@@ -1,6 +1,6 @@
 
-# smp_task
+# umode_sys_call
 
-多核&任务支持
+用户态与系统调用
 
 TODO: IA32
