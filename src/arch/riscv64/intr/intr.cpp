@@ -53,14 +53,14 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
     (void)_sp;
     (void)_sstatus;
     (void)_context;
-// #define DEBUG
+#define DEBUG
 #ifdef DEBUG
     info("scause: 0x%p, sepc: 0x%p, stval: 0x%p.\n", _scause, _sepc, _stval);
 #undef DEBUG
 #endif
     if (_scause & CPU::CAUSE_INTR_MASK) {
 // 中断
-// #define DEBUG
+#define DEBUG
 #ifdef DEBUG
         info("intr: %s.\n", INTR::get_instance().get_intr_name(
                                 _scause & CPU::CAUSE_CODE_MASK));
@@ -84,6 +84,13 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
 #undef DEBUG
 #endif
         INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK);
+        if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK) {
+            _context->sepc += 8;
+            _context->sstatus = sstatus & ~(SSTATUS_SPP | SSTATUS_SPIE);
+        }
+        if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_U_ENV_CALL) {
+            _context->sepc += 8;
+        }
     }
     return;
 }

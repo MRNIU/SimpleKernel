@@ -85,6 +85,12 @@ private:
     spinlock_t spinlock;
 
 public:
+    /// break
+    static constexpr const uint8_t EXCP_BREAK = 3;
+    /// U 态 ecall
+    static constexpr const uint8_t EXCP_U_ENV_CALL = 8;
+    /// S 态 ecall
+    static constexpr const uint8_t EXCP_S_ENV_CALL = 9;
     /// 页读错误
     static constexpr const uint8_t EXCP_LOAD_PAGE_FAULT = 13;
     /// 页写错误

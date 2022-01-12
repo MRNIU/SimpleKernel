@@ -65,7 +65,12 @@ void kernel_main_smp(void) {
     /// @note 在 tmp_SCHEDULER::init() 执行完后才能正常处理中断
     tmp_SCHEDULER::get_instance().init_other_core();
     // 时钟中断初始化
-    TIMER::get_instance().init_other_core();
+    // TIMER::get_instance().init_other_core();
+    return;
+}
+
+static void u_env_call_hancler(void) {
+    info("u_env_call_hancler\n");
     return;
 }
 
@@ -99,7 +104,7 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
         /// @note 在 tmp_SCHEDULER::init() 执行完后才能正常处理中断
         tmp_SCHEDULER::get_instance().init();
         // 设置时钟中断
-        TIMER::get_instance().init();
+        // TIMER::get_instance().init();
         // 显示基本信息
         show_info();
         // 唤醒其余 core
@@ -115,6 +120,21 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
 
     // 允许中断
     CPU::ENABLE_INTR();
+
+    INTR::get_instance().register_excp_handler(INTR::EXCP_U_ENV_CALL,
+                                               u_env_call_hancler);
+
+    INTR::get_instance().register_excp_handler(INTR::EXCP_BREAK,
+                                               u_env_call_hancler);
+
+    info("ebreak----------.\n");
+    asm("ebreak");
+    info("ebreak----------END.\n");
+    asm("ecall");
+    info("ecall----------END.\n");
+
+    while (1)
+        ;
 
     test_sched();
     // 开始调度
