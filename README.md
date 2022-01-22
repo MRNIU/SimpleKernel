@@ -1,5 +1,5 @@
 
-# umode_sys_call
+# syscall
 
 用户态与系统调用
 
