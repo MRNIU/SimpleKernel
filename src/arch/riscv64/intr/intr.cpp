@@ -17,11 +17,8 @@
 #include "cpu.hpp"
 #include "stdio.h"
 #include "intr.h"
-#include "cpu.hpp"
 #include "vmm.h"
-#include "tmp_scheduler.h"
 #include "task.h"
-#include "spinlock.h"
 #include "core.h"
 
 extern "C" void switch_context(CPU::context_t *_old, CPU::context_t *_new);
@@ -55,7 +52,8 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
     (void)_context;
 #define DEBUG
 #ifdef DEBUG
-    info("scause: 0x%p, sepc: 0x%p, stval: 0x%p.\n", _scause, _sepc, _stval);
+    info("sepc: 0x%p, stval: 0x%p, scause: 0x%p, sp: 0x%p, sstatus: 0x%p.\n",
+         _sepc, _stval, _scause, _sp, _sstatus);
 #undef DEBUG
 #endif
     if (_scause & CPU::CAUSE_INTR_MASK) {
@@ -86,7 +84,7 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
         INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK);
         if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK) {
             _context->sepc += 8;
-            _context->sstatus = sstatus & ~(SSTATUS_SPP | SSTATUS_SPIE);
+            _context->sstatus = _sstatus & ~(CPU::SSTATUS_SPP | CPU::SSTATUS_SPIE);
         }
         if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_U_ENV_CALL) {
             _context->sepc += 8;

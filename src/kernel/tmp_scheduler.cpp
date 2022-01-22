@@ -27,6 +27,19 @@
 extern "C" void context_init(CPU::context_t *_context);
 extern "C" void switch_context(CPU::context_t *_old, CPU::context_t *_new);
 extern "C" void switch_os(CPU::context_t *_os);
+/// idle 任务指针
+task_t *idle_task[COMMON::CORES_COUNT] = {0};
+/**
+ * @brief idle 任务
+ */
+void idle(void) {
+    while (1) {
+        asm("wfi");
+    }
+    // 不会执行到这里
+    assert(0);
+    return;
+}
 
 pid_t tmp_SCHEDULER::alloc_pid(void) {
     pid_t res = g_pid++;
@@ -59,23 +72,24 @@ task_t *tmp_SCHEDULER::get_next_task(void) {
     spinlock.lock();
     // 如果队列为空
     if (task_queue->empty() == true) {
-        task = core_t::get_curr_task();
+        // 运行 idle 线程
+        task = idle_task[CPU::get_curr_core_id()];
     }
     else {
         // 不为空的话弹出一个任务
         task = task_queue->front();
         task_queue->pop();
     }
-
     spinlock.unlock();
     return task;
 }
 
 // 切换到下一个任务
 void tmp_SCHEDULER::switch_task(void) {
-    // 设置 core 当前线程信息
-    core_t::set_curr_task(get_next_task());
     // 获取下一个线程并替换为当前线程下一个线程
+    auto tmp = get_next_task();
+    // 设置 core 当前线程信息
+    core_t::set_curr_task(tmp);
     // 切换
     switch_context(&core_t::cores[CPU::get_curr_core_id()].sched_task->context,
                    &core_t::get_curr_task()->context);
@@ -111,6 +125,9 @@ bool tmp_SCHEDULER::init(void) {
     core_t::cores[CPU::get_curr_core_id()].core_id    = CPU::get_curr_core_id();
     core_t::cores[CPU::get_curr_core_id()].curr_task  = task;
     core_t::cores[CPU::get_curr_core_id()].sched_task = task;
+    // 创建 idle 任务
+    idle_task[CPU::get_curr_core_id()]        = new task_t("idle", idle);
+    idle_task[CPU::get_curr_core_id()]->state = RUNNING;
     info("task init.\n");
     return true;
 }
@@ -127,12 +144,13 @@ bool tmp_SCHEDULER::init_other_core(void) {
     core_t::cores[CPU::get_curr_core_id()].core_id    = CPU::get_curr_core_id();
     core_t::cores[CPU::get_curr_core_id()].curr_task  = task;
     core_t::cores[CPU::get_curr_core_id()].sched_task = task;
+    idle_task[CPU::get_curr_core_id()]        = new task_t("idle", idle);
+    idle_task[CPU::get_curr_core_id()]->state = RUNNING;
     info("task other init.\n");
     return true;
 }
 
 void tmp_SCHEDULER::sched(void) {
-    info("sched: Running...\n");
     // TODO: 根据当前任务的属性进行调度
     switch_task();
     return;

@@ -12,12 +12,9 @@
 # ARCH="x86_64"
 ARCH="riscv64"
 
+DEBUG=0
 # Use qeme for i386/x86_64, bochs for default
 IA32_USE_QEMU=0
-
-# Use for riscv64, compile opensbi
-# for linux, use riscv64-linux-gnu-
-TOOLCHAIN_PREFIX=riscv64-unknown-elf-
 
 # 内核映像
 kernel='./build/bin/kernel.elf'
@@ -35,7 +32,9 @@ if [ "${OS}" == "Linux" ]; then
         TOOLS="toolchain_linux_aarch64.cmake"
     elif [ "${ARCH}" == "riscv64" ]; then
         TOOLS="toolchain_linux_riscv.cmake"
+        TOOLCHAIN_PREFIX=riscv64-linux-gnu-
     fi
+    OPENSBI="$(pwd)/tools/opensbi/build/platform/generic/firmware/fw_jump.elf"
     GRUB_PATH="$(dirname $(which grub-file))"
     bochsrc="./tools/bochsrc_linux.txt"
 elif [ "${OS}" == "Darwin" ]; then
@@ -45,6 +44,7 @@ elif [ "${OS}" == "Darwin" ]; then
         TOOLS="toolchain_mac_aarch64.cmake"
     elif [ "${ARCH}" == "riscv64" ]; then
         TOOLS="toolchain_mac_riscv.cmake"
+        TOOLCHAIN_PREFIX=riscv64-unknown-elf-
     fi
     OPENSBI="$(pwd)/tools/opensbi/build/platform/generic/firmware/fw_jump.elf"
     GRUB_PATH="$(pwd)/tools/grub-2.04/build/grub/bin"

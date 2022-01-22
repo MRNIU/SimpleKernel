@@ -6,7 +6,6 @@
 
 #include "common.h"
 #include "stdio.h"
-#include "iostream"
 #include "assert.h"
 #include "pmm.h"
 #include "vmm.h"
@@ -230,7 +229,7 @@ int test_sched(void) {
     }
 
     while (1) {
-        if (taskxx_cond_(0)) {
+        if (taskxx_cond_all) {
             break;
         }
         tmp_SCHEDULER::get_instance().sched();

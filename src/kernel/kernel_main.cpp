@@ -14,13 +14,12 @@
  * </table>
  */
 
-#include "cxxabi.h"
 #include "common.h"
 #include "stdio.h"
-#include "stdlib.h"
 #include "iostream"
 #include "assert.h"
 #include "boot_info.h"
+#include "cxxabi.h"
 #include "pmm.h"
 #include "vmm.h"
 #include "heap.h"
@@ -33,9 +32,6 @@
 #include "opensbi.h"
 #include "core.h"
 #include "spinlock.h"
-
-/// @todo gdb 调试
-/// @todo clion 环境
 
 /**
  * @brief 启动所有 core

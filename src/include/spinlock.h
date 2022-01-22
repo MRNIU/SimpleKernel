@@ -19,6 +19,7 @@
 
 #include "stddef.h"
 #include "string"
+#include "atomic"
 
 /**
  * @brief 自旋锁
@@ -29,9 +30,9 @@ private:
     /// 自旋锁名称
     const char *name;
     /// 是否 lock
-    volatile bool locked;
+    std::atomic_flag locked;
     /// 获得此锁的 hartid
-    volatile size_t hartid;
+    size_t hartid;
 
     /**
      * @brief 检查当前 hart 是否获得此锁
@@ -88,7 +89,7 @@ public:
     friend std::ostream &operator<<(std::ostream     &_os,
                                     const spinlock_t &_spinlock) {
         printf("spinlock(%s) hart 0x%X %s\n", _spinlock.name, _spinlock.hartid,
-               (_spinlock.locked ? "locked" : "unlock"));
+               (_spinlock.locked._M_i ? "locked" : "unlock"));
         return _os;
     }
 };
