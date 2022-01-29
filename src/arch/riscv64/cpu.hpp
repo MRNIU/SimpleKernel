@@ -293,10 +293,28 @@ static inline void ENABLE_INTR(void) {
 }
 
 /**
+ * @brief 允许中断
+ * @param  _sstatus         要设置的 sstatus
+ */
+static inline void ENABLE_INTR(uint64_t &_sstatus) {
+    _sstatus |= SSTATUS_SIE;
+    return;
+}
+
+/**
  * @brief 禁止中断
  */
 static inline void DISABLE_INTR(void) {
     WRITE_SSTATUS(READ_SSTATUS() & ~SSTATUS_SIE);
+    return;
+}
+
+/**
+ * @brief 禁止中断
+ * @param  _sstatus         要设置的原 sstatus 值
+ */
+static inline void DISABLE_INTR(uint64_t &_sstatus) {
+    _sstatus &= ~SSTATUS_SIE;
     return;
 }
 
@@ -366,26 +384,6 @@ static inline void VMM_FLUSH(uintptr_t) {
     // the zero, zero means flush all TLB entries.
     __asm__ volatile("sfence.vma zero, zero");
     return;
-}
-
-/**
- * @brief 设置当前 core id
- * @param  _hartid          要设置的值
- * @todo 不使用 tp
- */
-static inline void set_curr_core_id(size_t _hartid) {
-    CPU::WRITE_TP(_hartid);
-    return;
-}
-
-/**
- * @brief 获取当前 core id
- * @return size_t           hartid
- * @note hartid 和 core id 是一回事
- * @todo 不使用 tp
- */
-static inline size_t get_curr_core_id(void) {
-    return CPU::READ_TP();
 }
 
 /**
@@ -468,41 +466,80 @@ struct fregs_t {
  * @brief 调用者保存寄存器
  */
 struct caller_regs_t {
-    uintptr_t ra;
-    uintptr_t t0;
-    uintptr_t t2;
-    uintptr_t a0;
-    uintptr_t a1;
-    uintptr_t a2;
-    uintptr_t a3;
-    uintptr_t a4;
-    uintptr_t a5;
-    uintptr_t a6;
-    uintptr_t a7;
-    uintptr_t t3;
-    uintptr_t t4;
-    uintptr_t t5;
-    uintptr_t t6;
-    uintptr_t ft0;
-    uintptr_t ft1;
-    uintptr_t ft2;
-    uintptr_t ft3;
-    uintptr_t ft4;
-    uintptr_t ft5;
-    uintptr_t ft6;
-    uintptr_t ft7;
-    uintptr_t fa0;
-    uintptr_t fa1;
-    uintptr_t fa2;
-    uintptr_t fa3;
-    uintptr_t fa4;
-    uintptr_t fa5;
-    uintptr_t fa6;
-    uintptr_t fa7;
-    uintptr_t ft8;
-    uintptr_t ft9;
-    uintptr_t ft10;
-    uintptr_t ft11;
+    uintptr_t            ra;
+    uintptr_t            t0;
+    uintptr_t            t2;
+    uintptr_t            a0;
+    uintptr_t            a1;
+    uintptr_t            a2;
+    uintptr_t            a3;
+    uintptr_t            a4;
+    uintptr_t            a5;
+    uintptr_t            a6;
+    uintptr_t            a7;
+    uintptr_t            t3;
+    uintptr_t            t4;
+    uintptr_t            t5;
+    uintptr_t            t6;
+    uintptr_t            ft0;
+    uintptr_t            ft1;
+    uintptr_t            ft2;
+    uintptr_t            ft3;
+    uintptr_t            ft4;
+    uintptr_t            ft5;
+    uintptr_t            ft6;
+    uintptr_t            ft7;
+    uintptr_t            fa0;
+    uintptr_t            fa1;
+    uintptr_t            fa2;
+    uintptr_t            fa3;
+    uintptr_t            fa4;
+    uintptr_t            fa5;
+    uintptr_t            fa6;
+    uintptr_t            fa7;
+    uintptr_t            ft8;
+    uintptr_t            ft9;
+    uintptr_t            ft10;
+    uintptr_t            ft11;
+    friend std::ostream &operator<<(std::ostream        &_os,
+                                    const caller_regs_t &_caller_regs) {
+        printf("ra: 0x%p, ", _caller_regs.ra);
+        printf("t0: 0x%p, ", _caller_regs.t0);
+        printf("t2: 0x%p, ", _caller_regs.t2);
+        printf("a0: 0x%p\n", _caller_regs.a0);
+        printf("a1: 0x%p, ", _caller_regs.a1);
+        printf("a2: 0x%p, ", _caller_regs.a2);
+        printf("a3: 0x%p, ", _caller_regs.a3);
+        printf("a4: 0x%p\n", _caller_regs.a4);
+        printf("a5: 0x%p, ", _caller_regs.a5);
+        printf("a6: 0x%p, ", _caller_regs.a6);
+        printf("a7: 0x%p, ", _caller_regs.a7);
+        printf("t3: 0x%p\n", _caller_regs.t3);
+        printf("t4: 0x%p, ", _caller_regs.t4);
+        printf("t5: 0x%p, ", _caller_regs.t5);
+        printf("t6: 0x%p, ", _caller_regs.t6);
+        printf("ft0: 0x%p\n", _caller_regs.ft0);
+        printf("ft1: 0x%p, ", _caller_regs.ft1);
+        printf("ft2: 0x%p, ", _caller_regs.ft2);
+        printf("ft3: 0x%p, ", _caller_regs.ft3);
+        printf("ft4: 0x%p\n", _caller_regs.ft4);
+        printf("ft5: 0x%p, ", _caller_regs.ft5);
+        printf("ft6: 0x%p, ", _caller_regs.ft6);
+        printf("ft7: 0x%p, ", _caller_regs.ft7);
+        printf("fa0: 0x%p\n", _caller_regs.fa0);
+        printf("fa1: 0x%p", _caller_regs.fa1);
+        printf("fa2: 0x%p", _caller_regs.fa2);
+        printf("fa3: 0x%p", _caller_regs.fa3);
+        printf("fa4: 0x%p", _caller_regs.fa4);
+        printf("fa5: 0x%p", _caller_regs.fa5);
+        printf("fa6: 0x%p", _caller_regs.fa6);
+        printf("fa7: 0x%p", _caller_regs.fa7);
+        printf("ft8: 0x%p", _caller_regs.ft8);
+        printf("ft9: 0x%p", _caller_regs.ft9);
+        printf("ft10: 0x%p", _caller_regs.ft10);
+        printf("ft11: 0x%p", _caller_regs.ft11);
+        return _os;
+    }
 };
 
 /**
@@ -569,23 +606,51 @@ struct callee_regs_t {
  * @brief 上下文，用于中断/任务切换
  */
 struct context_t {
+    /// 运行此任务的 core id
+    uintptr_t            coreid;
     uintptr_t            ra;
     CPU::callee_regs_t   callee_regs;
     uintptr_t            satp;
     uintptr_t            sepc;
     uintptr_t            sstatus;
+    uintptr_t            sie;
+    uintptr_t            sip;
     uintptr_t            sscratch;
     friend std::ostream &operator<<(std::ostream    &_os,
                                     const context_t &_context) {
+        printf("coreid: 0x%X, ", _context.coreid);
         printf("ra: 0x%p\n", _context.ra);
         std::cout << _context.callee_regs << std::endl;
         printf("satp: 0x%p, ", _context.satp);
         printf("sepc: 0x%p, ", _context.sepc);
-        printf("sstatus: 0x%p", _context.sstatus);
+        printf("sstatus: 0x%p, ", _context.sstatus);
+        printf("sie: 0x%p, ", _context.sie);
+        printf("sip: 0x%p, ", _context.sip);
         printf("sscratch: 0x%p", _context.sscratch);
         return _os;
     }
 };
+
+/**
+ * @brief 设置当前 core id
+ * @param  _hartid          要设置的值
+ * @todo 不使用 tp
+ */
+static inline void set_curr_core_id(size_t _hartid) {
+    CPU::WRITE_TP(_hartid);
+    return;
+}
+
+/**
+ * @brief 获取当前 core id
+ * @return size_t           hartid
+ * @note hartid 和 core id 是一回事
+ * @todo 不使用 tp
+ */
+static inline size_t get_curr_core_id(void) {
+    return CPU::READ_TP();
+}
+
 }; // namespace CPU
 
 #endif /* _CPU_HPP_ */

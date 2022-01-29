@@ -1,7 +1,7 @@
 
 /**
  * @file intr.cpp
- * @brief 中断抽象
+ * @brief 中断实现
  * @author Zone.N (Zone.Niuzh@hotmail.com)
  * @version 1.0
  * @date 2021-09-18
@@ -18,6 +18,7 @@
 #include "stdio.h"
 #include "intr.h"
 #include "vmm.h"
+#include "pmm.h"
 #include "task.h"
 #include "core.h"
 
@@ -43,6 +44,7 @@ static void switch_sched(void) {
 extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
                              uintptr_t _scause, uintptr_t _sp,
                              uintptr_t _sstatus, CPU::context_t *_context) {
+    CPU::DISABLE_INTR();
     // 消除 unused 警告
     (void)_sepc;
     (void)_stval;
@@ -58,7 +60,7 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
 #endif
     if (_scause & CPU::CAUSE_INTR_MASK) {
 // 中断
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
         info("intr: %s.\n", INTR::get_instance().get_intr_name(
                                 _scause & CPU::CAUSE_CODE_MASK));
@@ -69,16 +71,16 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
         // 如果是时钟中断
         if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::INTR_S_TIMER) {
             // 设置 sepc，切换到内核线程
-            _context->sepc = (uintptr_t)&switch_sched;
+            CPU::WRITE_SEPC(reinterpret_cast<uintptr_t>(&switch_sched));
         }
     }
     else {
 // 异常
 // 跳转到对应的处理函数
-#define DEBUG
+// #define DEBUG
 #ifdef DEBUG
-        warn("excp: %s.\n", INTR::get_instance().get_excp_name(
-                                _scause & CPU::CAUSE_CODE_MASK));
+        warn("excp: %s.\n",
+             INTR::get_instance().excp_name(_scause & CPU::CAUSE_CODE_MASK));
 #undef DEBUG
 #endif
         INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK);
@@ -97,25 +99,50 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
 extern "C" void trap_entry(void);
 
 /**
- * @brief 缺页处理
+ * @brief 缺页读处理
  */
 void pg_load_excp(void) {
     uintptr_t addr = CPU::READ_STVAL();
-    // 映射页
-    VMM::get_instance().mmap(VMM::get_instance().get_pgd(), addr, addr,
-                             VMM_PAGE_READABLE);
+    uintptr_t pa   = 0x0;
+    auto      is_mmap =
+        VMM::get_instance().get_mmap(VMM::get_instance().get_pgd(), addr, &pa);
+    // 如果 is_mmap 为 true，说明已经应映射过了
+    if (is_mmap == true) {
+        // 直接映射
+        VMM::get_instance().mmap(VMM::get_instance().get_pgd(), addr, pa,
+                                 VMM_PAGE_READABLE);
+    }
+    else {
+        // 分配一页物理内存进行映射
+        pa = PMM::get_instance().alloc_page_kernel();
+        VMM::get_instance().mmap(VMM::get_instance().get_pgd(), addr, pa,
+                                 VMM_PAGE_READABLE);
+    }
     info("pg_load_excp done: 0x%p.\n", addr);
     return;
 }
 
 /**
- * @brief 缺页处理
+ * @brief 缺页写处理
+ * @todo 需要读权限吗？测试发现没有读权限不行，原因未知
  */
 void pg_store_excp(void) {
     uintptr_t addr = CPU::READ_STVAL();
-    // 映射页
-    VMM::get_instance().mmap(VMM::get_instance().get_pgd(), addr, addr,
-                             VMM_PAGE_WRITABLE | VMM_PAGE_READABLE);
+    uintptr_t pa   = 0x0;
+    auto      is_mmap =
+        VMM::get_instance().get_mmap(VMM::get_instance().get_pgd(), addr, &pa);
+    // 如果 is_mmap 为 true，说明已经应映射过了
+    if (is_mmap == true) {
+        // 直接映射
+        VMM::get_instance().mmap(VMM::get_instance().get_pgd(), addr, pa,
+                                 VMM_PAGE_READABLE | VMM_PAGE_WRITABLE);
+    }
+    else {
+        // 分配一页物理内存进行映射
+        pa = PMM::get_instance().alloc_page_kernel();
+        VMM::get_instance().mmap(VMM::get_instance().get_pgd(), addr, pa,
+                                 VMM_PAGE_READABLE | VMM_PAGE_WRITABLE);
+    }
     info("pg_store_excp done: 0x%p.\n", addr);
     return;
 }
@@ -137,8 +164,11 @@ INTR &INTR::get_instance(void) {
 }
 
 int32_t INTR::init(void) {
-    // 初始化锁
-    spinlock.init("INTR");
+    //    // 创建用于保存上下文的空间
+    //    CPU::context_t *context = (CPU::context_t
+    //    *)kmalloc(sizeof(CPU::context_t));
+    //    // 将地址保存在 sscratch 寄存器中
+    //    CPU::WRITE_SSCRATCH(reinterpret_cast<uint64_t>(context));
     // 设置 trap vector
     CPU::WRITE_STVEC((uintptr_t)trap_entry);
     // 直接跳转到处理函数
