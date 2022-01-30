@@ -21,6 +21,8 @@
 #include "pmm.h"
 #include "task.h"
 #include "core.h"
+#include "io.h"
+#include "syscall.h"
 
 extern "C" void switch_context(CPU::context_t *_old, CPU::context_t *_new);
 
@@ -34,6 +36,18 @@ static void switch_sched(void) {
                    &core_t::cores[CPU::get_curr_core_id()].sched_task->context);
     return;
 }
+
+static int sys_putc(uint64_t *_arg) {
+    int c = (int)_arg[0];
+    IO::get_instance().put_char(c);
+    return 0;
+}
+
+//这里定义了函数指针的数组syscalls,
+//把每个系统调用编号的下标上初始化为对应的函数指针
+static int (*syscalls[1])(uint64_t *) = {sys_putc};
+
+#define NUM_SYSCALLS ((sizeof(syscalls)) / (sizeof(syscalls[0])))
 
 /**
  * @brief 中断处理函数
@@ -76,21 +90,65 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
     }
     else {
 // 异常
-// 跳转到对应的处理函数
-// #define DEBUG
+#define DEBUG
 #ifdef DEBUG
-        warn("excp: %s.\n",
-             INTR::get_instance().excp_name(_scause & CPU::CAUSE_CODE_MASK));
+        warn("excp: %s.\n", INTR::get_instance().get_excp_name(
+                                _scause & CPU::CAUSE_CODE_MASK));
 #undef DEBUG
 #endif
-        INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK);
-        if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK) {
-            _context->sepc += 8;
-            _context->sstatus = _sstatus & ~(CPU::SSTATUS_SPP | CPU::SSTATUS_SPIE);
-        }
         if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_U_ENV_CALL) {
-            _context->sepc += 8;
+            CPU::WRITE_SEPC(_context->sepc + 8);
+            uint64_t   arg[5];
+            uintptr_t *sp  = (uintptr_t *)_sp;
+            int        num = sp[10]; // a0寄存器保存了系统调用编号
+            if (num >= 0 && num < NUM_SYSCALLS) { //防止syscalls[num]下标越界
+                if (syscalls[num] != NULL) {
+                    arg[0] = sp[11];
+                    arg[1] = sp[12];
+                    arg[2] = sp[13];
+                    arg[3] = sp[14];
+                    arg[4] = sp[15];
+                    sp[10] = syscalls[num](arg);
+                    //把寄存器里的参数取出来，转发给系统调用编号对应的函数进行处理
+                    return;
+                }
+            }
+            //如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
+            assert(0);
         }
+        if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK) {
+            info("_context->sepc: 0x%X\n", _context->sepc);
+            CPU::WRITE_SEPC(_context->sepc + 8);
+            uint64_t   arg[5];
+            uintptr_t *sp  = (uintptr_t *)_sp;
+            int        num = sp[10]; // a0寄存器保存了系统调用编号
+            if (num >= 0 && num < NUM_SYSCALLS) { //防止syscalls[num]下标越界
+                if (syscalls[num] != NULL) {
+                    arg[0] = sp[11];
+                    arg[1] = sp[12];
+                    arg[2] = sp[13];
+                    arg[3] = sp[14];
+                    arg[4] = sp[15];
+                    info("1314141\n");
+                    sp[10] = syscalls[num](arg);
+                    //把寄存器里的参数取出来，转发给系统调用编号对应的函数进行处理
+                    return;
+                }
+            }
+            //如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
+            assert(0);
+        }
+        // 跳转到对应的处理函数
+        INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK);
+        //        if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK) {
+        //            _context->sepc += 8;
+        //            _context->sstatus =
+        //                _sstatus & ~(CPU::SSTATUS_SPP | CPU::SSTATUS_SPIE);
+        //        }
+        //        if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_U_ENV_CALL)
+        //        {
+        //            _context->sepc += 8;
+        //        }
     }
     return;
 }

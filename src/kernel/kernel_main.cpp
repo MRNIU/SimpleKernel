@@ -28,6 +28,7 @@
 #include "kernel.h"
 #include "opensbi.h"
 #include "smp_task.h"
+#include "syscall.h"
 
 /**
  * @brief 启动所有 core
@@ -56,12 +57,7 @@ void kernel_main_smp(void) {
     // 初始化任务调度
     SMP_TASK::get_instance().init_other_core();
     // 时钟中断初始化
-    // TIMER::get_instance().init_other_core();
-    return;
-}
-
-static void u_env_call_hancler(void) {
-    info("u_env_call_hancler\n");
+    TIMER::get_instance().init_other_core();
     return;
 }
 
@@ -106,23 +102,23 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
     else {
         // 唤醒 core0
         start_all_core(_dtb_addr);
+        while (1) {}
         // 执行其它 core 的初始化
         kernel_main_smp();
     }
 
+    syscall_init();
+
     // 允许中断
     CPU::ENABLE_INTR();
 
-    INTR::get_instance().register_excp_handler(INTR::EXCP_U_ENV_CALL,
-                                               u_env_call_hancler);
+    info("ecall----------.\n");
+    const char         c            = 'd';
+    int                ret          = 0;
+    register uintptr_t a0 asm("a0") = (uintptr_t)(0);
+    register uintptr_t a1 asm("a1") = (uintptr_t)(c);
+    asm("ebreak" : : "r"(a0), "r"(a1) : "memory");
 
-    INTR::get_instance().register_excp_handler(INTR::EXCP_BREAK,
-                                               u_env_call_hancler);
-
-    info("ebreak----------.\n");
-    asm("ebreak");
-    info("ebreak----------END.\n");
-    asm("ecall");
     info("ecall----------END.\n");
 
     while (1)
