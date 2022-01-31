@@ -105,45 +105,45 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
         // 跳转到对应的处理函数
         INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK);
         if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_U_ENV_CALL) {
-            CPU::WRITE_SEPC(_context->sepc + 8);
-            uint64_t   arg[5];
-            uintptr_t *sp  = (uintptr_t *)_sp;
-            int        num = sp[10]; // a0寄存器保存了系统调用编号
-            if (num >= 0 && num < NUM_SYSCALLS) { //防止syscalls[num]下标越界
+            CPU::WRITE_SEPC(CPU::READ_SEPC() + sizeof(uintptr_t));
+            uint64_t arg[5];
+            // a0 寄存器保存了系统调用编号
+            int num = _all_regs->xregs.a0;
+            // 防止syscalls[num]下标越界
+            if (num >= 0 && num < NUM_SYSCALLS) {
                 if (syscalls[num] != NULL) {
-                    arg[0] = sp[11];
-                    arg[1] = sp[12];
-                    arg[2] = sp[13];
-                    arg[3] = sp[14];
-                    arg[4] = sp[15];
-                    sp[10] = syscalls[num](arg);
-                    //把寄存器里的参数取出来，转发给系统调用编号对应的函数进行处理
+                    arg[0]              = _all_regs->xregs.a1;
+                    arg[1]              = _all_regs->xregs.a2;
+                    arg[2]              = _all_regs->xregs.a3;
+                    arg[3]              = _all_regs->xregs.a4;
+                    arg[4]              = _all_regs->xregs.a5;
+                    _all_regs->xregs.a0 = syscalls[num](arg);
+                    // 把寄存器里的参数取出来，转发给系统调用编号对应的函数进行处理
                     return;
                 }
             }
-            //如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
+            // 如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
             assert(0);
         }
         if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK) {
             CPU::WRITE_SEPC(CPU::READ_SEPC() + sizeof(uintptr_t));
-            uint64_t   arg[5];
-            uintptr_t *sp  = (uintptr_t *)_sp;
-            int        num = sp[10]; // a0寄存器保存了系统调用编号
-            if (num >= 0 && num < NUM_SYSCALLS) { //防止syscalls[num]下标越界
+            uint64_t arg[5];
+            // a0 寄存器保存了系统调用编号
+            int num = _all_regs->xregs.a0;
+            // 防止syscalls[num]下标越界
+            if (num >= 0 && num < NUM_SYSCALLS) {
                 if (syscalls[num] != NULL) {
-                    arg[0] = sp[11];
-                    arg[1] = sp[12];
-                    arg[2] = sp[13];
-                    arg[3] = sp[14];
-                    arg[4] = sp[15];
-                    info("1314141\n");
-                    sp[10] = syscalls[num](arg);
-                    info("13---------\n");
-                    //把寄存器里的参数取出来，转发给系统调用编号对应的函数进行处理
+                    arg[0]              = _all_regs->xregs.a1;
+                    arg[1]              = _all_regs->xregs.a2;
+                    arg[2]              = _all_regs->xregs.a3;
+                    arg[3]              = _all_regs->xregs.a4;
+                    arg[4]              = _all_regs->xregs.a5;
+                    _all_regs->xregs.a0 = syscalls[num](arg);
+                    // 把寄存器里的参数取出来，转发给系统调用编号对应的函数进行处理
                     return;
                 }
             }
-            //如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
+            // 如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
             assert(0);
         }
     }
