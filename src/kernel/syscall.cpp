@@ -92,7 +92,7 @@ bool syscall_init(void) {
     INTR::get_instance().register_excp_handler(INTR::EXCP_U_ENV_CALL,
                                                u_env_call_hancler);
 
-    INTR::get_instance().register_excp_handler(INTR::EXCP_S_ENV_CALL,
+    INTR::get_instance().register_excp_handler(INTR::EXCP_BREAK,
                                                u_env_call_hancler);
     info("syscall init.\n");
     return true;

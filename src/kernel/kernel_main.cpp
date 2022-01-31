@@ -92,7 +92,7 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
         // 初始化任务调度
         SMP_TASK::get_instance().init();
         // 设置时钟中断
-        // TIMER::get_instance().init();
+        //        TIMER::get_instance().init();
         // 显示基本信息
         show_info();
         // 唤醒其余 core
@@ -102,7 +102,8 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
     else {
         // 唤醒 core0
         start_all_core(_dtb_addr);
-        while (1) {}
+        while (1)
+            ;
         // 执行其它 core 的初始化
         kernel_main_smp();
     }

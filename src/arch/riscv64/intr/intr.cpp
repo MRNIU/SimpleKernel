@@ -96,6 +96,8 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
                                 _scause & CPU::CAUSE_CODE_MASK));
 #undef DEBUG
 #endif
+        // 跳转到对应的处理函数
+        INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK);
         if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_U_ENV_CALL) {
             CPU::WRITE_SEPC(_context->sepc + 8);
             uint64_t   arg[5];
@@ -117,8 +119,7 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
             assert(0);
         }
         if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK) {
-            info("_context->sepc: 0x%X\n", _context->sepc);
-            CPU::WRITE_SEPC(_context->sepc + 8);
+            CPU::WRITE_SEPC(CPU::READ_SEPC() + sizeof(uintptr_t));
             uint64_t   arg[5];
             uintptr_t *sp  = (uintptr_t *)_sp;
             int        num = sp[10]; // a0寄存器保存了系统调用编号
@@ -131,6 +132,7 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
                     arg[4] = sp[15];
                     info("1314141\n");
                     sp[10] = syscalls[num](arg);
+                    info("13---------\n");
                     //把寄存器里的参数取出来，转发给系统调用编号对应的函数进行处理
                     return;
                 }
@@ -138,17 +140,6 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
             //如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
             assert(0);
         }
-        // 跳转到对应的处理函数
-        INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK);
-        //        if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK) {
-        //            _context->sepc += 8;
-        //            _context->sstatus =
-        //                _sstatus & ~(CPU::SSTATUS_SPP | CPU::SSTATUS_SPIE);
-        //        }
-        //        if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_U_ENV_CALL)
-        //        {
-        //            _context->sepc += 8;
-        //        }
     }
     return;
 }
