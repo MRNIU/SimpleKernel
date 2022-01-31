@@ -83,9 +83,9 @@ int sys_putc(int c) {
 //           current->name);
 // }
 
-static void u_env_call_hancler(void) {
+int32_t u_env_call_hancler(int _argc, char **_argv) {
     info("u_env_call_hancler\n");
-    return;
+    return 0;
 }
 
 bool syscall_init(void) {
