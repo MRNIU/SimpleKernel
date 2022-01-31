@@ -18,9 +18,19 @@
 #define _SYSCALL_H_
 
 #include "stdint.h"
+#include "stddef.h"
 
-bool syscall_init(void);
+/**
+ * @brief 系统调用初始化
+ * @return int32_t         成功返回 0
+ */
+int32_t syscall_init(void);
 
+inline int syscall(uint8_t _sysno, ...);
+
+int32_t sys_putc(int _c);
+
+static constexpr const size_t  MAX_ARGS = 7;
 static constexpr const uint8_t SYS_putc = 0;
 
 #endif /* _SYSCALL_H_ */

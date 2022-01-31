@@ -37,18 +37,6 @@ static void switch_sched(void) {
     return;
 }
 
-static int sys_putc(uint64_t *_arg) {
-    int c = (int)_arg[0];
-    IO::get_instance().put_char(c);
-    return 0;
-}
-
-//这里定义了函数指针的数组syscalls,
-//把每个系统调用编号的下标上初始化为对应的函数指针
-static int (*syscalls[1])(uint64_t *) = {sys_putc};
-
-#define NUM_SYSCALLS ((sizeof(syscalls)) / (sizeof(syscalls[0])))
-
 /**
  * @brief 中断处理函数
  * @param  _scause         原因
@@ -104,49 +92,17 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
 #undef DEBUG
 #endif
         // 跳转到对应的处理函数
-        INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK, 0,
-                                     nullptr);
-        if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_U_ENV_CALL) {
+        if (((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_U_ENV_CALL) ||
+            ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK)) {
             CPU::WRITE_SEPC(CPU::READ_SEPC() + sizeof(uintptr_t));
-            uint64_t arg[5];
-            // a0 寄存器保存了系统调用编号
-            int num = _all_regs->xregs.a0;
-            // 防止syscalls[num]下标越界
-            if (num >= 0 && num < NUM_SYSCALLS) {
-                if (syscalls[num] != NULL) {
-                    arg[0]              = _all_regs->xregs.a1;
-                    arg[1]              = _all_regs->xregs.a2;
-                    arg[2]              = _all_regs->xregs.a3;
-                    arg[3]              = _all_regs->xregs.a4;
-                    arg[4]              = _all_regs->xregs.a5;
-                    _all_regs->xregs.a0 = syscalls[num](arg);
-                    // 把寄存器里的参数取出来，转发给系统调用编号对应的函数进行处理
-                    return;
-                }
-            }
-            // 如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
-            assert(0);
+            char **argv = (char **)kmalloc(sizeof(CPU::all_regs_t));
+            argv[0]     = (char *)_all_regs;
+            INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK, 1,
+                                         argv);
         }
-        if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK) {
-            CPU::WRITE_SEPC(CPU::READ_SEPC() + sizeof(uintptr_t));
-            uint64_t arg[5];
-            // a0 寄存器保存了系统调用编号
-            int num = _all_regs->xregs.a0;
-            // 防止syscalls[num]下标越界
-            if (num >= 0 && num < NUM_SYSCALLS) {
-                if (syscalls[num] != NULL) {
-                    arg[0]              = _all_regs->xregs.a1;
-                    arg[1]              = _all_regs->xregs.a2;
-                    arg[2]              = _all_regs->xregs.a3;
-                    arg[3]              = _all_regs->xregs.a4;
-                    arg[4]              = _all_regs->xregs.a5;
-                    _all_regs->xregs.a0 = syscalls[num](arg);
-                    // 把寄存器里的参数取出来，转发给系统调用编号对应的函数进行处理
-                    return;
-                }
-            }
-            // 如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
-            assert(0);
+        else {
+            INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK, 0,
+                                         nullptr);
         }
     }
     return;

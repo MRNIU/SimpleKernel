@@ -114,12 +114,7 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
     CPU::ENABLE_INTR();
 
     info("ecall----------.\n");
-    const char         c            = 'd';
-    int                ret          = 0;
-    register uintptr_t a0 asm("a0") = (uintptr_t)(0);
-    register uintptr_t a1 asm("a1") = (uintptr_t)(c);
-    asm("ebreak" : : "r"(a0), "r"(a1) : "memory");
-
+    sys_putc('c');
     info("ecall----------END.\n");
 
     while (1)
