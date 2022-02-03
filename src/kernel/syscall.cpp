@@ -31,6 +31,24 @@ static int32_t sys_putc(uintptr_t *_arg) {
     return 0;
 }
 
+int32_t u_env_call_handler(int _argc, char **_argv) {
+    assert(_argc == 1);
+    info("u_env_call_handler\n");
+    CPU::all_regs_t *regs = (CPU::all_regs_t *)_argv[0];
+    uintptr_t        arg[8];
+    // a0 寄存器保存了系统调用编号
+    uint8_t sysno  = regs->xregs.a0;
+    arg[0]         = regs->xregs.a1;
+    arg[1]         = regs->xregs.a2;
+    arg[2]         = regs->xregs.a3;
+    arg[3]         = regs->xregs.a4;
+    arg[4]         = regs->xregs.a5;
+    arg[5]         = regs->xregs.a6;
+    arg[6]         = regs->xregs.a7;
+    regs->xregs.a0 = SYSCALL::get_instance().do_syscall(sysno, arg);
+    return 0;
+}
+
 SYSCALL::syscall_handler_t SYSCALL::syscalls[SYSCALL_NO_MAX] = {
     [SYSCALL::SYS_putc] = sys_putc,
 };
@@ -39,31 +57,13 @@ int32_t SYSCALL::do_syscall(uint8_t _no, uintptr_t *_argv) {
     // 防止 syscalls[sysno] 越界
     assert(_no >= 0);
     assert(_no < SYSCALL::SYSCALL_NO_MAX);
-    return syscalls[_no](_argv);
-}
-
-int32_t u_env_call_handler(int _argc, char **_argv) {
-    assert(_argc == 1);
-    info("u_env_call_handler\n");
-    CPU::all_regs_t *regs = (CPU::all_regs_t *)_argv[0];
-    uintptr_t        arg[8];
-    // a0 寄存器保存了系统调用编号
-    uint8_t sysno = regs->xregs.a0;
-    if (SYSCALL::syscalls[sysno] != nullptr) {
-        arg[0]         = regs->xregs.a1;
-        arg[1]         = regs->xregs.a2;
-        arg[2]         = regs->xregs.a3;
-        arg[3]         = regs->xregs.a4;
-        arg[4]         = regs->xregs.a5;
-        arg[5]         = regs->xregs.a6;
-        arg[6]         = regs->xregs.a7;
-        regs->xregs.a0 = SYSCALL::get_instance().do_syscall(sysno, arg);
-        //        SYSCALL::syscalls[sysno](arg);
-        return 0;
+    if (syscalls[_no] != nullptr) {
+        return syscalls[_no](_argv);
     }
-    // 如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
-    assert(0);
-    return 0;
+    else {
+        assert(0);
+        return -1;
+    }
 }
 
 SYSCALL &SYSCALL::get_instance(void) {

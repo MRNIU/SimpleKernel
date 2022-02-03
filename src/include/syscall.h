@@ -29,6 +29,9 @@ int32_t sys_putc(int _c);
 
 class SYSCALL {
 private:
+    /// 最多 256 个系统调用
+    static constexpr const uint8_t SYSCALL_NO_MAX = UINT8_MAX;
+
     /**
      * @brief 系统调用函数指针
      * @param  _argv           参数列表
@@ -36,28 +39,26 @@ private:
      */
     typedef int32_t (*syscall_handler_t)(uintptr_t *_argv);
 
+    /// 系统调用函数指针表
+    static syscall_handler_t syscalls[SYSCALL_NO_MAX];
+
     /**
      * @brief 字符输出系统调用实现
      * @param _arg             要输出的字符
      * @return                 成功返回 0
      */
-//    int32_t sys_putc(uintptr_t *_arg);
+    //    int32_t sys_putc(uintptr_t *_arg);
+    int32_t        do_syscall(uint8_t _no, uintptr_t *_argv);
 
 protected:
 public:
     /// 系统调用最大参数数量
     static constexpr const size_t MAX_ARGS = 7;
 
-    /// 最多 256 个系统调用
-    static constexpr const uint8_t SYSCALL_NO_MAX = UINT8_MAX;
-
     /// 系统调用号
     enum : uint8_t {
         SYS_putc = 0,
     };
-
-    /// 系统调用函数指针表
-    static syscall_handler_t syscalls[SYSCALL_NO_MAX];
 
     /**
      * @brief 获取单例
@@ -73,14 +74,14 @@ public:
     int32_t init_other_core(void);
 
     /**
-     * @brief 系统调用入口
+     * @brief 系统调用入口，构造参数并触发中断
      * @param  _sysno           系统调用号
      * @param  ...              系统调用参数
      * @return int32_t          成功返回 0
      */
     int32_t syscall(uint8_t _sysno, ...);
 
-    int32_t do_syscall(uint8_t _no, uintptr_t *_argv);
+    friend int32_t u_env_call_handler(int _argc, char **_argv);
 };
 
 #endif /* _SYSCALL_H_ */
