@@ -21,7 +21,77 @@
 #include "cpu.hpp"
 #include "intr.h"
 
-inline int32_t syscall(uint8_t _sysno, ...) {
+int32_t sys_putc(int _c) {
+    return SYSCALL::get_instance().syscall(SYSCALL::SYS_putc, _c);
+}
+
+static int32_t sys_putc(uintptr_t *_arg) {
+    char c = (char)_arg[0];
+    IO::get_instance().put_char(c);
+    return 0;
+}
+
+SYSCALL::syscall_handler_t SYSCALL::syscalls[SYSCALL_NO_MAX] = {
+    [SYSCALL::SYS_putc] = sys_putc,
+};
+
+int32_t SYSCALL::do_syscall(uint8_t _no, uintptr_t *_argv) {
+    // 防止 syscalls[sysno] 越界
+    assert(_no >= 0);
+    assert(_no < SYSCALL::SYSCALL_NO_MAX);
+    return syscalls[_no](_argv);
+}
+
+int32_t u_env_call_handler(int _argc, char **_argv) {
+    assert(_argc == 1);
+    info("u_env_call_handler\n");
+    CPU::all_regs_t *regs = (CPU::all_regs_t *)_argv[0];
+    uintptr_t        arg[8];
+    // a0 寄存器保存了系统调用编号
+    uint8_t sysno = regs->xregs.a0;
+    if (SYSCALL::syscalls[sysno] != nullptr) {
+        arg[0]         = regs->xregs.a1;
+        arg[1]         = regs->xregs.a2;
+        arg[2]         = regs->xregs.a3;
+        arg[3]         = regs->xregs.a4;
+        arg[4]         = regs->xregs.a5;
+        arg[5]         = regs->xregs.a6;
+        arg[6]         = regs->xregs.a7;
+        regs->xregs.a0 = SYSCALL::get_instance().do_syscall(sysno, arg);
+        //        SYSCALL::syscalls[sysno](arg);
+        return 0;
+    }
+    // 如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
+    assert(0);
+    return 0;
+}
+
+SYSCALL &SYSCALL::get_instance(void) {
+    static SYSCALL syscall;
+    return syscall;
+}
+
+int32_t SYSCALL::init(void) {
+    INTR::get_instance().register_excp_handler(INTR::EXCP_U_ENV_CALL,
+                                               u_env_call_handler);
+
+    INTR::get_instance().register_excp_handler(INTR::EXCP_BREAK,
+                                               u_env_call_handler);
+    info("syscall init.\n");
+    return 0;
+}
+
+int32_t SYSCALL::init_other_core(void) {
+    INTR::get_instance().register_excp_handler(INTR::EXCP_U_ENV_CALL,
+                                               u_env_call_handler);
+
+    INTR::get_instance().register_excp_handler(INTR::EXCP_BREAK,
+                                               u_env_call_handler);
+    info("syscall other 0x%X init.\n", CPU::get_curr_core_id());
+    return 0;
+}
+
+int32_t SYSCALL::syscall(uint8_t _sysno, ...) {
     va_list ap;
     va_start(ap, _sysno);
     uintptr_t a[MAX_ARGS];
@@ -42,56 +112,4 @@ inline int32_t syscall(uint8_t _sysno, ...) {
                  : "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5), "r"(a6), "r"(a7)
                  : "memory");
     return a0;
-}
-
-int32_t sys_putc(int _c) {
-    return syscall(SYS_putc, _c);
-}
-
-static int32_t sys_putc(uintptr_t *_arg) {
-    int c = (int)_arg[0];
-    IO::get_instance().put_char(c);
-    return 0;
-}
-
-//这里定义了函数指针的数组syscalls,
-//把每个系统调用编号的下标上初始化为对应的函数指针
-int32_t (*syscalls[1])(uintptr_t *) = {sys_putc};
-
-#define NUM_SYSCALLS ((sizeof(syscalls)) / (sizeof(syscalls[0])))
-
-int32_t u_env_call_hancler(int _argc, char **_argv) {
-    assert(_argc == 1);
-    info("u_env_call_hancler\n");
-    CPU::all_regs_t *regs = (CPU::all_regs_t *)_argv[0];
-    uintptr_t        arg[8];
-    // a0 寄存器保存了系统调用编号
-    int sysno = regs->xregs.a0;
-    // 防止syscalls[sysno]下标越界
-    if (sysno >= 0 && sysno < NUM_SYSCALLS) {
-        if (syscalls[sysno] != NULL) {
-            arg[0]         = regs->xregs.a1;
-            arg[1]         = regs->xregs.a2;
-            arg[2]         = regs->xregs.a3;
-            arg[3]         = regs->xregs.a4;
-            arg[4]         = regs->xregs.a5;
-            arg[5]         = regs->xregs.a6;
-            arg[6]         = regs->xregs.a7;
-            regs->xregs.a0 = syscalls[sysno](arg);
-            return 0;
-        }
-    }
-    // 如果执行到这里，说明传入的系统调用编号还没有被实现，就崩掉了。
-    assert(0);
-    return 0;
-}
-
-int32_t syscall_init(void) {
-    INTR::get_instance().register_excp_handler(INTR::EXCP_U_ENV_CALL,
-                                               u_env_call_hancler);
-
-    INTR::get_instance().register_excp_handler(INTR::EXCP_BREAK,
-                                               u_env_call_hancler);
-    info("syscall init.\n");
-    return 0;
 }

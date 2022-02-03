@@ -56,8 +56,11 @@ void kernel_main_smp(void) {
     INTR::get_instance().init_other_core();
     // 初始化任务调度
     SMP_TASK::get_instance().init_other_core();
+    // 系统调用初始化
+    SYSCALL::get_instance().init_other_core();
     // 时钟中断初始化
     TIMER::get_instance().init_other_core();
+
     return;
 }
 
@@ -91,8 +94,11 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
         test_intr();
         // 初始化任务调度
         SMP_TASK::get_instance().init();
+        // 系统调用初始化
+        SYSCALL::get_instance().init();
         // 设置时钟中断
         //        TIMER::get_instance().init();
+
         // 显示基本信息
         show_info();
         // 唤醒其余 core
@@ -107,8 +113,6 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
         // 执行其它 core 的初始化
         kernel_main_smp();
     }
-
-    syscall_init();
 
     // 允许中断
     CPU::ENABLE_INTR();
