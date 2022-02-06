@@ -21,19 +21,19 @@
 #include "cpu.hpp"
 #include "intr.h"
 
-int32_t sys_putc(int _c) {
+int32_t sys_putc(char _c) {
     return SYSCALL::get_instance().syscall(SYSCALL::SYS_putc, _c);
 }
 
 static int32_t sys_putc(uintptr_t *_arg) {
     char c = (char)_arg[0];
-    IO::get_instance().put_char(c);
+    //    IO::get_instance().put_char(c);
+    printf("%c", c);
     return 0;
 }
 
 int32_t u_env_call_handler(int _argc, char **_argv) {
     assert(_argc == 1);
-    info("u_env_call_handler\n");
     CPU::all_regs_t *regs = (CPU::all_regs_t *)_argv[0];
     uintptr_t        arg[8];
     // a0 寄存器保存了系统调用编号

@@ -25,7 +25,7 @@
  * @param _c               要输出的字符
  * @return                 成功返回 0
  */
-int32_t sys_putc(int _c);
+int32_t sys_putc(char _c);
 
 class SYSCALL {
 private:
@@ -43,12 +43,12 @@ private:
     static syscall_handler_t syscalls[SYSCALL_NO_MAX];
 
     /**
-     * @brief 字符输出系统调用实现
-     * @param _arg             要输出的字符
+     * @brief 执行系统调用，中断处理程序使用
+     * @param _no              系统调用号
+     * @param _argv            系统调用参数
      * @return                 成功返回 0
      */
-    //    int32_t sys_putc(uintptr_t *_arg);
-    int32_t        do_syscall(uint8_t _no, uintptr_t *_argv);
+    int32_t do_syscall(uint8_t _no, uintptr_t *_argv);
 
 protected:
 public:
@@ -79,7 +79,7 @@ public:
      * @param  ...              系统调用参数
      * @return int32_t          成功返回 0
      */
-    int32_t syscall(uint8_t _sysno, ...);
+    inline int32_t syscall(uint8_t _sysno, ...);
 
     friend int32_t u_env_call_handler(int _argc, char **_argv);
 };

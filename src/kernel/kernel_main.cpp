@@ -97,7 +97,7 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
         // 系统调用初始化
         SYSCALL::get_instance().init();
         // 设置时钟中断
-        //        TIMER::get_instance().init();
+        TIMER::get_instance().init();
 
         // 显示基本信息
         show_info();
@@ -108,8 +108,6 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
     else {
         // 唤醒 core0
         start_all_core(_dtb_addr);
-        while (1)
-            ;
         // 执行其它 core 的初始化
         kernel_main_smp();
     }
@@ -117,14 +115,12 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
     // 允许中断
     CPU::ENABLE_INTR();
 
+    test_sched();
+
     info("ecall----------.\n");
     sys_putc('c');
     info("ecall----------END.\n");
 
-    while (1)
-        ;
-
-    test_sched();
     // 开始调度
     while (1) {
         SMP_TASK::get_instance().sched();
