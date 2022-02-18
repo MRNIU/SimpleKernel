@@ -94,11 +94,11 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
         // 跳转到对应的处理函数
         if (((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_U_ENV_CALL) ||
             ((_scause & CPU::CAUSE_CODE_MASK) == INTR::EXCP_BREAK)) {
-            CPU::WRITE_SEPC(CPU::READ_SEPC() + sizeof(uintptr_t));
-            char **argv = (char **)kmalloc(sizeof(CPU::all_regs_t));
-            argv[0]     = (char *)_all_regs;
+            char *argv = (char *)kmalloc(sizeof(CPU::all_regs_t));
+            memcpy(argv, _all_regs, sizeof(CPU::all_regs_t));
+            _all_regs->sepc += sizeof(uintptr_t);
             INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK, 1,
-                                         argv);
+                                         &argv);
         }
         else {
             INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK, 0,
