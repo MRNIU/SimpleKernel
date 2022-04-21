@@ -33,6 +33,9 @@ static int32_t sys_putc(uintptr_t *_arg) {
 }
 
 int32_t u_env_call_handler(int _argc, char **_argv) {
+    (void)_argc;
+    (void)_argv;
+#if defined(__riscv)
     assert(_argc == 1);
     CPU::all_regs_t *regs = (CPU::all_regs_t *)_argv[0];
     uintptr_t        arg[8];
@@ -46,6 +49,7 @@ int32_t u_env_call_handler(int _argc, char **_argv) {
     arg[5]         = regs->xregs.a6;
     arg[6]         = regs->xregs.a7;
     regs->xregs.a0 = SYSCALL::get_instance().do_syscall(sysno, arg);
+#endif
     return 0;
 }
 
@@ -72,26 +76,32 @@ SYSCALL &SYSCALL::get_instance(void) {
 }
 
 int32_t SYSCALL::init(void) {
+#if defined(__riscv)
     INTR::get_instance().register_excp_handler(INTR::EXCP_U_ENV_CALL,
                                                u_env_call_handler);
 
     INTR::get_instance().register_excp_handler(INTR::EXCP_BREAK,
                                                u_env_call_handler);
+#endif
     info("syscall init.\n");
     return 0;
 }
 
 int32_t SYSCALL::init_other_core(void) {
+#if defined(__riscv)
     INTR::get_instance().register_excp_handler(INTR::EXCP_U_ENV_CALL,
                                                u_env_call_handler);
 
     INTR::get_instance().register_excp_handler(INTR::EXCP_BREAK,
                                                u_env_call_handler);
+#endif
     info("syscall other 0x%X init.\n", CPU::get_curr_core_id());
     return 0;
 }
 
 int32_t SYSCALL::syscall(uint8_t _sysno, ...) {
+    (void)_sysno;
+#if defined(__riscv)
     va_list ap;
     va_start(ap, _sysno);
     uintptr_t a[MAX_ARGS];
@@ -112,4 +122,7 @@ int32_t SYSCALL::syscall(uint8_t _sysno, ...) {
                  : "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5), "r"(a6), "r"(a7)
                  : "memory");
     return a0;
+#else
+    return 0;
+#endif
 }
