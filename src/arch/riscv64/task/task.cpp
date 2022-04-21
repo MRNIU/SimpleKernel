@@ -33,11 +33,13 @@ task_t::task_t(mystl::string _name, void (*_task)(void))
     context.coreid = CPU::get_curr_core_id();
     context.callee_regs.sp = stack + COMMON::STACK_SIZE;
     context.sscratch       = (uintptr_t)kmalloc(sizeof(CPU::context_t));
-    page_dir               = VMM::get_instance().get_pgd();
-    slice                  = 0;
-    slice_total            = 0;
-    hartid                 = CPU::get_curr_core_id();
-    exit_code              = -1;
+    context.sie |= CPU::SIE_STIE;
+    context.sstatus |= CPU::SSTATUS_SIE;
+    page_dir    = VMM::get_instance().get_pgd();
+    slice       = 0;
+    slice_total = 0;
+    hartid      = CPU::get_curr_core_id();
+    exit_code   = -1;
     return;
 }
 
@@ -54,7 +56,8 @@ task_t::~task_t(void) {
 }
 
 std::ostream &operator<<(std::ostream &_os, const task_t &_task) {
-    printf("%s: hartid: 0x%X, pid 0x%X, state 0x%X", _task.name.c_str(),
-           _task.hartid, _task.pid, _task.state);
+    printf("%s: hartid: 0x%X, pid 0x%X, state 0x%X, parent: 0x%X, stack: 0x%X",
+           _task.name.c_str(), _task.hartid, _task.pid, _task.state,
+           _task.parent, _task.stack);
     return _os;
 }

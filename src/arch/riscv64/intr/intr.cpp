@@ -27,48 +27,40 @@
 extern "C" void switch_context(CPU::context_t *_old, CPU::context_t *_new);
 
 /**
- * @brief 保存当前上下文并跳转到调度线程
- */
-static void switch_sched(void) {
-    task_t *old = core_t::get_curr_task();
-    // 设置 core 当前线程信息
-    switch_context(&old->context,
-                   &core_t::cores[CPU::get_curr_core_id()].sched_task->context);
-    return;
-}
-
-/**
  * @brief 中断处理函数
  * @param  _scause         原因
  * @param  _sepc           值
  * @param  _stval          值
  * @param  _scause         值
  * @param  _all_regs       保存在栈上的所有寄存器，实际上是 sp
+ * @param  _sie            值
  * @param  _sstatus        值
- * @param  _sstatus        值
+ * @param  _sscratch       值
  */
 extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
                              uintptr_t _scause, CPU::all_regs_t *_all_regs,
-                             uintptr_t _sstatus, uintptr_t _sscratch) {
+                             uintptr_t _sie, uintptr_t _sstatus,
+                             uintptr_t _sscratch) {
     CPU::DISABLE_INTR();
     // 消除 unused 警告
     (void)_sepc;
     (void)_stval;
     (void)_scause;
     (void)_all_regs;
+    (void)_sie;
     (void)_sstatus;
     (void)_sscratch;
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
-    info("sepc: 0x%p, stval: 0x%p, scause: 0x%p, all_regs(sp): 0x%p, sstatus: "
-         "0x%p.\n",
-         _sepc, _stval, _scause, _all_regs, _sstatus);
-// std::cout << *_all_regs << std::endl;
+    info("sepc: 0x%p, stval: 0x%p, scause: 0x%p, all_regs(sp): 0x%p, sie: "
+         "0x%p, sstatus: 0x%p.\n",
+         _sepc, _stval, _scause, _all_regs, _sie, _sstatus);
+//    std::cout << *_all_regs << std::endl;
 #undef DEBUG
 #endif
     if (_scause & CPU::CAUSE_INTR_MASK) {
-// 中断
-//#define DEBUG
+        // 中断
+#define DEBUG
 #ifdef DEBUG
         info("intr: %s.\n", INTR::get_instance().get_intr_name(
                                 _scause & CPU::CAUSE_CODE_MASK));
@@ -79,12 +71,15 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
                                           nullptr);
         // 如果是时钟中断
         if ((_scause & CPU::CAUSE_CODE_MASK) == INTR::INTR_S_TIMER) {
-            // 设置 sepc，切换到内核线程
-            _all_regs->sepc = reinterpret_cast<uintptr_t>(&switch_sched);
+            // 切换到内核线程
+            switch_context(
+                &core_t::get_curr_task()->context,
+                &core_t::cores[CPU::get_curr_core_id()].sched_task->context);
         }
     }
     else {
-// 异常
+        // 异常
+        // 跳转到对应的处理函数
 #define DEBUG
 #ifdef DEBUG
         warn("excp: %s.\n", INTR::get_instance().get_excp_name(
@@ -110,55 +105,6 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
 
 /// 中断处理入口 intr_s.S
 extern "C" void trap_entry(void);
-
-/**
- * @brief 缺页读处理
- */
-int32_t pg_load_excp(int, char **) {
-    uintptr_t addr = CPU::READ_STVAL();
-    uintptr_t pa   = 0x0;
-    auto      is_mmap =
-        VMM::get_instance().get_mmap(VMM::get_instance().get_pgd(), addr, &pa);
-    // 如果 is_mmap 为 true，说明已经应映射过了
-    if (is_mmap == true) {
-        // 直接映射
-        VMM::get_instance().mmap(VMM::get_instance().get_pgd(), addr, pa,
-                                 VMM_PAGE_READABLE);
-    }
-    else {
-        // 分配一页物理内存进行映射
-        pa = PMM::get_instance().alloc_page_kernel();
-        VMM::get_instance().mmap(VMM::get_instance().get_pgd(), addr, pa,
-                                 VMM_PAGE_READABLE);
-    }
-    info("pg_load_excp done: 0x%p.\n", addr);
-    return 0;
-}
-
-/**
- * @brief 缺页写处理
- * @todo 需要读权限吗？测试发现没有读权限不行，原因未知
- */
-int32_t pg_store_excp(int, char **) {
-    uintptr_t addr = CPU::READ_STVAL();
-    uintptr_t pa   = 0x0;
-    auto      is_mmap =
-        VMM::get_instance().get_mmap(VMM::get_instance().get_pgd(), addr, &pa);
-    // 如果 is_mmap 为 true，说明已经应映射过了
-    if (is_mmap == true) {
-        // 直接映射
-        VMM::get_instance().mmap(VMM::get_instance().get_pgd(), addr, pa,
-                                 VMM_PAGE_READABLE | VMM_PAGE_WRITABLE);
-    }
-    else {
-        // 分配一页物理内存进行映射
-        pa = PMM::get_instance().alloc_page_kernel();
-        VMM::get_instance().mmap(VMM::get_instance().get_pgd(), addr, pa,
-                                 VMM_PAGE_READABLE | VMM_PAGE_WRITABLE);
-    }
-    info("pg_store_excp done: 0x%p.\n", addr);
-    return 0;
-}
 
 /**
  * @brief 默认使用的中断处理函数

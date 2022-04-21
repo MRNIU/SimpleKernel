@@ -160,13 +160,17 @@ int32_t IO::write_string(const char *s) {
 }
 
 /// 输出缓冲区
-char buf[IO::BUF_SIZE];
-char info_buf[IO::BUF_SIZE];
+static char buf[IO::BUF_SIZE];
+static char buf_info[IO::BUF_SIZE];
+static char buf_warn[IO::BUF_SIZE];
+static char buf_err[IO::BUF_SIZE];
 
 /// 格式化输出自旋锁
 /// @todo 这里需要看一下这么构造有没有问题
 static spinlock_t spinlock_printf("printf");
 static spinlock_t spinlock_info("info");
+static spinlock_t spinlock_warn("warn");
+static spinlock_t spinlock_err("err");
 
 /**
  * @brief printf 定义
@@ -199,7 +203,7 @@ extern "C" int32_t info(const char *_fmt, ...) {
     va_list va;
     int32_t i;
     va_start(va, _fmt);
-    i = vsnprintf_(info_buf, (size_t)-1, _fmt, va);
+    i = vsnprintf_(buf_info, IO::BUF_SIZE, _fmt, va);
     va_end(va);
     // 输出 cpuid
     char tmp[5] = {0};
@@ -209,8 +213,8 @@ extern "C" int32_t info(const char *_fmt, ...) {
     tmp[3] = ' ';
     tmp[4] = '\0';
     IO::get_instance().write_string(tmp);
-    IO::get_instance().write_string(info_buf);
-    bzero(info_buf, IO::BUF_SIZE);
+    IO::get_instance().write_string(buf_info);
+    bzero(buf_info, IO::BUF_SIZE);
     IO::get_instance().set_color(curr_color);
     spinlock_info.unlock();
     return i;
@@ -220,13 +224,13 @@ extern "C" int32_t info(const char *_fmt, ...) {
  * @brief 与 printf 类似，只是颜色不同
  */
 extern "C" int32_t warn(const char *_fmt, ...) {
-    spinlock_info.lock();
+    spinlock_warn.lock();
     COLOR::color_t curr_color = IO::get_instance().get_color();
     IO::get_instance().set_color(COLOR::YELLOW);
     va_list va;
     int32_t i;
     va_start(va, _fmt);
-    i = vsnprintf_(info_buf, (size_t)-1, _fmt, va);
+    i = vsnprintf_(buf_warn, IO::BUF_SIZE, _fmt, va);
     va_end(va);
     // 输出 cpuid
     char tmp[5] = {0};
@@ -236,10 +240,10 @@ extern "C" int32_t warn(const char *_fmt, ...) {
     tmp[3] = ' ';
     tmp[4] = '\0';
     IO::get_instance().write_string(tmp);
-    IO::get_instance().write_string(info_buf);
-    bzero(info_buf, IO::BUF_SIZE);
+    IO::get_instance().write_string(buf_warn);
+    bzero(buf_warn, IO::BUF_SIZE);
     IO::get_instance().set_color(curr_color);
-    spinlock_info.unlock();
+    spinlock_warn.unlock();
     return i;
 }
 
@@ -247,13 +251,13 @@ extern "C" int32_t warn(const char *_fmt, ...) {
  * @brief 与 printf 类似，只是颜色不同
  */
 extern "C" int32_t err(const char *_fmt, ...) {
-    spinlock_info.lock();
+    spinlock_err.lock();
     COLOR::color_t curr_color = IO::get_instance().get_color();
     IO::get_instance().set_color(COLOR::LIGHT_RED);
     va_list va;
     int32_t i;
     va_start(va, _fmt);
-    i = vsnprintf_(info_buf, (size_t)-1, _fmt, va);
+    i = vsnprintf_(buf_err, IO::BUF_SIZE, _fmt, va);
     va_end(va);
     // 输出 cpuid
     char tmp[5] = {0};
@@ -263,9 +267,9 @@ extern "C" int32_t err(const char *_fmt, ...) {
     tmp[3] = ' ';
     tmp[4] = '\0';
     IO::get_instance().write_string(tmp);
-    IO::get_instance().write_string(info_buf);
-    bzero(info_buf, IO::BUF_SIZE);
+    IO::get_instance().write_string(buf_err);
+    bzero(buf_err, IO::BUF_SIZE);
     IO::get_instance().set_color(curr_color);
-    spinlock_info.unlock();
+    spinlock_err.unlock();
     return i;
 }

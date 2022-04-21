@@ -23,6 +23,8 @@
 .align 4
 trap_entry:
     // 将所有寄存器保存到栈上
+    // 在栈上留出保存寄存器的空间
+    addi sp, sp, -ALL_SIZE
     all_regs_save sp
 
     // 调用 intr.cpp: trap_handler
@@ -31,12 +33,15 @@ trap_entry:
     csrr a1, stval
     csrr a2, scause
     mv   a3, sp
-    csrr a4, sstatus
-    csrr a5, sscratch
+    csrr a4, sie
+    csrr a5, sstatus
+    csrr a6, sscratch
     jal trap_handler
 
     // 从栈上恢复所有寄存器
     all_regs_load sp
+    // 释放栈上用于保存寄存器的空间
+    addi sp, sp, ALL_SIZE
 
     // 跳转到 sepc 处执行
     sret

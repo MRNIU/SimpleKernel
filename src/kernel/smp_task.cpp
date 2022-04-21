@@ -36,6 +36,11 @@ task_t *idle_task[COMMON::CORES_COUNT] = {0};
  */
 void idle(void) {
     while (1) {
+#define DEBUG
+#ifdef DEBUG
+        info("idle running\n");
+#undef DEBUG
+#endif
 #if defined(__riscv)
         asm("wfi");
 #elif defined(__i386__) || defined(__x86_64__)
@@ -81,6 +86,15 @@ void SMP_TASK::switch_task(void) {
     auto tmp = get_next_task();
     // 设置 core 当前线程信息
     core_t::set_curr_task(tmp);
+#define DEBUG
+#ifdef DEBUG
+    info("switch_task core_t::cores[CPU::get_curr_core_id()].sched_task: \n");
+    std::cout << *core_t::cores[CPU::get_curr_core_id()].sched_task
+              << std::endl;
+    info("switch_task core_t::get_curr_task(): \n");
+    std::cout << *core_t::get_curr_task() << std::endl;
+#undef DEBUG
+#endif
     // 切换
     switch_context(&core_t::cores[CPU::get_curr_core_id()].sched_task->context,
                    &core_t::get_curr_task()->context);
@@ -119,23 +133,26 @@ bool SMP_TASK::init(void) {
     // 原地跳转，填充启动进程的 task_t 信息
     context_init(&task->context);
     // 初始化 core 信息
-    core_t::cores[CPU::get_curr_core_id()].core_id    = CPU::get_curr_core_id();
-    core_t::cores[CPU::get_curr_core_id()].curr_task  = task;
-    core_t::cores[CPU::get_curr_core_id()].sched_task = task;
+    core_t::cores[COMMON::BOOT_HART_ID].core_id    = COMMON::BOOT_HART_ID;
+    core_t::cores[COMMON::BOOT_HART_ID].curr_task  = task;
+    core_t::cores[COMMON::BOOT_HART_ID].sched_task = task;
 
     // 创建 idle 任务
-    idle_task[CPU::get_curr_core_id()]        = new task_t("idle", idle);
-    idle_task[CPU::get_curr_core_id()]->state = RUNNING;
-    idle_task[CPU::get_curr_core_id()]->context.sstatus =
+    idle_task[COMMON::BOOT_HART_ID]        = new task_t("idle", idle);
+    idle_task[COMMON::BOOT_HART_ID]->state = RUNNING;
+#if defined(__riscv)
+    idle_task[COMMON::BOOT_HART_ID]->context.sstatus =
         task->context.sstatus | CPU::SSTATUS_SIE;
-    idle_task[CPU::get_curr_core_id()]->context.sie =
+    idle_task[COMMON::BOOT_HART_ID]->context.sie =
         task->context.sie | CPU::SIE_STIE;
-    idle_task[CPU::get_curr_core_id()]->context.sip = task->context.sip;
+    idle_task[COMMON::BOOT_HART_ID]->context.sip = task->context.sip;
+#endif
     info("smp_task init.\n");
     return true;
 }
 
 bool SMP_TASK::init_other_core(void) {
+    assert(CPU::get_curr_core_id() != COMMON::BOOT_HART_ID);
     // 当前进程
     task_t *task = new task_t("init other", nullptr);
     task->hartid = CPU::get_curr_core_id();
@@ -149,13 +166,14 @@ bool SMP_TASK::init_other_core(void) {
     core_t::cores[CPU::get_curr_core_id()].sched_task = task;
     // 创建 idle 任务
     idle_task[CPU::get_curr_core_id()]        = new task_t("idle", idle);
+#if defined(__riscv)
     idle_task[CPU::get_curr_core_id()]->state = RUNNING;
     idle_task[CPU::get_curr_core_id()]->context.sstatus =
         task->context.sstatus | CPU::SSTATUS_SIE;
     idle_task[CPU::get_curr_core_id()]->context.sie =
         task->context.sie | CPU::SIE_STIE;
     idle_task[CPU::get_curr_core_id()]->context.sip = task->context.sip;
-
+#endif
     info("smp_task other init.\n");
     return true;
 }
@@ -179,6 +197,11 @@ void SMP_TASK::remove_task(task_t &_task) {
 
 void SMP_TASK::sched(void) {
     // TODO: 根据当前任务的属性进行调度
+//#define DEBUG
+#ifdef DEBUG
+    info("sched\n");
+#undef DEBUG
+#endif
     switch_task();
     return;
 }
