@@ -44,6 +44,8 @@ void rr_scheduler_t::remove_task(task_t *_task) {
 }
 
 task_t *rr_scheduler_t::get_next_task(void) {
+    std::cout << "core_t::get_curr_task(): " << *core_t::get_curr_task()
+              << std::endl;
     task_t *ret = nullptr;
     // 如果任务未结束
     if (core_t::get_curr_task()->state == RUNNING) {
@@ -58,6 +60,12 @@ task_t *rr_scheduler_t::get_next_task(void) {
     // 任务队列不为空的话弹出一个任务
     if (task_queue.empty() == false) {
         ret = task_queue.front();
+//#define DEBUG
+#ifdef DEBUG
+        info("ret->context.coreid: 0x%X, CPU::get_curr_core_id(): 0x%X\n",
+             ret->context.coreid, CPU::get_curr_core_id());
+#undef DEBUG
+#endif
         // 任务上下文保存的 coreid 与调度的 cpu 一致
         if (ret->context.coreid == CPU::get_curr_core_id()) {
             task_queue.pop();
@@ -66,5 +74,12 @@ task_t *rr_scheduler_t::get_next_task(void) {
             ret = nullptr;
         }
     }
+//#define DEBUG
+#ifdef DEBUG
+    if (ret == nullptr) {
+        info("ret == nullptr\n");
+    }
+#undef DEBUG
+#endif
     return ret;
 }
