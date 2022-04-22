@@ -77,10 +77,10 @@ SYSCALL &SYSCALL::get_instance(void) {
 
 int32_t SYSCALL::init(void) {
 #if defined(__riscv)
-    INTR::get_instance().register_excp_handler(INTR::EXCP_U_ENV_CALL,
+    INTR::get_instance().register_excp_handler(CPU::EXCP_ECALL_U,
                                                u_env_call_handler);
 
-    INTR::get_instance().register_excp_handler(INTR::EXCP_BREAK,
+    INTR::get_instance().register_excp_handler(CPU::EXCP_BREAKPOINT,
                                                u_env_call_handler);
 #endif
     info("syscall init.\n");
@@ -89,10 +89,10 @@ int32_t SYSCALL::init(void) {
 
 int32_t SYSCALL::init_other_core(void) {
 #if defined(__riscv)
-    INTR::get_instance().register_excp_handler(INTR::EXCP_U_ENV_CALL,
+    INTR::get_instance().register_excp_handler(CPU::EXCP_ECALL_U,
                                                u_env_call_handler);
 
-    INTR::get_instance().register_excp_handler(INTR::EXCP_BREAK,
+    INTR::get_instance().register_excp_handler(CPU::EXCP_BREAKPOINT,
                                                u_env_call_handler);
 #endif
     info("syscall other 0x%X init.\n", CPU::get_curr_core_id());
