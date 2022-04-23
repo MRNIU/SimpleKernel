@@ -167,6 +167,7 @@ enum {
     EXCP_ECALL_U                        = EXCP_ECALL + U_MODE,
     EXCP_ECALL_S                        = EXCP_ECALL + S_MODE,
     EXCP_ECALL_M                        = EXCP_ECALL + M_MODE,
+    EXCP_ECALL_INSTRUCTION_LENGTH       = 4,
     EXCP_INSTRUCTION_PAGE_FAULT         = 12,
     EXCP_LOAD_PAGE_FAULT                = 13,
     EXCP_STORE_AMO_PAGE_FAULT           = 15,
