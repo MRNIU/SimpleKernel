@@ -35,11 +35,15 @@ task_t::task_t(mystl::string _name, void (*_task)(void))
     context.sscratch       = (uintptr_t)kmalloc(sizeof(CPU::context_t));
     context.sie |= CPU::SIE_STIE;
     context.sstatus.sie = true;
-    page_dir            = VMM::get_instance().get_pgd();
-    slice               = 0;
-    slice_total         = 0;
-    hartid              = CPU::get_curr_core_id();
-    exit_code           = -1;
+    // 默认为用户模式
+    context.sstatus.spp = false;
+    // 允许用户模式下的中断
+    context.sstatus.spie = true;
+    page_dir             = VMM::get_instance().get_pgd();
+    slice                = 0;
+    slice_total          = 0;
+    hartid               = CPU::get_curr_core_id();
+    exit_code            = -1;
     return;
 }
 
