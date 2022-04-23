@@ -24,8 +24,8 @@
 .globl context_init
 .align 4
 context_init:
-    // @todo 临时设置为 ra
-    sd_base          ra,       0,                    a0
+    // @todo 临时设置为 tp
+    sd_base          tp,       0,                    a0
     sd_base          ra,       1,                    a0
 
     callee_regs_save a0,       2
