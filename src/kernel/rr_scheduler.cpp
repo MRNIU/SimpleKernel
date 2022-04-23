@@ -44,8 +44,6 @@ void rr_scheduler_t::remove_task(task_t *_task) {
 }
 
 task_t *rr_scheduler_t::get_next_task(void) {
-    std::cout << "core_t::get_curr_task(): " << *core_t::get_curr_task()
-              << std::endl;
     task_t *ret = nullptr;
     // 如果任务未结束
     if (core_t::get_curr_task()->state == RUNNING) {
