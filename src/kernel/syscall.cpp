@@ -117,7 +117,7 @@ int32_t SYSCALL::syscall(uint8_t _sysno, ...) {
     register uintptr_t a5 asm("a5") = a[4];
     register uintptr_t a6 asm("a6") = a[5];
     register uintptr_t a7 asm("a7") = a[6];
-    asm volatile("ebreak"
+    asm volatile("ecall"
                  : "+r"(a0)
                  : "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5), "r"(a6), "r"(a7)
                  : "memory");
