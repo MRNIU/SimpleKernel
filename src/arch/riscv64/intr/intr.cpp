@@ -49,7 +49,7 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
     (void)_sie;
     (void)_sstatus;
     (void)_sscratch;
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
     info("sepc: 0x%p, stval: 0x%p, scause: 0x%p, all_regs(sp): 0x%p, sie: "
          "0x%p\nsstatus: ",
@@ -92,7 +92,7 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
             ((_scause & CPU::CAUSE_CODE_MASK) == CPU::EXCP_BREAKPOINT)) {
             char *argv = (char *)kmalloc(sizeof(CPU::all_regs_t));
             memcpy(argv, _all_regs, sizeof(CPU::all_regs_t));
-            _all_regs->sepc += sizeof(uintptr_t);
+            _all_regs->sepc += CPU::EXCP_ECALL_INSTRUCTION_LENGTH;
             INTR::get_instance().do_excp(_scause & CPU::CAUSE_CODE_MASK, 1,
                                          &argv);
         }
@@ -101,6 +101,11 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
                                          nullptr);
         }
     }
+    static int i666 = 0;
+    if (i666 == 3) {
+        _all_regs->sstatus.spp = false;
+    }
+    i666++;
     return;
 }
 

@@ -64,6 +64,20 @@ void kernel_main_smp(void) {
     return;
 }
 
+static uint64_t tmp_taak_var233 = 0;
+static void     ttt(void) {
+    info("ttt create\n");
+    while (1) {
+        tmp_taak_var233++;
+        if (tmp_taak_var233 % 9999999 == 0) {
+            info("ttt running\n");
+            sys_putc('\n');
+            //            asm("ebreak");
+            //            asm("ecall");
+        }
+    }
+}
+
 /**
  * @brief 内核主要逻辑
  * @note 这个函数不会返回
@@ -103,7 +117,7 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
         show_info();
         // 唤醒其余 core
         start_all_core(_dtb_addr);
-        started = true;
+        //        started = true;
     }
     else {
         // 唤醒 core0
@@ -111,15 +125,17 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
         // 执行其它 core 的初始化
         kernel_main_smp();
     }
+    task_t *task = new task_t("user_task", &ttt);
+    SMP_TASK::get_instance().add_task(*task, SMP_TASK::SCHEDULER_RR);
 
     // 允许中断
     CPU::ENABLE_INTR();
 
-    test_sched();
+    //    test_sched();
 
-    info("ecall----------.\n");
-    sys_putc('c');
-    info("ecall----------END.\n");
+    //    info("ecall----------.\n");
+    //    sys_putc('c');
+    //    info("ecall----------END.\n");
 
     // 开始调度
     while (1) {
