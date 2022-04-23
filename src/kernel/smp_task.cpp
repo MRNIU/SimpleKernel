@@ -134,6 +134,9 @@ bool SMP_TASK::init(void) {
     task->state = RUNNING;
     // 原地跳转，填充启动进程的 task_t 信息
     context_init(&task->context);
+    /// @note 这里的 sstatus 一读出来就是 0x8000000000006020，U mode
+    // 手动设置为 S mode
+    task->context.sstatus.spp = true;
     // 初始化 core 信息
     core_t::cores[COMMON::BOOT_HART_ID].core_id    = COMMON::BOOT_HART_ID;
     core_t::cores[COMMON::BOOT_HART_ID].curr_task  = task;
@@ -156,6 +159,9 @@ bool SMP_TASK::init_other_core(void) {
     task->state  = RUNNING;
     // 原地跳转，填充启动进程的 task_t 信息
     context_init(&task->context);
+    /// @note 这里的 sstatus 一读出来就是 0x8000000000006020，U mode
+    // 手动设置为 S mode
+    task->context.sstatus.spp = true;
     // 初始化 core 信息
     core_t::cores[CPU::get_curr_core_id()].core_id    = CPU::get_curr_core_id();
     core_t::cores[CPU::get_curr_core_id()].curr_task  = task;
