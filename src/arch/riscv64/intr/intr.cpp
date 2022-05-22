@@ -103,8 +103,10 @@ extern "C" void trap_handler(uintptr_t _sepc, uintptr_t _stval,
         }
     }
     static int i666 = 0;
-    if (i666 == 3) {
+    if (i666 == 2) {
         _all_regs->sstatus.spp = false;
+//        _all_regs->satp        = CPU::satp_t(
+//                   CPU::SET_SV39(reinterpret_cast<uint64_t>(VMM::pgd_user)));
     }
     i666++;
     return;

@@ -77,7 +77,7 @@ static void     ttt(void) {
         }
     }
 }
-
+static pt_t pgd_user = nullptr;
 /**
  * @brief 内核主要逻辑
  * @note 这个函数不会返回
@@ -113,6 +113,34 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
         // 设置时钟中断
         TIMER::get_instance().init();
 
+        /// @note
+        /// http://wyfcyx.gitee.io/rcore-tutorial-book-v3/chapter4/6multitasking-based-on-as.html
+        pgd_user = (pt_t)PMM::get_instance().alloc_page_kernel();
+        bzero(pgd_user, COMMON::PAGE_SIZE);
+        // 映射内核空间
+        for (uintptr_t addr = 0x80000000; addr < (uintptr_t)0x84400000;
+             addr += COMMON::PAGE_SIZE) {
+            // TODO: 区分代码/数据等段分别映射
+            VMM::get_instance().mmap(pgd_user, addr, addr,
+                                     VMM_PAGE_READABLE | VMM_PAGE_WRITABLE |
+                                         VMM_PAGE_EXECUTABLE | VMM_PAGE_USER);
+        }
+        for (uintptr_t addr = 0x30000000; addr < (uintptr_t)0x10000000;
+             addr += COMMON::PAGE_SIZE) {
+            // TODO: 区分代码/数据等段分别映射
+            VMM::get_instance().mmap(pgd_user, addr, addr,
+                                     VMM_PAGE_READABLE | VMM_PAGE_WRITABLE |
+                                         VMM_PAGE_EXECUTABLE | VMM_PAGE_USER);
+        }
+
+        for (uintptr_t addr = 0x2000000; addr < (uintptr_t)0x10000;
+             addr += COMMON::PAGE_SIZE) {
+            // TODO: 区分代码/数据等段分别映射
+            VMM::get_instance().mmap(pgd_user, addr, addr,
+                                     VMM_PAGE_READABLE | VMM_PAGE_WRITABLE |
+                                         VMM_PAGE_EXECUTABLE | VMM_PAGE_USER);
+        }
+
         // 显示基本信息
         show_info();
         // 唤醒其余 core
@@ -126,6 +154,8 @@ void kernel_main(uintptr_t _hartid, uintptr_t _dtb_addr) {
         kernel_main_smp();
     }
     task_t *task = new task_t("user_task", &ttt);
+    task->context.satp.val =
+        CPU::SET_SV39(reinterpret_cast<uint64_t>(pgd_user));
     SMP_TASK::get_instance().add_task(*task, SMP_TASK::SCHEDULER_RR);
 
     // 允许中断
