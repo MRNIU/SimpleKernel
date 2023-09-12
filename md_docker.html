@@ -86,18 +86,18 @@ $(document).ready(function(){initNavTree('md_docker.html',''); initResizable(); 
 <div class="title">构建 Docker 并通过 ssh 使用 </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md12"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md15"></a>
 构建 Docker image</h1>
 <p>构建 image</p>
 <div class="fragment"><div class="line">cd SimpleKernel</div>
 <div class="line">docker build -t SimpleKernel-docker .</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md13"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md16"></a>
 启动容器，并配置 ssh</h1>
 <p>运行以下命令启动容器:</p>
 <div class="fragment"><div class="line">docker run --name SimpleKernel-container -itd -p 233:22 -v ./:/home/zone/SimpleKernel SimpleKernel-docker</div>
 </div><!-- fragment --><p>进入 docker container ubuntu 命令行环境</p>
 <div class="fragment"><div class="line">docker exec -it SimpleKernel-container /bin/zsh</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md14"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md17"></a>
 配置 ssh</h1>
 <p>在本地创建 RSA Key:</p>
 <div class="fragment"><div class="line"># 检查是否已经存在 RSA key:</div>
@@ -116,7 +116,7 @@ $(document).ready(function(){initNavTree('md_docker.html',''); initResizable(); 
 <p>ssh 登录 ubuntu:</p>
 <div class="fragment"><div class="line">ssh -p 233 zone@localhost</div>
 </div><!-- fragment --><p>此时应该能够直接登录，不再需要输入密码</p>
-<h1><a class="anchor" id="autotoc_md15"></a>
+<h1><a class="anchor" id="autotoc_md18"></a>
 配置 vscode</h1>
 <ul>
 <li>安装<code>Remote - SSH</code> 插件</li>
@@ -131,7 +131,7 @@ $(document).ready(function(){initNavTree('md_docker.html',''); initResizable(); 
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Sep 12 2023 13:33:39 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue Sep 12 2023 14:59:34 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

@@ -38,22 +38,38 @@ var NAVTREE =
       [ "RISCV", "md_1__xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md9", null ],
       [ "相关文档", "md_1__xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md10", null ]
     ] ],
+    [ "构建系统", "md_build_system.html", [
+      [ "目录及文件介绍", "md_build_system.html#autotoc_md12", null ],
+      [ "命名规范", "md_build_system.html#autotoc_md13", null ]
+    ] ],
     [ "构建 Docker 并通过 ssh 使用", "md_docker.html", [
-      [ "构建 Docker image", "md_docker.html#autotoc_md12", null ],
-      [ "启动容器，并配置 ssh", "md_docker.html#autotoc_md13", null ],
-      [ "配置 ssh", "md_docker.html#autotoc_md14", null ],
-      [ "配置 vscode", "md_docker.html#autotoc_md15", null ]
+      [ "构建 Docker image", "md_docker.html#autotoc_md15", null ],
+      [ "启动容器，并配置 ssh", "md_docker.html#autotoc_md16", null ],
+      [ "配置 ssh", "md_docker.html#autotoc_md17", null ],
+      [ "配置 vscode", "md_docker.html#autotoc_md18", null ]
     ] ],
     [ "README", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html", [
-      [ "boot", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md16", [
-        [ "本分支新增特性", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md17", null ],
-        [ "已支持的全部特性", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md18", null ]
+      [ "SimpleKernel", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md19", [
+        [ "关键词", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md20", null ],
+        [ "简介", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md21", null ],
+        [ "新增特性", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md22", null ],
+        [ "已支持", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md23", null ],
+        [ "依赖", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md24", null ]
+      ] ]
+    ] ],
+    [ "README_ENG", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html", [
+      [ "SimpleKernel", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md25", [
+        [ "Key Words", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md26", null ],
+        [ "Introduction", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md27", null ],
+        [ "What's NEW", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md28", null ],
+        [ "Supported", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md29", null ],
+        [ "Dependencies", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md30", null ]
       ] ]
     ] ],
     [ "gnu_efi_test", "md__home_runner_work_SimpleKernel_SimpleKernel_test_system_test_gnu_efi_test_README.html", null ],
     [ "CLion 配置及使用", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_Clion__xE4_xBD_xBF_xE7_x94_xA8_xE8_xAF_xB4_xE6_x98_x8E.html", [
-      [ "配置", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_Clion__xE4_xBD_xBF_xE7_x94_xA8_xE8_xAF_xB4_xE6_x98_x8E.html#autotoc_md21", null ],
-      [ "使用", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_Clion__xE4_xBD_xBF_xE7_x94_xA8_xE8_xAF_xB4_xE6_x98_x8E.html#autotoc_md22", null ]
+      [ "配置", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_Clion__xE4_xBD_xBF_xE7_x94_xA8_xE8_xAF_xB4_xE6_x98_x8E.html#autotoc_md33", null ],
+      [ "使用", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_Clion__xE4_xBD_xBF_xE7_x94_xA8_xE8_xAF_xB4_xE6_x98_x8E.html#autotoc_md34", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
