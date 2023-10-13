@@ -67,9 +67,10 @@ var NAVTREE =
       ] ]
     ] ],
     [ "gnu_efi_test", "md__home_runner_work_SimpleKernel_SimpleKernel_test_system_test_gnu_efi_test_README.html", null ],
-    [ "CLion 配置及使用", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_Clion__xE4_xBD_xBF_xE7_x94_xA8_xE8_xAF_xB4_xE6_x98_x8E.html", [
-      [ "配置", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_Clion__xE4_xBD_xBF_xE7_x94_xA8_xE8_xAF_xB4_xE6_x98_x8E.html#autotoc_md33", null ],
-      [ "使用", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_Clion__xE4_xBD_xBF_xE7_x94_xA8_xE8_xAF_xB4_xE6_x98_x8E.html#autotoc_md34", null ]
+    [ "CLion Usage", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html", [
+      [ "osx+QEMU+x86_64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md33", null ],
+      [ "osx+QEMU+riscv64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md34", null ],
+      [ "osx+QEMU+aarch64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md35", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],

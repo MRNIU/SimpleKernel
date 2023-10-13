@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['clion_20使用说明_2emd_116',['Clion 使用说明.md',['../Clion_01_xE4_xBD_xBF_xE7_x94_xA8_xE8_xAF_xB4_xE6_x98_x8E_8md.html',1,'']]]
+  ['clion_5fusage_2emd_116',['clion_usage.md',['../clion__usage_8md.html',1,'']]]
 ];
