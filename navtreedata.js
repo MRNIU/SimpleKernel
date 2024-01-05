@@ -97,7 +97,7 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"aarch64_2arch_8cpp.html"
+"aarch64_2arch__main_8cpp.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
