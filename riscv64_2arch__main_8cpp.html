@@ -118,8 +118,6 @@ Functions</h2></td></tr>
 <tr class="separator:ae588de26fa6132129a1743b8df8fc982"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3743e5195a085e51d92eb812991cce47"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a> (const char _c)</td></tr>
 <tr class="separator:a3743e5195a085e51d92eb812991cce47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1e691d4494dd64444edd8b48c721471"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="riscv64_2arch__main_8cpp.html#ad1e691d4494dd64444edd8b48c721471">arch</a> (int, uint8_t **)</td></tr>
-<tr class="separator:ad1e691d4494dd64444edd8b48c721471"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a595eb78e2d8dc0a817263e8e30897bd5"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="riscv64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5">arch_init</a> (uint32_t _argc, uint8_t **_argv)</td></tr>
 <tr class="separator:a595eb78e2d8dc0a817263e8e30897bd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -139,61 +137,6 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition in file <a class="el" href="riscv64_2arch__main_8cpp_source.html">arch_main.cpp</a>.</p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="ad1e691d4494dd64444edd8b48c721471"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad1e691d4494dd64444edd8b48c721471">&#9670;&nbsp;</a></span>arch()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int arch </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint8_t **&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="riscv64_2arch__main_8cpp_source.html#l00053">53</a> of file <a class="el" href="riscv64_2arch__main_8cpp_source.html">arch_main.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                          {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;H&#39;</span>);</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;e&#39;</span>);</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;W&#39;</span>);</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;o&#39;</span>);</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;r&#39;</span>);</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;d&#39;</span>);</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;!&#39;</span>);</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;}</div>
-<div class="ttc" id="ariscv64_2arch__main_8cpp_html_a3743e5195a085e51d92eb812991cce47"><div class="ttname"><a href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a></div><div class="ttdeci">void put_char(const char _c)</div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch__main_8cpp_source.html#l00048">arch_main.cpp:48</a></div></div>
-</div><!-- fragment --><div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="riscv64_2arch__main_8cpp_ad1e691d4494dd64444edd8b48c721471_cgraph.png" border="0" usemap="#ariscv64_2arch__main_8cpp_ad1e691d4494dd64444edd8b48c721471_cgraph" alt=""/></div>
-<map name="ariscv64_2arch__main_8cpp_ad1e691d4494dd64444edd8b48c721471_cgraph" id="ariscv64_2arch__main_8cpp_ad1e691d4494dd64444edd8b48c721471_cgraph">
-<area shape="rect" title=" " alt="" coords="5,5,56,32"/>
-<area shape="rect" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47" title=" " alt="" coords="104,5,183,32"/>
-<area shape="rect" href="riscv64_2arch__main_8cpp.html#ae588de26fa6132129a1743b8df8fc982" title=" " alt="" coords="231,5,284,32"/>
-</map>
-</div>
-
-</div>
-</div>
 <a id="a595eb78e2d8dc0a817263e8e30897bd5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a595eb78e2d8dc0a817263e8e30897bd5">&#9670;&nbsp;</a></span>arch_init()</h2>
 
@@ -220,29 +163,30 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="riscv64_2arch__main_8cpp_source.html#l00068">68</a> of file <a class="el" href="riscv64_2arch__main_8cpp_source.html">arch_main.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                                                   {</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  (void)_argc;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;  (void)_argv;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;H&#39;</span>);</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;e&#39;</span>);</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;W&#39;</span>);</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;o&#39;</span>);</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;r&#39;</span>);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;d&#39;</span>);</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;!&#39;</span>);</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  <span class="comment">// 进入死循环</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    ;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  }</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="riscv64_2arch__main_8cpp_source.html#l00053">53</a> of file <a class="el" href="riscv64_2arch__main_8cpp_source.html">arch_main.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                                                   {</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  (void)_argc;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  (void)_argv;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;H&#39;</span>);</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;e&#39;</span>);</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;W&#39;</span>);</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;o&#39;</span>);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;r&#39;</span>);</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;d&#39;</span>);</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;!&#39;</span>);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  <span class="comment">// 进入死循环</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    ;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  }</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;}</div>
+<div class="ttc" id="ariscv64_2arch__main_8cpp_html_a3743e5195a085e51d92eb812991cce47"><div class="ttname"><a href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a></div><div class="ttdeci">void put_char(const char _c)</div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch__main_8cpp_source.html#l00048">arch_main.cpp:48</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -345,10 +289,9 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="riscv64_2arch__main_8cpp_ae588de26fa6132129a1743b8df8fc982_icgraph.png" border="0" usemap="#ariscv64_2arch__main_8cpp_ae588de26fa6132129a1743b8df8fc982_icgraph" alt=""/></div>
 <map name="ariscv64_2arch__main_8cpp_ae588de26fa6132129a1743b8df8fc982_icgraph" id="ariscv64_2arch__main_8cpp_ae588de26fa6132129a1743b8df8fc982_icgraph">
-<area shape="rect" title=" " alt="" coords="259,31,312,57"/>
-<area shape="rect" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47" title=" " alt="" coords="132,31,211,57"/>
-<area shape="rect" href="riscv64_2arch__main_8cpp.html#ad1e691d4494dd64444edd8b48c721471" title=" " alt="" coords="19,5,70,32"/>
-<area shape="rect" href="riscv64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5" title=" " alt="" coords="5,56,84,83"/>
+<area shape="rect" title=" " alt="" coords="259,5,312,32"/>
+<area shape="rect" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47" title=" " alt="" coords="132,5,211,32"/>
+<area shape="rect" href="riscv64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5" title=" " alt="" coords="5,5,84,32"/>
 </map>
 </div>
 
@@ -390,9 +333,8 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="riscv64_2arch__main_8cpp_a3743e5195a085e51d92eb812991cce47_icgraph.png" border="0" usemap="#ariscv64_2arch__main_8cpp_a3743e5195a085e51d92eb812991cce47_icgraph" alt=""/></div>
 <map name="ariscv64_2arch__main_8cpp_a3743e5195a085e51d92eb812991cce47_icgraph" id="ariscv64_2arch__main_8cpp_a3743e5195a085e51d92eb812991cce47_icgraph">
-<area shape="rect" title=" " alt="" coords="132,31,211,57"/>
-<area shape="rect" href="riscv64_2arch__main_8cpp.html#ad1e691d4494dd64444edd8b48c721471" title=" " alt="" coords="19,5,70,32"/>
-<area shape="rect" href="riscv64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5" title=" " alt="" coords="5,56,84,83"/>
+<area shape="rect" title=" " alt="" coords="132,5,211,32"/>
+<area shape="rect" href="riscv64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5" title=" " alt="" coords="5,5,84,32"/>
 </map>
 </div>
 
@@ -404,7 +346,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_76e3dd4d2fa719e8d3b096e9aa563982.html">arch</a></li><li class="navelem"><a class="el" href="dir_5d78c82c73cee529a313d94efe356afe.html">riscv64</a></li><li class="navelem"><a class="el" href="riscv64_2arch__main_8cpp.html">arch_main.cpp</a></li>
-    <li class="footer">Generated on Fri Jan 5 2024 09:13:58 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Sun Jan 7 2024 15:39:40 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

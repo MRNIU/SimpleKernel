@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['boot_2ecpp_7',['boot.cpp',['../src_2boot_2boot_8cpp.html',1,'(Global Namespace)'],['../test_2system__test_2gnu__efi__test_2boot_8cpp.html',1,'(Global Namespace)'],['../test_2system__test_2opensbi__test_2boot_8cpp.html',1,'(Global Namespace)']]],
-  ['boot_2eh_8',['boot.h',['../boot_8h.html',1,'']]],
-  ['build_5fsystem_2emd_9',['build_system.md',['../build__system_8md.html',1,'']]]
+  ['boot_2ecpp_6',['boot.cpp',['../src_2boot_2boot_8cpp.html',1,'(Global Namespace)'],['../test_2system__test_2gnu__efi__test_2boot_8cpp.html',1,'(Global Namespace)'],['../test_2system__test_2opensbi__test_2boot_8cpp.html',1,'(Global Namespace)']]],
+  ['boot_2eh_7',['boot.h',['../boot_8h.html',1,'']]],
+  ['build_5fsystem_2emd_8',['build_system.md',['../build__system_8md.html',1,'']]]
 ];
