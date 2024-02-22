@@ -1,4 +1,4 @@
 var arch_8h =
 [
-    [ "arch_init", "arch_8h.html#a595eb78e2d8dc0a817263e8e30897bd5", null ]
+    [ "arch", "arch_8h.html#a6e72ac01cbd693797621b4ee1d02c9e5", null ]
 ];

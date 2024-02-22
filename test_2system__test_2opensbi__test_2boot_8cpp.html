@@ -200,28 +200,28 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00027">27</a> of file <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html">boot.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;                                   {</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <a class="code" href="structsbiret__t.html">sbiret_t</a> ret;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keyword">register</span> uintptr_t a0 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a0&quot;</span>) = (uintptr_t)(_arg0);</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keyword">register</span> uintptr_t a1 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a1&quot;</span>) = (uintptr_t)(_arg1);</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keyword">register</span> uintptr_t a2 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a2&quot;</span>) = (uintptr_t)(_arg2);</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">register</span> uintptr_t a3 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a3&quot;</span>) = (uintptr_t)(_arg3);</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keyword">register</span> uintptr_t a4 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a4&quot;</span>) = (uintptr_t)(_arg4);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keyword">register</span> uintptr_t a5 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a5&quot;</span>) = (uintptr_t)(_arg5);</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">register</span> uintptr_t a6 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a6&quot;</span>) = (uintptr_t)(_fid);</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keyword">register</span> uintptr_t a7 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a7&quot;</span>) = (uintptr_t)(_eid);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keyword">asm</span>(<span class="stringliteral">&quot;ecall&quot;</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;      : <span class="stringliteral">&quot;+r&quot;</span>(a0), <span class="stringliteral">&quot;+r&quot;</span>(a1)</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;      : <span class="stringliteral">&quot;r&quot;</span>(a2), <span class="stringliteral">&quot;r&quot;</span>(a3), <span class="stringliteral">&quot;r&quot;</span>(a4), <span class="stringliteral">&quot;r&quot;</span>(a5), <span class="stringliteral">&quot;r&quot;</span>(a6), <span class="stringliteral">&quot;r&quot;</span>(a7)</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;      : <span class="stringliteral">&quot;memory&quot;</span>);</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  ret.<a class="code" href="structsbiret__t.html#a907730633f8936f3e11a4a10aa8a8442">error</a> = a0;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  ret.<a class="code" href="structsbiret__t.html#a78449f5d7934aa1a6cd54351b16cc00d">value</a> = a1;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keywordflow">return</span> ret;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;}</div>
-<div class="ttc" id="astructsbiret__t_html"><div class="ttname"><a href="structsbiret__t.html">sbiret_t</a></div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch__main_8cpp_source.html#l00020">arch_main.cpp:20</a></div></div>
-<div class="ttc" id="astructsbiret__t_html_a78449f5d7934aa1a6cd54351b16cc00d"><div class="ttname"><a href="structsbiret__t.html#a78449f5d7934aa1a6cd54351b16cc00d">sbiret_t::value</a></div><div class="ttdeci">long value</div><div class="ttdoc">返回值</div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch__main_8cpp_source.html#l00024">arch_main.cpp:24</a></div></div>
-<div class="ttc" id="astructsbiret__t_html_a907730633f8936f3e11a4a10aa8a8442"><div class="ttname"><a href="structsbiret__t.html#a907730633f8936f3e11a4a10aa8a8442">sbiret_t::error</a></div><div class="ttdeci">long error</div><div class="ttdoc">错误码</div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch__main_8cpp_source.html#l00022">arch_main.cpp:22</a></div></div>
+<p class="definition">Definition at line <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00032">32</a> of file <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html">boot.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                                   {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <a class="code" href="structsbiret__t.html">sbiret_t</a> ret;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keyword">register</span> uintptr_t a0 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a0&quot;</span>) = (uintptr_t)(_arg0);</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">register</span> uintptr_t a1 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a1&quot;</span>) = (uintptr_t)(_arg1);</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keyword">register</span> uintptr_t a2 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a2&quot;</span>) = (uintptr_t)(_arg2);</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keyword">register</span> uintptr_t a3 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a3&quot;</span>) = (uintptr_t)(_arg3);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keyword">register</span> uintptr_t a4 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a4&quot;</span>) = (uintptr_t)(_arg4);</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <span class="keyword">register</span> uintptr_t a5 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a5&quot;</span>) = (uintptr_t)(_arg5);</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keyword">register</span> uintptr_t a6 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a6&quot;</span>) = (uintptr_t)(_fid);</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <span class="keyword">register</span> uintptr_t a7 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a7&quot;</span>) = (uintptr_t)(_eid);</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <span class="keyword">asm</span>(<span class="stringliteral">&quot;ecall&quot;</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;      : <span class="stringliteral">&quot;+r&quot;</span>(a0), <span class="stringliteral">&quot;+r&quot;</span>(a1)</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;      : <span class="stringliteral">&quot;r&quot;</span>(a2), <span class="stringliteral">&quot;r&quot;</span>(a3), <span class="stringliteral">&quot;r&quot;</span>(a4), <span class="stringliteral">&quot;r&quot;</span>(a5), <span class="stringliteral">&quot;r&quot;</span>(a6), <span class="stringliteral">&quot;r&quot;</span>(a7)</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;      : <span class="stringliteral">&quot;memory&quot;</span>);</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  ret.<a class="code" href="structsbiret__t.html#a907730633f8936f3e11a4a10aa8a8442">error</a> = a0;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  ret.<a class="code" href="structsbiret__t.html#a78449f5d7934aa1a6cd54351b16cc00d">value</a> = a1;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  <span class="keywordflow">return</span> ret;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;}</div>
+<div class="ttc" id="astructsbiret__t_html"><div class="ttname"><a href="structsbiret__t.html">sbiret_t</a></div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch_8cpp_source.html#l00025">arch.cpp:25</a></div></div>
+<div class="ttc" id="astructsbiret__t_html_a78449f5d7934aa1a6cd54351b16cc00d"><div class="ttname"><a href="structsbiret__t.html#a78449f5d7934aa1a6cd54351b16cc00d">sbiret_t::value</a></div><div class="ttdeci">long value</div><div class="ttdoc">返回值</div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch_8cpp_source.html#l00029">arch.cpp:29</a></div></div>
+<div class="ttc" id="astructsbiret__t_html_a907730633f8936f3e11a4a10aa8a8442"><div class="ttname"><a href="structsbiret__t.html#a907730633f8936f3e11a4a10aa8a8442">sbiret_t::error</a></div><div class="ttdeci">long error</div><div class="ttdoc">错误码</div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch_8cpp_source.html#l00027">arch.cpp:27</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -272,31 +272,30 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>int 正常返回 0 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00053">53</a> of file <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html">boot.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                       {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;H&#39;</span>);</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;e&#39;</span>);</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;W&#39;</span>);</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;o&#39;</span>);</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;r&#39;</span>);</div>
+<p class="definition">Definition at line <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00058">58</a> of file <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html">boot.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                       {</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;H&#39;</span>);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;e&#39;</span>);</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;d&#39;</span>);</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;!&#39;</span>);</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;}</div>
-<div class="ttc" id="atest_2system__test_2opensbi__test_2boot_8cpp_html_a3743e5195a085e51d92eb812991cce47"><div class="ttname"><a href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a></div><div class="ttdeci">void put_char(const char _c)</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00048">boot.cpp:48</a></div></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;W&#39;</span>);</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;o&#39;</span>);</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;r&#39;</span>);</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;d&#39;</span>);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;!&#39;</span>);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;}</div>
+<div class="ttc" id="atest_2system__test_2opensbi__test_2boot_8cpp_html_a3743e5195a085e51d92eb812991cce47"><div class="ttname"><a href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a></div><div class="ttdeci">void put_char(const char _c)</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00053">boot.cpp:53</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="test_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_cgraph.png" border="0" usemap="#atest_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_cgraph" alt=""/></div>
 <map name="atest_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_cgraph" id="atest_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_cgraph">
-<area shape="rect" title="入口" alt="" coords="5,31,60,57"/>
-<area shape="rect" href="aarch64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5" title=" " alt="" coords="108,5,187,32"/>
-<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47" title=" " alt="" coords="108,56,187,83"/>
-<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#ae588de26fa6132129a1743b8df8fc982" title=" " alt="" coords="235,56,288,83"/>
+<area shape="rect" title="入口" alt="" coords="5,5,60,32"/>
+<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a3743e5195a085e51d92eb812991cce47" title=" " alt="" coords="108,5,187,32"/>
+<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#ae588de26fa6132129a1743b8df8fc982" title=" " alt="" coords="235,5,288,32"/>
 </map>
 </div>
 
@@ -318,12 +317,12 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00048">48</a> of file <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html">boot.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                             {</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#ae588de26fa6132129a1743b8df8fc982">ecall</a>(_c, 0, 0, 0, 0, 0, 0, SBI_EXT_0_1_CONSOLE_PUTCHAR);</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;}</div>
-<div class="ttc" id="atest_2system__test_2opensbi__test_2boot_8cpp_html_ae588de26fa6132129a1743b8df8fc982"><div class="ttname"><a href="test_2system__test_2opensbi__test_2boot_8cpp.html#ae588de26fa6132129a1743b8df8fc982">ecall</a></div><div class="ttdeci">sbiret_t ecall(unsigned long _arg0, unsigned long _arg1, unsigned long _arg2, unsigned long _arg3, unsigned long _arg4, unsigned long _arg5, int _fid, int _eid)</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00027">boot.cpp:27</a></div></div>
+<p class="definition">Definition at line <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00053">53</a> of file <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html">boot.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                             {</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <a class="code" href="test_2system__test_2opensbi__test_2boot_8cpp.html#ae588de26fa6132129a1743b8df8fc982">ecall</a>(_c, 0, 0, 0, 0, 0, 0, SBI_EXT_0_1_CONSOLE_PUTCHAR);</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;}</div>
+<div class="ttc" id="atest_2system__test_2opensbi__test_2boot_8cpp_html_ae588de26fa6132129a1743b8df8fc982"><div class="ttname"><a href="test_2system__test_2opensbi__test_2boot_8cpp.html#ae588de26fa6132129a1743b8df8fc982">ecall</a></div><div class="ttdeci">sbiret_t ecall(unsigned long _arg0, unsigned long _arg1, unsigned long _arg2, unsigned long _arg3, unsigned long _arg4, unsigned long _arg5, int _fid, int _eid)</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00032">boot.cpp:32</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -351,7 +350,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_13e138d54eb8818da29c3992edef070a.html">test</a></li><li class="navelem"><a class="el" href="dir_dfa008182f2a40cb988df1752e3cb29d.html">system_test</a></li><li class="navelem"><a class="el" href="dir_7c016ae1625038972db0411832a49708.html">opensbi_test</a></li><li class="navelem"><a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp.html">boot.cpp</a></li>
-    <li class="footer">Generated on Sun Jan 7 2024 15:39:40 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu Feb 22 2024 10:11:58 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>
