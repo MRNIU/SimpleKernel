@@ -121,8 +121,8 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
-<tr class="memitem:a0d7799e95e8dda035f91d14e2febcfcd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMemory.html#a0d7799e95e8dda035f91d14e2febcfcd">flush_desc</a> ()</td></tr>
-<tr class="separator:a0d7799e95e8dda035f91d14e2febcfcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47fc4bc34f3d43bd469eb6fd050ad8b3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMemory.html#a47fc4bc34f3d43bd469eb6fd050ad8b3">flush_desc</a> ()</td></tr>
+<tr class="separator:a47fc4bc34f3d43bd469eb6fd050ad8b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -159,17 +159,25 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>构造函数 </p>
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00030">30</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;{ <a class="code" href="classMemory.html#a0d7799e95e8dda035f91d14e2febcfcd">flush_desc</a>(); }</div>
-<div class="ttc" id="aclassMemory_html_a0d7799e95e8dda035f91d14e2febcfcd"><div class="ttname"><a href="classMemory.html#a0d7799e95e8dda035f91d14e2febcfcd">Memory::flush_desc</a></div><div class="ttdeci">void flush_desc()</div><div class="ttdef"><b>Definition:</b> <a href="memory_8cpp_source.html#l00022">memory.cpp:22</a></div></div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00029">29</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;               {</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keyword">auto</span> flush_desc_ret = <a class="code" href="classMemory.html#a47fc4bc34f3d43bd469eb6fd050ad8b3">flush_desc</a>();</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keywordflow">if</span> (!flush_desc_ret) {</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Memory::Memory() flush_desc failed.&quot;</span> &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  }</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;}</div>
+<div class="ttc" id="aclassMemory_html_a47fc4bc34f3d43bd469eb6fd050ad8b3"><div class="ttname"><a href="classMemory.html#a47fc4bc34f3d43bd469eb6fd050ad8b3">Memory::flush_desc</a></div><div class="ttdeci">bool flush_desc()</div><div class="ttdef"><b>Definition:</b> <a href="memory_8cpp_source.html#l00020">memory.cpp:20</a></div></div>
+<div class="ttc" id="aclassostream_html_a271664830d4cda9da6c7c0b4c04a8ed2"><div class="ttname"><a href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a></div><div class="ttdeci">static auto endl(ostream &amp;_ostream) -&gt; ostream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8cpp_source.html#l00042">ostream.cpp:42</a></div></div>
+<div class="ttc" id="aostream_8hpp_html_a48c0732d1726c996d7fad294439777fc"><div class="ttname"><a href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a></div><div class="ttdeci">ostream debug</div><div class="ttdoc">全局输出流</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8cpp_source.html#l00045">ostream.cpp:45</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classMemory_a585d7bb6fc6f2237bcebf94a86b7dd99_cgraph.png" border="0" usemap="#aclassMemory_a585d7bb6fc6f2237bcebf94a86b7dd99_cgraph" alt=""/></div>
 <map name="aclassMemory_a585d7bb6fc6f2237bcebf94a86b7dd99_cgraph" id="aclassMemory_a585d7bb6fc6f2237bcebf94a86b7dd99_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,143,32"/>
-<area shape="rect" href="classMemory.html#a0d7799e95e8dda035f91d14e2febcfcd" title=" " alt="" coords="191,5,341,32"/>
 <area shape="rect" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2" title=" " alt="" coords="389,5,501,32"/>
+<area shape="rect" href="classMemory.html#a47fc4bc34f3d43bd469eb6fd050ad8b3" title=" " alt="" coords="191,31,341,57"/>
 </map>
 </div>
 
@@ -254,8 +262,8 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a0d7799e95e8dda035f91d14e2febcfcd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0d7799e95e8dda035f91d14e2febcfcd">&#9670;&nbsp;</a></span>flush_desc()</h2>
+<a id="a47fc4bc34f3d43bd469eb6fd050ad8b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47fc4bc34f3d43bd469eb6fd050ad8b3">&#9670;&nbsp;</a></span>flush_desc()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -264,7 +272,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void Memory::flush_desc </td>
+          <td class="memname">bool Memory::flush_desc </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -276,28 +284,27 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>更新内存映射信息 </p>
+<p>更新内存映射信息 </p><dl class="section return"><dt>Returns</dt><dd>失败返回 false </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00022">22</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;                        {</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <a class="code" href="classMemory.html#a49d7d63bc05c1e0ac8d1440b9a4bcfeb">memory_map</a> = LibMemoryMap(&amp;<a class="code" href="classMemory.html#a0a3d91c1e74ac3776a8992e17c73b33c">desc_count</a>, &amp;<a class="code" href="classMemory.html#ae10ce4cd40c83a10d3b598eee63adefd">map_key</a>, &amp;<a class="code" href="classMemory.html#aa9e9794c5b03c7a5c7900c273b17c065">desc_size</a>, &amp;<a class="code" href="classMemory.html#a78b8170be31c2b6f3717a4cffb27244e">desc_version</a>);</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  <span class="keywordflow">if</span> (<a class="code" href="classMemory.html#a49d7d63bc05c1e0ac8d1440b9a4bcfeb">memory_map</a> == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;LibMemoryMap failed: memory_map == nullptr&quot;</span> &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;memory_map == nullptr&quot;</span>);</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  }</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00020">20</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;                        {</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  <a class="code" href="classMemory.html#a49d7d63bc05c1e0ac8d1440b9a4bcfeb">memory_map</a> = LibMemoryMap(&amp;<a class="code" href="classMemory.html#a0a3d91c1e74ac3776a8992e17c73b33c">desc_count</a>, &amp;<a class="code" href="classMemory.html#ae10ce4cd40c83a10d3b598eee63adefd">map_key</a>, &amp;<a class="code" href="classMemory.html#aa9e9794c5b03c7a5c7900c273b17c065">desc_size</a>, &amp;<a class="code" href="classMemory.html#a78b8170be31c2b6f3717a4cffb27244e">desc_version</a>);</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <span class="keywordflow">if</span> (<a class="code" href="classMemory.html#a49d7d63bc05c1e0ac8d1440b9a4bcfeb">memory_map</a> == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;LibMemoryMap failed: memory_map == nullptr&quot;</span> &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  }</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;}</div>
 <div class="ttc" id="aclassMemory_html_a0a3d91c1e74ac3776a8992e17c73b33c"><div class="ttname"><a href="classMemory.html#a0a3d91c1e74ac3776a8992e17c73b33c">Memory::desc_count</a></div><div class="ttdeci">uint64_t desc_count</div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00116">load_elf.h:116</a></div></div>
 <div class="ttc" id="aclassMemory_html_a49d7d63bc05c1e0ac8d1440b9a4bcfeb"><div class="ttname"><a href="classMemory.html#a49d7d63bc05c1e0ac8d1440b9a4bcfeb">Memory::memory_map</a></div><div class="ttdeci">EFI_MEMORY_DESCRIPTOR * memory_map</div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00117">load_elf.h:117</a></div></div>
 <div class="ttc" id="aclassMemory_html_a78b8170be31c2b6f3717a4cffb27244e"><div class="ttname"><a href="classMemory.html#a78b8170be31c2b6f3717a4cffb27244e">Memory::desc_version</a></div><div class="ttdeci">uint32_t desc_version</div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00120">load_elf.h:120</a></div></div>
 <div class="ttc" id="aclassMemory_html_aa9e9794c5b03c7a5c7900c273b17c065"><div class="ttname"><a href="classMemory.html#aa9e9794c5b03c7a5c7900c273b17c065">Memory::desc_size</a></div><div class="ttdeci">uint64_t desc_size</div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00119">load_elf.h:119</a></div></div>
 <div class="ttc" id="aclassMemory_html_ae10ce4cd40c83a10d3b598eee63adefd"><div class="ttname"><a href="classMemory.html#ae10ce4cd40c83a10d3b598eee63adefd">Memory::map_key</a></div><div class="ttdeci">uint64_t map_key</div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00118">load_elf.h:118</a></div></div>
-<div class="ttc" id="aclassostream_html_a271664830d4cda9da6c7c0b4c04a8ed2"><div class="ttname"><a href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a></div><div class="ttdeci">static auto endl(ostream &amp;_ostream) -&gt; ostream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8cpp_source.html#l00042">ostream.cpp:42</a></div></div>
-<div class="ttc" id="aostream_8hpp_html_a48c0732d1726c996d7fad294439777fc"><div class="ttname"><a href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a></div><div class="ttdeci">static ostream debug</div><div class="ttdoc">全局输出流</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8hpp_source.html#l00204">ostream.hpp:204</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classMemory_a0d7799e95e8dda035f91d14e2febcfcd_cgraph.png" border="0" usemap="#aclassMemory_a0d7799e95e8dda035f91d14e2febcfcd_cgraph" alt=""/></div>
-<map name="aclassMemory_a0d7799e95e8dda035f91d14e2febcfcd_cgraph" id="aclassMemory_a0d7799e95e8dda035f91d14e2febcfcd_cgraph">
+<div class="center"><img src="classMemory_a47fc4bc34f3d43bd469eb6fd050ad8b3_cgraph.png" border="0" usemap="#aclassMemory_a47fc4bc34f3d43bd469eb6fd050ad8b3_cgraph" alt=""/></div>
+<map name="aclassMemory_a47fc4bc34f3d43bd469eb6fd050ad8b3_cgraph" id="aclassMemory_a47fc4bc34f3d43bd469eb6fd050ad8b3_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,156,32"/>
 <area shape="rect" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2" title=" " alt="" coords="204,5,316,32"/>
 </map>
@@ -305,8 +312,8 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classMemory_a0d7799e95e8dda035f91d14e2febcfcd_icgraph.png" border="0" usemap="#aclassMemory_a0d7799e95e8dda035f91d14e2febcfcd_icgraph" alt=""/></div>
-<map name="aclassMemory_a0d7799e95e8dda035f91d14e2febcfcd_icgraph" id="aclassMemory_a0d7799e95e8dda035f91d14e2febcfcd_icgraph">
+<div class="center"><img src="classMemory_a47fc4bc34f3d43bd469eb6fd050ad8b3_icgraph.png" border="0" usemap="#aclassMemory_a47fc4bc34f3d43bd469eb6fd050ad8b3_icgraph" alt=""/></div>
+<map name="aclassMemory_a47fc4bc34f3d43bd469eb6fd050ad8b3_icgraph" id="aclassMemory_a47fc4bc34f3d43bd469eb6fd050ad8b3_icgraph">
 <area shape="rect" title=" " alt="" coords="199,31,349,57"/>
 <area shape="rect" href="classMemory.html#a585d7bb6fc6f2237bcebf94a86b7dd99" title=" " alt="" coords="9,5,147,32"/>
 <area shape="rect" href="classMemory.html#a81aabf1a13f96ce935d6157a9520b83a" title=" " alt="" coords="5,56,151,83"/>
@@ -383,89 +390,94 @@ Here is the caller graph for this function:</div>
 </div><div class="memdoc">
 <p>输出内存映射信息 </p>
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00032">32</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;                        {</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <a class="code" href="classMemory.html#a0d7799e95e8dda035f91d14e2febcfcd">flush_desc</a>();</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Type\t\t\t\tPages\tPhysicalStart\tVirtualStart\tAttribute&quot;</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keywordflow">for</span> (uint64_t i = 0; i &lt; <a class="code" href="classMemory.html#a0a3d91c1e74ac3776a8992e17c73b33c">desc_count</a>; i++) {</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keyword">auto</span> *MMap = <span class="keyword">reinterpret_cast&lt;</span>EFI_MEMORY_DESCRIPTOR *<span class="keyword">&gt;</span>(</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        (<span class="keyword">reinterpret_cast&lt;</span>uint8_t *<span class="keyword">&gt;</span>(<a class="code" href="classMemory.html#a49d7d63bc05c1e0ac8d1440b9a4bcfeb">memory_map</a>)) + i * <a class="code" href="classMemory.html#aa9e9794c5b03c7a5c7900c273b17c065">desc_size</a>);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordflow">switch</span> (MMap-&gt;Type) {</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;      <span class="keywordflow">case</span> EfiReservedMemoryType: {</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;iReservedMemoryType\t\t&quot;</span>;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;      }</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;      <span class="keywordflow">case</span> EfiLoaderCode: {</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiLoaderCode\t\t\t&quot;</span>;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;      }</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;      <span class="keywordflow">case</span> EfiLoaderData: {</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiLoaderData\t\t\t&quot;</span>;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;      }</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;      <span class="keywordflow">case</span> EfiBootServicesCode: {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiBootServicesCode\t\t&quot;</span>;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;      }</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;      <span class="keywordflow">case</span> EfiBootServicesData: {</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiBootServicesData\t\t&quot;</span>;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;      }</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;      <span class="keywordflow">case</span> EfiRuntimeServicesCode: {</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiRuntimeServicesCode\t\t&quot;</span>;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;      }</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;      <span class="keywordflow">case</span> EfiRuntimeServicesData: {</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiRuntimeServicesData\t\t&quot;</span>;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;      }</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;      <span class="keywordflow">case</span> EfiConventionalMemory: {</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiConventionalMemory\t\t&quot;</span>;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;      }</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;      <span class="keywordflow">case</span> EfiUnusableMemory: {</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiUnusableMemory\t\t&quot;</span>;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;      }</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;      <span class="keywordflow">case</span> EfiACPIReclaimMemory: {</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiACPIReclaimMemory\t\t&quot;</span>;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;      }</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;      <span class="keywordflow">case</span> EfiACPIMemoryNVS: {</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiACPIMemoryNVS\t\t&quot;</span>;</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;      }</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;      <span class="keywordflow">case</span> EfiMemoryMappedIO: {</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiMemoryMappedIO\t\t&quot;</span>;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;      }</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;      <span class="keywordflow">case</span> EfiMemoryMappedIOPortSpace: {</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiMemoryMappedIOPortSpace\t\t&quot;</span>;</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;      }</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;      <span class="keywordflow">case</span> EfiPalCode: {</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiPalCode\t\t&quot;</span>;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;      }</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;      <span class="keywordflow">case</span> EfiMaxMemoryType: {</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiMaxMemoryType\t\t&quot;</span>;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;      }</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;      <span class="keywordflow">default</span>: {</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Unknown &quot;</span> &lt;&lt; <a class="code" href="classostream.html#a4ec6f2934351244c566df995f0aa6d99">ostream::hex_x</a> &lt;&lt; MMap-&gt;Type &lt;&lt; L<span class="stringliteral">&quot;\t\t&quot;</span>;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;      }</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    }</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; MMap-&gt;NumberOfPages &lt;&lt; L<span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a></div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;          &lt;&lt; MMap-&gt;PhysicalStart &lt;&lt; L<span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a></div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;          &lt;&lt; MMap-&gt;VirtualStart &lt;&lt; L<span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a> &lt;&lt; MMap-&gt;Attribute</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;          &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  }</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;  <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;map_key: &quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a> &lt;&lt; <a class="code" href="classMemory.html#ae10ce4cd40c83a10d3b598eee63adefd">map_key</a> &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00037">37</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                        {</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keyword">auto</span> flush_desc_ret = <a class="code" href="classMemory.html#a47fc4bc34f3d43bd469eb6fd050ad8b3">flush_desc</a>();</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keywordflow">if</span> (!flush_desc_ret) {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Memory::print_info() flush_desc failed.&quot;</span> &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  }</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Type\t\t\t\tPages\tPhysicalStart\tVirtualStart\tAttribute&quot;</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <span class="keywordflow">for</span> (uint64_t i = 0; i &lt; <a class="code" href="classMemory.html#a0a3d91c1e74ac3776a8992e17c73b33c">desc_count</a>; i++) {</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">auto</span> *MMap = <span class="keyword">reinterpret_cast&lt;</span>EFI_MEMORY_DESCRIPTOR *<span class="keyword">&gt;</span>(</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        (<span class="keyword">reinterpret_cast&lt;</span>uint8_t *<span class="keyword">&gt;</span>(<a class="code" href="classMemory.html#a49d7d63bc05c1e0ac8d1440b9a4bcfeb">memory_map</a>)) + i * <a class="code" href="classMemory.html#aa9e9794c5b03c7a5c7900c273b17c065">desc_size</a>);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keywordflow">switch</span> (MMap-&gt;Type) {</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;      <span class="keywordflow">case</span> EfiReservedMemoryType: {</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;iReservedMemoryType\t\t&quot;</span>;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;      }</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;      <span class="keywordflow">case</span> EfiLoaderCode: {</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiLoaderCode\t\t\t&quot;</span>;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      }</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;      <span class="keywordflow">case</span> EfiLoaderData: {</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiLoaderData\t\t\t&quot;</span>;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;      }</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;      <span class="keywordflow">case</span> EfiBootServicesCode: {</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiBootServicesCode\t\t&quot;</span>;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;      }</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;      <span class="keywordflow">case</span> EfiBootServicesData: {</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiBootServicesData\t\t&quot;</span>;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;      }</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;      <span class="keywordflow">case</span> EfiRuntimeServicesCode: {</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiRuntimeServicesCode\t\t&quot;</span>;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;      }</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;      <span class="keywordflow">case</span> EfiRuntimeServicesData: {</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiRuntimeServicesData\t\t&quot;</span>;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;      }</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;      <span class="keywordflow">case</span> EfiConventionalMemory: {</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiConventionalMemory\t\t&quot;</span>;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;      }</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;      <span class="keywordflow">case</span> EfiUnusableMemory: {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiUnusableMemory\t\t&quot;</span>;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;      }</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;      <span class="keywordflow">case</span> EfiACPIReclaimMemory: {</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiACPIReclaimMemory\t\t&quot;</span>;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;      }</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;      <span class="keywordflow">case</span> EfiACPIMemoryNVS: {</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiACPIMemoryNVS\t\t&quot;</span>;</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;      }</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;      <span class="keywordflow">case</span> EfiMemoryMappedIO: {</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiMemoryMappedIO\t\t&quot;</span>;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;      }</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;      <span class="keywordflow">case</span> EfiMemoryMappedIOPortSpace: {</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiMemoryMappedIOPortSpace\t\t&quot;</span>;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;      }</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;      <span class="keywordflow">case</span> EfiPalCode: {</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiPalCode\t\t&quot;</span>;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;      }</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;      <span class="keywordflow">case</span> EfiMaxMemoryType: {</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;EfiMaxMemoryType\t\t&quot;</span>;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;      }</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;      <span class="keywordflow">default</span>: {</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Unknown &quot;</span> &lt;&lt; <a class="code" href="classostream.html#a4ec6f2934351244c566df995f0aa6d99">ostream::hex_x</a> &lt;&lt; MMap-&gt;Type &lt;&lt; L<span class="stringliteral">&quot;\t\t&quot;</span>;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;      }</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    }</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160; </div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; MMap-&gt;NumberOfPages &lt;&lt; L<span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;          &lt;&lt; MMap-&gt;PhysicalStart &lt;&lt; L<span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;          &lt;&lt; MMap-&gt;VirtualStart &lt;&lt; L<span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a> &lt;&lt; MMap-&gt;Attribute</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;          &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;  }</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;  <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;map_key: &quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a> &lt;&lt; <a class="code" href="classMemory.html#ae10ce4cd40c83a10d3b598eee63adefd">map_key</a> &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;}</div>
 <div class="ttc" id="aclassostream_html_a4ec6f2934351244c566df995f0aa6d99"><div class="ttname"><a href="classostream.html#a4ec6f2934351244c566df995f0aa6d99">ostream::hex_x</a></div><div class="ttdeci">static auto hex_x(ostream &amp;_ostream) -&gt; ostream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8cpp_source.html#l00032">ostream.cpp:32</a></div></div>
 <div class="ttc" id="aclassostream_html_afaa63ab1ab5310f2e4ccaeaf26a1d9f9"><div class="ttname"><a href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a></div><div class="ttdeci">static auto hex_X(ostream &amp;_ostream) -&gt; ostream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8cpp_source.html#l00037">ostream.cpp:37</a></div></div>
 </div><!-- fragment --><div class="dynheader">
@@ -475,7 +487,7 @@ Here is the call graph for this function:</div>
 <map name="aclassMemory_a81aabf1a13f96ce935d6157a9520b83a_cgraph" id="aclassMemory_a81aabf1a13f96ce935d6157a9520b83a_cgraph">
 <area shape="rect" title=" " alt="" coords="5,56,151,83"/>
 <area shape="rect" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2" title=" " alt="" coords="397,5,509,32"/>
-<area shape="rect" href="classMemory.html#a0d7799e95e8dda035f91d14e2febcfcd" title=" " alt="" coords="199,31,349,57"/>
+<area shape="rect" href="classMemory.html#a47fc4bc34f3d43bd469eb6fd050ad8b3" title=" " alt="" coords="199,31,349,57"/>
 <area shape="rect" href="classostream.html#a4ec6f2934351244c566df995f0aa6d99" title=" " alt="" coords="213,81,335,108"/>
 <area shape="rect" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9" title=" " alt="" coords="212,132,336,159"/>
 </map>
@@ -614,7 +626,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classMemory.html">Memory</a></li>
-    <li class="footer">Generated on Wed Feb 28 2024 07:38:01 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue Mar 5 2024 01:09:39 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

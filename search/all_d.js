@@ -10,6 +10,6 @@ var searchData=
   ['load_5felf_2ecpp_56',['load_elf.cpp',['../load__elf_8cpp.html',1,'']]],
   ['load_5felf_2eh_57',['load_elf.h',['../load__elf_8h.html',1,'']]],
   ['load_5fkernel_5fimage_58',['load_kernel_image',['../classElf.html#a75355dba9bf23ee591ef52c04b688cea',1,'Elf']]],
-  ['load_5fprogram_5fsections_59',['load_program_sections',['../classElf.html#a3502161430e3a3c1896c2d92df03c71e',1,'Elf']]],
-  ['load_5fsections_60',['load_sections',['../classElf.html#a1764987395919b2725a85a17f904f245',1,'Elf']]]
+  ['load_5fprogram_5fsections_59',['load_program_sections',['../classElf.html#a34557caf6211250751510b5fc2a83869',1,'Elf']]],
+  ['load_5fsections_60',['load_sections',['../classElf.html#a673f90dbaf2d441189f837af86caaf74',1,'Elf']]]
 ];

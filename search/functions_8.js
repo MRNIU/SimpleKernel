@@ -4,6 +4,6 @@ var searchData=
   ['libcxx_153',['libcxx',['../libcxx_8h.html#a1e7046ac65ca1fc2e305cdf450e3fdac',1,'libcxx(uint32_t _argc, uint8_t **_argv):&#160;libcxx.cpp'],['../libcxx_8cpp.html#a1e7046ac65ca1fc2e305cdf450e3fdac',1,'libcxx(uint32_t _argc, uint8_t **_argv):&#160;libcxx.cpp']]],
   ['load_154',['load',['../classElf.html#abec14f617596cbe75854cdff875a4db2',1,'Elf']]],
   ['load_5fkernel_5fimage_155',['load_kernel_image',['../classElf.html#a75355dba9bf23ee591ef52c04b688cea',1,'Elf']]],
-  ['load_5fprogram_5fsections_156',['load_program_sections',['../classElf.html#a3502161430e3a3c1896c2d92df03c71e',1,'Elf']]],
-  ['load_5fsections_157',['load_sections',['../classElf.html#a1764987395919b2725a85a17f904f245',1,'Elf']]]
+  ['load_5fprogram_5fsections_156',['load_program_sections',['../classElf.html#a34557caf6211250751510b5fc2a83869',1,'Elf']]],
+  ['load_5fsections_157',['load_sections',['../classElf.html#a673f90dbaf2d441189f837af86caaf74',1,'Elf']]]
 ];
