@@ -1,0 +1,4 @@
+<map id="OPENSBI::hart_start" name="OPENSBI::hart_start">
+<area shape="rect" id="node1" title="启动指定的 hart" alt="" coords="5,5,156,32"/>
+<area shape="rect" id="node2" href="$classOPENSBI.html#a9bf59cfca8c615e4c56661f77395ad70" title="ecall 借口" alt="" coords="204,5,323,32"/>
+</map>

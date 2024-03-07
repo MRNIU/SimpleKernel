@@ -66,11 +66,13 @@ var NAVTREE =
         [ "Dependencies", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md30", null ]
       ] ]
     ] ],
+    [ "arch", "md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_arch_README.html", null ],
+    [ "driver", "md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_README.html", null ],
     [ "gnu_efi_test", "md__home_runner_work_SimpleKernel_SimpleKernel_test_system_test_gnu_efi_test_README.html", null ],
     [ "CLion Usage", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html", [
-      [ "osx+QEMU+x86_64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md33", null ],
-      [ "osx+QEMU+riscv64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md34", null ],
-      [ "osx+QEMU+aarch64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md35", null ]
+      [ "osx+QEMU+x86_64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md35", null ],
+      [ "osx+QEMU+riscv64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md36", null ],
+      [ "osx+QEMU+aarch64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md37", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
@@ -97,7 +99,8 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"aarch64_2arch__main_8cpp.html"
+"aarch64_2arch__main_8cpp.html",
+"src_2boot_2boot_8cpp.html#a3c37e763c85d8c042a579e38a938e53e"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -87,75 +87,40 @@ $(document).ready(function(){initNavTree('riscv64_2arch__main_8cpp_source.html',
 </div><!--header-->
 <div class="contents">
 <a href="riscv64_2arch__main_8cpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;cstdint&quot;</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;sbi/sbi_ecall_interface.h&quot;</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
-<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="structsbiret__t.html">   20</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structsbiret__t.html">sbiret_t</a> {</div>
-<div class="line"><a name="l00022"></a><span class="lineno"><a class="line" href="structsbiret__t.html#a907730633f8936f3e11a4a10aa8a8442">   22</a></span>&#160;  <span class="keywordtype">long</span> <a class="code" href="structsbiret__t.html#a907730633f8936f3e11a4a10aa8a8442">error</a>;</div>
-<div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="structsbiret__t.html#a78449f5d7934aa1a6cd54351b16cc00d">   24</a></span>&#160;  <span class="keywordtype">long</span> <a class="code" href="structsbiret__t.html#a78449f5d7934aa1a6cd54351b16cc00d">value</a>;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;};</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
-<div class="line"><a name="l00027"></a><span class="lineno"><a class="line" href="riscv64_2arch__main_8cpp.html#ae588de26fa6132129a1743b8df8fc982">   27</a></span>&#160;<a class="code" href="structsbiret__t.html">sbiret_t</a> <a class="code" href="riscv64_2arch__main_8cpp.html#ae588de26fa6132129a1743b8df8fc982">ecall</a>(<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> _arg0, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> _arg1, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> _arg2,</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;               <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> _arg3, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> _arg4, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> _arg5,</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;               <span class="keywordtype">int</span> _fid, <span class="keywordtype">int</span> _eid) {</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <a class="code" href="structsbiret__t.html">sbiret_t</a> ret;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keyword">register</span> uintptr_t a0 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a0&quot;</span>) = (uintptr_t)(_arg0);</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keyword">register</span> uintptr_t a1 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a1&quot;</span>) = (uintptr_t)(_arg1);</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keyword">register</span> uintptr_t a2 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a2&quot;</span>) = (uintptr_t)(_arg2);</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">register</span> uintptr_t a3 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a3&quot;</span>) = (uintptr_t)(_arg3);</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keyword">register</span> uintptr_t a4 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a4&quot;</span>) = (uintptr_t)(_arg4);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keyword">register</span> uintptr_t a5 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a5&quot;</span>) = (uintptr_t)(_arg5);</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">register</span> uintptr_t a6 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a6&quot;</span>) = (uintptr_t)(_fid);</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keyword">register</span> uintptr_t a7 <span class="keyword">asm</span>(<span class="stringliteral">&quot;a7&quot;</span>) = (uintptr_t)(_eid);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keyword">asm</span>(<span class="stringliteral">&quot;ecall&quot;</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;      : <span class="stringliteral">&quot;+r&quot;</span>(a0), <span class="stringliteral">&quot;+r&quot;</span>(a1)</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;      : <span class="stringliteral">&quot;r&quot;</span>(a2), <span class="stringliteral">&quot;r&quot;</span>(a3), <span class="stringliteral">&quot;r&quot;</span>(a4), <span class="stringliteral">&quot;r&quot;</span>(a5), <span class="stringliteral">&quot;r&quot;</span>(a6), <span class="stringliteral">&quot;r&quot;</span>(a7)</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;      : <span class="stringliteral">&quot;memory&quot;</span>);</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  ret.<a class="code" href="structsbiret__t.html#a907730633f8936f3e11a4a10aa8a8442">error</a> = a0;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  ret.<a class="code" href="structsbiret__t.html#a78449f5d7934aa1a6cd54351b16cc00d">value</a> = a1;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keywordflow">return</span> ret;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;}</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
-<div class="line"><a name="l00048"></a><span class="lineno"><a class="line" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">   48</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> _c) {</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#ae588de26fa6132129a1743b8df8fc982">ecall</a>(_c, 0, 0, 0, 0, 0, 0, SBI_EXT_0_1_CONSOLE_PUTCHAR);</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;}</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
-<div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="riscv64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5">   53</a></span>&#160;int32_t <a class="code" href="aarch64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5">arch_init</a>(uint32_t _argc, uint8_t **_argv) {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  (void)_argc;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  (void)_argv;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;H&#39;</span>);</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;e&#39;</span>);</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;W&#39;</span>);</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;o&#39;</span>);</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;r&#39;</span>);</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;d&#39;</span>);</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <a class="code" href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a>(<span class="charliteral">&#39;!&#39;</span>);</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  <span class="comment">// 进入死循环</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    ;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  }</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;}</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;opensbi_interface.h&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
+<div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="riscv64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5">   19</a></span>&#160;int32_t <a class="code" href="aarch64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5">arch_init</a>(uint32_t _argc, uint8_t **_argv) {</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  (void)_argc;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  (void)_argv;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;H&#39;</span>);</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;e&#39;</span>);</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;l&#39;</span>);</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;l&#39;</span>);</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;o&#39;</span>);</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;W&#39;</span>);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;o&#39;</span>);</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;r&#39;</span>);</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;l&#39;</span>);</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;d&#39;</span>);</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;!&#39;</span>);</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  sbi_debug_console_write_byte(<span class="charliteral">&#39;\n&#39;</span>);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="comment">// 进入死循环</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    ;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  }</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;}</div>
 <div class="ttc" id="aaarch64_2arch__main_8cpp_html_a595eb78e2d8dc0a817263e8e30897bd5"><div class="ttname"><a href="aarch64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5">arch_init</a></div><div class="ttdeci">int32_t arch_init(uint32_t _argc, uint8_t **_argv)</div><div class="ttdef"><b>Definition:</b> <a href="aarch64_2arch__main_8cpp_source.html#l00019">arch_main.cpp:19</a></div></div>
-<div class="ttc" id="ariscv64_2arch__main_8cpp_html_a3743e5195a085e51d92eb812991cce47"><div class="ttname"><a href="riscv64_2arch__main_8cpp.html#a3743e5195a085e51d92eb812991cce47">put_char</a></div><div class="ttdeci">void put_char(const char _c)</div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch__main_8cpp_source.html#l00048">arch_main.cpp:48</a></div></div>
-<div class="ttc" id="ariscv64_2arch__main_8cpp_html_ae588de26fa6132129a1743b8df8fc982"><div class="ttname"><a href="riscv64_2arch__main_8cpp.html#ae588de26fa6132129a1743b8df8fc982">ecall</a></div><div class="ttdeci">sbiret_t ecall(unsigned long _arg0, unsigned long _arg1, unsigned long _arg2, unsigned long _arg3, unsigned long _arg4, unsigned long _arg5, int _fid, int _eid)</div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch__main_8cpp_source.html#l00027">arch_main.cpp:27</a></div></div>
-<div class="ttc" id="astructsbiret__t_html"><div class="ttname"><a href="structsbiret__t.html">sbiret_t</a></div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch__main_8cpp_source.html#l00020">arch_main.cpp:20</a></div></div>
-<div class="ttc" id="astructsbiret__t_html_a78449f5d7934aa1a6cd54351b16cc00d"><div class="ttname"><a href="structsbiret__t.html#a78449f5d7934aa1a6cd54351b16cc00d">sbiret_t::value</a></div><div class="ttdeci">long value</div><div class="ttdoc">返回值</div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch__main_8cpp_source.html#l00024">arch_main.cpp:24</a></div></div>
-<div class="ttc" id="astructsbiret__t_html_a907730633f8936f3e11a4a10aa8a8442"><div class="ttname"><a href="structsbiret__t.html#a907730633f8936f3e11a4a10aa8a8442">sbiret_t::error</a></div><div class="ttdeci">long error</div><div class="ttdoc">错误码</div><div class="ttdef"><b>Definition:</b> <a href="riscv64_2arch__main_8cpp_source.html#l00022">arch_main.cpp:22</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_76e3dd4d2fa719e8d3b096e9aa563982.html">arch</a></li><li class="navelem"><a class="el" href="dir_5d78c82c73cee529a313d94efe356afe.html">riscv64</a></li><li class="navelem"><a class="el" href="riscv64_2arch__main_8cpp.html">arch_main.cpp</a></li>
-    <li class="footer">Generated on Tue Mar 5 2024 01:09:39 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu Mar 7 2024 08:30:50 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

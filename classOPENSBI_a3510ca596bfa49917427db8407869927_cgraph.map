@@ -1,0 +1,4 @@
+<map id="OPENSBI::get_char" name="OPENSBI::get_char">
+<area shape="rect" id="node1" title="从 uart 读取一个字符" alt="" coords="5,5,148,32"/>
+<area shape="rect" id="node2" href="$classOPENSBI.html#a9bf59cfca8c615e4c56661f77395ad70" title="ecall 借口" alt="" coords="196,5,315,32"/>
+</map>

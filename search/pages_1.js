@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['gnu_5fefi_5ftest_205',['gnu_efi_test',['../md__home_runner_work_SimpleKernel_SimpleKernel_test_system_test_gnu_efi_test_README.html',1,'']]]
+  ['clion_20usage_284',['CLion Usage',['../md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html',1,'']]]
 ];

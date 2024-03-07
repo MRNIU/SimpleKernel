@@ -1,0 +1,4 @@
+<map id="OPENSBI::send_ipi" name="OPENSBI::send_ipi">
+<area shape="rect" id="node1" title="发送 ipi(inter&#45;processor interrupt) 给指定的 hart" alt="" coords="5,5,147,32"/>
+<area shape="rect" id="node2" href="$classOPENSBI.html#a9bf59cfca8c615e4c56661f77395ad70" title="ecall 借口" alt="" coords="195,5,313,32"/>
+</map>

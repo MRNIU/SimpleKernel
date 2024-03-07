@@ -1,8 +1,9 @@
 var annotated_dup =
 [
+    [ "CPU", "classCPU.html", "classCPU" ],
     [ "Elf", "classElf.html", "classElf" ],
     [ "Graphics", "classGraphics.html", "classGraphics" ],
     [ "Memory", "classMemory.html", "classMemory" ],
-    [ "ostream", "classostream.html", "classostream" ],
-    [ "sbiret_t", "structsbiret__t.html", "structsbiret__t" ]
+    [ "OPENSBI", "classOPENSBI.html", "classOPENSBI" ],
+    [ "ostream", "classostream.html", "classostream" ]
 ];
