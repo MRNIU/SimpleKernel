@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['imagebase_259',['ImageBase',['../src_2boot_2boot_8cpp.html#a3c37e763c85d8c042a579e38a938e53e',1,'ImageBase():&#160;boot.cpp'],['../test_2system__test_2gnu__efi__test_2boot_8cpp.html#a3c37e763c85d8c042a579e38a938e53e',1,'ImageBase():&#160;boot.cpp']]]
+  ['file_241',['file',['../classElf.html#adf9ed3472f22d8d149e627394ea442ea',1,'Elf']]],
+  ['file_5fsystem_5fprotocol_242',['file_system_protocol',['../classElf.html#a0f7dcccb310a1b259b0dc72f292a8629',1,'Elf']]],
+  ['framebuffer_243',['framebuffer',['../structboot__info__t.html#a69adb3c4d7a65e74354979b8eef4d4aa',1,'boot_info_t']]]
 ];

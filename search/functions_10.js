@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['_7eelf_227',['~Elf',['../classElf.html#a184a984a3da808368593a45f06005bd3',1,'Elf']]],
-  ['_7egraphics_228',['~Graphics',['../classGraphics.html#a6832d01237ef9bff8d34f0882d86970c',1,'Graphics']]],
-  ['_7ememory_229',['~Memory',['../classMemory.html#a2b517b46ae4b070d9f6a7b6d9efeb7a1',1,'Memory']]],
-  ['_7eostream_230',['~ostream',['../classostream.html#a36fe66b87e7d9f5bca462383b1b347a3',1,'ostream']]]
+  ['wait_5ffor_5finput_221',['wait_for_input',['../ostream_8hpp.html#a27887edc523c98e888002e7756434ef9',1,'wait_for_input(EFI_INPUT_KEY *_key) -&gt; EFI_STATUS:&#160;ostream.cpp'],['../ostream_8cpp.html#a27887edc523c98e888002e7756434ef9',1,'wait_for_input(EFI_INPUT_KEY *_key) -&gt; EFI_STATUS:&#160;ostream.cpp']]],
+  ['write_222',['write',['../classCPU_1_1Serial.html#a247f278da97b4ec3063aa774e083a6ee',1,'CPU::Serial']]]
 ];

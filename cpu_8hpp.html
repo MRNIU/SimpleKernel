@@ -83,7 +83,8 @@ $(document).ready(function(){initNavTree('cpu_8hpp.html',''); initResizable(); }
 
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a>  </div>
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">cpu.hpp File Reference</div>  </div>
 </div><!--header-->
@@ -101,6 +102,16 @@ Include dependency graph for cpu.hpp:</div>
 <area shape="rect" title=" " alt="" coords="74,109,141,136"/>
 </map>
 </div>
+</div><div class="textblock"><div class="dynheader">
+This graph shows which files directly or indirectly include this file:</div>
+<div class="dyncontent">
+<div class="center"><img src="cpu_8hpp__dep__incl.png" border="0" usemap="#a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2arch_2x86__64_2cpu_8hppdep" alt=""/></div>
+<map name="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2arch_2x86__64_2cpu_8hppdep" id="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2arch_2x86__64_2cpu_8hppdep">
+<area shape="rect" title="x86_64 cpu 相关定义" alt="" coords="110,5,314,61"/>
+<area shape="rect" href="x86__64_2arch__main_8cpp.html" title="arch_main cpp" alt="" coords="5,109,200,180"/>
+<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html" title="内核入口" alt="" coords="224,109,419,180"/>
+</map>
+</div>
 </div>
 <p><a href="cpu_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -108,6 +119,13 @@ Include dependency graph for cpu.hpp:</div>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCPU.html">CPU</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCPU_1_1Serial.html">CPU::Serial</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a49b04e203cda77cc09e7f0f15efa8e1a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cpu_8hpp.html#a49b04e203cda77cc09e7f0f15efa8e1a">_putchar</a> (char _character)</td></tr>
+<tr class="separator:a49b04e203cda77cc09e7f0f15efa8e1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>x86_64 cpu 相关定义 </p>
@@ -124,13 +142,49 @@ Classes</h2></td></tr>
 </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a49b04e203cda77cc09e7f0f15efa8e1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a49b04e203cda77cc09e7f0f15efa8e1a">&#9670;&nbsp;</a></span>_putchar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _putchar </td>
+          <td>(</td>
+          <td class="paramtype">char&#160;</td>
+          <td class="paramname"><em>_character</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00174">174</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;                                          {</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;  <span class="keyword">auto</span> serial = <a class="code" href="classCPU_1_1Serial.html">CPU::Serial</a>(<a class="code" href="classCPU.html#aff7d1281b8738f293fc60e2143639549">CPU::COM1</a>);</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;  serial.write(_character);</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;}</div>
+<div class="ttc" id="aclassCPU_1_1Serial_html"><div class="ttname"><a href="classCPU_1_1Serial.html">CPU::Serial</a></div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00086">cpu.hpp:86</a></div></div>
+<div class="ttc" id="aclassCPU_html_aff7d1281b8738f293fc60e2143639549"><div class="ttname"><a href="classCPU.html#aff7d1281b8738f293fc60e2143639549">CPU::COM1</a></div><div class="ttdeci">static constexpr const uint32_t COM1</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00085">cpu.hpp:85</a></div></div>
+</div><!-- fragment --><div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="cpu_8hpp_a49b04e203cda77cc09e7f0f15efa8e1a_icgraph.png" border="0" usemap="#acpu_8hpp_a49b04e203cda77cc09e7f0f15efa8e1a_icgraph" alt=""/></div>
+<map name="acpu_8hpp_a49b04e203cda77cc09e7f0f15efa8e1a_icgraph" id="acpu_8hpp_a49b04e203cda77cc09e7f0f15efa8e1a_icgraph">
+<area shape="rect" title=" " alt="" coords="132,5,211,32"/>
+<area shape="rect" href="x86__64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5" title=" " alt="" coords="5,5,84,32"/>
+</map>
+</div>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_76e3dd4d2fa719e8d3b096e9aa563982.html">arch</a></li><li class="navelem"><a class="el" href="dir_7c4c796ec9937bed8074dafcec3d25e4.html">x86_64</a></li><li class="navelem"><a class="el" href="cpu_8hpp.html">cpu.hpp</a></li>
-    <li class="footer">Generated on Thu Mar 7 2024 08:30:50 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu Mar 21 2024 08:21:30 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

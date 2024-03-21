@@ -1,14 +1,14 @@
 var searchData=
 [
-  ['d_15',['d',['../classostream.html#a2f1697fb486d2afcde8e8a5b7f6608f6a16426222a71c446926e9ee5aef5ef53a',1,'ostream']]],
-  ['debug_16',['debug',['../ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc',1,'debug():&#160;ostream.cpp'],['../ostream_8cpp.html#a48c0732d1726c996d7fad294439777fc',1,'debug():&#160;ostream.cpp']]],
-  ['default_5fheight_17',['DEFAULT_HEIGHT',['../classGraphics.html#a036aee49398070f73600101bac34a29f',1,'Graphics']]],
-  ['default_5fwidth_18',['DEFAULT_WIDTH',['../classGraphics.html#ad960ad754a9ee99b9cdae1bcebd6804b',1,'Graphics']]],
-  ['desc_5fcount_19',['desc_count',['../classMemory.html#a0a3d91c1e74ac3776a8992e17c73b33c',1,'Memory']]],
-  ['desc_5fsize_20',['desc_size',['../classMemory.html#aa9e9794c5b03c7a5c7900c273b17c065',1,'Memory']]],
-  ['desc_5fversion_21',['desc_version',['../classMemory.html#a78b8170be31c2b6f3717a4cffb27244e',1,'Memory']]],
-  ['docker_2emd_22',['docker.md',['../docker_8md.html',1,'']]],
-  ['driver_23',['driver',['../driver_8cpp.html#a06475316d2443b94d393c59426f08649',1,'driver(uint32_t _argc, uint8_t **_argv):&#160;driver.cpp'],['../driver_8h.html#a06475316d2443b94d393c59426f08649',1,'driver(uint32_t _argc, uint8_t **_argv):&#160;driver.cpp'],['../md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_README.html',1,'(Global Namespace)']]],
-  ['driver_2ecpp_24',['driver.cpp',['../driver_8cpp.html',1,'']]],
-  ['driver_2eh_25',['driver.h',['../driver_8h.html',1,'']]]
+  ['d_20',['d',['../classostream.html#a2f1697fb486d2afcde8e8a5b7f6608f6a16426222a71c446926e9ee5aef5ef53a',1,'ostream']]],
+  ['debug_21',['debug',['../ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc',1,'debug():&#160;ostream.cpp'],['../ostream_8cpp.html#a48c0732d1726c996d7fad294439777fc',1,'debug():&#160;ostream.cpp']]],
+  ['default_5fheight_22',['DEFAULT_HEIGHT',['../classGraphics.html#a036aee49398070f73600101bac34a29f',1,'Graphics']]],
+  ['default_5fwidth_23',['DEFAULT_WIDTH',['../classGraphics.html#ad960ad754a9ee99b9cdae1bcebd6804b',1,'Graphics']]],
+  ['desc_5fcount_24',['desc_count',['../classMemory.html#a0a3d91c1e74ac3776a8992e17c73b33c',1,'Memory']]],
+  ['desc_5fsize_25',['desc_size',['../classMemory.html#aa9e9794c5b03c7a5c7900c273b17c065',1,'Memory']]],
+  ['desc_5fversion_26',['desc_version',['../classMemory.html#a78b8170be31c2b6f3717a4cffb27244e',1,'Memory']]],
+  ['docker_2emd_27',['docker.md',['../docker_8md.html',1,'']]],
+  ['driver_28',['driver',['../driver_8cpp.html#a06475316d2443b94d393c59426f08649',1,'driver(uint32_t _argc, uint8_t **_argv):&#160;driver.cpp'],['../driver_8h.html#a06475316d2443b94d393c59426f08649',1,'driver(uint32_t _argc, uint8_t **_argv):&#160;driver.cpp'],['../md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_README.html',1,'(Global Namespace)']]],
+  ['driver_2ecpp_29',['driver.cpp',['../driver_8cpp.html',1,'']]],
+  ['driver_2eh_30',['driver.h',['../driver_8h.html',1,'']]]
 ];

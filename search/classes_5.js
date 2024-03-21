@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['sbiret_5ft_150',['sbiret_t',['../structOPENSBI_1_1sbiret__t.html',1,'OPENSBI']]]
+  ['memory_142',['Memory',['../classMemory.html',1,'']]],
+  ['memory_5fmap_5ft_143',['memory_map_t',['../structboot__info__t_1_1memory__map__t.html',1,'boot_info_t']]]
 ];

@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['x_136',['X',['../classostream.html#a2f1697fb486d2afcde8e8a5b7f6608f6a53178dc78826d4f620fd4cf2dbe52284',1,'ostream']]],
-  ['x_137',['x',['../classostream.html#a2f1697fb486d2afcde8e8a5b7f6608f6abe6defa90d521b92be9e4b072c89dbf7',1,'ostream']]]
+  ['_7eelf_130',['~Elf',['../classElf.html#a184a984a3da808368593a45f06005bd3',1,'Elf']]],
+  ['_7egraphics_131',['~Graphics',['../classGraphics.html#a6832d01237ef9bff8d34f0882d86970c',1,'Graphics']]],
+  ['_7ememory_132',['~Memory',['../classMemory.html#a2b517b46ae4b070d9f6a7b6d9efeb7a1',1,'Memory']]],
+  ['_7eostream_133',['~ostream',['../classostream.html#a36fe66b87e7d9f5bca462383b1b347a3',1,'ostream']]],
+  ['_7eserial_134',['~Serial',['../classCPU_1_1Serial.html#a44bf975b938ea9b87f2f986a9036165b',1,'CPU::Serial']]]
 ];

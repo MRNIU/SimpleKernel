@@ -74,6 +74,7 @@ var NAVTREE =
       [ "osx+QEMU+riscv64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md36", null ],
       [ "osx+QEMU+aarch64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md37", null ]
     ] ],
+    [ "Todo List", "todo.html", null ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
@@ -100,7 +101,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "aarch64_2arch__main_8cpp.html",
-"src_2boot_2boot_8cpp.html#a3c37e763c85d8c042a579e38a938e53e"
+"structboot__info__t.html#a69adb3c4d7a65e74354979b8eef4d4aa"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

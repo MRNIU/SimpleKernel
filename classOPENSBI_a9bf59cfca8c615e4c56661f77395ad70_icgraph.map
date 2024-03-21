@@ -1,8 +1,0 @@
-<map id="OPENSBI::ecall" name="OPENSBI::ecall">
-<area shape="rect" id="node1" title="ecall 借口" alt="" coords="204,107,323,133"/>
-<area shape="rect" id="node2" href="$classOPENSBI.html#a3510ca596bfa49917427db8407869927" title="从 uart 读取一个字符" alt="" coords="9,5,152,32"/>
-<area shape="rect" id="node3" href="$classOPENSBI.html#aad968c3c2836fccd42e9f9f3abff1e24" title="启动指定的 hart" alt="" coords="5,56,156,83"/>
-<area shape="rect" id="node4" href="$classOPENSBI.html#a3c7e033dec0e69eeb362baf0ff7faa65" title="输出一个字符" alt="" coords="9,107,152,133"/>
-<area shape="rect" id="node5" href="$classOPENSBI.html#a63b444f2534159d1a775522fb1767027" title="发送 ipi(inter&#45;processor interrupt) 给指定的 hart" alt="" coords="10,157,151,184"/>
-<area shape="rect" id="node6" href="$classOPENSBI.html#a64d9f6409930b14e2f42cc763313d8e2" title="设置时钟" alt="" coords="6,208,155,235"/>
-</map>

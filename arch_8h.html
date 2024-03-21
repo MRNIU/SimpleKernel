@@ -83,6 +83,7 @@ $(document).ready(function(){initNavTree('arch_8h.html',''); initResizable(); })
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">arch.h File Reference</div>  </div>
@@ -106,15 +107,26 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="arch_8h__dep__incl.png" border="0" usemap="#a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2arch_2arch_8hdep" alt=""/></div>
 <map name="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2arch_2arch_8hdep" id="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2arch_2arch_8hdep">
-<area shape="rect" title="arch 头文件" alt="" coords="224,5,419,61"/>
-<area shape="rect" href="aarch64_2arch__main_8cpp.html" title="arch_main cpp" alt="" coords="5,109,200,180"/>
-<area shape="rect" href="x86__64_2arch__main_8cpp.html" title="arch_main cpp" alt="" coords="224,109,419,180"/>
-<area shape="rect" href="src_2kernel_2main_8cpp.html" title="内核入口" alt="" coords="443,117,637,173"/>
+<area shape="rect" title="arch 头文件" alt="" coords="443,5,637,61"/>
+<area shape="rect" href="src_2boot_2boot_8cpp.html" title="boot cpp" alt="" coords="5,117,200,173"/>
+<area shape="rect" href="aarch64_2arch__main_8cpp.html" title="arch_main cpp" alt="" coords="224,109,419,180"/>
+<area shape="rect" href="x86__64_2arch__main_8cpp.html" title="arch_main cpp" alt="" coords="443,109,637,180"/>
+<area shape="rect" href="src_2kernel_2main_8cpp.html" title="内核入口" alt="" coords="661,117,856,173"/>
+<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html" title="内核入口" alt="" coords="880,109,1075,180"/>
 </map>
 </div>
 </div>
 <p><a href="arch_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structboot__info__t.html">boot_info_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structboot__info__t_1_1framebuffer__t.html">boot_info_t::framebuffer_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structboot__info__t_1_1memory__map__t.html">boot_info_t::memory_map_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a595eb78e2d8dc0a817263e8e30897bd5"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="arch_8h.html#a595eb78e2d8dc0a817263e8e30897bd5">arch_init</a> (uint32_t _argc, uint8_t **_argv)</td></tr>
@@ -175,6 +187,16 @@ Functions</h2></td></tr>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;}</div>
 </div><!-- fragment --><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="arch_8h_a595eb78e2d8dc0a817263e8e30897bd5_cgraph.png" border="0" usemap="#aarch_8h_a595eb78e2d8dc0a817263e8e30897bd5_cgraph" alt=""/></div>
+<map name="aarch_8h_a595eb78e2d8dc0a817263e8e30897bd5_cgraph" id="aarch_8h_a595eb78e2d8dc0a817263e8e30897bd5_cgraph">
+<area shape="rect" title=" " alt="" coords="5,31,84,57"/>
+<area shape="rect" href="cpu_8hpp.html#a49b04e203cda77cc09e7f0f15efa8e1a" title=" " alt="" coords="132,5,211,32"/>
+<area shape="rect" href="x86__64_2arch__main_8cpp.html#ac9350a912edb98453358084057c66bb3" title=" " alt="" coords="140,56,203,83"/>
+</map>
+</div>
+<div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="arch_8h_a595eb78e2d8dc0a817263e8e30897bd5_icgraph.png" border="0" usemap="#aarch_8h_a595eb78e2d8dc0a817263e8e30897bd5_icgraph" alt=""/></div>
@@ -192,7 +214,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_76e3dd4d2fa719e8d3b096e9aa563982.html">arch</a></li><li class="navelem"><a class="el" href="arch_8h.html">arch.h</a></li>
-    <li class="footer">Generated on Thu Mar 7 2024 08:30:50 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu Mar 21 2024 08:21:30 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

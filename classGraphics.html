@@ -97,7 +97,7 @@ Collaboration diagram for Graphics:</div>
 <div class="dyncontent">
 <div class="center"><img src="classGraphics__coll__graph.png" border="0" usemap="#aGraphics_coll__map" alt="Collaboration graph"/></div>
 <map name="aGraphics_coll__map" id="aGraphics_coll__map">
-<area shape="rect" title=" " alt="" coords="5,5,152,303"/>
+<area shape="rect" title=" " alt="" coords="5,5,157,317"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -107,8 +107,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af2e8fe67fd31ec263c843a6e28b29d3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6832d01237ef9bff8d34f0882d86970c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#a6832d01237ef9bff8d34f0882d86970c">~Graphics</a> ()=default</td></tr>
 <tr class="separator:a6832d01237ef9bff8d34f0882d86970c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a04e4caa540b0612a56adc590971715b6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#a04e4caa540b0612a56adc590971715b6">set_mode</a> (EFI_GRAPHICS_PIXEL_FORMAT _format=PixelBlueGreenRedReserved8BitPerColor, uint32_t _width=<a class="el" href="classGraphics.html#ad960ad754a9ee99b9cdae1bcebd6804b">DEFAULT_WIDTH</a>, uint32_t _height=<a class="el" href="classGraphics.html#a036aee49398070f73600101bac34a29f">DEFAULT_HEIGHT</a>) const</td></tr>
-<tr class="separator:a04e4caa540b0612a56adc590971715b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab213691eaa61862f4d4a9115a67713b3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#ab213691eaa61862f4d4a9115a67713b3">set_mode</a> (EFI_GRAPHICS_PIXEL_FORMAT _format=PixelRedGreenBlueReserved8BitPerColor, uint32_t _width=<a class="el" href="classGraphics.html#ad960ad754a9ee99b9cdae1bcebd6804b">DEFAULT_WIDTH</a>, uint32_t _height=<a class="el" href="classGraphics.html#a036aee49398070f73600101bac34a29f">DEFAULT_HEIGHT</a>) const</td></tr>
+<tr class="separator:ab213691eaa61862f4d4a9115a67713b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad41b3e3102be8152afad74612f013f74"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#ad41b3e3102be8152afad74612f013f74">get_framebuffer</a> () const -&gt; std::pair&lt; uint64_t, uint32_t &gt;</td></tr>
+<tr class="separator:ad41b3e3102be8152afad74612f013f74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad860b4ad2f72a6332cb4a850839ff5e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#ad860b4ad2f72a6332cb4a850839ff5e5">print_info</a> () const</td></tr>
 <tr class="separator:ad860b4ad2f72a6332cb4a850839ff5e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">不使用的构造函数</div></td></tr>
@@ -129,9 +131,9 @@ Private Attributes</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-static-attribs"></a>
 Static Private Attributes</h2></td></tr>
 <tr><td colspan="2"><div class="groupHeader">默认分辨率</div></td></tr>
-<tr class="memitem:ad960ad754a9ee99b9cdae1bcebd6804b"><td class="memItemLeft" align="right" valign="top">static constexpr const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#ad960ad754a9ee99b9cdae1bcebd6804b">DEFAULT_WIDTH</a> = 1920</td></tr>
+<tr class="memitem:ad960ad754a9ee99b9cdae1bcebd6804b"><td class="memItemLeft" align="right" valign="top">static constexpr const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#ad960ad754a9ee99b9cdae1bcebd6804b">DEFAULT_WIDTH</a> = 800</td></tr>
 <tr class="separator:ad960ad754a9ee99b9cdae1bcebd6804b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a036aee49398070f73600101bac34a29f"><td class="memItemLeft" align="right" valign="top">static constexpr const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#a036aee49398070f73600101bac34a29f">DEFAULT_HEIGHT</a> = 1080</td></tr>
+<tr class="memitem:a036aee49398070f73600101bac34a29f"><td class="memItemLeft" align="right" valign="top">static constexpr const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#a036aee49398070f73600101bac34a29f">DEFAULT_HEIGHT</a> = 600</td></tr>
 <tr class="separator:a036aee49398070f73600101bac34a29f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -171,7 +173,7 @@ Static Private Attributes</h2></td></tr>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordflow">return</span>;</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  }</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;}</div>
-<div class="ttc" id="aclassGraphics_html_a0684dbe06b0ddeb8577869b9a5993443"><div class="ttname"><a href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">Graphics::gop</a></div><div class="ttdeci">EFI_GRAPHICS_OUTPUT_PROTOCOL * gop</div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00082">load_elf.h:82</a></div></div>
+<div class="ttc" id="aclassGraphics_html_a0684dbe06b0ddeb8577869b9a5993443"><div class="ttname"><a href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">Graphics::gop</a></div><div class="ttdeci">EFI_GRAPHICS_OUTPUT_PROTOCOL * gop</div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00084">load_elf.h:84</a></div></div>
 <div class="ttc" id="aclassostream_html_a271664830d4cda9da6c7c0b4c04a8ed2"><div class="ttname"><a href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a></div><div class="ttdeci">static auto endl(ostream &amp;_ostream) -&gt; ostream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8cpp_source.html#l00042">ostream.cpp:42</a></div></div>
 <div class="ttc" id="aostream_8hpp_html_a48c0732d1726c996d7fad294439777fc"><div class="ttname"><a href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a></div><div class="ttdeci">ostream debug</div><div class="ttdoc">全局输出流</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8cpp_source.html#l00045">ostream.cpp:45</a></div></div>
 </div><!-- fragment --><div class="dynheader">
@@ -265,6 +267,28 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="ad41b3e3102be8152afad74612f013f74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad41b3e3102be8152afad74612f013f74">&#9670;&nbsp;</a></span>get_framebuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto Graphics::get_framebuffer </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const -&gt; std::pair&lt;uint64_t, uint32_t&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00080">80</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                                                                    {</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <span class="keywordflow">return</span> {<a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;FrameBufferBase, <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;FrameBufferSize};</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;}</div>
+</div><!-- fragment -->
+</div>
+</div>
 <a id="acd4c5b29614f7f19b47b09e75920abab"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acd4c5b29614f7f19b47b09e75920abab">&#9670;&nbsp;</a></span>operator=() <span class="overload">[1/2]</span></h2>
 
@@ -333,44 +357,44 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 <p>输出图形信息 </p>
 
-<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00080">80</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                                {</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Current Mode: &quot;</span> &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Mode &lt;&lt; L<span class="stringliteral">&quot;, Version: &quot;</span></div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        &lt;&lt; <a class="code" href="classostream.html#a4ec6f2934351244c566df995f0aa6d99">ostream::hex_x</a> &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;Version &lt;&lt; L<span class="stringliteral">&quot;, Format: &quot;</span></div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;PixelFormat &lt;&lt; L<span class="stringliteral">&quot;, Horizontal: &quot;</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution &lt;&lt; L<span class="stringliteral">&quot;, Vertical: &quot;</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution &lt;&lt; L<span class="stringliteral">&quot;, ScanLine: &quot;</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferBase: &quot;</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a> &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;FrameBufferBase</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferSize: &quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;FrameBufferSize &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;MaxMode; i++) {</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *mode_info = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    uint64_t mode_info_size = 0;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keyword">auto</span> status = uefi_call_wrapper(<a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;QueryMode, 4, <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>, i, &amp;mode_info_size,</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                                    &amp;mode_info);</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;      <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::print_info() QueryMode failed: &quot;</span> &lt;&lt; status</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;            &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;      <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    }</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Mode: &quot;</span> &lt;&lt; i &lt;&lt; L<span class="stringliteral">&quot;, Version: &quot;</span> &lt;&lt; <a class="code" href="classostream.html#a4ec6f2934351244c566df995f0aa6d99">ostream::hex_x</a></div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;Version &lt;&lt; L<span class="stringliteral">&quot;, Format: &quot;</span></div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;PixelFormat &lt;&lt; L<span class="stringliteral">&quot;, Horizontal: &quot;</span></div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution &lt;&lt; L<span class="stringliteral">&quot;, Vertical: &quot;</span></div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution &lt;&lt; L<span class="stringliteral">&quot;, ScanLine: &quot;</span></div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    status = uefi_call_wrapper(gBS-&gt;FreePool, 1, mode_info);</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;      <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::print_info() FreePool failed: &quot;</span> &lt;&lt; status</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;            &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;      <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    }</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;  }</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00084">84</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                                {</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Current Mode: &quot;</span> &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Mode &lt;&lt; L<span class="stringliteral">&quot;, Version: &quot;</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        &lt;&lt; <a class="code" href="classostream.html#a4ec6f2934351244c566df995f0aa6d99">ostream::hex_x</a> &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;Version &lt;&lt; L<span class="stringliteral">&quot;, Format: &quot;</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;PixelFormat &lt;&lt; L<span class="stringliteral">&quot;, Horizontal: &quot;</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution &lt;&lt; L<span class="stringliteral">&quot;, Vertical: &quot;</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution &lt;&lt; L<span class="stringliteral">&quot;, ScanLine: &quot;</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferBase: &quot;</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a> &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;FrameBufferBase</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferSize: &quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;FrameBufferSize &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;MaxMode; i++) {</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *mode_info = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    uint64_t mode_info_size = 0;</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keyword">auto</span> status = uefi_call_wrapper(<a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;QueryMode, 4, <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>, i, &amp;mode_info_size,</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                                    &amp;mode_info);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;      <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::print_info() QueryMode failed: &quot;</span> &lt;&lt; status</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;      <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    }</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Mode: &quot;</span> &lt;&lt; i &lt;&lt; L<span class="stringliteral">&quot;, Version: &quot;</span> &lt;&lt; <a class="code" href="classostream.html#a4ec6f2934351244c566df995f0aa6d99">ostream::hex_x</a></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;Version &lt;&lt; L<span class="stringliteral">&quot;, Format: &quot;</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;PixelFormat &lt;&lt; L<span class="stringliteral">&quot;, Horizontal: &quot;</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution &lt;&lt; L<span class="stringliteral">&quot;, Vertical: &quot;</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution &lt;&lt; L<span class="stringliteral">&quot;, ScanLine: &quot;</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#a0684dbe06b0ddeb8577869b9a5993443">gop</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    status = uefi_call_wrapper(gBS-&gt;FreePool, 1, mode_info);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;      <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::print_info() FreePool failed: &quot;</span> &lt;&lt; status</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;      <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    }</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  }</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;}</div>
 <div class="ttc" id="aclassostream_html_a4ec6f2934351244c566df995f0aa6d99"><div class="ttname"><a href="classostream.html#a4ec6f2934351244c566df995f0aa6d99">ostream::hex_x</a></div><div class="ttdeci">static auto hex_x(ostream &amp;_ostream) -&gt; ostream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8cpp_source.html#l00032">ostream.cpp:32</a></div></div>
 <div class="ttc" id="aclassostream_html_afaa63ab1ab5310f2e4ccaeaf26a1d9f9"><div class="ttname"><a href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a></div><div class="ttdeci">static auto hex_X(ostream &amp;_ostream) -&gt; ostream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8cpp_source.html#l00037">ostream.cpp:37</a></div></div>
 </div><!-- fragment --><div class="dynheader">
@@ -387,8 +411,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a04e4caa540b0612a56adc590971715b6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a04e4caa540b0612a56adc590971715b6">&#9670;&nbsp;</a></span>set_mode()</h2>
+<a id="ab213691eaa61862f4d4a9115a67713b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab213691eaa61862f4d4a9115a67713b3">&#9670;&nbsp;</a></span>set_mode()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -397,7 +421,7 @@ Here is the call graph for this function:</div>
           <td class="memname">void Graphics::set_mode </td>
           <td>(</td>
           <td class="paramtype">EFI_GRAPHICS_PIXEL_FORMAT&#160;</td>
-          <td class="paramname"><em>_format</em> = <code>PixelBlueGreenRedReserved8BitPerColor</code>, </td>
+          <td class="paramname"><em>_format</em> = <code>PixelRedGreenBlueReserved8BitPerColor</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -473,8 +497,8 @@ Here is the call graph for this function:</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classGraphics_a04e4caa540b0612a56adc590971715b6_cgraph.png" border="0" usemap="#aclassGraphics_a04e4caa540b0612a56adc590971715b6_cgraph" alt=""/></div>
-<map name="aclassGraphics_a04e4caa540b0612a56adc590971715b6_cgraph" id="aclassGraphics_a04e4caa540b0612a56adc590971715b6_cgraph">
+<div class="center"><img src="classGraphics_ab213691eaa61862f4d4a9115a67713b3_cgraph.png" border="0" usemap="#aclassGraphics_ab213691eaa61862f4d4a9115a67713b3_cgraph" alt=""/></div>
+<map name="aclassGraphics_ab213691eaa61862f4d4a9115a67713b3_cgraph" id="aclassGraphics_ab213691eaa61862f4d4a9115a67713b3_cgraph">
 <area shape="rect" title=" " alt="" coords="5,56,156,83"/>
 <area shape="rect" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2" title=" " alt="" coords="210,5,322,32"/>
 <area shape="rect" href="classostream.html#a4ec6f2934351244c566df995f0aa6d99" title=" " alt="" coords="205,56,327,83"/>
@@ -495,7 +519,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr const uint32_t Graphics::DEFAULT_HEIGHT = 1080</td>
+          <td class="memname">constexpr const uint32_t Graphics::DEFAULT_HEIGHT = 600</td>
         </tr>
       </table>
   </td>
@@ -505,7 +529,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00079">79</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00081">81</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
 
 </div>
 </div>
@@ -519,7 +543,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr const uint32_t Graphics::DEFAULT_WIDTH = 1920</td>
+          <td class="memname">constexpr const uint32_t Graphics::DEFAULT_WIDTH = 800</td>
         </tr>
       </table>
   </td>
@@ -529,7 +553,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00078">78</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00080">80</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
 
 </div>
 </div>
@@ -554,7 +578,7 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 <p>图形输出协议 </p>
 
-<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00082">82</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00084">84</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
 
 </div>
 </div>
@@ -568,7 +592,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classGraphics.html">Graphics</a></li>
-    <li class="footer">Generated on Thu Mar 7 2024 08:30:50 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu Mar 21 2024 08:21:30 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

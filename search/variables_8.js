@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['section_5fbuf_5fsize_265',['SECTION_BUF_SIZE',['../classElf.html#aead66f632e243546cc5cef1a654b404e',1,'Elf']]],
-  ['shdr_266',['shdr',['../classElf.html#a6a780ca4b86b353ef42ac64f9d64c845',1,'Elf']]],
-  ['shstrtab_5fbuf_267',['shstrtab_buf',['../classElf.html#a87eb8da130b534167a0e4a0047d78d18',1,'Elf']]]
+  ['length_247',['length',['../structboot__info__t_1_1memory__map__t.html#a4353f8910a952b3f236fcee15e4c96e8',1,'boot_info_t::memory_map_t']]]
 ];

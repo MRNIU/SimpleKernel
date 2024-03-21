@@ -83,6 +83,7 @@ $(document).ready(function(){initNavTree('classCPU.html',''); initResizable(); }
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classCPU-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -96,10 +97,15 @@ Collaboration diagram for CPU:</div>
 <div class="dyncontent">
 <div class="center"><img src="classCPU__coll__graph.png" border="0" usemap="#aCPU_coll__map" alt="Collaboration graph"/></div>
 <map name="aCPU_coll__map" id="aCPU_coll__map">
-<area shape="rect" title=" " alt="" coords="5,5,84,156"/>
+<area shape="rect" title=" " alt="" coords="5,5,84,171"/>
 </map>
 </div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCPU_1_1Serial.html">Serial</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a206dee379efc89ff7db0a1ce75a2eb79"><td class="memItemLeft" align="right" valign="top">static uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCPU.html#a206dee379efc89ff7db0a1ce75a2eb79">inb</a> (const uint32_t _port)</td></tr>
@@ -120,6 +126,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a512a1fd901517967f54dab8671fca7b9"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCPU.html#a512a1fd901517967f54dab8671fca7b9">outl</a> (const uint32_t _port, const uint32_t _data)</td></tr>
 <tr class="memdesc:a512a1fd901517967f54dab8671fca7b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">写一个双字  <a href="classCPU.html#a512a1fd901517967f54dab8671fca7b9">More...</a><br /></td></tr>
 <tr class="separator:a512a1fd901517967f54dab8671fca7b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">端口</div></td></tr>
+<tr class="memitem:aff7d1281b8738f293fc60e2143639549"><td class="memItemLeft" align="right" valign="top">static constexpr const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCPU.html#aff7d1281b8738f293fc60e2143639549">COM1</a> = 0x3F8</td></tr>
+<tr class="separator:aff7d1281b8738f293fc60e2143639549"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
@@ -164,7 +176,20 @@ Static Public Member Functions</h2></td></tr>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    __asm__ __volatile__(<span class="stringliteral">&quot;inb %1, %0&quot;</span> : <span class="stringliteral">&quot;=a&quot;</span>(data) : <span class="stringliteral">&quot;dN&quot;</span>(_port));</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordflow">return</span> data;</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  }</div>
-</div><!-- fragment -->
+</div><!-- fragment --><div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classCPU_a206dee379efc89ff7db0a1ce75a2eb79_icgraph.png" border="0" usemap="#aclassCPU_a206dee379efc89ff7db0a1ce75a2eb79_icgraph" alt=""/></div>
+<map name="aclassCPU_a206dee379efc89ff7db0a1ce75a2eb79_icgraph" id="aclassCPU_a206dee379efc89ff7db0a1ce75a2eb79_icgraph">
+<area shape="rect" title="读一个字节" alt="" coords="411,97,488,123"/>
+<area shape="rect" href="classCPU_1_1Serial.html#a5ed5d3bebd581b9e1709a8a47be6ae9e" title="串口是否可以发送数据" alt="" coords="188,5,363,47"/>
+<area shape="rect" href="classCPU_1_1Serial.html#a1a2d86351744b1f95f88a4648bf5703d" title="读一个字节" alt="" coords="7,126,138,153"/>
+<area shape="rect" href="classCPU_1_1Serial.html#abbac5f7b3704900abcabb7e9d5cfa0e4" title=" " alt="" coords="206,122,345,149"/>
+<area shape="rect" href="classCPU_1_1Serial.html#ae60e66af837b019708c08a6c34cc4387" title="串口是否接收到数据" alt="" coords="206,173,345,215"/>
+<area shape="rect" href="classCPU_1_1Serial.html#a247f278da97b4ec3063aa774e083a6ee" title="写一个字节" alt="" coords="5,13,140,39"/>
+</map>
+</div>
+
 </div>
 </div>
 <a id="aa66a8d3491e2e4912bfbad66b4eeb02a"></a>
@@ -298,7 +323,17 @@ Static Public Member Functions</h2></td></tr>
 <div class="fragment"><div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                                                                     {</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    __asm__ __volatile__(<span class="stringliteral">&quot;outb %1, %0&quot;</span> : : <span class="stringliteral">&quot;dN&quot;</span>(_port), <span class="stringliteral">&quot;a&quot;</span>(_data));</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;  }</div>
-</div><!-- fragment -->
+</div><!-- fragment --><div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classCPU_a1e844db4d582a8ad06ff212a37f653cc_icgraph.png" border="0" usemap="#aclassCPU_a1e844db4d582a8ad06ff212a37f653cc_icgraph" alt=""/></div>
+<map name="aclassCPU_a1e844db4d582a8ad06ff212a37f653cc_icgraph" id="aclassCPU_a1e844db4d582a8ad06ff212a37f653cc_icgraph">
+<area shape="rect" title="写一个字节" alt="" coords="192,31,279,57"/>
+<area shape="rect" href="classCPU_1_1Serial.html#abbac5f7b3704900abcabb7e9d5cfa0e4" title=" " alt="" coords="5,5,144,32"/>
+<area shape="rect" href="classCPU_1_1Serial.html#a247f278da97b4ec3063aa774e083a6ee" title="写一个字节" alt="" coords="7,56,142,83"/>
+</map>
+</div>
+
 </div>
 </div>
 <a id="a512a1fd901517967f54dab8671fca7b9"></a>
@@ -401,6 +436,31 @@ Static Public Member Functions</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="aff7d1281b8738f293fc60e2143639549"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff7d1281b8738f293fc60e2143639549">&#9670;&nbsp;</a></span>COM1</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const uint32_t CPU::COM1 = 0x3F8</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00085">85</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>/home/runner/work/SimpleKernel/SimpleKernel/src/kernel/arch/x86_64/<a class="el" href="cpu_8hpp_source.html">cpu.hpp</a></li>
 </ul>
@@ -410,7 +470,7 @@ Static Public Member Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classCPU.html">CPU</a></li>
-    <li class="footer">Generated on Thu Mar 7 2024 08:30:50 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu Mar 21 2024 08:21:30 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>
