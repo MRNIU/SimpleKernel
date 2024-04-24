@@ -104,8 +104,9 @@ $(document).ready(function(){initNavTree('md_build_system.html',''); initResizab
 <div class="line">│   ├── compile_config.cmake            // 编译选项</div>
 <div class="line">│   ├── functions.cmake                 // 辅助函数</div>
 <div class="line">│   ├── project_config.cmake            // 项目配置</div>
-<div class="line">│   ├── x86_64-riscv64-gcc.cmake        // host 为 x86_64，target 为 riscv64 的工具链</div>
-<div class="line">│   └── x86_64-x86_64-gcc.cmake         // host 为 x86_64，target 为 x86_64 的工具链</div>
+<div class="line">│   ├── aarch64-gcc.cmake               // target 为 aarch64 的工具链</div>
+<div class="line">│   ├── riscv64-gcc.cmake               // target 为 riscv64 的工具链</div>
+<div class="line">│   └── x86_64-gcc.cmake                // target 为 x86_64 的工具链</div>
 <div class="line">├── doc                                 // 文档目录</div>
 <div class="line">│   ├── CMakeLists.txt                  // 生成 doxygen 文档</div>
 <div class="line">│   ├── UEFI_Spec_2_10_Aug29.pdf        // UEFI 协议文档</div>
@@ -204,7 +205,7 @@ $(document).ready(function(){initNavTree('md_build_system.html',''); initResizab
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Apr 23 2024 08:24:52 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Wed Apr 24 2024 01:43:00 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>
