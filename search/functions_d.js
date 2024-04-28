@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['read_216',['read',['../classCPU_1_1Serial.html#a1a2d86351744b1f95f88a4648bf5703d',1,'CPU::Serial']]]
+  ['print_5fehdr_228',['print_ehdr',['../classElf.html#a34d57d143f7782f3c630f6ddb1f16948',1,'Elf']]],
+  ['print_5finfo_229',['print_info',['../classGraphics.html#ad860b4ad2f72a6332cb4a850839ff5e5',1,'Graphics::print_info()'],['../classMemory.html#a81aabf1a13f96ce935d6157a9520b83a',1,'Memory::print_info()']]],
+  ['print_5fphdr_230',['print_phdr',['../classElf.html#aff0728535c76009acc8d78cbece772fe',1,'Elf']]],
+  ['print_5fshdr_231',['print_shdr',['../classElf.html#a25345e29535844c992d1a45bf12e2e57',1,'Elf']]]
 ];

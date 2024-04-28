@@ -870,14 +870,14 @@ Here is the call graph for this function:</div>
 <div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;          &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
 <div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;  }</div>
-<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;  uintptr_t aaa = 0;</div>
+<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;  uintptr_t <a class="code" href="classaaa.html">aaa</a> = 0;</div>
 <div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;  <span class="comment">// status = uefi_call_wrapper(gBS-&gt;AllocatePages, 4, AllocateAddress,</span></div>
 <div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;  <span class="comment">//                            EfiLoaderData, section_page_count,</span></div>
 <div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;  <span class="comment">//                            (EFI_PHYSICAL_ADDRESS*)&amp;_phdr.p_paddr);</span></div>
 <div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;  status = uefi_call_wrapper(gBS-&gt;AllocatePages, 4, AllocateAnyPages,</div>
-<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;                             EfiLoaderData, section_page_count, &amp;aaa);</div>
+<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;                             EfiLoaderData, section_page_count, &amp;<a class="code" href="classaaa.html">aaa</a>);</div>
 <div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160;  <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;_phdr.p_paddr: [&quot;</span> &lt;&lt; status &lt;&lt; L<span class="stringliteral">&quot;] [&quot;</span> &lt;&lt; section_page_count</div>
-<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;        &lt;&lt; L<span class="stringliteral">&quot;] &quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a> &lt;&lt; aaa &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
+<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;        &lt;&lt; L<span class="stringliteral">&quot;] &quot;</span> &lt;&lt; <a class="code" href="classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9">ostream::hex_X</a> &lt;&lt; <a class="code" href="classaaa.html">aaa</a> &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
 <div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;  <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
 <div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;    <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Elf::load_sections AllocatePages AllocateAddress failed: &quot;</span></div>
 <div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;          &lt;&lt; status &lt;&lt; <a class="code" href="classostream.html#a271664830d4cda9da6c7c0b4c04a8ed2">ostream::endl</a>;</div>
@@ -904,7 +904,7 @@ Here is the call graph for this function:</div>
 <div class="line"><a name="l00854"></a><span class="lineno">  854</span>&#160; </div>
 <div class="line"><a name="l00855"></a><span class="lineno">  855</span>&#160;    <span class="comment">// 将读出来的数据复制到其对应的物理地址</span></div>
 <div class="line"><a name="l00856"></a><span class="lineno">  856</span>&#160;    uefi_call_wrapper(gBS-&gt;CopyMem, 3,</div>
-<div class="line"><a name="l00857"></a><span class="lineno">  857</span>&#160;                      <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">void</span> *<span class="keyword">&gt;</span>(aaa + _phdr.p_paddr), data,</div>
+<div class="line"><a name="l00857"></a><span class="lineno">  857</span>&#160;                      <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">void</span> *<span class="keyword">&gt;</span>(<a class="code" href="classaaa.html">aaa</a> + _phdr.p_paddr), data,</div>
 <div class="line"><a name="l00858"></a><span class="lineno">  858</span>&#160;                      _phdr.p_filesz);</div>
 <div class="line"><a name="l00859"></a><span class="lineno">  859</span>&#160; </div>
 <div class="line"><a name="l00860"></a><span class="lineno">  860</span>&#160;    <span class="comment">// 释放 program_data</span></div>
@@ -918,7 +918,7 @@ Here is the call graph for this function:</div>
 <div class="line"><a name="l00868"></a><span class="lineno">  868</span>&#160; </div>
 <div class="line"><a name="l00869"></a><span class="lineno">  869</span>&#160;  <span class="comment">// 计算填充大小</span></div>
 <div class="line"><a name="l00870"></a><span class="lineno">  870</span>&#160;  <span class="keyword">auto</span> *zero_fill_start =</div>
-<div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160;      <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">void</span> *<span class="keyword">&gt;</span>(aaa + _phdr.p_paddr + _phdr.p_filesz);</div>
+<div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160;      <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">void</span> *<span class="keyword">&gt;</span>(<a class="code" href="classaaa.html">aaa</a> + _phdr.p_paddr + _phdr.p_filesz);</div>
 <div class="line"><a name="l00872"></a><span class="lineno">  872</span>&#160;  <span class="keyword">auto</span> zero_fill_count = _phdr.p_memsz - _phdr.p_filesz;</div>
 <div class="line"><a name="l00873"></a><span class="lineno">  873</span>&#160;  <span class="keywordflow">if</span> (zero_fill_count &gt; 0) {</div>
 <div class="line"><a name="l00874"></a><span class="lineno">  874</span>&#160;    <a class="code" href="ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Debug: Zero-filling &quot;</span> &lt;&lt; zero_fill_count</div>
@@ -930,6 +930,7 @@ Here is the call graph for this function:</div>
 <div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160;  }</div>
 <div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160;  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00882"></a><span class="lineno">  882</span>&#160;}</div>
+<div class="ttc" id="aclassaaa_html"><div class="ttname"><a href="classaaa.html">aaa</a></div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00026">main.cpp:26</a></div></div>
 <div class="ttc" id="aclassostream_html_a4ec6f2934351244c566df995f0aa6d99"><div class="ttname"><a href="classostream.html#a4ec6f2934351244c566df995f0aa6d99">ostream::hex_x</a></div><div class="ttdeci">static auto hex_x(ostream &amp;_ostream) -&gt; ostream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="ostream_8cpp_source.html#l00032">ostream.cpp:32</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -2001,7 +2002,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classElf.html">Elf</a></li>
-    <li class="footer">Generated on Wed Apr 24 2024 01:43:00 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Sun Apr 28 2024 03:10:40 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

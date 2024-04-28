@@ -190,13 +190,7 @@ $(document).ready(function(){initNavTree('cpu_8hpp_source.html',''); initResizab
 <div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;  };</div>
 <div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;};</div>
 <div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160; </div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="comment">// printf_bare_metal 基本输出实现</span></div>
-<div class="line"><a name="l00174"></a><span class="lineno"><a class="line" href="cpu_8hpp.html#a49b04e203cda77cc09e7f0f15efa8e1a">  174</a></span>&#160;<span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> <span class="keywordtype">void</span> <a class="code" href="cpu_8hpp.html#a49b04e203cda77cc09e7f0f15efa8e1a">_putchar</a>(<span class="keywordtype">char</span> _character) {</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;  <span class="keyword">auto</span> serial = <a class="code" href="classCPU_1_1Serial.html">CPU::Serial</a>(<a class="code" href="classCPU.html#aff7d1281b8738f293fc60e2143639549">CPU::COM1</a>);</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;  serial.write(_character);</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;}</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160; </div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_CPU_HPP</span></div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_CPU_HPP</span></div>
 <div class="ttc" id="aclassCPU_1_1Serial_html"><div class="ttname"><a href="classCPU_1_1Serial.html">CPU::Serial</a></div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00086">cpu.hpp:86</a></div></div>
 <div class="ttc" id="aclassCPU_1_1Serial_html_a180176a650b8c88c9064e502338f6734"><div class="ttname"><a href="classCPU_1_1Serial.html#a180176a650b8c88c9064e502338f6734">CPU::Serial::port</a></div><div class="ttdeci">uint32_t port</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00151">cpu.hpp:151</a></div></div>
 <div class="ttc" id="aclassCPU_1_1Serial_html_a1a2d86351744b1f95f88a4648bf5703d"><div class="ttname"><a href="classCPU_1_1Serial.html#a1a2d86351744b1f95f88a4648bf5703d">CPU::Serial::read</a></div><div class="ttdeci">auto read() const -&gt; uint8_t</div><div class="ttdoc">读一个字节</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00132">cpu.hpp:132</a></div></div>
@@ -218,14 +212,13 @@ $(document).ready(function(){initNavTree('cpu_8hpp_source.html',''); initResizab
 <div class="ttc" id="aclassCPU_html_a6947eafc79c791823b57d16bbfacc2a2"><div class="ttname"><a href="classCPU.html#a6947eafc79c791823b57d16bbfacc2a2">CPU::outw</a></div><div class="ttdeci">static void outw(const uint32_t _port, const uint16_t _data)</div><div class="ttdoc">写一个字</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00071">cpu.hpp:71</a></div></div>
 <div class="ttc" id="aclassCPU_html_aa66a8d3491e2e4912bfbad66b4eeb02a"><div class="ttname"><a href="classCPU.html#aa66a8d3491e2e4912bfbad66b4eeb02a">CPU::inl</a></div><div class="ttdeci">static uint32_t inl(const uint32_t _port)</div><div class="ttdoc">读一个双字</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00051">cpu.hpp:51</a></div></div>
 <div class="ttc" id="aclassCPU_html_aff7d1281b8738f293fc60e2143639549"><div class="ttname"><a href="classCPU.html#aff7d1281b8738f293fc60e2143639549">CPU::COM1</a></div><div class="ttdeci">static constexpr const uint32_t COM1</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00085">cpu.hpp:85</a></div></div>
-<div class="ttc" id="acpu_8hpp_html_a49b04e203cda77cc09e7f0f15efa8e1a"><div class="ttname"><a href="cpu_8hpp.html#a49b04e203cda77cc09e7f0f15efa8e1a">_putchar</a></div><div class="ttdeci">void _putchar(char _character)</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00174">cpu.hpp:174</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_76e3dd4d2fa719e8d3b096e9aa563982.html">arch</a></li><li class="navelem"><a class="el" href="dir_7c4c796ec9937bed8074dafcec3d25e4.html">x86_64</a></li><li class="navelem"><a class="el" href="cpu_8hpp.html">cpu.hpp</a></li>
-    <li class="footer">Generated on Wed Apr 24 2024 01:43:00 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Sun Apr 28 2024 03:10:40 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

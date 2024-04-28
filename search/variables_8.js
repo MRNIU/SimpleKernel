@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['length_247',['length',['../structboot__info__t_1_1memory__map__t.html#a4353f8910a952b3f236fcee15e4c96e8',1,'boot_info_t::memory_map_t']]]
+  ['height_268',['height',['../structboot__info__t_1_1framebuffer__t.html#a206217c7c3f0ee4f20c0c79a82e9d6bc',1,'boot_info_t::framebuffer_t']]]
 ];

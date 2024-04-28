@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['section_5fbuf_5fsize_257',['SECTION_BUF_SIZE',['../classElf.html#aead66f632e243546cc5cef1a654b404e',1,'Elf']]],
-  ['shdr_258',['shdr',['../classElf.html#a6a780ca4b86b353ef42ac64f9d64c845',1,'Elf']]],
-  ['shstrtab_5fbuf_259',['shstrtab_buf',['../classElf.html#a87eb8da130b534167a0e4a0047d78d18',1,'Elf']]],
-  ['size_260',['size',['../structboot__info__t_1_1framebuffer__t.html#ad814d8a51533593894fc7651ffa42bff',1,'boot_info_t::framebuffer_t']]]
+  ['phdr_274',['phdr',['../classElf.html#a4a9108833faee1fb3608716720636eb1',1,'Elf']]],
+  ['pitch_275',['pitch',['../structboot__info__t_1_1framebuffer__t.html#accbdbfc03adc692593d31e39af278c41',1,'boot_info_t::framebuffer_t::pitch()'],['../x86__64_2arch__main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c',1,'pitch():&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c',1,'pitch():&#160;main.cpp']]],
+  ['pixelwidth_276',['pixelwidth',['../x86__64_2arch__main_8cpp.html#a1b67a367bf7a2124dca966985c1243af',1,'pixelwidth():&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af',1,'pixelwidth():&#160;main.cpp']]],
+  ['port_277',['port',['../classCPU_1_1Serial.html#a180176a650b8c88c9064e502338f6734',1,'CPU::Serial']]]
 ];

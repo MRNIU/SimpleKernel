@@ -1,0 +1,4 @@
+<map id="cpp_init" name="cpp_init">
+<area shape="rect" id="node1" title="初始化 c++ 全局对象" alt="" coords="112,5,185,32"/>
+<area shape="rect" id="node2" href="$kernel_8h.html#a04f3639cb06474621cc812e428edfb54" title="负责 crtbegin 的工作" alt="" coords="5,5,64,32"/>
+</map>

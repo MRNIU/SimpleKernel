@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['base_228',['base',['../structboot__info__t_1_1framebuffer__t.html#a36c0e729f750ee1ea5ded334bfb57c63',1,'boot_info_t::framebuffer_t::base()'],['../structboot__info__t_1_1memory__map__t.html#a36183abb01916fe56b7e47f84d061e8f',1,'boot_info_t::memory_map_t::base()']]],
-  ['bpp_229',['bpp',['../structboot__info__t_1_1framebuffer__t.html#aaf46dc0850f6c5e3c92156f1be1dd560',1,'boot_info_t::framebuffer_t']]]
+  ['_5f_5finit_5farray_5fend_244',['__init_array_end',['../libcxx_8cpp.html#ac7e71dba9e7998f6caa749b4666a7525',1,'libcxx.cpp']]],
+  ['_5f_5finit_5farray_5fstart_245',['__init_array_start',['../libcxx_8cpp.html#ae7242f0a148c102c15391ac98f022aac',1,'libcxx.cpp']]]
 ];
