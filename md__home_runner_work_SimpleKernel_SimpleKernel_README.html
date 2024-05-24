@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SimpleKernel: fix_FFFF</title>
+<title>SimpleKernel: README</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -83,114 +83,87 @@ $(document).ready(function(){initNavTree('md__home_runner_work_SimpleKernel_Simp
 
 <div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">fix_FFFF </div>  </div>
+<div class="title">README </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>此版本用于讨论bug</p>
-<p><a href="https://github.com/MRNIU/SimpleKernel/tree/fix_FFFF">https://github.com/MRNIU/SimpleKernel/tree/fix_FFFF</a></p>
-<h1><a class="anchor" id="autotoc_md20"></a>
-How To Use（需要科学上网）</h1>
+<div class="textblock"><p><a href="https://codecov.io/gh/Simple-XX/SimpleKernel"><img src="https://codecov.io/gh/Simple-XX/SimpleKernel/graph/badge.svg?token=J7NKK3SBNJ" alt="codecov" style="pointer-events: none;" class="inline"/></a> <img src="https://github.com/Simple-XX/SimpleKernel/actions/workflows/workflow.yml/badge.svg" alt="workflow" style="pointer-events: none;" class="inline"/> <img src="https://img.shields.io/github/commit-activity/t/Simple-XX/SimpleKernel" alt="commit-activity" class="inline"/> <img src="https://img.shields.io/github/last-commit/Simple-XX/SimpleKernel/boot" alt="last-commit-boot" class="inline"/> <img src="https://img.shields.io/github/license/mashape/apistatus.svg" alt="MIT License" style="pointer-events: none;" class="inline"/> <a href="https://github.com/996icu/996.ICU/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-Anti%20996-blue.svg" alt="LICENSE" style="pointer-events: none;" class="inline"/></a> <a href="https://996.icu"><img src="https://img.shields.io/badge/link-996.icu-red.svg" alt="996.icu" style="pointer-events: none;" class="inline"/></a></p>
+<p><a class="el" href="md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html">English</a> | <a class="el" href="md__home_runner_work_SimpleKernel_SimpleKernel_README.html">中文</a></p>
+<h1><a class="anchor" id="autotoc_md19"></a>
+SimpleKernel</h1>
+<h2><a class="anchor" id="autotoc_md20"></a>
+关键词</h2>
 <ul>
-<li>安装依赖(Ubuntu)</li>
+<li>kernel</li>
+<li>x86_64, riscv64, aarch64</li>
+<li>osdev</li>
+<li>bare metal</li>
+<li>c++, cmake</li>
+<li>uefi, opensbi</li>
 </ul>
-<div class="fragment"><div class="line">sudo apt install --fix-missing -y doxygen graphviz clang-format clang-tidy cppcheck qemu-system lcov gdb-multiarch libgtest-dev cmake</div>
-<div class="line">sudo apt install --fix-missing -y gcc-riscv64-linux-gnu g++-riscv64-linux-gnu</div>
-</div><!-- fragment --><ul>
-<li>编译</li>
+<h2><a class="anchor" id="autotoc_md21"></a>
+简介</h2>
+<p>提供了各个阶段完成度不同的内核，你可以从自己喜欢的地方开始。</p>
+<h2><a class="anchor" id="autotoc_md22"></a>
+新增特性</h2>
+<p>本分支是 SImpleKernel 的首个分支。在本分支中，完成了构建系统的基础搭建、基本的文档部署与自动化测试，当然还有最重要的，有基于 uefi 的 x86_64 内核与由 opensbi 启动的 riscv64 内核，可以在 qemu 上运行，并实现了简单的屏幕输出。</p>
+<p>调用顺序</p>
+<ul>
+<li>x86_64/aarch64 uefi-&gt;main.cpp:main-&gt;arch.cpp:arch_init</li>
 </ul>
-<div class="fragment"><div class="line">cd SimpleKernel</div>
-<div class="line">cmake --preset build_riscv64</div>
-<div class="line">cd build_riscv64</div>
-<div class="line">make kernel</div>
-</div><!-- fragment --><ul>
-<li>运行(于上一步的 build_riscv64 目录下)</li>
+<p>riscv64 opensbi-&gt;boot.S:_start-&gt;main.cpp:main-&gt;arch.cpp:arch_init</p>
+<ul>
+<li><p class="startli">构建系统</p>
+<p class="startli">参考 <a href="https://github.com/MRNIU/cmake-kernel">MRNIU/cmake-kernel</a> 的构建系统，详细解释见 <a class="el" href="md_build_system.html">doc/build_system.md</a></p>
+</li>
+<li><p class="startli">基于 gnu-efi 引导的 x86_64 内核</p>
+<p class="startli">编译后生成 boot.efi 与 kernel.elf，进入 uefi 环境后首先执行 boot.efi，初始化完成后跳转到 kernel.elf 执行</p>
+</li>
+<li><p class="startli">基于 opensbi 引导的 riscv64 内核</p>
+<p class="startli">由 opensbi 进行初始化，直接跳转到内核地址，进入内核逻辑时为 S 态</p>
+</li>
+<li><p class="startli">基于 doxygen 的文档生成与自动部署</p>
+<p class="startli">github action 会将文档部署到 <a href="https://simple-xx.github.io/SimpleKernel/">https://simple-xx.github.io/SimpleKernel/</a> (仅 main 分支)</p>
+</li>
+<li><p class="startli">基于 CPM 的第三方资源管理</p>
+<p class="startli">在 <code>3rd.cmake</code> 中使用 CPM 的功能自动下载、集成第三方资源</p>
+</li>
+<li><p class="startli">测试</p>
+<p class="startli">支持 单元测试、集成测试、系统测试，引入 gtest 作为测试框架，同时统计了测试覆盖率</p>
+</li>
+<li><p class="startli">代码分析</p>
+<p class="startli">引入 cppcheck、clang-tidy、sanitize 工具提前发现错误</p>
+</li>
+<li><p class="startli">代码格式化</p>
+<p class="startli">使用 llvm 风格</p>
+</li>
+<li><p class="startli">docker</p>
+<p class="startli">支持使用 docker 构建，详细使用方法见 <a class="el" href="md_docker.html">doc/docker.md</a></p>
+</li>
 </ul>
-<div class="fragment"><div class="line">make run_run</div>
-</div><!-- fragment --><ul>
-<li>调试(于上一步的 build_riscv64 目录下)</li>
-</ul>
-<div class="fragment"><div class="line">make run_debug</div>
-</div><!-- fragment --><p>此时需要新开一个 shell</p>
-<div class="fragment"><div class="line">gdb-multiarch</div>
-</div><!-- fragment --><p>进入 gdb 界面后输入</p>
-<div class="fragment"><div class="line">target remote :1234</div>
-<div class="line">file image/kernel.elf</div>
-<div class="line"># 打断点到 main</div>
-<div class="line">b main</div>
-<div class="line"># 开始运行</div>
-<div class="line">c</div>
-</div><!-- fragment --><ul>
-<li>可能有用的指令</li>
-</ul>
-<div class="fragment"><div class="line"># 在 qemu 中运行</div>
-<div class="line">make run_run</div>
-<div class="line"># 以 debug 模式在 qemu 中运行，可以使用 gdb 连接</div>
-<div class="line">make run_debug</div>
-<div class="line"># 编译 kernel，同时生成 objdump 与 readelf 结果</div>
-<div class="line">make kernel</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md21"></a>
-问题描述</h1>
-<p>riscv64 静态全局对象的地址与 readelf 不一致</p>
-<div class="fragment"><div class="line"> {c++}</div>
-<div class="line">class aaa {</div>
-<div class="line"> public:</div>
-<div class="line">  int a = 233;</div>
-<div class="line"> </div>
-<div class="line">  aaa() : a(666) { printf(&quot;aaa init\n&quot;); }</div>
-<div class="line"> </div>
-<div class="line">  aaa(int _a) : a(_a) { printf(&quot;aaa init %d\n&quot;, _a); }</div>
-<div class="line">};</div>
-<div class="line"> </div>
-<div class="line">// auto class_a = aaa(2);</div>
-<div class="line">// static aaa class_a2 = aaa(3);</div>
-<div class="line">int i32;</div>
-<div class="line">static int si32;</div>
-<div class="line"> </div>
-<div class="line">int main(int _argc, char** _argv) {</div>
-<div class="line">  // 架构相关初始化</div>
-<div class="line">  auto arch_init_ret = arch_init(_argc, reinterpret_cast&lt;uint8_t**&gt;(_argv));</div>
-<div class="line"> </div>
-<div class="line">  // printf(&quot;class_a.a: %d\n&quot;, class_a.a);</div>
-<div class="line">  // printf(&quot;&amp;class_a: %p\n&quot;, &amp;class_a);</div>
-<div class="line">  // printf(&quot;&amp;class_a2: %p\n&quot;, &amp;class_a2);</div>
-<div class="line">  printf(&quot;&amp;i32: %p\n&quot;, &amp;i32);</div>
-<div class="line">  printf(&quot;&amp;si32: %p\n&quot;, &amp;si32);</div>
-<div class="line">  printf(&quot;*(&amp;si32): %p\n&quot;, *(&amp;si32));</div>
-<div class="line">  uintptr_t ccc = 0;</div>
-<div class="line">  asm(&quot;nop&quot;);</div>
-<div class="line">  ccc = (uintptr_t)&amp;si32;</div>
-<div class="line">  asm(&quot;nop&quot;);</div>
-<div class="line"> </div>
-<div class="line">  printf(&quot;ccc: %X\n&quot;, ccc);</div>
-<div class="line"> </div>
-<div class="line">  printf(&quot;------\n&quot;);</div>
-<div class="line"> </div>
-<div class="line">  // 进入死循环</div>
-<div class="line">  while (1) {</div>
-<div class="line">    ;</div>
-<div class="line">  }</div>
-<div class="line">  return 0;</div>
-<div class="line">}</div>
-</div><!-- fragment --><ol type="1">
-<li>在 gdb 中 <code>p &amp;si32</code>，结果符合预期(地址为 8021XXXX，与 readelf 一致)</li>
-<li>在程序中 <code>ccc = &amp;si32</code>，然后在 gdb 中 <code>p ccc</code>，结果错误(地址为 FFFFFFFFFFFFFXXX)</li>
-</ol>
-<h1><a class="anchor" id="autotoc_md22"></a>
-相关文件路径</h1>
-<p>编译参数 cmake/compile_config.cmake</p>
-<p>链接脚本 src/kernel/arch/riscv64/link.ld</p>
-<p>boot src/kernel/arch/riscv64/boot.S</p>
-<p>cpp 初始化 <a class="el" href="libcxx_8cpp.html" title="libcxx cpp">src/kernel/libcxx/libcxx.cpp</a></p>
-<p>内核入口 <a class="el" href="src_2kernel_2main_8cpp.html" title="内核入口">src/kernel/main.cpp</a></p>
-<p>反汇编文件 build_riscv64/src/kernel/kernel.elf.disassembly</p>
-<p>readelf 文件 build_riscv64/src/kernel/kernel.elf.readelf </p>
+<h2><a class="anchor" id="autotoc_md23"></a>
+已支持</h2>
+<p>见 新增特性</p>
+<h2><a class="anchor" id="autotoc_md24"></a>
+依赖</h2>
+<p><a href="https://github.com/cpm-cmake/CPM.cmake">CPM</a></p>
+<p><a href="https://github.com/TheLartians/CPMLicenses.cmake">CPMLicences.cmake</a></p>
+<p><a href="https://github.com/google/googletest">google/googletest</a></p>
+<p><a href="https://github.com/riscv-software-src/opensbi">opensbi</a></p>
+<p><a href="https://www.doxygen.nl/">doxygen</a></p>
+<p><a href="https://github.com/linux-test-project/lcov">lcov</a></p>
+<p><a href="https://gcc.gnu.org/">gcc</a></p>
+<p><a href="https://www.qemu.org/">qemu</a></p>
+<p><a href="https://cppcheck.sourceforge.io/">cppcheck</a></p>
+<p><a href="https://clang.llvm.org/extra/clang-tidy/">clang-tidy</a></p>
+<p><a href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a></p>
+<p><a href="https://sourceforge.net/projects/gnu-efi/">gnu-efi</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri May 24 2024 11:44:37 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Fri May 24 2024 23:49:42 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['clion_20usage_324',['CLion Usage',['../md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html',1,'']]]
+  ['clion_20usage_328',['CLion Usage',['../md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html',1,'']]]
 ];

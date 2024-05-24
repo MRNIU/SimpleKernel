@@ -129,6 +129,10 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
+<tr class="memitem:ad1b18239cc5bbfadc2b0d788e9127bb7"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="src_2kernel_2main_8cpp.html#ad1b18239cc5bbfadc2b0d788e9127bb7">class_a</a> = <a class="el" href="classaaa.html">aaa</a>(2)</td></tr>
+<tr class="separator:ad1b18239cc5bbfadc2b0d788e9127bb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9660544660766fec06f48f028b2a50f2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classaaa.html">aaa</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="src_2kernel_2main_8cpp.html#a9660544660766fec06f48f028b2a50f2">class_a2</a> = <a class="el" href="classaaa.html">aaa</a>(3)</td></tr>
+<tr class="separator:a9660544660766fec06f48f028b2a50f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7bb06abd9ac0b6a806b9e9e6e974f292"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="src_2kernel_2main_8cpp.html#a7bb06abd9ac0b6a806b9e9e6e974f292">i32</a></td></tr>
 <tr class="separator:a7bb06abd9ac0b6a806b9e9e6e974f292"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8cd5782ea35ef8a6d8085604dabf86b"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="src_2kernel_2main_8cpp.html#ab8cd5782ea35ef8a6d8085604dabf86b">si32</a></td></tr>
@@ -237,9 +241,9 @@ Variables</h2></td></tr>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <span class="comment">// 架构相关初始化</span></div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keyword">auto</span> arch_init_ret = <a class="code" href="aarch64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5">arch_init</a>(_argc, <span class="keyword">reinterpret_cast&lt;</span>uint8_t**<span class="keyword">&gt;</span>(_argv));</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <span class="comment">// printf(&quot;class_a.a: %d\n&quot;, class_a.a);</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="comment">// printf(&quot;&amp;class_a: %p\n&quot;, &amp;class_a);</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <span class="comment">// printf(&quot;&amp;class_a2: %p\n&quot;, &amp;class_a2);</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  printf(<span class="stringliteral">&quot;class_a.a: %d\n&quot;</span>, <a class="code" href="src_2kernel_2main_8cpp.html#ad1b18239cc5bbfadc2b0d788e9127bb7">class_a</a>.a);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  printf(<span class="stringliteral">&quot;&amp;class_a: %p\n&quot;</span>, &amp;<a class="code" href="src_2kernel_2main_8cpp.html#ad1b18239cc5bbfadc2b0d788e9127bb7">class_a</a>);</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  printf(<span class="stringliteral">&quot;&amp;class_a2: %p\n&quot;</span>, &amp;<a class="code" href="src_2kernel_2main_8cpp.html#a9660544660766fec06f48f028b2a50f2">class_a2</a>);</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  printf(<span class="stringliteral">&quot;&amp;i32: %p\n&quot;</span>, &amp;<a class="code" href="src_2kernel_2main_8cpp.html#a7bb06abd9ac0b6a806b9e9e6e974f292">i32</a>);</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  printf(<span class="stringliteral">&quot;&amp;si32: %p\n&quot;</span>, &amp;<a class="code" href="src_2kernel_2main_8cpp.html#ab8cd5782ea35ef8a6d8085604dabf86b">si32</a>);</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  printf(<span class="stringliteral">&quot;*(&amp;si32): %p\n&quot;</span>, *(&amp;<a class="code" href="src_2kernel_2main_8cpp.html#ab8cd5782ea35ef8a6d8085604dabf86b">si32</a>));</div>
@@ -260,7 +264,9 @@ Variables</h2></td></tr>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;}</div>
 <div class="ttc" id="aaarch64_2arch__main_8cpp_html_a595eb78e2d8dc0a817263e8e30897bd5"><div class="ttname"><a href="aarch64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5">arch_init</a></div><div class="ttdeci">int32_t arch_init(uint32_t _argc, uint8_t **_argv)</div><div class="ttdef"><b>Definition:</b> <a href="aarch64_2arch__main_8cpp_source.html#l00025">arch_main.cpp:25</a></div></div>
 <div class="ttc" id="asrc_2kernel_2main_8cpp_html_a7bb06abd9ac0b6a806b9e9e6e974f292"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a7bb06abd9ac0b6a806b9e9e6e974f292">i32</a></div><div class="ttdeci">int i32</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00037">main.cpp:37</a></div></div>
+<div class="ttc" id="asrc_2kernel_2main_8cpp_html_a9660544660766fec06f48f028b2a50f2"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a9660544660766fec06f48f028b2a50f2">class_a2</a></div><div class="ttdeci">static aaa class_a2</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00036">main.cpp:36</a></div></div>
 <div class="ttc" id="asrc_2kernel_2main_8cpp_html_ab8cd5782ea35ef8a6d8085604dabf86b"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#ab8cd5782ea35ef8a6d8085604dabf86b">si32</a></div><div class="ttdeci">static int si32</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00038">main.cpp:38</a></div></div>
+<div class="ttc" id="asrc_2kernel_2main_8cpp_html_ad1b18239cc5bbfadc2b0d788e9127bb7"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#ad1b18239cc5bbfadc2b0d788e9127bb7">class_a</a></div><div class="ttdeci">auto class_a</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00035">main.cpp:35</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -274,6 +280,46 @@ Here is the caller graph for this function:</div>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a id="ad1b18239cc5bbfadc2b0d788e9127bb7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1b18239cc5bbfadc2b0d788e9127bb7">&#9670;&nbsp;</a></span>class_a</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto class_a = <a class="el" href="classaaa.html">aaa</a>(2)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="src_2kernel_2main_8cpp_source.html#l00035">35</a> of file <a class="el" href="src_2kernel_2main_8cpp_source.html">main.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a9660544660766fec06f48f028b2a50f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9660544660766fec06f48f028b2a50f2">&#9670;&nbsp;</a></span>class_a2</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classaaa.html">aaa</a> class_a2 = <a class="el" href="classaaa.html">aaa</a>(3)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="src_2kernel_2main_8cpp_source.html#l00036">36</a> of file <a class="el" href="src_2kernel_2main_8cpp_source.html">main.cpp</a>.</p>
+
+</div>
+</div>
 <a id="a7bb06abd9ac0b6a806b9e9e6e974f292"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7bb06abd9ac0b6a806b9e9e6e974f292">&#9670;&nbsp;</a></span>i32</h2>
 
@@ -320,7 +366,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="src_2kernel_2main_8cpp.html">main.cpp</a></li>
-    <li class="footer">Generated on Fri May 24 2024 11:44:37 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Fri May 24 2024 23:49:42 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

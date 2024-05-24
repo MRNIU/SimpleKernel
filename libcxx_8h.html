@@ -155,13 +155,14 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>初始化 c++ 全局对象 </p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>x86_64 crashed </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="libcxx_8cpp_source.html#l00026">26</a> of file <a class="el" href="libcxx_8cpp_source.html">libcxx.cpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;                    {</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">auto</span> ctor = <a class="code" href="libcxx_8cpp.html#ae7242f0a148c102c15391ac98f022aac">__init_array_start</a>; ctor &lt; <a class="code" href="libcxx_8cpp.html#ac7e71dba9e7998f6caa749b4666a7525">__init_array_end</a>; ctor++) {</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    (*ctor)();</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  }</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;}</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    (*ctor)();</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  }</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;}</div>
 <div class="ttc" id="alibcxx_8cpp_html_ac7e71dba9e7998f6caa749b4666a7525"><div class="ttname"><a href="libcxx_8cpp.html#ac7e71dba9e7998f6caa749b4666a7525">__init_array_end</a></div><div class="ttdeci">ctor_t __init_array_end[]</div></div>
 <div class="ttc" id="alibcxx_8cpp_html_ae7242f0a148c102c15391ac98f022aac"><div class="ttname"><a href="libcxx_8cpp.html#ae7242f0a148c102c15391ac98f022aac">__init_array_start</a></div><div class="ttdeci">ctor_t __init_array_start[]</div></div>
 </div><!-- fragment --><div class="dynheader">
@@ -212,18 +213,18 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>int32_t 正常返回 0 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="libcxx_8cpp_source.html#l00033">33</a> of file <a class="el" href="libcxx_8cpp_source.html">libcxx.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;                                                {</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  (void)_argc;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  (void)_argv;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="comment">// 进入死循环</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    ;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  }</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="libcxx_8cpp_source.html#l00034">34</a> of file <a class="el" href="libcxx_8cpp_source.html">libcxx.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                                                {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  (void)_argc;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  (void)_argv;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="comment">// 进入死循环</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    ;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  }</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -233,7 +234,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_d683bc3d3192fc80ec7b59eb6756d7d6.html">libcxx</a></li><li class="navelem"><a class="el" href="dir_59df94d8c79cd5668d4518ea58739506.html">include</a></li><li class="navelem"><a class="el" href="libcxx_8h.html">libcxx.h</a></li>
-    <li class="footer">Generated on Fri May 24 2024 11:44:37 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Fri May 24 2024 23:49:42 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>
