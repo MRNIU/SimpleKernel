@@ -48,31 +48,28 @@ var NAVTREE =
       [ "配置 ssh", "md_docker.html#autotoc_md17", null ],
       [ "配置 vscode", "md_docker.html#autotoc_md18", null ]
     ] ],
-    [ "README", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html", [
-      [ "SimpleKernel", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md19", [
-        [ "关键词", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md20", null ],
-        [ "简介", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md21", null ],
-        [ "新增特性", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md22", null ],
-        [ "已支持", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md23", null ],
-        [ "依赖", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md24", null ]
-      ] ]
+    [ "fix_FFFF", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html", [
+      [ "How To Use（需要科学上网）", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md20", null ],
+      [ "问题描述", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md21", null ],
+      [ "相关文件路径", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md22", null ]
     ] ],
     [ "README_ENG", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html", [
-      [ "SimpleKernel", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md25", [
-        [ "Key Words", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md26", null ],
-        [ "Introduction", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md27", null ],
-        [ "What's NEW", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md28", null ],
-        [ "Supported", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md29", null ],
-        [ "Dependencies", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md30", null ]
+      [ "SimpleKernel", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md23", [
+        [ "Key Words", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md24", null ],
+        [ "Introduction", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md25", null ],
+        [ "What's NEW", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md26", null ],
+        [ "Supported", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md27", null ],
+        [ "Dependencies", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md28", null ]
       ] ]
     ] ],
     [ "arch", "md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_arch_README.html", null ],
+    [ "ns16550a", "md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_ns16550a_README.html", null ],
     [ "driver", "md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_README.html", null ],
     [ "gnu_efi_test", "md__home_runner_work_SimpleKernel_SimpleKernel_test_system_test_gnu_efi_test_README.html", null ],
     [ "CLion Usage", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html", [
-      [ "osx+QEMU+x86_64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md35", null ],
-      [ "osx+QEMU+riscv64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md36", null ],
-      [ "osx+QEMU+aarch64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md37", null ]
+      [ "osx+QEMU+x86_64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md34", null ],
+      [ "osx+QEMU+riscv64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md35", null ],
+      [ "osx+QEMU+aarch64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md36", null ]
     ] ],
     [ "Todo List", "todo.html", null ],
     [ "Classes", "annotated.html", [
@@ -102,7 +99,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "aarch64_2arch__main_8cpp.html",
-"riscv64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5"
+"md_docker.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

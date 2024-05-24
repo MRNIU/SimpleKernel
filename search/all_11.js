@@ -1,10 +1,13 @@
 var searchData=
 [
-  ['read_115',['read',['../classCPU_1_1Serial.html#a1a2d86351744b1f95f88a4648bf5703d',1,'CPU::Serial']]],
-  ['readme_116',['README',['../md__home_runner_work_SimpleKernel_SimpleKernel_README.html',1,'']]],
-  ['readme_2emd_117',['README.md',['../README_8md.html',1,'(Global Namespace)'],['../src_2kernel_2arch_2README_8md.html',1,'(Global Namespace)'],['../src_2kernel_2driver_2README_8md.html',1,'(Global Namespace)'],['../test_2system__test_2gnu__efi__test_2README_8md.html',1,'(Global Namespace)']]],
-  ['readme_5feng_118',['README_ENG',['../md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html',1,'']]],
-  ['readme_5feng_2emd_119',['README_ENG.md',['../README__ENG_8md.html',1,'']]],
-  ['reserved_120',['reserved',['../structboot__info__t_1_1framebuffer__t.html#ac67b06f6ca9bd1e58961be57171c6b40',1,'boot_info_t::framebuffer_t::reserved()'],['../structboot__info__t_1_1memory__map__t.html#a1e916d273e0d89cf72136749d19b9b58',1,'boot_info_t::memory_map_t::reserved()']]],
-  ['root_5ffile_5fsystem_121',['root_file_system',['../classElf.html#a2401458a0b098dcccfa120bb64c12afd',1,'Elf']]]
+  ['phdr_108',['phdr',['../classElf.html#a4a9108833faee1fb3608716720636eb1',1,'Elf']]],
+  ['pitch_109',['pitch',['../structboot__info__t_1_1framebuffer__t.html#accbdbfc03adc692593d31e39af278c41',1,'boot_info_t::framebuffer_t::pitch()'],['../x86__64_2arch__main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c',1,'pitch():&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c',1,'pitch():&#160;main.cpp']]],
+  ['pixelwidth_110',['pixelwidth',['../x86__64_2arch__main_8cpp.html#a1b67a367bf7a2124dca966985c1243af',1,'pixelwidth():&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af',1,'pixelwidth():&#160;main.cpp']]],
+  ['port_111',['port',['../classCPU_1_1Serial.html#a180176a650b8c88c9064e502338f6734',1,'CPU::Serial']]],
+  ['print_5fehdr_112',['print_ehdr',['../classElf.html#a34d57d143f7782f3c630f6ddb1f16948',1,'Elf']]],
+  ['print_5finfo_113',['print_info',['../classGraphics.html#ad860b4ad2f72a6332cb4a850839ff5e5',1,'Graphics::print_info()'],['../classMemory.html#a81aabf1a13f96ce935d6157a9520b83a',1,'Memory::print_info()']]],
+  ['print_5fphdr_114',['print_phdr',['../classElf.html#aff0728535c76009acc8d78cbece772fe',1,'Elf']]],
+  ['print_5fshdr_115',['print_shdr',['../classElf.html#a25345e29535844c992d1a45bf12e2e57',1,'Elf']]],
+  ['project_5fconfig_2eh_116',['project_config.h',['../project__config_8h.html',1,'']]],
+  ['putc_117',['putc',['../classna16550a__t.html#aa204ea65aeeaa61d51211d4065b797a2',1,'na16550a_t']]]
 ];

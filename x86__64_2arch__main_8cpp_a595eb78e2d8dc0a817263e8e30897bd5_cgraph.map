@@ -1,5 +1,5 @@
 <map id="arch_init" name="arch_init">
 <area shape="rect" id="node1" title=" " alt="" coords="5,31,84,57"/>
-<area shape="rect" id="node2" href="$riscv64_2arch__main_8cpp.html#a49b04e203cda77cc09e7f0f15efa8e1a" title=" " alt="" coords="132,5,211,32"/>
+<area shape="rect" id="node2" href="$aarch64_2arch__main_8cpp.html#a49b04e203cda77cc09e7f0f15efa8e1a" title=" " alt="" coords="132,5,211,32"/>
 <area shape="rect" id="node3" href="$x86__64_2arch__main_8cpp.html#ac9350a912edb98453358084057c66bb3" title=" " alt="" coords="140,56,203,83"/>
 </map>

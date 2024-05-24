@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['serial_158',['Serial',['../classCPU_1_1Serial.html',1,'CPU']]]
+  ['ostream_173',['ostream',['../classostream.html',1,'']]]
 ];

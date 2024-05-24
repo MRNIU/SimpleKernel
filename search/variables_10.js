@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['width_285',['width',['../structboot__info__t_1_1framebuffer__t.html#a752348eb59a2cb0099a2aa22e9029230',1,'boot_info_t::framebuffer_t']]]
+  ['uart_5fdll_314',['UART_DLL',['../classna16550a__t.html#a76398e9889d1c3784c5f4347acb97fb8',1,'na16550a_t']]],
+  ['uart_5fdlm_315',['UART_DLM',['../classna16550a__t.html#a51a7b3370a5415cedf273b8caae97f3b',1,'na16550a_t']]]
 ];

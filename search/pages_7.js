@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['构建_20docker_20并通过_20ssh_20使用_301',['构建 Docker 并通过 ssh 使用',['../md_docker.html',1,'']]],
-  ['构建系统_302',['构建系统',['../md_build_system.html',1,'']]]
+  ['simplekernel_20启动_330',['SimpleKernel 启动',['../md_1__xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html',1,'']]],
+  ['simplekernel_20工具链_331',['SimpleKernel 工具链',['../md_0__xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html',1,'']]]
 ];

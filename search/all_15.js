@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['x_139',['X',['../classostream.html#a2f1697fb486d2afcde8e8a5b7f6608f6a53178dc78826d4f620fd4cf2dbe52284',1,'ostream']]],
-  ['x_140',['x',['../classostream.html#a2f1697fb486d2afcde8e8a5b7f6608f6abe6defa90d521b92be9e4b072c89dbf7',1,'ostream']]]
+  ['uart_5fdll_149',['UART_DLL',['../classna16550a__t.html#a76398e9889d1c3784c5f4347acb97fb8',1,'na16550a_t']]],
+  ['uart_5fdlm_150',['UART_DLM',['../classna16550a__t.html#a51a7b3370a5415cedf273b8caae97f3b',1,'na16550a_t']]]
 ];

@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['_7eelf_141',['~Elf',['../classElf.html#a184a984a3da808368593a45f06005bd3',1,'Elf']]],
-  ['_7egraphics_142',['~Graphics',['../classGraphics.html#a6832d01237ef9bff8d34f0882d86970c',1,'Graphics']]],
-  ['_7ememory_143',['~Memory',['../classMemory.html#a2b517b46ae4b070d9f6a7b6d9efeb7a1',1,'Memory']]],
-  ['_7eostream_144',['~ostream',['../classostream.html#a36fe66b87e7d9f5bca462383b1b347a3',1,'ostream']]],
-  ['_7eserial_145',['~Serial',['../classCPU_1_1Serial.html#a44bf975b938ea9b87f2f986a9036165b',1,'CPU::Serial']]]
+  ['wait_5ffor_5finput_151',['wait_for_input',['../ostream_8hpp.html#a27887edc523c98e888002e7756434ef9',1,'wait_for_input(EFI_INPUT_KEY *_key) -&gt; EFI_STATUS:&#160;ostream.cpp'],['../ostream_8cpp.html#a27887edc523c98e888002e7756434ef9',1,'wait_for_input(EFI_INPUT_KEY *_key) -&gt; EFI_STATUS:&#160;ostream.cpp']]],
+  ['width_152',['width',['../structboot__info__t_1_1framebuffer__t.html#a752348eb59a2cb0099a2aa22e9029230',1,'boot_info_t::framebuffer_t']]],
+  ['write_153',['write',['../classCPU_1_1Serial.html#a247f278da97b4ec3063aa774e083a6ee',1,'CPU::Serial::write()'],['../classna16550a__t.html#a5cb9126bbed0839cfa3bfc6a0cacf6af',1,'na16550a_t::write()']]]
 ];

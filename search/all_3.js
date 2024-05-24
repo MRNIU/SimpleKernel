@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['a_6',['a',['../classbbb.html#a5ca2900aa5dfe5d023538b0ee51f82b9',1,'bbb::a()'],['../classaaa.html#ad7b6c2f95f12e7e77e64feab000c1a99',1,'aaa::a()']]],
+  ['a_6',['a',['../classaaa.html#ad7b6c2f95f12e7e77e64feab000c1a99',1,'aaa']]],
   ['aaa_7',['aaa',['../classaaa.html',1,'aaa'],['../classaaa.html#a26c96a84ec8d2a12c228323d81b402e0',1,'aaa::aaa()'],['../classaaa.html#a008a00f0380a5ce9b1a7850dabad06d9',1,'aaa::aaa(int _a)']]],
   ['arch_8',['arch',['../md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_arch_README.html',1,'']]],
   ['arch_2eh_9',['arch.h',['../arch_8h.html',1,'']]],
