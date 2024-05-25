@@ -106,20 +106,49 @@ SimpleKernel</h1>
 <h2><a class="anchor" id="autotoc_md22"></a>
 新增特性</h2>
 <p>本分支是 SImpleKernel 的首个分支。在本分支中，完成了构建系统的基础搭建、基本的文档部署与自动化测试，当然还有最重要的，有基于 uefi 的 x86_64 内核与由 opensbi 启动的 riscv64 内核，可以在 qemu 上运行，并实现了简单的屏幕输出。</p>
-<p>调用顺序</p>
 <ul>
-<li>x86_64/aarch64 uefi-&gt;main.cpp:main-&gt;arch.cpp:arch_init</li>
+<li>调用顺序<ul>
+<li><p class="startli">x86_64/aarch64</p>
+<p class="startli"><img src="https://g.gravizo.com/svg?
+@startuml ;
+      uefi_shell-&gt;efi_main:boot.cpp;
+      efi_main-&gt;_start:main.cpp;
+      _start-&gt;cpp_init:libcxx.cpp;
+      cpp_init-&gt;main:main.cpp;
+      main-&gt;arch_init:arch.cpp;
+      arch_init-&gt;main;
+      main-&gt;main;
+      @enduml
+      " alt="" class="inline"/></p>
+</li>
+<li><p class="startli">riscv64</p>
+<p class="startli"><img src="https://g.gravizo.com/svg?
+@startuml ;
+      opensbi-&gt;_boot:boot.S;
+      _boot-&gt;_start:main.cpp;
+      _start-&gt;cpp_init:libcxx.cpp;
+      cpp_init-&gt;main:main.cpp;
+      main-&gt;arch_init:arch_init.cpp;
+      arch_init-&gt;main;
+      main-&gt;main;
+      @enduml
+    " alt="" class="inline"/></p>
+</li>
 </ul>
-<p>riscv64 opensbi-&gt;boot.S:_start-&gt;main.cpp:main-&gt;arch.cpp:arch_init</p>
-<ul>
+</li>
 <li><p class="startli">构建系统</p>
 <p class="startli">参考 <a href="https://github.com/MRNIU/cmake-kernel">MRNIU/cmake-kernel</a> 的构建系统，详细解释见 <a class="el" href="md_build_system.html">doc/build_system.md</a></p>
 </li>
 <li><p class="startli">基于 gnu-efi 引导的 x86_64 内核</p>
 <p class="startli">编译后生成 boot.efi 与 kernel.elf，进入 uefi 环境后首先执行 boot.efi，初始化完成后跳转到 kernel.elf 执行</p>
 </li>
-<li><p class="startli">基于 opensbi 引导的 riscv64 内核</p>
-<p class="startli">由 opensbi 进行初始化，直接跳转到内核地址，进入内核逻辑时为 S 态</p>
+<li>基于 opensbi 引导的 riscv64 内核<ol type="1">
+<li>由 opensbi 进行初始化，直接跳转到内核地址，进入内核逻辑时为 S 态</li>
+<li>gp 寄存器的初始化</li>
+<li>对 qemu 传递的 dtb 信息进行解析</li>
+<li>ns16550a 串口驱动</li>
+<li>基于 opensbi 的 printf</li>
+</ol>
 </li>
 <li><p class="startli">基于 doxygen 的文档生成与自动部署</p>
 <p class="startli">github action 会将文档部署到 <a href="https://simple-xx.github.io/SimpleKernel/">https://simple-xx.github.io/SimpleKernel/</a> (仅 main 分支)</p>
@@ -144,26 +173,23 @@ SimpleKernel</h1>
 已支持</h2>
 <p>见 新增特性</p>
 <h2><a class="anchor" id="autotoc_md24"></a>
-依赖</h2>
+使用的第三方资源</h2>
 <p><a href="https://github.com/cpm-cmake/CPM.cmake">CPM</a></p>
-<p><a href="https://github.com/TheLartians/CPMLicenses.cmake">CPMLicences.cmake</a></p>
-<p><a href="https://github.com/google/googletest">google/googletest</a></p>
 <p><a href="https://github.com/riscv-software-src/opensbi">opensbi</a></p>
-<p><a href="https://www.doxygen.nl/">doxygen</a></p>
-<p><a href="https://github.com/linux-test-project/lcov">lcov</a></p>
-<p><a href="https://gcc.gnu.org/">gcc</a></p>
-<p><a href="https://www.qemu.org/">qemu</a></p>
-<p><a href="https://cppcheck.sourceforge.io/">cppcheck</a></p>
-<p><a href="https://clang.llvm.org/extra/clang-tidy/">clang-tidy</a></p>
-<p><a href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a></p>
-<p><a href="https://sourceforge.net/projects/gnu-efi/">gnu-efi</a> </p>
+<p><a href="https://sourceforge.net/projects/gnu-efi/">gnu-efi</a></p>
+<p><a href="https://github.com/gdbinit/Gdbinit">gdbinit</a></p>
+<p><a href="https://github.com/MRNIU/opensbi_interface">opensbi_interface</a></p>
+<p><a href="https://github.com/MRNIU/printf_bare_metal">printf_bare_metal</a></p>
+<p><a href="https://github.com/MRNIU/fdt_parser">fdt_parser</a></p>
+<p><a href="https://github.com/TheLartians/CPMLicenses.cmake">CPMLicences.cmake</a></p>
+<p><a href="https://github.com/google/googletest">google/googletest</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri May 24 2024 23:49:42 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Sat May 25 2024 00:42:21 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

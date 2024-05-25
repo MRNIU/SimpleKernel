@@ -108,6 +108,35 @@ Introduction</h2>
 What's NEW</h2>
 <p>This branch is the first branch of SImpleKernel. In this branch, the foundation of the build system is completed, basic documentation deployment and automated testing, and of course the most important, there is a uefi based x86_64 kernel and riscv64 kernel started by opensbi, which can run on qemu, and achieve simple screen output.</p>
 <ul>
+<li>Control flow<ul>
+<li><p class="startli">x86_64/aarch64</p>
+<p class="startli"><img src="https://g.gravizo.com/svg?
+@startuml ;
+      uefi_shell-&gt;efi_main:boot.cpp;
+      efi_main-&gt;_start:main.cpp;
+      _start-&gt;cpp_init:libcxx.cpp;
+      cpp_init-&gt;main:main.cpp;
+      main-&gt;arch_init:arch.cpp;
+      arch_init-&gt;main;
+      main-&gt;main;
+      @enduml
+      " alt="" class="inline"/></p>
+</li>
+<li><p class="startli">riscv64</p>
+<p class="startli"><img src="https://g.gravizo.com/svg?
+@startuml ;
+      opensbi-&gt;_boot:boot.S;
+      _boot-&gt;_start:main.cpp;
+      _start-&gt;cpp_init:libcxx.cpp;
+      cpp_init-&gt;main:main.cpp;
+      main-&gt;arch_init:arch_init.cpp;
+      arch_init-&gt;main;
+      main-&gt;main;
+      @enduml
+    " alt="" class="inline"/></p>
+</li>
+</ul>
+</li>
 <li><p class="startli">Build system</p>
 <p class="startli">Reference <a href="https://github.com/MRNIU/cmake-kernel">MRNIU/cmake-kernel</a> build system, a detailed explanation see <a class="el" href="md_build_system.html">doc/build_system.md</a></p>
 </li>
@@ -140,26 +169,23 @@ What's NEW</h2>
 Supported</h2>
 <p>See What's NEW</p>
 <h2><a class="anchor" id="autotoc_md30"></a>
-Dependencies</h2>
+3rd</h2>
 <p><a href="https://github.com/cpm-cmake/CPM.cmake">CPM</a></p>
-<p><a href="https://github.com/TheLartians/CPMLicenses.cmake">CPMLicences.cmake</a></p>
-<p><a href="https://github.com/google/googletest">google/googletest</a></p>
 <p><a href="https://github.com/riscv-software-src/opensbi">opensbi</a></p>
-<p><a href="https://www.doxygen.nl/">doxygen</a></p>
-<p><a href="https://github.com/linux-test-project/lcov">lcov</a></p>
-<p><a href="https://gcc.gnu.org/">gcc</a></p>
-<p><a href="https://www.qemu.org/">qemu</a></p>
-<p><a href="https://cppcheck.sourceforge.io/">cppcheck</a></p>
-<p><a href="https://clang.llvm.org/extra/clang-tidy/">clang-tidy</a></p>
-<p><a href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a></p>
-<p><a href="https://sourceforge.net/projects/gnu-efi/">gnu-efi</a> </p>
+<p><a href="https://sourceforge.net/projects/gnu-efi/">gnu-efi</a></p>
+<p><a href="https://github.com/gdbinit/Gdbinit">gdbinit</a></p>
+<p><a href="https://github.com/MRNIU/opensbi_interface">opensbi_interface</a></p>
+<p><a href="https://github.com/MRNIU/printf_bare_metal">printf_bare_metal</a></p>
+<p><a href="https://github.com/MRNIU/fdt_parser">fdt_parser</a></p>
+<p><a href="https://github.com/TheLartians/CPMLicenses.cmake">CPMLicences.cmake</a></p>
+<p><a href="https://github.com/google/googletest">google/googletest</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri May 24 2024 23:49:42 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Sat May 25 2024 00:42:21 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

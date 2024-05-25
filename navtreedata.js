@@ -54,7 +54,7 @@ var NAVTREE =
         [ "简介", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md21", null ],
         [ "新增特性", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md22", null ],
         [ "已支持", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md23", null ],
-        [ "依赖", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md24", null ]
+        [ "使用的第三方资源", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md24", null ]
       ] ]
     ] ],
     [ "README_ENG", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html", [
@@ -63,7 +63,7 @@ var NAVTREE =
         [ "Introduction", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md27", null ],
         [ "What's NEW", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md28", null ],
         [ "Supported", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md29", null ],
-        [ "Dependencies", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md30", null ]
+        [ "3rd", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md30", null ]
       ] ]
     ] ],
     [ "arch", "md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_arch_README.html", null ],
