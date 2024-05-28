@@ -1,0 +1,4 @@
+<map id="Cpu::Serial::IsTransmitEmpty" name="Cpu::Serial::IsTransmitEmpty">
+<area shape="rect" id="node1" title="串口是否可以发送数据" alt="" coords="5,5,215,32"/>
+<area shape="rect" id="node2" href="$classCpu.html#a8a155b2fb5b653542fb18c386b3363cc" title="读一个字节" alt="" coords="263,5,360,32"/>
+</map>

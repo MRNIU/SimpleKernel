@@ -6,5 +6,5 @@ var dir_cf02dea305ec692505ba6fa0e02c0b80 =
       [ "Memory", "classMemory.html", "classMemory" ],
       [ "Elf", "classElf.html", "classElf" ]
     ] ],
-    [ "ostream.hpp", "ostream_8hpp.html", "ostream_8hpp" ]
+    [ "out_stream.hpp", "out__stream_8hpp.html", "out__stream_8hpp" ]
 ];

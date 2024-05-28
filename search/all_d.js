@@ -1,16 +1,14 @@
 var searchData=
 [
-  ['length_75',['length',['../structboot__info__t_1_1memory__map__t.html#a4353f8910a952b3f236fcee15e4c96e8',1,'boot_info_t::memory_map_t']]],
-  ['libc_76',['libc',['../libc_8h.html#a8c836cd24760922e8c388007278d467f',1,'libc(uint32_t _argc, uint8_t **_argv):&#160;libc.c'],['../libc_8c.html#a8c836cd24760922e8c388007278d467f',1,'libc(uint32_t _argc, uint8_t **_argv):&#160;libc.c']]],
-  ['libc_2ec_77',['libc.c',['../libc_8c.html',1,'']]],
-  ['libc_2eh_78',['libc.h',['../libc_8h.html',1,'']]],
-  ['libcxx_79',['libcxx',['../libcxx_8h.html#a1e7046ac65ca1fc2e305cdf450e3fdac',1,'libcxx(uint32_t _argc, uint8_t **_argv):&#160;libcxx.cpp'],['../libcxx_8cpp.html#a1e7046ac65ca1fc2e305cdf450e3fdac',1,'libcxx(uint32_t _argc, uint8_t **_argv):&#160;libcxx.cpp']]],
-  ['libcxx_2ecpp_80',['libcxx.cpp',['../libcxx_8cpp.html',1,'']]],
-  ['libcxx_2eh_81',['libcxx.h',['../libcxx_8h.html',1,'']]],
-  ['load_82',['load',['../classElf.html#abec14f617596cbe75854cdff875a4db2',1,'Elf']]],
-  ['load_5felf_2ecpp_83',['load_elf.cpp',['../load__elf_8cpp.html',1,'']]],
-  ['load_5felf_2eh_84',['load_elf.h',['../load__elf_8h.html',1,'']]],
-  ['load_5fkernel_5fimage_85',['load_kernel_image',['../classElf.html#a75355dba9bf23ee591ef52c04b688cea',1,'Elf']]],
-  ['load_5fprogram_5fsections_86',['load_program_sections',['../classElf.html#a34557caf6211250751510b5fc2a83869',1,'Elf']]],
-  ['load_5fsections_87',['load_sections',['../classElf.html#a673f90dbaf2d441189f837af86caaf74',1,'Elf']]]
+  ['length_92',['length',['../structBootInfo_1_1MemoryMap.html#a63f7a70789a038591b5cb6b8b9fb6637',1,'BootInfo::MemoryMap']]],
+  ['libc_93',['libc',['../libc_8h.html#a85e91e16f82c4e5ed26cd3fd622268b7',1,'libc.h']]],
+  ['libc_2eh_94',['libc.h',['../libc_8h.html',1,'']]],
+  ['libcxx_2ecpp_95',['libcxx.cpp',['../libcxx_8cpp.html',1,'']]],
+  ['libcxx_2eh_96',['libcxx.h',['../libcxx_8h.html',1,'']]],
+  ['libcxxinit_97',['LibCxxInit',['../libcxx_8h.html#a78c79eec0916e3713881a7d3926051c3',1,'LibCxxInit(uint32_t argc, uint8_t **argv):&#160;libcxx.cpp'],['../libcxx_8cpp.html#a78c79eec0916e3713881a7d3926051c3',1,'LibCxxInit(uint32_t argc, uint8_t **argv):&#160;libcxx.cpp']]],
+  ['load_98',['Load',['../classElf.html#a5655683b05a86929fcf828e43bef7bca',1,'Elf']]],
+  ['load_5felf_2ecpp_99',['load_elf.cpp',['../load__elf_8cpp.html',1,'']]],
+  ['load_5felf_2eh_100',['load_elf.h',['../load__elf_8h.html',1,'']]],
+  ['loadprogramsections_101',['LoadProgramSections',['../classElf.html#afa190358a17932ee977a82d3cf562578',1,'Elf']]],
+  ['loadsections_102',['LoadSections',['../classElf.html#a1a26946fd6122a59a2f44290a7f57d33',1,'Elf']]]
 ];

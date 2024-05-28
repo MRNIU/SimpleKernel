@@ -101,23 +101,14 @@ Include dependency graph for libc.h:</div>
 <area shape="rect" title=" " alt="" coords="67,109,138,136"/>
 </map>
 </div>
-</div><div class="textblock"><div class="dynheader">
-This graph shows which files directly or indirectly include this file:</div>
-<div class="dyncontent">
-<div class="center"><img src="libc_8h__dep__incl.png" border="0" usemap="#a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2libc_2include_2libc_8hdep" alt=""/></div>
-<map name="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2libc_2include_2libc_8hdep" id="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2libc_2include_2libc_8hdep">
-<area shape="rect" title="libc 头文件" alt="" coords="5,5,200,61"/>
-<area shape="rect" href="libc_8c.html" title=" " alt="" coords="5,109,200,165"/>
-</map>
-</div>
 </div>
 <p><a href="libc_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a8c836cd24760922e8c388007278d467f"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libc_8h.html#a8c836cd24760922e8c388007278d467f">libc</a> (uint32_t _argc, uint8_t **_argv)</td></tr>
-<tr class="memdesc:a8c836cd24760922e8c388007278d467f"><td class="mdescLeft">&#160;</td><td class="mdescRight">入口  <a href="libc_8h.html#a8c836cd24760922e8c388007278d467f">More...</a><br /></td></tr>
-<tr class="separator:a8c836cd24760922e8c388007278d467f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85e91e16f82c4e5ed26cd3fd622268b7"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libc_8h.html#a85e91e16f82c4e5ed26cd3fd622268b7">libc</a> (uint32_t argc, uint8_t **argv)</td></tr>
+<tr class="memdesc:a85e91e16f82c4e5ed26cd3fd622268b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">入口  <a href="libc_8h.html#a85e91e16f82c4e5ed26cd3fd622268b7">More...</a><br /></td></tr>
+<tr class="separator:a85e91e16f82c4e5ed26cd3fd622268b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>libc 头文件 </p>
@@ -135,8 +126,8 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition in file <a class="el" href="libc_8h_source.html">libc.h</a>.</p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a8c836cd24760922e8c388007278d467f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8c836cd24760922e8c388007278d467f">&#9670;&nbsp;</a></span>libc()</h2>
+<a id="a85e91e16f82c4e5ed26cd3fd622268b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85e91e16f82c4e5ed26cd3fd622268b7">&#9670;&nbsp;</a></span>libc()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -145,13 +136,13 @@ Functions</h2></td></tr>
           <td class="memname">int32_t libc </td>
           <td>(</td>
           <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>_argc</em>, </td>
+          <td class="paramname"><em>argc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint8_t **&#160;</td>
-          <td class="paramname"><em>_argv</em>&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -164,26 +155,13 @@ Functions</h2></td></tr>
 <p>入口 </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">_argc</td><td>参数个数 </td></tr>
-    <tr><td class="paramname">_argv</td><td>参数列表 </td></tr>
+    <tr><td class="paramname">argc</td><td>参数个数 </td></tr>
+    <tr><td class="paramname">argv</td><td>参数列表 </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>int32_t 正常返回 0 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="libc_8c_source.html#l00023">23</a> of file <a class="el" href="libc_8c_source.html">libc.c</a>.</p>
-<div class="fragment"><div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;                                              {</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  (void)_argc;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  (void)_argv;</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="comment">// 进入死循环</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    ;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  }</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;}</div>
-</div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->
@@ -192,7 +170,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_cccbabf7c3b8a30ea0b9902e22888214.html">libc</a></li><li class="navelem"><a class="el" href="dir_6f5d6d0f4b2a0708d4f75e2c093f010c.html">include</a></li><li class="navelem"><a class="el" href="libc_8h.html">libc.h</a></li>
-    <li class="footer">Generated on Sat May 25 2024 00:42:21 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue May 28 2024 13:16:25 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

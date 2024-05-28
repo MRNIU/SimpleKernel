@@ -1,5 +1,9 @@
 var searchData=
 [
-  ['hex_5fx_227',['hex_x',['../classostream.html#a4ec6f2934351244c566df995f0aa6d99',1,'ostream']]],
-  ['hex_5fx_228',['hex_X',['../classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9',1,'ostream']]]
+  ['getehdr_224',['GetEhdr',['../classElf.html#aa377cf025ed412c16e09d1e658987e30',1,'Elf']]],
+  ['getfilesize_225',['GetFileSize',['../classElf.html#a7fe8f58410d5f12b98a6f62bbf8ac31f',1,'Elf']]],
+  ['getframebuffer_226',['GetFrameBuffer',['../classGraphics.html#a85a2d9bc8db3fd7162361ad2a95a8c6f',1,'Graphics']]],
+  ['getphdr_227',['GetPhdr',['../classElf.html#ac43e0a8e56ee4ddcd9656acc287c7800',1,'Elf']]],
+  ['getshdr_228',['GetShdr',['../classElf.html#a4caeb02aeb9048f20e1ff78523926ddf',1,'Elf']]],
+  ['graphics_229',['Graphics',['../classGraphics.html#af2e8fe67fd31ec263c843a6e28b29d3c',1,'Graphics::Graphics()'],['../classGraphics.html#abe2f13f24a1d35c55fdac10a282744eb',1,'Graphics::Graphics(const Graphics &amp;)=delete'],['../classGraphics.html#ac19c4971eef9958a863e425ddd6936b4',1,'Graphics::Graphics(Graphics &amp;&amp;)=delete']]]
 ];

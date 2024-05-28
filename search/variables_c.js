@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['phdr_297',['phdr',['../classElf.html#a4a9108833faee1fb3608716720636eb1',1,'Elf']]],
-  ['pitch_298',['pitch',['../structboot__info__t_1_1framebuffer__t.html#accbdbfc03adc692593d31e39af278c41',1,'boot_info_t::framebuffer_t::pitch()'],['../x86__64_2arch__main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c',1,'pitch():&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c',1,'pitch():&#160;main.cpp']]],
-  ['pixelwidth_299',['pixelwidth',['../x86__64_2arch__main_8cpp.html#a1b67a367bf7a2124dca966985c1243af',1,'pixelwidth():&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af',1,'pixelwidth():&#160;main.cpp']]],
-  ['port_300',['port',['../classCPU_1_1Serial.html#a180176a650b8c88c9064e502338f6734',1,'CPU::Serial']]]
+  ['map_5fkey_5f_311',['map_key_',['../classMemory.html#ac62d9384dd99f0c28f7354bb35debb4f',1,'Memory']]],
+  ['memory_5fmap_312',['memory_map',['../structBootInfo.html#a5d7f315b058e41d427548255d0298526',1,'BootInfo']]],
+  ['memory_5fmap_5f_313',['memory_map_',['../classMemory.html#a0a831bb59134b81198bcb2bed02c75a9',1,'Memory']]],
+  ['mode_5f_314',['mode_',['../classOutStream.html#ab0a20a754689060d609d741963829ef9',1,'OutStream']]]
 ];

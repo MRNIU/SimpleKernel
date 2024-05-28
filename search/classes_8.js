@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ostream_175',['ostream',['../classostream.html',1,'']]]
+  ['outstream_178',['OutStream',['../classOutStream.html',1,'']]]
 ];

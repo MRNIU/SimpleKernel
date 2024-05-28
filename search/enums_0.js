@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['mode_5ft_322',['mode_t',['../classostream.html#a2f1697fb486d2afcde8e8a5b7f6608f6',1,'ostream']]]
+  ['mode_327',['Mode',['../classOutStream.html#aae37686b9a1d25ceeda1a3624799f742',1,'OutStream']]]
 ];

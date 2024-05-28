@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['section_5fbuf_5fsize_312',['SECTION_BUF_SIZE',['../classElf.html#aead66f632e243546cc5cef1a654b404e',1,'Elf']]],
-  ['shdr_313',['shdr',['../classElf.html#a6a780ca4b86b353ef42ac64f9d64c845',1,'Elf']]],
-  ['shstrtab_5fbuf_314',['shstrtab_buf',['../classElf.html#a87eb8da130b534167a0e4a0047d78d18',1,'Elf']]],
-  ['si32_315',['si32',['../src_2kernel_2main_8cpp.html#ab8cd5782ea35ef8a6d8085604dabf86b',1,'main.cpp']]],
-  ['size_316',['size',['../structboot__info__t_1_1framebuffer__t.html#ad814d8a51533593894fc7651ffa42bff',1,'boot_info_t::framebuffer_t']]]
+  ['reserved_318',['reserved',['../structBootInfo_1_1FrameBuffer.html#af7c71ba4349dec165baa02d0a5c10ac6',1,'BootInfo::FrameBuffer::reserved()'],['../structBootInfo_1_1MemoryMap.html#af8535237928880fb95baffb15504439d',1,'BootInfo::MemoryMap::reserved()']]],
+  ['root_5ffile_5fsystem_5f_319',['root_file_system_',['../classElf.html#ac244614d1fef5a03574b5d426d5db649',1,'Elf']]]
 ];

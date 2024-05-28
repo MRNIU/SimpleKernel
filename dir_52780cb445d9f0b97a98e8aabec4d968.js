@@ -5,5 +5,5 @@ var dir_52780cb445d9f0b97a98e8aabec4d968 =
     [ "graphics.cpp", "graphics_8cpp.html", null ],
     [ "load_elf.cpp", "load__elf_8cpp.html", null ],
     [ "memory.cpp", "memory_8cpp.html", null ],
-    [ "ostream.cpp", "ostream_8cpp.html", "ostream_8cpp" ]
+    [ "out_stream.cpp", "out__stream_8cpp.html", "out__stream_8cpp" ]
 ];

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['x_324',['X',['../classostream.html#a2f1697fb486d2afcde8e8a5b7f6608f6a53178dc78826d4f620fd4cf2dbe52284',1,'ostream']]],
-  ['x_325',['x',['../classostream.html#a2f1697fb486d2afcde8e8a5b7f6608f6abe6defa90d521b92be9e4b072c89dbf7',1,'ostream']]]
+  ['x_329',['X',['../classOutStream.html#aae37686b9a1d25ceeda1a3624799f742a9c68143df9dbc03ddd89f0f489deed77',1,'OutStream']]],
+  ['x_330',['x',['../classOutStream.html#aae37686b9a1d25ceeda1a3624799f742a58ed7225427bd81858023a35a0dabd72',1,'OutStream']]]
 ];

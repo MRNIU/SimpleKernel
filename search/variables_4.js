@@ -1,9 +1,7 @@
 var searchData=
 [
-  ['debug_276',['debug',['../ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc',1,'debug():&#160;ostream.cpp'],['../ostream_8cpp.html#a48c0732d1726c996d7fad294439777fc',1,'debug():&#160;ostream.cpp']]],
-  ['default_5fheight_277',['DEFAULT_HEIGHT',['../classGraphics.html#a036aee49398070f73600101bac34a29f',1,'Graphics']]],
-  ['default_5fwidth_278',['DEFAULT_WIDTH',['../classGraphics.html#ad960ad754a9ee99b9cdae1bcebd6804b',1,'Graphics']]],
-  ['desc_5fcount_279',['desc_count',['../classMemory.html#a0a3d91c1e74ac3776a8992e17c73b33c',1,'Memory']]],
-  ['desc_5fsize_280',['desc_size',['../classMemory.html#aa9e9794c5b03c7a5c7900c273b17c065',1,'Memory']]],
-  ['desc_5fversion_281',['desc_version',['../classMemory.html#a78b8170be31c2b6f3717a4cffb27244e',1,'Memory']]]
+  ['debug_277',['debug',['../out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334',1,'debug():&#160;out_stream.cpp'],['../out__stream_8cpp.html#ac35f3fe5ec881b6688219406bd354334',1,'debug():&#160;out_stream.cpp']]],
+  ['desc_5fcount_5f_278',['desc_count_',['../classMemory.html#aed0dc5abd37fe911256fc4efb1cf15f4',1,'Memory']]],
+  ['desc_5fsize_5f_279',['desc_size_',['../classMemory.html#a95a497abe9cd1e06508121985219c06f',1,'Memory']]],
+  ['desc_5fversion_5f_280',['desc_version_',['../classMemory.html#ab96d50143a7268f82be8c172a5407b3b',1,'Memory']]]
 ];

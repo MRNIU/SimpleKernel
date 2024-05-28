@@ -1,11 +1,13 @@
 <map id="/home/runner/work/SimpleKernel/SimpleKernel/src/boot/graphics.cpp" name="/home/runner/work/SimpleKernel/SimpleKernel/src/boot/graphics.cpp">
-<area shape="rect" id="node1" title="图形相关" alt="" coords="211,5,405,61"/>
-<area shape="rect" id="node2" href="$load__elf_8h.html" title="load_elf h" alt="" coords="207,109,292,136"/>
-<area shape="rect" id="node9" href="$ostream_8hpp.html" title="ostream hpp" alt="" coords="316,109,420,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="168,184,219,211"/>
-<area shape="rect" id="node4" title=" " alt="" coords="243,184,299,211"/>
-<area shape="rect" id="node5" title=" " alt="" coords="5,184,59,211"/>
-<area shape="rect" id="node6" title=" " alt="" coords="83,184,143,211"/>
+<area shape="rect" id="node1" title="图形相关" alt="" coords="252,5,447,61"/>
+<area shape="rect" id="node2" href="$load__elf_8h.html" title="load_elf h" alt="" coords="225,109,311,136"/>
+<area shape="rect" id="node9" href="$out__stream_8hpp.html" title=" " alt="" coords="369,109,493,136"/>
+<area shape="rect" id="node3" title=" " alt="" coords="5,184,56,211"/>
+<area shape="rect" id="node4" title=" " alt="" coords="80,184,136,211"/>
+<area shape="rect" id="node5" title=" " alt="" coords="160,184,213,211"/>
+<area shape="rect" id="node6" title=" " alt="" coords="238,184,298,211"/>
 <area shape="rect" id="node7" title=" " alt="" coords="323,184,373,211"/>
 <area shape="rect" id="node8" title=" " alt="" coords="397,184,464,211"/>
+<area shape="rect" id="node10" title=" " alt="" coords="488,184,555,211"/>
+<area shape="rect" id="node11" title=" " alt="" coords="579,184,640,211"/>
 </map>

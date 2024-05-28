@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['height_64',['height',['../structboot__info__t_1_1framebuffer__t.html#a206217c7c3f0ee4f20c0c79a82e9d6bc',1,'boot_info_t::framebuffer_t']]],
-  ['hex_5fx_65',['hex_x',['../classostream.html#a4ec6f2934351244c566df995f0aa6d99',1,'ostream']]],
-  ['hex_5fx_66',['hex_X',['../classostream.html#afaa63ab1ab5310f2e4ccaeaf26a1d9f9',1,'ostream']]]
+  ['height_63',['height',['../structBootInfo_1_1FrameBuffer.html#a5e5a889e6482e2cc2be51e12b43f4b5e',1,'BootInfo::FrameBuffer']]],
+  ['hex_5fx_64',['hex_x',['../classOutStream.html#a49759d79611564fc3fef7ed6a449aa2e',1,'OutStream']]],
+  ['hex_5fx_65',['hex_X',['../classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de',1,'OutStream']]]
 ];

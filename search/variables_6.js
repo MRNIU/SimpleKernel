@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['file_286',['file',['../classElf.html#adf9ed3472f22d8d149e627394ea442ea',1,'Elf']]],
-  ['file_5fsystem_5fprotocol_287',['file_system_protocol',['../classElf.html#a0f7dcccb310a1b259b0dc72f292a8629',1,'Elf']]],
-  ['framebuffer_288',['framebuffer',['../structboot__info__t.html#a69adb3c4d7a65e74354979b8eef4d4aa',1,'boot_info_t']]]
+  ['file_5f_285',['file_',['../classElf.html#a78129e66a88b9af4e26058ee0c9360c7',1,'Elf']]],
+  ['file_5fsystem_5fprotocol_5f_286',['file_system_protocol_',['../classElf.html#a65f3bc508f566e55431bdc30ff27388c',1,'Elf']]],
+  ['framebuffer_287',['framebuffer',['../structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5',1,'BootInfo']]]
 ];

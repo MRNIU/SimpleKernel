@@ -1,4 +1,21 @@
 var searchData=
 [
-  ['length_293',['length',['../structboot__info__t_1_1memory__map__t.html#a4353f8910a952b3f236fcee15e4c96e8',1,'boot_info_t::memory_map_t']]]
+  ['kcom1_292',['kCom1',['../classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5',1,'Cpu']]],
+  ['kdefaultheight_293',['kDefaultHeight',['../classGraphics.html#a12d721aa419f662a1ceede33314b4a7d',1,'Graphics']]],
+  ['kdefaultwidth_294',['kDefaultWidth',['../classGraphics.html#a0e9246dba43269a590b38d314fc30229',1,'Graphics']]],
+  ['kpitch_295',['kPitch',['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a129ccdf268cbc4381ea8655d7c23e189',1,'kPitch():&#160;main.cpp'],['../x86__64_2arch__main_8cpp.html#a129ccdf268cbc4381ea8655d7c23e189',1,'kPitch():&#160;arch_main.cpp']]],
+  ['kpixelwidth_296',['kPixelWidth',['../x86__64_2arch__main_8cpp.html#ab0f39aebd2dbf9cc39669828c815412f',1,'arch_main.cpp']]],
+  ['kpixelwidth_297',['kPixelwidth',['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f',1,'main.cpp']]],
+  ['kregfcr_298',['kRegFCR',['../classNs16550a.html#a3943bc574129b84b50129fe557777abc',1,'Ns16550a']]],
+  ['kregier_299',['kRegIER',['../classNs16550a.html#a35f9b45496564372bcd8dce128057ea3',1,'Ns16550a']]],
+  ['kregisr_300',['kRegISR',['../classNs16550a.html#aee3dbd7a5f4b505d3a9d80bb8184c56c',1,'Ns16550a']]],
+  ['kreglcr_301',['kRegLCR',['../classNs16550a.html#ad4c08050f62e35b075e5a792ab386f5a',1,'Ns16550a']]],
+  ['kreglsr_302',['kRegLSR',['../classNs16550a.html#aebf65d4334825fa909b8a4c4c195c828',1,'Ns16550a']]],
+  ['kregmcr_303',['kRegMCR',['../classNs16550a.html#a9db7218053a4f65ba1b14dfad461d43d',1,'Ns16550a']]],
+  ['kregmsr_304',['kRegMSR',['../classNs16550a.html#a6651d639c6709ea79be6f964443969c5',1,'Ns16550a']]],
+  ['kregrhr_305',['kRegRHR',['../classNs16550a.html#a7f59bbda1dd11d6899091237d252a6e7',1,'Ns16550a']]],
+  ['kregthr_306',['kRegTHR',['../classNs16550a.html#aea26b2a54d5a4207f37da9bb704ca074',1,'Ns16550a']]],
+  ['ksectionbuffersize_307',['kSectionBufferSize',['../classElf.html#ad5876652f67e70a5b0727e5ddd212cd0',1,'Elf']]],
+  ['kuartdll_308',['kUartDLL',['../classNs16550a.html#ab940933c0a3b4e923e43c9a8397c389d',1,'Ns16550a']]],
+  ['kuartdlm_309',['kUartDLM',['../classNs16550a.html#ae0d0349abc1abe464194325d8a84d3ed',1,'Ns16550a']]]
 ];

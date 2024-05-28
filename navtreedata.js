@@ -54,16 +54,17 @@ var NAVTREE =
         [ "简介", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md21", null ],
         [ "新增特性", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md22", null ],
         [ "已支持", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md23", null ],
-        [ "使用的第三方资源", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md24", null ]
+        [ "使用的第三方资源", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md24", null ],
+        [ "开发指南", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md25", null ]
       ] ]
     ] ],
     [ "README_ENG", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html", [
-      [ "SimpleKernel", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md25", [
-        [ "Key Words", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md26", null ],
-        [ "Introduction", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md27", null ],
-        [ "What's NEW", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md28", null ],
-        [ "Supported", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md29", null ],
-        [ "3rd", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md30", null ]
+      [ "SimpleKernel", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md26", [
+        [ "Key Words", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md27", null ],
+        [ "Introduction", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md28", null ],
+        [ "What's NEW", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md29", null ],
+        [ "Supported", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md30", null ],
+        [ "3rd", "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md31", null ]
       ] ]
     ] ],
     [ "arch", "md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_arch_README.html", null ],
@@ -71,10 +72,11 @@ var NAVTREE =
     [ "driver", "md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_README.html", null ],
     [ "gnu_efi_test", "md__home_runner_work_SimpleKernel_SimpleKernel_test_system_test_gnu_efi_test_README.html", null ],
     [ "CLion Usage", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html", [
-      [ "osx+QEMU+x86_64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md36", null ],
-      [ "osx+QEMU+riscv64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md37", null ],
-      [ "osx+QEMU+aarch64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md38", null ]
+      [ "osx+QEMU+x86_64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md37", null ],
+      [ "osx+QEMU+riscv64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md38", null ],
+      [ "osx+QEMU+aarch64", "md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html#autotoc_md39", null ]
     ] ],
+    [ "Bug List", "bug.html", null ],
     [ "Todo List", "todo.html", null ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
@@ -103,7 +105,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "aarch64_2arch__main_8cpp.html",
-"md_build_system.html"
+"md_build_system.html#autotoc_md13"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

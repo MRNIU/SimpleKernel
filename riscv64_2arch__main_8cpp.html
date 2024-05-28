@@ -113,10 +113,10 @@ Include dependency graph for arch_main.cpp:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a49b04e203cda77cc09e7f0f15efa8e1a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="riscv64_2arch__main_8cpp.html#a49b04e203cda77cc09e7f0f15efa8e1a">_putchar</a> (char _character)</td></tr>
-<tr class="separator:a49b04e203cda77cc09e7f0f15efa8e1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a595eb78e2d8dc0a817263e8e30897bd5"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="riscv64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5">arch_init</a> (uint32_t _argc, uint8_t **_argv)</td></tr>
-<tr class="separator:a595eb78e2d8dc0a817263e8e30897bd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a223496da92021626a4430fed0af667bd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="riscv64_2arch__main_8cpp.html#a223496da92021626a4430fed0af667bd">_putchar</a> (char character)</td></tr>
+<tr class="separator:a223496da92021626a4430fed0af667bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad714dde05165d2b51d7d7f0ba093fe63"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="riscv64_2arch__main_8cpp.html#ad714dde05165d2b51d7d7f0ba093fe63">ArchInit</a> (uint32_t argc, uint8_t **argv)</td></tr>
+<tr class="separator:ad714dde05165d2b51d7d7f0ba093fe63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>arch_main cpp </p>
@@ -134,8 +134,8 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition in file <a class="el" href="riscv64_2arch__main_8cpp_source.html">arch_main.cpp</a>.</p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a49b04e203cda77cc09e7f0f15efa8e1a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a49b04e203cda77cc09e7f0f15efa8e1a">&#9670;&nbsp;</a></span>_putchar()</h2>
+<a id="a223496da92021626a4430fed0af667bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a223496da92021626a4430fed0af667bd">&#9670;&nbsp;</a></span>_putchar()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -144,36 +144,36 @@ Functions</h2></td></tr>
           <td class="memname">void _putchar </td>
           <td>(</td>
           <td class="paramtype">char&#160;</td>
-          <td class="paramname"><em>_character</em></td><td>)</td>
+          <td class="paramname"><em>character</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="riscv64_2arch__main_8cpp_source.html#l00022">22</a> of file <a class="el" href="riscv64_2arch__main_8cpp_source.html">arch_main.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;                                          {</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  sbi_debug_console_write_byte(_character);</div>
+<div class="fragment"><div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;                                         {</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  sbi_debug_console_write_byte(character);</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;}</div>
 </div><!-- fragment -->
 </div>
 </div>
-<a id="a595eb78e2d8dc0a817263e8e30897bd5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a595eb78e2d8dc0a817263e8e30897bd5">&#9670;&nbsp;</a></span>arch_init()</h2>
+<a id="ad714dde05165d2b51d7d7f0ba093fe63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad714dde05165d2b51d7d7f0ba093fe63">&#9670;&nbsp;</a></span>ArchInit()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int32_t arch_init </td>
+          <td class="memname">int32_t ArchInit </td>
           <td>(</td>
           <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>_argc</em>, </td>
+          <td class="paramname"><em>argc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint8_t **&#160;</td>
-          <td class="paramname"><em>_argv</em>&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -184,33 +184,33 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="riscv64_2arch__main_8cpp_source.html#l00027">27</a> of file <a class="el" href="riscv64_2arch__main_8cpp_source.html">arch_main.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;                                                   {</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  printf(<span class="stringliteral">&quot;boot hart id: %d\n&quot;</span>, _argc);</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  printf(<span class="stringliteral">&quot;dtb info addr: %p\n&quot;</span>, _argv);</div>
+<div class="fragment"><div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;                                                {</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  printf(<span class="stringliteral">&quot;boot hart id: %d\n&quot;</span>, argc);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  printf(<span class="stringliteral">&quot;dtb info addr: %p\n&quot;</span>, argv);</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keyword">auto</span> dtb_info = FDT_PARSER::fdt_parser((uintptr_t)_argv);</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keyword">auto</span> dtb_info = FDT_PARSER::fdt_parser((uintptr_t)argv);</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keyword">auto</span> resource_mem = FDT_PARSER::resource_t();</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  dtb_info.find_via_prefix(<span class="stringliteral">&quot;serial@&quot;</span>, &amp;resource_mem);</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keyword">auto</span> uart = <a class="code" href="classna16550a__t.html">na16550a_t</a>(resource_mem.mem.addr);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  uart.putc(<span class="charliteral">&#39;H&#39;</span>);</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  uart.putc(<span class="charliteral">&#39;e&#39;</span>);</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  uart.putc(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  uart.putc(<span class="charliteral">&#39;l&#39;</span>);</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  uart.putc(<span class="charliteral">&#39;o&#39;</span>);</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  uart.putc(<span class="charliteral">&#39; &#39;</span>);</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  uart.putc(<span class="charliteral">&#39;u&#39;</span>);</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  uart.putc(<span class="charliteral">&#39;a&#39;</span>);</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  uart.putc(<span class="charliteral">&#39;r&#39;</span>);</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  uart.putc(<span class="charliteral">&#39;t&#39;</span>);</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  uart.putc(<span class="charliteral">&#39;!&#39;</span>);</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  uart.putc(<span class="charliteral">&#39;\n&#39;</span>);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keyword">auto</span> uart = <a class="code" href="classNs16550a.html">Ns16550a</a>(resource_mem.mem.addr);</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  uart.PutChar(<span class="charliteral">&#39;H&#39;</span>);</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  uart.PutChar(<span class="charliteral">&#39;e&#39;</span>);</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  uart.PutChar(<span class="charliteral">&#39;l&#39;</span>);</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  uart.PutChar(<span class="charliteral">&#39;l&#39;</span>);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  uart.PutChar(<span class="charliteral">&#39;o&#39;</span>);</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  uart.PutChar(<span class="charliteral">&#39; &#39;</span>);</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  uart.PutChar(<span class="charliteral">&#39;u&#39;</span>);</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  uart.PutChar(<span class="charliteral">&#39;a&#39;</span>);</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  uart.PutChar(<span class="charliteral">&#39;r&#39;</span>);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  uart.PutChar(<span class="charliteral">&#39;t&#39;</span>);</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  uart.PutChar(<span class="charliteral">&#39;!&#39;</span>);</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  uart.PutChar(<span class="charliteral">&#39;\n&#39;</span>);</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  printf(<span class="stringliteral">&quot;hello arch_init\n&quot;</span>);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  printf(<span class="stringliteral">&quot;hello ArchInit\n&quot;</span>);</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;}</div>
-<div class="ttc" id="aclassna16550a__t_html"><div class="ttname"><a href="classna16550a__t.html">na16550a_t</a></div><div class="ttdef"><b>Definition:</b> <a href="ns16550a_8h_source.html#l00022">ns16550a.h:22</a></div></div>
+<div class="ttc" id="aclassNs16550a_html"><div class="ttname"><a href="classNs16550a.html">Ns16550a</a></div><div class="ttdef"><b>Definition:</b> <a href="ns16550a_8h_source.html#l00022">ns16550a.h:22</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -220,7 +220,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_76e3dd4d2fa719e8d3b096e9aa563982.html">arch</a></li><li class="navelem"><a class="el" href="dir_5d78c82c73cee529a313d94efe356afe.html">riscv64</a></li><li class="navelem"><a class="el" href="riscv64_2arch__main_8cpp.html">arch_main.cpp</a></li>
-    <li class="footer">Generated on Sat May 25 2024 00:42:21 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue May 28 2024 13:16:25 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

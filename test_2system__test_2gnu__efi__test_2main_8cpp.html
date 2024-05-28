@@ -92,7 +92,8 @@ $(document).ready(function(){initNavTree('test_2system__test_2gnu__efi__test_2ma
 
 <p>内核入口  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="arch_8h_source.html">arch.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &lt;cstdint&gt;</code><br />
+<code>#include &quot;<a class="el" href="arch_8h_source.html">arch.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>&quot;</code><br />
 <code>#include &quot;cstdio&quot;</code><br />
 <code>#include &quot;<a class="el" href="kernel_8h_source.html">kernel.h</a>&quot;</code><br />
@@ -101,12 +102,12 @@ Include dependency graph for main.cpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp__incl.png" border="0" usemap="#a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2test_2system__test_2gnu__efi__test_2main_8cpp" alt=""/></div>
 <map name="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2test_2system__test_2gnu__efi__test_2main_8cpp" id="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2test_2system__test_2gnu__efi__test_2main_8cpp">
-<area shape="rect" title="内核入口" alt="" coords="77,5,271,76"/>
-<area shape="rect" href="arch_8h.html" title="arch 头文件" alt="" coords="5,124,68,151"/>
-<area shape="rect" href="cpu_8hpp.html" title="x86_64 cpu 相关定义" alt="" coords="92,124,165,151"/>
-<area shape="rect" title=" " alt="" coords="190,124,251,151"/>
-<area shape="rect" href="kernel_8h.html" title="内核头文件" alt="" coords="275,124,350,151"/>
-<area shape="rect" title=" " alt="" coords="95,199,162,225"/>
+<area shape="rect" title="内核入口" alt="" coords="48,5,243,76"/>
+<area shape="rect" title=" " alt="" coords="66,199,132,225"/>
+<area shape="rect" href="arch_8h.html" title="arch 头文件" alt="" coords="22,124,85,151"/>
+<area shape="rect" href="cpu_8hpp.html" title="x86_64 cpu 相关定义" alt="" coords="109,124,182,151"/>
+<area shape="rect" title=" " alt="" coords="207,124,268,151"/>
+<area shape="rect" href="kernel_8h.html" title="内核头文件" alt="" coords="292,124,367,151"/>
 </map>
 </div>
 </div>
@@ -114,21 +115,23 @@ Include dependency graph for main.cpp:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a04f3639cb06474621cc812e428edfb54"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a04f3639cb06474621cc812e428edfb54">_start</a> (int _argc, char **_argv)</td></tr>
-<tr class="memdesc:a04f3639cb06474621cc812e428edfb54"><td class="mdescLeft">&#160;</td><td class="mdescRight">负责 crtbegin 的工作  <a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a04f3639cb06474621cc812e428edfb54">More...</a><br /></td></tr>
-<tr class="separator:a04f3639cb06474621cc812e428edfb54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9350a912edb98453358084057c66bb3"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#ac9350a912edb98453358084057c66bb3">fillrect</a> (uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h)</td></tr>
-<tr class="separator:ac9350a912edb98453358084057c66bb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2201d4f3fe424b79dbb580041d738741"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a2201d4f3fe424b79dbb580041d738741">main</a> (int _argc, char **_argv)</td></tr>
-<tr class="memdesc:a2201d4f3fe424b79dbb580041d738741"><td class="mdescLeft">&#160;</td><td class="mdescRight">入口  <a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a2201d4f3fe424b79dbb580041d738741">More...</a><br /></td></tr>
-<tr class="separator:a2201d4f3fe424b79dbb580041d738741"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f48723753a66da09cdc1e659c62119a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a0f48723753a66da09cdc1e659c62119a">_start</a> (int argc, char **argv)</td></tr>
+<tr class="memdesc:a0f48723753a66da09cdc1e659c62119a"><td class="mdescLeft">&#160;</td><td class="mdescRight">负责 crtbegin 的工作  <a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a0f48723753a66da09cdc1e659c62119a">More...</a><br /></td></tr>
+<tr class="separator:a0f48723753a66da09cdc1e659c62119a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a223496da92021626a4430fed0af667bd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a223496da92021626a4430fed0af667bd">_putchar</a> (char character)</td></tr>
+<tr class="separator:a223496da92021626a4430fed0af667bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa94fac88ccd3e86a0c441f12a08b301b"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b">Fillrect</a> (uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h)</td></tr>
+<tr class="separator:aa94fac88ccd3e86a0c441f12a08b301b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
+<tr class="memdesc:a3c04138a5bfe5d72780bb7e82a18e627"><td class="mdescLeft">&#160;</td><td class="mdescRight">入口  <a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">More...</a><br /></td></tr>
+<tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a1b67a367bf7a2124dca966985c1243af"><td class="memItemLeft" align="right" valign="top">static const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af">pixelwidth</a> = 4</td></tr>
-<tr class="separator:a1b67a367bf7a2124dca966985c1243af"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1e7f51fcd70ae57ccb758ac62490559c"><td class="memItemLeft" align="right" valign="top">static const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c">pitch</a> = 800 * <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af">pixelwidth</a></td></tr>
-<tr class="separator:a1e7f51fcd70ae57ccb758ac62490559c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23eadeea056d2471bf63e2e9b04d8a7f"><td class="memItemLeft" align="right" valign="top">static const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f">kPixelwidth</a> = 4</td></tr>
+<tr class="separator:a23eadeea056d2471bf63e2e9b04d8a7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a129ccdf268cbc4381ea8655d7c23e189"><td class="memItemLeft" align="right" valign="top">static const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a129ccdf268cbc4381ea8655d7c23e189">kPitch</a> = 800 * <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f">kPixelwidth</a></td></tr>
+<tr class="separator:a129ccdf268cbc4381ea8655d7c23e189"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>内核入口 </p>
@@ -146,8 +149,34 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition in file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a04f3639cb06474621cc812e428edfb54"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a04f3639cb06474621cc812e428edfb54">&#9670;&nbsp;</a></span>_start()</h2>
+<a id="a223496da92021626a4430fed0af667bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a223496da92021626a4430fed0af667bd">&#9670;&nbsp;</a></span>_putchar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _putchar </td>
+          <td>(</td>
+          <td class="paramtype">char&#160;</td>
+          <td class="paramname"><em>character</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00026">26</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;                                         {</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="keyword">auto</span> serial = <a class="code" href="classCpu_1_1Serial.html">Cpu::Serial</a>(<a class="code" href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a>);</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  serial.Write(character);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;}</div>
+<div class="ttc" id="aclassCpu_1_1Serial_html"><div class="ttname"><a href="classCpu_1_1Serial.html">Cpu::Serial</a></div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00086">cpu.hpp:86</a></div></div>
+<div class="ttc" id="aclassCpu_html_a920fe77691b983ea96a7e3a9b0c463b5"><div class="ttname"><a href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a></div><div class="ttdeci">static constexpr const uint32_t kCom1</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00085">cpu.hpp:85</a></div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a0f48723753a66da09cdc1e659c62119a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f48723753a66da09cdc1e659c62119a">&#9670;&nbsp;</a></span>_start()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -156,13 +185,13 @@ Variables</h2></td></tr>
           <td class="memname">void _start </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>_argc</em>, </td>
+          <td class="paramname"><em>argc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">char **&#160;</td>
-          <td class="paramname"><em>_argv</em>&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -175,29 +204,29 @@ Variables</h2></td></tr>
 <p>负责 crtbegin 的工作 </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">_argc</td><td>由 bootloader 传递的参数，在不同架构有不同的含义 </td></tr>
-    <tr><td class="paramname">_argv</td><td>由 bootloader 传递的参数，在不同架构有不同的含义 </td></tr>
+    <tr><td class="paramname">argc</td><td>由 bootloader 传递的参数，在不同架构有不同的含义 </td></tr>
+    <tr><td class="paramname">argv</td><td>由 bootloader 传递的参数，在不同架构有不同的含义 </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00022">22</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;{ <a class="code" href="src_2kernel_2main_8cpp.html#a2201d4f3fe424b79dbb580041d738741">main</a>(_argc, _argv); }</div>
-<div class="ttc" id="asrc_2kernel_2main_8cpp_html_a2201d4f3fe424b79dbb580041d738741"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a2201d4f3fe424b79dbb580041d738741">main</a></div><div class="ttdeci">int main(int _argc, char **_argv)</div><div class="ttdoc">入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00040">main.cpp:40</a></div></div>
+<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00024">24</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;{ <a class="code" href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a>(argc, argv); }</div>
+<div class="ttc" id="asrc_2kernel_2main_8cpp_html_a3c04138a5bfe5d72780bb7e82a18e627"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a></div><div class="ttdeci">int main(int argc, char **argv)</div><div class="ttdoc">入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00040">main.cpp:40</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp_a04f3639cb06474621cc812e428edfb54_cgraph.png" border="0" usemap="#atest_2system__test_2gnu__efi__test_2main_8cpp_a04f3639cb06474621cc812e428edfb54_cgraph" alt=""/></div>
-<map name="atest_2system__test_2gnu__efi__test_2main_8cpp_a04f3639cb06474621cc812e428edfb54_cgraph" id="atest_2system__test_2gnu__efi__test_2main_8cpp_a04f3639cb06474621cc812e428edfb54_cgraph">
+<div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp_a0f48723753a66da09cdc1e659c62119a_cgraph.png" border="0" usemap="#atest_2system__test_2gnu__efi__test_2main_8cpp_a0f48723753a66da09cdc1e659c62119a_cgraph" alt=""/></div>
+<map name="atest_2system__test_2gnu__efi__test_2main_8cpp_a0f48723753a66da09cdc1e659c62119a_cgraph" id="atest_2system__test_2gnu__efi__test_2main_8cpp_a0f48723753a66da09cdc1e659c62119a_cgraph">
 <area shape="rect" title="负责 crtbegin 的工作" alt="" coords="5,5,64,32"/>
-<area shape="rect" href="src_2kernel_2main_8cpp.html#a2201d4f3fe424b79dbb580041d738741" title="入口" alt="" coords="112,5,167,32"/>
+<area shape="rect" href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="入口" alt="" coords="112,5,167,32"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="ac9350a912edb98453358084057c66bb3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac9350a912edb98453358084057c66bb3">&#9670;&nbsp;</a></span>fillrect()</h2>
+<a id="aa94fac88ccd3e86a0c441f12a08b301b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa94fac88ccd3e86a0c441f12a08b301b">&#9670;&nbsp;</a></span>Fillrect()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -206,7 +235,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void fillrect </td>
+          <td class="memname">static void Fillrect </td>
           <td>(</td>
           <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>vram</em>, </td>
@@ -254,37 +283,37 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00027">27</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;                                           {</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> *where = vram;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordtype">int</span> i, j;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keywordflow">for</span> (i = 0; i &lt; w; i++) {</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordflow">for</span> (j = 0; j &lt; h; j++) {</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;      <span class="comment">// putpixel(vram, 64 + j, 64 + i, (r &lt;&lt; 16) + (g &lt;&lt; 8) + b);</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;      where[j * <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af">pixelwidth</a>] = r;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;      where[j * <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af">pixelwidth</a> + 1] = g;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;      where[j * <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af">pixelwidth</a> + 2] = b;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    }</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    where += <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c">pitch</a>;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  }</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;}</div>
-<div class="ttc" id="atest_2system__test_2gnu__efi__test_2main_8cpp_html_a1b67a367bf7a2124dca966985c1243af"><div class="ttname"><a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af">pixelwidth</a></div><div class="ttdeci">static const int pixelwidth</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00024">main.cpp:24</a></div></div>
-<div class="ttc" id="atest_2system__test_2gnu__efi__test_2main_8cpp_html_a1e7f51fcd70ae57ccb758ac62490559c"><div class="ttname"><a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c">pitch</a></div><div class="ttdeci">static const int pitch</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00025">main.cpp:25</a></div></div>
+<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00034">34</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                                           {</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> *where = vram;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordtype">int</span> i, j;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keywordflow">for</span> (i = 0; i &lt; w; i++) {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordflow">for</span> (j = 0; j &lt; h; j++) {</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;      <span class="comment">// putpixel(vram, 64 + j, 64 + i, (r &lt;&lt; 16) + (g &lt;&lt; 8) + b);</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;      where[j * <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f">kPixelwidth</a>] = r;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;      where[j * <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f">kPixelwidth</a> + 1] = g;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;      where[j * <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f">kPixelwidth</a> + 2] = b;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    }</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    where += <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a129ccdf268cbc4381ea8655d7c23e189">kPitch</a>;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  }</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;}</div>
+<div class="ttc" id="atest_2system__test_2gnu__efi__test_2main_8cpp_html_a129ccdf268cbc4381ea8655d7c23e189"><div class="ttname"><a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a129ccdf268cbc4381ea8655d7c23e189">kPitch</a></div><div class="ttdeci">static const int kPitch</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00032">main.cpp:32</a></div></div>
+<div class="ttc" id="atest_2system__test_2gnu__efi__test_2main_8cpp_html_a23eadeea056d2471bf63e2e9b04d8a7f"><div class="ttname"><a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f">kPixelwidth</a></div><div class="ttdeci">static const int kPixelwidth</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00031">main.cpp:31</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp_ac9350a912edb98453358084057c66bb3_icgraph.png" border="0" usemap="#atest_2system__test_2gnu__efi__test_2main_8cpp_ac9350a912edb98453358084057c66bb3_icgraph" alt=""/></div>
-<map name="atest_2system__test_2gnu__efi__test_2main_8cpp_ac9350a912edb98453358084057c66bb3_icgraph" id="atest_2system__test_2gnu__efi__test_2main_8cpp_ac9350a912edb98453358084057c66bb3_icgraph">
-<area shape="rect" title=" " alt="" coords="108,5,171,32"/>
-<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a2201d4f3fe424b79dbb580041d738741" title="入口" alt="" coords="5,5,60,32"/>
+<div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp_aa94fac88ccd3e86a0c441f12a08b301b_icgraph.png" border="0" usemap="#atest_2system__test_2gnu__efi__test_2main_8cpp_aa94fac88ccd3e86a0c441f12a08b301b_icgraph" alt=""/></div>
+<map name="atest_2system__test_2gnu__efi__test_2main_8cpp_aa94fac88ccd3e86a0c441f12a08b301b_icgraph" id="atest_2system__test_2gnu__efi__test_2main_8cpp_aa94fac88ccd3e86a0c441f12a08b301b_icgraph">
+<area shape="rect" title=" " alt="" coords="108,5,175,32"/>
+<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="入口" alt="" coords="5,5,60,32"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a2201d4f3fe424b79dbb580041d738741"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2201d4f3fe424b79dbb580041d738741">&#9670;&nbsp;</a></span>main()</h2>
+<a id="a3c04138a5bfe5d72780bb7e82a18e627"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c04138a5bfe5d72780bb7e82a18e627">&#9670;&nbsp;</a></span>main()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -293,13 +322,13 @@ Here is the caller graph for this function:</div>
           <td class="memname">int main </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>_argc</em>, </td>
+          <td class="paramname"><em>argc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">char **&#160;</td>
-          <td class="paramname"><em>_argv</em>&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -313,53 +342,53 @@ Here is the caller graph for this function:</div>
 <p>内核入口</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">_argc</td><td>参数个数 </td></tr>
-    <tr><td class="paramname">_argv</td><td>参数列表 </td></tr>
+    <tr><td class="paramname">argc</td><td>参数个数 </td></tr>
+    <tr><td class="paramname">argv</td><td>参数列表 </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>int 正常返回 0 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00043">43</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;                                  {</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  (void)_argc;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  (void)_argv;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <span class="keywordflow">if</span> (_argc != 1) {</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    printf(<span class="stringliteral">&quot;_argc != 1 [%d]\n&quot;</span>, _argc);</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  }</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  <a class="code" href="structboot__info__t.html">boot_info_t</a> boot_info = *<span class="keyword">reinterpret_cast&lt;</span><a class="code" href="structboot__info__t.html">boot_info_t</a> *<span class="keyword">&gt;</span>(_argv[0]);</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  printf(<span class="stringliteral">&quot;boot_info.framebuffer.base: 0x%X\n&quot;</span>, boot_info.<a class="code" href="structboot__info__t.html#a69adb3c4d7a65e74354979b8eef4d4aa">framebuffer</a>.<a class="code" href="structboot__info__t_1_1framebuffer__t.html#a36c0e729f750ee1ea5ded334bfb57c63">base</a>);</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#ac9350a912edb98453358084057c66bb3">fillrect</a>((uint8_t *)boot_info.<a class="code" href="structboot__info__t.html#a69adb3c4d7a65e74354979b8eef4d4aa">framebuffer</a>.<a class="code" href="structboot__info__t_1_1framebuffer__t.html#a36c0e729f750ee1ea5ded334bfb57c63">base</a>, 255, 0, 255, 100, 100);</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  printf(<span class="stringliteral">&quot;Hello Test\n&quot;</span>);</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="comment">// 进入死循环</span></div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    ;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  }</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;}</div>
-<div class="ttc" id="astructboot__info__t_1_1framebuffer__t_html_a36c0e729f750ee1ea5ded334bfb57c63"><div class="ttname"><a href="structboot__info__t_1_1framebuffer__t.html#a36c0e729f750ee1ea5ded334bfb57c63">boot_info_t::framebuffer_t::base</a></div><div class="ttdeci">uint64_t base</div><div class="ttdef"><b>Definition:</b> <a href="arch_8h_source.html#l00024">arch.h:24</a></div></div>
-<div class="ttc" id="astructboot__info__t_html"><div class="ttname"><a href="structboot__info__t.html">boot_info_t</a></div><div class="ttdef"><b>Definition:</b> <a href="arch_8h_source.html#l00022">arch.h:22</a></div></div>
-<div class="ttc" id="astructboot__info__t_html_a69adb3c4d7a65e74354979b8eef4d4aa"><div class="ttname"><a href="structboot__info__t.html#a69adb3c4d7a65e74354979b8eef4d4aa">boot_info_t::framebuffer</a></div><div class="ttdeci">struct boot_info_t::framebuffer_t framebuffer</div></div>
-<div class="ttc" id="atest_2system__test_2gnu__efi__test_2main_8cpp_html_ac9350a912edb98453358084057c66bb3"><div class="ttname"><a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#ac9350a912edb98453358084057c66bb3">fillrect</a></div><div class="ttdeci">static void fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h)</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00027">main.cpp:27</a></div></div>
+<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00050">50</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                                {</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  (void)argc;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  (void)argv;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <span class="keywordflow">if</span> (argc != 1) {</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    printf(<span class="stringliteral">&quot;argc != 1 [%d]\n&quot;</span>, argc);</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  }</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <a class="code" href="structBootInfo.html">BootInfo</a> boot_info = *<span class="keyword">reinterpret_cast&lt;</span><a class="code" href="structBootInfo.html">BootInfo</a> *<span class="keyword">&gt;</span>(argv[0]);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  printf(<span class="stringliteral">&quot;boot_info.framebuffer.base: 0x%X\n&quot;</span>, boot_info.<a class="code" href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">framebuffer</a>.<a class="code" href="structBootInfo_1_1FrameBuffer.html#a4b9a918579211ea0e6c2d12988c54c46">base</a>);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b">Fillrect</a>((uint8_t *)boot_info.<a class="code" href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">framebuffer</a>.<a class="code" href="structBootInfo_1_1FrameBuffer.html#a4b9a918579211ea0e6c2d12988c54c46">base</a>, 255, 0, 255, 100, 100);</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  printf(<span class="stringliteral">&quot;Hello Test\n&quot;</span>);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;  <span class="comment">// 进入死循环</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    ;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  }</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;}</div>
+<div class="ttc" id="astructBootInfo_1_1FrameBuffer_html_a4b9a918579211ea0e6c2d12988c54c46"><div class="ttname"><a href="structBootInfo_1_1FrameBuffer.html#a4b9a918579211ea0e6c2d12988c54c46">BootInfo::FrameBuffer::base</a></div><div class="ttdeci">uint64_t base</div><div class="ttdef"><b>Definition:</b> <a href="arch_8h_source.html#l00024">arch.h:24</a></div></div>
+<div class="ttc" id="astructBootInfo_html"><div class="ttname"><a href="structBootInfo.html">BootInfo</a></div><div class="ttdef"><b>Definition:</b> <a href="arch_8h_source.html#l00022">arch.h:22</a></div></div>
+<div class="ttc" id="astructBootInfo_html_a2283a31a0096bab5e9fe2fb2605ae8e5"><div class="ttname"><a href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">BootInfo::framebuffer</a></div><div class="ttdeci">struct BootInfo::FrameBuffer framebuffer</div></div>
+<div class="ttc" id="atest_2system__test_2gnu__efi__test_2main_8cpp_html_aa94fac88ccd3e86a0c441f12a08b301b"><div class="ttname"><a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b">Fillrect</a></div><div class="ttdeci">static void Fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h)</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00034">main.cpp:34</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp_a2201d4f3fe424b79dbb580041d738741_cgraph.png" border="0" usemap="#atest_2system__test_2gnu__efi__test_2main_8cpp_a2201d4f3fe424b79dbb580041d738741_cgraph" alt=""/></div>
-<map name="atest_2system__test_2gnu__efi__test_2main_8cpp_a2201d4f3fe424b79dbb580041d738741_cgraph" id="atest_2system__test_2gnu__efi__test_2main_8cpp_a2201d4f3fe424b79dbb580041d738741_cgraph">
+<div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627_cgraph.png" border="0" usemap="#atest_2system__test_2gnu__efi__test_2main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627_cgraph" alt=""/></div>
+<map name="atest_2system__test_2gnu__efi__test_2main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627_cgraph" id="atest_2system__test_2gnu__efi__test_2main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627_cgraph">
 <area shape="rect" title="入口" alt="" coords="5,5,60,32"/>
-<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#ac9350a912edb98453358084057c66bb3" title=" " alt="" coords="108,5,171,32"/>
+<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b" title=" " alt="" coords="108,5,175,32"/>
 </map>
 </div>
 
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="a1e7f51fcd70ae57ccb758ac62490559c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1e7f51fcd70ae57ccb758ac62490559c">&#9670;&nbsp;</a></span>pitch</h2>
+<a id="a129ccdf268cbc4381ea8655d7c23e189"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a129ccdf268cbc4381ea8655d7c23e189">&#9670;&nbsp;</a></span>kPitch</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -368,7 +397,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const int pitch = 800 * <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af">pixelwidth</a></td>
+          <td class="memname">const int kPitch = 800 * <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f">kPixelwidth</a></td>
         </tr>
       </table>
   </td>
@@ -378,12 +407,12 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00025">25</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00032">32</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a1b67a367bf7a2124dca966985c1243af"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1b67a367bf7a2124dca966985c1243af">&#9670;&nbsp;</a></span>pixelwidth</h2>
+<a id="a23eadeea056d2471bf63e2e9b04d8a7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23eadeea056d2471bf63e2e9b04d8a7f">&#9670;&nbsp;</a></span>kPixelwidth</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -392,7 +421,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const int pixelwidth = 4</td>
+          <td class="memname">const int kPixelwidth = 4</td>
         </tr>
       </table>
   </td>
@@ -402,7 +431,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00024">24</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00031">31</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
 
 </div>
 </div>
@@ -412,7 +441,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_13e138d54eb8818da29c3992edef070a.html">test</a></li><li class="navelem"><a class="el" href="dir_dfa008182f2a40cb988df1752e3cb29d.html">system_test</a></li><li class="navelem"><a class="el" href="dir_cfadb97a047f54946ed337ecdf10cbea.html">gnu_efi_test</a></li><li class="navelem"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html">main.cpp</a></li>
-    <li class="footer">Generated on Sat May 25 2024 00:42:21 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue May 28 2024 13:16:25 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

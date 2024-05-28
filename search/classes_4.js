@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['framebuffer_5ft_170',['framebuffer_t',['../structboot__info__t_1_1framebuffer__t.html',1,'boot_info_t']]]
+  ['framebuffer_173',['FrameBuffer',['../structBootInfo_1_1FrameBuffer.html',1,'BootInfo']]]
 ];

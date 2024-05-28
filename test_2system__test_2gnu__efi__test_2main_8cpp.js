@@ -1,8 +1,9 @@
 var test_2system__test_2gnu__efi__test_2main_8cpp =
 [
-    [ "_start", "test_2system__test_2gnu__efi__test_2main_8cpp.html#a04f3639cb06474621cc812e428edfb54", null ],
-    [ "fillrect", "test_2system__test_2gnu__efi__test_2main_8cpp.html#ac9350a912edb98453358084057c66bb3", null ],
-    [ "main", "test_2system__test_2gnu__efi__test_2main_8cpp.html#a2201d4f3fe424b79dbb580041d738741", null ],
-    [ "pitch", "test_2system__test_2gnu__efi__test_2main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c", null ],
-    [ "pixelwidth", "test_2system__test_2gnu__efi__test_2main_8cpp.html#a1b67a367bf7a2124dca966985c1243af", null ]
+    [ "_putchar", "test_2system__test_2gnu__efi__test_2main_8cpp.html#a223496da92021626a4430fed0af667bd", null ],
+    [ "_start", "test_2system__test_2gnu__efi__test_2main_8cpp.html#a0f48723753a66da09cdc1e659c62119a", null ],
+    [ "Fillrect", "test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b", null ],
+    [ "main", "test_2system__test_2gnu__efi__test_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627", null ],
+    [ "kPitch", "test_2system__test_2gnu__efi__test_2main_8cpp.html#a129ccdf268cbc4381ea8655d7c23e189", null ],
+    [ "kPixelwidth", "test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f", null ]
 ];

@@ -1,5 +1,5 @@
 var libcxx_8h =
 [
-    [ "cpp_init", "libcxx_8h.html#a3b0909788e58e1b5e8df29cac1ae6b15", null ],
-    [ "libcxx", "libcxx_8h.html#a1e7046ac65ca1fc2e305cdf450e3fdac", null ]
+    [ "CppInit", "libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2", null ],
+    [ "LibCxxInit", "libcxx_8h.html#a78c79eec0916e3713881a7d3926051c3", null ]
 ];

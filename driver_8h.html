@@ -91,7 +91,7 @@ $(document).ready(function(){initNavTree('driver_8h.html',''); initResizable(); 
 
 <p>driver 头文件  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;cstdint&quot;</code><br />
+<div class="textblock"><code>#include &lt;cstdint&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for driver.h:</div>
 <div class="dyncontent">
@@ -115,9 +115,9 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a06475316d2443b94d393c59426f08649"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="driver_8h.html#a06475316d2443b94d393c59426f08649">driver</a> (uint32_t _argc, uint8_t **_argv)</td></tr>
-<tr class="memdesc:a06475316d2443b94d393c59426f08649"><td class="mdescLeft">&#160;</td><td class="mdescRight">入口  <a href="driver_8h.html#a06475316d2443b94d393c59426f08649">More...</a><br /></td></tr>
-<tr class="separator:a06475316d2443b94d393c59426f08649"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff88f6430b516ab09451ba1c48bbafae"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="driver_8h.html#aff88f6430b516ab09451ba1c48bbafae">Driver</a> (uint32_t argc, uint8_t **argv)</td></tr>
+<tr class="memdesc:aff88f6430b516ab09451ba1c48bbafae"><td class="mdescLeft">&#160;</td><td class="mdescRight">入口  <a href="driver_8h.html#aff88f6430b516ab09451ba1c48bbafae">More...</a><br /></td></tr>
+<tr class="separator:aff88f6430b516ab09451ba1c48bbafae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>driver 头文件 </p>
@@ -135,23 +135,23 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition in file <a class="el" href="driver_8h_source.html">driver.h</a>.</p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a06475316d2443b94d393c59426f08649"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a06475316d2443b94d393c59426f08649">&#9670;&nbsp;</a></span>driver()</h2>
+<a id="aff88f6430b516ab09451ba1c48bbafae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff88f6430b516ab09451ba1c48bbafae">&#9670;&nbsp;</a></span>Driver()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int32_t driver </td>
+          <td class="memname">int32_t Driver </td>
           <td>(</td>
           <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>_argc</em>, </td>
+          <td class="paramname"><em>argc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint8_t **&#160;</td>
-          <td class="paramname"><em>_argv</em>&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -164,17 +164,17 @@ Functions</h2></td></tr>
 <p>入口 </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">_argc</td><td>参数个数 </td></tr>
-    <tr><td class="paramname">_argv</td><td>参数列表 </td></tr>
+    <tr><td class="paramname">argc</td><td>参数个数 </td></tr>
+    <tr><td class="paramname">argv</td><td>参数列表 </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>int32_t 正常返回 0 </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="driver_8cpp_source.html#l00019">19</a> of file <a class="el" href="driver_8cpp_source.html">driver.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;                                                {</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  (void)_argc;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  (void)_argv;</div>
+<div class="fragment"><div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;                                              {</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  (void)argc;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  (void)argv;</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="comment">// 进入死循环</span></div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
@@ -192,7 +192,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_97ddee6994ce82fd2a76b10ba4d7572d.html">driver</a></li><li class="navelem"><a class="el" href="dir_ccbb917b88eb4b4e61c0612ad965fbbd.html">include</a></li><li class="navelem"><a class="el" href="driver_8h.html">driver.h</a></li>
-    <li class="footer">Generated on Sat May 25 2024 00:42:21 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue May 28 2024 13:16:25 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

@@ -1,9 +1,5 @@
 var searchData=
 [
-  ['get_5fehdr_221',['get_ehdr',['../classElf.html#aea825c7f4d213298f8a60b961c27cd6e',1,'Elf']]],
-  ['get_5ffile_5fsize_222',['get_file_size',['../classElf.html#a23bfd5acab462921c7e0f8b958fe5936',1,'Elf']]],
-  ['get_5fframebuffer_223',['get_framebuffer',['../classGraphics.html#ad41b3e3102be8152afad74612f013f74',1,'Graphics']]],
-  ['get_5fphdr_224',['get_phdr',['../classElf.html#a3074fcc38da6769775c9f685b02ab47c',1,'Elf']]],
-  ['get_5fshdr_225',['get_shdr',['../classElf.html#a135ba996115f8bd77521be56b1cf7767',1,'Elf']]],
-  ['graphics_226',['Graphics',['../classGraphics.html#af2e8fe67fd31ec263c843a6e28b29d3c',1,'Graphics::Graphics()'],['../classGraphics.html#abe2f13f24a1d35c55fdac10a282744eb',1,'Graphics::Graphics(const Graphics &amp;)=delete'],['../classGraphics.html#ac19c4971eef9958a863e425ddd6936b4',1,'Graphics::Graphics(Graphics &amp;&amp;)=delete']]]
+  ['fillrect_222',['Fillrect',['../x86__64_2arch__main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b',1,'Fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h):&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b',1,'Fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h):&#160;main.cpp']]],
+  ['flushdesc_223',['FlushDesc',['../classMemory.html#a252795e1254bfe0af91f16fd66989ce6',1,'Memory']]]
 ];

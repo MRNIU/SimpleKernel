@@ -153,11 +153,11 @@ $(document).ready(function(){initNavTree('md_build_system.html',''); initResizab
 <div class="line">│       │   ├── include                 // </div>
 <div class="line">│       │   │   └── libc.h              // </div>
 <div class="line">│       │   └── libc.c                  // </div>
-<div class="line">│       ├── libcxx                      // libcxx 目录</div>
+<div class="line">│       ├── libcxx                      // LibCxxInit 目录</div>
 <div class="line">│       │   ├── CMakeLists.txt          // </div>
 <div class="line">│       │   ├── include                 // </div>
-<div class="line">│       │   │   └── libcxx.h            // </div>
-<div class="line">│       │   └── libcxx.cpp              // </div>
+<div class="line">│       │   │   └── LibCxxInit.h            // </div>
+<div class="line">│       │   └── LibCxxInit.cpp              // </div>
 <div class="line">│       └── main.cpp                    // 内核入口</div>
 <div class="line">├── test                                // 测试目录</div>
 <div class="line">│   ├── CMakeLists.txt                  // </div>
@@ -189,7 +189,7 @@ $(document).ready(function(){initNavTree('md_build_system.html',''); initResizab
 <li>arch 目录下存放了体系结构相关的代码，在有涉及到体系结构内容时应当将实现放在这里，向外提供统接口。</li>
 <li>driver 目录下是设备驱动。在内核开发初期，可以将驱动代码与内核一起编译，在后期应当提供独立文件。</li>
 <li>kernel 目录是内核的核心逻辑，内存管理、任务管理等。</li>
-<li>libc 与 libcxx 是 c/c++ 库的位置，提供内核可用的相关接口。</li>
+<li>libc 与 LibCxxInit 是 c/c++ 库的位置，提供内核可用的相关接口。</li>
 </ol>
 <h1><a class="anchor" id="autotoc_md13"></a>
 命名规范</h1>
@@ -205,7 +205,7 @@ $(document).ready(function(){initNavTree('md_build_system.html',''); initResizab
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Sat May 25 2024 00:42:21 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue May 28 2024 13:16:25 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

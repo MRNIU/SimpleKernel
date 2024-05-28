@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['height_290',['height',['../structboot__info__t_1_1framebuffer__t.html#a206217c7c3f0ee4f20c0c79a82e9d6bc',1,'boot_info_t::framebuffer_t']]]
+  ['height_289',['height',['../structBootInfo_1_1FrameBuffer.html#a5e5a889e6482e2cc2be51e12b43f4b5e',1,'BootInfo::FrameBuffer']]]
 ];

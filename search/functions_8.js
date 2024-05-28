@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['inb_229',['inb',['../classCPU.html#a206dee379efc89ff7db0a1ce75a2eb79',1,'CPU']]],
-  ['inl_230',['inl',['../classCPU.html#aa66a8d3491e2e4912bfbad66b4eeb02a',1,'CPU']]],
-  ['inw_231',['inw',['../classCPU.html#a36aa64f2f1fde67e26c8bf5f2abdb462',1,'CPU']]],
-  ['is_5ftransmit_5fempty_232',['is_transmit_empty',['../classCPU_1_1Serial.html#a5ed5d3bebd581b9e1709a8a47be6ae9e',1,'CPU::Serial']]]
+  ['hex_5fx_230',['hex_x',['../classOutStream.html#a49759d79611564fc3fef7ed6a449aa2e',1,'OutStream']]],
+  ['hex_5fx_231',['hex_X',['../classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de',1,'OutStream']]]
 ];

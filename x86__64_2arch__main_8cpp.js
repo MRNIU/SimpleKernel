@@ -1,8 +1,8 @@
 var x86__64_2arch__main_8cpp =
 [
-    [ "_putchar", "x86__64_2arch__main_8cpp.html#a49b04e203cda77cc09e7f0f15efa8e1a", null ],
-    [ "arch_init", "x86__64_2arch__main_8cpp.html#a595eb78e2d8dc0a817263e8e30897bd5", null ],
-    [ "fillrect", "x86__64_2arch__main_8cpp.html#ac9350a912edb98453358084057c66bb3", null ],
-    [ "pitch", "x86__64_2arch__main_8cpp.html#a1e7f51fcd70ae57ccb758ac62490559c", null ],
-    [ "pixelwidth", "x86__64_2arch__main_8cpp.html#a1b67a367bf7a2124dca966985c1243af", null ]
+    [ "_putchar", "x86__64_2arch__main_8cpp.html#a223496da92021626a4430fed0af667bd", null ],
+    [ "ArchInit", "x86__64_2arch__main_8cpp.html#ad714dde05165d2b51d7d7f0ba093fe63", null ],
+    [ "Fillrect", "x86__64_2arch__main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b", null ],
+    [ "kPitch", "x86__64_2arch__main_8cpp.html#a129ccdf268cbc4381ea8655d7c23e189", null ],
+    [ "kPixelWidth", "x86__64_2arch__main_8cpp.html#ab0f39aebd2dbf9cc39669828c815412f", null ]
 ];

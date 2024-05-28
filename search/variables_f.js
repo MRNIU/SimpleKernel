@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['type_317',['type',['../structboot__info__t_1_1framebuffer__t.html#a5630ce6e0cab03f82d7d204fc4c31cb0',1,'boot_info_t::framebuffer_t::type()'],['../structboot__info__t_1_1memory__map__t.html#af97c4c4a926cd90cf1ee45ad949c51f1',1,'boot_info_t::memory_map_t::type()']]]
+  ['shdr_5f_320',['shdr_',['../classElf.html#aca5c407b15dfab93d46d9f710613e7fc',1,'Elf']]],
+  ['shstrtab_5fbuf_5f_321',['shstrtab_buf_',['../classElf.html#ab0448870f2f6106497dff4e1d1dc5efd',1,'Elf']]],
+  ['si32_322',['si32',['../src_2kernel_2main_8cpp.html#ab8cd5782ea35ef8a6d8085604dabf86b',1,'main.cpp']]],
+  ['size_323',['size',['../structBootInfo_1_1FrameBuffer.html#a5d71ff99e90256b8c2826b943b679ebe',1,'BootInfo::FrameBuffer']]]
 ];

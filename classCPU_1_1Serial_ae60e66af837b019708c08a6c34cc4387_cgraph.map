@@ -1,4 +1,0 @@
-<map id="CPU::Serial::serial_received" name="CPU::Serial::serial_received">
-<area shape="rect" id="node1" title="串口是否接收到数据" alt="" coords="5,5,144,47"/>
-<area shape="rect" id="node2" href="$classCPU.html#a206dee379efc89ff7db0a1ce75a2eb79" title="读一个字节" alt="" coords="192,13,269,39"/>
-</map>

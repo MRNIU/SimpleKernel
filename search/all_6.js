@@ -1,14 +1,13 @@
 var searchData=
 [
-  ['d_29',['d',['../classostream.html#a2f1697fb486d2afcde8e8a5b7f6608f6a16426222a71c446926e9ee5aef5ef53a',1,'ostream']]],
-  ['debug_30',['debug',['../ostream_8hpp.html#a48c0732d1726c996d7fad294439777fc',1,'debug():&#160;ostream.cpp'],['../ostream_8cpp.html#a48c0732d1726c996d7fad294439777fc',1,'debug():&#160;ostream.cpp']]],
-  ['default_5fheight_31',['DEFAULT_HEIGHT',['../classGraphics.html#a036aee49398070f73600101bac34a29f',1,'Graphics']]],
-  ['default_5fwidth_32',['DEFAULT_WIDTH',['../classGraphics.html#ad960ad754a9ee99b9cdae1bcebd6804b',1,'Graphics']]],
-  ['desc_5fcount_33',['desc_count',['../classMemory.html#a0a3d91c1e74ac3776a8992e17c73b33c',1,'Memory']]],
-  ['desc_5fsize_34',['desc_size',['../classMemory.html#aa9e9794c5b03c7a5c7900c273b17c065',1,'Memory']]],
-  ['desc_5fversion_35',['desc_version',['../classMemory.html#a78b8170be31c2b6f3717a4cffb27244e',1,'Memory']]],
-  ['docker_2emd_36',['docker.md',['../docker_8md.html',1,'']]],
-  ['driver_37',['driver',['../driver_8cpp.html#a06475316d2443b94d393c59426f08649',1,'driver(uint32_t _argc, uint8_t **_argv):&#160;driver.cpp'],['../driver_8h.html#a06475316d2443b94d393c59426f08649',1,'driver(uint32_t _argc, uint8_t **_argv):&#160;driver.cpp'],['../md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_README.html',1,'(Global Namespace)']]],
+  ['d_30',['d',['../classOutStream.html#aae37686b9a1d25ceeda1a3624799f742a46abc58ba4f0efd520b3c50f2106258d',1,'OutStream']]],
+  ['debug_31',['debug',['../out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334',1,'debug():&#160;out_stream.cpp'],['../out__stream_8cpp.html#ac35f3fe5ec881b6688219406bd354334',1,'debug():&#160;out_stream.cpp']]],
+  ['desc_5fcount_5f_32',['desc_count_',['../classMemory.html#aed0dc5abd37fe911256fc4efb1cf15f4',1,'Memory']]],
+  ['desc_5fsize_5f_33',['desc_size_',['../classMemory.html#a95a497abe9cd1e06508121985219c06f',1,'Memory']]],
+  ['desc_5fversion_5f_34',['desc_version_',['../classMemory.html#ab96d50143a7268f82be8c172a5407b3b',1,'Memory']]],
+  ['docker_2emd_35',['docker.md',['../docker_8md.html',1,'']]],
+  ['driver_36',['Driver',['../driver_8cpp.html#aff88f6430b516ab09451ba1c48bbafae',1,'Driver(uint32_t argc, uint8_t **argv):&#160;driver.cpp'],['../driver_8h.html#aff88f6430b516ab09451ba1c48bbafae',1,'Driver(uint32_t argc, uint8_t **argv):&#160;driver.cpp']]],
+  ['driver_37',['driver',['../md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_README.html',1,'']]],
   ['driver_2ecpp_38',['driver.cpp',['../driver_8cpp.html',1,'']]],
   ['driver_2eh_39',['driver.h',['../driver_8h.html',1,'']]]
 ];

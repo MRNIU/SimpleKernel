@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['read_253',['read',['../classCPU_1_1Serial.html#a1a2d86351744b1f95f88a4648bf5703d',1,'CPU::Serial::read()'],['../classna16550a__t.html#a8cfd99697b4bbf8c93b852b54461088f',1,'na16550a_t::read(uint8_t _reg)']]],
-  ['reg_254',['Reg',['../classna16550a__t.html#a447254978a3edbb4c3687f5e56854957',1,'na16550a_t']]]
+  ['printehdr_250',['PrintEhdr',['../classElf.html#ae50703a310aa791b619098f617db10c2',1,'Elf']]],
+  ['printinfo_251',['PrintInfo',['../classGraphics.html#aed3dc36d8764a602605e572fff902b64',1,'Graphics::PrintInfo()'],['../classMemory.html#a30fd51e51ec537a70a1b8560fa3d326b',1,'Memory::PrintInfo()']]],
+  ['printphdr_252',['PrintPhdr',['../classElf.html#aa61c6c905dca4940231ae2f0a8f18bd5',1,'Elf']]],
+  ['printshdr_253',['PrintShdr',['../classElf.html#ad20b69ad979c9b284df85e0b32345592',1,'Elf']]],
+  ['putchar_254',['PutChar',['../classNs16550a.html#afdb4a77523a6938e901a99864873c214',1,'Ns16550a']]]
 ];

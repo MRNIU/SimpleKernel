@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['base_270',['base',['../structboot__info__t_1_1framebuffer__t.html#a36c0e729f750ee1ea5ded334bfb57c63',1,'boot_info_t::framebuffer_t::base()'],['../structboot__info__t_1_1memory__map__t.html#a36183abb01916fe56b7e47f84d061e8f',1,'boot_info_t::memory_map_t::base()']]],
-  ['base_5faddr_271',['base_addr',['../classna16550a__t.html#a60df02afd5d94311ad59b6479bdfa593',1,'na16550a_t']]],
-  ['bpp_272',['bpp',['../structboot__info__t_1_1framebuffer__t.html#aaf46dc0850f6c5e3c92156f1be1dd560',1,'boot_info_t::framebuffer_t']]]
+  ['base_272',['base',['../structBootInfo_1_1FrameBuffer.html#a4b9a918579211ea0e6c2d12988c54c46',1,'BootInfo::FrameBuffer::base()'],['../structBootInfo_1_1MemoryMap.html#aa36732e57f0b24cb62c91b7030c5ddfc',1,'BootInfo::MemoryMap::base()']]],
+  ['base_5faddr_5f_273',['base_addr_',['../classNs16550a.html#a2fcbadb13d2073bce0438ab2818f6987',1,'Ns16550a']]],
+  ['bpp_274',['bpp',['../structBootInfo_1_1FrameBuffer.html#a739653b45fefbef05d0a3fb349011f48',1,'BootInfo::FrameBuffer']]]
 ];

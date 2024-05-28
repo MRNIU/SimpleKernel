@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['file_49',['file',['../classElf.html#adf9ed3472f22d8d149e627394ea442ea',1,'Elf']]],
-  ['file_5fsystem_5fprotocol_50',['file_system_protocol',['../classElf.html#a0f7dcccb310a1b259b0dc72f292a8629',1,'Elf']]],
-  ['fillrect_51',['fillrect',['../x86__64_2arch__main_8cpp.html#ac9350a912edb98453358084057c66bb3',1,'fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h):&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#ac9350a912edb98453358084057c66bb3',1,'fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h):&#160;main.cpp']]],
-  ['flush_5fdesc_52',['flush_desc',['../classMemory.html#a47fc4bc34f3d43bd469eb6fd050ad8b3',1,'Memory']]],
-  ['framebuffer_53',['framebuffer',['../structboot__info__t.html#a69adb3c4d7a65e74354979b8eef4d4aa',1,'boot_info_t']]],
-  ['framebuffer_5ft_54',['framebuffer_t',['../structboot__info__t_1_1framebuffer__t.html',1,'boot_info_t']]]
+  ['file_5f_48',['file_',['../classElf.html#a78129e66a88b9af4e26058ee0c9360c7',1,'Elf']]],
+  ['file_5fsystem_5fprotocol_5f_49',['file_system_protocol_',['../classElf.html#a65f3bc508f566e55431bdc30ff27388c',1,'Elf']]],
+  ['fillrect_50',['Fillrect',['../x86__64_2arch__main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b',1,'Fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h):&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b',1,'Fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h):&#160;main.cpp']]],
+  ['flushdesc_51',['FlushDesc',['../classMemory.html#a252795e1254bfe0af91f16fd66989ce6',1,'Memory']]],
+  ['framebuffer_52',['FrameBuffer',['../structBootInfo_1_1FrameBuffer.html',1,'BootInfo']]],
+  ['framebuffer_53',['framebuffer',['../structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5',1,'BootInfo']]]
 ];

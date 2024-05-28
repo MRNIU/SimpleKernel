@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['width_320',['width',['../structboot__info__t_1_1framebuffer__t.html#a752348eb59a2cb0099a2aa22e9029230',1,'boot_info_t::framebuffer_t']]]
+  ['width_325',['width',['../structBootInfo_1_1FrameBuffer.html#acd13563ba1fe3bad036b227c46b9d16a',1,'BootInfo::FrameBuffer']]]
 ];
