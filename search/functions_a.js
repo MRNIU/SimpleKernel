@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['libc_236',['libc',['../libc_8h.html#a85e91e16f82c4e5ed26cd3fd622268b7',1,'libc.h']]],
-  ['libcxxinit_237',['LibCxxInit',['../libcxx_8h.html#a78c79eec0916e3713881a7d3926051c3',1,'LibCxxInit(uint32_t argc, uint8_t **argv):&#160;libcxx.cpp'],['../libcxx_8cpp.html#a78c79eec0916e3713881a7d3926051c3',1,'LibCxxInit(uint32_t argc, uint8_t **argv):&#160;libcxx.cpp']]],
-  ['load_238',['Load',['../classElf.html#a5655683b05a86929fcf828e43bef7bca',1,'Elf']]],
-  ['loadprogramsections_239',['LoadProgramSections',['../classElf.html#afa190358a17932ee977a82d3cf562578',1,'Elf']]],
-  ['loadsections_240',['LoadSections',['../classElf.html#a1a26946fd6122a59a2f44290a7f57d33',1,'Elf']]]
+  ['main_243',['main',['../boot_8h.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;main.cpp'],['../kernel_8h.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;main.cpp'],['../src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;main.cpp'],['../test_2system__test_2opensbi__test_2boot_8cpp.html#a2c3f6775325c30275d11c6abee2db6a0',1,'main(int, char **):&#160;boot.cpp']]],
+  ['memory_244',['Memory',['../classMemory.html#a585d7bb6fc6f2237bcebf94a86b7dd99',1,'Memory::Memory()'],['../classMemory.html#a99380a9fcf78020c641ee9c9274b912c',1,'Memory::Memory(const Memory &amp;)=delete'],['../classMemory.html#ac9ab40541f6c3c44c8614c8ee3babea5',1,'Memory::Memory(Memory &amp;&amp;)=delete']]]
 ];

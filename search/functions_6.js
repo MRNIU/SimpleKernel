@@ -1,5 +1,9 @@
 var searchData=
 [
-  ['fillrect_222',['Fillrect',['../x86__64_2arch__main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b',1,'Fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h):&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b',1,'Fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h):&#160;main.cpp']]],
-  ['flushdesc_223',['FlushDesc',['../classMemory.html#a252795e1254bfe0af91f16fd66989ce6',1,'Memory']]]
+  ['getehdr_226',['GetEhdr',['../classElf.html#aa377cf025ed412c16e09d1e658987e30',1,'Elf']]],
+  ['getfilesize_227',['GetFileSize',['../classElf.html#a7fe8f58410d5f12b98a6f62bbf8ac31f',1,'Elf']]],
+  ['getframebuffer_228',['GetFrameBuffer',['../classGraphics.html#a85a2d9bc8db3fd7162361ad2a95a8c6f',1,'Graphics']]],
+  ['getphdr_229',['GetPhdr',['../classElf.html#ac43e0a8e56ee4ddcd9656acc287c7800',1,'Elf']]],
+  ['getshdr_230',['GetShdr',['../classElf.html#a4caeb02aeb9048f20e1ff78523926ddf',1,'Elf']]],
+  ['graphics_231',['Graphics',['../classGraphics.html#af2e8fe67fd31ec263c843a6e28b29d3c',1,'Graphics::Graphics()'],['../classGraphics.html#abe2f13f24a1d35c55fdac10a282744eb',1,'Graphics::Graphics(const Graphics &amp;)=delete'],['../classGraphics.html#ac19c4971eef9958a863e425ddd6936b4',1,'Graphics::Graphics(Graphics &amp;&amp;)=delete']]]
 ];

@@ -123,8 +123,6 @@ Include dependency graph for boot.cpp:</div>
 Functions</h2></td></tr>
 <tr class="memitem:a1712fe3b5cf05894dd01d662db5892b0"><td class="memItemLeft" align="right" valign="top">EFI_STATUS EFIAPI&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="src_2boot_2boot_8cpp.html#a1712fe3b5cf05894dd01d662db5892b0">efi_main</a> (EFI_HANDLE image_handle, [[maybe_unused]] EFI_SYSTEM_TABLE *system_table)</td></tr>
 <tr class="separator:a1712fe3b5cf05894dd01d662db5892b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f58928fc46e2b1afde57633e961c827"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="src_2boot_2boot_8cpp.html#a0f58928fc46e2b1afde57633e961c827">bug_function</a> ()</td></tr>
-<tr class="separator:a0f58928fc46e2b1afde57633e961c827"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -147,31 +145,6 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition in file <a class="el" href="src_2boot_2boot_8cpp_source.html">boot.cpp</a>.</p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a0f58928fc46e2b1afde57633e961c827"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f58928fc46e2b1afde57633e961c827">&#9670;&nbsp;</a></span>bug_function()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void bug_function </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<dl class="bug"><dt><b><a class="el" href="bug.html#_bug000001">Bug:</a></b></dt><dd>删掉这个函数 bootloader 会挂 函数不能 static 或 inline 必须访问一个栈上的变量 </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="src_2boot_2boot_8cpp_source.html#l00125">125</a> of file <a class="el" href="src_2boot_2boot_8cpp_source.html">boot.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;                    {</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="keyword">auto</span> aaa = std::span&lt;uint8_t&gt;((uint8_t *)0, 0);</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">auto</span> &amp;i : aaa)</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    ;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;}</div>
-</div><!-- fragment -->
-</div>
-</div>
 <a id="a1712fe3b5cf05894dd01d662db5892b0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1712fe3b5cf05894dd01d662db5892b0">&#9670;&nbsp;</a></span>efi_main()</h2>
 
@@ -341,7 +314,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_52780cb445d9f0b97a98e8aabec4d968.html">boot</a></li><li class="navelem"><a class="el" href="src_2boot_2boot_8cpp.html">boot.cpp</a></li>
-    <li class="footer">Generated on Tue May 28 2024 13:16:25 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Wed May 29 2024 08:47:14 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

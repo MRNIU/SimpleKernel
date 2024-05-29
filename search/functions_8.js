@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['hex_5fx_230',['hex_x',['../classOutStream.html#a49759d79611564fc3fef7ed6a449aa2e',1,'OutStream']]],
-  ['hex_5fx_231',['hex_X',['../classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de',1,'OutStream']]]
+  ['inbyte_234',['InByte',['../classCpu.html#a8a155b2fb5b653542fb18c386b3363cc',1,'Cpu']]],
+  ['inlong_235',['InLong',['../classCpu.html#a4a07575408a96383f27e07c500f34721',1,'Cpu']]],
+  ['inword_236',['InWord',['../classCpu.html#a276b4460ace37d16df9c86757ef3c96f',1,'Cpu']]],
+  ['istransmitempty_237',['IsTransmitEmpty',['../classCpu_1_1Serial.html#ae6e6cef44e54592c1401b90fc89a643c',1,'Cpu::Serial']]]
 ];

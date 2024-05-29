@@ -1,5 +1,9 @@
 var searchData=
 [
-  ['waitforinput_261',['WaitForInput',['../out__stream_8hpp.html#a0b4df4e5dc673f70ef2c97aa87ed7155',1,'WaitForInput(EFI_INPUT_KEY *key) -&gt; EFI_STATUS:&#160;out_stream.cpp'],['../out__stream_8cpp.html#a416c8f775711f7d45b2caaee6dc5eb4d',1,'WaitForInput(EFI_INPUT_KEY *_key) -&gt; EFI_STATUS:&#160;out_stream.cpp']]],
-  ['write_262',['Write',['../classCpu_1_1Serial.html#ac6b384877b9332d9f8938e661ccc40c0',1,'Cpu::Serial::Write()'],['../classNs16550a.html#a2c8ad6bc1b0b519787ec724601d161ef',1,'Ns16550a::Write()']]]
+  ['_7eelf_265',['~Elf',['../classElf.html#a184a984a3da808368593a45f06005bd3',1,'Elf']]],
+  ['_7egraphics_266',['~Graphics',['../classGraphics.html#a6832d01237ef9bff8d34f0882d86970c',1,'Graphics']]],
+  ['_7ememory_267',['~Memory',['../classMemory.html#a2b517b46ae4b070d9f6a7b6d9efeb7a1',1,'Memory']]],
+  ['_7ens16550a_268',['~Ns16550a',['../classNs16550a.html#a0b6b7c10624e3c3ccc3e0cf762500882',1,'Ns16550a']]],
+  ['_7eoutstream_269',['~OutStream',['../classOutStream.html#aeaa4f982153cde9234518766989d13b7',1,'OutStream']]],
+  ['_7eserial_270',['~Serial',['../classCpu_1_1Serial.html#a40177ab6f295a441237b656e7afaab19',1,'Cpu::Serial']]]
 ];

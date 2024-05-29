@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['clion_20usage_334',['CLion Usage',['../md__home_runner_work_SimpleKernel_SimpleKernel_tools_clion_usage.html',1,'']]]
+  ['driver_339',['driver',['../md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_README.html',1,'']]]
 ];
