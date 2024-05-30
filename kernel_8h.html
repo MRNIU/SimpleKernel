@@ -116,12 +116,12 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a0f48723753a66da09cdc1e659c62119a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="kernel_8h.html#a0f48723753a66da09cdc1e659c62119a">_start</a> (int argc, char **argv)</td></tr>
-<tr class="memdesc:a0f48723753a66da09cdc1e659c62119a"><td class="mdescLeft">&#160;</td><td class="mdescRight">负责 crtbegin 的工作  <a href="kernel_8h.html#a0f48723753a66da09cdc1e659c62119a">More...</a><br /></td></tr>
-<tr class="separator:a0f48723753a66da09cdc1e659c62119a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="kernel_8h.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
-<tr class="memdesc:a3c04138a5bfe5d72780bb7e82a18e627"><td class="mdescLeft">&#160;</td><td class="mdescRight">内核入口  <a href="kernel_8h.html#a3c04138a5bfe5d72780bb7e82a18e627">More...</a><br /></td></tr>
-<tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1069cf333a0c1ad48689c63dfe3347dd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="kernel_8h.html#a1069cf333a0c1ad48689c63dfe3347dd">_start</a> (uint32_t argc, uint8_t *argv)</td></tr>
+<tr class="memdesc:a1069cf333a0c1ad48689c63dfe3347dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">负责 crtbegin 的工作  <a href="kernel_8h.html#a1069cf333a0c1ad48689c63dfe3347dd">More...</a><br /></td></tr>
+<tr class="separator:a1069cf333a0c1ad48689c63dfe3347dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33a24bc7914061cb094c417bd05032dc"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="kernel_8h.html#a33a24bc7914061cb094c417bd05032dc">main</a> (uint32_t argc, uint8_t *argv)</td></tr>
+<tr class="memdesc:a33a24bc7914061cb094c417bd05032dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">内核入口  <a href="kernel_8h.html#a33a24bc7914061cb094c417bd05032dc">More...</a><br /></td></tr>
+<tr class="separator:a33a24bc7914061cb094c417bd05032dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>内核头文件 </p>
@@ -139,8 +139,8 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition in file <a class="el" href="kernel_8h_source.html">kernel.h</a>.</p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a0f48723753a66da09cdc1e659c62119a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f48723753a66da09cdc1e659c62119a">&#9670;&nbsp;</a></span>_start()</h2>
+<a id="a1069cf333a0c1ad48689c63dfe3347dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1069cf333a0c1ad48689c63dfe3347dd">&#9670;&nbsp;</a></span>_start()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -148,13 +148,13 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void _start </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>argc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char **&#160;</td>
+          <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>argv</em>&#160;</td>
         </tr>
         <tr>
@@ -173,45 +173,44 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>c++ 全局对象初始化 </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="src_2kernel_2main_8cpp_source.html#l00021">21</a> of file <a class="el" href="src_2kernel_2main_8cpp_source.html">main.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;                                                    {</div>
+<div class="fragment"><div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;                                                           {</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <a class="code" href="libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2">CppInit</a>();</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <a class="code" href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a>(argc, argv);</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <a class="code" href="src_2kernel_2main_8cpp.html#a33a24bc7914061cb094c417bd05032dc">main</a>(argc, argv);</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;}</div>
-<div class="ttc" id="alibcxx_8h_html_a8c22041b9886ca00cff1e90cd43eb3f2"><div class="ttname"><a href="libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2">CppInit</a></div><div class="ttdeci">void CppInit()</div><div class="ttdoc">初始化 c++ 全局对象</div><div class="ttdef"><b>Definition:</b> <a href="libcxx_8cpp_source.html#l00026">libcxx.cpp:26</a></div></div>
-<div class="ttc" id="asrc_2kernel_2main_8cpp_html_a3c04138a5bfe5d72780bb7e82a18e627"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a></div><div class="ttdeci">int main(int argc, char **argv)</div><div class="ttdoc">入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00026">main.cpp:26</a></div></div>
+<div class="ttc" id="alibcxx_8h_html_a8c22041b9886ca00cff1e90cd43eb3f2"><div class="ttname"><a href="libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2">CppInit</a></div><div class="ttdeci">void CppInit()</div><div class="ttdoc">初始化 c++ 全局对象</div><div class="ttdef"><b>Definition:</b> <a href="libcxx_8cpp_source.html#l00024">libcxx.cpp:24</a></div></div>
+<div class="ttc" id="asrc_2kernel_2main_8cpp_html_a33a24bc7914061cb094c417bd05032dc"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a33a24bc7914061cb094c417bd05032dc">main</a></div><div class="ttdeci">uint32_t main(uint32_t argc, uint8_t *argv)</div><div class="ttdoc">内核入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00026">main.cpp:26</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="kernel_8h_a0f48723753a66da09cdc1e659c62119a_cgraph.png" border="0" usemap="#akernel_8h_a0f48723753a66da09cdc1e659c62119a_cgraph" alt=""/></div>
-<map name="akernel_8h_a0f48723753a66da09cdc1e659c62119a_cgraph" id="akernel_8h_a0f48723753a66da09cdc1e659c62119a_cgraph">
+<div class="center"><img src="kernel_8h_a1069cf333a0c1ad48689c63dfe3347dd_cgraph.png" border="0" usemap="#akernel_8h_a1069cf333a0c1ad48689c63dfe3347dd_cgraph" alt=""/></div>
+<map name="akernel_8h_a1069cf333a0c1ad48689c63dfe3347dd_cgraph" id="akernel_8h_a1069cf333a0c1ad48689c63dfe3347dd_cgraph">
 <area shape="rect" title="负责 crtbegin 的工作" alt="" coords="5,31,64,57"/>
 <area shape="rect" href="libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2" title="初始化 c++ 全局对象" alt="" coords="112,5,180,32"/>
-<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a2c3f6775325c30275d11c6abee2db6a0" title="入口" alt="" coords="119,56,173,83"/>
-<area shape="rect" href="aarch64_2arch__main_8cpp.html#ad714dde05165d2b51d7d7f0ba093fe63" title=" " alt="" coords="228,56,300,83"/>
+<area shape="rect" href="src_2kernel_2main_8cpp.html#a33a24bc7914061cb094c417bd05032dc" title="内核入口" alt="" coords="119,56,173,83"/>
+<area shape="rect" href="aarch64_2arch__main_8cpp.html#afe4220e16c36bd6b2cf8ba5c899782be" title=" " alt="" coords="228,56,300,83"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a3c04138a5bfe5d72780bb7e82a18e627"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3c04138a5bfe5d72780bb7e82a18e627">&#9670;&nbsp;</a></span>main()</h2>
+<a id="a33a24bc7914061cb094c417bd05032dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33a24bc7914061cb094c417bd05032dc">&#9670;&nbsp;</a></span>main()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int main </td>
+          <td class="memname">uint32_t main </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>argc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char **&#160;</td>
+          <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>argv</em>&#160;</td>
         </tr>
         <tr>
@@ -226,50 +225,40 @@ Here is the call graph for this function:</div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">argc</td><td>参数个数 </td></tr>
-    <tr><td class="paramname">argv</td><td>参数列表 </td></tr>
+    <tr><td class="paramname">argv</td><td>参数指针 </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>int 正常返回 0</dd></dl>
-<p>内核入口</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">argc</td><td>参数个数 </td></tr>
-    <tr><td class="paramname">argv</td><td>参数列表 </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>int 正常返回 0 </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>uint32_t 正常返回 0 </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="src_2kernel_2main_8cpp_source.html#l00026">26</a> of file <a class="el" href="src_2kernel_2main_8cpp_source.html">main.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;                                {</div>
+<div class="fragment"><div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;                                            {</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="comment">// 架构相关初始化</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  [[maybe_unused]] <span class="keyword">auto</span> arch_init_ret =</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;      <a class="code" href="aarch64_2arch__main_8cpp.html#ad714dde05165d2b51d7d7f0ba093fe63">ArchInit</a>(argc, <span class="keyword">reinterpret_cast&lt;</span>uint8_t**<span class="keyword">&gt;</span>(argv));</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="comment">// 进入死循环</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    ;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  }</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;}</div>
-<div class="ttc" id="aaarch64_2arch__main_8cpp_html_ad714dde05165d2b51d7d7f0ba093fe63"><div class="ttname"><a href="aarch64_2arch__main_8cpp.html#ad714dde05165d2b51d7d7f0ba093fe63">ArchInit</a></div><div class="ttdeci">int32_t ArchInit(uint32_t argc, uint8_t **argv)</div><div class="ttdef"><b>Definition:</b> <a href="aarch64_2arch__main_8cpp_source.html#l00025">arch_main.cpp:25</a></div></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  [[maybe_unused]] <span class="keyword">auto</span> arch_init_ret = <a class="code" href="aarch64_2arch__main_8cpp.html#afe4220e16c36bd6b2cf8ba5c899782be">ArchInit</a>(argc, argv);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="comment">// 进入死循环</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    ;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  }</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;}</div>
+<div class="ttc" id="aaarch64_2arch__main_8cpp_html_afe4220e16c36bd6b2cf8ba5c899782be"><div class="ttname"><a href="aarch64_2arch__main_8cpp.html#afe4220e16c36bd6b2cf8ba5c899782be">ArchInit</a></div><div class="ttdeci">uint32_t ArchInit(uint32_t argc, uint8_t *argv)</div><div class="ttdef"><b>Definition:</b> <a href="aarch64_2arch__main_8cpp_source.html#l00023">arch_main.cpp:23</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="kernel_8h_a3c04138a5bfe5d72780bb7e82a18e627_cgraph.png" border="0" usemap="#akernel_8h_a3c04138a5bfe5d72780bb7e82a18e627_cgraph" alt=""/></div>
-<map name="akernel_8h_a3c04138a5bfe5d72780bb7e82a18e627_cgraph" id="akernel_8h_a3c04138a5bfe5d72780bb7e82a18e627_cgraph">
+<div class="center"><img src="kernel_8h_a33a24bc7914061cb094c417bd05032dc_cgraph.png" border="0" usemap="#akernel_8h_a33a24bc7914061cb094c417bd05032dc_cgraph" alt=""/></div>
+<map name="akernel_8h_a33a24bc7914061cb094c417bd05032dc_cgraph" id="akernel_8h_a33a24bc7914061cb094c417bd05032dc_cgraph">
 <area shape="rect" title="内核入口" alt="" coords="5,5,60,32"/>
-<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b" title=" " alt="" coords="108,5,175,32"/>
+<area shape="rect" href="aarch64_2arch__main_8cpp.html#afe4220e16c36bd6b2cf8ba5c899782be" title=" " alt="" coords="108,5,180,32"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="kernel_8h_a3c04138a5bfe5d72780bb7e82a18e627_icgraph.png" border="0" usemap="#akernel_8h_a3c04138a5bfe5d72780bb7e82a18e627_icgraph" alt=""/></div>
-<map name="akernel_8h_a3c04138a5bfe5d72780bb7e82a18e627_icgraph" id="akernel_8h_a3c04138a5bfe5d72780bb7e82a18e627_icgraph">
+<div class="center"><img src="kernel_8h_a33a24bc7914061cb094c417bd05032dc_icgraph.png" border="0" usemap="#akernel_8h_a33a24bc7914061cb094c417bd05032dc_icgraph" alt=""/></div>
+<map name="akernel_8h_a33a24bc7914061cb094c417bd05032dc_icgraph" id="akernel_8h_a33a24bc7914061cb094c417bd05032dc_icgraph">
 <area shape="rect" title="内核入口" alt="" coords="112,5,167,32"/>
-<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a04f3639cb06474621cc812e428edfb54" title="负责 crtbegin 的工作" alt="" coords="5,5,64,32"/>
+<area shape="rect" href="kernel_8h.html#a1069cf333a0c1ad48689c63dfe3347dd" title="负责 crtbegin 的工作" alt="" coords="5,5,64,32"/>
 </map>
 </div>
 
@@ -281,7 +270,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_1083f99974d515180cb874b65de1a4c1.html">include</a></li><li class="navelem"><a class="el" href="kernel_8h.html">kernel.h</a></li>
-    <li class="footer">Generated on Thu May 30 2024 09:27:58 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 13:50:29 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

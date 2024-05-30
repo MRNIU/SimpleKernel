@@ -110,7 +110,6 @@ Functions</h2></td></tr>
 <tr class="memdesc:a2c3f6775325c30275d11c6abee2db6a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">入口  <a href="test_2system__test_2opensbi__test_2boot_8cpp.html#a2c3f6775325c30275d11c6abee2db6a0">More...</a><br /></td></tr>
 <tr class="separator:a2c3f6775325c30275d11c6abee2db6a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04f3639cb06474621cc812e428edfb54"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a04f3639cb06474621cc812e428edfb54">_start</a> (int _argc, char **_argv)</td></tr>
-<tr class="memdesc:a04f3639cb06474621cc812e428edfb54"><td class="mdescLeft">&#160;</td><td class="mdescRight">负责 crtbegin 的工作  <a href="test_2system__test_2opensbi__test_2boot_8cpp.html#a04f3639cb06474621cc812e428edfb54">More...</a><br /></td></tr>
 <tr class="separator:a04f3639cb06474621cc812e428edfb54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -139,13 +138,13 @@ Functions</h2></td></tr>
           <td class="memname">void _start </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>argc</em>, </td>
+          <td class="paramname"><em>_argc</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">char **&#160;</td>
-          <td class="paramname"><em>argv</em>&#160;</td>
+          <td class="paramname"><em>_argv</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -154,16 +153,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>负责 crtbegin 的工作 </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">argc</td><td>由 bootloader 传递的参数，在不同架构有不同的含义 </td></tr>
-    <tr><td class="paramname">argv</td><td>由 bootloader 传递的参数，在不同架构有不同的含义 </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>c++ 全局对象初始化 </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>c++ 全局对象初始化 </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html#l00036">36</a> of file <a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp_source.html">boot.cpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;                                                {</div>
@@ -176,10 +166,9 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="test_2system__test_2opensbi__test_2boot_8cpp_a04f3639cb06474621cc812e428edfb54_cgraph.png" border="0" usemap="#atest_2system__test_2opensbi__test_2boot_8cpp_a04f3639cb06474621cc812e428edfb54_cgraph" alt=""/></div>
 <map name="atest_2system__test_2opensbi__test_2boot_8cpp_a04f3639cb06474621cc812e428edfb54_cgraph" id="atest_2system__test_2opensbi__test_2boot_8cpp_a04f3639cb06474621cc812e428edfb54_cgraph">
-<area shape="rect" title="负责 crtbegin 的工作" alt="" coords="5,31,64,57"/>
-<area shape="rect" href="libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2" title="初始化 c++ 全局对象" alt="" coords="112,5,180,32"/>
-<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a2c3f6775325c30275d11c6abee2db6a0" title="入口" alt="" coords="119,56,173,83"/>
-<area shape="rect" href="aarch64_2arch__main_8cpp.html#ad714dde05165d2b51d7d7f0ba093fe63" title=" " alt="" coords="228,56,300,83"/>
+<area shape="rect" title=" " alt="" coords="5,5,64,32"/>
+<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a2c3f6775325c30275d11c6abee2db6a0" title="入口" alt="" coords="112,5,167,32"/>
+<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b" title=" " alt="" coords="215,5,281,32"/>
 </map>
 </div>
 
@@ -212,7 +201,6 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 
 <p>入口 </p>
-<p>内核入口</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">argc</td><td>参数个数 </td></tr>
@@ -245,7 +233,7 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="test_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_cgraph.png" border="0" usemap="#atest_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_cgraph" alt=""/></div>
 <map name="atest_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_cgraph" id="atest_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_cgraph">
 <area shape="rect" title="入口" alt="" coords="5,5,60,32"/>
-<area shape="rect" href="aarch64_2arch__main_8cpp.html#ad714dde05165d2b51d7d7f0ba093fe63" title=" " alt="" coords="108,5,180,32"/>
+<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b" title=" " alt="" coords="108,5,175,32"/>
 </map>
 </div>
 <div class="dynheader">
@@ -254,7 +242,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="test_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_icgraph.png" border="0" usemap="#atest_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_icgraph" alt=""/></div>
 <map name="atest_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_icgraph" id="atest_2system__test_2opensbi__test_2boot_8cpp_a2c3f6775325c30275d11c6abee2db6a0_icgraph">
 <area shape="rect" title="入口" alt="" coords="112,5,167,32"/>
-<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a04f3639cb06474621cc812e428edfb54" title="负责 crtbegin 的工作" alt="" coords="5,5,64,32"/>
+<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a04f3639cb06474621cc812e428edfb54" title=" " alt="" coords="5,5,64,32"/>
 </map>
 </div>
 
@@ -266,7 +254,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_13e138d54eb8818da29c3992edef070a.html">test</a></li><li class="navelem"><a class="el" href="dir_dfa008182f2a40cb988df1752e3cb29d.html">system_test</a></li><li class="navelem"><a class="el" href="dir_7c016ae1625038972db0411832a49708.html">opensbi_test</a></li><li class="navelem"><a class="el" href="test_2system__test_2opensbi__test_2boot_8cpp.html">boot.cpp</a></li>
-    <li class="footer">Generated on Thu May 30 2024 09:27:58 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 13:50:29 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

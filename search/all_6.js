@@ -6,7 +6,7 @@ var searchData=
   ['desc_5fsize_5f_30',['desc_size_',['../classMemory.html#a95a497abe9cd1e06508121985219c06f',1,'Memory']]],
   ['desc_5fversion_5f_31',['desc_version_',['../classMemory.html#ab96d50143a7268f82be8c172a5407b3b',1,'Memory']]],
   ['docker_2emd_32',['docker.md',['../docker_8md.html',1,'']]],
-  ['driver_33',['Driver',['../driver_8cpp.html#aff88f6430b516ab09451ba1c48bbafae',1,'Driver(uint32_t argc, uint8_t **argv):&#160;driver.cpp'],['../driver_8h.html#aff88f6430b516ab09451ba1c48bbafae',1,'Driver(uint32_t argc, uint8_t **argv):&#160;driver.cpp']]],
+  ['driver_33',['Driver',['../driver_8cpp.html#ae457d96485434df8bd937ab608e40056',1,'Driver(uint32_t argc, uint8_t *argv):&#160;driver.cpp'],['../driver_8h.html#ae457d96485434df8bd937ab608e40056',1,'Driver(uint32_t argc, uint8_t *argv):&#160;driver.cpp']]],
   ['driver_34',['driver',['../md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_README.html',1,'']]],
   ['driver_2ecpp_35',['driver.cpp',['../driver_8cpp.html',1,'']]],
   ['driver_2eh_36',['driver.h',['../driver_8h.html',1,'']]]

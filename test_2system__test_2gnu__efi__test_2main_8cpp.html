@@ -116,7 +116,6 @@ Include dependency graph for main.cpp:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a0f48723753a66da09cdc1e659c62119a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a0f48723753a66da09cdc1e659c62119a">_start</a> (int argc, char **argv)</td></tr>
-<tr class="memdesc:a0f48723753a66da09cdc1e659c62119a"><td class="mdescLeft">&#160;</td><td class="mdescRight">负责 crtbegin 的工作  <a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a0f48723753a66da09cdc1e659c62119a">More...</a><br /></td></tr>
 <tr class="separator:a0f48723753a66da09cdc1e659c62119a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a223496da92021626a4430fed0af667bd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a223496da92021626a4430fed0af667bd">_putchar</a> (char character)</td></tr>
 <tr class="separator:a223496da92021626a4430fed0af667bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,8 +169,8 @@ Variables</h2></td></tr>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="keyword">auto</span> <a class="code" href="x86__64_2arch__main_8cpp.html#a5af9f33299c9c679814c3e293c6f8e8e">serial</a> = <a class="code" href="classCpu_1_1Serial.html">Cpu::Serial</a>(<a class="code" href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a>);</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <a class="code" href="x86__64_2arch__main_8cpp.html#a5af9f33299c9c679814c3e293c6f8e8e">serial</a>.Write(character);</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;}</div>
-<div class="ttc" id="aclassCpu_1_1Serial_html"><div class="ttname"><a href="classCpu_1_1Serial.html">Cpu::Serial</a></div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2cpu_8hpp_source.html#l00086">cpu.hpp:86</a></div></div>
-<div class="ttc" id="aclassCpu_html_a920fe77691b983ea96a7e3a9b0c463b5"><div class="ttname"><a href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a></div><div class="ttdeci">static constexpr const uint32_t kCom1</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2cpu_8hpp_source.html#l00085">cpu.hpp:85</a></div></div>
+<div class="ttc" id="aclassCpu_1_1Serial_html"><div class="ttname"><a href="classCpu_1_1Serial.html">Cpu::Serial</a></div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2include_2cpu_8hpp_source.html#l00086">cpu.hpp:86</a></div></div>
+<div class="ttc" id="aclassCpu_html_a920fe77691b983ea96a7e3a9b0c463b5"><div class="ttname"><a href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a></div><div class="ttdeci">static constexpr const uint32_t kCom1</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2include_2cpu_8hpp_source.html#l00085">cpu.hpp:85</a></div></div>
 <div class="ttc" id="ax86__64_2arch__main_8cpp_html_a5af9f33299c9c679814c3e293c6f8e8e"><div class="ttname"><a href="x86__64_2arch__main_8cpp.html#a5af9f33299c9c679814c3e293c6f8e8e">serial</a></div><div class="ttdeci">static auto serial</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2arch__main_8cpp_source.html#l00024">arch_main.cpp:24</a></div></div>
 </div><!-- fragment -->
 </div>
@@ -202,25 +201,17 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>负责 crtbegin 的工作 </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">argc</td><td>由 bootloader 传递的参数，在不同架构有不同的含义 </td></tr>
-    <tr><td class="paramname">argv</td><td>由 bootloader 传递的参数，在不同架构有不同的含义 </td></tr>
-  </table>
-  </dd>
-</dl>
-
 <p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00024">24</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;{ <a class="code" href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a>(argc, argv); }</div>
-<div class="ttc" id="asrc_2kernel_2main_8cpp_html_a3c04138a5bfe5d72780bb7e82a18e627"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a></div><div class="ttdeci">int main(int argc, char **argv)</div><div class="ttdoc">入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00026">main.cpp:26</a></div></div>
+<div class="fragment"><div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;{ <a class="code" href="src_2kernel_2main_8cpp.html#a33a24bc7914061cb094c417bd05032dc">main</a>(argc, argv); }</div>
+<div class="ttc" id="asrc_2kernel_2main_8cpp_html_a33a24bc7914061cb094c417bd05032dc"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a33a24bc7914061cb094c417bd05032dc">main</a></div><div class="ttdeci">uint32_t main(uint32_t argc, uint8_t *argv)</div><div class="ttdoc">内核入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00026">main.cpp:26</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp_a0f48723753a66da09cdc1e659c62119a_cgraph.png" border="0" usemap="#atest_2system__test_2gnu__efi__test_2main_8cpp_a0f48723753a66da09cdc1e659c62119a_cgraph" alt=""/></div>
 <map name="atest_2system__test_2gnu__efi__test_2main_8cpp_a0f48723753a66da09cdc1e659c62119a_cgraph" id="atest_2system__test_2gnu__efi__test_2main_8cpp_a0f48723753a66da09cdc1e659c62119a_cgraph">
-<area shape="rect" title="负责 crtbegin 的工作" alt="" coords="5,5,64,32"/>
-<area shape="rect" href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="入口" alt="" coords="112,5,167,32"/>
+<area shape="rect" title=" " alt="" coords="5,5,64,32"/>
+<area shape="rect" href="src_2kernel_2main_8cpp.html#a33a24bc7914061cb094c417bd05032dc" title="内核入口" alt="" coords="112,5,167,32"/>
+<area shape="rect" href="aarch64_2arch__main_8cpp.html#afe4220e16c36bd6b2cf8ba5c899782be" title=" " alt="" coords="215,5,287,32"/>
 </map>
 </div>
 
@@ -306,8 +297,9 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp_aa94fac88ccd3e86a0c441f12a08b301b_icgraph.png" border="0" usemap="#atest_2system__test_2gnu__efi__test_2main_8cpp_aa94fac88ccd3e86a0c441f12a08b301b_icgraph" alt=""/></div>
 <map name="atest_2system__test_2gnu__efi__test_2main_8cpp_aa94fac88ccd3e86a0c441f12a08b301b_icgraph" id="atest_2system__test_2gnu__efi__test_2main_8cpp_aa94fac88ccd3e86a0c441f12a08b301b_icgraph">
-<area shape="rect" title=" " alt="" coords="108,5,175,32"/>
-<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="入口" alt="" coords="5,5,60,32"/>
+<area shape="rect" title=" " alt="" coords="215,5,281,32"/>
+<area shape="rect" href="boot_8h.html#a3c04138a5bfe5d72780bb7e82a18e627" title="入口" alt="" coords="112,5,167,32"/>
+<area shape="rect" href="test_2system__test_2opensbi__test_2boot_8cpp.html#a04f3639cb06474621cc812e428edfb54" title=" " alt="" coords="5,5,64,32"/>
 </map>
 </div>
 
@@ -340,7 +332,6 @@ Here is the caller graph for this function:</div>
 </div><div class="memdoc">
 
 <p>入口 </p>
-<p>内核入口</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">argc</td><td>参数个数 </td></tr>
@@ -375,16 +366,7 @@ Here is the caller graph for this function:</div>
 <div class="ttc" id="astructBootInfo_html"><div class="ttname"><a href="structBootInfo.html">BootInfo</a></div><div class="ttdef"><b>Definition:</b> <a href="arch_8h_source.html#l00022">arch.h:22</a></div></div>
 <div class="ttc" id="astructBootInfo_html_a2283a31a0096bab5e9fe2fb2605ae8e5"><div class="ttname"><a href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">BootInfo::framebuffer</a></div><div class="ttdeci">struct BootInfo::FrameBuffer framebuffer</div></div>
 <div class="ttc" id="atest_2system__test_2gnu__efi__test_2main_8cpp_html_aa94fac88ccd3e86a0c441f12a08b301b"><div class="ttname"><a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b">Fillrect</a></div><div class="ttdeci">static void Fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h)</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00034">main.cpp:34</a></div></div>
-</div><!-- fragment --><div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627_cgraph.png" border="0" usemap="#atest_2system__test_2gnu__efi__test_2main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627_cgraph" alt=""/></div>
-<map name="atest_2system__test_2gnu__efi__test_2main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627_cgraph" id="atest_2system__test_2gnu__efi__test_2main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627_cgraph">
-<area shape="rect" title="入口" alt="" coords="5,5,60,32"/>
-<area shape="rect" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b" title=" " alt="" coords="108,5,175,32"/>
-</map>
-</div>
-
+</div><!-- fragment -->
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
@@ -442,7 +424,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_13e138d54eb8818da29c3992edef070a.html">test</a></li><li class="navelem"><a class="el" href="dir_dfa008182f2a40cb988df1752e3cb29d.html">system_test</a></li><li class="navelem"><a class="el" href="dir_cfadb97a047f54946ed337ecdf10cbea.html">gnu_efi_test</a></li><li class="navelem"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html">main.cpp</a></li>
-    <li class="footer">Generated on Thu May 30 2024 09:27:58 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 13:50:29 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

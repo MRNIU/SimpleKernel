@@ -1,6 +1,5 @@
 <map id="_start" name="_start">
-<area shape="rect" id="node1" title="负责 crtbegin 的工作" alt="" coords="5,31,64,57"/>
-<area shape="rect" id="node2" href="$libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2" title="初始化 c++ 全局对象" alt="" coords="112,5,180,32"/>
-<area shape="rect" id="node3" href="$test_2system__test_2opensbi__test_2boot_8cpp.html#a2c3f6775325c30275d11c6abee2db6a0" title="入口" alt="" coords="119,56,173,83"/>
-<area shape="rect" id="node4" href="$aarch64_2arch__main_8cpp.html#ad714dde05165d2b51d7d7f0ba093fe63" title=" " alt="" coords="228,56,300,83"/>
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,64,32"/>
+<area shape="rect" id="node2" href="$test_2system__test_2opensbi__test_2boot_8cpp.html#a2c3f6775325c30275d11c6abee2db6a0" title="入口" alt="" coords="112,5,167,32"/>
+<area shape="rect" id="node3" href="$test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b" title=" " alt="" coords="215,5,281,32"/>
 </map>

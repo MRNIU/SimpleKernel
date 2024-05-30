@@ -93,18 +93,18 @@ $(document).ready(function(){initNavTree('x86__64_2arch__main_8cpp.html',''); in
 <p>arch_main cpp  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="arch_8h_source.html">arch.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>&quot;</code><br />
+<code>#include &quot;cpu.hpp&quot;</code><br />
 <code>#include &quot;cstdio&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for arch_main.cpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="x86__64_2arch__main_8cpp__incl.png" border="0" usemap="#a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2arch_2x86__64_2arch__main_8cpp" alt=""/></div>
 <map name="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2arch_2x86__64_2arch__main_8cpp" id="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2src_2kernel_2arch_2x86__64_2arch__main_8cpp">
-<area shape="rect" title="arch_main cpp" alt="" coords="31,5,226,76"/>
-<area shape="rect" href="arch_8h.html" title="arch 头文件" alt="" coords="5,124,68,151"/>
-<area shape="rect" href="x86__64_2cpu_8hpp.html" title="x86_64 cpu 相关定义" alt="" coords="92,124,165,151"/>
-<area shape="rect" title=" " alt="" coords="190,124,251,151"/>
-<area shape="rect" title=" " alt="" coords="49,199,115,225"/>
+<area shape="rect" title="arch_main cpp" alt="" coords="33,5,228,76"/>
+<area shape="rect" href="arch_8h.html" title="arch 头文件" alt="" coords="7,124,70,151"/>
+<area shape="rect" title=" " alt="" coords="94,124,167,151"/>
+<area shape="rect" title=" " alt="" coords="192,124,253,151"/>
+<area shape="rect" title=" " alt="" coords="5,199,72,225"/>
 </map>
 </div>
 </div>
@@ -116,8 +116,8 @@ Functions</h2></td></tr>
 <tr class="separator:a223496da92021626a4430fed0af667bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06d927030ed5e8af6d4608f6b30b5731"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="x86__64_2arch__main_8cpp.html#a06d927030ed5e8af6d4608f6b30b5731">Fillrect</a> (uint8_t *vram, uint32_t pitch, uint8_t r, uint8_t g, uint8_t b, uint32_t w, uint32_t h)</td></tr>
 <tr class="separator:a06d927030ed5e8af6d4608f6b30b5731"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad714dde05165d2b51d7d7f0ba093fe63"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="x86__64_2arch__main_8cpp.html#ad714dde05165d2b51d7d7f0ba093fe63">ArchInit</a> (uint32_t argc, uint8_t **argv)</td></tr>
-<tr class="separator:ad714dde05165d2b51d7d7f0ba093fe63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe4220e16c36bd6b2cf8ba5c899782be"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="x86__64_2arch__main_8cpp.html#afe4220e16c36bd6b2cf8ba5c899782be">ArchInit</a> (uint32_t argc, uint8_t *argv)</td></tr>
+<tr class="separator:afe4220e16c36bd6b2cf8ba5c899782be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -162,14 +162,14 @@ Variables</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<a id="ad714dde05165d2b51d7d7f0ba093fe63"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad714dde05165d2b51d7d7f0ba093fe63">&#9670;&nbsp;</a></span>ArchInit()</h2>
+<a id="afe4220e16c36bd6b2cf8ba5c899782be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe4220e16c36bd6b2cf8ba5c899782be">&#9670;&nbsp;</a></span>ArchInit()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int32_t ArchInit </td>
+          <td class="memname">uint32_t ArchInit </td>
           <td>(</td>
           <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>argc</em>, </td>
@@ -177,7 +177,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t **&#160;</td>
+          <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>argv</em>&#160;</td>
         </tr>
         <tr>
@@ -195,7 +195,7 @@ Variables</h2></td></tr>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  }</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <a class="code" href="structBootInfo.html">BootInfo</a> boot_info = *<span class="keyword">reinterpret_cast&lt;</span><a class="code" href="structBootInfo.html">BootInfo</a> *<span class="keyword">&gt;</span>(argv[0]);</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <a class="code" href="structBootInfo.html">BootInfo</a> boot_info = *<span class="keyword">reinterpret_cast&lt;</span><a class="code" href="structBootInfo.html">BootInfo</a> *<span class="keyword">&gt;</span>(argv);</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  printf(<span class="stringliteral">&quot;boot_info.framebuffer.base: 0x%p.\n&quot;</span>, boot_info.<a class="code" href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">framebuffer</a>.<a class="code" href="structBootInfo_1_1FrameBuffer.html#a4b9a918579211ea0e6c2d12988c54c46">base</a>);</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  printf(<span class="stringliteral">&quot;boot_info.framebuffer.size: %d.\n&quot;</span>, boot_info.<a class="code" href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">framebuffer</a>.<a class="code" href="structBootInfo_1_1FrameBuffer.html#a5d71ff99e90256b8c2826b943b679ebe">size</a>);</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  printf(<span class="stringliteral">&quot;boot_info.framebuffer.height: %d.\n&quot;</span>, boot_info.<a class="code" href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">framebuffer</a>.<a class="code" href="structBootInfo_1_1FrameBuffer.html#a5e5a889e6482e2cc2be51e12b43f4b5e">height</a>);</div>
@@ -233,8 +233,8 @@ Variables</h2></td></tr>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="x86__64_2arch__main_8cpp_ad714dde05165d2b51d7d7f0ba093fe63_cgraph.png" border="0" usemap="#ax86__64_2arch__main_8cpp_ad714dde05165d2b51d7d7f0ba093fe63_cgraph" alt=""/></div>
-<map name="ax86__64_2arch__main_8cpp_ad714dde05165d2b51d7d7f0ba093fe63_cgraph" id="ax86__64_2arch__main_8cpp_ad714dde05165d2b51d7d7f0ba093fe63_cgraph">
+<div class="center"><img src="x86__64_2arch__main_8cpp_afe4220e16c36bd6b2cf8ba5c899782be_cgraph.png" border="0" usemap="#ax86__64_2arch__main_8cpp_afe4220e16c36bd6b2cf8ba5c899782be_cgraph" alt=""/></div>
+<map name="ax86__64_2arch__main_8cpp_afe4220e16c36bd6b2cf8ba5c899782be_cgraph" id="ax86__64_2arch__main_8cpp_afe4220e16c36bd6b2cf8ba5c899782be_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,77,32"/>
 <area shape="rect" href="x86__64_2arch__main_8cpp.html#a06d927030ed5e8af6d4608f6b30b5731" title=" " alt="" coords="125,5,192,32"/>
 </map>
@@ -324,7 +324,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="x86__64_2arch__main_8cpp_a06d927030ed5e8af6d4608f6b30b5731_icgraph.png" border="0" usemap="#ax86__64_2arch__main_8cpp_a06d927030ed5e8af6d4608f6b30b5731_icgraph" alt=""/></div>
 <map name="ax86__64_2arch__main_8cpp_a06d927030ed5e8af6d4608f6b30b5731_icgraph" id="ax86__64_2arch__main_8cpp_a06d927030ed5e8af6d4608f6b30b5731_icgraph">
 <area shape="rect" title=" " alt="" coords="125,5,192,32"/>
-<area shape="rect" href="x86__64_2arch__main_8cpp.html#ad714dde05165d2b51d7d7f0ba093fe63" title=" " alt="" coords="5,5,77,32"/>
+<area shape="rect" href="x86__64_2arch__main_8cpp.html#afe4220e16c36bd6b2cf8ba5c899782be" title=" " alt="" coords="5,5,77,32"/>
 </map>
 </div>
 
@@ -362,7 +362,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_76e3dd4d2fa719e8d3b096e9aa563982.html">arch</a></li><li class="navelem"><a class="el" href="dir_7c4c796ec9937bed8074dafcec3d25e4.html">x86_64</a></li><li class="navelem"><a class="el" href="x86__64_2arch__main_8cpp.html">arch_main.cpp</a></li>
-    <li class="footer">Generated on Thu May 30 2024 09:27:58 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 13:50:29 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

@@ -1,4 +1,5 @@
 <map id="_start" name="_start">
-<area shape="rect" id="node1" title="负责 crtbegin 的工作" alt="" coords="5,5,64,32"/>
-<area shape="rect" id="node2" href="$src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="入口" alt="" coords="112,5,167,32"/>
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,64,32"/>
+<area shape="rect" id="node2" href="$src_2kernel_2main_8cpp.html#a33a24bc7914061cb094c417bd05032dc" title="内核入口" alt="" coords="112,5,167,32"/>
+<area shape="rect" id="node3" href="$aarch64_2arch__main_8cpp.html#afe4220e16c36bd6b2cf8ba5c899782be" title=" " alt="" coords="215,5,287,32"/>
 </map>

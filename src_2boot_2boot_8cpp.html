@@ -254,10 +254,10 @@ Variables</h2></td></tr>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordflow">return</span> status;</div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;  }</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;  <span class="comment">// 获取内存信息</span></div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;  <a class="code" href="structBootInfo.html">BootInfo</a> boot_info = {};</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;  <span class="comment">// 向内核传递参数</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;  <a class="code" href="structBootInfo.html">BootInfo</a> boot_info = {};</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  <span class="comment">// 获取内存信息</span></div>
 <div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  boot_info.<a class="code" href="structBootInfo.html#a1c415beae567d8f4b7f554d3af4f3b3a">memory_map_count</a> = memory.GetMemoryMap(boot_info.<a class="code" href="structBootInfo.html#a95ea0d874a391c9fbf4deb701e9fec9f">memory_map</a>);</div>
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;  <span class="comment">// 获取 framebuffer 信息</span></div>
@@ -270,17 +270,12 @@ Variables</h2></td></tr>
 <div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;  boot_info.<a class="code" href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">framebuffer</a>.<a class="code" href="structBootInfo_1_1FrameBuffer.html#a5e5a889e6482e2cc2be51e12b43f4b5e">height</a> = framebuffer_height;</div>
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;  boot_info.<a class="code" href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">framebuffer</a>.<a class="code" href="structBootInfo_1_1FrameBuffer.html#a0183e76056d84d683daec62b21b1b33b">pitch</a> = framebuffer_pixel_per_line * <span class="keyword">sizeof</span>(uint32_t);</div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160; </div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;  uint8_t *argv[] = {</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;      <span class="keyword">reinterpret_cast&lt;</span>uint8_t *<span class="keyword">&gt;</span>(&amp;boot_info),</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;      <span class="keyword">nullptr</span>,</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  };</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160; </div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;  <span class="keyword">auto</span> kernel_entry = (void (*)(uint32_t, uint8_t **))kernel_addr;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  kernel_entry(1, <span class="keyword">static_cast&lt;</span>uint8_t **<span class="keyword">&gt;</span>(argv));</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160; </div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;  <span class="comment">// 不会执行到这里</span></div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;  <span class="keywordflow">return</span> EFI_SUCCESS;</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;}</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;  <span class="keyword">auto</span> kernel_entry = (void (*)(uint32_t, uint8_t *))kernel_addr;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;  kernel_entry(1, <span class="keyword">reinterpret_cast&lt;</span>uint8_t *<span class="keyword">&gt;</span>(&amp;boot_info));</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; </div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="comment">// 不会执行到这里</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  <span class="keywordflow">return</span> EFI_SUCCESS;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;}</div>
 <div class="ttc" id="aclassElf_html"><div class="ttname"><a href="classElf.html">Elf</a></div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00151">load_elf.h:151</a></div></div>
 <div class="ttc" id="aclassGraphics_html"><div class="ttname"><a href="classGraphics.html">Graphics</a></div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00043">load_elf.h:43</a></div></div>
 <div class="ttc" id="aclassMemory_html"><div class="ttname"><a href="classMemory.html">Memory</a></div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00098">load_elf.h:98</a></div></div>
@@ -333,7 +328,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_52780cb445d9f0b97a98e8aabec4d968.html">boot</a></li><li class="navelem"><a class="el" href="src_2boot_2boot_8cpp.html">boot.cpp</a></li>
-    <li class="footer">Generated on Thu May 30 2024 09:27:58 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 13:50:29 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>
