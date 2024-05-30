@@ -109,8 +109,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a6832d01237ef9bff8d34f0882d86970c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0cb3f28bf3bc9eb24b15d9fbefceea1d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#a0cb3f28bf3bc9eb24b15d9fbefceea1d">SetMode</a> (EFI_GRAPHICS_PIXEL_FORMAT format=PixelRedGreenBlueReserved8BitPerColor, uint32_t width=<a class="el" href="classGraphics.html#a0e9246dba43269a590b38d314fc30229">kDefaultWidth</a>, uint32_t height=<a class="el" href="classGraphics.html#a12d721aa419f662a1ceede33314b4a7d">kDefaultHeight</a>) const</td></tr>
 <tr class="separator:a0cb3f28bf3bc9eb24b15d9fbefceea1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a85a2d9bc8db3fd7162361ad2a95a8c6f"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#a85a2d9bc8db3fd7162361ad2a95a8c6f">GetFrameBuffer</a> () const -&gt; std::pair&lt; uint64_t, uint32_t &gt;</td></tr>
-<tr class="separator:a85a2d9bc8db3fd7162361ad2a95a8c6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab14b0b12ba3f561686c3ca724e69a5f2"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#ab14b0b12ba3f561686c3ca724e69a5f2">GetFrameBuffer</a> () const -&gt; std::tuple&lt; uint64_t, uint32_t, uint32_t, uint32_t, uint32_t &gt;</td></tr>
+<tr class="separator:ab14b0b12ba3f561686c3ca724e69a5f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed3dc36d8764a602605e572fff902b64"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGraphics.html#aed3dc36d8764a602605e572fff902b64">PrintInfo</a> () const</td></tr>
 <tr class="separator:aed3dc36d8764a602605e572fff902b64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">不使用的构造函数</div></td></tr>
@@ -139,7 +139,7 @@ Static Private Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>图形相关 </p>
 
-<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00040">40</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00043">43</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="af2e8fe67fd31ec263c843a6e28b29d3c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af2e8fe67fd31ec263c843a6e28b29d3c">&#9670;&nbsp;</a></span>Graphics() <span class="overload">[1/3]</span></h2>
@@ -157,23 +157,23 @@ Static Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>构造函数 </p>
 
-<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00020">20</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;                   {</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  <span class="keyword">auto</span> status = LibLocateProtocol(&amp;GraphicsOutputProtocol,</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;                                  <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">void</span> **<span class="keyword">&gt;</span>(&amp;<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>));</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::Graphics() Could not locate GOP: &quot;</span> &lt;&lt; status</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;          &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  }</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <span class="keywordflow">if</span> (<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a> == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::Graphics() LibLocateProtocol(GraphicsOutputProtocol, &quot;</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;             L<span class="stringliteral">&quot;&amp;gop) returned &quot;</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;          &lt;&lt; status &lt;&lt; <span class="stringliteral">&quot; but gop is nullptr&quot;</span> &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  }</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;}</div>
-<div class="ttc" id="aclassGraphics_html_ab2da5b25b85f034800da46abbe3349ce"><div class="ttname"><a href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">Graphics::gop_</a></div><div class="ttdeci">EFI_GRAPHICS_OUTPUT_PROTOCOL * gop_</div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00084">load_elf.h:84</a></div></div>
+<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00022">22</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;                   {</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="keyword">auto</span> status = LibLocateProtocol(&amp;GraphicsOutputProtocol,</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;                                  <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">void</span> **<span class="keyword">&gt;</span>(&amp;<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>));</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::Graphics() Could not locate GOP: &quot;</span> &lt;&lt; status</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;          &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  }</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordflow">if</span> (<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a> == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::Graphics() LibLocateProtocol(GraphicsOutputProtocol, &quot;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;             L<span class="stringliteral">&quot;&amp;gop) returned &quot;</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;          &lt;&lt; status &lt;&lt; <span class="stringliteral">&quot; but gop is nullptr&quot;</span> &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  }</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;}</div>
+<div class="ttc" id="aclassGraphics_html_ab2da5b25b85f034800da46abbe3349ce"><div class="ttname"><a href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">Graphics::gop_</a></div><div class="ttdeci">EFI_GRAPHICS_OUTPUT_PROTOCOL * gop_</div><div class="ttdef"><b>Definition:</b> <a href="load__elf_8h_source.html#l00092">load_elf.h:92</a></div></div>
 <div class="ttc" id="aclassOutStream_html_a4013bbc2fd5844d63fb69e59e350f6c2"><div class="ttname"><a href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a></div><div class="ttdeci">static auto endl(OutStream &amp;ostream) -&gt; OutStream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="out__stream_8cpp_source.html#l00042">out_stream.cpp:42</a></div></div>
 <div class="ttc" id="aout__stream_8hpp_html_ac35f3fe5ec881b6688219406bd354334"><div class="ttname"><a href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a></div><div class="ttdeci">OutStream debug</div><div class="ttdoc">全局输出流</div><div class="ttdef"><b>Definition:</b> <a href="out__stream_8cpp_source.html#l00047">out_stream.cpp:47</a></div></div>
 </div><!-- fragment --><div class="dynheader">
@@ -267,8 +267,8 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a85a2d9bc8db3fd7162361ad2a95a8c6f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a85a2d9bc8db3fd7162361ad2a95a8c6f">&#9670;&nbsp;</a></span>GetFrameBuffer()</h2>
+<a id="ab14b0b12ba3f561686c3ca724e69a5f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab14b0b12ba3f561686c3ca724e69a5f2">&#9670;&nbsp;</a></span>GetFrameBuffer()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -277,15 +277,20 @@ Here is the call graph for this function:</div>
           <td class="memname">auto Graphics::GetFrameBuffer </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td> const -&gt; std::pair&lt;uint64_t, uint32_t&gt;</td>
+          <td> const -&gt; std::tuple&lt;uint64_t, uint32_t, uint32_t, uint32_t, uint32_t&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>获取图形缓冲区信息 </p><dl class="section return"><dt>Returns</dt><dd>缓冲区地址，缓冲区长度，垂直像素个数，水平像素个数，每行像素个数 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00080">80</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                                                                   {</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <span class="keywordflow">return</span> {<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferBase, <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferSize};</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00082">82</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                                                                  {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;  <span class="keywordflow">return</span> std::make_tuple(<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferBase,</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                         <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferSize,</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                         <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution,</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;                         <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution,</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                         <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine);</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -357,44 +362,44 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 <p>输出图形信息 </p>
 
-<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00084">84</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                               {</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Current Mode: &quot;</span> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Mode &lt;&lt; L<span class="stringliteral">&quot;, Version: &quot;</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        &lt;&lt; <a class="code" href="classOutStream.html#a49759d79611564fc3fef7ed6a449aa2e">OutStream::hex_x</a> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;Version &lt;&lt; L<span class="stringliteral">&quot;, Format: &quot;</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelFormat &lt;&lt; L<span class="stringliteral">&quot;, Horizontal: &quot;</span></div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution &lt;&lt; L<span class="stringliteral">&quot;, Vertical: &quot;</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution &lt;&lt; L<span class="stringliteral">&quot;, ScanLine: &quot;</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferBase: &quot;</span></div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        &lt;&lt; <a class="code" href="classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de">OutStream::hex_X</a> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferBase</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferSize: &quot;</span> &lt;&lt; <a class="code" href="classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de">OutStream::hex_X</a></div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferSize &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;MaxMode; i++) {</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *mode_info = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    uint64_t mode_info_size = 0;</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keyword">auto</span> status = uefi_call_wrapper(<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;QueryMode, 4, <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>, i,</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                                    &amp;mode_info_size, &amp;mode_info);</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;      <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::PrintInfo() QueryMode failed: &quot;</span> &lt;&lt; status</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;      <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    }</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Mode: &quot;</span> &lt;&lt; i &lt;&lt; L<span class="stringliteral">&quot;, Version: &quot;</span> &lt;&lt; <a class="code" href="classOutStream.html#a49759d79611564fc3fef7ed6a449aa2e">OutStream::hex_x</a></div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;Version &lt;&lt; L<span class="stringliteral">&quot;, Format: &quot;</span></div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelFormat &lt;&lt; L<span class="stringliteral">&quot;, Horizontal: &quot;</span></div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution &lt;&lt; L<span class="stringliteral">&quot;, Vertical: &quot;</span></div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution &lt;&lt; L<span class="stringliteral">&quot;, ScanLine: &quot;</span></div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00091">91</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                               {</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Current Mode: &quot;</span> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Mode &lt;&lt; L<span class="stringliteral">&quot;, Version: &quot;</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        &lt;&lt; <a class="code" href="classOutStream.html#a49759d79611564fc3fef7ed6a449aa2e">OutStream::hex_x</a> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;Version &lt;&lt; L<span class="stringliteral">&quot;, Format: &quot;</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelFormat &lt;&lt; L<span class="stringliteral">&quot;, Horizontal: &quot;</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution &lt;&lt; L<span class="stringliteral">&quot;, Vertical: &quot;</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution &lt;&lt; L<span class="stringliteral">&quot;, ScanLine: &quot;</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferBase: &quot;</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        &lt;&lt; <a class="code" href="classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de">OutStream::hex_X</a> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferBase</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferSize: &quot;</span> &lt;&lt; <a class="code" href="classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de">OutStream::hex_X</a></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferSize &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;  <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;MaxMode; i++) {</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *mode_info = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    uint64_t mode_info_size = 0;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keyword">auto</span> status = uefi_call_wrapper(<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;QueryMode, 4, <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>, i,</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                                    &amp;mode_info_size, &amp;mode_info);</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;      <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::PrintInfo() QueryMode failed: &quot;</span> &lt;&lt; status</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;      <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    }</div>
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    status = uefi_call_wrapper(gBS-&gt;FreePool, 1, mode_info);</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;      <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::PrintInfo() FreePool failed: &quot;</span> &lt;&lt; status</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;      <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    }</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  }</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;}</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Mode: &quot;</span> &lt;&lt; i &lt;&lt; L<span class="stringliteral">&quot;, Version: &quot;</span> &lt;&lt; <a class="code" href="classOutStream.html#a49759d79611564fc3fef7ed6a449aa2e">OutStream::hex_x</a></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;Version &lt;&lt; L<span class="stringliteral">&quot;, Format: &quot;</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelFormat &lt;&lt; L<span class="stringliteral">&quot;, Horizontal: &quot;</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution &lt;&lt; L<span class="stringliteral">&quot;, Vertical: &quot;</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution &lt;&lt; L<span class="stringliteral">&quot;, ScanLine: &quot;</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;          &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    status = uefi_call_wrapper(gBS-&gt;FreePool, 1, mode_info);</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;      <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::PrintInfo() FreePool failed: &quot;</span> &lt;&lt; status</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;      <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    }</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  }</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;}</div>
 <div class="ttc" id="aclassOutStream_html_a48756fe3b36fc3ae8329c33c9abae6de"><div class="ttname"><a href="classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de">OutStream::hex_X</a></div><div class="ttdeci">static auto hex_X(OutStream &amp;ostream) -&gt; OutStream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="out__stream_8cpp_source.html#l00037">out_stream.cpp:37</a></div></div>
 <div class="ttc" id="aclassOutStream_html_a49759d79611564fc3fef7ed6a449aa2e"><div class="ttname"><a href="classOutStream.html#a49759d79611564fc3fef7ed6a449aa2e">OutStream::hex_x</a></div><div class="ttdeci">static auto hex_x(OutStream &amp;ostream) -&gt; OutStream &amp;</div><div class="ttdef"><b>Definition:</b> <a href="out__stream_8cpp_source.html#l00032">out_stream.cpp:32</a></div></div>
 </div><!-- fragment --><div class="dynheader">
@@ -451,49 +456,49 @@ Here is the call graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00036">36</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                                              {</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  EFI_STATUS status = EFI_SUCCESS;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;MaxMode; i++) {</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *mode_info = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    uint64_t mode_info_size = 0;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    status = uefi_call_wrapper(<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;QueryMode, 4, <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>, i, &amp;mode_info_size,</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                               &amp;mode_info);</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;      <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::SetMode QueryMode failed: &quot;</span> &lt;&lt; status</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;      <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    }</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordflow">if</span> ((mode_info-&gt;PixelFormat == format) &amp;&amp;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        (mode_info-&gt;HorizontalResolution == width) &amp;&amp;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        (mode_info-&gt;VerticalResolution == height)) {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;      status = uefi_call_wrapper(<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;SetMode, 2, <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>, i);</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;      <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::SetMode SetMode failed: &quot;</span> &lt;&lt; status</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;              &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;      }</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    }</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    status = uefi_call_wrapper(gBS-&gt;FreePool, 1, mode_info);</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;      <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::SetMode FreePool failed: &quot;</span> &lt;&lt; status</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;            &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;      <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    }</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  }</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Current Mode: &quot;</span> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Mode &lt;&lt; L<span class="stringliteral">&quot;, Version: &quot;</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        &lt;&lt; <a class="code" href="classOutStream.html#a49759d79611564fc3fef7ed6a449aa2e">OutStream::hex_x</a> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;Version &lt;&lt; L<span class="stringliteral">&quot;, Format: &quot;</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelFormat &lt;&lt; L<span class="stringliteral">&quot;, Horizontal: &quot;</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution &lt;&lt; L<span class="stringliteral">&quot;, Vertical: &quot;</span></div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution &lt;&lt; L<span class="stringliteral">&quot;, ScanLine: &quot;</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferBase: &quot;</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        &lt;&lt; <a class="code" href="classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de">OutStream::hex_X</a> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferBase</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferSize: &quot;</span> &lt;&lt; <a class="code" href="classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de">OutStream::hex_X</a></div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferSize &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="graphics_8cpp_source.html#l00038">38</a> of file <a class="el" href="graphics_8cpp_source.html">graphics.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                                              {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  EFI_STATUS status = EFI_SUCCESS;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;MaxMode; i++) {</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *mode_info = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    uint64_t mode_info_size = 0;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    status = uefi_call_wrapper(<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;QueryMode, 4, <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>, i, &amp;mode_info_size,</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                               &amp;mode_info);</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;      <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::SetMode QueryMode failed: &quot;</span> &lt;&lt; status</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;      <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    }</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordflow">if</span> ((mode_info-&gt;PixelFormat == format) &amp;&amp;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        (mode_info-&gt;HorizontalResolution == width) &amp;&amp;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        (mode_info-&gt;VerticalResolution == height)) {</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;      status = uefi_call_wrapper(<a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;SetMode, 2, <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>, i);</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;      <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::SetMode SetMode failed: &quot;</span> &lt;&lt; status</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;              &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;      }</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    }</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    status = uefi_call_wrapper(gBS-&gt;FreePool, 1, mode_info);</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordflow">if</span> (EFI_ERROR(status)) {</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;      <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Graphics::SetMode FreePool failed: &quot;</span> &lt;&lt; status</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;            &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;      <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    }</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  }</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <a class="code" href="out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334">debug</a> &lt;&lt; L<span class="stringliteral">&quot;Current Mode: &quot;</span> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Mode &lt;&lt; L<span class="stringliteral">&quot;, Version: &quot;</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        &lt;&lt; <a class="code" href="classOutStream.html#a49759d79611564fc3fef7ed6a449aa2e">OutStream::hex_x</a> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;Version &lt;&lt; L<span class="stringliteral">&quot;, Format: &quot;</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelFormat &lt;&lt; L<span class="stringliteral">&quot;, Horizontal: &quot;</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;HorizontalResolution &lt;&lt; L<span class="stringliteral">&quot;, Vertical: &quot;</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;VerticalResolution &lt;&lt; L<span class="stringliteral">&quot;, ScanLine: &quot;</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;Info-&gt;PixelsPerScanLine &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferBase: &quot;</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        &lt;&lt; <a class="code" href="classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de">OutStream::hex_X</a> &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferBase</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        &lt;&lt; L<span class="stringliteral">&quot;, FrameBufferSize: &quot;</span> &lt;&lt; <a class="code" href="classOutStream.html#a48756fe3b36fc3ae8329c33c9abae6de">OutStream::hex_X</a></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        &lt;&lt; <a class="code" href="classGraphics.html#ab2da5b25b85f034800da46abbe3349ce">gop_</a>-&gt;Mode-&gt;FrameBufferSize &lt;&lt; <a class="code" href="classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2">OutStream::endl</a>;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;}</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -530,7 +535,7 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 <p>图形输出协议 </p>
 
-<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00084">84</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00092">92</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
 
 </div>
 </div>
@@ -554,7 +559,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00081">81</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00089">89</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
 
 </div>
 </div>
@@ -578,7 +583,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00080">80</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="load__elf_8h_source.html#l00088">88</a> of file <a class="el" href="load__elf_8h_source.html">load_elf.h</a>.</p>
 
 </div>
 </div>
@@ -592,7 +597,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classGraphics.html">Graphics</a></li>
-    <li class="footer">Generated on Wed May 29 2024 08:47:14 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 08:28:02 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

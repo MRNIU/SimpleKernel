@@ -5,6 +5,7 @@ var classMemory =
     [ "Memory", "classMemory.html#a99380a9fcf78020c641ee9c9274b912c", null ],
     [ "Memory", "classMemory.html#ac9ab40541f6c3c44c8614c8ee3babea5", null ],
     [ "FlushDesc", "classMemory.html#a252795e1254bfe0af91f16fd66989ce6", null ],
+    [ "GetMemoryMap", "classMemory.html#a8207d7ad72f4c552a133c41e8c74fc40", null ],
     [ "operator=", "classMemory.html#ad9e7a4cbd22f78011c39393458e5c04e", null ],
     [ "operator=", "classMemory.html#a486d18dc915927190cb52471b7308ae6", null ],
     [ "PrintInfo", "classMemory.html#a30fd51e51ec537a70a1b8560fa3d326b", null ],

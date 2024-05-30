@@ -94,7 +94,7 @@ $(document).ready(function(){initNavTree('test_2system__test_2gnu__efi__test_2ma
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;cstdint&gt;</code><br />
 <code>#include &quot;<a class="el" href="arch_8h_source.html">arch.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>&quot;</code><br />
+<code>#include &quot;cpu.hpp&quot;</code><br />
 <code>#include &quot;cstdio&quot;</code><br />
 <code>#include &quot;<a class="el" href="kernel_8h_source.html">kernel.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
@@ -103,9 +103,9 @@ Include dependency graph for main.cpp:</div>
 <div class="center"><img src="test_2system__test_2gnu__efi__test_2main_8cpp__incl.png" border="0" usemap="#a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2test_2system__test_2gnu__efi__test_2main_8cpp" alt=""/></div>
 <map name="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2test_2system__test_2gnu__efi__test_2main_8cpp" id="a_2home_2runner_2work_2SimpleKernel_2SimpleKernel_2test_2system__test_2gnu__efi__test_2main_8cpp">
 <area shape="rect" title="内核入口" alt="" coords="48,5,243,76"/>
-<area shape="rect" title=" " alt="" coords="66,199,132,225"/>
+<area shape="rect" title=" " alt="" coords="20,199,87,225"/>
 <area shape="rect" href="arch_8h.html" title="arch 头文件" alt="" coords="22,124,85,151"/>
-<area shape="rect" href="cpu_8hpp.html" title="x86_64 cpu 相关定义" alt="" coords="109,124,182,151"/>
+<area shape="rect" title=" " alt="" coords="109,124,182,151"/>
 <area shape="rect" title=" " alt="" coords="207,124,268,151"/>
 <area shape="rect" href="kernel_8h.html" title="内核头文件" alt="" coords="292,124,367,151"/>
 </map>
@@ -167,11 +167,12 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00026">26</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;                                         {</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="keyword">auto</span> serial = <a class="code" href="classCpu_1_1Serial.html">Cpu::Serial</a>(<a class="code" href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a>);</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  serial.Write(character);</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="keyword">auto</span> <a class="code" href="x86__64_2arch__main_8cpp.html#a5af9f33299c9c679814c3e293c6f8e8e">serial</a> = <a class="code" href="classCpu_1_1Serial.html">Cpu::Serial</a>(<a class="code" href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a>);</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <a class="code" href="x86__64_2arch__main_8cpp.html#a5af9f33299c9c679814c3e293c6f8e8e">serial</a>.Write(character);</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;}</div>
-<div class="ttc" id="aclassCpu_1_1Serial_html"><div class="ttname"><a href="classCpu_1_1Serial.html">Cpu::Serial</a></div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00086">cpu.hpp:86</a></div></div>
-<div class="ttc" id="aclassCpu_html_a920fe77691b983ea96a7e3a9b0c463b5"><div class="ttname"><a href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a></div><div class="ttdeci">static constexpr const uint32_t kCom1</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00085">cpu.hpp:85</a></div></div>
+<div class="ttc" id="aclassCpu_1_1Serial_html"><div class="ttname"><a href="classCpu_1_1Serial.html">Cpu::Serial</a></div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2cpu_8hpp_source.html#l00086">cpu.hpp:86</a></div></div>
+<div class="ttc" id="aclassCpu_html_a920fe77691b983ea96a7e3a9b0c463b5"><div class="ttname"><a href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a></div><div class="ttdeci">static constexpr const uint32_t kCom1</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2cpu_8hpp_source.html#l00085">cpu.hpp:85</a></div></div>
+<div class="ttc" id="ax86__64_2arch__main_8cpp_html_a5af9f33299c9c679814c3e293c6f8e8e"><div class="ttname"><a href="x86__64_2arch__main_8cpp.html#a5af9f33299c9c679814c3e293c6f8e8e">serial</a></div><div class="ttdeci">static auto serial</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2arch__main_8cpp_source.html#l00024">arch_main.cpp:24</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -212,7 +213,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00024">24</a> of file <a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html">main.cpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;{ <a class="code" href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a>(argc, argv); }</div>
-<div class="ttc" id="asrc_2kernel_2main_8cpp_html_a3c04138a5bfe5d72780bb7e82a18e627"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a></div><div class="ttdeci">int main(int argc, char **argv)</div><div class="ttdoc">入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00040">main.cpp:40</a></div></div>
+<div class="ttc" id="asrc_2kernel_2main_8cpp_html_a3c04138a5bfe5d72780bb7e82a18e627"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a></div><div class="ttdeci">int main(int argc, char **argv)</div><div class="ttdoc">入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00026">main.cpp:26</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -370,7 +371,7 @@ Here is the caller graph for this function:</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  }</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;}</div>
-<div class="ttc" id="astructBootInfo_1_1FrameBuffer_html_a4b9a918579211ea0e6c2d12988c54c46"><div class="ttname"><a href="structBootInfo_1_1FrameBuffer.html#a4b9a918579211ea0e6c2d12988c54c46">BootInfo::FrameBuffer::base</a></div><div class="ttdeci">uint64_t base</div><div class="ttdef"><b>Definition:</b> <a href="arch_8h_source.html#l00024">arch.h:24</a></div></div>
+<div class="ttc" id="astructBootInfo_1_1FrameBuffer_html_a4b9a918579211ea0e6c2d12988c54c46"><div class="ttname"><a href="structBootInfo_1_1FrameBuffer.html#a4b9a918579211ea0e6c2d12988c54c46">BootInfo::FrameBuffer::base</a></div><div class="ttdeci">uint64_t base</div><div class="ttdef"><b>Definition:</b> <a href="arch_8h_source.html#l00034">arch.h:34</a></div></div>
 <div class="ttc" id="astructBootInfo_html"><div class="ttname"><a href="structBootInfo.html">BootInfo</a></div><div class="ttdef"><b>Definition:</b> <a href="arch_8h_source.html#l00022">arch.h:22</a></div></div>
 <div class="ttc" id="astructBootInfo_html_a2283a31a0096bab5e9fe2fb2605ae8e5"><div class="ttname"><a href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">BootInfo::framebuffer</a></div><div class="ttdeci">struct BootInfo::FrameBuffer framebuffer</div></div>
 <div class="ttc" id="atest_2system__test_2gnu__efi__test_2main_8cpp_html_aa94fac88ccd3e86a0c441f12a08b301b"><div class="ttname"><a href="test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b">Fillrect</a></div><div class="ttdeci">static void Fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b, uint8_t w, uint8_t h)</div><div class="ttdef"><b>Definition:</b> <a href="test_2system__test_2gnu__efi__test_2main_8cpp_source.html#l00034">main.cpp:34</a></div></div>
@@ -441,7 +442,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_13e138d54eb8818da29c3992edef070a.html">test</a></li><li class="navelem"><a class="el" href="dir_dfa008182f2a40cb988df1752e3cb29d.html">system_test</a></li><li class="navelem"><a class="el" href="dir_cfadb97a047f54946ed337ecdf10cbea.html">gnu_efi_test</a></li><li class="navelem"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html">main.cpp</a></li>
-    <li class="footer">Generated on Wed May 29 2024 08:47:14 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 08:28:02 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['aaa_171',['Aaa',['../classAaa.html',1,'']]]
+  ['bootinfo_175',['BootInfo',['../structBootInfo.html',1,'']]]
 ];

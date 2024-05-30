@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['base_274',['base',['../structBootInfo_1_1FrameBuffer.html#a4b9a918579211ea0e6c2d12988c54c46',1,'BootInfo::FrameBuffer::base()'],['../structBootInfo_1_1MemoryMap.html#aa36732e57f0b24cb62c91b7030c5ddfc',1,'BootInfo::MemoryMap::base()']]],
-  ['base_5faddr_5f_275',['base_addr_',['../classNs16550a.html#a2fcbadb13d2073bce0438ab2818f6987',1,'Ns16550a']]],
-  ['bpp_276',['bpp',['../structBootInfo_1_1FrameBuffer.html#a739653b45fefbef05d0a3fb349011f48',1,'BootInfo::FrameBuffer']]]
+  ['debug_280',['debug',['../out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334',1,'debug():&#160;out_stream.cpp'],['../out__stream_8cpp.html#ac35f3fe5ec881b6688219406bd354334',1,'debug():&#160;out_stream.cpp']]],
+  ['desc_5fcount_5f_281',['desc_count_',['../classMemory.html#aed0dc5abd37fe911256fc4efb1cf15f4',1,'Memory']]],
+  ['desc_5fsize_5f_282',['desc_size_',['../classMemory.html#a95a497abe9cd1e06508121985219c06f',1,'Memory']]],
+  ['desc_5fversion_5f_283',['desc_version_',['../classMemory.html#ab96d50143a7268f82be8c172a5407b3b',1,'Memory']]]
 ];

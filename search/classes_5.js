@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['graphics_176',['Graphics',['../classGraphics.html',1,'']]]
+  ['memory_180',['Memory',['../classMemory.html',1,'']]],
+  ['memorymap_181',['MemoryMap',['../structBootInfo_1_1MemoryMap.html',1,'BootInfo']]]
 ];

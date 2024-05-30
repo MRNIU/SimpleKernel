@@ -91,7 +91,7 @@ $(document).ready(function(){initNavTree('classCpu.html',''); initResizable(); }
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="aarch64_2cpu_8hpp_source.html">cpu.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Collaboration diagram for Cpu:</div>
 <div class="dyncontent">
@@ -135,7 +135,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00022">22</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="aarch64_2cpu_8hpp_source.html#l00022">22</a> of file <a class="el" href="aarch64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a8a155b2fb5b653542fb18c386b3363cc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8a155b2fb5b653542fb18c386b3363cc">&#9670;&nbsp;</a></span>InByte()</h2>
@@ -170,7 +170,7 @@ Static Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>uint8_t 读取到的数据 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00029">29</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00029">29</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;                                                    {</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    uint8_t data;</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    __asm__ __volatile__(<span class="stringliteral">&quot;inb %1, %0&quot;</span> : <span class="stringliteral">&quot;=a&quot;</span>(data) : <span class="stringliteral">&quot;dN&quot;</span>(port));</div>
@@ -225,7 +225,7 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>uint32_t 读取到的数据 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00051">51</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00051">51</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                                                     {</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    uint32_t data;</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    __asm__ __volatile__(<span class="stringliteral">&quot;inl %1, %0&quot;</span> : <span class="stringliteral">&quot;=a&quot;</span>(data) : <span class="stringliteral">&quot;dN&quot;</span>(port));</div>
@@ -267,7 +267,7 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>uint16_t 读取到的数据 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00040">40</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00040">40</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                                                     {</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    uint16_t data;</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    __asm__ __volatile__(<span class="stringliteral">&quot;inw %1, %0&quot;</span> : <span class="stringliteral">&quot;=a&quot;</span>(data) : <span class="stringliteral">&quot;dN&quot;</span>(port));</div>
@@ -319,7 +319,7 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00062">62</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00062">62</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                                                                      {</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    __asm__ __volatile__(<span class="stringliteral">&quot;outb %1, %0&quot;</span> : : <span class="stringliteral">&quot;dN&quot;</span>(port), <span class="stringliteral">&quot;a&quot;</span>(data));</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;  }</div>
@@ -379,7 +379,7 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00080">80</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00080">80</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                                                                       {</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    __asm__ __volatile__(<span class="stringliteral">&quot;outl %1, %0&quot;</span> : : <span class="stringliteral">&quot;dN&quot;</span>(port), <span class="stringliteral">&quot;a&quot;</span>(data));</div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  }</div>
@@ -429,7 +429,7 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00071">71</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00071">71</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                                                                       {</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    __asm__ __volatile__(<span class="stringliteral">&quot;outw %1, %0&quot;</span> : : <span class="stringliteral">&quot;dN&quot;</span>(port), <span class="stringliteral">&quot;a&quot;</span>(data));</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  }</div>
@@ -457,12 +457,12 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00085">85</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00085">85</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/home/runner/work/SimpleKernel/SimpleKernel/src/kernel/arch/x86_64/<a class="el" href="cpu_8hpp_source.html">cpu.hpp</a></li>
+<li>/home/runner/work/SimpleKernel/SimpleKernel/src/kernel/arch/aarch64/<a class="el" href="aarch64_2cpu_8hpp_source.html">cpu.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -470,7 +470,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classCpu.html">Cpu</a></li>
-    <li class="footer">Generated on Wed May 29 2024 08:47:14 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 08:28:02 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

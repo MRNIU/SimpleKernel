@@ -1,5 +1,5 @@
 <map id="BootInfo" name="BootInfo">
-<area shape="rect" id="node1" title=" " alt="" coords="144,248,221,325"/>
+<area shape="rect" id="node1" title=" " alt="" coords="86,248,279,340"/>
 <area shape="rect" id="node2" href="$structBootInfo_1_1FrameBuffer.html" title=" " alt="" coords="5,5,171,185"/>
 <area shape="rect" id="node3" href="$structBootInfo_1_1MemoryMap.html" title=" " alt="" coords="195,35,362,156"/>
 </map>

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['elf_174',['Elf',['../classElf.html',1,'']]]
+  ['framebuffer_178',['FrameBuffer',['../structBootInfo_1_1FrameBuffer.html',1,'BootInfo']]]
 ];

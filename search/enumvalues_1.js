@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['x_334',['X',['../classOutStream.html#aae37686b9a1d25ceeda1a3624799f742a9c68143df9dbc03ddd89f0f489deed77',1,'OutStream']]],
-  ['x_335',['x',['../classOutStream.html#aae37686b9a1d25ceeda1a3624799f742a58ed7225427bd81858023a35a0dabd72',1,'OutStream']]]
+  ['ktypeacpi_335',['kTypeAcpi',['../structBootInfo_1_1MemoryMap.html#ac919e5c1ee8a93777038fcd8f34b814da8cb0db3a96e1695a4c09fa07ae123fad',1,'BootInfo::MemoryMap']]],
+  ['ktypenvs_336',['kTypeNvs',['../structBootInfo_1_1MemoryMap.html#ac919e5c1ee8a93777038fcd8f34b814da1e857b48d11c915ce0823fc40e194f62',1,'BootInfo::MemoryMap']]],
+  ['ktyperam_337',['kTypeRam',['../structBootInfo_1_1MemoryMap.html#ac919e5c1ee8a93777038fcd8f34b814dae314d6347ac5e14948eec30b2c3f021b',1,'BootInfo::MemoryMap']]],
+  ['ktypereserved_338',['kTypeReserved',['../structBootInfo_1_1MemoryMap.html#ac919e5c1ee8a93777038fcd8f34b814da13adb54b20aea181597010d9292ece9e',1,'BootInfo::MemoryMap']]],
+  ['ktypeunusable_339',['kTypeUnUsable',['../structBootInfo_1_1MemoryMap.html#ac919e5c1ee8a93777038fcd8f34b814da5b27233c056c7f41abbfa834087b178c',1,'BootInfo::MemoryMap']]]
 ];

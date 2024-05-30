@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['reserved_323',['reserved',['../structBootInfo_1_1FrameBuffer.html#af7c71ba4349dec165baa02d0a5c10ac6',1,'BootInfo::FrameBuffer::reserved()'],['../structBootInfo_1_1MemoryMap.html#af8535237928880fb95baffb15504439d',1,'BootInfo::MemoryMap::reserved()']]],
-  ['root_5ffile_5fsystem_5f_324',['root_file_system_',['../classElf.html#ac244614d1fef5a03574b5d426d5db649',1,'Elf']]]
+  ['type_330',['type',['../structBootInfo_1_1MemoryMap.html#ad8e87475acaf55cb295214f06475b618',1,'BootInfo::MemoryMap::type()'],['../structBootInfo_1_1FrameBuffer.html#ad3f0efce71cec50f9edc414af930caad',1,'BootInfo::FrameBuffer::type()']]]
 ];

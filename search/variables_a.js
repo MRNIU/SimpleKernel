@@ -1,24 +1,8 @@
 var searchData=
 [
-  ['kaligntwo_294',['kAlignTwo',['../load__elf_8cpp.html#a647bfe75b9523735dbccfa5baa8fba25',1,'load_elf.cpp']]],
-  ['kcom1_295',['kCom1',['../classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5',1,'Cpu']]],
-  ['kdefaultheight_296',['kDefaultHeight',['../classGraphics.html#a12d721aa419f662a1ceede33314b4a7d',1,'Graphics']]],
-  ['kdefaultwidth_297',['kDefaultWidth',['../classGraphics.html#a0e9246dba43269a590b38d314fc30229',1,'Graphics']]],
-  ['konetabsize_298',['kOneTabSize',['../load__elf_8cpp.html#a5ef4da285cded793e8306cdd61aa9417',1,'load_elf.cpp']]],
-  ['kpitch_299',['kPitch',['../x86__64_2arch__main_8cpp.html#a129ccdf268cbc4381ea8655d7c23e189',1,'kPitch():&#160;arch_main.cpp'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a129ccdf268cbc4381ea8655d7c23e189',1,'kPitch():&#160;main.cpp']]],
-  ['kpixelwidth_300',['kPixelwidth',['../test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f',1,'main.cpp']]],
-  ['kpixelwidth_301',['kPixelWidth',['../x86__64_2arch__main_8cpp.html#ab0f39aebd2dbf9cc39669828c815412f',1,'arch_main.cpp']]],
-  ['kregfcr_302',['kRegFCR',['../classNs16550a.html#a3943bc574129b84b50129fe557777abc',1,'Ns16550a']]],
-  ['kregier_303',['kRegIER',['../classNs16550a.html#a35f9b45496564372bcd8dce128057ea3',1,'Ns16550a']]],
-  ['kregisr_304',['kRegISR',['../classNs16550a.html#aee3dbd7a5f4b505d3a9d80bb8184c56c',1,'Ns16550a']]],
-  ['kreglcr_305',['kRegLCR',['../classNs16550a.html#ad4c08050f62e35b075e5a792ab386f5a',1,'Ns16550a']]],
-  ['kreglsr_306',['kRegLSR',['../classNs16550a.html#aebf65d4334825fa909b8a4c4c195c828',1,'Ns16550a']]],
-  ['kregmcr_307',['kRegMCR',['../classNs16550a.html#a9db7218053a4f65ba1b14dfad461d43d',1,'Ns16550a']]],
-  ['kregmsr_308',['kRegMSR',['../classNs16550a.html#a6651d639c6709ea79be6f964443969c5',1,'Ns16550a']]],
-  ['kregrhr_309',['kRegRHR',['../classNs16550a.html#a7f59bbda1dd11d6899091237d252a6e7',1,'Ns16550a']]],
-  ['kregthr_310',['kRegTHR',['../classNs16550a.html#aea26b2a54d5a4207f37da9bb704ca074',1,'Ns16550a']]],
-  ['ksectionbuffersize_311',['kSectionBufferSize',['../classElf.html#ad5876652f67e70a5b0727e5ddd212cd0',1,'Elf']]],
-  ['ktwotabsize_312',['kTwoTabSize',['../load__elf_8cpp.html#a1e74ce958e2355223d7c85971feadfcd',1,'load_elf.cpp']]],
-  ['kuartdll_313',['kUartDLL',['../classNs16550a.html#ab940933c0a3b4e923e43c9a8397c389d',1,'Ns16550a']]],
-  ['kuartdlm_314',['kUartDLM',['../classNs16550a.html#ae0d0349abc1abe464194325d8a84d3ed',1,'Ns16550a']]]
+  ['map_5fkey_5f_316',['map_key_',['../classMemory.html#ac62d9384dd99f0c28f7354bb35debb4f',1,'Memory']]],
+  ['memory_5fmap_317',['memory_map',['../structBootInfo.html#a95ea0d874a391c9fbf4deb701e9fec9f',1,'BootInfo']]],
+  ['memory_5fmap_5f_318',['memory_map_',['../classMemory.html#a0a831bb59134b81198bcb2bed02c75a9',1,'Memory']]],
+  ['memory_5fmap_5fcount_319',['memory_map_count',['../structBootInfo.html#a1c415beae567d8f4b7f554d3af4f3b3a',1,'BootInfo']]],
+  ['mode_5f_320',['mode_',['../classOutStream.html#ab0a20a754689060d609d741963829ef9',1,'OutStream']]]
 ];

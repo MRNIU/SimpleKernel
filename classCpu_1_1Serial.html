@@ -92,7 +92,7 @@ $(document).ready(function(){initNavTree('classCpu_1_1Serial.html',''); initResi
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Collaboration diagram for Cpu::Serial:</div>
 <div class="dyncontent">
@@ -142,7 +142,7 @@ Private Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00086">86</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00086">86</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a5a16c474ac2db110d686f942bfec920b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5a16c474ac2db110d686f942bfec920b">&#9670;&nbsp;</a></span>Serial() <span class="overload">[1/4]</span></h2>
@@ -167,9 +167,8 @@ Private Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>失败处理 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00088">88</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00088">88</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                                   : <a class="code" href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">port_</a>(port) {</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;      <span class="comment">// Disable all interrupts</span></div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;      <a class="code" href="classCpu.html#a5497de750dea06f8941505159fd96c1c">OutByte</a>(<a class="code" href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">port_</a> + 1, 0x00);</div>
@@ -191,15 +190,16 @@ Private Attributes</h2></td></tr>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;      <a class="code" href="classCpu.html#a5497de750dea06f8941505159fd96c1c">OutByte</a>(<a class="code" href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">port_</a> + 0, 0xAE);</div>
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;      <span class="comment">// Check if serial is faulty (i.e: not same byte as sent)</span></div>
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;      <span class="keywordflow">if</span> (<a class="code" href="classCpu.html#a8a155b2fb5b653542fb18c386b3363cc">InByte</a>(<a class="code" href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">port_</a> + 0) != 0xAE) {</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        <span class="keyword">asm</span>(<span class="stringliteral">&quot;hlt&quot;</span>);</div>
 <div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;      }</div>
 <div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;      <span class="comment">// If serial is not faulty set it in normal operation mode (not-loopback</span></div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;      <span class="comment">// with IRQs enabled and OUT#1 and OUT#2 bits enabled)</span></div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;      <a class="code" href="classCpu.html#a5497de750dea06f8941505159fd96c1c">OutByte</a>(<a class="code" href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">port_</a> + 4, 0x0F);</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    }</div>
-<div class="ttc" id="aclassCpu_1_1Serial_html_ab2efc349240252e682f9045b6123e29f"><div class="ttname"><a href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">Cpu::Serial::port_</a></div><div class="ttdeci">uint32_t port_</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00151">cpu.hpp:151</a></div></div>
-<div class="ttc" id="aclassCpu_html_a5497de750dea06f8941505159fd96c1c"><div class="ttname"><a href="classCpu.html#a5497de750dea06f8941505159fd96c1c">Cpu::OutByte</a></div><div class="ttdeci">static void OutByte(const uint32_t port, const uint8_t data)</div><div class="ttdoc">写一个字节</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00062">cpu.hpp:62</a></div></div>
-<div class="ttc" id="aclassCpu_html_a8a155b2fb5b653542fb18c386b3363cc"><div class="ttname"><a href="classCpu.html#a8a155b2fb5b653542fb18c386b3363cc">Cpu::InByte</a></div><div class="ttdeci">static uint8_t InByte(const uint32_t port)</div><div class="ttdoc">读一个字节</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00029">cpu.hpp:29</a></div></div>
+<div class="ttc" id="aclassCpu_1_1Serial_html_ab2efc349240252e682f9045b6123e29f"><div class="ttname"><a href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">Cpu::Serial::port_</a></div><div class="ttdeci">uint32_t port_</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2cpu_8hpp_source.html#l00151">cpu.hpp:151</a></div></div>
+<div class="ttc" id="aclassCpu_html_a5497de750dea06f8941505159fd96c1c"><div class="ttname"><a href="classCpu.html#a5497de750dea06f8941505159fd96c1c">Cpu::OutByte</a></div><div class="ttdeci">static void OutByte(const uint32_t port, const uint8_t data)</div><div class="ttdoc">写一个字节</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2cpu_8hpp_source.html#l00062">cpu.hpp:62</a></div></div>
+<div class="ttc" id="aclassCpu_html_a8a155b2fb5b653542fb18c386b3363cc"><div class="ttname"><a href="classCpu.html#a8a155b2fb5b653542fb18c386b3363cc">Cpu::InByte</a></div><div class="ttdeci">static uint8_t InByte(const uint32_t port)</div><div class="ttdoc">读一个字节</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2cpu_8hpp_source.html#l00029">cpu.hpp:29</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -344,7 +344,7 @@ Here is the call graph for this function:</div>
 <dd>
 false </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00167">167</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00167">167</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;                                                       {</div>
 <div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;      <span class="keywordflow">return</span> <a class="code" href="classCpu.html#a8a155b2fb5b653542fb18c386b3363cc">InByte</a>(<a class="code" href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">port_</a> + 5) &amp; 0x20;</div>
 <div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    }</div>
@@ -447,14 +447,14 @@ Here is the caller graph for this function:</div>
 <p>读一个字节 </p>
 <dl class="section return"><dt>Returns</dt><dd>uint8_t 读取到的数据 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00132">132</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00132">132</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                                               {</div>
 <div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;      <span class="keywordflow">while</span> (!<a class="code" href="classCpu_1_1Serial.html#aaea29810818d2a5a4fd7e16e2ce10c36">SerialReceived</a>()) {</div>
 <div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        ;</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;      }</div>
 <div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;      <span class="keywordflow">return</span> <a class="code" href="classCpu.html#a8a155b2fb5b653542fb18c386b3363cc">InByte</a>(<a class="code" href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">port_</a>);</div>
 <div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    }</div>
-<div class="ttc" id="aclassCpu_1_1Serial_html_aaea29810818d2a5a4fd7e16e2ce10c36"><div class="ttname"><a href="classCpu_1_1Serial.html#aaea29810818d2a5a4fd7e16e2ce10c36">Cpu::Serial::SerialReceived</a></div><div class="ttdeci">auto SerialReceived() const -&gt; bool</div><div class="ttdoc">串口是否接收到数据</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00158">cpu.hpp:158</a></div></div>
+<div class="ttc" id="aclassCpu_1_1Serial_html_aaea29810818d2a5a4fd7e16e2ce10c36"><div class="ttname"><a href="classCpu_1_1Serial.html#aaea29810818d2a5a4fd7e16e2ce10c36">Cpu::Serial::SerialReceived</a></div><div class="ttdeci">auto SerialReceived() const -&gt; bool</div><div class="ttdoc">串口是否接收到数据</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2cpu_8hpp_source.html#l00158">cpu.hpp:158</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -496,7 +496,7 @@ Here is the call graph for this function:</div>
 <dd>
 false </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00158">158</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00158">158</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;                                                      {</div>
 <div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;      <span class="keywordflow">return</span> <a class="code" href="classCpu.html#a8a155b2fb5b653542fb18c386b3363cc">InByte</a>(<a class="code" href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">port_</a> + 5) &amp; 1;</div>
 <div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    }</div>
@@ -553,14 +553,14 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00143">143</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00143">143</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;                                {</div>
 <div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;      <span class="keywordflow">while</span> (!<a class="code" href="classCpu_1_1Serial.html#ae6e6cef44e54592c1401b90fc89a643c">IsTransmitEmpty</a>()) {</div>
 <div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;        ;</div>
 <div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;      }</div>
 <div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;      <a class="code" href="classCpu.html#a5497de750dea06f8941505159fd96c1c">OutByte</a>(<a class="code" href="classCpu_1_1Serial.html#ab2efc349240252e682f9045b6123e29f">port_</a>, c);</div>
 <div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    }</div>
-<div class="ttc" id="aclassCpu_1_1Serial_html_ae6e6cef44e54592c1401b90fc89a643c"><div class="ttname"><a href="classCpu_1_1Serial.html#ae6e6cef44e54592c1401b90fc89a643c">Cpu::Serial::IsTransmitEmpty</a></div><div class="ttdeci">auto IsTransmitEmpty() const -&gt; bool</div><div class="ttdoc">串口是否可以发送数据</div><div class="ttdef"><b>Definition:</b> <a href="cpu_8hpp_source.html#l00167">cpu.hpp:167</a></div></div>
+<div class="ttc" id="aclassCpu_1_1Serial_html_ae6e6cef44e54592c1401b90fc89a643c"><div class="ttname"><a href="classCpu_1_1Serial.html#ae6e6cef44e54592c1401b90fc89a643c">Cpu::Serial::IsTransmitEmpty</a></div><div class="ttdeci">auto IsTransmitEmpty() const -&gt; bool</div><div class="ttdoc">串口是否可以发送数据</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2cpu_8hpp_source.html#l00167">cpu.hpp:167</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -596,12 +596,12 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="cpu_8hpp_source.html#l00151">151</a> of file <a class="el" href="cpu_8hpp_source.html">cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="x86__64_2cpu_8hpp_source.html#l00151">151</a> of file <a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/home/runner/work/SimpleKernel/SimpleKernel/src/kernel/arch/x86_64/<a class="el" href="cpu_8hpp_source.html">cpu.hpp</a></li>
+<li>/home/runner/work/SimpleKernel/SimpleKernel/src/kernel/arch/x86_64/<a class="el" href="x86__64_2cpu_8hpp_source.html">cpu.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -609,7 +609,7 @@ Here is the call graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classCpu.html">Cpu</a></li><li class="navelem"><a class="el" href="classCpu_1_1Serial.html">Serial</a></li>
-    <li class="footer">Generated on Wed May 29 2024 08:47:14 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 08:28:02 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

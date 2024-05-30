@@ -1,13 +1,15 @@
 <map id="/home/runner/work/SimpleKernel/SimpleKernel/src/boot/graphics.cpp" name="/home/runner/work/SimpleKernel/SimpleKernel/src/boot/graphics.cpp">
-<area shape="rect" id="node1" title="图形相关" alt="" coords="252,5,447,61"/>
-<area shape="rect" id="node2" href="$load__elf_8h.html" title="load_elf h" alt="" coords="225,109,311,136"/>
-<area shape="rect" id="node9" href="$out__stream_8hpp.html" title=" " alt="" coords="369,109,493,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="5,184,56,211"/>
-<area shape="rect" id="node4" title=" " alt="" coords="80,184,136,211"/>
-<area shape="rect" id="node5" title=" " alt="" coords="160,184,213,211"/>
-<area shape="rect" id="node6" title=" " alt="" coords="238,184,298,211"/>
-<area shape="rect" id="node7" title=" " alt="" coords="323,184,373,211"/>
-<area shape="rect" id="node8" title=" " alt="" coords="397,184,464,211"/>
-<area shape="rect" id="node10" title=" " alt="" coords="488,184,555,211"/>
-<area shape="rect" id="node11" title=" " alt="" coords="579,184,640,211"/>
+<area shape="rect" id="node1" title="图形相关" alt="" coords="209,5,403,61"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,184,60,211"/>
+<area shape="rect" id="node3" href="$load__elf_8h.html" title="load_elf h" alt="" coords="263,109,349,136"/>
+<area shape="rect" id="node12" href="$out__stream_8hpp.html" title=" " alt="" coords="611,109,735,136"/>
+<area shape="rect" id="node4" title=" " alt="" coords="85,184,135,211"/>
+<area shape="rect" id="node5" title=" " alt="" coords="159,184,215,211"/>
+<area shape="rect" id="node6" title=" " alt="" coords="239,184,293,211"/>
+<area shape="rect" id="node7" title=" " alt="" coords="317,184,377,211"/>
+<area shape="rect" id="node8" href="$arch_8h.html" title="arch 头文件" alt="" coords="402,184,541,211"/>
+<area shape="rect" id="node10" title=" " alt="" coords="565,184,615,211"/>
+<area shape="rect" id="node11" title=" " alt="" coords="639,184,706,211"/>
+<area shape="rect" id="node9" title=" " alt="" coords="574,259,641,285"/>
+<area shape="rect" id="node13" title=" " alt="" coords="781,184,842,211"/>
 </map>

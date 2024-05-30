@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['debug_279',['debug',['../out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334',1,'debug():&#160;out_stream.cpp'],['../out__stream_8cpp.html#ac35f3fe5ec881b6688219406bd354334',1,'debug():&#160;out_stream.cpp']]],
-  ['desc_5fcount_5f_280',['desc_count_',['../classMemory.html#aed0dc5abd37fe911256fc4efb1cf15f4',1,'Memory']]],
-  ['desc_5fsize_5f_281',['desc_size_',['../classMemory.html#a95a497abe9cd1e06508121985219c06f',1,'Memory']]],
-  ['desc_5fversion_5f_282',['desc_version_',['../classMemory.html#ab96d50143a7268f82be8c172a5407b3b',1,'Memory']]]
+  ['file_5f_288',['file_',['../classElf.html#a78129e66a88b9af4e26058ee0c9360c7',1,'Elf']]],
+  ['file_5fsystem_5fprotocol_5f_289',['file_system_protocol_',['../classElf.html#a65f3bc508f566e55431bdc30ff27388c',1,'Elf']]],
+  ['framebuffer_290',['framebuffer',['../structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5',1,'BootInfo']]]
 ];

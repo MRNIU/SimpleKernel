@@ -1,6 +1,5 @@
 var annotated_dup =
 [
-    [ "Aaa", "classAaa.html", "classAaa" ],
     [ "BootInfo", "structBootInfo.html", "structBootInfo" ],
     [ "Cpu", "classCpu.html", "classCpu" ],
     [ "Elf", "classElf.html", "classElf" ],

@@ -85,6 +85,7 @@ $(document).ready(function(){initNavTree('structBootInfo.html',''); initResizabl
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="structBootInfo-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">BootInfo Struct Reference</div>  </div>
@@ -97,7 +98,7 @@ Collaboration diagram for BootInfo:</div>
 <div class="dyncontent">
 <div class="center"><img src="structBootInfo__coll__graph.png" border="0" usemap="#aBootInfo_coll__map" alt="Collaboration graph"/></div>
 <map name="aBootInfo_coll__map" id="aBootInfo_coll__map">
-<area shape="rect" title=" " alt="" coords="144,248,221,325"/>
+<area shape="rect" title=" " alt="" coords="86,248,279,340"/>
 <area shape="rect" href="structBootInfo_1_1FrameBuffer.html" title=" " alt="" coords="5,5,171,185"/>
 <area shape="rect" href="structBootInfo_1_1MemoryMap.html" title=" " alt="" coords="195,35,362,156"/>
 </map>
@@ -112,10 +113,17 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
+<tr class="memitem:a95ea0d874a391c9fbf4deb701e9fec9f"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structBootInfo_1_1MemoryMap.html">BootInfo::MemoryMap</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structBootInfo.html#a95ea0d874a391c9fbf4deb701e9fec9f">memory_map</a> [<a class="el" href="structBootInfo.html#a5acdde07afb44bceaec24e96136435f0">kMemoryMapMaxCount</a>]</td></tr>
+<tr class="separator:a95ea0d874a391c9fbf4deb701e9fec9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c415beae567d8f4b7f554d3af4f3b3a"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structBootInfo.html#a1c415beae567d8f4b7f554d3af4f3b3a">memory_map_count</a></td></tr>
+<tr class="separator:a1c415beae567d8f4b7f554d3af4f3b3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2283a31a0096bab5e9fe2fb2605ae8e5"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structBootInfo_1_1FrameBuffer.html">BootInfo::FrameBuffer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">framebuffer</a></td></tr>
 <tr class="separator:a2283a31a0096bab5e9fe2fb2605ae8e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5d7f315b058e41d427548255d0298526"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structBootInfo_1_1MemoryMap.html">BootInfo::MemoryMap</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structBootInfo.html#a5d7f315b058e41d427548255d0298526">memory_map</a></td></tr>
-<tr class="separator:a5d7f315b058e41d427548255d0298526"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a5acdde07afb44bceaec24e96136435f0"><td class="memItemLeft" align="right" valign="top">static constexpr const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structBootInfo.html#a5acdde07afb44bceaec24e96136435f0">kMemoryMapMaxCount</a> = 256</td></tr>
+<tr class="separator:a5acdde07afb44bceaec24e96136435f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
@@ -135,17 +143,57 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a5d7f315b058e41d427548255d0298526"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5d7f315b058e41d427548255d0298526">&#9670;&nbsp;</a></span>memory_map</h2>
+<a id="a5acdde07afb44bceaec24e96136435f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5acdde07afb44bceaec24e96136435f0">&#9670;&nbsp;</a></span>kMemoryMapMaxCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const uint32_t BootInfo::kMemoryMapMaxCount = 256</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arch_8h_source.html#l00023">23</a> of file <a class="el" href="arch_8h_source.html">arch.h</a>.</p>
+
+</div>
+</div>
+<a id="a95ea0d874a391c9fbf4deb701e9fec9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95ea0d874a391c9fbf4deb701e9fec9f">&#9670;&nbsp;</a></span>memory_map</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct <a class="el" href="structBootInfo_1_1MemoryMap.html">BootInfo::MemoryMap</a> BootInfo::memory_map</td>
+          <td class="memname">struct <a class="el" href="structBootInfo_1_1MemoryMap.html">BootInfo::MemoryMap</a> BootInfo::memory_map[<a class="el" href="structBootInfo.html#a5acdde07afb44bceaec24e96136435f0">kMemoryMapMaxCount</a>]</td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1c415beae567d8f4b7f554d3af4f3b3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c415beae567d8f4b7f554d3af4f3b3a">&#9670;&nbsp;</a></span>memory_map_count</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t BootInfo::memory_map_count</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="arch_8h_source.html#l00031">31</a> of file <a class="el" href="arch_8h_source.html">arch.h</a>.</p>
 
 </div>
 </div>
@@ -158,7 +206,7 @@ Public Attributes</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="structBootInfo.html">BootInfo</a></li>
-    <li class="footer">Generated on Wed May 29 2024 08:47:14 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 08:28:02 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>
