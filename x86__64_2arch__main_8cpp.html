@@ -206,7 +206,7 @@ Variables</h2></td></tr>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <a class="code" href="x86__64_2arch__main_8cpp.html#a06d927030ed5e8af6d4608f6b30b5731">Fillrect</a>((uint8_t *)boot_info.<a class="code" href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">framebuffer</a>.<a class="code" href="structBootInfo_1_1FrameBuffer.html#a4b9a918579211ea0e6c2d12988c54c46">base</a>, boot_info.<a class="code" href="structBootInfo.html#a2283a31a0096bab5e9fe2fb2605ae8e5">framebuffer</a>.<a class="code" href="structBootInfo_1_1FrameBuffer.html#a0183e76056d84d683daec62b21b1b33b">pitch</a>,</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;           255, 0, 255, 100, 100);</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">auto</span> i = 0; i &lt; boot_info.<a class="code" href="structBootInfo.html#a1c415beae567d8f4b7f554d3af4f3b3a">memory_map_count</a>; i++) {</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; boot_info.<a class="code" href="structBootInfo.html#a1c415beae567d8f4b7f554d3af4f3b3a">memory_map_count</a>; i++) {</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    printf(</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="stringliteral">&quot;boot_info.memory_map[%d].base_addr: 0x%p, length: 0x%X, type: %d.\n&quot;</span>,</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        i, boot_info.<a class="code" href="structBootInfo.html#a95ea0d874a391c9fbf4deb701e9fec9f">memory_map</a>[i].<a class="code" href="structBootInfo_1_1MemoryMap.html#aed0f5b0e5a46dcdaa259699b0fb23e23">base_addr</a>, boot_info.<a class="code" href="structBootInfo.html#a95ea0d874a391c9fbf4deb701e9fec9f">memory_map</a>[i].<a class="code" href="structBootInfo_1_1MemoryMap.html#a63f7a70789a038591b5cb6b8b9fb6637">length</a>,</div>
@@ -309,8 +309,8 @@ Here is the call graph for this function:</div>
 <p class="definition">Definition at line <a class="el" href="x86__64_2arch__main_8cpp_source.html#l00027">27</a> of file <a class="el" href="x86__64_2arch__main_8cpp_source.html">arch_main.cpp</a>.</p>
 <div class="fragment"><div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;                                                        {</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> kPixelWidth = <span class="keyword">sizeof</span>(uint32_t);</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">auto</span> i = 0; i &lt; w; i++) {</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">auto</span> j = 0; j &lt; h; j++) {</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; w; i++) {</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordflow">for</span> (uint32_t j = 0; j &lt; h; j++) {</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;      vram[j * kPixelWidth] = r;</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;      vram[j * kPixelWidth + 1] = g;</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;      vram[j * kPixelWidth + 2] = b;</div>
@@ -362,7 +362,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_76e3dd4d2fa719e8d3b096e9aa563982.html">arch</a></li><li class="navelem"><a class="el" href="dir_7c4c796ec9937bed8074dafcec3d25e4.html">x86_64</a></li><li class="navelem"><a class="el" href="x86__64_2arch__main_8cpp.html">arch_main.cpp</a></li>
-    <li class="footer">Generated on Thu May 30 2024 08:28:02 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu May 30 2024 08:36:54 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>
