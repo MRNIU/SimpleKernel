@@ -65,7 +65,7 @@ var NAVTREE =
       [ "加载符号表", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md31", null ],
       [ "开始执行", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md32", [
         [ "新增特性", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md33", null ],
-        [ "已支持", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md34", null ],
+        [ "已支持特性", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md34", null ],
         [ "使用的第三方资源", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md35", null ],
         [ "开发指南", "md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md36", null ]
       ] ]
