@@ -90,6 +90,9 @@ var NAVTREE =
     ] ],
     [ "Bug List", "bug.html", null ],
     [ "Todo List", "todo.html", null ],
+    [ "Namespaces", "namespaces.html", [
+      [ "Namespace List", "namespaces.html", "namespaces_dup" ]
+    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
@@ -117,7 +120,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "aarch64_2arch__main_8cpp.html",
-"md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md41"
+"md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md39"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

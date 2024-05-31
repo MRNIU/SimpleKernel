@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['main_2ecpp_202',['main.cpp',['../src_2kernel_2main_8cpp.html',1,'(Global Namespace)'],['../test_2system__test_2gnu__efi__test_2main_8cpp.html',1,'(Global Namespace)']]],
-  ['memory_2ecpp_203',['memory.cpp',['../memory_8cpp.html',1,'']]]
+  ['libcxx_2ecpp_202',['libcxx.cpp',['../libcxx_8cpp.html',1,'']]],
+  ['libcxx_2eh_203',['libcxx.h',['../libcxx_8h.html',1,'']]],
+  ['load_5felf_2ecpp_204',['load_elf.cpp',['../load__elf_8cpp.html',1,'']]],
+  ['load_5felf_2eh_205',['load_elf.h',['../load__elf_8h.html',1,'']]]
 ];
