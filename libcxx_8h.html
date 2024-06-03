@@ -114,13 +114,53 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a8c22041b9886ca00cff1e90cd43eb3f2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2">CppInit</a> ()</td></tr>
-<tr class="memdesc:a8c22041b9886ca00cff1e90cd43eb3f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">初始化 c++ 全局对象  <a href="libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2">More...</a><br /></td></tr>
+<tr class="memdesc:a8c22041b9886ca00cff1e90cd43eb3f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">构造 c++ 全局对象  <a href="libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2">More...</a><br /></td></tr>
 <tr class="separator:a8c22041b9886ca00cff1e90cd43eb3f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace4b6de6e1ac3081329da66be1b45f76"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libcxx_8h.html#ace4b6de6e1ac3081329da66be1b45f76">CppDeInit</a> ()</td></tr>
+<tr class="memdesc:ace4b6de6e1ac3081329da66be1b45f76"><td class="mdescLeft">&#160;</td><td class="mdescRight">析构 c++ 全局对象  <a href="libcxx_8h.html#ace4b6de6e1ac3081329da66be1b45f76">More...</a><br /></td></tr>
+<tr class="separator:ace4b6de6e1ac3081329da66be1b45f76"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af42c1cb6cf3fbadebe80a1dd0d9d20df"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libcxx_8h.html#af42c1cb6cf3fbadebe80a1dd0d9d20df">LibCxxInit</a> (uint32_t argc, uint8_t *argv)</td></tr>
 <tr class="memdesc:af42c1cb6cf3fbadebe80a1dd0d9d20df"><td class="mdescLeft">&#160;</td><td class="mdescRight">入口  <a href="libcxx_8h.html#af42c1cb6cf3fbadebe80a1dd0d9d20df">More...</a><br /></td></tr>
 <tr class="separator:af42c1cb6cf3fbadebe80a1dd0d9d20df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="ace4b6de6e1ac3081329da66be1b45f76"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace4b6de6e1ac3081329da66be1b45f76">&#9670;&nbsp;</a></span>CppDeInit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CppDeInit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>析构 c++ 全局对象 </p>
+
+<p class="definition">Definition at line <a class="el" href="libcxx_8cpp_source.html#l00033">33</a> of file <a class="el" href="libcxx_8cpp_source.html">libcxx.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;                     {</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  std::for_each(&amp;<a class="code" href="libcxx_8cpp.html#a66db7682da68ee991c83b157e94ec916">__fini_array_start</a>, &amp;<a class="code" href="libcxx_8cpp.html#a337b2464bd1c72ed4340e1f0d496bf44">__fini_array_end</a>,</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                [](<a class="code" href="libcxx_8cpp.html#addbc9580aadec5fc7bf6bf285801815b">function_t</a> func) { (func)(); });</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;}</div>
+<div class="ttc" id="alibcxx_8cpp_html_a337b2464bd1c72ed4340e1f0d496bf44"><div class="ttname"><a href="libcxx_8cpp.html#a337b2464bd1c72ed4340e1f0d496bf44">__fini_array_end</a></div><div class="ttdeci">function_t __fini_array_end</div><div class="ttdef"><b>Definition:</b> <a href="libcxx_8cpp_source.html#l00026">libcxx.cpp:26</a></div></div>
+<div class="ttc" id="alibcxx_8cpp_html_a66db7682da68ee991c83b157e94ec916"><div class="ttname"><a href="libcxx_8cpp.html#a66db7682da68ee991c83b157e94ec916">__fini_array_start</a></div><div class="ttdeci">function_t __fini_array_start</div><div class="ttdef"><b>Definition:</b> <a href="libcxx_8cpp_source.html#l00025">libcxx.cpp:25</a></div></div>
+<div class="ttc" id="alibcxx_8cpp_html_addbc9580aadec5fc7bf6bf285801815b"><div class="ttname"><a href="libcxx_8cpp.html#addbc9580aadec5fc7bf6bf285801815b">function_t</a></div><div class="ttdeci">void(* function_t)(void)</div><div class="ttdef"><b>Definition:</b> <a href="libcxx_8cpp_source.html#l00021">libcxx.cpp:21</a></div></div>
+</div><!-- fragment --><div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="libcxx_8h_ace4b6de6e1ac3081329da66be1b45f76_icgraph.png" border="0" usemap="#alibcxx_8h_ace4b6de6e1ac3081329da66be1b45f76_icgraph" alt=""/></div>
+<map name="alibcxx_8h_ace4b6de6e1ac3081329da66be1b45f76_icgraph" id="alibcxx_8h_ace4b6de6e1ac3081329da66be1b45f76_icgraph">
+<area shape="rect" title="析构 c++ 全局对象" alt="" coords="112,5,199,32"/>
+<area shape="rect" href="kernel_8h.html#a1069cf333a0c1ad48689c63dfe3347dd" title="负责 crtbegin 的工作" alt="" coords="5,5,64,32"/>
+</map>
+</div>
+
+</div>
+</div>
 <a id="a8c22041b9886ca00cff1e90cd43eb3f2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8c22041b9886ca00cff1e90cd43eb3f2">&#9670;&nbsp;</a></span>CppInit()</h2>
 
@@ -136,22 +176,21 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>初始化 c++ 全局对象 </p>
+<p>构造 c++ 全局对象 </p>
 
-<p class="definition">Definition at line <a class="el" href="libcxx_8cpp_source.html#l00024">24</a> of file <a class="el" href="libcxx_8cpp_source.html">libcxx.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;                   {</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">auto</span> ctor = <a class="code" href="libcxx_8cpp.html#ae7242f0a148c102c15391ac98f022aac">__init_array_start</a>; ctor &lt; <a class="code" href="libcxx_8cpp.html#ac7e71dba9e7998f6caa749b4666a7525">__init_array_end</a>; ctor++) {</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    (*ctor)();</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  }</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;}</div>
-<div class="ttc" id="alibcxx_8cpp_html_ac7e71dba9e7998f6caa749b4666a7525"><div class="ttname"><a href="libcxx_8cpp.html#ac7e71dba9e7998f6caa749b4666a7525">__init_array_end</a></div><div class="ttdeci">ctor_t __init_array_end[]</div><div class="ttdef"><b>Definition:</b> <a href="libcxx_8cpp_source.html#l00022">libcxx.cpp:22</a></div></div>
-<div class="ttc" id="alibcxx_8cpp_html_ae7242f0a148c102c15391ac98f022aac"><div class="ttname"><a href="libcxx_8cpp.html#ae7242f0a148c102c15391ac98f022aac">__init_array_start</a></div><div class="ttdeci">ctor_t __init_array_start[]</div><div class="ttdef"><b>Definition:</b> <a href="libcxx_8cpp_source.html#l00021">libcxx.cpp:21</a></div></div>
+<p class="definition">Definition at line <a class="el" href="libcxx_8cpp_source.html#l00028">28</a> of file <a class="el" href="libcxx_8cpp_source.html">libcxx.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;                   {</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  std::for_each(&amp;<a class="code" href="libcxx_8cpp.html#a712761290ad098358f092397279d4331">__init_array_start</a>, &amp;<a class="code" href="libcxx_8cpp.html#aa7e80f6a504a0136615a6499a04c73c4">__init_array_end</a>,</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;                [](<a class="code" href="libcxx_8cpp.html#addbc9580aadec5fc7bf6bf285801815b">function_t</a> func) { (func)(); });</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;}</div>
+<div class="ttc" id="alibcxx_8cpp_html_a712761290ad098358f092397279d4331"><div class="ttname"><a href="libcxx_8cpp.html#a712761290ad098358f092397279d4331">__init_array_start</a></div><div class="ttdeci">function_t __init_array_start</div><div class="ttdef"><b>Definition:</b> <a href="libcxx_8cpp_source.html#l00023">libcxx.cpp:23</a></div></div>
+<div class="ttc" id="alibcxx_8cpp_html_aa7e80f6a504a0136615a6499a04c73c4"><div class="ttname"><a href="libcxx_8cpp.html#aa7e80f6a504a0136615a6499a04c73c4">__init_array_end</a></div><div class="ttdeci">function_t __init_array_end</div><div class="ttdef"><b>Definition:</b> <a href="libcxx_8cpp_source.html#l00024">libcxx.cpp:24</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="libcxx_8h_a8c22041b9886ca00cff1e90cd43eb3f2_icgraph.png" border="0" usemap="#alibcxx_8h_a8c22041b9886ca00cff1e90cd43eb3f2_icgraph" alt=""/></div>
 <map name="alibcxx_8h_a8c22041b9886ca00cff1e90cd43eb3f2_icgraph" id="alibcxx_8h_a8c22041b9886ca00cff1e90cd43eb3f2_icgraph">
-<area shape="rect" title="初始化 c++ 全局对象" alt="" coords="112,5,180,32"/>
+<area shape="rect" title="构造 c++ 全局对象" alt="" coords="112,5,180,32"/>
 <area shape="rect" href="kernel_8h.html#a1069cf333a0c1ad48689c63dfe3347dd" title="负责 crtbegin 的工作" alt="" coords="5,5,64,32"/>
 </map>
 </div>
@@ -194,18 +233,18 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>uint32_t 正常返回 0 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="libcxx_8cpp_source.html#l00030">30</a> of file <a class="el" href="libcxx_8cpp_source.html">libcxx.cpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;                                                  {</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  (void)argc;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  (void)argv;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="comment">// 进入死循环</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    ;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  }</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;}</div>
+<p class="definition">Definition at line <a class="el" href="libcxx_8cpp_source.html#l00038">38</a> of file <a class="el" href="libcxx_8cpp_source.html">libcxx.cpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                                                  {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  (void)argc;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  (void)argv;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="comment">// 进入死循环</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <span class="keywordflow">while</span> (1) {</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    ;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  }</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -215,7 +254,7 @@ Here is the caller graph for this function:</div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_d683bc3d3192fc80ec7b59eb6756d7d6.html">libcxx</a></li><li class="navelem"><a class="el" href="dir_59df94d8c79cd5668d4518ea58739506.html">include</a></li><li class="navelem"><a class="el" href="libcxx_8h.html">libcxx.h</a></li>
-    <li class="footer">Generated on Mon Jun 3 2024 02:29:11 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Mon Jun 3 2024 05:27:09 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

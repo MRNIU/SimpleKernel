@@ -92,20 +92,21 @@ $(document).ready(function(){initNavTree('kernel_8h_source.html',''); initResiza
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> <span class="keywordtype">void</span> <a class="code" href="kernel_8h.html#a1069cf333a0c1ad48689c63dfe3347dd">_start</a>(uint32_t argc, uint8_t* argv);</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;uint32_t <a class="code" href="kernel_8h.html#a33a24bc7914061cb094c417bd05032dc">main</a>(uint32_t argc, uint8_t* argv);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> [[maybe_unused]] [[noreturn]] <span class="keywordtype">void</span> <a class="code" href="kernel_8h.html#a1069cf333a0c1ad48689c63dfe3347dd">_start</a>(uint32_t argc,</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;                                                     uint8_t* argv);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;uint32_t <a class="code" href="kernel_8h.html#a33a24bc7914061cb094c417bd05032dc">main</a>(uint32_t argc, uint8_t* argv);</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_H_ */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="akernel_8h_html_a1069cf333a0c1ad48689c63dfe3347dd"><div class="ttname"><a href="kernel_8h.html#a1069cf333a0c1ad48689c63dfe3347dd">_start</a></div><div class="ttdeci">void _start(uint32_t argc, uint8_t *argv)</div><div class="ttdoc">负责 crtbegin 的工作</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00022">main.cpp:22</a></div></div>
-<div class="ttc" id="akernel_8h_html_a33a24bc7914061cb094c417bd05032dc"><div class="ttname"><a href="kernel_8h.html#a33a24bc7914061cb094c417bd05032dc">main</a></div><div class="ttdeci">uint32_t main(uint32_t argc, uint8_t *argv)</div><div class="ttdoc">内核入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00027">main.cpp:27</a></div></div>
+<div class="ttc" id="akernel_8h_html_a33a24bc7914061cb094c417bd05032dc"><div class="ttname"><a href="kernel_8h.html#a33a24bc7914061cb094c417bd05032dc">main</a></div><div class="ttdeci">uint32_t main(uint32_t argc, uint8_t *argv)</div><div class="ttdoc">内核入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00033">main.cpp:33</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_cbd7f246bdf7dc0a50281a272327e6ed.html">kernel</a></li><li class="navelem"><a class="el" href="dir_1083f99974d515180cb874b65de1a4c1.html">include</a></li><li class="navelem"><a class="el" href="kernel_8h.html">kernel.h</a></li>
-    <li class="footer">Generated on Mon Jun 3 2024 02:29:11 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Mon Jun 3 2024 05:27:09 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

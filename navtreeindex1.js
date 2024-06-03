@@ -1,5 +1,9 @@
 var NAVTREEINDEX1 =
 {
+"md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md36":[4,10,3],
+"md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html":[5],
+"md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md37":[5,0],
+"md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md38":[5,0,0],
 "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md39":[5,0,1],
 "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md40":[5,0,2],
 "md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md41":[5,0,3],
@@ -78,11 +82,11 @@ var NAVTREEINDEX1 =
 "structBootInfo_1_1MemoryMap.html#aed0f5b0e5a46dcdaa259699b0fb23e23":[14,0,0,1,0],
 "structBootInfo_1_1MemoryMap.html#af8535237928880fb95baffb15504439d":[14,0,0,1,2],
 "test_2system__test_2gnu__efi__test_2main_8cpp.html":[15,0,1,1,0,0],
-"test_2system__test_2gnu__efi__test_2main_8cpp.html#a0f48723753a66da09cdc1e659c62119a":[15,0,1,1,0,0,1],
+"test_2system__test_2gnu__efi__test_2main_8cpp.html#a1069cf333a0c1ad48689c63dfe3347dd":[15,0,1,1,0,0,1],
 "test_2system__test_2gnu__efi__test_2main_8cpp.html#a129ccdf268cbc4381ea8655d7c23e189":[15,0,1,1,0,0,4],
 "test_2system__test_2gnu__efi__test_2main_8cpp.html#a223496da92021626a4430fed0af667bd":[15,0,1,1,0,0,0],
 "test_2system__test_2gnu__efi__test_2main_8cpp.html#a23eadeea056d2471bf63e2e9b04d8a7f":[15,0,1,1,0,0,5],
-"test_2system__test_2gnu__efi__test_2main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627":[15,0,1,1,0,0,3],
+"test_2system__test_2gnu__efi__test_2main_8cpp.html#a33a24bc7914061cb094c417bd05032dc":[15,0,1,1,0,0,3],
 "test_2system__test_2gnu__efi__test_2main_8cpp.html#aa94fac88ccd3e86a0c441f12a08b301b":[15,0,1,1,0,0,2],
 "test_2system__test_2gnu__efi__test_2main_8cpp_source.html":[15,0,1,1,0,0],
 "test_2system__test_2opensbi__test_2boot_8cpp.html":[15,0,1,1,1,0],

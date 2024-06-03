@@ -120,7 +120,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "aarch64_2arch__main_8cpp.html",
-"md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html#autotoc_md39"
+"md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md36"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

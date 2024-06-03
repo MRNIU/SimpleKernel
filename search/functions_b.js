@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ns16550a_248',['Ns16550a',['../classNs16550a.html#a94a8b561451520c1ba86ee5cb7a82b71',1,'Ns16550a::Ns16550a(uintptr_t dev_addr)'],['../classNs16550a.html#a0329066ce32e2d7f6f908c1f499a6481',1,'Ns16550a::Ns16550a()=delete'],['../classNs16550a.html#ad2e9b43de25302fec524542c0e0ac269',1,'Ns16550a::Ns16550a(const Ns16550a &amp;na16550a)=delete'],['../classNs16550a.html#a7346c57994b8b17cbdb497215a183572',1,'Ns16550a::Ns16550a(Ns16550a &amp;&amp;na16550a)=delete']]]
+  ['ns16550a_252',['Ns16550a',['../classNs16550a.html#a94a8b561451520c1ba86ee5cb7a82b71',1,'Ns16550a::Ns16550a(uintptr_t dev_addr)'],['../classNs16550a.html#a0329066ce32e2d7f6f908c1f499a6481',1,'Ns16550a::Ns16550a()=delete'],['../classNs16550a.html#ad2e9b43de25302fec524542c0e0ac269',1,'Ns16550a::Ns16550a(const Ns16550a &amp;na16550a)=delete'],['../classNs16550a.html#a7346c57994b8b17cbdb497215a183572',1,'Ns16550a::Ns16550a(Ns16550a &amp;&amp;na16550a)=delete']]]
 ];
