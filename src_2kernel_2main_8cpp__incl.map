@@ -1,9 +1,9 @@
 <map id="/home/runner/work/SimpleKernel/SimpleKernel/src/kernel/main.cpp" name="/home/runner/work/SimpleKernel/SimpleKernel/src/kernel/main.cpp">
-<area shape="rect" id="node1" title="内核入口" alt="" coords="121,5,315,61"/>
-<area shape="rect" id="node2" href="$arch_8h.html" title="arch 头文件" alt="" coords="5,109,68,136"/>
-<area shape="rect" id="node4" title=" " alt="" coords="93,109,154,136"/>
-<area shape="rect" id="node5" title=" " alt="" coords="178,109,258,136"/>
-<area shape="rect" id="node6" href="$kernel_8h.html" title="内核头文件" alt="" coords="282,109,357,136"/>
-<area shape="rect" id="node7" href="$libcxx_8h.html" title=" " alt="" coords="381,109,455,136"/>
-<area shape="rect" id="node3" title=" " alt="" coords="286,184,353,211"/>
+<area shape="rect" id="node1" title="内核入口" alt="" coords="94,5,288,61"/>
+<area shape="rect" id="node2" title=" " alt="" coords="166,184,232,211"/>
+<area shape="rect" id="node3" href="$arch_8h.html" title="arch 头文件" alt="" coords="26,109,89,136"/>
+<area shape="rect" id="node4" title=" " alt="" coords="114,109,175,136"/>
+<area shape="rect" id="node5" title=" " alt="" coords="199,109,279,136"/>
+<area shape="rect" id="node6" href="$kernel_8h.html" title="内核头文件" alt="" coords="303,109,378,136"/>
+<area shape="rect" id="node7" href="$libcxx_8h.html" title=" " alt="" coords="402,109,476,136"/>
 </map>
