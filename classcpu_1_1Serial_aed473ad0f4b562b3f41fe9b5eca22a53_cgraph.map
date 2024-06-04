@@ -1,0 +1,6 @@
+<map id="cpu::Serial::Write" name="cpu::Serial::Write">
+<area shape="rect" id="node1" title="写一个字节" alt="" coords="5,31,139,57"/>
+<area shape="rect" id="node2" href="$classcpu_1_1Serial.html#a3c7b9cce88d443d905732598660fef3d" title="串口是否可以发送数据" alt="" coords="187,5,393,32"/>
+<area shape="rect" id="node4" href="$namespacecpu.html#adac69fb28047dc64891559f3a59c6d28" title="写一个字节" alt="" coords="237,56,343,83"/>
+<area shape="rect" id="node3" href="$namespacecpu.html#afb4971cb2063fac78fcb8b451670f518" title="读一个字节" alt="" coords="441,5,536,32"/>
+</map>

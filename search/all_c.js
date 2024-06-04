@@ -1,7 +1,7 @@
 var searchData=
 [
   ['kaligntwo_73',['kAlignTwo',['../load__elf_8cpp.html#a647bfe75b9523735dbccfa5baa8fba25',1,'load_elf.cpp']]],
-  ['kcom1_74',['kCom1',['../classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5',1,'Cpu']]],
+  ['kcom1_74',['kCom1',['../namespacecpu.html#abe3ae8974ef5472411d6ead61494200f',1,'cpu']]],
   ['kdefaultheight_75',['kDefaultHeight',['../classGraphics.html#a12d721aa419f662a1ceede33314b4a7d',1,'Graphics']]],
   ['kdefaultwidth_76',['kDefaultWidth',['../classGraphics.html#a0e9246dba43269a590b38d314fc30229',1,'Graphics']]],
   ['kernel_2eh_77',['kernel.h',['../kernel_8h.html',1,'']]],

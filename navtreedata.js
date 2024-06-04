@@ -91,7 +91,12 @@ var NAVTREE =
     [ "Bug List", "bug.html", null ],
     [ "Todo List", "todo.html", null ],
     [ "Namespaces", "namespaces.html", [
-      [ "Namespace List", "namespaces.html", "namespaces_dup" ]
+      [ "Namespace List", "namespaces.html", "namespaces_dup" ],
+      [ "Namespace Members", "namespacemembers.html", [
+        [ "All", "namespacemembers.html", null ],
+        [ "Functions", "namespacemembers_func.html", null ],
+        [ "Variables", "namespacemembers_vars.html", null ]
+      ] ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
@@ -120,7 +125,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "aarch64_2arch__main_8cpp.html",
-"md__home_runner_work_SimpleKernel_SimpleKernel_README.html#autotoc_md36"
+"md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_arch_README.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

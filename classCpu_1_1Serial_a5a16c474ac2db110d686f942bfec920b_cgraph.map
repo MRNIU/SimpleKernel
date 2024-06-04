@@ -1,5 +1,0 @@
-<map id="Cpu::Serial::Serial" name="Cpu::Serial::Serial">
-<area shape="rect" id="node1" title=" " alt="" coords="5,31,143,57"/>
-<area shape="rect" id="node2" href="$classCpu.html#a8a155b2fb5b653542fb18c386b3363cc" title="读一个字节" alt="" coords="196,5,293,32"/>
-<area shape="rect" id="node3" href="$classCpu.html#a5497de750dea06f8941505159fd96c1c" title="写一个字节" alt="" coords="191,56,299,83"/>
-</map>

@@ -5,5 +5,5 @@ var searchData=
   ['_7ememory_172',['~Memory',['../classMemory.html#a2b517b46ae4b070d9f6a7b6d9efeb7a1',1,'Memory']]],
   ['_7ens16550a_173',['~Ns16550a',['../classNs16550a.html#a0b6b7c10624e3c3ccc3e0cf762500882',1,'Ns16550a']]],
   ['_7eoutstream_174',['~OutStream',['../classOutStream.html#aeaa4f982153cde9234518766989d13b7',1,'OutStream']]],
-  ['_7eserial_175',['~Serial',['../classCpu_1_1Serial.html#a40177ab6f295a441237b656e7afaab19',1,'Cpu::Serial']]]
+  ['_7eserial_175',['~Serial',['../classcpu_1_1Serial.html#a49826ddb50db29772a63e94ec80c3264',1,'cpu::Serial']]]
 ];

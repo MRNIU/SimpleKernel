@@ -104,7 +104,7 @@ $(document).ready(function(){initNavTree('test_2system__test_2gnu__efi__test_2ma
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;}</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
 <div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a223496da92021626a4430fed0af667bd">   33</a></span>&#160;<span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> <span class="keywordtype">void</span> <a class="code" href="test_2system__test_2gnu__efi__test_2main_8cpp.html#a223496da92021626a4430fed0af667bd">_putchar</a>(<span class="keywordtype">char</span> character) {</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">auto</span> <a class="code" href="x86__64_2arch__main_8cpp.html#a5af9f33299c9c679814c3e293c6f8e8e">serial</a> = <a class="code" href="classCpu_1_1Serial.html">Cpu::Serial</a>(<a class="code" href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a>);</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">auto</span> <a class="code" href="x86__64_2arch__main_8cpp.html#a5af9f33299c9c679814c3e293c6f8e8e">serial</a> = <a class="code" href="classcpu_1_1Serial.html">cpu::Serial</a>(<a class="code" href="namespacecpu.html#abe3ae8974ef5472411d6ead61494200f">cpu::kCom1</a>);</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <a class="code" href="x86__64_2arch__main_8cpp.html#a5af9f33299c9c679814c3e293c6f8e8e">serial</a>.Write(character);</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;}</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
@@ -148,9 +148,9 @@ $(document).ready(function(){initNavTree('test_2system__test_2gnu__efi__test_2ma
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;}</div>
 <div class="ttc" id="aarch_8h_html"><div class="ttname"><a href="arch_8h.html">arch.h</a></div><div class="ttdoc">arch 头文件</div></div>
-<div class="ttc" id="aclassCpu_1_1Serial_html"><div class="ttname"><a href="classCpu_1_1Serial.html">Cpu::Serial</a></div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2include_2cpu_8hpp_source.html#l00086">cpu.hpp:86</a></div></div>
-<div class="ttc" id="aclassCpu_html_a920fe77691b983ea96a7e3a9b0c463b5"><div class="ttname"><a href="classCpu.html#a920fe77691b983ea96a7e3a9b0c463b5">Cpu::kCom1</a></div><div class="ttdeci">static constexpr const uint32_t kCom1</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2include_2cpu_8hpp_source.html#l00085">cpu.hpp:85</a></div></div>
+<div class="ttc" id="aclasscpu_1_1Serial_html"><div class="ttname"><a href="classcpu_1_1Serial.html">cpu::Serial</a></div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2include_2cpu_8hpp_source.html#l00085">cpu.hpp:85</a></div></div>
 <div class="ttc" id="akernel_8h_html"><div class="ttname"><a href="kernel_8h.html">kernel.h</a></div><div class="ttdoc">内核头文件</div></div>
+<div class="ttc" id="anamespacecpu_html_abe3ae8974ef5472411d6ead61494200f"><div class="ttname"><a href="namespacecpu.html#abe3ae8974ef5472411d6ead61494200f">cpu::kCom1</a></div><div class="ttdeci">static constexpr const uint32_t kCom1</div><div class="ttdef"><b>Definition:</b> <a href="x86__64_2include_2cpu_8hpp_source.html#l00084">cpu.hpp:84</a></div></div>
 <div class="ttc" id="asrc_2kernel_2main_8cpp_html_a1069cf333a0c1ad48689c63dfe3347dd"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a1069cf333a0c1ad48689c63dfe3347dd">_start</a></div><div class="ttdeci">void _start(uint32_t argc, uint8_t *argv)</div><div class="ttdoc">负责 crtbegin 的工作</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00024">main.cpp:24</a></div></div>
 <div class="ttc" id="asrc_2kernel_2main_8cpp_html_a33a24bc7914061cb094c417bd05032dc"><div class="ttname"><a href="src_2kernel_2main_8cpp.html#a33a24bc7914061cb094c417bd05032dc">main</a></div><div class="ttdeci">uint32_t main(uint32_t argc, uint8_t *argv)</div><div class="ttdoc">内核入口</div><div class="ttdef"><b>Definition:</b> <a href="src_2kernel_2main_8cpp_source.html#l00035">main.cpp:35</a></div></div>
 <div class="ttc" id="astructBootInfo_1_1FrameBuffer_html_a4b9a918579211ea0e6c2d12988c54c46"><div class="ttname"><a href="structBootInfo_1_1FrameBuffer.html#a4b9a918579211ea0e6c2d12988c54c46">BootInfo::FrameBuffer::base</a></div><div class="ttdeci">uint64_t base</div><div class="ttdef"><b>Definition:</b> <a href="arch_8h_source.html#l00034">arch.h:34</a></div></div>
@@ -167,7 +167,7 @@ $(document).ready(function(){initNavTree('test_2system__test_2gnu__efi__test_2ma
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_13e138d54eb8818da29c3992edef070a.html">test</a></li><li class="navelem"><a class="el" href="dir_dfa008182f2a40cb988df1752e3cb29d.html">system_test</a></li><li class="navelem"><a class="el" href="dir_cfadb97a047f54946ed337ecdf10cbea.html">gnu_efi_test</a></li><li class="navelem"><a class="el" href="test_2system__test_2gnu__efi__test_2main_8cpp.html">main.cpp</a></li>
-    <li class="footer">Generated on Tue Jun 4 2024 02:38:17 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue Jun 4 2024 05:58:11 for SimpleKernel by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

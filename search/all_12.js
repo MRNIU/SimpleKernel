@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['read_142',['Read',['../classCpu_1_1Serial.html#a77d94573c826928e0e2a4a3b8fc45baa',1,'Cpu::Serial::Read()'],['../classNs16550a.html#a63919576c522a1e7c6e2d2da2fd87f5d',1,'Ns16550a::Read()']]],
+  ['read_142',['Read',['../classcpu_1_1Serial.html#a0493c5ab212c62b918e0e171f058716d',1,'cpu::Serial::Read()'],['../classNs16550a.html#a63919576c522a1e7c6e2d2da2fd87f5d',1,'Ns16550a::Read()']]],
   ['readme_143',['README',['../md__home_runner_work_SimpleKernel_SimpleKernel_README.html',1,'']]],
   ['readme_2emd_144',['README.md',['../README_8md.html',1,'(Global Namespace)'],['../src_2kernel_2arch_2README_8md.html',1,'(Global Namespace)'],['../src_2kernel_2driver_2ns16550a_2README_8md.html',1,'(Global Namespace)'],['../src_2kernel_2driver_2README_8md.html',1,'(Global Namespace)'],['../test_2system__test_2gnu__efi__test_2README_8md.html',1,'(Global Namespace)']]],
   ['readme_5feng_145',['README_ENG',['../md__home_runner_work_SimpleKernel_SimpleKernel_README_ENG.html',1,'']]],

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['outstream_186',['OutStream',['../classOutStream.html',1,'']]]
+  ['serial_186',['Serial',['../classcpu_1_1Serial.html',1,'cpu']]]
 ];
