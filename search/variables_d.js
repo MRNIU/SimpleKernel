@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['reserved_370',['reserved',['../structBootInfo_1_1MemoryMap.html#af8535237928880fb95baffb15504439d',1,'BootInfo::MemoryMap::reserved()'],['../structBootInfo_1_1FrameBuffer.html#af7c71ba4349dec165baa02d0a5c10ac6',1,'BootInfo::FrameBuffer::reserved()']]],
-  ['root_5ffile_5fsystem_5f_371',['root_file_system_',['../classElf.html#ac244614d1fef5a03574b5d426d5db649',1,'Elf']]]
+  ['phdr_5f_374',['phdr_',['../classElf.html#ac211c626a727d93554e6b37ea314b133',1,'Elf']]],
+  ['pitch_375',['pitch',['../structBootInfo_1_1FrameBuffer.html#a0183e76056d84d683daec62b21b1b33b',1,'BootInfo::FrameBuffer']]],
+  ['port_5f_376',['port_',['../classcpu_1_1Serial.html#a9e527217fb8eafc6786bfcf3cad4c2c6',1,'cpu::Serial']]]
 ];

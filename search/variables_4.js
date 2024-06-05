@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['ehdr_5f_317',['ehdr_',['../classElf.html#af8a3c623186ed689668522ae99f99fcc',1,'Elf']]],
-  ['elf_5f_318',['elf_',['../classElf.html#af307f1a08ff2488cd8b5b8683f4694e4',1,'Elf']]],
-  ['elf_5ffile_5fbuffer_5f_319',['elf_file_buffer_',['../classElf.html#a73eb7364f52ce2806eca1f320336dc5c',1,'Elf']]],
-  ['elf_5ffile_5fsize_5f_320',['elf_file_size_',['../classElf.html#af1d1cf5cc6005c0df60f620f91346c91',1,'Elf']]]
+  ['debug_320',['debug',['../out__stream_8hpp.html#ac35f3fe5ec881b6688219406bd354334',1,'debug():&#160;out_stream.cpp'],['../out__stream_8cpp.html#ac35f3fe5ec881b6688219406bd354334',1,'debug():&#160;out_stream.cpp']]],
+  ['desc_5fcount_5f_321',['desc_count_',['../classMemory.html#aed0dc5abd37fe911256fc4efb1cf15f4',1,'Memory']]],
+  ['desc_5fsize_5f_322',['desc_size_',['../classMemory.html#a95a497abe9cd1e06508121985219c06f',1,'Memory']]],
+  ['desc_5fversion_5f_323',['desc_version_',['../classMemory.html#ab96d50143a7268f82be8c172a5407b3b',1,'Memory']]]
 ];

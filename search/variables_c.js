@@ -1,6 +1,8 @@
 var searchData=
 [
-  ['phdr_5f_367',['phdr_',['../classElf.html#ac211c626a727d93554e6b37ea314b133',1,'Elf']]],
-  ['pitch_368',['pitch',['../structBootInfo_1_1FrameBuffer.html#a0183e76056d84d683daec62b21b1b33b',1,'BootInfo::FrameBuffer']]],
-  ['port_5f_369',['port_',['../classcpu_1_1Serial.html#a9e527217fb8eafc6786bfcf3cad4c2c6',1,'cpu::Serial']]]
+  ['map_5fkey_5f_369',['map_key_',['../classMemory.html#ac62d9384dd99f0c28f7354bb35debb4f',1,'Memory']]],
+  ['memory_5fmap_370',['memory_map',['../structBootInfo.html#a95ea0d874a391c9fbf4deb701e9fec9f',1,'BootInfo']]],
+  ['memory_5fmap_5f_371',['memory_map_',['../classMemory.html#a0a831bb59134b81198bcb2bed02c75a9',1,'Memory']]],
+  ['memory_5fmap_5fcount_372',['memory_map_count',['../structBootInfo.html#a1c415beae567d8f4b7f554d3af4f3b3a',1,'BootInfo']]],
+  ['mode_5f_373',['mode_',['../classOutStream.html#ab0a20a754689060d609d741963829ef9',1,'OutStream']]]
 ];

@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['ns16550a_203',['Ns16550a',['../classNs16550a.html',1,'']]]
+  ['memory_205',['Memory',['../classMemory.html',1,'']]],
+  ['memorymap_206',['MemoryMap',['../structBootInfo_1_1MemoryMap.html',1,'BootInfo']]]
 ];

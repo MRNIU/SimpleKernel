@@ -3,6 +3,7 @@ var annotated_dup =
     [ "cpu", "namespacecpu.html", [
       [ "Serial", "classcpu_1_1Serial.html", "classcpu_1_1Serial" ]
     ] ],
+    [ "aaa", "classaaa.html", "classaaa" ],
     [ "BootInfo", "structBootInfo.html", "structBootInfo" ],
     [ "Elf", "classElf.html", "classElf" ],
     [ "Graphics", "classGraphics.html", "classGraphics" ],
