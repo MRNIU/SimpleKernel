@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['framebuffer_180',['FrameBuffer',['../structBootInfo_1_1FrameBuffer.html',1,'BootInfo']]]
+  ['framebuffer_199',['FrameBuffer',['../structBootInfo_1_1FrameBuffer.html',1,'BootInfo']]]
 ];

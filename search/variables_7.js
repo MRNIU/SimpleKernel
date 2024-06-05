@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['imagebase_299',['ImageBase',['../src_2boot_2boot_8cpp.html#a3c37e763c85d8c042a579e38a938e53e',1,'boot.cpp']]]
+  ['height_338',['height',['../structBootInfo_1_1FrameBuffer.html#a5e5a889e6482e2cc2be51e12b43f4b5e',1,'BootInfo::FrameBuffer']]]
 ];

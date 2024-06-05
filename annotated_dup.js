@@ -8,5 +8,6 @@ var annotated_dup =
     [ "Graphics", "classGraphics.html", "classGraphics" ],
     [ "Memory", "classMemory.html", "classMemory" ],
     [ "Ns16550a", "classNs16550a.html", "classNs16550a" ],
-    [ "OutStream", "classOutStream.html", "classOutStream" ]
+    [ "OutStream", "classOutStream.html", "classOutStream" ],
+    [ "TestStaticConstructDestruct", "classTestStaticConstructDestruct.html", "classTestStaticConstructDestruct" ]
 ];

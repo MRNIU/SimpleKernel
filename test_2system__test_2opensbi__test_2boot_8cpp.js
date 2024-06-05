@@ -1,5 +1,24 @@
 var test_2system__test_2opensbi__test_2boot_8cpp =
 [
-    [ "_start", "test_2system__test_2opensbi__test_2boot_8cpp.html#a04f3639cb06474621cc812e428edfb54", null ],
-    [ "main", "test_2system__test_2opensbi__test_2boot_8cpp.html#a2c3f6775325c30275d11c6abee2db6a0", null ]
+    [ "TestStaticConstructDestruct", "classTestStaticConstructDestruct.html", "classTestStaticConstructDestruct" ],
+    [ "_putchar", "test_2system__test_2opensbi__test_2boot_8cpp.html#a223496da92021626a4430fed0af667bd", null ],
+    [ "_start", "test_2system__test_2opensbi__test_2boot_8cpp.html#a1069cf333a0c1ad48689c63dfe3347dd", null ],
+    [ "main", "test_2system__test_2opensbi__test_2boot_8cpp.html#ada709d1df58c8f209a57334b5ff9bd4c", null ],
+    [ "constructor_destructor_1", "test_2system__test_2opensbi__test_2boot_8cpp.html#aeea6406a657213616632397ce88a2653", null ],
+    [ "constructor_destructor_2", "test_2system__test_2opensbi__test_2boot_8cpp.html#a454a014af49317bd013db286c4056b4c", null ],
+    [ "constructor_destructor_3", "test_2system__test_2opensbi__test_2boot_8cpp.html#a4afba5f3de74469df265231427019a31", null ],
+    [ "constructor_destructor_4", "test_2system__test_2opensbi__test_2boot_8cpp.html#aa117cd79ab14a1b0f80cf244cf4f7211", null ],
+    [ "global_bool_keep_running", "test_2system__test_2opensbi__test_2boot_8cpp.html#ab318d94cfeb36b542b05a9f111d5755f", null ],
+    [ "global_f32_value_with_init", "test_2system__test_2opensbi__test_2boot_8cpp.html#a7fe626533e57b62569ca38e49c5caadb", null ],
+    [ "global_f64_value_with_init", "test_2system__test_2opensbi__test_2boot_8cpp.html#aba095abbb7b73a35721c476eb71968d2", null ],
+    [ "global_u16_value_with_init", "test_2system__test_2opensbi__test_2boot_8cpp.html#a08388217386b03f63120f4f55eebb05f", null ],
+    [ "global_u32_value_with_init", "test_2system__test_2opensbi__test_2boot_8cpp.html#a5989b9b415c73164b2e638355d4da869", null ],
+    [ "global_u64_value_with_init", "test_2system__test_2opensbi__test_2boot_8cpp.html#a2f5540c4ba25c08fb73a200559f24d8f", null ],
+    [ "global_u8a_value_with_init", "test_2system__test_2opensbi__test_2boot_8cpp.html#a948b83901bd51374518aaaa29c1ebd9b", null ],
+    [ "global_u8b_value_with_init", "test_2system__test_2opensbi__test_2boot_8cpp.html#a42ed6394d3001c194facd0489cf760d1", null ],
+    [ "global_u8c_value_with_init", "test_2system__test_2opensbi__test_2boot_8cpp.html#a807f7c273cbbcf6c3ac3375eff164dd0", null ],
+    [ "global_u8d_value_with_init", "test_2system__test_2opensbi__test_2boot_8cpp.html#a016ab196b6711dcf6da58e40c6688e28", null ],
+    [ "global_value1_with_constructor", "test_2system__test_2opensbi__test_2boot_8cpp.html#a2c2899c5d94d1ae14c96e6ff910bb3cd", null ],
+    [ "global_value2_with_constructor", "test_2system__test_2opensbi__test_2boot_8cpp.html#a0c30e733b226c40281132263a548422d", null ],
+    [ "global_value_with_init", "test_2system__test_2opensbi__test_2boot_8cpp.html#a4054bd985d024c1c2692cd82802669d4", null ]
 ];
