@@ -15,11 +15,11 @@
  */
 
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
 
+#include "basic_info.hpp"
 #include "cpu.hpp"
-#include "cstdio"
-#include "cstring"
-#include "kernel.h"
 
 extern "C" void _putchar(char character) {
   auto serial = cpu::Serial(cpu::kCom1);

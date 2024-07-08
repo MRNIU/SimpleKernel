@@ -16,10 +16,10 @@
 
 #include <elf.h>
 
+#include "basic_info.hpp"
 #include "cpu.hpp"
 #include "cstdio"
 #include "cstring"
-#include "kernel.h"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 

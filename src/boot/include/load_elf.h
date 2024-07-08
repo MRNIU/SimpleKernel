@@ -24,7 +24,7 @@
 #include <tuple>
 #include <utility>
 
-#include "kernel/include/kernel.h"
+#include "kernel/include/basic_info.hpp"
 
 #ifdef __cplusplus
 extern "C" {

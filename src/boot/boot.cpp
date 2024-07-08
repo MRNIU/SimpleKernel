@@ -14,7 +14,7 @@
  * </table>
  */
 
-#include "kernel/include/kernel.h"
+#include "kernel/include/basic_info.hpp"
 #include "load_elf.h"
 #include "out_stream.hpp"
 #include "project_config.h"
