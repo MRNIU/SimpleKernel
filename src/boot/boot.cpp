@@ -65,12 +65,6 @@ efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_table) {
   debug << L"Unload:          " << OutStream::hex_X << loaded_image->Unload
         << OutStream::endl;
 
-  // 初始化 Graphics
-  auto graphics = Graphics();
-  // 打印图形信息
-  graphics.PrintInfo();
-  // 设置为 kDefaultWidth*kDefaultHeight
-  graphics.SetMode();
   // 初始化 Memory
   auto memory = Memory();
   memory.PrintInfo();
@@ -112,16 +106,6 @@ efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_table) {
 
   // 获取内存信息
   basic_info.memory_map_count = memory.GetMemoryMap(basic_info.memory_map);
-
-  // 获取 framebuffer 信息
-  auto [framebuffer_base, framebuffer_size, framebuffer_width,
-        framebuffer_height, framebuffer_pixel_per_line] =
-      graphics.GetFrameBuffer();
-  basic_info.framebuffer.base = framebuffer_base;
-  basic_info.framebuffer.size = framebuffer_size;
-  basic_info.framebuffer.width = framebuffer_width;
-  basic_info.framebuffer.height = framebuffer_height;
-  basic_info.framebuffer.pitch = framebuffer_pixel_per_line * sizeof(uint32_t);
 
   // 获取 elf 地址
   basic_info.elf_addr = elf_info.first;

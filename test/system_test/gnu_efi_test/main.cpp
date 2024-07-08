@@ -26,34 +26,23 @@ extern "C" void _putchar(char character) {
   serial.Write(character);
 }
 
-static const int kPixelwidth = 4;
-static const int kPitch = 800 * kPixelwidth;
-
-static void Fillrect(uint8_t *vram, uint8_t r, uint8_t g, unsigned char b,
-                     uint8_t w, uint8_t h) {
-  unsigned char *where = vram;
-  int i, j;
-
-  for (i = 0; i < w; i++) {
-    for (j = 0; j < h; j++) {
-      // putpixel(vram, 64 + j, 64 + i, (r << 16) + (g << 8) + b);
-      where[j * kPixelwidth] = r;
-      where[j * kPixelwidth + 1] = g;
-      where[j * kPixelwidth + 2] = b;
-    }
-    where += kPitch;
-  }
-}
-
 uint32_t main(uint32_t argc, uint8_t *argv) {
   if (argc != 1) {
     printf("argc != 1 [%d]\n", argc);
     return -1;
   }
 
-  BasicInfo basic_info = *reinterpret_cast<BasicInfo *>(argv);
-  printf("basic_info.framebuffer.base: 0x%X\n", basic_info.framebuffer.base);
-  Fillrect((uint8_t *)basic_info.framebuffer.base, 255, 0, 255, 100, 100);
+  kBasicInfo.GetInstance() = *reinterpret_cast<BasicInfo *>(argv);
+  printf("kBasicInfo.elf_addr: 0x%X.\n", kBasicInfo.GetInstance().elf_addr);
+  printf("kBasicInfo.elf_size: %d.\n", kBasicInfo.GetInstance().elf_size);
+
+  for (uint32_t i = 0; i < kBasicInfo.GetInstance().memory_map_count; i++) {
+    printf(
+        "kBasicInfo.memory_map[%d].base_addr: 0x%p, length: 0x%X, type: %d.\n",
+        i, kBasicInfo.GetInstance().memory_map[i].base_addr,
+        kBasicInfo.GetInstance().memory_map[i].length,
+        kBasicInfo.GetInstance().memory_map[i].type);
+  }
 
   printf("Hello Test\n");
 

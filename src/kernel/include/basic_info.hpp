@@ -51,25 +51,15 @@ struct BasicInfo {
   /// 内存表数量
   uint32_t memory_map_count;
 
-  /// 显示缓冲区
-  struct FrameBuffer {
-    /// 地址
-    uint64_t base;
-    /// 长度
-    uint32_t size;
-    /// 屏幕宽像素个数
-    uint32_t width;
-    /// 屏幕高像素个数
-    uint32_t height;
-    /// 每行字节数
-    uint32_t pitch;
-    /// 每像素字节数
-    uint8_t bpp;
-    /// 显示类型
-    uint8_t type;
-    /// 保留
-    uint8_t reserved;
-  } framebuffer;
+  /// physical_memory 地址
+  uint64_t physical_memory_addr;
+  /// physical_memory 大小
+  size_t physical_memory_size;
+
+  /// kernel 地址
+  uint64_t kernel_addr;
+  /// kernel 大小
+  size_t kernel_size;
 
   /// elf 地址
   uint64_t elf_addr;
