@@ -24,8 +24,6 @@
 #include <tuple>
 #include <utility>
 
-#include "kernel/include/basic_info.hpp"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -61,12 +59,10 @@ class Memory {
   /// @}
 
   /**
-   * 获取内存信息，MemoryMap 指 arch.h 中定义的内存信息类型
-   * @param mmap 要传递给内核的 MemoryMap 结构数组
-   * @return mmap 数量
+   * 获取内存信息，只保留地址与长度
+   * @return std::pair<uint64_t, size_t> 内存地址与长度
    */
-  size_t GetMemoryMap(
-      BasicInfo::MemoryMap mmap[BasicInfo::kMemoryMapMaxCount]) const;
+  std::pair<uint64_t, size_t> GetMemory() const;
 
   /**
    * 输出内存映射信息

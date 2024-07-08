@@ -36,16 +36,12 @@ uint32_t ArchInit(uint32_t argc, uint8_t *argv) {
   }
 
   kBasicInfo.GetInstance() = *reinterpret_cast<BasicInfo *>(argv);
+  printf("kBasicInfo.physical_memory_addr: 0x%X.\n",
+         kBasicInfo.GetInstance().physical_memory_addr);
+  printf("kBasicInfo.physical_memory_size: 0x%X.\n",
+         kBasicInfo.GetInstance().physical_memory_size);
   printf("kBasicInfo.elf_addr: 0x%X.\n", kBasicInfo.GetInstance().elf_addr);
   printf("kBasicInfo.elf_size: %d.\n", kBasicInfo.GetInstance().elf_size);
-
-  for (uint32_t i = 0; i < kBasicInfo.GetInstance().memory_map_count; i++) {
-    printf(
-        "kBasicInfo.memory_map[%d].base_addr: 0x%p, length: 0x%X, type: %d.\n",
-        i, kBasicInfo.GetInstance().memory_map[i].base_addr,
-        kBasicInfo.GetInstance().memory_map[i].length,
-        kBasicInfo.GetInstance().memory_map[i].type);
-  }
 
   // 解析内核 elf 信息
   kKernelElf.GetInstance() = KernelElf(kBasicInfo.GetInstance().elf_addr,

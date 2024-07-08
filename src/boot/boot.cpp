@@ -14,7 +14,6 @@
  * </table>
  */
 
-#include "kernel/include/basic_info.hpp"
 #include "load_elf.h"
 #include "out_stream.hpp"
 #include "project_config.h"
@@ -101,13 +100,23 @@ efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_table) {
     return status;
   }
 
-  // 向内核传递参数
-  BasicInfo basic_info = {};
+  /// 基础信息
+  /// @note 结构与 basic_info.hpp 同步
+  struct {
+    uint64_t physical_memory_addr;
+    size_t physical_memory_size;
+    uint64_t kernel_addr;
+    size_t kernel_size;
+    uint64_t elf_addr;
+    size_t elf_size;
+  } basic_info;
 
-  // 获取内存信息
-  basic_info.memory_map_count = memory.GetMemoryMap(basic_info.memory_map);
+  // 获取物理内存信息
+  auto [physical_memory_addr, physical_memory_size] = memory.GetMemory();
 
-  // 获取 elf 地址
+  // 填充信息
+  basic_info.physical_memory_addr = physical_memory_addr;
+  basic_info.physical_memory_size = physical_memory_size;
   basic_info.elf_addr = elf_info.first;
   basic_info.elf_size = elf_info.second;
 

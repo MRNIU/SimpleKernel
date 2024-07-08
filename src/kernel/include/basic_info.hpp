@@ -23,34 +23,6 @@
 #include "singleton.hpp"
 
 struct BasicInfo {
-  /// 最大内存表数量
-  static constexpr const uint32_t kMemoryMapMaxCount = 256;
-  struct MemoryMap {
-    /// 内存类型
-    enum {
-      /// 可用
-      kTypeRam = 1,
-      /// 保留
-      kTypeReserved,
-      /// ACPI
-      kTypeAcpi,
-      /// NV
-      kTypeNvs,
-      /// 不可用
-      kTypeUnUsable
-    };
-    /// 地址
-    uint64_t base_addr;
-    /// 长度
-    uint64_t length;
-    /// 类型
-    uint32_t type;
-    /// 保留
-    uint32_t reserved;
-  } memory_map[kMemoryMapMaxCount];
-  /// 内存表数量
-  uint32_t memory_map_count;
-
   /// physical_memory 地址
   uint64_t physical_memory_addr;
   /// physical_memory 大小
