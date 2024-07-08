@@ -26,23 +26,32 @@ extern "C" void _putchar(char character) {
   serial.Write(character);
 }
 
+// 引用链接脚本中的变量
+/// @see http://wiki.osdev.org/Using_Linker_Script_Values
+/// 内核开始
+extern "C" void *__executable_start[];
+/// 内核结束
+extern "C" void *end[];
+BasicInfo::BasicInfo(uint32_t argc, uint8_t *argv) {
+  (void)argc;
+  auto basic_info = *reinterpret_cast<BasicInfo *>(argv);
+  physical_memory_addr = basic_info.physical_memory_addr;
+  physical_memory_size = basic_info.physical_memory_size;
+  kernel_addr = reinterpret_cast<uint64_t>(__executable_start);
+  kernel_size = reinterpret_cast<uint64_t>(end) -
+                reinterpret_cast<uint64_t>(__executable_start);
+  elf_addr = basic_info.elf_addr;
+  elf_size = basic_info.elf_size;
+}
+
 uint32_t main(uint32_t argc, uint8_t *argv) {
   if (argc != 1) {
     printf("argc != 1 [%d]\n", argc);
     return -1;
   }
 
-  kBasicInfo.GetInstance() = *reinterpret_cast<BasicInfo *>(argv);
-  printf("kBasicInfo.elf_addr: 0x%X.\n", kBasicInfo.GetInstance().elf_addr);
-  printf("kBasicInfo.elf_size: %d.\n", kBasicInfo.GetInstance().elf_size);
-
-  for (uint32_t i = 0; i < kBasicInfo.GetInstance().memory_map_count; i++) {
-    printf(
-        "kBasicInfo.memory_map[%d].base_addr: 0x%p, length: 0x%X, type: %d.\n",
-        i, kBasicInfo.GetInstance().memory_map[i].base_addr,
-        kBasicInfo.GetInstance().memory_map[i].length,
-        kBasicInfo.GetInstance().memory_map[i].type);
-  }
+  kBasicInfo.GetInstance() = BasicInfo(argc, argv);
+  std::cout << kBasicInfo.GetInstance();
 
   printf("Hello Test\n");
 
