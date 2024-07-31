@@ -65,7 +65,7 @@ uint32_t ArchInit(uint32_t argc, uint8_t *argv) {
   kKernelElf.GetInstance() = KernelElf(kBasicInfo.GetInstance().elf_addr,
                                        kBasicInfo.GetInstance().elf_size);
 
-  Info("Hello x8_64 ArchInit\n");
+  Info("Hello x86_64 ArchInit\n");
 
   return 0;
 }
