@@ -54,7 +54,7 @@ BasicInfo::BasicInfo(uint32_t argc, uint8_t *argv) {
 
 uint32_t ArchInit(uint32_t argc, uint8_t *argv) {
   if (argc != 1) {
-    Err("argc != 1 [%d]\n", argc);
+    log::Err("argc != 1 [%d]\n", argc);
     throw;
   }
 
@@ -65,7 +65,7 @@ uint32_t ArchInit(uint32_t argc, uint8_t *argv) {
   kKernelElf.GetInstance() = KernelElf(kBasicInfo.GetInstance().elf_addr,
                                        kBasicInfo.GetInstance().elf_size);
 
-  Info("Hello x86_64 ArchInit\n");
+  log::Info("Hello x86_64 ArchInit\n");
 
   return 0;
 }
