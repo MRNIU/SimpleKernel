@@ -65,6 +65,7 @@ elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
             DEPENDS ${PROJECT_NAME} ${RUN_DEPENDS} ${DEBUG_DEPENDS}
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
             TARGET ${CMAKE_SYSTEM_PROCESSOR}
+            BOOT ${boot_BINARY_DIR}/${BOOT_EFI_OUTPUT_NAME}
             KERNEL $<TARGET_FILE:${PROJECT_NAME}>
             QEMU_FLAGS
             -serial stdio -monitor telnet::2333,server,nowait

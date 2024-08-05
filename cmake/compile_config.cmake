@@ -107,6 +107,13 @@ list(APPEND DEFAULT_BOOT_LINK_OPTIONS
         -Wl,-Bsymbolic
         >
 
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
+        # 编译为共享库
+        -shared
+        # 符号级别绑定
+        -Wl,-Bsymbolic
+        >
+
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
         -shared
         -Wl,-Bsymbolic
@@ -117,6 +124,14 @@ list(APPEND DEFAULT_BOOT_LINK_LIB
         ${COMMON_LINK_LIB}
         # 目标平台编译选项
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
+        # 链接 gnu-efi
+        ${gnu-efi_BINARY_DIR}/gnuefi/reloc_${CMAKE_SYSTEM_PROCESSOR}.o
+        ${gnu-efi_BINARY_DIR}/gnuefi/crt0-efi-${CMAKE_SYSTEM_PROCESSOR}.o
+        ${gnu-efi_BINARY_DIR}/gnuefi/libgnuefi.a
+        ${gnu-efi_BINARY_DIR}/lib/libefi.a
+        >
+
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
         # 链接 gnu-efi
         ${gnu-efi_BINARY_DIR}/gnuefi/reloc_${CMAKE_SYSTEM_PROCESSOR}.o
         ${gnu-efi_BINARY_DIR}/gnuefi/crt0-efi-${CMAKE_SYSTEM_PROCESSOR}.o
@@ -203,6 +218,7 @@ elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
             opensbi_interface
             printf_bare_metal
             dtc
+            gnu-efi
     )
 elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
     list(APPEND COMPILE_DEPENDS
