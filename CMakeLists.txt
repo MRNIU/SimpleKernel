@@ -81,7 +81,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/doc)
 
 # 添加 run 和 debug target
 add_run_target(
-        DEPENDS $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:boot> $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:boot> kernel ${RUN_DEPENDS} ${DEBUG_DEPENDS}
+        DEPENDS $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:boot> $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:boot> $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:boot> kernel
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         TARGET ${CMAKE_SYSTEM_PROCESSOR}
         BOOT ${PROJECT_BINARY_DIR}/src/boot/boot.efi
