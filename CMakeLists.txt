@@ -62,6 +62,8 @@ elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
             # 可选项，qemu7.0 自带了 opensbi1.0
             -bios ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_jump.elf
             -kernel $<TARGET_FILE:kernel>
+        #     -bios ${ovmf_BINARY_DIR}/OVMF_${CMAKE_SYSTEM_PROCESSOR}.fd
+        #     -hda fat:rw:./image/
     )
 elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     list(APPEND QEMU_FLAGS
