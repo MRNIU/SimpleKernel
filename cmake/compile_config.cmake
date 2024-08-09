@@ -6,7 +6,8 @@
 # 配置信息
 
 # 通用编译选项
-list(APPEND COMMON_COMPILE_OPTIONS
+add_library(COMMON_COMPILE_OPTIONS INTERFACE)
+target_compile_options(COMMON_COMPILE_OPTIONS INTERFACE
         # 如果 CMAKE_BUILD_TYPE 为 Release 则使用 -O3 -Werror，否则使用 -O0 -ggdb
         # -g 在 Debug 模式下由 cmake 自动添加
         $<$<CONFIG:Release>:-O3;-Werror>
@@ -83,7 +84,6 @@ list(APPEND DEFAULT_BOOT_DEFINITIONS
 )
 
 list(APPEND DEFAULT_BOOT_COMPILE_OPTIONS
-        ${COMMON_COMPILE_OPTIONS}
         # 使用 2 字节 wchar_t
         -fshort-wchar
         # 允许 wchar_t
@@ -155,8 +155,6 @@ list(APPEND DEFAULT_KERNEL_DEFINITIONS
 )
 
 list(APPEND DEFAULT_KERNEL_COMPILE_OPTIONS
-        ${COMMON_COMPILE_OPTIONS}
-
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
         # 使用 kernel 内存模型
         -mcmodel=large
@@ -196,6 +194,7 @@ list(APPEND DEFAULT_KERNEL_LINK_LIB
 
         printf_bare_metal
         ${dtc_BINARY_DIR}/libfdt/libfdt.a
+        COMMON_COMPILE_OPTIONS
 
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
         opensbi_interface
