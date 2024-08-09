@@ -61,13 +61,15 @@ target_compile_options(COMMON_COMPILE_OPTIONS INTERFACE
 )
 
 # 通用链接选项
-list(APPEND COMMON_LINK_OPTIONS
+add_library(COMMON_LINK_OPTIONS INTERFACE)
+target_link_options(COMMON_LINK_OPTIONS INTERFACE
         # 不链接 ctr0 等启动代码
         -nostartfiles
 )
 
 # 通用库选项
 list(APPEND COMMON_LINK_LIB
+        COMMON_LINK_OPTIONS
 )
 
 # 通用宏定义
@@ -98,8 +100,6 @@ list(APPEND DEFAULT_BOOT_COMPILE_OPTIONS
 )
 
 list(APPEND DEFAULT_BOOT_LINK_OPTIONS
-        ${COMMON_LINK_OPTIONS}
-
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
         # 编译为共享库
         -shared
@@ -168,8 +168,6 @@ list(APPEND DEFAULT_KERNEL_COMPILE_OPTIONS
 )
 
 list(APPEND DEFAULT_KERNEL_LINK_OPTIONS
-        ${COMMON_LINK_OPTIONS}
-
         # 链接脚本
         -T ${CMAKE_SOURCE_DIR}/src/kernel/arch/${CMAKE_SYSTEM_PROCESSOR}/link.ld
 
