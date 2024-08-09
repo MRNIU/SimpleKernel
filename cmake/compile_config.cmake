@@ -68,7 +68,8 @@ target_link_options(COMMON_LINK_OPTIONS INTERFACE
 )
 
 # 通用库选项
-list(APPEND COMMON_LINK_LIB
+add_library(COMMON_LINK_LIB INTERFACE)
+target_link_libraries(COMMON_LINK_LIB INTERFACE
         COMMON_LINK_OPTIONS
 )
 
@@ -121,7 +122,7 @@ list(APPEND DEFAULT_BOOT_LINK_OPTIONS
 )
 
 list(APPEND DEFAULT_BOOT_LINK_LIB
-        ${COMMON_LINK_LIB}
+        COMMON_LINK_LIB
         # 目标平台编译选项
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
         # 链接 gnu-efi
@@ -188,7 +189,7 @@ list(APPEND DEFAULT_KERNEL_LINK_OPTIONS
 )
 
 list(APPEND DEFAULT_KERNEL_LINK_LIB
-        ${COMMON_LINK_LIB}
+        COMMON_LINK_LIB
 
         printf_bare_metal
         ${dtc_BINARY_DIR}/libfdt/libfdt.a
