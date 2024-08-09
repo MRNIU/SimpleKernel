@@ -15,11 +15,11 @@
  */
 
 #include <cstdint>
-#include <cstdio>
-#include <cstring>
 
 #include "basic_info.hpp"
 #include "cpu.hpp"
+#include "sk_cstdio"
+#include "sk_cstring"
 
 extern "C" void _putchar(char character) {
   auto serial = cpu::Serial(cpu::kCom1);
@@ -51,7 +51,7 @@ uint32_t main(uint32_t argc, uint8_t *argv) {
   }
 
   kBasicInfo.GetInstance() = BasicInfo(argc, argv);
-  std::cout << kBasicInfo.GetInstance();
+  sk_std::cout << kBasicInfo.GetInstance();
 
   printf("Hello Test\n");
 

@@ -14,9 +14,9 @@ enable_language(C)
 
 # 生成对象库
 add_library(${PROJECT_NAME} OBJECT
-        ${PROJECT_SOURCE_DIR}/libc.c
-        ${PROJECT_SOURCE_DIR}/string.c
-        ${PROJECT_SOURCE_DIR}/stdio.c
+        ${PROJECT_SOURCE_DIR}/sk_libc.c
+        ${PROJECT_SOURCE_DIR}/sk_string.c
+        ${PROJECT_SOURCE_DIR}/sk_stdio.c
 )
 
 # 添加定义
