@@ -26,7 +26,7 @@ add_header_3rd(${PROJECT_NAME})
 
 # 添加要链接的库
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${DEFAULT_BOOT_LINK_LIB}
+        DEFAULT_BOOT_LINK_LIB
 )
 
 # 添加依赖

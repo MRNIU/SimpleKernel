@@ -202,6 +202,7 @@ target_link_options(DEFAULT_KERNEL_LINK_OPTIONS INTERFACE
 add_library(DEFAULT_KERNEL_LINK_LIB INTERFACE)
 target_link_libraries(DEFAULT_KERNEL_LINK_LIB INTERFACE
         COMMON_LINK_LIB
+        DEFAULT_KERNEL_LINK_OPTIONS
 
         printf_bare_metal
         ${dtc_BINARY_DIR}/libfdt/libfdt.a

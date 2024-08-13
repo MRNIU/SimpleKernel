@@ -34,7 +34,7 @@ target_link_options(${PROJECT_NAME} PRIVATE
 
 # 添加要链接的库
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${DEFAULT_KERNEL_LINK_LIB}
+        DEFAULT_KERNEL_LINK_LIB
         libc
         libcxx
 )
