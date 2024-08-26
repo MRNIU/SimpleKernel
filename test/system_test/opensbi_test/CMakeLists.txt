@@ -18,8 +18,6 @@ add_executable(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src/kernel/arch/${CMAKE_SYSTEM_PROCESSOR}/boot.S
 )
 
-add_header_libc(${PROJECT_NAME})
-add_header_libcxx(${PROJECT_NAME})
 add_header_kernel(${PROJECT_NAME})
 add_header_3rd(${PROJECT_NAME})
 

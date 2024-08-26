@@ -15,16 +15,6 @@ function(add_header_boot _target)
             ${CMAKE_SOURCE_DIR}/src/boot/include)
 endfunction()
 
-function(add_header_libc _target)
-    target_include_directories(${_target} PRIVATE
-            ${CMAKE_SOURCE_DIR}/src/kernel/libc/include)
-endfunction()
-
-function(add_header_libcxx _target)
-    target_include_directories(${_target} PRIVATE
-            ${CMAKE_SOURCE_DIR}/src/kernel/libcxx/include)
-endfunction()
-
 function(add_header_kernel _target)
     target_include_directories(${_target} PRIVATE
             ${CMAKE_SOURCE_DIR}/src/kernel/include)
