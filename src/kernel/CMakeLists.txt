@@ -24,8 +24,10 @@ add_executable(${PROJECT_NAME}
 )
 
 # 添加头文件
-add_header_kernel(${PROJECT_NAME})
 add_header_3rd(${PROJECT_NAME})
+target_include_directories(kernel PRIVATE
+        include
+)
 
 # 添加定义
 target_compile_definitions(${PROJECT_NAME} PRIVATE
