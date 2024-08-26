@@ -22,14 +22,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_SOURCE_DIR}/src/kernel/arch/${CMAKE_SYSTEM_PROCESSOR}/include
 )
 
-target_compile_options(${PROJECT_NAME} PRIVATE
-        ${DEFAULT_KERNEL_COMPILE_OPTIONS}
-)
-
-target_link_options(${PROJECT_NAME} PRIVATE
-        ${DEFAULT_KERNEL_LINK_OPTIONS}
-)
-
 target_link_libraries(${PROJECT_NAME} PRIVATE
         DEFAULT_KERNEL_LINK_LIB
         libc
