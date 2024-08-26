@@ -136,26 +136,17 @@ target_link_libraries(DEFAULT_BOOT_LINK_LIB INTERFACE
         # 目标平台编译选项
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
         # 链接 gnu-efi
-        ${gnu-efi_BINARY_DIR}/gnuefi/reloc_${CMAKE_SYSTEM_PROCESSOR}.o
-        ${gnu-efi_BINARY_DIR}/gnuefi/crt0-efi-${CMAKE_SYSTEM_PROCESSOR}.o
-        ${gnu-efi_BINARY_DIR}/gnuefi/libgnuefi.a
-        ${gnu-efi_BINARY_DIR}/lib/libefi.a
+        gnu-efi-lib
         >
 
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
         # 链接 gnu-efi
-        ${gnu-efi_BINARY_DIR}/gnuefi/reloc_${CMAKE_SYSTEM_PROCESSOR}.o
-        ${gnu-efi_BINARY_DIR}/gnuefi/crt0-efi-${CMAKE_SYSTEM_PROCESSOR}.o
-        ${gnu-efi_BINARY_DIR}/gnuefi/libgnuefi.a
-        ${gnu-efi_BINARY_DIR}/lib/libefi.a
+        gnu-efi-lib
         >
 
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
         # 链接 gnu-efi
-        ${gnu-efi_BINARY_DIR}/gnuefi/reloc_${CMAKE_SYSTEM_PROCESSOR}.o
-        ${gnu-efi_BINARY_DIR}/gnuefi/crt0-efi-${CMAKE_SYSTEM_PROCESSOR}.o
-        ${gnu-efi_BINARY_DIR}/gnuefi/libgnuefi.a
-        ${gnu-efi_BINARY_DIR}/lib/libefi.a
+        gnu-efi-lib
         >
 )
 
@@ -219,7 +210,6 @@ target_link_libraries(DEFAULT_KERNEL_LINK_LIB INTERFACE
 # 编译依赖
 list(APPEND COMPILE_DEPENDS
             ovmf
-            gnu-efi
             dtc
             printf_bare_metal
     )

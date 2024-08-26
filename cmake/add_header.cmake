@@ -12,11 +12,5 @@ endfunction()
 
 function(add_header_3rd _target)
     target_include_directories(${_target} PRIVATE
-            ${gnu-efi_BINARY_DIR}/inc)
-    target_include_directories(${_target} PRIVATE
-            ${gnu-efi_BINARY_DIR}/inc/${CMAKE_SYSTEM_PROCESSOR})
-    target_include_directories(${_target} PRIVATE
-            ${gnu-efi_BINARY_DIR}/inc/protocol)
-    target_include_directories(${_target} PRIVATE
             ${dtc_BINARY_DIR}/libfdt)
 endfunction()

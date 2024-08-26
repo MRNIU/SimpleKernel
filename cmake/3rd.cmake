@@ -189,6 +189,19 @@ add_custom_target(gnu-efi
         ${gnu-efi_SOURCE_DIR}/inc
         ${gnu-efi_BINARY_DIR}/inc
 )
+add_library(gnu-efi-lib INTERFACE)
+add_dependencies(gnu-efi-lib gnu-efi)
+target_include_directories(gnu-efi-lib INTERFACE
+        ${gnu-efi_BINARY_DIR}/inc
+        ${gnu-efi_BINARY_DIR}/inc/${CMAKE_SYSTEM_PROCESSOR}
+        ${gnu-efi_BINARY_DIR}/inc/protocol
+)
+target_link_libraries(gnu-efi-lib INTERFACE
+        ${gnu-efi_BINARY_DIR}/gnuefi/reloc_${CMAKE_SYSTEM_PROCESSOR}.o
+        ${gnu-efi_BINARY_DIR}/gnuefi/crt0-efi-${CMAKE_SYSTEM_PROCESSOR}.o
+        ${gnu-efi_BINARY_DIR}/gnuefi/libgnuefi.a
+        ${gnu-efi_BINARY_DIR}/lib/libefi.a
+)
 
 # ovmf
 # @todo 使用互联网连接或从 edk2 编译
