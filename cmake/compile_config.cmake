@@ -5,9 +5,16 @@
 # compile_config.cmake for Simple-XX/SimpleKernel.
 # 配置信息
 
+# 通用宏定义
+add_library(compile_definitions INTERFACE)
+target_compile_definitions(compile_definitions INTERFACE
+        $<$<CONFIG:Release>:SIMPLEKERNEL_RELEASE>
+        $<$<CONFIG:Debug>:SIMPLEKERNEL_DEBUG>
+)
+
 # 通用编译选项
-add_library(COMMON_COMPILE_OPTIONS INTERFACE)
-target_compile_options(COMMON_COMPILE_OPTIONS INTERFACE
+add_library(compile_options INTERFACE)
+target_compile_options(compile_options INTERFACE
         # 如果 CMAKE_BUILD_TYPE 为 Release 则使用 -O3 -Werror，否则使用 -O0 -ggdb
         # -g 在 Debug 模式下由 cmake 自动添加
         $<$<CONFIG:Release>:-O3;-Werror>
@@ -61,33 +68,28 @@ target_compile_options(COMMON_COMPILE_OPTIONS INTERFACE
 )
 
 # 通用链接选项
-add_library(COMMON_LINK_OPTIONS INTERFACE)
-target_link_options(COMMON_LINK_OPTIONS INTERFACE
+add_library(link_options INTERFACE)
+target_link_options(link_options INTERFACE
         # 不链接 ctr0 等启动代码
         -nostartfiles
 )
 
 # 通用库选项
-add_library(COMMON_LINK_LIB INTERFACE)
-target_link_libraries(COMMON_LINK_LIB INTERFACE
-        COMMON_LINK_OPTIONS
+add_library(link_libraries INTERFACE)
+target_link_libraries(link_libraries INTERFACE
+        compile_definitions
+        compile_options
+        link_options
 )
 
-# 通用宏定义
-add_library(COMMON_DEFINITIONS INTERFACE)
-target_compile_definitions(COMMON_DEFINITIONS INTERFACE
-        $<$<CONFIG:Release>:SIMPLEKERNEL_RELEASE>
-        $<$<CONFIG:Debug>:SIMPLEKERNEL_DEBUG>
-)
-
-add_library(DEFAULT_BOOT_DEFINITIONS INTERFACE)
-target_compile_definitions(DEFAULT_BOOT_DEFINITIONS INTERFACE
+add_library(boot_compile_definitions INTERFACE)
+target_compile_definitions(boot_compile_definitions INTERFACE
         # 使用 gnu-efi
         GNU_EFI_USE_MS_ABI
 )
 
-add_library(DEFAULT_BOOT_COMPILE_OPTIONS INTERFACE)
-target_compile_options(DEFAULT_BOOT_COMPILE_OPTIONS INTERFACE
+add_library(boot_compile_options INTERFACE)
+target_compile_options(boot_compile_options INTERFACE
         # 使用 2 字节 wchar_t
         -fshort-wchar
         # 允许 wchar_t
@@ -101,8 +103,8 @@ target_compile_options(DEFAULT_BOOT_COMPILE_OPTIONS INTERFACE
         >
 )
 
-add_library(DEFAULT_BOOT_LINK_OPTIONS INTERFACE)
-target_link_options(DEFAULT_BOOT_LINK_OPTIONS INTERFACE
+add_library(boot_link_options INTERFACE)
+target_link_options(boot_link_options INTERFACE
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
         # 编译为共享库
         -shared
@@ -123,15 +125,12 @@ target_link_options(DEFAULT_BOOT_LINK_OPTIONS INTERFACE
         >
 )
 
-add_library(DEFAULT_BOOT_LINK_LIB INTERFACE)
-target_link_libraries(DEFAULT_BOOT_LINK_LIB INTERFACE
-        COMMON_COMPILE_OPTIONS
-        COMMON_LINK_OPTIONS
-        COMMON_LINK_LIB
-        COMMON_DEFINITIONS
-        DEFAULT_BOOT_DEFINITIONS
-        DEFAULT_BOOT_COMPILE_OPTIONS
-        DEFAULT_BOOT_LINK_OPTIONS
+add_library(boot_link_libraries INTERFACE)
+target_link_libraries(boot_link_libraries INTERFACE
+        link_libraries
+        boot_compile_definitions
+        boot_compile_options
+        boot_link_options
 
         # 目标平台编译选项
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
@@ -192,10 +191,7 @@ target_link_options(DEFAULT_KERNEL_LINK_OPTIONS INTERFACE
 
 add_library(DEFAULT_KERNEL_LINK_LIB INTERFACE)
 target_link_libraries(DEFAULT_KERNEL_LINK_LIB INTERFACE
-        COMMON_COMPILE_OPTIONS
-        COMMON_LINK_OPTIONS
-        COMMON_LINK_LIB
-        COMMON_DEFINITIONS
+        link_libraries
         DEFAULT_KERNEL_DEFINITIONS
         DEFAULT_KERNEL_COMPILE_OPTIONS
         DEFAULT_KERNEL_LINK_OPTIONS

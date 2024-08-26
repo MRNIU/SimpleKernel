@@ -27,7 +27,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 # 添加要链接的库
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        DEFAULT_BOOT_LINK_LIB
+        boot_link_libraries
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
