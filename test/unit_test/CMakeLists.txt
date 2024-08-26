@@ -21,6 +21,10 @@ add_executable(${PROJECT_NAME}
 )
 
 add_header_3rd(${PROJECT_NAME})
+target_include_directories(${PROJECT_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/kernel/include
+        ${CMAKE_SOURCE_DIR}/src/kernel/arch
+)
 
 target_compile_options(${PROJECT_NAME} PRIVATE
         ${DEFAULT_TEST_COMPILE_OPTIONS}
