@@ -28,8 +28,6 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # 导入项目配置
 include(project_config)
-# 导入头文件处理
-include(add_header)
 # 导入函数
 include(functions)
 

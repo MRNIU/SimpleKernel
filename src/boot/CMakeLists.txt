@@ -20,10 +20,9 @@ add_executable(${PROJECT_NAME}
 )
 
 # 添加头文件
-add_header_project(${PROJECT_NAME})
-
 target_include_directories(${PROJECT_NAME} PRIVATE
         include
+        ${CMAKE_SOURCE_DIR}/src
 )
 
 # 添加要链接的库
