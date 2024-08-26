@@ -149,13 +149,13 @@ target_link_libraries(boot_link_libraries INTERFACE
         >
 )
 
-add_library(DEFAULT_KERNEL_DEFINITIONS INTERFACE)
-target_compile_definitions(DEFAULT_KERNEL_DEFINITIONS INTERFACE
+add_library(kernel_compile_definitions INTERFACE)
+target_compile_definitions(kernel_compile_definitions INTERFACE
         USE_NO_RELAX=$<BOOL:${USE_NO_RELAX}>
 )
 
-add_library(DEFAULT_KERNEL_COMPILE_OPTIONS INTERFACE)
-target_compile_options(DEFAULT_KERNEL_COMPILE_OPTIONS INTERFACE
+add_library(kernel_compile_options INTERFACE)
+target_compile_options(kernel_compile_options INTERFACE
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
         # 使用 kernel 内存模型
         -mcmodel=large
@@ -168,8 +168,8 @@ target_compile_options(DEFAULT_KERNEL_COMPILE_OPTIONS INTERFACE
         >
 )
 
-add_library(DEFAULT_KERNEL_LINK_OPTIONS INTERFACE)
-target_link_options(DEFAULT_KERNEL_LINK_OPTIONS INTERFACE
+add_library(kernel_link_options INTERFACE)
+target_link_options(kernel_link_options INTERFACE
         # 链接脚本
         -T ${CMAKE_SOURCE_DIR}/src/kernel/arch/${CMAKE_SYSTEM_PROCESSOR}/link.ld
 
@@ -192,9 +192,9 @@ target_link_options(DEFAULT_KERNEL_LINK_OPTIONS INTERFACE
 add_library(DEFAULT_KERNEL_LINK_LIB INTERFACE)
 target_link_libraries(DEFAULT_KERNEL_LINK_LIB INTERFACE
         link_libraries
-        DEFAULT_KERNEL_DEFINITIONS
-        DEFAULT_KERNEL_COMPILE_OPTIONS
-        DEFAULT_KERNEL_LINK_OPTIONS
+        kernel_compile_definitions
+        kernel_compile_options
+        kernel_link_options
 
         printf_bare_metal
         dtc-lib
