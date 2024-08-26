@@ -10,11 +10,6 @@ function(add_header_project _target)
             ${CMAKE_SOURCE_DIR}/src)
 endfunction()
 
-function(add_header_boot _target)
-    target_include_directories(${_target} PRIVATE
-            ${CMAKE_SOURCE_DIR}/src/boot/include)
-endfunction()
-
 function(add_header_kernel _target)
     target_include_directories(${_target} PRIVATE
             ${CMAKE_SOURCE_DIR}/src/kernel/include)

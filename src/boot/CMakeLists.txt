@@ -21,8 +21,11 @@ add_executable(${PROJECT_NAME}
 
 # 添加头文件
 add_header_project(${PROJECT_NAME})
-add_header_boot(${PROJECT_NAME})
 add_header_3rd(${PROJECT_NAME})
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+        include
+)
 
 # 添加要链接的库
 target_link_libraries(${PROJECT_NAME} PRIVATE

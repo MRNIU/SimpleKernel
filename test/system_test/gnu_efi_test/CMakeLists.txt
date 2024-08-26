@@ -16,8 +16,6 @@ add_executable(${PROJECT_NAME}
         main.cpp
 )
 
-add_header_libc(${PROJECT_NAME})
-add_header_libcxx(${PROJECT_NAME})
 add_header_kernel(${PROJECT_NAME})
 
 target_compile_options(${PROJECT_NAME} PRIVATE
