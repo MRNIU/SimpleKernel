@@ -20,7 +20,6 @@ add_executable(${PROJECT_NAME}
         kernel_fdt_test.cpp
 )
 
-add_header_3rd(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_SOURCE_DIR}/src/kernel/include
         ${CMAKE_SOURCE_DIR}/src/kernel/arch

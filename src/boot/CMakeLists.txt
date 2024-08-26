@@ -21,7 +21,6 @@ add_executable(${PROJECT_NAME}
 
 # 添加头文件
 add_header_project(${PROJECT_NAME})
-add_header_3rd(${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         include

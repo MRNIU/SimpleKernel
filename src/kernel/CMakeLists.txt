@@ -24,7 +24,6 @@ add_executable(${PROJECT_NAME}
 )
 
 # 添加头文件
-add_header_3rd(${PROJECT_NAME})
 target_include_directories(kernel PRIVATE
         include
 )

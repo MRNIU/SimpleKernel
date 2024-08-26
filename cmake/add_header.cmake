@@ -9,6 +9,3 @@ function(add_header_project _target)
     target_include_directories(${_target} PRIVATE
             ${CMAKE_SOURCE_DIR}/src)
 endfunction()
-
-function(add_header_3rd _target)
-endfunction()

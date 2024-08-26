@@ -18,8 +18,6 @@ add_executable(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src/kernel/arch/${CMAKE_SYSTEM_PROCESSOR}/boot.S
 )
 
-add_header_3rd(${PROJECT_NAME})
-
 target_compile_options(${PROJECT_NAME} PRIVATE
         ${DEFAULT_KERNEL_COMPILE_OPTIONS}
 )
