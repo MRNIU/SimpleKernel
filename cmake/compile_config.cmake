@@ -196,7 +196,7 @@ target_link_libraries(DEFAULT_KERNEL_LINK_LIB INTERFACE
         DEFAULT_KERNEL_LINK_OPTIONS
 
         printf_bare_metal
-        ${dtc_BINARY_DIR}/libfdt/libfdt.a
+        dtc-lib
         COMMON_COMPILE_OPTIONS
 
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
@@ -210,7 +210,6 @@ target_link_libraries(DEFAULT_KERNEL_LINK_LIB INTERFACE
 # 编译依赖
 list(APPEND COMPILE_DEPENDS
             ovmf
-            dtc
             printf_bare_metal
     )
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")

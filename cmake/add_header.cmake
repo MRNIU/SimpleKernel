@@ -11,6 +11,4 @@ function(add_header_project _target)
 endfunction()
 
 function(add_header_3rd _target)
-    target_include_directories(${_target} PRIVATE
-            ${dtc_BINARY_DIR}/libfdt)
 endfunction()

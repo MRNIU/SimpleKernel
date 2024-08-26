@@ -152,6 +152,14 @@ add_custom_target(dtc
         COMMAND
         make clean
 )
+add_library(dtc-lib INTERFACE)
+add_dependencies(dtc-lib dtc)
+target_include_directories(dtc-lib INTERFACE
+        ${dtc_BINARY_DIR}/libfdt
+)
+target_link_libraries(dtc-lib INTERFACE
+        ${dtc_BINARY_DIR}/libfdt/libfdt.a
+)
 
 # https://github.com/ncroxon/gnu-efi.git
 set(gnu-efi_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/gnu-efi)
