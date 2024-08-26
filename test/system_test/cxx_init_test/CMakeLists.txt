@@ -28,7 +28,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        DEFAULT_KERNEL_LINK_LIB
+        kernel_link_libraries
         libc
         libcxx
 )

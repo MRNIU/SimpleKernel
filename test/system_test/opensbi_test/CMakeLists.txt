@@ -20,7 +20,7 @@ add_executable(${PROJECT_NAME}
 
 # 添加要链接的库
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        DEFAULT_KERNEL_LINK_LIB
+        kernel_link_libraries
         libc
         libcxx
 )

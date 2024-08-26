@@ -30,7 +30,7 @@ target_include_directories(kernel PRIVATE
 
 # 添加要链接的库
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        DEFAULT_KERNEL_LINK_LIB
+        kernel_link_libraries
         libc
         libcxx
         arch

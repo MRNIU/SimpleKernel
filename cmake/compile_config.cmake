@@ -189,8 +189,8 @@ target_link_options(kernel_link_options INTERFACE
         >
 )
 
-add_library(DEFAULT_KERNEL_LINK_LIB INTERFACE)
-target_link_libraries(DEFAULT_KERNEL_LINK_LIB INTERFACE
+add_library(kernel_link_libraries INTERFACE)
+target_link_libraries(kernel_link_libraries INTERFACE
         link_libraries
         kernel_compile_definitions
         kernel_compile_options
