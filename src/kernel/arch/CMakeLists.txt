@@ -4,8 +4,13 @@
 #
 # CMakeLists.txt for Simple-XX/SimpleKernel.
 
-# 生成对象库
 add_library(arch INTERFACE)
+
+target_include_directories(arch INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/${CMAKE_SYSTEM_PROCESSOR}/include
+)
+
 target_sources(arch INTERFACE
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
         ${CMAKE_CURRENT_SOURCE_DIR}/${CMAKE_SYSTEM_PROCESSOR}/macro.S
