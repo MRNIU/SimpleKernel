@@ -210,7 +210,6 @@ target_link_libraries(DEFAULT_KERNEL_LINK_LIB INTERFACE
 # 编译依赖
 list(APPEND COMPILE_DEPENDS
             ovmf
-            printf_bare_metal
     )
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
