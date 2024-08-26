@@ -30,11 +30,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         DEFAULT_BOOT_LINK_LIB
 )
 
-# 添加依赖
-add_dependencies(${PROJECT_NAME}
-        ${COMPILE_DEPENDS}
-)
-
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${BOOT_ELF_OUTPUT_NAME})
 

@@ -36,10 +36,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         libcxx
 )
 
-add_dependencies(${PROJECT_NAME}
-        ${COMPILE_DEPENDS}
-)
-
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${KERNEL_ELF_OUTPUT_NAME})
 

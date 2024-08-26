@@ -206,16 +206,3 @@ target_link_libraries(DEFAULT_KERNEL_LINK_LIB INTERFACE
         $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
         >
 )
-
-# 编译依赖
-list(APPEND COMPILE_DEPENDS
-            ovmf
-    )
-if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
-    list(APPEND COMPILE_DEPENDS
-            opensbi
-            opensbi_interface
-    )
-elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
-endif ()

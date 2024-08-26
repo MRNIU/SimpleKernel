@@ -38,8 +38,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         ${dtc_BINARY_DIR}/libfdt/libfdt.a
 )
 
-add_dependencies(${PROJECT_NAME}
-        ${COMPILE_DEPENDS}
-)
-
 gtest_discover_tests(${PROJECT_NAME})

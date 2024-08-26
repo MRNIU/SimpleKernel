@@ -116,6 +116,14 @@ if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
             ${opensbi_SOURCE_DIR}/include
             ${opensbi_BINARY_DIR}/include
     )
+    add_library(opensbi-fw_jump INTERFACE)
+    add_dependencies(opensbi-fw_jump opensbi)
+    target_include_directories(opensbi-fw_jump INTERFACE
+        ${dtc_BINARY_DIR}/libfdt
+    )
+    target_link_libraries(opensbi-fw_jump INTERFACE
+        ${dtc_BINARY_DIR}/libfdt/libfdt.a
+    )
 
     # https://github.com/MRNIU/opensbi_interface.git
     add_subdirectory(3rd/opensbi_interface)
