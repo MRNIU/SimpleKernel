@@ -20,7 +20,6 @@ add_executable(${PROJECT_NAME}
         kernel_fdt_test.cpp
 )
 
-add_header_arch(${PROJECT_NAME})
 add_header_kernel(${PROJECT_NAME})
 add_header_3rd(${PROJECT_NAME})
 add_header_libc(${PROJECT_NAME})

@@ -23,8 +23,12 @@ add_executable(${PROJECT_NAME}
 
 add_header_libc(${PROJECT_NAME})
 add_header_libcxx(${PROJECT_NAME})
-add_header_arch(${PROJECT_NAME})
 add_header_kernel(${PROJECT_NAME})
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/kernel/arch
+        ${CMAKE_SOURCE_DIR}/src/kernel/arch/${CMAKE_SYSTEM_PROCESSOR}/include
+)
 
 target_compile_options(${PROJECT_NAME} PRIVATE
         ${DEFAULT_KERNEL_COMPILE_OPTIONS}

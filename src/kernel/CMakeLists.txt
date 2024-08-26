@@ -26,7 +26,6 @@ add_executable(${PROJECT_NAME}
 # 添加头文件
 add_header_libc(${PROJECT_NAME})
 add_header_libcxx(${PROJECT_NAME})
-add_header_arch(${PROJECT_NAME})
 add_header_kernel(${PROJECT_NAME})
 add_header_driver(${PROJECT_NAME})
 add_header_3rd(${PROJECT_NAME})

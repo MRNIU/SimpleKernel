@@ -25,9 +25,6 @@ function(add_header_libcxx _target)
             ${CMAKE_SOURCE_DIR}/src/kernel/libcxx/include)
 endfunction()
 
-function(add_header_arch _target)
-endfunction()
-
 function(add_header_kernel _target)
     target_include_directories(${_target} PRIVATE
             ${CMAKE_SOURCE_DIR}/src/kernel/include)
