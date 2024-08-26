@@ -10,6 +10,8 @@ project(
         VERSION 0.0.1
 )
 
+enable_language(ASM)
+enable_language(C)
 enable_language(CXX)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/libc)
