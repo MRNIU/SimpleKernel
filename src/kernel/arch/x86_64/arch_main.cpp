@@ -17,11 +17,11 @@
 #include <elf.h>
 
 #include "basic_info.hpp"
-#include "cpu.hpp"
-#include "sk_cstdio"
-#include "sk_cstring"
+#include "cpu/cpu.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
+#include "sk_cstdio"
+#include "sk_cstring"
 
 // printf_bare_metal 基本输出实现
 /// @note 这里要注意，保证在 serial 初始化之前不能使用 printf
@@ -54,7 +54,7 @@ BasicInfo::BasicInfo(uint32_t argc, uint8_t *argv) {
 
 uint32_t ArchInit(uint32_t argc, uint8_t *argv) {
   if (argc != 1) {
-    log::Err("argc != 1 [%d]\n", argc);
+    klog::Err("argc != 1 [%d]\n", argc);
     throw;
   }
 
@@ -65,7 +65,7 @@ uint32_t ArchInit(uint32_t argc, uint8_t *argv) {
   kKernelElf.GetInstance() = KernelElf(kBasicInfo.GetInstance().elf_addr,
                                        kBasicInfo.GetInstance().elf_size);
 
-  log::Info("Hello x86_64 ArchInit\n");
+  klog::Info("Hello x86_64 ArchInit\n");
 
   return 0;
 }

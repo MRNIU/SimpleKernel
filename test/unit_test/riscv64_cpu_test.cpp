@@ -16,18 +16,18 @@
 
 #include <gtest/gtest.h>
 
-#include "riscv64/include/cpu.hpp"
+#include "riscv64/include/cpu/cpu.hpp"
 
 TEST(Riscv64RegInfoBaseTest, ValueTest) {
-  EXPECT_EQ(cpu::reginfo::RegInfoBase::kBitOffset, 0);
-  EXPECT_EQ(cpu::reginfo::RegInfoBase::kBitWidth, 64);
-  EXPECT_EQ(cpu::reginfo::RegInfoBase::kBitMask, 0xFFFFFFFFFFFFFFFF);
-  EXPECT_EQ(cpu::reginfo::RegInfoBase::kAllSetMask, 0xFFFFFFFFFFFFFFFF);
+  EXPECT_EQ(cpu::register_info::RegInfoBase::kBitOffset, 0);
+  EXPECT_EQ(cpu::register_info::RegInfoBase::kBitWidth, 64);
+  EXPECT_EQ(cpu::register_info::RegInfoBase::kBitMask, 0xFFFFFFFFFFFFFFFF);
+  EXPECT_EQ(cpu::register_info::RegInfoBase::kAllSetMask, 0xFFFFFFFFFFFFFFFF);
 }
 
 TEST(Riscv64FpInfoTest, ValueTest) {
-  EXPECT_EQ(cpu::reginfo::FpInfo::kBitOffset, 0);
-  EXPECT_EQ(cpu::reginfo::FpInfo::kBitWidth, 64);
-  EXPECT_EQ(cpu::reginfo::FpInfo::kBitMask, 0xFFFFFFFFFFFFFFFF);
-  EXPECT_EQ(cpu::reginfo::FpInfo::kAllSetMask, 0xFFFFFFFFFFFFFFFF);
+  EXPECT_EQ(cpu::register_info::FpInfo::kBitOffset, 0);
+  EXPECT_EQ(cpu::register_info::FpInfo::kBitWidth, 64);
+  EXPECT_EQ(cpu::register_info::FpInfo::kBitMask, 0xFFFFFFFFFFFFFFFF);
+  EXPECT_EQ(cpu::register_info::FpInfo::kAllSetMask, 0xFFFFFFFFFFFFFFFF);
 }
