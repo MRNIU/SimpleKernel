@@ -1,7 +1,7 @@
 
 /**
- * @file cr.hpp
- * @brief x86_64 cr 相关定义
+ * @file regs.hpp
+ * @brief riscv64 寄存器相关定义
  * @author Zone.N (Zone.Niuzh@hotmail.com)
  * @version 1.0
  * @date 2024-03-05
@@ -14,8 +14,8 @@
  * </table>
  */
 
-#ifndef SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INCLUDE_CPU_CR_HPP_
-#define SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INCLUDE_CPU_CR_HPP_
+#ifndef SIMPLEKERNEL_SRC_KERNEL_ARCH_RISCV64_INCLUDE_CPU_REGS_HPP_
+#define SIMPLEKERNEL_SRC_KERNEL_ARCH_RISCV64_INCLUDE_CPU_REGS_HPP_
 
 #include <cstdint>
 #include <cstdlib>
@@ -27,7 +27,7 @@
 #include "sk_iostream"
 
 /**
- * x86_64 cpu Control Registers 相关定义
+ * riscv64 cpu Control and Status Registers 相关定义
  * @note 寄存器读写设计见 arch/README.md
  */
 namespace cpu {
@@ -51,7 +51,7 @@ struct RegInfoBase {
 };
 
 /// 通用寄存器
-struct RbpInfo : public RegInfoBase {};
+struct FpInfo : public RegInfoBase {};
 
 };  // namespace register_info
 
@@ -80,8 +80,8 @@ class ReadOnlyRegBase {
    */
   static __always_inline RegInfo::DataType Read() {
     typename RegInfo::DataType value{};
-    if constexpr (std::is_same<RegInfo, register_info::RbpInfo>::value) {
-      __asm__ volatile("mov %%rbp, %0" : "=r"(value) : :);
+    if constexpr (std::is_same<RegInfo, register_info::FpInfo>::value) {
+      __asm__ volatile("mv %0, fp" : "=r"(value) : :);
     } else {
       klog::Err("No Type\n");
       throw;
@@ -117,7 +117,7 @@ class WriteOnlyRegBase {
    * @param value 要写的值
    */
   static __always_inline void Write(RegInfo::DataType value) {
-    if constexpr (std::is_same<RegInfo, register_info::RbpInfo>::value) {
+    if constexpr (std::is_same<RegInfo, register_info::FpInfo>::value) {
       __asm__ volatile("mv fp, %0" : : "r"(value) :);
     } else {
       klog::Err("No Type\n");
@@ -146,17 +146,17 @@ class ReadWriteRegBase : public ReadOnlyRegBase<RegInfo>,
 };
 
 // 第三部分：寄存器实例
-class Rbp : public ReadWriteRegBase<register_info::RbpInfo> {
+class Fp : public ReadWriteRegBase<register_info::FpInfo> {
  public:
-  friend sk_std::ostream &operator<<(sk_std::ostream &os, const Rbp &rbp) {
-    printf("val: 0x%p", (void *)rbp.Read());
+  friend sk_std::ostream &operator<<(sk_std::ostream &os, const Fp &fp) {
+    printf("val: 0x%p", (void *)fp.Read());
     return os;
   }
 };
 
 /// 通用寄存器
 struct AllXreg {
-  Rbp rbp;
+  Fp fp;
 };
 
 };  // namespace
@@ -166,4 +166,4 @@ struct AllXreg {
 
 };  // namespace cpu
 
-#endif  // SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INCLUDE_CPU_CR_HPP_
+#endif  // SIMPLEKERNEL_SRC_KERNEL_ARCH_RISCV64_INCLUDE_CPU_REGS_HPP_
