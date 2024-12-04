@@ -58,6 +58,12 @@ if (NOT TARGET gtest)
     include(GoogleTest)
 endif ()
 
+# https://git.savannah.gnu.org/git/grub.git
+set(grub2_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/grub2)
+target_include_directories(grub2 INTERFACE
+        ${grub2_SOURCE_DIR}/include
+)
+
 # https://github.com/gdbinit/Gdbinit.git
 set(gdbinit_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/gdbinit)
 set(gdbinit_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/gdbinit)
