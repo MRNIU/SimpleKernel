@@ -60,6 +60,7 @@ endif ()
 
 # https://git.savannah.gnu.org/git/grub.git
 set(grub2_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/grub2)
+add_library(grub2 INTERFACE)
 target_include_directories(grub2 INTERFACE
         ${grub2_SOURCE_DIR}/include
 )
