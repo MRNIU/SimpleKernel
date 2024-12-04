@@ -316,18 +316,6 @@ add_custom_target(clang-tidy
         > ${CMAKE_BINARY_DIR}/clang_tidy_report.log 2>&1
 )
 
-# clang-format
-find_program(CLANG_FORMAT_EXE NAMES clang-format)
-if (NOT CLANG_FORMAT_EXE)
-    message(FATAL_ERROR "clang-format not found.\n"
-            "Following https://clang.llvm.org/docs/ClangFormat.html to install.")
-endif ()
-add_custom_target(clang-format
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Run clang-format on ${ALL_SOURCE_FILES} ..."
-        COMMAND ${CLANG_FORMAT_EXE} -i -style=file ${ALL_SOURCE_FILES}
-)
-
 if (CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
     # genhtml 生成测试覆盖率报告网页
     find_program(GENHTML_EXE genhtml)
