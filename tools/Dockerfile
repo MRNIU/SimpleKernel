@@ -59,6 +59,8 @@ RUN apt install --no-install-recommends --fix-missing -y \
     git \
     qemu-system \
     gdb-multiarch \
+    grub2 \
+    xorriso \
     libgtest-dev \
     pkg-config \
     flex \
