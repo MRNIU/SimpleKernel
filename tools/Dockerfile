@@ -59,7 +59,7 @@ RUN apt install --no-install-recommends --fix-missing -y \
     git \
     qemu-system \
     gdb-multiarch \
-    grub2 \
+    grub-common \
     xorriso \
     libgtest-dev \
     pkg-config \
