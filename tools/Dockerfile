@@ -30,8 +30,11 @@ RUN apt install --no-install-recommends --fix-missing -y \
     doxygen \
     valgrind \
     graphviz \
+    pre-commit \
     clang-format \
     clang-tidy \
+    uncrustify \
+    iwyu \
     cppcheck \
     lcov
 RUN locale-gen en_US.UTF-8 && locale-gen zh_CN.UTF-8 \
