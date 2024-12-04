@@ -228,6 +228,8 @@ boot branch
 
 ## 使用的第三方资源
 
+[grub2](https://git.savannah.gnu.org/git/grub.git)
+
 [opensbi](https://github.com/riscv-software-src/opensbi)
 
 [gnu-efi](https://sourceforge.net/projects/gnu-efi/)
