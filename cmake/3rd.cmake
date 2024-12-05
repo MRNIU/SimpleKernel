@@ -52,6 +52,11 @@
 #   add_library(Freetype::Freetype ALIAS freetype)
 # endif()
 
+# Pre-commit hooks
+if (NOT EXISTS ${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit)
+    EXECUTE_PROCESS(COMMAND pre-commit install)
+endif ()
+
 # https://github.com/google/googletest.git
 if (NOT TARGET gtest)
     add_subdirectory(3rd/googletest)
