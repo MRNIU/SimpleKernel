@@ -65,6 +65,10 @@ target_compile_options(compile_options INTERFACE
         # 平台相关
         $<$<PLATFORM_ID:Darwin>:
         >
+
+        -I/usr/lib/gcc-cross/riscv64-linux-gnu/13/include
+        -I/usr/lib/gcc-cross/riscv64-linux-gnu/13/../../../../riscv64-linux-gnu/include
+        -I/usr/include
 )
 
 # 通用链接选项

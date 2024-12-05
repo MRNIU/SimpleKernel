@@ -293,35 +293,6 @@ add_custom_target(cppcheck
         --output-file=${CMAKE_BINARY_DIR}/cppcheck_report.log
 )
 
-# 获取全部源文件
-file(GLOB_RECURSE ALL_SOURCE_FILES
-        ${CMAKE_SOURCE_DIR}/src/*.h
-        ${CMAKE_SOURCE_DIR}/src/*.hpp
-        ${CMAKE_SOURCE_DIR}/src/*.c
-        ${CMAKE_SOURCE_DIR}/src/*.cpp
-        ${CMAKE_SOURCE_DIR}/test/*.h
-        ${CMAKE_SOURCE_DIR}/test/*.hpp
-        ${CMAKE_SOURCE_DIR}/test/*.c
-        ${CMAKE_SOURCE_DIR}/test/*.cpp
-)
-
-# clang-tidy
-find_program(CLANG_TIDY_EXE NAMES clang-tidy)
-if (NOT CLANG_TIDY_EXE)
-    message(FATAL_ERROR "clang-tidy not found.\n"
-            "Following https://clang.llvm.org/extra/clang-tidy to install.")
-endif ()
-add_custom_target(clang-tidy
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Run clang-tidy on ${ALL_SOURCE_FILES} ..."
-        COMMAND
-        ${CLANG_TIDY_EXE}
-        --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
-        -p=${CMAKE_BINARY_DIR}
-        ${ALL_SOURCE_FILES}
-        > ${CMAKE_BINARY_DIR}/clang_tidy_report.log 2>&1
-)
-
 if (CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
     # genhtml 生成测试覆盖率报告网页
     find_program(GENHTML_EXE genhtml)

@@ -26,9 +26,6 @@ add_executable(${PROJECT_NAME}
 # 添加头文件
 target_include_directories(kernel PRIVATE
         include
-        /usr/lib/gcc-cross/riscv64-linux-gnu/13/include
-        /usr/lib/gcc-cross/riscv64-linux-gnu/13/../../../../riscv64-linux-gnu/include
-        /usr/include
 )
 
 # 添加要链接的库
