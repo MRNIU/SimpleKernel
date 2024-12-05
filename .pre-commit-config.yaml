@@ -7,10 +7,17 @@ repos:
         args: [--style=file]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0  # Use the ref you want to point at
+    rev: v5.0.0
     hooks:
-      - id: trailing-whitespace
-      - id: check-json
       - id: check-case-conflict
       - id: check-illegal-windows-names
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-xml
+      - id: check-yaml
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
       - id: trailing-whitespace
