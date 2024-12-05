@@ -1,13 +1,5 @@
 fail_fast: false
 repos:
-  - repo: https://github.com/pocc/pre-commit-hooks
-    rev: v1.3.5
-    hooks:
-      - id: clang-format
-        args: [--style=file]
-      - id: cpplint
-        args: [--filter=-build/include_subdir]
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -23,3 +15,20 @@ repos:
       - id: end-of-file-fixer
       - id: mixed-line-ending
       - id: trailing-whitespace
+
+  - repo: https://github.com/cpp-linter/cpp-linter-hooks
+    rev: v0.5.1
+    hooks:
+      - id: clang-format
+        args:
+          - --style=file
+      - id: clang-tidy
+        args:
+          - --checks=.clang-tidy
+          - -p=build_riscv64/compiler_commands.json
+          - -extra-arg=--std=c++2b
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.10.0
+    hooks:
+    - id: shellcheck

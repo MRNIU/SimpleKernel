@@ -37,6 +37,7 @@ RUN apt install --no-install-recommends --fix-missing -y \
     iwyu \
     cppcheck \
     cpplint \
+    shellcheck \
     lcov
 RUN locale-gen en_US.UTF-8 && locale-gen zh_CN.UTF-8 \
     && mkdir -p /var/run/sshd \

@@ -22,7 +22,9 @@ jobs:
       packages: read
       statuses: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install dependencies
         run: |
@@ -62,7 +64,7 @@ jobs:
       - name: Build Doc
         if: github.ref == 'refs/heads/main'
         run: |
-          cmake --preset=build_x86_64 
+          cmake --preset=build_x86_64
           cmake --build build_x86_64 --target doc
 
       - name: Publish
@@ -74,5 +76,5 @@ jobs:
 
       - name: Super-Linter
         uses: super-linter/super-linter@v7.2.0
-        env: 
+        env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

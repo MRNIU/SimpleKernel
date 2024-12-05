@@ -24,15 +24,17 @@
 
 void _start(uint32_t argc, uint8_t *argv) {
   CppInit();
+
+  auto eag = 0;
   main(argc, argv);
   CppDeInit();
 
   // 进入死循环
-  while (1) {
+  while (true) {
   }
 }
 
-uint32_t main(uint32_t argc, uint8_t *argv) {
+auto main(uint32_t argc, uint8_t *argv) -> uint32_t {
   // 架构相关初始化
   [[maybe_unused]] auto arch_init_ret = ArchInit(argc, argv);
 
