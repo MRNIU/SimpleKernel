@@ -29,7 +29,6 @@ void _start(uint32_t argc, uint8_t *argv) {
 
   // 进入死循环
   while (1) {
-    ;
   }
 }
 
