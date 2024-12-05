@@ -12,6 +12,28 @@ target_compile_definitions(compile_definitions INTERFACE
         $<$<CONFIG:Debug>:SIMPLEKERNEL_DEBUG>
 )
 
+# 获取 gcc 的 include 路径
+execute_process(
+    COMMAND
+        sh -c "echo | ${CMAKE_CXX_COMPILER} -v -x c -E - 2>&1 | sed -n '/#include <...> search starts here:/,/End of search list./{/^ /p}'"
+    OUTPUT_VARIABLE GCC_OUTPUT
+    ERROR_VARIABLE GCC_ERROR
+    RESULT_VARIABLE GCC_RESULT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+# 检查 gcc 是否成功执行
+if(NOT GCC_RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to run ${CMAKE_CXX_COMPILER} -v")
+endif()
+# 分割路径并生成路径列表
+string(REPLACE "\n" ";" INCLUDE_PATH_LIST "${GCC_OUTPUT}")
+# 使用 `-I` 将路径添加到编译选项中
+foreach(INCLUDE_PATH ${INCLUDE_PATH_LIST})
+    string(REGEX REPLACE " " "" CLEAN_PATH ${INCLUDE_PATH})
+    list(APPEND CROSS_INCLUDE_PATHS "-I${CLEAN_PATH}")
+endforeach()
+message(STATUS "GCC Include CROSS_INCLUDE_PATHS: ${CROSS_INCLUDE_PATHS}")
+
 # 通用编译选项
 add_library(compile_options INTERFACE)
 target_compile_options(compile_options INTERFACE
@@ -66,9 +88,7 @@ target_compile_options(compile_options INTERFACE
         $<$<PLATFORM_ID:Darwin>:
         >
 
-        -I/usr/lib/gcc-cross/riscv64-linux-gnu/13/include
-        -I/usr/lib/gcc-cross/riscv64-linux-gnu/13/../../../../riscv64-linux-gnu/include
-        -I/usr/include
+        ${CROSS_INCLUDE_PATHS}
 )
 
 # 通用链接选项

@@ -5,13 +5,6 @@
 # project_config.cmake for Simple-XX/SimpleKernel.
 # 配置信息
 
-# 设置 cmake 目标环境根目录
-# @todo 设置目录
-list(APPEND CMAKE_FIND_ROOT_PATH
-        /usr/x86_64-linux-gnu
-        /usr/riscv64-linux-gnu
-        /usr/aarch64-linux-gnu
-)
 # 在目标环境搜索 program
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 # 在目标环境搜索库文件
