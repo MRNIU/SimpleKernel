@@ -14,7 +14,4 @@ target_sources(libc INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/sk_libc.c
         ${CMAKE_CURRENT_SOURCE_DIR}/sk_string.c
         ${CMAKE_CURRENT_SOURCE_DIR}/sk_stdio.c
-        /usr/include
-        /usr/riscv64-linux-gnu/include
-        /usr/x86_64-linux-gnu/include
 )
