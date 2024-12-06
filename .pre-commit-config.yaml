@@ -25,7 +25,8 @@ repos:
       - id: clang-tidy
         args:
           - --checks=.clang-tidy
-          - -p=build_riscv64/compiler_commands.json
+          # - -p=build_riscv64/compiler_commands.json
+          - -p=build_x86_64/compiler_commands.json
           - -extra-arg=--std=c++2b
 
   - repo: https://github.com/koalaman/shellcheck-precommit
