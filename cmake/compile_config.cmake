@@ -11,9 +11,8 @@ TARGET_COMPILE_DEFINITIONS (
 
 # 获取 gcc 的 include 路径
 EXECUTE_PROCESS (
-    COMMAND
-        sh -c "echo | ${CMAKE_CXX_COMPILER} -v -x c -E - 2>&1 | sed -n "
-        "'/#include <...> search starts here:/,/End of search list./{/^ /p}'"
+    COMMAND sh -c "echo | ${CMAKE_CXX_COMPILER} -v -x c -E - 2>&1 | sed -n \
+        '/#include <...> search starts here:/,/End of search list./{/^ /p}'"
     OUTPUT_VARIABLE GCC_OUTPUT
     ERROR_VARIABLE GCC_ERROR
     RESULT_VARIABLE GCC_RESULT
