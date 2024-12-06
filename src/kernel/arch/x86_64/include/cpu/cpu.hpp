@@ -37,8 +37,9 @@ namespace cpu {
  * @param  port           要读的端口
  * @return uint8_t         读取到的数据
  */
-static __always_inline uint8_t InByte(const uint32_t port) {
+static __always_inline auto InByte(const uint32_t port) -> uint8_t {
   uint8_t data;
+
   __asm__ volatile("inb %1, %0" : "=a"(data) : "dN"(port));
   return data;
 }
@@ -48,7 +49,7 @@ static __always_inline uint8_t InByte(const uint32_t port) {
  * @param  port           要读的端口
  * @return uint16_t        读取到的数据
  */
-static __always_inline uint16_t InWord(const uint32_t port) {
+static __always_inline auto InWord(const uint32_t port) -> uint16_t {
   uint16_t data;
   __asm__ volatile("inw %1, %0" : "=a"(data) : "dN"(port));
   return data;
@@ -59,7 +60,7 @@ static __always_inline uint16_t InWord(const uint32_t port) {
  * @param  port           要读的端口
  * @return uint32_t        读取到的数据
  */
-static __always_inline uint32_t InLong(const uint32_t port) {
+static __always_inline auto InLong(const uint32_t port) -> uint32_t {
   uint32_t data;
   __asm__ volatile("inl %1, %0" : "=a"(data) : "dN"(port));
   return data;
@@ -170,7 +171,7 @@ class Serial {
    * @return false
    */
   [[nodiscard]] auto SerialReceived() const -> bool {
-    return InByte(port_ + 5) & 1;
+    return bool(InByte(port_ + 5) & 1);
   }
 
   /**
@@ -179,7 +180,7 @@ class Serial {
    * @return false
    */
   [[nodiscard]] auto IsTransmitEmpty() const -> bool {
-    return InByte(port_ + 5) & 0x20;
+    return bool((InByte(port_ + 5) & 0x20) != 0);
   }
 };
 };  // namespace cpu

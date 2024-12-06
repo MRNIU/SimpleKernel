@@ -21,6 +21,5 @@ Checks: >
   -readability-named-parameter,
   -readability-braces-around-statements,
   -readability-magic-numbers
-HeaderFilterRegex: '^${sourceDir}/src/*'
 FormatStyle: google
 ...
