@@ -55,5 +55,5 @@ ENDIF()
 # 生成项目配置头文件，传递给代码
 CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/project_config.h.in
                 ${CMAKE_SOURCE_DIR}/src/project_config.h @ONLY)
-CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/.pre-commit-config.yaml.in
-                ${CMAKE_SOURCE_DIR}/.pre-commit-config.yaml @ONLY)
+# CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/.pre-commit-config.yaml.in
+# ${CMAKE_SOURCE_DIR}/.pre-commit-config.yaml @ONLY)
