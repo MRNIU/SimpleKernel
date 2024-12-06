@@ -155,7 +155,6 @@ class Fp : public read_write::ReadWriteRegBase<register_info::FpInfo> {
  public:
   friend auto operator<<(sk_std::ostream &os, [[maybe_unused]] const Fp &fp)
       -> sk_std::ostream & {
-    // (void)fp;
     klog::Info("val: 0x%p", regs::Fp::Read());
     return os;
   }
