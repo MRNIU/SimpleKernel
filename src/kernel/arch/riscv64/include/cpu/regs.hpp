@@ -56,7 +56,7 @@ struct FpInfo : public RegInfoBase {};
 };  // namespace register_info
 
 // 第二部分：读/写模版实现
-namespace {
+namespace read_write {
 /**
  * 只读接口
  * @tparam 寄存器类型
@@ -78,7 +78,7 @@ class ReadOnlyRegBase {
    * 读寄存器
    * @return RegInfo::DataType 寄存器的值
    */
-  static __always_inline RegInfo::DataType Read() {
+  static __always_inline auto Read() -> typename RegInfo::DataType {
     typename RegInfo::DataType value{};
     if constexpr (std::is_same<RegInfo, register_info::FpInfo>::value) {
       __asm__ volatile("mv %0, fp" : "=r"(value) : :);
@@ -92,7 +92,9 @@ class ReadOnlyRegBase {
   /**
    * () 重载
    */
-  static __always_inline RegInfo::DataType operator()() { return Read(); }
+  __always_inline auto operator()() -> typename RegInfo::DataType {
+    return Read();
+  }
 };
 
 /**
@@ -116,7 +118,7 @@ class WriteOnlyRegBase {
    * 写寄存器
    * @param value 要写的值
    */
-  static __always_inline void Write(RegInfo::DataType value) {
+  static __always_inline void Write(typename RegInfo::DataType value) {
     if constexpr (std::is_same<RegInfo, register_info::FpInfo>::value) {
       __asm__ volatile("mv fp, %0" : : "r"(value) :);
     } else {
@@ -145,11 +147,16 @@ class ReadWriteRegBase : public ReadOnlyRegBase<RegInfo>,
   /// @}
 };
 
+};  // namespace read_write
+
 // 第三部分：寄存器实例
-class Fp : public ReadWriteRegBase<register_info::FpInfo> {
+namespace regs {
+class Fp : public read_write::ReadWriteRegBase<register_info::FpInfo> {
  public:
-  friend sk_std::ostream &operator<<(sk_std::ostream &os, const Fp &fp) {
-    printf("val: 0x%p", (void *)fp.Read());
+  friend auto operator<<(sk_std::ostream &os, const Fp &fp)
+      -> sk_std::ostream & {
+    (void)fp;
+    klog::Info("val: 0x%p", regs::Fp::Read());
     return os;
   }
 };
@@ -159,10 +166,10 @@ struct AllXreg {
   Fp fp;
 };
 
-};  // namespace
+};  // namespace regs
 
 // 第四部分：访问接口
-[[maybe_unused]] static AllXreg kAllXreg;
+[[maybe_unused]] static regs::AllXreg kAllXreg;
 
 };  // namespace cpu
 
