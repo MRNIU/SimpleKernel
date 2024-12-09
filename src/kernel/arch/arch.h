@@ -17,6 +17,8 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_ARCH_ARCH_H_
 #define SIMPLEKERNEL_SRC_KERNEL_ARCH_ARCH_H_
 
+#include <sys/cdefs.h>
+
 #include <cstddef>
 #include <cstdint>
 
