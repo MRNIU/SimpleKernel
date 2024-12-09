@@ -17,10 +17,11 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INCLUDE_CPU_REGS_HPP_
 #define SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INCLUDE_CPU_REGS_HPP_
 
+#include <sys/cdefs.h>
+
 #include <cstdint>
 #include <cstdlib>
 #include <type_traits>
-#include <typeinfo>
 
 #include "kernel_log.hpp"
 #include "sk_cstdio"
@@ -80,7 +81,7 @@ class ReadOnlyRegBase {
    */
   static __always_inline auto Read() -> typename RegInfo::DataType {
     typename RegInfo::DataType value{};
-    if constexpr (std::is_same<RegInfo, register_info::RbpInfo>::value) {
+    if constexpr (std::is_same_v<RegInfo, register_info::RbpInfo>) {
       __asm__ volatile("mov %%rbp, %0" : "=r"(value) : :);
     } else {
       klog::Err("No Type\n");
@@ -119,7 +120,7 @@ class WriteOnlyRegBase {
    * @param value 要写的值
    */
   static __always_inline void Write(typename RegInfo::DataType value) {
-    if constexpr (std::is_same<RegInfo, register_info::RbpInfo>::value) {
+    if constexpr (std::is_same_v<RegInfo, register_info::RbpInfo>) {
       __asm__ volatile("mv fp, %0" : : "r"(value) :);
     } else {
       klog::Err("No Type\n");
@@ -154,10 +155,10 @@ namespace regs {
 // 第三部分：寄存器实例
 class Rbp : public read_write::ReadWriteRegBase<register_info::RbpInfo> {
  public:
-  friend auto operator<<(sk_std::ostream &os, [[maybe_unused]] const Rbp &rbp)
-      -> sk_std::ostream & {
-    printf("val: 0x%p", regs::Rbp::Read());
-    return os;
+  friend auto operator<<(sk_std::ostream &ostream,
+                         [[maybe_unused]] const Rbp &rbp) -> sk_std::ostream & {
+    klog::Info("val: 0x%p", regs::Rbp::Read());
+    return ostream;
   }
 };
 
