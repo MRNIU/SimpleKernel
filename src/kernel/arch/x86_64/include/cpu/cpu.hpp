@@ -33,64 +33,45 @@
  */
 namespace cpu {
 /**
- * @brief  读一个字节
+ * @brief  从端口读数据
+ * @tparam T              要读的数据类型
  * @param  port           要读的端口
- * @return uint8_t         读取到的数据
+ * @return uint8_t        读取到的数据
  */
-static __always_inline auto InByte(const uint32_t port) -> uint8_t {
-  uint8_t data;
-
-  __asm__ volatile("inb %1, %0" : "=a"(data) : "dN"(port));
+template <class T>
+static __always_inline auto In(const uint32_t port) -> T {
+  T data;
+  if constexpr (std::is_same<T, uint8_t>::value) {
+    __asm__ volatile("inb %1, %0" : "=a"(data) : "dN"(port));
+  } else if constexpr (std::is_same<T, uint16_t>::value) {
+    __asm__ volatile("inw %1, %0" : "=a"(data) : "dN"(port));
+  } else if constexpr (std::is_same<T, uint32_t>::value) {
+    __asm__ volatile("inl %1, %0" : "=a"(data) : "dN"(port));
+  } else {
+    klog::Err("No Type\n");
+    throw;
+  }
   return data;
 }
 
 /**
- * @brief  读一个字
- * @param  port           要读的端口
- * @return uint16_t        读取到的数据
- */
-static __always_inline auto InWord(const uint32_t port) -> uint16_t {
-  uint16_t data;
-  __asm__ volatile("inw %1, %0" : "=a"(data) : "dN"(port));
-  return data;
-}
-
-/**
- * @brief  读一个双字
- * @param  port           要读的端口
- * @return uint32_t        读取到的数据
- */
-static __always_inline auto InLong(const uint32_t port) -> uint32_t {
-  uint32_t data;
-  __asm__ volatile("inl %1, %0" : "=a"(data) : "dN"(port));
-  return data;
-}
-
-/**
- * @brief  写一个字节
+ * @brief  向端口写数据
+ * @tparam T              要写的数据类型
  * @param  port           要写的端口
  * @param  data           要写的数据
  */
-static __always_inline void OutByte(const uint32_t port, const uint8_t data) {
-  __asm__ volatile("outb %1, %0" : : "dN"(port), "a"(data));
-}
-
-/**
- * @brief  写一个字
- * @param  port           要写的端口
- * @param  data           要写的数据
- */
-static __always_inline void OutWord(const uint32_t port, const uint16_t data) {
-  __asm__ volatile("outw %1, %0" : : "dN"(port), "a"(data));
-}
-
-/**
- * @brief  写一个双字
- * @param  port           要写的端口
- * @param  data           要写的数据
- */
-static __always_inline void OutLong(const uint32_t port, const uint32_t data) {
-  __asm__ volatile("outl %1, %0" : : "dN"(port), "a"(data));
+template <class T>
+static __always_inline void Out(const uint32_t port, const T data) {
+  if constexpr (std::is_same<T, uint8_t>::value) {
+    __asm__ volatile("outb %1, %0" : : "dN"(port), "a"(data));
+  } else if constexpr (std::is_same<T, uint16_t>::value) {
+    __asm__ volatile("outw %1, %0" : : "dN"(port), "a"(data));
+  } else if constexpr (std::is_same<T, uint32_t>::value) {
+    __asm__ volatile("outl %1, %0" : : "dN"(port), "a"(data));
+  } else {
+    klog::Err("No Type\n");
+    throw;
+  }
 }
 
 /// @name 端口
@@ -102,31 +83,31 @@ class Serial {
  public:
   explicit Serial(uint32_t port) : port_(port) {
     // Disable all interrupts
-    OutByte(port_ + 1, 0x00);
+    Out<uint8_t>(port_ + 1, 0x00);
     // Enable DLAB (set baud rate divisor)
-    OutByte(port_ + 3, 0x80);
+    Out<uint8_t>(port_ + 3, 0x80);
     // Set divisor to 3 (lo byte) 38400 baud
-    OutByte(port_ + 0, 0x03);
+    Out<uint8_t>(port_ + 0, 0x03);
     // (hi byte)
-    OutByte(port_ + 1, 0x00);
+    Out<uint8_t>(port_ + 1, 0x00);
     // 8 bits, no parity, one stop bit
-    OutByte(port_ + 3, 0x03);
+    Out<uint8_t>(port_ + 3, 0x03);
     // Enable FIFO, clear them, with 14-byte threshold
-    OutByte(port_ + 2, 0xC7);
+    Out<uint8_t>(port_ + 2, 0xC7);
     // IRQs enabled, RTS/DSR set
-    OutByte(port_ + 4, 0x0B);
+    Out<uint8_t>(port_ + 4, 0x0B);
     // Set in loopback mode, test the serial chip
-    OutByte(port_ + 4, 0x1E);
+    Out<uint8_t>(port_ + 4, 0x1E);
     // Test serial chip (send byte 0xAE and check if serial returns same byte)
-    OutByte(port_ + 0, 0xAE);
+    Out<uint8_t>(port_ + 0, 0xAE);
     // Check if serial is faulty (i.e: not same byte as sent)
-    if (InByte(port_ + 0) != 0xAE) {
+    if (In<uint8_t>(port_ + 0) != 0xAE) {
       asm("hlt");
     }
 
     // If serial is not faulty set it in normal operation mode (not-loopback
     // with IRQs enabled and OUT#1 and OUT#2 bits enabled)
-    OutByte(port_ + 4, 0x0F);
+    Out<uint8_t>(port_ + 4, 0x0F);
   }
 
   ~Serial() = default;
@@ -148,7 +129,7 @@ class Serial {
     while (!SerialReceived()) {
       ;
     }
-    return InByte(port_);
+    return In<uint8_t>(port_);
   }
 
   /**
@@ -159,7 +140,7 @@ class Serial {
     while (!IsTransmitEmpty()) {
       ;
     }
-    OutByte(port_, c);
+    Out<uint8_t>(port_, c);
   }
 
  private:
@@ -171,7 +152,7 @@ class Serial {
    * @return false
    */
   [[nodiscard]] auto SerialReceived() const -> bool {
-    return bool(InByte(port_ + 5) & 1);
+    return bool(In<uint8_t>(port_ + 5) & 1);
   }
 
   /**
@@ -180,7 +161,7 @@ class Serial {
    * @return false
    */
   [[nodiscard]] auto IsTransmitEmpty() const -> bool {
-    return bool((InByte(port_ + 5) & 0x20) != 0);
+    return bool((In<uint8_t>(port_ + 5) & 0x20) != 0);
   }
 };
 };  // namespace cpu
