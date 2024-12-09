@@ -17,14 +17,13 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INCLUDE_CPU_CPU_HPP_
 #define SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INCLUDE_CPU_CPU_HPP_
 
+#include <sys/cdefs.h>
+
 #include <cstdint>
 #include <cstdlib>
 #include <type_traits>
-#include <typeinfo>
 
 #include "kernel_log.hpp"
-#include "regs.hpp"
-#include "sk_cstdio"
 #include "sk_iostream"
 
 /**
@@ -41,11 +40,11 @@ namespace cpu {
 template <class T>
 static __always_inline auto In(const uint32_t port) -> T {
   T data;
-  if constexpr (std::is_same<T, uint8_t>::value) {
+  if constexpr (std::is_same_v<T, uint8_t>) {
     __asm__ volatile("inb %1, %0" : "=a"(data) : "dN"(port));
-  } else if constexpr (std::is_same<T, uint16_t>::value) {
+  } else if constexpr (std::is_same_v<T, uint16_t>) {
     __asm__ volatile("inw %1, %0" : "=a"(data) : "dN"(port));
-  } else if constexpr (std::is_same<T, uint32_t>::value) {
+  } else if constexpr (std::is_same_v<T, uint32_t>) {
     __asm__ volatile("inl %1, %0" : "=a"(data) : "dN"(port));
   } else {
     klog::Err("No Type\n");
@@ -62,11 +61,11 @@ static __always_inline auto In(const uint32_t port) -> T {
  */
 template <class T>
 static __always_inline void Out(const uint32_t port, const T data) {
-  if constexpr (std::is_same<T, uint8_t>::value) {
+  if constexpr (std::is_same_v<T, uint8_t>) {
     __asm__ volatile("outb %1, %0" : : "dN"(port), "a"(data));
-  } else if constexpr (std::is_same<T, uint16_t>::value) {
+  } else if constexpr (std::is_same_v<T, uint16_t>) {
     __asm__ volatile("outw %1, %0" : : "dN"(port), "a"(data));
-  } else if constexpr (std::is_same<T, uint32_t>::value) {
+  } else if constexpr (std::is_same_v<T, uint32_t>) {
     __asm__ volatile("outl %1, %0" : : "dN"(port), "a"(data));
   } else {
     klog::Err("No Type\n");
@@ -134,13 +133,13 @@ class Serial {
 
   /**
    * @brief  写一个字节
-   * @param  c              要写的数据
+   * @param  byte              要写的数据
    */
-  void Write(uint8_t c) const {
+  void Write(uint8_t byte) const {
     while (!IsTransmitEmpty()) {
       ;
     }
-    Out<uint8_t>(port_, c);
+    Out<uint8_t>(port_, byte);
   }
 
  private:
