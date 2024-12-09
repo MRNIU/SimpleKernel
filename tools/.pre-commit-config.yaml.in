@@ -28,7 +28,7 @@ repos:
           - -p=@CMAKE_BINARY_DIR@/build_x86_64/compiler_commands.json
           - -extra-arg=--std=c++2b
           - --fix
-          # - --header-filter=^(?@CMAKE_BINARY_DIR@/src/).*
+          - --header-filter=^(?@CMAKE_BINARY_DIR@/src/).*
           # - --exclude-header-filter=^(?@CMAKE_BINARY_DIR@/src/arch/x86_64|@CMAKE_BINARY_DIR@/src/arch/aarch64).*
       # - id: clang-tidy
       #   args:
