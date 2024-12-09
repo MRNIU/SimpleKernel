@@ -134,6 +134,6 @@ extern "C" inline void Err(const char* format, ...) {
 [[maybe_unused]] static Logger<Debug> debug;
 [[maybe_unused]] static Logger<Err> err;
 
-}  // namespace log
+}  // namespace klog
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_LOG_HPP_ */
