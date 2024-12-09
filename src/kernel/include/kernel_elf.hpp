@@ -21,11 +21,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <span>
 
 #include "kernel_log.hpp"
 #include "singleton.hpp"
-#include "sk_cstring"
 
 /**
  * elf 文件相关
@@ -33,7 +33,7 @@
 class KernelElf {
  public:
   /// 符号表
-  std::span<Elf64_Sym> symtab_ = {};
+  std::span<Elf64_Sym> symtab_;
   /// 字符串表
   uint8_t *strtab_ = nullptr;
 
@@ -43,12 +43,12 @@ class KernelElf {
    * @param elf_size elf 大小，默认为 64，Elf64_Ehdr 的大小
    */
   explicit KernelElf(uint64_t elf_addr, size_t elf_size = 64) {
-    if (!elf_addr || !elf_size) {
+    if ((elf_addr == 0U) || (elf_size == 0U)) {
       klog::Err("Fatal Error: Invalid elf_addr or elf_size.\n");
       throw;
     }
 
-    elf_ = std::span<uint8_t>((uint8_t *)elf_addr, elf_size);
+    elf_ = std::span<uint8_t>(reinterpret_cast<uint8_t *>(elf_addr), elf_size);
 
     // 检查 elf 头数据
     auto check_elf_identity_ret = CheckElfIdentity();
@@ -67,15 +67,15 @@ class KernelElf {
         reinterpret_cast<Elf64_Shdr *>(elf_.data() + ehdr_.e_shoff),
         ehdr_.e_shnum);
 
-    auto shstrtab =
-        (const char *)elf_.data() + shdr_[ehdr_.e_shstrndx].sh_offset;
-    for (auto i : shdr_) {
-      if (strcmp(shstrtab + i.sh_name, ".symtab") == 0) {
+    const auto *shstrtab = reinterpret_cast<const char *>(elf_.data()) +
+                           shdr_[ehdr_.e_shstrndx].sh_offset;
+    for (auto shdr : shdr_) {
+      if (strcmp(shstrtab + shdr.sh_name, ".symtab") == 0) {
         symtab_ = std::span<Elf64_Sym>(
-            reinterpret_cast<Elf64_Sym *>(elf_.data() + i.sh_offset),
-            (i.sh_size / sizeof(Elf64_Sym)));
-      } else if (strcmp(shstrtab + i.sh_name, ".strtab") == 0) {
-        strtab_ = elf_.data() + i.sh_offset;
+            reinterpret_cast<Elf64_Sym *>(elf_.data() + shdr.sh_offset),
+            (shdr.sh_size / sizeof(Elf64_Sym)));
+      } else if (strcmp(shstrtab + shdr.sh_name, ".strtab") == 0) {
+        strtab_ = elf_.data() + shdr.sh_offset;
       }
     }
   }
@@ -93,17 +93,17 @@ class KernelElf {
  private:
   /// @name elf 文件相关
   /// @{
-  std::span<uint8_t> elf_ = {};
+  std::span<uint8_t> elf_;
   Elf64_Ehdr ehdr_ = {};
-  std::span<Elf64_Phdr> phdr_ = {};
-  std::span<Elf64_Shdr> shdr_ = {};
+  std::span<Elf64_Phdr> phdr_;
+  std::span<Elf64_Shdr> shdr_;
   /// @}
 
   /**
    * 检查 elf 标识
    * @return 失败返回 false
    */
-  [[nodiscard]] bool CheckElfIdentity() const {
+  [[nodiscard]] auto CheckElfIdentity() const -> bool {
     if ((elf_[EI_MAG0] != ELFMAG0) || (elf_[EI_MAG1] != ELFMAG1) ||
         (elf_[EI_MAG2] != ELFMAG2) || (elf_[EI_MAG3] != ELFMAG3)) {
       klog::Err("Fatal Error: Invalid ELF header.\n");
