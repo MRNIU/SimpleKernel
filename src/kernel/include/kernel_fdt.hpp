@@ -18,6 +18,7 @@
 #define SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_FDT_HPP_
 
 // 禁用 GCC/Clang 的警告
+#include "libfdt_env.h"
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
@@ -35,7 +36,6 @@
 
 #include "kernel_log.hpp"
 #include "singleton.hpp"
-#include "sk_cstring"
 
 /**
  * elf 文件相关
@@ -46,8 +46,9 @@ class KernelFdt {
    * 构造函数
    * @param fdt_addr fdt 地址
    */
-  explicit KernelFdt(uint64_t fdt_addr) : fdt_addr_((void *)fdt_addr) {
-    if (!fdt_addr_) {
+  explicit KernelFdt(uint64_t fdt_addr)
+      : fdt_addr_(reinterpret_cast<void *>(fdt_addr)) {
+    if (fdt_addr_ == nullptr) {
       klog::Err("Fatal Error: Invalid fdt_addr.\n");
       throw;
     }
@@ -73,7 +74,7 @@ class KernelFdt {
    * 获取内存信息
    * @return 内存信息<地址，长度>
    */
-  std::pair<uint64_t, size_t> GetMemory() {
+  auto GetMemory() -> std::pair<uint64_t, size_t> {
     uint64_t base = 0;
     uint64_t size = 0;
 
@@ -87,14 +88,14 @@ class KernelFdt {
     }
 
     // 获取 reg 属性
-    auto prop = fdt_get_property(fdt_addr_, offset, "reg", &len);
-    if (!prop) {
+    const auto *prop = fdt_get_property(fdt_addr_, offset, "reg", &len);
+    if (prop == nullptr) {
       klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
       throw;
     }
 
     // 解析 reg 属性，通常包含基地址和大小
-    auto reg = (const uint64_t *)prop->data;
+    const auto *reg = reinterpret_cast<const uint64_t *>(prop->data);
     for (size_t i = 0; i < len / sizeof(uint64_t); i += 2) {
       base = fdt64_to_cpu(reg[i]);
       size = fdt64_to_cpu(reg[i + 1]);
@@ -106,7 +107,7 @@ class KernelFdt {
    * 获取串口信息
    * @return 内存信息<地址，长度>
    */
-  std::pair<uint64_t, size_t> GetSerial() {
+  auto GetSerial() -> std::pair<uint64_t, size_t> {
     uint64_t base = 0;
     uint64_t size = 0;
 
@@ -120,14 +121,14 @@ class KernelFdt {
     }
 
     // 获取 reg 属性
-    auto prop = fdt_get_property(fdt_addr_, offset, "reg", &len);
-    if (!prop) {
+    const auto *prop = fdt_get_property(fdt_addr_, offset, "reg", &len);
+    if (prop == nullptr) {
       klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
       throw;
     }
 
     // 解析 reg 属性，通常包含基地址和大小
-    auto reg = (const uint64_t *)prop->data;
+    const auto *reg = reinterpret_cast<const uint64_t *>(prop->data);
     for (size_t i = 0; i < len / sizeof(uint64_t); i += 2) {
       base = fdt64_to_cpu(reg[i]);
       size = fdt64_to_cpu(reg[i + 1]);
