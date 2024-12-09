@@ -20,6 +20,7 @@ Checks: >
   -misc-non-private-member-variables-in-classes,
   -readability-named-parameter,
   -readability-braces-around-statements,
-  -readability-magic-numbers
+  -readability-magic-numbers,
+  -performance-no-int-to-ptr
 FormatStyle: google
 ...
