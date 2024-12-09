@@ -14,31 +14,33 @@
  * </table>
  */
 
-#include <elf.h>
+#include <cstdint>
 
 #include "basic_info.hpp"
 #include "cpu/cpu.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
-#include "sk_cstdio"
-#include "sk_cstring"
+#include "singleton.hpp"
+#include "sk_iostream"
 
 // printf_bare_metal 基本输出实现
 /// @note 这里要注意，保证在 serial 初始化之前不能使用 printf
 /// 函数，否则会有全局对象依赖问题
-static cpu::Serial kSerial(cpu::kCom1);
+namespace {
+cpu::Serial kSerial(cpu::kCom1);
 extern "C" void _putchar(char character) { kSerial.Write(character); }
-
 // 引用链接脚本中的变量
 /// @see http://wiki.osdev.org/Using_Linker_Script_Values
 /// 内核开始
-extern "C" void *__executable_start[];
+extern "C" void *__executable_start[];  // NOLINT
 /// 内核结束
 extern "C" void *end[];
-BasicInfo::BasicInfo(uint32_t argc, uint8_t *argv) {
+}  // namespace
+
+BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   (void)argc;
 
-  auto basic_info = *reinterpret_cast<BasicInfo *>(argv);
+  auto basic_info = *reinterpret_cast<const BasicInfo *>(argv);
   physical_memory_addr = basic_info.physical_memory_addr;
   physical_memory_size = basic_info.physical_memory_size;
 
@@ -52,18 +54,19 @@ BasicInfo::BasicInfo(uint32_t argc, uint8_t *argv) {
   fdt_addr = 0;
 }
 
-uint32_t ArchInit(uint32_t argc, uint8_t *argv) {
+auto ArchInit(uint32_t argc, uint8_t *argv) -> uint32_t {
   if (argc != 1) {
     klog::Err("argc != 1 [%d]\n", argc);
     throw;
   }
 
-  kBasicInfo.GetInstance() = BasicInfo(argc, argv);
-  sk_std::cout << kBasicInfo.GetInstance();
+  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+  sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
   // 解析内核 elf 信息
-  kKernelElf.GetInstance() = KernelElf(kBasicInfo.GetInstance().elf_addr,
-                                       kBasicInfo.GetInstance().elf_size);
+  Singleton<KernelElf>::GetInstance() =
+      KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr,
+                Singleton<BasicInfo>::GetInstance().elf_size);
 
   klog::Info("Hello x86_64 ArchInit\n");
 

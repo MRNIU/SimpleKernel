@@ -48,7 +48,7 @@ struct BasicInfo {
    * @param argc 同 _start
    * @param argv 同 _start
    */
-  explicit BasicInfo(uint32_t argc, uint8_t *argv);
+  explicit BasicInfo(uint32_t argc, const uint8_t *argv);
 
   /// @name 构造/析构函数
   /// @{
@@ -60,8 +60,8 @@ struct BasicInfo {
   ~BasicInfo() = default;
   /// @}
 
-  friend sk_std::ostream &operator<<(sk_std::ostream &os,
-                                     const BasicInfo &basic_info) {
+  friend auto operator<<(sk_std::ostream &os, const BasicInfo &basic_info)
+      -> sk_std::ostream & {
     printf("physical_memory_addr: 0x%X, size 0x%X.\n",
            basic_info.physical_memory_addr, basic_info.physical_memory_size);
     printf("kernel_addr: 0x%X, size 0x%X.\n", basic_info.kernel_addr,
