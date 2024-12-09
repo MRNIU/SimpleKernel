@@ -16,12 +16,14 @@
 
 #include "driver.h"
 
-uint32_t Driver(uint32_t argc, uint8_t *argv) {
+#include <cstdint>
+
+auto Driver(uint32_t argc, const uint8_t *argv) -> uint32_t {
   (void)argc;
   (void)argv;
 
   // 进入死循环
-  while (1) {
+  while (true) {
     ;
   }
 
