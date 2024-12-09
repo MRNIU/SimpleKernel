@@ -28,7 +28,7 @@ repos:
           - -p=/root/SimpleKernel/build_x86_64/build_x86_64/compiler_commands.json
           - -extra-arg=--std=c++2b
           - --fix
-          - --header-filter=^(?/root/SimpleKernel/build_x86_64/src/).*
+          - --header-filter=^(/root/SimpleKernel/build_x86_64/src/).*
           # - --exclude-header-filter=^(?/root/SimpleKernel/build_x86_64/src/arch/x86_64|/root/SimpleKernel/build_x86_64/src/arch/aarch64).*
       # - id: clang-tidy
       #   args:
