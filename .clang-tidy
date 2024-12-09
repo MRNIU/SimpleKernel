@@ -21,6 +21,7 @@ Checks: >
   -readability-named-parameter,
   -readability-braces-around-statements,
   -readability-magic-numbers,
-  -performance-no-int-to-ptr
+  -performance-no-int-to-ptr,
+  -modernize-use-std-print
 FormatStyle: google
 ...

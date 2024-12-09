@@ -17,76 +17,77 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_LOG_HPP_
 #define SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_LOG_HPP_
 
-#include <stdarg.h>
+#include <cstdarg>
+#include <cstdint>
 
 #include "../../project_config.h"
 #include "sk_cstdio"
 #include "sk_iostream"
 
-namespace {
+namespace klog {
+namespace logger {
 
 /// ANSI 转义码，在支持 ANSI 转义码的终端中可以显示颜色
-static constexpr const auto kReset = "\033[0m";
-static constexpr const auto kRed = "\033[31m";
-static constexpr const auto kGreen = "\033[32m";
-static constexpr const auto kYellow = "\033[33m";
-static constexpr const auto kBlue = "\033[34m";
-static constexpr const auto kMagenta = "\033[35m";
-static constexpr const auto kCyan = "\033[36m";
-static constexpr const auto kWhite = "\033[37m";
+constexpr const auto kReset = "\033[0m";
+constexpr const auto kRed = "\033[31m";
+constexpr const auto kGreen = "\033[32m";
+constexpr const auto kYellow = "\033[33m";
+constexpr const auto kBlue = "\033[34m";
+constexpr const auto kMagenta = "\033[35m";
+constexpr const auto kCyan = "\033[36m";
+constexpr const auto kWhite = "\033[37m";
 
 template <void (*OutputFunction)(const char* format, ...)>
 class Logger : public sk_std::ostream {
  public:
-  Logger& operator<<(int8_t val) override {
+  auto operator<<(int8_t val) -> Logger& override {
     OutputFunction("%d", val);
     return *this;
   }
 
-  Logger& operator<<(uint8_t val) override {
+  auto operator<<(uint8_t val) -> Logger& override {
     OutputFunction("%d", val);
     return *this;
   }
 
-  Logger& operator<<(const char* val) override {
+  auto operator<<(const char* val) -> Logger& override {
     OutputFunction("%s", val);
     return *this;
   }
 
-  Logger& operator<<(int16_t val) override {
+  auto operator<<(int16_t val) -> Logger& override {
     OutputFunction("%d", val);
     return *this;
   }
 
-  Logger& operator<<(uint16_t val) override {
+  auto operator<<(uint16_t val) -> Logger& override {
     OutputFunction("%d", val);
     return *this;
   }
 
-  Logger& operator<<(int32_t val) override {
+  auto operator<<(int32_t val) -> Logger& override {
     OutputFunction("%d", val);
     return *this;
   }
 
-  Logger& operator<<(uint32_t val) override {
+  auto operator<<(uint32_t val) -> Logger& override {
     OutputFunction("%d", val);
     return *this;
   }
 
-  Logger& operator<<(int64_t val) override {
+  auto operator<<(int64_t val) -> Logger& override {
     OutputFunction("%ld", val);
     return *this;
   }
 
-  Logger& operator<<(uint64_t val) override {
+  auto operator<<(uint64_t val) -> Logger& override {
     OutputFunction("%ld", val);
     return *this;
   }
 };
 
-}  // namespace
+}  // namespace logger
 
-namespace klog {
 /**
  * @brief 与 printf 类似，只是颜色不同
  */
@@ -95,9 +96,9 @@ extern "C" inline void Debug(const char* format, ...) {
 #ifdef SIMPLEKERNEL_DEBUG_LOG
   va_list args;
   va_start(args, format);
-  printf("%s", kMagenta);
+  printf("%s", logger::kMagenta);
   vprintf(format, args);
-  printf("%s", kReset);
+  printf("%s", logger::kReset);
   va_end(args);
 #endif
 }
@@ -105,34 +106,34 @@ extern "C" inline void Debug(const char* format, ...) {
 extern "C" inline void Info(const char* format, ...) {
   va_list args;
   va_start(args, format);
-  printf("%s", kCyan);
+  printf("%s", logger::kCyan);
   vprintf(format, args);
-  printf("%s", kReset);
+  printf("%s", logger::kReset);
   va_end(args);
 }
 
 extern "C" inline void Warn(const char* format, ...) {
   va_list args;
   va_start(args, format);
-  printf("%s", kYellow);
+  printf("%s", logger::kYellow);
   vprintf(format, args);
-  printf("%s", kReset);
+  printf("%s", logger::kReset);
   va_end(args);
 }
 
 extern "C" inline void Err(const char* format, ...) {
   va_list args;
   va_start(args, format);
-  printf("%s", kRed);
+  printf("%s", logger::kRed);
   vprintf(format, args);
-  printf("%s", kReset);
+  printf("%s", logger::kReset);
   va_end(args);
 }
 
-[[maybe_unused]] static Logger<Info> info;
-[[maybe_unused]] static Logger<Warn> warn;
-[[maybe_unused]] static Logger<Debug> debug;
-[[maybe_unused]] static Logger<Err> err;
+[[maybe_unused]] static logger::Logger<Info> info;
+[[maybe_unused]] static logger::Logger<Warn> warn;
+[[maybe_unused]] static logger::Logger<Debug> debug;
+[[maybe_unused]] static logger::Logger<Err> err;
 
 }  // namespace klog
 
