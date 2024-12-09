@@ -20,8 +20,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "kernel_log.hpp"
 #include "singleton.hpp"
-#include "sk_cstdio"
 #include "sk_iostream"
 
 struct BasicInfo {
@@ -60,16 +60,17 @@ struct BasicInfo {
   ~BasicInfo() = default;
   /// @}
 
-  friend auto operator<<(sk_std::ostream &os, const BasicInfo &basic_info)
+  friend auto operator<<(sk_std::ostream &ostream, const BasicInfo &basic_info)
       -> sk_std::ostream & {
-    printf("physical_memory_addr: 0x%X, size 0x%X.\n",
-           basic_info.physical_memory_addr, basic_info.physical_memory_size);
-    printf("kernel_addr: 0x%X, size 0x%X.\n", basic_info.kernel_addr,
-           basic_info.kernel_size);
-    printf("elf_addr: 0x%X, size 0x%X\n", basic_info.elf_addr,
-           basic_info.elf_size);
-    printf("fdt_addr: 0x%X\n", basic_info.fdt_addr);
-    return os;
+    klog::Info("physical_memory_addr: 0x%X, size 0x%X.\n",
+               basic_info.physical_memory_addr,
+               basic_info.physical_memory_size);
+    klog::Info("kernel_addr: 0x%X, size 0x%X.\n", basic_info.kernel_addr,
+               basic_info.kernel_size);
+    klog::Info("elf_addr: 0x%X, size 0x%X\n", basic_info.elf_addr,
+               basic_info.elf_size);
+    klog::Info("fdt_addr: 0x%X\n", basic_info.fdt_addr);
+    return ostream;
   }
 };
 
