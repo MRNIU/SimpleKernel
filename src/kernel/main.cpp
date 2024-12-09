@@ -26,6 +26,7 @@ void _start(uint32_t argc, uint8_t *argv) {
   CppInit();
 
   auto eag = 0;
+
   main(argc, argv);
   CppDeInit();
 
