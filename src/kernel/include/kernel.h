@@ -17,7 +17,6 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_H_
 #define SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_H_
 
-#include <cstddef>
 #include <cstdint>
 
 /**
@@ -39,6 +38,6 @@ extern "C" [[maybe_unused]] [[noreturn]] void _start(uint32_t argc,
  * @param argv 同 _start
  * @return uint32_t 正常返回 0
  */
-uint32_t main(uint32_t argc, uint8_t* argv);
+auto main(uint32_t argc, uint8_t* argv) -> uint32_t;
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_H_ */
