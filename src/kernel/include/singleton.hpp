@@ -21,23 +21,23 @@
 template <typename T>
 class Singleton {
  public:
+  /// @name 构造/析构函数
+  /// @{
   Singleton() = default;
+  Singleton(const Singleton&) = delete;
+  Singleton(Singleton&&) = delete;
+  auto operator=(const Singleton&) -> Singleton& = delete;
+  auto operator=(Singleton&&) -> Singleton& = delete;
   ~Singleton() = default;
+  /// @}
 
   // 获取单例实例的静态方法
-  static T& GetInstance() {
+  static auto GetInstance() -> T& {
     static T instance;
     return instance;
   }
 
  private:
-  /// @name 构造/析构函数
-  /// @{
-  Singleton(const Singleton&) = delete;
-  Singleton(Singleton&&) = delete;
-  auto operator=(const Singleton&) -> Singleton& = delete;
-  auto operator=(Singleton&&) -> Singleton& = delete;
-  /// @}
 };
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_SINGLETON_HPP_ */
