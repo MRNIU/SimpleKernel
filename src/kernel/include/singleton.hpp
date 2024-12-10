@@ -36,8 +36,6 @@ class Singleton {
     static T instance;
     return instance;
   }
-
- private:
 };
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_SINGLETON_HPP_ */
