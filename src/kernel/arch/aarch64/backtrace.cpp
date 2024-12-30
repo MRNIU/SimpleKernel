@@ -33,10 +33,10 @@ int backtrace(void **buffer, int size) {
 }
 
 void DumpStack() {
-  void *buffer[kMaxFramesCount];
+  void *buffer[kMaxFrameCount];
 
   // 获取调用栈中的地址
-  auto num_frames = backtrace(buffer, kMaxFramesCount);
+  auto num_frames = backtrace(buffer, kMaxFrameCount);
 
   // 打印地址
   /// @todo 打印函数名，需要 elf 支持

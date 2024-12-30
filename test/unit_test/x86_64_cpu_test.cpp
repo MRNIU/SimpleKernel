@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "x86_64/include/cpu/cpu.hpp"
+#include "x86_64/include/cpu/regs.hpp"
 
 TEST(x8664RegInfoBaseTest, ValueTest) {
   EXPECT_EQ(cpu::register_info::RegInfoBase::kBitOffset, 0);

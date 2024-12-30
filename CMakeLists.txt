@@ -81,15 +81,18 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         -machine
         virt
         -cpu
-        cortex-a57
+        cortex-a72
         -m
         128M
         -net
         none
-        -bios
-        ${ovmf_BINARY_DIR}/OVMF_${CMAKE_SYSTEM_PROCESSOR}.fd
-        -hda
-        fat:rw:./image/)
+        -kernel
+        $<TARGET_FILE:kernel>
+        # -bios
+        # ${ovmf_BINARY_DIR}/OVMF_${CMAKE_SYSTEM_PROCESSOR}.fd
+        # -hda
+        # fat:rw:./image/
+    )
 ENDIF()
 
 # 添加要编译的目录

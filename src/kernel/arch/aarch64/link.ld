@@ -15,12 +15,13 @@
 OUTPUT_FORMAT("elf64-littleaarch64", "elf64-bigaarch64",
 	      "elf64-littleaarch64")
 OUTPUT_ARCH(aarch64)
-ENTRY(_start)
+ENTRY(_boot)
 SECTIONS
 {
   /* Read-only sections, merged into text segment: */
-  PROVIDE (__executable_start = SEGMENT_START("text-segment", 0xFFFF800000000000));
-  . = SEGMENT_START("text-segment", 0xFFFF800000000000) + SIZEOF_HEADERS;
+  PROVIDE (__executable_start = SEGMENT_START("text-segment", 0x40100000));
+  . = SEGMENT_START("text-segment", 0x40100000) + SIZEOF_HEADERS;
+  .boot           : ALIGN(0x1000) { *(.text.boot) *(.data.boot) *(.bss.boot) }
   .interp         : { *(.interp) }
   .note.gnu.build-id  : { *(.note.gnu.build-id) }
   .hash           : { *(.hash) }

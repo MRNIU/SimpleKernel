@@ -18,16 +18,14 @@
 #include "sk_cstdio"
 
 // printf_bare_metal 基本输出实现
-extern "C" void _putchar(char character) { (void)character; }
+extern "C" void _putchar(char character) {
+  volatile uint8_t *uart = (uint8_t *)0x09000000;
+  *uart = character;
+}
 
 uint32_t ArchInit(uint32_t argc, uint8_t *argv) {
   (void)argc;
   (void)argv;
-
-  // 进入死循环
-  while (1) {
-    ;
-  }
 
   return 0;
 }
