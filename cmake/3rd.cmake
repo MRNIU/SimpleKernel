@@ -1,4 +1,3 @@
-
 # This file is a part of Simple-XX/SimpleKernel
 # (https://github.com/Simple-XX/SimpleKernel).
 #
@@ -53,258 +52,212 @@
 # endif()
 
 # Pre-commit hooks
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit)
-    EXECUTE_PROCESS(COMMAND pre-commit install)
-endif ()
+IF(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit)
+    EXECUTE_PROCESS (COMMAND pre-commit install)
+ENDIF()
 
 # https://github.com/google/googletest.git
-if (NOT TARGET gtest)
-    add_subdirectory(3rd/googletest)
-    include(GoogleTest)
-endif ()
+IF(NOT TARGET gtest)
+    ADD_SUBDIRECTORY (3rd/googletest)
+    INCLUDE (GoogleTest)
+ENDIF()
 
 # https://git.savannah.gnu.org/git/grub.git
-set(grub2_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/grub2)
-add_library(grub2 INTERFACE)
-target_include_directories(grub2 INTERFACE
-        ${grub2_SOURCE_DIR}/include
-)
+SET (grub2_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/grub2)
+ADD_LIBRARY (grub2 INTERFACE)
+TARGET_INCLUDE_DIRECTORIES (grub2 INTERFACE ${grub2_SOURCE_DIR}/include)
 
 # https://github.com/gdbinit/Gdbinit.git
-set(gdbinit_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/gdbinit)
-set(gdbinit_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/gdbinit)
-add_custom_target(gdbinit
-        COMMENT "Generate gdbinit ..."
-        WORKING_DIRECTORY ${gdbinit_SOURCE_DIR}
-        # 复制到根目录下并重命名
-        COMMAND
-        ${CMAKE_COMMAND}
-        -E
-        copy
-        ${gdbinit_SOURCE_DIR}/gdbinit
+SET (gdbinit_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/gdbinit)
+SET (gdbinit_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/gdbinit)
+ADD_CUSTOM_TARGET (
+    gdbinit
+    COMMENT "Generate gdbinit ..."
+    WORKING_DIRECTORY ${gdbinit_SOURCE_DIR}
+    # 复制到根目录下并重命名
+    COMMAND ${CMAKE_COMMAND} -E copy ${gdbinit_SOURCE_DIR}/gdbinit
+            ${CMAKE_SOURCE_DIR}/.gdbinit
+    COMMAND echo "target remote ${QEMU_GDB_PORT}" >>
+            ${CMAKE_SOURCE_DIR}/.gdbinit
+    COMMAND
+        echo "add-symbol-file ${kernel_BINARY_DIR}/${KERNEL_ELF_OUTPUT_NAME}" >>
         ${CMAKE_SOURCE_DIR}/.gdbinit
-        COMMAND
-        echo "target remote ${QEMU_GDB_PORT}" >> ${CMAKE_SOURCE_DIR}/.gdbinit
-        COMMAND
-        echo "add-symbol-file ${kernel_BINARY_DIR}/${KERNEL_ELF_OUTPUT_NAME}" >> ${CMAKE_SOURCE_DIR}/.gdbinit
-        COMMAND
-        echo "add-symbol-file ${boot_BINARY_DIR}/${BOOT_ELF_OUTPUT_NAME}" >> ${CMAKE_SOURCE_DIR}/.gdbinit
-)
+    COMMAND echo "add-symbol-file ${boot_BINARY_DIR}/${BOOT_ELF_OUTPUT_NAME}"
+            >> ${CMAKE_SOURCE_DIR}/.gdbinit)
 # 在 make clean 时删除 .gdbinit
-set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
-        ${CMAKE_SOURCE_DIR}/.gdbinit
-)
+SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
+                                     ${CMAKE_SOURCE_DIR}/.gdbinit)
 
 # https://github.com/MRNIU/printf_bare_metal.git
-add_subdirectory(3rd/printf_bare_metal)
+ADD_SUBDIRECTORY (3rd/printf_bare_metal)
 
-if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
+# https://github.com/MRNIU/cpu_io.git
+ADD_SUBDIRECTORY (3rd/cpu_io)
+
+IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
     # https://github.com/riscv-software-src/opensbi.git
     # 编译 opensbi
-    set(opensbi_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/opensbi)
-    set(opensbi_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/opensbi)
-    add_custom_target(opensbi
-            COMMENT "build opensbi..."
-            # make 时编译
-            ALL
-            WORKING_DIRECTORY ${opensbi_SOURCE_DIR}
-            COMMAND
-            ${CMAKE_COMMAND}
-            -E
-            make_directory
-            ${opensbi_BINARY_DIR}
-            COMMAND
-            make
-            CROSS_COMPILE=${TOOLCHAIN_PREFIX}
-            FW_JUMP=y
-            FW_JUMP_ADDR=0x80210000
-            PLATFORM_RISCV_XLEN=64
-            PLATFORM=generic
+    SET (opensbi_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/opensbi)
+    SET (opensbi_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/opensbi)
+    ADD_CUSTOM_TARGET (
+        opensbi
+        COMMENT "build opensbi..."
+        # make 时编译
+        ALL
+        WORKING_DIRECTORY ${opensbi_SOURCE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${opensbi_BINARY_DIR}
+        COMMAND
+            make CROSS_COMPILE=${TOOLCHAIN_PREFIX} FW_JUMP=y
+            FW_JUMP_ADDR=0x80210000 PLATFORM_RISCV_XLEN=64 PLATFORM=generic
             O=${opensbi_BINARY_DIR}
-            COMMAND
-            ${CMAKE_COMMAND}
-            -E
-            copy_directory
-            ${opensbi_SOURCE_DIR}/include
-            ${opensbi_BINARY_DIR}/include
-    )
-    add_library(opensbi-fw_jump INTERFACE)
-    add_dependencies(opensbi-fw_jump opensbi)
-    target_include_directories(opensbi-fw_jump INTERFACE
-        ${dtc_BINARY_DIR}/libfdt
-    )
-    target_link_libraries(opensbi-fw_jump INTERFACE
-        ${dtc_BINARY_DIR}/libfdt/libfdt.a
-    )
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${opensbi_SOURCE_DIR}/include ${opensbi_BINARY_DIR}/include)
+    ADD_LIBRARY (opensbi-fw_jump INTERFACE)
+    ADD_DEPENDENCIES (opensbi-fw_jump opensbi)
+    TARGET_INCLUDE_DIRECTORIES (opensbi-fw_jump
+                                INTERFACE ${dtc_BINARY_DIR}/libfdt)
+    TARGET_LINK_LIBRARIES (opensbi-fw_jump
+                           INTERFACE ${dtc_BINARY_DIR}/libfdt/libfdt.a)
 
     # https://github.com/MRNIU/opensbi_interface.git
-    add_subdirectory(3rd/opensbi_interface)
-endif ()
+    ADD_SUBDIRECTORY (3rd/opensbi_interface)
+ENDIF()
 
 # https://git.kernel.org/pub/scm/utils/dtc/dtc.git
-set(dtc_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/dtc)
-set(dtc_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/dtc)
-set(dtc_CC ${CMAKE_C_COMPILER})
-set(dtc_AR ${CMAKE_AR})
+SET (dtc_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/dtc)
+SET (dtc_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/dtc)
+SET (dtc_CC ${CMAKE_C_COMPILER})
+SET (dtc_AR ${CMAKE_AR})
 # 编译 libfdt
-add_custom_target(dtc
-        COMMENT "build libdtc..."
-        # make 时编译
-        ALL
-        WORKING_DIRECTORY ${dtc_SOURCE_DIR}
-        COMMAND
-        ${CMAKE_COMMAND}
-        -E
-        make_directory
-        ${dtc_BINARY_DIR}/libfdt
-        COMMAND
-        CC=${dtc_CC}
-        AR=${dtc_AR}
-        HOME=${dtc_BINARY_DIR}
-        make libfdt/libfdt.a
-        COMMAND
-        ${CMAKE_COMMAND}
-        -E
-        copy
-        ${dtc_SOURCE_DIR}/libfdt/*.a
-        ${dtc_SOURCE_DIR}/libfdt/*.h
-        ${dtc_BINARY_DIR}/libfdt
-        COMMAND
-        make clean
-)
-add_library(dtc-lib INTERFACE)
-add_dependencies(dtc-lib dtc)
-target_include_directories(dtc-lib INTERFACE
-        ${dtc_BINARY_DIR}/libfdt
-)
-target_link_libraries(dtc-lib INTERFACE
-        ${dtc_BINARY_DIR}/libfdt/libfdt.a
-)
+ADD_CUSTOM_TARGET (
+    dtc
+    COMMENT "build libdtc..."
+    # make 时编译
+    ALL
+    WORKING_DIRECTORY ${dtc_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${dtc_BINARY_DIR}/libfdt
+    COMMAND CC=${dtc_CC} AR=${dtc_AR} HOME=${dtc_BINARY_DIR} make
+            libfdt/libfdt.a
+    COMMAND ${CMAKE_COMMAND} -E copy ${dtc_SOURCE_DIR}/libfdt/*.a
+            ${dtc_SOURCE_DIR}/libfdt/*.h ${dtc_BINARY_DIR}/libfdt
+    COMMAND make clean)
+ADD_LIBRARY (dtc-lib INTERFACE)
+ADD_DEPENDENCIES (dtc-lib dtc)
+TARGET_INCLUDE_DIRECTORIES (dtc-lib INTERFACE ${dtc_BINARY_DIR}/libfdt)
+TARGET_LINK_LIBRARIES (dtc-lib INTERFACE ${dtc_BINARY_DIR}/libfdt/libfdt.a)
 
 # https://github.com/ncroxon/gnu-efi.git
-set(gnu-efi_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/gnu-efi)
-set(gnu-efi_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/gnu-efi)
-if (CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
-set(CC_ ${CMAKE_C_COMPILER})
-set(AR_ ${CMAKE_AR})
-elseif (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
-set(CROSS_COMPILE_ x86_64-linux-gnu-)
-elseif (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" AND CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64")
-set(CROSS_COMPILE_ riscv64-linux-gnu-)
-endif ()
+SET (gnu-efi_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/gnu-efi)
+SET (gnu-efi_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/gnu-efi)
+IF(CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
+    SET (CC_ ${CMAKE_C_COMPILER})
+    SET (AR_ ${CMAKE_AR})
+ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" AND CMAKE_SYSTEM_PROCESSOR
+                                                         MATCHES "x86_64")
+    SET (CROSS_COMPILE_ x86_64-linux-gnu-)
+ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" AND CMAKE_SYSTEM_PROCESSOR
+                                                         MATCHES "riscv64")
+    SET (CROSS_COMPILE_ riscv64-linux-gnu-)
+ENDIF()
 # 编译 gnu-efi
-add_custom_target(gnu-efi
-        COMMENT "build gnu-efi..."
-        # make 时编译
-        ALL
-        WORKING_DIRECTORY ${gnu-efi_SOURCE_DIR}
-        COMMAND
-        ${CMAKE_COMMAND}
-        -E
-        make_directory
-        ${gnu-efi_BINARY_DIR}
-        COMMAND
-        # @note 仅支持 gcc
-        make lib gnuefi inc
-        CROSS_COMPILE=${CROSS_COMPILE_}
-        ARCH=${CMAKE_SYSTEM_PROCESSOR}
-        OBJDIR=${gnu-efi_BINARY_DIR}
-        V=1
-        COMMAND
-        ${CMAKE_COMMAND}
-        -E
-        copy_directory
-        ${gnu-efi_SOURCE_DIR}/inc
-        ${gnu-efi_BINARY_DIR}/inc
-)
-add_library(gnu-efi-lib INTERFACE)
-add_dependencies(gnu-efi-lib gnu-efi)
-target_include_directories(gnu-efi-lib INTERFACE
-        ${gnu-efi_BINARY_DIR}/inc
-        ${gnu-efi_BINARY_DIR}/inc/${CMAKE_SYSTEM_PROCESSOR}
-        ${gnu-efi_BINARY_DIR}/inc/protocol
-)
-target_link_libraries(gnu-efi-lib INTERFACE
-        ${gnu-efi_BINARY_DIR}/gnuefi/reloc_${CMAKE_SYSTEM_PROCESSOR}.o
-        ${gnu-efi_BINARY_DIR}/gnuefi/crt0-efi-${CMAKE_SYSTEM_PROCESSOR}.o
-        ${gnu-efi_BINARY_DIR}/gnuefi/libgnuefi.a
-        ${gnu-efi_BINARY_DIR}/lib/libefi.a
-)
+ADD_CUSTOM_TARGET (
+    gnu-efi
+    COMMENT "build gnu-efi..."
+    # make 时编译
+    ALL
+    WORKING_DIRECTORY ${gnu-efi_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${gnu-efi_BINARY_DIR}
+    COMMAND # @note 仅支持 gcc
+            make lib gnuefi inc CROSS_COMPILE=${CROSS_COMPILE_}
+            ARCH=${CMAKE_SYSTEM_PROCESSOR} OBJDIR=${gnu-efi_BINARY_DIR} V=1
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${gnu-efi_SOURCE_DIR}/inc
+            ${gnu-efi_BINARY_DIR}/inc)
+ADD_LIBRARY (gnu-efi-lib INTERFACE)
+ADD_DEPENDENCIES (gnu-efi-lib gnu-efi)
+TARGET_INCLUDE_DIRECTORIES (
+    gnu-efi-lib
+    INTERFACE ${gnu-efi_BINARY_DIR}/inc
+              ${gnu-efi_BINARY_DIR}/inc/${CMAKE_SYSTEM_PROCESSOR}
+              ${gnu-efi_BINARY_DIR}/inc/protocol)
+TARGET_LINK_LIBRARIES (
+    gnu-efi-lib
+    INTERFACE ${gnu-efi_BINARY_DIR}/gnuefi/reloc_${CMAKE_SYSTEM_PROCESSOR}.o
+              ${gnu-efi_BINARY_DIR}/gnuefi/crt0-efi-${CMAKE_SYSTEM_PROCESSOR}.o
+              ${gnu-efi_BINARY_DIR}/gnuefi/libgnuefi.a
+              ${gnu-efi_BINARY_DIR}/lib/libefi.a)
 
 # ovmf
 # @todo 使用互联网连接或从 edk2 编译
 # https://efi.akeo.ie/QEMU_EFI/QEMU_EFI-AA64.zip
-set(ovmf_SOURCE_DIR ${CMAKE_SOURCE_DIR}/tools/ovmf)
-set(ovmf_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/ovmf)
-add_custom_target(ovmf
-        COMMENT "build ovmf ..."
-        # make 时编译
-        ALL
-        WORKING_DIRECTORY ${ovmf_SOURCE_DIR}
-        COMMAND
-        ${CMAKE_COMMAND}
-        -E
-        make_directory
-        ${ovmf_BINARY_DIR}
-        COMMAND
-        ${CMAKE_COMMAND}
-        -E
-        copy
-        ${ovmf_SOURCE_DIR}/*
-        ${ovmf_BINARY_DIR}
-)
+SET (ovmf_SOURCE_DIR ${CMAKE_SOURCE_DIR}/tools/ovmf)
+SET (ovmf_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/ovmf)
+ADD_CUSTOM_TARGET (
+    ovmf
+    COMMENT "build ovmf ..."
+    # make 时编译
+    ALL
+    WORKING_DIRECTORY ${ovmf_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${ovmf_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${ovmf_SOURCE_DIR}/* ${ovmf_BINARY_DIR})
 
 # gdb
-find_program(GDB_EXE gdb)
-if (NOT GDB_EXE)
-    message(FATAL_ERROR "gdb not found.\n"
-            "Following https://www.sourceware.org/gdb/ to install.")
-endif ()
+FIND_PROGRAM (GDB_EXE gdb)
+IF(NOT GDB_EXE)
+    MESSAGE (
+        FATAL_ERROR "gdb not found.\n"
+                    "Following https://www.sourceware.org/gdb/ to install.")
+ENDIF()
 
 # qemu
-find_program(QEMU_EXE qemu-system-${CMAKE_SYSTEM_PROCESSOR})
-if (NOT QEMU_EXE)
-    message(FATAL_ERROR "qemu-system-${CMAKE_SYSTEM_PROCESSOR} not found.\n"
-            "Following https://www.qemu.org/ to install.")
-endif ()
+FIND_PROGRAM (QEMU_EXE qemu-system-${CMAKE_SYSTEM_PROCESSOR})
+IF(NOT QEMU_EXE)
+    MESSAGE (FATAL_ERROR "qemu-system-${CMAKE_SYSTEM_PROCESSOR} not found.\n"
+                         "Following https://www.qemu.org/ to install.")
+ENDIF()
 
 # doxygen
-find_package(Doxygen
-        REQUIRED dot)
-if (NOT DOXYGEN_FOUND)
-    message(FATAL_ERROR "Doxygen not found.\n"
-            "Following https://www.doxygen.nl/index.html to install.")
-endif ()
+FIND_PACKAGE (Doxygen REQUIRED dot)
+IF(NOT DOXYGEN_FOUND)
+    MESSAGE (
+        FATAL_ERROR "Doxygen not found.\n"
+                    "Following https://www.doxygen.nl/index.html to install.")
+ENDIF()
 
 # cppcheck
-find_program(CPPCHECK_EXE NAMES cppcheck)
-if (NOT CPPCHECK_EXE)
-    message(FATAL_ERROR "cppcheck not found.\n"
-            "Following https://cppcheck.sourceforge.io to install.")
-endif ()
-add_custom_target(cppcheck
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Run cppcheck on ${CMAKE_BINARY_DIR}/compile_commands.json ..."
-        COMMAND
-        ${CPPCHECK_EXE}
-        --enable=all
+FIND_PROGRAM (CPPCHECK_EXE NAMES cppcheck)
+IF(NOT CPPCHECK_EXE)
+    MESSAGE (
+        FATAL_ERROR "cppcheck not found.\n"
+                    "Following https://cppcheck.sourceforge.io to install.")
+ENDIF()
+ADD_CUSTOM_TARGET (
+    cppcheck
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Run cppcheck on ${CMAKE_BINARY_DIR}/compile_commands.json ..."
+    COMMAND
+        ${CPPCHECK_EXE} --enable=all
         --project=${CMAKE_BINARY_DIR}/compile_commands.json
         --suppress-xml=${CMAKE_SOURCE_DIR}/tools/cppcheck-suppressions.xml
-        --output-file=${CMAKE_BINARY_DIR}/cppcheck_report.log
-)
+        --output-file=${CMAKE_BINARY_DIR}/cppcheck_report.log)
 
-if (CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
+IF(CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
     # genhtml 生成测试覆盖率报告网页
-    find_program(GENHTML_EXE genhtml)
-    if (NOT GENHTML_EXE)
-        message(FATAL_ERROR "genhtml not found.\n"
-                "Following https://github.com/linux-test-project/lcov to install.")
-    endif ()
+    FIND_PROGRAM (GENHTML_EXE genhtml)
+    IF(NOT GENHTML_EXE)
+        MESSAGE (
+            FATAL_ERROR
+                "genhtml not found.\n"
+                "Following https://github.com/linux-test-project/lcov to install."
+        )
+    ENDIF()
 
     # lcov 生成测试覆盖率报告
-    find_program(LCOV_EXE lcov)
-    if (NOT LCOV_EXE)
-        message(FATAL_ERROR "lcov not found.\n"
-                "Following https://github.com/linux-test-project/lcov to install.")
-    endif ()
-endif ()
+    FIND_PROGRAM (LCOV_EXE lcov)
+    IF(NOT LCOV_EXE)
+        MESSAGE (
+            FATAL_ERROR
+                "lcov not found.\n"
+                "Following https://github.com/linux-test-project/lcov to install."
+        )
+    ENDIF()
+ENDIF()
