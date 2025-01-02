@@ -31,14 +31,15 @@ extern "C" void _putchar(char character) {
 // 引用链接脚本中的变量
 /// @see http://wiki.osdev.org/Using_Linker_Script_Values
 /// 内核开始
-extern "C" void *__executable_start[];
+extern "C" void *__executable_start[];  // NOLINT
 /// 内核结束
 extern "C" void *end[];
-BasicInfo::BasicInfo(uint32_t argc, uint8_t *argv) {
+BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   (void)argc;
   (void)argv;
 
-  auto [memory_base, memory_size] = kKernelFdt.GetInstance().GetMemory();
+  auto [memory_base, memory_size] =
+      Singleton<KernelFdt>::GetInstance().GetMemory();
   physical_memory_addr = memory_base;
   physical_memory_size = memory_size;
 
@@ -51,16 +52,18 @@ BasicInfo::BasicInfo(uint32_t argc, uint8_t *argv) {
   fdt_addr = reinterpret_cast<uint64_t>(argv);
 }
 
-uint32_t ArchInit(uint32_t argc, uint8_t *argv) {
+auto ArchInit(uint32_t argc, uint8_t *argv) -> uint32_t {
   printf("boot hart id: %d\n", argc);
   printf("dtb info addr: %p\n", argv);
 
-  kKernelFdt.GetInstance() = KernelFdt((uint64_t)argv);
+  Singleton<KernelFdt>::GetInstance() =
+      KernelFdt(reinterpret_cast<uint64_t>(argv));
 
-  kBasicInfo.GetInstance() = BasicInfo(argc, argv);
-  sk_std::cout << kBasicInfo.GetInstance();
+  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+  sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
-  auto [serial_base, serial_size] = kKernelFdt.GetInstance().GetSerial();
+  auto [serial_base, serial_size] =
+      Singleton<KernelFdt>::GetInstance().GetSerial();
   auto uart = Ns16550a(serial_base);
   uart.PutChar('H');
   uart.PutChar('e');
@@ -76,7 +79,7 @@ uint32_t ArchInit(uint32_t argc, uint8_t *argv) {
   uart.PutChar('\n');
 
   // 解析内核 elf 信息
-  kKernelElf.GetInstance() = KernelElf();
+  Singleton<KernelElf>::GetInstance() = KernelElf();
 
   klog::Info("Hello riscv64 ArchInit\n");
 

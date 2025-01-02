@@ -21,24 +21,24 @@
 #include "sk_cstdio"
 #include "sk_libc.h"
 
-int backtrace(void **buffer, int size) {
-  uint64_t *fp = (uint64_t *)cpu::kAllXreg.fp.Read();
+auto backtrace(void **buffer, int size) -> int {
+  auto *fp = reinterpret_cast<uint64_t *>(cpu::regs::Fp::Read());
   uint64_t *ra = nullptr;
 
   int count = 0;
-  while (fp && *fp && count < size) {
+  while ((fp != nullptr) && (*fp != 0U) && count < size) {
     ra = fp - 1;
-    fp = (uint64_t *)*(fp - 2);
-    buffer[count++] = (void *)*ra;
+    fp = reinterpret_cast<uint64_t *>(*(fp - 2));
+    buffer[count++] = reinterpret_cast<void *>(*ra);
   }
   return count;
 }
 
 void DumpStack() {
-  void *buffer[kMaxFramesCount];
+  std::array<void *, kMaxFrameCount> buffer;
 
   // 获取调用栈中的地址
-  auto num_frames = backtrace(buffer, kMaxFramesCount);
+  auto num_frames = backtrace(buffer.data(), kMaxFrameCount);
 
   // 打印地址
   /// @todo 打印函数名，需要 elf 支持
