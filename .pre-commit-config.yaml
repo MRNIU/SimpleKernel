@@ -22,13 +22,13 @@ repos:
       - id: clang-format
         args:
           - --style=file
-      # - id: clang-tidy
-      #   args:
-      #     - --checks=.clang-tidy
-      #     - -p=/home/ubuntu/github/MRNIU/SimpleKernel/build_riscv64/build_x86_64/compiler_commands.json
-      #     - -extra-arg=--std=c++2b
-      #     - --fix
-      #     - --header-filter=^(/home/ubuntu/github/MRNIU/SimpleKernel/build_riscv64/src/).*
+      - id: clang-tidy
+        args:
+          - --checks=.clang-tidy
+          - -p=/home/ubuntu/github/MRNIU/SimpleKernel/build_riscv64/build_x86_64/compiler_commands.json
+          - -extra-arg=--std=c++2b
+          - --fix
+          - --header-filter=^(/home/ubuntu/github/MRNIU/SimpleKernel/build_riscv64/src/).*
           # - --exclude-header-filter=^(?/home/ubuntu/github/MRNIU/SimpleKernel/build_riscv64/src/arch/x86_64|/home/ubuntu/github/MRNIU/SimpleKernel/build_riscv64/src/arch/aarch64).*
       # - id: clang-tidy
       #   args:
