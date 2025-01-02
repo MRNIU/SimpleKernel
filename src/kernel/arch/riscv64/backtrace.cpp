@@ -35,7 +35,7 @@ auto backtrace(void **buffer, int size) -> int {
 }
 
 void DumpStack() {
-  std::array<void *, kMaxFrameCount> buffer;
+  std::array<void *, kMaxFrameCount> buffer{};
 
   // 获取调用栈中的地址
   auto num_frames = backtrace(buffer.data(), kMaxFrameCount);
