@@ -55,7 +55,7 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   fdt_addr = 0;
 }
 
-auto ArchInit(uint32_t argc, uint8_t *argv) -> uint32_t {
+auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
   if (argc != 1) {
     klog::Err("argc != 1 [%d]\n", argc);
     throw;

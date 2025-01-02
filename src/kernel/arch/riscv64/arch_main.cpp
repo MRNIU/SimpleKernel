@@ -52,7 +52,7 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   fdt_addr = reinterpret_cast<uint64_t>(argv);
 }
 
-auto ArchInit(uint32_t argc, uint8_t *argv) -> uint32_t {
+auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
   printf("boot hart id: %d\n", argc);
   printf("dtb info addr: %p\n", argv);
 

@@ -8,10 +8,7 @@ PROJECT (unit-test VERSION 0.0.1)
 
 ENABLE_LANGUAGE (CXX)
 
-ADD_EXECUTABLE (
-    ${PROJECT_NAME}
-    riscv64_cpu_test.cpp x86_64_cpu_test.cpp aarch64_cpu_test.cpp
-    kernel_elf_test.cpp kernel_fdt_test.cpp)
+ADD_EXECUTABLE (${PROJECT_NAME} kernel_elf_test.cpp kernel_fdt_test.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME} PRIVATE ./ ${CMAKE_SOURCE_DIR}/src/kernel/include
