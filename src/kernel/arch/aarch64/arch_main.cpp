@@ -14,17 +14,18 @@
  * </table>
  */
 
+#include <cpu_io.h>
+
 #include "arch.h"
-#include "cpu/cpu.hpp"
 #include "sk_cstdio"
 
 // printf_bare_metal 基本输出实现
 extern "C" void _putchar(char character) {
-  static uint8_t* kUartAddr = (uint8_t*)0x09000000;
+  static auto* kUartAddr = (uint8_t*)0x09000000;
   *kUartAddr = character;
 }
 
-uint32_t ArchInit(uint32_t argc, uint8_t* argv) {
+auto ArchInit(uint32_t argc, const uint8_t* argv) -> uint32_t {
   (void)argc;
   (void)argv;
 

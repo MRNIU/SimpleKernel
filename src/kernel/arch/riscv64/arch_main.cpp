@@ -13,10 +13,10 @@
  * </table>
  */
 
+#include <cpu_io.h>
 #include <opensbi_interface.h>
 
 #include "basic_info.hpp"
-#include "cpu/cpu.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
 #include "ns16550a.h"

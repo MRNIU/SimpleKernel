@@ -13,30 +13,33 @@
  * </table>
  */
 
+#include <cpu_io.h>
+
+#include <array>
+
 #include "arch.h"
-#include "cpu/cpu.hpp"
 #include "kernel_elf.hpp"
 #include "sk_cstdio"
 #include "sk_libc.h"
 
-int backtrace(void **buffer, int size) {
-  uint64_t *x29 = (uint64_t *)cpu::kAllXreg.x29.Read();
+auto backtrace(void **buffer, int size) -> int {
+  auto *x29 = reinterpret_cast<uint64_t *>(cpu::regs::X29::Read());
 
   int count = 0;
-  while (x29 && *x29 && count < size) {
+  while ((x29 != nullptr) && (*x29 != 0U) && count < size) {
     uint64_t lr = x29[1];
-    x29 = (uint64_t *)x29[0];
-    buffer[count++] = (void *)lr;
+    x29 = reinterpret_cast<uint64_t *>(x29[0]);
+    buffer[count++] = reinterpret_cast<void *>(lr);
   }
 
   return count;
 }
 
 void DumpStack() {
-  void *buffer[kMaxFrameCount];
+  std::array<void *, kMaxFrameCount> buffer{};
 
   // 获取调用栈中的地址
-  auto num_frames = backtrace(buffer, kMaxFrameCount);
+  auto num_frames = backtrace(buffer.data(), kMaxFrameCount);
 
   // 打印地址
   /// @todo 打印函数名，需要 elf 支持

@@ -14,8 +14,11 @@
  * </table>
  */
 
+#include <cpu_io.h>
+
+#include <array>
+
 #include "arch.h"
-#include "cpu/cpu.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
 #include "sk_cstdio"
