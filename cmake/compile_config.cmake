@@ -199,6 +199,7 @@ TARGET_LINK_LIBRARIES (
               kernel_link_options
               printf_bare_metal
               dtc-lib
+              cpu_io
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
               opensbi_interface
               >
