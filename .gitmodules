@@ -23,3 +23,6 @@
 [submodule "3rd/grub2"]
 	path = 3rd/grub2
 	url = https://git.savannah.gnu.org/git/grub.git
+[submodule "3rd/cpu_io"]
+	path = 3rd/cpu_io
+	url = https://github.com/MRNIU/cpu_io.git
