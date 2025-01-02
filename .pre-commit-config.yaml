@@ -45,7 +45,7 @@ repos:
       #     - -extra-arg=--std=c++2b
       #     - --fix
       #     - --header-filter=^(?/root/SimpleKernel/build_aarch64/src/).*
-      #     - --exclude-header-filter=^(?/root/SimpleKernel/build_aarch64/src/arch/riscv64|/root/SimpleKernel/build_aarch64/src/arch/x86_64).*
+          # - --exclude-header-filter=^(?/root/SimpleKernel/build_aarch64/src/arch/riscv64|/root/SimpleKernel/build_aarch64/src/arch/x86_64).*
 
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.10.0

@@ -27,7 +27,7 @@
 #include "sk_iostream"
 
 /**
- * aarch64 cpu 相关定义
+ * aarch64 cpu Control and Status Registers 相关定义
  * @note 寄存器读写设计见 arch/README.md
  */
 namespace cpu {
@@ -56,7 +56,7 @@ struct X29Info : public RegInfoBase {};
 };  // namespace register_info
 
 // 第二部分：读/写模版实现
-namespace {
+namespace read_write {
 /**
  * 只读接口
  * @tparam 寄存器类型
@@ -78,7 +78,7 @@ class ReadOnlyRegBase {
    * 读寄存器
    * @return RegInfo::DataType 寄存器的值
    */
-  static __always_inline RegInfo::DataType Read() {
+  static __always_inline auto Read() -> typename RegInfo::DataType {
     typename RegInfo::DataType value{};
     if constexpr (std::is_same<RegInfo, register_info::X29Info>::value) {
       __asm__ volatile("mov %0, x29" : "=r"(value) : :);
@@ -92,7 +92,9 @@ class ReadOnlyRegBase {
   /**
    * () 重载
    */
-  static __always_inline RegInfo::DataType operator()() { return Read(); }
+  __always_inline auto operator()() -> typename RegInfo::DataType {
+    return Read();
+  }
 };
 
 /**
@@ -116,9 +118,9 @@ class WriteOnlyRegBase {
    * 写寄存器
    * @param value 要写的值
    */
-  static __always_inline void Write(RegInfo::DataType value) {
+  static __always_inline void Write(typename RegInfo::DataType value) {
     if constexpr (std::is_same<RegInfo, register_info::X29Info>::value) {
-      __asm__ volatile("mv fp, %0" : : "r"(value) :);
+      __asm__ volatile("mov x29, %0" : : "r"(value) :);
     } else {
       klog::Err("No Type\n");
       throw;
@@ -145,11 +147,15 @@ class ReadWriteRegBase : public ReadOnlyRegBase<RegInfo>,
   /// @}
 };
 
+};  // namespace read_write
+
 // 第三部分：寄存器实例
-class X29 : public ReadWriteRegBase<register_info::X29Info> {
+namespace regs {
+class X29 : public read_write::ReadWriteRegBase<register_info::X29Info> {
  public:
-  friend sk_std::ostream &operator<<(sk_std::ostream &os, const X29 &x29) {
-    printf("val: 0x%p", (void *)x29.Read());
+  friend auto operator<<(sk_std::ostream &os, [[maybe_unused]] const X29 &x29)
+      -> sk_std::ostream & {
+    klog::Info("val: 0x%p", regs::X29::Read());
     return os;
   }
 };
@@ -159,10 +165,10 @@ struct AllXreg {
   X29 x29;
 };
 
-};  // namespace
+};  // namespace regs
 
 // 第四部分：访问接口
-[[maybe_unused]] static AllXreg kAllXreg;
+[[maybe_unused]] static regs::AllXreg kAllXreg;
 
 };  // namespace cpu
 

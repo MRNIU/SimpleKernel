@@ -27,4 +27,22 @@
 #include "sk_cstdio"
 #include "sk_iostream"
 
+/**
+ * aarch64 cpu 相关定义
+ * @note 寄存器读写设计见 arch/README.md
+ */
+namespace cpu {
+
+/**
+ * @brief 初始化 FPU
+ */
+static __always_inline void SetupFpu() {
+  asm volatile("mrs x0, CPACR_EL1");
+  asm volatile("orr x0, x0, #(0b11 << 20)");
+  asm volatile("msr CPACR_EL1, x0");
+  asm volatile("isb");
+}
+
+}  // namespace cpu
+
 #endif  // SIMPLEKERNEL_SRC_KERNEL_ARCH_AARCH64_INCLUDE_CPU_CPU_HPP_
