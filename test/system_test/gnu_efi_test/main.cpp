@@ -14,10 +14,11 @@
  * </table>
  */
 
+#include <cpu_io.h>
+
 #include <cstdint>
 
 #include "basic_info.hpp"
-#include "cpu/cpu.hpp"
 #include "sk_cstdio"
 #include "sk_cstring"
 
@@ -29,19 +30,19 @@ extern "C" void _putchar(char character) {
 // 引用链接脚本中的变量
 /// @see http://wiki.osdev.org/Using_Linker_Script_Values
 /// 内核开始
-extern "C" void *__executable_start[];
+extern "C" void *_executable_start[];
 /// 内核结束
 extern "C" void *end[];
-BasicInfo::BasicInfo(uint32_t argc, uint8_t *argv) {
+BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   (void)argc;
 
-  auto basic_info = *reinterpret_cast<BasicInfo *>(argv);
+  auto basic_info = *reinterpret_cast<const BasicInfo *>(argv);
   physical_memory_addr = basic_info.physical_memory_addr;
   physical_memory_size = basic_info.physical_memory_size;
 
-  kernel_addr = reinterpret_cast<uint64_t>(__executable_start);
+  kernel_addr = reinterpret_cast<uint64_t>(_executable_start);
   kernel_size = reinterpret_cast<uint64_t>(end) -
-                reinterpret_cast<uint64_t>(__executable_start);
+                reinterpret_cast<uint64_t>(_executable_start);
 
   elf_addr = basic_info.elf_addr;
   elf_size = basic_info.elf_size;
@@ -49,14 +50,14 @@ BasicInfo::BasicInfo(uint32_t argc, uint8_t *argv) {
   fdt_addr = 0;
 }
 
-uint32_t main(uint32_t argc, uint8_t *argv) {
+auto main(uint32_t argc, uint8_t *argv) -> uint32_t {
   if (argc != 1) {
     printf("argc != 1 [%d]\n", argc);
     return -1;
   }
 
-  kBasicInfo.GetInstance() = BasicInfo(argc, argv);
-  sk_std::cout << kBasicInfo.GetInstance();
+  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+  sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
   printf("Hello Test\n");
 
@@ -67,7 +68,7 @@ extern "C" void _start(uint32_t argc, uint8_t *argv) {
   main(argc, argv);
 
   // 进入死循环
-  while (1) {
+  while (true) {
     ;
   }
 }

@@ -14,10 +14,11 @@
  * </table>
  */
 
+#include <cpu_io.h>
+
 #include <cstdint>
 
 #include "basic_info.hpp"
-#include "cpu/cpu.hpp"
 #include "sk_cstdio"
 #include "sk_cstring"
 #include "sk_libcxx.h"
@@ -40,7 +41,7 @@ extern "C" void _putchar(char character) {
 template <uint32_t V>
 class TestStaticConstructDestruct {
  public:
-  TestStaticConstructDestruct(unsigned int &v) : _v(v) { _v |= V; }
+  explicit TestStaticConstructDestruct(unsigned int &v) : _v(v) { _v |= V; }
   ~TestStaticConstructDestruct() { _v &= ~V; }
 
  private:
@@ -48,8 +49,8 @@ class TestStaticConstructDestruct {
 };
 
 static int global_value_with_init = 42;
-static uint32_t global_u32_value_with_init{0xa1a2a3a4ul};
-static uint64_t global_u64_value_with_init{0xb1b2b3b4b5b6b7b8ull};
+static uint32_t global_u32_value_with_init{0xa1a2a3a4UL};
+static uint64_t global_u64_value_with_init{0xb1b2b3b4b5b6b7b8ULL};
 static float global_f32_value_with_init{3.14};
 static double global_f64_value_with_init{1.44};
 static uint16_t global_u16_value_with_init{0x1234};
@@ -84,7 +85,7 @@ class InsClass : public AbsClass {
   void Func() override { val = 'C'; }
 };
 
-uint32_t main(uint32_t, uint8_t *) {
+auto main(uint32_t, uint8_t *) -> uint32_t {
 #ifdef __aarch64__
   cpu::SetupFpu();
 #endif
@@ -111,8 +112,8 @@ uint32_t main(uint32_t, uint8_t *) {
   inst_class_static.Func();
   printf("%c\n", inst_class_static.val);
 
-  printf("%d\n", kBasicInfo.GetInstance().elf_addr);
-  printf("%d\n", kBasicInfo.GetInstance().elf_size);
+  printf("%d\n", Singleton<BasicInfo>::GetInstance().elf_addr);
+  printf("%d\n", Singleton<BasicInfo>::GetInstance().elf_size);
 
   printf("Hello Test\n");
 
@@ -127,7 +128,7 @@ extern "C" void _start(uint32_t argc, uint8_t *argv) {
   CppDeInit();
 
   // 进入死循环
-  while (1) {
+  while (true) {
     ;
   }
 }

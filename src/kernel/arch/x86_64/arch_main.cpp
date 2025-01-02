@@ -14,10 +14,11 @@
  * </table>
  */
 
+#include <cpu_io.h>
+
 #include <cstdint>
 
 #include "basic_info.hpp"
-#include "cpu/cpu.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"

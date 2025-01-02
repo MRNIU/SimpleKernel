@@ -13,6 +13,7 @@
  * </table>
  */
 
+#include <cpu_io.h>
 #include <elf.h>
 
 #include <array>
@@ -20,7 +21,6 @@
 #include <cstdint>
 
 #include "arch.h"
-#include "cpu/regs.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
