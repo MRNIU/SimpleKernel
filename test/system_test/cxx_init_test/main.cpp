@@ -31,7 +31,10 @@ extern "C" void _putchar(char character) {
   sbi_debug_console_write_byte(character);
 }
 #elif __aarch64__
-extern "C" void _putchar(char character) { (void)character; }
+extern "C" void _putchar(char character) {
+  static uint8_t *kUartAddr = (uint8_t *)0x09000000;
+  *kUartAddr = character;
+}
 #endif
 
 template <uint32_t V>
@@ -82,6 +85,10 @@ class InsClass : public AbsClass {
 };
 
 uint32_t main(uint32_t, uint8_t *) {
+#ifdef __aarch64__
+  cpu::SetupFpu();
+#endif
+
   global_u8c_value_with_init++;
   global_u32_value_with_init++;
   global_u64_value_with_init++;

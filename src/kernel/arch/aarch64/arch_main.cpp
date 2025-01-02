@@ -19,8 +19,10 @@
 #include "sk_cstdio"
 
 // printf_bare_metal 基本输出实现
-static uint8_t* kUartAddr = (uint8_t*)0x09000000;
-extern "C" void _putchar(char character) { *kUartAddr = character; }
+extern "C" void _putchar(char character) {
+  static uint8_t* kUartAddr = (uint8_t*)0x09000000;
+  *kUartAddr = character;
+}
 
 uint32_t ArchInit(uint32_t argc, uint8_t* argv) {
   (void)argc;

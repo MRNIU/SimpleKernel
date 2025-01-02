@@ -23,12 +23,12 @@ repos:
         args:
           - --style=file
       # - id: clang-tidy
-        # args:
-          # - --checks=.clang-tidy
-          # - -p=/root/SimpleKernel/build_aarch64/build_x86_64/compiler_commands.json
-          # - -extra-arg=--std=c++2b
-          # - --fix
-          # - --header-filter=^(/root/SimpleKernel/build_aarch64/src/).*
+      #   args:
+      #     - --checks=.clang-tidy
+      #     - -p=/root/SimpleKernel/build_aarch64/build_x86_64/compiler_commands.json
+      #     - -extra-arg=--std=c++2b
+      #     - --fix
+      #     - --header-filter=^(/root/SimpleKernel/build_aarch64/src/).*
           # - --exclude-header-filter=^(?/root/SimpleKernel/build_aarch64/src/arch/x86_64|/root/SimpleKernel/build_aarch64/src/arch/aarch64).*
       # - id: clang-tidy
       #   args:
@@ -45,7 +45,7 @@ repos:
       #     - -extra-arg=--std=c++2b
       #     - --fix
       #     - --header-filter=^(?/root/SimpleKernel/build_aarch64/src/).*
-          # - --exclude-header-filter=^(?/root/SimpleKernel/build_aarch64/src/arch/riscv64|/root/SimpleKernel/build_aarch64/src/arch/x86_64).*
+      #     - --exclude-header-filter=^(?/root/SimpleKernel/build_aarch64/src/arch/riscv64|/root/SimpleKernel/build_aarch64/src/arch/x86_64).*
 
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.10.0
@@ -56,4 +56,4 @@ repos:
     rev: v0.6.13
     hooks:
       - id: cmake-format
-      - id: cmake-lint
+      # - id: cmake-lint
