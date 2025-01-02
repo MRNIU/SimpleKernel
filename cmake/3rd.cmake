@@ -161,6 +161,9 @@ ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" AND CMAKE_SYSTEM_PROCESSOR
 ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64" AND CMAKE_SYSTEM_PROCESSOR
                                                         MATCHES "riscv64")
     SET (CROSS_COMPILE_ riscv64-linux-gnu-)
+ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64" AND CMAKE_SYSTEM_PROCESSOR
+                                                        MATCHES "aarch64")
+    SET (CROSS_COMPILE_ aarch64-linux-gnu-)
 ENDIF()
 # 编译 gnu-efi
 ADD_CUSTOM_TARGET (
