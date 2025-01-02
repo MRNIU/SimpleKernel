@@ -1,42 +1,27 @@
-
 # This file is a part of Simple-XX/SimpleKernel
 # (https://github.com/Simple-XX/SimpleKernel).
 #
 # CMakeLists.txt for Simple-XX/SimpleKernel.
 
 # 设置项目名与版本
-project(
-        unit-test
-        VERSION 0.0.1
-)
+PROJECT (unit-test VERSION 0.0.1)
 
-enable_language(CXX)
+ENABLE_LANGUAGE (CXX)
 
-add_executable(${PROJECT_NAME}
-        riscv64_cpu_test.cpp
-        x86_64_cpu_test.cpp
-        aarch64_cpu_test.cpp
-        kernel_elf_test.cpp
-        kernel_fdt_test.cpp
-)
+ADD_EXECUTABLE (
+    ${PROJECT_NAME}
+    riscv64_cpu_test.cpp x86_64_cpu_test.cpp aarch64_cpu_test.cpp
+    kernel_elf_test.cpp kernel_fdt_test.cpp)
 
-target_include_directories(${PROJECT_NAME} PRIVATE
-        ./
-        ${CMAKE_SOURCE_DIR}/src/kernel/include
-        ${CMAKE_SOURCE_DIR}/src/kernel/arch
-)
+TARGET_INCLUDE_DIRECTORIES (
+    ${PROJECT_NAME} PRIVATE ./ ${CMAKE_SOURCE_DIR}/src/kernel/include
+                            ${CMAKE_SOURCE_DIR}/src/kernel/arch)
 
-target_compile_options(${PROJECT_NAME} PRIVATE
-        ${DEFAULT_TEST_COMPILE_OPTIONS}
-)
+TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 
-target_link_options(${PROJECT_NAME} PRIVATE
-        ${DEFAULT_TEST_LINK_OPTIONS}
-)
+TARGET_LINK_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_OPTIONS})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${DEFAULT_TEST_LINK_LIB}
-        dtc-lib
-)
+TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_LIB} dtc-lib
+                                               cpu_io)
 
-gtest_discover_tests(${PROJECT_NAME})
+GTEST_DISCOVER_TESTS (${PROJECT_NAME})
