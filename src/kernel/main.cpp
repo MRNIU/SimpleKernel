@@ -24,12 +24,12 @@
 
 void _start(uint32_t argc, uint8_t *argv) {
   CppInit();
-
   main(argc, argv);
   CppDeInit();
 
   // 进入死循环
   while (true) {
+    ;
   }
 }
 
