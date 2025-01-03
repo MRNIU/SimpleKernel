@@ -25,7 +25,7 @@
 #include "sk_libc.h"
 
 auto backtrace(void **buffer, int size) -> int {
-  auto *fp = reinterpret_cast<uint64_t *>(cpu::regs::Fp::Read());
+  auto *fp = reinterpret_cast<uint64_t *>(cpu_io::Fp::Read());
   uint64_t *ra = nullptr;
 
   int count = 0;
