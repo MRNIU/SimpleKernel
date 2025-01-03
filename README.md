@@ -35,7 +35,7 @@ boot branch
     sudo apt install --fix-missing -y gcc g++ gcc-riscv64-linux-gnu g++-riscv64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
     sudo apt install --fix-missing -y cmake qemu-system gdb-multiarch
     sudo apt install --fix-missing -y doxygen graphviz
-    sudo apt install --fix-missing -y doxygen graphviz 
+    sudo apt install --fix-missing -y doxygen graphviz
     sudo apt install --fix-missing -y clang-format clang-tidy cppcheck libgtest-dev lcov
     ```
 
@@ -65,7 +65,7 @@ boot branch
     # 进入构建目录后执行
     make debug
     ```
-    
+
     在一个新的 shell 中进入 gdb
     ```shell
     # 进入 gdb
@@ -77,7 +77,7 @@ boot branch
     # 开始执行
     c
     ```
-    
+
 
 ## 执行流
 
@@ -192,10 +192,6 @@ boot branch
 
   |                  对象名                  |                 位置                 |          用途           |
   | :--------------------------------------: | :----------------------------------: | :---------------------: |
-  |          `static ostream cout`           |  src/kernel/libcxx/include/iostream  | 内核中的 std::cout 实现 |
-  | `static Singleton<KernelElf> kKernelElf` |  src/kernel/include/kernel_elf.hpp   | 解析内核自身的 elf 信息 |
-  | `static Singleton<KernelFdt> kKernelFdt` |  src/kernel/include/kernel_fdt.hpp   |      解析 dtb 信息      |
-  | `static Singleton<BasicInfo> kBasicInfo` |  src/kernel/include/basic_info.hpp   |      内核基本信息       |
   | `static cpu::Serial kSerial(cpu::kCom1)` | src/kernel/arch/x86_64/arch_main.cpp |     X86_64 下的串口     |
 
 - 基于 doxygen 的文档生成与自动部署
@@ -239,6 +235,8 @@ boot branch
 [opensbi_interface](https://github.com/MRNIU/opensbi_interface)
 
 [printf_bare_metal](https://github.com/MRNIU/printf_bare_metal)
+
+[cpu_io](https://github.com/MRNIU/cpu_io)
 
 [dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git)
 
