@@ -78,6 +78,10 @@ boot branch
     c
     ```
 
+5. 使用 vscode
+
+    已经配置了 vscode 的 tasks.json 与 launch.json，你可以直接使用 vscode 运行内核或进行调试
+
 
 ## 执行流
 
