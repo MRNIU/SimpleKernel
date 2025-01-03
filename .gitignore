@@ -10,6 +10,7 @@ build_x86_64
 doc/html
 .gdbinit
 .vscode/*
+!.vscode/tasks.json
 !.vscode/launch.json
 .idea
 Doxyfile
