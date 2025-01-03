@@ -140,7 +140,4 @@ class KernelFdt {
   void *fdt_addr_;
 };
 
-/// 全局 elf 对象，需要在相应体系结构初始化时重新初始化
-[[maybe_unused]] static Singleton<KernelFdt> kKernelFdt;
-
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_FDT_HPP_ */

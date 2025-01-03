@@ -74,7 +74,4 @@ struct BasicInfo {
   }
 };
 
-/// 保存基本信息
-[[maybe_unused]] static Singleton<BasicInfo> kBasicInfo;
-
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_BASIC_INFO_HPP_ */
