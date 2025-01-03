@@ -26,7 +26,7 @@
 #include "singleton.hpp"
 
 auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer) -> int {
-  auto *rbp = reinterpret_cast<uint64_t *>(cpu::regs::Rbp::Read());
+  auto *rbp = reinterpret_cast<uint64_t *>(cpu_io::Rbp::Read());
   uint64_t *rip = nullptr;
 
   int count = 0;

@@ -24,7 +24,7 @@
 #include "sk_libcxx.h"
 
 #ifdef __x86_64__
-static auto serial = cpu::Serial(cpu::kCom1);
+static auto serial = cpu_io::Serial(cpu_io::kCom1);
 extern "C" void _putchar(char character) { serial.Write(character); }
 #elif __riscv
 #include <opensbi_interface.h>
@@ -87,7 +87,7 @@ class InsClass : public AbsClass {
 
 auto main(uint32_t, uint8_t *) -> uint32_t {
 #ifdef __aarch64__
-  cpu::SetupFpu();
+  cpu_io::SetupFpu();
 #endif
 
   global_u8c_value_with_init++;

@@ -28,7 +28,7 @@
 /// @note 这里要注意，保证在 serial 初始化之前不能使用 printf
 /// 函数，否则会有全局对象依赖问题
 namespace {
-cpu::Serial kSerial(cpu::kCom1);
+cpu_io::Serial kSerial(cpu_io::kCom1);
 extern "C" void _putchar(char character) { kSerial.Write(character); }
 // 引用链接脚本中的变量
 /// @see http://wiki.osdev.org/Using_Linker_Script_Values
