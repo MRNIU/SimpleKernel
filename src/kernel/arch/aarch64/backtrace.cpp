@@ -23,7 +23,7 @@
 #include "sk_libc.h"
 
 auto backtrace(void **buffer, int size) -> int {
-  auto *x29 = reinterpret_cast<uint64_t *>(cpu::regs::X29::Read());
+  auto *x29 = reinterpret_cast<uint64_t *>(cpu_io::X29::Read());
 
   int count = 0;
   while ((x29 != nullptr) && (*x29 != 0U) && count < size) {

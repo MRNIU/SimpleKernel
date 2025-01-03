@@ -25,7 +25,7 @@ repos:
       - id: clang-tidy
         args:
           - --checks=.clang-tidy
-          - -p=@CMAKE_BINARY_DIR@/build_x86_64/compiler_commands.json
+          - -p=@CMAKE_BINARY_DIR@/compiler_commands.json
           - -extra-arg=--std=c++2b
           - --fix
           - --header-filter=^(@CMAKE_BINARY_DIR@/src/).*

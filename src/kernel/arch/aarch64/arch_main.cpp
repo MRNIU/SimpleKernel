@@ -30,7 +30,7 @@ auto ArchInit(uint32_t argc, const uint8_t* argv) -> uint32_t {
   (void)argv;
 
   // 初始化 FPU
-  cpu::SetupFpu();
+  cpu_io::SetupFpu();
 
   return 0;
 }
