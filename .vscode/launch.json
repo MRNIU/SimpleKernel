@@ -14,7 +14,7 @@
             "environment": [],
             "externalConsole": true,
             "logging": {
-                "engineLogging": false
+                "engineLogging": "verbose"
             },
             "MIMode": "gdb",
             "preLaunchTask": "debug_riscv64"
@@ -30,9 +30,9 @@
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}/build_x86_64/bin",
             "environment": [],
-            "externalConsole": false,
+            "externalConsole": true,
             "logging": {
-                "engineLogging": false
+                "engineLogging": "verbose"
             },
             "MIMode": "gdb",
             "preLaunchTask": "debug_x86_64"
@@ -48,9 +48,9 @@
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}/build_aarch64/bin",
             "environment": [],
-            "externalConsole": false,
+            "externalConsole": true,
             "logging": {
-                "engineLogging": false
+                "engineLogging": "verbose"
             },
             "MIMode": "gdb",
             "preLaunchTask": "debug_aarch64"
