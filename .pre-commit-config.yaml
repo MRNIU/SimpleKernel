@@ -5,7 +5,7 @@ repos:
     hooks:
       - id: check-case-conflict
       - id: check-illegal-windows-names
-      - id: check-json
+      # - id: check-json
       - id: check-merge-conflict
       - id: check-symlinks
       - id: check-xml

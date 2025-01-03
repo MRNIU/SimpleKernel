@@ -1,4 +1,3 @@
-
 # This file is a part of Simple-XX/SimpleKernel
 # (https://github.com/Simple-XX/SimpleKernel).
 #
@@ -10,7 +9,8 @@ build_riscv64
 build_x86_64
 doc/html
 .gdbinit
-.vscode
+.vscode/*
+!.vscode/launch.json
 .idea
 Doxyfile
 .gdbinit
