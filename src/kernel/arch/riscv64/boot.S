@@ -16,6 +16,9 @@
 
 #include "macro.S"
 
+#define ASM_FILE
+#include "multiboot2.h"
+
 // clang-format off
 
 .section .text.boot

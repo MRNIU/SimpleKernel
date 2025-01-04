@@ -200,6 +200,7 @@ TARGET_LINK_LIBRARIES (
               printf_bare_metal
               dtc-lib
               cpu_io
+              grub2
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
               opensbi_interface
               >
