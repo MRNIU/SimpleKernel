@@ -43,6 +43,9 @@ struct BasicInfo {
   /// fdt 地址
   uint64_t fdt_addr;
 
+  /// cpu 核数
+  size_t core_count;
+
   /**
    * 构造函数，在 arch_main.cpp 中定义
    * @param argc 同 _start
