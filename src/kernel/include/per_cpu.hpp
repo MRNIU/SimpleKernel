@@ -17,20 +17,36 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_INCLUDE_PER_CPU_HPP_
 #define SIMPLEKERNEL_SRC_KERNEL_INCLUDE_PER_CPU_HPP_
 
+#include <unistd.h>
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 
-struct PerCpu {
+class PerCpu {
+ public:
   /// 核心 ID
-  size_t core_id;
+  size_t core_id_;
+  /// 中断嵌套深度
+  ssize_t noff_;
+  /// 在进入调度线程前是否允许中断
+  bool intr_enable_;
+
+  explicit PerCpu(size_t core_id) : core_id_(core_id) {}
+
+  /// @name 构造/析构函数
+  /// @{
+  PerCpu() = default;
+  PerCpu(const PerCpu &) = default;
+  PerCpu(PerCpu &&) = default;
+  auto operator=(const PerCpu &) -> PerCpu & = default;
+  auto operator=(PerCpu &&) -> PerCpu & = default;
+  ~PerCpu() = default;
+  /// @}
 };
 
-/// 最多支持 4 个核心
-constexpr size_t kMaxCoreCount = 8;
-
 /// per cpu 数据
-static std::array<PerCpu, kMaxCoreCount> kPerCpu;
+extern PerCpu g_per_cpu;
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_PER_CPU_HPP_ */

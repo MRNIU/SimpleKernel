@@ -20,6 +20,7 @@
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
 #include "ns16550a.h"
+#include "per_cpu.hpp"
 #include "sk_cstdio"
 #include "sk_libc.h"
 
@@ -52,6 +53,8 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   fdt_addr = reinterpret_cast<uint64_t>(argv);
 }
 
+PerCpu g_per_cpu = PerCpu(0);
+
 auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
   printf("boot hart id: %d\n", argc);
   printf("dtb info addr: %p\n", argv);
@@ -61,6 +64,10 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
 
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
+
+  g_per_cpu.core_id_ = argc;
+
+  Singleton<BasicInfo>::GetInstance().core_count++;
 
   auto [serial_base, serial_size] =
       Singleton<KernelFdt>::GetInstance().GetSerial();
