@@ -24,6 +24,8 @@
 #include "sk_cstdio"
 #include "sk_libc.h"
 
+PerCpu g_per_cpu = PerCpu(0);
+
 // printf_bare_metal 基本输出实现
 extern "C" void _putchar(char character) {
   sbi_debug_console_write_byte(character);
@@ -52,8 +54,6 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
 
   fdt_addr = reinterpret_cast<uint64_t>(argv);
 }
-
-PerCpu g_per_cpu = PerCpu(0);
 
 auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
   printf("boot hart id: %d\n", argc);
