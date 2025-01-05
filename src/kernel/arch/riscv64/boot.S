@@ -42,8 +42,11 @@ _boot:
 .option pop
 #endif
 
-    // 设置栈地址
+    // 按照每个 core 设置栈地址
+    add t0, a0, 1
+    slli t0, t0, 12
     la sp, stack_top
+    add sp, sp, t0
 
     // 保存 sbi 传递的参数
     // 开辟栈空间
