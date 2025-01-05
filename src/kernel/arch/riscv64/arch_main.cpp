@@ -59,15 +59,14 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
   printf("boot hart id: %d\n", argc);
   printf("dtb info addr: %p\n", argv);
 
+  g_per_cpu.core_id_ = argc;
+
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(reinterpret_cast<uint64_t>(argv));
 
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
-  sk_std::cout << Singleton<BasicInfo>::GetInstance();
-
-  g_per_cpu.core_id_ = argc;
-
   Singleton<BasicInfo>::GetInstance().core_count++;
+  sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
   auto [serial_base, serial_size] =
       Singleton<KernelFdt>::GetInstance().GetSerial();
