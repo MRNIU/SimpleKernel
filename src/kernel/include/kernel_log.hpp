@@ -23,6 +23,7 @@
 #include "../../project_config.h"
 #include "sk_cstdio"
 #include "sk_iostream"
+#include "spinlock.hpp"
 
 namespace klog {
 namespace logger {
@@ -36,6 +37,8 @@ constexpr const auto kBlue = "\033[34m";
 constexpr const auto kMagenta = "\033[35m";
 constexpr const auto kCyan = "\033[36m";
 constexpr const auto kWhite = "\033[37m";
+
+static SpinLock logger_lock("klog::logger");
 
 template <void (*OutputFunction)(const char* format, ...)>
 class Logger : public sk_std::ostream {
@@ -94,40 +97,48 @@ class Logger : public sk_std::ostream {
 extern "C" inline void Debug(const char* format, ...) {
   (void)format;
 #ifdef SIMPLEKERNEL_DEBUG_LOG
+  logger::logger_lock.lock();
   va_list args;
   va_start(args, format);
-  printf("%s", logger::kMagenta);
+  printf("%s[%d] ", logger::kMagenta, cpu_io::GetCurrentCoreId());
   vprintf(format, args);
   printf("%s", logger::kReset);
   va_end(args);
+  logger::logger_lock.unlock();
 #endif
 }
 
 extern "C" inline void Info(const char* format, ...) {
+  logger::logger_lock.lock();
   va_list args;
   va_start(args, format);
-  printf("%s", logger::kCyan);
+  printf("%s[%d] ", logger::kCyan, cpu_io::GetCurrentCoreId());
   vprintf(format, args);
   printf("%s", logger::kReset);
   va_end(args);
+  logger::logger_lock.unlock();
 }
 
 extern "C" inline void Warn(const char* format, ...) {
+  logger::logger_lock.lock();
   va_list args;
   va_start(args, format);
-  printf("%s", logger::kYellow);
+  printf("%s[%d] ", logger::kYellow, cpu_io::GetCurrentCoreId());
   vprintf(format, args);
   printf("%s", logger::kReset);
   va_end(args);
+  logger::logger_lock.unlock();
 }
 
 extern "C" inline void Err(const char* format, ...) {
+  logger::logger_lock.lock();
   va_list args;
   va_start(args, format);
-  printf("%s", logger::kRed);
+  printf("%s[%d] ", logger::kRed, cpu_io::GetCurrentCoreId());
   vprintf(format, args);
   printf("%s", logger::kReset);
   va_end(args);
+  logger::logger_lock.unlock();
 }
 
 [[maybe_unused]] static logger::Logger<Info> info;

@@ -20,12 +20,16 @@
 #include <unistd.h>
 
 #include <array>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 
 class PerCpu {
  public:
+  /// 最大 CPU 数
+  static constexpr size_t kMaxCoreCount = 8;
+
   /// 核心 ID
   size_t core_id_;
   /// 中断嵌套深度
@@ -33,11 +37,15 @@ class PerCpu {
   /// 在进入调度线程前是否允许中断
   bool intr_enable_;
 
-  explicit PerCpu(size_t core_id) : core_id_(core_id) {}
+  PerCpu() {
+    core_id_ = SIZE_MAX;
+    noff_ = 0;
+    intr_enable_ = false;
+  }
+  // explicit PerCpu(size_t core_id) : core_id_(core_id) {}
 
   /// @name 构造/析构函数
   /// @{
-  PerCpu() = default;
   PerCpu(const PerCpu &) = default;
   PerCpu(PerCpu &&) = default;
   auto operator=(const PerCpu &) -> PerCpu & = default;
@@ -47,6 +55,6 @@ class PerCpu {
 };
 
 /// per cpu 数据
-extern PerCpu g_per_cpu;
+static std::array<PerCpu, PerCpu::kMaxCoreCount> g_per_cpu{};
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_PER_CPU_HPP_ */

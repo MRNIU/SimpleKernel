@@ -65,7 +65,7 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
         -machine
         virt
         -smp
-        4
+        2
         # 可选项，qemu7.0 自带了 opensbi1.0
         -bios
         ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_jump.elf

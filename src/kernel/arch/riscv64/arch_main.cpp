@@ -24,8 +24,6 @@
 #include "sk_cstdio"
 #include "sk_libc.h"
 
-PerCpu g_per_cpu = PerCpu(0);
-
 // printf_bare_metal 基本输出实现
 extern "C" void _putchar(char character) {
   sbi_debug_console_write_byte(character);
@@ -55,39 +53,67 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   fdt_addr = reinterpret_cast<uint64_t>(argv);
 }
 
+static bool is_init = false;
+
 auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
-  printf("boot hart id: %d\n", argc);
-  printf("dtb info addr: %p\n", argv);
+  if (!is_init) {
+    printf("boot hart id: %d\n", argc);
+    printf("dtb info addr: %p\n", argv);
 
-  g_per_cpu.core_id_ = argc;
+    for (auto i = 0; i < 8; i++) {
+      g_per_cpu[i].core_id_ = SIZE_MAX;
+    }
 
-  Singleton<KernelFdt>::GetInstance() =
-      KernelFdt(reinterpret_cast<uint64_t>(argv));
+    cpu_io::Tp::Write(argc);
+    g_per_cpu[argc].core_id_ = argc;
 
-  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+    Singleton<KernelFdt>::GetInstance() =
+        KernelFdt(reinterpret_cast<uint64_t>(argv));
+
+    Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+    // sk_std::cout << Singleton<BasicInfo>::GetInstance();
+
+    auto [serial_base, serial_size] =
+        Singleton<KernelFdt>::GetInstance().GetSerial();
+    auto uart = Ns16550a(serial_base);
+    uart.PutChar('H');
+    uart.PutChar('e');
+    uart.PutChar('l');
+    uart.PutChar('l');
+    uart.PutChar('o');
+    uart.PutChar(' ');
+    uart.PutChar('u');
+    uart.PutChar('a');
+    uart.PutChar('r');
+    uart.PutChar('t');
+    uart.PutChar('!');
+    uart.PutChar('\n');
+
+    // 解析内核 elf 信息
+    Singleton<KernelElf>::GetInstance() = KernelElf();
+
+    // klog::Info("Hello riscv64 ArchInit\n");
+
+    sbi_hart_start(0, 0x0000000080210000, 0);
+    sbi_hart_start(1, 0x0000000080210000, 0);
+    sbi_hart_start(2, 0x0000000080210000, 0);
+    sbi_hart_start(3, 0x0000000080210000, 0);
+
+    is_init = true;
+  }
+  // 将 core id 保存到 tp 寄存器
+  cpu_io::Tp::Write(argc);
+  g_per_cpu[argc].core_id_ = argc;
   Singleton<BasicInfo>::GetInstance().core_count++;
-  sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
-  auto [serial_base, serial_size] =
-      Singleton<KernelFdt>::GetInstance().GetSerial();
-  auto uart = Ns16550a(serial_base);
-  uart.PutChar('H');
-  uart.PutChar('e');
-  uart.PutChar('l');
-  uart.PutChar('l');
-  uart.PutChar('o');
-  uart.PutChar(' ');
-  uart.PutChar('u');
-  uart.PutChar('a');
-  uart.PutChar('r');
-  uart.PutChar('t');
-  uart.PutChar('!');
-  uart.PutChar('\n');
+  klog::Info("Helloa\n");
+  klog::Info("Hellob\n");
+  klog::Info("Helloc\n");
+  klog::Info("Hellod\n");
 
-  // 解析内核 elf 信息
-  Singleton<KernelElf>::GetInstance() = KernelElf();
-
-  klog::Info("Hello riscv64 ArchInit\n");
+  while (true) {
+    ;
+  }
 
   return 0;
 }

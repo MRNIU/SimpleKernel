@@ -1,0 +1,156 @@
+
+/**
+ * @file spinlock.hpp
+ * @brief 自旋锁
+ * @author Zone.N (Zone.Niuzh@hotmail.com)
+ * @version 1.0
+ * @date 2022-01-01
+ * @copyright MIT LICENSE
+ * https://github.com/Simple-XX/SimpleKernel
+ * @par change log:
+ * <table>
+ * <tr><th>Date<th>Author<th>Description
+ * <tr><td>2022-01-01<td>MRNIU<td>迁移到 doxygen
+ * </table>
+ */
+
+#ifndef SIMPLEKERNEL_SRC_KERNEL_INCLUDE_SPINLOCK_HPP_
+#define SIMPLEKERNEL_SRC_KERNEL_INCLUDE_SPINLOCK_HPP_
+
+#include <cpu_io.h>
+
+#include <atomic>
+#include <cstddef>
+
+#include "per_cpu.hpp"
+#include "sk_stdio.h"
+
+/**
+ * @brief 自旋锁
+ */
+class SpinLock {
+ public:
+  SpinLock() : locked_(ATOMIC_FLAG_INIT), core_id_(SIZE_MAX) {}
+
+  /**
+   * @brief 构造函数
+   * @param  _name            锁名
+   * @note 需要堆初始化后可用
+   */
+  explicit SpinLock(const char *_name)
+      : locked_(ATOMIC_FLAG_INIT), name_(_name), core_id_(SIZE_MAX) {}
+
+  /// @name 构造/析构函数
+  /// @{
+  SpinLock(const SpinLock &) = default;
+  SpinLock(SpinLock &&) = default;
+  auto operator=(const SpinLock &) -> SpinLock & = default;
+  auto operator=(SpinLock &&) -> SpinLock & = default;
+  ~SpinLock() = default;
+  /// @}
+
+  /**
+   * @brief 获得锁
+   */
+  void lock() {
+    DisableInterruptsNested();
+    if (IsLockedByCurrentCore()) {
+      //   printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
+      printf("A");
+    }
+    while (locked_.test_and_set(std::memory_order_acquire)) {
+      ;
+    }
+
+    std::atomic_signal_fence(std::memory_order_acquire);
+    std::atomic_thread_fence(std::memory_order_acquire);
+
+    core_id_ = cpu_io::GetCurrentCoreId();
+  }
+
+  /**
+   * @brief 释放锁
+   */
+  void unlock() {
+    if (!locked_._M_i) {
+      printf("-");
+      while (true) {
+        ;
+      }
+    }
+    if (!IsLockedByCurrentCore()) {
+      //   printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
+      printf("C");
+    }
+    core_id_ = SIZE_MAX;
+
+    std::atomic_signal_fence(std::memory_order_release);
+    std::atomic_thread_fence(std::memory_order_release);
+
+    locked_.clear(std::memory_order_release);
+
+    RestoreInterruptsNested();
+  }
+
+  //   friend std::ostream &operator<<(std::ostream &_os,
+  //                                   const SpinLock &_spinlock) {
+  //     printf("spinlock(%s) hart 0x%X %s\n", _spinlock.name_,
+  //     _spinlock.core_id_,
+  //            (_spinlock.locked_._M_i ? "locked_" : "unlock"));
+  //     return _os;
+  //   }
+
+ private:
+  /// 自旋锁名称
+  const char *name_{"unnamed"};
+  /// 是否 lock
+  std::atomic_flag locked_;
+  /// 获得此锁的 core_id_
+  std::atomic<size_t> core_id_;
+
+  /**
+   * @brief 检查当前 core 是否获得此锁
+   * @return true             是
+   * @return false            否
+   */
+  auto IsLockedByCurrentCore() -> bool {
+    return locked_._M_i && (core_id_ == cpu_io::GetCurrentCoreId());
+  }
+
+  /**
+   * @brief 中断嵌套+1
+   */
+  static void DisableInterruptsNested() {
+    bool old = cpu_io::GetInterruptStatus();
+
+    cpu_io::DisableInterrupt();
+
+    if (g_per_cpu[cpu_io::GetCurrentCoreId()].noff_ == 0) {
+      g_per_cpu[cpu_io::GetCurrentCoreId()].intr_enable_ = old;
+    }
+    g_per_cpu[cpu_io::GetCurrentCoreId()].noff_ += 1;
+  }
+
+  /**
+   * @brief 中断嵌套-1
+   */
+  static void RestoreInterruptsNested() {
+    if (cpu_io::GetInterruptStatus()) {
+      //   printf("RestoreInterruptsNested - interruptible\n");
+      printf("D");
+    }
+
+    if (g_per_cpu[cpu_io::GetCurrentCoreId()].noff_ < 1) {
+      //   printf("RestoreInterruptsNested\n");
+      //   printf("E");
+    }
+    g_per_cpu[cpu_io::GetCurrentCoreId()].noff_ -= 1;
+
+    if ((g_per_cpu[cpu_io::GetCurrentCoreId()].noff_ == 0) &&
+        (g_per_cpu[cpu_io::GetCurrentCoreId()].intr_enable_)) {
+      cpu_io::EnableInterrupt();
+    }
+  }
+};
+
+#endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_SPINLOCK_HPP_ */
