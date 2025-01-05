@@ -8,7 +8,8 @@ PROJECT (unit-test VERSION 0.0.1)
 
 ENABLE_LANGUAGE (CXX)
 
-ADD_EXECUTABLE (${PROJECT_NAME} kernel_elf_test.cpp kernel_fdt_test.cpp)
+ADD_EXECUTABLE (${PROJECT_NAME} kernel_elf_test.cpp kernel_fdt_test.cpp
+                                spinlock_test.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME} PRIVATE ./ ${CMAKE_SOURCE_DIR}/src/kernel/include

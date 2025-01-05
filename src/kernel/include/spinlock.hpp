@@ -23,25 +23,23 @@
 #include <cstddef>
 
 #include "per_cpu.hpp"
-#include "sk_stdio.h"
+#include "sk_cstdio"
 
 /**
  * @brief 自旋锁
  */
 class SpinLock {
  public:
-  SpinLock() : locked_(ATOMIC_FLAG_INIT), core_id_(SIZE_MAX) {}
-
   /**
    * @brief 构造函数
    * @param  _name            锁名
    * @note 需要堆初始化后可用
    */
-  explicit SpinLock(const char *_name)
-      : locked_(ATOMIC_FLAG_INIT), name_(_name), core_id_(SIZE_MAX) {}
+  explicit SpinLock(const char *_name) : name_(_name) {}
 
   /// @name 构造/析构函数
   /// @{
+  SpinLock() = default;
   SpinLock(const SpinLock &) = default;
   SpinLock(SpinLock &&) = default;
   auto operator=(const SpinLock &) -> SpinLock & = default;
@@ -53,7 +51,7 @@ class SpinLock {
    * @brief 获得锁
    */
   void lock() {
-    DisableInterruptsNested();
+    // DisableInterruptsNested();
     if (IsLockedByCurrentCore()) {
       //   printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
       printf("A");
@@ -89,7 +87,7 @@ class SpinLock {
 
     locked_.clear(std::memory_order_release);
 
-    RestoreInterruptsNested();
+    // RestoreInterruptsNested();
   }
 
   //   friend std::ostream &operator<<(std::ostream &_os,
@@ -104,9 +102,9 @@ class SpinLock {
   /// 自旋锁名称
   const char *name_{"unnamed"};
   /// 是否 lock
-  std::atomic_flag locked_;
+  std::atomic_flag locked_{ATOMIC_FLAG_INIT};
   /// 获得此锁的 core_id_
-  std::atomic<size_t> core_id_;
+  size_t core_id_{SIZE_MAX};
 
   /**
    * @brief 检查当前 core 是否获得此锁

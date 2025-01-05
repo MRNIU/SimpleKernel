@@ -106,10 +106,10 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
   g_per_cpu[argc].core_id_ = argc;
   Singleton<BasicInfo>::GetInstance().core_count++;
 
-  klog::Info("Helloa\n");
-  klog::Info("Hellob\n");
-  klog::Info("Helloc\n");
-  klog::Info("Hellod\n");
+  // klog::Info("Helloa\n");
+  // klog::Info("Hellob\n");
+  // klog::Info("Helloc\n");
+  // klog::Info("Hellod\n");
 
   while (true) {
     ;
