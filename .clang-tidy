@@ -22,6 +22,7 @@ Checks: >
   -readability-braces-around-statements,
   -readability-magic-numbers,
   -performance-no-int-to-ptr,
-  -modernize-use-std-print
+  -modernize-use-std-print,
+  -bugprone-reserved-identifier
 FormatStyle: google
 ...

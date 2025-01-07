@@ -22,13 +22,13 @@
 using function_t = void (*)();
 // 在 link.ld 中定义
 /// 全局构造函数函数指针起点地址
-extern "C" function_t __init_array_start;  // NOLINT
+extern "C" function_t __init_array_start;
 /// 全局构造函数函数指针终点地址
-extern "C" function_t __init_array_end;  // NOLINT
+extern "C" function_t __init_array_end;
 /// 全局析构函数函数指针起点地址
-extern "C" function_t __fini_array_start;  // NOLINT
+extern "C" function_t __fini_array_start;
 /// 全局析构函数函数指针终点地址
-extern "C" function_t __fini_array_end;  // NOLINT
+extern "C" function_t __fini_array_end;
 /// 动态共享对象标识，内核使用静态链接，此变量在内核中没有使用
 void* dso_handle = nullptr;
 
@@ -56,8 +56,8 @@ static size_t atexit_func_count = 0;
  * @param obj_ptr 传递给析构函数的参数
  * @return 成功返回 0
  */
-extern "C" auto _cxa_atexit(void (*destructor_func)(void*), void* obj_ptr,
-                            void*) -> int {
+extern "C" auto __cxa_atexit(void (*destructor_func)(void*), void* obj_ptr,
+                             void*) -> int {
   if (atexit_func_count >= kMaxAtExitFuncsCount) {
     return -1;
   }
@@ -73,7 +73,7 @@ extern "C" auto _cxa_atexit(void (*destructor_func)(void*), void* obj_ptr,
  * @param destructor_func 要调用的析构函数指针，为 nullptr
  * 时调用所有注册的析构函数。
  */
-extern "C" void _cxa_finalize(void* destructor_func) {
+extern "C" void __cxa_finalize(void* destructor_func) {
   if (destructor_func == nullptr) {
     // 如果 destructor_func 为 nullptr，调用所有析构函数
     for (auto i = atexit_func_count - 1; i != 0; i--) {
@@ -124,7 +124,7 @@ struct GuardType {
  * @param guard 锁，一个 64 位变量
  * @return 未初始化返回非零值，已初始化返回 0
  */
-extern "C" auto _cxa_guard_acquire(GuardType* guard) -> int {
+extern "C" auto __cxa_guard_acquire(GuardType* guard) -> int {
   if ((guard->is_in_use == 0U) && (guard->is_initialized == 0U)) {
     guard->is_in_use = 1;
   }
@@ -136,7 +136,7 @@ extern "C" auto _cxa_guard_acquire(GuardType* guard) -> int {
  * @param guard 锁，一个 64 位变量
  * @return 未初始化返回非零值并设置锁，已初始化返回 0
  */
-extern "C" void _cxa_guard_release(GuardType* guard) {
+extern "C" void __cxa_guard_release(GuardType* guard) {
   guard->is_in_use = 0;
   guard->is_initialized = 1;
 }
@@ -145,7 +145,7 @@ extern "C" void _cxa_guard_release(GuardType* guard) {
  * 如果在初始化过程中出现异常或其他错误，调用此函数以释放锁而不标记变量为已初始化
  * @param guard 锁
  */
-extern "C" void _cxa_guard_abort(GuardType* guard) {
+extern "C" void __cxa_guard_abort(GuardType* guard) {
   guard->is_in_use = 0;
   guard->is_initialized = 0;
 }
@@ -155,7 +155,7 @@ extern "C" void _cxa_guard_abort(GuardType* guard) {
 /**
  * 纯虚函数调用处理
  */
-extern "C" void _cxa_pure_virtual() {
+extern "C" void __cxa_pure_virtual() {
   while (true) {
     ;
   }
@@ -165,7 +165,7 @@ extern "C" void _cxa_pure_virtual() {
  * 异常处理
  * @note 这里只能处理 throw，无法处理异常类型
  */
-extern "C" void _cxa_rethrow() {
+extern "C" void __cxa_rethrow() {
   while (true) {
     ;
   }
