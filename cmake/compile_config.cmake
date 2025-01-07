@@ -68,6 +68,7 @@ TARGET_COMPILE_OPTIONS (
               -march=armv8-a
               # 针对 cortex-a72 优化代码
               -mtune=cortex-a72
+              -mno-outline-atomics
               >
               # gcc 特定选项
               $<$<CXX_COMPILER_ID:GNU>:
