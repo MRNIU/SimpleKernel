@@ -19,18 +19,18 @@
 #include <algorithm>
 
 /// 全局构造函数函数指针
-typedef void (*function_t)(void);
+using function_t = void (*)();
 // 在 link.ld 中定义
 /// 全局构造函数函数指针起点地址
-extern "C" function_t __init_array_start;
+extern "C" function_t _init_array_start;
 /// 全局构造函数函数指针终点地址
-extern "C" function_t __init_array_end;
+extern "C" function_t _init_array_end;
 /// 全局析构函数函数指针起点地址
-extern "C" function_t __fini_array_start;
+extern "C" function_t _fini_array_start;
 /// 全局析构函数函数指针终点地址
-extern "C" function_t __fini_array_end;
+extern "C" function_t _fini_array_end;
 /// 动态共享对象标识，内核使用静态链接，此变量在内核中没有使用
-void* __dso_handle = nullptr;
+void* dso_handle = nullptr;
 
 /// 最大析构函数数量
 static constexpr const size_t kMaxAtExitFuncsCount = 128;
@@ -46,9 +46,9 @@ struct atexit_func_entry_t {
 };
 
 /// 析构函数数组
-static atexit_func_entry_t __atexit_funcs[kMaxAtExitFuncsCount];
+static atexit_func_entry_t atexit_funcs[kMaxAtExitFuncsCount];  // NOLINT
 /// 析构函数个数
-static size_t __atexit_func_count = 0;
+static size_t atexit_func_count = 0;
 
 /**
  * 注册在程序正常终止时调用的析构函数
@@ -56,15 +56,15 @@ static size_t __atexit_func_count = 0;
  * @param obj_ptr 传递给析构函数的参数
  * @return 成功返回 0
  */
-extern "C" int __cxa_atexit(void (*destructor_func)(void*), void* obj_ptr,
-                            void*) {
-  if (__atexit_func_count >= kMaxAtExitFuncsCount) {
+extern "C" auto _cxa_atexit(void (*destructor_func)(void*), void* obj_ptr,
+                            void*) -> int {
+  if (atexit_func_count >= kMaxAtExitFuncsCount) {
     return -1;
   }
-  __atexit_funcs[__atexit_func_count].destructor_func = destructor_func;
-  __atexit_funcs[__atexit_func_count].obj_ptr = obj_ptr;
-  __atexit_funcs[__atexit_func_count].dso_handle = nullptr;
-  __atexit_func_count++;
+  atexit_funcs[atexit_func_count].destructor_func = destructor_func;
+  atexit_funcs[atexit_func_count].obj_ptr = obj_ptr;
+  atexit_funcs[atexit_func_count].dso_handle = nullptr;
+  atexit_func_count++;
   return 0;
 }
 
@@ -73,20 +73,20 @@ extern "C" int __cxa_atexit(void (*destructor_func)(void*), void* obj_ptr,
  * @param destructor_func 要调用的析构函数指针，为 nullptr
  * 时调用所有注册的析构函数。
  */
-extern "C" void __cxa_finalize(void* destructor_func) {
-  if (!destructor_func) {
+extern "C" void _cxa_finalize(void* destructor_func) {
+  if (destructor_func == nullptr) {
     // 如果 destructor_func 为 nullptr，调用所有析构函数
-    for (auto i = __atexit_func_count - 1; i != 0; i--) {
-      if (__atexit_funcs[i].destructor_func) {
-        (*__atexit_funcs[i].destructor_func)(__atexit_funcs[i].obj_ptr);
+    for (auto i = atexit_func_count - 1; i != 0; i--) {
+      if (atexit_funcs[i].destructor_func != nullptr) {
+        (*atexit_funcs[i].destructor_func)(atexit_funcs[i].obj_ptr);
       }
     }
   } else {
     // 不为空时只调用对应的析构函数
-    for (auto i = __atexit_func_count - 1; i != 0; i--) {
-      if ((void*)__atexit_funcs[i].destructor_func == destructor_func) {
-        (*__atexit_funcs[i].destructor_func)(__atexit_funcs[i].obj_ptr);
-        __atexit_funcs[i].destructor_func = nullptr;
+    for (auto i = atexit_func_count - 1; i != 0; i--) {
+      if ((void*)atexit_funcs[i].destructor_func == destructor_func) {
+        (*atexit_funcs[i].destructor_func)(atexit_funcs[i].obj_ptr);
+        atexit_funcs[i].destructor_func = nullptr;
       }
     }
   }
@@ -124,11 +124,11 @@ struct GuardType {
  * @param guard 锁，一个 64 位变量
  * @return 未初始化返回非零值，已初始化返回 0
  */
-extern "C" int __cxa_guard_acquire(GuardType* guard) {
-  if (!guard->is_in_use && !guard->is_initialized) {
+extern "C" auto _cxa_guard_acquire(GuardType* guard) -> int {
+  if ((guard->is_in_use == 0U) && (guard->is_initialized == 0U)) {
     guard->is_in_use = 1;
   }
-  return !guard->is_initialized;
+  return static_cast<int>(static_cast<int>(guard->is_initialized) == 0U);
 }
 
 /**
@@ -136,7 +136,7 @@ extern "C" int __cxa_guard_acquire(GuardType* guard) {
  * @param guard 锁，一个 64 位变量
  * @return 未初始化返回非零值并设置锁，已初始化返回 0
  */
-extern "C" void __cxa_guard_release(GuardType* guard) {
+extern "C" void _cxa_guard_release(GuardType* guard) {
   guard->is_in_use = 0;
   guard->is_initialized = 1;
 }
@@ -145,7 +145,7 @@ extern "C" void __cxa_guard_release(GuardType* guard) {
  * 如果在初始化过程中出现异常或其他错误，调用此函数以释放锁而不标记变量为已初始化
  * @param guard 锁
  */
-extern "C" void __cxa_guard_abort(GuardType* guard) {
+extern "C" void _cxa_guard_abort(GuardType* guard) {
   guard->is_in_use = 0;
   guard->is_initialized = 0;
 }
@@ -155,42 +155,46 @@ extern "C" void __cxa_guard_abort(GuardType* guard) {
 /**
  * 纯虚函数调用处理
  */
-extern "C" void __cxa_pure_virtual() {
-  while (1)
+extern "C" void _cxa_pure_virtual() {
+  while (true) {
     ;
+  }
 }
 
 /**
  * 异常处理
  * @note 这里只能处理 throw，无法处理异常类型
  */
-extern "C" void __cxa_rethrow() {
-  while (1)
+extern "C" void _cxa_rethrow() {
+  while (true) {
     ;
+  }
 }
-extern "C" void _Unwind_Resume() {
-  while (1)
+extern "C" void Unwind_Resume() {
+  while (true) {
     ;
+  }
 }
-extern "C" void __gxx_personality_v0() {
-  while (1)
+extern "C" void _gxx_personality_v0() {
+  while (true) {
     ;
+  }
 }
 
 /**
  * c++ 全局对象构造
  */
-void CppInit(void) {
+void CppInit() {
   // 调用构造函数
-  std::for_each(&__init_array_start, &__init_array_end,
+  std::for_each(&_init_array_start, &_init_array_end,
                 [](function_t func) { (func)(); });
 }
 
 /**
  * c++ 全局对象析构
  */
-void CppDeInit(void) {
+void CppDeInit() {
   // 调用析构函数
-  std::for_each(&__fini_array_start, &__fini_array_end,
+  std::for_each(&_fini_array_start, &_fini_array_end,
                 [](function_t func) { (func)(); });
 }
