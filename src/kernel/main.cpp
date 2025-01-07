@@ -24,13 +24,17 @@
 #include "sk_libcxx.h"
 
 /// 用于判断是否为启动核
-static bool is_boot_core = false;
+namespace {
+
+bool is_boot_core = false;
 /// 非启动核入口
-static auto main_smp(uint32_t argc, uint8_t *argv) -> uint32_t {
+auto main_smp(uint32_t argc, uint8_t *argv) -> uint32_t {
   ArchInitSMP(argc, argv);
   klog::Info("Hello SimpleKernel\n");
   return 0;
 }
+
+}  // namespace
 
 void _start(uint32_t argc, uint8_t *argv) {
   if (!is_boot_core) {
