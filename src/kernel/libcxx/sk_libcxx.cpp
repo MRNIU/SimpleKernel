@@ -22,13 +22,13 @@
 using function_t = void (*)();
 // 在 link.ld 中定义
 /// 全局构造函数函数指针起点地址
-extern "C" function_t _init_array_start;
+extern "C" function_t __init_array_start;  // NOLINT
 /// 全局构造函数函数指针终点地址
-extern "C" function_t _init_array_end;
+extern "C" function_t __init_array_end;  // NOLINT
 /// 全局析构函数函数指针起点地址
-extern "C" function_t _fini_array_start;
+extern "C" function_t __fini_array_start;  // NOLINT
 /// 全局析构函数函数指针终点地址
-extern "C" function_t _fini_array_end;
+extern "C" function_t __fini_array_end;  // NOLINT
 /// 动态共享对象标识，内核使用静态链接，此变量在内核中没有使用
 void* dso_handle = nullptr;
 
@@ -186,7 +186,7 @@ extern "C" void _gxx_personality_v0() {
  */
 void CppInit() {
   // 调用构造函数
-  std::for_each(&_init_array_start, &_init_array_end,
+  std::for_each(&__init_array_start, &__init_array_end,
                 [](function_t func) { (func)(); });
 }
 
@@ -195,6 +195,6 @@ void CppInit() {
  */
 void CppDeInit() {
   // 调用析构函数
-  std::for_each(&_fini_array_start, &_fini_array_end,
+  std::for_each(&__fini_array_start, &__fini_array_end,
                 [](function_t func) { (func)(); });
 }
