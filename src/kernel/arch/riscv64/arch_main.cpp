@@ -86,7 +86,7 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
   Singleton<KernelElf>::GetInstance() = KernelElf();
 
   klog::Info("Hello riscv64 ArchInit\n");
-  for (auto i = 0; i < PerCpu::kMaxCoreCount; i++) {
+  for (size_t i = 0; i < PerCpu::kMaxCoreCount; i++) {
     auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret.error != SBI_SUCCESS) &&
         (ret.error != SBI_ERR_ALREADY_AVAILABLE)) {
