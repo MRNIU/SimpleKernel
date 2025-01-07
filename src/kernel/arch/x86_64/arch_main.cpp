@@ -25,8 +25,6 @@
 #include "singleton.hpp"
 #include "sk_iostream"
 
-PerCpu g_per_cpu = PerCpu(0);
-
 // printf_bare_metal 基本输出实现
 /// @note 这里要注意，保证在 serial 初始化之前不能使用 printf
 /// 函数，否则会有全局对象依赖问题
@@ -64,7 +62,7 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
     throw;
   }
 
-  g_per_cpu.core_id_ = cpu_io::GetCurrentCoreId();
+  g_per_cpu[cpu_io::GetCurrentCoreId()].core_id_ = cpu_io::GetCurrentCoreId();
 
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
   Singleton<BasicInfo>::GetInstance().core_count++;
