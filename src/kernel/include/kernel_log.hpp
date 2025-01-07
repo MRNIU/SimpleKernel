@@ -100,7 +100,7 @@ extern "C" inline void Debug(const char* format, ...) {
   logger::logger_lock.lock();
   va_list args;
   va_start(args, format);
-  printf("%s[%d] ", logger::kMagenta, cpu_io::GetCurrentCoreId());
+  printf("%s[%ld] ", logger::kMagenta, cpu_io::GetCurrentCoreId());
   vprintf(format, args);
   printf("%s", logger::kReset);
   va_end(args);
@@ -112,7 +112,7 @@ extern "C" inline void Info(const char* format, ...) {
   logger::logger_lock.lock();
   va_list args;
   va_start(args, format);
-  printf("%s[%d] ", logger::kCyan, cpu_io::GetCurrentCoreId());
+  printf("%s[%ld] ", logger::kCyan, cpu_io::GetCurrentCoreId());
   vprintf(format, args);
   printf("%s", logger::kReset);
   va_end(args);
@@ -123,7 +123,7 @@ extern "C" inline void Warn(const char* format, ...) {
   logger::logger_lock.lock();
   va_list args;
   va_start(args, format);
-  printf("%s[%d] ", logger::kYellow, cpu_io::GetCurrentCoreId());
+  printf("%s[%ld] ", logger::kYellow, cpu_io::GetCurrentCoreId());
   vprintf(format, args);
   printf("%s", logger::kReset);
   va_end(args);
@@ -134,7 +134,7 @@ extern "C" inline void Err(const char* format, ...) {
   logger::logger_lock.lock();
   va_list args;
   va_start(args, format);
-  printf("%s[%d] ", logger::kRed, cpu_io::GetCurrentCoreId());
+  printf("%s[%ld] ", logger::kRed, cpu_io::GetCurrentCoreId());
   vprintf(format, args);
   printf("%s", logger::kReset);
   va_end(args);
