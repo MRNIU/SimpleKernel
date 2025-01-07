@@ -24,8 +24,6 @@
 #include <thread>
 #include <vector>
 
-// static std::array<PerCpu, PerCpu::kMaxCoreCount> g_per_cpu{};
-
 class TestableSpinLock : public SpinLock {
  public:
   using SpinLock::SpinLock;

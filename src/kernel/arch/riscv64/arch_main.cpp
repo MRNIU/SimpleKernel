@@ -51,13 +51,9 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
   printf("boot hart id: %d\n", argc);
   printf("dtb info addr: %p\n", argv);
 
-  for (auto i = 0; i < 8; i++) {
-    g_per_cpu[i].core_id_ = SIZE_MAX;
-  }
-
   // 将 core id 保存到 tp 寄存器
   cpu_io::Tp::Write(argc);
-  g_per_cpu[argc].core_id_ = argc;
+  GetCurrentCore().core_id_ = argc;
 
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(reinterpret_cast<uint64_t>(argv));
@@ -99,8 +95,7 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
 
 auto ArchInitSMP(uint32_t argc, const uint8_t *) -> uint32_t {
   cpu_io::Tp::Write(argc);
-  g_per_cpu[argc].core_id_ = argc;
+  GetCurrentCore().core_id_ = argc;
   Singleton<BasicInfo>::GetInstance().core_count++;
-
   return 0;
 }

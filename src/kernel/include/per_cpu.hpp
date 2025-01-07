@@ -17,6 +17,7 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_INCLUDE_PER_CPU_HPP_
 #define SIMPLEKERNEL_SRC_KERNEL_INCLUDE_PER_CPU_HPP_
 
+#include <cpu_io.h>
 #include <unistd.h>
 
 #include <array>
@@ -24,6 +25,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+
+#include "singleton.hpp"
 
 class PerCpu {
  public:
@@ -55,6 +58,11 @@ class PerCpu {
 };
 
 /// per cpu 数据
-static std::array<PerCpu, PerCpu::kMaxCoreCount> g_per_cpu{};
+// static std::array<PerCpu, PerCpu::kMaxCoreCount> g_per_cpu{};
+
+static __always_inline auto GetCurrentCore() -> PerCpu & {
+  return Singleton<std::array<PerCpu, PerCpu::kMaxCoreCount>>::GetInstance()
+      [cpu_io::GetCurrentCoreId()];
+}
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_PER_CPU_HPP_ */

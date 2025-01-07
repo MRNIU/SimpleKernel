@@ -116,10 +116,10 @@ class SpinLock {
 
     DisableInterrupt();
 
-    if (g_per_cpu[GetCurrentCoreId()].noff_ == 0) {
-      g_per_cpu[GetCurrentCoreId()].intr_enable_ = old;
+    if (GetCurrentCore().noff_ == 0) {
+      GetCurrentCore().intr_enable_ = old;
     }
-    g_per_cpu[GetCurrentCoreId()].noff_ += 1;
+    GetCurrentCore().noff_ += 1;
   }
 
   /**
@@ -130,13 +130,12 @@ class SpinLock {
       printf("RestoreInterruptsNested - interruptible\n");
     }
 
-    if (g_per_cpu[GetCurrentCoreId()].noff_ < 1) {
+    if (GetCurrentCore().noff_ < 1) {
       printf("RestoreInterruptsNested\n");
     }
-    g_per_cpu[GetCurrentCoreId()].noff_ -= 1;
+    GetCurrentCore().noff_ -= 1;
 
-    if ((g_per_cpu[GetCurrentCoreId()].noff_ == 0) &&
-        (g_per_cpu[GetCurrentCoreId()].intr_enable_)) {
+    if ((GetCurrentCore().noff_ == 0) && (GetCurrentCore().intr_enable_)) {
       EnableInterrupt();
     }
   }

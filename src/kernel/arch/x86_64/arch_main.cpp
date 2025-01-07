@@ -56,7 +56,7 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
     throw;
   }
 
-  g_per_cpu[cpu_io::GetCurrentCoreId()].core_id_ = cpu_io::GetCurrentCoreId();
+  GetCurrentCore().core_id_ = cpu_io::GetCurrentCoreId();
 
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
   Singleton<BasicInfo>::GetInstance().core_count++;
