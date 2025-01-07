@@ -51,10 +51,9 @@ class SpinLock {
    * @brief 获得锁
    */
   void lock() {
-    // DisableInterruptsNested();
+    DisableInterruptsNested();
     if (IsLockedByCurrentCore()) {
-      //   printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
-      printf("A");
+      printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
     }
     while (locked_.test_and_set(std::memory_order_acquire)) {
       ;
@@ -63,22 +62,15 @@ class SpinLock {
     std::atomic_signal_fence(std::memory_order_acquire);
     std::atomic_thread_fence(std::memory_order_acquire);
 
-    core_id_ = cpu_io::GetCurrentCoreId();
+    core_id_ = core_id();
   }
 
   /**
    * @brief 释放锁
    */
   void unlock() {
-    if (!locked_._M_i) {
-      printf("-");
-      while (true) {
-        ;
-      }
-    }
     if (!IsLockedByCurrentCore()) {
-      //   printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
-      printf("C");
+      printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
     }
     core_id_ = SIZE_MAX;
 
@@ -87,7 +79,7 @@ class SpinLock {
 
     locked_.clear(std::memory_order_release);
 
-    // RestoreInterruptsNested();
+    RestoreInterruptsNested();
   }
 
   //   friend std::ostream &operator<<(std::ostream &_os,
@@ -98,7 +90,7 @@ class SpinLock {
   //     return _os;
   //   }
 
- private:
+ protected:
   /// 自旋锁名称
   const char *name_{"unnamed"};
   /// 是否 lock
@@ -106,47 +98,52 @@ class SpinLock {
   /// 获得此锁的 core_id_
   size_t core_id_{SIZE_MAX};
 
+  virtual void intr_on() const { cpu_io::EnableInterrupt(); }
+  virtual void intr_off() const { cpu_io::DisableInterrupt(); }
+  virtual auto intr_status() const -> bool {
+    return cpu_io::GetInterruptStatus();
+  }
+  virtual auto core_id() const -> size_t { return cpu_io::GetCurrentCoreId(); }
+
   /**
    * @brief 检查当前 core 是否获得此锁
    * @return true             是
    * @return false            否
    */
   auto IsLockedByCurrentCore() -> bool {
-    return locked_._M_i && (core_id_ == cpu_io::GetCurrentCoreId());
+    return locked_._M_i && (core_id_ == core_id());
   }
 
   /**
    * @brief 中断嵌套+1
    */
-  static void DisableInterruptsNested() {
-    bool old = cpu_io::GetInterruptStatus();
+  void DisableInterruptsNested() {
+    bool old = intr_status();
 
-    cpu_io::DisableInterrupt();
+    intr_off();
 
-    if (g_per_cpu[cpu_io::GetCurrentCoreId()].noff_ == 0) {
-      g_per_cpu[cpu_io::GetCurrentCoreId()].intr_enable_ = old;
+    if (g_per_cpu[core_id()].noff_ == 0) {
+      g_per_cpu[core_id()].intr_enable_ = old;
     }
-    g_per_cpu[cpu_io::GetCurrentCoreId()].noff_ += 1;
+    g_per_cpu[core_id()].noff_ += 1;
   }
 
   /**
    * @brief 中断嵌套-1
    */
-  static void RestoreInterruptsNested() {
-    if (cpu_io::GetInterruptStatus()) {
-      //   printf("RestoreInterruptsNested - interruptible\n");
-      printf("D");
+  void RestoreInterruptsNested() {
+    if (intr_status()) {
+      printf("RestoreInterruptsNested - interruptible\n");
     }
 
-    if (g_per_cpu[cpu_io::GetCurrentCoreId()].noff_ < 1) {
-      //   printf("RestoreInterruptsNested\n");
-      //   printf("E");
+    if (g_per_cpu[core_id()].noff_ < 1) {
+      printf("RestoreInterruptsNested\n");
     }
-    g_per_cpu[cpu_io::GetCurrentCoreId()].noff_ -= 1;
+    g_per_cpu[core_id()].noff_ -= 1;
 
-    if ((g_per_cpu[cpu_io::GetCurrentCoreId()].noff_ == 0) &&
-        (g_per_cpu[cpu_io::GetCurrentCoreId()].intr_enable_)) {
-      cpu_io::EnableInterrupt();
+    if ((g_per_cpu[core_id()].noff_ == 0) &&
+        (g_per_cpu[core_id()].intr_enable_)) {
+      intr_on();
     }
   }
 };

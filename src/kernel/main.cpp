@@ -22,8 +22,13 @@
 #include "sk_iostream"
 #include "sk_libcxx.h"
 
+static bool is_init = false;
+
 void _start(uint32_t argc, uint8_t *argv) {
-  CppInit();
+  if (is_init == false) {
+    is_init = true;
+    CppInit();
+  }
   main(argc, argv);
   CppDeInit();
 
