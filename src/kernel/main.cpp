@@ -16,21 +16,31 @@
 #include <cstdint>
 
 #include "arch.h"
+#include "basic_info.hpp"
 #include "kernel.h"
 #include "kernel_log.hpp"
 #include "sk_cstdio"
 #include "sk_iostream"
 #include "sk_libcxx.h"
 
-static bool is_init = false;
+/// 用于判断是否为启动核
+static bool is_boot_core = false;
+/// 非启动核入口
+static auto main_smp(uint32_t argc, uint8_t *argv) -> uint32_t {
+  ArchInitSMP(argc, argv);
+  klog::Info("Hello SimpleKernel\n");
+  return 0;
+}
 
 void _start(uint32_t argc, uint8_t *argv) {
-  if (is_init == false) {
-    is_init = true;
+  if (!is_boot_core) {
+    is_boot_core = true;
     CppInit();
+    main(argc, argv);
+    CppDeInit();
+  } else {
+    main_smp(argc, argv);
   }
-  main(argc, argv);
-  CppDeInit();
 
   // 进入死循环
   while (true) {

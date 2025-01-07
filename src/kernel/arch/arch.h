@@ -28,6 +28,7 @@
  * @param argv 在不同体系结构有不同含义，同 _start
  */
 auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t;
+auto ArchInitSMP(uint32_t argc, const uint8_t *argv) -> uint32_t;
 
 /// 最多回溯 128 层调用栈
 static constexpr const size_t kMaxFrameCount = 128;
