@@ -67,7 +67,7 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
         -machine
         virt
         -smp
-        4
+        2
         # 可选项，qemu7.0 自带了 opensbi1.0
         -bios
         ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_jump.elf
@@ -88,6 +88,8 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         cortex-a72
         -m
         128M
+        -smp
+        4
         -net
         none
         -kernel
