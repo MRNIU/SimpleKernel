@@ -29,12 +29,6 @@ extern "C" void _putchar(char character) {
   sbi_debug_console_write_byte(character);
 }
 
-// 引用链接脚本中的变量
-/// @see http://wiki.osdev.org/Using_Linker_Script_Values
-/// 内核开始
-extern "C" void *__executable_start[];  // NOLINT
-/// 内核结束
-extern "C" void *end[];
 BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   (void)argc;
   (void)argv;
@@ -53,54 +47,57 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   fdt_addr = reinterpret_cast<uint64_t>(argv);
 }
 
-static bool is_init = false;
-
 auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
-  if (!is_init) {
-    printf("boot hart id: %d\n", argc);
-    printf("dtb info addr: %p\n", argv);
+  printf("boot hart id: %d\n", argc);
+  printf("dtb info addr: %p\n", argv);
 
-    for (auto i = 0; i < 8; i++) {
-      g_per_cpu[i].core_id_ = SIZE_MAX;
-    }
-
-    cpu_io::Tp::Write(argc);
-    g_per_cpu[argc].core_id_ = argc;
-
-    Singleton<KernelFdt>::GetInstance() =
-        KernelFdt(reinterpret_cast<uint64_t>(argv));
-
-    Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
-    // sk_std::cout << Singleton<BasicInfo>::GetInstance();
-
-    auto [serial_base, serial_size] =
-        Singleton<KernelFdt>::GetInstance().GetSerial();
-    auto uart = Ns16550a(serial_base);
-    uart.PutChar('H');
-    uart.PutChar('e');
-    uart.PutChar('l');
-    uart.PutChar('l');
-    uart.PutChar('o');
-    uart.PutChar(' ');
-    uart.PutChar('u');
-    uart.PutChar('a');
-    uart.PutChar('r');
-    uart.PutChar('t');
-    uart.PutChar('!');
-    uart.PutChar('\n');
-
-    // 解析内核 elf 信息
-    Singleton<KernelElf>::GetInstance() = KernelElf();
-
-    // klog::Info("Hello riscv64 ArchInit\n");
-    sbi_hart_start(0, 0x0000000080210000, 0);
-    sbi_hart_start(1, 0x0000000080210000, 0);
-    sbi_hart_start(2, 0x0000000080210000, 0);
-    sbi_hart_start(3, 0x0000000080210000, 0);
-
-    is_init = true;
+  for (auto i = 0; i < 8; i++) {
+    g_per_cpu[i].core_id_ = SIZE_MAX;
   }
+
   // 将 core id 保存到 tp 寄存器
+  cpu_io::Tp::Write(argc);
+  g_per_cpu[argc].core_id_ = argc;
+
+  Singleton<KernelFdt>::GetInstance() =
+      KernelFdt(reinterpret_cast<uint64_t>(argv));
+
+  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+  Singleton<BasicInfo>::GetInstance().core_count++;
+  sk_std::cout << Singleton<BasicInfo>::GetInstance();
+
+  auto [serial_base, serial_size] =
+      Singleton<KernelFdt>::GetInstance().GetSerial();
+  auto uart = Ns16550a(serial_base);
+  uart.PutChar('H');
+  uart.PutChar('e');
+  uart.PutChar('l');
+  uart.PutChar('l');
+  uart.PutChar('o');
+  uart.PutChar(' ');
+  uart.PutChar('u');
+  uart.PutChar('a');
+  uart.PutChar('r');
+  uart.PutChar('t');
+  uart.PutChar('!');
+  uart.PutChar('\n');
+
+  // 解析内核 elf 信息
+  Singleton<KernelElf>::GetInstance() = KernelElf();
+
+  klog::Info("Hello riscv64 ArchInit\n");
+  for (auto i = 0; i < PerCpu::kMaxCoreCount; i++) {
+    auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
+    if ((ret.error != SBI_SUCCESS) &&
+        (ret.error != SBI_ERR_ALREADY_AVAILABLE)) {
+      printf("hart %d start failed: %d\n", i, ret.error);
+    }
+  }
+
+  return 0;
+}
+
+auto ArchInitSMP(uint32_t argc, const uint8_t *) -> uint32_t {
   cpu_io::Tp::Write(argc);
   g_per_cpu[argc].core_id_ = argc;
   Singleton<BasicInfo>::GetInstance().core_count++;

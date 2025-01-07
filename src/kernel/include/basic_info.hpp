@@ -24,6 +24,15 @@
 #include "singleton.hpp"
 #include "sk_iostream"
 
+// 引用链接脚本中的变量
+/// @see http://wiki.osdev.org/Using_Linker_Script_Values
+/// 内核开始
+extern "C" void *__executable_start[];
+/// 内核结束
+extern "C" void *end[];
+/// 内核入口，在 boot.S 中定义
+extern "C" void _boot();
+
 struct BasicInfo {
   /// physical_memory 地址
   uint64_t physical_memory_addr;
