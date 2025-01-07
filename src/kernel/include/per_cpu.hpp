@@ -28,7 +28,7 @@
 class PerCpu {
  public:
   /// 最大 CPU 数
-  static constexpr size_t kMaxCoreCount = 8;
+  static constexpr size_t kMaxCoreCount = 4;
 
   /// 核心 ID
   size_t core_id_;
