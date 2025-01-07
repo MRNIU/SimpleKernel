@@ -31,12 +31,6 @@
 namespace {
 cpu_io::Serial kSerial(cpu_io::kCom1);
 extern "C" void _putchar(char character) { kSerial.Write(character); }
-// 引用链接脚本中的变量
-/// @see http://wiki.osdev.org/Using_Linker_Script_Values
-/// 内核开始
-extern "C" void *__executable_start[];  // NOLINT
-/// 内核结束
-extern "C" void *end[];
 }  // namespace
 
 BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
@@ -75,5 +69,11 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
 
   klog::Info("Hello x86_64 ArchInit\n");
 
+  return 0;
+}
+
+auto ArchInitSMP(uint32_t argc, const uint8_t *argv) -> uint32_t {
+  (void)argc;
+  (void)argv;
   return 0;
 }
