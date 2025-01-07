@@ -129,18 +129,27 @@ SET (dtc_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/dtc)
 SET (dtc_CC ${CMAKE_C_COMPILER})
 SET (dtc_AR ${CMAKE_AR})
 # 编译 libfdt
-ADD_CUSTOM_TARGET (
-    dtc
-    COMMENT "build libdtc..."
-    # make 时编译
-    ALL
-    WORKING_DIRECTORY ${dtc_SOURCE_DIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${dtc_BINARY_DIR}/libfdt
-    COMMAND CC=${dtc_CC} AR=${dtc_AR} HOME=${dtc_BINARY_DIR} make
-            libfdt/libfdt.a
-    COMMAND ${CMAKE_COMMAND} -E copy ${dtc_SOURCE_DIR}/libfdt/*.a
-            ${dtc_SOURCE_DIR}/libfdt/*.h ${dtc_BINARY_DIR}/libfdt
-    COMMAND make clean)
+IF(NOT EXISTS ${dtc_BINARY_DIR}/libfdt/libfdt.a)
+    ADD_CUSTOM_TARGET (
+        dtc
+        COMMENT "build libdtc..."
+        # make 时编译
+        ALL
+        WORKING_DIRECTORY ${dtc_SOURCE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${dtc_BINARY_DIR}/libfdt
+        COMMAND CC=${dtc_CC} AR=${dtc_AR} HOME=${dtc_BINARY_DIR} make
+                libfdt/libfdt.a
+        COMMAND ${CMAKE_COMMAND} -E copy ${dtc_SOURCE_DIR}/libfdt/*.a
+                ${dtc_SOURCE_DIR}/libfdt/*.h ${dtc_BINARY_DIR}/libfdt
+        COMMAND make clean)
+ELSE()
+    ADD_CUSTOM_TARGET (
+        dtc
+        COMMENT "libdtc already exists, skipping..."
+        # make 时编译
+        ALL
+        WORKING_DIRECTORY ${dtc_SOURCE_DIR})
+ENDIF()
 ADD_LIBRARY (dtc-lib INTERFACE)
 ADD_DEPENDENCIES (dtc-lib dtc)
 TARGET_INCLUDE_DIRECTORIES (dtc-lib INTERFACE ${dtc_BINARY_DIR}/libfdt)
@@ -165,19 +174,27 @@ ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64" AND CMAKE_SYSTEM_PROCESSOR
                                                         MATCHES "aarch64")
     SET (CROSS_COMPILE_ aarch64-linux-gnu-)
 ENDIF()
-# 编译 gnu-efi
-ADD_CUSTOM_TARGET (
-    gnu-efi
-    COMMENT "build gnu-efi..."
-    # make 时编译
-    ALL
-    WORKING_DIRECTORY ${gnu-efi_SOURCE_DIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${gnu-efi_BINARY_DIR}
-    COMMAND # @note 仅支持 gcc
-            make lib gnuefi inc CROSS_COMPILE=${CROSS_COMPILE_}
-            ARCH=${CMAKE_SYSTEM_PROCESSOR} OBJDIR=${gnu-efi_BINARY_DIR} V=1
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${gnu-efi_SOURCE_DIR}/inc
-            ${gnu-efi_BINARY_DIR}/inc)
+IF(NOT EXISTS ${gnu-efi_BINARY_DIR}/lib/libefi.a)
+    # 编译 gnu-efi
+    ADD_CUSTOM_TARGET (
+        gnu-efi
+        COMMENT "build gnu-efi..."
+        # make 时编译
+        ALL
+        WORKING_DIRECTORY ${gnu-efi_SOURCE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${gnu-efi_BINARY_DIR}
+        COMMAND # @note 仅支持 gcc
+                make lib gnuefi inc CROSS_COMPILE=${CROSS_COMPILE_}
+                ARCH=${CMAKE_SYSTEM_PROCESSOR} OBJDIR=${gnu-efi_BINARY_DIR} V=1
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${gnu-efi_SOURCE_DIR}/inc
+                ${gnu-efi_BINARY_DIR}/inc)
+ELSE()
+    ADD_CUSTOM_TARGET (
+        gnu-efi
+        COMMENT "gnu-efi already exists, skipping..."
+        ALL
+        WORKING_DIRECTORY ${gnu-efi_SOURCE_DIR})
+ENDIF()
 ADD_LIBRARY (gnu-efi-lib INTERFACE)
 ADD_DEPENDENCIES (gnu-efi-lib gnu-efi)
 TARGET_INCLUDE_DIRECTORIES (
