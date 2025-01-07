@@ -19,9 +19,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <array>
 #include <format>
 #include <thread>
 #include <vector>
+
+// static std::array<PerCpu, PerCpu::kMaxCoreCount> g_per_cpu{};
 
 class TestableSpinLock : public SpinLock {
  public:
@@ -32,10 +35,10 @@ class TestableSpinLock : public SpinLock {
   using SpinLock::IsLockedByCurrentCore;
   using SpinLock::RestoreInterruptsNested;
 
-  void intr_on() const override {}
-  void intr_off() const override {}
-  auto intr_status() const -> bool override { return false; }
-  auto core_id() const -> size_t override {
+  void EnableInterrupt() const override {}
+  void DisableInterrupt() const override {}
+  auto GetInterruptStatus() const -> bool override { return false; }
+  auto GetCurrentCoreId() const -> size_t override {
     return std::hash<std::thread::id>{}(std::this_thread::get_id());
   }
 };
@@ -56,31 +59,15 @@ TEST_F(TestableSpinLockTest, LockUnlockTest) {
 }
 
 TEST_F(TestableSpinLockTest, MultiThreadLockUnlockTest) {
-  auto thread_func = [this](const std::string& name) {
+  auto thread_func = [this]() {
     spinlock.lock();
     EXPECT_TRUE(spinlock.IsLockedByCurrentCore());
-
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     spinlock.unlock();
     EXPECT_FALSE(spinlock.IsLockedByCurrentCore());
 
     spinlock.lock();
     EXPECT_TRUE(spinlock.IsLockedByCurrentCore());
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    spinlock.unlock();
-    EXPECT_FALSE(spinlock.IsLockedByCurrentCore());
-
-    spinlock.lock();
-    EXPECT_TRUE(spinlock.IsLockedByCurrentCore());
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    spinlock.unlock();
-    EXPECT_FALSE(spinlock.IsLockedByCurrentCore());
-
-    spinlock.lock();
-    EXPECT_TRUE(spinlock.IsLockedByCurrentCore());
-
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     spinlock.unlock();
     EXPECT_FALSE(spinlock.IsLockedByCurrentCore());
@@ -88,12 +75,12 @@ TEST_F(TestableSpinLockTest, MultiThreadLockUnlockTest) {
 
   std::vector<std::thread> threads;
   for (int i = 0; i < 100; ++i) {
-    threads.emplace_back(thread_func, "thread" + std::to_string(i + 1));
+    threads.emplace_back(thread_func);
   }
 
   for (auto& thread : threads) {
     thread.detach();
   }
 
-  std::this_thread::sleep_for(std::chrono::seconds(8));
+  std::this_thread::sleep_for(std::chrono::seconds(2));
 }

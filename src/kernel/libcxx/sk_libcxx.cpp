@@ -30,7 +30,7 @@ extern "C" function_t __fini_array_start;
 /// 全局析构函数函数指针终点地址
 extern "C" function_t __fini_array_end;
 /// 动态共享对象标识，内核使用静态链接，此变量在内核中没有使用
-void* dso_handle = nullptr;
+void* __dso_handle = nullptr;
 
 /// 最大析构函数数量
 static constexpr const size_t kMaxAtExitFuncsCount = 128;
@@ -170,12 +170,12 @@ extern "C" void __cxa_rethrow() {
     ;
   }
 }
-extern "C" void Unwind_Resume() {
+extern "C" void _Unwind_Resume() {
   while (true) {
     ;
   }
 }
-extern "C" void _gxx_personality_v0() {
+extern "C" void __gxx_personality_v0() {
   while (true) {
     ;
   }

@@ -34,3 +34,9 @@ auto ArchInit(uint32_t argc, const uint8_t* argv) -> uint32_t {
 
   return 0;
 }
+
+auto ArchInitSMP(uint32_t argc, const uint8_t* argv) -> uint32_t {
+  (void)argc;
+  (void)argv;
+  return 0;
+}
