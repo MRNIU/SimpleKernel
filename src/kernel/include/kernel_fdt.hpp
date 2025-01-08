@@ -112,9 +112,17 @@ class KernelFdt {
     uint64_t size = 0;
 
     int len = 0;
+    int offset = 0;
 
-    // 找到 /memory 节点
-    auto offset = fdt_path_offset(fdt_addr_, "/soc/serial");
+    std::array<const char *, 2> compatible_str = {"arm,pl011\0arm,primecell",
+                                                  "ns16550a"};
+
+    for (const auto &compatible : compatible_str) {
+      offset = fdt_node_offset_by_compatible(fdt_addr_, -1, compatible);
+      if (offset != -FDT_ERR_NOTFOUND) {
+        break;
+      }
+    }
     if (offset < 0) {
       klog::Err("Error finding /soc/serial node: %s\n", fdt_strerror(offset));
       throw;

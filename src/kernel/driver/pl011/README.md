@@ -2,6 +2,8 @@
 
 aarch64 使用的 uart
 
+https://developer.arm.com/documentation/ddi0183/g/
+
 ```
 pl011@9000000 {
 		clock-names = "uartclk\0apb_pclk";
