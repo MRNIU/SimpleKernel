@@ -15,11 +15,12 @@
 OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64",
 	      "elf64-x86-64")
 OUTPUT_ARCH(i386:x86-64)
-ENTRY(_start)
+ENTRY(_boot)
 SECTIONS
 {
   PROVIDE (__executable_start = SEGMENT_START("text-segment", 0x400000));
   . = SEGMENT_START("text-segment", 0x400000) + SIZEOF_HEADERS;
+  .boot           : ALIGN(0x1000) { *(.text.boot) *(.data.boot) *(.bss.boot) }
   .interp         : ALIGN(0x1000) { *(.interp) }
   .note.gnu.build-id  : ALIGN(0x1000) { *(.note.gnu.build-id) }
   .hash           : ALIGN(0x1000) { *(.hash) }
