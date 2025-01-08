@@ -1,28 +1,21 @@
-
 # This file is a part of Simple-XX/SimpleKernel
 # (https://github.com/Simple-XX/SimpleKernel).
 #
 # CMakeLists.txt for Simple-XX/SimpleKernel.
 
+ADD_LIBRARY (driver INTERFACE)
 
-add_library(driver INTERFACE)
+TARGET_INCLUDE_DIRECTORIES (driver
+                            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_include_directories(driver INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
+TARGET_SOURCES (driver INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/driver.cpp)
 
-target_sources(driver INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/driver.cpp
-)
+TARGET_LINK_LIBRARIES (
+    driver INTERFACE $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>: ns16550a
+                     > $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>: pl011 >)
 
-target_link_libraries(driver INTERFACE
-        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
-                ns16550a
-        >
-)
-
-if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
-    add_subdirectory(
-            ns16550a
-    )
-endif ()
+IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
+    ADD_SUBDIRECTORY (ns16550a)
+ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+    ADD_SUBDIRECTORY (pl011)
+ENDIF()
