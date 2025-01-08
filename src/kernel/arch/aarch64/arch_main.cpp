@@ -25,9 +25,13 @@
 #include "sk_cstdio"
 
 // printf_bare_metal 基本输出实现
+namespace {
+Pl011* pl011 = nullptr;
+}
 extern "C" void _putchar(char character) {
-  static auto* kUartAddr = (uint8_t*)0x09000000;
-  *kUartAddr = character;
+  if (pl011) {
+    pl011->PutChar(character);
+  }
 }
 
 BasicInfo::BasicInfo(uint32_t argc, const uint8_t* argv) {
@@ -49,9 +53,6 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t* argv) {
 }
 
 auto ArchInit(uint32_t argc, const uint8_t* argv) -> uint32_t {
-  (void)argc;
-  (void)argv;
-
   // 初始化 FPU
   cpu_io::SetupFpu();
 
@@ -59,11 +60,14 @@ auto ArchInit(uint32_t argc, const uint8_t* argv) -> uint32_t {
 
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
   Singleton<BasicInfo>::GetInstance().core_count++;
-  sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
   auto [serial_base, serial_size] =
       Singleton<KernelFdt>::GetInstance().GetSerial();
-  auto uart = Pl011(serial_base);
+
+  static auto uart = Pl011(serial_base);
+  pl011 = &uart;
+  sk_std::cout << Singleton<BasicInfo>::GetInstance();
+
   uart.PutChar('H');
   uart.PutChar('e');
   uart.PutChar('l');
@@ -77,7 +81,7 @@ auto ArchInit(uint32_t argc, const uint8_t* argv) -> uint32_t {
   uart.PutChar('!');
   uart.PutChar('\n');
 
-  __asm__ volatile("sev");
+  // __asm__ volatile("sev");
 
   return 0;
 }
