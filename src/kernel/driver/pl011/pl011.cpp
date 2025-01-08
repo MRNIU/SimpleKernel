@@ -16,31 +16,37 @@
 
 #include "pl011.h"
 
+#include "io.hpp"
+
 Pl011::Pl011(uintptr_t dev_addr) : base_addr_(dev_addr) {
-  // disable interrupt
-  Write(kRegIER, 0x00);
-  // set baud rate
-  Write(kRegLCR, 0x80);
-  Write(kUartDLL, 0x03);
-  Write(kUartDLM, 0x00);
-  // set word length to 8-bits
-  Write(kRegLCR, 0x03);
-  // enable FIFOs
-  Write(kRegFCR, 0x07);
-  // enable receiver interrupts
-  Write(kRegIER, 0x01);
+  // Clear all errors
+  io::Out<uint32_t>(base_addr_ + kRegRSRECR, 0);
+  // Disable everything
+  io::Out<uint32_t>(base_addr_ + kRegCR, 0);
+
+  // if (baud_rate) {
+  //   uint32_t divisor = (uart_clk * 4) / baud_rate;
+
+  //   io::Out<uint32_t>(base_addr_ + kRegIBRD, divisor >> 6);
+  //   io::Out<uint32_t>(base_addr_ + kRegFBRD, divisor & 0x3f);
+  // }
+
+  // Configure TX to 8 bits, 1 stop bit, no parity, fifo disabled.
+  io::Out<uint32_t>(base_addr_ + kRegLCRH, kLCRHWlen8);
+
+  // Enable receive interrupt
+  io::Out<uint32_t>(base_addr_ + kRegIMSC, kIMSCRxim);
+
+  // Enable UART and RX/TX
+  io::Out<uint32_t>(base_addr_ + kRegCR, kCREnable | kCRTxEnable | kCRRxEnable);
 }
 
 void Pl011::PutChar(uint8_t c) {
-  while ((Read(kRegLSR) & (1 << 5)) == 0)
+  /* Wait until there is space in the FIFO or device is disabled */
+  while (io::In<uint32_t>(base_addr_ + kRegFR) & kFRTxFIFO) {
     ;
-  Write(kRegTHR, c);
+  }
+
+  /* Send the character */
+  io::Out<uint32_t>(base_addr_ + kRegDR, c);
 }
-
-volatile uint8_t* Pl011::Reg(uint8_t reg) {
-  return (volatile uint8_t*)(base_addr_ + reg);
-}
-
-uint8_t Pl011::Read(uint8_t reg) { return (*(Reg(reg))); }
-
-void Pl011::Write(uint8_t reg, uint8_t c) { (*Reg(reg)) = c; }
