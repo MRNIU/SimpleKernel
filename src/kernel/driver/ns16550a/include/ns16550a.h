@@ -25,7 +25,7 @@ class Ns16550a {
    * 构造函数
    * @param dev_addr 设备地址
    */
-  explicit Ns16550a(uintptr_t dev_addr);
+  explicit Ns16550a(uint64_t dev_addr);
 
   /// @name 默认构造/析构函数
   /// @{
@@ -37,7 +37,7 @@ class Ns16550a {
   ~Ns16550a() = default;
   /// @}
 
-  void PutChar(uint8_t c);
+  void PutChar(uint8_t c) const;
 
  private:
   /// read mode: Receive holding reg
@@ -64,13 +64,7 @@ class Ns16550a {
   /// MSB of divisor Latch when enabled
   static constexpr const uint8_t kUartDLM = 1;
 
-  uintptr_t base_addr_;
-
-  inline volatile uint8_t* Reg(uint8_t reg);
-
-  inline uint8_t Read(uint8_t reg);
-
-  inline void Write(uint8_t reg, uint8_t c);
+  uint64_t base_addr_;
 };
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_DRIVER_NS16550A_INCLUDE_NS16550A_H_ */
