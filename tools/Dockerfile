@@ -70,7 +70,8 @@ RUN apt install --no-install-recommends --fix-missing -y \
     libgtest-dev \
     pkg-config \
     flex \
-    bison
+    bison \
+    device-tree-compiler
 RUN apt install --no-install-recommends --fix-missing -y \
     gcc \
     g++ \
