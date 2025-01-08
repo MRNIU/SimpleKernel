@@ -28,8 +28,10 @@ class Pl011 {
   /**
    * 构造函数
    * @param dev_addr 设备地址
+   * @param uart_clk 串口时钟
+   * @param baud_rate 波特率
    */
-  explicit Pl011(uint64_t dev_addr);
+  explicit Pl011(uint64_t dev_addr, uint64_t clock = 0, uint64_t baud_rate = 0);
 
   /// @name 默认构造/析构函数
   /// @{
@@ -121,9 +123,9 @@ class Pl011 {
   static constexpr const uint32_t kIMSCRTIM = (1 << 6);
   static constexpr const uint32_t kIMSCRxim = (1 << 4);
 
-  uint64_t base_addr_;
-  uint64_t base_clock;
-  uint32_t baudrate;
+  uint64_t base_addr_ = 0;
+  uint64_t base_clock_ = 0;
+  uint64_t baud_rate_ = 0;
 };
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_DRIVER_PL011_INCLUDE_PL011_H_ */
