@@ -47,7 +47,7 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   fdt_addr = reinterpret_cast<uint64_t>(argv);
 }
 
-auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
+void ArchInit(uint32_t argc, const uint8_t *argv) {
   printf("boot hart id: %d\n", argc);
   printf("dtb info addr: %p\n", argv);
 
@@ -89,13 +89,10 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
       printf("hart %d start failed: %d\n", i, ret.error);
     }
   }
-
-  return 0;
 }
 
-auto ArchInitSMP(uint32_t argc, const uint8_t *) -> uint32_t {
+void ArchInitSMP(uint32_t argc, const uint8_t *) {
   cpu_io::Tp::Write(argc);
   GetCurrentCore().core_id_ = argc;
   Singleton<BasicInfo>::GetInstance().core_count++;
-  return 0;
 }

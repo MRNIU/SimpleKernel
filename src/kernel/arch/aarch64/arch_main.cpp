@@ -52,7 +52,7 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t* argv) {
   fdt_addr = 0x40000000;
 }
 
-auto ArchInit(uint32_t argc, const uint8_t* argv) -> uint32_t {
+void ArchInit(uint32_t argc, const uint8_t* argv) {
   // 初始化 FPU
   cpu_io::SetupFpu();
 
@@ -82,12 +82,11 @@ auto ArchInit(uint32_t argc, const uint8_t* argv) -> uint32_t {
   uart.PutChar('\n');
 
   // __asm__ volatile("sev");
-
-  return 0;
 }
 
-auto ArchInitSMP(uint32_t argc, const uint8_t* argv) -> uint32_t {
+void ArchInitSMP(uint32_t argc, const uint8_t* argv) {
   (void)argc;
   (void)argv;
-  return 0;
+
+  Singleton<BasicInfo>::GetInstance().core_count++;
 }

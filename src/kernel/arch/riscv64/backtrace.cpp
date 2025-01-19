@@ -21,6 +21,7 @@
 #include "arch.h"
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
+#include "kernel_log.hpp"
 #include "sk_cstdio"
 #include "sk_libc.h"
 
@@ -46,6 +47,6 @@ void DumpStack() {
   // 打印地址
   /// @todo 打印函数名，需要 elf 支持
   for (auto i = 0; i < num_frames; i++) {
-    printf("[0x%p]\n", buffer[i]);
+    klog::Err("[0x%p]\n", buffer[i]);
   }
 }

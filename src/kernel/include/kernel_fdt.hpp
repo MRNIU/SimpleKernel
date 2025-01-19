@@ -38,23 +38,38 @@
 #include "singleton.hpp"
 
 /**
- * elf 文件相关
+ * fdt 相关
  */
 class KernelFdt {
  public:
+  struct FdtHeader {
+    uint32_t magic;
+    uint32_t totalsize;
+    uint32_t off_dt_struct;
+    uint32_t off_dt_strings;
+    uint32_t off_mem_rsvmap;
+    uint32_t version;
+    uint32_t last_comp_version;
+    uint32_t boot_cpuid_phys;
+    uint32_t size_dt_strings;
+    uint32_t size_dt_struct;
+  };
+
+  FdtHeader *fdt_header;
+
   /**
    * 构造函数
    * @param fdt_addr fdt 地址
    */
-  explicit KernelFdt(uint64_t fdt_addr)
-      : fdt_addr_(reinterpret_cast<FdtHeader *>(fdt_addr)) {
-    if (fdt_addr_ == nullptr) {
+  explicit KernelFdt(uint64_t header)
+      : fdt_header(reinterpret_cast<FdtHeader *>(header)) {
+    if (fdt_header == nullptr) {
       klog::Err("Fatal Error: Invalid fdt_addr.\n");
       throw;
     }
 
     // 检查 fdt 头数据
-    if (fdt_check_header(fdt_addr_) != 0) {
+    if (fdt_check_header(fdt_header) != 0) {
       klog::Err("Invalid device tree blob\n");
       throw;
     }
@@ -74,21 +89,21 @@ class KernelFdt {
    * 获取内存信息
    * @return 内存信息<地址，长度>
    */
-  auto GetMemory() -> std::pair<uint64_t, size_t> {
+  [[nodiscard]] auto GetMemory() const -> std::pair<uint64_t, size_t> {
     uint64_t base = 0;
     uint64_t size = 0;
 
     int len = 0;
 
     // 找到 /memory 节点
-    auto offset = fdt_path_offset(fdt_addr_, "/memory");
+    auto offset = fdt_path_offset(fdt_header, "/memory");
     if (offset < 0) {
       klog::Err("Error finding /memory node: %s\n", fdt_strerror(offset));
       throw;
     }
 
     // 获取 reg 属性
-    const auto *prop = fdt_get_property(fdt_addr_, offset, "reg", &len);
+    const auto *prop = fdt_get_property(fdt_header, offset, "reg", &len);
     if (prop == nullptr) {
       klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
       throw;
@@ -107,7 +122,7 @@ class KernelFdt {
    * 获取串口信息
    * @return 内存信息<地址，长度>
    */
-  auto GetSerial() -> std::pair<uint64_t, size_t> {
+  [[nodiscard]] auto GetSerial() const -> std::pair<uint64_t, size_t> {
     uint64_t base = 0;
     uint64_t size = 0;
 
@@ -118,7 +133,7 @@ class KernelFdt {
                                                   "ns16550a"};
 
     for (const auto &compatible : compatible_str) {
-      offset = fdt_node_offset_by_compatible(fdt_addr_, -1, compatible);
+      offset = fdt_node_offset_by_compatible(fdt_header, -1, compatible);
       if (offset != -FDT_ERR_NOTFOUND) {
         break;
       }
@@ -129,7 +144,7 @@ class KernelFdt {
     }
 
     // 获取 reg 属性
-    const auto *prop = fdt_get_property(fdt_addr_, offset, "reg", &len);
+    const auto *prop = fdt_get_property(fdt_header, offset, "reg", &len);
     if (prop == nullptr) {
       klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
       throw;
@@ -143,22 +158,6 @@ class KernelFdt {
     }
     return {base, size};
   }
-
- private:
-  struct FdtHeader {
-    uint32_t magic;
-    uint32_t totalsize;
-    uint32_t off_dt_struct;
-    uint32_t off_dt_strings;
-    uint32_t off_mem_rsvmap;
-    uint32_t version;
-    uint32_t last_comp_version;
-    uint32_t boot_cpuid_phys;
-    uint32_t size_dt_strings;
-    uint32_t size_dt_struct;
-  };
-
-  FdtHeader *fdt_addr_;
 };
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_FDT_HPP_ */

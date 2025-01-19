@@ -54,21 +54,16 @@ void _start(uint32_t argc, uint8_t *argv) {
 
 auto main(uint32_t argc, uint8_t *argv) -> uint32_t {
   // 架构相关初始化
-  [[maybe_unused]] auto arch_init_ret = ArchInit(argc, argv);
+  ArchInit(argc, argv);
 
-  // printf("Hello SimpleKernel\n");
-  klog::Debug("Hello SimpleKernel\n");
-  klog::Info("Hello SimpleKernel\n");
-  klog::Warn("Hello SimpleKernel\n");
-  klog::Err("Hello SimpleKernel\n");
-  // klog::debug << "Hello SimpleKernel\n";
-  // klog::info << "Hello SimpleKernel\n";
-  // klog::warn << "Hello SimpleKernel\n";
-  // klog::err << "Hello SimpleKernel\n";
+  // klog::Debug("Hello SimpleKernel\n");
+  // klog::Info("Hello SimpleKernel\n");
+  // klog::Warn("Hello SimpleKernel\n");
+  // klog::Err("Hello SimpleKernel\n");
 
-  // DumpStack();
+  DumpStack();
 
-  // sk_std::cout << "Hello ostream" << sk_std::endl;
+  klog::info << "Hello SimpleKernel\n";
 
   return 0;
 }
