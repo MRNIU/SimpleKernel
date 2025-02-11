@@ -32,3 +32,12 @@
 [submodule "3rd/smccc"]
 	path = 3rd/smccc
 	url = https://github.com/MRNIU/smccc.git
+[submodule "3rd/optee/optee_os"]
+	path = 3rd/optee/optee_os
+	url = https://github.com/OP-TEE/optee_os.git
+[submodule "3rd/optee/build"]
+	path = 3rd/optee/build
+	url = https://github.com/OP-TEE/build.git
+[submodule "3rd/optee/optee_client"]
+	path = 3rd/optee/optee_client
+	url = https://github.com/OP-TEE/optee_client.git
