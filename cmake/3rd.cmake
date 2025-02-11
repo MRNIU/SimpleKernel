@@ -129,6 +129,8 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
             CROSS_COMPILE_ta_arm32=${TOOLCHAIN_PREFIX32}
             CROSS_COMPILE_ta_arm64=${TOOLCHAIN_PREFIX} DEBUG=1
             O=${optee_os_BINARY_DIR} PLATFORM=vexpress-qemu_armv8a)
+    SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
+                                         ${optee_os_BINARY_DIR})
 
     # https://github.com/ARM-software/arm-trusted-firmware
     # 编译 atf
@@ -159,6 +161,8 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
             dd if=${arm-trusted-firmware_BINARY_DIR}/qemu/debug/fip.bin
             of=${arm-trusted-firmware_BINARY_DIR}/flash.bin seek=64 bs=4096
             conv=notrunc)
+    SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
+                                         ${arm-trusted-firmware_BINARY_DIR})
 ENDIF()
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")

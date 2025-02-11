@@ -87,7 +87,7 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         -cpu
         cortex-a72
         -m
-        128M
+        1024M
         -smp
         4
         -net
