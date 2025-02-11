@@ -71,7 +71,9 @@ RUN apt install --no-install-recommends --fix-missing -y \
     pkg-config \
     flex \
     bison \
-    device-tree-compiler
+    device-tree-compiler \
+    python3-cryptography \
+    python3-pyelftools
 RUN apt install --no-install-recommends --fix-missing -y \
     gcc \
     g++ \
@@ -79,8 +81,8 @@ RUN apt install --no-install-recommends --fix-missing -y \
     g++-riscv64-linux-gnu \
     gcc-aarch64-linux-gnu \
     g++-aarch64-linux-gnu \
-    gcc-riscv64-linux-gnu \
-    g++-riscv64-linux-gnu \
+    gcc-arm-linux-gnueabihf \
+    g++-arm-linux-gnueabihf \
     gcc-x86-64-linux-gnu \
     g++-x86-64-linux-gnu
 

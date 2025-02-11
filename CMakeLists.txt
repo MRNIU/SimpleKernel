@@ -83,7 +83,7 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         APPEND
         QEMU_FLAGS
         -machine
-        virt
+        virt,secure=on,gic_version=3
         -cpu
         cortex-a72
         -m
@@ -92,13 +92,10 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         4
         -net
         none
+        -bios
+        ${arm-trusted-firmware_BINARY_DIR}/flash.bin
         -kernel
-        $<TARGET_FILE:kernel>
-        # -bios
-        # ${ovmf_BINARY_DIR}/OVMF_${CMAKE_SYSTEM_PROCESSOR}.fd
-        # -hda
-        # fat:rw:./image/
-    )
+        $<TARGET_FILE:kernel>)
 ENDIF()
 
 # 添加要编译的目录
@@ -114,6 +111,8 @@ ADD_RUN_TARGET (
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:boot>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:boot>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:boot>
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
     kernel
     WORKING_DIRECTORY
     ${PROJECT_BINARY_DIR}

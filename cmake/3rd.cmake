@@ -88,6 +88,20 @@ ADD_CUSTOM_TARGET (
 SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
                                      ${CMAKE_SOURCE_DIR}/.gdbinit)
 
+# ovmf
+# @todo 使用互联网连接或从 edk2 编译
+# https://efi.akeo.ie/QEMU_EFI/QEMU_EFI-AA64.zip
+SET (ovmf_SOURCE_DIR ${CMAKE_SOURCE_DIR}/tools/ovmf)
+SET (ovmf_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/ovmf)
+ADD_CUSTOM_TARGET (
+    ovmf
+    COMMENT "build ovmf ..."
+    # make 时编译
+    ALL
+    WORKING_DIRECTORY ${ovmf_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${ovmf_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${ovmf_SOURCE_DIR}/* ${ovmf_BINARY_DIR})
+
 # https://github.com/MRNIU/printf_bare_metal.git
 ADD_SUBDIRECTORY (3rd/printf_bare_metal)
 
@@ -98,6 +112,24 @@ ADD_SUBDIRECTORY (3rd/cpu_io)
 ADD_SUBDIRECTORY (3rd/smccc)
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+    # https://github.com/OP-TEE/optee_os.git
+    SET (optee_os_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/optee/optee_os)
+    SET (optee_os_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/optee/optee_os)
+    ADD_CUSTOM_TARGET (
+        optee_os
+        COMMENT "build optee_os..."
+        # make 时编译
+        ALL
+        WORKING_DIRECTORY ${optee_os_SOURCE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${optee_os_BINARY_DIR}
+        COMMAND
+            make CFG_ARM64_core=y CFG_TEE_BENCHMARK=n CFG_TEE_CORE_LOG_LEVEL=3
+            CROSS_COMPILE=${TOOLCHAIN_PREFIX}
+            CROSS_COMPILE_core=${TOOLCHAIN_PREFIX}
+            CROSS_COMPILE_ta_arm32=${TOOLCHAIN_PREFIX32}
+            CROSS_COMPILE_ta_arm64=${TOOLCHAIN_PREFIX} DEBUG=1
+            O=${optee_os_BINARY_DIR} PLATFORM=vexpress-qemu_armv8a)
+
     # https://github.com/ARM-software/arm-trusted-firmware
     # 编译 atf
     SET (arm-trusted-firmware_SOURCE_DIR
@@ -112,8 +144,21 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
         WORKING_DIRECTORY ${arm-trusted-firmware_SOURCE_DIR}
         COMMAND ${CMAKE_COMMAND} -E make_directory
                 ${arm-trusted-firmware_BINARY_DIR}
-        COMMAND make CROSS_COMPILE=${TOOLCHAIN_PREFIX} PLAT=qemu
-                BUILD_BASE=${arm-trusted-firmware_BINARY_DIR} all)
+        COMMAND
+            make DEBUG=1 CROSS_COMPILE=${TOOLCHAIN_PREFIX} PLAT=qemu
+            BUILD_BASE=${arm-trusted-firmware_BINARY_DIR}
+            BL32=${optee_os_BINARY_DIR}/core/tee-header_v2.bin
+            BL32_EXTRA1=${optee_os_BINARY_DIR}/core/tee-pager_v2.bin
+            BL32_EXTRA2=${optee_os_BINARY_DIR}/core/tee-pageable_v2.bin
+            BL33=${ovmf_BINARY_DIR}/OVMF_aarch64.fd BL32_RAM_LOCATION=tdram
+            QEMU_USE_GIC_DRIVER=QEMU_GICV3 SPD=opteed all fip
+        COMMAND
+            dd if=${arm-trusted-firmware_BINARY_DIR}/qemu/debug/bl1.bin
+            of=${arm-trusted-firmware_BINARY_DIR}/flash.bin bs=4096 conv=notrunc
+        COMMAND
+            dd if=${arm-trusted-firmware_BINARY_DIR}/qemu/debug/fip.bin
+            of=${arm-trusted-firmware_BINARY_DIR}/flash.bin seek=64 bs=4096
+            conv=notrunc)
 ENDIF()
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
@@ -230,20 +275,6 @@ TARGET_LINK_LIBRARIES (
               ${gnu-efi_BINARY_DIR}/gnuefi/crt0-efi-${CMAKE_SYSTEM_PROCESSOR}.o
               ${gnu-efi_BINARY_DIR}/gnuefi/libgnuefi.a
               ${gnu-efi_BINARY_DIR}/lib/libefi.a)
-
-# ovmf
-# @todo 使用互联网连接或从 edk2 编译
-# https://efi.akeo.ie/QEMU_EFI/QEMU_EFI-AA64.zip
-SET (ovmf_SOURCE_DIR ${CMAKE_SOURCE_DIR}/tools/ovmf)
-SET (ovmf_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/ovmf)
-ADD_CUSTOM_TARGET (
-    ovmf
-    COMMENT "build ovmf ..."
-    # make 时编译
-    ALL
-    WORKING_DIRECTORY ${ovmf_SOURCE_DIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${ovmf_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${ovmf_SOURCE_DIR}/* ${ovmf_BINARY_DIR})
 
 # gdb
 FIND_PROGRAM (GDB_EXE gdb)
