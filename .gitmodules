@@ -26,3 +26,9 @@
 [submodule "3rd/cpu_io"]
 	path = 3rd/cpu_io
 	url = https://github.com/MRNIU/cpu_io.git
+[submodule "3rd/arm-trusted-firmware"]
+	path = 3rd/arm-trusted-firmware
+	url = https://github.com/ARM-software/arm-trusted-firmware.git
+[submodule "3rd/smccc"]
+	path = 3rd/smccc
+	url = https://github.com/MRNIU/smccc.git
