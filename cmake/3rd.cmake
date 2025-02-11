@@ -112,20 +112,8 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
         WORKING_DIRECTORY ${arm-trusted-firmware_SOURCE_DIR}
         COMMAND ${CMAKE_COMMAND} -E make_directory
                 ${arm-trusted-firmware_BINARY_DIR}
-        COMMAND
-            make CROSS_COMPILE=${TOOLCHAIN_PREFIX} FW_JUMP=y
-            FW_JUMP_ADDR=0x80210000 PLATFORM_RISCV_XLEN=64 PLATFORM=generic
-            O=${arm-trusted-firmware_BINARY_DIR}
-        COMMAND
-            ${CMAKE_COMMAND} -E copy_directory
-            ${arm-trusted-firmware_SOURCE_DIR}/include
-            ${arm-trusted-firmware_BINARY_DIR}/include)
-    ADD_LIBRARY (arm-trusted-firmware-fw_jump INTERFACE)
-    ADD_DEPENDENCIES (arm-trusted-firmware-fw_jump arm-trusted-firmware)
-    TARGET_INCLUDE_DIRECTORIES (arm-trusted-firmware-fw_jump
-                                INTERFACE ${dtc_BINARY_DIR}/libfdt)
-    TARGET_LINK_LIBRARIES (arm-trusted-firmware-fw_jump
-                           INTERFACE ${dtc_BINARY_DIR}/libfdt/libfdt.a)
+        COMMAND make CROSS_COMPILE=${TOOLCHAIN_PREFIX} PLAT=qemu
+                BUILD_BASE=${arm-trusted-firmware_BINARY_DIR} all)
 ENDIF()
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
