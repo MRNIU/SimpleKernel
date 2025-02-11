@@ -94,6 +94,40 @@ ADD_SUBDIRECTORY (3rd/printf_bare_metal)
 # https://github.com/MRNIU/cpu_io.git
 ADD_SUBDIRECTORY (3rd/cpu_io)
 
+# https://github.com/MRNIU/smccc.git
+ADD_SUBDIRECTORY (3rd/smccc)
+
+IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+    # https://github.com/ARM-software/arm-trusted-firmware
+    # 编译 atf
+    SET (arm-trusted-firmware_SOURCE_DIR
+         ${CMAKE_SOURCE_DIR}/3rd/arm-trusted-firmware)
+    SET (arm-trusted-firmware_BINARY_DIR
+         ${CMAKE_BINARY_DIR}/3rd/arm-trusted-firmware)
+    ADD_CUSTOM_TARGET (
+        arm-trusted-firmware
+        COMMENT "build arm-trusted-firmware..."
+        # make 时编译
+        ALL
+        WORKING_DIRECTORY ${arm-trusted-firmware_SOURCE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                ${arm-trusted-firmware_BINARY_DIR}
+        COMMAND
+            make CROSS_COMPILE=${TOOLCHAIN_PREFIX} FW_JUMP=y
+            FW_JUMP_ADDR=0x80210000 PLATFORM_RISCV_XLEN=64 PLATFORM=generic
+            O=${arm-trusted-firmware_BINARY_DIR}
+        COMMAND
+            ${CMAKE_COMMAND} -E copy_directory
+            ${arm-trusted-firmware_SOURCE_DIR}/include
+            ${arm-trusted-firmware_BINARY_DIR}/include)
+    ADD_LIBRARY (arm-trusted-firmware-fw_jump INTERFACE)
+    ADD_DEPENDENCIES (arm-trusted-firmware-fw_jump arm-trusted-firmware)
+    TARGET_INCLUDE_DIRECTORIES (arm-trusted-firmware-fw_jump
+                                INTERFACE ${dtc_BINARY_DIR}/libfdt)
+    TARGET_LINK_LIBRARIES (arm-trusted-firmware-fw_jump
+                           INTERFACE ${dtc_BINARY_DIR}/libfdt/libfdt.a)
+ENDIF()
+
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
     # https://github.com/riscv-software-src/opensbi.git
     # 编译 opensbi
