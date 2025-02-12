@@ -23,7 +23,10 @@ RUN apt install --no-install-recommends --fix-missing -y \
     zip \
     unzip \
     telnet \
-    tar
+    tar \
+    tmux \
+    ncat \
+    socat
 RUN apt install --no-install-recommends --fix-missing -y \
     file \
     vim \

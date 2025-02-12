@@ -75,8 +75,7 @@ ADD_CUSTOM_TARGET (
     COMMENT "Generate gdbinit ..."
     WORKING_DIRECTORY ${gdbinit_SOURCE_DIR}
     # 复制到根目录下并重命名
-    COMMAND ${CMAKE_COMMAND} -E copy ${gdbinit_SOURCE_DIR}/gdbinit
-            ${CMAKE_SOURCE_DIR}/.gdbinit
+    COMMAND ln -s -f ${gdbinit_SOURCE_DIR}/gdbinit ${CMAKE_SOURCE_DIR}/.gdbinit
     COMMAND echo "target remote ${QEMU_GDB_PORT}" >>
             ${CMAKE_SOURCE_DIR}/.gdbinit
     COMMAND
@@ -99,8 +98,7 @@ ADD_CUSTOM_TARGET (
     # make 时编译
     ALL
     WORKING_DIRECTORY ${ovmf_SOURCE_DIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${ovmf_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${ovmf_SOURCE_DIR}/* ${ovmf_BINARY_DIR})
+    COMMAND ln -s -f ${ovmf_SOURCE_DIR} ${CMAKE_BINARY_DIR}/3rd)
 
 # https://github.com/MRNIU/printf_bare_metal.git
 ADD_SUBDIRECTORY (3rd/printf_bare_metal)
@@ -109,9 +107,12 @@ ADD_SUBDIRECTORY (3rd/printf_bare_metal)
 ADD_SUBDIRECTORY (3rd/cpu_io)
 
 # https://github.com/MRNIU/smccc.git
-ADD_SUBDIRECTORY (3rd/smccc)
+# ADD_SUBDIRECTORY (3rd/smccc)
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+    # https://github.com/OP-TEE/build.git
+    SET (optee_build_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/optee/build)
+
     # https://github.com/OP-TEE/optee_os.git
     SET (optee_os_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/optee/optee_os)
     SET (optee_os_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/optee/optee_os)
@@ -184,14 +185,9 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
             make CROSS_COMPILE=${TOOLCHAIN_PREFIX} FW_JUMP=y
             FW_JUMP_ADDR=0x80210000 PLATFORM_RISCV_XLEN=64 PLATFORM=generic
             O=${opensbi_BINARY_DIR}
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${opensbi_SOURCE_DIR}/include ${opensbi_BINARY_DIR}/include)
+        COMMAND ln -s -f ${opensbi_SOURCE_DIR}/include ${opensbi_BINARY_DIR})
     ADD_LIBRARY (opensbi-fw_jump INTERFACE)
     ADD_DEPENDENCIES (opensbi-fw_jump opensbi)
-    TARGET_INCLUDE_DIRECTORIES (opensbi-fw_jump
-                                INTERFACE ${dtc_BINARY_DIR}/libfdt)
-    TARGET_LINK_LIBRARIES (opensbi-fw_jump
-                           INTERFACE ${dtc_BINARY_DIR}/libfdt/libfdt.a)
 
     # https://github.com/MRNIU/opensbi_interface.git
     ADD_SUBDIRECTORY (3rd/opensbi_interface)

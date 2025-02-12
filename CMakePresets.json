@@ -67,6 +67,14 @@
           "type": "STRING",
           "value": "qemu"
         },
+        "QEMU_NORMAL_WORLD_DEV_PATH": {
+          "type": "STRING",
+          "value": "tcp:127.0.0.1:54320"
+        },
+        "QEMU_SECURE_WORLD_DEV_PATH": {
+          "type": "STRING",
+          "value": "tcp:127.0.0.1:54321"
+        },
         "QEMU_GDB_PORT": {
           "type": "STRING",
           "value": "tcp::1234"
