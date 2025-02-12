@@ -170,3 +170,10 @@ FUNCTION(add_run_target)
             # 使用 1234 端口
             -gdb ${QEMU_GDB_PORT})
 ENDFUNCTION()
+
+# 定义宏处理参数化配置
+FUNCTION(add_soc_term_target TARGET_NAME PORT_NUM)
+    ADD_CUSTOM_TARGET (
+        ${TARGET_NAME} COMMAND python3 ${optee_build_SOURCE_DIR}/soc_term.py
+                               ${PORT_NUM})
+ENDFUNCTION()
