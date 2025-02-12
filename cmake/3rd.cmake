@@ -127,8 +127,9 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
             CROSS_COMPILE=${TOOLCHAIN_PREFIX}
             CROSS_COMPILE_core=${TOOLCHAIN_PREFIX}
             CROSS_COMPILE_ta_arm32=${TOOLCHAIN_PREFIX32}
-            CROSS_COMPILE_ta_arm64=${TOOLCHAIN_PREFIX} DEBUG=1
-            O=${optee_os_BINARY_DIR} PLATFORM=vexpress-qemu_armv8a)
+            CROSS_COMPILE_ta_arm64=${TOOLCHAIN_PREFIX} DEBUG=$<CONFIG:Debug>·
+            O=${optee_os_BINARY_DIR} PLATFORM=vexpress-qemu_armv8a
+            CFG_ARM_GICV3=y)
     SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
                                          ${optee_os_BINARY_DIR})
 
@@ -147,18 +148,20 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
         COMMAND ${CMAKE_COMMAND} -E make_directory
                 ${arm-trusted-firmware_BINARY_DIR}
         COMMAND
-            make DEBUG=1 CROSS_COMPILE=${TOOLCHAIN_PREFIX} PLAT=qemu
-            BUILD_BASE=${arm-trusted-firmware_BINARY_DIR}
+            make DEBUG=$<CONFIG:Debug> CROSS_COMPILE=${TOOLCHAIN_PREFIX}
+            PLAT=qemu BUILD_BASE=${arm-trusted-firmware_BINARY_DIR}
             BL32=${optee_os_BINARY_DIR}/core/tee-header_v2.bin
             BL32_EXTRA1=${optee_os_BINARY_DIR}/core/tee-pager_v2.bin
             BL32_EXTRA2=${optee_os_BINARY_DIR}/core/tee-pageable_v2.bin
             BL33=${ovmf_BINARY_DIR}/OVMF_aarch64.fd BL32_RAM_LOCATION=tdram
             QEMU_USE_GIC_DRIVER=QEMU_GICV3 SPD=opteed all fip
         COMMAND
-            dd if=${arm-trusted-firmware_BINARY_DIR}/qemu/debug/bl1.bin
+            dd
+            if=${arm-trusted-firmware_BINARY_DIR}/qemu/$<IF:$<CONFIG:Debug>,debug,release>/bl1.bin
             of=${arm-trusted-firmware_BINARY_DIR}/flash.bin bs=4096 conv=notrunc
         COMMAND
-            dd if=${arm-trusted-firmware_BINARY_DIR}/qemu/debug/fip.bin
+            dd
+            if=${arm-trusted-firmware_BINARY_DIR}/qemu/$<IF:$<CONFIG:Debug>,debug,release>/fip.bin
             of=${arm-trusted-firmware_BINARY_DIR}/flash.bin seek=64 bs=4096
             conv=notrunc)
     SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
