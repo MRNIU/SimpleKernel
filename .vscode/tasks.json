@@ -5,7 +5,10 @@
             "label": "::54320",
             "type": "shell",
             "command": "python3",
-            "args": ["${workspaceFolder}/3rd/optee/build/soc_term.py", "54320"],
+            "args": [
+                "${workspaceFolder}/3rd/optee/build/soc_term.py",
+                "54320"
+            ],
             "isBackground": true,
             "presentation": {
                 "reveal": "always",
@@ -17,7 +20,10 @@
             "label": "::54321",
             "type": "shell",
             "command": "python3",
-            "args": ["${workspaceFolder}/3rd/optee/build/soc_term.py", "54321"],
+            "args": [
+                "${workspaceFolder}/3rd/optee/build/soc_term.py",
+                "54321"
+            ],
             "isBackground": true,
             "presentation": {
                 "reveal": "always",
@@ -37,7 +43,9 @@
                 "kind": "build",
                 "isDefault": false
             },
-            "problemMatcher": ["$gcc"],
+            "problemMatcher": [
+                "$gcc"
+            ],
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -51,7 +59,9 @@
             "label": "run_riscv64",
             "type": "process",
             "command": "make",
-            "args": ["run"],
+            "args": [
+                "run"
+            ],
             "options": {
                 "cwd": "${workspaceFolder}/build_riscv64"
             },
@@ -74,7 +84,9 @@
             "label": "debug_riscv64",
             "type": "process",
             "command": "make",
-            "args": ["debug"],
+            "args": [
+                "debug"
+            ],
             "options": {
                 "cwd": "${workspaceFolder}/build_riscv64"
             },
@@ -105,7 +117,9 @@
                 "kind": "build",
                 "isDefault": false
             },
-            "problemMatcher": ["$gcc"],
+            "problemMatcher": [
+                "$gcc"
+            ],
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -119,7 +133,9 @@
             "label": "run_aarch64_warp",
             "type": "process",
             "command": "make",
-            "args": ["run"],
+            "args": [
+                "run"
+            ],
             "options": {
                 "cwd": "${workspaceFolder}/build_aarch64"
             },
@@ -142,14 +158,20 @@
         },
         {
             "label": "run_aarch64",
-            "dependsOn": ["run_aarch64_warp", "::54320", "::54321"],
+            "dependsOn": [
+                "run_aarch64_warp",
+                "::54320",
+                "::54321"
+            ],
             "dependsOrder": "parallel"
         },
         {
             "label": "debug_aarch64_warp",
             "type": "process",
             "command": "make",
-            "args": ["debug"],
+            "args": [
+                "debug"
+            ],
             "options": {
                 "cwd": "${workspaceFolder}/build_aarch64"
             },
@@ -171,7 +193,11 @@
         },
         {
             "label": "debug_aarch64",
-            "dependsOn": ["debug_aarch64_warp", "::54320", "::54321"],
+            "dependsOn": [
+                "debug_aarch64_warp",
+                "::54320",
+                "::54321"
+            ],
             "dependsOrder": "parallel"
         },
         {
@@ -186,7 +212,9 @@
                 "kind": "build",
                 "isDefault": false
             },
-            "problemMatcher": ["$gcc"],
+            "problemMatcher": [
+                "$gcc"
+            ],
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -200,7 +228,9 @@
             "label": "run_x86_64",
             "type": "process",
             "command": "make",
-            "args": ["run"],
+            "args": [
+                "run"
+            ],
             "options": {
                 "cwd": "${workspaceFolder}/build_x86_64"
             },
@@ -223,7 +253,9 @@
             "label": "debug_x86_64",
             "type": "process",
             "command": "make",
-            "args": ["debug"],
+            "args": [
+                "debug"
+            ],
             "options": {
                 "cwd": "${workspaceFolder}/build_x86_64"
             },
