@@ -48,7 +48,10 @@
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}/build_aarch64/bin",
             "setupCommands": [
-                { "text": "set architecture aarch64" }
+                { "text": "add-symbol-file ${workspaceFolder}/build_aarch64/3rd/arm-trusted-firmware/qemu/debug/bl1/bl1.elf" },
+                { "text": "add-symbol-file ${workspaceFolder}/build_aarch64/3rd/arm-trusted-firmware/qemu/debug/bl2/bl2.elf" },
+                { "text": "add-symbol-file ${workspaceFolder}/build_aarch64/3rd/arm-trusted-firmware/qemu/debug/bl31/bl31.elf" },
+                { "text": "add-symbol-file ${workspaceFolder}/build_aarch64/3rd/optee/optee_os/core/tee.elf" }
             ],
             "environment": [],
             "externalConsole": true,
