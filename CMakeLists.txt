@@ -107,10 +107,6 @@ ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/src)
 ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/test)
 ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/doc)
 
-# 添加 soc term target
-# add_soc_term_target(launch_uart_nw ${QEMU_NORMAL_WORLD_DEV_PATH})
-# add_soc_term_target(launch_uart_sw ${QEMU_SECURE_WORLD_DEV_PATH})
-
 # 添加 run 和 debug target
 ADD_RUN_TARGET (
     DEPENDS
@@ -121,8 +117,6 @@ ADD_RUN_TARGET (
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:boot>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
-    # $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:launch_uart_nw>
-    # $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:launch_uart_sw>
     kernel
     WORKING_DIRECTORY
     ${PROJECT_BINARY_DIR}

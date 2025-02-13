@@ -110,9 +110,6 @@ ADD_SUBDIRECTORY (3rd/cpu_io)
 # ADD_SUBDIRECTORY (3rd/smccc)
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
-    # https://github.com/OP-TEE/build.git
-    SET (optee_build_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/optee/build)
-
     # https://github.com/OP-TEE/optee_os.git
     SET (optee_os_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/optee/optee_os)
     SET (optee_os_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/optee/optee_os)
