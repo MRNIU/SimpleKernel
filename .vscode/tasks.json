@@ -10,6 +10,7 @@
                 "54320"
             ],
             "isBackground": true,
+            "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
                 "panel": "new",
@@ -25,6 +26,7 @@
                 "54321"
             ],
             "isBackground": true,
+            "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
                 "panel": "new",
@@ -103,7 +105,8 @@
                 "panel": "dedicated",
                 "showReuseMessage": true,
                 "clear": true
-            }
+            },
+            "hide": true
         },
         {
             "label": "build_aarch64",
@@ -158,6 +161,7 @@
         },
         {
             "label": "run_aarch64",
+            "problemMatcher": [],
             "dependsOn": [
                 "run_aarch64_warp",
                 "::54320",
@@ -166,7 +170,7 @@
             "dependsOrder": "parallel"
         },
         {
-            "label": "debug_aarch64_warp",
+            "label": "debug_aarch64",
             "type": "process",
             "command": "make",
             "args": [
@@ -187,18 +191,10 @@
                 "focus": true,
                 "panel": "dedicated",
                 "showReuseMessage": true,
-                "clear": true
+                "clear": true,
+                "group": "aarch64"
             },
             "hide": true
-        },
-        {
-            "label": "debug_aarch64",
-            "dependsOn": [
-                "debug_aarch64_warp",
-                "::54320",
-                "::54321"
-            ],
-            "dependsOrder": "parallel"
         },
         {
             "label": "build_x86_64",
@@ -272,7 +268,8 @@
                 "panel": "dedicated",
                 "showReuseMessage": true,
                 "clear": true
-            }
+            },
+            "hide": true
         }
     ]
 }

@@ -47,6 +47,9 @@
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}/build_aarch64/bin",
+            "setupCommands": [
+                { "text": "set architecture aarch64" }
+            ],
             "environment": [],
             "externalConsole": true,
             "logging": {
