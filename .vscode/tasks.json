@@ -2,6 +2,30 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "::54320",
+            "type": "shell",
+            "command": "python3",
+            "args": ["${workspaceFolder}/3rd/optee/build/soc_term.py", "54320"],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "aarch64"
+            }
+        },
+        {
+            "label": "::54321",
+            "type": "shell",
+            "command": "python3",
+            "args": ["${workspaceFolder}/3rd/optee/build/soc_term.py", "54321"],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "aarch64"
+            }
+        },
+        {
             "label": "build_riscv64",
             "type": "process",
             "command": "make",
@@ -92,7 +116,7 @@
             }
         },
         {
-            "label": "run_aarch64",
+            "label": "run_aarch64_warp",
             "type": "process",
             "command": "make",
             "args": ["run"],
@@ -109,13 +133,20 @@
                 "echo": true,
                 "reveal": "always",
                 "focus": true,
-                "panel": "dedicated",
+                "panel": "new",
                 "showReuseMessage": true,
-                "clear": true
-            }
+                "clear": true,
+                "group": "aarch64"
+            },
+            "hide": true
         },
         {
-            "label": "debug_aarch64",
+            "label": "run_aarch64",
+            "dependsOn": ["run_aarch64_warp", "::54320", "::54321"],
+            "dependsOrder": "parallel"
+        },
+        {
+            "label": "debug_aarch64_warp",
             "type": "process",
             "command": "make",
             "args": ["debug"],
@@ -135,7 +166,13 @@
                 "panel": "dedicated",
                 "showReuseMessage": true,
                 "clear": true
-            }
+            },
+            "hide": true
+        },
+        {
+            "label": "debug_aarch64",
+            "dependsOn": ["debug_aarch64_warp", "::54320", "::54321"],
+            "dependsOrder": "parallel"
         },
         {
             "label": "build_x86_64",
