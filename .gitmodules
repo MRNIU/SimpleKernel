@@ -44,3 +44,6 @@
 [submodule "3rd/u-boot"]
 	path = 3rd/u-boot
 	url = https://github.com/u-boot/u-boot.git
+[submodule "3rd/buildroot"]
+	path = 3rd/buildroot
+	url = https://github.com/buildroot/buildroot.git

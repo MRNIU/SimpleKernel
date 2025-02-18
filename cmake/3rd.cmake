@@ -124,6 +124,30 @@ ADD_CUSTOM_TARGET (
 SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
                                      ${u-boot_BINARY_DIR})
 
+# https://github.com/buildroot/buildroot.git
+SET (buildroot_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/buildroot)
+SET (buildroot_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/buildroot)
+ADD_CUSTOM_TARGET (
+    buildroot
+    COMMENT "build buildroot..."
+    # make 时编译
+    ALL
+    WORKING_DIRECTORY ${buildroot_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${buildroot_BINARY_DIR}
+    COMMAND make HOSTCXX=${CMAKE_CXX_COMPILER} HOSTCC=${CMAKE_C_COMPILER}
+            O=${buildroot_BINARY_DIR} qemu_aarch64_virt_defconfig
+    COMMAND HOSTCXX=${CMAKE_CXX_COMPILER} HOSTCC=${CMAKE_C_COMPILER}
+            O=${buildroot_BINARY_DIR} utils/config -e BR2_TARGET_ROOTFS_CPIO
+    COMMAND
+        HOSTCXX=${CMAKE_CXX_COMPILER} HOSTCC=${CMAKE_C_COMPILER}
+        O=${buildroot_BINARY_DIR} utils/config -e BR2_TARGET_ROOTFS_CPIO_GZIP
+    COMMAND make HOSTCXX=${CMAKE_CXX_COMPILER} HOSTCC=${CMAKE_C_COMPILER}
+            O=${buildroot_BINARY_DIR} olddefconfig
+    COMMAND make HOSTCXX=${CMAKE_CXX_COMPILER} HOSTCC=${CMAKE_C_COMPILER}
+            O=${buildroot_BINARY_DIR})
+SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
+                                     ${buildroot_BINARY_DIR})
+
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
     # https://github.com/OP-TEE/optee_os.git
     SET (optee_os_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/optee/optee_os)
@@ -157,6 +181,7 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
         COMMENT "build arm-trusted-firmware..."
         # make 时编译
         ALL
+        DEPENDS optee_os
         WORKING_DIRECTORY ${arm-trusted-firmware_SOURCE_DIR}
         COMMAND ${CMAKE_COMMAND} -E make_directory
                 ${arm-trusted-firmware_BINARY_DIR}
@@ -166,7 +191,9 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
             BL32=${optee_os_BINARY_DIR}/core/tee-header_v2.bin
             BL32_EXTRA1=${optee_os_BINARY_DIR}/core/tee-pager_v2.bin
             BL32_EXTRA2=${optee_os_BINARY_DIR}/core/tee-pageable_v2.bin
-            BL33=${ovmf_BINARY_DIR}/OVMF_aarch64.fd BL32_RAM_LOCATION=tdram
+            # @todo uefi 支持
+            # BL33=${ovmf_BINARY_DIR}/OVMF_aarch64.fd
+            BL33=${u-boot_BINARY_DIR}/u-boot.bin BL32_RAM_LOCATION=tdram
             QEMU_USE_GIC_DRIVER=QEMU_GICV3 SPD=opteed all fip
         COMMAND
             dd

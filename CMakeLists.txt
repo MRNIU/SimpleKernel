@@ -98,8 +98,16 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         none
         -bios
         ${arm-trusted-firmware_BINARY_DIR}/flash.bin
+        # -kernel
+        # $<TARGET_FILE:kernel>
+        -initrd
+        ${buildroot_BINARY_DIR}/output/images/rootfs.cpio.gz
         -kernel
-        $<TARGET_FILE:kernel>)
+        ${buildroot_BINARY_DIR}/output/images/Image
+        -append
+        'console=ttyAMA0,38400 keep_bootcon'
+        # -d unimp
+    )
 ENDIF()
 
 # 添加要编译的目录
