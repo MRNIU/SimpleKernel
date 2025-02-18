@@ -41,3 +41,6 @@
 [submodule "3rd/optee/optee_client"]
 	path = 3rd/optee/optee_client
 	url = https://github.com/OP-TEE/optee_client.git
+[submodule "3rd/u-boot"]
+	path = 3rd/u-boot
+	url = https://github.com/u-boot/u-boot.git
