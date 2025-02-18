@@ -59,6 +59,10 @@
           "type": "STRING",
           "value": "Generic"
         },
+        "CMAKE_BUILD_PARALLEL_LEVEL": {
+          "type": "STRING",
+          "value": "8"
+        },
         "COVERAGE_OUTPUT_DIR": {
           "type": "STRING",
           "value": "coverage"

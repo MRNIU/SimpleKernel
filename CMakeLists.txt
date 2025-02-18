@@ -101,9 +101,9 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         # -kernel
         # $<TARGET_FILE:kernel>
         -initrd
-        ${buildroot_BINARY_DIR}/output/images/rootfs.cpio.gz
+        ${buildroot_BINARY_DIR}/images/rootfs.cpio.gz
         -kernel
-        ${buildroot_BINARY_DIR}/output/images/Image
+        ${buildroot_BINARY_DIR}/images/Image
         -append
         'console=ttyAMA0,38400 keep_bootcon'
         # -d unimp

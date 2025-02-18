@@ -120,7 +120,9 @@ ADD_CUSTOM_TARGET (
     WORKING_DIRECTORY ${u-boot_SOURCE_DIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${u-boot_BINARY_DIR}
     COMMAND make O=${u-boot_BINARY_DIR} qemu_arm64_defconfig
-    COMMAND make CROSS_COMPILE=${TOOLCHAIN_PREFIX} O=${u-boot_BINARY_DIR})
+            -j${CMAKE_BUILD_PARALLEL_LEVEL}
+    COMMAND make CROSS_COMPILE=${TOOLCHAIN_PREFIX} O=${u-boot_BINARY_DIR}
+            -j${CMAKE_BUILD_PARALLEL_LEVEL})
 SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
                                      ${u-boot_BINARY_DIR})
 
@@ -134,17 +136,15 @@ ADD_CUSTOM_TARGET (
     ALL
     WORKING_DIRECTORY ${buildroot_SOURCE_DIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${buildroot_BINARY_DIR}
-    COMMAND make HOSTCXX=${CMAKE_CXX_COMPILER} HOSTCC=${CMAKE_C_COMPILER}
-            O=${buildroot_BINARY_DIR} qemu_aarch64_virt_defconfig
-    COMMAND HOSTCXX=${CMAKE_CXX_COMPILER} HOSTCC=${CMAKE_C_COMPILER}
-            O=${buildroot_BINARY_DIR} utils/config -e BR2_TARGET_ROOTFS_CPIO
-    COMMAND
-        HOSTCXX=${CMAKE_CXX_COMPILER} HOSTCC=${CMAKE_C_COMPILER}
-        O=${buildroot_BINARY_DIR} utils/config -e BR2_TARGET_ROOTFS_CPIO_GZIP
-    COMMAND make HOSTCXX=${CMAKE_CXX_COMPILER} HOSTCC=${CMAKE_C_COMPILER}
-            O=${buildroot_BINARY_DIR} olddefconfig
-    COMMAND make HOSTCXX=${CMAKE_CXX_COMPILER} HOSTCC=${CMAKE_C_COMPILER}
-            O=${buildroot_BINARY_DIR})
+    COMMAND make O=${buildroot_BINARY_DIR} qemu_aarch64_virt_defconfig
+            -j${CMAKE_BUILD_PARALLEL_LEVEL}
+    COMMAND cd ${buildroot_BINARY_DIR} && ${buildroot_SOURCE_DIR}/utils/config
+            -e BR2_TARGET_ROOTFS_CPIO
+    COMMAND cd ${buildroot_BINARY_DIR} && ${buildroot_SOURCE_DIR}/utils/config
+            -e BR2_TARGET_ROOTFS_CPIO_GZIP
+    COMMAND cd ${buildroot_BINARY_DIR} && make olddefconfig
+            -j${CMAKE_BUILD_PARALLEL_LEVEL}
+    COMMAND cd ${buildroot_BINARY_DIR} && make -j${CMAKE_BUILD_PARALLEL_LEVEL})
 SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
                                      ${buildroot_BINARY_DIR})
 
@@ -166,7 +166,7 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
             CROSS_COMPILE_ta_arm32=${TOOLCHAIN_PREFIX32}
             CROSS_COMPILE_ta_arm64=${TOOLCHAIN_PREFIX} DEBUG=$<CONFIG:Debug>·
             O=${optee_os_BINARY_DIR} PLATFORM=vexpress-qemu_armv8a
-            CFG_ARM_GICV3=y)
+            CFG_ARM_GICV3=y -j${CMAKE_BUILD_PARALLEL_LEVEL})
     SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
                                          ${optee_os_BINARY_DIR})
 
@@ -181,7 +181,7 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
         COMMENT "build arm-trusted-firmware..."
         # make 时编译
         ALL
-        DEPENDS optee_os
+        DEPENDS optee_os u-boot
         WORKING_DIRECTORY ${arm-trusted-firmware_SOURCE_DIR}
         COMMAND ${CMAKE_COMMAND} -E make_directory
                 ${arm-trusted-firmware_BINARY_DIR}
@@ -195,6 +195,7 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
             # BL33=${ovmf_BINARY_DIR}/OVMF_aarch64.fd
             BL33=${u-boot_BINARY_DIR}/u-boot.bin BL32_RAM_LOCATION=tdram
             QEMU_USE_GIC_DRIVER=QEMU_GICV3 SPD=opteed all fip
+            -j${CMAKE_BUILD_PARALLEL_LEVEL}
         COMMAND
             dd
             if=${arm-trusted-firmware_BINARY_DIR}/qemu/$<IF:$<CONFIG:Debug>,debug,release>/bl1.bin
@@ -223,7 +224,7 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
         COMMAND
             make CROSS_COMPILE=${TOOLCHAIN_PREFIX} FW_JUMP=y
             FW_JUMP_ADDR=0x80210000 PLATFORM_RISCV_XLEN=64 PLATFORM=generic
-            O=${opensbi_BINARY_DIR}
+            O=${opensbi_BINARY_DIR} -j${CMAKE_BUILD_PARALLEL_LEVEL}
         COMMAND ln -s -f ${opensbi_SOURCE_DIR}/include ${opensbi_BINARY_DIR})
     ADD_LIBRARY (opensbi-fw_jump INTERFACE)
     ADD_DEPENDENCIES (opensbi-fw_jump opensbi)
@@ -247,7 +248,7 @@ IF(NOT EXISTS ${dtc_BINARY_DIR}/libfdt/libfdt.a)
         WORKING_DIRECTORY ${dtc_SOURCE_DIR}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${dtc_BINARY_DIR}/libfdt
         COMMAND CC=${dtc_CC} AR=${dtc_AR} HOME=${dtc_BINARY_DIR} make
-                libfdt/libfdt.a
+                libfdt/libfdt.a -j${CMAKE_BUILD_PARALLEL_LEVEL}
         COMMAND ${CMAKE_COMMAND} -E copy ${dtc_SOURCE_DIR}/libfdt/*.a
                 ${dtc_SOURCE_DIR}/libfdt/*.h ${dtc_BINARY_DIR}/libfdt
         COMMAND make clean)
@@ -292,9 +293,11 @@ IF(NOT EXISTS ${gnu-efi_BINARY_DIR}/lib/libefi.a)
         ALL
         WORKING_DIRECTORY ${gnu-efi_SOURCE_DIR}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${gnu-efi_BINARY_DIR}
-        COMMAND # @note 仅支持 gcc
-                make lib gnuefi inc CROSS_COMPILE=${CROSS_COMPILE_}
-                ARCH=${CMAKE_SYSTEM_PROCESSOR} OBJDIR=${gnu-efi_BINARY_DIR} V=1
+        COMMAND
+            # @note 仅支持 gcc
+            make lib gnuefi inc CROSS_COMPILE=${CROSS_COMPILE_}
+            ARCH=${CMAKE_SYSTEM_PROCESSOR} OBJDIR=${gnu-efi_BINARY_DIR} V=1
+            -j${CMAKE_BUILD_PARALLEL_LEVEL}
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${gnu-efi_SOURCE_DIR}/inc
                 ${gnu-efi_BINARY_DIR}/inc)
 ELSE()
