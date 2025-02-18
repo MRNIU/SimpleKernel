@@ -77,7 +77,8 @@ RUN apt install --no-install-recommends --fix-missing -y \
     bison \
     device-tree-compiler \
     python3-cryptography \
-    python3-pyelftools
+    python3-pyelftools \
+    libgnutls28-dev
 RUN apt install --no-install-recommends --fix-missing -y \
     gcc \
     g++ \

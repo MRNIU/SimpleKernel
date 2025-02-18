@@ -109,6 +109,21 @@ ADD_SUBDIRECTORY (3rd/cpu_io)
 # https://github.com/MRNIU/smccc.git
 # ADD_SUBDIRECTORY (3rd/smccc)
 
+# https://github.com/u-boot/u-boot.git
+SET (u-boot_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/u-boot)
+SET (u-boot_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/u-boot)
+ADD_CUSTOM_TARGET (
+    u-boot
+    COMMENT "build u-boot..."
+    # make 时编译
+    ALL
+    WORKING_DIRECTORY ${u-boot_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${u-boot_BINARY_DIR}
+    COMMAND make O=${u-boot_BINARY_DIR} qemu_arm64_defconfig
+    COMMAND make CROSS_COMPILE=${TOOLCHAIN_PREFIX} O=${u-boot_BINARY_DIR})
+SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
+                                     ${u-boot_BINARY_DIR})
+
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
     # https://github.com/OP-TEE/optee_os.git
     SET (optee_os_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/optee/optee_os)
