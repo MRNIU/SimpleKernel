@@ -80,7 +80,8 @@ RUN apt install --no-install-recommends --fix-missing -y \
     device-tree-compiler \
     python3-cryptography \
     python3-pyelftools \
-    libgnutls28-dev
+    libgnutls28-dev \
+    gawk
 RUN apt install --no-install-recommends --fix-missing -y \
     gcc \
     g++ \
