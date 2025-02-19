@@ -27,7 +27,9 @@ RUN apt install --no-install-recommends --fix-missing -y \
     tmux \
     ncat \
     socat \
-    lsof
+    lsof \
+    bc \
+    cpio
 RUN apt install --no-install-recommends --fix-missing -y \
     file \
     vim \

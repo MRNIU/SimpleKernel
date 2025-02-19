@@ -125,6 +125,7 @@ ADD_RUN_TARGET (
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:boot>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:buildroot>
     kernel
     WORKING_DIRECTORY
     ${PROJECT_BINARY_DIR}
