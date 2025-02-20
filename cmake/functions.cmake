@@ -20,6 +20,8 @@ FUNCTION(objdump_readelf_nm target)
                 $<TARGET_FILE_DIR:${target}>/${target}.readelf || exit 0
         COMMAND ${CMAKE_NM} -a $<TARGET_FILE:${target}> >
                 $<TARGET_FILE_DIR:${target}>/${target}.sym
+        COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${target}>
+                $<TARGET_FILE_DIR:${target}>/${target}.bin
         COMMENT "Generating symbol table, assembly, and readelf for ${target}")
     SET_DIRECTORY_PROPERTIES (
         PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
@@ -42,6 +44,9 @@ FUNCTION(elf2efi target efi)
             .note.gnu.build-id -R .gnu.hash -R .dynsym
             --target=efi-app-${CMAKE_SYSTEM_PROCESSOR} --subsystem=10)
 ENDFUNCTION()
+
+# 生成 uboot 使用的 FIT
+# @todo 需要解决依赖关系
 
 # 添加测试覆盖率 target
 # DEPENDS 要生成的 targets
@@ -156,6 +161,9 @@ FUNCTION(add_run_target)
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
         COMMAND ${CMAKE_COMMAND} -E make_directory image/ ${commands}
+        COMMAND qemu-system-${ARG_TARGET} -machine dumpdtb=./bin/qemu.dtb
+                ${ARG_QEMU_FLAGS}
+        COMMAND dtc -I dtb ./bin/qemu.dtb -O dts -o ./bin/qemu.dts
         COMMAND qemu-system-${ARG_TARGET} ${ARG_QEMU_FLAGS})
     ADD_CUSTOM_TARGET (
         ${ARG_NAME}debug
@@ -163,6 +171,9 @@ FUNCTION(add_run_target)
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
         COMMAND ${CMAKE_COMMAND} -E make_directory image/ ${commands}
+        COMMAND qemu-system-${ARG_TARGET} -machine dumpdtb=./bin/qemu.dtb
+                ${ARG_QEMU_FLAGS}
+        COMMAND dtc -I dtb ./bin/qemu.dtb -O dts -o ./bin/qemu.dts
         COMMAND
             qemu-system-${ARG_TARGET} ${ARG_QEMU_FLAGS}
             # 等待 gdb 连接
