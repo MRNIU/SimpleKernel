@@ -66,16 +66,16 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
         QEMU_FLAGS
         -machine
         virt
+        -netdev
+        user,id=net0
+        -device
+        e1000,netdev=net0
         -smp
         4
         -bios
         ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_payload.elf
         # -kernel
         # $<TARGET_FILE:kernel>
-        # @todo 暂时还不支持 riscv64 的 uefi 启动 预期路线: qemu->uefi->opensbi +
-        # kernel(payload) -bios
-        # ${ovmf_BINARY_DIR}/OVMF_${CMAKE_SYSTEM_PROCESSOR}.fd -hda
-        # fat:rw:./image/
     )
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     LIST (
@@ -112,8 +112,6 @@ ADD_RUN_TARGET (
     ovmf
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi-fw_jump>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:boot>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:boot>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:boot>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:buildroot>
