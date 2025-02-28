@@ -119,8 +119,11 @@ ADD_CUSTOM_TARGET (
     ALL
     WORKING_DIRECTORY ${u-boot_SOURCE_DIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${u-boot_BINARY_DIR}
-    COMMAND make O=${u-boot_BINARY_DIR} qemu_arm64_defconfig
-            -j${CMAKE_BUILD_PARALLEL_LEVEL}
+    COMMAND
+        make O=${u-boot_BINARY_DIR}
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:qemu_arm64_defconfig>
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:qemu-riscv64_smode_defconfig>
+        -j${CMAKE_BUILD_PARALLEL_LEVEL}
     COMMAND make CROSS_COMPILE=${TOOLCHAIN_PREFIX} O=${u-boot_BINARY_DIR}
             -j${CMAKE_BUILD_PARALLEL_LEVEL})
 SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
@@ -219,13 +222,16 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
         COMMENT "build opensbi..."
         # make 时编译
         ALL
+        DEPENDS u-boot
         WORKING_DIRECTORY ${opensbi_SOURCE_DIR}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${opensbi_BINARY_DIR}
         COMMAND
-            make CROSS_COMPILE=${TOOLCHAIN_PREFIX} FW_JUMP=y
-            FW_JUMP_ADDR=0x80210000 PLATFORM_RISCV_XLEN=64 PLATFORM=generic
+            make PLATFORM_RISCV_XLEN=64 PLATFORM=generic
+            CROSS_COMPILE=${TOOLCHAIN_PREFIX} FW_PAYLOAD=y
+            FW_PAYLOAD_PATH=${u-boot_BINARY_DIR}/u-boot.bin
             O=${opensbi_BINARY_DIR} -j${CMAKE_BUILD_PARALLEL_LEVEL}
         COMMAND ln -s -f ${opensbi_SOURCE_DIR}/include ${opensbi_BINARY_DIR})
+
     ADD_LIBRARY (opensbi-fw_jump INTERFACE)
     ADD_DEPENDENCIES (opensbi-fw_jump opensbi)
 

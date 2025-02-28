@@ -68,11 +68,10 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
         virt
         -smp
         4
-        # 可选项，qemu7.0 自带了 opensbi1.0
         -bios
-        ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_jump.elf
-        -kernel
-        $<TARGET_FILE:kernel>
+        ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_payload.elf
+        # -kernel
+        # $<TARGET_FILE:kernel>
         # @todo 暂时还不支持 riscv64 的 uefi 启动 预期路线: qemu->uefi->opensbi +
         # kernel(payload) -bios
         # ${ovmf_BINARY_DIR}/OVMF_${CMAKE_SYSTEM_PROCESSOR}.fd -hda
