@@ -81,7 +81,8 @@ RUN apt install --no-install-recommends --fix-missing -y \
     python3-cryptography \
     python3-pyelftools \
     libgnutls28-dev \
-    gawk
+    gawk \
+    u-boot-tools
 RUN apt install --no-install-recommends --fix-missing -y \
     gcc \
     g++ \
