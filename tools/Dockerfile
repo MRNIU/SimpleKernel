@@ -29,7 +29,8 @@ RUN apt install --no-install-recommends --fix-missing -y \
     socat \
     lsof \
     bc \
-    cpio
+    cpio \
+    tftpd-hpa
 RUN apt install --no-install-recommends --fix-missing -y \
     file \
     vim \
@@ -60,7 +61,8 @@ RUN locale-gen en_US.UTF-8 && locale-gen zh_CN.UTF-8 \
     && chsh -s /bin/zsh root \
     && usermod -s /bin/zsh root \
     && chsh -s /bin/zsh ubuntu \
-    && usermod -s /bin/zsh ubuntu
+    && usermod -s /bin/zsh ubuntu \
+    && chmod 777 /srv/tftp
 
 FROM basic_tools AS dev_tools
 RUN apt install --no-install-recommends --fix-missing -y \

@@ -43,13 +43,11 @@ LIST (APPEND QEMU_BOOT_FLAGS "")
 LIST (APPEND QEMU_MACHINE_FLAGS "")
 # 目标平台参数
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    LIST (APPEND QEMU_BOOT_FLAGS -bios ${u-boot_BINARY_DIR}/u-boot.rom -kernel
-          $<TARGET_FILE:kernel>)
+    LIST (APPEND QEMU_BOOT_FLAGS -bios ${u-boot_BINARY_DIR}/u-boot.rom)
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
     LIST (APPEND QEMU_MACHINE_FLAGS -machine virt)
     LIST (APPEND QEMU_BOOT_FLAGS -bios
-          ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_payload.elf
-          -kernel $<TARGET_FILE:kernel>)
+          ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_payload.elf)
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     LIST (APPEND QEMU_MACHINE_FLAGS -machine virt,secure=on,gic_version=3 -cpu
           cortex-a72)
@@ -75,10 +73,21 @@ GEN_DTB_DTS (
     ${QEMU_COMMON_FLAG}
     ${QEMU_MACHINE_FLAGS})
 
+GEN_FIT (
+    DEPENDS
+    kernel
+    gen_dtb_dts
+    WORKING_DIRECTORY
+    ${PROJECT_BINARY_DIR}
+    TARGET
+    ${CMAKE_SYSTEM_PROCESSOR})
+
 # 添加 run 和 debug target
 ADD_RUN_TARGET (
     DEPENDS
     ovmf
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:gen_fit>
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:gen_fit>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi-fw_jump>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:boot>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>

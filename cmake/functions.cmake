@@ -45,9 +45,6 @@ FUNCTION(elf2efi target efi)
             --target=efi-app-${CMAKE_SYSTEM_PROCESSOR} --subsystem=10)
 ENDFUNCTION()
 
-# 生成 uboot 使用的 FIT
-# @todo 需要解决依赖关系
-
 # 添加测试覆盖率 target
 # DEPENDS 要生成的 targets
 # SOURCE_DIR 源码路径
@@ -112,6 +109,27 @@ FUNCTION(gen_dtb_dts)
         COMMAND dtc -I dtb bin/qemu.dtb -O dts -o bin/qemu.dts)
 ENDFUNCTION()
 
+# 生成 uboot 使用的 FIT
+# @todo 需要解决依赖关系
+FUNCTION(gen_fit)
+    # 解析参数
+    SET (options)
+    SET (one_value_keywords TARGET WORKING_DIRECTORY)
+    SET (multi_value_keywords DEPENDS)
+    CMAKE_PARSE_ARGUMENTS (ARG "${options}" "${one_value_keywords}"
+                           "${multi_value_keywords}" ${ARGN})
+
+    CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/${ARG_TARGET}_qemu_virt.its.in
+                    ${ARG_WORKING_DIRECTORY}/bin/qemu.its @ONLY)
+
+    ADD_CUSTOM_TARGET (
+        gen_fit
+        COMMENT "Generating FIT file..."
+        DEPENDS ${ARG_DEPENDS}
+        WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
+        COMMAND mkimage -f bin/qemu.its bin/qemu.itb)
+ENDFUNCTION()
+
 # 添加运行 qemu target
 # NAME 生成的 target 前缀
 # TARGET 目标架构
@@ -140,6 +158,7 @@ FUNCTION(add_run_target)
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
         COMMAND ${CMAKE_COMMAND} -E make_directory image/
         COMMAND ${CMAKE_COMMAND} -E copy ${ARG_KERNEL} image/
+        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin /srv/tftp
         COMMAND qemu-system-${ARG_TARGET} ${ARG_QEMU_FLAGS})
     ADD_CUSTOM_TARGET (
         ${ARG_NAME}debug
@@ -148,6 +167,7 @@ FUNCTION(add_run_target)
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
         COMMAND ${CMAKE_COMMAND} -E make_directory image/
         COMMAND ${CMAKE_COMMAND} -E copy ${ARG_KERNEL} image/
+        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin /srv/tftp
         COMMAND
             qemu-system-${ARG_TARGET} ${ARG_QEMU_FLAGS}
             # 等待 gdb 连接
