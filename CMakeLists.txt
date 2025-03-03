@@ -33,78 +33,53 @@ INCLUDE (3rd)
 # 导入编译配置
 INCLUDE (compile_config)
 
+# 添加要编译的目录
+ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/src)
+ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/test)
+ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/doc)
+
 # qemu 参数设置
-LIST (
-    APPEND
-    QEMU_FLAGS
-    # 不启用图形界面
-    -nographic
-    # 使用标准输出显示
-    -serial
-    stdio
-    # 启动 telnet 服务，使用 2333 端口，不等待连接
-    -monitor
-    ${QEMU_MONITOR_ARG})
+LIST (APPEND QEMU_BOOT_FLAGS "")
+LIST (APPEND QEMU_MACHINE_FLAGS "")
 # 目标平台参数
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    LIST (
-        APPEND
-        QEMU_FLAGS
-        -m
-        128M
-        -smp
-        4
-        -net
-        none
-        -bios
-        ${ovmf_BINARY_DIR}/OVMF_${CMAKE_SYSTEM_PROCESSOR}.fd
-        -hda
-        fat:rw:./image/)
+    LIST (APPEND QEMU_BOOT_FLAGS -bios
+          ${ovmf_BINARY_DIR}/OVMF_${CMAKE_SYSTEM_PROCESSOR}.fd -hda
+          fat:rw:./image/)
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
+    LIST (APPEND QEMU_MACHINE_FLAGS -machine virt)
     LIST (
         APPEND
-        QEMU_FLAGS
-        -machine
-        virt
-        -netdev
-        user,id=net0
-        -device
-        e1000,netdev=net0
-        -smp
-        4
+        QEMU_BOOT_FLAGS
         -bios
         ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_payload.elf
         # -kernel
         # $<TARGET_FILE:kernel>
     )
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    LIST (APPEND QEMU_MACHINE_FLAGS -machine virt,secure=on,gic_version=3 -cpu
+          cortex-a72)
     LIST (
         APPEND
-        QEMU_FLAGS
-        -machine
-        virt,secure=on,gic_version=3
-        -cpu
-        cortex-a72
-        -m
-        1024M
+        QEMU_BOOT_FLAGS
         -serial
         ${QEMU_NORMAL_WORLD_DEV_PATH}
         -serial
         ${QEMU_SECURE_WORLD_DEV_PATH}
-        -smp
-        4
-        -net
-        none
         -bios
         ${arm-trusted-firmware_BINARY_DIR}/flash.bin
         -kernel
         $<TARGET_FILE:kernel>)
 ENDIF()
 
-# 添加要编译的目录
-ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/src)
-ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/test)
-ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/doc)
+GEN_DTB_DTS (
+    WORKING_DIRECTORY
+    ${PROJECT_BINARY_DIR}
+    TARGET
+    ${CMAKE_SYSTEM_PROCESSOR}
+    QEMU_FLAGS
+    ${QEMU_COMMON_FLAG}
+    ${QEMU_MACHINE_FLAGS})
 
 # 添加 run 和 debug target
 ADD_RUN_TARGET (
@@ -114,7 +89,6 @@ ADD_RUN_TARGET (
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:boot>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:buildroot>
     kernel
     WORKING_DIRECTORY
     ${PROJECT_BINARY_DIR}
@@ -125,4 +99,6 @@ ADD_RUN_TARGET (
     KERNEL
     $<TARGET_FILE:kernel>
     QEMU_FLAGS
-    ${QEMU_FLAGS})
+    ${QEMU_COMMON_FLAG}
+    ${QEMU_MACHINE_FLAGS}
+    ${QEMU_BOOT_FLAGS})

@@ -25,27 +25,27 @@ repos:
       - id: clang-tidy
         args:
           - --checks=.clang-tidy
-          - -p=/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/compiler_commands.json
+          - -p=/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/compiler_commands.json
           - -extra-arg=--std=c++2b
           - --fix
-          - --header-filter=^(/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/src/).*
-          # - --exclude-header-filter=^(?/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/src/arch/x86_64|/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/src/arch/aarch64).*
+          - --header-filter=^(/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/src/).*
+          # - --exclude-header-filter=^(?/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/src/arch/x86_64|/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/src/arch/aarch64).*
       # - id: clang-tidy
       #   args:
       #     - --checks=.clang-tidy
-      #     - -p=/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/build_x86_64/compiler_commands.json
+      #     - -p=/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/build_x86_64/compiler_commands.json
       #     - -extra-arg=--std=c++2b
       #     - --fix
-      #     - --header-filter=^(?/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/src/).*
-      #     - --exclude-header-filter=^(?/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/src/arch/riscv_64|/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/src/arch/aarch64).*
+      #     - --header-filter=^(?/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/src/).*
+      #     - --exclude-header-filter=^(?/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/src/arch/riscv_64|/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/src/arch/aarch64).*
       # - id: clang-tidy
       #   args:
       #     - --checks=.clang-tidy
-      #     - -p=/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/build_aarch64/compiler_commands.json
+      #     - -p=/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/build_aarch64/compiler_commands.json
       #     - -extra-arg=--std=c++2b
       #     - --fix
-      #     - --header-filter=^(?/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/src/).*
-      #     - --exclude-header-filter=^(?/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/src/arch/riscv64|/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_riscv64/src/arch/x86_64).*
+      #     - --header-filter=^(?/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/src/).*
+      #     - --exclude-header-filter=^(?/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/src/arch/riscv64|/Users/zhihongniu/Documents/github/MRNIU/SimpleKernel/build_x86_64/src/arch/x86_64).*
 
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.10.0

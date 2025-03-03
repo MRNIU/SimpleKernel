@@ -88,6 +88,30 @@ FUNCTION(add_coverage_target)
                 ${COVERAGE_OUTPUT_DIR} --branch-coverage)
 ENDFUNCTION()
 
+# 根据 qemu flags 生成 dtb 与 dts
+# NAME 生成的 target 前缀
+# WORKING_DIRECTORY 工作目录
+# QEMU_FLAGS qemu 参数
+FUNCTION(gen_dtb_dts)
+    # 解析参数
+    SET (options)
+    SET (one_value_keywords NAME TARGET WORKING_DIRECTORY)
+    SET (multi_value_keywords QEMU_FLAGS)
+    CMAKE_PARSE_ARGUMENTS (ARG "${options}" "${one_value_keywords}"
+                           "${multi_value_keywords}" ${ARGN})
+
+    # 添加 target
+    ADD_CUSTOM_TARGET (
+        gen_dtb_dts
+        COMMENT "Generating dtb and dts..."
+        DEPENDS ${ARG_DEPENDS}
+        WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
+        COMMAND ${CMAKE_COMMAND} -E make_directory image/ ${commands}
+        COMMAND qemu-system-${ARG_TARGET} -machine dumpdtb=bin/qemu.dtb
+                ${ARG_QEMU_FLAGS}
+        COMMAND dtc -I dtb bin/qemu.dtb -O dts -o bin/qemu.dts)
+ENDFUNCTION()
+
 # 添加运行 qemu target
 # NAME 生成的 target 前缀
 # TARGET 目标架构
@@ -104,55 +128,9 @@ FUNCTION(add_run_target)
     CMAKE_PARSE_ARGUMENTS (ARG "${options}" "${one_value_keywords}"
                            "${multi_value_keywords}" ${ARGN})
 
-    LIST (
-        APPEND
-        commands
-        COMMAND
-        ${CMAKE_COMMAND}
-        -E
-        copy
-        ${ARG_KERNEL}
-        image/)
-    IF(${ARG_TARGET} STREQUAL "x86_64")
-        GET_FILENAME_COMPONENT (BOOT_FILE_NAME ${ARG_BOOT} NAME)
-        CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/startup.nsh.in
-                        image/startup.nsh @ONLY)
-        LIST (
-            APPEND
-            commands
-            COMMAND
-            ${CMAKE_COMMAND}
-            -E
-            copy
-            ${ARG_BOOT}
-            image/)
-    ELSEIF(${ARG_TARGET} STREQUAL "riscv64")
-        GET_FILENAME_COMPONENT (BOOT_FILE_NAME ${ARG_BOOT} NAME)
-        CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/startup.nsh.in
-                        image/startup.nsh @ONLY)
-        LIST (
-            APPEND
-            commands
-            COMMAND
-            ${CMAKE_COMMAND}
-            -E
-            copy
-            ${ARG_BOOT}
-            image/)
-    ELSEIF(${ARG_TARGET} STREQUAL "aarch64")
-        GET_FILENAME_COMPONENT (BOOT_FILE_NAME ${ARG_BOOT} NAME)
-        CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/startup.nsh.in
-                        image/startup.nsh @ONLY)
-        LIST (
-            APPEND
-            commands
-            COMMAND
-            ${CMAKE_COMMAND}
-            -E
-            copy
-            ${ARG_BOOT}
-            image/)
-    ENDIF()
+    GET_FILENAME_COMPONENT (BOOT_FILE_NAME ${ARG_BOOT} NAME)
+    CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/startup.nsh.in image/startup.nsh
+                    @ONLY)
 
     # 添加 target
     ADD_CUSTOM_TARGET (
@@ -160,20 +138,16 @@ FUNCTION(add_run_target)
         COMMENT "Run ${ARG_NAME} ..."
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND ${CMAKE_COMMAND} -E make_directory image/ ${commands}
-        COMMAND qemu-system-${ARG_TARGET} -machine dumpdtb=./bin/qemu.dtb
-                ${ARG_QEMU_FLAGS}
-        COMMAND dtc -I dtb ./bin/qemu.dtb -O dts -o ./bin/qemu.dts
+        COMMAND ${CMAKE_COMMAND} -E make_directory image/
+        COMMAND ${CMAKE_COMMAND} -E copy ${ARG_KERNEL} image/
         COMMAND qemu-system-${ARG_TARGET} ${ARG_QEMU_FLAGS})
     ADD_CUSTOM_TARGET (
         ${ARG_NAME}debug
         COMMENT "Run ${ARG_NAME} ..."
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND ${CMAKE_COMMAND} -E make_directory image/ ${commands}
-        COMMAND qemu-system-${ARG_TARGET} -machine dumpdtb=./bin/qemu.dtb
-                ${ARG_QEMU_FLAGS}
-        COMMAND dtc -I dtb ./bin/qemu.dtb -O dts -o ./bin/qemu.dts
+        COMMAND ${CMAKE_COMMAND} -E make_directory image/
+        COMMAND ${CMAKE_COMMAND} -E copy ${ARG_KERNEL} image/
         COMMAND
             qemu-system-${ARG_TARGET} ${ARG_QEMU_FLAGS}
             # 等待 gdb 连接

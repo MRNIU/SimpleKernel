@@ -87,6 +87,10 @@
           "type": "STRING",
           "value": "telnet::2333,server,nowait"
         },
+        "QEMU_COMMON_FLAG": {
+          "type": "STRING",
+          "value": "-nographic;-serial;stdio;-monitor;telnet::2333,server,nowait;-m;1024M;-smp;4;-netdev;user,id=net0;-device;e1000,netdev=net0"
+        },
         "BOOT_ELF_OUTPUT_NAME": {
           "type": "STRING",
           "value": "boot.elf"
