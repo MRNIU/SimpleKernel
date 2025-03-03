@@ -78,11 +78,14 @@ RUN apt install --no-install-recommends --fix-missing -y \
     flex \
     bison \
     device-tree-compiler \
+    python3-dev \
     python3-cryptography \
     python3-pyelftools \
+    python3-setuptools \
     libgnutls28-dev \
     gawk \
-    u-boot-tools
+    u-boot-tools \
+    swig
 RUN apt install --no-install-recommends --fix-missing -y \
     gcc \
     g++ \

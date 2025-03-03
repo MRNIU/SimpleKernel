@@ -43,19 +43,13 @@ LIST (APPEND QEMU_BOOT_FLAGS "")
 LIST (APPEND QEMU_MACHINE_FLAGS "")
 # 目标平台参数
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    LIST (APPEND QEMU_BOOT_FLAGS -bios
-          ${ovmf_BINARY_DIR}/OVMF_${CMAKE_SYSTEM_PROCESSOR}.fd -hda
-          fat:rw:./image/)
+    LIST (APPEND QEMU_BOOT_FLAGS -bios ${u-boot_BINARY_DIR}/u-boot.rom -kernel
+          $<TARGET_FILE:kernel>)
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
     LIST (APPEND QEMU_MACHINE_FLAGS -machine virt)
-    LIST (
-        APPEND
-        QEMU_BOOT_FLAGS
-        -bios
-        ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_payload.elf
-        # -kernel
-        # $<TARGET_FILE:kernel>
-    )
+    LIST (APPEND QEMU_BOOT_FLAGS -bios
+          ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_payload.elf
+          -kernel $<TARGET_FILE:kernel>)
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     LIST (APPEND QEMU_MACHINE_FLAGS -machine virt,secure=on,gic_version=3 -cpu
           cortex-a72)
