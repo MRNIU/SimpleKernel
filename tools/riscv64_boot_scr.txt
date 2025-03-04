@@ -1,0 +1,2 @@
+tftp 0x84000000 bin/qemu.itb
+bootm 0x84000000

@@ -127,7 +127,10 @@ FUNCTION(gen_fit)
         COMMENT "Generating FIT file..."
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND mkimage -f bin/qemu.its bin/qemu.itb)
+        COMMAND mkimage -f bin/qemu.its bin/qemu.itb
+        COMMAND
+            mkimage -T script -d
+            ${CMAKE_SOURCE_DIR}/tools/${ARG_TARGET}_boot_scr.txt bin/boot.scr)
 ENDFUNCTION()
 
 # 添加运行 qemu target

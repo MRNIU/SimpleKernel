@@ -1,0 +1,6 @@
+tftp 0x40400000 bin/qemu.itb
+bootm 0x40400000
+
+
+tftp 0x40100000 bin/kernel.elf
+go 0x40110018
