@@ -1,2 +1,2 @@
-tftp $kernel_addr_r boot.itb
+tftp $kernel_addr_r boot.fit
 bootm $kernel_addr_r

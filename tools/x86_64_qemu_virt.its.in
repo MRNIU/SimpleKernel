@@ -11,7 +11,7 @@
             data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.elf");
             type = "kernel";
 			// 架构类型
-            arch = "ia64";
+            arch = "x86_64";
             os = "linux";
 			// 压缩方式
             compression = "none";

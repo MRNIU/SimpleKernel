@@ -11,7 +11,7 @@
             data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.elf");
             type = "kernel";
 			// 架构类型
-            arch = "riscv64";
+            arch = "riscv";
             os = "linux";
 			// 压缩方式
             compression = "none";
@@ -29,7 +29,7 @@
 			// dtb 路径
             data = /incbin/("@CMAKE_BINARY_DIR@/bin/qemu.dtb");
             type = "flat_dt";
-            arch = "riscv64";
+            arch = "riscv";
             compression = "none";
             hash-1 {
                 algo = "sha1";
