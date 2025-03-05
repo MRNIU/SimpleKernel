@@ -1,6 +1,2 @@
-tftp $kernel_addr_r bin/qemu.itb
+tftp $kernel_addr_r boot.itb
 bootm $kernel_addr_r
-
-
-tftp 0x40100000 bin/kernel.elf
-go 0x40110018

@@ -127,10 +127,14 @@ FUNCTION(gen_fit)
         COMMENT "Generating FIT file..."
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND mkimage -f bin/qemu.its bin/qemu.itb
+        COMMAND mkimage -f bin/qemu.its bin/boot.itb
+        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin/boot.itb
+                ${ARG_WORKING_DIRECTORY}/bin/0A00020F.img
         COMMAND
             mkimage -T script -d
-            ${CMAKE_SOURCE_DIR}/tools/${ARG_TARGET}_boot_scr.txt bin/boot.scr)
+            ${CMAKE_SOURCE_DIR}/tools/${ARG_TARGET}_boot_scr.txt bin/boot.scr
+        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin/boot.scr
+                ${ARG_WORKING_DIRECTORY}/bin/boot.scr.uimg)
 ENDFUNCTION()
 
 # 添加运行 qemu target
@@ -159,18 +163,14 @@ FUNCTION(add_run_target)
         COMMENT "Run ${ARG_NAME} ..."
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND ${CMAKE_COMMAND} -E make_directory image/
-        COMMAND ${CMAKE_COMMAND} -E copy ${ARG_KERNEL} image/
-        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin /srv/tftp
+        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin/* /srv/tftp
         COMMAND qemu-system-${ARG_TARGET} ${ARG_QEMU_FLAGS})
     ADD_CUSTOM_TARGET (
         ${ARG_NAME}debug
         COMMENT "Run ${ARG_NAME} ..."
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND ${CMAKE_COMMAND} -E make_directory image/
-        COMMAND ${CMAKE_COMMAND} -E copy ${ARG_KERNEL} image/
-        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin /srv/tftp
+        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin/* /srv/tftp
         COMMAND
             qemu-system-${ARG_TARGET} ${ARG_QEMU_FLAGS}
             # 等待 gdb 连接

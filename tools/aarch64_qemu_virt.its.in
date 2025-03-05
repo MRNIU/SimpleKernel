@@ -5,7 +5,7 @@
     #address-cells = <1>;
 
     images {
-        kernel@1 {
+        kernel {
             description = "Linux Kernel";
 			// 内核路径
             data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.elf");
@@ -24,7 +24,7 @@
             };
         };
 
-        fdt@1 {
+        fdt {
             description = "Device Tree Blob";
 			// dtb 路径
             data = /incbin/("@CMAKE_BINARY_DIR@/bin/qemu.dtb");
@@ -38,12 +38,12 @@
     };
 
     configurations {
-        default = "config@1";
+        default = "config";
 
-        config@1 {
+        config {
             description = "Default Boot Configuration";
-            kernel = "kernel@1";
-            fdt = "fdt@1";
+            kernel = "kernel";
+            fdt = "fdt";
             hash-1 {
                 algo = "sha1";
             };
