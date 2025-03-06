@@ -128,18 +128,10 @@ FUNCTION(gen_fit)
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
         COMMAND mkimage -f bin/qemu.its bin/boot.fit
-        # COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin/boot.fit
-        #         ${ARG_WORKING_DIRECTORY}/bin/0A00020F.img
-        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin/kernel.elf
-                ${ARG_WORKING_DIRECTORY}/bin/0A00020F.img
         COMMAND
             mkimage -T script -d
-            ${CMAKE_SOURCE_DIR}/tools/${ARG_TARGET}_boot_scr.txt bin/boot.scr
-        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin/boot.scr
-                ${ARG_WORKING_DIRECTORY}/bin/boot.scr.uimg
-        # COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin/boot.scr
-        #         ${ARG_WORKING_DIRECTORY}/bin/0A00020F.img
-    )
+            ${CMAKE_SOURCE_DIR}/tools/${ARG_TARGET}_boot_scr.txt
+            bin/boot.scr.uimg)
 ENDFUNCTION()
 
 # 添加运行 qemu target

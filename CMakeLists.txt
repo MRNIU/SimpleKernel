@@ -54,7 +54,8 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     LIST (
         APPEND
         QEMU_BOOT_FLAGS
-        # -drive file=fat:rw:bin,format=raw,media=disk
+        -drive
+        file=fat:rw:bin,format=raw,media=disk
         -serial
         ${QEMU_NORMAL_WORLD_DEV_PATH}
         -serial
