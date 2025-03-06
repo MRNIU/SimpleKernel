@@ -37,10 +37,6 @@ auto main_smp(uint32_t argc, uint8_t *argv) -> uint32_t {
 }  // namespace
 
 void _start(uint32_t argc, uint8_t *argv) {
-  while (true) {
-    ;
-  }
-
   if (!is_boot_core) {
     is_boot_core = true;
     CppInit();

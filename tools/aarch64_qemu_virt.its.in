@@ -12,13 +12,13 @@
             type = "kernel";
 			// 架构类型
             arch = "arm64";
-            os = "linux";
+            os = "elf";
 			// 压缩方式
             compression = "none";
 			// 内核加载地址
             load = <0x40100000>;
 			// 内核入口地址
-            entry = <0x40110018>;
+            entry = <0x40100000>;
             hash-1 {
                 algo = "sha1";
             };
