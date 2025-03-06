@@ -120,14 +120,14 @@ FUNCTION(gen_fit)
                            "${multi_value_keywords}" ${ARGN})
 
     CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/${ARG_TARGET}_qemu_virt.its.in
-                    ${ARG_WORKING_DIRECTORY}/bin/qemu.its @ONLY)
+                    ${ARG_WORKING_DIRECTORY}/bin/boot.its @ONLY)
 
     ADD_CUSTOM_TARGET (
         gen_fit
         COMMENT "Generating FIT file..."
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND mkimage -f bin/qemu.its bin/boot.fit
+        COMMAND mkimage -f bin/boot.its bin/boot.fit
         COMMAND
             mkimage -T script -d
             ${CMAKE_SOURCE_DIR}/tools/${ARG_TARGET}_boot_scr.txt
