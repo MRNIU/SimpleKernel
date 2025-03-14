@@ -46,8 +46,19 @@ IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
     LIST (APPEND QEMU_BOOT_FLAGS -bios ${u-boot_BINARY_DIR}/u-boot.rom)
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
     LIST (APPEND QEMU_MACHINE_FLAGS -machine virt)
-    LIST (APPEND QEMU_BOOT_FLAGS -bios
-          ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_payload.elf)
+    LIST (
+        APPEND
+        QEMU_BOOT_FLAGS
+        -bios
+        # ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_payload.elf
+        ${u-boot_BINARY_DIR}/spl/u-boot-spl.bin
+        -device
+        loader,file=${u-boot_BINARY_DIR}/u-boot.itb,addr=0x80200000
+        # -kernel $<TARGET_FILE:kernel>
+        # ${u-boot_BINARY_DIR}/spl/u-boot-spl-dtb.bin
+        # ${u-boot_BINARY_DIR}/u-boot
+        # -device loader,file=${u-boot_BINARY_DIR}/u-boot.itb,addr=0x80200000
+    )
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     LIST (APPEND QEMU_MACHINE_FLAGS -machine virt,secure=on,gic_version=3 -cpu
           cortex-a72)
@@ -90,7 +101,8 @@ ADD_RUN_TARGET (
     ovmf
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:gen_fit>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:gen_fit>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi-fw_jump>
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi>
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:u-boot>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:boot>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>

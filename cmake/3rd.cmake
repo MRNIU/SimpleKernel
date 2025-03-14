@@ -109,27 +109,6 @@ ADD_SUBDIRECTORY (3rd/cpu_io)
 # https://github.com/MRNIU/smccc.git
 # ADD_SUBDIRECTORY (3rd/smccc)
 
-# https://github.com/u-boot/u-boot.git
-SET (u-boot_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/u-boot)
-SET (u-boot_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/u-boot)
-ADD_CUSTOM_TARGET (
-    u-boot
-    COMMENT "build u-boot..."
-    # make 时编译
-    ALL
-    WORKING_DIRECTORY ${u-boot_SOURCE_DIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${u-boot_BINARY_DIR}
-    COMMAND
-        make O=${u-boot_BINARY_DIR}
-        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:qemu_arm64_defconfig>
-        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:qemu-riscv64_smode_defconfig>
-        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:qemu-x86_64_defconfig>
-        -j${CMAKE_BUILD_PARALLEL_LEVEL}
-    COMMAND make CROSS_COMPILE=${TOOLCHAIN_PREFIX} O=${u-boot_BINARY_DIR}
-            -j${CMAKE_BUILD_PARALLEL_LEVEL})
-SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
-                                     ${u-boot_BINARY_DIR})
-
 # https://github.com/buildroot/buildroot.git
 SET (buildroot_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/buildroot)
 SET (buildroot_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/buildroot)
@@ -151,6 +130,28 @@ ADD_CUSTOM_TARGET (
     COMMAND cd ${buildroot_BINARY_DIR} && make -j${CMAKE_BUILD_PARALLEL_LEVEL})
 SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
                                      ${buildroot_BINARY_DIR})
+
+IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
+    # https://github.com/riscv-software-src/opensbi.git
+    # 编译 opensbi
+    SET (opensbi_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/opensbi)
+    SET (opensbi_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/opensbi)
+    ADD_CUSTOM_TARGET (
+        opensbi
+        COMMENT "build opensbi..."
+        # make 时编译
+        ALL
+        WORKING_DIRECTORY ${opensbi_SOURCE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${opensbi_BINARY_DIR}
+        COMMAND
+            make PLATFORM_RISCV_XLEN=64 PLATFORM=generic
+            CROSS_COMPILE=${TOOLCHAIN_PREFIX} O=${opensbi_BINARY_DIR}
+            -j${CMAKE_BUILD_PARALLEL_LEVEL}
+        COMMAND ln -s -f ${opensbi_SOURCE_DIR}/include ${opensbi_BINARY_DIR})
+
+    # https://github.com/MRNIU/opensbi_interface.git
+    ADD_SUBDIRECTORY (3rd/opensbi_interface)
+ENDIF()
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
     # https://github.com/OP-TEE/optee_os.git
@@ -211,32 +212,29 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
                                          ${arm-trusted-firmware_BINARY_DIR})
 ENDIF()
 
-IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
-    # https://github.com/riscv-software-src/opensbi.git
-    # 编译 opensbi
-    SET (opensbi_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/opensbi)
-    SET (opensbi_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/opensbi)
-    ADD_CUSTOM_TARGET (
-        opensbi
-        COMMENT "build opensbi..."
-        # make 时编译
-        ALL
-        DEPENDS u-boot
-        WORKING_DIRECTORY ${opensbi_SOURCE_DIR}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${opensbi_BINARY_DIR}
-        COMMAND
-            make PLATFORM_RISCV_XLEN=64 PLATFORM=generic
-            CROSS_COMPILE=${TOOLCHAIN_PREFIX} FW_PAYLOAD=y
-            FW_PAYLOAD_PATH=${u-boot_BINARY_DIR}/u-boot.bin
-            O=${opensbi_BINARY_DIR} -j${CMAKE_BUILD_PARALLEL_LEVEL}
-        COMMAND ln -s -f ${opensbi_SOURCE_DIR}/include ${opensbi_BINARY_DIR})
-
-    ADD_LIBRARY (opensbi-fw_jump INTERFACE)
-    ADD_DEPENDENCIES (opensbi-fw_jump opensbi)
-
-    # https://github.com/MRNIU/opensbi_interface.git
-    ADD_SUBDIRECTORY (3rd/opensbi_interface)
-ENDIF()
+# https://github.com/u-boot/u-boot.git
+SET (u-boot_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/u-boot)
+SET (u-boot_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/u-boot)
+ADD_CUSTOM_TARGET (
+    u-boot
+    COMMENT "build u-boot..."
+    # make 时编译
+    ALL
+    DEPENDS $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi>
+    WORKING_DIRECTORY ${u-boot_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${u-boot_BINARY_DIR}
+    COMMAND
+        make O=${u-boot_BINARY_DIR}
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:qemu_arm64_defconfig>
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:qemu-riscv64_spl_defconfig>
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:qemu-x86_64_defconfig>
+        -j${CMAKE_BUILD_PARALLEL_LEVEL}
+    COMMAND
+        make CROSS_COMPILE=${TOOLCHAIN_PREFIX} O=${u-boot_BINARY_DIR}
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:OPENSBI=${opensbi_BINARY_DIR}/platform/generic/firmware/fw_dynamic.bin>
+        -j${CMAKE_BUILD_PARALLEL_LEVEL})
+SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
+                                     ${u-boot_BINARY_DIR})
 
 # https://git.kernel.org/pub/scm/utils/dtc/dtc.git
 SET (dtc_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/dtc)

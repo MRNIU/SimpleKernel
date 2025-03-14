@@ -31,6 +31,7 @@
             type = "flat_dt";
             arch = "riscv";
             compression = "none";
+            load = <0x80400000>;
             hash-1 {
                 algo = "sha1";
             };

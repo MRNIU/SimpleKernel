@@ -56,17 +56,18 @@ void ArchInit(uint32_t argc, const uint8_t* argv) {
   // 初始化 FPU
   cpu_io::SetupFpu();
 
-  Singleton<KernelFdt>::GetInstance() = KernelFdt(0x40000000);
+  // Singleton<KernelFdt>::GetInstance() = KernelFdt(0x40000000);
 
-  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
-  Singleton<BasicInfo>::GetInstance().core_count++;
+  // Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+  // Singleton<BasicInfo>::GetInstance().core_count++;
 
-  auto [serial_base, serial_size] =
-      Singleton<KernelFdt>::GetInstance().GetSerial();
+  // auto [serial_base, serial_size] =
+  // Singleton<KernelFdt>::GetInstance().GetSerial();
 
-  static auto uart = Pl011(serial_base);
+  static auto uart = Pl011(0x9000000);
   pl011 = &uart;
-  sk_std::cout << Singleton<BasicInfo>::GetInstance();
+  klog::Info("argv 0x%p\n", argv);
+  // sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
   uart.PutChar('H');
   uart.PutChar('e');
@@ -80,8 +81,6 @@ void ArchInit(uint32_t argc, const uint8_t* argv) {
   uart.PutChar('t');
   uart.PutChar('!');
   uart.PutChar('\n');
-
-  // __asm__ volatile("sev");
 }
 
 void ArchInitSMP(uint32_t argc, const uint8_t* argv) {
