@@ -19,6 +19,7 @@
 #include "basic_info.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
+#include "kernel_log.hpp"
 #include "ns16550a.h"
 #include "per_cpu.hpp"
 #include "sk_cstdio"
@@ -48,23 +49,6 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
 }
 
 void ArchInit(uint32_t argc, const uint8_t *argv) {
-  printf("boot hart id: %d\n", argc);
-
-  auto aaa = 0xbeefc760;
-
-  printf("dtb info addr: %p\n", argv);
-  for (auto i = 0; i < 160; i++) {
-    if (i % 4 == 0) {
-      printf(" 0x");
-    }
-    printf("%X", argv[i]);
-  }
-  printf("\n");
-  // BEEFB420
-  // BEEFC100
-  // beefc760
-  // fdt_addr_r
-
   // 将 core id 保存到 tp 寄存器
   cpu_io::Tp::Write(argc);
   GetCurrentCore().core_id_ = argc;

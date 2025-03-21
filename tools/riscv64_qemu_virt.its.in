@@ -8,11 +8,11 @@
         kernel {
             description = "Linux Kernel";
 			// 内核路径
-            data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.elf");
+            data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.bin");
             type = "kernel";
 			// 架构类型
             arch = "riscv";
-            os = "elf";
+            os = "linux";
 			// 压缩方式
             compression = "none";
 			// 内核加载地址

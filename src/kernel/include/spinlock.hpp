@@ -50,7 +50,7 @@ class SpinLock {
   /**
    * @brief 获得锁
    */
-  void lock() {
+  __always_inline void lock() {
     DisableInterruptsNested();
     if (IsLockedByCurrentCore()) {
       printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
@@ -68,7 +68,7 @@ class SpinLock {
   /**
    * @brief 释放锁
    */
-  void unlock() {
+  __always_inline void unlock() {
     if (!IsLockedByCurrentCore()) {
       printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
     }
@@ -90,12 +90,12 @@ class SpinLock {
   /// 获得此锁的 core_id_
   size_t core_id_{SIZE_MAX};
 
-  virtual void EnableInterrupt() const { cpu_io::EnableInterrupt(); }
-  virtual void DisableInterrupt() const { cpu_io::DisableInterrupt(); }
-  [[nodiscard]] virtual auto GetInterruptStatus() const -> bool {
+  static __always_inline void EnableInterrupt() { cpu_io::EnableInterrupt(); }
+  static __always_inline void DisableInterrupt() { cpu_io::DisableInterrupt(); }
+  [[nodiscard]] static __always_inline auto GetInterruptStatus() -> bool {
     return cpu_io::GetInterruptStatus();
   }
-  [[nodiscard]] virtual auto GetCurrentCoreId() const -> size_t {
+  [[nodiscard]] static __always_inline auto GetCurrentCoreId() -> size_t {
     return cpu_io::GetCurrentCoreId();
   }
 
@@ -104,14 +104,14 @@ class SpinLock {
    * @return true             是
    * @return false            否
    */
-  auto IsLockedByCurrentCore() -> bool {
+  __always_inline auto IsLockedByCurrentCore() -> bool {
     return locked_._M_i && (core_id_ == GetCurrentCoreId());
   }
 
   /**
    * @brief 中断嵌套+1
    */
-  void DisableInterruptsNested() {
+  static __always_inline void DisableInterruptsNested() {
     bool old = GetInterruptStatus();
 
     DisableInterrupt();
@@ -125,7 +125,7 @@ class SpinLock {
   /**
    * @brief 中断嵌套-1
    */
-  void RestoreInterruptsNested() {
+  static __always_inline void RestoreInterruptsNested() {
     if (GetInterruptStatus()) {
       printf("RestoreInterruptsNested - interruptible\n");
     }
