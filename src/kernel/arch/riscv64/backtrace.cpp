@@ -15,38 +15,53 @@
  */
 
 #include <cpu_io.h>
+#include <elf.h>
 
 #include <array>
+#include <cerrno>
+#include <cstdint>
 
 #include "arch.h"
 #include "kernel_elf.hpp"
-#include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
-#include "sk_cstdio"
-#include "sk_libc.h"
+#include "singleton.hpp"
 
-auto backtrace(void **buffer, int size) -> int {
+auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer) -> int {
   auto *fp = reinterpret_cast<uint64_t *>(cpu_io::Fp::Read());
-  uint64_t *ra = nullptr;
+  uint64_t ra = 0;
 
   int count = 0;
-  while ((fp != nullptr) && (*fp != 0U) && count < size) {
-    ra = fp - 1;
+  while ((fp != nullptr) && (*fp != 0U) && count < buffer.max_size()) {
+    ra = *(fp - 1);
     fp = reinterpret_cast<uint64_t *>(*(fp - 2));
-    buffer[count++] = reinterpret_cast<void *>(*ra);
+    buffer[count++] = ra;
   }
   return count;
 }
 
 void DumpStack() {
-  std::array<void *, kMaxFrameCount> buffer{};
+  std::array<uint64_t, kMaxFrameCount> buffer{};
 
   // 获取调用栈中的地址
-  auto num_frames = backtrace(buffer.data(), kMaxFrameCount);
+  auto num_frames = backtrace(buffer);
 
   // 打印地址
   /// @todo 打印函数名，需要 elf 支持
   for (auto i = 0; i < num_frames; i++) {
     klog::Err("[0x%p]\n", buffer[i]);
+  }
+  for (auto current_frame_idx = 0; current_frame_idx < num_frames;
+       current_frame_idx++) {
+    // 打印函数名
+    klog::Err("current_frame_idx[%d]\n", current_frame_idx);
+    for (auto symtab : Singleton<KernelElf>::GetInstance().symtab_) {
+      if ((ELF64_ST_TYPE(symtab.st_info) == STT_FUNC) &&
+          (buffer[current_frame_idx] >= symtab.st_value) &&
+          (buffer[current_frame_idx] <= symtab.st_value + symtab.st_size)) {
+        klog::Err("[%s] 0x%p\n",
+                  Singleton<KernelElf>::GetInstance().strtab_ + symtab.st_name,
+                  buffer[current_frame_idx]);
+      }
+    }
   }
 }
