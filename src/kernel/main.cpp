@@ -28,7 +28,7 @@ namespace {
 
 bool is_boot_core = false;
 /// 非启动核入口
-auto main_smp(uint32_t argc, uint8_t *argv) -> uint32_t {
+auto main_smp(int argc, const char **argv) -> int {
   ArchInitSMP(argc, argv);
   klog::Info("Hello SimpleKernel\n");
   return 0;
@@ -36,7 +36,7 @@ auto main_smp(uint32_t argc, uint8_t *argv) -> uint32_t {
 
 }  // namespace
 
-void _start(uint32_t argc, uint8_t *argv) {
+void _start(int argc, const char **argv) {
   if (!is_boot_core) {
     is_boot_core = true;
     CppInit();
@@ -52,7 +52,7 @@ void _start(uint32_t argc, uint8_t *argv) {
   }
 }
 
-auto main(uint32_t argc, uint8_t *argv) -> uint32_t {
+auto main(int argc, const char **argv) -> int {
   // 架构相关初始化
   ArchInit(argc, argv);
 

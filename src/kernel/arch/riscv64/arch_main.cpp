@@ -30,7 +30,7 @@ extern "C" void _putchar(char character) {
   sbi_debug_console_write_byte(character);
 }
 
-BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
+BasicInfo::BasicInfo(int argc, const char **argv) {
   (void)argc;
   (void)argv;
 
@@ -48,7 +48,7 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   fdt_addr = reinterpret_cast<uint64_t>(argv);
 }
 
-void ArchInit(uint32_t argc, const uint8_t *argv) {
+void ArchInit(int argc, const char **argv) {
   // 将 core id 保存到 tp 寄存器
   cpu_io::Tp::Write(argc);
   GetCurrentCore().core_id_ = argc;
@@ -89,7 +89,7 @@ void ArchInit(uint32_t argc, const uint8_t *argv) {
   }
 }
 
-void ArchInitSMP(uint32_t argc, const uint8_t *) {
+void ArchInitSMP(int argc, const char **) {
   cpu_io::Tp::Write(argc);
   GetCurrentCore().core_id_ = argc;
   Singleton<BasicInfo>::GetInstance().core_count++;

@@ -29,15 +29,15 @@
  *          x86_64: BasicInfo 地址
  * @return uint32_t 正常返回 0
  */
-extern "C" [[maybe_unused]] [[noreturn]] void _start(uint32_t argc,
-                                                     uint8_t* argv);
+extern "C" [[maybe_unused]] [[noreturn]] void _start(int argc,
+                                                     const char** argv);
 
 /**
  * @brief 内核入口
  * @param argc 同 _start
  * @param argv 同 _start
- * @return uint32_t 正常返回 0
+ * @return int 正常返回 0
  */
-auto main(uint32_t argc, uint8_t* argv) -> uint32_t;
+auto main(int argc, const char** argv) -> int;
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_H_ */

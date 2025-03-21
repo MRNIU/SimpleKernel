@@ -60,7 +60,7 @@ struct BasicInfo {
    * @param argc 同 _start
    * @param argv 同 _start
    */
-  explicit BasicInfo(uint32_t argc, const uint8_t *argv);
+  explicit BasicInfo(int argc, const char **argv);
 
   /// @name 构造/析构函数
   /// @{
