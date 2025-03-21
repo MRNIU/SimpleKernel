@@ -89,7 +89,11 @@
         },
         "QEMU_COMMON_FLAG": {
           "type": "STRING",
-          "value": "-nographic;-serial;stdio;-monitor;telnet::2333,server,nowait;-m;1024M;-smp;4;-netdev;user,id=net0,tftp=/srv/tftp;-device;e1000,netdev=net0"
+          "value": "-nographic;-serial;stdio;-monitor;telnet::2333,server,nowait;-m;1024M;-smp;1;-netdev;user,id=net0,tftp=/srv/tftp;-device;e1000,netdev=net0"
+        },
+        "KERNEL_ELF_ADDR": {
+          "type": "STRING",
+          "value": "0x80600000"
         },
         "BOOT_ELF_OUTPUT_NAME": {
           "type": "STRING",

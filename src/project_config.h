@@ -21,6 +21,8 @@
 
 #define KERNEL_NAME (wchar_t *)L"kernel.elf"
 
+#define KERNEL_ELF_ADDR (0x80600000)
+
 #ifdef SIMPLEKERNEL_DEBUG
 #define SIMPLEKERNEL_DEBUG_LOG
 #endif
