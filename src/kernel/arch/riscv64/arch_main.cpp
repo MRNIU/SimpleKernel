@@ -16,6 +16,7 @@
 #include <cpu_io.h>
 #include <opensbi_interface.h>
 
+#include "../../project_config.h"
 #include "basic_info.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
@@ -42,7 +43,7 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
   kernel_addr = reinterpret_cast<uint64_t>(__executable_start);
   kernel_size = reinterpret_cast<uint64_t>(end) -
                 reinterpret_cast<uint64_t>(__executable_start);
-  elf_addr = 0;
+  elf_addr = KERNEL_ELF_ADDR;
   elf_size = 0;
 
   fdt_addr = reinterpret_cast<uint64_t>(argv);
@@ -59,6 +60,10 @@ void ArchInit(int argc, const char **argv) {
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
   Singleton<BasicInfo>::GetInstance().core_count++;
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
+
+  // 解析内核 elf 信息
+  Singleton<KernelElf>::GetInstance() =
+      KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
 
   auto [serial_base, serial_size] =
       Singleton<KernelFdt>::GetInstance().GetSerial();
