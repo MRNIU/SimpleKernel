@@ -83,10 +83,6 @@
           "type": "STRING",
           "value": "tcp::1234"
         },
-        "QEMU_MONITOR_ARG": {
-          "type": "STRING",
-          "value": "telnet::2333,server,nowait"
-        },
         "QEMU_COMMON_FLAG": {
           "type": "STRING",
           "value": "-nographic;-serial;stdio;-monitor;telnet::2333,server,nowait;-m;1024M;-smp;1;-netdev;user,id=net0,tftp=/srv/tftp;-device;e1000,netdev=net0"

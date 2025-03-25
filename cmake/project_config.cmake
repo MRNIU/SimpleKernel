@@ -47,11 +47,6 @@ IF(NOT DEFINED QEMU_GDB_PORT)
     SET (QEMU_GDB_PORT tcp::1234)
 ENDIF()
 
-# qemu monitor 参数
-IF(NOT DEFINED QEMU_MONITOR_ARG)
-    SET (QEMU_MONITOR_ARG telnet::2333,server,nowait)
-ENDIF()
-
 # 生成项目配置头文件，传递给代码
 CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/project_config.h.in
                 ${CMAKE_SOURCE_DIR}/src/project_config.h @ONLY)
