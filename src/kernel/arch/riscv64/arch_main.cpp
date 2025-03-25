@@ -43,7 +43,7 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
   kernel_addr = reinterpret_cast<uint64_t>(__executable_start);
   kernel_size = reinterpret_cast<uint64_t>(end) -
                 reinterpret_cast<uint64_t>(__executable_start);
-  elf_addr = KERNEL_ELF_ADDR;
+  elf_addr = kernel_addr;
   elf_size = 0;
 
   fdt_addr = reinterpret_cast<uint64_t>(argv);
