@@ -26,7 +26,8 @@
 #include "kernel_log.hpp"
 #include "singleton.hpp"
 
-auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer) -> int {
+__always_inline auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer)
+    -> int {
   auto *fp = reinterpret_cast<uint64_t *>(cpu_io::Fp::Read());
   uint64_t ra = 0;
 
@@ -45,15 +46,9 @@ void DumpStack() {
   // 获取调用栈中的地址
   auto num_frames = backtrace(buffer);
 
-  // 打印地址
-  /// @todo 打印函数名，需要 elf 支持
-  for (auto i = 0; i < num_frames; i++) {
-    klog::Err("[0x%p]\n", buffer[i]);
-  }
+  // 打印函数名
   for (auto current_frame_idx = 0; current_frame_idx < num_frames;
        current_frame_idx++) {
-    // 打印函数名
-    klog::Err("current_frame_idx[%d]\n", current_frame_idx);
     for (auto symtab : Singleton<KernelElf>::GetInstance().symtab_) {
       if ((ELF64_ST_TYPE(symtab.st_info) == STT_FUNC) &&
           (buffer[current_frame_idx] >= symtab.st_value) &&

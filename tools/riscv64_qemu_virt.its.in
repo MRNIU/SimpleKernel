@@ -8,7 +8,7 @@
         kernel {
             description = "SimpleKernel";
 			// 内核路径
-            data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.bin");
+            data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.elf");
             type = "kernel";
 			// 架构类型
             arch = "riscv";
@@ -18,7 +18,7 @@
 			// 内核加载地址
             load = <0x80200000>;
 			// 内核入口地址
-            entry = <0x80200000>;
+            entry = <0x80210000>;
             hash-1 {
                 algo = "sha1";
             };
