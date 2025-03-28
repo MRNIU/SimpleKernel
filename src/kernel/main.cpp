@@ -26,19 +26,17 @@
 /// 用于判断是否为启动核
 namespace {
 
-bool is_boot_core = false;
 /// 非启动核入口
 auto main_smp(int argc, const char **argv) -> int {
   ArchInitSMP(argc, argv);
-  klog::Info("Hello SimpleKernel\n");
+  klog::Info("Hello SimpleKernel SMP\n");
   return 0;
 }
 
 }  // namespace
 
 void _start(int argc, const char **argv) {
-  if (!is_boot_core) {
-    is_boot_core = true;
+  if (argv != nullptr) {
     CppInit();
     main(argc, argv);
     CppDeInit();

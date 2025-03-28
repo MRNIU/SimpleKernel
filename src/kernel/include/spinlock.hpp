@@ -59,7 +59,6 @@ class SpinLock {
       ;
     }
 
-    std::atomic_signal_fence(std::memory_order_acquire);
     std::atomic_thread_fence(std::memory_order_acquire);
 
     core_id_ = GetCurrentCoreId();
@@ -74,7 +73,6 @@ class SpinLock {
     }
     core_id_ = SIZE_MAX;
 
-    std::atomic_signal_fence(std::memory_order_release);
     std::atomic_thread_fence(std::memory_order_release);
 
     locked_.clear(std::memory_order_release);
@@ -82,7 +80,7 @@ class SpinLock {
     RestoreInterruptsNested();
   }
 
- protected:
+ private:
   /// 自旋锁名称
   const char *name_{"unnamed"};
   /// 是否 lock

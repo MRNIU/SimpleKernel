@@ -34,18 +34,13 @@ class PerCpu {
   static constexpr size_t kMaxCoreCount = 4;
 
   /// 核心 ID
-  size_t core_id_;
+  const size_t core_id_;
   /// 中断嵌套深度
-  ssize_t noff_;
+  ssize_t noff_{0};
   /// 在进入调度线程前是否允许中断
-  bool intr_enable_;
+  bool intr_enable_{false};
 
-  PerCpu() {
-    core_id_ = SIZE_MAX;
-    noff_ = 0;
-    intr_enable_ = false;
-  }
-  // explicit PerCpu(size_t core_id) : core_id_(core_id) {}
+  PerCpu() : core_id_(cpu_io::GetCurrentCoreId()) {}
 
   /// @name 构造/析构函数
   /// @{

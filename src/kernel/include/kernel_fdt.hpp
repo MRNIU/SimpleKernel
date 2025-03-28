@@ -55,21 +55,21 @@ class KernelFdt {
     uint32_t size_dt_struct;
   };
 
-  FdtHeader *fdt_header;
+  FdtHeader *fdt_header_;
 
   /**
    * 构造函数
    * @param fdt_addr fdt 地址
    */
   explicit KernelFdt(uint64_t header)
-      : fdt_header(reinterpret_cast<FdtHeader *>(header)) {
-    if (fdt_header == nullptr) {
+      : fdt_header_(reinterpret_cast<FdtHeader *>(header)) {
+    if (fdt_header_ == nullptr) {
       klog::Err("Fatal Error: Invalid fdt_addr.\n");
       throw;
     }
 
     // 检查 fdt 头数据
-    if (fdt_check_header(fdt_header) != 0) {
+    if (fdt_check_header(fdt_header_) != 0) {
       klog::Err("Invalid device tree blob\n");
       throw;
     }
@@ -86,6 +86,23 @@ class KernelFdt {
   /// @}
 
   /**
+   * 获取 core 数量
+   * @return core 数量
+   */
+  [[nodiscard]] auto GetCoreCount() const -> size_t {
+    size_t core_count = 0;
+    int offset = 0;
+    while (true) {
+      offset = fdt_node_offset_by_compatible(fdt_header_, offset, "riscv");
+      if (offset < 0) {
+        break;
+      }
+      ++core_count;
+    }
+    return core_count;
+  }
+
+  /**
    * 获取内存信息
    * @return 内存信息<地址，长度>
    */
@@ -96,14 +113,14 @@ class KernelFdt {
     int len = 0;
 
     // 找到 /memory 节点
-    auto offset = fdt_path_offset(fdt_header, "/memory");
+    auto offset = fdt_path_offset(fdt_header_, "/memory");
     if (offset < 0) {
       klog::Err("Error finding /memory node: %s\n", fdt_strerror(offset));
       throw;
     }
 
     // 获取 reg 属性
-    const auto *prop = fdt_get_property(fdt_header, offset, "reg", &len);
+    const auto *prop = fdt_get_property(fdt_header_, offset, "reg", &len);
     if (prop == nullptr) {
       klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
       throw;
@@ -133,7 +150,7 @@ class KernelFdt {
                                                   "ns16550a"};
 
     for (const auto &compatible : compatible_str) {
-      offset = fdt_node_offset_by_compatible(fdt_header, -1, compatible);
+      offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
       if (offset != -FDT_ERR_NOTFOUND) {
         break;
       }
@@ -144,7 +161,7 @@ class KernelFdt {
     }
 
     // 获取 reg 属性
-    const auto *prop = fdt_get_property(fdt_header, offset, "reg", &len);
+    const auto *prop = fdt_get_property(fdt_header_, offset, "reg", &len);
     if (prop == nullptr) {
       klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
       throw;

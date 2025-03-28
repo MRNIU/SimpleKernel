@@ -44,21 +44,18 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
   kernel_size = reinterpret_cast<uint64_t>(end) -
                 reinterpret_cast<uint64_t>(__executable_start);
   elf_addr = kernel_addr;
-  elf_size = 0;
+  elf_size = kernel_size;
 
   fdt_addr = reinterpret_cast<uint64_t>(argv);
+
+  core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
 }
 
 void ArchInit(int argc, const char **argv) {
-  // 将 core id 保存到 tp 寄存器
-  cpu_io::Tp::Write(argc);
-  GetCurrentCore().core_id_ = argc;
-
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(reinterpret_cast<uint64_t>(argv));
 
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
-  Singleton<BasicInfo>::GetInstance().core_count++;
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
   // 解析内核 elf 信息
@@ -86,13 +83,9 @@ void ArchInit(int argc, const char **argv) {
     auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret.error != SBI_SUCCESS) &&
         (ret.error != SBI_ERR_ALREADY_AVAILABLE)) {
-      printf("hart %d start failed: %d\n", i, ret.error);
+      klog::Warn("hart %d start failed: %d\n", i, ret.error);
     }
   }
 }
 
-void ArchInitSMP(int argc, const char **) {
-  cpu_io::Tp::Write(argc);
-  GetCurrentCore().core_id_ = argc;
-  Singleton<BasicInfo>::GetInstance().core_count++;
-}
+void ArchInitSMP(int, const char **) {}

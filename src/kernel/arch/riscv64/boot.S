@@ -54,7 +54,8 @@ multiboot_header_end:
 .extern __global_pointer$
 #endif
 _boot:
-
+    // Check if dtb address (a1) is zero
+    beqz a1, 2f
 #if USE_NO_RELAX == 0
 /// @see riscv-abi.pdf#9.1.4
 /// https://github.com/riscv-non-isa/riscv-elf-psabi-doc/releases/tag/v1.0
@@ -67,12 +68,14 @@ _boot:
 .option pop
 #endif
 
-    // 按照每个 core 设置栈地址
+2:  // 按照每个 core 设置栈地址
     add t0, a0, 1
     slli t0, t0, 12
     la sp, stack_top
     add sp, sp, t0
 
+    // 将 a0 的值写入 tp
+    mv tp, a0
     // 保存 sbi 传递的参数
     // 开辟栈空间
     addi sp, sp, -8*2

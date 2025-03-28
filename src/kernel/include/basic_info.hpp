@@ -28,6 +28,8 @@
 /// @see http://wiki.osdev.org/Using_Linker_Script_Values
 /// 内核开始
 extern "C" void *__executable_start[];
+/// 代码段结束
+extern "C" void *__etext[];
 /// 内核结束
 extern "C" void *end[];
 /// 内核入口，在 boot.S 中定义
