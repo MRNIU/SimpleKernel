@@ -1,7 +1,7 @@
 /dts-v1/;
 
 / {
-    description = "SimpleKernel U-Boot FIT Image";
+    description = "SimpleKernel RISCV64 U-Boot FIT Image";
     #address-cells = <1>;
 
     images {
@@ -31,7 +31,6 @@
             type = "flat_dt";
             arch = "riscv";
             compression = "none";
-            load = <0x80400000>;
             hash-1 {
                 algo = "sha1";
             };

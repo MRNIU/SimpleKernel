@@ -1,12 +1,12 @@
 /dts-v1/;
 
 / {
-    description = "U-Boot FIT Image";
+    description = "SimpleKernel AARCH64 U-Boot FIT Image";
     #address-cells = <1>;
 
     images {
         kernel {
-            description = "Linux Kernel";
+            description = "SimpleKernel";
 			// 内核路径
             data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.elf");
             type = "kernel";

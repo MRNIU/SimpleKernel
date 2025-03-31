@@ -91,14 +91,24 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetCoreCount() const -> size_t {
     size_t core_count = 0;
-    int offset = 0;
+    auto offset = -1;
+
     while (true) {
-      offset = fdt_node_offset_by_compatible(fdt_header_, offset, "riscv");
+      offset = fdt_next_node(fdt_header_, offset, nullptr);
       if (offset < 0) {
         break;
       }
-      ++core_count;
+
+      const auto *prop =
+          fdt_get_property(fdt_header_, offset, "device_type", nullptr);
+      if (prop != nullptr) {
+        const char *device_type = reinterpret_cast<const char *>(prop->data);
+        if (strcmp(device_type, "cpu") == 0) {
+          ++core_count;
+        }
+      }
     }
+
     return core_count;
   }
 

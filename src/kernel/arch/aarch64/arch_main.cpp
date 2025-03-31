@@ -23,10 +23,11 @@
 #include "per_cpu.hpp"
 #include "pl011.h"
 #include "sk_cstdio"
+#include "sk_libc.h"
 
 // printf_bare_metal 基本输出实现
 namespace {
-Pl011* pl011 = nullptr;
+Pl011 *pl011 = nullptr;
 }
 extern "C" void _putchar(char character) {
   if (pl011) {
@@ -34,7 +35,7 @@ extern "C" void _putchar(char character) {
   }
 }
 
-BasicInfo::BasicInfo(uint32_t argc, const uint8_t* argv) {
+BasicInfo::BasicInfo(int argc, const char **argv) {
   (void)argc;
   (void)argv;
 
@@ -46,28 +47,40 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t* argv) {
   kernel_addr = reinterpret_cast<uint64_t>(__executable_start);
   kernel_size = reinterpret_cast<uint64_t>(end) -
                 reinterpret_cast<uint64_t>(__executable_start);
-  elf_addr = 0;
-  elf_size = 0;
+  elf_addr = kernel_addr;
+  elf_size = kernel_size;
 
-  fdt_addr = 0x40000000;
+  fdt_addr = strtoull(argv[2], nullptr, 16);
+
+  core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
 }
 
-void ArchInit(uint32_t argc, const uint8_t* argv) {
+void ArchInit(int argc, const char **argv) {
   // 初始化 FPU
   cpu_io::SetupFpu();
 
-  // Singleton<KernelFdt>::GetInstance() = KernelFdt(0x40000000);
-
-  // Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
-  // Singleton<BasicInfo>::GetInstance().core_count++;
-
-  // auto [serial_base, serial_size] =
-  // Singleton<KernelFdt>::GetInstance().GetSerial();
-
   static auto uart = Pl011(0x9000000);
   pl011 = &uart;
-  klog::Info("argv 0x%p\n", argv);
-  // sk_std::cout << Singleton<BasicInfo>::GetInstance();
+
+  klog::Info("argc = %d\n", argc);
+  for (int i = 0; i < argc; i++) {
+    klog::Info("argv[%d] = [%s]\n", i, argv[i]);
+  }
+
+  Singleton<KernelFdt>::GetInstance() =
+      KernelFdt(strtoull(argv[2], nullptr, 16));
+
+  klog::Info("Singleton<KernelFdt>::GetInstance().GetCoreCount(): %d\n",
+             Singleton<KernelFdt>::GetInstance().GetCoreCount());
+
+  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+
+  auto [serial_base, serial_size] =
+      Singleton<KernelFdt>::GetInstance().GetSerial();
+
+  sk_std::cout << Singleton<BasicInfo>::GetInstance();
+
+  klog::Info("serial_base: 0x%lx\n", serial_base);
 
   uart.PutChar('H');
   uart.PutChar('e');
@@ -83,9 +96,7 @@ void ArchInit(uint32_t argc, const uint8_t* argv) {
   uart.PutChar('\n');
 }
 
-void ArchInitSMP(uint32_t argc, const uint8_t* argv) {
+void ArchInitSMP(int argc, const char **argv) {
   (void)argc;
   (void)argv;
-
-  Singleton<BasicInfo>::GetInstance().core_count++;
 }

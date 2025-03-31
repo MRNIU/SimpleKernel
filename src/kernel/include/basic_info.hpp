@@ -84,6 +84,7 @@ struct BasicInfo {
     klog::Info("elf_addr: 0x%X, size 0x%X\n", basic_info.elf_addr,
                basic_info.elf_size);
     klog::Info("fdt_addr: 0x%X\n", basic_info.fdt_addr);
+    klog::Info("core_count: %d\n", basic_info.core_count);
     return ostream;
   }
 };
