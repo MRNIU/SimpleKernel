@@ -206,4 +206,6 @@ TARGET_LINK_LIBRARIES (
               opensbi_interface
               >
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
+              teec
+              # smccc
               >)

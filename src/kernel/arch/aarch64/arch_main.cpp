@@ -93,6 +93,8 @@ void ArchInit(int argc, const char **argv) {
   uart.PutChar('t');
   uart.PutChar('!');
   uart.PutChar('\n');
+
+  /// @todo SMP
 }
 
 void ArchInitSMP(int argc, const char **argv) {

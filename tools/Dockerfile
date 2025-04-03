@@ -30,7 +30,8 @@ RUN apt install --no-install-recommends --fix-missing -y \
     lsof \
     bc \
     cpio \
-    tftpd-hpa
+    tftpd-hpa \
+    uuid-dev
 RUN apt install --no-install-recommends --fix-missing -y \
     file \
     vim \

@@ -199,6 +199,9 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
     SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
                                          ${optee_os_BINARY_DIR})
 
+    # https://github.com/OP-TEE/optee_client.git
+    ADD_SUBDIRECTORY (${CMAKE_SOURCE_DIR}/3rd/optee/optee_client)
+
     # https://github.com/ARM-software/arm-trusted-firmware
     # 编译 atf
     SET (arm-trusted-firmware_SOURCE_DIR
