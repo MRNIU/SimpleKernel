@@ -157,37 +157,72 @@ class KernelFdt {
   [[nodiscard]] auto GetSerial() const -> std::pair<uint64_t, size_t> {
     uint64_t base = 0;
     uint64_t size = 0;
-
     int len = 0;
-    int offset = 0;
 
-    std::array<const char *, 3> compatible_str = {"arm,pl011", "arm,primecell",
-                                                  "ns16550a"};
+    // Find the /chosen node
+    int chosen_offset = fdt_path_offset(fdt_header_, "/chosen");
+    if (chosen_offset < 0) {
+      klog::Err("Error finding /chosen node: %s\n",
+                fdt_strerror(chosen_offset));
+      throw;
+    }
 
-    for (const auto &compatible : compatible_str) {
-      offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
-      if (offset != -FDT_ERR_NOTFOUND) {
-        break;
+    // Get the stdout-path property
+    const auto *prop =
+        fdt_get_property(fdt_header_, chosen_offset, "stdout-path", &len);
+    if (prop == nullptr || len <= 0) {
+      klog::Err("Error finding stdout-path property: %s\n", fdt_strerror(len));
+      throw;
+    }
+
+    // Get the path as a string
+    const char *stdout_path = reinterpret_cast<const char *>(prop->data);
+
+    // Create a copy of the path that we can modify
+    std::array<char, 256> path_buffer;
+    strncpy(path_buffer.data(), stdout_path, path_buffer.max_size());
+
+    // Extract the path without any parameters (everything before ':')
+    char *colon = strchr(path_buffer.data(), ':');
+    if (colon != nullptr) {
+      *colon = '\0';  // Terminate the string at the colon
+    }
+
+    // Find the node at the stdout path
+    int stdout_offset = -1;
+
+    // Handle aliases (paths starting with '&')
+    if (path_buffer[0] == '&') {
+      const char *alias = path_buffer.data() + 1;  // Skip the '&'
+      const char *aliased_path = fdt_get_alias(fdt_header_, alias);
+      if (aliased_path != nullptr) {
+        stdout_offset = fdt_path_offset(fdt_header_, aliased_path);
       }
+    } else {
+      stdout_offset = fdt_path_offset(fdt_header_, path_buffer.data());
     }
-    if (offset < 0) {
-      klog::Err("Error finding /soc/serial node: %s\n", fdt_strerror(offset));
+
+    if (stdout_offset < 0) {
+      klog::Err("Error finding node for stdout-path %s: %s\n", path_buffer,
+                fdt_strerror(stdout_offset));
       throw;
     }
 
-    // 获取 reg 属性
-    const auto *prop = fdt_get_property(fdt_header_, offset, "reg", &len);
+    // Get the reg property of the stdout device
+    prop = fdt_get_property(fdt_header_, stdout_offset, "reg", &len);
     if (prop == nullptr) {
-      klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
+      klog::Err("Error finding reg property for stdout device: %s\n",
+                fdt_strerror(len));
       throw;
     }
 
-    // 解析 reg 属性，通常包含基地址和大小
+    // Parse the reg property to get base address and size
     const auto *reg = reinterpret_cast<const uint64_t *>(prop->data);
     for (size_t i = 0; i < len / sizeof(uint64_t); i += 2) {
       base = fdt64_to_cpu(reg[i]);
       size = fdt64_to_cpu(reg[i + 1]);
     }
+
     return {base, size};
   }
 };

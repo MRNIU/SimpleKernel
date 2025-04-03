@@ -41,6 +41,18 @@ _boot:
     bl _start
     b .
 
+.section ".rodata"                /* Allocates on ROM section (.progmem.data for AVR) */
+
+/// @tmp 临时将 dtb 信息嵌入内核文件
+.align 8
+.global dtb
+.global sizeof_dtb
+dtb:
+    .incbin "../../../build_aarch64/bin/qemu.dtb"
+.set sizeof_dtb, . - dtb
+
+.section ".text"
+
 // 声明所属段
 .section .bss.boot
 // 16 字节对齐

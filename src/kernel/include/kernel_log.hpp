@@ -149,7 +149,7 @@ __always_inline void DebugBlob(const void* data, size_t size) {
     for (size_t i = 0; i < size; i++) {
       printf("0x%02X ", reinterpret_cast<const uint8_t*>(data)[i]);
     }
-    printf("%s", detail::kReset);
+    printf("%s\n", detail::kReset);
     Singleton<SpinLock>::GetInstance().unlock();
   }
 }

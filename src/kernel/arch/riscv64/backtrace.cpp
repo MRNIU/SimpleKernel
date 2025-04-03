@@ -30,22 +30,14 @@
 __always_inline auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer)
     -> int {
   auto *fp = reinterpret_cast<uint64_t *>(cpu_io::Fp::Read());
-  uint64_t ra = 0;
-
   size_t count = 0;
-  klog::Debug("__executable_start: 0x%lx, __etext: 0x%lx\n", __executable_start,
-              __etext);
-  klog::Debug("fp: 0x%lx, *fp: 0x%lx, *(fp-1): 0x%lx, *(fp-2): 0x%lx\n", fp,
-              *fp, *(fp - 1), *(fp - 2));
   while ((fp != nullptr) && (*fp != 0U) &&
          *(fp - 2) >= reinterpret_cast<uint64_t>(__executable_start) &&
          *(fp - 2) <= reinterpret_cast<uint64_t>(__etext) &&
          count < buffer.max_size()) {
-    ra = *(fp - 1);
+    auto ra = *(fp - 1);
     fp = reinterpret_cast<uint64_t *>(*(fp - 2));
     buffer[count++] = ra;
-    klog::Debug("fp: 0x%lx, *fp: 0x%lx, *(fp-1): 0x%lx, *(fp-2): 0x%lx\n", fp,
-                *fp, *(fp - 1), *(fp - 2));
   }
   return int(count);
 }

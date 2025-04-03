@@ -70,6 +70,7 @@ class KernelElf {
     const auto *shstrtab = reinterpret_cast<const char *>(elf_.data()) +
                            shdr_[ehdr_.e_shstrndx].sh_offset;
     for (auto shdr : shdr_) {
+      klog::Debug("sh_name: [%s]\n", shstrtab + shdr.sh_name);
       if (strcmp(shstrtab + shdr.sh_name, ".symtab") == 0) {
         symtab_ = std::span<Elf64_Sym>(
             reinterpret_cast<Elf64_Sym *>(elf_.data() + shdr.sh_offset),

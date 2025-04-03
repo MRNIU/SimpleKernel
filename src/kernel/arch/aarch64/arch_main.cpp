@@ -35,6 +35,9 @@ extern "C" void _putchar(char character) {
   }
 }
 
+extern "C" void *dtb[];
+extern "C" void *sizeof_dtb[];
+
 BasicInfo::BasicInfo(int argc, const char **argv) {
   (void)argc;
   (void)argv;
@@ -50,7 +53,7 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
   elf_addr = kernel_addr;
   elf_size = kernel_size;
 
-  fdt_addr = strtoull(argv[2], nullptr, 16);
+  fdt_addr = reinterpret_cast<uint64_t>(dtb);
 
   core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
 }
@@ -59,24 +62,20 @@ void ArchInit(int argc, const char **argv) {
   // 初始化 FPU
   cpu_io::SetupFpu();
 
-  static auto uart = Pl011(0x9000000);
-  pl011 = &uart;
-
-  klog::Info("argc = %d\n", argc);
-  for (int i = 0; i < argc; i++) {
-    klog::Info("argv[%d] = [%s]\n", i, argv[i]);
-  }
-
   Singleton<KernelFdt>::GetInstance() =
-      KernelFdt(strtoull(argv[2], nullptr, 16));
-
-  klog::Info("Singleton<KernelFdt>::GetInstance().GetCoreCount(): %d\n",
-             Singleton<KernelFdt>::GetInstance().GetCoreCount());
-
-  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+      KernelFdt(reinterpret_cast<uint64_t>(dtb));
 
   auto [serial_base, serial_size] =
       Singleton<KernelFdt>::GetInstance().GetSerial();
+
+  static auto uart = Pl011(serial_base);
+  pl011 = &uart;
+
+  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+
+  // 解析内核 elf 信息
+  Singleton<KernelElf>::GetInstance() =
+      KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
 
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
 

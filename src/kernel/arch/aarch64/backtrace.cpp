@@ -14,37 +14,51 @@
  */
 
 #include <cpu_io.h>
+#include <elf.h>
 
 #include <array>
+#include <cerrno>
+#include <cstdint>
 
 #include "arch.h"
+#include "basic_info.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
-#include "sk_cstdio"
-#include "sk_libc.h"
+#include "singleton.hpp"
 
-auto backtrace(void **buffer, int size) -> int {
+__always_inline auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer)
+    -> int {
   auto *x29 = reinterpret_cast<uint64_t *>(cpu_io::X29::Read());
-
-  int count = 0;
-  while ((x29 != nullptr) && (*x29 != 0U) && count < size) {
-    uint64_t lr = x29[1];
+  size_t count = 0;
+  while ((x29 != nullptr) && (x29[0] != 0U) &&
+         x29[0] >= reinterpret_cast<uint64_t>(__executable_start) &&
+         x29[0] <= reinterpret_cast<uint64_t>(__etext) &&
+         count < buffer.max_size()) {
+    auto lr = x29[1];
     x29 = reinterpret_cast<uint64_t *>(x29[0]);
-    buffer[count++] = reinterpret_cast<void *>(lr);
+    buffer[count++] = lr;
   }
 
-  return count;
+  return int(count);
 }
 
 void DumpStack() {
-  std::array<void *, kMaxFrameCount> buffer{};
+  std::array<uint64_t, kMaxFrameCount> buffer{};
 
   // 获取调用栈中的地址
-  auto num_frames = backtrace(buffer.data(), kMaxFrameCount);
+  auto num_frames = backtrace(buffer);
 
-  // 打印地址
-  /// @todo 打印函数名，需要 elf 支持
-  for (auto i = 0; i < num_frames; i++) {
-    klog::Err("[0x%p]\n", buffer[i]);
+  // 打印函数名
+  for (auto current_frame_idx = 0; current_frame_idx < num_frames;
+       current_frame_idx++) {
+    for (auto symtab : Singleton<KernelElf>::GetInstance().symtab_) {
+      if ((ELF64_ST_TYPE(symtab.st_info) == STT_FUNC) &&
+          (buffer[current_frame_idx] >= symtab.st_value) &&
+          (buffer[current_frame_idx] <= symtab.st_value + symtab.st_size)) {
+        klog::Err("[%s] 0x%p\n",
+                  Singleton<KernelElf>::GetInstance().strtab_ + symtab.st_name,
+                  buffer[current_frame_idx]);
+      }
+    }
   }
 }
