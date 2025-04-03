@@ -17,8 +17,10 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_LOG_HPP_
 #define SIMPLEKERNEL_SRC_KERNEL_INCLUDE_KERNEL_LOG_HPP_
 
+#include <array>
 #include <cstdarg>
 #include <cstdint>
+#include <source_location>
 
 #include "../../project_config.h"
 #include "singleton.hpp"
@@ -27,19 +29,19 @@
 #include "spinlock.hpp"
 
 namespace klog {
-namespace logger {
+namespace detail {
 
 /// ANSI 转义码，在支持 ANSI 转义码的终端中可以显示颜色
-constexpr const auto kReset = "\033[0m";
-constexpr const auto kRed = "\033[31m";
-constexpr const auto kGreen = "\033[32m";
-constexpr const auto kYellow = "\033[33m";
-constexpr const auto kBlue = "\033[34m";
-constexpr const auto kMagenta = "\033[35m";
-constexpr const auto kCyan = "\033[36m";
-constexpr const auto kWhite = "\033[37m";
+static constexpr const auto kReset = "\033[0m";
+static constexpr const auto kRed = "\033[31m";
+static constexpr const auto kGreen = "\033[32m";
+static constexpr const auto kYellow = "\033[33m";
+static constexpr const auto kBlue = "\033[34m";
+static constexpr const auto kMagenta = "\033[35m";
+static constexpr const auto kCyan = "\033[36m";
+static constexpr const auto kWhite = "\033[37m";
 
-template <void (*OutputFunction)(const char* format, ...)>
+template <template <typename...> class OutputFunction>
 class Logger : public sk_std::ostream {
  public:
   auto operator<<(int8_t val) -> Logger& override {
@@ -88,62 +90,104 @@ class Logger : public sk_std::ostream {
   }
 };
 
-}  // namespace logger
+enum LogLevel {
+  kDebug,
+  kInfo,
+  kWarn,
+  kErr,
+  kLogLevelMax,
+};
+
+constexpr std::array<const char*, kLogLevelMax> kLogColors = {
+    // kDebug
+    detail::kMagenta,
+    // kInfo
+    detail::kCyan,
+    // kWarn
+    detail::kYellow,
+    // kErr
+    detail::kRed,
+};
+
+template <LogLevel Level, typename... Args>
+struct LogBase {
+  explicit LogBase(Args&&... args,
+                   [[maybe_unused]] const std::source_location& location =
+                       std::source_location::current()) {
+    constexpr auto* color = kLogColors[Level];
+    Singleton<SpinLock>::GetInstance().lock();
+    printf("%s[%ld]", color, cpu_io::GetCurrentCoreId());
+    if constexpr (Level == kDebug && kSimpleKernelDebugLog) {
+      printf("[%s] ", location.function_name());
+    }
+    printf(args...);
+    printf("%s", detail::kReset);
+    Singleton<SpinLock>::GetInstance().unlock();
+  }
+};
+
+}  // namespace detail
 
 /**
  * @brief 与 printf 类似，只是颜色不同
  */
-extern "C" inline void Debug(const char* format, ...) {
-  (void)format;
-#ifdef SIMPLEKERNEL_DEBUG_LOG
-  Singleton<SpinLock>::GetInstance().lock();
-  va_list args;
-  va_start(args, format);
-  printf("%s[%ld] ", logger::kMagenta, cpu_io::GetCurrentCoreId());
-  vprintf(format, args);
-  printf("%s", logger::kReset);
-  va_end(args);
-  Singleton<SpinLock>::GetInstance().unlock();
-#endif
+
+template <typename... Args>
+struct Debug : public detail::LogBase<detail::kDebug, Args...> {
+  explicit Debug(Args&&... args, const std::source_location& location =
+                                     std::source_location::current())
+      : detail::LogBase<detail::kDebug, Args...>(std::forward<Args>(args)...,
+                                                 location) {}
+};
+template <typename... Args>
+Debug(Args&&...) -> Debug<Args...>;
+
+__always_inline void DebugBlob(const void* data, size_t size) {
+  if constexpr (kSimpleKernelDebugLog) {
+    Singleton<SpinLock>::GetInstance().lock();
+    printf("%s[%ld] ", detail::kMagenta, cpu_io::GetCurrentCoreId());
+    for (size_t i = 0; i < size; i++) {
+      printf("0x%02X ", reinterpret_cast<const uint8_t*>(data)[i]);
+    }
+    printf("%s", detail::kReset);
+    Singleton<SpinLock>::GetInstance().unlock();
+  }
 }
 
-extern "C" inline void Info(const char* format, ...) {
-  Singleton<SpinLock>::GetInstance().lock();
-  va_list args;
-  va_start(args, format);
-  printf("%s[%ld] ", logger::kCyan, cpu_io::GetCurrentCoreId());
-  vprintf(format, args);
-  printf("%s", logger::kReset);
-  va_end(args);
-  Singleton<SpinLock>::GetInstance().unlock();
-}
+template <typename... Args>
+struct Info : public detail::LogBase<detail::kInfo, Args...> {
+  explicit Info(Args&&... args, const std::source_location& location =
+                                    std::source_location::current())
+      : detail::LogBase<detail::kInfo, Args...>(std::forward<Args>(args)...,
+                                                location) {}
+};
+template <typename... Args>
+Info(Args&&...) -> Info<Args...>;
 
-extern "C" inline void Warn(const char* format, ...) {
-  Singleton<SpinLock>::GetInstance().lock();
-  va_list args;
-  va_start(args, format);
-  printf("%s[%ld] ", logger::kYellow, cpu_io::GetCurrentCoreId());
-  vprintf(format, args);
-  printf("%s", logger::kReset);
-  va_end(args);
-  Singleton<SpinLock>::GetInstance().unlock();
-}
+template <typename... Args>
+struct Warn : public detail::LogBase<detail::kWarn, Args...> {
+  explicit Warn(Args&&... args, const std::source_location& location =
+                                    std::source_location::current())
+      : detail::LogBase<detail::kWarn, Args...>(std::forward<Args>(args)...,
+                                                location) {}
+};
+template <typename... Args>
+Warn(Args&&...) -> Warn<Args...>;
 
-extern "C" inline void Err(const char* format, ...) {
-  Singleton<SpinLock>::GetInstance().lock();
-  va_list args;
-  va_start(args, format);
-  printf("%s[%ld] ", logger::kRed, cpu_io::GetCurrentCoreId());
-  vprintf(format, args);
-  printf("%s", logger::kReset);
-  va_end(args);
-  Singleton<SpinLock>::GetInstance().unlock();
-}
+template <typename... Args>
+struct Err : public detail::LogBase<detail::kErr, Args...> {
+  explicit Err(Args&&... args, const std::source_location& location =
+                                   std::source_location::current())
+      : detail::LogBase<detail::kErr, Args...>(std::forward<Args>(args)...,
+                                               location) {}
+};
+template <typename... Args>
+Err(Args&&...) -> Err<Args...>;
 
-[[maybe_unused]] static logger::Logger<Info> info;
-[[maybe_unused]] static logger::Logger<Warn> warn;
-[[maybe_unused]] static logger::Logger<Debug> debug;
-[[maybe_unused]] static logger::Logger<Err> err;
+[[maybe_unused]] static detail::Logger<Info> info;
+[[maybe_unused]] static detail::Logger<Warn> warn;
+[[maybe_unused]] static detail::Logger<Debug> debug;
+[[maybe_unused]] static detail::Logger<Err> err;
 
 }  // namespace klog
 

@@ -70,9 +70,14 @@ class KernelFdt {
 
     // 检查 fdt 头数据
     if (fdt_check_header(fdt_header_) != 0) {
-      klog::Err("Invalid device tree blob\n");
+      klog::Err("Invalid device tree blob [0x%p]\n", fdt_header_);
+      klog::Debug("fdt_header_->magic 0x%X\n", fdt_header_->magic);
+      klog::DebugBlob(fdt_header_, 32);
       throw;
     }
+
+    klog::Debug("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
+                fdt_header_->totalsize);
   }
 
   /// @name 构造/析构函数
@@ -156,7 +161,7 @@ class KernelFdt {
     int len = 0;
     int offset = 0;
 
-    std::array<const char *, 2> compatible_str = {"arm,pl011\0arm,primecell",
+    std::array<const char *, 3> compatible_str = {"arm,pl011", "arm,primecell",
                                                   "ns16550a"};
 
     for (const auto &compatible : compatible_str) {

@@ -24,7 +24,7 @@
 #define KERNEL_ELF_ADDR ()
 
 #ifdef SIMPLEKERNEL_DEBUG
-#define SIMPLEKERNEL_DEBUG_LOG
+static constexpr const auto kSimpleKernelDebugLog = true;
 #endif
 
 #endif /* SIMPLEKERNEL_SRC_PROJECT_CONFIG_H_ */

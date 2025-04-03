@@ -32,7 +32,7 @@ __always_inline auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer)
   auto *fp = reinterpret_cast<uint64_t *>(cpu_io::Fp::Read());
   uint64_t ra = 0;
 
-  auto count = 0;
+  size_t count = 0;
   klog::Debug("__executable_start: 0x%lx, __etext: 0x%lx\n", __executable_start,
               __etext);
   klog::Debug("fp: 0x%lx, *fp: 0x%lx, *(fp-1): 0x%lx, *(fp-2): 0x%lx\n", fp,
@@ -47,7 +47,7 @@ __always_inline auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer)
     klog::Debug("fp: 0x%lx, *fp: 0x%lx, *(fp-1): 0x%lx, *(fp-2): 0x%lx\n", fp,
                 *fp, *(fp - 1), *(fp - 2));
   }
-  return count;
+  return int(count);
 }
 
 void DumpStack() {
