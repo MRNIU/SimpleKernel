@@ -118,6 +118,59 @@ class KernelFdt {
   }
 
   /**
+   * 获取 psci 信息
+   * @return psci 信息
+   * @todo 等待 uboot patch 合入
+   */
+  [[nodiscard]] auto GetPSCI() const -> size_t {
+    size_t method = 0;
+
+    // Find the PSCI node
+    auto offset = fdt_path_offset(fdt_header_, "/psci");
+    if (offset < 0) {
+      klog::Err("Error finding /psci node: %s\n", fdt_strerror(offset));
+      return 0;
+    }
+
+    // Get the method property
+    int len = 0;
+    const auto *method_prop =
+        fdt_get_property(fdt_header_, offset, "method", &len);
+    if (method_prop == nullptr) {
+      klog::Err("Error finding PSCI method property\n");
+      return 0;
+    }
+
+    // Determine the method (SMC or HVC)
+    const char *method_str = reinterpret_cast<const char *>(method_prop->data);
+    klog::Debug("PSCI method: %s\n", method_str);
+
+    if (strcmp(method_str, "smc") == 0) {
+      method = 1;  // SMC method
+    } else if (strcmp(method_str, "hvc") == 0) {
+      method = 2;  // HVC method
+    }
+
+    // Log function IDs for debugging
+    auto log_function_id = [&](const char *name) {
+      const auto *prop = fdt_get_property(fdt_header_, offset, name, &len);
+      if (prop != nullptr && len >= sizeof(uint32_t)) {
+        uint32_t id =
+            fdt32_to_cpu(*reinterpret_cast<const uint32_t *>(prop->data));
+        klog::Debug("PSCI %s function ID: 0x%X\n", name, id);
+      }
+    };
+
+    log_function_id("cpu_on");
+    log_function_id("cpu_off");
+    log_function_id("cpu_suspend");
+    log_function_id("system_off");
+    log_function_id("system_reset");
+
+    return method;
+  }
+
+  /**
    * 获取内存信息
    * @return 内存信息<地址，长度>
    */

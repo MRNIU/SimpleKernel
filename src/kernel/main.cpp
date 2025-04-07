@@ -23,9 +23,6 @@
 #include "sk_iostream"
 #include "sk_libcxx.h"
 
-// #include <smccc.h>
-
-/// 用于判断是否为启动核
 namespace {
 
 /// 非启动核入口

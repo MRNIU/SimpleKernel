@@ -80,7 +80,9 @@ void ArchInit(int argc, const char **argv) {
   uart.PutChar('\n');
 
   klog::Info("Hello riscv64 ArchInit\n");
-  for (size_t i = 0; i < PerCpu::kMaxCoreCount; i++) {
+
+  // 唤醒其余 core
+  for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {
     auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret.error != SBI_SUCCESS) &&
         (ret.error != SBI_ERR_ALREADY_AVAILABLE)) {
