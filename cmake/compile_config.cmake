@@ -207,5 +207,4 @@ TARGET_LINK_LIBRARIES (
               >
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
               teec
-              # smccc
               >)

@@ -106,9 +106,6 @@ ADD_SUBDIRECTORY (3rd/printf_bare_metal)
 # https://github.com/MRNIU/cpu_io.git
 ADD_SUBDIRECTORY (3rd/cpu_io)
 
-# https://github.com/MRNIU/smccc.git
-# ADD_SUBDIRECTORY (3rd/smccc)
-
 # https://github.com/buildroot/buildroot.git
 SET (buildroot_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/buildroot)
 SET (buildroot_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/buildroot)
