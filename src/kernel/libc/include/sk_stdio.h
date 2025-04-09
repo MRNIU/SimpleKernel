@@ -18,6 +18,6 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_LIBC_INCLUDE_SK_STDIO_H_
 #define SIMPLEKERNEL_SRC_KERNEL_LIBC_INCLUDE_SK_STDIO_H_
 
-#include <printf_bare_metal.h>
+#include <printf.h>
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_LIBC_INCLUDE_SK_STDIO_H_ */

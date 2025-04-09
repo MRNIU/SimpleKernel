@@ -16,8 +16,8 @@
 #include <cpu_io.h>
 #include <opensbi_interface.h>
 
-#include "../../project_config.h"
 #include "basic_info.hpp"
+#include "config.h"
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"

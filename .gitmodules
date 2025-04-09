@@ -1,7 +1,4 @@
 
-[submodule "3rd/printf_bare_metal"]
-	path = 3rd/printf_bare_metal
-	url = https://github.com/MRNIU/printf_bare_metal.git
 [submodule "3rd/opensbi_interface"]
 	path = 3rd/opensbi_interface
 	url = https://github.com/MRNIU/opensbi_interface.git
@@ -44,3 +41,6 @@
 [submodule "3rd/buildroot"]
 	path = 3rd/buildroot
 	url = https://github.com/buildroot/buildroot.git
+[submodule "3rd/printf"]
+	path = 3rd/printf
+	url = https://github.com/eyalroz/printf.git

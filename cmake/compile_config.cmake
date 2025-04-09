@@ -198,7 +198,7 @@ TARGET_LINK_LIBRARIES (
               kernel_compile_definitions
               kernel_compile_options
               kernel_link_options
-              printf_bare_metal
+              printf
               dtc-lib
               cpu_io
               grub2

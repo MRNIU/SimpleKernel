@@ -100,8 +100,8 @@ ADD_CUSTOM_TARGET (
     WORKING_DIRECTORY ${ovmf_SOURCE_DIR}
     COMMAND ln -s -f ${ovmf_SOURCE_DIR} ${CMAKE_BINARY_DIR}/3rd)
 
-# https://github.com/MRNIU/printf_bare_metal.git
-ADD_SUBDIRECTORY (3rd/printf_bare_metal)
+# https://github.com/eyalroz/printf.git
+ADD_SUBDIRECTORY (3rd/printf)
 
 # https://github.com/MRNIU/cpu_io.git
 ADD_SUBDIRECTORY (3rd/cpu_io)
