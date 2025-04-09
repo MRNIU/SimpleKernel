@@ -29,7 +29,7 @@
 namespace {
 Pl011 *pl011 = nullptr;
 }
-extern "C" void _putchar(char character) {
+extern "C" void putchar_(char character) {
   if (pl011) {
     pl011->PutChar(character);
   }
@@ -105,7 +105,22 @@ void ArchInit(int argc, const char **argv) {
   }
 }
 
-void ArchInitSMP(int argc, const char **argv) {
-  (void)argc;
-  (void)argv;
+int _vsnprintf233(const char *format, va_list va) {
+  putchar_('?');
+  return 0;
+}
+
+int printf_233(const char *format, ...) {
+  va_list va;
+  va_start(va, format);
+  // uint64_t ret = 0;
+  _vsnprintf233(format, va);
+  va_end(va);
+  return 0;
+}
+
+void ArchInitSMP(int, const char **) {
+  // 初始化 FPU
+  cpu_io::SetupFpu();
+  printf_233("Hello SimpleKernel SMP\n");
 }

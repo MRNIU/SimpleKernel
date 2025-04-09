@@ -27,7 +27,7 @@
 #include "sk_libc.h"
 
 // printf_bare_metal 基本输出实现
-extern "C" void _putchar(char character) {
+extern "C" void putchar_(char character) {
   sbi_debug_console_write_byte(character);
 }
 

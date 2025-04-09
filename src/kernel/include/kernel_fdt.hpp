@@ -154,7 +154,7 @@ class KernelFdt {
     // Log function IDs for debugging
     auto log_function_id = [&](const char *name) {
       const auto *prop = fdt_get_property(fdt_header_, offset, name, &len);
-      if (prop != nullptr && len >= sizeof(uint32_t)) {
+      if (prop != nullptr && (size_t)len >= sizeof(uint32_t)) {
         uint32_t id =
             fdt32_to_cpu(*reinterpret_cast<const uint32_t *>(prop->data));
         klog::Debug("PSCI %s function ID: 0x%X\n", name, id);

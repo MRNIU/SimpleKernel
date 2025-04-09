@@ -18,6 +18,9 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_LIBC_INCLUDE_SK_STDIO_H_
 #define SIMPLEKERNEL_SRC_KERNEL_LIBC_INCLUDE_SK_STDIO_H_
 
-#include <printf.h>
+#include <stdarg.h>
+
+#define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES_SOFT 1
+#include <printf/printf.h>
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_LIBC_INCLUDE_SK_STDIO_H_ */
