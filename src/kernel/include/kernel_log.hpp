@@ -116,22 +116,21 @@ struct LogBase {
                        std::source_location::current()) {
     constexpr auto* color = kLogColors[Level];
     Singleton<SpinLock>::GetInstance().lock();
-    /// @todo 解决警告
     printf("%s[%ld]", color, cpu_io::GetCurrentCoreId());
     if constexpr (Level == kDebug && kSimpleKernelDebugLog) {
       printf("[%s] ", location.function_name());
     }
+/// @todo 解决警告
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-security"
     printf(args...);
+#pragma GCC diagnostic pop
     printf("%s", detail::kReset);
     Singleton<SpinLock>::GetInstance().unlock();
   }
 };
 
 }  // namespace detail
-
-/**
- * @brief 与 printf 类似，只是颜色不同
- */
 
 template <typename... Args>
 struct Debug : public detail::LogBase<detail::kDebug, Args...> {
