@@ -116,6 +116,7 @@ struct LogBase {
                        std::source_location::current()) {
     constexpr auto* color = kLogColors[Level];
     Singleton<SpinLock>::GetInstance().lock();
+    /// @todo 解决警告
     printf("%s[%ld]", color, cpu_io::GetCurrentCoreId());
     if constexpr (Level == kDebug && kSimpleKernelDebugLog) {
       printf("[%s] ", location.function_name());
