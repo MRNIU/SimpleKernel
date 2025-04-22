@@ -35,7 +35,6 @@ extern "C" void putchar_(char character) {
   }
 }
 
-extern "C" void *dtb[];
 extern "C" void *sizeof_dtb[];
 
 BasicInfo::BasicInfo(int argc, const char **argv) {
@@ -53,7 +52,7 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
   elf_addr = kernel_addr;
   elf_size = kernel_size;
 
-  fdt_addr = reinterpret_cast<uint64_t>(dtb);
+  fdt_addr = strtoull(argv[2], nullptr, 16);
 
   core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
 }
@@ -63,7 +62,7 @@ void ArchInit(int argc, const char **argv) {
   cpu_io::SetupFpu();
 
   Singleton<KernelFdt>::GetInstance() =
-      KernelFdt(reinterpret_cast<uint64_t>(dtb));
+      KernelFdt(strtoull(argv[2], nullptr, 16));
 
   auto [serial_base, serial_size] =
       Singleton<KernelFdt>::GetInstance().GetSerial();
@@ -78,6 +77,8 @@ void ArchInit(int argc, const char **argv) {
       KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
 
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
+
+  Singleton<KernelFdt>::GetInstance().GetPSCI();
 
   klog::Info("serial_base: 0x%lx\n", serial_base);
 
@@ -105,22 +106,10 @@ void ArchInit(int argc, const char **argv) {
   }
 }
 
-int _vsnprintf233(const char *format, va_list va) {
-  putchar_('?');
-  return 0;
-}
-
-int printf_233(const char *format, ...) {
-  va_list va;
-  va_start(va, format);
-  // uint64_t ret = 0;
-  _vsnprintf233(format, va);
-  va_end(va);
-  return 0;
-}
-
 void ArchInitSMP(int, const char **) {
   // 初始化 FPU
   cpu_io::SetupFpu();
-  printf_233("Hello SimpleKernel SMP\n");
+
+  // caller();
+  putchar_('!');
 }

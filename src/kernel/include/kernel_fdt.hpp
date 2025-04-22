@@ -42,27 +42,14 @@
  */
 class KernelFdt {
  public:
-  struct FdtHeader {
-    uint32_t magic;
-    uint32_t totalsize;
-    uint32_t off_dt_struct;
-    uint32_t off_dt_strings;
-    uint32_t off_mem_rsvmap;
-    uint32_t version;
-    uint32_t last_comp_version;
-    uint32_t boot_cpuid_phys;
-    uint32_t size_dt_strings;
-    uint32_t size_dt_struct;
-  };
-
-  FdtHeader *fdt_header_;
+  fdt_header *fdt_header_;
 
   /**
    * 构造函数
    * @param fdt_addr fdt 地址
    */
   explicit KernelFdt(uint64_t header)
-      : fdt_header_(reinterpret_cast<FdtHeader *>(header)) {
+      : fdt_header_(reinterpret_cast<fdt_header *>(header)) {
     if (fdt_header_ == nullptr) {
       klog::Err("Fatal Error: Invalid fdt_addr.\n");
       throw;
@@ -118,18 +105,14 @@ class KernelFdt {
   }
 
   /**
-   * 获取 psci 信息
-   * @return psci 信息
-   * @todo 等待 uboot patch 合入
+   * 判断 psci 信息
    */
-  [[nodiscard]] auto GetPSCI() const -> size_t {
-    size_t method = 0;
-
+  void GetPSCI() const {
     // Find the PSCI node
     auto offset = fdt_path_offset(fdt_header_, "/psci");
     if (offset < 0) {
       klog::Err("Error finding /psci node: %s\n", fdt_strerror(offset));
-      return 0;
+      return;
     }
 
     // Get the method property
@@ -138,36 +121,36 @@ class KernelFdt {
         fdt_get_property(fdt_header_, offset, "method", &len);
     if (method_prop == nullptr) {
       klog::Err("Error finding PSCI method property\n");
-      return 0;
+      return;
     }
 
     // Determine the method (SMC or HVC)
     const char *method_str = reinterpret_cast<const char *>(method_prop->data);
     klog::Debug("PSCI method: %s\n", method_str);
 
-    if (strcmp(method_str, "smc") == 0) {
-      method = 1;  // SMC method
-    } else if (strcmp(method_str, "hvc") == 0) {
-      method = 2;  // HVC method
+    // 暂时只支持 smc
+    if (strcmp(method_str, "smc") != 0) {
+      klog::Err("Unsupported PSCI method: %s\n", method_str);
     }
 
     // Log function IDs for debugging
-    auto log_function_id = [&](const char *name) {
+    auto assert_function_id = [&](const char *name, uint64_t value) {
       const auto *prop = fdt_get_property(fdt_header_, offset, name, &len);
       if (prop != nullptr && (size_t)len >= sizeof(uint32_t)) {
         uint32_t id =
             fdt32_to_cpu(*reinterpret_cast<const uint32_t *>(prop->data));
         klog::Debug("PSCI %s function ID: 0x%X\n", name, id);
+        if (id != value) {
+          klog::Err("PSCI %s function ID mismatch: expected 0x%X, got 0x%X\n",
+                    name, value, id);
+        }
       }
     };
 
-    log_function_id("cpu_on");
-    log_function_id("cpu_off");
-    log_function_id("cpu_suspend");
-    log_function_id("system_off");
-    log_function_id("system_reset");
-
-    return method;
+    /// @see https://developer.arm.com/documentation/den0022/fb/?lang=en
+    assert_function_id("cpu_on", 0xC4000003);
+    assert_function_id("cpu_off", 0x84000002);
+    assert_function_id("cpu_suspend", 0xC4000001);
   }
 
   /**
