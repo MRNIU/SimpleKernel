@@ -107,7 +107,7 @@ class KernelFdt {
   /**
    * 判断 psci 信息
    */
-  void GetPSCI() const {
+  void CheckPSCI() const {
     // Find the PSCI node
     auto offset = fdt_path_offset(fdt_header_, "/psci");
     if (offset < 0) {

@@ -78,7 +78,7 @@ void ArchInit(int argc, const char **argv) {
 
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
-  Singleton<KernelFdt>::GetInstance().GetPSCI();
+  Singleton<KernelFdt>::GetInstance().CheckPSCI();
 
   klog::Info("serial_base: 0x%lx\n", serial_base);
 
