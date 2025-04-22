@@ -6,7 +6,7 @@
 ```shell
 cd SimpleKernel
 docker pull ptrnull233/simple_kernel:latest
-docker run --name SimpleKernel-container -itd -p 233:22 -v ./:/root/SimpleKernel ptrnull233/simple_kernel:latest
+docker run --name SimpleKernel-container -itd -p 233:22 -v ./:/root/SimpleKernel -v ~/.ssh:/root/.ssh -v ~/.gitconfig:/root/.gitconfig  ptrnull233/simple_kernel:latest
 docker exec -it SimpleKernel-container /bin/zsh
 ```
 
