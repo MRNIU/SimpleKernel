@@ -13,18 +13,16 @@ ADD_EXECUTABLE (
     ${PROJECT_NAME}
     main.cpp
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
-    ${CMAKE_SOURCE_DIR}/src/kernel/arch/${CMAKE_SYSTEM_PROCESSOR}/boot.S
+    ${CMAKE_SOURCE_DIR}/src/arch/${CMAKE_SYSTEM_PROCESSOR}/boot.S
     >
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
-    ${CMAKE_SOURCE_DIR}/src/kernel/arch/${CMAKE_SYSTEM_PROCESSOR}/boot.S
+    ${CMAKE_SOURCE_DIR}/src/arch/${CMAKE_SYSTEM_PROCESSOR}/boot.S
     >)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/kernel/include
-        ${CMAKE_SOURCE_DIR}/src/kernel/arch
-        ${CMAKE_SOURCE_DIR}/src/kernel/arch/${CMAKE_SYSTEM_PROCESSOR}/include)
+    PRIVATE ${CMAKE_SOURCE_DIR}/src/include ${CMAKE_SOURCE_DIR}/src/arch
+            ${CMAKE_SOURCE_DIR}/src/arch/${CMAKE_SYSTEM_PROCESSOR}/include)
 
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
                                                libcxx)
@@ -42,14 +40,11 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
         NAME
         ${PROJECT_NAME}_
         DEPENDS
-        boot
         ${PROJECT_NAME}
         WORKING_DIRECTORY
         ${PROJECT_BINARY_DIR}
         TARGET
         ${CMAKE_SYSTEM_PROCESSOR}
-        BOOT
-        ${boot_BINARY_DIR}/${BOOT_EFI_OUTPUT_NAME}
         KERNEL
         $<TARGET_FILE:${PROJECT_NAME}>
         QEMU_FLAGS
@@ -59,14 +54,11 @@ ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
         NAME
         ${PROJECT_NAME}_
         DEPENDS
-        boot
         ${PROJECT_NAME}
         WORKING_DIRECTORY
         ${PROJECT_BINARY_DIR}
         TARGET
         ${CMAKE_SYSTEM_PROCESSOR}
-        BOOT
-        ${boot_BINARY_DIR}/${BOOT_EFI_OUTPUT_NAME}
         KERNEL
         $<TARGET_FILE:${PROJECT_NAME}>
         QEMU_FLAGS
@@ -86,14 +78,11 @@ ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
         NAME
         ${PROJECT_NAME}_
         DEPENDS
-        boot
         ${PROJECT_NAME}
         WORKING_DIRECTORY
         ${PROJECT_BINARY_DIR}
         TARGET
         ${CMAKE_SYSTEM_PROCESSOR}
-        BOOT
-        ${boot_BINARY_DIR}/${BOOT_EFI_OUTPUT_NAME}
         KERNEL
         $<TARGET_FILE:${PROJECT_NAME}>
         QEMU_FLAGS

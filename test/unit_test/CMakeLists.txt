@@ -12,8 +12,8 @@ ADD_EXECUTABLE (${PROJECT_NAME} kernel_elf_test.cpp kernel_fdt_test.cpp
                                 spinlock_test.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (
-    ${PROJECT_NAME} PRIVATE ./ ${CMAKE_SOURCE_DIR}/src/kernel/include
-                            ${CMAKE_SOURCE_DIR}/src/kernel/arch)
+    ${PROJECT_NAME} PRIVATE ./ ${CMAKE_SOURCE_DIR}/src/include
+                            ${CMAKE_SOURCE_DIR}/src/arch)
 
 TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 

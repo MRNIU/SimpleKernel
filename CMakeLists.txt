@@ -33,11 +33,6 @@ INCLUDE (3rd)
 # 导入编译配置
 INCLUDE (compile_config)
 
-# 添加要编译的目录
-ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/src)
-ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/test)
-ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/doc)
-
 # qemu 参数设置
 LIST (APPEND QEMU_BOOT_FLAGS "")
 LIST (APPEND QEMU_MACHINE_FLAGS "")
@@ -86,23 +81,24 @@ GEN_FIT (
     TARGET
     ${CMAKE_SYSTEM_PROCESSOR})
 
+# 添加要编译的目录
+ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/src)
+ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/test)
+ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/doc)
+
 # 添加 run 和 debug target
 ADD_RUN_TARGET (
     DEPENDS
-    ovmf
     gen_fit
     u-boot
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
-    # $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:boot>
     kernel
     WORKING_DIRECTORY
     ${PROJECT_BINARY_DIR}
     TARGET
     ${CMAKE_SYSTEM_PROCESSOR}
-    BOOT
-    ${PROJECT_BINARY_DIR}/src/boot/boot.efi
     KERNEL
     $<TARGET_FILE:kernel>
     QEMU_FLAGS

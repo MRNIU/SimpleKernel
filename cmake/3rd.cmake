@@ -87,19 +87,6 @@ ADD_CUSTOM_TARGET (
 SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
                                      ${CMAKE_SOURCE_DIR}/.gdbinit)
 
-# ovmf
-# @todo 使用互联网连接或从 edk2 编译
-# https://efi.akeo.ie/QEMU_EFI/QEMU_EFI-AA64.zip
-SET (ovmf_SOURCE_DIR ${CMAKE_SOURCE_DIR}/tools/ovmf)
-SET (ovmf_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/ovmf)
-ADD_CUSTOM_TARGET (
-    ovmf
-    COMMENT "build ovmf ..."
-    # make 时编译
-    ALL
-    WORKING_DIRECTORY ${ovmf_SOURCE_DIR}
-    COMMAND ln -s -f ${ovmf_SOURCE_DIR} ${CMAKE_BINARY_DIR}/3rd)
-
 # https://github.com/eyalroz/printf.git
 ADD_SUBDIRECTORY (3rd/printf)
 

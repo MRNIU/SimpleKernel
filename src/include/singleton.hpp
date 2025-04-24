@@ -1,0 +1,41 @@
+
+/**
+ * @file singleton.hpp
+ * @brief 单例模版
+ * @author Zone.N (Zone.Niuzh@hotmail.com)
+ * @version 1.0
+ * @date 2023-07-15
+ * @copyright MIT LICENSE
+ * https://github.com/Simple-XX/SimpleKernel
+ * @par change log:
+ * <table>
+ * <tr><th>Date<th>Author<th>Description
+ * <tr><td>2023-07-15<td>Zone.N (Zone.Niuzh@hotmail.com)<td>创建文件
+ * </table>
+ */
+
+#ifndef SIMPLEKERNEL_SRC_INCLUDE_SINGLETON_HPP_
+#define SIMPLEKERNEL_SRC_INCLUDE_SINGLETON_HPP_
+
+// 单例模板类
+template <typename T>
+class Singleton {
+ public:
+  /// @name 构造/析构函数
+  /// @{
+  Singleton() = default;
+  Singleton(const Singleton&) = delete;
+  Singleton(Singleton&&) = delete;
+  auto operator=(const Singleton&) -> Singleton& = delete;
+  auto operator=(Singleton&&) -> Singleton& = delete;
+  ~Singleton() = default;
+  /// @}
+
+  // 获取单例实例的静态方法
+  static auto GetInstance() -> T& {
+    static T instance;
+    return instance;
+  }
+};
+
+#endif /* SIMPLEKERNEL_SRC_INCLUDE_SINGLETON_HPP_ */

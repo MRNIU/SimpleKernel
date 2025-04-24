@@ -176,7 +176,7 @@ TARGET_LINK_OPTIONS (
     INTERFACE
     # 链接脚本
     -T
-    ${CMAKE_SOURCE_DIR}/src/kernel/arch/${CMAKE_SYSTEM_PROCESSOR}/link.ld
+    ${CMAKE_SOURCE_DIR}/src/arch/${CMAKE_SYSTEM_PROCESSOR}/link.ld
     # 静态链接
     -static
     # 不链接标准库

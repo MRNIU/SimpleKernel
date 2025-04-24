@@ -1,0 +1,52 @@
+
+/**
+ * @file sk_new
+ * @brief 内存分配
+ * @author Zone.N (Zone.Niuzh@hotmail.com)
+ * @version 1.0
+ * @date 2023-03-31
+ * @copyright MIT LICENSE
+ * https://github.com/Simple-XX/SimpleKernel
+ * @par change log:
+ * <table>
+ * <tr><th>Date<th>Author<th>Description
+ * <tr><td>2023-03-31<td>Zone.N<td>迁移到 doxygen
+ * </table>
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_NEW_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_NEW_
+
+#include <cstddef>
+
+[[nodiscard]] void* operator new(size_t) noexcept;
+
+[[nodiscard]] void* operator new[](size_t) noexcept;
+
+[[nodiscard]] void* operator new(size_t, size_t) noexcept;
+
+[[nodiscard]] void* operator new[](size_t, size_t) noexcept;
+
+void operator delete(void*);
+
+void operator delete(void*, size_t);
+
+void operator delete[](void*);
+
+void operator delete[](void*, size_t);
+
+// Default placement versions of operator new.
+[[nodiscard]] __always_inline void* operator new(std::size_t,
+                                                 void* p) noexcept {
+  return p;
+}
+[[nodiscard]] __always_inline void* operator new[](std::size_t,
+                                                   void* p) noexcept {
+  return p;
+}
+
+// Default placement versions of operator delete.
+__always_inline void operator delete(void*, void*) noexcept {}
+__always_inline void operator delete[](void*, void*) noexcept {}
+
+#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_NEW_ */

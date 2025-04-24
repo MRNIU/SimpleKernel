@@ -103,7 +103,6 @@ FUNCTION(gen_dtb_dts)
         COMMENT "Generating dtb and dts..."
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND ${CMAKE_COMMAND} -E make_directory image/ ${commands}
         COMMAND qemu-system-${ARG_TARGET} -machine dumpdtb=bin/qemu.dtb
                 ${ARG_QEMU_FLAGS}
         COMMAND dtc -I dtb bin/qemu.dtb -O dts -o bin/qemu.dts)
@@ -138,21 +137,16 @@ ENDFUNCTION()
 # NAME 生成的 target 前缀
 # TARGET 目标架构
 # WORKING_DIRECTORY 工作目录
-# BOOT boot 文件路径
 # KERNEL kernel 文件路径
 # DEPENDS 依赖的 target
 # QEMU_FLAGS qemu 参数
 FUNCTION(add_run_target)
     # 解析参数
     SET (options)
-    SET (one_value_keywords NAME TARGET WORKING_DIRECTORY BOOT KERNEL)
+    SET (one_value_keywords NAME TARGET WORKING_DIRECTORY KERNEL)
     SET (multi_value_keywords DEPENDS QEMU_FLAGS)
     CMAKE_PARSE_ARGUMENTS (ARG "${options}" "${one_value_keywords}"
                            "${multi_value_keywords}" ${ARGN})
-
-    GET_FILENAME_COMPONENT (BOOT_FILE_NAME ${ARG_BOOT} NAME)
-    CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/startup.nsh.in image/startup.nsh
-                    @ONLY)
 
     # 添加 target
     ADD_CUSTOM_TARGET (

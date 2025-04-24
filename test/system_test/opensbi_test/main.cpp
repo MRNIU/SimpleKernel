@@ -21,23 +21,23 @@
 #include "sk_cstdio"
 
 // printf_bare_metal 基本输出实现
-extern "C" void _putchar(char character) {
+extern "C" void putchar_(char character) {
   sbi_debug_console_write_byte(character);
 }
 
 uint32_t main(uint32_t, uint8_t *) {
-  _putchar('H');
-  _putchar('e');
-  _putchar('l');
-  _putchar('l');
-  _putchar('o');
-  _putchar('W');
-  _putchar('o');
-  _putchar('r');
-  _putchar('l');
-  _putchar('d');
-  _putchar('!');
-  _putchar('\n');
+  putchar_('H');
+  putchar_('e');
+  putchar_('l');
+  putchar_('l');
+  putchar_('o');
+  putchar_('W');
+  putchar_('o');
+  putchar_('r');
+  putchar_('l');
+  putchar_('d');
+  putchar_('!');
+  putchar_('\n');
 
   return 0;
 }

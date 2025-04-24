@@ -22,7 +22,7 @@
 #include "sk_cstdio"
 #include "sk_cstring"
 
-extern "C" void _putchar(char character) {
+extern "C" void putchar_(char character) {
   auto serial = cpu_io::Serial(cpu_io::kCom1);
   serial.Write(character);
 }

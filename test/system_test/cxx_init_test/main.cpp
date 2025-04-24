@@ -25,14 +25,14 @@
 
 #ifdef __x86_64__
 static auto serial = cpu_io::Serial(cpu_io::kCom1);
-extern "C" void _putchar(char character) { serial.Write(character); }
+extern "C" void putchar_(char character) { serial.Write(character); }
 #elif __riscv
 #include <opensbi_interface.h>
-extern "C" void _putchar(char character) {
+extern "C" void putchar_(char character) {
   sbi_debug_console_write_byte(character);
 }
 #elif __aarch64__
-extern "C" void _putchar(char character) {
+extern "C" void putchar_(char character) {
   static uint8_t *kUartAddr = (uint8_t *)0x09000000;
   *kUartAddr = character;
 }
