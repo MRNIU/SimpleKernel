@@ -44,7 +44,8 @@ class KernelElf {
    */
   explicit KernelElf(uint64_t elf_addr, size_t elf_size = 64) {
     if ((elf_addr == 0U) || (elf_size == 0U)) {
-      klog::Err("Fatal Error: Invalid elf_addr or elf_size.\n");
+      klog::Err("Fatal Error: Invalid elf_addr[0x%lX] or elf_size[0x%lX].\n",
+                elf_addr, elf_size);
       throw;
     }
 

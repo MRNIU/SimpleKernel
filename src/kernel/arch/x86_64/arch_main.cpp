@@ -30,10 +30,10 @@
 /// 函数，否则会有全局对象依赖问题
 namespace {
 cpu_io::Serial kSerial(cpu_io::kCom1);
-extern "C" void _putchar(char character) { kSerial.Write(character); }
+extern "C" void putchar_(char character) { kSerial.Write(character); }
 }  // namespace
 
-BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
+BasicInfo::BasicInfo(int argc, const char **argv) {
   (void)argc;
 
   auto basic_info = *reinterpret_cast<const BasicInfo *>(argv);
@@ -48,18 +48,18 @@ BasicInfo::BasicInfo(uint32_t argc, const uint8_t *argv) {
   elf_size = basic_info.elf_size;
 
   fdt_addr = 0;
+
+  /// @todo 获取 core 数量
+  core_count = 1;
 }
 
-auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
+auto ArchInit(int argc, const char **argv) -> int {
   if (argc != 1) {
     klog::Err("argc != 1 [%d]\n", argc);
     throw;
   }
 
-  GetCurrentCore().core_id_ = cpu_io::GetCurrentCoreId();
-
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
-  Singleton<BasicInfo>::GetInstance().core_count++;
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
   // 解析内核 elf 信息
@@ -72,7 +72,7 @@ auto ArchInit(uint32_t argc, const uint8_t *argv) -> uint32_t {
   return 0;
 }
 
-auto ArchInitSMP(uint32_t argc, const uint8_t *argv) -> uint32_t {
+auto ArchInitSMP(int argc, const char **argv) -> int {
   (void)argc;
   (void)argv;
   return 0;

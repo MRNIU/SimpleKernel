@@ -1,24 +1,24 @@
 /dts-v1/;
 
 / {
-    description = "U-Boot FIT Image";
+    description = "SimpleKernel x86_64 U-Boot FIT Image";
     #address-cells = <1>;
 
     images {
-        kernel@1 {
-            description = "Linux Kernel";
+        kernel {
+            description = "SimpleKernel";
 			// 内核路径
             data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.elf");
             type = "kernel";
 			// 架构类型
             arch = "x86_64";
-            os = "linux";
+            os = "elf";
 			// 压缩方式
             compression = "none";
 			// 内核加载地址
             load = <0x400000>;
 			// 内核入口地址
-            entry = <0x401018>;
+            entry = <0x400000>;
             hash-1 {
                 algo = "sha1";
             };
@@ -26,11 +26,11 @@
     };
 
     configurations {
-        default = "config@1";
+        default = "config";
 
-        config@1 {
+        config {
             description = "Default Boot Configuration";
-            kernel = "kernel@1";
+            kernel = "kernel";
             hash-1 {
                 algo = "sha1";
             };

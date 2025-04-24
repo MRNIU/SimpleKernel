@@ -43,7 +43,8 @@ LIST (APPEND QEMU_BOOT_FLAGS "")
 LIST (APPEND QEMU_MACHINE_FLAGS "")
 # 目标平台参数
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    LIST (APPEND QEMU_BOOT_FLAGS -bios ${u-boot_BINARY_DIR}/u-boot.rom)
+    LIST (APPEND QEMU_BOOT_FLAGS -drive file=fat:rw:bin,format=raw,media=disk
+          -bios ${u-boot_BINARY_DIR}/u-boot.rom)
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
     LIST (APPEND QEMU_MACHINE_FLAGS -machine virt)
     LIST (APPEND QEMU_BOOT_FLAGS -bios ${u-boot_BINARY_DIR}/spl/u-boot-spl.bin
@@ -78,7 +79,8 @@ GEN_DTB_DTS (
 GEN_FIT (
     DEPENDS
     kernel
-    gen_dtb_dts
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:gen_dtb_dts>
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:gen_dtb_dts>
     WORKING_DIRECTORY
     ${PROJECT_BINARY_DIR}
     TARGET
@@ -88,14 +90,12 @@ GEN_FIT (
 ADD_RUN_TARGET (
     DEPENDS
     ovmf
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:gen_fit>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:gen_fit>
+    gen_fit
+    u-boot
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:u-boot>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:boot>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:gen_dtb_dts>
+    # $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:boot>
     kernel
     WORKING_DIRECTORY
     ${PROJECT_BINARY_DIR}

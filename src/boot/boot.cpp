@@ -14,9 +14,9 @@
  * </table>
  */
 
-#include "config.h"
 #include "load_elf.h"
 #include "out_stream.hpp"
+#include "project_config.h"
 
 // efi 使用的全局变量
 #if defined(__x86_64__) || defined(__aarch64__)
