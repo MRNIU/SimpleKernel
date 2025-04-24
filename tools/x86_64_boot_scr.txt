@@ -1,2 +1,3 @@
+bootp
 tftp $kernel_addr_r boot.fit
 bootm $kernel_addr_r
