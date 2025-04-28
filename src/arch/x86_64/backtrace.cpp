@@ -29,14 +29,14 @@ auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer) -> int {
   auto *rbp = reinterpret_cast<uint64_t *>(cpu_io::Rbp::Read());
   uint64_t *rip = nullptr;
 
-  int count = 0;
+  size_t count = 0;
   while ((rbp != nullptr) && (*rbp != 0U) && count < buffer.max_size()) {
     rip = rbp + 1;
     rbp = reinterpret_cast<uint64_t *>(*rbp);
     buffer[count++] = *rip;
   }
 
-  return count;
+  return int(count);
 }
 
 void DumpStack() {
