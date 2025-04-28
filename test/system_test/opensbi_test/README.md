@@ -8,3 +8,7 @@
 2. 进入 opensbi
 3. opensbi 跳转到 0x80210000 执行内核
 4. 内核使用 opensbi 提供的接口进行输出
+
+```shell
+qemu-system-riscv64 -nographic -serial stdio -monitor telnet::2333,server,nowait -machine virt -bios 3rd/opensbi/platform/generic/firmware/fw_jump.elf -kernel bin/opensbi-test
+```

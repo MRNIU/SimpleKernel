@@ -1,6 +1,10 @@
+# aarch64_minimal
 
+qemu aarch64 最小可运行代码
+
+```shell
+# 编译&链接
 aarch64-linux-gnu-as -o boot.o boot.S
-
 aarch64-linux-gnu-g++ \
 -g -std=c++23 -O0 -ggdb \
 -Wall -Wextra -pedantic -fPIC -fPIE \
@@ -9,6 +13,10 @@ aarch64-linux-gnu-g++ \
 -shared -Wl,-Bsymbolic -T link.ld -static -nostdlib \
 -o aarch64_minimal.elf main.cpp
 
+# 在 qemu 中运行
 qemu-system-aarch64 -nographic -serial stdio -monitor telnet::2333,server,nowait -m 1024M -machine virt -cpu cortex-a72 -kernel aarch64_minimal.elf
 
+# 反汇编
 objdump -D aarch64_minimal.elf > aarch64_minimal.objdump
+
+```

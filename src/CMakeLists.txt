@@ -18,15 +18,30 @@ ADD_SUBDIRECTORY (driver)
 ADD_EXECUTABLE (${PROJECT_NAME} main.cpp)
 
 # 添加头文件
-TARGET_INCLUDE_DIRECTORIES (kernel PRIVATE include)
+TARGET_INCLUDE_DIRECTORIES (${PROJECT_NAME} PRIVATE include)
 
 # 添加要链接的库
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
                                                libcxx arch driver)
 
-SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES OUTPUT_NAME
                                                   ${KERNEL_ELF_OUTPUT_NAME})
 
 # 获取目标文件信息
 OBJDUMP_READELF_NM (${PROJECT_NAME})
+
+GEN_DTB_DTS_FIT (${PROJECT_NAME} QEMU_FLAGS ${QEMU_COMMON_FLAG}
+                 ${QEMU_MACHINE_FLAGS})
+
+# 添加 run 和 debug target
+ADD_RUN_TARGET (
+    DEPENDS
+    u-boot
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi>
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
+    ${PROJECT_NAME}
+    QEMU_FLAGS
+    ${QEMU_COMMON_FLAG}
+    ${QEMU_MACHINE_FLAGS}
+    ${QEMU_BOOT_FLAGS})

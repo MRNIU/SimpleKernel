@@ -17,34 +17,5 @@ ADD_EXECUTABLE (
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
                                                libcxx)
 
-SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES PREFIX "")
-SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES OUTPUT_NAME
-                                                  ${KERNEL_ELF_OUTPUT_NAME})
-
 # 获取目标文件信息
 OBJDUMP_READELF_NM (${PROJECT_NAME})
-
-# 添加 run 和 debug target
-ADD_RUN_TARGET (
-    NAME
-    ${PROJECT_NAME}_
-    DEPENDS
-    ${PROJECT_NAME}
-    WORKING_DIRECTORY
-    ${PROJECT_BINARY_DIR}
-    TARGET
-    ${CMAKE_SYSTEM_PROCESSOR}
-    KERNEL
-    $<TARGET_FILE:${PROJECT_NAME}>
-    QEMU_FLAGS
-    -serial
-    stdio
-    -monitor
-    telnet::2333,server,nowait
-    -machine
-    virt
-    -nographic
-    -bios
-    ${opensbi_BINARY_DIR}/platform/generic/firmware/fw_jump.elf
-    -kernel
-    $<TARGET_FILE:${PROJECT_NAME}>)

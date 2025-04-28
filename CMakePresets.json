@@ -67,10 +67,6 @@
           "type": "STRING",
           "value": "coverage"
         },
-        "PLATFORM": {
-          "type": "STRING",
-          "value": "qemu"
-        },
         "QEMU_NORMAL_WORLD_DEV_PATH": {
           "type": "STRING",
           "value": "tcp:127.0.0.1:54320"
@@ -86,14 +82,6 @@
         "QEMU_COMMON_FLAG": {
           "type": "STRING",
           "value": "-nographic;-serial;stdio;-monitor;telnet::2333,server,nowait;-m;1024M;-smp;2;-netdev;user,id=net0,tftp=/srv/tftp;-device;e1000,netdev=net0"
-        },
-        "BOOT_ELF_OUTPUT_NAME": {
-          "type": "STRING",
-          "value": "boot.elf"
-        },
-        "BOOT_EFI_OUTPUT_NAME": {
-          "type": "STRING",
-          "value": "boot.efi"
         },
         "KERNEL_ELF_OUTPUT_NAME": {
           "type": "STRING",

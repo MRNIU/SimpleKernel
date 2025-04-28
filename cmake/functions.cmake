@@ -30,21 +30,6 @@ FUNCTION(objdump_readelf_nm target)
                    "$<TARGET_FILE_DIR:${target}>/${target}.sym;")
 ENDFUNCTION()
 
-# 将 elf 转换为 efi
-# efi: 输出的 efi 文件名
-# 在 ${${target}_BINARY_DIR} 目录下生成 ${efi} 文件
-FUNCTION(elf2efi target efi)
-    ADD_CUSTOM_COMMAND (
-        TARGET ${target}
-        COMMENT "Convert $<TARGET_FILE:${target}> to efi ..."
-        POST_BUILD DEPENDS ${target}
-        WORKING_DIRECTORY ${${target}_BINARY_DIR}
-        COMMAND
-            ${CMAKE_OBJCOPY} $<TARGET_FILE:${target}> ${efi} -S -R .comment -R
-            .note.gnu.build-id -R .gnu.hash -R .dynsym
-            --target=efi-app-${CMAKE_SYSTEM_PROCESSOR} --subsystem=10)
-ENDFUNCTION()
-
 # 添加测试覆盖率 target
 # DEPENDS 要生成的 targets
 # SOURCE_DIR 源码路径
@@ -85,85 +70,57 @@ FUNCTION(add_coverage_target)
                 ${COVERAGE_OUTPUT_DIR} --branch-coverage)
 ENDFUNCTION()
 
-# 根据 qemu flags 生成 dtb 与 dts
-# NAME 生成的 target 前缀
-# WORKING_DIRECTORY 工作目录
+# 生成 dtb/dts/fit
 # QEMU_FLAGS qemu 参数
-FUNCTION(gen_dtb_dts)
+FUNCTION(gen_dtb_dts_fit target)
     # 解析参数
     SET (options)
-    SET (one_value_keywords NAME TARGET WORKING_DIRECTORY)
     SET (multi_value_keywords QEMU_FLAGS)
     CMAKE_PARSE_ARGUMENTS (ARG "${options}" "${one_value_keywords}"
                            "${multi_value_keywords}" ${ARGN})
 
-    # 添加 target
-    ADD_CUSTOM_TARGET (
-        gen_dtb_dts
-        COMMENT "Generating dtb and dts..."
-        DEPENDS ${ARG_DEPENDS}
-        WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND qemu-system-${ARG_TARGET} -machine dumpdtb=bin/qemu.dtb
-                ${ARG_QEMU_FLAGS}
-        COMMAND dtc -I dtb bin/qemu.dtb -O dts -o bin/qemu.dts)
-ENDFUNCTION()
-
-# 生成 uboot 使用的 FIT
-# @todo 需要解决依赖关系
-FUNCTION(gen_fit)
-    # 解析参数
-    SET (options)
-    SET (one_value_keywords TARGET WORKING_DIRECTORY)
-    SET (multi_value_keywords DEPENDS)
-    CMAKE_PARSE_ARGUMENTS (ARG "${options}" "${one_value_keywords}"
-                           "${multi_value_keywords}" ${ARGN})
-
-    CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/${ARG_TARGET}_qemu_virt.its.in
-                    ${ARG_WORKING_DIRECTORY}/bin/boot.its @ONLY)
-
-    ADD_CUSTOM_TARGET (
-        gen_fit
-        COMMENT "Generating FIT file..."
-        DEPENDS ${ARG_DEPENDS}
-        WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
+    ADD_CUSTOM_COMMAND (
+        TARGET ${target}
+        VERBATIM POST_BUILD DEPENDS ${target}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Generating dtb/dts/fit..."
+        # COMMAND bash -c "if [[ \"${CMAKE_SYSTEM_PROCESSOR}\" == \"riscv64\" || \"${CMAKE_SYSTEM_PROCESSOR}\" == \"aarch64\" ]]; then cd \"${CMAKE_BINARY_DIR}\" && qemu-system-\"${CMAKE_SYSTEM_PROCESSOR}\" -machine dumpdtb=bin/qemu.dtb \"${ARG_QEMU_FLAGS}\" && dtc -I dtb bin/qemu.dtb -O dts -o bin/qemu.dts; else echo 2; fi;"
+        COMMAND
+            qemu-system-${CMAKE_SYSTEM_PROCESSOR} -machine dumpdtb=bin/qemu.dtb
+            ${ARG_QEMU_FLAGS} && dtc -I dtb bin/qemu.dtb -O dts -o bin/qemu.dts
         COMMAND mkimage -f bin/boot.its bin/boot.fit
         COMMAND
             mkimage -T script -d
-            ${CMAKE_SOURCE_DIR}/tools/${ARG_TARGET}_boot_scr.txt
+            ${CMAKE_SOURCE_DIR}/tools/${CMAKE_SYSTEM_PROCESSOR}_boot_scr.txt
             bin/boot.scr.uimg)
 ENDFUNCTION()
 
-# 添加运行 qemu target
-# NAME 生成的 target 前缀
-# TARGET 目标架构
-# WORKING_DIRECTORY 工作目录
-# KERNEL kernel 文件路径
+# 添加在 qemu 中运行内核
 # DEPENDS 依赖的 target
 # QEMU_FLAGS qemu 参数
 FUNCTION(add_run_target)
     # 解析参数
     SET (options)
-    SET (one_value_keywords NAME TARGET WORKING_DIRECTORY KERNEL)
     SET (multi_value_keywords DEPENDS QEMU_FLAGS)
     CMAKE_PARSE_ARGUMENTS (ARG "${options}" "${one_value_keywords}"
                            "${multi_value_keywords}" ${ARGN})
 
     # 添加 target
     ADD_CUSTOM_TARGET (
-        ${ARG_NAME}run
-        COMMENT "Run ${ARG_NAME} ..."
+        run
+        COMMENT "Run Simplekernel ..."
         DEPENDS ${ARG_DEPENDS}
-        WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin/* /srv/tftp
-        COMMAND qemu-system-${ARG_TARGET} ${ARG_QEMU_FLAGS})
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMAND ln -s -f ${CMAKE_BINARY_DIR}/bin/* /srv/tftp
+        COMMAND qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${ARG_QEMU_FLAGS})
     ADD_CUSTOM_TARGET (
-        ${ARG_NAME}debug
-        COMMENT "Run ${ARG_NAME} ..."
+        debug
+        COMMENT "Debug Simplekernel ..."
         DEPENDS ${ARG_DEPENDS}
-        WORKING_DIRECTORY ${ARG_WORKING_DIRECTORY}
-        COMMAND ln -s -f ${ARG_WORKING_DIRECTORY}/bin/* /srv/tftp
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMAND ln -s -f ${CMAKE_BINARY_DIR}/bin/* /srv/tftp
         COMMAND
-            qemu-system-${ARG_TARGET} ${ARG_QEMU_FLAGS}
+            qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${ARG_QEMU_FLAGS}
             # 等待 gdb 连接
             -S
             # 使用 1234 端口

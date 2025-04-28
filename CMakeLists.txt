@@ -11,7 +11,6 @@ PROJECT (SimpleKernel VERSION 0.0.1)
 
 # 禁止原地编译
 IF(${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
-    # 如果你看到这句话，cmake 此时已经在根目录下生成了一些临时文件，你需要删除它们 CMakeFiles, CMakeCache.txt
     MESSAGE (
         FATAL_ERROR
             "In-source builds not allowed."
@@ -62,46 +61,7 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         $<TARGET_FILE:kernel>)
 ENDIF()
 
-GEN_DTB_DTS (
-    WORKING_DIRECTORY
-    ${PROJECT_BINARY_DIR}
-    TARGET
-    ${CMAKE_SYSTEM_PROCESSOR}
-    QEMU_FLAGS
-    ${QEMU_COMMON_FLAG}
-    ${QEMU_MACHINE_FLAGS})
-
-GEN_FIT (
-    DEPENDS
-    kernel
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:gen_dtb_dts>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:gen_dtb_dts>
-    WORKING_DIRECTORY
-    ${PROJECT_BINARY_DIR}
-    TARGET
-    ${CMAKE_SYSTEM_PROCESSOR})
-
 # 添加要编译的目录
 ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/src)
 ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/test)
 ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/doc)
-
-# 添加 run 和 debug target
-ADD_RUN_TARGET (
-    DEPENDS
-    gen_fit
-    u-boot
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
-    kernel
-    WORKING_DIRECTORY
-    ${PROJECT_BINARY_DIR}
-    TARGET
-    ${CMAKE_SYSTEM_PROCESSOR}
-    KERNEL
-    $<TARGET_FILE:kernel>
-    QEMU_FLAGS
-    ${QEMU_COMMON_FLAG}
-    ${QEMU_MACHINE_FLAGS}
-    ${QEMU_BOOT_FLAGS})

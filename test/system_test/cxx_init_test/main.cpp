@@ -102,18 +102,23 @@ auto main(uint32_t, uint8_t *) -> uint32_t {
   global_value_with_init++;
   global_bool_keep_running = false;
 
+  putchar_('1');
   auto inst_class = InsClass();
+  putchar_('2');
   printf("%c\n", inst_class.val);
+  putchar_('3');
   inst_class.Func();
+  putchar_('4');
   printf("%c\n", inst_class.val);
+  putchar_('5');
 
   static InsClass inst_class_static;
   printf("%c\n", inst_class_static.val);
   inst_class_static.Func();
   printf("%c\n", inst_class_static.val);
 
-  printf("%d\n", Singleton<BasicInfo>::GetInstance().elf_addr);
-  printf("%d\n", Singleton<BasicInfo>::GetInstance().elf_size);
+  printf("%ld\n", Singleton<BasicInfo>::GetInstance().elf_addr);
+  printf("%ld\n", Singleton<BasicInfo>::GetInstance().elf_size);
 
   printf("Hello Test\n");
 

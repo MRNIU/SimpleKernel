@@ -128,7 +128,7 @@ IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
         WORKING_DIRECTORY ${opensbi_SOURCE_DIR}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${opensbi_BINARY_DIR}
         COMMAND
-            make PLATFORM_RISCV_XLEN=64 PLATFORM=generic
+            make PLATFORM_RISCV_XLEN=64 PLATFORM=generic FW_JUMP_ADDR=0x80210000
             CROSS_COMPILE=${TOOLCHAIN_PREFIX} O=${opensbi_BINARY_DIR}
             -j${CMAKE_BUILD_PARALLEL_LEVEL}
         COMMAND ln -s -f ${opensbi_SOURCE_DIR}/include ${opensbi_BINARY_DIR})
