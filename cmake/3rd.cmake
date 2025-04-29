@@ -62,11 +62,6 @@ IF(NOT TARGET gtest)
     INCLUDE (GoogleTest)
 ENDIF()
 
-# https://git.savannah.gnu.org/git/grub.git
-SET (grub2_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/grub2)
-ADD_LIBRARY (grub2 INTERFACE)
-TARGET_INCLUDE_DIRECTORIES (grub2 INTERFACE ${grub2_SOURCE_DIR}/include)
-
 # https://github.com/gdbinit/Gdbinit.git
 SET (gdbinit_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/gdbinit)
 SET (gdbinit_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/gdbinit)
@@ -92,28 +87,6 @@ ADD_SUBDIRECTORY (3rd/printf)
 
 # https://github.com/MRNIU/cpu_io.git
 ADD_SUBDIRECTORY (3rd/cpu_io)
-
-# https://github.com/buildroot/buildroot.git
-SET (buildroot_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/buildroot)
-SET (buildroot_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/buildroot)
-ADD_CUSTOM_TARGET (
-    buildroot
-    COMMENT "build buildroot..."
-    # make 时编译
-    ALL
-    WORKING_DIRECTORY ${buildroot_SOURCE_DIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${buildroot_BINARY_DIR}
-    COMMAND make O=${buildroot_BINARY_DIR} qemu_aarch64_virt_defconfig
-            -j${CMAKE_BUILD_PARALLEL_LEVEL}
-    COMMAND cd ${buildroot_BINARY_DIR} && ${buildroot_SOURCE_DIR}/utils/config
-            -e BR2_TARGET_ROOTFS_CPIO
-    COMMAND cd ${buildroot_BINARY_DIR} && ${buildroot_SOURCE_DIR}/utils/config
-            -e BR2_TARGET_ROOTFS_CPIO_GZIP
-    COMMAND cd ${buildroot_BINARY_DIR} && make olddefconfig
-            -j${CMAKE_BUILD_PARALLEL_LEVEL}
-    COMMAND cd ${buildroot_BINARY_DIR} && make -j${CMAKE_BUILD_PARALLEL_LEVEL})
-SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
-                                     ${buildroot_BINARY_DIR})
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
     # https://github.com/riscv-software-src/opensbi.git
