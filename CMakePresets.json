@@ -110,7 +110,7 @@
         },
         "LIBRARY_OUTPUT_PATH": {
           "type": "STRING",
-          "value": "${sourceDir}/build_x86_64/lib"
+          "value": "${sourceDir}/build_x86_64/bin"
         }
       }
     },
@@ -135,7 +135,7 @@
         },
         "LIBRARY_OUTPUT_PATH": {
           "type": "STRING",
-          "value": "${sourceDir}/build_riscv64/lib"
+          "value": "${sourceDir}/build_riscv64/bin"
         },
         "USE_NO_RELAX": {
           "type": "BOOL",
@@ -164,7 +164,7 @@
         },
         "LIBRARY_OUTPUT_PATH": {
           "type": "STRING",
-          "value": "${sourceDir}/build_aarch64/lib"
+          "value": "${sourceDir}/build_aarch64/bin"
         }
       }
     }
