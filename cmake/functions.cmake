@@ -70,31 +70,6 @@ FUNCTION(add_coverage_target)
                 ${COVERAGE_OUTPUT_DIR} --branch-coverage)
 ENDFUNCTION()
 
-# 生成 dtb/dts/fit
-# QEMU_FLAGS qemu 参数
-FUNCTION(gen_dtb_dts_fit target)
-    # 解析参数
-    SET (options)
-    SET (multi_value_keywords QEMU_FLAGS)
-    CMAKE_PARSE_ARGUMENTS (ARG "${options}" "${one_value_keywords}"
-                           "${multi_value_keywords}" ${ARGN})
-
-    ADD_CUSTOM_COMMAND (
-        TARGET ${target}
-        VERBATIM POST_BUILD DEPENDS ${target}
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Generating dtb/dts/fit..."
-        # COMMAND bash -c "if [[ \"${CMAKE_SYSTEM_PROCESSOR}\" == \"riscv64\" || \"${CMAKE_SYSTEM_PROCESSOR}\" == \"aarch64\" ]]; then cd \"${CMAKE_BINARY_DIR}\" && qemu-system-\"${CMAKE_SYSTEM_PROCESSOR}\" -machine dumpdtb=bin/qemu.dtb \"${ARG_QEMU_FLAGS}\" && dtc -I dtb bin/qemu.dtb -O dts -o bin/qemu.dts; else echo 2; fi;"
-        COMMAND
-            qemu-system-${CMAKE_SYSTEM_PROCESSOR} -machine dumpdtb=bin/qemu.dtb
-            ${ARG_QEMU_FLAGS} && dtc -I dtb bin/qemu.dtb -O dts -o bin/qemu.dts
-        COMMAND mkimage -f bin/boot.its bin/boot.fit
-        COMMAND
-            mkimage -T script -d
-            ${CMAKE_SOURCE_DIR}/tools/${CMAKE_SYSTEM_PROCESSOR}_boot_scr.txt
-            bin/boot.scr.uimg)
-ENDFUNCTION()
-
 # 添加在 qemu 中运行内核
 # DEPENDS 依赖的 target
 # QEMU_FLAGS qemu 参数
