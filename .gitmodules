@@ -8,18 +8,12 @@
 [submodule "3rd/gdbinit"]
 	path = 3rd/gdbinit
 	url = https://github.com/gdbinit/Gdbinit.git
-[submodule "3rd/gnu-efi"]
-	path = 3rd/gnu-efi
-	url = https://github.com/ncroxon/gnu-efi.git
 [submodule "3rd/dtc"]
 	path = 3rd/dtc
 	url = https://git.kernel.org/pub/scm/utils/dtc/dtc.git
 [submodule "3rd/googletest"]
 	path = 3rd/googletest
 	url = https://github.com/google/googletest.git
-[submodule "3rd/grub2"]
-	path = 3rd/grub2
-	url = https://git.savannah.gnu.org/git/grub.git
 [submodule "3rd/cpu_io"]
 	path = 3rd/cpu_io
 	url = https://github.com/MRNIU/cpu_io.git
@@ -38,9 +32,6 @@
 [submodule "3rd/u-boot"]
 	path = 3rd/u-boot
 	url = https://github.com/u-boot/u-boot.git
-[submodule "3rd/buildroot"]
-	path = 3rd/buildroot
-	url = https://github.com/buildroot/buildroot.git
 [submodule "3rd/printf"]
 	path = 3rd/printf
 	url = https://github.com/eyalroz/printf.git
