@@ -91,35 +91,35 @@ FUNCTION(ADD_RUN_TARGET)
                 $<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dts)
 
     # 生成 U-BOOT FIT
-    ADD_CUSTOM_COMMAND (
-        COMMENT "Generating U-BOOT FIT ..." TARGET ${ARG_TARGET} POST_BUILD
-        VERBATIM
+    ADD_CUSTOM_TARGET (
+        gen_fit
+        COMMENT "Generating U-BOOT FIT ..."
         WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
         DEPENDS
             $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:$<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb>
             $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:$<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb>
+            ${ARG_TARGET}
         COMMAND mkimage -f $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.its
                 $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.fit
         COMMAND
             mkimage -T script -d
             ${CMAKE_SOURCE_DIR}/tools/${CMAKE_SYSTEM_PROCESSOR}_boot_scr.txt
-            $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.scr.uimg)
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.scr.uimg
+        COMMAND ln -s -f $<TARGET_FILE_DIR:${ARG_TARGET}>/* /srv/tftp)
 
     # 添加 target
     ADD_CUSTOM_TARGET (
         run
         COMMENT "Run $<TARGET_FILE_NAME:${ARG_TARGET}> ..."
-        DEPENDS ${ARG_DEPENDS}
+        DEPENDS ${ARG_DEPENDS} gen_fit
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMAND ln -s -f ${CMAKE_BINARY_DIR}/bin/* /srv/tftp
         COMMAND qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${QEMU_COMMON_FLAG}
                 ${QEMU_MACHINE_FLAGS} ${ARG_QEMU_BOOT_FLAGS})
     ADD_CUSTOM_TARGET (
         debug
         COMMENT "Debug $<TARGET_FILE_NAME:${ARG_TARGET}> ..."
-        DEPENDS ${ARG_DEPENDS}
+        DEPENDS ${ARG_DEPENDS} gen_fit
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMAND ln -s -f ${CMAKE_BINARY_DIR}/bin/* /srv/tftp
         COMMAND
             qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${QEMU_COMMON_FLAG}
             ${QEMU_MACHINE_FLAGS} ${QEMU_DEBUG_FLAGS} ${ARG_QEMU_BOOT_FLAGS})

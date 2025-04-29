@@ -62,8 +62,5 @@ ADD_RUN_TARGET (
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
-    ${CMAKE_BINARY_DIR}/bin/boot.fit
-    ${CMAKE_BINARY_DIR}/bin/boot.scr.uimg
-    ${PROJECT_NAME}
     QEMU_BOOT_FLAGS
     ${QEMU_BOOT_FLAGS})
