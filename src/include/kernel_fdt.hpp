@@ -18,7 +18,7 @@
 #define SIMPLEKERNEL_SRC_INCLUDE_KERNEL_FDT_HPP_
 
 // 禁用 GCC/Clang 的警告
-#include "libfdt_env.h"
+#include <libfdt_env.h>
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
