@@ -208,6 +208,12 @@ ADD_DEPENDENCIES (dtc-lib dtc)
 TARGET_INCLUDE_DIRECTORIES (dtc-lib INTERFACE ${dtc_BINARY_DIR}/libfdt)
 TARGET_LINK_LIBRARIES (dtc-lib INTERFACE ${dtc_BINARY_DIR}/libfdt/libfdt.a)
 
+# doxygen
+FIND_PACKAGE (Doxygen REQUIRED dot)
+
+# cppcheck
+FIND_PROGRAM (CPPCHECK_EXE NAMES cppcheck)
+
 # cppcheck
 FIND_PROGRAM (CPPCHECK_EXE NAMES cppcheck)
 ADD_CUSTOM_TARGET (
