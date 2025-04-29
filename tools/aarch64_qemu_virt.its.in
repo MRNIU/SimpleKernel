@@ -8,7 +8,7 @@
         kernel {
             description = "SimpleKernel";
 			// 内核路径
-            data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.elf");
+            data = /incbin/("kernel.elf");
             type = "kernel";
 			// 架构类型
             arch = "arm64";
@@ -27,7 +27,7 @@
         fdt {
             description = "Device Tree Blob";
 			// dtb 路径
-            data = /incbin/("@CMAKE_BINARY_DIR@/bin/qemu.dtb");
+            data = /incbin/("qemu.dtb");
             type = "flat_dt";
             arch = "arm64";
             compression = "none";

@@ -8,7 +8,7 @@
         kernel {
             description = "SimpleKernel";
 			// 内核路径
-            data = /incbin/("@CMAKE_BINARY_DIR@/bin/kernel.elf");
+            data = /incbin/("kernel.elf");
             type = "kernel";
 			// 架构类型
             arch = "x86_64";
