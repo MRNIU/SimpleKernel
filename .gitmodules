@@ -5,9 +5,6 @@
 [submodule "3rd/opensbi"]
 	path = 3rd/opensbi
 	url = https://github.com/riscv-software-src/opensbi.git
-[submodule "3rd/gdbinit"]
-	path = 3rd/gdbinit
-	url = https://github.com/gdbinit/Gdbinit.git
 [submodule "3rd/dtc"]
 	path = 3rd/dtc
 	url = https://git.kernel.org/pub/scm/utils/dtc/dtc.git

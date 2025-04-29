@@ -62,26 +62,6 @@ IF(NOT TARGET gtest)
     INCLUDE (GoogleTest)
 ENDIF()
 
-# https://github.com/gdbinit/Gdbinit.git
-SET (gdbinit_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/gdbinit)
-SET (gdbinit_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/gdbinit)
-ADD_CUSTOM_TARGET (
-    gdbinit
-    COMMENT "Generate gdbinit ..."
-    WORKING_DIRECTORY ${gdbinit_SOURCE_DIR}
-    # 复制到根目录下并重命名
-    COMMAND ln -s -f ${gdbinit_SOURCE_DIR}/gdbinit ${CMAKE_SOURCE_DIR}/.gdbinit
-    COMMAND echo "target remote ${QEMU_GDB_PORT}" >>
-            ${CMAKE_SOURCE_DIR}/.gdbinit
-    COMMAND
-        echo "add-symbol-file ${kernel_BINARY_DIR}/${KERNEL_ELF_OUTPUT_NAME}" >>
-        ${CMAKE_SOURCE_DIR}/.gdbinit
-    COMMAND echo "add-symbol-file ${boot_BINARY_DIR}/${BOOT_ELF_OUTPUT_NAME}"
-            >> ${CMAKE_SOURCE_DIR}/.gdbinit)
-# 在 make clean 时删除 .gdbinit
-SET_DIRECTORY_PROPERTIES (PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
-                                     ${CMAKE_SOURCE_DIR}/.gdbinit)
-
 # https://github.com/eyalroz/printf.git
 ADD_SUBDIRECTORY (3rd/printf)
 
