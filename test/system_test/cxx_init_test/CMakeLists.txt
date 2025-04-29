@@ -28,4 +28,4 @@ TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
                                                libcxx)
 
 # 获取目标文件信息
-OBJDUMP_READELF_NM (${PROJECT_NAME})
+# OBJDUMP_READELF_NM (${PROJECT_NAME})

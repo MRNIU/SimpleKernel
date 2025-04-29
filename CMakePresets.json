@@ -75,9 +75,9 @@
           "type": "STRING",
           "value": "tcp:127.0.0.1:54321"
         },
-        "QEMU_GDB_PORT": {
+        "QEMU_DEBUG_FLAGS": {
           "type": "STRING",
-          "value": "tcp::1234"
+          "value": "-S;-gdb;tcp::1234"
         },
         "QEMU_COMMON_FLAG": {
           "type": "STRING",
@@ -111,6 +111,10 @@
         "LIBRARY_OUTPUT_PATH": {
           "type": "STRING",
           "value": "${sourceDir}/build_x86_64/bin"
+        },
+        "QEMU_MACHINE_FLAGS": {
+          "type": "STRING",
+          "value": ""
         }
       }
     },
@@ -140,6 +144,10 @@
         "USE_NO_RELAX": {
           "type": "BOOL",
           "value": "OFF"
+        },
+        "QEMU_MACHINE_FLAGS": {
+          "type": "STRING",
+          "value": "-machine;virt"
         }
       }
     },
@@ -165,6 +173,10 @@
         "LIBRARY_OUTPUT_PATH": {
           "type": "STRING",
           "value": "${sourceDir}/build_aarch64/bin"
+        },
+        "QEMU_MACHINE_FLAGS": {
+          "type": "STRING",
+          "value": "-machine;virt,secure=on,gic_version=3;-cpu;cortex-a72"
         }
       }
     }

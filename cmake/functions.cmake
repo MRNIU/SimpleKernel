@@ -4,32 +4,6 @@
 # functions.cmake for Simple-XX/SimpleKernel.
 # 辅助函数
 
-# 生成 target 输出文件的 objdump -D, readelf -a, nm -a
-# target: target 名
-# 在 ${${target}_BINARY_DIR} 目录下生成 $<TARGET_FILE:${target}>.asm 文件
-# 在 ${${target}_BINARY_DIR} 目录下生成 $<TARGET_FILE:${target}>.readelf 文件
-# 在 ${${target}_BINARY_DIR} 目录下生成 $<TARGET_FILE:${target}>.sym 文件
-FUNCTION(objdump_readelf_nm target)
-    ADD_CUSTOM_COMMAND (
-        TARGET ${target}
-        VERBATIM POST_BUILD DEPENDS ${target}
-        WORKING_DIRECTORY ${${target}_BINARY_DIR}
-        COMMAND ${CMAKE_OBJDUMP} -D $<TARGET_FILE:${target}> >
-                $<TARGET_FILE_DIR:${target}>/${target}.asm || exit 0
-        COMMAND ${CMAKE_READELF} -a $<TARGET_FILE:${target}> >
-                $<TARGET_FILE_DIR:${target}>/${target}.readelf || exit 0
-        COMMAND ${CMAKE_NM} -a $<TARGET_FILE:${target}> >
-                $<TARGET_FILE_DIR:${target}>/${target}.sym
-        COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${target}>
-                $<TARGET_FILE_DIR:${target}>/${target}.bin
-        COMMENT "Generating symbol table, assembly, and readelf for ${target}")
-    SET_DIRECTORY_PROPERTIES (
-        PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
-                   "$<TARGET_FILE_DIR:${target}>/${target}.asm;"
-                   "$<TARGET_FILE_DIR:${target}>/${target}.readelf;"
-                   "$<TARGET_FILE_DIR:${target}>/${target}.sym;")
-ENDFUNCTION()
-
 # 添加测试覆盖率 target
 # DEPENDS 要生成的 targets
 # SOURCE_DIR 源码路径
@@ -73,31 +47,80 @@ ENDFUNCTION()
 # 添加在 qemu 中运行内核
 # DEPENDS 依赖的 target
 # QEMU_FLAGS qemu 参数
-FUNCTION(add_run_target)
+FUNCTION(ADD_RUN_TARGET)
     # 解析参数
     SET (options)
-    SET (multi_value_keywords DEPENDS QEMU_FLAGS)
+    SET (one_value_keywords TARGET)
+    SET (multi_value_keywords DEPENDS QEMU_BOOT_FLAGS)
     CMAKE_PARSE_ARGUMENTS (ARG "${options}" "${one_value_keywords}"
                            "${multi_value_keywords}" ${ARGN})
+
+    # 获取目标文件信息
+    ADD_CUSTOM_COMMAND (
+        COMMENT "Generating binary info for $<TARGET_FILE_NAME:${ARG_TARGET}>"
+                TARGET ${ARG_TARGET} POST_BUILD
+        VERBATIM
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
+        COMMAND
+            ${CMAKE_OBJDUMP} -D $<TARGET_FILE:${ARG_TARGET}> >
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/$<TARGET_FILE_NAME:${ARG_TARGET}>.objdump
+            || true
+        COMMAND
+            ${CMAKE_READELF} -a $<TARGET_FILE:${ARG_TARGET}> >
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/$<TARGET_FILE_NAME:${ARG_TARGET}>.readelf
+            || true
+        COMMAND
+            ${CMAKE_NM} -a $<TARGET_FILE:${ARG_TARGET}> >
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/$<TARGET_FILE_NAME:${ARG_TARGET}>.nm
+        COMMAND
+            ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${ARG_TARGET}>
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/$<TARGET_FILE_NAME:${ARG_TARGET}>.bin
+    )
+
+    # 生成 QEMU DTS 和 DTB
+    ADD_CUSTOM_COMMAND (
+        COMMENT "Generating QEMU DTS and DTB ..."
+        OUTPUT ${CMAKE_BINARY_DIR}/bin/qemu.dtb ${CMAKE_BINARY_DIR}/bin/qemu.dts
+        VERBATIM
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
+        COMMAND
+            qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${QEMU_COMMON_FLAG}
+            ${QEMU_MACHINE_FLAGS} -machine
+            dumpdtb=$<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb
+        COMMAND dtc -I dtb $<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb -O dts -o
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dts)
+
+    # 生成 U-BOOT FIT
+    ADD_CUSTOM_COMMAND (
+        COMMENT "Generating U-BOOT FIT ..." TARGET ${ARG_TARGET} POST_BUILD
+        VERBATIM
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
+        DEPENDS
+            $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:$<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb>
+            $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:$<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb>
+        COMMAND mkimage -f $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.its
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.fit
+        COMMAND
+            mkimage -T script -d
+            ${CMAKE_SOURCE_DIR}/tools/${CMAKE_SYSTEM_PROCESSOR}_boot_scr.txt
+            $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.scr.uimg)
 
     # 添加 target
     ADD_CUSTOM_TARGET (
         run
-        COMMENT "Run Simplekernel ..."
+        COMMENT "Run $<TARGET_FILE_NAME:${ARG_TARGET}> ..."
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND ln -s -f ${CMAKE_BINARY_DIR}/bin/* /srv/tftp
-        COMMAND qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${ARG_QEMU_FLAGS})
+        COMMAND qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${QEMU_COMMON_FLAG}
+                ${QEMU_MACHINE_FLAGS} ${ARG_QEMU_BOOT_FLAGS})
     ADD_CUSTOM_TARGET (
         debug
-        COMMENT "Debug Simplekernel ..."
+        COMMENT "Debug $<TARGET_FILE_NAME:${ARG_TARGET}> ..."
         DEPENDS ${ARG_DEPENDS}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND ln -s -f ${CMAKE_BINARY_DIR}/bin/* /srv/tftp
         COMMAND
-            qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${ARG_QEMU_FLAGS}
-            # 等待 gdb 连接
-            -S
-            # 使用 1234 端口
-            -gdb ${QEMU_GDB_PORT})
+            qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${QEMU_COMMON_FLAG}
+            ${QEMU_MACHINE_FLAGS} ${QEMU_DEBUG_FLAGS} ${ARG_QEMU_BOOT_FLAGS})
 ENDFUNCTION()
