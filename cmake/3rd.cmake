@@ -255,92 +255,8 @@ ADD_DEPENDENCIES (dtc-lib dtc)
 TARGET_INCLUDE_DIRECTORIES (dtc-lib INTERFACE ${dtc_BINARY_DIR}/libfdt)
 TARGET_LINK_LIBRARIES (dtc-lib INTERFACE ${dtc_BINARY_DIR}/libfdt/libfdt.a)
 
-# https://github.com/ncroxon/gnu-efi.git
-SET (gnu-efi_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/gnu-efi)
-SET (gnu-efi_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/gnu-efi)
-IF(CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
-    SET (CC_ ${CMAKE_C_COMPILER})
-    SET (AR_ ${CMAKE_AR})
-ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" AND CMAKE_SYSTEM_PROCESSOR
-                                                         MATCHES "x86_64")
-    SET (CROSS_COMPILE_ x86_64-linux-gnu-)
-ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64" AND CMAKE_SYSTEM_PROCESSOR
-                                                         MATCHES "riscv64")
-    SET (CROSS_COMPILE_ riscv64-linux-gnu-)
-ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64" AND CMAKE_SYSTEM_PROCESSOR
-                                                        MATCHES "riscv64")
-    SET (CROSS_COMPILE_ riscv64-linux-gnu-)
-ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64" AND CMAKE_SYSTEM_PROCESSOR
-                                                        MATCHES "aarch64")
-    SET (CROSS_COMPILE_ aarch64-linux-gnu-)
-ENDIF()
-IF(NOT EXISTS ${gnu-efi_BINARY_DIR}/lib/libefi.a)
-    # 编译 gnu-efi
-    ADD_CUSTOM_TARGET (
-        gnu-efi
-        COMMENT "build gnu-efi..."
-        # make 时编译
-        ALL
-        WORKING_DIRECTORY ${gnu-efi_SOURCE_DIR}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${gnu-efi_BINARY_DIR}
-        COMMAND
-            # @note 仅支持 gcc
-            make lib gnuefi inc CROSS_COMPILE=${CROSS_COMPILE_}
-            ARCH=${CMAKE_SYSTEM_PROCESSOR} OBJDIR=${gnu-efi_BINARY_DIR} V=1
-            -j${CMAKE_BUILD_PARALLEL_LEVEL}
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${gnu-efi_SOURCE_DIR}/inc
-                ${gnu-efi_BINARY_DIR}/inc)
-ELSE()
-    ADD_CUSTOM_TARGET (
-        gnu-efi
-        COMMENT "gnu-efi already exists, skipping..."
-        ALL
-        WORKING_DIRECTORY ${gnu-efi_SOURCE_DIR})
-ENDIF()
-ADD_LIBRARY (gnu-efi-lib INTERFACE)
-ADD_DEPENDENCIES (gnu-efi-lib gnu-efi)
-TARGET_INCLUDE_DIRECTORIES (
-    gnu-efi-lib
-    INTERFACE ${gnu-efi_BINARY_DIR}/inc
-              ${gnu-efi_BINARY_DIR}/inc/${CMAKE_SYSTEM_PROCESSOR}
-              ${gnu-efi_BINARY_DIR}/inc/protocol)
-TARGET_LINK_LIBRARIES (
-    gnu-efi-lib
-    INTERFACE ${gnu-efi_BINARY_DIR}/gnuefi/reloc_${CMAKE_SYSTEM_PROCESSOR}.o
-              ${gnu-efi_BINARY_DIR}/gnuefi/crt0-efi-${CMAKE_SYSTEM_PROCESSOR}.o
-              ${gnu-efi_BINARY_DIR}/gnuefi/libgnuefi.a
-              ${gnu-efi_BINARY_DIR}/lib/libefi.a)
-
-# gdb
-FIND_PROGRAM (GDB_EXE gdb)
-IF(NOT GDB_EXE)
-    MESSAGE (
-        FATAL_ERROR "gdb not found.\n"
-                    "Following https://www.sourceware.org/gdb/ to install.")
-ENDIF()
-
-# qemu
-FIND_PROGRAM (QEMU_EXE qemu-system-${CMAKE_SYSTEM_PROCESSOR})
-IF(NOT QEMU_EXE)
-    MESSAGE (FATAL_ERROR "qemu-system-${CMAKE_SYSTEM_PROCESSOR} not found.\n"
-                         "Following https://www.qemu.org/ to install.")
-ENDIF()
-
-# doxygen
-FIND_PACKAGE (Doxygen REQUIRED dot)
-IF(NOT DOXYGEN_FOUND)
-    MESSAGE (
-        FATAL_ERROR "Doxygen not found.\n"
-                    "Following https://www.doxygen.nl/index.html to install.")
-ENDIF()
-
 # cppcheck
 FIND_PROGRAM (CPPCHECK_EXE NAMES cppcheck)
-IF(NOT CPPCHECK_EXE)
-    MESSAGE (
-        FATAL_ERROR "cppcheck not found.\n"
-                    "Following https://cppcheck.sourceforge.io to install.")
-ENDIF()
 ADD_CUSTOM_TARGET (
     cppcheck
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -354,21 +270,6 @@ ADD_CUSTOM_TARGET (
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
     # genhtml 生成测试覆盖率报告网页
     FIND_PROGRAM (GENHTML_EXE genhtml)
-    IF(NOT GENHTML_EXE)
-        MESSAGE (
-            FATAL_ERROR
-                "genhtml not found.\n"
-                "Following https://github.com/linux-test-project/lcov to install."
-        )
-    ENDIF()
-
     # lcov 生成测试覆盖率报告
     FIND_PROGRAM (LCOV_EXE lcov)
-    IF(NOT LCOV_EXE)
-        MESSAGE (
-            FATAL_ERROR
-                "lcov not found.\n"
-                "Following https://github.com/linux-test-project/lcov to install."
-        )
-    ENDIF()
 ENDIF()

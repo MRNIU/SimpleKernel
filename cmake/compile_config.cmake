@@ -94,66 +94,6 @@ ADD_LIBRARY (link_libraries INTERFACE)
 TARGET_LINK_LIBRARIES (link_libraries INTERFACE compile_definitions
                                                 compile_options link_options)
 
-ADD_LIBRARY (boot_compile_definitions INTERFACE)
-TARGET_COMPILE_DEFINITIONS (
-    boot_compile_definitions INTERFACE # 使用 gnu-efi
-                                       GNU_EFI_USE_MS_ABI)
-
-ADD_LIBRARY (boot_compile_options INTERFACE)
-TARGET_COMPILE_OPTIONS (
-    boot_compile_options
-    INTERFACE # 使用 2 字节 wchar_t
-              -fshort-wchar
-              # 允许 wchar_t
-              -fpermissive
-              # 目标平台编译选项
-              $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
-              >
-              $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
-              >)
-
-ADD_LIBRARY (boot_link_options INTERFACE)
-TARGET_LINK_OPTIONS (
-    boot_link_options
-    INTERFACE
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
-    # 编译为共享库
-    -shared
-    # 符号级别绑定
-    -Wl,-Bsymbolic
-    >
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
-    # 编译为共享库
-    -shared
-    # 符号级别绑定
-    -Wl,-Bsymbolic
-    >
-    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
-    -shared
-    -Wl,-Bsymbolic
-    >)
-
-ADD_LIBRARY (boot_link_libraries INTERFACE)
-TARGET_LINK_LIBRARIES (
-    boot_link_libraries
-    INTERFACE link_libraries
-              boot_compile_definitions
-              boot_compile_options
-              boot_link_options
-              # 目标平台编译选项
-              $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
-              # 链接 gnu-efi
-              gnu-efi-lib
-              >
-              $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
-              # 链接 gnu-efi
-              gnu-efi-lib
-              >
-              $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
-              # 链接 gnu-efi
-              gnu-efi-lib
-              >)
-
 ADD_LIBRARY (kernel_compile_definitions INTERFACE)
 TARGET_COMPILE_DEFINITIONS (kernel_compile_definitions
                             INTERFACE USE_NO_RELAX=$<BOOL:${USE_NO_RELAX}>)
