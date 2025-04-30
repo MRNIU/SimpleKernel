@@ -27,5 +27,30 @@ TARGET_INCLUDE_DIRECTORIES (
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
                                                libcxx)
 
-# 获取目标文件信息
-# OBJDUMP_READELF_NM (${PROJECT_NAME})
+# qemu 参数设置
+LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS "")
+# 目标平台参数
+IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+    LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS -drive
+          file=fat:rw:${CMAKE_BINARY_DIR}/bin,format=raw,media=disk -bios
+          ${u-boot_BINARY_DIR}/u-boot.rom)
+ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
+    LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS -bios
+          3rd/opensbi/platform/generic/firmware/fw_jump.elf -kernel
+          $<TARGET_FILE:${PROJECT_NAME}>)
+ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS -kernel
+          $<TARGET_FILE:${PROJECT_NAME}>)
+ENDIF()
+
+# 添加 run 和 debug targets
+ADD_RUN_TARGET (
+    NAME
+    ${PROJECT_NAME}_
+    TARGET
+    ${PROJECT_NAME}
+    DEPENDS
+    u-boot
+    $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:opensbi>
+    QEMU_BOOT_FLAGS
+    ${${PROJECT_NAME}_QEMU_BOOT_FLAGS})

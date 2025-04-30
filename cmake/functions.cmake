@@ -47,18 +47,19 @@ ENDFUNCTION()
 # 添加在 qemu 中运行内核
 # DEPENDS 依赖的 target
 # QEMU_FLAGS qemu 参数
-FUNCTION(ADD_RUN_TARGET)
+FUNCTION(add_run_target)
     # 解析参数
     SET (options)
-    SET (one_value_keywords TARGET)
+    SET (one_value_keywords NAME TARGET)
     SET (multi_value_keywords DEPENDS QEMU_BOOT_FLAGS)
     CMAKE_PARSE_ARGUMENTS (ARG "${options}" "${one_value_keywords}"
                            "${multi_value_keywords}" ${ARGN})
 
     # 获取目标文件信息
     ADD_CUSTOM_COMMAND (
+        TARGET ${ARG_TARGET}
+        POST_BUILD
         COMMENT "Generating binary info for $<TARGET_FILE_NAME:${ARG_TARGET}>"
-                TARGET ${ARG_TARGET} POST_BUILD
         VERBATIM
         WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
         COMMAND
@@ -79,8 +80,8 @@ FUNCTION(ADD_RUN_TARGET)
 
     # 生成 QEMU DTS 和 DTB
     ADD_CUSTOM_COMMAND (
-        COMMENT "Generating QEMU DTS and DTB ..."
         OUTPUT ${CMAKE_BINARY_DIR}/bin/qemu.dtb ${CMAKE_BINARY_DIR}/bin/qemu.dts
+        COMMENT "Generating QEMU DTS and DTB ..."
         VERBATIM
         WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
         COMMAND
@@ -92,7 +93,7 @@ FUNCTION(ADD_RUN_TARGET)
 
     # 生成 U-BOOT FIT
     ADD_CUSTOM_TARGET (
-        gen_fit
+        ${ARG_TARGET}_gen_fit
         COMMENT "Generating U-BOOT FIT ..."
         WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
         DEPENDS
@@ -100,7 +101,7 @@ FUNCTION(ADD_RUN_TARGET)
             $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:$<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb>
             ${ARG_TARGET}
         COMMAND mkimage -f $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.its
-                $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.fit
+                $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.fit || true
         COMMAND
             mkimage -T script -d
             ${CMAKE_SOURCE_DIR}/tools/${CMAKE_SYSTEM_PROCESSOR}_boot_scr.txt
@@ -109,16 +110,16 @@ FUNCTION(ADD_RUN_TARGET)
 
     # 添加 target
     ADD_CUSTOM_TARGET (
-        run
+        ${ARG_NAME}run
         COMMENT "Run $<TARGET_FILE_NAME:${ARG_TARGET}> ..."
-        DEPENDS ${ARG_DEPENDS} gen_fit
+        DEPENDS ${ARG_DEPENDS} ${ARG_TARGET}_gen_fit
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${QEMU_COMMON_FLAG}
                 ${QEMU_MACHINE_FLAGS} ${ARG_QEMU_BOOT_FLAGS})
     ADD_CUSTOM_TARGET (
-        debug
+        ${ARG_NAME}debug
         COMMENT "Debug $<TARGET_FILE_NAME:${ARG_TARGET}> ..."
-        DEPENDS ${ARG_DEPENDS} gen_fit
+        DEPENDS ${ARG_DEPENDS} ${ARG_TARGET}_gen_fit
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND
             qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${QEMU_COMMON_FLAG}
