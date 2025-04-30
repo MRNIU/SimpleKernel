@@ -15,9 +15,6 @@ MESSAGE (STATUS "CMAKE_SYSTEM_PROCESSOR is: ${CMAKE_SYSTEM_PROCESSOR}")
 MESSAGE (STATUS "CMAKE_TOOLCHAIN_FILE is: ${CMAKE_TOOLCHAIN_FILE}")
 
 # 生成项目配置头文件，传递给代码
-CONFIGURE_FILE (
-    ${CMAKE_SOURCE_DIR}/tools/${CMAKE_SYSTEM_PROCESSOR}_qemu_virt.its.in
-    ${CMAKE_BINARY_DIR}/bin/boot.its @ONLY)
 CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/project_config.h.in
                 ${CMAKE_SOURCE_DIR}/src/project_config.h @ONLY)
 CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/.pre-commit-config.yaml.in

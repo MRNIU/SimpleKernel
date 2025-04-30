@@ -95,11 +95,18 @@ FUNCTION(add_run_target)
     ADD_CUSTOM_TARGET (
         ${ARG_TARGET}_gen_fit
         COMMENT "Generating U-BOOT FIT ..."
+        VERBATIM
         WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
         DEPENDS
             $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:$<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb>
             $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:$<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb>
             ${ARG_TARGET}
+        COMMAND
+            ${CMAKE_COMMAND} -D
+            IN_FILE=${CMAKE_SOURCE_DIR}/tools/${CMAKE_SYSTEM_PROCESSOR}_qemu_virt.its.in
+            -D OUT_FILE=${CMAKE_BINARY_DIR}/bin/boot.its -D
+            KV_PAIRS=DESC\;$<TARGET_FILE_NAME:${ARG_TARGET}>\;KERNEL_PATH\;$<TARGET_FILE:${ARG_TARGET}>\;DTB_PATH\;$<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb;
+            -P ${CMAKE_SOURCE_DIR}/cmake/replace_kv.cmake
         COMMAND mkimage -f $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.its
                 $<TARGET_FILE_DIR:${ARG_TARGET}>/boot.fit || true
         COMMAND

@@ -6,9 +6,9 @@
 
     images {
         kernel {
-            description = "SimpleKernel";
+            description = "@DESC@";
 			// 内核路径
-            data = /incbin/("kernel.elf");
+            data = /incbin/("@KERNEL_PATH@");
             type = "kernel";
 			// 架构类型
             arch = "arm64";
@@ -27,7 +27,7 @@
         fdt {
             description = "Device Tree Blob";
 			// dtb 路径
-            data = /incbin/("qemu.dtb");
+            data = /incbin/("@DTB_PATH@");
             type = "flat_dt";
             arch = "arm64";
             compression = "none";
