@@ -19,10 +19,6 @@
 
 #include <cstdint>
 
-#define KERNEL_NAME (wchar_t *)L"kernel.elf"
-
-#define KERNEL_ELF_ADDR ()
-
 #ifdef SIMPLEKERNEL_DEBUG
 static constexpr const auto kSimpleKernelDebugLog = true;
 #endif
