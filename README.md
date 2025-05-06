@@ -15,7 +15,7 @@ boot branch
 ## 关键词
 
 - kernel, own kernel
-- x86_64/ riscv64/ aarch64
+- x86_64, riscv64, aarch64
 - osdev
 - c++ bare metal
 - u-boot, opensbi
