@@ -180,12 +180,6 @@ make run
 
 - pl011 串口驱动
 
-- 全局对象
-
-  |                  对象名                  |                 位置                 |          用途           |
-  | :--------------------------------------: | :----------------------------------: | :---------------------: |
-  | `static cpu::Serial kSerial(cpu::kCom1)` | src/kernel/arch/x86_64/arch_main.cpp |     X86_64 下的串口     |
-
 - 基于 doxygen 的文档生成与自动部署
 
   github action 会将文档部署到 https://simple-xx.github.io/SimpleKernel/ (仅 main 分支)

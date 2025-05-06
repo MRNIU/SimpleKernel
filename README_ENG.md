@@ -67,7 +67,6 @@ This branch is the first branch of SImpleKernel. In this branch, the foundation 
 
   Reference [MRNIU/cmake-kernel](https://github.com/MRNIU/cmake-kernel) build system, a detailed explanation see [doc/build_system.md](./doc/build_system.md)
 
-
 - Stack Trace Printing
 
   Traverse frame pointers and cross-reference with ELF symbol tables to reconstruct function call stacks.
