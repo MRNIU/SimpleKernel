@@ -21,6 +21,8 @@
 
 #ifdef SIMPLEKERNEL_DEBUG
 static constexpr const auto kSimpleKernelDebugLog = true;
+#else
+static constexpr const auto kSimpleKernelDebugLog = false;
 #endif
 
 #endif /* SIMPLEKERNEL_SRC_PROJECT_CONFIG_H_ */

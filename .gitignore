@@ -16,3 +16,4 @@ Doxyfile
 *.o
 *.objdump
 *.elf
+.pre-commit-config.yaml

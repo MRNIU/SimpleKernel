@@ -10,66 +10,124 @@
 
 # SimpleKernel
 
+boot branch
+
 ## Key Words
 
-- kernel
-- x86_64, riscv64, aarch64
+- kernel, own kernel
+- x86_64/ riscv64/ aarch64
 - osdev
-- bare metal
-- c++, cmake
-- uefi, opensbi
+- c++ bare metal
+- u-boot, opensbi
+- linux
 
-## Introduction
 
-SimpleKernel, a simple kernel for learning. Contains the basic functionality of an operating system
+## Quick Start
 
-Kernels with different levels of completion are available, and you can start from where you like.
+### Using Pre-built Docker
 
-## What's NEW
+```shell
+# Clone repository
+git clone https://github.com/MRNIU/SimpleKernel.git
+git submodule update --init --recursive
+# Pull Docker Image
+docker pull ptrnull233/simple_kernel:latest
+# Run Docker
+docker run --name SimpleKernel-container -itd -p 233:22 -v ./SimpleKernel:/root/ ptrnull233/simple_kernel:latest
+# Enter Docker
+docker exec -it SimpleKernel-container /bin/zsh
+```
+
+### Build and Run
+
+```shell
+cd SimpleKernel
+# build_riscv64/build_aarch64/build_x86_64/
+cmake --preset build_riscv64
+cd build_riscv64
+# Build kernel
+make kernel
+# Run in QEMU
+make run
+```
+
+### Using VSCode
+
+Pre-configured VSCode settings for running and debugging the kernel are provided.
+
+## Execution Flow
+
+![common_bootflow](https://www.planttext.com?text=dLDRIyCm57xU-HM7-2WROsCl1MLkYAWR38TF8YLjWmis5xDKEd-zITQkhHqezg4b9zyjvwJplQN65Y87iDpc39TA22LnePJ5BViec4mPx1ZDc44o6Kzcena1e8LLiX09Cm29Ad5gChnOyRUTlJFi0DffyfHhAYqcJYbNWQ-CVq_m1GPNmM0LwZ0OkWS6X3mFVPaGU0KcCqSj0J4Oa2qNEcUFp4YMayfhaHUivrMvJCV1nbT6syOXJcg33Z5qeSiKbCjHgdMB6r1ziWDnoN_Gz-znpfEqBBiQIwtl7ROlukr-2-0hVIOrwQxlxwjnN-B6bSy7s0iT_pL4xC3d5VuLPhlUT6OEhJipl3vEDGgN9Upusd5W4JuKGiDnuQhr92Bqifpc_ClTwCjBV2gavO910mr7ZN3jFxVIcaEpTUf4X2vPjGiqjVoJMXQOpQe60mIAevzQ4A4_O8W29yrAlmNo7WqGsgWwnK6ck55SMiXODqThtIIPkqQwN_eR)
+
+## New Features
 
 This branch is the first branch of SImpleKernel. In this branch, the foundation of the build system is completed, basic documentation deployment and automated testing, and of course the most important, there is a uefi based x86_64 kernel and riscv64 kernel started by opensbi, which can run on qemu, and achieve simple screen output.
-
-- Control flow
-
-  - x86_64/aarch64
-
-      <img src='https://g.gravizo.com/svg?
-      @startuml;
-      uefi_shell->efi_main:boot.cpp;
-      efi_main->_start:main.cpp;
-    _start->CppInit:LibCxxInit.cpp;
-    CppInit->main:main.cpp;
-    main->ArchInit:arch.cpp;
-    ArchInit->main;
-      main->main;
-      @enduml
-      '>
-
-  - riscv64
-
-    <img src='https://g.gravizo.com/svg?
-      @startuml;
-      opensbi->_boot:boot.S;
-      _boot->_start:main.cpp;
-    _start->CppInit:LibCxxInit.cpp;
-    CppInit->main:main.cpp;
-    main->ArchInit:ArchInit.cpp;
-    ArchInit->main;
-      main->main;
-      @enduml
-    '>
 
 - Build system
 
   Reference [MRNIU/cmake-kernel](https://github.com/MRNIU/cmake-kernel) build system, a detailed explanation see [doc/build_system.md](./doc/build_system.md)
 
-- x86_64 kernel based on gnu-efi boot
 
-  After compiling, boot.efi and kernel.elf are generated. After entering uefi environment, boot.efi is executed first. After initialization, kernel.elf is executed
+- Stack Trace Printing
 
-- riscv64 kernel based on opensbi boot
+  Traverse frame pointers and cross-reference with ELF symbol tables to reconstruct function call stacks.
 
-  Initializing by opensbi, it jumps directly to the kernel address and enters the S state when entering the kernel logic
+- Basic C++ Exception Support
+
+  Implements throw to trigger exceptions followed by system termination (no context-aware exception handling).
+
+- klog Kernel Logging Module
+
+  Supports ANSI escape codes for colored text output in ANSI-compatible terminals.
+
+- RISC-V64 (U-Boot + OpenSBI)
+
+  - Initialized by OpenSBI; kernel entry in Supervisor (S) mode.
+
+  - GP (Global Pointer) register initialization.
+
+  - printf implementation leveraging OpenSBI.
+
+  - FIT (Flattened Image Tree) image packaging.
+
+- AMD64 (U-Boot)
+
+  - Initialized by U-Boot; kernel enters 64-bit mode directly.
+
+  - FIT image packaging.
+
+- AArch64 (U-Boot + Arm Trusted Firmware [ATF] + OP-TEE)
+
+  - FIT image packaging.
+
+  - Initialized by U-Boot in 64-bit mode.
+
+  - ATF (Arm Trusted Firmware) framework integration.
+
+- SMP Support
+
+  Multi-core CPU coordination
+
+- Spinlock
+
+  Preemptive multi-core spinlock implementation (primarily for klog synchronization).
+
+- Device Tree Blob (DTB) Parsing
+
+  Hardware configuration decoding.
+
+- ELF Parsing
+
+  Executable/linkable format analysis.
+
+- NS16550A
+
+  UART driver for x86/RISC-V platforms.
+
+- PL011
+
+  UART driver for ARM platforms.
+
 
 - Doxygen-based document generation and automatic deployment
 
@@ -90,31 +148,38 @@ This branch is the first branch of SImpleKernel. In this branch, the foundation 
 - Code formatting
 
     Use the llvm style
-    
+
 - docker
 
     Supports building with docker, see [doc/docker.md](./doc/docker.md)
 
-## Supported
+## Supported Features
 
-See What's NEW
+See "New Features" section
 
 ## 3rd
 
-[CPM](https://github.com/cpm-cmake/CPM.cmake)
+[google/googletest](https://github.com/google/googletest.git)
 
-[opensbi](https://github.com/riscv-software-src/opensbi)
+[eyalroz/printf](https://github.com/eyalroz/printf.git)
 
-[gnu-efi](https://sourceforge.net/projects/gnu-efi/)
+[MRNIU/cpu_io](https://github.com/MRNIU/cpu_io.git)
 
-[gdbinit](https://github.com/gdbinit/Gdbinit)
+[riscv-software-src/opensbi](https://github.com/riscv-software-src/opensbi.git)
 
-[opensbi_interface](https://github.com/MRNIU/opensbi_interface)
+[MRNIU/opensbi_interface](https://github.com/MRNIU/opensbi_interface.git)
 
-[printf_bare_metal](https://github.com/MRNIU/printf_bare_metal)
+[u-boot/u-boot](https://github.com/u-boot/u-boot.git)
 
-[fdt_parser](https://github.com/MRNIU/fdt_parser)
+[OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git)
 
-[CPMLicences.cmake](https://github.com/TheLartians/CPMLicenses.cmake)
+[OP-TEE/optee_client](https://github.com/OP-TEE/optee_client.git)
 
-[google/googletest](https://github.com/google/googletest)
+[ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git)
+
+[dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git)https://github.com/google/googletest)
+
+
+## Development Guide
+- Code Style: Google Style (enforced via .clang-format)
+- Naming Convention: [Google Open Source Style Guide](https://google.github.io/styleguide/cppguide.html)
