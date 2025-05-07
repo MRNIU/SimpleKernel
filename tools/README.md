@@ -21,10 +21,6 @@
 
   Dockerfile
 
-- git_commit.md
-
-  git commit 规范
-
 - project_config.h.in
 
   项目配置模版
