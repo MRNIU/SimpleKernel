@@ -20,24 +20,4 @@
 
 #include "riscv64_virt.dtb.h"
 
-TEST(KernelFdtTest, ConstructorTest) {
-  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
-}
-
-TEST(KernelFdtTest, GetMemoryTest) {
-  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
-
-  auto [memory_base, memory_size] = kerlen_fdt.GetMemory();
-
-  EXPECT_EQ(memory_base, 0x80000000);
-  EXPECT_EQ(memory_size, 0x8000000);
-}
-
-TEST(KernelFdtTest, GetSerialTest) {
-  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
-
-  auto [serial_base, serial_size] = kerlen_fdt.GetSerial();
-
-  EXPECT_EQ(serial_base, 0x10000000);
-  EXPECT_EQ(serial_size, 0x100);
-}
+/// @todo

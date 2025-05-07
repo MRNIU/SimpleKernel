@@ -80,7 +80,7 @@ class SpinLock {
     RestoreInterruptsNested();
   }
 
- private:
+ protected:
   /// 自旋锁名称
   const char *name_{"unnamed"};
   /// 是否 lock

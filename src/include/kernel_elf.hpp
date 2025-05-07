@@ -92,7 +92,7 @@ class KernelElf {
   ~KernelElf() = default;
   /// @}
 
- private:
+ protected:
   /// @name elf 文件相关
   /// @{
   std::span<uint8_t> elf_;
