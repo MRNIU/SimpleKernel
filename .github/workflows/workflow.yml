@@ -33,8 +33,8 @@ jobs:
 
       - name: x86_64
         run: |
-            docker run -v ${{ github.workspace }}:/workspace ${{ env.DOCKER_IMAGE }} \
-            /bin/sh -c "cd /workspace && CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} cmake --preset=build_x86_64 && cmake --build build_x86_64 --target kernel && cmake --build build_x86_64 --target unit-test && cmake --build build_x86_64 --target coverage && cmake --build build_x86_64 --target doc"
+            docker run -v ${{ github.workspace }}:/workspace ${{ env.DOCKER_IMAGE }} -e CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+            /bin/sh -c "cd /workspace cmake --preset=build_x86_64 && cmake --build build_x86_64 --target kernel && cmake --build build_x86_64 --target unit-test && cmake --build build_x86_64 --target coverage && cmake --build build_x86_64 --target doc"
           # cmake --preset=build_x86_64
           # cmake --build build_x86_64 --target boot
           # cmake --build build_x86_64 --target kernel
@@ -43,15 +43,15 @@ jobs:
 
       - name: riscv64
         run: |
-            docker run -v ${{ github.workspace }}:/workspace ${{ env.DOCKER_IMAGE }} \
-            /bin/sh -c "cd /workspace && CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} cmake --preset=build_riscv64 && cmake --build build_riscv64 --target kernel"
+            docker run -v ${{ github.workspace }}:/workspace ${{ env.DOCKER_IMAGE }} -e CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+            /bin/sh -c "cd /workspace && cmake --preset=build_riscv64 && cmake --build build_riscv64 --target kernel"
           # cmake --preset=build_riscv64
           # cmake --build build_riscv64 --target kernel
 
       - name: aarch64
         run: |
-            docker run -v ${{ github.workspace }}:/workspace ${{ env.DOCKER_IMAGE }} \
-            /bin/sh -c "cd /workspace && CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} cmake --preset=build_aarch64 && cmake --build build_aarch64 --target kernel"
+            docker run -v ${{ github.workspace }}:/workspace ${{ env.DOCKER_IMAGE }} -e CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+            /bin/sh -c "cd /workspace && cmake --preset=build_aarch64 && cmake --build build_aarch64 --target kernel"
           # cmake --preset=build_aarch64
           # cmake --build build_aarch64 --target boot
           # cmake --build build_aarch64 --target kernel
