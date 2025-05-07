@@ -33,7 +33,7 @@ jobs:
 
       - name: x86_64
         run: |
-            docker run -v ${{ github.workspace }}:/root -e CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} ${{ env.DOCKER_IMAGE }} \
+            docker run -v ${{ github.workspace }}:/root ${{ env.DOCKER_IMAGE }} \
             /bin/sh -c 'cmake --preset=build_x86_64 && cmake --build build_x86_64 --target kernel unit-test coverage doc'
           # cmake --preset=build_x86_64
           # cmake --build build_x86_64 --target boot
@@ -43,14 +43,14 @@ jobs:
 
       - name: riscv64
         run: |
-            docker run -v ${{ github.workspace }}:/root -e CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} ${{ env.DOCKER_IMAGE }} \
+            docker run -v ${{ github.workspace }}:/root ${{ env.DOCKER_IMAGE }} \
             /bin/sh -c 'cmake --preset=build_riscv64 && cmake --build build_riscv64 --target kernel'
           # cmake --preset=build_riscv64
           # cmake --build build_riscv64 --target kernel
 
       - name: aarch64
         run: |
-            docker run -v ${{ github.workspace }}:/root -e CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} ${{ env.DOCKER_IMAGE }} \
+            docker run -v ${{ github.workspace }}:/root ${{ env.DOCKER_IMAGE }} \
             /bin/sh -c 'cmake --preset=build_aarch64 && cmake --build build_aarch64 --target kernel'
           # cmake --preset=build_aarch64
           # cmake --build build_aarch64 --target boot
