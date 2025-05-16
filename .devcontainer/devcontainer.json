@@ -7,7 +7,6 @@
 			"extensions": [
 				"ms-vscode.cpptools",
 				"ms-vscode.cpptools-extension-pack",
-				"twxs.cmake",
 				"ms-vscode.cmake-tools",
 				"jebbs.plantuml",
 				"yzhang.markdown-all-in-one",
