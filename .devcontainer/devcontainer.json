@@ -1,14 +1,20 @@
 {
 	"name": "SimpleKernel DevContainer",
-	"dockerFile": "../tools/Dockerfile",
-	"postCreateCommand": "bash -i -c 'pre-commit install'",
+	"image": "ptrnull233/simple_kernel:latest",
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"ms-vscode.cpptools",
 				"ms-vscode.cpptools-extension-pack",
 				"twxs.cmake",
-				"ms-vscode.cmake-tools"
+				"ms-vscode.cmake-tools",
+				"jebbs.plantuml",
+				"yzhang.markdown-all-in-one",
+				"eamodio.gitlens",
+				"github.copilot-chat",
+				"github.copilot",
+				"ms-vscode.hexeditor",
+				"xaver.clang-format"
 			]
 		}
 	}
