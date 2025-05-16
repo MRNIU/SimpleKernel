@@ -1,7 +1,7 @@
 {
 	"name": "SimpleKernel DevContainer",
 	"image": "ptrnull233/simple_kernel:latest",
-	"postCreateCommand": "echo 'Welcome to SimpleKernel DevContainer!' && echo 'Initializing git submodules...' && git submodule update --init --recursive",
+	"postCreateCommand": "git submodule update --init --recursive",
 	"customizations": {
 		"vscode": {
 			"extensions": [
