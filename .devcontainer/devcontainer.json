@@ -1,6 +1,7 @@
 {
 	"name": "SimpleKernel DevContainer",
 	"image": "ptrnull233/simple_kernel:latest",
+	"postCreateCommand": "echo 'Welcome to SimpleKernel DevContainer!' && echo 'Initializing git submodules...' && git submodule update --init --recursive",
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -14,7 +15,12 @@
 				"github.copilot-chat",
 				"github.copilot",
 				"ms-vscode.hexeditor",
-				"xaver.clang-format"
+				"xaver.clang-format",
+				"plorefice.devicetree",
+				"dan-c-underwood.arm",
+				"zixuanwang.linkerscript",
+				"zhwu95.riscv",
+				"13xforever.language-x86-64-assembly"
 			]
 		}
 	}
