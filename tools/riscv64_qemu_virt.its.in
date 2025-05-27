@@ -12,13 +12,13 @@
             type = "kernel";
 			// 架构类型
             arch = "riscv";
-            os = "linux";
+            os = "elf";
 			// 压缩方式
             compression = "none";
 			// 内核加载地址
             load = <0x80200000>;
 			// 内核入口地址
-            entry = <0x80210000>;
+            entry = <0x80200000>;
             hash-1 {
                 algo = "sha1";
             };

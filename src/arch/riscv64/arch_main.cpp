@@ -53,6 +53,13 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
 }
 
 void ArchInit(int argc, const char **argv) {
+  // Print out argc value
+  klog::Info("ArchInit: argc = %d\n", argc);
+
+  // Print out all argv values
+  for (int i = 0; i < argc; i++) {
+    klog::Info("ArchInit: argv[%d] = %p (%s)\n", i, argv[i], argv[i]);
+  }
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(reinterpret_cast<uint64_t>(argv));
 
