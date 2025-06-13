@@ -14,6 +14,7 @@ RUN apt install --no-install-recommends --fix-missing -y \
     locales \
     ca-certificates \
     git \
+    git-email \
     curl \
     wget \
     openssh-server \
