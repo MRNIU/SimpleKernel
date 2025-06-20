@@ -110,6 +110,5 @@ void ArchInitSMP(int, const char **) {
   // 初始化 FPU
   cpu_io::SetupFpu();
 
-  // caller();
   putchar_('!');
 }
