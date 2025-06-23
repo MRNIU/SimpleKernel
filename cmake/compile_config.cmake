@@ -64,6 +64,7 @@ TARGET_COMPILE_OPTIONS (
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
               >
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
+              -mgeneral-regs-only
               # 生成 armv8-a 代码
               -march=armv8-a
               # 针对 cortex-a72 优化代码

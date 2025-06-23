@@ -59,7 +59,7 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
 
 void ArchInit(int argc, const char **argv) {
   // 初始化 FPU
-  cpu_io::SetupFpu();
+  // cpu_io::SetupFpu();
 
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(strtoull(argv[2], nullptr, 16));
@@ -108,7 +108,8 @@ void ArchInit(int argc, const char **argv) {
 
 void ArchInitSMP(int, const char **) {
   // 初始化 FPU
-  cpu_io::SetupFpu();
+  // cpu_io::SetupFpu();
 
   putchar_('!');
+  printf("12345\n");
 }

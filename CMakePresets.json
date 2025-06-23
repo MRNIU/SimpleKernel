@@ -77,7 +77,7 @@
         },
         "QEMU_DEBUG_FLAGS": {
           "type": "STRING",
-          "value": "-S;-gdb;tcp::1234"
+          "value": "-S;-gdb;tcp::1234;-d;int,cpu_reset"
         },
         "QEMU_COMMON_FLAG": {
           "type": "STRING",
