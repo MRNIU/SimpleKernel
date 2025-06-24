@@ -91,6 +91,14 @@ FUNCTION(add_run_target)
         COMMAND dtc -I dtb $<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dtb -O dts -o
                 $<TARGET_FILE_DIR:${ARG_TARGET}>/qemu.dts)
 
+    # 生成空的 qemu.log 文件
+    ADD_CUSTOM_COMMAND (
+        OUTPUT ${CMAKE_BINARY_DIR}/bin/qemu.log
+        COMMENT "Generating qemu.log ..."
+        VERBATIM
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
+        COMMAND echo "" > ${CMAKE_BINARY_DIR}/bin/qemu.log)
+
     # 生成 U-BOOT FIT
     ADD_CUSTOM_TARGET (
         ${ARG_TARGET}_gen_fit
@@ -122,6 +130,7 @@ FUNCTION(add_run_target)
         ${ARG_NAME}run
         COMMENT "Run $<TARGET_FILE_NAME:${ARG_TARGET}> ..."
         DEPENDS ${ARG_DEPENDS} ${ARG_TARGET}_gen_fit
+                ${CMAKE_BINARY_DIR}/bin/qemu.log
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${QEMU_COMMON_FLAG}
                 ${QEMU_MACHINE_FLAGS} ${ARG_QEMU_BOOT_FLAGS})
@@ -129,6 +138,7 @@ FUNCTION(add_run_target)
         ${ARG_NAME}debug
         COMMENT "Debug $<TARGET_FILE_NAME:${ARG_TARGET}> ..."
         DEPENDS ${ARG_DEPENDS} ${ARG_TARGET}_gen_fit
+                ${CMAKE_BINARY_DIR}/bin/qemu.log
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND
             qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${QEMU_COMMON_FLAG}

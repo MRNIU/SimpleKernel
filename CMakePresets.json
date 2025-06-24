@@ -77,11 +77,11 @@
         },
         "QEMU_DEBUG_FLAGS": {
           "type": "STRING",
-          "value": "-S;-gdb;tcp::1234"
+          "value": "-S;-gdb;tcp::1234;-d;int,cpu_reset,guest_errors"
         },
         "QEMU_COMMON_FLAG": {
           "type": "STRING",
-          "value": "-nographic;-serial;stdio;-monitor;telnet::2333,server,nowait;-m;1024M;-smp;2;-netdev;user,id=net0,tftp=/srv/tftp;-device;e1000,netdev=net0;-d;int,cpu_reset,guest_errors;-D;qemu.log"
+          "value": "-nographic;-serial;stdio;-monitor;telnet::2333,server,nowait;-m;1024M;-smp;2;-netdev;user,id=net0,tftp=/srv/tftp;-device;e1000,netdev=net0;-d;guest_errors"
         },
         "KERNEL_ELF_OUTPUT_NAME": {
           "type": "STRING",
