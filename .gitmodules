@@ -29,6 +29,6 @@
 [submodule "3rd/u-boot"]
 	path = 3rd/u-boot
 	url = https://github.com/u-boot/u-boot.git
-[submodule "3rd/printf"]
-	path = 3rd/printf
-	url = https://github.com/eyalroz/printf.git
+[submodule "3rd/nanoprintf"]
+	path = 3rd/nanoprintf
+	url = https://github.com/charlesnicholson/nanoprintf.git

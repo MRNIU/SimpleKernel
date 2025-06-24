@@ -53,7 +53,7 @@ class SpinLock {
   __always_inline void lock() {
     DisableInterruptsNested();
     if (IsLockedByCurrentCore()) {
-      printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
+      sk_printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
     }
     while (locked_.test_and_set(std::memory_order_acquire)) {
       ;
@@ -69,7 +69,7 @@ class SpinLock {
    */
   __always_inline void unlock() {
     if (!IsLockedByCurrentCore()) {
-      printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
+      sk_printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
     }
     core_id_ = SIZE_MAX;
 
@@ -125,11 +125,11 @@ class SpinLock {
    */
   static __always_inline void RestoreInterruptsNested() {
     if (GetInterruptStatus()) {
-      printf("RestoreInterruptsNested - interruptible\n");
+      sk_printf("RestoreInterruptsNested - interruptible\n");
     }
 
     if (GetCurrentCore().noff_ < 1) {
-      printf("RestoreInterruptsNested\n");
+      sk_printf("RestoreInterruptsNested\n");
     }
     GetCurrentCore().noff_ -= 1;
 

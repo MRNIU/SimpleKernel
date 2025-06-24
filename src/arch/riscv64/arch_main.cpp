@@ -26,9 +26,9 @@
 #include "sk_cstdio"
 #include "sk_libc.h"
 
-// printf_bare_metal 基本输出实现
-extern "C" void putchar_(char character) {
-  sbi_debug_console_write_byte(character);
+// 基本输出实现
+extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
+  sbi_debug_console_write_byte(c);
 }
 
 BasicInfo::BasicInfo(int argc, const char **argv) {

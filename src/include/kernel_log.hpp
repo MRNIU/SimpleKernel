@@ -116,16 +116,16 @@ struct LogBase {
                        std::source_location::current()) {
     constexpr auto* color = kLogColors[Level];
     Singleton<SpinLock>::GetInstance().lock();
-    printf("%s[%ld]", color, cpu_io::GetCurrentCoreId());
+    sk_printf("%s[%ld]", color, cpu_io::GetCurrentCoreId());
     if constexpr (Level == kDebug && kSimpleKernelDebugLog) {
-      printf("[%s] ", location.function_name());
+      sk_printf("[%s] ", location.function_name());
     }
 /// @todo 解决警告
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-security"
-    printf(args...);
+    sk_printf(args...);
 #pragma GCC diagnostic pop
-    printf("%s", detail::kReset);
+    sk_printf("%s", detail::kReset);
     Singleton<SpinLock>::GetInstance().unlock();
   }
 };
@@ -145,11 +145,11 @@ Debug(Args&&...) -> Debug<Args...>;
 __always_inline void DebugBlob(const void* data, size_t size) {
   if constexpr (kSimpleKernelDebugLog) {
     Singleton<SpinLock>::GetInstance().lock();
-    printf("%s[%ld] ", detail::kMagenta, cpu_io::GetCurrentCoreId());
+    sk_printf("%s[%ld] ", detail::kMagenta, cpu_io::GetCurrentCoreId());
     for (size_t i = 0; i < size; i++) {
-      printf("0x%02X ", reinterpret_cast<const uint8_t*>(data)[i]);
+      sk_printf("0x%02X ", reinterpret_cast<const uint8_t*>(data)[i]);
     }
-    printf("%s\n", detail::kReset);
+    sk_printf("%s\n", detail::kReset);
     Singleton<SpinLock>::GetInstance().unlock();
   }
 }

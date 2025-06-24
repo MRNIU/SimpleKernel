@@ -25,12 +25,14 @@
 #include "singleton.hpp"
 #include "sk_iostream"
 
-// printf_bare_metal 基本输出实现
+// 基本输出实现
 /// @note 这里要注意，保证在 serial 初始化之前不能使用 printf
 /// 函数，否则会有全局对象依赖问题
 namespace {
 cpu_io::Serial kSerial(cpu_io::kCom1);
-extern "C" void putchar_(char character) { kSerial.Write(character); }
+extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
+  kSerial.Write(c);
+}
 }  // namespace
 
 BasicInfo::BasicInfo(int argc, const char **argv) {

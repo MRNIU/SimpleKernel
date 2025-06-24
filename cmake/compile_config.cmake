@@ -58,13 +58,20 @@ TARGET_COMPILE_OPTIONS (
               -fno-common
               # 目标平台编译选项
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
+              # 仅使用通用寄存器
+              -mgeneral-regs-only
               # 禁用 red-zone
               -mno-red-zone
               >
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
+              # 严格对齐
+              -mstrict-align
               >
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
+              # 仅使用通用寄存器
               -mgeneral-regs-only
+              # 严格对齐
+              -mstrict-align
               # 生成 armv8-a 代码
               -march=armv8-a
               # 针对 cortex-a72 优化代码
@@ -102,14 +109,23 @@ TARGET_COMPILE_DEFINITIONS (kernel_compile_definitions
 ADD_LIBRARY (kernel_compile_options INTERFACE)
 TARGET_COMPILE_OPTIONS (
     kernel_compile_options
-    INTERFACE $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
-              # 使用 kernel 内存模型
-              -mcmodel=large
-              >
-              $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
-              # 使用 medany 内存模型 代码和数据段可以在任意地址
-              -mcmodel=medany
-              >)
+    INTERFACE
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
+        # @todo 这里需要判断一下能不能都用 large
+        # 使用 large 内存模型
+        # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-mcmodel_003dlarge-4
+        -mcmodel=large
+        >
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
+        # 使用 large 内存模型
+        # https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html#index-mcmodel_003dlarge
+        # -mcmodel=large
+        >
+        $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
+        # 使用 medany 内存模型 代码和数据段可以在任意地址
+        # https://gcc.gnu.org/onlinedocs/gcc/RISC-V-Options.html#index-mcmodel_003dlarge-2
+        -mcmodel=medany
+        >)
 
 ADD_LIBRARY (kernel_link_options INTERFACE)
 TARGET_LINK_OPTIONS (
@@ -139,7 +155,7 @@ TARGET_LINK_LIBRARIES (
               kernel_compile_definitions
               kernel_compile_options
               kernel_link_options
-              printf
+              nanoprintf-lib
               dtc-lib
               cpu_io
               gcc

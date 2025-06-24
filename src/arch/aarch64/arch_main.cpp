@@ -25,17 +25,15 @@
 #include "sk_cstdio"
 #include "sk_libc.h"
 
-// printf_bare_metal 基本输出实现
+// 基本输出实现
 namespace {
 Pl011 *pl011 = nullptr;
 }
-extern "C" void putchar_(char character) {
+extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
   if (pl011) {
-    pl011->PutChar(character);
+    pl011->PutChar(c);
   }
 }
-
-extern "C" void *sizeof_dtb[];
 
 BasicInfo::BasicInfo(int argc, const char **argv) {
   (void)argc;
@@ -58,9 +56,6 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
 }
 
 void ArchInit(int argc, const char **argv) {
-  // 初始化 FPU
-  // cpu_io::SetupFpu();
-
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(strtoull(argv[2], nullptr, 16));
 
@@ -107,9 +102,5 @@ void ArchInit(int argc, const char **argv) {
 }
 
 void ArchInitSMP(int, const char **) {
-  // 初始化 FPU
-  // cpu_io::SetupFpu();
-
-  putchar_('!');
-  printf("12345\n");
+  klog::Info("Hello aarch64 SMP ArchInit\n");
 }

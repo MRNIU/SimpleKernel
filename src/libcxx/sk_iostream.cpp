@@ -24,47 +24,47 @@
 namespace sk_std {
 
 ostream& ostream::operator<<(int8_t val) {
-  printf("%d", val);
+  sk_printf("%d", val);
   return *this;
 }
 
 ostream& ostream::operator<<(uint8_t val) {
-  printf("%d", val);
+  sk_printf("%d", val);
   return *this;
 }
 
 ostream& ostream::operator<<(const char* val) {
-  printf("%s", val);
+  sk_printf("%s", val);
   return *this;
 }
 
 ostream& ostream::operator<<(int16_t val) {
-  printf("%d", val);
+  sk_printf("%d", val);
   return *this;
 }
 
 ostream& ostream::operator<<(uint16_t val) {
-  printf("%d", val);
+  sk_printf("%d", val);
   return *this;
 }
 
 ostream& ostream::operator<<(int32_t val) {
-  printf("%d", val);
+  sk_printf("%d", val);
   return *this;
 }
 
 ostream& ostream::operator<<(uint32_t val) {
-  printf("%d", val);
+  sk_printf("%d", val);
   return *this;
 }
 
 ostream& ostream::operator<<(int64_t val) {
-  printf("%ld", val);
+  sk_printf("%ld", val);
   return *this;
 }
 
 ostream& ostream::operator<<(uint64_t val) {
-  printf("%ld", val);
+  sk_printf("%ld", val);
   return *this;
 }
 
