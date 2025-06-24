@@ -46,8 +46,8 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
   kernel_size = reinterpret_cast<uint64_t>(end) -
                 reinterpret_cast<uint64_t>(__executable_start);
 
-  elf_addr = basic_info.elf_addr;
-  elf_size = basic_info.elf_size;
+  elf_addr = kernel_addr;
+  elf_size = kernel_size;
 
   fdt_addr = 0;
 
