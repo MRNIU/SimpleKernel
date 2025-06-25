@@ -214,7 +214,7 @@ make run
 
 [google/googletest](https://github.com/google/googletest.git)
 
-[eyalroz/printf](https://github.com/eyalroz/printf.git)
+[charlesnicholson/nanoprintf](https://github.com/charlesnicholson/nanoprintf.git)
 
 [MRNIU/cpu_io](https://github.com/MRNIU/cpu_io.git)
 
