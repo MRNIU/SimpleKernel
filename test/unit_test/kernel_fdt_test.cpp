@@ -42,10 +42,10 @@ TEST(KernelFdtTest, GetSerialTest) {
   EXPECT_EQ(serial_size, 0x100);
 }
 
-// TEST(KernelFdtTest, GetTimebaseFrequencyTest) {
-//   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+TEST(KernelFdtTest, GetTimebaseFrequencyTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
 
-//   auto time_base_frequency = kerlen_fdt.GetTimebaseFrequency();
+  auto time_base_frequency = kerlen_fdt.GetTimebaseFrequency();
 
-//   EXPECT_EQ(time_base_frequency, 0x989680);
-// }
+  EXPECT_EQ(time_base_frequency, 0x989680);
+}

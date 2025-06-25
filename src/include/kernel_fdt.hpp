@@ -260,6 +260,136 @@ class KernelFdt {
 
     return {base, size};
   }
+
+  /**
+   * 获取 cpu 时钟
+   * @return uint32_t 时钟频率
+   */
+  [[nodiscard]] auto GetTimebaseFrequency() const -> uint32_t {
+    int len = 0;
+
+    // 找到 /cpus 节点
+    auto offset = fdt_path_offset(fdt_header_, "/cpus");
+    if (offset < 0) {
+      ERR("Error finding /cpus node: %s\n", fdt_strerror(offset));
+      return 0;
+    }
+
+    const auto *prop = reinterpret_cast<const uint32_t *>(
+        fdt_getprop(fdt_header_, offset, "timebase-frequency", &len));
+    if (prop == nullptr) {
+      ERR("Error finding timebase-frequency property: %s\n", fdt_strerror(len));
+      return 0;
+    }
+
+    if (len != sizeof(uint32_t)) {
+      ERR("Unexpected timebase-frequency size\n");
+      return 0;
+    }
+
+    return fdt32_to_cpu(*prop);
+  }
+
+  /**
+   * 获取 gic 信息
+   * @return 内存信息<dist 地址，redist 地址>
+   * @note 仅支持单个 dist+redist
+   * @see https://github.com/qemu/qemu/blob/master/hw/arm/virt.c
+   */
+  [[nodiscard]] auto GetGIC() const -> std::pair<uint64_t, uint64_t> {
+    uint64_t dist_base = 0;
+    uint64_t redist_base = 0;
+
+    int len = 0;
+    int offset = 0;
+
+    std::array<const char *, 1> compatible_str = {"arm,gic-v3"};
+
+    for (const auto &compatible : compatible_str) {
+      offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
+      if (offset != -FDT_ERR_NOTFOUND) {
+        break;
+      }
+    }
+    if (offset < 0) {
+      ERR("Error finding interrupt controller node: %s\n",
+          fdt_strerror(offset));
+      throw;
+    }
+
+    // 获取 reg 属性
+    const auto *prop = fdt_get_property(fdt_header_, offset, "reg", &len);
+    if (prop == nullptr) {
+      ERR("Error finding reg property: %s\n", fdt_strerror(len));
+      throw;
+    }
+
+    // 解析 reg 属性，通常包含基地址和大小
+    const auto *reg = reinterpret_cast<const uint64_t *>(prop->data);
+    if (static_cast<unsigned>(len) >= 2 * sizeof(uint64_t)) {
+      dist_base = fdt64_to_cpu(reg[0]);
+    }
+    if (static_cast<unsigned>(len) >= 4 * sizeof(uint64_t)) {
+      redist_base = fdt64_to_cpu(reg[2]);
+    }
+
+    return {dist_base, redist_base};
+  }
+
+  /**
+   * 获取 aarch64 中断号
+   * @return intid
+   * @see
+   * https://www.kernel.org/doc/Documentation/devicetree/bindings/arm/arch_timer.txt
+   * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/arm/gic.txt?id=refs/tags/v3.16-rc4
+   */
+  [[nodiscard]] auto GetAarch64Intid(const char *compatible) const -> uint64_t {
+    int len = 0;
+    int offset = 0;
+
+    offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
+
+    if (offset < 0) {
+      ERR("Error finding interrupt controller node: %s\n",
+          fdt_strerror(offset));
+      throw;
+    }
+
+    // 获取 interrupts 属性
+    const auto *prop =
+        fdt_get_property(fdt_header_, offset, "interrupts", &len);
+    if (prop == nullptr) {
+      ERR("Error finding interrupts property: %s\n", fdt_strerror(len));
+      throw;
+    }
+
+    const auto *interrupts = reinterpret_cast<const uint32_t *>(prop->data);
+
+#ifdef SIMPLEKERNEL_DEBUG
+    for (uint32_t i = 0; i < fdt32_to_cpu(prop->len);
+         i += 3 * sizeof(uint32_t)) {
+      // 0: SPI, 1: PPI
+      auto type = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 0]);
+      // PPI: 16 + intid, SPI: 32 + intid
+      // SPI[0-987], PPI[0-15]
+      auto intid = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 1]);
+      auto trigger = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xF;
+      auto cpuid_mask =
+          fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xFF00;
+      DEBUG("type: %d, intid: %d, trigger: %d, cpuid_mask: %d\n", type, intid,
+            trigger, cpuid_mask);
+    }
+#endif
+
+    uint64_t intid = 0;
+    if (strcmp(compatible, "arm,armv8-timer") == 0) {
+      intid = fdt32_to_cpu(interrupts[7]);
+    } else if (strcmp(compatible, "arm,pl011") == 0) {
+      intid = fdt32_to_cpu(interrupts[1]);
+    }
+
+    return intid;
+  }
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_FDT_HPP_ */
