@@ -75,21 +75,6 @@ void ArchInit(int argc, const char **argv) {
 
   Singleton<KernelFdt>::GetInstance().CheckPSCI();
 
-  klog::Info("serial_base: 0x%lx\n", serial_base);
-
-  uart.PutChar('H');
-  uart.PutChar('e');
-  uart.PutChar('l');
-  uart.PutChar('l');
-  uart.PutChar('o');
-  uart.PutChar(' ');
-  uart.PutChar('u');
-  uart.PutChar('a');
-  uart.PutChar('r');
-  uart.PutChar('t');
-  uart.PutChar('!');
-  uart.PutChar('\n');
-
   klog::Info("Hello aarch64 ArchInit\n");
 
   // 唤醒其余 core

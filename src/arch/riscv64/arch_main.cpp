@@ -53,13 +53,6 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
 }
 
 void ArchInit(int argc, const char **argv) {
-  // Print out argc value
-  klog::Info("ArchInit: argc = %d\n", argc);
-
-  // Print out all argv values
-  for (int i = 0; i < argc; i++) {
-    klog::Info("ArchInit: argv[%d] = %p (%s)\n", i, argv[i], argv[i]);
-  }
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(reinterpret_cast<uint64_t>(argv));
 
@@ -69,22 +62,6 @@ void ArchInit(int argc, const char **argv) {
   // 解析内核 elf 信息
   Singleton<KernelElf>::GetInstance() =
       KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
-
-  auto [serial_base, serial_size] =
-      Singleton<KernelFdt>::GetInstance().GetSerial();
-  auto uart = Ns16550a(serial_base);
-  uart.PutChar('H');
-  uart.PutChar('e');
-  uart.PutChar('l');
-  uart.PutChar('l');
-  uart.PutChar('o');
-  uart.PutChar(' ');
-  uart.PutChar('u');
-  uart.PutChar('a');
-  uart.PutChar('r');
-  uart.PutChar('t');
-  uart.PutChar('!');
-  uart.PutChar('\n');
 
   klog::Info("Hello riscv64 ArchInit\n");
 
