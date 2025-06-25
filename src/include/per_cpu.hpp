@@ -28,6 +28,7 @@
 
 #include "singleton.hpp"
 
+namespace per_cpu {
 class PerCpu {
  public:
   /// 最大 CPU 数
@@ -40,7 +41,8 @@ class PerCpu {
   /// 在进入调度线程前是否允许中断
   bool intr_enable_{false};
 
-  PerCpu() : core_id_(cpu_io::GetCurrentCoreId()) {}
+  PerCpu() : core_id_(GetCurrentCoreId()) {}
+  explicit PerCpu(size_t id) : core_id_(id) {}
 
   /// @name 构造/析构函数
   /// @{
@@ -50,6 +52,15 @@ class PerCpu {
   auto operator=(PerCpu &&) -> PerCpu & = default;
   ~PerCpu() = default;
   /// @}
+
+ protected:
+  /**
+   * @brief 获取当前核心 ID
+   * @return size_t 当前核心 ID
+   */
+  [[nodiscard]] virtual __always_inline auto GetCurrentCoreId() -> size_t {
+    return cpu_io::GetCurrentCoreId();
+  }
 };
 
 /// per cpu 数据
@@ -59,5 +70,7 @@ static __always_inline auto GetCurrentCore() -> PerCpu & {
   return Singleton<std::array<PerCpu, PerCpu::kMaxCoreCount>>::GetInstance()
       [cpu_io::GetCurrentCoreId()];
 }
+
+}  // namespace per_cpu
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_PER_CPU_HPP_ */

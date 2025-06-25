@@ -40,20 +40,23 @@ class SpinLock {
   /// @name 构造/析构函数
   /// @{
   SpinLock() = default;
-  SpinLock(const SpinLock &) = default;
-  SpinLock(SpinLock &&) = default;
-  auto operator=(const SpinLock &) -> SpinLock & = default;
-  auto operator=(SpinLock &&) -> SpinLock & = default;
+  SpinLock(const SpinLock &) = delete;
+  SpinLock(SpinLock &&) = delete;
+  auto operator=(const SpinLock &) -> SpinLock & = delete;
+  auto operator=(SpinLock &&) -> SpinLock & = delete;
   ~SpinLock() = default;
   /// @}
 
   /**
    * @brief 获得锁
    */
-  __always_inline void lock() {
-    DisableInterruptsNested();
+  __always_inline auto lock() -> bool {
+    if (DisableInterruptsNested() == false) {
+      return false;
+    }
     if (IsLockedByCurrentCore()) {
       sk_printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
+      return false;
     }
     while (locked_.test_and_set(std::memory_order_acquire)) {
       ;
@@ -62,14 +65,16 @@ class SpinLock {
     std::atomic_thread_fence(std::memory_order_acquire);
 
     core_id_ = GetCurrentCoreId();
+    return true;
   }
 
   /**
    * @brief 释放锁
    */
-  __always_inline void unlock() {
+  __always_inline auto unlock() -> bool {
     if (!IsLockedByCurrentCore()) {
       sk_printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
+      return false;
     }
     core_id_ = SIZE_MAX;
 
@@ -77,7 +82,7 @@ class SpinLock {
 
     locked_.clear(std::memory_order_release);
 
-    RestoreInterruptsNested();
+    return RestoreInterruptsNested();
   }
 
  protected:
@@ -88,13 +93,19 @@ class SpinLock {
   /// 获得此锁的 core_id_
   size_t core_id_{SIZE_MAX};
 
-  static __always_inline void EnableInterrupt() { cpu_io::EnableInterrupt(); }
-  static __always_inline void DisableInterrupt() { cpu_io::DisableInterrupt(); }
-  [[nodiscard]] static __always_inline auto GetInterruptStatus() -> bool {
+  virtual __always_inline void EnableInterrupt() { cpu_io::EnableInterrupt(); }
+  virtual __always_inline void DisableInterrupt() {
+    cpu_io::DisableInterrupt();
+  }
+  [[nodiscard]] virtual __always_inline auto GetInterruptStatus() -> bool {
     return cpu_io::GetInterruptStatus();
   }
-  [[nodiscard]] static __always_inline auto GetCurrentCoreId() -> size_t {
+  [[nodiscard]] virtual __always_inline auto GetCurrentCoreId() -> size_t {
     return cpu_io::GetCurrentCoreId();
+  }
+  [[nodiscard]] virtual __always_inline auto GetCurrentCore()
+      -> per_cpu::PerCpu & {
+    return per_cpu::GetCurrentCore();
   }
 
   /**
@@ -109,7 +120,7 @@ class SpinLock {
   /**
    * @brief 中断嵌套+1
    */
-  static __always_inline void DisableInterruptsNested() {
+  __always_inline auto DisableInterruptsNested() -> bool {
     bool old = GetInterruptStatus();
 
     DisableInterrupt();
@@ -118,24 +129,29 @@ class SpinLock {
       GetCurrentCore().intr_enable_ = old;
     }
     GetCurrentCore().noff_ += 1;
+
+    return true;
   }
 
   /**
    * @brief 中断嵌套-1
    */
-  static __always_inline void RestoreInterruptsNested() {
+  __always_inline auto RestoreInterruptsNested() -> bool {
     if (GetInterruptStatus()) {
       sk_printf("RestoreInterruptsNested - interruptible\n");
+      return false;
     }
 
     if (GetCurrentCore().noff_ < 1) {
       sk_printf("RestoreInterruptsNested\n");
+      return false;
     }
     GetCurrentCore().noff_ -= 1;
 
     if ((GetCurrentCore().noff_ == 0) && (GetCurrentCore().intr_enable_)) {
       EnableInterrupt();
     }
+    return true;
   }
 };
 

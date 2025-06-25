@@ -11,6 +11,8 @@ ENABLE_LANGUAGE (CXX)
 ADD_EXECUTABLE (${PROJECT_NAME} kernel_elf_test.cpp kernel_fdt_test.cpp
                                 spinlock_test.cpp)
 
+TARGET_COMPILE_DEFINITIONS (${PROJECT_NAME} PRIVATE -Dsk_printf=printf)
+
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
     PRIVATE ./ ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/include
