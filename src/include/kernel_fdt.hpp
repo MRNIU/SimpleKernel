@@ -51,20 +51,20 @@ class KernelFdt {
   explicit KernelFdt(uint64_t header)
       : fdt_header_(reinterpret_cast<fdt_header *>(header)) {
     if (fdt_header_ == nullptr) {
-      klog::Err("Fatal Error: Invalid fdt_addr.\n");
+      ERR("Fatal Error: Invalid fdt_addr.\n");
       throw;
     }
 
     // 检查 fdt 头数据
     if (fdt_check_header(fdt_header_) != 0) {
-      klog::Err("Invalid device tree blob [0x%p]\n", fdt_header_);
-      klog::Debug("fdt_header_->magic 0x%X\n", fdt_header_->magic);
-      klog::DebugBlob(fdt_header_, 32);
+      ERR("Invalid device tree blob [0x%p]\n", fdt_header_);
+      DEBUG("fdt_header_->magic 0x%X\n", fdt_header_->magic);
+      DEBUG_BLOB(fdt_header_, 32);
       throw;
     }
 
-    klog::Debug("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
-                fdt_header_->totalsize);
+    DEBUG("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
+          fdt_header_->totalsize);
   }
 
   /// @name 构造/析构函数
@@ -111,7 +111,7 @@ class KernelFdt {
     // Find the PSCI node
     auto offset = fdt_path_offset(fdt_header_, "/psci");
     if (offset < 0) {
-      klog::Err("Error finding /psci node: %s\n", fdt_strerror(offset));
+      ERR("Error finding /psci node: %s\n", fdt_strerror(offset));
       return;
     }
 
@@ -120,17 +120,17 @@ class KernelFdt {
     const auto *method_prop =
         fdt_get_property(fdt_header_, offset, "method", &len);
     if (method_prop == nullptr) {
-      klog::Err("Error finding PSCI method property\n");
+      ERR("Error finding PSCI method property\n");
       return;
     }
 
     // Determine the method (SMC or HVC)
     const char *method_str = reinterpret_cast<const char *>(method_prop->data);
-    klog::Debug("PSCI method: %s\n", method_str);
+    DEBUG("PSCI method: %s\n", method_str);
 
     // 暂时只支持 smc
     if (strcmp(method_str, "smc") != 0) {
-      klog::Err("Unsupported PSCI method: %s\n", method_str);
+      ERR("Unsupported PSCI method: %s\n", method_str);
     }
 
     // Log function IDs for debugging
@@ -139,10 +139,10 @@ class KernelFdt {
       if (prop != nullptr && (size_t)len >= sizeof(uint32_t)) {
         uint32_t id =
             fdt32_to_cpu(*reinterpret_cast<const uint32_t *>(prop->data));
-        klog::Debug("PSCI %s function ID: 0x%X\n", name, id);
+        DEBUG("PSCI %s function ID: 0x%X\n", name, id);
         if (id != value) {
-          klog::Err("PSCI %s function ID mismatch: expected 0x%X, got 0x%X\n",
-                    name, value, id);
+          ERR("PSCI %s function ID mismatch: expected 0x%X, got 0x%X\n", name,
+              value, id);
         }
       }
     };
@@ -166,14 +166,14 @@ class KernelFdt {
     // 找到 /memory 节点
     auto offset = fdt_path_offset(fdt_header_, "/memory");
     if (offset < 0) {
-      klog::Err("Error finding /memory node: %s\n", fdt_strerror(offset));
+      ERR("Error finding /memory node: %s\n", fdt_strerror(offset));
       throw;
     }
 
     // 获取 reg 属性
     const auto *prop = fdt_get_property(fdt_header_, offset, "reg", &len);
     if (prop == nullptr) {
-      klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
+      ERR("Error finding reg property: %s\n", fdt_strerror(len));
       throw;
     }
 
@@ -198,8 +198,7 @@ class KernelFdt {
     // Find the /chosen node
     int chosen_offset = fdt_path_offset(fdt_header_, "/chosen");
     if (chosen_offset < 0) {
-      klog::Err("Error finding /chosen node: %s\n",
-                fdt_strerror(chosen_offset));
+      ERR("Error finding /chosen node: %s\n", fdt_strerror(chosen_offset));
       throw;
     }
 
@@ -207,7 +206,7 @@ class KernelFdt {
     const auto *prop =
         fdt_get_property(fdt_header_, chosen_offset, "stdout-path", &len);
     if (prop == nullptr || len <= 0) {
-      klog::Err("Error finding stdout-path property: %s\n", fdt_strerror(len));
+      ERR("Error finding stdout-path property: %s\n", fdt_strerror(len));
       throw;
     }
 
@@ -239,16 +238,16 @@ class KernelFdt {
     }
 
     if (stdout_offset < 0) {
-      klog::Err("Error finding node for stdout-path %s: %s\n", path_buffer,
-                fdt_strerror(stdout_offset));
+      ERR("Error finding node for stdout-path %s: %s\n", path_buffer,
+          fdt_strerror(stdout_offset));
       throw;
     }
 
     // Get the reg property of the stdout device
     prop = fdt_get_property(fdt_header_, stdout_offset, "reg", &len);
     if (prop == nullptr) {
-      klog::Err("Error finding reg property for stdout device: %s\n",
-                fdt_strerror(len));
+      ERR("Error finding reg property for stdout device: %s\n",
+          fdt_strerror(len));
       throw;
     }
 

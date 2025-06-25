@@ -191,4 +191,18 @@ Err(Args&&...) -> Err<Args...>;
 
 }  // namespace klog
 
+#if defined(UNIT_TEST)
+#define INFO(...)
+#define WARN(...)
+#define ERR(...)
+#define DEBUG(...)
+#define DEBUG_BLOB(data, size)
+#else
+#define INFO(...) klog::Info(__VA_ARGS__, std::source_location::current())
+#define WARN(...) klog::Warn(__VA_ARGS__, std::source_location::current())
+#define ERR(...) klog::Err(__VA_ARGS__, std::source_location::current())
+#define DEBUG(...) klog::Debug(__VA_ARGS__, std::source_location::current())
+#define DEBUG_BLOB(data, size) klog::DebugBlob(data, size)
+#endif
+
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_ */

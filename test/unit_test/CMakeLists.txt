@@ -11,7 +11,7 @@ ENABLE_LANGUAGE (CXX)
 ADD_EXECUTABLE (${PROJECT_NAME} kernel_elf_test.cpp kernel_fdt_test.cpp
                                 spinlock_test.cpp)
 
-TARGET_COMPILE_DEFINITIONS (${PROJECT_NAME} PRIVATE -Dsk_printf=printf)
+TARGET_COMPILE_DEFINITIONS (${PROJECT_NAME} PRIVATE -Dsk_printf=printf -DUNIT_TEST)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
