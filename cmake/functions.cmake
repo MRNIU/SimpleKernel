@@ -39,7 +39,7 @@ FUNCTION(add_coverage_target)
         COMMAND
             ${LCOV_EXE} -c -o ${COVERAGE_OUTPUT_DIR}/coverage.info -d
             ${ARG_BINARY_DIR} -b ${ARG_SOURCE_DIR} --no-external ${EXCLUDES}
-            --rc branch_coverage=1 --ignore-errors mismatch
+            --rc branch_coverage=1 --ignore-errors mismatch --ignore-errors unused
         COMMAND ${GENHTML_EXE} ${COVERAGE_OUTPUT_DIR}/coverage.info -o
                 ${COVERAGE_OUTPUT_DIR} --branch-coverage)
 ENDFUNCTION()
