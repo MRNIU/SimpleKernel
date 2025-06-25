@@ -61,11 +61,11 @@ Pre-configured VSCode settings for running and debugging the kernel are provided
 
 ## New Features
 
-This branch is the first branch of SImpleKernel. In this branch, the foundation of the build system is completed, basic documentation deployment and automated testing, and of course the most important, there is a uefi based x86_64 kernel and riscv64 kernel started by opensbi, which can run on qemu, and achieve simple screen output.
+This branch is the first branch of SimpleKernel. In this branch, we have completed the foundation of the build system, basic documentation deployment, and automated testing. Most importantly, we have implemented a u-boot based x86_64 kernel and a RISC-V64 kernel started by OpenSBI, both of which can run on QEMU and achieve simple screen output.
 
 - Build system
 
-  Reference [MRNIU/cmake-kernel](https://github.com/MRNIU/cmake-kernel) build system, a detailed explanation see [doc/build_system.md](./doc/build_system.md)
+  References the [MRNIU/cmake-kernel](https://github.com/MRNIU/cmake-kernel) build system. For detailed explanation, see [doc/build_system.md](./doc/build_system.md)
 
 - Stack Trace Printing
 
@@ -81,82 +81,75 @@ This branch is the first branch of SImpleKernel. In this branch, the foundation 
 
 - RISC-V64 (U-Boot + OpenSBI)
 
-  - Initialized by OpenSBI; kernel entry in Supervisor (S) mode.
+  1. Initialized by OpenSBI; kernel entry in Supervisor (S) mode.
+  2. GP (Global Pointer) register initialization.
+  3. printf implementation leveraging OpenSBI.
+  4. FIT (Flattened Image Tree) image packaging.
 
-  - GP (Global Pointer) register initialization.
+- x86_64 (U-Boot)
 
-  - printf implementation leveraging OpenSBI.
+  1. Initialized by U-Boot; kernel enters 64-bit mode directly.
+  2. FIT image packaging.
 
-  - FIT (Flattened Image Tree) image packaging.
+- AArch64 (U-Boot + Arm Trusted Firmware + OP-TEE)
 
-- AMD64 (U-Boot)
-
-  - Initialized by U-Boot; kernel enters 64-bit mode directly.
-
-  - FIT image packaging.
-
-- AArch64 (U-Boot + Arm Trusted Firmware [ATF] + OP-TEE)
-
-  - FIT image packaging.
-
-  - Initialized by U-Boot in 64-bit mode.
-
-  - ATF (Arm Trusted Firmware) framework integration.
+  1. FIT image packaging.
+  2. Initialized by U-Boot in 64-bit mode.
+  3. ATF (Arm Trusted Firmware) framework integration.
 
 - SMP Support
 
-  Multi-core CPU coordination
+  Multi-core CPU coordination and synchronization
 
 - Spinlock
 
-  Preemptive multi-core spinlock implementation (primarily for klog synchronization).
+  Preemptive multi-core spinlock implementation (primarily for klog synchronization)
 
 - Device Tree Blob (DTB) Parsing
 
-  Hardware configuration decoding.
+  Hardware configuration decoding and interpretation
 
 - ELF Parsing
 
-  Executable/linkable format analysis.
+  Executable and Linkable Format analysis
 
-- NS16550A
+- NS16550A UART Driver
 
-  UART driver for x86/RISC-V platforms.
+  Serial communication driver for x86/RISC-V platforms
 
-- PL011
+- PL011 UART Driver
 
-  UART driver for ARM platforms.
+  Serial communication driver for ARM platforms
 
+- Doxygen-based Documentation Generation and Automatic Deployment
 
-- Doxygen-based document generation and automatic deployment
+  GitHub Actions automatically deploys documentation to https://simple-xx.github.io/SimpleKernel/ (main branch only)
 
-  Making the action will document deployment to https://simple-xx.github.io/SimpleKernel/ (the main branch only)
+- Third-party Resource Management based on Git Submodules
 
-- Third-party resource management based on CPM
+  Uses git submodule to integrate third-party resources
 
-  Use CPM's functionality in '3rd.cmake' to automatically download and integrate third-party resources
+- Testing Framework
 
-- Test
+  Supports unit testing, integration testing, and system testing using gtest framework with test coverage statistics
 
-    Support unit testing, integration testing, system testing, the introduction of gtest as a test framework, while the test coverage statistics
+- Code Analysis
 
-- Code analysis
+  Integrates cppcheck, clang-tidy, and sanitize tools for early error detection
 
-    Introduce cppcheck, clang-tidy, and sanitize tools to detect errors in advance
+- Code Formatting
 
-- Code formatting
+  Uses Google style formatting
 
-    Use the llvm style
+- Docker Support
 
-- docker
-
-    Supports building with docker, see [doc/docker.md](./doc/docker.md)
+  Supports building with Docker, see [doc/docker.md](./doc/docker.md)
 
 ## Supported Features
 
-See "New Features" section
+See New Features
 
-## 3rd
+## Third-party Dependencies
 
 [google/googletest](https://github.com/google/googletest.git)
 
@@ -176,9 +169,9 @@ See "New Features" section
 
 [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git)
 
-[dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git)https://github.com/google/googletest)
-
+[dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git)
 
 ## Development Guide
-- Code Style: Google Style (enforced via .clang-format)
-- Naming Convention: [Google Open Source Style Guide](https://google.github.io/styleguide/cppguide.html)
+
+- **Code Style**: Google Style (enforced via .clang-format)
+- **Naming Convention**: [Google Open Source Style Guide](https://google.github.io/styleguide/cppguide.html)

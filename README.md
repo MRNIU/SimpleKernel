@@ -10,6 +10,8 @@
 
 # SimpleKernel
 
+**一个现代的多架构内核操作系统，支持 x86_64、RISC-V 和 AArch64 架构**
+
 boot branch
 
 ## 关键词
@@ -27,7 +29,7 @@ boot branch
 
 ```shell
 # 拉取代码
-git pull https://github.com/MRNIU/SimpleKernel.git
+git clone https://github.com/MRNIU/SimpleKernel.git
 git submodule update --init --recursive
 # 拉取 Docker Image
 docker pull ptrnull233/simple_kernel:latest
@@ -52,7 +54,7 @@ make run
 
 ### 使用 vscode
 
-提供了用于运行、调试的  vscode 相关配置，可以直接使用 vscode 运行内核或进行调试。
+提供了用于运行、调试的 vscode 相关配置，可以直接使用 vscode 运行内核或进行调试。
 
 
 ## 执行流
@@ -61,7 +63,7 @@ make run
 
 ## 新增特性
 
-本分支是 SImpleKernel 的首个分支。在本分支中，完成了构建系统的基础搭建、基本的文档部署与自动化测试，当然还有最重要的，有基于 uefi 的 x86_64 内核与由 opensbi 启动的 riscv64 内核，可以在 qemu 上运行，并实现了简单的屏幕输出。
+本分支是 SimpleKernel 的首个分支。在本分支中，完成了构建系统的基础搭建、基本的文档部署与自动化测试，当然还有最重要的，有基于 u-boot 引导的 x86_64 内核与由 opensbi 启动的 riscv64 内核，可以在 qemu 上运行，并实现了简单的屏幕输出。
 
 ||x86_64|riscv64|aarch64|
 | :-----------------------: | :-------------------------------: | :---------------------------------------------: | :-------------------: |
@@ -204,7 +206,7 @@ make run
 
     支持使用 docker 构建，详细使用方法见 [doc/docker.md](./doc/docker.md)
 
-## 已支持特性
+## 已支持的特性
 
 见 新增特性
 
@@ -234,4 +236,4 @@ make run
 
 代码风格：Google，已由 .clang-format 指定
 
-命名规范：[Gooele 开源项目风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
+命名规范：[Google 开源项目风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
