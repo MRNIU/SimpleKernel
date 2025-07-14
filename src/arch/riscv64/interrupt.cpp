@@ -56,8 +56,7 @@ Interrupt::Interrupt() {
                 cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
                     [cause],
                 cause, context);
-      while (1)
-        ;
+      while (1);
       return 0;
     };
   }
@@ -135,13 +134,14 @@ auto InterruptInit(int, const char **) -> int {
         auto source_id = Singleton<Plic>::GetInstance().Which();
         if (source_id != 0) {
           klog::Info("External interrupt from source %d\n", source_id);
-          if (source_id == 10) {
+          if (source_id ==
+              std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial())) {
             char c = 0;
             sbi_debug_console_read(1,
                                    reinterpret_cast<uint64_t>(&c) & 0xFFFFFFFF,
                                    reinterpret_cast<uint64_t>(&c) >> 32);
             if (c != '\0') {
-              klog::Info("Get char: %c\n", c);
+              sk_putchar(c, nullptr);
             } else {
               klog::Info("No char available\n");
             }
@@ -187,17 +187,17 @@ auto InterruptInit(int, const char **) -> int {
   // 开启外部中断
   cpu_io::Sie::Seie::Set();
 
-  asm("ebreak");
+  asm volatile("ebreak");
 
   // 设置时钟中断时间
-  // sbi_set_timer(kInterval);
+  sbi_set_timer(kInterval);
 
   klog::Info("Hello InterruptInit\n");
 
   Singleton<Plic>::GetInstance().Set(0, 10, 1, 1);
   Singleton<Plic>::GetInstance().Set(1, 10, 1, 1);
 
-  auto [base, size] = Singleton<KernelFdt>::GetInstance().GetSerial();
+  auto [base, size, irq] = Singleton<KernelFdt>::GetInstance().GetSerial();
   auto serial = Ns16550a(base);
   auto ret = serial.GetChar();
   klog::Info("Get char: %c\n", ret);
@@ -230,7 +230,7 @@ auto InterruptInitSMP(int, const char **) -> int {
   // 开启外部中断
   cpu_io::Sie::Seie::Set();
 
-  asm("ebreak");
+  asm volatile("ebreak");
 
   // 设置时钟中断时间
   sbi_set_timer(kInterval);
