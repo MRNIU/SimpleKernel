@@ -189,11 +189,13 @@ class KernelFdt {
 
   /**
    * 获取串口信息
-   * @return 内存信息<地址，长度>
+   * @return 内存信息<地址，长度，中断号>
    */
-  [[nodiscard]] auto GetSerial() const -> std::pair<uint64_t, size_t> {
+  [[nodiscard]] auto GetSerial() const
+      -> std::tuple<uint64_t, size_t, uint32_t> {
     uint64_t base = 0;
-    uint64_t size = 0;
+    size_t size = 0;
+    uint32_t irq = 0;
     int len = 0;
 
     // Find the /chosen node
@@ -259,7 +261,21 @@ class KernelFdt {
       size = fdt64_to_cpu(reg[i + 1]);
     }
 
-    return {base, size};
+    // Get the interrupts property
+    prop = fdt_get_property(fdt_header_, stdout_offset, "interrupts", &len);
+    if (prop == nullptr) {
+      ERR("Error finding interrupts property for stdout device: %s\n",
+          fdt_strerror(len));
+      throw;
+    }
+
+    // Parse the interrupts property to get the IRQ number
+    const auto *interrupts = reinterpret_cast<const uint32_t *>(prop->data);
+    if (interrupts != nullptr && len != 0) {
+      irq = fdt32_to_cpu(*interrupts);
+    }
+
+    return {base, size, irq};
   }
 
   /**
