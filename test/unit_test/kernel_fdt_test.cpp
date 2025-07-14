@@ -36,10 +36,11 @@ TEST(KernelFdtTest, GetMemoryTest) {
 TEST(KernelFdtTest, GetSerialTest) {
   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
 
-  auto [serial_base, serial_size] = kerlen_fdt.GetSerial();
+  auto [serial_base, serial_size, serial_irq] = kerlen_fdt.GetSerial();
 
   EXPECT_EQ(serial_base, 0x10000000);
   EXPECT_EQ(serial_size, 0x100);
+  EXPECT_EQ(serial_irq, 0xA);
 }
 
 TEST(KernelFdtTest, GetTimebaseFrequencyTest) {
