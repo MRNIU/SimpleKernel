@@ -59,7 +59,7 @@ void ArchInit(int argc, const char **argv) {
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(strtoull(argv[2], nullptr, 16));
 
-  auto [serial_base, serial_size] =
+  auto [serial_base, serial_size, irq] =
       Singleton<KernelFdt>::GetInstance().GetSerial();
 
   static auto uart = Pl011(serial_base);
