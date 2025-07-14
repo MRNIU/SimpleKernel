@@ -56,7 +56,8 @@ Interrupt::Interrupt() {
                 cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
                     [cause],
                 cause, context);
-      while (1);
+      while (1)
+        ;
       return 0;
     };
   }
