@@ -50,3 +50,12 @@ void Pl011::PutChar(uint8_t c) {
 
   io::Out<uint32_t>(base_addr_ + kRegDR, c);
 }
+
+auto Pl011::GetChar() -> uint8_t {
+  // Wait until there is data in the FIFO or device is disabled
+  while (io::In<uint32_t>(base_addr_ + kRegFR) & kFRRXFE) {
+    ;
+  }
+
+  return io::In<uint32_t>(base_addr_ + kRegDR);
+}

@@ -39,3 +39,19 @@ void Ns16550a::PutChar(uint8_t c) const {
   }
   io::Out<uint8_t>(base_addr_ + kRegTHR, c);
 }
+
+auto Ns16550a::GetChar() const -> uint8_t {
+  // 等待直到接收缓冲区有数据 (LSR bit 0 = 1)
+  while ((io::In<uint8_t>(base_addr_ + kRegLSR) & (1 << 0)) == 0) {
+    ;
+  }
+  return io::In<uint8_t>(base_addr_ + kRegRHR);
+}
+
+auto Ns16550a::TryGetChar() const -> uint8_t {
+  // 检查接收缓冲区是否有数据 (LSR bit 0 = 1)
+  if ((io::In<uint8_t>(base_addr_ + kRegLSR) & (1 << 0)) != 0) {
+    return io::In<uint8_t>(base_addr_ + kRegRHR);
+  }
+  return -1;
+}

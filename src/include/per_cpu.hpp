@@ -32,7 +32,7 @@ namespace per_cpu {
 class PerCpu {
  public:
   /// 最大 CPU 数
-  static constexpr size_t kMaxCoreCount = 4;
+  static constexpr const size_t kMaxCoreCount = 4;
 
   /// 核心 ID
   const size_t core_id_;

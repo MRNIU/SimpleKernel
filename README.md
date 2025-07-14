@@ -1,7 +1,7 @@
 [![codecov](https://codecov.io/gh/Simple-XX/SimpleKernel/graph/badge.svg?token=J7NKK3SBNJ)](https://codecov.io/gh/Simple-XX/SimpleKernel)
 ![workflow](https://github.com/Simple-XX/SimpleKernel/actions/workflows/workflow.yml/badge.svg)
 ![commit-activity](https://img.shields.io/github/commit-activity/t/Simple-XX/SimpleKernel)
-![last-commit-boot](https://img.shields.io/github/last-commit/Simple-XX/SimpleKernel/boot)
+![last-commit-interrupt](https://img.shields.io/github/last-commit/Simple-XX/SimpleKernel/interrupt)
 ![MIT License](https://img.shields.io/github/license/mashape/apistatus.svg)
 [![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
 [![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
@@ -10,9 +10,7 @@
 
 # SimpleKernel
 
-**一个现代的多架构内核操作系统，支持 x86_64、RISC-V 和 AArch64 架构**
-
-boot branch
+interrupt branch
 
 ## 关键词
 
@@ -65,150 +63,78 @@ make run
 
 本分支是 SimpleKernel 的首个分支。在本分支中，完成了构建系统的基础搭建、基本的文档部署与自动化测试，当然还有最重要的，有基于 u-boot 引导的 x86_64 内核与由 opensbi 启动的 riscv64 内核，可以在 qemu 上运行，并实现了简单的屏幕输出。
 
-||x86_64|riscv64|aarch64|
-| :-----------------------: | :-------------------------------: | :---------------------------------------------: | :-------------------: |
-|引导|u-boot|u-boot+opensbi|u-boot+atf+optee|
-|基本输出|通过 serial 实现|通过 opensbi 提供的 ecall 实现|通过 serial 实现|
-|硬件资源探测|由 u-boot 传递|由 u-boot 传递的 dtb|由 u-boot+atf 传递的 dtb|
+- riscv64
 
-- 构建系统
+    1. 对 CSR 寄存器的抽象
+    2. 寄存器状态打印
+    3. 基于 Direct 的中断处理
+    4. 中断注册函数
+    5. 时钟中断
 
-  参考 [MRNIU/cmake-kernel](https://github.com/MRNIU/cmake-kernel) 的构建系统，详细解释见 [doc/build_system.md](./doc/build_system.md)
+- aarch64
 
-- libc 支持
+    1. 中断注册函数
+    2. 时钟中断
+    3. uart 中断
+    4. gicv3 驱动
 
-  |     函数/变量名      |                       用途                       |      |
-  | :------------------: | :----------------------------------------------: | :--: |
-  | `__stack_chk_guard`  |                      栈保护                      |      |
-  | `__stack_chk_fail()` |               栈保护检查失败后调用               |      |
-  |      `memcpy()`      |                    复制内存块                    |      |
-  |     `memmove()`      |          复制内存块，可以处理重叠区域。          |      |
-  |      `memset()`      |                    设置内存块                    |      |
-  |      `memcmp()`      |                    比较内存块                    |      |
-  |      `memchr()`      |                在内存块中查找字符                |      |
-  |      `strcpy()`      |                    复制字符串                    |      |
-  |     `strncpy()`      |               复制指定长度的字符串               |      |
-  |      `strcat()`      |                    连接字符串                    |      |
-  |      `strcmp()`      |                    比较字符串                    |      |
-  |     `strncmp()`      |               比较指定长度的字符串               |      |
-  |      `strlen()`      |                  获取字符串长度                  |      |
-  |     `strnlen()`      |                获取指定字符串长度                |      |
-  |      `strchr()`      |           查找字符在字符串中的首次出现           |      |
-  |     `strrchr()`      |         反向查找字符在字符串中的首次出现         |      |
-  |     `strtoull()`     |      将字符串按指定进制转换为无符号长长整数      |      |
-  |     `strtoul()`      |       将字符串按指定进制转换为无符号长整数       |      |
-  |     `strtoll()`      |         将字符串按指定进制转换为长长整数         |      |
-  |      `strtol()`      |          将字符串按指定进制转换为长整数          |      |
-  |      `atoll()`       |              将字符串转换为长长整数              |      |
-  |       `atol()`       |               将字符串转换为长整数               |      |
-  |       `atoi()`       |                将字符串转换为整数                |      |
-  |     `isalnum()`      |             检查字符是否为字母或数字             |      |
-  |     `isalpha()`      |                检查字符是否为字母                |      |
-  |     `isblank()`      |      检查字符是否为空白字符（空格或制表符）      |      |
-  |     `iscntrl()`      |              检查字符是否为控制字符              |      |
-  |     `isdigit()`      |         检查字符是否为十进制数字（0-9）          |      |
-  |     `isgraph()`      |      检查字符是否为可打印字符（不包括空格）      |      |
-  |     `islower()`      |              检查字符是否为小写字母              |      |
-  |     `isprint()`      |       检查字符是否为可打印字符（包括空格）       |      |
-  |     `ispunct()`      |              检查字符是否为标点符号              |      |
-  |     `isspace()`      | 检查字符是否为空白字符（空格、制表符、换行符等） |      |
-  |     `isupper()`      |              检查字符是否为大写字母              |      |
-  |     `isxdigit()`     |   检查字符是否为十六进制数字（0-9、a-f、A-F）    |      |
-  |     `tolower()`      |                 将字符转换为小写                 |      |
-  |     `toupper()`      |                 将字符转换为大写                 |      |
+- X86_64
 
-- libc++ 支持
+    1. cpu 抽象
+    2. 8259A pic 控制器抽象
+    3. 8253/8254 timer 控制器抽象
+    4. gdt 初始化
+    5. 中断处理流程
+    6. 中断注册函数
+    7. 时钟中断
 
-    |       函数/变量名       |                 用途                 |      |
-    | :---------------------: | :----------------------------------: | :--: |
-    |    `__cxa_atexit()`     |             注册析构函数             |      |
-    |   `__cxa_finalize()`    |             调用析构函数             |      |
-    | `__cxa_guard_acquire()` |         静态局部变量初始化锁         |      |
-    | `__cxa_guard_release()` |        静态局部变量初始化完成        |      |
-    |  `__cxa_guard_abort()`  |        静态局部变量初始化出错        |      |
-    |    `__cxa_rethrow()`    |         用于简单处理 `throw`         |      |
-    |    `operator new()`     | 运算符重载，空实现，用于全局对象支持 |      |
-    |   `operator new[]()`    | 运算符重载，空实现，用于全局对象支持 |      |
-    |    `operator new()`     | 运算符重载，空实现，用于全局对象支持 |      |
-    |   `operator new[]()`    | 运算符重载，空实现，用于全局对象支持 |      |
-    |   `operator delete()`   | 运算符重载，空实现，用于全局对象支持 |      |
-    |   `operator delete()`   | 运算符重载，空实现，用于全局对象支持 |      |
-    |  `operator delete[]()`  | 运算符重载，空实现，用于全局对象支持 |      |
-    |  `operator delete[]()`  | 运算符重载，空实现，用于全局对象支持 |      |
+- TODO
 
-- 打印函数调用栈
+    riscv64 PLIC
 
-  逐层回溯帧指针后与 elf 信息进行对比，实现对函数调用栈的打印
-
-- 基础 c++ 异常 支持
-
-  通过 throw 抛出异常后停机，没有上下文相关的处理
-
-- klog 内核日志模块
-
-  基于 ANSI 转义码，在支持 ANSI 转义码的终端中可以显示有颜色的字符串
-
-- 基于 u-boot+opensbi 引导的 riscv64 内核
-
-  1. 由 opensbi 进行初始化，直接跳转到内核地址，进入内核逻辑时为 S 态
-  2. gp 寄存器的初始化
-  3. 基于 opensbi 的 printf
-  4. 使用 FIT 打包的内核
-
-- 基于 u-boot 引导的 amd64 内核
-
-  1. 由 u-boot 进行初始化，进入内核时为 64 位状态
-  2. 使用 FIT 打包的内核
-
-- 基于 u-boot+arm-trusted-firmware+optee 的 aarch64 内核
-
-  1. 使用 FIT 打包的内核
-  2. 由 u-boot 进行初始化，进入内核时为 64 位状态
-  3. 使用 atf 框架
-
-- SMP 支持
-
-  多核支持
-
-- spinlock
-
-  适用于多核抢占的自旋锁，主要用于 klog 模块
-
-- dtb 解析
-
-- elf 解析
-
-- ns16550a 串口驱动
-
-- pl011 串口驱动
-
-- 基于 doxygen 的文档生成与自动部署
-
-  github action 会将文档部署到 https://simple-xx.github.io/SimpleKernel/ (仅 main 分支)
-
-- 基于 git submodule 的第三方资源管理
-
-  使用 git submodule 集成第三方资源
-
-- 测试
-
-    支持 单元测试、集成测试、系统测试，引入 gtest 作为测试框架，同时统计了测试覆盖率
-
-- 代码分析
-
-    引入 cppcheck、clang-tidy、sanitize 工具提前发现错误
-
-- 代码格式化
-
-    使用 google 风格
-
-- docker
-
-    支持使用 docker 构建，详细使用方法见 [doc/docker.md](./doc/docker.md)
+    x86_64 APIC
 
 ## 已支持的特性
 
-见 新增特性
+  - [x] [BUILD] 使用 CMake 的构建系统
+
+  - [x] [BUILD] 使用 gdb remote 调试
+
+  - [x] [BUILD] 第三方资源集成
+
+  - [x] [COMMON] C++ 全局对象的构造
+
+  - [x] [COMMON] C++ 静态局部对象构造
+
+  - [x] [COMMON] C 栈保护支持
+
+  - [x] [COMMON] printf 支持
+
+  - [x] [COMMON] 简单的 C++ 异常支持
+
+  - [x] [COMMON] 带颜色的字符串输出
+
+  - [x] [x86_64] 基于 gnuefi 的 bootloader
+
+  - [x] [x86_64] 基于 serial 的基本输出
+
+  - [x] [x86_64] 物理内存信息探测
+
+  - [x] [x86_64] 显示缓冲区探测
+
+  - [x] [x86_64] 调用栈回溯
+
+  - [x] [riscv64] gp 寄存器的初始化
+
+  - [x] [riscv64] 基于 opensbi 的基本输出
+
+  - [x] [riscv64] device tree 硬件信息解析
+
+  - [x] [riscv64] ns16550a 串口驱动
+
+  - [x] [riscv64] 调用栈回溯(仅打印地址)
+
+  - [ ] [aarch64] 基于 gnuefi 的 bootloader(调试中)
 
 ## 使用的第三方资源
 

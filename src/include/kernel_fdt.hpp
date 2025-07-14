@@ -1,4 +1,3 @@
-
 /**
  * @file kernel_fdt.hpp
  * @brief 用于解析内核自身的 fdt 解析
@@ -30,8 +29,10 @@
 #pragma GCC diagnostic pop
 #endif
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <tuple>
 #include <utility>
 
 #include "kernel_log.hpp"
@@ -296,7 +297,7 @@ class KernelFdt {
    * @note 仅支持单个 dist+redist
    * @see https://github.com/qemu/qemu/blob/master/hw/arm/virt.c
    */
-  [[nodiscard]] auto GetGIC() const -> std::pair<uint64_t, uint64_t> {
+  [[nodiscard]] auto GetGic() const -> std::pair<uint64_t, uint64_t> {
     uint64_t dist_base = 0;
     uint64_t redist_base = 0;
 
@@ -389,6 +390,70 @@ class KernelFdt {
     }
 
     return intid;
+  }
+
+  /**
+   * 获取 plic 信息
+   * @return 内存信息<地址，长度，中断源数量，上下文数量>
+   * @see https://github.com/qemu/qemu/blob/master/hw/arm/virt.c
+   */
+
+  [[nodiscard]] auto GetPlic() const
+      -> std::tuple<uint64_t, uint64_t, uint32_t, uint32_t> {
+    uint64_t base_addr = 0;
+    uint64_t size = 0;
+    uint32_t ndev = 0;
+    uint32_t context_count = 0;
+
+    int len = 0;
+    int offset = 0;
+
+    std::array<const char *, 2> compatible_str = {"sifive,plic-1.0.0",
+                                                  "riscv,plic0"};
+
+    for (const auto &compatible : compatible_str) {
+      offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
+      if (offset != -FDT_ERR_NOTFOUND) {
+        break;
+      }
+    }
+    if (offset < 0) {
+      ERR("Error finding interrupt controller node: %s\n",
+          fdt_strerror(offset));
+      throw;
+    }
+
+    // 通过 interrupts-extended 字段计算上下文数量
+    auto prop =
+        fdt_get_property(fdt_header_, offset, "interrupts-extended", &len);
+    if (prop == nullptr) {
+      throw;
+    }
+
+    // interrupts-extended 格式: <cpu_phandle interrupt_id> 成对出现
+    // 每两个 uint32_t 值表示一个上下文 (CPU + 模式)
+    uint32_t num_entries = len / sizeof(uint32_t);
+    // 每两个条目表示一个上下文
+    context_count = num_entries / 2;
+
+    // 获取 ndev 属性
+    prop = fdt_get_property(fdt_header_, offset, "riscv,ndev", &len);
+    if (prop == nullptr) {
+      throw;
+    }
+    ndev = fdt32_to_cpu(*reinterpret_cast<const uint32_t *>(prop->data));
+
+    // 获取 reg 属性
+    prop = fdt_get_property(fdt_header_, offset, "reg", &len);
+    if (prop == nullptr) {
+      throw;
+    }
+
+    const auto *reg = reinterpret_cast<const uint64_t *>(prop->data);
+    base_addr = fdt64_to_cpu(reg[0]);
+    size = fdt64_to_cpu(reg[1]);
+
+    return {base_addr, size, ndev, context_count};
   }
 };
 

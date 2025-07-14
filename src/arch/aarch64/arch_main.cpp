@@ -18,6 +18,7 @@
 
 #include "arch.h"
 #include "basic_info.hpp"
+#include "interrupt.h"
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
 #include "per_cpu.hpp"

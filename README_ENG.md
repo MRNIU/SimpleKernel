@@ -1,7 +1,7 @@
 [![codecov](https://codecov.io/gh/Simple-XX/SimpleKernel/graph/badge.svg?token=J7NKK3SBNJ)](https://codecov.io/gh/Simple-XX/SimpleKernel)
 ![workflow](https://github.com/Simple-XX/SimpleKernel/actions/workflows/workflow.yml/badge.svg)
 ![commit-activity](https://img.shields.io/github/commit-activity/t/Simple-XX/SimpleKernel)
-![last-commit-boot](https://img.shields.io/github/last-commit/Simple-XX/SimpleKernel/boot)
+![last-commit-interrupt](https://img.shields.io/github/last-commit/Simple-XX/SimpleKernel/interrupt)
 ![MIT License](https://img.shields.io/github/license/mashape/apistatus.svg)
 [![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
 [![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
@@ -10,7 +10,7 @@
 
 # SimpleKernel
 
-boot branch
+interrupt branch
 
 ## Key Words
 
@@ -63,93 +63,80 @@ Pre-configured VSCode settings for running and debugging the kernel are provided
 
 This branch is the first branch of SimpleKernel. In this branch, we have completed the foundation of the build system, basic documentation deployment, and automated testing. Most importantly, we have implemented a u-boot based x86_64 kernel and a RISC-V64 kernel started by OpenSBI, both of which can run on QEMU and achieve simple screen output.
 
-- Build system
+- riscv64
 
-  References the [MRNIU/cmake-kernel](https://github.com/MRNIU/cmake-kernel) build system. For detailed explanation, see [doc/build_system.md](./doc/build_system.md)
+    1. CSR register abstraction
+    2. Register status printing
+    3. Direct-based interrupt handling
+    4. Interrupt registration functions
+    5. Timer interrupts
 
-- Stack Trace Printing
+- aarch64
 
-  Traverse frame pointers and cross-reference with ELF symbol tables to reconstruct function call stacks.
+    1. Interrupt registration functions
+    2. Timer interrupts
+    3. UART interrupts
+    4. GICv3 driver
 
-- Basic C++ Exception Support
+- x86_64
 
-  Implements throw to trigger exceptions followed by system termination (no context-aware exception handling).
+    1. CPU abstraction
+    2. 8259A PIC controller abstraction
+    3. 8253/8254 timer controller abstraction
+    4. GDT initialization
+    5. Interrupt handling flow
+    6. Interrupt registration functions
+    7. Timer interrupts
 
-- klog Kernel Logging Module
+- TODO
 
-  Supports ANSI escape codes for colored text output in ANSI-compatible terminals.
+    riscv64 PLIC
 
-- RISC-V64 (U-Boot + OpenSBI)
-
-  1. Initialized by OpenSBI; kernel entry in Supervisor (S) mode.
-  2. GP (Global Pointer) register initialization.
-  3. printf implementation leveraging OpenSBI.
-  4. FIT (Flattened Image Tree) image packaging.
-
-- x86_64 (U-Boot)
-
-  1. Initialized by U-Boot; kernel enters 64-bit mode directly.
-  2. FIT image packaging.
-
-- AArch64 (U-Boot + Arm Trusted Firmware + OP-TEE)
-
-  1. FIT image packaging.
-  2. Initialized by U-Boot in 64-bit mode.
-  3. ATF (Arm Trusted Firmware) framework integration.
-
-- SMP Support
-
-  Multi-core CPU coordination and synchronization
-
-- Spinlock
-
-  Preemptive multi-core spinlock implementation (primarily for klog synchronization)
-
-- Device Tree Blob (DTB) Parsing
-
-  Hardware configuration decoding and interpretation
-
-- ELF Parsing
-
-  Executable and Linkable Format analysis
-
-- NS16550A UART Driver
-
-  Serial communication driver for x86/RISC-V platforms
-
-- PL011 UART Driver
-
-  Serial communication driver for ARM platforms
-
-- Doxygen-based Documentation Generation and Automatic Deployment
-
-  GitHub Actions automatically deploys documentation to https://simple-xx.github.io/SimpleKernel/ (main branch only)
-
-- Third-party Resource Management based on Git Submodules
-
-  Uses git submodule to integrate third-party resources
-
-- Testing Framework
-
-  Supports unit testing, integration testing, and system testing using gtest framework with test coverage statistics
-
-- Code Analysis
-
-  Integrates cppcheck, clang-tidy, and sanitize tools for early error detection
-
-- Code Formatting
-
-  Uses Google style formatting
-
-- Docker Support
-
-  Supports building with Docker, see [doc/docker.md](./doc/docker.md)
+    x86_64 APIC
 
 ## Supported Features
 
-See New Features
+  - [x] [BUILD] CMake-based build system
 
-## Third-party Dependencies
+  - [x] [BUILD] GDB remote debugging
+
+  - [x] [BUILD] Third-party resource integration
+
+  - [x] [COMMON] C++ global object construction
+
+  - [x] [COMMON] C++ static local object construction
+
+  - [x] [COMMON] C stack protection support
+
+  - [x] [COMMON] printf support
+
+  - [x] [COMMON] Simple C++ exception support
+
+  - [x] [COMMON] Colored string output
+
+  - [x] [x86_64] gnuefi-based bootloader
+
+  - [x] [x86_64] Serial-based basic output
+
+  - [x] [x86_64] Physical memory information detection
+
+  - [x] [x86_64] Display buffer detection
+
+  - [x] [x86_64] Call stack backtrace
+
+  - [x] [riscv64] GP register initialization
+
+  - [x] [riscv64] OpenSBI-based basic output
+
+  - [x] [riscv64] Device tree hardware information parsing
+
+  - [x] [riscv64] ns16550a serial driver
+
+  - [x] [riscv64] Call stack backtrace (address printing only)
+
+  - [ ] [aarch64] gnuefi-based bootloader (debugging)
+
+## Used Third-party Resources
 
 [google/googletest](https://github.com/google/googletest.git)
 
@@ -173,5 +160,6 @@ See New Features
 
 ## Development Guide
 
-- **Code Style**: Google Style (enforced via .clang-format)
-- **Naming Convention**: [Google Open Source Style Guide](https://google.github.io/styleguide/cppguide.html)
+Code Style: Google, specified by .clang-format
+
+Naming Convention: [Google Open Source Project Style Guide](https://google.github.io/styleguide/cppguide.html)
