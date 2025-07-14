@@ -134,6 +134,17 @@ auto InterruptInit(int, const char **) -> int {
         auto source_id = Singleton<Plic>::GetInstance().Which();
         if (source_id != 0) {
           klog::Info("External interrupt from source %d\n", source_id);
+          if (source_id == 10) {
+            char c = 0;
+            sbi_debug_console_read(1,
+                                   reinterpret_cast<uint64_t>(&c) & 0xFFFFFFFF,
+                                   reinterpret_cast<uint64_t>(&c) >> 32);
+            if (c != '\0') {
+              klog::Info("Get char: %c\n", c);
+            } else {
+              klog::Info("No char available\n");
+            }
+          }
           // 告知 PLIC 中断已处理完成
           Singleton<Plic>::GetInstance().Done(source_id);
         }
@@ -189,8 +200,6 @@ auto InterruptInit(int, const char **) -> int {
   auto serial = Ns16550a(base);
   auto ret = serial.GetChar();
   klog::Info("Get char: %c\n", ret);
-
-  while (1);
 
   // 唤醒其余 core
   for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {
