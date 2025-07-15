@@ -36,10 +36,10 @@ class Pl011 {
   /// @name 默认构造/析构函数
   /// @{
   Pl011() = default;
-  Pl011(const Pl011& na16550a) = default;
-  Pl011(Pl011&& na16550a) = default;
-  auto operator=(const Pl011& na16550a) -> Pl011& = default;
-  auto operator=(Pl011&& na16550a) -> Pl011& = default;
+  Pl011(const Pl011&) = delete;
+  Pl011(Pl011&&) = default;
+  auto operator=(const Pl011&) -> Pl011& = delete;
+  auto operator=(Pl011&&) -> Pl011& = default;
   ~Pl011() = default;
   /// @}
 

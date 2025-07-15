@@ -33,11 +33,11 @@ class Acpi {
 
   /// @name 默认构造/析构函数
   /// @{
-  Acpi() = delete;
+  Acpi() = default;
   Acpi(const Acpi&) = delete;
-  Acpi(Acpi&&) = delete;
+  Acpi(Acpi&&) = default;
   auto operator=(const Acpi&) -> Acpi& = delete;
-  auto operator=(Acpi&&) -> Acpi& = delete;
+  auto operator=(Acpi&&) -> Acpi& = default;
   ~Acpi() = default;
   /// @}
 

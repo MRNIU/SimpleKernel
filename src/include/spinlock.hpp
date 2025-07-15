@@ -41,9 +41,9 @@ class SpinLock {
   /// @{
   SpinLock() = default;
   SpinLock(const SpinLock &) = delete;
-  SpinLock(SpinLock &&) = delete;
+  SpinLock(SpinLock &&) = default;
   auto operator=(const SpinLock &) -> SpinLock & = delete;
-  auto operator=(SpinLock &&) -> SpinLock & = delete;
+  auto operator=(SpinLock &&) -> SpinLock & = default;
   ~SpinLock() = default;
   /// @}
 
@@ -51,7 +51,7 @@ class SpinLock {
    * @brief 获得锁
    */
   __always_inline auto lock() -> bool {
-    if (DisableInterruptsNested() == false) {
+    if (!DisableInterruptsNested()) {
       return false;
     }
     if (IsLockedByCurrentCore()) {
