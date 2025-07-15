@@ -41,15 +41,16 @@ inline SpinLock& GetLogLock() {
  */
 class LogLockGuard {
  public:
-  explicit LogLockGuard() { GetLogLock().lock(); }
-
+  LogLockGuard() { GetLogLock().lock(); }
   ~LogLockGuard() { GetLogLock().unlock(); }
 
-  // 禁止拷贝和移动
+  /// @name 构造/析构函数
+  /// @{
   LogLockGuard(const LogLockGuard&) = delete;
   LogLockGuard(LogLockGuard&&) = delete;
   LogLockGuard& operator=(const LogLockGuard&) = delete;
   LogLockGuard& operator=(LogLockGuard&&) = delete;
+  /// @}
 };
 
 /// ANSI 转义码，在支持 ANSI 转义码的终端中可以显示颜色

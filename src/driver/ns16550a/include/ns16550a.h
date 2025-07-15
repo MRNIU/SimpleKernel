@@ -29,11 +29,11 @@ class Ns16550a {
 
   /// @name 默认构造/析构函数
   /// @{
-  Ns16550a() = delete;
-  Ns16550a(const Ns16550a& na16550a) = delete;
-  Ns16550a(Ns16550a&& na16550a) = delete;
-  auto operator=(const Ns16550a& na16550a) -> Ns16550a& = delete;
-  auto operator=(Ns16550a&& na16550a) -> Ns16550a& = delete;
+  Ns16550a() = default;
+  Ns16550a(const Ns16550a&) = delete;
+  Ns16550a(Ns16550a&&) = default;
+  auto operator=(const Ns16550a&) -> Ns16550a& = delete;
+  auto operator=(Ns16550a&&) -> Ns16550a& = default;
   ~Ns16550a() = default;
   /// @}
 
