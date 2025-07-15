@@ -65,13 +65,13 @@ auto InterruptInit(int, const char **) -> int {
       });
 
   auto [base, size, irq] = Singleton<KernelFdt>::GetInstance().GetSerial();
-  static auto serial = Ns16550a(base);
+  Singleton<Ns16550a>::GetInstance() = std::move(Ns16550a(base));
 
   // 注册串口中断
   Singleton<Plic>::GetInstance().RegisterInterruptFunc(
       std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial()),
       [](uint64_t, uint8_t *) -> uint64_t {
-        sk_putchar(serial.TryGetChar(), nullptr);
+        sk_putchar(Singleton<Ns16550a>::GetInstance().TryGetChar(), nullptr);
         return 0;
       });
 
