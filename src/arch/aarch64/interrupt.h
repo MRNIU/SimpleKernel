@@ -55,6 +55,7 @@ class Interrupt final : public InterruptBase {
    */
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
 
+  __always_inline void SetUP() const { gic_.SetUP(); }
   __always_inline void SPI(uint32_t intid) const { gic_.SPI(intid); }
   __always_inline void PPI(uint32_t intid, uint32_t cpuid) const {
     gic_.PPI(intid, cpuid);

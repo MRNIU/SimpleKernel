@@ -162,7 +162,8 @@ void InterruptInit(int, const char **) {
   klog::Info("timer_intid: %d, uart_intid: %d\n", timer_intid, uart_intid);
 
   Singleton<Interrupt>::GetInstance().SPI(uart_intid);
-  Singleton<Interrupt>::GetInstance().PPI(timer_intid, 0);
+  Singleton<Interrupt>::GetInstance().PPI(timer_intid,
+                                          cpu_io::GetCurrentCoreId());
 
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(timer_intid,
                                                             timer_handler);
@@ -195,6 +196,18 @@ void InterruptInit(int, const char **) {
 
 void InterruptInitSMP(int, const char **) {
   cpu_io::VBAR_EL1::Write(reinterpret_cast<uint64_t>(vector_table));
+
+  Singleton<Interrupt>::GetInstance().SetUP();
+
+  auto timer_intid =
+      Singleton<KernelFdt>::GetInstance().GetAarch64Intid("arm,armv8-timer") +
+      Gic::kPPIBase;
+
+  Singleton<Interrupt>::GetInstance().PPI(timer_intid,
+                                          cpu_io::GetCurrentCoreId());
+
+  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(timer_intid,
+                                                            timer_handler);
 
   cpu_io::EnableInterrupt();
 

@@ -540,6 +540,11 @@ class Gic {
     void SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const;
 
     /**
+     * 初始化 gicr，在多核场景使用
+     */
+    void SetUP() const;
+
+    /**
      * 设置指定 PPI 中断
      * PPI: private peripheral interrupt,
      * 私有外设中断，该中断来源于外设，但是该中断只对指定的 core 有效
@@ -578,6 +583,7 @@ class Gic {
   ~Gic() = default;
   /// @}
 
+  void SetUP() const;
   void SPI(uint32_t intid) const;
   void PPI(uint32_t intid, uint32_t cpuid) const;
 

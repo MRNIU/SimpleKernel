@@ -29,6 +29,14 @@ Gic::Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
   klog::Info("Gic init.\n");
 }
 
+void Gic::SetUP() const {
+  cpu_io::ICC_IGRPEN1_EL1::Enable::Clear();
+  cpu_io::ICC_PMR_EL1::Priority::Set();
+  gicd_.EnableGrp1NS();
+
+  gicr_.SetUP();
+}
+
 void Gic::SPI(uint32_t intid) const { gicd_.SetupSPI(intid); }
 
 void Gic::PPI(uint32_t intid, uint32_t cpuid) const {
@@ -100,6 +108,31 @@ void Gic::Gicd::SetTarget(uint32_t intid, uint32_t cpuid) const {
   Write(ITARGETSRn(intid / kITARGETSRn_SIZE),
         target |
             ((1 << cpuid) << ((intid % kITARGETSRn_SIZE) * kITARGETSRn_BITS)));
+}
+
+void Gic::Gicr::SetUP() const {
+  auto cpuid = cpu_io::GetCurrentCoreId();
+
+  // 将 GICR_CTLR 清零
+  Write(cpuid, kCTLR, 0);
+
+  // The System register interface for the current Security state is enabled.
+  cpu_io::ICC_SRE_EL1::SRE::Set();
+
+  // 允许 Non-secure Group 1 中断
+  Write(cpuid, kIGROUPR0, kIGROUPR0_Set);
+  Write(cpuid, kIGRPMODR0, kIGRPMODR0_Clear);
+
+  // 唤醒 Redistributor
+  // @see
+  // https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-WAKER--Redistributor-Wake-Register?lang=en
+  auto waker = Read(cpuid, kWAKER);
+  // Clear the ProcessorSleep bit
+  Write(cpuid, kWAKER, waker & ~kWAKER_ProcessorSleepMASK);
+  // 等待唤醒完成
+  while (Read(cpuid, kWAKER) & kWAKER_ChildrenAsleepMASK) {
+    ;
+  }
 }
 
 void Gic::Gicd::SetupSPI(uint32_t intid) const {
