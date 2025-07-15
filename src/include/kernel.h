@@ -40,7 +40,4 @@ extern "C" [[maybe_unused]] [[noreturn]] void _start(int argc,
  */
 auto main(int argc, const char** argv) -> int;
 
-auto InterruptInit(int argc, const char** argv) -> int;
-auto InterruptInitSMP(int argc, const char** argv) -> int;
-
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_ */

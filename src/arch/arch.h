@@ -30,6 +30,14 @@
 void ArchInit(int argc, const char **argv);
 void ArchInitSMP(int argc, const char **argv);
 
+/**
+ * 体系结构相关中断初始化
+ * @param argc 在不同体系结构有不同含义，同 _start
+ * @param argv 在不同体系结构有不同含义，同 _start
+ */
+void InterruptInit(int argc, const char **argv);
+void InterruptInitSMP(int argc, const char **argv);
+
 /// 最多回溯 128 层调用栈
 static constexpr const size_t kMaxFrameCount = 128;
 

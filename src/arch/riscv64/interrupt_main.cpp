@@ -32,7 +32,7 @@ __attribute__((interrupt("supervisor"))) alignas(4) void TarpEntry() {
 }
 }  // namespace
 
-auto InterruptInit(int, const char **) -> int {
+void InterruptInit(int, const char **) {
   // 获取 cpu 速度
   kInterval = Singleton<KernelFdt>::GetInstance().GetTimebaseFrequency();
   klog::Info("kInterval: 0x%X\n", kInterval);
@@ -125,11 +125,9 @@ auto InterruptInit(int, const char **) -> int {
       klog::Warn("hart %d start failed: %d\n", i, ret.error);
     }
   }
-
-  return 0;
 }
 
-auto InterruptInitSMP(int, const char **) -> int {
+void InterruptInitSMP(int, const char **) {
   // 设置 trap vector
   cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(TarpEntry));
 
@@ -149,6 +147,4 @@ auto InterruptInitSMP(int, const char **) -> int {
   sbi_set_timer(kInterval);
 
   klog::Info("Hello InterruptInitSMP\n");
-
-  return 0;
 }

@@ -77,16 +77,6 @@ void ArchInit(int argc, const char **argv) {
   Singleton<KernelFdt>::GetInstance().CheckPSCI();
 
   klog::Info("Hello aarch64 ArchInit\n");
-
-  // 唤醒其余 core
-  for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {
-    auto ret = cpu_io::psci::CpuOn(i, reinterpret_cast<uint64_t>(_boot), 0);
-    if ((ret != cpu_io::psci::SUCCESS) && (ret != cpu_io::psci::ALREADY_ON)) {
-      klog::Warn("hart %d start failed: %d\n", i, ret);
-    }
-  }
 }
 
-void ArchInitSMP(int, const char **) {
-  klog::Info("Hello aarch64 SMP ArchInit\n");
-}
+void ArchInitSMP(int, const char **) {}
