@@ -28,6 +28,13 @@
 class Plic {
  public:
   /**
+   * @brief 中断处理函数指针
+   * @param cause 中断号
+   * @param context 中断上下文
+   */
+  typedef uint64_t (*InterruptFunc)(uint64_t cause, uint8_t* context);
+
+  /**
    * 构造函数
    * @param dev_addr 设备地址
    * @param ndev 支持的中断源数量 (riscv,ndev)
@@ -83,19 +90,19 @@ class Plic {
   auto Get(uint32_t hart_id, uint32_t source_id) const
       -> std::tuple<uint32_t, bool, bool>;
 
-  // /**
-  //  * @brief 注册外部中断处理函数
-  //  * @param  cause             外部中断号
-  //  * @param  _interrupt_handler 外部中断处理函数
-  //  */
-  // void register_externel_handler(
-  //     uint8_t cause, InterruptFunc _interrupt_handler);
+  /**
+   * @brief 注册外部中断处理函数
+   * @param  cause             外部中断号
+   * @param  func 外部中断处理函数
+   */
+  void RegisterInterruptFunc(uint8_t cause, InterruptFunc func);
 
-  // /**
-  //  * @brief 执行外部中断处理
-  //  * @param  cause              外部中断号
-  //  */
-  // void do_externel_interrupt(uint8_t cause);
+  /**
+   * @brief 执行外部中断处理
+   * @param  cause              外部中断号
+   * @param  context 中断上下文
+   */
+  void Do(uint64_t cause, uint8_t* context);
 
  private:
   static constexpr const uint64_t kSourcePriorityOffset = 0x000000;
@@ -111,18 +118,11 @@ class Plic {
   // Enable bits 每个 context 的大小 (最多支持 1024 个中断源)
   static constexpr const uint64_t kEnableSize = 0x80;
 
-  /**
-   * @brief 外部中断处理函数指针
-   * @param cause 中断号
-   */
-  typedef void (*InterruptFunc)(uint8_t cause);
-
   /// 最大外部中断数量
   static constexpr const size_t kInterruptMaxCount = 16;
 
   /// 外部中断处理函数数组
-  static std::array<InterruptFunc, kInterruptMaxCount>
-      external_interrupt_handlers_;
+  static std::array<InterruptFunc, kInterruptMaxCount> interrupt_handlers_;
 
   uint64_t base_addr_ = 0;
   size_t ndev_ = 0;

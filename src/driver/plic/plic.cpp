@@ -21,9 +21,8 @@
 #include "kernel_log.hpp"
 #include "sk_string.h"
 
-alignas(
-    4) std::array<Plic::InterruptFunc,
-                  Plic::kInterruptMaxCount> Plic::external_interrupt_handlers_;
+alignas(4) std::array<Plic::InterruptFunc,
+                      Plic::kInterruptMaxCount> Plic::interrupt_handlers_;
 
 Plic::Plic(uint64_t dev_addr, size_t ndev, size_t context_count)
     : base_addr_(dev_addr), ndev_(ndev), context_count_(context_count) {
@@ -58,16 +57,13 @@ void Plic::Done(uint32_t source_id) const {
   ClaimComplete(context_id) = source_id;
 }
 
-// void Plic::register_externel_handler(
-//     uint8_t cause, InterruptFunc _interrupt_handler) {
-//   externel_interrupt_handlers[cause] = _interrupt_handler;
-//   return;
-// }
+void Plic::RegisterInterruptFunc(uint8_t cause, InterruptFunc func) {
+  interrupt_handlers_[cause] = func;
+}
 
-// void Plic::do_externel_interrupt(uint8_t cause) {
-//   externel_interrupt_handlers[cause](cause);
-//   return;
-// }
+void Plic::Do(uint64_t cause, uint8_t* context) {
+  interrupt_handlers_[cause](cause, context);
+}
 
 void Plic::Set(uint32_t hart_id, uint32_t source_id, uint32_t priority,
                bool enable) const {
