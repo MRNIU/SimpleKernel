@@ -144,7 +144,8 @@ auto timer_handler(uint64_t cause, uint8_t *) -> uint64_t {
 }
 
 auto uart_handler(uint64_t cause, uint8_t *) -> uint64_t {
-  klog::Info("%c", Singleton<Pl011>::GetInstance().GetChar());
+  klog::Info("UART interrupt\n");
+  sk_putchar(Singleton<Pl011>::GetInstance().TryGetChar(), nullptr);
   return cause;
 }
 
@@ -161,7 +162,8 @@ void InterruptInit(int, const char **) {
 
   klog::Info("timer_intid: %d, uart_intid: %d\n", timer_intid, uart_intid);
 
-  Singleton<Interrupt>::GetInstance().SPI(uart_intid);
+  Singleton<Interrupt>::GetInstance().SPI(uart_intid,
+                                          cpu_io::GetCurrentCoreId());
   Singleton<Interrupt>::GetInstance().PPI(timer_intid,
                                           cpu_io::GetCurrentCoreId());
 

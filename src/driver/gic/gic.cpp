@@ -37,7 +37,9 @@ void Gic::SetUP() const {
   gicr_.SetUP();
 }
 
-void Gic::SPI(uint32_t intid) const { gicd_.SetupSPI(intid); }
+void Gic::SPI(uint32_t intid, uint32_t cpuid) const {
+  gicd_.SetupSPI(intid, cpuid);
+}
 
 void Gic::PPI(uint32_t intid, uint32_t cpuid) const {
   gicr_.SetupPPI(intid, cpuid);
@@ -135,7 +137,7 @@ void Gic::Gicr::SetUP() const {
   }
 }
 
-void Gic::Gicd::SetupSPI(uint32_t intid) const {
+void Gic::Gicd::SetupSPI(uint32_t intid, uint32_t cpuid) const {
   // 电平触发
   SetConfig(intid, kICFGRn_LevelSensitive);
 
@@ -143,7 +145,7 @@ void Gic::Gicd::SetupSPI(uint32_t intid) const {
   SetPrio(intid, 0);
 
   // 设置所有中断由 cpu0 处理
-  SetTarget(intid, 0);
+  SetTarget(intid, cpuid);
   // 清除中断请求
   Clear(intid);
   // 使能中断

@@ -364,7 +364,61 @@ class KernelFdt {
     int len = 0;
     int offset = 0;
 
-    offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
+    // 对于 arm,pl011，通过 /chosen/stdout-path 找到正确的设备
+    if (strcmp(compatible, "arm,pl011") == 0) {
+      // Find the /chosen node
+      int chosen_offset = fdt_path_offset(fdt_header_, "/chosen");
+      if (chosen_offset < 0) {
+        ERR("Error finding /chosen node: %s\n", fdt_strerror(chosen_offset));
+        throw;
+      }
+
+      // Get the stdout-path property
+      const auto *prop =
+          fdt_get_property(fdt_header_, chosen_offset, "stdout-path", &len);
+      if (prop == nullptr || len <= 0) {
+        ERR("Error finding stdout-path property: %s\n", fdt_strerror(len));
+        throw;
+      }
+
+      // Get the path as a string
+      const char *stdout_path = reinterpret_cast<const char *>(prop->data);
+
+      // Create a copy of the path that we can modify
+      std::array<char, 256> path_buffer;
+      strncpy(path_buffer.data(), stdout_path, path_buffer.max_size());
+
+      // Extract the path without any parameters (everything before ':')
+      char *colon = strchr(path_buffer.data(), ':');
+      if (colon != nullptr) {
+        *colon = '\0';  // Terminate the string at the colon
+      }
+
+      // Find the node at the stdout path
+      int stdout_offset = -1;
+
+      // Handle aliases (paths starting with '&')
+      if (path_buffer[0] == '&') {
+        const char *alias = path_buffer.data() + 1;  // Skip the '&'
+        const char *aliased_path = fdt_get_alias(fdt_header_, alias);
+        if (aliased_path != nullptr) {
+          stdout_offset = fdt_path_offset(fdt_header_, aliased_path);
+        }
+      } else {
+        stdout_offset = fdt_path_offset(fdt_header_, path_buffer.data());
+      }
+
+      if (stdout_offset < 0) {
+        ERR("Error finding node for stdout-path %s: %s\n", path_buffer.data(),
+            fdt_strerror(stdout_offset));
+        throw;
+      }
+
+      offset = stdout_offset;
+    } else {
+      // 对于其他设备，使用原来的查找方式
+      offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
+    }
 
     if (offset < 0) {
       ERR("Error finding interrupt controller node: %s\n",

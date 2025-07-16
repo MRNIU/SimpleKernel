@@ -350,8 +350,9 @@ class Gic {
      * SPI: shared peripheral interrupt,
      * 共享外设中断，该中断来源于外设，但是该中断可以对所有的 core 有效
      * @param intid 中断号
+     * @param cpuid cpu 编号
      */
-    void SetupSPI(uint32_t intid) const;
+    void SetupSPI(uint32_t intid, uint32_t cpuid) const;
 
    private:
     uint64_t base_addr_ = 0;
@@ -584,7 +585,7 @@ class Gic {
   /// @}
 
   void SetUP() const;
-  void SPI(uint32_t intid) const;
+  void SPI(uint32_t intid, uint32_t cpuid) const;
   void PPI(uint32_t intid, uint32_t cpuid) const;
 
  private:
