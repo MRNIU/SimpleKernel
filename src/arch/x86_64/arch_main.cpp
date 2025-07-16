@@ -26,14 +26,14 @@
 #include "sk_iostream"
 
 // 基本输出实现
-/// @note 这里要注意，保证在 serial 初始化之前不能使用 printf
-/// 函数，否则会有全局对象依赖问题
 namespace {
-cpu_io::Serial kSerial(cpu_io::kCom1);
-extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
-  kSerial.Write(c);
-}
+cpu_io::Serial *serial = nullptr;
 }  // namespace
+extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
+  if (serial) {
+    serial->Write(c);
+  }
+}
 
 BasicInfo::BasicInfo(int argc, const char **argv) {
   (void)argc;
@@ -60,6 +60,9 @@ auto ArchInit(int argc, const char **argv) -> int {
     klog::Err("argc != 1 [%d]\n", argc);
     throw;
   }
+
+  Singleton<cpu_io::Serial>::GetInstance() = cpu_io::Serial(cpu_io::kCom1);
+  serial = &Singleton<cpu_io::Serial>::GetInstance();
 
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
