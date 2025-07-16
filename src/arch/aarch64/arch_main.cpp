@@ -62,8 +62,8 @@ void ArchInit(int argc, const char **argv) {
   auto [serial_base, serial_size, irq] =
       Singleton<KernelFdt>::GetInstance().GetSerial();
 
-  static auto uart = Pl011(serial_base);
-  pl011 = &uart;
+  Singleton<Pl011>::GetInstance() = Pl011(serial_base);
+  pl011 = &Singleton<Pl011>::GetInstance();
 
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
 
@@ -86,6 +86,4 @@ void ArchInit(int argc, const char **argv) {
   }
 }
 
-void ArchInitSMP(int, const char **) {
-  klog::Info("Hello aarch64 SMP ArchInit\n");
-}
+void ArchInitSMP(int, const char **) {}
