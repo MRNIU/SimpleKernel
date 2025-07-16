@@ -66,8 +66,6 @@ extern "C" void irq_current_el_spx_handler(uint64_t sp [[maybe_unused]]) {
   klog::Err("IRQ Exception at Current EL with SPx\n");
   auto cause = cpu_io::ICC_IAR1_EL1::INTID::Get();
   Singleton<Interrupt>::GetInstance().Do(cause, nullptr);
-  // 处理 IRQ 中断
-  // ...
 }
 
 extern "C" void fiq_current_el_spx_handler(uint64_t sp [[maybe_unused]]) {
@@ -136,7 +134,6 @@ extern "C" void error_lower_el_aarch32_handler(uint64_t sp [[maybe_unused]]) {
 }
 
 auto timer_handler(uint64_t cause, uint8_t *) -> uint64_t {
-  klog::Info("Timer interrupt\n");
   // 2s
   uint64_t interval_clk = 2 * cpu_io::CNTFRQ_EL0::Read();
   cpu_io::CNTV_TVAL_EL0::Write(interval_clk);
@@ -144,7 +141,6 @@ auto timer_handler(uint64_t cause, uint8_t *) -> uint64_t {
 }
 
 auto uart_handler(uint64_t cause, uint8_t *) -> uint64_t {
-  klog::Info("UART interrupt\n");
   sk_putchar(Singleton<Pl011>::GetInstance().TryGetChar(), nullptr);
   return cause;
 }
