@@ -119,38 +119,3 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
                 cause, func);
   }
 }
-
-auto InterruptInit(int, const char **) -> int {
-  // 初始化中断
-  Singleton<Interrupt>::GetInstance();
-
-  // 注册时钟中断
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::IdtrInfo::kIrq0,
-      [](uint64_t exception_code, uint8_t *) -> uint64_t {
-        Singleton<Interrupt>::GetInstance().pit_.Ticks();
-        if (Singleton<Interrupt>::GetInstance().pit_.GetTicks() % 100 == 0) {
-          klog::Info("Handle %d %s\n", exception_code,
-                     cpu_io::detail::register_info::IdtrInfo::kInterruptNames
-                         [exception_code]);
-        }
-        Singleton<Interrupt>::GetInstance().pic_.Clear(exception_code);
-        return 0;
-      });
-
-  // 允许时钟中断
-  Singleton<Interrupt>::GetInstance().pic_.Enable(
-      cpu_io::detail::register_info::IdtrInfo::kIrq0);
-  // 开启中断
-  cpu_io::Rflags::If::Set();
-
-  klog::Info("Hello InterruptInit\n");
-
-  return 0;
-}
-
-auto InterruptInitSMP(int, const char **) -> int {
-  klog::Info("Hello InterruptInitSMP\n");
-
-  return 0;
-}
