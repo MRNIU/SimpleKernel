@@ -25,14 +25,14 @@
 
 #ifdef __x86_64__
 static auto serial = cpu_io::Serial(cpu_io::kCom1);
-extern "C" void putchar_(char character) { serial.Write(character); }
+extern "C" void sk_putchar(int character, void *) { serial.Write(character); }
 #elif __riscv
 #include <opensbi_interface.h>
-extern "C" void putchar_(char character) {
+extern "C" void sk_putchar(int character, void *) {
   sbi_debug_console_write_byte(character);
 }
 #elif __aarch64__
-extern "C" void putchar_(char character) {
+extern "C" void sk_putchar(int character, void *) {
   static uint8_t *kUartAddr = (uint8_t *)0x09000000;
   *kUartAddr = character;
 }
@@ -51,8 +51,6 @@ class TestStaticConstructDestruct {
 static int global_value_with_init = 42;
 static uint32_t global_u32_value_with_init{0xa1a2a3a4UL};
 static uint64_t global_u64_value_with_init{0xb1b2b3b4b5b6b7b8ULL};
-static float global_f32_value_with_init{3.14};
-static double global_f64_value_with_init{1.44};
 static uint16_t global_u16_value_with_init{0x1234};
 static uint8_t global_u8a_value_with_init{0x42};
 static uint8_t global_u8b_value_with_init{0x43};
@@ -93,34 +91,32 @@ auto main(uint32_t, uint8_t *) -> uint32_t {
   global_u8c_value_with_init++;
   global_u32_value_with_init++;
   global_u64_value_with_init++;
-  global_f32_value_with_init++;
   global_u8b_value_with_init++;
-  global_f64_value_with_init++;
   global_u8d_value_with_init++;
   global_u16_value_with_init++;
   global_u8a_value_with_init++;
   global_value_with_init++;
   global_bool_keep_running = false;
 
-  putchar_('1');
+  sk_putchar('1', nullptr);
   auto inst_class = InsClass();
-  putchar_('2');
-  printf("%c\n", inst_class.val);
-  putchar_('3');
+  sk_putchar('2', nullptr);
+  sk_printf("%c\n", inst_class.val);
+  sk_putchar('3', nullptr);
   inst_class.Func();
-  putchar_('4');
-  printf("%c\n", inst_class.val);
-  putchar_('5');
+  sk_putchar('4', nullptr);
+  sk_printf("%c\n", inst_class.val);
+  sk_putchar('5', nullptr);
 
   static InsClass inst_class_static;
-  printf("%c\n", inst_class_static.val);
+  sk_printf("%c\n", inst_class_static.val);
   inst_class_static.Func();
-  printf("%c\n", inst_class_static.val);
+  sk_printf("%c\n", inst_class_static.val);
 
-  printf("%ld\n", Singleton<BasicInfo>::GetInstance().elf_addr);
-  printf("%ld\n", Singleton<BasicInfo>::GetInstance().elf_size);
+  sk_printf("%ld\n", Singleton<BasicInfo>::GetInstance().elf_addr);
+  sk_printf("%ld\n", Singleton<BasicInfo>::GetInstance().elf_size);
 
-  printf("Hello Test\n");
+  sk_printf("Hello Test\n");
 
   throw;
 

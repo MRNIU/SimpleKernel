@@ -21,7 +21,8 @@ ADD_EXECUTABLE (
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
-    PRIVATE ${CMAKE_SOURCE_DIR}/src/include ${CMAKE_SOURCE_DIR}/src/arch
+    PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/include
+            ${CMAKE_SOURCE_DIR}/src/arch
             ${CMAKE_SOURCE_DIR}/src/arch/${CMAKE_SYSTEM_PROCESSOR}/include)
 
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
