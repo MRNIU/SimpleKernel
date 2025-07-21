@@ -1,3 +1,7 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ * @brief TODO: Add description
+ */
 
 #include <cstdarg>
 #include <cstdint>

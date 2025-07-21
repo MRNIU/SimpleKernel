@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
 
-<!--This file is a part of Simple-XX/SimpleKernel-->
-<!--(https://github.com/Simple-XX/SimpleKernel).-->
-
-<!--cppcheck-suppressions.xml for Simple-XX/SimpleKernel.-->
+<!--Copyright The SimpleKernel Contributors-->
 
 <suppressions>
     <suppress>

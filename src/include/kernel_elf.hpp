@@ -1,17 +1,6 @@
-
 /**
- * @file kernel_elf.hpp
+ * @copyright Copyright The SimpleKernel Contributors
  * @brief 用于解析内核自身的 elf
- * @author Zone.N (Zone.Niuzh@hotmail.com)
- * @version 1.0
- * @date 2023-07-15
- * @copyright MIT LICENSE
- * https://github.com/Simple-XX/SimpleKernel
- * @par change log:
- * <table>
- * <tr><th>Date<th>Author<th>Description
- * <tr><td>2023-07-15<td>Zone.N (Zone.Niuzh@hotmail.com)<td>创建文件
- * </table>
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_ELF_HPP_

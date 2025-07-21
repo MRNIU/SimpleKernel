@@ -1,7 +1,5 @@
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# CMakeLists.txt for Simple-XX/SimpleKernel.
+# Copyright The SimpleKernel Contributors
+# CMake build configuration
 
 # 设置最小 cmake 版本
 CMAKE_MINIMUM_REQUIRED (VERSION 3.27 FATAL_ERROR)

@@ -1,17 +1,6 @@
-
 /**
- * @file riscv64_virt.dtb.h
+ * @copyright Copyright The SimpleKernel Contributors
  * @brief 测试用 dtb 文件
- * @author Zone.N (Zone.Niuzh@hotmail.com)
- * @version 1.0
- * @date 2024-06-16
- * @copyright MIT LICENSE
- * https://github.com/Simple-XX/SimpleKernel
- * @par change log:
- * <table>
- * <tr><th>Date<th>Author<th>Description
- * <tr><td>2024-06-16<td>Zone.N (Zone.Niuzh@hotmail.com)<td>创建文件
- * </table>
  */
 
 #ifndef SIMPLEKERNEL_TEST_UNIT_TEST_RISCV64_VIRT_DTB_H_

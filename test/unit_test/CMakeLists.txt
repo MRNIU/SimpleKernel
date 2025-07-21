@@ -1,7 +1,5 @@
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# CMakeLists.txt for Simple-XX/SimpleKernel.
+# Copyright The SimpleKernel Contributors
+# CMake build configuration
 
 # 设置项目名与版本
 PROJECT (unit-test VERSION 0.0.1)
@@ -11,7 +9,8 @@ ENABLE_LANGUAGE (CXX)
 ADD_EXECUTABLE (${PROJECT_NAME} kernel_elf_test.cpp kernel_fdt_test.cpp
                                 spinlock_test.cpp)
 
-TARGET_COMPILE_DEFINITIONS (${PROJECT_NAME} PRIVATE -Dsk_printf=printf -DUNIT_TEST)
+TARGET_COMPILE_DEFINITIONS (${PROJECT_NAME} PRIVATE -Dsk_printf=printf
+                                                    -DUNIT_TEST)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}

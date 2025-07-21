@@ -1,8 +1,4 @@
-
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# Dockerfile for Simple-XX/SimpleKernel.
+# Copyright The SimpleKernel Contributors
 
 FROM ubuntu:latest AS basic_os
 RUN export DEBIAN_FRONTEND=noninteractive && apt update && apt upgrade -y
