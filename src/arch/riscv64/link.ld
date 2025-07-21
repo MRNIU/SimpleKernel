@@ -1,8 +1,4 @@
-
-/* This file is a part of Simple-XX/SimpleKernel
- * (https://github.com/Simple-XX/SimpleKernel).
- *
- * link.ld for Simple-XX/SimpleKernel.
+/* Copyright The SimpleKernel Contributors
  * 链接脚本，指定生成的二进制文件的布局
  */
 

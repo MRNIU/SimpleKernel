@@ -1,7 +1,4 @@
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# compile_config.cmake for Simple-XX/SimpleKernel. 配置信息
+# Copyright The SimpleKernel Contributors
 
 # 通用宏定义
 ADD_LIBRARY (compile_definitions INTERFACE)

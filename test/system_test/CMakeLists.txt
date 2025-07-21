@@ -1,7 +1,4 @@
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# CMakeLists.txt for Simple-XX/SimpleKernel.
+# Copyright The SimpleKernel Contributors
 
 # 设置项目名与版本
 PROJECT (system-test VERSION 0.0.1)

@@ -48,13 +48,9 @@ arch 目录下放置了与架构强相关的内容
 ```c++
 
 /**
- * @file cpu.hpp
  * @brief riscv64 cpu 相关定义
- * @author Zone.N (Zone.Niuzh@hotmail.com)
- * @version 1.0
  * @date 2024-03-05
- * @copyright MIT LICENSE
- * https://github.com/Simple-XX/SimpleKernel
+ * @copyright Copyright The SimpleKernel Contributors
  * @par change log:
  * <table>
  * <tr><th>Date<th>Author<th>Description

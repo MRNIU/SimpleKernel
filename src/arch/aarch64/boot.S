@@ -1,17 +1,6 @@
-
 /**
- * @file boot.S
+ * @copyright Copyright The SimpleKernel Contributors
  * @brief boot S
- * @author Zone.N (Zone.Niuzh@hotmail.com)
- * @version 1.0
- * @date 2024-12-30
- * @copyright MIT LICENSE
- * https://github.com/Simple-XX/SimpleKernel
- * @par change log:
- * <table>
- * <tr><th>Date<th>Author<th>Description
- * <tr><td>2024-12-30<td>Zone.N (Zone.Niuzh@hotmail.com)<td>创建文件
- * </table>
  */
 
 // clang-format off

@@ -1,17 +1,6 @@
-
 /**
- * @file io.hpp
+ * @copyright Copyright The SimpleKernel Contributors
  * @brief 直接内存读写
- * @author Zone.N (Zone.Niuzh@hotmail.com)
- * @version 1.0
- * @date 2022-01-01
- * @copyright MIT LICENSE
- * https://github.com/Simple-XX/SimpleKernel
- * @par change log:
- * <table>
- * <tr><th>Date<th>Author<th>Description
- * <tr><td>2022-01-01<td>MRNIU<td>迁移到 doxygen
- * </table>
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_IO_HPP_

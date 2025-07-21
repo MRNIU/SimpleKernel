@@ -1,8 +1,5 @@
 
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# .clang-tidy for Simple-XX/SimpleKernel.
+# Copyright The SimpleKernel Contributors
 
 ---
 Checks: >

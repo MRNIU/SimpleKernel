@@ -1,8 +1,5 @@
 
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# .clang-format for Simple-XX/SimpleKernel.
+# Copyright The SimpleKernel Contributors
 
 ---
 # @version clang-format version 15

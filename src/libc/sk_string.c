@@ -1,17 +1,6 @@
-
 /**
- * @file sk_string.c
+ * @copyright Copyright The SimpleKernel Contributors
  * @brief sk_string 实现
- * @author Zone.N (Zone.Niuzh@hotmail.com)
- * @version 1.0
- * @date 2023-05-08
- * @copyright MIT LICENSE
- * https://github.com/Simple-XX/SimpleKernel
- * @par change log:
- * <table>
- * <tr><th>Date<th>Author<th>Description
- * <tr><td>2023-05-08<td>Zone.N<td>创建文件
- * </table>
  */
 
 #include "sk_string.h"

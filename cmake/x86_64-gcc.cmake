@@ -1,40 +1,40 @@
+# Copyright The SimpleKernel Contributors
 
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-# 
-# x86_64-gcc.cmake for Simple-XX/SimpleKernel.
+IF(NOT UNIX)
+    MESSAGE (FATAL_ERROR "Only support Linux.")
+ENDIF()
 
-if (NOT UNIX)
-    message(FATAL_ERROR "Only support Linux.")
-endif ()
-
-if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
+IF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
     # GCC
-    find_program(Compiler_gcc g++)
-    if (NOT Compiler_gcc)
-        message(FATAL_ERROR "g++ not found.\n"
-                "Run `sudo apt-get install -y gcc g++` to install.")
-    else ()
-        message(STATUS "Found g++ ${Compiler_gcc}")
-    endif ()
-elseif (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64")
-    find_program(Compiler_gcc_cr x86_64-linux-gnu-g++)
-    if (NOT Compiler_gcc_cr)
-        message(FATAL_ERROR "aarch64-linux-gnu-g++ not found.\n"
-                "Run `sudo apt install -y g++-multilib-x86-64-linux-gnu` to install.")
-    else ()
-        message(STATUS "Found x86_64-linux-gnu-g++  ${Compiler_gcc_cr}")
-    endif ()
+    FIND_PROGRAM (Compiler_gcc g++)
+    IF(NOT Compiler_gcc)
+        MESSAGE (
+            FATAL_ERROR "g++ not found.\n"
+                        "Run `sudo apt-get install -y gcc g++` to install.")
+    ELSE()
+        MESSAGE (STATUS "Found g++ ${Compiler_gcc}")
+    ENDIF()
+ELSEIF(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64")
+    FIND_PROGRAM (Compiler_gcc_cr x86_64-linux-gnu-g++)
+    IF(NOT Compiler_gcc_cr)
+        MESSAGE (
+            FATAL_ERROR
+                "aarch64-linux-gnu-g++ not found.\n"
+                "Run `sudo apt install -y g++-multilib-x86-64-linux-gnu` to install."
+        )
+    ELSE()
+        MESSAGE (STATUS "Found x86_64-linux-gnu-g++  ${Compiler_gcc_cr}")
+    ENDIF()
 
-    set(TOOLCHAIN_PREFIX x86_64-linux-gnu-)
-    set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}gcc)
-    set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}g++)
-    set(CMAKE_READELF ${TOOLCHAIN_PREFIX}readelf)
-    set(CMAKE_AR ${TOOLCHAIN_PREFIX}ar)
-    set(CMAKE_LINKER ${TOOLCHAIN_PREFIX}ld)
-    set(CMAKE_NM ${TOOLCHAIN_PREFIX}nm)
-    set(CMAKE_OBJDUMP ${TOOLCHAIN_PREFIX}objdump)
-    set(CMAKE_RANLIB ${TOOLCHAIN_PREFIX}ranlib)
-else ()
-    message(FATAL_ERROR "NOT support ${CMAKE_HOST_SYSTEM_PROCESSOR}")
-endif ()
+    SET (TOOLCHAIN_PREFIX x86_64-linux-gnu-)
+    SET (CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}gcc)
+    SET (CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}g++)
+    SET (CMAKE_READELF ${TOOLCHAIN_PREFIX}readelf)
+    SET (CMAKE_AR ${TOOLCHAIN_PREFIX}ar)
+    SET (CMAKE_LINKER ${TOOLCHAIN_PREFIX}ld)
+    SET (CMAKE_NM ${TOOLCHAIN_PREFIX}nm)
+    SET (CMAKE_OBJDUMP ${TOOLCHAIN_PREFIX}objdump)
+    SET (CMAKE_RANLIB ${TOOLCHAIN_PREFIX}ranlib)
+ELSE()
+    MESSAGE (FATAL_ERROR "NOT support ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+ENDIF()

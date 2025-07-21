@@ -1,7 +1,4 @@
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# .gitignore for Simple-XX/SimpleKernel.
+# Copyright The SimpleKernel Contributors
 
 .DS_Store
 build_aarch64

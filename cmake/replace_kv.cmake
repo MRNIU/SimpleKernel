@@ -1,8 +1,4 @@
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# replace_kv.cmake for Simple-XX/SimpleKernel.
-# 动态替换文件中的键值对
+# Copyright The SimpleKernel Contributors
 
 # 键值替换函数
 # 参数：

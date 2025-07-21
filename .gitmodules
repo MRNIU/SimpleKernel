@@ -1,4 +1,3 @@
-
 [submodule "3rd/opensbi_interface"]
 	path = 3rd/opensbi_interface
 	url = https://github.com/MRNIU/opensbi_interface.git
