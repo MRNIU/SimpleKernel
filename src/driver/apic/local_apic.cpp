@@ -39,16 +39,16 @@ bool LocalApic::Init() {
     sivr = cpu_io::msr::apic::ReadSivr();
   } else {
     // xAPIC 模式下通过内存映射读取
-    sivr = *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0xF0);
+    sivr = *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicSivrOffset);
   }
   
-  sivr |= 0x100;  // 设置 APIC Software Enable 位
-  sivr |= 0xFF;   // 设置虚假中断向量为 0xFF
+  sivr |= kApicSoftwareEnableBit;  // 设置 APIC Software Enable 位
+  sivr |= kSpuriousVector;         // 设置虚假中断向量为 0xFF
   
   if (is_x2apic_mode_) {
     cpu_io::msr::apic::WriteSivr(sivr);
   } else {
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0xF0) = sivr;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicSivrOffset) = sivr;
   }
   
   // 清除任务优先级
@@ -56,16 +56,16 @@ bool LocalApic::Init() {
   
   // 禁用所有 LVT 条目（设置 mask 位）
   if (is_x2apic_mode_) {
-    cpu_io::msr::apic::WriteLvtTimer(0x10000);  // mask 位在第 16 位
-    cpu_io::msr::apic::WriteLvtLint0(0x10000);
-    cpu_io::msr::apic::WriteLvtLint1(0x10000);
-    cpu_io::msr::apic::WriteLvtError(0x10000);
+    cpu_io::msr::apic::WriteLvtTimer(kLvtMaskBit);
+    cpu_io::msr::apic::WriteLvtLint0(kLvtMaskBit);
+    cpu_io::msr::apic::WriteLvtLint1(kLvtMaskBit);
+    cpu_io::msr::apic::WriteLvtError(kLvtMaskBit);
   } else {
     // xAPIC 模式下通过内存映射写入
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x320) = 0x10000;  // Timer
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x350) = 0x10000;  // LINT0
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x360) = 0x10000;  // LINT1
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x370) = 0x10000;  // Error
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtTimerOffset) = kLvtMaskBit;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtLint0Offset) = kLvtMaskBit;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtLint1Offset) = kLvtMaskBit;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtErrorOffset) = kLvtMaskBit;
   }
   
   klog::Info("Local APIC initialized successfully in %s mode\n", 
@@ -108,8 +108,8 @@ uint32_t LocalApic::GetApicId() const {
     return cpu_io::msr::apic::ReadId();
   } else {
     // xAPIC 模式下，APIC ID 在偏移 0x20 处，高 8 位包含 ID
-    uint32_t id_reg = *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x20);
-    return (id_reg >> 24) & 0xFF;  // APIC ID 在位 24-31
+    uint32_t id_reg = *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIdOffset);
+    return (id_reg >> kApicIdShift) & kApicIdMask;  // APIC ID 在位 24-31
   }
 }
 
@@ -118,7 +118,7 @@ uint32_t LocalApic::GetApicVersion() const {
     return cpu_io::msr::apic::ReadVersion();
   } else {
     // xAPIC 模式下，版本寄存器在偏移 0x30 处
-    return *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x30);
+    return *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicVersionOffset);
   }
 }
 
@@ -127,7 +127,7 @@ void LocalApic::SendEoi() {
     cpu_io::msr::apic::WriteEoi(0);
   } else {
     // xAPIC 模式下，写入 EOI 寄存器（偏移 0xB0）
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0xB0) = 0;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicEoiOffset) = 0;
   }
 }
 
@@ -140,7 +140,7 @@ void LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) {
     cpu_io::msr::apic::WriteIcr(icr);
     
     // 等待发送完成
-    while ((cpu_io::msr::apic::ReadIcr() & 0x1000) != 0) {
+    while ((cpu_io::msr::apic::ReadIcr() & kIcrDeliveryStatusBit) != 0) {
       // 等待发送状态清除
     }
   } else {
@@ -148,15 +148,15 @@ void LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) {
     // ICR 分为两个 32 位寄存器：ICR_LOW (0x300) 和 ICR_HIGH (0x310)
     
     // 设置目标 APIC ID（ICR_HIGH 的位 24-31）
-    uint32_t icr_high = (destination_apic_id & 0xFF) << 24;
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x310) = icr_high;
+    uint32_t icr_high = (destination_apic_id & kApicIdMask) << kIcrDestShift;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrHighOffset) = icr_high;
     
     // 设置向量和传递模式（ICR_LOW）
     uint32_t icr_low = static_cast<uint32_t>(vector);
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x300) = icr_low;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrLowOffset) = icr_low;
     
     // 等待发送完成（检查 ICR_LOW 的 Delivery Status 位）
-    while ((*reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x300) & 0x1000) != 0) {
+    while ((*reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrLowOffset) & kIcrDeliveryStatusBit) != 0) {
       // 等待发送状态清除
     }
   }
@@ -174,7 +174,7 @@ void LocalApic::BroadcastIpi(uint8_t vector) {
     cpu_io::msr::apic::WriteIcr(icr);
     
     // 等待发送完成
-    while ((cpu_io::msr::apic::ReadIcr() & 0x1000) != 0) {
+    while ((cpu_io::msr::apic::ReadIcr() & kIcrDeliveryStatusBit) != 0) {
       // 等待发送状态清除
     }
   } else {
@@ -182,14 +182,14 @@ void LocalApic::BroadcastIpi(uint8_t vector) {
     // 广播到除自己外的所有 CPU（目标简写模式）
     
     // ICR_HIGH 设为 0（不使用具体目标 ID）
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x310) = 0;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrHighOffset) = 0;
     
     // ICR_LOW：向量 + 目标简写模式（位 18-19 = 11）
-    uint32_t icr_low = static_cast<uint32_t>(vector) | 0xC0000;
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x300) = icr_low;
+    uint32_t icr_low = static_cast<uint32_t>(vector) | kIcrBroadcastMode;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrLowOffset) = icr_low;
     
     // 等待发送完成
-    while ((*reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x300) & 0x1000) != 0) {
+    while ((*reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrLowOffset) & kIcrDeliveryStatusBit) != 0) {
       // 等待发送状态清除
     }
   }
@@ -202,17 +202,17 @@ void LocalApic::SetTaskPriority(uint8_t priority) {
     cpu_io::msr::apic::WriteTpr(static_cast<uint32_t>(priority));
   } else {
     // xAPIC 模式下，TPR 寄存器在偏移 0x80 处
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x80) = static_cast<uint32_t>(priority);
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicTprOffset) = static_cast<uint32_t>(priority);
   }
 }
 
 uint8_t LocalApic::GetTaskPriority() const {
   if (is_x2apic_mode_) {
-    return static_cast<uint8_t>(cpu_io::msr::apic::ReadTpr() & 0xFF);
+    return static_cast<uint8_t>(cpu_io::msr::apic::ReadTpr() & kApicIdMask);
   } else {
     // xAPIC 模式下，TPR 寄存器在偏移 0x80 处
-    uint32_t tpr = *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x80);
-    return static_cast<uint8_t>(tpr & 0xFF);
+    uint32_t tpr = *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicTprOffset);
+    return static_cast<uint8_t>(tpr & kApicIdMask);
   }
 }
 
@@ -224,7 +224,7 @@ void LocalApic::EnableTimer(uint32_t initial_count, uint32_t divide_value,
     
     uint32_t lvt_timer = static_cast<uint32_t>(vector);
     if (periodic) {
-      lvt_timer |= 0x20000;  // 设置周期模式（位 17）
+      lvt_timer |= kLvtPeriodicMode;  // 设置周期模式（位 17）
     }
     
     cpu_io::msr::apic::WriteLvtTimer(lvt_timer);
@@ -232,18 +232,18 @@ void LocalApic::EnableTimer(uint32_t initial_count, uint32_t divide_value,
   } else {
     // xAPIC 模式：使用内存映射接口
     // 设置分频器（偏移 0x3E0）
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x3E0) = divide_value;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicTimerDivideOffset) = divide_value;
     
     // 设置 LVT 定时器寄存器（偏移 0x320）
     uint32_t lvt_timer = static_cast<uint32_t>(vector);
     if (periodic) {
-      lvt_timer |= 0x20000;  // 设置周期模式（位 17）
+      lvt_timer |= kLvtPeriodicMode;  // 设置周期模式（位 17）
     }
     
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x320) = lvt_timer;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtTimerOffset) = lvt_timer;
     
     // 设置初始计数值（偏移 0x380）
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x380) = initial_count;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicTimerInitCountOffset) = initial_count;
   }
   
   klog::Info("APIC Timer enabled: vector=0x%x, initial_count=%u, periodic=%s\n",
@@ -254,15 +254,15 @@ void LocalApic::DisableTimer() {
   if (is_x2apic_mode_) {
     // x2APIC 模式：使用 MSR 接口
     uint32_t lvt_timer = cpu_io::msr::apic::ReadLvtTimer();
-    lvt_timer |= 0x10000;  // 设置 mask 位（位 16）
+    lvt_timer |= kLvtMaskBit;  // 设置 mask 位（位 16）
     cpu_io::msr::apic::WriteLvtTimer(lvt_timer);
     cpu_io::msr::apic::WriteTimerInitCount(0);
   } else {
     // xAPIC 模式：使用内存映射接口
-    uint32_t lvt_timer = *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x320);
-    lvt_timer |= 0x10000;  // 设置 mask 位（位 16）
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x320) = lvt_timer;
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x380) = 0;
+    uint32_t lvt_timer = *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtTimerOffset);
+    lvt_timer |= kLvtMaskBit;  // 设置 mask 位（位 16）
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtTimerOffset) = lvt_timer;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicTimerInitCountOffset) = 0;
   }
   
   klog::Info("APIC Timer disabled\n");
@@ -273,24 +273,23 @@ uint32_t LocalApic::GetTimerCurrentCount() const {
     return cpu_io::msr::apic::ReadTimerCurrCount();
   } else {
     // xAPIC 模式下，当前计数寄存器在偏移 0x390 处
-    return *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x390);
+    return *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicTimerCurrCountOffset);
   }
 }
 
 void LocalApic::SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) {
   // 使用 APIC 定时器的典型配置
   // 假设 APIC 时钟频率为 100MHz（实际应从 CPU 频率计算）
-  constexpr uint32_t apic_clock_hz = 100000000;  // 100MHz
   
   // 计算初始计数值
-  uint32_t initial_count = apic_clock_hz / frequency_hz;
+  uint32_t initial_count = kDefaultApicClockHz / frequency_hz;
   
   // 选择合适的分频值以获得更好的精度
-  uint32_t divide_value = 0x0B;  // 分频 1
+  uint32_t divide_value = kTimerDivideBy1;  // 分频 1
   if (initial_count > 0xFFFFFFFF) {
     // 如果计数值太大，使用分频
-    divide_value = 0x03;  // 分频 16
-    initial_count = (apic_clock_hz / 16) / frequency_hz;
+    divide_value = kTimerDivideBy16;  // 分频 16
+    initial_count = (kDefaultApicClockHz / 16) / frequency_hz;
   }
   
   EnableTimer(initial_count, divide_value, vector, true);
@@ -301,16 +300,15 @@ void LocalApic::SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) {
 
 void LocalApic::SetupOneShotTimer(uint32_t microseconds, uint8_t vector) {
   // 假设 APIC 时钟频率为 100MHz
-  constexpr uint32_t apic_clock_hz = 100000000;  // 100MHz
   
   // 计算初始计数值（微秒转换为时钟周期）
-  uint32_t initial_count = (apic_clock_hz / 1000000) * microseconds;
+  uint32_t initial_count = (kDefaultApicClockHz / kMicrosecondsPerSecond) * microseconds;
   
   // 选择合适的分频值
-  uint32_t divide_value = 0x0B;  // 分频 1
+  uint32_t divide_value = kTimerDivideBy1;  // 分频 1
   if (initial_count > 0xFFFFFFFF) {
-    divide_value = 0x03;  // 分频 16
-    initial_count = ((apic_clock_hz / 16) / 1000000) * microseconds;
+    divide_value = kTimerDivideBy16;  // 分频 16
+    initial_count = ((kDefaultApicClockHz / 16) / kMicrosecondsPerSecond) * microseconds;
   }
   
   EnableTimer(initial_count, divide_value, vector, false);
@@ -326,28 +324,27 @@ uint32_t LocalApic::CalibrateTimer() {
   klog::Info("Calibrating APIC timer...\n");
   
   // 设置分频器为 1
-  cpu_io::msr::apic::WriteTimerDivide(0x0B);
+  cpu_io::msr::apic::WriteTimerDivide(kTimerDivideBy1);
   
   // 设置一个大的初始值
-  constexpr uint32_t calibration_count = 0xFFFFFFFF;
-  cpu_io::msr::apic::WriteTimerInitCount(calibration_count);
+  cpu_io::msr::apic::WriteTimerInitCount(kCalibrationCount);
   
   // 这里应该等待一个已知的时间间隔（例如使用 PIT 或 HPET）
   // 为了简化，我们假设等待了 10ms
   // 在实际实现中，应该使用精确的时间源
   
   // 模拟等待 10ms
-  volatile uint32_t delay = 1000000;  // 简单的延时循环
+  volatile uint32_t delay = kCalibrationDelayLoop;  // 简单的延时循环
   while (delay--) {
     __asm__ volatile("nop");
   }
   
   // 读取当前计数值
   uint32_t current_count = GetTimerCurrentCount();
-  uint32_t elapsed_ticks = calibration_count - current_count;
+  uint32_t elapsed_ticks = kCalibrationCount - current_count;
   
   // 假设等待了 10ms，计算 APIC 时钟频率
-  uint32_t apic_frequency = elapsed_ticks * 100;  // 10ms -> 1s
+  uint32_t apic_frequency = elapsed_ticks * kCalibrationMultiplier;  // 10ms -> 1s
   
   klog::Info("APIC timer frequency: ~%u Hz\n", apic_frequency);
   
@@ -360,27 +357,27 @@ uint32_t LocalApic::CalibrateTimer() {
 void LocalApic::SendInitIpi(uint32_t destination_apic_id) {
   if (is_x2apic_mode_) {
     // x2APIC 模式：使用 MSR 接口
-    uint64_t icr = 0x500;  // INIT IPI (delivery mode = 101b)
+    uint64_t icr = kInitIpiMode;  // INIT IPI (delivery mode = 101b)
     icr |= static_cast<uint64_t>(destination_apic_id) << 32;
     
     cpu_io::msr::apic::WriteIcr(icr);
     
     // 等待发送完成
-    while ((cpu_io::msr::apic::ReadIcr() & 0x1000) != 0) {
+    while ((cpu_io::msr::apic::ReadIcr() & kIcrDeliveryStatusBit) != 0) {
       // 等待发送状态清除
     }
   } else {
     // xAPIC 模式：使用内存映射接口
     // 设置目标 APIC ID（ICR_HIGH）
-    uint32_t icr_high = (destination_apic_id & 0xFF) << 24;
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x310) = icr_high;
+    uint32_t icr_high = (destination_apic_id & kApicIdMask) << kIcrDestShift;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrHighOffset) = icr_high;
     
     // 发送 INIT IPI（ICR_LOW）
-    uint32_t icr_low = 0x500;  // INIT IPI (delivery mode = 101b)
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x300) = icr_low;
+    uint32_t icr_low = kInitIpiMode;  // INIT IPI (delivery mode = 101b)
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrLowOffset) = icr_low;
     
     // 等待发送完成
-    while ((*reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x300) & 0x1000) != 0) {
+    while ((*reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrLowOffset) & kIcrDeliveryStatusBit) != 0) {
       // 等待发送状态清除
     }
   }
@@ -391,27 +388,27 @@ void LocalApic::SendInitIpi(uint32_t destination_apic_id) {
 void LocalApic::SendStartupIpi(uint32_t destination_apic_id, uint8_t start_page) {
   if (is_x2apic_mode_) {
     // x2APIC 模式：使用 MSR 接口
-    uint64_t icr = 0x600 | start_page;  // SIPI with start page (delivery mode = 110b)
+    uint64_t icr = kSipiMode | start_page;  // SIPI with start page (delivery mode = 110b)
     icr |= static_cast<uint64_t>(destination_apic_id) << 32;
     
     cpu_io::msr::apic::WriteIcr(icr);
     
     // 等待发送完成
-    while ((cpu_io::msr::apic::ReadIcr() & 0x1000) != 0) {
+    while ((cpu_io::msr::apic::ReadIcr() & kIcrDeliveryStatusBit) != 0) {
       // 等待发送状态清除
     }
   } else {
     // xAPIC 模式：使用内存映射接口
     // 设置目标 APIC ID（ICR_HIGH）
-    uint32_t icr_high = (destination_apic_id & 0xFF) << 24;
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x310) = icr_high;
+    uint32_t icr_high = (destination_apic_id & kApicIdMask) << kIcrDestShift;
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrHighOffset) = icr_high;
     
     // 发送 SIPI（ICR_LOW）
-    uint32_t icr_low = 0x600 | start_page;  // SIPI with start page (delivery mode = 110b)
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x300) = icr_low;
+    uint32_t icr_low = kSipiMode | start_page;  // SIPI with start page (delivery mode = 110b)
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrLowOffset) = icr_low;
     
     // 等待发送完成
-    while ((*reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x300) & 0x1000) != 0) {
+    while ((*reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicIcrLowOffset) & kIcrDeliveryStatusBit) != 0) {
       // 等待发送状态清除
     }
   }
@@ -424,29 +421,29 @@ void LocalApic::ConfigureLvtEntries() {
   if (is_x2apic_mode_) {
     // x2APIC 模式：使用 MSR 接口
     // 配置 LINT0 (通常连接到 8259 PIC 的 INTR)
-    uint32_t lint0 = 0x700;  // ExtINT delivery mode (111b)
+    uint32_t lint0 = kExtIntMode;  // ExtINT delivery mode (111b)
     cpu_io::msr::apic::WriteLvtLint0(lint0);
     
     // 配置 LINT1 (通常连接到 NMI)
-    uint32_t lint1 = 0x400;  // NMI delivery mode (100b)
+    uint32_t lint1 = kNmiMode;  // NMI delivery mode (100b)
     cpu_io::msr::apic::WriteLvtLint1(lint1);
     
     // 配置错误中断
-    uint32_t error = 0xEF;  // 使用向量 0xEF
+    uint32_t error = kErrorVector;  // 使用向量 0xEF
     cpu_io::msr::apic::WriteLvtError(error);
   } else {
     // xAPIC 模式：使用内存映射接口
     // 配置 LINT0 (偏移 0x350)
-    uint32_t lint0 = 0x700;  // ExtINT delivery mode (111b)
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x350) = lint0;
+    uint32_t lint0 = kExtIntMode;  // ExtINT delivery mode (111b)
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtLint0Offset) = lint0;
     
     // 配置 LINT1 (偏移 0x360)
-    uint32_t lint1 = 0x400;  // NMI delivery mode (100b)
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x360) = lint1;
+    uint32_t lint1 = kNmiMode;  // NMI delivery mode (100b)
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtLint1Offset) = lint1;
     
     // 配置错误中断 (偏移 0x370)
-    uint32_t error = 0xEF;  // 使用向量 0xEF
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x370) = error;
+    uint32_t error = kErrorVector;  // 使用向量 0xEF
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtErrorOffset) = error;
   }
   
   klog::Info("LVT entries configured\n");
@@ -460,8 +457,8 @@ uint32_t LocalApic::ReadErrorStatus() {
   } else {
     // xAPIC 模式：读取 ESR (Error Status Register, 偏移 0x280)
     // 读取 ESR 之前需要先写入 0
-    *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x280) = 0;
-    return *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x280);
+    *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicEsrOffset) = 0;
+    return *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicEsrOffset);
   }
 }
 
@@ -479,7 +476,7 @@ void LocalApic::PrintInfo() const {
     // x2APIC 模式：使用 MSR 接口
     uint32_t sivr = cpu_io::msr::apic::ReadSivr();
     klog::Info("SIVR: 0x%x (APIC %s)\n", sivr,
-               (sivr & 0x100) ? "Enabled" : "Disabled");
+               (sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled");
     
     uint32_t lvt_timer = cpu_io::msr::apic::ReadLvtTimer();
     klog::Info("LVT Timer: 0x%x\n", lvt_timer);
@@ -494,20 +491,20 @@ void LocalApic::PrintInfo() const {
     klog::Info("LVT Error: 0x%x\n", lvt_error);
   } else {
     // xAPIC 模式：使用内存映射接口
-    uint32_t sivr = *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0xF0);
+    uint32_t sivr = *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicSivrOffset);
     klog::Info("SIVR: 0x%x (APIC %s)\n", sivr,
-               (sivr & 0x100) ? "Enabled" : "Disabled");
+               (sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled");
     
-    uint32_t lvt_timer = *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x320);
+    uint32_t lvt_timer = *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtTimerOffset);
     klog::Info("LVT Timer: 0x%x\n", lvt_timer);
     
-    uint32_t lvt_lint0 = *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x350);
+    uint32_t lvt_lint0 = *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtLint0Offset);
     klog::Info("LVT LINT0: 0x%x\n", lvt_lint0);
     
-    uint32_t lvt_lint1 = *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x360);
+    uint32_t lvt_lint1 = *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtLint1Offset);
     klog::Info("LVT LINT1: 0x%x\n", lvt_lint1);
     
-    uint32_t lvt_error = *reinterpret_cast<volatile uint32_t*>(apic_base_ + 0x370);
+    uint32_t lvt_error = *reinterpret_cast<volatile uint32_t*>(apic_base_ + kXApicLvtErrorOffset);
     klog::Info("LVT Error: 0x%x\n", lvt_error);
     
     klog::Info("APIC Base Address: 0x%lx\n", apic_base_);
@@ -532,13 +529,13 @@ bool LocalApic::EnableXApic() {
   uint64_t apic_base_msr = cpu_io::msr::apic::ReadBase();
   
   // 确保 APIC 全局启用位设置（位 11）
-  apic_base_msr |= (1ULL << 11);
+  apic_base_msr |= kApicGlobalEnableBit;
   
   // 确保 x2APIC 模式位清零（位 10）
-  apic_base_msr &= ~(1ULL << 10);
+  apic_base_msr &= ~kX2ApicEnableBit;
   
   // 提取 APIC 基地址（位 12-35）
-  apic_base_ = apic_base_msr & 0xFFFFF000ULL;
+  apic_base_ = apic_base_msr & kApicBaseMask;
   
   // 写回 APIC 基地址寄存器
   cpu_io::msr::apic::WriteBase(apic_base_msr);
@@ -560,7 +557,7 @@ void LocalApic::DisableXApic() {
   uint64_t apic_base_msr = cpu_io::msr::apic::ReadBase();
   
   // 清除 APIC 全局启用位（位 11）
-  apic_base_msr &= ~(1ULL << 11);
+  apic_base_msr &= ~kApicGlobalEnableBit;
   
   // 写回 APIC 基地址寄存器
   cpu_io::msr::apic::WriteBase(apic_base_msr);
@@ -571,20 +568,20 @@ bool LocalApic::IsXApicEnabled() const {
   
   // 检查 APIC 全局启用位（位 11）和 x2APIC 模式位（位 10）
   // xAPIC 模式：位 11 = 1，位 10 = 0
-  return ((apic_base_msr & (1ULL << 11)) != 0) && 
-         ((apic_base_msr & (1ULL << 10)) == 0);
+  return ((apic_base_msr & kApicGlobalEnableBit) != 0) && 
+         ((apic_base_msr & kX2ApicEnableBit) == 0);
 }
 
 uint64_t LocalApic::GetApicBase() const {
   uint64_t apic_base_msr = cpu_io::msr::apic::ReadBase();
-  return apic_base_msr & 0xFFFFF000ULL;  // 提取基地址（位 12-35）
+  return apic_base_msr & kApicBaseMask;  // 提取基地址（位 12-35）
 }
 
 void LocalApic::SetApicBase(uint64_t base_address) {
   uint64_t apic_base_msr = cpu_io::msr::apic::ReadBase();
   
   // 保留控制位，更新基地址
-  apic_base_msr = (apic_base_msr & 0xFFF) | (base_address & 0xFFFFF000ULL);
+  apic_base_msr = (apic_base_msr & kApicBaseControlMask) | (base_address & kApicBaseMask);
   
   cpu_io::msr::apic::WriteBase(apic_base_msr);
   apic_base_ = base_address;
