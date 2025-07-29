@@ -92,10 +92,103 @@ void Apic::BroadcastIpi(uint8_t vector) {
 }
 
 bool Apic::StartupAp(uint32_t apic_id, uint8_t start_vector) {
-  // TODO: 实现启动 AP
   klog::Info("Starting up AP with APIC ID 0x%x, start vector 0x%x\n", apic_id,
              start_vector);
-  return false;
+  
+  // 检查目标 APIC ID 是否已经在线
+  if (IsCpuOnline(apic_id)) {
+    klog::Info("AP with APIC ID 0x%x is already online\n", apic_id);
+    return true;
+  }
+  
+  // 使用 Local APIC 发送 INIT-SIPI-SIPI 序列
+  bool result = local_apic_.WakeupAp(apic_id, start_vector);
+  
+  if (result) {
+    klog::Info("INIT-SIPI-SIPI sequence sent successfully to APIC ID 0x%x\n", 
+               apic_id);
+    
+    // 注意：这里不立即标记 CPU 为在线状态
+    // AP 启动后应该调用 SetCpuOnline() 来报告自己的状态
+    klog::Info("Waiting for AP 0x%x to come online...\n", apic_id);
+  } else {
+    klog::Err("Failed to send startup sequence to APIC ID 0x%x\n", apic_id);
+  }
+  
+  return result;
+}
+
+size_t Apic::StartupAllAps(uint8_t start_vector, uint32_t max_wait_ms) {
+  klog::Info("Starting up all Application Processors (APs)\n");
+  klog::Info("Start vector: 0x%x, Max wait time: %u ms\n", start_vector, max_wait_ms);
+  
+  uint32_t current_apic_id = GetCurrentApicId();
+  klog::Info("Current BSP APIC ID: 0x%x\n", current_apic_id);
+  
+  size_t startup_attempts = 0;
+  size_t startup_success = 0;
+  
+  // 尝试启动 APIC ID 0 到 max_cpu_count_-1 的所有处理器
+  // 跳过当前的 BSP (Bootstrap Processor)
+  for (size_t apic_id = 0; apic_id < max_cpu_count_; ++apic_id) {
+    // 跳过当前 BSP
+    if (static_cast<uint32_t>(apic_id) == current_apic_id) {
+      continue;
+    }
+    
+    // 跳过已经在线的 CPU
+    if (IsCpuOnline(static_cast<uint32_t>(apic_id))) {
+      klog::Info("APIC ID 0x%x is already online, skipping\n", 
+                 static_cast<uint32_t>(apic_id));
+      continue;
+    }
+    
+    klog::Info("Attempting to start AP with APIC ID 0x%x\n", 
+               static_cast<uint32_t>(apic_id));
+    
+    startup_attempts++;
+    
+    if (StartupAp(static_cast<uint32_t>(apic_id), start_vector)) {
+      startup_success++;
+      klog::Info("Successfully sent startup sequence to APIC ID 0x%x\n", 
+                 static_cast<uint32_t>(apic_id));
+    } else {
+      klog::Err("Failed to start AP with APIC ID 0x%x\n", 
+                static_cast<uint32_t>(apic_id));
+    }
+    
+    // 在启动下一个 AP 前稍作等待
+    volatile uint32_t delay = 100000;  // 短暂延时
+    while (delay--) {
+      __asm__ volatile("nop");
+    }
+  }
+  
+  klog::Info("AP startup summary: %zu attempts, %zu successful sequences sent\n", 
+             startup_attempts, startup_success);
+  klog::Info("Note: Actual AP online status depends on AP self-reporting\n");
+  
+  // 等待一段时间让 AP 有机会启动并报告状态
+  klog::Info("Waiting %u ms for APs to come online...\n", max_wait_ms);
+  
+  // 简单的等待实现（实际使用中应该使用精确的定时器）
+  volatile uint32_t wait_delay = max_wait_ms * 1000;  // 转换为更小的延时单位
+  while (wait_delay--) {
+    __asm__ volatile("nop");
+  }
+  
+  // 统计实际在线的 AP 数量（不包括 BSP）
+  size_t online_aps = 0;
+  for (size_t i = 0; i < online_cpu_count_; ++i) {
+    if (online_cpus_[i] != current_apic_id) {
+      online_aps++;
+    }
+  }
+  
+  klog::Info("APs actually online: %zu (total CPUs online: %zu)\n", 
+             online_aps, online_cpu_count_);
+  
+  return startup_success;
 }
 
 uint32_t Apic::GetCurrentApicId() {

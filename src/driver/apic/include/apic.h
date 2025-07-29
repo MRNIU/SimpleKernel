@@ -150,6 +150,16 @@ class LocalApic {
   void SendStartupIpi(uint32_t destination_apic_id, uint8_t start_page);
 
   /**
+   * @brief 唤醒应用处理器 (AP)
+   * @param destination_apic_id 目标 APIC ID
+   * @param start_vector 启动向量（启动代码的物理地址 / 4096）
+   * @return true 唤醒成功
+   * @return false 唤醒失败
+   * @note 执行标准的 INIT-SIPI-SIPI 序列来唤醒 AP
+   */
+  bool WakeupAp(uint32_t destination_apic_id, uint8_t start_vector);
+
+  /**
    * @brief 配置 Local Vector Table 条目
    */
   void ConfigureLvtEntries();
@@ -563,6 +573,15 @@ class Apic {
   bool StartupAp(uint32_t apic_id, uint8_t start_vector);
 
   /**
+   * @brief 唤醒所有应用处理器 (AP)
+   * @param start_vector 启动向量（启动代码的物理地址 / 4096）
+   * @param max_wait_ms 最大等待时间（毫秒）
+   * @return size_t 成功启动的 AP 数量
+   * @note 此方法会尝试唤醒除当前 BSP 外的所有 CPU 核心
+   */
+  size_t StartupAllAps(uint8_t start_vector, uint32_t max_wait_ms = 5000);
+
+  /**
    * @brief 获取当前 CPU 的 APIC ID
    * @return uint32_t 当前 CPU 的 APIC ID
    */
@@ -618,7 +637,7 @@ class Apic {
   size_t io_apic_count_{0};
 
   /// 系统最大 CPU 数量
-  size_t max_cpu_count_{0};
+  size_t max_cpu_count_{2};
 
   /// 在线 CPU 的 APIC ID 列表
   std::array<uint32_t, kMaxCpus> online_cpus_;
