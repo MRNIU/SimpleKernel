@@ -127,6 +127,7 @@ const std::array<uint32_t, 256>& Apic::GetOnlineCpus() const {
 
 void Apic::PrintInfo() const {
   // TODO: 实现打印 APIC 信息
+  local_apic_.PrintInfo();
   klog::Info("APIC System Information\n");
   klog::Info("Max CPU Count: %zu\n", max_cpu_count_);
   klog::Info("Online CPU Count: %zu\n", online_cpu_count_);

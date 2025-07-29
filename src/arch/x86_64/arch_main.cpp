@@ -66,6 +66,8 @@ auto ArchInit(int argc, const char **argv) -> int {
   Singleton<Apic>::GetInstance() = Apic();
   Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
 
+  Singleton<Apic>::GetInstance().PrintInfo();
+
   return 0;
 }
 

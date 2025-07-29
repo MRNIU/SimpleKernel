@@ -172,98 +172,139 @@ class LocalApic {
    * @return false 不支持 x2APIC
    */
   bool CheckX2ApicSupport() const;
-  
+
   /**
    * @brief 启用传统 xAPIC 模式
    * @return true 启用成功
    * @return false 启用失败
    */
   bool EnableXApic();
-  
+
   /**
    * @brief 禁用传统 xAPIC 模式
    */
   void DisableXApic();
-  
+
   /**
    * @brief 检查传统 xAPIC 是否启用
    * @return true xAPIC 已启用
    * @return false xAPIC 未启用
    */
   bool IsXApicEnabled() const;
-  
+
   /**
    * @brief 获取 APIC 基地址
    * @return uint64_t APIC 基地址
    */
   uint64_t GetApicBase() const;
-  
+
   /**
    * @brief 设置 APIC 基地址
    * @param base_address APIC 基地址
    */
   void SetApicBase(uint64_t base_address);
-  
+
   /// @name xAPIC 寄存器偏移量常数
   /// @{
-  static constexpr uint32_t kXApicIdOffset = 0x20;          ///< APIC ID 寄存器偏移
-  static constexpr uint32_t kXApicVersionOffset = 0x30;     ///< 版本寄存器偏移
-  static constexpr uint32_t kXApicTprOffset = 0x80;         ///< 任务优先级寄存器偏移
-  static constexpr uint32_t kXApicEoiOffset = 0xB0;         ///< EOI 寄存器偏移
-  static constexpr uint32_t kXApicSivrOffset = 0xF0;        ///< 虚假中断向量寄存器偏移
-  static constexpr uint32_t kXApicEsrOffset = 0x280;        ///< 错误状态寄存器偏移
-  static constexpr uint32_t kXApicIcrLowOffset = 0x300;     ///< ICR 低位寄存器偏移
-  static constexpr uint32_t kXApicIcrHighOffset = 0x310;    ///< ICR 高位寄存器偏移
-  static constexpr uint32_t kXApicLvtTimerOffset = 0x320;   ///< LVT 定时器寄存器偏移
-  static constexpr uint32_t kXApicLvtLint0Offset = 0x350;   ///< LVT LINT0 寄存器偏移
-  static constexpr uint32_t kXApicLvtLint1Offset = 0x360;   ///< LVT LINT1 寄存器偏移
-  static constexpr uint32_t kXApicLvtErrorOffset = 0x370;   ///< LVT 错误寄存器偏移
-  static constexpr uint32_t kXApicTimerInitCountOffset = 0x380;  ///< 定时器初始计数寄存器偏移
-  static constexpr uint32_t kXApicTimerCurrCountOffset = 0x390;  ///< 定时器当前计数寄存器偏移
-  static constexpr uint32_t kXApicTimerDivideOffset = 0x3E0;     ///< 定时器分频寄存器偏移
+  /// APIC ID 寄存器偏移
+  static constexpr uint32_t kXApicIdOffset = 0x20;
+  /// 版本寄存器偏移
+  static constexpr uint32_t kXApicVersionOffset = 0x30;
+  /// 任务优先级寄存器偏移
+  static constexpr uint32_t kXApicTprOffset = 0x80;
+  /// EOI 寄存器偏移
+  static constexpr uint32_t kXApicEoiOffset = 0xB0;
+  /// 虚假中断向量寄存器偏移
+  static constexpr uint32_t kXApicSivrOffset = 0xF0;
+  /// 错误状态寄存器偏移
+  static constexpr uint32_t kXApicEsrOffset = 0x280;
+  /// ICR 低位寄存器偏移
+  static constexpr uint32_t kXApicIcrLowOffset = 0x300;
+  /// ICR 高位寄存器偏移
+  static constexpr uint32_t kXApicIcrHighOffset = 0x310;
+  /// LVT 定时器寄存器偏移
+  static constexpr uint32_t kXApicLvtTimerOffset = 0x320;
+  /// LVT LINT0 寄存器偏移
+  static constexpr uint32_t kXApicLvtLint0Offset = 0x350;
+  /// LVT LINT1 寄存器偏移
+  static constexpr uint32_t kXApicLvtLint1Offset = 0x360;
+  /// LVT 错误寄存器偏移
+  static constexpr uint32_t kXApicLvtErrorOffset = 0x370;
+  /// 定时器初始计数寄存器偏移
+  static constexpr uint32_t kXApicTimerInitCountOffset = 0x380;
+  /// 定时器当前计数寄存器偏移
+  static constexpr uint32_t kXApicTimerCurrCountOffset = 0x390;
+  /// 定时器分频寄存器偏移
+  static constexpr uint32_t kXApicTimerDivideOffset = 0x3E0;
   /// @}
-  
+
   /// @name 位掩码和位移常数
   /// @{
-  static constexpr uint32_t kApicIdShift = 24;              ///< xAPIC ID 位移
-  static constexpr uint32_t kApicIdMask = 0xFF;             ///< xAPIC ID 掩码
-  static constexpr uint32_t kApicSoftwareEnableBit = 0x100; ///< APIC 软件启用位
-  static constexpr uint32_t kSpuriousVector = 0xFF;         ///< 虚假中断向量
-  static constexpr uint32_t kLvtMaskBit = 0x10000;          ///< LVT 掩码位
-  static constexpr uint32_t kLvtPeriodicMode = 0x20000;     ///< LVT 周期模式位
-  static constexpr uint32_t kIcrDeliveryStatusBit = 0x1000; ///< ICR 传递状态位
-  static constexpr uint32_t kIcrDestShift = 24;             ///< ICR 目标位移
-  static constexpr uint32_t kIcrBroadcastMode = 0xC0000;    ///< ICR 广播模式位
-  static constexpr uint32_t kInitIpiMode = 0x500;           ///< INIT IPI 模式
-  static constexpr uint32_t kSipiMode = 0x600;              ///< SIPI 模式
-  static constexpr uint32_t kExtIntMode = 0x700;            ///< ExtINT 传递模式
-  static constexpr uint32_t kNmiMode = 0x400;               ///< NMI 传递模式
-  static constexpr uint8_t kErrorVector = 0xEF;             ///< 错误中断向量
+  /// xAPIC ID 位移
+  static constexpr uint32_t kApicIdShift = 24;
+  /// xAPIC ID 掩码
+  static constexpr uint32_t kApicIdMask = 0xFF;
+  /// APIC 软件启用位
+  static constexpr uint32_t kApicSoftwareEnableBit = 0x100;
+  /// 虚假中断向量
+  static constexpr uint32_t kSpuriousVector = 0xFF;
+  /// LVT 掩码位
+  static constexpr uint32_t kLvtMaskBit = 0x10000;
+  /// LVT 周期模式位
+  static constexpr uint32_t kLvtPeriodicMode = 0x20000;
+  /// ICR 传递状态位
+  static constexpr uint32_t kIcrDeliveryStatusBit = 0x1000;
+  /// ICR 目标位移
+  static constexpr uint32_t kIcrDestShift = 24;
+  /// ICR 广播模式位
+  static constexpr uint32_t kIcrBroadcastMode = 0xC0000;
+  /// INIT IPI 模式
+  static constexpr uint32_t kInitIpiMode = 0x500;
+  /// SIPI 模式
+  static constexpr uint32_t kSipiMode = 0x600;
+  /// ExtINT 传递模式
+  static constexpr uint32_t kExtIntMode = 0x700;
+  /// NMI 传递模式
+  static constexpr uint32_t kNmiMode = 0x400;
+  /// 错误中断向量
+  static constexpr uint8_t kErrorVector = 0xEF;
   /// @}
-  
+
   /// @name 定时器相关常数
   /// @{
-  static constexpr uint32_t kDefaultApicClockHz = 100000000; ///< 默认 APIC 时钟频率 (100MHz)
-  static constexpr uint32_t kTimerDivideBy1 = 0x0B;         ///< 定时器分频 1
-  static constexpr uint32_t kTimerDivideBy16 = 0x03;        ///< 定时器分频 16
-  static constexpr uint32_t kCalibrationCount = 0xFFFFFFFF; ///< 校准用的计数值
-  static constexpr uint32_t kCalibrationDelayLoop = 1000000; ///< 校准延时循环次数
-  static constexpr uint32_t kCalibrationMultiplier = 100;   ///< 校准倍数 (10ms -> 1s)
-  static constexpr uint32_t kMicrosecondsPerSecond = 1000000; ///< 每秒微秒数
+  /// 默认 APIC 时钟频率 (100MHz)
+  static constexpr uint32_t kDefaultApicClockHz = 100000000;
+  /// 定时器分频 1
+  static constexpr uint32_t kTimerDivideBy1 = 0x0B;
+  /// 定时器分频 16
+  static constexpr uint32_t kTimerDivideBy16 = 0x03;
+  /// 校准用的计数值
+  static constexpr uint32_t kCalibrationCount = 0xFFFFFFFF;
+  /// 校准延时循环次数
+  static constexpr uint32_t kCalibrationDelayLoop = 1000000;
+  /// 校准倍数 (10ms -> 1s)
+  static constexpr uint32_t kCalibrationMultiplier = 100;
+  /// 每秒微秒数
+  static constexpr uint32_t kMicrosecondsPerSecond = 1000000;
   /// @}
-  
+
   /// @name APIC 基地址相关常数
   /// @{
-  static constexpr uint64_t kDefaultApicBase = 0xFEE00000;   ///< 默认 APIC 基地址
-  static constexpr uint64_t kApicBaseMask = 0xFFFFF000ULL;   ///< APIC 基地址掩码
-  static constexpr uint64_t kApicGlobalEnableBit = 1ULL << 11; ///< APIC 全局启用位
-  static constexpr uint64_t kX2ApicEnableBit = 1ULL << 10;   ///< x2APIC 启用位
-  static constexpr uint64_t kApicBaseControlMask = 0xFFF;    ///< APIC 基地址控制位掩码
+  /// 默认 APIC 基地址
+  static constexpr uint64_t kDefaultApicBase = 0xFEE00000;
+  /// APIC 基地址掩码
+  static constexpr uint64_t kApicBaseMask = 0xFFFFF000ULL;
+  /// APIC 全局启用位
+  static constexpr uint64_t kApicGlobalEnableBit = 1ULL << 11;
+  /// x2APIC 启用位
+  static constexpr uint64_t kX2ApicEnableBit = 1ULL << 10;
+  /// APIC 基地址控制位掩码
+  static constexpr uint64_t kApicBaseControlMask = 0xFFF;
   /// @}
-  
+
   /// @brief 当前 APIC 模式（true = x2APIC, false = xAPIC）
   bool is_x2apic_mode_ = false;
-  
+
   /// @brief APIC 基地址（仅用于 xAPIC 模式）
   uint64_t apic_base_ = kDefaultApicBase;
 };
@@ -348,16 +389,22 @@ class IoApic {
 
   /// @name IO APIC 寄存器偏移
   /// @{
-  static constexpr uint32_t kRegSel = 0x00;  ///< 寄存器选择
-  static constexpr uint32_t kRegWin = 0x10;  ///< 寄存器窗口
+  /// 寄存器选择
+  static constexpr uint32_t kRegSel = 0x00;
+  /// 寄存器窗口
+  static constexpr uint32_t kRegWin = 0x10;
   /// @}
 
   /// @name IO APIC 寄存器索引
   /// @{
-  static constexpr uint32_t kRegId = 0x00;       ///< IO APIC ID
-  static constexpr uint32_t kRegVer = 0x01;      ///< IO APIC 版本
-  static constexpr uint32_t kRegArb = 0x02;      ///< IO APIC 仲裁
-  static constexpr uint32_t kRedTblBase = 0x10;  ///< 重定向表基址
+  /// IO APIC ID
+  static constexpr uint32_t kRegId = 0x00;
+  /// IO APIC 版本
+  static constexpr uint32_t kRegVer = 0x01;
+  /// IO APIC 仲裁
+  static constexpr uint32_t kRegArb = 0x02;
+  /// 重定向表基址
+  static constexpr uint32_t kRedTblBase = 0x10;
   /// @}
 
   /**
