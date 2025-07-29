@@ -11,19 +11,21 @@
 #include <cstdint>
 
 #include "arch.h"
+#include "basic_info.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
 
 auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer) -> int {
   auto *rbp = reinterpret_cast<uint64_t *>(cpu_io::Rbp::Read());
-  uint64_t *rip = nullptr;
-
   size_t count = 0;
-  while ((rbp != nullptr) && (*rbp != 0U) && count < buffer.max_size()) {
-    rip = rbp + 1;
+  while ((rbp != nullptr) && (*rbp != 0U) &&
+         *rbp >= reinterpret_cast<uint64_t>(__executable_start) &&
+         *rbp <= reinterpret_cast<uint64_t>(__etext) &&
+         count < buffer.max_size()) {
+    auto rip = *(rbp + 1);
     rbp = reinterpret_cast<uint64_t *>(*rbp);
-    buffer[count++] = *rip;
+    buffer[count++] = rip;
   }
 
   return int(count);

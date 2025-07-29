@@ -13,7 +13,8 @@
 _boot:
     // 关中断
     cli
-
+    // 设置栈指针
+    mov $stack_top, %rsp
     call _start
     hlt
     ret
