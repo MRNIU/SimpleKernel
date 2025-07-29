@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include "apic.h"
 #include "basic_info.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
@@ -40,8 +41,7 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
 
   fdt_addr = 0;
 
-  /// @todo 获取 core 数量
-  core_count = 1;
+  core_count = cpu_io::GetCpuTopologyInfo().logical_processors;
 }
 
 auto ArchInit(int argc, const char **argv) -> int {
@@ -62,6 +62,9 @@ auto ArchInit(int argc, const char **argv) -> int {
                 Singleton<BasicInfo>::GetInstance().elf_size);
 
   klog::Info("Hello x86_64 ArchInit\n");
+
+  Singleton<Apic>::GetInstance() = Apic();
+  Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
 
   return 0;
 }
