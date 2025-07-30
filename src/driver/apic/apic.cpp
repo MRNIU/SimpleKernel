@@ -4,13 +4,11 @@
  */
 
 #include "apic.h"
-
 #include "kernel_log.hpp"
 
 bool Apic::Init(size_t max_cpu_count) {
   // TODO: 实现 APIC 系统初始化
   max_cpu_count_ = max_cpu_count > kMaxCpus ? kMaxCpus : max_cpu_count;
-  online_cpu_count_ = 0;
 
   klog::Info("Initializing APIC system for %zu CPUs\n", max_cpu_count_);
   return false;
@@ -59,8 +57,6 @@ IoApic* Apic::FindIoApicByGsi(uint32_t gsi) {
 
 size_t Apic::GetIoApicCount() const { return io_apic_count_; }
 
-size_t Apic::GetCpuCount() const { return online_cpu_count_; }
-
 bool Apic::SetIrqRedirection(uint8_t irq, uint8_t vector,
                              uint32_t destination_apic_id, bool mask) {
   // TODO: 实现 IRQ 重定向设置
@@ -96,12 +92,6 @@ bool Apic::StartupAp(uint32_t apic_id, uint8_t start_vector) {
   klog::Info("Starting up AP with APIC ID 0x%x, start vector 0x%x\n", apic_id,
              start_vector);
 
-  // 检查目标 APIC ID 是否已经在线
-  if (IsCpuOnline(apic_id)) {
-    klog::Info("AP with APIC ID 0x%x is already online\n", apic_id);
-    return true;
-  }
-
   // 使用 Local APIC 发送 INIT-SIPI-SIPI 序列
   bool result = local_apic_.WakeupAp(apic_id, start_vector);
 
@@ -135,13 +125,6 @@ size_t Apic::StartupAllAps(uint8_t start_vector, uint32_t max_wait_ms) {
   for (size_t apic_id = 0; apic_id < max_cpu_count_; ++apic_id) {
     // 跳过当前 BSP
     if (static_cast<uint32_t>(apic_id) == current_apic_id) {
-      continue;
-    }
-
-    // 跳过已经在线的 CPU
-    if (IsCpuOnline(static_cast<uint32_t>(apic_id))) {
-      klog::Info("APIC ID 0x%x is already online, skipping\n",
-                 static_cast<uint32_t>(apic_id));
       continue;
     }
 
@@ -180,55 +163,12 @@ size_t Apic::StartupAllAps(uint8_t start_vector, uint32_t max_wait_ms) {
     __asm__ volatile("nop");
   }
 
-  // 统计实际在线的 AP 数量（不包括 BSP）
-  size_t online_aps = 0;
-  for (size_t i = 0; i < online_cpu_count_; ++i) {
-    if (online_cpus_[i] != current_apic_id) {
-      online_aps++;
-    }
-  }
-
-  klog::Info("APs actually online: %zu (total CPUs online: %zu)\n", online_aps,
-             online_cpu_count_);
-
   return startup_success;
 }
 
-uint32_t Apic::GetCurrentApicId() {
-  // TODO: 实现获取当前 APIC ID
-  return local_apic_.GetApicId();
-}
+uint32_t Apic::GetCurrentApicId() { return local_apic_.GetApicId(); }
 
-bool Apic::IsCpuOnline(uint32_t apic_id) {
-  // TODO: 实现检查 CPU 是否在线
-  for (size_t i = 0; i < online_cpu_count_; ++i) {
-    if (online_cpus_[i] == apic_id) {
-      return true;
-    }
-  }
-  return false;
-}
-
-void Apic::SetCpuOnline(uint32_t apic_id) {
-  // TODO: 实现标记 CPU 为在线
-  if (online_cpu_count_ < kMaxCpus && !IsCpuOnline(apic_id)) {
-    online_cpus_[online_cpu_count_++] = apic_id;
-    klog::Info("CPU with APIC ID 0x%x is now online\n", apic_id);
-  }
-}
-
-const std::array<uint32_t, 256>& Apic::GetOnlineCpus() const {
-  return online_cpus_;
-}
-
-void Apic::PrintInfo() const {
-  // TODO: 实现打印 APIC 信息
-  local_apic_.PrintInfo();
-  klog::Info("APIC System Information\n");
-  klog::Info("Max CPU Count: %zu\n", max_cpu_count_);
-  klog::Info("Online CPU Count: %zu\n", online_cpu_count_);
-  klog::Info("IO APIC Count: %zu\n", io_apic_count_);
-}
+void Apic::PrintInfo() const { local_apic_.PrintInfo(); }
 
 Apic::IoApicInfo* Apic::FindIoApicByIrq(uint8_t irq) {
   // TODO: 实现根据 IRQ 查找 IO APIC

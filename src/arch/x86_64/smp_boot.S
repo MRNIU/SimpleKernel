@@ -9,7 +9,7 @@
 
 .code16
 smp_boot_start:
-nop
+    nop
     // 关中断
     cli
     

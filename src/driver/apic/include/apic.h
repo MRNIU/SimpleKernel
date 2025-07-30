@@ -517,12 +517,6 @@ class Apic {
   size_t GetIoApicCount() const;
 
   /**
-   * @brief 获取系统 CPU 数量
-   * @return size_t 系统 CPU 数量
-   */
-  size_t GetCpuCount() const;
-
-  /**
    * @brief 设置 IRQ 重定向
    * @param irq IRQ 号
    * @param vector 中断向量
@@ -588,26 +582,6 @@ class Apic {
   uint32_t GetCurrentApicId();
 
   /**
-   * @brief 检查指定 CPU 是否在线
-   * @param apic_id APIC ID
-   * @return true CPU 在线
-   * @return false CPU 离线
-   */
-  bool IsCpuOnline(uint32_t apic_id);
-
-  /**
-   * @brief 标记 CPU 为在线状态
-   * @param apic_id APIC ID
-   */
-  void SetCpuOnline(uint32_t apic_id);
-
-  /**
-   * @brief 获取所有在线 CPU 的 APIC ID 列表
-   * @return std::array<uint32_t, kMaxCpus> 在线 CPU 的 APIC ID 数组
-   */
-  const std::array<uint32_t, 256>& GetOnlineCpus() const;
-
-  /**
    * @brief 打印所有 APIC 信息（调试用）
    */
   void PrintInfo() const;
@@ -638,12 +612,6 @@ class Apic {
 
   /// 系统最大 CPU 数量
   size_t max_cpu_count_{2};
-
-  /// 在线 CPU 的 APIC ID 列表
-  std::array<uint32_t, kMaxCpus> online_cpus_;
-
-  /// 在线 CPU 数量
-  size_t online_cpu_count_{0};
 
   /**
    * @brief 根据 IRQ 查找对应的 IO APIC
