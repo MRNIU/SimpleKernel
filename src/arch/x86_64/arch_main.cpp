@@ -43,7 +43,9 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
 
   core_count = cpu_io::GetCpuTopologyInfo().logical_processors;
 }
-
+extern "C" void *smp_boot_start[];
+extern "C" void *smp_boot_end[];
+constexpr uint64_t kSmpBootCodeAddr = 0x8000;
 auto ArchInit(int argc, const char **argv) -> int {
   if (argc != 1) {
     klog::Err("argc != 1 [%d]\n", argc);
@@ -68,7 +70,24 @@ auto ArchInit(int argc, const char **argv) -> int {
 
   Singleton<Apic>::GetInstance().PrintInfo();
 
-  /// @todo 这里需要唤醒其余 core
+  auto smp_boot_size = reinterpret_cast<size_t>(smp_boot_end) -
+                       reinterpret_cast<size_t>(smp_boot_start);
+  std::memcpy((void *)kSmpBootCodeAddr, smp_boot_start, smp_boot_size);
+
+  // 验证拷贝是否成功
+  if (std::memcmp((void *)kSmpBootCodeAddr, smp_boot_start, smp_boot_size) !=
+      0) {
+    klog::Err("SMP boot code copy verification failed\n");
+    return false;
+  }
+
+  // 唤醒其它 core
+  uint8_t start_vector = kSmpBootCodeAddr >> 12;
+  klog::Info("Using start vector: 0x%x\n", start_vector);
+
+  size_t started_aps =
+      Singleton<Apic>::GetInstance().StartupAllAps(start_vector);
+  klog::Info("Started %zu Application Processors\n", started_aps);
 
   return 0;
 }
