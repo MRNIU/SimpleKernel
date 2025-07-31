@@ -35,25 +35,6 @@ class LocalApic {
   auto Init() -> bool;
 
   /**
-   * @brief 启用 x2APIC 模式
-   * @return true 启用成功
-   * @return false 启用失败
-   */
-  auto EnableX2Apic() -> bool;
-
-  /**
-   * @brief 禁用 x2APIC 模式
-   */
-  void DisableX2Apic();
-
-  /**
-   * @brief 检查 x2APIC 是否启用
-   * @return true x2APIC 已启用
-   * @return false x2APIC 未启用
-   */
-  [[nodiscard]] auto IsX2ApicEnabled() const -> bool;
-
-  /**
    * @brief 获取当前 CPU 的 APIC ID
    * @return uint32_t APIC ID
    */
@@ -286,12 +267,12 @@ class LocalApic {
    * @return true 启用成功
    * @return false 启用失败
    */
-  auto EnableXApic() -> bool;
+  auto EnableXApic() const -> bool;
 
   /**
    * @brief 禁用传统 xAPIC 模式
    */
-  void DisableXApic();
+  bool DisableXApic() const;
 
   /**
    * @brief 检查传统 xAPIC 是否启用
@@ -299,6 +280,25 @@ class LocalApic {
    * @return false xAPIC 未启用
    */
   [[nodiscard]] auto IsXApicEnabled() const -> bool;
+
+  /**
+   * @brief 启用 x2APIC 模式
+   * @return true 启用成功
+   * @return false 启用失败
+   */
+  auto EnableX2Apic() const -> bool;
+
+  /**
+   * @brief 禁用 x2APIC 模式
+   */
+  bool DisableX2Apic() const;
+
+  /**
+   * @brief 检查 x2APIC 是否启用
+   * @return true x2APIC 已启用
+   * @return false x2APIC 未启用
+   */
+  [[nodiscard]] auto IsX2ApicEnabled() const -> bool;
 
   /**
    * @brief 设置 APIC 基地址

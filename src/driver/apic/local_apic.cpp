@@ -82,35 +82,6 @@ bool LocalApic::Init() {
   return true;
 }
 
-bool LocalApic::EnableX2Apic() {
-  // 检查 CPU 是否支持 x2APIC
-  if (!CheckX2ApicSupport()) {
-    return false;
-  }
-
-  klog::Info("Enabling x2APIC mode\n");
-
-  // 启用 x2APIC 模式
-  cpu_io::msr::apic::EnableX2Apic();
-
-  // 验证 x2APIC 是否成功启用
-  if (!IsX2ApicEnabled()) {
-    return false;
-  }
-
-  klog::Info("x2APIC mode enabled successfully\n");
-  return true;
-}
-
-void LocalApic::DisableX2Apic() {
-  klog::Info("Disabling x2APIC mode\n");
-  cpu_io::msr::apic::DisableX2Apic();
-}
-
-bool LocalApic::IsX2ApicEnabled() const {
-  return cpu_io::msr::apic::IsX2ApicEnabled();
-}
-
 uint32_t LocalApic::GetApicId() const {
   if (is_x2apic_mode_) {
     return cpu_io::msr::apic::ReadId();
@@ -557,62 +528,52 @@ void LocalApic::PrintInfo() const {
 
 bool LocalApic::CheckX2ApicSupport() const {
   // 使用 CPUID 检查 x2APIC 支持
-  uint32_t eax, ebx, ecx, edx;
+  uint32_t eax;
+  uint32_t ebx;
+  uint32_t ecx;
+  uint32_t edx;
   __get_cpuid(1, &eax, &ebx, &ecx, &edx);
 
   // ECX 位 21 表示 x2APIC 支持
   return (ecx & (1 << 21)) != 0;
 }
 
-bool LocalApic::EnableXApic() {
-  klog::Info("Enabling xAPIC mode\n");
-
-  // 获取当前 APIC 基地址
-  uint64_t apic_base_msr = cpu_io::msr::apic::ReadBase();
-
-  // 确保 APIC 全局启用位设置(位 11)
-  apic_base_msr |= kApicGlobalEnableBit;
-
-  // 确保 x2APIC 模式位清零(位 10)
-  apic_base_msr &= ~kX2ApicEnableBit;
-
-  // 提取 APIC 基地址(位 12-35)
-  apic_base_ = apic_base_msr & kApicBaseMask;
-
-  // 写回 APIC 基地址寄存器
-  cpu_io::msr::apic::WriteBase(apic_base_msr);
-
-  // 验证 xAPIC 是否启用
-  if (!IsXApicEnabled()) {
-    klog::Err("Failed to enable xAPIC mode\n");
-    return false;
-  }
-
-  klog::Info("xAPIC mode enabled successfully, base address: 0x%lx\n",
-             apic_base_);
-  return true;
+bool LocalApic::EnableXApic() const {
+  cpu_io::msr::apic::EnableGlobally();
+  cpu_io::msr::apic::DisableX2Apic();
+  return IsXApicEnabled();
 }
 
-void LocalApic::DisableXApic() {
-  klog::Info("Disabling xAPIC mode\n");
-
-  // 获取当前 APIC 基地址
-  uint64_t apic_base_msr = cpu_io::msr::apic::ReadBase();
-
-  // 清除 APIC 全局启用位(位 11)
-  apic_base_msr &= ~kApicGlobalEnableBit;
-
-  // 写回 APIC 基地址寄存器
-  cpu_io::msr::apic::WriteBase(apic_base_msr);
+bool LocalApic::DisableXApic() const {
+  cpu_io::msr::apic::DisableGlobally();
+  return !IsXApicEnabled();
 }
 
 bool LocalApic::IsXApicEnabled() const {
-  uint64_t apic_base_msr = cpu_io::msr::apic::ReadBase();
+  return cpu_io::msr::apic::IsGloballyEnabled() &&
+         !cpu_io::msr::apic::IsX2ApicEnabled();
+}
 
-  // 检查 APIC 全局启用位(位 11)和 x2APIC 模式位(位 10)
-  // xAPIC 模式：位 11 = 1，位 10 = 0
-  return ((apic_base_msr & kApicGlobalEnableBit) != 0) &&
-         ((apic_base_msr & kX2ApicEnableBit) == 0);
+bool LocalApic::EnableX2Apic() const {
+  // 检查 CPU 是否支持 x2APIC
+  if (!CheckX2ApicSupport()) {
+    return false;
+  }
+
+  // 启用 x2APIC 模式
+  cpu_io::msr::apic::EnableX2Apic();
+
+  // 验证 x2APIC 是否成功启用
+  return IsX2ApicEnabled();
+}
+
+bool LocalApic::DisableX2Apic() const {
+  cpu_io::msr::apic::DisableX2Apic();
+  return !IsX2ApicEnabled();
+}
+
+bool LocalApic::IsX2ApicEnabled() const {
+  return cpu_io::msr::apic::IsX2ApicEnabled();
 }
 
 void LocalApic::SetApicBase(uint64_t base_address) {
@@ -625,7 +586,6 @@ void LocalApic::SetApicBase(uint64_t base_address) {
   cpu_io::msr::apic::WriteBase(apic_base_msr);
   apic_base_ = base_address;
 }
-#define CMOS_PORT 0x70
 
 bool LocalApic::WakeupAp(uint32_t destination_apic_id, uint8_t start_vector) {
   klog::Info("Waking up AP with APIC ID 0x%x, start vector 0x%x\n",
