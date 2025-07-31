@@ -80,7 +80,6 @@ auto ArchInit(int argc, const char **argv) -> int {
 
   // 填充 sipi_params 结构体
   target_sipi_params->cr3 = cpu_io::Cr3::Read();
-  target_sipi_params->ap_count = 0;
 
   // 唤醒其它 core
   size_t started_aps = Singleton<Apic>::GetInstance().StartupAllAps(

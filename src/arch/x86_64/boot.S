@@ -118,7 +118,6 @@ _boot:
     ret
 
 // 临时使用的 GDT 描述符
-.align 8
 gdt:
     // 空描述符 (0x00)
     .quad 0x0000000000000000
@@ -131,20 +130,15 @@ gdtdesc:
     .word (gdtdesc - gdt - 1)
     .long gdt
 
-.align 4
 .globl sipi_params
 sipi_params:
 cr3:
-	.long 0
-ap_count:
 	.long 0
 
 .globl ap_start64_end
 ap_start64_end:
 
 .section .bss
-.align 16
-.global stack_top
 // MAX_CPU_COUNT 个 CPU × STACK_SIZE_PER_CPU 每个 = TOTAL_STACK_SIZE 总栈空间
 stack_top:
     .space TOTAL_STACK_SIZE

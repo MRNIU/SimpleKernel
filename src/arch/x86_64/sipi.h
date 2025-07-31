@@ -21,7 +21,6 @@ extern "C" void *sipi_params[];
 
 struct sipi_params_t {
   uint32_t cr3;
-  volatile uint32_t ap_count;
 } __attribute__((packed));
 
 #endif /* SIMPLEKERNEL_SRC_ARCH_X86_64_SIPI_H_ */
