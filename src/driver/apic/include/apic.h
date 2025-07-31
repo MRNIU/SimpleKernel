@@ -464,10 +464,6 @@ class Apic {
   ~Apic() = default;
   /// @}
 
-  /// 启动 APs 的默认地址和大小
-  static constexpr uint64_t kDefaultAPBase = 0x30000;
-  static constexpr uint64_t kDefaultAPSize = 0x10000;
-
   /**
    * @brief 初始化 APIC 系统
    * @param max_cpu_count 系统最大 CPU 数量
@@ -566,24 +562,24 @@ class Apic {
    * @param apic_id 目标 APIC ID
    * @param ap_code_addr AP 启动代码的虚拟地址
    * @param ap_code_size AP 启动代码的大小
+   * @param target_addr AP 代码要复制到的目标物理地址
    * @return true 启动成功
    * @return false 启动失败
-   * @note 函数内部会将启动代码复制到 kDefaultAPBase，并计算 start_vector
+   * @note 函数内部会将启动代码复制到指定的目标地址，并计算 start_vector
    */
-  bool StartupAp(uint32_t apic_id, const void* ap_code_addr,
-                 size_t ap_code_size);
+  bool StartupAp(uint32_t apic_id, const void* ap_code_addr, size_t ap_code_size, uint64_t target_addr);
 
   /**
    * @brief 唤醒所有应用处理器 (AP)
    * @param ap_code_addr AP 启动代码的虚拟地址
    * @param ap_code_size AP 启动代码的大小
+   * @param target_addr AP 代码要复制到的目标物理地址
    * @param max_wait_ms 最大等待时间（毫秒）
    * @return size_t 成功启动的 AP 数量
    * @note 此方法会尝试唤醒除当前 BSP 外的所有 CPU 核心
-   * @note 函数内部会将启动代码复制到 kDefaultAPBase，并计算 start_vector
+   * @note 函数内部会将启动代码复制到指定的目标地址，并计算 start_vector
    */
-  size_t StartupAllAps(const void* ap_code_addr, size_t ap_code_size,
-                       uint32_t max_wait_ms = 5000);
+  size_t StartupAllAps(const void* ap_code_addr, size_t ap_code_size, uint64_t target_addr, uint32_t max_wait_ms = 5000);
 
   /**
    * @brief 获取当前 CPU 的 APIC ID

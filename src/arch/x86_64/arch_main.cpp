@@ -13,6 +13,7 @@
 #include "kernel_log.hpp"
 #include "per_cpu.hpp"
 #include "singleton.hpp"
+#include "sipi.h"
 #include "sk_iostream"
 
 // 基本输出实现
@@ -45,7 +46,6 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
 }
 extern "C" void *smp_boot_start[];
 extern "C" void *smp_boot_end[];
-constexpr uint64_t kSmpBootCodeAddr = 0x30000;
 
 auto ArchInit(int argc, const char **argv) -> int {
   if (argc != 1) {
@@ -79,9 +79,8 @@ auto ArchInit(int argc, const char **argv) -> int {
              smp_boot_start, smp_boot_end, smp_boot_size);
 
   // 唤醒其它 core - 传入 SMP 启动代码的地址和大小
-  // StartupAllAps 内部会将代码复制到适当的物理地址并计算 start_vector
   size_t started_aps = Singleton<Apic>::GetInstance().StartupAllAps(
-      smp_boot_start, smp_boot_size);
+      smp_boot_start, smp_boot_size, kDefaultAPBase);
   klog::Info("Started %zu Application Processors\n", started_aps);
 
   return 0;

@@ -92,10 +92,11 @@ void Apic::BroadcastIpi(uint8_t vector) {
 }
 
 bool Apic::StartupAp(uint32_t apic_id, const void* ap_code_addr,
-                     size_t ap_code_size) {
+                     size_t ap_code_size, uint64_t target_addr) {
   klog::Info("Starting up AP with APIC ID 0x%x\n", apic_id);
   klog::Info("AP code address: %p, size: %zu bytes\n", ap_code_addr,
              ap_code_size);
+  klog::Info("Target address: 0x%llx\n", target_addr);
 
   // 检查参数有效性
   if (ap_code_addr == nullptr || ap_code_size == 0) {
@@ -103,28 +104,36 @@ bool Apic::StartupAp(uint32_t apic_id, const void* ap_code_addr,
     return false;
   }
 
-  if (ap_code_size > kDefaultAPSize) {
-    klog::Err("AP code size (%zu) exceeds maximum allowed size (%llu)\n",
-              ap_code_size, kDefaultAPSize);
+  // 检查目标地址是否对齐到 4KB 边界（SIPI 要求）
+  if (target_addr & 0xFFF) {
+    klog::Err("Target address 0x%llx is not aligned to 4KB boundary\n",
+              target_addr);
     return false;
   }
 
-  // 将 AP 启动代码复制到默认地址
-  klog::Info("Copying AP code to physical address 0x%llx\n", kDefaultAPBase);
-  std::memcpy(reinterpret_cast<void*>(kDefaultAPBase), ap_code_addr,
-              ap_code_size);
+  // 检查目标地址是否在有效范围内（实模式可访问）
+  // 1MB 以上的地址在实模式下不可访问
+  if (target_addr >= 0x100000) {
+    klog::Err("Target address 0x%llx exceeds real mode limit (1MB)\n",
+              target_addr);
+    return false;
+  }
+
+  // 将 AP 启动代码复制到指定地址
+  klog::Info("Copying AP code to physical address 0x%llx\n", target_addr);
+  std::memcpy(reinterpret_cast<void*>(target_addr), ap_code_addr, ap_code_size);
 
   // 验证复制是否成功
-  if (std::memcmp(reinterpret_cast<const void*>(kDefaultAPBase), ap_code_addr,
+  if (std::memcmp(reinterpret_cast<const void*>(target_addr), ap_code_addr,
                   ap_code_size) != 0) {
     klog::Err("AP code copy verification failed\n");
     return false;
   }
 
   // 计算启动向量 (物理地址 / 4096)
-  uint8_t start_vector = static_cast<uint8_t>(kDefaultAPBase >> 12);
+  uint8_t start_vector = static_cast<uint8_t>(target_addr >> 12);
   klog::Info("Calculated start vector: 0x%x (physical address: 0x%llx)\n",
-             start_vector, kDefaultAPBase);
+             start_vector, target_addr);
 
   // 使用 Local APIC 发送 INIT-SIPI-SIPI 序列
   bool result = local_apic_.WakeupAp(apic_id, start_vector);
@@ -144,10 +153,11 @@ bool Apic::StartupAp(uint32_t apic_id, const void* ap_code_addr,
 }
 
 size_t Apic::StartupAllAps(const void* ap_code_addr, size_t ap_code_size,
-                           uint32_t max_wait_ms) {
+                           uint64_t target_addr, uint32_t max_wait_ms) {
   klog::Info("Starting up all Application Processors (APs)\n");
   klog::Info("AP code address: %p, size: %zu bytes\n", ap_code_addr,
              ap_code_size);
+  klog::Info("Target address: 0x%llx\n", target_addr);
   klog::Info("Max wait time: %u ms\n", max_wait_ms);
 
   // 检查参数有效性
@@ -175,7 +185,8 @@ size_t Apic::StartupAllAps(const void* ap_code_addr, size_t ap_code_size,
 
     startup_attempts++;
 
-    if (StartupAp(static_cast<uint32_t>(apic_id), ap_code_addr, ap_code_size)) {
+    if (StartupAp(static_cast<uint32_t>(apic_id), ap_code_addr, ap_code_size,
+                  target_addr)) {
       startup_success++;
       klog::Info("Successfully sent startup sequence to APIC ID 0x%x\n",
                  static_cast<uint32_t>(apic_id));
