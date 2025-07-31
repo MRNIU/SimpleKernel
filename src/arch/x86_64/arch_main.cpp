@@ -76,19 +76,6 @@ auto ArchInit(int argc, const char **argv) -> int {
   klog::Info("SMP boot code: start=%p, end=%p, size=%zu bytes\n", ap_start16,
              ap_start16_end, smp_boot_size);
 
-  // 填充参数
-  /// @note 这里直接修改了代码段内存的值
-  auto gdt = cpu_io::Gdtr::Read();
-  auto params16 = reinterpret_cast<sipi_params_16bit_t *>(
-      reinterpret_cast<uint64_t>(sipi_params_16bit));
-  params16->ap_start =
-      static_cast<uint32_t>(reinterpret_cast<uint64_t>(ap_start));
-      /// @todo 设置正确的选择子
-  params16->segment = 0x10;
-  
-  params16->gdt = static_cast<uint32_t>(reinterpret_cast<uint64_t>(gdt.base));
-  params16->gdt_limit = gdt.limit;
-
   // 唤醒其它 core
   size_t started_aps = Singleton<Apic>::GetInstance().StartupAllAps(
       ap_start16, smp_boot_size, kDefaultAPBase);

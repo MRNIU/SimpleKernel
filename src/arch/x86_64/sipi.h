@@ -17,20 +17,7 @@ static constexpr uint64_t kDefaultAPBase = 0x30000;
 extern "C" void *ap_start16[];
 extern "C" void *ap_start16_end[];
 extern "C" void *ap_start[];
-extern "C" void *sipi_params_16bit[];
 extern "C" void *sipi_params[];
-
-/**
- * 与 boot.S 中的 sipi_params_16bit 结构对应，传递给 ap_start16 的参数
- */
-struct sipi_params_16bit_t {
-  uint32_t ap_start;
-  uint16_t segment;
-  uint16_t pad0 = 0;
-  uint16_t gdt_limit;
-  uint32_t gdt;
-  uint16_t pad1 = 0;
-} __attribute__((packed));
 
 struct sipi_params_t {
   uint32_t idt_ptr;
