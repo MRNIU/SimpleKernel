@@ -82,20 +82,14 @@ auto ArchInit(int argc, const char **argv) -> int {
   auto params16 = reinterpret_cast<sipi_params_16bit_t *>(
       reinterpret_cast<uint64_t>(sipi_params_16bit));
   params16->ap_start =
-      static_cast<uint32_t>(reinterpret_cast<uint64_t>(nullptr));
-  params16->segment = gdt.selector;
+      static_cast<uint32_t>(reinterpret_cast<uint64_t>(ap_start));
+      /// @todo 设置正确的选择子
+  params16->segment = 0x10;
+  
   params16->gdt = static_cast<uint32_t>(reinterpret_cast<uint64_t>(gdt.base));
-  // params16->gdt_limit = gdt.limit;
+  params16->gdt_limit = gdt.limit;
 
-  auto aaa = params16->ap_start;
-  auto bbb = params16->gdt;
-  auto ccc = params16->gdt_limit;
-
-  klog::Info(
-      "SIPI params: params16: 0x%x, ap_start=0x%x, gdt=0x%lx, gdt_limit=0x%x\n",
-      params16, aaa, bbb, ccc);
-
-  // 唤醒其它 core - 传入 SMP 启动代码的地址和大小
+  // 唤醒其它 core
   size_t started_aps = Singleton<Apic>::GetInstance().StartupAllAps(
       ap_start16, smp_boot_size, kDefaultAPBase);
   klog::Info("Started %zu Application Processors\n", started_aps);

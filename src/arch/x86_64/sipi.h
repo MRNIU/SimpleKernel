@@ -26,22 +26,20 @@ extern "C" void *sipi_params[];
 struct sipi_params_16bit_t {
   uint32_t ap_start;
   uint16_t segment;
-  uint16_t pad;
+  uint16_t pad0 = 0;
   uint16_t gdt_limit;
   uint32_t gdt;
-  uint16_t unused;
+  uint16_t pad1 = 0;
 } __attribute__((packed));
 
-// struct sipi_params {
-//   uint32_t idt_ptr;
-//   uint32_t stack_top;
-//   uint32_t stack_size;
-//   uint32_t microcode_lock;
-//   uint32_t microcode_ptr;
-//   uint32_t msr_table_ptr;
-//   uint32_t msr_count;
-//   uint32_t c_handler;
-//   atomic_t ap_count;
-// };
+struct sipi_params_t {
+  uint32_t idt_ptr;
+  uint32_t stack_top;
+  uint32_t stack_size;
+  uint32_t msr_table_ptr;
+  uint32_t msr_count;
+  uint32_t c_handler;
+  volatile uint32_t ap_count;
+} __attribute__((packed));
 
 #endif /* SIMPLEKERNEL_SRC_ARCH_X86_64_SIPI_H_ */
