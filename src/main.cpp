@@ -38,7 +38,12 @@ void _start(int argc, const char **argv) {
     ;
   }
 }
-
+extern "C" auto main_smp233(int argc, const char **argv) -> int {
+  // ArchInitSMP(argc, argv);
+  // while(1);
+  klog::Info("Hello SimpleKernel SMP\n");
+  return 0;
+}
 auto main(int argc, const char **argv) -> int {
   // 架构相关初始化
   ArchInit(argc, argv);

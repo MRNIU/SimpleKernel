@@ -32,7 +32,6 @@ stack_top:
 // 以下是多核启动入口
 .section .text
 .global ap_start16
-.global ap_start16_end
 .code16
 ap_start16:
     cli
@@ -73,8 +72,6 @@ gdtdesc:
     .word (gdtdesc - gdt - 1)
     .long gdt
 
-ap_start16_end:
-
 .code32
 .align 16
 .globl ap_start32
@@ -82,26 +79,35 @@ ap_start32:
     // 启用 PAE (Physical Address Extension)
     mov %cr4, %eax
     // 设置 PAE 位 (位 5)
-    or $0x20, %eax         
+    or $0x20, %eax
     mov %eax, %cr4
-    
+
     // 设置页表 - 使用 sipi_params 中的 cr3 值
     // 计算 sipi_params.cr3 的相对地址
-    mov $cr3, %ebx        
-    sub $ap_start16, %ebx           
-    mov (%ebx), %eax            
-    mov %eax, %cr3                
+    mov $cr3, %ebx
+    sub $ap_start16, %ebx
+    mov (%ebx), %eax
+    mov %eax, %cr3
 
     // 启用长模式 (设置 IA32_EFER.LME)
-    mov $0xC0000080, %ecx  
+    mov $0xC0000080, %ecx
     rdmsr
-    or $0x100, %eax        
+    or $0x100, %eax
     wrmsr
-    
+
     // 启用分页以激活长模式
     mov %cr0, %eax
-    or $0x80000000, %eax   
+    or $0x80000000, %eax
     mov %eax, %cr0
+
+    // 读取 argc 和 argv 参数准备传递给64位模式
+    mov $argc, %ebx               // 获取 argc 的地址
+    sub $ap_start16, %ebx
+    mov (%ebx), %edi
+
+    mov $argv, %ebx               // 获取 argv 的地址
+    sub $ap_start16, %ebx
+    mov (%ebx), %esi
 
     // 现在处于兼容模式，需要跳转到64位代码段
     ljmp $0x10, $ap_start64
@@ -122,8 +128,26 @@ ap_start32_end:
 .align 16
 .globl ap_start64
 .globl ap_start64_end
+.extern main_smp233
 ap_start64:
+
+cli
+    mov $stack_top233, %rsp
+    //call _start
+    // 在64位模式下，%edi 和 %esi 会自动扩展为 %rdi 和 %rsi
+    // %rdi = argc (第一个参数)
+    // %rsi = argv (第二个参数)
+
+    // 调用 _boot 函数，传递 argc 和 argv 参数
+    call main_smp233
     call _boot
+
+.align 16
+.global stack_top233
+// 栈
+stack_top233:
+    // 跳过 16KB
+    .space 4096 * 4
 ap_start64_end:
 
 // clang-format on
