@@ -70,11 +70,24 @@ auto ArchInit(int argc, const char **argv) -> int {
   Singleton<Apic>::GetInstance().PrintInfo();
 
   // 计算 SMP 启动代码大小
-  auto smp_boot_size = reinterpret_cast<size_t>(ap_start16_end) -
+  auto smp_boot_size = reinterpret_cast<size_t>(ap_start64_end) -
                        reinterpret_cast<size_t>(ap_start16);
 
   klog::Info("SMP boot code: start=%p, end=%p, size=%zu bytes\n", ap_start16,
-             ap_start16_end, smp_boot_size);
+             ap_start64_end, smp_boot_size);
+
+  // 计算 sipi_params 在目标内存中的实际地址
+  volatile sipi_params_t *target_sipi_params =
+      reinterpret_cast<volatile sipi_params_t *>(sipi_params);
+
+  // 填充 sipi_params 结构体
+  target_sipi_params->cr0 = cpu_io::Cr0::Read();
+  target_sipi_params->cr3 = cpu_io::Cr3::Read();
+  target_sipi_params->argc = 0;
+  target_sipi_params->argv = 0;
+
+  // klog::Info("Set sipi_params: cr0=0x%x, cr3=0x%x\n", target_sipi_params->cr0,
+            //  target_sipi_params->cr3);
 
   // 唤醒其它 core
   size_t started_aps = Singleton<Apic>::GetInstance().StartupAllAps(

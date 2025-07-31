@@ -15,18 +15,15 @@
 static constexpr uint64_t kDefaultAPBase = 0x30000;
 
 extern "C" void *ap_start16[];
-extern "C" void *ap_start16_end[];
+extern "C" void *ap_start64_end[];
 extern "C" void *ap_start[];
 extern "C" void *sipi_params[];
 
 struct sipi_params_t {
-  uint32_t idt_ptr;
-  uint32_t stack_top;
-  uint32_t stack_size;
-  uint32_t msr_table_ptr;
-  uint32_t msr_count;
-  uint32_t c_handler;
-  volatile uint32_t ap_count;
+  uint32_t cr0;
+  uint32_t cr3;
+  uint32_t argc;
+  uint32_t argv;
 } __attribute__((packed));
 
 #endif /* SIMPLEKERNEL_SRC_ARCH_X86_64_SIPI_H_ */

@@ -57,15 +57,18 @@ ap_start16:
     mov %eax, %cr0
 
     // 跳转到保护模式
-    jmpl    $8, $(ap_start)
+    jmpl    $8, $(ap_start32)
 
 // 临时使用的 GDT 描述符
 .align 8
 gdt:
-    .word 0, 0
-    .byte 0, 0, 0, 0
-    .word 0xFFFF, 0
-    .byte 0, 0x9A, 0xCF, 0
+    // 空描述符 (0x00)
+    .quad 0x0000000000000000
+    // 32位统一段 (0x08) - 代码和数据共用
+    .quad 0x00CF9A000000FFFF
+    // 64位统一段 (0x10) - 代码和数据共用
+    .quad 0x00AF9A000000FFFF
+
 gdtdesc:
     .word (gdtdesc - gdt - 1)
     .long gdt
@@ -74,30 +77,54 @@ ap_start16_end:
 
 .code32
 .align 16
-.globl ap_start
-ap_start:
-    movl $0x233, %eax
+.globl ap_start32
+ap_start32:
+    // 启用 PAE (Physical Address Extension)
+    mov %cr4, %eax
+    // 设置 PAE 位 (位 5)
+    or $0x20, %eax         
+    mov %eax, %cr4
+    
+    // 设置页表 - 使用 sipi_params 中的 cr3 值
+    mov (cr3), %eax      
+    mov %eax, %cr3     
+
     hlt
+    
+    // 启用长模式 (设置 IA32_EFER.LME)
+    mov $0xC0000080, %ecx  
+    rdmsr
+    or $0x100, %eax        
+    wrmsr
+    
+    // 启用分页以激活长模式
+    mov %cr0, %eax
+    or $0x80000000, %eax   
+    mov %eax, %cr0
+    
+    // 现在处于兼容模式，需要跳转到64位代码段
+    ljmp $0x10, $ap_start64
 
-
-/* This matches struct sipi_param */
-.align  4
-.globl  sipi_params
+.align	4
+.globl	sipi_params
 sipi_params:
-idt_ptr:
+cr0:
     .long 0
-sipi_stack_top:
-    .long 0
-sipi_stack_size:
-    .long 0
-msr_table_ptr:
-    .long 0
-msr_count:
-    .long 0
-c_handler:
-    .long 0
-ap_count:
-    .long 0
+cr3:
+	.long 0
+argc:
+	.long 0
+argv:
+	.long 0
 
+ap_start32_end:
+
+.code64
+.align 16
+.globl ap_start64
+.globl ap_start64_end
+ap_start64:
+    call _boot
+ap_start64_end:
 
 // clang-format on
