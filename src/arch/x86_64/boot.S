@@ -74,7 +74,6 @@ gdtdesc:
 
 .code32
 .align 16
-.globl ap_start32
 ap_start32:
     // 启用 PAE (Physical Address Extension)
     mov %cr4, %eax
@@ -100,15 +99,6 @@ ap_start32:
     or $0x80000000, %eax
     mov %eax, %cr0
 
-    // 读取 argc 和 argv 参数准备传递给64位模式
-    mov $argc, %ebx               // 获取 argc 的地址
-    sub $ap_start16, %ebx
-    mov (%ebx), %edi
-
-    mov $argv, %ebx               // 获取 argv 的地址
-    sub $ap_start16, %ebx
-    mov (%ebx), %esi
-
     // 现在处于兼容模式，需要跳转到64位代码段
     ljmp $0x10, $ap_start64
 
@@ -117,18 +107,14 @@ ap_start32:
 sipi_params:
 cr3:
 	.long 0
-argc:
-	.long 0
-argv:
+ap_count:
 	.long 0
 
 ap_start32_end:
 
 .code64
 .align 16
-.globl ap_start64
 .globl ap_start64_end
-.extern main_smp233
 ap_start64:
 
 cli
@@ -139,8 +125,7 @@ cli
     // %rsi = argv (第二个参数)
 
     // 调用 _boot 函数，传递 argc 和 argv 参数
-    call main_smp233
-    call _boot
+    call _start
 
 .align 16
 .global stack_top233

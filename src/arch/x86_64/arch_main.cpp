@@ -26,12 +26,9 @@ extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
   }
 }
 
-BasicInfo::BasicInfo(int argc, const char **argv) {
-  (void)argc;
-
-  auto basic_info = *reinterpret_cast<const BasicInfo *>(argv);
-  physical_memory_addr = basic_info.physical_memory_addr;
-  physical_memory_size = basic_info.physical_memory_size;
+BasicInfo::BasicInfo(int, const char **) {
+  physical_memory_addr = 0;
+  physical_memory_size = 0;
 
   kernel_addr = reinterpret_cast<uint64_t>(__executable_start);
   kernel_size = reinterpret_cast<uint64_t>(end) -
@@ -81,8 +78,7 @@ auto ArchInit(int argc, const char **argv) -> int {
 
   // 填充 sipi_params 结构体
   target_sipi_params->cr3 = cpu_io::Cr3::Read();
-  target_sipi_params->argc = 0;
-  target_sipi_params->argv = 0;
+  target_sipi_params->ap_count = 0;
 
   // 唤醒其它 core
   size_t started_aps = Singleton<Apic>::GetInstance().StartupAllAps(
