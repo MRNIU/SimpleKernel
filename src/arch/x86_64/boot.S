@@ -86,11 +86,12 @@ ap_start32:
     mov %eax, %cr4
     
     // 设置页表 - 使用 sipi_params 中的 cr3 值
-    mov (cr3), %eax      
-    mov %eax, %cr3     
+    // 计算 sipi_params.cr3 的相对地址
+    mov $cr3, %ebx        
+    sub $ap_start16, %ebx           
+    mov (%ebx), %eax            
+    mov %eax, %cr3                
 
-    hlt
-    
     // 启用长模式 (设置 IA32_EFER.LME)
     mov $0xC0000080, %ecx  
     rdmsr
@@ -101,15 +102,13 @@ ap_start32:
     mov %cr0, %eax
     or $0x80000000, %eax   
     mov %eax, %cr0
-    
+
     // 现在处于兼容模式，需要跳转到64位代码段
     ljmp $0x10, $ap_start64
 
-.align	4
-.globl	sipi_params
+.align 4
+.globl sipi_params
 sipi_params:
-cr0:
-    .long 0
 cr3:
 	.long 0
 argc:

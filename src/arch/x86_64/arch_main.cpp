@@ -77,17 +77,12 @@ auto ArchInit(int argc, const char **argv) -> int {
              ap_start64_end, smp_boot_size);
 
   // 计算 sipi_params 在目标内存中的实际地址
-  volatile sipi_params_t *target_sipi_params =
-      reinterpret_cast<volatile sipi_params_t *>(sipi_params);
+  auto target_sipi_params = reinterpret_cast<sipi_params_t *>(sipi_params);
 
   // 填充 sipi_params 结构体
-  target_sipi_params->cr0 = cpu_io::Cr0::Read();
   target_sipi_params->cr3 = cpu_io::Cr3::Read();
   target_sipi_params->argc = 0;
   target_sipi_params->argv = 0;
-
-  // klog::Info("Set sipi_params: cr0=0x%x, cr3=0x%x\n", target_sipi_params->cr0,
-            //  target_sipi_params->cr3);
 
   // 唤醒其它 core
   size_t started_aps = Singleton<Apic>::GetInstance().StartupAllAps(

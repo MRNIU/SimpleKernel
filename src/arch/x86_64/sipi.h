@@ -20,7 +20,6 @@ extern "C" void *ap_start[];
 extern "C" void *sipi_params[];
 
 struct sipi_params_t {
-  uint32_t cr0;
   uint32_t cr3;
   uint32_t argc;
   uint32_t argv;
