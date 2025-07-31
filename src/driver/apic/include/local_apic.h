@@ -176,44 +176,6 @@ class LocalApic {
   void PrintInfo() const;
 
  private:
-  /**
-   * @brief 检查 CPU 是否支持 x2APIC
-   * @return true 支持 x2APIC
-   * @return false 不支持 x2APIC
-   */
-  [[nodiscard]] auto CheckX2ApicSupport() const -> bool;
-
-  /**
-   * @brief 启用传统 xAPIC 模式
-   * @return true 启用成功
-   * @return false 启用失败
-   */
-  auto EnableXApic() -> bool;
-
-  /**
-   * @brief 禁用传统 xAPIC 模式
-   */
-  void DisableXApic();
-
-  /**
-   * @brief 检查传统 xAPIC 是否启用
-   * @return true xAPIC 已启用
-   * @return false xAPIC 未启用
-   */
-  [[nodiscard]] auto IsXApicEnabled() const -> bool;
-
-  /**
-   * @brief 获取 APIC 基地址
-   * @return uint64_t APIC 基地址
-   */
-  [[nodiscard]] auto GetApicBase() const -> uint64_t;
-
-  /**
-   * @brief 设置 APIC 基地址
-   * @param base_address APIC 基地址
-   */
-  void SetApicBase(uint64_t base_address);
-
   /// @name xAPIC 寄存器偏移量常数
   /// @{
   /// APIC ID 寄存器偏移
@@ -311,6 +273,38 @@ class LocalApic {
   /// APIC 基地址控制位掩码
   static constexpr uint64_t kApicBaseControlMask = 0xFFF;
   /// @}
+
+  /**
+   * @brief 检查 CPU 是否支持 x2APIC
+   * @return true 支持 x2APIC
+   * @return false 不支持 x2APIC
+   */
+  [[nodiscard]] auto CheckX2ApicSupport() const -> bool;
+
+  /**
+   * @brief 启用传统 xAPIC 模式
+   * @return true 启用成功
+   * @return false 启用失败
+   */
+  auto EnableXApic() -> bool;
+
+  /**
+   * @brief 禁用传统 xAPIC 模式
+   */
+  void DisableXApic();
+
+  /**
+   * @brief 检查传统 xAPIC 是否启用
+   * @return true xAPIC 已启用
+   * @return false xAPIC 未启用
+   */
+  [[nodiscard]] auto IsXApicEnabled() const -> bool;
+
+  /**
+   * @brief 设置 APIC 基地址
+   * @param base_address APIC 基地址
+   */
+  void SetApicBase(uint64_t base_address);
 
   /// @brief 当前 APIC 模式（true = x2APIC, false = xAPIC）
   bool is_x2apic_mode_ = false;

@@ -615,11 +615,6 @@ bool LocalApic::IsXApicEnabled() const {
          ((apic_base_msr & kX2ApicEnableBit) == 0);
 }
 
-uint64_t LocalApic::GetApicBase() const {
-  uint64_t apic_base_msr = cpu_io::msr::apic::ReadBase();
-  return apic_base_msr & kApicBaseMask;
-}
-
 void LocalApic::SetApicBase(uint64_t base_address) {
   uint64_t apic_base_msr = cpu_io::msr::apic::ReadBase();
 
