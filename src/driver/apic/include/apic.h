@@ -567,7 +567,8 @@ class Apic {
    * @return false 启动失败
    * @note 函数内部会将启动代码复制到指定的目标地址，并计算 start_vector
    */
-  bool StartupAp(uint32_t apic_id, const void* ap_code_addr, size_t ap_code_size, uint64_t target_addr);
+  bool StartupAp(uint32_t apic_id, const void* ap_code_addr,
+                 size_t ap_code_size, uint64_t target_addr);
 
   /**
    * @brief 唤醒所有应用处理器 (AP)
@@ -579,7 +580,8 @@ class Apic {
    * @note 此方法会尝试唤醒除当前 BSP 外的所有 CPU 核心
    * @note 函数内部会将启动代码复制到指定的目标地址，并计算 start_vector
    */
-  size_t StartupAllAps(const void* ap_code_addr, size_t ap_code_size, uint64_t target_addr, uint32_t max_wait_ms = 5000);
+  size_t StartupAllAps(const void* ap_code_addr, size_t ap_code_size,
+                       uint64_t target_addr, uint32_t max_wait_ms = 5000);
 
   /**
    * @brief 获取当前 CPU 的 APIC ID
@@ -593,8 +595,6 @@ class Apic {
   void PrintInfo() const;
 
  private:
-  /// 最大支持的 CPU 数量
-  static constexpr size_t kMaxCpus = 256;
   /// 最大 IO APIC 数量
   static constexpr size_t kMaxIoApics = 8;
 
@@ -617,7 +617,7 @@ class Apic {
   size_t io_apic_count_{0};
 
   /// 系统最大 CPU 数量
-  size_t max_cpu_count_{2};
+  size_t max_cpu_count_{4};
 
   /**
    * @brief 根据 IRQ 查找对应的 IO APIC

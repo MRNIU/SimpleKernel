@@ -62,6 +62,8 @@ auto ArchInit(int argc, const char **argv) -> int {
   klog::Info("Hello x86_64 ArchInit\n");
 
   Singleton<Apic>::GetInstance() = Apic();
+  Singleton<Apic>::GetInstance().Init(
+      Singleton<BasicInfo>::GetInstance().core_count);
   Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
 
   Singleton<Apic>::GetInstance().PrintInfo();

@@ -11,7 +11,7 @@
 
 bool Apic::Init(size_t max_cpu_count) {
   // TODO: 实现 APIC 系统初始化
-  max_cpu_count_ = max_cpu_count > kMaxCpus ? kMaxCpus : max_cpu_count;
+  max_cpu_count_ = max_cpu_count;
 
   klog::Info("Initializing APIC system for %zu CPUs\n", max_cpu_count_);
   return false;
