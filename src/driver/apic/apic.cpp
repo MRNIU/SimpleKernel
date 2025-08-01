@@ -9,7 +9,10 @@
 
 #include "kernel_log.hpp"
 
-Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {}
+Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {
+  // 禁用传统的 8259A PIC 以避免与 APIC 冲突
+  cpu_io::Pic::Disable();
+}
 
 bool Apic::AddIoApic(uint64_t base_address, uint32_t gsi_base) {
   // TODO: 实现添加 IO APIC
