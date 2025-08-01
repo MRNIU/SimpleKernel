@@ -85,7 +85,42 @@ std::array<cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor,
                 k64Bit),
 };
 
+/// 设置 GDT 和段寄存器
+void SetupGdtAndSegmentRegisters() {
+  // 设置 gdt
+  cpu_io::detail::register_info::GdtrInfo::Gdtr gdtr{
+      .limit =
+          (sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
+           cpu_io::detail::register_info::GdtrInfo::kMaxCount) -
+          1,
+      .base = kSegmentDescriptors.data(),
+  };
+  cpu_io::Gdtr::Write(gdtr);
+
+  // 加载内核数据段描述符
+  cpu_io::Ds::Write(
+      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
+      cpu_io::detail::register_info::GdtrInfo::kKernelDataIndex);
+  cpu_io::Es::Write(
+      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
+      cpu_io::detail::register_info::GdtrInfo::kKernelDataIndex);
+  cpu_io::Fs::Write(
+      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
+      cpu_io::detail::register_info::GdtrInfo::kKernelDataIndex);
+  cpu_io::Gs::Write(
+      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
+      cpu_io::detail::register_info::GdtrInfo::kKernelDataIndex);
+  cpu_io::Ss::Write(
+      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
+      cpu_io::detail::register_info::GdtrInfo::kKernelDataIndex);
+  // 加载内核代码段描述符
+  cpu_io::Cs::Write(
+      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
+      cpu_io::detail::register_info::GdtrInfo::kKernelCodeIndex);
+}
+
 }  // namespace
+
 extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
   if (serial) {
     serial->Write(c);
@@ -120,58 +155,8 @@ auto ArchInit(int, const char **) -> int {
       KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr,
                 Singleton<BasicInfo>::GetInstance().elf_size);
 
-  // 加载描述符
-  cpu_io::detail::register_info::GdtrInfo::Gdtr gdtr{
-      .limit =
-          (sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
-           cpu_io::detail::register_info::GdtrInfo::kMaxCount) -
-          1,
-      .base = kSegmentDescriptors.data(),
-  };
-  cpu_io::Gdtr::Write(gdtr);
-
-  klog::Debug(
-      "sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor): "
-      "%d\n",
-      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor));
-  klog::Debug("kSegmentDescriptors: 0x%X\n", kSegmentDescriptors);
-
-  // 加载内核数据段描述符
-  cpu_io::Ds::Write(
-      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
-      cpu_io::detail::register_info::GdtrInfo::kKernelDataIndex);
-  cpu_io::Es::Write(
-      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
-      cpu_io::detail::register_info::GdtrInfo::kKernelDataIndex);
-  cpu_io::Fs::Write(
-      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
-      cpu_io::detail::register_info::GdtrInfo::kKernelDataIndex);
-  cpu_io::Gs::Write(
-      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
-      cpu_io::detail::register_info::GdtrInfo::kKernelDataIndex);
-  cpu_io::Ss::Write(
-      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
-      cpu_io::detail::register_info::GdtrInfo::kKernelDataIndex);
-  // 加载内核代码段描述符
-  cpu_io::Cs::Write(
-      sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
-      cpu_io::detail::register_info::GdtrInfo::kKernelCodeIndex);
-
-  //   sk_std::cout << "es: " << cpu_io::kAllCr.es << sk_std::endl;
-  //   sk_std::cout << "cs: " << cpu_io::kAllCr.cs << sk_std::endl;
-  //   sk_std::cout << "ss: " << cpu_io::kAllCr.ss << sk_std::endl;
-  //   sk_std::cout << "ds: " << cpu_io::kAllCr.ds << sk_std::endl;
-  //   sk_std::cout << "fs: " << cpu_io::kAllCr.fs << sk_std::endl;
-  //   sk_std::cout << "gs: " << cpu_io::kAllCr.gs << sk_std::endl;
-
-  for (size_t i = 0;
-       i <
-       (cpu_io::Gdtr::Read().limit + 1) /
-           sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor);
-       i++) {
-    klog::Debug("gdtr[%d] 0x%p\n", i, cpu_io::Gdtr::Read().base + i);
-    // klog::debug << *(cpu_io::kAllCr.gdtr.Read().base + i) << sk_std::endl;
-  }
+  // 设置 GDT 和段寄存器
+  SetupGdtAndSegmentRegisters();
 
   // 初始化 APIC
   Singleton<Apic>::GetInstance() =
@@ -195,6 +180,9 @@ auto ArchInit(int, const char **) -> int {
 }
 
 auto ArchInitSMP(int, const char **) -> int {
+  // 设置 GDT 和段寄存器
+  SetupGdtAndSegmentRegisters();
+
   Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
   return 0;
 }
