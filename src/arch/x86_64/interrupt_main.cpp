@@ -12,26 +12,12 @@
 #include "sk_iostream"
 
 void InterruptInit(int, const char **) {
-  // 初始化中断
-  Singleton<Interrupt>::GetInstance();
+  // 定义 APIC 时钟中断向量号（使用高优先级向量）
+  constexpr uint8_t kApicTimerVector = 0xF0;
 
-  // 注册时钟中断
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::IdtrInfo::kIrq0,
-      [](uint64_t exception_code, uint8_t *) -> uint64_t {
-        Singleton<Interrupt>::GetInstance().pit_.Ticks();
-        if (Singleton<Interrupt>::GetInstance().pit_.GetTicks() % 100 == 0) {
-          klog::Info("Handle %d %s\n", exception_code,
-                     cpu_io::detail::register_info::IdtrInfo::kInterruptNames
-                         [exception_code]);
-        }
-        Singleton<Interrupt>::GetInstance().pic_.Clear(exception_code);
-        return 0;
-      });
+  // 启用基于 Local APIC 的时钟中断（100 Hz）
+  Singleton<Interrupt>::GetInstance().EnableApicTimer(100, kApicTimerVector);
 
-  // 允许时钟中断
-  Singleton<Interrupt>::GetInstance().pic_.Enable(
-      cpu_io::detail::register_info::IdtrInfo::kIrq0);
   // 开启中断
   cpu_io::Rflags::If::Set();
 

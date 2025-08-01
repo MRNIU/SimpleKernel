@@ -11,15 +11,13 @@
 #include <array>
 #include <cstdint>
 
+#include "apic.h"
 #include "interrupt_base.h"
 #include "singleton.hpp"
 #include "sk_stdio.h"
 
 class Interrupt final : public InterruptBase {
  public:
-  cpu_io::Pic pic_;
-  cpu_io::Pit pit_;
-
   Interrupt();
 
   /// @name 构造/析构函数
@@ -45,15 +43,27 @@ class Interrupt final : public InterruptBase {
    */
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
 
+  /**
+   * @brief 启用基于 Local APIC 的时钟中断
+   * @param frequency_hz 中断频率 (Hz)
+   * @param vector 中断向量号
+   */
+  void EnableApicTimer(uint32_t frequency_hz, uint8_t vector);
+
+  /**
+   * @brief 禁用 Local APIC 时钟中断
+   */
+  void DisableApicTimer();
+
  private:
   /// 中断处理函数数组
-  static std::array<InterruptFunc,
-                    cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount>
-      interrupt_handlers;
+  alignas(4096) static std::array<InterruptFunc,
+                                  cpu_io::detail::register_info::IdtrInfo::
+                                      kInterruptMaxCount> interrupt_handlers;
 
-  static std::array<cpu_io::detail::register_info::IdtrInfo::Idt,
-                    cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount>
-      idts;
+  alignas(4096) static std::array<
+      cpu_io::detail::register_info::IdtrInfo::Idt,
+      cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount> idts;
 
   /**
    * @brief 初始化 idtr

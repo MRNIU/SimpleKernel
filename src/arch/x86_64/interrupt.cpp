@@ -3,10 +3,11 @@
  * @brief 中断初始化
  */
 
+#include "interrupt.h"
+
 #include <cpu_io.h>
 
 #include "arch.h"
-#include "interrupt.h"
 #include "kernel_log.hpp"
 #include "sk_cstdio"
 #include "sk_iostream"
@@ -22,6 +23,28 @@ template <uint8_t no>
 __attribute__((target("general-regs-only"))) __attribute__((interrupt)) void
 TarpEntry(uint8_t *interrupt_context) {
   Singleton<Interrupt>::GetInstance().Do(no, interrupt_context);
+}
+
+/**
+ * @brief APIC 时钟中断处理函数
+ * @param cause 中断原因
+ * @param context 中断上下文
+ * @return uint64_t 返回值
+ */
+uint64_t ApicTimerHandler(uint64_t cause, uint8_t *context) {
+  // APIC 时钟中断处理
+  static uint64_t tick_count = 0;
+  tick_count++;
+
+  // 每100次中断打印一次信息（减少日志输出）
+  if (tick_count % 100 == 0) {
+    klog::Info("APIC Timer interrupt %lu, vector 0x%X\n", tick_count,
+               static_cast<uint32_t>(cause));
+  }
+
+  // 发送 EOI 信号给 Local APIC
+  Singleton<Apic>::GetInstance().GetCurrentLocalApic().SendEoi();
+  return 0;
 }
 };  // namespace
 
@@ -48,7 +71,7 @@ void Interrupt::SetUpIdtr() {
     // 写入 idtr
     static auto idtr = cpu_io::detail::register_info::IdtrInfo::Idtr{
         .limit =
-            sizeof(cpu_io::detail::register_info::IdtrInfo::Idtr) *
+            sizeof(cpu_io::detail::register_info::IdtrInfo::Idt) *
                 cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount -
             1,
         .base = idts.data(),
@@ -65,10 +88,7 @@ void Interrupt::SetUpIdtr() {
   }
 }
 
-Interrupt::Interrupt()
-    : pic_(cpu_io::detail::register_info::IdtrInfo::kIrq0,
-           cpu_io::detail::register_info::IdtrInfo::kIrq8),
-      pit_(200) {
+Interrupt::Interrupt() {
   // 注册默认中断处理函数
   for (auto &i : interrupt_handlers) {
     i = [](uint64_t cause, uint8_t *context) -> uint64_t {
@@ -86,9 +106,15 @@ Interrupt::Interrupt()
   // 初始化 idtr
   SetUpIdtr();
 
-  // 初始化 loacl apic
+  // 初始化当前 CPU 的 Local APIC
+  if (Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic()) {
+    klog::Info("Local APIC initialized successfully\n");
+  } else {
+    klog::Err("Failed to initialize Local APIC\n");
+  }
 
-  // 初始化 io apic
+  // 初始化 IO APIC (暂时保留注释)
+  // TODO: 实现 IO APIC 支持
 
   klog::Info("Interrupt init.\n");
 }
@@ -106,4 +132,19 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
                 cpu_io::detail::register_info::IdtrInfo::kInterruptNames[cause],
                 cause, func);
   }
+}
+
+void Interrupt::EnableApicTimer(uint32_t frequency_hz, uint8_t vector) {
+  // 注册中断处理函数
+  RegisterInterruptFunc(vector, ApicTimerHandler);
+
+  // 启用 Local APIC 定时器
+  Singleton<Apic>::GetInstance().GetCurrentLocalApic().SetupPeriodicTimer(
+      frequency_hz, vector);
+  klog::Info("APIC Timer enabled: %u Hz, vector 0x%X\n", frequency_hz, vector);
+}
+
+void Interrupt::DisableApicTimer() {
+  Singleton<Apic>::GetInstance().GetCurrentLocalApic().DisableTimer();
+  klog::Info("APIC Timer disabled\n");
 }
