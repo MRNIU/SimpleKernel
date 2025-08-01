@@ -118,13 +118,13 @@ class Apic {
    * @param target_apic_id 目标 CPU 的 APIC ID
    * @param vector 中断向量
    */
-  void SendIpi(uint32_t target_apic_id, uint8_t vector);
+  void SendIpi(uint32_t target_apic_id, uint8_t vector) const;
 
   /**
    * @brief 广播 IPI 到所有其他 CPU
    * @param vector 中断向量
    */
-  void BroadcastIpi(uint8_t vector);
+  void BroadcastIpi(uint8_t vector) const;
 
   /**
    * @brief 启动 AP (Application Processor)

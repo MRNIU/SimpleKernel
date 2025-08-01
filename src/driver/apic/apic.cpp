@@ -10,11 +10,18 @@
 #include "kernel_log.hpp"
 
 bool Apic::Init(size_t max_cpu_count) {
-  // TODO: 实现 APIC 系统初始化
   max_cpu_count_ = max_cpu_count;
 
   klog::Info("Initializing APIC system for %zu CPUs\n", max_cpu_count_);
-  return false;
+
+  // 初始化 Local APIC
+  if (!local_apic_.Init()) {
+    klog::Err("Failed to initialize Local APIC\n");
+    return false;
+  }
+
+  klog::Info("APIC system initialized successfully\n");
+  return true;
 }
 
 bool Apic::AddIoApic(uint64_t base_address, uint32_t gsi_base) {
@@ -30,10 +37,16 @@ bool Apic::AddIoApic(uint64_t base_address, uint32_t gsi_base) {
 }
 
 bool Apic::InitCurrentCpuLocalApic() {
-  // TODO: 实现当前 CPU 的 Local APIC 初始化
-  local_apic_.Init();
-  klog::Info("Initializing Local APIC for current CPU\n");
-  return false;
+  bool result = local_apic_.Init();
+  if (result) {
+    klog::Info(
+        "Local APIC initialized successfully for CPU with APIC ID 0x%x\n",
+        cpu_io::GetApicInfo().apic_id);
+  } else {
+    klog::Err("Failed to initialize Local APIC for current CPU\n");
+  }
+
+  return result;
 }
 
 LocalApic& Apic::GetCurrentLocalApic() { return local_apic_; }
@@ -80,15 +93,12 @@ bool Apic::UnmaskIrq(uint8_t irq) {
   return false;
 }
 
-void Apic::SendIpi(uint32_t target_apic_id, uint8_t vector) {
-  // TODO: 实现发送 IPI
-  klog::Info("Sending IPI to APIC ID 0x%x, vector 0x%x\n", target_apic_id,
-             vector);
+void Apic::SendIpi(uint32_t target_apic_id, uint8_t vector) const {
+  local_apic_.SendIpi(target_apic_id, vector);
 }
 
-void Apic::BroadcastIpi(uint8_t vector) {
-  // TODO: 实现广播 IPI
-  klog::Info("Broadcasting IPI with vector 0x%x\n", vector);
+void Apic::BroadcastIpi(uint8_t vector) const {
+  local_apic_.BroadcastIpi(vector);
 }
 
 bool Apic::StartupAp(uint32_t apic_id, const void* ap_code_addr,
@@ -166,7 +176,7 @@ size_t Apic::StartupAllAps(const void* ap_code_addr, size_t ap_code_size,
     return 0;
   }
 
-  uint32_t current_apic_id = cpu_io::GetApicInfo().apic_id;
+  auto current_apic_id = cpu_io::GetApicInfo().apic_id;
   klog::Info("Current BSP APIC ID: 0x%x\n", current_apic_id);
 
   size_t startup_attempts = 0;
