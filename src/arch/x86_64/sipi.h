@@ -16,7 +16,6 @@ static constexpr uint64_t kDefaultAPBase = 0x30000;
 
 extern "C" void *ap_start16[];
 extern "C" void *ap_start64_end[];
-extern "C" void *ap_start[];
 extern "C" void *sipi_params[];
 
 struct sipi_params_t {
