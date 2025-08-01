@@ -4,6 +4,7 @@
  */
 
 #include "apic.h"
+#include "io.hpp"
 #include "kernel_log.hpp"
 
 bool IoApic::Init(uint64_t base_address) {
@@ -102,16 +103,18 @@ void IoApic::UnmaskIrq(uint8_t irq) {
 }
 
 uint32_t IoApic::GetId() const {
-  return (ReadReg(kRegId) >> 24) & 0x0F;  // ID 位于位 24-27
+  // ID 位于位 24-27
+  return (Read(kRegId) >> 24) & 0x0F;
 }
 
 uint32_t IoApic::GetVersion() const {
-  return ReadReg(kRegVer) & 0xFF;  // 版本位于位 0-7
+  // 版本位于位 0-7
+  return Read(kRegVer) & 0xFF;
 }
 
 uint32_t IoApic::GetMaxRedirectionEntries() const {
   // MRE 位于位 16-23，实际数量需要 +1
-  return ((ReadReg(kRegVer) >> 16) & 0xFF) + 1;
+  return ((Read(kRegVer) >> 16) & 0xFF) + 1;
 }
 
 void IoApic::PrintInfo() const {
@@ -122,26 +125,26 @@ void IoApic::PrintInfo() const {
   klog::Info("Max Redirection Entries: %u\n", GetMaxRedirectionEntries());
 }
 
-uint32_t IoApic::ReadReg(uint32_t reg) const {
+uint32_t IoApic::Read(uint32_t reg) const {
   // 写入寄存器选择器
-  *reinterpret_cast<volatile uint32_t*>(base_address_ + kRegSel) = reg;
+  io::Out<uint32_t>(base_address_ + kRegSel, reg);
   // 读取寄存器窗口
-  return *reinterpret_cast<volatile uint32_t*>(base_address_ + kRegWin);
+  return io::In<uint32_t>(base_address_ + kRegWin);
 }
 
-void IoApic::WriteReg(uint32_t reg, uint32_t value) {
+void IoApic::Write(uint32_t reg, uint32_t value) const {
   // 写入寄存器选择器
-  *reinterpret_cast<volatile uint32_t*>(base_address_ + kRegSel) = reg;
+  io::Out<uint32_t>(base_address_ + kRegSel, reg);
   // 写入寄存器窗口
-  *reinterpret_cast<volatile uint32_t*>(base_address_ + kRegWin) = value;
+  io::Out<uint32_t>(base_address_ + kRegWin, value);
 }
 
 uint64_t IoApic::ReadRedirectionEntry(uint8_t irq) const {
   uint32_t low_reg = kRedTblBase + (irq * 2);
   uint32_t high_reg = low_reg + 1;
 
-  uint32_t low = ReadReg(low_reg);
-  uint32_t high = ReadReg(high_reg);
+  uint32_t low = Read(low_reg);
+  uint32_t high = Read(high_reg);
 
   return (static_cast<uint64_t>(high) << 32) | low;
 }
@@ -153,6 +156,6 @@ void IoApic::WriteRedirectionEntry(uint8_t irq, uint64_t value) {
   uint32_t low = static_cast<uint32_t>(value & 0xFFFFFFFF);
   uint32_t high = static_cast<uint32_t>((value >> 32) & 0xFFFFFFFF);
 
-  WriteReg(low_reg, low);
-  WriteReg(high_reg, high);
+  Write(low_reg, low);
+  Write(high_reg, high);
 }

@@ -75,12 +75,6 @@ class IoApic {
   [[nodiscard]] auto GetMaxRedirectionEntries() const -> uint32_t;
 
   /**
-   * @brief 获取 IO APIC 基地址
-   * @return uint64_t IO APIC 基地址
-   */
-  [[nodiscard]] auto GetBaseAddress() const -> uint64_t;
-
-  /**
    * @brief 打印 IO APIC 信息（调试用）
    */
   void PrintInfo() const;
@@ -114,14 +108,14 @@ class IoApic {
    * @param reg 寄存器索引
    * @return uint32_t 寄存器值
    */
-  [[nodiscard]] auto ReadReg(uint32_t reg) const -> uint32_t;
+  [[nodiscard]] auto Read(uint32_t reg) const -> uint32_t;
 
   /**
    * @brief 写入 IO APIC 寄存器
    * @param reg 寄存器索引
    * @param value 要写入的值
    */
-  void WriteReg(uint32_t reg, uint32_t value);
+  void Write(uint32_t reg, uint32_t value) const;
 
   /**
    * @brief 读取 IO APIC 重定向表项
