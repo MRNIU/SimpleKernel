@@ -12,7 +12,7 @@
 Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {}
 
 bool Apic::InitCurrentCpuLocalApic() {
-  bool result = local_apic_.Init();
+  auto result = local_apic_.Init();
   if (result) {
     klog::Info(
         "Local APIC initialized successfully for CPU with APIC ID 0x%x\n",
@@ -26,9 +26,6 @@ bool Apic::InitCurrentCpuLocalApic() {
 
 bool Apic::SetIrqRedirection(uint8_t irq, uint8_t vector,
                              uint32_t destination_apic_id, bool mask) {
-  klog::Info("Setting IRQ %u redirection to vector 0x%x, APIC ID 0x%x\n", irq,
-             vector, destination_apic_id);
-
   // 检查 IRQ 是否在有效范围内
   if (irq >= io_apic_.GetMaxRedirectionEntries()) {
     klog::Err("IRQ %u exceeds IO APIC range (max: %u)\n", irq,
@@ -42,8 +39,6 @@ bool Apic::SetIrqRedirection(uint8_t irq, uint8_t vector,
 }
 
 bool Apic::MaskIrq(uint8_t irq) {
-  klog::Info("Masking IRQ %u\n", irq);
-
   // 检查 IRQ 是否在有效范围内
   if (irq >= io_apic_.GetMaxRedirectionEntries()) {
     klog::Err("IRQ %u exceeds IO APIC range (max: %u)\n", irq,
@@ -56,8 +51,6 @@ bool Apic::MaskIrq(uint8_t irq) {
 }
 
 bool Apic::UnmaskIrq(uint8_t irq) {
-  klog::Info("Unmasking IRQ %u\n", irq);
-
   // 检查 IRQ 是否在有效范围内
   if (irq >= io_apic_.GetMaxRedirectionEntries()) {
     klog::Err("IRQ %u exceeds IO APIC range (max: %u)\n", irq,
@@ -126,30 +119,28 @@ void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
     return;
   }
 
-  // 尝试启动 APIC ID 0 到 cpu_count_-1 的所有处理器
+  // 启动 APIC ID 0 到 cpu_count_-1 的所有处理器
   // 跳过当前的 BSP (Bootstrap Processor)
   for (size_t apic_id = 0; apic_id < cpu_count_; apic_id++) {
     // 跳过当前 BSP
     if (static_cast<uint32_t>(apic_id) == cpu_io::GetApicInfo().apic_id) {
       continue;
     }
-    StartupAp(static_cast<uint32_t>(apic_id), ap_code_addr, ap_code_size,
-              target_addr);
+    auto ret = StartupAp(static_cast<uint32_t>(apic_id), ap_code_addr,
+                         ap_code_size, target_addr);
+    if (!ret) {
+      klog::Err("Failed to start AP with APIC ID 0x%x\n", apic_id);
+    }
   }
-}
-
-void Apic::PrintInfo() const {
-  local_apic_.PrintInfo();
-
-  klog::Info("System has 1 IO APIC:\n");
-  io_apic_.PrintInfo();
-  uint32_t max_entries = io_apic_.GetMaxRedirectionEntries();
-  klog::Info("  Max Entries: %u\n", max_entries);
-  klog::Info("  IRQ Range: 0 - %u\n", max_entries - 1);
 }
 
 void Apic::SendEoi() const { local_apic_.SendEoi(); }
 
 void Apic::SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const {
   local_apic_.SetupPeriodicTimer(frequency_hz, vector);
+}
+
+void Apic::PrintInfo() const {
+  local_apic_.PrintInfo();
+  io_apic_.PrintInfo();
 }

@@ -9,16 +9,8 @@
 #include "kernel_log.hpp"
 
 IoApic::IoApic() {
-  // 检查 IO APIC 是否可访问
-  auto id = GetId();
-  auto version = GetVersion();
-  auto max_entries = GetMaxRedirectionEntries();
-
-  klog::Info("IO APIC ID: 0x%x, Version: 0x%x, Max Entries: %u\n", id, version,
-             max_entries);
-
   // 禁用所有重定向条目（设置为屏蔽状态）
-  for (auto i = 0; i < max_entries; i++) {
+  for (auto i = 0; i < GetMaxRedirectionEntries(); i++) {
     auto entry = ReadRedirectionEntry(i);
     entry |= kMaskBit;
     WriteRedirectionEntry(i, entry);
@@ -28,10 +20,7 @@ IoApic::IoApic() {
 }
 
 void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
-                               uint32_t destination_apic_id, bool mask) {
-  klog::Info("Setting IRQ %u redirection: vector=0x%x, dest=0x%x, mask=%s\n",
-             irq, vector, destination_apic_id, mask ? "true" : "false");
-
+                               uint32_t destination_apic_id, bool mask) const {
   // 检查 IRQ 是否在有效范围内
   auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
@@ -56,7 +45,7 @@ void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
   WriteRedirectionEntry(irq, entry);
 }
 
-void IoApic::MaskIrq(uint8_t irq) {
+void IoApic::MaskIrq(uint8_t irq) const {
   auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
     klog::Err("IRQ %u exceeds maximum entries %u\n", irq, max_entries);
@@ -68,7 +57,7 @@ void IoApic::MaskIrq(uint8_t irq) {
   WriteRedirectionEntry(irq, entry);
 }
 
-void IoApic::UnmaskIrq(uint8_t irq) {
+void IoApic::UnmaskIrq(uint8_t irq) const {
   auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
     klog::Err("IRQ %u exceeds maximum entries %u\n", irq, max_entries);
@@ -127,7 +116,7 @@ uint64_t IoApic::ReadRedirectionEntry(uint8_t irq) const {
   return (static_cast<uint64_t>(high) << 32) | low;
 }
 
-void IoApic::WriteRedirectionEntry(uint8_t irq, uint64_t value) {
+void IoApic::WriteRedirectionEntry(uint8_t irq, uint64_t value) const {
   auto low_reg = kRedTblBase + (irq * 2);
   auto high_reg = low_reg + 1;
 

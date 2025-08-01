@@ -109,11 +109,6 @@ class Apic {
                      uint64_t target_addr) const;
 
   /**
-   * @brief 打印所有 APIC 信息（调试用）
-   */
-  void PrintInfo() const;
-
-  /**
    * @brief 发送 EOI 信号给当前 CPU 的 Local APIC
    */
   void SendEoi() const;
@@ -124,6 +119,11 @@ class Apic {
    * @param vector 中断向量号
    */
   void SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const;
+
+  /**
+   * @brief 打印所有 APIC 信息（调试用）
+   */
+  void PrintInfo() const;
 
  private:
   /// Local APIC 操作接口（静态实例，用于当前 CPU）

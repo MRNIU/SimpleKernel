@@ -17,9 +17,10 @@
  */
 class IoApic {
  public:
+  IoApic();
+
   /// @name 默认构造/析构函数
   /// @{
-  IoApic();
   IoApic(const IoApic&) = delete;
   IoApic(IoApic&&) = default;
   auto operator=(const IoApic&) -> IoApic& = delete;
@@ -35,19 +36,19 @@ class IoApic {
    * @param mask 是否屏蔽中断
    */
   void SetIrqRedirection(uint8_t irq, uint8_t vector,
-                         uint32_t destination_apic_id, bool mask = false);
+                         uint32_t destination_apic_id, bool mask = false) const;
 
   /**
    * @brief 屏蔽 IRQ
    * @param irq IRQ 号
    */
-  void MaskIrq(uint8_t irq);
+  void MaskIrq(uint8_t irq) const;
 
   /**
    * @brief 取消屏蔽 IRQ
    * @param irq IRQ 号
    */
-  void UnmaskIrq(uint8_t irq);
+  void UnmaskIrq(uint8_t irq) const;
 
   /**
    * @brief 获取 IO APIC ID
@@ -168,7 +169,7 @@ class IoApic {
    * @param irq IRQ 号
    * @param value 重定向表项值
    */
-  void WriteRedirectionEntry(uint8_t irq, uint64_t value);
+  void WriteRedirectionEntry(uint8_t irq, uint64_t value) const;
 };
 
 #endif /* SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_IO_APIC_H_ */
