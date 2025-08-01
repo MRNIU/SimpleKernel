@@ -3,8 +3,8 @@
  * @brief boot S
  */
 
-// 每个 CPU 的栈大小：4KB
-#define STACK_SIZE_PER_CPU      0x1000
+// 每个 CPU 的栈大小：64KB
+#define STACK_SIZE_PER_CPU      0x10000
 // 最大 CPU 数量
 #define MAX_CPU_COUNT           4
 // 总栈大小
