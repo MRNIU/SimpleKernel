@@ -1,212 +1,128 @@
 # arch
 
-arch 目录下放置了与架构强相关的内容
+架构相关代码目录，包含了不同 CPU 架构的特定实现，目前支持三种主流 64 位架构：
 
-如 CPU 寄存器读写、内存相关操作等
+- **aarch64** - ARM 64 位架构
+- **riscv64** - RISC-V 64 位架构
+- **x86_64** - x86 64 位架构
 
-## 对链接脚本做的修改：
-
-- x86_64
-
-  在 `x86_64-linux-gnu-ld --verbose` 输出的基础上添加了对齐要求 `ALIGN(0x1000)`
-
-- riscv64
-
-    1. 在 `riscv64-linux-gnu-ld --verbose`
-       输出的基础上添加了对齐要求 `ALIGN(0x1000)`
-
-    2. 将开始地址设置为 0x80200000
-
-    3. 添加 .boot 段
-
-## cpu.hpp
-
-所有读写寄存器的操作被分为四层
-
-1. 寄存器定义
-
-   如果寄存器有特殊的位域含义(如 csr/cr0 寄存器)，参考 RegInfoBase 给出
-
-2. 读/写模版实现
-
-   针对通用寄存器只实现 Read/Write 接口
-
-   csr/cr0 寄存器还有 ReadImm/WriteImm/ReadWrite/ReadWriteImm 等接口
-
-   调用时根据寄存器类型选择对应的模版实现
-
-3. 寄存器实例
-
-   通过向读写模版传递寄存器定义，生成对应的实例
-
-4. 访问接口
-
-   通过访问接口访问寄存器
-
-添加寄存器时，按照以上四步进行
-
-```c++
-
-/**
- * @file cpu.hpp
- * @brief riscv64 cpu 相关定义
- * @author Zone.N (Zone.Niuzh@hotmail.com)
- * @version 1.0
- * @date 2024-03-05
- * @copyright MIT LICENSE
- * https://github.com/Simple-XX/SimpleKernel
- * @par change log:
- * <table>
- * <tr><th>Date<th>Author<th>Description
- * <tr><td>2024-03-05<td>Zone.N (Zone.Niuzh@hotmail.com)<td>创建文件
- * </table>
- */
-
-#ifndef SIMPLEKERNEL_SRC_ARCH_RISCV64_INCLUDE_CPU_HPP_
-#define SIMPLEKERNEL_SRC_ARCH_RISCV64_INCLUDE_CPU_HPP_
-
-#include <cstdint>
-#include <cstdlib>
-#include <type_traits>
-#include <typeinfo>
-
-#include "sk_cstdio"
-#include "sk_iostream"
-#include "kernel_log.hpp"
-
-/**
- * riscv64 cpu 相关定义
- * @note 寄存器读写设计见 arch/README.md
- */
-namespace cpu {
-
-// 第一部分：寄存器定义
-namespace reginfo {
-
-struct RegInfoBase {
-  using DataType = uint64_t;
-  static constexpr uint64_t kBitOffset = 0;
-  static constexpr uint64_t kBitWidth = 64;
-  static constexpr uint64_t kBitMask = ~0;
-  static constexpr uint64_t kAllSetMask = ~0;
-};
-
-/// 通用寄存器
-struct FpInfo : public RegInfoBase {};
-
-};  // namespace reginfo
-
-// 第二部分：读/写模版实现
-namespace {
-/**
- * 只读接口
- * @tparam 寄存器类型
- */
-template <class Reg>
-class ReadOnlyRegBase {
- public:
-  /// @name 构造/析构函数
-  /// @{
-  ReadOnlyRegBase() = default;
-  ReadOnlyRegBase(const ReadOnlyRegBase &) = delete;
-  ReadOnlyRegBase(ReadOnlyRegBase &&) = delete;
-  auto operator=(const ReadOnlyRegBase &) -> ReadOnlyRegBase & = delete;
-  auto operator=(ReadOnlyRegBase &&) -> ReadOnlyRegBase & = delete;
-  ~ReadOnlyRegBase() = default;
-  /// @}
-
-  /**
-   * 读寄存器
-   * @return uint64_t 寄存器的值
-   */
-  static __always_inline uint64_t Read() {
-    uint64_t value = -1;
-    if constexpr (std::is_same<Reg, reginfo::FpInfo>::value) {
-      __asm__ volatile("mv %0, fp" : "=r"(value) : :);
-    } else {
-      Err("No Type\n");
-      throw;
-    }
-    return value;
-  }
-
-  /**
-   * () 重载
-   */
-  static __always_inline uint64_t operator()() { return Read(); }
-};
-
-/**
- * 只写接口
- * @tparam 寄存器类型
- */
-template <class Reg>
-class WriteOnlyRegBase {
- public:
-  /// @name 构造/析构函数
-  /// @{
-  WriteOnlyRegBase() = default;
-  WriteOnlyRegBase(const WriteOnlyRegBase &) = delete;
-  WriteOnlyRegBase(WriteOnlyRegBase &&) = delete;
-  auto operator=(const WriteOnlyRegBase &) -> WriteOnlyRegBase & = delete;
-  auto operator=(WriteOnlyRegBase &&) -> WriteOnlyRegBase & = delete;
-  ~WriteOnlyRegBase() = default;
-  /// @}
-
-  /**
-   * 写寄存器
-   * @param value 要写的值
-   */
-  static __always_inline void Write(uint64_t value) {
-    if constexpr (std::is_same<Reg, reginfo::FpInfo>::value) {
-      __asm__ volatile("mv fp, %0" : : "r"(value) :);
-    } else {
-      Err("No Type\n");
-      throw;
-    }
-  }
-};
-
-/**
- * 读写接口
- * @tparam 寄存器类型
- */
-template <class Reg>
-class ReadWriteRegBase : public ReadOnlyRegBase<Reg>,
-                         public WriteOnlyRegBase<Reg> {
- public:
-  /// @name 构造/析构函数
-  /// @{
-  ReadWriteRegBase() = default;
-  ReadWriteRegBase(const ReadWriteRegBase &) = delete;
-  ReadWriteRegBase(ReadWriteRegBase &&) = delete;
-  auto operator=(const ReadWriteRegBase &) -> ReadWriteRegBase & = delete;
-  auto operator=(ReadWriteRegBase &&) -> ReadWriteRegBase & = delete;
-  ~ReadWriteRegBase() = default;
-  /// @}
-};
-
-// 第三部分：寄存器实例
-class Fp : public ReadWriteRegBase<reginfo::FpInfo> {
- public:
-  friend std::ostream &operator<<(std::ostream &os, const Fp &fp) {
-    printf("val: 0x%p", fp.Read());
-    return os;
-  }
-};
-
-/// 通用寄存器
-struct AllXreg {
-  Fp fp;
-};
-
-};  // namespace
-
-// 第四部分：访问接口
-[[maybe_unused]] static AllXreg kAllXreg;
-
-};  // namespace cpu
-
-#endif  // SIMPLEKERNEL_SRC_ARCH_RISCV64_INCLUDE_CPU_HPP_
+## 目录结构
 
 ```
+arch/
+├── arch.h              # 架构抽象接口定义
+├── CMakeLists.txt      # 构建配置文件
+├── README.md          # 本文档
+├── aarch64/           # ARM 64 位架构实现
+│   ├── arch_main.cpp  # 架构初始化主函数
+│   ├── backtrace.cpp  # 调用栈回溯实现
+│   ├── boot.S         # 启动汇编代码
+│   └── link.ld        # 链接脚本
+├── riscv64/           # RISC-V 64 位架构实现
+│   ├── arch_main.cpp  # 架构初始化主函数
+│   ├── backtrace.cpp  # 调用栈回溯实现
+│   ├── boot.S         # 启动汇编代码
+│   ├── link.ld        # 链接脚本
+│   └── macro.S        # 汇编宏定义
+└── x86_64/            # x86 64 位架构实现
+    ├── arch_main.cpp  # 架构初始化主函数
+    ├── backtrace.cpp  # 调用栈回溯实现
+    ├── boot.S         # 启动汇编代码
+    ├── link.ld        # 链接脚本
+    └── sipi.h         # SMP 启动相关定义
+```
+
+## 核心接口
+
+### arch.h
+
+定义了所有架构需要实现的统一接口：
+
+```cpp
+// 架构相关初始化
+void ArchInit(int argc, const char **argv);
+void ArchInitSMP(int argc, const char **argv);
+
+// 调用栈回溯
+int backtrace(void **buffer, int size);
+void DumpStack();
+```
+
+## 各架构实现
+
+### 通用功能
+
+每个架构都实现了以下核心功能：
+
+1. **启动引导** (`boot.S`)
+   - CPU 初始化和寄存器设置
+   - 栈空间分配和设置
+   - 跳转到 C/C++ 入口点
+
+2. **架构初始化** (`arch_main.cpp`)
+   - 基础硬件初始化
+   - 串口/控制台输出设置
+   - 多核处理器启动
+   - 系统信息收集
+
+3. **调用栈回溯** (`backtrace.cpp`)
+   - 基于帧指针的栈回溯
+   - 符号表解析和函数名显示
+   - 错误调试支持
+
+4. **链接配置** (`link.ld`)
+   - 内存布局定义
+   - 段分配和对齐
+   - 符号导出
+
+### 架构特定功能
+
+#### aarch64
+- **启动方式**: 通过 ARM Trusted Firmware 或 U-Boot 启动
+- **多核启动**: 使用 PSCI (Power State Coordination Interface) 唤醒其他核心
+- **串口**: PL011 UART 控制器
+- **设备树**: 通过 FDT (Flattened Device Tree) 获取硬件信息
+- **帧指针**: 使用 X29 寄存器进行栈回溯
+
+#### riscv64
+- **启动方式**: 通过 OpenSBI 启动
+- **多核启动**: 使用 SBI (Supervisor Binary Interface) hart_start 调用
+- **串口**: 通过 OpenSBI 提供的调试控制台
+- **设备树**: 通过 FDT 获取硬件信息
+- **帧指针**: 使用 FP 寄存器进行栈回溯
+- **特殊文件**: `macro.S` 提供汇编宏定义，包括寄存器操作宏
+
+#### x86_64
+- **启动方式**: 通过 GRUB 或其他 Multiboot 兼容启动器
+- **多核启动**: 使用 APIC (Advanced Programmable Interrupt Controller) 和 SIPI (Startup Inter-Processor Interrupt)
+- **串口**: 标准 COM1 串口 (0x3F8)
+- **硬件发现**: 通过 CPUID 指令获取处理器信息
+- **帧指针**: 使用 RBP 寄存器进行栈回溯
+- **特殊文件**: `sipi.h` 定义多核启动相关结构
+
+## 编译配置
+
+通过 CMake 根据 `CMAKE_SYSTEM_PROCESSOR` 变量自动选择对应的架构实现：
+
+- **源文件**: 每个架构的 `boot.S`, `arch_main.cpp`, `backtrace.cpp`
+- **头文件路径**: 自动包含对应架构的头文件目录
+- **特殊处理**: RISC-V 架构额外包含 `macro.S` 文件
+
+## 多核支持
+
+所有架构都支持 SMP (Symmetric Multi-Processing)：
+
+- **主核初始化**: `ArchInit()` 在主核上执行完整初始化
+- **从核初始化**: `ArchInitSMP()` 在从核上执行简化初始化
+- **核心启动**: 每个架构使用不同的机制唤醒其他 CPU 核心
+- **栈管理**: 为每个核心分配独立的栈空间
+
+## 调试支持
+
+提供统一的调用栈回溯功能：
+
+- **符号解析**: 通过解析内核 ELF 文件获取函数符号
+- **地址映射**: 将运行时地址映射到函数名
+- **错误定位**: 在内核崩溃时显示详细的调用栈信息
+
+这种架构设计确保了内核的可移植性，同时允许每个架构充分利用其特有的硬件特性。

@@ -18,7 +18,8 @@ TARGET_LINK_LIBRARIES (
               gic>
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
               8259a
-              apic>)
+              apic
+              acpi>)
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
     ADD_SUBDIRECTORY (ns16550a)
@@ -29,4 +30,5 @@ ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
 ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     ADD_SUBDIRECTORY (8259a)
     ADD_SUBDIRECTORY (apic)
+    ADD_SUBDIRECTORY (acpi)
 ENDIF()

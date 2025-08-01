@@ -23,30 +23,48 @@ interrupt branch
 
 ## 快速开始
 
-### 使用构建好的 Docker
+### 📋 系统要求
+
+- **操作系统**: Linux (推荐 Ubuntu 24.04) 或 macOS
+- **容器引擎**: Docker 20.10+
+- **工具链**: 已包含在 Docker 镜像中（GCC 交叉编译器、CMake、QEMU 等）
+
+### 🛠️ 环境搭建
+
+**方式一：使用 Docker（推荐）**
 
 ```shell
-# 拉取代码
-git clone https://github.com/MRNIU/SimpleKernel.git
+# 1. 克隆项目
+git clone https://github.com/simple-xx/SimpleKernel.git
+cd SimpleKernel
 git submodule update --init --recursive
-# 拉取 Docker Image
+
+# 2. 启动开发环境
 docker pull ptrnull233/simple_kernel:latest
-# 运行 Docker
-docker run --name SimpleKernel-container -itd -p 233:22 -v ./SimpleKernel:/root/ ptrnull233/simple_kernel:latest
-# 进入 Docker
-docker exec -it SimpleKernel-container /bin/zsh
+docker run --name SimpleKernel-dev -itd -p 233:22 \
+  -v $(pwd):/root/SimpleKernel ptrnull233/simple_kernel:latest
+
+# 3. 进入开发容器
+docker exec -it SimpleKernel-dev /bin/zsh
 ```
 
-### 编译并运行
+**方式二：本地环境**
+
+参考 [工具链文档](./doc/0_工具链.md) 配置本地开发环境。
+
+### ⚡ 编译与运行
 
 ```shell
 cd SimpleKernel
-# build_riscv64/build_aarch64/build_x86_64/
+
+# 选择目标架构编译（以 RISC-V 64 为例）
 cmake --preset build_riscv64
 cd build_riscv64
+
 # 编译内核
 make kernel
-# 在 qemu 中运行
+
+# 在 QEMU 模拟器中运行
 make run
 ```
 
@@ -158,8 +176,97 @@ make run
 
 [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git)
 
-## 开发指南
+## 📝 开发指南
 
-代码风格：Google，已由 .clang-format 指定
+### 🎨 代码风格规范
+- **编码标准** - 严格遵循 [Google C++ 风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
+- **自动格式化** - 预配置 `.clang-format`，使用 `clang-format` 自动格式化
+- **命名约定** - 类名采用 PascalCase，函数和变量使用 snake_case
+- **注释规范** - 使用 Doxygen 风格注释，支持自动文档生成
 
-命名规范：[Google 开源项目风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
+### 🚀 开发工作流
+1. **Fork 项目** - 从主仓库创建个人分支
+2. **本地开发** - 使用 Docker 环境进行开发和测试
+3. **质量检查** - 运行静态分析和测试套件
+4. **提交 PR** - 遵循提交信息规范，详细描述变更
+
+### 📋 提交信息规范
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**类型说明:**
+- `feat`: 新功能
+- `fix`: Bug 修复
+- `docs`: 文档更新
+- `style`: 代码格式调整
+- `refactor`: 代码重构
+- `test`: 测试相关
+- `chore`: 构建工具或辅助工具变更
+
+### 📚 文档自动部署
+- **主分支部署** - GitHub Actions 自动将 main 分支文档部署到 [GitHub Pages](https://simple-xx.github.io/SimpleKernel/)
+- **API 文档** - Doxygen 生成的完整 API 参考文档
+- **开发文档** - 架构设计、开发指南和最佳实践
+
+## 🤝 贡献指南
+
+我们欢迎所有形式的贡献！无论是代码、文档、测试还是问题报告，都是推动项目发展的重要力量。
+
+### 🎯 如何贡献
+
+**🐛 报告问题**
+- 使用 [GitHub Issues](https://github.com/Simple-XX/SimpleKernel/issues) 报告 Bug
+- 详细描述问题重现步骤、环境信息和期望行为
+- 附上相关日志和错误信息
+
+**💡 功能建议**
+- 通过 Issues 提出新功能建议
+- 描述功能用途、实现思路和预期效果
+- 讨论技术可行性和架构影响
+
+**🔧 代码贡献**
+1. Fork 本仓库到个人账户
+2. 创建功能分支: `git checkout -b feature/amazing-feature`
+3. 遵循代码规范进行开发
+4. 添加必要的测试用例
+5. 提交变更: `git commit -m 'feat: add amazing feature'`
+6. 推送分支: `git push origin feature/amazing-feature`
+7. 创建 Pull Request
+
+### 📋 贡献者协议
+- 确保代码质量和测试覆盖率
+- 尊重现有架构和设计模式
+- 积极参与代码评审和讨论
+
+## 📄 许可证
+
+本项目采用多重许可证：
+
+- **代码许可** - [MIT License](./LICENSE)
+- **反 996 许可** - [Anti 996 License](https://github.com/996icu/996.ICU/blob/master/LICENSE)
+
+```
+MIT License & Anti 996 License
+
+Copyright (c) 2024 SimpleKernel Contributors
+
+在遵循 MIT 协议的同时，本项目坚决反对 996 工作制度，
+提倡健康的工作与生活平衡。
+```
+
+---
+
+<div align="center">
+
+**⭐ 如果这个项目对您有帮助，请给我们一个 Star！**
+
+**🚀 让我们一起构建更好的操作系统内核！**
+
+[🌟 Star 项目](https://github.com/Simple-XX/SimpleKernel) • [🐛 报告问题](https://github.com/Simple-XX/SimpleKernel/issues) • [💬 参与讨论](https://github.com/Simple-XX/SimpleKernel/discussions)
+
+</div>
