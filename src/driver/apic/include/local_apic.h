@@ -35,12 +35,6 @@ class LocalApic {
   auto Init() -> bool;
 
   /**
-   * @brief 获取当前 CPU 的 APIC ID
-   * @return uint32_t APIC ID
-   */
-  [[nodiscard]] auto GetApicId() const -> uint32_t;
-
-  /**
    * @brief 获取 APIC 版本信息
    * @return uint32_t APIC 版本
    */

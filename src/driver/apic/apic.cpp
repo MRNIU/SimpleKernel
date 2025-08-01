@@ -166,7 +166,7 @@ size_t Apic::StartupAllAps(const void* ap_code_addr, size_t ap_code_size,
     return 0;
   }
 
-  uint32_t current_apic_id = GetCurrentApicId();
+  uint32_t current_apic_id = cpu_io::GetApicInfo().apic_id;
   klog::Info("Current BSP APIC ID: 0x%x\n", current_apic_id);
 
   size_t startup_attempts = 0;
@@ -218,8 +218,6 @@ size_t Apic::StartupAllAps(const void* ap_code_addr, size_t ap_code_size,
 
   return startup_success;
 }
-
-uint32_t Apic::GetCurrentApicId() { return local_apic_.GetApicId(); }
 
 void Apic::PrintInfo() const { local_apic_.PrintInfo(); }
 

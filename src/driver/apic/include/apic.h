@@ -154,12 +154,6 @@ class Apic {
       -> size_t;
 
   /**
-   * @brief 获取当前 CPU 的 APIC ID
-   * @return uint32_t 当前 CPU 的 APIC ID
-   */
-  auto GetCurrentApicId() -> uint32_t;
-
-  /**
    * @brief 打印所有 APIC 信息（调试用）
    */
   void PrintInfo() const;

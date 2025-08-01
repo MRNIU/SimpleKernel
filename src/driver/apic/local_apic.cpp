@@ -3,8 +3,6 @@
  * @brief Local APIC 驱动实现
  */
 
-#include <cpuid.h>
-
 #include "apic.h"
 #include "io.hpp"
 #include "kernel_log.hpp"
@@ -72,18 +70,7 @@ bool LocalApic::Init() {
 
   klog::Info("Local APIC initialized successfully in %s mode\n",
              is_x2apic_mode_ ? "x2APIC" : "xAPIC");
-  klog::Info("APIC ID: 0x%x\n", GetApicId());
   return true;
-}
-
-uint32_t LocalApic::GetApicId() const {
-  if (is_x2apic_mode_) {
-    return cpu_io::msr::apic::ReadId();
-  } else {
-    // APIC ID 在偏移 0x20 处，高 8 位包含 ID
-    auto id_reg = io::In<uint32_t>(apic_base_ + kXApicIdOffset);
-    return (id_reg >> kApicIdShift) & kApicIdMask;
-  }
 }
 
 uint32_t LocalApic::GetApicVersion() const {
@@ -437,7 +424,6 @@ uint32_t LocalApic::ReadErrorStatus() {
 
 void LocalApic::PrintInfo() const {
   klog::Info("=== Local APIC Information ===\n");
-  klog::Info("APIC ID: 0x%x\n", GetApicId());
   klog::Info("APIC Version: 0x%x\n", GetApicVersion());
   klog::Info("Mode: %s\n", is_x2apic_mode_ ? "x2APIC" : "xAPIC");
   klog::Info("x2APIC Enabled: %s\n", IsX2ApicEnabled() ? "Yes" : "No");
@@ -487,13 +473,7 @@ void LocalApic::PrintInfo() const {
 }
 
 bool LocalApic::CheckX2ApicSupport() const {
-  // CPUID.01H:ECX.x2APIC[bit 21] = 1 表示支持 x2APIC
-  uint32_t eax;
-  uint32_t ebx;
-  uint32_t ecx;
-  uint32_t edx;
-  __get_cpuid(1, &eax, &ebx, &ecx, &edx);
-  return (ecx & (1 << 21)) != 0;
+  return cpu_io::GetApicInfo().has_x2apic;
 }
 
 bool LocalApic::EnableXApic() const {
