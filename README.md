@@ -182,10 +182,6 @@ SimpleKernel 在当前 interrupt 分支实现了完整的中断处理系统，�
 
 ## 🎯 中断系统架构
 
-### 🔄 执行流程图
-
-[common_bootflow](https://www.plantuml.com/plantuml/png/dL9TIyCm57tU_HKXFewDiR6NWJ8tHDGDXiKdaPAs5nVCHymIsVpr9d6bgnqexg6ZvvwFqzpCTuvPvwK0nvr0ijHIQaKMMZkIuRj7LI9iaLLe2HsFnjFXb08mxxJoia0BKEWzcTYANApuwzRTMZo02PQyv8OfHuhW97JIQnkVO_8ClSiKi4euz0RX1prAdmOHfXHU05L5WZCGaW9engKH-81MeQ37h8NmsCawfan6AIOYmwn9o8iwe2LCXz1MIiRLi3JcH9jONN4WSSL_o7TlkU15kT-tFPR6t0LkroJ6_LOW8bqbi-Mscn_Hl6jn7U3p1NRIv7yjaGVoUOT_bSdMczREuUJE3Aw-jpfBboLD0fOM5i5xBmsabu3McmXujELCy4yaotwVF7hbk4HegB5DuAtZturozj2CwfC8uz3iE0LMElx172PbyrQJ0U8po9jzp4Zym5G5Qbhjtv1IHaEiRLej3gea6ysLWmhRFIhiDfcZghmKNm00)
-
 ### 💡 分支新增特性
 
 本分支基于 boot 分支的完整基础架构，重点实现了中断处理系统。在此分支中，完成了多架构中断控制器驱动、中断注册机制、时钟中断处理等核心功能。
@@ -273,7 +269,7 @@ SimpleKernel 在当前 interrupt 分支实现了完整的中断处理系统，�
 - [x] **[aarch64]** UART 中断处理
 - [ ] **[aarch64]** 基于 U-Boot 的引导 (开发中)
 
-## � 第三方依赖
+## 📦 第三方依赖
 
 - [google/googletest](https://github.com/google/googletest.git) - 测试框架
 - [charlesnicholson/nanoprintf](https://github.com/charlesnicholson/nanoprintf.git) - printf 实现
@@ -286,7 +282,7 @@ SimpleKernel 在当前 interrupt 分支实现了完整的中断处理系统，�
 - [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git) - ARM 可信固件
 - [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) - 设备树编译器
 
-## �📝 开发指南
+## 📝 开发指南
 
 ### 🎨 代码风格规范
 - **编码标准** - 严格遵循 [Google C++ 风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
