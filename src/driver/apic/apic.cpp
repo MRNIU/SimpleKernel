@@ -12,7 +12,6 @@
 Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {}
 
 bool Apic::AddIoApic(uint64_t base_address, uint32_t gsi_base) {
-  // TODO: 实现添加 IO APIC
   if (io_apic_count_ >= kMaxIoApics) {
     klog::Err("Cannot add more IO APICs, maximum %zu reached\n", kMaxIoApics);
     return false;
@@ -20,7 +19,27 @@ bool Apic::AddIoApic(uint64_t base_address, uint32_t gsi_base) {
 
   klog::Info("Adding IO APIC at address 0x%lx, GSI base %u\n", base_address,
              gsi_base);
-  return false;
+
+  auto& io_apic_info = io_apics_[io_apic_count_];
+
+  // 初始化 IO APIC
+  if (!io_apic_info.instance.Init(base_address)) {
+    klog::Err("Failed to initialize IO APIC at address 0x%lx\n", base_address);
+    return false;
+  }
+
+  // 设置 IO APIC 信息
+  io_apic_info.base_address = base_address;
+  io_apic_info.gsi_base = gsi_base;
+  io_apic_info.gsi_count = io_apic_info.instance.GetMaxRedirectionEntries();
+  io_apic_info.valid = true;
+
+  io_apic_count_++;
+
+  klog::Info("IO APIC added successfully. GSI range: %u - %u\n", gsi_base,
+             gsi_base + io_apic_info.gsi_count - 1);
+
+  return true;
 }
 
 bool Apic::InitCurrentCpuLocalApic() {
@@ -39,7 +58,6 @@ bool Apic::InitCurrentCpuLocalApic() {
 LocalApic& Apic::GetCurrentLocalApic() { return local_apic_; }
 
 IoApic* Apic::GetIoApic(size_t index) {
-  // TODO: 实现获取 IO APIC
   if (index >= io_apic_count_) {
     return nullptr;
   }
@@ -47,7 +65,6 @@ IoApic* Apic::GetIoApic(size_t index) {
 }
 
 IoApic* Apic::FindIoApicByGsi(uint32_t gsi) {
-  // TODO: 实现根据 GSI 查找 IO APIC
   for (size_t i = 0; i < io_apic_count_; ++i) {
     auto& io_apic_info = io_apics_[i];
     if (io_apic_info.valid && gsi >= io_apic_info.gsi_base &&
@@ -62,22 +79,55 @@ size_t Apic::GetIoApicCount() const { return io_apic_count_; }
 
 bool Apic::SetIrqRedirection(uint8_t irq, uint8_t vector,
                              uint32_t destination_apic_id, bool mask) {
-  // TODO: 实现 IRQ 重定向设置
   klog::Info("Setting IRQ %u redirection to vector 0x%x, APIC ID 0x%x\n", irq,
              vector, destination_apic_id);
-  return false;
+
+  // 查找处理该 IRQ 的 IO APIC
+  auto* io_apic_info = FindIoApicByIrq(irq);
+  if (io_apic_info == nullptr || !io_apic_info->valid) {
+    klog::Err("No IO APIC found for IRQ %u\n", irq);
+    return false;
+  }
+
+  // 检查 IRQ 是否在有效范围内
+  uint32_t gsi = io_apic_info->gsi_base + irq;
+  if (gsi >= io_apic_info->gsi_base + io_apic_info->gsi_count) {
+    klog::Err("IRQ %u (GSI %u) exceeds IO APIC range\n", irq, gsi);
+    return false;
+  }
+
+  // 设置重定向
+  io_apic_info->instance.SetIrqRedirection(irq, vector, destination_apic_id,
+                                           mask);
+  return true;
 }
 
 bool Apic::MaskIrq(uint8_t irq) {
-  // TODO: 实现屏蔽 IRQ
   klog::Info("Masking IRQ %u\n", irq);
-  return false;
+
+  // 查找处理该 IRQ 的 IO APIC
+  auto* io_apic_info = FindIoApicByIrq(irq);
+  if (io_apic_info == nullptr || !io_apic_info->valid) {
+    klog::Err("No IO APIC found for IRQ %u\n", irq);
+    return false;
+  }
+
+  io_apic_info->instance.MaskIrq(irq);
+  return true;
 }
 
 bool Apic::UnmaskIrq(uint8_t irq) {
-  // TODO: 实现取消屏蔽 IRQ
   klog::Info("Unmasking IRQ %u\n", irq);
-  return false;
+
+  // 查找处理该 IRQ 的 IO APIC
+  auto* io_apic_info = FindIoApicByIrq(irq);
+  if (io_apic_info == nullptr || !io_apic_info->valid) {
+    klog::Err("No IO APIC found for IRQ %u\n", irq);
+    return false;
+  }
+
+  io_apic_info->instance.UnmaskIrq(irq);
+  return true;
 }
 
 void Apic::SendIpi(uint32_t target_apic_id, uint8_t vector) const {
@@ -149,13 +199,39 @@ void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
   }
 }
 
-void Apic::PrintInfo() const { local_apic_.PrintInfo(); }
+void Apic::PrintInfo() const {
+  local_apic_.PrintInfo();
+
+  klog::Info("System has %zu IO APIC(s)\n", io_apic_count_);
+  for (size_t i = 0; i < io_apic_count_; ++i) {
+    const auto& io_apic_info = io_apics_[i];
+    if (io_apic_info.valid) {
+      klog::Info("IO APIC %zu:\n", i);
+      io_apic_info.instance.PrintInfo();
+      klog::Info("  GSI Base: %u\n", io_apic_info.gsi_base);
+      klog::Info("  GSI Count: %u\n", io_apic_info.gsi_count);
+      klog::Info("  GSI Range: %u - %u\n", io_apic_info.gsi_base,
+                 io_apic_info.gsi_base + io_apic_info.gsi_count - 1);
+    }
+  }
+}
 
 Apic::IoApicInfo* Apic::FindIoApicByIrq(uint8_t irq) {
-  // TODO: 实现根据 IRQ 查找 IO APIC
-  // 简单实现：假设 IRQ 0-23 由第一个 IO APIC 处理
-  if (io_apic_count_ > 0 && irq < 24) {
-    return &io_apics_[0];
+  // 首先尝试在第一个 IO APIC 中查找（通常处理 IRQ 0-23）
+  if (io_apic_count_ > 0 && io_apics_[0].valid) {
+    if (irq < io_apics_[0].gsi_count) {
+      return &io_apics_[0];
+    }
   }
+
+  // 如果第一个 IO APIC 不能处理该 IRQ，则遍历所有 IO APIC
+  for (size_t i = 0; i < io_apic_count_; ++i) {
+    auto& io_apic_info = io_apics_[i];
+    if (io_apic_info.valid && irq >= io_apic_info.gsi_base &&
+        irq < io_apic_info.gsi_base + io_apic_info.gsi_count) {
+      return &io_apic_info;
+    }
+  }
+
   return nullptr;
 }
