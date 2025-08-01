@@ -43,33 +43,6 @@ class Apic {
   auto InitCurrentCpuLocalApic() -> bool;
 
   /**
-   * @brief 获取当前 CPU 的 Local APIC 操作接口
-   * @return LocalApic& Local APIC 引用
-   * @note 返回的是一个静态实例，用于访问当前 CPU 的 Local APIC
-   */
-  auto GetCurrentLocalApic() -> LocalApic&;
-
-  /**
-   * @brief 获取 IO APIC 实例
-   * @param index IO APIC 索引
-   * @return IoApic* IO APIC 指针，如果索引无效则返回 nullptr
-   */
-  auto GetIoApic(size_t index = 0) -> IoApic*;
-
-  /**
-   * @brief 根据 GSI 查找对应的 IO APIC
-   * @param gsi 全局系统中断号
-   * @return IoApic* 对应的 IO APIC 指针，如果未找到则返回 nullptr
-   */
-  auto FindIoApicByGsi(uint32_t gsi) -> IoApic*;
-
-  /**
-   * @brief 获取 IO APIC 数量
-   * @return size_t IO APIC 数量
-   */
-  [[nodiscard]] auto GetIoApicCount() const -> size_t;
-
-  /**
    * @brief 设置 IRQ 重定向
    * @param irq IRQ 号
    * @param vector 中断向量
@@ -139,6 +112,18 @@ class Apic {
    * @brief 打印所有 APIC 信息（调试用）
    */
   void PrintInfo() const;
+
+  /**
+   * @brief 发送 EOI 信号给当前 CPU 的 Local APIC
+   */
+  void SendEoi() const;
+
+  /**
+   * @brief 设置 Local APIC 定时器
+   * @param frequency_hz 定时器频率（Hz）
+   * @param vector 中断向量号
+   */
+  void SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const;
 
  private:
   /// Local APIC 操作接口（静态实例，用于当前 CPU）

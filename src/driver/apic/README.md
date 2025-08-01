@@ -79,11 +79,11 @@ if (!apic.InitCurrentCpuLocalApic()) {
     // 处理初始化失败
 }
 
-// 获取当前 CPU 的 Local APIC
-auto& local_apic = apic.GetCurrentLocalApic();
+// 发送 EOI 信号
+apic.SendEoi();
 
-// 发送 EOI
-local_apic.SendEoi();
+// 设置 Local APIC 定时器
+apic.SetupPeriodicTimer(100, 0xF0);
 
 // 发送 IPI 到指定 CPU
 apic.SendIpi(target_apic_id, 0x30);

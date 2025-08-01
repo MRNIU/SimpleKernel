@@ -9,9 +9,7 @@
 
 #include "kernel_log.hpp"
 
-Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {
-  // IO APIC 在构造时自动初始化完成
-}
+Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {}
 
 bool Apic::InitCurrentCpuLocalApic() {
   bool result = local_apic_.Init();
@@ -25,25 +23,6 @@ bool Apic::InitCurrentCpuLocalApic() {
 
   return result;
 }
-
-LocalApic& Apic::GetCurrentLocalApic() { return local_apic_; }
-
-IoApic* Apic::GetIoApic(size_t index) {
-  if (index != 0) {
-    return nullptr;
-  }
-  return &io_apic_;
-}
-
-IoApic* Apic::FindIoApicByGsi(uint32_t gsi) {
-  // 简化版本：检查 GSI 是否在单个 IO APIC 的范围内
-  if (gsi < io_apic_.GetMaxRedirectionEntries()) {
-    return &io_apic_;
-  }
-  return nullptr;
-}
-
-size_t Apic::GetIoApicCount() const { return 1; }
 
 bool Apic::SetIrqRedirection(uint8_t irq, uint8_t vector,
                              uint32_t destination_apic_id, bool mask) {
@@ -167,4 +146,10 @@ void Apic::PrintInfo() const {
   uint32_t max_entries = io_apic_.GetMaxRedirectionEntries();
   klog::Info("  Max Entries: %u\n", max_entries);
   klog::Info("  IRQ Range: 0 - %u\n", max_entries - 1);
+}
+
+void Apic::SendEoi() const { local_apic_.SendEoi(); }
+
+void Apic::SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const {
+  local_apic_.SetupPeriodicTimer(frequency_hz, vector);
 }

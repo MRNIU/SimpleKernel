@@ -140,7 +140,7 @@ class IoApic {
   /// @}
 
   /// @brief IO APIC 基地址
-  uint64_t base_address_{kDefaultIoApicBase};
+  uint64_t base_address_ = kDefaultIoApicBase;
 
   /**
    * @brief 读取 IO APIC 寄存器

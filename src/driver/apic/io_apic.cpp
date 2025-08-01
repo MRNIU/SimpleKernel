@@ -9,20 +9,18 @@
 #include "kernel_log.hpp"
 
 IoApic::IoApic() {
-  klog::Info("Initializing IO APIC at address 0x%lx\n", base_address_);
-
   // 检查 IO APIC 是否可访问
-  uint32_t id = GetId();
-  uint32_t version = GetVersion();
-  uint32_t max_entries = GetMaxRedirectionEntries();
+  auto id = GetId();
+  auto version = GetVersion();
+  auto max_entries = GetMaxRedirectionEntries();
 
   klog::Info("IO APIC ID: 0x%x, Version: 0x%x, Max Entries: %u\n", id, version,
              max_entries);
 
   // 禁用所有重定向条目（设置为屏蔽状态）
-  for (uint32_t i = 0; i < max_entries; i++) {
-    uint64_t entry = ReadRedirectionEntry(i);
-    entry |= kMaskBit;  // 设置屏蔽位
+  for (auto i = 0; i < max_entries; i++) {
+    auto entry = ReadRedirectionEntry(i);
+    entry |= kMaskBit;
     WriteRedirectionEntry(i, entry);
   }
 
@@ -35,7 +33,7 @@ void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
              irq, vector, destination_apic_id, mask ? "true" : "false");
 
   // 检查 IRQ 是否在有效范围内
-  uint32_t max_entries = GetMaxRedirectionEntries();
+  auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
     klog::Err("IRQ %u exceeds maximum entries %u\n", irq, max_entries);
     return;
@@ -59,30 +57,26 @@ void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
 }
 
 void IoApic::MaskIrq(uint8_t irq) {
-  klog::Info("Masking IRQ %u\n", irq);
-
-  uint32_t max_entries = GetMaxRedirectionEntries();
+  auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
     klog::Err("IRQ %u exceeds maximum entries %u\n", irq, max_entries);
     return;
   }
 
-  uint64_t entry = ReadRedirectionEntry(irq);
-  entry |= kMaskBit;  // 设置屏蔽位
+  auto entry = ReadRedirectionEntry(irq);
+  entry |= kMaskBit;
   WriteRedirectionEntry(irq, entry);
 }
 
 void IoApic::UnmaskIrq(uint8_t irq) {
-  klog::Info("Unmasking IRQ %u\n", irq);
-
-  uint32_t max_entries = GetMaxRedirectionEntries();
+  auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
     klog::Err("IRQ %u exceeds maximum entries %u\n", irq, max_entries);
     return;
   }
 
-  uint64_t entry = ReadRedirectionEntry(irq);
-  entry &= ~kMaskBit;  // 清除屏蔽位
+  auto entry = ReadRedirectionEntry(irq);
+  entry &= ~kMaskBit;
   WriteRedirectionEntry(irq, entry);
 }
 
@@ -124,21 +118,21 @@ void IoApic::Write(uint32_t reg, uint32_t value) const {
 }
 
 uint64_t IoApic::ReadRedirectionEntry(uint8_t irq) const {
-  uint32_t low_reg = kRedTblBase + (irq * 2);
-  uint32_t high_reg = low_reg + 1;
+  auto low_reg = kRedTblBase + (irq * 2);
+  auto high_reg = low_reg + 1;
 
-  uint32_t low = Read(low_reg);
-  uint32_t high = Read(high_reg);
+  auto low = Read(low_reg);
+  auto high = Read(high_reg);
 
   return (static_cast<uint64_t>(high) << 32) | low;
 }
 
 void IoApic::WriteRedirectionEntry(uint8_t irq, uint64_t value) {
-  uint32_t low_reg = kRedTblBase + (irq * 2);
-  uint32_t high_reg = low_reg + 1;
+  auto low_reg = kRedTblBase + (irq * 2);
+  auto high_reg = low_reg + 1;
 
-  uint32_t low = static_cast<uint32_t>(value & 0xFFFFFFFF);
-  uint32_t high = static_cast<uint32_t>((value >> 32) & 0xFFFFFFFF);
+  auto low = static_cast<uint32_t>(value & 0xFFFFFFFF);
+  auto high = static_cast<uint32_t>((value >> 32) & 0xFFFFFFFF);
 
   Write(low_reg, low);
   Write(high_reg, high);

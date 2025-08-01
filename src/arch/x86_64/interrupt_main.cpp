@@ -37,7 +37,7 @@ uint64_t ApicTimerHandler(uint64_t cause, uint8_t *context) {
   }
 
   // 发送 EOI 信号给 Local APIC
-  Singleton<Apic>::GetInstance().GetCurrentLocalApic().SendEoi();
+  Singleton<Apic>::GetInstance().SendEoi();
   return 0;
 }
 
@@ -74,7 +74,7 @@ uint64_t KeyboardHandler(uint64_t cause, uint8_t *context) {
   }
 
   // 发送 EOI 信号给 Local APIC
-  Singleton<Apic>::GetInstance().GetCurrentLocalApic().SendEoi();
+  Singleton<Apic>::GetInstance().SendEoi();
   return 0;
 }
 
@@ -135,8 +135,8 @@ void InterruptInit(int, const char **) {
   EnableKeyboardInterrupt(kKeyboardVector);
 
   // 启用 Local APIC 定时器
-  Singleton<Apic>::GetInstance().GetCurrentLocalApic().SetupPeriodicTimer(
-      kApicTimerFrequencyHz, kApicTimerVector);
+  Singleton<Apic>::GetInstance().SetupPeriodicTimer(kApicTimerFrequencyHz,
+                                                    kApicTimerVector);
   // 开启中断
   cpu_io::Rflags::If::Set();
 
@@ -146,8 +146,8 @@ void InterruptInit(int, const char **) {
 void InterruptInitSMP(int, const char **) {
   Singleton<Interrupt>::GetInstance().SetUpIdtr();
   // 启用 Local APIC 定时器
-  Singleton<Apic>::GetInstance().GetCurrentLocalApic().SetupPeriodicTimer(
-      kApicTimerFrequencyHz, kApicTimerVector);
+  Singleton<Apic>::GetInstance().SetupPeriodicTimer(kApicTimerFrequencyHz,
+                                                    kApicTimerVector);
   cpu_io::Rflags::If::Set();
   klog::Info("Hello InterruptInit SMP\n");
 }
