@@ -444,7 +444,7 @@ void LocalApic::WakeupAp(uint32_t destination_apic_id,
   SendStartupIpi(destination_apic_id, start_vector);
 
   // 等待 200μs (SIPI 后的标准等待时间)
-  delay = 200 * (kCalibrationDelayLoop / 1000);  // 约 200μs
+  delay = 200 * (kCalibrationDelayLoop / 1000);
   while (delay--) {
     __asm__ volatile("nop");
   }
@@ -453,7 +453,7 @@ void LocalApic::WakeupAp(uint32_t destination_apic_id,
   SendStartupIpi(destination_apic_id, start_vector);
 
   // 等待 200μs
-  delay = 200 * (kCalibrationDelayLoop / 1000);  // 约 200μs
+  delay = 200 * (kCalibrationDelayLoop / 1000);
   while (delay--) {
     __asm__ volatile("nop");
   }
