@@ -57,6 +57,7 @@ class Interrupt final : public InterruptBase {
 
   /**
    * @brief 初始化 idtr
+   * @note 注意模板展开时的栈溢出
    */
   template <uint8_t no = 0>
   void SetUpIdtr();

@@ -3,23 +3,15 @@
  * @brief 中断初始化
  */
 
-#include "interrupt.h"
-
 #include <cpu_io.h>
 
 #include "arch.h"
+#include "interrupt.h"
 #include "kernel_log.hpp"
 #include "sk_cstdio"
 #include "sk_iostream"
 
-std::array<Interrupt::InterruptFunc,
-           cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount>
-    Interrupt::interrupt_handlers;
-
-std::array<cpu_io::detail::register_info::IdtrInfo::Idt,
-           cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount>
-    Interrupt::idts;
-
+namespace {
 /**
  * @brief 中断处理函数
  * @tparam no 中断号
@@ -27,11 +19,19 @@ std::array<cpu_io::detail::register_info::IdtrInfo::Idt,
  * InterruptContextErrorCode
  */
 template <uint8_t no>
-__attribute__((target("general-regs-only")))
-__attribute__((interrupt)) static void
+__attribute__((target("general-regs-only"))) __attribute__((interrupt)) void
 TarpEntry(uint8_t *interrupt_context) {
   Singleton<Interrupt>::GetInstance().Do(no, interrupt_context);
 }
+};  // namespace
+
+alignas(4096) std::array<Interrupt::InterruptFunc,
+                         cpu_io::detail::register_info::IdtrInfo::
+                             kInterruptMaxCount> Interrupt::interrupt_handlers;
+
+alignas(4096) std::array<cpu_io::detail::register_info::IdtrInfo::Idt,
+                         cpu_io::detail::register_info::IdtrInfo::
+                             kInterruptMaxCount> Interrupt::idts;
 
 template <uint8_t no>
 void Interrupt::SetUpIdtr() {
@@ -56,13 +56,11 @@ void Interrupt::SetUpIdtr() {
     cpu_io::Idtr::Write(idtr);
 
     // 输出 idtr 信息
-    // sk_std::cout << cpu::kAllCr.idtr << sk_std::endl;
     for (size_t i = 0;
          i < (cpu_io::Idtr::Read().limit + 1) /
                  sizeof(cpu_io::detail::register_info::IdtrInfo::Idtr);
          i++) {
       klog::Debug("idtr[%d] 0x%p\n", i, cpu_io::Idtr::Read().base + i);
-      // klog::debug << *(cpu::kAllCr.idtr.Read().base + i) << sk_std::endl;
     }
   }
 }

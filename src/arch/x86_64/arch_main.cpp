@@ -85,16 +85,17 @@ std::array<cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor,
                 k64Bit),
 };
 
+cpu_io::detail::register_info::GdtrInfo::Gdtr gdtr{
+    .limit =
+        (sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
+         cpu_io::detail::register_info::GdtrInfo::kMaxCount) -
+        1,
+    .base = kSegmentDescriptors.data(),
+};
+
 /// 设置 GDT 和段寄存器
 void SetupGdtAndSegmentRegisters() {
   // 设置 gdt
-  cpu_io::detail::register_info::GdtrInfo::Gdtr gdtr{
-      .limit =
-          (sizeof(cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor) *
-           cpu_io::detail::register_info::GdtrInfo::kMaxCount) -
-          1,
-      .base = kSegmentDescriptors.data(),
-  };
   cpu_io::Gdtr::Write(gdtr);
 
   // 加载内核数据段描述符
