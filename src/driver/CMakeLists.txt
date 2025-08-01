@@ -17,7 +17,6 @@ TARGET_LINK_LIBRARIES (
               pl011
               gic>
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
-              8259a
               apic
               acpi>)
 
@@ -28,7 +27,6 @@ ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
     ADD_SUBDIRECTORY (pl011)
     ADD_SUBDIRECTORY (gic)
 ELSEIF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-    ADD_SUBDIRECTORY (8259a)
     ADD_SUBDIRECTORY (apic)
     ADD_SUBDIRECTORY (acpi)
 ENDIF()
