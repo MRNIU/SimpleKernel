@@ -42,16 +42,11 @@ BasicInfo::BasicInfo(int, const char **) {
   core_count = cpu_io::GetCpuTopologyInfo().logical_processors;
 }
 
-auto ArchInit(int argc, const char **argv) -> int {
-  if (argc != 1) {
-    klog::Err("argc != 1 [%d]\n", argc);
-    throw;
-  }
-
+auto ArchInit(int, const char **) -> int {
   Singleton<cpu_io::Serial>::GetInstance() = cpu_io::Serial(cpu_io::kCom1);
   serial = &Singleton<cpu_io::Serial>::GetInstance();
 
-  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+  Singleton<BasicInfo>::GetInstance() = BasicInfo(0, nullptr);
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
   // 解析内核 elf 信息
@@ -59,38 +54,30 @@ auto ArchInit(int argc, const char **argv) -> int {
       KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr,
                 Singleton<BasicInfo>::GetInstance().elf_size);
 
-  klog::Info("Hello x86_64 ArchInit\n");
-
-  Singleton<Apic>::GetInstance() = Apic();
-  Singleton<Apic>::GetInstance().Init(
-      Singleton<BasicInfo>::GetInstance().core_count);
+  // 初始化 APIC
+  Singleton<Apic>::GetInstance() =
+      Apic(Singleton<BasicInfo>::GetInstance().core_count);
   Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
 
   Singleton<Apic>::GetInstance().PrintInfo();
 
-  // 计算 SMP 启动代码大小
-  auto smp_boot_size = reinterpret_cast<size_t>(ap_start64_end) -
-                       reinterpret_cast<size_t>(ap_start16);
-
-  klog::Info("SMP boot code: start=%p, end=%p, size=%zu bytes\n", ap_start16,
-             ap_start64_end, smp_boot_size);
-
-  // 计算 sipi_params 在目标内存中的实际地址
-  auto target_sipi_params = reinterpret_cast<sipi_params_t *>(sipi_params);
+  klog::Info("Hello x86_64 ArchInit\n");
 
   // 填充 sipi_params 结构体
+  auto target_sipi_params = reinterpret_cast<sipi_params_t *>(sipi_params);
   target_sipi_params->cr3 = cpu_io::Cr3::Read();
 
   // 唤醒其它 core
-  size_t started_aps = Singleton<Apic>::GetInstance().StartupAllAps(
-      ap_start16, smp_boot_size, kDefaultAPBase);
-  klog::Info("Started %zu Application Processors\n", started_aps);
+  Singleton<Apic>::GetInstance().StartupAllAps(
+      reinterpret_cast<uint64_t>(ap_start16),
+      reinterpret_cast<size_t>(ap_start64_end) -
+          reinterpret_cast<size_t>(ap_start16),
+      kDefaultAPBase);
 
   return 0;
 }
 
-auto ArchInitSMP(int argc, const char **argv) -> int {
-  (void)argc;
-  (void)argv;
+auto ArchInitSMP(int, const char **) -> int {
+  Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
   return 0;
 }

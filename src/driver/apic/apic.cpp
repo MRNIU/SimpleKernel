@@ -9,20 +9,7 @@
 
 #include "kernel_log.hpp"
 
-bool Apic::Init(size_t max_cpu_count) {
-  max_cpu_count_ = max_cpu_count;
-
-  klog::Info("Initializing APIC system for %zu CPUs\n", max_cpu_count_);
-
-  // 初始化 Local APIC
-  if (!local_apic_.Init()) {
-    klog::Err("Failed to initialize Local APIC\n");
-    return false;
-  }
-
-  klog::Info("APIC system initialized successfully\n");
-  return true;
-}
+Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {}
 
 bool Apic::AddIoApic(uint64_t base_address, uint32_t gsi_base) {
   // TODO: 实现添加 IO APIC
@@ -101,15 +88,10 @@ void Apic::BroadcastIpi(uint8_t vector) const {
   local_apic_.BroadcastIpi(vector);
 }
 
-bool Apic::StartupAp(uint32_t apic_id, const void* ap_code_addr,
-                     size_t ap_code_size, uint64_t target_addr) {
-  klog::Info("Starting up AP with APIC ID 0x%x\n", apic_id);
-  klog::Info("AP code address: %p, size: %zu bytes\n", ap_code_addr,
-             ap_code_size);
-  klog::Info("Target address: 0x%llx\n", target_addr);
-
+bool Apic::StartupAp(uint32_t apic_id, uint64_t ap_code_addr,
+                     size_t ap_code_size, uint64_t target_addr) const {
   // 检查参数有效性
-  if (ap_code_addr == nullptr || ap_code_size == 0) {
+  if (ap_code_addr == 0 || ap_code_size == 0) {
     klog::Err("Invalid AP code parameters\n");
     return false;
   }
@@ -129,104 +111,48 @@ bool Apic::StartupAp(uint32_t apic_id, const void* ap_code_addr,
     return false;
   }
 
-  // 将 AP 启动代码复制到指定地址
-  klog::Info("Copying AP code to physical address 0x%llx\n", target_addr);
-  std::memcpy(reinterpret_cast<void*>(target_addr), ap_code_addr, ap_code_size);
+  std::memcpy(reinterpret_cast<void*>(target_addr),
+              reinterpret_cast<void*>(ap_code_addr), ap_code_size);
 
   // 验证复制是否成功
-  if (std::memcmp(reinterpret_cast<const void*>(target_addr), ap_code_addr,
+  if (std::memcmp(reinterpret_cast<const void*>(target_addr),
+                  reinterpret_cast<const void*>(ap_code_addr),
                   ap_code_size) != 0) {
     klog::Err("AP code copy verification failed\n");
     return false;
   }
 
   // 计算启动向量 (物理地址 / 4096)
-  uint8_t start_vector = static_cast<uint8_t>(target_addr >> 12);
-  klog::Info("Calculated start vector: 0x%x (physical address: 0x%llx)\n",
-             start_vector, target_addr);
-
+  auto start_vector = static_cast<uint8_t>(target_addr >> 12);
   // 使用 Local APIC 发送 INIT-SIPI-SIPI 序列
-  bool result = local_apic_.WakeupAp(apic_id, start_vector);
+  local_apic_.WakeupAp(apic_id, start_vector);
 
-  if (result) {
-    klog::Info("INIT-SIPI-SIPI sequence sent successfully to APIC ID 0x%x\n",
-               apic_id);
-
-    // 注意：这里不立即标记 CPU 为在线状态
-    // AP 启动后应该调用 SetCpuOnline() 来报告自己的状态
-    klog::Info("Waiting for AP 0x%x to come online...\n", apic_id);
-  } else {
-    klog::Err("Failed to send startup sequence to APIC ID 0x%x\n", apic_id);
-  }
-
-  return result;
+  return true;
 }
 
-size_t Apic::StartupAllAps(const void* ap_code_addr, size_t ap_code_size,
-                           uint64_t target_addr, uint32_t max_wait_ms) {
-  klog::Info("Starting up all Application Processors (APs)\n");
-  klog::Info("AP code address: %p, size: %zu bytes\n", ap_code_addr,
-             ap_code_size);
-  klog::Info("Target address: 0x%llx\n", target_addr);
-  klog::Info("Max wait time: %u ms\n", max_wait_ms);
-
-  // 检查参数有效性
-  if (ap_code_addr == nullptr || ap_code_size == 0) {
+void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
+                         uint64_t target_addr, uint32_t max_wait_ms) const {
+  if (ap_code_addr == 0 || ap_code_size == 0) {
     klog::Err("Invalid AP code parameters\n");
-    return 0;
+    return;
   }
 
-  auto current_apic_id = cpu_io::GetApicInfo().apic_id;
-  klog::Info("Current BSP APIC ID: 0x%x\n", current_apic_id);
-
-  size_t startup_attempts = 0;
-  size_t startup_success = 0;
-
-  // 尝试启动 APIC ID 0 到 max_cpu_count_-1 的所有处理器
+  // 尝试启动 APIC ID 0 到 cpu_count_-1 的所有处理器
   // 跳过当前的 BSP (Bootstrap Processor)
-  for (size_t apic_id = 0; apic_id < max_cpu_count_; ++apic_id) {
+  for (size_t apic_id = 0; apic_id < cpu_count_; apic_id++) {
     // 跳过当前 BSP
-    if (static_cast<uint32_t>(apic_id) == current_apic_id) {
+    if (static_cast<uint32_t>(apic_id) == cpu_io::GetApicInfo().apic_id) {
       continue;
     }
-
-    klog::Info("Attempting to start AP with APIC ID 0x%x\n",
-               static_cast<uint32_t>(apic_id));
-
-    startup_attempts++;
-
-    if (StartupAp(static_cast<uint32_t>(apic_id), ap_code_addr, ap_code_size,
-                  target_addr)) {
-      startup_success++;
-      klog::Info("Successfully sent startup sequence to APIC ID 0x%x\n",
-                 static_cast<uint32_t>(apic_id));
-    } else {
-      klog::Err("Failed to start AP with APIC ID 0x%x\n",
-                static_cast<uint32_t>(apic_id));
-    }
+    StartupAp(static_cast<uint32_t>(apic_id), ap_code_addr, ap_code_size,
+              target_addr);
 
     // 在启动下一个 AP 前稍作等待
-    volatile uint32_t delay = 100000;  // 短暂延时
+    auto delay = 100000;
     while (delay--) {
       __asm__ volatile("nop");
     }
   }
-
-  klog::Info(
-      "AP startup summary: %zu attempts, %zu successful sequences sent\n",
-      startup_attempts, startup_success);
-  klog::Info("Note: Actual AP online status depends on AP self-reporting\n");
-
-  // 等待一段时间让 AP 有机会启动并报告状态
-  klog::Info("Waiting %u ms for APs to come online...\n", max_wait_ms);
-
-  // 简单的等待实现（实际使用中应该使用精确的定时器）
-  volatile uint32_t wait_delay = max_wait_ms * 1000;  // 转换为更小的延时单位
-  while (wait_delay--) {
-    __asm__ volatile("nop");
-  }
-
-  return startup_success;
 }
 
 void Apic::PrintInfo() const { local_apic_.PrintInfo(); }

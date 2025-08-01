@@ -130,10 +130,9 @@ class LocalApic {
    * @param destination_apic_id 目标 APIC ID
    * @param start_vector 启动向量（启动代码的物理地址 / 4096）
    * @return true 唤醒成功
-   * @return false 唤醒失败
    * @note 执行标准的 INIT-SIPI-SIPI 序列来唤醒 AP
    */
-  auto WakeupAp(uint32_t destination_apic_id, uint8_t start_vector) -> bool;
+  void WakeupAp(uint32_t destination_apic_id, uint8_t start_vector) const;
 
   /**
    * @brief 配置 Local Vector Table 条目

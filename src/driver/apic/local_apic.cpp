@@ -489,13 +489,9 @@ bool LocalApic::IsX2ApicEnabled() const {
   return cpu_io::msr::apic::IsX2ApicEnabled();
 }
 
-bool LocalApic::WakeupAp(uint32_t destination_apic_id, uint8_t start_vector) {
-  klog::Info("Waking up AP with APIC ID 0x%x, start vector 0x%x\n",
-             destination_apic_id, start_vector);
-  // 标准的 INIT-SIPI-SIPI 序列用于唤醒 Application Processor (AP)
-
-  // 步骤 1: 发送 INIT IPI
-  klog::Info("Step 1: Sending INIT IPI to APIC ID 0x%x\n", destination_apic_id);
+void LocalApic::WakeupAp(uint32_t destination_apic_id,
+                         uint8_t start_vector) const {
+  // 发送 INIT IPI
   SendInitIpi(destination_apic_id);
 
   // 等待 10ms (INIT IPI 后的标准等待时间)
@@ -505,9 +501,7 @@ bool LocalApic::WakeupAp(uint32_t destination_apic_id, uint8_t start_vector) {
     __asm__ volatile("nop");
   }
 
-  // 步骤 2: 发送第一个 SIPI
-  klog::Info("Step 2: Sending first SIPI to APIC ID 0x%x\n",
-             destination_apic_id);
+  // 发送第一个 SIPI
   SendStartupIpi(destination_apic_id, start_vector);
 
   // 等待 200μs (SIPI 后的标准等待时间)
@@ -516,23 +510,12 @@ bool LocalApic::WakeupAp(uint32_t destination_apic_id, uint8_t start_vector) {
     __asm__ volatile("nop");
   }
 
-  // // 步骤 3: 发送第二个 SIPI (为了可靠性)
-  // klog::Info("Step 3: Sending second SIPI to APIC ID 0x%x\n",
-  // destination_apic_id); SendStartupIpi(destination_apic_id, start_vector);
+  // 发送第二个 SIPI (为了可靠性)
+  SendStartupIpi(destination_apic_id, start_vector);
 
   // 等待 200μs
   delay = 200 * (kCalibrationDelayLoop / 1000);  // 约 200μs
   while (delay--) {
     __asm__ volatile("nop");
   }
-
-  // 注意：这里无法直接检测 AP 是否成功启动，因为需要 AP 自己报告状态
-  // 在实际系统中，AP 启动后应该通过某种机制(如共享内存变量)报告其状态
-
-  klog::Info("INIT-SIPI-SIPI sequence completed for APIC ID 0x%x\n",
-             destination_apic_id);
-  klog::Info("AP should start execution at physical address 0x%x\n",
-             static_cast<uint32_t>(start_vector) * 4096);
-
-  return true;  // 序列发送成功，但不能保证 AP 实际启动成功
 }
