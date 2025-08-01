@@ -44,16 +44,9 @@ class Interrupt final : public InterruptBase {
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
 
   /**
-   * @brief 启用基于 Local APIC 的时钟中断
-   * @param frequency_hz 中断频率 (Hz)
-   * @param vector 中断向量号
+   * @brief 初始化 idtr
    */
-  void EnableApicTimer(uint32_t frequency_hz, uint8_t vector);
-
-  /**
-   * @brief 禁用 Local APIC 时钟中断
-   */
-  void DisableApicTimer();
+  void SetUpIdtr();
 
  private:
   /// 中断处理函数数组
