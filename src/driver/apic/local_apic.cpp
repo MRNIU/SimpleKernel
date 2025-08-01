@@ -82,7 +82,7 @@ uint32_t LocalApic::GetApicVersion() const {
   }
 }
 
-void LocalApic::SendEoi() {
+void LocalApic::SendEoi() const {
   if (is_x2apic_mode_) {
     cpu_io::msr::apic::WriteEoi(0);
   } else {
@@ -91,7 +91,7 @@ void LocalApic::SendEoi() {
   }
 }
 
-void LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) {
+void LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) const {
   if (is_x2apic_mode_) {
     auto icr = static_cast<uint64_t>(vector);
     icr |= static_cast<uint64_t>(destination_apic_id) << 32;
@@ -122,7 +122,7 @@ void LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) {
               vector);
 }
 
-void LocalApic::BroadcastIpi(uint8_t vector) {
+void LocalApic::BroadcastIpi(uint8_t vector) const {
   if (is_x2apic_mode_) {
     auto icr = static_cast<uint64_t>(vector);
     // 目标简写：除自己外的所有 CPU
@@ -151,7 +151,7 @@ void LocalApic::BroadcastIpi(uint8_t vector) {
   klog::Debug("Broadcast IPI sent with vector 0x%x\n", vector);
 }
 
-void LocalApic::SetTaskPriority(uint8_t priority) {
+void LocalApic::SetTaskPriority(uint8_t priority) const {
   if (is_x2apic_mode_) {
     cpu_io::msr::apic::WriteTpr(static_cast<uint32_t>(priority));
   } else {
@@ -164,7 +164,7 @@ uint8_t LocalApic::GetTaskPriority() const {
   if (is_x2apic_mode_) {
     return static_cast<uint8_t>(cpu_io::msr::apic::ReadTpr() & kApicIdMask);
   } else {
-    uint32_t tpr = io::In<uint32_t>(apic_base_ + kXApicTprOffset);
+    auto tpr = io::In<uint32_t>(apic_base_ + kXApicTprOffset);
     return static_cast<uint8_t>(tpr & kApicIdMask);
   }
 }
@@ -200,12 +200,12 @@ void LocalApic::EnableTimer(uint32_t initial_count, uint32_t divide_value,
 
 void LocalApic::DisableTimer() const {
   if (is_x2apic_mode_) {
-    uint32_t lvt_timer = cpu_io::msr::apic::ReadLvtTimer();
+    auto lvt_timer = cpu_io::msr::apic::ReadLvtTimer();
     lvt_timer |= kLvtMaskBit;
     cpu_io::msr::apic::WriteLvtTimer(lvt_timer);
     cpu_io::msr::apic::WriteTimerInitCount(0);
   } else {
-    uint32_t lvt_timer = io::In<uint32_t>(apic_base_ + kXApicLvtTimerOffset);
+    auto lvt_timer = io::In<uint32_t>(apic_base_ + kXApicLvtTimerOffset);
     lvt_timer |= kLvtMaskBit;
     io::Out<uint32_t>(apic_base_ + kXApicLvtTimerOffset, lvt_timer);
     io::Out<uint32_t>(apic_base_ + kXApicTimerInitCountOffset, 0);
@@ -216,12 +216,13 @@ uint32_t LocalApic::GetTimerCurrentCount() const {
   if (is_x2apic_mode_) {
     return cpu_io::msr::apic::ReadTimerCurrCount();
   } else {
-    // xAPIC 模式下，当前计数寄存器在偏移 0x390 处
+    // 当前计数寄存器在偏移 0x390 处
     return io::In<uint32_t>(apic_base_ + kXApicTimerCurrCountOffset);
   }
 }
 
-void LocalApic::SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) {
+void LocalApic::SetupPeriodicTimer(uint32_t frequency_hz,
+                                   uint8_t vector) const {
   // 使用 APIC 定时器的典型配置
   // 假设 APIC 时钟频率为 100MHz(实际应从 CPU 频率计算)
 
@@ -242,7 +243,7 @@ void LocalApic::SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) {
              frequency_hz, vector);
 }
 
-void LocalApic::SetupOneShotTimer(uint32_t microseconds, uint8_t vector) {
+void LocalApic::SetupOneShotTimer(uint32_t microseconds, uint8_t vector) const {
   // 假设 APIC 时钟频率为 100MHz
 
   // 计算初始计数值(微秒转换为时钟周期)
@@ -263,7 +264,7 @@ void LocalApic::SetupOneShotTimer(uint32_t microseconds, uint8_t vector) {
              vector);
 }
 
-uint32_t LocalApic::CalibrateTimer() {
+uint32_t LocalApic::CalibrateTimer() const {
   // 校准 APIC 定时器频率
   // 这是一个简化的实现，实际使用中应该使用更精确的方法
 

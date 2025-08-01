@@ -43,26 +43,26 @@ class LocalApic {
   /**
    * @brief 发送中断结束信号 (EOI)
    */
-  void SendEoi();
+  void SendEoi() const;
 
   /**
    * @brief 发送处理器间中断 (IPI)
    * @param destination_apic_id 目标 APIC ID
    * @param vector 中断向量
    */
-  void SendIpi(uint32_t destination_apic_id, uint8_t vector);
+  void SendIpi(uint32_t destination_apic_id, uint8_t vector) const;
 
   /**
    * @brief 广播 IPI 到所有其他 CPU
    * @param vector 中断向量
    */
-  void BroadcastIpi(uint8_t vector);
+  void BroadcastIpi(uint8_t vector) const;
 
   /**
    * @brief 设置任务优先级
    * @param priority 优先级值
    */
-  void SetTaskPriority(uint8_t priority);
+  void SetTaskPriority(uint8_t priority) const;
 
   /**
    * @brief 获取任务优先级
@@ -96,21 +96,21 @@ class LocalApic {
    * @param frequency_hz 定时器频率（Hz）
    * @param vector 定时器中断向量
    */
-  void SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector);
+  void SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const;
 
   /**
    * @brief 设置单次定时器
    * @param microseconds 延时时间（微秒）
    * @param vector 定时器中断向量
    */
-  void SetupOneShotTimer(uint32_t microseconds, uint8_t vector);
+  void SetupOneShotTimer(uint32_t microseconds, uint8_t vector) const;
 
   /**
    * @brief 校准 APIC 定时器频率
    * @return uint32_t APIC 定时器频率（Hz）\
    * @todo 需要实现更精确的校准方法
    */
-  auto CalibrateTimer() -> uint32_t;
+  auto CalibrateTimer() const -> uint32_t;
 
   /**
    * @brief 发送 INIT IPI
