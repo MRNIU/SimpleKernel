@@ -22,7 +22,7 @@
  */
 class Apic {
  public:
-  explicit Apic(const size_t cpu_count);
+  explicit Apic(size_t cpu_count);
 
   /// @name 默认构造/析构函数
   /// @{
@@ -130,8 +130,9 @@ class Apic {
    * @return false 启动失败
    * @note 函数内部会将启动代码复制到指定的目标地址，并计算 start_vector
    */
-  auto StartupAp(uint32_t apic_id, uint64_t ap_code_addr, size_t ap_code_size,
-                 uint64_t target_addr) const -> bool;
+  [[nodiscard]] auto StartupAp(uint32_t apic_id, uint64_t ap_code_addr,
+                               size_t ap_code_size, uint64_t target_addr) const
+      -> bool;
 
   /**
    * @brief 唤醒所有应用处理器 (AP)
@@ -169,10 +170,10 @@ class Apic {
   std::array<IoApicInfo, kMaxIoApics> io_apics_;
 
   /// 当前 IO APIC 数量
-  size_t io_apic_count_{0};
+  size_t io_apic_count_;
 
   /// 系统 CPU 数量
-  size_t cpu_count_{4};
+  size_t cpu_count_;
 
   /**
    * @brief 根据 IRQ 查找对应的 IO APIC
