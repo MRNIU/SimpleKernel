@@ -80,8 +80,8 @@ uint32_t LocalApic::GetApicId() const {
   if (is_x2apic_mode_) {
     return cpu_io::msr::apic::ReadId();
   } else {
-    // xAPIC 模式下，APIC ID 在偏移 0x20 处，高 8 位包含 ID
-    uint32_t id_reg = io::In<uint32_t>(apic_base_ + kXApicIdOffset);
+    // APIC ID 在偏移 0x20 处，高 8 位包含 ID
+    auto id_reg = io::In<uint32_t>(apic_base_ + kXApicIdOffset);
     return (id_reg >> kApicIdShift) & kApicIdMask;
   }
 }
@@ -90,7 +90,7 @@ uint32_t LocalApic::GetApicVersion() const {
   if (is_x2apic_mode_) {
     return cpu_io::msr::apic::ReadVersion();
   } else {
-    // xAPIC 模式下，版本寄存器在偏移 0x30 处
+    // 版本寄存器在偏移 0x30 处
     return io::In<uint32_t>(apic_base_ + kXApicVersionOffset);
   }
 }
@@ -99,84 +99,75 @@ void LocalApic::SendEoi() {
   if (is_x2apic_mode_) {
     cpu_io::msr::apic::WriteEoi(0);
   } else {
-    // xAPIC 模式下，写入 EOI 寄存器(偏移 0xB0)
+    // 写入 EOI 寄存器(偏移 0xB0)
     io::Out<uint32_t>(apic_base_ + kXApicEoiOffset, 0);
   }
 }
 
 void LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) {
   if (is_x2apic_mode_) {
-    // x2APIC 模式：使用 MSR 接口
-    uint64_t icr = static_cast<uint64_t>(vector);
+    auto icr = static_cast<uint64_t>(vector);
     icr |= static_cast<uint64_t>(destination_apic_id) << 32;
 
     cpu_io::msr::apic::WriteIcr(icr);
 
-    // 等待发送完成
     while ((cpu_io::msr::apic::ReadIcr() & kIcrDeliveryStatusBit) != 0) {
-      // 等待发送状态清除
+      ;
     }
   } else {
-    // xAPIC 模式：使用内存映射接口
     // ICR 分为两个 32 位寄存器：ICR_LOW (0x300) 和 ICR_HIGH (0x310)
 
     // 设置目标 APIC ID(ICR_HIGH 的位 24-31)
-    uint32_t icr_high = (destination_apic_id & kApicIdMask) << kIcrDestShift;
+    auto icr_high = (destination_apic_id & kApicIdMask) << kIcrDestShift;
     io::Out<uint32_t>(apic_base_ + kXApicIcrHighOffset, icr_high);
 
     // 设置向量和传递模式(ICR_LOW)
-    uint32_t icr_low = static_cast<uint32_t>(vector);
+    auto icr_low = static_cast<uint32_t>(vector);
     io::Out<uint32_t>(apic_base_ + kXApicIcrLowOffset, icr_low);
 
-    // 等待发送完成(检查 ICR_LOW 的 Delivery Status 位)
     while ((io::In<uint32_t>(apic_base_ + kXApicIcrLowOffset) &
             kIcrDeliveryStatusBit) != 0) {
-      // 等待发送状态清除
+      ;
     }
   }
 
-  klog::Info("IPI sent to APIC ID 0x%x, vector 0x%x\n", destination_apic_id,
-             vector);
+  klog::Debug("IPI sent to APIC ID 0x%x, vector 0x%x\n", destination_apic_id,
+              vector);
 }
 
 void LocalApic::BroadcastIpi(uint8_t vector) {
   if (is_x2apic_mode_) {
-    // x2APIC 模式：使用 MSR 接口
-    uint64_t icr = static_cast<uint64_t>(vector);
-    icr |= 0x80000;  // 目标简写：除自己外的所有 CPU
+    auto icr = static_cast<uint64_t>(vector);
+    // 目标简写：除自己外的所有 CPU
+    icr |= 0x80000;
 
     cpu_io::msr::apic::WriteIcr(icr);
 
-    // 等待发送完成
     while ((cpu_io::msr::apic::ReadIcr() & kIcrDeliveryStatusBit) != 0) {
-      // 等待发送状态清除
+      ;
     }
   } else {
-    // xAPIC 模式：使用内存映射接口
     // 广播到除自己外的所有 CPU(目标简写模式)
-
     // ICR_HIGH 设为 0(不使用具体目标 ID)
     io::Out<uint32_t>(apic_base_ + kXApicIcrHighOffset, 0);
 
     // ICR_LOW：向量 + 目标简写模式(位 18-19 = 11)
-    uint32_t icr_low = static_cast<uint32_t>(vector) | kIcrBroadcastMode;
+    auto icr_low = static_cast<uint32_t>(vector) | kIcrBroadcastMode;
     io::Out<uint32_t>(apic_base_ + kXApicIcrLowOffset, icr_low);
 
-    // 等待发送完成
     while ((io::In<uint32_t>(apic_base_ + kXApicIcrLowOffset) &
             kIcrDeliveryStatusBit) != 0) {
-      // 等待发送状态清除
+      ;
     }
   }
 
-  klog::Info("Broadcast IPI sent with vector 0x%x\n", vector);
+  klog::Debug("Broadcast IPI sent with vector 0x%x\n", vector);
 }
 
 void LocalApic::SetTaskPriority(uint8_t priority) {
   if (is_x2apic_mode_) {
     cpu_io::msr::apic::WriteTpr(static_cast<uint32_t>(priority));
   } else {
-    // xAPIC 模式下，TPR 寄存器在偏移 0x80 处
     io::Out<uint32_t>(apic_base_ + kXApicTprOffset,
                       static_cast<uint32_t>(priority));
   }
@@ -186,7 +177,6 @@ uint8_t LocalApic::GetTaskPriority() const {
   if (is_x2apic_mode_) {
     return static_cast<uint8_t>(cpu_io::msr::apic::ReadTpr() & kApicIdMask);
   } else {
-    // xAPIC 模式下，TPR 寄存器在偏移 0x80 处
     uint32_t tpr = io::In<uint32_t>(apic_base_ + kXApicTprOffset);
     return static_cast<uint8_t>(tpr & kApicIdMask);
   }
