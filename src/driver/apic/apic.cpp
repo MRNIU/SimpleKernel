@@ -131,7 +131,7 @@ bool Apic::StartupAp(uint32_t apic_id, uint64_t ap_code_addr,
 }
 
 void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
-                         uint64_t target_addr, uint32_t max_wait_ms) const {
+                         uint64_t target_addr) const {
   if (ap_code_addr == 0 || ap_code_size == 0) {
     klog::Err("Invalid AP code parameters\n");
     return;
@@ -146,12 +146,6 @@ void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
     }
     StartupAp(static_cast<uint32_t>(apic_id), ap_code_addr, ap_code_size,
               target_addr);
-
-    // 在启动下一个 AP 前稍作等待
-    auto delay = 100000;
-    while (delay--) {
-      __asm__ volatile("nop");
-    }
   }
 }
 

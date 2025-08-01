@@ -59,8 +59,6 @@ auto ArchInit(int, const char **) -> int {
       Apic(Singleton<BasicInfo>::GetInstance().core_count);
   Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
 
-  Singleton<Apic>::GetInstance().PrintInfo();
-
   klog::Info("Hello x86_64 ArchInit\n");
 
   // 填充 sipi_params 结构体

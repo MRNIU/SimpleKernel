@@ -8,27 +8,20 @@
 #include "kernel_log.hpp"
 
 bool LocalApic::Init() {
-  klog::Info("Initializing Local APIC\n");
-
   // 检查 APIC 是否全局启用
   if (!cpu_io::msr::apic::IsGloballyEnabled()) {
-    klog::Info("Enabling APIC globally\n");
     cpu_io::msr::apic::EnableGlobally();
   }
 
   // 首先尝试启用 x2APIC 模式
   if (EnableX2Apic()) {
     is_x2apic_mode_ = true;
-    klog::Info("Using x2APIC mode\n");
   } else {
-    // 如果 x2APIC 失败，尝试启用传统 xAPIC 模式
-    klog::Info("x2APIC not available, trying xAPIC mode\n");
     if (!EnableXApic()) {
       klog::Err("Failed to enable APIC in any mode\n");
       return false;
     }
     is_x2apic_mode_ = false;
-    klog::Info("Using xAPIC mode\n");
   }
 
   // 启用 Local APIC(通过设置 SIVR)
@@ -36,7 +29,6 @@ bool LocalApic::Init() {
   if (is_x2apic_mode_) {
     sivr = cpu_io::msr::apic::ReadSivr();
   } else {
-    // xAPIC 模式下通过内存映射读取
     sivr = io::In<uint32_t>(apic_base_ + kXApicSivrOffset);
   }
 
@@ -67,9 +59,6 @@ bool LocalApic::Init() {
     io::Out<uint32_t>(apic_base_ + kXApicLvtLint1Offset, kLvtMaskBit);
     io::Out<uint32_t>(apic_base_ + kXApicLvtErrorOffset, kLvtMaskBit);
   }
-
-  klog::Info("Local APIC initialized successfully in %s mode\n",
-             is_x2apic_mode_ ? "x2APIC" : "xAPIC");
   return true;
 }
 
@@ -117,9 +106,6 @@ void LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) const {
       ;
     }
   }
-
-  klog::Debug("IPI sent to APIC ID 0x%x, vector 0x%x\n", destination_apic_id,
-              vector);
 }
 
 void LocalApic::BroadcastIpi(uint8_t vector) const {
@@ -147,8 +133,6 @@ void LocalApic::BroadcastIpi(uint8_t vector) const {
       ;
     }
   }
-
-  klog::Debug("Broadcast IPI sent with vector 0x%x\n", vector);
 }
 
 void LocalApic::SetTaskPriority(uint8_t priority) const {
@@ -227,20 +211,17 @@ void LocalApic::SetupPeriodicTimer(uint32_t frequency_hz,
   // 假设 APIC 时钟频率为 100MHz(实际应从 CPU 频率计算)
 
   // 计算初始计数值
-  uint32_t initial_count = kDefaultApicClockHz / frequency_hz;
+  auto initial_count = kDefaultApicClockHz / frequency_hz;
 
   // 选择合适的分频值以获得更好的精度
-  uint32_t divide_value = kTimerDivideBy1;  // 分频 1
+  auto divide_value = kTimerDivideBy1;
   if (initial_count > 0xFFFFFFFF) {
     // 如果计数值太大，使用分频
-    divide_value = kTimerDivideBy16;  // 分频 16
+    divide_value = kTimerDivideBy16;
     initial_count = (kDefaultApicClockHz / 16) / frequency_hz;
   }
 
   EnableTimer(initial_count, divide_value, vector, true);
-
-  klog::Info("Periodic timer setup: frequency=%u Hz, vector=0x%x\n",
-             frequency_hz, vector);
 }
 
 void LocalApic::SetupOneShotTimer(uint32_t microseconds, uint8_t vector) const {
@@ -251,55 +232,14 @@ void LocalApic::SetupOneShotTimer(uint32_t microseconds, uint8_t vector) const {
       (kDefaultApicClockHz / kMicrosecondsPerSecond) * microseconds;
 
   // 选择合适的分频值
-  auto divide_value = kTimerDivideBy1;  // 分频 1
+  auto divide_value = kTimerDivideBy1;
   if (initial_count > 0xFFFFFFFF) {
-    divide_value = kTimerDivideBy16;  // 分频 16
+    divide_value = kTimerDivideBy16;
     initial_count =
         ((kDefaultApicClockHz / 16) / kMicrosecondsPerSecond) * microseconds;
   }
 
   EnableTimer(initial_count, divide_value, vector, false);
-
-  klog::Info("One-shot timer setup: delay=%u μs, vector=0x%x\n", microseconds,
-             vector);
-}
-
-uint32_t LocalApic::CalibrateTimer() const {
-  // 校准 APIC 定时器频率
-  // 这是一个简化的实现，实际使用中应该使用更精确的方法
-
-  klog::Info("Calibrating APIC timer...\n");
-
-  // 设置分频器为 1
-  cpu_io::msr::apic::WriteTimerDivide(kTimerDivideBy1);
-
-  // 设置一个大的初始值
-  cpu_io::msr::apic::WriteTimerInitCount(kCalibrationCount);
-
-  // 这里应该等待一个已知的时间间隔(例如使用 PIT 或 HPET)
-  // 为了简化，我们假设等待了 10ms
-  // 在实际实现中，应该使用精确的时间源
-
-  // 模拟等待 10ms
-  volatile uint32_t delay = kCalibrationDelayLoop;  // 简单的延时循环
-  while (delay--) {
-    __asm__ volatile("nop");
-  }
-
-  // 读取当前计数值
-  uint32_t current_count = GetTimerCurrentCount();
-  uint32_t elapsed_ticks = kCalibrationCount - current_count;
-
-  // 假设等待了 10ms，计算 APIC 时钟频率
-  uint32_t apic_frequency =
-      elapsed_ticks * kCalibrationMultiplier;  // 10ms -> 1s
-
-  klog::Info("APIC timer frequency: ~%u Hz\n", apic_frequency);
-
-  // 停止定时器
-  cpu_io::msr::apic::WriteTimerInitCount(0);
-
-  return apic_frequency;
 }
 
 void LocalApic::SendInitIpi(uint32_t destination_apic_id) const {
@@ -495,8 +435,7 @@ void LocalApic::WakeupAp(uint32_t destination_apic_id,
   SendInitIpi(destination_apic_id);
 
   // 等待 10ms (INIT IPI 后的标准等待时间)
-  // 这里使用简单的延时循环，实际使用中应该使用精确的定时器
-  volatile uint32_t delay = 10 * kCalibrationDelayLoop;  // 约 10ms
+  auto delay = 10 * kCalibrationDelayLoop;
   while (delay--) {
     __asm__ volatile("nop");
   }

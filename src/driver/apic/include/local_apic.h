@@ -106,13 +106,6 @@ class LocalApic {
   void SetupOneShotTimer(uint32_t microseconds, uint8_t vector) const;
 
   /**
-   * @brief 校准 APIC 定时器频率
-   * @return uint32_t APIC 定时器频率（Hz）\
-   * @todo 需要实现更精确的校准方法
-   */
-  auto CalibrateTimer() const -> uint32_t;
-
-  /**
    * @brief 发送 INIT IPI
    * @param destination_apic_id 目标 APIC ID
    */
