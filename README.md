@@ -12,24 +12,37 @@
 
 **一个现代的多架构内核操作系统，支持 x86_64、RISC-V 和 AArch64 架构**
 
-boot branch
+> boot branch - SimpleKernel 的首个分支，完成了构建系统基础搭建、文档部署与自动化测试
 
-## 关键词
+## 📖 目录
 
-- kernel, own kernel
-- x86_64, riscv64, aarch64
-- osdev
-- c++ bare metal
-- u-boot, opensbi
-- linux
+- [简介](#简介)
+- [支持的架构](#支持的架构)
+- [快速开始](#快速开始)
+- [核心特性](#核心特性)
+- [系统架构](#系统架构)
+- [第三方依赖](#第三方依赖)
+- [开发指南](#开发指南)
 
-## 快速开始
+## 📋 简介
 
-### 使用构建好的 Docker
+SimpleKernel 是一个基于 C++ 的现代操作系统内核，专注于多架构支持和模块化设计。项目采用现代化的构建系统和完善的测试框架，为操作系统开发学习和研究提供了良好的基础平台。
+
+### 关键特性
+- 🔧 现代 C++ 内核实现
+- 🏗️ 支持多架构（x86_64、RISC-V、AArch64）
+- 🚀 基于 CMake 的构建系统
+- 🐳 Docker 容器化开发环境
+- 🧪 完善的测试框架（单元测试、集成测试、系统测试）
+- 📚 自动化文档生成与部署
+
+## 🚀 快速开始
+
+### 环境准备
 
 ```shell
 # 拉取代码
-git clone https://github.com/MRNIU/SimpleKernel.git
+git clone https://github.com/simple-xx/SimpleKernel.git
 git submodule update --init --recursive
 # 拉取 Docker Image
 docker pull ptrnull233/simple_kernel:latest
@@ -43,7 +56,7 @@ docker exec -it SimpleKernel-container /bin/zsh
 
 ```shell
 cd SimpleKernel
-# build_riscv64/build_aarch64/build_x86_64/
+# 选择架构：build_riscv64/build_aarch64/build_x86_64/
 cmake --preset build_riscv64
 cd build_riscv64
 # 编译内核
@@ -52,188 +65,117 @@ make kernel
 make run
 ```
 
-### 使用 vscode
+### 使用 VS Code
 
-提供了用于运行、调试的 vscode 相关配置，可以直接使用 vscode 运行内核或进行调试。
+提供了用于运行、调试的 VS Code 相关配置，可以直接使用 VS Code 运行内核或进行调试。
 
+## 🏗️ 系统架构
 
-## 执行流
+### 执行流程
 
 [common_bootflow](https://www.plantuml.com/plantuml/png/dL9TIyCm57tU_HKXFewDiR6NWJ8tHDGDXiKdaPAs5nVCHymIsVpr9d6bgnqexg6ZvvwFqzpCTuvPvwK0nvr0ijHIQaKMMZkIuRj7LI9iaLLe2HsFnjFXb08mxxJoia0BKEWzcTYANApuwzRTMZo02PQyv8OfHuhW97JIQnkVO_8ClSiKi4euz0RX1prAdmOHfXHU05L5WZCGaW9engKH-81MeQ37h8NmsCawfan6AIOYmwn9o8iwe2LCXz1MIiRLi3JcH9jONN4WSSL_o7TlkU15kT-tFPR6t0LkroJ6_LOW8bqbi-Mscn_Hl6jn7U3p1NRIv7yjaGVoUOT_bSdMczREuUJE3Aw-jpfBboLD0fOM5i5xBmsabu3McmXujELCy4yaotwVF7hbk4HegB5DuAtZturozj2CwfC8uz3iE0LMElx172PbyrQJ0U8po9jzp4Zym5G5Qbhjtv1IHaEiRLej3gea6ysLWmhRFIhiDfcZghmKNm00)
 
-## 新增特性
+### 支持的架构
+
+| 架构 | 引导方式 | 基本输出 | 硬件资源探测 |
+| :---: | :---: | :---: | :---: |
+| x86_64 | u-boot | 通过 serial 实现 | 由 u-boot 传递 |
+| riscv64 | u-boot+opensbi | 通过 opensbi 提供的 ecall 实现 | 由 u-boot 传递的 dtb |
+| aarch64 | u-boot+atf+optee | 通过 serial 实现 | 由 u-boot+atf 传递的 dtb |
+
+## 💻 核心特性
 
 本分支是 SimpleKernel 的首个分支。在本分支中，完成了构建系统的基础搭建、基本的文档部署与自动化测试，当然还有最重要的，有基于 u-boot 引导的 x86_64 内核与由 opensbi 启动的 riscv64 内核，可以在 qemu 上运行，并实现了简单的屏幕输出。
 
-||x86_64|riscv64|aarch64|
-| :-----------------------: | :-------------------------------: | :---------------------------------------------: | :-------------------: |
-|引导|u-boot|u-boot+opensbi|u-boot+atf+optee|
-|基本输出|通过 serial 实现|通过 opensbi 提供的 ecall 实现|通过 serial 实现|
-|硬件资源探测|由 u-boot 传递|由 u-boot 传递的 dtb|由 u-boot+atf 传递的 dtb|
+### 🔧 构建系统
 
-- 构建系统
+见 [doc/0_工具链.md](./doc/0_工具链.md)
 
-  参考 [MRNIU/cmake-kernel](https://github.com/MRNIU/cmake-kernel) 的构建系统，详细解释见 [doc/build_system.md](./doc/build_system.md)
+### 📚 标准库支持
 
-- libc 支持
+#### libc 支持
 
-  |     函数/变量名      |                       用途                       |      |
-  | :------------------: | :----------------------------------------------: | :--: |
-  | `__stack_chk_guard`  |                      栈保护                      |      |
-  | `__stack_chk_fail()` |               栈保护检查失败后调用               |      |
-  |      `memcpy()`      |                    复制内存块                    |      |
-  |     `memmove()`      |          复制内存块，可以处理重叠区域。          |      |
-  |      `memset()`      |                    设置内存块                    |      |
-  |      `memcmp()`      |                    比较内存块                    |      |
-  |      `memchr()`      |                在内存块中查找字符                |      |
-  |      `strcpy()`      |                    复制字符串                    |      |
-  |     `strncpy()`      |               复制指定长度的字符串               |      |
-  |      `strcat()`      |                    连接字符串                    |      |
-  |      `strcmp()`      |                    比较字符串                    |      |
-  |     `strncmp()`      |               比较指定长度的字符串               |      |
-  |      `strlen()`      |                  获取字符串长度                  |      |
-  |     `strnlen()`      |                获取指定字符串长度                |      |
-  |      `strchr()`      |           查找字符在字符串中的首次出现           |      |
-  |     `strrchr()`      |         反向查找字符在字符串中的首次出现         |      |
-  |     `strtoull()`     |      将字符串按指定进制转换为无符号长长整数      |      |
-  |     `strtoul()`      |       将字符串按指定进制转换为无符号长整数       |      |
-  |     `strtoll()`      |         将字符串按指定进制转换为长长整数         |      |
-  |      `strtol()`      |          将字符串按指定进制转换为长整数          |      |
-  |      `atoll()`       |              将字符串转换为长长整数              |      |
-  |       `atol()`       |               将字符串转换为长整数               |      |
-  |       `atoi()`       |                将字符串转换为整数                |      |
-  |     `isalnum()`      |             检查字符是否为字母或数字             |      |
-  |     `isalpha()`      |                检查字符是否为字母                |      |
-  |     `isblank()`      |      检查字符是否为空白字符（空格或制表符）      |      |
-  |     `iscntrl()`      |              检查字符是否为控制字符              |      |
-  |     `isdigit()`      |         检查字符是否为十进制数字（0-9）          |      |
-  |     `isgraph()`      |      检查字符是否为可打印字符（不包括空格）      |      |
-  |     `islower()`      |              检查字符是否为小写字母              |      |
-  |     `isprint()`      |       检查字符是否为可打印字符（包括空格）       |      |
-  |     `ispunct()`      |              检查字符是否为标点符号              |      |
-  |     `isspace()`      | 检查字符是否为空白字符（空格、制表符、换行符等） |      |
-  |     `isupper()`      |              检查字符是否为大写字母              |      |
-  |     `isxdigit()`     |   检查字符是否为十六进制数字（0-9、a-f、A-F）    |      |
-  |     `tolower()`      |                 将字符转换为小写                 |      |
-  |     `toupper()`      |                 将字符转换为大写                 |      |
+提供了完整的 libc 函数支持，包括：
 
-- libc++ 支持
+- **内存操作**：`memcpy()`, `memmove()`, `memset()`, `memcmp()`, `memchr()`
+- **字符串操作**：`strcpy()`, `strncpy()`, `strcat()`, `strcmp()`, `strlen()` 等
+- **字符串转换**：`atoi()`, `atol()`, `strtol()`, `strtoul()` 等
+- **字符分类**：`isalnum()`, `isalpha()`, `isdigit()` 等
+- **栈保护**：`__stack_chk_guard`, `__stack_chk_fail()`
 
-    |       函数/变量名       |                 用途                 |      |
-    | :---------------------: | :----------------------------------: | :--: |
-    |    `__cxa_atexit()`     |             注册析构函数             |      |
-    |   `__cxa_finalize()`    |             调用析构函数             |      |
-    | `__cxa_guard_acquire()` |         静态局部变量初始化锁         |      |
-    | `__cxa_guard_release()` |        静态局部变量初始化完成        |      |
-    |  `__cxa_guard_abort()`  |        静态局部变量初始化出错        |      |
-    |    `__cxa_rethrow()`    |         用于简单处理 `throw`         |      |
-    |    `operator new()`     | 运算符重载，空实现，用于全局对象支持 |      |
-    |   `operator new[]()`    | 运算符重载，空实现，用于全局对象支持 |      |
-    |    `operator new()`     | 运算符重载，空实现，用于全局对象支持 |      |
-    |   `operator new[]()`    | 运算符重载，空实现，用于全局对象支持 |      |
-    |   `operator delete()`   | 运算符重载，空实现，用于全局对象支持 |      |
-    |   `operator delete()`   | 运算符重载，空实现，用于全局对象支持 |      |
-    |  `operator delete[]()`  | 运算符重载，空实现，用于全局对象支持 |      |
-    |  `operator delete[]()`  | 运算符重载，空实现，用于全局对象支持 |      |
+#### libc++ 支持
 
-- 打印函数调用栈
+提供了基础的 C++ 运行时支持：
 
-  逐层回溯帧指针后与 elf 信息进行对比，实现对函数调用栈的打印
+- **对象构造/析构**：`__cxa_atexit()`, `__cxa_finalize()`
+- **静态局部变量**：`__cxa_guard_acquire()`, `__cxa_guard_release()`
+- **内存管理**：`operator new()`, `operator delete()` 系列
+- **异常处理**：`__cxa_rethrow()` 简单异常处理
 
-- 基础 c++ 异常 支持
+### 🖥️ 架构特定实现
 
-  通过 throw 抛出异常后停机，没有上下文相关的处理
+#### RISC-V 64位支持
+- 基于 u-boot+opensbi 引导
+- S 态运行环境
+- gp 寄存器初始化
+- 基于 opensbi 的输出实现
+- FIT 打包内核
 
-- klog 内核日志模块
+#### x86_64 支持
+- 基于 u-boot 引导
+- 64位运行环境
+- FIT 打包内核
 
-  基于 ANSI 转义码，在支持 ANSI 转义码的终端中可以显示有颜色的字符串
+#### AArch64 支持
+- 基于 u-boot+arm-trusted-firmware+optee
+- 64位运行环境
+- ATF 框架集成
+- FIT 打包内核
 
-- 基于 u-boot+opensbi 引导的 riscv64 内核
+### 🔍 调试与诊断
 
-  1. 由 opensbi 进行初始化，直接跳转到内核地址，进入内核逻辑时为 S 态
-  2. gp 寄存器的初始化
-  3. 基于 opensbi 的 printf
-  4. 使用 FIT 打包的内核
+- **函数调用栈打印**：逐层回溯帧指针后与 ELF 信息进行对比
+- **基础 C++ 异常支持**：通过 throw 抛出异常后停机
+- **klog 内核日志模块**：基于 ANSI 转义码的彩色输出
 
-- 基于 u-boot 引导的 amd64 内核
+### 🚀 多核与同步
 
-  1. 由 u-boot 进行初始化，进入内核时为 64 位状态
-  2. 使用 FIT 打包的内核
+- **SMP 支持**：多核处理器支持
+- **spinlock**：适用于多核抢占的自旋锁，主要用于 klog 模块
 
-- 基于 u-boot+arm-trusted-firmware+optee 的 aarch64 内核
+### 🔌 硬件驱动
 
-  1. 使用 FIT 打包的内核
-  2. 由 u-boot 进行初始化，进入内核时为 64 位状态
-  3. 使用 atf 框架
+- **串口驱动**：ns16550a 和 pl011 串口驱动
+- **DTB 解析**：设备树解析支持
+- **ELF 解析**：可执行文件格式解析
 
-- SMP 支持
+### 🧪 开发工具支持
 
-  多核支持
+- **测试框架**：支持单元测试、集成测试、系统测试，基于 gtest 框架
+- **代码分析**：集成 cppcheck、clang-tidy、sanitize 工具
+- **代码格式化**：使用 Google 代码风格
+- **Docker 支持**：容器化开发环境，详见 [doc/docker.md](./doc/docker.md)
+- **文档生成**：基于 doxygen 的自动文档生成与部署
 
-- spinlock
+## 📦 第三方依赖
 
-  适用于多核抢占的自旋锁，主要用于 klog 模块
+- [google/googletest](https://github.com/google/googletest.git) - 测试框架
+- [charlesnicholson/nanoprintf](https://github.com/charlesnicholson/nanoprintf.git) - printf 实现
+- [MRNIU/cpu_io](https://github.com/MRNIU/cpu_io.git) - CPU I/O 操作
+- [riscv-software-src/opensbi](https://github.com/riscv-software-src/opensbi.git) - RISC-V SBI 实现
+- [MRNIU/opensbi_interface](https://github.com/MRNIU/opensbi_interface.git) - OpenSBI 接口
+- [u-boot/u-boot](https://github.com/u-boot/u-boot.git) - 通用引导程序
+- [OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git) - OP-TEE 操作系统
+- [OP-TEE/optee_client](https://github.com/OP-TEE/optee_client.git) - OP-TEE 客户端
+- [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git) - ARM 可信固件
+- [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) - 设备树编译器
 
-- dtb 解析
+## 📝 开发指南
 
-- elf 解析
+### 代码风格
+- **代码风格**：Google C++ 风格指南
+- **格式化工具**：已配置 `.clang-format`
+- **命名规范**：遵循 [Google 开源项目风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
 
-- ns16550a 串口驱动
-
-- pl011 串口驱动
-
-- 基于 doxygen 的文档生成与自动部署
-
-  github action 会将文档部署到 https://simple-xx.github.io/SimpleKernel/ (仅 main 分支)
-
-- 基于 git submodule 的第三方资源管理
-
-  使用 git submodule 集成第三方资源
-
-- 测试
-
-    支持 单元测试、集成测试、系统测试，引入 gtest 作为测试框架，同时统计了测试覆盖率
-
-- 代码分析
-
-    引入 cppcheck、clang-tidy、sanitize 工具提前发现错误
-
-- 代码格式化
-
-    使用 google 风格
-
-- docker
-
-    支持使用 docker 构建，详细使用方法见 [doc/docker.md](./doc/docker.md)
-
-## 已支持的特性
-
-见 新增特性
-
-## 使用的第三方资源
-
-[google/googletest](https://github.com/google/googletest.git)
-
-[charlesnicholson/nanoprintf](https://github.com/charlesnicholson/nanoprintf.git)
-
-[MRNIU/cpu_io](https://github.com/MRNIU/cpu_io.git)
-
-[riscv-software-src/opensbi](https://github.com/riscv-software-src/opensbi.git)
-
-[MRNIU/opensbi_interface](https://github.com/MRNIU/opensbi_interface.git)
-
-[u-boot/u-boot](https://github.com/u-boot/u-boot.git)
-
-[OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git)
-
-[OP-TEE/optee_client](https://github.com/OP-TEE/optee_client.git)
-
-[ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git)
-
-[dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git)
-
-## 开发指南
-
-代码风格：Google，已由 .clang-format 指定
-
-命名规范：[Google 开源项目风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
+### 文档部署
+GitHub Actions 会自动将文档部署到 https://simple-xx.github.io/SimpleKernel/ （仅限 main 分支）
