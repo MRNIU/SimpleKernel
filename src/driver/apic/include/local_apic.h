@@ -136,7 +136,7 @@ class LocalApic {
    * @brief 读取错误状态
    * @return uint32_t 错误状态寄存器值
    */
-  auto ReadErrorStatus() const -> uint32_t;
+  [[nodiscard]] auto ReadErrorStatus() const -> uint32_t;
 
   /**
    * @brief 打印 Local APIC 信息（调试用）
@@ -242,6 +242,12 @@ class LocalApic {
   static constexpr uint64_t kApicBaseControlMask = 0xFFF;
   /// @}
 
+  /// @brief 当前 APIC 模式（true = x2APIC, false = xAPIC）
+  bool is_x2apic_mode_ = false;
+
+  /// @brief APIC 基地址（仅用于 xAPIC 模式）
+  uint64_t apic_base_ = kDefaultApicBase;
+
   /**
    * @brief 检查 CPU 是否支持 x2APIC
    * @return true 支持 x2APIC
@@ -254,14 +260,14 @@ class LocalApic {
    * @return true 启用成功
    * @return false 启用失败
    */
-  auto EnableXApic() const -> bool;
+  [[nodiscard]] auto EnableXApic() const -> bool;
 
   /**
    * @brief 禁用传统 xAPIC 模式
    * @return true 禁用成功
    * @return false 禁用失败或xAPIC未启用
    */
-  auto DisableXApic() const -> bool;
+  [[nodiscard]] auto DisableXApic() const -> bool;
 
   /**
    * @brief 检查传统 xAPIC 是否启用
@@ -275,14 +281,14 @@ class LocalApic {
    * @return true 启用成功
    * @return false 启用失败
    */
-  auto EnableX2Apic() const -> bool;
+  [[nodiscard]] auto EnableX2Apic() const -> bool;
 
   /**
    * @brief 禁用 x2APIC 模式
    * @return true 禁用成功
    * @return false 禁用失败或x2APIC未启用
    */
-  auto DisableX2Apic() const -> bool;
+  [[nodiscard]] auto DisableX2Apic() const -> bool;
 
   /**
    * @brief 检查 x2APIC 是否启用
@@ -290,12 +296,6 @@ class LocalApic {
    * @return false x2APIC 未启用
    */
   [[nodiscard]] auto IsX2ApicEnabled() const -> bool;
-
-  /// @brief 当前 APIC 模式（true = x2APIC, false = xAPIC）
-  bool is_x2apic_mode_ = false;
-
-  /// @brief APIC 基地址（仅用于 xAPIC 模式）
-  uint64_t apic_base_ = kDefaultApicBase;
 };
 
 #endif /* SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_LOCAL_APIC_H_ */

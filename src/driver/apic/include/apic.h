@@ -35,15 +35,6 @@ class Apic {
   /// @}
 
   /**
-   * @brief 添加 IO APIC
-   * @param base_address IO APIC 基地址
-   * @param gsi_base 全局系统中断基址
-   * @return true 添加成功
-   * @return false 添加失败
-   */
-  auto AddIoApic(uint64_t base_address, uint32_t gsi_base = 0) -> bool;
-
-  /**
    * @brief 初始化当前 CPU 的 Local APIC
    * @return true 初始化成功
    * @return false 初始化失败
@@ -150,36 +141,14 @@ class Apic {
   void PrintInfo() const;
 
  private:
-  /// 最大 IO APIC 数量
-  static constexpr size_t kMaxIoApics = 8;
-
-  /// IO APIC 信息结构
-  struct IoApicInfo {
-    IoApic instance;
-    uint64_t base_address;
-    uint32_t gsi_base;
-    uint32_t gsi_count;
-    bool valid;
-  };
-
   /// Local APIC 操作接口（静态实例，用于当前 CPU）
   LocalApic local_apic_;
 
-  /// IO APIC 实例数组
-  std::array<IoApicInfo, kMaxIoApics> io_apics_;
-
-  /// 当前 IO APIC 数量
-  size_t io_apic_count_{0};
+  /// 只支持一个 IO APIC
+  IoApic io_apic_;
 
   /// 系统 CPU 数量
-  size_t cpu_count_{4};
-
-  /**
-   * @brief 根据 IRQ 查找对应的 IO APIC
-   * @param irq IRQ 号
-   * @return IoApicInfo* 对应的 IO APIC 信息，如果未找到则返回 nullptr
-   */
-  auto FindIoApicByIrq(uint8_t irq) -> IoApicInfo*;
+  size_t cpu_count_;
 };
 
 #endif /* SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_APIC_H_ */

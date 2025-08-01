@@ -3,13 +3,13 @@
  * @brief IO APIC 驱动实现
  */
 
-#include "apic.h"
+#include "io_apic.h"
+
 #include "io.hpp"
 #include "kernel_log.hpp"
 
-bool IoApic::Init(uint64_t base_address) {
-  base_address_ = base_address;
-  klog::Info("Initializing IO APIC at address 0x%lx\n", base_address);
+IoApic::IoApic() {
+  klog::Info("Initializing IO APIC at address 0x%lx\n", base_address_);
 
   // 检查 IO APIC 是否可访问
   uint32_t id = GetId();
@@ -22,12 +22,11 @@ bool IoApic::Init(uint64_t base_address) {
   // 禁用所有重定向条目（设置为屏蔽状态）
   for (uint32_t i = 0; i < max_entries; i++) {
     uint64_t entry = ReadRedirectionEntry(i);
-    entry |= (1ULL << 16);  // 设置屏蔽位
+    entry |= kMaskBit;  // 设置屏蔽位
     WriteRedirectionEntry(i, entry);
   }
 
   klog::Info("IO APIC initialization completed\n");
-  return true;
 }
 
 void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
@@ -46,30 +45,15 @@ void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
   uint64_t entry = 0;
 
   // 设置中断向量 (位 0-7)
-  entry |= vector & 0xFF;
-
-  // 设置传递模式为固定 (位 8-10 = 000)
-  // entry |= (0 << 8);  // 固定模式，默认为 0
-
-  // 设置目标模式为物理 (位 11 = 0)
-  // entry |= (0 << 11);  // 物理模式，默认为 0
-
-  // 设置传递状态为空闲 (位 12 = 0)
-  // entry |= (0 << 12);  // 空闲状态，默认为 0
-
-  // 设置极性为高电平有效 (位 13 = 0)
-  // entry |= (0 << 13);  // 高电平有效，默认为 0
-
-  // 设置触发模式为边沿触发 (位 15 = 0)
-  // entry |= (0 << 15);  // 边沿触发，默认为 0
-
+  entry |= vector & kVectorMask;
   // 设置屏蔽位 (位 16)
   if (mask) {
-    entry |= (1ULL << 16);
+    entry |= kMaskBit;
   }
 
   // 设置目标 APIC ID (位 56-63)
-  entry |= (static_cast<uint64_t>(destination_apic_id & 0xFF) << 56);
+  entry |= (static_cast<uint64_t>(destination_apic_id & kDestApicIdMask)
+            << kDestApicIdShift);
 
   WriteRedirectionEntry(irq, entry);
 }
@@ -84,7 +68,7 @@ void IoApic::MaskIrq(uint8_t irq) {
   }
 
   uint64_t entry = ReadRedirectionEntry(irq);
-  entry |= (1ULL << 16);  // 设置屏蔽位
+  entry |= kMaskBit;  // 设置屏蔽位
   WriteRedirectionEntry(irq, entry);
 }
 
@@ -98,7 +82,7 @@ void IoApic::UnmaskIrq(uint8_t irq) {
   }
 
   uint64_t entry = ReadRedirectionEntry(irq);
-  entry &= ~(1ULL << 16);  // 清除屏蔽位
+  entry &= ~kMaskBit;  // 清除屏蔽位
   WriteRedirectionEntry(irq, entry);
 }
 
