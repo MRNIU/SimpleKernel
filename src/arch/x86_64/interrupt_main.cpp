@@ -86,6 +86,7 @@ bool EnableKeyboardInterrupt(uint8_t vector) {
 
   // 获取当前 CPU 的 APIC ID 作为目标
   uint32_t destination_apic_id = cpu_io::GetApicInfo().apic_id;
+  klog::Info("Target APIC ID: 0x%x\n", destination_apic_id);
 
   // 通过 APIC 设置 IRQ 重定向到指定向量
   bool success = Singleton<Apic>::GetInstance().SetIrqRedirection(
