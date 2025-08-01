@@ -78,12 +78,12 @@ class LocalApic {
    * @param periodic 是否为周期性定时器
    */
   void EnableTimer(uint32_t initial_count, uint32_t divide_value,
-                   uint8_t vector, bool periodic = true);
+                   uint8_t vector, bool periodic = true) const;
 
   /**
    * @brief 禁用 Local APIC 定时器
    */
-  void DisableTimer();
+  void DisableTimer() const;
 
   /**
    * @brief 获取定时器当前计数值
@@ -107,7 +107,8 @@ class LocalApic {
 
   /**
    * @brief 校准 APIC 定时器频率
-   * @return uint32_t APIC 定时器频率（Hz）
+   * @return uint32_t APIC 定时器频率（Hz）\
+   * @todo 需要实现更精确的校准方法
    */
   auto CalibrateTimer() -> uint32_t;
 
@@ -115,14 +116,14 @@ class LocalApic {
    * @brief 发送 INIT IPI
    * @param destination_apic_id 目标 APIC ID
    */
-  void SendInitIpi(uint32_t destination_apic_id);
+  void SendInitIpi(uint32_t destination_apic_id) const;
 
   /**
    * @brief 发送 SIPI (Startup IPI)
    * @param destination_apic_id 目标 APIC ID
    * @param start_page 启动页面地址（4KB 页面）
    */
-  void SendStartupIpi(uint32_t destination_apic_id, uint8_t start_page);
+  void SendStartupIpi(uint32_t destination_apic_id, uint8_t start_page) const;
 
   /**
    * @brief 唤醒应用处理器 (AP)
@@ -137,13 +138,13 @@ class LocalApic {
   /**
    * @brief 配置 Local Vector Table 条目
    */
-  void ConfigureLvtEntries();
+  void ConfigureLvtEntries() const;
 
   /**
    * @brief 读取错误状态
    * @return uint32_t 错误状态寄存器值
    */
-  auto ReadErrorStatus() -> uint32_t;
+  auto ReadErrorStatus() const -> uint32_t;
 
   /**
    * @brief 打印 Local APIC 信息（调试用）
