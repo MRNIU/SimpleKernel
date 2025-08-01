@@ -100,24 +100,6 @@ bool EnableKeyboardInterrupt(uint8_t vector) {
   return success;
 }
 
-bool DisableKeyboardInterrupt() {
-  klog::Info("Disabling keyboard interrupt\n");
-
-  // 键盘使用 IRQ 1
-  constexpr uint8_t kKeyboardIrq = 1;
-
-  // 屏蔽键盘中断
-  bool success = Singleton<Apic>::GetInstance().MaskIrq(kKeyboardIrq);
-
-  if (success) {
-    klog::Info("Keyboard interrupt disabled successfully\n");
-  } else {
-    klog::Err("Failed to disable keyboard interrupt\n");
-  }
-
-  return success;
-}
-
 };  // namespace
 
 void InterruptInit(int, const char **) {
