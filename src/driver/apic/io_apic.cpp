@@ -110,11 +110,9 @@ uint32_t IoApic::GetVersion() const {
 }
 
 uint32_t IoApic::GetMaxRedirectionEntries() const {
-  return ((ReadReg(kRegVer) >> 16) & 0xFF) +
-         1;  // MRE 位于位 16-23，实际数量需要 +1
+  // MRE 位于位 16-23，实际数量需要 +1
+  return ((ReadReg(kRegVer) >> 16) & 0xFF) + 1;
 }
-
-uint64_t IoApic::GetBaseAddress() const { return base_address_; }
 
 void IoApic::PrintInfo() const {
   klog::Info("IO APIC Information\n");

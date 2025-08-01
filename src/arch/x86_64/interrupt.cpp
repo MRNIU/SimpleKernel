@@ -50,8 +50,9 @@ Interrupt::Interrupt() {
     };
   }
 
-  // 初始化 IO APIC (暂时保留注释)
-  // TODO: 实现 IO APIC 支持
+  // 初始化 IO APIC
+  // 添加标准 PC 配置的 IO APIC (基地址 0xFEC00000)
+  Singleton<Apic>::GetInstance().AddIoApic(0xFEC00000, 0);
 
   klog::Info("Interrupt init.\n");
 }
