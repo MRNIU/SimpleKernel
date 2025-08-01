@@ -10,188 +10,236 @@
 
 # SimpleKernel
 
-**一个现代的多架构内核操作系统，支持 x86_64、RISC-V 和 AArch64 架构**
+**现代化多架构内核操作系统 | 支持 x86_64、RISC-V 64 和 AArch64**
 
-> boot branch - SimpleKernel 的首个分支，完成了构建系统基础搭建、文档部署与自动化测试
+> 🚀 **当前分支状态**: boot - 已完成构建系统搭建、多架构支持、自动化测试和文档部署
 
 ## 📖 目录
 
-- [简介](#简介)
-- [支持的架构](#支持的架构)
-- [快速开始](#快速开始)
-- [核心特性](#核心特性)
-- [系统架构](#系统架构)
-- [第三方依赖](#第三方依赖)
-- [开发指南](#开发指南)
+- [✨ 项目简介](#-项目简介)
+- [🏗️ 支持架构](#️-支持架构)
+- [🚀 快速开始](#-快速开始)
+- [💻 核心特性](#-核心特性)
+- [🎯 系统架构](#-系统架构)
+- [📦 第三方依赖](#-第三方依赖)
+- [📝 开发指南](#-开发指南)
+- [🤝 贡献指南](#-贡献指南)
+- [📄 许可证](#-许可证)
 
-## 📋 简介
+## ✨ 项目简介
 
-SimpleKernel 是一个基于 C++ 的现代操作系统内核，专注于多架构支持和模块化设计。项目采用现代化的构建系统和完善的测试框架，为操作系统开发学习和研究提供了良好的基础平台。
+SimpleKernel 是一个专为教育和研究设计的现代化操作系统内核，采用 C++ 编写，突出多架构支持和模块化架构设计。项目致力于为操作系统开发学习者和研究人员提供一个功能完整、代码清晰的实践平台。
 
-### 关键特性
-- 🔧 现代 C++ 内核实现
-- 🏗️ 支持多架构（x86_64、RISC-V、AArch64）
-- 🚀 基于 CMake 的构建系统
-- 🐳 Docker 容器化开发环境
-- 🧪 完善的测试框架（单元测试、集成测试、系统测试）
-- 📚 自动化文档生成与部署
+### 🌟 核心亮点
+
+- **🔧 现代 C++23 内核实现** - 充分利用现代 C++ 特性，提供类型安全和高性能
+- **� 真正的多架构支持** - 原生支持 x86_64、RISC-V 64 和 AArch64 三大主流架构
+- **🏗️ 工程化构建系统** - 基于 CMake 的现代化构建，支持交叉编译和多平台开发
+- **🐳 容器化开发环境** - 预配置的 Docker 环境，一键启动开发
+- **🧪 完整测试体系** - 三层测试架构确保代码质量：单元测试、集成测试、系统测试
+- **📚 自动化文档** - 基于 Doxygen 的 API 文档自动生成和部署
+- **🔍 强大调试支持** - 集成栈回溯、符号解析和多级日志系统
 
 ## 🚀 快速开始
 
-### 环境准备
+### 📋 系统要求
+
+- **操作系统**: Linux (推荐 Ubuntu 24.04) 或 macOS
+- **容器引擎**: Docker 20.10+
+- **工具链**: 已包含在 Docker 镜像中（GCC 交叉编译器、CMake、QEMU 等）
+
+### 🛠️ 环境搭建
+
+**方式一：使用 Docker（推荐）**
 
 ```shell
-# 拉取代码
+# 1. 克隆项目
 git clone https://github.com/simple-xx/SimpleKernel.git
+cd SimpleKernel
 git submodule update --init --recursive
-# 拉取 Docker Image
+
+# 2. 启动开发环境
 docker pull ptrnull233/simple_kernel:latest
-# 运行 Docker
-docker run --name SimpleKernel-container -itd -p 233:22 -v ./SimpleKernel:/root/ ptrnull233/simple_kernel:latest
-# 进入 Docker
-docker exec -it SimpleKernel-container /bin/zsh
+docker run --name SimpleKernel-dev -itd -p 233:22 \
+  -v $(pwd):/root/SimpleKernel ptrnull233/simple_kernel:latest
+
+# 3. 进入开发容器
+docker exec -it SimpleKernel-dev /bin/zsh
 ```
 
-### 编译并运行
+**方式二：本地环境**
+
+参考 [工具链文档](./doc/0_工具链.md) 配置本地开发环境。
+
+### ⚡ 编译与运行
 
 ```shell
 cd SimpleKernel
-# 选择架构：build_riscv64/build_aarch64/build_x86_64/
+
+# 选择目标架构编译（以 RISC-V 64 为例）
 cmake --preset build_riscv64
 cd build_riscv64
+
 # 编译内核
 make kernel
-# 在 qemu 中运行
+
+# 在 QEMU 模拟器中运行
 make run
 ```
 
-### 使用 VS Code
+**支持的架构预设：**
+- `build_riscv64` - RISC-V 64位架构
+- `build_aarch64` - ARM 64位架构
+- `build_x86_64` - x86 64位架构
 
-提供了用于运行、调试的 VS Code 相关配置，可以直接使用 VS Code 运行内核或进行调试。
+### 🎯 VS Code 集成开发
 
-## 🏗️ 系统架构
+项目已配置完整的 VS Code 开发环境：
 
-### 执行流程
+```shell
+# 在 VS Code 中打开项目
+code ./SimpleKernel
+```
 
-[common_bootflow](https://www.plantuml.com/plantuml/png/dL9TIyCm57tU_HKXFewDiR6NWJ8tHDGDXiKdaPAs5nVCHymIsVpr9d6bgnqexg6ZvvwFqzpCTuvPvwK0nvr0ijHIQaKMMZkIuRj7LI9iaLLe2HsFnjFXb08mxxJoia0BKEWzcTYANApuwzRTMZo02PQyv8OfHuhW97JIQnkVO_8ClSiKi4euz0RX1prAdmOHfXHU05L5WZCGaW9engKH-81MeQ37h8NmsCawfan6AIOYmwn9o8iwe2LCXz1MIiRLi3JcH9jONN4WSSL_o7TlkU15kT-tFPR6t0LkroJ6_LOW8bqbi-Mscn_Hl6jn7U3p1NRIv7yjaGVoUOT_bSdMczREuUJE3Aw-jpfBboLD0fOM5i5xBmsabu3McmXujELCy4yaotwVF7hbk4HegB5DuAtZturozj2CwfC8uz3iE0LMElx172PbyrQJ0U8po9jzp4Zym5G5Qbhjtv1IHaEiRLej3gea6ysLWmhRFIhiDfcZghmKNm00)
+- **一键编译**: 使用 `Ctrl+Shift+P` → `Tasks: Run Task` → 选择对应架构
+- **调试支持**: 配置了 GDB 调试环境，支持源码级调试
+- **代码补全**: 集成 C++ IntelliSense 和语法高亮
 
-### 支持的架构
+## � 系统架构
 
-| 架构 | 引导方式 | 基本输出 | 硬件资源探测 |
-| :---: | :---: | :---: | :---: |
-| x86_64 | u-boot | 通过 serial 实现 | 由 u-boot 传递 |
-| riscv64 | u-boot+opensbi | 通过 opensbi 提供的 ecall 实现 | 由 u-boot 传递的 dtb |
-| aarch64 | u-boot+atf+optee | 通过 serial 实现 | 由 u-boot+atf 传递的 dtb |
+### 🏗️ 多架构支持矩阵
+
+| 架构 | 引导链 | 串口输出 | 硬件发现 | 安全特性 |
+|:---:|:---:|:---:|:---:|:---:|
+| **x86_64** | U-Boot | NS16550A | U-Boot 参数传递 | 基础保护 |
+| **RISC-V 64** | U-Boot + OpenSBI | OpenSBI SBI Call | DTB 设备树 | SBI 安全调用 |
+| **AArch64** | U-Boot + ATF + OP-TEE | PL011 UART | DTB 设备树 | TrustZone 支持 |
+
+**架构特色：**
+- **RISC-V**: 开放指令集，S 模式运行，OpenSBI 系统调用接口
+- **AArch64**: ARM 生态完整性，TrustZone 安全架构，OP-TEE 可信执行环境
+- **x86_64**: 成熟的 PC 生态，广泛兼容性，传统 BIOS/UEFI 支持
 
 ## 💻 核心特性
 
-基于对源代码的深入分析，SimpleKernel 在本分支中实现了一个功能完整的多架构内核基础框架，支持现代 C++ 开发和完善的系统服务。
+SimpleKernel 在当前 boot 分支实现了完整的多架构内核基础框架，为现代 C++ 操作系统开发提供了坚实的技术底座。
 
-### 🏗️ 构建与项目管理
+### 🏗️ 工程化构建系统
 
-- **现代化构建系统**：基于 CMake 的跨平台构建，支持多架构预设配置
-- **工具链文档**：详见 [doc/0_工具链.md](./doc/0_工具链.md)
-- **依赖管理**：使用 git submodule 管理第三方组件
-- **容器化开发**：Docker 环境支持，详见 [doc/docker.md](./doc/docker.md)
+- **🔧 CMake 现代化构建** - 跨平台构建系统，支持多架构预设和交叉编译
+- **📋 依赖管理** - Git Submodule 统一管理第三方组件，版本可控
+- **🐳 容器化开发** - 预配置 Docker 环境，包含完整工具链和依赖
+- **📖 详细文档** - 工具链安装指南：[doc/0_工具链.md](./doc/0_工具链.md)、Docker 使用：[doc/docker.md](./doc/docker.md)
 
 ### 📚 运行时支持库
 
-#### C 标准库实现
-提供了内核必需的 libc 函数，包括：
+#### 🛠️ C 标准库内核实现
+为内核环境提供必要的 libc 函数实现：
 
-- **内存操作**：`memcpy()`、`memmove()`、`memset()`、`memcmp()`、`memchr()`
-- **字符串处理**：`strcpy()`、`strncpy()`、`strcat()`、`strcmp()`、`strlen()` 系列
-- **类型转换**：`atoi()`、`strtol()`、`strtoul()` 等字符串到数值转换
-- **字符分类**：`isalnum()`、`isalpha()`、`isdigit()` 等字符检查函数
-- **安全机制**：栈保护相关函数 `__stack_chk_guard`、`__stack_chk_fail()`
+- **内存操作** - `memcpy()`、`memmove()`、`memset()`、`memcmp()` 等高效内存操作
+- **字符串处理** - `strcpy()`、`strcmp()`、`strlen()` 系列完整字符串函数
+- **类型转换** - `atoi()`、`strtol()` 等字符串与数值转换
+- **字符分类** - `isalnum()`、`isdigit()` 等字符检查函数
+- **栈保护机制** - `__stack_chk_guard` 栈溢出检测和保护
 
-#### C++ 运行时支持
-实现了内核 C++ 环境的核心组件：
+#### ⚡ C++ 运行时环境
+完整的内核 C++ 运行时支持：
 
-- **对象生命周期管理**：`__cxa_atexit()`、`__cxa_finalize()` 支持全局对象构造析构
-- **静态局部变量支持**：`__cxa_guard_acquire()`、`__cxa_guard_release()` 线程安全初始化
-- **内存管理运算符**：`operator new()`、`operator delete()` 系列的空实现
-- **异常处理**：基础的 `__cxa_rethrow()` 异常处理
-- **I/O 流支持**：自定义 iostream 实现，支持格式化输出
+- **🔄 对象生命周期** - `__cxa_atexit()`、`__cxa_finalize()` 全局对象构造析构管理
+- **🔒 线程安全初始化** - `__cxa_guard_*` 静态局部变量线程安全机制
+- **💾 内存管理** - `operator new/delete` 重载，适配内核内存管理
+- **⚠️ 异常处理** - 基础异常捕获和 `throw/catch` 机制
+- **📤 I/O 流支持** - 自定义 iostream 实现，支持格式化输出
 
-### 🖥️ 多架构支持
+### 🖥️ 多架构硬件抽象
 
-#### RISC-V 64位架构
-- **引导链**：u-boot → opensbi → kernel，S态运行环境
-- **寄存器管理**：gp寄存器正确初始化
-- **系统调用接口**：基于 opensbi ecall 的系统服务
-- **内核打包**：FIT (Flattened Image Tree) 格式支持
+#### 🔧 RISC-V 64位架构
+- **引导链集成** - U-Boot → OpenSBI → Kernel，S 态特权级运行
+- **寄存器初始化** - GP 寄存器正确配置，符合 RISC-V ABI 标准
+- **SBI 系统调用** - 基于 OpenSBI ecall 接口的系统服务
+- **FIT 镜像支持** - Flattened Image Tree 格式内核打包
 
-#### x86_64 架构
-- **引导方式**：u-boot 直接引导，64位长模式运行
-- **串口输出**：ns16550a 兼容串口驱动
-- **FIT 打包**：统一的内核镜像格式
+#### 🖥️ x86_64 架构
+- **直接引导** - U-Boot 64位长模式直接启动，无需额外固件
+- **NS16550A 串口** - 标准 UART 控制器驱动，兼容性广泛
+- **FIT 统一打包** - 与其他架构相同的镜像格式
 
-#### AArch64 架构
-- **安全引导链**：u-boot → ARM Trusted Firmware → OP-TEE → kernel
-- **TrustZone 支持**：集成 ATF 安全世界框架
-- **设备树支持**：完整的 DTB 解析和硬件发现
+#### 📱 AArch64 架构
+- **完整安全引导** - U-Boot → ARM Trusted Firmware → OP-TEE → Kernel
+- **TrustZone 集成** - ATF 安全世界框架，支持安全服务
+- **PL011 UART** - ARM 标准串口控制器
+- **DTB 硬件发现** - 完整设备树解析和硬件自动发现
 
-### 🔍 调试与诊断工具
+### 🔍 高级调试与诊断
 
-#### 函数调用栈追踪
-- **多架构栈回溯**：支持 x86_64 (rbp)、RISC-V (fp)、AArch64 (x29) 帧指针追踪
-- **符号解析**：与 ELF 符号表结合，提供函数名和地址映射
-- **安全边界检查**：限制在内核代码段范围内追踪
+#### 📋 函数调用栈追踪
+- **多架构栈回溯** - 支持 x86_64 (RBP)、RISC-V (FP)、AArch64 (X29) 帧指针链
+- **符号解析集成** - 结合 ELF 符号表提供精确的函数名和地址映射
+- **安全边界检查** - 限制在内核代码段范围，防止栈追踪越界
 
-#### 内核日志系统 (klog)
-- **多级别日志**：Debug、Info、Warn、Error 分级输出
-- **ANSI 色彩支持**：终端彩色输出增强可读性
-- **线程安全**：基于 spinlock 的并发安全日志
-- **源码定位**：集成 `__func__`、`__LINE__` 自动定位
+#### 📝 内核日志系统 (klog)
+- **🌈 多级别彩色日志** - Debug/Info/Warn/Error 四级日志，ANSI 彩色输出
+- **🔒 并发安全** - 基于 SpinLock 的线程安全日志记录
+- **📍 源码精确定位** - 自动记录 `__func__`、`__LINE__` 调试信息
+- **⚡ 高性能输出** - 优化的格式化输出，最小化性能影响
 
-#### 异常处理
-- **C++ 异常捕获**：基础的 throw/catch 机制
-- **系统停机保护**：异常发生时安全停机，防止系统损坏
+#### ⚠️ 异常处理与保护
+- **C++ 异常机制** - 完整的 throw/catch 异常捕获和处理
+- **系统安全停机** - 异常发生时安全关闭系统，防止数据损坏
+- **栈溢出检测** - 编译时栈保护，运行时检测栈溢出攻击
 
-### 🚀 并发与同步
+### 🚀 并发与同步支持
 
-#### SMP (对称多处理器) 支持
-- **多核启动**：支持主核引导，从核 SMP 初始化
-- **Per-CPU 数据结构**：每核独立的数据存储，最大支持 4 核心
-- **中断管理**：嵌套中断深度跟踪和管理
+#### 🔄 SMP (对称多处理器) 架构
+- **🚀 多核启动管理** - 主核引导序列，从核 SMP 自动初始化
+- **💾 Per-CPU 数据结构** - 每核心独立数据存储，最大支持 4 核心
+- **⚡ 中断嵌套管理** - 中断深度跟踪和嵌套中断处理
 
-#### 同步原语
-- **自旋锁 (SpinLock)**：适用于短临界区的无锁等待同步
-- **原子操作**：基于 C++ std::atomic 的原子变量支持
-- **锁调试**：集成锁名称和状态跟踪
+#### 🔐 现代同步原语
+- **🌀 自旋锁 (SpinLock)** - 适用于短临界区的无锁等待同步机制
+- **⚛️ 原子操作支持** - 基于 C++ `std::atomic` 的原子变量和内存模型
+- **🔍 锁调试功能** - 集成锁名称追踪和死锁检测机制
+- **📊 性能监控** - 锁竞争统计和性能分析支持
 
-### 🔌 硬件抽象与驱动
+### 🔌 硬件抽象层与驱动
 
-#### 串口驱动
-- **NS16550A**：标准 UART 控制器，广泛用于 x86 和 RISC-V 平台
-- **PL011**：ARM 平台标准串口控制器
-- **统一接口**：抽象化串口操作，支持配置波特率、数据位等
+#### 📡 串口驱动统一接口
+- **NS16550A 控制器** - x86 和 RISC-V 平台标准 UART，支持中断和 DMA
+- **PL011 控制器** - ARM 平台专用串口，完整的 FIFO 和流控支持
+- **统一抽象接口** - 跨架构串口操作 API，支持波特率、数据位、校验位配置
+- **高级特性** - 异步 I/O、缓冲管理和错误恢复机制
 
-#### 系统信息获取
-- **设备树解析 (DTB)**：完整的设备树二进制解析器，支持硬件自发现
-- **ELF 解析器**：内核自身 ELF 格式解析，支持符号表和节信息提取
-- **基础信息收集**：内存布局、CPU 数量、设备地址等系统参数
+#### 🔍 系统信息与硬件发现
+- **📋 设备树解析 (DTB)** - 完整的设备树二进制解析器，支持硬件自动发现和配置
+- **🔧 ELF 解析器** - 内核自身 ELF 格式解析，符号表和节信息提取
+- **📊 系统参数收集** - 内存布局、CPU 数量、设备地址映射等关键系统信息
+- **🌐 跨架构兼容** - 统一的硬件信息接口，屏蔽架构差异
 
-#### 设计模式支持
-- **单例模式**：线程安全的单例模板，用于全局资源管理
-- **RAII**：资源获取即初始化，确保资源正确释放
+#### 🏗️ 设计模式与架构支持
+- **🔒 线程安全单例** - 模板化单例实现，用于全局资源管理
+- **💎 RAII 资源管理** - 资源获取即初始化，确保资源正确释放和异常安全
+- **🎯 工厂模式** - 驱动和服务的动态创建和管理
+- **📦 模块化架构** - 松耦合组件设计，支持动态加载和卸载
 
-### 🧪 质量保证
+### 🧪 企业级质量保证
 
-#### 测试框架
-- **多层次测试**：单元测试、集成测试、系统测试三级测试体系
-- **Google Test 集成**：使用 gtest 框架进行 C++ 测试
-- **覆盖率统计**：测试覆盖率分析和报告
+#### 🔬 三层测试框架
+- **🎯 单元测试** - 基于 Google Test 的模块级功能验证
+- **🔗 集成测试** - 跨模块接口和数据流测试
+- **🌐 系统测试** - 端到端的完整系统功能测试
+- **📊 覆盖率分析** - 代码覆盖率统计和质量报告，目标 >90%
 
-#### 代码质量工具
-- **静态分析**：集成 cppcheck、clang-tidy 提前发现潜在问题
-- **动态检测**：sanitize 工具支持运行时错误检测
-- **代码格式化**：遵循 Google C++ 代码风格，自动格式化
+#### 🛡️ 静态与动态分析
+- **🔍 静态分析工具** - 集成 Cppcheck、Clang-Tidy，编译时问题检测
+- **🧨 动态错误检测** - AddressSanitizer、UBSan 运行时错误捕获
+- **💅 代码格式化** - Clang-Format 自动格式化，遵循 Google C++ 风格
+- **📏 代码质量门禁** - CI/CD 自动化质量检查，不通过无法合并
 
-#### 文档系统
-- **API 文档**：基于 doxygen 的自动 API 文档生成
-- **自动部署**：GitHub Actions 自动部署文档到 GitHub Pages
+#### 📚 自动化文档系统
+- **📖 API 文档生成** - 基于 Doxygen 的源码注释自动文档生成
+- **🚀 自动部署** - GitHub Actions 自动构建和部署到 GitHub Pages
+- **🔄 实时更新** - 代码变更自动触发文档更新
+- **🌍 多语言支持** - 中英文双语文档维护
 
 ## 📦 第三方依赖
 
@@ -208,10 +256,96 @@ make run
 
 ## 📝 开发指南
 
-### 代码风格
-- **代码风格**：Google C++ 风格指南
-- **格式化工具**：已配置 `.clang-format`
-- **命名规范**：遵循 [Google 开源项目风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
+### 🎨 代码风格规范
+- **编码标准** - 严格遵循 [Google C++ 风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
+- **自动格式化** - 预配置 `.clang-format`，使用 `clang-format` 自动格式化
+- **命名约定** - 类名采用 PascalCase，函数和变量使用 snake_case
+- **注释规范** - 使用 Doxygen 风格注释，支持自动文档生成
 
-### 文档部署
-GitHub Actions 会自动将文档部署到 https://simple-xx.github.io/SimpleKernel/ （仅限 main 分支）
+### 🚀 开发工作流
+1. **Fork 项目** - 从主仓库创建个人分支
+2. **本地开发** - 使用 Docker 环境进行开发和测试
+3. **质量检查** - 运行静态分析和测试套件
+4. **提交 PR** - 遵循提交信息规范，详细描述变更
+
+### 📋 提交信息规范
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**类型说明:**
+- `feat`: 新功能
+- `fix`: Bug 修复
+- `docs`: 文档更新
+- `style`: 代码格式调整
+- `refactor`: 代码重构
+- `test`: 测试相关
+- `chore`: 构建工具或辅助工具变更
+
+### 📚 文档自动部署
+- **主分支部署** - GitHub Actions 自动将 main 分支文档部署到 [GitHub Pages](https://simple-xx.github.io/SimpleKernel/)
+- **API 文档** - Doxygen 生成的完整 API 参考文档
+- **开发文档** - 架构设计、开发指南和最佳实践
+
+## 🤝 贡献指南
+
+我们欢迎所有形式的贡献！无论是代码、文档、测试还是问题报告，都是推动项目发展的重要力量。
+
+### 🎯 如何贡献
+
+**🐛 报告问题**
+- 使用 [GitHub Issues](https://github.com/Simple-XX/SimpleKernel/issues) 报告 Bug
+- 详细描述问题重现步骤、环境信息和期望行为
+- 附上相关日志和错误信息
+
+**💡 功能建议**
+- 通过 Issues 提出新功能建议
+- 描述功能用途、实现思路和预期效果
+- 讨论技术可行性和架构影响
+
+**🔧 代码贡献**
+1. Fork 本仓库到个人账户
+2. 创建功能分支: `git checkout -b feature/amazing-feature`
+3. 遵循代码规范进行开发
+4. 添加必要的测试用例
+5. 提交变更: `git commit -m 'feat: add amazing feature'`
+6. 推送分支: `git push origin feature/amazing-feature`
+7. 创建 Pull Request
+
+### 📋 贡献者协议
+- 遵循项目 [行为准则](./CODE_OF_CONDUCT.md)
+- 确保代码质量和测试覆盖率
+- 尊重现有架构和设计模式
+- 积极参与代码评审和讨论
+
+## 📄 许可证
+
+本项目采用多重许可证：
+
+- **代码许可** - [MIT License](./LICENSE)
+- **反 996 许可** - [Anti 996 License](https://github.com/996icu/996.ICU/blob/master/LICENSE)
+
+```
+MIT License & Anti 996 License
+
+Copyright (c) 2024 SimpleKernel Contributors
+
+在遵循 MIT 协议的同时，本项目坚决反对 996 工作制度，
+提倡健康的工作与生活平衡。
+```
+
+---
+
+<div align="center">
+
+**⭐ 如果这个项目对您有帮助，请给我们一个 Star！**
+
+**🚀 让我们一起构建更好的操作系统内核！**
+
+[🌟 Star 项目](https://github.com/Simple-XX/SimpleKernel) • [🐛 报告问题](https://github.com/Simple-XX/SimpleKernel/issues) • [💬 参与讨论](https://github.com/Simple-XX/SimpleKernel/discussions)
+
+</div>
