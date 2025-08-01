@@ -527,29 +527,31 @@ void LocalApic::PrintInfo() const {
 }
 
 bool LocalApic::CheckX2ApicSupport() const {
-  // 使用 CPUID 检查 x2APIC 支持
+  // CPUID.01H:ECX.x2APIC[bit 21] = 1 表示支持 x2APIC
   uint32_t eax;
   uint32_t ebx;
   uint32_t ecx;
   uint32_t edx;
   __get_cpuid(1, &eax, &ebx, &ecx, &edx);
-
-  // ECX 位 21 表示 x2APIC 支持
   return (ecx & (1 << 21)) != 0;
 }
 
 bool LocalApic::EnableXApic() const {
+  // 设置 IA32_APIC_BASE.Global_Enable (位11) = 1
   cpu_io::msr::apic::EnableGlobally();
+  // 清除 IA32_APIC_BASE.x2APIC_Enable (位10) = 0
   cpu_io::msr::apic::DisableX2Apic();
   return IsXApicEnabled();
 }
 
 bool LocalApic::DisableXApic() const {
+  // 清除 IA32_APIC_BASE.Global_Enable (位11) = 0
   cpu_io::msr::apic::DisableGlobally();
   return !IsXApicEnabled();
 }
 
 bool LocalApic::IsXApicEnabled() const {
+  // Global_Enable = 1 && x2APIC_Enable = 0
   return cpu_io::msr::apic::IsGloballyEnabled() &&
          !cpu_io::msr::apic::IsX2ApicEnabled();
 }
@@ -560,7 +562,8 @@ bool LocalApic::EnableX2Apic() const {
     return false;
   }
 
-  // 启用 x2APIC 模式
+  // 设置 IA32_APIC_BASE.x2APIC_Enable (位10) = 1
+  // 同时确保 IA32_APIC_BASE.Global_Enable (位11) = 1
   cpu_io::msr::apic::EnableX2Apic();
 
   // 验证 x2APIC 是否成功启用
@@ -568,23 +571,13 @@ bool LocalApic::EnableX2Apic() const {
 }
 
 bool LocalApic::DisableX2Apic() const {
+  // 清除 IA32_APIC_BASE.x2APIC_Enable (位10) = 0
   cpu_io::msr::apic::DisableX2Apic();
   return !IsX2ApicEnabled();
 }
 
 bool LocalApic::IsX2ApicEnabled() const {
   return cpu_io::msr::apic::IsX2ApicEnabled();
-}
-
-void LocalApic::SetApicBase(uint64_t base_address) {
-  uint64_t apic_base_msr = cpu_io::msr::apic::ReadBase();
-
-  // 保留控制位，更新基地址
-  apic_base_msr =
-      (apic_base_msr & kApicBaseControlMask) | (base_address & kApicBaseMask);
-
-  cpu_io::msr::apic::WriteBase(apic_base_msr);
-  apic_base_ = base_address;
 }
 
 bool LocalApic::WakeupAp(uint32_t destination_apic_id, uint8_t start_vector) {

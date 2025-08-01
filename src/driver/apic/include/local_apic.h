@@ -271,8 +271,10 @@ class LocalApic {
 
   /**
    * @brief 禁用传统 xAPIC 模式
+   * @return true 禁用成功
+   * @return false 禁用失败或xAPIC未启用
    */
-  bool DisableXApic() const;
+  auto DisableXApic() const -> bool;
 
   /**
    * @brief 检查传统 xAPIC 是否启用
@@ -290,8 +292,10 @@ class LocalApic {
 
   /**
    * @brief 禁用 x2APIC 模式
+   * @return true 禁用成功
+   * @return false 禁用失败或x2APIC未启用
    */
-  bool DisableX2Apic() const;
+  auto DisableX2Apic() const -> bool;
 
   /**
    * @brief 检查 x2APIC 是否启用
@@ -299,12 +303,6 @@ class LocalApic {
    * @return false x2APIC 未启用
    */
   [[nodiscard]] auto IsX2ApicEnabled() const -> bool;
-
-  /**
-   * @brief 设置 APIC 基地址
-   * @param base_address APIC 基地址
-   */
-  void SetApicBase(uint64_t base_address);
 
   /// @brief 当前 APIC 模式（true = x2APIC, false = xAPIC）
   bool is_x2apic_mode_ = false;
