@@ -242,6 +242,12 @@ class LocalApic {
   static constexpr uint64_t kApicBaseControlMask = 0xFFF;
   /// @}
 
+  /// @brief 当前 APIC 模式（true = x2APIC, false = xAPIC）
+  bool is_x2apic_mode_ = false;
+
+  /// @brief APIC 基地址（仅用于 xAPIC 模式）
+  uint64_t apic_base_ = kDefaultApicBase;
+
   /**
    * @brief 检查 CPU 是否支持 x2APIC
    * @return true 支持 x2APIC
@@ -290,12 +296,6 @@ class LocalApic {
    * @return false x2APIC 未启用
    */
   [[nodiscard]] auto IsX2ApicEnabled() const -> bool;
-
-  /// @brief 当前 APIC 模式（true = x2APIC, false = xAPIC）
-  bool is_x2apic_mode_ = false;
-
-  /// @brief APIC 基地址（仅用于 xAPIC 模式）
-  uint64_t apic_base_ = kDefaultApicBase;
 };
 
 #endif /* SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_LOCAL_APIC_H_ */
