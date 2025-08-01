@@ -10,168 +10,346 @@
 
 # SimpleKernel
 
-boot branch
+**Modern Multi-Architecture Kernel OS | Supporting x86_64, RISC-V 64 and AArch64**
 
-## Key Words
+> 🚀 **Current Branch Status**: boot - Build system setup, multi-architecture support, automated testing and documentation deployment completed
 
-- kernel, own kernel
-- x86_64/ riscv64/ aarch64
-- osdev
-- c++ bare metal
-- u-boot, opensbi
-- linux
+## 📖 Table of Contents
+
+- [✨ Project Overview](#-project-overview)
+- [🏗️ Supported Architectures](#️-supported-architectures)
+- [🚀 Quick Start](#-quick-start)
+- [💻 Core Features](#-core-features)
+- [🎯 System Architecture](#-system-architecture)
+- [📦 Third-party Dependencies](#-third-party-dependencies)
+- [📝 Development Guide](#-development-guide)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+
+## ✨ Project Overview
+
+SimpleKernel is a modern operating system kernel designed for education and research, written in C++ with emphasis on multi-architecture support and modular design. The project aims to provide a feature-complete, clean-code practice platform for OS development learners and researchers.
+
+### 🌟 Core Highlights
+
+- **🔧 Modern C++17 Kernel Implementation** - Leveraging modern C++ features for type safety and high performance
+- **🌐 True Multi-Architecture Support** - Native support for x86_64, RISC-V 64 and AArch64 mainstream architectures
+- **🏗️ Engineering Build System** - CMake-based modern build with cross-compilation and multi-platform development support
+- **🐳 Containerized Development Environment** - Pre-configured Docker environment for one-click development startup
+- **🧪 Complete Testing Framework** - Three-tier testing architecture ensuring code quality: unit tests, integration tests, system tests
+- **📚 Automated Documentation** - Doxygen-based API documentation auto-generation and deployment
+- **🔍 Powerful Debugging Support** - Integrated stack backtrace, symbol resolution and multi-level logging system
 
 
-## Quick Start
+## 🚀 Quick Start
 
-### Using Pre-built Docker
+### 📋 System Requirements
+
+- **Operating System**: Linux (Ubuntu 20.04+ recommended) or macOS
+- **Container Engine**: Docker 20.10+
+- **Toolchain**: Included in Docker image (GCC cross-compilers, CMake, QEMU, etc.)
+
+### 🛠️ Environment Setup
+
+**Option 1: Using Docker (Recommended)**
 
 ```shell
-# Clone repository
-git clone https://github.com/MRNIU/SimpleKernel.git
+# 1. Clone the project
+git clone https://github.com/simple-xx/SimpleKernel.git
+cd SimpleKernel
 git submodule update --init --recursive
-# Pull Docker Image
+
+# 2. Start development environment
 docker pull ptrnull233/simple_kernel:latest
-# Run Docker
-docker run --name SimpleKernel-container -itd -p 233:22 -v ./SimpleKernel:/root/ ptrnull233/simple_kernel:latest
-# Enter Docker
-docker exec -it SimpleKernel-container /bin/zsh
+docker run --name SimpleKernel-dev -itd -p 233:22 \
+  -v $(pwd):/root/SimpleKernel ptrnull233/simple_kernel:latest
+
+# 3. Enter development container
+docker exec -it SimpleKernel-dev /bin/zsh
 ```
 
-### Build and Run
+**Option 2: Local Environment**
+
+Refer to [Toolchain Documentation](./doc/0_工具链.md) for local development environment setup.
+
+### ⚡ Build and Run
 
 ```shell
 cd SimpleKernel
-# build_riscv64/build_aarch64/build_x86_64/
+
+# Select target architecture (RISC-V 64 example)
 cmake --preset build_riscv64
 cd build_riscv64
+
 # Build kernel
 make kernel
-# Run in QEMU
+
+# Run in QEMU emulator
 make run
 ```
 
-### Using VSCode
+**Supported Architecture Presets:**
+- `build_riscv64` - RISC-V 64-bit architecture
+- `build_aarch64` - ARM 64-bit architecture
+- `build_x86_64` - x86 64-bit architecture
 
-Pre-configured VSCode settings for running and debugging the kernel are provided.
+### 🎯 VS Code Integrated Development
 
-## Execution Flow
+The project has configured complete VS Code development environment:
 
-[common_bootflow](https://www.plantuml.com/plantuml/png/dL9TIyCm57tU_HKXFewDiR6NWJ8tHDGDXiKdaPAs5nVCHymIsVpr9d6bgnqexg6ZvvwFqzpCTuvPvwK0nvr0ijHIQaKMMZkIuRj7LI9iaLLe2HsFnjFXb08mxxJoia0BKEWzcTYANApuwzRTMZo02PQyv8OfHuhW97JIQnkVO_8ClSiKi4euz0RX1prAdmOHfXHU05L5WZCGaW9engKH-81MeQ37h8NmsCawfan6AIOYmwn9o8iwe2LCXz1MIiRLi3JcH9jONN4WSSL_o7TlkU15kT-tFPR6t0LkroJ6_LOW8bqbi-Mscn_Hl6jn7U3p1NRIv7yjaGVoUOT_bSdMczREuUJE3Aw-jpfBboLD0fOM5i5xBmsabu3McmXujELCy4yaotwVF7hbk4HegB5DuAtZturozj2CwfC8uz3iE0LMElx172PbyrQJ0U8po9jzp4Zym5G5Qbhjtv1IHaEiRLej3gea6ysLWmhRFIhiDfcZghmKNm00)
+```shell
+# Open project in VS Code
+code ./SimpleKernel
+```
 
-## New Features
+- **One-click Build**: Use `Ctrl+Shift+P` → `Tasks: Run Task` → Select corresponding architecture
+- **Debug Support**: Configured GDB debugging environment with source-level debugging support
+- **Code Completion**: Integrated C++ IntelliSense and syntax highlighting
 
-This branch is the first branch of SimpleKernel. In this branch, we have completed the foundation of the build system, basic documentation deployment, and automated testing. Most importantly, we have implemented a u-boot based x86_64 kernel and a RISC-V64 kernel started by OpenSBI, both of which can run on QEMU and achieve simple screen output.
+## 🎯 System Architecture
 
-- Build system
+### 📊 Boot Flow Diagram
 
-  References the [MRNIU/cmake-kernel](https://github.com/MRNIU/cmake-kernel) build system. For detailed explanation, see [doc/build_system.md](./doc/build_system.md)
+![Boot Flow](https://www.plantuml.com/plantuml/png/dL9TIyCm57tU_HKXFewDiR6NWJ8tHDGDXiKdaPAs5nVCHymIsVpr9d6bgnqexg6ZvvwFqzpCTuvPvwK0nvr0ijHIQaKMMZkIuRj7LI9iaLLe2HsFnjFXb08mxxJoia0BKEWzcTYANApuwzRTMZo02PQyv8OfHuhW97JIQnkVO_8ClSiKi4euz0RX1prAdmOHfXHU05L5WZCGaW9engKH-81MeQ37h8NmsCawfan6AIOYmwn9o8iwe2LCXz1MIiRLi3JcH9jONN4WSSL_o7TlkU15kT-tFPR6t0LkroJ6_LOW8bqbi-Mscn_Hl6jn7U3p1NRIv7yjaGVoUOT_bSdMczREuUJE3Aw-jpfBboLD0fOM5i5xBmsabu3McmXujELCy4yaotwVF7hbk4HegB5DuAtZturozj2CwfC8uz3iE0LMElx172PbyrQJ0U8po9jzp4Zym5G5Qbhjtv1IHaEiRLej3gea6ysLWmhRFIhiDfcZghmKNm00)
 
-- Stack Trace Printing
+### 🏗️ Multi-Architecture Support Matrix
 
-  Traverse frame pointers and cross-reference with ELF symbol tables to reconstruct function call stacks.
+| Architecture | Boot Chain | Serial Output | Hardware Discovery | Security Features |
+|:---:|:---:|:---:|:---:|:---:|
+| **x86_64** | U-Boot | NS16550A | U-Boot Parameter Passing | Basic Protection |
+| **RISC-V 64** | U-Boot + OpenSBI | OpenSBI SBI Call | DTB Device Tree | SBI Secure Calls |
+| **AArch64** | U-Boot + ATF + OP-TEE | PL011 UART | DTB Device Tree | TrustZone Support |
 
-- Basic C++ Exception Support
+**Architecture Features:**
+- **RISC-V**: Open instruction set, S-mode execution, OpenSBI system call interface
+- **AArch64**: Complete ARM ecosystem, TrustZone security architecture, OP-TEE trusted execution environment
+- **x86_64**: Mature PC ecosystem, broad compatibility, traditional BIOS/UEFI support
 
-  Implements throw to trigger exceptions followed by system termination (no context-aware exception handling).
+## 💻 Core Features
 
-- klog Kernel Logging Module
+SimpleKernel implements a complete multi-architecture kernel foundation framework in the current boot branch, providing a solid technical foundation for modern C++ operating system development.
 
-  Supports ANSI escape codes for colored text output in ANSI-compatible terminals.
+### 🏗️ Engineering Build System
 
-- RISC-V64 (U-Boot + OpenSBI)
+- **🔧 Modern CMake Build** - Cross-platform build system with multi-architecture presets and cross-compilation support
+- **📋 Dependency Management** - Unified third-party component management via Git Submodule with version control
+- **🐳 Containerized Development** - Pre-configured Docker environment with complete toolchain and dependencies
+- **📖 Detailed Documentation** - Toolchain installation guide: [doc/0_工具链.md](./doc/0_工具链.md), Docker usage: [doc/docker.md](./doc/docker.md)
 
-  1. Initialized by OpenSBI; kernel entry in Supervisor (S) mode.
-  2. GP (Global Pointer) register initialization.
-  3. printf implementation leveraging OpenSBI.
-  4. FIT (Flattened Image Tree) image packaging.
+### 📚 Runtime Support Libraries
 
-- x86_64 (U-Boot)
+#### 🛠️ C Standard Library Kernel Implementation
+Provides essential libc function implementations for kernel environment:
 
-  1. Initialized by U-Boot; kernel enters 64-bit mode directly.
-  2. FIT image packaging.
+- **Memory Operations** - Efficient memory operations like `memcpy()`, `memmove()`, `memset()`, `memcmp()`
+- **String Processing** - Complete string functions including `strcpy()`, `strcmp()`, `strlen()` series
+- **Type Conversion** - String to numeric conversions like `atoi()`, `strtol()`
+- **Character Classification** - Character checking functions like `isalnum()`, `isdigit()`
+- **Stack Protection Mechanism** - Stack overflow detection and protection via `__stack_chk_guard`
 
-- AArch64 (U-Boot + Arm Trusted Firmware + OP-TEE)
+#### ⚡ C++ Runtime Environment
+Complete kernel C++ runtime support:
 
-  1. FIT image packaging.
-  2. Initialized by U-Boot in 64-bit mode.
-  3. ATF (Arm Trusted Firmware) framework integration.
+- **🔄 Object Lifecycle** - Global object construction/destruction management via `__cxa_atexit()`, `__cxa_finalize()`
+- **🔒 Thread-Safe Initialization** - Static local variable thread-safe mechanism via `__cxa_guard_*`
+- **💾 Memory Management** - `operator new/delete` overloads adapted to kernel memory management
+- **⚠️ Exception Handling** - Basic exception catching and `throw/catch` mechanism
+- **📤 I/O Stream Support** - Custom iostream implementation supporting formatted output
 
-- SMP Support
+### 🖥️ Multi-Architecture Hardware Abstraction
 
-  Multi-core CPU coordination and synchronization
+#### 🔧 RISC-V 64-bit Architecture
+- **Boot Chain Integration** - U-Boot → OpenSBI → Kernel, S-mode privilege level execution
+- **Register Initialization** - GP register proper configuration following RISC-V ABI standard
+- **SBI System Calls** - System services based on OpenSBI ecall interface
+- **FIT Image Support** - Flattened Image Tree format kernel packaging
 
-- Spinlock
+#### 🖥️ x86_64 Architecture
+- **Direct Boot** - U-Boot 64-bit long mode direct startup without additional firmware
+- **NS16550A Serial** - Standard UART controller driver with broad compatibility
+- **Unified FIT Packaging** - Same image format as other architectures
 
-  Preemptive multi-core spinlock implementation (primarily for klog synchronization)
+#### 📱 AArch64 Architecture
+- **Complete Secure Boot** - U-Boot → ARM Trusted Firmware → OP-TEE → Kernel
+- **TrustZone Integration** - ATF secure world framework supporting security services
+- **PL011 UART** - ARM standard serial controller
+- **DTB Hardware Discovery** - Complete device tree parsing and automatic hardware discovery
 
-- Device Tree Blob (DTB) Parsing
+### 🔍 Advanced Debugging and Diagnostics
 
-  Hardware configuration decoding and interpretation
+#### 📋 Function Call Stack Tracing
+- **Multi-Architecture Stack Backtracing** - Support for x86_64 (RBP), RISC-V (FP), AArch64 (X29) frame pointer chains
+- **Symbol Resolution Integration** - Precise function name and address mapping combined with ELF symbol tables
+- **Safe Boundary Checking** - Limited to kernel code segment range preventing stack trace overflow
 
-- ELF Parsing
+#### 📝 Kernel Logging System (klog)
+- **🌈 Multi-Level Color Logging** - Debug/Info/Warn/Error four-level logging with ANSI color output
+- **🔒 Concurrency Safety** - Thread-safe logging based on SpinLock
+- **📍 Precise Source Location** - Automatic recording of `__func__`, `__LINE__` debug information
+- **⚡ High-Performance Output** - Optimized formatted output with minimal performance impact
 
-  Executable and Linkable Format analysis
+#### ⚠️ Exception Handling and Protection
+- **C++ Exception Mechanism** - Complete throw/catch exception catching and handling
+- **System Safe Shutdown** - Safe system shutdown when exceptions occur, preventing data corruption
+- **Stack Overflow Detection** - Compile-time stack protection, runtime stack overflow attack detection
 
-- NS16550A UART Driver
+### 🚀 Concurrency and Synchronization Support
 
-  Serial communication driver for x86/RISC-V platforms
+#### 🔄 SMP (Symmetric Multi-Processing) Architecture
+- **🚀 Multi-Core Boot Management** - Boot core sequence, secondary core SMP automatic initialization
+- **💾 Per-CPU Data Structures** - Independent data storage per core, supporting up to 4 cores
+- **⚡ Interrupt Nesting Management** - Interrupt depth tracking and nested interrupt handling
 
-- PL011 UART Driver
+#### 🔐 Modern Synchronization Primitives
+- **🌀 SpinLock** - Lock-free waiting synchronization mechanism for short critical sections
+- **⚛️ Atomic Operation Support** - Atomic variables and memory model based on C++ `std::atomic`
+- **🔍 Lock Debugging Features** - Integrated lock name tracking and deadlock detection mechanism
+- **📊 Performance Monitoring** - Lock contention statistics and performance analysis support
 
-  Serial communication driver for ARM platforms
+### 🔌 Hardware Abstraction Layer and Drivers
 
-- Doxygen-based Documentation Generation and Automatic Deployment
+#### 📡 Unified Serial Driver Interface
+- **NS16550A Controller** - Standard UART for x86 and RISC-V platforms with interrupt and DMA support
+- **PL011 Controller** - ARM platform dedicated serial with complete FIFO and flow control support
+- **Unified Abstract Interface** - Cross-architecture serial operation API supporting baud rate, data bits, parity configuration
+- **Advanced Features** - Asynchronous I/O, buffer management and error recovery mechanism
 
-  GitHub Actions automatically deploys documentation to https://simple-xx.github.io/SimpleKernel/ (main branch only)
+#### 🔍 System Information and Hardware Discovery
+- **📋 Device Tree Parsing (DTB)** - Complete device tree binary parser supporting automatic hardware discovery and configuration
+- **🔧 ELF Parser** - Kernel self ELF format parsing, symbol table and section information extraction
+- **📊 System Parameter Collection** - Key system information like memory layout, CPU count, device address mapping
+- **🌐 Cross-Architecture Compatibility** - Unified hardware information interface hiding architectural differences
 
-- Third-party Resource Management based on Git Submodules
+#### 🏗️ Design Pattern and Architecture Support
+- **🔒 Thread-Safe Singleton** - Template singleton implementation for global resource management
+- **💎 RAII Resource Management** - Resource Acquisition Is Initialization ensuring proper resource release and exception safety
+- **🎯 Factory Pattern** - Dynamic creation and management of drivers and services
+- **📦 Modular Architecture** - Loosely coupled component design supporting dynamic loading and unloading
 
-  Uses git submodule to integrate third-party resources
+### 🧪 Enterprise-Grade Quality Assurance
 
-- Testing Framework
+#### 🔬 Three-Tier Testing Framework
+- **🎯 Unit Testing** - Module-level functional verification based on Google Test
+- **🔗 Integration Testing** - Cross-module interface and data flow testing
+- **🌐 System Testing** - End-to-end complete system functionality testing
+- **📊 Coverage Analysis** - Code coverage statistics and quality reports targeting >90%
 
-  Supports unit testing, integration testing, and system testing using gtest framework with test coverage statistics
+#### 🛡️ Static and Dynamic Analysis
+- **🔍 Static Analysis Tools** - Integrated Cppcheck, Clang-Tidy for compile-time issue detection
+- **🧨 Dynamic Error Detection** - AddressSanitizer, UBSan runtime error capturing
+- **💅 Code Formatting** - Clang-Format automatic formatting following Google C++ style
+- **📏 Code Quality Gates** - CI/CD automated quality checks preventing merge without passing
 
-- Code Analysis
+#### 📚 Automated Documentation System
+- **📖 API Documentation Generation** - Source code comment automatic documentation generation based on Doxygen
+- **🚀 Automatic Deployment** - GitHub Actions automatic build and deployment to GitHub Pages
+- **🔄 Real-time Updates** - Code changes automatically trigger documentation updates
+- **🌍 Multi-language Support** - Chinese-English bilingual documentation maintenance
 
-  Integrates cppcheck, clang-tidy, and sanitize tools for early error detection
+## 📦 Third-party Dependencies
 
-- Code Formatting
+- [google/googletest](https://github.com/google/googletest.git) - Testing framework
+- [charlesnicholson/nanoprintf](https://github.com/charlesnicholson/nanoprintf.git) - printf implementation
+- [MRNIU/cpu_io](https://github.com/MRNIU/cpu_io.git) - CPU I/O operations
+- [riscv-software-src/opensbi](https://github.com/riscv-software-src/opensbi.git) - RISC-V SBI implementation
+- [MRNIU/opensbi_interface](https://github.com/MRNIU/opensbi_interface.git) - OpenSBI interface
+- [u-boot/u-boot](https://github.com/u-boot/u-boot.git) - Universal bootloader
+- [OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git) - OP-TEE operating system
+- [OP-TEE/optee_client](https://github.com/OP-TEE/optee_client.git) - OP-TEE client
+- [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git) - ARM Trusted Firmware
+- [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) - Device Tree Compiler
 
-  Uses Google style formatting
+## 📝 Development Guide
 
-- Docker Support
+### 🎨 Code Style Standards
+- **Coding Standards** - Strictly follow [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+- **Automatic Formatting** - Pre-configured `.clang-format`, use `clang-format` for automatic formatting
+- **Naming Conventions** - Class names use PascalCase, functions and variables use snake_case
+- **Comment Standards** - Use Doxygen-style comments supporting automatic documentation generation
 
-  Supports building with Docker, see [doc/docker.md](./doc/docker.md)
+### 🚀 Development Workflow
+1. **Fork Project** - Create personal branch from main repository
+2. **Local Development** - Use Docker environment for development and testing
+3. **Quality Checks** - Run static analysis and test suites
+4. **Submit PR** - Follow commit message standards with detailed change descriptions
 
-## Supported Features
+### 📋 Commit Message Standards
+```
+<type>(<scope>): <subject>
 
-See New Features
+<body>
 
-## Third-party Dependencies
+<footer>
+```
 
-[google/googletest](https://github.com/google/googletest.git)
+**Type Descriptions:**
+- `feat`: New features
+- `fix`: Bug fixes
+- `docs`: Documentation updates
+- `style`: Code formatting adjustments
+- `refactor`: Code refactoring
+- `test`: Test-related
+- `chore`: Build tools or auxiliary tool changes
 
-[charlesnicholson/nanoprintf](https://github.com/charlesnicholson/nanoprintf.git)
+### 📚 Automatic Documentation Deployment
+- **Main Branch Deployment** - GitHub Actions automatically deploys main branch documentation to [GitHub Pages](https://simple-xx.github.io/SimpleKernel/)
+- **API Documentation** - Complete API reference documentation generated by Doxygen
+- **Development Documentation** - Architecture design, development guides and best practices
 
-[MRNIU/cpu_io](https://github.com/MRNIU/cpu_io.git)
+## 🤝 Contributing
 
-[riscv-software-src/opensbi](https://github.com/riscv-software-src/opensbi.git)
+We welcome all forms of contributions! Whether code, documentation, testing or issue reports, all are important forces driving project development.
 
-[MRNIU/opensbi_interface](https://github.com/MRNIU/opensbi_interface.git)
+### 🎯 How to Contribute
 
-[u-boot/u-boot](https://github.com/u-boot/u-boot.git)
+**🐛 Report Issues**
+- Use [GitHub Issues](https://github.com/Simple-XX/SimpleKernel/issues) to report bugs
+- Describe problem reproduction steps, environment information and expected behavior in detail
+- Attach relevant logs and error information
 
-[OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git)
+**💡 Feature Suggestions**
+- Propose new feature suggestions through Issues
+- Describe feature purpose, implementation ideas and expected effects
+- Discuss technical feasibility and architectural impact
 
-[OP-TEE/optee_client](https://github.com/OP-TEE/optee_client.git)
+**🔧 Code Contributions**
+1. Fork this repository to personal account
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Follow code standards for development
+4. Add necessary test cases
+5. Commit changes: `git commit -m 'feat: add amazing feature'`
+6. Push branch: `git push origin feature/amazing-feature`
+7. Create Pull Request
 
-[ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git)
+### 📋 Contributor Agreement
+- Ensure code quality and test coverage
+- Respect existing architecture and design patterns
+- Actively participate in code review and discussions
 
-[dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git)
+## 📄 License
 
-## Development Guide
+This project adopts multiple licenses:
 
-- **Code Style**: Google Style (enforced via .clang-format)
-- **Naming Convention**: [Google Open Source Style Guide](https://google.github.io/styleguide/cppguide.html)
+- **Code License** - [MIT License](./LICENSE)
+- **Anti-996 License** - [Anti 996 License](https://github.com/996icu/996.ICU/blob/master/LICENSE)
+
+```
+MIT License & Anti 996 License
+
+Copyright (c) 2024 SimpleKernel Contributors
+
+While following the MIT agreement, this project firmly opposes the 996 work system,
+advocating for healthy work-life balance.
+```
+
+---
+
+<div align="center">
+
+**⭐ If this project helps you, please give us a Star!**
+
+**🚀 Let's build better operating system kernels together!**
+
+[🌟 Star Project](https://github.com/Simple-XX/SimpleKernel) • [🐛 Report Issues](https://github.com/Simple-XX/SimpleKernel/issues) • [💬 Join Discussion](https://github.com/Simple-XX/SimpleKernel/discussions)
+
+</div>
