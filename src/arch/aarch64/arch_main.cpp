@@ -25,10 +25,7 @@ extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
   }
 }
 
-BasicInfo::BasicInfo(int argc, const char **argv) {
-  (void)argc;
-  (void)argv;
-
+BasicInfo::BasicInfo(int, const char **argv) {
   auto [memory_base, memory_size] =
       Singleton<KernelFdt>::GetInstance().GetMemory();
   physical_memory_addr = memory_base;
@@ -45,7 +42,7 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
   core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
 }
 
-void ArchInit(int argc, const char **argv) {
+void ArchInit(int, const char **argv) {
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(strtoull(argv[2], nullptr, 16));
 
@@ -55,7 +52,7 @@ void ArchInit(int argc, const char **argv) {
   Singleton<Pl011>::GetInstance() = Pl011(serial_base);
   pl011 = &Singleton<Pl011>::GetInstance();
 
-  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
+  Singleton<BasicInfo>::GetInstance() = BasicInfo(0, argv);
 
   // 解析内核 elf 信息
   Singleton<KernelElf>::GetInstance() =
