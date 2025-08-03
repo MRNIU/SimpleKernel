@@ -11,53 +11,53 @@
 
 namespace sk_std {
 
-ostream& ostream::operator<<(int8_t val) {
+auto ostream::operator<<(int8_t val) -> ostream& {
   sk_printf("%d", val);
   return *this;
 }
 
-ostream& ostream::operator<<(uint8_t val) {
+auto ostream::operator<<(uint8_t val) -> ostream& {
   sk_printf("%d", val);
   return *this;
 }
 
-ostream& ostream::operator<<(const char* val) {
+auto ostream::operator<<(const char* val) -> ostream& {
   sk_printf("%s", val);
   return *this;
 }
 
-ostream& ostream::operator<<(int16_t val) {
+auto ostream::operator<<(int16_t val) -> ostream& {
   sk_printf("%d", val);
   return *this;
 }
 
-ostream& ostream::operator<<(uint16_t val) {
+auto ostream::operator<<(uint16_t val) -> ostream& {
   sk_printf("%d", val);
   return *this;
 }
 
-ostream& ostream::operator<<(int32_t val) {
+auto ostream::operator<<(int32_t val) -> ostream& {
   sk_printf("%d", val);
   return *this;
 }
 
-ostream& ostream::operator<<(uint32_t val) {
+auto ostream::operator<<(uint32_t val) -> ostream& {
   sk_printf("%d", val);
   return *this;
 }
 
-ostream& ostream::operator<<(int64_t val) {
+auto ostream::operator<<(int64_t val) -> ostream& {
   sk_printf("%ld", val);
   return *this;
 }
 
-ostream& ostream::operator<<(uint64_t val) {
+auto ostream::operator<<(uint64_t val) -> ostream& {
   sk_printf("%ld", val);
   return *this;
 }
 
-ostream& ostream::operator<<(ostream& (*manip)(ostream&)) {
+auto ostream::operator<<(ostream& (*manip)(ostream&)) -> ostream& {
   return manip(*this);
 }
 
-};  // namespace sk_std
+}  // namespace sk_std

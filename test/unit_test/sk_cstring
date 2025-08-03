@@ -23,6 +23,6 @@ using ::strncmp;
 using ::strncpy;
 using ::strnlen;
 
-};  // namespace sk_std
+}  // namespace sk_std
 
 #endif /* SIMPLEKERNEL_TEST_UNIT_TEST_SK_CSTRING_ */

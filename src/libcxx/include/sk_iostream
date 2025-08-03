@@ -45,6 +45,6 @@ inline ostream& endl(ostream& os) { return os << "\n"; }
 
 [[maybe_unused]] static ostream cout;
 
-};  // namespace sk_std
+}  // namespace sk_std
 
 #endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_IOSTREAM_ */
