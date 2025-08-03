@@ -75,6 +75,6 @@ inline ostream& endl(ostream& os) { return os << "\n"; }
 
 [[maybe_unused]] static ostream cout;
 
-};  // namespace sk_std
+}  // namespace sk_std
 
 #endif /* SIMPLEKERNEL_TEST_UNIT_TEST_SK_IOSTREAM_ */
