@@ -21,7 +21,7 @@ bool Apic::InitCurrentCpuLocalApic() {
   if (result) {
     klog::Info(
         "Local APIC initialized successfully for CPU with APIC ID 0x%x\n",
-        cpu_io::GetApicInfo().apic_id);
+        cpu_io::GetCurrentCoreId());
   } else {
     klog::Err("Failed to initialize Local APIC for current CPU\n");
   }
@@ -128,7 +128,7 @@ void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
   // 跳过当前的 BSP (Bootstrap Processor)
   for (size_t apic_id = 0; apic_id < cpu_count_; apic_id++) {
     // 跳过当前 BSP
-    if (static_cast<uint32_t>(apic_id) == cpu_io::GetApicInfo().apic_id) {
+    if (static_cast<uint32_t>(apic_id) == cpu_io::GetCurrentCoreId()) {
       continue;
     }
     auto ret = StartupAp(static_cast<uint32_t>(apic_id), ap_code_addr,
