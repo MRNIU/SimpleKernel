@@ -52,8 +52,8 @@ class Apic {
    * @return false 设置失败
    */
   auto SetIrqRedirection(uint8_t irq, uint8_t vector,
-                         uint32_t destination_apic_id, bool mask = false)
-      -> bool;
+                         uint32_t destination_apic_id,
+                         bool mask = false) -> bool;
 
   /**
    * @brief 屏蔽 IRQ

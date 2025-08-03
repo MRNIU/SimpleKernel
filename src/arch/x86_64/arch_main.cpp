@@ -141,7 +141,7 @@ BasicInfo::BasicInfo(int, const char **) {
 
   fdt_addr = 0;
 
-  core_count = cpu_io::GetCpuTopologyInfo().logical_processors;
+  core_count = cpu_io::cpuid::GetLogicalProcessorCount();
 }
 
 auto ArchInit(int, const char **) -> int {

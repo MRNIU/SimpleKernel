@@ -3,12 +3,13 @@
  * @brief APIC 管理类实现
  */
 
-#include "apic.h"
+#include <cpu_io.h>
 
 #include <cpu_io.h>
 
 #include <cstring>
 
+#include "apic.h"
 #include "kernel_log.hpp"
 
 Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {

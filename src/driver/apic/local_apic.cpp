@@ -379,7 +379,7 @@ void LocalApic::PrintInfo() const {
 }
 
 bool LocalApic::CheckX2ApicSupport() const {
-  return cpu_io::GetApicInfo().has_x2apic;
+  return cpu_io::cpuid::HasX2Apic();
 }
 
 bool LocalApic::EnableXApic() const {
