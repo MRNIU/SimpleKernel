@@ -334,7 +334,6 @@ uint32_t LocalApic::ReadErrorStatus() const {
 }
 
 void LocalApic::PrintInfo() const {
-  klog::Info("=== Local APIC Information ===\n");
   klog::Info("APIC Version: 0x%x\n", GetApicVersion());
   klog::Info("Mode: %s\n", is_x2apic_mode_ ? "x2APIC" : "xAPIC");
   klog::Info("x2APIC Enabled: %s\n", IsX2ApicEnabled() ? "Yes" : "No");
@@ -377,8 +376,6 @@ void LocalApic::PrintInfo() const {
 
     klog::Info("APIC Base Address: 0x%lx\n", apic_base_);
   }
-
-  klog::Info("==============================\n");
 }
 
 bool LocalApic::CheckX2ApicSupport() const {

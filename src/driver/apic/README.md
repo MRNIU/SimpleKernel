@@ -39,7 +39,7 @@
 
 1. **LocalApic** - 管理 Local APIC 功能（per-CPU）
    - 自动模式检测（x2APIC 优先，回退到 xAPIC）
-   - 处理器间中断 (IPI) 
+   - 处理器间中断 (IPI)
    - 定时器功能
    - 中断优先级管理
    - CPU 启动支持（INIT/SIPI）
@@ -79,11 +79,11 @@ if (!apic.InitCurrentCpuLocalApic()) {
     // 处理初始化失败
 }
 
-// 获取当前 CPU 的 Local APIC
-auto& local_apic = apic.GetCurrentLocalApic();
+// 发送 EOI 信号
+apic.SendEoi();
 
-// 发送 EOI
-local_apic.SendEoi();
+// 设置 Local APIC 定时器
+apic.SetupPeriodicTimer(100, 0xF0);
 
 // 发送 IPI 到指定 CPU
 apic.SendIpi(target_apic_id, 0x30);

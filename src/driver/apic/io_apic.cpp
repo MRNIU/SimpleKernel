@@ -3,55 +3,88 @@
  * @brief IO APIC 驱动实现
  */
 
-#include "apic.h"
+#include "io_apic.h"
 
+#include "io.hpp"
 #include "kernel_log.hpp"
 
-bool IoApic::Init(uint64_t base_address) {
-  // TODO: 实现 IO APIC 初始化
-  base_address_ = base_address;
-  klog::Info("Initializing IO APIC at address 0x%lx\n", base_address);
-  return false;
+IoApic::IoApic() {
+  // 禁用所有重定向条目（设置为屏蔽状态）
+  for (uint32_t i = 0; i < GetMaxRedirectionEntries(); i++) {
+    auto entry = ReadRedirectionEntry(i);
+    entry |= kMaskBit;
+    WriteRedirectionEntry(i, entry);
+  }
+
+  klog::Info("IO APIC initialization completed\n");
 }
 
 void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
-                               uint32_t destination_apic_id, bool mask) {
-  // TODO: 实现设置 IRQ 重定向
-  klog::Info("Setting IRQ %u redirection: vector=0x%x, dest=0x%x, mask=%s\n",
-             irq, vector, destination_apic_id, mask ? "true" : "false");
+                               uint32_t destination_apic_id, bool mask) const {
+  // 检查 IRQ 是否在有效范围内
+  auto max_entries = GetMaxRedirectionEntries();
+  if (irq >= max_entries) {
+    klog::Err("IRQ %u exceeds maximum entries %u\n", irq, max_entries);
+    return;
+  }
+
+  // 构造重定向表项
+  uint64_t entry = 0;
+
+  // 设置中断向量 (位 0-7)
+  entry |= vector & kVectorMask;
+  // 设置屏蔽位 (位 16)
+  if (mask) {
+    entry |= kMaskBit;
+  }
+
+  // 设置目标 APIC ID (位 56-63)
+  entry |= (static_cast<uint64_t>(destination_apic_id & kDestApicIdMask)
+            << kDestApicIdShift);
+
+  WriteRedirectionEntry(irq, entry);
 }
 
-void IoApic::MaskIrq(uint8_t irq) {
-  // TODO: 实现屏蔽 IRQ
-  klog::Info("Masking IRQ %u\n", irq);
+void IoApic::MaskIrq(uint8_t irq) const {
+  auto max_entries = GetMaxRedirectionEntries();
+  if (irq >= max_entries) {
+    klog::Err("IRQ %u exceeds maximum entries %u\n", irq, max_entries);
+    return;
+  }
+
+  auto entry = ReadRedirectionEntry(irq);
+  entry |= kMaskBit;
+  WriteRedirectionEntry(irq, entry);
 }
 
-void IoApic::UnmaskIrq(uint8_t irq) {
-  // TODO: 实现取消屏蔽 IRQ
-  klog::Info("Unmasking IRQ %u\n", irq);
+void IoApic::UnmaskIrq(uint8_t irq) const {
+  auto max_entries = GetMaxRedirectionEntries();
+  if (irq >= max_entries) {
+    klog::Err("IRQ %u exceeds maximum entries %u\n", irq, max_entries);
+    return;
+  }
+
+  auto entry = ReadRedirectionEntry(irq);
+  entry &= ~kMaskBit;
+  WriteRedirectionEntry(irq, entry);
 }
 
 uint32_t IoApic::GetId() const {
-  // TODO: 实现获取 IO APIC ID
-  return 0;
+  // ID 位于位 24-27
+  return (Read(kRegId) >> 24) & 0x0F;
 }
 
 uint32_t IoApic::GetVersion() const {
-  // TODO: 实现获取 IO APIC 版本
-  return 0;
+  // 版本位于位 0-7
+  return Read(kRegVer) & 0xFF;
 }
 
 uint32_t IoApic::GetMaxRedirectionEntries() const {
-  // TODO: 实现获取最大重定向条目数
-  return 0;
-}
-
-uint64_t IoApic::GetBaseAddress() const {
-  return base_address_;
+  // MRE 位于位 16-23，实际数量需要 +1
+  return ((Read(kRegVer) >> 16) & 0xFF) + 1;
 }
 
 void IoApic::PrintInfo() const {
-  // TODO: 实现打印 IO APIC 信息
   klog::Info("IO APIC Information\n");
   klog::Info("Base Address: 0x%lx\n", base_address_);
   klog::Info("ID: 0x%x\n", GetId());
@@ -59,20 +92,37 @@ void IoApic::PrintInfo() const {
   klog::Info("Max Redirection Entries: %u\n", GetMaxRedirectionEntries());
 }
 
-uint32_t IoApic::ReadReg(uint32_t reg) const {
-  // TODO: 实现读取 IO APIC 寄存器
-  return 0;
+uint32_t IoApic::Read(uint32_t reg) const {
+  // 写入寄存器选择器
+  io::Out<uint32_t>(base_address_ + kRegSel, reg);
+  // 读取寄存器窗口
+  return io::In<uint32_t>(base_address_ + kRegWin);
 }
 
-void IoApic::WriteReg(uint32_t reg, uint32_t value) {
-  // TODO: 实现写入 IO APIC 寄存器
+void IoApic::Write(uint32_t reg, uint32_t value) const {
+  // 写入寄存器选择器
+  io::Out<uint32_t>(base_address_ + kRegSel, reg);
+  // 写入寄存器窗口
+  io::Out<uint32_t>(base_address_ + kRegWin, value);
 }
 
 uint64_t IoApic::ReadRedirectionEntry(uint8_t irq) const {
-  // TODO: 实现读取重定向表项
-  return 0;
+  auto low_reg = kRedTblBase + (irq * 2);
+  auto high_reg = low_reg + 1;
+
+  auto low = Read(low_reg);
+  auto high = Read(high_reg);
+
+  return (static_cast<uint64_t>(high) << 32) | low;
 }
 
-void IoApic::WriteRedirectionEntry(uint8_t irq, uint64_t value) {
-  // TODO: 实现写入重定向表项
+void IoApic::WriteRedirectionEntry(uint8_t irq, uint64_t value) const {
+  auto low_reg = kRedTblBase + (irq * 2);
+  auto high_reg = low_reg + 1;
+
+  auto low = static_cast<uint32_t>(value & 0xFFFFFFFF);
+  auto high = static_cast<uint32_t>((value >> 32) & 0xFFFFFFFF);
+
+  Write(low_reg, low);
+  Write(high_reg, high);
 }
