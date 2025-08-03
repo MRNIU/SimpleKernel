@@ -10,7 +10,7 @@
 
 IoApic::IoApic() {
   // 禁用所有重定向条目（设置为屏蔽状态）
-  for (auto i = 0; i < GetMaxRedirectionEntries(); i++) {
+  for (uint32_t i = 0; i < GetMaxRedirectionEntries(); i++) {
     auto entry = ReadRedirectionEntry(i);
     entry |= kMaskBit;
     WriteRedirectionEntry(i, entry);
