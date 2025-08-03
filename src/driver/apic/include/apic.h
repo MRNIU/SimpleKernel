@@ -22,7 +22,7 @@
  */
 class Apic {
  public:
-  explicit Apic(size_t cpu_count);
+  explicit Apic(const size_t cpu_count);
 
   /// @name 默认构造/析构函数
   /// @{
@@ -35,48 +35,12 @@ class Apic {
   /// @}
 
   /**
-   * @brief 添加 IO APIC
-   * @param base_address IO APIC 基地址
-   * @param gsi_base 全局系统中断基址
-   * @return true 添加成功
-   * @return false 添加失败
-   */
-  auto AddIoApic(uint64_t base_address, uint32_t gsi_base = 0) -> bool;
-
-  /**
    * @brief 初始化当前 CPU 的 Local APIC
    * @return true 初始化成功
    * @return false 初始化失败
    * @note 每个 CPU 核心启动时都需要调用此函数
    */
   auto InitCurrentCpuLocalApic() -> bool;
-
-  /**
-   * @brief 获取当前 CPU 的 Local APIC 操作接口
-   * @return LocalApic& Local APIC 引用
-   * @note 返回的是一个静态实例，用于访问当前 CPU 的 Local APIC
-   */
-  auto GetCurrentLocalApic() -> LocalApic&;
-
-  /**
-   * @brief 获取 IO APIC 实例
-   * @param index IO APIC 索引
-   * @return IoApic* IO APIC 指针，如果索引无效则返回 nullptr
-   */
-  auto GetIoApic(size_t index = 0) -> IoApic*;
-
-  /**
-   * @brief 根据 GSI 查找对应的 IO APIC
-   * @param gsi 全局系统中断号
-   * @return IoApic* 对应的 IO APIC 指针，如果未找到则返回 nullptr
-   */
-  auto FindIoApicByGsi(uint32_t gsi) -> IoApic*;
-
-  /**
-   * @brief 获取 IO APIC 数量
-   * @return size_t IO APIC 数量
-   */
-  [[nodiscard]] auto GetIoApicCount() const -> size_t;
 
   /**
    * @brief 设置 IRQ 重定向
@@ -88,8 +52,8 @@ class Apic {
    * @return false 设置失败
    */
   auto SetIrqRedirection(uint8_t irq, uint8_t vector,
-                         uint32_t destination_apic_id, bool mask = false)
-      -> bool;
+                         uint32_t destination_apic_id,
+                         bool mask = false) -> bool;
 
   /**
    * @brief 屏蔽 IRQ
@@ -130,9 +94,8 @@ class Apic {
    * @return false 启动失败
    * @note 函数内部会将启动代码复制到指定的目标地址，并计算 start_vector
    */
-  [[nodiscard]] auto StartupAp(uint32_t apic_id, uint64_t ap_code_addr,
-                               size_t ap_code_size, uint64_t target_addr) const
-      -> bool;
+  auto StartupAp(uint32_t apic_id, uint64_t ap_code_addr, size_t ap_code_size,
+                 uint64_t target_addr) const -> bool;
 
   /**
    * @brief 唤醒所有应用处理器 (AP)
@@ -146,41 +109,31 @@ class Apic {
                      uint64_t target_addr) const;
 
   /**
+   * @brief 发送 EOI 信号给当前 CPU 的 Local APIC
+   */
+  void SendEoi() const;
+
+  /**
+   * @brief 设置 Local APIC 定时器
+   * @param frequency_hz 定时器频率（Hz）
+   * @param vector 中断向量号
+   */
+  void SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const;
+
+  /**
    * @brief 打印所有 APIC 信息（调试用）
    */
   void PrintInfo() const;
 
  private:
-  /// 最大 IO APIC 数量
-  static constexpr size_t kMaxIoApics = 8;
-
-  /// IO APIC 信息结构
-  struct IoApicInfo {
-    IoApic instance;
-    uint64_t base_address;
-    uint32_t gsi_base;
-    uint32_t gsi_count;
-    bool valid;
-  };
-
   /// Local APIC 操作接口（静态实例，用于当前 CPU）
   LocalApic local_apic_;
 
-  /// IO APIC 实例数组
-  std::array<IoApicInfo, kMaxIoApics> io_apics_;
-
-  /// 当前 IO APIC 数量
-  size_t io_apic_count_;
+  /// 只支持一个 IO APIC
+  IoApic io_apic_;
 
   /// 系统 CPU 数量
   size_t cpu_count_;
-
-  /**
-   * @brief 根据 IRQ 查找对应的 IO APIC
-   * @param irq IRQ 号
-   * @return IoApicInfo* 对应的 IO APIC 信息，如果未找到则返回 nullptr
-   */
-  auto FindIoApicByIrq(uint8_t irq) -> IoApicInfo*;
 };
 
 #endif /* SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_APIC_H_ */
