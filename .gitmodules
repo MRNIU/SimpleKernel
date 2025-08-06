@@ -31,3 +31,6 @@
 [submodule "3rd/nanoprintf"]
 	path = 3rd/nanoprintf
 	url = https://github.com/charlesnicholson/nanoprintf.git
+[submodule "3rd/snmalloc"]
+	path = 3rd/snmalloc
+	url = https://github.com/microsoft/snmalloc.git
