@@ -155,6 +155,7 @@ TARGET_LINK_LIBRARIES (
               nanoprintf-lib
               dtc-lib
               cpu_io
+              bmalloc
               gcc
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
               opensbi_interface

@@ -74,6 +74,9 @@ ADD_LIBRARY (nanoprintf-lib INTERFACE)
 ADD_DEPENDENCIES (nanoprintf-lib nanoprintf)
 TARGET_INCLUDE_DIRECTORIES (nanoprintf-lib INTERFACE ${nanoprintf_BINARY_DIR})
 
+# https://github.com/MRNIU/bmalloc.git
+ADD_SUBDIRECTORY (3rd/bmalloc)
+
 # https://github.com/MRNIU/cpu_io.git
 ADD_SUBDIRECTORY (3rd/cpu_io)
 
