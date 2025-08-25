@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <optional>
 
 /**
  * @brief 虚拟内存管理抽象基类
@@ -57,8 +58,7 @@ class VirtualMemory {
     // 检查是否已经映射且标志位相同
     if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
       // 如果物理地址和标志位都相同，则认为是重复映射（警告但不失败）
-      uint64_t existing_pa =
-          cpu_io::virtual_memory::PageTableEntryToPhysical(*pte);
+      auto existing_pa = cpu_io::virtual_memory::PageTableEntryToPhysical(*pte);
       if (existing_pa == physical_addr &&
           (*pte & ((1ULL << cpu_io::virtual_memory::kPteAttributeBits) - 1)) ==
               flags) {
@@ -85,7 +85,7 @@ class VirtualMemory {
    * @return false           取消映射失败
    */
   auto UnmapPage(uint64_t page_dir, uint64_t virtual_addr) -> bool {
-    uint64_t* pte = FindPageTableEntry(page_dir, virtual_addr, false);
+    auto pte = FindPageTableEntry(page_dir, virtual_addr, false);
     if (pte == nullptr) {
       return false;
     }
@@ -107,36 +107,21 @@ class VirtualMemory {
    * @brief 获取虚拟地址映射的物理地址
    * @param page_dir         页目录
    * @param virtual_addr     虚拟地址
-   * @param physical_addr    输出参数，存储映射的物理地址
-   * @return true            虚拟地址已映射
-   * @return false           虚拟地址未映射
+   * @return std::optional<uint64_t>  映射的物理地址，如果未映射则返回
+   * std::nullopt
    */
-  [[nodiscard]] auto GetMapping(uint64_t page_dir, uint64_t virtual_addr,
-                                uint64_t& physical_addr) -> bool {
-    uint64_t* pte = FindPageTableEntry(page_dir, virtual_addr, false);
+  [[nodiscard]] auto GetMapping(uint64_t page_dir, uint64_t virtual_addr)
+      -> std::optional<uint64_t> {
+    auto pte = FindPageTableEntry(page_dir, virtual_addr, false);
     if (pte == nullptr) {
-      return false;
+      return std::nullopt;
     }
 
     if (!cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
-      return false;
+      return std::nullopt;
     }
 
-    physical_addr = cpu_io::virtual_memory::PageTableEntryToPhysical(*pte);
-    return true;
-  }
-
-  /**
-   * @brief 检查虚拟地址是否已映射
-   * @param page_dir         页目录
-   * @param virtual_addr     要检查的虚拟地址
-   * @return true            已映射
-   * @return false           未映射
-   */
-  [[nodiscard]] auto IsMapped(uint64_t page_dir, uint64_t virtual_addr)
-      -> bool {
-    uint64_t physical_addr;
-    return GetMapping(page_dir, virtual_addr, physical_addr);
+    return cpu_io::virtual_memory::PageTableEntryToPhysical(*pte);
   }
 
  private:
