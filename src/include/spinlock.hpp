@@ -144,4 +144,33 @@ class SpinLock {
   }
 };
 
+/**
+ * @brief RAII 风格的锁守卫模板类
+ * @tparam Mutex 锁类型，必须有 lock() 和 unlock() 方法
+ */
+template <typename Mutex>
+class LockGuard {
+ public:
+  using mutex_type = Mutex;
+
+  /**
+   * @brief 构造函数，自动获取锁
+   * @param mutex 要保护的锁对象
+   */
+  explicit LockGuard(mutex_type &mutex) : mutex_(mutex) { mutex_.lock(); }
+
+  /**
+   * @brief 析构函数，自动释放锁
+   */
+  ~LockGuard() { mutex_.unlock(); }
+
+  LockGuard(const LockGuard &) = delete;
+  LockGuard(LockGuard &&) = delete;
+  auto operator=(const LockGuard &) -> LockGuard & = delete;
+  auto operator=(LockGuard &&) -> LockGuard & = delete;
+
+ private:
+  mutex_type &mutex_;
+};
+
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SPINLOCK_HPP_ */
