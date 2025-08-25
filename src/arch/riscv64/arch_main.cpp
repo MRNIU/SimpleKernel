@@ -17,6 +17,7 @@
 #include "per_cpu.hpp"
 #include "sk_cstdio"
 #include "sk_libc.h"
+#include "virtual_mamory.hpp"
 
 namespace {
 
@@ -78,6 +79,8 @@ void ArchInit(int argc, const char **argv) {
   klog::Info("bmalloc size: %zu\n", allocator_size);
 
   bmalloc::Bmalloc<BmallocLogger> allocator(allocator_addr, allocator_size);
+
+  auto mm = MemoryManager(allocator_addr, allocator_size);
 
   std::array<size_t, 13> sizes = {1,   2,   4,   8,    16,   32,  64,
                                   128, 256, 512, 1024, 2048, 4096};
