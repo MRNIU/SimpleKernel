@@ -152,8 +152,7 @@ class VirtualMemory {
     }
 
     // 返回最底层页表中的页表项
-    uint64_t vpn =
-        cpu_io::virtual_memory::GetVirtualPageNumber(virtual_addr, 0);
+    auto vpn = cpu_io::virtual_memory::GetVirtualPageNumber(virtual_addr, 0);
     return &current_table[vpn];
   }
 };
