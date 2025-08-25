@@ -27,4 +27,7 @@ extern "C" [[maybe_unused]] [[noreturn]] void _start(int argc,
  */
 auto main(int argc, const char** argv) -> int;
 
+void MemoryInit();
+void MemoryInitSMP();
+
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_ */

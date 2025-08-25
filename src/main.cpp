@@ -12,13 +12,13 @@
 #include "sk_cstdio"
 #include "sk_iostream"
 #include "sk_libcxx.h"
-#include "virtual_memory.hpp"
 
 namespace {
 
 /// 非启动核入口
 auto main_smp(int argc, const char **argv) -> int {
   ArchInitSMP(argc, argv);
+  MemoryInitSMP();
   klog::Info("Hello SimpleKernel SMP\n");
   return 0;
 }
@@ -43,6 +43,8 @@ void _start(int argc, const char **argv) {
 auto main(int argc, const char **argv) -> int {
   // 架构相关初始化
   ArchInit(argc, argv);
+  // 内存相关初始化
+  MemoryInit();
 
   // klog::Debug("Hello SimpleKernel\n");
   // klog::Info("Hello SimpleKernel\n");

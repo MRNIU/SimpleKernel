@@ -24,6 +24,10 @@ void operator delete[](void*);
 
 void operator delete[](void*, size_t);
 
+void operator delete(void*, size_t, size_t);
+
+void operator delete[](void*, size_t, size_t);
+
 // Default placement versions of operator new.
 [[nodiscard]] __always_inline void* operator new(std::size_t,
                                                  void* p) noexcept {
