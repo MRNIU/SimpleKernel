@@ -13,6 +13,10 @@
 #include <cstring>
 #include <optional>
 
+#include "basic_info.hpp"
+#include "kernel_log.hpp"
+#include "singleton.hpp"
+
 /**
  * @brief 虚拟内存管理抽象基类
  * @details 定义了必须通过继承实现的核心虚拟内存接口
@@ -20,6 +24,45 @@
  */
 class VirtualMemory {
  public:
+  explicit VirtualMemory(void *(*malloc)(size_t)) : malloc_(malloc) {
+    // 分配根页表目录
+    kernel_page_dir_ = malloc_(cpu_io::virtual_memory::kPageSize);
+    if (kernel_page_dir_ == nullptr) {
+      klog::Err("Failed to allocate kernel page directory\n");
+      return;
+    }
+
+    // 清零页表目录
+    std::memset(kernel_page_dir_, 0, cpu_io::virtual_memory::kPageSize);
+
+    // 获取内核基本信息
+    const auto &basic_info = Singleton<BasicInfo>::GetInstance();
+
+    // 计算内核映射范围：从内核开始到物理内存结束
+    auto kernel_start = basic_info.kernel_addr;
+    auto kernel_end =
+        basic_info.physical_memory_addr + basic_info.physical_memory_size;
+
+    // 将内核使用的内存进行原地映射
+    // 内核需要可读、可写、可执行权限
+    auto kernel_flags =
+        cpu_io::virtual_memory::kRead | cpu_io::virtual_memory::kWrite |
+        cpu_io::virtual_memory::kExec | cpu_io::virtual_memory::kGlobal;
+
+    // 按页对齐映射
+    auto start_page = cpu_io::virtual_memory::PageAlign(kernel_start);
+    auto end_page = cpu_io::virtual_memory::PageAlignUp(kernel_end);
+
+    for (uint64_t addr = start_page; addr < end_page;
+         addr += cpu_io::virtual_memory::kPageSize) {
+      if (!MapPage(kernel_page_dir_, reinterpret_cast<void *>(addr),
+                   reinterpret_cast<void *>(addr), kernel_flags)) {
+        klog::Err("Failed to map kernel page at address 0x%lX\n", addr);
+        break;
+      }
+    }
+  }
+
   /// @name 构造/析构函数
   /// @{
   VirtualMemory() = default;
@@ -30,12 +73,14 @@ class VirtualMemory {
   ~VirtualMemory() = default;
   /// @}
 
-  static void InitCurrentCore() {
+  void InitCurrentCore() {
+    cpu_io::virtual_memory::SetPageDirectory(
+        reinterpret_cast<uint64_t>(kernel_page_dir_));
     // 开启分页功能
     cpu_io::virtual_memory::EnablePage();
   }
 
-  auto MapPage(uint64_t page_dir, uint64_t virtual_addr, uint64_t physical_addr,
+  auto MapPage(void *page_dir, void *virtual_addr, void *physical_addr,
                uint32_t flags) -> bool {
     // 查找页表项，如果不存在则分配
     auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, true);
@@ -48,7 +93,7 @@ class VirtualMemory {
     if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
       // 如果物理地址和标志位都相同，则认为是重复映射（警告但不失败）
       auto existing_pa = cpu_io::virtual_memory::PageTableEntryToPhysical(*pte);
-      if (existing_pa == physical_addr &&
+      if (existing_pa == reinterpret_cast<uint64_t>(physical_addr) &&
           (*pte & ((1ULL << cpu_io::virtual_memory::kPteAttributeBits) - 1)) ==
               flags) {
         // 重复映射，但不是错误
@@ -58,7 +103,8 @@ class VirtualMemory {
 
     // 设置页表项
     *pte = cpu_io::virtual_memory::PhysicalToPageTableEntry(
-        physical_addr, flags | cpu_io::virtual_memory::kValid);
+        reinterpret_cast<uint64_t>(physical_addr),
+        flags | cpu_io::virtual_memory::kValid);
 
     // 刷新 TLB
     cpu_io::virtual_memory::FlushTLBAll();
@@ -66,7 +112,7 @@ class VirtualMemory {
     return true;
   }
 
-  auto UnmapPage(uint64_t page_dir, uint64_t virtual_addr) -> bool {
+  auto UnmapPage(void *page_dir, void *virtual_addr) -> bool {
     auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, false);
     if (!pte_opt) {
       return false;
@@ -86,8 +132,8 @@ class VirtualMemory {
     return true;
   }
 
-  [[nodiscard]] auto GetMapping(uint64_t page_dir, uint64_t virtual_addr)
-      -> std::optional<uint64_t> {
+  [[nodiscard]] auto GetMapping(void *page_dir,
+                                void *virtual_addr) -> std::optional<void *> {
     auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, false);
     if (!pte_opt) {
       return std::nullopt;
@@ -98,12 +144,14 @@ class VirtualMemory {
       return std::nullopt;
     }
 
-    return cpu_io::virtual_memory::PageTableEntryToPhysical(*pte);
+    return reinterpret_cast<void *>(
+        cpu_io::virtual_memory::PageTableEntryToPhysical(*pte));
   }
 
  private:
-  void *(*malloc_page)(size_t) = nullptr;
-  void (*free_page)(void *) = nullptr;
+  void *(*malloc_)(size_t) = [](size_t) -> void * { return nullptr; };
+
+  void *kernel_page_dir_ = nullptr;
 
   /**
    * @brief 在页表中查找虚拟地址对应的页表项
@@ -112,17 +160,17 @@ class VirtualMemory {
    * @param allocate         如果页表项不存在是否分配新的页表
    * @return std::optional<uint64_t*>  页表项指针，失败时返回std::nullopt
    */
-  [[nodiscard]] auto FindPageTableEntry(
-      uint64_t page_dir, uint64_t virtual_addr,
-      bool allocate = false) -> std::optional<uint64_t *> {
+  [[nodiscard]] auto FindPageTableEntry(void *page_dir, void *virtual_addr,
+                                        bool allocate = false)
+      -> std::optional<uint64_t *> {
     auto *current_table = reinterpret_cast<uint64_t *>(page_dir);
+    auto vaddr = reinterpret_cast<uint64_t>(virtual_addr);
 
     // 遍历页表层级
     for (size_t level = cpu_io::virtual_memory::kPageTableLevels - 1; level > 0;
          --level) {
       // 获取当前级别的虚拟页号
-      auto vpn =
-          cpu_io::virtual_memory::GetVirtualPageNumber(virtual_addr, level);
+      auto vpn = cpu_io::virtual_memory::GetVirtualPageNumber(vaddr, level);
       auto *pte = &current_table[vpn];
 
       if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
@@ -132,8 +180,7 @@ class VirtualMemory {
       } else {
         // 页表项无效
         if (allocate) {
-          /// @todo 分配新的页表
-          auto *new_table = malloc_page(cpu_io::virtual_memory::kPageSize);
+          auto *new_table = malloc_(cpu_io::virtual_memory::kPageSize);
           if (new_table == nullptr) {
             return std::nullopt;
           }
@@ -154,7 +201,7 @@ class VirtualMemory {
     }
 
     // 返回最底层页表中的页表项
-    auto vpn = cpu_io::virtual_memory::GetVirtualPageNumber(virtual_addr, 0);
+    auto vpn = cpu_io::virtual_memory::GetVirtualPageNumber(vaddr, 0);
     return &current_table[vpn];
   }
 };

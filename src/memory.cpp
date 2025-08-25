@@ -2,6 +2,8 @@
  * Copyright The SimpleKernel Contributors
  */
 
+#include <cpu_io.h>
+
 #include <bmalloc.hpp>
 #include <cstddef>
 
@@ -60,7 +62,16 @@ void MemoryInit() {
                                                      allocator_size);
   allocator = &bmallocator;
 
-  klog::Info("Hello MemoryInit\n");
+  // 初始化虚拟内存管理器
+  Singleton<VirtualMemory>::GetInstance() = VirtualMemory(malloc);
+
+  // 初始化当前核心的虚拟内存
+  Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
+
+  klog::Info("Memory initialization completed with 1:1 mapping\n");
 }
 
-void MemoryInitSMP() { klog::Info("Hello MemoryInitSMP\n"); }
+void MemoryInitSMP() {
+  Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
+  klog::Info("SMP Memory initialization completed\n");
+}
