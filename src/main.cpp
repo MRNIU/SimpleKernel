@@ -12,6 +12,7 @@
 #include "sk_cstdio"
 #include "sk_iostream"
 #include "sk_libcxx.h"
+#include "virtual_memory.hpp"
 
 namespace {
 
