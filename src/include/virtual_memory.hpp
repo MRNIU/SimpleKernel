@@ -139,88 +139,6 @@ class VirtualMemory {
     return GetMapping(page_dir, virtual_addr, physical_addr);
   }
 
-  /**
-   * @brief 创建相等映射（identity mapping）页表
-   * @param page_dir         页目录
-   * @param start_addr       起始物理地址
-   * @param size             映射大小（字节）
-   * @param flags            页面属性标志
-   * @return true            映射成功
-   * @return false           映射失败
-   */
-  auto CreateIdentityMapping(uint64_t page_dir, uint64_t start_addr,
-                             uint64_t size, uint32_t flags) -> bool {
-    // 确保地址和大小都是页对齐的
-    uint64_t aligned_start = cpu_io::virtual_memory::PageAlign(start_addr);
-    uint64_t aligned_end =
-        cpu_io::virtual_memory::PageAlignUp(start_addr + size);
-
-    // 逐页映射，虚拟地址等于物理地址
-    for (uint64_t addr = aligned_start; addr < aligned_end;
-         addr += cpu_io::virtual_memory::kPageSize) {
-      if (!MapPage(page_dir, addr, addr, flags)) {
-        // 映射失败，尝试回滚已映射的页面
-        for (uint64_t rollback_addr = aligned_start; rollback_addr < addr;
-             rollback_addr += cpu_io::virtual_memory::kPageSize) {
-          UnmapPage(page_dir, rollback_addr);
-        }
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * @brief 为内核创建相等映射页表
-   * @param page_dir         页目录
-   * @param kernel_start     内核起始地址
-   * @param kernel_end       内核结束地址
-   * @return true            映射成功
-   * @return false           映射失败
-   */
-  auto CreateKernelIdentityMapping(uint64_t page_dir, uint64_t kernel_start,
-                                   uint64_t kernel_end) -> bool {
-    // 内核代码段：可读可执行
-    uint32_t kernel_code_flags = cpu_io::virtual_memory::kRead |
-                                 cpu_io::virtual_memory::kExec |
-                                 cpu_io::virtual_memory::kGlobal;
-
-    // 内核数据段：可读可写
-    uint32_t kernel_data_flags = cpu_io::virtual_memory::kRead |
-                                 cpu_io::virtual_memory::kWrite |
-                                 cpu_io::virtual_memory::kGlobal;
-
-    // 为简化，整个内核区域使用可读可写可执行权限
-    // 在实际使用中，可以根据段信息进行更精细的权限控制
-    uint32_t kernel_flags =
-        cpu_io::virtual_memory::kRead | cpu_io::virtual_memory::kWrite |
-        cpu_io::virtual_memory::kExec | cpu_io::virtual_memory::kGlobal;
-
-    uint64_t kernel_size = kernel_end - kernel_start;
-    return CreateIdentityMapping(page_dir, kernel_start, kernel_size,
-                                 kernel_flags);
-  }
-
-  /**
-   * @brief 获取页表项
-   * @param page_dir         页目录
-   * @param virtual_addr     虚拟地址
-   * @param pte              输出参数，存储页表项
-   * @return true            获取成功
-   * @return false           获取失败
-   */
-  [[nodiscard]] auto GetPageTableEntry(uint64_t page_dir, uint64_t virtual_addr,
-                                       uint64_t& pte) -> bool {
-    uint64_t* pte_ptr = FindPageTableEntry(page_dir, virtual_addr, false);
-    if (pte_ptr == nullptr) {
-      return false;
-    }
-
-    pte = *pte_ptr;
-    return true;
-  }
-
  private:
   /**
    * @brief 在页表中查找虚拟地址对应的页表项
@@ -234,7 +152,7 @@ class VirtualMemory {
                                         bool allocate = false) -> uint64_t* {
     auto* current_table = reinterpret_cast<uint64_t*>(page_dir);
 
-    // 遍历页表层级，RISC-V SV39 有 3 级页表
+    // 遍历页表层级
     for (size_t level = cpu_io::virtual_memory::kPageTableLevels - 1; level > 0;
          --level) {
       // 获取当前级别的虚拟页号
@@ -249,8 +167,8 @@ class VirtualMemory {
       } else {
         // 页表项无效
         if (allocate) {
-          // 分配新的页表
-          void* new_table = MemoryManager{}.AllocatePhysicalPages(1);
+          /// @todo 分配新的页表
+          void* new_table = nullptr;
           if (new_table == nullptr) {
             return nullptr;
           }
