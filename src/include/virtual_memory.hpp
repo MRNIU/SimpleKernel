@@ -23,14 +23,14 @@ class VirtualMemory {
   /// @name 构造/析构函数
   /// @{
   VirtualMemory() = default;
-  VirtualMemory(const VirtualMemory&) = delete;
-  VirtualMemory(VirtualMemory&&) = default;
-  auto operator=(const VirtualMemory&) -> VirtualMemory& = delete;
-  auto operator=(VirtualMemory&&) -> VirtualMemory& = default;
+  VirtualMemory(const VirtualMemory &) = delete;
+  VirtualMemory(VirtualMemory &&) = default;
+  auto operator=(const VirtualMemory &) -> VirtualMemory & = delete;
+  auto operator=(VirtualMemory &&) -> VirtualMemory & = default;
   ~VirtualMemory() = default;
   /// @}
 
-  void InitCurrentCore() {
+  static void InitCurrentCore() {
     // 开启分页功能
     cpu_io::virtual_memory::EnablePage();
   }
@@ -42,7 +42,7 @@ class VirtualMemory {
     if (!pte_opt) {
       return false;
     }
-    auto pte = *pte_opt;
+    auto *pte = *pte_opt;
 
     // 检查是否已经映射且标志位相同
     if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
@@ -71,7 +71,7 @@ class VirtualMemory {
     if (!pte_opt) {
       return false;
     }
-    auto pte = *pte_opt;
+    auto *pte = *pte_opt;
 
     if (!cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
       return false;
@@ -92,7 +92,7 @@ class VirtualMemory {
     if (!pte_opt) {
       return std::nullopt;
     }
-    auto pte = *pte_opt;
+    auto *pte = *pte_opt;
 
     if (!cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
       return std::nullopt;
@@ -102,6 +102,9 @@ class VirtualMemory {
   }
 
  private:
+  void *(*malloc_page)(size_t) = nullptr;
+  void (*free_page)(void *) = nullptr;
+
   /**
    * @brief 在页表中查找虚拟地址对应的页表项
    * @param page_dir         页目录
@@ -109,29 +112,28 @@ class VirtualMemory {
    * @param allocate         如果页表项不存在是否分配新的页表
    * @return std::optional<uint64_t*>  页表项指针，失败时返回std::nullopt
    */
-  [[nodiscard]] auto FindPageTableEntry(uint64_t page_dir,
-                                        uint64_t virtual_addr,
-                                        bool allocate = false)
-      -> std::optional<uint64_t*> {
-    auto* current_table = reinterpret_cast<uint64_t*>(page_dir);
+  [[nodiscard]] auto FindPageTableEntry(
+      uint64_t page_dir, uint64_t virtual_addr,
+      bool allocate = false) -> std::optional<uint64_t *> {
+    auto *current_table = reinterpret_cast<uint64_t *>(page_dir);
 
     // 遍历页表层级
     for (size_t level = cpu_io::virtual_memory::kPageTableLevels - 1; level > 0;
          --level) {
       // 获取当前级别的虚拟页号
-      uint64_t vpn =
+      auto vpn =
           cpu_io::virtual_memory::GetVirtualPageNumber(virtual_addr, level);
-      uint64_t* pte = &current_table[vpn];
+      auto *pte = &current_table[vpn];
 
       if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
         // 页表项有效，获取下一级页表
-        current_table = reinterpret_cast<uint64_t*>(
+        current_table = reinterpret_cast<uint64_t *>(
             cpu_io::virtual_memory::PageTableEntryToPhysical(*pte));
       } else {
         // 页表项无效
         if (allocate) {
           /// @todo 分配新的页表
-          void* new_table = nullptr;
+          auto *new_table = malloc_page(cpu_io::virtual_memory::kPageSize);
           if (new_table == nullptr) {
             return std::nullopt;
           }
@@ -144,7 +146,7 @@ class VirtualMemory {
               reinterpret_cast<uint64_t>(new_table),
               cpu_io::virtual_memory::kValid);
 
-          current_table = reinterpret_cast<uint64_t*>(new_table);
+          current_table = reinterpret_cast<uint64_t *>(new_table);
         } else {
           return std::nullopt;
         }
