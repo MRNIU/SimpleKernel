@@ -38,8 +38,8 @@ class VirtualMemory {
     // 获取内核基本信息
     const auto &basic_info = Singleton<BasicInfo>::GetInstance();
 
-    // 计算内核映射范围：从内核开始到物理内存结束
-    auto kernel_start = basic_info.kernel_addr;
+    // 映射全部物理内存
+    auto kernel_start = basic_info.physical_memory_addr;
     auto kernel_end =
         basic_info.physical_memory_addr + basic_info.physical_memory_size;
 
@@ -182,8 +182,8 @@ class VirtualMemory {
     }
   }
 
-  [[nodiscard]] auto GetMapping(void *page_dir,
-                                void *virtual_addr) -> std::optional<void *> {
+  [[nodiscard]] auto GetMapping(void *page_dir, void *virtual_addr)
+      -> std::optional<void *> {
     auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, false);
     if (!pte_opt) {
       return std::nullopt;
