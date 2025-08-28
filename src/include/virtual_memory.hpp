@@ -92,6 +92,12 @@ class VirtualMemory {
     if (!pte_opt) {
       return false;
     }
+    if (reinterpret_cast<uint64_t>(virtual_addr) > 0x805fb000) {
+      klog::Debug(
+          "Mapping virtual address %p to physical address %p, pte_opt: %p, "
+          "*pte_opt: %p\n",
+          virtual_addr, physical_addr, pte_opt, *pte_opt);
+    }
     auto *pte = *pte_opt;
 
     // 检查是否已经映射且标志位相同
@@ -215,6 +221,10 @@ class VirtualMemory {
       -> std::optional<uint64_t *> {
     auto *current_table = reinterpret_cast<uint64_t *>(page_dir);
     auto vaddr = reinterpret_cast<uint64_t>(virtual_addr);
+    if (vaddr > 0x805fb000) {
+      klog::Debug("Finding PTE for virtual address %p in page directory %p\n",
+                  virtual_addr, page_dir);
+    }
 
     // 遍历页表层级
     for (size_t level = cpu_io::virtual_memory::kPageTableLevels - 1; level > 0;
@@ -222,6 +232,16 @@ class VirtualMemory {
       // 获取当前级别的虚拟页号
       auto vpn = cpu_io::virtual_memory::GetVirtualPageNumber(vaddr, level);
       auto *pte = &current_table[vpn];
+
+      if (vaddr > 0x805fb000) {
+        // klog::Debug(
+        //     "current_table: %p, vpn: %lu, current_table[vpn]: %p, "
+        //     "&current_table[vpn]: %p\n",
+        //     current_table, vpn, current_table[vpn], &current_table[vpn]);
+        // klog::Debug("!!!!!!!!!!!\n");
+
+        // klog::Debug("current_table: %p, vpn: %lu\n", current_table, vpn);
+      }
 
       if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
         // 页表项有效，获取下一级页表
@@ -252,6 +272,14 @@ class VirtualMemory {
 
     // 返回最底层页表中的页表项
     auto vpn = cpu_io::virtual_memory::GetVirtualPageNumber(vaddr, 0);
+
+    // if (vaddr > 0x805fb000) {
+    // klog::Debug(
+    //     "current_table: %p, vpn: %lu, current_table[vpn]: %p, "
+    //     "&current_table[vpn]: %p\n",
+    //     current_table, vpn, current_table[vpn], &current_table[vpn]);
+    // }
+
     return &current_table[vpn];
   }
 };
