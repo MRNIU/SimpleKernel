@@ -89,8 +89,8 @@ class VirtualMemory {
     if (!pte_opt) {
       return false;
     }
-    if (reinterpret_cast<uint64_t>(virtual_addr) > 0x805fb000) {
-      klog::Debug(
+    if (reinterpret_cast<uint64_t>(virtual_addr) > 0x805fd000) {
+      klog::Info(
           "Mapping virtual address %p to physical address %p, pte_opt: %p, "
           "*pte_opt: %p\n",
           virtual_addr, physical_addr, pte_opt, *pte_opt);
@@ -182,12 +182,36 @@ class VirtualMemory {
       // 获取当前级别的虚拟页号
       auto vpn = cpu_io::virtual_memory::GetVirtualPageNumber(vaddr, level);
       auto *pte = &current_table[vpn];
-
+      if (reinterpret_cast<uint64_t>(virtual_addr) > 0x805fd000) {
+        klog::Debug("Level %zu: VPN: %lu, PTE Address: %p, PTE Value: 0x%lX\n",
+                    level, vpn, pte, *pte);
+        // 额外检查：如果PTE值看起来可疑，记录更多信息
+        if (*pte > 0x100000000ULL && (*pte & cpu_io::virtual_memory::kValid)) {
+          klog::Warn("Suspicious PTE 0x%lX at level %zu, VPN %lu, PTE addr %p\n",
+                     *pte, level, vpn, pte);
+        }
+      }
       if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
         // 页表项有效，获取下一级页表
-        current_table = reinterpret_cast<uint64_t *>(
-            cpu_io::virtual_memory::PageTableEntryToPhysical(*pte));
+        auto physical_addr = cpu_io::virtual_memory::PageTableEntryToPhysical(*pte);
+        
+        // 验证物理地址的合理性 - 检查是否在合理的物理内存范围内
+        // 对于RISC-V，物理地址不应该有高位全为1的情况
+        if (physical_addr > 0x100000000ULL || physical_addr == 0xFFFFFFFFFFFFFFFFULL) {
+          klog::Err("Invalid physical address 0x%lX from PTE 0x%lX at level %zu, VPN %lu\n", 
+                    physical_addr, *pte, level, vpn);
+          if (allocate) {
+            // 如果允许分配，则清除这个无效的PTE并分配新的页表
+            *pte = 0;
+            goto allocate_new_table;
+          } else {
+            return std::nullopt;
+          }
+        }
+        
+        current_table = reinterpret_cast<uint64_t *>(physical_addr);
       } else {
+      allocate_new_table:
         // 页表项无效
         if (allocate) {
           auto *new_table = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
@@ -195,6 +219,8 @@ class VirtualMemory {
           if (new_table == nullptr) {
             return std::nullopt;
           }
+
+          klog::Info("new_table: %p\n", new_table);
 
           // 清零新页表
           std::memset(new_table, 0, cpu_io::virtual_memory::kPageSize);
