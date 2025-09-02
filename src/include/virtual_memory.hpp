@@ -24,9 +24,11 @@
  */
 class VirtualMemory {
  public:
-  explicit VirtualMemory(void *(*malloc)(size_t)) : malloc_(malloc) {
+  explicit VirtualMemory(void *(*aligned_alloc)(size_t, size_t))
+      : aligned_alloc_(aligned_alloc) {
     // 分配根页表目录
-    kernel_page_dir_ = malloc_(cpu_io::virtual_memory::kPageSize);
+    kernel_page_dir_ = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
+                                      cpu_io::virtual_memory::kPageSize);
     if (kernel_page_dir_ == nullptr) {
       klog::Err("Failed to allocate kernel page directory\n");
       return;
@@ -61,11 +63,6 @@ class VirtualMemory {
         break;
       }
     }
-
-    // 在构造完成后转储页表内容
-    klog::Info(
-        "Kernel page table initialization completed. Dumping page table...\n");
-    DumpPageTable(kernel_page_dir_, start_page, end_page);
   }
 
   /// @name 构造/析构函数
@@ -143,51 +140,6 @@ class VirtualMemory {
     return true;
   }
 
-  /**
-   * @brief 转储页表的详细内容
-   * @param page_dir 页目录
-   * @param start_addr 开始转储的虚拟地址（可选，默认为0）
-   * @param end_addr 结束转储的虚拟地址（可选，默认为整个地址空间）
-   */
-  void DumpPageTable(void *page_dir = nullptr, uint64_t start_addr = 0,
-                     uint64_t end_addr = 0xFFFFFFFFFFFFFFFF) {
-    if (page_dir == nullptr) {
-      page_dir = kernel_page_dir_;
-    }
-
-    if (page_dir == nullptr) {
-      klog::Err("Page directory is null\n");
-      return;
-    }
-
-    klog::Info("========== Page Table Dump ==========\n");
-    klog::Info("Page Directory: 0x%p\n", page_dir);
-    klog::Info("Address Range: 0x%lX - 0x%lX\n", start_addr, end_addr);
-    klog::Info("====================================\n");
-
-    // 简单转储页表内容
-    uint64_t *table = reinterpret_cast<uint64_t *>(page_dir);
-    const size_t entries_per_table = 4096 / sizeof(uint64_t);  // 512 entries
-
-    klog::Info("Root page table entries:\n");
-    for (size_t i = 0; i < entries_per_table; ++i) {
-      uint64_t pte = table[i];
-      if (pte != 0) {
-        klog::Info("  Entry[%zu]: 0x%016lX (", i, pte);
-        // 直接打印页表项的原始值和基本标志位
-        if (pte & 0x1) klog::Info("V");   // Valid
-        if (pte & 0x2) klog::Info("R");   // Read
-        if (pte & 0x4) klog::Info("W");   // Write
-        if (pte & 0x8) klog::Info("X");   // Execute
-        if (pte & 0x10) klog::Info("U");  // User
-        if (pte & 0x20) klog::Info("G");  // Global
-        if (pte & 0x40) klog::Info("A");  // Accessed
-        if (pte & 0x80) klog::Info("D");  // Dirty
-        klog::Info(") PPN: 0x%lX\n", (pte >> 10) & 0xFFFFFFFFFFF);
-      }
-    }
-  }
-
   [[nodiscard]] auto GetMapping(void *page_dir, void *virtual_addr)
       -> std::optional<void *> {
     auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, false);
@@ -205,7 +157,9 @@ class VirtualMemory {
   }
 
  private:
-  void *(*malloc_)(size_t) = [](size_t) -> void * { return nullptr; };
+  void *(*aligned_alloc_)(size_t, size_t) = [](size_t, size_t) -> void * {
+    return nullptr;
+  };
 
   void *kernel_page_dir_ = nullptr;
 
@@ -236,7 +190,8 @@ class VirtualMemory {
       } else {
         // 页表项无效
         if (allocate) {
-          auto *new_table = malloc_(cpu_io::virtual_memory::kPageSize);
+          auto *new_table = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
+                                           cpu_io::virtual_memory::kPageSize);
           if (new_table == nullptr) {
             return std::nullopt;
           }
