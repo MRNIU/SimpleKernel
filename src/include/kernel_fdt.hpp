@@ -54,7 +54,7 @@ class KernelFdt {
     }
 
     DEBUG("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
-          fdt_header_->totalsize);
+          fdt32_to_cpu(fdt_header_->totalsize));
   }
 
   /// @name 构造/析构函数
