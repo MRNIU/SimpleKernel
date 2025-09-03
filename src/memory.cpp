@@ -55,8 +55,8 @@ void MemoryInit() {
       Singleton<BasicInfo>::GetInstance().physical_memory_size -
       reinterpret_cast<uint64_t>(allocator_addr);
 
-  klog::Info("bmalloc address: %p\n", allocator_addr);
-  klog::Info("bmalloc size: %zu\n", allocator_size);
+  klog::Info("bmalloc address: %p, size: 0x%lX\n", allocator_addr,
+             allocator_size);
 
   static bmalloc::Bmalloc<BmallocLogger> bmallocator(allocator_addr,
                                                      allocator_size);
