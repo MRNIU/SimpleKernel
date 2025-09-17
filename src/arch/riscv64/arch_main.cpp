@@ -54,15 +54,16 @@ void ArchInit(int argc, const char **argv) {
       KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
 
   klog::Info("Hello riscv64 ArchInit\n");
-
   // 唤醒其余 core
-  // for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {
-  //   auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
-  //   if ((ret.error != SBI_SUCCESS) &&
-  //       (ret.error != SBI_ERR_ALREADY_AVAILABLE)) {
-  //     klog::Warn("hart %d start failed: %d\n", i, ret.error);
-  //   }
-  // }
+  for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {
+    auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
+    if ((ret.error != SBI_SUCCESS) &&
+        (ret.error != SBI_ERR_ALREADY_AVAILABLE)) {
+      klog::Warn("hart %d start failed: %d\n", i, ret.error);
+    }
+  }
 }
 
-void ArchInitSMP(int, const char **) {}
+void ArchInitSMP(int, const char **) {
+  klog::Info("Hello riscv64 ArchInitSMP\n");
+}

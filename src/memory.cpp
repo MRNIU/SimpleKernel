@@ -66,12 +66,11 @@ void MemoryInit() {
   Singleton<VirtualMemory>::GetInstance() = VirtualMemory(aligned_alloc);
 
   // 初始化当前核心的虚拟内存
-  // Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
-
-  klog::Info("Memory initialization completed with 1:1 mapping\n");
+  Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
+  klog::Info("Memory initialization completed\n");
 }
 
 void MemoryInitSMP() {
-  // Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
+  Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
   klog::Info("SMP Memory initialization completed\n");
 }

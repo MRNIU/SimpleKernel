@@ -63,6 +63,8 @@ class VirtualMemory {
         break;
       }
     }
+    klog::Info("Kernel memory mapped from 0x%lX to 0x%lX\n", start_page,
+               end_page);
   }
 
   /// @name 构造/析构函数
@@ -76,6 +78,10 @@ class VirtualMemory {
   /// @}
 
   void InitCurrentCore() {
+    /// @todo 这里需要等待启动核完成内存初始化
+    while (kernel_page_dir_ == nullptr) {
+      ;
+    }
     cpu_io::virtual_memory::SetPageDirectory(
         reinterpret_cast<uint64_t>(kernel_page_dir_));
     // 开启分页功能
@@ -167,11 +173,6 @@ class VirtualMemory {
   [[nodiscard]] auto FindPageTableEntry(void *page_dir, void *virtual_addr,
                                         bool allocate = false)
       -> std::optional<uint64_t *> {
-    if (reinterpret_cast<uint64_t>(virtual_addr) >= 0x803fd000) {
-      klog::Info(
-          "Finding page table entry for virtual address %p, page_dir: %p\n",
-          virtual_addr, page_dir);
-    }
     auto *current_table = reinterpret_cast<uint64_t *>(page_dir);
     auto vaddr = reinterpret_cast<uint64_t>(virtual_addr);
 
@@ -181,10 +182,6 @@ class VirtualMemory {
       // 获取当前级别的虚拟页号
       auto vpn = cpu_io::virtual_memory::GetVirtualPageNumber(vaddr, level);
       auto *pte = &current_table[vpn];
-      if (reinterpret_cast<uint64_t>(virtual_addr) >= 0x803fd000) {
-        klog::Debug("Level %zu: VPN: %lu, PTE Address: %p, PTE Value: %p\n",
-                    level, vpn, pte, *pte);
-      }
       if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
         // 页表项有效，获取下一级页表
         current_table = reinterpret_cast<uint64_t *>(
@@ -197,9 +194,6 @@ class VirtualMemory {
           if (new_table == nullptr) {
             return std::nullopt;
           }
-
-          klog::Info("new_table: %p\n", new_table);
-
           // 清零新页表
           std::memset(new_table, 0, cpu_io::virtual_memory::kPageSize);
 
