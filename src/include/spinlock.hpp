@@ -45,15 +45,15 @@ class SpinLock {
     }
     if (IsLockedByCurrentCore()) {
       sk_printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
+      RestoreInterruptsNested();  // 恢复中断状态
       return false;
     }
     while (locked_.test_and_set(std::memory_order_acquire)) {
       ;
     }
 
-    std::atomic_thread_fence(std::memory_order_acquire);
-
-    core_id_ = GetCurrentCoreId();
+    // 获取锁成功后立即设置 core_id_
+    core_id_.store(GetCurrentCoreId(), std::memory_order_release);
     return true;
   }
 
@@ -65,10 +65,9 @@ class SpinLock {
       sk_printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
       return false;
     }
-    core_id_ = SIZE_MAX;
-
-    std::atomic_thread_fence(std::memory_order_release);
-
+    
+    // 先重置 core_id_，再释放锁
+    core_id_.store(SIZE_MAX, std::memory_order_release);
     locked_.clear(std::memory_order_release);
 
     return RestoreInterruptsNested();
@@ -80,7 +79,7 @@ class SpinLock {
   /// 是否 lock
   std::atomic_flag locked_{ATOMIC_FLAG_INIT};
   /// 获得此锁的 core_id_
-  size_t core_id_{SIZE_MAX};
+  std::atomic<size_t> core_id_{SIZE_MAX};
 
   virtual __always_inline void EnableInterrupt() { cpu_io::EnableInterrupt(); }
   virtual __always_inline void DisableInterrupt() {
@@ -103,7 +102,7 @@ class SpinLock {
    * @return false            否
    */
   __always_inline auto IsLockedByCurrentCore() -> bool {
-    return locked_._M_i && (core_id_ == GetCurrentCoreId());
+    return locked_.test() && (core_id_.load(std::memory_order_acquire) == GetCurrentCoreId());
   }
 
   /**
