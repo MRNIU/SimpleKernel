@@ -65,7 +65,7 @@ class SpinLock {
       sk_printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
       return false;
     }
-    
+
     // 先重置 core_id_，再释放锁
     core_id_.store(SIZE_MAX, std::memory_order_release);
     locked_.clear(std::memory_order_release);
@@ -102,7 +102,8 @@ class SpinLock {
    * @return false            否
    */
   __always_inline auto IsLockedByCurrentCore() -> bool {
-    return locked_.test() && (core_id_.load(std::memory_order_acquire) == GetCurrentCoreId());
+    return locked_.test() &&
+           (core_id_.load(std::memory_order_acquire) == GetCurrentCoreId());
   }
 
   /**
