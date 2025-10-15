@@ -45,12 +45,6 @@ class VirtualMemory {
     auto kernel_end =
         basic_info.physical_memory_addr + basic_info.physical_memory_size;
 
-    // 将内核使用的内存进行原地映射
-    // 内核需要可读、可写、可执行权限
-    auto kernel_flags =
-        cpu_io::virtual_memory::kRead | cpu_io::virtual_memory::kWrite |
-        cpu_io::virtual_memory::kExec | cpu_io::virtual_memory::kGlobal;
-
     // 按页对齐映射
     auto start_page = cpu_io::virtual_memory::PageAlign(kernel_start);
     auto end_page = cpu_io::virtual_memory::PageAlignUp(kernel_end);
@@ -58,7 +52,8 @@ class VirtualMemory {
     for (uint64_t addr = start_page; addr < end_page;
          addr += cpu_io::virtual_memory::kPageSize) {
       if (!MapPage(kernel_page_dir_, reinterpret_cast<void *>(addr),
-                   reinterpret_cast<void *>(addr), kernel_flags)) {
+                   reinterpret_cast<void *>(addr),
+                   cpu_io::virtual_memory::GetKernelPagePermissions())) {
         klog::Err("Failed to map kernel page at address 0x%lX\n", addr);
         break;
       }
