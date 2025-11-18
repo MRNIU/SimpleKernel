@@ -16,15 +16,15 @@
 
 // 基本输出实现
 namespace {
-Pl011 *pl011 = nullptr;
+Pl011* pl011 = nullptr;
 }
-extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
+extern "C" void sk_putchar(int c, [[maybe_unused]] void* ctx) {
   if (pl011) {
     pl011->PutChar(c);
   }
 }
 
-BasicInfo::BasicInfo(int argc, const char **argv) {
+BasicInfo::BasicInfo(int argc, const char** argv) {
   (void)argc;
   (void)argv;
 
@@ -44,7 +44,7 @@ BasicInfo::BasicInfo(int argc, const char **argv) {
   core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
 }
 
-void ArchInit(int argc, const char **argv) {
+void ArchInit(int argc, const char** argv) {
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(strtoull(argv[2], nullptr, 16));
 
@@ -75,4 +75,4 @@ void ArchInit(int argc, const char **argv) {
   }
 }
 
-void ArchInitSMP(int, const char **) {}
+void ArchInitSMP(int, const char**) {}

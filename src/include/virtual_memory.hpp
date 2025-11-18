@@ -24,7 +24,7 @@
  */
 class VirtualMemory {
  public:
-  explicit VirtualMemory(void *(*aligned_alloc)(size_t, size_t))
+  explicit VirtualMemory(void* (*aligned_alloc)(size_t, size_t))
       : aligned_alloc_(aligned_alloc) {
     // 分配根页表目录
     kernel_page_dir_ = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
@@ -38,26 +38,32 @@ class VirtualMemory {
     std::memset(kernel_page_dir_, 0, cpu_io::virtual_memory::kPageSize);
 
     // 获取内核基本信息
-    const auto &basic_info = Singleton<BasicInfo>::GetInstance();
+    const auto& basic_info = Singleton<BasicInfo>::GetInstance();
+
+    klog::Err("----1111----\n");
 
     // 映射全部物理内存
     auto kernel_start = basic_info.physical_memory_addr;
     auto kernel_end =
         basic_info.physical_memory_addr + basic_info.physical_memory_size;
+    klog::Err("----2222----\n");
 
     // 按页对齐映射
     auto start_page = cpu_io::virtual_memory::PageAlign(kernel_start);
     auto end_page = cpu_io::virtual_memory::PageAlignUp(kernel_end);
+    klog::Err("----3333----\n");
 
     for (uint64_t addr = start_page; addr < end_page;
          addr += cpu_io::virtual_memory::kPageSize) {
-      if (!MapPage(kernel_page_dir_, reinterpret_cast<void *>(addr),
-                   reinterpret_cast<void *>(addr),
+      if (!MapPage(kernel_page_dir_, reinterpret_cast<void*>(addr),
+                   reinterpret_cast<void*>(addr),
                    cpu_io::virtual_memory::GetKernelPagePermissions())) {
         klog::Err("Failed to map kernel page at address 0x%lX\n", addr);
         break;
       }
     }
+    klog::Err("----4444----\n");
+
     inited_ = true;
     klog::Info("Kernel memory mapped from 0x%lX to 0x%lX\n", start_page,
                end_page);
@@ -66,32 +72,36 @@ class VirtualMemory {
   /// @name 构造/析构函数
   /// @{
   VirtualMemory() = default;
-  VirtualMemory(const VirtualMemory &) = delete;
-  VirtualMemory(VirtualMemory &&) = default;
-  auto operator=(const VirtualMemory &) -> VirtualMemory & = delete;
-  auto operator=(VirtualMemory &&) -> VirtualMemory & = default;
+  VirtualMemory(const VirtualMemory&) = delete;
+  VirtualMemory(VirtualMemory&&) = default;
+  auto operator=(const VirtualMemory&) -> VirtualMemory& = delete;
+  auto operator=(VirtualMemory&&) -> VirtualMemory& = default;
   ~VirtualMemory() = default;
   /// @}
 
   void InitCurrentCore() {
+    klog::Err("----5555----\n");
     // 等待启动核完成内存初始化
     while (!inited_) {
       ;
     }
+    klog::Err("----6666----\n");
     cpu_io::virtual_memory::SetPageDirectory(
         reinterpret_cast<uint64_t>(kernel_page_dir_));
     // 开启分页功能
+    klog::Err("----7777----\n");
     cpu_io::virtual_memory::EnablePage();
+    klog::Err("----8888----\n");
   }
 
-  auto MapPage(void *page_dir, void *virtual_addr, void *physical_addr,
+  auto MapPage(void* page_dir, void* virtual_addr, void* physical_addr,
                uint32_t flags) -> bool {
     // 查找页表项，如果不存在则分配
     auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, true);
     if (!pte_opt) {
       return false;
     }
-    auto *pte = *pte_opt;
+    auto* pte = *pte_opt;
 
     // 检查是否已经映射且标志位相同
     if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
@@ -116,12 +126,12 @@ class VirtualMemory {
     return true;
   }
 
-  auto UnmapPage(void *page_dir, void *virtual_addr) -> bool {
+  auto UnmapPage(void* page_dir, void* virtual_addr) -> bool {
     auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, false);
     if (!pte_opt) {
       return false;
     }
-    auto *pte = *pte_opt;
+    auto* pte = *pte_opt;
 
     if (!cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
       return false;
@@ -136,28 +146,28 @@ class VirtualMemory {
     return true;
   }
 
-  [[nodiscard]] auto GetMapping(void *page_dir, void *virtual_addr)
-      -> std::optional<void *> {
+  [[nodiscard]] auto GetMapping(void* page_dir, void* virtual_addr)
+      -> std::optional<void*> {
     auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, false);
     if (!pte_opt) {
       return std::nullopt;
     }
-    auto *pte = *pte_opt;
+    auto* pte = *pte_opt;
 
     if (!cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
       return std::nullopt;
     }
 
-    return reinterpret_cast<void *>(
+    return reinterpret_cast<void*>(
         cpu_io::virtual_memory::PageTableEntryToPhysical(*pte));
   }
 
  private:
-  void *(*aligned_alloc_)(size_t, size_t) = [](size_t, size_t) -> void * {
+  void* (*aligned_alloc_)(size_t, size_t) = [](size_t, size_t) -> void* {
     return nullptr;
   };
 
-  void *kernel_page_dir_ = nullptr;
+  void* kernel_page_dir_ = nullptr;
   volatile bool inited_ = false;
 
   /**
@@ -167,10 +177,10 @@ class VirtualMemory {
    * @param allocate         如果页表项不存在是否分配新的页表
    * @return std::optional<uint64_t*>  页表项指针，失败时返回std::nullopt
    */
-  [[nodiscard]] auto FindPageTableEntry(void *page_dir, void *virtual_addr,
+  [[nodiscard]] auto FindPageTableEntry(void* page_dir, void* virtual_addr,
                                         bool allocate = false)
-      -> std::optional<uint64_t *> {
-    auto *current_table = reinterpret_cast<uint64_t *>(page_dir);
+      -> std::optional<uint64_t*> {
+    auto* current_table = reinterpret_cast<uint64_t*>(page_dir);
     auto vaddr = reinterpret_cast<uint64_t>(virtual_addr);
 
     // 遍历页表层级
@@ -178,15 +188,15 @@ class VirtualMemory {
          --level) {
       // 获取当前级别的虚拟页号
       auto vpn = cpu_io::virtual_memory::GetVirtualPageNumber(vaddr, level);
-      auto *pte = &current_table[vpn];
+      auto* pte = &current_table[vpn];
       if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
         // 页表项有效，获取下一级页表
-        current_table = reinterpret_cast<uint64_t *>(
+        current_table = reinterpret_cast<uint64_t*>(
             cpu_io::virtual_memory::PageTableEntryToPhysical(*pte));
       } else {
         // 页表项无效
         if (allocate) {
-          auto *new_table = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
+          auto* new_table = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
                                            cpu_io::virtual_memory::kPageSize);
           if (new_table == nullptr) {
             return std::nullopt;
@@ -199,7 +209,7 @@ class VirtualMemory {
               reinterpret_cast<uint64_t>(new_table),
               cpu_io::virtual_memory::kValid);
 
-          current_table = reinterpret_cast<uint64_t *>(new_table);
+          current_table = reinterpret_cast<uint64_t*>(new_table);
         } else {
           return std::nullopt;
         }

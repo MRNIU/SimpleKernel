@@ -14,7 +14,7 @@
 namespace {
 
 struct BmallocLogger {
-  int operator()(const char *format, ...) const {
+  int operator()(const char* format, ...) const {
     va_list args;
     va_start(args, format);
     char buffer[1024];
@@ -25,31 +25,31 @@ struct BmallocLogger {
   }
 };
 
-static bmalloc::Bmalloc<BmallocLogger> *allocator = nullptr;
+static bmalloc::Bmalloc<BmallocLogger>* allocator = nullptr;
 }  // namespace
 
-extern "C" void *malloc(size_t size) {
+extern "C" void* malloc(size_t size) {
   if (allocator) {
     return allocator->malloc(size);
   }
   return nullptr;
 }
 
-extern "C" void *aligned_alloc(size_t alignment, size_t size) {
+extern "C" void* aligned_alloc(size_t alignment, size_t size) {
   if (allocator) {
     return allocator->aligned_alloc(alignment, size);
   }
   return nullptr;
 }
-extern "C" void free(void *ptr) {
+extern "C" void free(void* ptr) {
   if (allocator) {
     allocator->free(ptr);
   }
 }
 
 void MemoryInit() {
-  auto allocator_addr = reinterpret_cast<void *>(
-      (reinterpret_cast<uint64_t>(end) + 4095) & ~4095);
+  auto allocator_addr =
+      reinterpret_cast<void*>((reinterpret_cast<uint64_t>(end) + 4095) & ~4095);
   auto allocator_size =
       Singleton<BasicInfo>::GetInstance().physical_memory_addr +
       Singleton<BasicInfo>::GetInstance().physical_memory_size -
