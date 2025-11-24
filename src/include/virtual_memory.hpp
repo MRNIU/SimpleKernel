@@ -115,9 +115,7 @@ class VirtualMemory {
 
     // 设置页表项
     *pte = cpu_io::virtual_memory::PhysicalToPageTableEntry(
-        reinterpret_cast<uint64_t>(physical_addr),
-        flags | cpu_io::virtual_memory::kValid);
-
+        reinterpret_cast<uint64_t>(physical_addr), flags);
     // 刷新 TLB
     cpu_io::virtual_memory::FlushTLBAll();
 
