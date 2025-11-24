@@ -29,6 +29,8 @@ class VirtualMemory {
     // 分配根页表目录
     kernel_page_dir_ = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
                                       cpu_io::virtual_memory::kPageSize);
+    klog::Info("Allocated kernel page directory at address: %p\n",
+               kernel_page_dir_);
     if (kernel_page_dir_ == nullptr) {
       klog::Err("Failed to allocate kernel page directory\n");
       return;
@@ -40,18 +42,11 @@ class VirtualMemory {
     // 获取内核基本信息
     const auto& basic_info = Singleton<BasicInfo>::GetInstance();
 
-    klog::Err("----1111----\n");
-
-    // 映射全部物理内存
-    auto kernel_start = basic_info.physical_memory_addr;
-    auto kernel_end =
-        basic_info.physical_memory_addr + basic_info.physical_memory_size;
-    klog::Err("----2222----\n");
-
-    // 按页对齐映射
-    auto start_page = cpu_io::virtual_memory::PageAlign(kernel_start);
-    auto end_page = cpu_io::virtual_memory::PageAlignUp(kernel_end);
-    klog::Err("----3333----\n");
+    // 映射从物理内存起始地址到内核代码结束，按页对齐映射
+    auto start_page =
+        cpu_io::virtual_memory::PageAlign(basic_info.physical_memory_addr);
+    auto end_page = cpu_io::virtual_memory::PageAlignUp(basic_info.kernel_addr +
+                                                        basic_info.kernel_size);
 
     for (uint64_t addr = start_page; addr < end_page;
          addr += cpu_io::virtual_memory::kPageSize) {
@@ -79,19 +74,15 @@ class VirtualMemory {
   ~VirtualMemory() = default;
   /// @}
 
-  void InitCurrentCore() {
-    klog::Err("----5555----\n");
+  void InitCurrentCore() const {
     // 等待启动核完成内存初始化
     while (!inited_) {
       ;
     }
-    klog::Err("----6666----\n");
     cpu_io::virtual_memory::SetPageDirectory(
         reinterpret_cast<uint64_t>(kernel_page_dir_));
-    // 开启分页功能
-    klog::Err("----7777----\n");
+    // 开启分页
     cpu_io::virtual_memory::EnablePage();
-    klog::Err("----8888----\n");
   }
 
   auto MapPage(void* page_dir, void* virtual_addr, void* physical_addr,
@@ -99,6 +90,8 @@ class VirtualMemory {
     // 查找页表项，如果不存在则分配
     auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, true);
     if (!pte_opt) {
+      klog::Err("MapPage: FindPageTableEntry failed for va = %p\n",
+                virtual_addr);
       return false;
     }
     auto* pte = *pte_opt;
@@ -110,9 +103,14 @@ class VirtualMemory {
       if (existing_pa == reinterpret_cast<uint64_t>(physical_addr) &&
           (*pte & ((1ULL << cpu_io::virtual_memory::kPteAttributeBits) - 1)) ==
               flags) {
+        klog::Debug(
+            "MapPage: duplicate va = %p, pa = 0x%lX, flags = 0x%X, skip\n",
+            virtual_addr, existing_pa, flags);
         // 重复映射，但不是错误
         return true;
       }
+      klog::Warn("MapPage: remap va = %p from pa = 0x%lX to pa = %p\n",
+                 virtual_addr, existing_pa, physical_addr);
     }
 
     // 设置页表项
@@ -207,7 +205,7 @@ class VirtualMemory {
           // 设置页表项
           *pte = cpu_io::virtual_memory::PhysicalToPageTableEntry(
               reinterpret_cast<uint64_t>(new_table),
-              cpu_io::virtual_memory::kValid);
+              cpu_io::virtual_memory::GetKernelPagePermissions());
 
           current_table = reinterpret_cast<uint64_t*>(new_table);
         } else {
