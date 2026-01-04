@@ -57,7 +57,6 @@ class VirtualMemory {
         break;
       }
     }
-    inited_ = true;
     klog::Info("Kernel memory mapped from 0x%lX to 0x%lX\n", start_page,
                end_page);
   }
@@ -73,10 +72,6 @@ class VirtualMemory {
   /// @}
 
   void InitCurrentCore() const {
-    // 等待启动核完成内存初始化
-    while (!inited_) {
-      ;
-    }
     cpu_io::virtual_memory::SetPageDirectory(
         reinterpret_cast<uint64_t>(kernel_page_dir_));
     // 开启分页
@@ -189,7 +184,6 @@ class VirtualMemory {
   };
 
   void* kernel_page_dir_ = nullptr;
-  volatile bool inited_ = false;
 
   /**
    * @brief 在页表中查找虚拟地址对应的页表项
