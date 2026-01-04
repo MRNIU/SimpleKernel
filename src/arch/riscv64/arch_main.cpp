@@ -5,9 +5,6 @@
 #include <cpu_io.h>
 #include <opensbi_interface.h>
 
-#include <bmalloc.hpp>
-#include <cstddef>
-
 #include "basic_info.hpp"
 #include "config.h"
 #include "kernel_elf.hpp"
