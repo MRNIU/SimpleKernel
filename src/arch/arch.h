@@ -24,6 +24,11 @@ void ArchInitSMP(int argc, const char** argv);
  */
 void ArchReMap();
 
+/**
+ * 唤醒其余 core
+ */
+void WakeUpOtherCores();
+
 /// 最多回溯 128 层调用栈
 static constexpr const size_t kMaxFrameCount = 128;
 

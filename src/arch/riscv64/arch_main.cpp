@@ -21,11 +21,11 @@
 #include "virtual_memory.hpp"
 
 // 基本输出实现
-extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
+extern "C" void sk_putchar(int c, [[maybe_unused]] void* ctx) {
   sbi_debug_console_write_byte(c);
 }
 
-BasicInfo::BasicInfo(int, const char **argv) {
+BasicInfo::BasicInfo(int, const char** argv) {
   auto [memory_base, memory_size] =
       Singleton<KernelFdt>::GetInstance().GetMemory();
   physical_memory_addr = memory_base;
@@ -42,7 +42,7 @@ BasicInfo::BasicInfo(int, const char **argv) {
   core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
 }
 
-void ArchInit(int argc, const char **argv) {
+void ArchInit(int argc, const char** argv) {
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(reinterpret_cast<uint64_t>(argv));
 
@@ -54,7 +54,18 @@ void ArchInit(int argc, const char **argv) {
       KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
 
   klog::Info("Hello riscv64 ArchInit\n");
-  // 唤醒其余 core
+}
+
+void ArchInitSMP(int, const char**) {}
+
+void ArchReMap() {
+  // 映射串口
+  auto [serial_base, serial_size, irq] =
+      Singleton<KernelFdt>::GetInstance().GetSerial();
+  Singleton<VirtualMemory>::GetInstance().MapMMIO(serial_base, serial_size);
+}
+
+void WakeUpOtherCores() {
   for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {
     auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret.error != SBI_SUCCESS) &&
@@ -63,9 +74,3 @@ void ArchInit(int argc, const char **argv) {
     }
   }
 }
-
-void ArchInitSMP(int, const char **) {
-  klog::Info("Hello riscv64 ArchInitSMP\n");
-}
-
-void ArchReMap() {}

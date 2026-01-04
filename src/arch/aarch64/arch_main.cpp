@@ -75,8 +75,9 @@ void ArchReMap() {
   auto [serial_base, serial_size, irq] =
       Singleton<KernelFdt>::GetInstance().GetSerial();
   Singleton<VirtualMemory>::GetInstance().MapMMIO(serial_base, serial_size);
+}
 
-  // 唤醒其余 core
+void WakeUpOtherCores() {
   for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {
     auto ret = cpu_io::psci::CpuOn(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret != cpu_io::psci::SUCCESS) && (ret != cpu_io::psci::ALREADY_ON)) {
