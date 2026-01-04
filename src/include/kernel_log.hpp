@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 内核日志相关函数
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_

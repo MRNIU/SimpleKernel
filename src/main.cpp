@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 内核入口
  */
 
 #include <cstdint>

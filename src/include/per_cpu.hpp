@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 多核数据结构
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_PER_CPU_HPP_

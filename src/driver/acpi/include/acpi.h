@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief acpi 头文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_DRIVER_ACPI_INCLUDE_ACPI_H_

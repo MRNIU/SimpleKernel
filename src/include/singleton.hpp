@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 单例模版
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_SINGLETON_HPP_

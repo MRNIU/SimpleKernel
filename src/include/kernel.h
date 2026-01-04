@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 内核头文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_

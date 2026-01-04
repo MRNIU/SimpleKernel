@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 用于解析内核自身的 fdt 解析
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_FDT_HPP_

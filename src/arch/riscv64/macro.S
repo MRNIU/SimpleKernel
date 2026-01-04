@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief macro S 汇编宏
  */
 
 // clang-format off

@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief APIC 管理类实现
  */
 
 #include <cpu_io.h>

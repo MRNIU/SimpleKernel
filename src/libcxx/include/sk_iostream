@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief C++ 输入输出
  */
 
 #ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_IOSTREAM_

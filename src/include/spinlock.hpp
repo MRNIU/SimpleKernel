@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 自旋锁
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_SPINLOCK_HPP_

@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 用于解析内核自身的 elf
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_ELF_HPP_

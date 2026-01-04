@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief driver cpp
  */
 
 #include "driver.h"

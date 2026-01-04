@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief c 运行时支持
  */
 
 #include "sk_libc.h"

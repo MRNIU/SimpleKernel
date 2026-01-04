@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 内存分配
  */
 
 #ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_NEW_

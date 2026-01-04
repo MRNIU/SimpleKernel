@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief ns16550a 头文件
  */
 
 #include "ns16550a.h"

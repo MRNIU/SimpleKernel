@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief sk_ctype 实现
  */
 
 #include "sk_ctype.h"

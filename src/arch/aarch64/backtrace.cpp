@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @file backtrace.cpp
  */
 
 #include <cpu_io.h>

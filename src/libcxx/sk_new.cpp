@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 内存分配实现
  */
 
 #include "sk_new"
