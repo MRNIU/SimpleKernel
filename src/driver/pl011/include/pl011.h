@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief pl011 头文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_DRIVER_PL011_INCLUDE_PL011_H_

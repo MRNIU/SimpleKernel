@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief sk_cstring 定义
  */
 
 #ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_CSTRING_

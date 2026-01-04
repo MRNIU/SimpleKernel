@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief arch_main cpp
  */
 
 #include <cpu_io.h>

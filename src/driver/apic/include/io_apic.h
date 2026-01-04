@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief IO APIC 驱动头文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_IO_APIC_H_

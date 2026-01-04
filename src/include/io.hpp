@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 直接内存读写
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_IO_HPP_

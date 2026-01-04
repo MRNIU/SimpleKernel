@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief boot S
  */
 
 // 每个 CPU 的栈大小：64KB

@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief acpi 实现
  */
 
 #include "acpi.h"

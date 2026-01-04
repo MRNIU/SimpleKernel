@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 栈回溯实现
  */
 
 #include <cpu_io.h>

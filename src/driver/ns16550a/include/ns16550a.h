@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief ns16550a 头文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_DRIVER_NS16550A_INCLUDE_NS16550A_H_

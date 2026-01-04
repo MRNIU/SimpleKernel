@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief arch 头文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_ARCH_ARCH_H_
