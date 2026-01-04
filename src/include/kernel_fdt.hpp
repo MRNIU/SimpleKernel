@@ -32,14 +32,14 @@
  */
 class KernelFdt {
  public:
-  fdt_header *fdt_header_;
+  fdt_header* fdt_header_;
 
   /**
    * 构造函数
    * @param fdt_addr fdt 地址
    */
   explicit KernelFdt(uint64_t header)
-      : fdt_header_(reinterpret_cast<fdt_header *>(header)) {
+      : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
     if (fdt_header_ == nullptr) {
       ERR("Fatal Error: Invalid fdt_addr.\n");
       throw;
@@ -60,10 +60,10 @@ class KernelFdt {
   /// @name 构造/析构函数
   /// @{
   KernelFdt() = default;
-  KernelFdt(const KernelFdt &) = default;
-  KernelFdt(KernelFdt &&) = default;
-  auto operator=(const KernelFdt &) -> KernelFdt & = default;
-  auto operator=(KernelFdt &&) -> KernelFdt & = default;
+  KernelFdt(const KernelFdt&) = default;
+  KernelFdt(KernelFdt&&) = default;
+  auto operator=(const KernelFdt&) -> KernelFdt& = default;
+  auto operator=(KernelFdt&&) -> KernelFdt& = default;
   ~KernelFdt() = default;
   /// @}
 
@@ -81,10 +81,10 @@ class KernelFdt {
         break;
       }
 
-      const auto *prop =
+      const auto* prop =
           fdt_get_property(fdt_header_, offset, "device_type", nullptr);
       if (prop != nullptr) {
-        const char *device_type = reinterpret_cast<const char *>(prop->data);
+        const char* device_type = reinterpret_cast<const char*>(prop->data);
         if (strcmp(device_type, "cpu") == 0) {
           ++core_count;
         }
@@ -107,7 +107,7 @@ class KernelFdt {
 
     // Get the method property
     int len = 0;
-    const auto *method_prop =
+    const auto* method_prop =
         fdt_get_property(fdt_header_, offset, "method", &len);
     if (method_prop == nullptr) {
       ERR("Error finding PSCI method property\n");
@@ -115,7 +115,7 @@ class KernelFdt {
     }
 
     // Determine the method (SMC or HVC)
-    const char *method_str = reinterpret_cast<const char *>(method_prop->data);
+    const char* method_str = reinterpret_cast<const char*>(method_prop->data);
     DEBUG("PSCI method: %s\n", method_str);
 
     // 暂时只支持 smc
@@ -124,11 +124,11 @@ class KernelFdt {
     }
 
     // Log function IDs for debugging
-    auto assert_function_id = [&](const char *name, uint64_t value) {
-      const auto *prop = fdt_get_property(fdt_header_, offset, name, &len);
+    auto assert_function_id = [&](const char* name, uint64_t value) {
+      const auto* prop = fdt_get_property(fdt_header_, offset, name, &len);
       if (prop != nullptr && (size_t)len >= sizeof(uint32_t)) {
         uint32_t id =
-            fdt32_to_cpu(*reinterpret_cast<const uint32_t *>(prop->data));
+            fdt32_to_cpu(*reinterpret_cast<const uint32_t*>(prop->data));
         DEBUG("PSCI %s function ID: 0x%X\n", name, id);
         if (id != value) {
           ERR("PSCI %s function ID mismatch: expected 0x%X, got 0x%X\n", name,
@@ -161,14 +161,14 @@ class KernelFdt {
     }
 
     // 获取 reg 属性
-    const auto *prop = fdt_get_property(fdt_header_, offset, "reg", &len);
+    const auto* prop = fdt_get_property(fdt_header_, offset, "reg", &len);
     if (prop == nullptr) {
       ERR("Error finding reg property: %s\n", fdt_strerror(len));
       throw;
     }
 
     // 解析 reg 属性，通常包含基地址和大小
-    const auto *reg = reinterpret_cast<const uint64_t *>(prop->data);
+    const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
     for (size_t i = 0; i < len / sizeof(uint64_t); i += 2) {
       base = fdt64_to_cpu(reg[i]);
       size = fdt64_to_cpu(reg[i + 1]);
@@ -195,7 +195,7 @@ class KernelFdt {
     }
 
     // Get the stdout-path property
-    const auto *prop =
+    const auto* prop =
         fdt_get_property(fdt_header_, chosen_offset, "stdout-path", &len);
     if (prop == nullptr || len <= 0) {
       ERR("Error finding stdout-path property: %s\n", fdt_strerror(len));
@@ -203,14 +203,14 @@ class KernelFdt {
     }
 
     // Get the path as a string
-    const char *stdout_path = reinterpret_cast<const char *>(prop->data);
+    const char* stdout_path = reinterpret_cast<const char*>(prop->data);
 
     // Create a copy of the path that we can modify
     std::array<char, 256> path_buffer;
     strncpy(path_buffer.data(), stdout_path, path_buffer.max_size());
 
     // Extract the path without any parameters (everything before ':')
-    char *colon = strchr(path_buffer.data(), ':');
+    char* colon = strchr(path_buffer.data(), ':');
     if (colon != nullptr) {
       *colon = '\0';  // Terminate the string at the colon
     }
@@ -220,8 +220,8 @@ class KernelFdt {
 
     // Handle aliases (paths starting with '&')
     if (path_buffer[0] == '&') {
-      const char *alias = path_buffer.data() + 1;  // Skip the '&'
-      const char *aliased_path = fdt_get_alias(fdt_header_, alias);
+      const char* alias = path_buffer.data() + 1;  // Skip the '&'
+      const char* aliased_path = fdt_get_alias(fdt_header_, alias);
       if (aliased_path != nullptr) {
         stdout_offset = fdt_path_offset(fdt_header_, aliased_path);
       }
@@ -244,7 +244,7 @@ class KernelFdt {
     }
 
     // Parse the reg property to get base address and size
-    const auto *reg = reinterpret_cast<const uint64_t *>(prop->data);
+    const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
     for (size_t i = 0; i < len / sizeof(uint64_t); i += 2) {
       base = fdt64_to_cpu(reg[i]);
       size = fdt64_to_cpu(reg[i + 1]);
@@ -259,7 +259,7 @@ class KernelFdt {
     }
 
     // Parse the interrupts property to get the IRQ number
-    const auto *interrupts = reinterpret_cast<const uint32_t *>(prop->data);
+    const auto* interrupts = reinterpret_cast<const uint32_t*>(prop->data);
     if (interrupts != nullptr && len != 0) {
       irq = fdt32_to_cpu(*interrupts);
     }
@@ -281,7 +281,7 @@ class KernelFdt {
       return 0;
     }
 
-    const auto *prop = reinterpret_cast<const uint32_t *>(
+    const auto* prop = reinterpret_cast<const uint32_t*>(
         fdt_getprop(fdt_header_, offset, "timebase-frequency", &len));
     if (prop == nullptr) {
       ERR("Error finding timebase-frequency property: %s\n", fdt_strerror(len));
@@ -298,20 +298,23 @@ class KernelFdt {
 
   /**
    * 获取 gic 信息
-   * @return 内存信息<dist 地址，redist 地址>
+   * @return 内存信息<dist 地址，dist 大小，redist 地址，redist 大小>
    * @note 仅支持单个 dist+redist
    * @see https://github.com/qemu/qemu/blob/master/hw/arm/virt.c
    */
-  [[nodiscard]] auto GetGIC() const -> std::pair<uint64_t, uint64_t> {
+  [[nodiscard]] auto GetGIC() const
+      -> std::tuple<uint64_t, size_t, uint64_t, size_t> {
     uint64_t dist_base = 0;
+    size_t dist_size = 0;
     uint64_t redist_base = 0;
+    size_t redist_size = 0;
 
     int len = 0;
     int offset = 0;
 
-    std::array<const char *, 1> compatible_str = {"arm,gic-v3"};
+    std::array<const char*, 1> compatible_str = {"arm,gic-v3"};
 
-    for (const auto &compatible : compatible_str) {
+    for (const auto& compatible : compatible_str) {
       offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
       if (offset != -FDT_ERR_NOTFOUND) {
         break;
@@ -324,22 +327,42 @@ class KernelFdt {
     }
 
     // 获取 reg 属性
-    const auto *prop = fdt_get_property(fdt_header_, offset, "reg", &len);
+    const auto* prop = fdt_get_property(fdt_header_, offset, "reg", &len);
     if (prop == nullptr) {
       ERR("Error finding reg property: %s\n", fdt_strerror(len));
       throw;
     }
 
     // 解析 reg 属性，通常包含基地址和大小
-    const auto *reg = reinterpret_cast<const uint64_t *>(prop->data);
+    const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
     if (static_cast<unsigned>(len) >= 2 * sizeof(uint64_t)) {
       dist_base = fdt64_to_cpu(reg[0]);
+      dist_size = fdt64_to_cpu(reg[1]);
     }
     if (static_cast<unsigned>(len) >= 4 * sizeof(uint64_t)) {
       redist_base = fdt64_to_cpu(reg[2]);
+      redist_size = fdt64_to_cpu(reg[3]);
     }
 
-    return {dist_base, redist_base};
+    return {dist_base, dist_size, redist_base, redist_size};
+  }
+
+  /**
+   * 获取 GIC Distributor 信息
+   * @return <base, size>
+   */
+  [[nodiscard]] auto GetGicDist() const -> std::pair<uint64_t, size_t> {
+    auto [dist_base, dist_size, redist_base, redist_size] = GetGIC();
+    return {dist_base, dist_size};
+  }
+
+  /**
+   * 获取 GIC CPU Interface (Redistributor) 信息
+   * @return <base, size>
+   */
+  [[nodiscard]] auto GetGicCpu() const -> std::pair<uint64_t, size_t> {
+    auto [dist_base, dist_size, redist_base, redist_size] = GetGIC();
+    return {redist_base, redist_size};
   }
 
   /**
@@ -349,7 +372,7 @@ class KernelFdt {
    * https://www.kernel.org/doc/Documentation/devicetree/bindings/arm/arch_timer.txt
    * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/arm/gic.txt?id=refs/tags/v3.16-rc4
    */
-  [[nodiscard]] auto GetAarch64Intid(const char *compatible) const -> uint64_t {
+  [[nodiscard]] auto GetAarch64Intid(const char* compatible) const -> uint64_t {
     int len = 0;
     int offset = 0;
 
@@ -362,14 +385,14 @@ class KernelFdt {
     }
 
     // 获取 interrupts 属性
-    const auto *prop =
+    const auto* prop =
         fdt_get_property(fdt_header_, offset, "interrupts", &len);
     if (prop == nullptr) {
       ERR("Error finding interrupts property: %s\n", fdt_strerror(len));
       throw;
     }
 
-    const auto *interrupts = reinterpret_cast<const uint32_t *>(prop->data);
+    const auto* interrupts = reinterpret_cast<const uint32_t*>(prop->data);
 
 #ifdef SIMPLEKERNEL_DEBUG
     for (uint32_t i = 0; i < fdt32_to_cpu(prop->len);

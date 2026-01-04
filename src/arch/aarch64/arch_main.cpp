@@ -13,6 +13,7 @@
 #include "pl011.h"
 #include "sk_cstdio"
 #include "sk_libc.h"
+#include "virtual_memory.hpp"
 
 // 基本输出实现
 namespace {
@@ -76,3 +77,12 @@ void ArchInit(int argc, const char** argv) {
 }
 
 void ArchInitSMP(int, const char**) {}
+
+void ArchReMap() {
+  // 映射串口
+  auto [serial_base, serial_size, irq] =
+      Singleton<KernelFdt>::GetInstance().GetSerial();
+  // Singleton<VirtualMemory>::GetInstance().MapMMIO(serial_base, serial_size);
+  // Singleton<VirtualMemory>::GetInstance().MapMMIO(0x9040000, 0x1000);
+  Singleton<VirtualMemory>::GetInstance().MapMMIO(0x9000000, 0x1000);
+}

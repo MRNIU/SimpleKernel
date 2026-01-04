@@ -186,3 +186,5 @@ auto ArchInitSMP(int, const char **) -> int {
   Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
   return 0;
 }
+
+void ArchReMap() {}

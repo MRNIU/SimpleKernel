@@ -7,6 +7,7 @@
 #include <bmalloc.hpp>
 #include <cstddef>
 
+#include "arch.h"
 #include "basic_info.hpp"
 #include "kernel_log.hpp"
 #include "virtual_memory.hpp"
@@ -65,8 +66,12 @@ void MemoryInit() {
   // 初始化虚拟内存管理器
   Singleton<VirtualMemory>::GetInstance() = VirtualMemory(aligned_alloc);
 
+  // 重新映射架构相关的内存区域
+  ArchReMap();
+
   // 初始化当前核心的虚拟内存
   Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
+
   klog::Info("Memory initialization completed\n");
 }
 

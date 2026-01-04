@@ -15,6 +15,7 @@
 
 #include "basic_info.hpp"
 #include "kernel_log.hpp"
+#include "per_cpu.hpp"
 #include "singleton.hpp"
 
 /**
@@ -42,12 +43,11 @@ class VirtualMemory {
     // 获取内核基本信息
     const auto& basic_info = Singleton<BasicInfo>::GetInstance();
 
-    // 映射从物理内存起始地址到内核代码结束，按页对齐映射
+    // 映射全部物理内存
     auto start_page =
         cpu_io::virtual_memory::PageAlign(basic_info.physical_memory_addr);
-    auto end_page = cpu_io::virtual_memory::PageAlignUp(basic_info.kernel_addr +
-                                                        basic_info.kernel_size);
-
+    auto end_page = cpu_io::virtual_memory::PageAlignUp(
+        basic_info.physical_memory_addr + basic_info.physical_memory_size);
     for (uint64_t addr = start_page; addr < end_page;
          addr += cpu_io::virtual_memory::kPageSize) {
       if (!MapPage(kernel_page_dir_, reinterpret_cast<void*>(addr),
@@ -57,8 +57,6 @@ class VirtualMemory {
         break;
       }
     }
-    klog::Err("----4444----\n");
-
     inited_ = true;
     klog::Info("Kernel memory mapped from 0x%lX to 0x%lX\n", start_page,
                end_page);
@@ -83,6 +81,33 @@ class VirtualMemory {
         reinterpret_cast<uint64_t>(kernel_page_dir_));
     // 开启分页
     cpu_io::virtual_memory::EnablePage();
+  }
+
+  /**
+   * @brief 映射设备内存 (MMIO)
+   * @param phys_addr 设备物理基地址
+   * @param size 映射大小
+   * @param flags 页表属性，默认为内核设备内存属性（如果架构支持区分的话）
+   * @return 映射后的虚拟地址 (通常在内核空间，可能是恒等映射)
+   */
+  auto MapMMIO(
+      uint64_t phys_addr, size_t size,
+      uint32_t flags = cpu_io::virtual_memory::GetKernelPagePermissions())
+      -> void* {
+    // 计算对齐后的起始和结束页
+    auto start_page = cpu_io::virtual_memory::PageAlign(phys_addr);
+    auto end_page = cpu_io::virtual_memory::PageAlignUp(phys_addr + size);
+
+    // 遍历并映射
+    for (uint64_t addr = start_page; addr < end_page;
+         addr += cpu_io::virtual_memory::kPageSize) {
+      if (!MapPage(kernel_page_dir_, reinterpret_cast<void*>(addr),
+                   reinterpret_cast<void*>(addr), flags)) {
+        klog::Err("MapMMIO: Failed to map address 0x%lX\n", addr);
+        return nullptr;
+      }
+    }
+    return reinterpret_cast<void*>(phys_addr);
   }
 
   auto MapPage(void* page_dir, void* virtual_addr, void* physical_addr,

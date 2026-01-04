@@ -67,3 +67,5 @@ void ArchInit(int argc, const char **argv) {
 void ArchInitSMP(int, const char **) {
   klog::Info("Hello riscv64 ArchInitSMP\n");
 }
+
+void ArchReMap() {}

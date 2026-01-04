@@ -35,10 +35,10 @@ class PerCpu {
 
   /// @name 构造/析构函数
   /// @{
-  PerCpu(const PerCpu &) = default;
-  PerCpu(PerCpu &&) = default;
-  auto operator=(const PerCpu &) -> PerCpu & = default;
-  auto operator=(PerCpu &&) -> PerCpu & = default;
+  PerCpu(const PerCpu&) = default;
+  PerCpu(PerCpu&&) = default;
+  auto operator=(const PerCpu&) -> PerCpu& = default;
+  auto operator=(PerCpu&&) -> PerCpu& = default;
   ~PerCpu() = default;
   /// @}
 
@@ -55,7 +55,7 @@ class PerCpu {
 /// per cpu 数据
 // static std::array<PerCpu, PerCpu::kMaxCoreCount> g_per_cpu{};
 
-static __always_inline auto GetCurrentCore() -> PerCpu & {
+static __always_inline auto GetCurrentCore() -> PerCpu& {
   return Singleton<std::array<PerCpu, PerCpu::kMaxCoreCount>>::GetInstance()
       [cpu_io::GetCurrentCoreId()];
 }
