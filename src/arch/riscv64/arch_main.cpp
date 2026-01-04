@@ -21,7 +21,7 @@
 namespace {
 
 struct BmallocLogger {
-  int operator()(const char *format, ...) const {
+  int operator()(const char* format, ...) const {
     va_list args;
     va_start(args, format);
     char buffer[1024];
@@ -35,11 +35,11 @@ struct BmallocLogger {
 }  // namespace
 
 // 基本输出实现
-extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
+extern "C" void sk_putchar(int c, [[maybe_unused]] void* ctx) {
   sbi_debug_console_write_byte(c);
 }
 
-BasicInfo::BasicInfo(int, const char **argv) {
+BasicInfo::BasicInfo(int, const char** argv) {
   auto [memory_base, memory_size] =
       Singleton<KernelFdt>::GetInstance().GetMemory();
   physical_memory_addr = memory_base;
@@ -56,7 +56,7 @@ BasicInfo::BasicInfo(int, const char **argv) {
   core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
 }
 
-void ArchInit(int argc, const char **argv) {
+void ArchInit(int argc, const char** argv) {
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(reinterpret_cast<uint64_t>(argv));
 
@@ -67,7 +67,7 @@ void ArchInit(int argc, const char **argv) {
   Singleton<KernelElf>::GetInstance() =
       KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
 
-  void *allocator_addr = reinterpret_cast<void *>(
+  void* allocator_addr = reinterpret_cast<void*>(
       (reinterpret_cast<uintptr_t>(end) + 4095) & ~4095);
   size_t allocator_size =
       Singleton<BasicInfo>::GetInstance().physical_memory_size -
@@ -83,10 +83,10 @@ void ArchInit(int argc, const char **argv) {
                                   128, 256, 512, 1024, 2048, 4096};
 
   for (size_t size : sizes) {
-    void *ptr = allocator.malloc(size);
+    void* ptr = allocator.malloc(size);
     if (ptr != nullptr) {
       // 写入边界位置
-      char *bytes = static_cast<char *>(ptr);
+      char* bytes = static_cast<char*>(ptr);
       bytes[0] = 0xAA;
       bytes[size - 1] = 0xBB;
 
@@ -103,8 +103,11 @@ void ArchInit(int argc, const char **argv) {
   }
 
   klog::Info("Hello riscv64 ArchInit\n");
+}
 
-  // 唤醒其余 core
+void ArchInitSMP(int, const char**) {}
+
+void WakeUpOtherCores() {
   for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {
     auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret.error != SBI_SUCCESS) &&
@@ -113,5 +116,3 @@ void ArchInit(int argc, const char **argv) {
     }
   }
 }
-
-void ArchInitSMP(int, const char **) {}
