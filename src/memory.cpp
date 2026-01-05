@@ -4,11 +4,13 @@
 
 #include <cpu_io.h>
 
+#include <algorithm>
 #include <bmalloc.hpp>
 #include <cstddef>
 
 #include "arch.h"
 #include "basic_info.hpp"
+#include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "virtual_memory.hpp"
 
@@ -49,8 +51,10 @@ extern "C" void free(void* ptr) {
 }
 
 void MemoryInit() {
+  auto allocator_start = Singleton<BasicInfo>::GetInstance().elf_addr +
+                         Singleton<KernelElf>::GetInstance().GetElfSize();
   auto allocator_addr =
-      reinterpret_cast<void*>((reinterpret_cast<uint64_t>(end) + 4095) & ~4095);
+      reinterpret_cast<void*>((allocator_start + 4095) & ~4095);
   auto allocator_size =
       Singleton<BasicInfo>::GetInstance().physical_memory_addr +
       Singleton<BasicInfo>::GetInstance().physical_memory_size -
