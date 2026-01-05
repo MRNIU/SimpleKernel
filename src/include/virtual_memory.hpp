@@ -44,21 +44,11 @@ class VirtualMemory {
     const auto& basic_info = Singleton<BasicInfo>::GetInstance();
 
     // 映射全部物理内存
-    auto start_page =
-        cpu_io::virtual_memory::PageAlign(basic_info.physical_memory_addr);
-    auto end_page = cpu_io::virtual_memory::PageAlignUp(
+    MapMMIO(basic_info.physical_memory_addr, basic_info.physical_memory_size);
+    klog::Info(
+        "Kernel memory mapped from 0x%lX to 0x%lX\n",
+        basic_info.physical_memory_addr,
         basic_info.physical_memory_addr + basic_info.physical_memory_size);
-    for (uint64_t addr = start_page; addr < end_page;
-         addr += cpu_io::virtual_memory::kPageSize) {
-      if (!MapPage(kernel_page_dir_, reinterpret_cast<void*>(addr),
-                   reinterpret_cast<void*>(addr),
-                   cpu_io::virtual_memory::GetKernelPagePermissions())) {
-        klog::Err("Failed to map kernel page at address 0x%lX\n", addr);
-        break;
-      }
-    }
-    klog::Info("Kernel memory mapped from 0x%lX to 0x%lX\n", start_page,
-               end_page);
   }
 
   /// @name 构造/析构函数
