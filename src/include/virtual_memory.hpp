@@ -209,10 +209,10 @@ class VirtualMemory {
           // 清零新页表
           std::memset(new_table, 0, cpu_io::virtual_memory::kPageSize);
 
-          // 设置页表项
+          // 设置中间页表项
           *pte = cpu_io::virtual_memory::PhysicalToPageTableEntry(
               reinterpret_cast<uint64_t>(new_table),
-              cpu_io::virtual_memory::GetKernelPagePermissions());
+              cpu_io::virtual_memory::GetTableEntryPermissions());
 
           current_table = reinterpret_cast<uint64_t*>(new_table);
         } else {
