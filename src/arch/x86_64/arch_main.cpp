@@ -135,7 +135,6 @@ BasicInfo::BasicInfo(int, const char**) {
                 reinterpret_cast<uint64_t>(__executable_start);
 
   elf_addr = kernel_addr;
-  elf_size = kernel_size;
 
   fdt_addr = 0;
 
@@ -151,8 +150,7 @@ auto ArchInit(int, const char**) -> int {
 
   // 解析内核 elf 信息
   Singleton<KernelElf>::GetInstance() =
-      KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr,
-                Singleton<BasicInfo>::GetInstance().elf_size);
+      KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
 
   // 设置 GDT 和段寄存器
   SetupGdtAndSegmentRegisters();

@@ -15,16 +15,16 @@
 #include "kernel_log.hpp"
 #include "singleton.hpp"
 
-__always_inline auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer)
+__always_inline auto backtrace(std::array<uint64_t, kMaxFrameCount>& buffer)
     -> int {
-  auto *x29 = reinterpret_cast<uint64_t *>(cpu_io::X29::Read());
+  auto* x29 = reinterpret_cast<uint64_t*>(cpu_io::X29::Read());
   size_t count = 0;
   while ((x29 != nullptr) && (x29[0] != 0U) &&
          x29[0] >= reinterpret_cast<uint64_t>(__executable_start) &&
          x29[0] <= reinterpret_cast<uint64_t>(__etext) &&
          count < buffer.max_size()) {
     auto lr = x29[1];
-    x29 = reinterpret_cast<uint64_t *>(x29[0]);
+    x29 = reinterpret_cast<uint64_t*>(x29[0]);
     buffer[count++] = lr;
   }
 
