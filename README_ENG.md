@@ -184,6 +184,7 @@ Complete kernel C++ runtime support:
 
 #### 📝 Kernel Logging System (klog)
 - **🌈 Multi-Level Color Logging** - Debug/Info/Warn/Error four-level logging with ANSI color output
+- **📟 Early Console** - Support for debug output during early kernel boot, covering static object initialization phase
 - **🔒 Concurrency Safety** - Thread-safe logging based on SpinLock
 - **📍 Precise Source Location** - Automatic recording of `__func__`, `__LINE__` debug information
 - **⚡ High-Performance Output** - Optimized formatted output with minimal performance impact
