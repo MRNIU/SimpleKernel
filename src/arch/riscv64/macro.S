@@ -2,6 +2,9 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+// 对齐到 16 字节
+#define ALIGN_16(x) (((x) + 15) & ~15)
+
 // clang-format off
 
 /**
@@ -10,18 +13,30 @@
 .equ kRegsBytes, 8
 
 /**
- * @brief 上下文切换所需保存的寄存器数量
+ * @brief 中断/异常上下文切换所需保存的寄存器数量
  *
  * 31 个通用寄存器(x1-x31) + 4 个 CSR + 32 个浮点寄存器(f0-f31) + 1 个 fcsr
  * 总计: 31 + 4 + 32 + 1 = 68
  */
-.equ kContextRegsCount, 68
+.equ kTrapContextRegsCount, 68
 
 /**
- * @brief 上下文切换所需保存的寄存器大小
+ * @brief 中断/异常上下文切换所需保存的寄存器大小
  * 68 个寄存器 * 8 字节 = 544 字节
  */
-.equ kContextSize, kContextRegsCount * kRegsBytes
+.equ kTrapContextSize, kTrapContextRegsCount * kRegsBytes
+
+/**
+ * @brief 函数调用上下文切换所需保存的寄存器数量 (Callee-saved)
+ * ra, s0-s11 (13 regs) + fs0-fs11 (12 regs) = 25 regs
+ */
+.equ kCalleeSavedContextRegsCount, 25
+
+/**
+ * @brief 函数调用上下文切换所需保存的寄存器大小 (Callee-saved)
+ * 25 * 8 = 200 bytes.
+ */
+.equ kCalleeSavedContextSize, kCalleeSavedContextRegsCount * kRegsBytes
 
 /**
  * @brief 将寄存器 a 保存在 c 偏移 b 的位置
@@ -64,16 +79,16 @@
 .endm
 
 /**
- * @brief 保存上下文 (Context)
+ * @brief 保存中断/异常上下文 (TrapContext)
  *
  * 保存所有通用寄存器 (x1-x31) 和必要的 CSR 到栈上。
  *
- * @note 此宏会自动分配栈空间 (addi sp, sp, -kContextSize)。
+ * @note 此宏会自动分配栈空间 (addi sp, sp, -kTrapContextSize)。
  * @note 保存的 sp 是分配空间之前的 sp。
  * @note 如果是从用户态陷入，通常需要手动将 sscratch (用户 sp) 覆盖到 offset 1。
  */
-.macro SaveContext
-    addi sp, sp, -kContextSize
+.macro SaveTrapContext
+    addi sp, sp, -ALIGN_16(kTrapContextSize)
 
     // 保存通用寄存器 (除了 sp)
     SdBase ra, 0, sp
@@ -109,7 +124,7 @@
     SdBase t6, 30, sp
 
     // 保存原来的 sp 到 offset 1
-    addi t0, sp, kContextSize
+    addi t0, sp, kTrapContextSize
     SdBase t0, 1, sp
 
     // 保存浮点寄存器
@@ -162,13 +177,13 @@
 .endm
 
 /**
- * @brief 恢复上下文 (Context)
+ * @brief 恢复中断/异常上下文 (TrapContext)
  *
  * 从栈上恢复所有通用寄存器 (x1-x31) 和 CSR。
  *
- * @note 此宏会恢复 sp，等于隐式释放栈空间 (若 Context 中的 sp 是分配前的栈顶)。
+ * @note 此宏会恢复 sp，等于隐式释放栈空间 (若 TrapContext 中的 sp 是分配前的栈顶)。
  */
-.macro RestoreContext
+.macro RestoreTrapContext
     // 恢复 CSRs (使用 t0 作为临时寄存器)
     LdBase t0, 64, sp
     csrw sstatus, t0
@@ -253,7 +268,77 @@
     LdBase t0, 4, sp
 
     // 恢复 sp
-    addi sp, sp, kContextSize
+    addi sp, sp, ALIGN_16(kTrapContextSize)
+.endm
+
+/**
+ * @brief 保存 Callee-saved 寄存器
+ * 保存 ra, s0-s11, fs0-fs11
+ */
+.macro SaveCalleeSavedContext
+    addi sp, sp, -ALIGN_16(kCalleeSavedContextSize)
+
+    SdBase ra, 0, sp
+    SdBase s0, 1, sp
+    SdBase s1, 2, sp
+    SdBase s2, 3, sp
+    SdBase s3, 4, sp
+    SdBase s4, 5, sp
+    SdBase s5, 6, sp
+    SdBase s6, 7, sp
+    SdBase s7, 8, sp
+    SdBase s8, 9, sp
+    SdBase s9, 10, sp
+    SdBase s10, 11, sp
+    SdBase s11, 12, sp
+
+    FsdBase fs0, 13, sp
+    FsdBase fs1, 14, sp
+    FsdBase fs2, 15, sp
+    FsdBase fs3, 16, sp
+    FsdBase fs4, 17, sp
+    FsdBase fs5, 18, sp
+    FsdBase fs6, 19, sp
+    FsdBase fs7, 20, sp
+    FsdBase fs8, 21, sp
+    FsdBase fs9, 22, sp
+    FsdBase fs10, 23, sp
+    FsdBase fs11, 24, sp
+.endm
+
+/**
+ * @brief 恢复 Callee-saved 寄存器
+ * 恢复 ra, s0-s11, fs0-fs11
+ */
+.macro RestoreCalleeSavedContext
+    LdBase ra, 0, sp
+    LdBase s0, 1, sp
+    LdBase s1, 2, sp
+    LdBase s2, 3, sp
+    LdBase s3, 4, sp
+    LdBase s4, 5, sp
+    LdBase s5, 6, sp
+    LdBase s6, 7, sp
+    LdBase s7, 8, sp
+    LdBase s8, 9, sp
+    LdBase s9, 10, sp
+    LdBase s10, 11, sp
+    LdBase s11, 12, sp
+
+    FldBase fs0, 13, sp
+    FldBase fs1, 14, sp
+    FldBase fs2, 15, sp
+    FldBase fs3, 16, sp
+    FldBase fs4, 17, sp
+    FldBase fs5, 18, sp
+    FldBase fs6, 19, sp
+    FldBase fs7, 20, sp
+    FldBase fs8, 21, sp
+    FldBase fs9, 22, sp
+    FldBase fs10, 23, sp
+    FldBase fs11, 24, sp
+
+    addi sp, sp, ALIGN_16(kCalleeSavedContextSize)
 .endm
 
 // clang-format on
