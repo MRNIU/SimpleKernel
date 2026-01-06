@@ -51,13 +51,6 @@ void ArchInit(int argc, const char** argv) {
 
 void ArchInitSMP(int, const char**) {}
 
-void ArchReMap() {
-  // 映射串口
-  auto [serial_base, serial_size, irq] =
-      Singleton<KernelFdt>::GetInstance().GetSerial();
-  Singleton<VirtualMemory>::GetInstance().MapMMIO(serial_base, serial_size);
-}
-
 void WakeUpOtherCores() {
   for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {
     auto ret = cpu_io::psci::CpuOn(i, reinterpret_cast<uint64_t>(_boot), 0);

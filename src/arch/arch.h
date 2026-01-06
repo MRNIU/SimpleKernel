@@ -19,11 +19,6 @@ void ArchInit(int argc, const char** argv);
 void ArchInitSMP(int argc, const char** argv);
 
 /**
- * @brief 重新映射架构相关内存区域
- */
-void ArchReMap();
-
-/**
  * 唤醒其余 core
  */
 void WakeUpOtherCores();

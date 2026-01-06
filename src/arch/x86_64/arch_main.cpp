@@ -163,8 +163,6 @@ auto ArchInitSMP(int, const char**) -> int {
   return 0;
 }
 
-void ArchReMap() {}
-
 void WakeUpOtherCores() {
   // 填充 sipi_params 结构体
   auto target_sipi_params = reinterpret_cast<sipi_params_t*>(sipi_params);
