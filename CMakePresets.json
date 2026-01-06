@@ -145,6 +145,10 @@
           "type": "BOOL",
           "value": "OFF"
         },
+        "SIMPLEKERNEL_EARLY_CONSOLE": {
+          "type": "STRING",
+          "value": "0x10000000"
+        },
         "QEMU_MACHINE_FLAGS": {
           "type": "STRING",
           "value": "-machine;virt"
@@ -173,6 +177,10 @@
         "LIBRARY_OUTPUT_PATH": {
           "type": "STRING",
           "value": "${sourceDir}/build_aarch64/bin"
+        },
+        "SIMPLEKERNEL_EARLY_CONSOLE": {
+          "type": "STRING",
+          "value": "0x9000000"
         },
         "QEMU_MACHINE_FLAGS": {
           "type": "STRING",
