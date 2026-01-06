@@ -10,16 +10,10 @@
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
-#include "ns16550a.h"
 #include "per_cpu.hpp"
 #include "sk_cstdio"
 #include "sk_libc.h"
 #include "virtual_memory.hpp"
-
-// 基本输出实现
-extern "C" void sk_putchar(int c, [[maybe_unused]] void* ctx) {
-  sbi_debug_console_write_byte(c);
-}
 
 BasicInfo::BasicInfo(int, const char** argv) {
   auto [memory_base, memory_size] =

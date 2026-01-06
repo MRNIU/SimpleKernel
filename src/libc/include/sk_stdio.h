@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-extern void sk_putchar(int c, [[maybe_unused]] void* ctx);
+extern void (*sk_putchar)(int c, void* ctx);
 
 int sk_printf(const char* format, ...) __attribute__((format(printf, 1, 2)));
 

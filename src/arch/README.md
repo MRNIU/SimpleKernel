@@ -17,17 +17,20 @@ arch/
 │   ├── arch_main.cpp  # 架构初始化主函数
 │   ├── backtrace.cpp  # 调用栈回溯实现
 │   ├── boot.S         # 启动汇编代码
+│   ├── early_console.cpp # 早期调试输出
 │   └── link.ld        # 链接脚本
 ├── riscv64/           # RISC-V 64 位架构实现
 │   ├── arch_main.cpp  # 架构初始化主函数
 │   ├── backtrace.cpp  # 调用栈回溯实现
 │   ├── boot.S         # 启动汇编代码
+│   ├── early_console.cpp # 早期调试输出
 │   ├── link.ld        # 链接脚本
 │   └── macro.S        # 汇编宏定义
 └── x86_64/            # x86 64 位架构实现
     ├── arch_main.cpp  # 架构初始化主函数
     ├── backtrace.cpp  # 调用栈回溯实现
     ├── boot.S         # 启动汇编代码
+    ├── early_console.cpp # 早期调试输出
     ├── link.ld        # 链接脚本
     └── sipi.h         # SMP 启动相关定义
 ```
@@ -80,14 +83,14 @@ void DumpStack();
 #### aarch64
 - **启动方式**: 通过 ARM Trusted Firmware 或 U-Boot 启动
 - **多核启动**: 使用 PSCI (Power State Coordination Interface) 唤醒其他核心
-- **串口**: PL011 UART 控制器
+- **早期控制台**: 通过 SIMPLEKERNEL_EARLY_CONSOLE 预设支持早期调试输出 (PL011)
 - **设备树**: 通过 FDT (Flattened Device Tree) 获取硬件信息
 - **帧指针**: 使用 X29 寄存器进行栈回溯
 
 #### riscv64
 - **启动方式**: 通过 OpenSBI 启动
 - **多核启动**: 使用 SBI (Supervisor Binary Interface) hart_start 调用
-- **串口**: 通过 OpenSBI 提供的调试控制台
+- **早期控制台**: 通过 SIMPLEKERNEL_EARLY_CONSOLE 预设支持早期调试输出 (SBI)
 - **设备树**: 通过 FDT 获取硬件信息
 - **帧指针**: 使用 FP 寄存器进行栈回溯
 - **特殊文件**: `macro.S` 提供汇编宏定义，包括寄存器操作宏
@@ -95,7 +98,7 @@ void DumpStack();
 #### x86_64
 - **启动方式**: 通过 GRUB 或其他 Multiboot 兼容启动器
 - **多核启动**: 使用 APIC (Advanced Programmable Interrupt Controller) 和 SIPI (Startup Inter-Processor Interrupt)
-- **串口**: 标准 COM1 串口 (0x3F8)
+- **早期控制台**: 通过 cpu_io 预设支持早期调试输出 (COM1)
 - **硬件发现**: 通过 CPUID 指令获取处理器信息
 - **帧指针**: 使用 RBP 寄存器进行栈回溯
 - **特殊文件**: `sipi.h` 定义多核启动相关结构

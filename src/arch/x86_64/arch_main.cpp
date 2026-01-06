@@ -17,7 +17,6 @@
 
 // 基本输出实现
 namespace {
-cpu_io::Serial* serial = nullptr;
 
 /// gdt 描述符表，顺序与 cpu_io::detail::register_info::GdtrInfo 中的定义一致
 std::array<cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor,
@@ -120,12 +119,6 @@ void SetupGdtAndSegmentRegisters() {
 
 }  // namespace
 
-extern "C" void sk_putchar(int c, [[maybe_unused]] void* ctx) {
-  if (serial) {
-    serial->Write(c);
-  }
-}
-
 BasicInfo::BasicInfo(int, const char**) {
   physical_memory_addr = 0;
   physical_memory_size = 0;
@@ -142,9 +135,6 @@ BasicInfo::BasicInfo(int, const char**) {
 }
 
 auto ArchInit(int, const char**) -> int {
-  Singleton<cpu_io::Serial>::GetInstance() = cpu_io::Serial(cpu_io::kCom1);
-  serial = &Singleton<cpu_io::Serial>::GetInstance();
-
   Singleton<BasicInfo>::GetInstance() = BasicInfo(0, nullptr);
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
