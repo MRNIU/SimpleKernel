@@ -14,4 +14,11 @@ static constexpr const auto kSimpleKernelDebugLog = true;
 static constexpr const auto kSimpleKernelDebugLog = false;
 #endif
 
+#ifdef SIMPLEKERNEL_EARLY_CONSOLE
+static constexpr const uint64_t kSimpleKernelEarlyConsoleBase =
+    SIMPLEKERNEL_EARLY_CONSOLE;
+#else
+static constexpr const uint64_t kSimpleKernelEarlyConsoleBase = 0x0;
+#endif
+
 #endif /* SIMPLEKERNEL_SRC_PROJECT_CONFIG_H_ */

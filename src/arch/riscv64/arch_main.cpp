@@ -10,16 +10,10 @@
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
-#include "ns16550a.h"
 #include "per_cpu.hpp"
 #include "sk_cstdio"
 #include "sk_libc.h"
 #include "virtual_memory.hpp"
-
-// 基本输出实现
-extern "C" void sk_putchar(int c, [[maybe_unused]] void* ctx) {
-  sbi_debug_console_write_byte(c);
-}
 
 BasicInfo::BasicInfo(int, const char** argv) {
   auto [memory_base, memory_size] =
@@ -52,13 +46,6 @@ void ArchInit(int argc, const char** argv) {
 }
 
 void ArchInitSMP(int, const char**) {}
-
-void ArchReMap() {
-  // 映射串口
-  auto [serial_base, serial_size, irq] =
-      Singleton<KernelFdt>::GetInstance().GetSerial();
-  Singleton<VirtualMemory>::GetInstance().MapMMIO(serial_base, serial_size);
-}
 
 void WakeUpOtherCores() {
   for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {

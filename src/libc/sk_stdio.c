@@ -19,6 +19,10 @@ extern "C" {
 #define NANOPRINTF_USE_ALT_FORM_FLAG 1
 #include <nanoprintf.h>
 
+static void dummy_putchar(int, void*) {}
+
+void (*sk_putchar)(int, void*) = dummy_putchar;
+
 int sk_printf(const char* format, ...) {
   va_list args;
   va_start(args, format);

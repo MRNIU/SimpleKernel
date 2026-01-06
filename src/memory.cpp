@@ -10,6 +10,7 @@
 
 #include "arch.h"
 #include "basic_info.hpp"
+#include "config.h"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "virtual_memory.hpp"
@@ -51,10 +52,10 @@ extern "C" void free(void* ptr) {
 }
 
 void MemoryInit() {
-  auto allocator_start = Singleton<BasicInfo>::GetInstance().elf_addr +
-                         Singleton<KernelElf>::GetInstance().GetElfSize();
   auto allocator_addr =
-      reinterpret_cast<void*>((allocator_start + 4095) & ~4095);
+      reinterpret_cast<void*>(cpu_io::virtual_memory::PageAlignUp(
+          Singleton<BasicInfo>::GetInstance().elf_addr +
+          Singleton<KernelElf>::GetInstance().GetElfSize()));
   auto allocator_size =
       Singleton<BasicInfo>::GetInstance().physical_memory_addr +
       Singleton<BasicInfo>::GetInstance().physical_memory_size -
@@ -73,8 +74,11 @@ void MemoryInit() {
   // 初始化当前核心的虚拟内存
   Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
 
-  // 重新映射架构相关的内存区域
-  ArchReMap();
+  // 重新映射早期控制台地址（如果有的话）
+  if (kSimpleKernelEarlyConsoleBase != 0) {
+    Singleton<VirtualMemory>::GetInstance().MapMMIO(
+        kSimpleKernelEarlyConsoleBase, cpu_io::virtual_memory::kPageSize);
+  }
 
   klog::Info("Memory initialization completed\n");
 }

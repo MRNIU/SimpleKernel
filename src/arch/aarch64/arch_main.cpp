@@ -10,20 +10,9 @@
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
 #include "per_cpu.hpp"
-#include "pl011.h"
 #include "sk_cstdio"
 #include "sk_libc.h"
 #include "virtual_memory.hpp"
-
-// 基本输出实现
-namespace {
-Pl011* pl011 = nullptr;
-}
-extern "C" void sk_putchar(int c, [[maybe_unused]] void* ctx) {
-  if (pl011) {
-    pl011->PutChar(c);
-  }
-}
 
 BasicInfo::BasicInfo(int argc, const char** argv) {
   (void)argc;
@@ -48,13 +37,7 @@ void ArchInit(int argc, const char** argv) {
   Singleton<KernelFdt>::GetInstance() =
       KernelFdt(strtoull(argv[2], nullptr, 16));
 
-  auto [serial_base, serial_size, irq] =
-      Singleton<KernelFdt>::GetInstance().GetSerial();
-
-  Singleton<Pl011>::GetInstance() = Pl011(serial_base);
-  pl011 = &Singleton<Pl011>::GetInstance();
-
-  Singleton<BasicInfo>::GetInstance() = BasicInfo(0, argv);
+  Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
 
   // 解析内核 elf 信息
   Singleton<KernelElf>::GetInstance() =
@@ -68,13 +51,6 @@ void ArchInit(int argc, const char** argv) {
 }
 
 void ArchInitSMP(int, const char**) {}
-
-void ArchReMap() {
-  // 映射串口
-  auto [serial_base, serial_size, irq] =
-      Singleton<KernelFdt>::GetInstance().GetSerial();
-  Singleton<VirtualMemory>::GetInstance().MapMMIO(serial_base, serial_size);
-}
 
 void WakeUpOtherCores() {
   for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {

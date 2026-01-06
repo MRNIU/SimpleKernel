@@ -7,7 +7,8 @@
 ADD_LIBRARY (compile_definitions INTERFACE)
 TARGET_COMPILE_DEFINITIONS (
     compile_definitions INTERFACE $<$<CONFIG:Release>:SIMPLEKERNEL_RELEASE>
-                                  $<$<CONFIG:Debug>:SIMPLEKERNEL_DEBUG>)
+                                  $<$<CONFIG:Debug>:SIMPLEKERNEL_DEBUG>
+                                  SIMPLEKERNEL_EARLY_CONSOLE=${SIMPLEKERNEL_EARLY_CONSOLE})
 
 # 获取 gcc 的 include 路径
 EXECUTE_PROCESS (
