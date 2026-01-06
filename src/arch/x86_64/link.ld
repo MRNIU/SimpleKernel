@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 链接脚本，指定生成的二进制文件的布局
  */
 
 /* GNU ld (GNU Binutils for Ubuntu) 2.41 */

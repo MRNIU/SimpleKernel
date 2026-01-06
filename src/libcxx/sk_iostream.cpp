@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief C++ 输入输出
  */
 
 #include "sk_iostream"

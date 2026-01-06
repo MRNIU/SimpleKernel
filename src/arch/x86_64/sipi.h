@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief sipi 头文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_ARCH_X86_64_SIPI_H_

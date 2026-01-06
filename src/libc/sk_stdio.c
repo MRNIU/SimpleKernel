@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief sk_stdio 定义
  */
 
 #include "sk_stdio.h"

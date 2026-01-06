@@ -103,7 +103,6 @@ auto main(uint32_t, uint8_t *) -> uint32_t {
   sk_printf("%c\n", inst_class_static.val);
 
   sk_printf("%ld\n", Singleton<BasicInfo>::GetInstance().elf_addr);
-  sk_printf("%ld\n", Singleton<BasicInfo>::GetInstance().elf_size);
 
   sk_printf("Hello Test\n");
 

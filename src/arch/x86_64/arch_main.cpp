@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief arch_main cpp
  */
 
 #include <cpu_io.h>
@@ -18,8 +17,7 @@
 #include "sk_iostream"
 
 namespace {
-// 基本输出实现
-cpu_io::Serial *serial = nullptr;
+cpu_io::Serial* serial = nullptr;
 
 /// gdt 描述符表，顺序与 cpu_io::detail::register_info::GdtrInfo 中的定义一致
 std::array<cpu_io::detail::register_info::GdtrInfo::SegmentDescriptor,
@@ -122,13 +120,13 @@ void SetupGdtAndSegmentRegisters() {
 
 }  // namespace
 
-extern "C" void sk_putchar(int c, [[maybe_unused]] void *ctx) {
+extern "C" void sk_putchar(int c, [[maybe_unused]] void* ctx) {
   if (serial) {
     serial->Write(c);
   }
 }
 
-BasicInfo::BasicInfo(int, const char **) {
+BasicInfo::BasicInfo(int, const char**) {
   physical_memory_addr = 0;
   physical_memory_size = 0;
 
@@ -137,14 +135,13 @@ BasicInfo::BasicInfo(int, const char **) {
                 reinterpret_cast<uint64_t>(__executable_start);
 
   elf_addr = kernel_addr;
-  elf_size = kernel_size;
 
   fdt_addr = 0;
 
   core_count = cpu_io::cpuid::GetLogicalProcessorCount();
 }
 
-auto ArchInit(int, const char **) -> int {
+auto ArchInit(int, const char**) -> int {
   Singleton<cpu_io::Serial>::GetInstance() = cpu_io::Serial(cpu_io::kCom1);
   serial = &Singleton<cpu_io::Serial>::GetInstance();
 
@@ -153,8 +150,7 @@ auto ArchInit(int, const char **) -> int {
 
   // 解析内核 elf 信息
   Singleton<KernelElf>::GetInstance() =
-      KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr,
-                Singleton<BasicInfo>::GetInstance().elf_size);
+      KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
 
   // 设置 GDT 和段寄存器
   SetupGdtAndSegmentRegisters();
@@ -166,24 +162,27 @@ auto ArchInit(int, const char **) -> int {
 
   klog::Info("Hello x86_64 ArchInit\n");
 
-  // 填充 sipi_params 结构体
-  auto target_sipi_params = reinterpret_cast<sipi_params_t *>(sipi_params);
-  target_sipi_params->cr3 = cpu_io::Cr3::Read();
-
-  // 唤醒其它 core
-  Singleton<Apic>::GetInstance().StartupAllAps(
-      reinterpret_cast<uint64_t>(ap_start16),
-      reinterpret_cast<size_t>(ap_start64_end) -
-          reinterpret_cast<size_t>(ap_start16),
-      kDefaultAPBase);
-
   return 0;
 }
 
-auto ArchInitSMP(int, const char **) -> int {
+auto ArchInitSMP(int, const char**) -> int {
   // 设置 GDT 和段寄存器
   SetupGdtAndSegmentRegisters();
 
   Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
   return 0;
+}
+
+void ArchReMap() {}
+
+void WakeUpOtherCores() {
+  // 填充 sipi_params 结构体
+  auto target_sipi_params = reinterpret_cast<sipi_params_t*>(sipi_params);
+  target_sipi_params->cr3 = cpu_io::Cr3::Read();
+
+  Singleton<Apic>::GetInstance().StartupAllAps(
+      reinterpret_cast<uint64_t>(ap_start16),
+      reinterpret_cast<size_t>(ap_start64_end) -
+          reinterpret_cast<size_t>(ap_start16),
+      kDefaultAPBase);
 }

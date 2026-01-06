@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 内核日志相关函数
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_
@@ -21,27 +20,7 @@ namespace klog {
 namespace detail {
 
 // 日志专用的自旋锁实例
-inline SpinLock& GetLogLock() {
-  static SpinLock log_lock("kernel_log");
-  return log_lock;
-}
-
-/**
- * @brief RAII 风格的锁守护类，确保异常安全
- */
-class LogLockGuard {
- public:
-  LogLockGuard() { GetLogLock().lock(); }
-  ~LogLockGuard() { GetLogLock().unlock(); }
-
-  /// @name 构造/析构函数
-  /// @{
-  LogLockGuard(const LogLockGuard&) = delete;
-  LogLockGuard(LogLockGuard&&) = delete;
-  LogLockGuard& operator=(const LogLockGuard&) = delete;
-  LogLockGuard& operator=(LogLockGuard&&) = delete;
-  /// @}
-};
+static SpinLock log_lock("kernel_log");
 
 /// ANSI 转义码，在支持 ANSI 转义码的终端中可以显示颜色
 static constexpr const auto kReset = "\033[0m";
@@ -127,7 +106,7 @@ struct LogBase {
                    [[maybe_unused]] const std::source_location& location =
                        std::source_location::current()) {
     constexpr auto* color = kLogColors[Level];
-    LogLockGuard lock_guard;
+    LockGuard<SpinLock> lock_guard(log_lock);
     sk_printf("%s[%ld]", color, cpu_io::GetCurrentCoreId());
     if constexpr (Level == kDebug && kSimpleKernelDebugLog) {
       sk_printf("[%s] ", location.function_name());
@@ -155,7 +134,7 @@ Debug(Args&&...) -> Debug<Args...>;
 
 __always_inline void DebugBlob(const void* data, size_t size) {
   if constexpr (kSimpleKernelDebugLog) {
-    detail::LogLockGuard lock_guard;
+    LockGuard<SpinLock> lock_guard(klog::detail::log_lock);
     sk_printf("%s[%ld] ", detail::kMagenta, cpu_io::GetCurrentCoreId());
     for (size_t i = 0; i < size; i++) {
       sk_printf("0x%02X ", reinterpret_cast<const uint8_t*>(data)[i]);

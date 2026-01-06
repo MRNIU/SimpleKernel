@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief pl011 头文件
  */
 
 #include "pl011.h"

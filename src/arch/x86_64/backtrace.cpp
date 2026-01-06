@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 栈回溯实现
  */
 
 #include <cpu_io.h>
@@ -16,8 +15,8 @@
 #include "kernel_log.hpp"
 #include "singleton.hpp"
 
-auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer) -> int {
-  auto *rbp = reinterpret_cast<uint64_t *>(cpu_io::Rbp::Read());
+auto backtrace(std::array<uint64_t, kMaxFrameCount>& buffer) -> int {
+  auto* rbp = reinterpret_cast<uint64_t*>(cpu_io::Rbp::Read());
   size_t count = 0;
   while ((rbp != nullptr) && (*rbp != 0U) && count < buffer.max_size()) {
     auto rip = *(rbp + 1);
@@ -25,7 +24,7 @@ auto backtrace(std::array<uint64_t, kMaxFrameCount> &buffer) -> int {
         rip > reinterpret_cast<uint64_t>(__etext)) {
       break;
     }
-    rbp = reinterpret_cast<uint64_t *>(*rbp);
+    rbp = reinterpret_cast<uint64_t*>(*rbp);
     buffer[count++] = rip;
   }
 

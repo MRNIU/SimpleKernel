@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief driver 头文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_DRIVER_INCLUDE_DRIVER_H_

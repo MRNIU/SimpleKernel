@@ -1,15 +1,13 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief APIC 管理类实现
  */
 
-#include <cpu_io.h>
+#include "apic.h"
 
 #include <cpu_io.h>
 
 #include <cstring>
 
-#include "apic.h"
 #include "kernel_log.hpp"
 
 Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {

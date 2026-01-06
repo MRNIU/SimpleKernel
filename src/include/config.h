@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 配置文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_CONFIG_H_

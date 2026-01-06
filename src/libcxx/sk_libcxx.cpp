@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief sk_libcxx cpp
  */
 
 #include "sk_libcxx.h"

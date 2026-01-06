@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief Local APIC 驱动实现
  */
 
 #include "apic.h"

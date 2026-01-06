@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 内核头文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_
@@ -26,5 +25,8 @@ extern "C" [[maybe_unused]] [[noreturn]] void _start(int argc,
  * @return int 正常返回 0
  */
 auto main(int argc, const char** argv) -> int;
+
+void MemoryInit();
+void MemoryInitSMP();
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_ */

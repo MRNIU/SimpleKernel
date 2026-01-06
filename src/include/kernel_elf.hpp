@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 用于解析内核自身的 elf
  */
 
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_ELF_HPP_
@@ -24,21 +23,19 @@ class KernelElf {
   /// 符号表
   std::span<Elf64_Sym> symtab_;
   /// 字符串表
-  uint8_t *strtab_ = nullptr;
+  uint8_t* strtab_ = nullptr;
 
   /**
    * 构造函数
    * @param elf_addr elf 地址
-   * @param elf_size elf 大小，默认为 64，Elf64_Ehdr 的大小
    */
-  explicit KernelElf(uint64_t elf_addr, size_t elf_size = 64) {
-    if ((elf_addr == 0U) || (elf_size == 0U)) {
-      ERR("Fatal Error: Invalid elf_addr[0x%lX] or elf_size[0x%lX].\n",
-          elf_addr, elf_size);
+  explicit KernelElf(uint64_t elf_addr) {
+    if (elf_addr == 0U) {
+      ERR("Fatal Error: Invalid elf_addr[0x%lX].\n", elf_addr);
       throw;
     }
 
-    elf_ = std::span<uint8_t>(reinterpret_cast<uint8_t *>(elf_addr), elf_size);
+    elf_ = std::span<uint8_t>(reinterpret_cast<uint8_t*>(elf_addr), EI_NIDENT);
 
     // 检查 elf 头数据
     auto check_elf_identity_ret = CheckElfIdentity();
@@ -47,23 +44,47 @@ class KernelElf {
       throw;
     }
 
-    ehdr_ = *reinterpret_cast<const Elf64_Ehdr *>(elf_.data());
+    ehdr_ = *reinterpret_cast<const Elf64_Ehdr*>(elf_.data());
+
+    // 重新计算 elf 大小
+    size_t max_size = EI_NIDENT;
+    if (ehdr_.e_phoff != 0) {
+      size_t ph_end = ehdr_.e_phoff + ehdr_.e_phnum * ehdr_.e_phentsize;
+      if (ph_end > max_size) {
+        max_size = ph_end;
+      }
+    }
+    if (ehdr_.e_shoff != 0) {
+      size_t sh_end = ehdr_.e_shoff + ehdr_.e_shnum * ehdr_.e_shentsize;
+      if (sh_end > max_size) {
+        max_size = sh_end;
+      }
+      const auto* shdrs =
+          reinterpret_cast<const Elf64_Shdr*>(elf_.data() + ehdr_.e_shoff);
+      for (int i = 0; i < ehdr_.e_shnum; ++i) {
+        size_t section_end = shdrs[i].sh_offset + shdrs[i].sh_size;
+        if (section_end > max_size) {
+          max_size = section_end;
+        }
+      }
+    }
+    elf_ = std::span<uint8_t>(reinterpret_cast<uint8_t*>(elf_addr), max_size);
 
     phdr_ = std::span<Elf64_Phdr>(
-        reinterpret_cast<Elf64_Phdr *>(elf_.data() + ehdr_.e_phoff),
+        reinterpret_cast<Elf64_Phdr*>(elf_.data() + ehdr_.e_phoff),
         ehdr_.e_phnum);
 
     shdr_ = std::span<Elf64_Shdr>(
-        reinterpret_cast<Elf64_Shdr *>(elf_.data() + ehdr_.e_shoff),
+        reinterpret_cast<Elf64_Shdr*>(elf_.data() + ehdr_.e_shoff),
         ehdr_.e_shnum);
 
-    const auto *shstrtab = reinterpret_cast<const char *>(elf_.data()) +
+    const auto* shstrtab = reinterpret_cast<const char*>(elf_.data()) +
                            shdr_[ehdr_.e_shstrndx].sh_offset;
     for (auto shdr : shdr_) {
       DEBUG("sh_name: [%s]\n", shstrtab + shdr.sh_name);
       if (strcmp(shstrtab + shdr.sh_name, ".symtab") == 0) {
         symtab_ = std::span<Elf64_Sym>(
-            reinterpret_cast<Elf64_Sym *>(elf_.data() + shdr.sh_offset),
+            reinterpret_cast<Elf64_Sym*>(elf_.data() + shdr.sh_offset),
             (shdr.sh_size / sizeof(Elf64_Sym)));
       } else if (strcmp(shstrtab + shdr.sh_name, ".strtab") == 0) {
         strtab_ = elf_.data() + shdr.sh_offset;
@@ -74,12 +95,18 @@ class KernelElf {
   /// @name 构造/析构函数
   /// @{
   KernelElf() = default;
-  KernelElf(const KernelElf &) = default;
-  KernelElf(KernelElf &&) = default;
-  auto operator=(const KernelElf &) -> KernelElf & = default;
-  auto operator=(KernelElf &&) -> KernelElf & = default;
+  KernelElf(const KernelElf&) = default;
+  KernelElf(KernelElf&&) = default;
+  auto operator=(const KernelElf&) -> KernelElf& = default;
+  auto operator=(KernelElf&&) -> KernelElf& = default;
   ~KernelElf() = default;
   /// @}
+
+  /**
+   * 获取 elf 文件大小
+   * @return elf 文件大小
+   */
+  [[nodiscard]] auto GetElfSize() const -> size_t { return elf_.size(); }
 
  protected:
   /// @name elf 文件相关

@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief sk_libcxx 头文件
  */
 
 #ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_LIBCXX_H_
