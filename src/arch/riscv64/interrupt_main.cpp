@@ -15,6 +15,7 @@
 #include "sk_iostream"
 #include "virtual_memory.hpp"
 
+// 在 trap.S 中定义
 extern "C" void trap_entry();
 
 extern "C" void HandleTrap(cpu_io::TrapContext* context) {
