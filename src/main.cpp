@@ -11,6 +11,7 @@
 #include "sk_cstdio"
 #include "sk_iostream"
 #include "sk_libcxx.h"
+#include "task.hpp"
 
 namespace {
 
@@ -57,6 +58,8 @@ auto main(int argc, const char** argv) -> int {
   // klog::Err("Hello SimpleKernel\n");
 
   DumpStack();
+
+  TaskControlBlock("init", 1);
 
   klog::info << "Hello SimpleKernel\n";
 
