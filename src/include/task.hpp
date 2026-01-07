@@ -85,6 +85,14 @@ struct TaskControlBlock {
    */
   void InitThread(void (*entry)(void*), void* arg);
 
+  /**
+   * @brief 初始化用户线程上下文
+   * @param entry 用户程序入口地址
+   * @param arg 用户程序参数
+   * @param user_sp 用户栈顶地址
+   */
+  void InitUserThread(void* entry, void* arg, void* user_sp);
+
   /// @name 构造/析构函数
   /// @{
   TaskControlBlock();

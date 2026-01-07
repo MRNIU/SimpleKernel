@@ -43,7 +43,7 @@ trap_entry:
     // 需要将 sscratch（用户 sp）保存到 Context 中
     csrr t0, sscratch
     beqz t0, .Lcall_handler
-    
+
     // 覆盖 Context 中的 sp
     sd t0, 8(sp)
     // 将 sscratch 清零，保证在内核态执行时 sscratch 为 0
@@ -54,6 +54,12 @@ trap_entry:
     mv a0, sp
     // 调用 C++ 中的 Trap 处理函数
     call HandleTrap
+
+.global trap_return
+trap_return:
+    // 1. kernel_thread_entry 跳转到这里时，a0 是参数 (Context*)
+    // 2. 将 a0 赋值给 sp，切换到 Trap 上下文所在的栈位置
+    mv sp, a0
 
     // 恢复 Trap 上下文
     // 检查 sstatus.SPP (offset 64) 判断返回到用户态还是内核态

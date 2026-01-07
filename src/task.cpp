@@ -62,3 +62,36 @@ void TaskControlBlock::InitThread(void (*entry)(void*), void* arg) {
   // 状态设为就绪
   status = TaskStatus::kReady;
 }
+
+extern "C" void trap_return(void*);
+
+void TaskControlBlock::InitUserThread(void* entry, void* arg, void* user_sp) {
+  // 设置内核栈顶
+  uint64_t stack_top = reinterpret_cast<uint64_t>(kernel_stack_top.data()) +
+                       kernel_stack_top.size();
+
+  // 1. 预留 TrapContext 空间
+  trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
+      stack_top - sizeof(cpu_io::TrapContext));
+
+  // 2. 初始化 TrapContext (用户上下文)
+  *trap_context_ptr = cpu_io::TrapContext();
+
+  // sstatus: SPP=0 (User), SPIE=1 (Enable Interrupts)
+  trap_context_ptr->sstatus = 0x00000020;
+  trap_context_ptr->sepc = reinterpret_cast<uint64_t>(entry);
+  trap_context_ptr->sp = reinterpret_cast<uint64_t>(user_sp);
+  trap_context_ptr->a0 = reinterpret_cast<uint64_t>(arg);
+
+  // 3. 初始化 TaskContext (内核上下文)
+  // ra -> kernel_thread_entry
+  // s0 -> trap_return
+  // s1 -> trap_context_ptr
+  task_context.ra = reinterpret_cast<uint64_t>(kernel_thread_entry);
+  task_context.s0 = reinterpret_cast<uint64_t>(trap_return);
+  task_context.s1 = reinterpret_cast<uint64_t>(trap_context_ptr);
+  task_context.sp = reinterpret_cast<uint64_t>(trap_context_ptr);
+
+  // 状态设为就绪
+  status = TaskStatus::kReady;
+}
