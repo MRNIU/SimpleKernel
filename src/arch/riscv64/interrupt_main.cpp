@@ -15,12 +15,15 @@
 #include "sk_iostream"
 #include "virtual_memory.hpp"
 
+extern "C" void trap_entry();
+
+extern "C" void HandleTrap(cpu_io::TrapContext* context) {
+  Singleton<Interrupt>::GetInstance().Do(context->scause,
+                                         reinterpret_cast<uint8_t*>(context));
+}
+
 namespace {
 uint64_t kInterval = 0;
-__attribute__((interrupt("supervisor"))) alignas(4) void TarpEntry() {
-  Singleton<Interrupt>::GetInstance().Do(
-      static_cast<uint64_t>(cpu_io::Scause::Read()), nullptr);
-}
 }  // namespace
 
 void InterruptInit(int, const char**) {
@@ -69,8 +72,25 @@ void InterruptInit(int, const char**) {
   // ebreak 中断
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kBreakpoint,
-      [](uint64_t exception_code, uint8_t*) -> uint64_t {
-        cpu_io::Sepc::Write(cpu_io::Sepc::Read() + 2);
+      [](uint64_t exception_code, uint8_t* context) -> uint64_t {
+        auto* trap_context = reinterpret_cast<cpu_io::TrapContext*>(context);
+        klog::Debug("scause: 0x%X\n", trap_context->scause);
+        klog::Debug("sepc: 0x%X\n", trap_context->sepc);
+        klog::Debug("sp: 0x%X\n", trap_context->sp);
+        klog::Debug("sstatus: 0x%X\n", trap_context->sstatus);
+        klog::Debug("stval: 0x%X\n", trap_context->stval);
+
+        // 读取 sepc 处的指令
+        auto instruction = *reinterpret_cast<uint8_t*>(trap_context->sepc);
+
+        // 判断是否为压缩指令 (低 2 位不为 11)
+        if ((instruction & 0x3) != 0x3) {
+          // 2 字节指令
+          trap_context->sepc += 2;
+        } else {
+          // 4 字节指令
+          trap_context->sepc += 4;
+        }
         klog::Info("Handle %s\n",
                    cpu_io::detail::register_info::csr::ScauseInfo::
                        kExceptionNames[exception_code]);
@@ -90,7 +110,7 @@ void InterruptInit(int, const char**) {
       std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial()), 1, true);
 
   // 设置 trap vector
-  cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(TarpEntry));
+  cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));
 
   // 开启 Supervisor 中断
   cpu_io::Sstatus::Sie::Set();
@@ -112,7 +132,7 @@ void InterruptInit(int, const char**) {
 
 void InterruptInitSMP(int, const char**) {
   // 设置 trap vector
-  cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(TarpEntry));
+  cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));
 
   // 开启 Supervisor 中断
   cpu_io::Sstatus::Sie::Set();
