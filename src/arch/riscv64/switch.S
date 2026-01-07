@@ -24,3 +24,21 @@ switch_to:
     RestoreCalleeSavedContext a1
 
     ret
+
+.global kernel_thread_entry
+.type kernel_thread_entry, @function
+kernel_thread_entry:
+    // 上下文恢复时：
+    // ra = kernel_thread_entry
+    // s0 = 真正的入口函数 entry
+    // s1 = 参数 arg
+
+    // 1. 将参数移动到 a0
+    mv a0, s1
+
+    // 2. 跳转到入口函数执行
+    jalr s0
+
+    // 3. 如果函数返回，应该调用 exit 或者类似的处理
+    // 目前暂时死循环，防止跑飞
+    j .
