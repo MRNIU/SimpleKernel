@@ -108,15 +108,6 @@ void InterruptInit(int, const char**) {
   sbi_set_timer(kInterval);
 
   klog::Info("Hello InterruptInit\n");
-
-  // 唤醒其余 core
-  for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; i++) {
-    auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
-    if ((ret.error != SBI_SUCCESS) &&
-        (ret.error != SBI_ERR_ALREADY_AVAILABLE)) {
-      klog::Warn("hart %d start failed: %d\n", i, ret.error);
-    }
-  }
 }
 
 void InterruptInitSMP(int, const char**) {
