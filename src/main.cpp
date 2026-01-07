@@ -56,8 +56,6 @@ auto main(int argc, const char** argv) -> int {
   // klog::Warn("Hello SimpleKernel\n");
   // klog::Err("Hello SimpleKernel\n");
 
-  __asm__ volatile("ebreak");
-
   DumpStack();
 
   klog::info << "Hello SimpleKernel\n";

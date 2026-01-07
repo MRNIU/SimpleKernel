@@ -8,6 +8,7 @@
 .global trap_entry
 .type trap_entry, @function
 .extern HandleTrap
+.align 4
 
 /**
  * @brief Trap 处理入口函数

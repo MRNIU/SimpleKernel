@@ -74,11 +74,6 @@ void InterruptInit(int, const char**) {
       cpu_io::detail::register_info::csr::ScauseInfo::kBreakpoint,
       [](uint64_t exception_code, uint8_t* context) -> uint64_t {
         auto* trap_context = reinterpret_cast<cpu_io::TrapContext*>(context);
-        klog::Debug("scause: 0x%X\n", trap_context->scause);
-        klog::Debug("sepc: 0x%X\n", trap_context->sepc);
-        klog::Debug("sp: 0x%X\n", trap_context->sp);
-        klog::Debug("sstatus: 0x%X\n", trap_context->sstatus);
-        klog::Debug("stval: 0x%X\n", trap_context->stval);
 
         // 读取 sepc 处的指令
         auto instruction = *reinterpret_cast<uint8_t*>(trap_context->sepc);
@@ -110,7 +105,11 @@ void InterruptInit(int, const char**) {
       std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial()), 1, true);
 
   // 设置 trap vector
-  cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));
+  auto success =
+      cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));
+  if (!success) {
+    klog::Err("Failed to set trap vector\n");
+  }
 
   // 开启 Supervisor 中断
   cpu_io::Sstatus::Sie::Set();
@@ -126,13 +125,20 @@ void InterruptInit(int, const char**) {
 
   // 设置时钟中断时间
   sbi_set_timer(kInterval);
+
+  // 触发一次 ebreak 以测试中断处理
+  __asm__ volatile("ebreak");
 
   klog::Info("Hello InterruptInit\n");
 }
 
 void InterruptInitSMP(int, const char**) {
   // 设置 trap vector
-  cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));
+  auto success =
+      cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));
+  if (!success) {
+    klog::Err("Failed to set trap vector\n");
+  }
 
   // 开启 Supervisor 中断
   cpu_io::Sstatus::Sie::Set();
@@ -148,6 +154,9 @@ void InterruptInitSMP(int, const char**) {
 
   // 设置时钟中断时间
   sbi_set_timer(kInterval);
+
+  // 触发一次 ebreak 以测试中断处理
+  __asm__ volatile("ebreak");
 
   klog::Info("Hello InterruptInitSMP\n");
 }
