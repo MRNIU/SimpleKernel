@@ -52,8 +52,9 @@ struct TaskControlBlock {
   cpu_io::TrapContext* trap_context_ptr;
 
   // 任务上下文 (用于内核线程切换)
-  // 如果支持内核级线程切换 (switch)，这里还需要保存 Callee-Saved 寄存器
-  cpu_io::CalleeSavedContext task_context;
+  // 保存切换时的内核栈指针 (包含 Callee-Saved 寄存器)
+  // 指向各个任务内核栈上保存的 CalleeSavedContext
+  uint64_t context_sp;
 
   // 页表指针
   uint64_t* page_table;

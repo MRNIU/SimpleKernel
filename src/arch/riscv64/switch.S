@@ -11,22 +11,16 @@
 /**
  * @brief 线程上下文切换
  *
- * extern "C" void switch_to(CalleeSavedContext** prev, CalleeSavedContext* next);
+ * void switch_to(CalleeSavedContext* prev, CalleeSavedContext* next);
  *
- * @param prev a0: 保存当前线程上下文指针的地址 (CalleeSavedContext** prev)
- * @param next a1: 下一个线程的上下文指针 (CalleeSavedContext* next)
+ * @param prev a0: 当前线程上下文结构体的地址
+ * @param next a1: 下一个线程上下文结构体的地址
  */
 switch_to:
-    // 在当前栈上分配空间保存 Callee-saved 寄存器
-    SaveCalleeSavedContext
+    // 保存 Callee-saved 寄存器到 prev (a0) 指向的结构体
+    SaveCalleeSavedContext a0
 
-    // 保存当前 sp 到 *prev
-    sd sp, (a0)
-
-    // 切换到新栈
-    mv sp, a1
-
-    // 恢复寄存器
-    RestoreCalleeSavedContext
+    // 从 next (a1) 指向的结构体恢复 Callee-saved 寄存器
+    RestoreCalleeSavedContext a1
 
     ret

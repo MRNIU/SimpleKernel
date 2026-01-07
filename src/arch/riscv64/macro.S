@@ -26,13 +26,13 @@
 
 /**
  * @brief 函数调用上下文切换所需保存的寄存器数量 (Callee-saved)
- * ra, s0-s11 (13 regs) + fs0-fs11 (12 regs) = 25 regs
+ * ra, sp, s0-s11 (13 regs) + fs0-fs11 (12 regs) = 26 regs
  */
-.equ kCalleeSavedContextRegsCount, 25
+.equ kCalleeSavedContextRegsCount, 26
 
 /**
  * @brief 函数调用上下文切换所需保存的寄存器大小 (Callee-saved)
- * 25 * 8 = 200 bytes.
+ * 26 * 8 = 208 bytes.
  */
 .equ kCalleeSavedContextSize, kCalleeSavedContextRegsCount * kRegsBytes
 
@@ -270,71 +270,73 @@
 .endm
 
 /**
- * @brief 保存 Callee-saved 寄存器
- * 保存 ra, s0-s11, fs0-fs11
+ * @brief 保存 Callee-saved 寄存器到指定地址
+ * 保存 ra, sp, s0-s11, fs0-fs11
+ *
+ * @param base_reg 基地址寄存器 (保存的目标地址)
  */
-.macro SaveCalleeSavedContext
-    addi sp, sp, -ALIGN_16(kCalleeSavedContextSize)
+.macro SaveCalleeSavedContext base_reg
+    SdBase ra, 0, \base_reg
+    SdBase sp, 1, \base_reg
+    SdBase s0, 2, \base_reg
+    SdBase s1, 3, \base_reg
+    SdBase s2, 4, \base_reg
+    SdBase s3, 5, \base_reg
+    SdBase s4, 6, \base_reg
+    SdBase s5, 7, \base_reg
+    SdBase s6, 8, \base_reg
+    SdBase s7, 9, \base_reg
+    SdBase s8, 10, \base_reg
+    SdBase s9, 11, \base_reg
+    SdBase s10, 12, \base_reg
+    SdBase s11, 13, \base_reg
 
-    SdBase ra, 0, sp
-    SdBase s0, 1, sp
-    SdBase s1, 2, sp
-    SdBase s2, 3, sp
-    SdBase s3, 4, sp
-    SdBase s4, 5, sp
-    SdBase s5, 6, sp
-    SdBase s6, 7, sp
-    SdBase s7, 8, sp
-    SdBase s8, 9, sp
-    SdBase s9, 10, sp
-    SdBase s10, 11, sp
-    SdBase s11, 12, sp
-
-    FsdBase fs0, 13, sp
-    FsdBase fs1, 14, sp
-    FsdBase fs2, 15, sp
-    FsdBase fs3, 16, sp
-    FsdBase fs4, 17, sp
-    FsdBase fs5, 18, sp
-    FsdBase fs6, 19, sp
-    FsdBase fs7, 20, sp
-    FsdBase fs8, 21, sp
-    FsdBase fs9, 22, sp
-    FsdBase fs10, 23, sp
-    FsdBase fs11, 24, sp
+    FsdBase fs0, 14, \base_reg
+    FsdBase fs1, 15, \base_reg
+    FsdBase fs2, 16, \base_reg
+    FsdBase fs3, 17, \base_reg
+    FsdBase fs4, 18, \base_reg
+    FsdBase fs5, 19, \base_reg
+    FsdBase fs6, 20, \base_reg
+    FsdBase fs7, 21, \base_reg
+    FsdBase fs8, 22, \base_reg
+    FsdBase fs9, 23, \base_reg
+    FsdBase fs10, 24, \base_reg
+    FsdBase fs11, 25, \base_reg
 .endm
 
 /**
- * @brief 恢复 Callee-saved 寄存器
- * 恢复 ra, s0-s11, fs0-fs11
+ * @brief 从指定地址恢复 Callee-saved 寄存器
+ * 恢复 ra, sp, s0-s11, fs0-fs11
+ *
+ * @param base_reg 基地址寄存器 (恢复的源地址)
  */
-.macro RestoreCalleeSavedContext
-    LdBase ra, 0, sp
-    LdBase s0, 1, sp
-    LdBase s1, 2, sp
-    LdBase s2, 3, sp
-    LdBase s3, 4, sp
-    LdBase s4, 5, sp
-    LdBase s5, 6, sp
-    LdBase s6, 7, sp
-    LdBase s7, 8, sp
-    LdBase s8, 9, sp
-    LdBase s9, 10, sp
-    LdBase s10, 11, sp
-    LdBase s11, 12, sp
+.macro RestoreCalleeSavedContext base_reg
+    LdBase ra, 0, \base_reg
+    LdBase sp, 1, \base_reg
+    LdBase s0, 2, \base_reg
+    LdBase s1, 3, \base_reg
+    LdBase s2, 4, \base_reg
+    LdBase s3, 5, \base_reg
+    LdBase s4, 6, \base_reg
+    LdBase s5, 7, \base_reg
+    LdBase s6, 8, \base_reg
+    LdBase s7, 9, \base_reg
+    LdBase s8, 10, \base_reg
+    LdBase s9, 11, \base_reg
+    LdBase s10, 12, \base_reg
+    LdBase s11, 13, \base_reg
 
-    FldBase fs0, 13, sp
-    FldBase fs1, 14, sp
-    FldBase fs2, 15, sp
-    FldBase fs3, 16, sp
-    FldBase fs4, 17, sp
-    FldBase fs5, 18, sp
-    FldBase fs6, 19, sp
-    FldBase fs7, 20, sp
-    FldBase fs8, 21, sp
-    FldBase fs9, 22, sp
-    FldBase fs10, 23, sp
-    FldBase fs11, 24, sp
-
-    addi sp, sp, ALIGN_16(kCalleeSavedContextSize)
+    FldBase fs0, 14, \base_reg
+    FldBase fs1, 15, \base_reg
+    FldBase fs2, 16, \base_reg
+    FldBase fs3, 17, \base_reg
+    FldBase fs4, 18, \base_reg
+    FldBase fs5, 19, \base_reg
+    FldBase fs6, 20, \base_reg
+    FldBase fs7, 21, \base_reg
+    FldBase fs8, 22, \base_reg
+    FldBase fs9, 23, \base_reg
+    FldBase fs10, 24, \base_reg
+    FldBase fs11, 25, \base_reg
 .endm
