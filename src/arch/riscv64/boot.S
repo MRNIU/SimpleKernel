@@ -4,8 +4,6 @@
 
 #include "macro.S"
 
-// clang-format off
-
 .section .text.boot
 .global _boot
 .type _boot, @function
@@ -57,5 +55,3 @@ _boot:
 stack_top:
     // 跳过 16KB
     .space 4096 * 4
-
-// clang-format on

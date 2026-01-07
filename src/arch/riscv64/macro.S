@@ -5,8 +5,6 @@
 // 对齐到 16 字节
 #define ALIGN_16(x) (((x) + 15) & ~15)
 
-// clang-format off
-
 /**
  * @brief 寄存器长度，8 字节
  */
@@ -340,5 +338,3 @@
 
     addi sp, sp, ALIGN_16(kCalleeSavedContextSize)
 .endm
-
-// clang-format on
