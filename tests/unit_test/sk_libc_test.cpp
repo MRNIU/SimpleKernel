@@ -38,12 +38,12 @@ TEST(SkLibcTest, Atoll) {
   EXPECT_EQ(sk_atoll("-123456789012345"), -123456789012345LL);
 }
 
-// TEST(SkLibcTest, Atof) {
-//   EXPECT_DOUBLE_EQ(sk_atof("3.14"), 3.14);
-//   EXPECT_DOUBLE_EQ(sk_atof("-2.5"), -2.5);
-//   EXPECT_DOUBLE_EQ(sk_atof("0.0"), 0.0);
-//   EXPECT_DOUBLE_EQ(sk_atof("123.456"), 123.456);
-// }
+TEST(SkLibcTest, Atof) {
+  EXPECT_DOUBLE_EQ(sk_atof("3.14"), 3.14);
+  EXPECT_DOUBLE_EQ(sk_atof("-2.5"), -2.5);
+  EXPECT_DOUBLE_EQ(sk_atof("0.0"), 0.0);
+  EXPECT_DOUBLE_EQ(sk_atof("123.456"), 123.456);
+}
 
 TEST(SkLibcTest, Strtol) {
   char *end;
@@ -92,15 +92,15 @@ TEST(SkLibcTest, Strtoull) {
             18446744073709551615ULL);
 }
 
-// TEST(SkLibcTest, Strtod) {
-//   char *end;
-//   EXPECT_DOUBLE_EQ(sk_strtod("3.14159", &end), 3.14159);
-//   EXPECT_EQ(*end, '\0');
-//   EXPECT_DOUBLE_EQ(sk_strtod("  -123.456abc", &end), -123.456);
-//   EXPECT_EQ(*end, 'a');
-// }
+TEST(SkLibcTest, Strtod) {
+  char *end;
+  EXPECT_DOUBLE_EQ(sk_strtod("3.14159", &end), 3.14159);
+  EXPECT_EQ(*end, '\0');
+  EXPECT_DOUBLE_EQ(sk_strtod("  -123.456abc", &end), -123.456);
+  EXPECT_EQ(*end, 'a');
+}
 
-// TEST(SkLibcTest, Strtof) {
-//   char *end;
-//   EXPECT_FLOAT_EQ(sk_strtof("3.14", &end), 3.14f);
-// }
+TEST(SkLibcTest, Strtof) {
+  char *end;
+  EXPECT_FLOAT_EQ(sk_strtof("3.14", &end), 3.14f);
+}
