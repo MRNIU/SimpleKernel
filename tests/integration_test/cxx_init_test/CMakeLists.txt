@@ -1,7 +1,7 @@
 # Copyright The SimpleKernel Contributors
 
 # 设置项目名与版本
-PROJECT (cxx-init-test VERSION 0.0.1)
+PROJECT (cxx-init-test)
 
 ENABLE_LANGUAGE (CXX)
 ENABLE_LANGUAGE (ASM)

@@ -1,10 +1,8 @@
 # Copyright The SimpleKernel Contributors
 
-# 设置最小 cmake 版本
 CMAKE_MINIMUM_REQUIRED (VERSION 3.27 FATAL_ERROR)
 
-# 设置项目名与版本
-PROJECT (SimpleKernel VERSION 0.0.1)
+PROJECT (SimpleKernel)
 
 # 禁止原地编译
 IF(${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
@@ -31,5 +29,5 @@ INCLUDE (compile_config)
 
 # 添加要编译的目录
 ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/src)
-ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/test)
+ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/tests)
 ADD_SUBDIRECTORY (${PROJECT_SOURCE_DIR}/doc)

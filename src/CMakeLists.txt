@@ -1,7 +1,6 @@
 # Copyright The SimpleKernel Contributors
 
-# 设置项目名与版本
-PROJECT (kernel VERSION 0.0.1)
+PROJECT (kernel)
 
 ENABLE_LANGUAGE (ASM)
 ENABLE_LANGUAGE (C)

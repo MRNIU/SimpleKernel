@@ -1,7 +1,6 @@
 # Copyright The SimpleKernel Contributors
 
-# 设置项目名与版本
-PROJECT (system-test VERSION 0.0.1)
+PROJECT (integration-test)
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 

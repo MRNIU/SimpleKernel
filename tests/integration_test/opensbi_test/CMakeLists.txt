@@ -1,7 +1,7 @@
 # Copyright The SimpleKernel Contributors
 
 # 设置项目名与版本
-PROJECT (opensbi-test VERSION 0.0.1)
+PROJECT (opensbi-test)
 
 ENABLE_LANGUAGE (ASM)
 ENABLE_LANGUAGE (CXX)

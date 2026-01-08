@@ -1,7 +1,6 @@
 # Copyright The SimpleKernel Contributors
 
-# 设置项目名与版本
-PROJECT (doc VERSION 0.0.1)
+PROJECT (doc)
 
 # 设置 doxygen 相关参数
 SET (DOXYGEN_HAVE_DOT YES)

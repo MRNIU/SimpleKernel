@@ -1,7 +1,7 @@
 # Copyright The SimpleKernel Contributors
 
 # 设置项目名与版本
-PROJECT (integration-test VERSION 0.0.1)
+PROJECT (integration-test)
 
 ADD_EXECUTABLE (integration_test example.cpp)
 
