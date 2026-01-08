@@ -36,16 +36,16 @@ auto test_recursive_lock() -> bool {
   sk_printf("Running test_recursive_lock...\n");
   TestSpinLock lock("recursive");
   EXPECT_TRUE(lock.lock(), "Lock failed in recursive test");
-  // lock() returns false if already locked by current core
+  // lock() 如果已经被当前核心锁定则返回 false
   if (lock.lock()) {
     sk_printf("FAIL: Recursive lock should return false\n");
-    lock.unlock();  // try to recover
+    lock.unlock();  // 尝试恢复
     lock.unlock();
     return false;
   }
 
   EXPECT_TRUE(lock.unlock(), "Unlock failed in recursive test");
-  // Unlock again should fail
+  // 再次解锁应该失败
   if (lock.unlock()) {
     sk_printf("FAIL: Double unlock should return false\n");
     return false;
@@ -96,7 +96,6 @@ auto spinlock_smp_test() -> bool {
   return true;
 }
 
-// BUFFER Test
 constexpr int BUFFER_SIZE = 8192;
 int shared_buffer[BUFFER_SIZE];
 int buffer_index = 0;
@@ -140,12 +139,11 @@ auto spinlock_smp_buffer_test() -> bool {
   return true;
 }
 
-// STRING Test
 constexpr int STR_BUFFER_SIZE = 512 * 1024;
-// Use a larger buffer to hold all strings
+// 使用更大的缓冲区以容纳所有字符串
 char shared_str_buffer[STR_BUFFER_SIZE];
 int str_buffer_offset = 0;
-// A separate lock for this test
+// 单独的锁用于此测试
 SpinLock str_lock("str_lock");
 std::atomic<int> str_test_finished_cores = 0;
 std::atomic<int> str_test_start_barrier = 0;
@@ -154,7 +152,7 @@ auto spinlock_smp_string_test() -> bool {
   size_t core_id = cpu_io::GetCurrentCoreId();
   size_t core_count = Singleton<BasicInfo>::GetInstance().core_count;
 
-  // Requirement 1: Ensure more than one core
+  // 需求 1: 确保核心数大于 1
   if (core_count < 2) {
     if (core_id == 0) {
       sk_printf("Skipping SMP string test: need more than 1 core.\n");
@@ -162,9 +160,8 @@ auto spinlock_smp_string_test() -> bool {
     return true;
   }
 
-  // Barrier: Wait for all cores to arrive here
-  // This ensures they start writing roughly at the same time to cause
-  // contention.
+  // Barrier: 等待所有核心到达此处
+  // 确保它们大致同时开始写入以引起竞争
   str_test_start_barrier.fetch_add(1);
   while (str_test_start_barrier.load() < (int)core_count) {
     ;
@@ -174,16 +171,14 @@ auto spinlock_smp_string_test() -> bool {
   char local_buf[128];
 
   for (int i = 0; i < writes_per_core; ++i) {
-    // 2. Write distinguishable string to local buffer first
-    // Increase data length to increase critical section duration
+    // 2. 先写入可区分的字符串到本地缓冲区
+    // 增加数据长度以增加临界区持续时间
     int len = sk_snprintf(local_buf, sizeof(local_buf),
                           "[C:%d-%d|LongStringPaddingForContention]",
                           (int)core_id, i);
 
-    // Critical Section
     str_lock.lock();
     if (str_buffer_offset + len < STR_BUFFER_SIZE - 1) {
-      // Copy char by char
       for (int k = 0; k < len; ++k) {
         shared_str_buffer[str_buffer_offset + k] = local_buf[k];
       }
@@ -195,7 +190,7 @@ auto spinlock_smp_string_test() -> bool {
 
   int finished = str_test_finished_cores.fetch_add(1) + 1;
   if (finished == (int)core_count) {
-    // 3. Verify
+    // 3. 验证
     sk_printf(
         "All cores finished string writes. Verifying string integrity...\n");
     bool failed = false;
@@ -210,7 +205,7 @@ auto spinlock_smp_string_test() -> bool {
         break;
       }
 
-      // Should find matching ']'
+      // 应该找到匹配的 ']'
       int end_idx = current_idx + 1;
       bool closed = false;
       while (end_idx < str_buffer_offset) {
@@ -219,7 +214,7 @@ auto spinlock_smp_string_test() -> bool {
           break;
         }
         if (shared_str_buffer[end_idx] == '[') {
-          // Encountered another start before end -> corruption/interleaving
+          // 在结束前遇到另一个开始 -> 数据损坏/交错
           break;
         }
         end_idx++;
@@ -231,7 +226,7 @@ auto spinlock_smp_string_test() -> bool {
         break;
       }
 
-      // Verify content format slightly C:ID-Seq
+      // 验证内容格式 C:ID-Seq
       if (shared_str_buffer[current_idx + 1] != 'C' ||
           shared_str_buffer[current_idx + 2] != ':') {
         failed = true;
@@ -239,9 +234,9 @@ auto spinlock_smp_string_test() -> bool {
         break;
       }
 
-      // Verify padding integrity
+      // 验证填充完整性
       const char *padding = "|LongStringPaddingForContention";
-      int padding_len = 31;  // Length of "|LongStringPaddingForContention"
+      int padding_len = 31;  // "|LongStringPaddingForContention" 的长度
       int token_content_len = end_idx - current_idx - 1;
       bool padding_ok = true;
 
@@ -269,8 +264,7 @@ auto spinlock_smp_string_test() -> bool {
     }
 
     int expected_tokens = writes_per_core * core_count;
-    // It is possible buffer runs out if too small, but reasonably we should
-    // match If buffer is large enough we expect exact match.
+    // 如果缓冲区太小可能会耗尽，但通常我们应该期望完全匹配。
 
     if (tokens_found != expected_tokens) {
       failed = true;
@@ -293,7 +287,7 @@ auto spinlock_test() -> bool {
   bool ret = true;
   size_t core_id = cpu_io::GetCurrentCoreId();
 
-  // Unit tests run only on core 0 to avoid messy logs
+  // 单元测试仅在核心 0 上运行，以避免日志混乱
   if (core_id == 0) {
     sk_printf("Starting spinlock_test\n");
     ret = ret && test_basic_lock();
@@ -301,9 +295,8 @@ auto spinlock_test() -> bool {
     ret = ret && test_lock_guard();
   }
 
-  // SMP (Multi-core) tests run on all cores
-  // Use sequential execution to ensure barriers don't deadlock if a previous
-  // test fails
+  // SMP (多核) 测试在所有核心上运行
+  // 使用顺序执行以确保如果前一个测试失败，屏障不会死锁
   if (!spinlock_smp_test()) ret = false;
   if (!spinlock_smp_buffer_test()) ret = false;
   if (!spinlock_smp_string_test()) ret = false;
