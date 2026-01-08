@@ -5,7 +5,7 @@ PROJECT (system_test)
 ENABLE_LANGUAGE (CXX)
 ENABLE_LANGUAGE (ASM)
 
-ADD_EXECUTABLE (${PROJECT_NAME} main.cpp ctor_dtor_test.cpp)
+ADD_EXECUTABLE (${PROJECT_NAME} main.cpp ctor_dtor_test.cpp spinlock_test.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src

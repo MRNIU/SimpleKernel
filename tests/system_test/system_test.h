@@ -28,5 +28,6 @@
   }
 
 auto ctor_dtor_test() -> bool;
+auto spinlock_test() -> bool;
 
 #endif /* SIMPLEKERNEL_TESTS_SYSTEM_TEST_SYSTEM_TEST_H_ */
