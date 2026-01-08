@@ -7,11 +7,7 @@
 #include <cstddef>
 #include <cstring>
 
-extern "C" {
-void* malloc(size_t size);
-void* aligned_alloc(size_t alignment, size_t size);
-void free(void* ptr);
-}
+#include "sk_stdlib.h"
 
 void* operator new(size_t size) {
   if (size == 0) {
