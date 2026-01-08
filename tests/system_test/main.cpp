@@ -34,6 +34,7 @@ void run_tests() {
       klog::Err("----%s failed----\n", test.name);
     }
   }
+  klog::Info("All tests done.\n");
 }
 
 /// 非启动核入口

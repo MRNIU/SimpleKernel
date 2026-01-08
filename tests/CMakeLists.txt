@@ -1,7 +1,5 @@
 # Copyright The SimpleKernel Contributors
 
-PROJECT (tests)
-
 ADD_SUBDIRECTORY (${CMAKE_CURRENT_SOURCE_DIR}/system_test)
 ADD_SUBDIRECTORY (${CMAKE_CURRENT_SOURCE_DIR}/integration_test)
 

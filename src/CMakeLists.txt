@@ -1,6 +1,6 @@
 # Copyright The SimpleKernel Contributors
 
-PROJECT (kernel)
+PROJECT (SimpleKernel)
 
 ENABLE_LANGUAGE (ASM)
 ENABLE_LANGUAGE (C)
@@ -24,19 +24,21 @@ SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES OUTPUT_NAME
                                                   ${KERNEL_ELF_OUTPUT_NAME})
 
 # qemu 参数设置
-LIST (APPEND QEMU_BOOT_FLAGS "-D;${CMAKE_BINARY_DIR}/bin/qemu.log")
+LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS
+      "-D;${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}_qemu.log")
 # 目标平台参数
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    LIST (APPEND QEMU_BOOT_FLAGS -drive
+    LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS -drive
           file=fat:rw:${CMAKE_BINARY_DIR}/bin,format=raw,media=disk -bios
           ${u-boot_BINARY_DIR}/u-boot.rom)
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
-    LIST (APPEND QEMU_BOOT_FLAGS -bios ${u-boot_BINARY_DIR}/spl/u-boot-spl.bin
-          -device loader,file=${u-boot_BINARY_DIR}/u-boot.itb,addr=0x80200000)
+    LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS -bios
+          ${u-boot_BINARY_DIR}/spl/u-boot-spl.bin -device
+          loader,file=${u-boot_BINARY_DIR}/u-boot.itb,addr=0x80200000)
 ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     LIST (
         APPEND
-        QEMU_BOOT_FLAGS
+        ${PROJECT_NAME}_QEMU_BOOT_FLAGS
         -drive
         file=fat:rw:${CMAKE_BINARY_DIR}/bin,format=raw,media=disk
         -serial
@@ -46,7 +48,7 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         -bios
         ${arm-trusted-firmware_BINARY_DIR}/flash.bin
         -kernel
-        $<TARGET_FILE:kernel>)
+        $<TARGET_FILE:${PROJECT_NAME}>)
 ENDIF()
 
 # 添加 run 和 debug target
@@ -59,4 +61,4 @@ ADD_RUN_TARGET (
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:optee_os>
     $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:arm-trusted-firmware>
     QEMU_BOOT_FLAGS
-    ${QEMU_BOOT_FLAGS})
+    ${${PROJECT_NAME}_QEMU_BOOT_FLAGS})
