@@ -106,7 +106,8 @@ void InterruptInit(int, const char**) {
               exception_code, addr);
     klog::Err("sepc: 0x%lx\n", trap_context->sepc);
     DumpStack();
-    while (1);
+    while (1)
+      ;
     return 0;
   };
 
