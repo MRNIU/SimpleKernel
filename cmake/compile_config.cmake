@@ -49,8 +49,6 @@ TARGET_COMPILE_OPTIONS (
               -fPIE
               # 禁用运行时类型支持
               $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
-              # 允许 new 返回 null
-              $<$<COMPILE_LANGUAGE:CXX>:-fcheck-new>
               # 启用 free-standing 环境，该选项隐含了 -fno-builtin
               -ffreestanding
               # 保留帧指针，便于调试和栈回溯
