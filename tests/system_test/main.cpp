@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 用于测试 c++ 初始化和异常支持
  */
 
 #include <cpu_io.h>

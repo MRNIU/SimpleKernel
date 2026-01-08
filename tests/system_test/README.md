@@ -1,4 +1,4 @@
-# cxx_init_test
+# system_test
 
 c++ 构造函数测试
 
