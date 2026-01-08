@@ -23,7 +23,7 @@ TEST(KernelElfTest, ConstructorWithElfAddrTest) {
 }
 
 TEST(KernelElfTest, ConstructorWithElfAddrAndElfSizeTest) {
-  KernelElf kerlen_elf((uint64_t)kernel_elf_data, kernel_elf_data_len);
+  KernelElf kerlen_elf((uint64_t)kernel_elf_data);
   EXPECT_EQ((uint64_t)kerlen_elf.strtab_,
             (uint64_t)((uint64_t)&kernel_elf_data + 0x38d08));
   EXPECT_EQ(kerlen_elf.symtab_.size(), 341);
