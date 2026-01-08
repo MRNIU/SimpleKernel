@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief string test
  */
 
 #include <gtest/gtest.h>
