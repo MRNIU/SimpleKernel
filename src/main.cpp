@@ -23,8 +23,9 @@ void thread_func_a(void* arg) {
   while (1) {
     klog::Info("Thread A: running, arg=%d\n", (uint64_t)arg);
     // 模拟耗时操作
-    for (volatile int i = 0; i < 1000000; i++)
+    for (volatile int i = 0; i < 1000000; i++) {
       ;
+    }
     sys_yield();
   }
 }
@@ -33,8 +34,9 @@ void thread_func_b(void* arg) {
   while (1) {
     klog::Info("Thread B: running, arg=%d\n", (uint64_t)arg);
     // 模拟耗时操作
-    for (volatile int i = 0; i < 1000000; i++)
+    for (volatile int i = 0; i < 1000000; i++) {
       ;
+    }
     sys_yield();
   }
 }
@@ -87,8 +89,7 @@ void user_thread_test() {
       [](uint64_t cause, uint8_t* context) -> uint64_t {
         klog::Info("System call detected from User Mode!\n");
         auto* trap_context = reinterpret_cast<cpu_io::TrapContext*>(context);
-        // 跳过 ecall 指令 (4字节)
-        trap_context->sepc += 4;
+        sys_yield();
         return 0;
       });
 

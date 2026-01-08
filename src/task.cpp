@@ -77,8 +77,8 @@ void TaskControlBlock::InitUserThread(void* entry, void* arg, void* user_sp) {
   // 2. 初始化 TrapContext (用户上下文)
   *trap_context_ptr = cpu_io::TrapContext();
 
-  // sstatus: SPP=0 (User), SPIE=1 (Enable Interrupts)
-  trap_context_ptr->sstatus = 0x00000020;
+  // sstatus: SPP=0 (User), SPIE=1 (Enable Interrupts), FS=1 (Initial)
+  trap_context_ptr->sstatus = 0x00002020;
   trap_context_ptr->sepc = reinterpret_cast<uint64_t>(entry);
   trap_context_ptr->sp = reinterpret_cast<uint64_t>(user_sp);
   trap_context_ptr->a0 = reinterpret_cast<uint64_t>(arg);
