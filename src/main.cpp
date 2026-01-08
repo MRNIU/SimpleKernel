@@ -49,11 +49,6 @@ auto main(int argc, const char** argv) -> int {
   // 唤醒其余 core
   WakeUpOtherCores();
 
-  // klog::Debug("Hello SimpleKernel\n");
-  // klog::Info("Hello SimpleKernel\n");
-  // klog::Warn("Hello SimpleKernel\n");
-  // klog::Err("Hello SimpleKernel\n");
-
   DumpStack();
 
   klog::info << "Hello SimpleKernel\n";
