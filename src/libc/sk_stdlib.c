@@ -2,7 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "sk_libc.h"
+#include "sk_stdlib.h"
 
 #include <limits.h>
 #include <stdbool.h>

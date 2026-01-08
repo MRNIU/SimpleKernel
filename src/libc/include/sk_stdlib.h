@@ -2,12 +2,18 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_LIBC_H_
-#define SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_LIBC_H_
+#ifndef SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_
+#define SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_
+
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void* malloc(size_t size);
+void free(void* ptr);
+void* aligned_alloc(size_t alignment, size_t size);
 
 /**
  * @brief 将字符串转换为双精度浮点数
@@ -101,4 +107,4 @@ unsigned long long int strtoull(const char* nptr, char** endptr, int base);
 }
 #endif
 
-#endif /* SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_LIBC_H_ */
+#endif /* SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_ */

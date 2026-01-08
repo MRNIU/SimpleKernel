@@ -12,7 +12,7 @@
 #include "kernel_log.hpp"
 #include "per_cpu.hpp"
 #include "sk_cstdio"
-#include "sk_libc.h"
+#include "sk_stdlib.h"
 
 BasicInfo::BasicInfo(int, const char** argv) {
   auto [memory_base, memory_size] =
