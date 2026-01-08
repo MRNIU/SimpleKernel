@@ -17,7 +17,7 @@
 #define strtoul sk_strtoul
 #define strtoull sk_strtoull
 
-#include "../../src/libc/sk_libc.c"
+#include "../../src/libc/sk_stdlib.c"
 
 TEST(SkLibcTest, Atoi) {
   EXPECT_EQ(sk_atoi("123"), 123);
