@@ -21,8 +21,9 @@ struct test_case {
   bool (*func)(void);
 };
 
-std::array<test_case, 1> test_cases = {
+std::array<test_case, 2> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test},
+    test_case{"memory_test", memory_test},
 };
 
 void run_tests() {
@@ -40,6 +41,7 @@ void run_tests() {
 /// 非启动核入口
 auto main_smp(int argc, const char** argv) -> int {
   ArchInitSMP(argc, argv);
+  MemoryInitSMP();
   klog::Info("Hello SimpleKernel SMP\n");
 
   run_tests();
@@ -67,6 +69,9 @@ void _start(int argc, const char** argv) {
 auto main(int argc, const char** argv) -> int {
   // 架构相关初始化
   ArchInit(argc, argv);
+
+  // 内存相关初始化
+  MemoryInit();
 
   // 唤醒其余 core
   WakeUpOtherCores();
