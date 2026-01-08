@@ -5,6 +5,7 @@
 
 #include <cpu_io.h>
 
+#include "arch.h"
 #include "basic_info.hpp"
 #include "interrupt.h"
 #include "kernel_fdt.hpp"
@@ -94,6 +95,31 @@ void InterruptInit(int, const char**) {
         return 0;
       });
 
+  // 注册缺页中断处理
+  auto page_fault_handler = [](uint64_t exception_code,
+                               uint8_t* context) -> uint64_t {
+    auto addr = cpu_io::Stval::Read();
+    auto* trap_context = reinterpret_cast<cpu_io::TrapContext*>(context);
+    klog::Err("PageFault: %s(0x%lx), addr: 0x%lx\n",
+              cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
+                  [exception_code],
+              exception_code, addr);
+    klog::Err("sepc: 0x%lx\n", trap_context->sepc);
+    DumpStack();
+    while (1);
+    return 0;
+  };
+
+  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+      cpu_io::detail::register_info::csr::ScauseInfo::kInstructionPageFault,
+      page_fault_handler);
+  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+      cpu_io::detail::register_info::csr::ScauseInfo::kLoadPageFault,
+      page_fault_handler);
+  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+      cpu_io::detail::register_info::csr::ScauseInfo::kStoreAmoPageFault,
+      page_fault_handler);
+
   // 初始化 plic
   auto [plic_addr, plic_size, ndev, context_count] =
       Singleton<KernelFdt>::GetInstance().GetPlic();
@@ -130,6 +156,10 @@ void InterruptInit(int, const char**) {
 
   // 触发一次 ebreak 以测试中断处理
   __asm__ volatile("ebreak");
+
+  // 触发一次 PageFault 以测试中断处理
+  // klog::Info("Triggering Page Fault...\n");
+  // *(volatile int*)0 = 0;
 
   klog::Info("Hello InterruptInit\n");
 }
