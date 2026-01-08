@@ -12,8 +12,8 @@
 #include "kernel.h"
 #include "sk_cstdio"
 #include "sk_cstring"
-#include "sk_libc.h"
 #include "sk_libcxx.h"
+#include "sk_stdlib.h"
 #include "system_test.h"
 
 extern "C" {
@@ -28,10 +28,7 @@ auto memory_test() -> bool {
   // Test 1: malloc & free
   size_t size = 1024;
   void *ptr = malloc(size);
-  if (ptr == nullptr) {
-    sk_printf("memory_test: malloc failed\n");
-    return false;
-  }
+  EXPECT_TRUE(ptr != nullptr, "memory_test: malloc failed");
 
   // Write and read verification
   auto *byte_ptr = static_cast<uint8_t *>(ptr);
@@ -40,11 +37,8 @@ auto memory_test() -> bool {
   }
 
   for (size_t i = 0; i < size; ++i) {
-    if (byte_ptr[i] != static_cast<uint8_t>(i & 0xFF)) {
-      sk_printf("memory_test: verify failed at %lu\n", i);
-      free(ptr);
-      return false;
-    }
+    EXPECT_EQ(byte_ptr[i], static_cast<uint8_t>(i & 0xFF),
+              "memory_test: verify failed");
   }
 
   free(ptr);
@@ -54,16 +48,10 @@ auto memory_test() -> bool {
   size_t alignment = 256;
   size_t aligned_size = 512;
   void *aligned_ptr = aligned_alloc(alignment, aligned_size);
-  if (aligned_ptr == nullptr) {
-    sk_printf("memory_test: aligned_alloc failed\n");
-    return false;
-  }
+  EXPECT_TRUE(aligned_ptr != nullptr, "memory_test: aligned_alloc failed");
 
-  if ((reinterpret_cast<uintptr_t>(aligned_ptr) & (alignment - 1)) != 0) {
-    sk_printf("memory_test: aligned_alloc alignment failed: %p\n", aligned_ptr);
-    free(aligned_ptr);
-    return false;
-  }
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(aligned_ptr) & (alignment - 1), 0,
+            "memory_test: aligned_alloc alignment failed");
 
   free(aligned_ptr);
   sk_printf("memory_test: aligned_alloc passed\n");
@@ -71,36 +59,18 @@ auto memory_test() -> bool {
   // Test 3: Multiple small allocations
   const int count = 10;
   void *ptrs[count];
-  bool alloc_failed = false;
+
   for (int i = 0; i < count; ++i) {
     ptrs[i] = malloc(128);
-    if (ptrs[i] == nullptr) {
-      sk_printf("memory_test: multi alloc failed at %d\n", i);
-      alloc_failed = true;
-      // Free previous
-      for (int j = 0; j < i; ++j) {
-        free(ptrs[j]);
-      }
-      break;
-    }
+    EXPECT_TRUE(ptrs[i] != nullptr, "memory_test: multi alloc failed");
     // Fill
     sk_std::memset(ptrs[i], i, 128);
-  }
-  if (alloc_failed) {
-    return false;
   }
 
   for (int i = 0; i < count; ++i) {
     auto *p = static_cast<uint8_t *>(ptrs[i]);
     for (int j = 0; j < 128; ++j) {
-      if (p[j] != i) {
-        sk_printf("memory_test: multi alloc verify failed at %d\n", i);
-        // Cleanup
-        for (int k = 0; k < count; ++k) {
-          free(ptrs[k]);
-        }
-        return false;
-      }
+      EXPECT_EQ(p[j], i, "memory_test: multi alloc verify failed");
     }
     free(ptrs[i]);
   }
