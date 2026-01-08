@@ -61,9 +61,10 @@ int memcmp(const void *str1, const void *str2, size_t n) {
 // 在内存块中查找字符
 void *memchr(const void *str, int c, size_t n) {
   const unsigned char *src = (const unsigned char *)str;
+  unsigned char uc = (unsigned char)c;
 
   while (n-- > 0) {
-    if (*src == c) {
+    if (*src == uc) {
       return (void *)src;
     }
     src++;
@@ -99,17 +100,18 @@ char *strcat(char *dest, const char *src) {
     while (*src) {
       *add_d++ = *src++;
     }
+    *add_d = '\0';
   }
   return dest;
 }
 
 // 比较字符串
 int strcmp(const char *s1, const char *s2) {
-  while (*s2 && *s1 && (*s2 == *s1)) {
-    s2++;
+  while (*s1 && (*s1 == *s2)) {
     s1++;
+    s2++;
   }
-  return *s2 - *s1;
+  return *(const unsigned char *)s1 - *(const unsigned char *)s2;
 }
 
 // 比较指定长度的字符串
@@ -148,8 +150,9 @@ size_t strnlen(const char *s, size_t n) {
 
 // 查找字符在字符串中的首次出现
 char *strchr(const char *s, int c) {
+  char ch = (char)c;
   do {
-    if (*s == c) {
+    if (*s == ch) {
       return (char *)s;
     }
   } while (*s++);
@@ -158,9 +161,10 @@ char *strchr(const char *s, int c) {
 
 char *strrchr(const char *s, int c) {
   char *rtnval = 0;
+  char ch = (char)c;
 
   do {
-    if (*s == c) {
+    if (*s == ch) {
       rtnval = (char *)s;
     }
   } while (*s++);

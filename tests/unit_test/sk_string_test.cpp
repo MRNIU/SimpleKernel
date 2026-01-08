@@ -43,8 +43,8 @@ TEST(SkStringTest, Memmove) {
   char str[] = "memory move test";
   // Overlap: dest > src
   sk_memmove(str + 7, str, 6);  // "memory " -> "memory " at pos 7
-  // "memory memory test"
-  EXPECT_STREQ(str, "memory memory test");
+  // "memory memoryest"
+  EXPECT_STREQ(str, "memory memoryest");
 
   char str2[] = "memory move test";
   // Overlap: dest < src
