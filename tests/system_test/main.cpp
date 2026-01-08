@@ -13,15 +13,15 @@
 
 #ifdef __x86_64__
 static auto serial = cpu_io::Serial(cpu_io::kCom1);
-extern "C" void sk_putchar(int character, void *) { serial.Write(character); }
+extern "C" void sk_putchar(int character, void*) { serial.Write(character); }
 #elif __riscv
 #include <opensbi_interface.h>
-extern "C" void sk_putchar(int character, void *) {
+extern "C" void sk_putchar(int character, void*) {
   sbi_debug_console_write_byte(character);
 }
 #elif __aarch64__
-extern "C" void sk_putchar(int character, void *) {
-  static uint8_t *kUartAddr = (uint8_t *)0x09000000;
+extern "C" void sk_putchar(int character, void*) {
+  static uint8_t* kUartAddr = (uint8_t*)0x09000000;
   *kUartAddr = character;
 }
 #endif
@@ -29,11 +29,11 @@ extern "C" void sk_putchar(int character, void *) {
 template <uint32_t V>
 class TestStaticConstructDestruct {
  public:
-  explicit TestStaticConstructDestruct(unsigned int &v) : _v(v) { _v |= V; }
+  explicit TestStaticConstructDestruct(unsigned int& v) : _v(v) { _v |= V; }
   ~TestStaticConstructDestruct() { _v &= ~V; }
 
  private:
-  unsigned int &_v;
+  unsigned int& _v;
 };
 
 static int global_value_with_init = 42;
@@ -71,7 +71,7 @@ class InsClass : public AbsClass {
   void Func() override { val = 'C'; }
 };
 
-auto main(uint32_t, uint8_t *) -> uint32_t {
+auto main(uint32_t, uint8_t*) -> uint32_t {
 #ifdef __aarch64__
   cpu_io::SetupFpu();
 #endif
@@ -110,7 +110,7 @@ auto main(uint32_t, uint8_t *) -> uint32_t {
   return 0;
 }
 
-extern "C" void _start(uint32_t argc, uint8_t *argv) {
+extern "C" void _start(uint32_t argc, uint8_t* argv) {
   CppInit();
   main(argc, argv);
   CppDeInit();

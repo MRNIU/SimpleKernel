@@ -41,6 +41,8 @@ ENDIF()
 
 # 添加 run 和 debug target
 ADD_RUN_TARGET (
+    NAME
+    ${PROJECT_NAME}_
     TARGET
     ${PROJECT_NAME}
     DEPENDS
