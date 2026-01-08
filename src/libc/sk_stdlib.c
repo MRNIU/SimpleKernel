@@ -159,6 +159,8 @@ long int atol(const char *nptr) { return strtol(nptr, NULL, 10); }
 
 long long int atoll(const char *nptr) { return strtoll(nptr, NULL, 10); }
 
+#if (defined(__x86_64__) && defined(__SSE__)) || \
+    (defined(__aarch64__) && defined(__ARM_FP)) || defined(__riscv)
 double strtod(const char *nptr, char **endptr) {
   const char *s = nptr;
   double acc = 0.0;
@@ -232,6 +234,7 @@ float strtof(const char *nptr, char **endptr) {
 }
 
 double atof(const char *nptr) { return strtod(nptr, NULL); }
+#endif
 
 #ifdef __cplusplus
 }
