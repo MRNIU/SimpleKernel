@@ -15,7 +15,8 @@ TARGET_COMPILE_DEFINITIONS (${PROJECT_NAME} PRIVATE -Dsk_printf=printf
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
     PRIVATE ./ ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/include
-            ${CMAKE_SOURCE_DIR}/src/arch ${CMAKE_SOURCE_DIR}/src/libc/include)
+            ${CMAKE_SOURCE_DIR}/src/arch ${CMAKE_SOURCE_DIR}/src/libc/include
+            ${CMAKE_SOURCE_DIR}/src/libcxx/include)
 
 TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 
