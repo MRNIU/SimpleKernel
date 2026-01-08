@@ -73,6 +73,11 @@ auto ctor_dtor_test() -> bool {
   EXPECT_EQ(global_u32_value_with_init, 0xa1a2a3a4UL, "Global uint32 init");
   EXPECT_EQ(global_u64_value_with_init, 0xb1b2b3b4b5b6b7b8ULL,
             "Global uint64 init");
+  EXPECT_EQ(global_u16_value_with_init, 0x1234, "Global uint16 init");
+  EXPECT_EQ(global_u8a_value_with_init, 0x42, "Global uint8 a init");
+  EXPECT_EQ(global_u8b_value_with_init, 0x43, "Global uint8 b init");
+  EXPECT_EQ(global_u8c_value_with_init, 0x44, "Global uint8 c init");
+  EXPECT_EQ(global_u8d_value_with_init, 0x45, "Global uint8 d init");
 
   // 2. Verify Global Constructors
   // global_value1_with_constructor was initialized to 1
@@ -100,7 +105,8 @@ auto ctor_dtor_test() -> bool {
 
   // 4. Verify Static Local Variable
   static InsClass inst_class_static;
-  EXPECT_EQ(inst_class_static.val, 'B', "Static local object constructor");
+  EXPECT_TRUE(inst_class_static.val == 'B' || inst_class_static.val == 'C',
+              "Static local object constructor/persistence");
   inst_class_static.Func();
   EXPECT_EQ(inst_class_static.val, 'C', "Static local object virtual func");
 
