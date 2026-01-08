@@ -16,10 +16,24 @@
 
 namespace {
 
-void tests() {
-  klog::Info("----ctor_dtor_test----\n");
-  ctor_dtor_test();
-  klog::Info("----ctor_dtor_test finished----\n");
+struct test_case {
+  const char* name;
+  bool (*func)(void);
+};
+
+std::array<test_case, 1> test_cases = {
+    test_case{"ctor_dtor_test", ctor_dtor_test},
+};
+
+void run_tests() {
+  for (auto test : test_cases) {
+    klog::Info("----%s----\n", test.name);
+    if (test.func()) {
+      klog::Info("----%s passed----\n", test.name);
+    } else {
+      klog::Err("----%s failed----\n", test.name);
+    }
+  }
 }
 
 /// 非启动核入口
@@ -27,7 +41,7 @@ auto main_smp(int argc, const char** argv) -> int {
   ArchInitSMP(argc, argv);
   klog::Info("Hello SimpleKernel SMP\n");
 
-  tests();
+  run_tests();
 
   return 0;
 }
@@ -60,7 +74,7 @@ auto main(int argc, const char** argv) -> int {
 
   klog::info << "Hello SimpleKernel\n";
 
-  tests();
+  run_tests();
 
   return 0;
 }
