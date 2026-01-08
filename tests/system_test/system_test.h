@@ -29,5 +29,6 @@
 
 auto ctor_dtor_test() -> bool;
 auto memory_test() -> bool;
+auto sk_list_test() -> bool;
 
 #endif /* SIMPLEKERNEL_TESTS_SYSTEM_TEST_SYSTEM_TEST_H_ */
