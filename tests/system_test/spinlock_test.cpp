@@ -272,6 +272,12 @@ auto spinlock_smp_string_test() -> bool {
     // It is possible buffer runs out if too small, but reasonably we should
     // match If buffer is large enough we expect exact match.
 
+    if (tokens_found != expected_tokens) {
+      failed = true;
+      sk_printf("FAIL: Expected %d tokens, found %d\n", expected_tokens,
+                tokens_found);
+    }
+
     if (!failed) {
       sk_printf("String test passed. Length: %d, Tokens: %d\n",
                 str_buffer_offset, tokens_found);
