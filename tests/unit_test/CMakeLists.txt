@@ -15,8 +15,9 @@ ADD_EXECUTABLE (
     spinlock_test.cpp
     sk_list_test.cpp)
 
-TARGET_COMPILE_DEFINITIONS (${PROJECT_NAME} PRIVATE -Dsk_printf=printf
-                                                    -DUNIT_TEST)
+TARGET_COMPILE_DEFINITIONS (
+    ${PROJECT_NAME} PRIVATE -Dsk_printf=printf -DUNIT_TEST
+                            -DSIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_NEW_)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
