@@ -1,40 +1,27 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 用于测试 c++ 初始化和异常支持
  */
 
 #include <cpu_io.h>
 
 #include <cstdint>
 
+#include "arch.h"
 #include "basic_info.hpp"
+#include "kernel.h"
 #include "sk_cstdio"
 #include "sk_cstring"
 #include "sk_libcxx.h"
-
-#ifdef __x86_64__
-static auto serial = cpu_io::Serial(cpu_io::kCom1);
-extern "C" void sk_putchar(int character, void *) { serial.Write(character); }
-#elif __riscv
-#include <opensbi_interface.h>
-extern "C" void sk_putchar(int character, void *) {
-  sbi_debug_console_write_byte(character);
-}
-#elif __aarch64__
-extern "C" void sk_putchar(int character, void *) {
-  static uint8_t *kUartAddr = (uint8_t *)0x09000000;
-  *kUartAddr = character;
-}
-#endif
+#include "system_test.h"
 
 template <uint32_t V>
 class TestStaticConstructDestruct {
  public:
-  explicit TestStaticConstructDestruct(unsigned int &v) : _v(v) { _v |= V; }
+  explicit TestStaticConstructDestruct(unsigned int& v) : _v(v) { _v |= V; }
   ~TestStaticConstructDestruct() { _v &= ~V; }
 
  private:
-  unsigned int &_v;
+  unsigned int& _v;
 };
 
 static int global_value_with_init = 42;
@@ -72,7 +59,7 @@ class InsClass : public AbsClass {
   void Func() override { val = 'C'; }
 };
 
-auto main(uint32_t, uint8_t *) -> uint32_t {
+auto ctor_dtor_test() -> bool {
 #ifdef __aarch64__
   cpu_io::SetupFpu();
 #endif
@@ -106,18 +93,5 @@ auto main(uint32_t, uint8_t *) -> uint32_t {
 
   sk_printf("Hello Test\n");
 
-  throw;
-
-  return 0;
-}
-
-extern "C" void _start(uint32_t argc, uint8_t *argv) {
-  CppInit();
-  main(argc, argv);
-  CppDeInit();
-
-  // 进入死循环
-  while (true) {
-    ;
-  }
+  return true;
 }
