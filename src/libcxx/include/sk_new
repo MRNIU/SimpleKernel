@@ -27,18 +27,4 @@ void operator delete(void*, size_t, size_t);
 
 void operator delete[](void*, size_t, size_t);
 
-// Default placement versions of operator new.
-[[nodiscard]] __always_inline void* operator new(std::size_t,
-                                                 void* p) noexcept {
-  return p;
-}
-[[nodiscard]] __always_inline void* operator new[](std::size_t,
-                                                   void* p) noexcept {
-  return p;
-}
-
-// Default placement versions of operator delete.
-__always_inline void operator delete(void*, void*) noexcept {}
-__always_inline void operator delete[](void*, void*) noexcept {}
-
 #endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_NEW_ */
