@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief fdt 解析测试
  */
 
 #include "kernel_fdt.hpp"

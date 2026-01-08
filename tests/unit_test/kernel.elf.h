@@ -1,5 +1,4 @@
 /**
- * @brief 测试用 elf 文件
  * @copyright Copyright The SimpleKernel Contributors
  */
 

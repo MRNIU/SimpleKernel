@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 测试使用的 sk_cstdio
  */
 
 #ifndef SIMPLEKERNEL_TEST_UNIT_TEST_SK_CSTDIO_

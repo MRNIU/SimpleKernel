@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 测试使用的 sk_cstring
  */
 
 #ifndef SIMPLEKERNEL_TEST_UNIT_TEST_SK_CSTRING_
