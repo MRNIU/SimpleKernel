@@ -46,10 +46,12 @@ static TestStaticConstructDestruct<0x100000> constructor_destructor_3{
 static TestStaticConstructDestruct<0x100000> constructor_destructor_4{
     global_value1_with_constructor};
 
+static int g_dtor_count = 0;
+
 class AbsClass {
  public:
   AbsClass() { val = 'B'; }
-  virtual ~AbsClass() { ; }
+  virtual ~AbsClass() { g_dtor_count++; }
   virtual void Func() = 0;
   char val = 'A';
 };
@@ -64,34 +66,45 @@ auto ctor_dtor_test() -> bool {
   cpu_io::SetupFpu();
 #endif
 
-  global_u8c_value_with_init++;
-  global_u32_value_with_init++;
-  global_u64_value_with_init++;
-  global_u8b_value_with_init++;
-  global_u8d_value_with_init++;
-  global_u16_value_with_init++;
-  global_u8a_value_with_init++;
-  global_value_with_init++;
-  global_bool_keep_running = false;
+  sk_printf("Running C++ Runtime Tests...\n");
 
-  sk_putchar('1', nullptr);
-  auto inst_class = InsClass();
-  sk_putchar('2', nullptr);
-  sk_printf("%c\n", inst_class.val);
-  sk_putchar('3', nullptr);
-  inst_class.Func();
-  sk_putchar('4', nullptr);
-  sk_printf("%c\n", inst_class.val);
-  sk_putchar('5', nullptr);
+  // 1. Verify Global Initialization
+  EXPECT_EQ(global_value_with_init, 42, "Global int init");
+  EXPECT_EQ(global_u32_value_with_init, 0xa1a2a3a4UL, "Global uint32 init");
+  EXPECT_EQ(global_u64_value_with_init, 0xb1b2b3b4b5b6b7b8ULL,
+            "Global uint64 init");
 
+  // 2. Verify Global Constructors
+  // global_value1_with_constructor was initialized to 1
+  // constructor_destructor_1 adds 0x200
+  // constructor_destructor_4 adds 0x100000
+  // Expected: 1 | 0x200 | 0x100000 = 0x100201 (1049089)
+  unsigned int expected_v1 = 1 | 0x200 | 0x100000;
+  EXPECT_EQ(global_value1_with_constructor, expected_v1,
+            "Global constructor execution 1");
+
+  unsigned int expected_v2 = 2 | 0x200 | 0x100000;
+  EXPECT_EQ(global_value2_with_constructor, expected_v2,
+            "Global constructor execution 2");
+
+  // 3. Verify Class Member, Virtual Function, and Stack Object Destructor
+  int start_dtor = g_dtor_count;
+  {
+    auto inst_class = InsClass();
+    EXPECT_EQ(inst_class.val, 'B', "Class constructor body");
+    inst_class.Func();
+    EXPECT_EQ(inst_class.val, 'C', "Virtual function dispatch");
+  }
+  EXPECT_EQ(g_dtor_count, start_dtor + 1,
+            "Stack object destructor verification");
+
+  // 4. Verify Static Local Variable
   static InsClass inst_class_static;
-  sk_printf("%c\n", inst_class_static.val);
+  EXPECT_EQ(inst_class_static.val, 'B', "Static local object constructor");
   inst_class_static.Func();
-  sk_printf("%c\n", inst_class_static.val);
+  EXPECT_EQ(inst_class_static.val, 'C', "Static local object virtual func");
 
-  sk_printf("%ld\n", Singleton<BasicInfo>::GetInstance().elf_addr);
-
-  sk_printf("Hello Test\n");
+  sk_printf("PASS: All C++ Runtime Tests passed.\n");
 
   return true;
 }
