@@ -6,10 +6,14 @@ PROJECT (unit-test)
 ENABLE_LANGUAGE (CXX)
 
 ADD_EXECUTABLE (
-    ${PROJECT_NAME} sk_libc_test.cpp sk_ctype_test.cpp sk_string_test.cpp
-                    kernel_elf_test.cpp kernel_fdt_test.cpp spinlock_test.cpp
-    # sk_list_test.cpp
-)
+    ${PROJECT_NAME}
+    sk_libc_test.cpp
+    sk_ctype_test.cpp
+    sk_string_test.cpp
+    kernel_elf_test.cpp
+    kernel_fdt_test.cpp
+    spinlock_test.cpp
+    sk_list_test.cpp)
 
 TARGET_COMPILE_DEFINITIONS (${PROJECT_NAME} PRIVATE -Dsk_printf=printf
                                                     -DUNIT_TEST)
