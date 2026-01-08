@@ -18,9 +18,10 @@
 // 在 trap.S 中定义
 extern "C" void trap_entry();
 
-extern "C" void HandleTrap(cpu_io::TrapContext* context) {
+extern "C" cpu_io::TrapContext* HandleTrap(cpu_io::TrapContext* context) {
   Singleton<Interrupt>::GetInstance().Do(context->scause,
                                          reinterpret_cast<uint8_t*>(context));
+  return context;
 }
 
 namespace {

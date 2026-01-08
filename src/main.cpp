@@ -96,6 +96,8 @@ void user_thread_test() {
   TaskControlBlock* user_task = new TaskControlBlock("UserDemo", 3);
   user_task->InitUserThread(reinterpret_cast<void*>(user_entry_va), nullptr,
                             reinterpret_cast<void*>(user_sp));
+
+  klog::Info("----1111----\n");
   TaskManager::GetInstance().AddTask(user_task);
 
   klog::Info("User thread created. Entry: 0x%lX\n", user_entry_va);
@@ -138,7 +140,7 @@ auto main(int argc, const char** argv) -> int {
   InterruptInit(argc, argv);
 
   // 唤醒其余 core
-  WakeUpOtherCores();
+  // WakeUpOtherCores();
 
   // klog::Debug("Hello SimpleKernel\n");
   // klog::Info("Hello SimpleKernel\n");
