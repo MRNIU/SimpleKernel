@@ -3,9 +3,10 @@
 # 通用宏定义
 ADD_LIBRARY (compile_definitions INTERFACE)
 TARGET_COMPILE_DEFINITIONS (
-    compile_definitions INTERFACE $<$<CONFIG:Release>:SIMPLEKERNEL_RELEASE>
-                                  $<$<CONFIG:Debug>:SIMPLEKERNEL_DEBUG>
-                                  SIMPLEKERNEL_EARLY_CONSOLE=${SIMPLEKERNEL_EARLY_CONSOLE})
+    compile_definitions
+    INTERFACE $<$<CONFIG:Release>:SIMPLEKERNEL_RELEASE>
+              $<$<CONFIG:Debug>:SIMPLEKERNEL_DEBUG>
+              SIMPLEKERNEL_EARLY_CONSOLE=${SIMPLEKERNEL_EARLY_CONSOLE})
 
 # 获取 gcc 的 include 路径
 EXECUTE_PROCESS (
@@ -48,6 +49,8 @@ TARGET_COMPILE_OPTIONS (
               -fPIE
               # 禁用运行时类型支持
               $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+              # 允许 new 返回 null
+              $<$<COMPILE_LANGUAGE:CXX>:-fcheck-new>
               # 启用 free-standing 环境，该选项隐含了 -fno-builtin
               -ffreestanding
               # 保留帧指针，便于调试和栈回溯
