@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include "../../src/libcxx/sk_iostream.cpp"
 #include "kernel.elf.h"
 
 TEST(KernelElfTest, DefaultConstructorTest) {

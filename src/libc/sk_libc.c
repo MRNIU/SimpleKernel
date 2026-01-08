@@ -5,6 +5,7 @@
 #include "sk_libc.h"
 
 #include <limits.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -23,280 +24,214 @@ __attribute__((noreturn)) void __stack_chk_fail() {
     ;
 }
 
-int atoi(const char* nptr) { return (int)strtol(nptr, NULL, 10); }
+// Internal helper for string to number conversion
+// Parses magnitude into unsigned long long.
+// handles base detection, whitespace, signs.
+static unsigned long long strtox_main(const char *nptr, char **endptr, int base,
+                                      int *sign_out, int *overflow) {
+  const char *s = nptr;
+  unsigned long long acc = 0;
+  int c;
+  unsigned long long cutoff;
+  int cutlim;
+  int any = 0;
+  int negative = 0;
 
-long int atol(const char* nptr) { return strtol(nptr, NULL, 10); }
+  *overflow = 0;
 
-long long int atoll(const char* nptr) { return strtoll(nptr, NULL, 10); }
+  // Skip whitespace
+  while (isspace(*s)) s++;
 
-long int strtol(const char* nptr, char** endptr, int base) {
-  unsigned long long int result = strtoull(nptr, endptr, base);
+  // Check sign
+  if (*s == '-') {
+    negative = 1;
+    s++;
+  } else if (*s == '+') {
+    s++;
+  }
+  if (sign_out) *sign_out = negative;
 
-  // Check if result will fit in a long int
-  if (result > LONG_MAX) {
-    return LONG_MAX;
+  // Detect base
+  if ((base == 0 || base == 16) && *s == '0' && (s[1] == 'x' || s[1] == 'X')) {
+    // Hex prefix
+    // We speculatively consume it.
+    if (isxdigit(s[2])) {
+      s += 2;
+      base = 16;
+    } else {
+      // '0x' followed by non-hex.
+      // if base==0, it's octal 0.
+      if (base == 0) base = 8;
+    }
+  }
+  if (base == 0) {
+    base = *s == '0' ? 8 : 10;
   }
 
-  return (long int)result;
-}
-
-long long int strtoll(const char* nptr, char** endptr, int base) {
-  unsigned long long int result = strtoull(nptr, endptr, base);
-
-  // Check if result will fit in a long long int
-  if (result > LLONG_MAX) {
-    return LLONG_MAX;
-  }
-
-  return (long long int)result;
-}
-
-unsigned long int strtoul(const char* nptr, char** endptr, int base) {
-  unsigned long long int result = strtoull(nptr, endptr, base);
-
-  // Check if result will fit in an unsigned long
-  if (result > ULONG_MAX) {
-    return ULONG_MAX;
-  }
-
-  return (unsigned long int)result;
-}
-
-/**
- * @brief Tables for efficient string-to-number conversions
- *
- * These tables store precomputed values to avoid expensive division operations
- * during string-to-number conversions.
- *
- * - __strtol_ul_max_tab[base] = ULONG_MAX / base
- *   The largest value that can be multiplied by base without overflow
- *
- * - __strtol_ul_rem_tab[base] = ULONG_MAX % base
- *   The maximum digit value that can be added after multiplication
- */
-static const unsigned long __strtol_ul_max_tab[37] = {[0] = 0,  // Invalid base
-                                                      [1] = 0,  // Invalid base
-                                                      [2] = ULONG_MAX / 2,
-                                                      [3] = ULONG_MAX / 3,
-                                                      [4] = ULONG_MAX / 4,
-                                                      [5] = ULONG_MAX / 5,
-                                                      [6] = ULONG_MAX / 6,
-                                                      [7] = ULONG_MAX / 7,
-                                                      [8] = ULONG_MAX / 8,
-                                                      [9] = ULONG_MAX / 9,
-                                                      [10] = ULONG_MAX / 10,
-                                                      [11] = ULONG_MAX / 11,
-                                                      [12] = ULONG_MAX / 12,
-                                                      [13] = ULONG_MAX / 13,
-                                                      [14] = ULONG_MAX / 14,
-                                                      [15] = ULONG_MAX / 15,
-                                                      [16] = ULONG_MAX / 16,
-                                                      [17] = ULONG_MAX / 17,
-                                                      [18] = ULONG_MAX / 18,
-                                                      [19] = ULONG_MAX / 19,
-                                                      [20] = ULONG_MAX / 20,
-                                                      [21] = ULONG_MAX / 21,
-                                                      [22] = ULONG_MAX / 22,
-                                                      [23] = ULONG_MAX / 23,
-                                                      [24] = ULONG_MAX / 24,
-                                                      [25] = ULONG_MAX / 25,
-                                                      [26] = ULONG_MAX / 26,
-                                                      [27] = ULONG_MAX / 27,
-                                                      [28] = ULONG_MAX / 28,
-                                                      [29] = ULONG_MAX / 29,
-                                                      [30] = ULONG_MAX / 30,
-                                                      [31] = ULONG_MAX / 31,
-                                                      [32] = ULONG_MAX / 32,
-                                                      [33] = ULONG_MAX / 33,
-                                                      [34] = ULONG_MAX / 34,
-                                                      [35] = ULONG_MAX / 35,
-                                                      [36] = ULONG_MAX / 36};
-
-static const unsigned long __strtol_ul_rem_tab[37] = {[0] = 0,  // Invalid base
-                                                      [1] = 0,  // Invalid base
-                                                      [2] = ULONG_MAX % 2,
-                                                      [3] = ULONG_MAX % 3,
-                                                      [4] = ULONG_MAX % 4,
-                                                      [5] = ULONG_MAX % 5,
-                                                      [6] = ULONG_MAX % 6,
-                                                      [7] = ULONG_MAX % 7,
-                                                      [8] = ULONG_MAX % 8,
-                                                      [9] = ULONG_MAX % 9,
-                                                      [10] = ULONG_MAX % 10,
-                                                      [11] = ULONG_MAX % 11,
-                                                      [12] = ULONG_MAX % 12,
-                                                      [13] = ULONG_MAX % 13,
-                                                      [14] = ULONG_MAX % 14,
-                                                      [15] = ULONG_MAX % 15,
-                                                      [16] = ULONG_MAX % 16,
-                                                      [17] = ULONG_MAX % 17,
-                                                      [18] = ULONG_MAX % 18,
-                                                      [19] = ULONG_MAX % 19,
-                                                      [20] = ULONG_MAX % 20,
-                                                      [21] = ULONG_MAX % 21,
-                                                      [22] = ULONG_MAX % 22,
-                                                      [23] = ULONG_MAX % 23,
-                                                      [24] = ULONG_MAX % 24,
-                                                      [25] = ULONG_MAX % 25,
-                                                      [26] = ULONG_MAX % 26,
-                                                      [27] = ULONG_MAX % 27,
-                                                      [28] = ULONG_MAX % 28,
-                                                      [29] = ULONG_MAX % 29,
-                                                      [30] = ULONG_MAX % 30,
-                                                      [31] = ULONG_MAX % 31,
-                                                      [32] = ULONG_MAX % 32,
-                                                      [33] = ULONG_MAX % 33,
-                                                      [34] = ULONG_MAX % 34,
-                                                      [35] = ULONG_MAX % 35,
-                                                      [36] = ULONG_MAX % 36};
-
-unsigned long long int strtoull(const char* nptr, char** endptr, int base) {
-  int negative;
-  unsigned long long int cutoff;
-  unsigned int cutlim;
-  unsigned long long int i;
-  const char* s;
-  unsigned char c;
-  const char* save;
-  const char* end;
-  int overflow;
-
-  if (base < 0 || base == 1 || base > 36) {
+  if (base < 2 || base > 36) {
+    if (endptr) *endptr = (char *)nptr;  // Invalid base
     return 0;
   }
 
-  save = s = nptr;
+  cutoff = ULLONG_MAX / (unsigned long long)base;
+  cutlim = ULLONG_MAX % (unsigned long long)base;
 
-  /* Skip white space.  */
-  while (isspace(*s) != 0) {
-    ++s;
-  }
-  if ((*s == ('\0'))) {
-    goto noconv;
-  }
+  for (;; s++) {
+    c = *s;
+    if (isdigit(c))
+      c -= '0';
+    else if (isalpha(c))
+      c = toupper(c) - 'A' + 10;
+    else
+      break;
 
-  /* Check for a sign.  */
-  negative = 0;
-  if (*s == ('-')) {
-    negative = 1;
-    ++s;
-  } else if (*s == ('+')) {
-    ++s;
-  }
+    if (c >= base) break;
 
-  /* Recognize number prefix and if BASE is zero, figure it out ourselves.  */
-  if (*s == ('0')) {
-    if ((base == 0 || base == 16) && toupper(s[1]) == ('X')) {
-      s += 2;
-      base = 16;
-    } else if (base == 0) {
-      base = 8;
-    }
-  } else if (base == 0) {
-    base = 10;
-  }
-
-  /* Save the pointer so we can check later if anything happened.  */
-  save = s;
-  end = NULL;
-
-  /* Avoid runtime division; lookup cutoff and limit.  */
-  cutoff = __strtol_ul_max_tab[base - 2];
-  cutlim = __strtol_ul_rem_tab[base - 2];
-
-  overflow = 0;
-  i = 0;
-  c = *s;
-  if (sizeof(long int) != sizeof(long long int)) {
-    unsigned long int j = 0;
-    unsigned long int jmax = __strtol_ul_max_tab[base - 2];
-
-    for (; c != ('\0'); c = *++s) {
-      if (s == end) {
-        break;
-      }
-      if (c >= ('0') && c <= ('9')) {
-        c -= ('0');
-      } else if (isalpha(c) != 0) {
-        c = toupper(c) - ('A') + 10;
-      } else {
-        break;
-      }
-      if ((int)c >= base) {
-        break;
-      }
-      /* Note that we never can have an overflow.  */
-      else if (j >= jmax) {
-        /* We have an overflow.  Now use the long representation.  */
-        i = (unsigned long long int)j;
-        goto use_long;
-      } else {
-        j = j * (unsigned long int)base + c;
-      }
-    }
-
-    i = (unsigned long long int)j;
-  } else
-    for (; c != ('\0'); c = *++s) {
-      if (s == end) {
-        break;
-      }
-      if (c >= ('0') && c <= ('9')) {
-        c -= ('0');
-      } else if (isalpha(c) != 0) {
-        c = toupper(c) - ('A') + 10;
-      } else {
-        break;
-      }
-      if ((int)c >= base) {
-        break;
-      }
-      /* Check for overflow.  */
-      if (i > cutoff || (i == cutoff && c > cutlim)) {
-        overflow = 1;
-      } else {
-      use_long:
-        i *= (unsigned long long int)base;
-        i += c;
-      }
-    }
-
-  /* Check if anything actually happened.  */
-  if (s == save) {
-    goto noconv;
-  }
-
-  /* Store in ENDPTR the address of one character
-     past the last character we converted.  */
-  if (endptr != NULL) {
-    *endptr = (char*)s;
-  }
-
-  if (overflow != 0) {
-    return ULLONG_MAX;
-  }
-
-  /* Return the result of the appropriate sign.  */
-  return negative ? -i : i;
-
-noconv:
-  /* We must handle a special case here: the base is 0 or 16 and the
-     first two characters are '0' and 'x', but the rest are no
-     hexadecimal digits.  Likewise when the base is 0 or 2 and the
-     first two characters are '0' and 'b', but the rest are no binary
-     digits.  This is no error case.  We return 0 and ENDPTR points to
-     the 'x' or 'b'.  */
-  if (endptr != NULL) {
-    if (save - nptr >= 2 && (toupper(save[-1]) == ('X')) && save[-2] == ('0')) {
-      *endptr = (char*)&save[-1];
+    if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim)) {
+      any = -1;  // overflow
     } else {
-      /*  There was no number to convert.  */
-      *endptr = (char*)nptr;
+      any = 1;
+      acc = acc * base + c;
     }
   }
 
-  return 0L;
+  if (any < 0) {
+    *overflow = 1;
+    acc = ULLONG_MAX;
+  }
+
+  // Set endptr
+  if (endptr) {
+    *endptr = (char *)(any ? s : nptr);
+  }
+  return acc;
 }
+
+unsigned long long int strtoull(const char *nptr, char **endptr, int base) {
+  int negative;
+  int overflow;
+  unsigned long long acc =
+      strtox_main(nptr, endptr, base, &negative, &overflow);
+
+  if (overflow) return ULLONG_MAX;
+  return negative ? -acc : acc;
+}
+
+long long int strtoll(const char *nptr, char **endptr, int base) {
+  int negative;
+  int overflow;
+  unsigned long long acc =
+      strtox_main(nptr, endptr, base, &negative, &overflow);
+
+  if (overflow) {
+    return negative ? LLONG_MIN : LLONG_MAX;
+  }
+
+  if (negative) {
+    if (acc > (unsigned long long)LLONG_MAX + 1) return LLONG_MIN;
+    return -(long long)acc;
+  } else {
+    if (acc > LLONG_MAX) return LLONG_MAX;
+    return (long long)acc;
+  }
+}
+
+long int strtol(const char *nptr, char **endptr, int base) {
+  long long int val = strtoll(nptr, endptr, base);
+#if LONG_MAX != LLONG_MAX
+  if (val > LONG_MAX) return LONG_MAX;
+  if (val < LONG_MIN) return LONG_MIN;
+#endif
+  return (long int)val;
+}
+
+unsigned long int strtoul(const char *nptr, char **endptr, int base) {
+  unsigned long long int val = strtoull(nptr, endptr, base);
+#if ULONG_MAX != ULLONG_MAX
+  if (val > ULONG_MAX) return ULONG_MAX;
+#endif
+  return (unsigned long int)val;
+}
+
+int atoi(const char *nptr) { return (int)strtol(nptr, NULL, 10); }
+
+long int atol(const char *nptr) { return strtol(nptr, NULL, 10); }
+
+long long int atoll(const char *nptr) { return strtoll(nptr, NULL, 10); }
+
+double strtod(const char *nptr, char **endptr) {
+  const char *s = nptr;
+  double acc = 0.0;
+  int sign = 1;
+
+  while (isspace(*s)) s++;
+
+  if (*s == '-') {
+    sign = -1;
+    s++;
+  } else if (*s == '+') {
+    s++;
+  }
+
+  int any = 0;
+  while (isdigit(*s)) {
+    any = 1;
+    acc = acc * 10.0 + (*s - '0');
+    s++;
+  }
+
+  if (*s == '.') {
+    s++;
+    double k = 0.1;
+    while (isdigit(*s)) {
+      any = 1;
+      acc += (*s - '0') * k;
+      k *= 0.1;
+      s++;
+    }
+  }
+
+  if (any && (*s == 'e' || *s == 'E')) {
+    int esign = 1;
+    int exp = 0;
+    const char *eptr = s + 1;
+
+    if (*eptr == '-') {
+      esign = -1;
+      eptr++;
+    } else if (*eptr == '+') {
+      eptr++;
+    }
+
+    if (isdigit(*eptr)) {
+      while (isdigit(*eptr)) {
+        exp = exp * 10 + (*eptr - '0');
+        eptr++;
+      }
+      s = eptr;
+      double p = 1.0;
+      double b = 10.0;
+      while (exp) {
+        if (exp & 1) p *= b;
+        b *= b;
+        exp >>= 1;
+      }
+      if (esign > 0)
+        acc *= p;
+      else
+        acc /= p;
+    }
+  }
+
+  if (endptr) *endptr = (char *)(any ? s : nptr);
+  return sign * acc;
+}
+
+float strtof(const char *nptr, char **endptr) {
+  return (float)strtod(nptr, endptr);
+}
+
+double atof(const char *nptr) { return strtod(nptr, NULL); }
 
 #ifdef __cplusplus
 }
