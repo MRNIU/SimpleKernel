@@ -11,6 +11,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "sk_list"
+
 /**
  * @brief 任务状态枚举
  */
@@ -118,34 +120,22 @@ class TaskManager {
     return instance;
   }
 
-  void AddTask(TaskControlBlock* task) {
-    if (ready_count < kMaxReadyTasks) {
-      ready_queue[ready_count++] = task;
-    }
-  }
+  void AddTask(TaskControlBlock* task) { ready_queue.push_back(task); }
 
   void Schedule() {
-    if (ready_count == 0) {
+    if (ready_queue.empty()) {
       return;
     }
 
     // 简单的 FIFO 调度
-    // 这是一个低效的数组移动实现，仅作为临时展示
-    TaskControlBlock* next_task = ready_queue[0];
-
-    // 移动数组元素
-    for (size_t i = 0; i < ready_count - 1; ++i) {
-      ready_queue[i] = ready_queue[i + 1];
-    }
-    ready_count--;
+    TaskControlBlock* next_task = ready_queue.front();
+    ready_queue.pop_front();
 
     // 如果当前任务还在运行（没有退出），则放回队列末尾
     // 注意：这里我们简单假设 Schedule 是由当前任务主动调用的 (Yield)
     if (current_task->status == TaskStatus::kRunning) {
       current_task->status = TaskStatus::kReady;
-      if (ready_count < kMaxReadyTasks) {
-        ready_queue[ready_count++] = current_task;
-      }
+      ready_queue.push_back(current_task);
     }
 
     TaskControlBlock* prev_task = current_task;
@@ -169,10 +159,8 @@ class TaskManager {
  private:
   TaskManager() = default;
 
-  // 简单的就绪队列 (定长数组 临时替代)
-  static constexpr size_t kMaxReadyTasks = 64;
-  std::array<TaskControlBlock*, kMaxReadyTasks> ready_queue;
-  size_t ready_count = 0;
+  // 就绪队列
+  sk_std::list<TaskControlBlock*> ready_queue;
 
   TaskControlBlock* current_task = nullptr;
 };
