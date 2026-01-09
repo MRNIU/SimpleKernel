@@ -10,6 +10,15 @@
 #include <cstdint>
 #include <functional>
 
+// 供汇编调用：上下文切换
+extern "C" void switch_to(cpu_io::CalleeSavedContext* prev,
+                          cpu_io::CalleeSavedContext* next);
+
+// 汇编入口跳板
+extern "C" void kernel_thread_entry();
+
+extern "C" void trap_return(void*);
+
 class InterruptBase {
  public:
   /// @todo functional 报错
@@ -20,15 +29,15 @@ class InterruptBase {
    * @param  context 中断上下文
    * @return uint64_t 返回值，0 成功
    */
-  typedef uint64_t (*InterruptFunc)(uint64_t cause, uint8_t *context);
+  typedef uint64_t (*InterruptFunc)(uint64_t cause, uint8_t* context);
 
   /// @name 构造/析构函数
   /// @{
   InterruptBase() = default;
-  InterruptBase(const InterruptBase &) = delete;
-  InterruptBase(InterruptBase &&) = delete;
-  auto operator=(const InterruptBase &) -> InterruptBase & = delete;
-  auto operator=(InterruptBase &&) -> InterruptBase & = delete;
+  InterruptBase(const InterruptBase&) = delete;
+  InterruptBase(InterruptBase&&) = delete;
+  auto operator=(const InterruptBase&) -> InterruptBase& = delete;
+  auto operator=(InterruptBase&&) -> InterruptBase& = delete;
   virtual ~InterruptBase() = default;
   /// @}
 
@@ -36,7 +45,7 @@ class InterruptBase {
    * @brief 执行中断处理
    * @param 不同平台有不同含义
    */
-  virtual void Do(uint64_t, uint8_t *) = 0;
+  virtual void Do(uint64_t, uint8_t*) = 0;
 
   /**
    * @brief 注册中断处理函数

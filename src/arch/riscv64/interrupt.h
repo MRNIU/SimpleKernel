@@ -22,10 +22,10 @@ class Interrupt final : public InterruptBase {
 
   /// @name 构造/析构函数
   /// @{
-  Interrupt(const Interrupt &) = delete;
-  Interrupt(Interrupt &&) = delete;
-  auto operator=(const Interrupt &) -> Interrupt & = delete;
-  auto operator=(Interrupt &&) -> Interrupt & = delete;
+  Interrupt(const Interrupt&) = delete;
+  Interrupt(Interrupt&&) = delete;
+  auto operator=(const Interrupt&) -> Interrupt& = delete;
+  auto operator=(Interrupt&&) -> Interrupt& = delete;
   ~Interrupt() = default;
   /// @}
 
@@ -34,7 +34,7 @@ class Interrupt final : public InterruptBase {
    * @param  cause 中断或异常号
    * @param  context 中断上下文
    */
-  void Do(uint64_t cause, uint8_t *context) override;
+  void Do(uint64_t cause, uint8_t* context) override;
 
   /**
    * @brief 注册中断处理函数

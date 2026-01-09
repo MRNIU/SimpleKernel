@@ -11,16 +11,10 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "interrupt_base.h"
 #include "sk_list"
 
 class SchedulerBase;
-
-// 供汇编调用：上下文切换
-extern "C" void switch_to(cpu_io::CalleeSavedContext* prev,
-                          cpu_io::CalleeSavedContext* next);
-
-// 汇编入口跳板
-extern "C" void kernel_thread_entry();
 
 /**
  * @brief 任务状态枚举
@@ -120,7 +114,7 @@ struct TaskControlBlock {
 
   /// @name 构造/析构函数
   /// @{
-  TaskControlBlock();
+  TaskControlBlock() = default;
   TaskControlBlock(const TaskControlBlock&) = default;
   TaskControlBlock(TaskControlBlock&&) = default;
   auto operator=(const TaskControlBlock&) -> TaskControlBlock& = default;
