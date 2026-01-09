@@ -43,6 +43,9 @@ struct BasicInfo {
   /// cpu 核数
   size_t core_count;
 
+  /// 时钟频率
+  size_t interval;
+
   /**
    * 构造函数，在 arch_main.cpp 中定义
    * @param argc 同 _start
