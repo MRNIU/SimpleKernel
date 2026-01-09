@@ -16,40 +16,9 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
                                    ThreadEntry entry, void* arg)
     : name(name),
       pid(pid),
-      status(TaskStatus::kUnInit),
-      policy(SchedPolicy::kNormal),
-      priority(10),
-      kernel_stack_top{},
       trap_context_ptr(reinterpret_cast<cpu_io::TrapContext*>(
           kernel_stack_top.data() + kernel_stack_top.size() -
-          sizeof(cpu_io::TrapContext))),
-      page_table(nullptr),
-      cpu_affinity(UINT64_MAX),
-      parent_pid(0) {
-  InitKernelThread(entry, arg);
-}
-
-TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
-                                   ThreadEntry entry, void* arg, void* user_sp)
-    : name(name),
-      pid(pid),
-      status(TaskStatus::kUnInit),
-      policy(SchedPolicy::kNormal),
-      priority(10),
-      kernel_stack_top{},
-      trap_context_ptr(reinterpret_cast<cpu_io::TrapContext*>(
-          kernel_stack_top.data() + kernel_stack_top.size() -
-          sizeof(cpu_io::TrapContext))),
-      page_table(nullptr),
-      cpu_affinity(UINT64_MAX),
-      parent_pid(0) {
-  InitUserThread(entry, arg, user_sp);
-}
-
-// 实现一个简易的 yield
-void sys_yield() { Singleton<TaskManager>::GetInstance().Schedule(); }
-
-void TaskControlBlock::InitKernelThread(ThreadEntry entry, void* arg) {
+          sizeof(cpu_io::TrapContext))) {
   // 设置内核栈顶
   auto stack_top = reinterpret_cast<uint64_t>(kernel_stack_top.data()) +
                    kernel_stack_top.size();
@@ -71,8 +40,13 @@ void TaskControlBlock::InitKernelThread(ThreadEntry entry, void* arg) {
   status = TaskStatus::kReady;
 }
 
-void TaskControlBlock::InitUserThread(ThreadEntry entry, void* arg,
-                                      void* user_sp) {
+TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
+                                   ThreadEntry entry, void* arg, void* user_sp)
+    : name(name),
+      pid(pid),
+      trap_context_ptr(reinterpret_cast<cpu_io::TrapContext*>(
+          kernel_stack_top.data() + kernel_stack_top.size() -
+          sizeof(cpu_io::TrapContext))) {
   // 1. 初始化 TrapContext (用户上下文)
   *trap_context_ptr = cpu_io::TrapContext();
 
@@ -94,6 +68,9 @@ void TaskControlBlock::InitUserThread(ThreadEntry entry, void* arg,
   // 状态设为就绪
   status = TaskStatus::kReady;
 }
+
+// 实现一个简易的 yield
+void sys_yield() { Singleton<TaskManager>::GetInstance().Schedule(); }
 
 TaskManager::TaskManager() {
   // 初始化调度器数组
