@@ -23,22 +23,16 @@ extern "C" cpu_io::TrapContext* HandleTrap(cpu_io::TrapContext* context) {
   return context;
 }
 
-namespace {
-uint64_t kInterval = 0;
-}  // namespace
-
 void InterruptInit(int, const char**) {
-  // 获取 cpu 速度
-  // 设置 100Hz (10ms)
-  kInterval = Singleton<KernelFdt>::GetInstance().GetTimebaseFrequency() / 100;
-  klog::Info("kInterval: 0x%X\n", kInterval);
-  Singleton<TaskManager>::GetInstance().SetTickFrequency(100);
+  Singleton<TaskManager>::GetInstance().SetTickFrequency(
+      Singleton<BasicInfo>::GetInstance().interval);
 
   // 注册时钟中断
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kSupervisorTimerInterrupt,
       [](uint64_t exception_code, uint8_t*) -> uint64_t {
-        sbi_set_timer(cpu_io::Time::Read() + kInterval);
+        sbi_set_timer(cpu_io::Time::Read() +
+                      Singleton<BasicInfo>::GetInstance().interval);
         Singleton<TaskManager>::GetInstance().UpdateTick();
         return 0;
       });
@@ -151,7 +145,7 @@ void InterruptInit(int, const char**) {
   cpu_io::Sie::Seie::Set();
 
   // 设置时钟中断时间
-  sbi_set_timer(kInterval);
+  sbi_set_timer(Singleton<BasicInfo>::GetInstance().interval);
 
   // 触发一次 ebreak 以测试中断处理
   __asm__ volatile("ebreak");
@@ -184,7 +178,7 @@ void InterruptInitSMP(int, const char**) {
   cpu_io::Sie::Seie::Set();
 
   // 设置时钟中断时间
-  sbi_set_timer(kInterval);
+  sbi_set_timer(Singleton<BasicInfo>::GetInstance().interval);
 
   // 触发一次 ebreak 以测试中断处理
   __asm__ volatile("ebreak");
