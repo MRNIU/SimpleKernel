@@ -188,7 +188,7 @@ class TaskManager {
    *
    * 索引对应 SchedPolicy 枚举值。
    */
-  SchedulerBase* schedulers[SchedPolicy::kPolicyCount];
+  std::array<SchedulerBase*, SchedPolicy::kPolicyCount> schedulers;
 
   /**
    * @brief 当前正在运行的任务
