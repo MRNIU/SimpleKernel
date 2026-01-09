@@ -24,7 +24,7 @@ void thread_func_a(void* arg) {
   while (1) {
     klog::Info("Thread A: running, arg=%d\n", (uint64_t)arg);
     // 模拟耗时操作
-    for (volatile int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < 1000000; i++) {
       ;
     }
     sys_yield();
@@ -35,7 +35,7 @@ void thread_func_b(void* arg) {
   while (1) {
     klog::Info("Thread B: running, arg=%d\n", (uint64_t)arg);
     // 模拟耗时操作
-    for (volatile int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < 1000000; i++) {
       ;
     }
     sys_yield();
@@ -87,9 +87,8 @@ void user_thread_test() {
   // 6. 注册系统调用处理函数 (User Env Call = 8)
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       8,  // kUserEnvCall
-      [](uint64_t cause, uint8_t* context) -> uint64_t {
+      [](uint64_t, uint8_t*) -> uint64_t {
         klog::Info("System call detected from User Mode!\n");
-        auto* trap_context = reinterpret_cast<cpu_io::TrapContext*>(context);
         sys_yield();
         return 0;
       });
@@ -99,8 +98,7 @@ void user_thread_test() {
   user_task->InitUserThread(reinterpret_cast<void*>(user_entry_va), nullptr,
                             reinterpret_cast<void*>(user_sp));
 
-  klog::Info("----1111----\n");
-  TaskManager::GetInstance().AddTask(user_task);
+  Singleton<TaskManager>::GetInstance().AddTask(user_task);
 
   klog::Info("User thread created. Entry: 0x%lX\n", user_entry_va);
 }
@@ -151,7 +149,7 @@ auto main(int argc, const char** argv) -> int {
   klog::info << "Hello SimpleKernel\n";
 
   // 初始化任务管理器 (设置主线程)
-  TaskManager::GetInstance().InitMainThread();
+  Singleton<TaskManager>::GetInstance().InitMainThread();
 
   // 运行用户线程测试
   user_thread_test();
@@ -161,19 +159,19 @@ auto main(int argc, const char** argv) -> int {
   // 管理生命周期
   TaskControlBlock* task_a = new TaskControlBlock("Task A", 1);
   task_a->InitThread(thread_func_a, (void*)100);
-  TaskManager::GetInstance().AddTask(task_a);
+  Singleton<TaskManager>::GetInstance().AddTask(task_a);
 
   // 创建线程 B
   TaskControlBlock* task_b = new TaskControlBlock("Task B", 2);
   task_b->InitThread(thread_func_b, (void*)200);
-  TaskManager::GetInstance().AddTask(task_b);
+  Singleton<TaskManager>::GetInstance().AddTask(task_b);
 
   klog::Info("Main: Starting scheduler...\n");
 
   // 主线程进入调度循环
   while (1) {
     klog::Info("Main Thread: running\n");
-    for (volatile int i = 0; i < 2000000; i++)
+    for (int i = 0; i < 2000000; i++)
       ;
     sys_yield();
   }

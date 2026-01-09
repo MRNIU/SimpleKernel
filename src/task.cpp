@@ -9,12 +9,15 @@
 #include <memory>
 
 #include "kernel_log.hpp"
+#include "scheduler/fifo_scheduler.hpp"
 #include "singleton.hpp"
 
 TaskControlBlock::TaskControlBlock()
     : name("Idle"),
       pid(0),
       status(TaskStatus::kRunning),
+      policy(SchedPolicy::kIdle),
+      priority(0),
       page_table(nullptr),
       cpu_affinity(UINT64_MAX),
       parent_pid(0) {
@@ -26,6 +29,8 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid)
     : name(name),
       pid(pid),
       status(TaskStatus::kUnInit),
+      policy(SchedPolicy::kNormal),
+      priority(10),
       page_table(nullptr),
       cpu_affinity(UINT64_MAX),
       parent_pid(0) {
@@ -37,7 +42,7 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid)
 }
 
 // 实现一个简易的 yield
-void sys_yield() { TaskManager::GetInstance().Schedule(); }
+void sys_yield() { Singleton<TaskManager>::GetInstance().Schedule(); }
 
 void TaskControlBlock::InitThread(void (*entry)(void*), void* arg) {
   // 设置内核栈顶
@@ -94,4 +99,65 @@ void TaskControlBlock::InitUserThread(void* entry, void* arg, void* user_sp) {
 
   // 状态设为就绪
   status = TaskStatus::kReady;
+}
+
+TaskManager::TaskManager() {
+  // 初始化调度器数组
+  schedulers[SchedPolicy::kRealTime] = new RtScheduler();
+  schedulers[SchedPolicy::kNormal] = new FifoScheduler();
+  schedulers[SchedPolicy::kIdle] = nullptr;
+}
+
+void TaskManager::AddTask(TaskControlBlock* task) {
+  if (task->policy < SchedPolicy::kPolicyCount) {
+    schedulers[task->policy]->Enqueue(task);
+  }
+}
+
+void TaskManager::Schedule() {
+  TaskControlBlock* next_task = nullptr;
+
+  // 1. 如果当前任务还在运行 (Yield的情况)，先将其放回就绪队列
+  if (current_task->status == TaskStatus::kRunning) {
+    current_task->status = TaskStatus::kReady;
+    if (current_task->policy < SchedPolicy::kPolicyCount &&
+        schedulers[current_task->policy]) {
+      schedulers[current_task->policy]->Enqueue(current_task);
+    }
+  }
+
+  // 2. 按优先级遍历调度器，寻找下一个任务
+  // 顺序: RealTime -> Normal -> Idle (如果有)
+  for (auto* sched : schedulers) {
+    if (sched) {
+      next_task = sched->PickNext();
+      if (next_task) {
+        break;
+      }
+    }
+  }
+
+  if (!next_task) {
+    // 如果当前任务被放回去了，那它就是唯一的任务了，继续跑它
+    if (current_task->status == TaskStatus::kReady) {
+      return;
+    }
+    // TODO: Switch to Idle Task if null
+    return;
+  }
+
+  TaskControlBlock* prev_task = current_task;
+  current_task = next_task;
+  current_task->status = TaskStatus::kRunning;
+
+  // 执行上下文切换
+  switch_to(&prev_task->task_context, &current_task->task_context);
+}
+
+void TaskManager::InitMainThread() {
+  static TaskControlBlock main_task;  // Idle/Main thread
+  main_task.pid = 0;
+  main_task.status = TaskStatus::kRunning;
+  main_task.policy = SchedPolicy::kNormal;  // 初始设为 Normal
+  current_task = &main_task;
 }

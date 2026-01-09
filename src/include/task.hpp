@@ -13,6 +13,15 @@
 
 #include "sk_list"
 
+class SchedulerBase;
+
+// 供汇编调用：上下文切换
+extern "C" void switch_to(cpu_io::CalleeSavedContext* prev,
+                          cpu_io::CalleeSavedContext* next);
+
+// 汇编入口跳板
+extern "C" void kernel_thread_entry();
+
 /**
  * @brief 任务状态枚举
  */
@@ -30,6 +39,16 @@ enum TaskStatus : uint8_t {
 };
 
 /**
+ * @brief 调度策略
+ */
+enum SchedPolicy : uint8_t {
+  kRealTime = 0,  // 实时任务 (最高优先级)
+  kNormal = 1,    // 普通任务
+  kIdle = 2,      // 空闲任务 (最低优先级)
+  kPolicyCount    // 策略数量
+};
+
+/**
  * @brief 任务控制块 (Task Control Block, TCB)
  * 管理进程/线程的核心数据结构
  */
@@ -44,6 +63,10 @@ struct TaskControlBlock {
 
   // 进程状态
   TaskStatus status;
+  // 调度策略
+  SchedPolicy policy;
+  // 优先级 (数字越小优先级越高，用于同策略内部比较，可选)
+  int priority;
 
   // 内核栈
   std::array<uint8_t, kDefaultKernelStackSize> kernel_stack_top;
@@ -106,61 +129,31 @@ struct TaskControlBlock {
   /// @}
 };
 
-// 供汇编调用：上下文切换
-extern "C" void switch_to(cpu_io::CalleeSavedContext* prev,
-                          cpu_io::CalleeSavedContext* next);
-
-// 汇编入口跳板
-extern "C" void kernel_thread_entry();
-
 class TaskManager {
  public:
-  static TaskManager& GetInstance() {
-    static TaskManager instance;
-    return instance;
-  }
+  /// @name 构造/析构函数
+  /// @{
+  TaskManager();
+  TaskManager(const TaskManager&) = default;
+  TaskManager(TaskManager&&) = default;
+  auto operator=(const TaskManager&) -> TaskManager& = default;
+  auto operator=(TaskManager&&) -> TaskManager& = default;
+  ~TaskManager() = default;
+  /// @}
 
-  void AddTask(TaskControlBlock* task) { ready_queue.push_back(task); }
+  // 添加任务：根据策略分发到对应的调度器
+  void AddTask(TaskControlBlock* task);
 
-  void Schedule() {
-    if (ready_queue.empty()) {
-      return;
-    }
-
-    // 简单的 FIFO 调度
-    TaskControlBlock* next_task = ready_queue.front();
-    ready_queue.pop_front();
-
-    // 如果当前任务还在运行（没有退出），则放回队列末尾
-    // 注意：这里我们简单假设 Schedule 是由当前任务主动调用的 (Yield)
-    if (current_task->status == TaskStatus::kRunning) {
-      current_task->status = TaskStatus::kReady;
-      ready_queue.push_back(current_task);
-    }
-
-    TaskControlBlock* prev_task = current_task;
-    current_task = next_task;
-    current_task->status = TaskStatus::kRunning;
-
-    // 执行上下文切换
-    switch_to(&prev_task->task_context, &current_task->task_context);
-  }
+  void Schedule();
 
   TaskControlBlock* GetCurrentTask() const { return current_task; }
 
   // 初始化主线程
-  void InitMainThread() {
-    static TaskControlBlock main_task;  // Idle/Main thread
-    main_task.pid = 0;
-    main_task.status = TaskStatus::kRunning;
-    current_task = &main_task;
-  }
+  void InitMainThread();
 
  private:
-  TaskManager() = default;
-
-  // 就绪队列
-  sk_std::list<TaskControlBlock*> ready_queue;
+  // 调度器数组，索引对应 SchedPolicy
+  SchedulerBase* schedulers[SchedPolicy::kPolicyCount];
 
   TaskControlBlock* current_task = nullptr;
 };
