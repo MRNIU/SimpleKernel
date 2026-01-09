@@ -22,11 +22,12 @@ struct test_case {
   bool (*func)(void);
 };
 
-std::array<test_case, 4> test_cases = {
+std::array<test_case, 5> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test},
     test_case{"spinlock_test", spinlock_test},
     test_case{"memory_test", memory_test},
     test_case{"sk_list_test", sk_list_test},
+    test_case{"interrupt_test", interrupt_test},
 };
 
 void run_tests() {
@@ -45,6 +46,7 @@ void run_tests() {
 auto main_smp(int argc, const char** argv) -> int {
   ArchInitSMP(argc, argv);
   MemoryInitSMP();
+  InterruptInitSMP(argc, argv);
   klog::Info("Hello SimpleKernel SMP\n");
 
   run_tests();
@@ -75,6 +77,9 @@ auto main(int argc, const char** argv) -> int {
 
   // 内存相关初始化
   MemoryInit();
+
+  // 中断相关初始化
+  InterruptInit(argc, argv);
 
   // 唤醒其余 core
   WakeUpOtherCores();

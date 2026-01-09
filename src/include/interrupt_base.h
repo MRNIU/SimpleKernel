@@ -8,15 +8,15 @@
 
 #include <atomic>
 #include <cstdint>
-#include <functional>
 
-// 供汇编调用：上下文切换
+// 在 switch.S 中定义
 extern "C" void switch_to(cpu_io::CalleeSavedContext* prev,
                           cpu_io::CalleeSavedContext* next);
 
-// 汇编入口跳板
+// 在 switch.S 中定义
 extern "C" void kernel_thread_entry();
 
+// 在 switch.S 中定义
 extern "C" void trap_return(void*);
 
 // 在 trap.S 中定义
@@ -24,8 +24,6 @@ extern "C" void trap_entry();
 
 class InterruptBase {
  public:
-  /// @todo functional 报错
-  // typedef std::function<uint64_t(uint64_t, uint8_t *)> InterruptFunc;
   /**
    * @brief 中断/异常处理函数指针
    * @param  cause 中断或异常号
