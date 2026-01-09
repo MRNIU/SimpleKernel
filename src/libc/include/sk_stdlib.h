@@ -2,12 +2,18 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_LIBC_H_
-#define SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_LIBC_H_
+#ifndef SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_
+#define SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_
+
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void* malloc(size_t size);
+void free(void* ptr);
+void* aligned_alloc(size_t alignment, size_t size);
 
 /**
  * @brief 将字符串转换为双精度浮点数
@@ -45,6 +51,8 @@ long long int atoll(const char* nptr);
  */
 double strtod(const char* nptr, char** endptr);
 
+#if (defined(__x86_64__) && defined(__SSE__)) || \
+    (defined(__aarch64__) && defined(__ARM_FP)) || defined(__riscv)
 /**
  * @brief 将字符串转换为单精度浮点数，并可以获取转换结束位置
  * @param nptr 指向要转换的字符串的指针
@@ -60,7 +68,7 @@ float strtof(const char* nptr, char** endptr);
  * @return 转换后的长双精度浮点数
  */
 long double strtold(const char* nptr, char** endptr);
-
+#endif
 /**
  * @brief 将字符串按指定进制转换为长整数，并可以获取转换结束位置
  * @param nptr 指向要转换的字符串的指针
@@ -101,4 +109,4 @@ unsigned long long int strtoull(const char* nptr, char** endptr, int base);
 }
 #endif
 
-#endif /* SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_LIBC_H_ */
+#endif /* SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_ */

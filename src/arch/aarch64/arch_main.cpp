@@ -11,7 +11,7 @@
 #include "kernel_fdt.hpp"
 #include "per_cpu.hpp"
 #include "sk_cstdio"
-#include "sk_libc.h"
+#include "sk_stdlib.h"
 #include "virtual_memory.hpp"
 
 BasicInfo::BasicInfo(int argc, const char** argv) {

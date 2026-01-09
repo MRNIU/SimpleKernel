@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 用于测试 opensbi 的启动
  */
 
 #include <opensbi_interface.h>

@@ -1,28 +1,21 @@
 # Copyright The SimpleKernel Contributors
-# CMake build configuration
 
-PROJECT (SimpleKernel)
+PROJECT (system_test)
 
-ENABLE_LANGUAGE (ASM)
-ENABLE_LANGUAGE (C)
 ENABLE_LANGUAGE (CXX)
+ENABLE_LANGUAGE (ASM)
 
-ADD_SUBDIRECTORY (libc)
-ADD_SUBDIRECTORY (libcxx)
-ADD_SUBDIRECTORY (arch)
-ADD_SUBDIRECTORY (driver)
+ADD_EXECUTABLE (
+    ${PROJECT_NAME}
+    main.cpp ctor_dtor_test.cpp spinlock_test.cpp memory_test.cpp
+    sk_list_test.cpp ${CMAKE_SOURCE_DIR}/src/memory.cpp)
 
-ADD_EXECUTABLE (${PROJECT_NAME} main.cpp memory.cpp task.cpp)
+TARGET_INCLUDE_DIRECTORIES (
+    ${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src
+                            ${CMAKE_SOURCE_DIR}/src/include)
 
-# 添加头文件
-TARGET_INCLUDE_DIRECTORIES (${PROJECT_NAME} PRIVATE ./ include)
-
-# 添加要链接的库
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
                                                libcxx arch driver)
-
-SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES OUTPUT_NAME
-                                                  ${KERNEL_ELF_OUTPUT_NAME})
 
 # qemu 参数设置
 LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS
@@ -54,6 +47,8 @@ ENDIF()
 
 # 添加 run 和 debug target
 ADD_RUN_TARGET (
+    NAME
+    ${PROJECT_NAME}_
     TARGET
     ${PROJECT_NAME}
     DEPENDS

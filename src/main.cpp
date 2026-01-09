@@ -12,6 +12,7 @@
 #include "sk_cstdio"
 #include "sk_iostream"
 #include "sk_libcxx.h"
+#include "sk_new"
 #include "task.hpp"
 #include "virtual_memory.hpp"
 
@@ -142,11 +143,6 @@ auto main(int argc, const char** argv) -> int {
 
   // 唤醒其余 core
   // WakeUpOtherCores();
-
-  // klog::Debug("Hello SimpleKernel\n");
-  // klog::Info("Hello SimpleKernel\n");
-  // klog::Warn("Hello SimpleKernel\n");
-  // klog::Err("Hello SimpleKernel\n");
 
   DumpStack();
 

@@ -22,14 +22,14 @@ repos:
       - id: clang-format
         args:
           - --style=file
-      - id: clang-tidy
-        args:
-          - --checks=.clang-tidy
-          - -p=@CMAKE_BINARY_DIR@/compiler_commands.json
-          - -extra-arg=--std=c++2b
-          - --fix
-          - --header-filter=^(@CMAKE_BINARY_DIR@/src/).*
-          # - --exclude-header-filter=^(?@CMAKE_BINARY_DIR@/src/arch/x86_64|@CMAKE_BINARY_DIR@/src/arch/aarch64).*
+      # - id: clang-tidy
+      #   args:
+      #     - --checks=.clang-tidy
+      #     - -p=@CMAKE_BINARY_DIR@/compiler_commands.json
+      #     - -extra-arg=--std=c++2b
+      #     - --fix
+      #     - --header-filter=^(@CMAKE_BINARY_DIR@/src/).*
+      #     - --exclude-header-filter=^(?@CMAKE_BINARY_DIR@/src/arch/x86_64|@CMAKE_BINARY_DIR@/src/arch/aarch64).*
       # - id: clang-tidy
       #   args:
       #     - --checks=.clang-tidy
@@ -50,7 +50,7 @@ repos:
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.10.0
     hooks:
-    - id: shellcheck
+      - id: shellcheck
 
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.13

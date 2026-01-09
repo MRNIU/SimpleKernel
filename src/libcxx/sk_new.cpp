@@ -7,20 +7,16 @@
 #include <cstddef>
 #include <cstring>
 
-extern "C" {
-void* malloc(size_t size);
-void* aligned_alloc(size_t alignment, size_t size);
-void free(void* ptr);
-}
+#include "sk_stdlib.h"
 
-void* operator new(size_t size) noexcept {
+void* operator new(size_t size) {
   if (size == 0) {
     size = 1;
   }
   return malloc(size);
 }
 
-void* operator new[](size_t size) noexcept {
+void* operator new[](size_t size) {
   if (size == 0) {
     size = 1;
   }
@@ -63,37 +59,37 @@ void* operator new[](size_t size, size_t alignment) noexcept {
   return aligned_alloc(alignment, size);
 }
 
-void operator delete(void* ptr) {
+void operator delete(void* ptr) noexcept {
   if (ptr != nullptr) {
     free(ptr);
   }
 }
 
-void operator delete(void* ptr, size_t) {
+void operator delete(void* ptr, size_t) noexcept {
   if (ptr != nullptr) {
     free(ptr);
   }
 }
 
-void operator delete[](void* ptr) {
+void operator delete[](void* ptr) noexcept {
   if (ptr != nullptr) {
     free(ptr);
   }
 }
 
-void operator delete[](void* ptr, size_t) {
+void operator delete[](void* ptr, size_t) noexcept {
   if (ptr != nullptr) {
     free(ptr);
   }
 }
 
-void operator delete(void* ptr, size_t, size_t) {
+void operator delete(void* ptr, size_t, size_t) noexcept {
   if (ptr != nullptr) {
     free(ptr);
   }
 }
 
-void operator delete[](void* ptr, size_t, size_t) {
+void operator delete[](void* ptr, size_t, size_t) noexcept {
   if (ptr != nullptr) {
     free(ptr);
   }

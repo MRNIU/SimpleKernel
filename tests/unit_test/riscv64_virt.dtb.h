@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 测试用 dtb 文件
  */
 
 #ifndef SIMPLEKERNEL_TEST_UNIT_TEST_RISCV64_VIRT_DTB_H_
