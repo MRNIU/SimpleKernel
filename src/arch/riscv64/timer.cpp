@@ -23,7 +23,7 @@ void TimerInitSMP() {
   cpu_io::Sie::Stie::Set();
 
   // 设置初次时钟中断时间
-  sbi_set_timer(cpu_io::Time::Read() + interval);
+  sbi_set_timer(interval);
 }
 
 void TimerInit() {
@@ -41,4 +41,10 @@ void TimerInit() {
         Singleton<TaskManager>::GetInstance().UpdateTick();
         return 0;
       });
+
+  // 开启时钟中断
+  cpu_io::Sie::Stie::Set();
+
+  // 设置初次时钟中断时间
+  sbi_set_timer(interval);
 }
