@@ -19,6 +19,9 @@ extern "C" void kernel_thread_entry();
 
 extern "C" void trap_return(void*);
 
+// 在 trap.S 中定义
+extern "C" void trap_entry();
+
 class InterruptBase {
  public:
   /// @todo functional 报错
