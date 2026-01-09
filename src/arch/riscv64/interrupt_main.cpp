@@ -24,19 +24,6 @@ extern "C" cpu_io::TrapContext* HandleTrap(cpu_io::TrapContext* context) {
 }
 
 void InterruptInit(int, const char**) {
-  Singleton<TaskManager>::GetInstance().SetTickFrequency(
-      Singleton<BasicInfo>::GetInstance().interval);
-
-  // 注册时钟中断
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::csr::ScauseInfo::kSupervisorTimerInterrupt,
-      [](uint64_t exception_code, uint8_t*) -> uint64_t {
-        sbi_set_timer(cpu_io::Time::Read() +
-                      Singleton<BasicInfo>::GetInstance().interval);
-        Singleton<TaskManager>::GetInstance().UpdateTick();
-        return 0;
-      });
-
   // 注册外部中断
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::
@@ -138,21 +125,11 @@ void InterruptInit(int, const char**) {
   // 开启内部中断
   cpu_io::Sie::Ssie::Set();
 
-  // 开启时钟中断
-  cpu_io::Sie::Stie::Set();
-
   // 开启外部中断
   cpu_io::Sie::Seie::Set();
 
-  // 设置时钟中断时间
-  sbi_set_timer(Singleton<BasicInfo>::GetInstance().interval);
-
-  // 触发一次 ebreak 以测试中断处理
-  __asm__ volatile("ebreak");
-
-  // 触发一次 PageFault 以测试中断处理
-  // klog::Info("Triggering Page Fault...\n");
-  // *(volatile int*)0 = 0;
+  // 初始化定时器
+  TimerInit();
 
   klog::Info("Hello InterruptInit\n");
 }
@@ -171,17 +148,11 @@ void InterruptInitSMP(int, const char**) {
   // 开启内部中断
   cpu_io::Sie::Ssie::Set();
 
-  // 开启时钟中断
-  cpu_io::Sie::Stie::Set();
-
   // 开启外部中断
   cpu_io::Sie::Seie::Set();
 
-  // 设置时钟中断时间
-  sbi_set_timer(Singleton<BasicInfo>::GetInstance().interval);
-
-  // 触发一次 ebreak 以测试中断处理
-  __asm__ volatile("ebreak");
+  // 初始化定时器
+  TimerInitSMP();
 
   klog::Info("Hello InterruptInitSMP\n");
 }

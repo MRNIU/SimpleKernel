@@ -24,14 +24,14 @@ extern "C" void* aligned_alloc(size_t alignment, size_t size);
 void thread_func_a(void* arg) {
   while (1) {
     klog::Info("Thread A: running, arg=%d\n", (uint64_t)arg);
-    sys_sleep(1);
+    sys_sleep(100);
   }
 }
 
 void thread_func_b(void* arg) {
   while (1) {
     klog::Info("Thread B: running, arg=%d\n", (uint64_t)arg);
-    sys_sleep(1);
+    sys_sleep(100);
   }
 }
 
@@ -159,7 +159,8 @@ auto main(int argc, const char** argv) -> int {
   // 主线程进入调度循环
   while (1) {
     klog::Info("Main Thread: running\n");
-    sys_sleep(1);
+    sys_sleep(100);
+    sys_yield();
   }
 
   return 0;

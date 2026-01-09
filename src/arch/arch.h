@@ -31,6 +31,9 @@ void WakeUpOtherCores();
 void InterruptInit(int argc, const char** argv);
 void InterruptInitSMP(int argc, const char** argv);
 
+void TimerInit();
+void TimerInitSMP();
+
 /// 最多回溯 128 层调用栈
 static constexpr const size_t kMaxFrameCount = 128;
 
