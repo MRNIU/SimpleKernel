@@ -98,11 +98,37 @@ struct TaskControlBlock {
   // std::vector<std::shared_ptr<File>> fd_table;
 
   /**
-   * @brief 构造函数
+   * @brief 构造函数 (内核线程)
+   * @param name 任务名称
    * @param pid 进程 ID
+   * @param entry 线程入口函数
+   * @param arg 线程参数
    */
-  TaskControlBlock(const char* name, size_t pid);
+  TaskControlBlock(const char* name, size_t pid, void (*entry)(void*),
+                   void* arg);
 
+  /**
+   * @brief 构造函数 (用户线程)
+   * @param name 任务名称
+   * @param pid 进程 ID
+   * @param entry 用户程序入口地址
+   * @param arg 用户程序参数
+   * @param user_sp 用户栈顶地址
+   */
+  TaskControlBlock(const char* name, size_t pid, void* entry, void* arg,
+                   void* user_sp);
+
+  /// @name 构造/析构函数
+  /// @{
+  TaskControlBlock();
+  TaskControlBlock(const TaskControlBlock&) = default;
+  TaskControlBlock(TaskControlBlock&&) = default;
+  auto operator=(const TaskControlBlock&) -> TaskControlBlock& = default;
+  auto operator=(TaskControlBlock&&) -> TaskControlBlock& = default;
+  ~TaskControlBlock() = default;
+  /// @}
+
+ private:
   /**
    * @brief 初始化内核线程上下文
    * @param entry 线程入口函数
@@ -117,16 +143,6 @@ struct TaskControlBlock {
    * @param user_sp 用户栈顶地址
    */
   void InitUserThread(void* entry, void* arg, void* user_sp);
-
-  /// @name 构造/析构函数
-  /// @{
-  TaskControlBlock();
-  TaskControlBlock(const TaskControlBlock&) = default;
-  TaskControlBlock(TaskControlBlock&&) = default;
-  auto operator=(const TaskControlBlock&) -> TaskControlBlock& = default;
-  auto operator=(TaskControlBlock&&) -> TaskControlBlock& = default;
-  ~TaskControlBlock() = default;
-  /// @}
 };
 
 class TaskManager {

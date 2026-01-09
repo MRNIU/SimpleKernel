@@ -94,9 +94,9 @@ void user_thread_test() {
       });
 
   // 7. 创建用户线程
-  TaskControlBlock* user_task = new TaskControlBlock("UserDemo", 3);
-  user_task->InitUserThread(reinterpret_cast<void*>(user_entry_va), nullptr,
-                            reinterpret_cast<void*>(user_sp));
+  TaskControlBlock* user_task = new TaskControlBlock(
+      "UserDemo", 3, reinterpret_cast<void*>(user_entry_va), nullptr,
+      reinterpret_cast<void*>(user_sp));
 
   Singleton<TaskManager>::GetInstance().AddTask(user_task);
 
@@ -144,8 +144,6 @@ auto main(int argc, const char** argv) -> int {
 
   DumpStack();
 
-  TaskControlBlock("init", 1);
-
   klog::info << "Hello SimpleKernel\n";
 
   // 初始化任务管理器 (设置主线程)
@@ -157,13 +155,13 @@ auto main(int argc, const char** argv) -> int {
   // 创建线程 A
   // 注意：需要手动分配内存，实际中应由 ObjectPool 或 memory allocator
   // 管理生命周期
-  TaskControlBlock* task_a = new TaskControlBlock("Task A", 1);
-  task_a->InitThread(thread_func_a, (void*)100);
+  TaskControlBlock* task_a =
+      new TaskControlBlock("Task A", 1, thread_func_a, (void*)100);
   Singleton<TaskManager>::GetInstance().AddTask(task_a);
 
   // 创建线程 B
-  TaskControlBlock* task_b = new TaskControlBlock("Task B", 2);
-  task_b->InitThread(thread_func_b, (void*)200);
+  TaskControlBlock* task_b =
+      new TaskControlBlock("Task B", 2, thread_func_b, (void*)200);
   Singleton<TaskManager>::GetInstance().AddTask(task_b);
 
   klog::Info("Main: Starting scheduler...\n");

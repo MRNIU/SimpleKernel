@@ -25,7 +25,9 @@ TaskControlBlock::TaskControlBlock()
   // 但我们必须初始化 trap_context_ptr 防止空指针，虽然它可能不会被直接用到
 }
 
-TaskControlBlock::TaskControlBlock(const char* name, size_t pid)
+// 构造内核线程
+TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
+                                   void (*entry)(void*), void* arg)
     : name(name),
       pid(pid),
       status(TaskStatus::kUnInit),
@@ -39,6 +41,26 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid)
   trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
       kernel_stack_top.data() + kernel_stack_top.size() -
       sizeof(cpu_io::TrapContext));
+
+  InitThread(entry, arg);
+}
+
+// 构造用户线程
+TaskControlBlock::TaskControlBlock(const char* name, size_t pid, void* entry,
+                                   void* arg, void* user_sp)
+    : name(name),
+      pid(pid),
+      status(TaskStatus::kUnInit),
+      policy(SchedPolicy::kNormal),
+      priority(10),
+      page_table(nullptr),
+      cpu_affinity(UINT64_MAX),
+      parent_pid(0) {
+  trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
+      kernel_stack_top.data() + kernel_stack_top.size() -
+      sizeof(cpu_io::TrapContext));
+
+  InitUserThread(entry, arg, user_sp);
 }
 
 // 实现一个简易的 yield
