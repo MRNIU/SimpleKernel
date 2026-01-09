@@ -26,6 +26,8 @@ enum TaskStatus : uint8_t {
   kReady,
   // 正在运行
   kRunning,
+  // 睡眠中
+  kSleeping,
   // 已退出
   kExited,
   // 僵尸状态 (等待回收)
@@ -67,6 +69,8 @@ struct TaskControlBlock {
   SchedPolicy policy = SchedPolicy::kNormal;
   // 优先级 (数字越小优先级越高，用于同策略内部比较，可选)
   int priority = 10;
+  // 唤醒时间 (tick)
+  uint64_t wake_tick = 0;
   // 内核栈
   std::array<uint8_t, kDefaultKernelStackSize> kernel_stack_top{};
 
@@ -182,6 +186,23 @@ class TaskManager {
    */
   void InitMainThread();
 
+  /**
+   * @brief 更新系统 tick
+   */
+  void UpdateTick();
+
+  /**
+   * @brief 线程睡眠
+   * @param ms 睡眠毫秒数
+   */
+  void Sleep(uint64_t ms);
+
+  /**
+   * @brief 设置 tick 频率
+   * @param freq 每秒 tick 数
+   */
+  void SetTickFrequency(uint64_t freq) { tick_frequency = freq; }
+
  private:
   /**
    * @brief 调度器数组
@@ -194,6 +215,21 @@ class TaskManager {
    * @brief 当前正在运行的任务
    */
   TaskControlBlock* current_task = nullptr;
+
+  /**
+   * @brief 系统当前 tick
+   */
+  uint64_t current_tick = 0;
+
+  /**
+   * @brief tick 频率 (Hz)
+   */
+  uint64_t tick_frequency = 100;
+
+  /**
+   * @brief 睡眠任务列表
+   */
+  sk_std::list<TaskControlBlock*> sleeping_tasks;
 };
 
 #endif  // SIMPLEKERNEL_SRC_INCLUDE_TASK_HPP_

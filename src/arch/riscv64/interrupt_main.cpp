@@ -14,6 +14,7 @@
 #include "opensbi_interface.h"
 #include "sk_cstdio"
 #include "sk_iostream"
+#include "task.hpp"
 #include "virtual_memory.hpp"
 
 // 在 trap.S 中定义
@@ -31,17 +32,17 @@ uint64_t kInterval = 0;
 
 void InterruptInit(int, const char**) {
   // 获取 cpu 速度
-  kInterval = Singleton<KernelFdt>::GetInstance().GetTimebaseFrequency();
+  // 设置 100Hz (10ms)
+  kInterval = Singleton<KernelFdt>::GetInstance().GetTimebaseFrequency() / 100;
   klog::Info("kInterval: 0x%X\n", kInterval);
+  Singleton<TaskManager>::GetInstance().SetTickFrequency(100);
 
   // 注册时钟中断
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kSupervisorTimerInterrupt,
       [](uint64_t exception_code, uint8_t*) -> uint64_t {
         sbi_set_timer(cpu_io::Time::Read() + kInterval);
-        klog::Info("Handle %s\n",
-                   cpu_io::detail::register_info::csr::ScauseInfo::
-                       kInterruptNames[exception_code]);
+        Singleton<TaskManager>::GetInstance().UpdateTick();
         return 0;
       });
 
@@ -106,7 +107,8 @@ void InterruptInit(int, const char**) {
               exception_code, addr);
     klog::Err("sepc: 0x%lx\n", trap_context->sepc);
     DumpStack();
-    while (1);
+    while (1)
+      ;
     return 0;
   };
 

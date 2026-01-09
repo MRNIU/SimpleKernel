@@ -111,10 +111,20 @@ void TaskManager::Schedule() {
   if (!next_task) {
     // 如果当前任务被放回去了，那它就是唯一的任务了，继续跑它
     if (current_task->status == TaskStatus::kReady) {
+      current_task->status = TaskStatus::kRunning;
       return;
     }
-    // TODO: Switch to Idle Task if null
-    return;
+
+    // 如果没有任务就绪（且当前任务也在睡眠），则等待
+    // 这里简单实现为忙等待，直到有任务就绪 (由中断触发 UpdateTick 唤醒)
+    while (!next_task) {
+      for (auto* sched : schedulers) {
+        if (sched) {
+          next_task = sched->PickNext();
+          if (next_task) break;
+        }
+      }
+    }
   }
 
   TaskControlBlock* prev_task = current_task;
@@ -132,3 +142,33 @@ void TaskManager::InitMainThread() {
   main_task.policy = SchedPolicy::kNormal;  // 初始设为 Normal
   current_task = &main_task;
 }
+
+void TaskManager::UpdateTick() {
+  current_tick++;
+  auto it = sleeping_tasks.begin();
+  while (it != sleeping_tasks.end()) {
+    TaskControlBlock* task = *it;
+    if (current_tick >= task->wake_tick) {
+      task->status = TaskStatus::kReady;
+      AddTask(task);
+      it = sleeping_tasks.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
+
+void TaskManager::Sleep(uint64_t ms) {
+  if (!current_task) return;
+
+  // 至少睡眠 1 tick
+  uint64_t ticks = ms * tick_frequency / 1000;
+  if (ticks == 0) ticks = 1;
+
+  current_task->wake_tick = current_tick + ticks;
+  current_task->status = TaskStatus::kSleeping;
+  sleeping_tasks.push_back(current_task);
+
+  Schedule();
+}
+void sys_sleep(uint64_t ms) { Singleton<TaskManager>::GetInstance().Sleep(ms); }

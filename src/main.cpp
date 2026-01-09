@@ -18,27 +18,20 @@
 
 // 声明 yield
 void sys_yield();
+void sys_sleep(uint64_t ms);
 extern "C" void* aligned_alloc(size_t alignment, size_t size);
 
 void thread_func_a(void* arg) {
   while (1) {
     klog::Info("Thread A: running, arg=%d\n", (uint64_t)arg);
-    // 模拟耗时操作
-    for (int i = 0; i < 1000000; i++) {
-      ;
-    }
-    sys_yield();
+    sys_sleep(1000);
   }
 }
 
 void thread_func_b(void* arg) {
   while (1) {
     klog::Info("Thread B: running, arg=%d\n", (uint64_t)arg);
-    // 模拟耗时操作
-    for (int i = 0; i < 1000000; i++) {
-      ;
-    }
-    sys_yield();
+    sys_sleep(1000);
   }
 }
 
@@ -94,8 +87,8 @@ void user_thread_test() {
       });
 
   // 7. 创建用户线程
-  TaskControlBlock* user_task = new TaskControlBlock(
-      "UserDemo", 3, user_entry_va, nullptr, reinterpret_cast<void*>(user_sp));
+  auto user_task = new TaskControlBlock("UserDemo", 3, user_entry_va, nullptr,
+                                        reinterpret_cast<void*>(user_sp));
 
   Singleton<TaskManager>::GetInstance().AddTask(user_task);
 
@@ -149,18 +142,16 @@ auto main(int argc, const char** argv) -> int {
   Singleton<TaskManager>::GetInstance().InitMainThread();
 
   // 运行用户线程测试
-  user_thread_test();
+  // user_thread_test();
 
   // 创建线程 A
   // 注意：需要手动分配内存，实际中应由 ObjectPool 或 memory allocator
   // 管理生命周期
-  TaskControlBlock* task_a =
-      new TaskControlBlock("Task A", 1, thread_func_a, (void*)100);
+  auto task_a = new TaskControlBlock("Task A", 1, thread_func_a, (void*)100);
   Singleton<TaskManager>::GetInstance().AddTask(task_a);
 
   // 创建线程 B
-  TaskControlBlock* task_b =
-      new TaskControlBlock("Task B", 2, thread_func_b, (void*)200);
+  auto task_b = new TaskControlBlock("Task B", 2, thread_func_b, (void*)200);
   Singleton<TaskManager>::GetInstance().AddTask(task_b);
 
   klog::Info("Main: Starting scheduler...\n");
