@@ -13,7 +13,7 @@
 #include "singleton.hpp"
 
 TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
-                                   void (*entry)(void*), void* arg)
+                                   ThreadEntry entry, void* arg)
     : name(name),
       pid(pid),
       status(TaskStatus::kUnInit),
@@ -26,11 +26,11 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
       page_table(nullptr),
       cpu_affinity(UINT64_MAX),
       parent_pid(0) {
-  InitThread(entry, arg);
+  InitKernelThread(entry, arg);
 }
 
-TaskControlBlock::TaskControlBlock(const char* name, size_t pid, void* entry,
-                                   void* arg, void* user_sp)
+TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
+                                   ThreadEntry entry, void* arg, void* user_sp)
     : name(name),
       pid(pid),
       status(TaskStatus::kUnInit),
@@ -49,7 +49,7 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid, void* entry,
 // 实现一个简易的 yield
 void sys_yield() { Singleton<TaskManager>::GetInstance().Schedule(); }
 
-void TaskControlBlock::InitThread(void (*entry)(void*), void* arg) {
+void TaskControlBlock::InitKernelThread(ThreadEntry entry, void* arg) {
   // 设置内核栈顶
   auto stack_top = reinterpret_cast<uint64_t>(kernel_stack_top.data()) +
                    kernel_stack_top.size();
@@ -71,7 +71,8 @@ void TaskControlBlock::InitThread(void (*entry)(void*), void* arg) {
   status = TaskStatus::kReady;
 }
 
-void TaskControlBlock::InitUserThread(void* entry, void* arg, void* user_sp) {
+void TaskControlBlock::InitUserThread(ThreadEntry entry, void* arg,
+                                      void* user_sp) {
   // 1. 初始化 TrapContext (用户上下文)
   *trap_context_ptr = cpu_io::TrapContext();
 

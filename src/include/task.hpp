@@ -42,6 +42,8 @@ enum SchedPolicy : uint8_t {
   kPolicyCount    // 策略数量
 };
 
+using ThreadEntry = void (*)(void*);
+
 /**
  * @brief 任务控制块 (Task Control Block, TCB)
  * 管理进程/线程的核心数据结构
@@ -85,7 +87,6 @@ struct TaskControlBlock {
   uint64_t cpu_affinity;
 
   // 父进程 ID
-  // 0 通常表示初始进程或无父进程
   size_t parent_pid;
 
   // 其他预留字段:
@@ -98,8 +99,7 @@ struct TaskControlBlock {
    * @param entry 线程入口函数
    * @param arg 线程参数
    */
-  TaskControlBlock(const char* name, size_t pid, void (*entry)(void*),
-                   void* arg);
+  TaskControlBlock(const char* name, size_t pid, ThreadEntry entry, void* arg);
 
   /**
    * @brief 构造函数 (用户线程)
@@ -109,7 +109,7 @@ struct TaskControlBlock {
    * @param arg 用户程序参数
    * @param user_sp 用户栈顶地址
    */
-  TaskControlBlock(const char* name, size_t pid, void* entry, void* arg,
+  TaskControlBlock(const char* name, size_t pid, ThreadEntry entry, void* arg,
                    void* user_sp);
 
   /// @name 构造/析构函数
@@ -128,7 +128,7 @@ struct TaskControlBlock {
    * @param entry 线程入口函数
    * @param arg 线程参数
    */
-  void InitThread(void (*entry)(void*), void* arg);
+  void InitKernelThread(ThreadEntry entry, void* arg);
 
   /**
    * @brief 初始化用户线程上下文
@@ -136,7 +136,7 @@ struct TaskControlBlock {
    * @param arg 用户程序参数
    * @param user_sp 用户栈顶地址
    */
-  void InitUserThread(void* entry, void* arg, void* user_sp);
+  void InitUserThread(ThreadEntry entry, void* arg, void* user_sp);
 };
 
 class TaskManager {

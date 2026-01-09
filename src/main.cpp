@@ -61,7 +61,7 @@ void user_thread_test() {
   instructions[1] = 0x0000006f;  // j . (infinite loop)
 
   // 4. 映射代码页到用户空间 (VA = 0x10000000)
-  uint64_t user_entry_va = 0x10000000;
+  ThreadEntry user_entry_va = (ThreadEntry)0x10000000;
   // 获取当前页目录物理地址 (假设是恆等映射，直接转为指针)
   void* page_dir =
       reinterpret_cast<void*>(cpu_io::virtual_memory::GetPageDirectory());
@@ -95,8 +95,7 @@ void user_thread_test() {
 
   // 7. 创建用户线程
   TaskControlBlock* user_task = new TaskControlBlock(
-      "UserDemo", 3, reinterpret_cast<void*>(user_entry_va), nullptr,
-      reinterpret_cast<void*>(user_sp));
+      "UserDemo", 3, user_entry_va, nullptr, reinterpret_cast<void*>(user_sp));
 
   Singleton<TaskManager>::GetInstance().AddTask(user_task);
 
