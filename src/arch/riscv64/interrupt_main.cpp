@@ -17,13 +17,8 @@
 #include "task.hpp"
 #include "virtual_memory.hpp"
 
-extern "C" cpu_io::TrapContext* HandleTrap(cpu_io::TrapContext* context) {
-  Singleton<Interrupt>::GetInstance().Do(context->scause,
-                                         reinterpret_cast<uint8_t*>(context));
-  return context;
-}
-
-void InterruptInit(int, const char**) {
+namespace {
+void RegisterInterrupts() {
   // 注册外部中断
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::
@@ -51,7 +46,7 @@ void InterruptInit(int, const char**) {
         return 0;
       });
 
-  // ebreak 中断
+  // 注册 ebreak 中断
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kBreakpoint,
       [](uint64_t exception_code, uint8_t* context) -> uint64_t {
@@ -100,18 +95,6 @@ void InterruptInit(int, const char**) {
       cpu_io::detail::register_info::csr::ScauseInfo::kStoreAmoPageFault,
       page_fault_handler);
 
-  // 初始化 plic
-  auto [plic_addr, plic_size, ndev, context_count] =
-      Singleton<KernelFdt>::GetInstance().GetPlic();
-  Singleton<VirtualMemory>::GetInstance().MapMMIO(plic_addr, plic_size);
-  Singleton<Plic>::GetInstance() =
-      std::move(Plic(plic_addr, ndev, context_count));
-
-  // 为当前 core 开启串口中断
-  Singleton<Plic>::GetInstance().Set(
-      cpu_io::GetCurrentCoreId(),
-      std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial()), 1, true);
-
   // 注册系统调用
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kEcallUserMode,
@@ -119,6 +102,26 @@ void InterruptInit(int, const char**) {
         Syscall(0, context);
         return 0;
       });
+}
+
+}  // namespace
+
+extern "C" cpu_io::TrapContext* HandleTrap(cpu_io::TrapContext* context) {
+  Singleton<Interrupt>::GetInstance().Do(context->scause,
+                                         reinterpret_cast<uint8_t*>(context));
+  return context;
+}
+
+void InterruptInit(int, const char**) {
+  // 注册中断处理函数
+  RegisterInterrupts();
+
+  // 初始化 plic
+  auto [plic_addr, plic_size, ndev, context_count] =
+      Singleton<KernelFdt>::GetInstance().GetPlic();
+  Singleton<VirtualMemory>::GetInstance().MapMMIO(plic_addr, plic_size);
+  Singleton<Plic>::GetInstance() =
+      std::move(Plic(plic_addr, ndev, context_count));
 
   // 设置 trap vector
   auto success =
@@ -135,6 +138,11 @@ void InterruptInit(int, const char**) {
 
   // 开启外部中断
   cpu_io::Sie::Seie::Set();
+
+  // 为当前 core 开启串口中断
+  Singleton<Plic>::GetInstance().Set(
+      cpu_io::GetCurrentCoreId(),
+      std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial()), 1, true);
 
   // 初始化定时器
   TimerInit();
