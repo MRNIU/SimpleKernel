@@ -22,11 +22,12 @@ struct test_case {
   bool (*func)(void);
 };
 
-std::array<test_case, 4> test_cases = {
+std::array<test_case, 5> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test},
     test_case{"spinlock_test", spinlock_test},
     test_case{"memory_test", memory_test},
     test_case{"sk_list_test", sk_list_test},
+    test_case{"sk_vector_test", sk_vector_test},
 };
 
 void run_tests() {

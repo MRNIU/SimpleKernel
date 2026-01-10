@@ -7,8 +7,13 @@ ENABLE_LANGUAGE (ASM)
 
 ADD_EXECUTABLE (
     ${PROJECT_NAME}
-    main.cpp ctor_dtor_test.cpp spinlock_test.cpp memory_test.cpp
-    sk_list_test.cpp ${CMAKE_SOURCE_DIR}/src/memory.cpp)
+    main.cpp
+    ctor_dtor_test.cpp
+    spinlock_test.cpp
+    memory_test.cpp
+    sk_list_test.cpp
+    sk_vector_test.cpp
+    ${CMAKE_SOURCE_DIR}/src/memory.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src

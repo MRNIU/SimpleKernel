@@ -11,7 +11,9 @@
 #include "sk_cstdio"
 #include "sk_iostream"
 #include "sk_libcxx.h"
+#include "sk_list"
 #include "sk_new"
+#include "sk_vector"
 
 namespace {
 
