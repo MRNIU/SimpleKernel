@@ -29,6 +29,9 @@ auto main_smp(int argc, const char** argv) -> int {
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
   klog::Info("Hello SimpleKernel SMP\n");
+
+  sys_yield();
+
   return 0;
 }
 
@@ -63,6 +66,11 @@ auto main(int argc, const char** argv) -> int {
   DumpStack();
 
   klog::info << "Hello SimpleKernel\n";
+
+  // 初始化任务管理器 (设置主线程)
+  Singleton<TaskManager>::GetInstance().InitMainThread();
+
+  sys_yield();
 
   return 0;
 }

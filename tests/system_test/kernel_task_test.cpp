@@ -38,9 +38,6 @@ void thread_func_b(void* arg) {
 auto kernel_task_test() -> bool {
   sk_printf("kernel_task_test: start\n");
 
-  // 初始化任务管理器 (设置主线程)
-  Singleton<TaskManager>::GetInstance().InitMainThread();
-
   // 创建线程 A
   // 注意：需要手动分配内存，实际中应由 ObjectPool 或 memory allocator
   // 管理生命周期

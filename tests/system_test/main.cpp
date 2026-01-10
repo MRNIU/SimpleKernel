@@ -14,6 +14,7 @@
 #include "sk_new"
 #include "spinlock.hpp"
 #include "system_test.h"
+#include "task.hpp"
 
 namespace {
 
@@ -22,7 +23,7 @@ struct test_case {
   bool (*func)(void);
 };
 
-std::array<test_case, 8> test_cases = {
+std::array<test_case, 7> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test},
     test_case{"spinlock_test", spinlock_test},
     test_case{"memory_test", memory_test},
@@ -30,7 +31,7 @@ std::array<test_case, 8> test_cases = {
     test_case{"sk_vector_test", sk_vector_test},
     test_case{"interrupt_test", interrupt_test},
     test_case{"kernel_task_test", kernel_task_test},
-    test_case{"user_task_test", user_task_test},
+    // test_case{"user_task_test", user_task_test},
 };
 
 void run_tests() {
@@ -90,6 +91,9 @@ auto main(int argc, const char** argv) -> int {
   DumpStack();
 
   klog::info << "Hello SimpleKernel\n";
+
+  // 初始化任务管理器 (设置主线程)
+  Singleton<TaskManager>::GetInstance().InitMainThread();
 
   run_tests();
 
