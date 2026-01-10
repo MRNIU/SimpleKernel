@@ -30,6 +30,8 @@ auto main_smp(int argc, const char** argv) -> int {
   InterruptInitSMP(argc, argv);
   klog::Info("Hello SimpleKernel SMP\n");
 
+  Singleton<TaskManager>::GetInstance().InitMainThread();
+
   sys_yield();
 
   return 0;

@@ -12,7 +12,9 @@
 #include <cstdint>
 
 #include "interrupt_base.h"
+#include "per_cpu.hpp"
 #include "sk_list"
+#include "spinlock.hpp"
 
 class SchedulerBase;
 
@@ -140,6 +142,15 @@ struct TaskControlBlock {
 };
 
 /**
+ * @brief 每个核心的调度数据 (RunQueue)
+ */
+struct CpuSchedData {
+  SpinLock lock{"sched_lock"};
+  std::array<SchedulerBase*, SchedPolicy::kPolicyCount> schedulers{};
+  sk_std::list<TaskControlBlock*> sleeping_tasks;
+};
+
+/**
  * @brief 任务管理器
  *
  * 负责管理系统中的所有任务，包括任务的创建、调度、切换等。
@@ -177,7 +188,9 @@ class TaskManager {
    * @brief 获取当前任务
    * @return TaskControlBlock* 当前正在运行的任务
    */
-  TaskControlBlock* GetCurrentTask() const { return current_task; }
+  TaskControlBlock* GetCurrentTask() const {
+    return per_cpu::GetCurrentCore().running_task;
+  }
 
   /**
    * @brief 初始化主线程
@@ -203,33 +216,38 @@ class TaskManager {
    */
   void SetTickFrequency(uint64_t freq) { tick_frequency = freq; }
 
+  /**
+   * @brief 负载均衡 (空闲 core 窃取任务)
+   */
+  void Balance();
+
  private:
   /**
-   * @brief 调度器数组
-   *
-   * 索引对应 SchedPolicy 枚举值。
+   * @brief 每个核心的调度数据
    */
-  std::array<SchedulerBase*, SchedPolicy::kPolicyCount> schedulers;
+  std::array<CpuSchedData, per_cpu::PerCpu::kMaxCoreCount> cpu_schedulers_;
 
   /**
-   * @brief 当前正在运行的任务
+   * @brief 获取当前核心的调度数据
    */
-  TaskControlBlock* current_task = nullptr;
+  CpuSchedData& GetCurrentCpuSched() {
+    return cpu_schedulers_[cpu_io::GetCurrentCoreId()];
+  }
 
   /**
-   * @brief 系统当前 tick
+   * @brief 系统当前 tick (使用原子变量或每核独立
+   * tick，这里为简单起见改为每核独立或者是原子) 但为了兼容
+   * sleep，暂时保留为全局 tick (由主核更新) 或者 每个核维护自己的 tick count
+   * 如果是多核，每个核都有 timer 中断，所以应该是 Per-Cpu Tick
    */
-  uint64_t current_tick = 0;
+  // uint64_t current_tick = 0;
+  // 移到 CpuSchedData 或者作为 atomic
+  std::atomic<uint64_t> current_tick{0};
 
   /**
    * @brief tick 频率 (Hz)
    */
   uint64_t tick_frequency = 100;
-
-  /**
-   * @brief 睡眠任务列表
-   */
-  sk_std::list<TaskControlBlock*> sleeping_tasks;
 };
 
 #endif  // SIMPLEKERNEL_SRC_INCLUDE_TASK_HPP_

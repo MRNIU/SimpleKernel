@@ -16,6 +16,9 @@
 
 #include "singleton.hpp"
 
+struct TaskControlBlock;
+struct CpuSchedData;
+
 namespace per_cpu {
 class PerCpu {
  public:
@@ -28,6 +31,13 @@ class PerCpu {
   ssize_t noff_{0};
   /// 在进入调度线程前是否允许中断
   bool intr_enable_{false};
+
+  /// 当前运行的任务
+  TaskControlBlock* running_task = nullptr;
+  /// 空闲任务
+  TaskControlBlock* idle_task = nullptr;
+  /// 调度数据 (RunQueue) 指针
+  CpuSchedData* sched_data = nullptr;
 
   PerCpu() : core_id_(GetCurrentCoreId()) {}
   explicit PerCpu(size_t id) : core_id_(id) {}
