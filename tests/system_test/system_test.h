@@ -33,5 +33,7 @@ auto memory_test() -> bool;
 auto sk_list_test() -> bool;
 auto sk_vector_test() -> bool;
 auto interrupt_test() -> bool;
+auto kernel_task_test() -> bool;
+auto user_task_test() -> bool;
 
 #endif /* SIMPLEKERNEL_TESTS_SYSTEM_TEST_SYSTEM_TEST_H_ */

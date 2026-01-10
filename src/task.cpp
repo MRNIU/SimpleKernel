@@ -5,8 +5,6 @@
 #include "task.hpp"
 
 #include <cpu_io.h>
-#include <sk_stdlib.h>
-#include <sk_string.h>
 
 #include <algorithm>
 #include <memory>
@@ -16,6 +14,9 @@
 #include "kernel_log.hpp"
 #include "scheduler/fifo_scheduler.hpp"
 #include "singleton.hpp"
+#include "sk_cstring"
+#include "sk_stdlib.h"
+#include "sk_vector"
 #include "virtual_memory.hpp"
 
 static uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
@@ -145,7 +146,7 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid, uint8_t* elf,
 
   // 4. 处理参数 (放入栈中)
   uint8_t* sp = (uint8_t*)stack_page + cpu_io::virtual_memory::kPageSize;
-  std::vector<uint64_t> argv_addrs;
+  sk_std::vector<uint64_t> argv_addrs;
   // 推入字符串
   for (int i = 0; i < argc; ++i) {
     size_t len = strlen(argv[i]) + 1;

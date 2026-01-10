@@ -14,8 +14,11 @@ ADD_EXECUTABLE (
     sk_list_test.cpp
     sk_vector_test.cpp
     interrupt_test.cpp
+    kernel_task_test.cpp
+    user_task_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory.cpp
-    ${CMAKE_SOURCE_DIR}/src/task.cpp)
+    ${CMAKE_SOURCE_DIR}/src/task.cpp
+    ${CMAKE_SOURCE_DIR}/src/syscall.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src
