@@ -121,12 +121,12 @@ struct TaskControlBlock {
    * @brief 构造函数 (用户线程)
    * @param name 任务名称
    * @param pid 进程 ID
-   * @param entry 用户程序入口地址
-   * @param arg 用户程序参数
-   * @param user_sp 用户栈顶地址
+   * @param elf 指向 ELF 镜像的指针
+   * @param argc 参数个数
+   * @param argv 参数数组
    */
-  TaskControlBlock(const char* name, size_t pid, ThreadEntry entry, void* arg,
-                   void* user_sp);
+  TaskControlBlock(const char* name, size_t pid, uint8_t* elf, int argc,
+                   char** argv);
 
   /// @name 构造/析构函数
   /// @{
