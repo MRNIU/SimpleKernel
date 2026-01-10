@@ -12,6 +12,7 @@ ADD_EXECUTABLE (
     spinlock_test.cpp
     memory_test.cpp
     sk_list_test.cpp
+    sk_queue_test.cpp
     sk_vector_test.cpp
     kernel_task_test.cpp
     user_task_test.cpp
