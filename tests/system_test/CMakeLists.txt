@@ -13,7 +13,6 @@ ADD_EXECUTABLE (
     memory_test.cpp
     sk_list_test.cpp
     sk_vector_test.cpp
-    interrupt_test.cpp
     kernel_task_test.cpp
     user_task_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory.cpp

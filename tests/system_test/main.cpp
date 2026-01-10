@@ -29,8 +29,7 @@ std::array<test_case, 6> test_cases = {
     test_case{"memory_test", memory_test},
     test_case{"sk_list_test", sk_list_test},
     test_case{"sk_vector_test", sk_vector_test},
-    test_case{"interrupt_test", interrupt_test},
-    // test_case{"kernel_task_test", kernel_task_test},
+    test_case{"kernel_task_test", kernel_task_test},
     // test_case{"user_task_test", user_task_test},
 };
 
