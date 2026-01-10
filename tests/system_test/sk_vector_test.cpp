@@ -54,7 +54,7 @@ bool test_resize() {
   EXPECT_EQ(v.size(), 5, "Size should be 5 after resize(5)");
   for (size_t i = 0; i < 5; ++i) {
     if (v[i] != 0) {
-      sk_printf("Error: v[%d] should be 0\n", i);
+      sk_printf("Error: v[%ld] should be 0\n", i);
       return false;
     }
   }
