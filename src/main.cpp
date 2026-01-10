@@ -33,66 +33,6 @@ void thread_func_b(void* arg) {
   }
 }
 
-void user_func(void*) { sys_yield(); }
-
-void user_thread_test() {
-  // 1. 获取虚拟内存管理器实例
-  auto& vm = Singleton<VirtualMemory>::GetInstance();
-
-  // 2. 分配用户代码页
-  void* code_page = aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                  cpu_io::virtual_memory::kPageSize);
-  if (!code_page) {
-    klog::Err("Failed to allocate user code page\n");
-    return;
-  }
-
-  // 3. 复制 user_func 到用户代码页
-  sk_std::memcpy(code_page, reinterpret_cast<void*>(user_func), 1024);
-
-  // 4. 创建用户页表并映射代码页 (VA = 0x10000000)
-  // 分配新的页目录
-  void* user_page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                      cpu_io::virtual_memory::kPageSize);
-  if (!user_page_dir) {
-    klog::Err("Failed to allocate user page directory\n");
-    return;
-  }
-  // 复制内核页目录 (共享内核映射)
-  void* kernel_page_dir =
-      reinterpret_cast<void*>(cpu_io::virtual_memory::GetPageDirectory());
-  memcpy(user_page_dir, kernel_page_dir, cpu_io::virtual_memory::kPageSize);
-
-  ThreadEntry user_entry_va = (ThreadEntry)0x10000000;
-
-  vm.MapPage(user_page_dir, reinterpret_cast<void*>(user_entry_va), code_page,
-             cpu_io::virtual_memory::kUser | cpu_io::virtual_memory::kRead |
-                 cpu_io::virtual_memory::kWrite |
-                 cpu_io::virtual_memory::kExec |
-                 cpu_io::virtual_memory::kValid);
-
-  // 5. 分配并映射用户栈 (VA = 0x20000000)
-  void* stack_page = aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                   cpu_io::virtual_memory::kPageSize);
-  uint64_t user_stack_va = 0x20000000;
-  vm.MapPage(user_page_dir, reinterpret_cast<void*>(user_stack_va), stack_page,
-             cpu_io::virtual_memory::kUser | cpu_io::virtual_memory::kRead |
-                 cpu_io::virtual_memory::kWrite |
-                 cpu_io::virtual_memory::kValid);
-
-  // 栈顶 (栈向下增长)
-  uint64_t user_sp = user_stack_va + cpu_io::virtual_memory::kPageSize;
-
-  // 6. 创建用户线程
-  auto user_task =
-      new TaskControlBlock("UserDemo", 3, user_entry_va, nullptr,
-                           reinterpret_cast<void*>(user_sp), user_page_dir);
-
-  Singleton<TaskManager>::GetInstance().AddTask(user_task);
-
-  klog::Info("User thread created. Entry: 0x%lX\n", user_entry_va);
-}
-
 namespace {
 
 /// 非启动核入口
@@ -138,9 +78,6 @@ auto main(int argc, const char** argv) -> int {
 
   // 初始化任务管理器 (设置主线程)
   Singleton<TaskManager>::GetInstance().InitMainThread();
-
-  // 运行用户线程测试
-  user_thread_test();
 
   // 创建线程 A
   // 注意：需要手动分配内存，实际中应由 ObjectPool 或 memory allocator
