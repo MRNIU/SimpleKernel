@@ -13,6 +13,7 @@
 #include "opensbi_interface.h"
 #include "sk_cstdio"
 #include "sk_iostream"
+#include "syscall.hpp"
 #include "task.hpp"
 #include "virtual_memory.hpp"
 
@@ -110,6 +111,14 @@ void InterruptInit(int, const char**) {
   Singleton<Plic>::GetInstance().Set(
       cpu_io::GetCurrentCoreId(),
       std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial()), 1, true);
+
+  // 注册系统调用
+  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+      cpu_io::detail::register_info::csr::ScauseInfo::kEcallUserMode,
+      [](uint64_t, uint8_t* context) -> uint64_t {
+        Syscall(0, context);
+        return 0;
+      });
 
   // 设置 trap vector
   auto success =

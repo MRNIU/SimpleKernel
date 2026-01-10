@@ -10,16 +10,14 @@
 #include "kernel.h"
 #include "kernel_log.hpp"
 #include "sk_cstdio"
+#include "sk_cstring"
 #include "sk_iostream"
 #include "sk_libcxx.h"
 #include "sk_new"
+#include "sk_stdlib.h"
+#include "syscall.hpp"
 #include "task.hpp"
 #include "virtual_memory.hpp"
-
-// 声明 yield
-void sys_yield();
-void sys_sleep(uint64_t ms);
-extern "C" void* aligned_alloc(size_t alignment, size_t size);
 
 void thread_func_a(void* arg) {
   while (1) {
@@ -35,6 +33,8 @@ void thread_func_b(void* arg) {
   }
 }
 
+void user_func(void*) { sys_yield(); }
+
 void user_thread_test() {
   // 1. 获取虚拟内存管理器实例
   auto& vm = Singleton<VirtualMemory>::GetInstance();
@@ -47,19 +47,25 @@ void user_thread_test() {
     return;
   }
 
-  // 3. 写入用户代码: ecall (0x00000073) 然后 j . (0x0000006f)
-  // 这里的指令是为了测试用户态执行和系统调用
-  uint32_t* instructions = reinterpret_cast<uint32_t*>(code_page);
-  instructions[0] = 0x00000073;  // ecall
-  instructions[1] = 0x0000006f;  // j . (infinite loop)
+  // 3. 复制 user_func 到用户代码页
+  sk_std::memcpy(code_page, reinterpret_cast<void*>(user_func), 1024);
 
-  // 4. 映射代码页到用户空间 (VA = 0x10000000)
-  ThreadEntry user_entry_va = (ThreadEntry)0x10000000;
-  // 获取当前页目录物理地址 (假设是恆等映射，直接转为指针)
-  void* page_dir =
+  // 4. 创建用户页表并映射代码页 (VA = 0x10000000)
+  // 分配新的页目录
+  void* user_page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                      cpu_io::virtual_memory::kPageSize);
+  if (!user_page_dir) {
+    klog::Err("Failed to allocate user page directory\n");
+    return;
+  }
+  // 复制内核页目录 (共享内核映射)
+  void* kernel_page_dir =
       reinterpret_cast<void*>(cpu_io::virtual_memory::GetPageDirectory());
+  memcpy(user_page_dir, kernel_page_dir, cpu_io::virtual_memory::kPageSize);
 
-  vm.MapPage(page_dir, reinterpret_cast<void*>(user_entry_va), code_page,
+  ThreadEntry user_entry_va = (ThreadEntry)0x10000000;
+
+  vm.MapPage(user_page_dir, reinterpret_cast<void*>(user_entry_va), code_page,
              cpu_io::virtual_memory::kUser | cpu_io::virtual_memory::kRead |
                  cpu_io::virtual_memory::kWrite |
                  cpu_io::virtual_memory::kExec |
@@ -69,7 +75,7 @@ void user_thread_test() {
   void* stack_page = aligned_alloc(cpu_io::virtual_memory::kPageSize,
                                    cpu_io::virtual_memory::kPageSize);
   uint64_t user_stack_va = 0x20000000;
-  vm.MapPage(page_dir, reinterpret_cast<void*>(user_stack_va), stack_page,
+  vm.MapPage(user_page_dir, reinterpret_cast<void*>(user_stack_va), stack_page,
              cpu_io::virtual_memory::kUser | cpu_io::virtual_memory::kRead |
                  cpu_io::virtual_memory::kWrite |
                  cpu_io::virtual_memory::kValid);
@@ -77,18 +83,10 @@ void user_thread_test() {
   // 栈顶 (栈向下增长)
   uint64_t user_sp = user_stack_va + cpu_io::virtual_memory::kPageSize;
 
-  // 6. 注册系统调用处理函数 (User Env Call = 8)
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
-      8,  // kUserEnvCall
-      [](uint64_t, uint8_t*) -> uint64_t {
-        klog::Info("System call detected from User Mode!\n");
-        sys_yield();
-        return 0;
-      });
-
-  // 7. 创建用户线程
-  auto user_task = new TaskControlBlock("UserDemo", 3, user_entry_va, nullptr,
-                                        reinterpret_cast<void*>(user_sp));
+  // 6. 创建用户线程
+  auto user_task =
+      new TaskControlBlock("UserDemo", 3, user_entry_va, nullptr,
+                           reinterpret_cast<void*>(user_sp), user_page_dir);
 
   Singleton<TaskManager>::GetInstance().AddTask(user_task);
 
@@ -142,7 +140,7 @@ auto main(int argc, const char** argv) -> int {
   Singleton<TaskManager>::GetInstance().InitMainThread();
 
   // 运行用户线程测试
-  // user_thread_test();
+  user_thread_test();
 
   // 创建线程 A
   // 注意：需要手动分配内存，实际中应由 ObjectPool 或 memory allocator

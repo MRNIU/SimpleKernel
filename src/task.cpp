@@ -69,9 +69,6 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
   status = TaskStatus::kReady;
 }
 
-// 实现一个简易的 yield
-void sys_yield() { Singleton<TaskManager>::GetInstance().Schedule(); }
-
 TaskManager::TaskManager() {
   // 初始化调度器数组
   schedulers[SchedPolicy::kRealTime] = new RtScheduler();
@@ -171,4 +168,3 @@ void TaskManager::Sleep(uint64_t ms) {
 
   Schedule();
 }
-void sys_sleep(uint64_t ms) { Singleton<TaskManager>::GetInstance().Sleep(ms); }
