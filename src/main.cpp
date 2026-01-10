@@ -13,6 +13,7 @@
 #include "sk_cstring"
 #include "sk_iostream"
 #include "sk_libcxx.h"
+#include "sk_list"
 #include "sk_new"
 #include "sk_stdlib.h"
 #include "syscall.hpp"
@@ -32,6 +33,7 @@ void thread_func_b(void* arg) {
     sys_sleep(100);
   }
 }
+#include "sk_vector"
 
 namespace {
 

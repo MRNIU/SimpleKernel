@@ -12,6 +12,7 @@ ADD_EXECUTABLE (
     spinlock_test.cpp
     memory_test.cpp
     sk_list_test.cpp
+    sk_vector_test.cpp
     interrupt_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory.cpp
     ${CMAKE_SOURCE_DIR}/src/task.cpp)

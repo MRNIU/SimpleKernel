@@ -14,7 +14,8 @@ ADD_EXECUTABLE (
     kernel_elf_test.cpp
     kernel_fdt_test.cpp
     spinlock_test.cpp
-    sk_list_test.cpp)
+    sk_list_test.cpp
+    sk_vector_test.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME} PRIVATE -Dsk_printf=printf -DUNIT_TEST
