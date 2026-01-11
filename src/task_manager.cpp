@@ -20,6 +20,36 @@
 #include "sk_vector"
 #include "virtual_memory.hpp"
 
+void TaskManager::InitCurrentCore() {
+  // 初始化每个核心的调度器
+  size_t core_id = cpu_io::GetCurrentCoreId();
+  auto& cpu_sched = cpu_schedulers_[core_id];
+
+  if (!cpu_sched.schedulers[SchedPolicy::kNormal]) {
+    cpu_sched.schedulers[SchedPolicy::kRealTime] = new RtScheduler();
+    cpu_sched.schedulers[SchedPolicy::kNormal] = new FifoScheduler();
+    // Idle 策略可以有一个专门的调度器，或者直接使用 idle_task
+    cpu_sched.schedulers[SchedPolicy::kIdle] = nullptr;
+  }
+
+  // 关联 PerCpu
+  auto& cpu_data = per_cpu::GetCurrentCore();
+  cpu_data.sched_data = &cpu_sched;
+
+  auto* main_task = new TaskControlBlock();
+  main_task->name = "Idle/Main";
+
+  // 所有核心的 Idle 任务都使用 PID 0
+  main_task->pid = 0;
+
+  main_task->status = TaskStatus::kRunning;
+  main_task->policy = SchedPolicy::kIdle;
+  main_task->cpu_affinity = (1UL << core_id);
+
+  cpu_data.running_task = main_task;
+  cpu_data.idle_task = main_task;
+}
+
 void TaskManager::AddTask(TaskControlBlock* task) {
   // 简单的负载均衡：如果指定了亲和性，放入对应核心，否则放入当前核心
   // 更复杂的逻辑可以是：寻找最空闲的核心
@@ -122,36 +152,6 @@ void TaskManager::Schedule() {
   if (prev_task != next_task) {
     switch_to(&prev_task->task_context, &next_task->task_context);
   }
-}
-
-void TaskManager::InitCurrentCore() {
-  // 初始化每个核心的调度器
-  size_t core_id = cpu_io::GetCurrentCoreId();
-  auto& cpu_sched = cpu_schedulers_[core_id];
-
-  if (!cpu_sched.schedulers[SchedPolicy::kNormal]) {
-    cpu_sched.schedulers[SchedPolicy::kRealTime] = new RtScheduler();
-    cpu_sched.schedulers[SchedPolicy::kNormal] = new FifoScheduler();
-    // Idle 策略可以有一个专门的调度器，或者直接使用 idle_task
-    cpu_sched.schedulers[SchedPolicy::kIdle] = nullptr;
-  }
-
-  // 关联 PerCpu
-  auto& cpu_data = per_cpu::GetCurrentCore();
-  cpu_data.sched_data = &cpu_sched;
-
-  auto* main_task = new TaskControlBlock();
-  main_task->name = "Idle/Main";
-
-  // 所有核心的 Idle 任务都使用 PID 0
-  main_task->pid = 0;
-
-  main_task->status = TaskStatus::kRunning;
-  main_task->policy = SchedPolicy::kIdle;
-  main_task->cpu_affinity = (1UL << core_id);
-
-  cpu_data.running_task = main_task;
-  cpu_data.idle_task = main_task;
 }
 
 size_t TaskManager::AllocatePid() { return pid_allocator.fetch_add(1); }

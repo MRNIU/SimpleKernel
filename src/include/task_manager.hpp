@@ -46,6 +46,13 @@ class TaskManager {
   /// @}
 
   /**
+   * @brief 为当前核心创建主线程任务
+   *
+   * 将当前正在执行的流包装为主线程任务。
+   */
+  void InitCurrentCore();
+
+  /**
    * @brief 添加任务
    *
    * 根据任务的调度策略，将其添加到对应的调度器中。
@@ -69,13 +76,6 @@ class TaskManager {
   TaskControlBlock* GetCurrentTask() const {
     return per_cpu::GetCurrentCore().running_task;
   }
-
-  /**
-   * @brief 为当前核心创建主线程任务
-   *
-   * 将当前正在执行的流包装为主线程任务。
-   */
-  void InitCurrentCore();
 
   /**
    * @brief 更新系统 tick
