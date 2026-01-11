@@ -193,11 +193,11 @@ class TaskManager {
   }
 
   /**
-   * @brief 初始化主线程
+   * @brief 为当前核心创建主线程任务
    *
-   * 将当前正在执行的流（通常是启动代码后的第一个 C++ 执行流）包装为主线程任务。
+   * 将当前正在执行的流包装为主线程任务。
    */
-  void InitMainThread();
+  void InitCurrentCore();
 
   /**
    * @brief 更新系统 tick
@@ -215,6 +215,12 @@ class TaskManager {
    * @param freq 每秒 tick 数
    */
   void SetTickFrequency(uint64_t freq) { tick_frequency = freq; }
+
+  /**
+   * @brief 分配新的 PID
+   * @return size_t 新的 PID
+   */
+  size_t AllocatePid();
 
   /**
    * @brief 负载均衡 (空闲 core 窃取任务)
@@ -248,6 +254,11 @@ class TaskManager {
    * @brief tick 频率 (Hz)
    */
   uint64_t tick_frequency = 100;
+
+  /**
+   * @brief PID 分配器
+   */
+  std::atomic<size_t> pid_allocator{1};
 };
 
 #endif  // SIMPLEKERNEL_SRC_INCLUDE_TASK_HPP_

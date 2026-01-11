@@ -333,12 +333,13 @@ void TaskManager::Schedule() {
   }
 }
 
-void TaskManager::InitMainThread() {
-  // 为当前核心创建主线程/Idle任务
-  // 注意：不再使用 static，因为每个核心都需要一个
+void TaskManager::InitCurrentCore() {
   auto* main_task = new TaskControlBlock();
   main_task->name = "Idle/Main";
+
+  // 所有核心的 Idle 任务都使用 PID 0
   main_task->pid = 0;
+
   main_task->status = TaskStatus::kRunning;
   main_task->policy = SchedPolicy::kIdle;
   main_task->cpu_affinity = (1UL << cpu_io::GetCurrentCoreId());
@@ -347,6 +348,8 @@ void TaskManager::InitMainThread() {
   cpu_data.running_task = main_task;
   cpu_data.idle_task = main_task;
 }
+
+size_t TaskManager::AllocatePid() { return pid_allocator.fetch_add(1); }
 
 void TaskManager::UpdateTick() {
   // 原子增加全局 tick? 或者只作为计时。
