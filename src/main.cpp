@@ -54,13 +54,17 @@ void _start(int argc, const char** argv) {
 }
 
 void thread_func_a(void* arg) {
-  uint64_t id = (uint64_t)arg;
-  for (int i = 0; i < 5; ++i) {
-    klog::Info("Thread A: running, arg=%d, iter=%d\n", id, i);
-    sys_sleep(50);
+  while (1) {
+    klog::Info("Thread A: running, arg=%d\n", (uint64_t)arg);
+    sys_sleep(100);
   }
-  klog::Info("Thread A: exit\n");
-  sys_exit(0);
+}
+
+void thread_func_b(void* arg) {
+  while (1) {
+    klog::Info("Thread B: running, arg=%d\n", (uint64_t)arg);
+    sys_sleep(100);
+  }
 }
 
 auto main(int argc, const char** argv) -> int {
@@ -74,17 +78,25 @@ auto main(int argc, const char** argv) -> int {
   Singleton<TaskManager>::GetInstance().InitCurrentCore();
 
   // 唤醒其余 core
-  // WakeUpOtherCores();
+  WakeUpOtherCores();
 
   DumpStack();
 
   klog::info << "Hello SimpleKernel\n";
 
-  // 创建线程 A
-  auto task_a = new TaskControlBlock("Task A", 100, thread_func_a, (void*)100);
+  auto task_a = new TaskControlBlock("Task A", 1, thread_func_a, (void*)100);
+  auto task_b = new TaskControlBlock("Task B", 2, thread_func_b, (void*)200);
   Singleton<TaskManager>::GetInstance().AddTask(task_a);
+  Singleton<TaskManager>::GetInstance().AddTask(task_b);
 
-  sys_yield();
+  klog::Info("Main: Starting scheduler...\n");
+
+  // 主线程进入调度循环
+  while (1) {
+    klog::Info("Main Thread: running\n");
+    sys_sleep(100);
+    sys_yield();
+  }
 
   return 0;
 }
