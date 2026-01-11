@@ -9,7 +9,7 @@
 #include "interrupt.h"
 #include "opensbi_interface.h"
 #include "singleton.hpp"
-#include "task.hpp"
+#include "task_manager.hpp"
 
 namespace {
 uint64_t interval = 0;

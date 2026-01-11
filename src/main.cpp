@@ -18,7 +18,8 @@
 #include "sk_stdlib.h"
 #include "sk_vector"
 #include "syscall.hpp"
-#include "task.hpp"
+#include "task_control_block.hpp"
+#include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
 namespace {

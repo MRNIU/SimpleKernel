@@ -6,7 +6,7 @@
 
 #include "kernel_log.hpp"
 #include "singleton.hpp"
-#include "task.hpp"
+#include "task_manager.hpp"
 
 int syscall_dispatcher(int64_t syscall_id, uint64_t args[6]) {
   int64_t ret = 0;

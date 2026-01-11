@@ -17,7 +17,8 @@
 #include "sk_stdlib.h"
 #include "syscall.hpp"
 #include "system_test.h"
-#include "task.hpp"
+#include "task_control_block.hpp"
+#include "task_manager.hpp"
 
 namespace {
 

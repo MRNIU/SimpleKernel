@@ -12,7 +12,8 @@ ADD_SUBDIRECTORY (libcxx)
 ADD_SUBDIRECTORY (arch)
 ADD_SUBDIRECTORY (driver)
 
-ADD_EXECUTABLE (${PROJECT_NAME} main.cpp memory.cpp task.cpp syscall.cpp)
+ADD_EXECUTABLE (${PROJECT_NAME} main.cpp memory.cpp task_control_block.cpp
+                                task_manager.cpp syscall.cpp)
 
 # 添加头文件
 TARGET_INCLUDE_DIRECTORIES (${PROJECT_NAME} PRIVATE ./ include)

@@ -17,7 +17,8 @@ ADD_EXECUTABLE (
     kernel_task_test.cpp
     user_task_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory.cpp
-    ${CMAKE_SOURCE_DIR}/src/task.cpp
+    ${CMAKE_SOURCE_DIR}/src/task_control_block.cpp
+    ${CMAKE_SOURCE_DIR}/src/task_manager.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (

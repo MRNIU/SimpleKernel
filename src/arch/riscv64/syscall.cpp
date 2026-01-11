@@ -7,7 +7,6 @@
 #include "interrupt.h"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
-#include "task.hpp"
 
 void Syscall(uint64_t, uint8_t* context_ptr) {
   // 获取系统调用号和参数

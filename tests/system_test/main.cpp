@@ -13,8 +13,10 @@
 #include "sk_libcxx.h"
 #include "sk_new"
 #include "spinlock.hpp"
+#include "syscall.hpp"
 #include "system_test.h"
-#include "task.hpp"
+#include "task_control_block.hpp"
+#include "task_manager.hpp"
 
 namespace {
 
@@ -23,7 +25,7 @@ struct test_case {
   bool (*func)(void);
 };
 
-std::array<test_case, 6> test_cases = {
+std::array<test_case, 7> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test},
     test_case{"spinlock_test", spinlock_test},
     test_case{"memory_test", memory_test},
@@ -51,6 +53,7 @@ auto main_smp(int argc, const char** argv) -> int {
   ArchInitSMP(argc, argv);
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
+  Singleton<TaskManager>::GetInstance().InitCurrentCore();
   klog::Info("Hello SimpleKernel SMP\n");
 
   run_tests();
@@ -85,6 +88,9 @@ auto main(int argc, const char** argv) -> int {
   // 中断相关初始化
   InterruptInit(argc, argv);
 
+  // 初始化任务管理器 (设置主线程)
+  Singleton<TaskManager>::GetInstance().InitCurrentCore();
+
   // 唤醒其余 core
   WakeUpOtherCores();
 
@@ -92,10 +98,14 @@ auto main(int argc, const char** argv) -> int {
 
   klog::info << "Hello SimpleKernel\n";
 
-  // 初始化任务管理器 (设置主线程)
-  Singleton<TaskManager>::GetInstance().InitMainThread();
-
   run_tests();
+
+  // 主线程进入调度循环
+  while (1) {
+    klog::Info("Main Thread: running\n");
+    sys_sleep(100);
+    sys_yield();
+  }
 
   return 0;
 }
