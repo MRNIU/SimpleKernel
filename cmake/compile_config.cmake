@@ -160,6 +160,7 @@ TARGET_LINK_LIBRARIES (
               dtc-lib
               cpu_io
               bmalloc
+              mpmc_queue
               gcc
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
               opensbi_interface
