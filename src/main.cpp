@@ -28,9 +28,8 @@ auto main_smp(int argc, const char** argv) -> int {
   ArchInitSMP(argc, argv);
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
-  klog::Info("Hello SimpleKernel SMP\n");
-
   Singleton<TaskManager>::GetInstance().InitCurrentCore();
+  klog::Info("Hello SimpleKernel SMP\n");
 
   sys_yield();
 
@@ -54,6 +53,16 @@ void _start(int argc, const char** argv) {
   }
 }
 
+void thread_func_a(void* arg) {
+  uint64_t id = (uint64_t)arg;
+  for (int i = 0; i < 5; ++i) {
+    klog::Info("Thread A: running, arg=%d, iter=%d\n", id, i);
+    sys_sleep(50);
+  }
+  klog::Info("Thread A: exit\n");
+  sys_exit(0);
+}
+
 auto main(int argc, const char** argv) -> int {
   // 架构相关初始化
   ArchInit(argc, argv);
@@ -61,16 +70,19 @@ auto main(int argc, const char** argv) -> int {
   MemoryInit();
   // 中断相关初始化
   InterruptInit(argc, argv);
+  // 初始化任务管理器 (设置主线程)
+  Singleton<TaskManager>::GetInstance().InitCurrentCore();
 
   // 唤醒其余 core
-  WakeUpOtherCores();
+  // WakeUpOtherCores();
 
   DumpStack();
 
   klog::info << "Hello SimpleKernel\n";
 
-  // 初始化任务管理器 (设置主线程)
-  Singleton<TaskManager>::GetInstance().InitCurrentCore();
+  // 创建线程 A
+  auto task_a = new TaskControlBlock("Task A", 100, thread_func_a, (void*)100);
+  Singleton<TaskManager>::GetInstance().AddTask(task_a);
 
   sys_yield();
 
