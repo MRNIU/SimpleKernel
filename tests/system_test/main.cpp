@@ -102,7 +102,6 @@ auto main(int argc, const char** argv) -> int {
 
   // 主线程进入调度循环
   while (1) {
-    klog::Info("Main Thread: running\n");
     sys_sleep(100);
     sys_yield();
   }
