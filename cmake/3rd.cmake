@@ -80,6 +80,9 @@ ADD_SUBDIRECTORY (3rd/bmalloc)
 # https://github.com/MRNIU/cpu_io.git
 ADD_SUBDIRECTORY (3rd/cpu_io)
 
+# https://github.com/MRNIU/MPMCQueue.git
+ADD_SUBDIRECTORY (3rd/MPMCQueue)
+
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
     # https://github.com/riscv-software-src/opensbi.git
     # 编译 opensbi
