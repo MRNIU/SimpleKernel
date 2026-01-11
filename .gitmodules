@@ -34,3 +34,6 @@
 [submodule "3rd/bmalloc"]
 	path = 3rd/bmalloc
 	url = https://github.com/MRNIU/bmalloc.git
+[submodule "3rd/MPMCQueue"]
+	path = 3rd/MPMCQueue
+	url = https://github.com/MRNIU/MPMCQueue.git

@@ -2,6 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <MPMCQueue.hpp>
 #include <cstdint>
 
 #include "arch.h"
