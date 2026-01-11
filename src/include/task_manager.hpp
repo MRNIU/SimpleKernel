@@ -37,11 +37,11 @@ class TaskManager {
  public:
   /// @name 构造/析构函数
   /// @{
-  TaskManager();
-  TaskManager(const TaskManager&) = default;
-  TaskManager(TaskManager&&) = default;
-  auto operator=(const TaskManager&) -> TaskManager& = default;
-  auto operator=(TaskManager&&) -> TaskManager& = default;
+  TaskManager() = default;
+  TaskManager(const TaskManager&) = delete;
+  TaskManager(TaskManager&&) = delete;
+  auto operator=(const TaskManager&) -> TaskManager& = delete;
+  auto operator=(TaskManager&&) -> TaskManager& = delete;
   ~TaskManager() = default;
   /// @}
 

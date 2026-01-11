@@ -20,28 +20,6 @@
 #include "sk_vector"
 #include "virtual_memory.hpp"
 
-TaskManager::TaskManager() {
-  // 初始化每个核心的调度器
-  for (size_t i = 0; i < per_cpu::PerCpu::kMaxCoreCount; ++i) {
-    auto& cpu_sched = cpu_schedulers_[i];
-    cpu_sched.schedulers[SchedPolicy::kRealTime] = new RtScheduler();
-    cpu_sched.schedulers[SchedPolicy::kNormal] = new FifoScheduler();
-    // Idle 策略可以有一个专门的调度器，或者直接使用 idle_task
-    cpu_sched.schedulers[SchedPolicy::kIdle] = nullptr;
-
-    // 关联到 PerCpu
-    // 注意：这里假设 PerCpu 数组已经初始化。
-    // 由于 PerCpu 是 Singleton，且通常在早期访问，这里应该是安全的。
-    // 但是要小心 TaskManager 初始化时机是否晚于 PerCpu 内存分配。
-    // 另一种方式是在 GetCurrentCpuSched 中懒加载或者动态查找。
-    // 为了简单，这里通过 Singleton 获取 PerCpu 并设置指针。
-    auto& per_cpu_data =
-        Singleton<std::array<per_cpu::PerCpu,
-                             per_cpu::PerCpu::kMaxCoreCount>>::GetInstance()[i];
-    per_cpu_data.sched_data = &cpu_sched;
-  }
-}
-
 void TaskManager::AddTask(TaskControlBlock* task) {
   // 简单的负载均衡：如果指定了亲和性，放入对应核心，否则放入当前核心
   // 更复杂的逻辑可以是：寻找最空闲的核心
@@ -147,6 +125,21 @@ void TaskManager::Schedule() {
 }
 
 void TaskManager::InitCurrentCore() {
+  // 初始化每个核心的调度器
+  size_t core_id = cpu_io::GetCurrentCoreId();
+  auto& cpu_sched = cpu_schedulers_[core_id];
+
+  if (!cpu_sched.schedulers[SchedPolicy::kNormal]) {
+    cpu_sched.schedulers[SchedPolicy::kRealTime] = new RtScheduler();
+    cpu_sched.schedulers[SchedPolicy::kNormal] = new FifoScheduler();
+    // Idle 策略可以有一个专门的调度器，或者直接使用 idle_task
+    cpu_sched.schedulers[SchedPolicy::kIdle] = nullptr;
+  }
+
+  // 关联 PerCpu
+  auto& cpu_data = per_cpu::GetCurrentCore();
+  cpu_data.sched_data = &cpu_sched;
+
   auto* main_task = new TaskControlBlock();
   main_task->name = "Idle/Main";
 
@@ -155,9 +148,8 @@ void TaskManager::InitCurrentCore() {
 
   main_task->status = TaskStatus::kRunning;
   main_task->policy = SchedPolicy::kIdle;
-  main_task->cpu_affinity = (1UL << cpu_io::GetCurrentCoreId());
+  main_task->cpu_affinity = (1UL << core_id);
 
-  auto& cpu_data = per_cpu::GetCurrentCore();
   cpu_data.running_task = main_task;
   cpu_data.idle_task = main_task;
 }

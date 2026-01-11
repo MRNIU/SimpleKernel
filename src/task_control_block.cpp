@@ -19,7 +19,9 @@
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
-static uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
+namespace {
+
+uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
   // Check ELF magic
   auto* ehdr = reinterpret_cast<const Elf64_Ehdr*>(elf_data);
   if (ehdr->e_ident[EI_MAG0] != ELFMAG0 || ehdr->e_ident[EI_MAG1] != ELFMAG1 ||
@@ -82,6 +84,8 @@ static uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
   }
   return ehdr->e_entry;
 };
+
+}  // namespace
 
 TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
                                    ThreadEntry entry, void* arg)
