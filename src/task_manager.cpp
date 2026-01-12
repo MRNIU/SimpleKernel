@@ -56,7 +56,7 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   size_t target_core = cpu_io::GetCurrentCoreId();
 
   if (task->cpu_affinity != UINT64_MAX) {
-    // 简化的亲和性处理：寻找第一个允许的核心
+    // 寻找第一个允许的核心
     for (size_t i = 0; i < per_cpu::PerCpu::kMaxCoreCount; ++i) {
       if (task->cpu_affinity & (1UL << i)) {
         target_core = i;
