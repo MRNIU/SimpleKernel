@@ -16,6 +16,12 @@
 #include "sk_list"
 #include "spinlock.hpp"
 
+/// 进程 ID 类型
+using Pid = size_t;
+
+/// 线程入口函数类型
+using ThreadEntry = void (*)(void*);
+
 class SchedulerBase;
 
 /**
@@ -50,30 +56,32 @@ enum SchedPolicy : uint8_t {
   kPolicyCount
 };
 
-using ThreadEntry = void (*)(void*);
-
 /**
- * @brief 任务控制块 (Task Control Block, TCB)
- * 管理进程/线程的核心数据结构
+ * @brief 任务控制块，管理进程/线程的核心数据结构
  */
 struct TaskControlBlock {
-  // 默认内核栈大小 (16 KB)
+  /// 默认内核栈大小 (16 KB)
   static constexpr const size_t kDefaultKernelStackSize = 16 * 1024;
 
-  // 任务名称
+  /// 任务名称
   const char* name = "Unnamed Task";
-  // 进程 ID
-  size_t pid;
 
-  // 进程状态
+  /// 进程 ID
+  Pid pid;
+
+  /// 进程状态
   TaskStatus status = TaskStatus::kUnInit;
+
   // 调度策略
   SchedPolicy policy = SchedPolicy::kNormal;
-  // 优先级 (数字越小优先级越高，用于同策略内部比较，可选)
+
+  /// 优先级 (数字越小优先级越高，用于同策略内部比较，可选)
   int priority = 10;
-  // 唤醒时间 (tick)
+
+  /// 唤醒时间 (tick)
   uint64_t wake_tick = 0;
-  // 内核栈
+
+  /// 内核栈
   std::array<uint8_t, kDefaultKernelStackSize> kernel_stack_top{};
 
   /**
@@ -92,23 +100,16 @@ struct TaskControlBlock {
    */
   cpu_io::CalleeSavedContext task_context{};
 
-  // 页表指针
+  /// 页表指针
   uint64_t* page_table = nullptr;
 
   /**
-   * @brief CPU 亲和性 (CPU Affinity) Mask
-   *
-   * 位掩码，每一位代表一个 CPU 核心。如果某一位为 1，表示允许在该 CPU 上运行。
-   * Bit 0 -> Core 0, Bit 1 -> Core 1 ...
-   * 例如: 0x1 (只在 Core 0), 0x3 (Core 0 或 1), UINT64_MAX (任意 Core)
+   * @brief CPU 亲和性 (CPU Affinity) 位掩码
    */
   uint64_t cpu_affinity = UINT64_MAX;
 
-  // 父进程 ID
-  size_t parent_pid = 0;
-
-  // 其他预留字段:
-  // std::vector<std::shared_ptr<File>> fd_table;
+  /// 父进程 ID
+  Pid parent_pid = 0;
 
   /**
    * @brief 构造函数 (内核线程)
