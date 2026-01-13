@@ -109,7 +109,7 @@ class TaskManager {
   /**
    * @brief 每个核心的调度数据
    */
-  std::array<CpuSchedData, per_cpu::PerCpu::kMaxCoreCount> cpu_schedulers_;
+  std::array<CpuSchedData, SIMPLEKERNEL_MAX_CORE_COUNT> cpu_schedulers_;
 
   /**
    * @brief 获取当前核心的调度数据

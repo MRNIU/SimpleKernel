@@ -10,6 +10,7 @@
 #include "basic_info.hpp"
 #include "kernel.h"
 #include "kernel_log.hpp"
+#include "per_cpu.hpp"
 #include "sk_cstdio"
 #include "sk_cstring"
 #include "sk_iostream"
@@ -27,6 +28,7 @@ namespace {
 
 /// 非启动核入口
 auto main_smp(int argc, const char** argv) -> int {
+  per_cpu::GetCurrentCore() = per_cpu::PerCpu(cpu_io::GetCurrentCoreId());
   ArchInitSMP(argc, argv);
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
@@ -70,6 +72,9 @@ void thread_func_b(void* arg) {
 }
 
 auto main(int argc, const char** argv) -> int {
+  // 初始化当前核心的 per_cpu 数据
+  per_cpu::GetCurrentCore() = per_cpu::PerCpu(cpu_io::GetCurrentCoreId());
+
   // 架构相关初始化
   ArchInit(argc, argv);
   // 内存相关初始化
