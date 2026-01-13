@@ -35,4 +35,11 @@ static constexpr const uint64_t kSimpleKernelPerCpuAlignSize =
 static constexpr const uint64_t kSimpleKernelPerCpuAlignSize = 128;
 #endif
 
+#ifdef SIMPLEKERNEL_DEFAULT_STACK_SIZE
+static constexpr const uint64_t kSimpleKernelDefaultStackSize =
+    SIMPLEKERNEL_DEFAULT_STACK_SIZE;
+#else
+static constexpr const uint64_t kSimpleKernelDefaultStackSize = 4096;
+#endif
+
 #endif /* SIMPLEKERNEL_SRC_PROJECT_CONFIG_H_ */

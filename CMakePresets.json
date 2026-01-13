@@ -90,6 +90,10 @@
         "SIMPLEKERNEL_MAX_CORE_COUNT": {
           "type": "STRING",
           "value": "4"
+        },
+        "SIMPLEKERNEL_DEFAULT_STACK_SIZE": {
+          "type": "STRING",
+          "value": "4096"
         }
       }
     },
