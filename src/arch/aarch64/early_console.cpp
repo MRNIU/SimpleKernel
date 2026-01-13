@@ -19,7 +19,7 @@ void console_putchar(int c, [[maybe_unused]] void* ctx) {
 
 struct EarlyConsole {
   EarlyConsole() {
-    Singleton<Pl011>::GetInstance() = Pl011(kSimpleKernelEarlyConsoleBase);
+    Singleton<Pl011>::GetInstance() = Pl011(SIMPLEKERNEL_EARLY_CONSOLE_BASE);
     pl011 = &Singleton<Pl011>::GetInstance();
 
     sk_putchar = console_putchar;

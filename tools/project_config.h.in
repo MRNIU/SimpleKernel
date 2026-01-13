@@ -8,13 +8,6 @@
 
 #include <cstdint>
 
-#ifdef SIMPLEKERNEL_EARLY_CONSOLE
-static constexpr const uint64_t kSimpleKernelEarlyConsoleBase =
-    SIMPLEKERNEL_EARLY_CONSOLE;
-#else
-static constexpr const uint64_t kSimpleKernelEarlyConsoleBase = 0x0;
-#endif
-
 #ifdef SIMPLEKERNEL_MAX_CORE_COUNT
 static constexpr const uint64_t kSimpleKernelMaxCoreCount =
     SIMPLEKERNEL_MAX_CORE_COUNT;

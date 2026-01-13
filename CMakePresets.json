@@ -161,7 +161,7 @@
           "type": "STRING",
           "value": "-machine;virt"
         },
-        "SIMPLEKERNEL_EARLY_CONSOLE": {
+        "SIMPLEKERNEL_EARLY_CONSOLE_BASE": {
           "type": "STRING",
           "value": "0x10000000"
         },
@@ -198,7 +198,7 @@
           "type": "STRING",
           "value": "-machine;virt,secure=on,gic_version=3;-cpu;cortex-a72"
         },
-        "SIMPLEKERNEL_EARLY_CONSOLE": {
+        "SIMPLEKERNEL_EARLY_CONSOLE_BASE": {
           "type": "STRING",
           "value": "0x9000000"
         },
