@@ -6,7 +6,7 @@
 #define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_VECTOR_
 
 #include <cstddef>
-#include "sk_new"
+#include <new>
 
 namespace sk_std {
 

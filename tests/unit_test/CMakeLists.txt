@@ -16,7 +16,8 @@ ADD_EXECUTABLE (
     spinlock_test.cpp
     sk_list_test.cpp
     sk_queue_test.cpp
-    sk_vector_test.cpp)
+    sk_vector_test.cpp
+    sk_priority_queue_test.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME} PRIVATE -Dsk_printf=printf -DUNIT_TEST

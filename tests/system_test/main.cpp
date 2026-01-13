@@ -3,6 +3,7 @@
  */
 
 #include <cstdint>
+#include <new>
 
 #include "arch.h"
 #include "basic_info.hpp"
@@ -11,7 +12,6 @@
 #include "sk_cstdio"
 #include "sk_iostream"
 #include "sk_libcxx.h"
-#include "sk_new"
 #include "spinlock.hpp"
 #include "syscall.hpp"
 #include "system_test.h"
@@ -25,13 +25,14 @@ struct test_case {
   bool (*func)(void);
 };
 
-std::array<test_case, 7> test_cases = {
+std::array<test_case, 8> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test},
     test_case{"spinlock_test", spinlock_test},
     test_case{"memory_test", memory_test},
     test_case{"sk_list_test", sk_list_test},
     test_case{"sk_queue_test", sk_queue_test},
     test_case{"sk_vector_test", sk_vector_test},
+    test_case{"sk_priority_queue_test", sk_priority_queue_test},
     test_case{"kernel_task_test", kernel_task_test},
     // test_case{"user_task_test", user_task_test},
 };

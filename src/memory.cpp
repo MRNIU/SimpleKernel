@@ -10,7 +10,6 @@
 
 #include "arch.h"
 #include "basic_info.hpp"
-#include "config.h"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "virtual_memory.hpp"

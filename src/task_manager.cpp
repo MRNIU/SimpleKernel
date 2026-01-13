@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <new>
 
 #include "basic_info.hpp"
 #include "kernel_elf.hpp"
@@ -15,7 +16,6 @@
 #include "scheduler/fifo_scheduler.hpp"
 #include "singleton.hpp"
 #include "sk_cstring"
-#include "sk_new"
 #include "sk_stdlib.h"
 #include "sk_vector"
 #include "virtual_memory.hpp"

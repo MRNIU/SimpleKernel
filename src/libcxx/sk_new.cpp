@@ -2,10 +2,8 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "sk_new"
-
 #include <cstddef>
-#include <cstring>
+#include <new>
 
 #include "sk_stdlib.h"
 
