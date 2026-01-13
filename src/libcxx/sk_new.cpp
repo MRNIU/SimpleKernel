@@ -3,8 +3,7 @@
  */
 
 #include <cstddef>
-
-#include "sk_new"
+#include <new>
 
 [[nodiscard]] void* operator new(size_t) { throw; }
 
