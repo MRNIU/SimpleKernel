@@ -104,10 +104,11 @@ subject: 不超过50字符，不加句号
 3. 在架构初始化代码中调用驱动初始化
 
 ### 添加测试
-1. 在 `tests/` 下创建测试文件
+1. 每当你添加一个新模块时，在 `tests/` 下创建测试文件
 2. 使用 GoogleTest 编写测试用例
 3. 更新相应的 `CMakeLists.txt` 以包含新测试
-4. 需要创建 unit-test 与 system-test 两类测试
+4. 如果是 libc/libcxx，需要创建 unit-test 与 system-test 两类测试
+5. 如果是架构相关代码或内核代码，需要创建 system-test 测试
 
 ### 引导链
 | 架构 | 引导流程 |
