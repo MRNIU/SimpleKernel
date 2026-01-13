@@ -8,12 +8,6 @@
 
 #include <cstdint>
 
-#ifdef SIMPLEKERNEL_DEBUG
-static constexpr const auto kSimpleKernelDebugLog = true;
-#else
-static constexpr const auto kSimpleKernelDebugLog = false;
-#endif
-
 #ifdef SIMPLEKERNEL_EARLY_CONSOLE
 static constexpr const uint64_t kSimpleKernelEarlyConsoleBase =
     SIMPLEKERNEL_EARLY_CONSOLE;
