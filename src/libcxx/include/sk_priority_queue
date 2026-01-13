@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <functional>
+
 #include "sk_vector"
 
 namespace sk_std {
