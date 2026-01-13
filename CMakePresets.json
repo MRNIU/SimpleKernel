@@ -86,6 +86,10 @@
         "KERNEL_ELF_OUTPUT_NAME": {
           "type": "STRING",
           "value": "kernel.elf"
+        },
+        "SIMPLEKERNEL_MAX_CORE_COUNT": {
+          "type": "STRING",
+          "value": "4"
         }
       }
     },
@@ -115,6 +119,10 @@
         "QEMU_MACHINE_FLAGS": {
           "type": "STRING",
           "value": ""
+        },
+        "SIMPLEKERNEL_PER_CPU_ALIGN_SIZE": {
+          "type": "STRING",
+          "value": "128"
         }
       }
     },
@@ -145,13 +153,17 @@
           "type": "BOOL",
           "value": "OFF"
         },
+        "QEMU_MACHINE_FLAGS": {
+          "type": "STRING",
+          "value": "-machine;virt"
+        },
         "SIMPLEKERNEL_EARLY_CONSOLE": {
           "type": "STRING",
           "value": "0x10000000"
         },
-        "QEMU_MACHINE_FLAGS": {
+        "SIMPLEKERNEL_PER_CPU_ALIGN_SIZE": {
           "type": "STRING",
-          "value": "-machine;virt"
+          "value": "128"
         }
       }
     },
@@ -178,13 +190,17 @@
           "type": "STRING",
           "value": "${sourceDir}/build_aarch64/bin"
         },
+        "QEMU_MACHINE_FLAGS": {
+          "type": "STRING",
+          "value": "-machine;virt,secure=on,gic_version=3;-cpu;cortex-a72"
+        },
         "SIMPLEKERNEL_EARLY_CONSOLE": {
           "type": "STRING",
           "value": "0x9000000"
         },
-        "QEMU_MACHINE_FLAGS": {
+        "SIMPLEKERNEL_PER_CPU_ALIGN_SIZE": {
           "type": "STRING",
-          "value": "-machine;virt,secure=on,gic_version=3;-cpu;cortex-a72"
+          "value": "128"
         }
       }
     }

@@ -14,41 +14,32 @@
 #include <cstdint>
 #include <cstdlib>
 
+#include "config.h"
 #include "singleton.hpp"
 
 namespace per_cpu {
-class PerCpu {
- public:
-  /// 最大 CPU 数
-  static constexpr size_t kMaxCoreCount = 4;
-
+struct PerCpu {
   /// 核心 ID
-  const size_t core_id_;
+  size_t core_id;
 
-  PerCpu() : core_id_(GetCurrentCoreId()) {}
-  explicit PerCpu(size_t id) : core_id_(id) {}
+  explicit PerCpu(size_t id) : core_id(id) {}
 
   /// @name 构造/析构函数
   /// @{
+  PerCpu() = default;
   PerCpu(const PerCpu&) = default;
   PerCpu(PerCpu&&) = default;
   auto operator=(const PerCpu&) -> PerCpu& = default;
   auto operator=(PerCpu&&) -> PerCpu& = default;
   ~PerCpu() = default;
   /// @}
+} __attribute__((aligned(kSimpleKernelPerCpuAlignSize)));
 
- protected:
-  /**
-   * @brief 获取当前核心 ID
-   * @return size_t 当前核心 ID
-   */
-  [[nodiscard]] virtual __always_inline auto GetCurrentCoreId() -> size_t {
-    return cpu_io::GetCurrentCoreId();
-  }
-};
+static_assert(sizeof(PerCpu) <= kSimpleKernelPerCpuAlignSize,
+              "PerCpu size should not exceed cache line size");
 
 static __always_inline auto GetCurrentCore() -> PerCpu& {
-  return Singleton<std::array<PerCpu, PerCpu::kMaxCoreCount>>::GetInstance()
+  return Singleton<std::array<PerCpu, kSimpleKernelMaxCoreCount>>::GetInstance()
       [cpu_io::GetCurrentCoreId()];
 }
 
