@@ -23,15 +23,6 @@ static std::atomic<int> thread_counter{0};
 thread_local bool interrupt_enabled = true;
 thread_local size_t current_core_id = 0;
 
-class PerCpuTestable : public per_cpu::PerCpu {
- public:
-  PerCpuTestable(size_t id) : per_cpu::PerCpu(id) {}
-  size_t GetCurrentCoreId() override { return current_core_id; }
-};
-
-std::array<PerCpuTestable, PerCpuTestable::kMaxCoreCount> per_cpu_instances = {
-    PerCpuTestable(0), PerCpuTestable(1), PerCpuTestable(2), PerCpuTestable(3)};
-
 class SpinLockTestable : public SpinLock {
  public:
   explicit SpinLockTestable(const char* name) : SpinLock(name) {}
@@ -43,11 +34,6 @@ class SpinLockTestable : public SpinLock {
   bool GetInterruptStatus() override { return interrupt_enabled; }
 
   size_t GetCurrentCoreId() override { return current_core_id; }
-
-  auto GetCurrentCore() -> PerCpuTestable& override {
-    // printf("GetCurrentCoreId() = %zu\n", GetCurrentCoreId());
-    return per_cpu_instances[GetCurrentCoreId()];
-  }
 
   void SetCurrentCoreId(size_t id) { current_core_id = id; }
 };
@@ -93,6 +79,21 @@ TEST_F(SpinLockTest, InterruptControl) {
   lock.unlock();
   // 解锁后中断应该被恢复
   EXPECT_TRUE(lock.GetInterruptStatus());
+}
+
+// 测试中断状态恢复
+TEST_F(SpinLockTest, InterruptRestore) {
+  SpinLockTestable lock("intr_restore_test");
+
+  // 模拟中断原本就是关闭的情况
+  interrupt_enabled = false;
+
+  lock.lock();
+  EXPECT_FALSE(lock.GetInterruptStatus());
+
+  lock.unlock();
+  // 解锁后中断应该保持关闭（恢复原状）
+  EXPECT_FALSE(lock.GetInterruptStatus());
 }
 
 // 测试多线程并发安全性
