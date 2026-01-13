@@ -11,18 +11,11 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "interrupt_base.h"
-#include "per_cpu.hpp"
-#include "sk_list"
-#include "spinlock.hpp"
-
 /// 进程 ID 类型
 using Pid = size_t;
 
 /// 线程入口函数类型
 using ThreadEntry = void (*)(void*);
-
-class SchedulerBase;
 
 /**
  * @brief 任务状态枚举

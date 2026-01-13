@@ -2,21 +2,21 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include "task_control_block.hpp"
+
 #include <cpu_io.h>
+#include <elf.h>
 
 #include <algorithm>
 #include <memory>
 
 #include "basic_info.hpp"
-#include "kernel_elf.hpp"
+#include "interrupt_base.h"
 #include "kernel_log.hpp"
-#include "scheduler/fifo_scheduler.hpp"
 #include "singleton.hpp"
 #include "sk_cstring"
-#include "sk_new"
 #include "sk_stdlib.h"
 #include "sk_vector"
-#include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
 namespace {
