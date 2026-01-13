@@ -2,12 +2,6 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-// 每个 CPU 的栈大小：64KB
-#define STACK_SIZE_PER_CPU      0x10000
-// 最大 CPU 数量
-#define MAX_CPU_COUNT           4
-// 总栈大小
-#define TOTAL_STACK_SIZE        (STACK_SIZE_PER_CPU * MAX_CPU_COUNT)
 // CR4 中的 PAE 位 (位 5)
 #define PAE_BIT                 0x20
 // CR0 中的保护模式位
@@ -24,8 +18,6 @@
 #define APIC_ID_SHIFT           24
 // APIC ID 掩码
 #define APIC_ID_MASK            0xFF
-
-// clang-format off
 
 // 以下是多核启动入口
 .section .text
@@ -104,13 +96,13 @@ _boot:
     // 现在 EBX 包含 CPU ID (APIC ID)
     // 根据 CPU ID 计算栈地址: stack_top + CPU_ID * 4KB
     mov %ebx, %eax
-    mov $STACK_SIZE_PER_CPU, %edx
+    mov $SIMPLEKERNEL_DEFAULT_STACK_SIZE, %edx
     mul %edx
 
     // 计算该 CPU 的栈顶地址
     mov $stack_top, %rsp
     add %rax, %rsp
-    add $STACK_SIZE_PER_CPU, %rsp
+    add $SIMPLEKERNEL_DEFAULT_STACK_SIZE, %rsp
 
     call _start
     hlt
@@ -138,8 +130,5 @@ cr3:
 ap_start64_end:
 
 .section .bss
-// MAX_CPU_COUNT 个 CPU × STACK_SIZE_PER_CPU 每个 = TOTAL_STACK_SIZE 总栈空间
 stack_top:
-    .space TOTAL_STACK_SIZE
-
-// clang-format on
+    .space SIMPLEKERNEL_DEFAULT_STACK_SIZE * SIMPLEKERNEL_MAX_CORE_COUNT

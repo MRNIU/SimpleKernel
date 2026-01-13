@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <source_location>
 
-#include "config.h"
 #include "singleton.hpp"
 #include "sk_cstdio"
 #include "sk_iostream"
@@ -108,7 +107,7 @@ struct LogBase {
     constexpr auto* color = kLogColors[Level];
     LockGuard<SpinLock> lock_guard(log_lock);
     sk_printf("%s[%ld]", color, cpu_io::GetCurrentCoreId());
-    if constexpr (Level == kDebug && kSimpleKernelDebugLog) {
+    if constexpr (Level == kDebug) {
       sk_printf("[%s] ", location.function_name());
     }
 /// @todo 解决警告
@@ -133,14 +132,14 @@ template <typename... Args>
 Debug(Args&&...) -> Debug<Args...>;
 
 __always_inline void DebugBlob(const void* data, size_t size) {
-  if constexpr (kSimpleKernelDebugLog) {
-    LockGuard<SpinLock> lock_guard(klog::detail::log_lock);
-    sk_printf("%s[%ld] ", detail::kMagenta, cpu_io::GetCurrentCoreId());
-    for (size_t i = 0; i < size; i++) {
-      sk_printf("0x%02X ", reinterpret_cast<const uint8_t*>(data)[i]);
-    }
-    sk_printf("%s\n", detail::kReset);
+#ifdef SIMPLEKERNEL_DEBUG
+  LockGuard<SpinLock> lock_guard(klog::detail::log_lock);
+  sk_printf("%s[%ld] ", detail::kMagenta, cpu_io::GetCurrentCoreId());
+  for (size_t i = 0; i < size; i++) {
+    sk_printf("0x%02X ", reinterpret_cast<const uint8_t*>(data)[i]);
   }
+  sk_printf("%s\n", detail::kReset);
+#endif
 }
 
 template <typename... Args>

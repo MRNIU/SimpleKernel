@@ -4,7 +4,6 @@
 
 #include <opensbi_interface.h>
 
-#include "config.h"
 #include "sk_cstdio"
 
 namespace {

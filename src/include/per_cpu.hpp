@@ -14,7 +14,6 @@
 #include <cstdint>
 #include <cstdlib>
 
-#include "config.h"
 #include "singleton.hpp"
 
 namespace per_cpu {
@@ -33,14 +32,14 @@ struct PerCpu {
   auto operator=(PerCpu&&) -> PerCpu& = default;
   ~PerCpu() = default;
   /// @}
-} __attribute__((aligned(kSimpleKernelPerCpuAlignSize)));
+} __attribute__((aligned(SIMPLEKERNEL_PER_CPU_ALIGN_SIZE)));
 
-static_assert(sizeof(PerCpu) <= kSimpleKernelPerCpuAlignSize,
+static_assert(sizeof(PerCpu) <= SIMPLEKERNEL_PER_CPU_ALIGN_SIZE,
               "PerCpu size should not exceed cache line size");
 
 static __always_inline auto GetCurrentCore() -> PerCpu& {
-  return Singleton<std::array<PerCpu, kSimpleKernelMaxCoreCount>>::GetInstance()
-      [cpu_io::GetCurrentCoreId()];
+  return Singleton<std::array<PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT>>::
+      GetInstance()[cpu_io::GetCurrentCoreId()];
 }
 
 }  // namespace per_cpu
