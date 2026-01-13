@@ -3,6 +3,7 @@
  */
 
 #include <cstdint>
+#include <new>
 
 #include "arch.h"
 #include "basic_info.hpp"
@@ -11,7 +12,6 @@
 #include "sk_cstdio"
 #include "sk_iostream"
 #include "sk_libcxx.h"
-#include "sk_new"
 #include "spinlock.hpp"
 #include "system_test.h"
 

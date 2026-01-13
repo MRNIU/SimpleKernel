@@ -4,6 +4,7 @@
 
 #include <MPMCQueue.hpp>
 #include <cstdint>
+#include <new>
 
 #include "arch.h"
 #include "basic_info.hpp"
@@ -14,7 +15,6 @@
 #include "sk_iostream"
 #include "sk_libcxx.h"
 #include "sk_list"
-#include "sk_new"
 #include "sk_priority_queue"
 #include "sk_vector"
 
