@@ -4,7 +4,6 @@
 
 #include <cpu_io.h>
 
-#include "config.h"
 #include "singleton.hpp"
 #include "sk_cstdio"
 

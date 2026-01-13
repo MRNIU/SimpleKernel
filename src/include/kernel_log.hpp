@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <source_location>
 
-#include "config.h"
 #include "singleton.hpp"
 #include "sk_cstdio"
 #include "sk_iostream"
