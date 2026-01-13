@@ -7,9 +7,6 @@
 #include <cpu_io.h>
 #include <elf.h>
 
-#include <algorithm>
-#include <memory>
-
 #include "basic_info.hpp"
 #include "interrupt_base.h"
 #include "kernel_log.hpp"
