@@ -8,13 +8,6 @@
 
 #include <cstdint>
 
-#ifdef SIMPLEKERNEL_MAX_CORE_COUNT
-static constexpr const uint64_t kSimpleKernelMaxCoreCount =
-    SIMPLEKERNEL_MAX_CORE_COUNT;
-#else
-static constexpr const uint64_t kSimpleKernelMaxCoreCount = 4;
-#endif
-
 #ifdef SIMPLEKERNEL_PER_CPU_ALIGN_SIZE
 static constexpr const uint64_t kSimpleKernelPerCpuAlignSize =
     SIMPLEKERNEL_PER_CPU_ALIGN_SIZE;

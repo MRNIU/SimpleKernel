@@ -39,8 +39,8 @@ static_assert(sizeof(PerCpu) <= kSimpleKernelPerCpuAlignSize,
               "PerCpu size should not exceed cache line size");
 
 static __always_inline auto GetCurrentCore() -> PerCpu& {
-  return Singleton<std::array<PerCpu, kSimpleKernelMaxCoreCount>>::GetInstance()
-      [cpu_io::GetCurrentCoreId()];
+  return Singleton<std::array<PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT>>::
+      GetInstance()[cpu_io::GetCurrentCoreId()];
 }
 
 }  // namespace per_cpu
