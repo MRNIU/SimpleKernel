@@ -6,7 +6,6 @@
 #define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_LIST_
 
 #include <cstddef>
-
 #include <new>
 
 namespace sk_std {
