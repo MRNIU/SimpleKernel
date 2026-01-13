@@ -3,7 +3,6 @@
  */
 
 #include <cstddef>
-#include <cstring>
 #include <new>
 
 #include "sk_stdlib.h"
