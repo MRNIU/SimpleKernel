@@ -7,6 +7,8 @@
 
 #include "scheduler_base.hpp"
 #include "sk_list"
+#include "sk_priority_queue"
+#include "task_control_block.hpp"
 
 /**
  * @brief 先来先服务 (FIFO) 调度器，用于普通任务
@@ -38,9 +40,43 @@ class FifoScheduler : public SchedulerBase {
   sk_std::list<TaskControlBlock*> ready_queue;
 };
 
+struct TaskPriorityCompare {
+  bool operator()(TaskControlBlock* a, TaskControlBlock* b) {
+    // 优先级数值越小，优先级越高
+    return a->priority > b->priority;
+  }
+};
+
 /**
- * @brief 简单的优先级调度器 (暂用 FIFO 模拟)，用于实时任务
+ * @brief 优先级调度器，用于实时任务
  */
-class RtScheduler : public FifoScheduler {};
+class RtScheduler : public SchedulerBase {
+ public:
+  void Enqueue(TaskControlBlock* task) override { ready_queue.push(task); }
+
+  TaskControlBlock* PickNext() override {
+    if (ready_queue.empty()) {
+      return nullptr;
+    }
+    TaskControlBlock* next = ready_queue.top();
+    ready_queue.pop();
+    return next;
+  }
+
+  /// @name 构造/析构函数
+  /// @{
+  RtScheduler() = default;
+  RtScheduler(const RtScheduler&) = default;
+  RtScheduler(RtScheduler&&) = default;
+  auto operator=(const RtScheduler&) -> RtScheduler& = default;
+  auto operator=(RtScheduler&&) -> RtScheduler& = default;
+  ~RtScheduler() override = default;
+  /// @}
+
+ private:
+  sk_std::priority_queue<TaskControlBlock*, sk_std::vector<TaskControlBlock*>,
+                         TaskPriorityCompare>
+      ready_queue;
+};
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_ */

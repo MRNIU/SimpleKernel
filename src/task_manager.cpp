@@ -164,9 +164,8 @@ void TaskManager::UpdateTick() {
   auto& cpu_sched = GetCurrentCpuSched();
   cpu_sched.lock.lock();
 
-  auto it = cpu_sched.sleeping_tasks.begin();
-  while (it != cpu_sched.sleeping_tasks.end()) {
-    TaskControlBlock* task = *it;
+  while (!cpu_sched.sleeping_tasks.empty()) {
+    TaskControlBlock* task = cpu_sched.sleeping_tasks.top();
     if (current_tick >= task->wake_tick) {
       task->status = TaskStatus::kReady;
       // 唤醒到本核心队列 (或者根据 Affinity)
@@ -176,9 +175,9 @@ void TaskManager::UpdateTick() {
         cpu_sched.schedulers[task->policy]->Enqueue(task);
       }
 
-      it = cpu_sched.sleeping_tasks.erase(it);
+      cpu_sched.sleeping_tasks.pop();
     } else {
-      ++it;
+      break;
     }
   }
 
@@ -200,7 +199,7 @@ void TaskManager::Sleep(uint64_t ms) {
   cpu_sched.lock.lock();
   current->wake_tick = current_tick + ticks;
   current->status = TaskStatus::kSleeping;
-  cpu_sched.sleeping_tasks.push_back(current);
+  cpu_sched.sleeping_tasks.push(current);
   cpu_sched.lock.unlock();
 
   Schedule();

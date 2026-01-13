@@ -15,8 +15,15 @@
 #include "per_cpu.hpp"
 #include "scheduler/scheduler_base.hpp"
 #include "sk_list"
+#include "sk_priority_queue"
 #include "spinlock.hpp"
 #include "task_control_block.hpp"
+
+struct TaskWakeTickCompare {
+  bool operator()(TaskControlBlock* a, TaskControlBlock* b) {
+    return a->wake_tick > b->wake_tick;
+  }
+};
 
 /**
  * @brief 每个核心的调度数据 (RunQueue)
@@ -24,7 +31,9 @@
 struct CpuSchedData {
   SpinLock lock{"sched_lock"};
   std::array<SchedulerBase*, SchedPolicy::kPolicyCount> schedulers{};
-  sk_std::list<TaskControlBlock*> sleeping_tasks;
+  sk_std::priority_queue<TaskControlBlock*, sk_std::vector<TaskControlBlock*>,
+                         TaskWakeTickCompare>
+      sleeping_tasks;
 };
 
 /**
