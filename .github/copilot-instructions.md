@@ -149,7 +149,7 @@ Singleton<TaskManager>::GetInstance().AddTask(task);
 ### 常见陷阱
 - 内核代码中禁止使用标准库的动态内存分配，使用 `libc/` 和 `libcxx/` 中的实现
 - 不同架构的 `_start` 参数含义不同 (见 `kernel.h` 注释)
-- 编译选项使用 `-ffreestanding`，部分标准库函数不可用
+- 编译选项使用 `-ffreestanding`，部分标准库函数不可用，在 https://en.cppreference.com/w/cpp/freestanding.html 查阅可用库函数
 
 ## 资源链接
 

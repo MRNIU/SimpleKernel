@@ -5,24 +5,15 @@
 #ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_PRIORITY_QUEUE_
 #define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_PRIORITY_QUEUE_
 
+#include <algorithm>
+#include <functional>
+
 #include "sk_vector"
 
 namespace sk_std {
 
-template <class T>
-struct less {
-  bool operator()(const T& lhs, const T& rhs) const { return lhs < rhs; }
-};
-
-template <class T>
-void swap(T& a, T& b) {
-  T temp = static_cast<T&&>(a);
-  a = static_cast<T&&>(b);
-  b = static_cast<T&&>(temp);
-}
-
 template <class T, class Container = vector<T>,
-          class Compare = less<typename Container::value_type>>
+          class Compare = std::less<typename Container::value_type>>
 class priority_queue {
  public:
   using value_type = typename Container::value_type;
@@ -42,12 +33,12 @@ class priority_queue {
 
   priority_queue(const Compare& compare, const Container& cont)
       : c(cont), comp(compare) {
-    make_heap();
+    std::make_heap(c.begin(), c.end(), comp);
   }
 
   priority_queue(const Compare& compare, Container&& cont)
       : c(static_cast<Container&&>(cont)), comp(compare) {
-    make_heap();
+    std::make_heap(c.begin(), c.end(), comp);
   }
 
   bool empty() const { return c.size() == 0; }
@@ -58,75 +49,18 @@ class priority_queue {
 
   void push(const value_type& value) {
     c.push_back(value);
-    push_heap(c.size());
+    std::push_heap(c.begin(), c.end(), comp);
   }
 
   void push(value_type&& value) {
     c.push_back(static_cast<value_type&&>(value));
-    push_heap(c.size());
+    std::push_heap(c.begin(), c.end(), comp);
   }
 
   void pop() {
     if (c.size() > 0) {
-      pop_heap(c.size());
+      std::pop_heap(c.begin(), c.end(), comp);
       c.pop_back();
-    }
-  }
-
- private:
-  void push_heap(size_type n) {
-    // Current element is at index n-1
-    if (n == 0) return;
-    size_type current = n - 1;
-    while (current > 0) {
-      size_type parent = (current - 1) / 2;
-      // If current is larger than parent (using comp), swap them
-      // comp(a, b) means a < b. If parent < current, we swap for max-heap.
-      if (comp(c[parent], c[current])) {
-        swap(c[parent], c[current]);
-        current = parent;
-      } else {
-        break;
-      }
-    }
-  }
-
-  void pop_heap(size_type n) {
-    if (n == 0) return;
-    // Swap root with last element
-    swap(c[0], c[n - 1]);
-    // Sift down the new root, considering heap size is now n-1
-    sift_down(0, n - 1);
-  }
-
-  void sift_down(size_type start, size_type len) {
-    size_type current = start;
-    while (true) {
-      size_type left = 2 * current + 1;
-      size_type right = 2 * current + 2;
-      size_type largest = current;
-
-      if (left < len && comp(c[largest], c[left])) {
-        largest = left;
-      }
-      if (right < len && comp(c[largest], c[right])) {
-        largest = right;
-      }
-
-      if (largest != current) {
-        swap(c[current], c[largest]);
-        current = largest;
-      } else {
-        break;
-      }
-    }
-  }
-
-  void make_heap() {
-    if (c.size() < 2) return;
-    // Start from the last non-leaf node and sift down
-    for (size_type i = c.size() / 2; i > 0; --i) {
-      sift_down(i - 1, c.size());
     }
   }
 };

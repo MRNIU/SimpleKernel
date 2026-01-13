@@ -27,7 +27,7 @@ class queue {
   ~queue() = default;
 
   queue(const queue&) = default;
-  queue(queue&&) = default; // list implementation might not support move specially but it's fine
+  queue(queue&&) = default;
 
   queue& operator=(const queue&) = default;
   queue& operator=(queue&&) = default;
