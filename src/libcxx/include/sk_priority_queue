@@ -6,18 +6,13 @@
 #define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_PRIORITY_QUEUE_
 
 #include <algorithm>
-
+#include <functional>
 #include "sk_vector"
 
 namespace sk_std {
 
-template <class T>
-struct less {
-  bool operator()(const T& lhs, const T& rhs) const { return lhs < rhs; }
-};
-
 template <class T, class Container = vector<T>,
-          class Compare = less<typename Container::value_type>>
+          class Compare = std::less<typename Container::value_type>>
 class priority_queue {
  public:
   using value_type = typename Container::value_type;
