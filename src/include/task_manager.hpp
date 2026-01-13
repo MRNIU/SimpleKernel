@@ -13,11 +13,10 @@
 
 #include "interrupt_base.h"
 #include "per_cpu.hpp"
+#include "scheduler/scheduler_base.hpp"
 #include "sk_list"
 #include "spinlock.hpp"
 #include "task_control_block.hpp"
-
-class SchedulerBase;
 
 /**
  * @brief 每个核心的调度数据 (RunQueue)
