@@ -24,10 +24,6 @@ class PerCpu {
 
   /// 核心 ID
   const size_t core_id_;
-  /// 中断嵌套深度
-  ssize_t noff_{0};
-  /// 在进入调度线程前是否允许中断
-  bool intr_enable_{false};
 
   PerCpu() : core_id_(GetCurrentCoreId()) {}
   explicit PerCpu(size_t id) : core_id_(id) {}
@@ -50,9 +46,6 @@ class PerCpu {
     return cpu_io::GetCurrentCoreId();
   }
 };
-
-/// per cpu 数据
-// static std::array<PerCpu, PerCpu::kMaxCoreCount> g_per_cpu{};
 
 static __always_inline auto GetCurrentCore() -> PerCpu& {
   return Singleton<std::array<PerCpu, PerCpu::kMaxCoreCount>>::GetInstance()
