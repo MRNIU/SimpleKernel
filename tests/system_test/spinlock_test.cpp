@@ -66,6 +66,58 @@ auto test_lock_guard() -> bool {
   return true;
 }
 
+auto test_interrupt_restore() -> bool {
+  sk_printf("Running test_interrupt_restore...\n");
+  TestSpinLock lock("intr");
+
+  // Case 1: Interrupts enabled
+  cpu_io::EnableInterrupt();
+  if (!cpu_io::GetInterruptStatus()) {
+    sk_printf("FAIL: Failed to enable interrupts\n");
+    return false;
+  }
+
+  lock.lock();
+  if (cpu_io::GetInterruptStatus()) {
+    sk_printf("FAIL: Lock didn't disable interrupts\n");
+    lock.unlock();
+    return false;
+  }
+  lock.unlock();
+
+  if (!cpu_io::GetInterruptStatus()) {
+    sk_printf("FAIL: Unlock didn't restore interrupts (expected enabled)\n");
+    return false;
+  }
+
+  // Case 2: Interrupts disabled
+  cpu_io::DisableInterrupt();
+  // Ensure disabled
+  if (cpu_io::GetInterruptStatus()) {
+    sk_printf("FAIL: Failed to disable interrupts for test\n");
+    return false;
+  }
+
+  lock.lock();
+  if (cpu_io::GetInterruptStatus()) {
+    sk_printf("FAIL: Lock enabled interrupts unexpectedly\n");
+    lock.unlock();
+    cpu_io::EnableInterrupt();
+    return false;
+  }
+  lock.unlock();
+
+  if (cpu_io::GetInterruptStatus()) {
+    sk_printf("FAIL: Unlock enabled interrupts (expected disabled)\n");
+    cpu_io::EnableInterrupt();
+    return false;
+  }
+
+  cpu_io::EnableInterrupt();  // Cleanup
+  sk_printf("test_interrupt_restore passed\n");
+  return true;
+}
+
 SpinLock smp_lock("smp_lock");
 int shared_counter = 0;
 std::atomic<int> finished_cores = 0;
@@ -293,6 +345,7 @@ auto spinlock_test() -> bool {
     ret = ret && test_basic_lock();
     ret = ret && test_recursive_lock();
     ret = ret && test_lock_guard();
+    ret = ret && test_interrupt_restore();
   }
 
   // SMP (多核) 测试在所有核心上运行
