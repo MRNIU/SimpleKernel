@@ -10,7 +10,6 @@
 
 #include "arch.h"
 #include "basic_info.hpp"
-#include "config.h"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "virtual_memory.hpp"
@@ -75,9 +74,9 @@ void MemoryInit() {
   Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
 
   // 重新映射早期控制台地址（如果有的话）
-  if (kSimpleKernelEarlyConsoleBase != 0) {
+  if (SIMPLEKERNEL_EARLY_CONSOLE_BASE != 0) {
     Singleton<VirtualMemory>::GetInstance().MapMMIO(
-        kSimpleKernelEarlyConsoleBase, cpu_io::virtual_memory::kPageSize);
+        SIMPLEKERNEL_EARLY_CONSOLE_BASE, cpu_io::virtual_memory::kPageSize);
   }
 
   klog::Info("Memory initialization completed\n");

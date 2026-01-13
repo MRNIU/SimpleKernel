@@ -28,6 +28,8 @@
   }
 
 auto ctor_dtor_test() -> bool;
+auto sk_priority_queue_test() -> bool;
+
 auto spinlock_test() -> bool;
 auto memory_test() -> bool;
 auto sk_list_test() -> bool;
