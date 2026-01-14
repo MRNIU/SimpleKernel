@@ -131,7 +131,8 @@ struct Debug : public detail::LogBase<detail::kDebug, Args...> {
 template <typename... Args>
 Debug(Args&&...) -> Debug<Args...>;
 
-__always_inline void DebugBlob(const void* data, size_t size) {
+__always_inline void DebugBlob([[maybe_unused]] const void* data,
+                               [[maybe_unused]] size_t size) {
 #ifdef SIMPLEKERNEL_DEBUG
   LockGuard<SpinLock> lock_guard(klog::detail::log_lock);
   sk_printf("%s[%ld] ", detail::kMagenta, cpu_io::GetCurrentCoreId());
