@@ -25,7 +25,7 @@ struct test_case {
   bool (*func)(void);
 };
 
-std::array<test_case, 8> test_cases = {
+std::array<test_case, 10> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test},
     test_case{"spinlock_test", spinlock_test},
     test_case{"memory_test", memory_test},
@@ -33,6 +33,8 @@ std::array<test_case, 8> test_cases = {
     test_case{"sk_queue_test", sk_queue_test},
     test_case{"sk_vector_test", sk_vector_test},
     test_case{"sk_priority_queue_test", sk_priority_queue_test},
+    test_case{"sk_rb_tree_test", sk_rb_tree_test},
+    test_case{"sk_set_test", sk_set_test},
     test_case{"kernel_task_test", kernel_task_test},
     // test_case{"user_task_test", user_task_test},
 };

@@ -17,7 +17,9 @@ ADD_EXECUTABLE (
     sk_list_test.cpp
     sk_queue_test.cpp
     sk_vector_test.cpp
-    sk_priority_queue_test.cpp)
+    sk_priority_queue_test.cpp
+    sk_rb_tree_test.cpp
+    sk_set_test.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME} PRIVATE -Dsk_printf=printf -DUNIT_TEST

@@ -15,6 +15,8 @@ ADD_EXECUTABLE (
     sk_queue_test.cpp
     sk_vector_test.cpp
     sk_priority_queue_test.cpp
+    sk_rb_tree_test.cpp
+    sk_set_test.cpp
     kernel_task_test.cpp
     user_task_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory.cpp
