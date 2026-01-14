@@ -64,23 +64,6 @@ class set {
   }
 
   void erase(iterator position) {
-    // RbTree erase takes Rep::iterator
-    // position is Rep::const_iterator
-    // We need to cast it back to const-less iterator because we own the modification.
-    // Since we only have access to node pointer, and RbTreeIterator has it public or accessible.
-    // RbTreeIterator has NodePtr constructor.
-    // Wait, Rep::iterator and Rep::const_iterator both store `node`.
-
-    // Using strict aliasing compliant cast or just reconstruction:
-    // This assumes we can construct iterator from const_iterator which is not standard but we can utilize internal logic.
-    // Or we cast the iterator.
-
-    // Let's rely on the fact that we can construct iterator from node.
-    // But `iterator` (Rep::const_iterator) might not expose `node` publicly?
-    // In `sk_rb_tree.hpp`, `RbTreeIteratorBase` has `node`.
-
-    // We cast away constness of the iterator to match RbTree interface or improve RbTree interface.
-    // But here, I'll assume I can just do:
     t.erase(no_const(position));
   }
 
@@ -95,14 +78,6 @@ class set {
 
  private:
   typename Rep::iterator no_const(iterator it) {
-      // Create a mutable iterator from const iterator
-      // Since they share the same base structure and we know it's safe inside set implementation
-      // Use a trick or direct construction if constructor available.
-      // My RbTreeIterator has `node`.
-      // I can add a method to convert or just copy the node pointer.
-      // But `node` is in Base.
-      // `iterator` is `const_iterator` here (typedef).
-      // `Rep::iterator` is mutable iterator.
       return typename Rep::iterator((typename RbTreeNode<value_type>::LinkType)it.node);
   }
 };
