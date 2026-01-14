@@ -23,7 +23,7 @@ void RegisterInterrupts() {
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::
           kSupervisorExternalInterrupt,
-      [](uint64_t exception_code, uint8_t*) -> uint64_t {
+      [](uint64_t, uint8_t*) -> uint64_t {
         // 获取触发中断的源 ID
         auto source_id = Singleton<Plic>::GetInstance().Which();
         Singleton<Plic>::GetInstance().Do(source_id, nullptr);
@@ -176,17 +176,6 @@ void InterruptInitSMP(int, const char**) {
 
   // 初始化定时器
   TimerInitSMP();
-
-  // 注册软中断 (IPI)
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::csr::ScauseInfo::
-          kSupervisorSoftwareInterrupt,
-      [](uint64_t, uint8_t*) -> uint64_t {
-        // 清软中断 pending 位
-        cpu_io::Sip::Ssip::Clear();
-        klog::Debug("Core %d received IPI\n", cpu_io::GetCurrentCoreId());
-        return 0;
-      });
 
   klog::Info("Hello InterruptInitSMP\n");
 }
