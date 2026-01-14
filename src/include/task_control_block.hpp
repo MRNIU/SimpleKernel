@@ -56,6 +56,19 @@ struct TaskControlBlock {
   /// 默认内核栈大小 (16 KB)
   static constexpr const size_t kDefaultKernelStackSize = 16 * 1024;
 
+  struct PriorityCompare {
+    bool operator()(TaskControlBlock* a, TaskControlBlock* b) {
+      // 优先级数值越小，优先级越高
+      return a->priority > b->priority;
+    }
+  };
+
+  struct WakeTickCompare {
+    bool operator()(TaskControlBlock* a, TaskControlBlock* b) {
+      return a->wake_tick > b->wake_tick;
+    }
+  };
+
   /// 任务名称
   const char* name = "Unnamed Task";
 

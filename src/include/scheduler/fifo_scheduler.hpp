@@ -40,13 +40,6 @@ class FifoScheduler : public SchedulerBase {
   sk_std::list<TaskControlBlock*> ready_queue;
 };
 
-struct TaskPriorityCompare {
-  bool operator()(TaskControlBlock* a, TaskControlBlock* b) {
-    // 优先级数值越小，优先级越高
-    return a->priority > b->priority;
-  }
-};
-
 /**
  * @brief 优先级调度器，用于实时任务
  */
@@ -75,7 +68,7 @@ class RtScheduler : public SchedulerBase {
 
  private:
   sk_std::priority_queue<TaskControlBlock*, sk_std::vector<TaskControlBlock*>,
-                         TaskPriorityCompare>
+                         TaskControlBlock::PriorityCompare>
       ready_queue;
 };
 
