@@ -1,0 +1,615 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_RB_TREE_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_RB_TREE_
+
+#include <cstddef>
+#include <functional>
+#include <new>
+#include <utility>
+
+namespace sk_std {
+
+enum RbTreeColor { kRed = false, kBlack = true };
+
+struct RbTreeNodeBase {
+  using BasePtr = RbTreeNodeBase*;
+  using ConstBasePtr = const RbTreeNodeBase*;
+
+  RbTreeColor color;
+  BasePtr parent;
+  BasePtr left;
+  BasePtr right;
+
+  static BasePtr minimum(BasePtr x) {
+    while (x->left != nullptr) x = x->left;
+    return x;
+  }
+
+  static BasePtr maximum(BasePtr x) {
+    while (x->right != nullptr) x = x->right;
+    return x;
+  }
+};
+
+template <typename Value>
+struct RbTreeNode : public RbTreeNodeBase {
+  using LinkType = RbTreeNode<Value>*;
+  Value value_field;
+};
+
+struct RbTreeIteratorBase {
+  using BasePtr = RbTreeNodeBase::BasePtr;
+  BasePtr node;
+
+  RbTreeIteratorBase() : node(nullptr) {}
+  RbTreeIteratorBase(BasePtr x) : node(x) {}
+
+  void increment() {
+    if (node->right != nullptr) {
+      node = node->right;
+      while (node->left != nullptr) node = node->left;
+    } else {
+      BasePtr y = node->parent;
+      while (node == y->right) {
+        node = y;
+        y = y->parent;
+      }
+      if (node->right != y) node = y;
+    }
+  }
+
+  void decrement() {
+    if (node->color == kRed && node->parent->parent == node) {
+      node = node->right;
+    } else if (node->left != nullptr) {
+      BasePtr y = node->left;
+      while (y->right != nullptr) y = y->right;
+      node = y;
+    } else {
+      BasePtr y = node->parent;
+      while (node == y->left) {
+        node = y;
+        y = y->parent;
+      }
+      node = y;
+    }
+  }
+};
+
+template <typename Value, typename Ref, typename Ptr>
+struct RbTreeIterator : public RbTreeIteratorBase {
+  using Self = RbTreeIterator<Value, Ref, Ptr>;
+  using LinkType = RbTreeNode<Value>*;
+
+  RbTreeIterator() {}
+  RbTreeIterator(LinkType x) : RbTreeIteratorBase(x) {}
+  RbTreeIterator(RbTreeNodeBase::BasePtr x) : RbTreeIteratorBase(x) {}
+  RbTreeIterator(RbTreeNodeBase::ConstBasePtr x)
+      : RbTreeIteratorBase(const_cast<RbTreeNodeBase::BasePtr>(x)) {}
+  RbTreeIterator(const RbTreeIterator<Value, Value&, Value*>& other)
+      : RbTreeIteratorBase(other.node) {}
+
+  Ref operator*() const { return static_cast<LinkType>(node)->value_field; }
+  Ptr operator->() const { return &static_cast<LinkType>(node)->value_field; }
+
+  Self& operator++() {
+    increment();
+    return *this;
+  }
+  Self operator++(int) {
+    Self tmp = *this;
+    increment();
+    return tmp;
+  }
+  Self& operator--() {
+    decrement();
+    return *this;
+  }
+  Self operator--(int) {
+    Self tmp = *this;
+    decrement();
+    return tmp;
+  }
+
+  bool operator==(const Self& x) const { return node == x.node; }
+  bool operator!=(const Self& x) const { return node != x.node; }
+};
+
+inline void RbTreeRotateLeft(RbTreeNodeBase* x, RbTreeNodeBase*& root) {
+  RbTreeNodeBase* y = x->right;
+  x->right = y->left;
+  if (y->left != nullptr) y->left->parent = x;
+  y->parent = x->parent;
+  if (x == root)
+    root = y;
+  else if (x == x->parent->left)
+    x->parent->left = y;
+  else
+    x->parent->right = y;
+  y->left = x;
+  x->parent = y;
+}
+
+inline void RbTreeRotateRight(RbTreeNodeBase* x, RbTreeNodeBase*& root) {
+  RbTreeNodeBase* y = x->left;
+  x->left = y->right;
+  if (y->right != nullptr) y->right->parent = x;
+  y->parent = x->parent;
+  if (x == root)
+    root = y;
+  else if (x == x->parent->right)
+    x->parent->right = y;
+  else
+    x->parent->left = y;
+  y->right = x;
+  x->parent = y;
+}
+
+inline void RbTreeRebalance(RbTreeNodeBase* x, RbTreeNodeBase*& root) {
+  x->color = kRed;
+  while (x != root && x->parent->color == kRed) {
+    if (x->parent == x->parent->parent->left) {
+      RbTreeNodeBase* y = x->parent->parent->right;
+      if (y != nullptr && y->color == kRed) {
+        x->parent->color = kBlack;
+        y->color = kBlack;
+        x->parent->parent->color = kRed;
+        x = x->parent->parent;
+      } else {
+        if (x == x->parent->right) {
+          x = x->parent;
+          RbTreeRotateLeft(x, root);
+        }
+        x->parent->color = kBlack;
+        x->parent->parent->color = kRed;
+        RbTreeRotateRight(x->parent->parent, root);
+      }
+    } else {
+      RbTreeNodeBase* y = x->parent->parent->left;
+      if (y != nullptr && y->color == kRed) {
+        x->parent->color = kBlack;
+        y->color = kBlack;
+        x->parent->parent->color = kRed;
+        x = x->parent->parent;
+      } else {
+        if (x == x->parent->left) {
+          x = x->parent;
+          RbTreeRotateRight(x, root);
+        }
+        x->parent->color = kBlack;
+        x->parent->parent->color = kRed;
+        RbTreeRotateLeft(x->parent->parent, root);
+      }
+    }
+  }
+  root->color = kBlack;
+}
+
+inline RbTreeNodeBase* RbTreeRebalanceForErase(RbTreeNodeBase* z,
+                                               RbTreeNodeBase*& root,
+                                               RbTreeNodeBase*& left_most,
+                                               RbTreeNodeBase*& right_most) {
+  RbTreeNodeBase* y = z;
+  RbTreeNodeBase* x = nullptr;
+  RbTreeNodeBase* x_parent = nullptr;
+
+  if (y->left == nullptr)
+    x = y->right;
+  else if (y->right == nullptr)
+    x = y->left;
+  else {
+    y = y->right;
+    while (y->left != nullptr) y = y->left;
+    x = y->right;
+  }
+
+  if (y != z) {
+    z->left->parent = y;
+    y->left = z->left;
+    if (y != z->right) {
+      x_parent = y->parent;
+      if (x) x->parent = y->parent;
+      y->parent->left = x;
+      y->right = z->right;
+      z->right->parent = y;
+    } else
+      x_parent = y;
+    if (root == z)
+      root = y;
+    else if (z->parent->left == z)
+      z->parent->left = y;
+    else
+      z->parent->right = y;
+    y->parent = z->parent;
+    std::swap(y->color, z->color);
+    y = z;
+    // y now points to node to be actually deleted
+  } else {
+    x_parent = y->parent;
+    if (x) x->parent = y->parent;
+    if (root == z)
+      root = x;
+    else if (z->parent->left == z)
+      z->parent->left = x;
+    else
+      z->parent->right = x;
+    if (left_most == z) {
+      if (z->right == nullptr)
+        left_most = z->parent;
+      else
+        left_most = RbTreeNodeBase::minimum(x);
+    }
+    if (right_most == z) {
+      if (z->left == nullptr)
+        right_most = z->parent;
+      else
+        right_most = RbTreeNodeBase::maximum(x);
+    }
+  }
+
+  if (y->color != kRed) {
+    while (x != root && (x == nullptr || x->color == kBlack)) {
+      if (x == x_parent->left) {
+        RbTreeNodeBase* w = x_parent->right;
+        if (w->color == kRed) {
+          w->color = kBlack;
+          x_parent->color = kRed;
+          RbTreeRotateLeft(x_parent, root);
+          w = x_parent->right;
+        }
+        if ((w->left == nullptr || w->left->color == kBlack) &&
+            (w->right == nullptr || w->right->color == kBlack)) {
+          w->color = kRed;
+          x = x_parent;
+          x_parent = x_parent->parent;
+        } else {
+          if (w->right == nullptr || w->right->color == kBlack) {
+            if (w->left) w->left->color = kBlack;
+            w->color = kRed;
+            RbTreeRotateRight(w, root);
+            w = x_parent->right;
+          }
+          w->color = x_parent->color;
+          x_parent->color = kBlack;
+          if (w->right) w->right->color = kBlack;
+          RbTreeRotateLeft(x_parent, root);
+          break;
+        }
+      } else {
+        RbTreeNodeBase* w = x_parent->left;
+        if (w->color == kRed) {
+          w->color = kBlack;
+          x_parent->color = kRed;
+          RbTreeRotateRight(x_parent, root);
+          w = x_parent->left;
+        }
+        if ((w->right == nullptr || w->right->color == kBlack) &&
+            (w->left == nullptr || w->left->color == kBlack)) {
+          w->color = kRed;
+          x = x_parent;
+          x_parent = x_parent->parent;
+        } else {
+          if (w->left == nullptr || w->left->color == kBlack) {
+            if (w->right) w->right->color = kBlack;
+            w->color = kRed;
+            RbTreeRotateLeft(w, root);
+            w = x_parent->left;
+          }
+          w->color = x_parent->color;
+          x_parent->color = kBlack;
+          if (w->left) w->left->color = kBlack;
+          RbTreeRotateRight(x_parent, root);
+          break;
+        }
+      }
+    }
+    if (x) x->color = kBlack;
+  }
+  return y;
+}
+
+template <typename Key, typename Value, typename KeyOfValue, typename Compare>
+class RbTree {
+ public:
+  using key_type = Key;
+  using value_type = Value;
+  using pointer = value_type*;
+  using const_pointer = const value_type*;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using LinkType = RbTreeNode<Value>*;
+  using BasePtr = RbTreeNodeBase*;
+  using ConstBasePtr = const RbTreeNodeBase*;
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
+
+  using iterator = RbTreeIterator<Value, Value&, Value*>;
+  using const_iterator = RbTreeIterator<Value, const Value&, const Value*>;
+
+ protected:
+  size_type node_count_;
+  RbTreeNodeBase header_;
+  Compare key_compare_;
+
+  BasePtr& root() { return header_.parent; }
+  ConstBasePtr root() const { return header_.parent; }
+  BasePtr& leftmost() { return header_.left; }
+  ConstBasePtr leftmost() const { return header_.left; }
+  BasePtr& rightmost() { return header_.right; }
+  ConstBasePtr rightmost() const { return header_.right; }
+
+  static LinkType create_node(const value_type& x) {
+    LinkType tmp = new RbTreeNode<Value>();
+    tmp->value_field = x;
+    return tmp;
+  }
+
+  static void destroy_node(LinkType p) {
+    ::operator delete(p);
+  }
+
+  static LinkType clone_node(LinkType x) {
+    LinkType tmp = create_node(x->value_field);
+    tmp->color = x->color;
+    tmp->left = nullptr;
+    tmp->right = nullptr;
+    return tmp;
+  }
+
+ public:
+  RbTree() : node_count_(0), key_compare_() {
+    header_.color = kRed;
+    header_.parent = nullptr;
+    header_.left = &header_;
+    header_.right = &header_;
+  }
+
+  explicit RbTree(const Compare& comp) : node_count_(0), key_compare_(comp) {
+    header_.color = kRed;
+    header_.parent = nullptr;
+    header_.left = &header_;
+    header_.right = &header_;
+  }
+
+  RbTree(const RbTree& x) : node_count_(0), key_compare_(x.key_compare_) {
+    header_.color = kRed;
+    header_.parent = nullptr;
+    header_.left = &header_;
+    header_.right = &header_;
+    if (x.root() != nullptr) {
+      root() = copy(x.root(), &header_);
+      leftmost() = RbTreeNodeBase::minimum(root());
+      rightmost() = RbTreeNodeBase::maximum(root());
+      node_count_ = x.node_count_;
+    }
+  }
+
+  RbTree& operator=(const RbTree& x) {
+    if (this != &x) {
+      clear();
+      key_compare_ = x.key_compare_;
+      if (x.root() != nullptr) {
+        root() = copy(x.root(), &header_);
+        leftmost() = RbTreeNodeBase::minimum(root());
+        rightmost() = RbTreeNodeBase::maximum(root());
+        node_count_ = x.node_count_;
+      }
+    }
+    return *this;
+  }
+
+  Compare key_comp() const { return key_compare_; }
+
+  ~RbTree() { clear(); }
+
+  iterator begin() { return leftmost(); }
+  const_iterator begin() const { return leftmost(); }
+  iterator end() { return &header_; }
+  const_iterator end() const { return &header_; }
+
+  bool empty() const { return node_count_ == 0; }
+  size_type size() const { return node_count_; }
+
+  void clear() {
+    if (node_count_ != 0) {
+      erase_recursive(root());
+      root() = nullptr;
+      leftmost() = &header_;
+      rightmost() = &header_;
+      node_count_ = 0;
+    }
+  }
+
+  std::pair<iterator, bool> insert_unique(const value_type& v) {
+    LinkType y = (LinkType)&header_;
+    LinkType x = (LinkType)root();
+    bool comp = true;
+
+    while (x != nullptr) {
+      y = x;
+      comp = key_compare_(KeyOfValue()(v), KeyOfValue()(x->value_field));
+      x = comp ? (LinkType)x->left : (LinkType)x->right;
+    }
+
+    iterator j = iterator(y);
+    if (comp) {
+      if (j == begin())
+        return std::pair<iterator, bool>(insert_aux(x, y, v), true);
+      else
+        --j;
+    }
+
+    if (key_compare_(KeyOfValue()(*j), KeyOfValue()(v)))
+      return std::pair<iterator, bool>(insert_aux(x, y, v), true);
+
+    return std::pair<iterator, bool>(j, false);
+  }
+
+  iterator find(const key_type& k) {
+    LinkType y = (LinkType)&header_;
+    LinkType x = (LinkType)root();
+
+    while (x != nullptr) {
+      if (!key_compare_(KeyOfValue()(x->value_field), k)) {
+        y = x;
+        x = (LinkType)x->left;
+      } else {
+        x = (LinkType)x->right;
+      }
+    }
+    iterator j = iterator(y);
+    return (j == end() || key_compare_(k, KeyOfValue()(*j))) ? end() : j;
+  }
+
+  const_iterator find(const key_type& k) const {
+    LinkType y = (LinkType)&header_;
+    LinkType x = (LinkType)root();
+
+    while (x != nullptr) {
+      if (!key_compare_(KeyOfValue()(x->value_field), k)) {
+        y = x;
+        x = (LinkType)x->left;
+      } else {
+        x = (LinkType)x->right;
+      }
+    }
+    const_iterator j = const_iterator(y);
+    return (j == end() || key_compare_(k, KeyOfValue()(*j))) ? end() : j;
+  }
+
+  void erase(iterator position) {
+    LinkType y = (LinkType)RbTreeRebalanceForErase(
+        position.node, header_.parent, header_.left, header_.right);
+    destroy_node(y);
+    --node_count_;
+  }
+
+  size_type erase(const key_type& x) {
+    std::pair<iterator, iterator> p = equal_range(x);
+    size_type n = 0;
+    iterator first = p.first;
+    iterator last = p.second;
+    while (first != last) {
+      erase(first++);
+      ++n;
+    }
+    return n;
+  }
+
+  std::pair<iterator, iterator> equal_range(const key_type& k) {
+      return std::pair<iterator, iterator>(lower_bound(k), upper_bound(k));
+  }
+
+  std::pair<const_iterator, const_iterator> equal_range(const key_type& k) const {
+    return std::pair<const_iterator, const_iterator>(lower_bound(k),
+                                                     upper_bound(k));
+  }
+
+  iterator lower_bound(const key_type& k) {
+      LinkType y = (LinkType)&header_;
+      LinkType x = (LinkType)root();
+
+      while(x != nullptr) {
+          if (!key_compare_(KeyOfValue()(x->value_field), k)) {
+              y = x;
+              x = (LinkType)x->left;
+          } else {
+              x = (LinkType)x->right;
+          }
+      }
+      return iterator(y);
+  }
+
+  const_iterator lower_bound(const key_type& k) const {
+    ConstBasePtr y = &header_;
+    const RbTreeNode<Value>* x = (const RbTreeNode<Value>*)root();
+
+    while (x != nullptr) {
+      if (!key_compare_(KeyOfValue()(x->value_field), k)) {
+        y = x;
+        x = (const RbTreeNode<Value>*)x->left;
+      } else {
+        x = (const RbTreeNode<Value>*)x->right;
+      }
+    }
+    return const_iterator(y);
+  }
+
+  iterator upper_bound(const key_type& k) {
+      LinkType y = (LinkType)&header_;
+      LinkType x = (LinkType)root();
+
+      while(x != nullptr) {
+          if (key_compare_(k, KeyOfValue()(x->value_field))) {
+              y = x;
+              x = (LinkType)x->left;
+          } else {
+              x = (LinkType)x->right;
+          }
+      }
+      return iterator(y);
+  }
+
+  const_iterator upper_bound(const key_type& k) const {
+    ConstBasePtr y = &header_;
+    const RbTreeNode<Value>* x = (const RbTreeNode<Value>*)root();
+
+    while (x != nullptr) {
+      if (key_compare_(k, KeyOfValue()(x->value_field))) {
+        y = x;
+        x = (const RbTreeNode<Value>*)x->left;
+      } else {
+        x = (const RbTreeNode<Value>*)x->right;
+      }
+    }
+    return const_iterator(y);
+  }
+
+ private:
+  LinkType copy(ConstBasePtr x, BasePtr p) {
+    LinkType new_node = clone_node((LinkType)x);
+    new_node->parent = p;
+    if (x->left) new_node->left = copy(x->left, new_node);
+    if (x->right) new_node->right = copy(x->right, new_node);
+    return new_node;
+  }
+
+  void erase_recursive(BasePtr x) {
+    while (x != nullptr) {
+      erase_recursive(x->right);
+      BasePtr y = x->left;
+      destroy_node((LinkType)x);
+      x = y;
+    }
+  }
+
+  iterator insert_aux(LinkType x, LinkType y, const value_type& v) {
+    LinkType z = create_node(v);
+    if (y == &header_ || x != nullptr ||
+        key_compare_(KeyOfValue()(v), KeyOfValue()(y->value_field))) {
+      y->left = z;
+      if (y == &header_) {
+        header_.parent = z;
+        header_.right = z;
+      } else if (y == header_.left) {
+        header_.left = z;
+      }
+    } else {
+      y->right = z;
+      if (y == header_.right) header_.right = z;
+    }
+    z->parent = y;
+    z->left = nullptr;
+    z->right = nullptr;
+    RbTreeRebalance(z, header_.parent);
+    ++node_count_;
+    return iterator(z);
+  }
+};
+
+}  // namespace sk_std
+
+#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_RB_TREE_
