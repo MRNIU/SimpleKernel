@@ -103,7 +103,7 @@ struct RbTreeIterator : public RbTreeIteratorBase {
 
  public:
   RbTreeIterator(const RbTreeIterator<Value, Value&, Value*>& other)
-      requires(!IsSame<Self, RbTreeIterator<Value, Value&, Value*>>::value)
+    requires(!IsSame<Self, RbTreeIterator<Value, Value&, Value*>>::value)
       : RbTreeIteratorBase(other.node) {}
 
   Self& operator=(const Self& other) {
@@ -366,9 +366,7 @@ class RbTree {
     return tmp;
   }
 
-  static void destroy_node(LinkType p) {
-    delete p;
-  }
+  static void destroy_node(LinkType p) { delete p; }
 
   static LinkType clone_node(LinkType x) {
     LinkType tmp = create_node(x->value_field);
@@ -519,27 +517,28 @@ class RbTree {
   }
 
   std::pair<iterator, iterator> equal_range(const key_type& k) {
-      return std::pair<iterator, iterator>(lower_bound(k), upper_bound(k));
+    return std::pair<iterator, iterator>(lower_bound(k), upper_bound(k));
   }
 
-  std::pair<const_iterator, const_iterator> equal_range(const key_type& k) const {
+  std::pair<const_iterator, const_iterator> equal_range(
+      const key_type& k) const {
     return std::pair<const_iterator, const_iterator>(lower_bound(k),
                                                      upper_bound(k));
   }
 
   iterator lower_bound(const key_type& k) {
-      LinkType y = (LinkType)&header_;
-      LinkType x = (LinkType)root();
+    LinkType y = (LinkType)&header_;
+    LinkType x = (LinkType)root();
 
-      while(x != nullptr) {
-          if (!key_compare_(KeyOfValue()(x->value_field), k)) {
-              y = x;
-              x = (LinkType)x->left;
-          } else {
-              x = (LinkType)x->right;
-          }
+    while (x != nullptr) {
+      if (!key_compare_(KeyOfValue()(x->value_field), k)) {
+        y = x;
+        x = (LinkType)x->left;
+      } else {
+        x = (LinkType)x->right;
       }
-      return iterator(y);
+    }
+    return iterator(y);
   }
 
   const_iterator lower_bound(const key_type& k) const {
@@ -558,18 +557,18 @@ class RbTree {
   }
 
   iterator upper_bound(const key_type& k) {
-      LinkType y = (LinkType)&header_;
-      LinkType x = (LinkType)root();
+    LinkType y = (LinkType)&header_;
+    LinkType x = (LinkType)root();
 
-      while(x != nullptr) {
-          if (key_compare_(k, KeyOfValue()(x->value_field))) {
-              y = x;
-              x = (LinkType)x->left;
-          } else {
-              x = (LinkType)x->right;
-          }
+    while (x != nullptr) {
+      if (key_compare_(k, KeyOfValue()(x->value_field))) {
+        y = x;
+        x = (LinkType)x->left;
+      } else {
+        x = (LinkType)x->right;
       }
-      return iterator(y);
+    }
+    return iterator(y);
   }
 
   const_iterator upper_bound(const key_type& k) const {
