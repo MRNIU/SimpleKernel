@@ -11,6 +11,7 @@ ADD_EXECUTABLE (
     ctor_dtor_test.cpp
     spinlock_test.cpp
     memory_test.cpp
+    interrupt_test.cpp
     sk_list_test.cpp
     sk_queue_test.cpp
     sk_vector_test.cpp
@@ -25,8 +26,9 @@ ADD_EXECUTABLE (
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (
-    ${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src
-                            ${CMAKE_SOURCE_DIR}/src/include)
+    ${PROJECT_NAME}
+    PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/include
+            ${CMAKE_SOURCE_DIR}/src/arch/${CMAKE_SYSTEM_PROCESSOR})
 
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
                                                libcxx arch driver)

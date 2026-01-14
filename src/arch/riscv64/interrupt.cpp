@@ -105,12 +105,18 @@ bool Interrupt::SendIpi(uint64_t target_cpu_mask) {
 }
 
 bool Interrupt::BroadcastIpi() {
+  // 如果没有其他核心，直接返回成功
+  if (Singleton<BasicInfo>::GetInstance().core_count == 1) {
+    return true;
+  }
+
   uint64_t mask = 0;
-  size_t current = cpu_io::GetCurrentCoreId();
-  for (size_t i = 0; i < SIMPLEKERNEL_MAX_CORE_COUNT; ++i) {
+  auto current = cpu_io::GetCurrentCoreId();
+  for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; ++i) {
     if (i != current) {
       mask |= (1UL << i);
     }
   }
+
   return SendIpi(mask);
 }

@@ -7,6 +7,7 @@
 #include <new>
 
 #include "arch.h"
+#include "arch/riscv64/interrupt.h"
 #include "basic_info.hpp"
 #include "kernel.h"
 #include "kernel_log.hpp"
@@ -86,6 +87,19 @@ auto main(int argc, const char** argv) -> int {
 
   // 唤醒其余 core
   WakeUpOtherCores();
+
+  sys_sleep(100);
+
+  for (size_t i = 0; i < 1000000000; i++) {
+    asm volatile("nop");
+  }
+
+  Singleton<Interrupt>::GetInstance().SendIpi(0);
+  Singleton<Interrupt>::GetInstance().SendIpi(1);
+  // Singleton<Interrupt>::GetInstance().BroadcastIpi();
+
+  while (1)
+    ;
 
   DumpStack();
 
