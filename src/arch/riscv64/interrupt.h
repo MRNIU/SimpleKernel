@@ -29,19 +29,10 @@ class Interrupt final : public InterruptBase {
   ~Interrupt() = default;
   /// @}
 
-  /**
-   * @brief 执行中断处理
-   * @param  cause 中断或异常号
-   * @param  context 中断上下文
-   */
   void Do(uint64_t cause, uint8_t* context) override;
-
-  /**
-   * @brief 注册中断处理函数
-   * @param cause 中断原因
-   * @param func 处理函数
-   */
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
+  bool SendIpi(uint64_t target_cpu_mask) override;
+  bool BroadcastIpi() override;
 
  private:
   /// 中断处理函数数组

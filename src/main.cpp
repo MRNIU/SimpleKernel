@@ -7,7 +7,6 @@
 #include <new>
 
 #include "arch.h"
-#include "arch/riscv64/interrupt.h"
 #include "basic_info.hpp"
 #include "kernel.h"
 #include "kernel_log.hpp"

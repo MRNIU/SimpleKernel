@@ -22,26 +22,17 @@ class Interrupt final : public InterruptBase {
 
   /// @name 构造/析构函数
   /// @{
-  Interrupt(const Interrupt &) = delete;
-  Interrupt(Interrupt &&) = delete;
-  auto operator=(const Interrupt &) -> Interrupt & = delete;
-  auto operator=(Interrupt &&) -> Interrupt & = delete;
+  Interrupt(const Interrupt&) = delete;
+  Interrupt(Interrupt&&) = delete;
+  auto operator=(const Interrupt&) -> Interrupt& = delete;
+  auto operator=(Interrupt&&) -> Interrupt& = delete;
   ~Interrupt() override = default;
   /// @}
 
-  /**
-   * @brief 执行中断处理
-   * @param  cause 中断或异常号
-   * @param  context 中断上下文
-   */
-  void Do(uint64_t cause, uint8_t *context) override;
-
-  /**
-   * @brief 注册中断处理函数
-   * @param cause 中断原因
-   * @param func 处理函数
-   */
+  void Do(uint64_t cause, uint8_t* context) override;
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
+  bool SendIpi(uint64_t target_cpu_mask) override;
+  bool BroadcastIpi() override;
 
   /**
    * @brief 初始化 idtr

@@ -6,6 +6,7 @@
 #include "interrupt.h"
 
 #include <cpu_io.h>
+#include <opensbi_interface.h>
 
 #include "basic_info.hpp"
 #include "sk_cstdio"
@@ -21,8 +22,8 @@ alignas(4) std::array<Interrupt::InterruptFunc,
 
 Interrupt::Interrupt() {
   // 注册默认中断处理函数
-  for (auto &i : interrupt_handlers_) {
-    i = [](uint64_t cause, uint8_t *context) -> uint64_t {
+  for (auto& i : interrupt_handlers_) {
+    i = [](uint64_t cause, uint8_t* context) -> uint64_t {
       klog::Info("Default Interrupt handler [%s] 0x%X, 0x%p\n",
                  cpu_io::detail::register_info::csr::ScauseInfo::kInterruptNames
                      [cause],
@@ -31,8 +32,8 @@ Interrupt::Interrupt() {
     };
   }
   // 注册默认异常处理函数
-  for (auto &i : exception_handlers_) {
-    i = [](uint64_t cause, uint8_t *context) -> uint64_t {
+  for (auto& i : exception_handlers_) {
+    i = [](uint64_t cause, uint8_t* context) -> uint64_t {
       klog::Err("Default Exception handler [%s] 0x%X, 0x%p\n",
                 cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
                     [cause],
@@ -45,7 +46,7 @@ Interrupt::Interrupt() {
   klog::Info("Interrupt init.\n");
 }
 
-void Interrupt::Do(uint64_t cause, uint8_t *context) {
+void Interrupt::Do(uint64_t cause, uint8_t* context) {
   auto interrupt = cpu_io::Scause::Interrupt::Get(cause);
   auto exception_code = cpu_io::Scause::ExceptionCode::Get(cause);
 
@@ -87,4 +88,29 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
                  cause, func);
     }
   }
+}
+
+bool Interrupt::SendIpi(uint64_t target_cpu_mask) {
+  if (target_cpu_mask > (1UL << SIMPLEKERNEL_MAX_CORE_COUNT) - 1) {
+    klog::Err("SendIpi: target_cpu_mask 0x%lx out of range\n", target_cpu_mask);
+    return false;
+  }
+
+  auto ret = sbi_send_ipi(target_cpu_mask, 0);
+  if (ret.error != SBI_SUCCESS) {
+    klog::Err("SendIpi failed with error %ld\n", ret.error);
+    return false;
+  }
+  return true;
+}
+
+bool Interrupt::BroadcastIpi() {
+  uint64_t mask = 0;
+  size_t current = cpu_io::GetCurrentCoreId();
+  for (size_t i = 0; i < SIMPLEKERNEL_MAX_CORE_COUNT; ++i) {
+    if (i != current) {
+      mask |= (1UL << i);
+    }
+  }
+  return SendIpi(mask);
 }

@@ -46,3 +46,13 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
     interrupt_handlers[cause] = func;
   }
 }
+
+bool Interrupt::SendIpi(uint64_t target_cpu_mask) {
+  /// @todo
+  return false;
+}
+
+bool Interrupt::BroadcastIpi() {
+  /// @todo
+  return false;
+}

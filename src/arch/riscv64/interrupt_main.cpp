@@ -102,6 +102,15 @@ void RegisterInterrupts() {
         Syscall(0, context);
         return 0;
       });
+
+  // 注册软中断 (IPI)
+  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+      cpu_io::detail::register_info::csr::ScauseInfo::
+          kSupervisorSoftwareInterrupt,
+      [](uint64_t, uint8_t*) -> uint64_t {
+        cpu_io::Sip::Ssip::Clear();
+        return 0;
+      });
 }
 
 }  // namespace

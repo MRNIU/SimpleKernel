@@ -54,6 +54,17 @@ class InterruptBase {
    * @param func 处理函数
    */
   virtual void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) = 0;
+
+  /**
+   * @brief 发送 IPI 到指定核心
+   * @param target_cpu_mask 目标核心的位掩码
+   */
+  virtual bool SendIpi(uint64_t target_cpu_mask) = 0;
+
+  /**
+   * @brief 广播 IPI 到所有其他核心
+   */
+  virtual bool BroadcastIpi() = 0;
 };
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_ */
