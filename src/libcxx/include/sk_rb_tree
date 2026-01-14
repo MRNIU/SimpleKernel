@@ -89,8 +89,27 @@ struct RbTreeIterator : public RbTreeIteratorBase {
   RbTreeIterator(RbTreeNodeBase::BasePtr x) : RbTreeIteratorBase(x) {}
   RbTreeIterator(RbTreeNodeBase::ConstBasePtr x)
       : RbTreeIteratorBase(const_cast<RbTreeNodeBase::BasePtr>(x)) {}
+  RbTreeIterator(const Self& other) : RbTreeIteratorBase(other.node) {}
+
+ private:
+  template <typename T, typename U>
+  struct IsSame {
+    static constexpr bool value = false;
+  };
+  template <typename T>
+  struct IsSame<T, T> {
+    static constexpr bool value = true;
+  };
+
+ public:
   RbTreeIterator(const RbTreeIterator<Value, Value&, Value*>& other)
+      requires(!IsSame<Self, RbTreeIterator<Value, Value&, Value*>>::value)
       : RbTreeIteratorBase(other.node) {}
+
+  Self& operator=(const Self& other) {
+    node = other.node;
+    return *this;
+  }
 
   Ref operator*() const { return static_cast<LinkType>(node)->value_field; }
   Ptr operator->() const { return &static_cast<LinkType>(node)->value_field; }
@@ -348,7 +367,7 @@ class RbTree {
   }
 
   static void destroy_node(LinkType p) {
-    ::operator delete(p);
+    delete p;
   }
 
   static LinkType clone_node(LinkType x) {
