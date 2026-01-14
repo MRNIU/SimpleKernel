@@ -46,10 +46,10 @@ SimpleKernel/
 git submodule update --init --recursive
 
 # 1. 配置 (选择架构: build_riscv64 / build_aarch64 / build_x86_64)
-cmake --preset build_riscv64
+cmake --preset build_{arch}
 
 # 2. 编译内核 (目标名称是 SimpleKernel，不是 kernel)
-cd build_riscv64 && make SimpleKernel
+cd build_{arch} && make SimpleKernel
 
 # 3. 在 QEMU 中运行
 make run
@@ -57,9 +57,9 @@ make run
 # 4. 调试模式 (GDB 连接 localhost:1234)
 make debug
 
-# 5. 运行单元测试 (选择的架构需要与 HOST 一致)
-cmake --preset build_x86_64
-cd build_x86_64 && make unit-test coverage
+# 5. 运行单元测试 ({arch} 需要与 HOST 架构一致)
+cmake --preset build_{arch}
+cd build_{arch} && make unit-test coverage
 ```
 
 **VS Code 任务**: 使用 `Tasks: Run Task` 选择 `build_{arch}` 或 `run_{arch}`。
@@ -149,7 +149,7 @@ Singleton<TaskManager>::GetInstance().AddTask(task);
 ### 常见陷阱
 - 内核代码中禁止使用标准库的动态内存分配，使用 `libc/` 和 `libcxx/` 中的实现
 - 不同架构的 `_start` 参数含义不同 (见 `kernel.h` 注释)
-- 编译选项使用 `-ffreestanding`，部分标准库函数不可用，在 https://en.cppreference.com/w/cpp/freestanding.html 查阅可用库函数
+- 编译选项使用 `-ffreestanding`，在 https://en.cppreference.com/w/cpp/freestanding.html 查阅可用库函数
 
 ## 资源链接
 
