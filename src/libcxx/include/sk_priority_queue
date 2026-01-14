@@ -1,0 +1,70 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_PRIORITY_QUEUE_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_PRIORITY_QUEUE_
+
+#include <algorithm>
+#include <functional>
+
+#include "sk_vector"
+
+namespace sk_std {
+
+template <class T, class Container = vector<T>,
+          class Compare = std::less<typename Container::value_type>>
+class priority_queue {
+ public:
+  using value_type = typename Container::value_type;
+  using reference = typename Container::reference;
+  using const_reference = typename Container::const_reference;
+  using size_type = typename Container::size_type;
+  using container_type = Container;
+
+ protected:
+  Container c;
+  Compare comp;
+
+ public:
+  priority_queue() : c(), comp() {}
+
+  explicit priority_queue(const Compare& compare) : c(), comp(compare) {}
+
+  priority_queue(const Compare& compare, const Container& cont)
+      : c(cont), comp(compare) {
+    std::make_heap(c.begin(), c.end(), comp);
+  }
+
+  priority_queue(const Compare& compare, Container&& cont)
+      : c(static_cast<Container&&>(cont)), comp(compare) {
+    std::make_heap(c.begin(), c.end(), comp);
+  }
+
+  bool empty() const { return c.size() == 0; }
+
+  size_type size() const { return c.size(); }
+
+  const_reference top() const { return c.front(); }
+
+  void push(const value_type& value) {
+    c.push_back(value);
+    std::push_heap(c.begin(), c.end(), comp);
+  }
+
+  void push(value_type&& value) {
+    c.push_back(static_cast<value_type&&>(value));
+    std::push_heap(c.begin(), c.end(), comp);
+  }
+
+  void pop() {
+    if (c.size() > 0) {
+      std::pop_heap(c.begin(), c.end(), comp);
+      c.pop_back();
+    }
+  }
+};
+
+}  // namespace sk_std
+
+#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_PRIORITY_QUEUE_
