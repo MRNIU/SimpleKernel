@@ -73,6 +73,8 @@ TARGET_COMPILE_OPTIONS (
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
               # 严格对齐
               -mstrict-align
+              # 启用 zihintpause 拓展
+              -march=rv64gc_zihintpause
               >
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},aarch64>:
               # 仅使用通用寄存器
