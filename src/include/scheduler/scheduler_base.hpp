@@ -14,8 +14,8 @@ class SchedulerBase {
  public:
   // 添加任务到就绪队列
   virtual void Enqueue(TaskControlBlock*) = 0;
-  // 从就绪队列移除任务 (可选实现)
-  virtual void Dequeue(TaskControlBlock*) {}
+  // 从就绪队列移除任务
+  virtual void Dequeue(TaskControlBlock*) = 0;
   // 选择下一个要运行的任务
   virtual TaskControlBlock* PickNext() = 0;
 
