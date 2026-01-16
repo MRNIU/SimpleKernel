@@ -103,7 +103,7 @@ auto main(int argc, const char** argv) -> int {
   while (1) {
     klog::Info("Main Thread: running\n");
     sys_sleep(100);
-    sys_yield();
+    cpu_io::Pause();
   }
 
   return 0;
