@@ -87,6 +87,18 @@ struct TaskControlBlock {
   /// 唤醒时间 (tick)
   uint64_t wake_tick = 0;
 
+  /// 剩余时间片 (单位: ticks)
+  uint64_t time_slice_remaining = 10;
+
+  /// 默认时间片 (单位: ticks)
+  uint64_t time_slice_default = 10;
+
+  /// 总运行时间 (单位: ticks，用于统计)
+  uint64_t total_runtime = 0;
+
+  /// 上下文切换次数 (用于统计)
+  uint64_t context_switches = 0;
+
   /// 内核栈
   std::array<uint8_t, kDefaultKernelStackSize> kernel_stack_top{};
 

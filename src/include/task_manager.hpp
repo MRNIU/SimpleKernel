@@ -28,6 +28,15 @@ struct CpuSchedData {
   sk_std::priority_queue<TaskControlBlock*, sk_std::vector<TaskControlBlock*>,
                          TaskControlBlock::WakeTickCompare>
       sleeping_tasks;
+
+  /// Per-CPU tick 计数 (每个核心独立计时)
+  uint64_t local_tick = 0;
+
+  /// 本核心的空闲时间 (单位: ticks)
+  uint64_t idle_time = 0;
+
+  /// 本核心的总调度次数
+  uint64_t total_schedules = 0;
 };
 
 /**
@@ -121,14 +130,9 @@ class TaskManager {
   }
 
   /**
-   * @brief 系统当前 tick (使用原子变量或每核独立
-   * tick，这里为简单起见改为每核独立或者是原子) 但为了兼容
-   * sleep，暂时保留为全局 tick (由主核更新) 或者 每个核维护自己的 tick count
-   * 如果是多核，每个核都有 timer 中断，所以应该是 Per-Cpu Tick
+   * @brief 系统启动时间 (单位: ticks，用于全局时间参考)
    */
-  // uint64_t current_tick = 0;
-  // 移到 CpuSchedData 或者作为 atomic
-  std::atomic<uint64_t> current_tick{0};
+  std::atomic<uint64_t> system_boot_tick{0};
 
   /**
    * @brief tick 频率 (Hz)

@@ -146,6 +146,17 @@ void TaskManager::Schedule() {
   cpu_data.running_task = next_task;
   next_task->status = TaskStatus::kRunning;
 
+  // 更新调度统计
+  cpu_sched.total_schedules++;
+
+  // 如果任务变了，记录上下文切换
+  if (prev_task != next_task) {
+    if (prev_task) {
+      prev_task->context_switches++;
+    }
+    next_task->context_switches++;
+  }
+
   cpu_sched.lock.unlock();
 
   // 如果任务变了，切换
@@ -157,16 +168,41 @@ void TaskManager::Schedule() {
 size_t TaskManager::AllocatePid() { return pid_allocator.fetch_add(1); }
 
 void TaskManager::UpdateTick() {
-  // 原子增加全局 tick? 或者只作为计时。
-  // 注意：如果是 Per-Cpu 计时，这里应该只更新 cpu_sched.sleeping_tasks
-  current_tick++;
-
   auto& cpu_sched = GetCurrentCpuSched();
+  auto& cpu_data = per_cpu::GetCurrentCore();
+
   cpu_sched.lock.lock();
 
+  // 更新本核心的 tick 计数
+  cpu_sched.local_tick++;
+
+  // 更新当前任务的运行时间和时间片
+  TaskControlBlock* current_task = cpu_data.running_task;
+  if (current_task && current_task != cpu_data.idle_task) {
+    current_task->total_runtime++;
+
+    // 时间片递减
+    if (current_task->time_slice_remaining > 0) {
+      current_task->time_slice_remaining--;
+    }
+
+    // 时间片耗尽，标记需要调度
+    if (current_task->time_slice_remaining == 0) {
+      // 重置时间片，稍后在 Schedule() 中会将任务放回就绪队列
+      current_task->time_slice_remaining = current_task->time_slice_default;
+      cpu_sched.lock.unlock();
+      Schedule();
+      return;
+    }
+  } else if (current_task == cpu_data.idle_task) {
+    // 统计空闲时间
+    cpu_sched.idle_time++;
+  }
+
+  // 检查睡眠队列，唤醒到期的任务
   while (!cpu_sched.sleeping_tasks.empty()) {
     TaskControlBlock* task = cpu_sched.sleeping_tasks.top();
-    if (current_tick >= task->wake_tick) {
+    if (cpu_sched.local_tick >= task->wake_tick) {
       task->status = TaskStatus::kReady;
       // 唤醒到本核心队列 (或者根据 Affinity)
       // 简单起见，因为是在本核心 sleep 的，wake 到本核心
@@ -182,6 +218,9 @@ void TaskManager::UpdateTick() {
   }
 
   cpu_sched.lock.unlock();
+
+  // 更新全局系统时间
+  system_boot_tick.fetch_add(1, std::memory_order_relaxed);
 }
 
 void TaskManager::Sleep(uint64_t ms) {
@@ -189,15 +228,20 @@ void TaskManager::Sleep(uint64_t ms) {
   auto& cpu_data = per_cpu::GetCurrentCore();
   TaskControlBlock* current = cpu_data.running_task;
 
-  if (!current || current == cpu_data.idle_task) return;
+  if (!current || current == cpu_data.idle_task) {
+    return;
+  }
 
   // 至少睡眠 1 tick
   uint64_t ticks = ms * tick_frequency / 1000;
-  if (ticks == 0) ticks = 1;
+  if (ticks == 0) {
+    ticks = 1;
+  }
 
   // 加锁修改状态
   cpu_sched.lock.lock();
-  current->wake_tick = current_tick + ticks;
+  // 使用本核心的 local_tick
+  current->wake_tick = cpu_sched.local_tick + ticks;
   current->status = TaskStatus::kSleeping;
   cpu_sched.sleeping_tasks.push(current);
   cpu_sched.lock.unlock();

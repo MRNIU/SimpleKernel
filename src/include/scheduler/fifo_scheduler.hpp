@@ -16,7 +16,7 @@
 class FifoScheduler : public SchedulerBase {
  public:
   void Enqueue(TaskControlBlock* task) override { ready_queue.push_back(task); }
-  void Dequeue(TaskControlBlock* task) override{};
+  void Dequeue(TaskControlBlock*) override{};
 
   TaskControlBlock* PickNext() override {
     if (ready_queue.empty()) {
@@ -47,7 +47,7 @@ class FifoScheduler : public SchedulerBase {
 class RtScheduler : public SchedulerBase {
  public:
   void Enqueue(TaskControlBlock* task) override { ready_queue.push(task); }
-  void Dequeue(TaskControlBlock* task) override{};
+  void Dequeue(TaskControlBlock*) override{};
 
   TaskControlBlock* PickNext() override {
     if (ready_queue.empty()) {
