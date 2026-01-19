@@ -20,7 +20,9 @@ ADD_EXECUTABLE (
     sk_priority_queue_test.cpp
     sk_rb_tree_test.cpp
     sk_set_test.cpp
-    sk_unordered_map_test.cpp)
+    sk_unordered_map_test.cpp
+    fifo_scheduler_test.cpp
+    rr_scheduler_test.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME} PRIVATE -Dsk_printf=printf -DUNIT_TEST
@@ -28,9 +30,13 @@ TARGET_COMPILE_DEFINITIONS (
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
-    PRIVATE ./ ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/include
-            ${CMAKE_SOURCE_DIR}/src/arch ${CMAKE_SOURCE_DIR}/src/libc/include
-            ${CMAKE_SOURCE_DIR}/src/libcxx/include)
+    PRIVATE ./
+            ${CMAKE_SOURCE_DIR}/src
+            ${CMAKE_SOURCE_DIR}/src/include
+            ${CMAKE_SOURCE_DIR}/src/arch
+            ${CMAKE_SOURCE_DIR}/src/libc/include
+            ${CMAKE_SOURCE_DIR}/src/libcxx/include
+            ${CMAKE_SOURCE_DIR}/src/task/include)
 
 TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 

@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
-struct TaskControlBlock;
+#include "task_control_block.hpp"
 
 /**
  * @brief 调度器基类接口

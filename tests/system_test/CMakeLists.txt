@@ -19,6 +19,7 @@ ADD_EXECUTABLE (
     sk_rb_tree_test.cpp
     sk_set_test.cpp
     sk_unordered_map_test.cpp
+    fifo_scheduler_test.cpp
     kernel_task_test.cpp
     user_task_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory.cpp
