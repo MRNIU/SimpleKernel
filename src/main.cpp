@@ -102,9 +102,9 @@ void create_test_tasks() {
   task4->cpu_affinity = (1UL << core_id);
 
   tm.AddTask(task1);
-  // tm.AddTask(task2);
-  // tm.AddTask(task3);
-  // tm.AddTask(task4);
+  tm.AddTask(task2);
+  tm.AddTask(task3);
+  tm.AddTask(task4);
 
   klog::Info("Created 4 test tasks\n");
 }
