@@ -27,6 +27,82 @@
 
 namespace {
 
+/// 全局变量，用于测试多核同步
+std::atomic<uint64_t> global_counter{0};
+
+/// Task1: 每 1s 打印一次，测试 sys_exit
+void task1_func(void* arg) {
+  for (int i = 0; i < 5; ++i) {
+    klog::Info("Task1: iteration %d/5\n", i + 1);
+    sys_sleep(1000);
+  }
+  klog::Info("Task1: exiting with code 0\n");
+  sys_exit(0);
+}
+
+/// Task2: 每 2s 打印一次，测试 sys_yield
+void task2_func(void* arg) {
+  uint64_t count = 0;
+  while (1) {
+    klog::Info("Task2: yield count=%llu\n", count++);
+    sys_sleep(2000);
+    // 主动让出 CPU
+    sys_yield();
+  }
+}
+
+/// Task3: 每 3s 打印一次，同时修改全局变量，测试多核同步
+void task3_func(void* arg) {
+  while (1) {
+    uint64_t old_value = global_counter.fetch_add(1, std::memory_order_seq_cst);
+    klog::Info("Task3: global_counter %llu -> %llu\n", old_value,
+               old_value + 1);
+    sys_sleep(3000);
+  }
+}
+
+/// Task4: 每 4s 打印一次，测试 sys_sleep
+void task4_func(void* arg) {
+  uint64_t iteration = 0;
+  while (1) {
+    auto start_tick =
+        Singleton<TaskManager>::GetInstance().GetCurrentTask()->total_runtime;
+    klog::Info("Task4: sleeping for 4s (iteration %llu)\n", iteration++);
+    sys_sleep(4000);
+    auto end_tick =
+        Singleton<TaskManager>::GetInstance().GetCurrentTask()->total_runtime;
+    klog::Info("Task4: woke up (slept ~%llu ticks)\n", end_tick - start_tick);
+  }
+}
+
+/// 为当前核心创建测试任务
+void create_test_tasks() {
+  size_t core_id = cpu_io::GetCurrentCoreId();
+  auto& tm = Singleton<TaskManager>::GetInstance();
+
+  auto task1 =
+      new TaskControlBlock("Task1-Exit", tm.AllocatePid(), task1_func, nullptr);
+  auto task2 = new TaskControlBlock("Task2-Yield", tm.AllocatePid(), task2_func,
+                                    nullptr);
+  auto task3 =
+      new TaskControlBlock("Task3-Sync", tm.AllocatePid(), task3_func, nullptr);
+  auto task4 = new TaskControlBlock("Task4-Sleep", tm.AllocatePid(), task4_func,
+                                    nullptr);
+
+  // 设置 CPU 亲和性，绑定到当前核心
+  task1->cpu_affinity = (1UL << core_id);
+  task2->cpu_affinity = (1UL << core_id);
+  task3->cpu_affinity = (1UL << core_id);
+  task4->cpu_affinity = (1UL << core_id);
+
+  tm.AddTask(task1);
+  tm.AddTask(task2);
+  tm.AddTask(task3);
+  tm.AddTask(task4);
+
+  klog::Info("Created 4 test tasks\n");
+}
+
 /// 非启动核入口
 auto main_smp(int argc, const char** argv) -> int {
   per_cpu::GetCurrentCore() = per_cpu::PerCpu(cpu_io::GetCurrentCoreId());
@@ -34,7 +110,11 @@ auto main_smp(int argc, const char** argv) -> int {
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
   Singleton<TaskManager>::GetInstance().InitCurrentCore();
+
   klog::Info("Hello SimpleKernel SMP\n");
+
+  // 为当前核心创建测试任务
+  create_test_tasks();
 
   // 启动调度器
   Singleton<TaskManager>::GetInstance().Schedule();
@@ -57,21 +137,6 @@ void _start(int argc, const char** argv) {
   __builtin_unreachable();
 }
 
-void thread_func_a(void* arg) {
-  while (1) {
-    klog::Info("Thread A: running, arg=%d\n", (uint64_t)arg);
-    // sys_sleep(100);
-  }
-}
-
-void thread_func_b(void* arg) {
-  while (1) {
-    klog::Info("Thread B: running, arg=%d\n", (uint64_t)arg);
-    // sys_sleep(100);
-    sys_exit(233);
-  }
-}
-
 auto main(int argc, const char** argv) -> int {
   // 初始化当前核心的 per_cpu 数据
   per_cpu::GetCurrentCore() = per_cpu::PerCpu(cpu_io::GetCurrentCoreId());
@@ -91,15 +156,10 @@ auto main(int argc, const char** argv) -> int {
   DumpStack();
 
   klog::info << "Hello SimpleKernel\n";
+  klog::Info("Initializing test tasks...\n");
 
-  auto task_a = new TaskControlBlock(
-      "Task A", Singleton<TaskManager>::GetInstance().AllocatePid(),
-      thread_func_a, (void*)100);
-  auto task_b = new TaskControlBlock(
-      "Task B", Singleton<TaskManager>::GetInstance().AllocatePid(),
-      thread_func_b, (void*)200);
-  Singleton<TaskManager>::GetInstance().AddTask(task_a);
-  Singleton<TaskManager>::GetInstance().AddTask(task_b);
+  // 为主核心创建测试任务
+  create_test_tasks();
 
   klog::Info("Main: Starting scheduler...\n");
 
