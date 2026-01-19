@@ -20,6 +20,7 @@
 #include "sk_stdlib.h"
 #include "system_test.h"
 
+/// @todo 等用户态调通后补上
 auto interrupt_test() -> bool {
   sk_printf("memory_test: start\n");
 
