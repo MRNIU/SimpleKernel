@@ -34,6 +34,10 @@ void Gic::PPI(uint32_t intid, uint32_t cpuid) const {
   gicr_.SetupPPI(intid, cpuid);
 }
 
+void Gic::SGI(uint32_t intid, uint32_t cpuid) const {
+  gicr_.SetupSGI(intid, cpuid);
+}
+
 Gic::Gicd::Gicd(uint64_t base_addr) : base_addr_(base_addr) {
   if (base_addr_ == 0) {
     klog::Err("GICD base address is invalid [0x%X]\n", base_addr_);
@@ -198,6 +202,12 @@ void Gic::Gicr::SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const {
 }
 
 void Gic::Gicr::SetupPPI(uint32_t intid, uint32_t cpuid) const {
+  SetPrio(intid, cpuid, 0);
+  Clear(intid, cpuid);
+  Enable(intid, cpuid);
+}
+
+void Gic::Gicr::SetupSGI(uint32_t intid, uint32_t cpuid) const {
   SetPrio(intid, cpuid, 0);
   Clear(intid, cpuid);
   Enable(intid, cpuid);

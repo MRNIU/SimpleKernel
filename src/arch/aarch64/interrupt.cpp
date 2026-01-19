@@ -30,6 +30,10 @@ Interrupt::Interrupt() {
     };
   }
 
+  // 设置 SGI 0 用于 IPI
+  auto cpuid = cpu_io::GetCurrentCoreId();
+  gic_.SGI(0, cpuid);
+
   klog::Info("Interrupt init.\n");
 }
 
@@ -48,11 +52,38 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
 }
 
 bool Interrupt::SendIpi(uint64_t target_cpu_mask) {
-  /// @todo
-  return false;
+  /// @todo 默认使用 SGI 0 作为 IPI 中断
+  constexpr uint64_t kIPISGI = 0;
+
+  uint64_t sgi_value = 0;
+
+  // 设置 INTID 为 0 (SGI 0)
+  sgi_value |= (kIPISGI & 0xF) << 24;
+
+  // 设置 TargetList (Aff0 级别，低 16 位)
+  sgi_value |= (target_cpu_mask & 0xFFFF);
+
+  // 写入 ICC_SGI1R_EL1 寄存器发送 SGI
+  cpu_io::ICC_SGI1R_EL1::Write(sgi_value);
+
+  return true;
 }
 
 bool Interrupt::BroadcastIpi() {
-  /// @todo
-  return false;
+  /// @todo 默认使用 SGI 0 作为 IPI 中断
+  constexpr uint64_t kIPISGI = 0;
+
+  // 构造 ICC_SGI1R_EL1 寄存器的值
+  uint64_t sgi_value = 0;
+
+  // 设置 INTID 为 0 (SGI 0)
+  sgi_value |= (kIPISGI & 0xF) << 24;
+
+  // 设置 IRM (Interrupt Routing Mode) 为 1，表示广播到所有 PE
+  sgi_value |= (1ULL << 40);
+
+  // 写入 ICC_SGI1R_EL1 寄存器发送 SGI
+  cpu_io::ICC_SGI1R_EL1::Write(sgi_value);
+
+  return true;
 }

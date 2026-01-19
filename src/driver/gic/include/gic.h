@@ -543,6 +543,15 @@ class Gic {
      */
     void SetupPPI(uint32_t intid, uint32_t cpuid) const;
 
+    /**
+     * 设置指定 SGI 中断
+     * SGI: Software Generated Interrupt,
+     * 软件生成中断，用于处理器间通信
+     * @param intid 中断号 (0-15)
+     * @param cpuid cpu 编号
+     */
+    void SetupSGI(uint32_t intid, uint32_t cpuid) const;
+
    private:
     uint64_t base_addr_ = 0;
 
@@ -576,6 +585,7 @@ class Gic {
   void SetUP() const;
   void SPI(uint32_t intid, uint32_t cpuid) const;
   void PPI(uint32_t intid, uint32_t cpuid) const;
+  void SGI(uint32_t intid, uint32_t cpuid) const;
 
  private:
   Gicd gicd_;

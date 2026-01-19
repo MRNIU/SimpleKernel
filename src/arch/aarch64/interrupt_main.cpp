@@ -53,7 +53,6 @@ extern "C" void sync_current_el_spx_handler(uint64_t sp [[maybe_unused]]) {
 }
 
 extern "C" void irq_current_el_spx_handler(uint64_t sp [[maybe_unused]]) {
-  klog::Err("IRQ Exception at Current EL with SPx\n");
   auto cause = cpu_io::ICC_IAR1_EL1::INTID::Get();
   Singleton<Interrupt>::GetInstance().Do(cause, nullptr);
 }

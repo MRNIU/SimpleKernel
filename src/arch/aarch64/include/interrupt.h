@@ -42,6 +42,9 @@ class Interrupt final : public InterruptBase {
   __always_inline void PPI(uint32_t intid, uint32_t cpuid) const {
     gic_.PPI(intid, cpuid);
   }
+  __always_inline void SGI(uint32_t intid, uint32_t cpuid) const {
+    gic_.SGI(intid, cpuid);
+  }
 
  private:
   static std::array<InterruptFunc, kMaxInterrupt> interrupt_handlers;
