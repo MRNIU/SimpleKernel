@@ -20,14 +20,17 @@ namespace {
 struct test_case {
   const char* name;
   bool (*func)(void);
+  // 是否为多核测试，需要所有核心参与
+  bool is_smp_test;
 };
 
 std::array<test_case, 2> test_cases = {
-    test_case{"ctor_dtor_test", ctor_dtor_test},
-    test_case{"spinlock_test", spinlock_test},
+    test_case{"ctor_dtor_test", ctor_dtor_test, false},
+    test_case{"spinlock_test", spinlock_test, true},
 };
 
-void run_tests() {
+/// 主核运行所有测试
+void run_tests_main() {
   for (auto test : test_cases) {
     klog::Info("----%s----\n", test.name);
     if (test.func()) {
@@ -39,12 +42,23 @@ void run_tests() {
   klog::Info("All tests done.\n");
 }
 
+/// 从核只参与多核测试
+void run_tests_smp() {
+  for (auto test : test_cases) {
+    if (test.is_smp_test) {
+      // 从核静默参与多核测试，不输出日志
+      test.func();
+    }
+  }
+}
+
 /// 非启动核入口
 auto main_smp(int argc, const char** argv) -> int {
   ArchInitSMP(argc, argv);
   klog::Info("Hello SimpleKernel SMP\n");
 
-  run_tests();
+  // 从核只参与多核测试
+  run_tests_smp();
 
   return 0;
 }
@@ -77,7 +91,8 @@ auto main(int argc, const char** argv) -> int {
 
   klog::info << "Hello SimpleKernel\n";
 
-  run_tests();
+  // 主核运行所有测试（包括多核测试）
+  run_tests_main();
 
   return 0;
 }
