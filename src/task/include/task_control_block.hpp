@@ -23,12 +23,14 @@ using ThreadEntry = void (*)(void*);
 enum TaskStatus : uint8_t {
   // 未初始化
   kUnInit,
-  // 以此状态准备运行
+  // 就绪
   kReady,
   // 正在运行
   kRunning,
   // 睡眠中
   kSleeping,
+  // 阻塞
+  kBlocked,
   // 已退出
   kExited,
   // 僵尸状态 (等待回收)
@@ -56,16 +58,17 @@ struct TaskControlBlock {
   /// 默认内核栈大小 (16 KB)
   static constexpr const size_t kDefaultKernelStackSize = 16 * 1024;
 
+  /// 任务优先级比较函数，优先级数值越小，优先级越高
   struct PriorityCompare {
     bool operator()(TaskControlBlock* a, TaskControlBlock* b) {
-      // 优先级数值越小，优先级越高
-      return a->priority > b->priority;
+      return a->sched_info.priority > b->sched_info.priority;
     }
   };
 
+  /// 任务唤醒时间比较函数，时间越早优先级越高
   struct WakeTickCompare {
     bool operator()(TaskControlBlock* a, TaskControlBlock* b) {
-      return a->wake_tick > b->wake_tick;
+      return a->sched_info.wake_tick > b->sched_info.wake_tick;
     }
   };
 
@@ -78,29 +81,60 @@ struct TaskControlBlock {
   /// 进程状态
   TaskStatus status = TaskStatus::kUnInit;
 
-  // 调度策略
+  /// 调度策略
   SchedPolicy policy = SchedPolicy::kNormal;
 
-  /// 优先级 (数字越小优先级越高，用于同策略内部比较，可选)
-  int priority = 10;
-
-  /// 唤醒时间 (tick)
-  uint64_t wake_tick = 0;
-
-  /// 剩余时间片 (单位: ticks)
-  uint64_t time_slice_remaining = 10;
-
-  /// 默认时间片 (单位: ticks)
-  uint64_t time_slice_default = 10;
-
-  /// 总运行时间 (单位: ticks，用于统计)
-  uint64_t total_runtime = 0;
-
-  /// 上下文切换次数 (用于统计)
-  uint64_t context_switches = 0;
+  /**
+   * @brief 基础调度信息
+   */
+  struct SchedInfo {
+    /// 优先级 (数字越小优先级越高)
+    int priority = 10;
+    /// 基础优先级 (静态，用于优先级继承)
+    int base_priority = 10;
+    /// 继承的优先级
+    int inherited_priority = 0;
+    /// 唤醒时间 (tick)
+    uint64_t wake_tick = 0;
+    /// 剩余时间片 (ticks)
+    uint64_t time_slice_remaining = 10;
+    /// 默认时间片 (ticks)
+    uint64_t time_slice_default = 10;
+    /// 总运行时间 (ticks)
+    uint64_t total_runtime = 0;
+    /// 上下文切换次数
+    uint64_t context_switches = 0;
+  } sched_info;
 
   /// 退出码
   int exit_code = 0;
+
+  /**
+   * @brief 不同调度器的专用字段 (互斥使用)
+   */
+  union SchedData {
+    /// CFS 调度器数据
+    struct {
+      /// 虚拟运行时间
+      uint64_t vruntime = 0;
+      /// 任务权重 (1024 为默认)
+      uint32_t weight = 1024;
+    } cfs;
+
+    /// MLFQ 调度器数据
+    struct {
+      /// 优先级级别 (0 = 最高)
+      uint8_t level = 0;
+    } mlfq;
+  } sched_data;
+
+  /// 等待的资源 ID
+  uint64_t blocked_on = 0;
+
+  /// 优先级继承相关 (待实现 Mutex 后启用)
+  // void* held_mutexes = nullptr;
+  // void* blocked_on_mutex = nullptr;
+  TaskControlBlock* inherits_from = nullptr;
 
   /// 内核栈
   std::array<uint8_t, kDefaultKernelStackSize> kernel_stack_top{};
