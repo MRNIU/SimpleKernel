@@ -25,7 +25,7 @@ struct test_case {
   bool is_smp_test = false;
 };
 
-std::array<test_case, 10> test_cases = {
+std::array<test_case, 11> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test, false},
     test_case{"spinlock_test", spinlock_test, true},
     test_case{"memory_test", memory_test, false},
