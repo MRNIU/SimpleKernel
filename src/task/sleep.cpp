@@ -35,7 +35,6 @@ void TaskManager::Sleep(uint64_t ms) {
     return;
   }
 
-  // 计算唤醒时间并将任务加入睡眠队列
   {
     LockGuard<SpinLock> lock_guard(cpu_sched.lock);
 

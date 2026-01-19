@@ -90,11 +90,11 @@ class RoundRobinScheduler : public SchedulerBase {
    */
   auto OnTimeSliceExpired(TaskControlBlock* task) -> bool override {
     if (task) {
-      // 重新分配时间片（在 Enqueue 时会重置）
+      // 重新分配时间片
       task->sched_info.time_slice_remaining =
           task->sched_info.time_slice_default;
     }
-    return true;  // 需要重新入队
+    return true;
   }
 
   /**
