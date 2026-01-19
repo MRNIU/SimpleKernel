@@ -2,11 +2,6 @@
 
 ADD_LIBRARY (libc INTERFACE)
 
-TARGET_INCLUDE_DIRECTORIES (libc INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+TARGET_INCLUDE_DIRECTORIES (libc INTERFACE include)
 
-TARGET_SOURCES (
-    libc
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/sk_stdlib.c
-              ${CMAKE_CURRENT_SOURCE_DIR}/sk_string.c
-              ${CMAKE_CURRENT_SOURCE_DIR}/sk_stdio.c
-              ${CMAKE_CURRENT_SOURCE_DIR}/sk_ctype.c)
+TARGET_SOURCES (libc INTERFACE sk_stdlib.c sk_string.c sk_stdio.c sk_ctype.c)
