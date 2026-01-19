@@ -36,9 +36,11 @@ auto main_smp(int argc, const char** argv) -> int {
   Singleton<TaskManager>::GetInstance().InitCurrentCore();
   klog::Info("Hello SimpleKernel SMP\n");
 
-  sys_yield();
+  // 启动调度器
+  Singleton<TaskManager>::GetInstance().Schedule();
 
-  return 0;
+  // 不应该执行到这里
+  __builtin_unreachable();
 }
 
 }  // namespace
@@ -47,28 +49,25 @@ void _start(int argc, const char** argv) {
   if (argv != nullptr) {
     CppInit();
     main(argc, argv);
-    CppDeInit();
   } else {
     main_smp(argc, argv);
   }
 
-  // 进入死循环
-  while (true) {
-    ;
-  }
+  // 不应该执行到这里
+  __builtin_unreachable();
 }
 
 void thread_func_a(void* arg) {
   while (1) {
     klog::Info("Thread A: running, arg=%d\n", (uint64_t)arg);
-    sys_sleep(100);
+    // sys_sleep(100);
   }
 }
 
 void thread_func_b(void* arg) {
   while (1) {
     klog::Info("Thread B: running, arg=%d\n", (uint64_t)arg);
-    sys_sleep(100);
+    // sys_sleep(100);
     sys_exit(233);
   }
 }
@@ -87,7 +86,7 @@ auto main(int argc, const char** argv) -> int {
   Singleton<TaskManager>::GetInstance().InitCurrentCore();
 
   // 唤醒其余 core
-  WakeUpOtherCores();
+  // WakeUpOtherCores();
 
   DumpStack();
 
@@ -100,13 +99,10 @@ auto main(int argc, const char** argv) -> int {
 
   klog::Info("Main: Starting scheduler...\n");
 
-  // 主线程进入调度循环
-  while (1) {
-    klog::Info("Main Thread: running\n");
-    // cpu_io::Pause();
-    // sys_sleep(100);
-    sys_yield();
-  }
+  // 启动调度器，不再返回
+  // 从这里开始，系统将在各个任务之间切换
+  Singleton<TaskManager>::GetInstance().Schedule();
 
-  return 0;
+  // 不应该执行到这里
+  __builtin_unreachable();
 }

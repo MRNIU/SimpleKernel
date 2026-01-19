@@ -20,6 +20,17 @@
 #include "sk_vector"
 #include "virtual_memory.hpp"
 
+namespace {
+
+/// idle 线程入口函数
+void idle_thread(void*) {
+  while (1) {
+    cpu_io::Pause();
+  }
+}
+
+}  // namespace
+
 void TaskManager::InitCurrentCore() {
   // 初始化每个核心的调度器
   size_t core_id = cpu_io::GetCurrentCoreId();
@@ -36,18 +47,18 @@ void TaskManager::InitCurrentCore() {
   auto& cpu_data = per_cpu::GetCurrentCore();
   cpu_data.sched_data = &cpu_sched;
 
-  auto* main_task = new TaskControlBlock();
-  main_task->name = "Idle/Main";
+  // 创建独立的 Idle 线程
+  auto* idle_task = new TaskControlBlock("Idle", 0, idle_thread, nullptr);
+  idle_task->status = TaskStatus::kReady;
+  idle_task->policy = SchedPolicy::kIdle;
+  idle_task->cpu_affinity = (1UL << core_id);
 
-  // 所有核心的 Idle 任务都使用 PID 0
-  main_task->pid = 0;
+  cpu_data.idle_task = idle_task;
 
-  main_task->status = TaskStatus::kRunning;
-  main_task->policy = SchedPolicy::kIdle;
-  main_task->cpu_affinity = (1UL << core_id);
-
-  cpu_data.running_task = main_task;
-  cpu_data.idle_task = main_task;
+  // 初始化阶段，将 idle_task 作为当前运行任务
+  // main 函数执行在初始化栈上，第一次调度时会切换到其他任务或 idle
+  cpu_data.running_task = idle_task;
+  idle_task->status = TaskStatus::kRunning;
 }
 
 void TaskManager::AddTask(TaskControlBlock* task) {
@@ -93,11 +104,21 @@ void TaskManager::Schedule() {
   if (current_task && current_task->status == TaskStatus::kExited) {
     current_task->status = TaskStatus::kZombie;
     // TODO: 通知父进程回收资源，或在没有父进程时直接释放
-    // 暂时简单处理：已退出的任务不会再被调度
+    // 已退出的任务不会再被放回就绪队列，所以不会再被调度
   }
   // 2. 如果当前任务还在运行 (Yield的情况)，先将其放回就绪队列
   else if (current_task && current_task->status == TaskStatus::kRunning) {
     current_task->status = TaskStatus::kReady;
+    // 不要在此时将 idle task 放回队列，因为它特殊处理
+    if (current_task != cpu_data.idle_task) {
+      if (current_task->policy < SchedPolicy::kPolicyCount &&
+          cpu_sched.schedulers[current_task->policy]) {
+        cpu_sched.schedulers[current_task->policy]->Enqueue(current_task);
+      }
+    }
+  }
+  // 3. 如果当前任务处于就绪状态（时间片耗尽的情况），放回就绪队列
+  else if (current_task && current_task->status == TaskStatus::kReady) {
     // 不要在此时将 idle task 放回队列，因为它特殊处理
     if (current_task != cpu_data.idle_task) {
       if (current_task->policy < SchedPolicy::kPolicyCount &&
