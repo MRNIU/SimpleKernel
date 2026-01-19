@@ -1,9 +1,6 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 汇编宏
  */
-
-// clang-format off
 
 .macro savereg
     // make room to save registers.
@@ -56,6 +53,3 @@
     ldp x28, x29, [sp, #16 * 14]
     add sp, sp, #272
 .endm
-
-
-// clang-format on
