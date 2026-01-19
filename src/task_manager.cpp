@@ -100,35 +100,48 @@ void TaskManager::Schedule() {
   TaskControlBlock* current_task = cpu_data.running_task;
   TaskControlBlock* next_task = nullptr;
 
-  // 1. 如果当前任务已退出，标记为僵尸状态（等待父进程回收）
-  if (current_task && current_task->status == TaskStatus::kExited) {
-    current_task->status = TaskStatus::kZombie;
-    // TODO: 通知父进程回收资源，或在没有父进程时直接释放
-    // 已退出的任务不会再被放回就绪队列，所以不会再被调度
-  }
-  // 2. 如果当前任务还在运行 (Yield的情况)，先将其放回就绪队列
-  else if (current_task && current_task->status == TaskStatus::kRunning) {
-    current_task->status = TaskStatus::kReady;
-    // 不要在此时将 idle task 放回队列，因为它特殊处理
-    if (current_task != cpu_data.idle_task) {
-      if (current_task->policy < SchedPolicy::kPolicyCount &&
-          cpu_sched.schedulers[current_task->policy]) {
-        cpu_sched.schedulers[current_task->policy]->Enqueue(current_task);
+  // 处理当前任务的状态
+  if (current_task) {
+    switch (current_task->status) {
+      case TaskStatus::kExited: {
+        // 标记为僵尸状态（等待父进程回收）
+        current_task->status = TaskStatus::kZombie;
+        // TODO: 通知父进程回收资源，或在没有父进程时直接释放
+        // 已退出的任务不会再被放回就绪队列，所以不会再被调度
+        break;
       }
-    }
-  }
-  // 3. 如果当前任务处于就绪状态（时间片耗尽的情况），放回就绪队列
-  else if (current_task && current_task->status == TaskStatus::kReady) {
-    // 不要在此时将 idle task 放回队列，因为它特殊处理
-    if (current_task != cpu_data.idle_task) {
-      if (current_task->policy < SchedPolicy::kPolicyCount &&
-          cpu_sched.schedulers[current_task->policy]) {
-        cpu_sched.schedulers[current_task->policy]->Enqueue(current_task);
+      case TaskStatus::kRunning: {
+        // Yield的情况，将其放回就绪队列
+        current_task->status = TaskStatus::kReady;
+        // 不要在此时将 idle task 放回队列，因为它特殊处理
+        if (current_task != cpu_data.idle_task) {
+          if (current_task->policy < SchedPolicy::kPolicyCount &&
+              cpu_sched.schedulers[current_task->policy]) {
+            cpu_sched.schedulers[current_task->policy]->Enqueue(current_task);
+          }
+        }
+        break;
+      }
+      case TaskStatus::kReady: {
+        // 时间片耗尽的情况，放回就绪队列
+        // 不要在此时将 idle task 放回队列，因为它特殊处理
+        if (current_task != cpu_data.idle_task) {
+          if (current_task->policy < SchedPolicy::kPolicyCount &&
+              cpu_sched.schedulers[current_task->policy]) {
+            cpu_sched.schedulers[current_task->policy]->Enqueue(current_task);
+          }
+        }
+        break;
+      }
+
+      default: {
+        // 其他状态不需要处理
+        break;
       }
     }
   }
 
-  // 3. 按优先级遍历调度器，寻找下一个任务
+  // 按优先级遍历调度器，寻找下一个任务
   for (auto* sched : cpu_sched.schedulers) {
     if (sched) {
       next_task = sched->PickNext();
