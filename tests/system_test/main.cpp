@@ -22,7 +22,7 @@ struct test_case {
   const char* name;
   bool (*func)(void);
   // 是否为多核测试，需要所有核心参与
-  bool is_smp_test;
+  bool is_smp_test = false;
 };
 
 std::array<test_case, 10> test_cases = {
@@ -36,9 +36,7 @@ std::array<test_case, 10> test_cases = {
     test_case{"sk_priority_queue_test", sk_priority_queue_test, false},
     test_case{"sk_rb_tree_test", sk_rb_tree_test, false},
     test_case{"sk_set_test", sk_set_test, false},
-    // test_case{"kernel_task_test", kernel_task_test, false},
-    // test_case{"user_task_test", user_task_test, false},
-};
+    test_case{"sk_unordered_map_test", sk_unordered_map_test, false}};
 
 /// 主核运行所有测试
 void run_tests_main() {
