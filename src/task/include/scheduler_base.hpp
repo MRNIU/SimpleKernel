@@ -128,12 +128,12 @@ class SchedulerBase {
    * @brief 获取调度器统计信息
    * @return 统计信息结构体
    */
-  virtual auto GetStats() const -> Stats { return {}; }
+  virtual auto GetStats() const -> const Stats& { return stats_; }
 
   /**
    * @brief 重置统计信息
    */
-  virtual void ResetStats() {}
+  virtual void ResetStats() { stats_ = {}; }
 
   /// @name 构造/析构函数
   /// @{
@@ -144,6 +144,9 @@ class SchedulerBase {
   auto operator=(SchedulerBase&&) -> SchedulerBase& = default;
   virtual ~SchedulerBase() = default;
   /// @}
+
+ protected:
+  Stats stats_;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_SCHEDULER_BASE_HPP_ */

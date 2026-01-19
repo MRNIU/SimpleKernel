@@ -190,17 +190,6 @@ class CfsScheduler : public SchedulerBase {
   }
 
   /**
-   * @brief 获取调度器统计信息
-   * @return Stats 统计信息结构体
-   */
-  auto GetStats() const -> Stats override { return stats_; }
-
-  /**
-   * @brief 重置统计信息
-   */
-  void ResetStats() override { stats_ = {}; }
-
-  /**
    * @brief 获取当前 min_vruntime
    * @return uint64_t 最小虚拟运行时间
    */

@@ -105,17 +105,6 @@ class RoundRobinScheduler : public SchedulerBase {
     stats_.total_preemptions++;
   }
 
-  /**
-   * @brief 获取调度器统计信息
-   * @return Stats 统计信息结构体
-   */
-  auto GetStats() const -> Stats override { return stats_; }
-
-  /**
-   * @brief 重置统计信息
-   */
-  void ResetStats() override { stats_ = {}; }
-
   /// @name 构造/析构函数
   /// @{
   RoundRobinScheduler() = default;

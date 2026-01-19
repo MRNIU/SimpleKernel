@@ -12,6 +12,7 @@
 
 #include "basic_info.hpp"
 #include "fifo_scheduler.hpp"
+#include "idle_scheduler.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "rr_scheduler.hpp"
@@ -41,8 +42,7 @@ void TaskManager::InitCurrentCore() {
   if (!cpu_sched.schedulers[SchedPolicy::kNormal]) {
     cpu_sched.schedulers[SchedPolicy::kRealTime] = new FifoScheduler();
     cpu_sched.schedulers[SchedPolicy::kNormal] = new RoundRobinScheduler();
-    // Idle 策略可以有一个专门的调度器，或者直接使用 idle_task
-    cpu_sched.schedulers[SchedPolicy::kIdle] = nullptr;
+    cpu_sched.schedulers[SchedPolicy::kIdle] = new IdleScheduler();
   }
 
   // 关联 PerCpu
@@ -54,6 +54,11 @@ void TaskManager::InitCurrentCore() {
       new TaskControlBlock("Idle", AllocatePid(), idle_thread, nullptr);
   idle_task->status = TaskStatus::kRunning;
   idle_task->policy = SchedPolicy::kIdle;
+
+  // 将 idle 任务加入 Idle 调度器
+  if (cpu_sched.schedulers[SchedPolicy::kIdle]) {
+    cpu_sched.schedulers[SchedPolicy::kIdle]->Enqueue(idle_task);
+  }
 
   cpu_data.idle_task = idle_task;
   cpu_data.running_task = idle_task;

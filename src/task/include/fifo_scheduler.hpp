@@ -80,17 +80,6 @@ class FifoScheduler : public SchedulerBase {
     stats_.total_preemptions++;
   }
 
-  /**
-   * @brief 获取统计信息
-   * @return 调度器统计信息
-   */
-  auto GetStats() const -> Stats override { return stats_; }
-
-  /**
-   * @brief 重置统计信息
-   */
-  void ResetStats() override { stats_ = {}; }
-
   /// @name 构造/析构函数
   /// @{
   FifoScheduler(const FifoScheduler&) = default;
