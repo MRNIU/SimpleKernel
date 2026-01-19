@@ -14,6 +14,7 @@
 #include "fifo_scheduler.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
+#include "rr_scheduler.hpp"
 #include "singleton.hpp"
 #include "sk_cstring"
 #include "sk_stdlib.h"
@@ -37,8 +38,8 @@ void TaskManager::InitCurrentCore() {
   auto& cpu_sched = cpu_schedulers_[core_id];
 
   if (!cpu_sched.schedulers[SchedPolicy::kNormal]) {
-    cpu_sched.schedulers[SchedPolicy::kRealTime] = new RtScheduler();
-    cpu_sched.schedulers[SchedPolicy::kNormal] = new FifoScheduler();
+    cpu_sched.schedulers[SchedPolicy::kRealTime] = new FifoScheduler();
+    cpu_sched.schedulers[SchedPolicy::kNormal] = new RoundRobinScheduler();
     // Idle 策略可以有一个专门的调度器，或者直接使用 idle_task
     cpu_sched.schedulers[SchedPolicy::kIdle] = nullptr;
   }

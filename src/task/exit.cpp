@@ -19,21 +19,4 @@
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
-void TaskManager::Exit(int exit_code) {
-  auto& cpu_sched = GetCurrentCpuSched();
-  auto& cpu_data = per_cpu::GetCurrentCore();
-  TaskControlBlock* current = cpu_data.running_task;
-
-  if (!current || current == cpu_data.idle_task) {
-    return;
-  }
-
-  // 加锁修改状态
-  cpu_sched.lock.lock();
-  current->status = TaskStatus::kExited;
-  current->exit_code = exit_code;
-  cpu_sched.lock.unlock();
-
-  // 调度到下一个任务，当前任务不会再被调度
-  Schedule();
-}
+void TaskManager::Exit(int exit_code) {}

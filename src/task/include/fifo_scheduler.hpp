@@ -11,7 +11,7 @@
 #include "task_control_block.hpp"
 
 /**
- * @brief 先来先服务 (FIFO) 调度器，用于普通任务
+ * @brief 先来先服务 (FIFO) 调度器
  */
 class FifoScheduler : public SchedulerBase {
  public:
@@ -39,39 +39,6 @@ class FifoScheduler : public SchedulerBase {
 
  private:
   sk_std::list<TaskControlBlock*> ready_queue;
-};
-
-/**
- * @brief 优先级调度器，用于实时任务
- */
-class RtScheduler : public SchedulerBase {
- public:
-  void Enqueue(TaskControlBlock* task) override { ready_queue.push(task); }
-  void Dequeue(TaskControlBlock*) override{};
-
-  TaskControlBlock* PickNext() override {
-    if (ready_queue.empty()) {
-      return nullptr;
-    }
-    TaskControlBlock* next = ready_queue.top();
-    ready_queue.pop();
-    return next;
-  }
-
-  /// @name 构造/析构函数
-  /// @{
-  RtScheduler() = default;
-  RtScheduler(const RtScheduler&) = default;
-  RtScheduler(RtScheduler&&) = default;
-  auto operator=(const RtScheduler&) -> RtScheduler& = default;
-  auto operator=(RtScheduler&&) -> RtScheduler& = default;
-  ~RtScheduler() override = default;
-  /// @}
-
- private:
-  sk_std::priority_queue<TaskControlBlock*, sk_std::vector<TaskControlBlock*>,
-                         TaskControlBlock::PriorityCompare>
-      ready_queue;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_ */
