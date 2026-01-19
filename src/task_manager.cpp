@@ -196,6 +196,7 @@ void TaskManager::UpdateTick() {
     if (current_task->time_slice_remaining == 0) {
       // 重置时间片，稍后在 Schedule() 中会将任务放回就绪队列
       current_task->time_slice_remaining = current_task->time_slice_default;
+      current_task->status = TaskStatus::kReady;
       cpu_sched.lock.unlock();
       Schedule();
       return;
