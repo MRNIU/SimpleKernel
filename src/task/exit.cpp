@@ -27,8 +27,9 @@ void TaskManager::Exit(int exit_code) {
   auto* current = GetCurrentTask();
   if (!current) {
     klog::Err("Exit: No current task to exit.\n");
-    while (1)
+    while (1) {
       ;
+    }
   }
 
   // 设置退出码
