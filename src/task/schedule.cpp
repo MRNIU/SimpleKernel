@@ -12,10 +12,12 @@
 #include "fifo_scheduler.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
+#include "per_cpu.hpp"
 #include "singleton.hpp"
 #include "sk_cstring"
 #include "sk_stdlib.h"
 #include "sk_vector"
+#include "spinlock.hpp"
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
