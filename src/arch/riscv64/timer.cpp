@@ -15,9 +15,6 @@ namespace {
 uint64_t interval = 0;
 }
 
-// 系统 tick 频率
-static constexpr uint64_t kTickPerSec = 100;
-
 void TimerInitSMP() {
   // 开启时钟中断
   cpu_io::Sie::Stie::Set();
@@ -27,11 +24,8 @@ void TimerInitSMP() {
 }
 
 void TimerInit() {
-  // 设置 tick 频率
-  Singleton<TaskManager>::GetInstance().SetTickFrequency(kTickPerSec);
-
   // 计算 interval
-  interval = Singleton<BasicInfo>::GetInstance().interval / kTickPerSec;
+  interval = Singleton<BasicInfo>::GetInstance().interval / SIMPLEKERNEL_TICK;
 
   // 注册时钟中断
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(

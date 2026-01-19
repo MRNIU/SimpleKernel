@@ -106,12 +106,6 @@ class TaskManager {
   void Exit(int exit_code = 0);
 
   /**
-   * @brief 设置 tick 频率
-   * @param freq 每秒 tick 数
-   */
-  void SetTickFrequency(uint64_t freq) { tick_frequency = freq; }
-
-  /**
    * @brief 分配新的 PID
    * @return size_t 新的 PID
    */
@@ -139,11 +133,6 @@ class TaskManager {
    * @brief 系统启动时间 (单位: ticks，用于全局时间参考)
    */
   std::atomic<uint64_t> system_boot_tick{0};
-
-  /**
-   * @brief tick 频率 (Hz)
-   */
-  uint64_t tick_frequency = 100;
 
   /**
    * @brief PID 分配器

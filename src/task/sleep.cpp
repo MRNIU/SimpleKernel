@@ -29,7 +29,7 @@ void TaskManager::Sleep(uint64_t ms) {
   }
 
   // 至少睡眠 1 tick
-  uint64_t ticks = ms * tick_frequency / 1000;
+  uint64_t ticks = ms * SIMPLEKERNEL_TICK / 1000;
   if (ticks == 0) {
     ticks = 1;
   }

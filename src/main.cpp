@@ -32,6 +32,7 @@ std::atomic<uint64_t> global_counter{0};
 
 /// Task1: 每 1s 打印一次，测试 sys_exit
 void task1_func(void* arg) {
+  klog::Info("Task1: arg = %p\n", arg);
   for (int i = 0; i < 5; ++i) {
     klog::Info("Task1: iteration %d/5\n", i + 1);
     sys_sleep(1000);
@@ -42,6 +43,7 @@ void task1_func(void* arg) {
 
 /// Task2: 每 2s 打印一次，测试 sys_yield
 void task2_func(void* arg) {
+  klog::Info("Task2: arg = %p\n", arg);
   uint64_t count = 0;
   while (1) {
     klog::Info("Task2: yield count=%llu\n", count++);
@@ -53,6 +55,7 @@ void task2_func(void* arg) {
 
 /// Task3: 每 3s 打印一次，同时修改全局变量，测试多核同步
 void task3_func(void* arg) {
+  klog::Info("Task3: arg = %p\n", arg);
   while (1) {
     uint64_t old_value = global_counter.fetch_add(1, std::memory_order_seq_cst);
     klog::Info("Task3: global_counter %llu -> %llu\n", old_value,
@@ -63,6 +66,7 @@ void task3_func(void* arg) {
 
 /// Task4: 每 4s 打印一次，测试 sys_sleep
 void task4_func(void* arg) {
+  klog::Info("Task4: arg = %p\n", arg);
   uint64_t iteration = 0;
   while (1) {
     auto start_tick =
@@ -80,14 +84,14 @@ void create_test_tasks() {
   size_t core_id = cpu_io::GetCurrentCoreId();
   auto& tm = Singleton<TaskManager>::GetInstance();
 
-  auto task1 =
-      new TaskControlBlock("Task1-Exit", tm.AllocatePid(), task1_func, nullptr);
+  auto task1 = new TaskControlBlock("Task1-Exit", tm.AllocatePid(), task1_func,
+                                    reinterpret_cast<void*>(0x1111));
   auto task2 = new TaskControlBlock("Task2-Yield", tm.AllocatePid(), task2_func,
-                                    nullptr);
-  auto task3 =
-      new TaskControlBlock("Task3-Sync", tm.AllocatePid(), task3_func, nullptr);
+                                    reinterpret_cast<void*>(0x2222));
+  auto task3 = new TaskControlBlock("Task3-Sync", tm.AllocatePid(), task3_func,
+                                    reinterpret_cast<void*>(0x3333));
   auto task4 = new TaskControlBlock("Task4-Sleep", tm.AllocatePid(), task4_func,
-                                    nullptr);
+                                    reinterpret_cast<void*>(0x4444));
 
   // 设置 CPU 亲和性，绑定到当前核心
   task1->cpu_affinity = (1UL << core_id);
