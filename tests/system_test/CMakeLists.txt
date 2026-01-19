@@ -18,8 +18,6 @@ ADD_EXECUTABLE (
     sk_priority_queue_test.cpp
     sk_rb_tree_test.cpp
     sk_set_test.cpp
-    kernel_task_test.cpp
-    user_task_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp)
 
@@ -29,7 +27,7 @@ TARGET_INCLUDE_DIRECTORIES (
             ${CMAKE_SOURCE_DIR}/src/arch/${CMAKE_SYSTEM_PROCESSOR})
 
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
-                                               libcxx arch driver task)
+                                               libcxx arch driver)
 
 # qemu 参数设置
 LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS

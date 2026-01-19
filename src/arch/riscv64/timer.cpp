@@ -9,7 +9,6 @@
 #include "interrupt.h"
 #include "opensbi_interface.h"
 #include "singleton.hpp"
-#include "task_manager.hpp"
 
 namespace {
 uint64_t interval = 0;
@@ -27,9 +26,6 @@ void TimerInitSMP() {
 }
 
 void TimerInit() {
-  // 设置 tick 频率
-  Singleton<TaskManager>::GetInstance().SetTickFrequency(kTickPerSec);
-
   // 计算 interval
   interval = Singleton<BasicInfo>::GetInstance().interval / kTickPerSec;
 
@@ -38,7 +34,6 @@ void TimerInit() {
       cpu_io::detail::register_info::csr::ScauseInfo::kSupervisorTimerInterrupt,
       [](uint64_t, uint8_t*) -> uint64_t {
         sbi_set_timer(cpu_io::Time::Read() + interval);
-        Singleton<TaskManager>::GetInstance().TickUpdate();
         return 0;
       });
 
