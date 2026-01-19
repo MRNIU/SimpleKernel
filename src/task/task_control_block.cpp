@@ -86,14 +86,23 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
 
 TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
                                    ThreadEntry entry, void* arg)
-    : name(name),
-      pid(pid),
-      trap_context_ptr(reinterpret_cast<cpu_io::TrapContext*>(
-          kernel_stack_top.data() + kernel_stack_top.size() -
-          sizeof(cpu_io::TrapContext))) {
+    : name(name), pid(pid) {
+  // 分配内核栈
+  kernel_stack = static_cast<uint8_t*>(aligned_alloc(
+      cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
+  if (!kernel_stack) {
+    klog::Err("Failed to allocate kernel stack for task %s\n", name);
+    status = TaskStatus::kExited;
+    return;
+  }
+
+  // 设置 trap_context_ptr 指向内核栈顶预留的位置
+  trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
+      kernel_stack + kDefaultKernelStackSize - sizeof(cpu_io::TrapContext));
+
   // 设置内核栈顶
-  auto stack_top = reinterpret_cast<uint64_t>(kernel_stack_top.data()) +
-                   kernel_stack_top.size();
+  auto stack_top =
+      reinterpret_cast<uint64_t>(kernel_stack) + kDefaultKernelStackSize;
 
   // 1. 设置 ra 指向汇编跳板 kernel_thread_entry
   // 当 switch_to 执行 ret 时，会跳转到 kernel_thread_entry
@@ -114,11 +123,19 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
 
 TaskControlBlock::TaskControlBlock(const char* name, size_t pid, uint8_t* elf,
                                    int argc, char** argv)
-    : name(name),
-      pid(pid),
-      trap_context_ptr(reinterpret_cast<cpu_io::TrapContext*>(
-          kernel_stack_top.data() + kernel_stack_top.size() -
-          sizeof(cpu_io::TrapContext))) {
+    : name(name), pid(pid) {
+  // 分配内核栈
+  kernel_stack = static_cast<uint8_t*>(aligned_alloc(
+      cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
+  if (!kernel_stack) {
+    klog::Err("Failed to allocate kernel stack for task %s\n", name);
+    status = TaskStatus::kExited;
+    return;
+  }
+
+  // 设置 trap_context_ptr 指向内核栈顶预留的位置
+  trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
+      kernel_stack + kDefaultKernelStackSize - sizeof(cpu_io::TrapContext));
   // 1. 创建页表
   page_table = reinterpret_cast<uint64_t*>(aligned_alloc(
       cpu_io::virtual_memory::kPageSize, cpu_io::virtual_memory::kPageSize));
@@ -183,8 +200,8 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid, uint8_t* elf,
 #endif
 
   // 6. 初始化内核切换上下文
-  auto stack_top = reinterpret_cast<uint64_t>(kernel_stack_top.data()) +
-                   kernel_stack_top.size();
+  auto stack_top =
+      reinterpret_cast<uint64_t>(kernel_stack) + kDefaultKernelStackSize;
   task_context.ra = reinterpret_cast<uint64_t>(kernel_thread_entry);
   task_context.s0 = reinterpret_cast<uint64_t>(trap_return);
   task_context.s1 = reinterpret_cast<uint64_t>(trap_context_ptr);
@@ -205,4 +222,18 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid, uint8_t* elf,
   // trap_context_ptr->x[2] = user_sp; // sp
   // trap_context_ptr->a0 = argc;
   // trap_context_ptr->a1 = user_sp (argv ptr); // argv is at user_sp
+}
+
+TaskControlBlock::~TaskControlBlock() {
+  // 释放内核栈
+  if (kernel_stack) {
+    free(kernel_stack);
+    kernel_stack = nullptr;
+  }
+
+  // 释放页表
+  if (page_table) {
+    /// @todo 递归释放页表中分配的所有页面
+    page_table = nullptr;
+  }
 }

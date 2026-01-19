@@ -137,7 +137,7 @@ struct TaskControlBlock {
   TaskControlBlock* inherits_from = nullptr;
 
   /// 内核栈
-  std::array<uint8_t, kDefaultKernelStackSize> kernel_stack_top{};
+  uint8_t* kernel_stack = nullptr;
 
   /**
    * @brief 当前的 Trap 上下文指针
@@ -188,12 +188,12 @@ struct TaskControlBlock {
 
   /// @name 构造/析构函数
   /// @{
-  TaskControlBlock() = default;
-  TaskControlBlock(const TaskControlBlock&) = default;
-  TaskControlBlock(TaskControlBlock&&) = default;
-  auto operator=(const TaskControlBlock&) -> TaskControlBlock& = default;
-  auto operator=(TaskControlBlock&&) -> TaskControlBlock& = default;
-  ~TaskControlBlock() = default;
+  TaskControlBlock() = delete;
+  TaskControlBlock(const TaskControlBlock&) = delete;
+  TaskControlBlock(TaskControlBlock&&) = delete;
+  auto operator=(const TaskControlBlock&) -> TaskControlBlock& = delete;
+  auto operator=(TaskControlBlock&&) -> TaskControlBlock& = delete;
+  ~TaskControlBlock();
   /// @}
 };
 
