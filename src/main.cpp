@@ -92,8 +92,12 @@ auto main(int argc, const char** argv) -> int {
 
   klog::info << "Hello SimpleKernel\n";
 
-  auto task_a = new TaskControlBlock("Task A", 1, thread_func_a, (void*)100);
-  auto task_b = new TaskControlBlock("Task B", 2, thread_func_b, (void*)200);
+  auto task_a = new TaskControlBlock(
+      "Task A", Singleton<TaskManager>::GetInstance().AllocatePid(),
+      thread_func_a, (void*)100);
+  auto task_b = new TaskControlBlock(
+      "Task B", Singleton<TaskManager>::GetInstance().AllocatePid(),
+      thread_func_b, (void*)200);
   Singleton<TaskManager>::GetInstance().AddTask(task_a);
   Singleton<TaskManager>::GetInstance().AddTask(task_b);
 

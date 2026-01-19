@@ -62,6 +62,11 @@ void TaskManager::InitCurrentCore() {
 }
 
 void TaskManager::AddTask(TaskControlBlock* task) {
+  // 确保任务状态为 kReady
+  if (task->status == TaskStatus::kUnInit) {
+    task->status = TaskStatus::kReady;
+  }
+
   // 简单的负载均衡：如果指定了亲和性，放入对应核心，否则放入当前核心
   // 更复杂的逻辑可以是：寻找最空闲的核心
   size_t target_core = cpu_io::GetCurrentCoreId();
@@ -88,6 +93,19 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   }
 
   cpu_sched.lock.unlock();
+
+  // 如果是当前核心，且添加了比当前任务优先级更高的任务，触发抢占
+  if (target_core == cpu_io::GetCurrentCoreId()) {
+    auto& cpu_data = per_cpu::GetCurrentCore();
+    TaskControlBlock* current = cpu_data.running_task;
+    // 如果当前是 idle 任务，或新任务的策略优先级更高，触发调度
+    if (current == cpu_data.idle_task ||
+        (current && task->policy < current->policy)) {
+      // 注意：这里不能直接调用 Schedule()，因为可能在中断上下文中
+      // 实际应该设置一个 need_resched 标志，在中断返回前检查
+      // 为简化，这里暂时不做抢占，只在时间片耗尽时调度
+    }
+  }
 }
 
 void TaskManager::Schedule() {
@@ -171,7 +189,6 @@ void TaskManager::Schedule() {
 
   if (!next_task) {
     // 仍然没有任务，运行 Idle 任务
-    // 如果当前就是 Idle 且 Ready/Running，继续运行
     next_task = cpu_data.idle_task;
 
     // 如果连 idle task 都没有 (启动阶段?)，则需要 panic 或者等待
@@ -185,6 +202,11 @@ void TaskManager::Schedule() {
   TaskControlBlock* prev_task = current_task;
   cpu_data.running_task = next_task;
   next_task->status = TaskStatus::kRunning;
+
+  // 如果不是 idle 任务，重置时间片
+  if (next_task != cpu_data.idle_task) {
+    next_task->time_slice_remaining = next_task->time_slice_default;
+  }
 
   // 更新调度统计
   cpu_sched.total_schedules++;
@@ -228,8 +250,7 @@ void TaskManager::UpdateTick() {
 
     // 时间片耗尽，标记需要调度
     if (current_task->time_slice_remaining == 0) {
-      // 重置时间片，稍后在 Schedule() 中会将任务放回就绪队列
-      current_task->time_slice_remaining = current_task->time_slice_default;
+      // 标记任务需要重新调度，时间片将在 Schedule() 中重置
       current_task->status = TaskStatus::kReady;
       cpu_sched.lock.unlock();
       Schedule();
