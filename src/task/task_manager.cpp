@@ -11,9 +11,9 @@
 #include <new>
 
 #include "basic_info.hpp"
+#include "fifo_scheduler.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
-#include "scheduler/fifo_scheduler.hpp"
 #include "singleton.hpp"
 #include "sk_cstring"
 #include "sk_stdlib.h"

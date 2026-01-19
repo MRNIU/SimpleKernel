@@ -13,7 +13,7 @@
 
 #include "interrupt_base.h"
 #include "per_cpu.hpp"
-#include "scheduler/scheduler_base.hpp"
+#include "scheduler_base.hpp"
 #include "sk_list"
 #include "sk_priority_queue"
 #include "spinlock.hpp"

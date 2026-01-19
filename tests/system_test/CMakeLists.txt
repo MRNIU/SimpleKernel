@@ -21,8 +21,6 @@ ADD_EXECUTABLE (
     kernel_task_test.cpp
     user_task_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory.cpp
-    ${CMAKE_SOURCE_DIR}/src/task_control_block.cpp
-    ${CMAKE_SOURCE_DIR}/src/task_manager.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (
@@ -31,7 +29,7 @@ TARGET_INCLUDE_DIRECTORIES (
             ${CMAKE_SOURCE_DIR}/src/arch/${CMAKE_SYSTEM_PROCESSOR})
 
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
-                                               libcxx arch driver)
+                                               libcxx arch driver task)
 
 # qemu 参数设置
 LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS
