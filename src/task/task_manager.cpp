@@ -33,9 +33,10 @@ void idle_thread(void*) {
 }  // namespace
 
 void TaskManager::InitCurrentCore() {
-  // 初始化每个核心的调度器
-  size_t core_id = cpu_io::GetCurrentCoreId();
+  auto core_id = cpu_io::GetCurrentCoreId();
   auto& cpu_sched = cpu_schedulers_[core_id];
+
+  LockGuard lock_guard{cpu_sched.lock};
 
   if (!cpu_sched.schedulers[SchedPolicy::kNormal]) {
     cpu_sched.schedulers[SchedPolicy::kRealTime] = new FifoScheduler();
@@ -49,17 +50,13 @@ void TaskManager::InitCurrentCore() {
   cpu_data.sched_data = &cpu_sched;
 
   // 创建独立的 Idle 线程
-  auto* idle_task = new TaskControlBlock("Idle", 0, idle_thread, nullptr);
-  idle_task->status = TaskStatus::kReady;
+  auto* idle_task =
+      new TaskControlBlock("Idle", AllocatePid(), idle_thread, nullptr);
+  idle_task->status = TaskStatus::kRunning;
   idle_task->policy = SchedPolicy::kIdle;
-  idle_task->cpu_affinity = (1UL << core_id);
 
   cpu_data.idle_task = idle_task;
-
-  // 初始化阶段，将 idle_task 作为当前运行任务
-  // main 函数执行在初始化栈上，第一次调度时会切换到其他任务或 idle
   cpu_data.running_task = idle_task;
-  idle_task->status = TaskStatus::kRunning;
 }
 
 void TaskManager::AddTask(TaskControlBlock* task) {
@@ -114,4 +111,14 @@ size_t TaskManager::AllocatePid() { return pid_allocator.fetch_add(1); }
 void TaskManager::Balance() {
   // 算法留空
   // TODO: 检查其他核心的运行队列长度，如果比当前核心长，则窃取任务
+}
+
+TaskManager::~TaskManager() {
+  // 清理每个核心的调度器
+  for (auto& cpu_sched : cpu_schedulers_) {
+    for (auto& scheduler : cpu_sched.schedulers) {
+      delete scheduler;
+      scheduler = nullptr;
+    }
+  }
 }

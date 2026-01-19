@@ -56,20 +56,8 @@ struct CpuSchedData {
  */
 class TaskManager {
  public:
-  /// @name 构造/析构函数
-  /// @{
-  TaskManager() = default;
-  TaskManager(const TaskManager&) = delete;
-  TaskManager(TaskManager&&) = delete;
-  auto operator=(const TaskManager&) -> TaskManager& = delete;
-  auto operator=(TaskManager&&) -> TaskManager& = delete;
-  ~TaskManager() = default;
-  /// @}
-
   /**
-   * @brief 为当前核心创建主线程任务
-   *
-   * 将当前正在执行的流包装为主线程任务。
+   * @brief 初始化 per cpu 的调度数据，创建 idle 线程
    */
   void InitCurrentCore();
 
@@ -141,6 +129,16 @@ class TaskManager {
    */
   void Balance();
 
+  /// @name 构造/析构函数
+  /// @{
+  TaskManager() = default;
+  TaskManager(const TaskManager&) = delete;
+  TaskManager(TaskManager&&) = delete;
+  auto operator=(const TaskManager&) -> TaskManager& = delete;
+  auto operator=(TaskManager&&) -> TaskManager& = delete;
+  ~TaskManager();
+  /// @}
+
  private:
   /**
    * @brief 每个核心的调度数据
@@ -153,11 +151,6 @@ class TaskManager {
   CpuSchedData& GetCurrentCpuSched() {
     return cpu_schedulers_[cpu_io::GetCurrentCoreId()];
   }
-
-  /**
-   * @brief 系统启动时间 (单位: ticks，用于全局时间参考)
-   */
-  std::atomic<uint64_t> system_boot_tick{0};
 
   /**
    * @brief PID 分配器
