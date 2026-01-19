@@ -116,17 +116,17 @@ struct TaskControlBlock {
     /// CFS 调度器数据
     struct {
       /// 虚拟运行时间
-      uint64_t vruntime = 0;
+      uint64_t vruntime;
       /// 任务权重 (1024 为默认)
-      uint32_t weight = 1024;
+      uint32_t weight;
     } cfs;
 
     /// MLFQ 调度器数据
     struct {
       /// 优先级级别 (0 = 最高)
-      uint8_t level = 0;
+      uint8_t level;
     } mlfq;
-  } sched_data;
+  } sched_data{};
 
   /// 等待的资源 ID
   uint64_t blocked_on = 0;
