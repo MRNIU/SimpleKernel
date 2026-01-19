@@ -113,7 +113,7 @@ class TaskManager {
    * @brief 退出当前线程
    * @param exit_code 退出码
    */
-  void Exit(int exit_code = 0);
+  [[noreturn]] void Exit(int exit_code = 0);
 
   /**
    * @brief 阻塞当前任务
