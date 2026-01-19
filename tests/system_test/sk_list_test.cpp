@@ -169,6 +169,64 @@ bool test_char_type() {
   return true;
 }
 
+bool test_erase_range() {
+  list<int> l;
+  for (int i = 1; i <= 5; ++i) {
+    l.push_back(i);
+  }
+
+  auto first = l.begin();
+  ++first;  // points to 2
+  auto last = first;
+  ++last;
+  ++last;
+  ++last;  // points to 5
+
+  l.erase(first, last);  // erase 2, 3, 4
+  EXPECT_EQ(l.size(), 2, "Size should be 2 after erase range");
+  EXPECT_EQ(l.front(), 1, "Front should be 1");
+  EXPECT_EQ(l.back(), 5, "Back should be 5");
+
+  sk_printf("sk_list_test: erase_range passed\n");
+  return true;
+}
+
+bool test_remove() {
+  list<int> l;
+  l.push_back(1);
+  l.push_back(2);
+  l.push_back(2);
+  l.push_back(3);
+  l.push_back(2);
+
+  l.remove(2);
+  EXPECT_EQ(l.size(), 2, "Size should be 2 after remove");
+  EXPECT_EQ(l.front(), 1, "Front should be 1");
+  EXPECT_EQ(l.back(), 3, "Back should be 3");
+
+  sk_printf("sk_list_test: remove passed\n");
+  return true;
+}
+
+bool test_remove_if() {
+  list<int> l;
+  for (int i = 1; i <= 10; ++i) {
+    l.push_back(i);
+  }
+
+  l.remove_if([](int x) { return x % 2 == 0; });  // remove even numbers
+  EXPECT_EQ(l.size(), 5, "Size should be 5 after remove_if");
+
+  int expected = 1;
+  for (const auto& item : l) {
+    EXPECT_EQ(item, expected, "Should contain only odd numbers");
+    expected += 2;
+  }
+
+  sk_printf("sk_list_test: remove_if passed\n");
+  return true;
+}
+
 }  // namespace
 
 auto sk_list_test() -> bool {
@@ -179,5 +237,8 @@ auto sk_list_test() -> bool {
   if (!test_insert_erase()) return false;
   if (!test_struct_type()) return false;
   if (!test_char_type()) return false;
+  if (!test_erase_range()) return false;
+  if (!test_remove()) return false;
+  if (!test_remove_if()) return false;
   return true;
 }

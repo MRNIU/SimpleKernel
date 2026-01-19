@@ -106,3 +106,61 @@ TEST(SkVectorTest, Iterator) {
   }
   EXPECT_EQ(sum, 6);
 }
+
+TEST(SkVectorTest, EraseSingle) {
+  sk_std::vector<int> v;
+  v.push_back(1);
+  v.push_back(2);
+  v.push_back(3);
+  v.push_back(4);
+
+  auto it = v.begin() + 1;  // points to 2
+  it = v.erase(it);
+  EXPECT_EQ(v.size(), 3);
+  EXPECT_EQ(*it, 3);  // iterator points to next element
+  EXPECT_EQ(v[0], 1);
+  EXPECT_EQ(v[1], 3);
+  EXPECT_EQ(v[2], 4);
+}
+
+TEST(SkVectorTest, EraseRange) {
+  sk_std::vector<int> v;
+  for (int i = 1; i <= 5; ++i) {
+    v.push_back(i);
+  }
+
+  auto first = v.begin() + 1;  // points to 2
+  auto last = v.begin() + 4;   // points to 5
+  auto it = v.erase(first, last);
+  EXPECT_EQ(v.size(), 2);
+  EXPECT_EQ(*it, 5);
+  EXPECT_EQ(v[0], 1);
+  EXPECT_EQ(v[1], 5);
+}
+
+TEST(SkVectorTest, Remove) {
+  sk_std::vector<int> v;
+  v.push_back(1);
+  v.push_back(2);
+  v.push_back(2);
+  v.push_back(3);
+  v.push_back(2);
+
+  v.remove(2);
+  EXPECT_EQ(v.size(), 2);
+  EXPECT_EQ(v[0], 1);
+  EXPECT_EQ(v[1], 3);
+}
+
+TEST(SkVectorTest, RemoveIf) {
+  sk_std::vector<int> v;
+  for (int i = 1; i <= 10; ++i) {
+    v.push_back(i);
+  }
+
+  v.remove_if([](int x) { return x % 2 == 0; });  // remove even numbers
+  EXPECT_EQ(v.size(), 5);
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_EQ(v[i], static_cast<int>(i * 2 + 1));  // 1, 3, 5, 7, 9
+  }
+}
