@@ -190,14 +190,6 @@ class CfsScheduler : public SchedulerBase {
   }
 
   /**
-   * @brief 任务开始运行时调用
-   * @param task 开始运行的任务
-   */
-  void OnScheduled([[maybe_unused]] TaskControlBlock* task) override {
-    // CFS 不需要特殊处理
-  }
-
-  /**
    * @brief 获取调度器统计信息
    * @return Stats 统计信息结构体
    */
