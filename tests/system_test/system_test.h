@@ -70,5 +70,6 @@ auto sk_vector_test() -> bool;
 auto sk_priority_queue_test() -> bool;
 auto sk_rb_tree_test() -> bool;
 auto sk_set_test() -> bool;
+auto sk_unordered_map_test() -> bool;
 
 #endif /* SIMPLEKERNEL_TESTS_SYSTEM_TEST_SYSTEM_TEST_H_ */
