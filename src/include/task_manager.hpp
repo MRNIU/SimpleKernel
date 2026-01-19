@@ -100,6 +100,12 @@ class TaskManager {
   void Sleep(uint64_t ms);
 
   /**
+   * @brief 退出当前线程
+   * @param exit_code 退出码
+   */
+  void Exit(int exit_code = 0);
+
+  /**
    * @brief 设置 tick 频率
    * @param freq 每秒 tick 数
    */

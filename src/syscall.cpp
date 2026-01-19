@@ -46,11 +46,10 @@ int sys_write(int fd, const char* buf, size_t len) {
 int sys_exit(int code) {
   klog::Info("[Syscall] Process %d exited with code %d\n",
              Singleton<TaskManager>::GetInstance().GetCurrentTask()->pid, code);
-  // 可以在这里调用 ProcessManager 销毁进程
-  // 目前仅让出 CPU，模拟进程结束
-  Singleton<TaskManager>::GetInstance().GetCurrentTask()->status =
-      TaskStatus::kExited;
-  Singleton<TaskManager>::GetInstance().Schedule();
+  // 调用 TaskManager 的 Exit 方法处理线程退出
+  Singleton<TaskManager>::GetInstance().Exit(code);
+  // 不会执行到这里，因为 Exit 会触发调度切换
+  klog::Err("[Syscall] sys_exit should not return!\n");
   return 0;
 }
 

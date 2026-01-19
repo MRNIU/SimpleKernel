@@ -89,8 +89,14 @@ void TaskManager::Schedule() {
   TaskControlBlock* current_task = cpu_data.running_task;
   TaskControlBlock* next_task = nullptr;
 
-  // 1. 如果当前任务还在运行 (Yield的情况)，先将其放回就绪队列
-  if (current_task && current_task->status == TaskStatus::kRunning) {
+  // 1. 如果当前任务已退出，标记为僵尸状态（等待父进程回收）
+  if (current_task && current_task->status == TaskStatus::kExited) {
+    current_task->status = TaskStatus::kZombie;
+    // TODO: 通知父进程回收资源，或在没有父进程时直接释放
+    // 暂时简单处理：已退出的任务不会再被调度
+  }
+  // 2. 如果当前任务还在运行 (Yield的情况)，先将其放回就绪队列
+  else if (current_task && current_task->status == TaskStatus::kRunning) {
     current_task->status = TaskStatus::kReady;
     // 不要在此时将 idle task 放回队列，因为它特殊处理
     if (current_task != cpu_data.idle_task) {
@@ -101,7 +107,7 @@ void TaskManager::Schedule() {
     }
   }
 
-  // 2. 按优先级遍历调度器，寻找下一个任务
+  // 3. 按优先级遍历调度器，寻找下一个任务
   for (auto* sched : cpu_sched.schedulers) {
     if (sched) {
       next_task = sched->PickNext();
@@ -246,6 +252,25 @@ void TaskManager::Sleep(uint64_t ms) {
   cpu_sched.sleeping_tasks.push(current);
   cpu_sched.lock.unlock();
 
+  Schedule();
+}
+
+void TaskManager::Exit(int exit_code) {
+  auto& cpu_sched = GetCurrentCpuSched();
+  auto& cpu_data = per_cpu::GetCurrentCore();
+  TaskControlBlock* current = cpu_data.running_task;
+
+  if (!current || current == cpu_data.idle_task) {
+    return;
+  }
+
+  // 加锁修改状态
+  cpu_sched.lock.lock();
+  current->status = TaskStatus::kExited;
+  current->exit_code = exit_code;
+  cpu_sched.lock.unlock();
+
+  // 调度到下一个任务，当前任务不会再被调度
   Schedule();
 }
 

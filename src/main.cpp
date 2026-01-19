@@ -69,6 +69,7 @@ void thread_func_b(void* arg) {
   while (1) {
     klog::Info("Thread B: running, arg=%d\n", (uint64_t)arg);
     sys_sleep(100);
+    sys_exit(233);
   }
 }
 
@@ -102,8 +103,9 @@ auto main(int argc, const char** argv) -> int {
   // 主线程进入调度循环
   while (1) {
     klog::Info("Main Thread: running\n");
-    sys_sleep(100);
-    cpu_io::Pause();
+    // cpu_io::Pause();
+    // sys_sleep(100);
+    sys_yield();
   }
 
   return 0;

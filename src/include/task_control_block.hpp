@@ -99,6 +99,9 @@ struct TaskControlBlock {
   /// 上下文切换次数 (用于统计)
   uint64_t context_switches = 0;
 
+  /// 退出码
+  int exit_code = 0;
+
   /// 内核栈
   std::array<uint8_t, kDefaultKernelStackSize> kernel_stack_top{};
 
