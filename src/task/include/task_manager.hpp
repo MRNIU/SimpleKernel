@@ -16,6 +16,8 @@
 #include "scheduler_base.hpp"
 #include "sk_list"
 #include "sk_priority_queue"
+#include "sk_unordered_map"
+#include "sk_vector"
 #include "spinlock.hpp"
 #include "task_control_block.hpp"
 
@@ -24,10 +26,18 @@
  */
 struct CpuSchedData {
   SpinLock lock{"sched_lock"};
+
+  /// 调度器数组 (按策略索引)
   std::array<SchedulerBase*, SchedPolicy::kPolicyCount> schedulers{};
+
+  /// 睡眠队列 (优先队列，按唤醒时间排序)
   sk_std::priority_queue<TaskControlBlock*, sk_std::vector<TaskControlBlock*>,
                          TaskControlBlock::WakeTickCompare>
       sleeping_tasks;
+
+  /// 阻塞队列 (按资源 ID 分组)
+  sk_std::unordered_map<uint64_t, sk_std::list<TaskControlBlock*>>
+      blocked_tasks;
 
   /// Per-CPU tick 计数 (每个核心独立计时)
   uint64_t local_tick = 0;
@@ -104,6 +114,18 @@ class TaskManager {
    * @param exit_code 退出码
    */
   void Exit(int exit_code = 0);
+
+  /**
+   * @brief 阻塞当前任务
+   * @param resource_id 等待的资源 ID (如信号量地址、文件描述符等)
+   */
+  void Block(uint64_t resource_id);
+
+  /**
+   * @brief 唤醒等待指定资源的所有任务
+   * @param resource_id 资源 ID
+   */
+  void Wakeup(uint64_t resource_id);
 
   /**
    * @brief 分配新的 PID
