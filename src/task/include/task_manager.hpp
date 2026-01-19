@@ -91,7 +91,7 @@ class TaskManager {
   /**
    * @brief 更新系统 tick
    */
-  void UpdateTick();
+  void TickUpdate();
 
   /**
    * @brief 线程睡眠

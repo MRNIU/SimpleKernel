@@ -2,8 +2,7 @@
 
 ADD_LIBRARY (task INTERFACE)
 
-TARGET_INCLUDE_DIRECTORIES (task INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+TARGET_INCLUDE_DIRECTORIES (task INTERFACE include)
 
-TARGET_SOURCES (
-    task INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/task_control_block.cpp
-                   ${CMAKE_CURRENT_SOURCE_DIR}/task_manager.cpp)
+TARGET_SOURCES (task INTERFACE task_control_block.cpp schedule.cpp exit.cpp
+                               tick_update.cpp sleep.cpp task_manager.cpp)
