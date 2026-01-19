@@ -169,3 +169,52 @@ TEST(SkListTest, StructList) {
   EXPECT_EQ(list.size(), 1);
   EXPECT_EQ(list.front().x, 1);
 }
+
+TEST(SkListTest, EraseRange) {
+  sk_std::list<int> sk_list;
+  for (int i = 1; i <= 5; ++i) {
+    sk_list.push_back(i);
+  }
+
+  auto first = sk_list.begin();
+  ++first;  // points to 2
+  auto last = first;
+  ++last;
+  ++last;
+  ++last;  // points to 5
+
+  sk_list.erase(first, last);  // erase 2, 3, 4
+  EXPECT_EQ(sk_list.size(), 2);
+  EXPECT_EQ(sk_list.front(), 1);
+  EXPECT_EQ(sk_list.back(), 5);
+}
+
+TEST(SkListTest, Remove) {
+  sk_std::list<int> sk_list;
+  sk_list.push_back(1);
+  sk_list.push_back(2);
+  sk_list.push_back(2);
+  sk_list.push_back(3);
+  sk_list.push_back(2);
+
+  sk_list.remove(2);
+  EXPECT_EQ(sk_list.size(), 2);
+  EXPECT_EQ(sk_list.front(), 1);
+  EXPECT_EQ(sk_list.back(), 3);
+}
+
+TEST(SkListTest, RemoveIf) {
+  sk_std::list<int> sk_list;
+  for (int i = 1; i <= 10; ++i) {
+    sk_list.push_back(i);
+  }
+
+  sk_list.remove_if([](int x) { return x % 2 == 0; });  // remove even numbers
+  EXPECT_EQ(sk_list.size(), 5);
+
+  int expected = 1;
+  for (const auto& item : sk_list) {
+    EXPECT_EQ(item, expected);
+    expected += 2;
+  }
+}

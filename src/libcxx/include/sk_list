@@ -199,6 +199,36 @@ class list {
     return iterator(next);
   }
 
+  iterator erase(iterator first, iterator last) {
+    while (first != last) {
+      first = erase(first);
+    }
+    return last;
+  }
+
+  void remove(const T& value) {
+    iterator it = begin();
+    while (it != end()) {
+      if (*it == value) {
+        it = erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+
+  template <typename Predicate>
+  void remove_if(Predicate pred) {
+    iterator it = begin();
+    while (it != end()) {
+      if (pred(*it)) {
+        it = erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+
   void clear() {
     while (!empty()) {
       pop_front();

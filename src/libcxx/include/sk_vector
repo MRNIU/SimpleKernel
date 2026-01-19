@@ -174,6 +174,82 @@ class vector {
   const_iterator cbegin() const { return data_; }
   const_iterator cend() const { return data_ + size_; }
 
+  iterator erase(iterator pos) {
+    if (pos < begin() || pos >= end()) {
+      return end();
+    }
+
+    size_type index = pos - begin();
+    data_[index].~T();
+
+    for (size_type i = index; i < size_ - 1; ++i) {
+      new (data_ + i) T(static_cast<T&&>(data_[i + 1]));
+      data_[i + 1].~T();
+    }
+
+    --size_;
+    return begin() + index;
+  }
+
+  iterator erase(iterator first, iterator last) {
+    if (first >= last || first >= end()) {
+      return end();
+    }
+
+    size_type start_index = first - begin();
+    size_type end_index = last - begin();
+    size_type count = end_index - start_index;
+
+    for (size_type i = start_index; i < end_index; ++i) {
+      data_[i].~T();
+    }
+
+    for (size_type i = end_index; i < size_; ++i) {
+      new (data_ + i - count) T(static_cast<T&&>(data_[i]));
+      data_[i].~T();
+    }
+
+    size_ -= count;
+    return begin() + start_index;
+  }
+
+  void remove(const T& value) {
+    iterator write_pos = begin();
+    for (iterator read_pos = begin(); read_pos != end(); ++read_pos) {
+      if (!(*read_pos == value)) {
+        if (write_pos != read_pos) {
+          *write_pos = static_cast<T&&>(*read_pos);
+        }
+        ++write_pos;
+      }
+    }
+
+    size_type new_size = write_pos - begin();
+    for (size_type i = new_size; i < size_; ++i) {
+      data_[i].~T();
+    }
+    size_ = new_size;
+  }
+
+  template <typename Predicate>
+  void remove_if(Predicate pred) {
+    iterator write_pos = begin();
+    for (iterator read_pos = begin(); read_pos != end(); ++read_pos) {
+      if (!pred(*read_pos)) {
+        if (write_pos != read_pos) {
+          *write_pos = static_cast<T&&>(*read_pos);
+        }
+        ++write_pos;
+      }
+    }
+
+    size_type new_size = write_pos - begin();
+    for (size_type i = new_size; i < size_; ++i) {
+      data_[i].~T();
+    }
+    size_ = new_size;
+  }
+
  private:
   T* data_;
   size_type size_;
