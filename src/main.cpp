@@ -7,8 +7,8 @@
 #include <new>
 
 #include "arch.h"
+#include "arch/riscv64/interrupt.h"
 #include "basic_info.hpp"
-#include "interrupt.h"
 #include "kernel.h"
 #include "kernel_log.hpp"
 #include "per_cpu.hpp"
@@ -21,6 +21,8 @@
 #include "sk_stdlib.h"
 #include "sk_vector"
 #include "syscall.hpp"
+#include "task_control_block.hpp"
+#include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
 namespace {
@@ -31,9 +33,14 @@ auto main_smp(int argc, const char** argv) -> int {
   ArchInitSMP(argc, argv);
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
+  Singleton<TaskManager>::GetInstance().InitCurrentCore();
   klog::Info("Hello SimpleKernel SMP\n");
 
-  return 0;
+  // 启动调度器
+  Singleton<TaskManager>::GetInstance().Schedule();
+
+  // 不应该执行到这里
+  __builtin_unreachable();
 }
 
 }  // namespace
@@ -46,8 +53,23 @@ void _start(int argc, const char** argv) {
     main_smp(argc, argv);
   }
 
-  while (1)
-    ;
+  // 不应该执行到这里
+  __builtin_unreachable();
+}
+
+void thread_func_a(void* arg) {
+  while (1) {
+    klog::Info("Thread A: running, arg=%d\n", (uint64_t)arg);
+    // sys_sleep(100);
+  }
+}
+
+void thread_func_b(void* arg) {
+  while (1) {
+    klog::Info("Thread B: running, arg=%d\n", (uint64_t)arg);
+    // sys_sleep(100);
+    sys_exit(233);
+  }
 }
 
 auto main(int argc, const char** argv) -> int {
@@ -60,13 +82,31 @@ auto main(int argc, const char** argv) -> int {
   MemoryInit();
   // 中断相关初始化
   InterruptInit(argc, argv);
+  // 初始化任务管理器 (设置主线程)
+  Singleton<TaskManager>::GetInstance().InitCurrentCore();
 
   // 唤醒其余 core
-  WakeUpOtherCores();
+  // WakeUpOtherCores();
 
   DumpStack();
 
   klog::info << "Hello SimpleKernel\n";
 
-  return 0;
+  auto task_a = new TaskControlBlock(
+      "Task A", Singleton<TaskManager>::GetInstance().AllocatePid(),
+      thread_func_a, (void*)100);
+  auto task_b = new TaskControlBlock(
+      "Task B", Singleton<TaskManager>::GetInstance().AllocatePid(),
+      thread_func_b, (void*)200);
+  Singleton<TaskManager>::GetInstance().AddTask(task_a);
+  Singleton<TaskManager>::GetInstance().AddTask(task_b);
+
+  klog::Info("Main: Starting scheduler...\n");
+
+  // 启动调度器，不再返回
+  // 从这里开始，系统将在各个任务之间切换
+  Singleton<TaskManager>::GetInstance().Schedule();
+
+  // 不应该执行到这里
+  __builtin_unreachable();
 }

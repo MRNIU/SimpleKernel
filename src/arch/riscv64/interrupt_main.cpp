@@ -14,6 +14,7 @@
 #include "sk_cstdio"
 #include "sk_iostream"
 #include "syscall.hpp"
+#include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
 namespace {

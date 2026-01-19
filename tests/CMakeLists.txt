@@ -1,8 +1,8 @@
 # Copyright The SimpleKernel Contributors
 # CMake build configuration
 
-ADD_SUBDIRECTORY (system_test)
-ADD_SUBDIRECTORY (integration_test)
+ADD_SUBDIRECTORY (${CMAKE_CURRENT_SOURCE_DIR}/system_test)
+ADD_SUBDIRECTORY (${CMAKE_CURRENT_SOURCE_DIR}/integration_test)
 
 # 仅在 host 环境下进行 ut
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
@@ -21,7 +21,7 @@ IF(CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
 
     LIST (APPEND DEFAULT_TEST_LINK_LIB gtest gmock gtest_main)
 
-    ADD_SUBDIRECTORY (unit_test)
+    ADD_SUBDIRECTORY (${CMAKE_CURRENT_SOURCE_DIR}/unit_test)
 
     ADD_COVERAGE_TARGET (
         DEPENDS
