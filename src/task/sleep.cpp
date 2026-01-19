@@ -26,33 +26,34 @@ constexpr uint64_t kMillisecondsPerSecond = 1000;
 
 void TaskManager::Sleep(uint64_t ms) {
   auto& cpu_sched = GetCurrentCpuSched();
-  cpu_sched.lock.lock();
 
   auto* current = GetCurrentTask();
-  if (!current) {
-    cpu_sched.lock.unlock();
-    klog::Err("Sleep: No current task to sleep.\n");
-    return;
-  }
 
   // 如果睡眠时间为 0，仅让出 CPU（相当于 yield）
   if (ms == 0) {
-    cpu_sched.lock.unlock();
     Schedule();
     return;
   }
 
-  // 计算唤醒时间 (当前 tick + 睡眠时间)
-  uint64_t sleep_ticks = (ms * SIMPLEKERNEL_TICK) / kMillisecondsPerSecond;
-  current->sched_info.wake_tick = cpu_sched.local_tick + sleep_ticks;
+  // 计算唤醒时间并将任务加入睡眠队列
+  {
+    LockGuard<SpinLock> lock_guard(cpu_sched.lock);
 
-  // 将任务标记为睡眠状态
-  current->status = TaskStatus::kSleeping;
+    if (!current) {
+      klog::Err("Sleep: No current task to sleep.\n");
+      return;
+    }
 
-  // 将任务加入睡眠队列（优先队列会自动按 wake_tick 排序）
-  cpu_sched.sleeping_tasks.push(current);
+    // 计算唤醒时间 (当前 tick + 睡眠时间)
+    uint64_t sleep_ticks = (ms * SIMPLEKERNEL_TICK) / kMillisecondsPerSecond;
+    current->sched_info.wake_tick = cpu_sched.local_tick + sleep_ticks;
 
-  cpu_sched.lock.unlock();
+    // 将任务标记为睡眠状态
+    current->status = TaskStatus::kSleeping;
+
+    // 将任务加入睡眠队列（优先队列会自动按 wake_tick 排序）
+    cpu_sched.sleeping_tasks.push(current);
+  }
 
   // 调度到其他任务
   Schedule();
