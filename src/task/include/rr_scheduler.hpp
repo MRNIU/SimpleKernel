@@ -20,10 +20,16 @@ class RoundRobinScheduler : public SchedulerBase {
   /**
    * @brief 将任务加入就绪队列尾部
    * @param task 任务控制块指针
+   *
+   * 重置任务的时间片并将其加入队列尾部，实现公平的时间片轮转。
    */
   void Enqueue(TaskControlBlock* task) override {
     if (task) {
+      // 重新分配时间片
+      task->sched_info.time_slice_remaining =
+          task->sched_info.time_slice_default;
       ready_queue.push_back(task);
+      stats_.total_enqueues++;
     }
   }
 
@@ -41,6 +47,7 @@ class RoundRobinScheduler : public SchedulerBase {
     for (auto it = ready_queue.begin(); it != ready_queue.end(); ++it) {
       if (*it == task) {
         ready_queue.erase(it);
+        stats_.total_dequeues++;
         break;
       }
     }
@@ -58,8 +65,56 @@ class RoundRobinScheduler : public SchedulerBase {
     }
     auto next = ready_queue.front();
     ready_queue.pop_front();
+    stats_.total_picks++;
     return next;
   }
+
+  /**
+   * @brief 获取就绪队列大小
+   * @return size_t 队列中的任务数量
+   */
+  auto GetQueueSize() const -> size_t override { return ready_queue.size(); }
+
+  /**
+   * @brief 判断队列是否为空
+   * @return bool 队列为空返回 true
+   */
+  auto IsEmpty() const -> bool override { return ready_queue.empty(); }
+
+  /**
+   * @brief 时间片耗尽处理
+   * @param task 时间片耗尽的任务
+   * @return bool 返回 true 表示需要重新入队
+   *
+   * Round-Robin 调度器在时间片耗尽时重置时间片并将任务放回队列尾部。
+   */
+  auto OnTimeSliceExpired(TaskControlBlock* task) -> bool override {
+    if (task) {
+      // 重新分配时间片（在 Enqueue 时会重置）
+      task->sched_info.time_slice_remaining =
+          task->sched_info.time_slice_default;
+    }
+    return true;  // 需要重新入队
+  }
+
+  /**
+   * @brief 任务被抢占时调用
+   * @param task 被抢占的任务
+   */
+  void OnPreempted([[maybe_unused]] TaskControlBlock* task) override {
+    stats_.total_preemptions++;
+  }
+
+  /**
+   * @brief 获取调度器统计信息
+   * @return Stats 统计信息结构体
+   */
+  auto GetStats() const -> Stats override { return stats_; }
+
+  /**
+   * @brief 重置统计信息
+   */
+  void ResetStats() override { stats_ = {}; }
 
   /// @name 构造/析构函数
   /// @{
@@ -74,6 +129,9 @@ class RoundRobinScheduler : public SchedulerBase {
  private:
   /// 就绪队列 (双向链表，支持从头部取、向尾部放)
   sk_std::list<TaskControlBlock*> ready_queue;
+
+  /// 统计信息
+  Stats stats_;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_ */

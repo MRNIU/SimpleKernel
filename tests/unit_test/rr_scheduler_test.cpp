@@ -2,7 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "scheduler/rr_scheduler.hpp"
+#include "rr_scheduler.hpp"
 
 #include <gtest/gtest.h>
 
@@ -143,4 +143,189 @@ TEST(RoundRobinSchedulerTest, InterleavedEnqueueDequeue) {
   scheduler.Enqueue(&task2);
   EXPECT_EQ(scheduler.PickNext(), &task1);
   EXPECT_EQ(scheduler.PickNext(), &task2);
+}
+
+// 测试队列大小和空状态检查
+TEST(RoundRobinSchedulerTest, QueueSizeAndEmpty) {
+  RoundRobinScheduler scheduler;
+
+  TaskControlBlock task1, task2, task3;
+  task1.pid = 1;
+  task2.pid = 2;
+  task3.pid = 3;
+
+  // 初始状态
+  EXPECT_TRUE(scheduler.IsEmpty());
+  EXPECT_EQ(scheduler.GetQueueSize(), 0);
+
+  // 加入任务
+  scheduler.Enqueue(&task1);
+  EXPECT_FALSE(scheduler.IsEmpty());
+  EXPECT_EQ(scheduler.GetQueueSize(), 1);
+
+  scheduler.Enqueue(&task2);
+  scheduler.Enqueue(&task3);
+  EXPECT_EQ(scheduler.GetQueueSize(), 3);
+
+  // 取出任务
+  scheduler.PickNext();
+  EXPECT_EQ(scheduler.GetQueueSize(), 2);
+
+  scheduler.PickNext();
+  scheduler.PickNext();
+  EXPECT_TRUE(scheduler.IsEmpty());
+  EXPECT_EQ(scheduler.GetQueueSize(), 0);
+}
+
+// 测试时间片重置
+TEST(RoundRobinSchedulerTest, TimeSliceReset) {
+  RoundRobinScheduler scheduler;
+
+  TaskControlBlock task1;
+  task1.name = "Task1";
+  task1.pid = 1;
+  task1.sched_info.time_slice_default = 20;
+  task1.sched_info.time_slice_remaining = 5;  // 时间片快用完了
+
+  // 入队应该重置时间片
+  scheduler.Enqueue(&task1);
+  EXPECT_EQ(task1.sched_info.time_slice_remaining, 20);
+
+  // 模拟时间片耗尽
+  task1.sched_info.time_slice_remaining = 0;
+  bool should_reenqueue = scheduler.OnTimeSliceExpired(&task1);
+  EXPECT_TRUE(should_reenqueue);
+  EXPECT_EQ(task1.sched_info.time_slice_remaining, 20);
+}
+
+// 测试统计信息
+TEST(RoundRobinSchedulerTest, Statistics) {
+  RoundRobinScheduler scheduler;
+
+  TaskControlBlock task1, task2;
+  task1.pid = 1;
+  task2.pid = 2;
+
+  // 初始统计
+  auto stats = scheduler.GetStats();
+  EXPECT_EQ(stats.total_enqueues, 0);
+  EXPECT_EQ(stats.total_dequeues, 0);
+  EXPECT_EQ(stats.total_picks, 0);
+  EXPECT_EQ(stats.total_preemptions, 0);
+
+  // 测试入队统计
+  scheduler.Enqueue(&task1);
+  scheduler.Enqueue(&task2);
+  stats = scheduler.GetStats();
+  EXPECT_EQ(stats.total_enqueues, 2);
+
+  // 测试选择统计
+  scheduler.PickNext();
+  scheduler.PickNext();
+  stats = scheduler.GetStats();
+  EXPECT_EQ(stats.total_picks, 2);
+
+  // 测试出队统计
+  scheduler.Enqueue(&task1);
+  scheduler.Dequeue(&task1);
+  stats = scheduler.GetStats();
+  EXPECT_EQ(stats.total_dequeues, 1);
+
+  // 测试抢占统计
+  scheduler.OnPreempted(&task1);
+  scheduler.OnPreempted(&task2);
+  stats = scheduler.GetStats();
+  EXPECT_EQ(stats.total_preemptions, 2);
+
+  // 重置统计
+  scheduler.ResetStats();
+  stats = scheduler.GetStats();
+  EXPECT_EQ(stats.total_enqueues, 0);
+  EXPECT_EQ(stats.total_dequeues, 0);
+  EXPECT_EQ(stats.total_picks, 0);
+  EXPECT_EQ(stats.total_preemptions, 0);
+}
+
+// 测试大量任务的公平性
+TEST(RoundRobinSchedulerTest, FairnessWithManyTasks) {
+  RoundRobinScheduler scheduler;
+  constexpr size_t kTaskCount = 100;
+  TaskControlBlock tasks[kTaskCount];
+
+  // 初始化并加入所有任务
+  for (size_t i = 0; i < kTaskCount; ++i) {
+    tasks[i].pid = i;
+    tasks[i].status = TaskStatus::kReady;
+    scheduler.Enqueue(&tasks[i]);
+  }
+
+  EXPECT_EQ(scheduler.GetQueueSize(), kTaskCount);
+
+  // 验证所有任务按顺序被选中
+  for (size_t i = 0; i < kTaskCount; ++i) {
+    auto* picked = scheduler.PickNext();
+    ASSERT_NE(picked, nullptr);
+    EXPECT_EQ(picked->pid, i);
+  }
+
+  EXPECT_TRUE(scheduler.IsEmpty());
+}
+
+// 测试多轮轮转
+TEST(RoundRobinSchedulerTest, MultipleRounds) {
+  RoundRobinScheduler scheduler;
+
+  TaskControlBlock task1, task2, task3;
+  task1.pid = 1;
+  task2.pid = 2;
+  task3.pid = 3;
+
+  // 进行 5 轮轮转
+  for (int round = 0; round < 5; ++round) {
+    scheduler.Enqueue(&task1);
+    scheduler.Enqueue(&task2);
+    scheduler.Enqueue(&task3);
+
+    EXPECT_EQ(scheduler.PickNext()->pid, 1);
+    EXPECT_EQ(scheduler.PickNext()->pid, 2);
+    EXPECT_EQ(scheduler.PickNext()->pid, 3);
+    EXPECT_TRUE(scheduler.IsEmpty());
+  }
+}
+
+// 测试边界条件：单个任务
+TEST(RoundRobinSchedulerTest, SingleTask) {
+  RoundRobinScheduler scheduler;
+
+  TaskControlBlock task1;
+  task1.pid = 1;
+
+  scheduler.Enqueue(&task1);
+  EXPECT_EQ(scheduler.GetQueueSize(), 1);
+
+  auto* picked = scheduler.PickNext();
+  EXPECT_EQ(picked, &task1);
+  EXPECT_TRUE(scheduler.IsEmpty());
+}
+
+// 测试出队不存在的任务
+TEST(RoundRobinSchedulerTest, DequeueNonExistentTask) {
+  RoundRobinScheduler scheduler;
+
+  TaskControlBlock task1, task2, task3;
+  task1.pid = 1;
+  task2.pid = 2;
+  task3.pid = 3;
+
+  scheduler.Enqueue(&task1);
+  scheduler.Enqueue(&task2);
+
+  // 尝试移除不在队列中的任务
+  scheduler.Dequeue(&task3);
+  EXPECT_EQ(scheduler.GetQueueSize(), 2);
+
+  // 验证原有任务仍在队列中
+  EXPECT_EQ(scheduler.PickNext()->pid, 1);
+  EXPECT_EQ(scheduler.PickNext()->pid, 2);
+  EXPECT_TRUE(scheduler.IsEmpty());
 }
