@@ -20,21 +20,23 @@ namespace {
 struct test_case {
   const char* name;
   bool (*func)(void);
+  // 是否为多核测试，需要所有核心参与
+  bool is_smp_test;
 };
 
 std::array<test_case, 9> test_cases = {
-    test_case{"ctor_dtor_test", ctor_dtor_test},
-    test_case{"spinlock_test", spinlock_test},
-    test_case{"memory_test", memory_test},
-    test_case{"sk_list_test", sk_list_test},
-    test_case{"sk_queue_test", sk_queue_test},
-    test_case{"sk_vector_test", sk_vector_test},
-    test_case{"sk_priority_queue_test", sk_priority_queue_test},
-    test_case{"sk_rb_tree_test", sk_rb_tree_test},
-    test_case{"sk_set_test", sk_set_test},
-};
+    test_case{"ctor_dtor_test", ctor_dtor_test, false},
+    test_case{"spinlock_test", spinlock_test, true},
+    test_case{"memory_test", memory_test, false},
+    test_case{"sk_list_test", sk_list_test, false},
+    test_case{"sk_queue_test", sk_queue_test, false},
+    test_case{"sk_vector_test", sk_vector_test, false},
+    test_case{"sk_priority_queue_test", sk_priority_queue_test, false},
+    test_case{"sk_rb_tree_test", sk_rb_tree_test, false},
+    test_case{"sk_set_test", sk_set_test, false}};
 
-void run_tests() {
+/// 主核运行所有测试
+void run_tests_main() {
   for (auto test : test_cases) {
     klog::Info("----%s----\n", test.name);
     if (test.func()) {
@@ -46,13 +48,24 @@ void run_tests() {
   klog::Info("All tests done.\n");
 }
 
+/// 从核只参与多核测试
+void run_tests_smp() {
+  for (auto test : test_cases) {
+    if (test.is_smp_test) {
+      // 从核静默参与多核测试，不输出日志
+      test.func();
+    }
+  }
+}
+
 /// 非启动核入口
 auto main_smp(int argc, const char** argv) -> int {
   ArchInitSMP(argc, argv);
   MemoryInitSMP();
   klog::Info("Hello SimpleKernel SMP\n");
 
-  run_tests();
+  // 从核只参与多核测试
+  run_tests_smp();
 
   return 0;
 }
@@ -88,7 +101,8 @@ auto main(int argc, const char** argv) -> int {
 
   klog::info << "Hello SimpleKernel\n";
 
-  run_tests();
+  // 主核运行所有测试（包括多核测试）
+  run_tests_main();
 
   return 0;
 }
