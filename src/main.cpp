@@ -31,14 +31,12 @@ void _start(int argc, const char** argv) {
   if (argv != nullptr) {
     CppInit();
     main(argc, argv);
-    CppDeInit();
   } else {
     main_smp(argc, argv);
   }
 
-  // 进入死循环
   while (true) {
-    ;
+    cpu_io::Pause();
   }
 }
 
