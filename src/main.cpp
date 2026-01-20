@@ -7,8 +7,8 @@
 #include <new>
 
 #include "arch.h"
-#include "arch/riscv64/interrupt.h"
 #include "basic_info.hpp"
+#include "interrupt.h"
 #include "kernel.h"
 #include "kernel_log.hpp"
 #include "per_cpu.hpp"
