@@ -38,11 +38,8 @@ Interrupt::Interrupt() {
 }
 
 void Interrupt::Do(uint64_t cause, uint8_t* context) {
-  auto ret = interrupt_handlers[cause](cause, context);
-
-  if (ret) {
-    cpu_io::ICC_EOIR1_EL1::Write(cause);
-  }
+  interrupt_handlers[cause](cause, context);
+  cpu_io::ICC_EOIR1_EL1::Write(cause);
 }
 
 void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {

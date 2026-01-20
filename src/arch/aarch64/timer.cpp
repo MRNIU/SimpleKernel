@@ -38,9 +38,9 @@ void TimerInit() {
       Gic::kPPIBase;
 
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
-      timer_intid, [](uint64_t cause, uint8_t*) -> uint64_t {
+      timer_intid, [](uint64_t, uint8_t*) -> uint64_t {
         cpu_io::CNTV_TVAL_EL0::Write(interval);
-        return cause;
+        return 0;
       });
 
   Singleton<Interrupt>::GetInstance().PPI(timer_intid,
