@@ -36,12 +36,11 @@ void TimerInit() {
   timer_intid =
       Singleton<KernelFdt>::GetInstance().GetAarch64Intid("arm,armv8-timer") +
       Gic::kPPIBase;
-  klog::Info("timer_intid: %d\n", timer_intid);
+
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
-      timer_intid, [](uint64_t, uint8_t*) -> uint64_t {
-        cpu_io::CNTV_TVAL_EL0::Write(cpu_io::CNTFRQ_EL0::Read() + interval);
-        klog::Info("Timer interrupt on core %d\n", cpu_io::GetCurrentCoreId());
-        return 0;
+      timer_intid, [](uint64_t cause, uint8_t*) -> uint64_t {
+        cpu_io::CNTV_TVAL_EL0::Write(interval);
+        return cause;
       });
 
   Singleton<Interrupt>::GetInstance().PPI(timer_intid,

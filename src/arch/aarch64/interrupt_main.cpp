@@ -13,109 +13,107 @@
 
 /**
  * @brief 中断处理函数
- * 由于 aarch64-linux-gnu-g++ 13.2.0 不支持 aarch64 的
- * __attribute__((interrupt("IRQ"))) 写法，需要手动处理中断函数
  */
 extern "C" void vector_table();
 
 // 同步异常处理程序
-extern "C" void sync_current_el_sp0_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void sync_current_el_sp0_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("Sync Exception at Current EL with SP0\n");
   while (true) {
     asm volatile("wfi");
   }
 }
 
-extern "C" void irq_current_el_sp0_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void irq_current_el_sp0_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("IRQ Exception at Current EL with SP0\n");
   // 处理 IRQ 中断
   // ...
 }
 
-extern "C" void fiq_current_el_sp0_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void fiq_current_el_sp0_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("FIQ Exception at Current EL with SP0\n");
   // 处理 FIQ 中断
   // ...
 }
 
-extern "C" void error_current_el_sp0_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void error_current_el_sp0_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("Error Exception at Current EL with SP0\n");
   while (true) {
     asm volatile("wfi");
   }
 }
 
-extern "C" void sync_current_el_spx_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void sync_current_el_spx_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("Sync Exception at Current EL with SPx\n");
   while (true) {
     asm volatile("wfi");
   }
 }
 
-extern "C" void irq_current_el_spx_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void irq_current_el_spx_handler([[maybe_unused]] uint64_t sp) {
   auto cause = cpu_io::ICC_IAR1_EL1::INTID::Get();
   Singleton<Interrupt>::GetInstance().Do(cause, nullptr);
 }
 
-extern "C" void fiq_current_el_spx_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void fiq_current_el_spx_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("FIQ Exception at Current EL with SPx\n");
   // 处理 FIQ 中断
   // ...
 }
 
-extern "C" void error_current_el_spx_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void error_current_el_spx_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("Error Exception at Current EL with SPx\n");
   while (true) {
     asm volatile("wfi");
   }
 }
 
-extern "C" void sync_lower_el_aarch64_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void sync_lower_el_aarch64_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("Sync Exception at Lower EL using AArch64\n");
   while (true) {
     asm volatile("wfi");
   }
 }
 
-extern "C" void irq_lower_el_aarch64_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void irq_lower_el_aarch64_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("IRQ Exception at Lower EL using AArch64\n");
   // 处理 IRQ 中断
   // ...
 }
 
-extern "C" void fiq_lower_el_aarch64_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void fiq_lower_el_aarch64_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("FIQ Exception at Lower EL using AArch64\n");
   // 处理 FIQ 中断
   // ...
 }
 
-extern "C" void error_lower_el_aarch64_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void error_lower_el_aarch64_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("Error Exception at Lower EL using AArch64\n");
   while (true) {
     asm volatile("wfi");
   }
 }
 
-extern "C" void sync_lower_el_aarch32_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void sync_lower_el_aarch32_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("Sync Exception at Lower EL using AArch32\n");
   while (true) {
     asm volatile("wfi");
   }
 }
 
-extern "C" void irq_lower_el_aarch32_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void irq_lower_el_aarch32_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("IRQ Exception at Lower EL using AArch32\n");
   // 处理 IRQ 中断
   // ...
 }
 
-extern "C" void fiq_lower_el_aarch32_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void fiq_lower_el_aarch32_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("FIQ Exception at Lower EL using AArch32\n");
   // 处理 FIQ 中断
   // ...
 }
 
-extern "C" void error_lower_el_aarch32_handler(uint64_t sp [[maybe_unused]]) {
+extern "C" void error_lower_el_aarch32_handler([[maybe_unused]] uint64_t sp) {
   klog::Err("Error Exception at Lower EL using AArch32\n");
   while (true) {
     asm volatile("wfi");

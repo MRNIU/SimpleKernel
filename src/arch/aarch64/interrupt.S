@@ -1,11 +1,8 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 中断函数
  */
 
 #include "macro.S"
-
-// clang-format off
 
 .global vector_table
 .balign 0x800
@@ -162,5 +159,3 @@ error_lower_el_aarch32:
     bl error_lower_el_aarch32_handler
     restorereg
     eret
-
-// clang-format on
