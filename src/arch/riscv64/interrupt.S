@@ -5,9 +5,15 @@
 #include "macro.S"
 
 .section .text
+
+.global trap_return
+.type trap_return, @function
+
 .global trap_entry
 .type trap_entry, @function
+
 .extern HandleTrap
+
 .align 4
 
 /**
@@ -55,7 +61,6 @@ trap_entry:
     // 调用 C++ 中的 Trap 处理函数
     call HandleTrap
 
-.global trap_return
 trap_return:
     // 1. kernel_thread_entry 跳转到这里时，a0 是参数 (Context*)
     // 2. 将 a0 赋值给 sp，切换到 Trap 上下文所在的栈位置
