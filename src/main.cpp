@@ -136,8 +136,9 @@ void _start(int argc, const char** argv) {
     main_smp(argc, argv);
   }
 
-  // 不应该执行到这里
-  __builtin_unreachable();
+  while (true) {
+    cpu_io::Pause();
+  }
 }
 
 auto main(int argc, const char** argv) -> int {
