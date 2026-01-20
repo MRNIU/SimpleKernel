@@ -31,6 +31,8 @@ BasicInfo::BasicInfo(int argc, const char** argv) {
   fdt_addr = strtoull(argv[2], nullptr, 16);
 
   core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
+
+  // interval = Singleton<KernelFdt>::GetInstance().GetTimebaseFrequency();
 }
 
 void ArchInit(int argc, const char** argv) {
