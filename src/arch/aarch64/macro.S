@@ -22,9 +22,9 @@
 
 /**
  * @brief 中断/异常上下文切换所需保存的寄存器大小
- * 100 个寄存器 * 8 字节 = 800 字节
+ * 100 个寄存器 * 8 字节 = 800 字节（已对齐到 16 字节）
  */
-.equ kTrapContextSize, kTrapContextRegsCount * kRegsBytes
+.equ kTrapContextSize, ALIGN_16(kTrapContextRegsCount * kRegsBytes)
 
 /**
  * @brief 函数调用上下文切换所需保存的寄存器数量 (CalleeSavedContext)
@@ -34,9 +34,9 @@
 
 /**
  * @brief 函数调用上下文切换所需保存的寄存器大小 (CalleeSavedContext)
- * 30 * 8 = 240 bytes
+ * 30 * 8 = 240 字节（已对齐到 16 字节）
  */
-.equ kCalleeSavedContextSize, kCalleeSavedContextRegsCount * kRegsBytes
+.equ kCalleeSavedContextSize, ALIGN_16(kCalleeSavedContextRegsCount * kRegsBytes)
 
 /**
  * @brief 保存中断/异常上下文 (TrapContext)
@@ -48,8 +48,8 @@
  * @note 保存的 sp 是分配空间之前的 sp。
  */
 .macro SaveTrapContext
-    // 分配栈空间 (800 字节，对齐到 16)
-    sub sp, sp, #ALIGN_16(kTrapContextSize)
+    // 分配栈空间 (800 字节，已对齐到 16)
+    sub sp, sp, #kTrapContextSize
 
     // 保存通用寄存器 x0-x30 (31 个寄存器，248 字节)
     stp x0, x1, [sp, #16 * 0]
@@ -71,7 +71,7 @@
 
     // 保存 sp 和 pc (16 字节)
     // sp: 保存分配前的栈指针
-    add x9, sp, #ALIGN_16(kTrapContextSize)
+    add x9, sp, #kTrapContextSize
     // pc: 从 elr_el1 读取
     mrs x10, elr_el1
     stp x9, x10, [sp, #16 * 15 + 8]
@@ -162,7 +162,7 @@
     ldr x30, [sp, #16 * 15]
 
     // 恢复 sp (释放栈空间)
-    add sp, sp, #ALIGN_16(kTrapContextSize)
+    add sp, sp, #kTrapContextSize
 .endm
 
 /**
@@ -182,7 +182,7 @@
 
     // 保存 sp 和 pc (2 个寄存器)
     mov x9, sp
-    adr x10, 1f  // pc: 保存返回地址
+    mov x10, x30  // pc: 保存返回地址（Link Register）
     stp x9, x10, [\base_reg, #16 * 6]
 
     // 保存 callee-saved 浮点寄存器 q8-q15 (8 个 128 位寄存器)
@@ -190,7 +190,6 @@
     stp q10, q11, [\base_reg, #16 * 9]
     stp q12, q13, [\base_reg, #16 * 11]
     stp q14, q15, [\base_reg, #16 * 13]
-1:
 .endm
 
 /**
