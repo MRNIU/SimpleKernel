@@ -2,6 +2,8 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <cpu_io.h>
+
 #include "arch.h"
 #include "basic_info.hpp"
 #include "interrupt.h"
@@ -17,110 +19,125 @@
 extern "C" void vector_table();
 
 // 同步异常处理程序
-extern "C" void sync_current_el_sp0_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void sync_current_el_sp0_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("Sync Exception at Current EL with SP0\n");
   while (true) {
-    asm volatile("wfi");
+    cpu_io::Pause();
   }
 }
 
-extern "C" void irq_current_el_sp0_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void irq_current_el_sp0_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("IRQ Exception at Current EL with SP0\n");
   // 处理 IRQ 中断
   // ...
 }
 
-extern "C" void fiq_current_el_sp0_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void fiq_current_el_sp0_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("FIQ Exception at Current EL with SP0\n");
   // 处理 FIQ 中断
   // ...
 }
 
-extern "C" void error_current_el_sp0_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void error_current_el_sp0_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("Error Exception at Current EL with SP0\n");
   while (true) {
-    asm volatile("wfi");
+    cpu_io::Pause();
   }
 }
 
-extern "C" void sync_current_el_spx_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void sync_current_el_spx_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("Sync Exception at Current EL with SPx\n");
   while (true) {
-    asm volatile("wfi");
+    cpu_io::Pause();
   }
 }
 
-extern "C" void irq_current_el_spx_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void irq_current_el_spx_handler(cpu_io::TrapContext* context) {
   auto cause = cpu_io::ICC_IAR1_EL1::INTID::Get();
-  Singleton<Interrupt>::GetInstance().Do(cause, nullptr);
+  Singleton<Interrupt>::GetInstance().Do(cause, context);
 }
 
-extern "C" void fiq_current_el_spx_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void fiq_current_el_spx_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("FIQ Exception at Current EL with SPx\n");
   // 处理 FIQ 中断
   // ...
 }
 
-extern "C" void error_current_el_spx_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void error_current_el_spx_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("Error Exception at Current EL with SPx\n");
   while (true) {
-    asm volatile("wfi");
+    cpu_io::Pause();
   }
 }
 
-extern "C" void sync_lower_el_aarch64_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void sync_lower_el_aarch64_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("Sync Exception at Lower EL using AArch64\n");
   while (true) {
-    asm volatile("wfi");
+    cpu_io::Pause();
   }
 }
 
-extern "C" void irq_lower_el_aarch64_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void irq_lower_el_aarch64_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("IRQ Exception at Lower EL using AArch64\n");
   // 处理 IRQ 中断
   // ...
 }
 
-extern "C" void fiq_lower_el_aarch64_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void fiq_lower_el_aarch64_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("FIQ Exception at Lower EL using AArch64\n");
   // 处理 FIQ 中断
   // ...
 }
 
-extern "C" void error_lower_el_aarch64_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void error_lower_el_aarch64_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("Error Exception at Lower EL using AArch64\n");
   while (true) {
-    asm volatile("wfi");
+    cpu_io::Pause();
   }
 }
 
-extern "C" void sync_lower_el_aarch32_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void sync_lower_el_aarch32_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("Sync Exception at Lower EL using AArch32\n");
   while (true) {
-    asm volatile("wfi");
+    cpu_io::Pause();
   }
 }
 
-extern "C" void irq_lower_el_aarch32_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void irq_lower_el_aarch32_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("IRQ Exception at Lower EL using AArch32\n");
   // 处理 IRQ 中断
   // ...
 }
 
-extern "C" void fiq_lower_el_aarch32_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void fiq_lower_el_aarch32_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("FIQ Exception at Lower EL using AArch32\n");
   // 处理 FIQ 中断
   // ...
 }
 
-extern "C" void error_lower_el_aarch32_handler([[maybe_unused]] uint64_t sp) {
+extern "C" void error_lower_el_aarch32_handler(
+    [[maybe_unused]] cpu_io::TrapContext* context) {
   klog::Err("Error Exception at Lower EL using AArch32\n");
   while (true) {
-    asm volatile("wfi");
+    cpu_io::Pause();
   }
 }
 
-auto uart_handler(uint64_t cause, uint8_t*) -> uint64_t {
+auto uart_handler(uint64_t cause, cpu_io::TrapContext*) -> uint64_t {
   sk_putchar(Singleton<Pl011>::GetInstance().TryGetChar(), nullptr);
   return cause;
 }
