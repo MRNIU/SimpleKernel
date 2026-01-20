@@ -156,9 +156,9 @@ void InterruptInitSMP(int, const char**) {
 
   Singleton<Interrupt>::GetInstance().SetUP();
 
-  TimerInitSMP();
-
   cpu_io::EnableInterrupt();
+
+  TimerInitSMP();
 
   klog::Info("Hello InterruptInitSMP\n");
 }
