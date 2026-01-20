@@ -26,5 +26,5 @@ void Syscall(uint64_t, uint8_t* context_ptr) {
   auto ret = syscall_dispatcher(syscall_id, args);
 
   ctx->x0 = static_cast<uint64_t>(ret);
-  ctx->pc += 4;
+  ctx->elr_el1 += 4;
 }
