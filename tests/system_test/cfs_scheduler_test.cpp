@@ -18,21 +18,17 @@ auto test_cfs_basic_functionality() -> bool {
   CfsScheduler scheduler;
 
   // 创建测试任务
-  TaskControlBlock task1, task2, task3;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.status = TaskStatus::kReady;
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 0;
 
-  task2.name = "Task2";
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.status = TaskStatus::kReady;
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task2.sched_data.cfs.vruntime = 0;
 
-  task3.name = "Task3";
-  task3.pid = 3;
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
   task3.status = TaskStatus::kReady;
   task3.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task3.sched_data.cfs.vruntime = 0;
@@ -77,19 +73,15 @@ auto test_cfs_vruntime_ordering() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 1000;  // 最大 vruntime
 
-  task2.name = "Task2";
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task2.sched_data.cfs.vruntime = 500;  // 最小 vruntime
 
-  task3.name = "Task3";
-  task3.pid = 3;
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
   task3.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task3.sched_data.cfs.vruntime = 750;  // 中间 vruntime
 
@@ -121,9 +113,7 @@ auto test_cfs_new_task_vruntime() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock task1, task2;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 1000;
 
@@ -133,8 +123,7 @@ auto test_cfs_new_task_vruntime() -> bool {
   EXPECT_EQ(picked, &task1, "First pick should be task1");
 
   // 第二个新任务 (vruntime = 0)
-  task2.name = "Task2";
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task2.sched_data.cfs.vruntime = 0;
 
@@ -159,15 +148,12 @@ auto test_cfs_weight_impact() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock high_priority, low_priority;
-  high_priority.name = "HighPriority";
-  high_priority.pid = 1;
+  TaskControlBlock high_priority("HighPriority", 1, nullptr, nullptr);
   high_priority.sched_data.cfs.weight =
       CfsScheduler::kDefaultWeight * 2;  // 2倍权重
   high_priority.sched_data.cfs.vruntime = 0;
 
-  low_priority.name = "LowPriority";
-  low_priority.pid = 2;
+  TaskControlBlock low_priority("LowPriority", 2, nullptr, nullptr);
   low_priority.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;  // 1倍权重
   low_priority.sched_data.cfs.vruntime = 0;
 
@@ -199,14 +185,11 @@ auto test_cfs_preemption() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock task1, task2;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 1000;
 
-  task2.name = "Task2";
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task2.sched_data.cfs.vruntime = 0;  // 更小的 vruntime
 
@@ -225,14 +208,11 @@ auto test_cfs_no_preemption() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock task1, task2;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 1000;
 
-  task2.name = "Task2";
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   // OnTick 会让 task1 增加 1000，所以 task2 应该设置为 1000 + 1000 - 5 = 1995
   // 这样 OnTick 后：task1 = 2000, task2 = 1995，差距 5 < 10
@@ -255,20 +235,19 @@ auto test_cfs_dequeue() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3, task4;
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 100;
 
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task2.sched_data.cfs.vruntime = 200;
 
-  task3.pid = 3;
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
   task3.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task3.sched_data.cfs.vruntime = 300;
 
-  task4.pid = 4;
+  TaskControlBlock task4("Task4", 4, nullptr, nullptr);
   task4.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task4.sched_data.cfs.vruntime = 400;
 
@@ -307,12 +286,11 @@ auto test_cfs_statistics() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock task1, task2;
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 0;
 
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task2.sched_data.cfs.vruntime = 0;
 
@@ -358,16 +336,15 @@ auto test_cfs_min_vruntime_update() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3;
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 1000;
 
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task2.sched_data.cfs.vruntime = 500;
 
-  task3.pid = 3;
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
   task3.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task3.sched_data.cfs.vruntime = 750;
 
@@ -394,8 +371,7 @@ auto test_cfs_multiple_ticks() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock task;
-  task.pid = 1;
+  TaskControlBlock task("Task", 1, nullptr, nullptr);
   task.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task.sched_data.cfs.vruntime = 0;
 
@@ -429,13 +405,13 @@ auto test_cfs_fairness() -> bool {
 
   // 创建三个相同权重的任务
   constexpr size_t kTaskCount = 3;
-  TaskControlBlock tasks[kTaskCount];
+  TaskControlBlock* tasks[kTaskCount];
 
   for (size_t i = 0; i < kTaskCount; ++i) {
-    tasks[i].pid = i;
-    tasks[i].sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
-    tasks[i].sched_data.cfs.vruntime = 0;
-    scheduler.Enqueue(&tasks[i]);
+    tasks[i] = new TaskControlBlock("Task", i, nullptr, nullptr);
+    tasks[i]->sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
+    tasks[i]->sched_data.cfs.vruntime = 0;
+    scheduler.Enqueue(tasks[i]);
   }
 
   // 模拟多轮调度
@@ -461,11 +437,11 @@ auto test_cfs_fairness() -> bool {
   uint64_t min_vruntime = UINT64_MAX;
 
   for (size_t i = 0; i < kTaskCount; ++i) {
-    if (tasks[i].sched_data.cfs.vruntime > max_vruntime) {
-      max_vruntime = tasks[i].sched_data.cfs.vruntime;
+    if (tasks[i]->sched_data.cfs.vruntime > max_vruntime) {
+      max_vruntime = tasks[i]->sched_data.cfs.vruntime;
     }
-    if (tasks[i].sched_data.cfs.vruntime < min_vruntime) {
-      min_vruntime = tasks[i].sched_data.cfs.vruntime;
+    if (tasks[i]->sched_data.cfs.vruntime < min_vruntime) {
+      min_vruntime = tasks[i]->sched_data.cfs.vruntime;
     }
   }
 
@@ -473,6 +449,11 @@ auto test_cfs_fairness() -> bool {
   uint64_t difference = max_vruntime - min_vruntime;
   EXPECT_LT(difference, 10000,
             "vruntime difference should be small (fairness)");
+
+  // 清理内存
+  for (size_t i = 0; i < kTaskCount; ++i) {
+    delete tasks[i];
+  }
 
   sk_printf("test_cfs_fairness passed\n");
   return true;
@@ -483,24 +464,23 @@ auto test_cfs_mixed_operations() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3, task4, task5;
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 100;
 
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight * 2;
   task2.sched_data.cfs.vruntime = 200;
 
-  task3.pid = 3;
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
   task3.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task3.sched_data.cfs.vruntime = 300;
 
-  task4.pid = 4;
+  TaskControlBlock task4("Task4", 4, nullptr, nullptr);
   task4.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task4.sched_data.cfs.vruntime = 0;
 
-  task5.pid = 5;
+  TaskControlBlock task5("Task5", 5, nullptr, nullptr);
   task5.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task5.sched_data.cfs.vruntime = 0;
 
@@ -532,8 +512,7 @@ auto test_cfs_robustness() -> bool {
 
   CfsScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 0;
 

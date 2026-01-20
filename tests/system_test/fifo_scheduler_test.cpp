@@ -21,17 +21,13 @@ auto test_fifo_basic_functionality() -> bool {
   EXPECT_EQ(scheduler.name[0], 'F', "Scheduler name should start with F");
 
   // 创建测试任务
-  TaskControlBlock task1, task2, task3;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.status = TaskStatus::kReady;
 
-  task2.name = "Task2";
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.status = TaskStatus::kReady;
 
-  task3.name = "Task3";
-  task3.pid = 3;
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
   task3.status = TaskStatus::kReady;
 
   // 测试空队列
@@ -73,13 +69,13 @@ auto test_fifo_ordering() -> bool {
 
   FifoScheduler scheduler;
   constexpr size_t kTaskCount = 10;
-  TaskControlBlock tasks[kTaskCount];
+  TaskControlBlock* tasks[kTaskCount];
 
   // 初始化任务
   for (size_t i = 0; i < kTaskCount; ++i) {
-    tasks[i].pid = i;
-    tasks[i].status = TaskStatus::kReady;
-    scheduler.Enqueue(&tasks[i]);
+    tasks[i] = new TaskControlBlock("Task", i, nullptr, nullptr);
+    tasks[i]->status = TaskStatus::kReady;
+    scheduler.Enqueue(tasks[i]);
   }
 
   EXPECT_EQ(scheduler.GetQueueSize(), kTaskCount,
@@ -94,6 +90,11 @@ auto test_fifo_ordering() -> bool {
 
   EXPECT_TRUE(scheduler.IsEmpty(), "Scheduler should be empty after all picks");
 
+  // 清理内存
+  for (size_t i = 0; i < kTaskCount; ++i) {
+    delete tasks[i];
+  }
+
   sk_printf("test_fifo_ordering passed\n");
   return true;
 }
@@ -103,11 +104,10 @@ auto test_fifo_dequeue() -> bool {
 
   FifoScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3, task4;
-  task1.pid = 1;
-  task2.pid = 2;
-  task3.pid = 3;
-  task4.pid = 4;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
+  TaskControlBlock task4("Task4", 4, nullptr, nullptr);
 
   scheduler.Enqueue(&task1);
   scheduler.Enqueue(&task2);
@@ -144,9 +144,8 @@ auto test_fifo_statistics() -> bool {
 
   FifoScheduler scheduler;
 
-  TaskControlBlock task1, task2;
-  task1.pid = 1;
-  task2.pid = 2;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
 
   // 初始统计
   auto stats = scheduler.GetStats();
@@ -196,12 +195,11 @@ auto test_fifo_mixed_operations() -> bool {
 
   FifoScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3, task4, task5;
-  task1.pid = 1;
-  task2.pid = 2;
-  task3.pid = 3;
-  task4.pid = 4;
-  task5.pid = 5;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
+  TaskControlBlock task4("Task4", 4, nullptr, nullptr);
+  TaskControlBlock task5("Task5", 5, nullptr, nullptr);
 
   // 复杂的混合操作序列
   scheduler.Enqueue(&task1);
@@ -238,8 +236,7 @@ auto test_fifo_repeated_enqueue() -> bool {
 
   FifoScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
 
   // 模拟任务多次时间片用完后重新入队
   scheduler.Enqueue(&task1);
@@ -265,8 +262,7 @@ auto test_fifo_hooks() -> bool {
 
   FifoScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_info.priority = 5;
 
   // 测试各种钩子函数不会崩溃
@@ -298,8 +294,7 @@ auto test_fifo_robustness() -> bool {
 
   FifoScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
 
   // 空队列操作
   EXPECT_EQ(scheduler.PickNext(), nullptr,

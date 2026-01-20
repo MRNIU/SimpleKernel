@@ -69,14 +69,11 @@ void task4_func(void* arg) {
   klog::Info("Task4: arg = %p\n", arg);
   uint64_t iteration = 0;
   while (1) {
-    auto start_tick = Singleton<TaskManager>::GetInstance()
-                          .GetCurrentTask()
-                          ->sched_info.total_runtime;
+    auto* cpu_sched = per_cpu::GetCurrentCore().sched_data;
+    auto start_tick = cpu_sched->local_tick;
     klog::Info("Task4: sleeping for 4s (iteration %llu)\n", iteration++);
     sys_sleep(4000);
-    auto end_tick = Singleton<TaskManager>::GetInstance()
-                        .GetCurrentTask()
-                        ->sched_info.total_runtime;
+    auto end_tick = cpu_sched->local_tick;
     klog::Info("Task4: woke up (slept ~%llu ticks)\n", end_tick - start_tick);
   }
 }
