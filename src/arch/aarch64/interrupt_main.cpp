@@ -19,9 +19,14 @@
 extern "C" void vector_table();
 
 // 同步异常处理程序
-extern "C" void sync_current_el_sp0_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("Sync Exception at Current EL with SP0\n");
+extern "C" void sync_current_el_sp0_handler(cpu_io::TrapContext* context) {
+  klog::Err(
+      "Sync Exception at Current EL with SP0\n"
+      "  ESR_EL1: 0x%016lX, PC (ELR_EL1): 0x%016lX, SP: 0x%016lX, SPSR_EL1: "
+      "0x%016lX\n"
+      "  x0-x3: 0x%016lX 0x%016lX 0x%016lX 0x%016lX\n",
+      context->esr_el1, context->pc, context->sp, context->spsr_el1,
+      context->x0, context->x1, context->x2, context->x3);
   while (true) {
     cpu_io::Pause();
   }
@@ -41,17 +46,25 @@ extern "C" void fiq_current_el_sp0_handler(
   // ...
 }
 
-extern "C" void error_current_el_sp0_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("Error Exception at Current EL with SP0\n");
+extern "C" void error_current_el_sp0_handler(cpu_io::TrapContext* context) {
+  klog::Err(
+      "Error Exception at Current EL with SP0\n"
+      "  ESR_EL1: 0x%016lX, PC (ELR_EL1): 0x%016lX, SP: 0x%016lX, SPSR_EL1: "
+      "0x%016lX\n",
+      context->esr_el1, context->pc, context->sp, context->spsr_el1);
   while (true) {
     cpu_io::Pause();
   }
 }
 
-extern "C" void sync_current_el_spx_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("Sync Exception at Current EL with SPx\n");
+extern "C" void sync_current_el_spx_handler(cpu_io::TrapContext* context) {
+  klog::Err(
+      "Sync Exception at Current EL with SPx\n"
+      "  ESR_EL1: 0x%016lX, PC (ELR_EL1): 0x%016lX, SP: 0x%016lX, SPSR_EL1: "
+      "0x%016lX\n"
+      "  x0-x3: 0x%016lX 0x%016lX 0x%016lX 0x%016lX\n",
+      context->esr_el1, context->pc, context->sp, context->spsr_el1,
+      context->x0, context->x1, context->x2, context->x3);
   while (true) {
     cpu_io::Pause();
   }
@@ -69,17 +82,27 @@ extern "C" void fiq_current_el_spx_handler(
   // ...
 }
 
-extern "C" void error_current_el_spx_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("Error Exception at Current EL with SPx\n");
+extern "C" void error_current_el_spx_handler(cpu_io::TrapContext* context) {
+  klog::Err(
+      "Error Exception at Current EL with SPx\n"
+      "  ESR_EL1: 0x%016lX, PC (ELR_EL1): 0x%016lX, SP: 0x%016lX, SPSR_EL1: "
+      "0x%016lX\n",
+      context->esr_el1, context->pc, context->sp, context->spsr_el1);
   while (true) {
     cpu_io::Pause();
   }
 }
 
-extern "C" void sync_lower_el_aarch64_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("Sync Exception at Lower EL using AArch64\n");
+extern "C" void sync_lower_el_aarch64_handler(cpu_io::TrapContext* context) {
+  klog::Err(
+      "Sync Exception at Lower EL using AArch64\n"
+      "  ESR_EL1: 0x%016lX, PC (ELR_EL1): 0x%016lX, SP: 0x%016lX, SPSR_EL1: "
+      "0x%016lX\n"
+      "  x0-x7: 0x%016lX 0x%016lX 0x%016lX 0x%016lX 0x%016lX 0x%016lX "
+      "0x%016lX 0x%016lX\n",
+      context->esr_el1, context->pc, context->sp, context->spsr_el1,
+      context->x0, context->x1, context->x2, context->x3, context->x4,
+      context->x5, context->x6, context->x7);
   while (true) {
     cpu_io::Pause();
   }
@@ -99,17 +122,23 @@ extern "C" void fiq_lower_el_aarch64_handler(
   // ...
 }
 
-extern "C" void error_lower_el_aarch64_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("Error Exception at Lower EL using AArch64\n");
+extern "C" void error_lower_el_aarch64_handler(cpu_io::TrapContext* context) {
+  klog::Err(
+      "Error Exception at Lower EL using AArch64\n"
+      "  ESR_EL1: 0x%016lX, PC (ELR_EL1): 0x%016lX, SP: 0x%016lX, SPSR_EL1: "
+      "0x%016lX\n",
+      context->esr_el1, context->pc, context->sp, context->spsr_el1);
   while (true) {
     cpu_io::Pause();
   }
 }
 
-extern "C" void sync_lower_el_aarch32_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("Sync Exception at Lower EL using AArch32\n");
+extern "C" void sync_lower_el_aarch32_handler(cpu_io::TrapContext* context) {
+  klog::Err(
+      "Sync Exception at Lower EL using AArch32\n"
+      "  ESR_EL1: 0x%016lX, PC (ELR_EL1): 0x%016lX, SP: 0x%016lX, SPSR_EL1: "
+      "0x%016lX\n",
+      context->esr_el1, context->pc, context->sp, context->spsr_el1);
   while (true) {
     cpu_io::Pause();
   }
@@ -129,9 +158,12 @@ extern "C" void fiq_lower_el_aarch32_handler(
   // ...
 }
 
-extern "C" void error_lower_el_aarch32_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("Error Exception at Lower EL using AArch32\n");
+extern "C" void error_lower_el_aarch32_handler(cpu_io::TrapContext* context) {
+  klog::Err(
+      "Error Exception at Lower EL using AArch32\n"
+      "  ESR_EL1: 0x%016lX, PC (ELR_EL1): 0x%016lX, SP: 0x%016lX, SPSR_EL1: "
+      "0x%016lX\n",
+      context->esr_el1, context->pc, context->sp, context->spsr_el1);
   while (true) {
     cpu_io::Pause();
   }

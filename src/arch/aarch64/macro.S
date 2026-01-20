@@ -15,14 +15,14 @@
  *
  * 31 个通用寄存器(x0-x30) + 2 个特殊寄存器(sp, pc) +
  * 32 个浮点寄存器(q0-q31，每个 128 位用 2 个 uint64_t 存储，共 64 个) +
- * 3 个状态寄存器(fpsr, fpcr, esr_elx)
- * 总计: 31 + 2 + 64 + 3 = 100
+ * 4 个状态寄存器(fpsr, fpcr, esr_el1, spsr_el1)
+ * 总计: 31 + 2 + 64 + 4 = 101
  */
-.equ kTrapContextRegsCount, 100
+.equ kTrapContextRegsCount, 101
 
 /**
  * @brief 中断/异常上下文切换所需保存的寄存器大小
- * 100 个寄存器 * 8 字节 = 800 字节（已对齐到 16 字节）
+ * 101 个寄存器 * 8 字节 = 808 字节（对齐到 16 字节为 816 字节）
  */
 .equ kTrapContextSize, ALIGN_16(kTrapContextRegsCount * kRegsBytes)
 
@@ -94,14 +94,15 @@
     stp q28, q29, [sp, #16 * 45]
     stp q30, q31, [sp, #16 * 47]
 
-    // 保存浮点状态寄存器 fpsr, fpcr, esr_el1 (24 字节)
+    // 保存浮点状态寄存器 fpsr, fpcr, esr_el1, spsr_el1 (32 字节)
     // 使用临时基址避免偏移超限 (stp x 指令偏移最大 504)
     add x11, sp, #16 * 49
     mrs x9, fpsr
     mrs x10, fpcr
     stp x9, x10, [x11]
     mrs x9, esr_el1
-    str x9, [x11, #16]
+    mrs x10, spsr_el1
+    stp x9, x10, [x11, #16]
 .endm
 
 /**
@@ -118,8 +119,9 @@
     ldp x9, x10, [x11]
     msr fpsr, x9
     msr fpcr, x10
-    ldr x9, [x11, #16]
+    ldp x9, x10, [x11, #16]
     msr esr_el1, x9
+    msr spsr_el1, x10
 
     // 恢复浮点/SIMD寄存器 q0-q31
     ldp q0, q1, [sp, #16 * 17]
