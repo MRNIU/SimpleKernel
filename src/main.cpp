@@ -46,8 +46,9 @@ void _start(int argc, const char** argv) {
     main_smp(argc, argv);
   }
 
-  while (1)
-    ;
+  while (true) {
+    cpu_io::Pause();
+  }
 }
 
 auto main(int argc, const char** argv) -> int {
