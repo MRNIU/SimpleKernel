@@ -29,7 +29,7 @@ class Interrupt final : public InterruptBase {
   ~Interrupt() = default;
   /// @}
 
-  void Do(uint64_t cause, uint8_t* context) override;
+  void Do(uint64_t cause, cpu_io::TrapContext* context) override;
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
   bool SendIpi(uint64_t target_cpu_mask) override;
   bool BroadcastIpi() override;

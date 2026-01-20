@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 中断初始化
  */
 
 #include "interrupt.h"
@@ -24,7 +23,7 @@ Interrupt::Interrupt() {
 
   // 注册默认中断处理函数
   for (auto& i : interrupt_handlers) {
-    i = [](uint64_t cause, uint8_t* context) -> uint64_t {
+    i = [](uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
       klog::Info("Default Interrupt handler 0x%X, 0x%p\n", cause, context);
       return 0;
     };
@@ -37,12 +36,9 @@ Interrupt::Interrupt() {
   klog::Info("Interrupt init.\n");
 }
 
-void Interrupt::Do(uint64_t cause, uint8_t* context) {
-  auto ret = interrupt_handlers[cause](cause, context);
-
-  if (ret) {
-    cpu_io::ICC_EOIR1_EL1::Write(cause);
-  }
+void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
+  interrupt_handlers[cause](cause, context);
+  cpu_io::ICC_EOIR1_EL1::Write(cause);
 }
 
 void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {

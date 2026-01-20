@@ -26,7 +26,7 @@ static constexpr const uint64_t SYSCALL_YIELD = 24;
 #endif
 
 // 由各个架构实现
-void Syscall(uint64_t cause, uint8_t* context);
+void Syscall(uint64_t cause, cpu_io::TrapContext* context);
 
 int syscall_dispatcher(int64_t syscall_id, uint64_t args[6]);
 

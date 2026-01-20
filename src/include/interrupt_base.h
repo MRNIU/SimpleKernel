@@ -1,10 +1,11 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 中断处理接口
  */
 
 #ifndef SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_
 #define SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_
+
+#include <cpu_io.h>
 
 #include <atomic>
 #include <cstdint>
@@ -19,7 +20,7 @@ extern "C" void kernel_thread_entry();
 // 在 switch.S 中定义
 extern "C" void trap_return(void*);
 
-// 在 trap.S 中定义
+// 在 interrupt.S 中定义
 extern "C" void trap_entry();
 
 class InterruptBase {
@@ -30,7 +31,8 @@ class InterruptBase {
    * @param  context 中断上下文
    * @return uint64_t 返回值，0 成功
    */
-  typedef uint64_t (*InterruptFunc)(uint64_t cause, uint8_t* context);
+  typedef uint64_t (*InterruptFunc)(uint64_t cause,
+                                    cpu_io::TrapContext* context);
 
   /// @name 构造/析构函数
   /// @{
@@ -46,7 +48,7 @@ class InterruptBase {
    * @brief 执行中断处理
    * @param 不同平台有不同含义
    */
-  virtual void Do(uint64_t, uint8_t*) = 0;
+  virtual void Do(uint64_t, cpu_io::TrapContext*) = 0;
 
   /**
    * @brief 注册中断处理函数

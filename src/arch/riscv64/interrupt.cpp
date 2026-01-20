@@ -23,7 +23,7 @@ alignas(4) std::array<Interrupt::InterruptFunc,
 Interrupt::Interrupt() {
   // 注册默认中断处理函数
   for (auto& i : interrupt_handlers_) {
-    i = [](uint64_t cause, uint8_t* context) -> uint64_t {
+    i = [](uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
       klog::Info("Default Interrupt handler [%s] 0x%X, 0x%p\n",
                  cpu_io::detail::register_info::csr::ScauseInfo::kInterruptNames
                      [cause],
@@ -33,7 +33,7 @@ Interrupt::Interrupt() {
   }
   // 注册默认异常处理函数
   for (auto& i : exception_handlers_) {
-    i = [](uint64_t cause, uint8_t* context) -> uint64_t {
+    i = [](uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
       klog::Err("Default Exception handler [%s] 0x%X, 0x%p\n",
                 cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
                     [cause],
@@ -46,7 +46,7 @@ Interrupt::Interrupt() {
   klog::Info("Interrupt init.\n");
 }
 
-void Interrupt::Do(uint64_t cause, uint8_t* context) {
+void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
   auto interrupt = cpu_io::Scause::Interrupt::Get(cause);
   auto exception_code = cpu_io::Scause::ExceptionCode::Get(cause);
 
