@@ -20,7 +20,7 @@ extern "C" void kernel_thread_entry();
 // 在 switch.S 中定义
 extern "C" void trap_return(void*);
 
-// 在 trap.S 中定义
+// 在 interrupt.S 中定义
 extern "C" void trap_entry();
 
 class InterruptBase {

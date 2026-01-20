@@ -1,5 +1,6 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
+ * @note 需要与 MRNIU/cpu_io/include/riscv64/context.hpp 中的结构体定义保持一致
  */
 
 // 对齐到 16 字节
