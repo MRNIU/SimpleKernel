@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include "sk_vector"
 #include "task_control_block.hpp"
 
 // 测试 FIFO 调度器的基本入队出队功能
@@ -16,14 +17,10 @@ TEST(FifoSchedulerTest, BasicEnqueueDequeue) {
   EXPECT_STREQ(scheduler.name, "FIFO");
 
   // 创建测试任务
-  TaskControlBlock task1;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.status = TaskStatus::kReady;
 
-  TaskControlBlock task2;
-  task2.name = "Task2";
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.status = TaskStatus::kReady;
 
   // 测试空队列
@@ -54,15 +51,10 @@ TEST(FifoSchedulerTest, BasicEnqueueDequeue) {
 TEST(FifoSchedulerTest, FifoOrdering) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3, task4;
-  task1.name = "Task1";
-  task1.pid = 1;
-  task2.name = "Task2";
-  task2.pid = 2;
-  task3.name = "Task3";
-  task3.pid = 3;
-  task4.name = "Task4";
-  task4.pid = 4;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
+  TaskControlBlock task4("Task4", 4, nullptr, nullptr);
 
   // 按顺序加入任务
   scheduler.Enqueue(&task1);
@@ -84,13 +76,9 @@ TEST(FifoSchedulerTest, FifoOrdering) {
 TEST(FifoSchedulerTest, DequeueSpecificTask) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3;
-  task1.name = "Task1";
-  task1.pid = 1;
-  task2.name = "Task2";
-  task2.pid = 2;
-  task3.name = "Task3";
-  task3.pid = 3;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
 
   scheduler.Enqueue(&task1);
   scheduler.Enqueue(&task2);
@@ -112,13 +100,9 @@ TEST(FifoSchedulerTest, DequeueSpecificTask) {
 TEST(FifoSchedulerTest, DequeueFirstTask) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3;
-  task1.name = "Task1";
-  task1.pid = 1;
-  task2.name = "Task2";
-  task2.pid = 2;
-  task3.name = "Task3";
-  task3.pid = 3;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
 
   scheduler.Enqueue(&task1);
   scheduler.Enqueue(&task2);
@@ -138,13 +122,9 @@ TEST(FifoSchedulerTest, DequeueFirstTask) {
 TEST(FifoSchedulerTest, DequeueLastTask) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3;
-  task1.name = "Task1";
-  task1.pid = 1;
-  task2.name = "Task2";
-  task2.pid = 2;
-  task3.name = "Task3";
-  task3.pid = 3;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
 
   scheduler.Enqueue(&task1);
   scheduler.Enqueue(&task2);
@@ -163,11 +143,8 @@ TEST(FifoSchedulerTest, DequeueLastTask) {
 TEST(FifoSchedulerTest, Statistics) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1, task2;
-  task1.name = "Task1";
-  task1.pid = 1;
-  task2.name = "Task2";
-  task2.pid = 2;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
 
   // 初始状态
   auto stats = scheduler.GetStats();
@@ -212,9 +189,7 @@ TEST(FifoSchedulerTest, Statistics) {
 TEST(FifoSchedulerTest, RepeatedEnqueue) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
 
   // 多次入队同一任务（模拟时间片用完后重新入队）
   scheduler.Enqueue(&task1);
@@ -234,15 +209,10 @@ TEST(FifoSchedulerTest, RepeatedEnqueue) {
 TEST(FifoSchedulerTest, MixedOperations) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3, task4;
-  task1.name = "Task1";
-  task1.pid = 1;
-  task2.name = "Task2";
-  task2.pid = 2;
-  task3.name = "Task3";
-  task3.pid = 3;
-  task4.name = "Task4";
-  task4.pid = 4;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
+  TaskControlBlock task4("Task4", 4, nullptr, nullptr);
 
   // 加入 task1, task2, task3
   scheduler.Enqueue(&task1);
@@ -269,9 +239,7 @@ TEST(FifoSchedulerTest, MixedOperations) {
 TEST(FifoSchedulerTest, EmptyQueueRobustness) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
 
   // 空队列操作
   EXPECT_EQ(scheduler.PickNext(), nullptr);
@@ -298,12 +266,13 @@ TEST(FifoSchedulerTest, LargeNumberOfTasks) {
   FifoScheduler scheduler;
   constexpr size_t kTaskCount = 100;
 
-  // 创建任务数组
-  TaskControlBlock tasks[kTaskCount];
+  // 创建任务数组（使用动态分配）
+  sk_std::vector<TaskControlBlock*> tasks;
   for (size_t i = 0; i < kTaskCount; ++i) {
-    tasks[i].pid = i;
-    tasks[i].status = TaskStatus::kReady;
-    scheduler.Enqueue(&tasks[i]);
+    auto* task = new TaskControlBlock("Task", i, nullptr, nullptr);
+    task->status = TaskStatus::kReady;
+    tasks.push_back(task);
+    scheduler.Enqueue(task);
   }
 
   EXPECT_EQ(scheduler.GetQueueSize(), kTaskCount);
@@ -317,15 +286,18 @@ TEST(FifoSchedulerTest, LargeNumberOfTasks) {
 
   EXPECT_EQ(scheduler.PickNext(), nullptr);
   EXPECT_TRUE(scheduler.IsEmpty());
+
+  // 清理内存
+  for (auto* task : tasks) {
+    delete task;
+  }
 }
 
 // 测试 OnTick 钩子（FIFO 不需要 tick 处理，应返回 false）
 TEST(FifoSchedulerTest, OnTickHook) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
 
   // FIFO 调度器的 OnTick 应该始终返回 false（不需要抢占）
   EXPECT_FALSE(scheduler.OnTick(&task1));
@@ -336,9 +308,7 @@ TEST(FifoSchedulerTest, OnTickHook) {
 TEST(FifoSchedulerTest, OnTimeSliceExpiredHook) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
 
   // FIFO 调度器的 OnTimeSliceExpired 应返回 true（需要重新入队）
   EXPECT_TRUE(scheduler.OnTimeSliceExpired(&task1));
@@ -348,9 +318,7 @@ TEST(FifoSchedulerTest, OnTimeSliceExpiredHook) {
 TEST(FifoSchedulerTest, PriorityHooks) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_info.priority = 5;
 
   // 这些调用不应该崩溃（即使 FIFO 不使用优先级）
@@ -366,9 +334,7 @@ TEST(FifoSchedulerTest, PriorityHooks) {
 TEST(FifoSchedulerTest, SchedulerHooks) {
   FifoScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
 
   // OnScheduled 和 OnPreempted 不影响队列
   scheduler.Enqueue(&task1);

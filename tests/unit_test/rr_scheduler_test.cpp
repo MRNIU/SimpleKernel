@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include "sk_vector"
 #include "task_control_block.hpp"
 
 // 测试 Round-Robin 调度器的基本功能
@@ -13,14 +14,10 @@ TEST(RoundRobinSchedulerTest, BasicEnqueueDequeue) {
   RoundRobinScheduler scheduler;
 
   // 创建测试任务
-  TaskControlBlock task1;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.status = TaskStatus::kReady;
 
-  TaskControlBlock task2;
-  task2.name = "Task2";
-  task2.pid = 2;
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.status = TaskStatus::kReady;
 
   // 测试空队列
@@ -40,13 +37,9 @@ TEST(RoundRobinSchedulerTest, BasicEnqueueDequeue) {
 TEST(RoundRobinSchedulerTest, RoundRobinRotation) {
   RoundRobinScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3;
-  task1.name = "Task1";
-  task1.pid = 1;
-  task2.name = "Task2";
-  task2.pid = 2;
-  task3.name = "Task3";
-  task3.pid = 3;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
 
   // 加入三个任务
   scheduler.Enqueue(&task1);
@@ -73,13 +66,9 @@ TEST(RoundRobinSchedulerTest, RoundRobinRotation) {
 TEST(RoundRobinSchedulerTest, DequeueSpecificTask) {
   RoundRobinScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3;
-  task1.name = "Task1";
-  task1.pid = 1;
-  task2.name = "Task2";
-  task2.pid = 2;
-  task3.name = "Task3";
-  task3.pid = 3;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
 
   scheduler.Enqueue(&task1);
   scheduler.Enqueue(&task2);
@@ -110,9 +99,7 @@ TEST(RoundRobinSchedulerTest, NullPointerHandling) {
 TEST(RoundRobinSchedulerTest, RepeatedEnqueueDequeue) {
   RoundRobinScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
 
   // 重复入队和出队
   for (int i = 0; i < 10; ++i) {
@@ -127,11 +114,8 @@ TEST(RoundRobinSchedulerTest, RepeatedEnqueueDequeue) {
 TEST(RoundRobinSchedulerTest, InterleavedEnqueueDequeue) {
   RoundRobinScheduler scheduler;
 
-  TaskControlBlock task1, task2;
-  task1.name = "Task1";
-  task1.pid = 1;
-  task2.name = "Task2";
-  task2.pid = 2;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
 
   scheduler.Enqueue(&task1);
   EXPECT_EQ(scheduler.PickNext(), &task1);
@@ -149,10 +133,9 @@ TEST(RoundRobinSchedulerTest, InterleavedEnqueueDequeue) {
 TEST(RoundRobinSchedulerTest, QueueSizeAndEmpty) {
   RoundRobinScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3;
-  task1.pid = 1;
-  task2.pid = 2;
-  task3.pid = 3;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
 
   // 初始状态
   EXPECT_TRUE(scheduler.IsEmpty());
@@ -181,9 +164,7 @@ TEST(RoundRobinSchedulerTest, QueueSizeAndEmpty) {
 TEST(RoundRobinSchedulerTest, TimeSliceReset) {
   RoundRobinScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.name = "Task1";
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
   task1.sched_info.time_slice_default = 20;
   task1.sched_info.time_slice_remaining = 5;  // 时间片快用完了
 
@@ -202,9 +183,8 @@ TEST(RoundRobinSchedulerTest, TimeSliceReset) {
 TEST(RoundRobinSchedulerTest, Statistics) {
   RoundRobinScheduler scheduler;
 
-  TaskControlBlock task1, task2;
-  task1.pid = 1;
-  task2.pid = 2;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
 
   // 初始统计
   auto stats = scheduler.GetStats();
@@ -250,13 +230,14 @@ TEST(RoundRobinSchedulerTest, Statistics) {
 TEST(RoundRobinSchedulerTest, FairnessWithManyTasks) {
   RoundRobinScheduler scheduler;
   constexpr size_t kTaskCount = 100;
-  TaskControlBlock tasks[kTaskCount];
 
-  // 初始化并加入所有任务
+  // 创建任务数组（使用动态分配）
+  sk_std::vector<TaskControlBlock*> tasks;
   for (size_t i = 0; i < kTaskCount; ++i) {
-    tasks[i].pid = i;
-    tasks[i].status = TaskStatus::kReady;
-    scheduler.Enqueue(&tasks[i]);
+    auto* task = new TaskControlBlock("Task", i, nullptr, nullptr);
+    task->status = TaskStatus::kReady;
+    tasks.push_back(task);
+    scheduler.Enqueue(task);
   }
 
   EXPECT_EQ(scheduler.GetQueueSize(), kTaskCount);
@@ -269,16 +250,20 @@ TEST(RoundRobinSchedulerTest, FairnessWithManyTasks) {
   }
 
   EXPECT_TRUE(scheduler.IsEmpty());
+
+  // 清理内存
+  for (auto* task : tasks) {
+    delete task;
+  }
 }
 
 // 测试多轮轮转
 TEST(RoundRobinSchedulerTest, MultipleRounds) {
   RoundRobinScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3;
-  task1.pid = 1;
-  task2.pid = 2;
-  task3.pid = 3;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
 
   // 进行 5 轮轮转
   for (int round = 0; round < 5; ++round) {
@@ -297,8 +282,7 @@ TEST(RoundRobinSchedulerTest, MultipleRounds) {
 TEST(RoundRobinSchedulerTest, SingleTask) {
   RoundRobinScheduler scheduler;
 
-  TaskControlBlock task1;
-  task1.pid = 1;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
 
   scheduler.Enqueue(&task1);
   EXPECT_EQ(scheduler.GetQueueSize(), 1);
@@ -312,10 +296,9 @@ TEST(RoundRobinSchedulerTest, SingleTask) {
 TEST(RoundRobinSchedulerTest, DequeueNonExistentTask) {
   RoundRobinScheduler scheduler;
 
-  TaskControlBlock task1, task2, task3;
-  task1.pid = 1;
-  task2.pid = 2;
-  task3.pid = 3;
+  TaskControlBlock task1("Task1", 1, nullptr, nullptr);
+  TaskControlBlock task2("Task2", 2, nullptr, nullptr);
+  TaskControlBlock task3("Task3", 3, nullptr, nullptr);
 
   scheduler.Enqueue(&task1);
   scheduler.Enqueue(&task2);

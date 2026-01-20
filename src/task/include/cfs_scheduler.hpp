@@ -213,9 +213,6 @@ class CfsScheduler : public SchedulerBase {
 
   /// 当前最小 vruntime (用于新任务初始化)
   uint64_t min_vruntime_ = 0;
-
-  /// 统计信息
-  Stats stats_;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_CFS_SCHEDULER_HPP_ */

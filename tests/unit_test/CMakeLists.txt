@@ -23,7 +23,8 @@ ADD_EXECUTABLE (
     sk_unordered_map_test.cpp
     fifo_scheduler_test.cpp
     rr_scheduler_test.cpp
-    cfs_scheduler_test.cpp)
+    cfs_scheduler_test.cpp
+    task_control_block_mock.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME} PRIVATE -Dsk_printf=printf -DUNIT_TEST

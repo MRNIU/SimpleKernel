@@ -118,9 +118,6 @@ class RoundRobinScheduler : public SchedulerBase {
  private:
   /// 就绪队列 (双向链表，支持从头部取、向尾部放)
   sk_std::list<TaskControlBlock*> ready_queue;
-
-  /// 统计信息
-  Stats stats_;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_ */

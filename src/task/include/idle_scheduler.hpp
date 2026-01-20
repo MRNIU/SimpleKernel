@@ -112,9 +112,6 @@ class IdleScheduler : public SchedulerBase {
  private:
   /// Idle 任务指针（通常只有一个）
   TaskControlBlock* idle_task_ = nullptr;
-
-  /// 统计信息
-  Stats stats_;
 };
 
 #endif  // SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_IDLE_SCHEDULER_HPP_

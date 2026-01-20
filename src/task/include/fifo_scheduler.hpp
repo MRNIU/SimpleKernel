@@ -92,9 +92,6 @@ class FifoScheduler : public SchedulerBase {
  private:
   /// 就绪队列 (先进先出)
   sk_std::list<TaskControlBlock*> ready_queue;
-
-  /// 统计信息
-  Stats stats_;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_ */
