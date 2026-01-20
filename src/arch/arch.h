@@ -5,6 +5,7 @@
 #ifndef SIMPLEKERNEL_SRC_ARCH_ARCH_H_
 #define SIMPLEKERNEL_SRC_ARCH_ARCH_H_
 
+#include <cpu_io.h>
 #include <sys/cdefs.h>
 
 #include <cstddef>
