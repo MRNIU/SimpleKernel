@@ -32,7 +32,7 @@ BasicInfo::BasicInfo(int argc, const char** argv) {
 
   core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
 
-  // interval = Singleton<KernelFdt>::GetInstance().GetTimebaseFrequency();
+  interval = cpu_io::CNTFRQ_EL0::Read();
 }
 
 void ArchInit(int argc, const char** argv) {
