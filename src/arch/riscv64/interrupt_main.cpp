@@ -22,7 +22,7 @@ void RegisterInterrupts() {
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::
           kSupervisorExternalInterrupt,
-      [](uint64_t, uint8_t*) -> uint64_t {
+      [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
         // 获取触发中断的源 ID
         auto source_id = Singleton<Plic>::GetInstance().Which();
         Singleton<Plic>::GetInstance().Do(source_id, nullptr);
@@ -44,19 +44,17 @@ void RegisterInterrupts() {
   // 注册 ebreak 中断
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kBreakpoint,
-      [](uint64_t exception_code, uint8_t* context) -> uint64_t {
-        auto* trap_context = reinterpret_cast<cpu_io::TrapContext*>(context);
-
+      [](uint64_t exception_code, cpu_io::TrapContext* context) -> uint64_t {
         // 读取 sepc 处的指令
-        auto instruction = *reinterpret_cast<uint8_t*>(trap_context->sepc);
+        auto instruction = *reinterpret_cast<uint8_t*>(context->sepc);
 
         // 判断是否为压缩指令 (低 2 位不为 11)
         if ((instruction & 0x3) != 0x3) {
           // 2 字节指令
-          trap_context->sepc += 2;
+          context->sepc += 2;
         } else {
           // 4 字节指令
-          trap_context->sepc += 4;
+          context->sepc += 4;
         }
         klog::Info("Handle %s\n",
                    cpu_io::detail::register_info::csr::ScauseInfo::
@@ -66,17 +64,17 @@ void RegisterInterrupts() {
 
   // 注册缺页中断处理
   auto page_fault_handler = [](uint64_t exception_code,
-                               uint8_t* context) -> uint64_t {
+                               cpu_io::TrapContext* context) -> uint64_t {
     auto addr = cpu_io::Stval::Read();
-    auto* trap_context = reinterpret_cast<cpu_io::TrapContext*>(context);
     klog::Err("PageFault: %s(0x%lx), addr: 0x%lx\n",
               cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
                   [exception_code],
               exception_code, addr);
-    klog::Err("sepc: 0x%lx\n", trap_context->sepc);
+    klog::Err("sepc: 0x%lx\n", context->sepc);
     DumpStack();
-    while (1)
-      ;
+    while (1) {
+      cpu_io::Pause();
+    }
     return 0;
   };
 
@@ -93,7 +91,7 @@ void RegisterInterrupts() {
   // 注册系统调用
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kEcallUserMode,
-      [](uint64_t, uint8_t* context) -> uint64_t {
+      [](uint64_t, cpu_io::TrapContext* context) -> uint64_t {
         Syscall(0, context);
         return 0;
       });
@@ -102,7 +100,7 @@ void RegisterInterrupts() {
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::
           kSupervisorSoftwareInterrupt,
-      [](uint64_t, uint8_t*) -> uint64_t {
+      [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
         // 清软中断 pending 位
         cpu_io::Sip::Ssip::Clear();
         klog::Debug("Core %d received IPI\n", cpu_io::GetCurrentCoreId());
@@ -113,8 +111,7 @@ void RegisterInterrupts() {
 }  // namespace
 
 extern "C" cpu_io::TrapContext* HandleTrap(cpu_io::TrapContext* context) {
-  Singleton<Interrupt>::GetInstance().Do(context->scause,
-                                         reinterpret_cast<uint8_t*>(context));
+  Singleton<Interrupt>::GetInstance().Do(context->scause, context);
   return context;
 }
 

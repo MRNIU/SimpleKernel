@@ -20,9 +20,9 @@
 
 /**
  * @brief 中断/异常上下文切换所需保存的寄存器大小
- * 68 个寄存器 * 8 字节 = 544 字节
+ * 68 个寄存器 * 8 字节 = 544 字节（已对齐到 16 字节）
  */
-.equ kTrapContextSize, kTrapContextRegsCount * kRegsBytes
+.equ kTrapContextSize, ALIGN_16(kTrapContextRegsCount * kRegsBytes)
 
 /**
  * @brief 函数调用上下文切换所需保存的寄存器数量 (Callee-saved)
@@ -32,9 +32,9 @@
 
 /**
  * @brief 函数调用上下文切换所需保存的寄存器大小 (Callee-saved)
- * 26 * 8 = 208 bytes.
+ * 26 * 8 = 208 字节（已对齐到 16 字节）
  */
-.equ kCalleeSavedContextSize, kCalleeSavedContextRegsCount * kRegsBytes
+.equ kCalleeSavedContextSize, ALIGN_16(kCalleeSavedContextRegsCount * kRegsBytes)
 
 /**
  * @brief 将寄存器 a 保存在 c 偏移 b 的位置
@@ -86,7 +86,7 @@
  * @note 如果是从用户态陷入，通常需要手动将 sscratch (用户 sp) 覆盖到 offset 1。
  */
 .macro SaveTrapContext
-    addi sp, sp, -ALIGN_16(kTrapContextSize)
+    addi sp, sp, -kTrapContextSize
 
     // 保存通用寄存器 (除了 sp)
     SdBase ra, 0, sp
@@ -266,7 +266,7 @@
     LdBase t0, 4, sp
 
     // 恢复 sp
-    addi sp, sp, ALIGN_16(kTrapContextSize)
+    addi sp, sp, kTrapContextSize
 .endm
 
 /**

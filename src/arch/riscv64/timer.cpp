@@ -29,7 +29,7 @@ void TimerInit() {
   // 注册时钟中断
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kSupervisorTimerInterrupt,
-      [](uint64_t, uint8_t*) -> uint64_t {
+      [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
         sbi_set_timer(cpu_io::Time::Read() + interval);
         return 0;
       });
