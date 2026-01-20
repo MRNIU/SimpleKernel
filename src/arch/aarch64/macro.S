@@ -221,12 +221,3 @@
     // 跳转到保存的 pc
     br x10
 .endm
-
-// 兼容旧名称
-.macro savereg
-    SaveTrapContext
-.endm
-
-.macro restorereg
-    RestoreTrapContext
-.endm

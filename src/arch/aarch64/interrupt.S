@@ -49,113 +49,113 @@ vector_table:
 
 // Exception handlers
 sync_current_el_sp0:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl sync_current_el_sp0_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 irq_current_el_sp0:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl irq_current_el_sp0_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 fiq_current_el_sp0:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl fiq_current_el_sp0_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 error_current_el_sp0:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl error_current_el_sp0_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 sync_current_el_spx:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl sync_current_el_spx_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 irq_current_el_spx:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl irq_current_el_spx_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 fiq_current_el_spx:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl fiq_current_el_spx_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 error_current_el_spx:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl error_current_el_spx_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 sync_lower_el_aarch64:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl sync_lower_el_aarch64_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 irq_lower_el_aarch64:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl irq_lower_el_aarch64_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 fiq_lower_el_aarch64:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl fiq_lower_el_aarch64_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 error_lower_el_aarch64:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl error_lower_el_aarch64_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 sync_lower_el_aarch32:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl sync_lower_el_aarch32_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 irq_lower_el_aarch32:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl irq_lower_el_aarch32_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 fiq_lower_el_aarch32:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl fiq_lower_el_aarch32_handler
-    restorereg
+    RestoreTrapContext
     eret
 
 error_lower_el_aarch32:
-    savereg
+    SaveTrapContext
     mov x0, sp
     bl error_lower_el_aarch32_handler
-    restorereg
+    RestoreTrapContext
     eret
