@@ -94,6 +94,10 @@
         "SIMPLEKERNEL_DEFAULT_STACK_SIZE": {
           "type": "STRING",
           "value": "4096"
+        },
+        "SIMPLEKERNEL_TICK": {
+          "type": "STRING",
+          "value": "1000"
         }
       }
     },
