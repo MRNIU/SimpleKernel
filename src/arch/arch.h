@@ -10,6 +10,19 @@
 #include <cstddef>
 #include <cstdint>
 
+// 在 switch.S 中定义
+extern "C" void switch_to(cpu_io::CalleeSavedContext* prev,
+                          cpu_io::CalleeSavedContext* next);
+
+// 在 switch.S 中定义
+extern "C" void kernel_thread_entry();
+
+// 在 switch.S 中定义
+extern "C" void trap_return(void*);
+
+// 在 interrupt.S 中定义
+extern "C" void trap_entry();
+
 /**
  * 体系结构相关初始化
  * @param argc 在不同体系结构有不同含义，同 _start
