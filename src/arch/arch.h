@@ -5,10 +5,24 @@
 #ifndef SIMPLEKERNEL_SRC_ARCH_ARCH_H_
 #define SIMPLEKERNEL_SRC_ARCH_ARCH_H_
 
+#include <cpu_io.h>
 #include <sys/cdefs.h>
 
 #include <cstddef>
 #include <cstdint>
+
+// 在 switch.S 中定义
+extern "C" void switch_to(cpu_io::CalleeSavedContext* prev,
+                          cpu_io::CalleeSavedContext* next);
+
+// 在 switch.S 中定义
+extern "C" void kernel_thread_entry();
+
+// 在 switch.S 中定义
+extern "C" void trap_return(void*);
+
+// 在 interrupt.S 中定义
+extern "C" void trap_entry();
 
 /**
  * 体系结构相关初始化
@@ -33,6 +47,25 @@ void InterruptInitSMP(int argc, const char** argv);
 
 void TimerInit();
 void TimerInitSMP();
+
+/**
+ * 初始化内核线程的任务上下文（重载1）
+ * @param task_context 指向任务上下文的指针
+ * @param entry 线程入口函数
+ * @param arg 传递给线程的参数
+ * @param stack_top 内核栈顶地址
+ */
+void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
+                     void (*entry)(void*), void* arg, uint64_t stack_top);
+
+/**
+ * 初始化用户线程的任务上下文（重载2）
+ * @param task_context 指向任务上下文的指针
+ * @param trap_context_ptr 指向 Trap 上下文的指针
+ * @param stack_top 内核栈顶地址
+ */
+void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
+                     cpu_io::TrapContext* trap_context_ptr, uint64_t stack_top);
 
 /// 最多回溯 128 层调用栈
 static constexpr const size_t kMaxFrameCount = 128;

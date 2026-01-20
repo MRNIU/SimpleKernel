@@ -7,6 +7,7 @@
 #include <cpu_io.h>
 #include <elf.h>
 
+#include "arch.h"
 #include "basic_info.hpp"
 #include "interrupt_base.h"
 #include "kernel_log.hpp"
@@ -104,18 +105,8 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
   auto stack_top =
       reinterpret_cast<uint64_t>(kernel_stack) + kDefaultKernelStackSize;
 
-  // 1. 设置 ra 指向汇编跳板 kernel_thread_entry
-  // 当 switch_to 执行 ret 时，会跳转到 kernel_thread_entry
-  task_context.ra = reinterpret_cast<uint64_t>(kernel_thread_entry);
-
-  // 2. 设置 s0 保存真正的入口函数地址
-  task_context.s0 = reinterpret_cast<uint64_t>(entry);
-
-  // 3. 设置 s1 保存参数
-  task_context.s1 = reinterpret_cast<uint64_t>(arg);
-
-  // 4. 设置 sp 为栈顶
-  task_context.sp = stack_top;
+  // 初始化任务上下文
+  InitTaskContext(&task_context, entry, arg, stack_top);
 
   // 状态设为就绪
   status = TaskStatus::kReady;
@@ -124,116 +115,105 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
 TaskControlBlock::TaskControlBlock(const char* name, size_t pid, uint8_t* elf,
                                    int argc, char** argv)
     : name(name), pid(pid) {
-  // 分配内核栈
-  kernel_stack = static_cast<uint8_t*>(aligned_alloc(
-      cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
-  if (!kernel_stack) {
-    klog::Err("Failed to allocate kernel stack for task %s\n", name);
-    status = TaskStatus::kExited;
-    return;
-  }
+  //   // 分配内核栈
+  //   kernel_stack = static_cast<uint8_t*>(aligned_alloc(
+  //       cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
+  //   if (!kernel_stack) {
+  //     klog::Err("Failed to allocate kernel stack for task %s\n", name);
+  //     status = TaskStatus::kExited;
+  //     return;
+  //   }
 
-  // 设置 trap_context_ptr 指向内核栈顶预留的位置
-  trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
-      kernel_stack + kDefaultKernelStackSize - sizeof(cpu_io::TrapContext));
-  // 1. 创建页表
-  page_table = reinterpret_cast<uint64_t*>(aligned_alloc(
-      cpu_io::virtual_memory::kPageSize, cpu_io::virtual_memory::kPageSize));
-  // 复制内核映射
-  auto current_pgd = cpu_io::virtual_memory::GetPageDirectory();
-  std::memcpy(page_table, reinterpret_cast<void*>(current_pgd),
-              cpu_io::virtual_memory::kPageSize);
+  //   // 设置 trap_context_ptr 指向内核栈顶预留的位置
+  //   trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
+  //       kernel_stack + kDefaultKernelStackSize -
+  //       sizeof(cpu_io::TrapContext));
+  //   // 1. 创建页表
+  //   page_table = reinterpret_cast<uint64_t*>(aligned_alloc(
+  //       cpu_io::virtual_memory::kPageSize,
+  //       cpu_io::virtual_memory::kPageSize));
+  //   // 复制内核映射
+  //   auto current_pgd = cpu_io::virtual_memory::GetPageDirectory();
+  //   std::memcpy(page_table, reinterpret_cast<void*>(current_pgd),
+  //               cpu_io::virtual_memory::kPageSize);
 
-  // 2. 加载 ELF
-  uint64_t entry_point = LoadElf(elf, page_table);
-  if (!entry_point) {
-    status = TaskStatus::kExited;
-    return;
-  }
+  //   // 2. 加载 ELF
+  //   uint64_t entry_point = LoadElf(elf, page_table);
+  //   if (!entry_point) {
+  //     status = TaskStatus::kExited;
+  //     return;
+  //   }
 
-  // 3. 分配用户栈 (这里简化为分配一页作为栈)
-  auto& vm = Singleton<VirtualMemory>::GetInstance();
-  // 假设用户栈顶
-  constexpr uintptr_t kUserStackTop = 0x80000000;
-  void* stack_page = aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                   cpu_io::virtual_memory::kPageSize);
-  vm.MapPage(page_table,
-             (void*)(kUserStackTop - cpu_io::virtual_memory::kPageSize),
-             stack_page,
-             cpu_io::virtual_memory::GetUserPagePermissions(true, true, false));
+  //   // 3. 分配用户栈 (这里简化为分配一页作为栈)
+  //   auto& vm = Singleton<VirtualMemory>::GetInstance();
+  //   // 假设用户栈顶
+  //   constexpr uintptr_t kUserStackTop = 0x80000000;
+  //   void* stack_page = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+  //                                    cpu_io::virtual_memory::kPageSize);
+  //   vm.MapPage(page_table,
+  //              (void*)(kUserStackTop - cpu_io::virtual_memory::kPageSize),
+  //              stack_page,
+  //              cpu_io::virtual_memory::GetUserPagePermissions(true, true,
+  //              false));
 
-  // 4. 处理参数 (放入栈中)
-  uint8_t* sp = (uint8_t*)stack_page + cpu_io::virtual_memory::kPageSize;
-  sk_std::vector<uint64_t> argv_addrs;
-  // 推入字符串
-  for (int i = 0; i < argc; ++i) {
-    size_t len = strlen(argv[i]) + 1;
-    sp -= len;
-    strcpy((char*)sp, argv[i]);
-    // 记录用户空间地址
-    argv_addrs.push_back(kUserStackTop - cpu_io::virtual_memory::kPageSize +
-                         (sp - (uint8_t*)stack_page));
-  }
-  // 对齐
-  sp = (uint8_t*)((uint64_t)sp & ~7);
-  // 推入 argv 数组
-  sp -= sizeof(uint64_t) * (argc + 1);
-  uint64_t* argv_ptr = (uint64_t*)sp;
-  for (int i = 0; i < argc; ++i) {
-    argv_ptr[i] = argv_addrs[i];
-  }
-  argv_ptr[argc] = 0;  // NULL terminated
+  //   // 4. 处理参数 (放入栈中)
+  //   uint8_t* sp = (uint8_t*)stack_page + cpu_io::virtual_memory::kPageSize;
+  //   sk_std::vector<uint64_t> argv_addrs;
+  //   // 推入字符串
+  //   for (int i = 0; i < argc; ++i) {
+  //     size_t len = strlen(argv[i]) + 1;
+  //     sp -= len;
+  //     strcpy((char*)sp, argv[i]);
+  //     // 记录用户空间地址
+  //     argv_addrs.push_back(kUserStackTop - cpu_io::virtual_memory::kPageSize
+  //     +
+  //                          (sp - (uint8_t*)stack_page));
+  //   }
+  //   // 对齐
+  //   sp = (uint8_t*)((uint64_t)sp & ~7);
+  //   // 推入 argv 数组
+  //   sp -= sizeof(uint64_t) * (argc + 1);
+  //   uint64_t* argv_ptr = (uint64_t*)sp;
+  //   for (int i = 0; i < argc; ++i) {
+  //     argv_ptr[i] = argv_addrs[i];
+  //   }
+  //   argv_ptr[argc] = 0;  // NULL terminated
 
-  // 计算最终 sp (用户虚拟地址)
-  uint64_t user_sp = kUserStackTop - cpu_io::virtual_memory::kPageSize +
-                     (sp - (uint8_t*)stack_page);
+  //   // 计算最终 sp (用户虚拟地址)
+  //   uint64_t user_sp = kUserStackTop - cpu_io::virtual_memory::kPageSize +
+  //                      (sp - (uint8_t*)stack_page);
 
-  // 5. 初始化 Trap 上下文
-  std::memset(trap_context_ptr, 0, sizeof(cpu_io::TrapContext));
-#ifdef __riscv
-  // sstatus: SPIE=1, SPP=0
-  trap_context_ptr->sstatus = 1ULL << 5;
-  trap_context_ptr->sepc = entry_point;
-  trap_context_ptr->sp = user_sp;
-  trap_context_ptr->a0 = argc;
-  trap_context_ptr->a1 = user_sp;
-#endif
+  //   // 5. 初始化 Trap 上下文
+  //   std::memset(trap_context_ptr, 0, sizeof(cpu_io::TrapContext));
+  // #ifdef __riscv
+  //   // sstatus: SPIE=1, SPP=0
+  //   trap_context_ptr->sstatus = 1ULL << 5;
+  //   trap_context_ptr->sepc = entry_point;
+  //   trap_context_ptr->sp = user_sp;
+  //   trap_context_ptr->a0 = argc;
+  //   trap_context_ptr->a1 = user_sp;
+  // #endif
 
-  // 6. 初始化内核切换上下文
-  auto stack_top =
-      reinterpret_cast<uint64_t>(kernel_stack) + kDefaultKernelStackSize;
-  task_context.ra = reinterpret_cast<uint64_t>(kernel_thread_entry);
-  task_context.s0 = reinterpret_cast<uint64_t>(trap_return);
-  task_context.s1 = reinterpret_cast<uint64_t>(trap_context_ptr);
-  task_context.sp = stack_top;
+  //   // 6. 初始化内核切换上下文
+  //   auto stack_top =
+  //       reinterpret_cast<uint64_t>(kernel_stack) + kDefaultKernelStackSize;
+  //   task_context.ra = reinterpret_cast<uint64_t>(kernel_thread_entry);
+  //   task_context.s0 = reinterpret_cast<uint64_t>(trap_return);
+  //   task_context.s1 = reinterpret_cast<uint64_t>(trap_context_ptr);
+  //   task_context.sp = stack_top;
 
-  // 设置 TrapContext 内容
-  // 我们需要确认 TrapContext 布局
-  // 如果不知道 sstatus 位置，可能无法正确设置。
-  // 但 trap_return 会恢复所有寄存器。
-  // 对于 RISC-V, sstatus 通常在 saved registers 中。
-  // 再次读取 context.hpp 确认。
+  //   // 设置 TrapContext 内容
+  //   // 我们需要确认 TrapContext 布局
+  //   // 如果不知道 sstatus 位置，可能无法正确设置。
+  //   // 但 trap_return 会恢复所有寄存器。
+  //   // 对于 RISC-V, sstatus 通常在 saved registers 中。
 
-  status = TaskStatus::kReady;
+  //   // 使用架构相关接口初始化任务上下文
+  //   InitTaskContext(&task_context, trap_context_ptr, stack_top);
 
-  // 修正 Sstatus
-  // trap_context_ptr->sstatus = 1ULL << 5; // SPIE
-  // trap_context_ptr->sepc = entry_point;
-  // trap_context_ptr->x[2] = user_sp; // sp
-  // trap_context_ptr->a0 = argc;
-  // trap_context_ptr->a1 = user_sp (argv ptr); // argv is at user_sp
-}
-
-TaskControlBlock::~TaskControlBlock() {
-  // 释放内核栈
-  if (kernel_stack) {
-    free(kernel_stack);
-    kernel_stack = nullptr;
-  }
-
-  // 释放页表
-  if (page_table) {
-    /// @todo 递归释放页表中分配的所有页面
-    page_table = nullptr;
-  }
+  //   status = TaskStatus::kReady;
+  //   if (page_table) {
+  //     /// @todo 递归释放页表中分配的所有页面
+  //     page_table = nullptr;
+  //   }
 }

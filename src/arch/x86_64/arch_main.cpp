@@ -6,6 +6,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cstring>
 
 #include "apic.h"
 #include "basic_info.hpp"
@@ -173,4 +174,28 @@ void WakeUpOtherCores() {
       reinterpret_cast<size_t>(ap_start64_end) -
           reinterpret_cast<size_t>(ap_start16),
       kDefaultAPBase);
+}
+
+void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
+                     void (*entry)(void*), void* arg, uint64_t stack_top) {
+  // 清零上下文
+  std::memset(task_context, 0, sizeof(cpu_io::CalleeSavedContext));
+
+  /// @todo x86_64 实现待补充
+  (void)task_context;
+  (void)entry;
+  (void)arg;
+  (void)stack_top;
+}
+
+void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
+                     cpu_io::TrapContext* trap_context_ptr,
+                     uint64_t stack_top) {
+  // 清零上下文
+  std::memset(task_context, 0, sizeof(cpu_io::CalleeSavedContext));
+
+  /// @todo x86_64 实现待补充
+  (void)task_context;
+  (void)trap_context_ptr;
+  (void)stack_top;
 }

@@ -4,6 +4,8 @@
 
 #include <cpu_io.h>
 
+#include <cstring>
+
 #include "arch.h"
 #include "basic_info.hpp"
 #include "interrupt.h"
@@ -61,4 +63,38 @@ void WakeUpOtherCores() {
       klog::Warn("hart %d start failed: %d\n", i, ret);
     }
   }
+}
+
+void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
+                     void (*entry)(void*), void* arg, uint64_t stack_top) {
+  // 清零上下文
+  std::memset(task_context, 0, sizeof(cpu_io::CalleeSavedContext));
+
+  // AArch64: kernel_thread_entry 从 x19 和 x20 获取参数
+  // x19: entry function, x20: arg
+  task_context->x19 = reinterpret_cast<uint64_t>(entry);
+  task_context->x20 = reinterpret_cast<uint64_t>(arg);
+
+  // 设置栈指针
+  task_context->sp = stack_top;
+
+  // 设置返回地址 (pc) 为 kernel_thread_entry
+  task_context->pc = reinterpret_cast<uint64_t>(kernel_thread_entry);
+}
+
+void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
+                     cpu_io::TrapContext* trap_context_ptr,
+                     uint64_t stack_top) {
+  // 清零上下文
+  std::memset(task_context, 0, sizeof(cpu_io::CalleeSavedContext));
+
+  // x19: trap_return, x20: trap_context_ptr
+  task_context->x19 = reinterpret_cast<uint64_t>(trap_return);
+  task_context->x20 = reinterpret_cast<uint64_t>(trap_context_ptr);
+
+  // 设置栈指针
+  task_context->sp = stack_top;
+
+  // 设置返回地址 (pc) 为 kernel_thread_entry
+  task_context->pc = reinterpret_cast<uint64_t>(kernel_thread_entry);
 }

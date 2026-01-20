@@ -10,19 +10,6 @@
 #include <atomic>
 #include <cstdint>
 
-// 在 switch.S 中定义
-extern "C" void switch_to(cpu_io::CalleeSavedContext* prev,
-                          cpu_io::CalleeSavedContext* next);
-
-// 在 switch.S 中定义
-extern "C" void kernel_thread_entry();
-
-// 在 switch.S 中定义
-extern "C" void trap_return(void*);
-
-// 在 interrupt.S 中定义
-extern "C" void trap_entry();
-
 class InterruptBase {
  public:
   /**

@@ -8,6 +8,7 @@
 #include <memory>
 #include <new>
 
+#include "arch.h"
 #include "basic_info.hpp"
 #include "fifo_scheduler.hpp"
 #include "interrupt_base.h"
