@@ -68,7 +68,7 @@ void MemoryInit() {
   allocator = &bmallocator;
 
   // 初始化虚拟内存管理器
-  Singleton<VirtualMemory>::GetInstance() = VirtualMemory(aligned_alloc);
+  Singleton<VirtualMemory>::GetInstance() = VirtualMemory(aligned_alloc, free);
 
   // 初始化当前核心的虚拟内存
   Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
