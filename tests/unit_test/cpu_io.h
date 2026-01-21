@@ -36,8 +36,8 @@ static constexpr uint64_t kGlobal = 0x100;
 
 // 获取用户页面权限
 inline auto GetUserPagePermissions(bool readable = true, bool writable = false,
-                                   bool executable = false,
-                                   bool global = false) -> uint64_t {
+                                   bool executable = false, bool global = false)
+    -> uint64_t {
   uint64_t flags = kValid | kUser;
   if (readable) {
     flags |= kRead;
@@ -86,8 +86,8 @@ inline auto GetTableEntryPermissions() -> uint64_t {
 }
 
 // 获取虚拟页号
-inline auto GetVirtualPageNumber(uint64_t virtual_addr,
-                                 size_t level) -> uint64_t {
+inline auto GetVirtualPageNumber(uint64_t virtual_addr, size_t level)
+    -> uint64_t {
   return (virtual_addr >> (kPageOffsetBits + level * kVpnBits)) & kVpnMask;
 }
 
@@ -113,8 +113,8 @@ inline auto PageTableEntryToPhysical(uint64_t pte) -> uint64_t {
   return pte & 0x000FFFFFFFFFF000ULL;
 }
 
-inline auto PhysicalToPageTableEntry(uint64_t physical_addr,
-                                     uint64_t flags) -> uint64_t {
+inline auto PhysicalToPageTableEntry(uint64_t physical_addr, uint64_t flags)
+    -> uint64_t {
   return (physical_addr & 0x000FFFFFFFFFF000ULL) | (flags & 0xFFF) |
          (flags & (1ULL << 63));
 }
