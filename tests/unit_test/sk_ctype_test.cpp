@@ -133,3 +133,103 @@ TEST(SkCtypeTest, ToUpper) {
   EXPECT_EQ(sk_toupper('A'), 'A');
   EXPECT_EQ(sk_toupper('0'), '0');
 }
+
+// 边界条件测试
+TEST(SkCtypeTest, BoundaryValues) {
+  // ASCII 边界值
+  EXPECT_FALSE(sk_isalnum(-1));
+  EXPECT_FALSE(sk_isalnum(128));
+  EXPECT_FALSE(sk_isalpha(127));
+}
+
+TEST(SkCtypeTest, ToLowerBoundary) {
+  // 边界值
+  EXPECT_EQ(sk_tolower('A' - 1), 'A' - 1);  // '@'
+  EXPECT_EQ(sk_tolower('Z' + 1), 'Z' + 1);  // '['
+}
+
+TEST(SkCtypeTest, ToUpperBoundary) {
+  // 边界值
+  EXPECT_EQ(sk_toupper('a' - 1), 'a' - 1);  // '`'
+  EXPECT_EQ(sk_toupper('z' + 1), 'z' + 1);  // '{'
+}
+
+TEST(SkCtypeTest, AllDigits) {
+  for (char c = '0'; c <= '9'; ++c) {
+    EXPECT_TRUE(sk_isdigit(c));
+    EXPECT_TRUE(sk_isalnum(c));
+    EXPECT_TRUE(sk_isxdigit(c));
+  }
+}
+
+TEST(SkCtypeTest, AllLetters) {
+  for (char c = 'a'; c <= 'z'; ++c) {
+    EXPECT_TRUE(sk_isalpha(c));
+    EXPECT_TRUE(sk_isalnum(c));
+    EXPECT_TRUE(sk_islower(c));
+    EXPECT_FALSE(sk_isupper(c));
+  }
+
+  for (char c = 'A'; c <= 'Z'; ++c) {
+    EXPECT_TRUE(sk_isalpha(c));
+    EXPECT_TRUE(sk_isalnum(c));
+    EXPECT_TRUE(sk_isupper(c));
+    EXPECT_FALSE(sk_islower(c));
+  }
+}
+
+TEST(SkCtypeTest, AllPunctuation) {
+  // 测试常见标点符号
+  const char punct[] = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
+  for (size_t i = 0; i < strlen(punct); ++i) {
+    EXPECT_TRUE(sk_ispunct(punct[i]));
+    EXPECT_FALSE(sk_isalnum(punct[i]));
+  }
+}
+
+TEST(SkCtypeTest, AllWhitespace) {
+  EXPECT_TRUE(sk_isspace(' '));   // space
+  EXPECT_TRUE(sk_isspace('\t'));  // tab
+  EXPECT_TRUE(sk_isspace('\n'));  // newline
+  EXPECT_TRUE(sk_isspace('\r'));  // carriage return
+  EXPECT_TRUE(sk_isspace('\f'));  // form feed
+  EXPECT_TRUE(sk_isspace('\v'));  // vertical tab
+}
+
+TEST(SkCtypeTest, GraphPrintable) {
+  // isgraph: 可打印但不包括空格
+  // isprint: 可打印包括空格
+  EXPECT_FALSE(sk_isgraph(' '));
+  EXPECT_TRUE(sk_isprint(' '));
+
+  EXPECT_TRUE(sk_isgraph('A'));
+  EXPECT_TRUE(sk_isprint('A'));
+}
+
+TEST(SkCtypeTest, ControlCharacters) {
+  // 测试控制字符 (0-31 和 127)
+  for (int c = 0; c < 32; ++c) {
+    EXPECT_TRUE(sk_iscntrl(c));
+    EXPECT_FALSE(sk_isprint(c));
+  }
+  EXPECT_TRUE(sk_iscntrl(127));
+}
+
+TEST(SkCtypeTest, CaseConversion) {
+  // 测试整个字母表的大小写转换
+  for (char c = 'A'; c <= 'Z'; ++c) {
+    EXPECT_EQ(sk_tolower(c), c + ('a' - 'A'));
+  }
+
+  for (char c = 'a'; c <= 'z'; ++c) {
+    EXPECT_EQ(sk_toupper(c), c - ('a' - 'A'));
+  }
+}
+
+TEST(SkCtypeTest, NonAscii) {
+  // 测试非 ASCII 字符（假设函数处理扩展 ASCII）
+  // 这些应该返回 false 对于大多数函数
+  EXPECT_FALSE(sk_isalpha(128));
+  EXPECT_FALSE(sk_isdigit(200));
+  EXPECT_FALSE(sk_isalnum(255));
+}

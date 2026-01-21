@@ -39,3 +39,58 @@ TEST(KernelFdtTest, GetTimebaseFrequencyTest) {
 
   EXPECT_EQ(time_base_frequency, 0x989680);
 }
+
+TEST(KernelFdtTest, GetCoreCountTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+
+  auto core_count = kerlen_fdt.GetCoreCount();
+
+  EXPECT_GT(core_count, 0);  // 至少有一个 CPU 核心
+}
+
+TEST(KernelFdtTest, CopyConstructorTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+  KernelFdt kerlen_fdt2(kerlen_fdt);
+
+  auto [memory_base1, memory_size1] = kerlen_fdt.GetMemory();
+  auto [memory_base2, memory_size2] = kerlen_fdt2.GetMemory();
+
+  EXPECT_EQ(memory_base1, memory_base2);
+  EXPECT_EQ(memory_size1, memory_size2);
+}
+
+TEST(KernelFdtTest, AssignmentTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+  KernelFdt kerlen_fdt2;
+
+  kerlen_fdt2 = kerlen_fdt;
+
+  auto [memory_base1, memory_size1] = kerlen_fdt.GetMemory();
+  auto [memory_base2, memory_size2] = kerlen_fdt2.GetMemory();
+
+  EXPECT_EQ(memory_base1, memory_base2);
+  EXPECT_EQ(memory_size1, memory_size2);
+}
+
+TEST(KernelFdtTest, MoveConstructorTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+  auto [expected_base, expected_size] = kerlen_fdt.GetMemory();
+
+  KernelFdt kerlen_fdt2(std::move(kerlen_fdt));
+
+  auto [memory_base, memory_size] = kerlen_fdt2.GetMemory();
+  EXPECT_EQ(memory_base, expected_base);
+  EXPECT_EQ(memory_size, expected_size);
+}
+
+TEST(KernelFdtTest, MoveAssignmentTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+  auto [expected_base, expected_size] = kerlen_fdt.GetMemory();
+
+  KernelFdt kerlen_fdt2;
+  kerlen_fdt2 = std::move(kerlen_fdt);
+
+  auto [memory_base, memory_size] = kerlen_fdt2.GetMemory();
+  EXPECT_EQ(memory_base, expected_base);
+  EXPECT_EQ(memory_size, expected_size);
+}
