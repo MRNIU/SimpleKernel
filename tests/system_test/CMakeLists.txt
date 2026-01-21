@@ -11,6 +11,7 @@ ADD_EXECUTABLE (
     ctor_dtor_test.cpp
     spinlock_test.cpp
     memory_test.cpp
+    virtual_memory_test.cpp
     sk_list_test.cpp
     sk_queue_test.cpp
     sk_vector_test.cpp

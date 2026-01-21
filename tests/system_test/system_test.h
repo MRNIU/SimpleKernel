@@ -64,6 +64,7 @@ bool expect_ne_helper(const T1 &val1, const T2 &val2, const char *msg) {
 auto ctor_dtor_test() -> bool;
 auto spinlock_test() -> bool;
 auto memory_test() -> bool;
+auto virtual_memory_test() -> bool;
 auto sk_list_test() -> bool;
 auto sk_queue_test() -> bool;
 auto sk_vector_test() -> bool;

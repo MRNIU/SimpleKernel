@@ -15,7 +15,6 @@
 
 #include "basic_info.hpp"
 #include "kernel_log.hpp"
-#include "per_cpu.hpp"
 #include "singleton.hpp"
 
 /**
