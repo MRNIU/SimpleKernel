@@ -490,7 +490,7 @@ auto test_cfs_mixed_operations() -> bool {
   scheduler.Enqueue(&task3);
 
   auto* picked1 = scheduler.PickNext();  // 应该是 task1 (vruntime=100)
-  EXPECT_EQ(picked1->pid, 1, "First pick should be task1");
+  EXPECT_EQ(picked1, &task1, "First pick should be task1");
 
   scheduler.Enqueue(&task4);  // 新任务
   scheduler.Dequeue(&task3);

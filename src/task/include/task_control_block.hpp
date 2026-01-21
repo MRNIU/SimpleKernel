@@ -76,7 +76,7 @@ struct TaskControlBlock {
   const char* name = "Unnamed Task";
 
   /// 进程 ID
-  Pid pid;
+  Pid pid = 0;
 
   /// 进程状态
   TaskStatus status = TaskStatus::kUnInit;

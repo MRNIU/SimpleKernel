@@ -11,10 +11,14 @@
 // 简化版本，不依赖内核其他组件
 
 TaskControlBlock::TaskControlBlock([[maybe_unused]] const char* name,
-                                   [[maybe_unused]] size_t pid,
+                                   [[maybe_unused]] int priority,
                                    [[maybe_unused]] ThreadEntry entry,
                                    [[maybe_unused]] void* arg)
-    : name(name), pid(pid) {
+    : name(name), pid(0) {
+  // 设置优先级
+  sched_info.priority = priority;
+  sched_info.base_priority = priority;
+
   // 简化版本：只分配内核栈，不初始化复杂的上下文
   kernel_stack = static_cast<uint8_t*>(aligned_alloc(
       cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
@@ -34,11 +38,15 @@ TaskControlBlock::TaskControlBlock([[maybe_unused]] const char* name,
 }
 
 TaskControlBlock::TaskControlBlock([[maybe_unused]] const char* name,
-                                   [[maybe_unused]] size_t pid,
+                                   [[maybe_unused]] int priority,
                                    [[maybe_unused]] uint8_t* elf,
                                    [[maybe_unused]] int argc,
                                    [[maybe_unused]] char** argv)
-    : name(name), pid(pid) {
+    : name(name), pid(0) {
+  // 设置优先级
+  sched_info.priority = priority;
+  sched_info.base_priority = priority;
+
   // 简化版本：只分配内核栈
   kernel_stack = static_cast<uint8_t*>(aligned_alloc(
       cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));

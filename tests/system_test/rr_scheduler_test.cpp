@@ -75,18 +75,18 @@ auto test_rr_round_robin_behavior() -> bool {
   scheduler.Enqueue(&task2);
   scheduler.Enqueue(&task3);
 
-  EXPECT_EQ(scheduler.PickNext()->pid, 1, "First round: task1");
-  EXPECT_EQ(scheduler.PickNext()->pid, 2, "First round: task2");
-  EXPECT_EQ(scheduler.PickNext()->pid, 3, "First round: task3");
+  EXPECT_EQ(scheduler.PickNext(), &task1, "First round: task1");
+  EXPECT_EQ(scheduler.PickNext(), &task2, "First round: task2");
+  EXPECT_EQ(scheduler.PickNext(), &task3, "First round: task3");
 
   // 模拟时间片用完，任务重新入队（第二轮）
   scheduler.Enqueue(&task1);
   scheduler.Enqueue(&task2);
   scheduler.Enqueue(&task3);
 
-  EXPECT_EQ(scheduler.PickNext()->pid, 1, "Second round: task1");
-  EXPECT_EQ(scheduler.PickNext()->pid, 2, "Second round: task2");
-  EXPECT_EQ(scheduler.PickNext()->pid, 3, "Second round: task3");
+  EXPECT_EQ(scheduler.PickNext(), &task1, "Second round: task1");
+  EXPECT_EQ(scheduler.PickNext(), &task2, "Second round: task2");
+  EXPECT_EQ(scheduler.PickNext(), &task3, "Second round: task3");
 
   EXPECT_TRUE(scheduler.IsEmpty(), "Scheduler should be empty after 2 rounds");
 
@@ -305,9 +305,9 @@ auto test_rr_multiple_rounds() -> bool {
     scheduler.Enqueue(&task2);
     scheduler.Enqueue(&task3);
 
-    EXPECT_EQ(scheduler.PickNext()->pid, 1, "Round robin: task1");
-    EXPECT_EQ(scheduler.PickNext()->pid, 2, "Round robin: task2");
-    EXPECT_EQ(scheduler.PickNext()->pid, 3, "Round robin: task3");
+    EXPECT_EQ(scheduler.PickNext(), &task1, "Round robin: task1");
+    EXPECT_EQ(scheduler.PickNext(), &task2, "Round robin: task2");
+    EXPECT_EQ(scheduler.PickNext(), &task3, "Round robin: task3");
     EXPECT_TRUE(scheduler.IsEmpty(), "Queue should be empty after each round");
   }
 

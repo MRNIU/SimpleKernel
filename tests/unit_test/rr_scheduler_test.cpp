@@ -271,9 +271,9 @@ TEST(RoundRobinSchedulerTest, MultipleRounds) {
     scheduler.Enqueue(&task2);
     scheduler.Enqueue(&task3);
 
-    EXPECT_EQ(scheduler.PickNext()->pid, 1);
-    EXPECT_EQ(scheduler.PickNext()->pid, 2);
-    EXPECT_EQ(scheduler.PickNext()->pid, 3);
+    EXPECT_EQ(scheduler.PickNext(), &task1);
+    EXPECT_EQ(scheduler.PickNext(), &task2);
+    EXPECT_EQ(scheduler.PickNext(), &task3);
     EXPECT_TRUE(scheduler.IsEmpty());
   }
 }
@@ -308,7 +308,7 @@ TEST(RoundRobinSchedulerTest, DequeueNonExistentTask) {
   EXPECT_EQ(scheduler.GetQueueSize(), 2);
 
   // 验证原有任务仍在队列中
-  EXPECT_EQ(scheduler.PickNext()->pid, 1);
-  EXPECT_EQ(scheduler.PickNext()->pid, 2);
+  EXPECT_EQ(scheduler.PickNext(), &task1);
+  EXPECT_EQ(scheduler.PickNext(), &task2);
   EXPECT_TRUE(scheduler.IsEmpty());
 }

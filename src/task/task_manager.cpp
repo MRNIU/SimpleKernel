@@ -64,6 +64,11 @@ void TaskManager::InitCurrentCore() {
 }
 
 void TaskManager::AddTask(TaskControlBlock* task) {
+  // 分配 PID
+  if (task->pid == 0) {
+    task->pid = AllocatePid();
+  }
+
   // 确保任务状态为 kReady
   if (task->status == TaskStatus::kUnInit) {
     task->status = TaskStatus::kReady;
