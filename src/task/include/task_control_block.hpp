@@ -18,6 +18,27 @@ using Pid = size_t;
 using ThreadEntry = void (*)(void*);
 
 /**
+ * @brief Clone 标志位 (用于 sys_clone 系统调用)
+ * @note 参考 Linux clone flags
+ */
+enum CloneFlags : uint64_t {
+  // 全部共享
+  kCloneAll = 0,
+  // 共享地址空间
+  kCloneVm = 0x00000100,
+  // 共享文件系统信息
+  kCloneFs = 0x00000200,
+  // 共享文件描述符表
+  kCloneFiles = 0x00000400,
+  // 共享信号处理器
+  kCloneSighand = 0x00000800,
+  // 保持相同父进程
+  kCloneParent = 0x00008000,
+  // 同一线程组
+  kCloneThread = 0x00010000,
+};
+
+/**
  * @brief 任务状态枚举
  */
 enum TaskStatus : uint8_t {
@@ -77,12 +98,23 @@ struct TaskControlBlock {
 
   /// 进程 ID
   Pid pid = 0;
+  /// 父进程 ID
+  Pid parent_pid = 0;
+  /// 进程组 ID
+  Pid pgid = 0;
+  /// 会话 ID
+  Pid sid = 0;
 
   /// 进程状态
   TaskStatus status = TaskStatus::kUnInit;
-
   /// 调度策略
   SchedPolicy policy = SchedPolicy::kNormal;
+
+  /// 退出码
+  int exit_code = 0;
+
+  /// 克隆标志位
+  CloneFlags clone_flags = kCloneAll;
 
   /**
    * @brief 基础调度信息
@@ -94,20 +126,17 @@ struct TaskControlBlock {
     int base_priority = 10;
     /// 继承的优先级
     int inherited_priority = 0;
-    /// 唤醒时间 (tick)
+    /// 唤醒时间
     uint64_t wake_tick = 0;
-    /// 剩余时间片 (ticks)
+    /// 剩余时间片
     uint64_t time_slice_remaining = 10;
-    /// 默认时间片 (ticks)
+    /// 默认时间片
     uint64_t time_slice_default = 10;
-    /// 总运行时间 (ticks)
+    /// 总运行时间
     uint64_t total_runtime = 0;
     /// 上下文切换次数
     uint64_t context_switches = 0;
   } sched_info;
-
-  /// 退出码
-  int exit_code = 0;
 
   /**
    * @brief 不同调度器的专用字段 (互斥使用)
@@ -128,43 +157,24 @@ struct TaskControlBlock {
     } mlfq;
   } sched_data{};
 
-  /// 等待的资源 ID
-  uint64_t blocked_on = 0;
-
-  /// 优先级继承相关 (待实现 Mutex 后启用)
-  // void* held_mutexes = nullptr;
-  // void* blocked_on_mutex = nullptr;
-  TaskControlBlock* inherits_from = nullptr;
-
   /// 内核栈
   uint8_t* kernel_stack = nullptr;
 
-  /**
-   * @brief 当前的 Trap 上下文指针
-   *
-   * 指向最近一次 Trap 保存的上下文结构体在内核栈上的位置。
-   * 调度器通过此指针来恢复任务的上下文。
-   */
+  /// Trap 上下文
   cpu_io::TrapContext* trap_context_ptr = nullptr;
-
-  /**
-   * @brief 任务上下文 (用于内核线程切换)
-   *
-   * 保存切换时的内核栈指针 (包含 Callee-Saved 寄存器)。
-   * 指向各个任务内核栈上保存的 CalleeSavedContext。
-   */
+  /// 任务上下文
   cpu_io::CalleeSavedContext task_context{};
-
-  /// 页表指针
+  /// 页表
   uint64_t* page_table = nullptr;
 
-  /**
-   * @brief CPU 亲和性 (CPU Affinity) 位掩码
-   */
+  /// CPU 亲和性位掩码
   uint64_t cpu_affinity = UINT64_MAX;
 
-  /// 父进程 ID
-  Pid parent_pid = 0;
+  /// 等待的资源 ID
+  uint64_t blocked_on = 0;
+
+  /// @todo 优先级继承相关
+  /// @todo 文件系统相关
 
   /**
    * @brief 构造函数 (内核线程)
@@ -189,7 +199,7 @@ struct TaskControlBlock {
 
   /// @name 构造/析构函数
   /// @{
-  TaskControlBlock() = delete;
+  TaskControlBlock() = default;
   TaskControlBlock(const TaskControlBlock&) = delete;
   TaskControlBlock(TaskControlBlock&&) = delete;
   auto operator=(const TaskControlBlock&) -> TaskControlBlock& = delete;

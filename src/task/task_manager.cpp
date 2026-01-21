@@ -134,6 +134,16 @@ void TaskManager::Balance() {
   // TODO: 检查其他核心的运行队列长度，如果比当前核心长，则窃取任务
 }
 
+void TaskManager::ReapTask(TaskControlBlock* task) {
+  /// @todo 实现任务回收逻辑，释放资源，删除任务控制块等
+  (void)task;
+}
+
+void ReparentChildren(TaskControlBlock* parent) {
+  /// @todo 实现子进程重新分配给 init 进程的逻辑
+  (void)parent;
+}
+
 TaskManager::~TaskManager() {
   // 清理每个核心的调度器
   for (auto& cpu_sched : cpu_schedulers_) {

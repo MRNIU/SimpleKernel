@@ -3,6 +3,7 @@
  */
 
 #include <MPMCQueue.hpp>
+#include <cerrno>
 #include <cstdint>
 #include <new>
 

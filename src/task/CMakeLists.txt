@@ -13,4 +13,6 @@ TARGET_SOURCES (
               sleep.cpp
               block.cpp
               wakeup.cpp
+              clone.cpp
+              wait.cpp
               task_manager.cpp)

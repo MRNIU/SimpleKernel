@@ -130,11 +130,31 @@ class TaskManager {
   void Balance();
 
   /**
-   * @brief 按 PID 查找任务
-   * @param pid 进程 ID
-   * @return TaskControlBlock* 找到的任务，未找到返回 nullptr
+   * @brief 克隆当前任务 (fork/clone 系统调用)
+   * @param flags 克隆标志位
+   *        - kCloneVm: 共享地址空间
+   *        - kCloneThread: 共享线程组
+   *        - kCloneFiles: 共享文件描述符表
+   *        - kCloneSighand: 共享信号处理器
+   *        - 0: 完全复制 (fork)
+   * @param user_stack 用户栈指针 (nullptr 表示复制父进程栈)
+   * @param parent_tid 父进程 TID 存储地址
+   * @param child_tid 子进程 TID 存储地址
+   * @param tls 线程局部存储指针
+   * @param parent_context 父进程的 trap 上下文 (用于复制寄存器)
+   * @return 父进程返回子进程 PID，子进程返回 0，失败返回 -1
    */
-  TaskControlBlock* FindTask(Pid pid);
+  Pid Clone(uint64_t flags, void* user_stack, int* parent_tid, int* child_tid,
+            void* tls, cpu_io::TrapContext& parent_context);
+
+  /**
+   * @brief 等待子进程退出
+   * @param pid 子进程 PID (-1 表示任意子进程，0 表示同组，>0 表示指定进程)
+   * @param status 退出状态存储位置 (可为 nullptr)
+   * @param options 选项标志 (WNOHANG, WUNTRACED 等)
+   * @return 成功返回子进程 PID，无子进程返回 -ECHILD，被中断返回 -EINTR
+   */
+  Pid Wait(Pid pid, int* status, int options);
 
   /// @name 构造/析构函数
   /// @{
@@ -156,12 +176,13 @@ class TaskManager {
    * @brief 全局任务表 (PID -> TCB 映射)
    * @note 用于快速按 PID 查找任务，支持信号发送、wait 等操作
    */
+  SpinLock task_table_lock_{"task_table_lock"};
   sk_std::unordered_map<Pid, TaskControlBlock*> task_table_;
 
   /**
-   * @brief 任务表锁
+   * @brief PID 分配器
    */
-  SpinLock task_table_lock_{"task_table_lock"};
+  std::atomic<size_t> pid_allocator{1};
 
   /**
    * @brief 获取当前核心的调度数据
@@ -171,9 +192,25 @@ class TaskManager {
   }
 
   /**
-   * @brief PID 分配器
+   * @brief 按 PID 查找任务
+   * @param pid 进程 ID
+   * @return TaskControlBlock* 找到的任务，未找到返回 nullptr
    */
-  std::atomic<size_t> pid_allocator{1};
+  TaskControlBlock* FindTask(Pid pid);
+
+  /**
+   * @brief 回收僵尸进程资源
+   * @param task 要回收的任务 (必须处于 kZombie 状态)
+   * @note 释放内核栈、页表、TCB，回收 PID
+   */
+  void ReapTask(TaskControlBlock* task);
+
+  /**
+   * @brief 将孤儿进程过继给 init 进程
+   * @param parent 退出的父进程
+   * @note 在父进程退出时调用，防止子进程变成僵尸无人回收
+   */
+  void ReparentChildren(TaskControlBlock* parent);
 };
 
 #endif  // SIMPLEKERNEL_SRC_INCLUDE_TASK_MANAGER_HPP_

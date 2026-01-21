@@ -16,11 +16,19 @@
 static constexpr const uint64_t SYSCALL_WRITE = 64;
 static constexpr const uint64_t SYSCALL_EXIT = 93;
 static constexpr const uint64_t SYSCALL_YIELD = 124;
+static constexpr const uint64_t SYSCALL_CLONE = 220;
+static constexpr const uint64_t SYSCALL_GETTID = 178;
+static constexpr const uint64_t SYSCALL_FUTEX = 98;
+static constexpr const uint64_t SYSCALL_SET_TID_ADDRESS = 96;
 #elif defined(__x86_64__)
 // x86_64 使用自己的编号
 static constexpr const uint64_t SYSCALL_WRITE = 1;
 static constexpr const uint64_t SYSCALL_EXIT = 60;
 static constexpr const uint64_t SYSCALL_YIELD = 24;
+static constexpr const uint64_t SYSCALL_CLONE = 56;
+static constexpr const uint64_t SYSCALL_GETTID = 186;
+static constexpr const uint64_t SYSCALL_FUTEX = 202;
+static constexpr const uint64_t SYSCALL_SET_TID_ADDRESS = 218;
 #else
 #error "Unsupported architecture for syscall numbers"
 #endif
@@ -30,9 +38,128 @@ void Syscall(uint64_t cause, cpu_io::TrapContext* context);
 
 int syscall_dispatcher(int64_t syscall_id, uint64_t args[6]);
 
+/**
+ * @brief 向文件描述符写入数据
+ * @param fd 文件描述符
+ * @param buf 数据缓冲区
+ * @param len 数据长度
+ * @return 成功写入的字节数，失败返回负数
+ * @note 使用场景：标准输出、日志输出等
+ */
 int sys_write(int fd, const char* buf, size_t len);
+
+/**
+ * @brief 退出当前进程或线程
+ * @param code 退出码
+ * @return 不返回
+ * @note 使用场景：
+ *       - 进程正常/异常终止
+ *       - 线程退出（clone 创建的线程调用时只退出当前线程）
+ * @details 行为取决于线程创建方式：
+ *          - 普通进程：退出整个进程
+ *          - CLONE_THREAD 线程：仅退出当前线程
+ */
 int sys_exit(int code);
+
+/**
+ * @brief 主动放弃CPU，让出时间片
+ * @return 0 表示成功
+ * @note 使用场景：协作式调度、忙等待优化
+ */
 int sys_yield();
+
+/**
+ * @brief 休眠指定毫秒数
+ * @param ms 休眠时长（毫秒）
+ * @return 0 表示成功
+ * @note 使用场景：定时任务、延迟执行
+ */
 int sys_sleep(uint64_t ms);
+
+/**
+ * @brief 创建新线程（或进程）
+ * @param flags 克隆标志（CLONE_VM、CLONE_THREAD、CLONE_SIGHAND 等）
+ * @param stack 新线程的栈指针（用户空间）
+ * @param parent_tid 父线程TID存储地址（可选）
+ * @param child_tid 子线程TID存储地址（可选）
+ * @param tls 线程本地存储指针
+ * @return 成功返回新线程TID，失败返回负数
+ * @note 使用场景：
+ *       - pthread_create 底层实现
+ *       - fork() 实现（不带 CLONE_VM）
+ *       - 创建轻量级线程
+ * @details flags 常用组合：
+ *          - CLONE_VM | CLONE_THREAD | CLONE_SIGHAND: 创建共享地址空间的线程
+ *          - 0: 创建独立进程（类似 fork）
+ */
+int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
+              void* tls);
+
+/**
+ * @brief 获取当前线程ID
+ * @return 当前线程的TID
+ * @note 使用场景：
+ *       - 线程标识
+ *       - 调试信息输出
+ *       - 线程本地数据索引
+ */
+int sys_gettid();
+
+/**
+ * @brief 设置线程ID地址（用于线程退出时的清理）
+ * @param tidptr 线程ID存储地址
+ * @return 成功返回0，失败返回负数
+ * @note 使用场景：
+ *       - 线程库内部使用
+ *       - 实现线程退出时的通知机制
+ */
+int sys_set_tid_address(int* tidptr);
+
+/**
+ * @brief 快速用户空间互斥锁操作（futex）
+ * @param uaddr 用户空间的futex地址
+ * @param op 操作类型（FUTEX_WAIT、FUTEX_WAKE 等）
+ * @param val 操作参数
+ * @param timeout 超时时间（可选）
+ * @param uaddr2 第二个futex地址（部分操作使用）
+ * @param val3 第三个参数（部分操作使用）
+ * @return 依操作类型而定，失败返回负数
+ * @note 使用场景：
+ *       - 实现互斥锁（mutex）
+ *       - 实现条件变量（condition variable）
+ *       - 实现读写锁（rwlock）
+ *       - 实现信号量（semaphore）
+ *       - 实现 pthread_join（等待线程退出）
+ *       - 实现 pthread_detach（线程状态管理）
+ * @details 常用操作：
+ *          - FUTEX_WAIT: 等待futex值变化
+ *          - FUTEX_WAKE: 唤醒等待的线程
+ *          - FUTEX_REQUEUE: 重新排队等待的线程
+ */
+int sys_futex(int* uaddr, int op, int val, const void* timeout, int* uaddr2,
+              int val3);
+
+/**
+ * @brief 获取线程的CPU亲和性
+ * @param pid 线程ID（0 表示当前线程）
+ * @param cpusetsize CPU集合大小
+ * @param mask CPU亲和性掩码
+ * @return 成功返回0，失败返回负数
+ * @note 使用场景：查询线程可以在哪些CPU上运行
+ */
+int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask);
+
+/**
+ * @brief 设置线程的CPU亲和性
+ * @param pid 线程ID（0 表示当前线程）
+ * @param cpusetsize CPU集合大小
+ * @param mask CPU亲和性掩码
+ * @return 成功返回0，失败返回负数
+ * @note 使用场景：
+ *       - CPU绑定优化
+ *       - 实时任务调度
+ *       - NUMA优化
+ */
+int sys_sched_setaffinity(int pid, size_t cpusetsize, const uint64_t* mask);
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SYSCALL_HPP_ */
