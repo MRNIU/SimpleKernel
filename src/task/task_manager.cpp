@@ -69,6 +69,12 @@ void TaskManager::AddTask(TaskControlBlock* task) {
     task->pid = AllocatePid();
   }
 
+  // 加入全局任务表
+  {
+    LockGuard lock_guard{task_table_lock_};
+    task_table_[task->pid] = task;
+  }
+
   // 确保任务状态为 kReady
   if (task->status == TaskStatus::kUnInit) {
     task->status = TaskStatus::kReady;
@@ -116,6 +122,12 @@ void TaskManager::AddTask(TaskControlBlock* task) {
 }
 
 size_t TaskManager::AllocatePid() { return pid_allocator.fetch_add(1); }
+
+TaskControlBlock* TaskManager::FindTask(Pid pid) {
+  LockGuard lock_guard{task_table_lock_};
+  auto it = task_table_.find(pid);
+  return (it != task_table_.end()) ? it->second : nullptr;
+}
 
 void TaskManager::Balance() {
   // 算法留空

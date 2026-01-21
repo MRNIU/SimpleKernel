@@ -129,6 +129,13 @@ class TaskManager {
    */
   void Balance();
 
+  /**
+   * @brief 按 PID 查找任务
+   * @param pid 进程 ID
+   * @return TaskControlBlock* 找到的任务，未找到返回 nullptr
+   */
+  TaskControlBlock* FindTask(Pid pid);
+
   /// @name 构造/析构函数
   /// @{
   TaskManager() = default;
@@ -144,6 +151,17 @@ class TaskManager {
    * @brief 每个核心的调度数据
    */
   std::array<CpuSchedData, SIMPLEKERNEL_MAX_CORE_COUNT> cpu_schedulers_;
+
+  /**
+   * @brief 全局任务表 (PID -> TCB 映射)
+   * @note 用于快速按 PID 查找任务，支持信号发送、wait 等操作
+   */
+  sk_std::unordered_map<Pid, TaskControlBlock*> task_table_;
+
+  /**
+   * @brief 任务表锁
+   */
+  SpinLock task_table_lock_{"task_table_lock"};
 
   /**
    * @brief 获取当前核心的调度数据
