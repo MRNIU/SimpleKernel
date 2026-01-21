@@ -139,5 +139,12 @@ TaskControlBlock::~TaskControlBlock() {
     kernel_stack = nullptr;
   }
 
-  /// @todo 释放页表等其他资源
+  // 释放页表（如果有用户空间页表）
+  if (page_table) {
+    // 遍历用户空间页表并释放所有映射的物理页
+    /// @todo 实现完整的页表遍历和释放逻辑
+    // 目前简单释放页表本身
+    free(page_table);
+    page_table = nullptr;
+  }
 }

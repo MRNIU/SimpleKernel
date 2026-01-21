@@ -22,6 +22,9 @@ void TaskManager::Exit(int exit_code) {
     // 设置退出码
     current->exit_code = exit_code;
 
+    // 将子进程过继给 init 进程
+    ReparentChildren(current);
+
     if (current->parent_pid != 0) {
       // 有父进程，进入僵尸状态等待回收
       current->status = TaskStatus::kZombie;

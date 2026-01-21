@@ -135,13 +135,52 @@ void TaskManager::Balance() {
 }
 
 void TaskManager::ReapTask(TaskControlBlock* task) {
-  /// @todo 实现任务回收逻辑，释放资源，删除任务控制块等
-  (void)task;
+  if (!task) {
+    return;
+  }
+
+  /// @todo 考虑维护 thread_group
+  // 确保任务处于僵尸或退出状态
+  if (task->status != TaskStatus::kZombie &&
+      task->status != TaskStatus::kExited) {
+    klog::Warn("ReapTask: Task %zu is not in zombie/exited state\n", task->pid);
+    return;
+  }
+
+  // 从全局任务表中移除
+  {
+    LockGuard lock_guard{task_table_lock_};
+    task_table_.erase(task->pid);
+  }
+
+  delete task;
+
+  klog::Debug("ReapTask: Task %zu resources freed\n", task->pid);
 }
 
-void ReparentChildren(TaskControlBlock* parent) {
-  /// @todo 实现子进程重新分配给 init 进程的逻辑
-  (void)parent;
+void TaskManager::ReparentChildren(TaskControlBlock* parent) {
+  if (!parent) {
+    return;
+  }
+
+  // init 进程的 PID 通常是 1
+  /// @todo 当前的 pid 是自增的，需要考虑多核情况
+  constexpr Pid kInitPid = 1;
+
+  LockGuard lock_guard{task_table_lock_};
+
+  // 遍历所有任务，找到父进程是当前任务的子进程
+  for (auto& [pid, task] : task_table_) {
+    if (task && task->parent_pid == parent->pid) {
+      // 将子进程过继给 init 进程
+      task->parent_pid = kInitPid;
+      klog::Debug("ReparentChildren: Task %zu reparented to init (PID %zu)\n",
+                  task->pid, kInitPid);
+
+      // 如果子进程已经是僵尸状态，通知 init 进程回收
+      /// @todo 实现向 init 进程发送 SIGCHLD 信号
+    }
+  }
 }
 
 TaskManager::~TaskManager() {
