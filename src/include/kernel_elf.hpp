@@ -31,7 +31,7 @@ class KernelElf {
    */
   explicit KernelElf(uint64_t elf_addr) {
     if (elf_addr == 0U) {
-      ERR("Fatal Error: Invalid elf_addr[0x%lX].\n", elf_addr);
+      klog::Err("Fatal Error: Invalid elf_addr[0x%lX].\n", elf_addr);
       throw;
     }
 
@@ -40,7 +40,7 @@ class KernelElf {
     // 检查 elf 头数据
     auto check_elf_identity_ret = CheckElfIdentity();
     if (!check_elf_identity_ret) {
-      ERR("KernelElf NOT valid ELF file.\n");
+      klog::Err("KernelElf NOT valid ELF file.\n");
       throw;
     }
 
@@ -81,7 +81,7 @@ class KernelElf {
     const auto* shstrtab = reinterpret_cast<const char*>(elf_.data()) +
                            shdr_[ehdr_.e_shstrndx].sh_offset;
     for (auto shdr : shdr_) {
-      DEBUG("sh_name: [%s]\n", shstrtab + shdr.sh_name);
+      klog::Debug("sh_name: [%s]\n", shstrtab + shdr.sh_name);
       if (strcmp(shstrtab + shdr.sh_name, ".symtab") == 0) {
         symtab_ = std::span<Elf64_Sym>(
             reinterpret_cast<Elf64_Sym*>(elf_.data() + shdr.sh_offset),
@@ -124,15 +124,15 @@ class KernelElf {
   [[nodiscard]] auto CheckElfIdentity() const -> bool {
     if ((elf_[EI_MAG0] != ELFMAG0) || (elf_[EI_MAG1] != ELFMAG1) ||
         (elf_[EI_MAG2] != ELFMAG2) || (elf_[EI_MAG3] != ELFMAG3)) {
-      ERR("Fatal Error: Invalid ELF header.\n");
+      klog::Err("Fatal Error: Invalid ELF header.\n");
       throw;
     }
     if (elf_[EI_CLASS] == ELFCLASS32) {
-      ERR("Found 32bit executable but NOT SUPPORT.\n");
+      klog::Err("Found 32bit executable but NOT SUPPORT.\n");
       throw;
     }
     if (elf_[EI_CLASS] != ELFCLASS64) {
-      ERR("Fatal Error: Invalid executable.\n");
+      klog::Err("Fatal Error: Invalid executable.\n");
       throw;
     }
     return true;
