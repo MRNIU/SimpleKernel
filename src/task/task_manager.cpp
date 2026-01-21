@@ -50,8 +50,7 @@ void TaskManager::InitCurrentCore() {
   cpu_data.sched_data = &cpu_sched;
 
   // 创建独立的 Idle 线程
-  auto* idle_task =
-      new TaskControlBlock("Idle", AllocatePid(), idle_thread, nullptr);
+  auto* idle_task = new TaskControlBlock("Idle", INT_MAX, idle_thread, nullptr);
   idle_task->status = TaskStatus::kRunning;
   idle_task->policy = SchedPolicy::kIdle;
 

@@ -223,7 +223,7 @@ auto test_rr_fairness() -> bool {
 
   // 初始化任务
   for (size_t i = 0; i < kTaskCount; ++i) {
-    tasks[i] = new TaskControlBlock("Task", i, nullptr, nullptr);
+    tasks[i] = new TaskControlBlock("Task", 10, nullptr, nullptr);
     tasks[i]->status = TaskStatus::kReady;
     scheduler.Enqueue(tasks[i]);
   }
@@ -235,7 +235,7 @@ auto test_rr_fairness() -> bool {
   for (size_t i = 0; i < kTaskCount; ++i) {
     auto* picked = scheduler.PickNext();
     EXPECT_NE(picked, nullptr, "Picked task should not be nullptr");
-    EXPECT_EQ(picked->pid, i, "Task should be picked in order");
+    EXPECT_EQ(picked, tasks[i], "Task should be picked in order");
   }
 
   EXPECT_TRUE(scheduler.IsEmpty(), "Scheduler should be empty after all picks");

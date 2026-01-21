@@ -408,7 +408,7 @@ auto test_cfs_fairness() -> bool {
   TaskControlBlock* tasks[kTaskCount];
 
   for (size_t i = 0; i < kTaskCount; ++i) {
-    tasks[i] = new TaskControlBlock("Task", i, nullptr, nullptr);
+    tasks[i] = new TaskControlBlock("Task", 10, nullptr, nullptr);
     tasks[i]->sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
     tasks[i]->sched_data.cfs.vruntime = 0;
     scheduler.Enqueue(tasks[i]);

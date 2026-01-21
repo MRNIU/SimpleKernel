@@ -15,6 +15,7 @@
 #include "sk_cstring"
 #include "sk_stdlib.h"
 #include "sk_vector"
+#include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
 namespace {
@@ -85,9 +86,13 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
 
 }  // namespace
 
-TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
+TaskControlBlock::TaskControlBlock(const char* name, int priority,
                                    ThreadEntry entry, void* arg)
-    : name(name), pid(pid) {
+    : name(name), pid(Singleton<TaskManager>::GetInstance().AllocatePid()) {
+  // 设置优先级
+  sched_info.priority = priority;
+  sched_info.base_priority = priority;
+
   // 分配内核栈
   kernel_stack = static_cast<uint8_t*>(aligned_alloc(
       cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
@@ -112,12 +117,16 @@ TaskControlBlock::TaskControlBlock(const char* name, size_t pid,
   status = TaskStatus::kReady;
 }
 
-TaskControlBlock::TaskControlBlock(const char* name, size_t pid, uint8_t* elf,
+TaskControlBlock::TaskControlBlock(const char* name, int priority, uint8_t* elf,
                                    int argc, char** argv)
-    : name(name), pid(pid) {
+    : name(name), pid(Singleton<TaskManager>::GetInstance().AllocatePid()) {
+  // 设置优先级
+  sched_info.priority = priority;
+  sched_info.base_priority = priority;
+
   /// @todo
   (void)name;
-  (void)pid;
+  (void)priority;
   (void)elf;
   (void)argc;
   (void)argv;

@@ -407,7 +407,7 @@ TEST(CfsSchedulerTest, QueueSizeConsistency) {
 
   sk_std::vector<TaskControlBlock*> tasks;
   for (int i = 0; i < 5; ++i) {
-    auto* task = new TaskControlBlock("Task", i, nullptr, nullptr);
+    auto* task = new TaskControlBlock("Task", 10, nullptr, nullptr);
     task->sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
     task->sched_data.cfs.vruntime = i * 100;
     tasks.push_back(task);

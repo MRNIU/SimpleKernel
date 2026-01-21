@@ -269,7 +269,7 @@ TEST(FifoSchedulerTest, LargeNumberOfTasks) {
   // 创建任务数组（使用动态分配）
   sk_std::vector<TaskControlBlock*> tasks;
   for (size_t i = 0; i < kTaskCount; ++i) {
-    auto* task = new TaskControlBlock("Task", i, nullptr, nullptr);
+    auto* task = new TaskControlBlock("Task", 10, nullptr, nullptr);
     task->status = TaskStatus::kReady;
     tasks.push_back(task);
     scheduler.Enqueue(task);
@@ -281,7 +281,7 @@ TEST(FifoSchedulerTest, LargeNumberOfTasks) {
   for (size_t i = 0; i < kTaskCount; ++i) {
     auto* picked = scheduler.PickNext();
     EXPECT_NE(picked, nullptr);
-    EXPECT_EQ(picked->pid, i);
+    EXPECT_EQ(picked, tasks[i]);
   }
 
   EXPECT_EQ(scheduler.PickNext(), nullptr);

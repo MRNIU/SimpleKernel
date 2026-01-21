@@ -169,21 +169,22 @@ struct TaskControlBlock {
   /**
    * @brief 构造函数 (内核线程)
    * @param name 任务名称
-   * @param pid 进程 ID
+   * @param priority 优先级 (数字越小优先级越高)
    * @param entry 线程入口函数
    * @param arg 线程参数
    */
-  TaskControlBlock(const char* name, size_t pid, ThreadEntry entry, void* arg);
+  TaskControlBlock(const char* name, int priority, ThreadEntry entry,
+                   void* arg);
 
   /**
    * @brief 构造函数 (用户线程)
    * @param name 任务名称
-   * @param pid 进程 ID
+   * @param priority 优先级 (数字越小优先级越高)
    * @param elf 指向 ELF 镜像的指针
    * @param argc 参数个数
    * @param argv 参数数组
    */
-  TaskControlBlock(const char* name, size_t pid, uint8_t* elf, int argc,
+  TaskControlBlock(const char* name, int priority, uint8_t* elf, int argc,
                    char** argv);
 
   /// @name 构造/析构函数

@@ -83,13 +83,13 @@ void create_test_tasks() {
   size_t core_id = cpu_io::GetCurrentCoreId();
   auto& tm = Singleton<TaskManager>::GetInstance();
 
-  auto task1 = new TaskControlBlock("Task1-Exit", tm.AllocatePid(), task1_func,
+  auto task1 = new TaskControlBlock("Task1-Exit", 10, task1_func,
                                     reinterpret_cast<void*>(0x1111));
-  auto task2 = new TaskControlBlock("Task2-Yield", tm.AllocatePid(), task2_func,
+  auto task2 = new TaskControlBlock("Task2-Yield", 10, task2_func,
                                     reinterpret_cast<void*>(0x2222));
-  auto task3 = new TaskControlBlock("Task3-Sync", tm.AllocatePid(), task3_func,
+  auto task3 = new TaskControlBlock("Task3-Sync", 10, task3_func,
                                     reinterpret_cast<void*>(0x3333));
-  auto task4 = new TaskControlBlock("Task4-Sleep", tm.AllocatePid(), task4_func,
+  auto task4 = new TaskControlBlock("Task4-Sleep", 10, task4_func,
                                     reinterpret_cast<void*>(0x4444));
 
   // 设置 CPU 亲和性，绑定到当前核心
