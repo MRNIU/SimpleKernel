@@ -37,6 +37,6 @@ TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 TARGET_LINK_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_OPTIONS})
 
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_LIB} dtc-lib
-                                               cpu_io bmalloc)
+                                               bmalloc)
 
 GTEST_DISCOVER_TESTS (${PROJECT_NAME})
