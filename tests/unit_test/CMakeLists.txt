@@ -14,6 +14,7 @@ ADD_EXECUTABLE (
     kernel_elf_test.cpp
     kernel_fdt_test.cpp
     spinlock_test.cpp
+    virtual_memory_test.cpp
     sk_list_test.cpp
     sk_queue_test.cpp
     sk_vector_test.cpp
@@ -45,6 +46,6 @@ TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 TARGET_LINK_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_OPTIONS})
 
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_LIB} dtc-lib
-                                               cpu_io)
+                                               bmalloc)
 
 GTEST_DISCOVER_TESTS (${PROJECT_NAME})

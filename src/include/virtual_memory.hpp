@@ -15,7 +15,6 @@
 
 #include "basic_info.hpp"
 #include "kernel_log.hpp"
-#include "per_cpu.hpp"
 #include "singleton.hpp"
 
 /**
@@ -25,8 +24,9 @@
  */
 class VirtualMemory {
  public:
-  explicit VirtualMemory(void* (*aligned_alloc)(size_t, size_t))
-      : aligned_alloc_(aligned_alloc) {
+  explicit VirtualMemory(void* (*aligned_alloc)(size_t, size_t),
+                         void (*free)(void*))
+      : aligned_alloc_(aligned_alloc), free_(free) {
     // 分配根页表目录
     kernel_page_dir_ = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
                                       cpu_io::virtual_memory::kPageSize);
@@ -168,12 +168,183 @@ class VirtualMemory {
         cpu_io::virtual_memory::PageTableEntryToPhysical(*pte));
   }
 
+  /**
+   * @brief 回收页表，释放所有映射和子页表
+   * @param page_dir 要回收的页表目录
+   * @param free_pages 是否同时释放映射的物理页
+   * @note 此函数会递归释放所有层级的页表
+   */
+  void DestroyPageDirectory(void* page_dir, bool free_pages = false) {
+    if (page_dir == nullptr) {
+      return;
+    }
+
+    // 递归释放所有层级的页表
+    RecursiveFreePageTable(reinterpret_cast<uint64_t*>(page_dir),
+                           cpu_io::virtual_memory::kPageTableLevels - 1,
+                           free_pages);
+
+    // 释放根页表目录本身
+    free_(page_dir);
+
+    klog::Debug("Destroyed page directory at address: %p\n", page_dir);
+  }
+
+  /**
+   * @brief 复制页表
+   * @param src_page_dir 源页表目录
+   * @param copy_mappings 是否复制映射（true：复制映射，false：仅复制页表结构）
+   * @return 新页表目录，失败时返回 nullptr
+   * @note 如果 copy_mappings 为 true，会复制所有的页表项；
+   *       如果为 false，只复制页表结构，不复制最后一级的映射
+   */
+  auto ClonePageDirectory(void* src_page_dir, bool copy_mappings = true)
+      -> void* {
+    if (src_page_dir == nullptr) {
+      klog::Err("ClonePageDirectory: source page directory is nullptr\n");
+      return nullptr;
+    }
+
+    // 创建新的页表目录
+    auto* dst_page_dir = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
+                                        cpu_io::virtual_memory::kPageSize);
+    if (dst_page_dir == nullptr) {
+      klog::Err("ClonePageDirectory: failed to allocate new page directory\n");
+      return nullptr;
+    }
+
+    // 清零新页表
+    std::memset(dst_page_dir, 0, cpu_io::virtual_memory::kPageSize);
+
+    // 递归复制页表
+    if (!RecursiveClonePageTable(reinterpret_cast<uint64_t*>(src_page_dir),
+                                 reinterpret_cast<uint64_t*>(dst_page_dir),
+                                 cpu_io::virtual_memory::kPageTableLevels - 1,
+                                 copy_mappings)) {
+      // 复制失败，清理已分配的页表
+      DestroyPageDirectory(dst_page_dir, false);
+      return nullptr;
+    }
+
+    klog::Debug("Cloned page directory from %p to %p\n", src_page_dir,
+                dst_page_dir);
+    return dst_page_dir;
+  }
+
  private:
   void* (*aligned_alloc_)(size_t, size_t) = [](size_t, size_t) -> void* {
     return nullptr;
   };
+  void (*free_)(void*) = [](void*) {};
 
   void* kernel_page_dir_ = nullptr;
+
+  static constexpr const size_t kEntriesPerTable =
+      cpu_io::virtual_memory::kPageSize / sizeof(void*);
+
+  /**
+   * @brief 递归释放页表
+   * @param table 当前页表
+   * @param level 当前层级
+   * @param free_pages 是否释放物理页
+   */
+  void RecursiveFreePageTable(uint64_t* table, size_t level, bool free_pages) {
+    if (table == nullptr) {
+      return;
+    }
+
+    // 遍历页表中的所有条目
+    for (size_t i = 0; i < kEntriesPerTable; ++i) {
+      uint64_t pte = table[i];
+      if (!cpu_io::virtual_memory::IsPageTableEntryValid(pte)) {
+        continue;
+      }
+
+      auto pa = cpu_io::virtual_memory::PageTableEntryToPhysical(pte);
+
+      // 如果不是最后一级，递归释放子页表
+      if (level > 0) {
+        RecursiveFreePageTable(reinterpret_cast<uint64_t*>(pa), level - 1,
+                               free_pages);
+      } else if (free_pages) {
+        // 最后一级页表，释放物理页
+        free_(reinterpret_cast<void*>(pa));
+      }
+
+      // 清除页表项
+      table[i] = 0;
+    }
+
+    // 如果不是根页表，释放当前页表
+    if (level < cpu_io::virtual_memory::kPageTableLevels - 1) {
+      free_(table);
+    }
+  }
+
+  /**
+   * @brief 递归复制页表
+   * @param src_table 源页表
+   * @param dst_table 目标页表
+   * @param level 当前层级
+   * @param copy_mappings 是否复制映射
+   * @return 是否成功
+   */
+  auto RecursiveClonePageTable(uint64_t* src_table, uint64_t* dst_table,
+                               size_t level, bool copy_mappings) -> bool {
+    if (src_table == nullptr || dst_table == nullptr) {
+      return false;
+    }
+
+    for (size_t i = 0; i < kEntriesPerTable; ++i) {
+      uint64_t src_pte = src_table[i];
+      if (!cpu_io::virtual_memory::IsPageTableEntryValid(src_pte)) {
+        continue;
+      }
+
+      if (level > 0) {
+        // 非最后一级，需要递归复制子页表
+        auto src_pa = cpu_io::virtual_memory::PageTableEntryToPhysical(src_pte);
+        auto* src_next_table = reinterpret_cast<uint64_t*>(src_pa);
+
+        // 分配新的子页表
+        auto* dst_next_table =
+            aligned_alloc_(cpu_io::virtual_memory::kPageSize,
+                           cpu_io::virtual_memory::kPageSize);
+        if (dst_next_table == nullptr) {
+          klog::Err(
+              "RecursiveClonePageTable: failed to allocate page table at level "
+              "%zu\n",
+              level);
+          return false;
+        }
+
+        // 清零新页表
+        std::memset(dst_next_table, 0, cpu_io::virtual_memory::kPageSize);
+
+        // 递归复制子页表
+        if (!RecursiveClonePageTable(
+                src_next_table, reinterpret_cast<uint64_t*>(dst_next_table),
+                level - 1, copy_mappings)) {
+          free_(dst_next_table);
+          return false;
+        }
+
+        // 设置目标页表项指向新的子页表
+        dst_table[i] = cpu_io::virtual_memory::PhysicalToPageTableEntry(
+            reinterpret_cast<uint64_t>(dst_next_table),
+            cpu_io::virtual_memory::GetTableEntryPermissions());
+      } else {
+        // 最后一级页表
+        if (copy_mappings) {
+          // 直接复制页表项（共享物理页）
+          dst_table[i] = src_pte;
+        }
+        // 如果不复制映射，保持目标页表项为 0
+      }
+    }
+
+    return true;
+  }
 
   /**
    * @brief 在页表中查找虚拟地址对应的页表项

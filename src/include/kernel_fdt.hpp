@@ -41,20 +41,20 @@ class KernelFdt {
   explicit KernelFdt(uint64_t header)
       : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
     if (fdt_header_ == nullptr) {
-      ERR("Fatal Error: Invalid fdt_addr.\n");
+      klog::Err("Fatal Error: Invalid fdt_addr.\n");
       throw;
     }
 
     // 检查 fdt 头数据
     if (fdt_check_header(fdt_header_) != 0) {
-      ERR("Invalid device tree blob [0x%p]\n", fdt_header_);
-      DEBUG("fdt_header_->magic 0x%X\n", fdt_header_->magic);
-      DEBUG_BLOB(fdt_header_, 32);
+      klog::Err("Invalid device tree blob [0x%p]\n", fdt_header_);
+      klog::Debug("fdt_header_->magic 0x%X\n", fdt_header_->magic);
+      klog::DebugBlob(fdt_header_, 32);
       throw;
     }
 
-    DEBUG("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
-          fdt32_to_cpu(fdt_header_->totalsize));
+    klog::Debug("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
+                fdt32_to_cpu(fdt_header_->totalsize));
   }
 
   /// @name 构造/析构函数
@@ -101,7 +101,7 @@ class KernelFdt {
     // Find the PSCI node
     auto offset = fdt_path_offset(fdt_header_, "/psci");
     if (offset < 0) {
-      ERR("Error finding /psci node: %s\n", fdt_strerror(offset));
+      klog::Err("Error finding /psci node: %s\n", fdt_strerror(offset));
       return;
     }
 
@@ -110,17 +110,17 @@ class KernelFdt {
     const auto* method_prop =
         fdt_get_property(fdt_header_, offset, "method", &len);
     if (method_prop == nullptr) {
-      ERR("Error finding PSCI method property\n");
+      klog::Err("Error finding PSCI method property\n");
       return;
     }
 
     // Determine the method (SMC or HVC)
     const char* method_str = reinterpret_cast<const char*>(method_prop->data);
-    DEBUG("PSCI method: %s\n", method_str);
+    klog::Debug("PSCI method: %s\n", method_str);
 
     // 暂时只支持 smc
     if (strcmp(method_str, "smc") != 0) {
-      ERR("Unsupported PSCI method: %s\n", method_str);
+      klog::Err("Unsupported PSCI method: %s\n", method_str);
     }
 
     // Log function IDs for debugging
@@ -129,10 +129,10 @@ class KernelFdt {
       if (prop != nullptr && (size_t)len >= sizeof(uint32_t)) {
         uint32_t id =
             fdt32_to_cpu(*reinterpret_cast<const uint32_t*>(prop->data));
-        DEBUG("PSCI %s function ID: 0x%X\n", name, id);
+        klog::Debug("PSCI %s function ID: 0x%X\n", name, id);
         if (id != value) {
-          ERR("PSCI %s function ID mismatch: expected 0x%X, got 0x%X\n", name,
-              value, id);
+          klog::Err("PSCI %s function ID mismatch: expected 0x%X, got 0x%X\n",
+                    name, value, id);
         }
       }
     };
@@ -156,14 +156,14 @@ class KernelFdt {
     // 找到 /memory 节点
     auto offset = fdt_path_offset(fdt_header_, "/memory");
     if (offset < 0) {
-      ERR("Error finding /memory node: %s\n", fdt_strerror(offset));
+      klog::Err("Error finding /memory node: %s\n", fdt_strerror(offset));
       throw;
     }
 
     // 获取 reg 属性
     const auto* prop = fdt_get_property(fdt_header_, offset, "reg", &len);
     if (prop == nullptr) {
-      ERR("Error finding reg property: %s\n", fdt_strerror(len));
+      klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
       throw;
     }
 
@@ -190,7 +190,8 @@ class KernelFdt {
     // Find the /chosen node
     int chosen_offset = fdt_path_offset(fdt_header_, "/chosen");
     if (chosen_offset < 0) {
-      ERR("Error finding /chosen node: %s\n", fdt_strerror(chosen_offset));
+      klog::Err("Error finding /chosen node: %s\n",
+                fdt_strerror(chosen_offset));
       throw;
     }
 
@@ -198,7 +199,7 @@ class KernelFdt {
     const auto* prop =
         fdt_get_property(fdt_header_, chosen_offset, "stdout-path", &len);
     if (prop == nullptr || len <= 0) {
-      ERR("Error finding stdout-path property: %s\n", fdt_strerror(len));
+      klog::Err("Error finding stdout-path property: %s\n", fdt_strerror(len));
       throw;
     }
 
@@ -230,16 +231,16 @@ class KernelFdt {
     }
 
     if (stdout_offset < 0) {
-      ERR("Error finding node for stdout-path %s: %s\n", path_buffer,
-          fdt_strerror(stdout_offset));
+      klog::Err("Error finding node for stdout-path %s: %s\n", path_buffer,
+                fdt_strerror(stdout_offset));
       throw;
     }
 
     // Get the reg property of the stdout device
     prop = fdt_get_property(fdt_header_, stdout_offset, "reg", &len);
     if (prop == nullptr) {
-      ERR("Error finding reg property for stdout device: %s\n",
-          fdt_strerror(len));
+      klog::Err("Error finding reg property for stdout device: %s\n",
+                fdt_strerror(len));
       throw;
     }
 
@@ -253,8 +254,8 @@ class KernelFdt {
     // Get the interrupts property
     prop = fdt_get_property(fdt_header_, stdout_offset, "interrupts", &len);
     if (prop == nullptr) {
-      ERR("Error finding interrupts property for stdout device: %s\n",
-          fdt_strerror(len));
+      klog::Err("Error finding interrupts property for stdout device: %s\n",
+                fdt_strerror(len));
       throw;
     }
 
@@ -277,19 +278,20 @@ class KernelFdt {
     // 找到 /cpus 节点
     auto offset = fdt_path_offset(fdt_header_, "/cpus");
     if (offset < 0) {
-      ERR("Error finding /cpus node: %s\n", fdt_strerror(offset));
+      klog::Err("Error finding /cpus node: %s\n", fdt_strerror(offset));
       return 0;
     }
 
     const auto* prop = reinterpret_cast<const uint32_t*>(
         fdt_getprop(fdt_header_, offset, "timebase-frequency", &len));
     if (prop == nullptr) {
-      ERR("Error finding timebase-frequency property: %s\n", fdt_strerror(len));
+      klog::Err("Error finding timebase-frequency property: %s\n",
+                fdt_strerror(len));
       return 0;
     }
 
     if (len != sizeof(uint32_t)) {
-      ERR("Unexpected timebase-frequency size\n");
+      klog::Err("Unexpected timebase-frequency size\n");
       return 0;
     }
 
@@ -321,15 +323,15 @@ class KernelFdt {
       }
     }
     if (offset < 0) {
-      ERR("Error finding interrupt controller node: %s\n",
-          fdt_strerror(offset));
+      klog::Err("Error finding interrupt controller node: %s\n",
+                fdt_strerror(offset));
       throw;
     }
 
     // 获取 reg 属性
     const auto* prop = fdt_get_property(fdt_header_, offset, "reg", &len);
     if (prop == nullptr) {
-      ERR("Error finding reg property: %s\n", fdt_strerror(len));
+      klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
       throw;
     }
 
@@ -381,7 +383,8 @@ class KernelFdt {
       // Find the /chosen node
       int chosen_offset = fdt_path_offset(fdt_header_, "/chosen");
       if (chosen_offset < 0) {
-        ERR("Error finding /chosen node: %s\n", fdt_strerror(chosen_offset));
+        klog::Err("Error finding /chosen node: %s\n",
+                  fdt_strerror(chosen_offset));
         throw;
       }
 
@@ -389,7 +392,8 @@ class KernelFdt {
       const auto* prop =
           fdt_get_property(fdt_header_, chosen_offset, "stdout-path", &len);
       if (prop == nullptr || len <= 0) {
-        ERR("Error finding stdout-path property: %s\n", fdt_strerror(len));
+        klog::Err("Error finding stdout-path property: %s\n",
+                  fdt_strerror(len));
         throw;
       }
 
@@ -421,8 +425,8 @@ class KernelFdt {
       }
 
       if (stdout_offset < 0) {
-        ERR("Error finding node for stdout-path %s: %s\n", path_buffer.data(),
-            fdt_strerror(stdout_offset));
+        klog::Err("Error finding node for stdout-path %s: %s\n",
+                  path_buffer.data(), fdt_strerror(stdout_offset));
         throw;
       }
 
@@ -433,8 +437,8 @@ class KernelFdt {
     }
 
     if (offset < 0) {
-      ERR("Error finding interrupt controller node: %s\n",
-          fdt_strerror(offset));
+      klog::Err("Error finding interrupt controller node: %s\n",
+                fdt_strerror(offset));
       throw;
     }
 
@@ -442,7 +446,7 @@ class KernelFdt {
     const auto* prop =
         fdt_get_property(fdt_header_, offset, "interrupts", &len);
     if (prop == nullptr) {
-      ERR("Error finding interrupts property: %s\n", fdt_strerror(len));
+      klog::Err("Error finding interrupts property: %s\n", fdt_strerror(len));
       throw;
     }
 
@@ -459,8 +463,8 @@ class KernelFdt {
       auto trigger = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xF;
       auto cpuid_mask =
           fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xFF00;
-      DEBUG("type: %d, intid: %d, trigger: %d, cpuid_mask: %d\n", type, intid,
-            trigger, cpuid_mask);
+      klog::Debug("type: %d, intid: %d, trigger: %d, cpuid_mask: %d\n", type,
+                  intid, trigger, cpuid_mask);
     }
 #endif
 
@@ -500,8 +504,8 @@ class KernelFdt {
       }
     }
     if (offset < 0) {
-      ERR("Error finding interrupt controller node: %s\n",
-          fdt_strerror(offset));
+      klog::Err("Error finding interrupt controller node: %s\n",
+                fdt_strerror(offset));
       throw;
     }
 
