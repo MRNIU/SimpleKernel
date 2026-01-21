@@ -96,16 +96,16 @@ struct TaskControlBlock {
   /// 任务名称
   const char* name = "Unnamed Task";
 
-  /// 进程 ID
+  /// 线程 ID
   Pid pid = 0;
-  /// 父进程 ID
+  /// 父线程 ID
   Pid parent_pid = 0;
-  /// 进程组 ID
+  /// 线程组 ID
   Pid pgid = 0;
   /// 会话 ID
   Pid sid = 0;
 
-  /// 进程状态
+  /// 线程状态
   TaskStatus status = TaskStatus::kUnInit;
   /// 调度策略
   SchedPolicy policy = SchedPolicy::kNormal;
