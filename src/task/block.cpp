@@ -3,9 +3,10 @@
  */
 
 #include "kernel_log.hpp"
+#include "resource_id.hpp"
 #include "task_manager.hpp"
 
-void TaskManager::Block(uint64_t resource_id) {
+void TaskManager::Block(ResourceId resource_id) {
   auto& cpu_sched = GetCurrentCpuSched();
 
   auto* current = GetCurrentTask();
@@ -26,6 +27,9 @@ void TaskManager::Block(uint64_t resource_id) {
 
     // 将任务加入阻塞队列（按资源 ID 分组）
     cpu_sched.blocked_tasks[resource_id].push_back(current);
+
+    klog::Debug("Block: pid=%zu blocked on resource=%s, data=0x%lx\n",
+                current->pid, resource_id.GetTypeName(), resource_id.GetData());
   }
 
   // 调度到其他任务
