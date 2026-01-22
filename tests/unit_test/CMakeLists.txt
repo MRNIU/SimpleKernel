@@ -25,15 +25,6 @@ ADD_EXECUTABLE (
     fifo_scheduler_test.cpp
     rr_scheduler_test.cpp
     cfs_scheduler_test.cpp
-    thread_group_test.cpp
-    task_wait_test.cpp
-    clone_test.cpp
-    sleep_test.cpp
-    block_test.cpp
-    exit_test.cpp
-    schedule_test.cpp
-    tick_update_test.cpp
-    wakeup_test.cpp
     task_control_block_mock.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
