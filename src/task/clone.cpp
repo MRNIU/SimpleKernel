@@ -7,6 +7,7 @@
 #include "sk_cstring"
 #include "sk_stdlib.h"
 #include "task_manager.hpp"
+#include "virtual_memory.hpp"
 
 Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
                        int* child_tid, void* tls,
@@ -17,8 +18,23 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
     return -1;
   }
 
+  // 验证克隆标志的合法性
+  // 如果设置了 kCloneThread，必须同时设置 kCloneVm, kCloneFiles, kCloneSighand
+  if ((flags & kCloneThread) &&
+      (!(flags & kCloneVm) || !(flags & kCloneFiles) ||
+       !(flags & kCloneSighand))) {
+    klog::Warn(
+        "Clone: kCloneThread requires kCloneVm, kCloneFiles, kCloneSighand\n");
+    // 自动补全必需的标志
+    flags |= (kCloneVm | kCloneFiles | kCloneSighand);
+  }
+
   // 分配新的 PID
   Pid new_pid = AllocatePid();
+  if (new_pid == 0) {
+    klog::Err("Clone: Failed to allocate PID\n");
+    return -1;
+  }
 
   // 创建子任务控制块
   auto* child = new TaskControlBlock();
@@ -73,14 +89,54 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
   // 克隆标志位
   child->clone_flags = static_cast<CloneFlags>(flags);
 
+  // 处理文件描述符表 (kCloneFiles)
+  /// @todo 当前未实现文件系统，此标志暂时仅记录
+  if (flags & kCloneFiles) {
+    klog::Debug("Clone: sharing file descriptor table (not implemented)\n");
+  } else {
+    klog::Debug("Clone: copying file descriptor table (not implemented)\n");
+  }
+
+  // 处理信号处理器 (kCloneSighand)
+  /// @todo 当前未实现信号机制，此标志暂时仅记录
+  if (flags & kCloneSighand) {
+    klog::Debug("Clone: sharing signal handlers (not implemented)\n");
+  } else {
+    klog::Debug("Clone: copying signal handlers (not implemented)\n");
+  }
+
+  // 处理文件系统信息 (kCloneFs)
+  /// @todo 当前未实现文件系统，此标志暂时仅记录
+  if (flags & kCloneFs) {
+    klog::Debug("Clone: sharing filesystem info (not implemented)\n");
+  } else {
+    klog::Debug("Clone: copying filesystem info (not implemented)\n");
+  }
+
   // 处理地址空间
   if (flags & kCloneVm) {
-    // 共享地址空间
+    // 共享地址空间（线程）
     child->page_table = parent->page_table;
+    klog::Debug("Clone: sharing page table %p\n", child->page_table);
   } else {
-    // 复制地址空间
-    /// @todo 实现页表的深拷贝
-    child->page_table = nullptr;
+    // 复制地址空间（进程）
+    if (parent->page_table) {
+      // copy_mappings=true 表示复制用户空间映射
+      child->page_table = reinterpret_cast<uint64_t*>(
+          Singleton<VirtualMemory>::GetInstance().ClonePageDirectory(
+              parent->page_table, true));
+      if (!child->page_table) {
+        klog::Err("Clone: Failed to clone page table\n");
+        free(child->kernel_stack);
+        delete child;
+        return -1;
+      }
+      klog::Debug("Clone: cloned page table from %p to %p\n",
+                  parent->page_table, child->page_table);
+    } else {
+      // 父进程没有页表（内核线程），子进程也不需要
+      child->page_table = nullptr;
+    }
   }
 
   // 分配内核栈
@@ -89,9 +145,18 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
                     TaskControlBlock::kDefaultKernelStackSize));
   if (!child->kernel_stack) {
     klog::Err("Clone: Failed to allocate kernel stack\n");
+    // 清理已分配的资源
+    if (child->page_table && !(flags & kCloneVm)) {
+      // 如果是独立的页表，需要释放
+      Singleton<VirtualMemory>::GetInstance().DestroyPageDirectory(
+          child->page_table, false);
+    }
     delete child;
     return -1;
   }
+
+  // 初始化内核栈内容
+  memset(child->kernel_stack, 0, TaskControlBlock::kDefaultKernelStackSize);
 
   // 复制 trap context
   child->trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
@@ -101,19 +166,19 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
 
   // 设置用户栈
   if (user_stack) {
-    /// @todo 根据架构设置栈指针寄存器
-    // child->trap_context_ptr->sp = (uint64_t)user_stack;
+    child->trap_context_ptr->UserStackPointer() =
+        reinterpret_cast<uint64_t>(user_stack);
   }
 
-  // 设置 TLS
+  // 设置 TLS (Thread Local Storage)
   if (tls) {
-    /// @todo 根据架构设置 TLS 寄存器
+    child->trap_context_ptr->ThreadPointer() = reinterpret_cast<uint64_t>(tls);
   }
 
-  // 设置返回值：父进程返回子进程 PID，子进程返回 0
-  /// @todo 根据架构设置返回值寄存器
-  // parent_context.a0 = new_pid;  // 父进程返回值
-  // child->trap_context_ptr->a0 = 0;  // 子进程返回值
+  // 父进程返回子进程 PID
+  parent_context.ReturnValue() = new_pid;
+  // 子进程返回 0
+  child->trap_context_ptr->ReturnValue() = 0;
 
   // 写入 TID
   if (parent_tid) {
@@ -132,8 +197,13 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
   // 将子任务添加到调度器
   AddTask(child);
 
-  klog::Debug("Clone: parent=%zu, child=%zu, flags=0x%lx, tgid=%zu\n",
-              parent->pid, new_pid, flags, child->tgid);
+  // 打印详细的 clone 信息
+  const char* clone_type = (flags & kCloneThread) ? "thread" : "process";
+  const char* vm_type = (flags & kCloneVm) ? "shared" : "copied";
+  klog::Debug(
+      "Clone: created %s - parent=%zu, child=%zu, tgid=%zu, vm=%s, "
+      "flags=0x%lx\n",
+      clone_type, parent->pid, new_pid, child->tgid, vm_type, flags);
 
   return new_pid;
 }
