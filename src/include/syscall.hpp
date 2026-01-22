@@ -20,6 +20,7 @@ static constexpr const uint64_t SYSCALL_CLONE = 220;
 static constexpr const uint64_t SYSCALL_GETTID = 178;
 static constexpr const uint64_t SYSCALL_FUTEX = 98;
 static constexpr const uint64_t SYSCALL_SET_TID_ADDRESS = 96;
+static constexpr const uint64_t SYSCALL_FORK = 1220;
 #elif defined(__x86_64__)
 // x86_64 使用自己的编号
 static constexpr const uint64_t SYSCALL_WRITE = 1;
@@ -29,6 +30,7 @@ static constexpr const uint64_t SYSCALL_CLONE = 56;
 static constexpr const uint64_t SYSCALL_GETTID = 186;
 static constexpr const uint64_t SYSCALL_FUTEX = 202;
 static constexpr const uint64_t SYSCALL_SET_TID_ADDRESS = 218;
+static constexpr const uint64_t SYSCALL_FORK = 57;
 #else
 #error "Unsupported architecture for syscall numbers"
 #endif
@@ -94,6 +96,20 @@ int sys_sleep(uint64_t ms);
  */
 int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
               void* tls);
+
+/**
+ * @brief 创建新进程（fork）
+ * @return 父进程返回子进程 PID，子进程返回 0，失败返回 -1
+ * @note 使用场景：
+ *       - 进程创建
+ *       - 完全复制父进程的地址空间和资源
+ * @details fork 创建的子进程：
+ *          - 拥有独立的地址空间（页表被复制）
+ *          - 拥有独立的进程 ID (PID)
+ *          - 继承父进程的文件描述符、信号处理器等
+ *          - 父子进程独立运行，互不影响
+ */
+int sys_fork();
 
 /**
  * @brief 获取当前线程ID

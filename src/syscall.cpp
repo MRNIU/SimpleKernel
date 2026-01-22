@@ -28,6 +28,9 @@ int syscall_dispatcher(int64_t syscall_id, uint64_t args[6]) {
                       reinterpret_cast<int*>(args[3]),
                       reinterpret_cast<void*>(args[4]));
       break;
+    case SYSCALL_FORK:
+      ret = sys_fork();
+      break;
     case SYSCALL_GETTID:
       ret = sys_gettid();
       break;
@@ -104,6 +107,38 @@ int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
   } else {
     // 失败返回 -1
     klog::Err("[Syscall] sys_clone failed\n");
+    return -1;
+  }
+}
+
+int sys_fork() {
+  auto& task_manager = Singleton<TaskManager>::GetInstance();
+  auto current = task_manager.GetCurrentTask();
+
+  if (!current || !current->trap_context_ptr) {
+    klog::Err("[Syscall] sys_fork: Invalid current task or trap context\n");
+    return -1;
+  }
+
+  // fork = clone with flags=0 (完全复制，不共享任何资源)
+  Pid child_pid =
+      task_manager.Clone(0,        // flags=0: 完全复制
+                         nullptr,  // 复制父进程的用户栈
+                         nullptr,  // 不需要 parent_tid
+                         nullptr,  // 不需要 child_tid
+                         nullptr,  // 不设置 TLS
+                         *current->trap_context_ptr  // 复制父进程上下文
+      );
+
+  if (child_pid == 0) {
+    // 子进程返回 0
+    return 0;
+  } else if (child_pid > 0) {
+    // 父进程返回子进程 PID
+    return static_cast<int>(child_pid);
+  } else {
+    // 失败返回 -1
+    klog::Err("[Syscall] sys_fork failed\n");
     return -1;
   }
 }
