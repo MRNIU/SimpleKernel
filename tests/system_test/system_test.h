@@ -151,5 +151,7 @@ auto sk_unordered_map_test() -> bool;
 auto fifo_scheduler_test() -> bool;
 auto rr_scheduler_test() -> bool;
 auto cfs_scheduler_test() -> bool;
+auto thread_group_system_test() -> bool;
+auto wait_system_test() -> bool;
 
 #endif /* SIMPLEKERNEL_TESTS_SYSTEM_TEST_SYSTEM_TEST_H_ */

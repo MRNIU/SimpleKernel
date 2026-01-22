@@ -25,7 +25,7 @@ struct test_case {
   bool is_smp_test = false;
 };
 
-std::array<test_case, 15> test_cases = {
+std::array<test_case, 17> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test, false},
     test_case{"spinlock_test", spinlock_test, true},
     test_case{"memory_test", memory_test, false},
@@ -40,7 +40,9 @@ std::array<test_case, 15> test_cases = {
     test_case{"sk_unordered_map_test", sk_unordered_map_test, false},
     test_case{"fifo_scheduler_test", fifo_scheduler_test, false},
     test_case{"rr_scheduler_test", rr_scheduler_test, false},
-    test_case{"cfs_scheduler_test", cfs_scheduler_test, false}};
+    test_case{"cfs_scheduler_test", cfs_scheduler_test, false},
+    test_case{"thread_group_system_test", thread_group_system_test, false},
+    test_case{"wait_system_test", wait_system_test, false}};
 
 /// 主核运行所有测试
 void run_tests_main() {
