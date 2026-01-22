@@ -12,6 +12,7 @@
 #include "basic_info.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
+#include "sk_stdlib.h"
 #include "virtual_memory.hpp"
 
 namespace {
@@ -28,12 +29,32 @@ struct BmallocLogger {
   }
 };
 
-static bmalloc::Bmalloc<BmallocLogger>* allocator = nullptr;
+bmalloc::Bmalloc<BmallocLogger>* allocator = nullptr;
 }  // namespace
 
 extern "C" void* malloc(size_t size) {
   if (allocator) {
     return allocator->malloc(size);
+  }
+  return nullptr;
+}
+
+extern "C" void free(void* ptr) {
+  if (allocator) {
+    allocator->free(ptr);
+  }
+}
+
+extern "C" void* calloc(size_t num, size_t size) {
+  if (allocator) {
+    return allocator->calloc(num, size);
+  }
+  return nullptr;
+}
+
+extern "C" void* realloc(void* ptr, size_t new_size) {
+  if (allocator) {
+    return allocator->realloc(ptr, new_size);
   }
   return nullptr;
 }
@@ -44,9 +65,10 @@ extern "C" void* aligned_alloc(size_t alignment, size_t size) {
   }
   return nullptr;
 }
-extern "C" void free(void* ptr) {
+
+extern "C" void aligned_free(void* ptr) {
   if (allocator) {
-    allocator->free(ptr);
+    allocator->aligned_free(ptr);
   }
 }
 
@@ -66,9 +88,6 @@ void MemoryInit() {
   static bmalloc::Bmalloc<BmallocLogger> bmallocator(allocator_addr,
                                                      allocator_size);
   allocator = &bmallocator;
-
-  // 初始化虚拟内存管理器
-  Singleton<VirtualMemory>::GetInstance() = VirtualMemory(aligned_alloc, free);
 
   // 初始化当前核心的虚拟内存
   Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
