@@ -133,6 +133,9 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority, uint8_t* elf,
 }
 
 TaskControlBlock::~TaskControlBlock() {
+  // 从线程组中移除
+  LeaveThreadGroup();
+
   // 释放内核栈
   if (kernel_stack) {
     free(kernel_stack);
@@ -147,4 +150,60 @@ TaskControlBlock::~TaskControlBlock() {
     free(page_table);
     page_table = nullptr;
   }
+}
+
+void TaskControlBlock::JoinThreadGroup(TaskControlBlock* leader) {
+  if (!leader || leader == this) {
+    return;
+  }
+
+  // 设置 tgid
+  tgid = leader->tgid;
+
+  // 如果 leader 已经有其他线程，插入到链表头部
+  if (leader->thread_group_next) {
+    thread_group_next = leader->thread_group_next;
+    thread_group_next->thread_group_prev = this;
+  }
+  leader->thread_group_next = this;
+  thread_group_prev = leader;
+}
+
+void TaskControlBlock::LeaveThreadGroup() {
+  // 从双向链表中移除
+  if (thread_group_prev) {
+    thread_group_prev->thread_group_next = thread_group_next;
+  }
+  if (thread_group_next) {
+    thread_group_next->thread_group_prev = thread_group_prev;
+  }
+
+  thread_group_prev = nullptr;
+  thread_group_next = nullptr;
+}
+
+size_t TaskControlBlock::GetThreadGroupSize() const {
+  if (tgid == 0) {
+    // 未加入任何线程组
+    return 1;
+  }
+
+  // 计数自己
+  size_t count = 1;
+
+  // 向前遍历
+  const TaskControlBlock* curr = thread_group_prev;
+  while (curr) {
+    count++;
+    curr = curr->thread_group_prev;
+  }
+
+  // 向后遍历
+  curr = thread_group_next;
+  while (curr) {
+    count++;
+    curr = curr->thread_group_next;
+  }
+
+  return count;
 }

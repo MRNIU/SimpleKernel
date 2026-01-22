@@ -96,14 +96,22 @@ struct TaskControlBlock {
   /// 任务名称
   const char* name = "Unnamed Task";
 
-  /// 线程 ID
+  /// 线程 ID (Task ID)
   Pid pid = 0;
   /// 父线程 ID
   Pid parent_pid = 0;
-  /// 线程组 ID
+  /// 进程组 ID
   Pid pgid = 0;
   /// 会话 ID
   Pid sid = 0;
+  /// 线程组 ID (主线程的 PID)
+  Pid tgid = 0;
+
+  /// @name 侵入式线程组链表
+  /// @{
+  TaskControlBlock* thread_group_next = nullptr;
+  TaskControlBlock* thread_group_prev = nullptr;
+  /// @}
 
   /// 线程状态
   TaskStatus status = TaskStatus::kUnInit;
@@ -171,7 +179,7 @@ struct TaskControlBlock {
   uint64_t cpu_affinity = UINT64_MAX;
 
   /// 等待的资源 ID
-  uint64_t blocked_on = 0;
+  ResourceId blocked_on{};
 
   /// @todo 优先级继承相关
   /// @todo 文件系统相关
@@ -205,6 +213,43 @@ struct TaskControlBlock {
   auto operator=(const TaskControlBlock&) -> TaskControlBlock& = delete;
   auto operator=(TaskControlBlock&&) -> TaskControlBlock& = delete;
   ~TaskControlBlock();
+  /// @}
+
+  /// @name 线程组相关方法
+  /// @{
+  /**
+   * @brief 检查是否是线程组的主线程
+   * @return true 如果是主线程 (pid == tgid)
+   */
+  auto IsThreadGroupLeader() const -> bool { return pid == tgid; }
+
+  /**
+   * @brief 将线程添加到线程组
+   * @param leader 线程组的主线程
+   * @note 调用者需要确保加锁
+   */
+  void JoinThreadGroup(TaskControlBlock* leader);
+
+  /**
+   * @brief 从线程组中移除自己
+   * @note 调用者需要确保加锁
+   */
+  void LeaveThreadGroup();
+
+  /**
+   * @brief 获取线程组中的线程数量
+   * @return size_t 线程数量 (包括自己)
+   */
+  auto GetThreadGroupSize() const -> size_t;
+
+  /**
+   * @brief 检查是否与另一个任务在同一线程组
+   * @param other 另一个任务
+   * @return true 如果在同一线程组
+   */
+  auto InSameThreadGroup(const TaskControlBlock* other) const -> bool {
+    return other && (tgid == other->tgid) && (tgid != 0);
+  }
   /// @}
 };
 
