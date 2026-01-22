@@ -83,12 +83,12 @@ void operator delete[](void* ptr, size_t) noexcept {
 
 void operator delete(void* ptr, size_t, size_t) noexcept {
   if (ptr != nullptr) {
-    free(ptr);
+    aligned_free(ptr);
   }
 }
 
 void operator delete[](void* ptr, size_t, size_t) noexcept {
   if (ptr != nullptr) {
-    free(ptr);
+    aligned_free(ptr);
   }
 }
