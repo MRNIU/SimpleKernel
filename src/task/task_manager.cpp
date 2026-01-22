@@ -190,7 +190,7 @@ void TaskManager::ReparentChildren(TaskControlBlock* parent) {
 sk_std::vector<TaskControlBlock*> TaskManager::GetThreadGroup(Pid tgid) {
   sk_std::vector<TaskControlBlock*> result;
 
-  std::lock_guard lock(task_table_lock_);
+  LockGuard lock_guard(task_table_lock_);
 
   // 遍历任务表，找到所有 tgid 匹配的线程
   for (auto& [pid, task] : task_table_) {

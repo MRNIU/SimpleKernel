@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_SRC_TASK_INCLUDE_RESOURCE_ID_HPP_
 
 #include <cstdint>
+#include <functional>
 
 /**
  * @brief 资源类型枚举
@@ -118,5 +119,15 @@ struct ResourceId {
   // 内部存储的原始值
   uint64_t value_;
 };
+
+// std::hash 特化，使 ResourceId 可以作为 unordered_map 的键
+namespace std {
+template <>
+struct hash<ResourceId> {
+  constexpr size_t operator()(const ResourceId& id) const noexcept {
+    return hash<uint64_t>{}(static_cast<uint64_t>(id));
+  }
+};
+}  // namespace std
 
 #endif /* SIMPLEKERNEL_SRC_TASK_INCLUDE_RESOURCE_ID_HPP_ */

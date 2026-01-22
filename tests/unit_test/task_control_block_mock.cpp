@@ -66,6 +66,9 @@ TaskControlBlock::TaskControlBlock([[maybe_unused]] const char* name,
 }
 
 TaskControlBlock::~TaskControlBlock() {
+  // 从线程组中移除
+  LeaveThreadGroup();
+
   // 释放内核栈
   if (kernel_stack) {
     free(kernel_stack);
@@ -74,4 +77,53 @@ TaskControlBlock::~TaskControlBlock() {
 
   // 简化版本不需要释放页表
   page_table = nullptr;
+}
+
+void TaskControlBlock::JoinThreadGroup(TaskControlBlock* leader) {
+  if (!leader || leader == this) {
+    return;
+  }
+
+  tgid = leader->tgid;
+
+  if (leader->thread_group_next) {
+    thread_group_next = leader->thread_group_next;
+    thread_group_next->thread_group_prev = this;
+  }
+  leader->thread_group_next = this;
+  thread_group_prev = leader;
+}
+
+void TaskControlBlock::LeaveThreadGroup() {
+  if (thread_group_prev) {
+    thread_group_prev->thread_group_next = thread_group_next;
+  }
+  if (thread_group_next) {
+    thread_group_next->thread_group_prev = thread_group_prev;
+  }
+
+  thread_group_prev = nullptr;
+  thread_group_next = nullptr;
+}
+
+size_t TaskControlBlock::GetThreadGroupSize() const {
+  if (tgid == 0) {
+    return 1;
+  }
+
+  size_t count = 1;
+
+  const TaskControlBlock* curr = thread_group_prev;
+  while (curr) {
+    count++;
+    curr = curr->thread_group_prev;
+  }
+
+  curr = thread_group_next;
+  while (curr) {
+    count++;
+    curr = curr->thread_group_next;
+  }
+
+  return count;
 }

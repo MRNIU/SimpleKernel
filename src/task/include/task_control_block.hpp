@@ -11,6 +11,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "resource_id.hpp"
+
 /// 进程 ID 类型
 using Pid = size_t;
 

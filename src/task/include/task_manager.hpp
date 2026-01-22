@@ -121,17 +121,6 @@ class TaskManager {
   void Wakeup(ResourceId resource_id);
 
   /**
-   * @brief 分配新的 PID
-   * @return size_t 新的 PID
-   */
-  size_t AllocatePid();
-
-  /**
-   * @brief 负载均衡 (空闲 core 窃取任务)
-   */
-  void Balance();
-
-  /**
    * @brief 克隆当前任务 (fork/clone 系统调用)
    * @param flags 克隆标志位
    *        - kCloneVm: 共享地址空间
@@ -186,6 +175,17 @@ class TaskManager {
    * @brief PID 分配器
    */
   std::atomic<size_t> pid_allocator{1};
+
+  /**
+   * @brief 分配新的 PID
+   * @return size_t 新的 PID
+   */
+  size_t AllocatePid();
+
+  /**
+   * @brief 负载均衡 (空闲 core 窃取任务)
+   */
+  void Balance();
 
   /**
    * @brief 获取当前核心的调度数据
