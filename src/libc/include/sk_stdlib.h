@@ -13,7 +13,10 @@ extern "C" {
 
 void* malloc(size_t size);
 void free(void* ptr);
+void* calloc(size_t num, size_t size);
+void* realloc(void* ptr, size_t new_size);
 void* aligned_alloc(size_t alignment, size_t size);
+void aligned_free(void* ptr);
 
 /**
  * @brief 将字符串转换为双精度浮点数

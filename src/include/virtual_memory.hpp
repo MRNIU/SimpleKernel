@@ -16,6 +16,7 @@
 #include "basic_info.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
+#include "sk_stdlib.h"
 
 /**
  * @brief 虚拟内存管理抽象基类
@@ -24,12 +25,10 @@
  */
 class VirtualMemory {
  public:
-  explicit VirtualMemory(void* (*aligned_alloc)(size_t, size_t),
-                         void (*free)(void*))
-      : aligned_alloc_(aligned_alloc), free_(free) {
+  VirtualMemory() {
     // 分配根页表目录
-    kernel_page_dir_ = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
-                                      cpu_io::virtual_memory::kPageSize);
+    kernel_page_dir_ = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                     cpu_io::virtual_memory::kPageSize);
     klog::Info("Allocated kernel page directory at address: %p\n",
                kernel_page_dir_);
     if (kernel_page_dir_ == nullptr) {
@@ -53,7 +52,6 @@ class VirtualMemory {
 
   /// @name 构造/析构函数
   /// @{
-  VirtualMemory() = default;
   VirtualMemory(const VirtualMemory&) = delete;
   VirtualMemory(VirtualMemory&&) = default;
   auto operator=(const VirtualMemory&) -> VirtualMemory& = delete;
@@ -185,7 +183,7 @@ class VirtualMemory {
                            free_pages);
 
     // 释放根页表目录本身
-    free_(page_dir);
+    aligned_free(page_dir);
 
     klog::Debug("Destroyed page directory at address: %p\n", page_dir);
   }
@@ -206,8 +204,8 @@ class VirtualMemory {
     }
 
     // 创建新的页表目录
-    auto* dst_page_dir = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
-                                        cpu_io::virtual_memory::kPageSize);
+    auto* dst_page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                       cpu_io::virtual_memory::kPageSize);
     if (dst_page_dir == nullptr) {
       klog::Err("ClonePageDirectory: failed to allocate new page directory\n");
       return nullptr;
@@ -232,11 +230,6 @@ class VirtualMemory {
   }
 
  private:
-  void* (*aligned_alloc_)(size_t, size_t) = [](size_t, size_t) -> void* {
-    return nullptr;
-  };
-  void (*free_)(void*) = [](void*) {};
-
   void* kernel_page_dir_ = nullptr;
 
   static constexpr const size_t kEntriesPerTable =
@@ -268,7 +261,7 @@ class VirtualMemory {
                                free_pages);
       } else if (free_pages) {
         // 最后一级页表，释放物理页
-        free_(reinterpret_cast<void*>(pa));
+        aligned_free(reinterpret_cast<void*>(pa));
       }
 
       // 清除页表项
@@ -277,7 +270,7 @@ class VirtualMemory {
 
     // 如果不是根页表，释放当前页表
     if (level < cpu_io::virtual_memory::kPageTableLevels - 1) {
-      free_(table);
+      aligned_free(table);
     }
   }
 
@@ -307,9 +300,8 @@ class VirtualMemory {
         auto* src_next_table = reinterpret_cast<uint64_t*>(src_pa);
 
         // 分配新的子页表
-        auto* dst_next_table =
-            aligned_alloc_(cpu_io::virtual_memory::kPageSize,
-                           cpu_io::virtual_memory::kPageSize);
+        auto* dst_next_table = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                             cpu_io::virtual_memory::kPageSize);
         if (dst_next_table == nullptr) {
           klog::Err(
               "RecursiveClonePageTable: failed to allocate page table at level "
@@ -325,7 +317,7 @@ class VirtualMemory {
         if (!RecursiveClonePageTable(
                 src_next_table, reinterpret_cast<uint64_t*>(dst_next_table),
                 level - 1, copy_mappings)) {
-          free_(dst_next_table);
+          aligned_free(dst_next_table);
           return false;
         }
 
@@ -372,8 +364,8 @@ class VirtualMemory {
       } else {
         // 页表项无效
         if (allocate) {
-          auto* new_table = aligned_alloc_(cpu_io::virtual_memory::kPageSize,
-                                           cpu_io::virtual_memory::kPageSize);
+          auto* new_table = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                          cpu_io::virtual_memory::kPageSize);
           if (new_table == nullptr) {
             return std::nullopt;
           }

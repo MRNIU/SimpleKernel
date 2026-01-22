@@ -58,12 +58,13 @@ class MockAllocator {
   std::unordered_map<void*, size_t> allocated_blocks_;
 };
 
-// C-style wrapper functions
-extern "C" void* test_aligned_alloc(size_t alignment, size_t size) {
+extern "C" void* aligned_alloc(size_t alignment, size_t size) {
   return MockAllocator::GetInstance().AlignedAlloc(alignment, size);
 }
 
-extern "C" void test_free(void* ptr) { MockAllocator::GetInstance().Free(ptr); }
+extern "C" void aligned_free(void* ptr) {
+  MockAllocator::GetInstance().Free(ptr);
+}
 
 class VirtualMemoryTest : public ::testing::Test {
  protected:
@@ -77,10 +78,10 @@ class VirtualMemoryTest : public ::testing::Test {
 };
 
 TEST_F(VirtualMemoryTest, MapPageBasic) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
-  auto* page_dir = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                      cpu_io::virtual_memory::kPageSize);
+  auto* page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                 cpu_io::virtual_memory::kPageSize);
   ASSERT_NE(page_dir, nullptr);
   std::memset(page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
@@ -102,10 +103,10 @@ TEST_F(VirtualMemoryTest, MapPageBasic) {
 }
 
 TEST_F(VirtualMemoryTest, UnmapPage) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
-  auto* page_dir = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                      cpu_io::virtual_memory::kPageSize);
+  auto* page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                 cpu_io::virtual_memory::kPageSize);
   ASSERT_NE(page_dir, nullptr);
   std::memset(page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
@@ -126,10 +127,10 @@ TEST_F(VirtualMemoryTest, UnmapPage) {
 }
 
 TEST_F(VirtualMemoryTest, UnmapNonExistentPage) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
-  auto* page_dir = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                      cpu_io::virtual_memory::kPageSize);
+  auto* page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                 cpu_io::virtual_memory::kPageSize);
   ASSERT_NE(page_dir, nullptr);
   std::memset(page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
@@ -141,10 +142,10 @@ TEST_F(VirtualMemoryTest, UnmapNonExistentPage) {
 }
 
 TEST_F(VirtualMemoryTest, GetMappingNonExistent) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
-  auto* page_dir = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                      cpu_io::virtual_memory::kPageSize);
+  auto* page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                 cpu_io::virtual_memory::kPageSize);
   ASSERT_NE(page_dir, nullptr);
   std::memset(page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
@@ -155,10 +156,10 @@ TEST_F(VirtualMemoryTest, GetMappingNonExistent) {
 }
 
 TEST_F(VirtualMemoryTest, MapMultiplePages) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
-  auto* page_dir = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                      cpu_io::virtual_memory::kPageSize);
+  auto* page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                 cpu_io::virtual_memory::kPageSize);
   ASSERT_NE(page_dir, nullptr);
   std::memset(page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
@@ -189,10 +190,10 @@ TEST_F(VirtualMemoryTest, MapMultiplePages) {
 }
 
 TEST_F(VirtualMemoryTest, RemapPage) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
-  auto* page_dir = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                      cpu_io::virtual_memory::kPageSize);
+  auto* page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                 cpu_io::virtual_memory::kPageSize);
   ASSERT_NE(page_dir, nullptr);
   std::memset(page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
@@ -218,10 +219,10 @@ TEST_F(VirtualMemoryTest, RemapPage) {
 }
 
 TEST_F(VirtualMemoryTest, DestroyPageDirectoryWithoutFreePages) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
-  auto* page_dir = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                      cpu_io::virtual_memory::kPageSize);
+  auto* page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                 cpu_io::virtual_memory::kPageSize);
   ASSERT_NE(page_dir, nullptr);
   std::memset(page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
@@ -248,10 +249,10 @@ TEST_F(VirtualMemoryTest, DestroyPageDirectoryWithoutFreePages) {
 }
 
 TEST_F(VirtualMemoryTest, ClonePageDirectoryWithMappings) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
-  auto* src_page_dir = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                          cpu_io::virtual_memory::kPageSize);
+  auto* src_page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                     cpu_io::virtual_memory::kPageSize);
   ASSERT_NE(src_page_dir, nullptr);
   std::memset(src_page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
@@ -295,10 +296,10 @@ TEST_F(VirtualMemoryTest, ClonePageDirectoryWithMappings) {
 }
 
 TEST_F(VirtualMemoryTest, ClonePageDirectoryWithoutMappings) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
-  auto* src_page_dir = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                          cpu_io::virtual_memory::kPageSize);
+  auto* src_page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                     cpu_io::virtual_memory::kPageSize);
   ASSERT_NE(src_page_dir, nullptr);
   std::memset(src_page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
@@ -335,14 +336,14 @@ TEST_F(VirtualMemoryTest, ClonePageDirectoryWithoutMappings) {
 }
 
 TEST_F(VirtualMemoryTest, CloneNullPageDirectory) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
   auto* dst_page_dir = vm.ClonePageDirectory(nullptr, true);
   EXPECT_EQ(dst_page_dir, nullptr);
 }
 
 TEST_F(VirtualMemoryTest, DestroyNullPageDirectory) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
   // 应该不会崩溃
   vm.DestroyPageDirectory(nullptr, false);
@@ -350,14 +351,14 @@ TEST_F(VirtualMemoryTest, DestroyNullPageDirectory) {
 }
 
 TEST_F(VirtualMemoryTest, MemoryLeakCheck) {
-  VirtualMemory vm(test_aligned_alloc, test_free);
+  VirtualMemory vm;
 
-  auto* page_dir1 = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                       cpu_io::virtual_memory::kPageSize);
-  auto* page_dir2 = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                       cpu_io::virtual_memory::kPageSize);
-  auto* page_dir3 = test_aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                       cpu_io::virtual_memory::kPageSize);
+  auto* page_dir1 = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                  cpu_io::virtual_memory::kPageSize);
+  auto* page_dir2 = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                  cpu_io::virtual_memory::kPageSize);
+  auto* page_dir3 = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                  cpu_io::virtual_memory::kPageSize);
 
   ASSERT_NE(page_dir1, nullptr);
   ASSERT_NE(page_dir2, nullptr);
