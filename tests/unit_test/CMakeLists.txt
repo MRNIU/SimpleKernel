@@ -27,11 +27,23 @@ ADD_EXECUTABLE (
     cfs_scheduler_test.cpp
     thread_group_test.cpp
     task_wait_test.cpp
+    clone_test.cpp
+    sleep_test.cpp
+    block_test.cpp
+    exit_test.cpp
+    schedule_test.cpp
+    tick_update_test.cpp
+    wakeup_test.cpp
     task_control_block_mock.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
-    ${PROJECT_NAME} PRIVATE -Dsk_printf=printf -DUNIT_TEST
-                            -DSIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_NEW_)
+    ${PROJECT_NAME}
+    PRIVATE -Dsk_printf=printf
+            -DUNIT_TEST
+            -DSIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_NEW_
+            -DSIMPLEKERNEL_MAX_CORE_COUNT=4
+            -DSIMPLEKERNEL_PER_CPU_ALIGN_SIZE=4096
+            -DSIMPLEKERNEL_TICK=1000)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
