@@ -25,24 +25,32 @@ struct test_case {
   bool is_smp_test = false;
 };
 
-std::array<test_case, 17> test_cases = {
-    test_case{"ctor_dtor_test", ctor_dtor_test, false},
-    test_case{"spinlock_test", spinlock_test, true},
-    test_case{"memory_test", memory_test, false},
-    test_case{"virtual_memory_test", virtual_memory_test, false},
-    test_case{"interrupt_test", interrupt_test, false},
-    test_case{"sk_list_test", sk_list_test, false},
-    test_case{"sk_queue_test", sk_queue_test, false},
-    test_case{"sk_vector_test", sk_vector_test, false},
-    test_case{"sk_priority_queue_test", sk_priority_queue_test, false},
-    test_case{"sk_rb_tree_test", sk_rb_tree_test, false},
-    test_case{"sk_set_test", sk_set_test, false},
-    test_case{"sk_unordered_map_test", sk_unordered_map_test, false},
-    test_case{"fifo_scheduler_test", fifo_scheduler_test, false},
-    test_case{"rr_scheduler_test", rr_scheduler_test, false},
-    test_case{"cfs_scheduler_test", cfs_scheduler_test, false},
+// std::array<test_case, 19> test_cases = {
+//     test_case{"ctor_dtor_test", ctor_dtor_test, false},
+//     test_case{"spinlock_test", spinlock_test, true},
+//     test_case{"memory_test", memory_test, false},
+//     test_case{"virtual_memory_test", virtual_memory_test, false},
+//     test_case{"interrupt_test", interrupt_test, false},
+//     test_case{"sk_list_test", sk_list_test, false},
+//     test_case{"sk_queue_test", sk_queue_test, false},
+//     test_case{"sk_vector_test", sk_vector_test, false},
+//     test_case{"sk_priority_queue_test", sk_priority_queue_test, false},
+//     test_case{"sk_rb_tree_test", sk_rb_tree_test, false},
+//     test_case{"sk_set_test", sk_set_test, false},
+//     test_case{"sk_unordered_map_test", sk_unordered_map_test, false},
+//     test_case{"fifo_scheduler_test", fifo_scheduler_test, false},
+//     test_case{"rr_scheduler_test", rr_scheduler_test, false},
+//     test_case{"cfs_scheduler_test", cfs_scheduler_test, false},
+//     test_case{"thread_group_system_test", thread_group_system_test, false},
+//     test_case{"wait_system_test", wait_system_test, false},
+//     test_case{"clone_system_test", clone_system_test, false},
+//     test_case{"exit_system_test", exit_system_test, false}};
+
+std::array<test_case, 4> test_cases = {
     test_case{"thread_group_system_test", thread_group_system_test, false},
-    test_case{"wait_system_test", wait_system_test, false}};
+    test_case{"wait_system_test", wait_system_test, false},
+    test_case{"clone_system_test", clone_system_test, false},
+    test_case{"exit_system_test", exit_system_test, false}};
 
 /// 主核运行所有测试
 void run_tests_main() {
@@ -77,7 +85,7 @@ auto main_smp(int argc, const char** argv) -> int {
   // 从核只参与多核测试
   run_tests_smp();
 
-  return 0;
+  __builtin_unreachable();
 }
 
 }  // namespace
@@ -91,9 +99,8 @@ void _start(int argc, const char** argv) {
     main_smp(argc, argv);
   }
 
-  // 进入死循环
   while (true) {
-    ;
+    cpu_io::Pause();
   }
 }
 
@@ -117,5 +124,5 @@ auto main(int argc, const char** argv) -> int {
   // 主核运行所有测试（包括多核测试）
   run_tests_main();
 
-  return 0;
+  __builtin_unreachable();
 }

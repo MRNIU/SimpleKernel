@@ -81,7 +81,8 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
     }
   } else {
     // 创建进程: 新的线程组
-    child->tgid = new_pid;  // 新进程的 tgid 是自己的 pid
+    // 新进程的 tgid 是自己的 pid
+    child->tgid = new_pid;
     child->pgid = parent->pgid;
     child->sid = parent->sid;
   }
