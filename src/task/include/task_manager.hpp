@@ -148,6 +148,13 @@ class TaskManager {
    */
   Pid Wait(Pid pid, int* status, bool no_hang = false, bool untraced = false);
 
+  /**
+   * @brief 按 PID 查找任务
+   * @param pid 进程 ID
+   * @return TaskControlBlock* 找到的任务，未找到返回 nullptr
+   */
+  TaskControlBlock* FindTask(Pid pid);
+
   /// @name 构造/析构函数
   /// @{
   TaskManager() = default;
@@ -193,13 +200,6 @@ class TaskManager {
   CpuSchedData& GetCurrentCpuSched() {
     return cpu_schedulers_[cpu_io::GetCurrentCoreId()];
   }
-
-  /**
-   * @brief 按 PID 查找任务
-   * @param pid 进程 ID
-   * @return TaskControlBlock* 找到的任务，未找到返回 nullptr
-   */
-  TaskControlBlock* FindTask(Pid pid);
 
   /**
    * @brief 获取线程组的所有线程

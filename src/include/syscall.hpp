@@ -144,8 +144,7 @@ int sys_futex(int* uaddr, int op, int val, const void* timeout, int* uaddr2,
  * @param pid 线程ID（0 表示当前线程）
  * @param cpusetsize CPU集合大小
  * @param mask CPU亲和性掩码
- * @return 成功返回0，失败返回负数
- * @note 使用场景：查询线程可以在哪些CPU上运行
+ * @return 成功返回 0，失败返回负数
  */
 int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask);
 
@@ -154,7 +153,7 @@ int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask);
  * @param pid 线程ID（0 表示当前线程）
  * @param cpusetsize CPU集合大小
  * @param mask CPU亲和性掩码
- * @return 成功返回0，失败返回负数
+ * @return 成功返回 0，失败返回负数
  * @note 使用场景：
  *       - CPU绑定优化
  *       - 实时任务调度
