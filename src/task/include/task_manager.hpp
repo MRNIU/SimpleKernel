@@ -13,6 +13,7 @@
 
 #include "interrupt_base.h"
 #include "per_cpu.hpp"
+#include "resource_id.hpp"
 #include "scheduler_base.hpp"
 #include "sk_list"
 #include "sk_priority_queue"
@@ -36,7 +37,7 @@ struct CpuSchedData {
       sleeping_tasks;
 
   /// 阻塞队列 (按资源 ID 分组)
-  sk_std::unordered_map<uint64_t, sk_std::list<TaskControlBlock*>>
+  sk_std::unordered_map<ResourceId, sk_std::list<TaskControlBlock*>>
       blocked_tasks;
 
   /// Per-CPU tick 计数 (每个核心独立计时)
@@ -108,15 +109,16 @@ class TaskManager {
 
   /**
    * @brief 阻塞当前任务
-   * @param resource_id 等待的资源 ID (如信号量地址、文件描述符等)
+   * @param resource_id 等待的资源 ID
    */
-  void Block(uint64_t resource_id);
+  void Block(ResourceId resource_id);
 
   /**
    * @brief 唤醒等待指定资源的所有任务
    * @param resource_id 资源 ID
+   * @note 会唤醒所有阻塞在此资源上的任务
    */
-  void Wakeup(uint64_t resource_id);
+  void Wakeup(ResourceId resource_id);
 
   /**
    * @brief 分配新的 PID
@@ -151,10 +153,11 @@ class TaskManager {
    * @brief 等待子进程退出
    * @param pid 子进程 PID (-1 表示任意子进程，0 表示同组，>0 表示指定进程)
    * @param status 退出状态存储位置 (可为 nullptr)
-   * @param options 选项标志 (WNOHANG, WUNTRACED 等)
+   * @param no_hang 非阻塞等待，立即返回 (类似 WNOHANG)
+   * @param untraced 报告已停止的子进程 (类似 WUNTRACED)
    * @return 成功返回子进程 PID，无子进程返回 -ECHILD，被中断返回 -EINTR
    */
-  Pid Wait(Pid pid, int* status, int options);
+  Pid Wait(Pid pid, int* status, bool no_hang = false, bool untraced = false);
 
   /// @name 构造/析构函数
   /// @{
@@ -197,6 +200,21 @@ class TaskManager {
    * @return TaskControlBlock* 找到的任务，未找到返回 nullptr
    */
   TaskControlBlock* FindTask(Pid pid);
+
+  /**
+   * @brief 获取线程组的所有线程
+   * @param tgid 线程组 ID
+   * @return sk_std::vector<TaskControlBlock*> 线程组中的所有线程
+   */
+  sk_std::vector<TaskControlBlock*> GetThreadGroup(Pid tgid);
+
+  /**
+   * @brief 向线程组中的所有线程发送信号
+   * @param tgid 线程组 ID
+   * @param signal 信号编号
+   * @note 暂未实现信号机制，预留接口
+   */
+  void SignalThreadGroup(Pid tgid, int signal);
 
   /**
    * @brief 回收僵尸进程资源

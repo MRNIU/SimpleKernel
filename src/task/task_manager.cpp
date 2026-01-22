@@ -69,6 +69,11 @@ void TaskManager::AddTask(TaskControlBlock* task) {
     task->pid = AllocatePid();
   }
 
+  // 如果 tgid 未设置，则将其设为自己的 pid (单线程进程或线程组的主线程)
+  if (task->tgid == 0) {
+    task->tgid = task->pid;
+  }
+
   // 加入全局任务表
   {
     LockGuard lock_guard{task_table_lock_};
@@ -139,7 +144,6 @@ void TaskManager::ReapTask(TaskControlBlock* task) {
     return;
   }
 
-  /// @todo 考虑维护 thread_group
   // 确保任务处于僵尸或退出状态
   if (task->status != TaskStatus::kZombie &&
       task->status != TaskStatus::kExited) {
@@ -181,6 +185,33 @@ void TaskManager::ReparentChildren(TaskControlBlock* parent) {
       /// @todo 实现向 init 进程发送 SIGCHLD 信号
     }
   }
+}
+
+sk_std::vector<TaskControlBlock*> TaskManager::GetThreadGroup(Pid tgid) {
+  sk_std::vector<TaskControlBlock*> result;
+
+  std::lock_guard lock(task_table_lock_);
+
+  // 遍历任务表，找到所有 tgid 匹配的线程
+  for (auto& [pid, task] : task_table_) {
+    if (task && task->tgid == tgid) {
+      result.push_back(task);
+    }
+  }
+
+  return result;
+}
+
+void TaskManager::SignalThreadGroup(Pid tgid, int signal) {
+  /// @todo 实现信号机制后，向线程组中的所有线程发送信号
+  klog::Debug("SignalThreadGroup: tgid=%zu, signal=%d (not implemented)\n",
+              tgid, signal);
+
+  // 预期实现：
+  // auto threads = GetThreadGroup(tgid);
+  // for (auto* thread : threads) {
+  //   SendSignal(thread, signal);
+  // }
 }
 
 TaskManager::~TaskManager() {
