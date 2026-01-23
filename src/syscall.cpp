@@ -121,14 +121,8 @@ int sys_fork() {
   }
 
   // fork = clone with flags=0 (完全复制，不共享任何资源)
-  Pid child_pid =
-      task_manager.Clone(0,        // flags=0: 完全复制
-                         nullptr,  // 复制父进程的用户栈
-                         nullptr,  // 不需要 parent_tid
-                         nullptr,  // 不需要 child_tid
-                         nullptr,  // 不设置 TLS
-                         *current->trap_context_ptr  // 复制父进程上下文
-      );
+  Pid child_pid = task_manager.Clone(0, nullptr, nullptr, nullptr, nullptr,
+                                     *current->trap_context_ptr);
 
   if (child_pid == 0) {
     // 子进程返回 0
