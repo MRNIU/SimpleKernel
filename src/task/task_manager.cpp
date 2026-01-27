@@ -91,9 +91,9 @@ void TaskManager::AddTask(TaskControlBlock* task) {
 
   if (task->cpu_affinity != UINT64_MAX) {
     // 寻找第一个允许的核心
-    for (size_t i = 0; i < SIMPLEKERNEL_MAX_CORE_COUNT; ++i) {
-      if (task->cpu_affinity & (1UL << i)) {
-        target_core = i;
+    for (size_t core_id = 0; core_id < SIMPLEKERNEL_MAX_CORE_COUNT; ++core_id) {
+      if (task->cpu_affinity & (1UL << core_id)) {
+        target_core = core_id;
         break;
       }
     }

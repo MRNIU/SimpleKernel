@@ -47,8 +47,7 @@ void TaskManager::Schedule() {
 
   // 选择下一个任务 (按策略优先级: RealTime > Normal > Idle)
   TaskControlBlock* next = nullptr;
-  for (size_t i = 0; i < SchedPolicy::kPolicyCount; ++i) {
-    auto* scheduler = cpu_sched.schedulers[i];
+  for (auto* scheduler : cpu_sched.schedulers) {
     if (scheduler && !scheduler->IsEmpty()) {
       next = scheduler->PickNext();
       if (next) {
