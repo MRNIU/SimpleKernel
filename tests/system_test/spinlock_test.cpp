@@ -22,10 +22,10 @@ class TestSpinLock : public SpinLock {
 auto test_basic_lock() -> bool {
   sk_printf("Running test_basic_lock...\n");
   TestSpinLock lock("basic");
-  EXPECT_TRUE(lock.lock(), "Basic lock failed");
+  EXPECT_TRUE(lock.Lock(), "Basic lock failed");
   EXPECT_TRUE(lock.IsLockedByCurrentCore(),
               "IsLockedByCurrentCore failed after lock");
-  EXPECT_TRUE(lock.unlock(), "Basic unlock failed");
+  EXPECT_TRUE(lock.UnLock(), "Basic unlock failed");
   EXPECT_TRUE(!lock.IsLockedByCurrentCore(),
               "IsLockedByCurrentCore failed after unlock");
   sk_printf("test_basic_lock passed\n");
@@ -35,18 +35,18 @@ auto test_basic_lock() -> bool {
 auto test_recursive_lock() -> bool {
   sk_printf("Running test_recursive_lock...\n");
   TestSpinLock lock("recursive");
-  EXPECT_TRUE(lock.lock(), "Lock failed in recursive test");
-  // lock() 如果已经被当前核心锁定则返回 false
-  if (lock.lock()) {
+  EXPECT_TRUE(lock.Lock(), "Lock failed in recursive test");
+  // Lock() 如果已经被当前核心锁定则返回 false
+  if (lock.Lock()) {
     sk_printf("FAIL: Recursive lock should return false\n");
-    lock.unlock();  // 尝试恢复
-    lock.unlock();
+    lock.UnLock();  // 尝试恢复
+    lock.UnLock();
     return false;
   }
 
-  EXPECT_TRUE(lock.unlock(), "Unlock failed in recursive test");
+  EXPECT_TRUE(lock.UnLock(), "Unlock failed in recursive test");
   // 再次解锁应该失败
-  if (lock.unlock()) {
+  if (lock.UnLock()) {
     sk_printf("FAIL: Double unlock should return false\n");
     return false;
   }
@@ -77,13 +77,13 @@ auto test_interrupt_restore() -> bool {
     return false;
   }
 
-  lock.lock();
+  lock.Lock();
   if (cpu_io::GetInterruptStatus()) {
     sk_printf("FAIL: Lock didn't disable interrupts\n");
-    lock.unlock();
+    lock.UnLock();
     return false;
   }
-  lock.unlock();
+  lock.UnLock();
 
   if (!cpu_io::GetInterruptStatus()) {
     sk_printf("FAIL: Unlock didn't restore interrupts (expected enabled)\n");
@@ -98,14 +98,14 @@ auto test_interrupt_restore() -> bool {
     return false;
   }
 
-  lock.lock();
+  lock.Lock();
   if (cpu_io::GetInterruptStatus()) {
     sk_printf("FAIL: Lock enabled interrupts unexpectedly\n");
-    lock.unlock();
+    lock.UnLock();
     cpu_io::EnableInterrupt();
     return false;
   }
-  lock.unlock();
+  lock.UnLock();
 
   if (cpu_io::GetInterruptStatus()) {
     sk_printf("FAIL: Unlock enabled interrupts (expected disabled)\n");
@@ -124,9 +124,9 @@ std::atomic<int> finished_cores = 0;
 
 auto spinlock_smp_test() -> bool {
   for (int i = 0; i < 10000; ++i) {
-    smp_lock.lock();
+    smp_lock.Lock();
     shared_counter++;
-    smp_lock.unlock();
+    smp_lock.UnLock();
   }
 
   int finished = finished_cores.fetch_add(1) + 1;
@@ -159,12 +159,12 @@ auto spinlock_smp_buffer_test() -> bool {
   int writes_per_core = 500;
 
   for (int i = 0; i < writes_per_core; ++i) {
-    buffer_lock.lock();
+    buffer_lock.Lock();
     if (buffer_index < BUFFER_SIZE) {
       // 写入 Core ID
       shared_buffer[buffer_index++] = cpu_io::GetCurrentCoreId();
     }
-    buffer_lock.unlock();
+    buffer_lock.UnLock();
   }
 
   int finished = buffer_test_finished_cores.fetch_add(1) + 1;
@@ -229,7 +229,7 @@ auto spinlock_smp_string_test() -> bool {
                           "[C:%d-%d|LongStringPaddingForContention]",
                           (int)core_id, i);
 
-    str_lock.lock();
+    str_lock.Lock();
     if (str_buffer_offset + len < STR_BUFFER_SIZE - 1) {
       for (int k = 0; k < len; ++k) {
         shared_str_buffer[str_buffer_offset + k] = local_buf[k];
@@ -237,7 +237,7 @@ auto spinlock_smp_string_test() -> bool {
       str_buffer_offset += len;
       shared_str_buffer[str_buffer_offset] = '\0';
     }
-    str_lock.unlock();
+    str_lock.UnLock();
   }
 
   int finished = str_test_finished_cores.fetch_add(1) + 1;
