@@ -43,7 +43,7 @@ class SpinLock {
   /**
    * @brief 获得锁
    */
-  __always_inline auto lock() -> bool {
+  __always_inline auto Lock() -> bool {
     auto intr_enable = GetInterruptStatus();
     DisableInterrupt();
 
@@ -64,7 +64,7 @@ class SpinLock {
   /**
    * @brief 释放锁
    */
-  __always_inline auto unlock() -> bool {
+  __always_inline auto UnLock() -> bool {
     if (!IsLockedByCurrentCore()) {
       sk_printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
       return false;
@@ -83,7 +83,7 @@ class SpinLock {
  protected:
   /// 自旋锁名称
   const char* name_{"unnamed"};
-  /// 是否 lock
+  /// 是否 Lock
   std::atomic_flag locked_{ATOMIC_FLAG_INIT};
   /// 获得此锁的 core_id_
   std::atomic<size_t> core_id_{SIZE_MAX};
@@ -114,7 +114,7 @@ class SpinLock {
 
 /**
  * @brief RAII 风格的锁守卫模板类
- * @tparam Mutex 锁类型，必须有 lock() 和 unlock() 方法
+ * @tparam Mutex 锁类型，必须有 Lock() 和 UnLock() 方法
  */
 template <typename Mutex>
 class LockGuard {
@@ -125,12 +125,12 @@ class LockGuard {
    * @brief 构造函数，自动获取锁
    * @param mutex 要保护的锁对象
    */
-  explicit LockGuard(mutex_type& mutex) : mutex_(mutex) { mutex_.lock(); }
+  explicit LockGuard(mutex_type& mutex) : mutex_(mutex) { mutex_.Lock(); }
 
   /**
    * @brief 析构函数，自动释放锁
    */
-  ~LockGuard() { mutex_.unlock(); }
+  ~LockGuard() { mutex_.UnLock(); }
 
   LockGuard(const LockGuard&) = delete;
   LockGuard(LockGuard&&) = delete;
