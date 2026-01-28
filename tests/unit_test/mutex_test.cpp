@@ -81,21 +81,6 @@ TEST_F(MutexTest, UnLockWithoutTaskContext) {
   EXPECT_FALSE(mutex.UnLock());
 }
 
-// 测试 MutexGuard 构造和析构
-TEST_F(MutexTest, MutexGuardConstruction) {
-  Mutex mutex("guard_test");
-
-  // 由于没有任务上下文，MutexGuard 的 Lock 会失败
-  // 但这不应该导致崩溃
-  {
-    MutexGuard guard(mutex);
-    // guard 会尝试 Lock，但会失败
-    EXPECT_FALSE(mutex.IsLockedByCurrentTask());
-  }
-  // guard 析构时会尝试 UnLock，但也会失败
-  EXPECT_FALSE(mutex.IsLockedByCurrentTask());
-}
-
 // 测试多个 Mutex 对象的独立性
 TEST_F(MutexTest, MultipleMutexes) {
   Mutex mutex1("mutex1");

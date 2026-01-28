@@ -32,6 +32,9 @@
  */
 class Mutex {
  public:
+  /// 锁的名称
+  const char* name_{"unnamed_mutex"};
+
   /**
    * @brief 获取锁（阻塞）
    *
@@ -180,20 +183,8 @@ class Mutex {
   }
 
   /**
-   * @brief 获取资源 ID
-   * @return 此互斥锁的资源 ID
-   */
-  auto GetResourceId() const -> ResourceId { return resource_id_; }
-
-  /**
-   * @brief 获取锁的名称
-   * @return 锁的名称字符串
-   */
-  auto GetName() const -> const char* { return name_; }
-
-  /**
    * @brief 构造函数
-   * @param name 互斥锁名称（用于调试）
+   * @param name 互斥锁名称
    */
   explicit Mutex(const char* name = "unnamed_mutex")
       : name_(name),
@@ -209,10 +200,7 @@ class Mutex {
   ~Mutex() = default;
   /// @}
 
- private:
-  /// 锁的名称（用于调试）
-  const char* name_{"unnamed_mutex"};
-
+ protected:
   /// 锁状态：true=已锁定，false=未锁定
   std::atomic<bool> locked_{false};
 
