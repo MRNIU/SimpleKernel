@@ -7,6 +7,7 @@
 
 #include <cpu_io.h>
 
+#include <MPMCQueue.hpp>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -166,21 +167,42 @@ class TaskManager {
   /// @}
 
  private:
-  /**
-   * @brief 每个核心的调度数据
-   */
+  /// 中断工作队列容量
+  static constexpr const size_t kInterruptQueueCapacity = 256;
+
+  /// 中断线程处理结构体
+  struct InterruptWork {
+    using WorkHandler = void (*)(InterruptWork*);
+
+    // 中断号
+    uint64_t interrupt_no;
+    // 中断数据（可选）
+    void* data;
+    // 时间戳
+    uint64_t timestamp;
+
+    WorkHandler handler = nullptr;
+  };
+
+  /// 中断工作队列
+  using InterruptWorkQueue =
+      mpmc_queue::MPMCQueue<InterruptWork, kInterruptQueueCapacity>;
+
+  /// 每个核心的调度数据
   std::array<CpuSchedData, SIMPLEKERNEL_MAX_CORE_COUNT> cpu_schedulers_;
 
-  /**
-   * @brief 全局任务表 (PID -> TCB 映射)
-   * @note 用于快速按 PID 查找任务，支持信号发送、wait 等操作
-   */
+  /// 全局任务表 (PID -> TCB 映射)
   SpinLock task_table_lock_{"task_table_lock"};
   sk_std::unordered_map<Pid, TaskControlBlock*> task_table_;
 
-  /**
-   * @brief PID 分配器
-   */
+  /// 中断线程相关数据保护锁
+  SpinLock interrupt_threads_lock_{"interrupt_threads_lock"};
+  /// 中断号 -> 中断线程映射
+  sk_std::unordered_map<uint64_t, TaskControlBlock*> interrupt_threads_;
+  /// 中断号 -> 工作队列映射
+  sk_std::unordered_map<uint64_t, InterruptWorkQueue*> interrupt_work_queues_;
+
+  /// PID 分配器
   std::atomic<size_t> pid_allocator{1};
 
   /**

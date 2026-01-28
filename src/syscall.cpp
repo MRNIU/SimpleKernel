@@ -162,7 +162,7 @@ int sys_set_tid_address([[maybe_unused]] int* tidptr) {
 }
 
 int sys_futex(int* uaddr, int op, int val, [[maybe_unused]] const void* timeout,
-              int* uaddr2, [[maybe_unused]] int val3) {
+              [[maybe_unused]] int* uaddr2, [[maybe_unused]] int val3) {
   // Futex 常量定义
   constexpr int FUTEX_WAIT = 0;
   constexpr int FUTEX_WAKE = 1;
