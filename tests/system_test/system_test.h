@@ -138,7 +138,6 @@ bool expect_ge_helper(const T1 &val1, const T2 &val2, const char *msg) {
 
 auto ctor_dtor_test() -> bool;
 auto spinlock_test() -> bool;
-auto memory_test() -> bool;
 auto virtual_memory_test() -> bool;
 auto interrupt_test() -> bool;
 auto sk_list_test() -> bool;
@@ -155,5 +154,9 @@ auto thread_group_system_test() -> bool;
 auto wait_system_test() -> bool;
 auto clone_system_test() -> bool;
 auto exit_system_test() -> bool;
+
+namespace MutexTest {
+void RunTest();
+}
 
 #endif /* SIMPLEKERNEL_TESTS_SYSTEM_TEST_SYSTEM_TEST_H_ */

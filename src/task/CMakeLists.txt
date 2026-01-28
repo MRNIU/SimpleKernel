@@ -15,4 +15,5 @@ TARGET_SOURCES (
               wakeup.cpp
               clone.cpp
               wait.cpp
-              task_manager.cpp)
+              task_manager.cpp
+              mutex.cpp)

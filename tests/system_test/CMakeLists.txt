@@ -10,6 +10,7 @@ ADD_EXECUTABLE (
     main.cpp
     ctor_dtor_test.cpp
     spinlock_test.cpp
+    mutex_test.cpp
     memory_test.cpp
     virtual_memory_test.cpp
     interrupt_test.cpp

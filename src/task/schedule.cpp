@@ -25,7 +25,7 @@
 
 void TaskManager::Schedule() {
   auto& cpu_sched = GetCurrentCpuSched();
-  cpu_sched.lock.lock();
+  cpu_sched.lock.Lock();
 
   auto* current = GetCurrentTask();
 
@@ -64,7 +64,7 @@ void TaskManager::Schedule() {
     } else {
       // 否则统计空闲时间并返回
       cpu_sched.idle_time++;
-      cpu_sched.lock.unlock();
+      cpu_sched.lock.UnLock();
       return;
     }
   }
@@ -85,7 +85,7 @@ void TaskManager::Schedule() {
   // 更新 per-CPU running_task
   per_cpu::GetCurrentCore().running_task = next;
 
-  cpu_sched.lock.unlock();
+  cpu_sched.lock.UnLock();
 
   // 上下文切换
   if (current && current != next) {

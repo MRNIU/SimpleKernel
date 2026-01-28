@@ -12,6 +12,7 @@
 #include "interrupt.h"
 #include "kernel.h"
 #include "kernel_log.hpp"
+#include "mutex.hpp"
 #include "per_cpu.hpp"
 #include "sk_cstdio"
 #include "sk_cstring"

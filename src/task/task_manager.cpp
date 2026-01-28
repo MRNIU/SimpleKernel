@@ -102,7 +102,7 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   auto& cpu_sched = cpu_schedulers_[target_core];
 
   // 加锁保护运行队列
-  cpu_sched.lock.lock();
+  cpu_sched.lock.Lock();
 
   if (task->policy < SchedPolicy::kPolicyCount) {
     if (cpu_sched.schedulers[task->policy]) {
@@ -110,7 +110,7 @@ void TaskManager::AddTask(TaskControlBlock* task) {
     }
   }
 
-  cpu_sched.lock.unlock();
+  cpu_sched.lock.UnLock();
 
   // 如果是当前核心，且添加了比当前任务优先级更高的任务，触发抢占
   if (target_core == cpu_io::GetCurrentCoreId()) {
