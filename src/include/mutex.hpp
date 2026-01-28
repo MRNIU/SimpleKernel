@@ -107,7 +107,7 @@ class Mutex {
     }
 
     // 释放锁
-    owner_.store(std::numeric_limits<pid_t>::max(), std::memory_order_release);
+    owner_.store(std::numeric_limits<Pid>::max(), std::memory_order_release);
     locked_.store(false, std::memory_order_release);
 
     klog::Debug("Mutex::UnLock: Task %zu released mutex '%s'\n", current_pid,
@@ -217,7 +217,7 @@ class Mutex {
   std::atomic<bool> locked_{false};
 
   /// 持有锁的任务 ID，max() 表示未被持有
-  std::atomic<Pid> owner_{std::numeric_limits<pid_t>::max()};
+  std::atomic<Pid> owner_{std::numeric_limits<Pid>::max()};
 
   /// 资源 ID，用于任务阻塞队列
   ResourceId resource_id_;
