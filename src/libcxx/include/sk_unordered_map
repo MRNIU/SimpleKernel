@@ -508,4 +508,4 @@ class unordered_map {
 
 }  // namespace sk_std
 
-#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_UNORDERED_MAP_
+#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_UNORDERED_MAP_ */
