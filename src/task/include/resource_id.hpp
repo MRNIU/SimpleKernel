@@ -12,17 +12,28 @@
  * @brief 资源类型枚举
  */
 enum class ResourceType : uint8_t {
-  kNone = 0x00,        // 无效资源
-  kMutex = 0x01,       // 互斥锁
-  kSemaphore = 0x02,   // 信号量
-  kCondVar = 0x03,     // 条件变量
-  kChildExit = 0x04,   // 等待子进程退出
-  kIoComplete = 0x05,  // IO 完成
-  kFutex = 0x06,       // Futex (快速用户空间互斥锁)
-  kSignal = 0x07,      // 信号
-  kTimer = 0x08,       // 定时器
-  kResourceTypeCount,
+  // 无效资源
+  kNone = 0x00,
+  // 互斥锁
+  kMutex = 0x01,
+  // 信号量
+  kSemaphore = 0x02,
+  // 条件变量
+  kCondVar = 0x03,
+  // 等待子进程退出
+  kChildExit = 0x04,
+  // IO 完成
+  kIoComplete = 0x05,
+  // Futex (快速用户空间互斥锁)
+  kFutex = 0x06,
+  // 信号
+  kSignal = 0x07,
+  // 定时器
+  kTimer = 0x08,
+  // 中断（用于中断线程化）
+  kInterrupt = 0x09,
   // 可以继续扩展...
+  kResourceTypeCount,
 };
 
 /**
