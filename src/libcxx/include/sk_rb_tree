@@ -630,4 +630,4 @@ class RbTree {
 
 }  // namespace sk_std
 
-#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_RB_TREE_
+#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_RB_TREE_ */

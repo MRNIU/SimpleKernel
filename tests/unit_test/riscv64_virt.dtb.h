@@ -373,4 +373,4 @@ static constexpr const uint8_t riscv64_virt_dtb_data[] = {
 
 static constexpr const size_t riscv64_virt_dtb_data_len = 4326;
 
-#endif  // SIMPLEKERNEL_TEST_UNIT_TEST_RISCV64_VIRT_DTB_H_
+#endif /* SIMPLEKERNEL_TEST_UNIT_TEST_RISCV64_VIRT_DTB_H_ */
