@@ -8,6 +8,7 @@
 #include <cpu_io.h>
 
 #include <atomic>
+#include <concepts>
 #include <cstddef>
 #include <limits>
 
@@ -24,29 +25,15 @@
  */
 class SpinLock {
  public:
-  /**
-   * @brief 构造函数
-   * @param  _name            锁名
-   * @note 需要堆初始化后可用
-   */
-  explicit SpinLock(const char* _name) : name_(_name) {}
-
-  /// @name 构造/析构函数
-  /// @{
-  SpinLock() = default;
-  SpinLock(const SpinLock&) = delete;
-  SpinLock(SpinLock&&) = default;
-  auto operator=(const SpinLock&) -> SpinLock& = delete;
-  auto operator=(SpinLock&&) -> SpinLock& = default;
-  ~SpinLock() = default;
-  /// @}
+  /// 自旋锁名称
+  const char* name_{"unnamed"};
 
   /**
    * @brief 获得锁
    */
   __always_inline auto Lock() -> bool {
-    auto intr_enable = GetInterruptStatus();
-    DisableInterrupt();
+    auto intr_enable = cpu_io::GetInterruptStatus();
+    cpu_io::DisableInterrupt();
 
     if (IsLockedByCurrentCore()) {
       sk_printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
@@ -57,7 +44,7 @@ class SpinLock {
     }
 
     // 获取锁成功后立即设置 core_id_
-    core_id_.store(GetCurrentCoreId(), std::memory_order_release);
+    core_id_.store(cpu_io::GetCurrentCoreId(), std::memory_order_release);
     saved_intr_enable_ = intr_enable;
     return true;
   }
@@ -77,14 +64,29 @@ class SpinLock {
     locked_.clear(std::memory_order_release);
 
     if (saved_intr_enable_) {
-      EnableInterrupt();
+      cpu_io::EnableInterrupt();
     }
     return true;
   }
 
+  /**
+   * @brief 构造函数
+   * @param  _name            锁名
+   * @note 需要堆初始化后可用
+   */
+  explicit SpinLock(const char* _name) : name_(_name) {}
+
+  /// @name 构造/析构函数
+  /// @{
+  SpinLock() = default;
+  SpinLock(const SpinLock&) = delete;
+  SpinLock(SpinLock&&) = default;
+  auto operator=(const SpinLock&) -> SpinLock& = delete;
+  auto operator=(SpinLock&&) -> SpinLock& = default;
+  ~SpinLock() = default;
+  /// @}
+
  protected:
-  /// 自旋锁名称
-  const char* name_{"unnamed"};
   /// 是否 Lock
   std::atomic_flag locked_{ATOMIC_FLAG_INIT};
   /// 获得此锁的 core_id_
@@ -92,33 +94,26 @@ class SpinLock {
   /// 保存的中断状态
   bool saved_intr_enable_{false};
 
-  virtual __always_inline void EnableInterrupt() { cpu_io::EnableInterrupt(); }
-  virtual __always_inline void DisableInterrupt() {
-    cpu_io::DisableInterrupt();
-  }
-  [[nodiscard]] virtual __always_inline auto GetInterruptStatus() -> bool {
-    return cpu_io::GetInterruptStatus();
-  }
-  [[nodiscard]] virtual __always_inline auto GetCurrentCoreId() -> size_t {
-    return cpu_io::GetCurrentCoreId();
-  }
-
   /**
    * @brief 检查当前 core 是否获得此锁
    * @return true             是
    * @return false            否
    */
   __always_inline auto IsLockedByCurrentCore() -> bool {
-    return locked_.test() &&
-           (core_id_.load(std::memory_order_acquire) == GetCurrentCoreId());
+    return locked_.test() && (core_id_.load(std::memory_order_acquire) ==
+                              cpu_io::GetCurrentCoreId());
   }
 };
 
 /**
  * @brief RAII 风格的锁守卫模板类
- * @tparam Mutex 锁类型，必须有 Lock() 和 UnLock() 方法
+ * @tparam Mutex 锁类型，必须有返回 bool 的 Lock() 和 UnLock() 方法
  */
 template <typename Mutex>
+requires requires(Mutex& m) {
+  { m.Lock() } -> std::same_as<bool>;
+  { m.UnLock() } -> std::same_as<bool>;
+}
 class LockGuard {
  public:
   using mutex_type = Mutex;
