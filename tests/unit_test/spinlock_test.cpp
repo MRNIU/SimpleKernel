@@ -59,10 +59,10 @@ TEST_F(SpinLockTest, BasicLockUnlock) {
   SpinLockTestable lock("basic_test");
 
   // 初始状态应该是未锁定的
-  EXPECT_TRUE(lock.lock());
+  EXPECT_TRUE(lock.Lock());
 
   // 解锁应该成功
-  EXPECT_TRUE(lock.unlock());
+  EXPECT_TRUE(lock.UnLock());
 }
 
 // 测试中断控制
@@ -72,11 +72,11 @@ TEST_F(SpinLockTest, InterruptControl) {
   // 初始状态中断是开启的
   EXPECT_TRUE(lock.GetInterruptStatus());
 
-  lock.lock();
+  lock.Lock();
   // 加锁后中断应该被禁用
   EXPECT_FALSE(lock.GetInterruptStatus());
 
-  lock.unlock();
+  lock.UnLock();
   // 解锁后中断应该被恢复
   EXPECT_TRUE(lock.GetInterruptStatus());
 }
@@ -88,10 +88,10 @@ TEST_F(SpinLockTest, InterruptRestore) {
   // 模拟中断原本就是关闭的情况
   interrupt_enabled = false;
 
-  lock.lock();
+  lock.Lock();
   EXPECT_FALSE(lock.GetInterruptStatus());
 
-  lock.unlock();
+  lock.UnLock();
   // 解锁后中断应该保持关闭（恢复原状）
   EXPECT_FALSE(lock.GetInterruptStatus());
 }
@@ -115,12 +115,12 @@ TEST_F(SpinLockTest, ConcurrentAccess) {
       std::uniform_int_distribution<> dis(1, 5);
 
       for (int j = 0; j < increments_per_thread; ++j) {
-        lock.lock();
+        lock.Lock();
         int temp = shared_counter.load();
         // 随机工作时间 1-5 微秒
         std::this_thread::sleep_for(std::chrono::microseconds(dis(gen)));
         shared_counter.store(temp + 1);
-        lock.unlock();
+        lock.UnLock();
       }
     });
   }
@@ -173,17 +173,17 @@ TEST_F(SpinLockTest, NestedInterruptControl) {
 
   EXPECT_TRUE(lock1.GetInterruptStatus());
 
-  lock1.lock();
+  lock1.Lock();
   EXPECT_FALSE(lock1.GetInterruptStatus());
 
   // 嵌套加锁
-  lock2.lock();
+  lock2.Lock();
   EXPECT_FALSE(lock2.GetInterruptStatus());
 
-  lock2.unlock();
+  lock2.UnLock();
   EXPECT_FALSE(lock2.GetInterruptStatus());  // 仍然禁用
 
-  lock1.unlock();
+  lock1.UnLock();
   EXPECT_TRUE(lock1.GetInterruptStatus());  // 恢复
 }
 
@@ -194,16 +194,16 @@ TEST_F(SpinLockTest, LockOwnership) {
   // 设置当前核心 ID
   lock.SetCurrentCoreId(0);
 
-  lock.lock();
+  lock.Lock();
 
   // 切换到不同的核心
   lock.SetCurrentCoreId(1);
 
   // 从不同核心解锁应该输出警告信息（但仍然可以执行）
-  EXPECT_FALSE(lock.unlock());
+  EXPECT_FALSE(lock.UnLock());
 
   lock.SetCurrentCoreId(0);
-  EXPECT_TRUE(lock.unlock());
+  EXPECT_TRUE(lock.UnLock());
 }
 
 // 测试多个锁的独立性
@@ -212,11 +212,11 @@ TEST_F(SpinLockTest, MultipleLockIndependence) {
   SpinLockTestable lock2("independent_test2");
 
   // 锁1和锁2应该是独立的
-  lock1.lock();
-  EXPECT_TRUE(lock2.lock());
+  lock1.Lock();
+  EXPECT_TRUE(lock2.Lock());
 
-  lock1.unlock();
-  EXPECT_TRUE(lock2.unlock());
+  lock1.UnLock();
+  EXPECT_TRUE(lock2.UnLock());
 }
 
 // 性能测试：测试锁的获取和释放速度
@@ -227,8 +227,8 @@ TEST_F(SpinLockTest, PerformanceTest) {
   auto start = std::chrono::high_resolution_clock::now();
 
   for (int i = 0; i < iterations; ++i) {
-    lock.lock();
-    lock.unlock();
+    lock.Lock();
+    lock.UnLock();
   }
 
   auto end = std::chrono::high_resolution_clock::now();
@@ -390,8 +390,8 @@ TEST_F(SpinLockTest, EdgeCases) {
 
   // 测试快速连续的 lock/unlock
   for (int i = 0; i < 1000; ++i) {
-    lock.lock();
-    lock.unlock();
+    lock.Lock();
+    lock.UnLock();
   }
 
   EXPECT_TRUE(lock.GetInterruptStatus());  // 中断状态应该正确恢复
@@ -402,7 +402,7 @@ TEST_F(SpinLockTest, RecursiveLockDetection) {
   SpinLockTestable lock("recursive_test");
 
   lock.SetCurrentCoreId(0);
-  lock.lock();
+  lock.Lock();
 
   // 尝试在同一核心上再次加锁（这应该是错误的使用）
   // 注意：这个测试可能会导致死锁，取决于实现
@@ -411,7 +411,7 @@ TEST_F(SpinLockTest, RecursiveLockDetection) {
   // 简单验证锁状态
   EXPECT_FALSE(lock.GetInterruptStatus());
 
-  lock.unlock();
+  lock.UnLock();
 }
 
 // 测试锁的公平性（FIFO 顺序）
@@ -428,13 +428,13 @@ TEST_F(SpinLockTest, FairnessTest) {
       lock.SetCurrentCoreId(i);
       std::this_thread::sleep_for(std::chrono::milliseconds(i * 10));
 
-      lock.lock();
+      lock.Lock();
       {
         std::lock_guard<std::mutex> guard(order_mutex);
         execution_order.push_back(i);
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
-      lock.unlock();
+      lock.UnLock();
     });
   }
 
@@ -461,9 +461,9 @@ TEST_F(SpinLockTest, HighLoadPerformance) {
           lock.SetCurrentCoreId(i);
 
           for (int j = 0; j < operations_per_thread; ++j) {
-            lock.lock();
+            lock.Lock();
             total_operations.fetch_add(1);
-            lock.unlock();
+            lock.UnLock();
           }
         });
   }
@@ -484,23 +484,23 @@ TEST_F(SpinLockTest, NestedInterruptSaveRestore) {
   // 初始状态：中断开启
   EXPECT_TRUE(lock1.GetInterruptStatus());
 
-  lock1.lock();
+  lock1.Lock();
   EXPECT_FALSE(lock1.GetInterruptStatus());
 
-  lock2.lock();
+  lock2.Lock();
   EXPECT_FALSE(lock2.GetInterruptStatus());
 
-  lock3.lock();
+  lock3.Lock();
   EXPECT_FALSE(lock3.GetInterruptStatus());
 
   // 按相反顺序解锁
-  lock3.unlock();
+  lock3.UnLock();
   EXPECT_FALSE(lock3.GetInterruptStatus());
 
-  lock2.unlock();
+  lock2.UnLock();
   EXPECT_FALSE(lock2.GetInterruptStatus());
 
-  lock1.unlock();
+  lock1.UnLock();
   EXPECT_TRUE(lock1.GetInterruptStatus());  // 恢复原始状态
 }
 
@@ -512,9 +512,9 @@ TEST_F(SpinLockTest, NoContentionSingleThread) {
   auto start = std::chrono::high_resolution_clock::now();
 
   for (int i = 0; i < iterations; ++i) {
-    lock.lock();
+    lock.Lock();
     shared_counter++;
-    lock.unlock();
+    lock.UnLock();
   }
 
   auto end = std::chrono::high_resolution_clock::now();
@@ -537,7 +537,7 @@ TEST_F(SpinLockTest, LongHoldTime) {
 
   std::thread holder([&lock, &lock_held, &waiter_started]() {
     lock.SetCurrentCoreId(0);
-    lock.lock();
+    lock.Lock();
     lock_held = true;
 
     // 等待 waiter 线程开始尝试获取锁
@@ -547,7 +547,7 @@ TEST_F(SpinLockTest, LongHoldTime) {
 
     // 持有锁一段时间
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    lock.unlock();
+    lock.UnLock();
   });
 
   std::thread waiter([&lock, &lock_held, &spin_count, &waiter_started]() {
@@ -564,7 +564,7 @@ TEST_F(SpinLockTest, LongHoldTime) {
     auto start_time = std::chrono::steady_clock::now();
 
     // 尝试获取锁（会自旋等待）
-    lock.lock();
+    lock.Lock();
 
     auto end_time = std::chrono::steady_clock::now();
     auto wait_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -575,7 +575,7 @@ TEST_F(SpinLockTest, LongHoldTime) {
       spin_count.fetch_add(1);
     }
 
-    lock.unlock();
+    lock.UnLock();
   });
 
   holder.join();
@@ -596,10 +596,10 @@ TEST_F(SpinLockTest, MultipleCoreIds) {
       lock.SetCurrentCoreId(i);
 
       for (int j = 0; j < 100; ++j) {
-        lock.lock();
+        lock.Lock();
         core_results[i]++;
         std::this_thread::sleep_for(std::chrono::microseconds(10));
-        lock.unlock();
+        lock.UnLock();
       }
     });
   }
@@ -622,18 +622,18 @@ TEST_F(SpinLockTest, StateConsistency) {
   EXPECT_TRUE(lock.GetInterruptStatus());
 
   // 加锁
-  lock.lock();
+  lock.Lock();
   EXPECT_FALSE(lock.GetInterruptStatus());
 
   // 解锁
-  lock.unlock();
+  lock.UnLock();
   EXPECT_TRUE(lock.GetInterruptStatus());
 
   // 多次循环验证状态一致性
   for (int i = 0; i < 100; ++i) {
-    lock.lock();
+    lock.Lock();
     EXPECT_FALSE(lock.GetInterruptStatus());
-    lock.unlock();
+    lock.UnLock();
     EXPECT_TRUE(lock.GetInterruptStatus());
   }
 }
