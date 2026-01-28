@@ -8,10 +8,13 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
-#inclide < limits>
+#include <limits>
 
+#include "kernel_log.hpp"
 #include "resource_id.hpp"
+#include "singleton.hpp"
 #include "task_control_block.hpp"
+#include "task_manager.hpp"
 
 /**
  * @brief 互斥锁（Mutex）
@@ -38,7 +41,42 @@ class Mutex {
    * @return true  成功获取锁
    * @return false 失败（如递归获取）
    */
-  auto Lock() -> bool;
+  auto Lock() -> bool {
+    auto current_task = Singleton<TaskManager>::GetInstance().GetCurrentTask();
+    if (current_task == nullptr) {
+      klog::Err("Mutex::Lock: Cannot lock mutex '%s' outside task context\n",
+                name_);
+      return false;
+    }
+
+    Pid current_pid = current_task->pid;
+
+    // 检查是否递归获取锁
+    if (IsLockedByCurrentTask()) {
+      klog::Warn("Mutex::Lock: Task %zu tried to recursively lock mutex '%s'\n",
+                 current_pid, name_);
+      return false;
+    }
+
+    // 尝试获取锁
+    bool expected = false;
+    while (!locked_.compare_exchange_weak(
+        expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
+      // 锁被占用，阻塞当前任务
+      klog::Debug("Mutex::Lock: Task %zu blocking on mutex '%s'\n", current_pid,
+                  name_);
+      Singleton<TaskManager>::GetInstance().Block(resource_id_);
+
+      // 被唤醒后重新尝试
+      expected = false;
+    }
+
+    // 成功获取锁，记录所有者
+    owner_.store(current_pid, std::memory_order_release);
+    klog::Debug("Mutex::Lock: Task %zu acquired mutex '%s'\n", current_pid,
+                name_);
+    return true;
+  }
 
   /**
    * @brief 释放锁
@@ -49,7 +87,37 @@ class Mutex {
    * @return true  成功释放锁
    * @return false 失败（如当前线程未持有锁）
    */
-  auto UnLock() -> bool;
+  auto UnLock() -> bool {
+    auto current_task = Singleton<TaskManager>::GetInstance().GetCurrentTask();
+    if (current_task == nullptr) {
+      klog::Err(
+          "Mutex::UnLock: Cannot unlock mutex '%s' outside task context\n",
+          name_);
+      return false;
+    }
+
+    Pid current_pid = current_task->pid;
+
+    // 检查是否由持有锁的任务释放
+    if (!IsLockedByCurrentTask()) {
+      klog::Warn(
+          "Mutex::UnLock: Task %zu tried to unlock mutex '%s' it doesn't own\n",
+          current_pid, name_);
+      return false;
+    }
+
+    // 释放锁
+    owner_.store(std::numeric_limits<pid_t>::max(), std::memory_order_release);
+    locked_.store(false, std::memory_order_release);
+
+    klog::Debug("Mutex::UnLock: Task %zu released mutex '%s'\n", current_pid,
+                name_);
+
+    // 唤醒等待此锁的任务
+    Singleton<TaskManager>::GetInstance().Wakeup(resource_id_);
+
+    return true;
+  }
 
   /**
    * @brief 尝试获取锁（非阻塞）
@@ -59,14 +127,57 @@ class Mutex {
    * @return true  成功获取锁
    * @return false 锁不可用或递归获取
    */
-  auto TryLock() -> bool;
+  auto TryLock() -> bool {
+    auto current_task = Singleton<TaskManager>::GetInstance().GetCurrentTask();
+    if (current_task == nullptr) {
+      klog::Err(
+          "Mutex::TryLock: Cannot trylock mutex '%s' outside task context\n",
+          name_);
+      return false;
+    }
+
+    Pid current_pid = current_task->pid;
+
+    // 检查是否递归获取锁
+    if (IsLockedByCurrentTask()) {
+      klog::Debug(
+          "Mutex::TryLock: Task %zu tried to recursively trylock mutex '%s'\n",
+          current_pid, name_);
+      return false;
+    }
+
+    // 尝试获取锁（非阻塞）
+    bool expected = false;
+    if (locked_.compare_exchange_strong(expected, true,
+                                        std::memory_order_acquire,
+                                        std::memory_order_relaxed)) {
+      // 成功获取锁，记录所有者
+      owner_.store(current_pid, std::memory_order_release);
+      klog::Debug("Mutex::TryLock: Task %zu acquired mutex '%s'\n", current_pid,
+                  name_);
+      return true;
+    }
+
+    // 锁被占用
+    klog::Debug("Mutex::TryLock: Task %zu failed to acquire mutex '%s'\n",
+                current_pid, name_);
+    return false;
+  }
 
   /**
    * @brief 检查锁是否被当前线程持有
    * @return true  当前线程持有锁
    * @return false 当前线程未持有锁
    */
-  auto IsLockedByCurrentTask() const -> bool;
+  auto IsLockedByCurrentTask() const -> bool {
+    auto current_task = Singleton<TaskManager>::GetInstance().GetCurrentTask();
+    if (current_task == nullptr) {
+      return false;
+    }
+
+    return locked_.load(std::memory_order_acquire) &&
+           owner_.load(std::memory_order_acquire) == current_task->pid;
+  }
 
   /**
    * @brief 获取资源 ID
@@ -84,7 +195,9 @@ class Mutex {
    * @brief 构造函数
    * @param name 互斥锁名称（用于调试）
    */
-  explicit Mutex(const char* name = "unnamed_mutex");
+  explicit Mutex(const char* name = "unnamed_mutex")
+      : name_(name),
+        resource_id_(ResourceType::kMutex, reinterpret_cast<uint64_t>(this)) {}
 
   /// @name 构造/析构函数
   /// @{
@@ -100,41 +213,14 @@ class Mutex {
   /// 锁的名称（用于调试）
   const char* name_{"unnamed_mutex"};
 
-  /// 锁状态
-  std::atomic<uint8_t> locked_{0};
+  /// 锁状态：true=已锁定，false=未锁定
+  std::atomic<bool> locked_{false};
 
-  /// 持有锁的任务 ID（SIZE_MAX 表示未被持有）
-  std::atomic<Pid> owner_{SIZE_MAX};
+  /// 持有锁的任务 ID，max() 表示未被持有
+  std::atomic<Pid> owner_{std::numeric_limits<pid_t>::max()};
 
   /// 资源 ID，用于任务阻塞队列
   ResourceId resource_id_;
-};
-
-/**
- * @brief RAII 风格的互斥锁守卫
- *
- * 在构造时自动获取锁，在析构时自动释放锁。
- */
-class MutexGuard {
- public:
-  /**
-   * @brief 构造函数，自动获取锁
-   * @param mutex 要保护的互斥锁对象
-   */
-  explicit MutexGuard(Mutex& mutex);
-
-  /**
-   * @brief 析构函数，自动释放锁
-   */
-  ~MutexGuard();
-
-  MutexGuard(const MutexGuard&) = delete;
-  MutexGuard(MutexGuard&&) = delete;
-  auto operator=(const MutexGuard&) -> MutexGuard& = delete;
-  auto operator=(MutexGuard&&) -> MutexGuard& = delete;
-
- private:
-  Mutex& mutex_;
 };
 
 #endif /* SIMPLEKERNEL_SRC_TASK_INCLUDE_MUTEX_HPP_ */

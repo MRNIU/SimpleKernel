@@ -10,6 +10,7 @@
 #include "cpu_io.h"
 #include "singleton.hpp"
 #include "sk_stdio.h"
+#include "spinlock.hpp"
 #include "syscall.hpp"
 #include "system_test.h"
 #include "task_manager.hpp"
@@ -94,7 +95,7 @@ auto test_trylock() -> bool {
 }
 
 /**
- * @brief 测试 MutexGuard RAII
+ * @brief 测试 LockGuard<Mutex> RAII
  */
 auto test_mutex_guard() -> bool {
   sk_printf("Running test_mutex_guard...\n");
@@ -102,11 +103,11 @@ auto test_mutex_guard() -> bool {
   Mutex mutex("guard_test");
 
   {
-    MutexGuard guard(mutex);
-    EXPECT_TRUE(mutex.IsLockedByCurrentTask(), "MutexGuard failed to lock");
+    LockGuard<Mutex> guard(mutex);
+    EXPECT_TRUE(mutex.IsLockedByCurrentTask(), "LockGuard failed to lock");
   }
   // 作用域结束后应该自动解锁
-  EXPECT_TRUE(!mutex.IsLockedByCurrentTask(), "MutexGuard failed to unlock");
+  EXPECT_TRUE(!mutex.IsLockedByCurrentTask(), "LockGuard failed to unlock");
 
   sk_printf("test_mutex_guard passed\n");
   return true;
@@ -188,15 +189,15 @@ auto test_mutex_contention() -> bool {
 }
 
 /**
- * @brief 测试 MutexGuard 在多任务场景下的使用
+ * @brief 测试 LockGuard<Mutex> 在多任务场景下的使用
  */
 void mutex_guard_task(void* arg) {
   int task_id = *reinterpret_cast<int*>(arg);
   sk_printf("Task %d: started (with guard)\n", task_id);
 
   for (int i = 0; i < 100; ++i) {
-    // 使用 RAII 风格的 MutexGuard
-    MutexGuard guard(*test_mutex);
+    // 使用 RAII 风格的 LockGuard<Mutex>
+    LockGuard<Mutex> guard(*test_mutex);
 
     // 临界区
     int old_value = shared_counter.load();
@@ -212,7 +213,7 @@ void mutex_guard_task(void* arg) {
 }
 
 /**
- * @brief 测试 MutexGuard 在多任务竞争场景
+ * @brief 测试 LockGuard<Mutex> 在多任务竞争场景
  */
 auto test_mutex_guard_contention() -> bool {
   sk_printf("Running test_mutex_guard_contention...\n");
