@@ -231,4 +231,4 @@ class TaskManager {
   void ReparentChildren(TaskControlBlock* parent);
 };
 
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_TASK_MANAGER_HPP_
+#endif /* SIMPLEKERNEL_SRC_INCLUDE_TASK_MANAGER_HPP_ */

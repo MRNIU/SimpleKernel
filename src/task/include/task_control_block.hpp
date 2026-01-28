@@ -183,6 +183,11 @@ struct TaskControlBlock {
   /// 等待的资源 ID
   ResourceId blocked_on{};
 
+  /// 是否为中断线程
+  bool is_interrupt_thread = false;
+  /// 关联的中断号
+  uint64_t interrupt_number = 0;
+
   /// @todo 优先级继承相关
   /// @todo 文件系统相关
 
@@ -255,4 +260,4 @@ struct TaskControlBlock {
   /// @}
 };
 
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_TASK_CONTROL_BLOCK_HPP_
+#endif /* SIMPLEKERNEL_SRC_INCLUDE_TASK_CONTROL_BLOCK_HPP_ */
