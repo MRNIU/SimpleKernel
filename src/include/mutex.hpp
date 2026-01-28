@@ -186,7 +186,7 @@ class Mutex {
    * @brief 构造函数
    * @param name 互斥锁名称
    */
-  explicit Mutex(const char* name = "unnamed_mutex")
+  explicit Mutex(const char* name)
       : name_(name),
         resource_id_(ResourceType::kMutex, reinterpret_cast<uint64_t>(this)) {}
 
@@ -201,7 +201,7 @@ class Mutex {
   /// @}
 
  protected:
-  /// 锁状态：true=已锁定，false=未锁定
+  /// 锁状态
   std::atomic<bool> locked_{false};
 
   /// 持有锁的任务 ID，max() 表示未被持有
