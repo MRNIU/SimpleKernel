@@ -242,4 +242,4 @@ class list {
 
 }  // namespace sk_std
 
-#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_LIST_
+#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_LIST_ */
