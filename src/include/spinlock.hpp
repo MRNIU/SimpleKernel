@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <cstddef>
+#include <limits>
 
 #include "sk_cstdio"
 
@@ -71,7 +72,8 @@ class SpinLock {
     }
 
     // 先重置 core_id_，再释放锁
-    core_id_.store(SIZE_MAX, std::memory_order_release);
+    core_id_.store(std::numeric_limits<size_t>::max(),
+                   std::memory_order_release);
     locked_.clear(std::memory_order_release);
 
     if (saved_intr_enable_) {
@@ -86,7 +88,7 @@ class SpinLock {
   /// 是否 Lock
   std::atomic_flag locked_{ATOMIC_FLAG_INIT};
   /// 获得此锁的 core_id_
-  std::atomic<size_t> core_id_{SIZE_MAX};
+  std::atomic<size_t> core_id_{std::numeric_limits<size_t>::max()};
   /// 保存的中断状态
   bool saved_intr_enable_{false};
 
