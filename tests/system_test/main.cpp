@@ -121,9 +121,6 @@ auto main(int argc, const char** argv) -> int {
 
   klog::info << "Hello SimpleKernel\n";
 
-  // 运行 Mutex 测试
-  MutexTest::RunTest();
-
   // 主核运行所有测试（包括多核测试）
   run_tests_main();
 
