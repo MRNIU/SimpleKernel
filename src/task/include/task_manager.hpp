@@ -176,8 +176,8 @@ class TaskManager {
 
     // 中断号
     uint64_t interrupt_no;
-    // 中断数据（可选）
-    void* data;
+    // 中断上下文
+    cpu_io::TrapContext* data;
     // 时间戳
     uint64_t timestamp;
 
