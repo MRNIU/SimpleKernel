@@ -54,7 +54,7 @@ class SpinLockTest : public ::testing::Test {
   }
 };
 
-// 测试基本的 lock/unlock 功能
+// 测试基本的 lock/UnLock 功能
 TEST_F(SpinLockTest, BasicLockUnlock) {
   SpinLockTestable lock("basic_test");
 
@@ -237,7 +237,7 @@ TEST_F(SpinLockTest, PerformanceTest) {
 
   // 输出性能信息
   std::cout << std::format(
-      "SpinLock performance: {} lock/unlock pairs in {} microseconds\n",
+      "SpinLock performance: {} lock/UnLock pairs in {} microseconds\n",
       iterations, duration.count());
 
   // 基本的性能断言：应该能在合理时间内完成
@@ -275,7 +275,7 @@ TEST_F(SpinLockTest, ConcurrentAccessOrder) {
       }
 
       for (int j = 0; j < operations_per_thread; ++j) {
-        lock.lock();
+        lock.Lock();
 
         // 在临界区内记录访问顺序
         {
@@ -286,7 +286,7 @@ TEST_F(SpinLockTest, ConcurrentAccessOrder) {
         // 模拟随机工作时间
         std::this_thread::sleep_for(std::chrono::microseconds(work_dis(gen)));
 
-        lock.unlock();
+        lock.UnLock();
 
         // 在解锁后随机休息，让其他线程有机会获取锁
         std::this_thread::sleep_for(std::chrono::microseconds(rest_dis(gen)));
@@ -347,13 +347,13 @@ TEST_F(SpinLockTest, LockFairness) {
       std::uniform_int_distribution<> rest_dis(5, 30);  // 休息时间 5-30 微秒
 
       while (!stop_flag.load()) {
-        if (lock.lock()) {
+        if (lock.Lock()) {
           thread_access_counts[i]++;
 
           // 模拟随机工作时间
           std::this_thread::sleep_for(std::chrono::microseconds(work_dis(gen)));
 
-          lock.unlock();
+          lock.UnLock();
         }
 
         // 随机休息时间，给其他线程机会
@@ -388,7 +388,7 @@ TEST_F(SpinLockTest, LockFairness) {
 TEST_F(SpinLockTest, EdgeCases) {
   SpinLockTestable lock("edge_case_test");
 
-  // 测试快速连续的 lock/unlock
+  // 测试快速连续的 lock/UnLock
   for (int i = 0; i < 1000; ++i) {
     lock.Lock();
     lock.UnLock();
