@@ -275,7 +275,7 @@ TEST_F(SpinLockTest, ConcurrentAccessOrder) {
       }
 
       for (int j = 0; j < operations_per_thread; ++j) {
-        lock.lock();
+        lock.Lock();
 
         // 在临界区内记录访问顺序
         {
@@ -286,7 +286,7 @@ TEST_F(SpinLockTest, ConcurrentAccessOrder) {
         // 模拟随机工作时间
         std::this_thread::sleep_for(std::chrono::microseconds(work_dis(gen)));
 
-        lock.unlock();
+        lock.UnLock();
 
         // 在解锁后随机休息，让其他线程有机会获取锁
         std::this_thread::sleep_for(std::chrono::microseconds(rest_dis(gen)));
@@ -347,13 +347,13 @@ TEST_F(SpinLockTest, LockFairness) {
       std::uniform_int_distribution<> rest_dis(5, 30);  // 休息时间 5-30 微秒
 
       while (!stop_flag.load()) {
-        if (lock.lock()) {
+        if (lock.Lock()) {
           thread_access_counts[i]++;
 
           // 模拟随机工作时间
           std::this_thread::sleep_for(std::chrono::microseconds(work_dis(gen)));
 
-          lock.unlock();
+          lock.UnLock();
         }
 
         // 随机休息时间，给其他线程机会
