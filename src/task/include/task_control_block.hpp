@@ -191,37 +191,6 @@ struct TaskControlBlock {
   /// @todo 优先级继承相关
   /// @todo 文件系统相关
 
-  /**
-   * @brief 构造函数 (内核线程)
-   * @param name 任务名称
-   * @param priority 优先级 (数字越小优先级越高)
-   * @param entry 线程入口函数
-   * @param arg 线程参数
-   */
-  TaskControlBlock(const char* name, int priority, ThreadEntry entry,
-                   void* arg);
-
-  /**
-   * @brief 构造函数 (用户线程)
-   * @param name 任务名称
-   * @param priority 优先级 (数字越小优先级越高)
-   * @param elf 指向 ELF 镜像的指针
-   * @param argc 参数个数
-   * @param argv 参数数组
-   */
-  TaskControlBlock(const char* name, int priority, uint8_t* elf, int argc,
-                   char** argv);
-
-  /// @name 构造/析构函数
-  /// @{
-  TaskControlBlock() = default;
-  TaskControlBlock(const TaskControlBlock&) = delete;
-  TaskControlBlock(TaskControlBlock&&) = delete;
-  auto operator=(const TaskControlBlock&) -> TaskControlBlock& = delete;
-  auto operator=(TaskControlBlock&&) -> TaskControlBlock& = delete;
-  ~TaskControlBlock();
-  /// @}
-
   /// @name 线程组相关方法
   /// @{
   /**
@@ -257,6 +226,37 @@ struct TaskControlBlock {
   auto InSameThreadGroup(const TaskControlBlock* other) const -> bool {
     return other && (tgid == other->tgid) && (tgid != 0);
   }
+  /// @}
+
+  /**
+   * @brief 构造函数 (内核线程)
+   * @param name 任务名称
+   * @param priority 优先级 (数字越小优先级越高)
+   * @param entry 线程入口函数
+   * @param arg 线程参数
+   */
+  TaskControlBlock(const char* name, int priority, ThreadEntry entry,
+                   void* arg);
+
+  /**
+   * @brief 构造函数 (用户线程)
+   * @param name 任务名称
+   * @param priority 优先级 (数字越小优先级越高)
+   * @param elf 指向 ELF 镜像的指针
+   * @param argc 参数个数
+   * @param argv 参数数组
+   */
+  TaskControlBlock(const char* name, int priority, uint8_t* elf, int argc,
+                   char** argv);
+
+  /// @name 构造/析构函数
+  /// @{
+  TaskControlBlock() = default;
+  TaskControlBlock(const TaskControlBlock&) = delete;
+  TaskControlBlock(TaskControlBlock&&) = delete;
+  auto operator=(const TaskControlBlock&) -> TaskControlBlock& = delete;
+  auto operator=(TaskControlBlock&&) -> TaskControlBlock& = delete;
+  ~TaskControlBlock();
   /// @}
 };
 
