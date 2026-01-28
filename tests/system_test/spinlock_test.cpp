@@ -13,6 +13,7 @@
 #include "system_test.h"
 
 namespace {
+// 测试辅助类：暴露 protected 成员用于测试验证
 class TestSpinLock : public SpinLock {
  public:
   using SpinLock::IsLockedByCurrentCore;
