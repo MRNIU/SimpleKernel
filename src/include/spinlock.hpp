@@ -129,7 +129,14 @@ class LockGuard {
    * @brief 构造函数，自动获取锁
    * @param mutex 要保护的锁对象
    */
-  explicit LockGuard(mutex_type& mutex) : mutex_(mutex) { mutex_.Lock(); }
+  explicit LockGuard(mutex_type& mutex) : mutex_(mutex) {
+    if (!mutex_.Lock()) {
+      klog::Err("LockGuard: Failed to acquire lock\n");
+      while (true) {
+        cpu_io::Pause();
+      }
+    }
+  }
 
   /**
    * @brief 析构函数，自动释放锁
