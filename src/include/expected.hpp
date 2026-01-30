@@ -24,6 +24,9 @@ enum class ErrorCode : uint64_t {
   kFdtPropertyNotFound = 0x203,
   kFdtParseFailed = 0x204,
   kFdtInvalidPropertySize = 0x205,
+  // SpinLock 相关错误 (0x300 - 0x3FF)
+  kSpinLockRecursiveLock = 0x300,
+  kSpinLockNotOwned = 0x301,
   // 通用错误 (0xF00 - 0xFFF)
   kInvalidArgument = 0xF00,
   kOutOfMemory = 0xF01,
@@ -58,6 +61,10 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
       return "FDT parse failed";
     case ErrorCode::kFdtInvalidPropertySize:
       return "Invalid FDT property size";
+    case ErrorCode::kSpinLockRecursiveLock:
+      return "Recursive spinlock detected";
+    case ErrorCode::kSpinLockNotOwned:
+      return "Spinlock not owned by current core";
     case ErrorCode::kInvalidArgument:
       return "Invalid argument";
     case ErrorCode::kOutOfMemory:
