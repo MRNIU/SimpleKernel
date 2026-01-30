@@ -15,6 +15,7 @@
 #include "expected.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
+#include "sk_cassert"
 
 /**
  * elf 文件相关
@@ -31,12 +32,7 @@ class KernelElf {
    * @param elf_addr elf 地址
    */
   explicit KernelElf(uint64_t elf_addr) {
-    if (elf_addr == 0U) {
-      klog::Err("Fatal Error: Invalid elf_addr[0x%lX].\n", elf_addr);
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
+    sk_assert_msg(elf_addr != 0U, "Invalid elf_addr[0x%lX].\n", elf_addr);
 
     elf_ = std::span<uint8_t>(reinterpret_cast<uint8_t*>(elf_addr), EI_NIDENT);
 
@@ -83,6 +79,7 @@ class KernelElf {
         reinterpret_cast<Elf64_Shdr*>(elf_.data() + ehdr_.e_shoff),
         ehdr_.e_shnum);
 
+#ifdef SIMPLEKERNEL_DEBUG
     const auto* shstrtab = reinterpret_cast<const char*>(elf_.data()) +
                            shdr_[ehdr_.e_shstrndx].sh_offset;
     for (auto shdr : shdr_) {
@@ -95,6 +92,7 @@ class KernelElf {
         strtab_ = elf_.data() + shdr.sh_offset;
       }
     }
+#endif
   }
 
   /// @name 构造/析构函数

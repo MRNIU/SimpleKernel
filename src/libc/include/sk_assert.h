@@ -30,20 +30,22 @@ extern "C" {
   } while (0)
 
 /**
- * @brief 带自定义消息的运行时断言宏
+ * @brief 带自定义消息的运行时断言宏（支持变长参数）
  * @param expr 断言表达式
- * @param msg 自定义错误消息
+ * @param fmt 格式化字符串
+ * @param ... 格式化参数
  */
-#define sk_assert_msg(expr, msg)                                            \
-  do {                                                                      \
-    if (!(expr)) {                                                          \
-      klog::Err(                                                            \
-          "\n[ASSERT FAILED] %s:%d in %s\n Expression: %s\n Message: %s\n", \
-          __FILE__, __LINE__, __PRETTY_FUNCTION__, #expr, msg);             \
-      while (true) {                                                        \
-        cpu_io::Pause();                                                    \
-      }                                                                     \
-    }                                                                       \
+#define sk_assert_msg(expr, fmt, ...)                                      \
+  do {                                                                     \
+    if (!(expr)) {                                                         \
+      klog::Err(                                                           \
+          "\n[ASSERT FAILED] %s:%d in %s\n Expression: %s\n Message: " fmt \
+          "\n",                                                            \
+          __FILE__, __LINE__, __PRETTY_FUNCTION__, #expr, ##__VA_ARGS__);  \
+      while (true) {                                                       \
+        cpu_io::Pause();                                                   \
+      }                                                                    \
+    }                                                                      \
   } while (0)
 
 #ifdef __cplusplus
