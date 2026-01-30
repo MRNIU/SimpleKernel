@@ -179,20 +179,9 @@ extern "C" void __cxa_pure_virtual() {
 }
 
 /**
- * 异常处理
- * @note 这里只能处理 throw，无法处理异常类型
+ * 终止程序
  */
-extern "C" void __cxa_rethrow() {
-  while (true) {
-    cpu_io::Pause();
-  }
-}
-extern "C" void _Unwind_Resume() {
-  while (true) {
-    cpu_io::Pause();
-  }
-}
-extern "C" void __gxx_personality_v0() {
+extern "C" void abort() {
   while (true) {
     cpu_io::Pause();
   }
