@@ -24,7 +24,7 @@ extern "C" function_t __fini_array_end;
 void* __dso_handle = nullptr;
 
 /// 最大析构函数数量
-static constexpr const size_t kMaxAtExitFuncsCount = 128;
+static constexpr size_t kMaxAtExitFuncsCount = 128;
 
 /// 析构函数结构
 struct atexit_func_entry_t {

@@ -22,14 +22,14 @@ namespace detail {
 static SpinLock log_lock("kernel_log");
 
 /// ANSI 转义码，在支持 ANSI 转义码的终端中可以显示颜色
-static constexpr const auto kReset = "\033[0m";
-static constexpr const auto kRed = "\033[31m";
-static constexpr const auto kGreen = "\033[32m";
-static constexpr const auto kYellow = "\033[33m";
-static constexpr const auto kBlue = "\033[34m";
-static constexpr const auto kMagenta = "\033[35m";
-static constexpr const auto kCyan = "\033[36m";
-static constexpr const auto kWhite = "\033[37m";
+static constexpr auto kReset = "\033[0m";
+static constexpr auto kRed = "\033[31m";
+static constexpr auto kGreen = "\033[32m";
+static constexpr auto kYellow = "\033[33m";
+static constexpr auto kBlue = "\033[34m";
+static constexpr auto kMagenta = "\033[35m";
+static constexpr auto kCyan = "\033[36m";
+static constexpr auto kWhite = "\033[37m";
 
 template <template <typename...> class OutputFunction>
 class Logger : public sk_std::ostream {
