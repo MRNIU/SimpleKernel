@@ -2,11 +2,12 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include "apic.h"
+
 #include <cpu_io.h>
 
 #include <cstring>
 
-#include "apic.h"
 #include "kernel_log.hpp"
 
 Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {
@@ -65,12 +66,12 @@ bool Apic::UnmaskIrq(uint8_t irq) {
   return true;
 }
 
-void Apic::SendIpi(uint32_t target_apic_id, uint8_t vector) const {
-  local_apic_.SendIpi(target_apic_id, vector);
+auto Apic::SendIpi(uint32_t target_apic_id, uint8_t vector) const -> bool {
+  return local_apic_.SendIpi(target_apic_id, vector);
 }
 
-void Apic::BroadcastIpi(uint8_t vector) const {
-  local_apic_.BroadcastIpi(vector);
+auto Apic::BroadcastIpi(uint8_t vector) const -> bool {
+  return local_apic_.BroadcastIpi(vector);
 }
 
 bool Apic::StartupAp(uint32_t apic_id, uint64_t ap_code_addr,

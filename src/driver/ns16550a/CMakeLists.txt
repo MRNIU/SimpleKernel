@@ -1,4 +1,5 @@
 # Copyright The SimpleKernel Contributors
+# CMake build configuration
 
 ADD_LIBRARY (ns16550a INTERFACE)
 

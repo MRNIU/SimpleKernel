@@ -49,13 +49,13 @@ class LocalApic {
    * @param destination_apic_id 目标 APIC ID
    * @param vector 中断向量
    */
-  void SendIpi(uint32_t destination_apic_id, uint8_t vector) const;
+  bool SendIpi(uint32_t destination_apic_id, uint8_t vector) const;
 
   /**
    * @brief 广播 IPI 到所有其他 CPU
    * @param vector 中断向量
    */
-  void BroadcastIpi(uint8_t vector) const;
+  bool BroadcastIpi(uint8_t vector) const;
 
   /**
    * @brief 设置任务优先级
