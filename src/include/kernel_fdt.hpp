@@ -155,10 +155,16 @@ class KernelFdt {
       }
     };
 
+    /// PSCI 标准函数 ID（SMC64 调用约定）
     /// @see https://developer.arm.com/documentation/den0022/fb/?lang=en
-    assert_function_id("cpu_on", 0xC4000003);
-    assert_function_id("cpu_off", 0x84000002);
-    assert_function_id("cpu_suspend", 0xC4000001);
+    /// @note 高位 0xC4 表示 SMC64 快速调用，0x84 表示 SMC32 快速调用
+    static constexpr uint64_t kPsciCpuOnFuncId = 0xC4000003;
+    static constexpr uint64_t kPsciCpuOffFuncId = 0x84000002;
+    static constexpr uint64_t kPsciCpuSuspendFuncId = 0xC4000001;
+
+    assert_function_id("cpu_on", kPsciCpuOnFuncId);
+    assert_function_id("cpu_off", kPsciCpuOffFuncId);
+    assert_function_id("cpu_suspend", kPsciCpuSuspendFuncId);
   }
 
   /**
