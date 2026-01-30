@@ -25,7 +25,7 @@ constexpr uint8_t kKeyboardVector = 0xF1;
  * @param context 中断上下文
  * @return uint64_t 返回值
  */
-uint64_t ApicTimerHandler(uint64_t cause, uint8_t *context) {
+uint64_t ApicTimerHandler(uint64_t cause, cpu_io::TrapContext* context) {
   // APIC 时钟中断处理
   static uint64_t tick_count = 0;
   tick_count++;
@@ -47,7 +47,7 @@ uint64_t ApicTimerHandler(uint64_t cause, uint8_t *context) {
  * @param context 中断上下文
  * @return uint64_t 返回值
  */
-uint64_t KeyboardHandler(uint64_t cause, uint8_t *context) {
+uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
   klog::Info("Keyboard interrupt received, vector 0x%X\n",
              static_cast<uint32_t>(cause));
 
@@ -103,7 +103,7 @@ bool EnableKeyboardInterrupt(uint8_t vector) {
 
 };  // namespace
 
-void InterruptInit(int, const char **) {
+void InterruptInit(int, const char**) {
   Singleton<Interrupt>::GetInstance().SetUpIdtr();
 
   // 注册中断处理函数
@@ -126,7 +126,7 @@ void InterruptInit(int, const char **) {
   klog::Info("Hello InterruptInit\n");
 }
 
-void InterruptInitSMP(int, const char **) {
+void InterruptInitSMP(int, const char**) {
   Singleton<Interrupt>::GetInstance().SetUpIdtr();
   // 启用 Local APIC 定时器
   Singleton<Apic>::GetInstance().SetupPeriodicTimer(kApicTimerFrequencyHz,
