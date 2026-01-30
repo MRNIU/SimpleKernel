@@ -36,7 +36,7 @@ class KernelElf {
 
     elf_ = std::span<uint8_t>(reinterpret_cast<uint8_t*>(elf_addr), EI_NIDENT);
 
-    // 检查 elf 头数据，使用 Monadic operations 处理错误
+    // 检查 elf 头数据
     CheckElfIdentity().or_else([](Error err) -> Expected<void> {
       klog::Err("KernelElf NOT valid ELF file: %s\n", err.message());
       while (true) {
