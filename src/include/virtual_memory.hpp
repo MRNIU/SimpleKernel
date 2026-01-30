@@ -115,7 +115,9 @@ class VirtualMemory {
     if (!pte_result.has_value()) {
       return std::unexpected(Error(ErrorCode::kVmMapFailed));
     }
-    auto pte = pte_result.value();
+
+    /// @todo 这里希望使用 .value()，但是缺少异常支持，所以先用 *
+    auto pte = *pte_result;
 
     // 检查是否已经映射且标志位相同
     if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
@@ -156,7 +158,7 @@ class VirtualMemory {
     if (!pte_result.has_value()) {
       return std::unexpected(Error(ErrorCode::kVmPageNotMapped));
     }
-    auto pte = pte_result.value();
+    auto pte = *pte_result;
 
     if (!cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
       return std::unexpected(Error(ErrorCode::kVmPageNotMapped));
@@ -185,7 +187,7 @@ class VirtualMemory {
     if (!pte_result.has_value()) {
       return std::unexpected(Error(ErrorCode::kVmPageNotMapped));
     }
-    auto pte = pte_result.value();
+    auto pte = *pte_result;
 
     if (!cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
       return std::unexpected(Error(ErrorCode::kVmPageNotMapped));
