@@ -30,7 +30,7 @@ BasicInfo::BasicInfo(int argc, const char** argv) {
 
   fdt_addr = strtoull(argv[2], nullptr, 16);
 
-  core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
+  core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount().value_or(1);
 
   interval = cpu_io::CNTFRQ_EL0::Read();
 }

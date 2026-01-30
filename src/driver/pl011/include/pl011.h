@@ -47,81 +47,81 @@ class Pl011 {
 
  private:
   /// data register
-  static constexpr const uint32_t kRegDR = 0x00;
+  static constexpr uint32_t kRegDR = 0x00;
   /// receive status or error clear
-  static constexpr const uint32_t kRegRSRECR = 0x04;
+  static constexpr uint32_t kRegRSRECR = 0x04;
   /// DMA watermark configure
-  static constexpr const uint32_t kRegDmaWm = 0x08;
+  static constexpr uint32_t kRegDmaWm = 0x08;
   /// Timeout period
-  static constexpr const uint32_t kRegTimeOut = 0x0C;
+  static constexpr uint32_t kRegTimeOut = 0x0C;
   /// flag register
-  static constexpr const uint32_t kRegFR = 0x18;
+  static constexpr uint32_t kRegFR = 0x18;
   /// IrDA low-poer
-  static constexpr const uint32_t kRegILPR = 0x20;
+  static constexpr uint32_t kRegILPR = 0x20;
   /// integer baud register
-  static constexpr const uint32_t kRegIBRD = 0x24;
+  static constexpr uint32_t kRegIBRD = 0x24;
   /// fractional baud register
-  static constexpr const uint32_t kRegFBRD = 0x28;
+  static constexpr uint32_t kRegFBRD = 0x28;
   /// line control register
-  static constexpr const uint32_t kRegLCRH = 0x2C;
+  static constexpr uint32_t kRegLCRH = 0x2C;
   /// control register
-  static constexpr const uint32_t kRegCR = 0x30;
+  static constexpr uint32_t kRegCR = 0x30;
   /// interrupt FIFO level select
-  static constexpr const uint32_t kRegIFLS = 0x34;
+  static constexpr uint32_t kRegIFLS = 0x34;
   /// interrupt mask set/clear
-  static constexpr const uint32_t kRegIMSC = 0x38;
+  static constexpr uint32_t kRegIMSC = 0x38;
   /// raw interrupt register
-  static constexpr const uint32_t kRegRIS = 0x3C;
+  static constexpr uint32_t kRegRIS = 0x3C;
   /// masked interrupt register
-  static constexpr const uint32_t kRegMIS = 0x40;
+  static constexpr uint32_t kRegMIS = 0x40;
   /// interrupt clear register
-  static constexpr const uint32_t kRegICR = 0x44;
+  static constexpr uint32_t kRegICR = 0x44;
   /// DMA control register
-  static constexpr const uint32_t kRegDmaCR = 0x48;
+  static constexpr uint32_t kRegDmaCR = 0x48;
 
   /// flag register bits
-  static constexpr const uint32_t kFRRTXDIS = (1 << 13);
-  static constexpr const uint32_t kFRTERI = (1 << 12);
-  static constexpr const uint32_t kFRDDCD = (1 << 11);
-  static constexpr const uint32_t kFRDDSR = (1 << 10);
-  static constexpr const uint32_t kFRDCTS = (1 << 9);
-  static constexpr const uint32_t kFRRI = (1 << 8);
-  static constexpr const uint32_t kFRTXFE = (1 << 7);
-  static constexpr const uint32_t kFRRXFF = (1 << 6);
-  static constexpr const uint32_t kFRTxFIFO = (1 << 5);
-  static constexpr const uint32_t kFRRXFE = (1 << 4);
-  static constexpr const uint32_t kFRBUSY = (1 << 3);
-  static constexpr const uint32_t kFRDCD = (1 << 2);
-  static constexpr const uint32_t kFRDSR = (1 << 1);
-  static constexpr const uint32_t kFRCTS = (1 << 0);
+  static constexpr uint32_t kFRRTXDIS = (1 << 13);
+  static constexpr uint32_t kFRTERI = (1 << 12);
+  static constexpr uint32_t kFRDDCD = (1 << 11);
+  static constexpr uint32_t kFRDDSR = (1 << 10);
+  static constexpr uint32_t kFRDCTS = (1 << 9);
+  static constexpr uint32_t kFRRI = (1 << 8);
+  static constexpr uint32_t kFRTXFE = (1 << 7);
+  static constexpr uint32_t kFRRXFF = (1 << 6);
+  static constexpr uint32_t kFRTxFIFO = (1 << 5);
+  static constexpr uint32_t kFRRXFE = (1 << 4);
+  static constexpr uint32_t kFRBUSY = (1 << 3);
+  static constexpr uint32_t kFRDCD = (1 << 2);
+  static constexpr uint32_t kFRDSR = (1 << 1);
+  static constexpr uint32_t kFRCTS = (1 << 0);
 
   /// transmit/receive line register bits
-  static constexpr const uint32_t kLCRHSPS = (1 << 7);
-  static constexpr const uint32_t kLCRHWlen8 = (3 << 5);
-  static constexpr const uint32_t kLCRHWLEN_7 = (2 << 5);
-  static constexpr const uint32_t kLCRHWLEN_6 = (1 << 5);
-  static constexpr const uint32_t kLCRHWLEN_5 = (0 << 5);
-  static constexpr const uint32_t kLCRHFEN = (1 << 4);
-  static constexpr const uint32_t kLCRHSTP2 = (1 << 3);
-  static constexpr const uint32_t kLCRHEPS = (1 << 2);
-  static constexpr const uint32_t kLCRHPEN = (1 << 1);
-  static constexpr const uint32_t kLCRHBRK = (1 << 0);
+  static constexpr uint32_t kLCRHSPS = (1 << 7);
+  static constexpr uint32_t kLCRHWlen8 = (3 << 5);
+  static constexpr uint32_t kLCRHWLEN_7 = (2 << 5);
+  static constexpr uint32_t kLCRHWLEN_6 = (1 << 5);
+  static constexpr uint32_t kLCRHWLEN_5 = (0 << 5);
+  static constexpr uint32_t kLCRHFEN = (1 << 4);
+  static constexpr uint32_t kLCRHSTP2 = (1 << 3);
+  static constexpr uint32_t kLCRHEPS = (1 << 2);
+  static constexpr uint32_t kLCRHPEN = (1 << 1);
+  static constexpr uint32_t kLCRHBRK = (1 << 0);
 
   /// control register bits
-  static constexpr const uint32_t kCRCTSEN = (1 << 15);
-  static constexpr const uint32_t kCRRTSEN = (1 << 14);
-  static constexpr const uint32_t kCROUT2 = (1 << 13);
-  static constexpr const uint32_t kCROUT1 = (1 << 12);
-  static constexpr const uint32_t kCRRTS = (1 << 11);
-  static constexpr const uint32_t kCRDTR = (1 << 10);
-  static constexpr const uint32_t kCRRxEnable = (1 << 9);
-  static constexpr const uint32_t kCRTxEnable = (1 << 8);
-  static constexpr const uint32_t kCRLPE = (1 << 7);
-  static constexpr const uint32_t kCROVSFACT = (1 << 3);
-  static constexpr const uint32_t kCREnable = (1 << 0);
+  static constexpr uint32_t kCRCTSEN = (1 << 15);
+  static constexpr uint32_t kCRRTSEN = (1 << 14);
+  static constexpr uint32_t kCROUT2 = (1 << 13);
+  static constexpr uint32_t kCROUT1 = (1 << 12);
+  static constexpr uint32_t kCRRTS = (1 << 11);
+  static constexpr uint32_t kCRDTR = (1 << 10);
+  static constexpr uint32_t kCRRxEnable = (1 << 9);
+  static constexpr uint32_t kCRTxEnable = (1 << 8);
+  static constexpr uint32_t kCRLPE = (1 << 7);
+  static constexpr uint32_t kCROVSFACT = (1 << 3);
+  static constexpr uint32_t kCREnable = (1 << 0);
 
-  static constexpr const uint32_t kIMSCRTIM = (1 << 6);
-  static constexpr const uint32_t kIMSCRxim = (1 << 4);
+  static constexpr uint32_t kIMSCRTIM = (1 << 6);
+  static constexpr uint32_t kIMSCRxim = (1 << 4);
 
   uint64_t base_addr_ = 0;
   uint64_t base_clock_ = 0;

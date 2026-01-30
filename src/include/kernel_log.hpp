@@ -19,66 +19,17 @@ namespace klog {
 namespace detail {
 
 // 日志专用的自旋锁实例
-static SpinLock log_lock("kernel_log");
+inline SpinLock log_lock("kernel_log");
 
 /// ANSI 转义码，在支持 ANSI 转义码的终端中可以显示颜色
-static constexpr const auto kReset = "\033[0m";
-static constexpr const auto kRed = "\033[31m";
-static constexpr const auto kGreen = "\033[32m";
-static constexpr const auto kYellow = "\033[33m";
-static constexpr const auto kBlue = "\033[34m";
-static constexpr const auto kMagenta = "\033[35m";
-static constexpr const auto kCyan = "\033[36m";
-static constexpr const auto kWhite = "\033[37m";
-
-template <template <typename...> class OutputFunction>
-class Logger : public sk_std::ostream {
- public:
-  auto operator<<(int8_t val) -> Logger& override {
-    OutputFunction("%d", val);
-    return *this;
-  }
-
-  auto operator<<(uint8_t val) -> Logger& override {
-    OutputFunction("%d", val);
-    return *this;
-  }
-
-  auto operator<<(const char* val) -> Logger& override {
-    OutputFunction("%s", val);
-    return *this;
-  }
-
-  auto operator<<(int16_t val) -> Logger& override {
-    OutputFunction("%d", val);
-    return *this;
-  }
-
-  auto operator<<(uint16_t val) -> Logger& override {
-    OutputFunction("%d", val);
-    return *this;
-  }
-
-  auto operator<<(int32_t val) -> Logger& override {
-    OutputFunction("%d", val);
-    return *this;
-  }
-
-  auto operator<<(uint32_t val) -> Logger& override {
-    OutputFunction("%d", val);
-    return *this;
-  }
-
-  auto operator<<(int64_t val) -> Logger& override {
-    OutputFunction("%ld", val);
-    return *this;
-  }
-
-  auto operator<<(uint64_t val) -> Logger& override {
-    OutputFunction("%ld", val);
-    return *this;
-  }
-};
+static constexpr auto kReset = "\033[0m";
+static constexpr auto kRed = "\033[31m";
+static constexpr auto kGreen = "\033[32m";
+static constexpr auto kYellow = "\033[33m";
+static constexpr auto kBlue = "\033[34m";
+static constexpr auto kMagenta = "\033[35m";
+static constexpr auto kCyan = "\033[36m";
+static constexpr auto kWhite = "\033[37m";
 
 enum LogLevel {
   kDebug,
@@ -90,13 +41,83 @@ enum LogLevel {
 
 constexpr std::array<const char*, kLogLevelMax> kLogColors = {
     // kDebug
-    detail::kMagenta,
+    kMagenta,
     // kInfo
-    detail::kCyan,
+    kCyan,
     // kWarn
-    detail::kYellow,
+    kYellow,
     // kErr
-    detail::kRed,
+    kRed,
+};
+
+/**
+ * @brief 流式日志输出器
+ * @tparam Level 日志级别
+ * @note 使用 LogLevel 枚举作为模板参数，避免模板模板参数的复杂性
+ */
+template <LogLevel Level>
+class Logger : public sk_std::ostream {
+ public:
+  auto operator<<(int8_t val) -> Logger& override {
+    output("%d", val);
+    return *this;
+  }
+
+  auto operator<<(uint8_t val) -> Logger& override {
+    output("%u", static_cast<unsigned>(val));
+    return *this;
+  }
+
+  auto operator<<(const char* val) -> Logger& override {
+    output("%s", val);
+    return *this;
+  }
+
+  auto operator<<(int16_t val) -> Logger& override {
+    output("%d", val);
+    return *this;
+  }
+
+  auto operator<<(uint16_t val) -> Logger& override {
+    output("%u", static_cast<unsigned>(val));
+    return *this;
+  }
+
+  auto operator<<(int32_t val) -> Logger& override {
+    output("%d", val);
+    return *this;
+  }
+
+  auto operator<<(uint32_t val) -> Logger& override {
+    output("%u", val);
+    return *this;
+  }
+
+  auto operator<<(int64_t val) -> Logger& override {
+    output("%ld", val);
+    return *this;
+  }
+
+  auto operator<<(uint64_t val) -> Logger& override {
+    output("%lu", val);
+    return *this;
+  }
+
+ private:
+  /**
+   * @brief 输出格式化内容
+   * @tparam Args 可变参数类型
+   * @param fmt 格式化字符串
+   * @param args 格式化参数
+   */
+  template <typename... Args>
+  void output(const char* fmt, Args&&... args) {
+    constexpr auto* color = kLogColors[Level];
+    LockGuard<SpinLock> lock_guard(log_lock);
+    sk_printf("%s[%ld]", color, cpu_io::GetCurrentCoreId());
+    sk_printf(fmt, std::forward<Args>(args)...);
+    sk_printf("%s", kReset);
+  }
 };
 
 template <LogLevel Level, typename... Args>
@@ -173,10 +194,10 @@ struct Err : public detail::LogBase<detail::kErr, Args...> {
 template <typename... Args>
 Err(Args&&...) -> Err<Args...>;
 
-[[maybe_unused]] static detail::Logger<Info> info;
-[[maybe_unused]] static detail::Logger<Warn> warn;
-[[maybe_unused]] static detail::Logger<Debug> debug;
-[[maybe_unused]] static detail::Logger<Err> err;
+[[maybe_unused]] static detail::Logger<detail::kInfo> info;
+[[maybe_unused]] static detail::Logger<detail::kWarn> warn;
+[[maybe_unused]] static detail::Logger<detail::kDebug> debug;
+[[maybe_unused]] static detail::Logger<detail::kErr> err;
 
 }  // namespace klog
 
