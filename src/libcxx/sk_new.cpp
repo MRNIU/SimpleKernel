@@ -5,9 +5,9 @@
 #include <cstddef>
 #include <new>
 
-[[nodiscard]] void* operator new(size_t) { throw; }
+[[nodiscard]] void* operator new(size_t) { return nullptr; }
 
-[[nodiscard]] void* operator new[](size_t) { throw; }
+[[nodiscard]] void* operator new[](size_t) { return nullptr; }
 
 [[nodiscard]] void* operator new(size_t, size_t) noexcept { return nullptr; }
 
