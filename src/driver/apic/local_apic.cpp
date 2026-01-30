@@ -79,7 +79,8 @@ void LocalApic::SendEoi() const {
   }
 }
 
-void LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) const {
+auto LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) const
+    -> bool {
   if (is_x2apic_mode_) {
     auto icr = static_cast<uint64_t>(vector);
     icr |= static_cast<uint64_t>(destination_apic_id) << 32;
@@ -105,9 +106,10 @@ void LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) const {
       ;
     }
   }
+  return true;
 }
 
-void LocalApic::BroadcastIpi(uint8_t vector) const {
+auto LocalApic::BroadcastIpi(uint8_t vector) const -> bool {
   if (is_x2apic_mode_) {
     auto icr = static_cast<uint64_t>(vector);
     // 目标简写：除自己外的所有 CPU
@@ -132,6 +134,7 @@ void LocalApic::BroadcastIpi(uint8_t vector) const {
       ;
     }
   }
+  return true;
 }
 
 void LocalApic::SetTaskPriority(uint8_t priority) const {
