@@ -22,6 +22,8 @@ enum class ErrorCode : uint64_t {
   kFdtInvalidHeader = 0x201,
   kFdtNodeNotFound = 0x202,
   kFdtPropertyNotFound = 0x203,
+  kFdtParseFailed = 0x204,
+  kFdtInvalidPropertySize = 0x205,
   // 通用错误 (0xF00 - 0xFFF)
   kInvalidArgument = 0xF00,
   kOutOfMemory = 0xF01,
@@ -51,6 +53,10 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
       return "FDT node not found";
     case ErrorCode::kFdtPropertyNotFound:
       return "FDT property not found";
+    case ErrorCode::kFdtParseFailed:
+      return "FDT parse failed";
+    case ErrorCode::kFdtInvalidPropertySize:
+      return "Invalid FDT property size";
     case ErrorCode::kInvalidArgument:
       return "Invalid argument";
     case ErrorCode::kOutOfMemory:

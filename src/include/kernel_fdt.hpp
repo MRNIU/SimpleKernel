@@ -20,10 +20,10 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <optional>
 #include <tuple>
 #include <utility>
 
+#include "expected.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
 
@@ -40,22 +40,14 @@ class KernelFdt {
    */
   explicit KernelFdt(uint64_t header)
       : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
-    if (fdt_header_ == nullptr) {
-      klog::Err("Fatal Error: Invalid fdt_addr.\n");
+    // 使用 Monadic operations 处理验证
+    ValidateFdtHeader().or_else([](Error err) -> Expected<void> {
+      klog::Err("KernelFdt init failed: %s\n", err.message());
       while (true) {
         cpu_io::Pause();
       }
-    }
-
-    // 检查 fdt 头数据
-    if (fdt_check_header(fdt_header_) != 0) {
-      klog::Err("Invalid device tree blob [0x%p]\n", fdt_header_);
-      klog::Debug("fdt_header_->magic 0x%X\n", fdt_header_->magic);
-      klog::DebugBlob(fdt_header_, 32);
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
+      return {};
+    });
 
     klog::Debug("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
                 fdt32_to_cpu(fdt_header_->totalsize));
@@ -73,43 +65,36 @@ class KernelFdt {
 
   /**
    * 获取 core 数量
-   * @return std::optional<size_t> 成功返回核心数，解析失败返回 std::nullopt
-   * @note 返回 0 表示设备树中没有 CPU 节点（这在正常系统中不应发生）
+   * @return Expected<size_t> 成功返回核心数，失败返回错误
    */
-  [[nodiscard]] auto GetCoreCount() const -> std::optional<size_t> {
-    if (fdt_header_ == nullptr) {
-      klog::Err("GetCoreCount: fdt_header_ is null\n");
-      return std::nullopt;
-    }
+  [[nodiscard]] auto GetCoreCount() const -> Expected<size_t> {
+    return ValidateFdtNotNull().and_then([this]() -> Expected<size_t> {
+      size_t core_count = 0;
+      auto offset = -1;
+      bool found_cpus_node = false;
 
-    size_t core_count = 0;
-    auto offset = -1;
-    bool found_cpus_node = false;
-
-    while (true) {
-      offset = fdt_next_node(fdt_header_, offset, nullptr);
-      if (offset < 0) {
-        // FDT_ERR_NOTFOUND 表示遍历结束，其他负值表示错误
-        if (offset != -FDT_ERR_NOTFOUND && !found_cpus_node) {
-          klog::Err("GetCoreCount: fdt_next_node failed: %s\n",
-                    fdt_strerror(offset));
-          return std::nullopt;
+      while (true) {
+        offset = fdt_next_node(fdt_header_, offset, nullptr);
+        if (offset < 0) {
+          if (offset != -FDT_ERR_NOTFOUND && !found_cpus_node) {
+            return std::unexpected(Error(ErrorCode::kFdtParseFailed));
+          }
+          break;
         }
-        break;
-      }
 
-      const auto* prop =
-          fdt_get_property(fdt_header_, offset, "device_type", nullptr);
-      if (prop != nullptr) {
-        const char* device_type = reinterpret_cast<const char*>(prop->data);
-        if (strcmp(device_type, "cpu") == 0) {
-          found_cpus_node = true;
-          ++core_count;
+        const auto* prop =
+            fdt_get_property(fdt_header_, offset, "device_type", nullptr);
+        if (prop != nullptr) {
+          const char* device_type = reinterpret_cast<const char*>(prop->data);
+          if (strcmp(device_type, "cpu") == 0) {
+            found_cpus_node = true;
+            ++core_count;
+          }
         }
       }
-    }
 
-    return core_count;
+      return core_count;
+    });
   }
 
   /**
@@ -169,303 +154,280 @@ class KernelFdt {
 
   /**
    * 获取内存信息
-   * @return 内存信息<地址，长度>
+   * @return Expected<std::pair<uint64_t, size_t>> 内存信息<地址，长度>
    */
-  [[nodiscard]] auto GetMemory() const -> std::pair<uint64_t, size_t> {
-    uint64_t base = 0;
-    uint64_t size = 0;
-
-    int len = 0;
-
-    // 找到 /memory 节点
-    auto offset = fdt_path_offset(fdt_header_, "/memory");
-    if (offset < 0) {
-      klog::Err("Error finding /memory node: %s\n", fdt_strerror(offset));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    // 获取 reg 属性
-    const auto* prop = fdt_get_property(fdt_header_, offset, "reg", &len);
-    if (prop == nullptr) {
-      klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    // 解析 reg 属性，通常包含基地址和大小
-    const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
-    for (size_t i = 0; i < len / sizeof(uint64_t); i += 2) {
-      base = fdt64_to_cpu(reg[i]);
-      size = fdt64_to_cpu(reg[i + 1]);
-    }
-    return {base, size};
+  [[nodiscard]] auto GetMemory() const
+      -> Expected<std::pair<uint64_t, size_t>> {
+    return FindNode("/memory").and_then(
+        [this](int offset) -> Expected<std::pair<uint64_t, size_t>> {
+          return GetRegProperty(offset).transform(
+              [](std::pair<uint64_t, size_t> reg) { return reg; });
+        });
   }
 
   /**
    * 获取串口信息
-   * @return 内存信息<地址，长度，中断号>
+   * @return Expected<std::tuple<uint64_t, size_t, uint32_t>>
+   * <地址，长度，中断号>
    */
   [[nodiscard]] auto GetSerial() const
-      -> std::tuple<uint64_t, size_t, uint32_t> {
+      -> Expected<std::tuple<uint64_t, size_t, uint32_t>> {
+    return FindNode("/chosen").and_then(
+        [this](int chosen_offset)
+            -> Expected<std::tuple<uint64_t, size_t, uint32_t>> {
+          int len = 0;
+          const auto* prop =
+              fdt_get_property(fdt_header_, chosen_offset, "stdout-path", &len);
+          if (prop == nullptr || len <= 0) {
+            return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+          }
+
+          const char* stdout_path = reinterpret_cast<const char*>(prop->data);
+          std::array<char, 256> path_buffer;
+          strncpy(path_buffer.data(), stdout_path, path_buffer.max_size());
+
+          char* colon = strchr(path_buffer.data(), ':');
+          if (colon != nullptr) {
+            *colon = '\0';
+          }
+
+          int stdout_offset = -1;
+          if (path_buffer[0] == '&') {
+            const char* alias = path_buffer.data() + 1;
+            const char* aliased_path = fdt_get_alias(fdt_header_, alias);
+            if (aliased_path != nullptr) {
+              stdout_offset = fdt_path_offset(fdt_header_, aliased_path);
+            }
+          } else {
+            stdout_offset = fdt_path_offset(fdt_header_, path_buffer.data());
+          }
+
+          if (stdout_offset < 0) {
+            return std::unexpected(Error(ErrorCode::kFdtNodeNotFound));
+          }
+
+          // Get reg property
+          prop = fdt_get_property(fdt_header_, stdout_offset, "reg", &len);
+          if (prop == nullptr) {
+            return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+          }
+
+          uint64_t base = 0;
+          size_t size = 0;
+          const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
+          for (size_t i = 0; i < len / sizeof(uint64_t); i += 2) {
+            base = fdt64_to_cpu(reg[i]);
+            size = fdt64_to_cpu(reg[i + 1]);
+          }
+
+          // Get interrupts property
+          prop =
+              fdt_get_property(fdt_header_, stdout_offset, "interrupts", &len);
+          if (prop == nullptr) {
+            return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+          }
+
+          uint32_t irq = 0;
+          const auto* interrupts =
+              reinterpret_cast<const uint32_t*>(prop->data);
+          if (interrupts != nullptr && len != 0) {
+            irq = fdt32_to_cpu(*interrupts);
+          }
+
+          return std::tuple{base, size, irq};
+        });
+  }
+
+  /**
+   * 获取 cpu 时钟
+   * @return Expected<uint32_t> 时钟频率
+   */
+  [[nodiscard]] auto GetTimebaseFrequency() const -> Expected<uint32_t> {
+    return FindNode("/cpus").and_then([this](int offset) -> Expected<uint32_t> {
+      int len = 0;
+      const auto* prop = reinterpret_cast<const uint32_t*>(
+          fdt_getprop(fdt_header_, offset, "timebase-frequency", &len));
+      if (prop == nullptr) {
+        return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+      }
+
+      if (len != sizeof(uint32_t)) {
+        return std::unexpected(Error(ErrorCode::kFdtInvalidPropertySize));
+      }
+
+      return fdt32_to_cpu(*prop);
+    });
+  }
+
+  /**
+   * 获取 gic 信息
+   * @return Expected<std::tuple<...>>
+   * <dist地址，dist大小，redist地址，redist大小>
+   */
+  [[nodiscard]] auto GetGIC() const
+      -> Expected<std::tuple<uint64_t, size_t, uint64_t, size_t>> {
+    return FindCompatibleNode("arm,gic-v3")
+        .and_then(
+            [this](int offset)
+                -> Expected<std::tuple<uint64_t, size_t, uint64_t, size_t>> {
+              int len = 0;
+              const auto* prop =
+                  fdt_get_property(fdt_header_, offset, "reg", &len);
+              if (prop == nullptr) {
+                return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+              }
+
+              uint64_t dist_base = 0;
+              size_t dist_size = 0;
+              uint64_t redist_base = 0;
+              size_t redist_size = 0;
+
+              const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
+              if (static_cast<unsigned>(len) >= 2 * sizeof(uint64_t)) {
+                dist_base = fdt64_to_cpu(reg[0]);
+                dist_size = fdt64_to_cpu(reg[1]);
+              }
+              if (static_cast<unsigned>(len) >= 4 * sizeof(uint64_t)) {
+                redist_base = fdt64_to_cpu(reg[2]);
+                redist_size = fdt64_to_cpu(reg[3]);
+              }
+
+              return std::tuple{dist_base, dist_size, redist_base, redist_size};
+            });
+  }
+
+  /**
+   * 获取 GIC Distributor 信息
+   * @return Expected<std::pair<uint64_t, size_t>>
+   */
+  [[nodiscard]] auto GetGicDist() const
+      -> Expected<std::pair<uint64_t, size_t>> {
+    return GetGIC().transform(
+        [](std::tuple<uint64_t, size_t, uint64_t, size_t> gic) {
+          return std::pair{std::get<0>(gic), std::get<1>(gic)};
+        });
+  }
+
+  /**
+   * 获取 GIC CPU Interface (Redistributor) 信息
+   * @return Expected<std::pair<uint64_t, size_t>>
+   */
+  [[nodiscard]] auto GetGicCpu() const
+      -> Expected<std::pair<uint64_t, size_t>> {
+    return GetGIC().transform(
+        [](std::tuple<uint64_t, size_t, uint64_t, size_t> gic) {
+          return std::pair{std::get<2>(gic), std::get<3>(gic)};
+        });
+  }
+
+  /**
+   * 获取 aarch64 中断号
+   * @return Expected<uint64_t> intid
+   */
+  [[nodiscard]] auto GetAarch64Intid(const char* compatible) const
+      -> Expected<uint64_t> {
+    return FindCompatibleNode(compatible)
+        .and_then([this, compatible](int offset) -> Expected<uint64_t> {
+          int len = 0;
+          const auto* prop =
+              fdt_get_property(fdt_header_, offset, "interrupts", &len);
+          if (prop == nullptr) {
+            return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+          }
+
+          const auto* interrupts =
+              reinterpret_cast<const uint32_t*>(prop->data);
+
+#ifdef SIMPLEKERNEL_DEBUG
+          for (uint32_t i = 0; i < fdt32_to_cpu(prop->len);
+               i += 3 * sizeof(uint32_t)) {
+            auto type = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 0]);
+            auto intid = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 1]);
+            auto trigger =
+                fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xF;
+            auto cpuid_mask =
+                fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xFF00;
+            klog::Debug("type: %d, intid: %d, trigger: %d, cpuid_mask: %d\n",
+                        type, intid, trigger, cpuid_mask);
+          }
+#endif
+
+          uint64_t intid = 0;
+          if (strcmp(compatible, "arm,armv8-timer") == 0) {
+            intid = fdt32_to_cpu(interrupts[7]);
+          } else if (strcmp(compatible, "arm,pl011") == 0) {
+            intid = fdt32_to_cpu(interrupts[1]);
+          }
+
+          return intid;
+        });
+  }
+
+ private:
+  /**
+   * 验证 fdt_header_ 不为空
+   */
+  [[nodiscard]] auto ValidateFdtNotNull() const -> Expected<void> {
+    if (fdt_header_ == nullptr) {
+      return std::unexpected(Error(ErrorCode::kFdtInvalidAddress));
+    }
+    return {};
+  }
+
+  /**
+   * 验证 FDT header
+   */
+  [[nodiscard]] auto ValidateFdtHeader() const -> Expected<void> {
+    return ValidateFdtNotNull().and_then([this]() -> Expected<void> {
+      if (fdt_check_header(fdt_header_) != 0) {
+        return std::unexpected(Error(ErrorCode::kFdtInvalidHeader));
+      }
+      return {};
+    });
+  }
+
+  /**
+   * 查找节点
+   */
+  [[nodiscard]] auto FindNode(const char* path) const -> Expected<int> {
+    auto offset = fdt_path_offset(fdt_header_, path);
+    if (offset < 0) {
+      return std::unexpected(Error(ErrorCode::kFdtNodeNotFound));
+    }
+    return offset;
+  }
+
+  /**
+   * 按 compatible 查找节点
+   */
+  [[nodiscard]] auto FindCompatibleNode(const char* compatible) const
+      -> Expected<int> {
+    auto offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
+    if (offset < 0) {
+      return std::unexpected(Error(ErrorCode::kFdtNodeNotFound));
+    }
+    return offset;
+  }
+
+  /**
+   * 获取 reg 属性
+   */
+  [[nodiscard]] auto GetRegProperty(int offset) const
+      -> Expected<std::pair<uint64_t, size_t>> {
+    int len = 0;
+    const auto* prop = fdt_get_property(fdt_header_, offset, "reg", &len);
+    if (prop == nullptr) {
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+    }
+
     uint64_t base = 0;
     size_t size = 0;
-    uint32_t irq = 0;
-    int len = 0;
-
-    // Find the /chosen node
-    int chosen_offset = fdt_path_offset(fdt_header_, "/chosen");
-    if (chosen_offset < 0) {
-      klog::Err("Error finding /chosen node: %s\n",
-                fdt_strerror(chosen_offset));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    // Get the stdout-path property
-    const auto* prop =
-        fdt_get_property(fdt_header_, chosen_offset, "stdout-path", &len);
-    if (prop == nullptr || len <= 0) {
-      klog::Err("Error finding stdout-path property: %s\n", fdt_strerror(len));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    // Get the path as a string
-    const char* stdout_path = reinterpret_cast<const char*>(prop->data);
-
-    // Create a copy of the path that we can modify
-    std::array<char, 256> path_buffer;
-    strncpy(path_buffer.data(), stdout_path, path_buffer.max_size());
-
-    // Extract the path without any parameters (everything before ':')
-    char* colon = strchr(path_buffer.data(), ':');
-    if (colon != nullptr) {
-      *colon = '\0';  // Terminate the string at the colon
-    }
-
-    // Find the node at the stdout path
-    int stdout_offset = -1;
-
-    // Handle aliases (paths starting with '&')
-    if (path_buffer[0] == '&') {
-      const char* alias = path_buffer.data() + 1;  // Skip the '&'
-      const char* aliased_path = fdt_get_alias(fdt_header_, alias);
-      if (aliased_path != nullptr) {
-        stdout_offset = fdt_path_offset(fdt_header_, aliased_path);
-      }
-    } else {
-      stdout_offset = fdt_path_offset(fdt_header_, path_buffer.data());
-    }
-
-    if (stdout_offset < 0) {
-      klog::Err("Error finding node for stdout-path %s: %s\n", path_buffer,
-                fdt_strerror(stdout_offset));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    // Get the reg property of the stdout device
-    prop = fdt_get_property(fdt_header_, stdout_offset, "reg", &len);
-    if (prop == nullptr) {
-      klog::Err("Error finding reg property for stdout device: %s\n",
-                fdt_strerror(len));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    // Parse the reg property to get base address and size
     const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
     for (size_t i = 0; i < len / sizeof(uint64_t); i += 2) {
       base = fdt64_to_cpu(reg[i]);
       size = fdt64_to_cpu(reg[i + 1]);
     }
-
-    // Get the interrupts property
-    prop = fdt_get_property(fdt_header_, stdout_offset, "interrupts", &len);
-    if (prop == nullptr) {
-      klog::Err("Error finding interrupts property for stdout device: %s\n",
-                fdt_strerror(len));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    // Parse the interrupts property to get the IRQ number
-    const auto* interrupts = reinterpret_cast<const uint32_t*>(prop->data);
-    if (interrupts != nullptr && len != 0) {
-      irq = fdt32_to_cpu(*interrupts);
-    }
-
-    return {base, size, irq};
-  }
-
-  /**
-   * 获取 cpu 时钟
-   * @return uint32_t 时钟频率
-   */
-  [[nodiscard]] auto GetTimebaseFrequency() const -> uint32_t {
-    int len = 0;
-
-    // 找到 /cpus 节点
-    auto offset = fdt_path_offset(fdt_header_, "/cpus");
-    if (offset < 0) {
-      klog::Err("Error finding /cpus node: %s\n", fdt_strerror(offset));
-      return 0;
-    }
-
-    const auto* prop = reinterpret_cast<const uint32_t*>(
-        fdt_getprop(fdt_header_, offset, "timebase-frequency", &len));
-    if (prop == nullptr) {
-      klog::Err("Error finding timebase-frequency property: %s\n",
-                fdt_strerror(len));
-      return 0;
-    }
-
-    if (len != sizeof(uint32_t)) {
-      klog::Err("Unexpected timebase-frequency size\n");
-      return 0;
-    }
-
-    return fdt32_to_cpu(*prop);
-  }
-
-  /**
-   * 获取 gic 信息
-   * @return 内存信息<dist 地址，dist 大小，redist 地址，redist 大小>
-   * @note 仅支持单个 dist+redist
-   * @see https://github.com/qemu/qemu/blob/master/hw/arm/virt.c
-   */
-  [[nodiscard]] auto GetGIC() const
-      -> std::tuple<uint64_t, size_t, uint64_t, size_t> {
-    uint64_t dist_base = 0;
-    size_t dist_size = 0;
-    uint64_t redist_base = 0;
-    size_t redist_size = 0;
-
-    int len = 0;
-    int offset = 0;
-
-    std::array<const char*, 1> compatible_str = {"arm,gic-v3"};
-
-    for (const auto& compatible : compatible_str) {
-      offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
-      if (offset != -FDT_ERR_NOTFOUND) {
-        break;
-      }
-    }
-    if (offset < 0) {
-      klog::Err("Error finding interrupt controller node: %s\n",
-                fdt_strerror(offset));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    // 获取 reg 属性
-    const auto* prop = fdt_get_property(fdt_header_, offset, "reg", &len);
-    if (prop == nullptr) {
-      klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    // 解析 reg 属性，通常包含基地址和大小
-    const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
-    if (static_cast<unsigned>(len) >= 2 * sizeof(uint64_t)) {
-      dist_base = fdt64_to_cpu(reg[0]);
-      dist_size = fdt64_to_cpu(reg[1]);
-    }
-    if (static_cast<unsigned>(len) >= 4 * sizeof(uint64_t)) {
-      redist_base = fdt64_to_cpu(reg[2]);
-      redist_size = fdt64_to_cpu(reg[3]);
-    }
-
-    return {dist_base, dist_size, redist_base, redist_size};
-  }
-
-  /**
-   * 获取 GIC Distributor 信息
-   * @return <base, size>
-   */
-  [[nodiscard]] auto GetGicDist() const -> std::pair<uint64_t, size_t> {
-    auto [dist_base, dist_size, redist_base, redist_size] = GetGIC();
-    return {dist_base, dist_size};
-  }
-
-  /**
-   * 获取 GIC CPU Interface (Redistributor) 信息
-   * @return <base, size>
-   */
-  [[nodiscard]] auto GetGicCpu() const -> std::pair<uint64_t, size_t> {
-    auto [dist_base, dist_size, redist_base, redist_size] = GetGIC();
-    return {redist_base, redist_size};
-  }
-
-  /**
-   * 获取 aarch64 中断号
-   * @return intid
-   * @see
-   * https://www.kernel.org/doc/Documentation/devicetree/bindings/arm/arch_timer.txt
-   * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/arm/gic.txt?id=refs/tags/v3.16-rc4
-   */
-  [[nodiscard]] auto GetAarch64Intid(const char* compatible) const -> uint64_t {
-    int len = 0;
-    int offset = 0;
-
-    offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
-
-    if (offset < 0) {
-      klog::Err("Error finding interrupt controller node: %s\n",
-                fdt_strerror(offset));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    // 获取 interrupts 属性
-    const auto* prop =
-        fdt_get_property(fdt_header_, offset, "interrupts", &len);
-    if (prop == nullptr) {
-      klog::Err("Error finding interrupts property: %s\n", fdt_strerror(len));
-      while (true) {
-        cpu_io::Pause();
-      }
-    }
-
-    const auto* interrupts = reinterpret_cast<const uint32_t*>(prop->data);
-
-#ifdef SIMPLEKERNEL_DEBUG
-    for (uint32_t i = 0; i < fdt32_to_cpu(prop->len);
-         i += 3 * sizeof(uint32_t)) {
-      // 0: SPI, 1: PPI
-      auto type = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 0]);
-      // PPI: 16 + intid, SPI: 32 + intid
-      // SPI[0-987], PPI[0-15]
-      auto intid = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 1]);
-      auto trigger = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xF;
-      auto cpuid_mask =
-          fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xFF00;
-      klog::Debug("type: %d, intid: %d, trigger: %d, cpuid_mask: %d\n", type,
-                  intid, trigger, cpuid_mask);
-    }
-#endif
-
-    uint64_t intid = 0;
-    if (strcmp(compatible, "arm,armv8-timer") == 0) {
-      intid = fdt32_to_cpu(interrupts[7]);
-    } else if (strcmp(compatible, "arm,pl011") == 0) {
-      intid = fdt32_to_cpu(interrupts[1]);
-    }
-
-    return intid;
+    return std::pair{base, size};
   }
 };
 

@@ -12,6 +12,7 @@
 #include <cstring>
 #include <span>
 
+#include "expected.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
 
@@ -39,14 +40,14 @@ class KernelElf {
 
     elf_ = std::span<uint8_t>(reinterpret_cast<uint8_t*>(elf_addr), EI_NIDENT);
 
-    // 检查 elf 头数据
-    auto check_elf_identity_ret = CheckElfIdentity();
-    if (!check_elf_identity_ret) {
-      klog::Err("KernelElf NOT valid ELF file.\n");
+    // 检查 elf 头数据，使用 Monadic operations 处理错误
+    CheckElfIdentity().or_else([](Error err) -> Expected<void> {
+      klog::Err("KernelElf NOT valid ELF file: %s\n", err.message());
       while (true) {
         cpu_io::Pause();
       }
-    }
+      return {};
+    });
 
     ehdr_ = *reinterpret_cast<const Elf64_Ehdr*>(elf_.data());
 
@@ -123,23 +124,35 @@ class KernelElf {
 
   /**
    * 检查 elf 标识
-   * @return 失败返回 false
+   * @return 成功返回 Expected<void>，失败返回错误
    */
-  [[nodiscard]] auto CheckElfIdentity() const -> bool {
+  [[nodiscard]] auto CheckElfIdentity() const -> Expected<void> {
+    return CheckElfMagic().and_then([this]() { return CheckElfClass(); });
+  }
+
+ private:
+  /**
+   * 检查 ELF magic number
+   */
+  [[nodiscard]] auto CheckElfMagic() const -> Expected<void> {
     if ((elf_[EI_MAG0] != ELFMAG0) || (elf_[EI_MAG1] != ELFMAG1) ||
         (elf_[EI_MAG2] != ELFMAG2) || (elf_[EI_MAG3] != ELFMAG3)) {
-      klog::Err("Fatal Error: Invalid ELF header.\n");
-      return false;
+      return std::unexpected(Error(ErrorCode::kElfInvalidMagic));
     }
+    return {};
+  }
+
+  /**
+   * 检查 ELF class (32/64 bit)
+   */
+  [[nodiscard]] auto CheckElfClass() const -> Expected<void> {
     if (elf_[EI_CLASS] == ELFCLASS32) {
-      klog::Err("Found 32bit executable but NOT SUPPORT.\n");
-      return false;
+      return std::unexpected(Error(ErrorCode::kElfUnsupported32Bit));
     }
     if (elf_[EI_CLASS] != ELFCLASS64) {
-      klog::Err("Fatal Error: Invalid executable.\n");
-      return false;
+      return std::unexpected(Error(ErrorCode::kElfInvalidClass));
     }
-    return true;
+    return {};
   }
 };
 
