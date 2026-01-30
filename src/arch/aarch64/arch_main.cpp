@@ -14,14 +14,21 @@
 #include "sk_stdlib.h"
 #include "virtual_memory.hpp"
 
-BasicInfo::BasicInfo(int argc, const char** argv) {
-  (void)argc;
-  (void)argv;
-
-  auto [memory_base, memory_size] =
-      Singleton<KernelFdt>::GetInstance().GetMemory();
-  physical_memory_addr = memory_base;
-  physical_memory_size = memory_size;
+BasicInfo::BasicInfo(int, const char** argv) {
+  Singleton<KernelFdt>::GetInstance()
+      .GetMemory()
+      .and_then([this](std::pair<uint64_t, size_t> mem) -> Expected<void> {
+        physical_memory_addr = mem.first;
+        physical_memory_size = mem.second;
+        return {};
+      })
+      .or_else([](Error err) -> Expected<void> {
+        klog::Err("Failed to get memory info: %s\n", err.message());
+        while (true) {
+          cpu_io::Pause();
+        }
+        return {};
+      });
 
   kernel_addr = reinterpret_cast<uint64_t>(__executable_start);
   kernel_size = reinterpret_cast<uint64_t>(end) -
@@ -47,7 +54,11 @@ void ArchInit(int argc, const char** argv) {
 
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
-  Singleton<KernelFdt>::GetInstance().CheckPSCI();
+  Singleton<KernelFdt>::GetInstance().CheckPSCI().or_else(
+      [](Error err) -> Expected<void> {
+        klog::Err("CheckPSCI failed: %s\n", err.message());
+        return {};
+      });
 
   klog::Info("Hello aarch64 ArchInit\n");
 }

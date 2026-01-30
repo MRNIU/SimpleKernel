@@ -8,6 +8,7 @@
 
 #include "arch.h"
 #include "basic_info.hpp"
+#include "expected.hpp"
 #include "interrupt.h"
 #include "kernel.h"
 #include "kernel_log.hpp"

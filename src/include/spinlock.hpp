@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <limits>
 
+#include "expected.hpp"
 #include "sk_cstdio"
 
 /**
@@ -30,8 +31,9 @@ class SpinLock {
 
   /**
    * @brief 获得锁
+   * @return Expected<void> 成功返回空值，失败返回错误
    */
-  __always_inline auto Lock() -> bool {
+  __always_inline auto Lock() -> Expected<void> {
     auto intr_enable = cpu_io::GetInterruptStatus();
     cpu_io::DisableInterrupt();
 
@@ -45,7 +47,7 @@ class SpinLock {
           cpu_io::EnableInterrupt();
         }
         sk_printf("spinlock %s recursive lock detected.\n", name_);
-        return false;
+        return std::unexpected(Error{ErrorCode::kSpinLockRecursiveLock});
       }
       cpu_io::Pause();
     }
@@ -53,16 +55,17 @@ class SpinLock {
     // 获取锁成功后立即设置 core_id_
     core_id_.store(cpu_io::GetCurrentCoreId(), std::memory_order_release);
     saved_intr_enable_ = intr_enable;
-    return true;
+    return {};
   }
 
   /**
    * @brief 释放锁
+   * @return Expected<void> 成功返回空值，失败返回错误
    */
-  __always_inline auto UnLock() -> bool {
+  __always_inline auto UnLock() -> Expected<void> {
     if (!IsLockedByCurrentCore()) {
       sk_printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
-      return false;
+      return std::unexpected(Error{ErrorCode::kSpinLockNotOwned});
     }
 
     // 先重置 core_id_，再释放锁
@@ -73,7 +76,7 @@ class SpinLock {
     if (saved_intr_enable_) {
       cpu_io::EnableInterrupt();
     }
-    return true;
+    return {};
   }
 
   /**
@@ -114,12 +117,12 @@ class SpinLock {
 
 /**
  * @brief RAII 风格的锁守卫模板类
- * @tparam Mutex 锁类型，必须有返回 bool 的 Lock() 和 UnLock() 方法
+ * @tparam Mutex 锁类型，必须有返回 Expected<void> 的 Lock() 和 UnLock() 方法
  */
 template <typename Mutex>
 requires requires(Mutex& m) {
-  { m.Lock() } -> std::same_as<bool>;
-  { m.UnLock() } -> std::same_as<bool>;
+  { m.Lock() } -> std::same_as<Expected<void>>;
+  { m.UnLock() } -> std::same_as<Expected<void>>;
 }
 class LockGuard {
  public:
@@ -130,8 +133,9 @@ class LockGuard {
    * @param mutex 要保护的锁对象
    */
   explicit LockGuard(mutex_type& mutex) : mutex_(mutex) {
-    if (!mutex_.Lock()) {
-      sk_printf("LockGuard: Failed to acquire lock\n");
+    if (auto result = mutex_.Lock(); !result) {
+      sk_printf("LockGuard: Failed to acquire lock: %s\n",
+                result.error().message());
       while (true) {
         cpu_io::Pause();
       }
