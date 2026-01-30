@@ -52,7 +52,11 @@ void ArchInit(int argc, const char** argv) {
 
   sk_std::cout << Singleton<BasicInfo>::GetInstance();
 
-  Singleton<KernelFdt>::GetInstance().CheckPSCI();
+  Singleton<KernelFdt>::GetInstance().CheckPSCI().or_else(
+      [](Error err) -> Expected<void> {
+        klog::Err("CheckPSCI failed: %s\n", err.message());
+        return {};
+      });
 
   klog::Info("Hello aarch64 ArchInit\n");
 }

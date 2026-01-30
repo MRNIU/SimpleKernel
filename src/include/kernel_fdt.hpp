@@ -41,79 +41,33 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetCoreCount() const -> Expected<size_t> {
     sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
-    size_t core_count = 0;
-    auto offset = -1;
-    bool found_cpus_node = false;
 
-    while (true) {
-      offset = fdt_next_node(fdt_header_, offset, nullptr);
-      if (offset < 0) {
-        if (offset != -FDT_ERR_NOTFOUND && !found_cpus_node) {
-          return std::unexpected(Error(ErrorCode::kFdtParseFailed));
-        }
-        break;
-      }
-
-      const auto* prop =
-          fdt_get_property(fdt_header_, offset, "device_type", nullptr);
-      if (prop != nullptr) {
-        const char* device_type = reinterpret_cast<const char*>(prop->data);
-        if (strcmp(device_type, "cpu") == 0) {
-          found_cpus_node = true;
-          ++core_count;
-        }
-      }
-    }
-
-    return core_count;
+    return CountNodesByDeviceType("cpu").and_then(
+        [](size_t count) -> Expected<size_t> {
+          if (count == 0) {
+            return std::unexpected(Error(ErrorCode::kFdtNodeNotFound));
+          }
+          return count;
+        });
   }
 
   /**
    * 判断 psci 信息
+   * @return Expected<void> 成功返回空，失败返回错误
    */
-  void CheckPSCI() const {
-    // Find the PSCI node
-    auto offset = fdt_path_offset(fdt_header_, "/psci");
-    if (offset < 0) {
-      klog::Err("Error finding /psci node: %s\n", fdt_strerror(offset));
-      return;
-    }
+  [[nodiscard]] auto CheckPSCI() const -> Expected<void> {
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
 
-    // Get the method property
-    int len = 0;
-    const auto* method_prop =
-        fdt_get_property(fdt_header_, offset, "method", &len);
-    if (method_prop == nullptr) {
-      klog::Err("Error finding PSCI method property\n");
-      return;
-    }
-
-    // Determine the method (SMC or HVC)
-    const char* method_str = reinterpret_cast<const char*>(method_prop->data);
-    klog::Debug("PSCI method: %s\n", method_str);
-
-    // 暂时只支持 smc
-    if (strcmp(method_str, "smc") != 0) {
-      klog::Err("Unsupported PSCI method: %s\n", method_str);
-    }
-
-    // Log function IDs for debugging
-    auto assert_function_id = [&](const char* name, uint64_t value) {
-      const auto* prop = fdt_get_property(fdt_header_, offset, name, &len);
-      if (prop != nullptr && (size_t)len >= sizeof(uint32_t)) {
-        uint32_t id =
-            fdt32_to_cpu(*reinterpret_cast<const uint32_t*>(prop->data));
-        klog::Debug("PSCI %s function ID: 0x%X\n", name, id);
-        if (id != value) {
-          klog::Err("PSCI %s function ID mismatch: expected 0x%X, got 0x%X\n",
-                    name, value, id);
-        }
-      }
-    };
-
-    assert_function_id("cpu_on", kPsciCpuOnFuncId);
-    assert_function_id("cpu_off", kPsciCpuOffFuncId);
-    assert_function_id("cpu_suspend", kPsciCpuSuspendFuncId);
+    return FindNode("/psci").and_then([this](int offset) -> Expected<void> {
+      return GetPsciMethod(offset).and_then(
+          [this, offset](const char* method) -> Expected<void> {
+            klog::Debug("PSCI method: %s\n", method);
+            if (strcmp(method, "smc") != 0) {
+              return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+            }
+            return ValidatePsciFunctionIds(offset);
+          });
+    });
   }
 
   /**
@@ -122,6 +76,8 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetMemory() const
       -> Expected<std::pair<uint64_t, size_t>> {
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+
     return FindNode("/memory").and_then(
         [this](int offset) -> Expected<std::pair<uint64_t, size_t>> {
           return GetRegProperty(offset).transform(
@@ -136,6 +92,8 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetSerial() const
       -> Expected<std::tuple<uint64_t, size_t, uint32_t>> {
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+
     auto chosen_offset = FindNode("/chosen");
     if (!chosen_offset.has_value()) {
       return std::unexpected(chosen_offset.error());
@@ -206,6 +164,8 @@ class KernelFdt {
    * @return Expected<uint32_t> 时钟频率
    */
   [[nodiscard]] auto GetTimebaseFrequency() const -> Expected<uint32_t> {
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+
     return FindNode("/cpus").and_then([this](int offset) -> Expected<uint32_t> {
       int len = 0;
       const auto* prop = reinterpret_cast<const uint32_t*>(
@@ -229,6 +189,8 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetGIC() const
       -> Expected<std::tuple<uint64_t, size_t, uint64_t, size_t>> {
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+
     auto offset = FindCompatibleNode("arm,gic-v3");
     if (!offset.has_value()) {
       return std::unexpected(offset.error());
@@ -289,6 +251,8 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetAarch64Intid(const char* compatible) const
       -> Expected<uint64_t> {
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+
     auto offset = FindCompatibleNode(compatible);
     if (!offset.has_value()) {
       return std::unexpected(offset.error());
@@ -416,6 +380,83 @@ class KernelFdt {
       size = fdt64_to_cpu(reg[i + 1]);
     }
     return std::pair{base, size};
+  }
+
+  /**
+   * 按 device_type 统计节点数量
+   * @param device_type 设备类型
+   * @return Expected<size_t> 节点数量
+   */
+  [[nodiscard]] auto CountNodesByDeviceType(const char* device_type) const
+      -> Expected<size_t> {
+    size_t count = 0;
+    auto offset = -1;
+
+    while (true) {
+      offset = fdt_next_node(fdt_header_, offset, nullptr);
+      if (offset < 0) {
+        if (offset != -FDT_ERR_NOTFOUND) {
+          return std::unexpected(Error(ErrorCode::kFdtParseFailed));
+        }
+        break;
+      }
+
+      const auto* prop =
+          fdt_get_property(fdt_header_, offset, "device_type", nullptr);
+      if (prop != nullptr) {
+        const char* type = reinterpret_cast<const char*>(prop->data);
+        if (strcmp(type, device_type) == 0) {
+          ++count;
+        }
+      }
+    }
+
+    return count;
+  }
+
+  /**
+   * 获取 PSCI method 属性
+   * @param offset 节点偏移
+   * @return Expected<const char*> method 字符串
+   */
+  [[nodiscard]] auto GetPsciMethod(int offset) const -> Expected<const char*> {
+    int len = 0;
+    const auto* prop = fdt_get_property(fdt_header_, offset, "method", &len);
+    if (prop == nullptr) {
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+    }
+    return reinterpret_cast<const char*>(prop->data);
+  }
+
+  /**
+   * 验证 PSCI 函数 ID
+   * @param offset 节点偏移
+   * @return Expected<void> 验证结果
+   */
+  [[nodiscard]] auto ValidatePsciFunctionIds(int offset) const
+      -> Expected<void> {
+    auto validate_id = [this, offset](const char* name,
+                                      uint64_t expected) -> Expected<void> {
+      int len = 0;
+      const auto* prop = fdt_get_property(fdt_header_, offset, name, &len);
+      if (prop != nullptr && static_cast<size_t>(len) >= sizeof(uint32_t)) {
+        uint32_t id =
+            fdt32_to_cpu(*reinterpret_cast<const uint32_t*>(prop->data));
+        klog::Debug("PSCI %s function ID: 0x%X\n", name, id);
+        if (id != expected) {
+          klog::Err("PSCI %s function ID mismatch: expected 0x%X, got 0x%X\n",
+                    name, expected, id);
+          return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+        }
+      }
+      return {};
+    };
+
+    return validate_id("cpu_on", kPsciCpuOnFuncId)
+        .and_then([&]() { return validate_id("cpu_off", kPsciCpuOffFuncId); })
+        .and_then([&]() {
+          return validate_id("cpu_suspend", kPsciCpuSuspendFuncId);
+        });
   }
 };
 
