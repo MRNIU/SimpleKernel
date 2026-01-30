@@ -67,17 +67,19 @@ extern "C" auto __cxa_atexit(void (*destructor_func)(void*), void* obj_ptr,
 extern "C" void __cxa_finalize(void* destructor_func) {
   if (destructor_func == nullptr) {
     // 如果 destructor_func 为 nullptr，调用所有析构函数
-    for (auto i = atexit_func_count - 1; i != 0; i--) {
-      if (atexit_funcs[i].destructor_func != nullptr) {
-        (*atexit_funcs[i].destructor_func)(atexit_funcs[i].obj_ptr);
+    for (size_t i = atexit_func_count; i > 0; --i) {
+      size_t idx = i - 1;
+      if (atexit_funcs[idx].destructor_func != nullptr) {
+        (*atexit_funcs[idx].destructor_func)(atexit_funcs[idx].obj_ptr);
       }
     }
   } else {
     // 不为空时只调用对应的析构函数
-    for (auto i = atexit_func_count - 1; i != 0; i--) {
-      if ((void*)atexit_funcs[i].destructor_func == destructor_func) {
-        (*atexit_funcs[i].destructor_func)(atexit_funcs[i].obj_ptr);
-        atexit_funcs[i].destructor_func = nullptr;
+    for (size_t i = atexit_func_count; i > 0; --i) {
+      size_t idx = i - 1;
+      if ((void*)atexit_funcs[idx].destructor_func == destructor_func) {
+        (*atexit_funcs[idx].destructor_func)(atexit_funcs[idx].obj_ptr);
+        atexit_funcs[idx].destructor_func = nullptr;
       }
     }
   }

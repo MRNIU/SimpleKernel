@@ -19,7 +19,7 @@ namespace klog {
 namespace detail {
 
 // 日志专用的自旋锁实例
-static SpinLock log_lock("kernel_log");
+inline SpinLock log_lock("kernel_log");
 
 /// ANSI 转义码，在支持 ANSI 转义码的终端中可以显示颜色
 static constexpr auto kReset = "\033[0m";
