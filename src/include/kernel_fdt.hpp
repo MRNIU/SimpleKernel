@@ -140,13 +140,6 @@ class KernelFdt {
       }
     };
 
-    /// PSCI 标准函数 ID（SMC64 调用约定）
-    /// @see https://developer.arm.com/documentation/den0022/fb/?lang=en
-    /// @note 高位 0xC4 表示 SMC64 快速调用，0x84 表示 SMC32 快速调用
-    static constexpr uint64_t kPsciCpuOnFuncId = 0xC4000003;
-    static constexpr uint64_t kPsciCpuOffFuncId = 0x84000002;
-    static constexpr uint64_t kPsciCpuSuspendFuncId = 0xC4000001;
-
     assert_function_id("cpu_on", kPsciCpuOnFuncId);
     assert_function_id("cpu_off", kPsciCpuOffFuncId);
     assert_function_id("cpu_suspend", kPsciCpuSuspendFuncId);
@@ -172,70 +165,69 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetSerial() const
       -> Expected<std::tuple<uint64_t, size_t, uint32_t>> {
-    return FindNode("/chosen").and_then(
-        [this](int chosen_offset)
-            -> Expected<std::tuple<uint64_t, size_t, uint32_t>> {
-          int len = 0;
-          const auto* prop =
-              fdt_get_property(fdt_header_, chosen_offset, "stdout-path", &len);
-          if (prop == nullptr || len <= 0) {
-            return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
-          }
+    auto chosen_offset = FindNode("/chosen");
+    if (!chosen_offset.has_value()) {
+      return std::unexpected(chosen_offset.error());
+    }
 
-          const char* stdout_path = reinterpret_cast<const char*>(prop->data);
-          std::array<char, 256> path_buffer;
-          strncpy(path_buffer.data(), stdout_path, path_buffer.max_size());
+    int len = 0;
+    const auto* prop = fdt_get_property(fdt_header_, chosen_offset.value(),
+                                        "stdout-path", &len);
+    if (prop == nullptr || len <= 0) {
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+    }
 
-          char* colon = strchr(path_buffer.data(), ':');
-          if (colon != nullptr) {
-            *colon = '\0';
-          }
+    const char* stdout_path = reinterpret_cast<const char*>(prop->data);
+    std::array<char, 256> path_buffer;
+    strncpy(path_buffer.data(), stdout_path, path_buffer.max_size());
 
-          int stdout_offset = -1;
-          if (path_buffer[0] == '&') {
-            const char* alias = path_buffer.data() + 1;
-            const char* aliased_path = fdt_get_alias(fdt_header_, alias);
-            if (aliased_path != nullptr) {
-              stdout_offset = fdt_path_offset(fdt_header_, aliased_path);
-            }
-          } else {
-            stdout_offset = fdt_path_offset(fdt_header_, path_buffer.data());
-          }
+    char* colon = strchr(path_buffer.data(), ':');
+    if (colon != nullptr) {
+      *colon = '\0';
+    }
 
-          if (stdout_offset < 0) {
-            return std::unexpected(Error(ErrorCode::kFdtNodeNotFound));
-          }
+    int stdout_offset = -1;
+    if (path_buffer[0] == '&') {
+      const char* alias = path_buffer.data() + 1;
+      const char* aliased_path = fdt_get_alias(fdt_header_, alias);
+      if (aliased_path != nullptr) {
+        stdout_offset = fdt_path_offset(fdt_header_, aliased_path);
+      }
+    } else {
+      stdout_offset = fdt_path_offset(fdt_header_, path_buffer.data());
+    }
 
-          // Get reg property
-          prop = fdt_get_property(fdt_header_, stdout_offset, "reg", &len);
-          if (prop == nullptr) {
-            return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
-          }
+    if (stdout_offset < 0) {
+      return std::unexpected(Error(ErrorCode::kFdtNodeNotFound));
+    }
 
-          uint64_t base = 0;
-          size_t size = 0;
-          const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
-          for (size_t i = 0; i < len / sizeof(uint64_t); i += 2) {
-            base = fdt64_to_cpu(reg[i]);
-            size = fdt64_to_cpu(reg[i + 1]);
-          }
+    // Get reg property
+    prop = fdt_get_property(fdt_header_, stdout_offset, "reg", &len);
+    if (prop == nullptr) {
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+    }
 
-          // Get interrupts property
-          prop =
-              fdt_get_property(fdt_header_, stdout_offset, "interrupts", &len);
-          if (prop == nullptr) {
-            return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
-          }
+    uint64_t base = 0;
+    size_t size = 0;
+    const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
+    for (size_t i = 0; i < len / sizeof(uint64_t); i += 2) {
+      base = fdt64_to_cpu(reg[i]);
+      size = fdt64_to_cpu(reg[i + 1]);
+    }
 
-          uint32_t irq = 0;
-          const auto* interrupts =
-              reinterpret_cast<const uint32_t*>(prop->data);
-          if (interrupts != nullptr && len != 0) {
-            irq = fdt32_to_cpu(*interrupts);
-          }
+    // Get interrupts property
+    prop = fdt_get_property(fdt_header_, stdout_offset, "interrupts", &len);
+    if (prop == nullptr) {
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+    }
 
-          return std::tuple{base, size, irq};
-        });
+    uint32_t irq = 0;
+    const auto* interrupts = reinterpret_cast<const uint32_t*>(prop->data);
+    if (interrupts != nullptr && len != 0) {
+      irq = fdt32_to_cpu(*interrupts);
+    }
+
+    return std::tuple{base, size, irq};
   }
 
   /**
@@ -266,34 +258,34 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetGIC() const
       -> Expected<std::tuple<uint64_t, size_t, uint64_t, size_t>> {
-    return FindCompatibleNode("arm,gic-v3")
-        .and_then(
-            [this](int offset)
-                -> Expected<std::tuple<uint64_t, size_t, uint64_t, size_t>> {
-              int len = 0;
-              const auto* prop =
-                  fdt_get_property(fdt_header_, offset, "reg", &len);
-              if (prop == nullptr) {
-                return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
-              }
+    auto offset = FindCompatibleNode("arm,gic-v3");
+    if (!offset.has_value()) {
+      return std::unexpected(offset.error());
+    }
 
-              uint64_t dist_base = 0;
-              size_t dist_size = 0;
-              uint64_t redist_base = 0;
-              size_t redist_size = 0;
+    int len = 0;
+    const auto* prop =
+        fdt_get_property(fdt_header_, offset.value(), "reg", &len);
+    if (prop == nullptr) {
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+    }
 
-              const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
-              if (static_cast<unsigned>(len) >= 2 * sizeof(uint64_t)) {
-                dist_base = fdt64_to_cpu(reg[0]);
-                dist_size = fdt64_to_cpu(reg[1]);
-              }
-              if (static_cast<unsigned>(len) >= 4 * sizeof(uint64_t)) {
-                redist_base = fdt64_to_cpu(reg[2]);
-                redist_size = fdt64_to_cpu(reg[3]);
-              }
+    uint64_t dist_base = 0;
+    size_t dist_size = 0;
+    uint64_t redist_base = 0;
+    size_t redist_size = 0;
 
-              return std::tuple{dist_base, dist_size, redist_base, redist_size};
-            });
+    const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
+    if (static_cast<unsigned>(len) >= 2 * sizeof(uint64_t)) {
+      dist_base = fdt64_to_cpu(reg[0]);
+      dist_size = fdt64_to_cpu(reg[1]);
+    }
+    if (static_cast<unsigned>(len) >= 4 * sizeof(uint64_t)) {
+      redist_base = fdt64_to_cpu(reg[2]);
+      redist_size = fdt64_to_cpu(reg[3]);
+    }
+
+    return std::tuple{dist_base, dist_size, redist_base, redist_size};
   }
 
   /**
@@ -326,44 +318,51 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetAarch64Intid(const char* compatible) const
       -> Expected<uint64_t> {
-    return FindCompatibleNode(compatible)
-        .and_then([this, compatible](int offset) -> Expected<uint64_t> {
-          int len = 0;
-          const auto* prop =
-              fdt_get_property(fdt_header_, offset, "interrupts", &len);
-          if (prop == nullptr) {
-            return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
-          }
+    auto offset = FindCompatibleNode(compatible);
+    if (!offset.has_value()) {
+      return std::unexpected(offset.error());
+    }
 
-          const auto* interrupts =
-              reinterpret_cast<const uint32_t*>(prop->data);
+    int len = 0;
+    const auto* prop =
+        fdt_get_property(fdt_header_, offset.value(), "interrupts", &len);
+    if (prop == nullptr) {
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+    }
+
+    const auto* interrupts = reinterpret_cast<const uint32_t*>(prop->data);
 
 #ifdef SIMPLEKERNEL_DEBUG
-          for (uint32_t i = 0; i < fdt32_to_cpu(prop->len);
-               i += 3 * sizeof(uint32_t)) {
-            auto type = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 0]);
-            auto intid = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 1]);
-            auto trigger =
-                fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xF;
-            auto cpuid_mask =
-                fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xFF00;
-            klog::Debug("type: %d, intid: %d, trigger: %d, cpuid_mask: %d\n",
-                        type, intid, trigger, cpuid_mask);
-          }
+    for (uint32_t i = 0; i < fdt32_to_cpu(prop->len);
+         i += 3 * sizeof(uint32_t)) {
+      auto type = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 0]);
+      auto intid = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 1]);
+      auto trigger = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xF;
+      auto cpuid_mask =
+          fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xFF00;
+      klog::Debug("type: %d, intid: %d, trigger: %d, cpuid_mask: %d\n", type,
+                  intid, trigger, cpuid_mask);
+    }
 #endif
 
-          uint64_t intid = 0;
-          if (strcmp(compatible, "arm,armv8-timer") == 0) {
-            intid = fdt32_to_cpu(interrupts[7]);
-          } else if (strcmp(compatible, "arm,pl011") == 0) {
-            intid = fdt32_to_cpu(interrupts[1]);
-          }
+    uint64_t intid = 0;
+    if (strcmp(compatible, "arm,armv8-timer") == 0) {
+      intid = fdt32_to_cpu(interrupts[7]);
+    } else if (strcmp(compatible, "arm,pl011") == 0) {
+      intid = fdt32_to_cpu(interrupts[1]);
+    }
 
-          return intid;
-        });
+    return intid;
   }
 
  private:
+  /// PSCI 标准函数 ID（SMC64 调用约定）
+  /// @see https://developer.arm.com/documentation/den0022/fb/?lang=en
+  /// @note 高位 0xC4 表示 SMC64 快速调用，0x84 表示 SMC32 快速调用
+  static constexpr uint64_t kPsciCpuOnFuncId = 0xC4000003;
+  static constexpr uint64_t kPsciCpuOffFuncId = 0x84000002;
+  static constexpr uint64_t kPsciCpuSuspendFuncId = 0xC4000001;
+
   /**
    * 验证 fdt_header_ 不为空
    */
