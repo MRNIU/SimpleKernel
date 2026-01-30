@@ -131,7 +131,7 @@ class LockGuard {
    */
   explicit LockGuard(mutex_type& mutex) : mutex_(mutex) {
     if (!mutex_.Lock()) {
-      klog::Err("LockGuard: Failed to acquire lock\n");
+      sk_printf("LockGuard: Failed to acquire lock\n");
       while (true) {
         cpu_io::Pause();
       }
