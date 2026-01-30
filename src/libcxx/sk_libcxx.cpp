@@ -120,37 +120,32 @@ static_assert(sizeof(GuardType) == 8, "GuardType must be 64 bits per ABI");
  * 检测静态局部变量是否已经初始化
  * @param guard 锁，一个 64 位变量
  * @return 未初始化返回非零值，已初始化返回 0
+ * @note 使用紧凑的 CAS 循环，compare_exchange_weak 失败时会自动更新 expected
  */
 extern "C" auto __cxa_guard_acquire(GuardType* guard) -> int {
-  // 如果已初始化，直接返回 0
-  if ((guard->guard.load(std::memory_order_acquire) &
-       GuardType::kInitializedMask) != 0U) {
-    return 0;
-  }
-
-  // 尝试原子地设置 is_in_use 位
   uint64_t expected = 0;
-  while (true) {
-    expected = guard->guard.load(std::memory_order_acquire);
 
-    // 双重检查：是否已初始化
+  // 紧凑的 CAS 循环：尝试将 0 -> kInUseMask
+  // compare_exchange_weak 失败时会将当前值写入 expected
+  while (!guard->guard.compare_exchange_weak(expected, GuardType::kInUseMask,
+                                             std::memory_order_acq_rel,
+                                             std::memory_order_acquire)) {
+    // CAS 失败，检查失败原因
     if ((expected & GuardType::kInitializedMask) != 0U) {
+      // 已被其他核心初始化完成
       return 0;
     }
 
-    // 是否其他核心正在初始化
-    if ((expected & GuardType::kInUseMask) != 0U) {
-      cpu_io::Pause();
-      continue;
-    }
+    // 其他核心正在初始化中，等待
+    cpu_io::Pause();
 
-    // 尝试设置 in_use 位
-    if (guard->guard.compare_exchange_weak(expected,
-                                           expected | GuardType::kInUseMask,
-                                           std::memory_order_acq_rel)) {
-      return 1;  // 获取成功，需要初始化
-    }
+    // 重置 expected 以便下次 CAS 尝试
+    // 如果当前值仍有 kInUseMask，CAS 会再次失败并更新 expected
+    expected = 0;
   }
+
+  // CAS 成功，当前核心负责初始化
+  return 1;
 }
 
 /**
