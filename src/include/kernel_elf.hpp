@@ -79,11 +79,12 @@ class KernelElf {
         reinterpret_cast<Elf64_Shdr*>(elf_.data() + ehdr_.e_shoff),
         ehdr_.e_shnum);
 
-#ifdef SIMPLEKERNEL_DEBUG
     const auto* shstrtab = reinterpret_cast<const char*>(elf_.data()) +
                            shdr_[ehdr_.e_shstrndx].sh_offset;
     for (auto shdr : shdr_) {
+#ifdef SIMPLEKERNEL_DEBUG
       klog::Debug("sh_name: [%s]\n", shstrtab + shdr.sh_name);
+#endif
       if (strcmp(shstrtab + shdr.sh_name, ".symtab") == 0) {
         symtab_ = std::span<Elf64_Sym>(
             reinterpret_cast<Elf64_Sym*>(elf_.data() + shdr.sh_offset),
@@ -92,7 +93,6 @@ class KernelElf {
         strtab_ = elf_.data() + shdr.sh_offset;
       }
     }
-#endif
   }
 
   /// @name 构造/析构函数
