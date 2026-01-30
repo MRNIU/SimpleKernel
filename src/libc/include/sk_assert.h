@@ -10,6 +10,8 @@
 #include "kernel_log.hpp"
 
 #ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief 运行时断言宏
@@ -44,6 +46,8 @@
     }                                                                       \
   } while (0)
 
-#endif /* __cplusplus */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_ASSERT_H_ */
