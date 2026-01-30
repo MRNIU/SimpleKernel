@@ -129,21 +129,15 @@ class KernelElf {
     if ((elf_[EI_MAG0] != ELFMAG0) || (elf_[EI_MAG1] != ELFMAG1) ||
         (elf_[EI_MAG2] != ELFMAG2) || (elf_[EI_MAG3] != ELFMAG3)) {
       klog::Err("Fatal Error: Invalid ELF header.\n");
-      while (true) {
-        cpu_io::Pause();
-      }
+      return false;
     }
     if (elf_[EI_CLASS] == ELFCLASS32) {
       klog::Err("Found 32bit executable but NOT SUPPORT.\n");
-      while (true) {
-        cpu_io::Pause();
-      }
+      return false;
     }
     if (elf_[EI_CLASS] != ELFCLASS64) {
       klog::Err("Fatal Error: Invalid executable.\n");
-      while (true) {
-        cpu_io::Pause();
-      }
+      return false;
     }
     return true;
   }

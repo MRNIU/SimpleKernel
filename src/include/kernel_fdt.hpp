@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -72,15 +73,28 @@ class KernelFdt {
 
   /**
    * 获取 core 数量
-   * @return core 数量
+   * @return std::optional<size_t> 成功返回核心数，解析失败返回 std::nullopt
+   * @note 返回 0 表示设备树中没有 CPU 节点（这在正常系统中不应发生）
    */
-  [[nodiscard]] auto GetCoreCount() const -> size_t {
+  [[nodiscard]] auto GetCoreCount() const -> std::optional<size_t> {
+    if (fdt_header_ == nullptr) {
+      klog::Err("GetCoreCount: fdt_header_ is null\n");
+      return std::nullopt;
+    }
+
     size_t core_count = 0;
     auto offset = -1;
+    bool found_cpus_node = false;
 
     while (true) {
       offset = fdt_next_node(fdt_header_, offset, nullptr);
       if (offset < 0) {
+        // FDT_ERR_NOTFOUND 表示遍历结束，其他负值表示错误
+        if (offset != -FDT_ERR_NOTFOUND && !found_cpus_node) {
+          klog::Err("GetCoreCount: fdt_next_node failed: %s\n",
+                    fdt_strerror(offset));
+          return std::nullopt;
+        }
         break;
       }
 
@@ -89,6 +103,7 @@ class KernelFdt {
       if (prop != nullptr) {
         const char* device_type = reinterpret_cast<const char*>(prop->data);
         if (strcmp(device_type, "cpu") == 0) {
+          found_cpus_node = true;
           ++core_count;
         }
       }

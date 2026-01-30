@@ -26,7 +26,7 @@ BasicInfo::BasicInfo(int, const char** argv) {
 
   fdt_addr = reinterpret_cast<uint64_t>(argv);
 
-  core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
+  core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount().value_or(1);
 
   interval = Singleton<KernelFdt>::GetInstance().GetTimebaseFrequency();
 }
