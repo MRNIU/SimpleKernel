@@ -296,7 +296,6 @@ class KernelFdt {
    */
   explicit KernelFdt(uint64_t header)
       : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
-    // 使用 Monadic operations 处理验证
     ValidateFdtHeader().or_else([](Error err) -> Expected<void> {
       klog::Err("KernelFdt init failed: %s\n", err.message());
       while (true) {
