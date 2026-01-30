@@ -45,10 +45,11 @@ auto virtual_memory_test() -> bool {
   void* virt_addr = reinterpret_cast<void*>(0x200000);
   void* phys_addr = reinterpret_cast<void*>(0x90000000);
 
-  bool map_result =
+  auto map_result =
       vm.MapPage(user_page_dir, virt_addr, phys_addr,
                  cpu_io::virtual_memory::GetUserPagePermissions());
-  EXPECT_TRUE(map_result, "virtual_memory_test: failed to map page");
+  EXPECT_TRUE(map_result.has_value(),
+              "virtual_memory_test: failed to map page");
   sk_printf("virtual_memory_test: mapped va=%p to pa=%p\n", virt_addr,
             phys_addr);
 
@@ -69,9 +70,10 @@ auto virtual_memory_test() -> bool {
     void* pa = reinterpret_cast<void*>(0x91000000 +
                                        i * cpu_io::virtual_memory::kPageSize);
 
-    bool result = vm.MapPage(user_page_dir, va, pa,
+    auto result = vm.MapPage(user_page_dir, va, pa,
                              cpu_io::virtual_memory::GetUserPagePermissions());
-    EXPECT_TRUE(result, "virtual_memory_test: failed to map multiple pages");
+    EXPECT_TRUE(result.has_value(),
+                "virtual_memory_test: failed to map multiple pages");
   }
   sk_printf("virtual_memory_test: mapped %zu pages\n", kNumPages);
 
@@ -92,8 +94,9 @@ auto virtual_memory_test() -> bool {
   sk_printf("virtual_memory_test: verified %zu page mappings\n", kNumPages);
 
   // Test 6: 取消映射
-  bool unmap_result = vm.UnmapPage(user_page_dir, virt_addr);
-  EXPECT_TRUE(unmap_result, "virtual_memory_test: failed to unmap page");
+  auto unmap_result = vm.UnmapPage(user_page_dir, virt_addr);
+  EXPECT_TRUE(unmap_result.has_value(),
+              "virtual_memory_test: failed to unmap page");
 
   auto unmapped = vm.GetMapping(user_page_dir, virt_addr);
   EXPECT_TRUE(!unmapped.has_value(),
@@ -101,9 +104,10 @@ auto virtual_memory_test() -> bool {
   sk_printf("virtual_memory_test: unmapped va=%p\n", virt_addr);
 
   // Test 7: 克隆页表（复制映射）
-  void* cloned_page_dir = vm.ClonePageDirectory(user_page_dir, true);
-  EXPECT_TRUE(cloned_page_dir != nullptr,
+  auto clone_result = vm.ClonePageDirectory(user_page_dir, true);
+  EXPECT_TRUE(clone_result.has_value(),
               "virtual_memory_test: failed to clone page directory");
+  void* cloned_page_dir = clone_result.value();
   EXPECT_TRUE(cloned_page_dir != user_page_dir,
               "virtual_memory_test: cloned page dir same as source");
   sk_printf("virtual_memory_test: cloned page directory to %p\n",
@@ -135,9 +139,10 @@ auto virtual_memory_test() -> bool {
   sk_printf("virtual_memory_test: verified cloned mappings\n");
 
   // Test 9: 克隆页表（不复制映射）
-  void* cloned_no_map = vm.ClonePageDirectory(user_page_dir, false);
-  EXPECT_TRUE(cloned_no_map != nullptr,
+  auto clone_no_map_result = vm.ClonePageDirectory(user_page_dir, false);
+  EXPECT_TRUE(clone_no_map_result.has_value(),
               "virtual_memory_test: failed to clone page dir (no mappings)");
+  void* cloned_no_map = clone_no_map_result.value();
   sk_printf("virtual_memory_test: cloned page directory (no mappings) to %p\n",
             cloned_no_map);
 
@@ -156,10 +161,10 @@ auto virtual_memory_test() -> bool {
   void* new_va = reinterpret_cast<void*>(0x400000);
   void* new_pa = reinterpret_cast<void*>(0x92000000);
 
-  bool clone_map_result =
+  auto clone_map_result =
       vm.MapPage(cloned_no_map, new_va, new_pa,
                  cpu_io::virtual_memory::GetUserPagePermissions());
-  EXPECT_TRUE(clone_map_result,
+  EXPECT_TRUE(clone_map_result.has_value(),
               "virtual_memory_test: failed to map in cloned page dir");
 
   // 验证只在克隆的页表中有映射

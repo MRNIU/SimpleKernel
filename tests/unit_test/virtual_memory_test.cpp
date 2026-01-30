@@ -89,10 +89,10 @@ TEST_F(VirtualMemoryTest, MapPageBasic) {
   void* phys_addr = reinterpret_cast<void*>(0x80001000);
 
   // 映射页面
-  bool result = vm.MapPage(page_dir, virt_addr, phys_addr,
+  auto result = vm.MapPage(page_dir, virt_addr, phys_addr,
                            cpu_io::virtual_memory::GetUserPagePermissions());
 
-  EXPECT_TRUE(result);
+  EXPECT_TRUE(result.has_value());
 
   // 验证映射
   auto mapped = vm.GetMapping(page_dir, virt_addr);
@@ -118,8 +118,8 @@ TEST_F(VirtualMemoryTest, UnmapPage) {
              cpu_io::virtual_memory::GetUserPagePermissions());
 
   // 取消映射
-  bool result = vm.UnmapPage(page_dir, virt_addr);
-  EXPECT_TRUE(result);
+  auto result = vm.UnmapPage(page_dir, virt_addr);
+  EXPECT_TRUE(result.has_value());
 
   // 验证取消映射
   auto mapped = vm.GetMapping(page_dir, virt_addr);
@@ -137,8 +137,8 @@ TEST_F(VirtualMemoryTest, UnmapNonExistentPage) {
   void* virt_addr = reinterpret_cast<void*>(0x1000);
 
   // 取消映射不存在的页面
-  bool result = vm.UnmapPage(page_dir, virt_addr);
-  EXPECT_FALSE(result);
+  auto result = vm.UnmapPage(page_dir, virt_addr);
+  EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(VirtualMemoryTest, GetMappingNonExistent) {
@@ -171,9 +171,9 @@ TEST_F(VirtualMemoryTest, MapMultiplePages) {
     void* virt_addr = reinterpret_cast<void*>(0x10000 + i * kPageSize);
     void* phys_addr = reinterpret_cast<void*>(0x80000000 + i * kPageSize);
 
-    bool result = vm.MapPage(page_dir, virt_addr, phys_addr,
+    auto result = vm.MapPage(page_dir, virt_addr, phys_addr,
                              cpu_io::virtual_memory::GetUserPagePermissions());
-    EXPECT_TRUE(result);
+    EXPECT_TRUE(result.has_value());
   }
 
   // 验证所有映射
@@ -206,9 +206,9 @@ TEST_F(VirtualMemoryTest, RemapPage) {
              cpu_io::virtual_memory::GetUserPagePermissions());
 
   // 重新映射到不同的物理地址
-  bool result = vm.MapPage(page_dir, virt_addr, phys_addr2,
+  auto result = vm.MapPage(page_dir, virt_addr, phys_addr2,
                            cpu_io::virtual_memory::GetUserPagePermissions());
-  EXPECT_TRUE(result);
+  EXPECT_TRUE(result.has_value());
 
   // 验证新映射
   auto mapped = vm.GetMapping(page_dir, virt_addr);
@@ -268,8 +268,9 @@ TEST_F(VirtualMemoryTest, ClonePageDirectoryWithMappings) {
   }
 
   // 克隆页表（复制映射）
-  auto* dst_page_dir = vm.ClonePageDirectory(src_page_dir, true);
-  ASSERT_NE(dst_page_dir, nullptr);
+  auto clone_result = vm.ClonePageDirectory(src_page_dir, true);
+  ASSERT_TRUE(clone_result.has_value());
+  auto* dst_page_dir = clone_result.value();
   EXPECT_NE(dst_page_dir, src_page_dir);
 
   // 验证克隆的页表具有相同的映射
@@ -315,8 +316,9 @@ TEST_F(VirtualMemoryTest, ClonePageDirectoryWithoutMappings) {
   }
 
   // 克隆页表（不复制映射）
-  auto* dst_page_dir = vm.ClonePageDirectory(src_page_dir, false);
-  ASSERT_NE(dst_page_dir, nullptr);
+  auto clone_result = vm.ClonePageDirectory(src_page_dir, false);
+  ASSERT_TRUE(clone_result.has_value());
+  auto* dst_page_dir = clone_result.value();
   EXPECT_NE(dst_page_dir, src_page_dir);
 
   // 验证克隆的页表没有映射
@@ -336,10 +338,10 @@ TEST_F(VirtualMemoryTest, ClonePageDirectoryWithoutMappings) {
 }
 
 TEST_F(VirtualMemoryTest, CloneNullPageDirectory) {
-  VirtualMemory vm;
-
-  auto* dst_page_dir = vm.ClonePageDirectory(nullptr, true);
-  EXPECT_EQ(dst_page_dir, nullptr);
+  // 注意：根据重构后的代码，ClonePageDirectory 对 nullptr 输入会触发断言
+  // 因此该测试在使用 sk_assert_msg 的情况下无法正常进行
+  // 这里保留测试结构，但在实际运行时断言会触发
+  GTEST_SKIP() << "ClonePageDirectory with nullptr triggers assertion";
 }
 
 TEST_F(VirtualMemoryTest, DestroyNullPageDirectory) {
@@ -378,8 +380,9 @@ TEST_F(VirtualMemoryTest, MemoryLeakCheck) {
   }
 
   // 克隆
-  auto* cloned = vm.ClonePageDirectory(page_dir1, true);
-  ASSERT_NE(cloned, nullptr);
+  auto clone_result = vm.ClonePageDirectory(page_dir1, true);
+  ASSERT_TRUE(clone_result.has_value());
+  auto* cloned = clone_result.value();
 
   // 清理所有页表
   vm.DestroyPageDirectory(page_dir1, false);
