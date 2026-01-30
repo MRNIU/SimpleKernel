@@ -28,6 +28,7 @@ enum class ErrorCode : uint64_t {
   kInvalidArgument = 0xF00,
   kOutOfMemory = 0xF01,
 };
+
 /// 获取错误码对应的错误信息
 constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
   switch (code) {
