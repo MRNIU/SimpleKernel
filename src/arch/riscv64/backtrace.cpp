@@ -17,15 +17,31 @@
 
 __always_inline auto backtrace(std::array<uint64_t, kMaxFrameCount>& buffer)
     -> int {
-  auto* fp = reinterpret_cast<uint64_t*>(cpu_io::Fp::Read());
+  auto fp_value = cpu_io::Fp::Read();
   size_t count = 0;
-  while ((fp != nullptr) && (*fp != 0U) &&
-         *(fp - 2) >= reinterpret_cast<uint64_t>(__executable_start) &&
-         *(fp - 2) <= reinterpret_cast<uint64_t>(__etext) &&
-         count < buffer.max_size()) {
+
+  // RISC-V 栈帧布局 (使用 -fno-omit-frame-pointer):
+  // fp[-1] (fp - 8):  保存的返回地址 (ra)
+  // fp[-2] (fp - 16): 保存的上一个帧指针 (saved fp)
+
+  while ((fp_value & 0x07) == 0 && count < buffer.max_size()) {
+    auto* fp = reinterpret_cast<uint64_t*>(fp_value);
     auto ra = *(fp - 1);
-    fp = reinterpret_cast<uint64_t*>(*(fp - 2));
+    auto saved_fp = *(fp - 2);
+
+    // 检查返回地址是否在代码段范围内
+    if (ra < reinterpret_cast<uint64_t>(__executable_start) ||
+        ra > reinterpret_cast<uint64_t>(__etext)) {
+      break;
+    }
+
     buffer[count++] = ra;
+
+    // 如果 saved_fp 为 0 或无效，停止遍历
+    if (saved_fp == 0) {
+      break;
+    }
+    fp_value = saved_fp;
   }
   return int(count);
 }

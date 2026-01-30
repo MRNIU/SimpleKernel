@@ -17,11 +17,11 @@
 /**
  * @brief 自旋锁
  * @note 使用限制：
- * 1. 不可重入：不支持同一核心递归获取锁，会导致死锁或返回失败。
- * 2. 关中断：获取锁时会自动关闭中断，释放锁时恢复之前的状态。
- * 3. 必须配对：必须在获取锁的同一个核心释放锁。
- * 4. 不可休眠：持有自旋锁期间不可执行休眠或调度操作。
- * 5. 副作用：修改当前 CPU 的中断状态。
+ * 1. 不可重入：不支持同一核心递归获取锁，会导致返回失败
+ * 2. 关中断：获取锁时会自动关闭中断，释放锁时恢复之前的状态
+ * 3. 必须配对：必须在获取锁的同一个核心释放锁
+ * 4. 不可休眠：持有自旋锁期间不可执行休眠或调度操作
+ * 5. 副作用：修改当前 CPU 的中断状态
  */
 class SpinLock {
  public:
@@ -35,12 +35,19 @@ class SpinLock {
     auto intr_enable = cpu_io::GetInterruptStatus();
     cpu_io::DisableInterrupt();
 
-    if (IsLockedByCurrentCore()) {
-      sk_printf("spinlock %s IsLockedByCurrentCore == true.\n", name_);
-      return false;
-    }
+    // 先尝试获取锁
     while (locked_.test_and_set(std::memory_order_acquire)) {
-      ;
+      // 在等待时检查是否是当前核心持有锁（递归锁检测）
+      if (core_id_.load(std::memory_order_acquire) ==
+          cpu_io::GetCurrentCoreId()) {
+        // 递归锁定，恢复中断状态并返回失败
+        if (intr_enable) {
+          cpu_io::EnableInterrupt();
+        }
+        sk_printf("spinlock %s recursive lock detected.\n", name_);
+        return false;
+      }
+      cpu_io::Pause();
     }
 
     // 获取锁成功后立即设置 core_id_
@@ -122,7 +129,14 @@ class LockGuard {
    * @brief 构造函数，自动获取锁
    * @param mutex 要保护的锁对象
    */
-  explicit LockGuard(mutex_type& mutex) : mutex_(mutex) { mutex_.Lock(); }
+  explicit LockGuard(mutex_type& mutex) : mutex_(mutex) {
+    if (!mutex_.Lock()) {
+      sk_printf("LockGuard: Failed to acquire lock\n");
+      while (true) {
+        cpu_io::Pause();
+      }
+    }
+  }
 
   /**
    * @brief 析构函数，自动释放锁
