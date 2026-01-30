@@ -14,7 +14,7 @@ std::array<Interrupt::InterruptFunc, Interrupt::kMaxInterrupt>
 
 Interrupt::Interrupt() {
   auto [dist_base_addr, dist_size, redist_base_addr, redist_size] =
-      Singleton<KernelFdt>::GetInstance().GetGIC();
+      Singleton<KernelFdt>::GetInstance().GetGIC().value();
   Singleton<VirtualMemory>::GetInstance().MapMMIO(dist_base_addr, dist_size);
   Singleton<VirtualMemory>::GetInstance().MapMMIO(redist_base_addr,
                                                   redist_size);

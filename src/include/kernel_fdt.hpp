@@ -297,61 +297,49 @@ class KernelFdt {
    */
 
   [[nodiscard]] auto GetPlic() const
-      -> std::tuple<uint64_t, uint64_t, uint32_t, uint32_t> {
-    uint64_t base_addr = 0;
-    uint64_t size = 0;
-    uint32_t ndev = 0;
-    uint32_t context_count = 0;
+      -> Expected<std::tuple<uint64_t, uint64_t, uint32_t, uint32_t>> {
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+
+    // 查找 PLIC 节点，依次尝试两个 compatible 字符串
+    auto offset = FindCompatibleNode("sifive,plic-1.0.0");
+    if (!offset.has_value()) {
+      offset = FindCompatibleNode("riscv,plic0");
+    }
+    if (!offset.has_value()) {
+      return std::unexpected(offset.error());
+    }
 
     int len = 0;
-    int offset = 0;
-
-    std::array<const char*, 2> compatible_str = {"sifive,plic-1.0.0",
-                                                 "riscv,plic0"};
-
-    for (const auto& compatible : compatible_str) {
-      offset = fdt_node_offset_by_compatible(fdt_header_, -1, compatible);
-      if (offset != -FDT_ERR_NOTFOUND) {
-        break;
-      }
-    }
-    if (offset < 0) {
-      klog::Err("Error finding interrupt controller node: %s\n",
-                fdt_strerror(offset));
-      throw;
-    }
 
     // 通过 interrupts-extended 字段计算上下文数量
-    auto prop =
-        fdt_get_property(fdt_header_, offset, "interrupts-extended", &len);
+    const auto* prop = fdt_get_property(fdt_header_, offset.value(),
+                                        "interrupts-extended", &len);
     if (prop == nullptr) {
-      throw;
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
     }
 
     // interrupts-extended 格式: <cpu_phandle interrupt_id> 成对出现
     // 每两个 uint32_t 值表示一个上下文 (CPU + 模式)
     uint32_t num_entries = len / sizeof(uint32_t);
     // 每两个条目表示一个上下文
-    context_count = num_entries / 2;
+    uint32_t context_count = num_entries / 2;
 
     // 获取 ndev 属性
-    prop = fdt_get_property(fdt_header_, offset, "riscv,ndev", &len);
+    prop = fdt_get_property(fdt_header_, offset.value(), "riscv,ndev", &len);
     if (prop == nullptr) {
-      throw;
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
     }
-    ndev = fdt32_to_cpu(*reinterpret_cast<const uint32_t*>(prop->data));
+    uint32_t ndev =
+        fdt32_to_cpu(*reinterpret_cast<const uint32_t*>(prop->data));
 
     // 获取 reg 属性
-    prop = fdt_get_property(fdt_header_, offset, "reg", &len);
-    if (prop == nullptr) {
-      throw;
+    auto reg = GetRegProperty(offset.value());
+    if (!reg.has_value()) {
+      return std::unexpected(reg.error());
     }
 
-    const auto* reg = reinterpret_cast<const uint64_t*>(prop->data);
-    base_addr = fdt64_to_cpu(reg[0]);
-    size = fdt64_to_cpu(reg[1]);
-
-    return {base_addr, size, ndev, context_count};
+    return std::tuple{reg.value().first, reg.value().second, ndev,
+                      context_count};
   }
 
   /**

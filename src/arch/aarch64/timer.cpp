@@ -33,9 +33,10 @@ void TimerInit() {
   interval = Singleton<BasicInfo>::GetInstance().interval / SIMPLEKERNEL_TICK;
 
   // 获取定时器中断号
-  timer_intid =
-      Singleton<KernelFdt>::GetInstance().GetAarch64Intid("arm,armv8-timer") +
-      Gic::kPPIBase;
+  timer_intid = Singleton<KernelFdt>::GetInstance()
+                    .GetAarch64Intid("arm,armv8-timer")
+                    .value() +
+                Gic::kPPIBase;
 
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       timer_intid, [](uint64_t, cpu_io::TrapContext*) -> uint64_t {

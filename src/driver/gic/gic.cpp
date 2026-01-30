@@ -41,7 +41,6 @@ void Gic::SGI(uint32_t intid, uint32_t cpuid) const {
 Gic::Gicd::Gicd(uint64_t base_addr) : base_addr_(base_addr) {
   if (base_addr_ == 0) {
     klog::Err("GICD base address is invalid [0x%X]\n", base_addr_);
-    throw;
   }
   // 将 GICD_CTLR 清零
   Write(kCTLR, 0);
@@ -148,7 +147,6 @@ void Gic::Gicd::SetupSPI(uint32_t intid, uint32_t cpuid) const {
 Gic::Gicr::Gicr(uint64_t base_addr) : base_addr_(base_addr) {
   if (base_addr_ == 0) {
     klog::Err("GICR base address is invalid [0x%X]\n", base_addr_);
-    throw;
   }
 
   auto cpuid = cpu_io::GetCurrentCoreId();
