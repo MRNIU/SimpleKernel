@@ -30,11 +30,28 @@ Pl011::Pl011(uint64_t dev_addr, uint64_t clock, uint64_t baud_rate)
   io::Out<uint32_t>(base_addr_ + kRegCR, kCREnable | kCRTxEnable | kCRRxEnable);
 }
 
-void Pl011::PutChar(uint8_t c) {
+void Pl011::PutChar(uint8_t c) const {
   // Wait until there is space in the FIFO or device is disabled
   while (io::In<uint32_t>(base_addr_ + kRegFR) & kFRTxFIFO) {
     ;
   }
 
   io::Out<uint32_t>(base_addr_ + kRegDR, c);
+}
+
+auto Pl011::GetChar() const -> uint8_t {
+  // Wait until there is data in the FIFO or device is disabled
+  while (io::In<uint32_t>(base_addr_ + kRegFR) & kFRRXFE) {
+    ;
+  }
+
+  return io::In<uint32_t>(base_addr_ + kRegDR);
+}
+
+auto Pl011::TryGetChar() const -> uint8_t {
+  // Wait until there is data in the FIFO or device is disabled
+  if (io::In<uint32_t>(base_addr_ + kRegFR) & kFRRXFE) {
+    return -1;
+  }
+  return io::In<uint32_t>(base_addr_ + kRegDR);
 }

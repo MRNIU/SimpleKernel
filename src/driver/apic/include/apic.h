@@ -51,8 +51,8 @@ class Apic {
    * @return false 设置失败
    */
   auto SetIrqRedirection(uint8_t irq, uint8_t vector,
-                         uint32_t destination_apic_id,
-                         bool mask = false) -> bool;
+                         uint32_t destination_apic_id, bool mask = false)
+      -> bool;
 
   /**
    * @brief 屏蔽 IRQ
@@ -75,13 +75,13 @@ class Apic {
    * @param target_apic_id 目标 CPU 的 APIC ID
    * @param vector 中断向量
    */
-  void SendIpi(uint32_t target_apic_id, uint8_t vector) const;
+  bool SendIpi(uint32_t target_apic_id, uint8_t vector) const;
 
   /**
    * @brief 广播 IPI 到所有其他 CPU
    * @param vector 中断向量
    */
-  void BroadcastIpi(uint8_t vector) const;
+  bool BroadcastIpi(uint8_t vector) const;
 
   /**
    * @brief 启动 AP (Application Processor)

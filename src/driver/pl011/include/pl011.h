@@ -31,7 +31,19 @@ class Pl011 {
   ~Pl011() = default;
   /// @}
 
-  void PutChar(uint8_t c);
+  void PutChar(uint8_t c) const;
+
+  /**
+   * 阻塞式读取一个字符
+   * @return 读取到的字符
+   */
+  [[nodiscard]] auto GetChar() const -> uint8_t;
+
+  /**
+   * 非阻塞式尝试读取一个字符
+   * @return 读取到的字符，如果没有数据则返回 -1
+   */
+  [[nodiscard]] auto TryGetChar() const -> uint8_t;
 
  private:
   /// data register
