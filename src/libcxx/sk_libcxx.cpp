@@ -4,7 +4,10 @@
 
 #include "sk_libcxx.h"
 
+#include <cpu_io.h>
+
 #include <algorithm>
+#include <atomic>
 
 /// 全局构造函数函数指针
 using function_t = void (*)();
@@ -99,13 +102,17 @@ extern "C" void __cxa_finalize(void* destructor_func) {
  *  }
  */
 
+/// @note 根据 Itanium C++ ABI，守护变量必须是 64 位
+/// @see https://itanium-cxx-abi.github.io/cxx-abi/abi.html#once-ctor
 struct GuardType {
-  /// 是否被使用
-  uint64_t is_in_use : 8;
-  /// 是否已初始化
-  uint64_t is_initialized : 8;
-  uint64_t pad : 48;
+  /// 原子守护变量：bit 0 = is_initialized, bit 8 = is_in_use
+  std::atomic<uint64_t> guard{0};
+
+  static constexpr uint64_t kInitializedMask = 0x01;
+  static constexpr uint64_t kInUseMask = 0x100;
 };
+
+static_assert(sizeof(GuardType) == 8, "GuardType must be 64 bits per ABI");
 
 /**
  * 检测静态局部变量是否已经初始化
@@ -113,10 +120,35 @@ struct GuardType {
  * @return 未初始化返回非零值，已初始化返回 0
  */
 extern "C" auto __cxa_guard_acquire(GuardType* guard) -> int {
-  if ((guard->is_in_use == 0U) && (guard->is_initialized == 0U)) {
-    guard->is_in_use = 1;
+  // 如果已初始化，直接返回 0
+  if ((guard->guard.load(std::memory_order_acquire) &
+       GuardType::kInitializedMask) != 0U) {
+    return 0;
   }
-  return static_cast<int>(static_cast<int>(guard->is_initialized) == 0U);
+
+  // 尝试原子地设置 is_in_use 位
+  uint64_t expected = 0;
+  while (true) {
+    expected = guard->guard.load(std::memory_order_acquire);
+
+    // 双重检查：是否已初始化
+    if ((expected & GuardType::kInitializedMask) != 0U) {
+      return 0;
+    }
+
+    // 是否其他核心正在初始化
+    if ((expected & GuardType::kInUseMask) != 0U) {
+      cpu_io::Pause();
+      continue;
+    }
+
+    // 尝试设置 in_use 位
+    if (guard->guard.compare_exchange_weak(expected,
+                                           expected | GuardType::kInUseMask,
+                                           std::memory_order_acq_rel)) {
+      return 1;  // 获取成功，需要初始化
+    }
+  }
 }
 
 /**
@@ -125,8 +157,8 @@ extern "C" auto __cxa_guard_acquire(GuardType* guard) -> int {
  * @return 未初始化返回非零值并设置锁，已初始化返回 0
  */
 extern "C" void __cxa_guard_release(GuardType* guard) {
-  guard->is_in_use = 0;
-  guard->is_initialized = 1;
+  // 设置 initialized 位，清除 in_use 位
+  guard->guard.store(GuardType::kInitializedMask, std::memory_order_release);
 }
 
 /**
@@ -134,8 +166,8 @@ extern "C" void __cxa_guard_release(GuardType* guard) {
  * @param guard 锁
  */
 extern "C" void __cxa_guard_abort(GuardType* guard) {
-  guard->is_in_use = 0;
-  guard->is_initialized = 0;
+  // 清除所有位
+  guard->guard.store(0, std::memory_order_release);
 }
 
 /// @}
@@ -145,7 +177,7 @@ extern "C" void __cxa_guard_abort(GuardType* guard) {
  */
 extern "C" void __cxa_pure_virtual() {
   while (true) {
-    ;
+    cpu_io::Pause();
   }
 }
 
@@ -155,17 +187,17 @@ extern "C" void __cxa_pure_virtual() {
  */
 extern "C" void __cxa_rethrow() {
   while (true) {
-    ;
+    cpu_io::Pause();
   }
 }
 extern "C" void _Unwind_Resume() {
   while (true) {
-    ;
+    cpu_io::Pause();
   }
 }
 extern "C" void __gxx_personality_v0() {
   while (true) {
-    ;
+    cpu_io::Pause();
   }
 }
 

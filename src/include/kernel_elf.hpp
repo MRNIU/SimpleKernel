@@ -32,7 +32,9 @@ class KernelElf {
   explicit KernelElf(uint64_t elf_addr) {
     if (elf_addr == 0U) {
       klog::Err("Fatal Error: Invalid elf_addr[0x%lX].\n", elf_addr);
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     elf_ = std::span<uint8_t>(reinterpret_cast<uint8_t*>(elf_addr), EI_NIDENT);
@@ -41,7 +43,9 @@ class KernelElf {
     auto check_elf_identity_ret = CheckElfIdentity();
     if (!check_elf_identity_ret) {
       klog::Err("KernelElf NOT valid ELF file.\n");
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     ehdr_ = *reinterpret_cast<const Elf64_Ehdr*>(elf_.data());
@@ -125,15 +129,21 @@ class KernelElf {
     if ((elf_[EI_MAG0] != ELFMAG0) || (elf_[EI_MAG1] != ELFMAG1) ||
         (elf_[EI_MAG2] != ELFMAG2) || (elf_[EI_MAG3] != ELFMAG3)) {
       klog::Err("Fatal Error: Invalid ELF header.\n");
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
     if (elf_[EI_CLASS] == ELFCLASS32) {
       klog::Err("Found 32bit executable but NOT SUPPORT.\n");
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
     if (elf_[EI_CLASS] != ELFCLASS64) {
       klog::Err("Fatal Error: Invalid executable.\n");
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
     return true;
   }

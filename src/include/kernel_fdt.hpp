@@ -41,7 +41,9 @@ class KernelFdt {
       : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
     if (fdt_header_ == nullptr) {
       klog::Err("Fatal Error: Invalid fdt_addr.\n");
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // 检查 fdt 头数据
@@ -49,7 +51,9 @@ class KernelFdt {
       klog::Err("Invalid device tree blob [0x%p]\n", fdt_header_);
       klog::Debug("fdt_header_->magic 0x%X\n", fdt_header_->magic);
       klog::DebugBlob(fdt_header_, 32);
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     klog::Debug("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
@@ -156,14 +160,18 @@ class KernelFdt {
     auto offset = fdt_path_offset(fdt_header_, "/memory");
     if (offset < 0) {
       klog::Err("Error finding /memory node: %s\n", fdt_strerror(offset));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // 获取 reg 属性
     const auto* prop = fdt_get_property(fdt_header_, offset, "reg", &len);
     if (prop == nullptr) {
       klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // 解析 reg 属性，通常包含基地址和大小
@@ -191,7 +199,9 @@ class KernelFdt {
     if (chosen_offset < 0) {
       klog::Err("Error finding /chosen node: %s\n",
                 fdt_strerror(chosen_offset));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // Get the stdout-path property
@@ -199,7 +209,9 @@ class KernelFdt {
         fdt_get_property(fdt_header_, chosen_offset, "stdout-path", &len);
     if (prop == nullptr || len <= 0) {
       klog::Err("Error finding stdout-path property: %s\n", fdt_strerror(len));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // Get the path as a string
@@ -232,7 +244,9 @@ class KernelFdt {
     if (stdout_offset < 0) {
       klog::Err("Error finding node for stdout-path %s: %s\n", path_buffer,
                 fdt_strerror(stdout_offset));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // Get the reg property of the stdout device
@@ -240,7 +254,9 @@ class KernelFdt {
     if (prop == nullptr) {
       klog::Err("Error finding reg property for stdout device: %s\n",
                 fdt_strerror(len));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // Parse the reg property to get base address and size
@@ -255,7 +271,9 @@ class KernelFdt {
     if (prop == nullptr) {
       klog::Err("Error finding interrupts property for stdout device: %s\n",
                 fdt_strerror(len));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // Parse the interrupts property to get the IRQ number
@@ -324,14 +342,18 @@ class KernelFdt {
     if (offset < 0) {
       klog::Err("Error finding interrupt controller node: %s\n",
                 fdt_strerror(offset));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // 获取 reg 属性
     const auto* prop = fdt_get_property(fdt_header_, offset, "reg", &len);
     if (prop == nullptr) {
       klog::Err("Error finding reg property: %s\n", fdt_strerror(len));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // 解析 reg 属性，通常包含基地址和大小
@@ -382,7 +404,9 @@ class KernelFdt {
     if (offset < 0) {
       klog::Err("Error finding interrupt controller node: %s\n",
                 fdt_strerror(offset));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     // 获取 interrupts 属性
@@ -390,7 +414,9 @@ class KernelFdt {
         fdt_get_property(fdt_header_, offset, "interrupts", &len);
     if (prop == nullptr) {
       klog::Err("Error finding interrupts property: %s\n", fdt_strerror(len));
-      throw;
+      while (true) {
+        cpu_io::Pause();
+      }
     }
 
     const auto* interrupts = reinterpret_cast<const uint32_t*>(prop->data);
