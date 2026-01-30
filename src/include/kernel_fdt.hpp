@@ -26,6 +26,7 @@
 #include "expected.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
+#include "sk_cassert"
 
 /**
  * fdt 相关
@@ -35,66 +36,36 @@ class KernelFdt {
   fdt_header* fdt_header_;
 
   /**
-   * 构造函数
-   * @param fdt_addr fdt 地址
-   */
-  explicit KernelFdt(uint64_t header)
-      : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
-    // 使用 Monadic operations 处理验证
-    ValidateFdtHeader().or_else([](Error err) -> Expected<void> {
-      klog::Err("KernelFdt init failed: %s\n", err.message());
-      while (true) {
-        cpu_io::Pause();
-      }
-      return {};
-    });
-
-    klog::Debug("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
-                fdt32_to_cpu(fdt_header_->totalsize));
-  }
-
-  /// @name 构造/析构函数
-  /// @{
-  KernelFdt() = default;
-  KernelFdt(const KernelFdt&) = default;
-  KernelFdt(KernelFdt&&) = default;
-  auto operator=(const KernelFdt&) -> KernelFdt& = default;
-  auto operator=(KernelFdt&&) -> KernelFdt& = default;
-  ~KernelFdt() = default;
-  /// @}
-
-  /**
    * 获取 core 数量
    * @return Expected<size_t> 成功返回核心数，失败返回错误
    */
   [[nodiscard]] auto GetCoreCount() const -> Expected<size_t> {
-    return ValidateFdtNotNull().and_then([this]() -> Expected<size_t> {
-      size_t core_count = 0;
-      auto offset = -1;
-      bool found_cpus_node = false;
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    size_t core_count = 0;
+    auto offset = -1;
+    bool found_cpus_node = false;
 
-      while (true) {
-        offset = fdt_next_node(fdt_header_, offset, nullptr);
-        if (offset < 0) {
-          if (offset != -FDT_ERR_NOTFOUND && !found_cpus_node) {
-            return std::unexpected(Error(ErrorCode::kFdtParseFailed));
-          }
-          break;
+    while (true) {
+      offset = fdt_next_node(fdt_header_, offset, nullptr);
+      if (offset < 0) {
+        if (offset != -FDT_ERR_NOTFOUND && !found_cpus_node) {
+          return std::unexpected(Error(ErrorCode::kFdtParseFailed));
         }
-
-        const auto* prop =
-            fdt_get_property(fdt_header_, offset, "device_type", nullptr);
-        if (prop != nullptr) {
-          const char* device_type = reinterpret_cast<const char*>(prop->data);
-          if (strcmp(device_type, "cpu") == 0) {
-            found_cpus_node = true;
-            ++core_count;
-          }
-        }
+        break;
       }
 
-      return core_count;
-    });
+      const auto* prop =
+          fdt_get_property(fdt_header_, offset, "device_type", nullptr);
+      if (prop != nullptr) {
+        const char* device_type = reinterpret_cast<const char*>(prop->data);
+        if (strcmp(device_type, "cpu") == 0) {
+          found_cpus_node = true;
+          ++core_count;
+        }
+      }
+    }
+
+    return core_count;
   }
 
   /**
@@ -355,6 +326,35 @@ class KernelFdt {
     return intid;
   }
 
+  /**
+   * 构造函数
+   * @param header fdt 地址
+   */
+  explicit KernelFdt(uint64_t header)
+      : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
+    // 使用 Monadic operations 处理验证
+    ValidateFdtHeader().or_else([](Error err) -> Expected<void> {
+      klog::Err("KernelFdt init failed: %s\n", err.message());
+      while (true) {
+        cpu_io::Pause();
+      }
+      return {};
+    });
+
+    klog::Debug("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
+                fdt32_to_cpu(fdt_header_->totalsize));
+  }
+
+  /// @name 构造/析构函数
+  /// @{
+  KernelFdt() = default;
+  KernelFdt(const KernelFdt&) = default;
+  KernelFdt(KernelFdt&&) = default;
+  auto operator=(const KernelFdt&) -> KernelFdt& = default;
+  auto operator=(KernelFdt&&) -> KernelFdt& = default;
+  ~KernelFdt() = default;
+  /// @}
+
  private:
   /// PSCI 标准函数 ID（SMC64 调用约定）
   /// @see https://developer.arm.com/documentation/den0022/fb/?lang=en
@@ -364,25 +364,14 @@ class KernelFdt {
   static constexpr uint64_t kPsciCpuSuspendFuncId = 0xC4000001;
 
   /**
-   * 验证 fdt_header_ 不为空
-   */
-  [[nodiscard]] auto ValidateFdtNotNull() const -> Expected<void> {
-    if (fdt_header_ == nullptr) {
-      return std::unexpected(Error(ErrorCode::kFdtInvalidAddress));
-    }
-    return {};
-  }
-
-  /**
    * 验证 FDT header
    */
   [[nodiscard]] auto ValidateFdtHeader() const -> Expected<void> {
-    return ValidateFdtNotNull().and_then([this]() -> Expected<void> {
-      if (fdt_check_header(fdt_header_) != 0) {
-        return std::unexpected(Error(ErrorCode::kFdtInvalidHeader));
-      }
-      return {};
-    });
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    if (fdt_check_header(fdt_header_) != 0) {
+      return std::unexpected(Error(ErrorCode::kFdtInvalidHeader));
+    }
+    return {};
   }
 
   /**

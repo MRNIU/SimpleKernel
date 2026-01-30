@@ -1,0 +1,10 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_CASSERT_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_CASSERT_
+
+#include "sk_assert.h"
+
+#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_CASSERT_ */
