@@ -4,6 +4,8 @@
 
 #include "pl011.h"
 
+#include <cpu_io.h>
+
 #include "io.hpp"
 
 Pl011::Pl011(uint64_t dev_addr, uint64_t clock, uint64_t baud_rate)
@@ -33,7 +35,7 @@ Pl011::Pl011(uint64_t dev_addr, uint64_t clock, uint64_t baud_rate)
 void Pl011::PutChar(uint8_t c) const {
   // Wait until there is space in the FIFO or device is disabled
   while (io::In<uint32_t>(base_addr_ + kRegFR) & kFRTxFIFO) {
-    ;
+    cpu_io::Pause();
   }
 
   io::Out<uint32_t>(base_addr_ + kRegDR, c);
@@ -42,7 +44,7 @@ void Pl011::PutChar(uint8_t c) const {
 auto Pl011::GetChar() const -> uint8_t {
   // Wait until there is data in the FIFO or device is disabled
   while (io::In<uint32_t>(base_addr_ + kRegFR) & kFRRXFE) {
-    ;
+    cpu_io::Pause();
   }
 
   return io::In<uint32_t>(base_addr_ + kRegDR);

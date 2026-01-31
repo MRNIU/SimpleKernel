@@ -10,6 +10,7 @@
 #include <array>
 #include <cstdint>
 
+#include "expected.hpp"
 #include "io_apic.h"
 #include "local_apic.h"
 
@@ -39,7 +40,7 @@ class Apic {
    * @return false 初始化失败
    * @note 每个 CPU 核心启动时都需要调用此函数
    */
-  auto InitCurrentCpuLocalApic() -> bool;
+  auto InitCurrentCpuLocalApic() -> Expected<void, bool>;
 
   /**
    * @brief 设置 IRQ 重定向

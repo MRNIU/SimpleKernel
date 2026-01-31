@@ -262,7 +262,7 @@ class VirtualMemory {
  private:
   void* kernel_page_dir_ = nullptr;
 
-  static constexpr const size_t kEntriesPerTable =
+  static constexpr size_t kEntriesPerTable =
       cpu_io::virtual_memory::kPageSize / sizeof(void*);
 
   /**

@@ -4,6 +4,8 @@
 
 #include "ns16550a.h"
 
+#include <cpu_io.h>
+
 #include "io.hpp"
 
 Ns16550a::Ns16550a(uint64_t dev_addr) : base_addr_(dev_addr) {
@@ -23,7 +25,7 @@ Ns16550a::Ns16550a(uint64_t dev_addr) : base_addr_(dev_addr) {
 
 void Ns16550a::PutChar(uint8_t c) const {
   while ((io::In<uint8_t>(base_addr_ + kRegLSR) & (1 << 5)) == 0) {
-    ;
+    cpu_io::Pause();
   }
   io::Out<uint8_t>(base_addr_ + kRegTHR, c);
 }
@@ -31,7 +33,7 @@ void Ns16550a::PutChar(uint8_t c) const {
 auto Ns16550a::GetChar() const -> uint8_t {
   // 等待直到接收缓冲区有数据 (LSR bit 0 = 1)
   while ((io::In<uint8_t>(base_addr_ + kRegLSR) & (1 << 0)) == 0) {
-    ;
+    cpu_io::Pause();
   }
   return io::In<uint8_t>(base_addr_ + kRegRHR);
 }

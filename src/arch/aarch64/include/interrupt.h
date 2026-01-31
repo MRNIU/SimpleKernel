@@ -16,7 +16,7 @@
 
 class Interrupt final : public InterruptBase {
  public:
-  static constexpr const size_t kMaxInterrupt = 128;
+  static constexpr size_t kMaxInterrupt = 128;
 
   Interrupt();
 
