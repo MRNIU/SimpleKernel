@@ -47,7 +47,7 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
   }
 }
 
-bool Interrupt::SendIpi(uint64_t target_cpu_mask) {
+auto Interrupt::SendIpi(uint64_t target_cpu_mask) -> Expected<void> {
   /// @todo 默认使用 SGI 0 作为 IPI 中断
   constexpr uint64_t kIPISGI = 0;
 
@@ -62,10 +62,10 @@ bool Interrupt::SendIpi(uint64_t target_cpu_mask) {
   // 写入 ICC_SGI1R_EL1 寄存器发送 SGI
   cpu_io::ICC_SGI1R_EL1::Write(sgi_value);
 
-  return true;
+  return {};
 }
 
-bool Interrupt::BroadcastIpi() {
+auto Interrupt::BroadcastIpi() -> Expected<void> {
   /// @todo 默认使用 SGI 0 作为 IPI 中断
   constexpr uint64_t kIPISGI = 0;
 
@@ -81,5 +81,5 @@ bool Interrupt::BroadcastIpi() {
   // 写入 ICC_SGI1R_EL1 寄存器发送 SGI
   cpu_io::ICC_SGI1R_EL1::Write(sgi_value);
 
-  return true;
+  return {};
 }

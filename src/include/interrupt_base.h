@@ -7,8 +7,9 @@
 
 #include <cpu_io.h>
 
-#include <atomic>
 #include <cstdint>
+
+#include "expected.hpp"
 
 class InterruptBase {
  public:
@@ -47,13 +48,15 @@ class InterruptBase {
   /**
    * @brief 发送 IPI 到指定核心
    * @param target_cpu_mask 目标核心的位掩码
+   * @return Expected<void> 成功时返回 void，失败时返回错误
    */
-  virtual bool SendIpi(uint64_t target_cpu_mask) = 0;
+  virtual auto SendIpi(uint64_t target_cpu_mask) -> Expected<void> = 0;
 
   /**
    * @brief 广播 IPI 到所有其他核心
+   * @return Expected<void> 成功时返回 void，失败时返回错误
    */
-  virtual bool BroadcastIpi() = 0;
+  virtual auto BroadcastIpi() -> Expected<void> = 0;
 };
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_ */

@@ -9,6 +9,7 @@
 #include <opensbi_interface.h>
 
 #include "basic_info.hpp"
+#include "sk_cassert"
 #include "sk_cstdio"
 #include "sk_iostream"
 
@@ -38,9 +39,9 @@ Interrupt::Interrupt() {
                 cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
                     [cause],
                 cause, context);
-      while (1)
-        ;
-      return 0;
+      while (true) {
+        cpu_io::Pause();
+      }
     };
   }
   klog::Info("Interrupt init.\n");
@@ -70,44 +71,46 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
   auto exception_code = cpu_io::Scause::ExceptionCode::Get(cause);
 
   if (interrupt) {
-    if (exception_code <
-        cpu_io::detail::register_info::csr::ScauseInfo::kInterruptMaxCount) {
-      interrupt_handlers_[exception_code] = func;
-      klog::Info("RegisterInterruptFunc [%s] 0x%X, 0x%p\n",
-                 cpu_io::detail::register_info::csr::ScauseInfo::kInterruptNames
-                     [exception_code],
-                 cause, func);
-    }
+    sk_assert_msg(
+        exception_code <
+            cpu_io::detail::register_info::csr::ScauseInfo::kInterruptMaxCount,
+        "Interrupt code out of range");
+
+    interrupt_handlers_[exception_code] = func;
+    klog::Info("RegisterInterruptFunc [%s] 0x%X, 0x%p\n",
+               cpu_io::detail::register_info::csr::ScauseInfo::kInterruptNames
+                   [exception_code],
+               cause, func);
   } else {
-    if (exception_code <
-        cpu_io::detail::register_info::csr::ScauseInfo::kExceptionMaxCount) {
-      exception_handlers_[exception_code] = func;
-      klog::Info("RegisterInterruptFunc [%s] 0x%X, 0x%p\n",
-                 cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
-                     [exception_code],
-                 cause, func);
-    }
+    sk_assert_msg(
+        exception_code <
+            cpu_io::detail::register_info::csr::ScauseInfo::kExceptionMaxCount,
+        "Exception code out of range");
+
+    exception_handlers_[exception_code] = func;
+    klog::Info("RegisterInterruptFunc [%s] 0x%X, 0x%p\n",
+               cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
+                   [exception_code],
+               cause, func);
   }
 }
 
-bool Interrupt::SendIpi(uint64_t target_cpu_mask) {
+auto Interrupt::SendIpi(uint64_t target_cpu_mask) -> Expected<void> {
   if (target_cpu_mask > (1UL << SIMPLEKERNEL_MAX_CORE_COUNT) - 1) {
-    klog::Err("SendIpi: target_cpu_mask 0x%lx out of range\n", target_cpu_mask);
-    return false;
+    return std::unexpected(Error(ErrorCode::kIpiTargetOutOfRange));
   }
 
   auto ret = sbi_send_ipi(target_cpu_mask, 0);
   if (ret.error != SBI_SUCCESS) {
-    klog::Err("SendIpi failed with error %ld\n", ret.error);
-    return false;
+    return std::unexpected(Error(ErrorCode::kIpiSendFailed));
   }
-  return true;
+  return {};
 }
 
-bool Interrupt::BroadcastIpi() {
+auto Interrupt::BroadcastIpi() -> Expected<void> {
   // 如果没有其他核心，直接返回成功
   if (Singleton<BasicInfo>::GetInstance().core_count == 1) {
-    return true;
+    return {};
   }
 
   uint64_t mask = 0;

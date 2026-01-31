@@ -31,8 +31,8 @@ class Interrupt final : public InterruptBase {
 
   void Do(uint64_t cause, cpu_io::TrapContext* context) override;
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
-  bool SendIpi(uint64_t target_cpu_mask) override;
-  bool BroadcastIpi() override;
+  auto SendIpi(uint64_t target_cpu_mask) -> Expected<void> override;
+  auto BroadcastIpi() -> Expected<void> override;
 
   /**
    * @brief 初始化 idtr

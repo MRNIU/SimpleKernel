@@ -33,6 +33,9 @@ enum class ErrorCode : uint64_t {
   kVmUnmapFailed = 0x402,
   kVmInvalidPageTable = 0x403,
   kVmPageNotMapped = 0x404,
+  // IPI 相关错误 (0x500 - 0x5FF)
+  kIpiTargetOutOfRange = 0x500,
+  kIpiSendFailed = 0x501,
   // 通用错误 (0xF00 - 0xFFF)
   kInvalidArgument = 0xF00,
   kOutOfMemory = 0xF01,
@@ -81,6 +84,10 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
       return "Invalid page table";
     case ErrorCode::kVmPageNotMapped:
       return "Page not mapped";
+    case ErrorCode::kIpiTargetOutOfRange:
+      return "IPI target CPU mask out of range";
+    case ErrorCode::kIpiSendFailed:
+      return "IPI send failed";
     case ErrorCode::kInvalidArgument:
       return "Invalid argument";
     case ErrorCode::kOutOfMemory:
@@ -91,6 +98,7 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
 }
 
 /// 错误类型，用于 std::expected
+/// @todo 还需要传递一个具体错误信息的字符串
 struct Error {
   ErrorCode code;
 

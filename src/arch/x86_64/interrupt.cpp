@@ -102,12 +102,12 @@ void Interrupt::SetUpIdtr() {
   }
 }
 
-bool Interrupt::SendIpi(uint64_t target_cpu_mask) {
+auto Interrupt::SendIpi(uint64_t target_cpu_mask) -> Expected<void> {
   /// @todo
-  return false;
+  return std::unexpected(Error(ErrorCode::kIpiSendFailed));
 }
 
-bool Interrupt::BroadcastIpi() {
+auto Interrupt::BroadcastIpi() -> Expected<void> {
   /// @todo
-  return false;
+  return std::unexpected(Error(ErrorCode::kIpiSendFailed));
 }
