@@ -11,16 +11,12 @@ void TaskManager::Block(ResourceId resource_id) {
   auto& cpu_sched = GetCurrentCpuSched();
 
   auto* current = GetCurrentTask();
+  sk_assert_msg(current != nullptr, "Block: No current task to block");
+  sk_assert_msg(current->status == TaskStatus::kRunning,
+                "Block: current task status must be kRunning");
 
   {
     LockGuard<SpinLock> lock_guard(cpu_sched.lock);
-
-    if (!current) {
-      klog::Err("Block: No current task to block.\n");
-      return;
-    }
-
-    sk_assert(current->status == TaskStatus::kRunning);
 
     // 将任务标记为阻塞状态
     current->status = TaskStatus::kBlocked;

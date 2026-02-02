@@ -30,8 +30,10 @@ void TaskManager::Wakeup(ResourceId resource_id) {
     auto* task = waiting_tasks.front();
     waiting_tasks.pop_front();
 
-    sk_assert(task->status == TaskStatus::kBlocked);
-    sk_assert(task->blocked_on == resource_id);
+    sk_assert_msg(task->status == TaskStatus::kBlocked,
+                  "Wakeup: task status must be kBlocked");
+    sk_assert_msg(task->blocked_on == resource_id,
+                  "Wakeup: task blocked_on must match resource_id");
 
     // 将任务标记为就绪
     task->status = TaskStatus::kReady;
@@ -39,10 +41,8 @@ void TaskManager::Wakeup(ResourceId resource_id) {
 
     // 将任务重新加入对应调度器的就绪队列
     auto* scheduler = cpu_sched.schedulers[task->policy];
-    sk_assert(scheduler != nullptr);
-    if (scheduler) {
-      scheduler->Enqueue(task);
-    }
+    sk_assert_msg(scheduler != nullptr, "Wakeup: scheduler must not be null");
+    scheduler->Enqueue(task);
     wakeup_count++;
   }
 

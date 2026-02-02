@@ -17,6 +17,7 @@
 #include "kernel_log.hpp"
 #include "rr_scheduler.hpp"
 #include "singleton.hpp"
+#include "sk_cassert"
 #include "sk_cstring"
 #include "sk_stdlib.h"
 #include "sk_vector"
@@ -64,6 +65,9 @@ void TaskManager::InitCurrentCore() {
 }
 
 void TaskManager::AddTask(TaskControlBlock* task) {
+  sk_assert_msg(task != nullptr, "AddTask: task must not be null");
+  sk_assert_msg(task->status == TaskStatus::kUnInit,
+                "AddTask: task status must be kUnInit");
   // 分配 PID
   if (task->pid == 0) {
     task->pid = AllocatePid();
@@ -80,10 +84,8 @@ void TaskManager::AddTask(TaskControlBlock* task) {
     task_table_[task->pid] = task;
   }
 
-  // 确保任务状态为 kReady
-  if (task->status == TaskStatus::kUnInit) {
-    task->status = TaskStatus::kReady;
-  }
+  // 设置任务状态为 kReady
+  task->status = TaskStatus::kReady;
 
   // 简单的负载均衡：如果指定了亲和性，放入对应核心，否则放入当前核心
   // 更复杂的逻辑可以是：寻找最空闲的核心

@@ -10,18 +10,12 @@
 void TaskManager::Exit(int exit_code) {
   auto& cpu_sched = GetCurrentCpuSched();
   auto* current = GetCurrentTask();
+  sk_assert_msg(current != nullptr, "Exit: No current task to exit");
+  sk_assert_msg(current->status == TaskStatus::kRunning,
+                "Exit: current task status must be kRunning");
 
   {
     LockGuard<SpinLock> lock_guard(cpu_sched.lock);
-
-    if (!current) {
-      klog::Err("Exit: No current task to exit.\n");
-      while (1) {
-        ;
-      }
-    }
-
-    sk_assert(current->status == TaskStatus::kRunning);
 
     // 设置退出码
     current->exit_code = exit_code;

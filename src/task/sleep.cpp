@@ -15,6 +15,9 @@ void TaskManager::Sleep(uint64_t ms) {
   auto& cpu_sched = GetCurrentCpuSched();
 
   auto* current = GetCurrentTask();
+  sk_assert_msg(current != nullptr, "Sleep: No current task to sleep");
+  sk_assert_msg(current->status == TaskStatus::kRunning,
+                "Sleep: current task status must be kRunning");
 
   // 如果睡眠时间为 0，仅让出 CPU（相当于 yield）
   if (ms == 0) {
@@ -24,13 +27,6 @@ void TaskManager::Sleep(uint64_t ms) {
 
   {
     LockGuard<SpinLock> lock_guard(cpu_sched.lock);
-
-    if (!current) {
-      klog::Err("Sleep: No current task to sleep.\n");
-      return;
-    }
-
-    sk_assert(current->status == TaskStatus::kRunning);
 
     // 计算唤醒时间 (当前 tick + 睡眠时间)
     uint64_t sleep_ticks = (ms * SIMPLEKERNEL_TICK) / kMillisecondsPerSecond;

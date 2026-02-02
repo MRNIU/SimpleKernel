@@ -69,7 +69,7 @@ class TaskManager {
    *
    * 根据任务的调度策略，将其添加到对应的调度器中。
    *
-   * @param task 任务控制块指针
+   * @param task 任务控制块指针，状态应为 kUnInit
    */
   void AddTask(TaskControlBlock* task);
 

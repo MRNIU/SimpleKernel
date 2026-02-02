@@ -165,7 +165,6 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   child->trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
       child->kernel_stack + TaskControlBlock::kDefaultKernelStackSize -
       sizeof(cpu_io::TrapContext));
-  sk_assert(child->trap_context_ptr != nullptr);
   memcpy(child->trap_context_ptr, &parent_context, sizeof(cpu_io::TrapContext));
 
   // 设置用户栈
@@ -195,13 +194,13 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   // 将子任务加入任务表
   {
     LockGuard lock_guard(task_table_lock_);
-    sk_assert(task_table_.find(new_pid) == task_table_.end());
+    sk_assert_msg(task_table_.find(new_pid) == task_table_.end(),
+                  "Clone: new_pid must not exist in task_table");
     task_table_[new_pid] = child;
   }
 
   // 将子任务添加到调度器
   AddTask(child);
-  sk_assert(child->status == TaskStatus::kReady);
 
   // 打印详细的 clone 信息
   const char* clone_type = (flags & kCloneThread) ? "thread" : "process";
