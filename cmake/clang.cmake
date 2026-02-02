@@ -1,8 +1,4 @@
-
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-# 
-# clang.cmake for Simple-XX/SimpleKernel.
+# Copyright The SimpleKernel Contributors
 
 # 目标为无操作系统的环境
 set(CMAKE_SYSTEM_NAME Generic)
