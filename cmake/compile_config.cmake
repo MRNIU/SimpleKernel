@@ -65,6 +65,8 @@ TARGET_COMPILE_OPTIONS (
               -fno-omit-frame-pointer
               # 不使用 common 段
               -fno-common
+              # 禁用 new 的异常支持
+              -fcheck-new
               # 目标平台编译选项
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
               # 仅使用通用寄存器
