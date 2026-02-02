@@ -5,6 +5,7 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_EXPECTED_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_EXPECTED_HPP_
 
+#include <cstdint>
 #include <expected>
 
 /// 内核错误码
@@ -44,6 +45,15 @@ enum class ErrorCode : uint64_t {
   kApicAddressNotAligned = 0x604,
   kApicAddressOutOfRange = 0x605,
   kApicIpiTimeout = 0x606,
+  // Task 相关错误 (0x700 - 0x7FF)
+  kTaskNoCurrentTask = 0x700,
+  kTaskPidAllocationFailed = 0x701,
+  kTaskAllocationFailed = 0x702,
+  kTaskInvalidCloneFlags = 0x703,
+  kTaskPageTableCloneFailed = 0x704,
+  kTaskKernelStackAllocationFailed = 0x705,
+  kTaskNoChildFound = 0x706,
+  kTaskInvalidPid = 0x707,
   // 通用错误 (0xF00 - 0xFFF)
   kInvalidArgument = 0xF00,
   kOutOfMemory = 0xF01,
@@ -110,6 +120,22 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
       return "Address out of valid range";
     case ErrorCode::kApicIpiTimeout:
       return "IPI delivery timeout";
+    case ErrorCode::kTaskNoCurrentTask:
+      return "No current task";
+    case ErrorCode::kTaskPidAllocationFailed:
+      return "PID allocation failed";
+    case ErrorCode::kTaskAllocationFailed:
+      return "Task allocation failed";
+    case ErrorCode::kTaskInvalidCloneFlags:
+      return "Invalid clone flags";
+    case ErrorCode::kTaskPageTableCloneFailed:
+      return "Page table clone failed";
+    case ErrorCode::kTaskKernelStackAllocationFailed:
+      return "Kernel stack allocation failed";
+    case ErrorCode::kTaskNoChildFound:
+      return "No child process found";
+    case ErrorCode::kTaskInvalidPid:
+      return "Invalid PID";
     case ErrorCode::kInvalidArgument:
       return "Invalid argument";
     case ErrorCode::kOutOfMemory:

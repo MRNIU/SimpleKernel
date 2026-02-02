@@ -4,6 +4,7 @@
 
 #include "kernel_log.hpp"
 #include "resource_id.hpp"
+#include "sk_cassert"
 #include "task_manager.hpp"
 
 void TaskManager::Wakeup(ResourceId resource_id) {
@@ -29,12 +30,16 @@ void TaskManager::Wakeup(ResourceId resource_id) {
     auto* task = waiting_tasks.front();
     waiting_tasks.pop_front();
 
+    sk_assert(task->status == TaskStatus::kBlocked);
+    sk_assert(task->blocked_on == resource_id);
+
     // 将任务标记为就绪
     task->status = TaskStatus::kReady;
     task->blocked_on = ResourceId{};
 
     // 将任务重新加入对应调度器的就绪队列
     auto* scheduler = cpu_sched.schedulers[task->policy];
+    sk_assert(scheduler != nullptr);
     if (scheduler) {
       scheduler->Enqueue(task);
     }

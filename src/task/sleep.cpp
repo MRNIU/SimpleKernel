@@ -3,6 +3,7 @@
  */
 
 #include "kernel_log.hpp"
+#include "sk_cassert"
 #include "task_manager.hpp"
 
 namespace {
@@ -28,6 +29,8 @@ void TaskManager::Sleep(uint64_t ms) {
       klog::Err("Sleep: No current task to sleep.\n");
       return;
     }
+
+    sk_assert(current->status == TaskStatus::kRunning);
 
     // 计算唤醒时间 (当前 tick + 睡眠时间)
     uint64_t sleep_ticks = (ms * SIMPLEKERNEL_TICK) / kMillisecondsPerSecond;

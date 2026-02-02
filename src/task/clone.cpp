@@ -2,20 +2,22 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include "expected.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
+#include "sk_cassert"
 #include "sk_cstring"
 #include "sk_stdlib.h"
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
-Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
-                       int* child_tid, void* tls,
-                       cpu_io::TrapContext& parent_context) {
+Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
+                                 int* parent_tid, int* child_tid, void* tls,
+                                 cpu_io::TrapContext& parent_context) {
   auto* parent = GetCurrentTask();
   if (!parent) {
     klog::Err("Clone: No current task\n");
-    return -1;
+    return std::unexpected(Error(ErrorCode::kTaskNoCurrentTask));
   }
 
   // 验证克隆标志的合法性
@@ -33,14 +35,14 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
   Pid new_pid = AllocatePid();
   if (new_pid == 0) {
     klog::Err("Clone: Failed to allocate PID\n");
-    return -1;
+    return std::unexpected(Error(ErrorCode::kTaskPidAllocationFailed));
   }
 
   // 创建子任务控制块
   auto* child = new TaskControlBlock();
   if (!child) {
     klog::Err("Clone: Failed to allocate child task\n");
-    return -1;
+    return std::unexpected(Error(ErrorCode::kTaskAllocationFailed));
   }
 
   // 基本字段设置
@@ -126,10 +128,10 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
       auto result = Singleton<VirtualMemory>::GetInstance().ClonePageDirectory(
           parent->page_table, true);
       if (!result.has_value()) {
-        klog::Err("Clone: Failed to clone page table\n");
-        free(child->kernel_stack);
+        klog::Err("Clone: Failed to clone page table: %s\n",
+                  result.error().message());
         delete child;
-        return -1;
+        return std::unexpected(Error(ErrorCode::kTaskPageTableCloneFailed));
       }
       child->page_table = reinterpret_cast<uint64_t*>(result.value());
       klog::Debug("Clone: cloned page table from %p to %p\n",
@@ -153,7 +155,7 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
           child->page_table, false);
     }
     delete child;
-    return -1;
+    return std::unexpected(Error(ErrorCode::kTaskKernelStackAllocationFailed));
   }
 
   // 初始化内核栈内容
@@ -163,6 +165,7 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
   child->trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
       child->kernel_stack + TaskControlBlock::kDefaultKernelStackSize -
       sizeof(cpu_io::TrapContext));
+  sk_assert(child->trap_context_ptr != nullptr);
   memcpy(child->trap_context_ptr, &parent_context, sizeof(cpu_io::TrapContext));
 
   // 设置用户栈
@@ -192,11 +195,13 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
   // 将子任务加入任务表
   {
     LockGuard lock_guard(task_table_lock_);
+    sk_assert(task_table_.find(new_pid) == task_table_.end());
     task_table_[new_pid] = child;
   }
 
   // 将子任务添加到调度器
   AddTask(child);
+  sk_assert(child->status == TaskStatus::kReady);
 
   // 打印详细的 clone 信息
   const char* clone_type = (flags & kCloneThread) ? "thread" : "process";

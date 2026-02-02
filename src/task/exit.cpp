@@ -4,6 +4,7 @@
 
 #include "kernel_log.hpp"
 #include "resource_id.hpp"
+#include "sk_cassert"
 #include "task_manager.hpp"
 
 void TaskManager::Exit(int exit_code) {
@@ -19,6 +20,8 @@ void TaskManager::Exit(int exit_code) {
         ;
       }
     }
+
+    sk_assert(current->status == TaskStatus::kRunning);
 
     // 设置退出码
     current->exit_code = exit_code;

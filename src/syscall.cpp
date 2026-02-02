@@ -95,19 +95,22 @@ int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
   }
 
   // 调用 TaskManager 的 Clone 方法
-  Pid child_pid = task_manager.Clone(flags, stack, parent_tid, child_tid, tls,
-                                     *current->trap_context_ptr);
+  auto result = task_manager.Clone(flags, stack, parent_tid, child_tid, tls,
+                                   *current->trap_context_ptr);
 
+  if (!result.has_value()) {
+    // 失败返回 -1
+    klog::Err("[Syscall] sys_clone failed: %s\n", result.error().message());
+    return -1;
+  }
+
+  Pid child_pid = result.value();
   if (child_pid == 0) {
     // 子进程/线程返回 0
     return 0;
-  } else if (child_pid > 0) {
+  } else {
     // 父进程返回子进程 PID
     return static_cast<int>(child_pid);
-  } else {
-    // 失败返回 -1
-    klog::Err("[Syscall] sys_clone failed\n");
-    return -1;
   }
 }
 
@@ -121,19 +124,22 @@ int sys_fork() {
   }
 
   // fork = clone with flags=0 (完全复制，不共享任何资源)
-  Pid child_pid = task_manager.Clone(0, nullptr, nullptr, nullptr, nullptr,
-                                     *current->trap_context_ptr);
+  auto result = task_manager.Clone(0, nullptr, nullptr, nullptr, nullptr,
+                                   *current->trap_context_ptr);
 
+  if (!result.has_value()) {
+    // 失败返回 -1
+    klog::Err("[Syscall] sys_fork failed: %s\n", result.error().message());
+    return -1;
+  }
+
+  Pid child_pid = result.value();
   if (child_pid == 0) {
     // 子进程返回 0
     return 0;
-  } else if (child_pid > 0) {
+  } else {
     // 父进程返回子进程 PID
     return static_cast<int>(child_pid);
-  } else {
-    // 失败返回 -1
-    klog::Err("[Syscall] sys_fork failed\n");
-    return -1;
   }
 }
 

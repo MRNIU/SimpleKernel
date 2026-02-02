@@ -2,15 +2,21 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include "expected.hpp"
 #include "kernel_log.hpp"
 #include "resource_id.hpp"
+#include "sk_cassert"
 #include "task_manager.hpp"
 
-Pid TaskManager::Wait(Pid pid, int* status, bool no_hang, bool untraced) {
+Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
+                                bool untraced) {
   auto* current = GetCurrentTask();
   if (!current) {
-    return -1;
+    klog::Err("Wait: No current task\n");
+    return std::unexpected(Error(ErrorCode::kTaskNoCurrentTask));
   }
+
+  sk_assert(current->status == TaskStatus::kRunning);
 
   while (true) {
     TaskControlBlock* target = nullptr;
@@ -63,6 +69,10 @@ Pid TaskManager::Wait(Pid pid, int* status, bool no_hang, bool untraced) {
 
     // 找到了退出的子进程
     if (target) {
+      sk_assert(target->status == TaskStatus::kZombie ||
+                target->status == TaskStatus::kExited);
+      sk_assert(target->parent_pid == current->pid);
+
       Pid result_pid = target->pid;
 
       // 返回退出状态
@@ -73,7 +83,9 @@ Pid TaskManager::Wait(Pid pid, int* status, bool no_hang, bool untraced) {
       // 清理僵尸进程
       {
         LockGuard lock_guard(task_table_lock_);
-        task_table_.erase(target->pid);
+        auto it = task_table_.find(target->pid);
+        sk_assert(it != task_table_.end());
+        task_table_.erase(it->first);
       }
 
       delete target;

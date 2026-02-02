@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "expected.hpp"
 #include "interrupt_base.h"
 #include "per_cpu.hpp"
 #include "resource_id.hpp"
@@ -134,10 +135,11 @@ class TaskManager {
    * @param child_tid 子进程 TID 存储地址
    * @param tls 线程局部存储指针
    * @param parent_context 父进程的 trap 上下文 (用于复制寄存器)
-   * @return 父进程返回子进程 PID，子进程返回 0，失败返回 -1
+   * @return Expected<Pid> 父进程返回子进程 PID，子进程返回 0，失败返回错误
    */
-  Pid Clone(uint64_t flags, void* user_stack, int* parent_tid, int* child_tid,
-            void* tls, cpu_io::TrapContext& parent_context);
+  Expected<Pid> Clone(uint64_t flags, void* user_stack, int* parent_tid,
+                      int* child_tid, void* tls,
+                      cpu_io::TrapContext& parent_context);
 
   /**
    * @brief 等待子进程退出
@@ -145,9 +147,10 @@ class TaskManager {
    * @param status 退出状态存储位置 (可为 nullptr)
    * @param no_hang 非阻塞等待，立即返回 (类似 WNOHANG)
    * @param untraced 报告已停止的子进程 (类似 WUNTRACED)
-   * @return 成功返回子进程 PID，无子进程返回 -ECHILD，被中断返回 -EINTR
+   * @return Expected<Pid> 成功返回子进程 PID，无子进程或被中断返回错误
    */
-  Pid Wait(Pid pid, int* status, bool no_hang = false, bool untraced = false);
+  Expected<Pid> Wait(Pid pid, int* status, bool no_hang = false,
+                     bool untraced = false);
 
   /**
    * @brief 按 PID 查找任务

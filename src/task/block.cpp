@@ -4,6 +4,7 @@
 
 #include "kernel_log.hpp"
 #include "resource_id.hpp"
+#include "sk_cassert"
 #include "task_manager.hpp"
 
 void TaskManager::Block(ResourceId resource_id) {
@@ -18,6 +19,8 @@ void TaskManager::Block(ResourceId resource_id) {
       klog::Err("Block: No current task to block.\n");
       return;
     }
+
+    sk_assert(current->status == TaskStatus::kRunning);
 
     // 将任务标记为阻塞状态
     current->status = TaskStatus::kBlocked;

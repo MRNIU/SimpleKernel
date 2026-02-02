@@ -16,6 +16,7 @@
 #include "kernel_log.hpp"
 #include "per_cpu.hpp"
 #include "singleton.hpp"
+#include "sk_cassert"
 #include "sk_cstring"
 #include "sk_stdlib.h"
 #include "sk_vector"
@@ -70,6 +71,10 @@ void TaskManager::Schedule() {
   }
 
   // 切换到下一个任务
+  sk_assert(next != nullptr);
+  sk_assert(next->status == TaskStatus::kReady ||
+            next->policy == SchedPolicy::kIdle);
+
   next->status = TaskStatus::kRunning;
   // 重置时间片（对于 RR 和 FIFO 有效，CFS 使用 vruntime 不依赖此字段）
   next->sched_info.time_slice_remaining = next->sched_info.time_slice_default;
