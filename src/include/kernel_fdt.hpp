@@ -253,7 +253,7 @@ class KernelFdt {
       -> Expected<uint64_t> {
     sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
 
-    auto offset = FindCompatibleNode(compatible);
+    auto offset = FindEnabledCompatibleNode(compatible);
     if (!offset.has_value()) {
       return std::unexpected(offset.error());
     }
@@ -410,6 +410,40 @@ class KernelFdt {
       return std::unexpected(Error(ErrorCode::kFdtNodeNotFound));
     }
     return offset;
+  }
+
+  /**
+   * 根据 compatible 查找已启用的节点（跳过 status="disabled" 的节点）
+   * @param compatible 要查找的 compatible 字符串
+   * @return Expected<int> 节点偏移量
+   */
+  [[nodiscard]] auto FindEnabledCompatibleNode(const char* compatible) const
+      -> Expected<int> {
+    int offset = -1;
+    while (true) {
+      offset = fdt_node_offset_by_compatible(fdt_header_, offset, compatible);
+      if (offset < 0) {
+        return std::unexpected(Error(ErrorCode::kFdtNodeNotFound));
+      }
+
+      // 检查 status 属性
+      int len = 0;
+      const auto* status_prop =
+          fdt_get_property(fdt_header_, offset, "status", &len);
+
+      // 如果没有 status 属性，默认为 okay
+      if (status_prop == nullptr) {
+        return offset;
+      }
+
+      // 检查 status 是否为 "okay" 或 "ok"
+      const char* status = reinterpret_cast<const char*>(status_prop->data);
+      if (strcmp(status, "okay") == 0 || strcmp(status, "ok") == 0) {
+        return offset;
+      }
+
+      // 继续查找下一个匹配的节点
+    }
   }
 
   /**
