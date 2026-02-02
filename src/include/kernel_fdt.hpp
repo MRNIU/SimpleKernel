@@ -295,7 +295,6 @@ class KernelFdt {
    * @return 内存信息<地址，长度，中断源数量，上下文数量>
    * @see https://github.com/qemu/qemu/blob/master/hw/arm/virt.c
    */
-
   [[nodiscard]] auto GetPlic() const
       -> Expected<std::tuple<uint64_t, uint64_t, uint32_t, uint32_t>> {
     sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
