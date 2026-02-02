@@ -6,7 +6,7 @@
 #include "io.hpp"
 #include "kernel_log.hpp"
 
-bool LocalApic::Init() {
+auto LocalApic::Init() -> Expected<void> {
   // 检查 APIC 是否全局启用
   if (!cpu_io::msr::apic::IsGloballyEnabled()) {
     cpu_io::msr::apic::EnableGlobally();
@@ -18,7 +18,7 @@ bool LocalApic::Init() {
   } else {
     if (!EnableXApic()) {
       klog::Err("Failed to enable APIC in any mode\n");
-      return false;
+      return std::unexpected(Error(ErrorCode::kApicInitFailed));
     }
     is_x2apic_mode_ = false;
   }
@@ -58,7 +58,7 @@ bool LocalApic::Init() {
     io::Out<uint32_t>(apic_base_ + kXApicLvtLint1Offset, kLvtMaskBit);
     io::Out<uint32_t>(apic_base_ + kXApicLvtErrorOffset, kLvtMaskBit);
   }
-  return true;
+  return {};
 }
 
 uint32_t LocalApic::GetApicVersion() const {
@@ -80,7 +80,7 @@ void LocalApic::SendEoi() const {
 }
 
 auto LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) const
-    -> bool {
+    -> Expected<void> {
   if (is_x2apic_mode_) {
     auto icr = static_cast<uint64_t>(vector);
     icr |= static_cast<uint64_t>(destination_apic_id) << 32;
@@ -106,10 +106,10 @@ auto LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) const
       ;
     }
   }
-  return true;
+  return {};
 }
 
-auto LocalApic::BroadcastIpi(uint8_t vector) const -> bool {
+auto LocalApic::BroadcastIpi(uint8_t vector) const -> Expected<void> {
   if (is_x2apic_mode_) {
     auto icr = static_cast<uint64_t>(vector);
     // 目标简写：除自己外的所有 CPU
@@ -134,7 +134,7 @@ auto LocalApic::BroadcastIpi(uint8_t vector) const -> bool {
       ;
     }
   }
-  return true;
+  return {};
 }
 
 void LocalApic::SetTaskPriority(uint8_t priority) const {

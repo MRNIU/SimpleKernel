@@ -22,12 +22,12 @@ class Gic {
  public:
   static constexpr const char* kCompatibleName = "arm,gic-v3";
 
-  static constexpr const size_t kSGIBase = 0;
-  static constexpr const size_t kSGICount = 16;
-  static constexpr const size_t kPPIBase = 16;
-  static constexpr const size_t kPPICount = 16;
-  static constexpr const size_t kSPIBase = 32;
-  static constexpr const size_t kSPICount = 988;
+  static constexpr size_t kSGIBase = 0;
+  static constexpr size_t kSGICount = 16;
+  static constexpr size_t kPPIBase = 16;
+  static constexpr size_t kPPICount = 16;
+  static constexpr size_t kSPIBase = 32;
+  static constexpr size_t kSPICount = 988;
 
   class Gicd {
    public:
@@ -35,8 +35,8 @@ class Gic {
     /// https://developer.arm.com/documentation/101206/0003/Programmers-model/Distributor-registers--GICD-GICDA--summary
     /// GICD Register offsets
     /// Configuration dependent	Distributor Control Register, RW
-    static constexpr const uint32_t kCTLR = 0x0000;
-    static constexpr const uint32_t kCTLR_EnableGrp1NS = 0x2;
+    static constexpr uint32_t kCTLR = 0x0000;
+    static constexpr uint32_t kCTLR_EnableGrp1NS = 0x2;
     /**
      * @brief GICD_CTLR, Distributor Control Register
      * @see
@@ -64,8 +64,8 @@ class Gic {
     };
 
     /// Configuration dependent	Interrupt Controller Type Register, RO
-    static constexpr const uint32_t kTYPER = 0x0004;
-    static constexpr const uint32_t kTYPER_ITLinesNumberMask = 0x1F;
+    static constexpr uint32_t kTYPER = 0x0004;
+    static constexpr uint32_t kTYPER_ITLinesNumberMask = 0x1F;
     /**
      * @brief GICD_TYPER, Interrupt Controller Type Register
      * @see
@@ -104,7 +104,7 @@ class Gic {
 
     /// Configuration dependent	Distributor Implementer Identification Register,
     /// RO
-    static constexpr const uint32_t kIIDR = 0x0008;
+    static constexpr uint32_t kIIDR = 0x0008;
     /**
      * @brief GICD_IIDR, Distributor Implementer Identification Register
      * @see
@@ -127,22 +127,22 @@ class Gic {
     };
 
     /// Function Control Register, RW
-    static constexpr const uint32_t kFCTLR = 0x0020;
+    static constexpr uint32_t kFCTLR = 0x0020;
     /// Tie-off dependentb	Secure Access Control register, RW
-    static constexpr const uint32_t kSAC = 0x0024;
+    static constexpr uint32_t kSAC = 0x0024;
     /// Non-secure SPI Set Register, WO
-    static constexpr const uint32_t kSETSPI_NSR = 0x0040;
+    static constexpr uint32_t kSETSPI_NSR = 0x0040;
     /// Non-secure SPI Clear Register, WO
-    static constexpr const uint32_t kCLRSPI_NSR = 0x0048;
+    static constexpr uint32_t kCLRSPI_NSR = 0x0048;
     /// Secure SPI Set Register, WO
-    static constexpr const uint32_t kSETSPI_SR = 0x0050;
+    static constexpr uint32_t kSETSPI_SR = 0x0050;
     /// Secure SPI Clear Register, WO
-    static constexpr const uint32_t kCLRSPI_SR = 0x0058;
+    static constexpr uint32_t kCLRSPI_SR = 0x0058;
 
     /// Interrupt Group Registers, n = 0-31, but n=0 is Reserved
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-IGROUPR-n---Interrupt-Group-Registers?lang=en
-    static constexpr const uint32_t kIGROUPRn = 0x0080;
+    static constexpr uint32_t kIGROUPRn = 0x0080;
     __always_inline auto IGROUPRn(uint64_t n) const -> uint64_t {
       return kIGROUPRn + n * 4;
     }
@@ -150,8 +150,8 @@ class Gic {
     /// Interrupt Set-Enable Registers, n = 0-31, but n=0 is Reserved
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-ISENABLER-n---Interrupt-Set-Enable-Registers?lang=en
-    static constexpr const uint32_t kISENABLERn = 0x0100;
-    static constexpr const uint32_t kISENABLERn_SIZE = 32;
+    static constexpr uint32_t kISENABLERn = 0x0100;
+    static constexpr uint32_t kISENABLERn_SIZE = 32;
     __always_inline auto ISENABLERn(uint64_t n) const -> uint64_t {
       return kISENABLERn + n * 4;
     }
@@ -159,37 +159,37 @@ class Gic {
     /// Interrupt Clear-Enable Registers, n = 0-31, but n=0 is Reserved
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-ICENABLER-n---Interrupt-Clear-Enable-Registers?lang=en
-    static constexpr const uint32_t kICENABLERn = 0x0180;
-    static constexpr const uint32_t kICENABLERn_SIZE = 32;
+    static constexpr uint32_t kICENABLERn = 0x0180;
+    static constexpr uint32_t kICENABLERn_SIZE = 32;
     __always_inline auto ICENABLERn(uint64_t n) const -> uint64_t {
       return kICENABLERn + n * 4;
     }
 
     /// Interrupt Set-Pending Registers, n = 0-31, but n=0 is Reserved
-    static constexpr const uint32_t kISPENDRn = 0x0200;
+    static constexpr uint32_t kISPENDRn = 0x0200;
 
     /// Interrupt Clear-Pending Registers, n = 0-31, but n=0 is Reserved
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-ICPENDR-n---Interrupt-Clear-Pending-Registers?lang=en
-    static constexpr const uint32_t kICPENDRn = 0x0280;
-    static constexpr const uint32_t kICPENDRn_SIZE = 32;
+    static constexpr uint32_t kICPENDRn = 0x0280;
+    static constexpr uint32_t kICPENDRn_SIZE = 32;
     __always_inline auto ICPENDRn(uint64_t n) const -> uint64_t {
       return kICPENDRn + n * 4;
     }
 
     /// Interrupt Set-Active Registers, n = 0-31, but n=0 is Reserved
-    static constexpr const uint32_t kISACTIVERn = 0x0300;
+    static constexpr uint32_t kISACTIVERn = 0x0300;
     /// Interrupt Clear-Active Registers, n = 0-31, but n=0 is Reserved
-    static constexpr const uint32_t kICACTIVERn = 0x0380;
+    static constexpr uint32_t kICACTIVERn = 0x0380;
 
     /// Interrupt Priority Registers, n = 0-255, but n=0-7 are Reserved when
     /// affinity routing is enabled
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-IPRIORITYR-n---Interrupt-Priority-Registers?lang=en
-    static constexpr const uint32_t kIPRIORITYRn = 0x0400;
-    static constexpr const uint32_t kIPRIORITYRn_SIZE = 4;
-    static constexpr const uint32_t kIPRIORITYRn_BITS = 8;
-    static constexpr const uint32_t kIPRIORITYRn_BITS_MASK = 0xFF;
+    static constexpr uint32_t kIPRIORITYRn = 0x0400;
+    static constexpr uint32_t kIPRIORITYRn_SIZE = 4;
+    static constexpr uint32_t kIPRIORITYRn_BITS = 8;
+    static constexpr uint32_t kIPRIORITYRn_BITS_MASK = 0xFF;
     __always_inline auto IPRIORITYRn(uint64_t n) const -> uint64_t {
       return kIPRIORITYRn + n * 4;
     }
@@ -197,10 +197,10 @@ class Gic {
     /// Interrupt Processor Targets Registers, n = 0 - 254
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-ITARGETSR-n---Interrupt-Processor-Targets-Registers?lang=en
-    static constexpr const uint32_t kITARGETSRn = 0x0800;
-    static constexpr const uint32_t kITARGETSRn_SIZE = 4;
-    static constexpr const uint32_t kITARGETSRn_BITS = 8;
-    static constexpr const uint32_t kITARGETSRn_BITS_MASK = 0xFF;
+    static constexpr uint32_t kITARGETSRn = 0x0800;
+    static constexpr uint32_t kITARGETSRn_SIZE = 4;
+    static constexpr uint32_t kITARGETSRn_BITS = 8;
+    static constexpr uint32_t kITARGETSRn_BITS_MASK = 0xFF;
     __always_inline auto ITARGETSRn(uint64_t n) const -> uint64_t {
       return kITARGETSRn + n * 4;
     }
@@ -208,61 +208,61 @@ class Gic {
     /// Interrupt Configuration Registers, n = 0-63, but n=0-1 are Reserved
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-ICFGR-n---Interrupt-Configuration-Registers?lang=en
-    static constexpr const uint32_t kICFGRn = 0x0C00;
-    static constexpr const uint32_t kICFGRn_SIZE = 16;
-    static constexpr const uint32_t kICFGRn_BITS = 2;
-    static constexpr const uint32_t kICFGRn_BITS_MASK = 0x3;
-    static constexpr const uint32_t kICFGRn_LevelSensitive = 0;
-    static constexpr const uint32_t kICFGRn_EdgeTriggered = 1;
+    static constexpr uint32_t kICFGRn = 0x0C00;
+    static constexpr uint32_t kICFGRn_SIZE = 16;
+    static constexpr uint32_t kICFGRn_BITS = 2;
+    static constexpr uint32_t kICFGRn_BITS_MASK = 0x3;
+    static constexpr uint32_t kICFGRn_LevelSensitive = 0;
+    static constexpr uint32_t kICFGRn_EdgeTriggered = 1;
     __always_inline auto ICFGRn(uint64_t n) const -> uint64_t {
       return kICFGRn + n * 4;
     }
 
     /// Interrupt Group Modifier Registers, n = 0-31, but n=0 is Reserved. If
     /// GICD_CTLR.DS == 1, then this register is RAZ/WI.
-    static constexpr const uint32_t kIGRPMODRn = 0x0D00;
+    static constexpr uint32_t kIGRPMODRn = 0x0D00;
     /// Non-secure Access Control Registers, n = 0-63, but n=0-1 are Reserved
     /// when affinity routing is enabled
-    static constexpr const uint32_t kNSACRn = 0x0E00;
+    static constexpr uint32_t kNSACRn = 0x0E00;
     /// Interrupt Routing Registers, n = 0-991, but n=0-31 are Reserved when
     /// affinity routing is enabled.
-    static constexpr const uint32_t kIROUTERn = 0x6000;
+    static constexpr uint32_t kIROUTERn = 0x6000;
     /// P-Channel dependent	Chip Status Register, RW
-    static constexpr const uint32_t kCHIPSR = 0xC000;
+    static constexpr uint32_t kCHIPSR = 0xC000;
     /// Default Chip Register, RW
-    static constexpr const uint32_t kDCHIPR = 0xC004;
+    static constexpr uint32_t kDCHIPR = 0xC004;
     /// Chip Registers, n = 0-15. Reserved in single-chip configurations.
-    static constexpr const uint32_t kCHIPRn = 0xC008;
+    static constexpr uint32_t kCHIPRn = 0xC008;
     /// Interrupt Class Registers, n = 0-63, but n=0-1 are Reserved
-    static constexpr const uint32_t kICLARn = 0xE000;
+    static constexpr uint32_t kICLARn = 0xE000;
     /// Interrupt Clear Error Registers, n = 0-31, but n=0 is Reserved
-    static constexpr const uint32_t kICERRRn = 0xE100;
+    static constexpr uint32_t kICERRRn = 0xE100;
     /// Configuration dependent	Configuration ID Register, RO
-    static constexpr const uint64_t kCFGID = 0xF000;
+    static constexpr uint64_t kCFGID = 0xF000;
     /// Peripheral ID4 register	, RO
-    static constexpr const uint32_t kPIDR4 = 0xFFD0;
+    static constexpr uint32_t kPIDR4 = 0xFFD0;
     /// Peripheral ID 5 Register, RO
-    static constexpr const uint32_t kPIDR5 = 0xFFD4;
+    static constexpr uint32_t kPIDR5 = 0xFFD4;
     /// Peripheral ID 6 Register, RO
-    static constexpr const uint32_t kPIDR6 = 0xFFD8;
+    static constexpr uint32_t kPIDR6 = 0xFFD8;
     /// Peripheral ID 7 Register, RO
-    static constexpr const uint32_t kPIDR7 = 0xFFDC;
+    static constexpr uint32_t kPIDR7 = 0xFFDC;
     /// Peripheral ID0 register, RO
-    static constexpr const uint32_t kPIDR0 = 0xFFE0;
+    static constexpr uint32_t kPIDR0 = 0xFFE0;
     /// Peripheral ID1 register, RO
-    static constexpr const uint32_t kPIDR1 = 0xFFE4;
+    static constexpr uint32_t kPIDR1 = 0xFFE4;
     /// Peripheral ID2 register, RO
-    static constexpr const uint32_t kPIDR2 = 0xFFE8;
+    static constexpr uint32_t kPIDR2 = 0xFFE8;
     /// Peripheral ID3 register, RO
-    static constexpr const uint32_t kPIDR3 = 0xFFEC;
+    static constexpr uint32_t kPIDR3 = 0xFFEC;
     /// Component ID 0 Register, RO
-    static constexpr const uint32_t kCIDR0 = 0xFFF0;
+    static constexpr uint32_t kCIDR0 = 0xFFF0;
     /// Component ID 1 Register, RO
-    static constexpr const uint32_t kCIDR1 = 0xFFF4;
+    static constexpr uint32_t kCIDR1 = 0xFFF4;
     /// Component ID 2 Register, RO
-    static constexpr const uint32_t kCIDR2 = 0xFFF8;
+    static constexpr uint32_t kCIDR2 = 0xFFF8;
     /// Component ID 3 Register, RO
-    static constexpr const uint32_t kCIDR3 = 0xFFFC;
+    static constexpr uint32_t kCIDR3 = 0xFFFC;
 
     /**
      * 构造函数
@@ -358,131 +358,131 @@ class Gic {
   class Gicr {
    public:
     /// 每个 GICR 长度 2 * 64 * 1024
-    static constexpr const uint32_t kSTRIDE = 0x20000;
+    static constexpr uint32_t kSTRIDE = 0x20000;
 
     /// Redistributor Control Register, RW
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-CTLR--Redistributor-Control-Register?lang=en
-    static constexpr const uint32_t kCTLR = 0x0000;
+    static constexpr uint32_t kCTLR = 0x0000;
     /// Redistributor Implementation Identification Register, RO
-    static constexpr const uint32_t kIIDR = 0x0004;
+    static constexpr uint32_t kIIDR = 0x0004;
     /// Redistributor Type Register, RO
-    static constexpr const uint32_t kTYPER = 0x0008;
+    static constexpr uint32_t kTYPER = 0x0008;
 
     /// Power Management Control Register, RW1
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-WAKER--Redistributor-Wake-Register?lang=en
-    static constexpr const uint32_t kWAKER = 0x0014;
-    static constexpr const uint32_t kWAKER_ProcessorSleepMASK = 2;
-    static constexpr const uint32_t kWAKER_ChildrenAsleepMASK = 4;
+    static constexpr uint32_t kWAKER = 0x0014;
+    static constexpr uint32_t kWAKER_ProcessorSleepMASK = 2;
+    static constexpr uint32_t kWAKER_ChildrenAsleepMASK = 4;
 
     /// Function Control Register, RW
-    static constexpr const uint32_t kFCTLR = 0x0020;
+    static constexpr uint32_t kFCTLR = 0x0020;
     /// Power Register, RW
-    static constexpr const uint32_t kPWRR = 0x0024;
+    static constexpr uint32_t kPWRR = 0x0024;
     /// Class Register, RW
-    static constexpr const uint32_t kCLASSR = 0x0028;
+    static constexpr uint32_t kCLASSR = 0x0028;
     /// Redistributor Properties Base Address Register, RW
-    static constexpr const uint32_t kPROPBASER = 0x0070;
+    static constexpr uint32_t kPROPBASER = 0x0070;
     /// Redistributor LPI Pending Table Base Address Register, RW
-    static constexpr const uint32_t kPENDBASER = 0x0078;
+    static constexpr uint32_t kPENDBASER = 0x0078;
     /// Peripheral ID 4 Register, RO
-    static constexpr const uint32_t kPIDR4 = 0xFFD0;
+    static constexpr uint32_t kPIDR4 = 0xFFD0;
     /// Peripheral ID 5 Register, RO
-    static constexpr const uint32_t kPIDR5 = 0xFFD4;
+    static constexpr uint32_t kPIDR5 = 0xFFD4;
     /// Peripheral ID 6 Register, RO
-    static constexpr const uint32_t kPIDR6 = 0xFFD8;
+    static constexpr uint32_t kPIDR6 = 0xFFD8;
     /// Peripheral ID 7 Register, RO
-    static constexpr const uint32_t kPIDR7 = 0xFFDC;
+    static constexpr uint32_t kPIDR7 = 0xFFDC;
     /// Peripheral ID 0 Register, RO
-    static constexpr const uint32_t kPIDR0 = 0xFFE0;
+    static constexpr uint32_t kPIDR0 = 0xFFE0;
     /// Peripheral ID 1 Register, RO
-    static constexpr const uint32_t kPIDR1 = 0xFFE4;
+    static constexpr uint32_t kPIDR1 = 0xFFE4;
     /// Peripheral ID 2 Register, RO
-    static constexpr const uint32_t kPIDR2 = 0xFFE8;
+    static constexpr uint32_t kPIDR2 = 0xFFE8;
     /// Peripheral ID 3 Register, RO
-    static constexpr const uint32_t kPIDR3 = 0xFFEC;
+    static constexpr uint32_t kPIDR3 = 0xFFEC;
     /// Component ID 0 Register, RO
-    static constexpr const uint32_t kCIDR0 = 0xFFF0;
+    static constexpr uint32_t kCIDR0 = 0xFFF0;
     /// Component ID 1 Register, RO
-    static constexpr const uint32_t kCIDR1 = 0xFFF4;
+    static constexpr uint32_t kCIDR1 = 0xFFF4;
     /// Component ID 2 Register, RO
-    static constexpr const uint32_t kCIDR2 = 0xFFF8;
+    static constexpr uint32_t kCIDR2 = 0xFFF8;
     /// Component ID 3 Register, RO
-    static constexpr const uint32_t kCIDR3 = 0xFFFC;
+    static constexpr uint32_t kCIDR3 = 0xFFFC;
 
     /// SGI 基地址 64 * 1024
-    static constexpr const uint32_t kSGI_BASE = 0x10000;
+    static constexpr uint32_t kSGI_BASE = 0x10000;
 
     /// Interrupt Group Register, RW
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-IGROUPR0--Interrupt-Group-Register-0?lang=en
-    static constexpr const uint32_t kIGROUPR0 = kSGI_BASE + 0x0080;
-    static constexpr const uint32_t kIGROUPR0_Clear = 0;
-    static constexpr const uint32_t kIGROUPR0_Set = UINT32_MAX;
+    static constexpr uint32_t kIGROUPR0 = kSGI_BASE + 0x0080;
+    static constexpr uint32_t kIGROUPR0_Clear = 0;
+    static constexpr uint32_t kIGROUPR0_Set = UINT32_MAX;
 
     /// Interrupt Set-Enable Register, RW
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-ISENABLER0--Interrupt-Set-Enable-Register-0?lang=en
-    static constexpr const uint32_t kISENABLER0 = kSGI_BASE + 0x0100;
-    static constexpr const uint32_t kISENABLER0_SIZE = 32;
+    static constexpr uint32_t kISENABLER0 = kSGI_BASE + 0x0100;
+    static constexpr uint32_t kISENABLER0_SIZE = 32;
 
     /// Interrupt Clear-Enable Register, RW
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-ICENABLER0--Interrupt-Clear-Enable-Register-0?lang=en
-    static constexpr const uint32_t kICENABLER0 = kSGI_BASE + 0x0180;
-    static constexpr const uint32_t kICENABLER0_SIZE = 32;
+    static constexpr uint32_t kICENABLER0 = kSGI_BASE + 0x0180;
+    static constexpr uint32_t kICENABLER0_SIZE = 32;
 
     /// Interrupt Set-Pending Register, RW
-    static constexpr const uint32_t kISPENDR0 = kSGI_BASE + 0x0200;
+    static constexpr uint32_t kISPENDR0 = kSGI_BASE + 0x0200;
 
     /// Peripheral Clear Pending Register, RW
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-ICPENDR0--Interrupt-Clear-Pending-Register-0?lang=en
-    static constexpr const uint32_t kICPENDR0 = kSGI_BASE + 0x0280;
-    static constexpr const uint32_t kICPENDR0_SIZE = 32;
+    static constexpr uint32_t kICPENDR0 = kSGI_BASE + 0x0280;
+    static constexpr uint32_t kICPENDR0_SIZE = 32;
 
     /// Interrupt Set-Active Register, RW
-    static constexpr const uint32_t kISACTIVER0 = kSGI_BASE + 0x0300;
+    static constexpr uint32_t kISACTIVER0 = kSGI_BASE + 0x0300;
     /// Interrupt Clear-Active Register, RW
-    static constexpr const uint32_t kICACTIVER0 = kSGI_BASE + 0x0380;
+    static constexpr uint32_t kICACTIVER0 = kSGI_BASE + 0x0380;
     /// Interrupt Priority Registers, RW
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-IPRIORITYR-n---Interrupt-Priority-Registers?lang=en
-    static constexpr const uint32_t kIPRIORITYRn = kSGI_BASE + 0x0400;
-    static constexpr const uint32_t kIPRIORITYRn_SIZE = 4;
-    static constexpr const uint32_t kIPRIORITYRn_BITS = 8;
-    static constexpr const uint32_t kIPRIORITYRn_BITS_MASK = 0xFF;
+    static constexpr uint32_t kIPRIORITYRn = kSGI_BASE + 0x0400;
+    static constexpr uint32_t kIPRIORITYRn_SIZE = 4;
+    static constexpr uint32_t kIPRIORITYRn_BITS = 8;
+    static constexpr uint32_t kIPRIORITYRn_BITS_MASK = 0xFF;
     __always_inline auto IPRIORITYRn(uint64_t n) const -> uint64_t {
       return kIPRIORITYRn + n * 4;
     }
 
     /// Interrupt Configuration Registers, RW
-    static constexpr const uint32_t kICFGRn = 0x0C00;
+    static constexpr uint32_t kICFGRn = 0x0C00;
 
     /// Interrupt Group Modifier Register, RW
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-IGRPMODR0--Interrupt-Group-Modifier-Register-0?lang=en
-    static constexpr const uint32_t kIGRPMODR0 = 0x0D00;
+    static constexpr uint32_t kIGRPMODR0 = 0x0D00;
     // kIGRPMODR0 kIGROUPR0 Definition
     // 0b0	       0b0       Secure Group 0	G0S
     // 0b0	       0b1	     Non-secure Group 1	G1NS
     // 0b1	       0b0       Secure Group 1	G1S
-    static constexpr const uint32_t kIGRPMODR0_Clear = 0;
-    static constexpr const uint32_t kIGRPMODR0_Set = UINT32_MAX;
+    static constexpr uint32_t kIGRPMODR0_Clear = 0;
+    static constexpr uint32_t kIGRPMODR0_Set = UINT32_MAX;
 
     /// Non-secure Access Control Register, RW
-    static constexpr const uint32_t kNSACR = 0x0E00;
+    static constexpr uint32_t kNSACR = 0x0E00;
     /// Miscellaneous Status Register, RO
-    static constexpr const uint32_t kMISCSTATUSR = 0xC000;
+    static constexpr uint32_t kMISCSTATUSR = 0xC000;
     /// Interrupt Error Valid Register, RW
-    static constexpr const uint32_t kIERRVR = 0xC008;
+    static constexpr uint32_t kIERRVR = 0xC008;
     /// SGI Default Register, RW
-    static constexpr const uint32_t kSGIDR = 0xC010;
+    static constexpr uint32_t kSGIDR = 0xC010;
     /// Configuration ID0 Register, RO
-    static constexpr const uint32_t kCFGID0 = 0xF000;
+    static constexpr uint32_t kCFGID0 = 0xF000;
     /// Configuration ID1 Register, RO
-    static constexpr const uint32_t kCFGID1 = 0xF004;
+    static constexpr uint32_t kCFGID1 = 0xF004;
 
     /**
      * 构造函数

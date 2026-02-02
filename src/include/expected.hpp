@@ -33,6 +33,17 @@ enum class ErrorCode : uint64_t {
   kVmUnmapFailed = 0x402,
   kVmInvalidPageTable = 0x403,
   kVmPageNotMapped = 0x404,
+  // IPI 相关错误 (0x500 - 0x5FF)
+  kIpiTargetOutOfRange = 0x500,
+  kIpiSendFailed = 0x501,
+  // APIC 相关错误 (0x600 - 0x6FF)
+  kApicInitFailed = 0x600,
+  kApicInvalidIrq = 0x601,
+  kApicInvalidParameter = 0x602,
+  kApicCodeCopyFailed = 0x603,
+  kApicAddressNotAligned = 0x604,
+  kApicAddressOutOfRange = 0x605,
+  kApicIpiTimeout = 0x606,
   // 通用错误 (0xF00 - 0xFFF)
   kInvalidArgument = 0xF00,
   kOutOfMemory = 0xF01,
@@ -80,7 +91,24 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
     case ErrorCode::kVmInvalidPageTable:
       return "Invalid page table";
     case ErrorCode::kVmPageNotMapped:
-      return "Page not mapped";
+    case ErrorCode::kIpiTargetOutOfRange:
+      return "IPI target CPU mask out of range";
+    case ErrorCode::kIpiSendFailed:
+      return "IPI send failed";
+    case ErrorCode::kApicInitFailed:
+      return "APIC initialization failed";
+    case ErrorCode::kApicInvalidIrq:
+      return "Invalid IRQ number";
+    case ErrorCode::kApicInvalidParameter:
+      return "Invalid APIC parameter";
+    case ErrorCode::kApicCodeCopyFailed:
+      return "AP code copy verification failed";
+    case ErrorCode::kApicAddressNotAligned:
+      return "Address not aligned to required boundary";
+    case ErrorCode::kApicAddressOutOfRange:
+      return "Address out of valid range";
+    case ErrorCode::kApicIpiTimeout:
+      return "IPI delivery timeout";
     case ErrorCode::kInvalidArgument:
       return "Invalid argument";
     case ErrorCode::kOutOfMemory:
@@ -90,7 +118,6 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
   }
 }
 
-/// 错误类型，用于 std::expected
 struct Error {
   ErrorCode code;
 
