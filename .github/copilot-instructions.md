@@ -156,3 +156,4 @@ Singleton<TaskManager>::GetInstance().AddTask(task);
 - **文档目录**: `doc/` (工具链、系统启动、调试输出、中断)
 - **Docker 使用**: `doc/docker.md`
 - **Git 规范**: `doc/git_commit.md`
+- **调试信息**: `build_{arch}/bin` 目录会自动生成 objdump、 nm、map、dts 等文件，qemu 的运行日志也在这里
