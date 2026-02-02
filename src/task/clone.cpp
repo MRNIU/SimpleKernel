@@ -123,15 +123,15 @@ Pid TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
     // 复制地址空间（进程）
     if (parent->page_table) {
       // copy_mappings=true 表示复制用户空间映射
-      child->page_table = reinterpret_cast<uint64_t*>(
-          Singleton<VirtualMemory>::GetInstance().ClonePageDirectory(
-              parent->page_table, true));
-      if (!child->page_table) {
+      auto result = Singleton<VirtualMemory>::GetInstance().ClonePageDirectory(
+          parent->page_table, true);
+      if (!result.has_value()) {
         klog::Err("Clone: Failed to clone page table\n");
         free(child->kernel_stack);
         delete child;
         return -1;
       }
+      child->page_table = reinterpret_cast<uint64_t*>(result.value());
       klog::Debug("Clone: cloned page table from %p to %p\n",
                   parent->page_table, child->page_table);
     } else {
