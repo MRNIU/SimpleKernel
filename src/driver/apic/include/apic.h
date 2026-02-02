@@ -10,6 +10,7 @@
 #include <array>
 #include <cstdint>
 
+#include "expected.hpp"
 #include "io_apic.h"
 #include "local_apic.h"
 
@@ -35,11 +36,10 @@ class Apic {
 
   /**
    * @brief 初始化当前 CPU 的 Local APIC
-   * @return true 初始化成功
-   * @return false 初始化失败
+   * @return Expected<void> 初始化成功返回空值，失败返回错误
    * @note 每个 CPU 核心启动时都需要调用此函数
    */
-  auto InitCurrentCpuLocalApic() -> bool;
+  auto InitCurrentCpuLocalApic() -> Expected<void>;
 
   /**
    * @brief 设置 IRQ 重定向
@@ -47,41 +47,40 @@ class Apic {
    * @param vector 中断向量
    * @param destination_apic_id 目标 APIC ID
    * @param mask 是否屏蔽中断
-   * @return true 设置成功
-   * @return false 设置失败
+   * @return Expected<void> 设置成功返回空值，失败返回错误
    */
   auto SetIrqRedirection(uint8_t irq, uint8_t vector,
                          uint32_t destination_apic_id, bool mask = false)
-      -> bool;
+      -> Expected<void>;
 
   /**
    * @brief 屏蔽 IRQ
    * @param irq IRQ 号
-   * @return true 操作成功
-   * @return false 操作失败
+   * @return Expected<void> 操作成功返回空值，失败返回错误
    */
-  auto MaskIrq(uint8_t irq) -> bool;
+  auto MaskIrq(uint8_t irq) -> Expected<void>;
 
   /**
    * @brief 取消屏蔽 IRQ
    * @param irq IRQ 号
-   * @return true 操作成功
-   * @return false 操作失败
+   * @return Expected<void> 操作成功返回空值，失败返回错误
    */
-  auto UnmaskIrq(uint8_t irq) -> bool;
+  auto UnmaskIrq(uint8_t irq) -> Expected<void>;
 
   /**
    * @brief 发送 IPI 到指定 CPU
    * @param target_apic_id 目标 CPU 的 APIC ID
    * @param vector 中断向量
+   * @return Expected<void> 发送成功返回空值，失败返回错误
    */
-  auto SendIpi(uint32_t target_apic_id, uint8_t vector) const -> bool;
+  auto SendIpi(uint32_t target_apic_id, uint8_t vector) const -> Expected<void>;
 
   /**
    * @brief 广播 IPI 到所有其他 CPU
    * @param vector 中断向量
+   * @return Expected<void> 广播成功返回空值，失败返回错误
    */
-  auto BroadcastIpi(uint8_t vector) const -> bool;
+  auto BroadcastIpi(uint8_t vector) const -> Expected<void>;
 
   /**
    * @brief 启动 AP (Application Processor)
@@ -89,12 +88,11 @@ class Apic {
    * @param ap_code_addr AP 启动代码的虚拟地址
    * @param ap_code_size AP 启动代码的大小
    * @param target_addr AP 代码要复制到的目标物理地址
-   * @return true 启动成功
-   * @return false 启动失败
+   * @return Expected<void> 启动成功返回空值，失败返回错误
    * @note 函数内部会将启动代码复制到指定的目标地址，并计算 start_vector
    */
   auto StartupAp(uint32_t apic_id, uint64_t ap_code_addr, size_t ap_code_size,
-                 uint64_t target_addr) const -> bool;
+                 uint64_t target_addr) const -> Expected<void>;
 
   /**
    * @brief 唤醒所有应用处理器 (AP)
