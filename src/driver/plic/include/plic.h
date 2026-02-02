@@ -95,21 +95,21 @@ class Plic {
   void Do(uint64_t cause, uint8_t* context);
 
  private:
-  static constexpr const uint64_t kSourcePriorityOffset = 0x000000;
-  static constexpr const uint64_t kPendingBitsOffset = 0x001000;
-  static constexpr const uint64_t kEnableBitsOffset = 0x002000;
-  static constexpr const uint64_t kContextOffset = 0x200000;
+  static constexpr uint64_t kSourcePriorityOffset = 0x000000;
+  static constexpr uint64_t kPendingBitsOffset = 0x001000;
+  static constexpr uint64_t kEnableBitsOffset = 0x002000;
+  static constexpr uint64_t kContextOffset = 0x200000;
 
   // 每个 context 的大小和偏移
-  static constexpr const uint64_t kContextSize = 0x1000;
-  static constexpr const uint64_t kPriorityThresholdOffset = 0x0;
-  static constexpr const uint64_t kClaimCompleteOffset = 0x4;
+  static constexpr uint64_t kContextSize = 0x1000;
+  static constexpr uint64_t kPriorityThresholdOffset = 0x0;
+  static constexpr uint64_t kClaimCompleteOffset = 0x4;
 
   // Enable bits 每个 context 的大小 (最多支持 1024 个中断源)
-  static constexpr const uint64_t kEnableSize = 0x80;
+  static constexpr uint64_t kEnableSize = 0x80;
 
   /// 最大外部中断数量
-  static constexpr const size_t kInterruptMaxCount = 16;
+  static constexpr size_t kInterruptMaxCount = 16;
 
   /// 外部中断处理函数数组
   static std::array<InterruptFunc, kInterruptMaxCount> interrupt_handlers_;
