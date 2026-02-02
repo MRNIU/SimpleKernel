@@ -10,6 +10,8 @@
 #include <array>
 #include <cstdint>
 
+#include "expected.hpp"
+
 /**
  * @brief Local APIC 驱动类
  * @note 支持 xAPIC 和 x2APIC 模式，优先使用 x2APIC
@@ -28,10 +30,9 @@ class LocalApic {
 
   /**
    * @brief 初始化 Local APIC
-   * @return true 初始化成功
-   * @return false 初始化失败
+   * @return Expected<void> 初始化成功返回空值，失败返回错误
    */
-  auto Init() -> bool;
+  auto Init() -> Expected<void>;
 
   /**
    * @brief 获取 APIC 版本信息
@@ -48,14 +49,17 @@ class LocalApic {
    * @brief 发送处理器间中断 (IPI)
    * @param destination_apic_id 目标 APIC ID
    * @param vector 中断向量
+   * @return Expected<void> 发送成功返回空值，失败返回错误
    */
-  bool SendIpi(uint32_t destination_apic_id, uint8_t vector) const;
+  auto SendIpi(uint32_t destination_apic_id, uint8_t vector) const
+      -> Expected<void>;
 
   /**
    * @brief 广播 IPI 到所有其他 CPU
    * @param vector 中断向量
+   * @return Expected<void> 广播成功返回空值，失败返回错误
    */
-  bool BroadcastIpi(uint8_t vector) const;
+  auto BroadcastIpi(uint8_t vector) const -> Expected<void>;
 
   /**
    * @brief 设置任务优先级
