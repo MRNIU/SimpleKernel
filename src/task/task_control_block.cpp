@@ -167,9 +167,6 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority,
 
   // 初始化任务上下文
   InitTaskContext(&task_context, entry, arg, stack_top);
-
-  // 状态设为就绪
-  status = TaskStatus::kReady;
 }
 
 TaskControlBlock::TaskControlBlock(const char* name, int priority, uint8_t* elf,
