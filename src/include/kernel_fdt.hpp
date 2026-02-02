@@ -253,7 +253,7 @@ class KernelFdt {
       -> Expected<uint64_t> {
     sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
 
-    auto offset = FindCompatibleNode(compatible);
+    auto offset = FindEnabledCompatibleNode(compatible);
     if (!offset.has_value()) {
       return std::unexpected(offset.error());
     }
@@ -288,6 +288,57 @@ class KernelFdt {
     }
 
     return intid;
+  }
+
+  /**
+   * 获取 plic 信息
+   * @return 内存信息<地址，长度，中断源数量，上下文数量>
+   * @see https://github.com/qemu/qemu/blob/master/hw/arm/virt.c
+   */
+  [[nodiscard]] auto GetPlic() const
+      -> Expected<std::tuple<uint64_t, uint64_t, uint32_t, uint32_t>> {
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+
+    // 查找 PLIC 节点，依次尝试两个 compatible 字符串
+    auto offset = FindCompatibleNode("sifive,plic-1.0.0");
+    if (!offset.has_value()) {
+      offset = FindCompatibleNode("riscv,plic0");
+    }
+    if (!offset.has_value()) {
+      return std::unexpected(offset.error());
+    }
+
+    int len = 0;
+
+    // 通过 interrupts-extended 字段计算上下文数量
+    const auto* prop = fdt_get_property(fdt_header_, offset.value(),
+                                        "interrupts-extended", &len);
+    if (prop == nullptr) {
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+    }
+
+    // interrupts-extended 格式: <cpu_phandle interrupt_id> 成对出现
+    // 每两个 uint32_t 值表示一个上下文 (CPU + 模式)
+    uint32_t num_entries = len / sizeof(uint32_t);
+    // 每两个条目表示一个上下文
+    uint32_t context_count = num_entries / 2;
+
+    // 获取 ndev 属性
+    prop = fdt_get_property(fdt_header_, offset.value(), "riscv,ndev", &len);
+    if (prop == nullptr) {
+      return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
+    }
+    uint32_t ndev =
+        fdt32_to_cpu(*reinterpret_cast<const uint32_t*>(prop->data));
+
+    // 获取 reg 属性
+    auto reg = GetRegProperty(offset.value());
+    if (!reg.has_value()) {
+      return std::unexpected(reg.error());
+    }
+
+    return std::tuple{reg.value().first, reg.value().second, ndev,
+                      context_count};
   }
 
   /**
@@ -358,6 +409,40 @@ class KernelFdt {
       return std::unexpected(Error(ErrorCode::kFdtNodeNotFound));
     }
     return offset;
+  }
+
+  /**
+   * 根据 compatible 查找已启用的节点（跳过 status="disabled" 的节点）
+   * @param compatible 要查找的 compatible 字符串
+   * @return Expected<int> 节点偏移量
+   */
+  [[nodiscard]] auto FindEnabledCompatibleNode(const char* compatible) const
+      -> Expected<int> {
+    int offset = -1;
+    while (true) {
+      offset = fdt_node_offset_by_compatible(fdt_header_, offset, compatible);
+      if (offset < 0) {
+        return std::unexpected(Error(ErrorCode::kFdtNodeNotFound));
+      }
+
+      // 检查 status 属性
+      int len = 0;
+      const auto* status_prop =
+          fdt_get_property(fdt_header_, offset, "status", &len);
+
+      // 如果没有 status 属性，默认为 okay
+      if (status_prop == nullptr) {
+        return offset;
+      }
+
+      // 检查 status 是否为 "okay" 或 "ok"
+      const char* status = reinterpret_cast<const char*>(status_prop->data);
+      if (strcmp(status, "okay") == 0 || strcmp(status, "ok") == 0) {
+        return offset;
+      }
+
+      // 继续查找下一个匹配的节点
+    }
   }
 
   /**
