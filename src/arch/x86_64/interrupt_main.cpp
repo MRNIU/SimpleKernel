@@ -89,16 +89,16 @@ bool EnableKeyboardInterrupt(uint8_t vector) {
   klog::Info("Target APIC ID: 0x%x\n", destination_apic_id);
 
   // 通过 APIC 设置 IRQ 重定向到指定向量
-  bool success = Singleton<Apic>::GetInstance().SetIrqRedirection(
+  auto result = Singleton<Apic>::GetInstance().SetIrqRedirection(
       kKeyboardIrq, vector, destination_apic_id, false);
 
-  if (success) {
+  if (result.has_value()) {
     klog::Info("Keyboard interrupt enabled successfully\n");
+    return true;
   } else {
     klog::Err("Failed to enable keyboard interrupt\n");
+    return false;
   }
-
-  return success;
 }
 
 };  // namespace
