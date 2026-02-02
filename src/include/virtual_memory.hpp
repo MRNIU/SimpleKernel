@@ -11,11 +11,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <optional>
 
 #include "basic_info.hpp"
+#include "expected.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
+#include "sk_cassert"
 #include "sk_stdlib.h"
 
 /**
@@ -29,12 +30,8 @@ class VirtualMemory {
     // 分配根页表目录
     kernel_page_dir_ = aligned_alloc(cpu_io::virtual_memory::kPageSize,
                                      cpu_io::virtual_memory::kPageSize);
-    klog::Info("Allocated kernel page directory at address: %p\n",
-               kernel_page_dir_);
-    if (kernel_page_dir_ == nullptr) {
-      klog::Err("Failed to allocate kernel page directory\n");
-      return;
-    }
+    sk_assert_msg(kernel_page_dir_ != nullptr,
+                  "Failed to allocate kernel page directory");
 
     // 清零页表目录
     std::memset(kernel_page_dir_, 0, cpu_io::virtual_memory::kPageSize);
@@ -43,7 +40,15 @@ class VirtualMemory {
     const auto& basic_info = Singleton<BasicInfo>::GetInstance();
 
     // 映射全部物理内存
-    MapMMIO(basic_info.physical_memory_addr, basic_info.physical_memory_size);
+    MapMMIO(basic_info.physical_memory_addr, basic_info.physical_memory_size)
+        .or_else([](auto&& err) -> Expected<void*> {
+          klog::Err("Failed to map kernel memory: %s", err.message());
+          while (true) {
+            cpu_io::Pause();
+          }
+          return {};
+        });
+
     klog::Info(
         "Kernel memory mapped from 0x%lX to 0x%lX\n",
         basic_info.physical_memory_addr,
@@ -71,12 +76,12 @@ class VirtualMemory {
    * @param phys_addr 设备物理基地址
    * @param size 映射大小
    * @param flags 页表属性，默认为内核设备内存属性（如果架构支持区分的话）
-   * @return 映射后的虚拟地址 (通常在内核空间，可能是恒等映射)
+   * @return Expected<void*> 映射后的虚拟地址，失败时返回错误
    */
   auto MapMMIO(
       uint64_t phys_addr, size_t size,
       uint32_t flags = cpu_io::virtual_memory::GetKernelPagePermissions())
-      -> void* {
+      -> Expected<void*> {
     // 计算对齐后的起始和结束页
     auto start_page = cpu_io::virtual_memory::PageAlign(phys_addr);
     auto end_page = cpu_io::virtual_memory::PageAlignUp(phys_addr + size);
@@ -84,25 +89,34 @@ class VirtualMemory {
     // 遍历并映射
     for (uint64_t addr = start_page; addr < end_page;
          addr += cpu_io::virtual_memory::kPageSize) {
-      if (!MapPage(kernel_page_dir_, reinterpret_cast<void*>(addr),
-                   reinterpret_cast<void*>(addr), flags)) {
-        klog::Err("MapMMIO: Failed to map address 0x%lX\n", addr);
-        return nullptr;
+      auto result = MapPage(kernel_page_dir_, reinterpret_cast<void*>(addr),
+                            reinterpret_cast<void*>(addr), flags);
+      if (!result.has_value()) {
+        return std::unexpected(result.error());
       }
     }
     return reinterpret_cast<void*>(phys_addr);
   }
 
+  /**
+   * @brief 映射单个页面
+   * @param page_dir 页表目录
+   * @param virtual_addr 虚拟地址
+   * @param physical_addr 物理地址
+   * @param flags 页表属性
+   * @return Expected<void> 成功时返回 void，失败时返回错误
+   */
   auto MapPage(void* page_dir, void* virtual_addr, void* physical_addr,
-               uint32_t flags) -> bool {
+               uint32_t flags) -> Expected<void> {
+    sk_assert_msg(page_dir != nullptr, "MapPage: page_dir is null");
+
     // 查找页表项，如果不存在则分配
-    auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, true);
-    if (!pte_opt) {
-      klog::Err("MapPage: FindPageTableEntry failed for va = %p\n",
-                virtual_addr);
-      return false;
+    auto pte_result = FindPageTableEntry(page_dir, virtual_addr, true);
+    if (!pte_result.has_value()) {
+      return std::unexpected(Error(ErrorCode::kVmMapFailed));
     }
-    auto* pte = *pte_opt;
+
+    auto pte = pte_result.value();
 
     // 检查是否已经映射且标志位相同
     if (cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
@@ -115,7 +129,7 @@ class VirtualMemory {
             "MapPage: duplicate va = %p, pa = 0x%lX, flags = 0x%X, skip\n",
             virtual_addr, existing_pa, flags);
         // 重复映射，但不是错误
-        return true;
+        return {};
       }
       klog::Warn("MapPage: remap va = %p from pa = 0x%lX to pa = %p\n",
                  virtual_addr, existing_pa, physical_addr);
@@ -127,18 +141,27 @@ class VirtualMemory {
     // 刷新 TLB
     cpu_io::virtual_memory::FlushTLBAll();
 
-    return true;
+    return {};
   }
 
-  auto UnmapPage(void* page_dir, void* virtual_addr) -> bool {
-    auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, false);
-    if (!pte_opt) {
-      return false;
+  /**
+   * @brief 取消映射单个页面
+   * @param page_dir 页表目录
+   * @param virtual_addr 虚拟地址
+   * @return Expected<void> 成功时返回 void，失败时返回错误
+   */
+  auto UnmapPage(void* page_dir, void* virtual_addr) -> Expected<void> {
+    sk_assert_msg(page_dir != nullptr, "UnmapPage: page_dir is null");
+
+    auto pte_result = FindPageTableEntry(page_dir, virtual_addr, false);
+    if (!pte_result.has_value()) {
+      return std::unexpected(Error(ErrorCode::kVmPageNotMapped));
     }
-    auto* pte = *pte_opt;
+
+    auto pte = pte_result.value();
 
     if (!cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
-      return false;
+      return std::unexpected(Error(ErrorCode::kVmPageNotMapped));
     }
 
     // 清除页表项
@@ -147,19 +170,28 @@ class VirtualMemory {
     // 刷新 TLB
     cpu_io::virtual_memory::FlushTLBAll();
 
-    return true;
+    return {};
   }
 
+  /**
+   * @brief 获取虚拟地址对应的物理地址映射
+   * @param page_dir 页表目录
+   * @param virtual_addr 虚拟地址
+   * @return Expected<void*> 物理地址，失败时返回错误
+   */
   [[nodiscard]] auto GetMapping(void* page_dir, void* virtual_addr)
-      -> std::optional<void*> {
-    auto pte_opt = FindPageTableEntry(page_dir, virtual_addr, false);
-    if (!pte_opt) {
-      return std::nullopt;
+      -> Expected<void*> {
+    sk_assert_msg(page_dir != nullptr, "GetMapping: page_dir is null");
+
+    auto pte_result = FindPageTableEntry(page_dir, virtual_addr, false);
+    if (!pte_result.has_value()) {
+      return std::unexpected(Error(ErrorCode::kVmPageNotMapped));
     }
-    auto* pte = *pte_opt;
+
+    auto pte = pte_result.value();
 
     if (!cpu_io::virtual_memory::IsPageTableEntryValid(*pte)) {
-      return std::nullopt;
+      return std::unexpected(Error(ErrorCode::kVmPageNotMapped));
     }
 
     return reinterpret_cast<void*>(
@@ -192,36 +224,34 @@ class VirtualMemory {
    * @brief 复制页表
    * @param src_page_dir 源页表目录
    * @param copy_mappings 是否复制映射（true：复制映射，false：仅复制页表结构）
-   * @return 新页表目录，失败时返回 nullptr
+   * @return Expected<void*> 新页表目录，失败时返回错误
    * @note 如果 copy_mappings 为 true，会复制所有的页表项；
    *       如果为 false，只复制页表结构，不复制最后一级的映射
    */
   auto ClonePageDirectory(void* src_page_dir, bool copy_mappings = true)
-      -> void* {
-    if (src_page_dir == nullptr) {
-      klog::Err("ClonePageDirectory: source page directory is nullptr\n");
-      return nullptr;
-    }
+      -> Expected<void*> {
+    sk_assert_msg(src_page_dir != nullptr,
+                  "ClonePageDirectory: source page directory is nullptr");
 
     // 创建新的页表目录
-    auto* dst_page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
-                                       cpu_io::virtual_memory::kPageSize);
+    auto dst_page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
+                                      cpu_io::virtual_memory::kPageSize);
     if (dst_page_dir == nullptr) {
-      klog::Err("ClonePageDirectory: failed to allocate new page directory\n");
-      return nullptr;
+      return std::unexpected(Error(ErrorCode::kVmAllocationFailed));
     }
 
     // 清零新页表
     std::memset(dst_page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
     // 递归复制页表
-    if (!RecursiveClonePageTable(reinterpret_cast<uint64_t*>(src_page_dir),
-                                 reinterpret_cast<uint64_t*>(dst_page_dir),
-                                 cpu_io::virtual_memory::kPageTableLevels - 1,
-                                 copy_mappings)) {
+    auto result = RecursiveClonePageTable(
+        reinterpret_cast<uint64_t*>(src_page_dir),
+        reinterpret_cast<uint64_t*>(dst_page_dir),
+        cpu_io::virtual_memory::kPageTableLevels - 1, copy_mappings);
+    if (!result.has_value()) {
       // 复制失败，清理已分配的页表
       DestroyPageDirectory(dst_page_dir, false);
-      return nullptr;
+      return std::unexpected(result.error());
     }
 
     klog::Debug("Cloned page directory from %p to %p\n", src_page_dir,
@@ -232,7 +262,7 @@ class VirtualMemory {
  private:
   void* kernel_page_dir_ = nullptr;
 
-  static constexpr const size_t kEntriesPerTable =
+  static constexpr size_t kEntriesPerTable =
       cpu_io::virtual_memory::kPageSize / sizeof(void*);
 
   /**
@@ -280,13 +310,15 @@ class VirtualMemory {
    * @param dst_table 目标页表
    * @param level 当前层级
    * @param copy_mappings 是否复制映射
-   * @return 是否成功
+   * @return Expected<void> 成功时返回 void，失败时返回错误
    */
   auto RecursiveClonePageTable(uint64_t* src_table, uint64_t* dst_table,
-                               size_t level, bool copy_mappings) -> bool {
-    if (src_table == nullptr || dst_table == nullptr) {
-      return false;
-    }
+                               size_t level, bool copy_mappings)
+      -> Expected<void> {
+    sk_assert_msg(src_table != nullptr,
+                  "RecursiveClonePageTable: src_table is null");
+    sk_assert_msg(dst_table != nullptr,
+                  "RecursiveClonePageTable: dst_table is null");
 
     for (size_t i = 0; i < kEntriesPerTable; ++i) {
       uint64_t src_pte = src_table[i];
@@ -303,22 +335,19 @@ class VirtualMemory {
         auto* dst_next_table = aligned_alloc(cpu_io::virtual_memory::kPageSize,
                                              cpu_io::virtual_memory::kPageSize);
         if (dst_next_table == nullptr) {
-          klog::Err(
-              "RecursiveClonePageTable: failed to allocate page table at level "
-              "%zu\n",
-              level);
-          return false;
+          return std::unexpected(Error(ErrorCode::kVmAllocationFailed));
         }
 
         // 清零新页表
         std::memset(dst_next_table, 0, cpu_io::virtual_memory::kPageSize);
 
         // 递归复制子页表
-        if (!RecursiveClonePageTable(
-                src_next_table, reinterpret_cast<uint64_t*>(dst_next_table),
-                level - 1, copy_mappings)) {
+        auto result = RecursiveClonePageTable(
+            src_next_table, reinterpret_cast<uint64_t*>(dst_next_table),
+            level - 1, copy_mappings);
+        if (!result.has_value()) {
           aligned_free(dst_next_table);
-          return false;
+          return std::unexpected(result.error());
         }
 
         // 设置目标页表项指向新的子页表
@@ -335,7 +364,7 @@ class VirtualMemory {
       }
     }
 
-    return true;
+    return {};
   }
 
   /**
@@ -343,11 +372,11 @@ class VirtualMemory {
    * @param page_dir         页目录
    * @param virtual_addr     虚拟地址
    * @param allocate         如果页表项不存在是否分配新的页表
-   * @return std::optional<uint64_t*>  页表项指针，失败时返回std::nullopt
+   * @return Expected<uint64_t*> 页表项指针，失败时返回错误
    */
   [[nodiscard]] auto FindPageTableEntry(void* page_dir, void* virtual_addr,
                                         bool allocate = false)
-      -> std::optional<uint64_t*> {
+      -> Expected<uint64_t*> {
     auto* current_table = reinterpret_cast<uint64_t*>(page_dir);
     auto vaddr = reinterpret_cast<uint64_t>(virtual_addr);
 
@@ -367,7 +396,7 @@ class VirtualMemory {
           auto* new_table = aligned_alloc(cpu_io::virtual_memory::kPageSize,
                                           cpu_io::virtual_memory::kPageSize);
           if (new_table == nullptr) {
-            return std::nullopt;
+            return std::unexpected(Error(ErrorCode::kVmAllocationFailed));
           }
           // 清零新页表
           std::memset(new_table, 0, cpu_io::virtual_memory::kPageSize);
@@ -379,7 +408,7 @@ class VirtualMemory {
 
           current_table = reinterpret_cast<uint64_t*>(new_table);
         } else {
-          return std::nullopt;
+          return std::unexpected(Error(ErrorCode::kVmPageNotMapped));
         }
       }
     }

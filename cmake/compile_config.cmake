@@ -1,7 +1,4 @@
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# compile_config.cmake for Simple-XX/SimpleKernel. 配置信息
+# Copyright The SimpleKernel Contributors
 
 # 通用宏定义
 ADD_LIBRARY (compile_definitions INTERFACE)
@@ -57,12 +54,16 @@ TARGET_COMPILE_OPTIONS (
               -fPIE
               # 禁用运行时类型支持
               $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+              # 禁用异常支持
+              -fno-exceptions
               # 启用 free-standing 环境，该选项隐含了 -fno-builtin
               -ffreestanding
               # 保留帧指针，便于调试和栈回溯
               -fno-omit-frame-pointer
               # 不使用 common 段
               -fno-common
+              # 禁用 new 的异常支持
+              -fcheck-new
               # 目标平台编译选项
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:
               # 仅使用通用寄存器

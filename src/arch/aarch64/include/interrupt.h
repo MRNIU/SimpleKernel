@@ -16,7 +16,7 @@
 
 class Interrupt final : public InterruptBase {
  public:
-  static constexpr const size_t kMaxInterrupt = 128;
+  static constexpr size_t kMaxInterrupt = 128;
 
   Interrupt();
 
@@ -31,8 +31,8 @@ class Interrupt final : public InterruptBase {
 
   void Do(uint64_t cause, cpu_io::TrapContext* context) override;
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
-  bool SendIpi(uint64_t target_cpu_mask) override;
-  bool BroadcastIpi() override;
+  auto SendIpi(uint64_t target_cpu_mask) -> Expected<void> override;
+  auto BroadcastIpi() -> Expected<void> override;
 
   __always_inline void SetUP() const { gic_.SetUP(); }
   __always_inline void SPI(uint32_t intid, uint32_t cpuid) const {

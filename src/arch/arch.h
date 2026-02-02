@@ -68,7 +68,7 @@ void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
                      cpu_io::TrapContext* trap_context_ptr, uint64_t stack_top);
 
 /// 最多回溯 128 层调用栈
-static constexpr const size_t kMaxFrameCount = 128;
+static constexpr size_t kMaxFrameCount = 128;
 
 /**
  * 获取调用栈

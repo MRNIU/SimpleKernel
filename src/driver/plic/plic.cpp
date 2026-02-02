@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief plic 头文件
  */
 
 #include "plic.h"

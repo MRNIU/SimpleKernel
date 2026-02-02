@@ -149,7 +149,14 @@ auto ArchInit(int, const char**) -> int {
   // 初始化 APIC
   Singleton<Apic>::GetInstance() =
       Apic(Singleton<BasicInfo>::GetInstance().core_count);
-  Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
+  Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic().or_else(
+      [](Error err) -> Expected<void> {
+        klog::Err("Failed to initialize APIC: %s\n", err.message());
+        while (true) {
+          cpu_io::Pause();
+        }
+        return std::unexpected(err);
+      });
 
   klog::Info("Hello x86_64 ArchInit\n");
 
@@ -160,7 +167,14 @@ auto ArchInitSMP(int, const char**) -> int {
   // 设置 GDT 和段寄存器
   SetupGdtAndSegmentRegisters();
 
-  Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic();
+  Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic().or_else(
+      [](Error err) -> Expected<void> {
+        klog::Err("Failed to initialize APIC for AP: %s\n", err.message());
+        while (true) {
+          cpu_io::Pause();
+        }
+        return std::unexpected(err);
+      });
   return 0;
 }
 

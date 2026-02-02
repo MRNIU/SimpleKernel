@@ -1,8 +1,4 @@
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# 3rd.cmake for Simple-XX/SimpleKernel.
-# 依赖管理
+# Copyright The SimpleKernel Contributors
 
 # # https://github.com/abumq/easyloggingpp
 # CPMAddPackage(

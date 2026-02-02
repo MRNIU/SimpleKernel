@@ -1,8 +1,4 @@
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# functions.cmake for Simple-XX/SimpleKernel.
-# 辅助函数
+# Copyright The SimpleKernel Contributors
 
 # 添加测试覆盖率 target
 # DEPENDS 要生成的 targets

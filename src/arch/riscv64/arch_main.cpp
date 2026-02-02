@@ -18,10 +18,20 @@
 #include "virtual_memory.hpp"
 
 BasicInfo::BasicInfo(int, const char** argv) {
-  auto [memory_base, memory_size] =
-      Singleton<KernelFdt>::GetInstance().GetMemory();
-  physical_memory_addr = memory_base;
-  physical_memory_size = memory_size;
+  Singleton<KernelFdt>::GetInstance()
+      .GetMemory()
+      .and_then([this](std::pair<uint64_t, size_t> mem) -> Expected<void> {
+        physical_memory_addr = mem.first;
+        physical_memory_size = mem.second;
+        return {};
+      })
+      .or_else([](Error err) -> Expected<void> {
+        klog::Err("Failed to get memory info: %s\n", err.message());
+        while (true) {
+          cpu_io::Pause();
+        }
+        return {};
+      });
 
   kernel_addr = reinterpret_cast<uint64_t>(__executable_start);
   kernel_size = reinterpret_cast<uint64_t>(end) -
@@ -30,9 +40,10 @@ BasicInfo::BasicInfo(int, const char** argv) {
 
   fdt_addr = reinterpret_cast<uint64_t>(argv);
 
-  core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount();
+  core_count = Singleton<KernelFdt>::GetInstance().GetCoreCount().value_or(1);
 
-  interval = Singleton<KernelFdt>::GetInstance().GetTimebaseFrequency();
+  interval =
+      Singleton<KernelFdt>::GetInstance().GetTimebaseFrequency().value_or(0);
 }
 
 void ArchInit(int argc, const char** argv) {

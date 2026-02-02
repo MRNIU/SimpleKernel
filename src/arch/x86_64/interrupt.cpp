@@ -21,7 +21,7 @@ namespace {
  */
 template <uint8_t no>
 __attribute__((target("general-regs-only"))) __attribute__((interrupt)) void
-TarpEntry(uint8_t* interrupt_context) {
+TarpEntry(cpu_io::TrapContext* interrupt_context) {
   Singleton<Interrupt>::GetInstance().Do(no, interrupt_context);
 }
 
@@ -38,7 +38,7 @@ alignas(4096) std::array<cpu_io::detail::register_info::IdtrInfo::Idt,
 Interrupt::Interrupt() {
   // 注册默认中断处理函数
   for (auto& i : interrupt_handlers) {
-    i = [](uint64_t cause, uint8_t* context) -> uint64_t {
+    i = [](uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
       klog::Info(
           "Default Interrupt handler [%s] 0x%X, 0x%p\n",
           cpu_io::detail::register_info::IdtrInfo::kInterruptNames[cause],
@@ -53,7 +53,7 @@ Interrupt::Interrupt() {
   klog::Info("Interrupt init.\n");
 }
 
-void Interrupt::Do(uint64_t cause, uint8_t* context) {
+void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
   if (cause < cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount) {
     interrupt_handlers[cause](cause, context);
   }
@@ -102,12 +102,12 @@ void Interrupt::SetUpIdtr() {
   }
 }
 
-bool Interrupt::SendIpi(uint64_t target_cpu_mask) {
+auto Interrupt::SendIpi(uint64_t target_cpu_mask) -> Expected<void> {
   /// @todo
-  return false;
+  return std::unexpected(Error(ErrorCode::kIpiSendFailed));
 }
 
-bool Interrupt::BroadcastIpi() {
+auto Interrupt::BroadcastIpi() -> Expected<void> {
   /// @todo
-  return false;
+  return std::unexpected(Error(ErrorCode::kIpiSendFailed));
 }

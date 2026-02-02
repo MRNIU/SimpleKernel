@@ -1,12 +1,14 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief gic 头文件
  */
 
 #include "gic.h"
 
+#include <cpu_io.h>
+
 #include "io.hpp"
 #include "kernel_log.hpp"
+#include "sk_cassert"
 
 Gic::Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
     : gicd_(gicd_base_addr), gicr_(gicr_base_addr) {
@@ -39,10 +41,9 @@ void Gic::SGI(uint32_t intid, uint32_t cpuid) const {
 }
 
 Gic::Gicd::Gicd(uint64_t base_addr) : base_addr_(base_addr) {
-  if (base_addr_ == 0) {
-    klog::Err("GICD base address is invalid [0x%X]\n", base_addr_);
-    throw;
-  }
+  sk_assert_msg(base_addr_ != 0, "GICD base address is invalid [0x%X]\n",
+                base_addr_);
+
   // 将 GICD_CTLR 清零
   Write(kCTLR, 0);
 
@@ -126,7 +127,7 @@ void Gic::Gicr::SetUP() const {
   Write(cpuid, kWAKER, waker & ~kWAKER_ProcessorSleepMASK);
   // 等待唤醒完成
   while (Read(cpuid, kWAKER) & kWAKER_ChildrenAsleepMASK) {
-    ;
+    cpu_io::Pause();
   }
 }
 
@@ -146,10 +147,8 @@ void Gic::Gicd::SetupSPI(uint32_t intid, uint32_t cpuid) const {
 }
 
 Gic::Gicr::Gicr(uint64_t base_addr) : base_addr_(base_addr) {
-  if (base_addr_ == 0) {
-    klog::Err("GICR base address is invalid [0x%X]\n", base_addr_);
-    throw;
-  }
+  sk_assert_msg(base_addr_ != 0, "GICR base address is invalid [0x%X]\n",
+                base_addr_);
 
   auto cpuid = cpu_io::GetCurrentCoreId();
 
@@ -171,7 +170,7 @@ Gic::Gicr::Gicr(uint64_t base_addr) : base_addr_(base_addr) {
   Write(cpuid, kWAKER, waker & ~kWAKER_ProcessorSleepMASK);
   // 等待唤醒完成
   while (Read(cpuid, kWAKER) & kWAKER_ChildrenAsleepMASK) {
-    ;
+    cpu_io::Pause();
   }
 }
 

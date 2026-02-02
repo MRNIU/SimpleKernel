@@ -1,8 +1,4 @@
-
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-# 
-# x86_64-gcc.cmake for Simple-XX/SimpleKernel.
+# Copyright The SimpleKernel Contributors
 
 if (NOT UNIX)
     message(FATAL_ERROR "Only support Linux.")

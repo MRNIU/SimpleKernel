@@ -147,7 +147,7 @@ void InterruptInit(int, const char**) {
   cpu_io::VBAR_EL1::Write(reinterpret_cast<uint64_t>(vector_table));
 
   auto uart_intid =
-      Singleton<KernelFdt>::GetInstance().GetAarch64Intid("arm,pl011") +
+      Singleton<KernelFdt>::GetInstance().GetAarch64Intid("arm,pl011").value() +
       Gic::kSPIBase;
 
   klog::Info("uart_intid: %d\n", uart_intid);

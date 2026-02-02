@@ -31,12 +31,13 @@ void RegisterInterrupts() {
         return 0;
       });
 
-  auto [base, size, irq] = Singleton<KernelFdt>::GetInstance().GetSerial();
+  auto [base, size, irq] =
+      Singleton<KernelFdt>::GetInstance().GetSerial().value();
   Singleton<Ns16550a>::GetInstance() = std::move(Ns16550a(base));
 
   // 注册串口中断
   Singleton<Plic>::GetInstance().RegisterInterruptFunc(
-      std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial()),
+      std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial().value()),
       [](uint64_t, uint8_t*) -> uint64_t {
         sk_putchar(Singleton<Ns16550a>::GetInstance().TryGetChar(), nullptr);
         return 0;
@@ -122,7 +123,7 @@ void InterruptInit(int, const char**) {
 
   // 初始化 plic
   auto [plic_addr, plic_size, ndev, context_count] =
-      Singleton<KernelFdt>::GetInstance().GetPlic();
+      Singleton<KernelFdt>::GetInstance().GetPlic().value();
   Singleton<VirtualMemory>::GetInstance().MapMMIO(plic_addr, plic_size);
   Singleton<Plic>::GetInstance() =
       std::move(Plic(plic_addr, ndev, context_count));
@@ -146,7 +147,8 @@ void InterruptInit(int, const char**) {
   // 为当前 core 开启串口中断
   Singleton<Plic>::GetInstance().Set(
       cpu_io::GetCurrentCoreId(),
-      std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial()), 1, true);
+      std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial().value()), 1,
+      true);
 
   // 初始化定时器
   TimerInit();

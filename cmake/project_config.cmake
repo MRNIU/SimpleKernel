@@ -1,8 +1,4 @@
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# project_config.cmake for Simple-XX/SimpleKernel.
-# 配置信息
+# Copyright The SimpleKernel Contributors
 
 # 在目标环境搜索 program
 SET (CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)

@@ -41,28 +41,28 @@ class Ns16550a {
 
  private:
   /// read mode: Receive holding reg
-  static constexpr const uint8_t kRegRHR = 0;
+  static constexpr uint8_t kRegRHR = 0;
   /// write mode: Transmit Holding Reg
-  static constexpr const uint8_t kRegTHR = 0;
+  static constexpr uint8_t kRegTHR = 0;
   /// write mode: interrupt enable reg
-  static constexpr const uint8_t kRegIER = 1;
+  static constexpr uint8_t kRegIER = 1;
   /// write mode: FIFO control Reg
-  static constexpr const uint8_t kRegFCR = 2;
+  static constexpr uint8_t kRegFCR = 2;
   /// read mode: Interrupt Status Reg
-  static constexpr const uint8_t kRegISR = 2;
+  static constexpr uint8_t kRegISR = 2;
   /// write mode:Line Control Reg
-  static constexpr const uint8_t kRegLCR = 3;
+  static constexpr uint8_t kRegLCR = 3;
   /// write mode:Modem Control Reg
-  static constexpr const uint8_t kRegMCR = 4;
+  static constexpr uint8_t kRegMCR = 4;
   /// read mode: Line Status Reg
-  static constexpr const uint8_t kRegLSR = 5;
+  static constexpr uint8_t kRegLSR = 5;
   /// read mode: Modem Status Reg
-  static constexpr const uint8_t kRegMSR = 6;
+  static constexpr uint8_t kRegMSR = 6;
 
   /// LSB of divisor Latch when enabled
-  static constexpr const uint8_t kUartDLL = 0;
+  static constexpr uint8_t kUartDLL = 0;
   /// MSB of divisor Latch when enabled
-  static constexpr const uint8_t kUartDLM = 1;
+  static constexpr uint8_t kUartDLM = 1;
 
   uint64_t base_addr_;
 };
