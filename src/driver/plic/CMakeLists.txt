@@ -1,5 +1,4 @@
 # Copyright The SimpleKernel Contributors
-# CMake build configuration
 
 ADD_LIBRARY (plic INTERFACE)
 
