@@ -191,16 +191,16 @@ TaskControlBlock::~TaskControlBlock() {
 
   // 释放内核栈
   if (kernel_stack) {
-    free(kernel_stack);
+    aligned_free(kernel_stack);
     kernel_stack = nullptr;
   }
 
   // 释放页表（如果有用户空间页表）
   if (page_table) {
-    // 遍历用户空间页表并释放所有映射的物理页
-    /// @todo 实现完整的页表遍历和释放逻辑
-    // 目前简单释放页表本身
-    free(page_table);
+    // 如果是私有页表（非共享），需要释放物理页
+    auto should_free_pages = !(clone_flags & kCloneVm);
+    Singleton<VirtualMemory>::GetInstance().DestroyPageDirectory(
+        page_table, should_free_pages);
     page_table = nullptr;
   }
 }
