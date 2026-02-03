@@ -8,6 +8,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <mutex>
 #include <thread>
 #include <unordered_map>
 
@@ -26,8 +27,24 @@ inline auto GetInterruptStatusRef() -> bool& {
 
 // 使用线程 ID 映射到核心 ID（用于测试多核场景）
 inline auto GetCurrentCoreId() -> size_t {
-  // 使用线程 ID 的哈希值作为核心 ID
-  return std::hash<std::thread::id>{}(std::this_thread::get_id());
+  // 为每个线程分配一个唯一的小整数 ID
+  static std::atomic<size_t> next_core_id{0};
+  static std::unordered_map<std::thread::id, size_t> thread_to_core_map;
+  static std::mutex map_mutex;
+
+  thread_local size_t core_id = []() -> size_t {
+    std::lock_guard<std::mutex> lock(map_mutex);
+    auto tid = std::this_thread::get_id();
+    auto it = thread_to_core_map.find(tid);
+    if (it != thread_to_core_map.end()) {
+      return it->second;
+    }
+    size_t new_id = next_core_id.fetch_add(1);
+    thread_to_core_map[tid] = new_id;
+    return new_id;
+  }();
+
+  return core_id;
 }
 
 inline void EnableInterrupt() { GetInterruptStatusRef() = true; }

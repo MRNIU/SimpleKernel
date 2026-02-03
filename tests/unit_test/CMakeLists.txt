@@ -22,7 +22,9 @@ ADD_EXECUTABLE (
     sk_rb_tree_test.cpp
     sk_set_test.cpp
     sk_unordered_map_test.cpp
+    task/aaa.cpp
     mocks/arch_mock.cpp
+    ${CMAKE_SOURCE_DIR}/src/syscall.cpp
     ${CMAKE_SOURCE_DIR}/src/task/block.cpp
     ${CMAKE_SOURCE_DIR}/src/task/clone.cpp
     ${CMAKE_SOURCE_DIR}/src/task/exit.cpp

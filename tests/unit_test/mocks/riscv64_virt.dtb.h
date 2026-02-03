@@ -2,8 +2,8 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_TEST_UNIT_TEST_RISCV64_VIRT_DTB_H_
-#define SIMPLEKERNEL_TEST_UNIT_TEST_RISCV64_VIRT_DTB_H_
+#ifndef SIMPLEKERNEL_TESTS_UNIT_TEST_MOCKS_RISCV64_VIRT_DTB_H_
+#define SIMPLEKERNEL_TESTS_UNIT_TEST_MOCKS_RISCV64_VIRT_DTB_H_
 
 #include <cstdint>
 
@@ -372,4 +372,4 @@ static constexpr uint8_t riscv64_virt_dtb_data[] = {
 
 static constexpr size_t riscv64_virt_dtb_data_len = 4326;
 
-#endif /* SIMPLEKERNEL_TEST_UNIT_TEST_RISCV64_VIRT_DTB_H_ */
+#endif /* SIMPLEKERNEL_TESTS_UNIT_TEST_MOCKS_RISCV64_VIRT_DTB_H_ */
