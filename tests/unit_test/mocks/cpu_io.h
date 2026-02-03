@@ -14,8 +14,8 @@
 namespace cpu_io {
 
 inline void Pause() {
-  while (1)
-    ;
+  // 在单元测试中使用 yield 避免死循环
+  std::this_thread::yield();
 }
 
 // 使用内部函数的静态变量来避免多重定义
