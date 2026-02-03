@@ -13,7 +13,10 @@
 
 namespace cpu_io {
 
-inline void Pause() {}
+inline void Pause() {
+  while (1)
+    ;
+}
 
 // 使用内部函数的静态变量来避免多重定义
 inline auto GetInterruptStatusRef() -> bool& {
