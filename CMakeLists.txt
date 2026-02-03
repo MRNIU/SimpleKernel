@@ -1,5 +1,4 @@
 # Copyright The SimpleKernel Contributors
-# CMake build configuration
 
 CMAKE_MINIMUM_REQUIRED (VERSION 3.27 FATAL_ERROR)
 

@@ -1,5 +1,4 @@
 # Copyright The SimpleKernel Contributors
-# CMake build configuration
 
 ADD_LIBRARY (pl011 INTERFACE)
 

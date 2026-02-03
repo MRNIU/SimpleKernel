@@ -1,5 +1,4 @@
 # Copyright The SimpleKernel Contributors
-# CMake build configuration
 
 PROJECT (doc)
 
