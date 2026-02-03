@@ -77,18 +77,11 @@ void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
   // 清零上下文
   std::memset(task_context, 0, sizeof(cpu_io::CalleeSavedContext));
 
-  // 1. 设置 ra 指向汇编跳板 kernel_thread_entry
-  // 当 switch_to 执行 ret 时，会跳转到 kernel_thread_entry
-  task_context->ra = reinterpret_cast<uint64_t>(kernel_thread_entry);
-
-  // 2. 设置 s0 保存真正的入口函数地址
-  task_context->s0 = reinterpret_cast<uint64_t>(entry);
-
-  // 3. 设置 s1 保存参数
-  task_context->s1 = reinterpret_cast<uint64_t>(arg);
-
-  // 4. 设置 sp 为栈顶
-  task_context->sp = stack_top;
+  task_context->ReturnAddress() =
+      reinterpret_cast<uint64_t>(kernel_thread_entry);
+  task_context->EntryFunction() = reinterpret_cast<uint64_t>(entry);
+  task_context->EntryArgument() = reinterpret_cast<uint64_t>(arg);
+  task_context->StackPointer() = stack_top;
 }
 
 void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
@@ -97,15 +90,9 @@ void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
   // 清零上下文
   std::memset(task_context, 0, sizeof(cpu_io::CalleeSavedContext));
 
-  // 设置 ra 指向 kernel_thread_entry
-  task_context->ra = reinterpret_cast<uint64_t>(kernel_thread_entry);
-
-  // 设置 s0 指向 trap_return，用于返回用户态
-  task_context->s0 = reinterpret_cast<uint64_t>(trap_return);
-
-  // 设置 s1 指向 trap_context_ptr
-  task_context->s1 = reinterpret_cast<uint64_t>(trap_context_ptr);
-
-  // 设置 sp 为栈顶
-  task_context->sp = stack_top;
+  task_context->ReturnAddress() =
+      reinterpret_cast<uint64_t>(kernel_thread_entry);
+  task_context->EntryFunction() = reinterpret_cast<uint64_t>(trap_return);
+  task_context->EntryArgument() = reinterpret_cast<uint64_t>(trap_context_ptr);
+  task_context->StackPointer() = stack_top;
 }
