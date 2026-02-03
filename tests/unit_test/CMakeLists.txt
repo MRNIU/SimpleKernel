@@ -21,7 +21,18 @@ ADD_EXECUTABLE (
     sk_priority_queue_test.cpp
     sk_rb_tree_test.cpp
     sk_set_test.cpp
-    sk_unordered_map_test.cpp)
+    sk_unordered_map_test.cpp
+    mocks/arch_mock.cpp
+    ${CMAKE_SOURCE_DIR}/src/task/block.cpp
+    ${CMAKE_SOURCE_DIR}/src/task/clone.cpp
+    ${CMAKE_SOURCE_DIR}/src/task/exit.cpp
+    ${CMAKE_SOURCE_DIR}/src/task/schedule.cpp
+    ${CMAKE_SOURCE_DIR}/src/task/sleep.cpp
+    ${CMAKE_SOURCE_DIR}/src/task/task_control_block.cpp
+    ${CMAKE_SOURCE_DIR}/src/task/task_manager.cpp
+    ${CMAKE_SOURCE_DIR}/src/task/tick_update.cpp
+    ${CMAKE_SOURCE_DIR}/src/task/wait.cpp
+    ${CMAKE_SOURCE_DIR}/src/task/wakeup.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME}
@@ -35,6 +46,7 @@ TARGET_COMPILE_DEFINITIONS (
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_SOURCE_DIR}/mocks
             ${CMAKE_SOURCE_DIR}/src
             ${CMAKE_SOURCE_DIR}/src/include
             ${CMAKE_SOURCE_DIR}/src/arch
@@ -47,9 +59,6 @@ TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 TARGET_LINK_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_OPTIONS})
 
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_LIB} dtc-lib
-                                               bmalloc MPMCQueue)
+                                               bmalloc MPMCQueue task)
 
 GTEST_DISCOVER_TESTS (${PROJECT_NAME})
-
-# Task 单元测试子目录
-ADD_SUBDIRECTORY (task)
