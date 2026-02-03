@@ -14,7 +14,6 @@ ADD_EXECUTABLE (
     kernel_elf_test.cpp
     kernel_fdt_test.cpp
     spinlock_test.cpp
-    mutex_test.cpp
     virtual_memory_test.cpp
     sk_list_test.cpp
     sk_queue_test.cpp
@@ -22,11 +21,7 @@ ADD_EXECUTABLE (
     sk_priority_queue_test.cpp
     sk_rb_tree_test.cpp
     sk_set_test.cpp
-    sk_unordered_map_test.cpp
-    fifo_scheduler_test.cpp
-    rr_scheduler_test.cpp
-    cfs_scheduler_test.cpp
-    task_control_block_mock.cpp)
+    sk_unordered_map_test.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME}
@@ -39,7 +34,7 @@ TARGET_COMPILE_DEFINITIONS (
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
-    PRIVATE ./
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
             ${CMAKE_SOURCE_DIR}/src
             ${CMAKE_SOURCE_DIR}/src/include
             ${CMAKE_SOURCE_DIR}/src/arch
@@ -55,3 +50,6 @@ TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_LIB} dtc-lib
                                                bmalloc MPMCQueue)
 
 GTEST_DISCOVER_TESTS (${PROJECT_NAME})
+
+# Task 单元测试子目录
+ADD_SUBDIRECTORY (task)
