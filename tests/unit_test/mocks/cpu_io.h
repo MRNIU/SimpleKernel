@@ -12,6 +12,8 @@
 #include <thread>
 #include <unordered_map>
 
+#include "test_environment_state.hpp"
+
 namespace cpu_io {
 
 inline void Pause() {
@@ -19,39 +21,29 @@ inline void Pause() {
   std::this_thread::yield();
 }
 
-// 使用内部函数的静态变量来避免多重定义
-inline auto GetInterruptStatusRef() -> bool& {
-  thread_local bool interrupt_enabled = true;
-  return interrupt_enabled;
-}
-
 // 使用线程 ID 映射到核心 ID（用于测试多核场景）
 inline auto GetCurrentCoreId() -> size_t {
-  // 为每个线程分配一个唯一的小整数 ID
-  static std::atomic<size_t> next_core_id{0};
-  static std::unordered_map<std::thread::id, size_t> thread_to_core_map;
-  static std::mutex map_mutex;
-
-  thread_local size_t core_id = []() -> size_t {
-    std::lock_guard<std::mutex> lock(map_mutex);
-    auto tid = std::this_thread::get_id();
-    auto it = thread_to_core_map.find(tid);
-    if (it != thread_to_core_map.end()) {
-      return it->second;
-    }
-    size_t new_id = next_core_id.fetch_add(1);
-    thread_to_core_map[tid] = new_id;
-    return new_id;
-  }();
-
-  return core_id;
+  return test_env::TestEnvironmentState::GetInstance().GetCoreIdForThread(
+      std::this_thread::get_id());
 }
 
-inline void EnableInterrupt() { GetInterruptStatusRef() = true; }
+inline void EnableInterrupt() {
+  auto& core =
+      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  core.interrupt_enabled = true;
+}
 
-inline void DisableInterrupt() { GetInterruptStatusRef() = false; }
+inline void DisableInterrupt() {
+  auto& core =
+      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  core.interrupt_enabled = false;
+}
 
-inline bool GetInterruptStatus() { return GetInterruptStatusRef(); }
+inline bool GetInterruptStatus() {
+  auto& core =
+      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  return core.interrupt_enabled;
+}
 
 namespace virtual_memory {
 
@@ -113,9 +105,27 @@ inline auto GetKernelPagePermissions(bool readable = true,
 }
 
 // 页表操作函数
-inline void SetPageDirectory(uint64_t) {}
-inline void EnablePage() {}
-inline void FlushTLBAll() {}
+inline void SetPageDirectory(uint64_t pd) {
+  auto& core =
+      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  core.page_directory = pd;
+}
+
+inline auto GetPageDirectory() -> uint64_t {
+  auto& core =
+      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  return core.page_directory;
+}
+
+inline void EnablePage() {
+  auto& core =
+      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  core.paging_enabled = true;
+}
+
+inline void FlushTLBAll() {
+  // 在测试环境中不需要实际操作
+}
 
 // 获取页表项权限
 inline auto GetTableEntryPermissions() -> uint64_t {

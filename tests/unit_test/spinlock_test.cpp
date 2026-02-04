@@ -13,6 +13,8 @@
 #include <thread>
 #include <vector>
 
+#include "test_environment_state.hpp"
+
 namespace {
 
 // 测试用的全局变量
@@ -32,10 +34,18 @@ class SpinLockTest : public ::testing::Test {
   void SetUp() override {
     shared_counter = 0;
     thread_counter = 0;
+
+    // 初始化环境层
+    auto& env_state = test_env::TestEnvironmentState::GetInstance();
+    env_state.ResetAllCores();
+    env_state.InitializeCores(8);
+    env_state.BindThreadToCore(std::this_thread::get_id(), 0);
   }
 
   void TearDown() override {
     // Reset state after each test
+    auto& env_state = test_env::TestEnvironmentState::GetInstance();
+    env_state.ResetAllCores();
   }
 };
 

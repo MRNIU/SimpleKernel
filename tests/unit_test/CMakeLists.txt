@@ -22,8 +22,11 @@ ADD_EXECUTABLE (
     sk_rb_tree_test.cpp
     sk_set_test.cpp
     sk_unordered_map_test.cpp
-    task/aaa.cpp
+    task/example_environment_test.cpp
+    task/task_scheduling_example_test.cpp
+    task/fixtures/task_test_harness.cpp
     mocks/arch_mock.cpp
+    mocks/test_environment_state.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp
     ${CMAKE_SOURCE_DIR}/src/task/block.cpp
     ${CMAKE_SOURCE_DIR}/src/task/clone.cpp
@@ -49,6 +52,7 @@ TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
             ${CMAKE_CURRENT_SOURCE_DIR}/mocks
+            ${CMAKE_CURRENT_SOURCE_DIR}/task/fixtures
             ${CMAKE_SOURCE_DIR}/src
             ${CMAKE_SOURCE_DIR}/src/include
             ${CMAKE_SOURCE_DIR}/src/arch

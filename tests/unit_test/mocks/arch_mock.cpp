@@ -5,10 +5,33 @@
 #include <cstring>
 
 #include "cpu_io.h"
+#include "test_environment_state.hpp"
 
 extern "C" {
 
-void switch_to(cpu_io::CalleeSavedContext*, cpu_io::CalleeSavedContext*) {}
+void switch_to(cpu_io::CalleeSavedContext* prev_ctx,
+               cpu_io::CalleeSavedContext* next_ctx) {
+  auto& env_state = test_env::TestEnvironmentState::GetInstance();
+  auto& core = env_state.GetCurrentCoreEnv();
+
+  // 从上下文指针查找对应的任务
+  auto* prev_task = env_state.FindTaskByContext(prev_ctx);
+  auto* next_task = env_state.FindTaskByContext(next_ctx);
+
+  // 记录切换事件
+  core.switch_history.push_back({
+      .timestamp = core.local_tick,
+      .from = prev_task,
+      .to = next_task,
+      .core_id = core.core_id,
+  });
+
+  // 更新当前线程
+  core.current_thread = next_task;
+  core.total_switches++;
+
+  // 在单元测试中不执行真实的栈切换
+}
 void kernel_thread_entry() {}
 void trap_return(void*) {}
 void trap_entry() {}
