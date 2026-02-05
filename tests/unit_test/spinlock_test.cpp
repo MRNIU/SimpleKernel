@@ -36,17 +36,17 @@ class SpinLockTest : public ::testing::Test {
     thread_counter = 0;
 
     // 初始化环境层
-    auto& env_state = test_env::TestEnvironmentState::GetInstance();
-    env_state.ResetAllCores();
-    env_state.InitializeCores(8);
-    env_state.BindThreadToCore(std::this_thread::get_id(), 0);
+    env_state_.InitializeCores(8);  // 支持多核测试（最多 8 核）
+    env_state_.SetCurrentThreadEnvironment();
+    env_state_.BindThreadToCore(std::this_thread::get_id(), 0);
   }
 
   void TearDown() override {
-    // Reset state after each test
-    auto& env_state = test_env::TestEnvironmentState::GetInstance();
-    env_state.ResetAllCores();
+    // 清理环境
+    env_state_.ClearCurrentThreadEnvironment();
   }
+
+  test_env::TestEnvironmentState env_state_;
 };
 
 // 测试基本的 lock/UnLock 功能

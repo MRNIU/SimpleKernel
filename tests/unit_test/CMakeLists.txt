@@ -25,7 +25,7 @@ ADD_EXECUTABLE (
     task/example_environment_test.cpp
     task/task_scheduling_example_test.cpp
     task/fixtures/task_test_harness.cpp
-    mocks/arch_mock.cpp
+    mocks/arch.cpp
     mocks/test_environment_state.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp
     ${CMAKE_SOURCE_DIR}/src/task/block.cpp

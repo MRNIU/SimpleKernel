@@ -30,10 +30,11 @@ class TaskTestHarness : public ::testing::Test {
    * @brief 获取环境层状态
    */
   auto GetEnvironmentState() -> test_env::TestEnvironmentState& {
-    return test_env::TestEnvironmentState::GetInstance();
+    return env_state_;
   }
 
-  size_t num_cores_ = 1;  // 默认单核
+  size_t num_cores_ = 1;                      // 默认单核
+  test_env::TestEnvironmentState env_state_;  // 每个测试独立的环境
 };
 
 #endif /* SIMPLEKERNEL_TESTS_UNIT_TEST_TASK_FIXTURES_TASK_TEST_HARNESS_HPP_ */

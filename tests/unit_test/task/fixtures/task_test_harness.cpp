@@ -11,13 +11,14 @@
 #include "task_manager.hpp"
 
 void TaskTestHarness::SetUp() {
-  // 1. 重置环境层
-  auto& env_state = test_env::TestEnvironmentState::GetInstance();
-  env_state.ResetAllCores();
-  env_state.InitializeCores(num_cores_);
+  // 1. 初始化环境层（每个测试都有独立实例）
+  env_state_.InitializeCores(num_cores_);
 
-  // 2. 绑定主测试线程到 core 0
-  env_state.BindThreadToCore(std::this_thread::get_id(), 0);
+  // 2. 设置当前线程的环境指针（让 Mock 层可以访问）
+  env_state_.SetCurrentThreadEnvironment();
+
+  // 3. 绑定主测试线程到 core 0
+  env_state_.BindThreadToCore(std::this_thread::get_id(), 0);
 
   // 3. 重置 PerCpu 数据
   auto& per_cpu_array = Singleton<
@@ -32,8 +33,9 @@ void TaskTestHarness::SetUp() {
 }
 
 void TaskTestHarness::TearDown() {
-  // 清理环境
-  auto& env_state = test_env::TestEnvironmentState::GetInstance();
-  env_state.ClearSwitchHistory();
-  env_state.ResetAllCores();
+  // 清除当前线程的环境指针
+  env_state_.ClearCurrentThreadEnvironment();
+
+  // 其他清理
+  env_state_.ClearSwitchHistory();
 }

@@ -1,37 +1,44 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
  */
-
-#include <cstring>
+#include <cassert>#include <cstring>
 
 #include "cpu_io.h"
+#include "per_cpu.hpp"
+#include "task_manager.hpp"
 #include "test_environment_state.hpp"
 
 extern "C" {
 
 void switch_to(cpu_io::CalleeSavedContext* prev_ctx,
                cpu_io::CalleeSavedContext* next_ctx) {
-  auto& env_state = test_env::TestEnvironmentState::GetInstance();
-  auto& core = env_state.GetCurrentCoreEnv();
+  auto* env_state =
+      test_env::TestEnvironmentState::GetCurrentThreadEnvironment();
+  assert(env_state &&
+         "TestEnvironmentState not set for current thread. "
+         "Did you forget to call SetCurrentThreadEnvironment()?");
+
+  auto& core_env = env_state->GetCurrentCoreEnv();
 
   // 从上下文指针查找对应的任务
-  auto* prev_task = env_state.FindTaskByContext(prev_ctx);
-  auto* next_task = env_state.FindTaskByContext(next_ctx);
+  auto* prev_task = env_state->FindTaskByContext(prev_ctx);
+  auto* next_task = env_state->FindTaskByContext(next_ctx);
 
-  // 记录切换事件
-  core.switch_history.push_back({
-      .timestamp = core.local_tick,
-      .from = prev_task,
-      .to = next_task,
-      .core_id = core.core_id,
-  });
+  // 获取 PerCpu 数据
+  auto& per_cpu = per_cpu::GetCurrentCore();
 
-  // 更新当前线程
-  core.current_thread = next_task;
-  core.total_switches++;
+  // 记录切换事件到环境层
+  test_env::CoreEnvironment::SwitchEvent event;
+  event.timestamp = (per_cpu.sched_data ? per_cpu.sched_data->local_tick : 0);
+  event.from = prev_task;
+  event.to = next_task;
+  event.core_id = core_env.core_id;
+  core_env.switch_history.push_back(event);
 
-  // 在单元测试中不执行真实的栈切换
+  // 更新 PerCpu 的当前线程
+  per_cpu.running_task = next_task;
 }
+
 void kernel_thread_entry() {}
 void trap_return(void*) {}
 void trap_entry() {}

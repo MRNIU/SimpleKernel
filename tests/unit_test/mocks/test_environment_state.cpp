@@ -12,9 +12,20 @@
 
 namespace test_env {
 
-auto TestEnvironmentState::GetInstance() -> TestEnvironmentState& {
-  static TestEnvironmentState instance;
-  return instance;
+// 线程局部存储：每个线程指向当前测试的环境实例
+thread_local TestEnvironmentState* current_thread_env = nullptr;
+
+void TestEnvironmentState::SetCurrentThreadEnvironment() {
+  current_thread_env = this;
+}
+
+void TestEnvironmentState::ClearCurrentThreadEnvironment() {
+  current_thread_env = nullptr;
+}
+
+auto TestEnvironmentState::GetCurrentThreadEnvironment()
+    -> TestEnvironmentState* {
+  return current_thread_env;
 }
 
 void TestEnvironmentState::InitializeCores(size_t num_cores) {
@@ -30,15 +41,9 @@ void TestEnvironmentState::ResetAllCores() {
   std::lock_guard<std::mutex> lock(map_mutex_);
   for (auto& core : cores_) {
     core.interrupt_enabled = true;
-    core.interrupt_nest_level = 0;
     core.page_directory = 0;
     core.paging_enabled = false;
-    core.current_thread = nullptr;
-    core.idle_thread = nullptr;
-    core.sched_data = nullptr;
     core.switch_history.clear();
-    core.local_tick = 0;
-    core.total_switches = 0;
   }
   thread_to_core_map_.clear();
   context_to_task_map_.clear();
@@ -127,14 +132,9 @@ void TestEnvironmentState::DumpAllCoreStates() const {
   for (const auto& core : cores_) {
     std::cout << "\nCore " << core.core_id << ":" << std::endl;
     std::cout << "  Interrupt enabled: " << core.interrupt_enabled << std::endl;
-    std::cout << "  Interrupt nest level: " << core.interrupt_nest_level
-              << std::endl;
     std::cout << "  Page directory: 0x" << std::hex << core.page_directory
               << std::dec << std::endl;
     std::cout << "  Paging enabled: " << core.paging_enabled << std::endl;
-    std::cout << "  Current thread: " << core.current_thread << std::endl;
-    std::cout << "  Total switches: " << core.total_switches << std::endl;
-    std::cout << "  Local tick: " << core.local_tick << std::endl;
     std::cout << "  Switch history size: " << core.switch_history.size()
               << std::endl;
   }

@@ -30,11 +30,8 @@ TEST_F(EnvironmentLayerTest, CoreInitialization) {
   auto& core0 = env.GetCore(0);
   EXPECT_EQ(core0.core_id, 0);
   EXPECT_TRUE(core0.interrupt_enabled);
-  EXPECT_EQ(core0.interrupt_nest_level, 0);
   EXPECT_EQ(core0.page_directory, 0);
   EXPECT_FALSE(core0.paging_enabled);
-  EXPECT_EQ(core0.current_thread, nullptr);
-  EXPECT_EQ(core0.total_switches, 0);
 
   auto& core1 = env.GetCore(1);
   EXPECT_EQ(core1.core_id, 1);
@@ -54,13 +51,13 @@ TEST_F(EnvironmentLayerTest, InterruptControl) {
   EXPECT_FALSE(cpu_io::GetInterruptStatus());
 
   // 验证环境层状态
-  auto& core = env.GetCurrentCoreEnv();
-  EXPECT_FALSE(core.interrupt_enabled);
+  auto& core_env = env.GetCurrentCoreEnv();
+  EXPECT_FALSE(core_env.interrupt_enabled);
 
   // 重新使能中断
   cpu_io::EnableInterrupt();
   EXPECT_TRUE(cpu_io::GetInterruptStatus());
-  EXPECT_TRUE(core.interrupt_enabled);
+  EXPECT_TRUE(core_env.interrupt_enabled);
 }
 
 /**
@@ -75,13 +72,13 @@ TEST_F(EnvironmentLayerTest, PageTableOperations) {
   cpu_io::virtual_memory::SetPageDirectory(test_page_dir);
 
   // 验证环境层状态
-  auto& core = env.GetCurrentCoreEnv();
-  EXPECT_EQ(core.page_directory, test_page_dir);
+  auto& core_env = env.GetCurrentCoreEnv();
+  EXPECT_EQ(core_env.page_directory, test_page_dir);
   EXPECT_EQ(cpu_io::virtual_memory::GetPageDirectory(), test_page_dir);
 
   // 启用分页
   cpu_io::virtual_memory::EnablePage();
-  EXPECT_TRUE(core.paging_enabled);
+  EXPECT_TRUE(core_env.paging_enabled);
 }
 
 /**

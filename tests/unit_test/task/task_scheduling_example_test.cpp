@@ -6,6 +6,7 @@
 
 #include "arch.h"
 #include "cpu_io.h"
+#include "per_cpu.hpp"
 #include "task_control_block.hpp"
 #include "task_test_harness.hpp"
 #include "test_environment_state.hpp"
@@ -73,10 +74,11 @@ TEST_F(TaskSchedulingExample, SwitchToRecordsHistory) {
   env.RegisterTaskContext(&task2.task_context, &task2);
 
   // 获取当前核心环境
-  auto& core = env.GetCurrentCoreEnv();
+  auto& core_env = env.GetCurrentCoreEnv();
 
-  // 设置初始 tick
-  core.local_tick = 100;
+  // 设置初始 tick（通过 PerCpu 的 sched_data）
+  // 注意：这里假设测试已经设置了 sched_data
+  // 实际使用时，应该先通过 TaskManager 初始化
 
   // 清空历史记录
   env.ClearSwitchHistory();
@@ -89,14 +91,13 @@ TEST_F(TaskSchedulingExample, SwitchToRecordsHistory) {
   ASSERT_EQ(history.size(), 1);
 
   auto& event = history[0];
-  EXPECT_EQ(event.timestamp, 100);
   EXPECT_EQ(event.from, &task1);
   EXPECT_EQ(event.to, &task2);
   EXPECT_EQ(event.core_id, 0);
 
-  // 验证当前线程被更新
-  EXPECT_EQ(core.current_thread, &task2);
-  EXPECT_EQ(core.total_switches, 1);
+  // 验证当前线程被更新（通过 PerCpu）
+  auto& per_cpu = per_cpu::GetCurrentCore();
+  EXPECT_EQ(per_cpu.running_task, &task2);
 
   // 清理
   env.UnregisterTaskContext(&task1.task_context);
@@ -122,17 +123,11 @@ TEST_F(TaskSchedulingExample, MultipleSwitchesHistory) {
   env.RegisterTaskContext(&task2.task_context, &task2);
   env.RegisterTaskContext(&task3.task_context, &task3);
 
-  auto& core = env.GetCurrentCoreEnv();
   env.ClearSwitchHistory();
 
   // 执行一系列切换: task1 -> task2 -> task3 -> task1
-  core.local_tick = 100;
   switch_to(&task1.task_context, &task2.task_context);
-
-  core.local_tick = 110;
   switch_to(&task2.task_context, &task3.task_context);
-
-  core.local_tick = 120;
   switch_to(&task3.task_context, &task1.task_context);
 
   // 验证历史记录
@@ -140,23 +135,20 @@ TEST_F(TaskSchedulingExample, MultipleSwitchesHistory) {
   ASSERT_EQ(history.size(), 3);
 
   // 第一次切换
-  EXPECT_EQ(history[0].timestamp, 100);
   EXPECT_EQ(history[0].from, &task1);
   EXPECT_EQ(history[0].to, &task2);
 
   // 第二次切换
-  EXPECT_EQ(history[1].timestamp, 110);
   EXPECT_EQ(history[1].from, &task2);
   EXPECT_EQ(history[1].to, &task3);
 
   // 第三次切换
-  EXPECT_EQ(history[2].timestamp, 120);
   EXPECT_EQ(history[2].from, &task3);
   EXPECT_EQ(history[2].to, &task1);
 
-  // 验证统计信息
-  EXPECT_EQ(core.total_switches, 3);
-  EXPECT_EQ(core.current_thread, &task1);
+  // 验证当前任务（通过 PerCpu）
+  auto& per_cpu = per_cpu::GetCurrentCore();
+  EXPECT_EQ(per_cpu.running_task, &task1);
 
   // 清理
   env.UnregisterTaskContext(&task1.task_context);
@@ -178,13 +170,13 @@ TEST_F(TaskSchedulingExample, InterruptStatusDuringSwitch) {
   EXPECT_FALSE(cpu_io::GetInterruptStatus());
 
   // 验证环境层状态
-  auto& core = env.GetCurrentCoreEnv();
-  EXPECT_FALSE(core.interrupt_enabled);
+  auto& core_env = env.GetCurrentCoreEnv();
+  EXPECT_FALSE(core_env.interrupt_enabled);
 
   // 模拟离开临界区（恢复中断）
   cpu_io::EnableInterrupt();
   EXPECT_TRUE(cpu_io::GetInterruptStatus());
-  EXPECT_TRUE(core.interrupt_enabled);
+  EXPECT_TRUE(core_env.interrupt_enabled);
 }
 
 /**

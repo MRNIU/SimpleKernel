@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_TESTS_UNIT_TEST_MOCKS_CPU_IO_H_
 
 #include <atomic>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <mutex>
@@ -23,25 +24,31 @@ inline void Pause() {
 
 // 使用线程 ID 映射到核心 ID（用于测试多核场景）
 inline auto GetCurrentCoreId() -> size_t {
-  return test_env::TestEnvironmentState::GetInstance().GetCoreIdForThread(
-      std::this_thread::get_id());
+  auto* env = test_env::TestEnvironmentState::GetCurrentThreadEnvironment();
+  assert(env &&
+         "TestEnvironmentState not set for current thread. "
+         "Did you forget to call SetCurrentThreadEnvironment()?");
+  return env->GetCoreIdForThread(std::this_thread::get_id());
 }
 
 inline void EnableInterrupt() {
-  auto& core =
-      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  auto* env = test_env::TestEnvironmentState::GetCurrentThreadEnvironment();
+  assert(env && "TestEnvironmentState not set for current thread");
+  auto& core = env->GetCurrentCoreEnv();
   core.interrupt_enabled = true;
 }
 
 inline void DisableInterrupt() {
-  auto& core =
-      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  auto* env = test_env::TestEnvironmentState::GetCurrentThreadEnvironment();
+  assert(env && "TestEnvironmentState not set for current thread");
+  auto& core = env->GetCurrentCoreEnv();
   core.interrupt_enabled = false;
 }
 
 inline bool GetInterruptStatus() {
-  auto& core =
-      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  auto* env = test_env::TestEnvironmentState::GetCurrentThreadEnvironment();
+  assert(env && "TestEnvironmentState not set for current thread");
+  auto& core = env->GetCurrentCoreEnv();
   return core.interrupt_enabled;
 }
 
@@ -106,20 +113,23 @@ inline auto GetKernelPagePermissions(bool readable = true,
 
 // 页表操作函数
 inline void SetPageDirectory(uint64_t pd) {
-  auto& core =
-      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  auto* env = test_env::TestEnvironmentState::GetCurrentThreadEnvironment();
+  assert(env && "TestEnvironmentState not set for current thread");
+  auto& core = env->GetCurrentCoreEnv();
   core.page_directory = pd;
 }
 
 inline auto GetPageDirectory() -> uint64_t {
-  auto& core =
-      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  auto* env = test_env::TestEnvironmentState::GetCurrentThreadEnvironment();
+  assert(env && "TestEnvironmentState not set for current thread");
+  auto& core = env->GetCurrentCoreEnv();
   return core.page_directory;
 }
 
 inline void EnablePage() {
-  auto& core =
-      test_env::TestEnvironmentState::GetInstance().GetCurrentCoreEnv();
+  auto* env = test_env::TestEnvironmentState::GetCurrentThreadEnvironment();
+  assert(env && "TestEnvironmentState not set for current thread");
+  auto& core = env->GetCurrentCoreEnv();
   core.paging_enabled = true;
 }
 
