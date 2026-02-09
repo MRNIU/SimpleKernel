@@ -2,7 +2,36 @@
 
 ## 项目概述
 
-SimpleKernel 是一个现代化多架构操作系统内核，专为教育和研究设计。使用 **C++23** 编写，支持 **x86_64**、**RISC-V 64** 和 **AArch64** 三种架构。当前分支完成的功能需要你根据分支名与代码判断。
+SimpleKernel 是一个**面向 AI 辅助学习的现代化操作系统内核项目**。使用 **C++23** 编写，支持 **x86_64**、**RISC-V 64** 和 **AArch64** 三种架构。
+
+### 核心设计理念：接口驱动（Interface-Driven）
+
+- **项目主体是接口定义**——头文件（`.h/.hpp`）只包含类声明、纯虚接口、类型定义和 Doxygen 文档
+- **实现由 AI 完成**——用户阅读接口契约，AI 根据头文件生成 `.cpp` 实现
+- **现有代码是参考实现**——用于验证 AI 生成代码的正确性，不是唯一正确答案
+- **测试套件验证契约**——GoogleTest 测试用例验证实现是否符合接口要求
+
+### 你作为 AI 的角色
+
+当用户要求你实现某个模块时：
+1. **先阅读对应的接口头文件**——理解类声明、纯虚方法、Doxygen 契约（`@pre`/`@post`/`@note`）
+2. **在独立的 `.cpp` 文件中生成实现**——不要修改头文件中的接口定义
+3. **确保实现符合契约**——满足前置条件检查、后置条件保证、不引入额外的公共接口
+4. **运行测试验证**——`make unit-test` 或 `make SimpleKernel && make run`
+
+### 关键接口文件（你最常需要阅读的文件）
+
+| 接口文件 | 职责 | 对应实现 |
+|---------|------|---------|
+| `src/arch/arch.h` | 架构无关的统一入口 | `src/arch/{arch}/` 各文件 |
+| `src/include/interrupt_base.h` | 中断子系统抽象基类 | `src/arch/{arch}/interrupt.cpp` |
+| `src/driver/include/console_driver.h` | 控制台驱动抽象 | `ns16550a.cpp` / `pl011.cpp` |
+| `src/include/virtual_memory.hpp` | 虚拟内存管理 | `src/virtual_memory.cpp` |
+| `src/include/kernel_fdt.hpp` | 设备树解析 | `src/kernel_fdt.cpp` |
+| `src/include/kernel_elf.hpp` | ELF 解析 | `src/kernel_elf.cpp` |
+| `src/task/include/scheduler_base.hpp` | 调度器抽象基类 | `src/task/*_scheduler.cpp` |
+| `src/include/spinlock.hpp` | 自旋锁 | header-only（性能要求） |
+| `src/include/mutex.hpp` | 互斥锁 | `src/task/mutex.cpp` |
 
 ## 技术栈
 
@@ -21,12 +50,22 @@ SimpleKernel 是一个现代化多架构操作系统内核，专为教育和研�
 ```
 SimpleKernel/
 ├── src/                    # 内核源码
+│   ├── include/            # 📐 公共接口头文件（项目核心，你应该先读这里）
 │   ├── arch/               # 架构相关代码 (aarch64/riscv64/x86_64)
+│   │   ├── arch.h          # 📐 架构无关统一接口
 │   │   └── {arch}/         # 每架构: boot.S, link.ld, arch_main.cpp 等
-│   ├── driver/             # 设备驱动 (gic/plic/apic/ns16550a/pl011 等)
+│   ├── driver/             # 设备驱动
+│   │   ├── include/        # 📐 驱动接口 (console_driver.h 等)
+│   │   └── ...             # 驱动实现 (ns16550a/pl011/gic/plic/apic 等)
+│   ├── task/               # 任务管理
+│   │   ├── include/        # 📐 调度器接口 (scheduler_base.hpp 等)
+│   │   └── ...             # 调度器和任务管理实现
 │   ├── libc/               # 内核 C 标准库实现
-│   ├── libcxx/             # 内核 C++ 运行时
-│   └── include/            # 公共头文件
+│   └── libcxx/             # 内核 C++ 运行时
+├── tests/                  # 🧪 测试套件（验证实现是否符合接口契约）
+│   ├── unit_test/          # 单元测试
+│   ├── integration_test/   # 集成测试
+│   └── system_test/        # 系统测试（QEMU 运行）
 ├── cmake/                  # CMake 模块和工具链文件
 │   ├── {arch}-gcc.cmake    # 交叉编译工具链定义
 │   ├── compile_config.cmake # 编译选项配置
@@ -34,7 +73,6 @@ SimpleKernel/
 │   ├── project_config.cmake # 项目配置生成
 │   └── 3rd.cmake           # 第三方依赖管理
 ├── 3rd/                    # 第三方依赖 (Git Submodule)
-├── tests/                  # 测试代码
 ├── tools/                  # 构建工具和模板
 └── doc/                    # 文档
 ```
@@ -67,6 +105,15 @@ cd build_{arch} && make unit-test coverage
 **⚠️ aarch64 特殊要求**: 运行前需要先启动两个串口终端任务 (`::54320` 和 `::54321`)。
 
 ## 编码规范
+
+### 接口文件规范（最重要）
+
+当创建或修改接口头文件时，必须遵循以下规范：
+
+- **只包含声明**：类声明、纯虚接口、类型定义、常量，不包含方法实现
+- **Doxygen 契约文档**：每个类和方法必须包含 `@brief`、`@pre`（前置条件）、`@post`（后置条件）
+- **最小化 include**：接口头文件只包含声明所需的头文件，实现所需的头文件放在 `.cpp` 中
+- **性能例外**：标记 `__always_inline` 的方法（如 `SpinLock::Lock()`）允许保留在头文件中
 
 ### 代码风格
 - **格式化**: Google Style，使用 `.clang-format` 自动格式化
@@ -156,4 +203,5 @@ Singleton<TaskManager>::GetInstance().AddTask(task);
 - **文档目录**: `doc/` (工具链、系统启动、调试输出、中断)
 - **Docker 使用**: `doc/docker.md`
 - **Git 规范**: `doc/git_commit.md`
+- **接口重构计划**: `doc/TODO_interface_refactor.md`
 - **调试信息**: `build_{arch}/bin` 目录会自动生成 objdump、 nm、map、dts 等文件，qemu 的运行日志也在这里

@@ -1,7 +1,7 @@
 [![codecov](https://codecov.io/gh/Simple-XX/SimpleKernel/graph/badge.svg?token=J7NKK3SBNJ)](https://codecov.io/gh/Simple-XX/SimpleKernel)
 ![workflow](https://github.com/Simple-XX/SimpleKernel/actions/workflows/workflow.yml/badge.svg)
 ![commit-activity](https://img.shields.io/github/commit-activity/t/Simple-XX/SimpleKernel)
-![last-commit-interrupt](https://img.shields.io/github/last-commit/Simple-XX/SimpleKernel/interrupt)
+![last-commit-interrupt](https://img.shields.io/github/last-commit/Simple-XX/SimpleKernel/main)
 ![MIT License](https://img.shields.io/github/license/mashape/apistatus.svg)
 [![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
 [![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
@@ -10,18 +10,19 @@
 
 # SimpleKernel
 
-**现代化多架构内核操作系统 | 支持 x86_64、RISC-V 64 和 AArch64**
+**面向 AI 的操作系统学习项目 | Interface-Driven OS Kernel for AI-Assisted Learning**
 
-> 🚀 **当前分支状态**: interrupt - 已完成中断系统实现、多架构中断控制器支持和时钟中断处理
+> 🤖 **设计理念**：定义清晰的内核接口，由 AI 完成实现——学习操作系统的新范式
 
 ## 📖 目录
 
 - [✨ 项目简介](#-项目简介)
+- [🤖 面向 AI 的设计理念](#-面向-ai-的设计理念)
+- [🏛️ 接口体系总览](#️-接口体系总览)
 - [🏗️ 支持架构](#️-支持架构)
 - [🚀 快速开始](#-快速开始)
-- [💻 核心特性](#-核心特性)
-- [🎯 中断系统架构](#-中断系统架构)
-- [⚡ 执行流程](#-执行流程)
+- [📂 项目结构](#-项目结构)
+- [🎯 学习路线](#-学习路线)
 - [📦 第三方依赖](#-第三方依赖)
 - [📝 开发指南](#-开发指南)
 - [🤝 贡献指南](#-贡献指南)
@@ -29,31 +30,167 @@
 
 ## ✨ 项目简介
 
-SimpleKernel 是一个专为教育和研究设计的现代化操作系统内核，采用 C++ 编写，突出多架构支持和模块化架构设计。项目致力于为操作系统开发学习者和研究人员提供一个功能完整、代码清晰的实践平台。
+SimpleKernel 是一个**面向 AI 辅助学习的现代化操作系统内核项目**。采用 C++23 编写，支持 x86_64、RISC-V 64 和 AArch64 三种架构。
+
+与传统 OS 教学项目不同，SimpleKernel 采用**接口驱动（Interface-Driven）** 的设计：
+
+- **项目主体是接口定义**——完整的头文件（`.h/.hpp`）包含类声明、纯虚接口、类型定义、Doxygen 文档
+- **实现由 AI 完成**——你只需要理解接口契约，让 AI 根据接口文档生成实现代码
+- **参考实现可供对照**——项目提供完整的参考实现，用于验证 AI 生成代码的正确性
 
 ### 🌟 核心亮点
 
-- **🔧 现代 C++23 内核实现** - 充分利用现代 C++ 特性，提供类型安全和高性能
-- **🌐 真正的多架构支持** - 原生支持 x86_64、RISC-V 64 和 AArch64 三大主流架构
-- **⚡ 完整中断系统** - 实现了从底层硬件到高层处理的完整中断处理机制
-- **🏗️ 工程化构建系统** - 基于 CMake 的现代化构建，支持交叉编译和多平台开发
-- **🐳 容器化开发环境** - 预配置的 Docker 环境，一键启动开发
-- **🔍 强大调试支持** - 集成栈回溯、符号解析和多级日志系统
+| 特性 | 说明 |
+|------|------|
+| 🤖 **AI-First 设计** | 接口文档即 prompt，AI 可直接根据头文件生成完整实现 |
+| 📐 **接口与实现分离** | 头文件只有声明和契约，实现在独立的 `.cpp` 中 |
+| 🌐 **三架构支持** | x86_64、RISC-V 64、AArch64，同一套接口适配不同硬件 |
+| 🧪 **测试驱动验证** | GoogleTest 测试套件验证 AI 生成的实现是否符合接口契约 |
+| 📖 **完整 Doxygen 文档** | 每个接口都有职责描述、前置条件、后置条件、使用示例 |
+| 🏗️ **工程化基础设施** | CMake 构建、Docker 环境、CI/CD、clang-format/clang-tidy |
+
+## 🤖 面向 AI 的设计理念
+
+### 为什么要"面向 AI"？
+
+传统 OS 教学项目的学习路径：**读代码 → 理解原理 → 模仿修改**。这种方式存在几个问题：
+
+1. 内核代码量大，初学者容易迷失在实现细节中
+2. 各模块耦合紧密，难以独立理解单个子系统
+3. 从零实现一个模块的门槛很高，反馈周期长
+
+SimpleKernel 提出一种新范式：**读接口 → 理解契约 → AI 实现 → 测试验证**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    SimpleKernel 学习流程                   │
+│                                                         │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐         │
+│   │ 📐 接口   │───▶│ 🤖 AI    │───▶│ 🧪 测试  │         │
+│   │ 头文件    │    │ 生成实现  │    │ 验证正确性│         │
+│   │ + Doxygen │    │ (.cpp)   │    │ GoogleTest│         │
+│   └──────────┘    └──────────┘    └──────────┘         │
+│        │                               │                │
+│        │         ┌──────────┐          │                │
+│        └────────▶│ 📚 参考   │◀─────────┘                │
+│                  │ 实现对照  │                           │
+│                  └──────────┘                           │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 核心工作流
+
+#### 1️⃣ 阅读接口，理解契约
+
+每个模块的头文件都包含完整的接口文档：
+
+```cpp
+/**
+ * @brief 控制台驱动抽象基类
+ *
+ * 所有串口/控制台驱动必须实现此接口。
+ *
+ * @pre  硬件已完成基本初始化（时钟使能、引脚配置）
+ * @post 调用 PutChar/GetChar 可进行字符级 I/O
+ *
+ * 已知实现：Ns16550a（RISC-V/x86_64）、Pl011（AArch64）
+ */
+class ConsoleDriver {
+public:
+  virtual ~ConsoleDriver() = default;
+  virtual void PutChar(uint8_t c) const = 0;
+  [[nodiscard]] virtual auto GetChar() const -> uint8_t = 0;
+  [[nodiscard]] virtual auto TryGetChar() const -> uint8_t = 0;
+};
+```
+
+#### 2️⃣ 让 AI 实现
+
+将头文件作为上下文提供给 AI（如 GitHub Copilot、ChatGPT、Claude 等），要求其生成 `.cpp` 实现。接口的 Doxygen 注释就是最好的 prompt。
+
+#### 3️⃣ 测试验证
+
+运行项目自带的测试套件，验证 AI 生成的实现是否符合接口契约：
+
+```shell
+cmake --preset build_riscv64
+cd build_riscv64 && make unit-test
+```
+
+#### 4️⃣ 对照参考实现
+
+如果测试不通过，可以参考项目提供的参考实现进行对照和学习。
+
+### 与 AI 工具的结合方式
+
+| 场景 | 使用方式 |
+|------|---------|
+| **GitHub Copilot** | 打开头文件，在对应的 `.cpp` 中让 Copilot 自动补全实现 |
+| **ChatGPT / Claude** | 将头文件内容粘贴为上下文，要求生成完整的 `.cpp` 实现 |
+| **Copilot Chat / Cursor** | 在 IDE 中选中接口，要求 AI 解释契约含义或生成实现 |
+| **自主学习** | 先独立思考实现思路，再让 AI 生成，对比差异 |
+
+## 🏛️ 接口体系总览
+
+SimpleKernel 的接口按功能分为以下层次：
+
+```
+┌──────────────────────────────────────────┐
+│              应用/系统调用层               │
+│         syscall.h · SyscallInit          │
+├──────────────────────────────────────────┤
+│               任务管理层                  │
+│  TaskManager · SchedulerBase · Mutex     │
+│  CfsScheduler · FifoScheduler · RR ...   │
+├──────────────────────────────────────────┤
+│               内存管理层                  │
+│  VirtualMemory · PhysicalMemory          │
+│  MapPage · UnmapPage · AllocFrame        │
+├──────────────────────────────────────────┤
+│               中断/异常层                 │
+│  InterruptBase · RegisterInterruptFunc   │
+│  TimerInit · InterruptInit               │
+├──────────────────────────────────────────┤
+│               驱动层                      │
+│  ConsoleDriver · Ns16550a · Pl011        │
+│  Gic · Plic · Apic · Timer drivers       │
+├──────────────────────────────────────────┤
+│             架构抽象层 (arch.h)            │
+│  ArchInit · InterruptInit · TimerInit    │
+│  EarlyConsole（全局构造阶段自动设置）      │
+├──────────────────────────────────────────┤
+│            运行时支持库                    │
+│  libc (sk_cstdio, sk_cstring, ...)       │
+│  libcxx (sk_vector, __cxa_*, ...)        │
+├──────────────────────────────────────────┤
+│            硬件 / QEMU                    │
+│  x86_64 · RISC-V 64 · AArch64           │
+└──────────────────────────────────────────┘
+```
+
+### 关键接口文件
+
+| 接口文件 | 职责 | 实现文件 |
+|---------|------|---------|
+| `src/arch/arch.h` | 架构无关的统一入口 | 各 `src/arch/{arch}/` 目录 |
+| `src/include/interrupt_base.h` | 中断子系统抽象基类 | `src/arch/{arch}/interrupt.cpp` |
+| `src/driver/include/console_driver.h` | 控制台驱动抽象 | `ns16550a.cpp` / `pl011.cpp` |
+| `src/include/virtual_memory.hpp` | 虚拟内存管理接口 | `src/virtual_memory.cpp` |
+| `src/include/kernel_fdt.hpp` | 设备树解析接口 | `src/kernel_fdt.cpp` |
+| `src/include/kernel_elf.hpp` | ELF 解析接口 | `src/kernel_elf.cpp` |
+| `src/task/include/scheduler_base.hpp` | 调度器抽象基类 | `cfs_scheduler.cpp` 等 |
+| `src/include/spinlock.hpp` | 自旋锁接口 | header-only（性能要求） |
+| `src/include/mutex.hpp` | 互斥锁接口 | `src/task/mutex.cpp` |
+
+> 📋 完整接口重构计划见 [doc/TODO_interface_refactor.md](./doc/TODO_interface_refactor.md)
 
 ## 🏗️ 支持架构
 
-### 🏗️ 多架构支持矩阵
-
-| 架构 | 引导链 | 串口输出 | 中断控制器 | 时钟中断 |
+| 架构 | 引导链 | 串口 | 中断控制器 | 时钟 |
 |:---:|:---:|:---:|:---:|:---:|
-| **x86_64** | U-Boot | NS16550A | 8259A PIC | 8253/8254 Timer |
-| **RISC-V 64** | U-Boot + OpenSBI | OpenSBI SBI Call | Direct 模式 | SBI Timer |
-| **AArch64** | U-Boot + ATF + OP-TEE | PL011 UART | GICv3 | Generic Timer |
-
-**架构特色：**
-- **RISC-V**: 开放指令集，S 模式运行，完整的 CSR 寄存器抽象和基于 Direct 的中断处理
-- **AArch64**: ARM 生态完整性，TrustZone 安全架构，GICv3 中断控制器驱动
-- **x86_64**: 成熟的 PC 生态，8259A PIC 控制器，传统中断处理机制
+| **x86_64** | U-Boot | COM1 | 8259A PIC | 8253/8254 |
+| **RISC-V 64** | U-Boot + OpenSBI | SBI Call | Direct 模式 | SBI Timer |
+| **AArch64** | U-Boot + ATF + OP-TEE | PL011 | GICv3 | Generic Timer |
 
 ## 🚀 快速开始
 
@@ -62,6 +199,7 @@ SimpleKernel 是一个专为教育和研究设计的现代化操作系统内核�
 - **操作系统**: Linux (推荐 Ubuntu 24.04) 或 macOS
 - **容器引擎**: Docker 20.10+
 - **工具链**: 已包含在 Docker 镜像中（GCC 交叉编译器、CMake、QEMU 等）
+- **AI 工具（推荐）**: GitHub Copilot / ChatGPT / Claude
 
 ### 🛠️ 环境搭建
 
@@ -96,260 +234,199 @@ cmake --preset build_riscv64
 cd build_riscv64
 
 # 编译内核
-make kernel
+make SimpleKernel
 
 # 在 QEMU 模拟器中运行
 make run
+
+# 运行单元测试（验证你的实现）
+make unit-test
 ```
 
 **支持的架构预设：**
-- `build_riscv64` - RISC-V 64位架构
-- `build_aarch64` - ARM 64位架构
-- `build_x86_64` - x86 64位架构
+- `build_riscv64` - RISC-V 64 位架构
+- `build_aarch64` - ARM 64 位架构
+- `build_x86_64` - x86 64 位架构
 
-### 🎯 VS Code 集成开发
-
-项目已配置完整的 VS Code 开发环境：
+### 🎯 AI 辅助开发工作流
 
 ```shell
-# 在 VS Code 中打开项目
+# 1. 在 VS Code 中打开项目（推荐安装 GitHub Copilot 扩展）
 code ./SimpleKernel
+
+# 2. 阅读头文件中的接口定义（例如 src/include/virtual_memory.hpp）
+
+# 3. 创建/编辑对应的 .cpp 文件，让 AI 根据接口生成实现
+
+# 4. 编译验证
+cd build_riscv64 && make SimpleKernel
+
+# 5. 运行测试
+make unit-test
+
+# 6. 在 QEMU 中运行，观察行为
+make run
 ```
 
-- **一键编译**: 使用 `Ctrl+Shift+P` → `Tasks: Run Task` → 选择对应架构
-- **调试支持**: 配置了 GDB 调试环境，支持源码级调试
-- **代码补全**: 集成 C++ IntelliSense 和语法高亮
+## 📂 项目结构
 
-## 💻 核心特性
+```
+SimpleKernel/
+├── src/                        # 内核源码
+│   ├── include/                # 📐 公共接口头文件（项目核心）
+│   │   ├── virtual_memory.hpp  #   虚拟内存管理接口
+│   │   ├── kernel_fdt.hpp      #   设备树解析接口
+│   │   ├── kernel_elf.hpp      #   ELF 解析接口
+│   │   ├── spinlock.hpp        #   自旋锁接口
+│   │   ├── mutex.hpp           #   互斥锁接口
+│   │   └── ...
+│   ├── arch/                   # 架构相关代码
+│   │   ├── arch.h              # 📐 架构无关统一接口
+│   │   ├── aarch64/            #   AArch64 实现
+│   │   ├── riscv64/            #   RISC-V 64 实现
+│   │   └── x86_64/             #   x86_64 实现
+│   ├── driver/                 # 设备驱动
+│   │   ├── include/            # 📐 驱动接口（ConsoleDriver 等）
+│   │   ├── ns16550a/           #   NS16550A 串口驱动实现
+│   │   ├── pl011/              #   PL011 串口驱动实现
+│   │   └── ...
+│   ├── task/                   # 任务管理
+│   │   ├── include/            # 📐 调度器接口（SchedulerBase 等）
+│   │   └── ...                 #   调度器实现
+│   ├── libc/                   # 内核 C 标准库
+│   └── libcxx/                 # 内核 C++ 运行时
+├── tests/                      # 🧪 测试套件
+│   ├── unit_test/              #   单元测试
+│   ├── integration_test/       #   集成测试
+│   └── system_test/            #   系统测试（QEMU 运行）
+├── doc/                        # 📚 文档
+│   ├── TODO_interface_refactor.md  # 接口重构计划
+│   └── ...
+├── cmake/                      # CMake 构建配置
+├── 3rd/                        # 第三方依赖（Git Submodule）
+└── tools/                      # 构建工具和模板
+```
 
-SimpleKernel 在当前 interrupt 分支实现了完整的中断处理系统，为现代 C++ 操作系统开发提供了坚实的技术底座。
+> 📐 标记的目录/文件是**接口定义**——这是你需要重点阅读的内容。
 
-### ⚡ 中断系统核心功能
+## 🎯 学习路线
 
-#### 🔧 多架构中断控制器支持
-- **x86_64 8259A PIC** - 传统可编程中断控制器，支持中断优先级和屏蔽
-- **x86_64 8253/8254 Timer** - 精确的时钟中断生成和周期控制
-- **RISC-V Direct 模式** - 基于 CSR 的直接中断处理，高效的中断响应
-- **AArch64 GICv3** - 先进的通用中断控制器，支持消息信号中断和多核分发
+建议按以下顺序学习和实现各模块：
 
-#### 🎯 中断处理机制
-- **统一中断注册** - 跨架构的中断处理函数注册接口
-- **嵌套中断支持** - 中断深度跟踪和安全的嵌套中断处理
-- **时钟中断调度** - 精确的系统时钟中断，为任务调度提供基础
-- **中断上下文管理** - 完整的寄存器保存恢复和上下文切换
+### 阶段 1：基础设施（Boot）
 
-#### 🔍 CSR 寄存器抽象 (RISC-V)
-- **寄存器封装** - 类型安全的 CSR 寄存器访问接口
-- **状态监控** - 完整的寄存器状态打印和调试支持
-- **特权级管理** - S 模式运行环境和权限控制
-- **异常处理** - 中断和异常的统一处理框架
+| 模块 | 接口文件 | 难度 | 说明 |
+|------|---------|:---:|------|
+| Early Console | `src/arch/arch.h` 注释 | ⭐ | 最早期的输出，理解全局构造 |
+| 串口驱动 | `console_driver.h` | ⭐⭐ | 实现 `PutChar`/`GetChar`，理解 MMIO |
+| 设备树解析 | `kernel_fdt.hpp` | ⭐⭐ | 解析硬件信息，理解 FDT 格式 |
+| ELF 解析 | `kernel_elf.hpp` | ⭐⭐ | 符号表解析，用于栈回溯 |
 
-### 🏗️ 工程化构建系统
+### 阶段 2：中断系统（Interrupt）
 
-- **🔧 CMake 现代化构建** - 跨平台构建系统，支持多架构预设和交叉编译
-- **📋 依赖管理** - Git Submodule 统一管理第三方组件，版本可控
-- **🐳 容器化开发** - 预配置 Docker 环境，包含完整工具链和依赖
-- **📖 详细文档** - 工具链安装指南：[doc/0_工具链.md](./doc/0_工具链.md)
+| 模块 | 接口文件 | 难度 | 说明 |
+|------|---------|:---:|------|
+| 中断基类 | `interrupt_base.h` | ⭐⭐ | 理解中断处理的统一抽象 |
+| 中断控制器 | 各架构驱动头文件 | ⭐⭐⭐ | GIC/PLIC/PIC 硬件编程 |
+| 时钟中断 | `arch.h → TimerInit` | ⭐⭐ | 定时器配置，tick 驱动 |
 
-### 📚 运行时支持库
+### 阶段 3：内存管理（Memory）
 
-#### 🛠️ C 标准库内核实现
-为内核环境提供必要的 libc 函数实现：
+| 模块 | 接口文件 | 难度 | 说明 |
+|------|---------|:---:|------|
+| 虚拟内存 | `virtual_memory.hpp` | ⭐⭐⭐ | 页表管理、地址映射 |
+| 物理内存 | 相关接口 | ⭐⭐⭐ | 帧分配器、伙伴系统 |
 
-- **内存操作** - `memcpy()`、`memmove()`、`memset()`、`memcmp()` 等高效内存操作
-- **字符串处理** - `strcpy()`、`strcmp()`、`strlen()` 系列完整字符串函数
-- **栈保护机制** - `__stack_chk_guard` 栈溢出检测和保护
+### 阶段 4：任务管理（Thread/Task）
 
-#### ⚡ C++ 运行时环境
-完整的内核 C++ 运行时支持：
+| 模块 | 接口文件 | 难度 | 说明 |
+|------|---------|:---:|------|
+| 自旋锁 | `spinlock.hpp` | ⭐⭐ | 原子操作，多核同步 |
+| 互斥锁 | `mutex.hpp` | ⭐⭐⭐ | 基于任务阻塞的锁 |
+| 调度器 | `scheduler_base.hpp` | ⭐⭐⭐ | CFS/FIFO/RR 调度算法 |
 
-- **🔄 对象生命周期** - `__cxa_atexit()`、`__cxa_finalize()` 全局对象构造析构管理
-- **🔒 线程安全初始化** - `__cxa_guard_*` 静态局部变量线程安全机制
-- **⚠️ 异常处理** - 基础异常捕获和 `throw/catch` 机制
-- **📤 printf 支持** - 带颜色的格式化输出系统
+### 阶段 5：系统调用（Syscall）
 
-### 🔍 高级调试与诊断
-
-#### 📋 函数调用栈追踪
-- **多架构栈回溯** - 支持 x86_64 (RBP)、RISC-V (FP)、AArch64 (X29) 帧指针链
-- **符号解析集成** - 结合 ELF 符号表提供精确的函数名和地址映射
-- **安全边界检查** - 限制在内核代码段范围，防止栈追踪越界
-
-#### 📝 内核日志系统 (klog)
-- **🌈 多级别彩色日志** - Debug/Info/Warn/Error 四级日志，ANSI 彩色输出
-- **📟 Early Console** - 支持内核启动最早期（含静态对象初始化阶段）的调试输出
-- **🔒 并发安全** - 基于 SpinLock 的线程安全日志记录
-- **📍 源码精确定位** - 自动记录 `__func__`、`__LINE__` 调试信息
-- **⚡ 高性能输出** - 优化的格式化输出，最小化性能影响
-
-## 🎯 中断系统架构
-
-### 💡 分支新增特性
-
-本分支基于 boot 分支的完整基础架构，重点实现了中断处理系统。在此分支中，完成了多架构中断控制器驱动、中断注册机制、时钟中断处理等核心功能。
-
-#### 🔧 RISC-V 64 架构增强
-1. **CSR 寄存器抽象** - 完整的控制状态寄存器封装和类型安全访问
-2. **寄存器状态打印** - 调试友好的寄存器状态输出和监控
-3. **Direct 中断处理** - 基于 CSR 的高效直接中断处理机制
-4. **中断注册函数** - 统一的中断处理函数注册和管理接口
-5. **SBI 时钟中断** - OpenSBI 时钟中断服务集成
-
-#### 🖥️ AArch64 架构增强
-1. **中断注册函数** - ARM 架构中断处理函数注册机制
-2. **Generic Timer** - ARM 通用定时器中断处理
-3. **UART 中断** - PL011 串口中断处理支持
-4. **GICv3 驱动** - 完整的通用中断控制器 v3 驱动实现
-
-#### 💻 x86_64 架构增强
-1. **CPU 抽象** - x86_64 处理器状态和功能抽象
-2. **8259A PIC 控制器** - 传统可编程中断控制器完整驱动
-3. **8253/8254 Timer** - 精确的定时器控制器驱动
-4. **GDT 初始化** - 全局描述符表正确配置和管理
-5. **中断处理流程** - 完整的中断入口、处理和退出机制
-6. **中断注册函数** - x86 架构中断处理函数注册系统
-7. **时钟中断** - 系统时钟中断处理和调度支持
-
-#### 🚧 开发计划 (TODO)
-- **RISC-V PLIC** - 平台级中断控制器支持，处理外部设备中断
-- **x86_64 APIC** - 高级可编程中断控制器，支持多核和现代中断特性
-
-## ⚡ 执行流程
-
-### 🚀 系统启动流程
-
-1. **引导阶段**
-   - x86_64: U-Boot → Kernel
-   - RISC-V: U-Boot → OpenSBI → Kernel (S-mode)
-   - AArch64: U-Boot → ATF → OP-TEE → Kernel
-
-2. **内核初始化**
-   - C++ 运行时环境初始化
-   - 硬件抽象层初始化
-   - 中断控制器配置
-
-3. **中断系统启动**
-   - 中断控制器初始化
-   - 中断向量表配置
-   - 时钟中断启用
-
-4. **主循环运行**
-   - 系统服务就绪
-   - 中断驱动的事件处理
-   - 调试输出和状态监控
-
-### 🔧 已支持的特性
-
-- [x] **[BUILD]** 使用 CMake 的构建系统
-- [x] **[BUILD]** 使用 gdb remote 调试
-- [x] **[BUILD]** 第三方资源集成
-- [x] **[COMMON]** C++ 全局对象的构造
-- [x] **[COMMON]** C++ 静态局部对象构造
-- [x] **[COMMON]** C 栈保护支持
-- [x] **[COMMON]** printf 支持
-- [x] **[COMMON]** 简单的 C++ 异常支持
-- [x] **[COMMON]** 带颜色的字符串输出
-- [x] **[INTERRUPT]** 多架构中断系统
-- [x] **[INTERRUPT]** 时钟中断处理
-- [x] **[INTERRUPT]** 中断注册机制
-- [x] **[x86_64]** 基于 U-Boot 的引导
-- [x] **[x86_64]** 基于 serial 的基本输出
-- [x] **[x86_64]** 物理内存信息探测
-- [x] **[x86_64]** 显示缓冲区探测
-- [x] **[x86_64]** 调用栈回溯
-- [x] **[x86_64]** 8259A PIC 中断控制器
-- [x] **[x86_64]** 8253/8254 Timer 控制器
-- [x] **[riscv64]** gp 寄存器的初始化
-- [x] **[riscv64]** 基于 opensbi 的基本输出
-- [x] **[riscv64]** device tree 硬件信息解析
-- [x] **[riscv64]** ns16550a 串口驱动
-- [x] **[riscv64]** 调用栈回溯(仅打印地址)
-- [x] **[riscv64]** CSR 寄存器抽象
-- [x] **[riscv64]** Direct 模式中断处理
-- [x] **[aarch64]** GICv3 中断控制器驱动
-- [x] **[aarch64]** Generic Timer 时钟中断
-- [x] **[aarch64]** UART 中断处理
-- [ ] **[aarch64]** 基于 U-Boot 的引导 (开发中)
+| 模块 | 接口文件 | 难度 | 说明 |
+|------|---------|:---:|------|
+| 系统调用 | `arch.h → SyscallInit` | ⭐⭐⭐ | 用户态/内核态切换 |
 
 ## 📦 第三方依赖
 
-- [google/googletest](https://github.com/google/googletest.git) - 测试框架
-- [charlesnicholson/nanoprintf](https://github.com/charlesnicholson/nanoprintf.git) - printf 实现
-- [MRNIU/cpu_io](https://github.com/MRNIU/cpu_io.git) - CPU I/O 操作
-- [riscv-software-src/opensbi](https://github.com/riscv-software-src/opensbi.git) - RISC-V SBI 实现
-- [MRNIU/opensbi_interface](https://github.com/MRNIU/opensbi_interface.git) - OpenSBI 接口
-- [u-boot/u-boot](https://github.com/u-boot/u-boot.git) - 通用引导程序
-- [OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git) - OP-TEE 操作系统
-- [OP-TEE/optee_client](https://github.com/OP-TEE/optee_client.git) - OP-TEE 客户端
-- [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git) - ARM 可信固件
-- [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) - 设备树编译器
+| 依赖 | 用途 |
+|------|------|
+| [google/googletest](https://github.com/google/googletest.git) | 测试框架 |
+| [charlesnicholson/nanoprintf](https://github.com/charlesnicholson/nanoprintf.git) | printf 实现 |
+| [MRNIU/cpu_io](https://github.com/MRNIU/cpu_io.git) | CPU I/O 操作 |
+| [riscv-software-src/opensbi](https://github.com/riscv-software-src/opensbi.git) | RISC-V SBI 实现 |
+| [MRNIU/opensbi_interface](https://github.com/MRNIU/opensbi_interface.git) | OpenSBI 接口 |
+| [u-boot/u-boot](https://github.com/u-boot/u-boot.git) | 通用引导程序 |
+| [OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git) | OP-TEE 操作系统 |
+| [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git) | ARM 可信固件 |
+| [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) | 设备树编译器 |
 
 ## 📝 开发指南
 
-### 🎨 代码风格规范
-- **编码标准** - 严格遵循 [Google C++ 风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
-- **自动格式化** - 预配置 `.clang-format`，使用 `clang-format` 自动格式化
-- **命名约定** - 类名采用 PascalCase，函数和变量使用 snake_case
-- **注释规范** - 使用 Doxygen 风格注释，支持自动文档生成
+### 🎨 代码风格
 
-### 🚀 开发工作流
-1. **Fork 项目** - 从主仓库创建个人分支
-2. **本地开发** - 使用 Docker 环境进行开发和测试
-3. **质量检查** - 运行静态分析和测试套件
-4. **提交 PR** - 遵循提交信息规范，详细描述变更
+- **语言标准**: C23 / C++23
+- **编码规范**: [Google C++ Style Guide](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
+- **自动格式化**: `.clang-format` + `.clang-tidy`
+- **注释规范**: Doxygen 风格，接口文件必须包含完整的契约文档
 
-### 📋 提交信息规范
+### 命名约定
+
+| 类型 | 风格 | 示例 |
+|------|------|------|
+| 文件 | 小写下划线 | `kernel_log.hpp` |
+| 类/结构体 | PascalCase | `TaskManager` |
+| 函数 | PascalCase / snake_case | `ArchInit` / `sys_yield` |
+| 变量 | snake_case | `per_cpu_data` |
+| 宏 | SCREAMING_SNAKE | `SIMPLEKERNEL_DEBUG` |
+| 常量 | kCamelCase | `kPageSize` |
+| 内核 libc/libc++ 头文件 | `sk_` 前缀 | `sk_cstdio` |
+
+### 📋 Git Commit 规范
+
 ```
 <type>(<scope>): <subject>
 
-<body>
-
-<footer>
+type: feat|fix|docs|style|refactor|perf|test|build|revert
+scope: 可选，影响的模块 (arch, driver, libc)
+subject: 不超过50字符，不加句号
 ```
 
-**类型说明:**
-- `feat`: 新功能
-- `fix`: Bug 修复
-- `docs`: 文档更新
-- `style`: 代码格式调整
-- `refactor`: 代码重构
-- `test`: 测试相关
-- `chore`: 构建工具或辅助工具变更
+### 📚 文档
 
-### 📚 文档自动部署
-- **主分支部署** - GitHub Actions 自动将 main 分支文档部署到 [GitHub Pages](https://simple-xx.github.io/SimpleKernel/)
-- **API 文档** - Doxygen 生成的完整 API 参考文档
-- **开发文档** - 架构设计、开发指南和最佳实践
+- **工具链**: [doc/0_工具链.md](./doc/0_工具链.md)
+- **系统启动**: [doc/1_系统启动.md](./doc/1_系统启动.md)
+- **调试输出**: [doc/2_调试输出.md](./doc/2_调试输出.md)
+- **中断**: [doc/3_中断.md](./doc/3_中断.md)
+- **Docker**: [doc/docker.md](./doc/docker.md)
+- **接口重构计划**: [doc/TODO_interface_refactor.md](./doc/TODO_interface_refactor.md)
 
 ## 🤝 贡献指南
 
-我们欢迎所有形式的贡献！无论是代码、文档、测试还是问题报告，都是推动项目发展的重要力量。
+我们欢迎所有形式的贡献！
 
-### 🎯 如何贡献
+### 🎯 贡献方式
 
-**🐛 报告问题**
-- 使用 [GitHub Issues](https://github.com/Simple-XX/SimpleKernel/issues) 报告 Bug
-- 详细描述问题重现步骤、环境信息和期望行为
-- 附上相关日志和错误信息
+| 方式 | 说明 |
+|------|------|
+| 🐛 **报告问题** | 通过 [GitHub Issues](https://github.com/Simple-XX/SimpleKernel/issues) 报告 Bug |
+| 📐 **改进接口** | 提出更好的接口抽象和文档改进建议 |
+| 🧪 **补充测试** | 为现有接口编写更完整的测试用例 |
+| 📖 **完善文档** | 改进 Doxygen 注释、添加使用示例 |
+| 🔧 **提交实现** | 提交接口的参考实现或替代实现 |
 
-**💡 功能建议**
-- 通过 Issues 提出新功能建议
-- 描述功能用途、实现思路和预期效果
-- 讨论技术可行性和架构影响
+### 🔧 代码贡献流程
 
-**🔧 代码贡献**
-1. Fork 本仓库到个人账户
-2. 创建功能分支: `git checkout -b feature/amazing-feature`
+1. Fork 本仓库
+2. 创建功能分支: `git checkout -b feat/amazing-feature`
 3. 遵循代码规范进行开发
-4. 添加必要的测试用例
-5. 提交变更: `git commit -m 'feat: add amazing feature'`
-6. 推送分支: `git push origin feature/amazing-feature`
-7. 创建 Pull Request
-
-### 📋 贡献者协议
-- 确保代码质量和测试覆盖率
-- 尊重现有架构和设计模式
-- 积极参与代码评审和讨论
+4. 确保所有测试通过
+5. 提交变更: `git commit -m 'feat(scope): add amazing feature'`
+6. 创建 Pull Request
 
 ## 📄 许可证
 
@@ -358,22 +435,13 @@ SimpleKernel 在当前 interrupt 分支实现了完整的中断处理系统，�
 - **代码许可** - [MIT License](./LICENSE)
 - **反 996 许可** - [Anti 996 License](https://github.com/996icu/996.ICU/blob/master/LICENSE)
 
-```
-MIT License & Anti 996 License
-
-Copyright (c) 2024 SimpleKernel Contributors
-
-在遵循 MIT 协议的同时，本项目坚决反对 996 工作制度，
-提倡健康的工作与生活平衡。
-```
-
 ---
 
 <div align="center">
 
 **⭐ 如果这个项目对您有帮助，请给我们一个 Star！**
 
-**🚀 让我们一起构建更好的操作系统内核！**
+**🤖 让 AI 帮你写内核，让你专注于理解操作系统原理！**
 
 [🌟 Star 项目](https://github.com/Simple-XX/SimpleKernel) • [🐛 报告问题](https://github.com/Simple-XX/SimpleKernel/issues) • [💬 参与讨论](https://github.com/Simple-XX/SimpleKernel/discussions)
 
