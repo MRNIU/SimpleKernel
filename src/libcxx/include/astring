@@ -1,0 +1,34 @@
+﻿
+/**
+ * @file astring
+ * @brief stl astring 支持
+ * @author Zone.N (Zone.Niuzh@hotmail.com)
+ * @version 1.0
+ * @date 2023-04-05
+ * @copyright MIT LICENSE
+ * https://github.com/Simple-XX/SimpleKernel
+ * Based on https://github.com/Alinshans/MyTinySTL
+ * @par change log:
+ * <table>
+ * <tr><th>Date<th>Author<th>Description
+ * <tr><td>2023-04-05<td>Zone.N<td>迁移到 doxygen
+ * </table>
+ */
+
+#ifndef SIMPLEKERNEL_ASTRING
+#define SIMPLEKERNEL_ASTRING
+
+// 定义了 string, wstring, u16string, u32string 类型
+
+#include "basic_string"
+
+namespace mystl {
+
+using string    = mystl::basic_string<char>;
+using wstring   = mystl::basic_string<wchar_t>;
+using u16string = mystl::basic_string<char16_t>;
+using u32string = mystl::basic_string<char32_t>;
+
+};     // namespace mystl
+
+#endif /* SIMPLEKERNEL_ASTRING */

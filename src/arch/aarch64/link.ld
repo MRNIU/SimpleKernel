@@ -2,6 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+<<<<<<< HEAD
 /* GNU ld (GNU Binutils for Ubuntu) 2.41 */
 /* Script for -z combreloc */
 /* Copyright (C) 2014-2023 Free Software Foundation, Inc.
@@ -12,8 +13,31 @@ OUTPUT_FORMAT("elf64-littleaarch64", "elf64-bigaarch64",
 	      "elf64-littleaarch64")
 OUTPUT_ARCH(aarch64)
 ENTRY(_boot)
+||||||| bd1a0006
+/* This file is a part of Simple-XX/SimpleKernel (https://github.com/Simple-XX/SimpleKernel).
+ *
+ * link.ld for Simple-XX/SimpleKernel. */
+
+OUTPUT_FORMAT(elf64-littleaarch64)
+
+ENTRY(_start)
+
+=======
+/* This file is a part of Simple-XX/SimpleKernel
+ * (https://github.com/Simple-XX/SimpleKernel).
+ *
+ * link.ld for Simple-XX/SimpleKernel.
+ * 链接脚本，指定生成的二进制文件的布局
+ */
+
+OUTPUT_FORMAT(elf64-littleaarch64)
+
+ENTRY(_start)
+
+>>>>>>> upstream/main
 SECTIONS
 {
+<<<<<<< HEAD
   /* Read-only sections, merged into text segment: */
   PROVIDE (__executable_start = SEGMENT_START("text-segment", 0x40100000));
   . = SEGMENT_START("text-segment", 0x40100000) + SIZEOF_HEADERS;
@@ -28,6 +52,21 @@ SECTIONS
   .gnu.version_d  : { *(.gnu.version_d) }
   .gnu.version_r  : { *(.gnu.version_r) }
   .rela.dyn       :
+||||||| bd1a0006
+    /* 加载地址 */
+    . = 0x8000;
+	
+	PROVIDE(kernel_start = .);
+    PROVIDE(kernel_text_start = .);
+    .text : ALIGN(4K)
+=======
+    /* 加载地址 */
+    . = 0x8000;
+	
+	kernel_start = .;
+    kernel_text_start = .;
+    .text : ALIGN(4K)
+>>>>>>> upstream/main
     {
       *(.rela.init)
       *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*)
@@ -42,13 +81,52 @@ SECTIONS
       *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*)
       *(.rela.ifunc)
     }
+<<<<<<< HEAD
   .rela.plt       :
+||||||| bd1a0006
+    PROVIDE(kernel_text_end = .);
+ 
+    PROVIDE(kernel_rodata_start = .);
+	.rodata : ALIGN(4K)
+	{
+		*(.rodata)
+	}
+	PROVIDE(kernel_rodata_end = .);
+
+    PROVIDE(kernel_data_start = .);
+    .data : ALIGN(4K)
+=======
+    kernel_text_end = .;
+
+    kernel_rodata_start = .;
+	.rodata : ALIGN(4K)
+	{
+		*(.rodata)
+	}
+	kernel_rodata_end = .;
+
+    kernel_data_start = .;
+    .data : ALIGN(4K)
+>>>>>>> upstream/main
     {
+<<<<<<< HEAD
       *(.rela.plt)
       PROVIDE_HIDDEN (__rela_iplt_start = .);
       *(.rela.iplt)
       PROVIDE_HIDDEN (__rela_iplt_end = .);
+||||||| bd1a0006
+        *(.data)
+=======
+        ctors_start = .;
+	    *(.ctor*)
+	    ctors_end = .;
+	    dtors_start = .;
+	    *(.dtor*)
+	    dtors_end = .;
+        *(.data)
+>>>>>>> upstream/main
     }
+<<<<<<< HEAD
   .init           :
   {
     KEEP (*(SORT_NONE(.init)))
@@ -231,4 +309,29 @@ SECTIONS
   .ARM.attributes 0 : { KEEP (*(.ARM.attributes)) KEEP (*(.gnu.attributes)) }
   .note.gnu.arm.ident 0 : { KEEP (*(.note.gnu.arm.ident)) }
   /DISCARD/ : { *(.note.GNU-stack) *(.gnu_debuglink) *(.gnu.lto_*) }
+||||||| bd1a0006
+    PROVIDE(kernel_data_end = .);
+ 
+    PROVIDE(kernel_bss_start = .);
+	.bss : ALIGN(4K)
+	{
+		*(COMMON)
+		*(.bss)
+	}
+	PROVIDE(kernel_bss_end = .);
+
+	PROVIDE(kernel_end = .);
+=======
+    kernel_data_end = .;
+
+    kernel_bss_start = .;
+	.bss : ALIGN(4K)
+	{
+		*(COMMON)
+		*(.bss)
+	}
+	kernel_bss_end = .;
+
+	kernel_end = .;
+>>>>>>> upstream/main
 }
