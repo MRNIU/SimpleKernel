@@ -2,7 +2,6 @@
 # Git ignore rules
 
 .DS_Store
-<<<<<<< HEAD
 build_aarch64
 build_riscv64
 build_x86_64
@@ -16,29 +15,3 @@ Doxyfile
 *.objdump
 *.elf
 .pre-commit-config.yaml
-||||||| bd1a0006
-build*
-grub-2.04.tar.xz
-grub-2.04
-iso
-*.img
-*.iso
-*.bin
-null.d
-tools/aarch64-unknown-linux-gnu*
-.gdbinit
-tools/opensbi/build
-=======
-build*
-grub-2.04.tar.xz
-grub-2.04
-tools/opensbi
-iso
-*.img
-*.iso
-*.bin
-null.d
-tools/aarch64-unknown-linux-gnu*
-.gdbinit
-tools/opensbi/build
->>>>>>> upstream/main

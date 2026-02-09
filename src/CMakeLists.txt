@@ -21,23 +21,9 @@ TARGET_INCLUDE_DIRECTORIES (${PROJECT_NAME} PRIVATE ./ include)
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
                                                libcxx arch driver task)
 
-<<<<<<< HEAD
 SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES OUTPUT_NAME
                                                   ${KERNEL_ELF_OUTPUT_NAME})
-||||||| bd1a0006
-# 处理子目录下的 CMakeLists
-add_subdirectory(${SimpleKernel_SOURCE_CODE_DIR}/arch)
-add_subdirectory(${SimpleKernel_SOURCE_CODE_DIR}/kernel)
-=======
-# 处理子目录下的 CMakeLists
-add_subdirectory(${SimpleKernel_SOURCE_CODE_DIR}/arch)
-add_subdirectory(${SimpleKernel_SOURCE_CODE_DIR}/kernel)
-add_subdirectory(${SimpleKernel_SOURCE_CODE_DIR}/drv)
-add_subdirectory(${SimpleKernel_SOURCE_CODE_DIR}/libc)
-add_subdirectory(${SimpleKernel_SOURCE_CODE_DIR}/libcxx)
->>>>>>> upstream/main
 
-<<<<<<< HEAD
 # qemu 参数设置
 LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS
       "-D;${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}_qemu.log")
@@ -65,20 +51,6 @@ ELSEIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
         -kernel
         $<TARGET_FILE:${PROJECT_NAME}>)
 ENDIF()
-||||||| bd1a0006
-# 将各个子对象链接为内核文件
-add_executable(${KernelName}
-        $<TARGET_OBJECTS:arch>
-        $<TARGET_OBJECTS:kernel>)
-=======
-# 将各个子对象链接为内核文件
-add_executable(${KernelName}
-        $<TARGET_OBJECTS:arch>
-        $<TARGET_OBJECTS:libc>
-        $<TARGET_OBJECTS:libcxx>
-        $<TARGET_OBJECTS:drv>
-        $<TARGET_OBJECTS:kernel>)
->>>>>>> upstream/main
 
 # 添加 run 和 debug target
 ADD_RUN_TARGET (
