@@ -1,0 +1,89 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_SET_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_SET_
+
+#include <functional>
+#include <utility>
+
+#include "sk_rb_tree"
+
+namespace sk_std {
+
+template <typename Key, typename Compare = std::less<Key>>
+class set {
+ public:
+  using key_type = Key;
+  using value_type = Key;
+  using key_compare = Compare;
+  using value_compare = Compare;
+
+ private:
+  template <typename T>
+  struct Identity {
+    const T& operator()(const T& x) const { return x; }
+  };
+
+  using Rep = RbTree<key_type, value_type, Identity<value_type>, key_compare>;
+
+  Rep t;  // Red-black tree representing set.
+
+ public:
+  using pointer = typename Rep::const_pointer;
+  using const_pointer = typename Rep::const_pointer;
+  using reference = typename Rep::const_reference;
+  using const_reference = typename Rep::const_reference;
+  using iterator = typename Rep::const_iterator;
+  using const_iterator = typename Rep::const_iterator;
+  using size_type = typename Rep::size_type;
+  using difference_type = typename Rep::difference_type;
+
+  set() : t() {}
+  explicit set(const Compare& comp) : t(comp) {}
+  set(const set& x) : t(x.t) {}
+
+  set& operator=(const set& x) {
+    t = x.t;
+    return *this;
+  }
+
+  key_compare key_comp() const { return t.key_comp(); }
+  value_compare value_comp() const { return t.key_comp(); }
+
+  iterator begin() const { return t.begin(); }
+  iterator end() const { return t.end(); }
+  bool empty() const { return t.empty(); }
+  size_type size() const { return t.size(); }
+
+  void clear() { t.clear(); }
+
+  std::pair<iterator, bool> insert(const value_type& x) {
+    std::pair<typename Rep::iterator, bool> p = t.insert_unique(x);
+    return std::pair<iterator, bool>(p.first, p.second);
+  }
+
+  void erase(iterator position) { t.erase(no_const(position)); }
+
+  size_type erase(const key_type& x) { return t.erase(x); }
+
+  iterator find(const key_type& x) const { return t.find(x); }
+
+  size_type count(const key_type& x) const {
+    return t.find(x) == t.end() ? 0 : 1;
+  }
+
+  iterator lower_bound(const key_type& x) const { return t.lower_bound(x); }
+  iterator upper_bound(const key_type& x) const { return t.upper_bound(x); }
+
+ private:
+  typename Rep::iterator no_const(iterator it) {
+    return typename Rep::iterator(
+        (typename RbTreeNode<value_type>::LinkType)it.node);
+  }
+};
+
+}  // namespace sk_std
+
+#endif

@@ -1,0 +1,449 @@
+[![codecov](https://codecov.io/gh/Simple-XX/SimpleKernel/graph/badge.svg?token=J7NKK3SBNJ)](https://codecov.io/gh/Simple-XX/SimpleKernel)
+![workflow](https://github.com/Simple-XX/SimpleKernel/actions/workflows/workflow.yml/badge.svg)
+![commit-activity](https://img.shields.io/github/commit-activity/t/Simple-XX/SimpleKernel)
+![MIT License](https://img.shields.io/github/license/mashape/apistatus.svg)
+[![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
+[![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
+
+[English](./README_ENG.md) | [中文](./README.md)
+
+# SimpleKernel
+
+**Interface-Driven OS Kernel for AI-Assisted Learning | Multi-Architecture: x86_64, RISC-V 64, AArch64**
+
+> 🤖 **Design Philosophy**: Define clear kernel interfaces, let AI generate the implementation — a new paradigm for learning operating systems
+
+## 📖 Table of Contents
+
+- [✨ Project Overview](#-project-overview)
+- [🤖 AI-Oriented Design Philosophy](#-ai-oriented-design-philosophy)
+- [🏛️ Interface Architecture Overview](#️-interface-architecture-overview)
+- [🏗️ Supported Architectures](#️-supported-architectures)
+- [🚀 Quick Start](#-quick-start)
+- [📂 Project Structure](#-project-structure)
+- [🎯 Learning Path](#-learning-path)
+- [📦 Third-Party Dependencies](#-third-party-dependencies)
+- [📝 Development Guide](#-development-guide)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+
+## ✨ Project Overview
+
+SimpleKernel is a **modern OS kernel project designed for AI-assisted learning**. Written in C++23, it supports x86_64, RISC-V 64, and AArch64 architectures.
+
+Unlike traditional OS teaching projects, SimpleKernel adopts an **Interface-Driven** design:
+
+- **The project body is interface definitions** — complete header files (`.h/.hpp`) containing class declarations, pure virtual interfaces, type definitions, and Doxygen documentation
+- **Implementation is done by AI** — you only need to understand the interface contracts, and let AI generate `.cpp` implementations from the interface docs
+- **Reference implementations for comparison** — the project provides complete reference implementations to verify the correctness of AI-generated code
+
+### 🌟 Core Highlights
+
+| Feature | Description |
+|---------|-------------|
+| 🤖 **AI-First Design** | Interface docs serve as prompts — AI can generate complete implementations directly from header files |
+| 📐 **Interface-Implementation Separation** | Headers contain only declarations and contracts; implementations live in separate `.cpp` files |
+| 🌐 **Three-Architecture Support** | x86_64, RISC-V 64, AArch64 — one set of interfaces adapting to different hardware |
+| 🧪 **Test-Driven Verification** | GoogleTest test suites verify whether AI-generated implementations conform to interface contracts |
+| 📖 **Complete Doxygen Documentation** | Every interface has responsibility descriptions, preconditions, postconditions, and usage examples |
+| 🏗️ **Engineering Infrastructure** | CMake build, Docker environment, CI/CD, clang-format/clang-tidy |
+
+## 🤖 AI-Oriented Design Philosophy
+
+### Why "AI-Oriented"?
+
+Traditional OS teaching projects follow: **read code → understand principles → mimic and modify**. This approach has several problems:
+
+1. Kernel codebases are large — beginners easily get lost in implementation details
+2. Modules are tightly coupled — difficult to understand individual subsystems independently
+3. Implementing a module from scratch has a high barrier with long feedback cycles
+
+SimpleKernel proposes a new paradigm: **read interface → understand contract → AI implements → test verifies**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                 SimpleKernel Learning Flow                │
+│                                                         │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐         │
+│   │ 📐 Inter- │───▶│ 🤖 AI    │───▶│ 🧪 Test  │         │
+│   │ face Hdrs │    │ Generates│    │ Verifies │         │
+│   │ + Doxygen │    │ Impl     │    │ Contract │         │
+│   │           │    │ (.cpp)   │    │ GoogleTest│         │
+│   └──────────┘    └──────────┘    └──────────┘         │
+│        │                               │                │
+│        │         ┌──────────┐          │                │
+│        └────────▶│ 📚 Ref   │◀─────────┘                │
+│                  │ Impl     │                           │
+│                  └──────────┘                           │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Core Workflow
+
+#### 1️⃣ Read Interface, Understand Contract
+
+Each module's header file contains complete interface documentation:
+
+```cpp
+/**
+ * @brief Console driver abstract base class
+ *
+ * All serial/console drivers must implement this interface.
+ *
+ * @pre  Hardware has completed basic initialization (clock enable, pin config)
+ * @post PutChar/GetChar can be used for character-level I/O
+ *
+ * Known implementations: Ns16550a (RISC-V/x86_64), Pl011 (AArch64)
+ */
+class ConsoleDriver {
+public:
+  virtual ~ConsoleDriver() = default;
+  virtual void PutChar(uint8_t c) const = 0;
+  [[nodiscard]] virtual auto GetChar() const -> uint8_t = 0;
+  [[nodiscard]] virtual auto TryGetChar() const -> uint8_t = 0;
+};
+```
+
+#### 2️⃣ Let AI Implement
+
+Provide the header file as context to an AI (e.g., GitHub Copilot, ChatGPT, Claude) and ask it to generate the `.cpp` implementation. The Doxygen comments in the interface are the best prompt.
+
+#### 3️⃣ Test and Verify
+
+Run the project's built-in test suite to verify the AI-generated implementation conforms to the interface contract:
+
+```shell
+cmake --preset build_riscv64
+cd build_riscv64 && make unit-test
+```
+
+#### 4️⃣ Compare with Reference Implementation
+
+If tests fail, refer to the project's reference implementation for comparison and learning.
+
+### Integration with AI Tools
+
+| Scenario | Usage |
+|----------|-------|
+| **GitHub Copilot** | Open the header file, let Copilot auto-complete the implementation in the corresponding `.cpp` |
+| **ChatGPT / Claude** | Paste header file contents as context, request a complete `.cpp` implementation |
+| **Copilot Chat / Cursor** | Select the interface in the IDE, ask AI to explain contract meaning or generate implementation |
+| **Self-Study** | Think about the implementation first, then let AI generate it, and compare differences |
+
+## 🏛️ Interface Architecture Overview
+
+SimpleKernel's interfaces are organized into the following layers:
+
+```
+┌──────────────────────────────────────────┐
+│          Application / Syscall Layer      │
+│         syscall.h · SyscallInit          │
+├──────────────────────────────────────────┤
+│            Task Management Layer          │
+│  TaskManager · SchedulerBase · Mutex     │
+│  CfsScheduler · FifoScheduler · RR ...   │
+├──────────────────────────────────────────┤
+│          Memory Management Layer          │
+│  VirtualMemory · PhysicalMemory          │
+│  MapPage · UnmapPage · AllocFrame        │
+├──────────────────────────────────────────┤
+│          Interrupt / Exception Layer      │
+│  InterruptBase · RegisterInterruptFunc   │
+│  TimerInit · InterruptInit               │
+├──────────────────────────────────────────┤
+│               Driver Layer                │
+│  ConsoleDriver · Ns16550a · Pl011        │
+│  Gic · Plic · Apic · Timer drivers       │
+├──────────────────────────────────────────┤
+│       Architecture Abstraction (arch.h)   │
+│  ArchInit · InterruptInit · TimerInit    │
+│  EarlyConsole (auto-set during global    │
+│               construction phase)         │
+├──────────────────────────────────────────┤
+│         Runtime Support Libraries         │
+│  libc (sk_cstdio, sk_cstring, ...)       │
+│  libcxx (sk_vector, __cxa_*, ...)        │
+├──────────────────────────────────────────┤
+│            Hardware / QEMU                │
+│  x86_64 · RISC-V 64 · AArch64           │
+└──────────────────────────────────────────┘
+```
+
+### Key Interface Files
+
+| Interface File | Responsibility | Implementation File |
+|---------------|---------------|-------------------|
+| `src/arch/arch.h` | Architecture-independent unified entry | Each `src/arch/{arch}/` directory |
+| `src/include/interrupt_base.h` | Interrupt subsystem abstract base class | `src/arch/{arch}/interrupt.cpp` |
+| `src/driver/include/console_driver.h` | Console driver abstraction | `ns16550a.cpp` / `pl011.cpp` |
+| `src/include/virtual_memory.hpp` | Virtual memory management interface | `src/virtual_memory.cpp` |
+| `src/include/kernel_fdt.hpp` | Device tree parsing interface | `src/kernel_fdt.cpp` |
+| `src/include/kernel_elf.hpp` | ELF parsing interface | `src/kernel_elf.cpp` |
+| `src/task/include/scheduler_base.hpp` | Scheduler abstract base class | `cfs_scheduler.cpp` etc. |
+| `src/include/spinlock.hpp` | Spinlock interface | header-only (performance) |
+| `src/include/mutex.hpp` | Mutex interface | `src/task/mutex.cpp` |
+
+> 📋 See [doc/TODO_interface_refactor.md](./doc/TODO_interface_refactor.md) for the complete interface refactoring plan.
+
+## 🏗️ Supported Architectures
+
+| Architecture | Boot Chain | Serial | Interrupt Controller | Timer |
+|:---:|:---:|:---:|:---:|:---:|
+| **x86_64** | U-Boot | NS16550A | 8259A PIC | 8253/8254 |
+| **RISC-V 64** | U-Boot + OpenSBI | SBI Call | Direct Mode | SBI Timer |
+| **AArch64** | U-Boot + ATF + OP-TEE | PL011 | GICv3 | Generic Timer |
+
+## 🚀 Quick Start
+
+### 📋 System Requirements
+
+- **Operating System**: Linux (Ubuntu 24.04 recommended) or macOS
+- **Container Engine**: Docker 20.10+
+- **Toolchain**: Included in Docker image (GCC cross-compilers, CMake, QEMU, etc.)
+- **AI Tools (recommended)**: GitHub Copilot / ChatGPT / Claude
+
+### 🛠️ Environment Setup
+
+**Option 1: Using Docker (Recommended)**
+
+```shell
+# 1. Clone the project
+git clone https://github.com/simple-xx/SimpleKernel.git
+cd SimpleKernel
+git submodule update --init --recursive
+
+# 2. Start development environment
+docker pull ptrnull233/simple_kernel:latest
+docker run --name SimpleKernel-dev -itd -p 233:22 \
+  -v $(pwd):/root/SimpleKernel ptrnull233/simple_kernel:latest
+
+# 3. Enter development container
+docker exec -it SimpleKernel-dev /bin/zsh
+```
+
+**Option 2: Local Environment**
+
+Refer to [Toolchain Documentation](./doc/0_工具链.md) for local development environment setup.
+
+### ⚡ Build and Run
+
+```shell
+cd SimpleKernel
+
+# Select target architecture (RISC-V 64 example)
+cmake --preset build_riscv64
+cd build_riscv64
+
+# Build kernel
+make SimpleKernel
+
+# Run in QEMU emulator
+make run
+
+# Run unit tests (verify your implementation)
+make unit-test
+```
+
+**Supported Architecture Presets:**
+- `build_riscv64` - RISC-V 64-bit architecture
+- `build_aarch64` - ARM 64-bit architecture
+- `build_x86_64` - x86 64-bit architecture
+
+### 🎯 AI-Assisted Development Workflow
+
+```shell
+# 1. Open project in VS Code (GitHub Copilot extension recommended)
+code ./SimpleKernel
+
+# 2. Read interface definitions in header files (e.g., src/include/virtual_memory.hpp)
+
+# 3. Create/edit the corresponding .cpp file, let AI generate implementation from the interface
+
+# 4. Build and verify
+cd build_riscv64 && make SimpleKernel
+
+# 5. Run tests
+make unit-test
+
+# 6. Run in QEMU, observe behavior
+make run
+```
+
+## 📂 Project Structure
+
+```
+SimpleKernel/
+├── src/                        # Kernel source code
+│   ├── include/                # 📐 Public interface headers (project core)
+│   │   ├── virtual_memory.hpp  #   Virtual memory management interface
+│   │   ├── kernel_fdt.hpp      #   Device tree parsing interface
+│   │   ├── kernel_elf.hpp      #   ELF parsing interface
+│   │   ├── spinlock.hpp        #   Spinlock interface
+│   │   ├── mutex.hpp           #   Mutex interface
+│   │   └── ...
+│   ├── arch/                   # Architecture-specific code
+│   │   ├── arch.h              # 📐 Architecture-independent unified interface
+│   │   ├── aarch64/            #   AArch64 implementation
+│   │   ├── riscv64/            #   RISC-V 64 implementation
+│   │   └── x86_64/             #   x86_64 implementation
+│   ├── driver/                 # Device drivers
+│   │   ├── include/            # 📐 Driver interfaces (ConsoleDriver, etc.)
+│   │   ├── ns16550a/           #   NS16550A serial driver implementation
+│   │   ├── pl011/              #   PL011 serial driver implementation
+│   │   └── ...
+│   ├── task/                   # Task management
+│   │   ├── include/            # 📐 Scheduler interfaces (SchedulerBase, etc.)
+│   │   └── ...                 #   Scheduler implementations
+│   ├── libc/                   # Kernel C standard library
+│   └── libcxx/                 # Kernel C++ runtime
+├── tests/                      # 🧪 Test suite
+│   ├── unit_test/              #   Unit tests
+│   ├── integration_test/       #   Integration tests
+│   └── system_test/            #   System tests (QEMU-based)
+├── doc/                        # 📚 Documentation
+│   ├── TODO_interface_refactor.md  # Interface refactoring plan
+│   └── ...
+├── cmake/                      # CMake build configuration
+├── 3rd/                        # Third-party dependencies (Git Submodule)
+└── tools/                      # Build tools and templates
+```
+
+> Directories/files marked with 📐 are **interface definitions** — these are what you should focus on reading.
+
+## 🎯 Learning Path
+
+We recommend learning and implementing modules in the following order:
+
+### Phase 1: Infrastructure (Boot)
+
+| Module | Interface File | Difficulty | Description |
+|--------|---------------|:---:|-------------|
+| Early Console | `src/arch/arch.h` comments | ⭐ | Earliest output, understand global construction |
+| Serial Driver | `console_driver.h` | ⭐⭐ | Implement `PutChar`/`GetChar`, understand MMIO |
+| Device Tree Parsing | `kernel_fdt.hpp` | ⭐⭐ | Parse hardware info, understand FDT format |
+| ELF Parsing | `kernel_elf.hpp` | ⭐⭐ | Symbol table parsing, used for stack backtrace |
+
+### Phase 2: Interrupt System
+
+| Module | Interface File | Difficulty | Description |
+|--------|---------------|:---:|-------------|
+| Interrupt Base | `interrupt_base.h` | ⭐⭐ | Understand unified interrupt abstraction |
+| Interrupt Controller | Per-arch driver headers | ⭐⭐⭐ | GIC/PLIC/PIC hardware programming |
+| Timer Interrupt | `arch.h → TimerInit` | ⭐⭐ | Timer configuration, tick-driven |
+
+### Phase 3: Memory Management
+
+| Module | Interface File | Difficulty | Description |
+|--------|---------------|:---:|-------------|
+| Virtual Memory | `virtual_memory.hpp` | ⭐⭐⭐ | Page table management, address mapping |
+| Physical Memory | Related interfaces | ⭐⭐⭐ | Frame allocator, buddy system |
+
+### Phase 4: Task Management (Thread/Task)
+
+| Module | Interface File | Difficulty | Description |
+|--------|---------------|:---:|-------------|
+| Spinlock | `spinlock.hpp` | ⭐⭐ | Atomic operations, multi-core synchronization |
+| Mutex | `mutex.hpp` | ⭐⭐⭐ | Task-blocking based lock |
+| Scheduler | `scheduler_base.hpp` | ⭐⭐⭐ | CFS/FIFO/RR scheduling algorithms |
+
+### Phase 5: System Calls
+
+| Module | Interface File | Difficulty | Description |
+|--------|---------------|:---:|-------------|
+| System Calls | `arch.h → SyscallInit` | ⭐⭐⭐ | User/kernel mode switching |
+
+## 📦 Third-Party Dependencies
+
+| Dependency | Purpose |
+|-----------|---------|
+| [google/googletest](https://github.com/google/googletest.git) | Testing framework |
+| [charlesnicholson/nanoprintf](https://github.com/charlesnicholson/nanoprintf.git) | printf implementation |
+| [MRNIU/cpu_io](https://github.com/MRNIU/cpu_io.git) | CPU I/O operations |
+| [riscv-software-src/opensbi](https://github.com/riscv-software-src/opensbi.git) | RISC-V SBI implementation |
+| [MRNIU/opensbi_interface](https://github.com/MRNIU/opensbi_interface.git) | OpenSBI interface |
+| [u-boot/u-boot](https://github.com/u-boot/u-boot.git) | Universal bootloader |
+| [OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git) | OP-TEE operating system |
+| [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git) | ARM Trusted Firmware |
+| [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) | Device Tree Compiler |
+
+## 📝 Development Guide
+
+### 🎨 Code Style
+
+- **Language Standard**: C23 / C++23
+- **Coding Standard**: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+- **Auto Formatting**: `.clang-format` + `.clang-tidy`
+- **Comment Standard**: Doxygen style; interface files must contain complete contract documentation
+
+### Naming Conventions
+
+| Type | Style | Example |
+|------|-------|---------|
+| Files | lower_snake_case | `kernel_log.hpp` |
+| Classes/Structs | PascalCase | `TaskManager` |
+| Functions | PascalCase / snake_case | `ArchInit` / `sys_yield` |
+| Variables | snake_case | `per_cpu_data` |
+| Macros | SCREAMING_SNAKE | `SIMPLEKERNEL_DEBUG` |
+| Constants | kCamelCase | `kPageSize` |
+| Kernel libc/libc++ headers | `sk_` prefix | `sk_cstdio` |
+
+### 📋 Git Commit Convention
+
+```
+<type>(<scope>): <subject>
+
+type: feat|fix|docs|style|refactor|perf|test|build|revert
+scope: optional, affected module (arch, driver, libc)
+subject: max 50 chars, no period
+```
+
+### 📚 Documentation
+
+- **Toolchain**: [doc/0_工具链.md](./doc/0_工具链.md)
+- **System Boot**: [doc/1_系统启动.md](./doc/1_系统启动.md)
+- **Debug Output**: [doc/2_调试输出.md](./doc/2_调试输出.md)
+- **Interrupts**: [doc/3_中断.md](./doc/3_中断.md)
+- **Docker**: [doc/docker.md](./doc/docker.md)
+- **Interface Refactoring Plan**: [doc/TODO_interface_refactor.md](./doc/TODO_interface_refactor.md)
+
+## 🤝 Contributing
+
+We welcome all forms of contributions!
+
+### 🎯 Ways to Contribute
+
+| Method | Description |
+|--------|-------------|
+| 🐛 **Report Issues** | Report bugs via [GitHub Issues](https://github.com/Simple-XX/SimpleKernel/issues) |
+| 📐 **Improve Interfaces** | Suggest better interface abstractions and documentation improvements |
+| 🧪 **Add Tests** | Write more comprehensive test cases for existing interfaces |
+| 📖 **Improve Documentation** | Enhance Doxygen comments, add usage examples |
+| 🔧 **Submit Implementations** | Submit reference or alternative implementations of interfaces |
+
+### 🔧 Code Contribution Workflow
+
+1. Fork this repository
+2. Create a feature branch: `git checkout -b feat/amazing-feature`
+3. Follow coding standards during development
+4. Ensure all tests pass
+5. Commit changes: `git commit -m 'feat(scope): add amazing feature'`
+6. Create a Pull Request
+
+## 📄 License
+
+This project is dual-licensed:
+
+- **Code License** - [MIT License](./LICENSE)
+- **Anti-996 License** - [Anti 996 License](https://github.com/996icu/996.ICU/blob/master/LICENSE)
+
+---
+
+<div align="center">
+
+**⭐ If this project helps you, please give us a Star!**
+
+**🤖 Let AI write the kernel, so you can focus on understanding OS principles!**
+
+[🌟 Star the Project](https://github.com/Simple-XX/SimpleKernel) • [🐛 Report Issues](https://github.com/Simple-XX/SimpleKernel/issues) • [💬 Join Discussions](https://github.com/Simple-XX/SimpleKernel/discussions)
+
+</div>

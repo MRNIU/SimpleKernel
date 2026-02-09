@@ -1,0 +1,245 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_LIST_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_LIST_
+
+#include <cstddef>
+#include <new>
+
+namespace sk_std {
+
+struct list_node_base {
+  list_node_base* prev;
+  list_node_base* next;
+
+  list_node_base() : prev(this), next(this) {}
+};
+
+template <typename T>
+struct list_node : public list_node_base {
+  T data;
+
+  list_node(const T& val) : list_node_base(), data(val) {}
+};
+
+template <typename T>
+class list_iterator {
+ public:
+  using node_type = list_node<T>;
+  using base_node_type = list_node_base;
+  using self_type = list_iterator<T>;
+  using value_type = T;
+  using pointer = T*;
+  using reference = T&;
+
+  base_node_type* node;
+
+  list_iterator(base_node_type* n) : node(n) {}
+
+  reference operator*() const { return static_cast<node_type*>(node)->data; }
+  pointer operator->() const { return &static_cast<node_type*>(node)->data; }
+
+  self_type& operator++() {
+    node = node->next;
+    return *this;
+  }
+
+  self_type operator++(int) {
+    self_type tmp = *this;
+    node = node->next;
+    return tmp;
+  }
+
+  self_type& operator--() {
+    node = node->prev;
+    return *this;
+  }
+
+  self_type operator--(int) {
+    self_type tmp = *this;
+    node = node->prev;
+    return tmp;
+  }
+
+  bool operator==(const self_type& other) const { return node == other.node; }
+  bool operator!=(const self_type& other) const { return node != other.node; }
+};
+
+template <typename T>
+class list_const_iterator {
+ public:
+  using node_type = list_node<T>;
+  using base_node_type = list_node_base;
+  using self_type = list_const_iterator<T>;
+  using value_type = T;
+  using pointer = const T*;
+  using reference = const T&;
+
+  const base_node_type* node;
+
+  list_const_iterator(const base_node_type* n) : node(n) {}
+
+  reference operator*() const {
+    return static_cast<const node_type*>(node)->data;
+  }
+  pointer operator->() const {
+    return &static_cast<const node_type*>(node)->data;
+  }
+
+  self_type& operator++() {
+    node = node->next;
+    return *this;
+  }
+
+  self_type operator++(int) {
+    self_type tmp = *this;
+    node = node->next;
+    return tmp;
+  }
+
+  self_type& operator--() {
+    node = node->prev;
+    return *this;
+  }
+
+  self_type operator--(int) {
+    self_type tmp = *this;
+    node = node->prev;
+    return tmp;
+  }
+
+  bool operator==(const self_type& other) const { return node == other.node; }
+  bool operator!=(const self_type& other) const { return node != other.node; }
+};
+
+template <typename T>
+class list {
+ public:
+  using node_type = list_node<T>;
+  using base_node_type = list_node_base;
+  using iterator = list_iterator<T>;
+  using const_iterator = list_const_iterator<T>;
+  using value_type = T;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using size_type = size_t;
+
+  list() : _size(0) {
+    // Sentinel already initialized by default ctor of list_node_base
+  }
+
+  ~list() { clear(); }
+
+  list(const list& other) : _size(0) {
+    for (const auto& item : other) {
+      push_back(item);
+    }
+  }
+
+  list& operator=(const list& other) {
+    if (this != &other) {
+      clear();
+      for (const auto& item : other) {
+        push_back(item);
+      }
+    }
+    return *this;
+  }
+
+  iterator begin() { return iterator(sentinel.next); }
+  iterator end() { return iterator(&sentinel); }
+  const_iterator begin() const { return const_iterator(sentinel.next); }
+  const_iterator end() const { return const_iterator(&sentinel); }
+
+  bool empty() const { return _size == 0; }
+  size_type size() const { return _size; }
+
+  T& front() { return *begin(); }
+  const T& front() const { return *begin(); }
+  T& back() { return *(--end()); }
+  const T& back() const { return *(--end()); }
+
+  void push_front(const T& val) { insert(begin(), val); }
+
+  void push_back(const T& val) { insert(end(), val); }
+
+  void pop_front() { erase(begin()); }
+
+  void pop_back() { erase(--end()); }
+
+  iterator insert(iterator pos, const T& val) {
+    node_type* new_node = new node_type(val);
+    base_node_type* p = pos.node;
+    base_node_type* prev = p->prev;
+
+    new_node->next = p;
+    new_node->prev = prev;
+    prev->next = new_node;
+    p->prev = new_node;
+
+    _size++;
+    return iterator(new_node);
+  }
+
+  iterator erase(iterator pos) {
+    if (pos == end()) return end();
+
+    base_node_type* p = pos.node;
+    base_node_type* prev = p->prev;
+    base_node_type* next = p->next;
+
+    prev->next = next;
+    next->prev = prev;
+
+    delete static_cast<node_type*>(p);
+
+    _size--;
+    return iterator(next);
+  }
+
+  iterator erase(iterator first, iterator last) {
+    while (first != last) {
+      first = erase(first);
+    }
+    return last;
+  }
+
+  void remove(const T& value) {
+    iterator it = begin();
+    while (it != end()) {
+      if (*it == value) {
+        it = erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+
+  template <typename Predicate>
+  void remove_if(Predicate pred) {
+    iterator it = begin();
+    while (it != end()) {
+      if (pred(*it)) {
+        it = erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+
+  void clear() {
+    while (!empty()) {
+      pop_front();
+    }
+  }
+
+ private:
+  list_node_base sentinel;
+  size_type _size;
+};
+
+}  // namespace sk_std
+
+#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_LIST_ */

@@ -1,0 +1,70 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#ifndef SIMPLEKERNEL_SRC_DRIVER_NS16550A_INCLUDE_NS16550A_H_
+#define SIMPLEKERNEL_SRC_DRIVER_NS16550A_INCLUDE_NS16550A_H_
+
+#include <cstdint>
+
+class Ns16550a {
+ public:
+  /**
+   * 构造函数
+   * @param dev_addr 设备地址
+   */
+  explicit Ns16550a(uint64_t dev_addr);
+
+  /// @name 默认构造/析构函数
+  /// @{
+  Ns16550a() = default;
+  Ns16550a(const Ns16550a&) = delete;
+  Ns16550a(Ns16550a&&) = default;
+  auto operator=(const Ns16550a&) -> Ns16550a& = delete;
+  auto operator=(Ns16550a&&) -> Ns16550a& = default;
+  ~Ns16550a() = default;
+  /// @}
+
+  void PutChar(uint8_t c) const;
+
+  /**
+   * 阻塞式读取一个字符
+   * @return 读取到的字符
+   */
+  [[nodiscard]] auto GetChar() const -> uint8_t;
+
+  /**
+   * 非阻塞式尝试读取一个字符
+   * @return 读取到的字符，如果没有数据则返回 -1
+   */
+  [[nodiscard]] auto TryGetChar() const -> uint8_t;
+
+ private:
+  /// read mode: Receive holding reg
+  static constexpr uint8_t kRegRHR = 0;
+  /// write mode: Transmit Holding Reg
+  static constexpr uint8_t kRegTHR = 0;
+  /// write mode: interrupt enable reg
+  static constexpr uint8_t kRegIER = 1;
+  /// write mode: FIFO control Reg
+  static constexpr uint8_t kRegFCR = 2;
+  /// read mode: Interrupt Status Reg
+  static constexpr uint8_t kRegISR = 2;
+  /// write mode:Line Control Reg
+  static constexpr uint8_t kRegLCR = 3;
+  /// write mode:Modem Control Reg
+  static constexpr uint8_t kRegMCR = 4;
+  /// read mode: Line Status Reg
+  static constexpr uint8_t kRegLSR = 5;
+  /// read mode: Modem Status Reg
+  static constexpr uint8_t kRegMSR = 6;
+
+  /// LSB of divisor Latch when enabled
+  static constexpr uint8_t kUartDLL = 0;
+  /// MSB of divisor Latch when enabled
+  static constexpr uint8_t kUartDLM = 1;
+
+  uint64_t base_addr_;
+};
+
+#endif /* SIMPLEKERNEL_SRC_DRIVER_NS16550A_INCLUDE_NS16550A_H_ */

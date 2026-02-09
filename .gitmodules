@@ -1,0 +1,39 @@
+[submodule "3rd/opensbi_interface"]
+	path = 3rd/opensbi_interface
+	url = https://github.com/MRNIU/opensbi_interface.git
+[submodule "3rd/opensbi"]
+	path = 3rd/opensbi
+	url = https://github.com/riscv-software-src/opensbi.git
+[submodule "3rd/dtc"]
+	path = 3rd/dtc
+	url = https://git.kernel.org/pub/scm/utils/dtc/dtc.git
+[submodule "3rd/googletest"]
+	path = 3rd/googletest
+	url = https://github.com/google/googletest.git
+[submodule "3rd/cpu_io"]
+	path = 3rd/cpu_io
+	url = https://github.com/MRNIU/cpu_io.git
+[submodule "3rd/arm-trusted-firmware"]
+	path = 3rd/arm-trusted-firmware
+	url = https://github.com/ARM-software/arm-trusted-firmware.git
+[submodule "3rd/optee/optee_os"]
+	path = 3rd/optee/optee_os
+	url = https://github.com/OP-TEE/optee_os.git
+[submodule "3rd/optee/build"]
+	path = 3rd/optee/build
+	url = https://github.com/OP-TEE/build.git
+[submodule "3rd/optee/optee_client"]
+	path = 3rd/optee/optee_client
+	url = https://github.com/OP-TEE/optee_client.git
+[submodule "3rd/u-boot"]
+	path = 3rd/u-boot
+	url = https://github.com/u-boot/u-boot.git
+[submodule "3rd/nanoprintf"]
+	path = 3rd/nanoprintf
+	url = https://github.com/charlesnicholson/nanoprintf.git
+[submodule "3rd/bmalloc"]
+	path = 3rd/bmalloc
+	url = https://github.com/MRNIU/bmalloc.git
+[submodule "3rd/MPMCQueue"]
+	path = 3rd/MPMCQueue
+	url = https://github.com/MRNIU/MPMCQueue.git
