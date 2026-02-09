@@ -1,0 +1,39 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ * @brief TODO: Add description
+ */
+
+#include <cstdarg>
+#include <cstdint>
+
+extern "C" {
+volatile uint8_t *uart = (uint8_t *)0x9000000;
+void putc(char character) { *uart = character; }
+
+void SetupFpu() {
+  __asm__ volatile(
+      "mov X0, #0x00300000\n"
+      "msr CPACR_EL1, x0\n"
+      "isb\n"
+      :
+      :
+      :);
+}
+
+struct param {
+  uint64_t a;
+  uint64_t b;
+  uint64_t c;
+  uint64_t d;
+  uint64_t e;
+};
+
+void callee([[maybe_unused]] param var) { putc('e'); }
+
+void main() {
+  SetupFpu();
+  putc('0');
+  callee({});
+  putc('1');
+}
+}

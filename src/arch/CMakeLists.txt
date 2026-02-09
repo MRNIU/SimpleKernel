@@ -1,14 +1,19 @@
+# Copyright The SimpleKernel Contributors
 
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# CMakeLists.txt for Simple-XX/SimpleKernel.
-# 根据 SimpleKernelArch 判断跳转到哪个目录
+ADD_LIBRARY (arch INTERFACE)
 
-# 如果是 ia32/i386 或 ia32/x86_64，跳转到 ia32 目录
-if (SimpleKernelArch STREQUAL "ia32/i386" OR SimpleKernelArch STREQUAL "ia32/x86_64")
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ia32)
-else ()
-    # 其它情况跳转到与 SimpleKernelArch 同名目录即可
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/${SimpleKernelArch})
-endif ()
+TARGET_INCLUDE_DIRECTORIES (arch INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
+                                           ${CMAKE_SYSTEM_PROCESSOR}/include)
+
+TARGET_SOURCES (
+    arch
+    INTERFACE ${CMAKE_SYSTEM_PROCESSOR}/boot.S
+              ${CMAKE_SYSTEM_PROCESSOR}/arch_main.cpp
+              ${CMAKE_SYSTEM_PROCESSOR}/early_console.cpp
+              ${CMAKE_SYSTEM_PROCESSOR}/backtrace.cpp
+              ${CMAKE_SYSTEM_PROCESSOR}/interrupt.S
+              ${CMAKE_SYSTEM_PROCESSOR}/switch.S
+              ${CMAKE_SYSTEM_PROCESSOR}/interrupt.cpp
+              ${CMAKE_SYSTEM_PROCESSOR}/timer.cpp
+              ${CMAKE_SYSTEM_PROCESSOR}/interrupt_main.cpp
+              ${CMAKE_SYSTEM_PROCESSOR}/syscall.cpp)

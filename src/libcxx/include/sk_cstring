@@ -1,0 +1,27 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_CSTRING_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_CSTRING_
+
+#include "string.h"
+
+namespace sk_std {
+
+using ::memcmp;
+using ::memcpy;
+using ::memmove;
+using ::memset;
+using ::strcat;
+using ::strchr;
+using ::strcmp;
+using ::strcpy;
+using ::strlen;
+using ::strncmp;
+using ::strncpy;
+using ::strnlen;
+
+}  // namespace sk_std
+
+#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_CSTRING_ */

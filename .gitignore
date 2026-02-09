@@ -1,22 +1,17 @@
+# Copyright The SimpleKernel Contributors
+# Git ignore rules
 
-# This file is a part of Simple-XX/SimpleKernel
-# (https://github.com/Simple-XX/SimpleKernel).
-#
-# .gitinnore for Simple-XX/SimpleKernel.
-
-*.o
-*.gch
-*.tags*
 .DS_Store
-build*
-grub-2.04.tar.xz
-grub-2.04
-tools/opensbi
-iso
-*.img
-*.iso
-*.bin
-null.d
-tools/aarch64-unknown-linux-gnu*
-.gdbinit
-tools/opensbi/build
+build_aarch64
+build_riscv64
+build_x86_64
+doc/html
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea
+Doxyfile
+*.o
+*.objdump
+*.elf
+.pre-commit-config.yaml
