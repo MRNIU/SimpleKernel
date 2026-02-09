@@ -9,8 +9,11 @@
 
 #include <cstdint>
 #include <cstring>
+#include <thread>
 #include <unordered_map>
 #include <vector>
+
+#include "test_environment_state.hpp"
 
 namespace {
 
@@ -72,9 +75,18 @@ class VirtualMemoryTest : public ::testing::Test {
     Singleton<BasicInfo>::GetInstance().physical_memory_addr = 0x80000000;
     Singleton<BasicInfo>::GetInstance().physical_memory_size = 0x10000000;
     MockAllocator::GetInstance().Reset();
+
+    env_state_.InitializeCores(1);
+    env_state_.SetCurrentThreadEnvironment();
+    env_state_.BindThreadToCore(std::this_thread::get_id(), 0);
   }
 
-  void TearDown() override { MockAllocator::GetInstance().Reset(); }
+  void TearDown() override {
+    MockAllocator::GetInstance().Reset();
+    env_state_.ClearCurrentThreadEnvironment();
+  }
+
+  test_env::TestEnvironmentState env_state_;
 };
 
 TEST_F(VirtualMemoryTest, MapPageBasic) {

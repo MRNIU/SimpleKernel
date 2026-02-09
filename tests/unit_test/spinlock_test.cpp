@@ -104,7 +104,10 @@ TEST_F(SpinLockTest, ConcurrentAccess) {
   std::vector<std::thread> threads;
 
   for (int i = 0; i < num_threads; ++i) {
-    threads.emplace_back([&lock, increments_per_thread]() {
+    threads.emplace_back([this, &lock, increments_per_thread, i]() {
+      env_state_.SetCurrentThreadEnvironment();
+      env_state_.BindThreadToCore(std::this_thread::get_id(),
+                                  i % env_state_.GetCoreCount());
       for (int j = 0; j < increments_per_thread; ++j) {
         lock.Lock();
         int temp = shared_counter.load();
@@ -131,7 +134,10 @@ TEST_F(SpinLockTest, ConcurrentAccessWithoutLock) {
   std::vector<std::thread> threads;
 
   for (int i = 0; i < num_threads; ++i) {
-    threads.emplace_back([increments_per_thread]() {
+    threads.emplace_back([this, increments_per_thread, i]() {
+      env_state_.SetCurrentThreadEnvironment();
+      env_state_.BindThreadToCore(std::this_thread::get_id(),
+                                  i % env_state_.GetCoreCount());
       for (int j = 0; j < increments_per_thread; ++j) {
         // 不使用锁的并发访问
         int temp = thread_counter.load();
@@ -266,7 +272,10 @@ TEST_F(SpinLockTest, FairnessTest) {
   std::vector<std::thread> threads;
 
   for (int i = 0; i < num_threads; ++i) {
-    threads.emplace_back([&lock, &execution_order, &order_mutex, i]() {
+    threads.emplace_back([this, &lock, &execution_order, &order_mutex, i]() {
+      env_state_.SetCurrentThreadEnvironment();
+      env_state_.BindThreadToCore(std::this_thread::get_id(),
+                                  i % env_state_.GetCoreCount());
       std::this_thread::sleep_for(std::chrono::milliseconds(i * 10));
 
       lock.Lock();
@@ -297,13 +306,17 @@ TEST_F(SpinLockTest, HighLoadPerformance) {
   std::vector<std::thread> threads;
 
   for (int i = 0; i < num_threads; ++i) {
-    threads.emplace_back([&lock, operations_per_thread, &total_operations]() {
-      for (int j = 0; j < operations_per_thread; ++j) {
-        lock.Lock();
-        total_operations.fetch_add(1);
-        lock.UnLock();
-      }
-    });
+    threads.emplace_back(
+        [this, &lock, operations_per_thread, &total_operations, i]() {
+          env_state_.SetCurrentThreadEnvironment();
+          env_state_.BindThreadToCore(std::this_thread::get_id(),
+                                      i % env_state_.GetCoreCount());
+          for (int j = 0; j < operations_per_thread; ++j) {
+            lock.Lock();
+            total_operations.fetch_add(1);
+            lock.UnLock();
+          }
+        });
   }
 
   for (auto& thread : threads) {
@@ -373,7 +386,10 @@ TEST_F(SpinLockTest, LongHoldTime) {
   std::atomic<bool> waiter_started{false};
   std::atomic<int> spin_count{0};
 
-  std::thread holder([&lock, &lock_held, &waiter_started]() {
+  std::thread holder([this, &lock, &lock_held, &waiter_started]() {
+    env_state_.SetCurrentThreadEnvironment();
+    env_state_.BindThreadToCore(std::this_thread::get_id(),
+                                1 % env_state_.GetCoreCount());
     lock.Lock();
     lock_held = true;
 
@@ -387,7 +403,10 @@ TEST_F(SpinLockTest, LongHoldTime) {
     lock.UnLock();
   });
 
-  std::thread waiter([&lock, &lock_held, &spin_count, &waiter_started]() {
+  std::thread waiter([this, &lock, &lock_held, &spin_count, &waiter_started]() {
+    env_state_.SetCurrentThreadEnvironment();
+    env_state_.BindThreadToCore(std::this_thread::get_id(),
+                                2 % env_state_.GetCoreCount());
     // 等待直到第一个线程持有锁
     while (!lock_held.load()) {
       std::this_thread::yield();
@@ -427,7 +446,10 @@ TEST_F(SpinLockTest, MultipleThreads) {
   std::vector<std::thread> threads;
 
   for (int i = 0; i < 4; ++i) {
-    threads.emplace_back([&lock, &thread_results, i]() {
+    threads.emplace_back([this, &lock, &thread_results, i]() {
+      env_state_.SetCurrentThreadEnvironment();
+      env_state_.BindThreadToCore(std::this_thread::get_id(),
+                                  i % env_state_.GetCoreCount());
       for (int j = 0; j < 100; ++j) {
         lock.Lock();
         thread_results[i]++;

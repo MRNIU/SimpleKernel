@@ -7,12 +7,26 @@
 #include <gtest/gtest.h>
 
 #include "riscv64_virt.dtb.h"
+#include "test_environment_state.hpp"
 
-TEST(KernelFdtTest, ConstructorTest) {
+class KernelFdtTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    env_state_.InitializeCores(1);
+    env_state_.SetCurrentThreadEnvironment();
+    env_state_.BindThreadToCore(std::this_thread::get_id(), 0);
+  }
+
+  void TearDown() override { env_state_.ClearCurrentThreadEnvironment(); }
+
+  test_env::TestEnvironmentState env_state_;
+};
+
+TEST_F(KernelFdtTest, ConstructorTest) {
   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
 }
 
-TEST(KernelFdtTest, GetMemoryTest) {
+TEST_F(KernelFdtTest, GetMemoryTest) {
   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
 
   auto result = kerlen_fdt.GetMemory();
@@ -23,7 +37,7 @@ TEST(KernelFdtTest, GetMemoryTest) {
   EXPECT_EQ(memory_size, 0x8000000);
 }
 
-TEST(KernelFdtTest, GetSerialTest) {
+TEST_F(KernelFdtTest, GetSerialTest) {
   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
 
   auto result = kerlen_fdt.GetSerial();
@@ -35,7 +49,7 @@ TEST(KernelFdtTest, GetSerialTest) {
   EXPECT_EQ(serial_irq, 0xA);
 }
 
-TEST(KernelFdtTest, GetTimebaseFrequencyTest) {
+TEST_F(KernelFdtTest, GetTimebaseFrequencyTest) {
   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
 
   auto result = kerlen_fdt.GetTimebaseFrequency();
@@ -44,7 +58,7 @@ TEST(KernelFdtTest, GetTimebaseFrequencyTest) {
   EXPECT_EQ(*result, 0x989680);
 }
 
-TEST(KernelFdtTest, GetCoreCountTest) {
+TEST_F(KernelFdtTest, GetCoreCountTest) {
   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
 
   auto result = kerlen_fdt.GetCoreCount();
@@ -53,7 +67,7 @@ TEST(KernelFdtTest, GetCoreCountTest) {
   EXPECT_GT(*result, 0);  // 至少有一个 CPU 核心
 }
 
-TEST(KernelFdtTest, CopyConstructorTest) {
+TEST_F(KernelFdtTest, CopyConstructorTest) {
   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
   KernelFdt kerlen_fdt2(kerlen_fdt);
 
@@ -70,7 +84,7 @@ TEST(KernelFdtTest, CopyConstructorTest) {
   EXPECT_EQ(memory_size1, memory_size2);
 }
 
-TEST(KernelFdtTest, AssignmentTest) {
+TEST_F(KernelFdtTest, AssignmentTest) {
   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
   KernelFdt kerlen_fdt2;
 
@@ -89,7 +103,7 @@ TEST(KernelFdtTest, AssignmentTest) {
   EXPECT_EQ(memory_size1, memory_size2);
 }
 
-TEST(KernelFdtTest, MoveConstructorTest) {
+TEST_F(KernelFdtTest, MoveConstructorTest) {
   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
   auto result = kerlen_fdt.GetMemory();
   ASSERT_TRUE(result.has_value());
@@ -105,7 +119,7 @@ TEST(KernelFdtTest, MoveConstructorTest) {
   EXPECT_EQ(memory_size, expected_size);
 }
 
-TEST(KernelFdtTest, MoveAssignmentTest) {
+TEST_F(KernelFdtTest, MoveAssignmentTest) {
   KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
   auto result = kerlen_fdt.GetMemory();
   ASSERT_TRUE(result.has_value());

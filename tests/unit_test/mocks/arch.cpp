@@ -1,7 +1,9 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
  */
-#include <cassert>#include <cstring>
+
+#include <cassert>
+#include <cstring>
 
 #include "cpu_io.h"
 #include "per_cpu.hpp"
