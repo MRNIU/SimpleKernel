@@ -14,7 +14,7 @@ FUNCTION(add_coverage_target)
                            "${multi_value_keywords}" ${ARGN})
 
     # 不检查的目录
-    LIST (APPEND EXCLUDES --exclude)
+    LIST (APPEND EXCLUDES)
     FOREACH(item ${ARG_EXCLUDE_DIR})
         LIST (APPEND EXCLUDES '${item}')
     ENDFOREACH()
@@ -25,6 +25,7 @@ FUNCTION(add_coverage_target)
         COMMENT ""
         DEPENDS ${ARG_DEPENDS}
         COMMAND ${CMAKE_CTEST_COMMAND})
+
     # 在 coverage 执行完毕后生成报告
     ADD_CUSTOM_COMMAND (
         TARGET coverage
@@ -34,9 +35,8 @@ FUNCTION(add_coverage_target)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${COVERAGE_OUTPUT_DIR}
         COMMAND
             ${LCOV_EXE} -c -o ${COVERAGE_OUTPUT_DIR}/coverage.info -d
-            ${ARG_BINARY_DIR} -b ${ARG_SOURCE_DIR} --no-external ${EXCLUDES}
-            --rc branch_coverage=1 --ignore-errors mismatch --ignore-errors
-            unused --ignore-errors negative
+            ${ARG_BINARY_DIR} -b ${ARG_SOURCE_DIR} ${EXCLUDES} --rc
+            branch_coverage=1
         COMMAND ${GENHTML_EXE} ${COVERAGE_OUTPUT_DIR}/coverage.info -o
                 ${COVERAGE_OUTPUT_DIR} --branch-coverage)
 ENDFUNCTION()

@@ -1,5 +1,4 @@
 # Copyright The SimpleKernel Contributors
-# CMake build configuration
 
 # 设置项目名与版本
 PROJECT (unit-test)

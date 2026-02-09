@@ -1,5 +1,4 @@
 # Copyright The SimpleKernel Contributors
-# CMake build configuration
 
 ADD_SUBDIRECTORY (${CMAKE_CURRENT_SOURCE_DIR}/system_test)
 ADD_SUBDIRECTORY (${CMAKE_CURRENT_SOURCE_DIR}/integration_test)
@@ -25,12 +24,19 @@ IF(CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
 
     ADD_COVERAGE_TARGET (
         DEPENDS
-        unit_test
+        unit-test
         SOURCE_DIR
         ${CMAKE_SOURCE_DIR}
         BINARY_DIR
         ${CMAKE_BINARY_DIR}
         EXCLUDE_DIR
-        ${CMAKE_SOURCE_DIR}/3rd/*)
+        --exclude
+        ${CMAKE_SOURCE_DIR}/3rd/*
+        --exclude
+        ${CMAKE_BINARY_DIR}/3rd/*
+        --exclude
+        "*/tests/*"
+        --exclude
+        "/usr/")
 
 ENDIF()
