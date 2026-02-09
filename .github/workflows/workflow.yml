@@ -32,7 +32,7 @@ jobs:
           options: -v ${{ github.workspace }}:/root -e CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
           run: |
             cmake --preset=build_x86_64
-            cmake --build build_x86_64 --target kernel unit-test coverage doc
+            cmake --build build_x86_64 --target SimpleKernel unit-test coverage doc
 
       - name: riscv64
         uses: addnab/docker-run-action@v3
@@ -41,7 +41,7 @@ jobs:
           options: -v ${{ github.workspace }}:/root -e CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
           run: |
             cmake --preset=build_riscv64
-            cmake --build build_riscv64 --target kernel
+            cmake --build build_riscv64 --target SimpleKernel
 
       - name: aarch64
         uses: addnab/docker-run-action@v3
@@ -50,7 +50,7 @@ jobs:
           options: -v ${{ github.workspace }}:/root -e CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
           run: |
             cmake --preset=build_aarch64
-            cmake --build build_aarch64 --target kernel
+            cmake --build build_aarch64 --target SimpleKernel
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
