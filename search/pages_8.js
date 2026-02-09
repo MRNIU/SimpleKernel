@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['构建_20docker_20并通过_20ssh_20使用_406',['构建 Docker 并通过 ssh 使用',['../md_docker.html',1,'']]],
-  ['构建系统_407',['构建系统',['../md_build_system.html',1,'']]]
+  ['pl011_20uart_20驱动_0',['PL011 UART 驱动',['../md__2root_2src_2driver_2pl011_2README.html',1,'']]],
+  ['platform_20level_20interrupt_20controller_20plic_1',['Platform-Level Interrupt Controller (PLIC)',['../md__2root_2src_2driver_2plic_2README.html',1,'']]],
+  ['plic_2',['Platform-Level Interrupt Controller (PLIC)',['../md__2root_2src_2driver_2plic_2README.html',1,'']]]
 ];

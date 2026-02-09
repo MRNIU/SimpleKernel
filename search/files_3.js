@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['boot_2ecpp_217',['boot.cpp',['../src_2boot_2boot_8cpp.html',1,'(Global Namespace)'],['../test_2system__test_2opensbi__test_2boot_8cpp.html',1,'(Global Namespace)']]],
-  ['boot_2eh_218',['boot.h',['../boot_8h.html',1,'']]],
-  ['build_5fsystem_2emd_219',['build_system.md',['../build__system_8md.html',1,'']]]
+  ['3_5f中断_2emd_0',['3_中断.md',['../3___xE4_xB8_xAD_xE6_x96_xAD_8md.html',1,'']]]
 ];

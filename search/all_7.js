@@ -1,11 +1,5 @@
 var searchData=
 [
-  ['efi_5fmain_46',['efi_main',['../src_2boot_2boot_8cpp.html#a5a49104dd4adab62329e527a9e4bba9d',1,'boot.cpp']]],
-  ['ehdr_5f_47',['ehdr_',['../classElf.html#af8a3c623186ed689668522ae99f99fcc',1,'Elf']]],
-  ['elf_48',['Elf',['../classElf.html',1,'Elf'],['../classElf.html#ad179f8278f5c07e0ff404ac712863f30',1,'Elf::Elf(wchar_t *kernel_image_filename)'],['../classElf.html#a47b294082f1ed9196c086aed53704c96',1,'Elf::Elf(const Elf &amp;)=delete'],['../classElf.html#a5eccc90005cd47ce0d7e34db5a5159ef',1,'Elf::Elf(Elf &amp;&amp;)=delete']]],
-  ['elf_5f_49',['elf_',['../classElf.html#af307f1a08ff2488cd8b5b8683f4694e4',1,'Elf']]],
-  ['elf_5ffile_5fbuffer_5f_50',['elf_file_buffer_',['../classElf.html#a73eb7364f52ce2806eca1f320336dc5c',1,'Elf']]],
-  ['elf_5ffile_5fsize_5f_51',['elf_file_size_',['../classElf.html#af1d1cf5cc6005c0df60f620f91346c91',1,'Elf']]],
-  ['endl_52',['endl',['../classOutStream.html#a4013bbc2fd5844d63fb69e59e350f6c2',1,'OutStream']]],
-  ['example_2ecpp_53',['example.cpp',['../integration__test_2example_8cpp.html',1,'(Global Namespace)'],['../unit__test_2example_8cpp.html',1,'(Global Namespace)']]]
+  ['7_20为什么这样做_0',['7. 为什么这样做',['../md_task__unit__test__new__design.html#autotoc_md264',1,'']]],
+  ['7_3a_20调度器实现从头文件剥离到_20tt_20cpp_20tt_1',['TODO-7: 调度器实现从头文件剥离到 &lt;tt&gt;.cpp&lt;/tt&gt;',['../md_TODO__interface__refactor.html#autotoc_md281',1,'']]]
 ];

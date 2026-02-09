@@ -1,8 +1,0 @@
-<map id="_start" name="_start">
-<area shape="rect" id="node1" title="负责 crtbegin 的工作" alt="" coords="5,56,64,83"/>
-<area shape="rect" id="node2" href="$libcxx_8h.html#ace4b6de6e1ac3081329da66be1b45f76" title="析构 c++ 全局对象" alt="" coords="112,5,199,32"/>
-<area shape="rect" id="node3" href="$libcxx_8h.html#a8c22041b9886ca00cff1e90cd43eb3f2" title="构造 c++ 全局对象" alt="" coords="121,56,189,83"/>
-<area shape="rect" id="node4" href="$test_2system__test_2opensbi__test_2boot_8cpp.html#ada709d1df58c8f209a57334b5ff9bd4c" title="内核入口" alt="" coords="128,107,183,133"/>
-<area shape="rect" id="node5" href="$test_2system__test_2opensbi__test_2boot_8cpp.html#a223496da92021626a4430fed0af667bd" title=" " alt="" coords="247,81,325,108"/>
-<area shape="rect" id="node6" href="$aarch64_2arch__main_8cpp.html#afe4220e16c36bd6b2cf8ba5c899782be" title=" " alt="" coords="250,132,322,159"/>
-</map>

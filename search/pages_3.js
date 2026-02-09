@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['driver_399',['driver',['../md__home_runner_work_SimpleKernel_SimpleKernel_src_kernel_driver_README.html',1,'']]]
+  ['generic_20interrupt_20controller_0',['GIC (Generic Interrupt Controller)',['../md__2root_2src_2driver_2gic_2README.html',1,'']]],
+  ['gic_20generic_20interrupt_20controller_1',['GIC (Generic Interrupt Controller)',['../md__2root_2src_2driver_2gic_2README.html',1,'']]],
+  ['git_20commit_20规范_2',['Git Commit 规范',['../md_git__commit.html',1,'']]]
 ];

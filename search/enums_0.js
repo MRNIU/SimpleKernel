@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['mode_386',['Mode',['../classOutStream.html#aae37686b9a1d25ceeda1a3624799f742',1,'OutStream']]]
+  ['cloneflags_0',['CloneFlags',['../task__control__block_8hpp.html#a621e1ac4b663435d18b9ec55284dda6a',1,'task_control_block.hpp']]]
 ];
