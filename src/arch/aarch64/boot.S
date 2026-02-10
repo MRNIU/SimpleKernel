@@ -13,7 +13,9 @@ _boot:
 
     // 按照每个 core 设置栈地址
     add x10, x10, #1
-    lsl x10, x10, #12
+    // 根据 SIMPLEKERNEL_DEFAULT_STACK_SIZE 计算每核栈偏移
+    ldr x12, =SIMPLEKERNEL_DEFAULT_STACK_SIZE
+    mul x10, x10, x12
     ldr x11, =stack_top
     add x11, x11, x10
     mov sp, x11

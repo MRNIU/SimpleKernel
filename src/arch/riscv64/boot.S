@@ -28,7 +28,9 @@ _boot:
 
 2:  // 按照每个 core 设置栈地址
     add t0, a0, 1
-    slli t0, t0, 12
+    // 根据 SIMPLEKERNEL_DEFAULT_STACK_SIZE 计算每核栈偏移
+    li t1, SIMPLEKERNEL_DEFAULT_STACK_SIZE
+    mul t0, t0, t1
     la sp, stack_top
     add sp, sp, t0
 

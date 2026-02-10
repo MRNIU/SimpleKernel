@@ -37,3 +37,6 @@
 [submodule "3rd/MPMCQueue"]
 	path = 3rd/MPMCQueue
 	url = https://github.com/MRNIU/MPMCQueue.git
+[submodule "3rd/virtio_driver"]
+	path = 3rd/virtio_driver
+	url = https://github.com/MRNIU/virtio_driver.git
