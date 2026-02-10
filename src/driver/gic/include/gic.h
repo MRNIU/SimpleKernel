@@ -33,7 +33,7 @@ class Gic {
     /// @see
     /// https://developer.arm.com/documentation/101206/0003/Programmers-model/Distributor-registers--GICD-GICDA--summary
     /// GICD Register offsets
-    /// Configuration dependent	Distributor Control Register, RW
+    /// Configuration dependent Distributor Control Register, RW
     static constexpr uint32_t kCTLR = 0x0000;
     static constexpr uint32_t kCTLR_EnableGrp1NS = 0x2;
     /**
@@ -45,24 +45,24 @@ class Gic {
       // [31] Register Write Pending:
       uint32_t rwp : 1;
       uint32_t reserved1 : 23;
-      // [7]	E1NWF	Enable 1 of N Wakeup Functionality
+      // [7] E1NWF Enable 1 of N Wakeup Functionality
       uint32_t e1nwf : 1;
-      // [6]	DS	Disable Security
+      // [6] DS Disable Security
       uint32_t ds : 1;
-      // [5]	ARE_NS	Affinity Routing Enable, Non-secure state
+      // [5] ARE_NS Affinity Routing Enable, Non-secure state
       uint32_t are_ns : 1;
-      // [4]	ARE_S	Affinity Routing Enable, Secure state
+      // [4] ARE_S Affinity Routing Enable, Secure state
       uint32_t are_s : 1;
       uint32_t reserved0 : 1;
-      // [2]	EnableGrp1S	Enable Secure Group 1 interrupts
+      // [2] EnableGrp1S Enable Secure Group 1 interrupts
       uint32_t enable_grp1_s : 1;
-      // [1]	EnableGrp1NS	Enable Non-secure Group 1 interrupts
+      // [1] EnableGrp1NS Enable Non-secure Group 1 interrupts
       uint32_t enable_grp1_ns : 1;
-      // [0]	EnableGrp0	Enable Group 0 interrupts
+      // [0] EnableGrp0 Enable Group 0 interrupts
       uint32_t enable_grp0 : 1;
     };
 
-    /// Configuration dependent	Interrupt Controller Type Register, RO
+    /// Configuration dependent Interrupt Controller Type Register, RO
     static constexpr uint32_t kTYPER = 0x0004;
     static constexpr uint32_t kTYPER_ITLinesNumberMask = 0x1F;
     /**
@@ -71,37 +71,37 @@ class Gic {
      * https://developer.arm.com/documentation/101206/0003/Programmers-model/Distributor-registers--GICD-GICDA--summary/GICD-TYPER--Interrupt-Controller-Type-Register?lang=en
      */
     struct GICD_TYPER {
-      // [31:26]	Reserved, returns 0b000000
+      // [31:26] Reserved, returns 0b000000
       uint32_t reserved1 : 6;
-      // [25]	No1N	1 of N SPI
+      // [25] No1N 1 of N SPI
       uint32_t no1n : 1;
-      // [24]	A3V	Affinity level 3 values.
+      // [24] A3V Affinity level 3 values.
       uint32_t a3v : 1;
-      // [23:19]	IDbits	Interrupt identifier bits
+      // [23:19] IDbits Interrupt identifier bits
       uint32_t idbits : 5;
-      // [18]	DVIS	Direct virtual LPI injection support
+      // [18] DVIS Direct virtual LPI injection support
       uint32_t dvis : 1;
-      // [17]	LPIS	Indicates whether the implementation supports LPIs.
+      // [17] LPIS Indicates whether the implementation supports LPIs.
       uint32_t lpis : 1;
-      // [16]	MBIS	Message-based interrupt support
+      // [16] MBIS Message-based interrupt support
       uint32_t mbis : 1;
-      // [15:11]	num_LPIs	Returns 0b00000 because
+      // [15:11] num_LPIs Returns 0b00000 because
       // GICD_TYPER.IDbits indicates the number of LPIs that the GIC supports.
       uint32_t num_lpis : 5;
-      // [10]	SecurityExtn	Security state support.
+      // [10] SecurityExtn Security state support.
       uint32_t security_extn : 1;
-      // [9:8]	-	Reserved, returns 0b00000
+      // [9:8] - Reserved, returns 0b00000
       uint32_t reserved0 : 2;
-      // [7:5]	CPUNumber	Returns 0b000 because GICD_CTLR.ARE==1 (ARE_NS &
+      // [7:5] CPUNumber Returns 0b000 because GICD_CTLR.ARE==1 (ARE_NS &
       // ARE_S).
       uint32_t cpu_number : 3;
-      // [4:0]	ITLinesNumber	Returns the maximum SPI INTID that this
+      // [4:0] ITLinesNumber Returns the maximum SPI INTID that this
       // GIC-600AE implementation supports, and is given by 32×(ITLinesNumber +
       // 1) − 1.
       uint32_t it_lines_number : 5;
     };
 
-    /// Configuration dependent	Distributor Implementer Identification Register,
+    /// Configuration dependent Distributor Implementer Identification Register,
     /// RO
     static constexpr uint32_t kIIDR = 0x0008;
     /**
@@ -127,7 +127,7 @@ class Gic {
 
     /// Function Control Register, RW
     static constexpr uint32_t kFCTLR = 0x0020;
-    /// Tie-off dependentb	Secure Access Control register, RW
+    /// Tie-off dependentb Secure Access Control register, RW
     static constexpr uint32_t kSAC = 0x0024;
     /// Non-secure SPI Set Register, WO
     static constexpr uint32_t kSETSPI_NSR = 0x0040;
@@ -226,7 +226,7 @@ class Gic {
     /// Interrupt Routing Registers, n = 0-991, but n=0-31 are Reserved when
     /// affinity routing is enabled.
     static constexpr uint32_t kIROUTERn = 0x6000;
-    /// P-Channel dependent	Chip Status Register, RW
+    /// P-Channel dependent Chip Status Register, RW
     static constexpr uint32_t kCHIPSR = 0xC000;
     /// Default Chip Register, RW
     static constexpr uint32_t kDCHIPR = 0xC004;
@@ -236,9 +236,9 @@ class Gic {
     static constexpr uint32_t kICLARn = 0xE000;
     /// Interrupt Clear Error Registers, n = 0-31, but n=0 is Reserved
     static constexpr uint32_t kICERRRn = 0xE100;
-    /// Configuration dependent	Configuration ID Register, RO
+    /// Configuration dependent Configuration ID Register, RO
     static constexpr uint64_t kCFGID = 0xF000;
-    /// Peripheral ID4 register	, RO
+    /// Peripheral ID4 register , RO
     static constexpr uint32_t kPIDR4 = 0xFFD0;
     /// Peripheral ID 5 Register, RO
     static constexpr uint32_t kPIDR5 = 0xFFD4;
@@ -464,9 +464,9 @@ class Gic {
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-IGRPMODR0--Interrupt-Group-Modifier-Register-0?lang=en
     static constexpr uint32_t kIGRPMODR0 = 0x0D00;
     // kIGRPMODR0 kIGROUPR0 Definition
-    // 0b0	       0b0       Secure Group 0	G0S
-    // 0b0	       0b1	     Non-secure Group 1	G1NS
-    // 0b1	       0b0       Secure Group 1	G1S
+    // 0b0        0b0       Secure Group 0 G0S
+    // 0b0        0b1       Non-secure Group 1 G1NS
+    // 0b1        0b0       Secure Group 1 G1S
     static constexpr uint32_t kIGRPMODR0_Clear = 0;
     static constexpr uint32_t kIGRPMODR0_Set = UINT32_MAX;
 
