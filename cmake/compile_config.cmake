@@ -170,6 +170,7 @@ TARGET_LINK_LIBRARIES (
               cpu_io
               bmalloc
               MPMCQueue
+              virtio_driver
               gcc
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
               opensbi_interface

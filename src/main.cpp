@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <cstdint>
 #include <new>
+#include <virtio_driver/device/virtio_blk.hpp>
 
 #include "arch.h"
 #include "basic_info.hpp"
@@ -144,6 +145,34 @@ void _start(int argc, const char** argv) {
   }
 }
 
+struct BlkTestLogger {
+  auto operator()(const char* format, ...) const -> int {
+    va_list args;
+    va_start(args, format);
+    char buffer[1024];
+    int result = sk_vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    klog::Err("%s", buffer);
+    return result;
+  }
+};
+
+/**
+ * @brief 静态 DMA 内存区域
+ *
+ * 在裸机环境中无法使用 malloc，使用静态缓冲区模拟 DMA 内存。
+ * 需要页对齐以满足 DMA 要求。
+ */
+alignas(4096) static uint8_t g_vq_dma_buf[32768];
+
+/// 数据缓冲区（一个扇区大小）
+alignas(16) static uint8_t g_data_buf[virtio_driver::blk::kSectorSize];
+
+virtio_driver::PlatformOps g_platform_ops = {
+    .virt_to_phys = [](void* vaddr) -> uint64_t {
+      return reinterpret_cast<uint64_t>(vaddr);
+    }};
+
 auto main(int argc, const char** argv) -> int {
   // 初始化当前核心的 per_cpu 数据
   per_cpu::GetCurrentCore() = per_cpu::PerCpu(cpu_io::GetCurrentCoreId());
@@ -164,6 +193,27 @@ auto main(int argc, const char** argv) -> int {
 
   klog::info << "Hello SimpleKernel\n";
   klog::Info("Initializing test tasks...\n");
+
+  using VirtioBlkType = virtio_driver::blk::VirtioBlk<BlkTestLogger>;
+  uint64_t extra_features =
+      static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kSegMax) |
+      static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kSizeMax) |
+      static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kBlkSize) |
+      static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kFlush) |
+      static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kGeometry);
+  auto blk_result = VirtioBlkType::Create(blk_base, g_vq_dma_buf,
+                                          g_platform_ops, 128, extra_features);
+  if (blk_result.has_value()) {
+    klog::Err("VirtioBlk::Create() succeeds");
+  }
+
+  if (!blk_result.has_value()) {
+    klog::Err("VirtioBlk::Create() failed, skipping remaining tests");
+  }
+  auto& blk = *blk_result;
+
+  while (1)
+    ;
 
   // 为主核心创建测试任务
   create_test_tasks();
