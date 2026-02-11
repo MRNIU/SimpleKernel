@@ -1,5 +1,9 @@
 var searchData=
 [
-  ['🏛️_20接口体系总览_0',['🏛️ 接口体系总览',['../md__2root_2README.html#autotoc_md303',1,'']]],
-  ['🏛️_20interface_20architecture_20overview_1',['🏛️ Interface Architecture Overview',['../md__2root_2README__ENG.html#autotoc_md341',1,'']]]
+  ['验证中断状态_0',['验证中断状态',['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md538',1,'']]],
+  ['验证清单_1',['📋 验证清单',['../md_TODO__interface__refactor.html#autotoc_md338',1,'']]],
+  ['验证环境_2',['2. 验证环境',['../md_docker.html#autotoc_md231',1,'']]],
+  ['验证调度行为_3',['3. 验证调度行为',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md504',1,'']]],
+  ['验证页表切换_4',['验证页表切换',['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md539',1,'']]],
+  ['验证_20ssh_20免密登录_5',['3. 验证 SSH 免密登录',['../md_docker.html#autotoc_md239',1,'']]]
 ];

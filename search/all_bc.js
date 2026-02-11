@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['🔍_20多架构对比分析_0',['🔍 多架构对比分析',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md222',1,'']]]
+  ['📄_20许可证_0',['📄 许可证',['../md__2root_2README.html#autotoc_md375',1,'']]],
+  ['📄_20license_1',['📄 License',['../md__2root_2README__ENG.html#autotoc_md413',1,'']]]
 ];

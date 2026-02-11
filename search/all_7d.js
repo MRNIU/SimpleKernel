@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['环境层_20environment_20layer_0',['1. 环境层 (Environment Layer)',['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md479',1,'']]],
-  ['环境搭建_1',['🛠️ 环境搭建',['../md__2root_2README.html#autotoc_md308',1,'']]]
+  ['波特率设置_0',['2. 波特率设置',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md138',1,'']]]
 ];

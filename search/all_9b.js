@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['连接并打开项目_0',['3. 连接并打开项目',['../md_docker.html#autotoc_md243',1,'']]],
-  ['连接_1',['2. 配置 SSH 连接',['../md_docker.html#autotoc_md242',1,'']]]
+  ['超时保护（避免死循环）_0',['3.4 超时保护（避免死循环）',['../md_task__unit__test__new__design.html#autotoc_md308',1,'']]]
 ];

@@ -65,16 +65,16 @@ var searchData=
   ['gic_2eh_62',['gic.h',['../gic_8h.html',1,'']]],
   ['gic_5f_63',['gic_',['../classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee',1,'Interrupt']]],
   ['gicd_64',['gicd',['../classGic_1_1Gicd.html#a37987f235e17a873a62725624bd367e4',1,'Gic::Gicd::Gicd()'],['../classGic_1_1Gicd.html',1,'Gic::Gicd'],['../classGic_1_1Gicd.html#adadfa9c27c5ca6ff35fc468f6e71ece6',1,'Gic::Gicd::Gicd(uint64_t base_addr)'],['../classGic_1_1Gicd.html#af3c50fd8e5acc241120c6e0be3bea1af',1,'Gic::Gicd::Gicd(Gicd &amp;&amp;na16550a)=delete'],['../classGic_1_1Gicd.html#a0ae68debe450deb39dcbf592a500fed7',1,'Gic::Gicd::Gicd(const Gicd &amp;na16550a)=delete']]],
-  ['gicd_20接口_65',['Distributor (GICD) 接口',['../md__2root_2src_2driver_2gic_2README.html#autotoc_md406',1,'']]],
+  ['gicd_20接口_65',['Distributor (GICD) 接口',['../md__2root_2src_2driver_2gic_2README.html#autotoc_md454',1,'']]],
   ['gicd_5f_66',['gicd_',['../classGic.html#a2ac91e644e5b2be52eaf0019e6f2a8f6',1,'Gic']]],
   ['gicd_5fctlr_67',['GICD_CTLR',['../structGic_1_1Gicd_1_1GICD__CTLR.html',1,'Gic::Gicd']]],
   ['gicd_5fiidr_68',['GICD_IIDR',['../structGic_1_1Gicd_1_1GICD__IIDR.html',1,'Gic::Gicd']]],
   ['gicd_5ftyper_69',['GICD_TYPER',['../structGic_1_1Gicd_1_1GICD__TYPER.html',1,'Gic::Gicd']]],
   ['gicr_70',['gicr',['../classGic_1_1Gicr.html#a80b08b0b1aa8c952023d7d96aba2bc25',1,'Gic::Gicr::Gicr(Gicr &amp;&amp;na16550a)=delete'],['../classGic_1_1Gicr.html#af7f00e25635c063f93ecb369d1dec845',1,'Gic::Gicr::Gicr(const Gicr &amp;na16550a)=delete'],['../classGic_1_1Gicr.html#aed1a07189a588e59a7b3d73ab4fd7c87',1,'Gic::Gicr::Gicr()=default'],['../classGic_1_1Gicr.html#a96fdabe7194b6df5d1a465b6dcca6eab',1,'Gic::Gicr::Gicr(uint64_t base_addr)'],['../classGic_1_1Gicr.html',1,'Gic::Gicr']]],
-  ['gicr_20接口_71',['Redistributor (GICR) 接口',['../md__2root_2src_2driver_2gic_2README.html#autotoc_md407',1,'']]],
+  ['gicr_20接口_71',['Redistributor (GICR) 接口',['../md__2root_2src_2driver_2gic_2README.html#autotoc_md455',1,'']]],
   ['gicr_5f_72',['gicr_',['../classGic.html#adf2f5ef07ebc1e916f3c44df324d425c',1,'Gic']]],
-  ['git_20commit_20规范_73',['git commit 规范',['../md__2root_2README.html#autotoc_md322',1,'📋 Git Commit 规范'],['../md_git__commit.html',1,'Git Commit 规范']]],
-  ['git_20commit_20convention_74',['📋 Git Commit Convention',['../md__2root_2README__ENG.html#autotoc_md360',1,'']]],
+  ['git_20commit_20规范_73',['git commit 规范',['../md__2root_2README.html#autotoc_md370',1,'📋 Git Commit 规范'],['../md_git__commit.html',1,'Git Commit 规范']]],
+  ['git_20commit_20convention_74',['📋 Git Commit Convention',['../md__2root_2README__ENG.html#autotoc_md408',1,'']]],
   ['git_5fcommit_2emd_75',['git_commit.md',['../git__commit_8md.html',1,'']]],
   ['global_5fbool_5fkeep_5frunning_76',['global_bool_keep_running',['../ctor__dtor__test_8cpp.html#ab318d94cfeb36b542b05a9f111d5755f',1,'ctor_dtor_test.cpp']]],
   ['global_5fu16_5fvalue_5fwith_5finit_77',['global_u16_value_with_init',['../ctor__dtor__test_8cpp.html#a08388217386b03f63120f4f55eebb05f',1,'ctor_dtor_test.cpp']]],
@@ -94,5 +94,5 @@ var searchData=
   ['gpe1_5fblk_5flen_91',['gpe1_blk_len',['../structAcpi_1_1Fadt.html#a8ecebb6a03da8b77f9d7a44fedbc3bb9',1,'Acpi::Fadt::gpe1_blk_len'],['../acpi_8h.html#a7b8e4afd98861f10da62c68de02b9213',1,'gpe1_blk_len:&#160;acpi.h']]],
   ['guard_92',['guard',['../structGuardType.html#a4f750b86253c383330cf44f4bf232952',1,'GuardType']]],
   ['guardtype_93',['GuardType',['../structGuardType.html',1,'']]],
-  ['guide_94',['📝 Development Guide',['../md__2root_2README__ENG.html#autotoc_md357',1,'']]]
+  ['guide_94',['📝 Development Guide',['../md__2root_2README__ENG.html#autotoc_md405',1,'']]]
 ];

@@ -2,7 +2,7 @@ var searchData=
 [
   ['name_0',['name',['../classSchedulerBase.html#abbd29119b4aa4dfb73e363c8538fb456',1,'SchedulerBase::name'],['../structTaskControlBlock.html#af98827b16fc1af01c793e7aef9b0608a',1,'TaskControlBlock::name']]],
   ['name_5f_1',['name_',['../classMutex.html#ae158e4985e38b837771dc0cc967a3e27',1,'Mutex::name_'],['../classSpinLock.html#a126d1652f41f89a93f3cbf82b3cba4ef',1,'SpinLock::name_']]],
-  ['naming_20conventions_2',['Naming Conventions',['../md__2root_2README__ENG.html#autotoc_md359',1,'']]],
+  ['naming_20conventions_2',['Naming Conventions',['../md__2root_2README__ENG.html#autotoc_md407',1,'']]],
   ['nanoprintf_5fimplementation_3',['NANOPRINTF_IMPLEMENTATION',['../sk__stdio_8c.html#aa21f2b24d121f913f1b8b0e1befcc800',1,'sk_stdio.c']]],
   ['nanoprintf_5fuse_5falt_5fform_5fflag_4',['NANOPRINTF_USE_ALT_FORM_FLAG',['../sk__stdio_8c.html#ab2b74156916697be3c06407211ba500f',1,'sk_stdio.c']]],
   ['nanoprintf_5fuse_5fbinary_5fformat_5fspecifiers_5',['NANOPRINTF_USE_BINARY_FORMAT_SPECIFIERS',['../sk__stdio_8c.html#a4d0bd308c880fe7b1a9a3a7349031c6d',1,'sk_stdio.c']]],

@@ -92,8 +92,8 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
   <div class="headertitle"><div class="title">Task 模块单元测试环境层设计</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md476"></a> </p>
-<h1><a class="anchor" id="autotoc_md477"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md524"></a> </p>
+<h1><a class="anchor" id="autotoc_md525"></a>
 架构概述</h1>
 <p>Task 模块的单元测试采用三层架构设计，职责清晰、易于维护：</p>
 <div class="fragment"><div class="line">┌─────────────────────────────────────┐</div>
@@ -118,11 +118,11 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="line">│  - CoreEnvironment: 单核状态         │</div>
 <div class="line">│  - 记录中断、页表、线程、切换历史     │</div>
 <div class="line">└─────────────────────────────────────┘</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md478"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md526"></a>
 核心组件</h1>
-<h2><a class="anchor" id="autotoc_md479"></a>
+<h2><a class="anchor" id="autotoc_md527"></a>
 1. 环境层 (Environment Layer)</h2>
-<h3><a class="anchor" id="autotoc_md480"></a>
+<h3><a class="anchor" id="autotoc_md528"></a>
 &lt;tt&gt;CoreEnvironment&lt;/tt&gt; - 单核环境状态</h3>
 <p>模拟单个 CPU 核心的运行环境：</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>CoreEnvironment {</div>
@@ -143,7 +143,7 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="ttc" id="aper__cpu_8hpp_html_af349ef2aacd2314294eac3283d14e3ca"><div class="ttname"><a href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a></div><div class="ttdeci">size_t core_id</div><div class="ttdoc">核心 ID</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00001">per_cpu.hpp:1</a></div></div>
 <div class="ttc" id="astructCpuSchedData_html"><div class="ttname"><a href="structCpuSchedData.html">CpuSchedData</a></div><div class="ttdoc">每个核心的调度数据 (RunQueue)</div><div class="ttdef"><b>Definition</b> <a href="task__manager_8hpp_source.html#l00030">task_manager.hpp:30</a></div></div>
 <div class="ttc" id="astructTaskControlBlock_html"><div class="ttname"><a href="structTaskControlBlock.html">TaskControlBlock</a></div><div class="ttdoc">任务控制块，管理进程/线程的核心数据结构</div><div class="ttdef"><b>Definition</b> <a href="task__control__block_8hpp_source.html#l00080">task_control_block.hpp:80</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md481"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md529"></a>
 &lt;tt&gt;TestEnvironmentState&lt;/tt&gt; - 全局环境管理器</h3>
 <p>单例模式，管理所有核心的环境：</p>
 <div class="fragment"><div class="line"><span class="keyword">class </span>TestEnvironmentState {</div>
@@ -170,9 +170,9 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="line">  <span class="keywordtype">void</span> ClearSwitchHistory();</div>
 <div class="line">};</div>
 <div class="ttc" id="anamespacestd_html"><div class="ttname"><a href="namespacestd.html">std</a></div><div class="ttdef"><b>Definition</b> <a href="resource__id_8hpp_source.html#l00135">resource_id.hpp:135</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md482"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md530"></a>
 2. Mock 层 (Mock Layer)</h2>
-<h3><a class="anchor" id="autotoc_md483"></a>
+<h3><a class="anchor" id="autotoc_md531"></a>
 &lt;tt&gt;cpu_io.h&lt;/tt&gt; - 硬件接口模拟</h3>
 <p>所有硬件相关的接口都通过环境层实现：</p>
 <div class="fragment"><div class="line"><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacecpu__io.html">cpu_io</a> {</div>
@@ -225,7 +225,7 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="ttc" id="anamespacecpu__io_html_a6c4ee629d8129247969cace77d47fecb"><div class="ttname"><a href="namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb">cpu_io::DisableInterrupt</a></div><div class="ttdeci">void DisableInterrupt()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00041">cpu_io.h:41</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_aaab46268534006b116de3e112c237f7f"><div class="ttname"><a href="namespacecpu__io.html#aaab46268534006b116de3e112c237f7f">cpu_io::GetInterruptStatus</a></div><div class="ttdeci">bool GetInterruptStatus()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00048">cpu_io.h:48</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_afe7f925ac3cb632ed212166712288451"><div class="ttname"><a href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451">cpu_io::EnableInterrupt</a></div><div class="ttdeci">void EnableInterrupt()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00034">cpu_io.h:34</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md484"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md532"></a>
 &lt;tt&gt;arch_mock.cpp&lt;/tt&gt; - 架构相关函数</h3>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="arch_8h.html#a1a5356ccbae40313871a4877d89cc53d">switch_to</a>(<a class="code hl_struct" href="structcpu__io_1_1CalleeSavedContext.html">cpu_io::CalleeSavedContext</a>* prev_ctx,</div>
 <div class="line">               <a class="code hl_struct" href="structcpu__io_1_1CalleeSavedContext.html">cpu_io::CalleeSavedContext</a>* next_ctx) {</div>
@@ -252,9 +252,9 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="line">}</div>
 <div class="ttc" id="aarch_8h_html_a1a5356ccbae40313871a4877d89cc53d"><div class="ttname"><a href="arch_8h.html#a1a5356ccbae40313871a4877d89cc53d">switch_to</a></div><div class="ttdeci">void switch_to(cpu_io::CalleeSavedContext *prev, cpu_io::CalleeSavedContext *next)</div><div class="ttdef"><b>Definition</b> <a href="arch_8cpp_source.html#l00015">arch.cpp:15</a></div></div>
 <div class="ttc" id="astructcpu__io_1_1CalleeSavedContext_html"><div class="ttname"><a href="structcpu__io_1_1CalleeSavedContext.html">cpu_io::CalleeSavedContext</a></div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00194">cpu_io.h:194</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md485"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md533"></a>
 3. 测试层 (Test Layer)</h2>
-<h3><a class="anchor" id="autotoc_md486"></a>
+<h3><a class="anchor" id="autotoc_md534"></a>
 &lt;tt&gt;TaskTestHarness&lt;/tt&gt; - 测试 Fixture 基类</h3>
 <p>所有 Task 模块的测试都应继承自这个类：</p>
 <div class="fragment"><div class="line"><span class="keyword">class </span><a class="code hl_class" href="classTaskTestHarness.html">TaskTestHarness</a> : <span class="keyword">public</span> ::testing::Test {</div>
@@ -285,9 +285,9 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="ttc" id="aclassTaskTestHarness_html_a34722547f18a938d8f44c28bcbbc8b2c"><div class="ttname"><a href="classTaskTestHarness.html#a34722547f18a938d8f44c28bcbbc8b2c">TaskTestHarness::SetNumCores</a></div><div class="ttdeci">void SetNumCores(size_t num_cores)</div><div class="ttdoc">设置测试使用的核心数量（在 SetUp 前调用）</div><div class="ttdef"><b>Definition</b> <a href="task__test__harness_8hpp_source.html#l00027">task_test_harness.hpp:27</a></div></div>
 <div class="ttc" id="aclassTaskTestHarness_html_a9b21a4be72464267c2d3059fa165ca6d"><div class="ttname"><a href="classTaskTestHarness.html#a9b21a4be72464267c2d3059fa165ca6d">TaskTestHarness::SetUp</a></div><div class="ttdeci">void SetUp() override</div><div class="ttdef"><b>Definition</b> <a href="task__test__harness_8cpp_source.html#l00013">task_test_harness.cpp:13</a></div></div>
 <div class="ttc" id="aclassTaskTestHarness_html_abd7a9b94b9049521896e423224471840"><div class="ttname"><a href="classTaskTestHarness.html#abd7a9b94b9049521896e423224471840">TaskTestHarness::num_cores_</a></div><div class="ttdeci">size_t num_cores_</div><div class="ttdef"><b>Definition</b> <a href="task__test__harness_8hpp_source.html#l00036">task_test_harness.hpp:36</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md487"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md535"></a>
 使用示例</h1>
-<h2><a class="anchor" id="autotoc_md488"></a>
+<h2><a class="anchor" id="autotoc_md536"></a>
 单核测试</h2>
 <div class="fragment"><div class="line"><span class="keyword">class </span>SingleCoreSchedulerTest : <span class="keyword">public</span> <a class="code hl_class" href="classTaskTestHarness.html">TaskTestHarness</a> {</div>
 <div class="line"><span class="keyword">protected</span>:</div>
@@ -313,7 +313,7 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="line">}</div>
 <div class="ttc" id="akernel__fdt__test_8cpp_html_a3ad49ba9a2026e9c2c37e5cc99c307c4"><div class="ttname"><a href="kernel__fdt__test_8cpp.html#a3ad49ba9a2026e9c2c37e5cc99c307c4">TEST_F</a></div><div class="ttdeci">TEST_F(KernelFdtTest, ConstructorTest)</div><div class="ttdef"><b>Definition</b> <a href="kernel__fdt__test_8cpp_source.html#l00025">kernel_fdt_test.cpp:25</a></div></div>
 <div class="ttc" id="asystem__test_8h_html_abfc1b6826e51b93338e02cabfa5cfcd1"><div class="ttname"><a href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a></div><div class="ttdeci">#define EXPECT_EQ(val1, val2, msg)</div><div class="ttdef"><b>Definition</b> <a href="system__test_8h_source.html#l00102">system_test.h:102</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md489"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md537"></a>
 多核测试</h2>
 <div class="fragment"><div class="line"><span class="keyword">class </span>MultiCoreSchedulerTest : <span class="keyword">public</span> <a class="code hl_class" href="classTaskTestHarness.html">TaskTestHarness</a> {</div>
 <div class="line"><span class="keyword">protected</span>:</div>
@@ -349,7 +349,7 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="line">  }</div>
 <div class="line">}</div>
 <div class="ttc" id="asystem__test_8h_html_aab850358cd9bdeb95d390ab0918461da"><div class="ttname"><a href="system__test_8h.html#aab850358cd9bdeb95d390ab0918461da">EXPECT_GT</a></div><div class="ttdeci">#define EXPECT_GT(val1, val2, msg)</div><div class="ttdef"><b>Definition</b> <a href="system__test_8h_source.html#l00112">system_test.h:112</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md490"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md538"></a>
 验证中断状态</h2>
 <div class="fragment"><div class="line"><a class="code hl_function" href="kernel__fdt__test_8cpp.html#a3ad49ba9a2026e9c2c37e5cc99c307c4">TEST_F</a>(<a class="code hl_class" href="classTaskTestHarness.html">TaskTestHarness</a>, InterruptDisabledDuringSwitch) {</div>
 <div class="line">  <span class="keyword">auto</span>&amp; env = GetEnvironmentState();</div>
@@ -364,7 +364,7 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="line">  <a class="code hl_define" href="system__test_8h.html#aa627ee666d1479db9959f3423adc3549">EXPECT_FALSE</a>(core.interrupt_enabled);</div>
 <div class="line">}</div>
 <div class="ttc" id="asystem__test_8h_html_aa627ee666d1479db9959f3423adc3549"><div class="ttname"><a href="system__test_8h.html#aa627ee666d1479db9959f3423adc3549">EXPECT_FALSE</a></div><div class="ttdeci">#define EXPECT_FALSE(cond, msg)</div><div class="ttdef"><b>Definition</b> <a href="system__test_8h_source.html#l00133">system_test.h:133</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md491"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md539"></a>
 验证页表切换</h2>
 <div class="fragment"><div class="line"><a class="code hl_function" href="kernel__fdt__test_8cpp.html#a3ad49ba9a2026e9c2c37e5cc99c307c4">TEST_F</a>(<a class="code hl_class" href="classTaskTestHarness.html">TaskTestHarness</a>, PageTableSwitching) {</div>
 <div class="line">  <span class="keyword">auto</span>&amp; env = GetEnvironmentState();</div>
@@ -380,7 +380,7 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="line">  <a class="code hl_function" href="namespacecpu__io_1_1virtual__memory.html#a34641ac6c78b4598532a2d089c1357b2">cpu_io::virtual_memory::SetPageDirectory</a>(task2_pd);</div>
 <div class="line">  <a class="code hl_define" href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a>(env.GetCurrentCoreEnv().page_directory, task2_pd);</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md492"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md540"></a>
 关键优势</h1>
 <ol type="1">
 <li><b>职责分离</b>: 环境层、Mock层、测试层各司其职，易于维护</li>
@@ -389,9 +389,9 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <li><b>线程安全</b>: 使用互斥锁保护共享数据</li>
 <li><b>测试隔离</b>: 每个测试的 SetUp/TearDown 确保状态独立</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md493"></a>
+<h1><a class="anchor" id="autotoc_md541"></a>
 扩展点</h1>
-<h2><a class="anchor" id="autotoc_md494"></a>
+<h2><a class="anchor" id="autotoc_md542"></a>
 添加新的硬件特性</h2>
 <p>例如添加 TLB 模拟：</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>CoreEnvironment {</div>
@@ -411,7 +411,7 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="line">  }</div>
 <div class="line">}</div>
 <div class="ttc" id="anamespacecpu__io_1_1virtual__memory_html"><div class="ttname"><a href="namespacecpu__io_1_1virtual__memory.html">cpu_io::virtual_memory</a></div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00055">cpu_io.h:55</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md495"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md543"></a>
 添加性能计数器</h2>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>CoreEnvironment {</div>
 <div class="line">  <span class="keyword">struct </span>PerfCounters {</div>
@@ -420,7 +420,7 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <div class="line">    uint64_t branch_mispredictions = 0;</div>
 <div class="line">  } perf_counters;</div>
 <div class="line">};</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md496"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md544"></a>
 注意事项</h1>
 <ol type="1">
 <li><b>上下文注册</b>: 创建任务时需要调用 <code>RegisterTaskContext</code> 将任务上下文注册到环境层</li>
@@ -428,7 +428,7 @@ $(document).ready(function(){initNavTree('md__2root_2tests_2unit__test_2task_2RE
 <li><b>状态重置</b>: 每个测试结束后环境层会自动重置，无需手动清理</li>
 <li><b>线程安全</b>: 所有环境层接口都是线程安全的，可以在多线程环境中使用</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md497"></a>
+<h1><a class="anchor" id="autotoc_md545"></a>
 文件清单</h1>
 <ul>
 <li><code><a class="el" href="test__environment__state_8hpp.html">mocks/test_environment_state.hpp</a></code> - 环境层头文件</li>

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['建议优先实现的功能_0',['建议优先实现的功能',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md467',1,'']]]
+  ['序列_0',['3. INIT-SIPI-SIPI 序列',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md32',1,'']]]
 ];

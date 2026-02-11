@@ -92,8 +92,8 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2pl011_2README.
   <div class="headertitle"><div class="title">PL011 UART 驱动</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md423"></a> PL011 是 ARM 设计的通用异步接收器发送器 (UART)，广泛用于 aarch64 架构的串口通信。</p>
-<h1><a class="anchor" id="autotoc_md424"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md471"></a> PL011 是 ARM 设计的通用异步接收器发送器 (UART)，广泛用于 aarch64 架构的串口通信。</p>
+<h1><a class="anchor" id="autotoc_md472"></a>
 功能特性</h1>
 <ul>
 <li>支持 8 位数据位，1 个停止位，无奇偶校验</li>
@@ -102,9 +102,9 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2pl011_2README.
 <li>支持 FIFO 缓冲</li>
 <li>完整的寄存器级别控制</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md425"></a>
+<h1><a class="anchor" id="autotoc_md473"></a>
 类接口</h1>
-<h2><a class="anchor" id="autotoc_md426"></a>
+<h2><a class="anchor" id="autotoc_md474"></a>
 构造函数</h2>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classPl011.html">Pl011</a>(uint64_t dev_addr, uint64_t clock = 0, uint64_t baud_rate = 0)</div>
 <div class="ttc" id="aclassPl011_html"><div class="ttname"><a href="classPl011.html">Pl011</a></div><div class="ttdoc">PL011 串口驱动</div><div class="ttdef"><b>Definition</b> <a href="pl011_8h_source.html#l00014">pl011.h:14</a></div></div>
@@ -113,11 +113,11 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2pl011_2README.
 <li><code>clock</code>: 串口时钟频率（可选）</li>
 <li><code>baud_rate</code>: 波特率（可选）</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md427"></a>
+<h2><a class="anchor" id="autotoc_md475"></a>
 主要方法</h2>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> PutChar(uint8_t c)</div>
 </div><!-- fragment --><p> 发送单个字符到串口</p>
-<h1><a class="anchor" id="autotoc_md428"></a>
+<h1><a class="anchor" id="autotoc_md476"></a>
 使用示例</h1>
 <div class="fragment"><div class="line"><span class="comment">// 在 aarch64 架构中的使用</span></div>
 <div class="line"><span class="keyword">auto</span> [serial_base, serial_size, irq] =</div>
@@ -129,7 +129,7 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2pl011_2README.
 <div class="line"><span class="comment">// 发送字符</span></div>
 <div class="line">pl011-&gt;PutChar(<span class="charliteral">&#39;H&#39;</span>);</div>
 <div class="ttc" id="aclassSingleton_html_a68856b49e098eadba37b60366db33ebd"><div class="ttname"><a href="classSingleton.html#a68856b49e098eadba37b60366db33ebd">Singleton::GetInstance</a></div><div class="ttdeci">static auto GetInstance() -&gt; T &amp;</div><div class="ttdef"><b>Definition</b> <a href="singleton_8hpp_source.html#l00023">singleton.hpp:23</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md429"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md477"></a>
 设备树配置示例</h1>
 <div class="fragment"><div class="line">pl011@9000000 {</div>
 <div class="line">    clock-names = &quot;uartclk\0apb_pclk&quot;;</div>
@@ -138,7 +138,7 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2pl011_2README.
 <div class="line">    reg = &lt;0x00 0x9000000 0x00 0x1000&gt;;</div>
 <div class="line">    compatible = &quot;arm,pl011\0arm,primecell&quot;;</div>
 <div class="line">};</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md430"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md478"></a>
 寄存器映射</h1>
 <p>驱动实现了完整的 PL011 寄存器映射，包括：</p><ul>
 <li>数据寄存器 (DR)</li>
@@ -148,12 +148,12 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2pl011_2README.
 <li>波特率寄存器 (IBRD/FBRD)</li>
 <li>中断相关寄存器等</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md431"></a>
+<h1><a class="anchor" id="autotoc_md479"></a>
 参考文档</h1>
 <ul>
 <li><a href="https://developer.arm.com/documentation/ddi0183/g/">ARM PL011 技术参考手册</a></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md432"></a>
+<h1><a class="anchor" id="autotoc_md480"></a>
 文件结构</h1>
 <ul>
 <li><code><a class="el" href="pl011_8h.html">include/pl011.h</a></code> - 头文件，包含类定义和寄存器常量</li>

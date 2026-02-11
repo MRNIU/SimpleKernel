@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['？_0',['为什么要&quot;面向 AI&quot;？',['../md__2root_2README.html#autotoc_md296',1,'']]]
+  ['除数锁存器（当_20lcr_20dlab_201_20时）_0',['除数锁存器（当 LCR.DLAB=1 时）',['../md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md468',1,'']]]
 ];

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['🌟_20核心亮点_0',['🌟 核心亮点',['../md__2root_2README.html#autotoc_md294',1,'']]],
-  ['🌟_20core_20highlights_1',['🌟 Core Highlights',['../md__2root_2README__ENG.html#autotoc_md332',1,'']]]
+  ['集成_0',['VS Code 集成',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md20',1,'']]]
 ];

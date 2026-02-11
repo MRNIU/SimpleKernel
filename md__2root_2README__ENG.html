@@ -94,13 +94,13 @@ $(document).ready(function(){initNavTree('md__2root_2README__ENG.html',''); init
 <div class="contents">
 <div class="textblock"><p><a href="https://codecov.io/gh/Simple-XX/SimpleKernel"><img src="https://codecov.io/gh/Simple-XX/SimpleKernel/graph/badge.svg?token=J7NKK3SBNJ" alt="codecov" style="pointer-events: none;" class="inline"/></a> <img src="https://github.com/Simple-XX/SimpleKernel/actions/workflows/workflow.yml/badge.svg" alt="workflow" style="pointer-events: none;" class="inline"/> <img src="https://img.shields.io/github/commit-activity/t/Simple-XX/SimpleKernel" alt="commit-activity" class="inline"/> <img src="https://img.shields.io/github/license/mashape/apistatus.svg" alt="MIT License" style="pointer-events: none;" class="inline"/> <a href="https://github.com/996icu/996.ICU/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-Anti%20996-blue.svg" alt="LICENSE" style="pointer-events: none;" class="inline"/></a> <a href="https://996.icu"><img src="https://img.shields.io/badge/link-996.icu-red.svg" alt="996.icu" style="pointer-events: none;" class="inline"/></a></p>
 <p><a class="el" href="md__2root_2README__ENG.html">English</a> | <a class="el" href="md__2root_2README.html">中文</a></p>
-<h1><a class="anchor" id="autotoc_md329"></a>
+<h1><a class="anchor" id="autotoc_md377"></a>
 SimpleKernel</h1>
 <p><b>Interface-Driven OS Kernel for AI-Assisted Learning | Multi-Architecture: x86_64, RISC-V 64, AArch64</b></p>
 <blockquote class="doxtable">
 <p>&zwj;🤖 <b>Design Philosophy</b>: Define clear kernel interfaces, let AI generate the implementation — a new paradigm for learning operating systems </p>
 </blockquote>
-<h2><a class="anchor" id="autotoc_md330"></a>
+<h2><a class="anchor" id="autotoc_md378"></a>
 📖 Table of Contents</h2>
 <ul>
 <li>✨ Project Overview</li>
@@ -115,7 +115,7 @@ SimpleKernel</h1>
 <li>🤝 Contributing</li>
 <li>📄 License</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md331"></a>
+<h2><a class="anchor" id="autotoc_md379"></a>
 ✨ Project Overview</h2>
 <p>SimpleKernel is a <b>modern OS kernel project designed for AI-assisted learning</b>. Written in C++23, it supports x86_64, RISC-V 64, and AArch64 architectures.</p>
 <p>Unlike traditional OS teaching projects, SimpleKernel adopts an <b>Interface-Driven</b> design:</p>
@@ -124,7 +124,7 @@ SimpleKernel</h1>
 <li><b>Implementation is done by AI</b> — you only need to understand the interface contracts, and let AI generate <code>.cpp</code> implementations from the interface docs</li>
 <li><b>Reference implementations for comparison</b> — the project provides complete reference implementations to verify the correctness of AI-generated code</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md332"></a>
+<h3><a class="anchor" id="autotoc_md380"></a>
 🌟 Core Highlights</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -142,9 +142,9 @@ SimpleKernel</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">🏗️ <b>Engineering Infrastructure</b>   </td><td class="markdownTableBodyNone">CMake build, Docker environment, CI/CD, clang-format/clang-tidy   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md333"></a>
+<h2><a class="anchor" id="autotoc_md381"></a>
 🤖 AI-Oriented Design Philosophy</h2>
-<h3><a class="anchor" id="autotoc_md334"></a>
+<h3><a class="anchor" id="autotoc_md382"></a>
 Why "AI-Oriented"?</h3>
 <p>Traditional OS teaching projects follow: <b>read code → understand principles → mimic and modify</b>. This approach has several problems:</p>
 <ol type="1">
@@ -168,9 +168,9 @@ Why "AI-Oriented"?</h3>
 <div class="line">│                  │ Impl     │                           │</div>
 <div class="line">│                  └──────────┘                           │</div>
 <div class="line">└─────────────────────────────────────────────────────────┘</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md335"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md383"></a>
 Core Workflow</h3>
-<h4><a class="anchor" id="autotoc_md336"></a>
+<h4><a class="anchor" id="autotoc_md384"></a>
 1️⃣ Read Interface, Understand Contract</h4>
 <p>Each module's header file contains complete interface documentation:</p>
 <div class="fragment"><div class="line"> </div>
@@ -181,18 +181,18 @@ Core Workflow</h3>
 <div class="line">  [[nodiscard]] <span class="keyword">virtual</span> <span class="keyword">auto</span> GetChar() const -&gt; uint8_t = 0;</div>
 <div class="line">  [[nodiscard]] virtual auto TryGetChar() const -&gt; uint8_t = 0;</div>
 <div class="line">};</div>
-</div><!-- fragment --><h4><a class="anchor" id="autotoc_md337"></a>
+</div><!-- fragment --><h4><a class="anchor" id="autotoc_md385"></a>
 2️⃣ Let AI Implement</h4>
 <p>Provide the header file as context to an AI (e.g., GitHub Copilot, ChatGPT, Claude) and ask it to generate the <code>.cpp</code> implementation. The Doxygen comments in the interface are the best prompt.</p>
-<h4><a class="anchor" id="autotoc_md338"></a>
+<h4><a class="anchor" id="autotoc_md386"></a>
 3️⃣ Test and Verify</h4>
 <p>Run the project's built-in test suite to verify the AI-generated implementation conforms to the interface contract:</p>
 <div class="fragment"><div class="line">cmake --preset build_riscv64</div>
 <div class="line">cd build_riscv64 &amp;&amp; make unit-test</div>
-</div><!-- fragment --><h4><a class="anchor" id="autotoc_md339"></a>
+</div><!-- fragment --><h4><a class="anchor" id="autotoc_md387"></a>
 4️⃣ Compare with Reference Implementation</h4>
 <p>If tests fail, refer to the project's reference implementation for comparison and learning.</p>
-<h3><a class="anchor" id="autotoc_md340"></a>
+<h3><a class="anchor" id="autotoc_md388"></a>
 Integration with AI Tools</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -206,7 +206,7 @@ Integration with AI Tools</h3>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>Self-Study</b>   </td><td class="markdownTableBodyNone">Think about the implementation first, then let AI generate it, and compare differences   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md341"></a>
+<h2><a class="anchor" id="autotoc_md389"></a>
 🏛️ Interface Architecture Overview</h2>
 <p>SimpleKernel's interfaces are organized into the following layers:</p>
 <div class="fragment"><div class="line">┌──────────────────────────────────────────┐</div>
@@ -241,7 +241,7 @@ Integration with AI Tools</h3>
 <div class="line">│            Hardware / QEMU                │</div>
 <div class="line">│  x86_64 · RISC-V 64 · AArch64           │</div>
 <div class="line">└──────────────────────────────────────────┘</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md342"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md390"></a>
 Key Interface Files</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -268,7 +268,7 @@ Key Interface Files</h3>
 <blockquote class="doxtable">
 <p>&zwj;📋 See <a class="el" href="md_TODO__interface__refactor.html">doc/TODO_interface_refactor.md</a> for the complete interface refactoring plan. </p>
 </blockquote>
-<h2><a class="anchor" id="autotoc_md343"></a>
+<h2><a class="anchor" id="autotoc_md391"></a>
 🏗️ Supported Architectures</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -280,9 +280,9 @@ Key Interface Files</h3>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyCenter"><b>AArch64</b>   </td><td class="markdownTableBodyCenter">U-Boot + ATF + OP-TEE   </td><td class="markdownTableBodyCenter">PL011   </td><td class="markdownTableBodyCenter">GICv3   </td><td class="markdownTableBodyCenter">Generic Timer   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md344"></a>
+<h2><a class="anchor" id="autotoc_md392"></a>
 🚀 Quick Start</h2>
-<h3><a class="anchor" id="autotoc_md345"></a>
+<h3><a class="anchor" id="autotoc_md393"></a>
 📋 System Requirements</h3>
 <ul>
 <li><b>Operating System</b>: Linux (Ubuntu 24.04 recommended) or macOS</li>
@@ -290,7 +290,7 @@ Key Interface Files</h3>
 <li><b>Toolchain</b>: Included in Docker image (GCC cross-compilers, CMake, QEMU, etc.)</li>
 <li><b>AI Tools (recommended)</b>: GitHub Copilot / ChatGPT / Claude</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md346"></a>
+<h3><a class="anchor" id="autotoc_md394"></a>
 🛠️ Environment Setup</h3>
 <p><b>Option 1: Using Docker (Recommended)</b></p>
 <div class="fragment"><div class="line"># 1. Clone the project</div>
@@ -307,7 +307,7 @@ Key Interface Files</h3>
 <div class="line">docker exec -it SimpleKernel-dev /bin/zsh</div>
 </div><!-- fragment --><p><b>Option 2: Local Environment</b></p>
 <p>Refer to <a class="el" href="md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html">Toolchain Documentation</a> for local development environment setup.</p>
-<h3><a class="anchor" id="autotoc_md347"></a>
+<h3><a class="anchor" id="autotoc_md395"></a>
 ⚡ Build and Run</h3>
 <div class="fragment"><div class="line">cd SimpleKernel</div>
 <div class="line"> </div>
@@ -328,7 +328,7 @@ Key Interface Files</h3>
 <li><code>build_aarch64</code> - ARM 64-bit architecture</li>
 <li><code>build_x86_64</code> - x86 64-bit architecture</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md348"></a>
+<h3><a class="anchor" id="autotoc_md396"></a>
 🎯 AI-Assisted Development Workflow</h3>
 <div class="fragment"><div class="line"># 1. Open project in VS Code (GitHub Copilot extension recommended)</div>
 <div class="line">code ./SimpleKernel</div>
@@ -345,7 +345,7 @@ Key Interface Files</h3>
 <div class="line"> </div>
 <div class="line"># 6. Run in QEMU, observe behavior</div>
 <div class="line">make run</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md349"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md397"></a>
 📂 Project Structure</h2>
 <div class="fragment"><div class="line">SimpleKernel/</div>
 <div class="line">├── src/                        # Kernel source code</div>
@@ -384,10 +384,10 @@ Key Interface Files</h3>
 </div><!-- fragment --><blockquote class="doxtable">
 <p>&zwj;Directories/files marked with 📐 are <b>interface definitions</b> — these are what you should focus on reading. </p>
 </blockquote>
-<h2><a class="anchor" id="autotoc_md350"></a>
+<h2><a class="anchor" id="autotoc_md398"></a>
 🎯 Learning Path</h2>
 <p>We recommend learning and implementing modules in the following order:</p>
-<h3><a class="anchor" id="autotoc_md351"></a>
+<h3><a class="anchor" id="autotoc_md399"></a>
 Phase 1: Infrastructure (Boot)</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -401,7 +401,7 @@ Phase 1: Infrastructure (Boot)</h3>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">ELF Parsing   </td><td class="markdownTableBodyNone"><code><a class="el" href="kernel__elf_8hpp.html">kernel_elf.hpp</a></code>   </td><td class="markdownTableBodyCenter">⭐⭐   </td><td class="markdownTableBodyNone">Symbol table parsing, used for stack backtrace   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md352"></a>
+<h3><a class="anchor" id="autotoc_md400"></a>
 Phase 2: Interrupt System</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -413,7 +413,7 @@ Phase 2: Interrupt System</h3>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">Timer <a class="el" href="classInterrupt.html" title="中断处理">Interrupt</a>   </td><td class="markdownTableBodyNone"><code><a class="el" href="arch_8h.html">arch.h</a> → TimerInit</code>   </td><td class="markdownTableBodyCenter">⭐⭐   </td><td class="markdownTableBodyNone">Timer configuration, tick-driven   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md353"></a>
+<h3><a class="anchor" id="autotoc_md401"></a>
 Phase 3: Memory Management</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -423,7 +423,7 @@ Phase 3: Memory Management</h3>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">Physical Memory   </td><td class="markdownTableBodyNone">Related interfaces   </td><td class="markdownTableBodyCenter">⭐⭐⭐   </td><td class="markdownTableBodyNone">Frame allocator, buddy system   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md354"></a>
+<h3><a class="anchor" id="autotoc_md402"></a>
 Phase 4: Task Management (Thread/Task)</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -435,7 +435,7 @@ Phase 4: Task Management (Thread/Task)</h3>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">Scheduler   </td><td class="markdownTableBodyNone"><code><a class="el" href="scheduler__base_8hpp.html">scheduler_base.hpp</a></code>   </td><td class="markdownTableBodyCenter">⭐⭐⭐   </td><td class="markdownTableBodyNone">CFS/FIFO/RR scheduling algorithms   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md355"></a>
+<h3><a class="anchor" id="autotoc_md403"></a>
 Phase 5: System Calls</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -443,7 +443,7 @@ Phase 5: System Calls</h3>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">System Calls   </td><td class="markdownTableBodyNone"><code><a class="el" href="arch_8h.html">arch.h</a> → SyscallInit</code>   </td><td class="markdownTableBodyCenter">⭐⭐⭐   </td><td class="markdownTableBodyNone">User/kernel mode switching   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md356"></a>
+<h2><a class="anchor" id="autotoc_md404"></a>
 📦 Third-Party Dependencies</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -467,9 +467,9 @@ Phase 5: System Calls</h3>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><a href="https://git.kernel.org/pub/scm/utils/dtc/dtc.git">dtc/dtc</a>   </td><td class="markdownTableBodyNone">Device Tree Compiler   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md357"></a>
+<h2><a class="anchor" id="autotoc_md405"></a>
 📝 Development Guide</h2>
-<h3><a class="anchor" id="autotoc_md358"></a>
+<h3><a class="anchor" id="autotoc_md406"></a>
 🎨 Code Style</h3>
 <ul>
 <li><b>Language Standard</b>: C23 / C++23</li>
@@ -477,7 +477,7 @@ Phase 5: System Calls</h3>
 <li><b>Auto Formatting</b>: <code>.clang-format</code> + <code>.clang-tidy</code></li>
 <li><b>Comment Standard</b>: Doxygen style; interface files must contain complete contract documentation</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md359"></a>
+<h3><a class="anchor" id="autotoc_md407"></a>
 Naming Conventions</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -497,14 +497,14 @@ Naming Conventions</h3>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">Kernel libc/libc++ headers   </td><td class="markdownTableBodyNone"><code>sk_</code> prefix   </td><td class="markdownTableBodyNone"><code>sk_cstdio</code>   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md360"></a>
+<h3><a class="anchor" id="autotoc_md408"></a>
 📋 Git Commit Convention</h3>
 <div class="fragment"><div class="line">&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;</div>
 <div class="line"> </div>
 <div class="line">type: feat|fix|docs|style|refactor|perf|test|build|revert</div>
 <div class="line">scope: optional, affected module (arch, driver, libc)</div>
 <div class="line">subject: max 50 chars, no period</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md361"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md409"></a>
 📚 Documentation</h3>
 <ul>
 <li><b>Toolchain</b>: <a class="el" href="md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html">doc/0_工具链.md</a></li>
@@ -514,10 +514,10 @@ Naming Conventions</h3>
 <li><b>Docker</b>: <a class="el" href="md_docker.html">doc/docker.md</a></li>
 <li><b>Interface Refactoring Plan</b>: <a class="el" href="md_TODO__interface__refactor.html">doc/TODO_interface_refactor.md</a></li>
 </ul>
-<h2><a class="anchor" id="autotoc_md362"></a>
+<h2><a class="anchor" id="autotoc_md410"></a>
 🤝 Contributing</h2>
 <p>We welcome all forms of contributions!</p>
-<h3><a class="anchor" id="autotoc_md363"></a>
+<h3><a class="anchor" id="autotoc_md411"></a>
 🎯 Ways to Contribute</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -533,7 +533,7 @@ Naming Conventions</h3>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">🔧 <b>Submit Implementations</b>   </td><td class="markdownTableBodyNone">Submit reference or alternative implementations of interfaces   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md364"></a>
+<h3><a class="anchor" id="autotoc_md412"></a>
 🔧 Code Contribution Workflow</h3>
 <ol type="1">
 <li>Fork this repository</li>
@@ -543,7 +543,7 @@ Naming Conventions</h3>
 <li>Commit changes: &lsquo;git commit -m 'feat(scope): add amazing feature&rsquo;`</li>
 <li>Create a Pull Request</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md365"></a>
+<h2><a class="anchor" id="autotoc_md413"></a>
 📄 License</h2>
 <p>This project is dual-licensed:</p>
 <ul>

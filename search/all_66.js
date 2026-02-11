@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['抽象基类_0',['TODO-1: 新增 &lt;tt&gt;ConsoleDriver&lt;/tt&gt; 抽象基类',['../md_TODO__interface__refactor.html#autotoc_md268',1,'']]]
+  ['技术细节_0',['技术细节',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md519',1,'']]]
 ];

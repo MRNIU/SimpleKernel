@@ -348,225 +348,271 @@ var NAVTREE =
         [ "重置环境", "md_docker.html#autotoc_md251", null ]
       ] ]
     ] ],
+    [ "SimpleKernel 文件系统设计规划", "md_filesystem__design.html", [
+      [ "1. 概述", "md_filesystem__design.html#autotoc_md253", [
+        [ "实现优先级与依赖链", "md_filesystem__design.html#autotoc_md254", null ]
+      ] ],
+      [ "2. 目录结构", "md_filesystem__design.html#autotoc_md256", null ],
+      [ "3. 接口设计", "md_filesystem__design.html#autotoc_md258", [
+        [ "3.1 块设备接口 (<tt>block_device.hpp</tt>)", "md_filesystem__design.html#autotoc_md259", null ],
+        [ "3.2 VFS 核心数据结构 (<tt>vfs.hpp</tt>)", "md_filesystem__design.html#autotoc_md260", null ],
+        [ "3.3 文件系统基类 (<tt>filesystem.hpp</tt>)", "md_filesystem__design.html#autotoc_md261", null ],
+        [ "3.4 挂载管理 (<tt>mount.hpp</tt>)", "md_filesystem__design.html#autotoc_md262", null ],
+        [ "3.5 文件描述符表 (<tt>file_descriptor.hpp</tt>)", "md_filesystem__design.html#autotoc_md263", null ],
+        [ "3.6 virtio-blk 驱动 (<tt>virtio.hpp</tt> / <tt>virtio_blk.hpp</tt>)", "md_filesystem__design.html#autotoc_md264", null ]
+      ] ],
+      [ "4. 系统调用接口", "md_filesystem__design.html#autotoc_md266", null ],
+      [ "5. 改动范围", "md_filesystem__design.html#autotoc_md268", [
+        [ "5.1 新增文件", "md_filesystem__design.html#autotoc_md269", null ],
+        [ "5.2 需修改的已有文件", "md_filesystem__design.html#autotoc_md270", null ],
+        [ "5.3 QEMU 配置变更", "md_filesystem__design.html#autotoc_md271", null ],
+        [ "5.4 新增错误码", "md_filesystem__design.html#autotoc_md272", null ]
+      ] ],
+      [ "6. 详细实现计划", "md_filesystem__design.html#autotoc_md274", [
+        [ "P0: 块设备接口 + virtio-blk 驱动", "md_filesystem__design.html#autotoc_md275", [
+          [ "步骤", "md_filesystem__design.html#autotoc_md276", null ],
+          [ "关键技术点", "md_filesystem__design.html#autotoc_md277", null ]
+        ] ],
+        [ "P1: VFS 框架", "md_filesystem__design.html#autotoc_md279", [
+          [ "步骤", "md_filesystem__design.html#autotoc_md280", null ]
+        ] ],
+        [ "P2: ramfs", "md_filesystem__design.html#autotoc_md282", [
+          [ "步骤", "md_filesystem__design.html#autotoc_md283", null ]
+        ] ],
+        [ "P3: FAT32", "md_filesystem__design.html#autotoc_md285", [
+          [ "步骤", "md_filesystem__design.html#autotoc_md286", null ]
+        ] ],
+        [ "P4: 系统调用集成", "md_filesystem__design.html#autotoc_md288", [
+          [ "步骤", "md_filesystem__design.html#autotoc_md289", null ]
+        ] ]
+      ] ],
+      [ "7. 关键设计决策", "md_filesystem__design.html#autotoc_md291", null ],
+      [ "8. 测试策略", "md_filesystem__design.html#autotoc_md293", [
+        [ "单元测试（Host 运行）", "md_filesystem__design.html#autotoc_md294", null ],
+        [ "系统测试（QEMU 运行）", "md_filesystem__design.html#autotoc_md295", null ]
+      ] ],
+      [ "9. 里程碑与工作量估算", "md_filesystem__design.html#autotoc_md297", null ],
+      [ "10. 参考资料", "md_filesystem__design.html#autotoc_md299", null ]
+    ] ],
     [ "Git Commit 规范", "md_git__commit.html", null ],
     [ "Task 模块 Unit Test 设计（精简版）", "md_task__unit__test__new__design.html", [
-      [ "1. 目标", "md_task__unit__test__new__design.html#autotoc_md254", null ],
-      [ "2. 架构", "md_task__unit__test__new__design.html#autotoc_md255", null ],
-      [ "3. 关键机制", "md_task__unit__test__new__design.html#autotoc_md256", [
-        [ "3.1 测试隔离", "md_task__unit__test__new__design.html#autotoc_md257", null ],
-        [ "3.2 多核支持与亲和性", "md_task__unit__test__new__design.html#autotoc_md258", null ],
-        [ "3.3 <tt>switch_to</tt> 处理（架构无关）", "md_task__unit__test__new__design.html#autotoc_md259", null ],
-        [ "3.4 超时保护（避免死循环）", "md_task__unit__test__new__design.html#autotoc_md260", null ]
+      [ "1. 目标", "md_task__unit__test__new__design.html#autotoc_md302", null ],
+      [ "2. 架构", "md_task__unit__test__new__design.html#autotoc_md303", null ],
+      [ "3. 关键机制", "md_task__unit__test__new__design.html#autotoc_md304", [
+        [ "3.1 测试隔离", "md_task__unit__test__new__design.html#autotoc_md305", null ],
+        [ "3.2 多核支持与亲和性", "md_task__unit__test__new__design.html#autotoc_md306", null ],
+        [ "3.3 <tt>switch_to</tt> 处理（架构无关）", "md_task__unit__test__new__design.html#autotoc_md307", null ],
+        [ "3.4 超时保护（避免死循环）", "md_task__unit__test__new__design.html#autotoc_md308", null ]
       ] ],
-      [ "4. 文件结构（最小集）", "md_task__unit__test__new__design.html#autotoc_md261", null ],
-      [ "5. 必要的最小改动", "md_task__unit__test__new__design.html#autotoc_md262", null ],
-      [ "6. 典型测试覆盖", "md_task__unit__test__new__design.html#autotoc_md263", null ],
-      [ "7. 为什么这样做", "md_task__unit__test__new__design.html#autotoc_md264", null ]
+      [ "4. 文件结构（最小集）", "md_task__unit__test__new__design.html#autotoc_md309", null ],
+      [ "5. 必要的最小改动", "md_task__unit__test__new__design.html#autotoc_md310", null ],
+      [ "6. 典型测试覆盖", "md_task__unit__test__new__design.html#autotoc_md311", null ],
+      [ "7. 为什么这样做", "md_task__unit__test__new__design.html#autotoc_md312", null ]
     ] ],
     [ "SimpleKernel 接口层重构 TODO", "md_TODO__interface__refactor.html", [
-      [ "</blockquote>", "md_TODO__interface__refactor.html#autotoc_md266", null ],
-      [ "🔴 高优先级", "md_TODO__interface__refactor.html#autotoc_md267", [
-        [ "TODO-1: 新增 <tt>ConsoleDriver</tt> 抽象基类", "md_TODO__interface__refactor.html#autotoc_md268", null ],
-        [ "TODO-2: 新增 <tt>early_console</tt> 接口声明", "md_TODO__interface__refactor.html#autotoc_md270", null ],
-        [ "TODO-3: 重新设计 <tt>driver.h</tt>", "md_TODO__interface__refactor.html#autotoc_md272", null ]
+      [ "</blockquote>", "md_TODO__interface__refactor.html#autotoc_md314", null ],
+      [ "🔴 高优先级", "md_TODO__interface__refactor.html#autotoc_md315", [
+        [ "TODO-1: 新增 <tt>ConsoleDriver</tt> 抽象基类", "md_TODO__interface__refactor.html#autotoc_md316", null ],
+        [ "TODO-2: 新增 <tt>early_console</tt> 接口声明", "md_TODO__interface__refactor.html#autotoc_md318", null ],
+        [ "TODO-3: 重新设计 <tt>driver.h</tt>", "md_TODO__interface__refactor.html#autotoc_md320", null ]
       ] ],
-      [ "🟡 中优先级", "md_TODO__interface__refactor.html#autotoc_md274", [
-        [ "TODO-4: <tt>VirtualMemory</tt> 接口与实现分离", "md_TODO__interface__refactor.html#autotoc_md275", null ],
-        [ "TODO-5: <tt>KernelFdt</tt> 接口与实现分离", "md_TODO__interface__refactor.html#autotoc_md277", null ],
-        [ "TODO-6: <tt>KernelElf</tt> 接口与实现分离", "md_TODO__interface__refactor.html#autotoc_md279", null ],
-        [ "TODO-7: 调度器实现从头文件剥离到 <tt>.cpp</tt>", "md_TODO__interface__refactor.html#autotoc_md281", null ],
-        [ "TODO-8: <tt>SpinLock</tt> 和 <tt>Mutex</tt> 实现从头文件剥离", "md_TODO__interface__refactor.html#autotoc_md283", null ]
+      [ "🟡 中优先级", "md_TODO__interface__refactor.html#autotoc_md322", [
+        [ "TODO-4: <tt>VirtualMemory</tt> 接口与实现分离", "md_TODO__interface__refactor.html#autotoc_md323", null ],
+        [ "TODO-5: <tt>KernelFdt</tt> 接口与实现分离", "md_TODO__interface__refactor.html#autotoc_md325", null ],
+        [ "TODO-6: <tt>KernelElf</tt> 接口与实现分离", "md_TODO__interface__refactor.html#autotoc_md327", null ],
+        [ "TODO-7: 调度器实现从头文件剥离到 <tt>.cpp</tt>", "md_TODO__interface__refactor.html#autotoc_md329", null ],
+        [ "TODO-8: <tt>SpinLock</tt> 和 <tt>Mutex</tt> 实现从头文件剥离", "md_TODO__interface__refactor.html#autotoc_md331", null ]
       ] ],
-      [ "🟢 低优先级", "md_TODO__interface__refactor.html#autotoc_md285", [
-        [ "TODO-9: 考虑为定时器添加接口", "md_TODO__interface__refactor.html#autotoc_md286", null ],
-        [ "TODO-10: 考虑为中断控制器驱动添加统一基类", "md_TODO__interface__refactor.html#autotoc_md288", null ]
+      [ "🟢 低优先级", "md_TODO__interface__refactor.html#autotoc_md333", [
+        [ "TODO-9: 考虑为定时器添加接口", "md_TODO__interface__refactor.html#autotoc_md334", null ],
+        [ "TODO-10: 考虑为中断控制器驱动添加统一基类", "md_TODO__interface__refactor.html#autotoc_md336", null ]
       ] ],
-      [ "📋 验证清单", "md_TODO__interface__refactor.html#autotoc_md290", null ]
+      [ "📋 验证清单", "md_TODO__interface__refactor.html#autotoc_md338", null ]
     ] ],
     [ "README", "md__2root_2README.html", [
-      [ "SimpleKernel", "md__2root_2README.html#autotoc_md291", [
-        [ "📖 目录", "md__2root_2README.html#autotoc_md292", null ],
-        [ "✨ 项目简介", "md__2root_2README.html#autotoc_md293", [
-          [ "🌟 核心亮点", "md__2root_2README.html#autotoc_md294", null ]
+      [ "SimpleKernel", "md__2root_2README.html#autotoc_md339", [
+        [ "📖 目录", "md__2root_2README.html#autotoc_md340", null ],
+        [ "✨ 项目简介", "md__2root_2README.html#autotoc_md341", [
+          [ "🌟 核心亮点", "md__2root_2README.html#autotoc_md342", null ]
         ] ],
-        [ "🤖 面向 AI 的设计理念", "md__2root_2README.html#autotoc_md295", [
-          [ "为什么要\"面向 AI\"？", "md__2root_2README.html#autotoc_md296", null ],
-          [ "核心工作流", "md__2root_2README.html#autotoc_md297", [
-            [ "1️⃣ 阅读接口，理解契约", "md__2root_2README.html#autotoc_md298", null ],
-            [ "2️⃣ 让 AI 实现", "md__2root_2README.html#autotoc_md299", null ],
-            [ "3️⃣ 测试验证", "md__2root_2README.html#autotoc_md300", null ],
-            [ "4️⃣ 对照参考实现", "md__2root_2README.html#autotoc_md301", null ]
+        [ "🤖 面向 AI 的设计理念", "md__2root_2README.html#autotoc_md343", [
+          [ "为什么要\"面向 AI\"？", "md__2root_2README.html#autotoc_md344", null ],
+          [ "核心工作流", "md__2root_2README.html#autotoc_md345", [
+            [ "1️⃣ 阅读接口，理解契约", "md__2root_2README.html#autotoc_md346", null ],
+            [ "2️⃣ 让 AI 实现", "md__2root_2README.html#autotoc_md347", null ],
+            [ "3️⃣ 测试验证", "md__2root_2README.html#autotoc_md348", null ],
+            [ "4️⃣ 对照参考实现", "md__2root_2README.html#autotoc_md349", null ]
           ] ],
-          [ "与 AI 工具的结合方式", "md__2root_2README.html#autotoc_md302", null ]
+          [ "与 AI 工具的结合方式", "md__2root_2README.html#autotoc_md350", null ]
         ] ],
-        [ "🏛️ 接口体系总览", "md__2root_2README.html#autotoc_md303", [
-          [ "关键接口文件", "md__2root_2README.html#autotoc_md304", null ]
+        [ "🏛️ 接口体系总览", "md__2root_2README.html#autotoc_md351", [
+          [ "关键接口文件", "md__2root_2README.html#autotoc_md352", null ]
         ] ],
-        [ "🏗️ 支持架构", "md__2root_2README.html#autotoc_md305", null ],
-        [ "🚀 快速开始", "md__2root_2README.html#autotoc_md306", [
-          [ "📋 系统要求", "md__2root_2README.html#autotoc_md307", null ],
-          [ "🛠️ 环境搭建", "md__2root_2README.html#autotoc_md308", null ],
-          [ "⚡ 编译与运行", "md__2root_2README.html#autotoc_md309", null ],
-          [ "🎯 AI 辅助开发工作流", "md__2root_2README.html#autotoc_md310", null ]
+        [ "🏗️ 支持架构", "md__2root_2README.html#autotoc_md353", null ],
+        [ "🚀 快速开始", "md__2root_2README.html#autotoc_md354", [
+          [ "📋 系统要求", "md__2root_2README.html#autotoc_md355", null ],
+          [ "🛠️ 环境搭建", "md__2root_2README.html#autotoc_md356", null ],
+          [ "⚡ 编译与运行", "md__2root_2README.html#autotoc_md357", null ],
+          [ "🎯 AI 辅助开发工作流", "md__2root_2README.html#autotoc_md358", null ]
         ] ],
-        [ "📂 项目结构", "md__2root_2README.html#autotoc_md311", null ],
-        [ "🎯 学习路线", "md__2root_2README.html#autotoc_md312", [
-          [ "阶段 1：基础设施（Boot）", "md__2root_2README.html#autotoc_md313", null ],
-          [ "阶段 2：中断系统（Interrupt）", "md__2root_2README.html#autotoc_md314", null ],
-          [ "阶段 3：内存管理（Memory）", "md__2root_2README.html#autotoc_md315", null ],
-          [ "阶段 4：任务管理（Thread/Task）", "md__2root_2README.html#autotoc_md316", null ],
-          [ "阶段 5：系统调用（Syscall）", "md__2root_2README.html#autotoc_md317", null ]
+        [ "📂 项目结构", "md__2root_2README.html#autotoc_md359", null ],
+        [ "🎯 学习路线", "md__2root_2README.html#autotoc_md360", [
+          [ "阶段 1：基础设施（Boot）", "md__2root_2README.html#autotoc_md361", null ],
+          [ "阶段 2：中断系统（Interrupt）", "md__2root_2README.html#autotoc_md362", null ],
+          [ "阶段 3：内存管理（Memory）", "md__2root_2README.html#autotoc_md363", null ],
+          [ "阶段 4：任务管理（Thread/Task）", "md__2root_2README.html#autotoc_md364", null ],
+          [ "阶段 5：系统调用（Syscall）", "md__2root_2README.html#autotoc_md365", null ]
         ] ],
-        [ "📦 第三方依赖", "md__2root_2README.html#autotoc_md318", null ],
-        [ "📝 开发指南", "md__2root_2README.html#autotoc_md319", [
-          [ "🎨 代码风格", "md__2root_2README.html#autotoc_md320", null ],
-          [ "命名约定", "md__2root_2README.html#autotoc_md321", null ],
-          [ "📋 Git Commit 规范", "md__2root_2README.html#autotoc_md322", null ],
-          [ "📚 文档", "md__2root_2README.html#autotoc_md323", null ]
+        [ "📦 第三方依赖", "md__2root_2README.html#autotoc_md366", null ],
+        [ "📝 开发指南", "md__2root_2README.html#autotoc_md367", [
+          [ "🎨 代码风格", "md__2root_2README.html#autotoc_md368", null ],
+          [ "命名约定", "md__2root_2README.html#autotoc_md369", null ],
+          [ "📋 Git Commit 规范", "md__2root_2README.html#autotoc_md370", null ],
+          [ "📚 文档", "md__2root_2README.html#autotoc_md371", null ]
         ] ],
-        [ "🤝 贡献指南", "md__2root_2README.html#autotoc_md324", [
-          [ "🎯 贡献方式", "md__2root_2README.html#autotoc_md325", null ],
-          [ "🔧 代码贡献流程", "md__2root_2README.html#autotoc_md326", null ]
+        [ "🤝 贡献指南", "md__2root_2README.html#autotoc_md372", [
+          [ "🎯 贡献方式", "md__2root_2README.html#autotoc_md373", null ],
+          [ "🔧 代码贡献流程", "md__2root_2README.html#autotoc_md374", null ]
         ] ],
-        [ "📄 许可证", "md__2root_2README.html#autotoc_md327", null ]
+        [ "📄 许可证", "md__2root_2README.html#autotoc_md375", null ]
       ] ]
     ] ],
     [ "README_ENG", "md__2root_2README__ENG.html", [
-      [ "SimpleKernel", "md__2root_2README__ENG.html#autotoc_md329", [
-        [ "📖 Table of Contents", "md__2root_2README__ENG.html#autotoc_md330", null ],
-        [ "✨ Project Overview", "md__2root_2README__ENG.html#autotoc_md331", [
-          [ "🌟 Core Highlights", "md__2root_2README__ENG.html#autotoc_md332", null ]
+      [ "SimpleKernel", "md__2root_2README__ENG.html#autotoc_md377", [
+        [ "📖 Table of Contents", "md__2root_2README__ENG.html#autotoc_md378", null ],
+        [ "✨ Project Overview", "md__2root_2README__ENG.html#autotoc_md379", [
+          [ "🌟 Core Highlights", "md__2root_2README__ENG.html#autotoc_md380", null ]
         ] ],
-        [ "🤖 AI-Oriented Design Philosophy", "md__2root_2README__ENG.html#autotoc_md333", [
-          [ "Why \"AI-Oriented\"?", "md__2root_2README__ENG.html#autotoc_md334", null ],
-          [ "Core Workflow", "md__2root_2README__ENG.html#autotoc_md335", [
-            [ "1️⃣ Read Interface, Understand Contract", "md__2root_2README__ENG.html#autotoc_md336", null ],
-            [ "2️⃣ Let AI Implement", "md__2root_2README__ENG.html#autotoc_md337", null ],
-            [ "3️⃣ Test and Verify", "md__2root_2README__ENG.html#autotoc_md338", null ],
-            [ "4️⃣ Compare with Reference Implementation", "md__2root_2README__ENG.html#autotoc_md339", null ]
+        [ "🤖 AI-Oriented Design Philosophy", "md__2root_2README__ENG.html#autotoc_md381", [
+          [ "Why \"AI-Oriented\"?", "md__2root_2README__ENG.html#autotoc_md382", null ],
+          [ "Core Workflow", "md__2root_2README__ENG.html#autotoc_md383", [
+            [ "1️⃣ Read Interface, Understand Contract", "md__2root_2README__ENG.html#autotoc_md384", null ],
+            [ "2️⃣ Let AI Implement", "md__2root_2README__ENG.html#autotoc_md385", null ],
+            [ "3️⃣ Test and Verify", "md__2root_2README__ENG.html#autotoc_md386", null ],
+            [ "4️⃣ Compare with Reference Implementation", "md__2root_2README__ENG.html#autotoc_md387", null ]
           ] ],
-          [ "Integration with AI Tools", "md__2root_2README__ENG.html#autotoc_md340", null ]
+          [ "Integration with AI Tools", "md__2root_2README__ENG.html#autotoc_md388", null ]
         ] ],
-        [ "🏛️ Interface Architecture Overview", "md__2root_2README__ENG.html#autotoc_md341", [
-          [ "Key Interface Files", "md__2root_2README__ENG.html#autotoc_md342", null ]
+        [ "🏛️ Interface Architecture Overview", "md__2root_2README__ENG.html#autotoc_md389", [
+          [ "Key Interface Files", "md__2root_2README__ENG.html#autotoc_md390", null ]
         ] ],
-        [ "🏗️ Supported Architectures", "md__2root_2README__ENG.html#autotoc_md343", null ],
-        [ "🚀 Quick Start", "md__2root_2README__ENG.html#autotoc_md344", [
-          [ "📋 System Requirements", "md__2root_2README__ENG.html#autotoc_md345", null ],
-          [ "🛠️ Environment Setup", "md__2root_2README__ENG.html#autotoc_md346", null ],
-          [ "⚡ Build and Run", "md__2root_2README__ENG.html#autotoc_md347", null ],
-          [ "🎯 AI-Assisted Development Workflow", "md__2root_2README__ENG.html#autotoc_md348", null ]
+        [ "🏗️ Supported Architectures", "md__2root_2README__ENG.html#autotoc_md391", null ],
+        [ "🚀 Quick Start", "md__2root_2README__ENG.html#autotoc_md392", [
+          [ "📋 System Requirements", "md__2root_2README__ENG.html#autotoc_md393", null ],
+          [ "🛠️ Environment Setup", "md__2root_2README__ENG.html#autotoc_md394", null ],
+          [ "⚡ Build and Run", "md__2root_2README__ENG.html#autotoc_md395", null ],
+          [ "🎯 AI-Assisted Development Workflow", "md__2root_2README__ENG.html#autotoc_md396", null ]
         ] ],
-        [ "📂 Project Structure", "md__2root_2README__ENG.html#autotoc_md349", null ],
-        [ "🎯 Learning Path", "md__2root_2README__ENG.html#autotoc_md350", [
-          [ "Phase 1: Infrastructure (Boot)", "md__2root_2README__ENG.html#autotoc_md351", null ],
-          [ "Phase 2: Interrupt System", "md__2root_2README__ENG.html#autotoc_md352", null ],
-          [ "Phase 3: Memory Management", "md__2root_2README__ENG.html#autotoc_md353", null ],
-          [ "Phase 4: Task Management (Thread/Task)", "md__2root_2README__ENG.html#autotoc_md354", null ],
-          [ "Phase 5: System Calls", "md__2root_2README__ENG.html#autotoc_md355", null ]
+        [ "📂 Project Structure", "md__2root_2README__ENG.html#autotoc_md397", null ],
+        [ "🎯 Learning Path", "md__2root_2README__ENG.html#autotoc_md398", [
+          [ "Phase 1: Infrastructure (Boot)", "md__2root_2README__ENG.html#autotoc_md399", null ],
+          [ "Phase 2: Interrupt System", "md__2root_2README__ENG.html#autotoc_md400", null ],
+          [ "Phase 3: Memory Management", "md__2root_2README__ENG.html#autotoc_md401", null ],
+          [ "Phase 4: Task Management (Thread/Task)", "md__2root_2README__ENG.html#autotoc_md402", null ],
+          [ "Phase 5: System Calls", "md__2root_2README__ENG.html#autotoc_md403", null ]
         ] ],
-        [ "📦 Third-Party Dependencies", "md__2root_2README__ENG.html#autotoc_md356", null ],
-        [ "📝 Development Guide", "md__2root_2README__ENG.html#autotoc_md357", [
-          [ "🎨 Code Style", "md__2root_2README__ENG.html#autotoc_md358", null ],
-          [ "Naming Conventions", "md__2root_2README__ENG.html#autotoc_md359", null ],
-          [ "📋 Git Commit Convention", "md__2root_2README__ENG.html#autotoc_md360", null ],
-          [ "📚 Documentation", "md__2root_2README__ENG.html#autotoc_md361", null ]
+        [ "📦 Third-Party Dependencies", "md__2root_2README__ENG.html#autotoc_md404", null ],
+        [ "📝 Development Guide", "md__2root_2README__ENG.html#autotoc_md405", [
+          [ "🎨 Code Style", "md__2root_2README__ENG.html#autotoc_md406", null ],
+          [ "Naming Conventions", "md__2root_2README__ENG.html#autotoc_md407", null ],
+          [ "📋 Git Commit Convention", "md__2root_2README__ENG.html#autotoc_md408", null ],
+          [ "📚 Documentation", "md__2root_2README__ENG.html#autotoc_md409", null ]
         ] ],
-        [ "🤝 Contributing", "md__2root_2README__ENG.html#autotoc_md362", [
-          [ "🎯 Ways to Contribute", "md__2root_2README__ENG.html#autotoc_md363", null ],
-          [ "🔧 Code Contribution Workflow", "md__2root_2README__ENG.html#autotoc_md364", null ]
+        [ "🤝 Contributing", "md__2root_2README__ENG.html#autotoc_md410", [
+          [ "🎯 Ways to Contribute", "md__2root_2README__ENG.html#autotoc_md411", null ],
+          [ "🔧 Code Contribution Workflow", "md__2root_2README__ENG.html#autotoc_md412", null ]
         ] ],
-        [ "📄 License", "md__2root_2README__ENG.html#autotoc_md365", null ]
+        [ "📄 License", "md__2root_2README__ENG.html#autotoc_md413", null ]
       ] ]
     ] ],
     [ "arch", "md__2root_2src_2arch_2README.html", [
-      [ "目录结构", "md__2root_2src_2arch_2README.html#autotoc_md368", null ],
-      [ "核心接口", "md__2root_2src_2arch_2README.html#autotoc_md369", [
-        [ "arch.h", "md__2root_2src_2arch_2README.html#autotoc_md370", null ]
+      [ "目录结构", "md__2root_2src_2arch_2README.html#autotoc_md416", null ],
+      [ "核心接口", "md__2root_2src_2arch_2README.html#autotoc_md417", [
+        [ "arch.h", "md__2root_2src_2arch_2README.html#autotoc_md418", null ]
       ] ],
-      [ "各架构实现", "md__2root_2src_2arch_2README.html#autotoc_md371", [
-        [ "通用功能", "md__2root_2src_2arch_2README.html#autotoc_md372", null ],
-        [ "架构特定功能", "md__2root_2src_2arch_2README.html#autotoc_md373", [
-          [ "aarch64", "md__2root_2src_2arch_2README.html#autotoc_md374", null ],
-          [ "riscv64", "md__2root_2src_2arch_2README.html#autotoc_md375", null ],
-          [ "x86_64", "md__2root_2src_2arch_2README.html#autotoc_md376", null ]
+      [ "各架构实现", "md__2root_2src_2arch_2README.html#autotoc_md419", [
+        [ "通用功能", "md__2root_2src_2arch_2README.html#autotoc_md420", null ],
+        [ "架构特定功能", "md__2root_2src_2arch_2README.html#autotoc_md421", [
+          [ "aarch64", "md__2root_2src_2arch_2README.html#autotoc_md422", null ],
+          [ "riscv64", "md__2root_2src_2arch_2README.html#autotoc_md423", null ],
+          [ "x86_64", "md__2root_2src_2arch_2README.html#autotoc_md424", null ]
         ] ]
       ] ],
-      [ "编译配置", "md__2root_2src_2arch_2README.html#autotoc_md377", null ],
-      [ "多核支持", "md__2root_2src_2arch_2README.html#autotoc_md378", null ],
-      [ "调试支持", "md__2root_2src_2arch_2README.html#autotoc_md379", null ]
+      [ "编译配置", "md__2root_2src_2arch_2README.html#autotoc_md425", null ],
+      [ "多核支持", "md__2root_2src_2arch_2README.html#autotoc_md426", null ],
+      [ "调试支持", "md__2root_2src_2arch_2README.html#autotoc_md427", null ]
     ] ],
     [ "acpi", "md__2root_2src_2driver_2acpi_2README.html", null ],
     [ "APIC 驱动", "md__2root_2src_2driver_2apic_2README.html", [
-      [ "架构设计", "md__2root_2src_2driver_2apic_2README.html#autotoc_md382", [
-        [ "多核系统中的 APIC 结构", "md__2root_2src_2driver_2apic_2README.html#autotoc_md383", null ],
-        [ "支持的 APIC 模式", "md__2root_2src_2driver_2apic_2README.html#autotoc_md384", [
-          [ "x2APIC 模式 (推荐)", "md__2root_2src_2driver_2apic_2README.html#autotoc_md385", null ],
-          [ "xAPIC 模式 (兼容性)", "md__2root_2src_2driver_2apic_2README.html#autotoc_md386", null ]
+      [ "架构设计", "md__2root_2src_2driver_2apic_2README.html#autotoc_md430", [
+        [ "多核系统中的 APIC 结构", "md__2root_2src_2driver_2apic_2README.html#autotoc_md431", null ],
+        [ "支持的 APIC 模式", "md__2root_2src_2driver_2apic_2README.html#autotoc_md432", [
+          [ "x2APIC 模式 (推荐)", "md__2root_2src_2driver_2apic_2README.html#autotoc_md433", null ],
+          [ "xAPIC 模式 (兼容性)", "md__2root_2src_2driver_2apic_2README.html#autotoc_md434", null ]
         ] ],
-        [ "类结构", "md__2root_2src_2driver_2apic_2README.html#autotoc_md387", null ],
-        [ "使用方式", "md__2root_2src_2driver_2apic_2README.html#autotoc_md388", null ]
+        [ "类结构", "md__2root_2src_2driver_2apic_2README.html#autotoc_md435", null ],
+        [ "使用方式", "md__2root_2src_2driver_2apic_2README.html#autotoc_md436", null ]
       ] ],
-      [ "特性", "md__2root_2src_2driver_2apic_2README.html#autotoc_md389", [
-        [ "Local APIC (per-CPU)", "md__2root_2src_2driver_2apic_2README.html#autotoc_md390", null ],
-        [ "IO APIC (系统级)", "md__2root_2src_2driver_2apic_2README.html#autotoc_md391", null ],
-        [ "多核系统管理", "md__2root_2src_2driver_2apic_2README.html#autotoc_md392", null ]
+      [ "特性", "md__2root_2src_2driver_2apic_2README.html#autotoc_md437", [
+        [ "Local APIC (per-CPU)", "md__2root_2src_2driver_2apic_2README.html#autotoc_md438", null ],
+        [ "IO APIC (系统级)", "md__2root_2src_2driver_2apic_2README.html#autotoc_md439", null ],
+        [ "多核系统管理", "md__2root_2src_2driver_2apic_2README.html#autotoc_md440", null ]
       ] ],
-      [ "多核系统工作流程", "md__2root_2src_2driver_2apic_2README.html#autotoc_md393", [
-        [ "1. 系统启动阶段（BSP）", "md__2root_2src_2driver_2apic_2README.html#autotoc_md394", null ],
-        [ "2. AP 启动阶段", "md__2root_2src_2driver_2apic_2README.html#autotoc_md395", null ],
-        [ "3. 运行时中断管理", "md__2root_2src_2driver_2apic_2README.html#autotoc_md396", null ]
+      [ "多核系统工作流程", "md__2root_2src_2driver_2apic_2README.html#autotoc_md441", [
+        [ "1. 系统启动阶段（BSP）", "md__2root_2src_2driver_2apic_2README.html#autotoc_md442", null ],
+        [ "2. AP 启动阶段", "md__2root_2src_2driver_2apic_2README.html#autotoc_md443", null ],
+        [ "3. 运行时中断管理", "md__2root_2src_2driver_2apic_2README.html#autotoc_md444", null ]
       ] ],
-      [ "限制", "md__2root_2src_2driver_2apic_2README.html#autotoc_md397", null ],
-      [ "文件结构", "md__2root_2src_2driver_2apic_2README.html#autotoc_md398", null ],
-      [ "依赖", "md__2root_2src_2driver_2apic_2README.html#autotoc_md399", null ],
-      [ "注意事项", "md__2root_2src_2driver_2apic_2README.html#autotoc_md400", null ]
+      [ "限制", "md__2root_2src_2driver_2apic_2README.html#autotoc_md445", null ],
+      [ "文件结构", "md__2root_2src_2driver_2apic_2README.html#autotoc_md446", null ],
+      [ "依赖", "md__2root_2src_2driver_2apic_2README.html#autotoc_md447", null ],
+      [ "注意事项", "md__2root_2src_2driver_2apic_2README.html#autotoc_md448", null ]
     ] ],
     [ "GIC (Generic Interrupt Controller)", "md__2root_2src_2driver_2gic_2README.html", [
-      [ "功能特性", "md__2root_2src_2driver_2gic_2README.html#autotoc_md402", null ],
-      [ "类接口", "md__2root_2src_2driver_2gic_2README.html#autotoc_md403", [
-        [ "构造函数", "md__2root_2src_2driver_2gic_2README.html#autotoc_md404", null ],
-        [ "主要方法", "md__2root_2src_2driver_2gic_2README.html#autotoc_md405", null ],
-        [ "Distributor (GICD) 接口", "md__2root_2src_2driver_2gic_2README.html#autotoc_md406", null ],
-        [ "Redistributor (GICR) 接口", "md__2root_2src_2driver_2gic_2README.html#autotoc_md407", null ]
+      [ "功能特性", "md__2root_2src_2driver_2gic_2README.html#autotoc_md450", null ],
+      [ "类接口", "md__2root_2src_2driver_2gic_2README.html#autotoc_md451", [
+        [ "构造函数", "md__2root_2src_2driver_2gic_2README.html#autotoc_md452", null ],
+        [ "主要方法", "md__2root_2src_2driver_2gic_2README.html#autotoc_md453", null ],
+        [ "Distributor (GICD) 接口", "md__2root_2src_2driver_2gic_2README.html#autotoc_md454", null ],
+        [ "Redistributor (GICR) 接口", "md__2root_2src_2driver_2gic_2README.html#autotoc_md455", null ]
       ] ],
-      [ "使用示例", "md__2root_2src_2driver_2gic_2README.html#autotoc_md408", null ],
-      [ "参考文档", "md__2root_2src_2driver_2gic_2README.html#autotoc_md409", null ],
-      [ "设备树配置示例", "md__2root_2src_2driver_2gic_2README.html#autotoc_md410", null ]
+      [ "使用示例", "md__2root_2src_2driver_2gic_2README.html#autotoc_md456", null ],
+      [ "参考文档", "md__2root_2src_2driver_2gic_2README.html#autotoc_md457", null ],
+      [ "设备树配置示例", "md__2root_2src_2driver_2gic_2README.html#autotoc_md458", null ]
     ] ],
     [ "NS16550A UART 驱动", "md__2root_2src_2driver_2ns16550a_2README.html", [
-      [ "功能特性", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md412", null ],
-      [ "类接口", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md413", [
-        [ "构造函数", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md414", null ],
-        [ "主要方法", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md415", null ]
+      [ "功能特性", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md460", null ],
+      [ "类接口", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md461", [
+        [ "构造函数", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md462", null ],
+        [ "主要方法", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md463", null ]
       ] ],
-      [ "初始化配置", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md416", null ],
-      [ "使用示例", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md417", null ],
-      [ "设备树配置示例", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md418", null ],
-      [ "寄存器映射", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md419", [
-        [ "除数锁存器（当 LCR.DLAB=1 时）", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md420", null ]
+      [ "初始化配置", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md464", null ],
+      [ "使用示例", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md465", null ],
+      [ "设备树配置示例", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md466", null ],
+      [ "寄存器映射", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md467", [
+        [ "除数锁存器（当 LCR.DLAB=1 时）", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md468", null ]
       ] ],
-      [ "注意事项", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md421", null ],
-      [ "文件结构", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md422", null ]
+      [ "注意事项", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md469", null ],
+      [ "文件结构", "md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md470", null ]
     ] ],
     [ "PL011 UART 驱动", "md__2root_2src_2driver_2pl011_2README.html", [
-      [ "功能特性", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md424", null ],
-      [ "类接口", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md425", [
-        [ "构造函数", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md426", null ],
-        [ "主要方法", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md427", null ]
+      [ "功能特性", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md472", null ],
+      [ "类接口", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md473", [
+        [ "构造函数", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md474", null ],
+        [ "主要方法", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md475", null ]
       ] ],
-      [ "使用示例", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md428", null ],
-      [ "设备树配置示例", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md429", null ],
-      [ "寄存器映射", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md430", null ],
-      [ "参考文档", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md431", null ],
-      [ "文件结构", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md432", null ]
+      [ "使用示例", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md476", null ],
+      [ "设备树配置示例", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md477", null ],
+      [ "寄存器映射", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md478", null ],
+      [ "参考文档", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md479", null ],
+      [ "文件结构", "md__2root_2src_2driver_2pl011_2README.html#autotoc_md480", null ]
     ] ],
     [ "Platform-Level Interrupt Controller (PLIC)", "md__2root_2src_2driver_2plic_2README.html", [
-      [ "特性", "md__2root_2src_2driver_2plic_2README.html#autotoc_md434", null ],
-      [ "类接口", "md__2root_2src_2driver_2plic_2README.html#autotoc_md435", null ],
-      [ "使用示例", "md__2root_2src_2driver_2plic_2README.html#autotoc_md436", null ],
-      [ "设备树配置", "md__2root_2src_2driver_2plic_2README.html#autotoc_md437", null ],
-      [ "参考文档", "md__2root_2src_2driver_2plic_2README.html#autotoc_md438", null ]
+      [ "特性", "md__2root_2src_2driver_2plic_2README.html#autotoc_md482", null ],
+      [ "类接口", "md__2root_2src_2driver_2plic_2README.html#autotoc_md483", null ],
+      [ "使用示例", "md__2root_2src_2driver_2plic_2README.html#autotoc_md484", null ],
+      [ "设备树配置", "md__2root_2src_2driver_2plic_2README.html#autotoc_md485", null ],
+      [ "参考文档", "md__2root_2src_2driver_2plic_2README.html#autotoc_md486", null ]
     ] ],
     [ "driver", "md__2root_2src_2driver_2README.html", null ],
     [ "aarch64_minimal", "md__2root_2tests_2integration__test_2aarch64__minimal_2README.html", null ],
@@ -574,73 +620,73 @@ var NAVTREE =
     [ "system_test", "md__2root_2tests_2system__test_2README.html", null ],
     [ "unit_test", "md__2root_2tests_2unit__test_2README.html", null ],
     [ "Task 单元测试环境层实现总结", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html", [
-      [ "实现概览", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md445", null ],
-      [ "已创建的文件", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md446", [
-        [ "核心实现文件", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md447", null ]
+      [ "实现概览", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md493", null ],
+      [ "已创建的文件", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md494", [
+        [ "核心实现文件", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md495", null ]
       ] ],
-      [ "核心功能", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md448", [
-        [ "1. CoreEnvironment（单核环境状态）", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md449", null ],
-        [ "2. TestEnvironmentState（全局环境管理）", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md450", null ],
-        [ "3. Mock 层集成", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md451", null ],
-        [ "4. 测试框架", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md452", null ]
+      [ "核心功能", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md496", [
+        [ "1. CoreEnvironment（单核环境状态）", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md497", null ],
+        [ "2. TestEnvironmentState（全局环境管理）", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md498", null ],
+        [ "3. Mock 层集成", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md499", null ],
+        [ "4. 测试框架", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md500", null ]
       ] ],
-      [ "使用流程", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md453", [
-        [ "1. 编写测试类", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md454", null ],
-        [ "2. 注册任务上下文", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md455", null ],
-        [ "3. 验证调度行为", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md456", null ]
+      [ "使用流程", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md501", [
+        [ "1. 编写测试类", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md502", null ],
+        [ "2. 注册任务上下文", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md503", null ],
+        [ "3. 验证调度行为", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md504", null ]
       ] ],
-      [ "已验证的功能", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md457", [
-        [ "基础功能测试（example_environment_test.cpp）", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md458", null ],
-        [ "调度功能测试（task_scheduling_example_test.cpp）", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md459", null ]
+      [ "已验证的功能", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md505", [
+        [ "基础功能测试（example_environment_test.cpp）", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md506", null ],
+        [ "调度功能测试（task_scheduling_example_test.cpp）", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md507", null ]
       ] ],
-      [ "设计优势", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md460", [
-        [ "1. 职责清晰", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md461", null ],
-        [ "2. 可观测性强", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md462", null ],
-        [ "3. 易于扩展", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md463", null ],
-        [ "4. 线程安全", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md464", null ],
-        [ "5. 测试隔离", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md465", null ]
+      [ "设计优势", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md508", [
+        [ "1. 职责清晰", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md509", null ],
+        [ "2. 可观测性强", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md510", null ],
+        [ "3. 易于扩展", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md511", null ],
+        [ "4. 线程安全", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md512", null ],
+        [ "5. 测试隔离", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md513", null ]
       ] ],
-      [ "下一步工作", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md466", [
-        [ "建议优先实现的功能", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md467", null ],
-        [ "可以开始编写的测试", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md468", null ]
+      [ "下一步工作", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md514", [
+        [ "建议优先实现的功能", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md515", null ],
+        [ "可以开始编写的测试", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md516", null ]
       ] ],
-      [ "构建与运行", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md469", null ],
-      [ "文档参考", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md470", null ],
-      [ "技术细节", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md471", [
-        [ "线程到核心的映射", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md472", null ],
-        [ "上下文到任务的映射", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md473", null ],
-        [ "切换事件记录", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md474", null ]
+      [ "构建与运行", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md517", null ],
+      [ "文档参考", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md518", null ],
+      [ "技术细节", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md519", [
+        [ "线程到核心的映射", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md520", null ],
+        [ "上下文到任务的映射", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md521", null ],
+        [ "切换事件记录", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md522", null ]
       ] ],
-      [ "总结", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md475", null ]
+      [ "总结", "md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md523", null ]
     ] ],
     [ "Task 模块单元测试环境层设计", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html", [
-      [ "架构概述", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md477", null ],
-      [ "核心组件", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md478", [
-        [ "1. 环境层 (Environment Layer)", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md479", [
-          [ "<tt>CoreEnvironment</tt> - 单核环境状态", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md480", null ],
-          [ "<tt>TestEnvironmentState</tt> - 全局环境管理器", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md481", null ]
+      [ "架构概述", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md525", null ],
+      [ "核心组件", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md526", [
+        [ "1. 环境层 (Environment Layer)", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md527", [
+          [ "<tt>CoreEnvironment</tt> - 单核环境状态", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md528", null ],
+          [ "<tt>TestEnvironmentState</tt> - 全局环境管理器", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md529", null ]
         ] ],
-        [ "2. Mock 层 (Mock Layer)", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md482", [
-          [ "<tt>cpu_io.h</tt> - 硬件接口模拟", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md483", null ],
-          [ "<tt>arch_mock.cpp</tt> - 架构相关函数", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md484", null ]
+        [ "2. Mock 层 (Mock Layer)", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md530", [
+          [ "<tt>cpu_io.h</tt> - 硬件接口模拟", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md531", null ],
+          [ "<tt>arch_mock.cpp</tt> - 架构相关函数", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md532", null ]
         ] ],
-        [ "3. 测试层 (Test Layer)", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md485", [
-          [ "<tt>TaskTestHarness</tt> - 测试 Fixture 基类", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md486", null ]
+        [ "3. 测试层 (Test Layer)", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md533", [
+          [ "<tt>TaskTestHarness</tt> - 测试 Fixture 基类", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md534", null ]
         ] ]
       ] ],
-      [ "使用示例", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md487", [
-        [ "单核测试", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md488", null ],
-        [ "多核测试", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md489", null ],
-        [ "验证中断状态", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md490", null ],
-        [ "验证页表切换", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md491", null ]
+      [ "使用示例", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md535", [
+        [ "单核测试", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md536", null ],
+        [ "多核测试", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md537", null ],
+        [ "验证中断状态", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md538", null ],
+        [ "验证页表切换", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md539", null ]
       ] ],
-      [ "关键优势", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md492", null ],
-      [ "扩展点", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md493", [
-        [ "添加新的硬件特性", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md494", null ],
-        [ "添加性能计数器", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md495", null ]
+      [ "关键优势", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md540", null ],
+      [ "扩展点", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md541", [
+        [ "添加新的硬件特性", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md542", null ],
+        [ "添加性能计数器", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md543", null ]
       ] ],
-      [ "注意事项", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md496", null ],
-      [ "文件清单", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md497", null ]
+      [ "注意事项", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md544", null ],
+      [ "文件清单", "md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md545", null ]
     ] ],
     [ "tools", "md__2root_2tools_2README.html", null ],
     [ "Todo List", "todo.html", null ],
@@ -690,12 +736,12 @@ var NAVTREEINDEX =
 "classtest__env_1_1TestEnvironmentState.html#a79befc67182762d96731924685655670",
 "functions_vars_n.html",
 "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md84",
-"md__2root_2src_2driver_2apic_2README.html#autotoc_md385",
-"ns16550a_8cpp_source.html",
-"sk__stdio_8c.html#aa21f2b24d121f913f1b8b0e1befcc800",
-"structGic_1_1Gicd_1_1GICD__CTLR.html",
-"syscall_8cpp.html#aa03f906affa67ef23ebfbcb79efa569f",
-"unit__test_2sk__unordered__map__test_8cpp.html#a0bc4affdb04867cf4655d5fa90661930"
+"md__2root_2src_2driver_2apic_2README.html#autotoc_md433",
+"namespaceklog.html#aa59f931199fed6d453591f3766150ea0",
+"sk__libcxx_8cpp.html#a8c22041b9886ca00cff1e90cd43eb3f2",
+"structAcpi_1_1Rsdt.html#a6968aa04aea35b1e81b1142e914cdfef",
+"structtest__env_1_1CoreEnvironment.html",
+"unit__test_2rr__scheduler__test_8cpp_source.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -92,8 +92,8 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2ns16550a_2READ
   <div class="headertitle"><div class="title">NS16550A UART 驱动</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md411"></a> NS16550A 是一款兼容 16550 的通用异步接收器发送器 (UART)，广泛用于 RISC-V 架构的串口通信。</p>
-<h1><a class="anchor" id="autotoc_md412"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md459"></a> NS16550A 是一款兼容 16550 的通用异步接收器发送器 (UART)，广泛用于 RISC-V 架构的串口通信。</p>
+<h1><a class="anchor" id="autotoc_md460"></a>
 功能特性</h1>
 <ul>
 <li>支持 8 位数据位配置</li>
@@ -102,20 +102,20 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2ns16550a_2READ
 <li>支持接收中断</li>
 <li>兼容标准 16550 寄存器布局</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md413"></a>
+<h1><a class="anchor" id="autotoc_md461"></a>
 类接口</h1>
-<h2><a class="anchor" id="autotoc_md414"></a>
+<h2><a class="anchor" id="autotoc_md462"></a>
 构造函数</h2>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classNs16550a.html">Ns16550a</a>(uint64_t dev_addr)</div>
 <div class="ttc" id="aclassNs16550a_html"><div class="ttname"><a href="classNs16550a.html">Ns16550a</a></div><div class="ttdef"><b>Definition</b> <a href="ns16550a_8h_source.html#l00010">ns16550a.h:10</a></div></div>
 </div><!-- fragment --><ul>
 <li><code>dev_addr</code>: 设备基地址</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md415"></a>
+<h2><a class="anchor" id="autotoc_md463"></a>
 主要方法</h2>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> PutChar(uint8_t c) <span class="keyword">const</span></div>
 </div><!-- fragment --><p> 发送单个字符到串口</p>
-<h1><a class="anchor" id="autotoc_md416"></a>
+<h1><a class="anchor" id="autotoc_md464"></a>
 初始化配置</h1>
 <p>驱动在构造时自动进行以下初始化：</p><ul>
 <li>禁用中断</li>
@@ -124,7 +124,7 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2ns16550a_2READ
 <li>启用 FIFO</li>
 <li>启用接收中断</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md417"></a>
+<h1><a class="anchor" id="autotoc_md465"></a>
 使用示例</h1>
 <div class="fragment"><div class="line"><span class="comment">// 创建 NS16550A 实例</span></div>
 <div class="line"><a class="code hl_class" href="classNs16550a.html">Ns16550a</a> <a class="code hl_variable" href="tests_2integration__test_2aarch64__minimal_2main_8cpp.html#aa7ab943a365e8ef56f90c192e7777452">uart</a>(0x10000000);</div>
@@ -136,7 +136,7 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2ns16550a_2READ
 <div class="line"><a class="code hl_variable" href="tests_2integration__test_2aarch64__minimal_2main_8cpp.html#aa7ab943a365e8ef56f90c192e7777452">uart</a>.PutChar(<span class="charliteral">&#39;l&#39;</span>);</div>
 <div class="line"><a class="code hl_variable" href="tests_2integration__test_2aarch64__minimal_2main_8cpp.html#aa7ab943a365e8ef56f90c192e7777452">uart</a>.PutChar(<span class="charliteral">&#39;o&#39;</span>);</div>
 <div class="ttc" id="atests_2integration__test_2aarch64__minimal_2main_8cpp_html_aa7ab943a365e8ef56f90c192e7777452"><div class="ttname"><a href="tests_2integration__test_2aarch64__minimal_2main_8cpp.html#aa7ab943a365e8ef56f90c192e7777452">uart</a></div><div class="ttdeci">volatile uint8_t * uart</div><div class="ttdoc">TODO: Add description.</div><div class="ttdef"><b>Definition</b> <a href="tests_2integration__test_2aarch64__minimal_2main_8cpp_source.html#l00010">main.cpp:10</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md418"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md466"></a>
 设备树配置示例</h1>
 <div class="fragment"><div class="line">serial@10000000 {</div>
 <div class="line">    interrupts = &lt;0x0a&gt;;</div>
@@ -145,7 +145,7 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2ns16550a_2READ
 <div class="line">    reg = &lt;0x00 0x10000000 0x00 0x100&gt;;</div>
 <div class="line">    compatible = &quot;ns16550a&quot;;</div>
 <div class="line">};</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md419"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md467"></a>
 寄存器映射</h1>
 <p>驱动实现了标准的 NS16550A 寄存器布局：</p>
 <table class="markdownTable">
@@ -166,7 +166,7 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2ns16550a_2READ
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">0x06   </td><td class="markdownTableBodyNone">MSR   </td><td class="markdownTableBodyNone">-   </td><td class="markdownTableBodyNone">调制解调器状态寄存器   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md420"></a>
+<h2><a class="anchor" id="autotoc_md468"></a>
 除数锁存器（当 LCR.DLAB=1 时）</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -176,7 +176,7 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2ns16550a_2READ
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">0x01   </td><td class="markdownTableBodyNone">DLM   </td><td class="markdownTableBodyNone">除数锁存器高字节   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md421"></a>
+<h1><a class="anchor" id="autotoc_md469"></a>
 注意事项</h1>
 <ul>
 <li>在 RISC-V 架构中，该驱动目前主要用于直接硬件访问</li>
@@ -184,7 +184,7 @@ $(document).ready(function(){initNavTree('md__2root_2src_2driver_2ns16550a_2READ
 <li>驱动支持轮询模式的字符发送</li>
 <li>发送前会检查发送缓冲区状态，确保可以安全发送</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md422"></a>
+<h1><a class="anchor" id="autotoc_md470"></a>
 文件结构</h1>
 <ul>
 <li><code><a class="el" href="ns16550a_8h.html">include/ns16550a.h</a></code> - 头文件，包含类定义和寄存器常量</li>

@@ -1,13 +1,6 @@
 var searchData=
 [
-  ['核心亮点_0',['🌟 核心亮点',['../md__2root_2README.html#autotoc_md294',1,'']]],
-  ['核心功能_1',['核心功能',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md448',1,'']]],
-  ['核心实现文件_2',['核心实现文件',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md447',1,'']]],
-  ['核心寄存器_3',['1. 核心寄存器',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md137',1,'']]],
-  ['核心工作流_4',['核心工作流',['../md__2root_2README.html#autotoc_md297',1,'']]],
-  ['核心接口_5',['核心接口',['../md__2root_2src_2arch_2README.html#autotoc_md369',1,'']]],
-  ['核心数据结构_6',['核心数据结构',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md28',1,'2. 核心数据结构'],['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md49',1,'2. 核心数据结构'],['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md74',1,'2. 核心数据结构']]],
-  ['核心电源管理_7',['核心电源管理',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md90',1,'']]],
-  ['核心组件_8',['核心组件',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md148',1,'核心组件'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md172',1,'核心组件'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md198',1,'核心组件'],['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md478',1,'核心组件']]],
-  ['核心id获取机制_9',['核心id获取机制',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md55',1,'核心ID获取机制'],['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md81',1,'核心ID获取机制']]]
+  ['构建与运行_0',['构建与运行',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md517',1,'']]],
+  ['构建镜像_1',['1. 构建镜像',['../md_docker.html#autotoc_md233',1,'']]],
+  ['构造函数_2',['构造函数',['../md__2root_2src_2driver_2gic_2README.html#autotoc_md452',1,'构造函数'],['../md__2root_2src_2driver_2ns16550a_2README.html#autotoc_md462',1,'构造函数'],['../md__2root_2src_2driver_2pl011_2README.html#autotoc_md474',1,'构造函数']]]
 ];

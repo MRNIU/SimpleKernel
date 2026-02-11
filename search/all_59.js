@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['已创建的文件_0',['已创建的文件',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md446',1,'']]],
-  ['已验证的功能_1',['已验证的功能',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md457',1,'']]]
+  ['工具的结合方式_0',['与 AI 工具的结合方式',['../md__2root_2README.html#autotoc_md350',1,'']]],
+  ['工具链获取_1',['工具链获取',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md8',1,'']]],
+  ['工具链_2',['工具链',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html',1,'']]]
 ];

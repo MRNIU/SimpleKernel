@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['🎨_20代码风格_0',['🎨 代码风格',['../md__2root_2README.html#autotoc_md320',1,'']]],
-  ['🎨_20code_20style_1',['🎨 Code Style',['../md__2root_2README__ENG.html#autotoc_md358',1,'']]]
+  ['面向_20ai_20的设计理念_0',['🤖 面向 AI 的设计理念',['../md__2root_2README.html#autotoc_md343',1,'']]],
+  ['面向_20ai_20？_1',['为什么要&quot;面向 AI&quot;？',['../md__2root_2README.html#autotoc_md344',1,'']]]
 ];

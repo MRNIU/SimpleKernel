@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['🛠️_20环境搭建_0',['🛠️ 环境搭建',['../md__2root_2README.html#autotoc_md308',1,'']]],
-  ['🛠️_20environment_20setup_1',['🛠️ Environment Setup',['../md__2root_2README__ENG.html#autotoc_md346',1,'']]]
+  ['📚_20文档_0',['📚 文档',['../md__2root_2README.html#autotoc_md371',1,'']]],
+  ['📚_20documentation_1',['📚 Documentation',['../md__2root_2README__ENG.html#autotoc_md409',1,'']]]
 ];

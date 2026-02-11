@@ -1,6 +1,6 @@
 var indexSectionsWithContent =
 {
-  0: "0123456789_abcdefghijklmnopqrstuvwxy~⌨⏰⚡✨上下与中串为主交亲从代任优低使依免入全关典兼内切初功单参发可各启命和基处多字学安定实容寄密对层工已常序建开异当必快性总扩技抽拉接推支故文新早时易权构架栈核概模波注测添特环生电的目相硬第管类系线结编考职自规让许设访调贡超软辅运进远连通配重错键镜阅阶限除集面项驱验高？🌟🎛🎨🎯🏗🏛📂📄📊📋📖📚📝📦🔌🔍🔧🔴🚀🛠🟡🟢🤖🤝",
+  0: "0123456789_abcdefghijklmnopqrstuvwxy~⌨⏰⚡✨上下与中串为主交亲从代任优低使依免入全关典兼内切初功单参发可各启命和块基处多字学安定实容寄密对层工已常序建开异当必快性总扩技抽拉挂接推支改故文新早时易权构架栈核框概模步波注测添特环生电的目相硬第管类系线结编考职自规让许设访详调贡超软辅运进远连通配里重错键镜阅阶限除集需面项驱验高？🌟🎛🎨🎯🏗🏛📂📄📊📋📖📚📝📦🔌🔍🔧🔴🚀🛠🟡🟢🤖🤝",
   1: "abcdefghiklmnprstvwx",
   2: "cikmpst",
   3: "0123abcdefgiklmnprstuvw",
@@ -11,7 +11,7 @@ var indexSectionsWithContent =
   8: "k",
   9: "o",
   10: "aeimnst",
-  11: "acdgilnoprstu单多工开接模系规设调驱"
+  11: "acdgilnoprstu单多工开接文模系规设调驱"
 };
 
 var indexSectionNames =

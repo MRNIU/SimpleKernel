@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['贡献指南_0',['🤝 贡献指南',['../md__2root_2README.html#autotoc_md324',1,'']]],
-  ['贡献方式_1',['🎯 贡献方式',['../md__2root_2README.html#autotoc_md325',1,'']]]
+  ['让_20ai_20实现_0',['2️⃣ 让 AI 实现',['../md__2root_2README.html#autotoc_md347',1,'']]]
 ];

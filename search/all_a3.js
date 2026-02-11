@@ -1,8 +1,7 @@
 var searchData=
 [
-  ['阶段_201：基础设施（boot）_0',['阶段 1：基础设施（Boot）',['../md__2root_2README.html#autotoc_md313',1,'']]],
-  ['阶段_202：中断系统（interrupt）_1',['阶段 2：中断系统（Interrupt）',['../md__2root_2README.html#autotoc_md314',1,'']]],
-  ['阶段_203：内存管理（memory）_2',['阶段 3：内存管理（Memory）',['../md__2root_2README.html#autotoc_md315',1,'']]],
-  ['阶段_204：任务管理（thread_20task）_3',['阶段 4：任务管理（Thread/Task）',['../md__2root_2README.html#autotoc_md316',1,'']]],
-  ['阶段_205：系统调用（syscall）_4',['阶段 5：系统调用（Syscall）',['../md__2root_2README.html#autotoc_md317',1,'']]]
+  ['配置变更_0',['5.3 QEMU 配置变更',['../md_filesystem__design.html#autotoc_md271',1,'']]],
+  ['配置容器_20ssh_20访问_1',['2. 配置容器 SSH 访问',['../md_docker.html#autotoc_md238',1,'']]],
+  ['配置_2',['配置',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md3',1,'2. CMake Presets 配置'],['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md37',1,'APIC 配置'],['../md_docker.html#autotoc_md236',1,'SSH 配置']]],
+  ['配置_20ssh_20连接_3',['2. 配置 SSH 连接',['../md_docker.html#autotoc_md242',1,'']]]
 ];

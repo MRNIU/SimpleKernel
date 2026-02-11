@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['序列_0',['3. INIT-SIPI-SIPI 序列',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md32',1,'']]]
+  ['常用命令_0',['常用命令',['../md_docker.html#autotoc_md245',1,'']]],
+  ['常见问题_1',['常见问题',['../md_docker.html#autotoc_md250',1,'']]]
 ];

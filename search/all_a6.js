@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['集成_0',['VS Code 集成',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md20',1,'']]]
+  ['错误处理_0',['错误处理',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md99',1,'错误处理'],['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md142',1,'错误处理']]],
+  ['错误码定义_1',['错误码定义',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md65',1,'']]]
 ];

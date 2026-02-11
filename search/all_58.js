@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['工具的结合方式_0',['与 AI 工具的结合方式',['../md__2root_2README.html#autotoc_md302',1,'']]],
-  ['工具链获取_1',['工具链获取',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md8',1,'']]],
-  ['工具链_2',['工具链',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html',1,'']]]
+  ['层集成_0',['3. Mock 层集成',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md499',1,'']]],
+  ['层_20mock_20layer_1',['2. Mock 层 (Mock Layer)',['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md530',1,'']]]
 ];

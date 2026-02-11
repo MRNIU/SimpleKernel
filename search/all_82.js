@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['相关文档_0',['相关文档',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md22',1,'']]]
+  ['环境层_20environment_20layer_0',['1. 环境层 (Environment Layer)',['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md527',1,'']]],
+  ['环境搭建_1',['🛠️ 环境搭建',['../md__2root_2README.html#autotoc_md356',1,'']]]
 ];

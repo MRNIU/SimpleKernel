@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['阅读接口，理解契约_0',['1️⃣ 阅读接口，理解契约',['../md__2root_2README.html#autotoc_md298',1,'']]]
+  ['通用功能_0',['通用功能',['../md__2root_2src_2arch_2README.html#autotoc_md420',1,'']]]
 ];
