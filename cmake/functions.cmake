@@ -75,11 +75,21 @@ FUNCTION(add_run_target)
             $<TARGET_FILE_DIR:${ARG_TARGET}>/$<TARGET_FILE_NAME:${ARG_TARGET}>.bin
     )
 
+    # 生成 rootfs.img
+    ADD_CUSTOM_COMMAND (
+        OUTPUT ${CMAKE_BINARY_DIR}/bin/rootfs.img
+        COMMENT "Generating rootfs.img ..."
+        VERBATIM
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
+        COMMAND dd if=/dev/zero of=${CMAKE_BINARY_DIR}/bin/rootfs.img bs=1M
+                count=64)
+
     # 生成 QEMU DTS 和 DTB
     ADD_CUSTOM_COMMAND (
         OUTPUT ${CMAKE_BINARY_DIR}/bin/qemu.dtb ${CMAKE_BINARY_DIR}/bin/qemu.dts
         COMMENT "Generating QEMU DTS and DTB ..."
         VERBATIM
+        DEPENDS ${CMAKE_BINARY_DIR}/bin/rootfs.img
         WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
         COMMAND
             qemu-system-${CMAKE_SYSTEM_PROCESSOR} ${QEMU_COMMON_FLAG}
@@ -95,15 +105,6 @@ FUNCTION(add_run_target)
         VERBATIM
         WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
         COMMAND echo "" > ${CMAKE_BINARY_DIR}/bin/qemu.log)
-
-    # 生成 rootfs.img
-    ADD_CUSTOM_COMMAND (
-        OUTPUT ${CMAKE_BINARY_DIR}/bin/rootfs.img
-        COMMENT "Generating rootfs.img ..."
-        VERBATIM
-        WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
-        COMMAND dd if=/dev/zero of=${CMAKE_BINARY_DIR}/bin/rootfs.img bs=1M
-                count=64)
 
     # 生成 U-BOOT FIT
     ADD_CUSTOM_TARGET (
