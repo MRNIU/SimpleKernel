@@ -145,33 +145,52 @@ void _start(int argc, const char** argv) {
   }
 }
 
-struct BlkTestLogger {
-  auto operator()(const char* format, ...) const -> int {
-    va_list args;
-    va_start(args, format);
-    char buffer[1024];
-    int result = sk_vsnprintf(buffer, sizeof(buffer), format, args);
-    va_end(args);
-    klog::Err("%s", buffer);
-    return result;
+struct RiscvTraits {
+  static auto Log(const char* fmt, ...) -> int {
+    klog::Info("%s\n", fmt);
+    return 0;
+  }
+  static auto Mb() -> void { asm volatile("fence iorw, iorw" ::: "memory"); }
+  static auto Rmb() -> void { asm volatile("fence ir, ir" ::: "memory"); }
+  static auto Wmb() -> void { asm volatile("fence ow, ow" ::: "memory"); }
+  static auto VirtToPhys(void* p) -> uintptr_t {
+    return reinterpret_cast<uintptr_t>(p);
+  }
+  static auto PhysToVirt(uintptr_t a) -> void* {
+    return reinterpret_cast<void*>(a);
   }
 };
 
-/**
- * @brief 静态 DMA 内存区域
- *
- * 在裸机环境中无法使用 malloc，使用静态缓冲区模拟 DMA 内存。
- * 需要页对齐以满足 DMA 要求。
- */
-alignas(4096) static uint8_t g_vq_dma_buf[32768];
+/// QEMU virt 机器上的 VirtIO MMIO 设备起始地址
+constexpr uint64_t kVirtioMmioBase = 0x10001000;
+/// 每个 VirtIO MMIO 设备之间的地址间隔
+constexpr uint64_t kVirtioMmioSize = 0x1000;
+/// 扫描的最大设备数量
+constexpr int kMaxDevices = 8;
+/// 块设备的 Device ID
+constexpr uint32_t kBlockDeviceId = 2;
 
-/// 数据缓冲区（一个扇区大小）
-alignas(16) static uint8_t g_data_buf[virtio_driver::blk::kSectorSize];
+/// 静态 DMA 内存区域
+alignas(4096) uint8_t g_vq_dma_buf[32768];
 
-virtio_driver::PlatformOps g_platform_ops = {
-    .virt_to_phys = [](void* vaddr) -> uint64_t {
-      return reinterpret_cast<uint64_t>(vaddr);
-    }};
+/// 数据缓冲区
+alignas(16) uint8_t g_data_buf[virtio_driver::blk::kSectorSize];
+
+auto find_blk_device() -> uint64_t {
+  for (int i = 0; i < kMaxDevices; ++i) {
+    uint64_t base = kVirtioMmioBase + i * kVirtioMmioSize;
+    auto magic = *reinterpret_cast<volatile uint32_t*>(base);
+    if (magic != virtio_driver::kMmioMagicValue) {
+      continue;
+    }
+    auto device_id = *reinterpret_cast<volatile uint32_t*>(
+        base + virtio_driver::MmioTransport<>::MmioReg::kDeviceId);
+    if (device_id == kBlockDeviceId) {
+      return base;
+    }
+  }
+  return 0;
+}
 
 auto main(int argc, const char** argv) -> int {
   // 初始化当前核心的 per_cpu 数据
@@ -194,23 +213,56 @@ auto main(int argc, const char** argv) -> int {
   klog::info << "Hello SimpleKernel\n";
   klog::Info("Initializing test tasks...\n");
 
-  using VirtioBlkType = virtio_driver::blk::VirtioBlk<BlkTestLogger>;
+  Singleton<VirtualMemory>::GetInstance().MapMMIO(0x10001000, 0x8000);
+  Singleton<Plic>::GetInstance().Set(cpu_io::GetCurrentCoreId(), 7, 1, true);
+  Singleton<Plic>::GetInstance().RegisterInterruptFunc(
+      7, [](uint64_t source_id, uint8_t*) -> uint64_t {
+        klog::Info("Received blk interrupt %d\n", source_id);
+        return 0;
+      });
+
+  uint64_t blk_base = find_blk_device();
+  using VirtioBlkType = virtio_driver::blk::VirtioBlk<RiscvTraits>;
   uint64_t extra_features =
       static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kSegMax) |
       static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kSizeMax) |
       static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kBlkSize) |
       static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kFlush) |
       static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kGeometry);
-  auto blk_result = VirtioBlkType::Create(blk_base, g_vq_dma_buf,
-                                          g_platform_ops, 128, extra_features);
-  if (blk_result.has_value()) {
-    klog::Err("VirtioBlk::Create() succeeds");
-  }
-
+  auto blk_result =
+      VirtioBlkType::Create(blk_base, g_vq_dma_buf, 1, 128, extra_features);
   if (!blk_result.has_value()) {
     klog::Err("VirtioBlk::Create() failed, skipping remaining tests");
   }
   auto& blk = *blk_result;
+  auto config = blk.ReadConfig();
+  // klog::Info("Device capacity (sectors) 0x%X\n", config.capacity);
+  // klog::Info("Block size 0x%X\n", config.blk_size);
+  // klog::Info("Size max 0x%X\n", config.size_max);
+  // klog::Info("Seg max 0x%X\n", config.seg_max);
+  uint64_t capacity = blk.GetCapacity();
+  klog::Info("Calculated capacity (sectors) 0x%X\n", capacity);
+
+  memset(g_data_buf, 0, sizeof(g_data_buf));
+  auto read_result = blk.Read(0, g_data_buf);
+  if (!read_result.has_value()) {
+    klog::Err("VirtioBlk::Read() failed, error code: %d\n",
+              read_result.error().code);
+  } else {
+    klog::Info("Read first sector successfully:\n");
+    for (size_t i = 0; i < virtio_driver::blk::kSectorSize; ++i) {
+      klog::Info("%02X ", g_data_buf[i]);
+      if ((i + 1) % 16 == 0) {
+        klog::Info("\n");
+      }
+    }
+    klog::Info("\n");
+  }
+
+  for (size_t i = 0; i < virtio_driver::blk::kSectorSize; ++i) {
+    g_data_buf[i] = static_cast<uint8_t>(0xAA + (i & 0x0F));
+  }
+  auto write_result = blk.Write(0, g_data_buf);
 
   while (1)
     ;
