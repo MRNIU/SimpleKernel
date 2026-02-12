@@ -15,6 +15,7 @@
 
 class Ns16550aDevice : public CharDevice<Ns16550aDevice> {
  public:
+  Ns16550aDevice() = default;
   explicit Ns16550aDevice(uint64_t base_addr) : driver_(base_addr) {}
 
   /// 直接访问底层驱动（用于中断处理等需要绕过 Device 框架的场景）

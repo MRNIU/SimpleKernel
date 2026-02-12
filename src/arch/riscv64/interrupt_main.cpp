@@ -33,13 +33,20 @@ void RegisterInterrupts() {
 
   auto [base, size, irq] =
       Singleton<KernelFdt>::GetInstance().GetSerial().value();
-  Singleton<Ns16550a>::GetInstance() = std::move(Ns16550a(base));
+  Singleton<Ns16550aDevice>::GetInstance() = std::move(Ns16550aDevice(base));
+  Singleton<Ns16550aDevice>::GetInstance()
+      .Open(OpenFlags(OpenFlags::kReadWrite))
+      .or_else([](const Error& e) {
+        klog::Err("Failed to open Ns16550aDevice: %d\n",
+                  static_cast<int>(e.code));
+        return Expected<void>{};
+      });
 
   // 注册串口中断
   Singleton<Plic>::GetInstance().RegisterInterruptFunc(
       std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial().value()),
       [](uint64_t, uint8_t*) -> uint64_t {
-        auto ch = Singleton<Ns16550a>::GetInstance().TryGetChar();
+        auto ch = Singleton<Ns16550aDevice>::GetInstance().GetChar();
         if (ch) {
           sk_putchar(*ch, nullptr);
         }
