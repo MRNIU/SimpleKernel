@@ -39,7 +39,10 @@ void RegisterInterrupts() {
   Singleton<Plic>::GetInstance().RegisterInterruptFunc(
       std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial().value()),
       [](uint64_t, uint8_t*) -> uint64_t {
-        sk_putchar(Singleton<Ns16550a>::GetInstance().TryGetChar(), nullptr);
+        auto ch = Singleton<Ns16550a>::GetInstance().TryGetChar();
+        if (ch) {
+          sk_putchar(*ch, nullptr);
+        }
         return 0;
       });
 

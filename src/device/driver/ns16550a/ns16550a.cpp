@@ -38,10 +38,14 @@ auto Ns16550a::GetChar() const -> uint8_t {
   return io::In<uint8_t>(base_addr_ + kRegRHR);
 }
 
-auto Ns16550a::TryGetChar() const -> uint8_t {
+auto Ns16550a::TryGetChar() const -> std::optional<uint8_t> {
   // 检查接收缓冲区是否有数据 (LSR bit 0 = 1)
   if ((io::In<uint8_t>(base_addr_ + kRegLSR) & (1 << 0)) != 0) {
     return io::In<uint8_t>(base_addr_ + kRegRHR);
   }
-  return -1;
+  return std::nullopt;
+}
+
+auto Ns16550a::HasData() const -> bool {
+  return (io::In<uint8_t>(base_addr_ + kRegLSR) & (1 << 0)) != 0;
 }

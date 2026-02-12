@@ -5,6 +5,7 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_OPERATIONS_BASE_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_OPERATIONS_BASE_HPP_
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <expected>
@@ -102,14 +103,29 @@ class DeviceOperationsBase {
    * @return Expected<void>
    */
   auto Open(this Derived& self, OpenFlags flags) -> Expected<void> {
-    return self.DoOpen(flags);
+    bool expected = false;
+    if (!self.opened_.compare_exchange_strong(expected, true)) {
+      return std::unexpected(Error{ErrorCode::kDeviceAlreadyOpen});
+    }
+    auto result = self.DoOpen(flags);
+    if (!result) {
+      self.opened_.store(false);
+    }
+    return result;
   }
 
   /**
    * @brief 释放（关闭）设备
    */
   auto Release(this Derived& self) -> Expected<void> {
-    return self.DoRelease();
+    if (!self.opened_.load()) {
+      return std::unexpected(Error{ErrorCode::kDeviceNotOpen});
+    }
+    auto result = self.DoRelease();
+    if (result) {
+      self.opened_.store(false);
+    }
+    return result;
   }
 
   /**
@@ -124,6 +140,9 @@ class DeviceOperationsBase {
    */
   auto Read(this Derived& self, std::span<uint8_t> buffer, size_t offset = 0)
       -> Expected<size_t> {
+    if (!self.opened_.load()) {
+      return std::unexpected(Error{ErrorCode::kDeviceNotOpen});
+    }
     return self.DoRead(buffer, offset);
   }
 
@@ -139,6 +158,9 @@ class DeviceOperationsBase {
    */
   auto Write(this Derived& self, std::span<const uint8_t> data,
              size_t offset = 0) -> Expected<size_t> {
+    if (!self.opened_.load()) {
+      return std::unexpected(Error{ErrorCode::kDeviceNotOpen});
+    }
     return self.DoWrite(data, offset);
   }
 
@@ -157,6 +179,9 @@ class DeviceOperationsBase {
    */
   auto Mmap(this Derived& self, uintptr_t addr, size_t length, ProtFlags prot,
             MapFlags flags, size_t offset) -> Expected<uintptr_t> {
+    if (!self.opened_.load()) {
+      return std::unexpected(Error{ErrorCode::kDeviceNotOpen});
+    }
     return self.DoMmap(addr, length, prot, flags, offset);
   }
 
@@ -169,6 +194,9 @@ class DeviceOperationsBase {
    */
   auto Ioctl(this Derived& self, uint32_t request, uintptr_t arg = 0)
       -> Expected<int64_t> {
+    if (!self.opened_.load()) {
+      return std::unexpected(Error{ErrorCode::kDeviceNotOpen});
+    }
     return self.DoIoctl(request, arg);
   }
 
@@ -247,6 +275,9 @@ class DeviceOperationsBase {
                [[maybe_unused]] uintptr_t arg) -> Expected<int64_t> {
     return std::unexpected(Error{ErrorCode::kDeviceNotSupported});
   }
+
+  /// @brief 设备打开状态（原子操作，支持多核并发）
+  std::atomic<bool> opened_{false};
 };
 
 #endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_OPERATIONS_BASE_HPP_ */

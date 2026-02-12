@@ -69,6 +69,11 @@ enum class ErrorCode : uint64_t {
   kDeviceBlockUnaligned = 0x80B,
   kDeviceBlockOutOfRange = 0x80C,
   kDeviceFlushFailed = 0x80D,
+  // IrqChip 相关错误 (0x900 - 0x9FF)
+  kIrqChipInvalidIrq = 0x900,
+  kIrqChipIrqNotEnabled = 0x901,
+  kIrqChipAffinityFailed = 0x902,
+  kIrqChipIpiTimeout = 0x903,
   // 通用错误 (0xF00 - 0xFFF)
   kInvalidArgument = 0xF00,
   kOutOfMemory = 0xF01,
@@ -179,6 +184,14 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
       return "Block number out of device range";
     case ErrorCode::kDeviceFlushFailed:
       return "Device flush failed";
+    case ErrorCode::kIrqChipInvalidIrq:
+      return "IRQ number out of controller range";
+    case ErrorCode::kIrqChipIrqNotEnabled:
+      return "IRQ not enabled";
+    case ErrorCode::kIrqChipAffinityFailed:
+      return "Failed to set IRQ CPU affinity";
+    case ErrorCode::kIrqChipIpiTimeout:
+      return "IPI delivery timeout";
     case ErrorCode::kInvalidArgument:
       return "Invalid argument";
     case ErrorCode::kOutOfMemory:

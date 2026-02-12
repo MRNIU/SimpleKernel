@@ -149,9 +149,9 @@ class BlockDevice : public DeviceOperationsBase<Derived> {
   /**
    * @brief 字节级读取 → 块读取的桥接（要求对齐）
    */
-  auto DoRead(std::span<uint8_t> buffer, size_t offset) -> Expected<size_t> {
-    auto* derived = static_cast<Derived*>(this);
-    size_t block_size = derived->DoGetBlockSize();
+  auto DoRead(this Derived& self, std::span<uint8_t> buffer, size_t offset)
+      -> Expected<size_t> {
+    size_t block_size = self.DoGetBlockSize();
     if (block_size == 0) {
       return std::unexpected(Error{ErrorCode::kDeviceNotSupported});
     }
@@ -160,7 +160,7 @@ class BlockDevice : public DeviceOperationsBase<Derived> {
     }
     uint64_t block_no = offset / block_size;
     size_t block_count = buffer.size() / block_size;
-    auto result = derived->DoReadBlocks(block_no, buffer, block_count);
+    auto result = self.DoReadBlocks(block_no, buffer, block_count);
     if (!result) {
       return std::unexpected(result.error());
     }
@@ -170,10 +170,9 @@ class BlockDevice : public DeviceOperationsBase<Derived> {
   /**
    * @brief 字节级写入 → 块写入的桥接（要求对齐）
    */
-  auto DoWrite(std::span<const uint8_t> data, size_t offset)
+  auto DoWrite(this Derived& self, std::span<const uint8_t> data, size_t offset)
       -> Expected<size_t> {
-    auto* derived = static_cast<Derived*>(this);
-    size_t block_size = derived->DoGetBlockSize();
+    size_t block_size = self.DoGetBlockSize();
     if (block_size == 0) {
       return std::unexpected(Error{ErrorCode::kDeviceNotSupported});
     }
@@ -182,7 +181,7 @@ class BlockDevice : public DeviceOperationsBase<Derived> {
     }
     uint64_t block_no = offset / block_size;
     size_t block_count = data.size() / block_size;
-    auto result = derived->DoWriteBlocks(block_no, data, block_count);
+    auto result = self.DoWriteBlocks(block_no, data, block_count);
     if (!result) {
       return std::unexpected(result.error());
     }

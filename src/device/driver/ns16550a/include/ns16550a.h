@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_SRC_DRIVER_NS16550A_INCLUDE_NS16550A_H_
 
 #include <cstdint>
+#include <optional>
 
 class Ns16550a {
  public:
@@ -35,9 +36,15 @@ class Ns16550a {
 
   /**
    * 非阻塞式尝试读取一个字符
-   * @return 读取到的字符，如果没有数据则返回 -1
+   * @return 读取到的字符，如果没有数据则返回 std::nullopt
    */
-  [[nodiscard]] auto TryGetChar() const -> uint8_t;
+  [[nodiscard]] auto TryGetChar() const -> std::optional<uint8_t>;
+
+  /**
+   * 检查接收缓冲区是否有数据可读（不消耗数据）
+   * @return true 如果有数据可读
+   */
+  [[nodiscard]] auto HasData() const -> bool;
 
  private:
   /// read mode: Receive holding reg

@@ -11,8 +11,6 @@
  * @brief Poll 事件标志位
  */
 struct PollEvents {
-  uint32_t value;
-
   /// 有数据可读
   static constexpr uint32_t kIn = 1U << 0;
   /// 可以写入（不会阻塞）
@@ -22,24 +20,31 @@ struct PollEvents {
   /// 挂起（对端关闭）
   static constexpr uint32_t kHup = 1U << 3;
 
-  constexpr explicit PollEvents(uint32_t v = 0) : value(v) {}
-  constexpr auto operator|(PollEvents other) const -> PollEvents {
-    return PollEvents{value | other.value};
-  }
-  constexpr auto operator&(PollEvents other) const -> PollEvents {
-    return PollEvents{value & other.value};
-  }
-  constexpr explicit operator bool() const { return value != 0; }
-
   [[nodiscard]] constexpr auto HasIn() const -> bool {
     return (value & kIn) != 0;
   }
+
   [[nodiscard]] constexpr auto HasOut() const -> bool {
     return (value & kOut) != 0;
   }
+
   [[nodiscard]] constexpr auto HasErr() const -> bool {
     return (value & kErr) != 0;
   }
+
+  constexpr auto operator|(PollEvents other) const -> PollEvents {
+    return PollEvents{value | other.value};
+  }
+
+  constexpr auto operator&(PollEvents other) const -> PollEvents {
+    return PollEvents{value & other.value};
+  }
+
+  constexpr explicit operator bool() const { return value != 0; }
+
+  constexpr explicit PollEvents(uint32_t v = 0) : value(v) {}
+
+  uint32_t value;
 };
 
 /**
@@ -56,33 +61,15 @@ template <class Derived>
 class CharDevice : public DeviceOperationsBase<Derived> {
  public:
   /**
-   * @brief 从字符设备读取数据（无 offset）
-   *
-   * @param  buffer  目标缓冲区
-   * @return Expected<size_t> 实际读取的字节数
-   */
-  auto Read(this Derived& self, std::span<uint8_t> buffer) -> Expected<size_t> {
-    return self.DoCharRead(buffer);
-  }
-
-  /**
-   * @brief 向字符设备写入数据（无 offset）
-   *
-   * @param  data  待写入数据
-   * @return Expected<size_t> 实际写入的字节数
-   */
-  auto Write(this Derived& self, std::span<const uint8_t> data)
-      -> Expected<size_t> {
-    return self.DoCharWrite(data);
-  }
-
-  /**
    * @brief 查询设备就绪状态（非阻塞）
    *
    * @param  requested  感兴趣的事件集合
    * @return Expected<PollEvents> 当前就绪的事件集合
    */
   auto Poll(this Derived& self, PollEvents requested) -> Expected<PollEvents> {
+    if (!self.opened_.load()) {
+      return std::unexpected(Error{ErrorCode::kDeviceNotOpen});
+    }
     return self.DoPoll(requested);
   }
 
@@ -138,14 +125,14 @@ class CharDevice : public DeviceOperationsBase<Derived> {
     return std::unexpected(Error{ErrorCode::kDeviceNotSupported});
   }
 
-  auto DoRead(std::span<uint8_t> buffer, [[maybe_unused]] size_t offset)
-      -> Expected<size_t> {
-    return static_cast<Derived*>(this)->DoCharRead(buffer);
+  auto DoRead(this Derived& self, std::span<uint8_t> buffer,
+              [[maybe_unused]] size_t offset) -> Expected<size_t> {
+    return self.DoCharRead(buffer);
   }
 
-  auto DoWrite(std::span<const uint8_t> data, [[maybe_unused]] size_t offset)
-      -> Expected<size_t> {
-    return static_cast<Derived*>(this)->DoCharWrite(data);
+  auto DoWrite(this Derived& self, std::span<const uint8_t> data,
+               [[maybe_unused]] size_t offset) -> Expected<size_t> {
+    return self.DoCharWrite(data);
   }
 };
 
