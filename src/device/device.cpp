@@ -2,8 +2,6 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "driver.h"
-
 #include <cstdint>
 
 #include "device_manager.hpp"

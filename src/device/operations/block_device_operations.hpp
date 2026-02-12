@@ -2,10 +2,10 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_BLOCK_DEVICE_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_BLOCK_DEVICE_HPP_
+#ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_BLOCK_DEVICE_OPERATIONS_HPP_
+#define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_BLOCK_DEVICE_OPERATIONS_HPP_
 
-#include "device_operations.hpp"
+#include "device_operations_base.hpp"
 
 /**
  * @brief 块设备抽象接口
@@ -20,7 +20,7 @@
  * @pre  派生类至少实现 DoReadBlocks 或 DoWriteBlocks 之一
  */
 template <class Derived>
-class BlockDevice : public DeviceOperations<Derived> {
+class BlockDevice : public DeviceOperationsBase<Derived> {
  public:
   /**
    * @brief 从设备读取指定数量的块
@@ -146,7 +146,9 @@ class BlockDevice : public DeviceOperations<Derived> {
    */
   auto DoGetBlockCount() const -> uint64_t { return 0; }
 
-  /// @brief 字节级读取 → 块读取的桥接（要求对齐）
+  /**
+   * @brief 字节级读取 → 块读取的桥接（要求对齐）
+   */
   auto DoRead(std::span<uint8_t> buffer, size_t offset) -> Expected<size_t> {
     auto* derived = static_cast<Derived*>(this);
     size_t block_size = derived->DoGetBlockSize();
@@ -165,7 +167,9 @@ class BlockDevice : public DeviceOperations<Derived> {
     return *result * block_size;
   }
 
-  /// @brief 字节级写入 → 块写入的桥接（要求对齐）
+  /**
+   * @brief 字节级写入 → 块写入的桥接（要求对齐）
+   */
   auto DoWrite(std::span<const uint8_t> data, size_t offset)
       -> Expected<size_t> {
     auto* derived = static_cast<Derived*>(this);
@@ -185,10 +189,14 @@ class BlockDevice : public DeviceOperations<Derived> {
     return *result * block_size;
   }
 
-  ~BlockDevice() = default;
-
  private:
-  /// @brief 校验块访问参数的合法性
+  /**
+   * @brief 校验块访问参数的合法性
+   * @param  block_no     起始块号
+   * @param  buffer_size  数据缓冲区大小（字节）
+   * @param  block_count  块数量
+   * @return Expected<void> 参数合法返回 void，非法返回错误码
+   */
   auto ValidateBlockAccess(this const Derived& self, uint64_t block_no,
                            size_t buffer_size, size_t block_count)
       -> Expected<void> {
@@ -207,4 +215,4 @@ class BlockDevice : public DeviceOperations<Derived> {
   }
 };
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_BLOCK_DEVICE_HPP_ */
+#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_BLOCK_DEVICE_OPERATIONS_HPP_ */

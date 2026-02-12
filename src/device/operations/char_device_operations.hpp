@@ -2,15 +2,13 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_CHAR_DEVICE_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_CHAR_DEVICE_HPP_
+#ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_CHAR_DEVICE_OPERATIONS_HPP_
+#define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_CHAR_DEVICE_OPERATIONS_HPP_
 
-#include "device_operations.hpp"
+#include "device_operations_base.hpp"
 
 /**
  * @brief Poll 事件标志位
- *
- * 类似 Linux 的 POLLIN / POLLOUT 等，用于 Poll() 查询设备就绪状态。
  */
 struct PollEvents {
   uint32_t value;
@@ -48,14 +46,14 @@ struct PollEvents {
  * @brief 字符设备抽象接口
  *
  * 面向字节流的设备，不支持随机访问。
- * Read/Write 无 offset 参数，新增 Poll 和 PutChar/GetChar。
+ * Read/Write 无 offset 参数，新增 Poll 和 PutChar/GetChar
  *
  * @tparam Derived 具体字符设备类型
  *
  * @pre  派生类至少实现 DoCharRead 或 DoCharWrite 之一
  */
 template <class Derived>
-class CharDevice : public DeviceOperations<Derived> {
+class CharDevice : public DeviceOperationsBase<Derived> {
  public:
   /**
    * @brief 从字符设备读取数据（无 offset）
@@ -149,8 +147,6 @@ class CharDevice : public DeviceOperations<Derived> {
       -> Expected<size_t> {
     return static_cast<Derived*>(this)->DoCharWrite(data);
   }
-
-  ~CharDevice() = default;
 };
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_CHAR_DEVICE_HPP_ */
+#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_CHAR_DEVICE_OPERATIONS_HPP_ */

@@ -2,8 +2,8 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_OPERATIONS_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_OPERATIONS_HPP_
+#ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_OPERATIONS_BASE_HPP_
+#define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_OPERATIONS_BASE_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -14,8 +14,6 @@
 
 /**
  * @brief 设备打开模式标志位
- *
- * 类似 Linux 的 O_RDONLY / O_WRONLY / O_RDWR 等，使用位掩码组合。
  */
 struct OpenFlags {
   uint32_t value;
@@ -87,7 +85,7 @@ struct MapFlags {
 };
 
 /**
- * @brief 设备操作抽象接口，模仿 Linux struct file_operations
+ * @brief 设备操作抽象接口
  *
  * 派生类只需 override 支持的 DoXxx 方法，未覆写的操作默认返回
  * kDeviceNotSupported。
@@ -95,7 +93,7 @@ struct MapFlags {
  * @tparam Derived 具体设备类型
  */
 template <class Derived>
-class DeviceOperations {
+class DeviceOperationsBase {
  public:
   /**
    * @brief 打开设备
@@ -249,8 +247,6 @@ class DeviceOperations {
                [[maybe_unused]] uintptr_t arg) -> Expected<int64_t> {
     return std::unexpected(Error{ErrorCode::kDeviceNotSupported});
   }
-
-  ~DeviceOperations() = default;
 };
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_OPERATIONS_HPP_ */
+#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_OPERATIONS_BASE_HPP_ */
