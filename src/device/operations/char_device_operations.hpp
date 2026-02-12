@@ -67,7 +67,7 @@ class CharDevice : public DeviceOperationsBase<Derived> {
    * @return Expected<PollEvents> 当前就绪的事件集合
    */
   auto Poll(this Derived& self, PollEvents requested) -> Expected<PollEvents> {
-    if (!self.opened_.load()) {
+    if (!self.IsOpened()) {
       return std::unexpected(Error{ErrorCode::kDeviceNotOpen});
     }
     return self.DoPoll(requested);
@@ -134,6 +134,9 @@ class CharDevice : public DeviceOperationsBase<Derived> {
                [[maybe_unused]] size_t offset) -> Expected<size_t> {
     return self.DoCharWrite(data);
   }
+
+  CharDevice() = default;
+  ~CharDevice() = default;
 };
 
 #endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_CHAR_DEVICE_OPERATIONS_HPP_ */

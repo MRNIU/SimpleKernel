@@ -231,6 +231,9 @@ class DeviceOperationsBase {
   }
 
  protected:
+  /// @brief 查询设备是否已打开
+  [[nodiscard]] auto IsOpened() const -> bool { return opened_.load(); }
+
   /// @brief 默认 Open 实现（返回 kDeviceNotSupported）
   auto DoOpen([[maybe_unused]] OpenFlags flags) -> Expected<void> {
     return std::unexpected(Error{ErrorCode::kDeviceNotSupported});
@@ -276,6 +279,10 @@ class DeviceOperationsBase {
     return std::unexpected(Error{ErrorCode::kDeviceNotSupported});
   }
 
+  DeviceOperationsBase() = default;
+  ~DeviceOperationsBase() = default;
+
+ private:
   /// @brief 设备打开状态（原子操作，支持多核并发）
   std::atomic<bool> opened_{false};
 };

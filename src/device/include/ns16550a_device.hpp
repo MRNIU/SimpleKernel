@@ -21,10 +21,14 @@ class Ns16550aDevice : public CharDevice<Ns16550aDevice> {
     if (!flags.CanRead() && !flags.CanWrite()) {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
+    flags_ = flags;
     return {};
   }
 
   auto DoCharRead(std::span<uint8_t> buffer) -> Expected<size_t> {
+    if (!flags_.CanRead()) {
+      return std::unexpected(Error{ErrorCode::kDevicePermissionDenied});
+    }
     for (size_t i = 0; i < buffer.size(); ++i) {
       auto ch = driver_.TryGetChar();
       if (!ch) {
@@ -36,6 +40,9 @@ class Ns16550aDevice : public CharDevice<Ns16550aDevice> {
   }
 
   auto DoCharWrite(std::span<const uint8_t> data) -> Expected<size_t> {
+    if (!flags_.CanWrite()) {
+      return std::unexpected(Error{ErrorCode::kDevicePermissionDenied});
+    }
     for (auto byte : data) {
       driver_.PutChar(byte);
     }
@@ -60,6 +67,7 @@ class Ns16550aDevice : public CharDevice<Ns16550aDevice> {
 
  private:
   Ns16550a driver_;
+  OpenFlags flags_{0};
 };
 
 #endif /* SIMPLEKERNEL_SRC_DRIVER_NS16550A_INCLUDE_NS16550A_HPP_ */
