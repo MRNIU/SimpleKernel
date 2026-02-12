@@ -279,8 +279,25 @@ class DeviceOperationsBase {
     return std::unexpected(Error{ErrorCode::kDeviceNotSupported});
   }
 
+  /// @name 构造/析构函数
+  /// @{
   DeviceOperationsBase() = default;
   ~DeviceOperationsBase() = default;
+  DeviceOperationsBase(const DeviceOperationsBase&) = delete;
+  auto operator=(const DeviceOperationsBase&) -> DeviceOperationsBase& = delete;
+  DeviceOperationsBase(DeviceOperationsBase&& other) noexcept
+      : opened_(other.opened_.load()) {
+    other.opened_.store(false);
+  }
+  auto operator=(DeviceOperationsBase&& other) noexcept
+      -> DeviceOperationsBase& {
+    if (this != &other) {
+      opened_.store(other.opened_.load());
+      other.opened_.store(false);
+    }
+    return *this;
+  }
+  /// @}
 
  private:
   /// @brief 设备打开状态（原子操作，支持多核并发）

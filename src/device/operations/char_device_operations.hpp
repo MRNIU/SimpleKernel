@@ -135,8 +135,15 @@ class CharDevice : public DeviceOperationsBase<Derived> {
     return self.DoCharWrite(data);
   }
 
+  /// @name 构造/析构函数
+  /// @{
   CharDevice() = default;
   ~CharDevice() = default;
+  CharDevice(const CharDevice&) = delete;
+  auto operator=(const CharDevice&) -> CharDevice& = delete;
+  CharDevice(CharDevice&&) noexcept = default;
+  auto operator=(CharDevice&&) noexcept -> CharDevice& = default;
+  /// @}
 };
 
 #endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_CHAR_DEVICE_OPERATIONS_HPP_ */

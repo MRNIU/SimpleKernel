@@ -50,10 +50,13 @@ auto Pl011::GetChar() const -> uint8_t {
   return io::In<uint32_t>(base_addr_ + kRegDR);
 }
 
-auto Pl011::TryGetChar() const -> uint8_t {
-  // Wait until there is data in the FIFO or device is disabled
+auto Pl011::TryGetChar() const -> std::optional<uint8_t> {
   if (io::In<uint32_t>(base_addr_ + kRegFR) & kFRRXFE) {
-    return -1;
+    return std::nullopt;
   }
-  return io::In<uint32_t>(base_addr_ + kRegDR);
+  return static_cast<uint8_t>(io::In<uint32_t>(base_addr_ + kRegDR));
+}
+
+auto Pl011::HasData() const -> bool {
+  return !(io::In<uint32_t>(base_addr_ + kRegFR) & kFRRXFE);
 }

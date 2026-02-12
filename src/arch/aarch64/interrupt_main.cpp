@@ -10,7 +10,7 @@
 #include "io.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
-#include "pl011.h"
+#include "pl011_device.hpp"
 #include "sk_cstdio"
 
 namespace {
@@ -139,7 +139,7 @@ extern "C" void error_lower_el_aarch32_handler(cpu_io::TrapContext* context) {
 }
 
 auto uart_handler(uint64_t cause, cpu_io::TrapContext*) -> uint64_t {
-  sk_putchar(Singleton<Pl011>::GetInstance().TryGetChar(), nullptr);
+  sk_putchar(Singleton<Pl011Device>::GetInstance().GetChar().value(), nullptr);
   return cause;
 }
 

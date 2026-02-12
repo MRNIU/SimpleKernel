@@ -213,59 +213,59 @@ auto main(int argc, const char** argv) -> int {
   klog::info << "Hello SimpleKernel\n";
   klog::Info("Initializing test tasks...\n");
 
-  Singleton<VirtualMemory>::GetInstance().MapMMIO(0x10001000, 0x8000);
-  Singleton<Plic>::GetInstance().Set(cpu_io::GetCurrentCoreId(), 7, 1, true);
-  Singleton<Plic>::GetInstance().RegisterInterruptFunc(
-      7, [](uint64_t source_id, uint8_t*) -> uint64_t {
-        klog::Info("Received blk interrupt %d\n", source_id);
-        return 0;
-      });
+  // Singleton<VirtualMemory>::GetInstance().MapMMIO(0x10001000, 0x8000);
+  // Singleton<Plic>::GetInstance().Set(cpu_io::GetCurrentCoreId(), 7, 1, true);
+  // Singleton<Plic>::GetInstance().RegisterInterruptFunc(
+  //     7, [](uint64_t source_id, uint8_t*) -> uint64_t {
+  //       klog::Info("Received blk interrupt %d\n", source_id);
+  //       return 0;
+  //     });
 
-  uint64_t blk_base = find_blk_device();
-  using VirtioBlkType = virtio_driver::blk::VirtioBlk<RiscvTraits>;
-  uint64_t extra_features =
-      static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kSegMax) |
-      static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kSizeMax) |
-      static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kBlkSize) |
-      static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kFlush) |
-      static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kGeometry);
-  auto blk_result =
-      VirtioBlkType::Create(blk_base, g_vq_dma_buf, 1, 128, extra_features);
-  if (!blk_result.has_value()) {
-    klog::Err("VirtioBlk::Create() failed, skipping remaining tests");
-  }
-  auto& blk = *blk_result;
-  auto config = blk.ReadConfig();
-  // klog::Info("Device capacity (sectors) 0x%X\n", config.capacity);
-  // klog::Info("Block size 0x%X\n", config.blk_size);
-  // klog::Info("Size max 0x%X\n", config.size_max);
-  // klog::Info("Seg max 0x%X\n", config.seg_max);
-  uint64_t capacity = blk.GetCapacity();
-  klog::Info("Calculated capacity (sectors) 0x%X\n", capacity);
+  // uint64_t blk_base = find_blk_device();
+  // using VirtioBlkType = virtio_driver::blk::VirtioBlk<RiscvTraits>;
+  // uint64_t extra_features =
+  //     static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kSegMax) |
+  //     static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kSizeMax) |
+  //     static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kBlkSize) |
+  //     static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kFlush) |
+  //     static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kGeometry);
+  // auto blk_result =
+  //     VirtioBlkType::Create(blk_base, g_vq_dma_buf, 1, 128, extra_features);
+  // if (!blk_result.has_value()) {
+  //   klog::Err("VirtioBlk::Create() failed, skipping remaining tests");
+  // }
+  // auto& blk = *blk_result;
+  // auto config = blk.ReadConfig();
+  // // klog::Info("Device capacity (sectors) 0x%X\n", config.capacity);
+  // // klog::Info("Block size 0x%X\n", config.blk_size);
+  // // klog::Info("Size max 0x%X\n", config.size_max);
+  // // klog::Info("Seg max 0x%X\n", config.seg_max);
+  // uint64_t capacity = blk.GetCapacity();
+  // klog::Info("Calculated capacity (sectors) 0x%X\n", capacity);
 
-  memset(g_data_buf, 0, sizeof(g_data_buf));
-  auto read_result = blk.Read(0, g_data_buf);
-  if (!read_result.has_value()) {
-    klog::Err("VirtioBlk::Read() failed, error code: %d\n",
-              read_result.error().code);
-  } else {
-    klog::Info("Read first sector successfully:\n");
-    for (size_t i = 0; i < virtio_driver::blk::kSectorSize; ++i) {
-      klog::Info("%02X ", g_data_buf[i]);
-      if ((i + 1) % 16 == 0) {
-        klog::Info("\n");
-      }
-    }
-    klog::Info("\n");
-  }
+  // memset(g_data_buf, 0, sizeof(g_data_buf));
+  // auto read_result = blk.Read(0, g_data_buf);
+  // if (!read_result.has_value()) {
+  //   klog::Err("VirtioBlk::Read() failed, error code: %d\n",
+  //             read_result.error().code);
+  // } else {
+  //   klog::Info("Read first sector successfully:\n");
+  //   for (size_t i = 0; i < virtio_driver::blk::kSectorSize; ++i) {
+  //     klog::Info("%02X ", g_data_buf[i]);
+  //     if ((i + 1) % 16 == 0) {
+  //       klog::Info("\n");
+  //     }
+  //   }
+  //   klog::Info("\n");
+  // }
 
-  for (size_t i = 0; i < virtio_driver::blk::kSectorSize; ++i) {
-    g_data_buf[i] = static_cast<uint8_t>(0xAA + (i & 0x0F));
-  }
-  auto write_result = blk.Write(0, g_data_buf);
+  // for (size_t i = 0; i < virtio_driver::blk::kSectorSize; ++i) {
+  //   g_data_buf[i] = static_cast<uint8_t>(0xAA + (i & 0x0F));
+  // }
+  // auto write_result = blk.Write(0, g_data_buf);
 
-  while (1)
-    ;
+  // while (1)
+  //   ;
 
   // 为主核心创建测试任务
   create_test_tasks();
