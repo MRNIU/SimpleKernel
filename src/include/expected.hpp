@@ -54,6 +54,21 @@ enum class ErrorCode : uint64_t {
   kTaskKernelStackAllocationFailed = 0x705,
   kTaskNoChildFound = 0x706,
   kTaskInvalidPid = 0x707,
+  // Device 相关错误 (0x800 - 0x8FF)
+  kDeviceNotFound = 0x800,
+  kDeviceAlreadyOpen = 0x801,
+  kDeviceNotOpen = 0x802,
+  kDeviceReadFailed = 0x803,
+  kDeviceWriteFailed = 0x804,
+  kDeviceIoctlFailed = 0x805,
+  kDeviceMmapFailed = 0x806,
+  kDeviceNotSupported = 0x807,
+  kDeviceBusy = 0x808,
+  kDevicePermissionDenied = 0x809,
+  kDeviceInvalidOffset = 0x80A,
+  kDeviceBlockUnaligned = 0x80B,
+  kDeviceBlockOutOfRange = 0x80C,
+  kDeviceFlushFailed = 0x80D,
   // 通用错误 (0xF00 - 0xFFF)
   kInvalidArgument = 0xF00,
   kOutOfMemory = 0xF01,
@@ -136,6 +151,34 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
       return "No child process found";
     case ErrorCode::kTaskInvalidPid:
       return "Invalid PID";
+    case ErrorCode::kDeviceNotFound:
+      return "Device not found";
+    case ErrorCode::kDeviceAlreadyOpen:
+      return "Device already open";
+    case ErrorCode::kDeviceNotOpen:
+      return "Device not open";
+    case ErrorCode::kDeviceReadFailed:
+      return "Device read failed";
+    case ErrorCode::kDeviceWriteFailed:
+      return "Device write failed";
+    case ErrorCode::kDeviceIoctlFailed:
+      return "Device ioctl failed";
+    case ErrorCode::kDeviceMmapFailed:
+      return "Device mmap failed";
+    case ErrorCode::kDeviceNotSupported:
+      return "Operation not supported by device";
+    case ErrorCode::kDeviceBusy:
+      return "Device busy";
+    case ErrorCode::kDevicePermissionDenied:
+      return "Device permission denied";
+    case ErrorCode::kDeviceInvalidOffset:
+      return "Invalid device offset";
+    case ErrorCode::kDeviceBlockUnaligned:
+      return "Block access not aligned to block size";
+    case ErrorCode::kDeviceBlockOutOfRange:
+      return "Block number out of device range";
+    case ErrorCode::kDeviceFlushFailed:
+      return "Device flush failed";
     case ErrorCode::kInvalidArgument:
       return "Invalid argument";
     case ErrorCode::kOutOfMemory:

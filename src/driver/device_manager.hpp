@@ -4,8 +4,11 @@
 
 #include <cpu_io.h>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <span>
 
 #include "kernel_log.hpp"
 
@@ -111,18 +114,23 @@ class DeviceManager {
   }
 
   void HandleInterrupt(size_t source_id) {
-    for (size_t i = 0; i < device_count_; ++i) {
-      if (devices_[i] && devices_[i]->GetInterruptId() == source_id) {
-        devices_[i]->HandleInterrupt();
+    for (size_t i = 0; i < MaxDevices; ++i) {
+      if (devices_[i].valid &&
+          devices_[i].device->GetInterruptId() == source_id) {
+        devices_[i].device->HandleInterrupt();
         break;
       }
     }
   }
 
-  DeviceManager() { devices_.fill(nullptr); }
+  DeviceManager() {}
 
  private:
-  /// @brief 通过非模板基类指针统一持有所有设备，与 Transport 类型无关
-  std::array<DeviceBase*, MaxDevices> devices_{};
-  size_t device_count_{0};
+  struct DeviceInfo {
+    DeviceBase* device;
+    const char* compatible_str;
+    bool valid;
+  };
+
+  std::array<DeviceInfo, MaxDevices> devices_{};
 };
