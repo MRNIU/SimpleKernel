@@ -17,6 +17,10 @@ class Ns16550aDevice : public CharDevice<Ns16550aDevice> {
  public:
   explicit Ns16550aDevice(uint64_t base_addr) : driver_(base_addr) {}
 
+  /// 直接访问底层驱动（用于中断处理等需要绕过 Device 框架的场景）
+  auto GetDriver() -> Ns16550a& { return driver_; }
+
+ protected:
   auto DoOpen(OpenFlags flags) -> Expected<void> {
     if (!flags.CanRead() && !flags.CanWrite()) {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
@@ -62,10 +66,13 @@ class Ns16550aDevice : public CharDevice<Ns16550aDevice> {
 
   auto DoRelease() -> Expected<void> { return {}; }
 
-  /// 直接访问底层驱动（用于中断处理等需要绕过 Device 框架的场景）
-  auto GetDriver() -> Ns16550a& { return driver_; }
-
  private:
+  // CRTP 基类需要访问 DoXxx 方法
+  template <class>
+  friend class DeviceOperationsBase;
+  template <class>
+  friend class CharDevice;
+
   Ns16550a driver_;
   OpenFlags flags_{0};
 };
