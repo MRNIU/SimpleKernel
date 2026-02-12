@@ -2,7 +2,6 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "pl011.h"
 #include "pl011_device.hpp"
 #include "singleton.hpp"
 #include "sk_cstdio"

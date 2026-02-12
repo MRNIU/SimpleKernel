@@ -2,7 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "ns16550a.h"
+#include "include/ns16550a.h"
 
 #include <cpu_io.h>
 

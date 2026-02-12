@@ -9,7 +9,7 @@
 #include "interrupt.h"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
-#include "ns16550a.h"
+#include "ns16550a_device.hpp"
 #include "opensbi_interface.h"
 #include "sk_cstdio"
 #include "sk_iostream"

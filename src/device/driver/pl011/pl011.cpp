@@ -2,7 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "pl011.h"
+#include "include/pl011.h"
 
 #include <cpu_io.h>
 
