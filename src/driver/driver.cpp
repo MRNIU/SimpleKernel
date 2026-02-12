@@ -6,14 +6,17 @@
 
 #include <cstdint>
 
-auto Driver(uint32_t argc, const uint8_t *argv) -> uint32_t {
-  (void)argc;
-  (void)argv;
+#include "device_manager.hpp"
+#include "kernel_fdt.hpp"
+#include "kernel_log.hpp"
+#include "singleton.hpp"
 
-  // 进入死循环
-  while (true) {
-    ;
-  }
+auto DeviceInit(int, const char**) -> void {
+  Singleton<DeviceManager<EnvironmentTraits>>::GetInstance() =
+      DeviceManager<EnvironmentTraits>{};
+  auto& device_manager =
+      Singleton<DeviceManager<EnvironmentTraits>>::GetInstance();
 
-  return 0;
+  device_manager.AddDevice<MmioTransport>("virtio,mmio",
+                                          MmioTransport{0x10007000});
 }
