@@ -83,8 +83,8 @@ ADD_SUBDIRECTORY (3rd/cpu_io)
 # https://github.com/MRNIU/MPMCQueue.git
 ADD_SUBDIRECTORY (3rd/MPMCQueue)
 
-# https://github.com/MRNIU/virtio_driver.git
-ADD_SUBDIRECTORY (3rd/virtio_driver)
+# https://github.com/MRNIU/device_framework.git
+ADD_SUBDIRECTORY (3rd/device_framework)
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
     # https://github.com/riscv-software-src/opensbi.git
