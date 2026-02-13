@@ -1,3 +1,14 @@
+# 通过 DHCP/BOOTP 获取网络地址，用于后续 TFTP 下载
 bootp
+
+# 将 FIT 镜像加载地址设为 0x44000000，避免与内核解压目标地址 (0x40100000) 重叠。
+# U-Boot 默认的 kernel_addr_r (0x40400000) 距内核 load address 仅 3 MiB，
+# 当 FIT 镜像超过该间距时，bootm 解压内核会覆盖 FIT 源数据，导致：
+#   ERROR: new format image overwritten - must RESET the board to recover
+setenv kernel_addr_r 0x44000000
+
+# 通过 TFTP 从宿主机下载 FIT 镜像 (包含 kernel.elf + DTB)
 tftp $kernel_addr_r bin/boot.fit
+
+# 从 FIT 镜像启动内核，使用 QEMU 提供的 DTB ($fdt_addr)
 bootm $kernel_addr_r - $fdt_addr
