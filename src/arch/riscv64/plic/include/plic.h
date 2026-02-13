@@ -5,6 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_DRIVER_PLIC_INCLUDE_PLIC_H_
 #define SIMPLEKERNEL_SRC_DRIVER_PLIC_INCLUDE_PLIC_H_
 
+#include <cpu_io.h>
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -21,7 +23,11 @@ class Plic {
    * @param cause 中断号
    * @param context 中断上下文
    */
-  typedef uint64_t (*InterruptFunc)(uint64_t cause, uint8_t* context);
+  typedef uint64_t (*InterruptFunc)(uint64_t cause,
+                                    cpu_io::TrapContext* context);
+
+  /// 最大外部中断数量
+  static constexpr size_t kInterruptMaxCount = 16;
 
   /**
    * 构造函数
@@ -46,7 +52,7 @@ class Plic {
    * @param  cause 中断或异常号
    * @param  context 中断上下文
    */
-  void Do(uint64_t cause, uint8_t* context) const;
+  void Do(uint64_t cause, cpu_io::TrapContext* context) const;
 
   /**
    * @brief 向 Plic 询问中断
@@ -91,7 +97,7 @@ class Plic {
    * @param  cause              外部中断号
    * @param  context 中断上下文
    */
-  void Do(uint64_t cause, uint8_t* context);
+  void Do(uint64_t cause, cpu_io::TrapContext* context);
 
  private:
   static constexpr uint64_t kSourcePriorityOffset = 0x000000;
@@ -106,9 +112,6 @@ class Plic {
 
   // Enable bits 每个 context 的大小 (最多支持 1024 个中断源)
   static constexpr uint64_t kEnableSize = 0x80;
-
-  /// 最大外部中断数量
-  static constexpr size_t kInterruptMaxCount = 16;
 
   /// 外部中断处理函数数组
   static std::array<InterruptFunc, kInterruptMaxCount> interrupt_handlers_;

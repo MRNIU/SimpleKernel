@@ -83,3 +83,23 @@ auto Interrupt::BroadcastIpi() -> Expected<void> {
 
   return {};
 }
+
+auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
+                                          uint32_t priority,
+                                          InterruptFunc handler)
+    -> Expected<void> {
+  // irq 为 GIC INTID（已含 kSPIBase 偏移）
+  if (irq >= kMaxInterrupt) {
+    return std::unexpected(Error(ErrorCode::kIrqChipInvalidIrq));
+  }
+
+  // 先注册处理函数
+  RegisterInterruptFunc(irq, handler);
+
+  // 再在 GIC 上为指定核心配置并启用 SPI
+  gic_.SPI(irq, cpu_id);
+
+  klog::Info("RegisterExternalInterrupt: INTID %u, cpu %u, priority %u\n", irq,
+             cpu_id, priority);
+  return {};
+}

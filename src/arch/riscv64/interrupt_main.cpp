@@ -22,14 +22,14 @@
 
 namespace {
 void RegisterInterrupts() {
-  // 注册外部中断
+  // 注册外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::
           kSupervisorExternalInterrupt,
-      [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
+      [](uint64_t, cpu_io::TrapContext* context) -> uint64_t {
         // 获取触发中断的源 ID
         auto source_id = Singleton<Plic>::GetInstance().Which();
-        Singleton<Plic>::GetInstance().Do(source_id, nullptr);
+        Singleton<Plic>::GetInstance().Do(source_id, context);
         Singleton<Plic>::GetInstance().Done(source_id);
         return 0;
       });
@@ -46,15 +46,6 @@ void RegisterInterrupts() {
             "Failed to open device_framework::ns16550a::Ns16550aDevice: %d\n",
             static_cast<int>(e.code));
         return device_framework::Expected<void>{};
-      });
-
-  // 注册串口中断
-  Singleton<Plic>::GetInstance().RegisterInterruptFunc(
-      std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial().value()),
-      [](uint64_t, uint8_t*) -> uint64_t {
-        Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance()
-            .HandleInterrupt([](uint8_t ch) { sk_putchar(ch, nullptr); });
-        return 0;
       });
 
   // 注册 ebreak 中断
@@ -158,29 +149,44 @@ void InterruptInit(int, const char**) {
   // 开启外部中断
   cpu_io::Sie::Seie::Set();
 
-  // 为当前 core 开启串口中断
-  Singleton<Plic>::GetInstance().Set(
-      cpu_io::GetCurrentCoreId(),
-      std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial().value()), 1,
-      true);
+  // 通过统一接口注册串口外部中断（先注册 handler，再启用 PLIC）
+  auto serial_irq =
+      std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial().value());
+  Singleton<Interrupt>::GetInstance()
+      .RegisterExternalInterrupt(
+          serial_irq, cpu_io::GetCurrentCoreId(), 1,
+          [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
+            Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance()
+                .HandleInterrupt([](uint8_t ch) { sk_putchar(ch, nullptr); });
+            return 0;
+          })
+      .or_else([](Error err) -> Expected<void> {
+        klog::Err("Failed to register serial IRQ: %s\n", err.message());
+        return std::unexpected(err);
+      });
 
-  // 为当前 core 开启 virtio-blk 中断
+  // 通过统一接口注册 virtio-blk 外部中断
   using BlkDriver = VirtioBlkDriver<PlatformTraits>;
   auto blk_irq = BlkDriver::GetIrq();
   if (blk_irq != 0) {
-    Singleton<Plic>::GetInstance().Set(cpu_io::GetCurrentCoreId(), blk_irq, 1,
-                                       true);
-    Singleton<Plic>::GetInstance().RegisterInterruptFunc(
-        static_cast<uint8_t>(blk_irq), [](uint64_t, uint8_t*) -> uint64_t {
-          BlkDriver::HandleInterrupt([](void* /*token*/,
-                                        device_framework::ErrorCode status) {
-            if (status != device_framework::ErrorCode::kSuccess) {
-              klog::Err("VirtIO blk IO error: %d\n", static_cast<int>(status));
-            }
-          });
-          return 0;
+    Singleton<Interrupt>::GetInstance()
+        .RegisterExternalInterrupt(
+            blk_irq, cpu_io::GetCurrentCoreId(), 1,
+            [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
+              BlkDriver::HandleInterrupt(
+                  [](void* /*token*/, device_framework::ErrorCode status) {
+                    if (status != device_framework::ErrorCode::kSuccess) {
+                      klog::Err("VirtIO blk IO error: %d\n",
+                                static_cast<int>(status));
+                    }
+                  });
+              return 0;
+            })
+        .or_else([blk_irq](Error err) -> Expected<void> {
+          klog::Err("Failed to register virtio-blk IRQ %u: %s\n", blk_irq,
+                    err.message());
+          return std::unexpected(err);
         });
-    klog::Info("PLIC: virtio-blk IRQ %u registered\n", blk_irq);
   }
 
   // 初始化定时器

@@ -57,6 +57,19 @@ class InterruptBase {
    * @return Expected<void> 成功时返回 void，失败时返回错误
    */
   virtual auto BroadcastIpi() -> Expected<void> = 0;
+
+  /**
+   * @brief 注册外部中断处理函数
+   * @param irq 外部中断号（平台相关: PLIC source_id / GIC INTID / APIC IRQ）
+   * @param cpu_id 目标 CPU 核心 ID，中断将路由到该核心
+   * @param priority 中断优先级
+   * @param handler 中断处理函数
+   * @return Expected<void> 成功时返回 void，失败时返回错误
+   */
+  virtual auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
+                                         uint32_t priority,
+                                         InterruptFunc handler)
+      -> Expected<void> = 0;
 };
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_ */

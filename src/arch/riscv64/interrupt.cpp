@@ -123,3 +123,23 @@ auto Interrupt::BroadcastIpi() -> Expected<void> {
 
   return SendIpi(mask);
 }
+
+auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
+                                          uint32_t priority,
+                                          InterruptFunc handler)
+    -> Expected<void> {
+  if (irq >= Plic::kInterruptMaxCount) {
+    return std::unexpected(Error(ErrorCode::kIrqChipInvalidIrq));
+  }
+
+  // 先注册处理函数
+  Singleton<Plic>::GetInstance().RegisterInterruptFunc(
+      static_cast<uint8_t>(irq), handler);
+
+  // 再在 PLIC 上为指定核心启用该中断
+  Singleton<Plic>::GetInstance().Set(cpu_id, irq, priority, true);
+
+  klog::Info("RegisterExternalInterrupt: IRQ %u, cpu %u, priority %u\n", irq,
+             cpu_id, priority);
+  return {};
+}

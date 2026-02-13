@@ -154,12 +154,14 @@ void InterruptInit(int, const char**) {
 
   klog::Info("uart_intid: %d\n", uart_intid);
 
-  Singleton<Interrupt>::GetInstance().SPI(uart_intid,
-                                          cpu_io::GetCurrentCoreId());
-
-  // 注册 uart 中断处理函数
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(uart_intid,
-                                                            uart_handler);
+  // 通过统一接口注册 UART 外部中断（先注册 handler，再启用 GIC SPI）
+  Singleton<Interrupt>::GetInstance()
+      .RegisterExternalInterrupt(uart_intid, cpu_io::GetCurrentCoreId(), 0,
+                                 uart_handler)
+      .or_else([](Error err) -> Expected<void> {
+        klog::Err("Failed to register UART IRQ: %s\n", err.message());
+        return std::unexpected(err);
+      });
 
   cpu_io::EnableInterrupt();
 

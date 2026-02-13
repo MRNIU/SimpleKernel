@@ -33,6 +33,9 @@ class Interrupt final : public InterruptBase {
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
   auto SendIpi(uint64_t target_cpu_mask) -> Expected<void> override;
   auto BroadcastIpi() -> Expected<void> override;
+  auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
+                                 uint32_t priority, InterruptFunc handler)
+      -> Expected<void> override;
 
   __always_inline void SetUP() const { gic_.SetUP(); }
   __always_inline void SPI(uint32_t intid, uint32_t cpuid) const {

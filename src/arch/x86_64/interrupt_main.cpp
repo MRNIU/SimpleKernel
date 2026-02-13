@@ -16,9 +16,6 @@ namespace {
 constexpr uint8_t kApicTimerVector = 0xF0;
 constexpr uint32_t kApicTimerFrequencyHz = 100;
 
-// 定义键盘中断向量号
-constexpr uint8_t kKeyboardVector = 0xF1;
-
 /**
  * @brief APIC 时钟中断处理函数
  * @param cause 中断原因
@@ -78,44 +75,25 @@ uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
   return 0;
 }
 
-bool EnableKeyboardInterrupt(uint8_t vector) {
-  klog::Info("Enabling keyboard interrupt with vector 0x%x\n", vector);
-
-  // 键盘使用 IRQ 1 (传统 PS/2 键盘)
-  constexpr uint8_t kKeyboardIrq = 1;
-
-  // 获取当前 CPU 的 APIC ID 作为目标
-  uint32_t destination_apic_id = cpu_io::GetCurrentCoreId();
-  klog::Info("Target APIC ID: 0x%x\n", destination_apic_id);
-
-  // 通过 APIC 设置 IRQ 重定向到指定向量
-  auto result = Singleton<Apic>::GetInstance().SetIrqRedirection(
-      kKeyboardIrq, vector, destination_apic_id, false);
-
-  if (result.has_value()) {
-    klog::Info("Keyboard interrupt enabled successfully\n");
-    return true;
-  } else {
-    klog::Err("Failed to enable keyboard interrupt\n");
-    return false;
-  }
-}
-
 };  // namespace
 
 void InterruptInit(int, const char**) {
   Singleton<Interrupt>::GetInstance().SetUpIdtr();
 
-  // 注册中断处理函数
+  // 注册 APIC Timer 中断处理函数（Local APIC 内部中断，不走 IO APIC）
   Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(kApicTimerVector,
                                                             ApicTimerHandler);
 
-  // 注册键盘中断处理函数
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(kKeyboardVector,
-                                                            KeyboardHandler);
-
-  // 启用键盘中断
-  EnableKeyboardInterrupt(kKeyboardVector);
+  // 通过统一接口注册键盘外部中断（IRQ 1 = PS/2 键盘，先注册 handler 再启用 IO
+  // APIC）
+  constexpr uint8_t kKeyboardIrq = 1;
+  Singleton<Interrupt>::GetInstance()
+      .RegisterExternalInterrupt(kKeyboardIrq, cpu_io::GetCurrentCoreId(), 0,
+                                 KeyboardHandler)
+      .or_else([](Error err) -> Expected<void> {
+        klog::Err("Failed to register keyboard IRQ: %s\n", err.message());
+        return std::unexpected(err);
+      });
 
   // 启用 Local APIC 定时器
   Singleton<Apic>::GetInstance().SetupPeriodicTimer(kApicTimerFrequencyHz,

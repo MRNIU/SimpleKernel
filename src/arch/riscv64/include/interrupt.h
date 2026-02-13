@@ -33,6 +33,9 @@ class Interrupt final : public InterruptBase {
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
   auto SendIpi(uint64_t target_cpu_mask) -> Expected<void> override;
   auto BroadcastIpi() -> Expected<void> override;
+  auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
+                                 uint32_t priority, InterruptFunc handler)
+      -> Expected<void> override;
 
  private:
   /// 中断处理函数数组

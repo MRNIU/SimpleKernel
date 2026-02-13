@@ -33,6 +33,12 @@ class Interrupt final : public InterruptBase {
   void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
   auto SendIpi(uint64_t target_cpu_mask) -> Expected<void> override;
   auto BroadcastIpi() -> Expected<void> override;
+  auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
+                                 uint32_t priority, InterruptFunc handler)
+      -> Expected<void> override;
+
+  /// 外部中断向量基址（IO APIC IRQ 到 IDT 向量的映射）
+  static constexpr uint8_t kExternalVectorBase = 0x20;
 
   /**
    * @brief 初始化 idtr

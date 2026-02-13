@@ -50,7 +50,7 @@ void Plic::RegisterInterruptFunc(uint8_t cause, InterruptFunc func) {
   interrupt_handlers_[cause] = func;
 }
 
-void Plic::Do(uint64_t cause, uint8_t* context) {
+void Plic::Do(uint64_t cause, cpu_io::TrapContext* context) {
   interrupt_handlers_[cause](cause, context);
 }
 
