@@ -342,6 +342,85 @@ class KernelFdt {
   }
 
   /**
+   * 遍历 FDT 中所有设备节点
+   * @tparam Callback 回调类型，签名：
+   *   bool(const char* node_name, const char* compatible,
+   *        uint64_t mmio_base, size_t mmio_size, uint32_t irq)
+   *   返回 true 继续遍历，false 停止
+   * @param callback 节点处理函数
+   * @return Expected<void>
+   */
+  template <typename Callback>
+  [[nodiscard]] auto ForEachNode(Callback&& callback) const -> Expected<void> {
+    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+
+    int offset = -1;
+    int depth = 0;
+
+    while (true) {
+      offset = fdt_next_node(fdt_header_, offset, &depth);
+      if (offset < 0) {
+        if (offset == -FDT_ERR_NOTFOUND) {
+          break;
+        }
+        return std::unexpected(Error(ErrorCode::kFdtParseFailed));
+      }
+
+      const char* node_name = fdt_get_name(fdt_header_, offset, nullptr);
+      if (node_name == nullptr) {
+        continue;
+      }
+
+      int status_len = 0;
+      const auto* status_prop =
+          fdt_get_property(fdt_header_, offset, "status", &status_len);
+      if (status_prop != nullptr) {
+        const char* status = reinterpret_cast<const char*>(status_prop->data);
+        if (strcmp(status, "okay") != 0 && strcmp(status, "ok") != 0) {
+          continue;
+        }
+      }
+
+      const char* compatible = nullptr;
+      int compat_len = 0;
+      const auto* compat_prop =
+          fdt_get_property(fdt_header_, offset, "compatible", &compat_len);
+      if (compat_prop != nullptr && compat_len > 0) {
+        compatible = reinterpret_cast<const char*>(compat_prop->data);
+      }
+
+      uint64_t mmio_base = 0;
+      size_t mmio_size = 0;
+      int reg_len = 0;
+      const auto* reg_prop =
+          fdt_get_property(fdt_header_, offset, "reg", &reg_len);
+      if (reg_prop != nullptr &&
+          static_cast<size_t>(reg_len) >= 2 * sizeof(uint64_t)) {
+        const auto* reg = reinterpret_cast<const uint64_t*>(reg_prop->data);
+        mmio_base = fdt64_to_cpu(reg[0]);
+        mmio_size = fdt64_to_cpu(reg[1]);
+      }
+
+      uint32_t irq = 0;
+      int irq_len = 0;
+      const auto* irq_prop =
+          fdt_get_property(fdt_header_, offset, "interrupts", &irq_len);
+      if (irq_prop != nullptr &&
+          static_cast<size_t>(irq_len) >= sizeof(uint32_t)) {
+        const auto* interrupts =
+            reinterpret_cast<const uint32_t*>(irq_prop->data);
+        irq = fdt32_to_cpu(interrupts[0]);
+      }
+
+      if (!callback(node_name, compatible, mmio_base, mmio_size, irq)) {
+        break;
+      }
+    }
+
+    return {};
+  }
+
+  /**
    * 构造函数
    * @param header fdt 地址
    */
@@ -541,91 +620,6 @@ class KernelFdt {
         .and_then([&]() {
           return validate_id("cpu_suspend", kPsciCpuSuspendFuncId);
         });
-  }
-
-  /**
-   * 遍历 FDT 中所有设备节点
-   * @tparam Callback 回调类型，签名：
-   *   bool(const char* node_name, const char* compatible,
-   *        uint64_t mmio_base, size_t mmio_size, uint32_t irq)
-   *   返回 true 继续遍历，false 停止
-   * @param callback 节点处理函数
-   * @return Expected<void>
-   */
-  template <typename Callback>
-  [[nodiscard]] auto ForEachNode(Callback&& callback) const -> Expected<void> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
-
-    int offset = -1;
-    int depth = 0;
-
-    while (true) {
-      offset = fdt_next_node(fdt_header_, offset, &depth);
-      if (offset < 0) {
-        if (offset == -FDT_ERR_NOTFOUND) {
-          break;  // 遍历结束
-        }
-        return std::unexpected(Error(ErrorCode::kFdtParseFailed));
-      }
-
-      // 获取节点名称
-      const char* node_name = fdt_get_name(fdt_header_, offset, nullptr);
-      if (node_name == nullptr) {
-        continue;
-      }
-
-      // 检查 status 属性，跳过 disabled 节点
-      int status_len = 0;
-      const auto* status_prop =
-          fdt_get_property(fdt_header_, offset, "status", &status_len);
-      if (status_prop != nullptr) {
-        const char* status = reinterpret_cast<const char*>(status_prop->data);
-        if (strcmp(status, "okay") != 0 && strcmp(status, "ok") != 0) {
-          continue;
-        }
-      }
-
-      // 获取 compatible 字符串
-      const char* compatible = nullptr;
-      int compat_len = 0;
-      const auto* compat_prop =
-          fdt_get_property(fdt_header_, offset, "compatible", &compat_len);
-      if (compat_prop != nullptr && compat_len > 0) {
-        compatible = reinterpret_cast<const char*>(compat_prop->data);
-      }
-
-      // 获取 reg 属性（base + size）
-      uint64_t mmio_base = 0;
-      size_t mmio_size = 0;
-      int reg_len = 0;
-      const auto* reg_prop =
-          fdt_get_property(fdt_header_, offset, "reg", &reg_len);
-      if (reg_prop != nullptr &&
-          static_cast<size_t>(reg_len) >= 2 * sizeof(uint64_t)) {
-        const auto* reg = reinterpret_cast<const uint64_t*>(reg_prop->data);
-        mmio_base = fdt64_to_cpu(reg[0]);
-        mmio_size = fdt64_to_cpu(reg[1]);
-      }
-
-      // 获取 interrupts 属性（第一个中断号）
-      uint32_t irq = 0;
-      int irq_len = 0;
-      const auto* irq_prop =
-          fdt_get_property(fdt_header_, offset, "interrupts", &irq_len);
-      if (irq_prop != nullptr &&
-          static_cast<size_t>(irq_len) >= sizeof(uint32_t)) {
-        const auto* interrupts =
-            reinterpret_cast<const uint32_t*>(irq_prop->data);
-        irq = fdt32_to_cpu(interrupts[0]);
-      }
-
-      // 调用回调
-      if (!callback(node_name, compatible, mmio_base, mmio_size, irq)) {
-        break;  // 回调请求停止
-      }
-    }
-
-    return {};
   }
 };
 

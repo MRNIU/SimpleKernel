@@ -29,4 +29,6 @@ auto main(int argc, const char** argv) -> int;
 void MemoryInit();
 void MemoryInitSMP();
 
+void DeviceInit();
+
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_ */

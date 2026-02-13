@@ -8,10 +8,12 @@
 
 #include "arch.h"
 #include "basic_info.hpp"
+#include "driver/virtio_blk_driver.hpp"
 #include "interrupt.h"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "opensbi_interface.h"
+#include "platform_traits.hpp"
 #include "sk_cstdio"
 #include "sk_iostream"
 #include "syscall.hpp"
@@ -161,6 +163,25 @@ void InterruptInit(int, const char**) {
       cpu_io::GetCurrentCoreId(),
       std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial().value()), 1,
       true);
+
+  // 为当前 core 开启 virtio-blk 中断
+  using BlkDriver = VirtioBlkDriver<PlatformTraits>;
+  auto blk_irq = BlkDriver::GetIrq();
+  if (blk_irq != 0) {
+    Singleton<Plic>::GetInstance().Set(cpu_io::GetCurrentCoreId(), blk_irq, 1,
+                                       true);
+    Singleton<Plic>::GetInstance().RegisterInterruptFunc(
+        static_cast<uint8_t>(blk_irq), [](uint64_t, uint8_t*) -> uint64_t {
+          BlkDriver::HandleInterrupt([](void* /*token*/,
+                                        device_framework::ErrorCode status) {
+            if (status != device_framework::ErrorCode::kSuccess) {
+              klog::Err("VirtIO blk IO error: %d\n", static_cast<int>(status));
+            }
+          });
+          return 0;
+        });
+    klog::Info("PLIC: virtio-blk IRQ %u registered\n", blk_irq);
+  }
 
   // 初始化定时器
   TimerInit();

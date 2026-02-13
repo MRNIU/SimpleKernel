@@ -12,6 +12,7 @@
 
 #include "device_node.hpp"
 #include "expected.hpp"
+#include "sk_cstring"
 #include "spinlock.hpp"
 
 /// @name 驱动匹配键 tagged types
