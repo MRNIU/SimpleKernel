@@ -140,10 +140,8 @@ extern "C" void error_lower_el_aarch32_handler(cpu_io::TrapContext* context) {
 }
 
 auto uart_handler(uint64_t cause, cpu_io::TrapContext*) -> uint64_t {
-  sk_putchar(Singleton<device_framework::pl011::Pl011Device>::GetInstance()
-                 .GetChar()
-                 .value(),
-             nullptr);
+  Singleton<device_framework::pl011::Pl011Device>::GetInstance()
+      .HandleInterrupt([](uint8_t ch) { sk_putchar(ch, nullptr); });
   return cause;
 }
 
