@@ -4,12 +4,13 @@
 
 #include <cpu_io.h>
 
+#include <device_framework/ns16550a.hpp>
+
 #include "arch.h"
 #include "basic_info.hpp"
 #include "interrupt.h"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
-#include "ns16550a_device.hpp"
 #include "opensbi_interface.h"
 #include "sk_cstdio"
 #include "sk_iostream"
@@ -33,20 +34,25 @@ void RegisterInterrupts() {
 
   auto [base, size, irq] =
       Singleton<KernelFdt>::GetInstance().GetSerial().value();
-  Singleton<Ns16550aDevice>::GetInstance() = std::move(Ns16550aDevice(base));
-  Singleton<Ns16550aDevice>::GetInstance()
-      .Open(OpenFlags(OpenFlags::kReadWrite))
-      .or_else([](const Error& e) {
-        klog::Err("Failed to open Ns16550aDevice: %d\n",
-                  static_cast<int>(e.code));
-        return Expected<void>{};
+  Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance() =
+      std::move(device_framework::ns16550a::Ns16550aDevice(base));
+  Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance()
+      .OpenReadWrite()
+      .or_else([](device_framework::Error e)
+                   -> device_framework::Expected<void> {
+        klog::Err(
+            "Failed to open device_framework::ns16550a::Ns16550aDevice: %d\n",
+            static_cast<int>(e.code));
+        return device_framework::Expected<void>{};
       });
 
   // 注册串口中断
   Singleton<Plic>::GetInstance().RegisterInterruptFunc(
       std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial().value()),
       [](uint64_t, uint8_t*) -> uint64_t {
-        auto ch = Singleton<Ns16550aDevice>::GetInstance().GetChar();
+        auto ch =
+            Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance()
+                .GetChar();
         if (ch) {
           sk_putchar(*ch, nullptr);
         }

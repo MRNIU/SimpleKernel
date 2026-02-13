@@ -5,8 +5,8 @@
 #include <MPMCQueue.hpp>
 #include <cerrno>
 #include <cstdint>
+#include <device_framework/virtio_blk.hpp>
 #include <new>
-#include <virtio_driver/device/virtio_blk.hpp>
 
 #include "arch.h"
 #include "basic_info.hpp"
@@ -174,17 +174,17 @@ constexpr uint32_t kBlockDeviceId = 2;
 alignas(4096) uint8_t g_vq_dma_buf[32768];
 
 /// 数据缓冲区
-alignas(16) uint8_t g_data_buf[virtio_driver::blk::kSectorSize];
+alignas(16) uint8_t g_data_buf[512];
 
 auto find_blk_device() -> uint64_t {
   for (int i = 0; i < kMaxDevices; ++i) {
     uint64_t base = kVirtioMmioBase + i * kVirtioMmioSize;
     auto magic = *reinterpret_cast<volatile uint32_t*>(base);
-    if (magic != virtio_driver::kMmioMagicValue) {
+    if (magic != device_framework::virtio::kMmioMagicValue) {
       continue;
     }
     auto device_id = *reinterpret_cast<volatile uint32_t*>(
-        base + virtio_driver::MmioTransport<>::MmioReg::kDeviceId);
+        base + device_framework::virtio::MmioTransport<>::MmioReg::kDeviceId);
     if (device_id == kBlockDeviceId) {
       return base;
     }
@@ -222,13 +222,18 @@ auto main(int argc, const char** argv) -> int {
   //     });
 
   // uint64_t blk_base = find_blk_device();
-  // using VirtioBlkType = virtio_driver::blk::VirtioBlk<RiscvTraits>;
-  // uint64_t extra_features =
-  //     static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kSegMax) |
-  //     static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kSizeMax) |
-  //     static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kBlkSize) |
-  //     static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kFlush) |
-  //     static_cast<uint64_t>(virtio_driver::blk::BlkFeatureBit::kGeometry);
+  // using VirtioBlkType =
+  // device_framework::virtio::blk::VirtioBlk<RiscvTraits>; uint64_t
+  // extra_features =
+  //     static_cast<uint64_t>(device_framework::virtio::blk::BlkFeatureBit::kSegMax)
+  //     |
+  //     static_cast<uint64_t>(device_framework::virtio::blk::BlkFeatureBit::kSizeMax)
+  //     |
+  //     static_cast<uint64_t>(device_framework::virtio::blk::BlkFeatureBit::kBlkSize)
+  //     |
+  //     static_cast<uint64_t>(device_framework::virtio::blk::BlkFeatureBit::kFlush)
+  //     |
+  //     static_cast<uint64_t>(device_framework::virtio::blk::BlkFeatureBit::kGeometry);
   // auto blk_result =
   //     VirtioBlkType::Create(blk_base, g_vq_dma_buf, 1, 128, extra_features);
   // if (!blk_result.has_value()) {
@@ -250,7 +255,7 @@ auto main(int argc, const char** argv) -> int {
   //             read_result.error().code);
   // } else {
   //   klog::Info("Read first sector successfully:\n");
-  //   for (size_t i = 0; i < virtio_driver::blk::kSectorSize; ++i) {
+  //   for (size_t i = 0; i < device_framework::virtio::blk::kSectorSize; ++i) {
   //     klog::Info("%02X ", g_data_buf[i]);
   //     if ((i + 1) % 16 == 0) {
   //       klog::Info("\n");
@@ -259,7 +264,7 @@ auto main(int argc, const char** argv) -> int {
   //   klog::Info("\n");
   // }
 
-  // for (size_t i = 0; i < virtio_driver::blk::kSectorSize; ++i) {
+  // for (size_t i = 0; i < device_framework::virtio::blk::kSectorSize; ++i) {
   //   g_data_buf[i] = static_cast<uint8_t>(0xAA + (i & 0x0F));
   // }
   // auto write_result = blk.Write(0, g_data_buf);
