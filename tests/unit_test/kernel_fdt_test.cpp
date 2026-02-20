@@ -135,3 +135,120 @@ TEST_F(KernelFdtTest, MoveAssignmentTest) {
   EXPECT_EQ(memory_base, expected_base);
   EXPECT_EQ(memory_size, expected_size);
 }
+
+TEST_F(KernelFdtTest, ForEachCompatibleNodeTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+
+  size_t count = 0;
+  auto result = kerlen_fdt.ForEachCompatibleNode(
+      "virtio,mmio",
+      [&count](int offset, const char* node_name, uint64_t mmio_base,
+               size_t mmio_size, uint32_t irq) -> bool {
+        (void)offset;
+        (void)node_name;
+        (void)mmio_base;
+        (void)mmio_size;
+        (void)irq;
+        ++count;
+        return true;
+      });
+  ASSERT_TRUE(result.has_value()) << result.error().message();
+  EXPECT_EQ(count, 8);  // riscv64 virt has 8 virtio,mmio nodes
+}
+
+TEST_F(KernelFdtTest, ForEachNodeCompatibleDataTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+
+  bool found_plic = false;
+  auto result = kerlen_fdt.ForEachNode(
+      [&found_plic](const char* node_name, const char* compatible_data,
+                    size_t compatible_len, uint64_t mmio_base, size_t mmio_size,
+                    uint32_t irq) -> bool {
+        (void)mmio_base;
+        (void)mmio_size;
+        (void)irq;
+        if (compatible_data == nullptr || compatible_len == 0) {
+          return true;
+        }
+        // Look for PLIC node which has multi-string compatible:
+        // "sifive,plic-1.0.0\0riscv,plic0"
+        if (strcmp(node_name, "plic@c000000") == 0) {
+          found_plic = true;
+          // Should have both strings in the stringlist
+          EXPECT_GT(compatible_len, strlen("sifive,plic-1.0.0") + 1);
+          // First string should be "sifive,plic-1.0.0"
+          EXPECT_STREQ(compatible_data, "sifive,plic-1.0.0");
+          // Second string starts after first null terminator
+          const char* second =
+              compatible_data + strlen("sifive,plic-1.0.0") + 1;
+          EXPECT_STREQ(second, "riscv,plic0");
+        }
+        return true;
+      });
+  ASSERT_TRUE(result.has_value()) << result.error().message();
+  EXPECT_TRUE(found_plic) << "PLIC node not found in ForEachNode traversal";
+}
+
+TEST_F(KernelFdtTest, ForEachCompatibleNodeNoMatchTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+
+  size_t count = 0;
+  auto result = kerlen_fdt.ForEachCompatibleNode(
+      "nonexistent,device",
+      [&count](int offset, const char* node_name, uint64_t mmio_base,
+               size_t mmio_size, uint32_t irq) -> bool {
+        (void)offset;
+        (void)node_name;
+        (void)mmio_base;
+        (void)mmio_size;
+        (void)irq;
+        ++count;
+        return true;
+      });
+  ASSERT_TRUE(result.has_value()) << result.error().message();
+  EXPECT_EQ(count, 0);  // No matching nodes
+}
+
+TEST_F(KernelFdtTest, ForEachCompatibleNodeEarlyStopTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+
+  size_t count = 0;
+  auto result = kerlen_fdt.ForEachCompatibleNode(
+      "virtio,mmio",
+      [&count](int offset, const char* node_name, uint64_t mmio_base,
+               size_t mmio_size, uint32_t irq) -> bool {
+        (void)offset;
+        (void)node_name;
+        (void)mmio_base;
+        (void)mmio_size;
+        (void)irq;
+        ++count;
+        return count < 3;  // Stop after 3 nodes
+      });
+  ASSERT_TRUE(result.has_value()) << result.error().message();
+  EXPECT_EQ(count, 3);
+}
+
+TEST_F(KernelFdtTest, MultiCompatibleMatchTest) {
+  KernelFdt kerlen_fdt((uint64_t)riscv64_virt_dtb_data);
+
+  // The PLIC node has compatible = "sifive,plic-1.0.0\0riscv,plic0"
+  // ForEachCompatibleNode uses fdt_node_offset_by_compatible which
+  // matches against any string in the compatible stringlist
+  size_t count = 0;
+  auto result = kerlen_fdt.ForEachCompatibleNode(
+      "riscv,plic0",
+      [&count](int offset, const char* node_name, uint64_t mmio_base,
+               size_t mmio_size, uint32_t irq) -> bool {
+        (void)offset;
+        (void)node_name;
+        (void)mmio_base;
+        (void)mmio_size;
+        (void)irq;
+        ++count;
+        return true;
+      });
+  ASSERT_TRUE(result.has_value()) << result.error().message();
+  EXPECT_EQ(count,
+            1);  // Should find the PLIC node via second compatible string
+}
