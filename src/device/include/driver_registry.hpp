@@ -121,7 +121,13 @@ class DriverRegistry {
           if constexpr (std::is_same_v<T, PlatformCompatible>) {
             if (!resource.IsPlatform()) return false;
             const auto& plat = std::get<PlatformId>(resource.id);
-            return strcmp(plat.compatible, key.compatible) == 0;
+            const char* p = plat.compatible;
+            const char* end = plat.compatible + plat.compatible_len;
+            while (p < end) {
+              if (strcmp(p, key.compatible) == 0) return true;
+              p += strlen(p) + 1;
+            }
+            return false;
           } else if constexpr (std::is_same_v<T, PciMatchKey>) {
             if (!resource.IsPci()) return false;
             const auto& pci = std::get<PciAddress>(resource.id);

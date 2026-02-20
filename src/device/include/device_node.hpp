@@ -10,9 +10,12 @@
 #include <cstdint>
 #include <variant>
 
-/// Platform 设备标识（FDT compatible）
+/// Platform 设备标识（FDT compatible stringlist）
 struct PlatformId {
-  char compatible[64];
+  /// 完整的 compatible stringlist（多个字符串以 '\0' 分隔）
+  char compatible[128];
+  /// stringlist 的实际字节长度（包含所有 '\0' 分隔符）
+  size_t compatible_len{0};
 };
 
 /// PCI 设备标识

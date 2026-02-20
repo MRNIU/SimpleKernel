@@ -24,49 +24,46 @@ class PlatformBus {
     size_t count = 0;
 
     auto result = fdt_.ForEachNode(
-        [&out, &count, max](const char* node_name, const char* compatible,
-                            uint64_t mmio_base, size_t mmio_size,
-                            uint32_t irq) -> bool {
+        [&out, &count, max](const char* node_name, const char* compatible_data,
+                            size_t compatible_len, uint64_t mmio_base,
+                            size_t mmio_size, uint32_t irq) -> bool {
           if (count >= max) {
             return false;
           }
 
-          // 跳过没有 compatible 的节点
-          if (compatible == nullptr || compatible[0] == '\0') {
+          if (compatible_data == nullptr || compatible_len == 0) {
             return true;
           }
 
           auto& node = out[count];
 
-          // 设备名称
           strncpy(node.name, node_name, sizeof(node.name) - 1);
           node.name[sizeof(node.name) - 1] = '\0';
 
-          // 设备类型（默认 Platform）
           node.type = DeviceType::kPlatform;
 
-          // MMIO
           if (mmio_base != 0) {
             node.resource.mmio[0] = {mmio_base, mmio_size};
             node.resource.mmio_count = 1;
           }
 
-          // 中断
           if (irq != 0) {
             node.resource.irq[0] = irq;
             node.resource.irq_count = 1;
           }
 
-          // Platform 标识
           PlatformId plat{};
-          strncpy(plat.compatible, compatible, sizeof(plat.compatible) - 1);
-          plat.compatible[sizeof(plat.compatible) - 1] = '\0';
+          size_t copy_len = compatible_len < sizeof(plat.compatible)
+                                ? compatible_len
+                                : sizeof(plat.compatible);
+          memcpy(plat.compatible, compatible_data, copy_len);
+          plat.compatible_len = copy_len;
           node.resource.id = plat;
 
           klog::Debug(
               "PlatformBus: found '%s' compatible='%s' "
               "mmio=0x%lX size=0x%lX irq=%u\n",
-              node_name, compatible, mmio_base, mmio_size, irq);
+              node_name, compatible_data, mmio_base, mmio_size, irq);
 
           ++count;
           return true;
