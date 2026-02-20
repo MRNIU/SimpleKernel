@@ -86,21 +86,24 @@ SimpleKernel 提出一种新范式：**读接口 → 理解契约 → AI 实现 
 
 ```cpp
 /**
- * @brief 控制台驱动抽象基类
+ * @brief 中断子系统抽象基类
  *
- * 所有串口/控制台驱动必须实现此接口。
+ * 所有架构的中断处理必须实现此接口。
  *
- * @pre  硬件已完成基本初始化（时钟使能、引脚配置）
- * @post 调用 PutChar/GetChar 可进行字符级 I/O
+ * @pre  硬件中断控制器已初始化
+ * @post 可通过 RegisterInterruptFunc 注册中断处理函数
  *
- * 已知实现：Ns16550a（RISC-V/x86_64）、Pl011（AArch64）
+ * 已知实现：PLIC（RISC-V）、GIC（AArch64）、APIC（x86_64）
  */
-class ConsoleDriver {
+class InterruptBase {
 public:
-  virtual ~ConsoleDriver() = default;
-  virtual void PutChar(uint8_t c) const = 0;
-  [[nodiscard]] virtual auto GetChar() const -> uint8_t = 0;
-  [[nodiscard]] virtual auto TryGetChar() const -> uint8_t = 0;
+  virtual ~InterruptBase() = default;
+
+  /// 执行中断处理
+  virtual void Do(uint64_t cause, cpu_io::TrapContext* context) = 0;
+
+  /// 注册中断处理函数
+  virtual void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) = 0;
 };
 ```
 
@@ -151,9 +154,9 @@ SimpleKernel 的接口按功能分为以下层次：
 │  InterruptBase · RegisterInterruptFunc   │
 │  TimerInit · InterruptInit               │
 ├──────────────────────────────────────────┤
-│               驱动层                      │
-│  ConsoleDriver · Ns16550a · Pl011        │
-│  Gic · Plic · Apic · Timer drivers       │
+│               设备框架层                    │
+│  DeviceManager · DriverRegistry            │
+│  PlatformBus · Ns16550aDriver · VirtioBlk  │
 ├──────────────────────────────────────────┤
 │             架构抽象层 (arch.h)            │
 │  ArchInit · InterruptInit · TimerInit    │
@@ -174,7 +177,10 @@ SimpleKernel 的接口按功能分为以下层次：
 |---------|------|---------|
 | `src/arch/arch.h` | 架构无关的统一入口 | 各 `src/arch/{arch}/` 目录 |
 | `src/include/interrupt_base.h` | 中断子系统抽象基类 | `src/arch/{arch}/interrupt.cpp` |
-| `src/driver/include/console_driver.h` | 控制台驱动抽象 | `ns16550a.cpp` / `pl011.cpp` |
+| `src/device/include/device_manager.hpp` | 设备管理器 | header-only |
+| `src/device/include/driver_registry.hpp` | 驱动注册中心 | header-only |
+| `src/device/include/platform_bus.hpp` | 平台总线（FDT 枚举） | header-only |
+| `src/device/include/driver/ns16550a_driver.hpp` | NS16550A UART 驱动 | header-only（Probe/Remove 模式） |
 | `src/include/virtual_memory.hpp` | 虚拟内存管理接口 | `src/virtual_memory.cpp` |
 | `src/include/kernel_fdt.hpp` | 设备树解析接口 | `src/kernel_fdt.cpp` |
 | `src/include/kernel_elf.hpp` | ELF 解析接口 | `src/kernel_elf.cpp` |
@@ -188,7 +194,7 @@ SimpleKernel 的接口按功能分为以下层次：
 
 | 架构 | 引导链 | 串口 | 中断控制器 | 时钟 |
 |:---:|:---:|:---:|:---:|:---:|
-| **x86_64** | U-Boot | COM1 | 8259A PIC | 8253/8254 |
+| **x86_64** | U-Boot | NS16550A | 8259A PIC | 8253/8254 |
 | **RISC-V 64** | U-Boot + OpenSBI | SBI Call | Direct 模式 | SBI Timer |
 | **AArch64** | U-Boot + ATF + OP-TEE | PL011 | GICv3 | Generic Timer |
 
@@ -285,11 +291,10 @@ SimpleKernel/
 │   │   ├── aarch64/            #   AArch64 实现
 │   │   ├── riscv64/            #   RISC-V 64 实现
 │   │   └── x86_64/             #   x86_64 实现
-│   ├── driver/                 # 设备驱动
-│   │   ├── include/            # 📐 驱动接口（ConsoleDriver 等）
-│   │   ├── ns16550a/           #   NS16550A 串口驱动实现
-│   │   ├── pl011/              #   PL011 串口驱动实现
-│   │   └── ...
+│   ├── device/                 # 设备管理框架
+│   │   ├── include/            # 📐 设备框架接口（DeviceManager, DriverRegistry, Bus 等）
+│   │   │   └── driver/         #   具体驱动（ns16550a_driver.hpp, virtio_blk_driver.hpp）
+│   │   └── device.cpp          #   设备初始化入口（DeviceInit）
 │   ├── task/                   # 任务管理
 │   │   ├── include/            # 📐 调度器接口（SchedulerBase 等）
 │   │   └── ...                 #   调度器实现
@@ -318,7 +323,7 @@ SimpleKernel/
 | 模块 | 接口文件 | 难度 | 说明 |
 |------|---------|:---:|------|
 | Early Console | `src/arch/arch.h` 注释 | ⭐ | 最早期的输出，理解全局构造 |
-| 串口驱动 | `console_driver.h` | ⭐⭐ | 实现 `PutChar`/`GetChar`，理解 MMIO |
+| 串口驱动 | `ns16550a_driver.hpp` | ⭐⭐ | 实现 Probe/Remove，理解设备框架和 MMIO |
 | 设备树解析 | `kernel_fdt.hpp` | ⭐⭐ | 解析硬件信息，理解 FDT 格式 |
 | ELF 解析 | `kernel_elf.hpp` | ⭐⭐ | 符号表解析，用于栈回溯 |
 
@@ -364,6 +369,9 @@ SimpleKernel/
 | [OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git) | OP-TEE 操作系统 |
 | [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git) | ARM 可信固件 |
 | [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) | 设备树编译器 |
+| [MRNIU/bmalloc](https://github.com/MRNIU/bmalloc.git) | 内存分配器 |
+| [MRNIU/MPMCQueue](https://github.com/MRNIU/MPMCQueue.git) | 无锁 MPMC 队列 |
+| [MRNIU/device_framework](https://github.com/MRNIU/device_framework.git) | 设备管理框架 |
 
 ## 📝 开发指南
 
@@ -392,7 +400,7 @@ SimpleKernel/
 <type>(<scope>): <subject>
 
 type: feat|fix|docs|style|refactor|perf|test|build|revert
-scope: 可选，影响的模块 (arch, driver, libc)
+scope: 可选，影响的模块 (arch, device, libc)
 subject: 不超过50字符，不加句号
 ```
 

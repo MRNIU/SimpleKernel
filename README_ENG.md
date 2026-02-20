@@ -86,21 +86,24 @@ Each module's header file contains complete interface documentation:
 
 ```cpp
 /**
- * @brief Console driver abstract base class
+ * @brief Interrupt subsystem abstract base class
  *
- * All serial/console drivers must implement this interface.
+ * All architecture interrupt handlers must implement this interface.
  *
- * @pre  Hardware has completed basic initialization (clock enable, pin config)
- * @post PutChar/GetChar can be used for character-level I/O
+ * @pre  Hardware interrupt controller has been initialized
+ * @post Can register interrupt handlers via RegisterInterruptFunc
  *
- * Known implementations: Ns16550a (RISC-V/x86_64), Pl011 (AArch64)
+ * Known implementations: PLIC (RISC-V), GIC (AArch64), APIC (x86_64)
  */
-class ConsoleDriver {
+class InterruptBase {
 public:
-  virtual ~ConsoleDriver() = default;
-  virtual void PutChar(uint8_t c) const = 0;
-  [[nodiscard]] virtual auto GetChar() const -> uint8_t = 0;
-  [[nodiscard]] virtual auto TryGetChar() const -> uint8_t = 0;
+  virtual ~InterruptBase() = default;
+
+  /// Execute interrupt handling
+  virtual void Do(uint64_t cause, cpu_io::TrapContext* context) = 0;
+
+  /// Register interrupt handler function
+  virtual void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) = 0;
 };
 ```
 
@@ -151,9 +154,9 @@ SimpleKernel's interfaces are organized into the following layers:
 │  InterruptBase · RegisterInterruptFunc   │
 │  TimerInit · InterruptInit               │
 ├──────────────────────────────────────────┤
-│               Driver Layer                │
-│  ConsoleDriver · Ns16550a · Pl011        │
-│  Gic · Plic · Apic · Timer drivers       │
+│               Device Framework Layer           │
+│  DeviceManager · DriverRegistry               │
+│  PlatformBus · Ns16550aDriver · VirtioBlk     │
 ├──────────────────────────────────────────┤
 │       Architecture Abstraction (arch.h)   │
 │  ArchInit · InterruptInit · TimerInit    │
@@ -175,7 +178,10 @@ SimpleKernel's interfaces are organized into the following layers:
 |---------------|---------------|-------------------|
 | `src/arch/arch.h` | Architecture-independent unified entry | Each `src/arch/{arch}/` directory |
 | `src/include/interrupt_base.h` | Interrupt subsystem abstract base class | `src/arch/{arch}/interrupt.cpp` |
-| `src/driver/include/console_driver.h` | Console driver abstraction | `ns16550a.cpp` / `pl011.cpp` |
+| `src/device/include/device_manager.hpp` | Device manager | header-only |
+| `src/device/include/driver_registry.hpp` | Driver registry | header-only |
+| `src/device/include/platform_bus.hpp` | Platform bus (FDT enumeration) | header-only |
+| `src/device/include/driver/ns16550a_driver.hpp` | NS16550A UART driver | header-only (Probe/Remove pattern) |
 | `src/include/virtual_memory.hpp` | Virtual memory management interface | `src/virtual_memory.cpp` |
 | `src/include/kernel_fdt.hpp` | Device tree parsing interface | `src/kernel_fdt.cpp` |
 | `src/include/kernel_elf.hpp` | ELF parsing interface | `src/kernel_elf.cpp` |
@@ -286,11 +292,10 @@ SimpleKernel/
 │   │   ├── aarch64/            #   AArch64 implementation
 │   │   ├── riscv64/            #   RISC-V 64 implementation
 │   │   └── x86_64/             #   x86_64 implementation
-│   ├── driver/                 # Device drivers
-│   │   ├── include/            # 📐 Driver interfaces (ConsoleDriver, etc.)
-│   │   ├── ns16550a/           #   NS16550A serial driver implementation
-│   │   ├── pl011/              #   PL011 serial driver implementation
-│   │   └── ...
+│   ├── device/                 # Device management framework
+│   │   ├── include/            # 📐 Device framework interfaces (DeviceManager, DriverRegistry, Bus, etc.)
+│   │   │   └── driver/         #   Concrete drivers (ns16550a_driver.hpp, virtio_blk_driver.hpp)
+│   │   └── device.cpp          #   Device initialization entry (DeviceInit)
 │   ├── task/                   # Task management
 │   │   ├── include/            # 📐 Scheduler interfaces (SchedulerBase, etc.)
 │   │   └── ...                 #   Scheduler implementations
@@ -319,7 +324,7 @@ We recommend learning and implementing modules in the following order:
 | Module | Interface File | Difficulty | Description |
 |--------|---------------|:---:|-------------|
 | Early Console | `src/arch/arch.h` comments | ⭐ | Earliest output, understand global construction |
-| Serial Driver | `console_driver.h` | ⭐⭐ | Implement `PutChar`/`GetChar`, understand MMIO |
+| Serial Driver | `ns16550a_driver.hpp` | ⭐⭐ | Implement Probe/Remove, understand device framework and MMIO |
 | Device Tree Parsing | `kernel_fdt.hpp` | ⭐⭐ | Parse hardware info, understand FDT format |
 | ELF Parsing | `kernel_elf.hpp` | ⭐⭐ | Symbol table parsing, used for stack backtrace |
 
@@ -365,6 +370,9 @@ We recommend learning and implementing modules in the following order:
 | [OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git) | OP-TEE operating system |
 | [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git) | ARM Trusted Firmware |
 | [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) | Device Tree Compiler |
+| [MRNIU/bmalloc](https://github.com/MRNIU/bmalloc.git) | Memory allocator |
+| [MRNIU/MPMCQueue](https://github.com/MRNIU/MPMCQueue.git) | Lock-free MPMC queue |
+| [MRNIU/device_framework](https://github.com/MRNIU/device_framework.git) | Device management framework |
 
 ## 📝 Development Guide
 
@@ -393,7 +401,7 @@ We recommend learning and implementing modules in the following order:
 <type>(<scope>): <subject>
 
 type: feat|fix|docs|style|refactor|perf|test|build|revert
-scope: optional, affected module (arch, driver, libc)
+scope: optional, affected module (arch, device, libc)
 subject: max 50 chars, no period
 ```
 
