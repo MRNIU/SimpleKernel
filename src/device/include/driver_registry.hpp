@@ -64,6 +64,20 @@ struct DriverEntry {
 /// 驱动注册表
 class DriverRegistry {
  public:
+  /// @brief 获取指定驱动类型的持久单例实例
+  ///
+  /// 每个驱动类型 D 有且仅有一个实例，在首次调用时构造，
+  /// 生存期持续到程序结束。DriverRegistry 在 Probe/Remove 时
+  /// 操作此实例，外部也可通过此方法访问驱动状态。
+  ///
+  /// @tparam D 驱动类型（必须满足 Driver concept）
+  /// @return 驱动实例的引用
+  template <Driver D>
+  static auto GetDriverInstance() -> D& {
+    static D instance;
+    return instance;
+  }
+
   /// 注册一个驱动（编译期类型安全，运行期类型擦除存储）
   template <Driver D>
   auto Register() -> Expected<void> {
@@ -72,15 +86,15 @@ class DriverRegistry {
       return std::unexpected(Error(ErrorCode::kOutOfMemory));
     }
 
+    (void)GetDriverInstance<D>();
+
     drivers_[count_] = DriverEntry{
         .descriptor = &D::GetDescriptor(),
         .probe = [](DeviceNode& node) -> Expected<void> {
-          D driver;
-          return driver.Probe(node);
+          return GetDriverInstance<D>().Probe(node);
         },
         .remove = [](DeviceNode& node) -> Expected<void> {
-          D driver;
-          return driver.Remove(node);
+          return GetDriverInstance<D>().Remove(node);
         },
     };
     ++count_;

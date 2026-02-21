@@ -9,6 +9,7 @@
 #include "arch.h"
 #include "basic_info.hpp"
 #include "driver/virtio_blk_driver.hpp"
+#include "driver_registry.hpp"
 #include "interrupt.h"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
@@ -36,8 +37,14 @@ void RegisterInterrupts() {
 
   auto [base, size, irq] =
       Singleton<KernelFdt>::GetInstance().GetSerial().value();
-  Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance() =
-      std::move(device_framework::ns16550a::Ns16550aDevice(base));
+  auto uart_result = device_framework::ns16550a::Ns16550aDevice::Create(base);
+  if (uart_result) {
+    Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance() =
+        std::move(*uart_result);
+  } else {
+    klog::Err("Failed to create Ns16550aDevice: %d\n",
+              static_cast<int>(uart_result.error().code));
+  }
   Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance()
       .OpenReadWrite()
       .or_else([](device_framework::Error e)
@@ -167,19 +174,22 @@ void InterruptInit(int, const char**) {
 
   // 通过统一接口注册 virtio-blk 外部中断
   using BlkDriver = VirtioBlkDriver<PlatformTraits>;
-  auto blk_irq = BlkDriver::GetIrq();
+  auto& blk_driver = DriverRegistry::GetDriverInstance<BlkDriver>();
+  auto blk_irq = blk_driver.GetIrq();
   if (blk_irq != 0) {
     Singleton<Interrupt>::GetInstance()
         .RegisterExternalInterrupt(
             blk_irq, cpu_io::GetCurrentCoreId(), 1,
             [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
-              BlkDriver::HandleInterrupt(
-                  [](void* /*token*/, device_framework::ErrorCode status) {
-                    if (status != device_framework::ErrorCode::kSuccess) {
-                      klog::Err("VirtIO blk IO error: %d\n",
-                                static_cast<int>(status));
-                    }
-                  });
+              DriverRegistry::GetDriverInstance<
+                  VirtioBlkDriver<PlatformTraits>>()
+                  .HandleInterrupt(
+                      [](void* /*token*/, device_framework::ErrorCode status) {
+                        if (status != device_framework::ErrorCode::kSuccess) {
+                          klog::Err("VirtIO blk IO error: %d\n",
+                                    static_cast<int>(status));
+                        }
+                      });
               return 0;
             })
         .or_else([blk_irq](Error err) -> Expected<void> {
