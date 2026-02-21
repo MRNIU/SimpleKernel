@@ -149,6 +149,7 @@ CMake 文件使用: `# Copyright The SimpleKernel Contributors`
 - **禁止在头文件中实现方法**（例外: 标记 `__always_inline` 的性能关键方法）。
 - 每个类和方法必须有 Doxygen 文档: `@brief`、`@pre`（前置条件）、`@post`（后置条件）。
 - 实现放在独立的 `.cpp` 文件中——禁止修改接口头文件来添加实现。
+- 例外：与内核核心无关的工具类（如 `kernel_elf`、`kernel_fdt` 等解析器）可以将实现直接内联在 `.hpp` 头文件中，无需单独的 `.cpp` 文件。
 
 ## Git Commit 规范
 

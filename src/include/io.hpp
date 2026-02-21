@@ -5,14 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_IO_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_IO_HPP_
 
-#include <cpu_io.h>
-
-#include <atomic>
 #include <concepts>
 #include <cstddef>
-
-#include "per_cpu.hpp"
-#include "sk_cstdio"
 
 namespace io {
 /**
@@ -23,7 +17,7 @@ namespace io {
  */
 template <std::integral T>
 static __always_inline auto In(const uint64_t addr) -> T {
-  return *reinterpret_cast<volatile T *>(addr);
+  return *reinterpret_cast<volatile T*>(addr);
 }
 
 /**
@@ -34,7 +28,7 @@ static __always_inline auto In(const uint64_t addr) -> T {
  */
 template <std::integral T>
 static __always_inline void Out(const uint64_t addr, const T data) {
-  *reinterpret_cast<volatile T *>(addr) = data;
+  *reinterpret_cast<volatile T*>(addr) = data;
 }
 
 }  // namespace io
