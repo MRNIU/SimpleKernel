@@ -12,7 +12,7 @@ assignees: ''
  - Compile tools: [e.g. i386-elf-gcc i386-elf-ld]
  - Emulator: [e.g. Bochs 2.6.9]
  - Branch: [e.g. TODO]
- - Any modifications to tools/env.sh: 
+ - Any modifications to tools/env.sh:
 
 **Describe your question**
 A clear and concise description of what the question is.

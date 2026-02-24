@@ -12,46 +12,46 @@ extern "C" {
 #endif
 
 // 复制内存块
-void *memcpy(void *dest, const void *src, size_t n);
+void* memcpy(void* dest, const void* src, size_t n);
 
 // 复制内存块，可以处理重叠区域。
-void *memmove(void *dest, const void *src, size_t n);
+void* memmove(void* dest, const void* src, size_t n);
 
 // 设置内存块
-void *memset(void *dest, int val, size_t n);
+void* memset(void* dest, int val, size_t n);
 
 // 比较内存块
-int memcmp(const void *str1, const void *str2, size_t n);
+int memcmp(const void* str1, const void* str2, size_t n);
 
 // 在内存块中查找字符
-void *memchr(const void *str, int c, size_t n);
+void* memchr(const void* str, int c, size_t n);
 
 // 复制字符串
-char *strcpy(char *dest, const char *src);
+char* strcpy(char* dest, const char* src);
 
 // 复制指定长度的字符串
-char *strncpy(char *dest, const char *src, size_t n);
+char* strncpy(char* dest, const char* src, size_t n);
 
 // 连接字符串
-char *strcat(char *dest, const char *src);
+char* strcat(char* dest, const char* src);
 
 // 比较字符串
-int strcmp(const char *s1, const char *s2);
+int strcmp(const char* s1, const char* s2);
 
 // 比较指定长度的字符串
-int strncmp(const char *s1, const char *s2, size_t n);
+int strncmp(const char* s1, const char* s2, size_t n);
 
 // 获取字符串长度
-size_t strlen(const char *s);
+size_t strlen(const char* s);
 
 // 获取指定字符串长度
-size_t strnlen(const char *s, size_t n);
+size_t strnlen(const char* s, size_t n);
 
 // 查找字符在字符串中的首次出现
-char *strchr(const char *s, int c);
+char* strchr(const char* s, int c);
 
 // 反向查找字符在字符串中的首次出现
-char *strrchr(const char *s, int c);
+char* strrchr(const char* s, int c);
 
 #ifdef __cplusplus
 }

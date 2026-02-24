@@ -13,7 +13,7 @@ extern "C" void putchar_(char character) {
   sbi_debug_console_write_byte(character);
 }
 
-uint32_t main(uint32_t, uint8_t *) {
+uint32_t main(uint32_t, uint8_t*) {
   putchar_('H');
   putchar_('e');
   putchar_('l');
@@ -30,7 +30,7 @@ uint32_t main(uint32_t, uint8_t *) {
   return 0;
 }
 
-extern "C" void _start(uint32_t argc, uint8_t *argv) {
+extern "C" void _start(uint32_t argc, uint8_t* argv) {
   main(argc, argv);
 
   // 进入死循环

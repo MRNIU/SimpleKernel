@@ -17,9 +17,9 @@
 #include "system_test.h"
 
 extern "C" {
-void *malloc(size_t size);
-void free(void *ptr);
-void *aligned_alloc(size_t alignment, size_t size);
+void* malloc(size_t size);
+void free(void* ptr);
+void* aligned_alloc(size_t alignment, size_t size);
 }
 
 auto memory_test() -> bool {
@@ -27,11 +27,11 @@ auto memory_test() -> bool {
 
   // Test 1: malloc & free
   size_t size = 1024;
-  void *ptr = malloc(size);
+  void* ptr = malloc(size);
   EXPECT_TRUE(ptr != nullptr, "memory_test: malloc failed");
 
   // Write and read verification
-  auto *byte_ptr = static_cast<uint8_t *>(ptr);
+  auto* byte_ptr = static_cast<uint8_t*>(ptr);
   for (size_t i = 0; i < size; ++i) {
     byte_ptr[i] = static_cast<uint8_t>(i & 0xFF);
   }
@@ -47,7 +47,7 @@ auto memory_test() -> bool {
   // Test 2: aligned_alloc
   size_t alignment = 256;
   size_t aligned_size = 512;
-  void *aligned_ptr = aligned_alloc(alignment, aligned_size);
+  void* aligned_ptr = aligned_alloc(alignment, aligned_size);
   EXPECT_TRUE(aligned_ptr != nullptr, "memory_test: aligned_alloc failed");
 
   EXPECT_EQ(reinterpret_cast<uintptr_t>(aligned_ptr) & (alignment - 1), 0,
@@ -58,7 +58,7 @@ auto memory_test() -> bool {
 
   // Test 3: Multiple small allocations
   const int count = 10;
-  void *ptrs[count];
+  void* ptrs[count];
 
   for (int i = 0; i < count; ++i) {
     ptrs[i] = malloc(128);
@@ -68,7 +68,7 @@ auto memory_test() -> bool {
   }
 
   for (int i = 0; i < count; ++i) {
-    auto *p = static_cast<uint8_t *>(ptrs[i]);
+    auto* p = static_cast<uint8_t*>(ptrs[i]);
     for (int j = 0; j < 128; ++j) {
       EXPECT_EQ(p[j], i, "memory_test: multi alloc verify failed");
     }

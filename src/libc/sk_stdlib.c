@@ -19,17 +19,14 @@ extern "C" {
 uint64_t __stack_chk_guard = 0x595E9FBD94FDA766;
 
 /// 栈保护检查失败后进入死循环
-__attribute__((noreturn)) void __stack_chk_fail() {
-  while (true)
-    ;
-}
+__attribute__((noreturn)) void __stack_chk_fail() { while (true); }
 
 // Internal helper for string to number conversion
 // Parses magnitude into unsigned long long.
 // handles base detection, whitespace, signs.
-static unsigned long long strtox_main(const char *nptr, char **endptr, int base,
-                                      int *sign_out, int *overflow) {
-  const char *s = nptr;
+static unsigned long long strtox_main(const char* nptr, char** endptr, int base,
+                                      int* sign_out, int* overflow) {
+  const char* s = nptr;
   unsigned long long acc = 0;
   int c;
   unsigned long long cutoff;
@@ -69,7 +66,7 @@ static unsigned long long strtox_main(const char *nptr, char **endptr, int base,
   }
 
   if (base < 2 || base > 36) {
-    if (endptr) *endptr = (char *)nptr;  // Invalid base
+    if (endptr) *endptr = (char*)nptr;  // Invalid base
     return 0;
   }
 
@@ -102,12 +99,12 @@ static unsigned long long strtox_main(const char *nptr, char **endptr, int base,
 
   // Set endptr
   if (endptr) {
-    *endptr = (char *)(any ? s : nptr);
+    *endptr = (char*)(any ? s : nptr);
   }
   return acc;
 }
 
-unsigned long long int strtoull(const char *nptr, char **endptr, int base) {
+unsigned long long int strtoull(const char* nptr, char** endptr, int base) {
   int negative;
   int overflow;
   unsigned long long acc =
@@ -117,7 +114,7 @@ unsigned long long int strtoull(const char *nptr, char **endptr, int base) {
   return negative ? -acc : acc;
 }
 
-long long int strtoll(const char *nptr, char **endptr, int base) {
+long long int strtoll(const char* nptr, char** endptr, int base) {
   int negative;
   int overflow;
   unsigned long long acc =
@@ -136,7 +133,7 @@ long long int strtoll(const char *nptr, char **endptr, int base) {
   }
 }
 
-long int strtol(const char *nptr, char **endptr, int base) {
+long int strtol(const char* nptr, char** endptr, int base) {
   long long int val = strtoll(nptr, endptr, base);
 #if LONG_MAX != LLONG_MAX
   if (val > LONG_MAX) return LONG_MAX;
@@ -145,7 +142,7 @@ long int strtol(const char *nptr, char **endptr, int base) {
   return (long int)val;
 }
 
-unsigned long int strtoul(const char *nptr, char **endptr, int base) {
+unsigned long int strtoul(const char* nptr, char** endptr, int base) {
   unsigned long long int val = strtoull(nptr, endptr, base);
 #if ULONG_MAX != ULLONG_MAX
   if (val > ULONG_MAX) return ULONG_MAX;
@@ -153,16 +150,16 @@ unsigned long int strtoul(const char *nptr, char **endptr, int base) {
   return (unsigned long int)val;
 }
 
-int atoi(const char *nptr) { return (int)strtol(nptr, NULL, 10); }
+int atoi(const char* nptr) { return (int)strtol(nptr, NULL, 10); }
 
-long int atol(const char *nptr) { return strtol(nptr, NULL, 10); }
+long int atol(const char* nptr) { return strtol(nptr, NULL, 10); }
 
-long long int atoll(const char *nptr) { return strtoll(nptr, NULL, 10); }
+long long int atoll(const char* nptr) { return strtoll(nptr, NULL, 10); }
 
 #if (defined(__x86_64__) && defined(__SSE__)) || \
     (defined(__aarch64__) && defined(__ARM_FP)) || defined(__riscv)
-double strtod(const char *nptr, char **endptr) {
-  const char *s = nptr;
+double strtod(const char* nptr, char** endptr) {
+  const char* s = nptr;
   double acc = 0.0;
   int sign = 1;
 
@@ -196,7 +193,7 @@ double strtod(const char *nptr, char **endptr) {
   if (any && (*s == 'e' || *s == 'E')) {
     int esign = 1;
     int exp = 0;
-    const char *eptr = s + 1;
+    const char* eptr = s + 1;
 
     if (*eptr == '-') {
       esign = -1;
@@ -225,15 +222,15 @@ double strtod(const char *nptr, char **endptr) {
     }
   }
 
-  if (endptr) *endptr = (char *)(any ? s : nptr);
+  if (endptr) *endptr = (char*)(any ? s : nptr);
   return sign * acc;
 }
 
-float strtof(const char *nptr, char **endptr) {
+float strtof(const char* nptr, char** endptr) {
   return (float)strtod(nptr, endptr);
 }
 
-double atof(const char *nptr) { return strtod(nptr, NULL); }
+double atof(const char* nptr) { return strtod(nptr, NULL); }
 #endif
 
 #ifdef __cplusplus

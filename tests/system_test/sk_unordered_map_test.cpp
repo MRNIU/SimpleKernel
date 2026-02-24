@@ -32,7 +32,7 @@ bool test_insert_and_find() {
   EXPECT_EQ(map.contains(1), true, "Key 1 should exist");
 
   auto it = map.find(1);
-  EXPECT_NE((size_t) & *it, (size_t) & *map.end(),
+  EXPECT_NE((size_t)&*it, (size_t)&*map.end(),
             "find(1) should not return end()");
 
   map.insert({2, 20});

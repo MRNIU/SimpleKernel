@@ -7,7 +7,7 @@
 #include <cstdint>
 
 extern "C" {
-volatile uint8_t *uart = (uint8_t *)0x9000000;
+volatile uint8_t* uart = (uint8_t*)0x9000000;
 void putc(char character) { *uart = character; }
 
 void SetupFpu() {

@@ -10,7 +10,7 @@
 #include "sk_cstdio"
 
 template <typename T1, typename T2>
-bool expect_eq_helper(const T1 &val1, const T2 &val2, const char *msg) {
+bool expect_eq_helper(const T1& val1, const T2& val2, const char* msg) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
   if (val1 != val2) {
@@ -28,7 +28,7 @@ bool expect_eq_helper(const T1 &val1, const T2 &val2, const char *msg) {
 }
 
 template <typename T1, typename T2>
-bool expect_ne_helper(const T1 &val1, const T2 &val2, const char *msg) {
+bool expect_ne_helper(const T1& val1, const T2& val2, const char* msg) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
   if (val1 == val2) {
@@ -46,7 +46,7 @@ bool expect_ne_helper(const T1 &val1, const T2 &val2, const char *msg) {
 }
 
 template <typename T1, typename T2>
-bool expect_gt_helper(const T1 &val1, const T2 &val2, const char *msg) {
+bool expect_gt_helper(const T1& val1, const T2& val2, const char* msg) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
   if (!(val1 > val2)) {
@@ -64,7 +64,7 @@ bool expect_gt_helper(const T1 &val1, const T2 &val2, const char *msg) {
 }
 
 template <typename T1, typename T2>
-bool expect_lt_helper(const T1 &val1, const T2 &val2, const char *msg) {
+bool expect_lt_helper(const T1& val1, const T2& val2, const char* msg) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
   if (!(val1 < val2)) {
@@ -82,7 +82,7 @@ bool expect_lt_helper(const T1 &val1, const T2 &val2, const char *msg) {
 }
 
 template <typename T1, typename T2>
-bool expect_ge_helper(const T1 &val1, const T2 &val2, const char *msg) {
+bool expect_ge_helper(const T1& val1, const T2& val2, const char* msg) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
   if (!(val1 >= val2)) {

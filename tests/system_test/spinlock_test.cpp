@@ -288,7 +288,7 @@ auto spinlock_smp_string_test() -> bool {
       }
 
       // 验证填充完整性
-      const char *padding = "|LongStringPaddingForContention";
+      const char* padding = "|LongStringPaddingForContention";
       int padding_len = 31;  // "|LongStringPaddingForContention" 的长度
       int token_content_len = end_idx - current_idx - 1;
       bool padding_ok = true;

@@ -46,7 +46,7 @@ TEST(SkLibcTest, Atof) {
 }
 
 TEST(SkLibcTest, Strtol) {
-  char *end;
+  char* end;
   EXPECT_EQ(sk_strtol("123", &end, 10), 123L);
   EXPECT_EQ(*end, '\0');
 
@@ -70,14 +70,14 @@ TEST(SkLibcTest, Strtol) {
 }
 
 TEST(SkLibcTest, Strtoul) {
-  char *end;
+  char* end;
   EXPECT_EQ(sk_strtoul("123", &end, 10), 123UL);
   EXPECT_EQ(sk_strtoul("0xFF", &end, 16), 255UL);
   EXPECT_EQ(sk_strtoul("11", &end, 2), 3UL);
 }
 
 TEST(SkLibcTest, Strtoll) {
-  char *end;
+  char* end;
   // min for 64bit signed
   // -9223372036854775808
   EXPECT_EQ(sk_strtoll("-9223372036854775808", &end, 10),
@@ -85,7 +85,7 @@ TEST(SkLibcTest, Strtoll) {
 }
 
 TEST(SkLibcTest, Strtoull) {
-  char *end;
+  char* end;
   // max for 64bit unsigned
   // 18446744073709551615
   EXPECT_EQ(sk_strtoull("18446744073709551615", &end, 10),
@@ -93,7 +93,7 @@ TEST(SkLibcTest, Strtoull) {
 }
 
 TEST(SkLibcTest, Strtod) {
-  char *end;
+  char* end;
   EXPECT_DOUBLE_EQ(sk_strtod("3.14159", &end), 3.14159);
   EXPECT_EQ(*end, '\0');
   EXPECT_DOUBLE_EQ(sk_strtod("  -123.456abc", &end), -123.456);
@@ -101,7 +101,7 @@ TEST(SkLibcTest, Strtod) {
 }
 
 TEST(SkLibcTest, Strtof) {
-  char *end;
+  char* end;
   EXPECT_FLOAT_EQ(sk_strtof("3.14", &end), 3.14f);
 }
 
@@ -140,7 +140,7 @@ TEST(SkLibcTest, AtofEdgeCases) {
 }
 
 TEST(SkLibcTest, StrtolEdgeCases) {
-  char *end;
+  char* end;
 
   // 空字符串
   EXPECT_EQ(sk_strtol("", &end, 10), 0L);
@@ -158,7 +158,7 @@ TEST(SkLibcTest, StrtolEdgeCases) {
 }
 
 TEST(SkLibcTest, StrtoulEdgeCases) {
-  char *end;
+  char* end;
 
   // 最大无符号值
   EXPECT_EQ(sk_strtoul("4294967295", &end, 10), 4294967295UL);
@@ -171,7 +171,7 @@ TEST(SkLibcTest, StrtoulEdgeCases) {
 }
 
 TEST(SkLibcTest, StrtollEdgeCases) {
-  char *end;
+  char* end;
 
   // 零
   EXPECT_EQ(sk_strtoll("0", &end, 10), 0LL);
@@ -182,7 +182,7 @@ TEST(SkLibcTest, StrtollEdgeCases) {
 }
 
 TEST(SkLibcTest, StrtoullEdgeCases) {
-  char *end;
+  char* end;
 
   // 零
   EXPECT_EQ(sk_strtoull("0", &end, 10), 0ULL);
@@ -192,7 +192,7 @@ TEST(SkLibcTest, StrtoullEdgeCases) {
 }
 
 TEST(SkLibcTest, StrtodEdgeCases) {
-  char *end;
+  char* end;
 
   // 无穷大（如果支持）
   // EXPECT_TRUE(std::isinf(sk_strtod("inf", &end)));
@@ -205,7 +205,7 @@ TEST(SkLibcTest, StrtodEdgeCases) {
 }
 
 TEST(SkLibcTest, StrtofEdgeCases) {
-  char *end;
+  char* end;
 
   // 零
   EXPECT_FLOAT_EQ(sk_strtof("0.0", &end), 0.0f);
@@ -215,7 +215,7 @@ TEST(SkLibcTest, StrtofEdgeCases) {
 }
 
 TEST(SkLibcTest, BaseDetection) {
-  char *end;
+  char* end;
 
   // Base 0 应该自动检测
   EXPECT_EQ(sk_strtol("0x10", &end, 0), 16L);
@@ -238,7 +238,7 @@ TEST(SkLibcTest, SignHandling) {
 }
 
 TEST(SkLibcTest, PartialConversion) {
-  char *end;
+  char* end;
 
   // 部分转换
   EXPECT_EQ(sk_strtol("123abc", &end, 10), 123L);

@@ -29,7 +29,7 @@ A C++26 Multi-Producer Multi-Consumer (MPMC) lock-free queue implementation for 
 ## 要求 (Requirements)
 
 - C++26 兼容的编译器
-  - GCC 14+ 
+  - GCC 14+
   - Clang 18+
   - MSVC 2024+
 - CMake 3.20+（用于构建示例和测试）
@@ -37,7 +37,7 @@ A C++26 Multi-Producer Multi-Consumer (MPMC) lock-free queue implementation for 
 ---
 
 - C++26 compatible compiler
-  - GCC 14+ 
+  - GCC 14+
   - Clang 18+
   - MSVC 2024+
 - CMake 3.20+ (for building examples and tests)
@@ -53,12 +53,12 @@ int main() {
     // 创建一个容量为 256 的队列（必须是 2 的幂）
     // Create a queue with capacity of 256 (must be power of 2)
     mpmc_queue::MPMCQueue<int, 256> queue;
-    
+
     // 入队
     // Enqueue
     queue.push(42);
     queue.push(100);
-    
+
     // 出队
     // Dequeue
     int value;
@@ -66,7 +66,7 @@ int main() {
         // 成功获取值
         // Successfully got value
     }
-    
+
     return 0;
 }
 ```
@@ -100,10 +100,10 @@ void consumer() {
 int main() {
     std::thread t1(producer);
     std::thread t2(consumer);
-    
+
     t1.join();
     t2.join();
-    
+
     return 0;
 }
 ```
