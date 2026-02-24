@@ -116,11 +116,11 @@ struct DeviceNode {
         resource(other.resource),
         bound(other.bound.load(std::memory_order_relaxed)),
         dev_id(other.dev_id) {
-    __builtin_memcpy(name, other.name, sizeof(name));
+    sk_std::memcpy(name, other.name, sizeof(name));
   }
   auto operator=(const DeviceNode& other) -> DeviceNode& {
     if (this != &other) {
-      __builtin_memcpy(name, other.name, sizeof(name));
+      sk_std::memcpy(name, other.name, sizeof(name));
       type = other.type;
       resource = other.resource;
       bound.store(other.bound.load(std::memory_order_relaxed),
