@@ -206,7 +206,7 @@ class TaskManager {
   sk_std::unordered_map<uint64_t, InterruptWorkQueue*> interrupt_work_queues_;
 
   /// PID 分配器
-  std::atomic<size_t> pid_allocator{1};
+  std::atomic<size_t> pid_allocator_{1};
 
   /**
    * @brief 分配新的 PID

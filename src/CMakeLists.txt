@@ -12,7 +12,8 @@ ADD_SUBDIRECTORY (arch)
 ADD_SUBDIRECTORY (device)
 ADD_SUBDIRECTORY (task)
 
-ADD_EXECUTABLE (${PROJECT_NAME} main.cpp memory.cpp syscall.cpp)
+ADD_EXECUTABLE (${PROJECT_NAME} main.cpp virtual_memory.cpp memory.cpp
+                                syscall.cpp)
 
 # 添加头文件
 TARGET_INCLUDE_DIRECTORIES (${PROJECT_NAME} PRIVATE ./ include)

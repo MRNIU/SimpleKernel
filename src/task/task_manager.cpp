@@ -7,6 +7,7 @@
 #include <cpu_io.h>
 
 #include <algorithm>
+#include <climits>
 #include <memory>
 #include <new>
 
@@ -128,7 +129,7 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   }
 }
 
-size_t TaskManager::AllocatePid() { return pid_allocator.fetch_add(1); }
+size_t TaskManager::AllocatePid() { return pid_allocator_.fetch_add(1); }
 
 TaskControlBlock* TaskManager::FindTask(Pid pid) {
   LockGuard lock_guard{task_table_lock_};
