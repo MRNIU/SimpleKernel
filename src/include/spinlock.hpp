@@ -33,7 +33,7 @@ class SpinLock {
    * @brief 获得锁
    * @return Expected<void> 成功返回空值，失败返回错误
    */
-  __always_inline auto Lock() -> Expected<void> {
+  [[nodiscard]] __always_inline auto Lock() -> Expected<void> {
     auto intr_enable = cpu_io::GetInterruptStatus();
     cpu_io::DisableInterrupt();
 
@@ -62,7 +62,7 @@ class SpinLock {
    * @brief 释放锁
    * @return Expected<void> 成功返回空值，失败返回错误
    */
-  __always_inline auto UnLock() -> Expected<void> {
+  [[nodiscard]] __always_inline auto UnLock() -> Expected<void> {
     if (!IsLockedByCurrentCore()) {
       sk_printf("spinlock %s IsLockedByCurrentCore == false.\n", name_);
       return std::unexpected(Error{ErrorCode::kSpinLockNotOwned});
@@ -110,8 +110,9 @@ class SpinLock {
    * @return false            否
    */
   __always_inline auto IsLockedByCurrentCore() -> bool {
-    return locked_.test() && (core_id_.load(std::memory_order_acquire) ==
-                              cpu_io::GetCurrentCoreId());
+    return locked_.test(std::memory_order_acquire) &&
+           (core_id_.load(std::memory_order_acquire) ==
+            cpu_io::GetCurrentCoreId());
   }
 };
 
@@ -120,10 +121,10 @@ class SpinLock {
  * @tparam Mutex 锁类型，必须有返回 Expected<void> 的 Lock() 和 UnLock() 方法
  */
 template <typename Mutex>
-requires requires(Mutex& m) {
-  { m.Lock() } -> std::same_as<Expected<void>>;
-  { m.UnLock() } -> std::same_as<Expected<void>>;
-}
+  requires requires(Mutex& m) {
+    { m.Lock() } -> std::same_as<Expected<void>>;
+    { m.UnLock() } -> std::same_as<Expected<void>>;
+  }
 class LockGuard {
  public:
   using mutex_type = Mutex;
@@ -133,19 +134,27 @@ class LockGuard {
    * @param mutex 要保护的锁对象
    */
   explicit LockGuard(mutex_type& mutex) : mutex_(mutex) {
-    if (auto result = mutex_.Lock(); !result) {
-      sk_printf("LockGuard: Failed to acquire lock: %s\n",
-                result.error().message());
+    mutex_.Lock().or_else([](auto&& err) {
+      sk_printf("LockGuard: Failed to acquire lock: %s\n", err.message());
       while (true) {
         cpu_io::Pause();
       }
-    }
+      return Expected<void>{};
+    });
   }
 
   /**
    * @brief 析构函数，自动释放锁
    */
-  ~LockGuard() { mutex_.UnLock(); }
+  ~LockGuard() {
+    mutex_.UnLock().or_else([](auto&& err) {
+      sk_printf("LockGuard: Failed to release lock: %s\n", err.message());
+      while (true) {
+        cpu_io::Pause();
+      }
+      return Expected<void>{};
+    });
+  }
 
   LockGuard(const LockGuard&) = delete;
   LockGuard(LockGuard&&) = delete;

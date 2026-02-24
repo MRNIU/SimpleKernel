@@ -26,7 +26,13 @@
 
 void TaskManager::Schedule() {
   auto& cpu_sched = GetCurrentCpuSched();
-  cpu_sched.lock.Lock();
+  cpu_sched.lock.Lock().or_else([](auto&& err) {
+    sk_printf("Schedule: Failed to acquire lock: %s\n", err.message());
+    while (true) {
+      cpu_io::Pause();
+    }
+    return Expected<void>{};
+  });
 
   auto* current = GetCurrentTask();
   sk_assert_msg(current != nullptr, "Schedule: No current task to schedule");
@@ -66,7 +72,13 @@ void TaskManager::Schedule() {
     } else {
       // 否则统计空闲时间并返回
       cpu_sched.idle_time++;
-      cpu_sched.lock.UnLock();
+      cpu_sched.lock.UnLock().or_else([](auto&& err) {
+        sk_printf("Schedule: Failed to release lock: %s\n", err.message());
+        while (true) {
+          cpu_io::Pause();
+        }
+        return Expected<void>{};
+      });
       return;
     }
   }
@@ -92,7 +104,13 @@ void TaskManager::Schedule() {
   // 更新 per-CPU running_task
   per_cpu::GetCurrentCore().running_task = next;
 
-  cpu_sched.lock.UnLock();
+  cpu_sched.lock.UnLock().or_else([](auto&& err) {
+    sk_printf("Schedule: Failed to release lock: %s\n", err.message());
+    while (true) {
+      cpu_io::Pause();
+    }
+    return Expected<void>{};
+  });
 
   // 上下文切换
   if (current != next) {
