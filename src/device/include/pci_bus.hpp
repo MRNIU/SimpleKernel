@@ -9,15 +9,31 @@
 #include "device_node.hpp"
 #include "expected.hpp"
 
-/// @todo 实现 PCI 总线枚举
+/**
+ * @brief  PCI 总线枚举
+ * @todo   实现 PCI 总线枚举
+ */
 class PciBus {
  public:
-  /// @param ecam_base ECAM 基地址（从 FDT 或 ACPI MCFG 获取）
+  /**
+   * @brief  构造函数
+   * @param  ecam_base      ECAM 基地址（从 FDT 或 ACPI MCFG 获取）
+   */
   explicit PciBus(uint64_t ecam_base) : ecam_base_(ecam_base) {}
 
+  /**
+   * @brief  获取总线名称
+   * @return const char*    总线名称
+   */
   static auto GetName() -> const char* { return "pci"; }
 
-  /// @todo 实现 PCI 设备枚举
+  /**
+   * @brief  设备枚举
+   * @todo   实现 PCI 设备枚举
+   * @param  out            输出设备节点指针数组
+   * @param  max            最大枚举数量
+   * @return Expected<size_t> 成功时返回实际枚举数量，失败时返回错误
+   */
   auto Enumerate([[maybe_unused]] DeviceNode* out, [[maybe_unused]] size_t max)
       -> Expected<size_t> {
     // PCI ECAM 扫描尚未实现

@@ -18,16 +18,23 @@
 
 namespace df_bridge {
 
-/// @brief 类型安全的设备存储 — 在固定内存中管理设备生命周期
-///
-/// 使用 placement new/delete 在内联缓冲区中构造和销毁设备实例，
-/// 替代手动 StorageBlock + reinterpret_cast 模式。
-///
-/// @tparam T 设备类型
+/**
+ * @brief  类型安全的设备存储 — 在固定内存中管理设备生命周期
+ *
+ * 使用 placement new/delete 在内联缓冲区中构造和销毁设备实例，
+ * 替代手动 StorageBlock + reinterpret_cast 模式。
+ *
+ * @tparam T              设备类型
+ */
 template <typename T>
 class DeviceStorage {
  public:
-  /// @brief 在存储中原地构造设备实例（若已有实例则先销毁）
+  /**
+   * @brief  在存储中原地构造设备实例（若已有实例则先销毁）
+   * @tparam Args           构造参数类型
+   * @param  args           构造参数
+   * @return T&             设备实例引用
+   */
   template <typename... Args>
   auto Emplace(Args&&... args) -> T& {
     Destroy();
@@ -36,20 +43,31 @@ class DeviceStorage {
     return *reinterpret_cast<T*>(data_);
   }
 
-  /// @brief 获取设备指针（无效时返回 nullptr）
+  /**
+   * @brief  获取设备指针（无效时返回 nullptr）
+   * @return T*             设备实例指针
+   */
   [[nodiscard]] auto Get() -> T* {
     return valid_ ? reinterpret_cast<T*>(data_) : nullptr;
   }
 
-  /// @brief 获取设备指针（const 版本）
+  /**
+   * @brief  获取设备指针（const 版本）
+   * @return const T*       设备实例常量指针
+   */
   [[nodiscard]] auto Get() const -> const T* {
     return valid_ ? reinterpret_cast<const T*>(data_) : nullptr;
   }
 
-  /// @brief 是否持有有效实例
+  /**
+   * @brief  是否持有有效实例
+   * @return bool           是否持有有效实例
+   */
   [[nodiscard]] auto IsValid() const -> bool { return valid_; }
 
-  /// @brief 销毁设备实例
+  /**
+   * @brief  销毁设备实例
+   */
   auto Destroy() -> void {
     if (valid_) {
       reinterpret_cast<T*>(data_)->~T();
@@ -57,21 +75,26 @@ class DeviceStorage {
     }
   }
 
+  /// @name 构造/析构函数
+  /// @{
   ~DeviceStorage() { Destroy(); }
   DeviceStorage() = default;
   DeviceStorage(const DeviceStorage&) = delete;
   auto operator=(const DeviceStorage&) -> DeviceStorage& = delete;
   DeviceStorage(DeviceStorage&&) = delete;
   auto operator=(DeviceStorage&&) -> DeviceStorage& = delete;
+  /// @}
 
  private:
   alignas(alignof(T)) uint8_t data_[sizeof(T)]{};
   bool valid_{false};
 };
 
-/// @brief 将 device_framework::ErrorCode 映射为 SimpleKernel ErrorCode
-/// @param code device_framework 错误码
-/// @return 内核错误码
+/**
+ * @brief  将 device_framework::ErrorCode 映射为 SimpleKernel ErrorCode
+ * @param  code           device_framework 错误码
+ * @return ErrorCode      内核错误码
+ */
 constexpr auto ToKernelErrorCode(device_framework::ErrorCode code)
     -> ErrorCode {
   switch (code) {
@@ -113,23 +136,30 @@ constexpr auto ToKernelErrorCode(device_framework::ErrorCode code)
   }
 }
 
-/// @brief 将 device_framework::Error 映射为 SimpleKernel Error
-/// @param err device_framework 错误
-/// @return 内核 Error
+/**
+ * @brief  将 device_framework::Error 映射为 SimpleKernel Error
+ * @param  err            device_framework 错误
+ * @return Error          内核 Error
+ */
 constexpr auto ToKernelError(const device_framework::Error& err) -> Error {
   return Error(ToKernelErrorCode(err.code));
 }
 
-/// @brief MMIO Probe 上下文 — TryBind + 提取 MMIO + 映射的公共流程
+/**
+ * @brief  MMIO Probe 上下文 — TryBind + 提取 MMIO + 映射的公共流程
+ */
 struct MmioProbeContext {
   uint64_t base;
   size_t size;
 };
 
-/// @brief 执行通用 MMIO Probe 前置流程
-/// @param node 设备节点
-/// @param default_size 默认 MMIO 映射大小（当 FDT 未给出 size 时使用）
-/// @return 成功时返回 MmioProbeContext；失败时节点已回滚
+/**
+ * @brief  执行通用 MMIO Probe 前置流程
+ * @param  node           设备节点
+ * @param  default_size   默认 MMIO 映射大小（当 FDT 未给出 size 时使用）
+ * @return Expected<MmioProbeContext> 成功时返回
+ * MmioProbeContext；失败时节点已回滚
+ */
 inline auto PrepareMmioProbe(DeviceNode& node, size_t default_size)
     -> Expected<MmioProbeContext> {
   if (!node.TryBind()) {
@@ -152,14 +182,17 @@ inline auto PrepareMmioProbe(DeviceNode& node, size_t default_size)
   return MmioProbeContext{base, size};
 }
 
-/// @brief 通用 MMIO Probe 辅助 — TryBind → 提取 MMIO → 映射 → 调用 create_fn
-///
-/// @tparam CreateFn 可调用类型: (uint64_t base) ->
-/// device_framework::Expected<T>
-/// @param node 设备节点
-/// @param default_size 默认 MMIO 映射大小
-/// @param create_fn 设备工厂函数
-/// @return 成功时返回设备实例；失败时节点已回滚
+/**
+ * @brief  通用 MMIO Probe 辅助 — TryBind → 提取 MMIO → 映射 → 调用 create_fn
+ *
+ * @tparam CreateFn       可调用类型: (uint64_t base) ->
+ * device_framework::Expected<T>
+ * @param  node           设备节点
+ * @param  default_size   默认 MMIO 映射大小
+ * @param  create_fn      设备工厂函数
+ * @return Expected<std::remove_reference_t<decltype(*create_fn(uint64_t{}))>>
+ * 成功时返回设备实例；失败时节点已回滚
+ */
 template <typename CreateFn>
 auto ProbeWithMmio(DeviceNode& node, size_t default_size, CreateFn&& create_fn)
     -> Expected<std::remove_reference_t<decltype(*create_fn(uint64_t{}))>> {

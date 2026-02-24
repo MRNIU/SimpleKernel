@@ -53,6 +53,12 @@ class PlatformBus {
           }
 
           PlatformId plat{};
+          if (compatible_len > sizeof(plat.compatible)) {
+            klog::Warn(
+                "PlatformBus: compatible data truncated from %zu to %zu bytes "
+                "for node '%s'\\n",
+                compatible_len, sizeof(plat.compatible), node_name);
+          }
           size_t copy_len = compatible_len < sizeof(plat.compatible)
                                 ? compatible_len
                                 : sizeof(plat.compatible);

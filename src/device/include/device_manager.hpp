@@ -14,10 +14,17 @@
 #include "sk_cstring"
 #include "spinlock.hpp"
 
-/// 设备管理器 — 管理所有设备节点和驱动
+/**
+ * @brief  设备管理器 — 管理所有设备节点和驱动
+ */
 class DeviceManager {
  public:
-  /// 注册一条总线并立即枚举其上的设备
+  /**
+   * @brief  注册一条总线并立即枚举其上的设备
+   * @tparam B              总线类型
+   * @param  bus            总线实例
+   * @return Expected<void> 成功时返回 void，失败时返回错误
+   */
   template <Bus B>
   auto RegisterBus(B& bus) -> Expected<void> {
     LockGuard guard(lock_);
@@ -46,7 +53,10 @@ class DeviceManager {
     return {};
   }
 
-  /// 匹配已注册驱动并 Probe 所有未绑定设备
+  /**
+   * @brief  匹配已注册驱动并 Probe 所有未绑定设备
+   * @return Expected<void> 成功时返回 void，失败时返回错误
+   */
   auto ProbeAll() -> Expected<void> {
     LockGuard guard(lock_);
 
@@ -82,7 +92,14 @@ class DeviceManager {
     return {};
   }
 
-  /// 通过名称查找设备（只读路径，设备表稳定后无需加锁）
+  /**
+   * @brief  通过名称查找设备
+   * @note   并发安全：由于是只读路径，在设备枚举完成且设备表（device_count_ 和
+   *         devices_）稳定后，并发调用是安全的，无需加锁。
+   * @param  name           设备名称
+   * @return Expected<DeviceNode*> 成功时返回设备节点指针；失败时返回
+   * kDeviceNotFound 错误
+   */
   auto FindDevice(const char* name) -> Expected<DeviceNode*> {
     for (size_t i = 0; i < device_count_; ++i) {
       if (strcmp(devices_[i].name, name) == 0) {
@@ -92,7 +109,13 @@ class DeviceManager {
     return std::unexpected(Error(ErrorCode::kDeviceNotFound));
   }
 
-  /// 通过类型枚举设备
+  /**
+   * @brief  通过类型枚举设备
+   * @param  type           设备类型
+   * @param  out            输出设备节点指针数组
+   * @param  max            最大枚举数量
+   * @return size_t         实际找到的设备数量
+   */
   auto FindDevicesByType(DeviceType type, DeviceNode** out, size_t max)
       -> size_t {
     size_t found = 0;
@@ -104,7 +127,10 @@ class DeviceManager {
     return found;
   }
 
-  /// 获取驱动注册表
+  /**
+   * @brief  获取驱动注册表
+   * @return DriverRegistry& 驱动注册表实例
+   */
   auto GetRegistry() -> DriverRegistry& { return registry_; }
 
   /// @name 构造/析构函数
