@@ -171,7 +171,7 @@
         },
         "QEMU_MACHINE_FLAGS": {
           "type": "STRING",
-          "value": "-machine;virt;-drive;file=${sourceDir}/build_riscv64/bin/rootfs.img,if=none,format=raw,id=hd0;-device;virtio-blk-device,drive=hd0"
+          "value": "-machine;virt;-cpu;max;-drive;file=${sourceDir}/build_riscv64/bin/rootfs.img,if=none,format=raw,id=hd0;-device;virtio-blk-device,drive=hd0"
         },
         "SIMPLEKERNEL_EARLY_CONSOLE_BASE": {
           "type": "STRING",
