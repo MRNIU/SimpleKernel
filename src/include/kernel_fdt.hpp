@@ -23,7 +23,6 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <tuple>
 #include <utility>
 
@@ -31,6 +30,7 @@
 #include "kernel_log.hpp"
 #include "singleton.hpp"
 #include "sk_cassert"
+#include "sk_cstring"
 
 /**
  * @brief FDT（Flattened Device Tree）解析器
@@ -154,7 +154,8 @@ class KernelFdt {
 
     const char* stdout_path = reinterpret_cast<const char*>(prop->data);
     std::array<char, 256> path_buffer;
-    strncpy(path_buffer.data(), stdout_path, path_buffer.max_size());
+    sk_std::strncpy(path_buffer.data(), stdout_path,
+                    path_buffer.max_size() - 1);
 
     char* colon = strchr(path_buffer.data(), ':');
     if (colon != nullptr) {
