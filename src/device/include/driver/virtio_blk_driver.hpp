@@ -23,6 +23,10 @@ class VirtioBlkDriver {
   static constexpr MatchEntry kMatchTable[] = {
       kPlatformMatch,
   };
+  static constexpr uint32_t kMmioRegionSize = 0x1000;
+  static constexpr uint32_t kDefaultQueueCount = 1;
+  static constexpr uint32_t kDefaultQueueSize = 128;
+  static constexpr size_t kMinDmaBufferSize = 32768;
 
   static auto GetDescriptor() -> const DriverDescriptor& {
     static const DriverDescriptor desc{
@@ -34,7 +38,7 @@ class VirtioBlkDriver {
   }
 
   auto Probe(DeviceNode& node) -> Expected<void> {
-    auto ctx = df_bridge::PrepareMmioProbe(node, 0x1000);
+    auto ctx = df_bridge::PrepareMmioProbe(node, kMmioRegionSize);
     if (!ctx) {
       return std::unexpected(ctx.error());
     }
@@ -45,7 +49,6 @@ class VirtioBlkDriver {
     if (magic != device_framework::virtio::kMmioMagicValue) {
       klog::Debug("VirtioBlkDriver: 0x%lX not a VirtIO device (magic=0x%X)\n",
                   base, magic);
-      node.bound.store(false, std::memory_order_release);
       return std::unexpected(Error(ErrorCode::kDeviceNotFound));
     }
 
@@ -55,7 +58,6 @@ class VirtioBlkDriver {
     if (device_id != kBlockDeviceId) {
       klog::Debug("VirtioBlkDriver: 0x%lX device_id=%u (not block)\n", base,
                   device_id);
-      node.bound.store(false, std::memory_order_release);
       return std::unexpected(Error(ErrorCode::kDeviceNotFound));
     }
 
@@ -71,10 +73,27 @@ class VirtioBlkDriver {
         static_cast<uint64_t>(
             device_framework::virtio::blk::BlkFeatureBit::kGeometry);
 
-    auto result = VirtioBlkType::Create(base, dma_buf_, 1, 128, extra_features);
+    if (node.dma_buffer == nullptr || !node.dma_buffer->IsValid()) {
+      klog::Err(
+          "VirtioBlkDriver: Missing or invalid DMA buffer in DeviceNode at "
+          "0x%lX\n",
+          base);
+      return std::unexpected(Error(ErrorCode::kInvalidArgument));
+    }
+
+    if (node.dma_buffer->GetBuffer().second < kMinDmaBufferSize) {
+      klog::Err("VirtioBlkDriver: DMA buffer too small (%zu < %u)\n",
+                node.dma_buffer->GetBuffer().second, kMinDmaBufferSize);
+      return std::unexpected(Error(ErrorCode::kInvalidArgument));
+    }
+
+    // Pass the pointer to Create (ensure the size meets virtio queue
+    // requirements) GetBuffer() returns std::pair<uint8_t*, size_t>
+    auto result = VirtioBlkType::Create(
+        base, node.dma_buffer->GetBuffer().first, kDefaultQueueCount,
+        kDefaultQueueSize, extra_features);
     if (!result.has_value()) {
       klog::Err("VirtioBlkDriver: Create failed at 0x%lX\n", base);
-      node.bound.store(false, std::memory_order_release);
       return std::unexpected(df_bridge::ToKernelError(result.error()));
     }
 
@@ -111,7 +130,6 @@ class VirtioBlkDriver {
   }
 
  private:
-  alignas(4096) uint8_t dma_buf_[32768]{};
   df_bridge::DeviceStorage<VirtioBlkType> device_;
   uint32_t irq_{0};
 };
