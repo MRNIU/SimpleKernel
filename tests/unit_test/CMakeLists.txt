@@ -26,7 +26,6 @@ ADD_EXECUTABLE (
     task/fixtures/task_test_harness.cpp
     mocks/arch.cpp
     mocks/test_environment_state.cpp
-    ${CMAKE_SOURCE_DIR}/src/kernel_fdt.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp
     ${CMAKE_SOURCE_DIR}/src/task/block.cpp
     ${CMAKE_SOURCE_DIR}/src/task/clone.cpp

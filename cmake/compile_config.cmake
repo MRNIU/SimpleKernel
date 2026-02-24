@@ -41,7 +41,7 @@ TARGET_COMPILE_OPTIONS (
     compile_options
     INTERFACE # 如果 CMAKE_BUILD_TYPE 为 Release 则使用 -O3 -Werror，否则使用 -O0 -ggdb -g
               # 在 Debug 模式下由 cmake 自动添加
-              $<$<CONFIG:Release>:-O3;-Werror>
+              $<$<CONFIG:Release>:-O2;-Werror>
               $<$<CONFIG:Debug>:-O0;-ggdb>
               # 打开全部警告
               -Wall
