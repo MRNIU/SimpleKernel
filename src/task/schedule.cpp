@@ -31,7 +31,7 @@ void TaskManager::Schedule() {
     while (true) {
       cpu_io::Pause();
     }
-    return {};
+    return Expected<void>{};
   });
 
   auto* current = GetCurrentTask();
@@ -77,7 +77,7 @@ void TaskManager::Schedule() {
         while (true) {
           cpu_io::Pause();
         }
-        return {};
+        return Expected<void>{};
       });
       return;
     }
@@ -109,7 +109,7 @@ void TaskManager::Schedule() {
     while (true) {
       cpu_io::Pause();
     }
-    return {};
+    return Expected<void>{};
   });
 
   // 上下文切换

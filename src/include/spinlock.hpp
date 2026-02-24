@@ -139,7 +139,7 @@ class LockGuard {
       while (true) {
         cpu_io::Pause();
       }
-      return {};
+      return Expected<void>{};
     });
   }
 
@@ -152,7 +152,7 @@ class LockGuard {
       while (true) {
         cpu_io::Pause();
       }
-      return {};
+      return Expected<void>{};
     });
   }
 
