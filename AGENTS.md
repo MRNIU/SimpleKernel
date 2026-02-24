@@ -153,6 +153,8 @@ CMake 文件使用: `# Copyright The SimpleKernel Contributors`
 
 ## Git Commit 规范
 
+使用 --signoff 进行提交
+
 ```
 <type>(<scope>): <subject>
 
