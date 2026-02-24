@@ -10,6 +10,9 @@
 #include <cstdint>
 #include <variant>
 
+#include "io_buffer.hpp"
+#include "sk_cstring"
+
 /// Platform 设备标识（FDT compatible stringlist）
 struct PlatformId {
   /// 完整的 compatible stringlist（多个字符串以 '\0' 分隔）
@@ -99,6 +102,8 @@ struct DeviceNode {
   std::atomic<bool> bound{false};
   /// 全局设备编号
   uint32_t dev_id{0};
+  /// DMA 缓冲区
+  IoBuffer* dma_buffer{nullptr};
 
   /// 尝试绑定（CAS 保证幂等，防止重复绑定）
   auto TryBind() -> bool {
@@ -115,7 +120,8 @@ struct DeviceNode {
       : type(other.type),
         resource(other.resource),
         bound(other.bound.load(std::memory_order_relaxed)),
-        dev_id(other.dev_id) {
+        dev_id(other.dev_id),
+        dma_buffer(other.dma_buffer) {
     sk_std::memcpy(name, other.name, sizeof(name));
   }
   auto operator=(const DeviceNode& other) -> DeviceNode& {
@@ -126,6 +132,7 @@ struct DeviceNode {
       bound.store(other.bound.load(std::memory_order_relaxed),
                   std::memory_order_relaxed);
       dev_id = other.dev_id;
+      dma_buffer = other.dma_buffer;
     }
     return *this;
   }
