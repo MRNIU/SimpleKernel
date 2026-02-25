@@ -6,6 +6,7 @@
 #ifndef SIMPLEKERNEL_SRC_FILESYSTEM_INCLUDE_FILE_DESCRIPTOR_HPP_
 #define SIMPLEKERNEL_SRC_FILESYSTEM_INCLUDE_FILE_DESCRIPTOR_HPP_
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 
@@ -50,6 +51,7 @@ class FileDescriptorTable {
    * @post 返回的 fd >= 0 且 fd < kMaxFd
    */
   [[nodiscard]] auto Alloc(vfs::File* file) -> Expected<int>;
+
   /**
    * @brief 获取 fd 对应的 File 对象
    * @param fd 文件描述符
@@ -63,6 +65,7 @@ class FileDescriptorTable {
    * @param fd 要释放的文件描述符
    * @return Expected<void>
    */
+
   [[nodiscard]] auto Free(int fd) -> Expected<void>;
   /**
    * @brief 复制文件描述符（用于 dup/dup2）
@@ -70,11 +73,13 @@ class FileDescriptorTable {
    * @param new_fd 目标文件描述符（若为 -1 则分配最小可用）
    * @return Expected<int> 新的文件描述符
    */
+
   [[nodiscard]] auto Dup(int old_fd, int new_fd = -1) -> Expected<int>;
   /**
    * @brief 关闭所有文件描述符
    * @return Expected<void> 成功或错误
    */
+
   [[nodiscard]] auto CloseAll() -> Expected<void>;
   /**
    * @brief 设置标准文件描述符
@@ -83,6 +88,7 @@ class FileDescriptorTable {
    * @param stderr_file stderr 文件对象
    * @return Expected<void> 成功或错误
    */
+
   [[nodiscard]] auto SetupStandardFiles(vfs::File* stdin_file,
                                         vfs::File* stdout_file,
                                         vfs::File* stderr_file)
@@ -94,22 +100,10 @@ class FileDescriptorTable {
   [[nodiscard]] auto GetOpenCount() const -> int;
 
  private:
-  vfs::File* table_[kMaxFd];
+  std::array<vfs::File*, kMaxFd> table_;
   int open_count_;
   SpinLock lock_{"fd_table"};
 };
-/**
- * @brief 获取当前进程的文件描述符表
- * @return FileDescriptorTable* 当前进程的 fd 表
- * @note 需要在任务管理模块中实现 per-task 存储
- */
-auto GetCurrentFdTable() -> FileDescriptorTable*;
-
-/**
- * @brief 设置当前进程的文件描述符表
- * @param fd_table 文件描述符表指针
- */
-void SetCurrentFdTable(FileDescriptorTable* fd_table);
 
 }  // namespace filesystem
 

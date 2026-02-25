@@ -8,28 +8,18 @@
 
 namespace filesystem {
 
-namespace {
-
-// 当前任务的文件描述符表（线程本地）
-thread_local FileDescriptorTable* g_current_fd_table = nullptr;
-
-}  // anonymous namespace
-
 FileDescriptorTable::FileDescriptorTable()
-    : table_{}, open_count_(0), lock_{"fd_table"} {
-  // 初始化所有 fd 为空
-  for (int i = 0; i < kMaxFd; ++i) {
-    table_[i] = nullptr;
-  }
-}
+    : table_{}, open_count_(0), lock_{"fd_table"} {}
 
 FileDescriptorTable::~FileDescriptorTable() {
-  // 关闭所有打开的文件
-  (void)CloseAll();
+  CloseAll().or_else([](auto&& err) {
+    klog::Warn("Failed to close all files in destructor: %s\n", err.message());
+    return Expected<void>{};
+  });
 }
 
 FileDescriptorTable::FileDescriptorTable(FileDescriptorTable&& other)
-    : open_count_(other.open_count_), lock_("fd_table") {
+    : open_count_(other.open_count_), lock_{"fd_table"} {
   LockGuard guard(other.lock_);
 
   for (int i = 0; i < kMaxFd; ++i) {
@@ -44,7 +34,11 @@ auto FileDescriptorTable::operator=(FileDescriptorTable&& other)
     -> FileDescriptorTable& {
   if (this != &other) {
     // 先关闭当前的所有文件
-    (void)CloseAll();
+    CloseAll().or_else([](auto&& err) {
+      klog::Warn("Failed to close all files in move assignment: %s\n",
+                 err.message());
+      return Expected<void>{};
+    });
 
     LockGuard guard1(lock_);
     LockGuard guard2(other.lock_);
@@ -175,11 +169,5 @@ auto FileDescriptorTable::SetupStandardFiles(vfs::File* stdin_file,
 }
 
 auto FileDescriptorTable::GetOpenCount() const -> int { return open_count_; }
-
-auto GetCurrentFdTable() -> FileDescriptorTable* { return g_current_fd_table; }
-
-void SetCurrentFdTable(FileDescriptorTable* fd_table) {
-  g_current_fd_table = fd_table;
-}
 
 }  // namespace filesystem

@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "file_descriptor.hpp"
 #include "resource_id.hpp"
 
 /// 进程 ID 类型
@@ -189,7 +190,9 @@ struct TaskControlBlock {
   uint64_t interrupt_number = 0;
 
   /// @todo 优先级继承相关
-  /// @todo 文件系统相关
+
+  /// 文件描述符表
+  filesystem::FileDescriptorTable* fd_table = nullptr;
 
   /// @name 线程组相关方法
   /// @{

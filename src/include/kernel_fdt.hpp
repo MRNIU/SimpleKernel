@@ -54,12 +54,12 @@ class KernelFdt {
    */
   explicit KernelFdt(uint64_t header)
       : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
-    ValidateFdtHeader().or_else([](Error err) -> Expected<void> {
+    ValidateFdtHeader().or_else([](auto&& err) {
       klog::Err("KernelFdt init failed: %s\n", err.message());
       while (true) {
         cpu_io::Pause();
       }
-      return {};
+      return Expected<void>{};
     });
 
     klog::Debug("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
