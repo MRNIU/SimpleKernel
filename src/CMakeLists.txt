@@ -11,6 +11,7 @@ ADD_SUBDIRECTORY (libcxx)
 ADD_SUBDIRECTORY (arch)
 ADD_SUBDIRECTORY (device)
 ADD_SUBDIRECTORY (task)
+ADD_SUBDIRECTORY (vfs)
 
 ADD_EXECUTABLE (${PROJECT_NAME} main.cpp virtual_memory.cpp io_buffer.cpp
                                 memory.cpp syscall.cpp)
@@ -19,8 +20,15 @@ ADD_EXECUTABLE (${PROJECT_NAME} main.cpp virtual_memory.cpp io_buffer.cpp
 TARGET_INCLUDE_DIRECTORIES (${PROJECT_NAME} PRIVATE ./ include)
 
 # 添加要链接的库
-TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
-                                               libcxx arch device task)
+TARGET_LINK_LIBRARIES (
+    ${PROJECT_NAME}
+    PRIVATE kernel_link_libraries
+            libc
+            libcxx
+            arch
+            device
+            task
+            vfs)
 
 SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES OUTPUT_NAME
                                                   ${KERNEL_ELF_OUTPUT_NAME})

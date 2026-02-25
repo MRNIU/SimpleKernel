@@ -1,0 +1,250 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#include "mount.hpp"
+
+#include "kernel_log.hpp"
+#include "sk_cstring"
+
+namespace vfs {
+
+namespace {
+
+// 全局挂载表实例
+MountTable g_mount_table_instance;
+
+/**
+ * @brief 比较路径前缀
+ * @return true 如果 path 以 prefix 开头
+ */
+auto PathStartsWith(const char* path, const char* prefix) -> bool {
+  if (path == nullptr || prefix == nullptr) {
+    return false;
+  }
+
+  size_t prefix_len = strlen(prefix);
+
+  // 处理根目录特殊情况
+  if (prefix_len == 1 && prefix[0] == '/') {
+    return true;
+  }
+
+  if (strncmp(path, prefix, prefix_len) != 0) {
+    return false;
+  }
+
+  // 确保是完整路径组件匹配（prefix 结束于 / 或 path 结束）
+  char next_char = path[prefix_len];
+  return next_char == '\0' || next_char == '/';
+}
+
+}  // anonymous namespace
+
+MountTable::MountTable() : mounts_{}, mount_count_(0), root_mount_(nullptr) {}
+
+auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
+    -> Expected<void> {
+  if (path == nullptr || fs == nullptr) {
+    return std::unexpected(Error(ErrorCode::kInvalidArgument));
+  }
+
+  // 检查挂载点数量
+  if (mount_count_ >= kMaxMounts) {
+    return std::unexpected(Error(ErrorCode::kFsMountFailed));
+  }
+
+  // 规范化路径（确保以 / 开头）
+  if (path[0] != '/') {
+    return std::unexpected(Error(ErrorCode::kFsInvalidPath));
+  }
+
+  // 检查路径是否已被挂载
+  for (size_t i = 0; i < mount_count_; ++i) {
+    if (mounts_[i].active && strcmp(mounts_[i].mount_path, path) == 0) {
+      return std::unexpected(Error(ErrorCode::kFsAlreadyMounted));
+    }
+  }
+
+  // 挂载文件系统
+  auto mount_result = fs->Mount(device);
+  if (!mount_result.has_value()) {
+    klog::Err("MountTable: failed to mount filesystem '%s': %s\n",
+              fs->GetName(), mount_result.error().message());
+    return std::unexpected(Error(ErrorCode::kFsMountFailed));
+  }
+
+  Inode* root_inode = mount_result.value();
+  if (root_inode == nullptr || root_inode->type != FileType::kDirectory) {
+    return std::unexpected(Error(ErrorCode::kFsCorrupted));
+  }
+
+  // 为根 inode 创建 dentry
+  Dentry* root_dentry = new (std::nothrow) Dentry();
+  if (root_dentry == nullptr) {
+    fs->Unmount();
+    return std::unexpected(Error(ErrorCode::kOutOfMemory));
+  }
+
+  root_dentry->inode = root_inode;
+  strncpy(root_dentry->name, "/", sizeof(root_dentry->name));
+
+  // 查找挂载点 dentry（如果是非根挂载）
+  Dentry* mount_dentry = nullptr;
+  if (strcmp(path, "/") != 0) {
+    // 需要找到父文件系统中对应的 dentry
+    // 这里简化处理，实际应该通过 VFS Lookup 找到
+    // 暂时设置为 nullptr，表示根挂载
+  }
+
+  // 找到空闲挂载点槽位
+  size_t slot = 0;
+  for (; slot < kMaxMounts; ++slot) {
+    if (!mounts_[slot].active) {
+      break;
+    }
+  }
+
+  if (slot >= kMaxMounts) {
+    delete root_dentry;
+    fs->Unmount();
+    return std::unexpected(Error(ErrorCode::kFsMountFailed));
+  }
+
+  // 填充挂载点信息
+  mounts_[slot].mount_path = path;
+  mounts_[slot].mount_dentry = mount_dentry;
+  mounts_[slot].filesystem = fs;
+  mounts_[slot].device = device;
+  mounts_[slot].root_inode = root_inode;
+  mounts_[slot].root_dentry = root_dentry;
+  mounts_[slot].active = true;
+
+  ++mount_count_;
+
+  // 如果是根挂载，设置 root_mount_
+  if (strcmp(path, "/") == 0) {
+    root_mount_ = &mounts_[slot];
+    // 更新 VFS 根 dentry
+    extern void SetRootDentry(Dentry*);
+    SetRootDentry(root_dentry);
+  }
+
+  klog::Info("MountTable: mounted '%s' on '%s'\n", fs->GetName(), path);
+  return {};
+}
+
+auto MountTable::Unmount(const char* path) -> Expected<void> {
+  if (path == nullptr) {
+    return std::unexpected(Error(ErrorCode::kInvalidArgument));
+  }
+
+  // 查找挂载点
+  MountPoint* mp = nullptr;
+  size_t mp_index = 0;
+  for (size_t i = 0; i < kMaxMounts; ++i) {
+    if (mounts_[i].active && strcmp(mounts_[i].mount_path, path) == 0) {
+      mp = &mounts_[i];
+      mp_index = i;
+      break;
+    }
+  }
+
+  if (mp == nullptr) {
+    return std::unexpected(Error(ErrorCode::kFsNotMounted));
+  }
+
+  // 卸载文件系统
+  auto result = mp->filesystem->Unmount();
+  if (!result.has_value()) {
+    return std::unexpected(result.error());
+  }
+
+  // 清理挂载点
+  delete mp->root_dentry;
+
+  mp->active = false;
+  mp->mount_path = nullptr;
+  mp->mount_dentry = nullptr;
+  mp->filesystem = nullptr;
+  mp->device = nullptr;
+  mp->root_inode = nullptr;
+  mp->root_dentry = nullptr;
+
+  --mount_count_;
+
+  // 如果是根挂载，清除 root_mount_
+  if (root_mount_ == &mounts_[mp_index]) {
+    root_mount_ = nullptr;
+    extern void SetRootDentry(Dentry*);
+    SetRootDentry(nullptr);
+  }
+
+  klog::Info("MountTable: unmounted '%s'\n", path);
+  return {};
+}
+
+auto MountTable::Lookup(const char* path) -> MountPoint* {
+  if (path == nullptr || path[0] != '/') {
+    return nullptr;
+  }
+
+  MountPoint* best_match = nullptr;
+  size_t best_match_len = 0;
+
+  for (size_t i = 0; i < kMaxMounts; ++i) {
+    if (!mounts_[i].active) {
+      continue;
+    }
+
+    const char* mp_path = mounts_[i].mount_path;
+    if (mp_path == nullptr) {
+      continue;
+    }
+
+    size_t mp_len = strlen(mp_path);
+
+    // 检查路径是否以挂载路径开头
+    if (strncmp(path, mp_path, mp_len) == 0) {
+      // 确保是完整匹配或下一个字符是 /
+      char next_char = path[mp_len];
+      if (next_char == '\0' || next_char == '/') {
+        // 选择最长的匹配
+        if (mp_len > best_match_len) {
+          best_match = &mounts_[i];
+          best_match_len = mp_len;
+        }
+      }
+    }
+  }
+
+  return best_match;
+}
+
+auto MountTable::GetRootDentry(MountPoint* mp) -> Dentry* {
+  if (mp == nullptr || !mp->active) {
+    return nullptr;
+  }
+  return mp->root_dentry;
+}
+
+auto MountTable::IsMountPoint(const char* path) -> bool {
+  if (path == nullptr) {
+    return false;
+  }
+
+  for (size_t i = 0; i < kMaxMounts; ++i) {
+    if (mounts_[i].active && mounts_[i].mount_path != nullptr &&
+        strcmp(mounts_[i].mount_path, path) == 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+auto MountTable::GetRootMount() -> MountPoint* { return root_mount_; }
+
+auto GetMountTable() -> MountTable& { return g_mount_table_instance; }
+
+}  // namespace vfs

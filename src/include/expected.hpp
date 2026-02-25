@@ -69,6 +69,29 @@ enum class ErrorCode : uint64_t {
   kDeviceBlockUnaligned = 0x80B,
   kDeviceBlockOutOfRange = 0x80C,
   kDeviceFlushFailed = 0x80D,
+  // 文件系统相关错误 (0xA00 - 0xAFF)
+  kFsFileNotFound = 0xA00,
+  kFsPermissionDenied = 0xA01,
+  kFsNotADirectory = 0xA02,
+  kFsIsADirectory = 0xA03,
+  kFsFileExists = 0xA04,
+  kFsNoSpace = 0xA05,
+  kFsMountFailed = 0xA06,
+  kFsUnmountFailed = 0xA07,
+  kFsInvalidPath = 0xA08,
+  kFsFdTableFull = 0xA09,
+  kFsInvalidFd = 0xA0A,
+  kFsNotMounted = 0xA0B,
+  kFsReadOnly = 0xA0C,
+  kFsCorrupted = 0xA0D,
+  kFsAlreadyMounted = 0xA0E,
+  kFsNotEmpty = 0xA0F,
+  // BlockDevice 相关错误 (0xB00 - 0xBFF)
+  kBlkDeviceNotFound = 0xB00,
+  kBlkReadFailed = 0xB01,
+  kBlkWriteFailed = 0xB02,
+  kBlkSectorOutOfRange = 0xB03,
+  // IrqChip 相关错误 (0xC00 - 0xCFF)
   // IrqChip 相关错误 (0x900 - 0x9FF)
   kIrqChipInvalidIrq = 0x900,
   kIrqChipIrqNotEnabled = 0x901,
@@ -184,6 +207,46 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
       return "Block number out of device range";
     case ErrorCode::kDeviceFlushFailed:
       return "Device flush failed";
+    case ErrorCode::kFsFileNotFound:
+      return "File not found";
+    case ErrorCode::kFsPermissionDenied:
+      return "Filesystem permission denied";
+    case ErrorCode::kFsNotADirectory:
+      return "Not a directory";
+    case ErrorCode::kFsIsADirectory:
+      return "Is a directory";
+    case ErrorCode::kFsFileExists:
+      return "File already exists";
+    case ErrorCode::kFsNoSpace:
+      return "No space left on device";
+    case ErrorCode::kFsMountFailed:
+      return "Mount failed";
+    case ErrorCode::kFsUnmountFailed:
+      return "Unmount failed";
+    case ErrorCode::kFsInvalidPath:
+      return "Invalid path";
+    case ErrorCode::kFsFdTableFull:
+      return "File descriptor table full";
+    case ErrorCode::kFsInvalidFd:
+      return "Invalid file descriptor";
+    case ErrorCode::kFsNotMounted:
+      return "Filesystem not mounted";
+    case ErrorCode::kFsReadOnly:
+      return "Read-only filesystem";
+    case ErrorCode::kFsCorrupted:
+      return "Filesystem corrupted";
+    case ErrorCode::kFsAlreadyMounted:
+      return "Filesystem already mounted";
+    case ErrorCode::kFsNotEmpty:
+      return "Directory not empty";
+    case ErrorCode::kBlkDeviceNotFound:
+      return "Block device not found";
+    case ErrorCode::kBlkReadFailed:
+      return "Block read failed";
+    case ErrorCode::kBlkWriteFailed:
+      return "Block write failed";
+    case ErrorCode::kBlkSectorOutOfRange:
+      return "Sector out of range";
     case ErrorCode::kIrqChipInvalidIrq:
       return "IRQ number out of controller range";
     case ErrorCode::kIrqChipIrqNotEnabled:

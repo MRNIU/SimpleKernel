@@ -36,7 +36,8 @@ ADD_EXECUTABLE (
     ${CMAKE_SOURCE_DIR}/src/task/task_manager.cpp
     ${CMAKE_SOURCE_DIR}/src/task/tick_update.cpp
     ${CMAKE_SOURCE_DIR}/src/task/wait.cpp
-    ${CMAKE_SOURCE_DIR}/src/task/wakeup.cpp)
+    vfs_test.cpp
+    ramfs_test.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME}
@@ -57,13 +58,15 @@ TARGET_INCLUDE_DIRECTORIES (
             ${CMAKE_SOURCE_DIR}/src/arch
             ${CMAKE_SOURCE_DIR}/src/libc/include
             ${CMAKE_SOURCE_DIR}/src/libcxx/include
-            ${CMAKE_SOURCE_DIR}/src/task/include)
+            ${CMAKE_SOURCE_DIR}/src/task/include
+            ${CMAKE_SOURCE_DIR}/src/vfs/include
+            ${CMAKE_SOURCE_DIR}/src/vfs/ramfs/include)
 
 TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 
 TARGET_LINK_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_OPTIONS})
 
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_LIB} dtc-lib
-                                               bmalloc MPMCQueue task)
+                                               bmalloc MPMCQueue task vfs)
 
 GTEST_DISCOVER_TESTS (${PROJECT_NAME})
