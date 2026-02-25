@@ -50,13 +50,12 @@ auto MkDir(const char* path) -> Expected<void> {
   }
 
   // 创建目录
-  if (parent_dentry->inode->ops == nullptr ||
-      parent_dentry->inode->ops->mkdir == nullptr) {
+  if (parent_dentry->inode->ops == nullptr) {
     return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
   }
 
   auto result =
-      parent_dentry->inode->ops->mkdir(parent_dentry->inode, dir_name);
+      parent_dentry->inode->ops->Mkdir(parent_dentry->inode, dir_name);
   if (!result.has_value()) {
     return std::unexpected(result.error());
   }

@@ -18,10 +18,10 @@ auto ReadDir(File* file, DirEntry* dirent, size_t count) -> Expected<size_t> {
     return std::unexpected(Error(ErrorCode::kFsNotADirectory));
   }
 
-  if (file->ops == nullptr || file->ops->readdir == nullptr) {
+  if (file->ops == nullptr) {
     return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
   }
 
-  return file->ops->readdir(file, dirent, count);
+  return file->ops->ReadDir(file, dirent, count);
 }
 }  // namespace vfs

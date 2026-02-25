@@ -60,16 +60,13 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
     }
 
     // 创建文件
-    if (parent_dentry->inode->ops == nullptr ||
-        parent_dentry->inode->ops->create == nullptr) {
+    // 创建文件
+    if (parent_dentry->inode->ops == nullptr) {
       return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
     }
 
-    auto create_result = parent_dentry->inode->ops->create(
+    auto create_result = parent_dentry->inode->ops->Create(
         parent_dentry->inode, file_name, FileType::kRegular);
-    if (!create_result.has_value()) {
-      return std::unexpected(create_result.error());
-    }
 
     // 创建 dentry
     dentry = new Dentry();
@@ -106,9 +103,10 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
   file->offset = 0;
   file->flags = flags;
 
-  // 设置文件操作
-  // 由具体文件系统设置 FileOps
-  // 这里只是创建 File 结构，实际的 ops 由文件系统填充
+  // 从文件系统获取 FileOps
+  if (file->inode != nullptr && file->inode->fs != nullptr) {
+    file->ops = file->inode->fs->GetFileOps();
+  }
 
   // 处理 O_TRUNC
   if ((flags & kOTruncate) != 0 && dentry->inode->type == FileType::kRegular) {

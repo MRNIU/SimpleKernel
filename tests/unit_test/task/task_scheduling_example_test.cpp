@@ -183,8 +183,6 @@ TEST_F(TaskSchedulingExample, InterruptStatusDuringSwitch) {
  * @brief 示例：验证页表切换
  */
 TEST_F(TaskSchedulingExample, PageTableSwitchBetweenTasks) {
-  auto& env = GetEnvironmentState();
-
   const uint64_t kernel_pd = 0x1000;
   const uint64_t user_task1_pd = 0x2000;
   const uint64_t user_task2_pd = 0x3000;

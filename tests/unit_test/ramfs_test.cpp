@@ -4,12 +4,13 @@
  */
 
 #include "ramfs.hpp"
-using namespace ramfs;
+
 #include <gtest/gtest.h>
 
 #include <vector>
 
 #include "test_environment_state.hpp"
+
 using namespace vfs;
 using namespace ramfs;
 
@@ -70,12 +71,10 @@ TEST_F(RamFsTest, CreateAndLookupFile) {
   Inode* root = ramfs_.GetRootInode();
   ASSERT_NE(root, nullptr);
   ASSERT_NE(root->ops, nullptr);
-  ASSERT_NE(root->ops->create, nullptr);
-  ASSERT_NE(root->ops->lookup, nullptr);
 
   // 创建文件
   auto create_result =
-      root->ops->create(root, "testfile.txt", FileType::kRegular);
+      root->ops->Create(root, "testfile.txt", FileType::kRegular);
   EXPECT_TRUE(create_result.has_value());
 
   Inode* file_inode = create_result.value();
@@ -83,12 +82,12 @@ TEST_F(RamFsTest, CreateAndLookupFile) {
   EXPECT_EQ(file_inode->type, FileType::kRegular);
 
   // 查找文件
-  auto lookup_result = root->ops->lookup(root, "testfile.txt");
+  auto lookup_result = root->ops->Lookup(root, "testfile.txt");
   EXPECT_TRUE(lookup_result.has_value());
   EXPECT_EQ(lookup_result.value(), file_inode);
 
   // 查找不存在的文件
-  lookup_result = root->ops->lookup(root, "nonexistent.txt");
+  lookup_result = root->ops->Lookup(root, "nonexistent.txt");
   EXPECT_FALSE(lookup_result.has_value());
 }
 
@@ -97,10 +96,9 @@ TEST_F(RamFsTest, CreateDirectory) {
   Inode* root = ramfs_.GetRootInode();
   ASSERT_NE(root, nullptr);
   ASSERT_NE(root->ops, nullptr);
-  ASSERT_NE(root->ops->mkdir, nullptr);
 
   // 创建目录
-  auto mkdir_result = root->ops->mkdir(root, "testdir");
+  auto mkdir_result = root->ops->Mkdir(root, "testdir");
   EXPECT_TRUE(mkdir_result.has_value());
 
   Inode* dir_inode = mkdir_result.value();
@@ -115,15 +113,15 @@ TEST_F(RamFsTest, UnlinkFile) {
 
   // 先创建文件
   auto create_result =
-      root->ops->create(root, "todelete.txt", FileType::kRegular);
+      root->ops->Create(root, "todelete.txt", FileType::kRegular);
   ASSERT_TRUE(create_result.has_value());
 
   // 删除文件
-  auto unlink_result = root->ops->unlink(root, "todelete.txt");
+  auto unlink_result = root->ops->Unlink(root, "todelete.txt");
   EXPECT_TRUE(unlink_result.has_value());
 
   // 确认文件已删除
-  auto lookup_result = root->ops->lookup(root, "todelete.txt");
+  auto lookup_result = root->ops->Lookup(root, "todelete.txt");
   EXPECT_FALSE(lookup_result.has_value());
 }
 
@@ -133,15 +131,15 @@ TEST_F(RamFsTest, Rmdir) {
   ASSERT_NE(root, nullptr);
 
   // 创建目录
-  auto mkdir_result = root->ops->mkdir(root, "dir_to_remove");
+  auto mkdir_result = root->ops->Mkdir(root, "dir_to_remove");
   ASSERT_TRUE(mkdir_result.has_value());
 
   // 删除目录
-  auto rmdir_result = root->ops->rmdir(root, "dir_to_remove");
+  auto rmdir_result = root->ops->Rmdir(root, "dir_to_remove");
   EXPECT_TRUE(rmdir_result.has_value());
 
   // 确认目录已删除
-  auto lookup_result = root->ops->lookup(root, "dir_to_remove");
+  auto lookup_result = root->ops->Lookup(root, "dir_to_remove");
   EXPECT_FALSE(lookup_result.has_value());
 }
 
@@ -152,7 +150,7 @@ TEST_F(RamFsTest, FileReadWrite) {
 
   // 创建文件
   auto create_result =
-      root->ops->create(root, "rwtest.txt", FileType::kRegular);
+      root->ops->Create(root, "rwtest.txt", FileType::kRegular);
   ASSERT_TRUE(create_result.has_value());
 
   Inode* file_inode = create_result.value();
@@ -161,13 +159,13 @@ TEST_F(RamFsTest, FileReadWrite) {
   File file;
   file.inode = file_inode;
   file.offset = 0;
-  file.ops = RamFs::GetFileOps();  // 需要访问 ramfs 内部的 file ops
+  file.ops = ramfs_.GetFileOps();
 
   // 写入数据
   const char* write_data = "Hello, RamFS!";
   size_t write_len = strlen(write_data);
 
-  auto write_result = file.ops->write(&file, write_data, write_len);
+  auto write_result = file.ops->Write(&file, write_data, write_len);
   EXPECT_TRUE(write_result.has_value());
   EXPECT_EQ(write_result.value(), write_len);
 
@@ -175,7 +173,7 @@ TEST_F(RamFsTest, FileReadWrite) {
   file.offset = 0;
   char read_buffer[64] = {0};
 
-  auto read_result = file.ops->read(&file, read_buffer, sizeof(read_buffer));
+  auto read_result = file.ops->Read(&file, read_buffer, sizeof(read_buffer));
   EXPECT_TRUE(read_result.has_value());
   EXPECT_EQ(read_result.value(), write_len);
   EXPECT_STREQ(read_buffer, write_data);
@@ -188,29 +186,29 @@ TEST_F(RamFsTest, FileSeek) {
 
   // 创建文件并写入数据
   auto create_result =
-      root->ops->create(root, "seektest.txt", FileType::kRegular);
+      root->ops->Create(root, "seektest.txt", FileType::kRegular);
   ASSERT_TRUE(create_result.has_value());
 
   File file;
   file.inode = create_result.value();
   file.offset = 0;
-  file.ops = RamFs::GetFileOps();
+  file.ops = ramfs_.GetFileOps();
 
   const char* data = "ABCDEFGHIJ";
-  file.ops->write(&file, data, strlen(data));
+  file.ops->Write(&file, data, strlen(data));
 
   // SEEK_SET
-  auto seek_result = file.ops->seek(&file, 5, SeekWhence::kSet);
+  auto seek_result = file.ops->Seek(&file, 5, SeekWhence::kSet);
   EXPECT_TRUE(seek_result.has_value());
   EXPECT_EQ(seek_result.value(), 5u);
 
   // SEEK_CUR
-  seek_result = file.ops->seek(&file, 2, SeekWhence::kCur);
+  seek_result = file.ops->Seek(&file, 2, SeekWhence::kCur);
   EXPECT_TRUE(seek_result.has_value());
   EXPECT_EQ(seek_result.value(), 7u);
 
   // SEEK_END
-  seek_result = file.ops->seek(&file, -3, SeekWhence::kEnd);
+  seek_result = file.ops->Seek(&file, -3, SeekWhence::kEnd);
   EXPECT_TRUE(seek_result.has_value());
   EXPECT_EQ(seek_result.value(), strlen(data) - 3);
 }
@@ -221,18 +219,18 @@ TEST_F(RamFsTest, ReadDirectory) {
   ASSERT_NE(root, nullptr);
 
   // 创建一些文件和目录
-  root->ops->create(root, "file1.txt", FileType::kRegular);
-  root->ops->create(root, "file2.txt", FileType::kRegular);
-  root->ops->mkdir(root, "dir1");
+  root->ops->Create(root, "file1.txt", FileType::kRegular);
+  root->ops->Create(root, "file2.txt", FileType::kRegular);
+  root->ops->Mkdir(root, "dir1");
 
   // 创建 File 对象用于 readdir
   File dir_file;
   dir_file.inode = root;
   dir_file.offset = 0;
-  dir_file.ops = RamFs::GetFileOps();
+  dir_file.ops = ramfs_.GetFileOps();
 
   DirEntry entries[16];
-  auto readdir_result = dir_file.ops->readdir(&dir_file, entries, 16);
+  auto readdir_result = dir_file.ops->ReadDir(&dir_file, entries, 16);
   EXPECT_TRUE(readdir_result.has_value());
 
   // 应该至少有 . 和 .. 加上我们创建的文件和目录
@@ -247,11 +245,11 @@ TEST_F(RamFsTest, CreateDuplicateFile) {
 
   // 创建文件
   auto create_result =
-      root->ops->create(root, "duplicate.txt", FileType::kRegular);
+      root->ops->Create(root, "duplicate.txt", FileType::kRegular);
   EXPECT_TRUE(create_result.has_value());
 
   // 重复创建应该失败
-  create_result = root->ops->create(root, "duplicate.txt", FileType::kRegular);
+  create_result = root->ops->Create(root, "duplicate.txt", FileType::kRegular);
   EXPECT_FALSE(create_result.has_value());
 }
 
@@ -261,16 +259,16 @@ TEST_F(RamFsTest, RmdirNonEmpty) {
   ASSERT_NE(root, nullptr);
 
   // 创建目录
-  auto mkdir_result = root->ops->mkdir(root, "nonempty_dir");
+  auto mkdir_result = root->ops->Mkdir(root, "nonempty_dir");
   ASSERT_TRUE(mkdir_result.has_value());
 
   Inode* dir = mkdir_result.value();
 
   // 在目录中创建文件
-  dir->ops->create(dir, "file_inside.txt", FileType::kRegular);
+  dir->ops->Create(dir, "file_inside.txt", FileType::kRegular);
 
   // 尝试删除非空目录应该失败
-  auto rmdir_result = root->ops->rmdir(root, "nonempty_dir");
+  auto rmdir_result = root->ops->Rmdir(root, "nonempty_dir");
   EXPECT_FALSE(rmdir_result.has_value());
 }
 
@@ -279,7 +277,7 @@ TEST_F(RamFsTest, UnlinkNonExistent) {
   Inode* root = ramfs_.GetRootInode();
   ASSERT_NE(root, nullptr);
 
-  auto unlink_result = root->ops->unlink(root, "nonexistent.txt");
+  auto unlink_result = root->ops->Unlink(root, "nonexistent.txt");
   EXPECT_FALSE(unlink_result.has_value());
 }
 

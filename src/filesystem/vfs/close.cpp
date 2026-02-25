@@ -14,8 +14,8 @@ auto Close(File* file) -> Expected<void> {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
-  if (file->ops != nullptr && file->ops->close != nullptr) {
-    auto result = file->ops->close(file);
+  if (file->ops != nullptr) {
+    auto result = file->ops->Close(file);
     if (!result.has_value()) {
       return result;
     }

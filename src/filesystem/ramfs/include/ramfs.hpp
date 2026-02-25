@@ -80,31 +80,48 @@ class RamFs : public vfs::FileSystem {
   [[nodiscard]] auto GetRootInode() const -> vfs::Inode*;
 
   /**
-   * @brief 获取 ramfs 的文件操作表
-   * @return vfs::FileOps* 文件操作表指针
+   * @brief 获取文件操作实例
+   * @return vfs::FileOps* 文件操作实例指针
    */
-  static auto GetFileOps() -> vfs::FileOps*;
+  auto GetFileOps() -> vfs::FileOps*;
 
-  // inode 操作函数（static，供全局 ops 表使用）
-  static auto RamLookup(vfs::Inode* dir, const char* name)
-      -> Expected<vfs::Inode*>;
-  static auto RamCreate(vfs::Inode* dir, const char* name, vfs::FileType type)
-      -> Expected<vfs::Inode*>;
-  static auto RamUnlink(vfs::Inode* dir, const char* name) -> Expected<void>;
-  static auto RamMkdir(vfs::Inode* dir, const char* name)
-      -> Expected<vfs::Inode*>;
-  static auto RamRmdir(vfs::Inode* dir, const char* name) -> Expected<void>;
+  // Inode 操作实现类
+  class RamFsInodeOps : public vfs::InodeOps {
+   public:
+    explicit RamFsInodeOps(RamFs* fs) : fs_(fs) {}
+    auto Lookup(vfs::Inode* dir, const char* name)
+        -> Expected<vfs::Inode*> override;
+    auto Create(vfs::Inode* dir, const char* name, vfs::FileType type)
+        -> Expected<vfs::Inode*> override;
+    auto Unlink(vfs::Inode* dir, const char* name) -> Expected<void> override;
+    auto Mkdir(vfs::Inode* dir, const char* name)
+        -> Expected<vfs::Inode*> override;
+    auto Rmdir(vfs::Inode* dir, const char* name) -> Expected<void> override;
 
-  // file 操作函数（static，供全局 ops 表使用）
-  static auto RamRead(vfs::File* file, void* buf, size_t count)
-      -> Expected<size_t>;
-  static auto RamWrite(vfs::File* file, const void* buf, size_t count)
-      -> Expected<size_t>;
-  static auto RamSeek(vfs::File* file, int64_t offset, vfs::SeekWhence whence)
-      -> Expected<uint64_t>;
-  static auto RamClose(vfs::File* file) -> Expected<void>;
-  static auto RamReadDir(vfs::File* file, vfs::DirEntry* dirent, size_t count)
-      -> Expected<size_t>;
+   private:
+    RamFs* fs_;
+  };
+
+  // File 操作实现类
+  class RamFsFileOps : public vfs::FileOps {
+   public:
+    explicit RamFsFileOps(RamFs* fs) : fs_(fs) {}
+    auto Read(vfs::File* file, void* buf, size_t count)
+        -> Expected<size_t> override;
+    auto Write(vfs::File* file, const void* buf, size_t count)
+        -> Expected<size_t> override;
+    auto Seek(vfs::File* file, int64_t offset, vfs::SeekWhence whence)
+        -> Expected<uint64_t> override;
+    auto Close(vfs::File* file) -> Expected<void> override;
+    auto ReadDir(vfs::File* file, vfs::DirEntry* dirent, size_t count)
+        -> Expected<size_t> override;
+
+   private:
+    RamFs* fs_;
+  };
+
+  friend class RamFsInodeOps;
+  friend class RamFsFileOps;
 
  private:
   /// @brief ramfs 内部 inode 数据
@@ -120,7 +137,7 @@ class RamFs : public vfs::FileSystem {
     RamInode* next_free;
   };
 
-  /// @brief 目录项（存储在目录的 data 中）
+  /// @brief 目录项结构（存储在目录的 data 中）
   struct RamDirEntry {
     char name[256];
     vfs::Inode* inode;
@@ -139,6 +156,10 @@ class RamFs : public vfs::FileSystem {
   size_t used_inodes_;
   /// 是否已挂载
   bool mounted_;
+
+  // 操作实例
+  RamFsInodeOps inode_ops_;
+  RamFsFileOps file_ops_;
 
   // 辅助函数
   auto FindInDirectory(RamInode* dir, const char* name) -> RamDirEntry*;

@@ -14,8 +14,8 @@ auto Seek(File* file, int64_t offset, SeekWhence whence) -> Expected<uint64_t> {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
-  if (file->ops != nullptr && file->ops->seek != nullptr) {
-    return file->ops->seek(file, offset, whence);
+  if (file->ops != nullptr) {
+    return file->ops->Seek(file, offset, whence);
   }
 
   // 默认实现

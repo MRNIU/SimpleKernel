@@ -60,13 +60,12 @@ auto RmDir(const char* path) -> Expected<void> {
   }
 
   // 删除目录
-  if (parent_dentry->inode->ops == nullptr ||
-      parent_dentry->inode->ops->rmdir == nullptr) {
+  if (parent_dentry->inode->ops == nullptr) {
     return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
   }
 
   auto result =
-      parent_dentry->inode->ops->rmdir(parent_dentry->inode, dir_name);
+      parent_dentry->inode->ops->Rmdir(parent_dentry->inode, dir_name);
   if (!result.has_value()) {
     return std::unexpected(result.error());
   }

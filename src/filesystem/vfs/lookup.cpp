@@ -90,9 +90,8 @@ auto Lookup(const char* path) -> Expected<Dentry*> {
     Dentry* child = FindChild(current, component);
     if (child == nullptr) {
       // 尝试通过 inode ops 查找
-      if (current->inode->ops != nullptr &&
-          current->inode->ops->lookup != nullptr) {
-        auto result = current->inode->ops->lookup(current->inode, component);
+      if (current->inode->ops != nullptr) {
+        auto result = current->inode->ops->Lookup(current->inode, component);
         if (!result.has_value()) {
           return std::unexpected(Error(ErrorCode::kFsFileNotFound));
         }

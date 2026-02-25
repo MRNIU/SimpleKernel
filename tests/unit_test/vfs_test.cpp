@@ -15,19 +15,39 @@
 using namespace filesystem;
 using namespace vfs;
 
-// Mock 文件系统用于测试
+// Mock FileOps for testing
+class MockFileOps : public FileOps {
+ public:
+  auto Read(File*, void*, size_t) -> Expected<size_t> override {
+    return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
+  }
+  auto Write(File*, const void*, size_t) -> Expected<size_t> override {
+    return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
+  }
+  auto Seek(File*, int64_t, SeekWhence) -> Expected<uint64_t> override {
+    return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
+  }
+  auto Close(File*) -> Expected<void> override { return {}; }
+  auto ReadDir(File*, DirEntry*, size_t) -> Expected<size_t> override {
+    return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
+  }
+};
+
+// Mock file system for testing
 class MockFs : public FileSystem {
  public:
   mutable bool mount_called = false;
   mutable bool unmount_called = false;
   mutable bool sync_called = false;
   mutable BlockDevice* last_device = nullptr;
+  MockFileOps mock_file_ops_;
 
   Inode root_inode;
 
   MockFs() {
     root_inode.type = FileType::kDirectory;
     root_inode.ino = 1;
+    root_inode.ops = nullptr;  // MockFs doesn't provide InodeOps
   }
 
   [[nodiscard]] auto GetName() const -> const char* override {
@@ -55,6 +75,8 @@ class MockFs : public FileSystem {
   }
 
   auto FreeInode(Inode* /*inode*/) -> Expected<void> override { return {}; }
+
+  auto GetFileOps() -> FileOps* override { return &mock_file_ops_; }
 };
 
 // VFS 基础测试

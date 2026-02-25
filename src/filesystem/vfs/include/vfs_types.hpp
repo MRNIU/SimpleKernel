@@ -61,7 +61,10 @@ enum class SeekWhence : int {
 };
 
 /// Inode 操作接口
-struct InodeOps {
+class InodeOps {
+ public:
+  virtual ~InodeOps() = default;
+
   /**
    * @brief 在目录中查找指定名称的 inode
    * @param dir 父目录 inode
@@ -70,7 +73,7 @@ struct InodeOps {
    * @pre dir != nullptr && dir->type == FileType::kDirectory
    * @pre name != nullptr && strlen(name) > 0
    */
-  auto (*lookup)(Inode* dir, const char* name) -> Expected<Inode*>;
+  virtual auto Lookup(Inode* dir, const char* name) -> Expected<Inode*> = 0;
 
   /**
    * @brief 在目录中创建新文件
@@ -82,8 +85,8 @@ struct InodeOps {
    * @pre name != nullptr && strlen(name) > 0
    * @post 返回的 inode->type == type
    */
-  auto (*create)(Inode* dir, const char* name, FileType type)
-      -> Expected<Inode*>;
+  virtual auto Create(Inode* dir, const char* name, FileType type)
+      -> Expected<Inode*> = 0;
 
   /**
    * @brief 删除文件（解除链接）
@@ -93,7 +96,7 @@ struct InodeOps {
    * @pre dir != nullptr && dir->type == FileType::kDirectory
    * @pre name != nullptr
    */
-  auto (*unlink)(Inode* dir, const char* name) -> Expected<void>;
+  virtual auto Unlink(Inode* dir, const char* name) -> Expected<void> = 0;
 
   /**
    * @brief 创建目录
@@ -104,7 +107,7 @@ struct InodeOps {
    * @pre name != nullptr && strlen(name) > 0
    * @post 返回的 inode->type == FileType::kDirectory
    */
-  auto (*mkdir)(Inode* dir, const char* name) -> Expected<Inode*>;
+  virtual auto Mkdir(Inode* dir, const char* name) -> Expected<Inode*> = 0;
 
   /**
    * @brief 删除目录
@@ -114,7 +117,7 @@ struct InodeOps {
    * @pre dir != nullptr && dir->type == FileType::kDirectory
    * @pre name != nullptr
    */
-  auto (*rmdir)(Inode* dir, const char* name) -> Expected<void>;
+  virtual auto Rmdir(Inode* dir, const char* name) -> Expected<void> = 0;
 };
 /// 目录项结构（用于 readdir）
 struct DirEntry {
@@ -127,7 +130,10 @@ struct DirEntry {
 };
 
 /// File 操作接口
-struct FileOps {
+class FileOps {
+ public:
+  virtual ~FileOps() = default;
+
   /**
    * @brief 从文件读取数据
    * @param file 文件对象
@@ -137,7 +143,8 @@ struct FileOps {
    * @pre file != nullptr && buf != nullptr
    * @post 返回值 <= count
    */
-  auto (*read)(File* file, void* buf, size_t count) -> Expected<size_t>;
+  virtual auto Read(File* file, void* buf, size_t count)
+      -> Expected<size_t> = 0;
 
   /**
    * @brief 向文件写入数据
@@ -148,7 +155,8 @@ struct FileOps {
    * @pre file != nullptr && buf != nullptr
    * @post 返回值 <= count
    */
-  auto (*write)(File* file, const void* buf, size_t count) -> Expected<size_t>;
+  virtual auto Write(File* file, const void* buf, size_t count)
+      -> Expected<size_t> = 0;
 
   /**
    * @brief 调整文件偏移量
@@ -158,8 +166,8 @@ struct FileOps {
    * @return Expected<uint64_t> 新的偏移量或错误
    * @pre file != nullptr
    */
-  auto (*seek)(File* file, int64_t offset, SeekWhence whence)
-      -> Expected<uint64_t>;
+  virtual auto Seek(File* file, int64_t offset, SeekWhence whence)
+      -> Expected<uint64_t> = 0;
 
   /**
    * @brief 关闭文件
@@ -168,7 +176,7 @@ struct FileOps {
    * @pre file != nullptr
    * @post file 对象将被释放
    */
-  auto (*close)(File* file) -> Expected<void>;
+  virtual auto Close(File* file) -> Expected<void> = 0;
 
   /**
    * @brief 读取目录项
@@ -179,8 +187,8 @@ struct FileOps {
    * @pre file != nullptr && file->inode->type == FileType::kDirectory
    * @pre dirent != nullptr
    */
-  auto (*readdir)(File* file, DirEntry* dirent, size_t count)
-      -> Expected<size_t>;
+  virtual auto ReadDir(File* file, DirEntry* dirent, size_t count)
+      -> Expected<size_t> = 0;
 };
 
 }  // namespace vfs

@@ -62,6 +62,13 @@ class FileSystem {
    * @pre inode->link_count == 0
    */
   [[nodiscard]] virtual auto FreeInode(Inode* inode) -> Expected<void> = 0;
+
+  /**
+   * @brief 获取文件系统的文件操作接口
+   * @return FileOps* 文件操作接口指针
+   * @note 用于创建 File 对象时设置 ops
+   */
+  [[nodiscard]] virtual auto GetFileOps() -> FileOps* = 0;
 };
 
 }  // namespace vfs

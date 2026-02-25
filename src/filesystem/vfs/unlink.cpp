@@ -59,13 +59,12 @@ auto Unlink(const char* path) -> Expected<void> {
   }
 
   // 删除文件
-  if (parent_dentry->inode->ops == nullptr ||
-      parent_dentry->inode->ops->unlink == nullptr) {
+  if (parent_dentry->inode->ops == nullptr) {
     return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
   }
 
   auto result =
-      parent_dentry->inode->ops->unlink(parent_dentry->inode, file_name);
+      parent_dentry->inode->ops->Unlink(parent_dentry->inode, file_name);
   if (!result.has_value()) {
     return std::unexpected(result.error());
   }

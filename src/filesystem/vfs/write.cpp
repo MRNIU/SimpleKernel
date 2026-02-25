@@ -19,11 +19,11 @@ auto Write(File* file, const void* buf, size_t count) -> Expected<size_t> {
     return std::unexpected(Error(ErrorCode::kFsPermissionDenied));
   }
 
-  if (file->ops == nullptr || file->ops->write == nullptr) {
+  if (file->ops == nullptr) {
     return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
   }
 
-  return file->ops->write(file, buf, count);
+  return file->ops->Write(file, buf, count);
 }
 
 }  // namespace vfs

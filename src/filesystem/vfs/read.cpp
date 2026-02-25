@@ -14,11 +14,11 @@ auto Read(File* file, void* buf, size_t count) -> Expected<size_t> {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
-  if (file->ops == nullptr || file->ops->read == nullptr) {
+  if (file->ops == nullptr) {
     return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
   }
 
-  return file->ops->read(file, buf, count);
+  return file->ops->Read(file, buf, count);
 }
 
 }  // namespace vfs
