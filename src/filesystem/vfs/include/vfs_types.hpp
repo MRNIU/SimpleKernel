@@ -4,8 +4,8 @@
  * @note 此头文件只包含基础类型定义，不包含复杂依赖，用于解决循环依赖问题
  */
 
-#ifndef SIMPLEKERNEL_SRC_VFS_INCLUDE_VFS_TYPES_HPP_
-#define SIMPLEKERNEL_SRC_VFS_INCLUDE_VFS_TYPES_HPP_
+#ifndef SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_VFS_TYPES_HPP_
+#define SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_VFS_TYPES_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -185,4 +185,4 @@ struct FileOps {
 
 }  // namespace vfs
 
-#endif /* SIMPLEKERNEL_SRC_VFS_INCLUDE_VFS_TYPES_HPP_ */
+#endif /* SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_VFS_TYPES_HPP_ */

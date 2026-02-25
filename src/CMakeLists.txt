@@ -11,7 +11,7 @@ ADD_SUBDIRECTORY (libcxx)
 ADD_SUBDIRECTORY (arch)
 ADD_SUBDIRECTORY (device)
 ADD_SUBDIRECTORY (task)
-ADD_SUBDIRECTORY (vfs)
+ADD_SUBDIRECTORY (filesystem)
 
 ADD_EXECUTABLE (${PROJECT_NAME} main.cpp virtual_memory.cpp io_buffer.cpp
                                 memory.cpp syscall.cpp)
@@ -28,7 +28,7 @@ TARGET_LINK_LIBRARIES (
             arch
             device
             task
-            vfs)
+            filesystem)
 
 SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES OUTPUT_NAME
                                                   ${KERNEL_ELF_OUTPUT_NAME})

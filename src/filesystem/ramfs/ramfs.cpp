@@ -8,7 +8,9 @@
 #include "sk_cstring"
 #include "vfs.hpp"
 
-namespace vfs {
+namespace ramfs {
+
+using namespace vfs;
 
 // Inode 操作表
 static InodeOps g_ramfs_inode_ops = {
@@ -623,4 +625,4 @@ auto RamFs::RamReadDir(File* file, DirEntry* dirent, size_t count)
   return read_count;
 }
 
-}  // namespace vfs
+}  // namespace ramfs

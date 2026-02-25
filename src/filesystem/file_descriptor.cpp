@@ -6,7 +6,7 @@
 
 #include "kernel_log.hpp"
 
-namespace vfs {
+namespace filesystem {
 
 namespace {
 
@@ -25,7 +25,7 @@ FileDescriptorTable::FileDescriptorTable()
 
 FileDescriptorTable::~FileDescriptorTable() {
   // 关闭所有打开的文件
-  CloseAll();
+  (void)CloseAll();
 }
 
 FileDescriptorTable::FileDescriptorTable(FileDescriptorTable&& other)
@@ -44,7 +44,7 @@ auto FileDescriptorTable::operator=(FileDescriptorTable&& other)
     -> FileDescriptorTable& {
   if (this != &other) {
     // 先关闭当前的所有文件
-    CloseAll();
+    (void)CloseAll();
 
     LockGuard guard1(lock_);
     LockGuard guard2(other.lock_);
@@ -61,7 +61,7 @@ auto FileDescriptorTable::operator=(FileDescriptorTable&& other)
   return *this;
 }
 
-auto FileDescriptorTable::Alloc(File* file) -> Expected<int> {
+auto FileDescriptorTable::Alloc(vfs::File* file) -> Expected<int> {
   if (file == nullptr) {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
@@ -80,7 +80,7 @@ auto FileDescriptorTable::Alloc(File* file) -> Expected<int> {
   return std::unexpected(Error(ErrorCode::kFsFdTableFull));
 }
 
-auto FileDescriptorTable::Get(int fd) -> File* {
+auto FileDescriptorTable::Get(int fd) -> vfs::File* {
   if (fd < 0 || fd >= kMaxFd) {
     return nullptr;
   }
@@ -113,7 +113,7 @@ auto FileDescriptorTable::Dup(int old_fd, int new_fd) -> Expected<int> {
 
   LockGuard guard(lock_);
 
-  File* file = table_[old_fd];
+  vfs::File* file = table_[old_fd];
   if (file == nullptr) {
     return std::unexpected(Error(ErrorCode::kFsInvalidFd));
   }
@@ -159,9 +159,9 @@ auto FileDescriptorTable::CloseAll() -> Expected<void> {
   return {};
 }
 
-auto FileDescriptorTable::SetupStandardFiles(File* stdin_file,
-                                             File* stdout_file,
-                                             File* stderr_file)
+auto FileDescriptorTable::SetupStandardFiles(vfs::File* stdin_file,
+                                             vfs::File* stdout_file,
+                                             vfs::File* stderr_file)
     -> Expected<void> {
   LockGuard guard(lock_);
 
@@ -182,4 +182,4 @@ void SetCurrentFdTable(FileDescriptorTable* fd_table) {
   g_current_fd_table = fd_table;
 }
 
-}  // namespace vfs
+}  // namespace filesystem

@@ -3,8 +3,8 @@
  * @brief 文件描述符表
  */
 
-#ifndef SIMPLEKERNEL_SRC_VFS_INCLUDE_FILE_DESCRIPTOR_HPP_
-#define SIMPLEKERNEL_SRC_VFS_INCLUDE_FILE_DESCRIPTOR_HPP_
+#ifndef SIMPLEKERNEL_SRC_FILESYSTEM_INCLUDE_FILE_DESCRIPTOR_HPP_
+#define SIMPLEKERNEL_SRC_FILESYSTEM_INCLUDE_FILE_DESCRIPTOR_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -13,7 +13,7 @@
 #include "spinlock.hpp"
 #include "vfs.hpp"
 
-namespace vfs {
+namespace filesystem {
 
 /**
  * @brief 进程级文件描述符表
@@ -49,14 +49,14 @@ class FileDescriptorTable {
    * @return Expected<int> 分配到的 fd
    * @post 返回的 fd >= 0 且 fd < kMaxFd
    */
-  [[nodiscard]] auto Alloc(File* file) -> Expected<int>;
+  [[nodiscard]] auto Alloc(vfs::File* file) -> Expected<int>;
   /**
    * @brief 获取 fd 对应的 File 对象
    * @param fd 文件描述符
-   * @return File* 指针，无效 fd 返回 nullptr
+   * @return vfs::File* 指针，无效 fd 返回 nullptr
    * @pre 0 <= fd < kMaxFd
    */
-  auto Get(int fd) -> File*;
+  auto Get(int fd) -> vfs::File*;
 
   /**
    * @brief 释放 fd
@@ -83,8 +83,10 @@ class FileDescriptorTable {
    * @param stderr_file stderr 文件对象
    * @return Expected<void> 成功或错误
    */
-  [[nodiscard]] auto SetupStandardFiles(File* stdin_file, File* stdout_file,
-                                        File* stderr_file) -> Expected<void>;
+  [[nodiscard]] auto SetupStandardFiles(vfs::File* stdin_file,
+                                        vfs::File* stdout_file,
+                                        vfs::File* stderr_file)
+      -> Expected<void>;
   /**
    * @brief 获取已打开文件描述符数量
    * @return int 已打开 fd 数量
@@ -92,7 +94,7 @@ class FileDescriptorTable {
   [[nodiscard]] auto GetOpenCount() const -> int;
 
  private:
-  File* table_[kMaxFd];
+  vfs::File* table_[kMaxFd];
   int open_count_;
   SpinLock lock_{"fd_table"};
 };
@@ -109,6 +111,6 @@ auto GetCurrentFdTable() -> FileDescriptorTable*;
  */
 void SetCurrentFdTable(FileDescriptorTable* fd_table);
 
-}  // namespace vfs
+}  // namespace filesystem
 
-#endif /* SIMPLEKERNEL_SRC_VFS_INCLUDE_FILE_DESCRIPTOR_HPP_ */
+#endif /* SIMPLEKERNEL_SRC_FILESYSTEM_INCLUDE_FILE_DESCRIPTOR_HPP_ */
