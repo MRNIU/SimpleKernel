@@ -13,6 +13,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "basic_info.hpp"
+#include "singleton.hpp"
 #include "test_environment_state.hpp"
 
 namespace {

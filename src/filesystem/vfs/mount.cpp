@@ -218,9 +218,10 @@ auto MountTable::Lookup(const char* path) -> MountPoint* {
 
     // 检查路径是否以挂载路径开头
     if (strncmp(path, mp_path, mp_len) == 0) {
-      // 确保是完整匹配或下一个字符是 /
+      // 确保是完整匹配或下一个字符是 /，或者是根目录挂载
       char next_char = path[mp_len];
-      if (next_char == '\0' || next_char == '/') {
+      if (next_char == '\0' || next_char == '/' ||
+          (mp_len == 1 && mp_path[0] == '/')) {
         // 选择最长的匹配
         if (mp_len > best_match_len) {
           best_match = &mounts_[i];

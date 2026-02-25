@@ -26,6 +26,7 @@ ADD_EXECUTABLE (
     task/fixtures/task_test_harness.cpp
     mocks/arch.cpp
     mocks/test_environment_state.cpp
+    ${CMAKE_SOURCE_DIR}/src/virtual_memory.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp
     ${CMAKE_SOURCE_DIR}/src/task/block.cpp
     ${CMAKE_SOURCE_DIR}/src/task/clone.cpp
@@ -59,14 +60,16 @@ TARGET_INCLUDE_DIRECTORIES (
             ${CMAKE_SOURCE_DIR}/src/libc/include
             ${CMAKE_SOURCE_DIR}/src/libcxx/include
             ${CMAKE_SOURCE_DIR}/src/task/include
-            ${CMAKE_SOURCE_DIR}/src/vfs/include
-            ${CMAKE_SOURCE_DIR}/src/vfs/ramfs/include)
+            ${CMAKE_SOURCE_DIR}/src/filesystem/include
+            ${CMAKE_SOURCE_DIR}/src/filesystem/vfs/include
+            ${CMAKE_SOURCE_DIR}/src/filesystem/ramfs/include)
 
 TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 
 TARGET_LINK_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_OPTIONS})
 
-TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_LIB} dtc-lib
-                                               bmalloc MPMCQueue task vfs)
+TARGET_LINK_LIBRARIES (
+    ${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_LIB} dtc-lib bmalloc MPMCQueue
+                            task filesystem)
 
 GTEST_DISCOVER_TESTS (${PROJECT_NAME})

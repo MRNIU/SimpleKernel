@@ -74,7 +74,7 @@ TEST_F(TaskSchedulingExample, SwitchToRecordsHistory) {
   env.RegisterTaskContext(&task2.task_context, &task2);
 
   // 获取当前核心环境
-  auto& core_env = env.GetCurrentCoreEnv();
+  (void)env.GetCurrentCoreEnv();
 
   // 设置初始 tick（通过 PerCpu 的 sched_data）
   // 注意：这里假设测试已经设置了 sched_data

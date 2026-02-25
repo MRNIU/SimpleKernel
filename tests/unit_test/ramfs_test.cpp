@@ -4,27 +4,32 @@
  */
 
 #include "ramfs.hpp"
-
+using namespace ramfs;
 #include <gtest/gtest.h>
 
 #include <vector>
 
+#include "test_environment_state.hpp"
 using namespace vfs;
-
-#include <gtest/gtest.h>
-
-using namespace vfs;
+using namespace ramfs;
 
 class RamFsTest : public ::testing::Test {
  protected:
   RamFs ramfs_;
+  test_env::TestEnvironmentState env_state_;
 
   void SetUp() override {
+    env_state_.InitializeCores(1);
+    env_state_.SetCurrentThreadEnvironment();
+    env_state_.BindThreadToCore(std::this_thread::get_id(), 0);
     auto result = ramfs_.Mount(nullptr);
     EXPECT_TRUE(result.has_value());
   }
 
-  void TearDown() override { ramfs_.Unmount(); }
+  void TearDown() override {
+    ramfs_.Unmount();
+    env_state_.ClearCurrentThreadEnvironment();
+  }
 };
 
 // 测试基本挂载/卸载

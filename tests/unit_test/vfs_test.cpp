@@ -10,7 +10,9 @@
 #include "file_descriptor.hpp"
 #include "filesystem.hpp"
 #include "mount.hpp"
+#include "test_environment_state.hpp"
 
+using namespace filesystem;
 using namespace vfs;
 
 // Mock 文件系统用于测试
@@ -59,13 +61,32 @@ class MockFs : public FileSystem {
 class VfsTest : public ::testing::Test {
  protected:
   void SetUp() override {
+    env_state_.InitializeCores(1);
+    env_state_.SetCurrentThreadEnvironment();
+    env_state_.BindThreadToCore(std::this_thread::get_id(), 0);
     auto result = vfs::Init();
     EXPECT_TRUE(result.has_value());
   }
+
+  void TearDown() override { env_state_.ClearCurrentThreadEnvironment(); }
+
+  test_env::TestEnvironmentState env_state_;
+};
+
+class BaseEnvTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    env_state_.InitializeCores(1);
+    env_state_.SetCurrentThreadEnvironment();
+    env_state_.BindThreadToCore(std::this_thread::get_id(), 0);
+  }
+  void TearDown() override { env_state_.ClearCurrentThreadEnvironment(); }
+  test_env::TestEnvironmentState env_state_;
 };
 
 // 测试挂载表
-TEST(MountTableTest, MountAndUnmount) {
+class MountTableTest : public BaseEnvTest {};
+TEST_F(MountTableTest, MountAndUnmount) {
   MountTable mount_table;
   MockFs mock_fs;
 
@@ -80,6 +101,7 @@ TEST(MountTableTest, MountAndUnmount) {
 
   // 测试卸载
   auto unmount_result = mount_table.Unmount("/");
+  (void)unmount_result;
   EXPECT_TRUE(unmount_result.has_value());
   EXPECT_TRUE(mock_fs.unmount_called);
 
@@ -88,7 +110,7 @@ TEST(MountTableTest, MountAndUnmount) {
   EXPECT_FALSE(unmount_result.has_value());
 }
 
-TEST(MountTableTest, LookupMountPoint) {
+TEST_F(MountTableTest, LookupMountPoint) {
   MountTable mount_table;
   MockFs mock_fs;
 
@@ -102,15 +124,22 @@ TEST(MountTableTest, LookupMountPoint) {
   // 查找不存在挂载的路径
   mp = mount_table.Lookup("/mnt/nonexistent/file");
   EXPECT_NE(mp, nullptr);  // 应该返回根挂载点
+  (void)mount_table.Unmount("/");
 }
 
 // 测试文件描述符表
-class FdTableTest : public ::testing::Test {
+class FdTableTest : public BaseEnvTest {
  protected:
-  FileDescriptorTable fd_table_;
+  FileDescriptorTable* fd_table_;
 
   void SetUp() override {
-    // 不需要特殊设置
+    BaseEnvTest::SetUp();
+    fd_table_ = new FileDescriptorTable();
+  }
+
+  void TearDown() override {
+    delete fd_table_;
+    BaseEnvTest::TearDown();
   }
 };
 
@@ -119,34 +148,34 @@ TEST_F(FdTableTest, AllocAndFree) {
   File mock_file;
 
   // 分配 fd
-  auto alloc_result = fd_table_.Alloc(&mock_file);
+  auto alloc_result = fd_table_->Alloc(&mock_file);
   EXPECT_TRUE(alloc_result.has_value());
   int fd = alloc_result.value();
   EXPECT_GE(fd, 3);  // 0/1/2 预留给标准流
 
   // 获取文件
-  File* file = fd_table_.Get(fd);
+  File* file = fd_table_->Get(fd);
   EXPECT_EQ(file, &mock_file);
 
   // 释放 fd
-  auto free_result = fd_table_.Free(fd);
+  auto free_result = fd_table_->Free(fd);
   EXPECT_TRUE(free_result.has_value());
 
   // 再次获取应该返回 nullptr
-  file = fd_table_.Get(fd);
+  file = fd_table_->Get(fd);
   EXPECT_EQ(file, nullptr);
 }
 
 TEST_F(FdTableTest, InvalidFd) {
   // 无效 fd
-  File* file = fd_table_.Get(-1);
+  File* file = fd_table_->Get(-1);
   EXPECT_EQ(file, nullptr);
 
-  file = fd_table_.Get(999);
+  file = fd_table_->Get(999);
   EXPECT_EQ(file, nullptr);
 
   // 释放无效 fd
-  auto free_result = fd_table_.Free(-1);
+  auto free_result = fd_table_->Free(-1);
   EXPECT_FALSE(free_result.has_value());
 }
 
@@ -154,21 +183,21 @@ TEST_F(FdTableTest, DupFd) {
   File mock_file;
 
   // 分配 fd
-  auto alloc_result = fd_table_.Alloc(&mock_file);
+  auto alloc_result = fd_table_->Alloc(&mock_file);
   EXPECT_TRUE(alloc_result.has_value());
   int fd1 = alloc_result.value();
 
   // 复制 fd
-  auto dup_result = fd_table_.Dup(fd1);
+  auto dup_result = fd_table_->Dup(fd1);
   EXPECT_TRUE(dup_result.has_value());
   int fd2 = dup_result.value();
 
   // fd1 和 fd2 应该指向同一个文件
-  EXPECT_EQ(fd_table_.Get(fd1), fd_table_.Get(fd2));
+  EXPECT_EQ(fd_table_->Get(fd1), fd_table_->Get(fd2));
 
   // 清理
-  fd_table_.Free(fd1);
-  fd_table_.Free(fd2);
+  (void)fd_table_->Free(fd1);
+  (void)fd_table_->Free(fd2);
 }
 
 TEST_F(FdTableTest, SetupStandardFiles) {
@@ -177,13 +206,13 @@ TEST_F(FdTableTest, SetupStandardFiles) {
   File stderr_file;
 
   auto setup_result =
-      fd_table_.SetupStandardFiles(&stdin_file, &stdout_file, &stderr_file);
+      fd_table_->SetupStandardFiles(&stdin_file, &stdout_file, &stderr_file);
   EXPECT_TRUE(setup_result.has_value());
 
   // 检查标准文件描述符
-  EXPECT_EQ(fd_table_.Get(0), &stdin_file);
-  EXPECT_EQ(fd_table_.Get(1), &stdout_file);
-  EXPECT_EQ(fd_table_.Get(2), &stderr_file);
+  EXPECT_EQ(fd_table_->Get(0), &stdin_file);
+  EXPECT_EQ(fd_table_->Get(1), &stdout_file);
+  EXPECT_EQ(fd_table_->Get(2), &stderr_file);
 }
 
 // VFS 路径解析测试
@@ -212,7 +241,8 @@ TEST_F(VfsTest, LookupInvalidPaths) {
 }
 
 // VFS 初始化测试
-TEST(VfsInitTest, DoubleInit) {
+class VfsInitTest : public BaseEnvTest {};
+TEST_F(VfsInitTest, DoubleInit) {
   // 第一次初始化
   auto result = vfs::Init();
   EXPECT_TRUE(result.has_value());
