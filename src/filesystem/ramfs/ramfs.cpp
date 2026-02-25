@@ -216,7 +216,7 @@ auto RamFs::AddToDirectory(RamInode* dir, const char* name, Inode* inode)
   size_t current_entries = dir->capacity / sizeof(RamDirEntry);
   if (dir->child_count >= current_entries) {
     size_t new_capacity = (current_entries == 0) ? 16 : current_entries * 2;
-    RamDirEntry* new_data = new (std::nothrow) RamDirEntry[new_capacity];
+    RamDirEntry* new_data = new RamDirEntry[new_capacity];
     if (new_data == nullptr) {
       return std::unexpected(Error(ErrorCode::kOutOfMemory));
     }
@@ -292,7 +292,7 @@ auto RamFs::ExpandFile(RamInode* inode, size_t new_size) -> Expected<void> {
   // 计算新容量（按 256 字节对齐）
   size_t new_capacity = ((new_size + 255) / 256) * 256;
 
-  uint8_t* new_data = new (std::nothrow) uint8_t[new_capacity];
+  uint8_t* new_data = new uint8_t[new_capacity];
   if (new_data == nullptr) {
     return std::unexpected(Error(ErrorCode::kOutOfMemory));
   }

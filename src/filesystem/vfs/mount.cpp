@@ -10,39 +10,6 @@
 
 namespace vfs {
 
-namespace {
-
-/**
- * @brief 比较路径前缀
- * @return true 如果 path 以 prefix 开头
- */
-/**
- * @brief 比较路径前缀
- * @return true 如果 path 以 prefix 开头
- */
-auto PathStartsWith(const char* path, const char* prefix) -> bool {
-  if (path == nullptr || prefix == nullptr) {
-    return false;
-  }
-
-  size_t prefix_len = strlen(prefix);
-
-  // 处理根目录特殊情况
-  if (prefix_len == 1 && prefix[0] == '/') {
-    return true;
-  }
-
-  if (strncmp(path, prefix, prefix_len) != 0) {
-    return false;
-  }
-
-  // 确保是完整路径组件匹配（prefix 结束于 / 或 path 结束）
-  char next_char = path[prefix_len];
-  return next_char == '\0' || next_char == '/';
-}
-
-}  // anonymous namespace
-
 // MountPoint 构造函数实现
 MountPoint::MountPoint()
     : mount_path(nullptr),
@@ -92,7 +59,7 @@ auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
   }
 
   // 为根 inode 创建 dentry
-  Dentry* root_dentry = new (std::nothrow) Dentry();
+  Dentry* root_dentry = new Dentry();
   if (root_dentry == nullptr) {
     fs->Unmount();
     return std::unexpected(Error(ErrorCode::kOutOfMemory));
@@ -262,4 +229,5 @@ auto GetMountTable() -> MountTable& {
   static MountTable instance;
   return instance;
 }
+
 }  // namespace vfs
