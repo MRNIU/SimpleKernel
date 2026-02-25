@@ -30,10 +30,8 @@ TARGET_LINK_LIBRARIES (
             task
             filesystem)
 
-SET_TARGET_PROPERTIES (
-    ${PROJECT_NAME}
-    PROPERTIES
-    OUTPUT_NAME ${KERNEL_ELF_OUTPUT_NAME})
+SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES OUTPUT_NAME
+                                                  ${KERNEL_ELF_OUTPUT_NAME})
 
 # qemu 参数设置
 LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS
