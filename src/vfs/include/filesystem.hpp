@@ -3,11 +3,11 @@
  * @brief 文件系统基类接口
  */
 
-#ifndef SIMPLEKERNEL_SRC_FS_INCLUDE_FILESYSTEM_HPP_
-#define SIMPLEKERNEL_SRC_FS_INCLUDE_FILESYSTEM_HPP_
+#ifndef SIMPLEKERNEL_SRC_VFS_INCLUDE_FILESYSTEM_HPP_
+#define SIMPLEKERNEL_SRC_VFS_INCLUDE_FILESYSTEM_HPP_
 
 #include "block_device.hpp"
-#include "vfs.hpp"
+#include "vfs_types.hpp"
 
 namespace vfs {
 
@@ -32,27 +32,27 @@ class FileSystem {
    * @return Expected<Inode*> 根目录 inode
    * @post 返回的 inode->type == FileType::kDirectory
    */
-  virtual auto Mount(BlockDevice* device) -> Expected<Inode*> = 0;
+  [[nodiscard]] virtual auto Mount(BlockDevice* device) -> Expected<Inode*> = 0;
 
   /**
    * @brief 卸载文件系统
    * @return Expected<void> 成功或错误
    * @pre 没有打开的文件引用此文件系统
    */
-  virtual auto Unmount() -> Expected<void> = 0;
+  [[nodiscard]] virtual auto Unmount() -> Expected<void> = 0;
 
   /**
    * @brief 将缓存数据刷写到磁盘
    * @return Expected<void> 成功或错误
    */
-  virtual auto Sync() -> Expected<void> = 0;
+  [[nodiscard]] virtual auto Sync() -> Expected<void> = 0;
 
   /**
    * @brief 分配新 inode
    * @return Expected<Inode*> 新分配的 inode 或错误
    * @note 由具体文件系统实现 inode 分配策略
    */
-  virtual auto AllocateInode() -> Expected<Inode*> = 0;
+  [[nodiscard]] virtual auto AllocateInode() -> Expected<Inode*> = 0;
 
   /**
    * @brief 释放 inode
@@ -61,9 +61,9 @@ class FileSystem {
    * @pre inode != nullptr
    * @pre inode->link_count == 0
    */
-  virtual auto FreeInode(Inode* inode) -> Expected<void> = 0;
+  [[nodiscard]] virtual auto FreeInode(Inode* inode) -> Expected<void> = 0;
 };
 
 }  // namespace vfs
 
-#endif /* SIMPLEKERNEL_SRC_FS_INCLUDE_FILESYSTEM_HPP_ */
+#endif /* SIMPLEKERNEL_SRC_VFS_INCLUDE_FILESYSTEM_HPP_ */

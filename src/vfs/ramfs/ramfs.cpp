@@ -6,6 +6,7 @@
 
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "vfs.hpp"
 
 namespace vfs {
 

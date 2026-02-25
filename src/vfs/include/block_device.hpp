@@ -3,8 +3,8 @@
  * @brief 块设备抽象接口
  */
 
-#ifndef SIMPLEKERNEL_SRC_FS_INCLUDE_BLOCK_DEVICE_HPP_
-#define SIMPLEKERNEL_SRC_FS_INCLUDE_BLOCK_DEVICE_HPP_
+#ifndef SIMPLEKERNEL_SRC_VFS_INCLUDE_BLOCK_DEVICE_HPP_
+#define SIMPLEKERNEL_SRC_VFS_INCLUDE_BLOCK_DEVICE_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -32,8 +32,9 @@ class BlockDevice {
    * @pre sector_start + sector_count <= GetSectorCount()
    * @post 返回值 == sector_count * GetSectorSize() 或错误
    */
-  virtual auto ReadSectors(uint64_t sector_start, uint32_t sector_count,
-                           void* buffer) -> Expected<size_t> = 0;
+  [[nodiscard]] virtual auto ReadSectors(uint64_t sector_start,
+                                         uint32_t sector_count, void* buffer)
+      -> Expected<size_t> = 0;
 
   /**
    * @brief 写入连续扇区
@@ -44,8 +45,10 @@ class BlockDevice {
    * @pre buffer != nullptr
    * @pre sector_start + sector_count <= GetSectorCount()
    */
-  virtual auto WriteSectors(uint64_t sector_start, uint32_t sector_count,
-                            const void* buffer) -> Expected<size_t> = 0;
+  [[nodiscard]] virtual auto WriteSectors(uint64_t sector_start,
+                                          uint32_t sector_count,
+                                          const void* buffer)
+      -> Expected<size_t> = 0;
 
   /**
    * @brief 获取扇区大小（通常为 512 字节）
@@ -69,9 +72,9 @@ class BlockDevice {
    * @brief 刷新设备缓存到物理介质
    * @return Expected<void> 成功或错误
    */
-  virtual auto Flush() -> Expected<void> { return {}; }
+  [[nodiscard]] virtual auto Flush() -> Expected<void> { return {}; }
 };
 
 }  // namespace vfs
 
-#endif /* SIMPLEKERNEL_SRC_FS_INCLUDE_BLOCK_DEVICE_HPP_ */
+#endif /* SIMPLEKERNEL_SRC_VFS_INCLUDE_BLOCK_DEVICE_HPP_ */

@@ -16,7 +16,7 @@ thread_local FileDescriptorTable* g_current_fd_table = nullptr;
 }  // anonymous namespace
 
 FileDescriptorTable::FileDescriptorTable()
-    : table_{}, open_count_(0), lock_("fd_table") {
+    : table_{}, open_count_(0), lock_{"fd_table"} {
   // 初始化所有 fd 为空
   for (int i = 0; i < kMaxFd; ++i) {
     table_[i] = nullptr;

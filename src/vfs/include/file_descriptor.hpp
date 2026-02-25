@@ -3,8 +3,8 @@
  * @brief 文件描述符表
  */
 
-#ifndef SIMPLEKERNEL_SRC_FS_INCLUDE_FILE_DESCRIPTOR_HPP_
-#define SIMPLEKERNEL_SRC_FS_INCLUDE_FILE_DESCRIPTOR_HPP_
+#ifndef SIMPLEKERNEL_SRC_VFS_INCLUDE_FILE_DESCRIPTOR_HPP_
+#define SIMPLEKERNEL_SRC_VFS_INCLUDE_FILE_DESCRIPTOR_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -49,8 +49,7 @@ class FileDescriptorTable {
    * @return Expected<int> 分配到的 fd
    * @post 返回的 fd >= 0 且 fd < kMaxFd
    */
-  auto Alloc(File* file) -> Expected<int>;
-
+  [[nodiscard]] auto Alloc(File* file) -> Expected<int>;
   /**
    * @brief 获取 fd 对应的 File 对象
    * @param fd 文件描述符
@@ -64,22 +63,19 @@ class FileDescriptorTable {
    * @param fd 要释放的文件描述符
    * @return Expected<void>
    */
-  auto Free(int fd) -> Expected<void>;
-
+  [[nodiscard]] auto Free(int fd) -> Expected<void>;
   /**
    * @brief 复制文件描述符（用于 dup/dup2）
    * @param old_fd 原文件描述符
    * @param new_fd 目标文件描述符（若为 -1 则分配最小可用）
    * @return Expected<int> 新的文件描述符
    */
-  auto Dup(int old_fd, int new_fd = -1) -> Expected<int>;
-
+  [[nodiscard]] auto Dup(int old_fd, int new_fd = -1) -> Expected<int>;
   /**
    * @brief 关闭所有文件描述符
    * @return Expected<void> 成功或错误
    */
-  auto CloseAll() -> Expected<void>;
-
+  [[nodiscard]] auto CloseAll() -> Expected<void>;
   /**
    * @brief 设置标准文件描述符
    * @param stdin_file stdin 文件对象
@@ -87,9 +83,8 @@ class FileDescriptorTable {
    * @param stderr_file stderr 文件对象
    * @return Expected<void> 成功或错误
    */
-  auto SetupStandardFiles(File* stdin_file, File* stdout_file,
-                          File* stderr_file) -> Expected<void>;
-
+  [[nodiscard]] auto SetupStandardFiles(File* stdin_file, File* stdout_file,
+                                        File* stderr_file) -> Expected<void>;
   /**
    * @brief 获取已打开文件描述符数量
    * @return int 已打开 fd 数量
@@ -99,9 +94,8 @@ class FileDescriptorTable {
  private:
   File* table_[kMaxFd];
   int open_count_;
-  SpinLock lock_;
+  SpinLock lock_{"fd_table"};
 };
-
 /**
  * @brief 获取当前进程的文件描述符表
  * @return FileDescriptorTable* 当前进程的 fd 表
@@ -117,4 +111,4 @@ void SetCurrentFdTable(FileDescriptorTable* fd_table);
 
 }  // namespace vfs
 
-#endif /* SIMPLEKERNEL_SRC_FS_INCLUDE_FILE_DESCRIPTOR_HPP_ */
+#endif /* SIMPLEKERNEL_SRC_VFS_INCLUDE_FILE_DESCRIPTOR_HPP_ */

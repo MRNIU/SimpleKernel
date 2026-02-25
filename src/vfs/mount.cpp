@@ -6,14 +6,16 @@
 
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "vfs.hpp"
 
 namespace vfs {
 
 namespace {
 
-// 全局挂载表实例
-MountTable g_mount_table_instance;
-
+/**
+ * @brief 比较路径前缀
+ * @return true 如果 path 以 prefix 开头
+ */
 /**
  * @brief 比较路径前缀
  * @return true 如果 path 以 prefix 开头
@@ -40,6 +42,16 @@ auto PathStartsWith(const char* path, const char* prefix) -> bool {
 }
 
 }  // anonymous namespace
+
+// MountPoint 构造函数实现
+MountPoint::MountPoint()
+    : mount_path(nullptr),
+      mount_dentry(nullptr),
+      filesystem(nullptr),
+      device(nullptr),
+      root_inode(nullptr),
+      root_dentry(nullptr),
+      active(false) {}
 
 MountTable::MountTable() : mounts_{}, mount_count_(0), root_mount_(nullptr) {}
 
@@ -245,6 +257,8 @@ auto MountTable::IsMountPoint(const char* path) -> bool {
 
 auto MountTable::GetRootMount() -> MountPoint* { return root_mount_; }
 
-auto GetMountTable() -> MountTable& { return g_mount_table_instance; }
-
+auto GetMountTable() -> MountTable& {
+  static MountTable instance;
+  return instance;
+}
 }  // namespace vfs

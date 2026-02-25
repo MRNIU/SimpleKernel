@@ -7,6 +7,7 @@
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "mount.hpp"
+#include "singleton.hpp"
 #include "sk_cstdio"
 #include "sk_cstring"
 
@@ -14,13 +15,23 @@ namespace vfs {
 
 namespace {
 
-// VFS 全局状态
-bool g_initialized = false;
-MountTable* g_mount_table = nullptr;
-Dentry* g_root_dentry = nullptr;
+// VFS 全局状态结构体
+struct VfsState {
+  bool initialized = false;
+  MountTable* mount_table = nullptr;
+  Dentry* root_dentry = nullptr;
+};
+
+// 使用 Singleton 管理 VFS 状态
+auto GetVfsState() -> VfsState& {
+  static VfsState state;
+  return state;
+}
 
 /**
  * @brief 跳过路径中的前导斜杠
+ * @param path 输入路径
+ * @return 跳过前导斜杠后的路径指针
  */
 auto SkipLeadingSlashes(const char* path) -> const char* {
   while (*path == '/') {
@@ -98,26 +109,51 @@ auto RemoveChild(Dentry* parent, Dentry* child) -> void {
 
 }  // anonymous namespace
 
+// Inode 构造函数实现
+Inode::Inode()
+    : ino(0),
+      type(FileType::kUnknown),
+      size(0),
+      permissions(0644),
+      link_count(1),
+      fs_private(nullptr),
+      fs(nullptr),
+      ops(nullptr) {}
+
+// Dentry 构造函数实现
+Dentry::Dentry()
+    : inode(nullptr),
+      parent(nullptr),
+      children(nullptr),
+      next_sibling(nullptr),
+      fs_private(nullptr) {
+  name[0] = '\0';
+}
+
+// File 构造函数实现
+File::File()
+    : inode(nullptr), dentry(nullptr), offset(0), flags(0), ops(nullptr) {}
+
 auto Init() -> Expected<void> {
-  if (g_initialized) {
+  if (GetVfsState().initialized) {
     return {};
   }
 
   klog::Info("VFS: initializing...\n");
 
   // 初始化挂载表
-  g_mount_table = new (std::nothrow) MountTable();
-  if (g_mount_table == nullptr) {
+  GetVfsState().mount_table = new (std::nothrow) MountTable();
+  if (GetVfsState().mount_table == nullptr) {
     return std::unexpected(Error(ErrorCode::kOutOfMemory));
   }
 
-  g_initialized = true;
+  GetVfsState().initialized = true;
   klog::Info("VFS: initialization complete\n");
   return {};
 }
 
 auto Lookup(const char* path) -> Expected<Dentry*> {
-  if (!g_initialized) {
+  if (!GetVfsState().initialized) {
     return std::unexpected(Error(ErrorCode::kFsNotMounted));
   }
 
@@ -127,14 +163,14 @@ auto Lookup(const char* path) -> Expected<Dentry*> {
 
   // 空路径或根目录
   if (path[0] == '/' && (path[1] == '\0' || path[1] == '/')) {
-    if (g_root_dentry == nullptr) {
+    if (GetVfsState().root_dentry == nullptr) {
       return std::unexpected(Error(ErrorCode::kFsNotMounted));
     }
-    return g_root_dentry;
+    return GetVfsState().root_dentry;
   }
 
   // 查找路径对应的挂载点
-  MountPoint* mp = g_mount_table->Lookup(path);
+  MountPoint* mp = GetVfsState().mount_table->Lookup(path);
   if (mp == nullptr || mp->root_dentry == nullptr) {
     return std::unexpected(Error(ErrorCode::kFsNotMounted));
   }
@@ -225,7 +261,7 @@ auto Lookup(const char* path) -> Expected<Dentry*> {
     if (current->inode != nullptr) {
       // 检查是否有文件系统挂载在此 dentry 上
       for (size_t i = 0; i < MountTable::kMaxMounts; ++i) {
-        MountPoint* next_mp = g_mount_table->Lookup(p);
+        MountPoint* next_mp = GetVfsState().mount_table->Lookup(p);
         if (next_mp != nullptr && next_mp != mp &&
             next_mp->mount_dentry == current) {
           mp = next_mp;
@@ -240,7 +276,7 @@ auto Lookup(const char* path) -> Expected<Dentry*> {
 }
 
 auto Open(const char* path, uint32_t flags) -> Expected<File*> {
-  if (!g_initialized) {
+  if (!GetVfsState().initialized) {
     return std::unexpected(Error(ErrorCode::kFsNotMounted));
   }
 
@@ -660,12 +696,14 @@ auto ReadDir(File* file, DirEntry* dirent, size_t count) -> Expected<size_t> {
   return file->ops->readdir(file, dirent, count);
 }
 
-auto GetRootDentry() -> Dentry* { return g_root_dentry; }
+auto GetRootDentry() -> Dentry* { return GetVfsState().root_dentry; }
 
 // 内部接口：设置根 dentry
-void SetRootDentry(Dentry* dentry) { g_root_dentry = dentry; }
+void SetRootDentry(Dentry* dentry) { GetVfsState().root_dentry = dentry; }
 
 // 内部接口：获取挂载表
-auto GetMountTableInternal() -> MountTable* { return g_mount_table; }
+auto GetMountTableInternal() -> MountTable* {
+  return GetVfsState().mount_table;
+}
 
 }  // namespace vfs

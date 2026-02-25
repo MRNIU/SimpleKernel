@@ -3,11 +3,10 @@
  * @brief 挂载管理
  */
 
-#ifndef SIMPLEKERNEL_SRC_FS_INCLUDE_MOUNT_HPP_
-#define SIMPLEKERNEL_SRC_FS_INCLUDE_MOUNT_HPP_
+#ifndef SIMPLEKERNEL_SRC_VFS_INCLUDE_MOUNT_HPP_
+#define SIMPLEKERNEL_SRC_VFS_INCLUDE_MOUNT_HPP_
 
 #include "filesystem.hpp"
-#include "vfs.hpp"
 
 namespace vfs {
 
@@ -32,16 +31,8 @@ struct MountPoint {
   bool active;
 
   /// @brief 构造函数
-  MountPoint()
-      : mount_path(nullptr),
-        mount_dentry(nullptr),
-        filesystem(nullptr),
-        device(nullptr),
-        root_inode(nullptr),
-        root_dentry(nullptr),
-        active(false) {}
+  MountPoint();
 };
-
 /**
  * @brief 挂载表管理器
  */
@@ -51,8 +42,8 @@ class MountTable {
   static constexpr size_t kMaxMounts = 16;
 
   /// @brief 构造函数
+  /// @brief 构造函数
   MountTable();
-
   /// @brief 析构函数
   ~MountTable() = default;
 
@@ -71,15 +62,15 @@ class MountTable {
    * @pre path 必须是已存在的目录
    * @post 后续对 path 下路径的访问将被重定向到新文件系统
    */
-  auto Mount(const char* path, FileSystem* fs, BlockDevice* device)
-      -> Expected<void>;
+  [[nodiscard]] auto Mount(const char* path, FileSystem* fs,
+                           BlockDevice* device) -> Expected<void>;
 
   /**
    * @brief 卸载指定路径的文件系统
    * @param path 挂载点路径
    * @return Expected<void>
    */
-  auto Unmount(const char* path) -> Expected<void>;
+  [[nodiscard]] auto Unmount(const char* path) -> Expected<void>;
 
   /**
    * @brief 根据路径查找对应的挂载点
@@ -119,8 +110,8 @@ class MountTable {
  * @brief 获取全局挂载表实例
  * @return MountTable& 挂载表引用
  */
-auto GetMountTable() -> MountTable&;
+[[nodiscard]] auto GetMountTable() -> MountTable&;
 
 }  // namespace vfs
 
-#endif  // SIMPLEKERNEL_SRC_FS_INCLUDE_MOUNT_HPP_
+#endif /* SIMPLEKERNEL_SRC_VFS_INCLUDE_MOUNT_HPP_ */

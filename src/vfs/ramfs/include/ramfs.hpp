@@ -7,6 +7,7 @@
 #define SIMPLEKERNEL_SRC_VFS_RAMFS_INCLUDE_RAMFS_HPP_
 
 #include "filesystem.hpp"
+#include "vfs.hpp"
 
 namespace vfs {
 
