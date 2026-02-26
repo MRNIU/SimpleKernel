@@ -86,6 +86,9 @@ ADD_SUBDIRECTORY (3rd/MPMCQueue)
 # https://github.com/MRNIU/device_framework.git
 ADD_SUBDIRECTORY (3rd/device_framework)
 
+# https://github.com/abbrev/fatfs.git
+ADD_SUBDIRECTORY (3rd/fatfs)
+
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
     # https://github.com/riscv-software-src/opensbi.git
     # 编译 opensbi
