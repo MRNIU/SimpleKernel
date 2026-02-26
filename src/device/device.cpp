@@ -4,6 +4,7 @@
 
 #include <cstdint>
 
+#include "block_device_provider.hpp"
 #include "device_manager.hpp"
 #include "driver/ns16550a_driver.hpp"
 #include "driver/virtio_blk_driver.hpp"
@@ -51,4 +52,67 @@ auto DeviceInit() -> void {
   }
 
   klog::Info("DeviceInit: complete\n");
+}
+
+namespace {
+
+/// @brief Adapts VirtioBlk<PlatformTraits> to vfs::BlockDevice.
+class VirtioBlkBlockDevice final : public vfs::BlockDevice {
+ public:
+  using VirtioBlkType = typename VirtioBlkDriver<PlatformTraits>::VirtioBlkType;
+
+  explicit VirtioBlkBlockDevice(VirtioBlkType* dev) : dev_(dev) {}
+
+  auto ReadSectors(uint64_t lba, uint32_t count, void* buf)
+      -> Expected<size_t> override {
+    auto* ptr = static_cast<uint8_t*>(buf);
+    for (uint32_t i = 0; i < count; ++i) {
+      auto result = dev_->Read(lba + i, ptr + i * kSectorSize);
+      if (!result) {
+        return std::unexpected(df_bridge::ToKernelError(result.error()));
+      }
+    }
+    return static_cast<size_t>(count) * kSectorSize;
+  }
+
+  auto WriteSectors(uint64_t lba, uint32_t count, const void* buf)
+      -> Expected<size_t> override {
+    const auto* ptr = static_cast<const uint8_t*>(buf);
+    for (uint32_t i = 0; i < count; ++i) {
+      auto result = dev_->Write(lba + i, ptr + i * kSectorSize);
+      if (!result) {
+        return std::unexpected(df_bridge::ToKernelError(result.error()));
+      }
+    }
+    return static_cast<size_t>(count) * kSectorSize;
+  }
+
+  [[nodiscard]] auto GetSectorSize() const -> uint32_t override {
+    return kSectorSize;
+  }
+
+  [[nodiscard]] auto GetSectorCount() const -> uint64_t override {
+    return dev_->GetCapacity();
+  }
+
+  [[nodiscard]] auto GetName() const -> const char* override {
+    return "virtio-blk0";
+  }
+
+ private:
+  static constexpr uint32_t kSectorSize = 512;
+  VirtioBlkType* dev_;
+};
+
+}  // namespace
+
+auto GetVirtioBlkBlockDevice() -> vfs::BlockDevice* {
+  using Driver = VirtioBlkDriver<PlatformTraits>;
+  auto* raw = DriverRegistry::GetDriverInstance<Driver>().GetDevice();
+  if (raw == nullptr) {
+    klog::Err("GetVirtioBlkBlockDevice: no virtio-blk device probed\n");
+    return nullptr;
+  }
+  static VirtioBlkBlockDevice adapter(raw);
+  return &adapter;
 }

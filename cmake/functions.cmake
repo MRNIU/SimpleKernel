@@ -82,7 +82,8 @@ FUNCTION(add_run_target)
         VERBATIM
         WORKING_DIRECTORY $<TARGET_FILE_DIR:${ARG_TARGET}>
         COMMAND dd if=/dev/zero of=${CMAKE_BINARY_DIR}/bin/rootfs.img bs=1M
-                count=64)
+                count=64
+        COMMAND mkfs.fat -F 32 ${CMAKE_BINARY_DIR}/bin/rootfs.img)
 
     # 生成 QEMU DTS 和 DTB
     ADD_CUSTOM_COMMAND (

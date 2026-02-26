@@ -2,7 +2,8 @@
 
 ADD_LIBRARY (filesystem INTERFACE)
 
-TARGET_INCLUDE_DIRECTORIES (filesystem INTERFACE include)
+TARGET_INCLUDE_DIRECTORIES (
+    filesystem INTERFACE include ${CMAKE_SOURCE_DIR}/src/device/include)
 
 TARGET_SOURCES (filesystem INTERFACE file_descriptor.cpp filesystem.cpp)
 
