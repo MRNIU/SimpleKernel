@@ -9,7 +9,6 @@
 #include "ff.h"
 #include "kernel_log.hpp"
 #include "sk_cstring"
-#include "sk_stdio.h"
 #include "vfs.hpp"
 
 // Defined in diskio.cpp; set by Mount() before calling f_mount().
@@ -75,7 +74,7 @@ auto FatFsFileSystem::Mount(vfs::BlockDevice* device) -> Expected<vfs::Inode*> {
   g_block_devices[volume_id_] = device;
 
   // Build FatFS mount path: "0:/" or "1:/" etc.
-  char path[4] = {'0' + static_cast<char>(volume_id_), ':', '/', '\0'};
+  char path[4] = {static_cast<char>('0' + volume_id_), ':', '/', '\0'};
 
   FRESULT fr = f_mount(&fatfs_obj_, path, 1);
   if (fr != FR_OK) {
@@ -112,7 +111,7 @@ auto FatFsFileSystem::Unmount() -> Expected<void> {
   if (!mounted_) {
     return {};
   }
-  char path[4] = {'0' + static_cast<char>(volume_id_), ':', '/', '\0'};
+  char path[4] = {static_cast<char>('0' + volume_id_), ':', '/', '\0'};
   FRESULT fr = f_mount(nullptr, path, 0);
   g_block_devices[volume_id_] = nullptr;
   mounted_ = false;
@@ -241,7 +240,11 @@ auto FatFsFileSystem::FatFsInodeOps::Lookup(vfs::Inode* dir, const char* name)
 
   // Build full path: dir_path + name
   char full_path[512];
-  sk_snprintf(full_path, sizeof(full_path), "%s%s", dir_fi->path, name);
+  strncpy(full_path, dir_fi->path, sizeof(full_path) - 1);
+  full_path[sizeof(full_path) - 1] = '\0';
+  size_t dir_len = strlen(full_path);
+  strncpy(full_path + dir_len, name, sizeof(full_path) - dir_len - 1);
+  full_path[sizeof(full_path) - 1] = '\0';
 
   FILINFO fi_info;
   FRESULT fr = f_stat(full_path, &fi_info);
@@ -270,7 +273,11 @@ auto FatFsFileSystem::FatFsInodeOps::Create(vfs::Inode* dir, const char* name,
     -> Expected<vfs::Inode*> {
   auto* dir_fi = static_cast<FatInode*>(dir->fs_private);
   char full_path[512];
-  sk_snprintf(full_path, sizeof(full_path), "%s%s", dir_fi->path, name);
+  strncpy(full_path, dir_fi->path, sizeof(full_path) - 1);
+  full_path[sizeof(full_path) - 1] = '\0';
+  size_t dir_len = strlen(full_path);
+  strncpy(full_path + dir_len, name, sizeof(full_path) - dir_len - 1);
+  full_path[sizeof(full_path) - 1] = '\0';
 
   if (type == vfs::FileType::kDirectory) {
     FRESULT fr = f_mkdir(full_path);
@@ -306,7 +313,11 @@ auto FatFsFileSystem::FatFsInodeOps::Unlink(vfs::Inode* dir, const char* name)
     -> Expected<void> {
   auto* dir_fi = static_cast<FatInode*>(dir->fs_private);
   char full_path[512];
-  sk_snprintf(full_path, sizeof(full_path), "%s%s", dir_fi->path, name);
+  strncpy(full_path, dir_fi->path, sizeof(full_path) - 1);
+  full_path[sizeof(full_path) - 1] = '\0';
+  size_t dir_len = strlen(full_path);
+  strncpy(full_path + dir_len, name, sizeof(full_path) - dir_len - 1);
+  full_path[sizeof(full_path) - 1] = '\0';
   return FresultToExpected(f_unlink(full_path));
 }
 
