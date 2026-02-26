@@ -73,7 +73,7 @@ void test_wait_basic(void* /*arg*/) {
 
   // 等待子进程退出
   int status = 0;
-  Pid result = task_mgr.Wait(child_pid, &status, false, false);
+  Pid result = task_mgr.Wait(child_pid, &status, false, false).value_or(0);
 
   if (result == child_pid) {
     klog::Info("Parent: child %zu exited with status %d\n", result, status);
@@ -122,7 +122,8 @@ void test_wait_any_child(void* /*arg*/) {
   int completed = 0;
   for (int i = 0; i < kChildCount; ++i) {
     int status = 0;
-    Pid result = task_mgr.Wait(static_cast<Pid>(-1), &status, false, false);
+    Pid result =
+        task_mgr.Wait(static_cast<Pid>(-1), &status, false, false).value_or(0);
 
     if (result > 0) {
       klog::Info("Parent: child PID=%zu exited with status %d\n", result,
@@ -185,7 +186,7 @@ void test_wait_no_hang(void* /*arg*/) {
 
   // 立即尝试非阻塞 wait
   int status = 0;
-  Pid result = task_mgr.Wait(child_pid, &status, true, false);
+  Pid result = task_mgr.Wait(child_pid, &status, true, false).value_or(0);
 
   if (result == 0) {
     klog::Info("Parent: no-hang wait returned 0 (child still running)\n");
@@ -198,7 +199,7 @@ void test_wait_no_hang(void* /*arg*/) {
   }
 
   // 清理：等待子进程实际退出（阻塞）
-  result = task_mgr.Wait(child_pid, &status, false, false);
+  result = task_mgr.Wait(child_pid, &status, false, false).value_or(0);
   klog::Info("Parent: child finally exited with PID=%zu\n", result);
 
   sys_exit(0);
@@ -236,7 +237,7 @@ void test_wait_process_group(void* /*arg*/) {
 
   // 等待同进程组的子进程 (pid = 0)
   int status = 0;
-  Pid result = task_mgr.Wait(0, &status, false, false);
+  Pid result = task_mgr.Wait(0, &status, false, false).value_or(0);
 
   if (result == child1->pid) {
     klog::Info("Parent: correctly waited for same-pgid child %zu\n", result);
@@ -247,7 +248,7 @@ void test_wait_process_group(void* /*arg*/) {
   }
 
   // 清理另一个子进程
-  result = task_mgr.Wait(child2->pid, &status, false, false);
+  result = task_mgr.Wait(child2->pid, &status, false, false).value_or(0);
   klog::Info("Parent: cleaned up child2 PID=%zu\n", result);
 
   sys_exit(0);
@@ -290,7 +291,7 @@ void test_wait_zombie_reap(void* /*arg*/) {
 
   // 回收僵尸进程
   int status = 0;
-  Pid result = task_mgr.Wait(child_pid, &status, false, false);
+  Pid result = task_mgr.Wait(child_pid, &status, false, false).value_or(0);
 
   if (result == child_pid) {
     klog::Info("Parent: successfully reaped zombie child %zu\n", result);

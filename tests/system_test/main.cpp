@@ -46,11 +46,13 @@ struct test_case {
 //     test_case{"clone_system_test", clone_system_test, false},
 //     test_case{"exit_system_test", exit_system_test, false}};
 
-std::array<test_case, 4> test_cases = {
+std::array<test_case, 6> test_cases = {
     test_case{"thread_group_system_test", thread_group_system_test, false},
     test_case{"wait_system_test", wait_system_test, false},
     test_case{"clone_system_test", clone_system_test, false},
-    test_case{"exit_system_test", exit_system_test, false}};
+    test_case{"exit_system_test", exit_system_test, false},
+    test_case{"ramfs_system_test", ramfs_system_test, false},
+    test_case{"fatfs_system_test", fatfs_system_test, false}};
 
 /// 主核运行所有测试
 void run_tests_main() {
@@ -113,6 +115,9 @@ auto main(int argc, const char** argv) -> int {
 
   // 中断相关初始化
   InterruptInit(argc, argv);
+
+  // 文件系统初始化
+  FileSystemInit();
 
   // 唤醒其余 core
   WakeUpOtherCores();

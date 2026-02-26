@@ -28,18 +28,29 @@ ADD_EXECUTABLE (
     wait_system_test.cpp
     clone_system_test.cpp
     exit_system_test.cpp
+    ramfs_system_test.cpp
+    fatfs_system_test.cpp
     kernel_task_test.cpp
     user_task_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory.cpp
-    ${CMAKE_SOURCE_DIR}/src/syscall.cpp)
+    ${CMAKE_SOURCE_DIR}/src/syscall.cpp
+    ${CMAKE_SOURCE_DIR}/src/virtual_memory.cpp
+    ${CMAKE_SOURCE_DIR}/src/io_buffer.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
     PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/include
             ${CMAKE_SOURCE_DIR}/src/arch/${CMAKE_SYSTEM_PROCESSOR})
 
-TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
-                                               libcxx arch driver task)
+TARGET_LINK_LIBRARIES (
+    ${PROJECT_NAME}
+    PRIVATE kernel_link_libraries
+            libc
+            libcxx
+            arch
+            device
+            task
+            filesystem)
 
 # qemu 参数设置
 LIST (APPEND ${PROJECT_NAME}_QEMU_BOOT_FLAGS

@@ -154,6 +154,8 @@ auto thread_group_system_test() -> bool;
 auto wait_system_test() -> bool;
 auto clone_system_test() -> bool;
 auto exit_system_test() -> bool;
+auto ramfs_system_test() -> bool;
+auto fatfs_system_test() -> bool;
 
 namespace MutexTest {
 void RunTest();

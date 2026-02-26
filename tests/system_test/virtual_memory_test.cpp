@@ -37,7 +37,7 @@ auto virtual_memory_test() -> bool {
                                       cpu_io::virtual_memory::kPageSize);
   EXPECT_TRUE(user_page_dir != nullptr,
               "virtual_memory_test: failed to create user page directory");
-  std::memset(user_page_dir, 0, cpu_io::virtual_memory::kPageSize);
+  memset(user_page_dir, 0, cpu_io::virtual_memory::kPageSize);
   sk_printf("virtual_memory_test: user page directory created at %p\n",
             user_page_dir);
 
@@ -196,7 +196,7 @@ auto virtual_memory_test() -> bool {
                                       cpu_io::virtual_memory::kPageSize);
   EXPECT_TRUE(test_page_dir != nullptr,
               "virtual_memory_test: failed to create test page dir");
-  std::memset(test_page_dir, 0, cpu_io::virtual_memory::kPageSize);
+  memset(test_page_dir, 0, cpu_io::virtual_memory::kPageSize);
 
   void* test_va = reinterpret_cast<void*>(0x500000);
   void* test_pa1 = reinterpret_cast<void*>(0x93000000);

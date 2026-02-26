@@ -1,0 +1,176 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#include <cstddef>
+#include <cstdint>
+
+#include "sk_cstdio"
+#include "sk_cstring"
+#include "system_test.h"
+#include "vfs.hpp"
+
+auto ramfs_system_test() -> bool {
+  sk_printf("ramfs_system_test: start\n");
+
+  // FileSystemInit() has already been called in main.cpp.
+  // ramfs is mounted at "/" — use VFS directly.
+
+  // T1: Create file, write, read back
+  {
+    auto file_result =
+        vfs::Open("/hello.txt", vfs::kOCreate | vfs::kOReadWrite);
+    EXPECT_TRUE(file_result.has_value(),
+                "ramfs_system_test: open /hello.txt failed");
+    vfs::File* file = file_result.value();
+
+    const char kMsg[] = "Hello, ramfs!";
+    auto write_result = vfs::Write(file, kMsg, sizeof(kMsg) - 1);
+    EXPECT_TRUE(write_result.has_value(), "ramfs_system_test: write failed");
+    EXPECT_EQ(write_result.value(), sizeof(kMsg) - 1,
+              "ramfs_system_test: write byte count mismatch");
+    sk_printf("ramfs_system_test: wrote %zu bytes\n", write_result.value());
+
+    // Seek back to start
+    auto seek_result = vfs::Seek(file, 0, vfs::SeekWhence::kSet);
+    EXPECT_TRUE(seek_result.has_value(),
+                "ramfs_system_test: seek to start failed");
+    EXPECT_EQ(seek_result.value(), static_cast<uint64_t>(0),
+              "ramfs_system_test: seek position mismatch");
+
+    // Read back
+    char buf[64] = {};
+    auto read_result = vfs::Read(file, buf, sizeof(buf) - 1);
+    EXPECT_TRUE(read_result.has_value(), "ramfs_system_test: read failed");
+    EXPECT_EQ(read_result.value(), sizeof(kMsg) - 1,
+              "ramfs_system_test: read byte count mismatch");
+    EXPECT_EQ(memcmp(buf, kMsg, sizeof(kMsg) - 1), 0,
+              "ramfs_system_test: read content mismatch");
+    sk_printf("ramfs_system_test: read back: %s\n", buf);
+
+    vfs::Close(file);
+  }
+
+  // T3: Seek to middle, partial read
+  {
+    auto file_result = vfs::Open("/hello.txt", vfs::kOReadOnly);
+    EXPECT_TRUE(file_result.has_value(),
+                "ramfs_system_test: re-open for seek test failed");
+    vfs::File* file = file_result.value();
+
+    // Seek to offset 7
+    auto seek_result = vfs::Seek(file, 7, vfs::SeekWhence::kSet);
+    EXPECT_TRUE(seek_result.has_value(),
+                "ramfs_system_test: seek to offset 7 failed");
+    EXPECT_EQ(seek_result.value(), static_cast<uint64_t>(7),
+              "ramfs_system_test: seek offset 7 mismatch");
+
+    char buf[32] = {};
+    auto read_result = vfs::Read(file, buf, 5);
+    EXPECT_TRUE(read_result.has_value(),
+                "ramfs_system_test: partial read failed");
+    // "Hello, ramfs!" -> offset 7 = "ramfs"
+    EXPECT_EQ(read_result.value(), static_cast<size_t>(5),
+              "ramfs_system_test: partial read count mismatch");
+    EXPECT_EQ(memcmp(buf, "ramfs", 5), 0,
+              "ramfs_system_test: partial read content mismatch");
+    sk_printf("ramfs_system_test: partial read from offset 7: %.5s\n", buf);
+
+    vfs::Close(file);
+  }
+
+  // T4: MkDir + ReadDir
+  {
+    auto mkdir_result = vfs::MkDir("/testdir");
+    EXPECT_TRUE(mkdir_result.has_value(),
+                "ramfs_system_test: mkdir /testdir failed");
+    sk_printf("ramfs_system_test: mkdir /testdir ok\n");
+
+    // Create a file inside
+    auto inner =
+        vfs::Open("/testdir/inner.txt", vfs::kOCreate | vfs::kOWriteOnly);
+    EXPECT_TRUE(inner.has_value(),
+                "ramfs_system_test: open /testdir/inner.txt failed");
+    vfs::Close(inner.value());
+
+    // ReadDir on /testdir
+    auto dir_file_result =
+        vfs::Open("/testdir", vfs::kOReadOnly | vfs::kODirectory);
+    EXPECT_TRUE(dir_file_result.has_value(),
+                "ramfs_system_test: open /testdir as dir failed");
+    vfs::File* dir_file = dir_file_result.value();
+
+    vfs::DirEntry entries[8] = {};
+    auto readdir_result = vfs::ReadDir(dir_file, entries, 8);
+    EXPECT_TRUE(readdir_result.has_value(),
+                "ramfs_system_test: readdir failed");
+    // Expect at least "." + ".." + "inner.txt" = 3 entries
+    EXPECT_GT(readdir_result.value(), static_cast<size_t>(2),
+              "ramfs_system_test: readdir should return > 2 entries");
+    sk_printf("ramfs_system_test: readdir returned %zu entries\n",
+              readdir_result.value());
+
+    vfs::Close(dir_file);
+  }
+
+  // T5: Unlink a file, confirm it can't be re-opened without kOCreate
+  {
+    auto unlink_result = vfs::Unlink("/hello.txt");
+    EXPECT_TRUE(unlink_result.has_value(),
+                "ramfs_system_test: unlink /hello.txt failed");
+    sk_printf("ramfs_system_test: unlink /hello.txt ok\n");
+
+    auto reopen = vfs::Open("/hello.txt", vfs::kOReadOnly);
+    EXPECT_FALSE(reopen.has_value(),
+                 "ramfs_system_test: /hello.txt should be gone after unlink");
+    sk_printf("ramfs_system_test: confirmed /hello.txt no longer exists\n");
+  }
+
+  // T6: RmDir
+  {
+    // Remove inner file first
+    auto unlink_result = vfs::Unlink("/testdir/inner.txt");
+    EXPECT_TRUE(unlink_result.has_value(),
+                "ramfs_system_test: unlink /testdir/inner.txt failed");
+
+    auto rmdir_result = vfs::RmDir("/testdir");
+    EXPECT_TRUE(rmdir_result.has_value(),
+                "ramfs_system_test: rmdir /testdir failed");
+    sk_printf("ramfs_system_test: rmdir /testdir ok\n");
+  }
+
+  // T7: Two independent files do not share data
+  {
+    auto f1 = vfs::Open("/fileA.txt", vfs::kOCreate | vfs::kOReadWrite);
+    auto f2 = vfs::Open("/fileB.txt", vfs::kOCreate | vfs::kOReadWrite);
+    EXPECT_TRUE(f1.has_value(), "ramfs_system_test: open fileA failed");
+    EXPECT_TRUE(f2.has_value(), "ramfs_system_test: open fileB failed");
+
+    const char kDataA[] = "AAAA";
+    const char kDataB[] = "BBBB";
+    vfs::Write(f1.value(), kDataA, 4);
+    vfs::Write(f2.value(), kDataB, 4);
+
+    vfs::Seek(f1.value(), 0, vfs::SeekWhence::kSet);
+    vfs::Seek(f2.value(), 0, vfs::SeekWhence::kSet);
+
+    char buf1[8] = {};
+    char buf2[8] = {};
+    vfs::Read(f1.value(), buf1, 4);
+    vfs::Read(f2.value(), buf2, 4);
+
+    EXPECT_EQ(memcmp(buf1, kDataA, 4), 0,
+              "ramfs_system_test: fileA data corrupted by fileB");
+    EXPECT_EQ(memcmp(buf2, kDataB, 4), 0,
+              "ramfs_system_test: fileB data corrupted by fileA");
+    sk_printf("ramfs_system_test: two files are independent\n");
+
+    vfs::Close(f1.value());
+    vfs::Close(f2.value());
+    vfs::Unlink("/fileA.txt");
+    vfs::Unlink("/fileB.txt");
+  }
+
+  sk_printf("ramfs_system_test: all tests passed\n");
+  return true;
+}

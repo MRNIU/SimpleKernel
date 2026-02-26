@@ -109,11 +109,8 @@ auto Init() -> Expected<void> {
 
   klog::Info("VFS: initializing...\n");
 
-  // 初始化挂载表
-  GetVfsState().mount_table = new MountTable();
-  if (GetVfsState().mount_table == nullptr) {
-    return std::unexpected(Error(ErrorCode::kOutOfMemory));
-  }
+  // 初始化挂载表（使用全局单例，与 GetMountTable() 统一）
+  GetVfsState().mount_table = &GetMountTable();
 
   GetVfsState().initialized = true;
   klog::Info("VFS: initialization complete\n");
