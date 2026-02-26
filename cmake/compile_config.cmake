@@ -172,6 +172,7 @@ TARGET_LINK_LIBRARIES (
               bmalloc
               MPMCQueue
               device_framework
+              fatfs_lib
               gcc
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
               opensbi_interface

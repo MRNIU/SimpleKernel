@@ -89,8 +89,10 @@ ADD_SUBDIRECTORY (3rd/device_framework)
 # https://github.com/abbrev/fatfs.git
 SET (fatfs_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/fatfs)
 SET (fatfs_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/fatfs)
-
-# ADD_SUBDIRECTORY (3rd/fatfs)
+ADD_LIBRARY (fatfs_lib INTERFACE)
+TARGET_INCLUDE_DIRECTORIES (fatfs_lib INTERFACE ${fatfs_SOURCE_DIR}/source)
+TARGET_SOURCES (fatfs_lib INTERFACE ${fatfs_SOURCE_DIR}/source/ff.c
+                                    ${fatfs_SOURCE_DIR}/source/ffunicode.c)
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
     # https://github.com/riscv-software-src/opensbi.git
