@@ -1,52 +1,49 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
  * @file    diskio.cpp
- * @brief   FatFs low-level disk I/O — delegates to vfs::BlockDevice
+ * @brief   FatFs 底层磁盘 I/O — 委托给 vfs::BlockDevice
  */
 
-// ff.h must be included before diskio.h because diskio.h uses BYTE/LBA_t/etc.
-// which are defined only after ff.h has been processed.
+// ff.h 必须在 diskio.h 之前包含，因为 diskio.h 中使用的 BYTE/LBA_t 等类型
+// 均由 ff.h 定义。
 // clang-format off
 #include "ff.h"
 #include "diskio.h"
 // clang-format on
 
-#include "block_device.hpp"
+#include "fatfs.hpp"
 #include "kernel_log.hpp"
 
-/// Per-volume block device registry.  Set by FatFsFileSystem::Mount().
-/// Indexed by FatFS physical drive number (pdrv == volume_id).
-vfs::BlockDevice* g_block_devices[FF_VOLUMES] = {};
-/// get_fattime — returns FAT timestamp. Returns 0 (epoch) as we have no RTC.
-/// Required by FatFS when FF_FS_READONLY == 0.
+/// get_fattime — 返回 FAT 时间戳。无 RTC 时返回 0（epoch）。
+/// FF_FS_READONLY == 0 时 FatFS 要求此函数存在。
 extern "C" DWORD get_fattime() { return 0; }
 
 // ── disk_status ──────────────────────────────────────────────────────────────
 
 DSTATUS disk_status(BYTE pdrv) {
-  if (pdrv >= FF_VOLUMES || g_block_devices[pdrv] == nullptr) {
+  if (fatfs::FatFsFileSystem::GetBlockDevice(pdrv) == nullptr) {
     return STA_NOINIT;
   }
-  return 0;  // drive ready
+  return 0;  // 驱动器就绪
 }
 
 // ── disk_initialize ──────────────────────────────────────────────────────────
 
 DSTATUS disk_initialize(BYTE pdrv) {
-  if (pdrv >= FF_VOLUMES || g_block_devices[pdrv] == nullptr) {
+  if (fatfs::FatFsFileSystem::GetBlockDevice(pdrv) == nullptr) {
     return STA_NOINIT;
   }
-  return 0;  // already initialized via BlockDevice
+  return 0;  // BlockDevice 已由调用方初始化
 }
 
 // ── disk_read ────────────────────────────────────────────────────────────────
 
 DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count) {
-  if (pdrv >= FF_VOLUMES || g_block_devices[pdrv] == nullptr) {
+  auto* dev = fatfs::FatFsFileSystem::GetBlockDevice(pdrv);
+  if (dev == nullptr) {
     return RES_NOTRDY;
   }
-  auto result = g_block_devices[pdrv]->ReadSectors(
-      sector, static_cast<uint32_t>(count), buff);
+  auto result = dev->ReadSectors(sector, static_cast<uint32_t>(count), buff);
   if (!result) {
     klog::Err("disk_read: pdrv=%u sector=%llu count=%u failed\n",
               static_cast<unsigned>(pdrv),
@@ -62,11 +59,11 @@ DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count) {
 #if FF_FS_READONLY == 0
 
 DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count) {
-  if (pdrv >= FF_VOLUMES || g_block_devices[pdrv] == nullptr) {
+  auto* dev = fatfs::FatFsFileSystem::GetBlockDevice(pdrv);
+  if (dev == nullptr) {
     return RES_NOTRDY;
   }
-  auto result = g_block_devices[pdrv]->WriteSectors(
-      sector, static_cast<uint32_t>(count), buff);
+  auto result = dev->WriteSectors(sector, static_cast<uint32_t>(count), buff);
   if (!result) {
     klog::Err("disk_write: pdrv=%u sector=%llu count=%u failed\n",
               static_cast<unsigned>(pdrv),
@@ -82,10 +79,10 @@ DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count) {
 // ── disk_ioctl ───────────────────────────────────────────────────────────────
 
 DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff) {
-  if (pdrv >= FF_VOLUMES || g_block_devices[pdrv] == nullptr) {
+  auto* dev = fatfs::FatFsFileSystem::GetBlockDevice(pdrv);
+  if (dev == nullptr) {
     return RES_NOTRDY;
   }
-  vfs::BlockDevice* dev = g_block_devices[pdrv];
   switch (cmd) {
     case CTRL_SYNC: {
       auto r = dev->Flush();
@@ -101,7 +98,7 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff) {
       static_cast<DWORD*>(buff)[0] = 1;
       return RES_OK;
     case CTRL_TRIM:
-      return RES_OK;  // TRIM not required
+      return RES_OK;  // TRIM 不是必需的
     default:
       return RES_PARERR;
   }

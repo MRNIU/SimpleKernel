@@ -1,35 +1,71 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
  * @file    fatfs_filesystem.cpp
- * @brief   FatFsFileSystem implementation — vfs::FileSystem adapter for FatFS
+ * @brief   FatFsFileSystem 实现 — FatFS 的 vfs::FileSystem 适配器
  */
 
-#include "fatfs_filesystem.hpp"
-
+#include "fatfs.hpp"
 #include "ff.h"
 #include "kernel_log.hpp"
 #include "sk_cstring"
 #include "vfs.hpp"
 
-// Defined in diskio.cpp; set by Mount() before calling f_mount().
-extern vfs::BlockDevice* g_block_devices[FF_VOLUMES];
-
 namespace fatfs {
 
-// ── Helpers
-// ───────────────────────────────────────────────────────────────────
+// ── 静态成员定义
+// ────────────────────────────────────────────────────────────
+
+std::array<vfs::BlockDevice*, FF_VOLUMES> FatFsFileSystem::block_devices_{};
+
+// ── FRESULT 到 Expected<void> 的完整映射
+// ──────────────────────────────────────
 
 namespace {
 
-/// Map FatFS FRESULT to Expected<void>.
+/// @brief 将 FatFS FRESULT 映射到内核 ErrorCode。
+/// @details 区分常见错误类别，避免将所有错误笼统归入 kFsCorrupted。
+auto FresultToErrorCode(FRESULT fr) -> ErrorCode {
+  switch (fr) {
+    case FR_OK:
+      return ErrorCode::kSuccess;
+    case FR_NO_FILE:
+    case FR_NO_PATH:
+      return ErrorCode::kFsFileNotFound;
+    case FR_EXIST:
+      return ErrorCode::kFsFileExists;
+    case FR_DENIED:
+    case FR_WRITE_PROTECTED:
+      return ErrorCode::kFsPermissionDenied;
+    case FR_NOT_READY:
+    case FR_DISK_ERR:
+      return ErrorCode::kBlkReadFailed;
+    case FR_NOT_ENABLED:
+    case FR_INVALID_DRIVE:
+      return ErrorCode::kFsNotMounted;
+    case FR_NOT_ENOUGH_CORE:
+      return ErrorCode::kFsNoSpace;
+    case FR_INVALID_NAME:
+    case FR_INVALID_PARAMETER:
+    case FR_INVALID_OBJECT:
+      return ErrorCode::kInvalidArgument;
+    case FR_TOO_MANY_OPEN_FILES:
+      return ErrorCode::kFsFdTableFull;
+    case FR_INT_ERR:
+    case FR_MKFS_ABORTED:
+    default:
+      return ErrorCode::kFsCorrupted;
+  }
+}
+
+/// @brief 将 FRESULT 转换为 Expected<void>。
 auto FresultToExpected(FRESULT fr) -> Expected<void> {
   if (fr == FR_OK) {
     return {};
   }
-  return std::unexpected(Error{ErrorCode::kFsCorrupted});
+  return std::unexpected(Error{FresultToErrorCode(fr)});
 }
 
-/// Convert FILINFO attribute to vfs::FileType.
+/// @brief 将 FILINFO 属性转换为 vfs::FileType。
 auto FilInfoToFileType(const FILINFO& fi) -> vfs::FileType {
   if ((fi.fattrib & AM_DIR) != 0) {
     return vfs::FileType::kDirectory;
@@ -39,8 +75,25 @@ auto FilInfoToFileType(const FILINFO& fi) -> vfs::FileType {
 
 }  // namespace
 
-// ── Constructor / Destructor
-// ──────────────────────────────────────────────────
+// ── 静态辅助函数
+// ────────────────────────────────────────────────────────────────
+
+auto FatFsFileSystem::SetBlockDevice(uint8_t pdrv, vfs::BlockDevice* device)
+    -> void {
+  if (pdrv < FF_VOLUMES) {
+    block_devices_[pdrv] = device;
+  }
+}
+
+auto FatFsFileSystem::GetBlockDevice(uint8_t pdrv) -> vfs::BlockDevice* {
+  if (pdrv >= FF_VOLUMES) {
+    return nullptr;
+  }
+  return block_devices_[pdrv];
+}
+
+// ── 构造 / 析构
+// ──────────────────────────────────────────────────────────────
 
 FatFsFileSystem::FatFsFileSystem(uint8_t volume_id)
     : volume_id_(volume_id),
@@ -56,8 +109,8 @@ FatFsFileSystem::~FatFsFileSystem() {
   }
 }
 
-// ── vfs::FileSystem interface
-// ─────────────────────────────────────────────────
+// ── vfs::FileSystem 接口实现
+// ─────────────────────────────────────────────
 
 auto FatFsFileSystem::GetName() const -> const char* { return "fatfs"; }
 
@@ -70,37 +123,37 @@ auto FatFsFileSystem::Mount(vfs::BlockDevice* device) -> Expected<vfs::Inode*> {
     return std::unexpected(Error{ErrorCode::kInvalidArgument});
   }
 
-  // Register block device so diskio.cpp callbacks can reach it.
-  g_block_devices[volume_id_] = device;
+  // 注册块设备，使 diskio.cpp 的回调能够访问它
+  SetBlockDevice(volume_id_, device);
 
-  // Build FatFS mount path: "0:/" or "1:/" etc.
+  // 构造 FatFS 挂载路径："0:/" 或 "1:/" 等
   char path[4] = {static_cast<char>('0' + volume_id_), ':', '/', '\0'};
 
   FRESULT fr = f_mount(&fatfs_obj_, path, 1);
   if (fr != FR_OK) {
-    g_block_devices[volume_id_] = nullptr;
+    SetBlockDevice(volume_id_, nullptr);
     klog::Err("FatFsFileSystem::Mount: f_mount failed (%d)\n",
               static_cast<int>(fr));
-    return std::unexpected(Error{ErrorCode::kFsMountFailed});
+    return std::unexpected(Error{FresultToErrorCode(fr)});
   }
 
-  // Build root inode.
+  // 构建根 inode
   FatInode* fi = AllocateFatInode();
   if (fi == nullptr) {
     (void)f_mount(nullptr, path, 0);
-    g_block_devices[volume_id_] = nullptr;
+    SetBlockDevice(volume_id_, nullptr);
     return std::unexpected(Error{ErrorCode::kOutOfMemory});
   }
   fi->inode.ino = 0;
   fi->inode.type = vfs::FileType::kDirectory;
   fi->inode.size = 0;
-  fi->inode.permissions = 0755;
+  fi->inode.permissions = kRootDirPermissions;
   fi->inode.link_count = 1;
   fi->inode.fs = this;
   fi->inode.ops = &inode_ops_;
   fi->inode.fs_private = fi;
-  strncpy(fi->path, path, sizeof(fi->path) - 1);
-  fi->path[sizeof(fi->path) - 1] = '\0';
+  strncpy(fi->path.data(), path, fi->path.size() - 1);
+  fi->path[fi->path.size() - 1] = '\0';
 
   root_inode_ = &fi->inode;
   mounted_ = true;
@@ -113,10 +166,9 @@ auto FatFsFileSystem::Unmount() -> Expected<void> {
   }
   char path[4] = {static_cast<char>('0' + volume_id_), ':', '/', '\0'};
   FRESULT fr = f_mount(nullptr, path, 0);
-  g_block_devices[volume_id_] = nullptr;
+  SetBlockDevice(volume_id_, nullptr);
   mounted_ = false;
   root_inode_ = nullptr;
-  // Free all inodes
   for (auto& node : inodes_) {
     node.in_use = false;
   }
@@ -124,8 +176,9 @@ auto FatFsFileSystem::Unmount() -> Expected<void> {
 }
 
 auto FatFsFileSystem::Sync() -> Expected<void> {
-  if (volume_id_ < FF_VOLUMES && g_block_devices[volume_id_] != nullptr) {
-    return g_block_devices[volume_id_]->Flush();
+  auto* dev = GetBlockDevice(volume_id_);
+  if (dev != nullptr) {
+    return dev->Flush();
   }
   return {};
 }
@@ -152,8 +205,8 @@ auto FatFsFileSystem::FreeInode(vfs::Inode* inode) -> Expected<void> {
 
 auto FatFsFileSystem::GetFileOps() -> vfs::FileOps* { return &file_ops_; }
 
-// ── Inode pool helpers
-// ────────────────────────────────────────────────────────
+// ── inode 池辅助函数
+// ────────────────────────────────────────────────────────────
 
 auto FatFsFileSystem::AllocateFatInode() -> FatInode* {
   for (auto& fi : inodes_) {
@@ -172,8 +225,8 @@ auto FatFsFileSystem::FreeFatInode(FatInode* fi) -> void {
   }
 }
 
-// ── FIL pool helpers
-// ──────────────────────────────────────────────────────────
+// ── FIL 池辅助函数
+// ──────────────────────────────────────────────────────────────
 
 auto FatFsFileSystem::AllocateFil() -> FIL* {
   for (auto& fh : fil_pool_) {
@@ -199,33 +252,33 @@ auto FatFsFileSystem::OpenFil(vfs::Inode* inode, uint32_t open_flags)
     -> Expected<void> {
   auto* fi = static_cast<FatInode*>(inode->fs_private);
   if (fi->fil != nullptr) {
-    return {};  // already open
+    return {};  // 已打开
   }
   FIL* fil = AllocateFil();
   if (fil == nullptr) {
     return std::unexpected(Error{ErrorCode::kFsFdTableFull});
   }
   BYTE fa_mode = 0;
-  // kOReadOnly == 0, so check it specially
+  // kOReadOnly == 0，需单独检查
   if (open_flags == vfs::kOReadOnly) {
     fa_mode = FA_READ;
   }
-  if ((open_flags & vfs::kOWriteOnly) != 0u) {
+  if ((open_flags & vfs::kOWriteOnly) != 0U) {
     fa_mode = FA_WRITE;
   }
-  if ((open_flags & vfs::kOReadWrite) != 0u) {
+  if ((open_flags & vfs::kOReadWrite) != 0U) {
     fa_mode = FA_READ | FA_WRITE;
   }
-  if ((open_flags & vfs::kOCreate) != 0u) {
+  if ((open_flags & vfs::kOCreate) != 0U) {
     fa_mode |= FA_OPEN_ALWAYS;
   }
-  if ((open_flags & vfs::kOTruncate) != 0u) {
+  if ((open_flags & vfs::kOTruncate) != 0U) {
     fa_mode |= FA_CREATE_ALWAYS;
   }
-  FRESULT fr = f_open(fil, fi->path, fa_mode);
+  FRESULT fr = f_open(fil, fi->path.data(), fa_mode);
   if (fr != FR_OK) {
     FreeFil(fil);
-    return std::unexpected(Error{ErrorCode::kFsInvalidFd});
+    return std::unexpected(Error{FresultToErrorCode(fr)});
   }
   fi->fil = fil;
   return {};
@@ -238,18 +291,17 @@ auto FatFsFileSystem::FatFsInodeOps::Lookup(vfs::Inode* dir, const char* name)
     -> Expected<vfs::Inode*> {
   auto* dir_fi = static_cast<FatInode*>(dir->fs_private);
 
-  // Build full path: dir_path + name
-  char full_path[512];
-  strncpy(full_path, dir_fi->path, sizeof(full_path) - 1);
-  full_path[sizeof(full_path) - 1] = '\0';
-  size_t dir_len = strlen(full_path);
-  strncpy(full_path + dir_len, name, sizeof(full_path) - dir_len - 1);
-  full_path[sizeof(full_path) - 1] = '\0';
+  // 拼接完整路径：dir_path + name
+  std::array<char, kPathBufSize> full_path{};
+  strncpy(full_path.data(), dir_fi->path.data(), full_path.size() - 1);
+  size_t dir_len = strlen(full_path.data());
+  strncpy(full_path.data() + dir_len, name, full_path.size() - dir_len - 1);
+  full_path[full_path.size() - 1] = '\0';
 
   FILINFO fi_info;
-  FRESULT fr = f_stat(full_path, &fi_info);
+  FRESULT fr = f_stat(full_path.data(), &fi_info);
   if (fr != FR_OK) {
-    return std::unexpected(Error{ErrorCode::kFsFileNotFound});
+    return std::unexpected(Error{FresultToErrorCode(fr)});
   }
 
   auto inode_result = fs_->AllocateInode();
@@ -261,10 +313,10 @@ auto FatFsFileSystem::FatFsInodeOps::Lookup(vfs::Inode* dir, const char* name)
   inode->ino = 0;
   inode->type = FilInfoToFileType(fi_info);
   inode->size = fi_info.fsize;
-  inode->permissions = 0644;
+  inode->permissions = kDefaultFilePermissions;
   inode->link_count = 1;
-  strncpy(new_fi->path, full_path, sizeof(new_fi->path) - 1);
-  new_fi->path[sizeof(new_fi->path) - 1] = '\0';
+  strncpy(new_fi->path.data(), full_path.data(), new_fi->path.size() - 1);
+  new_fi->path[new_fi->path.size() - 1] = '\0';
   return inode;
 }
 
@@ -272,23 +324,22 @@ auto FatFsFileSystem::FatFsInodeOps::Create(vfs::Inode* dir, const char* name,
                                             vfs::FileType type)
     -> Expected<vfs::Inode*> {
   auto* dir_fi = static_cast<FatInode*>(dir->fs_private);
-  char full_path[512];
-  strncpy(full_path, dir_fi->path, sizeof(full_path) - 1);
-  full_path[sizeof(full_path) - 1] = '\0';
-  size_t dir_len = strlen(full_path);
-  strncpy(full_path + dir_len, name, sizeof(full_path) - dir_len - 1);
-  full_path[sizeof(full_path) - 1] = '\0';
+  std::array<char, kPathBufSize> full_path{};
+  strncpy(full_path.data(), dir_fi->path.data(), full_path.size() - 1);
+  size_t dir_len = strlen(full_path.data());
+  strncpy(full_path.data() + dir_len, name, full_path.size() - dir_len - 1);
+  full_path[full_path.size() - 1] = '\0';
 
   if (type == vfs::FileType::kDirectory) {
-    FRESULT fr = f_mkdir(full_path);
+    FRESULT fr = f_mkdir(full_path.data());
     if (fr != FR_OK) {
-      return std::unexpected(Error{ErrorCode::kFsCorrupted});
+      return std::unexpected(Error{FresultToErrorCode(fr)});
     }
   } else {
     FIL fil;
-    FRESULT fr = f_open(&fil, full_path, FA_CREATE_NEW | FA_WRITE);
+    FRESULT fr = f_open(&fil, full_path.data(), FA_CREATE_NEW | FA_WRITE);
     if (fr != FR_OK) {
-      return std::unexpected(Error{ErrorCode::kFsFileExists});
+      return std::unexpected(Error{FresultToErrorCode(fr)});
     }
     (void)f_close(&fil);
   }
@@ -302,23 +353,22 @@ auto FatFsFileSystem::FatFsInodeOps::Create(vfs::Inode* dir, const char* name,
   inode->ino = 0;
   inode->type = type;
   inode->size = 0;
-  inode->permissions = 0644;
+  inode->permissions = kDefaultFilePermissions;
   inode->link_count = 1;
-  strncpy(new_fi->path, full_path, sizeof(new_fi->path) - 1);
-  new_fi->path[sizeof(new_fi->path) - 1] = '\0';
+  strncpy(new_fi->path.data(), full_path.data(), new_fi->path.size() - 1);
+  new_fi->path[new_fi->path.size() - 1] = '\0';
   return inode;
 }
 
 auto FatFsFileSystem::FatFsInodeOps::Unlink(vfs::Inode* dir, const char* name)
     -> Expected<void> {
   auto* dir_fi = static_cast<FatInode*>(dir->fs_private);
-  char full_path[512];
-  strncpy(full_path, dir_fi->path, sizeof(full_path) - 1);
-  full_path[sizeof(full_path) - 1] = '\0';
-  size_t dir_len = strlen(full_path);
-  strncpy(full_path + dir_len, name, sizeof(full_path) - dir_len - 1);
-  full_path[sizeof(full_path) - 1] = '\0';
-  return FresultToExpected(f_unlink(full_path));
+  std::array<char, kPathBufSize> full_path{};
+  strncpy(full_path.data(), dir_fi->path.data(), full_path.size() - 1);
+  size_t dir_len = strlen(full_path.data());
+  strncpy(full_path.data() + dir_len, name, full_path.size() - dir_len - 1);
+  full_path[full_path.size() - 1] = '\0';
+  return FresultToExpected(f_unlink(full_path.data()));
 }
 
 auto FatFsFileSystem::FatFsInodeOps::Mkdir(vfs::Inode* dir, const char* name)
@@ -328,7 +378,7 @@ auto FatFsFileSystem::FatFsInodeOps::Mkdir(vfs::Inode* dir, const char* name)
 
 auto FatFsFileSystem::FatFsInodeOps::Rmdir(vfs::Inode* dir, const char* name)
     -> Expected<void> {
-  return Unlink(dir, name);  // f_unlink handles both files and empty dirs
+  return Unlink(dir, name);  // f_unlink 同时处理文件和空目录
 }
 
 // ── FatFsFileOps
@@ -344,7 +394,7 @@ auto FatFsFileSystem::FatFsFileOps::Read(vfs::File* file, void* buf,
   FRESULT fr = f_read(fi->fil, buf, static_cast<UINT>(count), &bytes_read);
   if (fr != FR_OK) {
     klog::Err("FatFsFileOps::Read: f_read failed (%d)\n", static_cast<int>(fr));
-    return std::unexpected(Error{ErrorCode::kFsCorrupted});
+    return std::unexpected(Error{FresultToErrorCode(fr)});
   }
   file->offset += bytes_read;
   return static_cast<size_t>(bytes_read);
@@ -361,7 +411,7 @@ auto FatFsFileSystem::FatFsFileOps::Write(vfs::File* file, const void* buf,
   if (fr != FR_OK) {
     klog::Err("FatFsFileOps::Write: f_write failed (%d)\n",
               static_cast<int>(fr));
-    return std::unexpected(Error{ErrorCode::kFsCorrupted});
+    return std::unexpected(Error{FresultToErrorCode(fr)});
   }
   file->offset += bytes_written;
   file->inode->size = static_cast<uint64_t>(f_size(fi->fil));
@@ -391,7 +441,7 @@ auto FatFsFileSystem::FatFsFileOps::Seek(vfs::File* file, int64_t offset,
   }
   FRESULT fr = f_lseek(fi->fil, new_pos);
   if (fr != FR_OK) {
-    return std::unexpected(Error{ErrorCode::kFsCorrupted});
+    return std::unexpected(Error{FresultToErrorCode(fr)});
   }
   file->offset = static_cast<uint64_t>(new_pos);
   return static_cast<uint64_t>(new_pos);
@@ -400,7 +450,7 @@ auto FatFsFileSystem::FatFsFileOps::Seek(vfs::File* file, int64_t offset,
 auto FatFsFileSystem::FatFsFileOps::Close(vfs::File* file) -> Expected<void> {
   auto* fi = static_cast<FatInode*>(file->inode->fs_private);
   if (fi->fil == nullptr) {
-    return {};  // already closed
+    return {};  // 已关闭
   }
   FRESULT fr = f_close(fi->fil);
   fs_->FreeFil(fi->fil);
@@ -413,12 +463,12 @@ auto FatFsFileSystem::FatFsFileOps::ReadDir(vfs::File* file,
     -> Expected<size_t> {
   auto* fi = static_cast<FatInode*>(file->inode->fs_private);
   DIR dir;
-  FRESULT fr = f_opendir(&dir, fi->path);
+  FRESULT fr = f_opendir(&dir, fi->path.data());
   if (fr != FR_OK) {
-    return std::unexpected(Error{ErrorCode::kFsCorrupted});
+    return std::unexpected(Error{FresultToErrorCode(fr)});
   }
 
-  // Skip already-read entries (file->offset used as entry index).
+  // 跳过已读取的条目（file->offset 用作条目索引）
   for (uint64_t i = 0; i < file->offset; ++i) {
     FILINFO fi_info;
     fr = f_readdir(&dir, &fi_info);

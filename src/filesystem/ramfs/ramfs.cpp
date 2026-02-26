@@ -58,8 +58,7 @@ auto RamFs::Mount(BlockDevice* device) -> Expected<Inode*> {
   root_inode_->permissions = 0755;
 
   // 初始化根目录数据
-  RamInode* ram_root = reinterpret_cast<RamInode*>(
-      reinterpret_cast<uint8_t*>(root_inode_) - offsetof(RamInode, inode));
+  RamInode* ram_root = static_cast<RamInode*>(root_inode_->fs_private);
   ram_root->data = nullptr;
   ram_root->capacity = 0;
   ram_root->child_count = 0;
@@ -134,8 +133,7 @@ auto RamFs::FreeInode(Inode* inode) -> Expected<void> {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
-  RamInode* ram_inode = reinterpret_cast<RamInode*>(
-      reinterpret_cast<uint8_t*>(inode) - offsetof(RamInode, inode));
+  RamInode* ram_inode = static_cast<RamInode*>(inode->fs_private);
 
   // 释放数据缓冲区
   if (ram_inode->data != nullptr) {
@@ -172,8 +170,7 @@ auto RamFs::RamFsInodeOps::Lookup(Inode* dir, const char* name)
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
-  RamInode* ram_dir = reinterpret_cast<RamInode*>(
-      reinterpret_cast<uint8_t*>(dir) - offsetof(RamInode, inode));
+  RamInode* ram_dir = static_cast<RamInode*>(dir->fs_private);
 
   RamDirEntry* entry = fs_->FindInDirectory(ram_dir, name);
 
@@ -194,8 +191,7 @@ auto RamFs::RamFsInodeOps::Create(Inode* dir, const char* name, FileType type)
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
-  RamInode* ram_dir = reinterpret_cast<RamInode*>(
-      reinterpret_cast<uint8_t*>(dir) - offsetof(RamInode, inode));
+  RamInode* ram_dir = static_cast<RamInode*>(dir->fs_private);
 
   // 分配新 inode
   auto alloc_result = fs_->AllocateInode();
@@ -222,8 +218,7 @@ auto RamFs::RamFsInodeOps::Unlink(Inode* dir, const char* name)
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
-  RamInode* ram_dir = reinterpret_cast<RamInode*>(
-      reinterpret_cast<uint8_t*>(dir) - offsetof(RamInode, inode));
+  RamInode* ram_dir = static_cast<RamInode*>(dir->fs_private);
 
   // 查找目标
   RamDirEntry* entry = fs_->FindInDirectory(ram_dir, name);
@@ -262,8 +257,7 @@ auto RamFs::RamFsInodeOps::Rmdir(Inode* dir, const char* name)
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
-  RamInode* ram_dir = reinterpret_cast<RamInode*>(
-      reinterpret_cast<uint8_t*>(dir) - offsetof(RamInode, inode));
+  RamInode* ram_dir = static_cast<RamInode*>(dir->fs_private);
 
   // 查找目标
   RamDirEntry* entry = fs_->FindInDirectory(ram_dir, name);
@@ -277,8 +271,7 @@ auto RamFs::RamFsInodeOps::Rmdir(Inode* dir, const char* name)
   }
 
   // 检查目录是否为空
-  RamInode* target = reinterpret_cast<RamInode*>(
-      reinterpret_cast<uint8_t*>(entry->inode) - offsetof(RamInode, inode));
+  RamInode* target = static_cast<RamInode*>(entry->inode->fs_private);
   if (!fs_->IsDirectoryEmpty(target)) {
     return std::unexpected(Error(ErrorCode::kFsNotEmpty));
   }
@@ -313,8 +306,7 @@ auto RamFs::RamFsFileOps::Read(File* file, void* buf, size_t count)
     return std::unexpected(Error(ErrorCode::kFsIsADirectory));
   }
 
-  RamInode* ram_inode = reinterpret_cast<RamInode*>(
-      reinterpret_cast<uint8_t*>(file->inode) - offsetof(RamInode, inode));
+  RamInode* ram_inode = static_cast<RamInode*>(file->inode->fs_private);
 
   // 计算可读字节数
   if (file->offset >= file->inode->size) {
@@ -349,8 +341,7 @@ auto RamFs::RamFsFileOps::Write(File* file, const void* buf, size_t count)
     return std::unexpected(Error(ErrorCode::kFsIsADirectory));
   }
 
-  RamInode* ram_inode = reinterpret_cast<RamInode*>(
-      reinterpret_cast<uint8_t*>(file->inode) - offsetof(RamInode, inode));
+  RamInode* ram_inode = static_cast<RamInode*>(file->inode->fs_private);
 
   // 检查是否需要扩展文件
   size_t new_size = file->offset + count;
@@ -437,8 +428,7 @@ auto RamFs::RamFsFileOps::ReadDir(File* file, DirEntry* dirent, size_t count)
     return std::unexpected(Error(ErrorCode::kFsNotADirectory));
   }
 
-  RamInode* ram_dir = reinterpret_cast<RamInode*>(
-      reinterpret_cast<uint8_t*>(file->inode) - offsetof(RamInode, inode));
+  RamInode* ram_dir = static_cast<RamInode*>(file->inode->fs_private);
 
   RamDirEntry* entries = static_cast<RamDirEntry*>(ram_dir->data);
 

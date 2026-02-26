@@ -239,7 +239,7 @@ Singleton<DeviceManager>::GetInstance().ProbeAll();
 
 ## 关键约束
 
-- **禁止标准库堆分配** — 使用 `src/libc/` 和 `src/libcxx/` 中的实现。
+- **在内存子系统初始化前，禁止堆分配** — 使用 `src/libc/` 和 `src/libcxx/` 中的实现。
 - **`-ffreestanding` 环境** — 仅 freestanding 头文件可用（见 cppreference）。
 - **禁止 RTTI 和异常** — 使用 `Expected<T>` 进行错误处理。
 - **交叉编译** — 内核交叉编译；单元测试仅在宿主机架构运行。

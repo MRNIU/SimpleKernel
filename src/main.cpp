@@ -156,6 +156,8 @@ auto main(int argc, const char** argv) -> int {
   DeviceInit();
   // 中断相关初始化
   InterruptInit(argc, argv);
+  // 文件系统初始化
+  FileSystemInit();
   // 初始化任务管理器 (设置主线程)
   Singleton<TaskManager>::GetInstance().InitCurrentCore();
 

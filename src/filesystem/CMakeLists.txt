@@ -4,7 +4,7 @@ ADD_LIBRARY (filesystem INTERFACE)
 
 TARGET_INCLUDE_DIRECTORIES (filesystem INTERFACE include)
 
-TARGET_SOURCES (filesystem INTERFACE file_descriptor.cpp)
+TARGET_SOURCES (filesystem INTERFACE file_descriptor.cpp filesystem.cpp)
 
 ADD_SUBDIRECTORY (vfs)
 ADD_SUBDIRECTORY (ramfs)

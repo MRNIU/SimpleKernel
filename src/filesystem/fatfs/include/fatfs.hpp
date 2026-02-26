@@ -1,0 +1,209 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ * @brief FatFS VFS 适配器 — 将 FatFS 封装为 vfs::FileSystem
+ */
+
+#ifndef SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_
+#define SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_
+
+#include <array>
+#include <cstdint>
+
+#include "block_device.hpp"
+#include "ff.h"
+#include "filesystem.hpp"
+#include "vfs.hpp"
+
+namespace fatfs {
+
+/**
+ * @brief FatFS VFS 适配器
+ * @details 将 FatFS (f_mount / f_open / f_read / ...) 封装在 vfs::FileSystem
+ *          接口后。每个 FatFsFileSystem 实例独占一个 FatFS 逻辑驱动器（卷）。
+ *
+ * @pre FF_VOLUMES >= 1 (ffconf.h)
+ */
+class FatFsFileSystem : public vfs::FileSystem {
+ public:
+  /// 根目录权限位
+  static constexpr uint32_t kRootDirPermissions = 0755U;
+  /// 普通文件默认权限位
+  static constexpr uint32_t kDefaultFilePermissions = 0644U;
+  /// 路径缓冲区大小（字节）
+  static constexpr size_t kPathBufSize = 512;
+  /// inode 池容量
+  static constexpr size_t kMaxInodes = 256;
+  /// 同时打开文件数上限
+  static constexpr size_t kMaxOpenFiles = 16;
+
+  /**
+   * @brief 构造函数，绑定到指定 FatFS 卷号
+   * @param volume_id FatFS 逻辑驱动器编号 (0 .. FF_VOLUMES-1)
+   * @pre volume_id < FF_VOLUMES
+   */
+  explicit FatFsFileSystem(uint8_t volume_id);
+
+  ~FatFsFileSystem() override;
+
+  FatFsFileSystem(const FatFsFileSystem&) = delete;
+  FatFsFileSystem(FatFsFileSystem&&) = delete;
+  auto operator=(const FatFsFileSystem&) -> FatFsFileSystem& = delete;
+  auto operator=(FatFsFileSystem&&) -> FatFsFileSystem& = delete;
+
+  /**
+   * @brief 返回 "fatfs"
+   */
+  [[nodiscard]] auto GetName() const -> const char* override;
+
+  /**
+   * @brief 挂载 FatFS 卷
+   * @param device 提供存储的块设备，不能为 nullptr
+   * @return Expected<vfs::Inode*> 根目录 inode 或错误
+   * @pre device != nullptr
+   * @post 返回的 inode->type == vfs::FileType::kDirectory
+   */
+  auto Mount(vfs::BlockDevice* device) -> Expected<vfs::Inode*> override;
+
+  /**
+   * @brief 卸载 FatFS 卷
+   * @return Expected<void> 成功或错误
+   * @pre 没有引用本卷的打开文件对象
+   */
+  auto Unmount() -> Expected<void> override;
+
+  /**
+   * @brief 刷新所有脏缓冲区
+   * @return Expected<void> 成功或错误
+   */
+  auto Sync() -> Expected<void> override;
+
+  /**
+   * @brief 分配新 inode（由 FatFS FILINFO 快照支撑）
+   * @return Expected<vfs::Inode*> 新 inode 或错误
+   */
+  auto AllocateInode() -> Expected<vfs::Inode*> override;
+
+  /**
+   * @brief 释放 inode
+   * @param inode 要释放的 inode，不能为 nullptr
+   * @return Expected<void> 成功或错误
+   * @pre inode != nullptr
+   * @pre inode->link_count == 0
+   */
+  auto FreeInode(vfs::Inode* inode) -> Expected<void> override;
+
+  /**
+   * @brief 返回本文件系统的 FileOps 实例
+   */
+  auto GetFileOps() -> vfs::FileOps* override;
+
+  /**
+   * @brief 为 inode 打开底层 FatFS FIL 对象
+   * @param inode      要打开的 inode（不能为 nullptr，类型必须为 kRegular）
+   * @param open_flags vfs OpenFlags 位掩码
+   * @return Expected<void> 成功或错误
+   * @pre inode != nullptr && inode->type == vfs::FileType::kRegular
+   * @post 成功时 inode->fs_private->fil != nullptr
+   */
+  auto OpenFil(vfs::Inode* inode, uint32_t open_flags) -> Expected<void>;
+
+  /**
+   * @brief 注册块设备（由 Mount 调用，供 diskio.cpp 的 C 回调使用）
+   * @param pdrv     FatFS 物理驱动器号（== volume_id）
+   * @param device   块设备指针（nullptr 表示注销）
+   */
+  static auto SetBlockDevice(uint8_t pdrv, vfs::BlockDevice* device) -> void;
+
+  /**
+   * @brief 获取指定驱动器的块设备
+   * @param pdrv FatFS 物理驱动器号
+   * @return vfs::BlockDevice* 若未注册则返回 nullptr
+   */
+  static auto GetBlockDevice(uint8_t pdrv) -> vfs::BlockDevice*;
+
+  // ── 内部操作类 ──────────────────────────────────────────────────────────
+
+  class FatFsInodeOps : public vfs::InodeOps {
+   public:
+    explicit FatFsInodeOps(FatFsFileSystem* fs) : fs_(fs) {}
+    auto Lookup(vfs::Inode* dir, const char* name)
+        -> Expected<vfs::Inode*> override;
+    auto Create(vfs::Inode* dir, const char* name, vfs::FileType type)
+        -> Expected<vfs::Inode*> override;
+    auto Unlink(vfs::Inode* dir, const char* name) -> Expected<void> override;
+    auto Mkdir(vfs::Inode* dir, const char* name)
+        -> Expected<vfs::Inode*> override;
+    auto Rmdir(vfs::Inode* dir, const char* name) -> Expected<void> override;
+
+   private:
+    FatFsFileSystem* fs_;
+  };
+
+  class FatFsFileOps : public vfs::FileOps {
+   public:
+    explicit FatFsFileOps(FatFsFileSystem* fs) : fs_(fs) {}
+    auto Read(vfs::File* file, void* buf, size_t count)
+        -> Expected<size_t> override;
+    auto Write(vfs::File* file, const void* buf, size_t count)
+        -> Expected<size_t> override;
+    auto Seek(vfs::File* file, int64_t offset, vfs::SeekWhence whence)
+        -> Expected<uint64_t> override;
+    auto Close(vfs::File* file) -> Expected<void> override;
+    auto ReadDir(vfs::File* file, vfs::DirEntry* dirent, size_t count)
+        -> Expected<size_t> override;
+
+   private:
+    FatFsFileSystem* fs_;
+  };
+
+  friend class FatFsInodeOps;
+  friend class FatFsFileOps;
+
+ private:
+  /// FatFS 逻辑驱动器号
+  uint8_t volume_id_;
+  /// FatFS 文件系统对象（每卷一个）
+  FATFS fatfs_obj_;
+  /// 根目录 inode（Mount 时设置）
+  vfs::Inode* root_inode_ = nullptr;
+  /// 当前卷是否已挂载
+  bool mounted_ = false;
+
+  /// FatFS inode 私有数据
+  struct FatInode {
+    vfs::Inode inode;
+    /// 卷内绝对路径（供 FatFS 操作使用）
+    std::array<char, kPathBufSize> path{};
+    /// FIL 对象（普通文件打开时使用）；目录或未使用时为 nullptr
+    FIL* fil = nullptr;
+    /// 该槽位是否在使用
+    bool in_use = false;
+  };
+
+  std::array<FatInode, kMaxInodes> inodes_;
+
+  /// FIL 对象池
+  struct FatFileHandle {
+    FIL fil;
+    bool in_use = false;
+  };
+
+  std::array<FatFileHandle, kMaxOpenFiles> fil_pool_;
+
+  // 操作单例
+  FatFsInodeOps inode_ops_;
+  FatFsFileOps file_ops_;
+
+  /// 每卷块设备注册表（静态，供 diskio.cpp C 回调访问）
+  static std::array<vfs::BlockDevice*, FF_VOLUMES> block_devices_;
+
+  // 辅助函数
+  auto AllocateFatInode() -> FatInode*;
+  auto FreeFatInode(FatInode* fi) -> void;
+  auto AllocateFil() -> FIL*;
+  auto FreeFil(FIL* fil) -> void;
+};
+
+}  // namespace fatfs
+
+#endif /* SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_ */
