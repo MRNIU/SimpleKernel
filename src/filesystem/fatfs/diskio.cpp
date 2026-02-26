@@ -6,10 +6,12 @@
 
 // ff.h must be included before diskio.h because diskio.h uses BYTE/LBA_t/etc.
 // which are defined only after ff.h has been processed.
+// clang-format off
+#include "ff.h"
 #include "diskio.h"
+// clang-format on
 
 #include "block_device.hpp"
-#include "ff.h"
 #include "kernel_log.hpp"
 
 /// Per-volume block device registry.  Set by FatFsFileSystem::Mount().
