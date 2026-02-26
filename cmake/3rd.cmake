@@ -87,7 +87,10 @@ ADD_SUBDIRECTORY (3rd/MPMCQueue)
 ADD_SUBDIRECTORY (3rd/device_framework)
 
 # https://github.com/abbrev/fatfs.git
-ADD_SUBDIRECTORY (3rd/fatfs)
+SET (fatfs_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/fatfs)
+SET (fatfs_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/fatfs)
+
+# ADD_SUBDIRECTORY (3rd/fatfs)
 
 IF(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
     # https://github.com/riscv-software-src/opensbi.git
@@ -231,21 +234,6 @@ TARGET_LINK_LIBRARIES (dtc-lib INTERFACE ${dtc_BINARY_DIR}/libfdt/libfdt.a)
 
 # doxygen
 FIND_PACKAGE (Doxygen REQUIRED dot)
-
-# cppcheck
-FIND_PROGRAM (CPPCHECK_EXE NAMES cppcheck)
-
-# cppcheck
-FIND_PROGRAM (CPPCHECK_EXE NAMES cppcheck)
-ADD_CUSTOM_TARGET (
-    cppcheck
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Run cppcheck on ${CMAKE_BINARY_DIR}/compile_commands.json ..."
-    COMMAND
-        ${CPPCHECK_EXE} --enable=all
-        --project=${CMAKE_BINARY_DIR}/compile_commands.json
-        --suppress-xml=${CMAKE_SOURCE_DIR}/tools/cppcheck-suppressions.xml
-        --output-file=${CMAKE_BINARY_DIR}/cppcheck_report.log)
 
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
     # genhtml 生成测试覆盖率报告网页

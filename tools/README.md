@@ -12,10 +12,6 @@
 
   aarch64 qemu FIT 模版
 
-- cppcheck-suppressions.xml
-
-  cppcheck 配置文件
-
 - Dockerfile
 
   Dockerfile
