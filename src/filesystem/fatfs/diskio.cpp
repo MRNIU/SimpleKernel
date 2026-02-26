@@ -2,8 +2,11 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include <diskio.h>
+// ff.h 必须在 diskio.h 之前包含
+// clang-format off
 #include <ff.h>
+#include <diskio.h>
+// clang-format on
 
 #include "fatfs.hpp"
 #include "kernel_log.hpp"
