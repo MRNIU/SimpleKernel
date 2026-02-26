@@ -1,7 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @file    diskio.cpp
- * @brief   FatFs 底层磁盘 I/O — 委托给 vfs::BlockDevice
  */
 
 // ff.h 必须在 diskio.h 之前包含，因为 diskio.h 中使用的 BYTE/LBA_t 等类型
@@ -14,30 +12,52 @@
 #include "fatfs.hpp"
 #include "kernel_log.hpp"
 
-/// get_fattime — 返回 FAT 时间戳。无 RTC 时返回 0（epoch）。
-/// FF_FS_READONLY == 0 时 FatFS 要求此函数存在。
-extern "C" DWORD get_fattime() { return 0; }
+extern "C" {
 
-// ── disk_status ──────────────────────────────────────────────────────────────
+/**
+ * @brief 返回 FAT 时间戳。无 RTC 时返回 0（epoch）。
+ *
+ * @note FF_FS_READONLY == 0 时 FatFS 要求此函数存在。
+ * @return DWORD 始终返回 0。
+ */
+DWORD get_fattime() { return 0; }
 
+/**
+ * @brief 查询磁盘驱动器状态。
+ *
+ * @param pdrv 物理驱动器编号。
+ * @return DSTATUS 驱动器状态标志；如果设备未注册则返回 STA_NOINIT。
+ */
 DSTATUS disk_status(BYTE pdrv) {
   if (fatfs::FatFsFileSystem::GetBlockDevice(pdrv) == nullptr) {
     return STA_NOINIT;
   }
-  return 0;  // 驱动器就绪
+  return 0;
 }
 
-// ── disk_initialize ──────────────────────────────────────────────────────────
-
+/**
+ * @brief 初始化磁盘驱动器。
+ *
+ * @note BlockDevice 已由调用方在注册时完成初始化，此函数仅检查设备是否存在。
+ * @param pdrv 物理驱动器编号。
+ * @return DSTATUS 驱动器状态标志；如果设备未注册则返回 STA_NOINIT。
+ */
 DSTATUS disk_initialize(BYTE pdrv) {
   if (fatfs::FatFsFileSystem::GetBlockDevice(pdrv) == nullptr) {
     return STA_NOINIT;
   }
-  return 0;  // BlockDevice 已由调用方初始化
+  return 0;
 }
 
-// ── disk_read ────────────────────────────────────────────────────────────────
-
+/**
+ * @brief 从磁盘读取扇区。
+ *
+ * @param pdrv   物理驱动器编号。
+ * @param buff   目标缓冲区指针。
+ * @param sector 起始逻辑块地址。
+ * @param count  要读取的扇区数。
+ * @return DRESULT 操作结果；RES_OK 表示成功。
+ */
 DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count) {
   auto* dev = fatfs::FatFsFileSystem::GetBlockDevice(pdrv);
   if (dev == nullptr) {
@@ -54,10 +74,15 @@ DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count) {
   return RES_OK;
 }
 
-// ── disk_write ───────────────────────────────────────────────────────────────
-
-#if FF_FS_READONLY == 0
-
+/**
+ * @brief 向磁盘写入扇区。
+ *
+ * @param pdrv   物理驱动器编号。
+ * @param buff   源数据缓冲区指针。
+ * @param sector 起始逻辑块地址。
+ * @param count  要写入的扇区数。
+ * @return DRESULT 操作结果；RES_OK 表示成功。
+ */
 DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count) {
   auto* dev = fatfs::FatFsFileSystem::GetBlockDevice(pdrv);
   if (dev == nullptr) {
@@ -74,10 +99,14 @@ DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count) {
   return RES_OK;
 }
 
-#endif  // FF_FS_READONLY == 0
-
-// ── disk_ioctl ───────────────────────────────────────────────────────────────
-
+/**
+ * @brief 执行磁盘 I/O 控制操作。
+ *
+ * @param pdrv 物理驱动器编号。
+ * @param cmd  控制命令（CTRL_SYNC、GET_SECTOR_COUNT、GET_SECTOR_SIZE 等）。
+ * @param buff 命令参数/结果缓冲区，含义取决于 cmd。
+ * @return DRESULT 操作结果；不支持的命令返回 RES_PARERR。
+ */
 DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff) {
   auto* dev = fatfs::FatFsFileSystem::GetBlockDevice(pdrv);
   if (dev == nullptr) {
@@ -102,4 +131,5 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff) {
     default:
       return RES_PARERR;
   }
+}
 }

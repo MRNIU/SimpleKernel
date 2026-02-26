@@ -1,10 +1,9 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @file    fatfs_filesystem.cpp
- * @brief   FatFsFileSystem 实现 — FatFS 的 vfs::FileSystem 适配器
  */
 
 #include "fatfs.hpp"
+
 #include "ff.h"
 #include "kernel_log.hpp"
 #include "sk_cstring"
@@ -12,18 +11,14 @@
 
 namespace fatfs {
 
-// ── 静态成员定义
-// ────────────────────────────────────────────────────────────
-
 std::array<vfs::BlockDevice*, FF_VOLUMES> FatFsFileSystem::block_devices_{};
-
-// ── FRESULT 到 Expected<void> 的完整映射
-// ──────────────────────────────────────
 
 namespace {
 
-/// @brief 将 FatFS FRESULT 映射到内核 ErrorCode。
-/// @details 区分常见错误类别，避免将所有错误笼统归入 kFsCorrupted。
+/**
+ * @brief 将 FatFS FRESULT 映射到内核 ErrorCode
+ * @details 区分常见错误类别，避免将所有错误笼统归入 kFsCorrupted
+ */
 auto FresultToErrorCode(FRESULT fr) -> ErrorCode {
   switch (fr) {
     case FR_OK:
@@ -57,7 +52,9 @@ auto FresultToErrorCode(FRESULT fr) -> ErrorCode {
   }
 }
 
-/// @brief 将 FRESULT 转换为 Expected<void>。
+/**
+ * @brief 将 FRESULT 转换为 Expected<void>
+ */
 auto FresultToExpected(FRESULT fr) -> Expected<void> {
   if (fr == FR_OK) {
     return {};
@@ -65,7 +62,9 @@ auto FresultToExpected(FRESULT fr) -> Expected<void> {
   return std::unexpected(Error{FresultToErrorCode(fr)});
 }
 
-/// @brief 将 FILINFO 属性转换为 vfs::FileType。
+/**
+ * @brief 将 FILINFO 属性转换为 vfs::FileType
+ */
 auto FilInfoToFileType(const FILINFO& fi) -> vfs::FileType {
   if ((fi.fattrib & AM_DIR) != 0) {
     return vfs::FileType::kDirectory;
@@ -74,9 +73,6 @@ auto FilInfoToFileType(const FILINFO& fi) -> vfs::FileType {
 }
 
 }  // namespace
-
-// ── 静态辅助函数
-// ────────────────────────────────────────────────────────────────
 
 auto FatFsFileSystem::SetBlockDevice(uint8_t pdrv, vfs::BlockDevice* device)
     -> void {
@@ -92,9 +88,6 @@ auto FatFsFileSystem::GetBlockDevice(uint8_t pdrv) -> vfs::BlockDevice* {
   return block_devices_[pdrv];
 }
 
-// ── 构造 / 析构
-// ──────────────────────────────────────────────────────────────
-
 FatFsFileSystem::FatFsFileSystem(uint8_t volume_id)
     : volume_id_(volume_id),
       fatfs_obj_{},
@@ -108,9 +101,6 @@ FatFsFileSystem::~FatFsFileSystem() {
     (void)Unmount();
   }
 }
-
-// ── vfs::FileSystem 接口实现
-// ─────────────────────────────────────────────
 
 auto FatFsFileSystem::GetName() const -> const char* { return "fatfs"; }
 
@@ -205,9 +195,6 @@ auto FatFsFileSystem::FreeInode(vfs::Inode* inode) -> Expected<void> {
 
 auto FatFsFileSystem::GetFileOps() -> vfs::FileOps* { return &file_ops_; }
 
-// ── inode 池辅助函数
-// ────────────────────────────────────────────────────────────
-
 auto FatFsFileSystem::AllocateFatInode() -> FatInode* {
   for (auto& fi : inodes_) {
     if (!fi.in_use) {
@@ -224,9 +211,6 @@ auto FatFsFileSystem::FreeFatInode(FatInode* fi) -> void {
     fi->in_use = false;
   }
 }
-
-// ── FIL 池辅助函数
-// ──────────────────────────────────────────────────────────────
 
 auto FatFsFileSystem::AllocateFil() -> FIL* {
   for (auto& fh : fil_pool_) {
@@ -252,7 +236,8 @@ auto FatFsFileSystem::OpenFil(vfs::Inode* inode, uint32_t open_flags)
     -> Expected<void> {
   auto* fi = static_cast<FatInode*>(inode->fs_private);
   if (fi->fil != nullptr) {
-    return {};  // 已打开
+    // 已打开
+    return {};
   }
   FIL* fil = AllocateFil();
   if (fil == nullptr) {
@@ -283,9 +268,6 @@ auto FatFsFileSystem::OpenFil(vfs::Inode* inode, uint32_t open_flags)
   fi->fil = fil;
   return {};
 }
-
-// ── FatFsInodeOps
-// ─────────────────────────────────────────────────────────────
 
 auto FatFsFileSystem::FatFsInodeOps::Lookup(vfs::Inode* dir, const char* name)
     -> Expected<vfs::Inode*> {
@@ -378,11 +360,9 @@ auto FatFsFileSystem::FatFsInodeOps::Mkdir(vfs::Inode* dir, const char* name)
 
 auto FatFsFileSystem::FatFsInodeOps::Rmdir(vfs::Inode* dir, const char* name)
     -> Expected<void> {
-  return Unlink(dir, name);  // f_unlink 同时处理文件和空目录
+  // f_unlink 同时处理文件和空目录
+  return Unlink(dir, name);
 }
-
-// ── FatFsFileOps
-// ──────────────────────────────────────────────────────────────
 
 auto FatFsFileSystem::FatFsFileOps::Read(vfs::File* file, void* buf,
                                          size_t count) -> Expected<size_t> {
@@ -450,7 +430,8 @@ auto FatFsFileSystem::FatFsFileOps::Seek(vfs::File* file, int64_t offset,
 auto FatFsFileSystem::FatFsFileOps::Close(vfs::File* file) -> Expected<void> {
   auto* fi = static_cast<FatInode*>(file->inode->fs_private);
   if (fi->fil == nullptr) {
-    return {};  // 已关闭
+    // 已关闭
+    return {};
   }
   FRESULT fr = f_close(fi->fil);
   fs_->FreeFil(fi->fil);

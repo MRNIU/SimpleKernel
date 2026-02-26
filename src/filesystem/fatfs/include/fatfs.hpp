@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief FatFS VFS 适配器 — 将 FatFS 封装为 vfs::FileSystem
  */
 
 #ifndef SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_
@@ -43,12 +42,14 @@ class FatFsFileSystem : public vfs::FileSystem {
    */
   explicit FatFsFileSystem(uint8_t volume_id);
 
+  /// @name 构造/析构函数
+  /// @{
   ~FatFsFileSystem() override;
-
   FatFsFileSystem(const FatFsFileSystem&) = delete;
   FatFsFileSystem(FatFsFileSystem&&) = delete;
   auto operator=(const FatFsFileSystem&) -> FatFsFileSystem& = delete;
   auto operator=(FatFsFileSystem&&) -> FatFsFileSystem& = delete;
+  /// @}
 
   /**
    * @brief 返回 "fatfs"
@@ -121,34 +122,112 @@ class FatFsFileSystem : public vfs::FileSystem {
    */
   static auto GetBlockDevice(uint8_t pdrv) -> vfs::BlockDevice*;
 
-  // ── 内部操作类 ──────────────────────────────────────────────────────────
-
+  /**
+   * @brief FatFS inode 操作实现
+   */
   class FatFsInodeOps : public vfs::InodeOps {
    public:
     explicit FatFsInodeOps(FatFsFileSystem* fs) : fs_(fs) {}
+
+    /**
+     * @brief 在目录中查找指定名称的 inode
+     * @param dir  目录 inode
+     * @param name 文件或子目录名称
+     * @return Expected<vfs::Inode*> 找到的 inode 或错误
+     */
     auto Lookup(vfs::Inode* dir, const char* name)
         -> Expected<vfs::Inode*> override;
+
+    /**
+     * @brief 在目录中创建文件或子目录
+     * @param dir  父目录 inode
+     * @param name 新条目名称
+     * @param type 文件类型（kRegular 或 kDirectory）
+     * @return Expected<vfs::Inode*> 新 inode 或错误
+     */
     auto Create(vfs::Inode* dir, const char* name, vfs::FileType type)
         -> Expected<vfs::Inode*> override;
+
+    /**
+     * @brief 删除目录中的文件条目
+     * @param dir  父目录 inode
+     * @param name 文件名称
+     * @return Expected<void> 成功或错误
+     */
     auto Unlink(vfs::Inode* dir, const char* name) -> Expected<void> override;
+
+    /**
+     * @brief 在目录中创建子目录
+     * @param dir  父目录 inode
+     * @param name 子目录名称
+     * @return Expected<vfs::Inode*> 新目录 inode 或错误
+     */
     auto Mkdir(vfs::Inode* dir, const char* name)
         -> Expected<vfs::Inode*> override;
+
+    /**
+     * @brief 删除目录中的空子目录
+     * @param dir  父目录 inode
+     * @param name 子目录名称
+     * @return Expected<void> 成功或错误
+     */
     auto Rmdir(vfs::Inode* dir, const char* name) -> Expected<void> override;
 
    private:
     FatFsFileSystem* fs_;
   };
 
+  /**
+   * @brief FatFS 文件操作实现
+   */
   class FatFsFileOps : public vfs::FileOps {
    public:
     explicit FatFsFileOps(FatFsFileSystem* fs) : fs_(fs) {}
+
+    /**
+     * @brief 从文件读取数据
+     * @param file  文件对象
+     * @param buf   读取缓冲区
+     * @param count 请求读取的字节数
+     * @return Expected<size_t> 实际读取字节数或错误
+     */
     auto Read(vfs::File* file, void* buf, size_t count)
         -> Expected<size_t> override;
+
+    /**
+     * @brief 向文件写入数据
+     * @param file  文件对象
+     * @param buf   写入数据缓冲区
+     * @param count 请求写入的字节数
+     * @return Expected<size_t> 实际写入字节数或错误
+     */
     auto Write(vfs::File* file, const void* buf, size_t count)
         -> Expected<size_t> override;
+
+    /**
+     * @brief 移动文件读写位置
+     * @param file   文件对象
+     * @param offset 偏移量
+     * @param whence 定位基准（kSet / kCur / kEnd）
+     * @return Expected<uint64_t> 新的文件偏移量或错误
+     */
     auto Seek(vfs::File* file, int64_t offset, vfs::SeekWhence whence)
         -> Expected<uint64_t> override;
+
+    /**
+     * @brief 关闭文件，释放底层 FIL 对象
+     * @param file 文件对象
+     * @return Expected<void> 成功或错误
+     */
     auto Close(vfs::File* file) -> Expected<void> override;
+
+    /**
+     * @brief 读取目录条目
+     * @param file   目录文件对象
+     * @param dirent 输出缓冲区
+     * @param count  最多读取的条目数
+     * @return Expected<size_t> 实际读取条目数或错误
+     */
     auto ReadDir(vfs::File* file, vfs::DirEntry* dirent, size_t count)
         -> Expected<size_t> override;
 
@@ -190,17 +269,36 @@ class FatFsFileSystem : public vfs::FileSystem {
 
   std::array<FatFileHandle, kMaxOpenFiles> fil_pool_;
 
-  // 操作单例
+  /// inode 操作单例
   FatFsInodeOps inode_ops_;
+  /// 文件操作单例
   FatFsFileOps file_ops_;
 
   /// 每卷块设备注册表（静态，供 diskio.cpp C 回调访问）
   static std::array<vfs::BlockDevice*, FF_VOLUMES> block_devices_;
 
-  // 辅助函数
+  /**
+   * @brief 从 inode 池中分配一个空闲槽位
+   * @return FatInode* 成功返回指针，池满返回 nullptr
+   */
   auto AllocateFatInode() -> FatInode*;
+
+  /**
+   * @brief 释放 inode 池槽位
+   * @param fi 要释放的槽位，允许为 nullptr（此时无操作）
+   */
   auto FreeFatInode(FatInode* fi) -> void;
+
+  /**
+   * @brief 从 FIL 池中分配一个空闲 FIL 对象
+   * @return FIL* 成功返回指针，池满返回 nullptr
+   */
   auto AllocateFil() -> FIL*;
+
+  /**
+   * @brief 归还 FIL 对象到池中
+   * @param fil 要归还的 FIL 指针
+   */
   auto FreeFil(FIL* fil) -> void;
 };
 
