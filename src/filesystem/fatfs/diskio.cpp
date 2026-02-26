@@ -2,12 +2,8 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-// ff.h 必须在 diskio.h 之前包含，因为 diskio.h 中使用的 BYTE/LBA_t 等类型
-// 均由 ff.h 定义。
-// clang-format off
-#include "ff.h"
-#include "diskio.h"
-// clang-format on
+#include <diskio.h>
+#include <ff.h>
 
 #include "fatfs.hpp"
 #include "kernel_log.hpp"

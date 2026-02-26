@@ -5,11 +5,12 @@
 #ifndef SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_
 #define SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_
 
+#include <ff.h>
+
 #include <array>
 #include <cstdint>
 
 #include "block_device.hpp"
-#include "ff.h"
 #include "filesystem.hpp"
 #include "vfs.hpp"
 
