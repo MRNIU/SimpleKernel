@@ -19,6 +19,7 @@
 #include "scheduler_base.hpp"
 #include "sk_list"
 #include "sk_priority_queue"
+#include "sk_unique_ptr"
 #include "sk_unordered_map"
 #include "sk_vector"
 #include "spinlock.hpp"
@@ -31,7 +32,8 @@ struct CpuSchedData {
   SpinLock lock{"sched_lock"};
 
   /// 调度器数组 (按策略索引)
-  std::array<SchedulerBase*, SchedPolicy::kPolicyCount> schedulers{};
+  std::array<sk_std::unique_ptr<SchedulerBase>, SchedPolicy::kPolicyCount>
+      schedulers{};
 
   /// 睡眠队列 (优先队列，按唤醒时间排序)
   sk_std::priority_queue<TaskControlBlock*, sk_std::vector<TaskControlBlock*>,

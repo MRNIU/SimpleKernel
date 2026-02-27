@@ -33,7 +33,7 @@ void TaskManager::TickUpdate() {
       task->status = TaskStatus::kReady;
 
       // 将任务重新加入对应调度器的就绪队列
-      auto* scheduler = cpu_sched.schedulers[task->policy];
+      auto* scheduler = cpu_sched.schedulers[task->policy].get();
       if (scheduler) {
         scheduler->Enqueue(task);
       }
@@ -50,7 +50,7 @@ void TaskManager::TickUpdate() {
       }
 
       // 调用调度器的 OnTick，检查是否需要抢占
-      auto* scheduler = cpu_sched.schedulers[current->policy];
+      auto* scheduler = cpu_sched.schedulers[current->policy].get();
 
       if (scheduler) {
         // 调度器可能基于自己的策略决定是否抢占

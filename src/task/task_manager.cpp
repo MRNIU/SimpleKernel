@@ -42,9 +42,12 @@ void TaskManager::InitCurrentCore() {
   LockGuard lock_guard{cpu_sched.lock};
 
   if (!cpu_sched.schedulers[SchedPolicy::kNormal]) {
-    cpu_sched.schedulers[SchedPolicy::kRealTime] = new FifoScheduler();
-    cpu_sched.schedulers[SchedPolicy::kNormal] = new RoundRobinScheduler();
-    cpu_sched.schedulers[SchedPolicy::kIdle] = new IdleScheduler();
+    cpu_sched.schedulers[SchedPolicy::kRealTime] =
+        sk_std::unique_ptr<SchedulerBase>(new FifoScheduler());
+    cpu_sched.schedulers[SchedPolicy::kNormal] =
+        sk_std::unique_ptr<SchedulerBase>(new RoundRobinScheduler());
+    cpu_sched.schedulers[SchedPolicy::kIdle] =
+        sk_std::unique_ptr<SchedulerBase>(new IdleScheduler());
   }
 
   // 关联 PerCpu
@@ -152,15 +155,18 @@ void TaskManager::ReapTask(TaskControlBlock* task) {
     return;
   }
 
+  // Capture pid before delete (avoids use-after-free in log)
+  Pid pid = task->pid;
+
   // 从全局任务表中移除
   {
     LockGuard lock_guard{task_table_lock_};
-    task_table_.erase(task->pid);
+    task_table_.erase(pid);
   }
 
   delete task;
 
-  klog::Debug("ReapTask: Task %zu resources freed\n", task->pid);
+  klog::Debug("ReapTask: Task %zu resources freed\n", pid);
 }
 
 void TaskManager::ReparentChildren(TaskControlBlock* parent) {
@@ -216,11 +222,5 @@ void TaskManager::SignalThreadGroup(Pid tgid, int signal) {
 }
 
 TaskManager::~TaskManager() {
-  // 清理每个核心的调度器
-  for (auto& cpu_sched : cpu_schedulers_) {
-    for (auto& scheduler : cpu_sched.schedulers) {
-      delete scheduler;
-      scheduler = nullptr;
-    }
-  }
+  // unique_ptr in cpu_schedulers_.schedulers[] auto-deletes on destruction
 }

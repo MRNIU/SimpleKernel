@@ -40,7 +40,7 @@ void TaskManager::Wakeup(ResourceId resource_id) {
     task->blocked_on = ResourceId{};
 
     // 将任务重新加入对应调度器的就绪队列
-    auto* scheduler = cpu_sched.schedulers[task->policy];
+    auto* scheduler = cpu_sched.schedulers[task->policy].get();
     sk_assert_msg(scheduler != nullptr, "Wakeup: scheduler must not be null");
     scheduler->Enqueue(task);
     wakeup_count++;

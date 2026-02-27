@@ -41,7 +41,7 @@ void TaskManager::Schedule() {
   if (current->status == TaskStatus::kRunning) {
     // 将当前任务标记为就绪并重新入队（如果它还能运行）
     current->status = TaskStatus::kReady;
-    auto* scheduler = cpu_sched.schedulers[current->policy];
+    auto* scheduler = cpu_sched.schedulers[current->policy].get();
 
     if (scheduler) {
       scheduler->OnPreempted(current);
@@ -55,7 +55,7 @@ void TaskManager::Schedule() {
 
   // 选择下一个任务 (按策略优先级: RealTime > Normal > Idle)
   TaskControlBlock* next = nullptr;
-  for (auto* scheduler : cpu_sched.schedulers) {
+  for (auto& scheduler : cpu_sched.schedulers) {
     if (scheduler && !scheduler->IsEmpty()) {
       next = scheduler->PickNext();
       if (next) {
@@ -96,7 +96,7 @@ void TaskManager::Schedule() {
   cpu_sched.total_schedules++;
 
   // 调用调度器钩子
-  auto* scheduler = cpu_sched.schedulers[next->policy];
+  auto* scheduler = cpu_sched.schedulers[next->policy].get();
   if (scheduler) {
     scheduler->OnScheduled(next);
   }
