@@ -12,7 +12,7 @@
 #include "io.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
-#include "sk_cstdio"
+#include "kstd_cstdio"
 
 namespace {
 /**

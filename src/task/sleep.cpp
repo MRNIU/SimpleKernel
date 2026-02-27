@@ -3,7 +3,7 @@
  */
 
 #include "kernel_log.hpp"
-#include "sk_cassert"
+#include "kstd_cassert"
 #include "task_manager.hpp"
 
 namespace {

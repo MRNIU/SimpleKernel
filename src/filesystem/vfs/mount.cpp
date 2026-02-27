@@ -5,8 +5,8 @@
 #include "mount.hpp"
 
 #include "kernel_log.hpp"
-#include "sk_cstring"
-#include "sk_unique_ptr"
+#include "kstd_cstring"
+#include "kstd_unique_ptr"
 #include "spinlock.hpp"
 #include "vfs.hpp"
 #include "vfs_internal.hpp"
@@ -63,7 +63,7 @@ auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
   }
 
   // 为根 inode 创建 dentry
-  auto root_dentry_ptr = sk_std::make_unique<Dentry>();
+  auto root_dentry_ptr = kstd::make_unique<Dentry>();
   if (!root_dentry_ptr) {
     fs->Unmount();
     return std::unexpected(Error(ErrorCode::kOutOfMemory));

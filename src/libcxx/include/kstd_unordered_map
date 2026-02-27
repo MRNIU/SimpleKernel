@@ -183,7 +183,15 @@ class unordered_map {
     const Node* node_;
   };
 
-  // 构造函数
+  /// @name 构造/析构函数
+  /// @{
+
+  /**
+   * @brief 构造 unordered_map
+   * @param node_pool 节点内存池引用
+   * @param bucket_buffer 外部提供的桶数组缓冲区
+   * @param bucket_count 桶数量
+   */
   unordered_map(PoolRef& node_pool, void* bucket_buffer, size_type bucket_count)
       : buckets_(static_cast<Node**>(bucket_buffer)),
         bucket_count_(bucket_count),
@@ -196,6 +204,14 @@ class unordered_map {
     }
   }
 
+  /**
+   * @brief 构造 unordered_map（自定义哈希和比较函数）
+   * @param node_pool 节点内存池引用
+   * @param bucket_buffer 外部提供的桶数组缓冲区
+   * @param bucket_count 桶数量
+   * @param hash 哈希函数
+   * @param equal 键比较函数
+   */
   unordered_map(PoolRef& node_pool, void* bucket_buffer, size_type bucket_count,
                 const Hash& hash, const KeyEqual& equal)
       : buckets_(static_cast<Node**>(bucket_buffer)),
@@ -209,10 +225,13 @@ class unordered_map {
     }
   }
 
-  // 禁用拷贝构造
+  /// 禁用拷贝构造
   unordered_map(const unordered_map& other) = delete;
 
-  // 移动构造
+  /**
+   * @brief 移动构造
+   * @param other 被移动的 unordered_map，移动后 other 为空
+   */
   unordered_map(unordered_map&& other) noexcept
       : buckets_(other.buckets_),
         bucket_count_(other.bucket_count_),
@@ -225,13 +244,17 @@ class unordered_map {
     other.size_ = 0;
   }
 
-  // 析构函数
+  /** @brief 析构函数，释放所有节点 */
   ~unordered_map() { destroy(); }
 
-  // 禁用拷贝赋值
+  /// 禁用拷贝赋值
   unordered_map& operator=(const unordered_map& other) = delete;
 
-  // 移动赋值
+  /**
+   * @brief 移动赋值
+   * @param other 被移动的 unordered_map，移动后 other 为空
+   * @return 自身引用
+   */
   unordered_map& operator=(unordered_map&& other) noexcept {
     if (this != &other) {
       destroy();
@@ -247,8 +270,10 @@ class unordered_map {
     }
     return *this;
   }
+  /// @}
 
-  // 迭代器
+  /// @name 迭代器
+  /// @{
   iterator begin() {
     for (size_type i = 0; i < bucket_count_; ++i) {
       if (buckets_[i] != nullptr) {
@@ -276,13 +301,17 @@ class unordered_map {
   }
 
   const_iterator cend() const { return end(); }
+  /// @}
 
-  // 容量
+  /// @name 容量
+  /// @{
   bool empty() const { return size_ == 0; }
   size_type size() const { return size_; }
   size_type bucket_count() const { return bucket_count_; }
+  /// @}
 
-  // 修改器
+  /// @name 修改器
+  /// @{
   void clear() {
     for (size_type i = 0; i < bucket_count_; ++i) {
       Node* node = buckets_[i];
@@ -296,11 +325,16 @@ class unordered_map {
     size_ = 0;
   }
 
+  /**
+   * @brief 插入键值对（拷贝）
+   * @param value 要插入的键值对
+   * @return pair<iterator, bool> 迭代器指向已有或新插入的元素，bool 表示是否插入成功
+   */
   std::pair<iterator, bool> insert(const value_type& value) {
     size_type bucket_idx = bucket_index(value.first);
     Node* node = buckets_[bucket_idx];
 
-    // 检查是否已存在
+    /// 检查是否已存在
     while (node != nullptr) {
       if (key_equal_(node->data.first, value.first)) {
         return {iterator(this, bucket_idx, node), false};
@@ -308,7 +342,7 @@ class unordered_map {
       node = node->next;
     }
 
-    // 插入新节点
+    /// 插入新节点
     Node* new_node = node_pool_->create<Node>(value);
     new_node->next = buckets_[bucket_idx];
     buckets_[bucket_idx] = new_node;
@@ -317,11 +351,16 @@ class unordered_map {
     return {iterator(this, bucket_idx, new_node), true};
   }
 
+  /**
+   * @brief 插入键值对（移动语义）
+   * @param value 要插入的键值对
+   * @return pair<iterator, bool> 迭代器指向已有或新插入的元素，bool 表示是否插入成功
+   */
   std::pair<iterator, bool> insert(value_type&& value) {
     size_type bucket_idx = bucket_index(value.first);
     Node* node = buckets_[bucket_idx];
 
-    // Check if key already exists
+    /// 检查是否已存在
     while (node != nullptr) {
       if (key_equal_(node->data.first, value.first)) {
         return {iterator(this, bucket_idx, node), false};
@@ -329,7 +368,7 @@ class unordered_map {
       node = node->next;
     }
 
-    // Insert new node with move
+    /// 插入新节点（移动语义）
     Node* new_node = node_pool_->create<Node>(static_cast<value_type&&>(value));
     new_node->next = buckets_[bucket_idx];
     buckets_[bucket_idx] = new_node;
@@ -338,12 +377,23 @@ class unordered_map {
     return {iterator(this, bucket_idx, new_node), true};
   }
 
+  /**
+   * @brief 原位构造并插入元素
+   * @tparam Args 构造参数类型
+   * @param args 构造参数
+   * @return pair<iterator, bool> 迭代器指向已有或新插入的元素，bool 表示是否插入成功
+   */
   template <typename... Args>
   std::pair<iterator, bool> emplace(Args&&... args) {
     value_type value(static_cast<Args&&>(args)...);
     return insert(static_cast<value_type&&>(value));
   }
 
+  /**
+   * @brief 删除指定键的元素
+   * @param key 要删除的键
+   * @return 删除的元素数量（0 或 1）
+   */
   size_type erase(const Key& key) {
     size_type bucket_idx = bucket_index(key);
     Node* node = buckets_[bucket_idx];
@@ -366,8 +416,15 @@ class unordered_map {
 
     return 0;
   }
+  /// @}
 
-  // 查找
+  /// @name 查找
+  /// @{
+  /**
+   * @brief 查找指定键的元素
+   * @param key 要查找的键
+   * @return 指向匹配元素的迭代器，未找到时返回 end()
+   */
   iterator find(const Key& key) {
     size_type bucket_idx = bucket_index(key);
     Node* node = buckets_[bucket_idx];
@@ -382,6 +439,11 @@ class unordered_map {
     return end();
   }
 
+  /**
+   * @brief 查找指定键的元素（const 版本）
+   * @param key 要查找的键
+   * @return 指向匹配元素的 const_iterator，未找到时返回 end()
+   */
   const_iterator find(const Key& key) const {
     size_type bucket_idx = bucket_index(key);
     Node* node = buckets_[bucket_idx];
@@ -399,8 +461,15 @@ class unordered_map {
   size_type count(const Key& key) const { return find(key) != end() ? 1 : 0; }
 
   bool contains(const Key& key) const { return find(key) != end(); }
+  /// @}
 
-  // 元素访问
+  /// @name 元素访问
+  /// @{
+  /**
+   * @brief 访问或插入指定键的值
+   * @param key 键（拷贝）
+   * @return 对应值的引用，若键不存在则插入默认值
+   */
   Value& operator[](const Key& key) {
     iterator it = find(key);
     if (it != end()) {
@@ -411,6 +480,11 @@ class unordered_map {
     return result.first->second;
   }
 
+  /**
+   * @brief 访问或插入指定键的值（移动语义）
+   * @param key 键（右值引用）
+   * @return 对应值的引用，若键不存在则插入默认值
+   */
   Value& operator[](Key&& key) {
     iterator it = find(key);
     if (it != end()) {
@@ -422,6 +496,12 @@ class unordered_map {
     return result.first->second;
   }
 
+  /**
+   * @brief 访问指定键的值
+   * @param key 要访问的键
+   * @return 对应值的引用
+   * @note 键不存在时返回静态默认值（内核环境无异常）
+   */
   Value& at(const Key& key) {
     iterator it = find(key);
     if (it != end()) {
@@ -432,6 +512,12 @@ class unordered_map {
     return default_value;
   }
 
+  /**
+   * @brief 访问指定键的值（const 版本）
+   * @param key 要访问的键
+   * @return 对应值的 const 引用
+   * @note 键不存在时返回静态默认值（内核环境无异常）
+   */
   const Value& at(const Key& key) const {
     const_iterator it = find(key);
     if (it != end()) {
@@ -441,8 +527,10 @@ class unordered_map {
     static Value default_value{};
     return default_value;
   }
+  /// @}
 
-  // 桶接口
+  /// @name 桶接口
+  /// @{
   size_type bucket(const Key& key) const { return bucket_index(key); }
 
   size_type bucket_size(size_type n) const {
@@ -454,12 +542,15 @@ class unordered_map {
     }
     return count;
   }
+  /// @}
 
-  // Hash 策略
+  /// @name Hash 策略
+  /// @{
   float load_factor() const {
     return bucket_count_ == 0 ? 0.0f
                               : static_cast<float>(size_) / bucket_count_;
   }
+  /// @}
 
  private:
   size_type bucket_index(const Key& key) const {
@@ -480,6 +571,32 @@ class unordered_map {
   hasher hasher_;
   key_equal key_equal_;
   PoolRef* node_pool_;
+};
+
+/**
+ * @brief Fixed-capacity unordered map with internal static storage.
+ */
+template <typename Key, typename Value, size_t MaxSize, size_t MaxBuckets,
+          typename Hash = std::hash<Key>, typename KeyEqual = std::equal_to<Key>>
+class static_unordered_map : public kstd::unordered_map<Key, Value, Hash, KeyEqual> {
+ public:
+  using Base = kstd::unordered_map<Key, Value, Hash, KeyEqual>;
+  using Node = typename Base::node_type;
+
+  static_unordered_map() : Base(pool_, buckets_, MaxBuckets) {}
+
+  static_unordered_map(const Hash& hash, const KeyEqual& equal)
+      : Base(pool_, buckets_, MaxBuckets, hash, equal) {}
+
+  /// 禁用拷贝/移动（内部含静态存储，Base 持有其引用）
+  static_unordered_map(const static_unordered_map&) = delete;
+  static_unordered_map(static_unordered_map&&) = delete;
+  auto operator=(const static_unordered_map&) -> static_unordered_map& = delete;
+  auto operator=(static_unordered_map&&) -> static_unordered_map& = delete;
+
+ private:
+  kstd::Pool<Node, MaxSize> pool_;
+  void* buckets_[MaxBuckets];
 };
 
 }  // namespace kstd

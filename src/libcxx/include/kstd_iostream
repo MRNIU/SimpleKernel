@@ -2,12 +2,13 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_IOSTREAM_
-#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_IOSTREAM_
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_IOSTREAM_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_IOSTREAM_
 
 #include <cstdint>
 
-namespace sk_std {
+namespace kstd {
+/// @brief 输出流基类
 class ostream {
  public:
   enum openmode : uint8_t {
@@ -44,6 +45,6 @@ inline ostream& endl(ostream& os) { return os << "\n"; }
 
 [[maybe_unused]] static ostream cout;
 
-}  // namespace sk_std
+}  // namespace kstd
 
-#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_SK_IOSTREAM_ */
+#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_IOSTREAM_ */

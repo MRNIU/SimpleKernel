@@ -11,7 +11,7 @@
 #include <variant>
 
 #include "io_buffer.hpp"
-#include "sk_cstring"
+#include "kstd_cstring"
 
 /// Platform 设备标识（FDT compatible stringlist）
 struct PlatformId {
@@ -122,11 +122,11 @@ struct DeviceNode {
         bound(other.bound.load(std::memory_order_relaxed)),
         dev_id(other.dev_id),
         dma_buffer(other.dma_buffer) {
-    sk_std::memcpy(name, other.name, sizeof(name));
+    kstd::memcpy(name, other.name, sizeof(name));
   }
   auto operator=(const DeviceNode& other) -> DeviceNode& {
     if (this != &other) {
-      sk_std::memcpy(name, other.name, sizeof(name));
+      kstd::memcpy(name, other.name, sizeof(name));
       type = other.type;
       resource = other.resource;
       bound.store(other.bound.load(std::memory_order_relaxed),

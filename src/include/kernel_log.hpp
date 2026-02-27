@@ -10,9 +10,9 @@
 #include <cstdint>
 #include <source_location>
 
+#include "kstd_cstdio"
+#include "kstd_iostream"
 #include "singleton.hpp"
-#include "sk_cstdio"
-#include "sk_iostream"
 #include "spinlock.hpp"
 
 namespace klog {
@@ -56,7 +56,7 @@ constexpr std::array<const char*, kLogLevelMax> kLogColors = {
  * @note 使用 LogLevel 枚举作为模板参数，避免模板模板参数的复杂性
  */
 template <LogLevel Level>
-class Logger : public sk_std::ostream {
+class Logger : public kstd::ostream {
  public:
   auto operator<<(int8_t val) -> Logger& override {
     output("%d", val);

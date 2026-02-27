@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#include "sk_cstdio"
+#include "kstd_cstdio"
 
 // printf_bare_metal 基本输出实现
 extern "C" void putchar_(char character) {

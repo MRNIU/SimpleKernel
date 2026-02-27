@@ -3,8 +3,8 @@
  */
 
 #include "kernel_log.hpp"
+#include "kstd_cassert"
 #include "resource_id.hpp"
-#include "sk_cassert"
 #include "task_manager.hpp"
 
 void TaskManager::Exit(int exit_code) {

@@ -2,13 +2,13 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "sk_iostream"
+#include "kstd_iostream"
 
 #include <cstdint>
 
-#include "sk_cstdio"
+#include "kstd_cstdio"
 
-namespace sk_std {
+namespace kstd {
 
 auto ostream::operator<<(int8_t val) -> ostream& {
   sk_printf("%d", val);
@@ -59,4 +59,4 @@ auto ostream::operator<<(ostream& (*manip)(ostream&)) -> ostream& {
   return manip(*this);
 }
 
-}  // namespace sk_std
+}  // namespace kstd

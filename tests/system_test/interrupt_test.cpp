@@ -13,10 +13,10 @@
 #include "basic_info.hpp"
 #include "interrupt_base.h"
 #include "kernel.h"
+#include "kstd_cstdio"
+#include "kstd_cstring"
+#include "kstd_libcxx.h"
 #include "singleton.hpp"
-#include "sk_cstdio"
-#include "sk_cstring"
-#include "sk_libcxx.h"
 #include "sk_stdlib.h"
 #include "system_test.h"
 

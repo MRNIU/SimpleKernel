@@ -2,11 +2,11 @@
  * @copyright Copyright The SimpleKernel Contributors
  * @brief Move-only owning smart pointer for kstd namespace.
  *
- * This is the same implementation as the original sk_std::unique_ptr,
+ * This is the canonical unique_ptr implementation for the kstd namespace.
  * moved to the kstd namespace. unique_ptr does not use ETL pools —
  * it's a standard smart pointer wrapping heap allocation.
  *
- * @note sk_std::unique_ptr requires heap allocation via ::operator new/delete.
+ * @note kstd::unique_ptr requires heap allocation via ::operator new/delete.
  * It MUST only be used after MemoryInit() has been called during kernel boot.
  */
 
@@ -16,8 +16,6 @@
 #include <cstddef>
 
 namespace kstd {
-
-// ── Default deleters ─────────────────────────────────────────────────────────
 
 /// @brief Default deleter for single objects (calls `delete`).
 template <typename T>
@@ -33,8 +31,6 @@ struct default_delete<T[]> {
   auto operator()(T* ptr) const noexcept -> void { delete[] ptr; }
 };
 
-// ── Primary template: unique_ptr<T, Deleter> ────────────────────────────────
-
 /// @brief Move-only owning smart pointer for single objects.
 ///
 /// Holds exclusive ownership of a dynamically allocated object and deletes it
@@ -49,8 +45,6 @@ struct default_delete<T[]> {
 template <typename T, typename Deleter = default_delete<T>>
 class unique_ptr {
  public:
-  // ── Constructors ──────────────────────────────────────────────────────────
-
   /// @brief Default constructor — null state.
   constexpr unique_ptr() noexcept : ptr_(nullptr), deleter_() {}
 
@@ -83,8 +77,6 @@ class unique_ptr {
     }
   }
 
-  // ── Assignment ────────────────────────────────────────────────────────────
-
   /// @brief Move assignment — releases current, transfers other's ownership.
   auto operator=(unique_ptr&& other) noexcept -> unique_ptr& {
     if (this != &other) {
@@ -104,8 +96,6 @@ class unique_ptr {
     reset();
     return *this;
   }
-
-  // ── Modifiers ─────────────────────────────────────────────────────────────
 
   /// @brief Release ownership and return the raw pointer.
   ///
@@ -136,8 +126,6 @@ class unique_ptr {
     other.deleter_ = static_cast<Deleter&&>(tmp_del);
   }
 
-  // ── Observers ─────────────────────────────────────────────────────────────
-
   /// @brief Return the stored raw pointer (nullptr if empty).
   [[nodiscard]] auto get() const noexcept -> T* { return ptr_; }
 
@@ -167,8 +155,6 @@ class unique_ptr {
   Deleter deleter_;
 };
 
-// ── Array specialization: unique_ptr<T[], Deleter> ──────────────────────────
-
 /// @brief Move-only owning smart pointer for dynamically allocated arrays.
 ///
 /// Same as the primary template but provides operator[] instead of
@@ -180,8 +166,6 @@ class unique_ptr {
 template <typename T, typename Deleter>
 class unique_ptr<T[], Deleter> {
  public:
-  // ── Constructors ──────────────────────────────────────────────────────────
-
   constexpr unique_ptr() noexcept : ptr_(nullptr), deleter_() {}
 
   constexpr unique_ptr(decltype(nullptr)) noexcept  // NOLINT
@@ -204,8 +188,6 @@ class unique_ptr<T[], Deleter> {
     }
   }
 
-  // ── Assignment ────────────────────────────────────────────────────────────
-
   auto operator=(unique_ptr&& other) noexcept -> unique_ptr& {
     if (this != &other) {
       reset();
@@ -222,8 +204,6 @@ class unique_ptr<T[], Deleter> {
     reset();
     return *this;
   }
-
-  // ── Modifiers ─────────────────────────────────────────────────────────────
 
   [[nodiscard]] auto release() noexcept -> T* {
     T* tmp = ptr_;
@@ -249,8 +229,6 @@ class unique_ptr<T[], Deleter> {
     other.deleter_ = static_cast<Deleter&&>(tmp_del);
   }
 
-  // ── Observers ─────────────────────────────────────────────────────────────
-
   [[nodiscard]] auto get() const noexcept -> T* { return ptr_; }
 
   [[nodiscard]] auto get_deleter() noexcept -> Deleter& { return deleter_; }
@@ -271,8 +249,6 @@ class unique_ptr<T[], Deleter> {
   T* ptr_;
   Deleter deleter_;
 };
-
-// ── Non-member functions ────────────────────────────────────────────────────
 
 /// @brief Swap two unique_ptrs (non-member overload).
 template <typename T, typename D>

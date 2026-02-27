@@ -9,8 +9,8 @@
 #include <cstdint>
 
 #include "kernel_log.hpp"
+#include "kstd_iostream"
 #include "singleton.hpp"
-#include "sk_iostream"
 
 // 引用链接脚本中的变量
 /// @see http://wiki.osdev.org/Using_Linker_Script_Values
@@ -63,8 +63,8 @@ struct BasicInfo {
   ~BasicInfo() = default;
   /// @}
 
-  friend auto operator<<(sk_std::ostream& ostream, const BasicInfo& basic_info)
-      -> sk_std::ostream& {
+  friend auto operator<<(kstd::ostream& ostream, const BasicInfo& basic_info)
+      -> kstd::ostream& {
     klog::Info("physical_memory_addr: 0x%X, size 0x%X.\n",
                basic_info.physical_memory_addr,
                basic_info.physical_memory_size);

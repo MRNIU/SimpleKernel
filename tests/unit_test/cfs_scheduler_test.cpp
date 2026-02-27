@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include "sk_vector"
+#include "kstd_vector"
 #include "task_control_block.hpp"
 
 // 测试 CFS 调度器的基本入队出队功能
@@ -405,7 +405,7 @@ TEST(CfsSchedulerTest, ExtremeWeightValues) {
 TEST(CfsSchedulerTest, QueueSizeConsistency) {
   CfsScheduler scheduler;
 
-  sk_std::vector<TaskControlBlock*> tasks;
+  kstd::vector<TaskControlBlock*> tasks;
   for (int i = 0; i < 5; ++i) {
     auto* task = new TaskControlBlock("Task", 10, nullptr, nullptr);
     task->sched_data.cfs.weight = CfsScheduler::kDefaultWeight;

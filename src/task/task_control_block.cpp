@@ -11,10 +11,10 @@
 #include "basic_info.hpp"
 #include "interrupt_base.h"
 #include "kernel_log.hpp"
+#include "kstd_cstring"
+#include "kstd_vector"
 #include "singleton.hpp"
-#include "sk_cstring"
 #include "sk_stdlib.h"
-#include "sk_vector"
 #include "virtual_memory.hpp"
 
 namespace {
@@ -54,7 +54,7 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
         klog::Err("Failed to allocate page for ELF\n");
         return 0;
       }
-      sk_std::memset(p_page, 0, cpu_io::virtual_memory::kPageSize);
+      kstd::memset(p_page, 0, cpu_io::virtual_memory::kPageSize);
 
       // Mapping logic
       uintptr_t v_start = page;
@@ -70,8 +70,8 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
       if (copy_end > copy_start) {
         uintptr_t dst_off = copy_start - v_start;
         uintptr_t src_off = (copy_start - vaddr) + offset;
-        sk_std::memcpy((uint8_t*)p_page + dst_off, elf_data + src_off,
-                       copy_end - copy_start);
+        kstd::memcpy((uint8_t*)p_page + dst_off, elf_data + src_off,
+                     copy_end - copy_start);
       }
 
       if (!vm.MapPage(page_table, (void*)page, p_page, flags)) {

@@ -13,17 +13,13 @@
 #include "interrupt.h"
 #include "kernel.h"
 #include "kernel_log.hpp"
+#include "kstd_cstdio"
+#include "kstd_cstring"
+#include "kstd_iostream"
+#include "kstd_libcxx.h"
 #include "mutex.hpp"
 #include "per_cpu.hpp"
-#include "sk_cstdio"
-#include "sk_cstring"
-#include "sk_iostream"
-#include "sk_libcxx.h"
-#include "sk_list"
-#include "sk_priority_queue"
 #include "sk_stdlib.h"
-#include "sk_unique_ptr"
-#include "sk_vector"
 #include "syscall.hpp"
 #include "task_control_block.hpp"
 #include "task_manager.hpp"
@@ -87,13 +83,13 @@ void create_test_tasks() {
   size_t core_id = cpu_io::GetCurrentCoreId();
   auto& tm = Singleton<TaskManager>::GetInstance();
 
-  auto task1 = sk_std::make_unique<TaskControlBlock>(
+  auto task1 = kstd::make_unique<TaskControlBlock>(
       "Task1-Exit", 10, task1_func, reinterpret_cast<void*>(0x1111));
-  auto task2 = sk_std::make_unique<TaskControlBlock>(
+  auto task2 = kstd::make_unique<TaskControlBlock>(
       "Task2-Yield", 10, task2_func, reinterpret_cast<void*>(0x2222));
-  auto task3 = sk_std::make_unique<TaskControlBlock>(
+  auto task3 = kstd::make_unique<TaskControlBlock>(
       "Task3-Sync", 10, task3_func, reinterpret_cast<void*>(0x3333));
-  auto task4 = sk_std::make_unique<TaskControlBlock>(
+  auto task4 = kstd::make_unique<TaskControlBlock>(
       "Task4-Sleep", 10, task4_func, reinterpret_cast<void*>(0x4444));
 
   // 设置 CPU 亲和性，绑定到当前核心

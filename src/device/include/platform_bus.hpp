@@ -10,7 +10,7 @@
 #include "expected.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
-#include "sk_cstring"
+#include "kstd_cstring"
 
 /// Platform 总线 — FDT 驱动的设备发现
 class PlatformBus {

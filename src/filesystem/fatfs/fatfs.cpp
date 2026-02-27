@@ -7,7 +7,7 @@
 #include <ff.h>
 
 #include "kernel_log.hpp"
-#include "sk_cstring"
+#include "kstd_cstring"
 #include "vfs.hpp"
 
 namespace fatfs {

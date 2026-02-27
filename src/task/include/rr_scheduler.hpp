@@ -5,8 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_
 
+#include "kstd_list"
 #include "scheduler_base.hpp"
-#include "sk_list"
 #include "task_control_block.hpp"
 
 /**
@@ -118,7 +118,7 @@ class RoundRobinScheduler : public SchedulerBase {
  private:
   /// 就绪队列 (双向链表，支持从头部取、向尾部放，固定容量)
   /// 就绪队列 (双向链表，支持从头部取、向尾部放，固定容量)
-  sk_std::static_list<TaskControlBlock*, 64> ready_queue;
+  kstd::static_list<TaskControlBlock*, 64> ready_queue;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_ */

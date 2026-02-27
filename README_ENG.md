@@ -164,8 +164,8 @@ SimpleKernel's interfaces are organized into the following layers:
 │               construction phase)         │
 ├──────────────────────────────────────────┤
 │         Runtime Support Libraries         │
-│  libc (sk_cstdio, sk_cstring, ...)       │
-│  libcxx (sk_vector, __cxa_*, ...)        │
+│  libc (sk_stdio.h, sk_string.h, ...)     │
+│  libcxx (kstd_vector, __cxa_*, ...)      │
 ├──────────────────────────────────────────┤
 │            Hardware / QEMU                │
 │  x86_64 · RISC-V 64 · AArch64           │
@@ -393,7 +393,7 @@ We recommend learning and implementing modules in the following order:
 | Variables | snake_case | `per_cpu_data` |
 | Macros | SCREAMING_SNAKE | `SIMPLEKERNEL_DEBUG` |
 | Constants | kCamelCase | `kPageSize` |
-| Kernel libc/libc++ headers | `sk_` prefix | `sk_cstdio` |
+| Kernel libc/libc++ headers | libc: `sk_` prefix, libcxx: `kstd_` prefix | `sk_stdio.h` / `kstd_vector` |
 
 ### 📋 Git Commit Convention
 

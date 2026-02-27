@@ -2,18 +2,18 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "sk_priority_queue"
-
 #include <gtest/gtest.h>
 
+#include "kstd_priority_queue"
+
 TEST(SkPriorityQueueTest, DefaultConstructor) {
-  sk_std::priority_queue<int> pq;
+  kstd::priority_queue<int> pq;
   EXPECT_TRUE(pq.empty());
   EXPECT_EQ(pq.size(), 0);
 }
 
 TEST(SkPriorityQueueTest, PushAndTop) {
-  sk_std::priority_queue<int> pq;
+  kstd::priority_queue<int> pq;
   pq.push(10);
   EXPECT_FALSE(pq.empty());
   EXPECT_EQ(pq.size(), 1);
@@ -29,7 +29,7 @@ TEST(SkPriorityQueueTest, PushAndTop) {
 }
 
 TEST(SkPriorityQueueTest, Pop) {
-  sk_std::priority_queue<int> pq;
+  kstd::priority_queue<int> pq;
   pq.push(10);
   pq.push(20);
   pq.push(5);
@@ -55,7 +55,7 @@ TEST(SkPriorityQueueTest, MinHeap) {
     bool operator()(const int& lhs, const int& rhs) const { return lhs > rhs; }
   };
 
-  sk_std::priority_queue<int, sk_std::vector<int>, greater> pq;
+  kstd::priority_queue<int, kstd::vector<int>, greater> pq;
   pq.push(10);
   pq.push(20);
   pq.push(5);

@@ -4,8 +4,8 @@
 
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
-#include "sk_cstring"
-#include "sk_unique_ptr"
+#include "kstd_cstring"
+#include "kstd_unique_ptr"
 #include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
@@ -101,7 +101,7 @@ auto Lookup(const char* path) -> Expected<Dentry*> {
         }
 
         // 创建新的 dentry
-        auto new_child = sk_std::make_unique<Dentry>();
+        auto new_child = kstd::make_unique<Dentry>();
         if (!new_child) {
           return std::unexpected(Error(ErrorCode::kOutOfMemory));
         }

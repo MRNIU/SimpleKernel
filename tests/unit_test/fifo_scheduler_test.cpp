@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include "sk_vector"
+#include "kstd_vector"
 #include "task_control_block.hpp"
 
 // 测试 FIFO 调度器的基本入队出队功能
@@ -267,7 +267,7 @@ TEST(FifoSchedulerTest, LargeNumberOfTasks) {
   constexpr size_t kTaskCount = 100;
 
   // 创建任务数组（使用动态分配）
-  sk_std::vector<TaskControlBlock*> tasks;
+  kstd::vector<TaskControlBlock*> tasks;
   for (size_t i = 0; i < kTaskCount; ++i) {
     auto* task = new TaskControlBlock("Task", 10, nullptr, nullptr);
     task->status = TaskStatus::kReady;

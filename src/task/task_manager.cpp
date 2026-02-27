@@ -16,12 +16,12 @@
 #include "idle_scheduler.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
+#include "kstd_cassert"
+#include "kstd_cstring"
+#include "kstd_vector"
 #include "rr_scheduler.hpp"
 #include "singleton.hpp"
-#include "sk_cassert"
-#include "sk_cstring"
 #include "sk_stdlib.h"
-#include "sk_vector"
 #include "virtual_memory.hpp"
 
 namespace {
@@ -43,11 +43,11 @@ void TaskManager::InitCurrentCore() {
 
   if (!cpu_sched.schedulers[SchedPolicy::kNormal]) {
     cpu_sched.schedulers[SchedPolicy::kRealTime] =
-        sk_std::unique_ptr<SchedulerBase>(new FifoScheduler());
+        kstd::unique_ptr<SchedulerBase>(new FifoScheduler());
     cpu_sched.schedulers[SchedPolicy::kNormal] =
-        sk_std::unique_ptr<SchedulerBase>(new RoundRobinScheduler());
+        kstd::unique_ptr<SchedulerBase>(new RoundRobinScheduler());
     cpu_sched.schedulers[SchedPolicy::kIdle] =
-        sk_std::unique_ptr<SchedulerBase>(new IdleScheduler());
+        kstd::unique_ptr<SchedulerBase>(new IdleScheduler());
   }
 
   // 关联 PerCpu
@@ -85,7 +85,7 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   // 加入全局任务表
   {
     LockGuard lock_guard{task_table_lock_};
-    task_table_[task->pid] = sk_std::unique_ptr<TaskControlBlock>(task);
+    task_table_[task->pid] = kstd::unique_ptr<TaskControlBlock>(task);
   }
 
   // 设置任务状态为 kReady
@@ -192,9 +192,9 @@ void TaskManager::ReparentChildren(TaskControlBlock* parent) {
   }
 }
 
-sk_std::static_vector<TaskControlBlock*, 64> TaskManager::GetThreadGroup(
+kstd::static_vector<TaskControlBlock*, 64> TaskManager::GetThreadGroup(
     Pid tgid) {
-  sk_std::static_vector<TaskControlBlock*, 64> result;
+  kstd::static_vector<TaskControlBlock*, 64> result;
 
   LockGuard lock_guard(task_table_lock_);
 

@@ -1,0 +1,10 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_CSTDIO_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_CSTDIO_
+
+#include "sk_stdio.h"
+
+#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_CSTDIO_ */

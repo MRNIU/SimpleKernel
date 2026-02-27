@@ -4,8 +4,8 @@
 
 #include <cpu_io.h>
 
+#include "kstd_cstdio"
 #include "singleton.hpp"
-#include "sk_cstdio"
 
 namespace {
 

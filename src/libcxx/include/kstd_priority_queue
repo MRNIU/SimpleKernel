@@ -1,4 +1,6 @@
-/** @copyright Copyright The SimpleKernel Contributors */
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
 
 #ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_PRIORITY_QUEUE_
 #define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_PRIORITY_QUEUE_

@@ -9,9 +9,9 @@
 #include "arch.h"
 #include "basic_info.hpp"
 #include "kernel.h"
-#include "sk_cstdio"
-#include "sk_cstring"
-#include "sk_libcxx.h"
+#include "kstd_cstdio"
+#include "kstd_cstring"
+#include "kstd_libcxx.h"
 #include "system_test.h"
 
 template <uint32_t V>

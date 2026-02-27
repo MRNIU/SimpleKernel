@@ -8,7 +8,7 @@
 
 #include "io.hpp"
 #include "kernel_log.hpp"
-#include "sk_cassert"
+#include "kstd_cassert"
 
 Gic::Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
     : gicd_(gicd_base_addr), gicr_(gicr_base_addr) {

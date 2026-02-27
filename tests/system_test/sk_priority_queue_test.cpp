@@ -2,12 +2,11 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "sk_priority_queue"
-
-#include "sk_cstdio"
+#include "kstd_cstdio"
+#include "kstd_priority_queue"
 #include "system_test.h"
 
-using namespace sk_std;
+using namespace kstd;
 
 namespace {
 

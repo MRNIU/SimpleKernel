@@ -2,20 +2,20 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "sk_unordered_map"
-
 #include <gtest/gtest.h>
 
 #include <string>
 
+#include "kstd_unordered_map"
+
 TEST(SkUnorderedMapTest, DefaultConstructor) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   EXPECT_TRUE(map.empty());
   EXPECT_EQ(map.size(), 0);
 }
 
 TEST(SkUnorderedMapTest, Insert) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
 
   auto result1 = map.insert({1, 10});
   EXPECT_TRUE(result1.second);
@@ -33,7 +33,7 @@ TEST(SkUnorderedMapTest, Insert) {
 }
 
 TEST(SkUnorderedMapTest, OperatorBracket) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
 
   map[1] = 10;
   EXPECT_EQ(map[1], 10);
@@ -49,7 +49,7 @@ TEST(SkUnorderedMapTest, OperatorBracket) {
 }
 
 TEST(SkUnorderedMapTest, Find) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   map[1] = 10;
   map[2] = 20;
 
@@ -63,7 +63,7 @@ TEST(SkUnorderedMapTest, Find) {
 }
 
 TEST(SkUnorderedMapTest, Contains) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   map[1] = 10;
   map[2] = 20;
 
@@ -73,7 +73,7 @@ TEST(SkUnorderedMapTest, Contains) {
 }
 
 TEST(SkUnorderedMapTest, Count) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   map[1] = 10;
 
   EXPECT_EQ(map.count(1), 1);
@@ -81,7 +81,7 @@ TEST(SkUnorderedMapTest, Count) {
 }
 
 TEST(SkUnorderedMapTest, Erase) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   map[1] = 10;
   map[2] = 20;
   map[3] = 30;
@@ -95,7 +95,7 @@ TEST(SkUnorderedMapTest, Erase) {
 }
 
 TEST(SkUnorderedMapTest, Clear) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   map[1] = 10;
   map[2] = 20;
 
@@ -105,7 +105,7 @@ TEST(SkUnorderedMapTest, Clear) {
 }
 
 TEST(SkUnorderedMapTest, Iterator) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   map[1] = 10;
   map[2] = 20;
   map[3] = 30;
@@ -126,7 +126,7 @@ TEST(SkUnorderedMapTest, Iterator) {
 }
 
 TEST(SkUnorderedMapTest, RangeBasedFor) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   map[1] = 10;
   map[2] = 20;
   map[3] = 30;
@@ -141,11 +141,11 @@ TEST(SkUnorderedMapTest, RangeBasedFor) {
 }
 
 TEST(SkUnorderedMapTest, CopyConstructor) {
-  sk_std::unordered_map<int, int> map1;
+  kstd::unordered_map<int, int> map1;
   map1[1] = 10;
   map1[2] = 20;
 
-  sk_std::unordered_map<int, int> map2(map1);
+  kstd::unordered_map<int, int> map2(map1);
   EXPECT_EQ(map2.size(), 2);
   EXPECT_EQ(map2[1], 10);
   EXPECT_EQ(map2[2], 20);
@@ -155,11 +155,11 @@ TEST(SkUnorderedMapTest, CopyConstructor) {
 }
 
 TEST(SkUnorderedMapTest, CopyAssignment) {
-  sk_std::unordered_map<int, int> map1;
+  kstd::unordered_map<int, int> map1;
   map1[1] = 10;
   map1[2] = 20;
 
-  sk_std::unordered_map<int, int> map2;
+  kstd::unordered_map<int, int> map2;
   map2 = map1;
 
   EXPECT_EQ(map2.size(), 2);
@@ -168,11 +168,11 @@ TEST(SkUnorderedMapTest, CopyAssignment) {
 }
 
 TEST(SkUnorderedMapTest, MoveConstructor) {
-  sk_std::unordered_map<int, int> map1;
+  kstd::unordered_map<int, int> map1;
   map1[1] = 10;
   map1[2] = 20;
 
-  sk_std::unordered_map<int, int> map2(std::move(map1));
+  kstd::unordered_map<int, int> map2(std::move(map1));
   EXPECT_EQ(map2.size(), 2);
   EXPECT_EQ(map2[1], 10);
   EXPECT_EQ(map2[2], 20);
@@ -180,11 +180,11 @@ TEST(SkUnorderedMapTest, MoveConstructor) {
 }
 
 TEST(SkUnorderedMapTest, MoveAssignment) {
-  sk_std::unordered_map<int, int> map1;
+  kstd::unordered_map<int, int> map1;
   map1[1] = 10;
   map1[2] = 20;
 
-  sk_std::unordered_map<int, int> map2;
+  kstd::unordered_map<int, int> map2;
   map2 = std::move(map1);
 
   EXPECT_EQ(map2.size(), 2);
@@ -194,7 +194,7 @@ TEST(SkUnorderedMapTest, MoveAssignment) {
 }
 
 TEST(SkUnorderedMapTest, At) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   map[1] = 10;
 
   EXPECT_EQ(map.at(1), 10);
@@ -204,7 +204,7 @@ TEST(SkUnorderedMapTest, At) {
 }
 
 TEST(SkUnorderedMapTest, Emplace) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
 
   auto result = map.emplace(1, 10);
   EXPECT_TRUE(result.second);
@@ -214,7 +214,7 @@ TEST(SkUnorderedMapTest, Emplace) {
 }
 
 TEST(SkUnorderedMapTest, BucketInterface) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   map[1] = 10;
   map[2] = 20;
 
@@ -226,7 +226,7 @@ TEST(SkUnorderedMapTest, BucketInterface) {
 }
 
 TEST(SkUnorderedMapTest, Reserve) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
 
   size_t initial_bucket_count = map.bucket_count();
   map.reserve(100);
@@ -234,7 +234,7 @@ TEST(SkUnorderedMapTest, Reserve) {
 }
 
 TEST(SkUnorderedMapTest, Rehash) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
   map[1] = 10;
   map[2] = 20;
 
@@ -246,7 +246,7 @@ TEST(SkUnorderedMapTest, Rehash) {
 }
 
 TEST(SkUnorderedMapTest, LargeDataSet) {
-  sk_std::unordered_map<int, int> map;
+  kstd::unordered_map<int, int> map;
 
   for (int i = 0; i < 1000; ++i) {
     map[i] = i * 2;
@@ -274,7 +274,7 @@ TEST(SkUnorderedMapTest, LargeDataSet) {
 }
 
 TEST(SkUnorderedMapTest, PointerKey) {
-  sk_std::unordered_map<int*, int> map;
+  kstd::unordered_map<int*, int> map;
 
   int a = 1, b = 2, c = 3;
   map[&a] = 10;

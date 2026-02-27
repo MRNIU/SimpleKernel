@@ -7,6 +7,6 @@ TARGET_INCLUDE_DIRECTORIES (libcxx
 
 TARGET_SOURCES (
     libcxx
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/sk_libcxx.cpp
-              ${CMAKE_CURRENT_SOURCE_DIR}/sk_new.cpp
-              ${CMAKE_CURRENT_SOURCE_DIR}/sk_iostream.cpp)
+    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/kstd_libcxx.cpp
+              ${CMAKE_CURRENT_SOURCE_DIR}/kstd_new.cpp
+              ${CMAKE_CURRENT_SOURCE_DIR}/kstd_iostream.cpp)

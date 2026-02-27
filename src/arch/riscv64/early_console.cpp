@@ -4,7 +4,7 @@
 
 #include <opensbi_interface.h>
 
-#include "sk_cstdio"
+#include "kstd_cstdio"
 
 namespace {
 

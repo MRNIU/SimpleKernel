@@ -4,8 +4,8 @@
 
 #include <device_framework/pl011.hpp>
 
+#include "kstd_cstdio"
 #include "singleton.hpp"
-#include "sk_cstdio"
 
 namespace {
 

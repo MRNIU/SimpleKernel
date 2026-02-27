@@ -43,7 +43,7 @@ cmake/                # Toolchain files, build helpers
 - **Naming**: files=`snake_case`, classes=`PascalCase`, vars=`snake_case`, members=`snake_case_` (trailing _), constants=`kCamelCase`, macros=`SCREAMING_SNAKE`
 - **Headers**: `#ifndef SIMPLEKERNEL_SRC_INCLUDE_FILENAME_HPP_` guard format
 - **Copyright**: `/** @copyright Copyright The SimpleKernel Contributors */`
-- **Includes**: system → third-party → project. Use `sk_cstdio`/`sk_vector`, never std dynamic alloc
+- **Includes**: system → third-party → project. Use `kstd_cstdio`/`kstd_vector`, never std dynamic alloc
 - **Returns**: trailing return type `auto Func() -> RetType`
 - **CMake**: UPPERCASE commands/keywords, 4-space indent, 80-char lines, space before `(`
 

@@ -4,7 +4,7 @@
 
 #include "mutex.hpp"
 
-#include "sk_cstdio"
+#include "kstd_cstdio"
 #include "system_test.h"
 
 /// @todo Implement mutex tests once task subsystem is stable

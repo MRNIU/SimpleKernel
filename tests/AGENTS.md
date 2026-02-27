@@ -15,7 +15,7 @@ unit_test/
   task/                     # Task-specific test fixtures (TaskTestHarness)
   *_test.cpp                # Per-module: cfs_scheduler, fifo_scheduler, rr_scheduler,
                             #   kernel_elf, kernel_fdt, ramfs, vfs, virtual_memory,
-                            #   spinlock, sk_libc, sk_ctype, sk_vector, sk_list, etc.
+                            #   spinlock, sk_libc, sk_ctype, kstd_vector, kstd_list, etc.
 system_test/
   CMakeLists.txt            # Freestanding build, linked as kernel, runs in QEMU
   main.cpp                  # Custom test runner (NOT GoogleTest)

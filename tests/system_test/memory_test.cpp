@@ -10,9 +10,9 @@
 #include "arch.h"
 #include "basic_info.hpp"
 #include "kernel.h"
-#include "sk_cstdio"
-#include "sk_cstring"
-#include "sk_libcxx.h"
+#include "kstd_cstdio"
+#include "kstd_cstring"
+#include "kstd_libcxx.h"
 #include "sk_stdlib.h"
 #include "system_test.h"
 
@@ -64,7 +64,7 @@ auto memory_test() -> bool {
     ptrs[i] = malloc(128);
     EXPECT_TRUE(ptrs[i] != nullptr, "memory_test: multi alloc failed");
     // Fill
-    sk_std::memset(ptrs[i], i, 128);
+    kstd::memset(ptrs[i], i, 128);
   }
 
   for (int i = 0; i < count; ++i) {

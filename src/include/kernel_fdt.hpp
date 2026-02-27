@@ -28,9 +28,9 @@
 
 #include "expected.hpp"
 #include "kernel_log.hpp"
+#include "kstd_cassert"
+#include "kstd_cstring"
 #include "singleton.hpp"
-#include "sk_cassert"
-#include "sk_cstring"
 
 /**
  * @brief FDT（Flattened Device Tree）解析器
@@ -154,8 +154,7 @@ class KernelFdt {
 
     const char* stdout_path = reinterpret_cast<const char*>(prop->data);
     std::array<char, 256> path_buffer;
-    sk_std::strncpy(path_buffer.data(), stdout_path,
-                    path_buffer.max_size() - 1);
+    kstd::strncpy(path_buffer.data(), stdout_path, path_buffer.max_size() - 1);
 
     char* colon = strchr(path_buffer.data(), ':');
     if (colon != nullptr) {

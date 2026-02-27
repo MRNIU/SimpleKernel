@@ -12,8 +12,8 @@
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
+#include "kstd_cstdio"
 #include "per_cpu.hpp"
-#include "sk_cstdio"
 #include "sk_stdlib.h"
 #include "virtual_memory.hpp"
 
@@ -51,7 +51,7 @@ void ArchInit(int argc, const char** argv) {
       KernelFdt(reinterpret_cast<uint64_t>(argv));
 
   Singleton<BasicInfo>::GetInstance() = BasicInfo(argc, argv);
-  sk_std::cout << Singleton<BasicInfo>::GetInstance();
+  kstd::cout << Singleton<BasicInfo>::GetInstance();
 
   // 解析内核 elf 信息
   Singleton<KernelElf>::GetInstance() =

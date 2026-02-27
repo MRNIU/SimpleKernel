@@ -4,9 +4,9 @@
 
 #include "expected.hpp"
 #include "kernel_log.hpp"
+#include "kstd_cassert"
+#include "kstd_cstring"
 #include "singleton.hpp"
-#include "sk_cassert"
-#include "sk_cstring"
 #include "sk_stdlib.h"
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"

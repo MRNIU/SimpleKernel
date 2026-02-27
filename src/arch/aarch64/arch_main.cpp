@@ -11,8 +11,8 @@
 #include "interrupt.h"
 #include "kernel_elf.hpp"
 #include "kernel_fdt.hpp"
+#include "kstd_cstdio"
 #include "per_cpu.hpp"
-#include "sk_cstdio"
 #include "sk_stdlib.h"
 #include "virtual_memory.hpp"
 
@@ -54,7 +54,7 @@ void ArchInit(int argc, const char** argv) {
   Singleton<KernelElf>::GetInstance() =
       KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
 
-  sk_std::cout << Singleton<BasicInfo>::GetInstance();
+  kstd::cout << Singleton<BasicInfo>::GetInstance();
 
   Singleton<KernelFdt>::GetInstance().CheckPSCI().or_else(
       [](Error err) -> Expected<void> {

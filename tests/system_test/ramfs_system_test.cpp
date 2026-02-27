@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "sk_cstdio"
-#include "sk_cstring"
+#include "kstd_cstdio"
+#include "kstd_cstring"
 #include "system_test.h"
 #include "vfs.hpp"
 

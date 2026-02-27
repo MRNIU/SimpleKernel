@@ -4,7 +4,7 @@
 
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
-#include "sk_cstring"
+#include "kstd_cstring"
 #include "spinlock.hpp"
 #include "vfs_internal.hpp"
 

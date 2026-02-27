@@ -12,10 +12,10 @@
 #include "basic_info.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
+#include "kstd_iostream"
 #include "per_cpu.hpp"
 #include "singleton.hpp"
 #include "sipi.h"
-#include "sk_iostream"
 
 namespace {
 
@@ -137,7 +137,7 @@ BasicInfo::BasicInfo(int, const char**) {
 
 auto ArchInit(int, const char**) -> int {
   Singleton<BasicInfo>::GetInstance() = BasicInfo(0, nullptr);
-  sk_std::cout << Singleton<BasicInfo>::GetInstance();
+  kstd::cout << Singleton<BasicInfo>::GetInstance();
 
   // 解析内核 elf 信息
   Singleton<KernelElf>::GetInstance() =

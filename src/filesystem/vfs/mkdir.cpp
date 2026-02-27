@@ -4,8 +4,8 @@
 
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
-#include "sk_cstring"
-#include "sk_unique_ptr"
+#include "kstd_cstring"
+#include "kstd_unique_ptr"
 #include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
@@ -64,7 +64,7 @@ auto MkDir(const char* path) -> Expected<void> {
   }
 
   // 创建 dentry
-  auto new_dentry = sk_std::make_unique<Dentry>();
+  auto new_dentry = kstd::make_unique<Dentry>();
   if (!new_dentry) {
     return std::unexpected(Error(ErrorCode::kOutOfMemory));
   }

@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-#include "sk_cstdio"
+#include "kstd_cstdio"
 
 template <typename T1, typename T2>
 bool expect_eq_helper(const T1& val1, const T2& val2, const char* msg) {

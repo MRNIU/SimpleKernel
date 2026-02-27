@@ -8,8 +8,8 @@
 #include "arch.h"
 #include "interrupt.h"
 #include "kernel_log.hpp"
-#include "sk_cstdio"
-#include "sk_iostream"
+#include "kstd_cstdio"
+#include "kstd_iostream"
 
 namespace {
 // 定义 APIC 时钟中断向量号（使用高优先级向量）

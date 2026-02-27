@@ -2,9 +2,9 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "sk_unique_ptr"
-
 #include <gtest/gtest.h>
+
+#include "kstd_unique_ptr"
 
 namespace {
 
@@ -23,14 +23,14 @@ class UniquePtrTest : public ::testing::Test {
 
 // 1. Default construction — null
 TEST_F(UniquePtrTest, DefaultConstruction) {
-  sk_std::unique_ptr<TestObj> p;
+  kstd::unique_ptr<TestObj> p;
   EXPECT_EQ(p.get(), nullptr);
   EXPECT_FALSE(static_cast<bool>(p));
 }
 
 // 2. Construction from raw pointer
 TEST_F(UniquePtrTest, ConstructionFromRawPointer) {
-  sk_std::unique_ptr<TestObj> p(new TestObj(42));
+  kstd::unique_ptr<TestObj> p(new TestObj(42));
   EXPECT_NE(p.get(), nullptr);
   EXPECT_TRUE(static_cast<bool>(p));
   EXPECT_EQ(p->value, 42);
@@ -39,7 +39,7 @@ TEST_F(UniquePtrTest, ConstructionFromRawPointer) {
 // 3. Destructor deletes object
 TEST_F(UniquePtrTest, DestructorDeletesObject) {
   {
-    sk_std::unique_ptr<TestObj> p(new TestObj(5));
+    kstd::unique_ptr<TestObj> p(new TestObj(5));
     EXPECT_EQ(TestObj::destroy_count, 0);
   }
   EXPECT_EQ(TestObj::destroy_count, 1);
@@ -47,11 +47,10 @@ TEST_F(UniquePtrTest, DestructorDeletesObject) {
 
 // 4. Move construction — source becomes null
 TEST_F(UniquePtrTest, MoveConstruction) {
-  sk_std::unique_ptr<TestObj> p1(new TestObj(99));
+  kstd::unique_ptr<TestObj> p1(new TestObj(99));
   TestObj* raw = p1.get();
 
-  sk_std::unique_ptr<TestObj> p2(
-      static_cast<sk_std::unique_ptr<TestObj>&&>(p1));
+  kstd::unique_ptr<TestObj> p2(static_cast<kstd::unique_ptr<TestObj>&&>(p1));
   EXPECT_EQ(p1.get(), nullptr);
   EXPECT_EQ(p2.get(), raw);
   EXPECT_EQ(TestObj::destroy_count, 0);
@@ -59,11 +58,11 @@ TEST_F(UniquePtrTest, MoveConstruction) {
 
 // 5. Move assignment
 TEST_F(UniquePtrTest, MoveAssignment) {
-  sk_std::unique_ptr<TestObj> p1(new TestObj(7));
-  sk_std::unique_ptr<TestObj> p2(new TestObj(8));
+  kstd::unique_ptr<TestObj> p1(new TestObj(7));
+  kstd::unique_ptr<TestObj> p2(new TestObj(8));
   TestObj* raw1 = p1.get();
 
-  p2 = static_cast<sk_std::unique_ptr<TestObj>&&>(p1);
+  p2 = static_cast<kstd::unique_ptr<TestObj>&&>(p1);
   EXPECT_EQ(TestObj::destroy_count, 1);  // p2's old object destroyed
   EXPECT_EQ(p1.get(), nullptr);
   EXPECT_EQ(p2.get(), raw1);
@@ -72,7 +71,7 @@ TEST_F(UniquePtrTest, MoveAssignment) {
 // 6. release() — returns pointer, unique_ptr becomes null
 TEST_F(UniquePtrTest, Release) {
   auto* raw = new TestObj(10);
-  sk_std::unique_ptr<TestObj> p(raw);
+  kstd::unique_ptr<TestObj> p(raw);
   TestObj* released = p.release();
   EXPECT_EQ(released, raw);
   EXPECT_EQ(p.get(), nullptr);
@@ -82,7 +81,7 @@ TEST_F(UniquePtrTest, Release) {
 
 // 7. reset() — becomes null, deletes old
 TEST_F(UniquePtrTest, ResetBecomesNull) {
-  sk_std::unique_ptr<TestObj> p(new TestObj(3));
+  kstd::unique_ptr<TestObj> p(new TestObj(3));
   p.reset();
   EXPECT_EQ(p.get(), nullptr);
   EXPECT_EQ(TestObj::destroy_count, 1);
@@ -90,7 +89,7 @@ TEST_F(UniquePtrTest, ResetBecomesNull) {
 
 // 8. reset(T*) — replaces managed object
 TEST_F(UniquePtrTest, ResetWithNewPointer) {
-  sk_std::unique_ptr<TestObj> p(new TestObj(11));
+  kstd::unique_ptr<TestObj> p(new TestObj(11));
   p.reset(new TestObj(22));
   EXPECT_EQ(TestObj::destroy_count, 1);
   EXPECT_EQ(p->value, 22);
@@ -100,8 +99,8 @@ TEST_F(UniquePtrTest, ResetWithNewPointer) {
 TEST_F(UniquePtrTest, Swap) {
   auto* raw1 = new TestObj(1);
   auto* raw2 = new TestObj(2);
-  sk_std::unique_ptr<TestObj> p1(raw1);
-  sk_std::unique_ptr<TestObj> p2(raw2);
+  kstd::unique_ptr<TestObj> p1(raw1);
+  kstd::unique_ptr<TestObj> p2(raw2);
 
   p1.swap(p2);
   EXPECT_EQ(p1.get(), raw2);
@@ -112,17 +111,17 @@ TEST_F(UniquePtrTest, Swap) {
 TEST_F(UniquePtrTest, NonMemberSwap) {
   auto* raw1 = new TestObj(10);
   auto* raw2 = new TestObj(20);
-  sk_std::unique_ptr<TestObj> p1(raw1);
-  sk_std::unique_ptr<TestObj> p2(raw2);
+  kstd::unique_ptr<TestObj> p1(raw1);
+  kstd::unique_ptr<TestObj> p2(raw2);
 
-  sk_std::swap(p1, p2);
+  kstd::swap(p1, p2);
   EXPECT_EQ(p1.get(), raw2);
   EXPECT_EQ(p2.get(), raw1);
 }
 
 // 11. Dereference operators
 TEST_F(UniquePtrTest, DereferenceOperators) {
-  sk_std::unique_ptr<TestObj> p(new TestObj(77));
+  kstd::unique_ptr<TestObj> p(new TestObj(77));
   EXPECT_EQ((*p).value, 77);
   EXPECT_EQ(p->value, 77);
   (*p).value = 88;
@@ -131,15 +130,15 @@ TEST_F(UniquePtrTest, DereferenceOperators) {
 
 // 12. Bool conversion
 TEST_F(UniquePtrTest, BoolConversion) {
-  sk_std::unique_ptr<TestObj> null_ptr;
-  sk_std::unique_ptr<TestObj> valid_ptr(new TestObj(1));
+  kstd::unique_ptr<TestObj> null_ptr;
+  kstd::unique_ptr<TestObj> valid_ptr(new TestObj(1));
   EXPECT_FALSE(static_cast<bool>(null_ptr));
   EXPECT_TRUE(static_cast<bool>(valid_ptr));
 }
 
 // 13. nullptr assignment
 TEST_F(UniquePtrTest, NullptrAssignment) {
-  sk_std::unique_ptr<TestObj> p(new TestObj(5));
+  kstd::unique_ptr<TestObj> p(new TestObj(5));
   p = nullptr;
   EXPECT_EQ(p.get(), nullptr);
   EXPECT_EQ(TestObj::destroy_count, 1);
@@ -147,7 +146,7 @@ TEST_F(UniquePtrTest, NullptrAssignment) {
 
 // 14. nullptr construction
 TEST_F(UniquePtrTest, NullptrConstruction) {
-  sk_std::unique_ptr<TestObj> p(nullptr);
+  kstd::unique_ptr<TestObj> p(nullptr);
   EXPECT_EQ(p.get(), nullptr);
   EXPECT_FALSE(static_cast<bool>(p));
 }
@@ -165,7 +164,7 @@ TEST_F(UniquePtrTest, CustomDeleter) {
   };
 
   {
-    sk_std::unique_ptr<TestObj, CustomDeleter> p(new TestObj(1));
+    kstd::unique_ptr<TestObj, CustomDeleter> p(new TestObj(1));
     EXPECT_EQ(custom_delete_count, 0);
   }
   EXPECT_EQ(custom_delete_count, 1);
@@ -174,7 +173,7 @@ TEST_F(UniquePtrTest, CustomDeleter) {
 
 // 16. get_deleter
 TEST_F(UniquePtrTest, GetDeleter) {
-  sk_std::unique_ptr<TestObj> p(new TestObj(1));
+  kstd::unique_ptr<TestObj> p(new TestObj(1));
   auto& d = p.get_deleter();
   // Just verify we can call it — default_delete should work
   (void)d;
@@ -182,7 +181,7 @@ TEST_F(UniquePtrTest, GetDeleter) {
 
 // 17. make_unique
 TEST_F(UniquePtrTest, MakeUnique) {
-  auto p = sk_std::make_unique<TestObj>(123);
+  auto p = kstd::make_unique<TestObj>(123);
   EXPECT_NE(p.get(), nullptr);
   EXPECT_EQ(p->value, 123);
 }
@@ -194,7 +193,7 @@ TEST_F(UniquePtrTest, MakeUniqueMultipleArgs) {
     int y;
     Point(int a, int b) : x(a), y(b) {}
   };
-  auto p = sk_std::make_unique<Point>(3, 4);
+  auto p = kstd::make_unique<Point>(3, 4);
   EXPECT_EQ(p->x, 3);
   EXPECT_EQ(p->y, 4);
 }
@@ -211,23 +210,23 @@ TEST_F(UniquePtrTest, Polymorphic) {
     auto GetValue() -> int override { return val; }
   };
 
-  sk_std::unique_ptr<Base> p(new Derived(42));
+  kstd::unique_ptr<Base> p(new Derived(42));
   EXPECT_EQ(p->GetValue(), 42);
 }
 
 // 20. Self move assignment — safe
 TEST_F(UniquePtrTest, SelfMoveAssignment) {
-  sk_std::unique_ptr<TestObj> p(new TestObj(42));
-  p = static_cast<sk_std::unique_ptr<TestObj>&&>(p);
+  kstd::unique_ptr<TestObj> p(new TestObj(42));
+  p = static_cast<kstd::unique_ptr<TestObj>&&>(p);
   // Object must not be double-deleted
   EXPECT_EQ(TestObj::destroy_count, 0);
 }
 
 // 21. Comparison operators
 TEST_F(UniquePtrTest, ComparisonOperators) {
-  sk_std::unique_ptr<TestObj> null_ptr;
-  sk_std::unique_ptr<TestObj> p1(new TestObj(1));
-  sk_std::unique_ptr<TestObj> p2(new TestObj(2));
+  kstd::unique_ptr<TestObj> null_ptr;
+  kstd::unique_ptr<TestObj> p1(new TestObj(1));
+  kstd::unique_ptr<TestObj> p2(new TestObj(2));
 
   EXPECT_TRUE(null_ptr == nullptr);
   EXPECT_TRUE(nullptr == null_ptr);
@@ -255,7 +254,7 @@ class UniquePtrArrayTest : public ::testing::Test {
 
 // 22. Array default construction
 TEST_F(UniquePtrArrayTest, DefaultConstruction) {
-  sk_std::unique_ptr<ArrayObj[]> p;
+  kstd::unique_ptr<ArrayObj[]> p;
   EXPECT_EQ(p.get(), nullptr);
   EXPECT_FALSE(static_cast<bool>(p));
 }
@@ -263,7 +262,7 @@ TEST_F(UniquePtrArrayTest, DefaultConstruction) {
 // 23. Array construction + destructor calls delete[]
 TEST_F(UniquePtrArrayTest, ConstructionAndDestruction) {
   {
-    sk_std::unique_ptr<ArrayObj[]> p(new ArrayObj[3]);
+    kstd::unique_ptr<ArrayObj[]> p(new ArrayObj[3]);
     EXPECT_NE(p.get(), nullptr);
     EXPECT_EQ(ArrayObj::destroy_count, 0);
   }
@@ -272,7 +271,7 @@ TEST_F(UniquePtrArrayTest, ConstructionAndDestruction) {
 
 // 24. Array subscript operator
 TEST_F(UniquePtrArrayTest, SubscriptOperator) {
-  sk_std::unique_ptr<ArrayObj[]> p(new ArrayObj[3]);
+  kstd::unique_ptr<ArrayObj[]> p(new ArrayObj[3]);
   p[0].value = 10;
   p[1].value = 20;
   p[2].value = 30;
@@ -283,10 +282,10 @@ TEST_F(UniquePtrArrayTest, SubscriptOperator) {
 
 // 25. Array move construction
 TEST_F(UniquePtrArrayTest, MoveConstruction) {
-  sk_std::unique_ptr<ArrayObj[]> p1(new ArrayObj[2]);
+  kstd::unique_ptr<ArrayObj[]> p1(new ArrayObj[2]);
   ArrayObj* raw = p1.get();
-  sk_std::unique_ptr<ArrayObj[]> p2(
-      static_cast<sk_std::unique_ptr<ArrayObj[]>&&>(p1));
+  kstd::unique_ptr<ArrayObj[]> p2(
+      static_cast<kstd::unique_ptr<ArrayObj[]>&&>(p1));
   EXPECT_EQ(p1.get(), nullptr);
   EXPECT_EQ(p2.get(), raw);
 }
@@ -294,7 +293,7 @@ TEST_F(UniquePtrArrayTest, MoveConstruction) {
 // 26. Array release
 TEST_F(UniquePtrArrayTest, Release) {
   auto* raw = new ArrayObj[2];
-  sk_std::unique_ptr<ArrayObj[]> p(raw);
+  kstd::unique_ptr<ArrayObj[]> p(raw);
   ArrayObj* released = p.release();
   EXPECT_EQ(released, raw);
   EXPECT_EQ(p.get(), nullptr);
@@ -304,7 +303,7 @@ TEST_F(UniquePtrArrayTest, Release) {
 
 // 27. Array reset
 TEST_F(UniquePtrArrayTest, Reset) {
-  sk_std::unique_ptr<ArrayObj[]> p(new ArrayObj[2]);
+  kstd::unique_ptr<ArrayObj[]> p(new ArrayObj[2]);
   p.reset();
   EXPECT_EQ(p.get(), nullptr);
   EXPECT_EQ(ArrayObj::destroy_count, 2);
@@ -314,8 +313,8 @@ TEST_F(UniquePtrArrayTest, Reset) {
 TEST_F(UniquePtrArrayTest, Swap) {
   auto* raw1 = new ArrayObj[1];
   auto* raw2 = new ArrayObj[1];
-  sk_std::unique_ptr<ArrayObj[]> p1(raw1);
-  sk_std::unique_ptr<ArrayObj[]> p2(raw2);
+  kstd::unique_ptr<ArrayObj[]> p1(raw1);
+  kstd::unique_ptr<ArrayObj[]> p2(raw2);
   p1.swap(p2);
   EXPECT_EQ(p1.get(), raw2);
   EXPECT_EQ(p2.get(), raw1);
@@ -323,7 +322,7 @@ TEST_F(UniquePtrArrayTest, Swap) {
 
 // 29. Array nullptr assignment
 TEST_F(UniquePtrArrayTest, NullptrAssignment) {
-  sk_std::unique_ptr<ArrayObj[]> p(new ArrayObj[2]);
+  kstd::unique_ptr<ArrayObj[]> p(new ArrayObj[2]);
   p = nullptr;
   EXPECT_EQ(p.get(), nullptr);
   EXPECT_EQ(ArrayObj::destroy_count, 2);

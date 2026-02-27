@@ -2,19 +2,19 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "sk_vector"
-
 #include <gtest/gtest.h>
 
+#include "kstd_vector"
+
 TEST(SkVectorTest, DefaultConstructor) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   EXPECT_TRUE(v.empty());
   EXPECT_EQ(v.size(), 0);
   EXPECT_EQ(v.capacity(), 0);
 }
 
 TEST(SkVectorTest, PushBack) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   v.push_back(1);
   EXPECT_EQ(v.size(), 1);
   EXPECT_EQ(v.front(), 1);
@@ -28,7 +28,7 @@ TEST(SkVectorTest, PushBack) {
 }
 
 TEST(SkVectorTest, PopBack) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   v.push_back(1);
   v.push_back(2);
   v.pop_back();
@@ -39,7 +39,7 @@ TEST(SkVectorTest, PopBack) {
 }
 
 TEST(SkVectorTest, Resize) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   v.resize(5);
   EXPECT_EQ(v.size(), 5);
   for (size_t i = 0; i < 5; ++i) {
@@ -56,7 +56,7 @@ TEST(SkVectorTest, Resize) {
 }
 
 TEST(SkVectorTest, Clear) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   v.push_back(1);
   v.clear();
   EXPECT_TRUE(v.empty());
@@ -64,7 +64,7 @@ TEST(SkVectorTest, Clear) {
 }
 
 TEST(SkVectorTest, Access) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   v.push_back(10);
   v.push_back(20);
   EXPECT_EQ(v[0], 10);
@@ -72,22 +72,22 @@ TEST(SkVectorTest, Access) {
 }
 
 TEST(SkVectorTest, CopyConstructor) {
-  sk_std::vector<int> v1;
+  kstd::vector<int> v1;
   v1.push_back(1);
   v1.push_back(2);
 
-  sk_std::vector<int> v2(v1);
+  kstd::vector<int> v2(v1);
   EXPECT_EQ(v2.size(), 2);
   EXPECT_EQ(v2[0], 1);
   EXPECT_EQ(v2[1], 2);
 }
 
 TEST(SkVectorTest, AssignmentOperator) {
-  sk_std::vector<int> v1;
+  kstd::vector<int> v1;
   v1.push_back(1);
   v1.push_back(2);
 
-  sk_std::vector<int> v2;
+  kstd::vector<int> v2;
   v2 = v1;
   EXPECT_EQ(v2.size(), 2);
   EXPECT_EQ(v2[0], 1);
@@ -95,7 +95,7 @@ TEST(SkVectorTest, AssignmentOperator) {
 }
 
 TEST(SkVectorTest, Iterator) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   v.push_back(1);
   v.push_back(2);
   v.push_back(3);
@@ -108,7 +108,7 @@ TEST(SkVectorTest, Iterator) {
 }
 
 TEST(SkVectorTest, EraseSingle) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   v.push_back(1);
   v.push_back(2);
   v.push_back(3);
@@ -124,7 +124,7 @@ TEST(SkVectorTest, EraseSingle) {
 }
 
 TEST(SkVectorTest, EraseRange) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   for (int i = 1; i <= 5; ++i) {
     v.push_back(i);
   }
@@ -139,7 +139,7 @@ TEST(SkVectorTest, EraseRange) {
 }
 
 TEST(SkVectorTest, Remove) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   v.push_back(1);
   v.push_back(2);
   v.push_back(2);
@@ -153,7 +153,7 @@ TEST(SkVectorTest, Remove) {
 }
 
 TEST(SkVectorTest, RemoveIf) {
-  sk_std::vector<int> v;
+  kstd::vector<int> v;
   for (int i = 1; i <= 10; ++i) {
     v.push_back(i);
   }

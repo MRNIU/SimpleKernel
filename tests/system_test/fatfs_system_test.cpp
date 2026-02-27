@@ -7,9 +7,9 @@
 
 #include "block_device_provider.hpp"
 #include "fatfs.hpp"
+#include "kstd_cstdio"
+#include "kstd_cstring"
 #include "mount.hpp"
-#include "sk_cstdio"
-#include "sk_cstring"
 #include "system_test.h"
 #include "vfs.hpp"
 

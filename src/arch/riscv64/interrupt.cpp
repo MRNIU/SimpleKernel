@@ -9,9 +9,9 @@
 #include <opensbi_interface.h>
 
 #include "basic_info.hpp"
-#include "sk_cassert"
-#include "sk_cstdio"
-#include "sk_iostream"
+#include "kstd_cassert"
+#include "kstd_cstdio"
+#include "kstd_iostream"
 
 alignas(4) std::array<Interrupt::InterruptFunc,
                       cpu_io::detail::register_info::csr::ScauseInfo::

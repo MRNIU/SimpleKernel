@@ -14,8 +14,8 @@
 #include "basic_info.hpp"
 #include "expected.hpp"
 #include "kernel_log.hpp"
+#include "kstd_cassert"
 #include "singleton.hpp"
-#include "sk_cassert"
 #include "sk_stdlib.h"
 
 VirtualMemory::VirtualMemory() {

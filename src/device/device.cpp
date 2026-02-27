@@ -10,10 +10,10 @@
 #include "driver/virtio_blk_driver.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
+#include "kstd_unique_ptr"
 #include "platform_bus.hpp"
 #include "platform_traits.hpp"
 #include "singleton.hpp"
-#include "sk_unique_ptr"
 
 /// 设备初始化入口
 auto DeviceInit() -> void {
@@ -53,7 +53,7 @@ auto DeviceInit() -> void {
     if (devs[i]->resource.IsPlatform()) {
       const auto& plat = std::get<PlatformId>(devs[i]->resource.id);
       if (strcmp(plat.compatible, "virtio,mmio") == 0) {
-        auto buf = sk_std::make_unique<IoBuffer>(
+        auto buf = kstd::make_unique<IoBuffer>(
             VirtioBlkDriver<PlatformTraits>::kMinDmaBufferSize);
         if (buf && buf->IsValid()) {
           devs[i]->dma_buffer = buf.release();

@@ -9,8 +9,8 @@
 
 #include "arch.h"
 #include "kernel_log.hpp"
-#include "sk_cstdio"
-#include "sk_iostream"
+#include "kstd_cstdio"
+#include "kstd_iostream"
 
 namespace {
 /**
