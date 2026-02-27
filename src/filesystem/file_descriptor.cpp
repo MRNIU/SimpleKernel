@@ -126,7 +126,7 @@ auto FileDescriptorTable::Dup(int old_fd, int new_fd) -> Expected<int> {
 
   // 分配新的 fd
   if (new_fd == -1) {
-    for (int fd = 0; fd < kMaxFd; ++fd) {
+    for (int fd = kStderrFd + 1; fd < kMaxFd; ++fd) {
       if (table_[fd] == nullptr) {
         table_[fd] = file;
         ++open_count_;
