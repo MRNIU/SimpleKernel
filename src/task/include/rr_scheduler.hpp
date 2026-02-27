@@ -5,7 +5,9 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_
 
-#include "kstd_list"
+#include "etl/list.h"
+#include "kernel_config.hpp"
+#include "kernel_log.hpp"
 #include "scheduler_base.hpp"
 #include "task_control_block.hpp"
 
@@ -25,6 +27,11 @@ class RoundRobinScheduler : public SchedulerBase {
    */
   void Enqueue(TaskControlBlock* task) override {
     if (task) {
+      if (ready_queue.full()) {
+        klog::Err(
+            "RoundRobinScheduler::Enqueue: ready_queue full, dropping task\n");
+        return;
+      }
       // 重新分配时间片
       task->sched_info.time_slice_remaining =
           task->sched_info.time_slice_default;
@@ -117,8 +124,7 @@ class RoundRobinScheduler : public SchedulerBase {
 
  private:
   /// 就绪队列 (双向链表，支持从头部取、向尾部放，固定容量)
-  /// 就绪队列 (双向链表，支持从头部取、向尾部放，固定容量)
-  kstd::static_list<TaskControlBlock*, 64> ready_queue;
+  etl::list<TaskControlBlock*, kernel::config::kMaxReadyTasks> ready_queue;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_ */

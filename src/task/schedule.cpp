@@ -16,7 +16,6 @@
 #include "kernel_log.hpp"
 #include "kstd_cassert"
 #include "kstd_cstring"
-#include "kstd_vector"
 #include "per_cpu.hpp"
 #include "singleton.hpp"
 #include "sk_stdlib.h"

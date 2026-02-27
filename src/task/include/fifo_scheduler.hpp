@@ -5,7 +5,9 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_
 
-#include "kstd_list"
+#include "etl/list.h"
+#include "kernel_config.hpp"
+#include "kernel_log.hpp"
 #include "scheduler_base.hpp"
 #include "task_control_block.hpp"
 
@@ -29,6 +31,10 @@ class FifoScheduler : public SchedulerBase {
    * @param task 要加入的任务
    */
   void Enqueue(TaskControlBlock* task) override {
+    if (ready_queue.full()) {
+      klog::Err("FifoScheduler::Enqueue: ready_queue full, dropping task\n");
+      return;
+    }
     ready_queue.push_back(task);
     stats_.total_enqueues++;
   }
@@ -90,8 +96,7 @@ class FifoScheduler : public SchedulerBase {
 
  private:
   /// 就绪队列 (先进先出，固定容量)
-  /// 就绪队列 (先进先出，固定容量)
-  kstd::static_list<TaskControlBlock*, 64> ready_queue;
+  etl::list<TaskControlBlock*, kernel::config::kMaxReadyTasks> ready_queue;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_ */
