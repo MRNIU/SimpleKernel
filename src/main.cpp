@@ -22,6 +22,7 @@
 #include "sk_list"
 #include "sk_priority_queue"
 #include "sk_stdlib.h"
+#include "sk_unique_ptr"
 #include "sk_vector"
 #include "syscall.hpp"
 #include "task_control_block.hpp"
@@ -86,14 +87,14 @@ void create_test_tasks() {
   size_t core_id = cpu_io::GetCurrentCoreId();
   auto& tm = Singleton<TaskManager>::GetInstance();
 
-  auto task1 = new TaskControlBlock("Task1-Exit", 10, task1_func,
-                                    reinterpret_cast<void*>(0x1111));
-  auto task2 = new TaskControlBlock("Task2-Yield", 10, task2_func,
-                                    reinterpret_cast<void*>(0x2222));
-  auto task3 = new TaskControlBlock("Task3-Sync", 10, task3_func,
-                                    reinterpret_cast<void*>(0x3333));
-  auto task4 = new TaskControlBlock("Task4-Sleep", 10, task4_func,
-                                    reinterpret_cast<void*>(0x4444));
+  auto task1 = sk_std::make_unique<TaskControlBlock>(
+      "Task1-Exit", 10, task1_func, reinterpret_cast<void*>(0x1111));
+  auto task2 = sk_std::make_unique<TaskControlBlock>(
+      "Task2-Yield", 10, task2_func, reinterpret_cast<void*>(0x2222));
+  auto task3 = sk_std::make_unique<TaskControlBlock>(
+      "Task3-Sync", 10, task3_func, reinterpret_cast<void*>(0x3333));
+  auto task4 = sk_std::make_unique<TaskControlBlock>(
+      "Task4-Sleep", 10, task4_func, reinterpret_cast<void*>(0x4444));
 
   // 设置 CPU 亲和性，绑定到当前核心
   task1->cpu_affinity = (1UL << core_id);
@@ -101,10 +102,10 @@ void create_test_tasks() {
   task3->cpu_affinity = (1UL << core_id);
   task4->cpu_affinity = (1UL << core_id);
 
-  tm.AddTask(task1);
-  tm.AddTask(task2);
-  tm.AddTask(task3);
-  tm.AddTask(task4);
+  tm.AddTask(task1.release());
+  tm.AddTask(task2.release());
+  tm.AddTask(task3.release());
+  tm.AddTask(task4.release());
 
   klog::Info("Created 4 test tasks\n");
 }
