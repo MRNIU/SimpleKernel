@@ -5,6 +5,7 @@
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
 namespace vfs {
@@ -14,6 +15,7 @@ auto MkDir(const char* path) -> Expected<void> {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
+  LockGuard<SpinLock> guard(GetVfsState().vfs_lock_);
   // 解析父目录路径和目录名
   char parent_path[512];
   char dir_name[256];

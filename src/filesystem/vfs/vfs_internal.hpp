@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_SRC_FILESYSTEM_VFS_VFS_INTERNAL_HPP_
 
 #include "mount.hpp"
+#include "spinlock.hpp"
 #include "vfs.hpp"
 
 namespace vfs {
@@ -15,6 +16,7 @@ struct VfsState {
   bool initialized = false;
   MountTable* mount_table = nullptr;
   Dentry* root_dentry = nullptr;
+  SpinLock vfs_lock_{"vfs"};
 };
 
 // 获取 VFS 状态

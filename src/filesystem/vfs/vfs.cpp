@@ -10,6 +10,7 @@
 #include "singleton.hpp"
 #include "sk_cstdio"
 #include "sk_cstring"
+#include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
 namespace vfs {
@@ -107,6 +108,7 @@ auto Init() -> Expected<void> {
     return {};
   }
 
+  LockGuard<SpinLock> guard(GetVfsState().vfs_lock_);
   klog::Info("VFS: initializing...\n");
 
   // 初始化挂载表（使用全局单例，与 GetMountTable() 统一）

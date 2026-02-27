@@ -5,6 +5,7 @@
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
 namespace vfs {
@@ -18,6 +19,7 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
+  LockGuard<SpinLock> guard(GetVfsState().vfs_lock_);
   // 查找或创建 dentry
   auto lookup_result = Lookup(path);
   Dentry* dentry = nullptr;
@@ -60,13 +62,15 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
     }
 
     // 创建文件
-    // 创建文件
     if (parent_dentry->inode->ops == nullptr) {
       return std::unexpected(Error(ErrorCode::kDeviceNotSupported));
     }
 
     auto create_result = parent_dentry->inode->ops->Create(
         parent_dentry->inode, file_name, FileType::kRegular);
+    if (!create_result.has_value()) {
+      return std::unexpected(create_result.error());
+    }
 
     // 创建 dentry
     dentry = new Dentry();

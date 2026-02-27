@@ -5,6 +5,7 @@
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
 namespace vfs {
@@ -14,6 +15,7 @@ auto ReadDir(File* file, DirEntry* dirent, size_t count) -> Expected<size_t> {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
+  LockGuard<SpinLock> guard(GetVfsState().vfs_lock_);
   if (file->inode == nullptr || file->inode->type != FileType::kDirectory) {
     return std::unexpected(Error(ErrorCode::kFsNotADirectory));
   }

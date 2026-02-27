@@ -5,6 +5,7 @@
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
 namespace vfs {
@@ -14,6 +15,7 @@ auto Close(File* file) -> Expected<void> {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
+  LockGuard<SpinLock> guard(GetVfsState().vfs_lock_);
   if (file->ops != nullptr) {
     auto result = file->ops->Close(file);
     if (!result.has_value()) {

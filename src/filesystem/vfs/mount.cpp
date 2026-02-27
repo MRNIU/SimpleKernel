@@ -6,7 +6,9 @@
 
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "spinlock.hpp"
 #include "vfs.hpp"
+#include "vfs_internal.hpp"
 
 namespace vfs {
 
@@ -28,6 +30,7 @@ auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
+  LockGuard<SpinLock> guard(GetVfsState().vfs_lock_);
   // 检查挂载点数量
   if (mount_count_ >= kMaxMounts) {
     return std::unexpected(Error(ErrorCode::kFsMountFailed));

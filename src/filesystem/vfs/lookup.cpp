@@ -5,6 +5,7 @@
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
 namespace vfs {
@@ -18,6 +19,8 @@ auto Lookup(const char* path) -> Expected<Dentry*> {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
+  // 注意：Lookup 是内部函数，由持锁的上层 VFS 函数（Open/MkDir 等）调用，
+  // 此处不需要额外加锁，否则会导致 SpinLock 递归死锁。
   // 空路径或根目录
   if (path[0] == '/' && (path[1] == '\0' || path[1] == '/')) {
     if (GetVfsState().root_dentry == nullptr) {
