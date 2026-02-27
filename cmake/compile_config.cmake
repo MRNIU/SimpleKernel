@@ -173,6 +173,7 @@ TARGET_LINK_LIBRARIES (
               MPMCQueue
               device_framework
               fatfs_lib
+              etl::etl
               gcc
               $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},riscv64>:
               opensbi_interface
