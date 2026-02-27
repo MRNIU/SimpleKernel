@@ -12,13 +12,14 @@
 #include <new>
 
 #include "basic_info.hpp"
+#include "etl/vector.h"
 #include "fifo_scheduler.hpp"
 #include "idle_scheduler.hpp"
+#include "kernel_config.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cassert"
 #include "kstd_cstring"
-#include "kstd_vector"
 #include "rr_scheduler.hpp"
 #include "singleton.hpp"
 #include "sk_stdlib.h"
@@ -192,9 +193,9 @@ void TaskManager::ReparentChildren(TaskControlBlock* parent) {
   }
 }
 
-kstd::static_vector<TaskControlBlock*, 64> TaskManager::GetThreadGroup(
-    Pid tgid) {
-  kstd::static_vector<TaskControlBlock*, 64> result;
+etl::vector<TaskControlBlock*, kernel::config::kMaxReadyTasks>
+TaskManager::GetThreadGroup(Pid tgid) {
+  etl::vector<TaskControlBlock*, kernel::config::kMaxReadyTasks> result;
 
   LockGuard lock_guard(task_table_lock_);
 
