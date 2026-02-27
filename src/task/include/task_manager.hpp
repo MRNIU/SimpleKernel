@@ -12,13 +12,14 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "etl/list.h"
+#include "etl/priority_queue.h"
+#include "etl/unordered_map.h"
+#include "etl/vector.h"
 #include "expected.hpp"
 #include "interrupt_base.h"
-#include "kstd_list"
-#include "kstd_priority_queue"
+#include "kernel_config.hpp"
 #include "kstd_unique_ptr"
-#include "kstd_unordered_map"
-#include "kstd_vector"
 #include "per_cpu.hpp"
 #include "resource_id.hpp"
 #include "scheduler_base.hpp"
@@ -35,17 +36,17 @@ struct CpuSchedData {
   std::array<kstd::unique_ptr<SchedulerBase>, SchedPolicy::kPolicyCount>
       schedulers{};
 
-  /// 睡眠队列存储
-  kstd::static_vector<TaskControlBlock*, 64> sleeping_tasks_storage;
   /// 睡眠队列 (优先队列，按唤醒时间排序)
-  kstd::priority_queue<TaskControlBlock*,
-                       kstd::static_vector<TaskControlBlock*, 64>,
-                       TaskControlBlock::WakeTickCompare>
-      sleeping_tasks{sleeping_tasks_storage};
+  etl::priority_queue<TaskControlBlock*, kernel::config::kMaxSleepingTasks,
+                      TaskControlBlock::WakeTickCompare>
+      sleeping_tasks;
 
   /// 阻塞队列 (按资源 ID 分组)
-  kstd::static_unordered_map<ResourceId,
-                             kstd::static_list<TaskControlBlock*, 16>, 32, 64>
+  etl::unordered_map<
+      ResourceId,
+      etl::list<TaskControlBlock*, kernel::config::kMaxBlockedPerGroup>,
+      kernel::config::kMaxBlockedGroups,
+      kernel::config::kMaxBlockedGroupsBuckets>
       blocked_tasks;
 
   /// Per-CPU tick 计数 (每个核心独立计时)
@@ -204,16 +205,22 @@ class TaskManager {
 
   /// 全局任务表 (PID -> TCB 映射)
   SpinLock task_table_lock_{"task_table_lock"};
-  kstd::static_unordered_map<Pid, kstd::unique_ptr<TaskControlBlock>, 64, 128>
+  etl::unordered_map<Pid, kstd::unique_ptr<TaskControlBlock>,
+                     kernel::config::kMaxTasks,
+                     kernel::config::kMaxTasksBuckets>
       task_table_;
 
   /// 中断线程相关数据保护锁
   SpinLock interrupt_threads_lock_{"interrupt_threads_lock"};
   /// 中断号 -> 中断线程映射
-  kstd::static_unordered_map<uint64_t, TaskControlBlock*, 32, 64>
+  etl::unordered_map<uint64_t, TaskControlBlock*,
+                     kernel::config::kMaxInterruptThreads,
+                     kernel::config::kMaxInterruptThreadsBuckets>
       interrupt_threads_;
   /// 中断号 -> 工作队列映射
-  kstd::static_unordered_map<uint64_t, InterruptWorkQueue*, 32, 64>
+  etl::unordered_map<uint64_t, InterruptWorkQueue*,
+                     kernel::config::kMaxInterruptThreads,
+                     kernel::config::kMaxInterruptThreadsBuckets>
       interrupt_work_queues_;
 
   /// PID 分配器
@@ -240,9 +247,11 @@ class TaskManager {
   /**
    * @brief 获取线程组的所有线程
    * @param tgid 线程组 ID
-   * @return kstd::static_vector<TaskControlBlock*, 64> 线程组中的所有线程
+   * @return etl::vector<TaskControlBlock*, kernel::config::kMaxReadyTasks>
+   * 线程组中的所有线程
    */
-  kstd::static_vector<TaskControlBlock*, 64> GetThreadGroup(Pid tgid);
+  etl::vector<TaskControlBlock*, kernel::config::kMaxReadyTasks> GetThreadGroup(
+      Pid tgid);
 
   /**
    * @brief 向线程组中的所有线程发送信号
