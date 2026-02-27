@@ -18,6 +18,10 @@ RamFs::RamFs()
       root_inode_(nullptr),
       used_inodes_(0),
       mounted_(false),
+      file_data_pool_{},
+      file_data_pool_used_(0),
+      dir_data_pool_{},
+      dir_data_pool_used_(0),
       inode_ops_(this),
       file_ops_(this) {}
 
@@ -77,20 +81,21 @@ auto RamFs::Unmount() -> Expected<void> {
 
   klog::Info("RamFs: unmounting...\n");
 
-  // 释放所有 inode 的数据缓冲区
+  // Clear all inode data pointers (data lives in static pools)
   for (size_t i = 0; i < kMaxInodes; ++i) {
     if (inodes_[i].inode.type != FileType::kUnknown &&
         inodes_[i].data != nullptr) {
-      delete[] static_cast<uint8_t*>(inodes_[i].data);
       inodes_[i].data = nullptr;
     }
   }
 
-  // 重置状态
+  // 重置状态并释放静态池
   free_list_ = nullptr;
   root_inode_ = nullptr;
   used_inodes_ = 0;
   mounted_ = false;
+  file_data_pool_used_ = 0;
+  dir_data_pool_used_ = 0;
 
   klog::Info("RamFs: unmounted\n");
   return {};
@@ -135,9 +140,8 @@ auto RamFs::FreeInode(Inode* inode) -> Expected<void> {
 
   RamInode* ram_inode = static_cast<RamInode*>(inode->fs_private);
 
-  // 释放数据缓冲区
+  // Data lives in static pools; just clear the pointer (no individual reclaim)
   if (ram_inode->data != nullptr) {
-    delete[] static_cast<uint8_t*>(ram_inode->data);
     ram_inode->data = nullptr;
   }
 
@@ -509,7 +513,7 @@ auto RamFs::AddToDirectory(RamInode* dir, const char* name, Inode* inode)
   size_t current_entries = dir->capacity / sizeof(RamDirEntry);
   if (dir->child_count >= current_entries) {
     size_t new_capacity = (current_entries == 0) ? 16 : current_entries * 2;
-    RamDirEntry* new_data = new RamDirEntry[new_capacity];
+    RamDirEntry* new_data = AllocateDirEntries(new_capacity);
     if (new_data == nullptr) {
       return std::unexpected(Error(ErrorCode::kOutOfMemory));
     }
@@ -517,7 +521,7 @@ auto RamFs::AddToDirectory(RamInode* dir, const char* name, Inode* inode)
     // 复制旧数据
     if (dir->data != nullptr) {
       memcpy(new_data, dir->data, dir->child_count * sizeof(RamDirEntry));
-      delete[] static_cast<RamDirEntry*>(dir->data);
+      // Old allocation stays in pool (bump allocator — no per-entry free)
     }
 
     dir->data = new_data;
@@ -585,7 +589,7 @@ auto RamFs::ExpandFile(RamInode* inode, size_t new_size) -> Expected<void> {
   // 计算新容量（按 256 字节对齐）
   size_t new_capacity = ((new_size + 255) / 256) * 256;
 
-  uint8_t* new_data = new uint8_t[new_capacity];
+  uint8_t* new_data = static_cast<uint8_t*>(AllocateFileData(new_capacity));
   if (new_data == nullptr) {
     return std::unexpected(Error(ErrorCode::kOutOfMemory));
   }
@@ -593,13 +597,39 @@ auto RamFs::ExpandFile(RamInode* inode, size_t new_size) -> Expected<void> {
   // 复制旧数据
   if (inode->data != nullptr) {
     memcpy(new_data, inode->data, inode->inode.size);
-    delete[] static_cast<uint8_t*>(inode->data);
+    // Old allocation stays in pool (bump allocator — no per-block free)
   }
 
   inode->data = new_data;
   inode->capacity = new_capacity;
 
   return {};
+}
+
+auto RamFs::AllocateFileData(size_t size) -> void* {
+  // Align up to 16 bytes
+  size_t aligned = (size + 15UL) & ~15UL;
+  if (file_data_pool_used_ + aligned > kFileDataPoolSize) {
+    return nullptr;
+  }
+  void* ptr = &file_data_pool_[file_data_pool_used_];
+  file_data_pool_used_ += aligned;
+  return ptr;
+}
+
+auto RamFs::AllocateDirEntries(size_t count) -> RamDirEntry* {
+  size_t bytes = count * sizeof(RamDirEntry);
+  // Align up to alignof(RamDirEntry)
+  constexpr size_t kAlign = alignof(RamDirEntry);
+  size_t aligned = (bytes + kAlign - 1UL) & ~(kAlign - 1UL);
+  if (dir_data_pool_used_ + aligned > kDirDataPoolSize) {
+    return nullptr;
+  }
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+  auto* ptr =
+      reinterpret_cast<RamDirEntry*>(&dir_data_pool_[dir_data_pool_used_]);
+  dir_data_pool_used_ += aligned;
+  return ptr;
 }
 
 }  // namespace ramfs

@@ -147,6 +147,12 @@ class RamFs : public vfs::FileSystem {
   /// 初始文件容量
   static constexpr size_t kInitialCapacity = 256;
 
+  // Static pool constants — zero heap allocation
+  /// File data pool: 1 MB for regular file content
+  static constexpr size_t kFileDataPoolSize = 1024UL * 1024UL;
+  /// Dir data pool: 256 KB for directory entry arrays
+  static constexpr size_t kDirDataPoolSize = 256UL * 1024UL;
+
   RamInode inodes_[kMaxInodes];
   /// 空闲 inode 链表头
   RamInode* free_list_;
@@ -156,6 +162,12 @@ class RamFs : public vfs::FileSystem {
   size_t used_inodes_;
   /// 是否已挂载
   bool mounted_;
+
+  // Static pools (bump allocator, reset on Unmount)
+  alignas(16) uint8_t file_data_pool_[kFileDataPoolSize];
+  size_t file_data_pool_used_;
+  alignas(alignof(RamDirEntry)) uint8_t dir_data_pool_[kDirDataPoolSize];
+  size_t dir_data_pool_used_;
 
   // 操作实例
   RamFsInodeOps inode_ops_;
@@ -168,6 +180,10 @@ class RamFs : public vfs::FileSystem {
   auto RemoveFromDirectory(RamInode* dir, const char* name) -> Expected<void>;
   auto IsDirectoryEmpty(RamInode* dir) -> bool;
   auto ExpandFile(RamInode* inode, size_t new_size) -> Expected<void>;
+  /// Bump-allocate @p size bytes from the file data pool.
+  auto AllocateFileData(size_t size) -> void*;
+  /// Bump-allocate space for @p count RamDirEntry from the dir pool.
+  auto AllocateDirEntries(size_t count) -> RamDirEntry*;
 };
 
 }  // namespace ramfs
