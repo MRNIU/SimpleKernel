@@ -5,6 +5,7 @@
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "sk_unique_ptr"
 #include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
@@ -100,15 +101,16 @@ auto Lookup(const char* path) -> Expected<Dentry*> {
         }
 
         // 创建新的 dentry
-        child = new Dentry();
-        if (child == nullptr) {
+        auto new_child = sk_std::make_unique<Dentry>();
+        if (!new_child) {
           return std::unexpected(Error(ErrorCode::kOutOfMemory));
         }
 
-        strncpy(child->name, component, sizeof(child->name) - 1);
-        child->name[sizeof(child->name) - 1] = '\0';
-        child->inode = result.value();
-        AddChild(current, child);
+        strncpy(new_child->name, component, sizeof(new_child->name) - 1);
+        new_child->name[sizeof(new_child->name) - 1] = '\0';
+        new_child->inode = result.value();
+        child = new_child.get();
+        AddChild(current, new_child.release());
       } else {
         return std::unexpected(Error(ErrorCode::kFsFileNotFound));
       }

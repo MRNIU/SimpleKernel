@@ -5,6 +5,7 @@
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "sk_unique_ptr"
 #include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
@@ -63,14 +64,14 @@ auto MkDir(const char* path) -> Expected<void> {
   }
 
   // 创建 dentry
-  Dentry* new_dentry = new Dentry();
-  if (new_dentry == nullptr) {
+  auto new_dentry = sk_std::make_unique<Dentry>();
+  if (!new_dentry) {
     return std::unexpected(Error(ErrorCode::kOutOfMemory));
   }
 
   strncpy(new_dentry->name, dir_name, sizeof(new_dentry->name) - 1);
   new_dentry->inode = result.value();
-  AddChild(parent_dentry, new_dentry);
+  AddChild(parent_dentry, new_dentry.release());
 
   klog::Debug("VFS: created directory '%s'\n", path);
   return {};

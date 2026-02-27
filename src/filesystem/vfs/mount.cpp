@@ -6,6 +6,7 @@
 
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "sk_unique_ptr"
 #include "spinlock.hpp"
 #include "vfs.hpp"
 #include "vfs_internal.hpp"
@@ -62,11 +63,12 @@ auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
   }
 
   // 为根 inode 创建 dentry
-  Dentry* root_dentry = new Dentry();
-  if (root_dentry == nullptr) {
+  auto root_dentry_ptr = sk_std::make_unique<Dentry>();
+  if (!root_dentry_ptr) {
     fs->Unmount();
     return std::unexpected(Error(ErrorCode::kOutOfMemory));
   }
+  Dentry* root_dentry = root_dentry_ptr.release();
 
   root_dentry->inode = root_inode;
   strncpy(root_dentry->name, "/", sizeof(root_dentry->name));

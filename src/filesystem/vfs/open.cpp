@@ -5,6 +5,7 @@
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "sk_cstring"
+#include "sk_unique_ptr"
 #include "spinlock.hpp"
 #include "vfs_internal.hpp"
 
@@ -73,15 +74,16 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
     }
 
     // 创建 dentry
-    dentry = new Dentry();
-    if (dentry == nullptr) {
+    auto new_dentry = sk_std::make_unique<Dentry>();
+    if (!new_dentry) {
       return std::unexpected(Error(ErrorCode::kOutOfMemory));
     }
 
-    strncpy(dentry->name, file_name, sizeof(dentry->name) - 1);
-    dentry->name[sizeof(dentry->name) - 1] = '\0';
-    dentry->inode = create_result.value();
-    AddChild(parent_dentry, dentry);
+    strncpy(new_dentry->name, file_name, sizeof(new_dentry->name) - 1);
+    new_dentry->name[sizeof(new_dentry->name) - 1] = '\0';
+    new_dentry->inode = create_result.value();
+    dentry = new_dentry.get();
+    AddChild(parent_dentry, new_dentry.release());
   } else {
     dentry = lookup_result.value();
   }
@@ -97,10 +99,11 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
   }
 
   // 创建 File 对象
-  File* file = new File();
-  if (file == nullptr) {
+  auto new_file = sk_std::make_unique<File>();
+  if (!new_file) {
     return std::unexpected(Error(ErrorCode::kOutOfMemory));
   }
+  File* file = new_file.release();
 
   file->inode = dentry->inode;
   file->dentry = dentry;
