@@ -37,8 +37,10 @@ struct CpuSchedData {
       schedulers{};
 
   /// 睡眠队列 (优先队列，按唤醒时间排序)
-  etl::priority_queue<TaskControlBlock*, kernel::config::kMaxSleepingTasks,
-                      TaskControlBlock::WakeTickCompare>
+  etl::priority_queue<
+      TaskControlBlock*, kernel::config::kMaxSleepingTasks,
+      etl::vector<TaskControlBlock*, kernel::config::kMaxSleepingTasks>,
+      TaskControlBlock::WakeTickCompare>
       sleeping_tasks;
 
   /// 阻塞队列 (按资源 ID 分组)
