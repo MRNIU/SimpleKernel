@@ -1,0 +1,51 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ * @brief Pool-backed doubly-linked list using ETL list_ext internally.
+ *
+ * kstd::list<T> wraps etl::list_ext<T> which takes a kstd::PoolRef&
+ * for node allocation. Multiple lists can share the same pool.
+ *
+ * Usage:
+ * @code
+ *   // Pool type is etl::ilist<T>::data_node_t
+ *   kstd::Pool<kstd::list_node_t<int>, 64> pool;
+ *   kstd::list<int> my_list(pool);
+ *   my_list.push_back(42);
+ * @endcode
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_LIST_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_LIST_
+
+#include <cstddef>
+
+#include "etl/list.h"
+
+#include "kstd_pool.hpp"
+
+namespace kstd {
+
+/// @brief Doubly-linked list with externally-provided node pool.
+///
+/// Requires a kstd::PoolRef& at construction for node allocation.
+template <typename T>
+using list = etl::list_ext<T>;
+
+/// @brief Fixed-capacity list with internal static storage.
+template <typename T, size_t N>
+using static_list = etl::list<T, N>;
+
+/// @brief Type-erased list interface.
+template <typename T>
+using ilist = etl::ilist<T>;
+
+/// @brief Node type for list<T> pools.
+///
+/// Use this to declare pools for kstd::list<T>:
+///   kstd::Pool<kstd::list_node_t<int>, 64> pool;
+template <typename T>
+using list_node_t = typename etl::ilist<T>::data_node_t;
+
+}  // namespace kstd
+
+#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_LIST_

@@ -1,0 +1,487 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_UNORDERED_MAP_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_UNORDERED_MAP_
+
+#include <cstddef>
+#include <functional>
+#include <new>
+#include <utility>
+
+#include "kstd_pool.hpp"
+
+namespace kstd {
+
+/**
+ * @brief Pool-backed unordered map for kstd namespace.
+ * @note Node allocation uses kstd::PoolRef instead of heap. Bucket array is externally provided.
+ */
+template <typename Key, typename Value, typename Hash = std::hash<Key>,
+          typename KeyEqual = std::equal_to<Key>>
+class unordered_map {
+ public:
+  using key_type = Key;
+  using mapped_type = Value;
+  using value_type = std::pair<const Key, Value>;
+  using size_type = size_t;
+  using hasher = Hash;
+  using key_equal = KeyEqual;
+
+ private:
+  struct Node;
+
+ public:
+  /// Exposed node type for pool sizing (used by kstd_pools.hpp).
+  using node_type = Node;
+
+ private:
+  struct Node {
+    value_type data;
+    Node* next;
+
+    Node(const Key& k, const Value& v) : data(k, v), next(nullptr) {}
+
+    Node(const value_type& val) : data(val), next(nullptr) {}
+
+    Node(const Key& k, Value&& v)
+        : data(k, static_cast<Value&&>(v)), next(nullptr) {}
+
+    Node(value_type&& val)
+        : data(static_cast<value_type&&>(val)), next(nullptr) {}
+  };
+
+ public:
+  class iterator {
+   public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = unordered_map::value_type;
+    using difference_type = std::ptrdiff_t;
+    using pointer = value_type*;
+    using reference = value_type&;
+
+    iterator() : map_(nullptr), bucket_idx_(0), node_(nullptr) {}
+
+    iterator(unordered_map* map, size_type bucket_idx, Node* node)
+        : map_(map), bucket_idx_(bucket_idx), node_(node) {
+      if (node_ == nullptr && map_ != nullptr) {
+        advance_to_next_bucket();
+      }
+    }
+
+    reference operator*() const { return node_->data; }
+    pointer operator->() const { return &(node_->data); }
+
+    iterator& operator++() {
+      if (node_) {
+        node_ = node_->next;
+        if (node_ == nullptr) {
+          ++bucket_idx_;
+          advance_to_next_bucket();
+        }
+      }
+      return *this;
+    }
+
+    iterator operator++(int) {
+      iterator tmp = *this;
+      ++(*this);
+      return tmp;
+    }
+
+    bool operator==(const iterator& other) const {
+      return node_ == other.node_;
+    }
+
+    bool operator!=(const iterator& other) const {
+      return node_ != other.node_;
+    }
+
+   private:
+    void advance_to_next_bucket() {
+      while (bucket_idx_ < map_->bucket_count_ &&
+             map_->buckets_[bucket_idx_] == nullptr) {
+        ++bucket_idx_;
+      }
+      if (bucket_idx_ < map_->bucket_count_) {
+        node_ = map_->buckets_[bucket_idx_];
+      } else {
+        node_ = nullptr;
+      }
+    }
+
+    unordered_map* map_;
+    size_type bucket_idx_;
+    Node* node_;
+  };
+
+  class const_iterator {
+   public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = unordered_map::value_type;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const value_type*;
+    using reference = const value_type&;
+
+    const_iterator() : map_(nullptr), bucket_idx_(0), node_(nullptr) {}
+
+    const_iterator(const unordered_map* map, size_type bucket_idx,
+                   const Node* node)
+        : map_(map), bucket_idx_(bucket_idx), node_(node) {
+      if (node_ == nullptr && map_ != nullptr) {
+        advance_to_next_bucket();
+      }
+    }
+
+    const_iterator(const iterator& it)
+        : map_(it.map_), bucket_idx_(it.bucket_idx_), node_(it.node_) {}
+
+    reference operator*() const { return node_->data; }
+    pointer operator->() const { return &(node_->data); }
+
+    const_iterator& operator++() {
+      if (node_) {
+        node_ = node_->next;
+        if (node_ == nullptr) {
+          ++bucket_idx_;
+          advance_to_next_bucket();
+        }
+      }
+      return *this;
+    }
+
+    const_iterator operator++(int) {
+      const_iterator tmp = *this;
+      ++(*this);
+      return tmp;
+    }
+
+    bool operator==(const const_iterator& other) const {
+      return node_ == other.node_;
+    }
+
+    bool operator!=(const const_iterator& other) const {
+      return node_ != other.node_;
+    }
+
+   private:
+    void advance_to_next_bucket() {
+      while (bucket_idx_ < map_->bucket_count_ &&
+             map_->buckets_[bucket_idx_] == nullptr) {
+        ++bucket_idx_;
+      }
+      if (bucket_idx_ < map_->bucket_count_) {
+        node_ = map_->buckets_[bucket_idx_];
+      } else {
+        node_ = nullptr;
+      }
+    }
+
+    const unordered_map* map_;
+    size_type bucket_idx_;
+    const Node* node_;
+  };
+
+  // 构造函数
+  unordered_map(PoolRef& node_pool, void* bucket_buffer, size_type bucket_count)
+      : buckets_(static_cast<Node**>(bucket_buffer)),
+        bucket_count_(bucket_count),
+        size_(0),
+        hasher_(Hash()),
+        key_equal_(KeyEqual()),
+        node_pool_(&node_pool) {
+    for (size_type i = 0; i < bucket_count_; ++i) {
+      buckets_[i] = nullptr;
+    }
+  }
+
+  unordered_map(PoolRef& node_pool, void* bucket_buffer, size_type bucket_count,
+                const Hash& hash, const KeyEqual& equal)
+      : buckets_(static_cast<Node**>(bucket_buffer)),
+        bucket_count_(bucket_count),
+        size_(0),
+        hasher_(hash),
+        key_equal_(equal),
+        node_pool_(&node_pool) {
+    for (size_type i = 0; i < bucket_count_; ++i) {
+      buckets_[i] = nullptr;
+    }
+  }
+
+  // 禁用拷贝构造
+  unordered_map(const unordered_map& other) = delete;
+
+  // 移动构造
+  unordered_map(unordered_map&& other) noexcept
+      : buckets_(other.buckets_),
+        bucket_count_(other.bucket_count_),
+        size_(other.size_),
+        hasher_(other.hasher_),
+        key_equal_(other.key_equal_),
+        node_pool_(other.node_pool_) {
+    other.buckets_ = nullptr;
+    other.bucket_count_ = 0;
+    other.size_ = 0;
+  }
+
+  // 析构函数
+  ~unordered_map() { destroy(); }
+
+  // 禁用拷贝赋值
+  unordered_map& operator=(const unordered_map& other) = delete;
+
+  // 移动赋值
+  unordered_map& operator=(unordered_map&& other) noexcept {
+    if (this != &other) {
+      destroy();
+      buckets_ = other.buckets_;
+      bucket_count_ = other.bucket_count_;
+      size_ = other.size_;
+      hasher_ = other.hasher_;
+      key_equal_ = other.key_equal_;
+      node_pool_ = other.node_pool_;
+      other.buckets_ = nullptr;
+      other.bucket_count_ = 0;
+      other.size_ = 0;
+    }
+    return *this;
+  }
+
+  // 迭代器
+  iterator begin() {
+    for (size_type i = 0; i < bucket_count_; ++i) {
+      if (buckets_[i] != nullptr) {
+        return iterator(this, i, buckets_[i]);
+      }
+    }
+    return end();
+  }
+
+  const_iterator begin() const {
+    for (size_type i = 0; i < bucket_count_; ++i) {
+      if (buckets_[i] != nullptr) {
+        return const_iterator(this, i, buckets_[i]);
+      }
+    }
+    return end();
+  }
+
+  const_iterator cbegin() const { return begin(); }
+
+  iterator end() { return iterator(this, bucket_count_, nullptr); }
+
+  const_iterator end() const {
+    return const_iterator(this, bucket_count_, nullptr);
+  }
+
+  const_iterator cend() const { return end(); }
+
+  // 容量
+  bool empty() const { return size_ == 0; }
+  size_type size() const { return size_; }
+  size_type bucket_count() const { return bucket_count_; }
+
+  // 修改器
+  void clear() {
+    for (size_type i = 0; i < bucket_count_; ++i) {
+      Node* node = buckets_[i];
+      while (node != nullptr) {
+        Node* next = node->next;
+        node_pool_->destroy<Node>(node);
+        node = next;
+      }
+      buckets_[i] = nullptr;
+    }
+    size_ = 0;
+  }
+
+  std::pair<iterator, bool> insert(const value_type& value) {
+    size_type bucket_idx = bucket_index(value.first);
+    Node* node = buckets_[bucket_idx];
+
+    // 检查是否已存在
+    while (node != nullptr) {
+      if (key_equal_(node->data.first, value.first)) {
+        return {iterator(this, bucket_idx, node), false};
+      }
+      node = node->next;
+    }
+
+    // 插入新节点
+    Node* new_node = node_pool_->create<Node>(value);
+    new_node->next = buckets_[bucket_idx];
+    buckets_[bucket_idx] = new_node;
+    ++size_;
+
+    return {iterator(this, bucket_idx, new_node), true};
+  }
+
+  std::pair<iterator, bool> insert(value_type&& value) {
+    size_type bucket_idx = bucket_index(value.first);
+    Node* node = buckets_[bucket_idx];
+
+    // Check if key already exists
+    while (node != nullptr) {
+      if (key_equal_(node->data.first, value.first)) {
+        return {iterator(this, bucket_idx, node), false};
+      }
+      node = node->next;
+    }
+
+    // Insert new node with move
+    Node* new_node = node_pool_->create<Node>(static_cast<value_type&&>(value));
+    new_node->next = buckets_[bucket_idx];
+    buckets_[bucket_idx] = new_node;
+    ++size_;
+
+    return {iterator(this, bucket_idx, new_node), true};
+  }
+
+  template <typename... Args>
+  std::pair<iterator, bool> emplace(Args&&... args) {
+    value_type value(static_cast<Args&&>(args)...);
+    return insert(static_cast<value_type&&>(value));
+  }
+
+  size_type erase(const Key& key) {
+    size_type bucket_idx = bucket_index(key);
+    Node* node = buckets_[bucket_idx];
+    Node* prev = nullptr;
+
+    while (node != nullptr) {
+      if (key_equal_(node->data.first, key)) {
+        if (prev == nullptr) {
+          buckets_[bucket_idx] = node->next;
+        } else {
+          prev->next = node->next;
+        }
+        node_pool_->destroy<Node>(node);
+        --size_;
+        return 1;
+      }
+      prev = node;
+      node = node->next;
+    }
+
+    return 0;
+  }
+
+  // 查找
+  iterator find(const Key& key) {
+    size_type bucket_idx = bucket_index(key);
+    Node* node = buckets_[bucket_idx];
+
+    while (node != nullptr) {
+      if (key_equal_(node->data.first, key)) {
+        return iterator(this, bucket_idx, node);
+      }
+      node = node->next;
+    }
+
+    return end();
+  }
+
+  const_iterator find(const Key& key) const {
+    size_type bucket_idx = bucket_index(key);
+    Node* node = buckets_[bucket_idx];
+
+    while (node != nullptr) {
+      if (key_equal_(node->data.first, key)) {
+        return const_iterator(this, bucket_idx, node);
+      }
+      node = node->next;
+    }
+
+    return end();
+  }
+
+  size_type count(const Key& key) const { return find(key) != end() ? 1 : 0; }
+
+  bool contains(const Key& key) const { return find(key) != end(); }
+
+  // 元素访问
+  Value& operator[](const Key& key) {
+    iterator it = find(key);
+    if (it != end()) {
+      return it->second;
+    }
+
+    auto result = insert(value_type(key, Value()));
+    return result.first->second;
+  }
+
+  Value& operator[](Key&& key) {
+    iterator it = find(key);
+    if (it != end()) {
+      return it->second;
+    }
+
+    auto result =
+        insert(value_type(static_cast<Key&&>(key), Value()));
+    return result.first->second;
+  }
+
+  Value& at(const Key& key) {
+    iterator it = find(key);
+    if (it != end()) {
+      return it->second;
+    }
+    // 在内核环境中，无法抛出异常，返回默认值引用
+    static Value default_value{};
+    return default_value;
+  }
+
+  const Value& at(const Key& key) const {
+    const_iterator it = find(key);
+    if (it != end()) {
+      return it->second;
+    }
+    // 在内核环境中，无法抛出异常，返回默认值引用
+    static Value default_value{};
+    return default_value;
+  }
+
+  // 桶接口
+  size_type bucket(const Key& key) const { return bucket_index(key); }
+
+  size_type bucket_size(size_type n) const {
+    size_type count = 0;
+    Node* node = buckets_[n];
+    while (node != nullptr) {
+      ++count;
+      node = node->next;
+    }
+    return count;
+  }
+
+  // Hash 策略
+  float load_factor() const {
+    return bucket_count_ == 0 ? 0.0f
+                              : static_cast<float>(size_) / bucket_count_;
+  }
+
+ private:
+  size_type bucket_index(const Key& key) const {
+    return hasher_(key) % bucket_count_;
+  }
+
+  void destroy() {
+    clear();
+    buckets_ = nullptr;
+    bucket_count_ = 0;
+  }
+
+  static constexpr size_type kMaxLoadFactor = 1;
+
+  Node** buckets_;
+  size_type bucket_count_;
+  size_type size_;
+  hasher hasher_;
+  key_equal key_equal_;
+  PoolRef* node_pool_;
+};
+
+}  // namespace kstd
+
+#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_UNORDERED_MAP_ */

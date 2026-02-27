@@ -1,0 +1,57 @@
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ * @brief Pool-backed vector using ETL vector_ext internally.
+ *
+ * kstd::vector<T> wraps etl::vector_ext<T> with buffer management.
+ * The buffer is provided externally (from a pool or static storage).
+ *
+ * @note ETL vector_ext requires the buffer to be provided at construction.
+ *       This wrapper does NOT own the buffer — the caller must ensure the
+ *       buffer outlives the vector.
+ */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_VECTOR_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_VECTOR_
+
+#include <cstddef>
+
+#include "etl/vector.h"
+
+namespace kstd {
+
+/// @brief Vector with externally-provided storage buffer.
+///
+/// This is a thin alias over etl::vector_ext<T>. The buffer must be
+/// provided at construction time and must outlive the vector.
+///
+/// Usage:
+/// @code
+///   alignas(int) uint8_t buf[sizeof(int) * 64];
+///   kstd::vector<int> v(buf, 64);
+///   v.push_back(42);
+/// @endcode
+///
+/// Or with a fixed-capacity convenience:
+/// @code
+///   kstd::static_vector<int, 64> v;
+///   v.push_back(42);
+/// @endcode
+template <typename T>
+using vector = etl::vector_ext<T>;
+
+/// @brief Fixed-capacity vector with internal static storage.
+///
+/// Convenience alias for when you know the max capacity at compile time.
+/// No external buffer management needed.
+template <typename T, size_t N>
+using static_vector = etl::vector<T, N>;
+
+/// @brief Type-erased vector interface.
+///
+/// Useful for functions that accept vectors of any capacity.
+template <typename T>
+using ivector = etl::ivector<T>;
+
+}  // namespace kstd
+
+#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_VECTOR_

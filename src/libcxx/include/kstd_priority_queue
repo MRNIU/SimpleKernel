@@ -1,0 +1,101 @@
+/** @copyright Copyright The SimpleKernel Contributors */
+
+#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_PRIORITY_QUEUE_
+#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_PRIORITY_QUEUE_
+
+#include <algorithm>
+#include <functional>
+
+#include "kstd_vector"
+
+namespace kstd {
+
+/**
+ * @brief Priority queue adapter wrapping a reference to an external container.
+ *
+ * This version of priority_queue does not own the underlying container.
+ * It takes a reference to an etl::ivector (or kstd::vector/static_vector)
+ * and manages it as a heap. This is required because ETL vectors often
+ * need externally provided buffers at construction.
+ *
+ * @tparam T The type of elements.
+ * @tparam Container The container type, defaults to kstd::ivector<T>.
+ * @tparam Compare The comparison type, defaults to std::less.
+ */
+template <class T, class Container = ivector<T>,
+          class Compare = std::less<typename Container::value_type>>
+class priority_queue {
+ public:
+  using value_type = typename Container::value_type;
+  using reference = typename Container::reference;
+  using const_reference = typename Container::const_reference;
+  using size_type = typename Container::size_type;
+  using container_type = Container;
+
+ protected:
+  Container& c;
+  Compare comp;
+
+ public:
+  priority_queue() = delete;
+
+  /**
+   * @brief Construct a priority queue from an existing container.
+   * @param cont Reference to the container to be used as the heap.
+   * @param compare Comparison function object.
+   */
+  explicit priority_queue(Container& cont, const Compare& compare = Compare())
+      : c(cont), comp(compare) {
+    std::make_heap(c.begin(), c.end(), comp);
+  }
+
+  /**
+   * @brief Check if the queue is empty.
+   * @return True if empty, false otherwise.
+   */
+  [[nodiscard]] auto empty() const -> bool { return c.size() == 0; }
+
+  /**
+   * @brief Get the number of elements in the queue.
+   * @return The number of elements.
+   */
+  [[nodiscard]] auto size() const -> size_type { return c.size(); }
+
+  /**
+   * @brief Get the top element of the queue.
+   * @return Reference to the top element.
+   */
+  [[nodiscard]] auto top() const -> const_reference { return c.front(); }
+
+  /**
+   * @brief Push an element into the queue.
+   * @param value The value to push.
+   */
+  auto push(const value_type& value) -> void {
+    c.push_back(value);
+    std::push_heap(c.begin(), c.end(), comp);
+  }
+
+  /**
+   * @brief Push an element into the queue (move version).
+   * @param value The value to push.
+   */
+  auto push(value_type&& value) -> void {
+    c.push_back(static_cast<value_type&&>(value));
+    std::push_heap(c.begin(), c.end(), comp);
+  }
+
+  /**
+   * @brief Remove the top element from the queue.
+   */
+  auto pop() -> void {
+    if (c.size() > 0) {
+      std::pop_heap(c.begin(), c.end(), comp);
+      c.pop_back();
+    }
+  }
+};
+
+}  // namespace kstd
+
+#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_PRIORITY_QUEUE_
