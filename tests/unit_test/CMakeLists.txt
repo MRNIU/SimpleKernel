@@ -9,6 +9,7 @@ ADD_EXECUTABLE (
     ${PROJECT_NAME}
     mocks/arch.cpp
     mocks/test_environment_state.cpp
+    mocks/io_buffer_mock.cpp
     sk_libc_test.cpp
     sk_ctype_test.cpp
     sk_string_test.cpp
@@ -24,6 +25,7 @@ ADD_EXECUTABLE (
     sk_set_test.cpp
     sk_unordered_map_test.cpp
     sk_shared_ptr_test.cpp
+    sk_unique_ptr_test.cpp
     task/fixtures/task_test_harness.cpp
     vfs_test.cpp
     ramfs_test.cpp
@@ -37,7 +39,6 @@ ADD_EXECUTABLE (
     ${CMAKE_SOURCE_DIR}/src/task/task_control_block.cpp
     ${CMAKE_SOURCE_DIR}/src/task/task_manager.cpp
     ${CMAKE_SOURCE_DIR}/src/task/tick_update.cpp
-    ${CMAKE_SOURCE_DIR}/src/task/wait.cpp
     ${CMAKE_SOURCE_DIR}/src/task/wait.cpp
     ${CMAKE_SOURCE_DIR}/src/device/device.cpp)
 
@@ -75,6 +76,9 @@ TARGET_LINK_LIBRARIES (
             dtc-lib
             bmalloc
             MPMCQueue
+            cpu_io
+            device_framework
+            device
             task
             filesystem
             fatfs_lib)

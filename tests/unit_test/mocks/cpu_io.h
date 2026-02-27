@@ -52,6 +52,11 @@ inline bool GetInterruptStatus() {
   return core.interrupt_enabled;
 }
 
+// Memory barrier stubs for unit testing
+inline void Mb() {}
+inline void Rmb() {}
+inline void Wmb() {}
+
 namespace virtual_memory {
 
 // 页大小常量
