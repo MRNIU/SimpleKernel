@@ -17,9 +17,9 @@ TARGET_LINK_LIBRARIES (${PROJECT_NAME} PRIVATE kernel_link_libraries libc
 LIST (
     APPEND
     ${PROJECT_NAME}_QEMU_BOOT_FLAGS
-    "-D;${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}_qemu.log -bios
-        ${u-boot_BINARY_DIR}/spl/u-boot-spl.bin -device
-        loader,file=${u-boot_BINARY_DIR}/u-boot.itb,addr=0x80200000")
+    "-D;${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}_qemu.log"
+    "-bios;${u-boot_BINARY_DIR}/spl/u-boot-spl.bin"
+    "-device;loader,file=${u-boot_BINARY_DIR}/u-boot.itb,addr=0x80200000")
 
 # 添加 run 和 debug target
 ADD_RUN_TARGET (

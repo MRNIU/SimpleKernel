@@ -45,7 +45,7 @@
       "cacheVariables": {
         "CMAKE_VERBOSE_MAKEFILE": {
           "type": "BOOL",
-          "value": "TRUE"
+          "value": "FALSE"
         },
         "CMAKE_EXPORT_COMPILE_COMMANDS": {
           "type": "BOOL",
@@ -126,7 +126,7 @@
         },
         "LIBRARY_OUTPUT_PATH": {
           "type": "STRING",
-          "value": "${sourceDir}/build_x86_64/bin"
+          "value": "${sourceDir}/build_x86_64/lib"
         },
         "QEMU_MACHINE_FLAGS": {
           "type": "STRING",
@@ -163,7 +163,7 @@
         },
         "LIBRARY_OUTPUT_PATH": {
           "type": "STRING",
-          "value": "${sourceDir}/build_riscv64/bin"
+          "value": "${sourceDir}/build_riscv64/lib"
         },
         "USE_NO_RELAX": {
           "type": "BOOL",
@@ -204,7 +204,7 @@
         },
         "LIBRARY_OUTPUT_PATH": {
           "type": "STRING",
-          "value": "${sourceDir}/build_aarch64/bin"
+          "value": "${sourceDir}/build_aarch64/lib"
         },
         "QEMU_MACHINE_FLAGS": {
           "type": "STRING",
