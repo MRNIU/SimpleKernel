@@ -81,6 +81,7 @@ class FileDescriptorTable {
    */
 
   [[nodiscard]] auto CloseAll() -> Expected<void>;
+
   /**
    * @brief 设置标准文件描述符
    * @param stdin_file stdin 文件对象
@@ -88,7 +89,6 @@ class FileDescriptorTable {
    * @param stderr_file stderr 文件对象
    * @return Expected<void> 成功或错误
    */
-
   [[nodiscard]] auto SetupStandardFiles(vfs::File* stdin_file,
                                         vfs::File* stdout_file,
                                         vfs::File* stderr_file)
