@@ -12,7 +12,6 @@
 #include "interrupt_base.h"
 #include "kernel_log.hpp"
 #include "kstd_cstring"
-#include "kstd_vector"
 #include "singleton.hpp"
 #include "sk_stdlib.h"
 #include "virtual_memory.hpp"
