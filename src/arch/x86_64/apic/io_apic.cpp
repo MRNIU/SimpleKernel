@@ -94,19 +94,19 @@ void IoApic::PrintInfo() const {
 
 uint32_t IoApic::Read(uint32_t reg) const {
   etl::io_port_wo<uint32_t> sel{
-      reinterpret_cast<volatile uint32_t*>(base_address_ + kRegSel)};
+      reinterpret_cast<void*>(base_address_ + kRegSel)};
   sel.write(reg);
   etl::io_port_ro<uint32_t> win{
-      reinterpret_cast<volatile uint32_t*>(base_address_ + kRegWin)};
+      reinterpret_cast<void*>(base_address_ + kRegWin)};
   return win.read();
 }
 
 void IoApic::Write(uint32_t reg, uint32_t value) const {
   etl::io_port_wo<uint32_t> sel{
-      reinterpret_cast<volatile uint32_t*>(base_address_ + kRegSel)};
+      reinterpret_cast<void*>(base_address_ + kRegSel)};
   sel.write(reg);
   etl::io_port_wo<uint32_t> win{
-      reinterpret_cast<volatile uint32_t*>(base_address_ + kRegWin)};
+      reinterpret_cast<void*>(base_address_ + kRegWin)};
   win.write(value);
 }
 

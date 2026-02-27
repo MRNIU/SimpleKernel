@@ -47,8 +47,7 @@ class VirtioBlkDriver {
 
     auto base = ctx->base;
 
-    etl::io_port_ro<uint32_t> magic_reg{
-        reinterpret_cast<volatile uint32_t*>(base)};
+    etl::io_port_ro<uint32_t> magic_reg{reinterpret_cast<void*>(base)};
     auto magic = magic_reg.read();
     if (magic != device_framework::virtio::kMmioMagicValue) {
       klog::Debug("VirtioBlkDriver: 0x%lX not a VirtIO device (magic=0x%X)\n",
@@ -57,10 +56,8 @@ class VirtioBlkDriver {
     }
 
     constexpr uint32_t kBlockDeviceId = 2;
-    etl::io_port_ro<uint32_t> device_id_reg{
-        reinterpret_cast<volatile uint32_t*>(
-            base +
-            device_framework::virtio::MmioTransport<>::MmioReg::kDeviceId)};
+    etl::io_port_ro<uint32_t> device_id_reg{reinterpret_cast<void*>(
+        base + device_framework::virtio::MmioTransport<>::MmioReg::kDeviceId)};
     auto device_id = device_id_reg.read();
     if (device_id != kBlockDeviceId) {
       klog::Debug("VirtioBlkDriver: 0x%lX device_id=%u (not block)\n", base,
