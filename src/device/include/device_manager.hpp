@@ -82,7 +82,6 @@ class DeviceManager {
         continue;
       }
 
-      devices_[i].bound.store(true, std::memory_order_release);
       ++probed;
       klog::Info("DeviceManager: '%s' bound to '%s'\n", devices_[i].name,
                  drv->descriptor->name);
