@@ -4,7 +4,6 @@
 
 #include "interrupt.h"
 
-#include "io.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "virtual_memory.hpp"

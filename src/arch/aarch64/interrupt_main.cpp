@@ -9,7 +9,6 @@
 #include "arch.h"
 #include "basic_info.hpp"
 #include "interrupt.h"
-#include "io.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
