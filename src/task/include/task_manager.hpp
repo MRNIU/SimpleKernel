@@ -6,16 +6,16 @@
 #define SIMPLEKERNEL_SRC_INCLUDE_TASK_MANAGER_HPP_
 
 #include <cpu_io.h>
+#include <etl/list.h>
+#include <etl/priority_queue.h>
+#include <etl/unordered_map.h>
+#include <etl/vector.h>
 
 #include <MPMCQueue.hpp>
 #include <array>
 #include <cstddef>
 #include <cstdint>
 
-#include "etl/list.h"
-#include "etl/priority_queue.h"
-#include "etl/unordered_map.h"
-#include "etl/vector.h"
 #include "expected.hpp"
 #include "interrupt_base.h"
 #include "kernel_config.hpp"

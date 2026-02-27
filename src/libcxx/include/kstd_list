@@ -19,7 +19,7 @@
 
 #include <cstddef>
 
-#include "etl/list.h"
+#include <etl/list.h>
 
 #include "kstd_pool.hpp"
 

@@ -15,7 +15,7 @@
 
 #include <cstddef>
 
-#include "etl/vector.h"
+#include <etl/vector.h>
 
 namespace kstd {
 

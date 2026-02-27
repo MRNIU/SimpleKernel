@@ -12,10 +12,10 @@
 #ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_POOL_HPP_
 #define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_POOL_HPP_
 
-#include <cstddef>
+#include <etl/ipool.h>
+#include <etl/pool.h>
 
-#include "etl/ipool.h"
-#include "etl/pool.h"
+#include <cstddef>
 
 namespace kstd {
 

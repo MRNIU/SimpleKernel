@@ -10,6 +10,8 @@
 #define ETL_CPP23_SUPPORTED 1
 
 // No exceptions in kernel
-#define ETL_NO_CHECKS 1
+#define ETL_NO_CHECKS 0
+
+#define ETL_NO_EXCEPTIONS 1
 
 #endif  // SIMPLEKERNEL_SRC_INCLUDE_ETL_PROFILE_H_

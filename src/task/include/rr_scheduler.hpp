@@ -5,7 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_
 
-#include "etl/list.h"
+#include <etl/list.h>
+
 #include "kernel_config.hpp"
 #include "kernel_log.hpp"
 #include "scheduler_base.hpp"

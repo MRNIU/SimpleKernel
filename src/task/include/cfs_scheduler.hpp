@@ -5,10 +5,11 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_CFS_SCHEDULER_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_CFS_SCHEDULER_HPP_
 
+#include <etl/priority_queue.h>
+#include <etl/vector.h>
+
 #include <cstdint>
 
-#include "etl/priority_queue.h"
-#include "etl/vector.h"
 #include "kernel_config.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cassert"

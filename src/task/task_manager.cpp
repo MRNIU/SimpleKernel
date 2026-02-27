@@ -5,6 +5,7 @@
 #include "task_manager.hpp"
 
 #include <cpu_io.h>
+#include <etl/vector.h>
 
 #include <algorithm>
 #include <climits>
@@ -12,7 +13,6 @@
 #include <new>
 
 #include "basic_info.hpp"
-#include "etl/vector.h"
 #include "fifo_scheduler.hpp"
 #include "idle_scheduler.hpp"
 #include "kernel_config.hpp"

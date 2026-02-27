@@ -5,10 +5,10 @@
 #ifndef SIMPLEKERNEL_SRC_TASK_INCLUDE_RESOURCE_ID_HPP_
 #define SIMPLEKERNEL_SRC_TASK_INCLUDE_RESOURCE_ID_HPP_
 
+#include <etl/hash.h>
+
 #include <cstdint>
 #include <functional>
-
-#include "etl/hash.h"
 
 /**
  * @brief 资源类型枚举
