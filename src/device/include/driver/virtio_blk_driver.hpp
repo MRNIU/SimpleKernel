@@ -11,6 +11,7 @@
 #include "df_bridge.hpp"
 #include "driver_registry.hpp"
 #include "expected.hpp"
+#include "io.hpp"
 #include "kernel_log.hpp"
 #include "singleton.hpp"
 
@@ -45,7 +46,7 @@ class VirtioBlkDriver {
 
     auto base = ctx->base;
 
-    auto magic = *reinterpret_cast<volatile uint32_t*>(base);
+    auto magic = io::In<uint32_t>(base);
     if (magic != device_framework::virtio::kMmioMagicValue) {
       klog::Debug("VirtioBlkDriver: 0x%lX not a VirtIO device (magic=0x%X)\n",
                   base, magic);
@@ -53,7 +54,7 @@ class VirtioBlkDriver {
     }
 
     constexpr uint32_t kBlockDeviceId = 2;
-    auto device_id = *reinterpret_cast<volatile uint32_t*>(
+    auto device_id = io::In<uint32_t>(
         base + device_framework::virtio::MmioTransport<>::MmioReg::kDeviceId);
     if (device_id != kBlockDeviceId) {
       klog::Debug("VirtioBlkDriver: 0x%lX device_id=%u (not block)\n", base,

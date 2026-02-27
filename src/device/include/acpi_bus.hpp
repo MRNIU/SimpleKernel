@@ -38,7 +38,10 @@ class AcpiBus {
    */
   auto Enumerate([[maybe_unused]] DeviceNode* out, [[maybe_unused]] size_t max)
       -> Expected<size_t> {
-    // ACPI 表解析尚未实现
+    // TODO(SimpleKernel): 实现 ACPI 设备枚举
+    // - 解析 RSDP → RSDT/XSDT → DSDT/SSDT
+    // - 遍历 ACPI 命名空间中的设备
+    // - 填充 DeviceNode 并返回枚举数量
     return static_cast<size_t>(0);
   }
 

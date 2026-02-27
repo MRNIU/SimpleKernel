@@ -36,7 +36,10 @@ class PciBus {
    */
   auto Enumerate([[maybe_unused]] DeviceNode* out, [[maybe_unused]] size_t max)
       -> Expected<size_t> {
-    // PCI ECAM 扫描尚未实现
+    // TODO(SimpleKernel): 实现 PCI ECAM 配置空间扫描
+    // - 遍历 bus/device/function
+    // - 读取 Vendor ID / Device ID
+    // - 填充 DeviceNode 并返回枚举数量
     return static_cast<size_t>(0);
   }
 
