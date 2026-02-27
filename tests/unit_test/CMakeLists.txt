@@ -23,6 +23,7 @@ ADD_EXECUTABLE (
     sk_rb_tree_test.cpp
     sk_set_test.cpp
     sk_unordered_map_test.cpp
+    sk_shared_ptr_test.cpp
     task/fixtures/task_test_harness.cpp
     vfs_test.cpp
     ramfs_test.cpp
