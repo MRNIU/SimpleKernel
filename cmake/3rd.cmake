@@ -86,6 +86,9 @@ ADD_SUBDIRECTORY (3rd/MPMCQueue)
 # https://github.com/MRNIU/device_framework.git
 ADD_SUBDIRECTORY (3rd/device_framework)
 
+# https://github.com/ETLCPP/etl.git
+ADD_SUBDIRECTORY (3rd/etl)
+
 # https://github.com/abbrev/fatfs.git
 # @todo 计划使用 c++ 重写
 SET (fatfs_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/fatfs)

@@ -43,3 +43,6 @@
 [submodule "3rd/fatfs"]
 	path = 3rd/fatfs
 	url = https://github.com/abbrev/fatfs.git
+[submodule "3rd/etl"]
+	path = 3rd/etl
+	url = https://github.com/ETLCPP/etl.git
