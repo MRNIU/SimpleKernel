@@ -35,6 +35,8 @@ class FatFsFileSystem : public vfs::FileSystem {
   static constexpr size_t kMaxInodes = 256;
   /// 同时打开文件数上限
   static constexpr size_t kMaxOpenFiles = 16;
+  /// 同时打开目录数上限
+  static constexpr size_t kMaxOpenDirs = 8;
 
   /**
    * @brief 构造函数，绑定到指定 FatFS 卷号
@@ -258,6 +260,8 @@ class FatFsFileSystem : public vfs::FileSystem {
     FIL* fil = nullptr;
     /// 该槽位是否在使用
     bool in_use = false;
+    /// DIR 对象（目录迭代状态）；未迭代时为 nullptr
+    DIR* dir = nullptr;
   };
 
   std::array<FatInode, kMaxInodes> inodes_;
@@ -269,6 +273,14 @@ class FatFsFileSystem : public vfs::FileSystem {
   };
 
   std::array<FatFileHandle, kMaxOpenFiles> fil_pool_;
+
+  /// DIR 对象池条目
+  struct FatDirHandle {
+    DIR dir;
+    bool in_use = false;
+  };
+
+  std::array<FatDirHandle, kMaxOpenDirs> dir_pool_;
 
   /// inode 操作单例
   FatFsInodeOps inode_ops_;
@@ -301,6 +313,18 @@ class FatFsFileSystem : public vfs::FileSystem {
    * @param fil 要归还的 FIL 指针
    */
   auto FreeFil(FIL* fil) -> void;
+
+  /**
+   * @brief 从 DIR 池中分配一个空闲 DIR 对象
+   * @return DIR* 成功返回指针，池满返回 nullptr
+   */
+  auto AllocateDir() -> DIR*;
+
+  /**
+   * @brief 归还 DIR 对象到池中
+   * @param dir 要归还的 DIR 指针
+   */
+  auto FreeDir(DIR* dir) -> void;
 };
 
 }  // namespace fatfs
