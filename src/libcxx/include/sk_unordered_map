@@ -31,6 +31,12 @@ class unordered_map {
     Node(const Key& k, const Value& v) : data(k, v), next(nullptr) {}
 
     Node(const value_type& val) : data(val), next(nullptr) {}
+
+    Node(const Key& k, Value&& v)
+        : data(k, static_cast<Value&&>(v)), next(nullptr) {}
+
+    Node(value_type&& val)
+        : data(static_cast<value_type&&>(val)), next(nullptr) {}
   };
 
  public:
@@ -330,10 +336,45 @@ class unordered_map {
     return {iterator(this, bucket_idx, new_node), true};
   }
 
+  std::pair<iterator, bool> insert(value_type&& value) {
+    size_type bucket_idx = bucket_index(value.first);
+    Node* node = buckets_[bucket_idx];
+
+    // Check if key already exists
+    while (node != nullptr) {
+      if (key_equal_(node->data.first, value.first)) {
+        return {iterator(this, bucket_idx, node), false};
+      }
+      node = node->next;
+    }
+
+    // Insert new node with move
+    Node* new_node = static_cast<Node*>(::operator new(sizeof(Node)));
+    new (new_node) Node(static_cast<value_type&&>(value));
+    new_node->next = buckets_[bucket_idx];
+    buckets_[bucket_idx] = new_node;
+    ++size_;
+
+    // Check if rehash needed
+    if (size_ > bucket_count_ * kMaxLoadFactor) {
+      rehash(bucket_count_ * 2);
+      bucket_idx = bucket_index(new_node->data.first);
+      node = buckets_[bucket_idx];
+      while (node != nullptr) {
+        if (key_equal_(node->data.first, new_node->data.first)) {
+          return {iterator(this, bucket_idx, node), true};
+        }
+        node = node->next;
+      }
+    }
+
+    return {iterator(this, bucket_idx, new_node), true};
+  }
+
   template <typename... Args>
   std::pair<iterator, bool> emplace(Args&&... args) {
     value_type value(std::forward<Args>(args)...);
-    return insert(value);
+    return insert(static_cast<value_type&&>(value));
   }
 
   size_type erase(const Key& key) {
@@ -400,7 +441,18 @@ class unordered_map {
       return it->second;
     }
 
-    auto result = insert({key, Value()});
+    auto result = insert(value_type(key, Value()));
+    return result.first->second;
+  }
+
+  Value& operator[](Key&& key) {
+    iterator it = find(key);
+    if (it != end()) {
+      return it->second;
+    }
+
+    auto result =
+        insert(value_type(static_cast<Key&&>(key), Value()));
     return result.first->second;
   }
 

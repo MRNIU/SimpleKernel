@@ -85,7 +85,7 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   // 加入全局任务表
   {
     LockGuard lock_guard{task_table_lock_};
-    task_table_[task->pid] = task;
+    task_table_[task->pid] = sk_std::unique_ptr<TaskControlBlock>(task);
   }
 
   // 设置任务状态为 kReady
@@ -135,7 +135,7 @@ size_t TaskManager::AllocatePid() { return pid_allocator_.fetch_add(1); }
 TaskControlBlock* TaskManager::FindTask(Pid pid) {
   LockGuard lock_guard{task_table_lock_};
   auto it = task_table_.find(pid);
-  return (it != task_table_.end()) ? it->second : nullptr;
+  return (it != task_table_.end()) ? it->second.get() : nullptr;
 }
 
 void TaskManager::Balance() {
@@ -155,16 +155,14 @@ void TaskManager::ReapTask(TaskControlBlock* task) {
     return;
   }
 
-  // Capture pid before delete (avoids use-after-free in log)
+  // Capture pid before erase (unique_ptr deletes on erase)
   Pid pid = task->pid;
 
-  // 从全局任务表中移除
+  // 从全局任务表中移除 (unique_ptr auto-deletes TCB)
   {
     LockGuard lock_guard{task_table_lock_};
     task_table_.erase(pid);
   }
-
-  delete task;
 
   klog::Debug("ReapTask: Task %zu resources freed\n", pid);
 }
@@ -202,7 +200,7 @@ sk_std::vector<TaskControlBlock*> TaskManager::GetThreadGroup(Pid tgid) {
   // 遍历任务表，找到所有 tgid 匹配的线程
   for (auto& [pid, task] : task_table_) {
     if (task && task->tgid == tgid) {
-      result.push_back(task);
+      result.push_back(task.get());
     }
   }
 

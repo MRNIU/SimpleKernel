@@ -198,7 +198,7 @@ class TaskManager {
 
   /// 全局任务表 (PID -> TCB 映射)
   SpinLock task_table_lock_{"task_table_lock"};
-  sk_std::unordered_map<Pid, TaskControlBlock*> task_table_;
+  sk_std::unordered_map<Pid, sk_std::unique_ptr<TaskControlBlock>> task_table_;
 
   /// 中断线程相关数据保护锁
   SpinLock interrupt_threads_lock_{"interrupt_threads_lock"};

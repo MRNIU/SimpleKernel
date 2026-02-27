@@ -49,7 +49,7 @@ Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
         // 检查任务状态
         if (task->status == TaskStatus::kZombie ||
             task->status == TaskStatus::kExited) {
-          target = task;
+          target = task.get();
           break;
         }
 
@@ -87,8 +87,6 @@ Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
                       "Wait: target must exist in task_table");
         task_table_.erase(it->first);
       }
-
-      delete target;
 
       klog::Debug("Wait: pid=%zu reaped child=%zu\n", current->pid, result_pid);
       return result_pid;

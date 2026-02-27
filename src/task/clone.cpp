@@ -48,7 +48,6 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   // 基本字段设置
   child->pid = new_pid;
   child->name = parent->name;
-  child->status = TaskStatus::kReady;
   child->policy = parent->policy;
   child->sched_info = parent->sched_info;
 
@@ -189,14 +188,6 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   }
   if (child_tid) {
     *child_tid = new_pid;
-  }
-
-  // 将子任务加入任务表
-  {
-    LockGuard lock_guard(task_table_lock_);
-    sk_assert_msg(task_table_.find(new_pid) == task_table_.end(),
-                  "Clone: new_pid must not exist in task_table");
-    task_table_[new_pid] = child;
   }
 
   // 将子任务添加到调度器
