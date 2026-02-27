@@ -35,13 +35,17 @@ struct CpuSchedData {
   std::array<sk_std::unique_ptr<SchedulerBase>, SchedPolicy::kPolicyCount>
       schedulers{};
 
+  /// 睡眠队列存储
+  sk_std::static_vector<TaskControlBlock*, 64> sleeping_tasks_storage;
   /// 睡眠队列 (优先队列，按唤醒时间排序)
-  sk_std::priority_queue<TaskControlBlock*, sk_std::vector<TaskControlBlock*>,
-                         TaskControlBlock::WakeTickCompare>
-      sleeping_tasks;
+  sk_std::priority_queue<
+      TaskControlBlock*, sk_std::static_vector<TaskControlBlock*, 64>,
+      TaskControlBlock::WakeTickCompare>
+      sleeping_tasks{sleeping_tasks_storage};
 
   /// 阻塞队列 (按资源 ID 分组)
-  sk_std::unordered_map<ResourceId, sk_std::list<TaskControlBlock*>>
+  sk_std::static_unordered_map<ResourceId, sk_std::static_list<TaskControlBlock*, 16>,
+                               32, 64>
       blocked_tasks;
 
   /// Per-CPU tick 计数 (每个核心独立计时)
@@ -52,6 +56,8 @@ struct CpuSchedData {
 
   /// 本核心的总调度次数
   uint64_t total_schedules = 0;
+
+  CpuSchedData() = default;
 };
 
 /**
@@ -194,18 +200,21 @@ class TaskManager {
       mpmc_queue::MPMCQueue<InterruptWork, kInterruptQueueCapacity>;
 
   /// 每个核心的调度数据
-  std::array<CpuSchedData, SIMPLEKERNEL_MAX_CORE_COUNT> cpu_schedulers_;
+  std::array<CpuSchedData, SIMPLEKERNEL_MAX_CORE_COUNT> cpu_schedulers_{};
 
   /// 全局任务表 (PID -> TCB 映射)
   SpinLock task_table_lock_{"task_table_lock"};
-  sk_std::unordered_map<Pid, sk_std::unique_ptr<TaskControlBlock>> task_table_;
+  sk_std::static_unordered_map<Pid, sk_std::unique_ptr<TaskControlBlock>, 64, 128>
+      task_table_;
 
   /// 中断线程相关数据保护锁
   SpinLock interrupt_threads_lock_{"interrupt_threads_lock"};
   /// 中断号 -> 中断线程映射
-  sk_std::unordered_map<uint64_t, TaskControlBlock*> interrupt_threads_;
+  sk_std::static_unordered_map<uint64_t, TaskControlBlock*, 32, 64>
+      interrupt_threads_;
   /// 中断号 -> 工作队列映射
-  sk_std::unordered_map<uint64_t, InterruptWorkQueue*> interrupt_work_queues_;
+  sk_std::static_unordered_map<uint64_t, InterruptWorkQueue*, 32, 64>
+      interrupt_work_queues_;
 
   /// PID 分配器
   std::atomic<size_t> pid_allocator_{1};
@@ -231,9 +240,9 @@ class TaskManager {
   /**
    * @brief 获取线程组的所有线程
    * @param tgid 线程组 ID
-   * @return sk_std::vector<TaskControlBlock*> 线程组中的所有线程
+   * @return sk_std::static_vector<TaskControlBlock*, 64> 线程组中的所有线程
    */
-  sk_std::vector<TaskControlBlock*> GetThreadGroup(Pid tgid);
+  sk_std::static_vector<TaskControlBlock*, 64> GetThreadGroup(Pid tgid);
 
   /**
    * @brief 向线程组中的所有线程发送信号

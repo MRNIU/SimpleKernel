@@ -82,16 +82,17 @@ class FifoScheduler : public SchedulerBase {
 
   /// @name 构造/析构函数
   /// @{
-  FifoScheduler(const FifoScheduler&) = default;
-  FifoScheduler(FifoScheduler&&) = default;
-  auto operator=(const FifoScheduler&) -> FifoScheduler& = default;
-  auto operator=(FifoScheduler&&) -> FifoScheduler& = default;
+  FifoScheduler(const FifoScheduler&) = delete;
+  FifoScheduler(FifoScheduler&&) = delete;
+  auto operator=(const FifoScheduler&) -> FifoScheduler& = delete;
+  auto operator=(FifoScheduler&&) -> FifoScheduler& = delete;
   ~FifoScheduler() override = default;
   /// @}
 
  private:
-  /// 就绪队列 (先进先出)
-  sk_std::list<TaskControlBlock*> ready_queue;
+  /// 就绪队列 (先进先出，固定容量)
+  /// 就绪队列 (先进先出，固定容量)
+  sk_std::static_list<TaskControlBlock*, 64> ready_queue;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_ */

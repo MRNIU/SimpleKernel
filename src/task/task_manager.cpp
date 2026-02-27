@@ -192,8 +192,9 @@ void TaskManager::ReparentChildren(TaskControlBlock* parent) {
   }
 }
 
-sk_std::vector<TaskControlBlock*> TaskManager::GetThreadGroup(Pid tgid) {
-  sk_std::vector<TaskControlBlock*> result;
+sk_std::static_vector<TaskControlBlock*, 64> TaskManager::GetThreadGroup(
+    Pid tgid) {
+  sk_std::static_vector<TaskControlBlock*, 64> result;
 
   LockGuard lock_guard(task_table_lock_);
 

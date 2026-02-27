@@ -108,16 +108,17 @@ class RoundRobinScheduler : public SchedulerBase {
   /// @name 构造/析构函数
   /// @{
   RoundRobinScheduler() = default;
-  RoundRobinScheduler(const RoundRobinScheduler&) = default;
-  RoundRobinScheduler(RoundRobinScheduler&&) = default;
-  auto operator=(const RoundRobinScheduler&) -> RoundRobinScheduler& = default;
-  auto operator=(RoundRobinScheduler&&) -> RoundRobinScheduler& = default;
+  RoundRobinScheduler(const RoundRobinScheduler&) = delete;
+  RoundRobinScheduler(RoundRobinScheduler&&) = delete;
+  auto operator=(const RoundRobinScheduler&) -> RoundRobinScheduler& = delete;
+  auto operator=(RoundRobinScheduler&&) -> RoundRobinScheduler& = delete;
   ~RoundRobinScheduler() override = default;
   /// @}
 
  private:
-  /// 就绪队列 (双向链表，支持从头部取、向尾部放)
-  sk_std::list<TaskControlBlock*> ready_queue;
+  /// 就绪队列 (双向链表，支持从头部取、向尾部放，固定容量)
+  /// 就绪队列 (双向链表，支持从头部取、向尾部放，固定容量)
+  sk_std::static_list<TaskControlBlock*, 64> ready_queue;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_ */

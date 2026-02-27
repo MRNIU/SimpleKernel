@@ -83,7 +83,7 @@ class CfsScheduler : public SchedulerBase {
     }
 
     // 临时向量用于重建队列
-    sk_std::vector<TaskControlBlock*> temp;
+    sk_std::static_vector<TaskControlBlock*, 64> temp;
     bool found = false;
 
     // 将所有元素弹出，除了要删除的任务
@@ -206,10 +206,13 @@ class CfsScheduler : public SchedulerBase {
   /// @}
 
  private:
+  /// 就绪队列底层存储 (固定容量)
+  sk_std::static_vector<TaskControlBlock*, 64> ready_queue_storage_;
   /// 就绪队列 (优先队列，按 vruntime 排序)
-  sk_std::priority_queue<TaskControlBlock*, sk_std::vector<TaskControlBlock*>,
+  sk_std::priority_queue<TaskControlBlock*,
+                         sk_std::static_vector<TaskControlBlock*, 64>,
                          VruntimeCompare>
-      ready_queue_;
+      ready_queue_{ready_queue_storage_};
 
   /// 当前最小 vruntime (用于新任务初始化)
   uint64_t min_vruntime_ = 0;
