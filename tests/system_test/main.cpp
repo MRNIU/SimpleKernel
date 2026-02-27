@@ -15,6 +15,7 @@
 #include "spinlock.hpp"
 #include "syscall.hpp"
 #include "system_test.h"
+#include "task_manager.hpp"
 
 namespace {
 
@@ -82,6 +83,7 @@ auto main_smp(int argc, const char** argv) -> int {
   ArchInitSMP(argc, argv);
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
+  Singleton<TaskManager>::GetInstance().InitCurrentCore();
   klog::Info("Hello SimpleKernel SMP\n");
 
   // 从核只参与多核测试
@@ -116,11 +118,17 @@ auto main(int argc, const char** argv) -> int {
   // 中断相关初始化
   InterruptInit(argc, argv);
 
+  // 设备管理器初始化
+  DeviceInit();
+
   // 文件系统初始化
   FileSystemInit();
 
+  // 初始化任务管理器 (设置主线程)
+  Singleton<TaskManager>::GetInstance().InitCurrentCore();
+
   // 唤醒其余 core
-  WakeUpOtherCores();
+  // WakeUpOtherCores();
 
   DumpStack();
 

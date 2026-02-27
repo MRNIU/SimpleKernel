@@ -152,10 +152,10 @@ auto main(int argc, const char** argv) -> int {
   ArchInit(argc, argv);
   // 内存相关初始化
   MemoryInit();
-  // 设备管理器初始化
-  DeviceInit();
   // 中断相关初始化
   InterruptInit(argc, argv);
+  // 设备管理器初始化
+  DeviceInit();
   // 文件系统初始化
   FileSystemInit();
   // 初始化任务管理器 (设置主线程)
