@@ -6,10 +6,10 @@
 
 #include <cpu_io.h>
 
+#include <cassert>
 #include <cstring>
 
 #include "kernel_log.hpp"
-#include "sk_assert.h"
 
 Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {
   // 禁用传统的 8259A PIC 以避免与 APIC 冲突
@@ -82,21 +82,11 @@ auto Apic::BroadcastIpi(uint8_t vector) const -> Expected<void> {
 auto Apic::StartupAp(uint32_t apic_id, uint64_t ap_code_addr,
                      size_t ap_code_size, uint64_t target_addr) const
     -> Expected<void> {
-  // 检查参数有效性
-  sk_assert_msg(ap_code_addr != 0 && ap_code_size != 0,
-                "Invalid AP code parameters: addr=0x%llx, size=%zu",
-                ap_code_addr, ap_code_size);
-
-  // 检查目标地址是否对齐到 4KB 边界（SIPI 要求）
-  sk_assert_msg((target_addr & 0xFFF) == 0,
-                "Target address 0x%llx is not aligned to 4KB boundary",
-                target_addr);
-
-  // 检查目标地址是否在有效范围内（实模式可访问）
-  // 1MB 以上的地址在实模式下不可访问
-  sk_assert_msg(target_addr < 0x100000,
-                "Target address 0x%llx exceeds real mode limit (1MB)",
-                target_addr);
+  assert(ap_code_addr != 0 && "AP code address must not be null");
+  assert(ap_code_size != 0 && "AP code size must not be zero");
+  assert((target_addr & 0xFFF) == 0 && "Target address must be 4KB aligned");
+  assert(target_addr < 0x100000 &&
+         "Target address exceeds real mode limit (1MB)");
 
   std::memcpy(reinterpret_cast<void*>(target_addr),
               reinterpret_cast<void*>(ap_code_addr), ap_code_size);
@@ -119,9 +109,11 @@ auto Apic::StartupAp(uint32_t apic_id, uint64_t ap_code_addr,
 
 void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
                          uint64_t target_addr) const {
-  sk_assert_msg(ap_code_addr != 0 && ap_code_size != 0,
-                "Invalid AP code parameters: addr=0x%llx, size=%zu",
-                ap_code_addr, ap_code_size);
+  assert(ap_code_addr != 0 && "AP code address must not be null");
+  assert(ap_code_size != 0 && "AP code size must not be zero");
+  assert((target_addr & 0xFFF) == 0 && "Target address must be 4KB aligned");
+  assert(target_addr < 0x100000 &&
+         "Target address exceeds real mode limit (1MB)");
 
   // 启动 APIC ID 0 到 cpu_count_-1 的所有处理器
   // 跳过当前的 BSP (Bootstrap Processor)

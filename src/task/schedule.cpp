@@ -5,6 +5,7 @@
 #include <cpu_io.h>
 
 #include <algorithm>
+#include <cassert>
 #include <memory>
 #include <new>
 
@@ -14,7 +15,6 @@
 #include "interrupt_base.h"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "kstd_cstring"
 #include "per_cpu.hpp"
 #include "singleton.hpp"
@@ -34,7 +34,7 @@ void TaskManager::Schedule() {
   });
 
   auto* current = GetCurrentTask();
-  sk_assert_msg(current != nullptr, "Schedule: No current task to schedule");
+  assert(current != nullptr && "Schedule: No current task to schedule");
 
   // 处理当前任务状态
   if (current->status == TaskStatus::kRunning) {
@@ -83,10 +83,10 @@ void TaskManager::Schedule() {
   }
 
   // 切换到下一个任务
-  sk_assert_msg(next != nullptr, "Schedule: next task must not be null");
-  sk_assert_msg(
-      next->status == TaskStatus::kReady || next->policy == SchedPolicy::kIdle,
-      "Schedule: next task must be kReady or kIdle policy");
+  assert(next != nullptr && "Schedule: next task must not be null");
+  assert((next->status == TaskStatus::kReady ||
+          next->policy == SchedPolicy::kIdle) &&
+         "Schedule: next task must be kReady or kIdle policy");
 
   next->status = TaskStatus::kRunning;
   // 重置时间片（对于 RR 和 FIFO 有效，CFS 使用 vruntime 不依赖此字段）

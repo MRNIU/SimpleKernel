@@ -6,8 +6,9 @@
 
 #include <cpu_io.h>
 
+#include <cassert>
+
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 
 Gic::Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
     : gicd_(gicd_base_addr), gicr_(gicr_base_addr) {
@@ -40,8 +41,7 @@ void Gic::SGI(uint32_t intid, uint32_t cpuid) const {
 }
 
 Gic::Gicd::Gicd(uint64_t base_addr) : base_addr_(base_addr) {
-  sk_assert_msg(base_addr_ != 0, "GICD base address is invalid [0x%X]\n",
-                base_addr_);
+  assert(base_addr_ != 0 && "GICD base address is invalid");
 
   // 将 GICD_CTLR 清零
   Write(kCTLR, 0);
@@ -146,8 +146,7 @@ void Gic::Gicd::SetupSPI(uint32_t intid, uint32_t cpuid) const {
 }
 
 Gic::Gicr::Gicr(uint64_t base_addr) : base_addr_(base_addr) {
-  sk_assert_msg(base_addr_ != 0, "GICR base address is invalid [0x%X]\n",
-                base_addr_);
+  assert(base_addr_ != 0 && "GICR base address is invalid");
 
   auto cpuid = cpu_io::GetCurrentCoreId();
 

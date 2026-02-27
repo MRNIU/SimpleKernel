@@ -7,6 +7,7 @@
 
 #include <elf.h>
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -14,7 +15,6 @@
 
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "singleton.hpp"
 
 /**
@@ -32,7 +32,7 @@ class KernelElf {
    * @param elf_addr elf 地址
    */
   explicit KernelElf(uint64_t elf_addr) {
-    sk_assert_msg(elf_addr != 0U, "Invalid elf_addr[0x%lX].\n", elf_addr);
+    assert(elf_addr != 0U && "elf_addr is null");
 
     elf_ = std::span<uint8_t>(reinterpret_cast<uint8_t*>(elf_addr), EI_NIDENT);
 

@@ -2,8 +2,9 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <cassert>
+
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "resource_id.hpp"
 #include "task_manager.hpp"
 
@@ -11,9 +12,9 @@ void TaskManager::Block(ResourceId resource_id) {
   auto& cpu_sched = GetCurrentCpuSched();
 
   auto* current = GetCurrentTask();
-  sk_assert_msg(current != nullptr, "Block: No current task to block");
-  sk_assert_msg(current->status == TaskStatus::kRunning,
-                "Block: current task status must be kRunning");
+  assert(current != nullptr && "Block: No current task to block");
+  assert(current->status == TaskStatus::kRunning &&
+         "Block: current task status must be kRunning");
 
   {
     LockGuard<SpinLock> lock_guard(cpu_sched.lock);

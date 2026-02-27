@@ -8,6 +8,7 @@
 #include <etl/vector.h>
 
 #include <algorithm>
+#include <cassert>
 #include <climits>
 #include <memory>
 #include <new>
@@ -18,7 +19,6 @@
 #include "kernel_config.hpp"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "kstd_cstring"
 #include "rr_scheduler.hpp"
 #include "singleton.hpp"
@@ -70,9 +70,9 @@ void TaskManager::InitCurrentCore() {
 }
 
 void TaskManager::AddTask(TaskControlBlock* task) {
-  sk_assert_msg(task != nullptr, "AddTask: task must not be null");
-  sk_assert_msg(task->status == TaskStatus::kUnInit,
-                "AddTask: task status must be kUnInit");
+  assert(task != nullptr && "AddTask: task must not be null");
+  assert(task->status == TaskStatus::kUnInit &&
+         "AddTask: task status must be kUnInit");
   // 分配 PID
   if (task->pid == 0) {
     task->pid = AllocatePid();

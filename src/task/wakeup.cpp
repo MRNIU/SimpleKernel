@@ -2,8 +2,9 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <cassert>
+
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "resource_id.hpp"
 #include "task_manager.hpp"
 
@@ -30,10 +31,10 @@ void TaskManager::Wakeup(ResourceId resource_id) {
     auto* task = waiting_tasks.front();
     waiting_tasks.pop_front();
 
-    sk_assert_msg(task->status == TaskStatus::kBlocked,
-                  "Wakeup: task status must be kBlocked");
-    sk_assert_msg(task->blocked_on == resource_id,
-                  "Wakeup: task blocked_on must match resource_id");
+    assert(task->status == TaskStatus::kBlocked &&
+           "Wakeup: task status must be kBlocked");
+    assert(task->blocked_on == resource_id &&
+           "Wakeup: task blocked_on must match resource_id");
 
     // 将任务标记为就绪
     task->status = TaskStatus::kReady;
@@ -41,7 +42,7 @@ void TaskManager::Wakeup(ResourceId resource_id) {
 
     // 将任务重新加入对应调度器的就绪队列
     auto* scheduler = cpu_sched.schedulers[task->policy].get();
-    sk_assert_msg(scheduler != nullptr, "Wakeup: scheduler must not be null");
+    assert(scheduler != nullptr && "Wakeup: scheduler must not be null");
     scheduler->Enqueue(task);
     wakeup_count++;
   }

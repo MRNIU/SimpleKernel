@@ -8,8 +8,9 @@
 #include <cpu_io.h>
 #include <opensbi_interface.h>
 
+#include <cassert>
+
 #include "basic_info.hpp"
-#include "kstd_cassert"
 #include "kstd_cstdio"
 #include "kstd_iostream"
 
@@ -71,10 +72,9 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
   auto exception_code = cpu_io::Scause::ExceptionCode::Get(cause);
 
   if (interrupt) {
-    sk_assert_msg(
-        exception_code <
-            cpu_io::detail::register_info::csr::ScauseInfo::kInterruptMaxCount,
-        "Interrupt code out of range");
+    assert(exception_code < cpu_io::detail::register_info::csr::ScauseInfo::
+                                kInterruptMaxCount &&
+           "Interrupt code out of range");
 
     interrupt_handlers_[exception_code] = func;
     klog::Info("RegisterInterruptFunc [%s] 0x%X, 0x%p\n",
@@ -82,10 +82,9 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
                    [exception_code],
                cause, func);
   } else {
-    sk_assert_msg(
-        exception_code <
-            cpu_io::detail::register_info::csr::ScauseInfo::kExceptionMaxCount,
-        "Exception code out of range");
+    assert(exception_code < cpu_io::detail::register_info::csr::ScauseInfo::
+                                kExceptionMaxCount &&
+           "Exception code out of range");
 
     exception_handlers_[exception_code] = func;
     klog::Info("RegisterInterruptFunc [%s] 0x%X, 0x%p\n",

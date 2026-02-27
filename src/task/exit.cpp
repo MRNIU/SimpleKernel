@@ -2,17 +2,18 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <cassert>
+
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "resource_id.hpp"
 #include "task_manager.hpp"
 
 void TaskManager::Exit(int exit_code) {
   auto& cpu_sched = GetCurrentCpuSched();
   auto* current = GetCurrentTask();
-  sk_assert_msg(current != nullptr, "Exit: No current task to exit");
-  sk_assert_msg(current->status == TaskStatus::kRunning,
-                "Exit: current task status must be kRunning");
+  assert(current != nullptr && "Exit: No current task to exit");
+  assert(current->status == TaskStatus::kRunning &&
+         "Exit: current task status must be kRunning");
 
   {
     LockGuard<SpinLock> lock_guard(cpu_sched.lock);

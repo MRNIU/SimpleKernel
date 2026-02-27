@@ -7,6 +7,7 @@
 #include <cpu_io.h>
 
 #include <bmalloc.hpp>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -14,7 +15,6 @@
 #include "basic_info.hpp"
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "singleton.hpp"
 #include "sk_stdlib.h"
 
@@ -22,8 +22,8 @@ VirtualMemory::VirtualMemory() {
   // 分配根页表目录
   kernel_page_dir_ = aligned_alloc(cpu_io::virtual_memory::kPageSize,
                                    cpu_io::virtual_memory::kPageSize);
-  sk_assert_msg(kernel_page_dir_ != nullptr,
-                "Failed to allocate kernel page directory");
+  assert(kernel_page_dir_ != nullptr &&
+         "Failed to allocate kernel page directory");
 
   // 清零页表目录
   std::memset(kernel_page_dir_, 0, cpu_io::virtual_memory::kPageSize);
@@ -74,7 +74,7 @@ auto VirtualMemory::MapMMIO(uint64_t phys_addr, size_t size, uint32_t flags)
 auto VirtualMemory::MapPage(void* page_dir, void* virtual_addr,
                             void* physical_addr, uint32_t flags)
     -> Expected<void> {
-  sk_assert_msg(page_dir != nullptr, "MapPage: page_dir is null");
+  assert(page_dir != nullptr && "MapPage: page_dir is null");
 
   // 查找页表项，如果不存在则分配
   auto pte_result = FindPageTableEntry(page_dir, virtual_addr, true);
@@ -112,7 +112,7 @@ auto VirtualMemory::MapPage(void* page_dir, void* virtual_addr,
 
 auto VirtualMemory::UnmapPage(void* page_dir, void* virtual_addr)
     -> Expected<void> {
-  sk_assert_msg(page_dir != nullptr, "UnmapPage: page_dir is null");
+  assert(page_dir != nullptr && "UnmapPage: page_dir is null");
 
   auto pte_result = FindPageTableEntry(page_dir, virtual_addr, false);
   if (!pte_result.has_value()) {
@@ -136,7 +136,7 @@ auto VirtualMemory::UnmapPage(void* page_dir, void* virtual_addr)
 
 auto VirtualMemory::GetMapping(void* page_dir, void* virtual_addr)
     -> Expected<void*> {
-  sk_assert_msg(page_dir != nullptr, "GetMapping: page_dir is null");
+  assert(page_dir != nullptr && "GetMapping: page_dir is null");
 
   auto pte_result = FindPageTableEntry(page_dir, virtual_addr, false);
   if (!pte_result.has_value()) {
@@ -171,8 +171,8 @@ void VirtualMemory::DestroyPageDirectory(void* page_dir, bool free_pages) {
 
 auto VirtualMemory::ClonePageDirectory(void* src_page_dir, bool copy_mappings)
     -> Expected<void*> {
-  sk_assert_msg(src_page_dir != nullptr,
-                "ClonePageDirectory: source page directory is nullptr");
+  assert(src_page_dir != nullptr &&
+         "ClonePageDirectory: source page directory is nullptr");
 
   // 创建新的页表目录
   auto dst_page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,
@@ -238,10 +238,8 @@ auto VirtualMemory::RecursiveClonePageTable(uint64_t* src_table,
                                             uint64_t* dst_table, size_t level,
                                             bool copy_mappings)
     -> Expected<void> {
-  sk_assert_msg(src_table != nullptr,
-                "RecursiveClonePageTable: src_table is null");
-  sk_assert_msg(dst_table != nullptr,
-                "RecursiveClonePageTable: dst_table is null");
+  assert(src_table != nullptr && "RecursiveClonePageTable: src_table is null");
+  assert(dst_table != nullptr && "RecursiveClonePageTable: dst_table is null");
 
   for (size_t i = 0; i < kEntriesPerTable; ++i) {
     uint64_t src_pte = src_table[i];

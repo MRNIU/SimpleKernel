@@ -2,8 +2,9 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <cassert>
+
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "task_manager.hpp"
 
 namespace {
@@ -15,9 +16,9 @@ void TaskManager::Sleep(uint64_t ms) {
   auto& cpu_sched = GetCurrentCpuSched();
 
   auto* current = GetCurrentTask();
-  sk_assert_msg(current != nullptr, "Sleep: No current task to sleep");
-  sk_assert_msg(current->status == TaskStatus::kRunning,
-                "Sleep: current task status must be kRunning");
+  assert(current != nullptr && "Sleep: No current task to sleep");
+  assert(current->status == TaskStatus::kRunning &&
+         "Sleep: current task status must be kRunning");
 
   // 如果睡眠时间为 0，仅让出 CPU（相当于 yield）
   if (ms == 0) {

@@ -2,12 +2,13 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "kstd_libcxx.h"
-
 #include <cpu_io.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <atomic>
+
+#include "kernel_log.hpp"
 
 /// 全局构造函数函数指针
 using function_t = void (*)();
@@ -183,6 +184,24 @@ extern "C" void __cxa_pure_virtual() {
  */
 extern "C" void abort() {
   while (true) {
+    cpu_io::Pause();
+  }
+}
+
+/**
+ * @brief libc assert() 失败时调用的底层接口
+ * @param assertion  断言表达式字符串
+ * @param file       源文件名
+ * @param line       行号
+ * @param function   函数名
+ */
+extern "C" __attribute__((noreturn)) void __assert_fail(const char* assertion,
+                                                        const char* file,
+                                                        unsigned int line,
+                                                        const char* function) {
+  sk_printf("\n[ASSERT FAILED] %s:%u in %s\n Expression: %s\n", file, line,
+            function, assertion);
+  while (1) {
     cpu_io::Pause();
   }
 }

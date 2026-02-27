@@ -21,6 +21,7 @@
 #include <cpu_io.h>
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <tuple>
@@ -28,7 +29,6 @@
 
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "kstd_cstring"
 #include "singleton.hpp"
 
@@ -82,7 +82,7 @@ class KernelFdt {
    * @pre fdt_header_ 不为空
    */
   [[nodiscard]] auto GetCoreCount() const -> Expected<size_t> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
 
     return CountNodesByDeviceType("cpu").and_then(
         [](size_t count) -> Expected<size_t> {
@@ -99,7 +99,7 @@ class KernelFdt {
    * @pre fdt_header_ 不为空
    */
   [[nodiscard]] auto CheckPSCI() const -> Expected<void> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
 
     return FindNode("/psci").and_then([this](int offset) -> Expected<void> {
       return GetPsciMethod(offset).and_then(
@@ -121,7 +121,7 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetMemory() const
       -> Expected<std::pair<uint64_t, size_t>> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
 
     return FindNode("/memory").and_then(
         [this](int offset) -> Expected<std::pair<uint64_t, size_t>> {
@@ -138,7 +138,7 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetSerial() const
       -> Expected<std::tuple<uint64_t, size_t, uint32_t>> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
 
     auto chosen_offset = FindNode("/chosen");
     if (!chosen_offset.has_value()) {
@@ -201,7 +201,7 @@ class KernelFdt {
    * @pre fdt_header_ 不为空
    */
   [[nodiscard]] auto GetTimebaseFrequency() const -> Expected<uint32_t> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
 
     return FindNode("/cpus").and_then([this](int offset) -> Expected<uint32_t> {
       int len = 0;
@@ -227,7 +227,7 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetGIC() const
       -> Expected<std::tuple<uint64_t, size_t, uint64_t, size_t>> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
 
     auto offset = FindCompatibleNode("arm,gic-v3");
     if (!offset.has_value()) {
@@ -291,7 +291,7 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetAarch64Intid(const char* compatible) const
       -> Expected<uint64_t> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
 
     auto offset = FindEnabledCompatibleNode(compatible);
     if (!offset.has_value()) {
@@ -339,7 +339,7 @@ class KernelFdt {
    */
   [[nodiscard]] auto GetPlic() const
       -> Expected<std::tuple<uint64_t, uint64_t, uint32_t, uint32_t>> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
 
     auto offset = FindCompatibleNode("sifive,plic-1.0.0");
     if (!offset.has_value()) {
@@ -393,7 +393,7 @@ class KernelFdt {
    */
   template <typename Callback>
   [[nodiscard]] auto ForEachNode(Callback&& callback) const -> Expected<void> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
 
     int offset = -1;
     int depth = 0;
@@ -481,7 +481,7 @@ class KernelFdt {
   [[nodiscard]] auto ForEachCompatibleNode(const char* compatible,
                                            Callback&& callback) const
       -> Expected<void> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
 
     int offset = -1;
     while (true) {
@@ -545,7 +545,7 @@ class KernelFdt {
    * @return Expected<void>
    */
   [[nodiscard]] auto ValidateFdtHeader() const -> Expected<void> {
-    sk_assert_msg(fdt_header_ != nullptr, "fdt_header_ is null");
+    assert(fdt_header_ != nullptr && "fdt_header_ is null");
     if (fdt_check_header(fdt_header_) != 0) {
       return std::unexpected(Error(ErrorCode::kFdtInvalidHeader));
     }

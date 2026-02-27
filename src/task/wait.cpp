@@ -2,18 +2,19 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <cassert>
+
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "resource_id.hpp"
 #include "task_manager.hpp"
 
 Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
                                 bool untraced) {
   auto* current = GetCurrentTask();
-  sk_assert_msg(current != nullptr, "Wait: No current task");
-  sk_assert_msg(current->status == TaskStatus::kRunning,
-                "Wait: current task status must be kRunning");
+  assert(current != nullptr && "Wait: No current task");
+  assert(current->status == TaskStatus::kRunning &&
+         "Wait: current task status must be kRunning");
 
   while (true) {
     TaskControlBlock* target = nullptr;
@@ -66,11 +67,11 @@ Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
 
     // 找到了退出的子进程
     if (target) {
-      sk_assert_msg(target->status == TaskStatus::kZombie ||
-                        target->status == TaskStatus::kExited,
-                    "Wait: target task must be kZombie or kExited");
-      sk_assert_msg(target->parent_pid == current->pid,
-                    "Wait: target parent_pid must match current pid");
+      assert((target->status == TaskStatus::kZombie ||
+              target->status == TaskStatus::kExited) &&
+             "Wait: target task must be kZombie or kExited");
+      assert(target->parent_pid == current->pid &&
+             "Wait: target parent_pid must match current pid");
 
       Pid result_pid = target->pid;
 
@@ -83,8 +84,8 @@ Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
       {
         LockGuard lock_guard(task_table_lock_);
         auto it = task_table_.find(target->pid);
-        sk_assert_msg(it != task_table_.end(),
-                      "Wait: target must exist in task_table");
+        assert(it != task_table_.end() &&
+               "Wait: target must exist in task_table");
         task_table_.erase(it->first);
       }
 

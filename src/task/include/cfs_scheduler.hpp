@@ -8,11 +8,11 @@
 #include <etl/priority_queue.h>
 #include <etl/vector.h>
 
+#include <cassert>
 #include <cstdint>
 
 #include "kernel_config.hpp"
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "scheduler_base.hpp"
 #include "task_control_block.hpp"
 
@@ -163,8 +163,8 @@ class CfsScheduler : public SchedulerBase {
          * 2. 检查是否有 vruntime 更小的任务需要抢占
          */
         auto OnTick(TaskControlBlock * current) -> bool override {
-          sk_assert_msg(current != nullptr,
-                        "CfsScheduler::OnTick: current task must not be null");
+          assert(current != nullptr &&
+                 "CfsScheduler::OnTick: current task must not be null");
 
           // 更新 vruntime：delta = tick * (kDefaultWeight / weight)
           // 权重越大，vruntime 增长越慢，获得更多 CPU 时间

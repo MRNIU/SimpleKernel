@@ -4,7 +4,6 @@
 
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "kstd_cassert"
 #include "kstd_cstring"
 #include "singleton.hpp"
 #include "sk_stdlib.h"
