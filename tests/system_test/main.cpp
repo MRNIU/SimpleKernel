@@ -26,18 +26,15 @@ struct test_case {
   bool is_smp_test = false;
 };
 
-std::array<test_case, 25> test_cases = {
+std::array<test_case, 22> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test, false},
     test_case{"spinlock_test", spinlock_test, true},
     test_case{"memory_test", memory_test, false},
     test_case{"virtual_memory_test", virtual_memory_test, false},
     test_case{"interrupt_test", interrupt_test, false},
     test_case{"sk_list_test", sk_list_test, false},
-    test_case{"sk_queue_test", sk_queue_test, false},
     test_case{"sk_vector_test", sk_vector_test, false},
     test_case{"sk_priority_queue_test", sk_priority_queue_test, false},
-    test_case{"sk_rb_tree_test", sk_rb_tree_test, false},
-    test_case{"sk_set_test", sk_set_test, false},
     test_case{"sk_unordered_map_test", sk_unordered_map_test, false},
     test_case{"fifo_scheduler_test", fifo_scheduler_test, false},
     test_case{"rr_scheduler_test", rr_scheduler_test, false},

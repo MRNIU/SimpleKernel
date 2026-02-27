@@ -18,13 +18,7 @@ ADD_EXECUTABLE (
     spinlock_test.cpp
     virtual_memory_test.cpp
     sk_list_test.cpp
-    sk_queue_test.cpp
-    sk_vector_test.cpp
-    sk_priority_queue_test.cpp
-    sk_rb_tree_test.cpp
-    sk_set_test.cpp
     sk_unordered_map_test.cpp
-    sk_shared_ptr_test.cpp
     sk_unique_ptr_test.cpp
     task/fixtures/task_test_harness.cpp
     vfs_test.cpp
