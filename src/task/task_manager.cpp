@@ -86,6 +86,11 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   // 加入全局任务表
   {
     LockGuard lock_guard{task_table_lock_};
+    if (task_table_.full()) {
+      klog::Err("AddTask: task_table_ full, cannot add task (pid=%zu)\n",
+                task->pid);
+      return;
+    }
     task_table_[task->pid] = kstd::unique_ptr<TaskControlBlock>(task);
   }
 

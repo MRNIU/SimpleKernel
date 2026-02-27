@@ -7,6 +7,7 @@
 
 #include "etl/list.h"
 #include "kernel_config.hpp"
+#include "kernel_log.hpp"
 #include "scheduler_base.hpp"
 #include "task_control_block.hpp"
 
@@ -26,6 +27,11 @@ class RoundRobinScheduler : public SchedulerBase {
    */
   void Enqueue(TaskControlBlock* task) override {
     if (task) {
+      if (ready_queue.full()) {
+        klog::Err(
+            "RoundRobinScheduler::Enqueue: ready_queue full, dropping task\n");
+        return;
+      }
       // 重新分配时间片
       task->sched_info.time_slice_remaining =
           task->sched_info.time_slice_default;

@@ -7,6 +7,7 @@
 
 #include "etl/list.h"
 #include "kernel_config.hpp"
+#include "kernel_log.hpp"
 #include "scheduler_base.hpp"
 #include "task_control_block.hpp"
 
@@ -30,6 +31,10 @@ class FifoScheduler : public SchedulerBase {
    * @param task 要加入的任务
    */
   void Enqueue(TaskControlBlock* task) override {
+    if (ready_queue.full()) {
+      klog::Err("FifoScheduler::Enqueue: ready_queue full, dropping task\n");
+      return;
+    }
     ready_queue.push_back(task);
     stats_.total_enqueues++;
   }

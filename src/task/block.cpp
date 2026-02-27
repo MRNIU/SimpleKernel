@@ -25,7 +25,16 @@ void TaskManager::Block(ResourceId resource_id) {
     current->blocked_on = resource_id;
 
     // 将任务加入阻塞队列（按资源 ID 分组）
-    cpu_sched.blocked_tasks[resource_id].push_back(current);
+    auto& list = cpu_sched.blocked_tasks[resource_id];
+    if (list.full()) {
+      klog::Err(
+          "Block: blocked_tasks list full for resource, cannot block task "
+          "%zu\n",
+          current->pid);
+      current->status = TaskStatus::kRunning;
+      return;
+    }
+    list.push_back(current);
 
     klog::Debug("Block: pid=%zu blocked on resource=%s, data=0x%lx\n",
                 current->pid, resource_id.GetTypeName(), resource_id.GetData());
