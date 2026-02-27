@@ -7,8 +7,10 @@
 
 #include <cstdint>
 
+#include "etl/priority_queue.h"
+#include "etl/vector.h"
+#include "kernel_config.hpp"
 #include "kstd_cassert"
-#include "kstd_vector"
 #include "scheduler_base.hpp"
 #include "task_control_block.hpp"
 
@@ -82,7 +84,7 @@ class CfsScheduler : public SchedulerBase {
     }
 
     // 临时向量用于重建队列
-    kstd::static_vector<TaskControlBlock*, 64> temp;
+    etl::vector<TaskControlBlock*, kernel::config::kMaxReadyTasks> temp;
     bool found = false;
 
     // 将所有元素弹出，除了要删除的任务
@@ -205,13 +207,10 @@ class CfsScheduler : public SchedulerBase {
   /// @}
 
  private:
-  /// 就绪队列底层存储 (固定容量)
-  kstd::static_vector<TaskControlBlock*, 64> ready_queue_storage_;
   /// 就绪队列 (优先队列，按 vruntime 排序)
-  kstd::priority_queue<TaskControlBlock*,
-                       kstd::static_vector<TaskControlBlock*, 64>,
-                       VruntimeCompare>
-      ready_queue_{ready_queue_storage_};
+  etl::priority_queue<TaskControlBlock*, kernel::config::kMaxReadyTasks,
+                      VruntimeCompare>
+      ready_queue_;
 
   /// 当前最小 vruntime (用于新任务初始化)
   uint64_t min_vruntime_ = 0;
