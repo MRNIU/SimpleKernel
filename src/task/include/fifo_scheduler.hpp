@@ -5,7 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_
 
-#include "kstd_list"
+#include "etl/list.h"
+#include "kernel_config.hpp"
 #include "scheduler_base.hpp"
 #include "task_control_block.hpp"
 
@@ -90,8 +91,7 @@ class FifoScheduler : public SchedulerBase {
 
  private:
   /// 就绪队列 (先进先出，固定容量)
-  /// 就绪队列 (先进先出，固定容量)
-  kstd::static_list<TaskControlBlock*, 64> ready_queue;
+  etl::list<TaskControlBlock*, kernel::config::kMaxReadyTasks> ready_queue;
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_ */
