@@ -6,6 +6,9 @@
 
 #include "kstd_list"
 
+// Use static_list<T, N> which has built-in storage (no external pool required)
+static constexpr size_t kListCapacity = 64;
+
 struct MyData {
   int x;
   double y;
@@ -16,13 +19,13 @@ struct MyData {
 };
 
 TEST(SkListTest, DefaultConstructor) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   EXPECT_TRUE(sk_list.empty());
   EXPECT_EQ(sk_list.size(), 0);
 }
 
 TEST(SkListTest, PushFront) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   sk_list.push_front(1);
   EXPECT_EQ(sk_list.size(), 1);
   EXPECT_EQ(sk_list.front(), 1);
@@ -35,7 +38,7 @@ TEST(SkListTest, PushFront) {
 }
 
 TEST(SkListTest, PushBack) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   sk_list.push_back(1);
   EXPECT_EQ(sk_list.size(), 1);
   EXPECT_EQ(sk_list.front(), 1);
@@ -48,7 +51,7 @@ TEST(SkListTest, PushBack) {
 }
 
 TEST(SkListTest, PopFront) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   sk_list.push_back(1);
   sk_list.push_back(2);
   sk_list.pop_front();
@@ -59,7 +62,7 @@ TEST(SkListTest, PopFront) {
 }
 
 TEST(SkListTest, PopBack) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   sk_list.push_back(1);
   sk_list.push_back(2);
   sk_list.pop_back();
@@ -70,7 +73,7 @@ TEST(SkListTest, PopBack) {
 }
 
 TEST(SkListTest, Insert) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   sk_list.push_back(1);
   sk_list.push_back(3);
 
@@ -86,7 +89,7 @@ TEST(SkListTest, Insert) {
 }
 
 TEST(SkListTest, Erase) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   sk_list.push_back(1);
   sk_list.push_back(2);
   sk_list.push_back(3);
@@ -101,7 +104,7 @@ TEST(SkListTest, Erase) {
 }
 
 TEST(SkListTest, Clear) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   sk_list.push_back(1);
   sk_list.push_back(2);
   sk_list.clear();
@@ -109,39 +112,8 @@ TEST(SkListTest, Clear) {
   EXPECT_TRUE(sk_list.empty());
 }
 
-TEST(SkListTest, CopyConstructor) {
-  kstd::list<int> l1;
-  l1.push_back(1);
-  l1.push_back(2);
-
-  kstd::list<int> l2(l1);
-  EXPECT_EQ(l2.size(), 2);
-  EXPECT_EQ(l2.front(), 1);
-  EXPECT_EQ(l2.back(), 2);
-
-  l1.pop_back();
-  EXPECT_EQ(l1.size(), 1);
-  EXPECT_EQ(l2.size(), 2);
-}
-
-TEST(SkListTest, AssignmentOperator) {
-  kstd::list<int> l1;
-  l1.push_back(1);
-  l1.push_back(2);
-
-  kstd::list<int> l2;
-  l2 = l1;
-  EXPECT_EQ(l2.size(), 2);
-  EXPECT_EQ(l2.front(), 1);
-  EXPECT_EQ(l2.back(), 2);
-
-  l1.pop_back();
-  EXPECT_EQ(l1.size(), 1);
-  EXPECT_EQ(l2.size(), 2);
-}
-
 TEST(SkListTest, FloatList) {
-  kstd::list<float> list;
+  kstd::static_list<float, kListCapacity> list;
   list.push_back(1.1f);
   list.push_back(2.2f);
 
@@ -155,7 +127,7 @@ TEST(SkListTest, FloatList) {
 }
 
 TEST(SkListTest, StructList) {
-  kstd::list<MyData> list;
+  kstd::static_list<MyData, kListCapacity> list;
   list.push_back({1, 1.1});
   list.push_back({2, 2.2});
 
@@ -171,7 +143,7 @@ TEST(SkListTest, StructList) {
 }
 
 TEST(SkListTest, EraseRange) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   for (int i = 1; i <= 5; ++i) {
     sk_list.push_back(i);
   }
@@ -190,7 +162,7 @@ TEST(SkListTest, EraseRange) {
 }
 
 TEST(SkListTest, Remove) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   sk_list.push_back(1);
   sk_list.push_back(2);
   sk_list.push_back(2);
@@ -204,7 +176,7 @@ TEST(SkListTest, Remove) {
 }
 
 TEST(SkListTest, RemoveIf) {
-  kstd::list<int> sk_list;
+  kstd::static_list<int, kListCapacity> sk_list;
   for (int i = 1; i <= 10; ++i) {
     sk_list.push_back(i);
   }

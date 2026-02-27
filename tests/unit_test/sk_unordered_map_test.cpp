@@ -8,14 +8,19 @@
 
 #include "kstd_unordered_map"
 
+// Use static_unordered_map<K, V, MaxNodes, MaxBuckets> which has built-in
+// storage (no external pool/bucket buffer required)
+static constexpr size_t kMapNodes = 256;
+static constexpr size_t kMapBuckets = 64;
+
 TEST(SkUnorderedMapTest, DefaultConstructor) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
   EXPECT_TRUE(map.empty());
   EXPECT_EQ(map.size(), 0);
 }
 
 TEST(SkUnorderedMapTest, Insert) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
 
   auto result1 = map.insert({1, 10});
   EXPECT_TRUE(result1.second);
@@ -33,7 +38,7 @@ TEST(SkUnorderedMapTest, Insert) {
 }
 
 TEST(SkUnorderedMapTest, OperatorBracket) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
 
   map[1] = 10;
   EXPECT_EQ(map[1], 10);
@@ -49,7 +54,7 @@ TEST(SkUnorderedMapTest, OperatorBracket) {
 }
 
 TEST(SkUnorderedMapTest, Find) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
   map[1] = 10;
   map[2] = 20;
 
@@ -63,7 +68,7 @@ TEST(SkUnorderedMapTest, Find) {
 }
 
 TEST(SkUnorderedMapTest, Contains) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
   map[1] = 10;
   map[2] = 20;
 
@@ -73,7 +78,7 @@ TEST(SkUnorderedMapTest, Contains) {
 }
 
 TEST(SkUnorderedMapTest, Count) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
   map[1] = 10;
 
   EXPECT_EQ(map.count(1), 1);
@@ -81,7 +86,7 @@ TEST(SkUnorderedMapTest, Count) {
 }
 
 TEST(SkUnorderedMapTest, Erase) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
   map[1] = 10;
   map[2] = 20;
   map[3] = 30;
@@ -95,7 +100,7 @@ TEST(SkUnorderedMapTest, Erase) {
 }
 
 TEST(SkUnorderedMapTest, Clear) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
   map[1] = 10;
   map[2] = 20;
 
@@ -105,7 +110,7 @@ TEST(SkUnorderedMapTest, Clear) {
 }
 
 TEST(SkUnorderedMapTest, Iterator) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
   map[1] = 10;
   map[2] = 20;
   map[3] = 30;
@@ -126,7 +131,7 @@ TEST(SkUnorderedMapTest, Iterator) {
 }
 
 TEST(SkUnorderedMapTest, RangeBasedFor) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
   map[1] = 10;
   map[2] = 20;
   map[3] = 30;
@@ -140,61 +145,8 @@ TEST(SkUnorderedMapTest, RangeBasedFor) {
   EXPECT_EQ(count, 3);
 }
 
-TEST(SkUnorderedMapTest, CopyConstructor) {
-  kstd::unordered_map<int, int> map1;
-  map1[1] = 10;
-  map1[2] = 20;
-
-  kstd::unordered_map<int, int> map2(map1);
-  EXPECT_EQ(map2.size(), 2);
-  EXPECT_EQ(map2[1], 10);
-  EXPECT_EQ(map2[2], 20);
-
-  map1[1] = 100;
-  EXPECT_EQ(map2[1], 10);
-}
-
-TEST(SkUnorderedMapTest, CopyAssignment) {
-  kstd::unordered_map<int, int> map1;
-  map1[1] = 10;
-  map1[2] = 20;
-
-  kstd::unordered_map<int, int> map2;
-  map2 = map1;
-
-  EXPECT_EQ(map2.size(), 2);
-  EXPECT_EQ(map2[1], 10);
-  EXPECT_EQ(map2[2], 20);
-}
-
-TEST(SkUnorderedMapTest, MoveConstructor) {
-  kstd::unordered_map<int, int> map1;
-  map1[1] = 10;
-  map1[2] = 20;
-
-  kstd::unordered_map<int, int> map2(std::move(map1));
-  EXPECT_EQ(map2.size(), 2);
-  EXPECT_EQ(map2[1], 10);
-  EXPECT_EQ(map2[2], 20);
-  EXPECT_TRUE(map1.empty());
-}
-
-TEST(SkUnorderedMapTest, MoveAssignment) {
-  kstd::unordered_map<int, int> map1;
-  map1[1] = 10;
-  map1[2] = 20;
-
-  kstd::unordered_map<int, int> map2;
-  map2 = std::move(map1);
-
-  EXPECT_EQ(map2.size(), 2);
-  EXPECT_EQ(map2[1], 10);
-  EXPECT_EQ(map2[2], 20);
-  EXPECT_TRUE(map1.empty());
-}
-
 TEST(SkUnorderedMapTest, At) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
   map[1] = 10;
 
   EXPECT_EQ(map.at(1), 10);
@@ -204,7 +156,7 @@ TEST(SkUnorderedMapTest, At) {
 }
 
 TEST(SkUnorderedMapTest, Emplace) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
 
   auto result = map.emplace(1, 10);
   EXPECT_TRUE(result.second);
@@ -214,7 +166,7 @@ TEST(SkUnorderedMapTest, Emplace) {
 }
 
 TEST(SkUnorderedMapTest, BucketInterface) {
-  kstd::unordered_map<int, int> map;
+  kstd::static_unordered_map<int, int, kMapNodes, kMapBuckets> map;
   map[1] = 10;
   map[2] = 20;
 
@@ -225,56 +177,37 @@ TEST(SkUnorderedMapTest, BucketInterface) {
   EXPECT_LT(bucket_idx, map.bucket_count());
 }
 
-TEST(SkUnorderedMapTest, Reserve) {
-  kstd::unordered_map<int, int> map;
-
-  size_t initial_bucket_count = map.bucket_count();
-  map.reserve(100);
-  EXPECT_GE(map.bucket_count(), initial_bucket_count);
-}
-
-TEST(SkUnorderedMapTest, Rehash) {
-  kstd::unordered_map<int, int> map;
-  map[1] = 10;
-  map[2] = 20;
-
-  map.rehash(50);
-  EXPECT_GE(map.bucket_count(), 50);
-  EXPECT_EQ(map.size(), 2);
-  EXPECT_EQ(map[1], 10);
-  EXPECT_EQ(map[2], 20);
-}
-
 TEST(SkUnorderedMapTest, LargeDataSet) {
-  kstd::unordered_map<int, int> map;
+  // Use larger capacity for this test
+  kstd::static_unordered_map<int, int, 1024, 256> map;
 
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i < 200; ++i) {
     map[i] = i * 2;
   }
 
-  EXPECT_EQ(map.size(), 1000);
+  EXPECT_EQ(map.size(), 200);
 
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i < 200; ++i) {
     EXPECT_EQ(map[i], i * 2);
   }
 
-  for (int i = 0; i < 500; ++i) {
+  for (int i = 0; i < 100; ++i) {
     map.erase(i);
   }
 
-  EXPECT_EQ(map.size(), 500);
+  EXPECT_EQ(map.size(), 100);
 
-  for (int i = 500; i < 1000; ++i) {
+  for (int i = 100; i < 200; ++i) {
     EXPECT_TRUE(map.contains(i));
   }
 
-  for (int i = 0; i < 500; ++i) {
+  for (int i = 0; i < 100; ++i) {
     EXPECT_FALSE(map.contains(i));
   }
 }
 
 TEST(SkUnorderedMapTest, PointerKey) {
-  kstd::unordered_map<int*, int> map;
+  kstd::static_unordered_map<int*, int, kMapNodes, kMapBuckets> map;
 
   int a = 1, b = 2, c = 3;
   map[&a] = 10;

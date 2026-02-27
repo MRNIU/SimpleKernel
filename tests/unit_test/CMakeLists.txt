@@ -75,6 +75,7 @@ TARGET_LINK_LIBRARIES (
             device
             task
             filesystem
-            fatfs_lib)
+            fatfs_lib
+            etl::etl)
 
 GTEST_DISCOVER_TESTS (${PROJECT_NAME})
