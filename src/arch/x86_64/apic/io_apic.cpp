@@ -4,7 +4,8 @@
 
 #include "io_apic.h"
 
-#include "io.hpp"
+#include <etl/io_port.h>
+
 #include "kernel_log.hpp"
 
 IoApic::IoApic() {
@@ -92,17 +93,21 @@ void IoApic::PrintInfo() const {
 }
 
 uint32_t IoApic::Read(uint32_t reg) const {
-  // 写入寄存器选择器
-  io::Out<uint32_t>(base_address_ + kRegSel, reg);
-  // 读取寄存器窗口
-  return io::In<uint32_t>(base_address_ + kRegWin);
+  etl::io_port_wo<uint32_t> sel{
+      reinterpret_cast<void*>(base_address_ + kRegSel)};
+  sel.write(reg);
+  etl::io_port_ro<uint32_t> win{
+      reinterpret_cast<void*>(base_address_ + kRegWin)};
+  return win.read();
 }
 
 void IoApic::Write(uint32_t reg, uint32_t value) const {
-  // 写入寄存器选择器
-  io::Out<uint32_t>(base_address_ + kRegSel, reg);
-  // 写入寄存器窗口
-  io::Out<uint32_t>(base_address_ + kRegWin, value);
+  etl::io_port_wo<uint32_t> sel{
+      reinterpret_cast<void*>(base_address_ + kRegSel)};
+  sel.write(reg);
+  etl::io_port_wo<uint32_t> win{
+      reinterpret_cast<void*>(base_address_ + kRegWin)};
+  win.write(value);
 }
 
 uint64_t IoApic::ReadRedirectionEntry(uint8_t irq) const {

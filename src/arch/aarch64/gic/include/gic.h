@@ -5,10 +5,11 @@
 #ifndef SIMPLEKERNEL_SRC_KERNEL_DRIVER_GIC_INCLUDE_GIC_H_
 #define SIMPLEKERNEL_SRC_KERNEL_DRIVER_GIC_INCLUDE_GIC_H_
 
+#include <etl/io_port.h>
+
 #include <array>
 #include <cstdint>
 
-#include "io.hpp"
 #include "kernel_log.hpp"
 #include "per_cpu.hpp"
 
@@ -346,11 +347,13 @@ class Gic {
     uint64_t base_addr_ = 0;
 
     __always_inline auto Read(uint32_t off) const -> uint32_t {
-      return io::In<uint32_t>(base_addr_ + off);
+      etl::io_port_ro<uint32_t> reg{reinterpret_cast<void*>(base_addr_ + off)};
+      return reg.read();
     }
 
     __always_inline void Write(uint32_t off, uint32_t val) const {
-      io::Out<uint32_t>(base_addr_ + off, val);
+      etl::io_port_wo<uint32_t> reg{reinterpret_cast<void*>(base_addr_ + off)};
+      reg.write(val);
     }
   };
 
@@ -555,12 +558,16 @@ class Gic {
     uint64_t base_addr_ = 0;
 
     __always_inline auto Read(uint32_t cpuid, uint32_t off) const -> uint32_t {
-      return io::In<uint32_t>(base_addr_ + cpuid * kSTRIDE + off);
+      etl::io_port_ro<uint32_t> reg{
+          reinterpret_cast<void*>(base_addr_ + cpuid * kSTRIDE + off)};
+      return reg.read();
     }
 
     __always_inline void Write(uint32_t cpuid, uint32_t off,
                                uint32_t val) const {
-      io::Out<uint32_t>(base_addr_ + cpuid * kSTRIDE + off, val);
+      etl::io_port_wo<uint32_t> reg{
+          reinterpret_cast<void*>(base_addr_ + cpuid * kSTRIDE + off)};
+      reg.write(val);
     }
   };
 

@@ -2,8 +2,9 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <etl/io_port.h>
+
 #include "apic.h"
-#include "io.hpp"
 #include "kernel_log.hpp"
 
 auto LocalApic::Init() -> Expected<void> {
@@ -28,7 +29,9 @@ auto LocalApic::Init() -> Expected<void> {
   if (is_x2apic_mode_) {
     sivr = cpu_io::msr::apic::ReadSivr();
   } else {
-    sivr = io::In<uint32_t>(apic_base_ + kXApicSivrOffset);
+    etl::io_port_ro<uint32_t> sivr_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicSivrOffset)};
+    sivr = sivr_reg.read();
   }
 
   // 设置 APIC Software Enable 位
@@ -39,7 +42,9 @@ auto LocalApic::Init() -> Expected<void> {
   if (is_x2apic_mode_) {
     cpu_io::msr::apic::WriteSivr(sivr);
   } else {
-    io::Out<uint32_t>(apic_base_ + kXApicSivrOffset, sivr);
+    etl::io_port_wo<uint32_t> sivr_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicSivrOffset)};
+    sivr_reg.write(sivr);
   }
 
   // 清除任务优先级
@@ -53,10 +58,18 @@ auto LocalApic::Init() -> Expected<void> {
     cpu_io::msr::apic::WriteLvtError(kLvtMaskBit);
   } else {
     // xAPIC 模式下通过内存映射写入
-    io::Out<uint32_t>(apic_base_ + kXApicLvtTimerOffset, kLvtMaskBit);
-    io::Out<uint32_t>(apic_base_ + kXApicLvtLint0Offset, kLvtMaskBit);
-    io::Out<uint32_t>(apic_base_ + kXApicLvtLint1Offset, kLvtMaskBit);
-    io::Out<uint32_t>(apic_base_ + kXApicLvtErrorOffset, kLvtMaskBit);
+    etl::io_port_wo<uint32_t> lvt_timer{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtTimerOffset)};
+    lvt_timer.write(kLvtMaskBit);
+    etl::io_port_wo<uint32_t> lvt_lint0{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtLint0Offset)};
+    lvt_lint0.write(kLvtMaskBit);
+    etl::io_port_wo<uint32_t> lvt_lint1{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtLint1Offset)};
+    lvt_lint1.write(kLvtMaskBit);
+    etl::io_port_wo<uint32_t> lvt_error{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtErrorOffset)};
+    lvt_error.write(kLvtMaskBit);
   }
   return {};
 }
@@ -66,7 +79,9 @@ uint32_t LocalApic::GetApicVersion() const {
     return cpu_io::msr::apic::ReadVersion();
   } else {
     // 版本寄存器在偏移 0x30 处
-    return io::In<uint32_t>(apic_base_ + kXApicVersionOffset);
+    etl::io_port_ro<uint32_t> ver_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicVersionOffset)};
+    return ver_reg.read();
   }
 }
 
@@ -75,7 +90,9 @@ void LocalApic::SendEoi() const {
     cpu_io::msr::apic::WriteEoi(0);
   } else {
     // 写入 EOI 寄存器(偏移 0xB0)
-    io::Out<uint32_t>(apic_base_ + kXApicEoiOffset, 0);
+    etl::io_port_wo<uint32_t> eoi_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicEoiOffset)};
+    eoi_reg.write(0);
   }
 }
 
@@ -95,15 +112,22 @@ auto LocalApic::SendIpi(uint32_t destination_apic_id, uint8_t vector) const
 
     // 设置目标 APIC ID(ICR_HIGH 的位 24-31)
     auto icr_high = (destination_apic_id & kApicIdMask) << kIcrDestShift;
-    io::Out<uint32_t>(apic_base_ + kXApicIcrHighOffset, icr_high);
+    etl::io_port_wo<uint32_t> icr_high_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicIcrHighOffset)};
+    icr_high_reg.write(icr_high);
 
     // 设置向量和传递模式(ICR_LOW)
     auto icr_low = static_cast<uint32_t>(vector);
-    io::Out<uint32_t>(apic_base_ + kXApicIcrLowOffset, icr_low);
+    etl::io_port_wo<uint32_t> icr_low_wo{
+        reinterpret_cast<void*>(apic_base_ + kXApicIcrLowOffset)};
+    icr_low_wo.write(icr_low);
 
-    while ((io::In<uint32_t>(apic_base_ + kXApicIcrLowOffset) &
-            kIcrDeliveryStatusBit) != 0) {
-      ;
+    {
+      etl::io_port_ro<uint32_t> icr_low_ro{
+          reinterpret_cast<void*>(apic_base_ + kXApicIcrLowOffset)};
+      while ((icr_low_ro.read() & kIcrDeliveryStatusBit) != 0) {
+        ;
+      }
     }
   }
   return {};
@@ -123,15 +147,22 @@ auto LocalApic::BroadcastIpi(uint8_t vector) const -> Expected<void> {
   } else {
     // 广播到除自己外的所有 CPU(目标简写模式)
     // ICR_HIGH 设为 0(不使用具体目标 ID)
-    io::Out<uint32_t>(apic_base_ + kXApicIcrHighOffset, 0);
+    etl::io_port_wo<uint32_t> icr_high_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicIcrHighOffset)};
+    icr_high_reg.write(0);
 
     // ICR_LOW：向量 + 目标简写模式(位 18-19 = 11)
     auto icr_low = static_cast<uint32_t>(vector) | kIcrBroadcastMode;
-    io::Out<uint32_t>(apic_base_ + kXApicIcrLowOffset, icr_low);
+    etl::io_port_wo<uint32_t> icr_low_wo{
+        reinterpret_cast<void*>(apic_base_ + kXApicIcrLowOffset)};
+    icr_low_wo.write(icr_low);
 
-    while ((io::In<uint32_t>(apic_base_ + kXApicIcrLowOffset) &
-            kIcrDeliveryStatusBit) != 0) {
-      ;
+    {
+      etl::io_port_ro<uint32_t> icr_low_ro{
+          reinterpret_cast<void*>(apic_base_ + kXApicIcrLowOffset)};
+      while ((icr_low_ro.read() & kIcrDeliveryStatusBit) != 0) {
+        ;
+      }
     }
   }
   return {};
@@ -141,8 +172,9 @@ void LocalApic::SetTaskPriority(uint8_t priority) const {
   if (is_x2apic_mode_) {
     cpu_io::msr::apic::WriteTpr(static_cast<uint32_t>(priority));
   } else {
-    io::Out<uint32_t>(apic_base_ + kXApicTprOffset,
-                      static_cast<uint32_t>(priority));
+    etl::io_port_wo<uint32_t> tpr_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicTprOffset)};
+    tpr_reg.write(static_cast<uint32_t>(priority));
   }
 }
 
@@ -150,7 +182,9 @@ uint8_t LocalApic::GetTaskPriority() const {
   if (is_x2apic_mode_) {
     return static_cast<uint8_t>(cpu_io::msr::apic::ReadTpr() & kApicIdMask);
   } else {
-    auto tpr = io::In<uint32_t>(apic_base_ + kXApicTprOffset);
+    etl::io_port_ro<uint32_t> tpr_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicTprOffset)};
+    auto tpr = tpr_reg.read();
     return static_cast<uint8_t>(tpr & kApicIdMask);
   }
 }
@@ -169,7 +203,9 @@ void LocalApic::EnableTimer(uint32_t initial_count, uint32_t divide_value,
     cpu_io::msr::apic::WriteTimerInitCount(initial_count);
   } else {
     // 设置分频器(偏移 0x3E0)
-    io::Out<uint32_t>(apic_base_ + kXApicTimerDivideOffset, divide_value);
+    etl::io_port_wo<uint32_t> divide_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicTimerDivideOffset)};
+    divide_reg.write(divide_value);
 
     // 设置 LVT 定时器寄存器(偏移 0x320)
     auto lvt_timer = static_cast<uint32_t>(vector);
@@ -177,10 +213,14 @@ void LocalApic::EnableTimer(uint32_t initial_count, uint32_t divide_value,
       lvt_timer |= kLvtPeriodicMode;
     }
 
-    io::Out<uint32_t>(apic_base_ + kXApicLvtTimerOffset, lvt_timer);
+    etl::io_port_wo<uint32_t> lvt_timer_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtTimerOffset)};
+    lvt_timer_reg.write(lvt_timer);
 
     // 设置初始计数值(偏移 0x380)
-    io::Out<uint32_t>(apic_base_ + kXApicTimerInitCountOffset, initial_count);
+    etl::io_port_wo<uint32_t> init_count_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicTimerInitCountOffset)};
+    init_count_reg.write(initial_count);
   }
 }
 
@@ -191,10 +231,14 @@ void LocalApic::DisableTimer() const {
     cpu_io::msr::apic::WriteLvtTimer(lvt_timer);
     cpu_io::msr::apic::WriteTimerInitCount(0);
   } else {
-    auto lvt_timer = io::In<uint32_t>(apic_base_ + kXApicLvtTimerOffset);
+    etl::io_port_rw<uint32_t> lvt_timer_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtTimerOffset)};
+    auto lvt_timer = lvt_timer_reg.read();
     lvt_timer |= kLvtMaskBit;
-    io::Out<uint32_t>(apic_base_ + kXApicLvtTimerOffset, lvt_timer);
-    io::Out<uint32_t>(apic_base_ + kXApicTimerInitCountOffset, 0);
+    lvt_timer_reg.write(lvt_timer);
+    etl::io_port_wo<uint32_t> init_count_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicTimerInitCountOffset)};
+    init_count_reg.write(0);
   }
 }
 
@@ -203,7 +247,9 @@ uint32_t LocalApic::GetTimerCurrentCount() const {
     return cpu_io::msr::apic::ReadTimerCurrCount();
   } else {
     // 当前计数寄存器在偏移 0x390 处
-    return io::In<uint32_t>(apic_base_ + kXApicTimerCurrCountOffset);
+    etl::io_port_ro<uint32_t> curr_count_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicTimerCurrCountOffset)};
+    return curr_count_reg.read();
   }
 }
 
@@ -257,15 +303,22 @@ void LocalApic::SendInitIpi(uint32_t destination_apic_id) const {
   } else {
     // 设置目标 APIC ID(ICR_HIGH)
     auto icr_high = (destination_apic_id & kApicIdMask) << kIcrDestShift;
-    io::Out<uint32_t>(apic_base_ + kXApicIcrHighOffset, icr_high);
+    etl::io_port_wo<uint32_t> icr_high_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicIcrHighOffset)};
+    icr_high_reg.write(icr_high);
 
     // 发送 INIT IPI(ICR_LOW)
     auto icr_low = kInitIpiMode;
-    io::Out<uint32_t>(apic_base_ + kXApicIcrLowOffset, icr_low);
+    etl::io_port_wo<uint32_t> icr_low_wo{
+        reinterpret_cast<void*>(apic_base_ + kXApicIcrLowOffset)};
+    icr_low_wo.write(icr_low);
 
-    while ((io::In<uint32_t>(apic_base_ + kXApicIcrLowOffset) &
-            kIcrDeliveryStatusBit) != 0) {
-      ;
+    {
+      etl::io_port_ro<uint32_t> icr_low_ro{
+          reinterpret_cast<void*>(apic_base_ + kXApicIcrLowOffset)};
+      while ((icr_low_ro.read() & kIcrDeliveryStatusBit) != 0) {
+        ;
+      }
     }
   }
 
@@ -287,15 +340,22 @@ void LocalApic::SendStartupIpi(uint32_t destination_apic_id,
   } else {
     // 设置目标 APIC ID(ICR_HIGH)
     uint32_t icr_high = (destination_apic_id & kApicIdMask) << kIcrDestShift;
-    io::Out<uint32_t>(apic_base_ + kXApicIcrHighOffset, icr_high);
+    etl::io_port_wo<uint32_t> icr_high_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicIcrHighOffset)};
+    icr_high_reg.write(icr_high);
 
     // 发送 SIPI(ICR_LOW)
     uint32_t icr_low = kSipiMode | start_page;
-    io::Out<uint32_t>(apic_base_ + kXApicIcrLowOffset, icr_low);
+    etl::io_port_wo<uint32_t> icr_low_wo{
+        reinterpret_cast<void*>(apic_base_ + kXApicIcrLowOffset)};
+    icr_low_wo.write(icr_low);
 
-    while ((io::In<uint32_t>(apic_base_ + kXApicIcrLowOffset) &
-            kIcrDeliveryStatusBit) != 0) {
-      ;
+    {
+      etl::io_port_ro<uint32_t> icr_low_ro{
+          reinterpret_cast<void*>(apic_base_ + kXApicIcrLowOffset)};
+      while ((icr_low_ro.read() & kIcrDeliveryStatusBit) != 0) {
+        ;
+      }
     }
   }
 }
@@ -312,13 +372,19 @@ void LocalApic::ConfigureLvtEntries() const {
     cpu_io::msr::apic::WriteLvtError(kErrorVector);
   } else {
     // 配置 LINT0 (偏移 0x350)
-    io::Out<uint32_t>(apic_base_ + kXApicLvtLint0Offset, kExtIntMode);
+    etl::io_port_wo<uint32_t> lint0_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtLint0Offset)};
+    lint0_reg.write(kExtIntMode);
 
     // 配置 LINT1 (偏移 0x360)
-    io::Out<uint32_t>(apic_base_ + kXApicLvtLint1Offset, kNmiMode);
+    etl::io_port_wo<uint32_t> lint1_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtLint1Offset)};
+    lint1_reg.write(kNmiMode);
 
     // 配置错误中断 (偏移 0x370)
-    io::Out<uint32_t>(apic_base_ + kXApicLvtErrorOffset, kErrorVector);
+    etl::io_port_wo<uint32_t> error_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtErrorOffset)};
+    error_reg.write(kErrorVector);
   }
 }
 
@@ -330,8 +396,10 @@ uint32_t LocalApic::ReadErrorStatus() const {
   } else {
     // 取 ESR (Error Status Register, 偏移 0x280)
     // 读取 ESR 之前需要先写入 0
-    io::Out<uint32_t>(apic_base_ + kXApicEsrOffset, 0);
-    return io::In<uint32_t>(apic_base_ + kXApicEsrOffset);
+    etl::io_port_rw<uint32_t> esr_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicEsrOffset)};
+    esr_reg.write(0);
+    return esr_reg.read();
   }
 }
 
@@ -360,20 +428,30 @@ void LocalApic::PrintInfo() const {
     uint32_t lvt_error = cpu_io::msr::apic::ReadLvtError();
     klog::Info("LVT Error: 0x%x\n", lvt_error);
   } else {
-    uint32_t sivr = io::In<uint32_t>(apic_base_ + kXApicSivrOffset);
+    etl::io_port_ro<uint32_t> sivr_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicSivrOffset)};
+    uint32_t sivr = sivr_reg.read();
     klog::Info("SIVR: 0x%x (APIC %s)\n", sivr,
                (sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled");
 
-    uint32_t lvt_timer = io::In<uint32_t>(apic_base_ + kXApicLvtTimerOffset);
+    etl::io_port_ro<uint32_t> lvt_timer_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtTimerOffset)};
+    uint32_t lvt_timer = lvt_timer_reg.read();
     klog::Info("LVT Timer: 0x%x\n", lvt_timer);
 
-    uint32_t lvt_lint0 = io::In<uint32_t>(apic_base_ + kXApicLvtLint0Offset);
+    etl::io_port_ro<uint32_t> lvt_lint0_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtLint0Offset)};
+    uint32_t lvt_lint0 = lvt_lint0_reg.read();
     klog::Info("LVT LINT0: 0x%x\n", lvt_lint0);
 
-    uint32_t lvt_lint1 = io::In<uint32_t>(apic_base_ + kXApicLvtLint1Offset);
+    etl::io_port_ro<uint32_t> lvt_lint1_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtLint1Offset)};
+    uint32_t lvt_lint1 = lvt_lint1_reg.read();
     klog::Info("LVT LINT1: 0x%x\n", lvt_lint1);
 
-    uint32_t lvt_error = io::In<uint32_t>(apic_base_ + kXApicLvtErrorOffset);
+    etl::io_port_ro<uint32_t> lvt_error_reg{
+        reinterpret_cast<void*>(apic_base_ + kXApicLvtErrorOffset)};
+    uint32_t lvt_error = lvt_error_reg.read();
     klog::Info("LVT Error: 0x%x\n", lvt_error);
 
     klog::Info("APIC Base Address: 0x%lx\n", apic_base_);

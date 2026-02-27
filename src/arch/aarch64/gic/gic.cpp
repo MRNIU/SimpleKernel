@@ -6,7 +6,6 @@
 
 #include <cpu_io.h>
 
-#include "io.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cassert"
 
