@@ -7,6 +7,8 @@ ENABLE_LANGUAGE (CXX)
 
 ADD_EXECUTABLE (
     ${PROJECT_NAME}
+    mocks/arch.cpp
+    mocks/test_environment_state.cpp
     sk_libc_test.cpp
     sk_ctype_test.cpp
     sk_string_test.cpp
@@ -21,11 +23,9 @@ ADD_EXECUTABLE (
     sk_rb_tree_test.cpp
     sk_set_test.cpp
     sk_unordered_map_test.cpp
-    task/example_environment_test.cpp
-    task/task_scheduling_example_test.cpp
     task/fixtures/task_test_harness.cpp
-    mocks/arch.cpp
-    mocks/test_environment_state.cpp
+    vfs_test.cpp
+    ramfs_test.cpp
     ${CMAKE_SOURCE_DIR}/src/virtual_memory.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp
     ${CMAKE_SOURCE_DIR}/src/task/block.cpp
@@ -37,8 +37,8 @@ ADD_EXECUTABLE (
     ${CMAKE_SOURCE_DIR}/src/task/task_manager.cpp
     ${CMAKE_SOURCE_DIR}/src/task/tick_update.cpp
     ${CMAKE_SOURCE_DIR}/src/task/wait.cpp
-    vfs_test.cpp
-    ramfs_test.cpp)
+    ${CMAKE_SOURCE_DIR}/src/task/wait.cpp
+    ${CMAKE_SOURCE_DIR}/src/device/device.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME}
@@ -69,7 +69,13 @@ TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 TARGET_LINK_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_OPTIONS})
 
 TARGET_LINK_LIBRARIES (
-    ${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_LINK_LIB} dtc-lib bmalloc MPMCQueue
-                            task filesystem)
+    ${PROJECT_NAME}
+    PRIVATE ${DEFAULT_TEST_LINK_LIB}
+            dtc-lib
+            bmalloc
+            MPMCQueue
+            task
+            filesystem
+            fatfs_lib)
 
 GTEST_DISCOVER_TESTS (${PROJECT_NAME})

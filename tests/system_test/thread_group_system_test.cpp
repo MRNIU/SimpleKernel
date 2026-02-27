@@ -25,6 +25,8 @@ namespace {
 std::atomic<int> g_thread_counter{0};
 std::atomic<int> g_thread_completed{0};
 
+std::atomic<int> g_tests_completed{0};
+std::atomic<int> g_tests_failed{0};
 /**
  * @brief 线程函数，增加计数器
  */
@@ -106,12 +108,15 @@ void test_thread_group_basic(void* /*arg*/) {
   // 清理
   delete leader;
 
-  if (g_thread_completed == 3 && g_thread_counter >= 30) {
+  bool passed = (g_thread_completed == 3 && g_thread_counter >= 30);
+  if (passed) {
     klog::Info("Thread Group Basic Test: PASS\n");
   } else {
     klog::Err("Thread Group Basic Test: FAIL\n");
+    g_tests_failed++;
   }
 
+  g_tests_completed++;
   sys_exit(0);
 }
 
@@ -164,13 +169,16 @@ void test_thread_group_dynamic(void* /*arg*/) {
   }
   delete leader;
 
-  if (final_size == static_cast<size_t>(kThreadCount + 1) &&
-      remaining_size == 1) {
+  bool passed = (final_size == static_cast<size_t>(kThreadCount + 1) &&
+                 remaining_size == 1);
+  if (passed) {
     klog::Info("Thread Group Dynamic Test: PASS\n");
   } else {
     klog::Err("Thread Group Dynamic Test: FAIL\n");
+    g_tests_failed++;
   }
 
+  g_tests_completed++;
   sys_exit(0);
 }
 
@@ -224,12 +232,15 @@ void test_thread_group_concurrent_exit(void* /*arg*/) {
 
   delete leader;
 
-  if (g_thread_completed == kWorkerCount) {
+  bool passed = (g_thread_completed == kWorkerCount);
+  if (passed) {
     klog::Info("Thread Group Concurrent Exit Test: PASS\n");
   } else {
     klog::Err("Thread Group Concurrent Exit Test: FAIL\n");
+    g_tests_failed++;
   }
 
+  g_tests_completed++;
   sys_exit(0);
 }
 
@@ -241,8 +252,8 @@ void test_thread_group_concurrent_exit(void* /*arg*/) {
 auto thread_group_system_test() -> bool {
   sk_printf("=== Thread Group System Test Suite ===\n");
 
-  // 注意：这些测试会异步运行，因为它们被添加到任务队列中
-  // 在实际的系统测试中，可能需要实现一个同步等待机制
+  g_tests_completed = 0;
+  g_tests_failed = 0;
 
   // 测试 1: 基本线程组功能
   auto* test1 = new TaskControlBlock("TestThreadGroupBasic", 10,
@@ -259,6 +270,21 @@ auto thread_group_system_test() -> bool {
       new TaskControlBlock("TestThreadGroupConcurrentExit", 10,
                            test_thread_group_concurrent_exit, nullptr);
   Singleton<TaskManager>::GetInstance().AddTask(test3);
+
+  // 同步等待所有测试完成
+  constexpr int kExpectedTests = 3;
+  int timeout = 400;
+  while (timeout > 0) {
+    sys_sleep(50);
+    if (g_tests_completed >= kExpectedTests) {
+      break;
+    }
+    timeout--;
+  }
+
+  EXPECT_EQ(g_tests_completed.load(), kExpectedTests,
+            "All thread group tests should complete");
+  EXPECT_EQ(g_tests_failed.load(), 0, "No thread group tests should fail");
 
   sk_printf("Thread Group System Test Suite: COMPLETED\n");
   return true;

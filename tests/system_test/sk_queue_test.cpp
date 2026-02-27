@@ -40,7 +40,7 @@ bool test_push_pop() {
 
 }  // namespace
 
-bool sk_queue_test() {
+auto sk_queue_test() -> bool {
   if (!test_push_pop()) {
     return false;
   }

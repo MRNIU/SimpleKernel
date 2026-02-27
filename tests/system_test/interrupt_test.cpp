@@ -22,11 +22,11 @@
 
 /// @todo 等用户态调通后补上
 auto interrupt_test() -> bool {
-  sk_printf("memory_test: start\n");
+  sk_printf("interrupt_test: start\n");
 
   Singleton<Interrupt>::GetInstance().BroadcastIpi();
 
-  sk_printf("memory_test: multi alloc passed\n");
+  sk_printf("interrupt_test: broadcast ipi passed\n");
 
   return true;
 }

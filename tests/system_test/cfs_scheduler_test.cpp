@@ -214,9 +214,14 @@ auto test_cfs_no_preemption() -> bool {
 
   TaskControlBlock task2("Task2", 2, nullptr, nullptr);
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
-  // OnTick 会让 task1 增加 1000，所以 task2 应该设置为 1000 + 1000 - 5 = 1995
-  // 这样 OnTick 后：task1 = 2000, task2 = 1995，差距 5 < 10
-  task2.sched_data.cfs.vruntime = 1995;
+  // OnTick 会让 task1 的 vruntime 增加 delta = (kDefaultWeight * 1000) / weight
+  // task1 初始 vruntime=1000，OnTick 后 = 1000 + delta = 2000
+  // 设置 task2 的 vruntime 使差距小于 kMinGranularity
+  uint64_t delta =
+      (CfsScheduler::kDefaultWeight * 1000) / task1.sched_data.cfs.weight;
+  uint64_t task1_after_tick = task1.sched_data.cfs.vruntime + delta;
+  task2.sched_data.cfs.vruntime =
+      task1_after_tick - (CfsScheduler::kMinGranularity / 2);
 
   scheduler.Enqueue(&task2);
 

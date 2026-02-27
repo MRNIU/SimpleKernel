@@ -68,7 +68,7 @@ bool test_min_heap() {
 
 }  // namespace
 
-bool sk_priority_queue_test() {
+auto sk_priority_queue_test() -> bool {
   if (!test_max_heap()) {
     sk_printf("SkPriorityQueueTest: test_max_heap failed\n");
     return false;

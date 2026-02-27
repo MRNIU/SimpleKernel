@@ -85,7 +85,10 @@ RUN apt install --no-install-recommends --fix-missing -y \
     libgnutls28-dev \
     gawk \
     u-boot-tools \
-    swig
+    swig \
+    p7zip-full \
+    mtools \
+    dosfstools
 RUN apt install --no-install-recommends --fix-missing -y \
     gcc \
     g++ \

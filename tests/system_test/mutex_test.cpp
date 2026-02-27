@@ -4,14 +4,12 @@
 
 #include "mutex.hpp"
 
-#include <atomic>
-#include <cstdint>
-
-#include "cpu_io.h"
-#include "singleton.hpp"
-#include "sk_stdio.h"
-#include "sk_string.h"
-#include "spinlock.hpp"
-#include "syscall.hpp"
+#include "sk_cstdio"
 #include "system_test.h"
-#include "task_manager.hpp"
+
+/// @todo Implement mutex tests once task subsystem is stable
+auto mutex_test() -> bool {
+  sk_printf("mutex_test: start\n");
+
+  return true;
+}

@@ -24,6 +24,8 @@ namespace {
 
 std::atomic<int> g_process_counter{0};
 std::atomic<int> g_thread_counter{0};
+std::atomic<int> g_tests_completed{0};
+std::atomic<int> g_tests_failed{0};
 
 /**
  * @brief 子进程工作函数
@@ -69,6 +71,7 @@ void child_thread_work(void* arg) {
 void test_clone_process(void* /*arg*/) {
   klog::Info("=== Clone Process Test ===\n");
 
+  bool passed = true;
   g_process_counter = 0;
 
   // 创建父进程
@@ -113,6 +116,8 @@ void test_clone_process(void* /*arg*/) {
     klog::Info("Child processes have correct tgid\n");
   } else {
     klog::Err("Child processes have incorrect tgid\n");
+    passed = false;
+    g_tests_failed++;
   }
 
   // 验证父子关系
@@ -120,9 +125,18 @@ void test_clone_process(void* /*arg*/) {
     klog::Info("Parent-child relationship is correct\n");
   } else {
     klog::Err("Parent-child relationship is incorrect\n");
+    passed = false;
+    g_tests_failed++;
   }
 
-  klog::Info("Clone Process Test: PASSED\n");
+  if (passed) {
+    klog::Info("Clone Process Test: PASSED\n");
+  } else {
+    klog::Err("Clone Process Test: FAILED\n");
+  }
+
+  g_tests_completed++;
+  sys_exit(passed ? 0 : 1);
 }
 
 /**
@@ -131,6 +145,7 @@ void test_clone_process(void* /*arg*/) {
 void test_clone_thread(void* /*arg*/) {
   klog::Info("=== Clone Thread Test ===\n");
 
+  bool passed = true;
   g_thread_counter = 0;
 
   // 创建父线程（线程组的主线程）
@@ -180,6 +195,8 @@ void test_clone_thread(void* /*arg*/) {
     klog::Info("All threads have same tgid\n");
   } else {
     klog::Err("Threads have incorrect tgid\n");
+    passed = false;
+    g_tests_failed++;
   }
 
   // 验证线程组大小
@@ -189,9 +206,18 @@ void test_clone_thread(void* /*arg*/) {
     klog::Info("Thread group size is correct\n");
   } else {
     klog::Err("Thread group size is incorrect\n");
+    passed = false;
+    g_tests_failed++;
   }
 
-  klog::Info("Clone Thread Test: PASSED\n");
+  if (passed) {
+    klog::Info("Clone Thread Test: PASSED\n");
+  } else {
+    klog::Err("Clone Thread Test: FAILED\n");
+  }
+
+  g_tests_completed++;
+  sys_exit(passed ? 0 : 1);
 }
 
 /**
@@ -199,6 +225,8 @@ void test_clone_thread(void* /*arg*/) {
  */
 void test_clone_parent_flag(void* /*arg*/) {
   klog::Info("=== Clone Parent Flag Test ===\n");
+
+  bool passed = true;
 
   // 创建祖父进程
   auto* grandparent = new TaskControlBlock("Grandparent", 10, nullptr, nullptr);
@@ -241,6 +269,8 @@ void test_clone_parent_flag(void* /*arg*/) {
     klog::Info("kCloneParent flag works correctly\n");
   } else {
     klog::Err("kCloneParent flag test failed\n");
+    passed = false;
+    g_tests_failed++;
   }
 
   delete grandparent;
@@ -248,7 +278,14 @@ void test_clone_parent_flag(void* /*arg*/) {
   delete child_no_flag;
   delete child_with_flag;
 
-  klog::Info("Clone Parent Flag Test: PASSED\n");
+  if (passed) {
+    klog::Info("Clone Parent Flag Test: PASSED\n");
+  } else {
+    klog::Err("Clone Parent Flag Test: FAILED\n");
+  }
+
+  g_tests_completed++;
+  sys_exit(passed ? 0 : 1);
 }
 
 /**
@@ -256,6 +293,8 @@ void test_clone_parent_flag(void* /*arg*/) {
  */
 void test_clone_flags_auto_completion(void* /*arg*/) {
   klog::Info("=== Clone Flags Auto Completion Test ===\n");
+
+  bool passed = true;
 
   // 如果只设置 kCloneThread，应该自动补全其他必需的标志
   uint64_t flags = kCloneThread;
@@ -278,9 +317,18 @@ void test_clone_flags_auto_completion(void* /*arg*/) {
     klog::Info("All required flags are set\n");
   } else {
     klog::Err("Flag auto-completion failed\n");
+    passed = false;
+    g_tests_failed++;
   }
 
-  klog::Info("Clone Flags Auto Completion Test: PASSED\n");
+  if (passed) {
+    klog::Info("Clone Flags Auto Completion Test: PASSED\n");
+  } else {
+    klog::Err("Clone Flags Auto Completion Test: FAILED\n");
+  }
+
+  g_tests_completed++;
+  sys_exit(passed ? 0 : 1);
 }
 
 }  // namespace
@@ -290,6 +338,9 @@ void test_clone_flags_auto_completion(void* /*arg*/) {
  */
 auto clone_system_test() -> bool {
   klog::Info("===== Clone System Test Start =====\n");
+
+  g_tests_completed = 0;
+  g_tests_failed = 0;
 
   auto& task_mgr = Singleton<TaskManager>::GetInstance();
 
@@ -312,6 +363,19 @@ auto clone_system_test() -> bool {
   auto* test4 = new TaskControlBlock("TestCloneFlagsAutoCompletion", 10,
                                      test_clone_flags_auto_completion, nullptr);
   task_mgr.AddTask(test4);
+
+  // 等待所有子测试完成（或超时）
+  int timeout = 200;  // 200 * 50ms = 10s roughly
+  while (timeout > 0) {
+    sys_sleep(50);
+    if (g_tests_completed >= 4) {
+      break;
+    }
+    timeout--;
+  }
+
+  EXPECT_EQ(g_tests_completed, 4, "tests completed");
+  EXPECT_EQ(g_tests_failed, 0, "tests failed");
 
   klog::Info("Clone System Test Suite: COMPLETED\n");
   return true;

@@ -43,6 +43,30 @@ auto DeviceInit() -> void {
     return;
   }
 
+  // 为 virtio,mmio 设备分配 DMA 缓冲区
+  constexpr size_t kMaxPlatformDevices = 64;
+  DeviceNode* devs[kMaxPlatformDevices];
+  size_t n =
+      dm.FindDevicesByType(DeviceType::kPlatform, devs, kMaxPlatformDevices);
+  for (size_t i = 0; i < n; ++i) {
+    if (devs[i]->resource.IsPlatform()) {
+      const auto& plat = std::get<PlatformId>(devs[i]->resource.id);
+      if (strcmp(plat.compatible, "virtio,mmio") == 0) {
+        auto* buf =
+            new IoBuffer(VirtioBlkDriver<PlatformTraits>::kMinDmaBufferSize);
+        if (buf != nullptr && buf->IsValid()) {
+          devs[i]->dma_buffer = buf;
+          klog::Debug("DeviceInit: allocated DMA buffer for '%s'\n",
+                      devs[i]->name);
+        } else {
+          klog::Warn("DeviceInit: failed to allocate DMA buffer for '%s'\n",
+                     devs[i]->name);
+          delete buf;
+        }
+      }
+    }
+  }
+
   // 匹配驱动并 Probe
   auto probe_result = dm.ProbeAll();
   if (!probe_result.has_value()) {

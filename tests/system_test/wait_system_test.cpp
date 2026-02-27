@@ -25,6 +25,8 @@ namespace {
 std::atomic<int> g_child_exit_code{0};
 std::atomic<int> g_wait_completed{0};
 
+std::atomic<int> g_tests_completed{0};
+std::atomic<int> g_tests_failed{0};
 /**
  * @brief 子进程工作函数
  */
@@ -90,6 +92,14 @@ void test_wait_basic(void* /*arg*/) {
               result, child_pid);
   }
 
+  if (result == child_pid && status == 42) {
+    klog::Info("Wait Basic Test: PASS\n");
+  } else {
+    klog::Err("Wait Basic Test: FAIL\n");
+    g_tests_failed++;
+  }
+
+  g_tests_completed++;
   sys_exit(0);
 }
 
@@ -142,6 +152,7 @@ void test_wait_any_child(void* /*arg*/) {
               completed, kChildCount);
   }
 
+  g_tests_completed++;
   sys_exit(0);
 }
 
@@ -202,6 +213,7 @@ void test_wait_no_hang(void* /*arg*/) {
   result = task_mgr.Wait(child_pid, &status, false, false).value_or(0);
   klog::Info("Parent: child finally exited with PID=%zu\n", result);
 
+  g_tests_completed++;
   sys_exit(0);
 }
 
@@ -251,6 +263,7 @@ void test_wait_process_group(void* /*arg*/) {
   result = task_mgr.Wait(child2->pid, &status, false, false).value_or(0);
   klog::Info("Parent: cleaned up child2 PID=%zu\n", result);
 
+  g_tests_completed++;
   sys_exit(0);
 }
 
@@ -300,6 +313,7 @@ void test_wait_zombie_reap(void* /*arg*/) {
     klog::Err("Wait Zombie Reap Test: FAIL - wait returned %zu\n", result);
   }
 
+  g_tests_completed++;
   sys_exit(0);
 }
 
@@ -311,10 +325,10 @@ void test_wait_zombie_reap(void* /*arg*/) {
 auto wait_system_test() -> bool {
   sk_printf("=== Wait System Test Suite ===\n");
 
-  auto& task_mgr = Singleton<TaskManager>::GetInstance();
+  g_tests_completed = 0;
+  g_tests_failed = 0;
 
-  // 注意：这些测试会异步运行，因为它们被添加到任务队列中
-  // 在实际的系统测试中，可能需要实现一个同步等待机制
+  auto& task_mgr = Singleton<TaskManager>::GetInstance();
 
   // 测试 1: 基本 wait 功能
   auto* test1 =
@@ -340,6 +354,21 @@ auto wait_system_test() -> bool {
   auto* test5 = new TaskControlBlock("TestWaitZombieReap", 10,
                                      test_wait_zombie_reap, nullptr);
   task_mgr.AddTask(test5);
+
+  // 同步等待所有测试完成
+  constexpr int kExpectedTests = 5;
+  int timeout = 400;
+  while (timeout > 0) {
+    sys_sleep(50);
+    if (g_tests_completed >= kExpectedTests) {
+      break;
+    }
+    timeout--;
+  }
+
+  EXPECT_EQ(g_tests_completed.load(), kExpectedTests,
+            "All wait tests should complete");
+  EXPECT_EQ(g_tests_failed.load(), 0, "No wait tests should fail");
 
   sk_printf("Wait System Test Suite: COMPLETED\n");
   return true;
