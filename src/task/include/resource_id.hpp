@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <functional>
 
+#include "etl/hash.h"
+
 /**
  * @brief 资源类型枚举
  */
@@ -140,5 +142,16 @@ struct hash<ResourceId> {
   }
 };
 }  // namespace std
+
+// etl::hash 特化，使 ResourceId 可以作为 etl::unordered_map 的键
+
+namespace etl {
+template <>
+struct hash<ResourceId> {
+  size_t operator()(const ResourceId& id) const {
+    return etl::hash<uint64_t>{}(static_cast<uint64_t>(id));
+  }
+};
+}  // namespace etl
 
 #endif /* SIMPLEKERNEL_SRC_TASK_INCLUDE_RESOURCE_ID_HPP_ */
