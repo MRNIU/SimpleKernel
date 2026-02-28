@@ -11,7 +11,10 @@
 #include <cstdint>
 
 /// 平台特性（满足 EnvironmentTraits + BarrierTraits + DmaTraits）
+/// 平台特性（满足 EnvironmentTraits + BarrierTraits + DmaTraits +
+/// SpinWaitTraits）
 struct PlatformTraits {
+  static constexpr uint32_t kMaxSpinIterations = 100000000;
   static auto Log(const char* /*fmt*/, ...) -> int { return 0; }
   static auto Mb() -> void { cpu_io::Mb(); }
   static auto Rmb() -> void { cpu_io::Rmb(); }

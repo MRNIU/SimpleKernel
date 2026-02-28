@@ -63,13 +63,14 @@ class DeviceManager {
 
     size_t probed = 0;
     for (size_t i = 0; i < device_count_; ++i) {
-      if (devices_[i].bound.load(std::memory_order_acquire)) {
-        continue;
-      }
-
       auto* drv = registry_.FindDriver(devices_[i].resource);
       if (drv == nullptr) {
         klog::Debug("DeviceManager: no driver for '%s'\n", devices_[i].name);
+        continue;
+      }
+
+      // TryBind() 原子检查并绑定，已绑定则跳过
+      if (!devices_[i].TryBind()) {
         continue;
       }
 
@@ -80,6 +81,7 @@ class DeviceManager {
       if (!result.has_value()) {
         klog::Err("DeviceManager: probe '%s' failed: %s\n", devices_[i].name,
                   result.error().message());
+        devices_[i].Release();  // 探测失败，回滚绑定
         continue;
       }
 
