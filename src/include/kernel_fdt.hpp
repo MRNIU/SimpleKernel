@@ -709,4 +709,6 @@ class KernelFdt {
   }
 };
 
+using KernelFdtSingleton = etl::singleton<KernelFdt>;
+
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_FDT_HPP_ */

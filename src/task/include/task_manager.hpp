@@ -9,6 +9,7 @@
 #include <etl/list.h>
 #include <etl/memory.h>
 #include <etl/priority_queue.h>
+#include <etl/singleton.h>
 #include <etl/unordered_map.h>
 #include <etl/vector.h>
 
@@ -278,5 +279,7 @@ class TaskManager {
    */
   void ReparentChildren(TaskControlBlock* parent);
 };
+
+using TaskManagerSingleton = etl::singleton<TaskManager>;
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_TASK_MANAGER_HPP_ */

@@ -5,24 +5,7 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_
 #define SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_
 
-#include <etl/singleton.h>
-
 #include <cstdint>
-
-#include "basic_info.hpp"
-#include "device_manager.hpp"
-#include "interrupt.h"
-#include "kernel_elf.hpp"
-#include "kernel_fdt.hpp"
-#include "task_manager.hpp"
-#include "virtual_memory.hpp"
-
-/// 全局单例对象类型定义
-using KernelFdtSingleton = etl::singleton<KernelFdt>;
-using KernelElfSingleton = etl::singleton<KernelElf>;
-using InterruptSingleton = etl::singleton<Interrupt>;
-using TaskManagerSingleton = etl::singleton<TaskManager>;
-using DeviceManagerSingleton = etl::singleton<DeviceManager>;
 
 /**
  * @brief 负责 crtbegin 的工作

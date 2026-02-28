@@ -7,6 +7,7 @@
 #define SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INTERRUPT_H_
 
 #include <cpu_io.h>
+#include <etl/singleton.h>
 
 #include <array>
 #include <cstdint>
@@ -76,5 +77,7 @@ class Interrupt final : public InterruptBase {
   template <uint8_t no = 0>
   void SetUpIdtr();
 };
+
+using InterruptSingleton = etl::singleton<Interrupt>;
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INTERRUPT_H_ */

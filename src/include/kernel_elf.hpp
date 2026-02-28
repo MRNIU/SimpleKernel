@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_SRC_INCLUDE_KERNEL_ELF_HPP_
 
 #include <elf.h>
+#include <etl/singleton.h>
 
 #include <cassert>
 #include <cstddef>
@@ -152,5 +153,7 @@ class KernelElf {
     return {};
   }
 };
+
+using KernelElfSingleton = etl::singleton<KernelElf>;
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_ELF_HPP_ */

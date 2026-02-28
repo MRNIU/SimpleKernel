@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_SRC_KERNEL_ARCH_AARCH64_INCLUDE_INTERRUPT_H_
 
 #include <cpu_io.h>
+#include <etl/singleton.h>
 
 #include <cstdint>
 
@@ -52,5 +53,7 @@ class Interrupt final : public InterruptBase {
 
   Gic gic_;
 };
+
+using InterruptSingleton = etl::singleton<Interrupt>;
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_ARCH_AARCH64_INCLUDE_INTERRUPT_H_ */

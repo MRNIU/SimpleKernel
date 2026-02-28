@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "basic_info.hpp"
-#include "singleton.hpp"
 #include "test_environment_state.hpp"
 
 namespace {
@@ -74,8 +73,9 @@ extern "C" void aligned_free(void* ptr) {
 class VirtualMemoryTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    Singleton<BasicInfo>::GetInstance().physical_memory_addr = 0x80000000;
-    Singleton<BasicInfo>::GetInstance().physical_memory_size = 0x10000000;
+    BasicInfoSingleton::create();
+    BasicInfoSingleton::instance().physical_memory_addr = 0x80000000;
+    BasicInfoSingleton::instance().physical_memory_size = 0x10000000;
     MockAllocator::GetInstance().Reset();
 
     env_state_.InitializeCores(1);
@@ -86,6 +86,7 @@ class VirtualMemoryTest : public ::testing::Test {
   void TearDown() override {
     MockAllocator::GetInstance().Reset();
     env_state_.ClearCurrentThreadEnvironment();
+    BasicInfoSingleton::destroy();
   }
 
   test_env::TestEnvironmentState env_state_;

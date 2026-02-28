@@ -7,7 +7,6 @@
 #include <thread>
 
 #include "per_cpu.hpp"
-#include "singleton.hpp"
 #include "task_manager.hpp"
 
 void TaskTestHarness::SetUp() {
@@ -21,18 +20,19 @@ void TaskTestHarness::SetUp() {
   env_state_.BindThreadToCore(std::this_thread::get_id(), 0);
 
   // 3. 重置 PerCpu 数据
-  auto& per_cpu_array = Singleton<
-      std::array<per_cpu::PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT>>::GetInstance();
+  per_cpu::PerCpuArraySingleton::create();
+  auto& per_cpu_array = per_cpu::PerCpuArraySingleton::instance();
   for (size_t i = 0; i < SIMPLEKERNEL_MAX_CORE_COUNT; ++i) {
     per_cpu_array[i] = per_cpu::PerCpu(i);
   }
 
   // 4. 重置 TaskManager（如果有 ResetForTesting 方法）
   // 注意：这需要在 TaskManager 中实现
-  // Singleton<TaskManager>::GetInstance().ResetForTesting();
+  // TaskManagerSingleton::instance().ResetForTesting();
 }
 
 void TaskTestHarness::TearDown() {
+  per_cpu::PerCpuArraySingleton::destroy();
   // 清除当前线程的环境指针
   env_state_.ClearCurrentThreadEnvironment();
 

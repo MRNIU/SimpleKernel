@@ -17,9 +17,6 @@ ADD_EXECUTABLE (
     kernel_fdt_test.cpp
     spinlock_test.cpp
     virtual_memory_test.cpp
-    sk_list_test.cpp
-    sk_unordered_map_test.cpp
-    sk_unique_ptr_test.cpp
     task/fixtures/task_test_harness.cpp
     vfs_test.cpp
     ramfs_test.cpp

@@ -1,10 +1,11 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 设备管理器
  */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_MANAGER_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_MANAGER_HPP_
+
+#include <etl/singleton.h>
 
 #include "bus.hpp"
 #include "device_node.hpp"
@@ -150,5 +151,7 @@ class DeviceManager {
   DriverRegistry registry_;
   SpinLock lock_{"device_manager"};
 };
+
+using DeviceManagerSingleton = etl::singleton<DeviceManager>;
 
 #endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_MANAGER_HPP_ */
