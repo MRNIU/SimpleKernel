@@ -100,10 +100,10 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   // 更复杂的逻辑可以是：寻找最空闲的核心
   size_t target_core = cpu_io::GetCurrentCoreId();
 
-  if (task->cpu_affinity != UINT64_MAX) {
+  if (task->cpu_affinity.value() != UINT64_MAX) {
     // 寻找第一个允许的核心
     for (size_t core_id = 0; core_id < SIMPLEKERNEL_MAX_CORE_COUNT; ++core_id) {
-      if (task->cpu_affinity & (1UL << core_id)) {
+      if (task->cpu_affinity.value() & (1UL << core_id)) {
         target_core = core_id;
         break;
       }

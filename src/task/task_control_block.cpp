@@ -197,7 +197,7 @@ TaskControlBlock::~TaskControlBlock() {
   // 释放页表（如果有用户空间页表）
   if (page_table) {
     // 如果是私有页表（非共享），需要释放物理页
-    auto should_free_pages = !(clone_flags & kCloneVm);
+    auto should_free_pages = !(clone_flags & clone_flag::kVm);
     VirtualMemorySingleton::instance().DestroyPageDirectory(page_table,
                                                             should_free_pages);
     page_table = nullptr;
