@@ -20,6 +20,7 @@
 #include "sk_stdlib.h"
 #include "spinlock.hpp"
 #include "task_manager.hpp"
+#include "task_messages.hpp"
 #include "virtual_memory.hpp"
 
 void TaskManager::Schedule() {
@@ -36,9 +37,9 @@ void TaskManager::Schedule() {
   assert(current != nullptr && "Schedule: No current task to schedule");
 
   // 处理当前任务状态
-  if (current->status == TaskStatus::kRunning) {
+  if (current->GetStatus() == TaskStatus::kRunning) {
     // 将当前任务标记为就绪并重新入队（如果它还能运行）
-    current->status = TaskStatus::kReady;
+    current->fsm.Receive(MsgYield{});
     auto* scheduler = cpu_sched.schedulers[current->policy].get();
 
     if (scheduler) {
@@ -65,7 +66,7 @@ void TaskManager::Schedule() {
   // 如果没有任务可运行
   if (!next) {
     // 如果当前任务仍然可以运行，继续运行它
-    if (current->status == TaskStatus::kReady) {
+    if (current->GetStatus() == TaskStatus::kReady) {
       next = current;
     } else {
       // 否则统计空闲时间并返回
@@ -83,11 +84,11 @@ void TaskManager::Schedule() {
 
   // 切换到下一个任务
   assert(next != nullptr && "Schedule: next task must not be null");
-  assert((next->status == TaskStatus::kReady ||
+  assert((next->GetStatus() == TaskStatus::kReady ||
           next->policy == SchedPolicy::kIdle) &&
          "Schedule: next task must be kReady or kIdle policy");
 
-  next->status = TaskStatus::kRunning;
+  next->fsm.Receive(MsgSchedule{});
   // 重置时间片（对于 RR 和 FIFO 有效，CFS 使用 vruntime 不依赖此字段）
   next->sched_info.time_slice_remaining = next->sched_info.time_slice_default;
   next->sched_info.context_switches++;

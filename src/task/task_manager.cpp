@@ -22,6 +22,7 @@
 #include "kstd_cstring"
 #include "rr_scheduler.hpp"
 #include "sk_stdlib.h"
+#include "task_messages.hpp"
 #include "virtual_memory.hpp"
 
 namespace {
@@ -56,7 +57,9 @@ void TaskManager::InitCurrentCore() {
 
   // 创建独立的 Idle 线程
   auto* idle_task = new TaskControlBlock("Idle", INT_MAX, idle_thread, nullptr);
-  idle_task->status = TaskStatus::kRunning;
+  // Transition idle task: kUnInit -> kReady -> kRunning
+  idle_task->fsm.Receive(MsgSchedule{});
+  idle_task->fsm.Receive(MsgSchedule{});
   idle_task->policy = SchedPolicy::kIdle;
 
   // 将 idle 任务加入 Idle 调度器
@@ -70,7 +73,7 @@ void TaskManager::InitCurrentCore() {
 
 void TaskManager::AddTask(TaskControlBlock* task) {
   assert(task != nullptr && "AddTask: task must not be null");
-  assert(task->status == TaskStatus::kUnInit &&
+  assert(task->GetStatus() == TaskStatus::kUnInit &&
          "AddTask: task status must be kUnInit");
   // 分配 PID
   if (task->pid == 0) {
@@ -94,7 +97,8 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   }
 
   // 设置任务状态为 kReady
-  task->status = TaskStatus::kReady;
+  // Transition: kUnInit -> kReady
+  task->fsm.Receive(MsgSchedule{});
 
   // 简单的负载均衡：如果指定了亲和性，放入对应核心，否则放入当前核心
   // 更复杂的逻辑可以是：寻找最空闲的核心
@@ -154,8 +158,8 @@ void TaskManager::ReapTask(TaskControlBlock* task) {
   }
 
   // 确保任务处于僵尸或退出状态
-  if (task->status != TaskStatus::kZombie &&
-      task->status != TaskStatus::kExited) {
+  if (task->GetStatus() != TaskStatus::kZombie &&
+      task->GetStatus() != TaskStatus::kExited) {
     klog::Warn("ReapTask: Task %zu is not in zombie/exited state\n", task->pid);
     return;
   }

@@ -8,12 +8,13 @@
 #include "kernel_log.hpp"
 #include "resource_id.hpp"
 #include "task_manager.hpp"
+#include "task_messages.hpp"
 
 Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
                                 bool untraced) {
   auto* current = GetCurrentTask();
   assert(current != nullptr && "Wait: No current task");
-  assert(current->status == TaskStatus::kRunning &&
+  assert(current->GetStatus() == TaskStatus::kRunning &&
          "Wait: current task status must be kRunning");
 
   while (true) {
@@ -48,14 +49,14 @@ Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
         }
 
         // 检查任务状态
-        if (task->status == TaskStatus::kZombie ||
-            task->status == TaskStatus::kExited) {
+        if (task->GetStatus() == TaskStatus::kZombie ||
+            task->GetStatus() == TaskStatus::kExited) {
           target = task.get();
           break;
         }
 
         // untraced: 报告已停止的子进程
-        if (untraced && task->status == TaskStatus::kBlocked) {
+        if (untraced && task->GetStatus() == TaskStatus::kBlocked) {
           if (status) {
             // 表示停止状态
             *status = 0;
@@ -67,8 +68,8 @@ Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
 
     // 找到了退出的子进程
     if (target) {
-      assert((target->status == TaskStatus::kZombie ||
-              target->status == TaskStatus::kExited) &&
+      assert((target->GetStatus() == TaskStatus::kZombie ||
+              target->GetStatus() == TaskStatus::kExited) &&
              "Wait: target task must be kZombie or kExited");
       assert(target->parent_pid == current->pid &&
              "Wait: target parent_pid must match current pid");

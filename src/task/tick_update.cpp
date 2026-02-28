@@ -4,6 +4,7 @@
 
 #include "kernel_log.hpp"
 #include "task_manager.hpp"
+#include "task_messages.hpp"
 
 void TaskManager::TickUpdate() {
   auto& cpu_sched = GetCurrentCpuSched();
@@ -30,7 +31,7 @@ void TaskManager::TickUpdate() {
 
       // 唤醒任务
       cpu_sched.sleeping_tasks.pop();
-      task->status = TaskStatus::kReady;
+      task->fsm.Receive(MsgWakeup{});
 
       // 将任务重新加入对应调度器的就绪队列
       auto* scheduler = cpu_sched.schedulers[task->policy].get();
@@ -40,7 +41,7 @@ void TaskManager::TickUpdate() {
     }
 
     // 更新当前任务的统计信息
-    if (current && current->status == TaskStatus::kRunning) {
+    if (current && current->GetStatus() == TaskStatus::kRunning) {
       // 更新总运行时间
       current->sched_info.total_runtime++;
 

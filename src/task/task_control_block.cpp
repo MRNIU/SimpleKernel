@@ -152,7 +152,7 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority,
       cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
   if (!kernel_stack) {
     klog::Err("Failed to allocate kernel stack for task %s\n", name);
-    status = TaskStatus::kExited;
+    // status not set — FSM stays in kUnInit to signal failure
     return;
   }
 
@@ -166,6 +166,8 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority,
 
   // 初始化任务上下文
   InitTaskContext(&task_context, entry, arg, stack_top);
+  // Transition FSM: kUnInit -> kReady
+  fsm.Start();
 }
 
 TaskControlBlock::TaskControlBlock(const char* name, int priority, uint8_t* elf,
@@ -182,6 +184,8 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority, uint8_t* elf,
   (void)argc;
   (void)argv;
   LoadElf(nullptr, nullptr);
+  // Transition FSM: kUnInit -> kReady
+  fsm.Start();
 }
 
 TaskControlBlock::~TaskControlBlock() {

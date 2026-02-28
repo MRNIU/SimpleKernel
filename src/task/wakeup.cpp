@@ -7,6 +7,7 @@
 #include "kernel_log.hpp"
 #include "resource_id.hpp"
 #include "task_manager.hpp"
+#include "task_messages.hpp"
 
 void TaskManager::Wakeup(ResourceId resource_id) {
   auto& cpu_sched = GetCurrentCpuSched();
@@ -31,13 +32,13 @@ void TaskManager::Wakeup(ResourceId resource_id) {
     auto* task = waiting_tasks.front();
     waiting_tasks.pop_front();
 
-    assert(task->status == TaskStatus::kBlocked &&
+    assert(task->GetStatus() == TaskStatus::kBlocked &&
            "Wakeup: task status must be kBlocked");
     assert(task->blocked_on == resource_id &&
            "Wakeup: task blocked_on must match resource_id");
 
     // 将任务标记为就绪
-    task->status = TaskStatus::kReady;
+    task->fsm.Receive(MsgWakeup{});
     task->blocked_on = ResourceId{};
 
     // 将任务重新加入对应调度器的就绪队列

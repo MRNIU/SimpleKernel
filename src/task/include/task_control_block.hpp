@@ -14,6 +14,7 @@
 
 #include "file_descriptor.hpp"
 #include "resource_id.hpp"
+#include "task_fsm.hpp"
 
 /// 进程 ID 类型
 using Pid = size_t;
@@ -49,25 +50,8 @@ using CloneFlags = etl::flags<uint64_t, clone_flag::kAllMask>;
 /// @brief 类型安全的 CPU 亲和性位掩码
 using CpuAffinity = etl::flags<uint64_t>;
 
-/**
- * @brief 任务状态枚举
- */
-enum TaskStatus : uint8_t {
-  // 未初始化
-  kUnInit,
-  // 就绪
-  kReady,
-  // 正在运行
-  kRunning,
-  // 睡眠中
-  kSleeping,
-  // 阻塞
-  kBlocked,
-  // 已退出
-  kExited,
-  // 僵尸状态 (等待回收)
-  kZombie,
-};
+/// @brief Task status type alias — backed by FSM state IDs
+using TaskStatus = TaskStatusId;
 
 /**
  * @brief 调度策略
@@ -124,8 +108,13 @@ struct TaskControlBlock {
   TaskControlBlock* thread_group_prev = nullptr;
   /// @}
 
-  /// 线程状态
-  TaskStatus status = TaskStatus::kUnInit;
+  /// Task FSM — owns per-task lifecycle state machine
+  TaskFsm fsm;
+
+  /// @brief Get the current task status
+  auto GetStatus() const -> TaskStatus {
+    return static_cast<TaskStatus>(fsm.GetStateId());
+  }
   /// 调度策略
   SchedPolicy policy = SchedPolicy::kNormal;
 

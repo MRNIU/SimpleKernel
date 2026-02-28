@@ -7,34 +7,33 @@
 #include "kernel_log.hpp"
 #include "resource_id.hpp"
 #include "task_manager.hpp"
+#include "task_messages.hpp"
 
 void TaskManager::Block(ResourceId resource_id) {
   auto& cpu_sched = GetCurrentCpuSched();
 
   auto* current = GetCurrentTask();
   assert(current != nullptr && "Block: No current task to block");
-  assert(current->status == TaskStatus::kRunning &&
+  assert(current->GetStatus() == TaskStatus::kRunning &&
          "Block: current task status must be kRunning");
 
   {
     LockGuard<SpinLock> lock_guard(cpu_sched.lock);
 
-    // 将任务标记为阻塞状态
-    current->status = TaskStatus::kBlocked;
-
-    // 记录阻塞的资源 ID
-    current->blocked_on = resource_id;
-
-    // 将任务加入阻塞队列（按资源 ID 分组）
+    // Check capacity before transitioning FSM
     auto& list = cpu_sched.blocked_tasks[resource_id];
     if (list.full()) {
       klog::Err(
           "Block: blocked_tasks list full for resource, cannot block task "
           "%zu\n",
           current->pid);
-      current->status = TaskStatus::kRunning;
+      // Rollback: task stays kRunning, do not transition FSM
       return;
     }
+    // Transition: kRunning -> kBlocked
+    current->fsm.Receive(MsgBlock{resource_id.GetData()});
+    // Record blocked resource
+    current->blocked_on = resource_id;
     list.push_back(current);
 
     klog::Debug("Block: pid=%zu blocked on resource=%s, data=0x%lx\n",
