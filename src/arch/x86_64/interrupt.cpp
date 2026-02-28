@@ -128,7 +128,7 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
 
   // 再在 IO APIC 上启用 IRQ 重定向到指定核心
   // 注: x86 APIC 优先级由向量号隐含决定，priority 参数不直接使用
-  auto result = ApicSingleton::instance().SetIrqRedirection(
+  auto result = apic_.SetIrqRedirection(
       static_cast<uint8_t>(irq), static_cast<uint8_t>(vector), cpu_id, false);
   if (!result.has_value()) {
     return std::unexpected(result.error());
@@ -138,3 +138,5 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
              static_cast<uint32_t>(vector), cpu_id);
   return {};
 }
+
+void Interrupt::InitApic(size_t cpu_count) { apic_ = Apic(cpu_count); }

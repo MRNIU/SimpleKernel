@@ -36,6 +36,18 @@ class Interrupt final : public InterruptBase {
                                  uint32_t priority, InterruptFunc handler)
       -> Expected<void> override;
 
+  /// @name APIC 访问接口
+  /// @{
+  __always_inline auto apic() -> Apic& { return apic_; }
+  __always_inline auto apic() const -> const Apic& { return apic_; }
+  /// @}
+
+  /**
+   * @brief 初始化 APIC
+   * @param cpu_count CPU 核心数
+   */
+  void InitApic(size_t cpu_count);
+
   /// 外部中断向量基址（IO APIC IRQ 到 IDT 向量的映射）
   static constexpr uint8_t kExternalVectorBase = 0x20;
 
@@ -53,6 +65,9 @@ class Interrupt final : public InterruptBase {
   alignas(4096) static std::array<
       cpu_io::detail::register_info::IdtrInfo::Idt,
       cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount> idts;
+
+  /// APIC 中断控制器实例
+  Apic apic_;
 
   /**
    * @brief 初始化 idtr

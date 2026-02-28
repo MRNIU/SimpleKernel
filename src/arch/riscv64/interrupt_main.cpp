@@ -22,6 +22,9 @@
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
+using Ns16550aSingleton =
+    etl::singleton<device_framework::ns16550a::Ns16550aDevice>;
+
 namespace {
 void RegisterInterrupts() {
   // 注册外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
@@ -29,10 +32,10 @@ void RegisterInterrupts() {
       cpu_io::detail::register_info::csr::ScauseInfo::
           kSupervisorExternalInterrupt,
       [](uint64_t, cpu_io::TrapContext* context) -> uint64_t {
-        // 获取触发中断的源 ID
-        auto source_id = PlicSingleton::instance().Which();
-        PlicSingleton::instance().Do(source_id, context);
-        PlicSingleton::instance().Done(source_id);
+        auto& plic = InterruptSingleton::instance().plic();
+        auto source_id = plic.Which();
+        plic.Do(source_id, context);
+        plic.Done(source_id);
         return 0;
       });
 
@@ -137,7 +140,7 @@ void InterruptInit(int, const char**) {
   auto [plic_addr, plic_size, ndev, context_count] =
       KernelFdtSingleton::instance().GetPlic().value();
   VirtualMemorySingleton::instance().MapMMIO(plic_addr, plic_size);
-  PlicSingleton::create(plic_addr, ndev, context_count);
+  InterruptSingleton::instance().InitPlic(plic_addr, ndev, context_count);
 
   // 设置 trap vector
   auto success =

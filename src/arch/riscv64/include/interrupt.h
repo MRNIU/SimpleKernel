@@ -36,6 +36,20 @@ class Interrupt final : public InterruptBase {
                                  uint32_t priority, InterruptFunc handler)
       -> Expected<void> override;
 
+  /// @name PLIC 访问接口
+  /// @{
+  __always_inline auto plic() -> Plic& { return plic_; }
+  __always_inline auto plic() const -> const Plic& { return plic_; }
+
+  /**
+   * @brief 初始化 PLIC
+   * @param dev_addr PLIC 设备地址
+   * @param ndev 支持的中断源数量
+   * @param context_count 上下文数量
+   */
+  void InitPlic(uint64_t dev_addr, size_t ndev, size_t context_count);
+  /// @}
+
  private:
   /// 中断处理函数数组
   static std::array<
@@ -47,6 +61,7 @@ class Interrupt final : public InterruptBase {
       InterruptFunc,
       cpu_io::detail::register_info::csr::ScauseInfo::kExceptionMaxCount>
       exception_handlers_;
+  Plic plic_;
 };
 
 #endif /* SIMPLEKERNEL_SRC_KERNEL_ARCH_RISCV64_INTERRUPT_H_ */

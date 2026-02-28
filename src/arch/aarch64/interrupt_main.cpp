@@ -13,6 +13,7 @@
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
+#include "pl011_singleton.h"
 
 namespace {
 /**

@@ -35,7 +35,7 @@ uint64_t ApicTimerHandler(uint64_t cause, cpu_io::TrapContext* context) {
   }
 
   // 发送 EOI 信号给 Local APIC
-  ApicSingleton::instance().SendEoi();
+  InterruptSingleton::instance().apic().SendEoi();
   return 0;
 }
 
@@ -72,7 +72,7 @@ uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
   }
 
   // 发送 EOI 信号给 Local APIC
-  ApicSingleton::instance().SendEoi();
+  InterruptSingleton::instance().apic().SendEoi();
   return 0;
 }
 
@@ -80,6 +80,18 @@ uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
 
 void InterruptInit(int, const char**) {
   InterruptSingleton::create();
+
+  // 初始化 APIC（从 ArchInit 移至此处）
+  InterruptSingleton::instance().InitApic(
+      BasicInfoSingleton::instance().core_count);
+  InterruptSingleton::instance().apic().InitCurrentCpuLocalApic().or_else(
+      [](Error err) -> Expected<void> {
+        klog::Err("Failed to initialize APIC: %s\n", err.message());
+        while (true) {
+          cpu_io::Pause();
+        }
+        return std::unexpected(err);
+      });
 
   InterruptSingleton::instance().SetUpIdtr();
 
@@ -99,8 +111,8 @@ void InterruptInit(int, const char**) {
       });
 
   // 启用 Local APIC 定时器
-  ApicSingleton::instance().SetupPeriodicTimer(kApicTimerFrequencyHz,
-                                               kApicTimerVector);
+  InterruptSingleton::instance().apic().SetupPeriodicTimer(
+      kApicTimerFrequencyHz, kApicTimerVector);
   // 开启中断
   cpu_io::Rflags::If::Set();
 
@@ -109,9 +121,20 @@ void InterruptInit(int, const char**) {
 
 void InterruptInitSMP(int, const char**) {
   InterruptSingleton::instance().SetUpIdtr();
+
+  // 初始化当前 AP 核的 Local APIC
+  InterruptSingleton::instance().apic().InitCurrentCpuLocalApic().or_else(
+      [](Error err) -> Expected<void> {
+        klog::Err("Failed to initialize APIC for AP: %s\n", err.message());
+        while (true) {
+          cpu_io::Pause();
+        }
+        return std::unexpected(err);
+      });
+
   // 启用 Local APIC 定时器
-  ApicSingleton::instance().SetupPeriodicTimer(kApicTimerFrequencyHz,
-                                               kApicTimerVector);
+  InterruptSingleton::instance().apic().SetupPeriodicTimer(
+      kApicTimerFrequencyHz, kApicTimerVector);
   cpu_io::Rflags::If::Set();
   klog::Info("Hello InterruptInit SMP\n");
 }

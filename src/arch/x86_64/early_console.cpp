@@ -3,9 +3,11 @@
  */
 
 #include <cpu_io.h>
+#include <etl/singleton.h>
 
-#include "kernel.h"
 #include "kstd_cstdio"
+
+using SerialSingleton = etl::singleton<cpu_io::Serial>;
 
 namespace {
 

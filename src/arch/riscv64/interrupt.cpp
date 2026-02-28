@@ -133,13 +133,16 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
   }
 
   // 先注册处理函数
-  PlicSingleton::instance().RegisterInterruptFunc(static_cast<uint8_t>(irq),
-                                                  handler);
+  plic_.RegisterInterruptFunc(static_cast<uint8_t>(irq), handler);
 
   // 再在 PLIC 上为指定核心启用该中断
-  PlicSingleton::instance().Set(cpu_id, irq, priority, true);
+  plic_.Set(cpu_id, irq, priority, true);
 
   klog::Info("RegisterExternalInterrupt: IRQ %u, cpu %u, priority %u\n", irq,
              cpu_id, priority);
   return {};
+}
+
+void Interrupt::InitPlic(uint64_t dev_addr, size_t ndev, size_t context_count) {
+  plic_ = Plic(dev_addr, ndev, context_count);
 }

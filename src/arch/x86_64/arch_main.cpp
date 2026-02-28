@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <cstring>
 
-#include "apic.h"
 #include "basic_info.hpp"
 #include "kernel.h"
 #include "kernel_elf.hpp"
@@ -145,17 +144,6 @@ auto ArchInit(int, const char**) -> int {
   // 设置 GDT 和段寄存器
   SetupGdtAndSegmentRegisters();
 
-  // 初始化 APIC
-  ApicSingleton::create(BasicInfoSingleton::instance().core_count);
-  ApicSingleton::instance().InitCurrentCpuLocalApic().or_else(
-      [](Error err) -> Expected<void> {
-        klog::Err("Failed to initialize APIC: %s\n", err.message());
-        while (true) {
-          cpu_io::Pause();
-        }
-        return std::unexpected(err);
-      });
-
   klog::Info("Hello x86_64 ArchInit\n");
 
   return 0;
@@ -165,7 +153,7 @@ auto ArchInitSMP(int, const char**) -> int {
   // 设置 GDT 和段寄存器
   SetupGdtAndSegmentRegisters();
 
-  ApicSingleton::instance().InitCurrentCpuLocalApic().or_else(
+  InterruptSingleton::instance().apic().InitCurrentCpuLocalApic().or_else(
       [](Error err) -> Expected<void> {
         klog::Err("Failed to initialize APIC for AP: %s\n", err.message());
         while (true) {
@@ -181,7 +169,7 @@ void WakeUpOtherCores() {
   auto target_sipi_params = reinterpret_cast<sipi_params_t*>(sipi_params);
   target_sipi_params->cr3 = cpu_io::Cr3::Read();
 
-  ApicSingleton::instance().StartupAllAps(
+  InterruptSingleton::instance().apic().StartupAllAps(
       reinterpret_cast<uint64_t>(ap_start16),
       reinterpret_cast<size_t>(ap_start64_end) -
           reinterpret_cast<size_t>(ap_start16),
