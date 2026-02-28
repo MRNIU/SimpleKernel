@@ -7,7 +7,6 @@
 
 #include <etl/memory.h>
 
-#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <variant>
@@ -15,6 +14,7 @@
 #include "io_buffer.hpp"
 #include "kstd_cstring"
 #include "kstd_memory"
+#include "spinlock.hpp"
 
 /// Platform 设备标识（FDT compatible stringlist）
 struct PlatformId {
@@ -101,18 +101,28 @@ struct DeviceNode {
   DeviceType type{};
   /// 硬件资源
   DeviceResource resource{};
-  /// 是否已绑定驱动
-  std::atomic<bool> bound{false};
   /// 全局设备编号
   uint32_t dev_id{0};
   /// DMA 缓冲区
   etl::unique_ptr<IoBuffer> dma_buffer{};
 
-  /// 尝试绑定（CAS 保证幂等，防止重复绑定）
+  /// 尝试绑定（SpinLock 保证幂等，防止重复绑定）
+  ///
+  /// @return true  绑定成功
+  /// @return false 已被其他驱动绑定
   auto TryBind() -> bool {
-    bool expected = false;
-    return bound.compare_exchange_strong(expected, true,
-                                         std::memory_order_acq_rel);
+    LockGuard<SpinLock> guard(lock_);
+    if (bound_) return false;
+    bound_ = true;
+    return true;
+  }
+
+  /// 释放绑定（Probe 失败时回滚）
+  ///
+  /// @post bound_ == false
+  auto Release() -> void {
+    LockGuard<SpinLock> guard(lock_);
+    bound_ = false;
   }
 
   /// @name 构造/析构函数
@@ -120,34 +130,17 @@ struct DeviceNode {
   DeviceNode() = default;
   ~DeviceNode() = default;
 
-  DeviceNode(const DeviceNode& other)
-      : type(other.type),
-        resource(other.resource),
-        bound(other.bound.load(std::memory_order_relaxed)),
-        dev_id(other.dev_id) {
-    kstd::memcpy(name, other.name, sizeof(name));
-  }
-
-  auto operator=(const DeviceNode& other) -> DeviceNode& {
-    if (this != &other) {
-      kstd::memcpy(name, other.name, sizeof(name));
-      type = other.type;
-      resource = other.resource;
-      bound.store(other.bound.load(std::memory_order_relaxed),
-                  std::memory_order_relaxed);
-      dev_id = other.dev_id;
-      // dma_buffer is not copied — ownership stays with original
-    }
-    return *this;
-  }
+  DeviceNode(const DeviceNode&) = delete;
+  auto operator=(const DeviceNode&) -> DeviceNode& = delete;
 
   DeviceNode(DeviceNode&& other) noexcept
       : type(other.type),
         resource(other.resource),
-        bound(other.bound.load(std::memory_order_relaxed)),
+        bound_(other.bound_),
         dev_id(other.dev_id),
         dma_buffer(std::move(other.dma_buffer)) {
     kstd::memcpy(name, other.name, sizeof(name));
+    other.bound_ = false;
   }
 
   auto operator=(DeviceNode&& other) noexcept -> DeviceNode& {
@@ -155,14 +148,20 @@ struct DeviceNode {
       kstd::memcpy(name, other.name, sizeof(name));
       type = other.type;
       resource = other.resource;
-      bound.store(other.bound.load(std::memory_order_relaxed),
-                  std::memory_order_relaxed);
+      bound_ = other.bound_;
+      other.bound_ = false;
       dev_id = other.dev_id;
       dma_buffer = std::move(other.dma_buffer);
     }
     return *this;
   }
   /// @}
+
+ private:
+  /// 是否已绑定驱动（由 lock_ 保护）
+  bool bound_{false};
+  /// 保护 bound_ 的自旋锁
+  SpinLock lock_{"device_node"};
 };
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_NODE_HPP_
