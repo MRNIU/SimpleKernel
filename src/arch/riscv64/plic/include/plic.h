@@ -21,7 +21,7 @@
 class Plic {
  public:
   /// @brief 中断处理委托类型 (forward from InterruptBase)
-  using InterruptFunc = InterruptBase::InterruptDelegate;
+  using InterruptDelegate = InterruptBase::InterruptDelegate;
 
   /// 最大外部中断数量
   static constexpr size_t kInterruptMaxCount = 16;
@@ -87,7 +87,7 @@ class Plic {
    * @param  cause             外部中断号
    * @param  func 外部中断处理函数
    */
-  void RegisterInterruptFunc(uint8_t cause, InterruptFunc func);
+  void RegisterInterruptFunc(uint8_t cause, InterruptDelegate func);
 
   /**
    * @brief 执行外部中断处理
@@ -111,7 +111,7 @@ class Plic {
   static constexpr uint64_t kEnableSize = 0x80;
 
   /// 外部中断处理函数数组
-  static std::array<InterruptFunc, kInterruptMaxCount> interrupt_handlers_;
+  static std::array<InterruptDelegate, kInterruptMaxCount> interrupt_handlers_;
 
   uint64_t base_addr_ = 0;
   size_t ndev_ = 0;

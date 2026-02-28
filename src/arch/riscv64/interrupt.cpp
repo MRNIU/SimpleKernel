@@ -68,7 +68,7 @@ void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
   }
 }
 
-void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
+void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) {
   auto interrupt = cpu_io::Scause::Interrupt::Get(cause);
   auto exception_code = cpu_io::Scause::ExceptionCode::Get(cause);
 
@@ -126,7 +126,7 @@ auto Interrupt::BroadcastIpi() -> Expected<void> {
 
 auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
                                           uint32_t priority,
-                                          InterruptFunc handler)
+                                          InterruptDelegate handler)
     -> Expected<void> {
   if (irq >= Plic::kInterruptMaxCount) {
     return std::unexpected(Error(ErrorCode::kIrqChipInvalidIrq));

@@ -53,7 +53,7 @@ void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
   }
 }
 
-void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
+void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) {
   if (cause < cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount) {
     interrupt_handlers_[cause] = func;
     klog::Debug("RegisterInterruptFunc [%s] 0x%X\n",
@@ -108,7 +108,7 @@ auto Interrupt::BroadcastIpi() -> Expected<void> {
 
 auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
                                           uint32_t priority,
-                                          InterruptFunc handler)
+                                          InterruptDelegate handler)
     -> Expected<void> {
   // 计算 IDT 向量号：kExternalVectorBase + irq
   auto vector = static_cast<uint64_t>(kExternalVectorBase + irq);

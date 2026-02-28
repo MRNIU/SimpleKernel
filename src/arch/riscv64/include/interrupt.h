@@ -30,11 +30,11 @@ class Interrupt final : public InterruptBase {
   /// @}
 
   void Do(uint64_t cause, cpu_io::TrapContext* context) override;
-  void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
+  void RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) override;
   auto SendIpi(uint64_t target_cpu_mask) -> Expected<void> override;
   auto BroadcastIpi() -> Expected<void> override;
   auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
-                                 uint32_t priority, InterruptFunc handler)
+                                 uint32_t priority, InterruptDelegate handler)
       -> Expected<void> override;
 
   /// @name PLIC 访问接口
@@ -53,11 +53,11 @@ class Interrupt final : public InterruptBase {
 
  private:
   /// 中断处理函数数组
-  std::array<InterruptFunc,
+  std::array<InterruptDelegate,
              cpu_io::detail::register_info::csr::ScauseInfo::kInterruptMaxCount>
       interrupt_handlers_;
   /// 异常处理函数数组
-  std::array<InterruptFunc,
+  std::array<InterruptDelegate,
              cpu_io::detail::register_info::csr::ScauseInfo::kExceptionMaxCount>
       exception_handlers_;
   Plic plic_;

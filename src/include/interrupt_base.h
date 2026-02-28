@@ -23,9 +23,6 @@ class InterruptBase {
   using InterruptDelegate =
       etl::delegate<uint64_t(uint64_t, cpu_io::TrapContext*)>;
 
-  /// @brief 向后兼容别名 (deprecated, use InterruptDelegate)
-  using InterruptFunc = InterruptDelegate;
-
   /// @name 构造/析构函数
   /// @{
   InterruptBase() = default;
@@ -47,7 +44,8 @@ class InterruptBase {
    * @param cause 中断号，不同平台有不同含义
    * @param func 处理函数
    */
-  virtual void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) = 0;
+  virtual void RegisterInterruptFunc(uint64_t cause,
+                                     InterruptDelegate func) = 0;
 
   /**
    * @brief 发送 IPI 到指定核心
@@ -72,7 +70,7 @@ class InterruptBase {
    */
   virtual auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
                                          uint32_t priority,
-                                         InterruptFunc handler)
+                                         InterruptDelegate handler)
       -> Expected<void> = 0;
 };
 

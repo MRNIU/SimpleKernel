@@ -30,11 +30,11 @@ class Interrupt final : public InterruptBase {
   /// @}
 
   void Do(uint64_t cause, cpu_io::TrapContext* context) override;
-  void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) override;
+  void RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) override;
   auto SendIpi(uint64_t target_cpu_mask) -> Expected<void> override;
   auto BroadcastIpi() -> Expected<void> override;
   auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
-                                 uint32_t priority, InterruptFunc handler)
+                                 uint32_t priority, InterruptDelegate handler)
       -> Expected<void> override;
 
   __always_inline void SetUP() const { gic_.SetUP(); }
@@ -49,7 +49,7 @@ class Interrupt final : public InterruptBase {
   }
 
  private:
-  std::array<InterruptFunc, kMaxInterrupt> interrupt_handlers_;
+  std::array<InterruptDelegate, kMaxInterrupt> interrupt_handlers_;
 
   Gic gic_;
 };

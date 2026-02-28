@@ -42,7 +42,7 @@ void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
   cpu_io::ICC_EOIR1_EL1::Write(cause);
 }
 
-void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
+void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) {
   if (func) {
     interrupt_handlers_[cause] = func;
   }
@@ -87,7 +87,7 @@ auto Interrupt::BroadcastIpi() -> Expected<void> {
 
 auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
                                           uint32_t priority,
-                                          InterruptFunc handler)
+                                          InterruptDelegate handler)
     -> Expected<void> {
   // irq 为 GIC INTID（已含 kSPIBase 偏移）
   if (irq >= kMaxInterrupt) {

@@ -19,7 +19,7 @@ auto DefaultPlicHandler(uint64_t cause, cpu_io::TrapContext* context)
 }
 }  // namespace
 
-alignas(4) std::array<Plic::InterruptFunc,
+alignas(4) std::array<Plic::InterruptDelegate,
                       Plic::kInterruptMaxCount> Plic::interrupt_handlers_;
 
 Plic::Plic(uint64_t dev_addr, size_t ndev, size_t context_count)
@@ -45,7 +45,7 @@ Plic::Plic(uint64_t dev_addr, size_t ndev, size_t context_count)
       "PLIC initialization: all interrupts disabled, priorities set to 0\n");
 
   for (auto& h : interrupt_handlers_) {
-    h = InterruptFunc::create<DefaultPlicHandler>();
+    h = InterruptDelegate::create<DefaultPlicHandler>();
   }
 }
 
@@ -59,7 +59,7 @@ void Plic::Done(uint32_t source_id) const {
   ClaimComplete(context_id) = source_id;
 }
 
-void Plic::RegisterInterruptFunc(uint8_t cause, InterruptFunc func) {
+void Plic::RegisterInterruptFunc(uint8_t cause, InterruptDelegate func) {
   interrupt_handlers_[cause] = func;
 }
 
