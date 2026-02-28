@@ -96,27 +96,11 @@ void TaskControlBlock::JoinThreadGroup(TaskControlBlock* leader) {
   // 设置 tgid
   tgid = leader->tgid;
 
-  // 如果 leader 已经有其他线程，插入到链表头部
-  if (leader->thread_group_next) {
-    thread_group_next = leader->thread_group_next;
-    thread_group_next->thread_group_prev = this;
-  }
-  leader->thread_group_next = this;
-  thread_group_prev = leader;
+  // 在 leader 之后插入自身
+  etl::link_splice<ThreadGroupLink>(*leader, *this);
 }
 
-void TaskControlBlock::LeaveThreadGroup() {
-  // 从双向链表中移除
-  if (thread_group_prev) {
-    thread_group_prev->thread_group_next = thread_group_next;
-  }
-  if (thread_group_next) {
-    thread_group_next->thread_group_prev = thread_group_prev;
-  }
-
-  thread_group_prev = nullptr;
-  thread_group_next = nullptr;
-}
+void TaskControlBlock::LeaveThreadGroup() { ThreadGroupLink::unlink(); }
 
 size_t TaskControlBlock::GetThreadGroupSize() const {
   if (tgid == 0) {
@@ -124,21 +108,20 @@ size_t TaskControlBlock::GetThreadGroupSize() const {
     return 1;
   }
 
-  // 计数自己
   size_t count = 1;
 
-  // 向前遍历
-  const TaskControlBlock* curr = thread_group_prev;
+  // 向前遍历至链表头
+  const ThreadGroupLink* curr = etl_previous;
   while (curr) {
-    count++;
-    curr = curr->thread_group_prev;
+    ++count;
+    curr = curr->etl_previous;
   }
 
-  // 向后遍历
-  curr = thread_group_next;
+  // 向后遍历至链表尾
+  curr = etl_next;
   while (curr) {
-    count++;
-    curr = curr->thread_group_next;
+    ++count;
+    curr = curr->etl_next;
   }
 
   return count;

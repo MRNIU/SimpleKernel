@@ -92,15 +92,6 @@ TARGET_COMPILE_OPTIONS (
               -mtune=cortex-a72
               -mno-outline-atomics
               >
-              # gcc 特定选项
-              $<$<CXX_COMPILER_ID:GNU>:
-              >
-              # clang 特定选项
-              $<$<CXX_COMPILER_ID:Clang>:
-              >
-              # 平台相关
-              $<$<PLATFORM_ID:Darwin>:
-              >
               # 将编译器的 include 路径添加到编译选项中，以便 clang-tidy 使用
               ${CROSS_INCLUDE_PATHS})
 

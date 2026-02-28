@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief Thread lifecycle messages for etl::message_router
  */
 
 #ifndef SIMPLEKERNEL_SRC_TASK_INCLUDE_LIFECYCLE_MESSAGES_HPP_
@@ -10,19 +9,16 @@
 
 #include <cstddef>
 
-/// @brief Lifecycle message IDs (start at 100 to avoid collision with task FSM)
 namespace lifecycle_msg_id {
 inline constexpr etl::message_id_t kThreadCreate = 100;
 inline constexpr etl::message_id_t kThreadExit = 101;
 }  // namespace lifecycle_msg_id
 
-/// @brief Thread creation event message
 struct ThreadCreateMsg : public etl::message<lifecycle_msg_id::kThreadCreate> {
   size_t pid;
   explicit ThreadCreateMsg(size_t p) : pid(p) {}
 };
 
-/// @brief Thread exit event message
 struct ThreadExitMsg : public etl::message<lifecycle_msg_id::kThreadExit> {
   size_t pid;
   int exit_code;

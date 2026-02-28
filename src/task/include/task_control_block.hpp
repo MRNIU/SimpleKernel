@@ -7,6 +7,7 @@
 
 #include <cpu_io.h>
 #include <etl/flags.h>
+#include <etl/intrusive_links.h>
 
 #include <array>
 #include <cstddef>
@@ -67,10 +68,13 @@ enum SchedPolicy : uint8_t {
   kPolicyCount
 };
 
+/// 线程组侵入式链表节点类型
+using ThreadGroupLink = etl::bidirectional_link<0>;
+
 /**
  * @brief 任务控制块，管理进程/线程的核心数据结构
  */
-struct TaskControlBlock {
+struct TaskControlBlock : public ThreadGroupLink {
   /// 默认内核栈大小 (16 KB)
   static constexpr const size_t kDefaultKernelStackSize = 16 * 1024;
 
@@ -101,13 +105,6 @@ struct TaskControlBlock {
   Pid sid = 0;
   /// 线程组 ID (主线程的 PID)
   Pid tgid = 0;
-
-  /// @name 侵入式线程组链表
-  /// @todo 尝试 etl
-  /// @{
-  TaskControlBlock* thread_group_next = nullptr;
-  TaskControlBlock* thread_group_prev = nullptr;
-  /// @}
 
   /// 任务状态机
   TaskFsm fsm;

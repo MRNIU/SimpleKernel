@@ -265,7 +265,6 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
 }
 
 /// 错误类型，用于 std::expected
-/// @todo 还需要传递一个具体错误信息的字符串
 struct Error {
   ErrorCode code;
 
