@@ -98,8 +98,8 @@ auto SerialIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
 // VirtIO-blk 外部中断处理
 auto VirtioBlkIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
-  DriverRegistry::GetDriverInstance<VirtioBlkDriver<PlatformTraits>>()
-      .HandleInterrupt([](void* /*token*/, device_framework::ErrorCode status) {
+  DriverRegistry::GetDriverInstance<VirtioBlkDriver>().HandleInterrupt(
+      [](void* /*token*/, device_framework::ErrorCode status) {
         if (status != device_framework::ErrorCode::kSuccess) {
           klog::Err("VirtIO blk IO error: %d\n", static_cast<int>(status));
         }
@@ -206,7 +206,7 @@ void InterruptInit(int, const char**) {
       });
 
   // 通过统一接口注册 virtio-blk 外部中断
-  using BlkDriver = VirtioBlkDriver<PlatformTraits>;
+  using BlkDriver = VirtioBlkDriver;
   auto& blk_driver = DriverRegistry::GetDriverInstance<BlkDriver>();
   auto blk_irq = blk_driver.GetIrq();
   if (blk_irq != 0) {
