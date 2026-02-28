@@ -64,8 +64,9 @@ struct BasicInfo {
   ~BasicInfo() = default;
   /// @}
 
-  friend auto operator<<(kstd::ostream& ostream, const BasicInfo& basic_info)
-      -> kstd::ostream& {
+  template <typename OStream>
+  friend auto operator<<(OStream& ostream, const BasicInfo& basic_info)
+      -> OStream& {
     klog::Info("physical_memory_addr: 0x%X, size 0x%X.\n",
                basic_info.physical_memory_addr,
                basic_info.physical_memory_size);
