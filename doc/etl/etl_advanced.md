@@ -155,19 +155,23 @@ virtual void on_exit_state() {}
 
 ```cpp
 // src/task/include/task_control_block.hpp
-// TaskStatus 状态：kReady → kRunning → kBlocked → kTerminated
+// TaskStatus 状态：kUnInit, kReady, kRunning, kSleeping, kBlocked, kExited, kZombie
+// 完整转换：kUnInit → kReady → kRunning → kSleeping/kBlocked/kZombie/kExited
 
 // 消息 ID 集中管理（见 src/task/include/task_messages.hpp）
 namespace task_msg_id {
-    constexpr etl::message_id_t kSchedule   = 0;
-    constexpr etl::message_id_t kBlock      = 1;
-    constexpr etl::message_id_t kUnblock    = 2;
-    constexpr etl::message_id_t kTerminate  = 3;
+    inline constexpr etl::message_id_t kSchedule = 1;
+    inline constexpr etl::message_id_t kYield    = 2;
+    inline constexpr etl::message_id_t kSleep    = 3;
+    inline constexpr etl::message_id_t kBlock    = 4;
+    inline constexpr etl::message_id_t kWakeup   = 5;
+    inline constexpr etl::message_id_t kExit     = 6;
+    inline constexpr etl::message_id_t kReap     = 7;
 }
 
 class TaskFsm : public etl::fsm {
 public:
-    TaskFsm() : etl::fsm(kFsmId) {}
+    TaskFsm() : etl::fsm(kRouterId) {}
 
     void Init(etl::ifsm_state* const state_list[], size_t num_states) {
         set_states(state_list, num_states);
@@ -179,7 +183,7 @@ public:
     }
 
 private:
-    static constexpr etl::message_router_id_t kFsmId = 0;
+    static constexpr etl::message_router_id_t kRouterId = 1;
 };
 ```
 
@@ -226,7 +230,7 @@ ArchInit → MemoryInit → InterruptInit → DeviceInit → FileSystemInit
 class TaskFsm : public etl::fsm {
 public:
     // 构造函数只做 FSM ID 绑定，不调用 start()
-    TaskFsm() : etl::fsm(kFsmId) {}
+    TaskFsm() : etl::fsm(kRouterId) {}
 
     // 在所有依赖就绪后显式调用
     void Init() {
@@ -239,12 +243,18 @@ public:
     }
 
 private:
-    static constexpr etl::message_router_id_t kFsmId = 0;
-    StateReady   state_ready_;
-    StateRunning state_running_;
-    StateBlocked state_blocked_;
-    etl::ifsm_state* states_[3] = {&state_ready_, &state_running_, &state_blocked_};
-};
+    static constexpr etl::message_router_id_t kRouterId = 1;
+    StateUnInit   state_uninit_;
+    StateReady    state_ready_;
+    StateRunning  state_running_;
+    StateSleeping state_sleeping_;
+    StateBlocked  state_blocked_;
+    StateZombie   state_zombie_;
+    StateExited   state_exited_;
+    etl::ifsm_state* states_[7] = {
+        &state_uninit_, &state_ready_, &state_running_,
+        &state_sleeping_, &state_blocked_, &state_zombie_, &state_exited_
+    };
 ```
 
 ---
@@ -339,8 +349,7 @@ while (true) {
 
 - `SchedulerBase` → `CfsScheduler` / `FifoScheduler` / `RrScheduler`
 - `TaskControlBlock` 管理任务上下文
-- `TaskManager::GetInstance()` 统一入口
-
+- `TaskManagerSingleton::instance()` 统一入口
 如果需要"轻量级周期性工作"，在 Timer Interrupt 回调中触发即可，无需引入合作式调度。
 
 ---
@@ -498,11 +507,12 @@ private:
     uint64_t jiffies_ = 0;
 };
 
-// Observer 1：调度器——检查当前任务时间片
-class CfsScheduler : public ITickObserver {
+// Observer 1：调度器（提议的观察者模式，当前由 TaskManager::TickUpdate 直接调用）
+class CfsScheduler : public SchedulerBase, public ITickObserver {
     void notification(TickEvent evt) override {
-        CheckPreemption(evt.jiffies);  // 时间片用尽则设置抢占标志
+        OnTick(evt.jiffies);
     }
+    // ... 现有实现 ...
 };
 
 // Observer 2：睡眠队列——唤醒到期任务
@@ -679,9 +689,10 @@ class MutexManager : public etl::message_router<MutexManager, ThreadExitMsg> {
 };
 
 // TaskManager 退出时广播（线程上下文，无并发限制）
-void TaskControlBlock::Exit(int code) {
+void TaskManager::Exit(int code) {
+    auto* task = GetCurrentTask();
     static ThreadExitMsg msg;
-    msg.thread_id = id_;
+    msg.thread_id = task->id;
     msg.exit_code = code;
     etl::send_message(mem_mgr,   msg);
     etl::send_message(mutex_mgr, msg);
@@ -727,15 +738,16 @@ NicDriver（以太网帧）
 
 所有 `Max_Observers` 统一在 `src/include/kernel_config.hpp` 定义：
 
-```cpp
 // src/include/kernel_config.hpp
+// 以下常量需要新增（当前文件仅包含任务/调度器容量常量）
 namespace kernel_config {
-    inline constexpr size_t kTickObservers   = 8;   // Timer Tick 订阅者上限
-    inline constexpr size_t kPanicObservers  = 4;   // Panic 订阅者上限
-    inline constexpr size_t kUartObservers   = 4;   // UART RX 订阅者上限
-    inline constexpr size_t kDeviceObservers = 8;   // 设备热插拔订阅者上限
+    // 已有常量：kMaxTasks, kMaxSchedulers 等（见现有文件）
+    // 以下为 etl::observer 集成时需要新增的常量：
+    inline constexpr size_t kTickObservers   = 8;
+    inline constexpr size_t kPanicObservers  = 4;
+    inline constexpr size_t kUartObservers   = 4;
+    inline constexpr size_t kDeviceObservers = 8;
 }
-```
 
 ---
 
@@ -748,7 +760,7 @@ namespace kernel_config {
 | **立即** | `etl::expected` | ❌ 不替换 | — | 无 |
 | **立即** | `etl::mutex/semaphore` | ❌ 不引入 | — | 无 |
 | **立即** | `etl::task` | ❌ 不引入 | — | 无 |
-| **Phase 1** | `etl::observer` | ✅ 按需引入 | `kernel_config.hpp` 容量常量 | 低 |
+| **Phase 1** | `etl::observer` | ✅ 按需引入 | `kernel_config.hpp` 容量常量（需新增） | 低 |
 | **Phase 2** | `etl::fsm` + `start()/reset()` | ✅ 建议引入 | 消息 ID 集中管理（`task_messages.hpp`） | 中 |
 | **Phase 3** | `etl::message_router`（总线模式） | 🔄 随 FSM 按需扩展 | FSM 迁移完成 | 中 |
 

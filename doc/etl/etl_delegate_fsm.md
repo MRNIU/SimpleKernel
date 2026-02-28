@@ -254,7 +254,8 @@ namespace task_msg_id {
 
 // 消息定义（使用上面的常量 ID）
 struct MsgSchedule : etl::message<task_msg_id::kSchedule> {};
-struct MsgYield    : etl::message<task_msg_id::kYield>    {};
+struct MsgYield    : etl::message<task_msg_id::kYield>    {}; // 对应抢占或主动放弃 CPU
+
 struct MsgSleep    : etl::message<task_msg_id::kSleep> {
   uint64_t wake_tick;
 };
@@ -264,6 +265,7 @@ struct MsgBlock    : etl::message<task_msg_id::kBlock> {
 struct MsgWakeup   : etl::message<task_msg_id::kWakeup>   {};
 struct MsgExit     : etl::message<task_msg_id::kExit> {
   int exit_code;
+  bool has_parent;  // 新增：是否具有父进程
 };
 struct MsgReap     : etl::message<task_msg_id::kReap>     {};
 
@@ -316,12 +318,68 @@ class StateRunning : public etl::fsm_state<TaskFsm, TaskControlBlock,
   }
   etl::fsm_state_id_t on_event(const MsgExit& m) {
     get_fsm_context().exit_code = m.exit_code;
-    return TaskStatus::kExited;
+    // 根据是否有父进程决定进入 Zombie 还是 Exited 状态
+    return m.has_parent ? TaskStatus::kZombie : TaskStatus::kExited;
   }
   etl::fsm_state_id_t on_event_unknown(const etl::imessage&) { return STATE_ID; }
 };
 
-// (其余状态类似...)
+// kUnInit 状态
+class StateUnInit : public etl::fsm_state<TaskFsm, TaskControlBlock,
+                                          TaskStatus::kUnInit,
+                                          MsgSchedule> {
+ public:
+  etl::fsm_state_id_t on_event(const MsgSchedule&) { return TaskStatus::kReady; }
+  etl::fsm_state_id_t on_event_unknown(const etl::imessage&) { return STATE_ID; }
+};
+
+// kSleeping 状态
+class StateSleeping : public etl::fsm_state<TaskFsm, TaskControlBlock,
+                                            TaskStatus::kSleeping,
+                                            MsgWakeup> {
+ public:
+  etl::fsm_state_id_t on_event(const MsgWakeup&) { return TaskStatus::kReady; }
+  etl::fsm_state_id_t on_event_unknown(const etl::imessage&) { return STATE_ID; }
+};
+
+// kBlocked 状态
+class StateBlocked : public etl::fsm_state<TaskFsm, TaskControlBlock,
+                                           TaskStatus::kBlocked,
+                                           MsgWakeup> {
+ public:
+  etl::fsm_state_id_t on_event(const MsgWakeup&) { return TaskStatus::kReady; }
+  etl::fsm_state_id_t on_event_unknown(const etl::imessage&) { return STATE_ID; }
+};
+
+// kZombie 状态
+class StateZombie : public etl::fsm_state<TaskFsm, TaskControlBlock,
+                                          TaskStatus::kZombie,
+                                          MsgReap> {
+ public:
+  etl::fsm_state_id_t on_event(const MsgReap&) {
+    // 任务从表中移除，状态机停止
+    return etl::fsm_state_id_t(0);
+  }
+  etl::fsm_state_id_t on_event_unknown(const etl::imessage&) { return STATE_ID; }
+
+  void on_enter_state() {
+    // TODO: 处理 ReparentChildren()、LeaveThreadGroup()、Wakeup(parent)
+  }
+};
+
+// kExited 状态
+class StateExited : public etl::fsm_state<TaskFsm, TaskControlBlock,
+                                          TaskStatus::kExited,
+                                          MsgReap> {
+ public:
+  etl::fsm_state_id_t on_event(const MsgReap&) { return etl::fsm_state_id_t(0); }
+  etl::fsm_state_id_t on_event_unknown(const etl::imessage&) { return STATE_ID; }
+
+  void on_enter_state() {
+    // TODO: 处理立即资源清理（无父进程需要通知）
+  }
+};
+
 ```
 
 **步骤 3：定义 FSM 宿主**
@@ -330,27 +388,32 @@ class StateRunning : public etl::fsm_state<TaskFsm, TaskControlBlock,
 // TaskFsm 宿主：继承 etl::fsm，持有 TCB 作为上下文
 class TaskFsm : public etl::fsm {
  public:
+  static constexpr etl::message_router_id_t kTaskFsmRouterId = 1;
+
   explicit TaskFsm(TaskControlBlock& tcb)
-    : etl::fsm(etl::ifsm_state_id_t(TaskStatus::kUnInit)),
+    : etl::fsm(kTaskFsmRouterId),
       context_(tcb) {}
 
   TaskControlBlock& get_context() { return context_; }
 
   void Start() {
-    // 注册所有状态
-    static StateReady   state_ready;
-    static StateRunning state_running;
-    // ...（其他状态）
-
     etl::ifsm_state* state_list[] = {
-      &state_ready, &state_running, /* ... */
+      &state_uninit_, &state_ready_, &state_running_,
+      &state_sleeping_, &state_blocked_, &state_zombie_, &state_exited_
     };
     set_states(state_list, ETL_OR_STD17::size(state_list));
-    start();  // 进入初始状态
+    start();
   }
 
  private:
   TaskControlBlock& context_;
+  StateUnInit   state_uninit_;
+  StateReady    state_ready_;
+  StateRunning  state_running_;
+  StateSleeping state_sleeping_;
+  StateBlocked  state_blocked_;
+  StateZombie   state_zombie_;
+  StateExited   state_exited_;
 };
 ```
 
@@ -363,7 +426,8 @@ void TaskManager::Schedule() {
   current_task->status = TaskStatus::kReady;
 
   // 替换后
-  current_task->fsm.receive(MsgYield{});  // FSM 自动处理转换逻辑
+  current_task->fsm.receive(MsgYield{});  // 对应 schedule.cpp 中的抢占路径
+
 }
 
 void TaskManager::Sleep(uint64_t ms) {
