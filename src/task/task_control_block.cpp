@@ -84,6 +84,9 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
 
 }  // namespace
 
+auto TaskControlBlock::GetStatus() const -> TaskStatus {
+  return static_cast<TaskStatus>(fsm.GetStateId());
+}
 void TaskControlBlock::JoinThreadGroup(TaskControlBlock* leader) {
   if (!leader || leader == this) {
     return;
@@ -152,7 +155,7 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority,
       cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
   if (!kernel_stack) {
     klog::Err("Failed to allocate kernel stack for task %s\n", name);
-    status = TaskStatus::kExited;
+    // status not set — FSM stays in kUnInit to signal failure
     return;
   }
 
@@ -166,6 +169,8 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority,
 
   // 初始化任务上下文
   InitTaskContext(&task_context, entry, arg, stack_top);
+  // Transition FSM: kUnInit -> kReady
+  fsm.Start();
 }
 
 TaskControlBlock::TaskControlBlock(const char* name, int priority, uint8_t* elf,
@@ -182,6 +187,8 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority, uint8_t* elf,
   (void)argc;
   (void)argv;
   LoadElf(nullptr, nullptr);
+  // Transition FSM: kUnInit -> kReady
+  fsm.Start();
 }
 
 TaskControlBlock::~TaskControlBlock() {
@@ -197,7 +204,7 @@ TaskControlBlock::~TaskControlBlock() {
   // 释放页表（如果有用户空间页表）
   if (page_table) {
     // 如果是私有页表（非共享），需要释放物理页
-    auto should_free_pages = !(clone_flags & kCloneVm);
+    auto should_free_pages = !(clone_flags & clone_flag::kVm);
     VirtualMemorySingleton::instance().DestroyPageDirectory(page_table,
                                                             should_free_pages);
     page_table = nullptr;

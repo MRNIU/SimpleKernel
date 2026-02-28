@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_SRC_INCLUDE_TASK_CONTROL_BLOCK_HPP_
 
 #include <cpu_io.h>
+#include <etl/flags.h>
 
 #include <array>
 #include <cstddef>
@@ -13,6 +14,7 @@
 
 #include "file_descriptor.hpp"
 #include "resource_id.hpp"
+#include "task_fsm.hpp"
 
 /// 进程 ID 类型
 using Pid = size_t;
@@ -21,45 +23,35 @@ using Pid = size_t;
 using ThreadEntry = void (*)(void*);
 
 /**
- * @brief Clone 标志位 (用于 sys_clone 系统调用)
+ * @brief Clone 标志位常量 (用于 sys_clone 系统调用)
  * @note 参考 Linux clone flags
  */
-enum CloneFlags : uint64_t {
-  // 全部共享
-  kCloneAll = 0,
-  // 共享地址空间
-  kCloneVm = 0x00000100,
-  // 共享文件系统信息
-  kCloneFs = 0x00000200,
-  // 共享文件描述符表
-  kCloneFiles = 0x00000400,
-  // 共享信号处理器
-  kCloneSighand = 0x00000800,
-  // 保持相同父进程
-  kCloneParent = 0x00008000,
-  // 同一线程组
-  kCloneThread = 0x00010000,
-};
+namespace clone_flag {
+// 共享地址空间
+inline constexpr uint64_t kVm = 0x00000100;
+// 共享文件系统信息
+inline constexpr uint64_t kFs = 0x00000200;
+// 共享文件描述符表
+inline constexpr uint64_t kFiles = 0x00000400;
+// 共享信号处理器
+inline constexpr uint64_t kSighand = 0x00000800;
+// 保持相同父进程
+inline constexpr uint64_t kParent = 0x00008000;
+// 同一线程组
+inline constexpr uint64_t kThread = 0x00010000;
+// 全部标志掩码
+inline constexpr uint64_t kAllMask =
+    kVm | kFs | kFiles | kSighand | kParent | kThread;
+}  // namespace clone_flag
 
-/**
- * @brief 任务状态枚举
- */
-enum TaskStatus : uint8_t {
-  // 未初始化
-  kUnInit,
-  // 就绪
-  kReady,
-  // 正在运行
-  kRunning,
-  // 睡眠中
-  kSleeping,
-  // 阻塞
-  kBlocked,
-  // 已退出
-  kExited,
-  // 僵尸状态 (等待回收)
-  kZombie,
-};
+/// @brief 类型安全的克隆标志位
+using CloneFlags = etl::flags<uint64_t, clone_flag::kAllMask>;
+
+/// @brief 类型安全的 CPU 亲和性位掩码
+using CpuAffinity = etl::flags<uint64_t>;
+
+/// @brief Task status type alias — backed by FSM state IDs
+using TaskStatus = TaskStatusId;
 
 /**
  * @brief 调度策略
@@ -116,8 +108,11 @@ struct TaskControlBlock {
   TaskControlBlock* thread_group_prev = nullptr;
   /// @}
 
-  /// 线程状态
-  TaskStatus status = TaskStatus::kUnInit;
+  /// Task FSM — owns per-task lifecycle state machine
+  TaskFsm fsm;
+
+  /// @brief Get the current task status
+  [[nodiscard]] auto GetStatus() const -> TaskStatus;
   /// 调度策略
   SchedPolicy policy = SchedPolicy::kNormal;
 
@@ -125,7 +120,7 @@ struct TaskControlBlock {
   int exit_code = 0;
 
   /// 克隆标志位
-  CloneFlags clone_flags = kCloneAll;
+  CloneFlags clone_flags{};
 
   /**
    * @brief 基础调度信息
@@ -179,7 +174,7 @@ struct TaskControlBlock {
   uint64_t* page_table = nullptr;
 
   /// CPU 亲和性位掩码
-  uint64_t cpu_affinity = UINT64_MAX;
+  CpuAffinity cpu_affinity{UINT64_MAX};
 
   /// 等待的资源 ID
   ResourceId blocked_on{};

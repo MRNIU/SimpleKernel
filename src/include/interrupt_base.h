@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_
 
 #include <cpu_io.h>
+#include <etl/delegate.h>
 
 #include <cstdint>
 
@@ -14,13 +15,16 @@
 class InterruptBase {
  public:
   /**
-   * @brief 中断/异常处理函数指针
+   * @brief 类型安全的中断处理委托
    * @param  cause 中断或异常号
    * @param  context 中断上下文
    * @return uint64_t 返回值，0 成功
    */
-  typedef uint64_t (*InterruptFunc)(uint64_t cause,
-                                    cpu_io::TrapContext* context);
+  using InterruptDelegate =
+      etl::delegate<uint64_t(uint64_t, cpu_io::TrapContext*)>;
+
+  /// @brief 向后兼容别名 (deprecated, use InterruptDelegate)
+  using InterruptFunc = InterruptDelegate;
 
   /// @name 构造/析构函数
   /// @{

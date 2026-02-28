@@ -26,21 +26,22 @@ TarpEntry(cpu_io::TrapContext* interrupt_context) {
   InterruptSingleton::instance().Do(no, interrupt_context);
 }
 
+auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)
+    -> uint64_t {
+  klog::Info("Default Interrupt handler [%s] 0x%X, 0x%p\n",
+             cpu_io::detail::register_info::IdtrInfo::kInterruptNames[cause],
+             cause, context);
+  DumpStack();
+  while (true) {
+    ;
+  }
+}
 };  // namespace
 
 Interrupt::Interrupt() {
   // 注册默认中断处理函数
   for (auto& i : interrupt_handlers_) {
-    i = [](uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
-      klog::Info(
-          "Default Interrupt handler [%s] 0x%X, 0x%p\n",
-          cpu_io::detail::register_info::IdtrInfo::kInterruptNames[cause],
-          cause, context);
-      DumpStack();
-      while (true) {
-        ;
-      }
-    };
+    i = InterruptDelegate::create<DefaultInterruptHandler>();
   }
 
   klog::Info("Interrupt init.\n");
@@ -55,9 +56,9 @@ void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
 void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
   if (cause < cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount) {
     interrupt_handlers_[cause] = func;
-    klog::Debug("RegisterInterruptFunc [%s] 0x%X, 0x%p\n",
+    klog::Debug("RegisterInterruptFunc [%s] 0x%X\n",
                 cpu_io::detail::register_info::IdtrInfo::kInterruptNames[cause],
-                cause, func);
+                cause);
   }
 }
 

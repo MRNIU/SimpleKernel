@@ -11,9 +11,17 @@
 #include "kernel_fdt.hpp"
 #include "task_manager.hpp"
 
+using InterruptDelegate = InterruptBase::InterruptDelegate;
 namespace {
 uint64_t interval = 0;
 uint64_t timer_intid = 0;
+
+auto TimerHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
+    -> uint64_t {
+  cpu_io::CNTV_TVAL_EL0::Write(interval);
+  TaskManagerSingleton::instance().TickUpdate();
+  return 0;
+}
 }  // namespace
 
 void TimerInitSMP() {
@@ -39,11 +47,7 @@ void TimerInit() {
                 Gic::kPPIBase;
 
   InterruptSingleton::instance().RegisterInterruptFunc(
-      timer_intid, [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
-        cpu_io::CNTV_TVAL_EL0::Write(interval);
-        TaskManagerSingleton::instance().TickUpdate();
-        return 0;
-      });
+      timer_intid, InterruptDelegate::create<TimerHandler>());
 
   InterruptSingleton::instance().PPI(timer_intid, cpu_io::GetCurrentCoreId());
 

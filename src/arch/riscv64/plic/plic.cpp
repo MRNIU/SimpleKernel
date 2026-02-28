@@ -10,6 +10,15 @@
 #include "kernel_log.hpp"
 #include "sk_string.h"
 
+namespace {
+auto DefaultPlicHandler(uint64_t cause, cpu_io::TrapContext* context)
+    -> uint64_t {
+  klog::Info("Default PLIC handler, cause: 0x%X, context: 0x%p\n", cause,
+             context);
+  return 0;
+}
+}  // namespace
+
 alignas(4) std::array<Plic::InterruptFunc,
                       Plic::kInterruptMaxCount> Plic::interrupt_handlers_;
 
@@ -34,6 +43,10 @@ Plic::Plic(uint64_t dev_addr, size_t ndev, size_t context_count)
 
   klog::Info(
       "PLIC initialization: all interrupts disabled, priorities set to 0\n");
+
+  for (auto& h : interrupt_handlers_) {
+    h = InterruptFunc::create<DefaultPlicHandler>();
+  }
 }
 
 auto Plic::Which() const -> uint32_t {

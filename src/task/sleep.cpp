@@ -6,6 +6,7 @@
 
 #include "kernel_log.hpp"
 #include "task_manager.hpp"
+#include "task_messages.hpp"
 
 namespace {
 /// 每秒的毫秒数
@@ -17,7 +18,7 @@ void TaskManager::Sleep(uint64_t ms) {
 
   auto* current = GetCurrentTask();
   assert(current != nullptr && "Sleep: No current task to sleep");
-  assert(current->status == TaskStatus::kRunning &&
+  assert(current->GetStatus() == TaskStatus::kRunning &&
          "Sleep: current task status must be kRunning");
 
   // 如果睡眠时间为 0，仅让出 CPU（相当于 yield）
@@ -33,16 +34,17 @@ void TaskManager::Sleep(uint64_t ms) {
     uint64_t sleep_ticks = (ms * SIMPLEKERNEL_TICK) / kMillisecondsPerSecond;
     current->sched_info.wake_tick = cpu_sched.local_tick + sleep_ticks;
 
-    // 将任务标记为睡眠状态
-    current->status = TaskStatus::kSleeping;
+    // Check capacity before transitioning FSM
 
     // 将任务加入睡眠队列（优先队列会自动按 wake_tick 排序）
     if (cpu_sched.sleeping_tasks.full()) {
       klog::Err("Sleep: sleeping_tasks full, cannot sleep task %zu\n",
                 current->pid);
-      current->status = TaskStatus::kRunning;
+      // Rollback: task stays kRunning, do not transition FSM
       return;
     }
+    // Transition: kRunning -> kSleeping
+    current->fsm.Receive(MsgSleep{current->sched_info.wake_tick});
     cpu_sched.sleeping_tasks.push(current);
   }
 

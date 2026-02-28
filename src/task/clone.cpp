@@ -21,13 +21,13 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
 
   // 验证克隆标志的合法性
   // 如果设置了 kCloneThread，必须同时设置 kCloneVm, kCloneFiles, kCloneSighand
-  if ((flags & kCloneThread) &&
-      (!(flags & kCloneVm) || !(flags & kCloneFiles) ||
-       !(flags & kCloneSighand))) {
+  if ((flags & clone_flag::kThread) &&
+      (!(flags & clone_flag::kVm) || !(flags & clone_flag::kFiles) ||
+       !(flags & clone_flag::kSighand))) {
     klog::Warn(
         "Clone: kCloneThread requires kCloneVm, kCloneFiles, kCloneSighand\n");
     // 自动补全必需的标志
-    flags |= (kCloneVm | kCloneFiles | kCloneSighand);
+    flags |= (clone_flag::kVm | clone_flag::kFiles | clone_flag::kSighand);
   }
 
   // 分配新的 PID
@@ -43,6 +43,9 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
     klog::Err("Clone: Failed to allocate child task\n");
     return std::unexpected(Error(ErrorCode::kTaskAllocationFailed));
   }
+  // Default ctor leaves FSM in set_states-but-not-started state.
+  // Start it so get_state_id() returns kUnInit instead of deref null.
+  child->fsm.Start();
 
   // 基本字段设置
   child->pid = new_pid;
@@ -51,7 +54,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   child->sched_info = parent->sched_info;
 
   // 设置父进程 ID
-  if (flags & kCloneParent) {
+  if (flags & clone_flag::kParent) {
     // 保持与父进程相同的父进程
     child->parent_pid = parent->parent_pid;
   } else {
@@ -59,7 +62,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   }
 
   // 处理线程组 ID (TGID)
-  if (flags & kCloneThread) {
+  if (flags & clone_flag::kThread) {
     // 创建线程: 共享线程组
     child->tgid = parent->tgid;
     child->pgid = parent->pgid;
@@ -88,11 +91,11 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   }
 
   // 克隆标志位
-  child->clone_flags = static_cast<CloneFlags>(flags);
+  child->clone_flags = CloneFlags(flags);
 
   // 处理文件描述符表 (kCloneFiles)
   /// @todo 当前未实现文件系统，此标志暂时仅记录
-  if (flags & kCloneFiles) {
+  if (flags & clone_flag::kFiles) {
     klog::Debug("Clone: sharing file descriptor table (not implemented)\n");
   } else {
     klog::Debug("Clone: copying file descriptor table (not implemented)\n");
@@ -100,7 +103,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
 
   // 处理信号处理器 (kCloneSighand)
   /// @todo 当前未实现信号机制，此标志暂时仅记录
-  if (flags & kCloneSighand) {
+  if (flags & clone_flag::kSighand) {
     klog::Debug("Clone: sharing signal handlers (not implemented)\n");
   } else {
     klog::Debug("Clone: copying signal handlers (not implemented)\n");
@@ -108,14 +111,14 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
 
   // 处理文件系统信息 (kCloneFs)
   /// @todo 当前未实现文件系统，此标志暂时仅记录
-  if (flags & kCloneFs) {
+  if (flags & clone_flag::kFs) {
     klog::Debug("Clone: sharing filesystem info (not implemented)\n");
   } else {
     klog::Debug("Clone: copying filesystem info (not implemented)\n");
   }
 
   // 处理地址空间
-  if (flags & kCloneVm) {
+  if (flags & clone_flag::kVm) {
     // 共享地址空间（线程）
     child->page_table = parent->page_table;
     klog::Debug("Clone: sharing page table %p\n", child->page_table);
@@ -147,7 +150,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   if (!child->kernel_stack) {
     klog::Err("Clone: Failed to allocate kernel stack\n");
     // 清理已分配的资源
-    if (child->page_table && !(flags & kCloneVm)) {
+    if (child->page_table && !(flags & clone_flag::kVm)) {
       // 如果是独立的页表，需要释放
       VirtualMemorySingleton::instance().DestroyPageDirectory(child->page_table,
                                                               false);
@@ -193,8 +196,8 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   AddTask(child);
 
   // 打印详细的 clone 信息
-  const char* clone_type = (flags & kCloneThread) ? "thread" : "process";
-  const char* vm_type = (flags & kCloneVm) ? "shared" : "copied";
+  const char* clone_type = (flags & clone_flag::kThread) ? "thread" : "process";
+  const char* vm_type = (flags & clone_flag::kVm) ? "shared" : "copied";
   klog::Debug(
       "Clone: created %s - parent=%zu, child=%zu, tgid=%zu, vm=%s, "
       "flags=0x%lx\n",

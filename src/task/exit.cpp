@@ -7,12 +7,13 @@
 #include "kernel_log.hpp"
 #include "resource_id.hpp"
 #include "task_manager.hpp"
+#include "task_messages.hpp"
 
 void TaskManager::Exit(int exit_code) {
   auto& cpu_sched = GetCurrentCpuSched();
   auto* current = GetCurrentTask();
   assert(current != nullptr && "Exit: No current task to exit");
-  assert(current->status == TaskStatus::kRunning &&
+  assert(current->GetStatus() == TaskStatus::kRunning &&
          "Exit: current task status must be kRunning");
 
   {
@@ -43,8 +44,8 @@ void TaskManager::Exit(int exit_code) {
 
     if (current->parent_pid != 0) {
       // 有父进程，进入僵尸状态等待回收
-      current->status = TaskStatus::kZombie;
-      /// @todo 通知父进程 (发送 SIGCHLD)
+      // Transition: kRunning -> kZombie
+      current->fsm.Receive(MsgExit{exit_code, true});
 
       // 唤醒等待此进程退出的父进程
       // 父进程会阻塞在 ChildExit 类型的资源上，数据是父进程自己的 PID
@@ -52,12 +53,16 @@ void TaskManager::Exit(int exit_code) {
           ResourceId(ResourceType::kChildExit, current->parent_pid);
       Wakeup(wait_resource_id);
 
+      /// @todo 通知父进程 (发送 SIGCHLD)
+
       klog::Debug("Exit: pid=%zu waking up parent=%zu on resource=%s\n",
                   current->pid, current->parent_pid,
                   wait_resource_id.GetTypeName());
     } else {
       // 没有父进程，直接退出并释放资源
-      current->status = TaskStatus::kExited;
+      // Transition: kRunning -> kExited
+      current->fsm.Receive(MsgExit{exit_code, false});
+      // No parent to call wait(), reap immediately to free TCB + stack
       ReapTask(current);
     }
   }
