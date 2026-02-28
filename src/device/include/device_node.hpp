@@ -5,6 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_NODE_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_NODE_HPP_
 
+#include <etl/memory.h>
+
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -12,6 +14,7 @@
 
 #include "io_buffer.hpp"
 #include "kstd_cstring"
+#include "kstd_memory"
 
 /// Platform 设备标识（FDT compatible stringlist）
 struct PlatformId {
@@ -103,7 +106,7 @@ struct DeviceNode {
   /// 全局设备编号
   uint32_t dev_id{0};
   /// DMA 缓冲区
-  IoBuffer* dma_buffer{nullptr};
+  etl::unique_ptr<IoBuffer> dma_buffer{};
 
   /// 尝试绑定（CAS 保证幂等，防止重复绑定）
   auto TryBind() -> bool {
@@ -116,14 +119,15 @@ struct DeviceNode {
   /// @{
   DeviceNode() = default;
   ~DeviceNode() = default;
+
   DeviceNode(const DeviceNode& other)
       : type(other.type),
         resource(other.resource),
         bound(other.bound.load(std::memory_order_relaxed)),
-        dev_id(other.dev_id),
-        dma_buffer(other.dma_buffer) {
+        dev_id(other.dev_id) {
     kstd::memcpy(name, other.name, sizeof(name));
   }
+
   auto operator=(const DeviceNode& other) -> DeviceNode& {
     if (this != &other) {
       kstd::memcpy(name, other.name, sizeof(name));
@@ -132,12 +136,32 @@ struct DeviceNode {
       bound.store(other.bound.load(std::memory_order_relaxed),
                   std::memory_order_relaxed);
       dev_id = other.dev_id;
-      dma_buffer = other.dma_buffer;
+      // dma_buffer is not copied — ownership stays with original
     }
     return *this;
   }
-  DeviceNode(DeviceNode&&) = delete;
-  auto operator=(DeviceNode&&) -> DeviceNode& = delete;
+
+  DeviceNode(DeviceNode&& other) noexcept
+      : type(other.type),
+        resource(other.resource),
+        bound(other.bound.load(std::memory_order_relaxed)),
+        dev_id(other.dev_id),
+        dma_buffer(std::move(other.dma_buffer)) {
+    kstd::memcpy(name, other.name, sizeof(name));
+  }
+
+  auto operator=(DeviceNode&& other) noexcept -> DeviceNode& {
+    if (this != &other) {
+      kstd::memcpy(name, other.name, sizeof(name));
+      type = other.type;
+      resource = other.resource;
+      bound.store(other.bound.load(std::memory_order_relaxed),
+                  std::memory_order_relaxed);
+      dev_id = other.dev_id;
+      dma_buffer = std::move(other.dma_buffer);
+    }
+    return *this;
+  }
   /// @}
 };
 

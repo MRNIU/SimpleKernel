@@ -76,7 +76,7 @@ class VirtioBlkDriver {
         static_cast<uint64_t>(
             device_framework::virtio::blk::BlkFeatureBit::kGeometry);
 
-    if (node.dma_buffer == nullptr || !node.dma_buffer->IsValid()) {
+    if (!node.dma_buffer || !node.dma_buffer->IsValid()) {
       klog::Err(
           "VirtioBlkDriver: Missing or invalid DMA buffer in DeviceNode at "
           "0x%lX\n",
@@ -84,16 +84,16 @@ class VirtioBlkDriver {
       return std::unexpected(Error(ErrorCode::kInvalidArgument));
     }
 
-    if (node.dma_buffer->GetBuffer().second < kMinDmaBufferSize) {
+    if (node.dma_buffer->GetBuffer().size() < kMinDmaBufferSize) {
       klog::Err("VirtioBlkDriver: DMA buffer too small (%zu < %u)\n",
-                node.dma_buffer->GetBuffer().second, kMinDmaBufferSize);
+                node.dma_buffer->GetBuffer().size(), kMinDmaBufferSize);
       return std::unexpected(Error(ErrorCode::kInvalidArgument));
     }
 
     // Pass the pointer to Create (ensure the size meets virtio queue
-    // requirements) GetBuffer() returns std::pair<uint8_t*, size_t>
+    // requirements) GetBuffer() returns std::span<uint8_t>
     auto result = VirtioBlkType::Create(
-        base, node.dma_buffer->GetBuffer().first, kDefaultQueueCount,
+        base, node.dma_buffer->GetBuffer().data(), kDefaultQueueCount,
         kDefaultQueueSize, extra_features);
     if (!result.has_value()) {
       klog::Err("VirtioBlkDriver: Create failed at 0x%lX\n", base);

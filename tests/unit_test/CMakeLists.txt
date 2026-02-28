@@ -20,6 +20,7 @@ ADD_EXECUTABLE (
     task/fixtures/task_test_harness.cpp
     vfs_test.cpp
     ramfs_test.cpp
+    ${CMAKE_SOURCE_DIR}/src/memory/virtual_memory.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp
     ${CMAKE_SOURCE_DIR}/src/task/block.cpp
     ${CMAKE_SOURCE_DIR}/src/task/clone.cpp
@@ -35,11 +36,15 @@ ADD_EXECUTABLE (
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME}
     PRIVATE -Dsk_printf=printf
+            -Dsk_vsnprintf=vsnprintf
             -DUNIT_TEST
             -DSIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_NEW_
             -DSIMPLEKERNEL_MAX_CORE_COUNT=4
             -DSIMPLEKERNEL_PER_CPU_ALIGN_SIZE=4096
-            -DSIMPLEKERNEL_TICK=1000)
+            -DSIMPLEKERNEL_TICK=1000
+            -DSIMPLEKERNEL_MIN_LOG_LEVEL=0
+            -DSIMPLEKERNEL_EARLY_CONSOLE_BASE=${SIMPLEKERNEL_EARLY_CONSOLE_BASE}
+)
 
 TARGET_INCLUDE_DIRECTORIES (
     ${PROJECT_NAME}
@@ -51,6 +56,7 @@ TARGET_INCLUDE_DIRECTORIES (
             ${CMAKE_SOURCE_DIR}/src/arch
             ${CMAKE_SOURCE_DIR}/src/libc/include
             ${CMAKE_SOURCE_DIR}/src/libcxx/include
+            ${CMAKE_SOURCE_DIR}/src/memory/include
             ${CMAKE_SOURCE_DIR}/src/task/include
             ${CMAKE_SOURCE_DIR}/src/filesystem/include
             ${CMAKE_SOURCE_DIR}/src/filesystem/vfs/include
@@ -68,7 +74,6 @@ TARGET_LINK_LIBRARIES (
             MPMCQueue
             cpu_io
             device_framework
-            memory
             device
             task
             filesystem

@@ -19,8 +19,8 @@ int sk_printf(const char* format, ...) __attribute__((format(printf, 1, 2)));
 int sk_snprintf(char* buffer, size_t bufsz, const char* format, ...)
     __attribute__((format(printf, 3, 4)));
 
-int sk_vsnprintf(char* buffer, size_t bufsz, const char* format, va_list vlist)
-    __attribute__((format(printf, 3, 0)));
+int sk_vsnprintf(char* buffer, size_t bufsz, const char* format,
+                 va_list vlist) noexcept __attribute__((format(printf, 3, 0)));
 
 #ifdef __cplusplus
 }

@@ -5,13 +5,14 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_
 
+#include <etl/enum_type.h>
+
 #include <array>
 #include <concepts>
 #include <cstdint>
 #include <source_location>
 #include <type_traits>
 
-#include "etl/enum_type.h"
 #include "kstd_cstdio"
 #include "spinlock.hpp"
 namespace klog {

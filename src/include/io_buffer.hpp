@@ -7,7 +7,7 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <utility>
+#include <span>
 
 /**
  * @brief RAII wrapper for dynamically allocated, aligned IO buffers.
@@ -34,38 +34,30 @@ class IoBuffer {
    */
   IoBuffer(size_t size, size_t alignment = kDefaultAlignment);
 
-  /**
-   * @brief 析构函数
-   */
   ~IoBuffer();
-  /// @}
 
-  /// @name 拷贝与移动控制
-  /// @{
-  // Disable copy
   IoBuffer(const IoBuffer&) = delete;
   auto operator=(const IoBuffer&) -> IoBuffer& = delete;
 
-  // Enable move
-  IoBuffer(IoBuffer&& other) noexcept;
+  IoBuffer(IoBuffer&& other);
   auto operator=(IoBuffer&& other) noexcept -> IoBuffer&;
   /// @}
 
   /**
    * @brief 获取缓冲区数据与大小 (只读)
-   * @return std::pair<const uint8_t*, size_t> 数据指针与大小的 pair
+   * @return std::span<const uint8_t> 缓冲区数据的只读视图
    * @pre None
-   * @post 返回指向缓冲区数据的常量指针与大小
+   * @post 返回指向缓冲区数据的常量 span
    */
-  [[nodiscard]] auto GetBuffer() const -> std::pair<const uint8_t*, size_t>;
+  [[nodiscard]] auto GetBuffer() const -> std::span<const uint8_t>;
 
   /**
    * @brief 获取缓冲区数据与大小
-   * @return std::pair<uint8_t*, size_t> 数据指针与大小的 pair
+   * @return std::span<uint8_t> 缓冲区数据的可变视图
    * @pre None
-   * @post 返回指向缓冲区数据的指针与大小
+   * @post 返回指向缓冲区数据的 span
    */
-  [[nodiscard]] auto GetBuffer() -> std::pair<uint8_t*, size_t>;
+  [[nodiscard]] auto GetBuffer() -> std::span<uint8_t>;
 
   /**
    * @brief 检查缓冲区是否有效
@@ -76,8 +68,10 @@ class IoBuffer {
   [[nodiscard]] auto IsValid() const -> bool;
 
  private:
-  /// 缓冲区数据与大小
-  std::pair<uint8_t*, size_t> buffer_{nullptr, 0};
+  /// 缓冲区数据指针
+  uint8_t* data_{nullptr};
+  /// 缓冲区大小
+  size_t size_{0};
 };
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_IO_BUFFER_HPP_ */

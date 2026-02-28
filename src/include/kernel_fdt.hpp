@@ -19,6 +19,7 @@
 #endif
 
 #include <cpu_io.h>
+#include <etl/singleton.h>
 
 #include <array>
 #include <cassert>

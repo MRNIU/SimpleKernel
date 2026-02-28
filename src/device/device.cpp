@@ -57,7 +57,7 @@ auto DeviceInit() -> void {
         auto buf = kstd::make_unique<IoBuffer>(
             VirtioBlkDriver<PlatformTraits>::kMinDmaBufferSize);
         if (buf && buf->IsValid()) {
-          devs[i]->dma_buffer = buf.release();
+          devs[i]->dma_buffer = std::move(buf);
           klog::Debug("DeviceInit: allocated DMA buffer for '%s'\n",
                       devs[i]->name);
         } else {
