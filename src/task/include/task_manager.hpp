@@ -7,6 +7,7 @@
 
 #include <cpu_io.h>
 #include <etl/list.h>
+#include <etl/memory.h>
 #include <etl/priority_queue.h>
 #include <etl/unordered_map.h>
 #include <etl/vector.h>
@@ -19,7 +20,7 @@
 #include "expected.hpp"
 #include "interrupt_base.h"
 #include "kernel_config.hpp"
-#include "kstd_unique_ptr"
+#include "kstd_memory"
 #include "per_cpu.hpp"
 #include "resource_id.hpp"
 #include "scheduler_base.hpp"
@@ -33,7 +34,7 @@ struct CpuSchedData {
   SpinLock lock{"sched_lock"};
 
   /// 调度器数组 (按策略索引)
-  std::array<kstd::unique_ptr<SchedulerBase>, SchedPolicy::kPolicyCount>
+  std::array<etl::unique_ptr<SchedulerBase>, SchedPolicy::kPolicyCount>
       schedulers{};
 
   /// 睡眠队列 (优先队列，按唤醒时间排序)
@@ -207,7 +208,7 @@ class TaskManager {
 
   /// 全局任务表 (PID -> TCB 映射)
   SpinLock task_table_lock_{"task_table_lock"};
-  etl::unordered_map<Pid, kstd::unique_ptr<TaskControlBlock>,
+  etl::unordered_map<Pid, etl::unique_ptr<TaskControlBlock>,
                      kernel::config::kMaxTasks,
                      kernel::config::kMaxTasksBuckets>
       task_table_;

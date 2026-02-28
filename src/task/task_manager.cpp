@@ -44,11 +44,11 @@ void TaskManager::InitCurrentCore() {
 
   if (!cpu_sched.schedulers[SchedPolicy::kNormal]) {
     cpu_sched.schedulers[SchedPolicy::kRealTime] =
-        kstd::unique_ptr<SchedulerBase>(new FifoScheduler());
+        kstd::make_unique<FifoScheduler>();
     cpu_sched.schedulers[SchedPolicy::kNormal] =
-        kstd::unique_ptr<SchedulerBase>(new RoundRobinScheduler());
+        kstd::make_unique<RoundRobinScheduler>();
     cpu_sched.schedulers[SchedPolicy::kIdle] =
-        kstd::unique_ptr<SchedulerBase>(new IdleScheduler());
+        kstd::make_unique<IdleScheduler>();
   }
 
   // 关联 PerCpu
@@ -91,7 +91,7 @@ void TaskManager::AddTask(TaskControlBlock* task) {
                 task->pid);
       return;
     }
-    task_table_[task->pid] = kstd::unique_ptr<TaskControlBlock>(task);
+    task_table_[task->pid] = etl::unique_ptr<TaskControlBlock>(task);
   }
 
   // 设置任务状态为 kReady

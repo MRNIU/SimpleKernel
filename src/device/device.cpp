@@ -10,7 +10,7 @@
 #include "driver/virtio_blk_driver.hpp"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
-#include "kstd_unique_ptr"
+#include "kstd_memory"
 #include "platform_bus.hpp"
 #include "platform_traits.hpp"
 #include "singleton.hpp"

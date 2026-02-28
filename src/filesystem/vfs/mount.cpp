@@ -6,7 +6,7 @@
 
 #include "kernel_log.hpp"
 #include "kstd_cstring"
-#include "kstd_unique_ptr"
+#include "kstd_memory"
 #include "spinlock.hpp"
 #include "vfs.hpp"
 #include "vfs_internal.hpp"
