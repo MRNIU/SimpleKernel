@@ -48,7 +48,7 @@ class Interrupt final : public InterruptBase {
   }
 
  private:
-  static std::array<InterruptFunc, kMaxInterrupt> interrupt_handlers;
+  std::array<InterruptFunc, kMaxInterrupt> interrupt_handlers_;
 
   Gic gic_;
 };

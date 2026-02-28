@@ -15,14 +15,6 @@
 #include "kstd_cstdio"
 #include "kstd_iostream"
 
-alignas(4) std::array<Interrupt::InterruptFunc,
-                      cpu_io::detail::register_info::csr::ScauseInfo::
-                          kInterruptMaxCount> Interrupt::interrupt_handlers_;
-/// 异常处理函数数组
-alignas(4) std::array<Interrupt::InterruptFunc,
-                      cpu_io::detail::register_info::csr::ScauseInfo::
-                          kExceptionMaxCount> Interrupt::exception_handlers_;
-
 Interrupt::Interrupt() {
   // 注册默认中断处理函数
   for (auto& i : interrupt_handlers_) {

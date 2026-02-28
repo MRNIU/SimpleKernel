@@ -28,17 +28,9 @@ TarpEntry(cpu_io::TrapContext* interrupt_context) {
 
 };  // namespace
 
-alignas(4096) std::array<Interrupt::InterruptFunc,
-                         cpu_io::detail::register_info::IdtrInfo::
-                             kInterruptMaxCount> Interrupt::interrupt_handlers;
-
-alignas(4096) std::array<cpu_io::detail::register_info::IdtrInfo::Idt,
-                         cpu_io::detail::register_info::IdtrInfo::
-                             kInterruptMaxCount> Interrupt::idts;
-
 Interrupt::Interrupt() {
   // 注册默认中断处理函数
-  for (auto& i : interrupt_handlers) {
+  for (auto& i : interrupt_handlers_) {
     i = [](uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
       klog::Info(
           "Default Interrupt handler [%s] 0x%X, 0x%p\n",
@@ -56,13 +48,13 @@ Interrupt::Interrupt() {
 
 void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
   if (cause < cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount) {
-    interrupt_handlers[cause](cause, context);
+    interrupt_handlers_[cause](cause, context);
   }
 }
 
 void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
   if (cause < cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount) {
-    interrupt_handlers[cause] = func;
+    interrupt_handlers_[cause] = func;
     klog::Debug("RegisterInterruptFunc [%s] 0x%X, 0x%p\n",
                 cpu_io::detail::register_info::IdtrInfo::kInterruptNames[cause],
                 cause, func);
@@ -76,7 +68,7 @@ void Interrupt::SetUpIdtr() {
   if constexpr (no <
                 cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount -
                     1) {
-    idts[no] = cpu_io::detail::register_info::IdtrInfo::Idt(
+    idts_[no] = cpu_io::detail::register_info::IdtrInfo::Idt(
         reinterpret_cast<uint64_t>(TarpEntry<no>), 8, 0x0,
         cpu_io::detail::register_info::IdtrInfo::Idt::Type::k64BitInterruptGate,
         cpu_io::detail::register_info::IdtrInfo::Idt::DPL::kRing0,
@@ -89,7 +81,7 @@ void Interrupt::SetUpIdtr() {
             sizeof(cpu_io::detail::register_info::IdtrInfo::Idt) *
                 cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount -
             1,
-        .base = idts.data(),
+        .base = idts_.data(),
     };
     cpu_io::Idtr::Write(idtr);
 

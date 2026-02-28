@@ -58,13 +58,13 @@ class Interrupt final : public InterruptBase {
 
  private:
   /// 中断处理函数数组
-  alignas(4096) static std::array<InterruptFunc,
-                                  cpu_io::detail::register_info::IdtrInfo::
-                                      kInterruptMaxCount> interrupt_handlers;
+  alignas(4096)
+      std::array<InterruptFunc, cpu_io::detail::register_info::IdtrInfo::
+                                    kInterruptMaxCount> interrupt_handlers_;
 
-  alignas(4096) static std::array<
+  alignas(4096) std::array<
       cpu_io::detail::register_info::IdtrInfo::Idt,
-      cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount> idts;
+      cpu_io::detail::register_info::IdtrInfo::kInterruptMaxCount> idts_;
 
   /// APIC 中断控制器实例
   Apic apic_;

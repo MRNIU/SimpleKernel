@@ -9,9 +9,6 @@
 #include "kernel_log.hpp"
 #include "virtual_memory.hpp"
 
-std::array<Interrupt::InterruptFunc, Interrupt::kMaxInterrupt>
-    Interrupt::interrupt_handlers;
-
 Interrupt::Interrupt() {
   auto [dist_base_addr, dist_size, redist_base_addr, redist_size] =
       KernelFdtSingleton::instance().GetGIC().value();
@@ -21,7 +18,7 @@ Interrupt::Interrupt() {
   gic_ = std::move(Gic(dist_base_addr, redist_base_addr));
 
   // 注册默认中断处理函数
-  for (auto& i : interrupt_handlers) {
+  for (auto& i : interrupt_handlers_) {
     i = [](uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
       klog::Info("Default Interrupt handler 0x%X, 0x%p\n", cause, context);
       return 0;
@@ -36,13 +33,13 @@ Interrupt::Interrupt() {
 }
 
 void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
-  interrupt_handlers[cause](cause, context);
+  interrupt_handlers_[cause](cause, context);
   cpu_io::ICC_EOIR1_EL1::Write(cause);
 }
 
 void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptFunc func) {
   if (func) {
-    interrupt_handlers[cause] = func;
+    interrupt_handlers_[cause] = func;
   }
 }
 
