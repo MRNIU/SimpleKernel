@@ -90,7 +90,7 @@ auto StateBlocked::on_event_unknown(const etl::imessage& msg)
 // ─── StateExited ─────────────────────────────────────────────────────────────
 
 auto StateExited::on_event(const MsgReap& /*msg*/) -> etl::fsm_state_id_t {
-  return TaskStatusId::kExited;
+  return STATE_ID;
 }
 
 auto StateExited::on_event_unknown(const etl::imessage& msg)

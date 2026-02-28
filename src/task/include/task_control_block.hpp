@@ -112,9 +112,7 @@ struct TaskControlBlock {
   TaskFsm fsm;
 
   /// @brief Get the current task status
-  auto GetStatus() const -> TaskStatus {
-    return static_cast<TaskStatus>(fsm.GetStateId());
-  }
+  [[nodiscard]] auto GetStatus() const -> TaskStatus;
   /// 调度策略
   SchedPolicy policy = SchedPolicy::kNormal;
 

@@ -84,6 +84,9 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
 
 }  // namespace
 
+auto TaskControlBlock::GetStatus() const -> TaskStatus {
+  return static_cast<TaskStatus>(fsm.GetStateId());
+}
 void TaskControlBlock::JoinThreadGroup(TaskControlBlock* leader) {
   if (!leader || leader == this) {
     return;

@@ -53,6 +53,8 @@ void TaskManager::Exit(int exit_code) {
           ResourceId(ResourceType::kChildExit, current->parent_pid);
       Wakeup(wait_resource_id);
 
+      /// @todo 通知父进程 (发送 SIGCHLD)
+
       klog::Debug("Exit: pid=%zu waking up parent=%zu on resource=%s\n",
                   current->pid, current->parent_pid,
                   wait_resource_id.GetTypeName());
@@ -60,6 +62,8 @@ void TaskManager::Exit(int exit_code) {
       // 没有父进程，直接退出并释放资源
       // Transition: kRunning -> kExited
       current->fsm.Receive(MsgExit{exit_code, false});
+      // No parent to call wait(), reap immediately to free TCB + stack
+      ReapTask(current);
     }
   }
 

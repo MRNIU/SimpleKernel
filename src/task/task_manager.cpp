@@ -57,8 +57,7 @@ void TaskManager::InitCurrentCore() {
 
   // 创建独立的 Idle 线程
   auto* idle_task = new TaskControlBlock("Idle", INT_MAX, idle_thread, nullptr);
-  // Transition idle task: kUnInit -> kReady -> kRunning
-  idle_task->fsm.Receive(MsgSchedule{});
+  // Transition idle task: kUnInit -> kReady (for Enqueue)
   idle_task->fsm.Receive(MsgSchedule{});
   idle_task->policy = SchedPolicy::kIdle;
 
@@ -67,6 +66,8 @@ void TaskManager::InitCurrentCore() {
     cpu_sched.schedulers[SchedPolicy::kIdle]->Enqueue(idle_task);
   }
 
+  // Transition: kReady -> kRunning (idle is the initial running task)
+  idle_task->fsm.Receive(MsgSchedule{});
   cpu_data.idle_task = idle_task;
   cpu_data.running_task = idle_task;
 }

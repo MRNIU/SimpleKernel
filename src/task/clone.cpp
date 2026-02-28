@@ -43,6 +43,9 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
     klog::Err("Clone: Failed to allocate child task\n");
     return std::unexpected(Error(ErrorCode::kTaskAllocationFailed));
   }
+  // Default ctor leaves FSM in set_states-but-not-started state.
+  // Start it so get_state_id() returns kUnInit instead of deref null.
+  child->fsm.Start();
 
   // 基本字段设置
   child->pid = new_pid;
