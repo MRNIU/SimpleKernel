@@ -69,6 +69,38 @@ enum class ErrorCode : uint64_t {
   kDeviceBlockUnaligned = 0x80B,
   kDeviceBlockOutOfRange = 0x80C,
   kDeviceFlushFailed = 0x80D,
+  /// 通用设备报告错误
+  kDeviceError = 0x80E,
+  /// IO 操作错误
+  kIoError = 0x80F,
+  /// 不支持的操作（通用，非设备特定）
+  kNotSupported = 0x810,
+  /// 操作超时
+  kTimeout = 0x811,
+  // VirtIO 传输层错误 (0x820 - 0x82F)
+  /// 无效的 MMIO 魔数
+  kInvalidMagic = 0x820,
+  /// 无效的版本号
+  kInvalidVersion = 0x821,
+  /// 无效的设备 ID（设备不存在）
+  kInvalidDeviceId = 0x822,
+  /// 传输层未正确初始化
+  kTransportNotInitialized = 0x823,
+  /// 特性协商失败
+  kFeatureNegotiationFailed = 0x824,
+  // VirtIO 虚拟队列错误 (0x830 - 0x83F)
+  /// 队列不可用（queue_num_max == 0）
+  kQueueNotAvailable = 0x830,
+  /// 队列已被使用
+  kQueueAlreadyUsed = 0x831,
+  /// 请求的队列大小超过设备支持的最大值
+  kQueueTooLarge = 0x832,
+  /// 没有空闲描述符
+  kNoFreeDescriptors = 0x833,
+  /// 无效的描述符索引
+  kInvalidDescriptor = 0x834,
+  /// 没有已使用的缓冲区可回收
+  kNoUsedBuffers = 0x835,
   // 文件系统相关错误 (0xA00 - 0xAFF)
   kFsFileNotFound = 0xA00,
   kFsPermissionDenied = 0xA01,
@@ -207,6 +239,38 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
       return "Block number out of device range";
     case ErrorCode::kDeviceFlushFailed:
       return "Device flush failed";
+    case ErrorCode::kDeviceError:
+      return "Device reported an error";
+    case ErrorCode::kIoError:
+      return "I/O operation failed";
+    case ErrorCode::kNotSupported:
+      return "Operation not supported";
+    case ErrorCode::kTimeout:
+      return "Operation timed out";
+    // VirtIO 传输层错误 (0x820 - 0x82F)
+    case ErrorCode::kInvalidMagic:
+      return "Invalid MMIO magic value";
+    case ErrorCode::kInvalidVersion:
+      return "Unsupported virtio version";
+    case ErrorCode::kInvalidDeviceId:
+      return "Invalid device ID (device does not exist)";
+    case ErrorCode::kTransportNotInitialized:
+      return "Transport layer not initialized";
+    case ErrorCode::kFeatureNegotiationFailed:
+      return "Feature negotiation failed";
+    // VirtIO 虚拟队列错误 (0x830 - 0x83F)
+    case ErrorCode::kQueueNotAvailable:
+      return "Queue not available (queue_num_max == 0)";
+    case ErrorCode::kQueueAlreadyUsed:
+      return "Queue already used";
+    case ErrorCode::kQueueTooLarge:
+      return "Requested queue size exceeds maximum";
+    case ErrorCode::kNoFreeDescriptors:
+      return "No free descriptors available";
+    case ErrorCode::kInvalidDescriptor:
+      return "Invalid descriptor index";
+    case ErrorCode::kNoUsedBuffers:
+      return "No used buffers to reclaim";
     case ErrorCode::kFsFileNotFound:
       return "File not found";
     case ErrorCode::kFsPermissionDenied:
