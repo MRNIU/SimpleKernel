@@ -9,6 +9,7 @@
 #include "sk_stdio.h"
 #include "system_test.h"
 #include "task_control_block.hpp"
+#include "task_messages.hpp"
 
 namespace {
 
@@ -19,17 +20,17 @@ auto test_cfs_basic_functionality() -> bool {
 
   // 创建测试任务
   TaskControlBlock task1("Task1", 1, nullptr, nullptr);
-  task1.status = TaskStatus::kReady;
+  task1.fsm.Receive(MsgSchedule{});
   task1.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task1.sched_data.cfs.vruntime = 0;
 
   TaskControlBlock task2("Task2", 2, nullptr, nullptr);
-  task2.status = TaskStatus::kReady;
+  task2.fsm.Receive(MsgSchedule{});
   task2.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task2.sched_data.cfs.vruntime = 0;
 
   TaskControlBlock task3("Task3", 3, nullptr, nullptr);
-  task3.status = TaskStatus::kReady;
+  task3.fsm.Receive(MsgSchedule{});
   task3.sched_data.cfs.weight = CfsScheduler::kDefaultWeight;
   task3.sched_data.cfs.vruntime = 0;
 

@@ -25,12 +25,12 @@ void* aligned_alloc(size_t alignment, size_t size);
 }
 
 // 从 Singleton 获取已初始化的 VirtualMemory 实例
-extern template class Singleton<VirtualMemory>;
+// VirtualMemorySingleton is defined in virtual_memory.hpp
 
 auto virtual_memory_test() -> bool {
   sk_printf("virtual_memory_test: start\n");
 
-  auto& vm = Singleton<VirtualMemory>::GetInstance();
+  auto& vm = VirtualMemorySingleton::instance();
 
   // Test 1: 创建用户页表
   void* user_page_dir = aligned_alloc(cpu_io::virtual_memory::kPageSize,

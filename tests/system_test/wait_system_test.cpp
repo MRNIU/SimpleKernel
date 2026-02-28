@@ -54,7 +54,7 @@ void child_work(void* arg) {
 void test_wait_basic(void* /*arg*/) {
   klog::Info("=== Wait Basic Test ===\n");
 
-  auto& task_mgr = Singleton<TaskManager>::GetInstance();
+  auto& task_mgr = TaskManagerSingleton::instance();
   auto* current = task_mgr.GetCurrentTask();
 
   if (!current) {
@@ -109,7 +109,7 @@ void test_wait_basic(void* /*arg*/) {
 void test_wait_any_child(void* /*arg*/) {
   klog::Info("=== Wait Any Child Test ===\n");
 
-  auto& task_mgr = Singleton<TaskManager>::GetInstance();
+  auto& task_mgr = TaskManagerSingleton::instance();
   auto* current = task_mgr.GetCurrentTask();
 
   if (!current) {
@@ -177,7 +177,7 @@ void slow_child_work(void* arg) {
 void test_wait_no_hang(void* /*arg*/) {
   klog::Info("=== Wait NoHang Test ===\n");
 
-  auto& task_mgr = Singleton<TaskManager>::GetInstance();
+  auto& task_mgr = TaskManagerSingleton::instance();
   auto* current = task_mgr.GetCurrentTask();
 
   if (!current) {
@@ -223,7 +223,7 @@ void test_wait_no_hang(void* /*arg*/) {
 void test_wait_process_group(void* /*arg*/) {
   klog::Info("=== Wait Process Group Test ===\n");
 
-  auto& task_mgr = Singleton<TaskManager>::GetInstance();
+  auto& task_mgr = TaskManagerSingleton::instance();
   auto* current = task_mgr.GetCurrentTask();
 
   if (!current) {
@@ -281,7 +281,7 @@ void test_wait_zombie_reap(void* /*arg*/) {
   klog::Info("=== Wait Zombie Reap Test ===\n");
 
   g_wait_completed = 0;
-  auto& task_mgr = Singleton<TaskManager>::GetInstance();
+  auto& task_mgr = TaskManagerSingleton::instance();
   auto* current = task_mgr.GetCurrentTask();
 
   if (!current) {
@@ -328,7 +328,7 @@ auto wait_system_test() -> bool {
   g_tests_completed = 0;
   g_tests_failed = 0;
 
-  auto& task_mgr = Singleton<TaskManager>::GetInstance();
+  auto& task_mgr = TaskManagerSingleton::instance();
 
   // 测试 1: 基本 wait 功能
   auto* test1 =

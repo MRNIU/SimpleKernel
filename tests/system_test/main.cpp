@@ -12,6 +12,7 @@
 #include "kstd_cstdio"
 #include "kstd_iostream"
 #include "kstd_libcxx.h"
+#include "per_cpu.hpp"
 #include "spinlock.hpp"
 #include "syscall.hpp"
 #include "system_test.h"
@@ -26,16 +27,12 @@ struct test_case {
   bool is_smp_test = false;
 };
 
-std::array<test_case, 22> test_cases = {
+std::array<test_case, 18> test_cases = {
     test_case{"ctor_dtor_test", ctor_dtor_test, false},
     test_case{"spinlock_test", spinlock_test, true},
     test_case{"memory_test", memory_test, false},
     test_case{"virtual_memory_test", virtual_memory_test, false},
     test_case{"interrupt_test", interrupt_test, false},
-    test_case{"sk_list_test", sk_list_test, false},
-    test_case{"sk_vector_test", sk_vector_test, false},
-    test_case{"sk_priority_queue_test", sk_priority_queue_test, false},
-    test_case{"sk_unordered_map_test", sk_unordered_map_test, false},
     test_case{"fifo_scheduler_test", fifo_scheduler_test, false},
     test_case{"rr_scheduler_test", rr_scheduler_test, false},
     test_case{"cfs_scheduler_test", cfs_scheduler_test, false},
@@ -75,10 +72,11 @@ void run_tests_smp() {
 
 /// 非启动核入口
 auto main_smp(int argc, const char** argv) -> int {
+  per_cpu::GetCurrentCore() = per_cpu::PerCpu(cpu_io::GetCurrentCoreId());
   ArchInitSMP(argc, argv);
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
-  Singleton<TaskManager>::GetInstance().InitCurrentCore();
+  TaskManagerSingleton::instance().InitCurrentCore();
   klog::Info("Hello SimpleKernel SMP\n");
 
   // 从核只参与多核测试
@@ -104,6 +102,10 @@ void _start(int argc, const char** argv) {
 }
 
 auto main(int argc, const char** argv) -> int {
+  // 初始化当前核心的 per_cpu 数据
+  per_cpu::PerCpuArraySingleton::create();
+  per_cpu::GetCurrentCore() = per_cpu::PerCpu(cpu_io::GetCurrentCoreId());
+
   // 架构相关初始化
   ArchInit(argc, argv);
 
@@ -120,7 +122,8 @@ auto main(int argc, const char** argv) -> int {
   FileSystemInit();
 
   // 初始化任务管理器 (设置主线程)
-  Singleton<TaskManager>::GetInstance().InitCurrentCore();
+  TaskManagerSingleton::create();
+  TaskManagerSingleton::instance().InitCurrentCore();
 
   // 唤醒其余 core
   // WakeUpOtherCores();

@@ -90,7 +90,7 @@ void test_thread_group_basic(void* /*arg*/) {
   }
 
   // 添加到调度器
-  auto& task_mgr = Singleton<TaskManager>::GetInstance();
+  auto& task_mgr = TaskManagerSingleton::instance();
   task_mgr.AddTask(thread1);
   task_mgr.AddTask(thread2);
   task_mgr.AddTask(thread3);
@@ -217,7 +217,7 @@ void test_thread_group_concurrent_exit(void* /*arg*/) {
                              reinterpret_cast<void*>(i));
     worker->pid = 3001 + i;
     worker->JoinThreadGroup(leader);
-    Singleton<TaskManager>::GetInstance().AddTask(worker);
+    TaskManagerSingleton::instance().AddTask(worker);
   }
 
   klog::Info("Started %d worker threads\n", kWorkerCount);
@@ -258,18 +258,18 @@ auto thread_group_system_test() -> bool {
   // 测试 1: 基本线程组功能
   auto* test1 = new TaskControlBlock("TestThreadGroupBasic", 10,
                                      test_thread_group_basic, nullptr);
-  Singleton<TaskManager>::GetInstance().AddTask(test1);
+  TaskManagerSingleton::instance().AddTask(test1);
 
   // 测试 2: 动态加入和离开
   auto* test2 = new TaskControlBlock("TestThreadGroupDynamic", 10,
                                      test_thread_group_dynamic, nullptr);
-  Singleton<TaskManager>::GetInstance().AddTask(test2);
+  TaskManagerSingleton::instance().AddTask(test2);
 
   // 测试 3: 并发退出
   auto* test3 =
       new TaskControlBlock("TestThreadGroupConcurrentExit", 10,
                            test_thread_group_concurrent_exit, nullptr);
-  Singleton<TaskManager>::GetInstance().AddTask(test3);
+  TaskManagerSingleton::instance().AddTask(test3);
 
   // 同步等待所有测试完成
   constexpr int kExpectedTests = 3;

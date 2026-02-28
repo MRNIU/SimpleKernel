@@ -80,7 +80,7 @@ void test_clone_process(void* /*arg*/) {
   parent->tgid = 2000;
   parent->parent_pid = 1;
 
-  Singleton<TaskManager>::GetInstance().AddTask(parent);
+  TaskManagerSingleton::instance().AddTask(parent);
 
   // 使用 clone 创建子进程（不设置 kCloneVm，表示不共享地址空间）
   uint64_t flags = 0;  // 不共享地址空间
@@ -92,7 +92,7 @@ void test_clone_process(void* /*arg*/) {
   child1->pgid = parent->pid;
   child1->clone_flags = static_cast<CloneFlags>(flags);
 
-  Singleton<TaskManager>::GetInstance().AddTask(child1);
+  TaskManagerSingleton::instance().AddTask(child1);
 
   // 创建子进程 2
   auto* child2 = new TaskControlBlock("CloneChild2", 10, child_process_work,
@@ -101,7 +101,7 @@ void test_clone_process(void* /*arg*/) {
   child2->pgid = parent->pid;
   child2->clone_flags = static_cast<CloneFlags>(flags);
 
-  Singleton<TaskManager>::GetInstance().AddTask(child2);
+  TaskManagerSingleton::instance().AddTask(child2);
 
   klog::Info("Created parent (pid=%zu) and 2 child processes\n", parent->pid);
 
@@ -155,10 +155,11 @@ void test_clone_thread(void* /*arg*/) {
   leader->tgid = 3000;
   leader->parent_pid = 1;
 
-  Singleton<TaskManager>::GetInstance().AddTask(leader);
+  TaskManagerSingleton::instance().AddTask(leader);
 
   // 使用 clone 创建线程（设置 kCloneThread 和 kCloneVm）
-  uint64_t flags = kCloneThread | kCloneVm | kCloneFiles | kCloneSighand;
+  uint64_t flags = clone_flag::kThread | clone_flag::kVm | clone_flag::kFiles |
+                   clone_flag::kSighand;
 
   // 创建子线程 1
   auto* thread1 = new TaskControlBlock("CloneThread1", 10, child_thread_work,
@@ -169,7 +170,7 @@ void test_clone_thread(void* /*arg*/) {
   thread1->clone_flags = static_cast<CloneFlags>(flags);
   thread1->JoinThreadGroup(leader);
 
-  Singleton<TaskManager>::GetInstance().AddTask(thread1);
+  TaskManagerSingleton::instance().AddTask(thread1);
 
   // 创建子线程 2
   auto* thread2 = new TaskControlBlock("CloneThread2", 10, child_thread_work,
@@ -180,7 +181,7 @@ void test_clone_thread(void* /*arg*/) {
   thread2->clone_flags = static_cast<CloneFlags>(flags);
   thread2->JoinThreadGroup(leader);
 
-  Singleton<TaskManager>::GetInstance().AddTask(thread2);
+  TaskManagerSingleton::instance().AddTask(thread2);
 
   klog::Info("Created thread leader (pid=%zu, tgid=%zu) and 2 threads\n",
              leader->pid, leader->tgid);
@@ -248,7 +249,7 @@ void test_clone_parent_flag(void* /*arg*/) {
   child_no_flag->parent_pid = parent->pid;  // 设置为 parent
 
   // 使用 kCloneParent：子进程的父进程应该是 grandparent
-  uint64_t flags = kCloneParent;
+  uint64_t flags = clone_flag::kParent;
   auto* child_with_flag =
       new TaskControlBlock("ChildWithFlag", 10, nullptr, nullptr);
   child_with_flag->pid = 4003;
@@ -297,19 +298,19 @@ void test_clone_flags_auto_completion(void* /*arg*/) {
   bool passed = true;
 
   // 如果只设置 kCloneThread，应该自动补全其他必需的标志
-  uint64_t flags = kCloneThread;
+  uint64_t flags = clone_flag::kThread;
 
-  if ((flags & kCloneThread) &&
-      (!(flags & kCloneVm) || !(flags & kCloneFiles) ||
-       !(flags & kCloneSighand))) {
+  if ((flags & clone_flag::kThread) &&
+      (!(flags & clone_flag::kVm) || !(flags & clone_flag::kFiles) ||
+       !(flags & clone_flag::kSighand))) {
     klog::Info("Auto-completing flags for kCloneThread\n");
-    flags |= (kCloneVm | kCloneFiles | kCloneSighand);
+    flags |= (clone_flag::kVm | clone_flag::kFiles | clone_flag::kSighand);
   }
 
-  bool check1 = (flags & kCloneThread);
-  bool check2 = (flags & kCloneVm);
-  bool check3 = (flags & kCloneFiles);
-  bool check4 = (flags & kCloneSighand);
+  bool check1 = (flags & clone_flag::kThread);
+  bool check2 = (flags & clone_flag::kVm);
+  bool check3 = (flags & clone_flag::kFiles);
+  bool check4 = (flags & clone_flag::kSighand);
 
   klog::Info("Flags after auto-completion: 0x%lx\n", flags);
 
@@ -342,7 +343,7 @@ auto clone_system_test() -> bool {
   g_tests_completed = 0;
   g_tests_failed = 0;
 
-  auto& task_mgr = Singleton<TaskManager>::GetInstance();
+  auto& task_mgr = TaskManagerSingleton::instance();
 
   // 测试 1: Clone process
   auto* test1 =

@@ -19,6 +19,7 @@
 #include "system_test.h"
 #include "task_control_block.hpp"
 #include "task_manager.hpp"
+#include "task_messages.hpp"
 
 namespace {
 
@@ -52,8 +53,8 @@ void test_exit_normal(void* /*arg*/) {
   task->tgid = 5000;
   task->parent_pid = 1;
 
-  if (task->status == TaskStatus::kExited ||
-      task->status == TaskStatus::kZombie) {
+  if (task->GetStatus() == TaskStatus::kExited ||
+      task->GetStatus() == TaskStatus::kZombie) {
     klog::Err("test_exit_normal: FAIL — fresh TCB already in terminal state\n");
     passed = false;
   }
@@ -69,7 +70,7 @@ void test_exit_normal(void* /*arg*/) {
   std::atomic<int> work_flag{0};
   auto* worker = new TaskControlBlock("ExitNormalWorker", 10, normal_work,
                                       reinterpret_cast<void*>(&work_flag));
-  Singleton<TaskManager>::GetInstance().AddTask(worker);
+  TaskManagerSingleton::instance().AddTask(worker);
 
   // 等待 worker 运行完毕（最多 500ms）
   int timeout = 10;
@@ -87,8 +88,10 @@ void test_exit_normal(void* /*arg*/) {
 
   // 4. 向 task 写入退出信息并验证读回一致
   task->exit_code = 0;
-  task->status = TaskStatus::kZombie;
-  if (task->exit_code != 0 || task->status != TaskStatus::kZombie) {
+  task->fsm.Receive(MsgSchedule{});     // kUnInit -> kReady
+  task->fsm.Receive(MsgSchedule{});     // kReady -> kRunning
+  task->fsm.Receive(MsgExit{0, true});  // kRunning -> kZombie
+  if (task->exit_code != 0 || task->GetStatus() != TaskStatus::kZombie) {
     klog::Err("test_exit_normal: FAIL — TCB field write-back mismatch\n");
     passed = false;
   }
@@ -139,7 +142,7 @@ void test_exit_with_error(void* /*arg*/) {
   std::atomic<int> work_flag{0};
   auto* worker = new TaskControlBlock("ExitErrorWorker", 10, error_work,
                                       reinterpret_cast<void*>(&work_flag));
-  Singleton<TaskManager>::GetInstance().AddTask(worker);
+  TaskManagerSingleton::instance().AddTask(worker);
 
   int timeout = 10;
   while (timeout > 0 && work_flag.load() == 0) {
@@ -157,7 +160,9 @@ void test_exit_with_error(void* /*arg*/) {
 
   // 3. 验证 TCB 中的退出码字段可以正确存储非零值
   task->exit_code = 42;
-  task->status = TaskStatus::kZombie;
+  task->fsm.Receive(MsgSchedule{});      // kUnInit -> kReady
+  task->fsm.Receive(MsgSchedule{});      // kReady -> kRunning
+  task->fsm.Receive(MsgExit{42, true});  // kRunning -> kZombie
   if (task->exit_code != 42) {
     klog::Err(
         "test_exit_with_error: FAIL — exit_code write-back mismatch "
@@ -165,7 +170,7 @@ void test_exit_with_error(void* /*arg*/) {
         task->exit_code);
     passed = false;
   }
-  if (task->status != TaskStatus::kZombie) {
+  if (task->GetStatus() != TaskStatus::kZombie) {
     klog::Err("test_exit_with_error: FAIL — status write-back mismatch\n");
     passed = false;
   }
@@ -211,7 +216,7 @@ void test_thread_exit(void* /*arg*/) {
   leader->tgid = 5100;
   leader->parent_pid = 1;
 
-  Singleton<TaskManager>::GetInstance().AddTask(leader);
+  TaskManagerSingleton::instance().AddTask(leader);
 
   // 创建子线程
   auto* thread1 = new TaskControlBlock("Thread1", 10, child_thread_exit_work,
@@ -220,7 +225,7 @@ void test_thread_exit(void* /*arg*/) {
   thread1->tgid = 5100;
   thread1->JoinThreadGroup(leader);
 
-  Singleton<TaskManager>::GetInstance().AddTask(thread1);
+  TaskManagerSingleton::instance().AddTask(thread1);
 
   auto* thread2 = new TaskControlBlock("Thread2", 10, child_thread_exit_work,
                                        reinterpret_cast<void*>(2));
@@ -228,7 +233,7 @@ void test_thread_exit(void* /*arg*/) {
   thread2->tgid = 5100;
   thread2->JoinThreadGroup(leader);
 
-  Singleton<TaskManager>::GetInstance().AddTask(thread2);
+  TaskManagerSingleton::instance().AddTask(thread2);
 
   klog::Info("Created thread group with leader (pid=%zu) and 2 threads\n",
              leader->pid);
@@ -288,13 +293,14 @@ void test_orphan_exit(void* /*arg*/) {
 
   // 2. 孤儿进程退出时预期进入 kExited 而非 kZombie（无父进程等待回收）
   orphan->exit_code = 0;
-  orphan->status = TaskStatus::kExited;
-
-  if (orphan->status != TaskStatus::kExited) {
+  orphan->fsm.Receive(MsgSchedule{});      // kUnInit -> kReady
+  orphan->fsm.Receive(MsgSchedule{});      // kReady -> kRunning
+  orphan->fsm.Receive(MsgExit{0, false});  // kRunning -> kExited (no parent)
+  if (orphan->GetStatus() != TaskStatus::kExited) {
     klog::Err(
         "test_orphan_exit: FAIL — orphan status should be kExited "
         "(got %d)\n",
-        static_cast<int>(orphan->status));
+        static_cast<int>(orphan->GetStatus()));
     passed = false;
   }
   if (orphan->parent_pid != 0) {
@@ -307,7 +313,7 @@ void test_orphan_exit(void* /*arg*/) {
   auto* orphan_worker = new TaskControlBlock(
       "OrphanWorker", 10, orphan_work, reinterpret_cast<void*>(&work_flag));
   orphan_worker->parent_pid = 0;  // 无父进程
-  Singleton<TaskManager>::GetInstance().AddTask(orphan_worker);
+  TaskManagerSingleton::instance().AddTask(orphan_worker);
 
   int timeout = 10;
   while (timeout > 0 && work_flag.load() == 0) {
@@ -360,7 +366,7 @@ void test_zombie_process(void* /*arg*/) {
   parent->tgid = 5300;
   parent->parent_pid = 1;
 
-  Singleton<TaskManager>::GetInstance().AddTask(parent);
+  TaskManagerSingleton::instance().AddTask(parent);
 
   auto* child = new TaskControlBlock("Child", 10, nullptr, nullptr);
   child->pid = 5301;
@@ -375,17 +381,18 @@ void test_zombie_process(void* /*arg*/) {
     passed = false;
   }
 
-  Singleton<TaskManager>::GetInstance().AddTask(child);
+  TaskManagerSingleton::instance().AddTask(child);
 
   // 2. 子进程退出时，因父进程仍存在，应变为 kZombie（等待父进程 wait）
   child->exit_code = 0;
-  child->status = TaskStatus::kZombie;
-
-  if (child->status != TaskStatus::kZombie) {
+  child->fsm.Receive(MsgSchedule{});     // kUnInit -> kReady
+  child->fsm.Receive(MsgSchedule{});     // kReady -> kRunning
+  child->fsm.Receive(MsgExit{0, true});  // kRunning -> kZombie (has parent)
+  if (child->GetStatus() != TaskStatus::kZombie) {
     klog::Err(
         "test_zombie_process: FAIL — child with living parent should be "
         "kZombie (got %d)\n",
-        static_cast<int>(child->status));
+        static_cast<int>(child->GetStatus()));
     passed = false;
   }
   if (child->parent_pid != parent->pid) {
@@ -405,7 +412,7 @@ void test_zombie_process(void* /*arg*/) {
   auto* real_child = new TaskControlBlock("RealChild", 10, child_work,
                                           reinterpret_cast<void*>(&work_flag));
   real_child->parent_pid = 5300;  // 指向 parent
-  Singleton<TaskManager>::GetInstance().AddTask(real_child);
+  TaskManagerSingleton::instance().AddTask(real_child);
 
   int timeout = 10;
   while (timeout > 0 && work_flag.load() == 0) {
@@ -444,7 +451,7 @@ auto exit_system_test() -> bool {
   g_tests_failed = 0;
   g_exit_test_counter = 0;
 
-  auto& task_mgr = Singleton<TaskManager>::GetInstance();
+  auto& task_mgr = TaskManagerSingleton::instance();
 
   // 测试 1: Normal exit
   auto* test1 =

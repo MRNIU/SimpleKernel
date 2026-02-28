@@ -55,11 +55,11 @@ auto kernel_task_test() -> bool {
 
   // 创建线程 A
   auto task_a = new TaskControlBlock("Task A", 10, thread_func_a, (void*)100);
-  Singleton<TaskManager>::GetInstance().AddTask(task_a);
+  TaskManagerSingleton::instance().AddTask(task_a);
 
   // 创建线程 B
   auto task_b = new TaskControlBlock("Task B", 10, thread_func_b, (void*)200);
-  Singleton<TaskManager>::GetInstance().AddTask(task_b);
+  TaskManagerSingleton::instance().AddTask(task_b);
 
   klog::Info("Main: Waiting for tasks...\n");
 

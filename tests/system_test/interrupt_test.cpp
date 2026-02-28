@@ -16,7 +16,6 @@
 #include "kstd_cstdio"
 #include "kstd_cstring"
 #include "kstd_libcxx.h"
-#include "singleton.hpp"
 #include "sk_stdlib.h"
 #include "system_test.h"
 
@@ -24,7 +23,7 @@
 auto interrupt_test() -> bool {
   sk_printf("interrupt_test: start\n");
 
-  Singleton<Interrupt>::GetInstance().BroadcastIpi();
+  InterruptSingleton::instance().BroadcastIpi();
 
   sk_printf("interrupt_test: broadcast ipi passed\n");
 

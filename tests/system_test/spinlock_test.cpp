@@ -131,7 +131,7 @@ auto spinlock_smp_test() -> bool {
   }
 
   int finished = finished_cores.fetch_add(1) + 1;
-  int total_cores = Singleton<BasicInfo>::GetInstance().core_count;
+  int total_cores = BasicInfoSingleton::instance().core_count;
 
   if (finished == total_cores) {
     bool passed = (shared_counter == total_cores * 10000);
@@ -169,7 +169,7 @@ auto spinlock_smp_buffer_test() -> bool {
   }
 
   int finished = buffer_test_finished_cores.fetch_add(1) + 1;
-  int total_cores = Singleton<BasicInfo>::GetInstance().core_count;
+  int total_cores = BasicInfoSingleton::instance().core_count;
 
   if (finished == total_cores) {
     // 最后一个完成的核心进行检查
@@ -203,7 +203,7 @@ std::atomic<int> str_test_start_barrier = 0;
 
 auto spinlock_smp_string_test() -> bool {
   size_t core_id = cpu_io::GetCurrentCoreId();
-  size_t core_count = Singleton<BasicInfo>::GetInstance().core_count;
+  size_t core_count = BasicInfoSingleton::instance().core_count;
 
   // 需求 1: 确保核心数大于 1
   if (core_count < 2) {

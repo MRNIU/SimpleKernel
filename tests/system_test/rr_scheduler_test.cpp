@@ -9,6 +9,7 @@
 #include "sk_stdio.h"
 #include "system_test.h"
 #include "task_control_block.hpp"
+#include "task_messages.hpp"
 
 namespace {
 
@@ -19,13 +20,13 @@ auto test_rr_basic_functionality() -> bool {
 
   // 创建测试任务
   TaskControlBlock task1("Task1", 1, nullptr, nullptr);
-  task1.status = TaskStatus::kReady;
+  task1.fsm.Receive(MsgSchedule{});
 
   TaskControlBlock task2("Task2", 2, nullptr, nullptr);
-  task2.status = TaskStatus::kReady;
+  task2.fsm.Receive(MsgSchedule{});
 
   TaskControlBlock task3("Task3", 3, nullptr, nullptr);
-  task3.status = TaskStatus::kReady;
+  task3.fsm.Receive(MsgSchedule{});
 
   // 测试空队列
   EXPECT_TRUE(scheduler.IsEmpty(), "Scheduler should be empty initially");
@@ -224,7 +225,7 @@ auto test_rr_fairness() -> bool {
   // 初始化任务
   for (size_t i = 0; i < kTaskCount; ++i) {
     tasks[i] = new TaskControlBlock("Task", 10, nullptr, nullptr);
-    tasks[i]->status = TaskStatus::kReady;
+    tasks[i]->fsm.Receive(MsgSchedule{});
     scheduler.Enqueue(tasks[i]);
   }
 

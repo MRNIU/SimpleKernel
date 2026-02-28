@@ -9,6 +9,7 @@
 #include "sk_stdio.h"
 #include "system_test.h"
 #include "task_control_block.hpp"
+#include "task_messages.hpp"
 
 namespace {
 
@@ -22,7 +23,7 @@ auto test_idle_basic_functionality() -> bool {
 
   // 创建 idle 任务
   TaskControlBlock idle_task("IdleTask", 0, nullptr, nullptr);
-  idle_task.status = TaskStatus::kReady;
+  idle_task.fsm.Receive(MsgSchedule{});
 
   // 测试空队列
   EXPECT_TRUE(scheduler.IsEmpty(), "Scheduler should be empty initially");
