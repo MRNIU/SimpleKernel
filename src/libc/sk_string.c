@@ -59,7 +59,7 @@ int memcmp(const void* str1, const void* str2, size_t n) {
 }
 
 // 在内存块中查找字符
-void* memchr(const void* str, int c, size_t n) {
+const void* memchr(const void* str, int c, size_t n) {
   const unsigned char* src = (const unsigned char*)str;
   unsigned char uc = (unsigned char)c;
 
@@ -149,7 +149,7 @@ size_t strnlen(const char* s, size_t n) {
 }
 
 // 查找字符在字符串中的首次出现
-char* strchr(const char* s, int c) {
+const char* strchr(const char* s, int c) {
   char ch = (char)c;
   do {
     if (*s == ch) {
@@ -159,7 +159,8 @@ char* strchr(const char* s, int c) {
   return NULL;
 }
 
-char* strrchr(const char* s, int c) {
+// 反向查找字符在字符串中的首次出现
+const char* strrchr(const char* s, int c) {
   char* rtnval = 0;
   char ch = (char)c;
 

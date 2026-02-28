@@ -10,7 +10,7 @@
 #define memset sk_memset
 #define memcmp sk_memcmp
 #define memchr sk_memchr
-#define strcpy sk_strcpy
+#define strcpy strcpy
 #define strncpy sk_strncpy
 #define strcat sk_strcat
 #define strcmp sk_strcmp
@@ -34,20 +34,20 @@
 TEST(SkStringTest, Memcpy) {
   char src[] = "hello";
   char dest[10];
-  sk_memcpy(dest, src, 6);
+  memcpy(dest, src, 6);
   EXPECT_STREQ(dest, "hello");
 }
 
 TEST(SkStringTest, Memmove) {
   char str[] = "memory move test";
   // Overlap: dest > src
-  sk_memmove(str + 7, str, 6);  // "memory " -> "memory " at pos 7
+  memmove(str + 7, str, 6);  // "memory " -> "memory " at pos 7
   // "memory memoryest"
   EXPECT_STREQ(str, "memory memoryest");
 
   char str2[] = "memory move test";
   // Overlap: dest < src
-  sk_memmove(str2, str2 + 7, 4);  // "move" -> starts at 0
+  memmove(str2, str2 + 7, 4);  // "move" -> starts at 0
   // "move ry move test"
   EXPECT_EQ(str2[0], 'm');
   EXPECT_EQ(str2[1], 'o');
@@ -57,7 +57,7 @@ TEST(SkStringTest, Memmove) {
 
 TEST(SkStringTest, Memset) {
   char buffer[10];
-  sk_memset(buffer, 'A', 5);
+  memset(buffer, 'A', 5);
   for (int i = 0; i < 5; ++i) {
     EXPECT_EQ(buffer[i], 'A');
   }
@@ -69,24 +69,24 @@ TEST(SkStringTest, Memcmp) {
   char s3[] = "abd";
   char s4[] = "aba";
 
-  EXPECT_EQ(sk_memcmp(s1, s2, 3), 0);
-  EXPECT_LT(sk_memcmp(s1, s3, 3), 0);  // 'c' < 'd' -> 99 - 100 < 0
-  EXPECT_GT(sk_memcmp(s1, s4, 3), 0);  // 'c' > 'a'
+  EXPECT_EQ(memcmp(s1, s2, 3), 0);
+  EXPECT_LT(memcmp(s1, s3, 3), 0);  // 'c' < 'd' -> 99 - 100 < 0
+  EXPECT_GT(memcmp(s1, s4, 3), 0);  // 'c' > 'a'
 }
 
 TEST(SkStringTest, Memchr) {
   char s[] = "hello world";
-  void* res = sk_memchr(s, 'w', 11);
-  EXPECT_EQ(static_cast<char*>(res), &s[6]);
+  const void* res = memchr(s, 'w', 11);
+  EXPECT_EQ(static_cast<const char*>(res), &s[6]);
 
-  res = sk_memchr(s, 'z', 11);
+  res = memchr(s, 'z', 11);
   EXPECT_EQ(res, nullptr);
 }
 
 TEST(SkStringTest, Strcpy) {
   char src[] = "test";
   char dest[10];
-  sk_strcpy(dest, src);
+  strcpy(dest, src);
   EXPECT_STREQ(dest, "test");
 }
 
@@ -103,7 +103,7 @@ TEST(SkStringTest, Strncpy) {
   // if n <= src_len
 
   // Let's verify behavior with simpler test first
-  sk_memset(dest, 0, 20);
+  memset(dest, 0, 20);
   sk_strncpy(dest, "abc", 5);
   EXPECT_STREQ(dest, "abc");
 
@@ -122,10 +122,10 @@ TEST(SkStringTest, Strcat) {
 }
 
 TEST(SkStringTest, Strcmp) {
-  EXPECT_EQ(sk_strcmp("abc", "abc"), 0);
-  EXPECT_LT(sk_strcmp("abc", "abd"), 0);
-  EXPECT_GT(sk_strcmp("abc", "aba"), 0);
-  EXPECT_LT(sk_strcmp("abc", "abcd"), 0);
+  EXPECT_EQ(strcmp("abc", "abc"), 0);
+  EXPECT_LT(strcmp("abc", "abd"), 0);
+  EXPECT_GT(strcmp("abc", "aba"), 0);
+  EXPECT_LT(strcmp("abc", "abcd"), 0);
 }
 
 TEST(SkStringTest, Strncmp) {
@@ -134,26 +134,26 @@ TEST(SkStringTest, Strncmp) {
 }
 
 TEST(SkStringTest, Strlen) {
-  EXPECT_EQ(sk_strlen("hello"), 5);
-  EXPECT_EQ(sk_strlen(""), 0);
+  EXPECT_EQ(strlen("hello"), 5);
+  EXPECT_EQ(strlen(""), 0);
 }
 
 TEST(SkStringTest, Strnlen) {
-  EXPECT_EQ(sk_strnlen("hello", 10), 5);
-  EXPECT_EQ(sk_strnlen("hello", 3), 3);
+  EXPECT_EQ(strnlen("hello", 10), 5);
+  EXPECT_EQ(strnlen("hello", 3), 3);
 }
 
 TEST(SkStringTest, Strchr) {
   char s[] = "hello";
-  EXPECT_STREQ(sk_strchr(s, 'e'), "ello");
-  EXPECT_EQ(sk_strchr(s, 'z'), nullptr);
-  EXPECT_STREQ(sk_strchr(s, 'l'), "llo");  // first 'l'
+  EXPECT_STREQ(strchr(s, 'e'), "ello");
+  EXPECT_EQ(strchr(s, 'z'), nullptr);
+  EXPECT_STREQ(strchr(s, 'l'), "llo");  // first 'l'
 }
 
 TEST(SkStringTest, Strrchr) {
   char s[] = "hello";
-  EXPECT_STREQ(sk_strrchr(s, 'l'), "lo");  // last 'l'
-  EXPECT_EQ(sk_strrchr(s, 'z'), nullptr);
+  EXPECT_STREQ(strrchr(s, 'l'), "lo");  // last 'l'
+  EXPECT_EQ(strrchr(s, 'z'), nullptr);
 }
 
 // 边界条件测试
@@ -162,10 +162,10 @@ TEST(SkStringTest, MemcpyEdgeCases) {
   char dest[10];
 
   // 零长度复制
-  sk_memcpy(dest, src, 0);
+  memcpy(dest, src, 0);
 
   // 单字节复制
-  sk_memcpy(dest, src, 1);
+  memcpy(dest, src, 1);
   EXPECT_EQ(dest[0], 't');
 }
 
@@ -173,16 +173,16 @@ TEST(SkStringTest, MemsetEdgeCases) {
   char buffer[10];
 
   // 零长度设置
-  sk_memset(buffer, 'A', 0);
+  memset(buffer, 'A', 0);
 
   // 使用 0 填充
-  sk_memset(buffer, 0, 5);
+  memset(buffer, 0, 5);
   for (int i = 0; i < 5; ++i) {
     EXPECT_EQ(buffer[i], 0);
   }
 
   // 使用负值填充 (转换为 unsigned char)
-  sk_memset(buffer, -1, 3);
+  memset(buffer, -1, 3);
   for (int i = 0; i < 3; ++i) {
     EXPECT_EQ(static_cast<unsigned char>(buffer[i]), 255);
   }
@@ -190,59 +190,59 @@ TEST(SkStringTest, MemsetEdgeCases) {
 
 TEST(SkStringTest, StrcmpEdgeCases) {
   // 空字符串比较
-  EXPECT_EQ(sk_strcmp("", ""), 0);
-  EXPECT_LT(sk_strcmp("", "a"), 0);
-  EXPECT_GT(sk_strcmp("a", ""), 0);
+  EXPECT_EQ(strcmp("", ""), 0);
+  EXPECT_LT(strcmp("", "a"), 0);
+  EXPECT_GT(strcmp("a", ""), 0);
 
   // 一个字符串是另一个的前缀
-  EXPECT_LT(sk_strcmp("abc", "abcd"), 0);
-  EXPECT_GT(sk_strcmp("abcd", "abc"), 0);
+  EXPECT_LT(strcmp("abc", "abcd"), 0);
+  EXPECT_GT(strcmp("abcd", "abc"), 0);
 }
 
 TEST(SkStringTest, StrlenEdgeCases) {
   // 空字符串
-  EXPECT_EQ(sk_strlen(""), 0);
+  EXPECT_EQ(strlen(""), 0);
 
   // 只有空字符
   const char null_str[] = {'\0', 'a', 'b', '\0'};
-  EXPECT_EQ(sk_strlen(null_str), 0);
+  EXPECT_EQ(strlen(null_str), 0);
 }
 
 TEST(SkStringTest, StrnlenEdgeCases) {
   // n 为 0
-  EXPECT_EQ(sk_strnlen("hello", 0), 0);
+  EXPECT_EQ(strnlen("hello", 0), 0);
 
   // n 大于字符串长度
-  EXPECT_EQ(sk_strnlen("hi", 100), 2);
+  EXPECT_EQ(strnlen("hi", 100), 2);
 
   // n 等于字符串长度
-  EXPECT_EQ(sk_strnlen("hello", 5), 5);
+  EXPECT_EQ(strnlen("hello", 5), 5);
 }
 
 TEST(SkStringTest, StrchrEdgeCases) {
   char s[] = "hello";
 
   // 查找空字符
-  EXPECT_EQ(sk_strchr(s, '\0'), &s[5]);
+  EXPECT_EQ(strchr(s, '\0'), &s[5]);
 
   // 第一个字符
-  EXPECT_EQ(sk_strchr(s, 'h'), s);
+  EXPECT_EQ(strchr(s, 'h'), s);
 }
 
 TEST(SkStringTest, StrrchrEdgeCases) {
   char s[] = "hello";
 
   // 查找空字符
-  EXPECT_EQ(sk_strrchr(s, '\0'), &s[5]);
+  EXPECT_EQ(strrchr(s, '\0'), &s[5]);
 
   // 第一个也是最后一个
-  EXPECT_EQ(sk_strrchr(s, 'h'), s);
+  EXPECT_EQ(strrchr(s, 'h'), s);
 }
 
 TEST(SkStringTest, MemmoveOverlapForward) {
   // 测试前向重叠: dest > src
   char str[] = "1234567890";
-  sk_memmove(str + 3, str, 5);  // "12312345890"
+  memmove(str + 3, str, 5);  // "12312345890"
   EXPECT_EQ(str[3], '1');
   EXPECT_EQ(str[4], '2');
   EXPECT_EQ(str[5], '3');
@@ -253,7 +253,7 @@ TEST(SkStringTest, MemmoveOverlapForward) {
 TEST(SkStringTest, MemmoveOverlapBackward) {
   // 测试后向重叠: dest < src
   char str[] = "1234567890";
-  sk_memmove(str, str + 3, 5);  // "4567567890"
+  memmove(str, str + 3, 5);  // "4567567890"
   EXPECT_EQ(str[0], '4');
   EXPECT_EQ(str[1], '5');
   EXPECT_EQ(str[2], '6');
@@ -265,27 +265,27 @@ TEST(SkStringTest, MemmoveNoOverlap) {
   // 无重叠
   char src[] = "source";
   char dest[10];
-  sk_memmove(dest, src, 7);
+  memmove(dest, src, 7);
   EXPECT_STREQ(dest, "source");
 }
 
 TEST(SkStringTest, MemchrNotFound) {
   char s[] = "hello world";
-  EXPECT_EQ(sk_memchr(s, 'x', 11), nullptr);
-  EXPECT_EQ(sk_memchr(s, 'z', 11), nullptr);
+  EXPECT_EQ(memchr(s, 'x', 11), nullptr);
+  EXPECT_EQ(memchr(s, 'z', 11), nullptr);
 }
 
 TEST(SkStringTest, MemcmpEqual) {
   char s1[] = "test";
   char s2[] = "test";
-  EXPECT_EQ(sk_memcmp(s1, s2, 4), 0);
+  EXPECT_EQ(memcmp(s1, s2, 4), 0);
 }
 
 TEST(SkStringTest, MemcmpDifferentLengths) {
   char s1[] = "abc";
   char s2[] = "abcd";
   // 只比较前3个字节
-  EXPECT_EQ(sk_memcmp(s1, s2, 3), 0);
+  EXPECT_EQ(memcmp(s1, s2, 3), 0);
 }
 
 TEST(SkStringTest, StrcatMultiple) {
@@ -298,7 +298,7 @@ TEST(SkStringTest, StrcatMultiple) {
 
 TEST(SkStringTest, StrncpyPadding) {
   char dest[10];
-  sk_memset(dest, 'X', 10);  // 用 'X' 填充
+  memset(dest, 'X', 10);  // 用 'X' 填充
 
   // 复制短字符串，应该填充空字符
   sk_strncpy(dest, "ab", 5);

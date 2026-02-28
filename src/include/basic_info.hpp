@@ -5,6 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_BASIC_INFO_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_BASIC_INFO_HPP_
 
+#include <etl/singleton.h>
+
 #include <cstddef>
 #include <cstdint>
 
@@ -75,5 +77,7 @@ struct BasicInfo {
     return ostream;
   }
 };
+
+using BasicInfoSingleton = etl::singleton<BasicInfo>;
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_BASIC_INFO_HPP_ */

@@ -18,7 +18,6 @@
 #include "virtual_memory.hpp"
 
 /// 全局单例对象类型定义
-using BasicInfoSingleton = etl::singleton<BasicInfo>;
 using KernelFdtSingleton = etl::singleton<KernelFdt>;
 using KernelElfSingleton = etl::singleton<KernelElf>;
 using InterruptSingleton = etl::singleton<Interrupt>;

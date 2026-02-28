@@ -16,6 +16,8 @@ CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/project_config.h.in
 CONFIGURE_FILE (${CMAKE_SOURCE_DIR}/tools/.pre-commit-config.yaml.in
                 ${CMAKE_SOURCE_DIR}/.pre-commit-config.yaml @ONLY)
 
-SET_DIRECTORY_PROPERTIES (
-    PROPERTIES ADDITIONAL_CLEAN_FILES
-               "${CMAKE_BINARY_DIR}/bin ${CMAKE_BINARY_DIR}/lib")
+SET_PROPERTY (
+    DIRECTORY
+    APPEND
+    PROPERTY ADDITIONAL_CLEAN_FILES "${CMAKE_BINARY_DIR}/bin"
+             "${CMAKE_BINARY_DIR}/lib")
