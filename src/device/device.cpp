@@ -13,7 +13,6 @@
 #include "kernel_log.hpp"
 #include "kstd_memory"
 #include "platform_bus.hpp"
-#include "platform_traits.hpp"
 
 /// 设备初始化入口
 auto DeviceInit() -> void {
@@ -29,7 +28,7 @@ auto DeviceInit() -> void {
     return;
   }
 
-  auto reg_blk = dm.GetRegistry().Register<VirtioBlkDriver<PlatformTraits>>();
+  auto reg_blk = dm.GetRegistry().Register<VirtioBlkDriver>();
   if (!reg_blk.has_value()) {
     klog::Err("DeviceInit: failed to register VirtioBlkDriver: %s\n",
               reg_blk.error().message());
@@ -55,7 +54,7 @@ auto DeviceInit() -> void {
       const auto& plat = std::get<PlatformId>(devs[i]->resource.id);
       if (strcmp(plat.compatible, "virtio,mmio") == 0) {
         auto buf = kstd::make_unique<IoBuffer>(
-            VirtioBlkDriver<PlatformTraits>::kMinDmaBufferSize);
+            VirtioBlkDriver::kMinDmaBufferSize);
         if (buf && buf->IsValid()) {
           devs[i]->dma_buffer = std::move(buf);
           klog::Debug("DeviceInit: allocated DMA buffer for '%s'\n",
@@ -82,10 +81,10 @@ auto DeviceInit() -> void {
 
 namespace {
 
-/// @brief Adapts VirtioBlk<PlatformTraits> to vfs::BlockDevice.
+/// @brief Adapts VirtioBlk<> to vfs::BlockDevice.
 class VirtioBlkBlockDevice final : public vfs::BlockDevice {
  public:
-  using VirtioBlkType = typename VirtioBlkDriver<PlatformTraits>::VirtioBlkType;
+  using VirtioBlkType = VirtioBlkDriver::VirtioBlkType;
 
   explicit VirtioBlkBlockDevice(VirtioBlkType* dev) : dev_(dev) {}
 
@@ -95,7 +94,7 @@ class VirtioBlkBlockDevice final : public vfs::BlockDevice {
     for (uint32_t i = 0; i < count; ++i) {
       auto result = dev_->Read(lba + i, ptr + i * kSectorSize);
       if (!result) {
-        return std::unexpected(df_bridge::ToKernelError(result.error()));
+        return std::unexpected(Error(result.error().code));
       }
     }
     return static_cast<size_t>(count) * kSectorSize;
@@ -107,7 +106,7 @@ class VirtioBlkBlockDevice final : public vfs::BlockDevice {
     for (uint32_t i = 0; i < count; ++i) {
       auto result = dev_->Write(lba + i, ptr + i * kSectorSize);
       if (!result) {
-        return std::unexpected(df_bridge::ToKernelError(result.error()));
+        return std::unexpected(Error(result.error().code));
       }
     }
     return static_cast<size_t>(count) * kSectorSize;
@@ -133,7 +132,7 @@ class VirtioBlkBlockDevice final : public vfs::BlockDevice {
 }  // namespace
 
 auto GetVirtioBlkBlockDevice() -> vfs::BlockDevice* {
-  using Driver = VirtioBlkDriver<PlatformTraits>;
+  using Driver = VirtioBlkDriver;
   auto* raw = DriverRegistry::GetDriverInstance<Driver>().GetDevice();
   if (raw == nullptr) {
     klog::Err("GetVirtioBlkBlockDevice: no virtio-blk device probed\n");
