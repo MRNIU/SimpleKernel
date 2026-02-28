@@ -2,21 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-/**
- * @file math.h
- * @brief Freestanding shim for <math.h>
- *
- * In GCC 14+ freestanding builds, the C++ stdlib wrapper
- * /usr/riscv64-linux-gnu/include/c++/14/math.h unconditionally includes
- * <cmath>, which triggers bits/requires_hosted.h (#error in freestanding
- * mode). This shim intercepts the include before the wrapper is reached,
- * temporarily enables _GLIBCXX_INCLUDE_NEXT_C_HEADERS so the wrapper
- * passes through to the actual C-level math.h, then restores the state.
- *
- * This file must reside in an -I directory that precedes the C++ stdlib
- * wrapper paths in the compiler's include search order.
- */
-
+/// @todo 等待 c++26 对 math 的 freestanding 支持后删除此文件
 #pragma GCC system_header
 
 #ifdef __cplusplus
