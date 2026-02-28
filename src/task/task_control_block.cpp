@@ -169,7 +169,7 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority,
 
   // 初始化任务上下文
   InitTaskContext(&task_context, entry, arg, stack_top);
-  // Transition FSM: kUnInit -> kReady
+
   fsm.Start();
 }
 
@@ -187,7 +187,7 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority, uint8_t* elf,
   (void)argc;
   (void)argv;
   LoadElf(nullptr, nullptr);
-  // Transition FSM: kUnInit -> kReady
+
   fsm.Start();
 }
 

@@ -31,7 +31,7 @@ void TaskManager::Block(ResourceId resource_id) {
       return;
     }
     // Transition: kRunning -> kBlocked
-    current->fsm.Receive(MsgBlock{resource_id.GetData()});
+    current->fsm.Receive(MsgBlock{resource_id});
     // Record blocked resource
     current->blocked_on = resource_id;
     list.push_back(current);

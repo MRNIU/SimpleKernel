@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief Task FSM — etl::fsm-based state machine for task lifecycle
  */
 
 #ifndef SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_FSM_HPP_
@@ -10,11 +9,7 @@
 
 #include "task_messages.hpp"
 
-// Forward declaration
-struct TaskControlBlock;
-
-/// @brief Task status IDs — used as etl::fsm state IDs
-/// @note These MUST match the old TaskStatus enum values for compatibility
+/// 任务状态 ID — 用作 etl::fsm 的状态 ID
 enum TaskStatusId : uint8_t {
   kUnInit = 0,
   kReady = 1,
@@ -25,8 +20,7 @@ enum TaskStatusId : uint8_t {
   kZombie = 6,
 };
 
-// Forward-declare all states so they can reference each other in transition
-// maps
+// 前向声明所有状态类，以便在转换表中相互引用
 class StateUnInit;
 class StateReady;
 class StateRunning;
@@ -35,7 +29,7 @@ class StateBlocked;
 class StateExited;
 class StateZombie;
 
-// ─── State: UnInit ───────────────────────────────────────────────────
+/// 状态：UnInit — 任务尚未初始化
 class StateUnInit : public etl::fsm_state<etl::fsm, StateUnInit,
                                           TaskStatusId::kUnInit, MsgSchedule> {
  public:
@@ -43,7 +37,7 @@ class StateUnInit : public etl::fsm_state<etl::fsm, StateUnInit,
   auto on_event_unknown(const etl::imessage& msg) -> etl::fsm_state_id_t;
 };
 
-// ─── State: Ready ────────────────────────────────────────────────────
+/// 状态：Ready — 任务已就绪，等待调度
 class StateReady : public etl::fsm_state<etl::fsm, StateReady,
                                          TaskStatusId::kReady, MsgSchedule> {
  public:
@@ -51,7 +45,7 @@ class StateReady : public etl::fsm_state<etl::fsm, StateReady,
   auto on_event_unknown(const etl::imessage& msg) -> etl::fsm_state_id_t;
 };
 
-// ─── State: Running ──────────────────────────────────────────────────
+/// 状态：Running — 任务正在执行
 class StateRunning
     : public etl::fsm_state<etl::fsm, StateRunning, TaskStatusId::kRunning,
                             MsgYield, MsgSleep, MsgBlock, MsgExit> {
@@ -63,7 +57,7 @@ class StateRunning
   auto on_event_unknown(const etl::imessage& msg) -> etl::fsm_state_id_t;
 };
 
-// ─── State: Sleeping ─────────────────────────────────────────────────
+/// 状态：Sleeping — 任务已挂起，等待唤醒时钟
 class StateSleeping
     : public etl::fsm_state<etl::fsm, StateSleeping, TaskStatusId::kSleeping,
                             MsgWakeup> {
@@ -72,7 +66,7 @@ class StateSleeping
   auto on_event_unknown(const etl::imessage& msg) -> etl::fsm_state_id_t;
 };
 
-// ─── State: Blocked ──────────────────────────────────────────────────
+/// 状态：Blocked — 任务阻塞，等待资源
 class StateBlocked : public etl::fsm_state<etl::fsm, StateBlocked,
                                            TaskStatusId::kBlocked, MsgWakeup> {
  public:
@@ -80,7 +74,7 @@ class StateBlocked : public etl::fsm_state<etl::fsm, StateBlocked,
   auto on_event_unknown(const etl::imessage& msg) -> etl::fsm_state_id_t;
 };
 
-// ─── State: Exited ───────────────────────────────────────────────────
+/// 状态：Exited — 任务已退出，无父任务回收
 class StateExited : public etl::fsm_state<etl::fsm, StateExited,
                                           TaskStatusId::kExited, MsgReap> {
  public:
@@ -88,7 +82,7 @@ class StateExited : public etl::fsm_state<etl::fsm, StateExited,
   auto on_event_unknown(const etl::imessage& msg) -> etl::fsm_state_id_t;
 };
 
-// ─── State: Zombie ───────────────────────────────────────────────────
+/// 状态：Zombie — 任务已退出，等待父任务回收
 class StateZombie : public etl::fsm_state<etl::fsm, StateZombie,
                                           TaskStatusId::kZombie, MsgReap> {
  public:
@@ -96,20 +90,17 @@ class StateZombie : public etl::fsm_state<etl::fsm, StateZombie,
   auto on_event_unknown(const etl::imessage& msg) -> etl::fsm_state_id_t;
 };
 
-// ─── TaskFsm ─────────────────────────────────────────────────────────
-
-/// @brief Per-task FSM instance. Each TaskControlBlock owns one.
 class TaskFsm {
  public:
   TaskFsm();
 
-  /// @brief Start the FSM (call after TCB is fully constructed)
+  /// 启动 FSM（在 TCB 完全构造后调用）
   void Start();
 
-  /// @brief Send a message to the FSM
+  /// 向 FSM 发送消息
   void Receive(const etl::imessage& msg);
 
-  /// @brief Get the current state ID
+  /// 获取当前状态 ID
   auto GetStateId() const -> etl::fsm_state_id_t;
 
  private:
@@ -121,7 +112,9 @@ class TaskFsm {
   StateExited state_exited_;
   StateZombie state_zombie_;
 
+  etl::ifsm_state* state_list_[7];
+
   etl::fsm fsm_;
 };
 
-#endif  // SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_FSM_HPP_
+#endif /* SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_FSM_HPP_ */
