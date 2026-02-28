@@ -70,7 +70,7 @@ cmake --preset build_{riscv64|aarch64|x86_64}
 cd build_{arch} && make SimpleKernel       # Build kernel (NOT 'make kernel')
 make run                                   # Run in QEMU
 make debug                                 # GDB on localhost:1234
-cmake --preset build_x86_64 && cd build_x86_64 && make unit-test  # Host-only tests
+cmake --preset build_{arch} && cd build_{arch} && make unit-test  # Host-only tests
 make coverage                              # Tests + coverage report
 pre-commit run --all-files                 # Format check
 ```
@@ -79,6 +79,6 @@ pre-commit run --all-files                 # Format check
 - Interface-driven: headers are contracts, .cpp files are implementations AI generates
 - Boot chains differ: x86_64 (U-Boot), riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
 - aarch64 needs two serial terminal tasks (::54320, ::54321) before `make run`
-- Unit tests only run on host arch (`build_x86_64` on x86_64 host)
+- Unit tests only run on host arch (`build_{arch}` on {arch} host)
 - Git commits: `<type>(<scope>): <subject>` with `--signoff`
 - Debug artifacts in `build_{arch}/bin/` (objdump, nm, map, dts, QEMU logs)
