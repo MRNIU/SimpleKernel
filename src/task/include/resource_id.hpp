@@ -154,4 +154,4 @@ struct hash<ResourceId> {
 };
 }  // namespace etl
 
-#endif /* SIMPLEKERNEL_SRC_TASK_INCLUDE_RESOURCE_ID_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_TASK_INCLUDE_RESOURCE_ID_HPP_

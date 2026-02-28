@@ -12,4 +12,4 @@
 
 using Pl011Singleton = etl::singleton<device_framework::pl011::Pl011Device>;
 
-#endif /* SIMPLEKERNEL_SRC_ARCH_AARCH64_INCLUDE_PL011_SINGLETON_H_ */
+#endif  // SIMPLEKERNEL_SRC_ARCH_AARCH64_INCLUDE_PL011_SINGLETON_H_

@@ -55,4 +55,4 @@ auto RemoveChild(Dentry* parent, Dentry* child) -> void;
 
 }  // namespace vfs
 
-#endif /* SIMPLEKERNEL_SRC_FILESYSTEM_VFS_VFS_INTERNAL_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_VFS_VFS_INTERNAL_HPP_

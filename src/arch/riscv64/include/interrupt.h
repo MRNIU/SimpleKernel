@@ -65,4 +65,4 @@ class Interrupt final : public InterruptBase {
 
 using InterruptSingleton = etl::singleton<Interrupt>;
 
-#endif /* SIMPLEKERNEL_SRC_KERNEL_ARCH_RISCV64_INTERRUPT_H_ */
+#endif  // SIMPLEKERNEL_SRC_KERNEL_ARCH_RISCV64_INTERRUPT_H_

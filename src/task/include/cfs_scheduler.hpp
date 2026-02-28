@@ -225,4 +225,4 @@ class CfsScheduler : public SchedulerBase {
         uint64_t min_vruntime_ = 0;
       };
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_CFS_SCHEDULER_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_CFS_SCHEDULER_HPP_

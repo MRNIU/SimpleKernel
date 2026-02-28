@@ -171,4 +171,4 @@ class IoApic {
   void WriteRedirectionEntry(uint8_t irq, uint64_t value) const;
 };
 
-#endif /* SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_IO_APIC_H_ */
+#endif  // SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_IO_APIC_H_

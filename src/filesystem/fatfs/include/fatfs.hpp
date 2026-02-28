@@ -329,4 +329,4 @@ class FatFsFileSystem : public vfs::FileSystem {
 
 }  // namespace fatfs
 
-#endif /* SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_

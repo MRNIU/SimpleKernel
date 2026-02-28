@@ -213,4 +213,4 @@ auto GetRootDentry() -> Dentry*;
 
 }  // namespace vfs
 
-#endif /* SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_VFS_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_VFS_HPP_

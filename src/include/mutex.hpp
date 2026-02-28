@@ -100,4 +100,4 @@ class Mutex {
   ResourceId resource_id_;
 };
 
-#endif /* SIMPLEKERNEL_SRC_TASK_INCLUDE_MUTEX_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_TASK_INCLUDE_MUTEX_HPP_

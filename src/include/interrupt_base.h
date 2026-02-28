@@ -74,4 +74,4 @@ class InterruptBase {
       -> Expected<void> = 0;
 };
 
-#endif /* SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_ */
+#endif  // SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_

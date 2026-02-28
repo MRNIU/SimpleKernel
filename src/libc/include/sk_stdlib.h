@@ -112,4 +112,4 @@ unsigned long long int strtoull(const char* nptr, char** endptr, int base);
 }
 #endif
 
-#endif /* SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_ */
+#endif  // SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_

@@ -258,4 +258,4 @@ struct TaskControlBlock {
   /// @}
 };
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_TASK_CONTROL_BLOCK_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_TASK_CONTROL_BLOCK_HPP_

@@ -74,4 +74,4 @@ class IoBuffer {
   size_t size_{0};
 };
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_IO_BUFFER_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_IO_BUFFER_HPP_

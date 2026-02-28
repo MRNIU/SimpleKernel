@@ -119,4 +119,4 @@ __always_inline auto backtrace(void** buffer, int size) -> int;
  */
 void DumpStack();
 
-#endif /* SIMPLEKERNEL_SRC_ARCH_ARCH_H_ */
+#endif  // SIMPLEKERNEL_SRC_ARCH_ARCH_H_

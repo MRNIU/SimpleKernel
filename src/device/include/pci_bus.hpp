@@ -57,4 +57,4 @@ class PciBus {
   uint64_t ecam_base_;
 };
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_PCI_BUS_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_PCI_BUS_HPP_

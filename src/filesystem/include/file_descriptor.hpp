@@ -107,4 +107,4 @@ class FileDescriptorTable {
 
 }  // namespace filesystem
 
-#endif /* SIMPLEKERNEL_SRC_FILESYSTEM_INCLUDE_FILE_DESCRIPTOR_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_INCLUDE_FILE_DESCRIPTOR_HPP_

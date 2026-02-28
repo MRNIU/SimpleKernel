@@ -163,4 +163,4 @@ class DriverRegistry {
   SpinLock lock_{"driver_registry"};
 };
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_REGISTRY_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_REGISTRY_HPP_

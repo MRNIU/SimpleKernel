@@ -57,4 +57,4 @@ static __always_inline auto GetCurrentCore() -> PerCpu& {
 
 }  // namespace per_cpu
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_PER_CPU_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_PER_CPU_HPP_

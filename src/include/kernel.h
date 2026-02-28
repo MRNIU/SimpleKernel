@@ -33,4 +33,4 @@ void DeviceInit();
 
 void FileSystemInit();
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_

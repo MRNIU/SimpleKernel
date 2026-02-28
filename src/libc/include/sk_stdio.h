@@ -29,4 +29,4 @@ int sk_vsnprintf(char* buffer, size_t bufsz, const char* format, va_list vlist)
 }
 #endif
 
-#endif /* SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDIO_H_ */
+#endif  // SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDIO_H_

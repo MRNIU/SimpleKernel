@@ -154,4 +154,4 @@ class DeviceManager {
 
 using DeviceManagerSingleton = etl::singleton<DeviceManager>;
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_MANAGER_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_MANAGER_HPP_

@@ -48,4 +48,4 @@ size_t strnlen(const char* s, size_t n);
 }
 #endif
 
-#endif /* SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STRING_H_ */
+#endif  // SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STRING_H_

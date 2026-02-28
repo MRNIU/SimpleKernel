@@ -81,4 +81,4 @@ struct BasicInfo {
 
 using BasicInfoSingleton = etl::singleton<BasicInfo>;
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_BASIC_INFO_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_BASIC_INFO_HPP_

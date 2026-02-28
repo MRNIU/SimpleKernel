@@ -96,4 +96,4 @@ class PlatformBus {
   KernelFdt& fdt_;
 };
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_PLATFORM_BUS_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_PLATFORM_BUS_HPP_

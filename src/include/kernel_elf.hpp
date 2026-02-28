@@ -156,4 +156,4 @@ class KernelElf {
 
 using KernelElfSingleton = etl::singleton<KernelElf>;
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_ELF_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_KERNEL_ELF_HPP_

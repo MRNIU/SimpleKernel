@@ -280,4 +280,4 @@ struct Error {
 template <typename T>
 using Expected = std::expected<T, Error>;
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_EXPECTED_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_EXPECTED_HPP_

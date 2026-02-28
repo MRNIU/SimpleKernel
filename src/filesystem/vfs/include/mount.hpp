@@ -114,4 +114,4 @@ class MountTable {
 
 }  // namespace vfs
 
-#endif /* SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_MOUNT_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_MOUNT_HPP_

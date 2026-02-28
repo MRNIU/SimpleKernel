@@ -20,7 +20,6 @@
  */
 class Plic {
  public:
-  /// @brief 中断处理委托类型 (forward from InterruptBase)
   using InterruptDelegate = InterruptBase::InterruptDelegate;
 
   /// 最大外部中断数量
@@ -181,4 +180,4 @@ class Plic {
    */
   auto ClaimComplete(uint32_t context_id) const -> uint32_t&;
 };
-#endif /* SIMPLEKERNEL_SRC_DRIVER_PLIC_INCLUDE_PLIC_H_ */
+#endif  // SIMPLEKERNEL_SRC_DRIVER_PLIC_INCLUDE_PLIC_H_

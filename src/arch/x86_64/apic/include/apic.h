@@ -133,4 +133,4 @@ class Apic {
   size_t cpu_count_;
 };
 
-#endif /* SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_APIC_H_ */
+#endif  // SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_APIC_H_

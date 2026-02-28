@@ -177,4 +177,4 @@ int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask);
  */
 int sys_sched_setaffinity(int pid, size_t cpusetsize, const uint64_t* mask);
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_SYSCALL_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_SYSCALL_HPP_

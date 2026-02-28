@@ -215,4 +215,4 @@ auto ProbeWithMmio(DeviceNode& node, size_t default_size, CreateFn&& create_fn)
 
 }  // namespace df_bridge
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DF_BRIDGE_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DF_BRIDGE_HPP_

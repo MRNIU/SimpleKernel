@@ -59,4 +59,4 @@ class AcpiBus {
   uint64_t rsdp_;
 };
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_ACPI_BUS_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_ACPI_BUS_HPP_

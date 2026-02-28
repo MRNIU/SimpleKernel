@@ -20,4 +20,4 @@ concept Bus = requires(B b, DeviceNode* out, size_t max) {
   { B::GetName() } -> std::same_as<const char*>;
 };
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_INCLUDE_BUS_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_BUS_HPP_

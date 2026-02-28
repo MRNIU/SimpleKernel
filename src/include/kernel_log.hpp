@@ -324,4 +324,4 @@ Err(Args&&...) -> Err<Args...>;
 
 }  // namespace klog
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_

@@ -100,4 +100,4 @@ class FifoScheduler : public SchedulerBase {
   etl::list<TaskControlBlock*, kernel::config::kMaxReadyTasks> ready_queue;
 };
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_

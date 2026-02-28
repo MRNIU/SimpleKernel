@@ -117,4 +117,4 @@ class TaskFsm {
   etl::fsm fsm_;
 };
 
-#endif /* SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_FSM_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_FSM_HPP_

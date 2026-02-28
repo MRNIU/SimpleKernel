@@ -142,4 +142,4 @@ class VirtualMemory {
 
 using VirtualMemorySingleton = etl::singleton<VirtualMemory>;
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_VIRTUAL_MEMORY_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_VIRTUAL_MEMORY_HPP_

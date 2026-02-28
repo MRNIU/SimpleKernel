@@ -17,4 +17,4 @@ void CppInit();
  */
 void CppDeInit();
 
-#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_LIBCXX_H_ */
+#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_LIBCXX_H_

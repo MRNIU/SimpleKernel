@@ -21,4 +21,4 @@ struct sipi_params_t {
   uint32_t cr3;
 } __attribute__((packed));
 
-#endif /* SIMPLEKERNEL_SRC_ARCH_X86_64_SIPI_H_ */
+#endif  // SIMPLEKERNEL_SRC_ARCH_X86_64_SIPI_H_

@@ -114,4 +114,4 @@ class IdleScheduler : public SchedulerBase {
   TaskControlBlock* idle_task_ = nullptr;
 };
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_IDLE_SCHEDULER_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_IDLE_SCHEDULER_HPP_

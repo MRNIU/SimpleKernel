@@ -42,4 +42,4 @@ int toupper(int c);
 }
 #endif
 
-#endif /* SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_CTYPE_H_ */
+#endif  // SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_CTYPE_H_

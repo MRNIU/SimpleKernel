@@ -165,4 +165,4 @@ class LockGuard {
   mutex_type& mutex_;
 };
 
-#endif /* SIMPLEKERNEL_SRC_INCLUDE_SPINLOCK_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_INCLUDE_SPINLOCK_HPP_
