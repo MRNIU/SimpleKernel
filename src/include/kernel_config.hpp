@@ -34,6 +34,10 @@ static constexpr size_t kMaxInterruptThreads = 32;
 /// 中断线程 map 桶数
 static constexpr size_t kMaxInterruptThreadsBuckets = 64;
 
+/// 最大 tick 观察者数
+static constexpr size_t kTickObservers = 8;
+/// 最大 panic 观察者数
+static constexpr size_t kPanicObservers = 4;
 }  // namespace kernel::config
 
 #endif  // SIMPLEKERNEL_SRC_INCLUDE_KERNEL_CONFIG_HPP_
