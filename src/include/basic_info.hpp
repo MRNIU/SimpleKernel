@@ -10,7 +10,6 @@
 
 #include "kernel_log.hpp"
 #include "kstd_iostream"
-#include "singleton.hpp"
 
 // 引用链接脚本中的变量
 /// @see http://wiki.osdev.org/Using_Linker_Script_Values

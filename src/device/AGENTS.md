@@ -7,8 +7,8 @@ Header-only device framework using C++23 concepts. FDT-based device enumeration,
 ```
 device.cpp              # DeviceInit() — registers buses, drivers, calls ProbeAll()
 include/
-  device_manager.hpp    # Singleton<DeviceManager> — owns buses, ProbeAll/RemoveAll
-  driver_registry.hpp   # Singleton<DriverRegistry> — Register<T>, driver lookup
+  device_manager.hpp    # DeviceManagerSingleton (etl::singleton<DeviceManager>) — owns buses, ProbeAll/RemoveAll
+  driver_registry.hpp   # DriverRegistry — Register<T>, driver lookup
   platform_bus.hpp      # PlatformBus — FDT-driven device enumeration
   bus.hpp               # Bus ABC — Enumerate/Probe/Remove interface
   device_node.hpp       # DeviceNode — per-device state (compatible, regs, irqs)
@@ -32,7 +32,7 @@ include/
 - **Entirely header-only** except `device.cpp` — no separate .cpp for framework classes
 - Drivers define static `kMatchTable[]` with FDT `compatible` strings for matching
 - `GetDescriptor()` returns `DriverDescriptor` with name, match table, Probe/Remove function pointers
-- Uses `Singleton<T>::GetInstance()` for DeviceManager and DriverRegistry
+- Uses named `etl::singleton<T>` aliases (e.g. `DeviceManagerSingleton::instance()`) defined in `kernel.h`
 - `df_bridge.hpp` adapts the 3rd-party `device_framework` submodule to kernel types
 
 ## ANTI-PATTERNS

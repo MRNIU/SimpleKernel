@@ -14,8 +14,8 @@
 
 #include "basic_info.hpp"
 #include "expected.hpp"
+#include "kernel.h"
 #include "kernel_log.hpp"
-#include "singleton.hpp"
 #include "sk_stdlib.h"
 
 VirtualMemory::VirtualMemory() {
@@ -29,7 +29,7 @@ VirtualMemory::VirtualMemory() {
   std::memset(kernel_page_dir_, 0, cpu_io::virtual_memory::kPageSize);
 
   // 获取内核基本信息
-  const auto& basic_info = Singleton<BasicInfo>::GetInstance();
+  const auto& basic_info = BasicInfoSingleton::instance();
 
   // 映射全部物理内存
   MapMMIO(basic_info.physical_memory_addr, basic_info.physical_memory_size)

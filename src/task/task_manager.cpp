@@ -21,7 +21,6 @@
 #include "kernel_log.hpp"
 #include "kstd_cstring"
 #include "rr_scheduler.hpp"
-#include "singleton.hpp"
 #include "sk_stdlib.h"
 #include "virtual_memory.hpp"
 

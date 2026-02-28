@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_SRC_INCLUDE_PER_CPU_HPP_
 
 #include <cpu_io.h>
+#include <etl/singleton.h>
 #include <unistd.h>
 
 #include <array>
@@ -13,8 +14,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
-
-#include "singleton.hpp"
 
 struct TaskControlBlock;
 struct CpuSchedData;
@@ -48,9 +47,12 @@ struct PerCpu {
 static_assert(sizeof(PerCpu) <= SIMPLEKERNEL_PER_CPU_ALIGN_SIZE,
               "PerCpu size should not exceed cache line size");
 
+/// @brief PerCpu 数组单例类型
+using PerCpuArraySingleton =
+    etl::singleton<std::array<PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT>>;
+
 static __always_inline auto GetCurrentCore() -> PerCpu& {
-  return Singleton<std::array<PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT>>::
-      GetInstance()[cpu_io::GetCurrentCoreId()];
+  return PerCpuArraySingleton::instance()[cpu_io::GetCurrentCoreId()];
 }
 
 }  // namespace per_cpu

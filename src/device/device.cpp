@@ -8,17 +8,18 @@
 #include "device_manager.hpp"
 #include "driver/ns16550a_driver.hpp"
 #include "driver/virtio_blk_driver.hpp"
+#include "kernel.h"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "kstd_memory"
 #include "platform_bus.hpp"
 #include "platform_traits.hpp"
-#include "singleton.hpp"
 
 /// 设备初始化入口
 auto DeviceInit() -> void {
-  auto& dm = Singleton<DeviceManager>::GetInstance();
-  auto& fdt = Singleton<KernelFdt>::GetInstance();
+  DeviceManagerSingleton::create();
+  auto& dm = DeviceManagerSingleton::instance();
+  auto& fdt = KernelFdtSingleton::instance();
 
   // 注册驱动
   auto reg_uart = dm.GetRegistry().Register<Ns16550aDriver>();

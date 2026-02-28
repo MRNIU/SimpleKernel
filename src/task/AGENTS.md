@@ -12,7 +12,7 @@ include/
   rr_scheduler.hpp         # Round-Robin — time-slice based preemption
   idle_scheduler.hpp       # Idle — runs when no other tasks ready
   task_control_block.hpp   # TCB — task state, context, priority, stack
-  task_manager.hpp         # Singleton<TaskManager> — owns schedulers, dispatches
+  task_manager.hpp         # TaskManagerSingleton (etl::singleton<TaskManager>) — owns schedulers, dispatches
   resource_id.hpp          # Typed resource IDs (TaskId, etc.)
 schedule.cpp               # Schedule() — main scheduling loop, context switch trigger
 task_control_block.cpp     # TCB construction, state transitions
@@ -36,7 +36,7 @@ mutex.cpp                  # Mutex implementation (uses SpinLock internally)
 ## CONVENTIONS
 - One syscall operation per .cpp file (clone, exit, sleep, wait, wakeup, block)
 - Schedulers are stateless policy objects — TaskManager owns the task queues
-- `Singleton<TaskManager>::GetInstance()` is the global entry point
+- `TaskManagerSingleton::instance()` (defined in `kernel.h`) is the global entry point
 - TCB contains arch-specific context pointer — populated by `switch.S`
 - TODO in `task_manager.cpp`: task stealing across cores (not yet implemented)
 

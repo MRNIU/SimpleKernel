@@ -7,8 +7,8 @@
 #include "arch.h"
 #include "basic_info.hpp"
 #include "interrupt.h"
+#include "kernel.h"
 #include "opensbi_interface.h"
-#include "singleton.hpp"
 #include "task_manager.hpp"
 
 namespace {
@@ -25,14 +25,14 @@ void TimerInitSMP() {
 
 void TimerInit() {
   // 计算 interval
-  interval = Singleton<BasicInfo>::GetInstance().interval / SIMPLEKERNEL_TICK;
+  interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;
 
   // 注册时钟中断
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+  InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kSupervisorTimerInterrupt,
       [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
         sbi_set_timer(cpu_io::Time::Read() + interval);
-        Singleton<TaskManager>::GetInstance().TickUpdate();
+        TaskManagerSingleton::instance().TickUpdate();
         return 0;
       });
 

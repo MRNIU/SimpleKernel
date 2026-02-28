@@ -10,6 +10,7 @@
 
 #include "arch.h"
 #include "basic_info.hpp"
+#include "kernel.h"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "sk_stdlib.h"
@@ -75,12 +76,11 @@ extern "C" void aligned_free(void* ptr) {
 void MemoryInit() {
   auto allocator_addr =
       reinterpret_cast<void*>(cpu_io::virtual_memory::PageAlignUp(
-          Singleton<BasicInfo>::GetInstance().elf_addr +
-          Singleton<KernelElf>::GetInstance().GetElfSize()));
-  auto allocator_size =
-      Singleton<BasicInfo>::GetInstance().physical_memory_addr +
-      Singleton<BasicInfo>::GetInstance().physical_memory_size -
-      reinterpret_cast<uint64_t>(allocator_addr);
+          BasicInfoSingleton::instance().elf_addr +
+          KernelElfSingleton::instance().GetElfSize()));
+  auto allocator_size = BasicInfoSingleton::instance().physical_memory_addr +
+                        BasicInfoSingleton::instance().physical_memory_size -
+                        reinterpret_cast<uint64_t>(allocator_addr);
 
   klog::Info("bmalloc address: %p, size: 0x%lX\n", allocator_addr,
              allocator_size);
@@ -90,11 +90,12 @@ void MemoryInit() {
   allocator = &bmallocator;
 
   // 初始化当前核心的虚拟内存
-  Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
+  VirtualMemorySingleton::create();
+  VirtualMemorySingleton::instance().InitCurrentCore();
 
   // 重新映射早期控制台地址（如果有的话）
   if (SIMPLEKERNEL_EARLY_CONSOLE_BASE != 0) {
-    Singleton<VirtualMemory>::GetInstance().MapMMIO(
+    VirtualMemorySingleton::instance().MapMMIO(
         SIMPLEKERNEL_EARLY_CONSOLE_BASE, cpu_io::virtual_memory::kPageSize);
   }
 
@@ -102,6 +103,6 @@ void MemoryInit() {
 }
 
 void MemoryInitSMP() {
-  Singleton<VirtualMemory>::GetInstance().InitCurrentCore();
+  VirtualMemorySingleton::instance().InitCurrentCore();
   klog::Info("SMP Memory initialization completed\n");
 }

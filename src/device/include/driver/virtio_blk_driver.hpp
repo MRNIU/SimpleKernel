@@ -14,7 +14,6 @@
 #include "driver_registry.hpp"
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "singleton.hpp"
 
 template <typename Traits>
 class VirtioBlkDriver {

@@ -11,6 +11,7 @@
 #include "driver/virtio_blk_driver.hpp"
 #include "driver_registry.hpp"
 #include "interrupt.h"
+#include "kernel.h"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
@@ -24,31 +25,27 @@
 namespace {
 void RegisterInterrupts() {
   // 注册外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+  InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::
           kSupervisorExternalInterrupt,
       [](uint64_t, cpu_io::TrapContext* context) -> uint64_t {
         // 获取触发中断的源 ID
-        auto source_id = Singleton<Plic>::GetInstance().Which();
-        Singleton<Plic>::GetInstance().Do(source_id, context);
-        Singleton<Plic>::GetInstance().Done(source_id);
+        auto source_id = PlicSingleton::instance().Which();
+        PlicSingleton::instance().Do(source_id, context);
+        PlicSingleton::instance().Done(source_id);
         return 0;
       });
 
-  auto [base, size, irq] =
-      Singleton<KernelFdt>::GetInstance().GetSerial().value();
+  auto [base, size, irq] = KernelFdtSingleton::instance().GetSerial().value();
   auto uart_result = device_framework::ns16550a::Ns16550aDevice::Create(base);
   if (uart_result) {
-    Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance() =
-        std::move(*uart_result);
+    Ns16550aSingleton::create(std::move(*uart_result));
   } else {
     klog::Err("Failed to create Ns16550aDevice: %d\n",
               static_cast<int>(uart_result.error().code));
   }
-  Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance()
-      .OpenReadWrite()
-      .or_else([](device_framework::Error e)
-                   -> device_framework::Expected<void> {
+  Ns16550aSingleton::instance().OpenReadWrite().or_else(
+      [](device_framework::Error e) -> device_framework::Expected<void> {
         klog::Err(
             "Failed to open device_framework::ns16550a::Ns16550aDevice: %d\n",
             static_cast<int>(e.code));
@@ -56,7 +53,7 @@ void RegisterInterrupts() {
       });
 
   // 注册 ebreak 中断
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+  InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kBreakpoint,
       [](uint64_t exception_code, cpu_io::TrapContext* context) -> uint64_t {
         // 读取 sepc 处的指令
@@ -92,18 +89,18 @@ void RegisterInterrupts() {
     return 0;
   };
 
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+  InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kInstructionPageFault,
       page_fault_handler);
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+  InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kLoadPageFault,
       page_fault_handler);
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+  InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kStoreAmoPageFault,
       page_fault_handler);
 
   // 注册系统调用
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+  InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kEcallUserMode,
       [](uint64_t, cpu_io::TrapContext* context) -> uint64_t {
         Syscall(0, context);
@@ -111,7 +108,7 @@ void RegisterInterrupts() {
       });
 
   // 注册软中断 (IPI)
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(
+  InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::
           kSupervisorSoftwareInterrupt,
       [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
@@ -125,20 +122,22 @@ void RegisterInterrupts() {
 }  // namespace
 
 extern "C" cpu_io::TrapContext* HandleTrap(cpu_io::TrapContext* context) {
-  Singleton<Interrupt>::GetInstance().Do(context->scause, context);
+  InterruptSingleton::instance().Do(context->scause, context);
   return context;
 }
 
 void InterruptInit(int, const char**) {
+  InterruptSingleton::create();
+
+  // 注册中断处理函数
   // 注册中断处理函数
   RegisterInterrupts();
 
   // 初始化 plic
   auto [plic_addr, plic_size, ndev, context_count] =
-      Singleton<KernelFdt>::GetInstance().GetPlic().value();
-  Singleton<VirtualMemory>::GetInstance().MapMMIO(plic_addr, plic_size);
-  Singleton<Plic>::GetInstance() =
-      std::move(Plic(plic_addr, ndev, context_count));
+      KernelFdtSingleton::instance().GetPlic().value();
+  VirtualMemorySingleton::instance().MapMMIO(plic_addr, plic_size);
+  PlicSingleton::create(plic_addr, ndev, context_count);
 
   // 设置 trap vector
   auto success =
@@ -158,13 +157,13 @@ void InterruptInit(int, const char**) {
 
   // 通过统一接口注册串口外部中断（先注册 handler，再启用 PLIC）
   auto serial_irq =
-      std::get<2>(Singleton<KernelFdt>::GetInstance().GetSerial().value());
-  Singleton<Interrupt>::GetInstance()
+      std::get<2>(KernelFdtSingleton::instance().GetSerial().value());
+  InterruptSingleton::instance()
       .RegisterExternalInterrupt(
           serial_irq, cpu_io::GetCurrentCoreId(), 1,
           [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
-            Singleton<device_framework::ns16550a::Ns16550aDevice>::GetInstance()
-                .HandleInterrupt([](uint8_t ch) { sk_putchar(ch, nullptr); });
+            Ns16550aSingleton::instance().HandleInterrupt(
+                [](uint8_t ch) { sk_putchar(ch, nullptr); });
             return 0;
           })
       .or_else([](Error err) -> Expected<void> {
@@ -177,7 +176,7 @@ void InterruptInit(int, const char**) {
   auto& blk_driver = DriverRegistry::GetDriverInstance<BlkDriver>();
   auto blk_irq = blk_driver.GetIrq();
   if (blk_irq != 0) {
-    Singleton<Interrupt>::GetInstance()
+    InterruptSingleton::instance()
         .RegisterExternalInterrupt(
             blk_irq, cpu_io::GetCurrentCoreId(), 1,
             [](uint64_t, cpu_io::TrapContext*) -> uint64_t {

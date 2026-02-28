@@ -208,7 +208,7 @@ SimpleKernel 的初始化顺序（`main.cpp`）：
 
 ```
 ArchInit → MemoryInit → InterruptInit → DeviceInit → FileSystemInit
-    → Singleton<TaskManager>::GetInstance().InitCurrentCore()
+    → TaskManagerSingleton::instance().InitCurrentCore()
 ```
 
 全局静态对象的构造函数在 `ArchInit` 之前（全局构造阶段），此时 `klog`、设备、调度器均未就绪。
@@ -218,7 +218,7 @@ ArchInit → MemoryInit → InterruptInit → DeviceInit → FileSystemInit
 | 全局静态对象的构造函数 | ❌ 危险 | `on_enter_state()` 可能调用未初始化的子系统 |
 | 成员变量（类内构造） | ❌ 危险 | 同上，依赖外部子系统的风险相同 |
 | 显式 `Init()` 方法中 | ✅ 安全 | 调用方保证所有依赖已初始化 |
-| `Singleton::GetInstance()` 中 | ✅ 安全 | Singleton 在 `main()` 中显式触发 |
+| `etl::singleton<T>::create()` 中 | ✅ 安全 | Singleton 在 `main()` 中显式触发 |
 
 **推荐模式：**
 

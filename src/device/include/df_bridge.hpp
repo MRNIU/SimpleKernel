@@ -13,6 +13,7 @@
 
 #include "device_node.hpp"
 #include "expected.hpp"
+#include "kernel.h"
 #include "kernel_log.hpp"
 #include "virtual_memory.hpp"
 
@@ -177,7 +178,7 @@ inline auto PrepareMmioProbe(DeviceNode& node, size_t default_size)
                                                : default_size;
 
   // 映射 MMIO 区域到虚拟地址空间
-  Singleton<VirtualMemory>::GetInstance().MapMMIO(base, size);
+  VirtualMemorySingleton::instance().MapMMIO(base, size);
 
   return MmioProbeContext{base, size};
 }

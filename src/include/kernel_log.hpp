@@ -12,7 +12,6 @@
 
 #include "kstd_cstdio"
 #include "kstd_iostream"
-#include "singleton.hpp"
 #include "spinlock.hpp"
 
 namespace klog {

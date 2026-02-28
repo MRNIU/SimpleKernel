@@ -3,9 +3,9 @@
  */
 
 #include "expected.hpp"
+#include "kernel.h"
 #include "kernel_log.hpp"
 #include "kstd_cstring"
-#include "singleton.hpp"
 #include "sk_stdlib.h"
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"
@@ -123,7 +123,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
     // 复制地址空间（进程）
     if (parent->page_table) {
       // copy_mappings=true 表示复制用户空间映射
-      auto result = Singleton<VirtualMemory>::GetInstance().ClonePageDirectory(
+      auto result = VirtualMemorySingleton::instance().ClonePageDirectory(
           parent->page_table, true);
       if (!result.has_value()) {
         klog::Err("Clone: Failed to clone page table: %s\n",
@@ -149,8 +149,8 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
     // 清理已分配的资源
     if (child->page_table && !(flags & kCloneVm)) {
       // 如果是独立的页表，需要释放
-      Singleton<VirtualMemory>::GetInstance().DestroyPageDirectory(
-          child->page_table, false);
+      VirtualMemorySingleton::instance().DestroyPageDirectory(child->page_table,
+                                                              false);
     }
     delete child;
     return std::unexpected(Error(ErrorCode::kTaskKernelStackAllocationFailed));

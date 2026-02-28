@@ -7,6 +7,7 @@
 
 #include "arch.h"
 #include "interrupt.h"
+#include "kernel.h"
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
 #include "kstd_iostream"
@@ -34,7 +35,7 @@ uint64_t ApicTimerHandler(uint64_t cause, cpu_io::TrapContext* context) {
   }
 
   // 发送 EOI 信号给 Local APIC
-  Singleton<Apic>::GetInstance().SendEoi();
+  ApicSingleton::instance().SendEoi();
   return 0;
 }
 
@@ -71,23 +72,25 @@ uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
   }
 
   // 发送 EOI 信号给 Local APIC
-  Singleton<Apic>::GetInstance().SendEoi();
+  ApicSingleton::instance().SendEoi();
   return 0;
 }
 
 };  // namespace
 
 void InterruptInit(int, const char**) {
-  Singleton<Interrupt>::GetInstance().SetUpIdtr();
+  InterruptSingleton::create();
+
+  InterruptSingleton::instance().SetUpIdtr();
 
   // 注册 APIC Timer 中断处理函数（Local APIC 内部中断，不走 IO APIC）
-  Singleton<Interrupt>::GetInstance().RegisterInterruptFunc(kApicTimerVector,
-                                                            ApicTimerHandler);
+  InterruptSingleton::instance().RegisterInterruptFunc(kApicTimerVector,
+                                                       ApicTimerHandler);
 
   // 通过统一接口注册键盘外部中断（IRQ 1 = PS/2 键盘，先注册 handler 再启用 IO
   // APIC）
   constexpr uint8_t kKeyboardIrq = 1;
-  Singleton<Interrupt>::GetInstance()
+  InterruptSingleton::instance()
       .RegisterExternalInterrupt(kKeyboardIrq, cpu_io::GetCurrentCoreId(), 0,
                                  KeyboardHandler)
       .or_else([](Error err) -> Expected<void> {
@@ -96,8 +99,8 @@ void InterruptInit(int, const char**) {
       });
 
   // 启用 Local APIC 定时器
-  Singleton<Apic>::GetInstance().SetupPeriodicTimer(kApicTimerFrequencyHz,
-                                                    kApicTimerVector);
+  ApicSingleton::instance().SetupPeriodicTimer(kApicTimerFrequencyHz,
+                                               kApicTimerVector);
   // 开启中断
   cpu_io::Rflags::If::Set();
 
@@ -105,10 +108,10 @@ void InterruptInit(int, const char**) {
 }
 
 void InterruptInitSMP(int, const char**) {
-  Singleton<Interrupt>::GetInstance().SetUpIdtr();
+  InterruptSingleton::instance().SetUpIdtr();
   // 启用 Local APIC 定时器
-  Singleton<Apic>::GetInstance().SetupPeriodicTimer(kApicTimerFrequencyHz,
-                                                    kApicTimerVector);
+  ApicSingleton::instance().SetupPeriodicTimer(kApicTimerFrequencyHz,
+                                               kApicTimerVector);
   cpu_io::Rflags::If::Set();
   klog::Info("Hello InterruptInit SMP\n");
 }

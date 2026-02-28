@@ -15,7 +15,6 @@
 
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "singleton.hpp"
 
 /**
  * elf 文件相关

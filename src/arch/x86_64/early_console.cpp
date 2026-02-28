@@ -4,8 +4,8 @@
 
 #include <cpu_io.h>
 
+#include "kernel.h"
 #include "kstd_cstdio"
-#include "singleton.hpp"
 
 namespace {
 
@@ -19,8 +19,8 @@ void console_putchar(int c, [[maybe_unused]] void* ctx) {
 
 struct EarlyConsole {
   EarlyConsole() {
-    Singleton<cpu_io::Serial>::GetInstance() = cpu_io::Serial(cpu_io::kCom1);
-    serial = &Singleton<cpu_io::Serial>::GetInstance();
+    SerialSingleton::create(cpu_io::kCom1);
+    serial = &SerialSingleton::instance();
 
     sk_putchar = console_putchar;
   }

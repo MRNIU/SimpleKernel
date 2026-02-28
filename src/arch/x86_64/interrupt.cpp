@@ -8,6 +8,7 @@
 #include <cpu_io.h>
 
 #include "arch.h"
+#include "kernel.h"
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
 #include "kstd_iostream"
@@ -22,7 +23,7 @@ namespace {
 template <uint8_t no>
 __attribute__((target("general-regs-only"))) __attribute__((interrupt)) void
 TarpEntry(cpu_io::TrapContext* interrupt_context) {
-  Singleton<Interrupt>::GetInstance().Do(no, interrupt_context);
+  InterruptSingleton::instance().Do(no, interrupt_context);
 }
 
 };  // namespace
@@ -127,7 +128,7 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
 
   // 再在 IO APIC 上启用 IRQ 重定向到指定核心
   // 注: x86 APIC 优先级由向量号隐含决定，priority 参数不直接使用
-  auto result = Singleton<Apic>::GetInstance().SetIrqRedirection(
+  auto result = ApicSingleton::instance().SetIrqRedirection(
       static_cast<uint8_t>(irq), static_cast<uint8_t>(vector), cpu_id, false);
   if (!result.has_value()) {
     return std::unexpected(result.error());

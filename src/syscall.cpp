@@ -4,8 +4,8 @@
 
 #include "syscall.hpp"
 
+#include "kernel.h"
 #include "kernel_log.hpp"
-#include "singleton.hpp"
 #include "task_manager.hpp"
 
 int syscall_dispatcher(int64_t syscall_id, uint64_t args[6]) {
@@ -66,27 +66,27 @@ int sys_write(int fd, const char* buf, size_t len) {
 
 int sys_exit(int code) {
   klog::Info("[Syscall] Process %d exited with code %d\n",
-             Singleton<TaskManager>::GetInstance().GetCurrentTask()->pid, code);
+             TaskManagerSingleton::instance().GetCurrentTask()->pid, code);
   // 调用 TaskManager 的 Exit 方法处理线程退出
-  Singleton<TaskManager>::GetInstance().Exit(code);
+  TaskManagerSingleton::instance().Exit(code);
   // 不会执行到这里，因为 Exit 会触发调度切换
   klog::Err("[Syscall] sys_exit should not return!\n");
   return 0;
 }
 
 int sys_yield() {
-  Singleton<TaskManager>::GetInstance().Schedule();
+  TaskManagerSingleton::instance().Schedule();
   return 0;
 }
 
 int sys_sleep(uint64_t ms) {
-  Singleton<TaskManager>::GetInstance().Sleep(ms);
+  TaskManagerSingleton::instance().Sleep(ms);
   return 0;
 }
 
 int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
               void* tls) {
-  auto& task_manager = Singleton<TaskManager>::GetInstance();
+  auto& task_manager = TaskManagerSingleton::instance();
   auto current = task_manager.GetCurrentTask();
 
   if (!current || !current->trap_context_ptr) {
@@ -115,7 +115,7 @@ int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
 }
 
 int sys_fork() {
-  auto& task_manager = Singleton<TaskManager>::GetInstance();
+  auto& task_manager = TaskManagerSingleton::instance();
   auto current = task_manager.GetCurrentTask();
 
   if (!current || !current->trap_context_ptr) {
@@ -144,7 +144,7 @@ int sys_fork() {
 }
 
 int sys_gettid() {
-  auto current = Singleton<TaskManager>::GetInstance().GetCurrentTask();
+  auto current = TaskManagerSingleton::instance().GetCurrentTask();
   if (!current) {
     klog::Err("[Syscall] sys_gettid: No current task\n");
     return -1;
@@ -153,7 +153,7 @@ int sys_gettid() {
 }
 
 int sys_set_tid_address([[maybe_unused]] int* tidptr) {
-  auto current = Singleton<TaskManager>::GetInstance().GetCurrentTask();
+  auto current = TaskManagerSingleton::instance().GetCurrentTask();
   if (!current) {
     klog::Err("[Syscall] sys_set_tid_address: No current task\n");
     return -1;
@@ -177,7 +177,7 @@ int sys_futex(int* uaddr, int op, int val, [[maybe_unused]] const void* timeout,
   // 提取操作类型（低位）
   int cmd = op & 0x7F;
 
-  auto& task_manager = Singleton<TaskManager>::GetInstance();
+  auto& task_manager = TaskManagerSingleton::instance();
 
   switch (cmd) {
     case FUTEX_WAIT: {
@@ -223,7 +223,7 @@ int sys_futex(int* uaddr, int op, int val, [[maybe_unused]] const void* timeout,
 }
 
 int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask) {
-  auto& task_manager = Singleton<TaskManager>::GetInstance();
+  auto& task_manager = TaskManagerSingleton::instance();
 
   TaskControlBlock* target;
   if (pid == 0) {
@@ -252,7 +252,7 @@ int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask) {
 }
 
 int sys_sched_setaffinity(int pid, size_t cpusetsize, const uint64_t* mask) {
-  auto& task_manager = Singleton<TaskManager>::GetInstance();
+  auto& task_manager = TaskManagerSingleton::instance();
 
   TaskControlBlock* target;
   if (pid == 0) {

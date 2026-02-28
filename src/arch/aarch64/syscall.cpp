@@ -6,7 +6,6 @@
 
 #include "interrupt.h"
 #include "kernel_log.hpp"
-#include "singleton.hpp"
 
 void Syscall(uint64_t, cpu_io::TrapContext* context_ptr) {
   // 获取系统调用号和参数

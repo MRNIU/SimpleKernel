@@ -13,7 +13,6 @@
 
 #include "interrupt_base.h"
 #include "plic.h"
-#include "singleton.hpp"
 #include "sk_stdio.h"
 
 class Interrupt final : public InterruptBase {

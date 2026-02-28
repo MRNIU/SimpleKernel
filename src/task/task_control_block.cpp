@@ -10,9 +10,9 @@
 #include "arch.h"
 #include "basic_info.hpp"
 #include "interrupt_base.h"
+#include "kernel.h"
 #include "kernel_log.hpp"
 #include "kstd_cstring"
-#include "singleton.hpp"
 #include "sk_stdlib.h"
 #include "virtual_memory.hpp"
 
@@ -28,7 +28,7 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
   }
 
   auto* phdr = reinterpret_cast<const Elf64_Phdr*>(elf_data + ehdr->e_phoff);
-  auto& vm = Singleton<VirtualMemory>::GetInstance();
+  auto& vm = VirtualMemorySingleton::instance();
 
   for (int i = 0; i < ehdr->e_phnum; ++i) {
     if (phdr[i].p_type != PT_LOAD) continue;
@@ -198,8 +198,8 @@ TaskControlBlock::~TaskControlBlock() {
   if (page_table) {
     // 如果是私有页表（非共享），需要释放物理页
     auto should_free_pages = !(clone_flags & kCloneVm);
-    Singleton<VirtualMemory>::GetInstance().DestroyPageDirectory(
-        page_table, should_free_pages);
+    VirtualMemorySingleton::instance().DestroyPageDirectory(page_table,
+                                                            should_free_pages);
     page_table = nullptr;
   }
 }

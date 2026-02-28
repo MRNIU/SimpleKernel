@@ -59,10 +59,10 @@
 
 ```cpp
 #include "apic.h"
-#include "singleton.hpp"
+#include "kernel.h"
 
 // 通过单例访问 APIC 管理器
-auto& apic = Singleton<Apic>::GetInstance();
+auto& apic = ApicSingleton::instance();
 
 // 初始化 APIC 系统（在 BSP 上执行）
 if (!apic.Init(max_cpu_count)) {
@@ -125,7 +125,7 @@ apic.SetCpuOnline(apic.GetCurrentApicId());
 
 ### 1. 系统启动阶段（BSP）
 ```cpp
-auto& apic = Singleton<Apic>::GetInstance();
+auto& apic = ApicSingleton::instance();
 
 // 1. 初始化 APIC 系统
 apic.Init(detected_cpu_count);
@@ -149,7 +149,7 @@ for (auto apic_id : ap_list) {
 
 // 在每个 AP 上执行
 void ap_main() {
-    auto& apic = Singleton<Apic>::GetInstance();
+    auto& apic = ApicSingleton::instance();
     apic.InitCurrentCpuLocalApic();
     apic.SetCpuOnline(apic.GetCurrentApicId());
 }
@@ -191,7 +191,7 @@ apic/
 
 - cpu_io 库（用于 MSR 操作）
 - kernel_log.hpp（用于日志输出）
-- singleton.hpp（用于单例模式）
+- kernel.h（用于 etl::singleton 命名别名，如 ApicSingleton）
 
 ## 注意事项
 

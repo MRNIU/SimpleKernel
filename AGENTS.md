@@ -57,7 +57,7 @@ cmake/                # Toolchain files, build helpers
 
 ## UNIQUE STYLES
 - `Expected<T>` for all error returns (no exceptions)
-- `Singleton<T>::GetInstance()` for managers (TaskManager, DeviceManager, DriverRegistry)
+- `etl::singleton<T>` with named aliases in `kernel.h` (e.g. `TaskManagerSingleton::instance()`, `DeviceManagerSingleton::create()`)
 - `LockGuard<SpinLock>` RAII locking
 - `__builtin_unreachable()` for dead code paths
 - `[[nodiscard]]`, `[[maybe_unused]]` attributes used extensively

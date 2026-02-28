@@ -11,6 +11,7 @@
 #include <cassert>
 
 #include "basic_info.hpp"
+#include "kernel.h"
 #include "kstd_cstdio"
 #include "kstd_iostream"
 
@@ -108,13 +109,13 @@ auto Interrupt::SendIpi(uint64_t target_cpu_mask) -> Expected<void> {
 
 auto Interrupt::BroadcastIpi() -> Expected<void> {
   // 如果没有其他核心，直接返回成功
-  if (Singleton<BasicInfo>::GetInstance().core_count == 1) {
+  if (BasicInfoSingleton::instance().core_count == 1) {
     return {};
   }
 
   uint64_t mask = 0;
   auto current = cpu_io::GetCurrentCoreId();
-  for (size_t i = 0; i < Singleton<BasicInfo>::GetInstance().core_count; ++i) {
+  for (size_t i = 0; i < BasicInfoSingleton::instance().core_count; ++i) {
     if (i != current) {
       mask |= (1UL << i);
     }
@@ -132,11 +133,11 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
   }
 
   // 先注册处理函数
-  Singleton<Plic>::GetInstance().RegisterInterruptFunc(
-      static_cast<uint8_t>(irq), handler);
+  PlicSingleton::instance().RegisterInterruptFunc(static_cast<uint8_t>(irq),
+                                                  handler);
 
   // 再在 PLIC 上为指定核心启用该中断
-  Singleton<Plic>::GetInstance().Set(cpu_id, irq, priority, true);
+  PlicSingleton::instance().Set(cpu_id, irq, priority, true);
 
   klog::Info("RegisterExternalInterrupt: IRQ %u, cpu %u, priority %u\n", irq,
              cpu_id, priority);

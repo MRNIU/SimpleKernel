@@ -12,7 +12,6 @@
 #include "driver_registry.hpp"
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "singleton.hpp"
 
 class Ns16550aDriver {
  public:

@@ -30,7 +30,6 @@
 #include "expected.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cstring"
-#include "singleton.hpp"
 
 /**
  * @brief FDT（Flattened Device Tree）解析器

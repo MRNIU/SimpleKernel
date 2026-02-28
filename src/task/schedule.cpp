@@ -17,7 +17,6 @@
 #include "kernel_log.hpp"
 #include "kstd_cstring"
 #include "per_cpu.hpp"
-#include "singleton.hpp"
 #include "sk_stdlib.h"
 #include "spinlock.hpp"
 #include "task_manager.hpp"

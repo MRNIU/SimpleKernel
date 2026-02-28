@@ -81,7 +81,7 @@ void task4_func(void* arg) {
 /// 为当前核心创建测试任务
 void create_test_tasks() {
   size_t core_id = cpu_io::GetCurrentCoreId();
-  auto& tm = Singleton<TaskManager>::GetInstance();
+  auto& tm = TaskManagerSingleton::instance();
 
   auto task1 = kstd::make_unique<TaskControlBlock>(
       "Task1-Exit", 10, task1_func, reinterpret_cast<void*>(0x1111));
@@ -112,7 +112,7 @@ auto main_smp(int argc, const char** argv) -> int {
   ArchInitSMP(argc, argv);
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
-  Singleton<TaskManager>::GetInstance().InitCurrentCore();
+  TaskManagerSingleton::instance().InitCurrentCore();
 
   klog::Info("Hello SimpleKernel SMP\n");
 
@@ -120,7 +120,7 @@ auto main_smp(int argc, const char** argv) -> int {
   create_test_tasks();
 
   // 启动调度器
-  Singleton<TaskManager>::GetInstance().Schedule();
+  TaskManagerSingleton::instance().Schedule();
 
   // 不应该执行到这里
   __builtin_unreachable();
@@ -143,6 +143,7 @@ void _start(int argc, const char** argv) {
 
 auto main(int argc, const char** argv) -> int {
   // 初始化当前核心的 per_cpu 数据
+  per_cpu::PerCpuArraySingleton::create();
   per_cpu::GetCurrentCore() = per_cpu::PerCpu(cpu_io::GetCurrentCoreId());
 
   // 架构相关初始化
@@ -156,7 +157,8 @@ auto main(int argc, const char** argv) -> int {
   // 文件系统初始化
   FileSystemInit();
   // 初始化任务管理器 (设置主线程)
-  Singleton<TaskManager>::GetInstance().InitCurrentCore();
+  TaskManagerSingleton::create();
+  TaskManagerSingleton::instance().InitCurrentCore();
 
   // 唤醒其余 core
   // WakeUpOtherCores();
@@ -173,7 +175,7 @@ auto main(int argc, const char** argv) -> int {
   klog::Info("Main: Starting scheduler...\n");
 
   // 启动调度器，不再返回
-  Singleton<TaskManager>::GetInstance().Schedule();
+  TaskManagerSingleton::instance().Schedule();
 
   // 不应该执行到这里
   __builtin_unreachable();

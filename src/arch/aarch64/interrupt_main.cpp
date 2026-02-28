@@ -9,6 +9,7 @@
 #include "arch.h"
 #include "basic_info.hpp"
 #include "interrupt.h"
+#include "kernel.h"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
@@ -80,7 +81,7 @@ extern "C" void sync_current_el_spx_handler(cpu_io::TrapContext* context) {
 
 extern "C" void irq_current_el_spx_handler(cpu_io::TrapContext* context) {
   auto cause = cpu_io::ICC_IAR1_EL1::INTID::Get();
-  Singleton<Interrupt>::GetInstance().Do(cause, context);
+  InterruptSingleton::instance().Do(cause, context);
 }
 
 extern "C" void fiq_current_el_spx_handler(
@@ -139,22 +140,24 @@ extern "C" void error_lower_el_aarch32_handler(cpu_io::TrapContext* context) {
 }
 
 auto uart_handler(uint64_t cause, cpu_io::TrapContext*) -> uint64_t {
-  Singleton<device_framework::pl011::Pl011Device>::GetInstance()
-      .HandleInterrupt([](uint8_t ch) { sk_putchar(ch, nullptr); });
+  Pl011Singleton::instance().HandleInterrupt(
+      [](uint8_t ch) { sk_putchar(ch, nullptr); });
   return cause;
 }
 
 void InterruptInit(int, const char**) {
+  InterruptSingleton::create();
+
   cpu_io::VBAR_EL1::Write(reinterpret_cast<uint64_t>(vector_table));
 
   auto uart_intid =
-      Singleton<KernelFdt>::GetInstance().GetAarch64Intid("arm,pl011").value() +
+      KernelFdtSingleton::instance().GetAarch64Intid("arm,pl011").value() +
       Gic::kSPIBase;
 
   klog::Info("uart_intid: %d\n", uart_intid);
 
   // 通过统一接口注册 UART 外部中断（先注册 handler，再启用 GIC SPI）
-  Singleton<Interrupt>::GetInstance()
+  InterruptSingleton::instance()
       .RegisterExternalInterrupt(uart_intid, cpu_io::GetCurrentCoreId(), 0,
                                  uart_handler)
       .or_else([](Error err) -> Expected<void> {
@@ -173,7 +176,7 @@ void InterruptInit(int, const char**) {
 void InterruptInitSMP(int, const char**) {
   cpu_io::VBAR_EL1::Write(reinterpret_cast<uint64_t>(vector_table));
 
-  Singleton<Interrupt>::GetInstance().SetUP();
+  InterruptSingleton::instance().SetUP();
 
   cpu_io::EnableInterrupt();
 

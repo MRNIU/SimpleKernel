@@ -10,11 +10,11 @@
 
 #include "apic.h"
 #include "basic_info.hpp"
+#include "kernel.h"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
 #include "kstd_iostream"
 #include "per_cpu.hpp"
-#include "singleton.hpp"
 #include "sipi.h"
 
 namespace {
@@ -136,20 +136,18 @@ BasicInfo::BasicInfo(int, const char**) {
 }
 
 auto ArchInit(int, const char**) -> int {
-  Singleton<BasicInfo>::GetInstance() = BasicInfo(0, nullptr);
-  kstd::cout << Singleton<BasicInfo>::GetInstance();
+  BasicInfoSingleton::create(0, nullptr);
+  kstd::cout << BasicInfoSingleton::instance();
 
   // 解析内核 elf 信息
-  Singleton<KernelElf>::GetInstance() =
-      KernelElf(Singleton<BasicInfo>::GetInstance().elf_addr);
+  KernelElfSingleton::create(BasicInfoSingleton::instance().elf_addr);
 
   // 设置 GDT 和段寄存器
   SetupGdtAndSegmentRegisters();
 
   // 初始化 APIC
-  Singleton<Apic>::GetInstance() =
-      Apic(Singleton<BasicInfo>::GetInstance().core_count);
-  Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic().or_else(
+  ApicSingleton::create(BasicInfoSingleton::instance().core_count);
+  ApicSingleton::instance().InitCurrentCpuLocalApic().or_else(
       [](Error err) -> Expected<void> {
         klog::Err("Failed to initialize APIC: %s\n", err.message());
         while (true) {
@@ -167,7 +165,7 @@ auto ArchInitSMP(int, const char**) -> int {
   // 设置 GDT 和段寄存器
   SetupGdtAndSegmentRegisters();
 
-  Singleton<Apic>::GetInstance().InitCurrentCpuLocalApic().or_else(
+  ApicSingleton::instance().InitCurrentCpuLocalApic().or_else(
       [](Error err) -> Expected<void> {
         klog::Err("Failed to initialize APIC for AP: %s\n", err.message());
         while (true) {
@@ -183,7 +181,7 @@ void WakeUpOtherCores() {
   auto target_sipi_params = reinterpret_cast<sipi_params_t*>(sipi_params);
   target_sipi_params->cr3 = cpu_io::Cr3::Read();
 
-  Singleton<Apic>::GetInstance().StartupAllAps(
+  ApicSingleton::instance().StartupAllAps(
       reinterpret_cast<uint64_t>(ap_start16),
       reinterpret_cast<size_t>(ap_start64_end) -
           reinterpret_cast<size_t>(ap_start16),
