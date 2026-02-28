@@ -7,6 +7,7 @@
 
 #include <etl/io_port.h>
 
+#include <device_framework/detail/storage.hpp>
 #include <device_framework/virtio_blk.hpp>
 
 #include "device_node.hpp"
@@ -15,10 +16,9 @@
 #include "expected.hpp"
 #include "kernel_log.hpp"
 
-template <typename Traits>
 class VirtioBlkDriver {
  public:
-  using VirtioBlkType = device_framework::virtio::blk::VirtioBlk<Traits>;
+  using VirtioBlkType = device_framework::virtio::blk::VirtioBlk<>;
 
   static constexpr PlatformCompatible kPlatformMatch{"virtio,mmio"};
   static constexpr MatchEntry kMatchTable[] = {
@@ -56,7 +56,7 @@ class VirtioBlkDriver {
 
     constexpr uint32_t kBlockDeviceId = 2;
     etl::io_port_ro<uint32_t> device_id_reg{reinterpret_cast<void*>(
-        base + device_framework::virtio::MmioTransport<>::MmioReg::kDeviceId)};
+        base + device_framework::virtio::MmioTransport::MmioReg::kDeviceId)};
     auto device_id = device_id_reg.read();
     if (device_id != kBlockDeviceId) {
       klog::Debug("VirtioBlkDriver: 0x%lX device_id=%u (not block)\n", base,
@@ -97,7 +97,7 @@ class VirtioBlkDriver {
         kDefaultQueueSize, extra_features);
     if (!result.has_value()) {
       klog::Err("VirtioBlkDriver: Create failed at 0x%lX\n", base);
-      return std::unexpected(df_bridge::ToKernelError(result.error()));
+      return std::unexpected(Error(result.error().code));
     }
 
     device_.Emplace(std::move(*result));
@@ -107,7 +107,7 @@ class VirtioBlkDriver {
       irq_ = node.resource.irq[0];
     }
 
-    auto capacity = device_.Get()->GetCapacity();
+    auto capacity = device_.Value().GetCapacity();
     klog::Info(
         "VirtioBlkDriver: block device at 0x%lX, capacity=%lu sectors, "
         "irq=%u\n",
@@ -117,23 +117,26 @@ class VirtioBlkDriver {
   }
 
   auto Remove([[maybe_unused]] DeviceNode& node) -> Expected<void> {
-    device_.Destroy();
+    device_.Reset();
     return {};
   }
 
-  [[nodiscard]] auto GetDevice() -> VirtioBlkType* { return device_.Get(); }
+  [[nodiscard]] auto GetDevice() -> VirtioBlkType* {
+    return device_.HasValue() ? &device_.Value() : nullptr;
+  }
 
   [[nodiscard]] auto GetIrq() const -> uint32_t { return irq_; }
 
   template <typename CompletionCallback>
   auto HandleInterrupt(CompletionCallback&& on_complete) -> void {
-    if (auto* dev = device_.Get(); dev != nullptr) {
-      dev->HandleInterrupt(static_cast<CompletionCallback&&>(on_complete));
+    if (device_.HasValue()) {
+      device_.Value().HandleInterrupt(
+          static_cast<CompletionCallback&&>(on_complete));
     }
   }
 
  private:
-  df_bridge::DeviceStorage<VirtioBlkType> device_;
+  device_framework::detail::Storage<VirtioBlkType> device_;
   uint32_t irq_{0};
 };
 
