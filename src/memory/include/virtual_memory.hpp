@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_SRC_INCLUDE_VIRTUAL_MEMORY_HPP_
 
 #include <cpu_io.h>
+#include <etl/singleton.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -138,5 +139,7 @@ class VirtualMemory {
                                         bool allocate = false)
       -> Expected<uint64_t*>;
 };
+
+using VirtualMemorySingleton = etl::singleton<VirtualMemory>;
 
 #endif /* SIMPLEKERNEL_SRC_INCLUDE_VIRTUAL_MEMORY_HPP_ */

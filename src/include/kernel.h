@@ -17,21 +17,13 @@
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
-// ---------------------------------------------------------------------------
-// Singleton type aliases
-// ---------------------------------------------------------------------------
-
+/// 全局单例对象类型定义
 using BasicInfoSingleton = etl::singleton<BasicInfo>;
 using KernelFdtSingleton = etl::singleton<KernelFdt>;
 using KernelElfSingleton = etl::singleton<KernelElf>;
-using VirtualMemorySingleton = etl::singleton<VirtualMemory>;
+using InterruptSingleton = etl::singleton<Interrupt>;
 using TaskManagerSingleton = etl::singleton<TaskManager>;
 using DeviceManagerSingleton = etl::singleton<DeviceManager>;
-using InterruptSingleton = etl::singleton<Interrupt>;
-
-// ---------------------------------------------------------------------------
-// Kernel entry points
-// ---------------------------------------------------------------------------
 
 /**
  * @brief 负责 crtbegin 的工作

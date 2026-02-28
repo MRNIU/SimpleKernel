@@ -23,7 +23,6 @@ ADD_EXECUTABLE (
     task/fixtures/task_test_harness.cpp
     vfs_test.cpp
     ramfs_test.cpp
-    ${CMAKE_SOURCE_DIR}/src/virtual_memory.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp
     ${CMAKE_SOURCE_DIR}/src/task/block.cpp
     ${CMAKE_SOURCE_DIR}/src/task/clone.cpp
@@ -72,6 +71,7 @@ TARGET_LINK_LIBRARIES (
             MPMCQueue
             cpu_io
             device_framework
+            memory
             device
             task
             filesystem

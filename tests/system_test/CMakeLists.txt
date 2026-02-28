@@ -28,9 +28,7 @@ ADD_EXECUTABLE (
     fatfs_system_test.cpp
     kernel_task_test.cpp
     user_task_test.cpp
-    ${CMAKE_SOURCE_DIR}/src/memory.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp
-    ${CMAKE_SOURCE_DIR}/src/virtual_memory.cpp
     ${CMAKE_SOURCE_DIR}/src/io_buffer.cpp)
 
 TARGET_INCLUDE_DIRECTORIES (
@@ -44,6 +42,7 @@ TARGET_LINK_LIBRARIES (
             libc
             libcxx
             arch
+            memory
             device
             task
             filesystem)
