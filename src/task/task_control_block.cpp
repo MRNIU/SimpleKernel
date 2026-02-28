@@ -87,6 +87,7 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
 auto TaskControlBlock::GetStatus() const -> TaskStatus {
   return static_cast<TaskStatus>(fsm.GetStateId());
 }
+
 void TaskControlBlock::JoinThreadGroup(TaskControlBlock* leader) {
   if (!leader || leader == this) {
     return;
@@ -155,7 +156,6 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority,
       cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
   if (!kernel_stack) {
     klog::Err("Failed to allocate kernel stack for task %s\n", name);
-    // status not set — FSM stays in kUnInit to signal failure
     return;
   }
 

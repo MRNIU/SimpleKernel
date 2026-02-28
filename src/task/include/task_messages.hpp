@@ -11,21 +11,21 @@
 
 /// Task FSM 消息 ID
 namespace task_msg_id {
-inline constexpr etl::message_id_t kSchedule = 1;
-inline constexpr etl::message_id_t kYield = 2;
-inline constexpr etl::message_id_t kSleep = 3;
-inline constexpr etl::message_id_t kBlock = 4;
-inline constexpr etl::message_id_t kWakeup = 5;
-inline constexpr etl::message_id_t kExit = 6;
-inline constexpr etl::message_id_t kReap = 7;
+static constexpr etl::message_id_t kSchedule = 1;
+static constexpr etl::message_id_t kYield = 2;
+static constexpr etl::message_id_t kSleep = 3;
+static constexpr etl::message_id_t kBlock = 4;
+static constexpr etl::message_id_t kWakeup = 5;
+static constexpr etl::message_id_t kExit = 6;
+static constexpr etl::message_id_t kReap = 7;
 }  // namespace task_msg_id
 
 /// 消息路由 ID
 namespace router_id {
-constexpr etl::message_router_id_t kTimerHandler = 0;
-constexpr etl::message_router_id_t kTaskFsm = 1;
-constexpr etl::message_router_id_t kVirtioBlk = 2;
-constexpr etl::message_router_id_t kVirtioNet = 3;
+static constexpr etl::message_router_id_t kTimerHandler = 0;
+static constexpr etl::message_router_id_t kTaskFsm = 1;
+static constexpr etl::message_router_id_t kVirtioBlk = 2;
+static constexpr etl::message_router_id_t kVirtioNet = 3;
 }  // namespace router_id
 
 /// Task FSM 消息结构体（无负载，用作事件）

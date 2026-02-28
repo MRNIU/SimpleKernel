@@ -40,10 +40,8 @@ void TaskManager::Sleep(uint64_t ms) {
     if (cpu_sched.sleeping_tasks.full()) {
       klog::Err("Sleep: sleeping_tasks full, cannot sleep task %zu\n",
                 current->pid);
-      // Rollback: task stays kRunning, do not transition FSM
       return;
     }
-    // Transition: kRunning -> kSleeping
     current->fsm.Receive(MsgSleep{current->sched_info.wake_tick});
     cpu_sched.sleeping_tasks.push(current);
   }

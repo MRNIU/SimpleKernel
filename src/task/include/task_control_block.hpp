@@ -103,16 +103,15 @@ struct TaskControlBlock {
   Pid tgid = 0;
 
   /// @name 侵入式线程组链表
+  /// @todo 尝试 etl
   /// @{
   TaskControlBlock* thread_group_next = nullptr;
   TaskControlBlock* thread_group_prev = nullptr;
   /// @}
 
-  /// Task FSM — owns per-task lifecycle state machine
+  /// 任务状态机
   TaskFsm fsm;
 
-  /// @brief Get the current task status
-  [[nodiscard]] auto GetStatus() const -> TaskStatus;
   /// 调度策略
   SchedPolicy policy = SchedPolicy::kNormal;
 
@@ -189,8 +188,9 @@ struct TaskControlBlock {
   /// 文件描述符表
   filesystem::FileDescriptorTable* fd_table = nullptr;
 
-  /// @name 线程组相关方法
-  /// @{
+  /// 获取当前任务状态
+  [[nodiscard]] auto GetStatus() const -> TaskStatus;
+
   /**
    * @brief 检查是否是线程组的主线程
    * @return true 如果是主线程 (pid == tgid)
@@ -224,7 +224,6 @@ struct TaskControlBlock {
   auto InSameThreadGroup(const TaskControlBlock* other) const -> bool {
     return other && (tgid == other->tgid) && (tgid != 0);
   }
-  /// @}
 
   /**
    * @brief 构造函数 (内核线程)

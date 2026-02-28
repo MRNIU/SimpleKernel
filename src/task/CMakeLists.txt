@@ -7,7 +7,6 @@ TARGET_INCLUDE_DIRECTORIES (task INTERFACE include)
 TARGET_SOURCES (
     task
     INTERFACE task_control_block.cpp
-              task_fsm.cpp
               schedule.cpp
               exit.cpp
               tick_update.cpp
