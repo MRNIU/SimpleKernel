@@ -9,6 +9,14 @@
 #include "kernel_log.hpp"
 #include "virtual_memory.hpp"
 
+namespace {
+auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)
+    -> uint64_t {
+  klog::Info("Default Interrupt handler 0x%X, 0x%p\n", cause, context);
+  return 0;
+}
+}  // namespace
+
 Interrupt::Interrupt() {
   auto [dist_base_addr, dist_size, redist_base_addr, redist_size] =
       KernelFdtSingleton::instance().GetGIC().value();
@@ -19,10 +27,7 @@ Interrupt::Interrupt() {
 
   // 注册默认中断处理函数
   for (auto& i : interrupt_handlers_) {
-    i = [](uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
-      klog::Info("Default Interrupt handler 0x%X, 0x%p\n", cause, context);
-      return 0;
-    };
+    i = InterruptDelegate::create<DefaultInterruptHandler>();
   }
 
   // 设置 SGI 0 用于 IPI

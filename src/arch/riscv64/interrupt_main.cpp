@@ -24,20 +24,95 @@
 
 using Ns16550aSingleton =
     etl::singleton<device_framework::ns16550a::Ns16550aDevice>;
-
+using InterruptDelegate = InterruptBase::InterruptDelegate;
 namespace {
+// 外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
+auto ExternalInterruptHandler(uint64_t /*cause*/, cpu_io::TrapContext* context)
+    -> uint64_t {
+  auto& plic = InterruptSingleton::instance().plic();
+  auto source_id = plic.Which();
+  plic.Do(source_id, context);
+  plic.Done(source_id);
+  return 0;
+}
+
+// ebreak 中断处理
+auto EbreakHandler(uint64_t exception_code, cpu_io::TrapContext* context)
+    -> uint64_t {
+  // 读取 sepc 处的指令
+  auto instruction = *reinterpret_cast<uint8_t*>(context->sepc);
+
+  // 判断是否为压缩指令 (低 2 位不为 11)
+  if ((instruction & 0x3) != 0x3) {
+    // 2 字节指令
+    context->sepc += 2;
+  } else {
+    // 4 字节指令
+    context->sepc += 4;
+  }
+  klog::Info("Handle %s\n", cpu_io::detail::register_info::csr::ScauseInfo::
+                                kExceptionNames[exception_code]);
+  return 0;
+}
+
+// 缺页中断处理
+auto PageFaultHandler(uint64_t exception_code, cpu_io::TrapContext* context)
+    -> uint64_t {
+  auto addr = cpu_io::Stval::Read();
+  klog::Err("PageFault: %s(0x%lx), addr: 0x%lx\n",
+            cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
+                [exception_code],
+            exception_code, addr);
+  klog::Err("sepc: 0x%lx\n", context->sepc);
+  DumpStack();
+  while (1) {
+    cpu_io::Pause();
+  }
+  return 0;
+}
+
+// 系统调用处理
+auto SyscallHandler(uint64_t /*cause*/, cpu_io::TrapContext* context)
+    -> uint64_t {
+  Syscall(0, context);
+  return 0;
+}
+
+// 软中断 (IPI) 处理
+auto IpiHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
+    -> uint64_t {
+  // 清软中断 pending 位
+  cpu_io::Sip::Ssip::Clear();
+  klog::Debug("Core %d received IPI\n", cpu_io::GetCurrentCoreId());
+  return 0;
+}
+
+// 串口外部中断处理
+auto SerialIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
+    -> uint64_t {
+  Ns16550aSingleton::instance().HandleInterrupt(
+      [](uint8_t ch) { sk_putchar(ch, nullptr); });
+  return 0;
+}
+
+// VirtIO-blk 外部中断处理
+auto VirtioBlkIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
+    -> uint64_t {
+  DriverRegistry::GetDriverInstance<VirtioBlkDriver<PlatformTraits>>()
+      .HandleInterrupt([](void* /*token*/, device_framework::ErrorCode status) {
+        if (status != device_framework::ErrorCode::kSuccess) {
+          klog::Err("VirtIO blk IO error: %d\n", static_cast<int>(status));
+        }
+      });
+  return 0;
+}
+
 void RegisterInterrupts() {
   // 注册外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
   InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::
           kSupervisorExternalInterrupt,
-      [](uint64_t, cpu_io::TrapContext* context) -> uint64_t {
-        auto& plic = InterruptSingleton::instance().plic();
-        auto source_id = plic.Which();
-        plic.Do(source_id, context);
-        plic.Done(source_id);
-        return 0;
-      });
+      InterruptDelegate::create<ExternalInterruptHandler>());
 
   auto [base, size, irq] = KernelFdtSingleton::instance().GetSerial().value();
   auto uart_result = device_framework::ns16550a::Ns16550aDevice::Create(base);
@@ -58,68 +133,29 @@ void RegisterInterrupts() {
   // 注册 ebreak 中断
   InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kBreakpoint,
-      [](uint64_t exception_code, cpu_io::TrapContext* context) -> uint64_t {
-        // 读取 sepc 处的指令
-        auto instruction = *reinterpret_cast<uint8_t*>(context->sepc);
-
-        // 判断是否为压缩指令 (低 2 位不为 11)
-        if ((instruction & 0x3) != 0x3) {
-          // 2 字节指令
-          context->sepc += 2;
-        } else {
-          // 4 字节指令
-          context->sepc += 4;
-        }
-        klog::Info("Handle %s\n",
-                   cpu_io::detail::register_info::csr::ScauseInfo::
-                       kExceptionNames[exception_code]);
-        return 0;
-      });
+      InterruptDelegate::create<EbreakHandler>());
 
   // 注册缺页中断处理
-  auto page_fault_handler = [](uint64_t exception_code,
-                               cpu_io::TrapContext* context) -> uint64_t {
-    auto addr = cpu_io::Stval::Read();
-    klog::Err("PageFault: %s(0x%lx), addr: 0x%lx\n",
-              cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
-                  [exception_code],
-              exception_code, addr);
-    klog::Err("sepc: 0x%lx\n", context->sepc);
-    DumpStack();
-    while (1) {
-      cpu_io::Pause();
-    }
-    return 0;
-  };
-
   InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kInstructionPageFault,
-      page_fault_handler);
+      InterruptDelegate::create<PageFaultHandler>());
   InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kLoadPageFault,
-      page_fault_handler);
+      InterruptDelegate::create<PageFaultHandler>());
   InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kStoreAmoPageFault,
-      page_fault_handler);
+      InterruptDelegate::create<PageFaultHandler>());
 
   // 注册系统调用
   InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kEcallUserMode,
-      [](uint64_t, cpu_io::TrapContext* context) -> uint64_t {
-        Syscall(0, context);
-        return 0;
-      });
+      InterruptDelegate::create<SyscallHandler>());
 
   // 注册软中断 (IPI)
   InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::
           kSupervisorSoftwareInterrupt,
-      [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
-        // 清软中断 pending 位
-        cpu_io::Sip::Ssip::Clear();
-        klog::Debug("Core %d received IPI\n", cpu_io::GetCurrentCoreId());
-        return 0;
-      });
+      InterruptDelegate::create<IpiHandler>());
 }
 
 }  // namespace
@@ -162,13 +198,8 @@ void InterruptInit(int, const char**) {
   auto serial_irq =
       std::get<2>(KernelFdtSingleton::instance().GetSerial().value());
   InterruptSingleton::instance()
-      .RegisterExternalInterrupt(
-          serial_irq, cpu_io::GetCurrentCoreId(), 1,
-          [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
-            Ns16550aSingleton::instance().HandleInterrupt(
-                [](uint8_t ch) { sk_putchar(ch, nullptr); });
-            return 0;
-          })
+      .RegisterExternalInterrupt(serial_irq, cpu_io::GetCurrentCoreId(), 1,
+                                 InterruptDelegate::create<SerialIrqHandler>())
       .or_else([](Error err) -> Expected<void> {
         klog::Err("Failed to register serial IRQ: %s\n", err.message());
         return std::unexpected(err);
@@ -182,18 +213,7 @@ void InterruptInit(int, const char**) {
     InterruptSingleton::instance()
         .RegisterExternalInterrupt(
             blk_irq, cpu_io::GetCurrentCoreId(), 1,
-            [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
-              DriverRegistry::GetDriverInstance<
-                  VirtioBlkDriver<PlatformTraits>>()
-                  .HandleInterrupt(
-                      [](void* /*token*/, device_framework::ErrorCode status) {
-                        if (status != device_framework::ErrorCode::kSuccess) {
-                          klog::Err("VirtIO blk IO error: %d\n",
-                                    static_cast<int>(status));
-                        }
-                      });
-              return 0;
-            })
+            InterruptDelegate::create<VirtioBlkIrqHandler>())
         .or_else([blk_irq](Error err) -> Expected<void> {
           klog::Err("Failed to register virtio-blk IRQ %u: %s\n", blk_irq,
                     err.message());

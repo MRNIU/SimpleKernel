@@ -12,19 +12,16 @@
 #include <cstdint>
 #include <tuple>
 
+#include "interrupt_base.h"
+
 /**
  * @brief Plic 驱动
  * @see https://github.com/riscv/riscv-plic
  */
 class Plic {
  public:
-  /**
-   * @brief 中断处理函数指针
-   * @param cause 中断号
-   * @param context 中断上下文
-   */
-  typedef uint64_t (*InterruptFunc)(uint64_t cause,
-                                    cpu_io::TrapContext* context);
+  /// @brief 中断处理委托类型 (forward from InterruptBase)
+  using InterruptFunc = InterruptBase::InterruptDelegate;
 
   /// 最大外部中断数量
   static constexpr size_t kInterruptMaxCount = 16;

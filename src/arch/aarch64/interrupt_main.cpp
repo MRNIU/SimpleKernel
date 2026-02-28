@@ -15,6 +15,7 @@
 #include "kstd_cstdio"
 #include "pl011_singleton.h"
 
+using InterruptDelegate = InterruptBase::InterruptDelegate;
 namespace {
 /**
  * @brief 通用异常处理辅助函数
@@ -160,7 +161,7 @@ void InterruptInit(int, const char**) {
   // 通过统一接口注册 UART 外部中断（先注册 handler，再启用 GIC SPI）
   InterruptSingleton::instance()
       .RegisterExternalInterrupt(uart_intid, cpu_io::GetCurrentCoreId(), 0,
-                                 uart_handler)
+                                 InterruptDelegate::create<uart_handler>())
       .or_else([](Error err) -> Expected<void> {
         klog::Err("Failed to register UART IRQ: %s\n", err.message());
         return std::unexpected(err);

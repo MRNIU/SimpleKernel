@@ -11,10 +11,17 @@
 #include "opensbi_interface.h"
 #include "task_manager.hpp"
 
+using InterruptDelegate = InterruptBase::InterruptDelegate;
 namespace {
 uint64_t interval = 0;
-}
 
+auto TimerHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
+    -> uint64_t {
+  sbi_set_timer(cpu_io::Time::Read() + interval);
+  TaskManagerSingleton::instance().TickUpdate();
+  return 0;
+}
+}  // namespace
 void TimerInitSMP() {
   // 开启时钟中断
   cpu_io::Sie::Stie::Set();
@@ -30,11 +37,7 @@ void TimerInit() {
   // 注册时钟中断
   InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::detail::register_info::csr::ScauseInfo::kSupervisorTimerInterrupt,
-      [](uint64_t, cpu_io::TrapContext*) -> uint64_t {
-        sbi_set_timer(cpu_io::Time::Read() + interval);
-        TaskManagerSingleton::instance().TickUpdate();
-        return 0;
-      });
+      InterruptDelegate::create<TimerHandler>());
 
   // 开启时钟中断
   cpu_io::Sie::Stie::Set();
