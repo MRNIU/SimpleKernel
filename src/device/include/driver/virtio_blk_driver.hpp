@@ -7,9 +7,10 @@
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_VIRTIO_BLK_DRIVER_HPP_
 
 #include <etl/io_port.h>
+#include <etl/optional.h>
+#include <etl/span.h>
 
 #include "device_node.hpp"
-#include "driver/detail/storage.hpp"
 #include "driver/detail/virtio/device/virtio_blk_device.hpp"
 #include "driver/detail/virtio/traits.hpp"
 #include "driver_registry.hpp"
@@ -37,10 +38,14 @@ class VirtioBlkDriver {
 
   static auto GetEntry() -> const DriverEntry& {
     static const DriverEntry entry{
-        .descriptor = &kDescriptor,
-        .match = MatchStatic,
-        .probe = [](DeviceNode& n) { return Instance().Probe(n); },
-        .remove = [](DeviceNode& n) { return Instance().Remove(n); },
+        .name = "virtio-blk",
+        .match_table = etl::span<const MatchEntry>(kMatchTable),
+        .match = etl::delegate<bool(
+            DeviceNode&)>::create<&VirtioBlkDriver::MatchStatic>(),
+        .probe = etl::delegate<Expected<void>(DeviceNode&)>::create<
+            VirtioBlkDriver, &VirtioBlkDriver::Probe>(Instance()),
+        .remove = etl::delegate<Expected<void>(DeviceNode&)>::create<
+            VirtioBlkDriver, &VirtioBlkDriver::Remove>(Instance()),
     };
     return entry;
   }
@@ -122,34 +127,34 @@ class VirtioBlkDriver {
       return std::unexpected(Error(result.error().code));
     }
 
-    device_.Emplace(std::move(*result));
+    device_.emplace(std::move(*result));
     node.type = DeviceType::kBlock;
     irq_ = node.irq;
 
     klog::Info(
         "VirtioBlkDriver: block device at 0x%lX, capacity=%lu sectors, "
         "irq=%u\n",
-        ctx->base, device_.Value().GetCapacity(), irq_);
+        ctx->base, device_.value().GetCapacity(), irq_);
 
     return {};
   }
 
   auto Remove([[maybe_unused]] DeviceNode& node) -> Expected<void> {
-    device_.Reset();
+    device_.reset();
     dma_buffer_.reset();
     return {};
   }
 
   [[nodiscard]] auto GetDevice() -> VirtioBlkType* {
-    return device_.HasValue() ? &device_.Value() : nullptr;
+    return device_.has_value() ? &device_.value() : nullptr;
   }
 
   [[nodiscard]] auto GetIrq() const -> uint32_t { return irq_; }
 
   template <typename CompletionCallback>
   auto HandleInterrupt(CompletionCallback&& on_complete) -> void {
-    if (device_.HasValue()) {
-      device_.Value().HandleInterrupt(
+    if (device_.has_value()) {
+      device_.value().HandleInterrupt(
           static_cast<CompletionCallback&&>(on_complete));
     }
   }
@@ -158,17 +163,10 @@ class VirtioBlkDriver {
   static constexpr MatchEntry kMatchTable[] = {
       {BusType::kPlatform, "virtio,mmio"},
   };
-  static const DriverDescriptor kDescriptor;
 
-  detail::Storage<VirtioBlkType> device_;
+  etl::optional<VirtioBlkType> device_;
   etl::unique_ptr<IoBuffer> dma_buffer_;
   uint32_t irq_{0};
-};
-
-inline const DriverDescriptor VirtioBlkDriver::kDescriptor{
-    .name = "virtio-blk",
-    .match_table = kMatchTable,
-    .match_count = sizeof(kMatchTable) / sizeof(kMatchTable[0]),
 };
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_VIRTIO_BLK_DRIVER_HPP_
