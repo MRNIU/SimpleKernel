@@ -15,12 +15,30 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_FRAMEWORK_PLATFORM_CONFIG_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_FRAMEWORK_PLATFORM_CONFIG_HPP_
 
+#include <cpu_io.h>
+
+#include <cstdint>
+
 #include "device_framework/traits.hpp"
 #include "expected.hpp"
-#include "platform_traits.hpp"
+
+/// Platform traits satisfying EnvironmentTraits, BarrierTraits, DmaTraits,
+/// and SpinWaitTraits (inlined from the former platform_traits.hpp).
+struct PlatformTraits {
+  static constexpr uint32_t kMaxSpinIterations = 100000000;
+  static auto Log(const char* /*fmt*/, ...) -> int { return 0; }
+  static auto Mb() -> void { cpu_io::Mb(); }
+  static auto Rmb() -> void { cpu_io::Rmb(); }
+  static auto Wmb() -> void { cpu_io::Wmb(); }
+  static auto VirtToPhys(void* p) -> uintptr_t {
+    return reinterpret_cast<uintptr_t>(p);
+  }
+  static auto PhysToVirt(uintptr_t a) -> void* {
+    return reinterpret_cast<void*>(a);
+  }
+};
 
 // PlatformTraits satisfies EnvironmentTraits, BarrierTraits, and DmaTraits.
-// See src/device/include/platform_traits.hpp for the implementation.
 using PlatformEnvironment = PlatformTraits;
 using PlatformBarrier = PlatformTraits;
 using PlatformDma = PlatformTraits;
