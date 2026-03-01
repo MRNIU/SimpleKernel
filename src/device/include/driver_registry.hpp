@@ -1,10 +1,15 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief Driver registry — function-pointer entries, no Driver concept
+ * @brief Driver registry — ETL-based entries with delegate callbacks
  */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_REGISTRY_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_REGISTRY_HPP_
+
+#include <etl/delegate.h>
+#include <etl/flat_map.h>
+#include <etl/span.h>
+#include <etl/vector.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -21,44 +26,46 @@ struct MatchEntry {
                            ///< or vendor/HID string (PCI/ACPI — future)
 };
 
-/// Immutable driver descriptor — lives in driver's .rodata
-struct DriverDescriptor {
-  const char* name;
-  const MatchEntry* match_table;
-  size_t match_count;
-};
-
 /**
  * @brief Type-erased driver entry — one per registered driver.
  *
- * @pre  descriptor points to a static DriverDescriptor
- * @pre  match/probe/remove are non-null function pointers
+ * @pre  match/probe/remove delegates are bound before registration
  */
 struct DriverEntry {
-  const DriverDescriptor* descriptor;
-  auto (*match)(DeviceNode&) -> bool;             ///< Hardware detection
-  auto (*probe)(DeviceNode&) -> Expected<void>;   ///< Driver initialization
-  auto (*remove)(DeviceNode&) -> Expected<void>;  ///< Driver teardown
+  const char* name;
+  etl::span<const MatchEntry> match_table;
+  etl::delegate<bool(DeviceNode&)> match;             ///< Hardware detection
+  etl::delegate<Expected<void>(DeviceNode&)> probe;   ///< Driver initialization
+  etl::delegate<Expected<void>(DeviceNode&)> remove;  ///< Driver teardown
+};
+
+/// Comparator for const char* keys in flat_map (uses kstd::strcmp).
+struct CStrLess {
+  auto operator()(const char* a, const char* b) const -> bool {
+    return kstd::strcmp(a, b) < 0;
+  }
 };
 
 /**
- * @brief Driver registry — flat array of DriverEntry, O(N) lookup.
+ * @brief Driver registry — ETL vector of DriverEntry with flat_map compat
+ * index.
  *
- * Linear scan over ≤32 drivers is adequate for boot-time use.
+ * Registration builds an etl::flat_map from compatible string → driver index,
+ * reducing FindDriver from O(N·M·K) to O(Cn · log T).
  */
 class DriverRegistry {
  public:
   /**
    * @brief Register a driver entry.
    *
-   * @pre  entry.descriptor != nullptr
+   * @pre  entry.match/probe/remove delegates are bound
    * @return Expected<void> kOutOfMemory if registry is full
    */
   auto Register(const DriverEntry& entry) -> Expected<void>;
 
   /**
-   * @brief Find the first driver whose match_table contains a compatible
-   *        string present in node.compatible (linear scan).
+   * @brief Find the first driver whose match_table has a compatible string
+   *        present in node.compatible (flat_map lookup, O(Cn · log T)).
    *
    * @return pointer to DriverEntry, or nullptr if no match
    */
@@ -73,8 +80,12 @@ class DriverRegistry {
 
  private:
   static constexpr size_t kMaxDrivers = 32;
-  DriverEntry drivers_[kMaxDrivers]{};
-  size_t count_{0};
+  /// Max total MatchEntry rows across all drivers (32 drivers × ~3 compat
+  /// strings)
+  static constexpr size_t kMaxCompatEntries = 96;
+
+  etl::vector<DriverEntry, kMaxDrivers> drivers_;
+  etl::flat_map<const char*, size_t, kMaxCompatEntries, CStrLess> compat_map_;
   SpinLock lock_{"driver_registry"};
 };
 
@@ -83,26 +94,33 @@ class DriverRegistry {
 inline auto DriverRegistry::Register(const DriverEntry& entry)
     -> Expected<void> {
   LockGuard guard(lock_);
-  if (count_ >= kMaxDrivers) {
+  if (drivers_.full()) {
     return std::unexpected(Error(ErrorCode::kOutOfMemory));
   }
-  drivers_[count_++] = entry;
+  const size_t idx = drivers_.size();
+  for (const auto& me : entry.match_table) {
+    if (compat_map_.full()) {
+      return std::unexpected(Error(ErrorCode::kOutOfMemory));
+    }
+    // insert() is a no-op on duplicate key — first-registered driver wins.
+    compat_map_.insert({me.compatible, idx});
+  }
+  drivers_.push_back(entry);
   return {};
 }
 
 inline auto DriverRegistry::FindDriver(const DeviceNode& node)
     -> const DriverEntry* {
-  // Walk the node's compatible stringlist; for each string, scan all drivers.
+  // Walk the node's compatible stringlist; for each string, do a flat_map
+  // lookup.
   const char* p = node.compatible;
   const char* end = node.compatible + node.compatible_len;
   while (p < end) {
-    for (size_t i = 0; i < count_; ++i) {
-      const auto* desc = drivers_[i].descriptor;
-      for (size_t j = 0; j < desc->match_count; ++j) {
-        if (desc->match_table[j].bus_type == node.bus_type &&
-            kstd::strcmp(desc->match_table[j].compatible, p) == 0) {
-          return &drivers_[i];
-        }
+    const auto it = compat_map_.find(p);
+    if (it != compat_map_.end()) {
+      auto& entry = drivers_[it->second];
+      if (entry.match(const_cast<DeviceNode&>(node))) {
+        return &entry;
       }
     }
     p += kstd::strlen(p) + 1;
