@@ -5,6 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_VFS_ADAPTER_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_VFS_ADAPTER_HPP_
 
+#include <array>
+
 #include "block_device.hpp"
 #include "expected.hpp"
 #include "virtio/device/blk/virtio_blk.hpp"
@@ -57,9 +59,9 @@ class VirtioBlkVfsAdapter final : public vfs::BlockDevice {
   }
 
   [[nodiscard]] auto GetName() const -> const char* override {
-    static const char* const kNames[] = {"virtio-blk0", "virtio-blk1",
-                                         "virtio-blk2", "virtio-blk3"};
-    return (index_ < 4) ? kNames[index_] : "virtio-blk?";
+    static constexpr std::array<const char*, 4> kNames = {
+        "virtio-blk0", "virtio-blk1", "virtio-blk2", "virtio-blk3"};
+    return (index_ < kNames.size()) ? kNames[index_] : "virtio-blk?";
   }
 
  private:

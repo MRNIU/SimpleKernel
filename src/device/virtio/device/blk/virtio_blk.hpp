@@ -7,6 +7,7 @@
 
 #include <cpu_io.h>
 
+#include <array>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
@@ -566,8 +567,8 @@ class VirtioBlk {
     slot.status = 0xFF;  // sentinel：设备完成后会覆写
     slot.token = token;
 
-    IoVec readable_iovs[kMaxSgElements];
-    IoVec writable_iovs[kMaxSgElements];
+    std::array<IoVec, kMaxSgElements> readable_iovs{};
+    std::array<IoVec, kMaxSgElements> writable_iovs{};
     size_t readable_count = 0;
     size_t writable_count = 0;
 
@@ -591,8 +592,8 @@ class VirtioBlk {
 
     cpu_io::Wmb();
 
-    auto chain_result = vq_.SubmitChain(readable_iovs, readable_count,
-                                        writable_iovs, writable_count);
+    auto chain_result = vq_.SubmitChain(readable_iovs.data(), readable_count,
+                                        writable_iovs.data(), writable_count);
     if (!chain_result) {
       FreeRequestSlot(slot_idx);
       stats_.queue_full_errors++;
@@ -826,9 +827,9 @@ class VirtioBlk {
   /// 性能统计数据
   VirtioStats stats_;
   /// 请求槽池（用于跟踪 in-flight 异步请求）
-  RequestSlot slots_[kMaxInflight];
+  std::array<RequestSlot, kMaxInflight> slots_{};
   /// 请求槽占用位图（bit i = 1 表示 slots_[i] 被占用）
-  uint64_t slot_bitmap_;
+  uint64_t slot_bitmap_{};
   /// 上次 Kick 时的 avail idx（用于 Event Index 通知抑制）
   uint16_t old_avail_idx_;
   /// 请求完成标志（由简化版 HandleInterrupt 在中断上下文中设置）
