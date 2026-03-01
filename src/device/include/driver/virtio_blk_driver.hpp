@@ -14,6 +14,7 @@
 #include "device_node.hpp"
 #include "driver_registry.hpp"
 #include "expected.hpp"
+#include "io_buffer.hpp"
 #include "kernel_log.hpp"
 #include "kstd_memory"
 #include "mmio_helper.hpp"
@@ -166,7 +167,7 @@ class VirtioBlkDriver {
   static const DriverDescriptor kDescriptor;
 
   device_framework::detail::Storage<VirtioBlkType> device_;
-  kstd::unique_ptr<IoBuffer> dma_buffer_;
+  etl::unique_ptr<IoBuffer> dma_buffer_;
   uint32_t irq_{0};
 };
 
