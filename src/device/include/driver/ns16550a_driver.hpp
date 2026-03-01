@@ -6,9 +6,8 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_NS16550A_DRIVER_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_NS16550A_DRIVER_HPP_
 
-#include <device_framework/ns16550a.hpp>
-
 #include "device_node.hpp"
+#include "driver/detail/ns16550a/ns16550a_device.hpp"
 #include "driver_registry.hpp"
 #include "expected.hpp"
 #include "kernel_log.hpp"
@@ -16,7 +15,7 @@
 
 class Ns16550aDriver {
  public:
-  using Ns16550aType = device_framework::ns16550a::Ns16550a;
+  using Ns16550aType = detail::ns16550a::Ns16550a;
 
   // --- Registration API ---
 

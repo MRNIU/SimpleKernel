@@ -8,10 +8,10 @@
 
 #include <etl/io_port.h>
 
-#include <device_framework/detail/storage.hpp>
-#include <device_framework/virtio_blk.hpp>
-
 #include "device_node.hpp"
+#include "driver/detail/storage.hpp"
+#include "driver/detail/virtio/device/virtio_blk_device.hpp"
+#include "driver/detail/virtio/traits.hpp"
 #include "driver_registry.hpp"
 #include "expected.hpp"
 #include "io_buffer.hpp"
@@ -21,7 +21,7 @@
 
 class VirtioBlkDriver {
  public:
-  using VirtioBlkType = device_framework::virtio::blk::VirtioBlk<>;
+  using VirtioBlkType = detail::virtio::blk::VirtioBlk<>;
 
   static constexpr uint32_t kMmioRegionSize = 0x1000;
   static constexpr uint32_t kDefaultQueueCount = 1;
@@ -63,15 +63,14 @@ class VirtioBlkDriver {
     if (!ctx) return false;
 
     etl::io_port_ro<uint32_t> magic_reg{reinterpret_cast<void*>(ctx->base)};
-    if (magic_reg.read() != device_framework::virtio::kMmioMagicValue) {
+    if (magic_reg.read() != detail::virtio::kMmioMagicValue) {
       klog::Debug("VirtioBlkDriver: 0x%lX not a VirtIO device\n", ctx->base);
       return false;
     }
 
     constexpr uint32_t kBlockDeviceId = 2;
     etl::io_port_ro<uint32_t> device_id_reg{reinterpret_cast<void*>(
-        ctx->base +
-        device_framework::virtio::MmioTransport::MmioReg::kDeviceId)};
+        ctx->base + detail::virtio::MmioTransport::MmioReg::kDeviceId)};
     if (device_id_reg.read() != kBlockDeviceId) {
       klog::Debug("VirtioBlkDriver: 0x%lX is not a block device\n", ctx->base);
       return false;
@@ -109,16 +108,11 @@ class VirtioBlkDriver {
     }
 
     uint64_t extra_features =
-        static_cast<uint64_t>(
-            device_framework::virtio::blk::BlkFeatureBit::kSegMax) |
-        static_cast<uint64_t>(
-            device_framework::virtio::blk::BlkFeatureBit::kSizeMax) |
-        static_cast<uint64_t>(
-            device_framework::virtio::blk::BlkFeatureBit::kBlkSize) |
-        static_cast<uint64_t>(
-            device_framework::virtio::blk::BlkFeatureBit::kFlush) |
-        static_cast<uint64_t>(
-            device_framework::virtio::blk::BlkFeatureBit::kGeometry);
+        static_cast<uint64_t>(detail::virtio::blk::BlkFeatureBit::kSegMax) |
+        static_cast<uint64_t>(detail::virtio::blk::BlkFeatureBit::kSizeMax) |
+        static_cast<uint64_t>(detail::virtio::blk::BlkFeatureBit::kBlkSize) |
+        static_cast<uint64_t>(detail::virtio::blk::BlkFeatureBit::kFlush) |
+        static_cast<uint64_t>(detail::virtio::blk::BlkFeatureBit::kGeometry);
 
     auto result = VirtioBlkType::Create(
         ctx->base, dma_buffer_->GetBuffer().data(), kDefaultQueueCount,
@@ -166,7 +160,7 @@ class VirtioBlkDriver {
   };
   static const DriverDescriptor kDescriptor;
 
-  device_framework::detail::Storage<VirtioBlkType> device_;
+  detail::Storage<VirtioBlkType> device_;
   etl::unique_ptr<IoBuffer> dma_buffer_;
   uint32_t irq_{0};
 };
