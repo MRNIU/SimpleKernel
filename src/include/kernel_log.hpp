@@ -60,10 +60,14 @@ inline constexpr auto kMinLogLevel =
 
 /// 每种日志级别对应的 ANSI 颜色 (indexed by enum_type value)
 inline constexpr const char* kLogColors[LogLevel::kMax] = {
-    kMagenta,  // kDebug
-    kCyan,     // kInfo
-    kYellow,   // kWarn
-    kRed,      // kErr
+    // kDebug
+    kMagenta,
+    // kInfo
+    kCyan,
+    // kWarn
+    kYellow,
+    // kErr
+    kRed,
 };
 
 // ── Header prefix emission ────────────────────────────────────────────────
@@ -77,9 +81,9 @@ inline constexpr const char* kLogColors[LogLevel::kMax] = {
  */
 template <LogLevel::enum_type Level>
 __always_inline void EmitHeader() {
-  sk_emit_str(kLogColors[Level]);
+  sk_print_str(kLogColors[Level]);
   etl_putchar('[');
-  sk_emit_sint(static_cast<long long>(cpu_io::GetCurrentCoreId()));
+  sk_print_int(static_cast<long long>(cpu_io::GetCurrentCoreId()));
   etl_putchar(']');
 }
 
@@ -92,7 +96,7 @@ struct NoOpTag {};
  * @brief RAII 流式日志行（基于 etl::string 实例缓冲）
  *
  * 构造时获取自旋锁并向 etl::string<512> 写入颜色前缀+核心ID，
- * 析构时通过 sk_emit_str 原子输出完整日志行并释放锁。
+ * 析构时通过 sk_print_str 原子输出完整日志行并释放锁。
  *
  * @tparam Level 日志级别
  * @note Only one LogLine may be live at a time (protected by log_lock).
@@ -113,9 +117,9 @@ class LogLine {
       const std::source_location& loc = std::source_location::current()) {
     AcquireLock();
     s_buf_.clear();
-    stream_ << kLogColors[Level] << '[' << cpu_io::GetCurrentCoreId() << ']';
+    stream_ << kLogColors[Level] << "[" << cpu_io::GetCurrentCoreId() << "]";
     if constexpr (Level == LogLevel::kDebug) {
-      stream_ << '[' << loc.file_name() << ':' << loc.line() << ' '
+      stream_ << "[" << loc.file_name() << ":" << loc.line() << " "
               << loc.function_name() << "] ";
     }
   }
@@ -132,8 +136,8 @@ class LogLine {
 
   ~LogLine() {
     if (!released_) {
-      stream_ << '\n' << kReset;
-      sk_emit_str(s_buf_.c_str());
+      stream_ << "\n" << kReset;
+      sk_print_str(s_buf_.c_str());
       ReleaseLock();
     }
   }
@@ -151,6 +155,14 @@ class LogLine {
   auto operator<<(bool val) -> LogLine& {
     if (!released_) {
       stream_ << (val ? "true" : "false");
+    }
+    return *this;
+  }
+
+  /// @brief Stream a single char directly (bypasses ETL integral formatting)
+  auto operator<<(char c) -> LogLine& {
+    if (!released_) {
+      s_buf_.push_back(c);
     }
     return *this;
   }
@@ -174,8 +186,8 @@ class LogLine {
   /// @brief Acquire log_lock; spin-halt on failure (e.g. recursive lock).
   static void AcquireLock() {
     log_lock.Lock().or_else([](auto&& err) -> Expected<void> {
-      sk_emit_str("LogLine: Failed to acquire lock: ");
-      sk_emit_str(err.message());
+      sk_print_str("LogLine: Failed to acquire lock: ");
+      sk_print_str(err.message());
       etl_putchar('\n');
       while (true) {
         cpu_io::Pause();
@@ -187,8 +199,8 @@ class LogLine {
   /// @brief Release log_lock; spin-halt on failure (e.g. not owned).
   static void ReleaseLock() {
     log_lock.UnLock().or_else([](auto&& err) -> Expected<void> {
-      sk_emit_str("LogLine: Failed to release lock: ");
-      sk_emit_str(err.message());
+      sk_print_str("LogLine: Failed to release lock: ");
+      sk_print_str(err.message());
       etl_putchar('\n');
       while (true) {
         cpu_io::Pause();
@@ -246,12 +258,12 @@ __always_inline void DebugBlob([[maybe_unused]] const void* data,
     for (size_t i = 0; i < size; i++) {
       etl_putchar('0');
       etl_putchar('x');
-      sk_emit_hex(static_cast<unsigned long long>(
-                      reinterpret_cast<const uint8_t*>(data)[i]),
-                  /*width=*/2, /*upper=*/1);
+      sk_print_hex(static_cast<unsigned long long>(
+                       reinterpret_cast<const uint8_t*>(data)[i]),
+                   /*width=*/2, /*upper=*/1);
       etl_putchar(' ');
     }
-    sk_emit_str(detail::kReset);
+    sk_print_str(detail::kReset);
     etl_putchar('\n');
   }
 }

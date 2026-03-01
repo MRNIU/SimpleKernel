@@ -46,9 +46,9 @@ class SpinLock {
         if (intr_enable) {
           cpu_io::EnableInterrupt();
         }
-        sk_emit_str("spinlock ");
-        sk_emit_str(name_);
-        sk_emit_str(" recursive lock detected.\n");
+        sk_print_str("spinlock ");
+        sk_print_str(name_);
+        sk_print_str(" recursive lock detected.\n");
         return std::unexpected(Error{ErrorCode::kSpinLockRecursiveLock});
       }
       cpu_io::Pause();
@@ -66,9 +66,9 @@ class SpinLock {
    */
   [[nodiscard]] __always_inline auto UnLock() -> Expected<void> {
     if (!IsLockedByCurrentCore()) {
-      sk_emit_str("spinlock ");
-      sk_emit_str(name_);
-      sk_emit_str(" IsLockedByCurrentCore == false.\n");
+      sk_print_str("spinlock ");
+      sk_print_str(name_);
+      sk_print_str(" IsLockedByCurrentCore == false.\n");
       return std::unexpected(Error{ErrorCode::kSpinLockNotOwned});
     }
 
@@ -139,8 +139,8 @@ class LockGuard {
    */
   explicit LockGuard(mutex_type& mutex) : mutex_(mutex) {
     mutex_.Lock().or_else([](auto&& err) {
-      sk_emit_str("LockGuard: Failed to acquire lock: ");
-      sk_emit_str(err.message());
+      sk_print_str("LockGuard: Failed to acquire lock: ");
+      sk_print_str(err.message());
       etl_putchar('\n');
       while (true) {
         cpu_io::Pause();
@@ -154,8 +154,8 @@ class LockGuard {
    */
   ~LockGuard() {
     mutex_.UnLock().or_else([](auto&& err) {
-      sk_emit_str("LockGuard: Failed to release lock: ");
-      sk_emit_str(err.message());
+      sk_print_str("LockGuard: Failed to release lock: ");
+      sk_print_str(err.message());
       etl_putchar('\n');
       while (true) {
         cpu_io::Pause();
