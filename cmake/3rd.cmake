@@ -58,22 +58,6 @@ IF(NOT TARGET gtest)
     INCLUDE (GoogleTest)
 ENDIF()
 
-# https://github.com/charlesnicholson/nanoprintf.git
-SET (nanoprintf_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/nanoprintf)
-SET (nanoprintf_BINARY_DIR ${CMAKE_BINARY_DIR}/3rd/nanoprintf)
-ADD_CUSTOM_TARGET (
-    nanoprintf
-    COMMENT "build nanoprintf..."
-    # make 时编译
-    ALL
-    WORKING_DIRECTORY ${nanoprintf_SOURCE_DIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${nanoprintf_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${nanoprintf_SOURCE_DIR}/nanoprintf.h
-            ${nanoprintf_BINARY_DIR}/nanoprintf.h)
-ADD_LIBRARY (nanoprintf-lib INTERFACE)
-ADD_DEPENDENCIES (nanoprintf-lib nanoprintf)
-TARGET_INCLUDE_DIRECTORIES (nanoprintf-lib INTERFACE ${nanoprintf_BINARY_DIR})
-
 # https://github.com/MRNIU/bmalloc.git
 ADD_SUBDIRECTORY (3rd/bmalloc)
 

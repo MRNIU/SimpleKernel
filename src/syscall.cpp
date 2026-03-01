@@ -57,7 +57,7 @@ int sys_write(int fd, const char* buf, size_t len) {
     /// @todo应该检查 buf 是否在用户空间合法范围内
     for (size_t i = 0; i < len; ++i) {
       // 使用 klog::Print 而不是 Format，避免 buffer 解析带来的问题
-      sk_printf("%c", buf[i]);
+      sk_putchar(buf[i], nullptr);
     }
     return static_cast<int>(len);
   }

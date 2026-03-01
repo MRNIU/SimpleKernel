@@ -13,20 +13,14 @@
 #include "kernel.h"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
-#include "sk_stdlib.h"
 #include "virtual_memory.hpp"
 
 namespace {
 
 struct BmallocLogger {
   int operator()(const char* format, ...) const {
-    va_list args;
-    va_start(args, format);
-    char buffer[1024];
-    int result = sk_vsnprintf(buffer, sizeof(buffer), format, args);
-    va_end(args);
-    klog::Err("{}", buffer);
-    return result;
+    (void)format;
+    return 0;
   }
 };
 

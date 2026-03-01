@@ -135,32 +135,37 @@ using KernelFormatString = KernelFmtStr<std::type_identity_t<Args>...>;
 // ── Single-argument freestanding-safe printer ────────────────────────────
 
 /// 输出有符号整数
-__always_inline void FormatArg(long long val) { sk_printf("%lld", val); }
-__always_inline void FormatArg(long val) { sk_printf("%ld", val); }
-__always_inline void FormatArg(int val) { sk_printf("%d", val); }
+__always_inline void FormatArg(long long val) { sk_emit_sint(val); }
+__always_inline void FormatArg(long val) { sk_emit_sint((long long)val); }
+__always_inline void FormatArg(int val) { sk_emit_sint((long long)val); }
 
 /// 输出无符号整数
-__always_inline void FormatArg(unsigned long long val) {
-  sk_printf("%llu", val);
+__always_inline void FormatArg(unsigned long long val) { sk_emit_uint(val); }
+__always_inline void FormatArg(unsigned long val) {
+  sk_emit_uint((unsigned long long)val);
 }
-__always_inline void FormatArg(unsigned long val) { sk_printf("%lu", val); }
-__always_inline void FormatArg(unsigned int val) { sk_printf("%u", val); }
+__always_inline void FormatArg(unsigned int val) {
+  sk_emit_uint((unsigned long long)val);
+}
 
 /// 输出布尔值
 __always_inline void FormatArg(bool val) {
-  sk_printf("%s", val ? "true" : "false");
+  sk_emit_str(val ? "true" : "false");
 }
 
 /// 输出字符
 __always_inline void FormatArg(char val) { sk_putchar(val, nullptr); }
 
 /// 输出 C 字符串
-__always_inline void FormatArg(const char* val) {
-  sk_printf("%s", val ? val : "(null)");
-}
+__always_inline void FormatArg(const char* val) { sk_emit_str(val); }
 
 /// 输出指针地址
-__always_inline void FormatArg(const void* val) { sk_printf("%p", val); }
+__always_inline void FormatArg(const void* val) {
+  sk_putchar('0', nullptr);
+  sk_putchar('x', nullptr);
+  sk_emit_hex((unsigned long long)(uintptr_t)val, (int)(sizeof(void*) * 2),
+              /*upper=*/0);
+}
 __always_inline void FormatArg(void* val) {
   FormatArg(static_cast<const void*>(val));
 }
@@ -238,13 +243,18 @@ class LogLine {
  public:
   LogLine() {
     log_lock.Lock().or_else([](auto&& err) {
-      sk_printf("LogLine: Failed to acquire lock: %s\n", err.message());
+      sk_emit_str("LogLine: Failed to acquire lock: ");
+      sk_emit_str(err.message());
+      sk_putchar('\n', nullptr);
       while (true) {
         cpu_io::Pause();
       }
       return Expected<void>{};
     });
-    sk_printf("%s[%ld]", kLogColors[Level], cpu_io::GetCurrentCoreId());
+    sk_emit_str(kLogColors[Level]);
+    sk_putchar('[', nullptr);
+    sk_emit_sint((long long)cpu_io::GetCurrentCoreId());
+    sk_putchar(']', nullptr);
   }
 
   LogLine(LogLine&& other) noexcept : released_(other.released_) {
@@ -257,9 +267,11 @@ class LogLine {
 
   ~LogLine() {
     if (!released_) {
-      sk_printf("%s", kReset);
+      sk_emit_str(kReset);
       log_lock.UnLock().or_else([](auto&& err) {
-        sk_printf("LogLine: Failed to release lock: %s\n", err.message());
+        sk_emit_str("LogLine: Failed to release lock: ");
+        sk_emit_str(err.message());
+        sk_putchar('\n', nullptr);
         while (true) {
           cpu_io::Pause();
         }
@@ -273,7 +285,7 @@ class LogLine {
   /// 输出有符号整数类型
   template <std::signed_integral T>
   auto operator<<(T val) -> LogLine& {
-    sk_printf("%lld", static_cast<long long>(val));
+    sk_emit_sint(static_cast<long long>(val));
     return *this;
   }
 
@@ -281,13 +293,13 @@ class LogLine {
   template <std::unsigned_integral T>
     requires(!std::same_as<T, bool> && !std::same_as<T, char>)
   auto operator<<(T val) -> LogLine& {
-    sk_printf("%llu", static_cast<unsigned long long>(val));
+    sk_emit_uint(static_cast<unsigned long long>(val));
     return *this;
   }
 
   /// 输出 C 字符串
   auto operator<<(const char* val) -> LogLine& {
-    sk_printf("%s", val ? val : "(null)");
+    sk_emit_str(val);
     return *this;
   }
 
@@ -299,13 +311,16 @@ class LogLine {
 
   /// 输出布尔值
   auto operator<<(bool val) -> LogLine& {
-    sk_printf("%s", val ? "true" : "false");
+    sk_emit_str(val ? "true" : "false");
     return *this;
   }
 
   /// 输出指针地址
   auto operator<<(const void* val) -> LogLine& {
-    sk_printf("%p", val);
+    sk_putchar('0', nullptr);
+    sk_putchar('x', nullptr);
+    sk_emit_hex((unsigned long long)(uintptr_t)val, (int)(sizeof(void*) * 2),
+                0);
     return *this;
   }
 
@@ -354,13 +369,22 @@ __always_inline void LogEmit(
     return;
   }
   LockGuard<SpinLock> lock_guard(log_lock);
-  sk_printf("%s[%ld]", kLogColors[Level], cpu_io::GetCurrentCoreId());
+  sk_emit_str(kLogColors[Level]);
+  sk_putchar('[', nullptr);
+  sk_emit_sint((long long)cpu_io::GetCurrentCoreId());
+  sk_putchar(']', nullptr);
   if constexpr (Level == LogLevel::kDebug) {
-    sk_printf("[%s:%u %s] ", location.file_name(), location.line(),
-              location.function_name());
+    sk_putchar('[', nullptr);
+    sk_emit_str(location.file_name());
+    sk_putchar(':', nullptr);
+    sk_emit_uint((unsigned long long)location.line());
+    sk_putchar(' ', nullptr);
+    sk_emit_str(location.function_name());
+    sk_putchar(']', nullptr);
+    sk_putchar(' ', nullptr);
   }
   LogFormat(fmt.str, static_cast<Args&&>(args)...);
-  sk_printf("%s", kReset);
+  sk_emit_str(kReset);
 }
 
 }  // namespace detail
@@ -394,11 +418,20 @@ __always_inline void DebugBlob([[maybe_unused]] const void* data,
 #ifdef SIMPLEKERNEL_DEBUG
   if constexpr (detail::LogLevel::kDebug >= detail::kMinLogLevel) {
     LockGuard<SpinLock> lock_guard(klog::detail::log_lock);
-    sk_printf("%s[%ld] ", detail::kMagenta, cpu_io::GetCurrentCoreId());
+    sk_emit_str(detail::kMagenta);
+    sk_putchar('[', nullptr);
+    sk_emit_sint((long long)cpu_io::GetCurrentCoreId());
+    sk_putchar(']', nullptr);
+    sk_putchar(' ', nullptr);
     for (size_t i = 0; i < size; i++) {
-      sk_printf("0x%02X ", reinterpret_cast<const uint8_t*>(data)[i]);
+      sk_putchar('0', nullptr);
+      sk_putchar('x', nullptr);
+      sk_emit_hex((unsigned long long)reinterpret_cast<const uint8_t*>(data)[i],
+                  /*width=*/2, /*upper=*/1);
+      sk_putchar(' ', nullptr);
     }
-    sk_printf("%s\n", detail::kReset);
+    sk_emit_str(detail::kReset);
+    sk_putchar('\n', nullptr);
   }
 #endif
 }
