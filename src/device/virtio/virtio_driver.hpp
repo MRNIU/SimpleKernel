@@ -18,8 +18,8 @@
 #include "io_buffer.hpp"
 #include "kernel_log.hpp"
 #include "kstd_memory"
-#include "virtio/device/virtio_blk.hpp"
-#include "virtio/device/virtio_blk_vfs_adapter.hpp"
+#include "virtio/device/blk/virtio_blk.hpp"
+#include "virtio/device/blk/virtio_blk_vfs_adapter.hpp"
 
 /**
  * @brief 统一 VirtIO 驱动
