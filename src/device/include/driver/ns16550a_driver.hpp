@@ -28,10 +28,14 @@ class Ns16550aDriver {
   /// Return the DriverEntry for registration.
   static auto GetEntry() -> const DriverEntry& {
     static const DriverEntry entry{
-        .descriptor = &kDescriptor,
-        .match = MatchStatic,
-        .probe = [](DeviceNode& n) { return Instance().Probe(n); },
-        .remove = [](DeviceNode& n) { return Instance().Remove(n); },
+        .name = "ns16550a",
+        .match_table = etl::span<const MatchEntry>(kMatchTable),
+        .match = etl::delegate<bool(
+            DeviceNode&)>::create<&Ns16550aDriver::MatchStatic>(),
+        .probe = etl::delegate<Expected<void>(DeviceNode&)>::create<
+            Ns16550aDriver, &Ns16550aDriver::Probe>(Instance()),
+        .remove = etl::delegate<Expected<void>(DeviceNode&)>::create<
+            Ns16550aDriver, &Ns16550aDriver::Remove>(Instance()),
     };
     return entry;
   }
@@ -86,15 +90,8 @@ class Ns16550aDriver {
       {BusType::kPlatform, "ns16550a"},
       {BusType::kPlatform, "ns16550"},
   };
-  static const DriverDescriptor kDescriptor;
 
   Ns16550aType uart_;
-};
-
-inline const DriverDescriptor Ns16550aDriver::kDescriptor{
-    .name = "ns16550a",
-    .match_table = kMatchTable,
-    .match_count = sizeof(kMatchTable) / sizeof(kMatchTable[0]),
 };
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_NS16550A_DRIVER_HPP_

@@ -77,8 +77,8 @@ class DeviceManager {
       }
 
       if (!drv->match(node)) {
-        klog::Debug("DeviceManager: driver '%s' rejected '%s'\n",
-                    drv->descriptor->name, node.name);
+        klog::Debug("DeviceManager: driver '%s' rejected '%s'\n", drv->name,
+                    node.name);
         continue;
       }
 
@@ -86,7 +86,7 @@ class DeviceManager {
       node.bound = true;
 
       klog::Info("DeviceManager: probing '%s' with driver '%s'\n", node.name,
-                 drv->descriptor->name);
+                 drv->name);
 
       auto result = drv->probe(node);
       if (!result.has_value()) {
@@ -97,8 +97,7 @@ class DeviceManager {
       }
 
       ++probed;
-      klog::Info("DeviceManager: '%s' bound to '%s'\n", node.name,
-                 drv->descriptor->name);
+      klog::Info("DeviceManager: '%s' bound to '%s'\n", node.name, drv->name);
     }
 
     klog::Info("DeviceManager: probed %zu device(s)\n", probed);
