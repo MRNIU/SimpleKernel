@@ -56,14 +56,15 @@ class KernelFdt {
   explicit KernelFdt(uint64_t header)
       : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
     ValidateFdtHeader().or_else([](auto&& err) {
-      klog::Err("KernelFdt init failed: %s\n", err.message());
+      klog::Err("KernelFdt init failed: {}\n", err.message());
       while (true) {
         cpu_io::Pause();
       }
       return Expected<void>{};
     });
 
-    klog::Debug("Load dtb at [0x%X], size [0x%X]\n", fdt_header_,
+    klog::Debug("Load dtb at [{:#X}], size [{:#X}]\n",
+                reinterpret_cast<uintptr_t>(fdt_header_),
                 fdt32_to_cpu(fdt_header_->totalsize));
   }
 
@@ -105,7 +106,7 @@ class KernelFdt {
     return FindNode("/psci").and_then([this](int offset) -> Expected<void> {
       return GetPsciMethod(offset).and_then(
           [this, offset](const char* method) -> Expected<void> {
-            klog::Debug("PSCI method: %s\n", method);
+            klog::Debug("PSCI method: {}\n", method);
             if (strcmp(method, "smc") != 0) {
               return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
             }
@@ -316,7 +317,7 @@ class KernelFdt {
       auto trigger = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xF;
       auto cpuid_mask =
           fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xFF00;
-      klog::Debug("type: %d, intid: %d, trigger: %d, cpuid_mask: %d\n", type,
+      klog::Debug("type: {}, intid: {}, trigger: {}, cpuid_mask: {}\n", type,
                   intid, trigger, cpuid_mask);
     }
 #endif
@@ -808,9 +809,9 @@ class KernelFdt {
       if (prop != nullptr && static_cast<size_t>(len) >= sizeof(uint32_t)) {
         uint32_t id =
             fdt32_to_cpu(*reinterpret_cast<const uint32_t*>(prop->data));
-        klog::Debug("PSCI %s function ID: 0x%X\n", name, id);
+        klog::Debug("PSCI {} function ID: {:#X}\n", name, id);
         if (id != expected) {
-          klog::Err("PSCI %s function ID mismatch: expected 0x%X, got 0x%X\n",
+          klog::Err("PSCI {} function ID mismatch: expected {:#X}, got {:#X}\n",
                     name, expected, id);
           return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
         }

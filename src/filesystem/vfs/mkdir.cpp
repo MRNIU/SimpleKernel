@@ -73,7 +73,7 @@ auto MkDir(const char* path) -> Expected<void> {
   new_dentry->inode = result.value();
   AddChild(parent_dentry, new_dentry.release());
 
-  klog::Debug("VFS: created directory '%s'\n", path);
+  klog::Debug("VFS: created directory '{}'\n", path);
   return {};
 }
 

@@ -13,7 +13,7 @@ FileDescriptorTable::FileDescriptorTable()
 
 FileDescriptorTable::~FileDescriptorTable() {
   CloseAll().or_else([](auto&& err) {
-    klog::Warn("Failed to close all files in destructor: %s\n", err.message());
+    klog::Warn("Failed to close all files in destructor: {}\n", err.message());
     return Expected<void>{};
   });
 }
@@ -35,7 +35,7 @@ auto FileDescriptorTable::operator=(FileDescriptorTable&& other)
   if (this != &other) {
     // 先关闭当前的所有文件
     CloseAll().or_else([](auto&& err) {
-      klog::Warn("Failed to close all files in move assignment: %s\n",
+      klog::Warn("Failed to close all files in move assignment: {}\n",
                  err.message());
       return Expected<void>{};
     });

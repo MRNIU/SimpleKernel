@@ -38,7 +38,7 @@ class KernelElf {
 
     // 检查 elf 头数据
     CheckElfIdentity().or_else([](Error err) -> Expected<void> {
-      klog::Err("KernelElf NOT valid ELF file: %s\n", err.message());
+      klog::Err("KernelElf NOT valid ELF file: {}\n", err.message());
       while (true) {
         cpu_io::Pause();
       }
@@ -83,7 +83,7 @@ class KernelElf {
                            shdr_[ehdr_.e_shstrndx].sh_offset;
     for (auto shdr : shdr_) {
 #ifdef SIMPLEKERNEL_DEBUG
-      klog::Debug("sh_name: [%s]\n", shstrtab + shdr.sh_name);
+      klog::Debug("sh_name: [{}]\n", shstrtab + shdr.sh_name);
 #endif
       if (strcmp(shstrtab + shdr.sh_name, ".symtab") == 0) {
         symtab_ = std::span<Elf64_Sym>(

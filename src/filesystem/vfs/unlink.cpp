@@ -75,7 +75,7 @@ auto Unlink(const char* path) -> Expected<void> {
   RemoveChild(parent_dentry, target_dentry);
   delete target_dentry;
 
-  klog::Debug("VFS: unlinked '%s'\n", path);
+  klog::Debug("VFS: unlinked '{}'\n", path);
   return {};
 }
 

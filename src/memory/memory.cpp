@@ -25,7 +25,7 @@ struct BmallocLogger {
     char buffer[1024];
     int result = sk_vsnprintf(buffer, sizeof(buffer), format, args);
     va_end(args);
-    klog::Err("%s", buffer);
+    klog::Err("{}", buffer);
     return result;
   }
 };
@@ -82,8 +82,8 @@ void MemoryInit() {
                         BasicInfoSingleton::instance().physical_memory_size -
                         reinterpret_cast<uint64_t>(allocator_addr);
 
-  klog::Info("bmalloc address: %p, size: 0x%lX\n", allocator_addr,
-             allocator_size);
+  klog::Info("bmalloc address: {:#x}, size: {:#X}\n",
+             reinterpret_cast<uintptr_t>(allocator_addr), allocator_size);
 
   static bmalloc::Bmalloc<BmallocLogger> bmallocator(allocator_addr,
                                                      allocator_size);
