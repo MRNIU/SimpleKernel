@@ -7,7 +7,7 @@
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_NS16550A_DRIVER_HPP_
 
 #include "device_node.hpp"
-#include "driver/detail/ns16550a/ns16550a_device.hpp"
+#include "driver/detail/ns16550a/ns16550a.hpp"
 #include "driver_registry.hpp"
 #include "expected.hpp"
 #include "kernel_log.hpp"
