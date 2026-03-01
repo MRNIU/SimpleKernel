@@ -199,8 +199,15 @@ extern "C" __attribute__((noreturn)) void __assert_fail(const char* assertion,
                                                         const char* file,
                                                         unsigned int line,
                                                         const char* function) {
-  sk_printf("\n[ASSERT FAILED] %s:%u in %s\n Expression: %s\n", file, line,
-            function, assertion);
+  sk_emit_str("\n[ASSERT FAILED] ");
+  sk_emit_str(file);
+  sk_putchar(':', nullptr);
+  sk_emit_uint((unsigned long long)line);
+  sk_emit_str(" in ");
+  sk_emit_str(function);
+  sk_emit_str("\n Expression: ");
+  sk_emit_str(assertion);
+  sk_putchar('\n', nullptr);
   while (1) {
     cpu_io::Pause();
   }

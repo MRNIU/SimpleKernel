@@ -160,7 +160,6 @@ TARGET_LINK_LIBRARIES (
               kernel_compile_definitions
               kernel_compile_options
               kernel_link_options
-              nanoprintf-lib
               dtc-lib
               cpu_io
               bmalloc
