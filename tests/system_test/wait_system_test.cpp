@@ -34,16 +34,16 @@ void child_work(void* arg) {
   uint64_t child_id = reinterpret_cast<uint64_t>(arg);
   int exit_code = static_cast<int>(child_id);
 
-  klog::Info("Child %zu: starting, will exit with code %d\n", child_id,
+  klog::Info("Child %zu: starting, will exit with code %d", child_id,
              exit_code);
 
   // 执行一些工作
   for (int i = 0; i < 5; ++i) {
-    klog::Debug("Child %zu: working, iter=%d\n", child_id, i);
+    klog::Debug("Child %zu: working, iter=%d", child_id, i);
     sys_sleep(30);
   }
 
-  klog::Info("Child %zu: exiting with code %d\n", child_id, exit_code);
+  klog::Info("Child %zu: exiting with code %d", child_id, exit_code);
   g_child_exit_code = exit_code;
   sys_exit(exit_code);
 }
@@ -52,13 +52,13 @@ void child_work(void* arg) {
  * @brief 测试基本的 wait 功能
  */
 void test_wait_basic(void* /*arg*/) {
-  klog::Info("=== Wait Basic Test ===\n");
+  klog::Info("=== Wait Basic Test ===");
 
   auto& task_mgr = TaskManagerSingleton::instance();
   auto* current = task_mgr.GetCurrentTask();
 
   if (!current) {
-    klog::Err("Wait Basic Test: Cannot get current task\n");
+    klog::Err("Wait Basic Test: Cannot get current task");
     sys_exit(1);
   }
 
@@ -71,16 +71,16 @@ void test_wait_basic(void* /*arg*/) {
   task_mgr.AddTask(child);
   Pid child_pid = child->pid;
 
-  klog::Info("Parent: created child with PID=%zu\n", child_pid);
+  klog::Info("Parent: created child with PID=%zu", child_pid);
 
   // 等待子进程退出
   int status = 0;
   Pid result = task_mgr.Wait(child_pid, &status, false, false).value_or(0);
 
   if (result == child_pid) {
-    klog::Info("Parent: child %zu exited with status %d\n", result, status);
+    klog::Info("Parent: child %zu exited with status %d", result, status);
     if (status == 42) {
-      klog::Info("Wait Basic Test: PASS\n");
+      klog::Info("Wait Basic Test: PASS");
     } else {
       klog::Err(
           "Wait Basic Test: FAIL - wrong exit status (got %d, expected "
@@ -88,14 +88,14 @@ void test_wait_basic(void* /*arg*/) {
           status);
     }
   } else {
-    klog::Err("Wait Basic Test: FAIL - wait returned %zu (expected %zu)\n",
+    klog::Err("Wait Basic Test: FAIL - wait returned %zu (expected %zu)",
               result, child_pid);
   }
 
   if (result == child_pid && status == 42) {
-    klog::Info("Wait Basic Test: PASS\n");
+    klog::Info("Wait Basic Test: PASS");
   } else {
-    klog::Err("Wait Basic Test: FAIL\n");
+    klog::Err("Wait Basic Test: FAIL");
     g_tests_failed++;
   }
 
@@ -107,13 +107,13 @@ void test_wait_basic(void* /*arg*/) {
  * @brief 测试等待任意子进程
  */
 void test_wait_any_child(void* /*arg*/) {
-  klog::Info("=== Wait Any Child Test ===\n");
+  klog::Info("=== Wait Any Child Test ===");
 
   auto& task_mgr = TaskManagerSingleton::instance();
   auto* current = task_mgr.GetCurrentTask();
 
   if (!current) {
-    klog::Err("Wait Any Child Test: Cannot get current task\n");
+    klog::Err("Wait Any Child Test: Cannot get current task");
     sys_exit(1);
   }
 
@@ -125,7 +125,7 @@ void test_wait_any_child(void* /*arg*/) {
     child->parent_pid = current->pid;
     child->pgid = current->pgid;
     task_mgr.AddTask(child);
-    klog::Info("Parent: created child %d with PID=%zu\n", i, child->pid);
+    klog::Info("Parent: created child %d with PID=%zu", i, child->pid);
   }
 
   // 等待任意子进程 (pid = -1)
@@ -136,19 +136,18 @@ void test_wait_any_child(void* /*arg*/) {
         task_mgr.Wait(static_cast<Pid>(-1), &status, false, false).value_or(0);
 
     if (result > 0) {
-      klog::Info("Parent: child PID=%zu exited with status %d\n", result,
-                 status);
+      klog::Info("Parent: child PID=%zu exited with status %d", result, status);
       completed++;
     } else {
-      klog::Err("Parent: wait failed with result %zu\n", result);
+      klog::Err("Parent: wait failed with result %zu", result);
       break;
     }
   }
 
   if (completed == kChildCount) {
-    klog::Info("Wait Any Child Test: PASS\n");
+    klog::Info("Wait Any Child Test: PASS");
   } else {
-    klog::Err("Wait Any Child Test: FAIL - only %d/%d children reaped\n",
+    klog::Err("Wait Any Child Test: FAIL - only %d/%d children reaped",
               completed, kChildCount);
   }
 
@@ -162,26 +161,26 @@ void test_wait_any_child(void* /*arg*/) {
 void slow_child_work(void* arg) {
   uint64_t child_id = reinterpret_cast<uint64_t>(arg);
 
-  klog::Info("SlowChild %zu: starting\n", child_id);
+  klog::Info("SlowChild %zu: starting", child_id);
 
   // 执行较长时间的工作
   for (int i = 0; i < 10; ++i) {
-    klog::Debug("SlowChild %zu: working, iter=%d\n", child_id, i);
+    klog::Debug("SlowChild %zu: working, iter=%d", child_id, i);
     sys_sleep(100);
   }
 
-  klog::Info("SlowChild %zu: exiting\n", child_id);
+  klog::Info("SlowChild %zu: exiting", child_id);
   sys_exit(0);
 }
 
 void test_wait_no_hang(void* /*arg*/) {
-  klog::Info("=== Wait NoHang Test ===\n");
+  klog::Info("=== Wait NoHang Test ===");
 
   auto& task_mgr = TaskManagerSingleton::instance();
   auto* current = task_mgr.GetCurrentTask();
 
   if (!current) {
-    klog::Err("Wait NoHang Test: Cannot get current task\n");
+    klog::Err("Wait NoHang Test: Cannot get current task");
     sys_exit(1);
   }
 
@@ -193,15 +192,15 @@ void test_wait_no_hang(void* /*arg*/) {
   task_mgr.AddTask(child);
   Pid child_pid = child->pid;
 
-  klog::Info("Parent: created slow child with PID=%zu\n", child_pid);
+  klog::Info("Parent: created slow child with PID=%zu", child_pid);
 
   // 立即尝试非阻塞 wait
   int status = 0;
   Pid result = task_mgr.Wait(child_pid, &status, true, false).value_or(0);
 
   if (result == 0) {
-    klog::Info("Parent: no-hang wait returned 0 (child still running)\n");
-    klog::Info("Wait NoHang Test: PASS\n");
+    klog::Info("Parent: no-hang wait returned 0 (child still running)");
+    klog::Info("Wait NoHang Test: PASS");
   } else {
     klog::Err(
         "Wait NoHang Test: FAIL - expected 0, got %zu (child shouldn't have "
@@ -211,7 +210,7 @@ void test_wait_no_hang(void* /*arg*/) {
 
   // 清理：等待子进程实际退出（阻塞）
   result = task_mgr.Wait(child_pid, &status, false, false).value_or(0);
-  klog::Info("Parent: child finally exited with PID=%zu\n", result);
+  klog::Info("Parent: child finally exited with PID=%zu", result);
 
   g_tests_completed++;
   sys_exit(0);
@@ -221,13 +220,13 @@ void test_wait_no_hang(void* /*arg*/) {
  * @brief 测试等待同进程组的子进程
  */
 void test_wait_process_group(void* /*arg*/) {
-  klog::Info("=== Wait Process Group Test ===\n");
+  klog::Info("=== Wait Process Group Test ===");
 
   auto& task_mgr = TaskManagerSingleton::instance();
   auto* current = task_mgr.GetCurrentTask();
 
   if (!current) {
-    klog::Err("Wait Process Group Test: Cannot get current task\n");
+    klog::Err("Wait Process Group Test: Cannot get current task");
     sys_exit(1);
   }
 
@@ -244,7 +243,7 @@ void test_wait_process_group(void* /*arg*/) {
   child2->pgid = 9999;  // 不同进程组
   task_mgr.AddTask(child2);
 
-  klog::Info("Parent: created child1 (pgid=%zu) and child2 (pgid=%zu)\n",
+  klog::Info("Parent: created child1 (pgid=%zu) and child2 (pgid=%zu)",
              child1->pgid, child2->pgid);
 
   // 等待同进程组的子进程 (pid = 0)
@@ -252,16 +251,16 @@ void test_wait_process_group(void* /*arg*/) {
   Pid result = task_mgr.Wait(0, &status, false, false).value_or(0);
 
   if (result == child1->pid) {
-    klog::Info("Parent: correctly waited for same-pgid child %zu\n", result);
-    klog::Info("Wait Process Group Test: PASS\n");
+    klog::Info("Parent: correctly waited for same-pgid child %zu", result);
+    klog::Info("Wait Process Group Test: PASS");
   } else {
-    klog::Err("Wait Process Group Test: FAIL - got PID=%zu, expected %zu\n",
+    klog::Err("Wait Process Group Test: FAIL - got PID=%zu, expected %zu",
               result, child1->pid);
   }
 
   // 清理另一个子进程
   result = task_mgr.Wait(child2->pid, &status, false, false).value_or(0);
-  klog::Info("Parent: cleaned up child2 PID=%zu\n", result);
+  klog::Info("Parent: cleaned up child2 PID=%zu", result);
 
   g_tests_completed++;
   sys_exit(0);
@@ -272,20 +271,20 @@ void test_wait_process_group(void* /*arg*/) {
  */
 void zombie_child_work(void* arg) {
   uint64_t child_id = reinterpret_cast<uint64_t>(arg);
-  klog::Info("ZombieChild %zu: exiting immediately\n", child_id);
+  klog::Info("ZombieChild %zu: exiting immediately", child_id);
   g_wait_completed++;
   sys_exit(0);
 }
 
 void test_wait_zombie_reap(void* /*arg*/) {
-  klog::Info("=== Wait Zombie Reap Test ===\n");
+  klog::Info("=== Wait Zombie Reap Test ===");
 
   g_wait_completed = 0;
   auto& task_mgr = TaskManagerSingleton::instance();
   auto* current = task_mgr.GetCurrentTask();
 
   if (!current) {
-    klog::Err("Wait Zombie Reap Test: Cannot get current task\n");
+    klog::Err("Wait Zombie Reap Test: Cannot get current task");
     sys_exit(1);
   }
 
@@ -297,7 +296,7 @@ void test_wait_zombie_reap(void* /*arg*/) {
   task_mgr.AddTask(child);
   Pid child_pid = child->pid;
 
-  klog::Info("Parent: created zombie child with PID=%zu\n", child_pid);
+  klog::Info("Parent: created zombie child with PID=%zu", child_pid);
 
   // 等待一段时间让子进程变成僵尸
   sys_sleep(200);
@@ -307,10 +306,10 @@ void test_wait_zombie_reap(void* /*arg*/) {
   Pid result = task_mgr.Wait(child_pid, &status, false, false).value_or(0);
 
   if (result == child_pid) {
-    klog::Info("Parent: successfully reaped zombie child %zu\n", result);
-    klog::Info("Wait Zombie Reap Test: PASS\n");
+    klog::Info("Parent: successfully reaped zombie child %zu", result);
+    klog::Info("Wait Zombie Reap Test: PASS");
   } else {
-    klog::Err("Wait Zombie Reap Test: FAIL - wait returned %zu\n", result);
+    klog::Err("Wait Zombie Reap Test: FAIL - wait returned %zu", result);
   }
 
   g_tests_completed++;

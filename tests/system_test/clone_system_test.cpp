@@ -33,16 +33,16 @@ std::atomic<int> g_tests_failed{0};
 void child_process_work(void* arg) {
   uint64_t child_id = reinterpret_cast<uint64_t>(arg);
 
-  klog::Info("Child process %zu: starting\n", child_id);
+  klog::Info("Child process %zu: starting", child_id);
 
   for (int i = 0; i < 5; ++i) {
     g_process_counter++;
-    klog::Debug("Child process %zu: counter=%d, iter=%d\n", child_id,
+    klog::Debug("Child process %zu: counter=%d, iter=%d", child_id,
                 g_process_counter.load(), i);
     sys_sleep(20);
   }
 
-  klog::Info("Child process %zu: exiting\n", child_id);
+  klog::Info("Child process %zu: exiting", child_id);
   sys_exit(static_cast<int>(child_id));
 }
 
@@ -52,16 +52,16 @@ void child_process_work(void* arg) {
 void child_thread_work(void* arg) {
   uint64_t thread_id = reinterpret_cast<uint64_t>(arg);
 
-  klog::Info("Child thread %zu: starting\n", thread_id);
+  klog::Info("Child thread %zu: starting", thread_id);
 
   for (int i = 0; i < 5; ++i) {
     g_thread_counter++;
-    klog::Debug("Child thread %zu: counter=%d, iter=%d\n", thread_id,
+    klog::Debug("Child thread %zu: counter=%d, iter=%d", thread_id,
                 g_thread_counter.load(), i);
     sys_sleep(20);
   }
 
-  klog::Info("Child thread %zu: exiting\n", thread_id);
+  klog::Info("Child thread %zu: exiting", thread_id);
   sys_exit(static_cast<int>(thread_id));
 }
 
@@ -69,7 +69,7 @@ void child_thread_work(void* arg) {
  * @brief 测试使用 clone 创建子进程（不共享地址空间）
  */
 void test_clone_process(void* /*arg*/) {
-  klog::Info("=== Clone Process Test ===\n");
+  klog::Info("=== Clone Process Test ===");
 
   bool passed = true;
   g_process_counter = 0;
@@ -103,36 +103,35 @@ void test_clone_process(void* /*arg*/) {
 
   TaskManagerSingleton::instance().AddTask(child2);
 
-  klog::Info("Created parent (pid=%zu) and 2 child processes\n", parent->pid);
+  klog::Info("Created parent (pid=%zu) and 2 child processes", parent->pid);
 
   // 等待子进程运行
   sys_sleep(200);
 
-  klog::Info("Process counter: %d (expected >= 10)\n",
-             g_process_counter.load());
+  klog::Info("Process counter: %d (expected >= 10)", g_process_counter.load());
 
   // 验证子进程的 tgid 应该等于它们自己的 pid（独立进程）
   if (child1->tgid == child1->pid && child2->tgid == child2->pid) {
-    klog::Info("Child processes have correct tgid\n");
+    klog::Info("Child processes have correct tgid");
   } else {
-    klog::Err("Child processes have incorrect tgid\n");
+    klog::Err("Child processes have incorrect tgid");
     passed = false;
     g_tests_failed++;
   }
 
   // 验证父子关系
   if (child1->parent_pid == parent->pid && child2->parent_pid == parent->pid) {
-    klog::Info("Parent-child relationship is correct\n");
+    klog::Info("Parent-child relationship is correct");
   } else {
-    klog::Err("Parent-child relationship is incorrect\n");
+    klog::Err("Parent-child relationship is incorrect");
     passed = false;
     g_tests_failed++;
   }
 
   if (passed) {
-    klog::Info("Clone Process Test: PASSED\n");
+    klog::Info("Clone Process Test: PASSED");
   } else {
-    klog::Err("Clone Process Test: FAILED\n");
+    klog::Err("Clone Process Test: FAILED");
   }
 
   g_tests_completed++;
@@ -143,7 +142,7 @@ void test_clone_process(void* /*arg*/) {
  * @brief 测试使用 clone 创建线程（共享地址空间）
  */
 void test_clone_thread(void* /*arg*/) {
-  klog::Info("=== Clone Thread Test ===\n");
+  klog::Info("=== Clone Thread Test ===");
 
   bool passed = true;
   g_thread_counter = 0;
@@ -183,38 +182,38 @@ void test_clone_thread(void* /*arg*/) {
 
   TaskManagerSingleton::instance().AddTask(thread2);
 
-  klog::Info("Created thread leader (pid=%zu, tgid=%zu) and 2 threads\n",
+  klog::Info("Created thread leader (pid=%zu, tgid=%zu) and 2 threads",
              leader->pid, leader->tgid);
 
   // 等待线程运行
   sys_sleep(200);
 
-  klog::Info("Thread counter: %d (expected >= 10)\n", g_thread_counter.load());
+  klog::Info("Thread counter: %d (expected >= 10)", g_thread_counter.load());
 
   // 验证所有线程的 tgid 应该相同（属于同一线程组）
   if (thread1->tgid == leader->tgid && thread2->tgid == leader->tgid) {
-    klog::Info("All threads have same tgid\n");
+    klog::Info("All threads have same tgid");
   } else {
-    klog::Err("Threads have incorrect tgid\n");
+    klog::Err("Threads have incorrect tgid");
     passed = false;
     g_tests_failed++;
   }
 
   // 验证线程组大小
   size_t group_size = leader->GetThreadGroupSize();
-  klog::Info("Thread group size: %zu (expected 3)\n", group_size);
+  klog::Info("Thread group size: %zu (expected 3)", group_size);
   if (group_size == 3) {
-    klog::Info("Thread group size is correct\n");
+    klog::Info("Thread group size is correct");
   } else {
-    klog::Err("Thread group size is incorrect\n");
+    klog::Err("Thread group size is incorrect");
     passed = false;
     g_tests_failed++;
   }
 
   if (passed) {
-    klog::Info("Clone Thread Test: PASSED\n");
+    klog::Info("Clone Thread Test: PASSED");
   } else {
-    klog::Err("Clone Thread Test: FAILED\n");
+    klog::Err("Clone Thread Test: FAILED");
   }
 
   g_tests_completed++;
@@ -225,7 +224,7 @@ void test_clone_thread(void* /*arg*/) {
  * @brief 测试 kCloneParent 标志
  */
 void test_clone_parent_flag(void* /*arg*/) {
-  klog::Info("=== Clone Parent Flag Test ===\n");
+  klog::Info("=== Clone Parent Flag Test ===");
 
   bool passed = true;
 
@@ -261,15 +260,15 @@ void test_clone_parent_flag(void* /*arg*/) {
   bool check1 = (child_no_flag->parent_pid == parent->pid);
   bool check2 = (child_with_flag->parent_pid == grandparent->pid);
 
-  klog::Info("Child without kCloneParent: parent_pid=%zu (expected %zu)\n",
+  klog::Info("Child without kCloneParent: parent_pid=%zu (expected %zu)",
              child_no_flag->parent_pid, parent->pid);
-  klog::Info("Child with kCloneParent: parent_pid=%zu (expected %zu)\n",
+  klog::Info("Child with kCloneParent: parent_pid=%zu (expected %zu)",
              child_with_flag->parent_pid, grandparent->pid);
 
   if (check1 && check2) {
-    klog::Info("kCloneParent flag works correctly\n");
+    klog::Info("kCloneParent flag works correctly");
   } else {
-    klog::Err("kCloneParent flag test failed\n");
+    klog::Err("kCloneParent flag test failed");
     passed = false;
     g_tests_failed++;
   }
@@ -280,9 +279,9 @@ void test_clone_parent_flag(void* /*arg*/) {
   delete child_with_flag;
 
   if (passed) {
-    klog::Info("Clone Parent Flag Test: PASSED\n");
+    klog::Info("Clone Parent Flag Test: PASSED");
   } else {
-    klog::Err("Clone Parent Flag Test: FAILED\n");
+    klog::Err("Clone Parent Flag Test: FAILED");
   }
 
   g_tests_completed++;
@@ -293,7 +292,7 @@ void test_clone_parent_flag(void* /*arg*/) {
  * @brief 测试 clone 时的标志位自动补全
  */
 void test_clone_flags_auto_completion(void* /*arg*/) {
-  klog::Info("=== Clone Flags Auto Completion Test ===\n");
+  klog::Info("=== Clone Flags Auto Completion Test ===");
 
   bool passed = true;
 
@@ -303,7 +302,7 @@ void test_clone_flags_auto_completion(void* /*arg*/) {
   if ((flags & clone_flag::kThread) &&
       (!(flags & clone_flag::kVm) || !(flags & clone_flag::kFiles) ||
        !(flags & clone_flag::kSighand))) {
-    klog::Info("Auto-completing flags for kCloneThread\n");
+    klog::Info("Auto-completing flags for kCloneThread");
     flags |= (clone_flag::kVm | clone_flag::kFiles | clone_flag::kSighand);
   }
 
@@ -312,20 +311,20 @@ void test_clone_flags_auto_completion(void* /*arg*/) {
   bool check3 = (flags & clone_flag::kFiles);
   bool check4 = (flags & clone_flag::kSighand);
 
-  klog::Info("Flags after auto-completion: 0x%lx\n", flags);
+  klog::Info("Flags after auto-completion: 0x%lx", flags);
 
   if (check1 && check2 && check3 && check4) {
-    klog::Info("All required flags are set\n");
+    klog::Info("All required flags are set");
   } else {
-    klog::Err("Flag auto-completion failed\n");
+    klog::Err("Flag auto-completion failed");
     passed = false;
     g_tests_failed++;
   }
 
   if (passed) {
-    klog::Info("Clone Flags Auto Completion Test: PASSED\n");
+    klog::Info("Clone Flags Auto Completion Test: PASSED");
   } else {
-    klog::Err("Clone Flags Auto Completion Test: FAILED\n");
+    klog::Err("Clone Flags Auto Completion Test: FAILED");
   }
 
   g_tests_completed++;
@@ -338,7 +337,7 @@ void test_clone_flags_auto_completion(void* /*arg*/) {
  * @brief Clone 系统测试入口
  */
 auto clone_system_test() -> bool {
-  klog::Info("===== Clone System Test Start =====\n");
+  klog::Info("===== Clone System Test Start =====");
 
   g_tests_completed = 0;
   g_tests_failed = 0;
@@ -378,6 +377,6 @@ auto clone_system_test() -> bool {
   EXPECT_EQ(g_tests_completed, 4, "tests completed");
   EXPECT_EQ(g_tests_failed, 0, "tests failed");
 
-  klog::Info("Clone System Test Suite: COMPLETED\n");
+  klog::Info("Clone System Test Suite: COMPLETED");
   return true;
 }

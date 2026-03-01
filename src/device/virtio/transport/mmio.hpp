@@ -132,14 +132,14 @@ class MmioTransport final : public Transport {
 
     auto magic = mmio_.Read<uint32_t>(MmioReg::kMagicValue);
     if (magic != kMmioMagicValue) {
-      klog::Debug("MMIO magic value mismatch: expected {:#08x}, got {:#08x}\n",
+      klog::Debug("MMIO magic value mismatch: expected {:#08x}, got {:#08x}",
                   kMmioMagicValue, magic);
       return;
     }
 
     auto version = mmio_.Read<uint32_t>(MmioReg::kVersion);
     if (version != kMmioVersionModern) {
-      klog::Debug("MMIO version not supported: expected {}, got {}\n",
+      klog::Debug("MMIO version not supported: expected {}, got {}",
                   kMmioVersionModern, version);
       return;
     }
@@ -154,7 +154,7 @@ class MmioTransport final : public Transport {
     this->Reset();
     is_valid_ = true;
 
-    klog::Debug("MMIO device initialized: DeviceID={:#08x}, VendorID={:#08x}\n",
+    klog::Debug("MMIO device initialized: DeviceID={:#08x}, VendorID={:#08x}",
                 device_id_, vendor_id_);
   }
 

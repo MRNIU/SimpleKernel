@@ -12,7 +12,7 @@
 namespace {
 auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)
     -> uint64_t {
-  klog::Info("Default Interrupt handler {:#X}, {:#x}\n", cause,
+  klog::Info("Default Interrupt handler {:#X}, {:#x}", cause,
              reinterpret_cast<uintptr_t>(context));
   return 0;
 }
@@ -35,7 +35,7 @@ Interrupt::Interrupt() {
   auto cpuid = cpu_io::GetCurrentCoreId();
   gic_.SGI(0, cpuid);
 
-  klog::Info("Interrupt init.\n");
+  klog::Info("Interrupt init.");
 }
 
 void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
@@ -101,7 +101,7 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
   // 再在 GIC 上为指定核心配置并启用 SPI
   gic_.SPI(irq, cpu_id);
 
-  klog::Info("RegisterExternalInterrupt: INTID {}, cpu {}, priority {}\n", irq,
+  klog::Info("RegisterExternalInterrupt: INTID {}, cpu {}, priority {}", irq,
              cpu_id, priority);
   return {};
 }

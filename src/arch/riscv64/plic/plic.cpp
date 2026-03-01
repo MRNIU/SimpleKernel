@@ -13,7 +13,7 @@
 namespace {
 auto DefaultPlicHandler(uint64_t cause, cpu_io::TrapContext* context)
     -> uint64_t {
-  klog::Info("Default PLIC handler, cause: {:#x}, context: {:#x}\n", cause,
+  klog::Info("Default PLIC handler, cause: {:#x}, context: {:#x}", cause,
              reinterpret_cast<uintptr_t>(context));
   return 0;
 }
@@ -25,12 +25,12 @@ alignas(4) std::array<Plic::InterruptDelegate,
 Plic::Plic(uint64_t dev_addr, size_t ndev, size_t context_count)
     : base_addr_(dev_addr), ndev_(ndev), context_count_(context_count) {
   // 设置所有中断源的优先级为 0 (禁用)
-  klog::Info("Setting all interrupt priorities to 0\n");
+  klog::Info("Setting all interrupt priorities to 0");
   for (size_t source_id = 0; source_id <= ndev_; source_id++) {
     SourcePriority(source_id) = 0;
   }
 
-  klog::Info("Disabling all interrupts for all contexts\n");
+  klog::Info("Disabling all interrupts for all contexts");
 
   for (size_t context_id = 0; context_id < context_count_; context_id++) {
     // 设置优先级阈值为 0 (允许所有优先级的中断)

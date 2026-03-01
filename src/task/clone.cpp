@@ -15,7 +15,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
                                  cpu_io::TrapContext& parent_context) {
   auto* parent = GetCurrentTask();
   if (!parent) {
-    klog::Err("Clone: No current task\n");
+    klog::Err("Clone: No current task");
     return std::unexpected(Error(ErrorCode::kTaskNoCurrentTask));
   }
 
@@ -33,14 +33,14 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   // 分配新的 PID
   Pid new_pid = AllocatePid();
   if (new_pid == 0) {
-    klog::Err("Clone: Failed to allocate PID\n");
+    klog::Err("Clone: Failed to allocate PID");
     return std::unexpected(Error(ErrorCode::kTaskPidAllocationFailed));
   }
 
   // 创建子任务控制块
   auto* child = new TaskControlBlock();
   if (!child) {
-    klog::Err("Clone: Failed to allocate child task\n");
+    klog::Err("Clone: Failed to allocate child task");
     return std::unexpected(Error(ErrorCode::kTaskAllocationFailed));
   }
   // Default ctor leaves FSM in set_states-but-not-started state.
@@ -77,7 +77,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
       if (leader) {
         child->JoinThreadGroup(leader);
       } else {
-        klog::Warn("Clone: Thread group leader not found for tgid={}\n",
+        klog::Warn("Clone: Thread group leader not found for tgid={}",
                    parent->tgid);
         child->tgid = parent->tgid;
       }
@@ -96,32 +96,32 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   // 处理文件描述符表 (kCloneFiles)
   /// @todo 当前未实现文件系统，此标志暂时仅记录
   if (flags & clone_flag::kFiles) {
-    klog::Debug("Clone: sharing file descriptor table (not implemented)\n");
+    klog::Debug("Clone: sharing file descriptor table (not implemented)");
   } else {
-    klog::Debug("Clone: copying file descriptor table (not implemented)\n");
+    klog::Debug("Clone: copying file descriptor table (not implemented)");
   }
 
   // 处理信号处理器 (kCloneSighand)
   /// @todo 当前未实现信号机制，此标志暂时仅记录
   if (flags & clone_flag::kSighand) {
-    klog::Debug("Clone: sharing signal handlers (not implemented)\n");
+    klog::Debug("Clone: sharing signal handlers (not implemented)");
   } else {
-    klog::Debug("Clone: copying signal handlers (not implemented)\n");
+    klog::Debug("Clone: copying signal handlers (not implemented)");
   }
 
   // 处理文件系统信息 (kCloneFs)
   /// @todo 当前未实现文件系统，此标志暂时仅记录
   if (flags & clone_flag::kFs) {
-    klog::Debug("Clone: sharing filesystem info (not implemented)\n");
+    klog::Debug("Clone: sharing filesystem info (not implemented)");
   } else {
-    klog::Debug("Clone: copying filesystem info (not implemented)\n");
+    klog::Debug("Clone: copying filesystem info (not implemented)");
   }
 
   // 处理地址空间
   if (flags & clone_flag::kVm) {
     // 共享地址空间（线程）
     child->page_table = parent->page_table;
-    klog::Debug("Clone: sharing page table {}\n", child->page_table);
+    klog::Debug("Clone: sharing page table {}", child->page_table);
   } else {
     // 复制地址空间（进程）
     if (parent->page_table) {
@@ -129,14 +129,14 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
       auto result = VirtualMemorySingleton::instance().ClonePageDirectory(
           parent->page_table, true);
       if (!result.has_value()) {
-        klog::Err("Clone: Failed to clone page table: {}\n",
+        klog::Err("Clone: Failed to clone page table: {}",
                   result.error().message());
         delete child;
         return std::unexpected(Error(ErrorCode::kTaskPageTableCloneFailed));
       }
       child->page_table = reinterpret_cast<uint64_t*>(result.value());
-      klog::Debug("Clone: cloned page table from {} to {}\n",
-                  parent->page_table, child->page_table);
+      klog::Debug("Clone: cloned page table from {} to {}", parent->page_table,
+                  child->page_table);
     } else {
       // 父进程没有页表（内核线程），子进程也不需要
       child->page_table = nullptr;
@@ -148,7 +148,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
       aligned_alloc(cpu_io::virtual_memory::kPageSize,
                     TaskControlBlock::kDefaultKernelStackSize));
   if (!child->kernel_stack) {
-    klog::Err("Clone: Failed to allocate kernel stack\n");
+    klog::Err("Clone: Failed to allocate kernel stack");
     // 清理已分配的资源
     if (child->page_table && !(flags & clone_flag::kVm)) {
       // 如果是独立的页表，需要释放

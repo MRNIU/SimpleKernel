@@ -36,7 +36,7 @@ void TaskManager::Block(ResourceId resource_id) {
     current->blocked_on = resource_id;
     list.push_back(current);
 
-    klog::Debug("Block: pid={} blocked on resource={}, data={:#x}\n",
+    klog::Debug("Block: pid={} blocked on resource={}, data={:#x}",
                 current->pid, resource_id.GetTypeName(), resource_id.GetData());
   }
 

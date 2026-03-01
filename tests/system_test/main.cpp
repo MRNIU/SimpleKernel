@@ -50,14 +50,14 @@ std::array<test_case, 18> test_cases = {
 /// 主核运行所有测试
 void run_tests_main() {
   for (auto test : test_cases) {
-    klog::Info("----%s----\n", test.name);
+    klog::Info("----%s----", test.name);
     if (test.func()) {
-      klog::Info("----%s passed----\n", test.name);
+      klog::Info("----%s passed----", test.name);
     } else {
-      klog::Err("----%s failed----\n", test.name);
+      klog::Err("----%s failed----", test.name);
     }
   }
-  klog::Info("All tests done.\n");
+  klog::Info("All tests done.");
 }
 
 /// 从核只参与多核测试
@@ -77,7 +77,7 @@ auto main_smp(int argc, const char** argv) -> int {
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
   TaskManagerSingleton::instance().InitCurrentCore();
-  klog::Info("Hello SimpleKernel SMP\n");
+  klog::Info("Hello SimpleKernel SMP");
 
   // 从核只参与多核测试
   run_tests_smp();
@@ -130,7 +130,7 @@ auto main(int argc, const char** argv) -> int {
 
   DumpStack();
 
-  klog::info << "Hello SimpleKernel\n";
+  klog::info << "Hello SimpleKernel";
 
   // 主核运行所有测试（包括多核测试）
   run_tests_main();

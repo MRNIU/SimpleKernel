@@ -35,15 +35,15 @@ std::atomic<int> g_tests_failed{0};
 
 void normal_work(void* arg) {
   auto* flag = reinterpret_cast<std::atomic<int>*>(arg);
-  klog::Debug("normal_work: running\n");
+  klog::Debug("normal_work: running");
   sys_sleep(30);
   *flag = 1;
-  klog::Debug("normal_work: done, calling sys_exit(0)\n");
+  klog::Debug("normal_work: done, calling sys_exit(0)");
   sys_exit(0);
 }
 
 void test_exit_normal(void* /*arg*/) {
-  klog::Info("=== Exit Normal Test ===\n");
+  klog::Info("=== Exit Normal Test ===");
 
   bool passed = true;
 
@@ -55,13 +55,13 @@ void test_exit_normal(void* /*arg*/) {
 
   if (task->GetStatus() == TaskStatus::kExited ||
       task->GetStatus() == TaskStatus::kZombie) {
-    klog::Err("test_exit_normal: FAIL — fresh TCB already in terminal state\n");
+    klog::Err("test_exit_normal: FAIL — fresh TCB already in terminal state");
     passed = false;
   }
 
   // 2. exit_code 默认应为 0
   if (task->exit_code != 0) {
-    klog::Err("test_exit_normal: FAIL — default exit_code != 0 (got %d)\n",
+    klog::Err("test_exit_normal: FAIL — default exit_code != 0 (got %d)",
               task->exit_code);
     passed = false;
   }
@@ -80,10 +80,10 @@ void test_exit_normal(void* /*arg*/) {
   }
 
   if (work_flag.load() != 1) {
-    klog::Err("test_exit_normal: FAIL — worker did not complete\n");
+    klog::Err("test_exit_normal: FAIL — worker did not complete");
     passed = false;
   } else {
-    klog::Info("test_exit_normal: worker completed successfully\n");
+    klog::Info("test_exit_normal: worker completed successfully");
   }
 
   // 4. 向 task 写入退出信息并验证读回一致
@@ -92,14 +92,14 @@ void test_exit_normal(void* /*arg*/) {
   task->fsm.Receive(MsgSchedule{});     // kReady -> kRunning
   task->fsm.Receive(MsgExit{0, true});  // kRunning -> kZombie
   if (task->exit_code != 0 || task->GetStatus() != TaskStatus::kZombie) {
-    klog::Err("test_exit_normal: FAIL — TCB field write-back mismatch\n");
+    klog::Err("test_exit_normal: FAIL — TCB field write-back mismatch");
     passed = false;
   }
 
   if (passed) {
-    klog::Info("Exit Normal Test: PASSED\n");
+    klog::Info("Exit Normal Test: PASSED");
   } else {
-    klog::Err("Exit Normal Test: FAILED\n");
+    klog::Err("Exit Normal Test: FAILED");
     g_tests_failed++;
   }
 
@@ -114,15 +114,15 @@ void test_exit_normal(void* /*arg*/) {
 
 void error_work(void* arg) {
   auto* flag = reinterpret_cast<std::atomic<int>*>(arg);
-  klog::Debug("error_work: running\n");
+  klog::Debug("error_work: running");
   sys_sleep(30);
   *flag = 42;
-  klog::Debug("error_work: done, calling sys_exit(42)\n");
+  klog::Debug("error_work: done, calling sys_exit(42)");
   sys_exit(42);
 }
 
 void test_exit_with_error(void* /*arg*/) {
-  klog::Info("=== Exit With Error Test ===\n");
+  klog::Info("=== Exit With Error Test ===");
 
   bool passed = true;
 
@@ -133,7 +133,7 @@ void test_exit_with_error(void* /*arg*/) {
   task->parent_pid = 1;
 
   if (task->exit_code != 0) {
-    klog::Err("test_exit_with_error: FAIL — default exit_code != 0 (got %d)\n",
+    klog::Err("test_exit_with_error: FAIL — default exit_code != 0 (got %d)",
               task->exit_code);
     passed = false;
   }
@@ -151,11 +151,10 @@ void test_exit_with_error(void* /*arg*/) {
   }
 
   if (work_flag.load() != 42) {
-    klog::Err("test_exit_with_error: FAIL — worker did not set error flag\n");
+    klog::Err("test_exit_with_error: FAIL — worker did not set error flag");
     passed = false;
   } else {
-    klog::Info("test_exit_with_error: worker set flag to %d\n",
-               work_flag.load());
+    klog::Info("test_exit_with_error: worker set flag to %d", work_flag.load());
   }
 
   // 3. 验证 TCB 中的退出码字段可以正确存储非零值
@@ -171,14 +170,14 @@ void test_exit_with_error(void* /*arg*/) {
     passed = false;
   }
   if (task->GetStatus() != TaskStatus::kZombie) {
-    klog::Err("test_exit_with_error: FAIL — status write-back mismatch\n");
+    klog::Err("test_exit_with_error: FAIL — status write-back mismatch");
     passed = false;
   }
 
   if (passed) {
-    klog::Info("Exit With Error Test: PASSED\n");
+    klog::Info("Exit With Error Test: PASSED");
   } else {
-    klog::Err("Exit With Error Test: FAILED\n");
+    klog::Err("Exit With Error Test: FAILED");
     g_tests_failed++;
   }
 
@@ -193,20 +192,20 @@ void test_exit_with_error(void* /*arg*/) {
 void child_thread_exit_work(void* arg) {
   uint64_t thread_id = reinterpret_cast<uint64_t>(arg);
 
-  klog::Info("Thread %zu: starting\n", thread_id);
+  klog::Info("Thread %zu: starting", thread_id);
 
   for (int i = 0; i < 3; ++i) {
     g_exit_test_counter++;
-    klog::Debug("Thread %zu: working, iter=%d\n", thread_id, i);
+    klog::Debug("Thread %zu: working, iter=%d", thread_id, i);
     sys_sleep(30);
   }
 
-  klog::Info("Thread %zu: exiting\n", thread_id);
+  klog::Info("Thread %zu: exiting", thread_id);
   sys_exit(static_cast<int>(thread_id));
 }
 
 void test_thread_exit(void* /*arg*/) {
-  klog::Info("=== Thread Exit Test ===\n");
+  klog::Info("=== Thread Exit Test ===");
 
   g_exit_test_counter = 0;
 
@@ -235,21 +234,21 @@ void test_thread_exit(void* /*arg*/) {
 
   TaskManagerSingleton::instance().AddTask(thread2);
 
-  klog::Info("Created thread group with leader (pid=%zu) and 2 threads\n",
+  klog::Info("Created thread group with leader (pid=%zu) and 2 threads",
              leader->pid);
 
   // 等待线程运行并退出
   sys_sleep(200);
 
-  klog::Info("Exit test counter: %d (expected >= 6)\n",
+  klog::Info("Exit test counter: %d (expected >= 6)",
              g_exit_test_counter.load());
 
   bool passed = (g_exit_test_counter.load() >= 6);
 
   if (passed) {
-    klog::Info("Thread Exit Test: PASSED\n");
+    klog::Info("Thread Exit Test: PASSED");
   } else {
-    klog::Err("Thread Exit Test: FAILED (counter=%d, expected >= 6)\n",
+    klog::Err("Thread Exit Test: FAILED (counter=%d, expected >= 6)",
               g_exit_test_counter.load());
     g_tests_failed++;
   }
@@ -267,15 +266,15 @@ void test_thread_exit(void* /*arg*/) {
 
 void orphan_work(void* arg) {
   auto* flag = reinterpret_cast<std::atomic<int>*>(arg);
-  klog::Debug("orphan_work: running\n");
+  klog::Debug("orphan_work: running");
   sys_sleep(30);
   *flag = 1;
-  klog::Debug("orphan_work: done\n");
+  klog::Debug("orphan_work: done");
   sys_exit(0);
 }
 
 void test_orphan_exit(void* /*arg*/) {
-  klog::Info("=== Orphan Exit Test ===\n");
+  klog::Info("=== Orphan Exit Test ===");
 
   bool passed = true;
 
@@ -286,7 +285,7 @@ void test_orphan_exit(void* /*arg*/) {
   orphan->parent_pid = 0;  // 孤儿进程
 
   if (orphan->parent_pid != 0) {
-    klog::Err("test_orphan_exit: FAIL — parent_pid not stored as 0 (got %zu)\n",
+    klog::Err("test_orphan_exit: FAIL — parent_pid not stored as 0 (got %zu)",
               orphan->parent_pid);
     passed = false;
   }
@@ -304,7 +303,7 @@ void test_orphan_exit(void* /*arg*/) {
     passed = false;
   }
   if (orphan->parent_pid != 0) {
-    klog::Err("test_orphan_exit: FAIL — parent_pid changed unexpectedly\n");
+    klog::Err("test_orphan_exit: FAIL — parent_pid changed unexpectedly");
     passed = false;
   }
 
@@ -322,16 +321,16 @@ void test_orphan_exit(void* /*arg*/) {
   }
 
   if (work_flag.load() != 1) {
-    klog::Err("test_orphan_exit: FAIL — orphan worker did not complete\n");
+    klog::Err("test_orphan_exit: FAIL — orphan worker did not complete");
     passed = false;
   } else {
-    klog::Info("test_orphan_exit: orphan worker completed\n");
+    klog::Info("test_orphan_exit: orphan worker completed");
   }
 
   if (passed) {
-    klog::Info("Orphan Exit Test: PASSED\n");
+    klog::Info("Orphan Exit Test: PASSED");
   } else {
-    klog::Err("Orphan Exit Test: FAILED\n");
+    klog::Err("Orphan Exit Test: FAILED");
     g_tests_failed++;
   }
 
@@ -348,15 +347,15 @@ void test_orphan_exit(void* /*arg*/) {
 
 void child_work(void* arg) {
   auto* flag = reinterpret_cast<std::atomic<int>*>(arg);
-  klog::Debug("child_work: running\n");
+  klog::Debug("child_work: running");
   sys_sleep(30);
   *flag = 1;
-  klog::Debug("child_work: done\n");
+  klog::Debug("child_work: done");
   sys_exit(0);
 }
 
 void test_zombie_process(void* /*arg*/) {
-  klog::Info("=== Zombie Process Test ===\n");
+  klog::Info("=== Zombie Process Test ===");
 
   bool passed = true;
 
@@ -421,16 +420,16 @@ void test_zombie_process(void* /*arg*/) {
   }
 
   if (work_flag.load() != 1) {
-    klog::Err("test_zombie_process: FAIL — child worker did not complete\n");
+    klog::Err("test_zombie_process: FAIL — child worker did not complete");
     passed = false;
   } else {
-    klog::Info("test_zombie_process: child worker completed\n");
+    klog::Info("test_zombie_process: child worker completed");
   }
 
   if (passed) {
-    klog::Info("Zombie Process Test: PASSED\n");
+    klog::Info("Zombie Process Test: PASSED");
   } else {
-    klog::Err("Zombie Process Test: FAILED\n");
+    klog::Err("Zombie Process Test: FAILED");
     g_tests_failed++;
   }
 
@@ -444,7 +443,7 @@ void test_zombie_process(void* /*arg*/) {
  * @brief Exit 系统测试入口
  */
 auto exit_system_test() -> bool {
-  klog::Info("===== Exit System Test Start =====\n");
+  klog::Info("===== Exit System Test Start =====");
 
   // 重置全局计数器
   g_tests_completed = 0;
@@ -478,7 +477,7 @@ auto exit_system_test() -> bool {
                                      test_zombie_process, nullptr);
   task_mgr.AddTask(test5);
 
-  klog::Info("Waiting for all 5 sub-tests to complete...\n");
+  klog::Info("Waiting for all 5 sub-tests to complete...");
 
   // 等待所有子测试完成（每个子测试在退出前会增加 g_tests_completed）
   // 超时: 200 * 50ms = 10s
@@ -491,12 +490,12 @@ auto exit_system_test() -> bool {
     timeout--;
   }
 
-  klog::Info("Exit System Test: completed=%d, failed=%d\n",
+  klog::Info("Exit System Test: completed=%d, failed=%d",
              g_tests_completed.load(), g_tests_failed.load());
 
   EXPECT_EQ(g_tests_completed, 5, "All 5 sub-tests completed");
   EXPECT_EQ(g_tests_failed, 0, "No sub-tests failed");
 
-  klog::Info("===== Exit System Test End =====\n");
+  klog::Info("===== Exit System Test End =====");
   return true;
 }

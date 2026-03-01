@@ -23,7 +23,7 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
   auto* ehdr = reinterpret_cast<const Elf64_Ehdr*>(elf_data);
   if (ehdr->e_ident[EI_MAG0] != ELFMAG0 || ehdr->e_ident[EI_MAG1] != ELFMAG1 ||
       ehdr->e_ident[EI_MAG2] != ELFMAG2 || ehdr->e_ident[EI_MAG3] != ELFMAG3) {
-    klog::Err("Invalid ELF magic\n");
+    klog::Err("Invalid ELF magic");
     return 0;
   }
 
@@ -50,7 +50,7 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
       void* p_page = aligned_alloc(cpu_io::virtual_memory::kPageSize,
                                    cpu_io::virtual_memory::kPageSize);
       if (!p_page) {
-        klog::Err("Failed to allocate page for ELF\n");
+        klog::Err("Failed to allocate page for ELF");
         return 0;
       }
       kstd::memset(p_page, 0, cpu_io::virtual_memory::kPageSize);
@@ -74,7 +74,7 @@ uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
       }
 
       if (!vm.MapPage(page_table, (void*)page, p_page, flags)) {
-        klog::Err("MapPage failed\n");
+        klog::Err("MapPage failed");
         return 0;
       }
     }
@@ -138,7 +138,7 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority,
   kernel_stack = static_cast<uint8_t*>(aligned_alloc(
       cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
   if (!kernel_stack) {
-    klog::Err("Failed to allocate kernel stack for task {}\n", name);
+    klog::Err("Failed to allocate kernel stack for task {}", name);
     return;
   }
 

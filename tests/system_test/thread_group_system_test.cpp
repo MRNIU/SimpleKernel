@@ -35,13 +35,13 @@ void thread_increment(void* arg) {
 
   for (int i = 0; i < 10; ++i) {
     g_thread_counter++;
-    klog::Debug("Thread %zu: counter=%d, iter=%d\n", thread_id,
+    klog::Debug("Thread %zu: counter=%d, iter=%d", thread_id,
                 g_thread_counter.load(), i);
     sys_sleep(10);
   }
 
   g_thread_completed++;
-  klog::Info("Thread %zu: completed\n", thread_id);
+  klog::Info("Thread %zu: completed", thread_id);
   sys_exit(0);
 }
 
@@ -49,7 +49,7 @@ void thread_increment(void* arg) {
  * @brief 测试线程组的基本功能
  */
 void test_thread_group_basic(void* /*arg*/) {
-  klog::Info("=== Thread Group Basic Test ===\n");
+  klog::Info("=== Thread Group Basic Test ===");
 
   g_thread_counter = 0;
   g_thread_completed = 0;
@@ -78,15 +78,15 @@ void test_thread_group_basic(void* /*arg*/) {
 
   // 验证线程组大小
   size_t group_size = leader->GetThreadGroupSize();
-  klog::Info("Thread group size: %zu (expected 4)\n", group_size);
+  klog::Info("Thread group size: %zu (expected 4)", group_size);
 
   // 验证所有线程在同一线程组
   if (leader->InSameThreadGroup(thread1) &&
       leader->InSameThreadGroup(thread2) &&
       leader->InSameThreadGroup(thread3)) {
-    klog::Info("All threads are in the same thread group: PASS\n");
+    klog::Info("All threads are in the same thread group: PASS");
   } else {
-    klog::Err("Thread group membership check failed: FAIL\n");
+    klog::Err("Thread group membership check failed: FAIL");
   }
 
   // 添加到调度器
@@ -100,19 +100,18 @@ void test_thread_group_basic(void* /*arg*/) {
     sys_sleep(50);
   }
 
-  klog::Info("Thread completed count: %d (expected 3)\n",
+  klog::Info("Thread completed count: %d (expected 3)",
              g_thread_completed.load());
-  klog::Info("Final counter value: %d (expected 30)\n",
-             g_thread_counter.load());
+  klog::Info("Final counter value: %d (expected 30)", g_thread_counter.load());
 
   // 清理
   delete leader;
 
   bool passed = (g_thread_completed == 3 && g_thread_counter >= 30);
   if (passed) {
-    klog::Info("Thread Group Basic Test: PASS\n");
+    klog::Info("Thread Group Basic Test: PASS");
   } else {
-    klog::Err("Thread Group Basic Test: FAIL\n");
+    klog::Err("Thread Group Basic Test: FAIL");
     g_tests_failed++;
   }
 
@@ -124,7 +123,7 @@ void test_thread_group_basic(void* /*arg*/) {
  * @brief 测试线程组的动态加入和离开
  */
 void test_thread_group_dynamic(void* /*arg*/) {
-  klog::Info("=== Thread Group Dynamic Test ===\n");
+  klog::Info("=== Thread Group Dynamic Test ===");
 
   // 创建主线程
   auto* leader = new TaskControlBlock("DynamicLeader", 10, nullptr, nullptr);
@@ -141,27 +140,27 @@ void test_thread_group_dynamic(void* /*arg*/) {
   }
 
   // 动态加入
-  klog::Info("Joining threads...\n");
+  klog::Info("Joining threads...");
   for (int i = 0; i < kThreadCount; ++i) {
     threads[i]->JoinThreadGroup(leader);
     size_t size = leader->GetThreadGroupSize();
-    klog::Debug("After join %d: group size=%zu\n", i, size);
+    klog::Debug("After join %d: group size=%zu", i, size);
   }
 
   size_t final_size = leader->GetThreadGroupSize();
-  klog::Info("Final group size: %zu (expected %d)\n", final_size,
+  klog::Info("Final group size: %zu (expected %d)", final_size,
              kThreadCount + 1);
 
   // 动态离开
-  klog::Info("Leaving threads...\n");
+  klog::Info("Leaving threads...");
   for (int i = 0; i < kThreadCount; ++i) {
     threads[i]->LeaveThreadGroup();
     size_t size = leader->GetThreadGroupSize();
-    klog::Debug("After leave %d: group size=%zu\n", i, size);
+    klog::Debug("After leave %d: group size=%zu", i, size);
   }
 
   size_t remaining_size = leader->GetThreadGroupSize();
-  klog::Info("Remaining group size: %zu (expected 1)\n", remaining_size);
+  klog::Info("Remaining group size: %zu (expected 1)", remaining_size);
 
   // 清理
   for (int i = 0; i < kThreadCount; ++i) {
@@ -172,9 +171,9 @@ void test_thread_group_dynamic(void* /*arg*/) {
   bool passed = (final_size == static_cast<size_t>(kThreadCount + 1) &&
                  remaining_size == 1);
   if (passed) {
-    klog::Info("Thread Group Dynamic Test: PASS\n");
+    klog::Info("Thread Group Dynamic Test: PASS");
   } else {
-    klog::Err("Thread Group Dynamic Test: FAIL\n");
+    klog::Err("Thread Group Dynamic Test: FAIL");
     g_tests_failed++;
   }
 
@@ -190,17 +189,17 @@ void concurrent_exit_worker(void* arg) {
 
   // 执行一些工作
   for (int i = 0; i < 5; ++i) {
-    klog::Debug("ConcurrentExitWorker %zu: iter=%d\n", thread_id, i);
+    klog::Debug("ConcurrentExitWorker %zu: iter=%d", thread_id, i);
     sys_sleep(20);
   }
 
-  klog::Info("ConcurrentExitWorker %zu: exiting\n", thread_id);
+  klog::Info("ConcurrentExitWorker %zu: exiting", thread_id);
   g_thread_completed++;
   sys_exit(0);
 }
 
 void test_thread_group_concurrent_exit(void* /*arg*/) {
-  klog::Info("=== Thread Group Concurrent Exit Test ===\n");
+  klog::Info("=== Thread Group Concurrent Exit Test ===");
 
   g_thread_completed = 0;
 
@@ -220,23 +219,23 @@ void test_thread_group_concurrent_exit(void* /*arg*/) {
     TaskManagerSingleton::instance().AddTask(worker);
   }
 
-  klog::Info("Started %d worker threads\n", kWorkerCount);
+  klog::Info("Started %d worker threads", kWorkerCount);
 
   // 等待所有线程完成
   for (int i = 0; i < 100 && g_thread_completed < kWorkerCount; ++i) {
     sys_sleep(50);
   }
 
-  klog::Info("Completed threads: %d (expected %d)\n", g_thread_completed.load(),
+  klog::Info("Completed threads: %d (expected %d)", g_thread_completed.load(),
              kWorkerCount);
 
   delete leader;
 
   bool passed = (g_thread_completed == kWorkerCount);
   if (passed) {
-    klog::Info("Thread Group Concurrent Exit Test: PASS\n");
+    klog::Info("Thread Group Concurrent Exit Test: PASS");
   } else {
-    klog::Err("Thread Group Concurrent Exit Test: FAIL\n");
+    klog::Err("Thread Group Concurrent Exit Test: FAIL");
     g_tests_failed++;
   }
 

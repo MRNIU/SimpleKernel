@@ -16,7 +16,7 @@ IoApic::IoApic() {
     WriteRedirectionEntry(i, entry);
   }
 
-  klog::Info("IO APIC initialization completed\n");
+  klog::Info("IO APIC initialization completed");
 }
 
 void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
@@ -24,7 +24,7 @@ void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
   // 检查 IRQ 是否在有效范围内
   auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
-    klog::Err("IRQ {} exceeds maximum entries {}\n", irq, max_entries);
+    klog::Err("IRQ {} exceeds maximum entries {}", irq, max_entries);
   }
 
   // 构造重定向表项
@@ -47,7 +47,7 @@ void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
 void IoApic::MaskIrq(uint8_t irq) const {
   auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
-    klog::Err("IRQ {} exceeds maximum entries {}\n", irq, max_entries);
+    klog::Err("IRQ {} exceeds maximum entries {}", irq, max_entries);
   }
 
   auto entry = ReadRedirectionEntry(irq);
@@ -58,7 +58,7 @@ void IoApic::MaskIrq(uint8_t irq) const {
 void IoApic::UnmaskIrq(uint8_t irq) const {
   auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
-    klog::Err("IRQ {} exceeds maximum entries {}\n", irq, max_entries);
+    klog::Err("IRQ {} exceeds maximum entries {}", irq, max_entries);
   }
 
   auto entry = ReadRedirectionEntry(irq);
@@ -82,11 +82,11 @@ uint32_t IoApic::GetMaxRedirectionEntries() const {
 }
 
 void IoApic::PrintInfo() const {
-  klog::Info("IO APIC Information\n");
-  klog::Info("Base Address: {:#x}\n", base_address_);
-  klog::Info("ID: {:#x}\n", GetId());
-  klog::Info("Version: {:#x}\n", GetVersion());
-  klog::Info("Max Redirection Entries: {}\n", GetMaxRedirectionEntries());
+  klog::Info("IO APIC Information");
+  klog::Info("Base Address: {:#x}", base_address_);
+  klog::Info("ID: {:#x}", GetId());
+  klog::Info("Version: {:#x}", GetVersion());
+  klog::Info("Max Redirection Entries: {}", GetMaxRedirectionEntries());
 }
 
 uint32_t IoApic::Read(uint32_t reg) const {

@@ -70,7 +70,7 @@ class CfsScheduler : public SchedulerBase {
     }
 
     if (ready_queue_.full()) {
-      klog::Err("CfsScheduler::Enqueue: ready_queue_ full, dropping task\n");
+      klog::Err("CfsScheduler::Enqueue: ready_queue_ full, dropping task");
       return;
     }
     ready_queue_.push(task);

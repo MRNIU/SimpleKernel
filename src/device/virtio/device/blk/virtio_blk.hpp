@@ -114,7 +114,7 @@ class VirtioBlk {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
     if (queue_count > 1) {
-      klog::Debug("Multi-queue not yet supported, using 1 queue\n");
+      klog::Debug("Multi-queue not yet supported, using 1 queue");
     }
 
     // 1. 创建传输层
@@ -136,7 +136,7 @@ class VirtioBlk {
     uint64_t negotiated = *negotiated_result;
 
     if ((negotiated & static_cast<uint64_t>(ReservedFeature::kVersion1)) == 0) {
-      klog::Debug("Device does not support VERSION_1 (modern mode)\n");
+      klog::Debug("Device does not support VERSION_1 (modern mode)");
       return std::unexpected(Error{ErrorCode::kFeatureNegotiationFailed});
     }
 
@@ -782,7 +782,7 @@ class VirtioBlk {
     }
 
     if (!vq_.HasUsed()) {
-      klog::Warn("Sync request timeout: sector={}\n",
+      klog::Warn("Sync request timeout: sector={}",
                  static_cast<unsigned long long>(sector));
       return std::unexpected(Error{ErrorCode::kTimeout});
     }

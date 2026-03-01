@@ -28,22 +28,22 @@ std::atomic<int> g_task_b_counter{0};
 void thread_func_a(void* arg) {
   uint64_t id = (uint64_t)arg;
   for (int i = 0; i < 5; ++i) {
-    klog::Info("Thread A: running, arg=%d, iter=%d\n", id, i);
+    klog::Info("Thread A: running, arg=%d, iter=%d", id, i);
     g_task_a_counter++;
     sys_sleep(50);
   }
-  klog::Info("Thread A: exit\n");
+  klog::Info("Thread A: exit");
   sys_exit(0);
 }
 
 void thread_func_b(void* arg) {
   uint64_t id = (uint64_t)arg;
   for (int i = 0; i < 5; ++i) {
-    klog::Info("Thread B: running, arg=%d, iter=%d\n", id, i);
+    klog::Info("Thread B: running, arg=%d, iter=%d", id, i);
     g_task_b_counter++;
     sys_sleep(50);
   }
-  klog::Info("Thread B: exit\n");
+  klog::Info("Thread B: exit");
   sys_exit(0);
 }
 }  // namespace
@@ -61,7 +61,7 @@ auto kernel_task_test() -> bool {
   auto task_b = new TaskControlBlock("Task B", 10, thread_func_b, (void*)200);
   TaskManagerSingleton::instance().AddTask(task_b);
 
-  klog::Info("Main: Waiting for tasks...\n");
+  klog::Info("Main: Waiting for tasks...");
 
   // Wait for tasks to finish (or reach expected count)
   int timeout = 200;  // 200 * 50ms = 10s roughly

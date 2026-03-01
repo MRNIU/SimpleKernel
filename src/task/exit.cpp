@@ -55,7 +55,7 @@ void TaskManager::Exit(int exit_code) {
 
       /// @todo 通知父进程 (发送 SIGCHLD)
 
-      klog::Debug("Exit: pid={} waking up parent={} on resource={}\n",
+      klog::Debug("Exit: pid={} waking up parent={} on resource={}",
                   current->pid, current->parent_pid,
                   wait_resource_id.GetTypeName());
     } else {
@@ -70,7 +70,7 @@ void TaskManager::Exit(int exit_code) {
   Schedule();
 
   // 退出后不应执行到这里
-  klog::Err("Exit: Task {} should not return from Schedule()\n", current->pid);
+  klog::Err("Exit: Task {} should not return from Schedule()", current->pid);
 
   __builtin_unreachable();
 }

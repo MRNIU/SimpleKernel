@@ -41,7 +41,7 @@ VirtualMemory::VirtualMemory() {
         return {};
       });
 
-  klog::Info("Kernel memory mapped from {:#X} to {:#X}\n",
+  klog::Info("Kernel memory mapped from {:#X} to {:#X}",
              basic_info.physical_memory_addr,
              basic_info.physical_memory_addr + basic_info.physical_memory_size);
 }
@@ -97,7 +97,7 @@ auto VirtualMemory::MapPage(void* page_dir, void* virtual_addr,
       // 重复映射，但不是错误
       return {};
     }
-    klog::Warn("MapPage: remap va = {:#x} from pa = {:#X} to pa = {:#x}\n",
+    klog::Warn("MapPage: remap va = {:#x} from pa = {:#X} to pa = {:#x}",
                reinterpret_cast<uintptr_t>(virtual_addr), existing_pa,
                reinterpret_cast<uintptr_t>(physical_addr));
   }
@@ -167,7 +167,7 @@ void VirtualMemory::DestroyPageDirectory(void* page_dir, bool free_pages) {
   // 释放根页表目录本身
   aligned_free(page_dir);
 
-  klog::Debug("Destroyed page directory at address: {:#x}\n",
+  klog::Debug("Destroyed page directory at address: {:#x}",
               reinterpret_cast<uintptr_t>(page_dir));
 }
 
@@ -197,7 +197,7 @@ auto VirtualMemory::ClonePageDirectory(void* src_page_dir, bool copy_mappings)
     return std::unexpected(result.error());
   }
 
-  klog::Debug("Cloned page directory from {:#x} to {:#x}\n",
+  klog::Debug("Cloned page directory from {:#x} to {:#x}",
               reinterpret_cast<uintptr_t>(src_page_dir),
               reinterpret_cast<uintptr_t>(dst_page_dir));
   return dst_page_dir;
