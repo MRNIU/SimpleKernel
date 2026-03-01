@@ -29,7 +29,7 @@ class PlatformBus {
   auto Enumerate(DeviceNode* out, size_t max) -> Expected<size_t> {
     size_t count = 0;
 
-    auto result = fdt_.ForEachNode(
+    auto result = fdt_.ForEachDeviceNode(
         [&out, &count, max](const char* node_name, const char* compatible_data,
                             size_t compatible_len, uint64_t mmio_base,
                             size_t mmio_size, uint32_t irq) -> bool {

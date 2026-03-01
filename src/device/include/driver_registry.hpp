@@ -12,6 +12,7 @@
 #include <etl/span.h>
 #include <etl/vector.h>
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 
@@ -152,14 +153,13 @@ struct ProbeContext {
  *
  * @param  node         Device node (must have mmio_base != 0)
  * @param  default_size Fallback size when node.mmio_size == 0
- * @return Expected<ProbeContext>; kDeviceNotFound if mmio_base == 0
+ * @return Expected<ProbeContext>
  */
 [[nodiscard]] inline auto Prepare(const DeviceNode& node, size_t default_size)
     -> Expected<ProbeContext> {
-  if (node.mmio_base == 0) {
-    klog::Err("mmio_helper: no MMIO base for '%s'\n", node.name);
-    return std::unexpected(Error(ErrorCode::kDeviceNotFound));
-  }
+  assert(
+      node.mmio_base != 0 &&
+      "mmio_helper::Prepare: node has no MMIO base; driver matched wrong node");
 
   size_t size = node.mmio_size > 0 ? node.mmio_size : default_size;
   VirtualMemorySingleton::instance().MapMMIO(node.mmio_base, size);
