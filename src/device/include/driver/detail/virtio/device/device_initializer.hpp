@@ -5,10 +5,10 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_DETAIL_VIRTIO_DEVICE_DEVICE_INITIALIZER_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_DETAIL_VIRTIO_DEVICE_DEVICE_INITIALIZER_HPP_
 
+#include "driver/detail/virtio/platform_config.hpp"
 #include "driver/detail/virtio/traits.hpp"
 #include "driver/detail/virtio/transport/transport.hpp"
 #include "expected.hpp"
-#include "driver/detail/virtio/platform_config.hpp"
 
 namespace detail::virtio {
 

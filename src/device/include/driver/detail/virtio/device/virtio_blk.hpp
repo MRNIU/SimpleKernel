@@ -12,11 +12,11 @@
 #include "driver/detail/virtio/defs.h"
 #include "driver/detail/virtio/device/device_initializer.hpp"
 #include "driver/detail/virtio/device/virtio_blk_defs.h"
+#include "driver/detail/virtio/platform_config.hpp"
 #include "driver/detail/virtio/traits.hpp"
 #include "driver/detail/virtio/transport/mmio.hpp"
 #include "driver/detail/virtio/virt_queue/split.hpp"
 #include "expected.hpp"
-#include "driver/detail/virtio/platform_config.hpp"
 
 namespace detail::virtio::blk {
 
