@@ -77,7 +77,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
       if (leader) {
         child->JoinThreadGroup(leader);
       } else {
-        klog::Warn("Clone: Thread group leader not found for tgid=%zu\n",
+        klog::Warn("Clone: Thread group leader not found for tgid={}\n",
                    parent->tgid);
         child->tgid = parent->tgid;
       }
@@ -121,7 +121,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   if (flags & clone_flag::kVm) {
     // 共享地址空间（线程）
     child->page_table = parent->page_table;
-    klog::Debug("Clone: sharing page table %p\n", child->page_table);
+    klog::Debug("Clone: sharing page table {}\n", child->page_table);
   } else {
     // 复制地址空间（进程）
     if (parent->page_table) {
@@ -129,13 +129,13 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
       auto result = VirtualMemorySingleton::instance().ClonePageDirectory(
           parent->page_table, true);
       if (!result.has_value()) {
-        klog::Err("Clone: Failed to clone page table: %s\n",
+        klog::Err("Clone: Failed to clone page table: {}\n",
                   result.error().message());
         delete child;
         return std::unexpected(Error(ErrorCode::kTaskPageTableCloneFailed));
       }
       child->page_table = reinterpret_cast<uint64_t*>(result.value());
-      klog::Debug("Clone: cloned page table from %p to %p\n",
+      klog::Debug("Clone: cloned page table from {} to {}\n",
                   parent->page_table, child->page_table);
     } else {
       // 父进程没有页表（内核线程），子进程也不需要

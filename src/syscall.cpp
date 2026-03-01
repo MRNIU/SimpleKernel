@@ -44,7 +44,7 @@ int syscall_dispatcher(int64_t syscall_id, uint64_t args[6]) {
           reinterpret_cast<int*>(args[4]), static_cast<int>(args[5]));
       break;
     default:
-      klog::Err("[Syscall] Unknown syscall id: %d\n", syscall_id);
+      klog::Err("[Syscall] Unknown syscall id: {}\n", syscall_id);
       ret = -1;
       break;
   }
@@ -65,7 +65,7 @@ int sys_write(int fd, const char* buf, size_t len) {
 }
 
 int sys_exit(int code) {
-  klog::Info("[Syscall] Process %d exited with code %d\n",
+  klog::Info("[Syscall] Process {} exited with code {}\n",
              TaskManagerSingleton::instance().GetCurrentTask()->pid, code);
   // 调用 TaskManager 的 Exit 方法处理线程退出
   TaskManagerSingleton::instance().Exit(code);
@@ -100,7 +100,7 @@ int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
 
   if (!result.has_value()) {
     // 失败返回 -1
-    klog::Err("[Syscall] sys_clone failed: %s\n", result.error().message());
+    klog::Err("[Syscall] sys_clone failed: {}\n", result.error().message());
     return -1;
   }
 
@@ -129,7 +129,7 @@ int sys_fork() {
 
   if (!result.has_value()) {
     // 失败返回 -1
-    klog::Err("[Syscall] sys_fork failed: %s\n", result.error().message());
+    klog::Err("[Syscall] sys_fork failed: {}\n", result.error().message());
     return -1;
   }
 
@@ -184,7 +184,8 @@ int sys_futex(int* uaddr, int op, int val, [[maybe_unused]] const void* timeout,
       // 检查 *uaddr 是否等于 val，如果相等则阻塞
       /// @todo需要实现原子比较和阻塞逻辑
       /// @todo需要在 TaskManager 中添加 futex 等待队列
-      klog::Debug("[Syscall] FUTEX_WAIT on %p (val=%d)\n", uaddr, val);
+      klog::Debug("[Syscall] FUTEX_WAIT on {:#x} (val={})\n",
+                  reinterpret_cast<uintptr_t>(uaddr), val);
 
       // 简化实现：直接检查值并阻塞
       if (*uaddr == val) {
@@ -198,7 +199,8 @@ int sys_futex(int* uaddr, int op, int val, [[maybe_unused]] const void* timeout,
 
     case FUTEX_WAKE: {
       // 唤醒最多 val 个等待 uaddr 的线程
-      klog::Debug("[Syscall] FUTEX_WAKE on %p (count=%d)\n", uaddr, val);
+      klog::Debug("[Syscall] FUTEX_WAKE on {:#x} (count={})\n",
+                  reinterpret_cast<uintptr_t>(uaddr), val);
 
       // 唤醒等待该 futex 的所有线程（简化实现，应该只唤醒 val 个）
       ResourceId futex_id(ResourceType::kFutex,
@@ -217,7 +219,7 @@ int sys_futex(int* uaddr, int op, int val, [[maybe_unused]] const void* timeout,
     }
 
     default:
-      klog::Err("[Syscall] Unknown futex operation: %d\n", cmd);
+      klog::Err("[Syscall] Unknown futex operation: {}\n", cmd);
       return -1;
   }
 }
@@ -233,7 +235,7 @@ int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask) {
     // 查找指定 PID 的任务
     target = task_manager.FindTask(static_cast<Pid>(pid));
     if (!target) {
-      klog::Err("[Syscall] sys_sched_getaffinity: Task %d not found\n", pid);
+      klog::Err("[Syscall] sys_sched_getaffinity: Task {} not found\n", pid);
       return -1;
     }
   }
@@ -261,7 +263,7 @@ int sys_sched_setaffinity(int pid, size_t cpusetsize, const uint64_t* mask) {
     // 查找指定 PID 的任务
     target = task_manager.FindTask(static_cast<Pid>(pid));
     if (!target) {
-      klog::Err("[Syscall] sys_sched_setaffinity: Task %d not found\n", pid);
+      klog::Err("[Syscall] sys_sched_setaffinity: Task {} not found\n", pid);
       return -1;
     }
   }
@@ -277,7 +279,7 @@ int sys_sched_setaffinity(int pid, size_t cpusetsize, const uint64_t* mask) {
 
   target->cpu_affinity = *mask;
 
-  klog::Debug("[Syscall] Set CPU affinity for task %zu to 0x%lx\n", target->pid,
+  klog::Debug("[Syscall] Set CPU affinity for task {} to {:#x}\n", target->pid,
               *mask);
 
   /// @todo 如果当前任务不在允许的 CPU 上运行，应该触发迁移

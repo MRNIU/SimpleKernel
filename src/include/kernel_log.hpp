@@ -7,14 +7,15 @@
 
 #include <etl/enum_type.h>
 
-#include <array>
 #include <concepts>
+#include <cstddef>
 #include <cstdint>
 #include <source_location>
 #include <type_traits>
 
 #include "kstd_cstdio"
 #include "spinlock.hpp"
+
 namespace klog {
 namespace detail {
 
@@ -56,17 +57,171 @@ struct LogLevel {
 inline constexpr auto kMinLogLevel =
     static_cast<LogLevel::enum_type>(SIMPLEKERNEL_MIN_LOG_LEVEL);
 
-/// 每种日志级别对应的 ANSI 颜色
-constexpr std::array<const char*, LogLevel::kMax> kLogColors = {
-    // kDebug
-    kMagenta,
-    // kInfo
-    kCyan,
-    // kWarn
-    kYellow,
-    // kErr
-    kRed,
+/// 每种日志级别对应的 ANSI 颜色 (indexed by enum_type value)
+static constexpr const char* kLogColors[LogLevel::kMax] = {
+    kMagenta,  // kDebug
+    kCyan,     // kInfo
+    kYellow,   // kWarn
+    kRed,      // kErr
 };
+
+// ── Freestanding-safe format string checker ───────────────────────────────
+
+namespace fmt_detail {
+
+/// 编译期计算格式字符串中 {} 占位符的数量（支持 {:...} 变体）
+consteval auto CountFormatArgs(const char* s) -> size_t {
+  size_t count = 0;
+  for (size_t i = 0; s[i] != '\0'; ++i) {
+    if (s[i] == '{') {
+      if (s[i + 1] == '}') {
+        ++count;
+        ++i;  // skip '}'
+      } else if (s[i + 1] != '\0' && s[i + 1] != '{') {
+        // {:spec} or {:#x} etc. — scan to matching '}'
+        size_t j = i + 1;
+        while (s[j] != '\0' && s[j] != '}') {
+          ++j;
+        }
+        if (s[j] == '}') {
+          ++count;
+          i = j;
+        }
+      }
+      // '{{' is an escaped brace, not a placeholder — skip
+    }
+  }
+  return count;
+}
+
+}  // namespace fmt_detail
+
+/**
+ * @brief 编译期类型安全格式字符串（内部实现）
+ *
+ * 使用 {} 语法，编译期校验占位符数量与参数数量一致。
+ * 仅依赖 freestanding 安全头文件——不引入任何 ETL string/format/print。
+ *
+ * @tparam Args 格式化参数类型包
+ */
+template <typename... Args>
+struct KernelFmtStr {
+  const char* str;
+
+  // Templated consteval constructor that accepts any string-literal-like type.
+  // Using `const _Str&` (templated) rather than `const char*` allows CTAD to
+  // work correctly when used via the KernelFormatString alias below.
+  // This mirrors the pattern used by std::basic_format_string.
+  template <typename _Str>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  consteval KernelFmtStr(const _Str& s) : str(s) {  // NOLINT
+    if (fmt_detail::CountFormatArgs(s) != sizeof...(Args)) {
+      __builtin_unreachable();
+    }
+  }
+};
+
+/**
+ * @brief 编译期类型安全格式字符串（对外接口）
+ *
+ * 使用 type_identity_t 包裹 Args，阻止编译器从格式字符串参数推导 Args，
+ * 强制 Args 仅由值参数推导——与 std::format_string 的做法完全相同。
+ *
+ * @tparam Args 格式化参数类型包
+ */
+template <typename... Args>
+using KernelFormatString = KernelFmtStr<std::type_identity_t<Args>...>;
+
+// ── Single-argument freestanding-safe printer ────────────────────────────
+
+/// 输出有符号整数
+__always_inline void FormatArg(long long val) { sk_printf("%lld", val); }
+__always_inline void FormatArg(long val) { sk_printf("%ld", val); }
+__always_inline void FormatArg(int val) { sk_printf("%d", val); }
+
+/// 输出无符号整数
+__always_inline void FormatArg(unsigned long long val) {
+  sk_printf("%llu", val);
+}
+__always_inline void FormatArg(unsigned long val) { sk_printf("%lu", val); }
+__always_inline void FormatArg(unsigned int val) { sk_printf("%u", val); }
+
+/// 输出布尔值
+__always_inline void FormatArg(bool val) {
+  sk_printf("%s", val ? "true" : "false");
+}
+
+/// 输出字符
+__always_inline void FormatArg(char val) { sk_putchar(val, nullptr); }
+
+/// 输出 C 字符串
+__always_inline void FormatArg(const char* val) {
+  sk_printf("%s", val ? val : "(null)");
+}
+
+/// 输出指针地址
+__always_inline void FormatArg(const void* val) { sk_printf("%p", val); }
+__always_inline void FormatArg(void* val) {
+  FormatArg(static_cast<const void*>(val));
+}
+
+// ── Format string walker ──────────────────────────────────────────────────
+
+/// 输出格式字符串中直到下一个 {} 之前的字面量字符，
+/// 返回跳过占位符后的指针（或末尾 '\0'）
+__always_inline auto EmitUntilNextArg(const char* s) -> const char* {
+  while (*s != '\0') {
+    if (s[0] == '{' && s[1] == '{') {
+      sk_putchar('{', nullptr);
+      s += 2;
+      continue;
+    }
+    if (s[0] == '}' && s[1] == '}') {
+      sk_putchar('}', nullptr);
+      s += 2;
+      continue;
+    }
+    if (s[0] == '{') {
+      // Placeholder — skip to matching '}'
+      while (*s != '\0' && *s != '}') {
+        ++s;
+      }
+      if (*s == '}') {
+        ++s;
+      }
+      return s;
+    }
+    sk_putchar(*s, nullptr);
+    ++s;
+  }
+  return s;
+}
+
+/// Base case: no remaining args — flush any trailing literal characters
+__always_inline void LogFormat(const char* s) {
+  while (*s != '\0') {
+    if (s[0] == '{' && s[1] == '{') {
+      sk_putchar('{', nullptr);
+      s += 2;
+    } else if (s[0] == '}' && s[1] == '}') {
+      sk_putchar('}', nullptr);
+      s += 2;
+    } else {
+      sk_putchar(*s, nullptr);
+      ++s;
+    }
+  }
+}
+
+/// Recursive case: emit up to next {}, format current arg, recurse for rest
+template <typename T, typename... Rest>
+__always_inline void LogFormat(const char* s, T&& val, Rest&&... rest) {
+  s = EmitUntilNextArg(s);
+  FormatArg(static_cast<std::decay_t<T>>(val));
+  LogFormat(s, static_cast<Rest&&>(rest)...);
+}
+
+// ── LogLine: RAII stream-style log line ──────────────────────────────────
 
 /**
  * @brief RAII 流式日志行
@@ -113,14 +268,12 @@ class LogLine {
     }
   }
 
+  // ── Value overloads ──────────────────────────────────────────────────
+
   /// 输出有符号整数类型
   template <std::signed_integral T>
   auto operator<<(T val) -> LogLine& {
-    if constexpr (sizeof(T) <= 4) {
-      sk_printf("%d", static_cast<int32_t>(val));
-    } else {
-      sk_printf("%ld", static_cast<int64_t>(val));
-    }
+    sk_printf("%lld", static_cast<long long>(val));
     return *this;
   }
 
@@ -128,23 +281,19 @@ class LogLine {
   template <std::unsigned_integral T>
     requires(!std::same_as<T, bool> && !std::same_as<T, char>)
   auto operator<<(T val) -> LogLine& {
-    if constexpr (sizeof(T) <= 4) {
-      sk_printf("%u", static_cast<uint32_t>(val));
-    } else {
-      sk_printf("%lu", static_cast<uint64_t>(val));
-    }
+    sk_printf("%llu", static_cast<unsigned long long>(val));
     return *this;
   }
 
   /// 输出 C 字符串
   auto operator<<(const char* val) -> LogLine& {
-    sk_printf("%s", val);
+    sk_printf("%s", val ? val : "(null)");
     return *this;
   }
 
   /// 输出单个字符
   auto operator<<(char val) -> LogLine& {
-    sk_printf("%c", val);
+    sk_putchar(val, nullptr);
     return *this;
   }
 
@@ -179,45 +328,38 @@ struct LogStarter {
   template <typename T>
   auto operator<<(T&& val) -> LogLine<Level> {
     LogLine<Level> line;
-    line << std::forward<T>(val);
+    line << static_cast<T&&>(val);
     return line;
   }
 };
 
 /**
- * @brief printf 风格日志输出
+ * @brief printf 风格日志输出（类型安全版本）
  *
- * 将 fmt 参数与可变参数分离，消除 -Wformat-security 警告。
- * 当无额外参数时使用 %s 包装 fmt。
+ * 使用 KernelFormatString<Args...> 进行编译期格式字符串校验。
+ * 格式语法：{} 用于所有类型，{{ 和 }} 为转义括号。
+ * 不依赖任何 ETL string/format/print 头文件——完全 freestanding 安全。
  *
  * @tparam Level 日志级别
  * @tparam Args 格式化参数类型
- * @param fmt 格式化字符串
  * @param location 调用位置（自动捕获）
+ * @param fmt 编译期格式字符串
  * @param args 格式化参数
  */
 template <LogLevel::enum_type Level, typename... Args>
 __always_inline void LogEmit(
-    [[maybe_unused]] const std::source_location& location, Args&&... args) {
+    [[maybe_unused]] const std::source_location& location,
+    KernelFormatString<Args...> fmt, Args&&... args) {
   if constexpr (Level < kMinLogLevel) {
     return;
   }
-  constexpr auto* color = kLogColors[Level];
   LockGuard<SpinLock> lock_guard(log_lock);
-  sk_printf("%s[%ld]", color, cpu_io::GetCurrentCoreId());
+  sk_printf("%s[%ld]", kLogColors[Level], cpu_io::GetCurrentCoreId());
   if constexpr (Level == LogLevel::kDebug) {
-    sk_printf("[%s:%d %s] ", location.file_name(), location.line(),
+    sk_printf("[%s:%u %s] ", location.file_name(), location.line(),
               location.function_name());
   }
-  if constexpr (sizeof...(Args) == 0) {
-    // no-op: nothing to print
-  } else if constexpr (sizeof...(Args) == 1) {
-    // 单参数：视为纯字符串，使用 %s 包装消除 -Wformat-security
-    sk_printf("%s", std::forward<Args>(args)...);
-  } else {
-    // 多参数：第一个参数为格式字符串
-    sk_printf(std::forward<Args>(args)...);
-  }
+  LogFormat(fmt.str, static_cast<Args&&>(args)...);
   sk_printf("%s", kReset);
 }
 
@@ -230,16 +372,17 @@ __always_inline void LogEmit(
  */
 template <typename... Args>
 struct Debug {
-  explicit Debug(Args&&... args, const std::source_location& location =
-                                     std::source_location::current()) {
+  explicit Debug(
+      detail::KernelFormatString<Args...> fmt, Args&&... args,
+      const std::source_location& location = std::source_location::current()) {
     if constexpr (detail::LogLevel::kDebug >= detail::kMinLogLevel) {
-      detail::LogEmit<detail::LogLevel::kDebug>(location,
-                                                std::forward<Args>(args)...);
+      detail::LogEmit<detail::LogLevel::kDebug>(location, fmt,
+                                                static_cast<Args&&>(args)...);
     }
   }
 };
 template <typename... Args>
-Debug(Args&&...) -> Debug<Args...>;
+Debug(detail::KernelFormatString<Args...>, Args&&...) -> Debug<Args...>;
 
 /**
  * @brief 以十六进制输出内存块内容（仅 Debug 构建）
@@ -266,16 +409,17 @@ __always_inline void DebugBlob([[maybe_unused]] const void* data,
  */
 template <typename... Args>
 struct Info {
-  explicit Info(Args&&... args, const std::source_location& location =
-                                    std::source_location::current()) {
+  explicit Info(
+      detail::KernelFormatString<Args...> fmt, Args&&... args,
+      const std::source_location& location = std::source_location::current()) {
     if constexpr (detail::LogLevel::kInfo >= detail::kMinLogLevel) {
-      detail::LogEmit<detail::LogLevel::kInfo>(location,
-                                               std::forward<Args>(args)...);
+      detail::LogEmit<detail::LogLevel::kInfo>(location, fmt,
+                                               static_cast<Args&&>(args)...);
     }
   }
 };
 template <typename... Args>
-Info(Args&&...) -> Info<Args...>;
+Info(detail::KernelFormatString<Args...>, Args&&...) -> Info<Args...>;
 
 /**
  * @brief Warn 级别 printf 风格日志
@@ -283,16 +427,17 @@ Info(Args&&...) -> Info<Args...>;
  */
 template <typename... Args>
 struct Warn {
-  explicit Warn(Args&&... args, const std::source_location& location =
-                                    std::source_location::current()) {
+  explicit Warn(
+      detail::KernelFormatString<Args...> fmt, Args&&... args,
+      const std::source_location& location = std::source_location::current()) {
     if constexpr (detail::LogLevel::kWarn >= detail::kMinLogLevel) {
-      detail::LogEmit<detail::LogLevel::kWarn>(location,
-                                               std::forward<Args>(args)...);
+      detail::LogEmit<detail::LogLevel::kWarn>(location, fmt,
+                                               static_cast<Args&&>(args)...);
     }
   }
 };
 template <typename... Args>
-Warn(Args&&...) -> Warn<Args...>;
+Warn(detail::KernelFormatString<Args...>, Args&&...) -> Warn<Args...>;
 
 /**
  * @brief Err 级别 printf 风格日志
@@ -300,16 +445,17 @@ Warn(Args&&...) -> Warn<Args...>;
  */
 template <typename... Args>
 struct Err {
-  explicit Err(Args&&... args, const std::source_location& location =
-                                   std::source_location::current()) {
+  explicit Err(
+      detail::KernelFormatString<Args...> fmt, Args&&... args,
+      const std::source_location& location = std::source_location::current()) {
     if constexpr (detail::LogLevel::kErr >= detail::kMinLogLevel) {
-      detail::LogEmit<detail::LogLevel::kErr>(location,
-                                              std::forward<Args>(args)...);
+      detail::LogEmit<detail::LogLevel::kErr>(location, fmt,
+                                              static_cast<Args&&>(args)...);
     }
   }
 };
 template <typename... Args>
-Err(Args&&...) -> Err<Args...>;
+Err(detail::KernelFormatString<Args...>, Args&&...) -> Err<Args...>;
 
 /// @brief 流式日志实例（使用 inline 避免跨 TU 重复定义）
 /// @{

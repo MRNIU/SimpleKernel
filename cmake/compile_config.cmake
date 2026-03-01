@@ -108,8 +108,10 @@ TARGET_LINK_LIBRARIES (link_libraries INTERFACE compile_definitions
                                                 compile_options link_options)
 
 ADD_LIBRARY (kernel_compile_definitions INTERFACE)
-TARGET_COMPILE_DEFINITIONS (kernel_compile_definitions
-                            INTERFACE USE_NO_RELAX=$<BOOL:${USE_NO_RELAX}>)
+TARGET_COMPILE_DEFINITIONS (
+    kernel_compile_definitions
+    INTERFACE USE_NO_RELAX=$<BOOL:${USE_NO_RELAX}> ETL_NO_STL
+              ETL_FORCE_STD_INITIALIZER_LIST ETL_NO_STD_OSTREAM)
 
 ADD_LIBRARY (kernel_compile_options INTERFACE)
 TARGET_COMPILE_OPTIONS (
