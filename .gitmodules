@@ -37,9 +37,6 @@
 [submodule "3rd/MPMCQueue"]
 	path = 3rd/MPMCQueue
 	url = https://github.com/MRNIU/MPMCQueue.git
-[submodule "3rd/device_framework"]
-	path = 3rd/device_framework
-	url = https://github.com/MRNIU/device_framework.git
 [submodule "3rd/fatfs"]
 	path = 3rd/fatfs
 	url = https://github.com/abbrev/fatfs.git

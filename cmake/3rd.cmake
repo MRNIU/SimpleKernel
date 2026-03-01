@@ -83,9 +83,6 @@ ADD_SUBDIRECTORY (3rd/cpu_io)
 # https://github.com/MRNIU/MPMCQueue.git
 ADD_SUBDIRECTORY (3rd/MPMCQueue)
 
-# https://github.com/MRNIU/device_framework.git
-ADD_SUBDIRECTORY (3rd/device_framework)
-
 # https://github.com/ETLCPP/etl.git
 ADD_SUBDIRECTORY (3rd/etl)
 

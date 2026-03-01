@@ -165,7 +165,6 @@ TARGET_LINK_LIBRARIES (
               cpu_io
               bmalloc
               MPMCQueue
-              device_framework
               fatfs_lib
               etl::etl
               gcc
