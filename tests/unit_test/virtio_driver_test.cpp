@@ -20,7 +20,7 @@ TEST(VirtioDriverTest, MatchTableContainsVirtioMmio) {
   const auto& entry = VirtioDriver::GetEntry();
   bool found = false;
   for (const auto& m : entry.match_table) {
-    if (m.bus == BusType::kPlatform &&
+    if (m.bus_type == BusType::kPlatform &&
         __builtin_strcmp(m.compatible, "virtio,mmio") == 0) {
       found = true;
     }
