@@ -17,7 +17,6 @@
 #include "kstd_cstdio"
 #include "kstd_iostream"
 #include "opensbi_interface.h"
-#include "platform_traits.hpp"
 #include "syscall.hpp"
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"

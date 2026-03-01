@@ -1,5 +1,6 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
+ * @brief Device manager — owns device nodes and driver registry
  */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_MANAGER_HPP_
@@ -16,15 +17,19 @@
 #include "spinlock.hpp"
 
 /**
- * @brief  设备管理器 — 管理所有设备节点和驱动
+ * @brief Device manager — manages all device nodes and drivers.
+ *
+ * @pre  Memory subsystem must be initialised before calling any method
+ * @post After ProbeAll(), bound devices are ready for use
  */
 class DeviceManager {
  public:
   /**
-   * @brief  注册一条总线并立即枚举其上的设备
-   * @tparam B              总线类型
-   * @param  bus            总线实例
-   * @return Expected<void> 成功时返回 void，失败时返回错误
+   * @brief Register a bus and immediately enumerate its devices.
+   *
+   * @tparam B              Bus type (must satisfy Bus concept)
+   * @param  bus            Bus instance
+   * @return Expected<void> void on success, error on failure
    */
   template <Bus B>
   auto RegisterBus(B& bus) -> Expected<void> {
@@ -43,7 +48,6 @@ class DeviceManager {
     }
 
     size_t count = result.value();
-    // 分配全局设备编号
     for (size_t i = 0; i < count; ++i) {
       devices_[device_count_ + i].dev_id = next_dev_id_++;
     }
@@ -55,38 +59,45 @@ class DeviceManager {
   }
 
   /**
-   * @brief  匹配已注册驱动并 Probe 所有未绑定设备
-   * @return Expected<void> 成功时返回 void，失败时返回错误
+   * @brief Match registered drivers and probe all unbound devices.
+   *
+   * @return Expected<void> void on success, error on failure
    */
   auto ProbeAll() -> Expected<void> {
     LockGuard guard(lock_);
 
     size_t probed = 0;
     for (size_t i = 0; i < device_count_; ++i) {
-      auto* drv = registry_.FindDriver(devices_[i].resource);
+      auto& node = devices_[i];
+
+      const auto* drv = registry_.FindDriver(node);
       if (drv == nullptr) {
-        klog::Debug("DeviceManager: no driver for '%s'\n", devices_[i].name);
+        klog::Debug("DeviceManager: no driver for '%s'\n", node.name);
         continue;
       }
 
-      // TryBind() 原子检查并绑定，已绑定则跳过
-      if (!devices_[i].TryBind()) {
+      if (!drv->match(node)) {
+        klog::Debug("DeviceManager: driver '%s' rejected '%s'\n",
+                    drv->descriptor->name, node.name);
         continue;
       }
 
-      klog::Info("DeviceManager: probing '%s' with driver '%s'\n",
-                 devices_[i].name, drv->descriptor->name);
+      if (node.bound) continue;
+      node.bound = true;
 
-      auto result = drv->probe(devices_[i]);
+      klog::Info("DeviceManager: probing '%s' with driver '%s'\n", node.name,
+                 drv->descriptor->name);
+
+      auto result = drv->probe(node);
       if (!result.has_value()) {
-        klog::Err("DeviceManager: probe '%s' failed: %s\n", devices_[i].name,
+        klog::Err("DeviceManager: probe '%s' failed: %s\n", node.name,
                   result.error().message());
-        devices_[i].Release();  // 探测失败，回滚绑定
+        node.bound = false;
         continue;
       }
 
       ++probed;
-      klog::Info("DeviceManager: '%s' bound to '%s'\n", devices_[i].name,
+      klog::Info("DeviceManager: '%s' bound to '%s'\n", node.name,
                  drv->descriptor->name);
     }
 
@@ -95,16 +106,16 @@ class DeviceManager {
   }
 
   /**
-   * @brief  通过名称查找设备
-   * @note   并发安全：由于是只读路径，在设备枚举完成且设备表（device_count_ 和
-   *         devices_）稳定后，并发调用是安全的，无需加锁。
-   * @param  name           设备名称
-   * @return Expected<DeviceNode*> 成功时返回设备节点指针；失败时返回
-   * kDeviceNotFound 错误
+   * @brief Find a device by name.
+   *
+   * @note  Read-only path — safe for concurrent callers once device_count_
+   *        and devices_ are stable (post-enumeration).
+   * @param  name           Device name
+   * @return Expected<DeviceNode*> device pointer, or kDeviceNotFound
    */
   auto FindDevice(const char* name) -> Expected<DeviceNode*> {
     for (size_t i = 0; i < device_count_; ++i) {
-      if (strcmp(devices_[i].name, name) == 0) {
+      if (kstd::strcmp(devices_[i].name, name) == 0) {
         return &devices_[i];
       }
     }
@@ -112,11 +123,12 @@ class DeviceManager {
   }
 
   /**
-   * @brief  通过类型枚举设备
-   * @param  type           设备类型
-   * @param  out            输出设备节点指针数组
-   * @param  max            最大枚举数量
-   * @return size_t         实际找到的设备数量
+   * @brief Enumerate devices by type.
+   *
+   * @param  type           Device type
+   * @param  out            Output array of device node pointers
+   * @param  max            Maximum results
+   * @return size_t         Number of matching devices found
    */
   auto FindDevicesByType(DeviceType type, DeviceNode** out, size_t max)
       -> size_t {
@@ -130,12 +142,13 @@ class DeviceManager {
   }
 
   /**
-   * @brief  获取驱动注册表
-   * @return DriverRegistry& 驱动注册表实例
+   * @brief Access the driver registry.
+   *
+   * @return DriverRegistry& driver registry instance
    */
   auto GetRegistry() -> DriverRegistry& { return registry_; }
 
-  /// @name 构造/析构函数
+  /// @name Construction / destruction
   /// @{
   DeviceManager() = default;
   ~DeviceManager() = default;

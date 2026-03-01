@@ -1,167 +1,55 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
+ * @brief Device node — per-device hardware description (plain data struct)
  */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_NODE_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_NODE_HPP_
 
-#include <etl/memory.h>
-
 #include <cstddef>
 #include <cstdint>
-#include <variant>
 
-#include "io_buffer.hpp"
-#include "kstd_cstring"
-#include "kstd_memory"
-#include "spinlock.hpp"
+/// Bus type discriminator — extension point for future PCI/ACPI buses
+enum class BusType : uint8_t { kPlatform, kPci, kAcpi };
 
-/// Platform 设备标识（FDT compatible stringlist）
-struct PlatformId {
-  /// 完整的 compatible stringlist（多个字符串以 '\0' 分隔）
-  char compatible[128];
-  /// stringlist 的实际字节长度（包含所有 '\0' 分隔符）
-  size_t compatible_len{0};
-};
-
-/// PCI 设备标识
-struct PciAddress {
-  /// PCI segment group
-  uint16_t segment;
-  uint8_t bus;
-  uint8_t device;
-  uint8_t function;
-  uint16_t vendor_id;
-  uint16_t device_id;
-  uint8_t class_code;
-  uint8_t subclass;
-};
-
-/// ACPI 设备标识
-struct AcpiId {
-  /// Hardware ID, e.g. "PNP0501"
-  char hid[16];
-  /// Unique ID
-  char uid[16];
-};
-
-/// 总线特定标识（类型安全 variant）
-using BusId = std::variant<PlatformId, PciAddress, AcpiId>;
-
-/// 设备类型
+/// Device category
 enum class DeviceType : uint8_t {
-  /// 字符设备
-  kChar,
-  /// 块设备
-  kBlock,
-  /// 网络设备
-  kNet,
-  /// 平台设备（中断控制器、定时器等）
-  kPlatform,
+  kChar,      ///< Character device (serial, etc.)
+  kBlock,     ///< Block device (disk, etc.)
+  kNet,       ///< Network device
+  kPlatform,  ///< Platform device (interrupt controller, timer, etc.)
 };
 
-/// 设备硬件资源描述
-struct DeviceResource {
-  /// MMIO 区域
-  struct MmioRegion {
-    uint64_t base;
-    size_t size;
-  };
-
-  /// PCI 最多 6 个 BAR
-  static constexpr size_t kMaxMmioRegions = 6;
-  MmioRegion mmio[kMaxMmioRegions]{};
-  uint8_t mmio_count{0};
-
-  /// 中断资源
-  static constexpr size_t kMaxIrqs = 4;
-  uint32_t irq[kMaxIrqs]{};
-  uint8_t irq_count{0};
-
-  /// 总线特定标识
-  BusId id;
-
-  /// 便捷方法
-  [[nodiscard]] auto IsPlatform() const {
-    return std::holds_alternative<PlatformId>(id);
-  }
-  [[nodiscard]] auto IsPci() const {
-    return std::holds_alternative<PciAddress>(id);
-  }
-  [[nodiscard]] auto IsAcpi() const {
-    return std::holds_alternative<AcpiId>(id);
-  }
-};
-
-/// 设备节点 — 系统中每个设备的统一表示
+/**
+ * @brief Hardware resource description for a single device.
+ *
+ * Plain data struct — no lifecycle management, no DMA buffers,
+ * no concurrency primitives. `bound` is protected by
+ * DeviceManager::lock_ (held for the entire ProbeAll() loop).
+ */
 struct DeviceNode {
-  /// 设备名称
+  /// Human-readable device name (from FDT node name)
   char name[32]{};
-  /// 设备类型
-  DeviceType type{};
-  /// 硬件资源
-  DeviceResource resource{};
-  /// 全局设备编号
+
+  BusType bus_type{BusType::kPlatform};
+  DeviceType type{DeviceType::kPlatform};
+
+  /// First MMIO region (extend to array when multi-BAR support is needed)
+  uint64_t mmio_base{0};
+  size_t mmio_size{0};
+
+  /// First interrupt line (extend when multi-IRQ support is needed)
+  uint32_t irq{0};
+
+  /// FDT compatible stringlist ('\0'-separated, e.g. "ns16550a\0ns16550\0")
+  char compatible[128]{};
+  size_t compatible_len{0};
+
+  /// Global device ID assigned by DeviceManager
   uint32_t dev_id{0};
-  /// DMA 缓冲区
-  etl::unique_ptr<IoBuffer> dma_buffer{};
 
-  /// 尝试绑定（SpinLock 保证幂等，防止重复绑定）
-  ///
-  /// @return true  绑定成功
-  /// @return false 已被其他驱动绑定
-  auto TryBind() -> bool {
-    LockGuard<SpinLock> guard(lock_);
-    if (bound_) return false;
-    bound_ = true;
-    return true;
-  }
-
-  /// 释放绑定（Probe 失败时回滚）
-  ///
-  /// @post bound_ == false
-  auto Release() -> void {
-    LockGuard<SpinLock> guard(lock_);
-    bound_ = false;
-  }
-
-  /// @name 构造/析构函数
-  /// @{
-  DeviceNode() = default;
-  ~DeviceNode() = default;
-
-  DeviceNode(const DeviceNode&) = delete;
-  auto operator=(const DeviceNode&) -> DeviceNode& = delete;
-
-  DeviceNode(DeviceNode&& other) noexcept
-      : type(other.type),
-        resource(other.resource),
-        bound_(other.bound_),
-        dev_id(other.dev_id),
-        dma_buffer(std::move(other.dma_buffer)) {
-    kstd::memcpy(name, other.name, sizeof(name));
-    other.bound_ = false;
-  }
-
-  auto operator=(DeviceNode&& other) noexcept -> DeviceNode& {
-    if (this != &other) {
-      kstd::memcpy(name, other.name, sizeof(name));
-      type = other.type;
-      resource = other.resource;
-      bound_ = other.bound_;
-      other.bound_ = false;
-      dev_id = other.dev_id;
-      dma_buffer = std::move(other.dma_buffer);
-    }
-    return *this;
-  }
-  /// @}
-
- private:
-  /// 是否已绑定驱动（由 lock_ 保护）
-  bool bound_{false};
-  /// 保护 bound_ 的自旋锁
-  SpinLock lock_{"device_node"};
+  /// Set by ProbeAll() under DeviceManager::lock_ — no per-node lock needed.
+  bool bound{false};
 };
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_NODE_HPP_
