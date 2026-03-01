@@ -18,7 +18,7 @@ auto VirtioDriver::MatchStatic(DeviceNode& node) -> bool {
 
   etl::io_port_ro<uint32_t> magic_reg{reinterpret_cast<void*>(ctx->base)};
   if (magic_reg.read() != virtio::kMmioMagicValue) {
-    klog::Debug("VirtioDriver: 0x%lX not a VirtIO device\n", ctx->base);
+    klog::Debug("VirtioDriver: {:#x} not a VirtIO device\n", ctx->base);
     return false;
   }
   return true;
@@ -41,7 +41,7 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
       dma_buffer_ = kstd::make_unique<IoBuffer>(kMinDmaBufferSize);
       if (!dma_buffer_ || !dma_buffer_->IsValid() ||
           dma_buffer_->GetBuffer().size() < kMinDmaBufferSize) {
-        klog::Err("VirtioDriver: failed to allocate DMA buffer at 0x%lX\n",
+        klog::Err("VirtioDriver: failed to allocate DMA buffer at {:#x}\n",
                   ctx->base);
         return std::unexpected(Error(ErrorCode::kOutOfMemory));
       }
@@ -57,7 +57,7 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
           ctx->base, dma_buffer_->GetBuffer().data(), kDefaultQueueCount,
           kDefaultQueueSize, extra_features);
       if (!result.has_value()) {
-        klog::Err("VirtioDriver: VirtioBlk Create failed at 0x%lX\n",
+        klog::Err("VirtioDriver: VirtioBlk Create failed at {:#x}\n",
                   ctx->base);
         return std::unexpected(Error(result.error().code));
       }
@@ -74,19 +74,19 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
         ++blk_adapter_count_;
       } else {
         klog::Warn(
-            "VirtioDriver: blk adapter pool full, device at 0x%lX skipped\n",
+            "VirtioDriver: blk adapter pool full, device at {:#x} skipped\n",
             ctx->base);
       }
 
       klog::Info(
-          "VirtioDriver: block device at 0x%lX, capacity=%lu sectors, "
-          "irq=%u\n",
+          "VirtioDriver: block device at {:#x}, capacity={} sectors, "
+          "irq={}\n",
           ctx->base, blk_device_.value().GetCapacity(), irq_);
       return {};
     }
 
     default:
-      klog::Warn("VirtioDriver: unsupported device_id=%u at 0x%lX\n",
+      klog::Warn("VirtioDriver: unsupported device_id={} at {:#x}\n",
                  static_cast<uint32_t>(device_id), ctx->base);
       return std::unexpected(Error(ErrorCode::kNotSupported));
   }

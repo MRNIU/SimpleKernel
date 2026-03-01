@@ -74,7 +74,7 @@ class Ns16550aDriver {
 
     uart_ = std::move(*result);
     node.type = DeviceType::kChar;
-    klog::Info("Ns16550aDriver: UART at 0x%lX bound\n", node.mmio_base);
+    klog::Info("Ns16550aDriver: UART at {:#x} bound\n", node.mmio_base);
     return {};
   }
 

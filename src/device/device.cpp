@@ -16,26 +16,26 @@ auto DeviceInit() -> void {
   auto& dm = DeviceManagerSingleton::instance();
 
   if (auto r = dm.GetRegistry().Register(Ns16550aDriver::GetEntry()); !r) {
-    klog::Err("DeviceInit: register Ns16550aDriver failed: %s\n",
+    klog::Err("DeviceInit: register Ns16550aDriver failed: {}\n",
               r.error().message());
     return;
   }
 
   if (auto r = dm.GetRegistry().Register(VirtioDriver::GetEntry()); !r) {
-    klog::Err("DeviceInit: register VirtioDriver failed: %s\n",
+    klog::Err("DeviceInit: register VirtioDriver failed: {}\n",
               r.error().message());
     return;
   }
 
   PlatformBus platform_bus(KernelFdtSingleton::instance());
   if (auto r = dm.RegisterBus(platform_bus); !r) {
-    klog::Err("DeviceInit: PlatformBus enumeration failed: %s\n",
+    klog::Err("DeviceInit: PlatformBus enumeration failed: {}\n",
               r.error().message());
     return;
   }
 
   if (auto r = dm.ProbeAll(); !r) {
-    klog::Err("DeviceInit: ProbeAll failed: %s\n", r.error().message());
+    klog::Err("DeviceInit: ProbeAll failed: {}\n", r.error().message());
     return;
   }
 
