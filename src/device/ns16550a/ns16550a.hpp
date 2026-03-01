@@ -9,7 +9,7 @@
 #include <optional>
 
 #include "expected.hpp"
-#include "ns16550a/mmio_accessor.hpp"
+#include "mmio_accessor.hpp"
 
 namespace ns16550a {
 
@@ -146,7 +146,7 @@ class Ns16550a {
   /// MSB of divisor Latch when enabled
   static constexpr uint8_t kUartDLM = 1;
 
-  detail::MmioAccessor mmio_;
+  MmioAccessor mmio_;
 
   explicit Ns16550a(uint64_t dev_addr) : mmio_(dev_addr) {}
 };

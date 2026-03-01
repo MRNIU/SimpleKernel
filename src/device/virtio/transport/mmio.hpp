@@ -7,7 +7,7 @@
 
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "ns16550a/mmio_accessor.hpp"
+#include "mmio_accessor.hpp"
 #include "virtio/transport/transport.hpp"
 
 namespace virtio {
@@ -361,7 +361,7 @@ class MmioTransport final : public Transport {
       gen1 = GetConfigGeneration();
 
       auto* ptr = reinterpret_cast<volatile uint32_t*>(
-          mmio_.base() + MmioReg::kConfig + offset);
+          mmio_.base + MmioReg::kConfig + offset);
       uint64_t lo = ptr[0];
       uint64_t hi = ptr[1];
       value = (hi << 32) | lo;
@@ -376,12 +376,9 @@ class MmioTransport final : public Transport {
     return mmio_.Read<uint32_t>(MmioReg::kConfigGeneration);
   }
 
-  /// 获取 MMIO 基地址
-  [[nodiscard]] auto base() const -> uint64_t { return mmio_.base(); }
-
  private:
   /// MMIO 寄存器访问器
-  detail::MmioAccessor mmio_;
+  MmioAccessor mmio_;
 
   /// 设备是否成功初始化
   bool is_valid_;

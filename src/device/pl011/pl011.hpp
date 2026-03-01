@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <optional>
 
-#include "ns16550a/mmio_accessor.hpp"
+#include "mmio_accessor.hpp"
 
 namespace pl011 {
 
@@ -185,7 +185,7 @@ class Pl011 {
   /// interrupt mask bits
   static constexpr uint32_t kIMSCRxim = (1 << 4);
 
-  detail::MmioAccessor mmio_;
+  MmioAccessor mmio_;
   uint64_t base_clock_ = 0;
   uint64_t baud_rate_ = 0;
 };
