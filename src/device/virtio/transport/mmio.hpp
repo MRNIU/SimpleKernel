@@ -395,4 +395,4 @@ class MmioTransport final : public Transport {
 
 }  // namespace detail::virtio
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_MMIO_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_MMIO_HPP_

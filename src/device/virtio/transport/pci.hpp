@@ -59,4 +59,4 @@ class PciTransport final : public Transport {
 
 }  // namespace detail::virtio
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_PCI_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_PCI_HPP_

@@ -50,5 +50,4 @@ struct IoVec {
 
 }  // namespace detail::virtio
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_MISC_HPP_ \
-        */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_MISC_HPP_

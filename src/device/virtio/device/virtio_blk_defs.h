@@ -280,7 +280,6 @@ static constexpr size_t kDeviceIdMaxLen = 20;
 
 /**
  * @brief VirtIO 设备性能监控统计数据
- * @see 架构文档 §3
  */
 struct VirtioStats {
   /// 已传输字节数
@@ -295,6 +294,4 @@ struct VirtioStats {
 
 }  // namespace detail::virtio::blk
 
-#endif /*                                                \
-SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_DEFS_H_ \
-        */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_DEFS_H_

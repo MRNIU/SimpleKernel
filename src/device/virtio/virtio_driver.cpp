@@ -1,4 +1,6 @@
-/** @copyright Copyright The SimpleKernel Contributors */
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
 
 #include "virtio/virtio_driver.hpp"
 

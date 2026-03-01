@@ -1,4 +1,6 @@
-/** @copyright Copyright The SimpleKernel Contributors */
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_VFS_ADAPTER_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_VFS_ADAPTER_HPP_

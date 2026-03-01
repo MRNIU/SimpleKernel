@@ -694,5 +694,4 @@ class SplitVirtqueue final : public VirtqueueBase {
 
 }  // namespace detail::virtio
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_SPLIT_HPP_ \
-        */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_SPLIT_HPP_

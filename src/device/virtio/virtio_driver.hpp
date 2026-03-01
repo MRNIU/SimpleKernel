@@ -1,4 +1,6 @@
-/** @copyright Copyright The SimpleKernel Contributors */
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRTIO_DRIVER_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRTIO_DRIVER_HPP_
@@ -45,8 +47,6 @@ class VirtioDriver {
   static constexpr uint32_t kDefaultQueueSize = 128;
   static constexpr size_t kMinDmaBufferSize = 32768;
 
-  // --- Registration API ---
-
   static auto Instance() -> VirtioDriver& {
     static VirtioDriver inst;
     return inst;
@@ -70,8 +70,6 @@ class VirtioDriver {
     };
     return entry;
   }
-
-  // --- Driver lifecycle ---
 
   /**
    * @brief 硬件检测：验证 VirtIO magic number

@@ -150,4 +150,4 @@ class Transport {
 
 }  // namespace detail::virtio
 
-#endif /* SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_TRANSPORT_HPP_ */
+#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_TRANSPORT_HPP_
