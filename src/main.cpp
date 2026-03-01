@@ -15,7 +15,6 @@
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
 #include "kstd_cstring"
-#include "kstd_iostream"
 #include "kstd_libcxx.h"
 #include "mutex.hpp"
 #include "per_cpu.hpp"

@@ -9,7 +9,6 @@
 #include <etl/format_spec.h>
 #include <etl/string.h>
 #include <etl/string_stream.h>
-#include <etl/to_string.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -25,14 +24,14 @@ namespace detail {
 inline SpinLock log_lock("kernel_log");
 
 /// ANSI 转义码，在支持 ANSI 转义码的终端中可以显示颜色
-static constexpr auto kReset = "\033[0m";
-static constexpr auto kRed = "\033[31m";
-static constexpr auto kGreen = "\033[32m";
-static constexpr auto kYellow = "\033[33m";
-static constexpr auto kBlue = "\033[34m";
-static constexpr auto kMagenta = "\033[35m";
-static constexpr auto kCyan = "\033[36m";
-static constexpr auto kWhite = "\033[37m";
+inline constexpr auto kReset = "\033[0m";
+inline constexpr auto kRed = "\033[31m";
+inline constexpr auto kGreen = "\033[32m";
+inline constexpr auto kYellow = "\033[33m";
+inline constexpr auto kBlue = "\033[34m";
+inline constexpr auto kMagenta = "\033[35m";
+inline constexpr auto kCyan = "\033[36m";
+inline constexpr auto kWhite = "\033[37m";
 
 /**
  * @brief 类型安全的日志级别枚举
@@ -60,7 +59,7 @@ inline constexpr auto kMinLogLevel =
     static_cast<LogLevel::enum_type>(SIMPLEKERNEL_MIN_LOG_LEVEL);
 
 /// 每种日志级别对应的 ANSI 颜色 (indexed by enum_type value)
-static constexpr const char* kLogColors[LogLevel::kMax] = {
+inline constexpr const char* kLogColors[LogLevel::kMax] = {
     kMagenta,  // kDebug
     kCyan,     // kInfo
     kYellow,   // kWarn
@@ -70,9 +69,9 @@ static constexpr const char* kLogColors[LogLevel::kMax] = {
 // ── Header prefix emission ────────────────────────────────────────────────
 
 /**
- * @brief 输出日志行前缀：ANSI 颜色码 + [core_id]
- *
- * 统一 LogLine 构造函数和 DebugBlob 中重复的前缀发射逻辑。
+ * @brief 仅供 DebugBlob 使用：直接向终端输出日志行前缀（ANSI 颜色码 +
+ *        [core_id]），不经过 LogLine 缓冲区。
+ *        LogLine 自行在构造函数中以流式方式写入缓冲区前缀。
  *
  * @tparam Level 日志级别
  */
@@ -90,13 +89,15 @@ __always_inline void EmitHeader() {
 struct NoOpTag {};
 
 /**
- * @brief RAII 流式日志行（基于 etl::string_stream 缓冲）
+ * @brief RAII 流式日志行（基于 etl::string 实例缓冲）
  *
- * 构造时获取自旋锁并向 static etl::string<512> 写入颜色前缀+核心ID，
+ * 构造时获取自旋锁并向 etl::string<512> 写入颜色前缀+核心ID，
  * 析构时通过 sk_emit_str 原子输出完整日志行并释放锁。
  *
  * @tparam Level 日志级别
- * @note Only one LogLine may be live at a time (protected by log_lock)
+ * @note Only one LogLine may be live at a time (protected by log_lock).
+ * @note Buffer capacity is 512 bytes; content exceeding this limit is
+ *       silently truncated by etl::string_stream.
  */
 template <LogLevel::enum_type Level>
 class LogLine {
@@ -110,28 +111,19 @@ class LogLine {
    */
   explicit LogLine(
       const std::source_location& loc = std::source_location::current()) {
-    log_lock.Lock().or_else([](auto&& err) {
-      sk_emit_str("LogLine: Failed to acquire lock: ");
-      sk_emit_str(err.message());
-      etl_putchar('\n');
-      while (true) {
-        cpu_io::Pause();
-      }
-      return Expected<void>{};
-    });
+    AcquireLock();
     s_buf_.clear();
-    stream_ << kLogColors[Level] << '[';
-    etl::to_string(cpu_io::GetCurrentCoreId(), s_buf_, true);
-    stream_ << ']';
+    stream_ << kLogColors[Level] << '[' << cpu_io::GetCurrentCoreId() << ']';
     if constexpr (Level == LogLevel::kDebug) {
-      stream_ << '[' << loc.file_name() << ':';
-      etl::to_string(loc.line(), s_buf_, true);
-      stream_ << ' ' << loc.function_name() << "] ";
+      stream_ << '[' << loc.file_name() << ':' << loc.line() << ' '
+              << loc.function_name() << "] ";
     }
   }
 
-  LogLine(LogLine&& other) noexcept : released_(other.released_) {
+  LogLine(LogLine&& other) noexcept
+      : s_buf_(other.s_buf_), stream_(s_buf_), released_(other.released_) {
     other.released_ = true;
+    other.s_buf_.clear();
   }
 
   LogLine(const LogLine&) = delete;
@@ -142,15 +134,7 @@ class LogLine {
     if (!released_) {
       stream_ << '\n' << kReset;
       sk_emit_str(s_buf_.c_str());
-      log_lock.UnLock().or_else([](auto&& err) {
-        sk_emit_str("LogLine: Failed to release lock: ");
-        sk_emit_str(err.message());
-        etl_putchar('\n');
-        while (true) {
-          cpu_io::Pause();
-        }
-        return Expected<void>{};
-      });
+      ReleaseLock();
     }
   }
 
@@ -187,7 +171,33 @@ class LogLine {
   }
 
  private:
-  inline static etl::string<512> s_buf_{};
+  /// @brief Acquire log_lock; spin-halt on failure (e.g. recursive lock).
+  static void AcquireLock() {
+    log_lock.Lock().or_else([](auto&& err) -> Expected<void> {
+      sk_emit_str("LogLine: Failed to acquire lock: ");
+      sk_emit_str(err.message());
+      etl_putchar('\n');
+      while (true) {
+        cpu_io::Pause();
+      }
+      __builtin_unreachable();
+    });
+  }
+
+  /// @brief Release log_lock; spin-halt on failure (e.g. not owned).
+  static void ReleaseLock() {
+    log_lock.UnLock().or_else([](auto&& err) -> Expected<void> {
+      sk_emit_str("LogLine: Failed to release lock: ");
+      sk_emit_str(err.message());
+      etl_putchar('\n');
+      while (true) {
+        cpu_io::Pause();
+      }
+      __builtin_unreachable();
+    });
+  }
+
+  etl::string<512> s_buf_{};
   etl::string_stream stream_{s_buf_};
   bool released_ = false;
 };
@@ -204,12 +214,17 @@ class LogLine {
 template <LogLevel::enum_type Level>
 struct LogStream {
   /// @brief 通过 << 创建 LogLine 并输出第一个值
+  /// @param val  第一个要输出的值
+  /// @note source_location 仅在 klog::debug() 函数调用时捕获；
+  ///       info/warn/err 的流式 << 接口不支持捕获调用方位置，
+  ///       因为 C++ 不允许在成员函数模板的 operator<< 上使用
+  ///       std::source_location 默认参数。
   template <typename T>
   auto operator<<(T&& val) -> LogLine<Level> {
     if constexpr (Level < kMinLogLevel) {
       return LogLine<Level>{NoOpTag{}};
     }
-    LogLine<Level> line{std::source_location::current()};
+    LogLine<Level> line{};
     line << static_cast<T&&>(val);
     return line;
   }
@@ -263,6 +278,9 @@ inline const etl::format_spec HEX =
  *
  * Usage: `klog::debug() << "msg " << val;`
  * @param loc automatically captured source location
+ * @note [[nodiscard]] 修饰确保返回的 LogLine 不被意外丢弃——若丢弃，析构函数
+ *       将立即执行，日志内容在未写入任何消息的情况下输出（仅含前缀），
+ *       且持有的 log_lock 会被立即释放。
  */
 [[nodiscard]] inline auto debug(
     std::source_location loc = std::source_location::current())

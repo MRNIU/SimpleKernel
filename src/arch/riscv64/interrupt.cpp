@@ -13,7 +13,6 @@
 #include "basic_info.hpp"
 #include "kernel.h"
 #include "kstd_cstdio"
-#include "kstd_iostream"
 
 namespace {
 auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)

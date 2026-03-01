@@ -11,7 +11,6 @@
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
-#include "kstd_iostream"
 #include "ns16550a/ns16550a.hpp"
 #include "opensbi_interface.h"
 #include "syscall.hpp"

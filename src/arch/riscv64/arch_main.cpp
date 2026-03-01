@@ -50,7 +50,6 @@ void ArchInit(int argc, const char** argv) {
   KernelFdtSingleton::create(reinterpret_cast<uint64_t>(argv));
 
   BasicInfoSingleton::create(argc, argv);
-  kstd::cout << BasicInfoSingleton::instance();
 
   // 解析内核 elf 信息
   KernelElfSingleton::create(BasicInfoSingleton::instance().elf_addr);
