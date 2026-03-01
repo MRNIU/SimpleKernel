@@ -12,7 +12,7 @@
 #include "expected.hpp"
 #include "virtio/virt_queue/misc.hpp"
 
-namespace detail::virtio {
+namespace virtio {
 
 /**
  * @brief Virtqueue 基类（C++23 Deducing this 编译期多态）
@@ -116,6 +116,6 @@ class VirtqueueBase {
   /// @}
 };
 
-}  // namespace detail::virtio
+}  // namespace virtio
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_VIRTQUEUE_BASE_HPP_

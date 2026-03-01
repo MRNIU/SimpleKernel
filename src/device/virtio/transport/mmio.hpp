@@ -10,7 +10,7 @@
 #include "ns16550a/mmio_accessor.hpp"
 #include "virtio/transport/transport.hpp"
 
-namespace detail::virtio {
+namespace virtio {
 
 /**
  * @brief MMIO 中断状态位
@@ -381,7 +381,7 @@ class MmioTransport final : public Transport {
 
  private:
   /// MMIO 寄存器访问器
-  MmioAccessor mmio_;
+  detail::MmioAccessor mmio_;
 
   /// 设备是否成功初始化
   bool is_valid_;
@@ -393,6 +393,6 @@ class MmioTransport final : public Transport {
   uint32_t vendor_id_;
 };
 
-}  // namespace detail::virtio
+}  // namespace virtio
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_MMIO_HPP_

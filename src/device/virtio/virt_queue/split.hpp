@@ -11,7 +11,7 @@
 #include "virtio/virt_queue/misc.hpp"
 #include "virtio/virt_queue/virtqueue_base.hpp"
 
-namespace detail::virtio {
+namespace virtio {
 
 /**
  * @brief Split Virtqueue 管理类
@@ -692,6 +692,6 @@ class SplitVirtqueue final : public VirtqueueBase {
   bool is_valid_ = false;
 };
 
-}  // namespace detail::virtio
+}  // namespace virtio
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_SPLIT_HPP_

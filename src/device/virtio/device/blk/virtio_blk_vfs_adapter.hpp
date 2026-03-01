@@ -11,7 +11,7 @@
 #include "expected.hpp"
 #include "virtio/device/blk/virtio_blk.hpp"
 
-namespace detail::virtio::blk {
+namespace virtio::blk {
 
 /**
  * @brief Adapts VirtioBlk<> to vfs::BlockDevice.
@@ -70,6 +70,6 @@ class VirtioBlkVfsAdapter final : public vfs::BlockDevice {
   uint32_t index_{0};
 };
 
-}  // namespace detail::virtio::blk
+}  // namespace virtio::blk
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_VFS_ADAPTER_HPP_

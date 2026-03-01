@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace detail::virtio {
+namespace virtio {
 
 /**
  * @brief 将值向上对齐到指定边界
@@ -48,6 +48,6 @@ struct IoVec {
   size_t len;
 };
 
-}  // namespace detail::virtio
+}  // namespace virtio
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_MISC_HPP_

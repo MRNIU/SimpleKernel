@@ -9,7 +9,7 @@
 #include "kernel_log.hpp"
 #include "virtio/transport/transport.hpp"
 
-namespace detail::virtio {
+namespace virtio {
 
 /**
  * @brief Virtio 设备初始化器
@@ -217,6 +217,6 @@ class DeviceInitializer {
   TransportImpl& transport_;
 };
 
-}  // namespace detail::virtio
+}  // namespace virtio
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_DEVICE_INITIALIZER_HPP_

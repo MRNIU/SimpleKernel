@@ -11,7 +11,7 @@
 #include "expected.hpp"
 #include "ns16550a/mmio_accessor.hpp"
 
-namespace detail::ns16550a {
+namespace ns16550a {
 
 /**
  * @brief NS16550A 串口驱动
@@ -151,6 +151,6 @@ class Ns16550a {
   explicit Ns16550a(uint64_t dev_addr) : mmio_(dev_addr) {}
 };
 
-}  // namespace detail::ns16550a
+}  // namespace ns16550a
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_HPP_

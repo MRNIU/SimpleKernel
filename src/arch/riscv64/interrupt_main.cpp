@@ -20,7 +20,7 @@
 #include "virtual_memory.hpp"
 
 namespace {
-using Ns16550aSingleton = etl::singleton<detail::ns16550a::Ns16550a>;
+using Ns16550aSingleton = etl::singleton<ns16550a::Ns16550a>;
 using InterruptDelegate = InterruptBase::InterruptDelegate;
 
 // 外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
@@ -112,7 +112,7 @@ void RegisterInterrupts() {
       InterruptDelegate::create<ExternalInterruptHandler>());
 
   auto [base, size, irq] = KernelFdtSingleton::instance().GetSerial().value();
-  auto uart_result = detail::ns16550a::Ns16550a::Create(base);
+  auto uart_result = ns16550a::Ns16550a::Create(base);
   if (uart_result) {
     Ns16550aSingleton::create(std::move(*uart_result));
   } else {

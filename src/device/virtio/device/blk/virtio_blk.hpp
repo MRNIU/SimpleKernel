@@ -20,7 +20,7 @@
 #include "virtio/transport/mmio.hpp"
 #include "virtio/virt_queue/split.hpp"
 
-namespace detail::virtio::blk {
+namespace virtio::blk {
 
 /**
  * @brief Virtio 块设备驱动
@@ -836,6 +836,6 @@ class VirtioBlk {
   volatile bool request_completed_;
 };
 
-}  // namespace detail::virtio::blk
+}  // namespace virtio::blk
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_HPP_

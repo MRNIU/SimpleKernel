@@ -98,7 +98,7 @@ class VirtioDriver {
     return {};
   }
 
-  [[nodiscard]] auto GetBlkDevice() -> detail::virtio::blk::VirtioBlk<>* {
+  [[nodiscard]] auto GetBlkDevice() -> virtio::blk::VirtioBlk<>* {
     return blk_device_.has_value() ? &blk_device_.value() : nullptr;
   }
 
@@ -117,14 +117,13 @@ class VirtioDriver {
       {BusType::kPlatform, "virtio,mmio"},
   };
 
-  etl::optional<detail::virtio::blk::VirtioBlk<>> blk_device_;
+  etl::optional<virtio::blk::VirtioBlk<>> blk_device_;
   etl::unique_ptr<IoBuffer> dma_buffer_;
   uint32_t irq_{0};
 
   // Static adapter pool — one slot per probed blk device (kernel lifetime).
   static constexpr size_t kMaxBlkDevices = 4;
-  etl::optional<detail::virtio::blk::VirtioBlkVfsAdapter>
-      blk_adapters_[kMaxBlkDevices];
+  etl::optional<virtio::blk::VirtioBlkVfsAdapter> blk_adapters_[kMaxBlkDevices];
   size_t blk_adapter_count_{0};
 };
 

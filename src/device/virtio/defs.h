@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-namespace detail::virtio {
+namespace virtio {
 
 /**
  * @brief Virtio 设备 ID 定义
@@ -86,6 +86,6 @@ enum class ReservedFeature : uint64_t {
   kRingReset = 0x10000000000,
 };
 
-}  // namespace detail::virtio
+}  // namespace virtio
 
 #endif /* SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEFS_H_ */

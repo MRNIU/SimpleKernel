@@ -17,7 +17,7 @@ auto VirtioDriver::MatchStatic(DeviceNode& node) -> bool {
   if (!ctx) return false;
 
   etl::io_port_ro<uint32_t> magic_reg{reinterpret_cast<void*>(ctx->base)};
-  if (magic_reg.read() != detail::virtio::kMmioMagicValue) {
+  if (magic_reg.read() != virtio::kMmioMagicValue) {
     klog::Debug("VirtioDriver: 0x%lX not a VirtIO device\n", ctx->base);
     return false;
   }
@@ -32,7 +32,7 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
 
   // 读取 device_id
   etl::io_port_ro<uint32_t> device_id_reg{reinterpret_cast<void*>(
-      ctx->base + detail::virtio::MmioTransport::MmioReg::kDeviceId)};
+      ctx->base + virtio::MmioTransport::MmioReg::kDeviceId)};
   const auto device_id = static_cast<DeviceId>(device_id_reg.read());
 
   switch (device_id) {
@@ -47,13 +47,13 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
       }
 
       uint64_t extra_features =
-          static_cast<uint64_t>(detail::virtio::blk::BlkFeatureBit::kSegMax) |
-          static_cast<uint64_t>(detail::virtio::blk::BlkFeatureBit::kSizeMax) |
-          static_cast<uint64_t>(detail::virtio::blk::BlkFeatureBit::kBlkSize) |
-          static_cast<uint64_t>(detail::virtio::blk::BlkFeatureBit::kFlush) |
-          static_cast<uint64_t>(detail::virtio::blk::BlkFeatureBit::kGeometry);
+          static_cast<uint64_t>(virtio::blk::BlkFeatureBit::kSegMax) |
+          static_cast<uint64_t>(virtio::blk::BlkFeatureBit::kSizeMax) |
+          static_cast<uint64_t>(virtio::blk::BlkFeatureBit::kBlkSize) |
+          static_cast<uint64_t>(virtio::blk::BlkFeatureBit::kFlush) |
+          static_cast<uint64_t>(virtio::blk::BlkFeatureBit::kGeometry);
 
-      auto result = detail::virtio::blk::VirtioBlk<>::Create(
+      auto result = virtio::blk::VirtioBlk<>::Create(
           ctx->base, dma_buffer_->GetBuffer().data(), kDefaultQueueCount,
           kDefaultQueueSize, extra_features);
       if (!result.has_value()) {

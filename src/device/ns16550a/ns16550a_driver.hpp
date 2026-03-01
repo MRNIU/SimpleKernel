@@ -14,7 +14,7 @@
 
 class Ns16550aDriver {
  public:
-  using Ns16550aType = detail::ns16550a::Ns16550a;
+  using Ns16550aType = ns16550a::Ns16550a;
 
   // --- Registration API ---
 

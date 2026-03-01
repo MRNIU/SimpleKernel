@@ -8,7 +8,7 @@
 #include "expected.hpp"
 #include "virtio/defs.h"
 
-namespace detail::virtio {
+namespace virtio {
 
 /**
  * @brief Virtio 传输层接口约束
@@ -148,6 +148,6 @@ class Transport {
   /// @}
 };
 
-}  // namespace detail::virtio
+}  // namespace virtio
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_TRANSPORT_HPP_

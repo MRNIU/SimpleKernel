@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace detail::virtio::blk {
+namespace virtio::blk {
 
 /**
  * @brief 块设备特性位定义
@@ -292,6 +292,6 @@ struct VirtioStats {
   uint64_t queue_full_errors{0};
 };
 
-}  // namespace detail::virtio::blk
+}  // namespace virtio::blk
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_DEFS_H_

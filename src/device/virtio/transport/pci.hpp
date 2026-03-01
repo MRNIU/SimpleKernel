@@ -7,7 +7,7 @@
 
 #include "virtio/transport/transport.hpp"
 
-namespace detail::virtio {
+namespace virtio {
 
 /**
  * @brief Virtio PCI 传输层（占位）
@@ -57,6 +57,6 @@ class PciTransport final : public Transport {
   [[nodiscard]] auto GetConfigGeneration() const -> uint32_t { return 0; }
 };
 
-}  // namespace detail::virtio
+}  // namespace virtio
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_PCI_HPP_
