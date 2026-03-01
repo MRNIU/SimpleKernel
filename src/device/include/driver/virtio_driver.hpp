@@ -106,6 +106,16 @@ class VirtioDriver {
     return blk_device_.has_value() ? &blk_device_.value() : nullptr;
   }
 
+  [[nodiscard]] auto GetIrq() const -> uint32_t { return irq_; }
+
+  template <typename CompletionCallback>
+  auto HandleInterrupt(CompletionCallback&& on_complete) -> void {
+    if (blk_device_.has_value()) {
+      blk_device_.value().HandleInterrupt(
+          static_cast<CompletionCallback&&>(on_complete));
+    }
+  }
+
  private:
   static constexpr MatchEntry kMatchTable[] = {
       {BusType::kPlatform, "virtio,mmio"},
