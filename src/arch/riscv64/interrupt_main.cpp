@@ -6,8 +6,8 @@
 
 #include "arch.h"
 #include "basic_info.hpp"
-#include "driver/detail/ns16550a/ns16550a_device.hpp"
-#include "driver/virtio_blk_driver.hpp"
+#include "driver/detail/ns16550a/ns16550a.hpp"
+#include "driver/virtio_driver.hpp"
 #include "interrupt.h"
 #include "kernel.h"
 #include "kernel_fdt.hpp"
@@ -19,7 +19,7 @@
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
-using Ns16550aSingleton = etl::singleton<detail::ns16550a::Ns16550aDevice>;
+using Ns16550aSingleton = etl::singleton<detail::ns16550a::Ns16550a>;
 using InterruptDelegate = InterruptBase::InterruptDelegate;
 namespace {
 // 外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
@@ -86,15 +86,17 @@ auto IpiHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
 // 串口外部中断处理
 auto SerialIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
-  Ns16550aSingleton::instance().HandleInterrupt(
-      [](uint8_t ch) { sk_putchar(ch, nullptr); });
+  while (Ns16550aSingleton::instance().HasData()) {
+    uint8_t ch = Ns16550aSingleton::instance().GetChar();
+    sk_putchar(ch, nullptr);
+  }
   return 0;
 }
 
 // VirtIO-blk 外部中断处理
 auto VirtioBlkIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
-  VirtioBlkDriver::Instance().HandleInterrupt(
+  VirtioDriver::Instance().HandleInterrupt(
       [](void* /*token*/, ErrorCode status) {
         if (status != ErrorCode::kSuccess) {
           klog::Err("VirtIO blk IO error: %d\n", static_cast<int>(status));
@@ -111,19 +113,13 @@ void RegisterInterrupts() {
       InterruptDelegate::create<ExternalInterruptHandler>());
 
   auto [base, size, irq] = KernelFdtSingleton::instance().GetSerial().value();
-  auto uart_result = detail::ns16550a::Ns16550aDevice::Create(base);
+  auto uart_result = detail::ns16550a::Ns16550a::Create(base);
   if (uart_result) {
     Ns16550aSingleton::create(std::move(*uart_result));
   } else {
-    klog::Err("Failed to create Ns16550aDevice: %d\n",
+    klog::Err("Failed to create Ns16550a: %d\n",
               static_cast<int>(uart_result.error().code));
   }
-  Ns16550aSingleton::instance().OpenReadWrite().or_else(
-      [](Error e) -> Expected<void> {
-        klog::Err("Failed to open Ns16550aDevice: %d\n",
-                  static_cast<int>(e.code));
-        return Expected<void>{};
-      });
 
   // 注册 ebreak 中断
   InterruptSingleton::instance().RegisterInterruptFunc(
@@ -201,7 +197,7 @@ void InterruptInit(int, const char**) {
       });
 
   // 通过统一接口注册 virtio-blk 外部中断
-  auto& blk_driver = VirtioBlkDriver::Instance();
+  auto& blk_driver = VirtioDriver::Instance();
   auto blk_irq = blk_driver.GetIrq();
   if (blk_irq != 0) {
     InterruptSingleton::instance()
