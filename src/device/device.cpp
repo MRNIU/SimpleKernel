@@ -4,6 +4,7 @@
 
 #include "block_device_provider.hpp"
 #include "device_manager.hpp"
+#include "driver/detail/virtio/device/virtio_blk_vfs_adapter.hpp"
 #include "driver/ns16550a_driver.hpp"
 #include "driver/virtio_blk_driver.hpp"
 #include "kernel.h"
