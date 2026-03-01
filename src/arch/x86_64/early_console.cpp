@@ -31,3 +31,5 @@ struct EarlyConsole {
 EarlyConsole early_console;
 
 }  // namespace
+
+extern "C" void etl_putchar(int c) { sk_putchar(c, nullptr); }
