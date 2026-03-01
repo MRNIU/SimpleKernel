@@ -16,6 +16,7 @@
 #include "driver/detail/virtio/transport/mmio.hpp"
 #include "driver/detail/virtio/virt_queue/split.hpp"
 #include "expected.hpp"
+#include "driver/detail/virtio/platform_config.hpp"
 
 namespace detail::virtio::blk {
 

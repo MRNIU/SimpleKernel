@@ -8,6 +8,7 @@
 #include "driver/detail/virtio/traits.hpp"
 #include "driver/detail/virtio/transport/transport.hpp"
 #include "expected.hpp"
+#include "driver/detail/virtio/platform_config.hpp"
 
 namespace detail::virtio {
 

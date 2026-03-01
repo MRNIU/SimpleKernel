@@ -73,7 +73,6 @@ TARGET_LINK_LIBRARIES (
             bmalloc
             MPMCQueue
             cpu_io
-            device_framework
             device
             task
             filesystem
