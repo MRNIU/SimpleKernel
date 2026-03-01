@@ -19,9 +19,10 @@
 #include "virtio/virtio_driver.hpp"
 #include "virtual_memory.hpp"
 
+namespace {
 using Ns16550aSingleton = etl::singleton<detail::ns16550a::Ns16550a>;
 using InterruptDelegate = InterruptBase::InterruptDelegate;
-namespace {
+
 // 外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
 auto ExternalInterruptHandler(uint64_t /*cause*/, cpu_io::TrapContext* context)
     -> uint64_t {
@@ -46,8 +47,8 @@ auto EbreakHandler(uint64_t exception_code, cpu_io::TrapContext* context)
     // 4 字节指令
     context->sepc += 4;
   }
-  klog::Info("Handle %s\n", cpu_io::detail::register_info::csr::ScauseInfo::
-                                kExceptionNames[exception_code]);
+  klog::Info("Handle %s\n",
+             cpu_io::ScauseInfo::kExceptionNames[exception_code]);
   return 0;
 }
 
@@ -56,9 +57,8 @@ auto PageFaultHandler(uint64_t exception_code, cpu_io::TrapContext* context)
     -> uint64_t {
   auto addr = cpu_io::Stval::Read();
   klog::Err("PageFault: %s(0x%lx), addr: 0x%lx\n",
-            cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
-                [exception_code],
-            exception_code, addr);
+            cpu_io::ScauseInfo::kExceptionNames[exception_code], exception_code,
+            addr);
   klog::Err("sepc: 0x%lx\n", context->sepc);
   DumpStack();
   while (1) {
@@ -108,8 +108,7 @@ auto VirtioBlkIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
 void RegisterInterrupts() {
   // 注册外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
   InterruptSingleton::instance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::csr::ScauseInfo::
-          kSupervisorExternalInterrupt,
+      cpu_io::ScauseInfo::kSupervisorExternalInterrupt,
       InterruptDelegate::create<ExternalInterruptHandler>());
 
   auto [base, size, irq] = KernelFdtSingleton::instance().GetSerial().value();
@@ -123,29 +122,28 @@ void RegisterInterrupts() {
 
   // 注册 ebreak 中断
   InterruptSingleton::instance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::csr::ScauseInfo::kBreakpoint,
+      cpu_io::ScauseInfo::kBreakpoint,
       InterruptDelegate::create<EbreakHandler>());
 
   // 注册缺页中断处理
   InterruptSingleton::instance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::csr::ScauseInfo::kInstructionPageFault,
+      cpu_io::ScauseInfo::kInstructionPageFault,
       InterruptDelegate::create<PageFaultHandler>());
   InterruptSingleton::instance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::csr::ScauseInfo::kLoadPageFault,
+      cpu_io::ScauseInfo::kLoadPageFault,
       InterruptDelegate::create<PageFaultHandler>());
   InterruptSingleton::instance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::csr::ScauseInfo::kStoreAmoPageFault,
+      cpu_io::ScauseInfo::kStoreAmoPageFault,
       InterruptDelegate::create<PageFaultHandler>());
 
   // 注册系统调用
   InterruptSingleton::instance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::csr::ScauseInfo::kEcallUserMode,
+      cpu_io::ScauseInfo::kEcallUserMode,
       InterruptDelegate::create<SyscallHandler>());
 
   // 注册软中断 (IPI)
   InterruptSingleton::instance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::csr::ScauseInfo::
-          kSupervisorSoftwareInterrupt,
+      cpu_io::ScauseInfo::kSupervisorSoftwareInterrupt,
       InterruptDelegate::create<IpiHandler>());
 }
 

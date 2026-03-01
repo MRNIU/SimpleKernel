@@ -6,6 +6,7 @@
 #include <cpu_io.h>
 
 #include "arch.h"
+#include "basic_info.hpp"
 #include "interrupt.h"
 #include "kernel.h"
 #include "kernel_log.hpp"
@@ -13,6 +14,8 @@
 #include "kstd_iostream"
 
 namespace {
+using InterruptDelegate = InterruptBase::InterruptDelegate;
+
 // 定义 APIC 时钟中断向量号（使用高优先级向量）
 constexpr uint8_t kApicTimerVector = 0xF0;
 constexpr uint32_t kApicTimerFrequencyHz = 100;
@@ -96,15 +99,15 @@ void InterruptInit(int, const char**) {
   InterruptSingleton::instance().SetUpIdtr();
 
   // 注册 APIC Timer 中断处理函数（Local APIC 内部中断，不走 IO APIC）
-  InterruptSingleton::instance().RegisterInterruptFunc(kApicTimerVector,
-                                                       ApicTimerHandler);
+  InterruptSingleton::instance().RegisterInterruptFunc(
+      kApicTimerVector, InterruptDelegate::create<ApicTimerHandler>());
 
   // 通过统一接口注册键盘外部中断（IRQ 1 = PS/2 键盘，先注册 handler 再启用 IO
   // APIC）
   constexpr uint8_t kKeyboardIrq = 1;
   InterruptSingleton::instance()
       .RegisterExternalInterrupt(kKeyboardIrq, cpu_io::GetCurrentCoreId(), 0,
-                                 KeyboardHandler)
+                                 InterruptDelegate::create<KeyboardHandler>())
       .or_else([](Error err) -> Expected<void> {
         klog::Err("Failed to register keyboard IRQ: %s\n", err.message());
         return std::unexpected(err);

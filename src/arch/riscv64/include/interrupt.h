@@ -53,12 +53,10 @@ class Interrupt final : public InterruptBase {
 
  private:
   /// 中断处理函数数组
-  std::array<InterruptDelegate,
-             cpu_io::detail::register_info::csr::ScauseInfo::kInterruptMaxCount>
+  std::array<InterruptDelegate, cpu_io::ScauseInfo::kInterruptMaxCount>
       interrupt_handlers_;
   /// 异常处理函数数组
-  std::array<InterruptDelegate,
-             cpu_io::detail::register_info::csr::ScauseInfo::kExceptionMaxCount>
+  std::array<InterruptDelegate, cpu_io::ScauseInfo::kExceptionMaxCount>
       exception_handlers_;
   Plic plic_;
 };

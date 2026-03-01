@@ -18,19 +18,15 @@
 namespace {
 auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)
     -> uint64_t {
-  klog::Info(
-      "Default Interrupt handler [%s] 0x%X, 0x%p\n",
-      cpu_io::detail::register_info::csr::ScauseInfo::kInterruptNames[cause],
-      cause, context);
+  klog::Info("Default Interrupt handler [%s] 0x%X, 0x%p\n",
+             cpu_io::ScauseInfo::kInterruptNames[cause], cause, context);
   return 0;
 }
 
 auto DefaultExceptionHandler(uint64_t cause, cpu_io::TrapContext* context)
     -> uint64_t {
-  klog::Err(
-      "Default Exception handler [%s] 0x%X, 0x%p\n",
-      cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames[cause],
-      cause, context);
+  klog::Err("Default Exception handler [%s] 0x%X, 0x%p\n",
+            cpu_io::ScauseInfo::kExceptionNames[cause], cause, context);
   while (true) {
     cpu_io::Pause();
   }
@@ -55,14 +51,12 @@ void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
 
   if (interrupt) {
     // 中断
-    if (exception_code <
-        cpu_io::detail::register_info::csr::ScauseInfo::kInterruptMaxCount) {
+    if (exception_code < cpu_io::ScauseInfo::kInterruptMaxCount) {
       interrupt_handlers_[exception_code](exception_code, context);
     }
   } else {
     // 异常
-    if (exception_code <
-        cpu_io::detail::register_info::csr::ScauseInfo::kExceptionMaxCount) {
+    if (exception_code < cpu_io::ScauseInfo::kExceptionMaxCount) {
       exception_handlers_[exception_code](exception_code, context);
     }
   }
@@ -73,25 +67,19 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) {
   auto exception_code = cpu_io::Scause::ExceptionCode::Get(cause);
 
   if (interrupt) {
-    assert(exception_code < cpu_io::detail::register_info::csr::ScauseInfo::
-                                kInterruptMaxCount &&
+    assert(exception_code < cpu_io::ScauseInfo::kInterruptMaxCount &&
            "Interrupt code out of range");
 
     interrupt_handlers_[exception_code] = func;
     klog::Info("RegisterInterruptFunc [%s] 0x%X\n",
-               cpu_io::detail::register_info::csr::ScauseInfo::kInterruptNames
-                   [exception_code],
-               cause);
+               cpu_io::ScauseInfo::kInterruptNames[exception_code], cause);
   } else {
-    assert(exception_code < cpu_io::detail::register_info::csr::ScauseInfo::
-                                kExceptionMaxCount &&
+    assert(exception_code < cpu_io::ScauseInfo::kExceptionMaxCount &&
            "Exception code out of range");
 
     exception_handlers_[exception_code] = func;
     klog::Info("RegisterInterruptFunc [%s] 0x%X\n",
-               cpu_io::detail::register_info::csr::ScauseInfo::kExceptionNames
-                   [exception_code],
-               cause);
+               cpu_io::ScauseInfo::kExceptionNames[exception_code], cause);
   }
 }
 

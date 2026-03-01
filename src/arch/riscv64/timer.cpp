@@ -36,7 +36,7 @@ void TimerInit() {
 
   // 注册时钟中断
   InterruptSingleton::instance().RegisterInterruptFunc(
-      cpu_io::detail::register_info::csr::ScauseInfo::kSupervisorTimerInterrupt,
+      cpu_io::ScauseInfo::kSupervisorTimerInterrupt,
       InterruptDelegate::create<TimerHandler>());
 
   // 开启时钟中断

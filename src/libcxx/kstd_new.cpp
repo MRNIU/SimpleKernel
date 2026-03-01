@@ -57,6 +57,14 @@ void* operator new[](size_t size, size_t alignment) noexcept {
   return aligned_alloc(alignment, size);
 }
 
+void* operator new(size_t size, std::align_val_t alignment) noexcept {
+  return operator new(size, static_cast<size_t>(alignment));
+}
+
+void* operator new[](size_t size, std::align_val_t alignment) noexcept {
+  return operator new[](size, static_cast<size_t>(alignment));
+}
+
 void operator delete(void* ptr) noexcept {
   if (ptr != nullptr) {
     free(ptr);
@@ -88,6 +96,30 @@ void operator delete(void* ptr, size_t, size_t) noexcept {
 }
 
 void operator delete[](void* ptr, size_t, size_t) noexcept {
+  if (ptr != nullptr) {
+    aligned_free(ptr);
+  }
+}
+
+void operator delete(void* ptr, std::align_val_t) noexcept {
+  if (ptr != nullptr) {
+    aligned_free(ptr);
+  }
+}
+
+void operator delete[](void* ptr, std::align_val_t) noexcept {
+  if (ptr != nullptr) {
+    aligned_free(ptr);
+  }
+}
+
+void operator delete(void* ptr, size_t, std::align_val_t) noexcept {
+  if (ptr != nullptr) {
+    aligned_free(ptr);
+  }
+}
+
+void operator delete[](void* ptr, size_t, std::align_val_t) noexcept {
   if (ptr != nullptr) {
     aligned_free(ptr);
   }
