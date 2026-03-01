@@ -5,16 +5,17 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_HPP_
 
+#include <cpu_io.h>
+
 #include <cstdint>
 #include <type_traits>
 #include <utility>
 
 #include "expected.hpp"
+#include "kernel_log.hpp"
 #include "virtio/defs.h"
 #include "virtio/device/device_initializer.hpp"
 #include "virtio/device/virtio_blk_defs.h"
-#include "virtio/platform_config.hpp"
-#include "virtio/traits.hpp"
 #include "virtio/transport/mmio.hpp"
 #include "virtio/virt_queue/split.hpp"
 
@@ -112,7 +113,7 @@ class VirtioBlk {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
     if (queue_count > 1) {
-      PlatformEnvironment::Log("Multi-queue not yet supported, using 1 queue");
+      klog::Debug("Multi-queue not yet supported, using 1 queue");
     }
 
     // 1. 创建传输层
@@ -134,8 +135,7 @@ class VirtioBlk {
     uint64_t negotiated = *negotiated_result;
 
     if ((negotiated & static_cast<uint64_t>(ReservedFeature::kVersion1)) == 0) {
-      PlatformEnvironment::Log(
-          "Device does not support VERSION_1 (modern mode)");
+      klog::Debug("Device does not support VERSION_1 (modern mode)");
       return std::unexpected(Error{ErrorCode::kFeatureNegotiationFailed});
     }
 
@@ -143,11 +143,11 @@ class VirtioBlk {
     bool event_idx =
         (negotiated & static_cast<uint64_t>(ReservedFeature::kEventIdx)) != 0;
     if (event_idx) {
-      PlatformEnvironment::Log(
+      klog::Debug(
           "VIRTIO_F_EVENT_IDX negotiated, notification suppression enabled");
     }
     // 3. 创建 Virtqueue
-    uint64_t dma_phys = PlatformDma::VirtToPhys(vq_dma_buf);
+    uint64_t dma_phys = reinterpret_cast<uintptr_t>(vq_dma_buf);
     VirtqueueT vq(vq_dma_buf, dma_phys, static_cast<uint16_t>(queue_size),
                   event_idx);
     if (!vq.IsValid()) {
@@ -232,7 +232,7 @@ class VirtioBlk {
       return;
     }
     // 写屏障：确保 Available Ring 更新对设备可见
-    PlatformBarrier::Wmb();
+    cpu_io::Wmb();
 
     if (vq_.EventIdxEnabled()) {
       auto* avail_event_ptr = vq_.UsedAvailEvent();
@@ -294,7 +294,7 @@ class VirtioBlk {
     }
     stats_.interrupts_handled++;
     request_completed_ = true;
-    PlatformBarrier::Wmb();
+    cpu_io::Wmb();
   }
 
   // ======== 同步便捷方法 ========
@@ -314,7 +314,7 @@ class VirtioBlk {
     if (data == nullptr) {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
-    IoVec data_iov{PlatformDma::VirtToPhys(data), kSectorSize};
+    IoVec data_iov{reinterpret_cast<uintptr_t>(data), kSectorSize};
     return SubmitSyncRequest(ReqType::kIn, sector, &data_iov, 1);
   }
 
@@ -334,7 +334,7 @@ class VirtioBlk {
     if (data == nullptr) {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
-    IoVec data_iov{PlatformDma::VirtToPhys(const_cast<uint8_t*>(data)),
+    IoVec data_iov{reinterpret_cast<uintptr_t>(const_cast<uint8_t*>(data)),
                    kSectorSize};
     return SubmitSyncRequest(ReqType::kOut, sector, &data_iov, 1);
   }
@@ -571,8 +571,8 @@ class VirtioBlk {
     size_t readable_count = 0;
     size_t writable_count = 0;
 
-    readable_iovs[readable_count++] = {PlatformDma::VirtToPhys(&slot.header),
-                                       sizeof(BlkReqHeader)};
+    readable_iovs[readable_count++] = {
+        reinterpret_cast<uintptr_t>(&slot.header), sizeof(BlkReqHeader)};
 
     if (type == ReqType::kIn) {
       for (size_t i = 0; i < buffer_count; ++i) {
@@ -586,11 +586,10 @@ class VirtioBlk {
 
     // 状态字节始终为 device-writable
     writable_iovs[writable_count++] = {
-        PlatformDma::VirtToPhys(
-            const_cast<uint8_t*>(static_cast<volatile uint8_t*>(&slot.status))),
+        reinterpret_cast<uintptr_t>(const_cast<uint8_t*>(&slot.status)),
         sizeof(uint8_t)};
 
-    PlatformBarrier::Wmb();
+    cpu_io::Wmb();
 
     auto chain_result = vq_.SubmitChain(readable_iovs, readable_count,
                                         writable_iovs, writable_count);
@@ -619,7 +618,7 @@ class VirtioBlk {
    */
   template <typename CompletionCallback>
   auto ProcessCompletions(CompletionCallback&& on_complete) -> void {
-    PlatformBarrier::Rmb();
+    cpu_io::Rmb();
 
     while (vq_.HasUsed()) {
       auto elem_result = vq_.PopUsed();
@@ -634,7 +633,7 @@ class VirtioBlk {
       if (slot_idx < kMaxInflight) {
         auto& slot = slots_[slot_idx];
 
-        PlatformBarrier::Rmb();
+        cpu_io::Rmb();
 
         ErrorCode ec = MapBlkStatus(slot.status);
         on_complete(slot.token, ec);
@@ -745,7 +744,7 @@ class VirtioBlk {
       auto* used_event_ptr = vq_.AvailUsedEvent();
       if (used_event_ptr != nullptr) {
         *used_event_ptr = vq_.LastUsedIdx();
-        PlatformBarrier::Wmb();
+        cpu_io::Wmb();
       }
     }
   }
@@ -754,8 +753,7 @@ class VirtioBlk {
    * @brief 同步提交请求的内部实现
    *
    * Read()/Write() 的共享实现：入队 → Kick → 轮询等待 → 处理完成 → 返回。
-   * 轮询上限由 SpinWaitTraits::kMaxSpinIterations 控制（若 Traits
-   * 未提供则回退默认值）。
+   * 轮询上限固定为 100000000 次迭代。
    *
    * @param type 请求类型（kIn/kOut）
    * @param sector 起始扇区号
@@ -773,24 +771,18 @@ class VirtioBlk {
 
     Kick(0);
 
-    uint32_t spin_limit{};
-    if constexpr (SpinWaitTraits<PlatformEnvironment>) {
-      spin_limit =
-          static_cast<uint32_t>(PlatformEnvironment::kMaxSpinIterations);
-    } else {
-      spin_limit = uint32_t{100000000};
-    }
+    uint32_t spin_limit = 100000000U;
 
     for (uint32_t i = 0; i < spin_limit; ++i) {
-      PlatformBarrier::Rmb();
+      cpu_io::Rmb();
       if (vq_.HasUsed()) {
         break;
       }
     }
 
     if (!vq_.HasUsed()) {
-      PlatformEnvironment::Log("Sync request timeout: sector=%llu",
-                               static_cast<unsigned long long>(sector));
+      klog::Warn("Sync request timeout: sector=%llu",
+                 static_cast<unsigned long long>(sector));
       return std::unexpected(Error{ErrorCode::kTimeout});
     }
 

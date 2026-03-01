@@ -6,7 +6,6 @@
 
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "mmio_helper.hpp"
 #include "virtio/transport/mmio.hpp"
 
 auto VirtioDriver::MatchStatic(DeviceNode& node) -> bool {
@@ -64,6 +63,18 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
       blk_device_.emplace(std::move(*result));
       node.type = DeviceType::kBlock;
       irq_ = node.irq;
+
+      // Register adapter in pool and expose via DeviceNode.
+      if (blk_adapter_count_ < kMaxBlkDevices) {
+        const auto idx = static_cast<uint32_t>(blk_adapter_count_);
+        blk_adapters_[blk_adapter_count_].emplace(&blk_device_.value(), idx);
+        node.block_device = &blk_adapters_[blk_adapter_count_].value();
+        ++blk_adapter_count_;
+      } else {
+        klog::Warn(
+            "VirtioDriver: blk adapter pool full, device at 0x%lX skipped\n",
+            ctx->base);
+      }
 
       klog::Info(
           "VirtioDriver: block device at 0x%lX, capacity=%lu sectors, "

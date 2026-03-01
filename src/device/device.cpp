@@ -1,6 +1,5 @@
 /** @copyright Copyright The SimpleKernel Contributors */
 
-#include "block_device_provider.hpp"
 #include "device_manager.hpp"
 #include "kernel.h"
 #include "kernel_fdt.hpp"
@@ -39,14 +38,4 @@ auto DeviceInit() -> void {
   }
 
   klog::Info("DeviceInit: complete\n");
-}
-
-auto GetVirtioBlkBlockDevice() -> vfs::BlockDevice* {
-  auto* raw = VirtioDriver::Instance().GetBlkDevice();
-  if (raw == nullptr) {
-    klog::Err("GetVirtioBlkBlockDevice: no virtio-blk device probed\n");
-    return nullptr;
-  }
-  static detail::virtio::blk::VirtioBlkVfsAdapter adapter(raw);
-  return &adapter;
 }

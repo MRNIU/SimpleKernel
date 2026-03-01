@@ -16,10 +16,8 @@
 #include "io_buffer.hpp"
 #include "kernel_log.hpp"
 #include "kstd_memory"
-#include "mmio_helper.hpp"
 #include "virtio/device/virtio_blk.hpp"
 #include "virtio/device/virtio_blk_vfs_adapter.hpp"
-#include "virtio/traits.hpp"
 
 /**
  * @brief 统一 VirtIO 驱动
@@ -92,7 +90,7 @@ class VirtioDriver {
    * 运行期读取 device_id，分发到对应设备实现，创建并注册设备。
    *
    * @pre  node.mmio_base != 0，MatchStatic() 已返回 true
-   * @post 设备已注册到 DeviceManager（通过 block_device_provider 等）
+   * @post 设备已注册到 DeviceManager（node.block_device 已填入适配器指针）
    */
   auto Probe(DeviceNode& node) -> Expected<void>;
 
@@ -124,6 +122,12 @@ class VirtioDriver {
   etl::optional<detail::virtio::blk::VirtioBlk<>> blk_device_;
   etl::unique_ptr<IoBuffer> dma_buffer_;
   uint32_t irq_{0};
+
+  // Static adapter pool — one slot per probed blk device (kernel lifetime).
+  static constexpr size_t kMaxBlkDevices = 4;
+  etl::optional<detail::virtio::blk::VirtioBlkVfsAdapter>
+      blk_adapters_[kMaxBlkDevices];
+  size_t blk_adapter_count_{0};
 };
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRTIO_DRIVER_HPP_

@@ -8,7 +8,6 @@
 
 #include <etl/singleton.h>
 
-#include "bus.hpp"
 #include "device_node.hpp"
 #include "driver_registry.hpp"
 #include "expected.hpp"

@@ -2,7 +2,8 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "block_device_provider.hpp"
+#include "device_manager.hpp"
+#include "device_node.hpp"
 #include "fatfs.hpp"
 #include "kernel_log.hpp"
 #include "mount.hpp"
@@ -31,9 +32,13 @@ auto FileSystemInit() -> void {
     return;
   }
 
-  // Mount FatFS on virtio-blk0 at /mnt/fat
-  auto* blk = GetVirtioBlkBlockDevice();
-  if (blk != nullptr) {
+  // Mount FatFS on the first available block device at /mnt/fat
+  DeviceNode* blk_nodes[4]{};
+  const size_t blk_count = DeviceManagerSingleton::instance().FindDevicesByType(
+      DeviceType::kBlock, blk_nodes, 4);
+
+  if (blk_count > 0 && blk_nodes[0]->block_device != nullptr) {
+    auto* blk = blk_nodes[0]->block_device;
     static fatfs::FatFsFileSystem fat_fs(kRootFsDriveId);
     auto fat_mount = fat_fs.Mount(blk);
     if (!fat_mount.has_value()) {
@@ -45,7 +50,8 @@ auto FileSystemInit() -> void {
         klog::Err("FileSystemInit: vfs mount at /mnt/fat failed: %s\n",
                   vfs_mount.error().message());
       } else {
-        klog::Info("FileSystemInit: FatFS mounted at /mnt/fat\n");
+        klog::Info("FileSystemInit: FatFS mounted at /mnt/fat (device: %s)\n",
+                   blk->GetName());
       }
     }
   }

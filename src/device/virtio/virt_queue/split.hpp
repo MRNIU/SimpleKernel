@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "expected.hpp"
-#include "virtio/traits.hpp"
 #include "virtio/virt_queue/misc.hpp"
 #include "virtio/virt_queue/virtqueue_base.hpp"
 
@@ -33,7 +32,7 @@ namespace detail::virtio {
  * @warning 单生产者-单消费者：描述符分配和提交应由同一线程执行，
  *                          已用缓冲区回收应由另一线程执行（通常在中断处理程序中）。
  *
- * @see PlatformBarrier for barrier semantics
+ * @see cpu_io::Wmb/Rmb for barrier semantics
  * @see virtio-v1.2#2.7
  */
 class SplitVirtqueue final : public VirtqueueBase {
@@ -373,7 +372,7 @@ class SplitVirtqueue final : public VirtqueueBase {
    * @note 调用者必须在调用此方法前确保描述符写入已完成
    * @note 调用者必须在调用此方法后通知设备（如 Transport::NotifyQueue()）
    *
-   * @see PlatformBarrier::Wmb() 用于确保 ring 写入在 idx 更新之前对设备可见
+   * @see cpu_io::Wmb() 用于确保 ring 写入在 idx 更新之前对设备可见
    *
    * @warning 非线程安全：多个线程同时调用可能导致竞态条件
    * @see virtio-v1.2#2.7.13 Supplying Buffers to The Device
@@ -383,7 +382,7 @@ class SplitVirtqueue final : public VirtqueueBase {
     avail_->ring[idx % queue_size_] = head;
 
     // 写屏障：确保 ring 写入在 idx 更新之前对设备可见
-    PlatformBarrier::Wmb();
+    cpu_io::Wmb();
 
     avail_->idx = idx + 1;
   }
@@ -506,7 +505,7 @@ class SplitVirtqueue final : public VirtqueueBase {
         desc_[prev_idx].flags & ~static_cast<uint16_t>(kDescFNext);
 
     // 写屏障：确保描述符写入在 Available Ring 更新之前对设备可见
-    PlatformBarrier::Wmb();
+    cpu_io::Wmb();
 
     Submit(head);
 

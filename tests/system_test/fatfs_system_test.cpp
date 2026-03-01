@@ -5,7 +5,8 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "block_device_provider.hpp"
+#include "device_manager.hpp"
+#include "device_node.hpp"
 #include "fatfs.hpp"
 #include "kstd_cstdio"
 #include "kstd_cstring"
@@ -16,12 +17,17 @@
 auto fatfs_system_test() -> bool {
   sk_printf("fatfs_system_test: start\n");
 
-  // T1: Get virtio-blk device
-  vfs::BlockDevice* blk = GetVirtioBlkBlockDevice();
-  if (blk == nullptr) {
-    sk_printf("fatfs_system_test: SKIP — no virtio-blk device available\n");
+  // T1: Get virtio-blk device via DeviceManager
+  DeviceNode* blk_nodes[4]{};
+  const size_t blk_count = DeviceManagerSingleton::instance().FindDevicesByType(
+      DeviceType::kBlock, blk_nodes, 4);
+  if (blk_count == 0 || blk_nodes[0]->block_device == nullptr) {
+    sk_printf(
+        "fatfs_system_test: SKIP \xe2\x80\x94 no virtio-blk device "
+        "available\n");
     return true;  // Graceful skip, not a failure
   }
+  vfs::BlockDevice* blk = blk_nodes[0]->block_device;
   sk_printf("fatfs_system_test: virtio-blk device: %s\n", blk->GetName());
   EXPECT_GT(blk->GetSectorCount(), static_cast<uint64_t>(0),
             "fatfs_system_test: virtio-blk has zero sectors");

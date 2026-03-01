@@ -10,7 +10,6 @@
 #include "driver_registry.hpp"
 #include "expected.hpp"
 #include "kernel_log.hpp"
-#include "mmio_helper.hpp"
 #include "ns16550a/ns16550a.hpp"
 
 class Ns16550aDriver {

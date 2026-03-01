@@ -6,7 +6,6 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_PLATFORM_BUS_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_PLATFORM_BUS_HPP_
 
-#include "bus.hpp"
 #include "device_node.hpp"
 #include "expected.hpp"
 #include "kernel_fdt.hpp"
@@ -59,7 +58,7 @@ class PlatformBus {
           kstd::memcpy(node.compatible, compatible_data, copy_len);
           node.compatible_len = copy_len;
 
-          klog::Debug(
+          klog::Info(
               "PlatformBus: found '%s' compatible='%s' "
               "mmio=0x%lX size=0x%lX irq=%u\n",
               node_name, compatible_data, mmio_base, mmio_size, irq);

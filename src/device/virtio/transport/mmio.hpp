@@ -6,8 +6,8 @@
 #define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_MMIO_HPP_
 
 #include "expected.hpp"
+#include "kernel_log.hpp"
 #include "ns16550a/mmio_accessor.hpp"
-#include "virtio/platform_config.hpp"
 #include "virtio/transport/transport.hpp"
 
 namespace detail::virtio {
@@ -126,29 +126,27 @@ class MmioTransport final : public Transport {
   explicit MmioTransport(uint64_t base)
       : mmio_(base), is_valid_(false), device_id_(0), vendor_id_(0) {
     if (base == 0) {
-      PlatformEnvironment::Log("MMIO base address is null");
+      klog::Debug("MMIO base address is null");
       return;
     }
 
     auto magic = mmio_.Read<uint32_t>(MmioReg::kMagicValue);
     if (magic != kMmioMagicValue) {
-      PlatformEnvironment::Log(
-          "MMIO magic value mismatch: expected 0x%08x, got 0x%08x",
-          kMmioMagicValue, magic);
+      klog::Debug("MMIO magic value mismatch: expected 0x%08x, got 0x%08x",
+                  kMmioMagicValue, magic);
       return;
     }
 
     auto version = mmio_.Read<uint32_t>(MmioReg::kVersion);
     if (version != kMmioVersionModern) {
-      PlatformEnvironment::Log(
-          "MMIO version not supported: expected %u, got %u", kMmioVersionModern,
-          version);
+      klog::Debug("MMIO version not supported: expected %u, got %u",
+                  kMmioVersionModern, version);
       return;
     }
 
     device_id_ = mmio_.Read<uint32_t>(MmioReg::kDeviceId);
     if (device_id_ == 0) {
-      PlatformEnvironment::Log("MMIO device ID is 0, no device found");
+      klog::Debug("MMIO device ID is 0, no device found");
       return;
     }
 
@@ -156,9 +154,8 @@ class MmioTransport final : public Transport {
     this->Reset();
     is_valid_ = true;
 
-    PlatformEnvironment::Log(
-        "MMIO device initialized: DeviceID=0x%08x, VendorID=0x%08x", device_id_,
-        vendor_id_);
+    klog::Debug("MMIO device initialized: DeviceID=0x%08x, VendorID=0x%08x",
+                device_id_, vendor_id_);
   }
 
   /**

@@ -7,7 +7,6 @@
 
 #include "expected.hpp"
 #include "virtio/defs.h"
-#include "virtio/traits.hpp"
 
 namespace detail::virtio {
 

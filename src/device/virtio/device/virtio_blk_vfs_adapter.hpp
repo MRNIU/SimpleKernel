@@ -19,7 +19,8 @@ class VirtioBlkVfsAdapter final : public vfs::BlockDevice {
  public:
   using VirtioBlkType = VirtioBlk<>;
 
-  explicit VirtioBlkVfsAdapter(VirtioBlkType* dev) : dev_(dev) {}
+  explicit VirtioBlkVfsAdapter(VirtioBlkType* dev, uint32_t index = 0)
+      : dev_(dev), index_(index) {}
 
   auto ReadSectors(uint64_t lba, uint32_t count, void* buf)
       -> Expected<size_t> override {
@@ -54,12 +55,15 @@ class VirtioBlkVfsAdapter final : public vfs::BlockDevice {
   }
 
   [[nodiscard]] auto GetName() const -> const char* override {
-    return "virtio-blk0";
+    static const char* const kNames[] = {"virtio-blk0", "virtio-blk1",
+                                         "virtio-blk2", "virtio-blk3"};
+    return (index_ < 4) ? kNames[index_] : "virtio-blk?";
   }
 
  private:
   static constexpr uint32_t kSectorSize = 512;
   VirtioBlkType* dev_;
+  uint32_t index_{0};
 };
 
 }  // namespace detail::virtio::blk

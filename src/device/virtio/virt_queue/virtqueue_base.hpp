@@ -5,10 +5,11 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_VIRTQUEUE_BASE_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_VIRTQUEUE_BASE_HPP_
 
+#include <cpu_io.h>
+
 #include <cstdint>
 
 #include "expected.hpp"
-#include "virtio/traits.hpp"
 #include "virtio/virt_queue/misc.hpp"
 
 namespace detail::virtio {
@@ -36,7 +37,7 @@ namespace detail::virtio {
  * - AvailPhys() const -> uint64_t
  * - UsedPhys() const -> uint64_t
  *
- * @see PlatformBarrier for barrier semantics
+ * @see cpu_io::Wmb/Rmb for barrier semantics
  * @see virtio-v1.2#2.7 / #2.8
  */
 class VirtqueueBase {
@@ -59,11 +60,11 @@ class VirtqueueBase {
       this auto&& self, const IoVec* readable, size_t readable_count,
       const IoVec* writable, size_t writable_count) -> Expected<uint16_t> {
     // 写屏障：确保调用方填充的数据对设备可见
-    PlatformBarrier::Wmb();
+    cpu_io::Wmb();
     auto result =
         self.SubmitChain(readable, readable_count, writable, writable_count);
     if (result.has_value()) {
-      PlatformBarrier::Mb();
+      cpu_io::Mb();
     }
     return result;
   }
@@ -85,7 +86,7 @@ class VirtqueueBase {
   auto ProcessUsedWithCallback(this auto&& self, Callback&& callback)
       -> uint32_t {
     // 读屏障：确保读取到设备最新的 Used Ring 写入
-    PlatformBarrier::Rmb();
+    cpu_io::Rmb();
 
     uint32_t processed = 0;
     while (self.HasUsed()) {
