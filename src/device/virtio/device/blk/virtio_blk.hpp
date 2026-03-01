@@ -2,8 +2,8 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_HPP_
+#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_HPP_
+#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_HPP_
 
 #include <cpu_io.h>
 
@@ -14,8 +14,8 @@
 #include "expected.hpp"
 #include "kernel_log.hpp"
 #include "virtio/defs.h"
+#include "virtio/device/blk/virtio_blk_defs.h"
 #include "virtio/device/device_initializer.hpp"
-#include "virtio/device/virtio_blk_defs.h"
 #include "virtio/transport/mmio.hpp"
 #include "virtio/virt_queue/split.hpp"
 
@@ -837,4 +837,4 @@ class VirtioBlk {
 
 }  // namespace detail::virtio::blk
 
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_HPP_
+#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_HPP_

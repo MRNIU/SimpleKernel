@@ -2,12 +2,12 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_VFS_ADAPTER_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_VFS_ADAPTER_HPP_
+#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_VFS_ADAPTER_HPP_
+#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_VFS_ADAPTER_HPP_
 
 #include "block_device.hpp"
 #include "expected.hpp"
-#include "virtio/device/virtio_blk.hpp"
+#include "virtio/device/blk/virtio_blk.hpp"
 
 namespace detail::virtio::blk {
 
@@ -70,4 +70,4 @@ class VirtioBlkVfsAdapter final : public vfs::BlockDevice {
 
 }  // namespace detail::virtio::blk
 
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_BLK_VFS_ADAPTER_HPP_
+#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_VFS_ADAPTER_HPP_
