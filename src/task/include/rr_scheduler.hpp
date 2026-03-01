@@ -29,8 +29,8 @@ class RoundRobinScheduler : public SchedulerBase {
   void Enqueue(TaskControlBlock* task) override {
     if (task) {
       if (ready_queue.full()) {
-        klog::Err(
-            "RoundRobinScheduler::Enqueue: ready_queue full, dropping task\n");
+        klog::err << "RoundRobinScheduler::Enqueue: ready_queue full, dropping "
+                     "task\\n";
         return;
       }
       // 重新分配时间片

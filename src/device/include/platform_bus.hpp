@@ -50,17 +50,17 @@ class PlatformBus {
                                 ? compatible_len
                                 : sizeof(node.compatible);
           if (compatible_len > sizeof(node.compatible)) {
-            klog::Warn(
-                "PlatformBus: compatible truncated {}\u2192{} for '{}'\n",
-                compatible_len, sizeof(node.compatible), node_name);
+            klog::warn << "PlatformBus: compatible truncated " << compatible_len
+                       << "\\u2192" << sizeof(node.compatible) << " for '"
+                       << node_name << "'\\n";
           }
           kstd::memcpy(node.compatible, compatible_data, copy_len);
           node.compatible_len = copy_len;
 
-          klog::Info(
-              "PlatformBus: found '{}' compatible='{}' "
-              "mmio={:#x} size={:#x} irq={}\n",
-              node_name, compatible_data, mmio_base, mmio_size, irq);
+          klog::info << "PlatformBus: found '" << node_name << "' compatible='"
+                     << compatible_data << "' mmio=" << klog::hex << mmio_base
+                     << " size=" << klog::hex << mmio_size << " irq=" << irq
+                     << "\\n";
 
           ++count;
           return true;

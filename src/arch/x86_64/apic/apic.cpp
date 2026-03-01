@@ -19,14 +19,14 @@ Apic::Apic(size_t cpu_count) : cpu_count_(cpu_count) {
 auto Apic::InitCurrentCpuLocalApic() -> Expected<void> {
   return local_apic_.Init()
       .and_then([]() -> Expected<void> {
-        klog::Info(
-            "Local APIC initialized successfully for CPU with APIC ID {:#x}\n",
-            cpu_io::GetCurrentCoreId());
+        klog::info
+            << "Local APIC initialized successfully for CPU with APIC ID "
+            << klog::hex << cpu_io::GetCurrentCoreId() << "\\n";
         return {};
       })
       .or_else([](Error err) -> Expected<void> {
-        klog::Err("Failed to initialize Local APIC for current CPU: {}",
-                  err.message());
+        klog::err << "Failed to initialize Local APIC for current CPU: "
+                  << err.message();
         return std::unexpected(err);
       });
 }
@@ -36,8 +36,8 @@ auto Apic::SetIrqRedirection(uint8_t irq, uint8_t vector,
     -> Expected<void> {
   // 检查 IRQ 是否在有效范围内
   if (irq >= io_apic_.GetMaxRedirectionEntries()) {
-    klog::Err("IRQ {} exceeds IO APIC range (max: {})", irq,
-              io_apic_.GetMaxRedirectionEntries() - 1);
+    klog::err << "IRQ " << irq << " exceeds IO APIC range (max: "
+              << io_apic_.GetMaxRedirectionEntries() - 1 << ")";
     return std::unexpected(Error(ErrorCode::kApicInvalidIrq));
   }
 
@@ -49,8 +49,8 @@ auto Apic::SetIrqRedirection(uint8_t irq, uint8_t vector,
 auto Apic::MaskIrq(uint8_t irq) -> Expected<void> {
   // 检查 IRQ 是否在有效范围内
   if (irq >= io_apic_.GetMaxRedirectionEntries()) {
-    klog::Err("IRQ {} exceeds IO APIC range (max: {})", irq,
-              io_apic_.GetMaxRedirectionEntries() - 1);
+    klog::err << "IRQ " << irq << " exceeds IO APIC range (max: "
+              << io_apic_.GetMaxRedirectionEntries() - 1 << ")";
     return std::unexpected(Error(ErrorCode::kApicInvalidIrq));
   }
 
@@ -61,8 +61,8 @@ auto Apic::MaskIrq(uint8_t irq) -> Expected<void> {
 auto Apic::UnmaskIrq(uint8_t irq) -> Expected<void> {
   // 检查 IRQ 是否在有效范围内
   if (irq >= io_apic_.GetMaxRedirectionEntries()) {
-    klog::Err("IRQ {} exceeds IO APIC range (max: {})", irq,
-              io_apic_.GetMaxRedirectionEntries() - 1);
+    klog::err << "IRQ " << irq << " exceeds IO APIC range (max: "
+              << io_apic_.GetMaxRedirectionEntries() - 1 << ")";
     return std::unexpected(Error(ErrorCode::kApicInvalidIrq));
   }
 
@@ -95,7 +95,7 @@ auto Apic::StartupAp(uint32_t apic_id, uint64_t ap_code_addr,
   if (std::memcmp(reinterpret_cast<const void*>(target_addr),
                   reinterpret_cast<const void*>(ap_code_addr),
                   ap_code_size) != 0) {
-    klog::Err("AP code copy verification failed");
+    klog::err << "AP code copy verification failed";
     return std::unexpected(Error(ErrorCode::kApicCodeCopyFailed));
   }
 
@@ -125,8 +125,8 @@ void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
     StartupAp(static_cast<uint32_t>(apic_id), ap_code_addr, ap_code_size,
               target_addr)
         .or_else([apic_id](Error err) -> Expected<void> {
-          klog::Err("Failed to start AP with APIC ID {:#x}: {}", apic_id,
-                    err.message());
+          klog::err << "Failed to start AP with APIC ID " << klog::hex
+                    << apic_id << ": " << err.message();
           return std::unexpected(err);
         });
   }

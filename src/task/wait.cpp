@@ -90,7 +90,8 @@ Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
         task_table_.erase(it->first);
       }
 
-      klog::Debug("Wait: pid={} reaped child={}", current->pid, result_pid);
+      klog::debug() << "Wait: pid=" << current->pid
+                    << " reaped child=" << result_pid;
       return result_pid;
     }
 
@@ -105,8 +106,9 @@ Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
 
     Block(wait_resource_id);
 
-    klog::Debug("Wait: pid={} blocked on resource={}, data={}", current->pid,
-                wait_resource_id.GetTypeName(), wait_resource_id.GetData());
+    klog::debug() << "Wait: pid=" << current->pid
+                  << " blocked on resource=" << wait_resource_id.GetTypeName()
+                  << ", data=" << wait_resource_id.GetData();
 
     // 被唤醒后重新检查
   }

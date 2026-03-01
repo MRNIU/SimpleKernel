@@ -18,7 +18,7 @@ auto LocalApic::Init() -> Expected<void> {
     is_x2apic_mode_ = true;
   } else {
     if (!EnableXApic()) {
-      klog::Err("Failed to enable APIC in any mode");
+      klog::err << "Failed to enable APIC in any mode";
       return std::unexpected(Error(ErrorCode::kApicInitFailed));
     }
     is_x2apic_mode_ = false;
@@ -322,7 +322,7 @@ void LocalApic::SendInitIpi(uint32_t destination_apic_id) const {
     }
   }
 
-  klog::Info("INIT IPI sent to APIC ID {:#x}", destination_apic_id);
+  klog::info << "INIT IPI sent to APIC ID " << klog::hex << destination_apic_id;
 }
 
 void LocalApic::SendStartupIpi(uint32_t destination_apic_id,
@@ -404,57 +404,61 @@ uint32_t LocalApic::ReadErrorStatus() const {
 }
 
 void LocalApic::PrintInfo() const {
-  klog::Info("APIC Version: {:#x}", GetApicVersion());
-  klog::Info("Mode: {}", is_x2apic_mode_ ? "x2APIC" : "xAPIC");
-  klog::Info("x2APIC Enabled: {}", IsX2ApicEnabled() ? "Yes" : "No");
-  klog::Info("Task Priority: {:#x}", GetTaskPriority());
-  klog::Info("Timer Current Count: {}", GetTimerCurrentCount());
+  klog::info << "APIC Version: " << klog::hex << GetApicVersion();
+  klog::info << "Mode: " << is_x2apic_mode_ ? "x2APIC" : "xAPIC";
+  klog::info << "x2APIC Enabled: " << IsX2ApicEnabled() ? "Yes" : "No";
+  klog::info << "Task Priority: " << klog::hex << GetTaskPriority();
+  klog::info << "Timer Current Count: " << GetTimerCurrentCount();
 
   // 读取各种寄存器状态
   if (is_x2apic_mode_) {
     uint32_t sivr = cpu_io::msr::apic::ReadSivr();
-    klog::Info("SIVR: {:#x} (APIC {})", sivr,
-               (sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled");
+    klog::info << "SIVR: " << klog::hex << sivr << " (APIC "
+               << (sivr & kApicSoftwareEnableBit)
+        ? "Enabled"
+        : "Disabled" << ")";
 
     uint32_t lvt_timer = cpu_io::msr::apic::ReadLvtTimer();
-    klog::Info("LVT Timer: {:#x}", lvt_timer);
+    klog::info << "LVT Timer: " << klog::hex << lvt_timer;
 
     uint32_t lvt_lint0 = cpu_io::msr::apic::ReadLvtLint0();
-    klog::Info("LVT LINT0: {:#x}", lvt_lint0);
+    klog::info << "LVT LINT0: " << klog::hex << lvt_lint0;
 
     uint32_t lvt_lint1 = cpu_io::msr::apic::ReadLvtLint1();
-    klog::Info("LVT LINT1: {:#x}", lvt_lint1);
+    klog::info << "LVT LINT1: " << klog::hex << lvt_lint1;
 
     uint32_t lvt_error = cpu_io::msr::apic::ReadLvtError();
-    klog::Info("LVT Error: {:#x}", lvt_error);
+    klog::info << "LVT Error: " << klog::hex << lvt_error;
   } else {
     etl::io_port_ro<uint32_t> sivr_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicSivrOffset)};
     uint32_t sivr = sivr_reg.read();
-    klog::Info("SIVR: {:#x} (APIC {})", sivr,
-               (sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled");
+    klog::info << "SIVR: " << klog::hex << sivr << " (APIC "
+               << (sivr & kApicSoftwareEnableBit)
+        ? "Enabled"
+        : "Disabled" << ")";
 
     etl::io_port_ro<uint32_t> lvt_timer_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtTimerOffset)};
     uint32_t lvt_timer = lvt_timer_reg.read();
-    klog::Info("LVT Timer: {:#x}", lvt_timer);
+    klog::info << "LVT Timer: " << klog::hex << lvt_timer;
 
     etl::io_port_ro<uint32_t> lvt_lint0_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtLint0Offset)};
     uint32_t lvt_lint0 = lvt_lint0_reg.read();
-    klog::Info("LVT LINT0: {:#x}", lvt_lint0);
+    klog::info << "LVT LINT0: " << klog::hex << lvt_lint0;
 
     etl::io_port_ro<uint32_t> lvt_lint1_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtLint1Offset)};
     uint32_t lvt_lint1 = lvt_lint1_reg.read();
-    klog::Info("LVT LINT1: {:#x}", lvt_lint1);
+    klog::info << "LVT LINT1: " << klog::hex << lvt_lint1;
 
     etl::io_port_ro<uint32_t> lvt_error_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtErrorOffset)};
     uint32_t lvt_error = lvt_error_reg.read();
-    klog::Info("LVT Error: {:#x}", lvt_error);
+    klog::info << "LVT Error: " << klog::hex << lvt_error;
 
-    klog::Info("APIC Base Address: {:#x}", apic_base_);
+    klog::info << "APIC Base Address: " << klog::hex << apic_base_;
   }
 }
 

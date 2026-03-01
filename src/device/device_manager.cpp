@@ -24,8 +24,8 @@ auto DeviceManager::ProbeAll() -> Expected<void> {
     }
 
     if (!drv->match(node)) {
-      klog::Debug("DeviceManager: driver '{}' rejected '{}'", drv->name,
-                  node.name);
+      klog::debug() << "DeviceManager: driver '" << drv->name << "' rejected '"
+                    << node.name << "'";
       continue;
     }
 
@@ -34,23 +34,24 @@ auto DeviceManager::ProbeAll() -> Expected<void> {
     }
     node.bound = true;
 
-    klog::Info("DeviceManager: probing '{}' with driver '{}'", node.name,
-               drv->name);
+    klog::info << "DeviceManager: probing '" << node.name << "' with driver '"
+               << drv->name << "'";
 
     auto result = drv->probe(node);
     if (!result.has_value()) {
-      klog::Err("DeviceManager: probe '{}' failed: {}", node.name,
-                result.error().message());
+      klog::err << "DeviceManager: probe '" << node.name
+                << "' failed: " << result.error().message();
       node.bound = false;
       continue;
     }
 
     ++probed;
-    klog::Info("DeviceManager: '{}' bound to '{}'", node.name, drv->name);
+    klog::info << "DeviceManager: '" << node.name << "' bound to '" << drv->name
+               << "'";
   }
 
-  klog::Info("DeviceManager: probed {} device(s), {} skipped (no driver)",
-             probed, no_driver_count);
+  klog::info << "DeviceManager: probed " << probed << " device(s), "
+             << no_driver_count << " skipped (no driver)";
   return {};
 }
 

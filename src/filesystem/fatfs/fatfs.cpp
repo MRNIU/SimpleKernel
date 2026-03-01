@@ -108,7 +108,7 @@ auto FatFsFileSystem::GetName() const -> const char* { return "fatfs"; }
 
 auto FatFsFileSystem::Mount(vfs::BlockDevice* device) -> Expected<vfs::Inode*> {
   if (device == nullptr) {
-    klog::Err("FatFsFileSystem::Mount: device is nullptr");
+    klog::err << "FatFsFileSystem::Mount: device is nullptr";
     return std::unexpected(Error{ErrorCode::kInvalidArgument});
   }
   if (volume_id_ >= FF_VOLUMES) {
@@ -124,8 +124,8 @@ auto FatFsFileSystem::Mount(vfs::BlockDevice* device) -> Expected<vfs::Inode*> {
   FRESULT fr = f_mount(&fatfs_obj_, path, 1);
   if (fr != FR_OK) {
     SetBlockDevice(volume_id_, nullptr);
-    klog::Err("FatFsFileSystem::Mount: f_mount failed ({})",
-              static_cast<int>(fr));
+    klog::err << "FatFsFileSystem::Mount: f_mount failed ("
+              << static_cast<int>(fr) << ")";
     return std::unexpected(Error{FresultToErrorCode(fr)});
   }
 
@@ -402,7 +402,8 @@ auto FatFsFileSystem::FatFsFileOps::Read(vfs::File* file, void* buf,
   UINT bytes_read = 0;
   FRESULT fr = f_read(fi->fil, buf, static_cast<UINT>(count), &bytes_read);
   if (fr != FR_OK) {
-    klog::Err("FatFsFileOps::Read: f_read failed ({})", static_cast<int>(fr));
+    klog::err << "FatFsFileOps::Read: f_read failed (" << static_cast<int>(fr)
+              << ")";
     return std::unexpected(Error{FresultToErrorCode(fr)});
   }
   file->offset += bytes_read;
@@ -418,7 +419,8 @@ auto FatFsFileSystem::FatFsFileOps::Write(vfs::File* file, const void* buf,
   UINT bytes_written = 0;
   FRESULT fr = f_write(fi->fil, buf, static_cast<UINT>(count), &bytes_written);
   if (fr != FR_OK) {
-    klog::Err("FatFsFileOps::Write: f_write failed ({})", static_cast<int>(fr));
+    klog::err << "FatFsFileOps::Write: f_write failed (" << static_cast<int>(fr)
+              << ")";
     return std::unexpected(Error{FresultToErrorCode(fr)});
   }
   file->offset += bytes_written;

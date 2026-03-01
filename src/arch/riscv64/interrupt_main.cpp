@@ -47,7 +47,8 @@ auto EbreakHandler(uint64_t exception_code, cpu_io::TrapContext* context)
     // 4 字节指令
     context->sepc += 4;
   }
-  klog::Info("Handle {}", cpu_io::ScauseInfo::kExceptionNames[exception_code]);
+  klog::info << "Handle "
+             << cpu_io::ScauseInfo::kExceptionNames[exception_code];
   return 0;
 }
 
@@ -55,10 +56,10 @@ auto EbreakHandler(uint64_t exception_code, cpu_io::TrapContext* context)
 auto PageFaultHandler(uint64_t exception_code, cpu_io::TrapContext* context)
     -> uint64_t {
   auto addr = cpu_io::Stval::Read();
-  klog::Err("PageFault: {}({:#x}), addr: {:#x}",
-            cpu_io::ScauseInfo::kExceptionNames[exception_code], exception_code,
-            addr);
-  klog::Err("sepc: {:#x}", context->sepc);
+  klog::err << "PageFault: "
+            << cpu_io::ScauseInfo::kExceptionNames[exception_code] << "("
+            << klog::hex << exception_code << "), addr: " << klog::hex << addr;
+  klog::err << "sepc: " << klog::hex << context->sepc;
   DumpStack();
   while (1) {
     cpu_io::Pause();
@@ -78,7 +79,7 @@ auto IpiHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
   // 清软中断 pending 位
   cpu_io::Sip::Ssip::Clear();
-  klog::Debug("Core {} received IPI", cpu_io::GetCurrentCoreId());
+  klog::debug() << "Core " << cpu_io::GetCurrentCoreId() << " received IPI";
   return 0;
 }
 
@@ -98,7 +99,7 @@ auto VirtioBlkIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
   VirtioDriver::Instance().HandleInterrupt(
       [](void* /*token*/, ErrorCode status) {
         if (status != ErrorCode::kSuccess) {
-          klog::Err("VirtIO blk IO error: {}", static_cast<int>(status));
+          klog::err << "VirtIO blk IO error: " << static_cast<int>(status);
         }
       });
   return 0;
@@ -115,8 +116,8 @@ void RegisterInterrupts() {
   if (uart_result) {
     Ns16550aSingleton::create(std::move(*uart_result));
   } else {
-    klog::Err("Failed to create Ns16550a: {}",
-              static_cast<int>(uart_result.error().code));
+    klog::err << "Failed to create Ns16550a: "
+              << static_cast<int>(uart_result.error().code);
   }
 
   // 注册 ebreak 中断
@@ -170,7 +171,7 @@ void InterruptInit(int, const char**) {
   auto success =
       cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));
   if (!success) {
-    klog::Err("Failed to set trap vector");
+    klog::err << "Failed to set trap vector";
   }
 
   // 开启 Supervisor 中断
@@ -189,7 +190,7 @@ void InterruptInit(int, const char**) {
       .RegisterExternalInterrupt(serial_irq, cpu_io::GetCurrentCoreId(), 1,
                                  InterruptDelegate::create<SerialIrqHandler>())
       .or_else([](Error err) -> Expected<void> {
-        klog::Err("Failed to register serial IRQ: {}", err.message());
+        klog::err << "Failed to register serial IRQ: " << err.message();
         return std::unexpected(err);
       });
 
@@ -202,8 +203,8 @@ void InterruptInit(int, const char**) {
             blk_irq, cpu_io::GetCurrentCoreId(), 1,
             InterruptDelegate::create<VirtioBlkIrqHandler>())
         .or_else([blk_irq](Error err) -> Expected<void> {
-          klog::Err("Failed to register virtio-blk IRQ {}: {}", blk_irq,
-                    err.message());
+          klog::err << "Failed to register virtio-blk IRQ " << blk_irq << ": "
+                    << err.message();
           return std::unexpected(err);
         });
   }
@@ -211,7 +212,7 @@ void InterruptInit(int, const char**) {
   // 初始化定时器
   TimerInit();
 
-  klog::Info("Hello InterruptInit");
+  klog::info << "Hello InterruptInit";
 }
 
 void InterruptInitSMP(int, const char**) {
@@ -219,7 +220,7 @@ void InterruptInitSMP(int, const char**) {
   auto success =
       cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));
   if (!success) {
-    klog::Err("Failed to set trap vector");
+    klog::err << "Failed to set trap vector";
   }
 
   // 开启 Supervisor 中断
@@ -234,5 +235,5 @@ void InterruptInitSMP(int, const char**) {
   // 初始化定时器
   TimerInitSMP();
 
-  klog::Info("Hello InterruptInitSMP");
+  klog::info << "Hello InterruptInitSMP";
 }

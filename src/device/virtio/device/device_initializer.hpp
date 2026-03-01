@@ -72,43 +72,44 @@ class DeviceInitializer {
    */
   [[nodiscard]] auto Init(uint64_t driver_features) -> Expected<uint64_t> {
     if (!transport_.IsValid()) {
-      klog::Debug("Transport layer not initialized");
+      klog::debug() << "Transport layer not initialized";
       return std::unexpected(Error{ErrorCode::kTransportNotInitialized});
     }
 
-    klog::Debug("Starting device initialization sequence");
+    klog::debug() << "Starting device initialization sequence";
 
     transport_.Reset();
 
     transport_.SetStatus(TransportImpl::kAcknowledge);
-    klog::Debug("Set ACKNOWLEDGE status");
+    klog::debug() << "Set ACKNOWLEDGE status";
 
     transport_.SetStatus(TransportImpl::kAcknowledge | TransportImpl::kDriver);
-    klog::Debug("Set DRIVER status");
+    klog::debug() << "Set DRIVER status";
 
     uint64_t device_features = transport_.GetDeviceFeatures();
     uint64_t negotiated_features = device_features & driver_features;
-    klog::Debug(
-        "Feature negotiation: device={:#016x}, driver={:#016x}, "
-        "negotiated={:#016x}\n",
-        static_cast<unsigned long long>(device_features),
-        static_cast<unsigned long long>(driver_features),
-        static_cast<unsigned long long>(negotiated_features));
+    klog::debug() << "Feature negotiation: device=" << klog::hex
+                  << static_cast<unsigned long long>(device_features)
+                  << ", driver=" << klog::hex
+                  << static_cast<unsigned long long>(driver_features)
+                  << ", negotiated=" << klog::hex
+                  << static_cast<unsigned long long>(negotiated_features)
+                  << "\\n";
 
     transport_.SetDriverFeatures(negotiated_features);
 
     transport_.SetStatus(TransportImpl::kAcknowledge | TransportImpl::kDriver |
                          TransportImpl::kFeaturesOk);
-    klog::Debug("Set FEATURES_OK status");
+    klog::debug() << "Set FEATURES_OK status";
 
     uint32_t status = transport_.GetStatus();
     if ((status & TransportImpl::kFeaturesOk) == 0) {
-      klog::Debug("Device rejected feature negotiation");
+      klog::debug() << "Device rejected feature negotiation";
       transport_.SetStatus(status | TransportImpl::kFailed);
       return std::unexpected(Error{ErrorCode::kFeatureNegotiationFailed});
     }
 
-    klog::Debug("Device initialization sequence completed");
+    klog::debug() << "Device initialization sequence completed";
     return negotiated_features;
   }
 
@@ -132,20 +133,21 @@ class DeviceInitializer {
                                 uint64_t avail_phys, uint64_t used_phys,
                                 uint32_t queue_size) -> Expected<void> {
     if (!transport_.IsValid()) {
-      klog::Debug("Transport layer not initialized");
+      klog::debug() << "Transport layer not initialized";
       return std::unexpected(Error{ErrorCode::kTransportNotInitialized});
     }
 
-    klog::Debug("Setting up queue {} (size={})", queue_idx, queue_size);
+    klog::debug() << "Setting up queue " << queue_idx << " (size=" << queue_size
+                  << ")";
 
     uint32_t max_size = transport_.GetQueueNumMax(queue_idx);
     if (max_size == 0) {
-      klog::Debug("Queue {} not available", queue_idx);
+      klog::debug() << "Queue " << queue_idx << " not available";
       return std::unexpected(Error{ErrorCode::kQueueNotAvailable});
     }
     if (queue_size > max_size) {
-      klog::Debug("Queue {} size {} exceeds max {}", queue_idx, queue_size,
-                  max_size);
+      klog::debug() << "Queue " << queue_idx << " size " << queue_size
+                    << " exceeds max " << max_size;
       return std::unexpected(Error{ErrorCode::kQueueTooLarge});
     }
 
@@ -155,12 +157,12 @@ class DeviceInitializer {
     transport_.SetQueueUsed(queue_idx, used_phys);
     transport_.SetQueueReady(queue_idx, true);
 
-    klog::Debug(
-        "Queue {} configured: desc={:#016x}, avail={:#016x}, "
-        "used={:#016x}\n",
-        queue_idx, static_cast<unsigned long long>(desc_phys),
-        static_cast<unsigned long long>(avail_phys),
-        static_cast<unsigned long long>(used_phys));
+    klog::debug() << "Queue " << queue_idx << " configured: desc=" << klog::hex
+                  << static_cast<unsigned long long>(desc_phys)
+                  << ", avail=" << klog::hex
+                  << static_cast<unsigned long long>(avail_phys)
+                  << ", used=" << klog::hex
+                  << static_cast<unsigned long long>(used_phys) << "\\n";
 
     return {};
   }
@@ -180,22 +182,22 @@ class DeviceInitializer {
    */
   [[nodiscard]] auto Activate() -> Expected<void> {
     if (!transport_.IsValid()) {
-      klog::Debug("Transport layer not initialized");
+      klog::debug() << "Transport layer not initialized";
       return std::unexpected(Error{ErrorCode::kTransportNotInitialized});
     }
 
-    klog::Debug("Activating device");
+    klog::debug() << "Activating device";
 
     uint32_t current_status = transport_.GetStatus();
     transport_.SetStatus(current_status | TransportImpl::kDriverOk);
 
     uint32_t new_status = transport_.GetStatus();
     if ((new_status & TransportImpl::kDeviceNeedsReset) != 0) {
-      klog::Debug("Device activation failed: device needs reset");
+      klog::debug() << "Device activation failed: device needs reset";
       return std::unexpected(Error{ErrorCode::kDeviceError});
     }
 
-    klog::Debug("Device activated successfully");
+    klog::debug() << "Device activated successfully";
     return {};
   }
 

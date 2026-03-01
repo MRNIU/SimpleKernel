@@ -114,7 +114,7 @@ class VirtioBlk {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
     if (queue_count > 1) {
-      klog::Debug("Multi-queue not yet supported, using 1 queue");
+      klog::debug() << "Multi-queue not yet supported, using 1 queue";
     }
 
     // 1. 创建传输层
@@ -136,7 +136,7 @@ class VirtioBlk {
     uint64_t negotiated = *negotiated_result;
 
     if ((negotiated & static_cast<uint64_t>(ReservedFeature::kVersion1)) == 0) {
-      klog::Debug("Device does not support VERSION_1 (modern mode)");
+      klog::debug() << "Device does not support VERSION_1 (modern mode)";
       return std::unexpected(Error{ErrorCode::kFeatureNegotiationFailed});
     }
 
@@ -144,8 +144,8 @@ class VirtioBlk {
     bool event_idx =
         (negotiated & static_cast<uint64_t>(ReservedFeature::kEventIdx)) != 0;
     if (event_idx) {
-      klog::Debug(
-          "VIRTIO_F_EVENT_IDX negotiated, notification suppression enabled\n");
+      klog::debug() << "VIRTIO_F_EVENT_IDX negotiated, notification "
+                       "suppression enabled\\n";
     }
     // 3. 创建 Virtqueue
     uint64_t dma_phys = reinterpret_cast<uintptr_t>(vq_dma_buf);
@@ -782,8 +782,8 @@ class VirtioBlk {
     }
 
     if (!vq_.HasUsed()) {
-      klog::Warn("Sync request timeout: sector={}",
-                 static_cast<unsigned long long>(sector));
+      klog::warn << "Sync request timeout: sector="
+                 << static_cast<unsigned long long>(sector);
       return std::unexpected(Error{ErrorCode::kTimeout});
     }
 

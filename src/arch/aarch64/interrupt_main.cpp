@@ -24,22 +24,23 @@ namespace {
  */
 static void HandleException(const char* exception_msg,
                             cpu_io::TrapContext* context, int print_regs = 0) {
-  klog::Err("{}", exception_msg);
-  klog::Err(
-      "  ESR_EL1: {:#016X}, ELR_EL1: {:#016X}, SP_EL0: {:#016X}, SP_EL1: "
-      "{:#016X}, SPSR_EL1: {:#016X}\n",
-      context->esr_el1, context->elr_el1, context->sp_el0, context->sp_el1,
-      context->spsr_el1);
+  klog::err << exception_msg;
+  klog::err << "  ESR_EL1: " << klog::HEX << context->esr_el1
+            << ", ELR_EL1: " << klog::HEX << context->elr_el1
+            << ", SP_EL0: " << klog::HEX << context->sp_el0
+            << ", SP_EL1: " << klog::HEX << context->sp_el1
+            << ", SPSR_EL1: " << klog::HEX << context->spsr_el1 << "\\n";
 
   if (print_regs == 4) {
-    klog::Err("  x0-x3: {:#016X} {:#016X} {:#016X} {:#016X}", context->x0,
-              context->x1, context->x2, context->x3);
+    klog::err << "  x0-x3: " << klog::HEX << context->x0 << " " << klog::HEX
+              << context->x1 << " " << klog::HEX << context->x2 << " "
+              << klog::HEX << context->x3;
   } else if (print_regs == 8) {
-    klog::Err(
-        "  x0-x7: {:#016X} {:#016X} {:#016X} {:#016X} {:#016X} {:#016X} "
-        "{:#016X} {:#016X}\n",
-        context->x0, context->x1, context->x2, context->x3, context->x4,
-        context->x5, context->x6, context->x7);
+    klog::err << "  x0-x7: " << klog::HEX << context->x0 << " " << klog::HEX
+              << context->x1 << " " << klog::HEX << context->x2 << " "
+              << klog::HEX << context->x3 << " " << klog::HEX << context->x4
+              << " " << klog::HEX << context->x5 << " " << klog::HEX
+              << context->x6 << " " << klog::HEX << context->x7 << "\\n";
   }
 
   while (true) {
@@ -60,14 +61,14 @@ extern "C" void sync_current_el_sp0_handler(cpu_io::TrapContext* context) {
 
 extern "C" void irq_current_el_sp0_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("IRQ Exception at Current EL with SP0");
+  klog::err << "IRQ Exception at Current EL with SP0";
   // 处理 IRQ 中断
   // ...
 }
 
 extern "C" void fiq_current_el_sp0_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("FIQ Exception at Current EL with SP0");
+  klog::err << "FIQ Exception at Current EL with SP0";
   // 处理 FIQ 中断
   // ...
 }
@@ -87,7 +88,7 @@ extern "C" void irq_current_el_spx_handler(cpu_io::TrapContext* context) {
 
 extern "C" void fiq_current_el_spx_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("FIQ Exception at Current EL with SPx");
+  klog::err << "FIQ Exception at Current EL with SPx";
   // 处理 FIQ 中断
   // ...
 }
@@ -102,14 +103,14 @@ extern "C" void sync_lower_el_aarch64_handler(cpu_io::TrapContext* context) {
 
 extern "C" void irq_lower_el_aarch64_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("IRQ Exception at Lower EL using AArch64");
+  klog::err << "IRQ Exception at Lower EL using AArch64";
   // 处理 IRQ 中断
   // ...
 }
 
 extern "C" void fiq_lower_el_aarch64_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("FIQ Exception at Lower EL using AArch64");
+  klog::err << "FIQ Exception at Lower EL using AArch64";
   // 处理 FIQ 中断
   // ...
 }
@@ -124,14 +125,14 @@ extern "C" void sync_lower_el_aarch32_handler(cpu_io::TrapContext* context) {
 
 extern "C" void irq_lower_el_aarch32_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("IRQ Exception at Lower EL using AArch32");
+  klog::err << "IRQ Exception at Lower EL using AArch32";
   // 处理 IRQ 中断
   // ...
 }
 
 extern "C" void fiq_lower_el_aarch32_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::Err("FIQ Exception at Lower EL using AArch32");
+  klog::err << "FIQ Exception at Lower EL using AArch32";
   // 处理 FIQ 中断
   // ...
 }
@@ -155,14 +156,14 @@ void InterruptInit(int, const char**) {
       KernelFdtSingleton::instance().GetAarch64Intid("arm,pl011").value() +
       Gic::kSPIBase;
 
-  klog::Info("uart_intid: {}", uart_intid);
+  klog::info << "uart_intid: " << uart_intid;
 
   // 通过统一接口注册 UART 外部中断（先注册 handler，再启用 GIC SPI）
   InterruptSingleton::instance()
       .RegisterExternalInterrupt(uart_intid, cpu_io::GetCurrentCoreId(), 0,
                                  InterruptDelegate::create<uart_handler>())
       .or_else([](Error err) -> Expected<void> {
-        klog::Err("Failed to register UART IRQ: {}", err.message());
+        klog::err << "Failed to register UART IRQ: " << err.message();
         return std::unexpected(err);
       });
 
@@ -171,7 +172,7 @@ void InterruptInit(int, const char**) {
   // 初始化定时器
   TimerInit();
 
-  klog::Info("Hello InterruptInit");
+  klog::info << "Hello InterruptInit";
 }
 
 void InterruptInitSMP(int, const char**) {
@@ -183,5 +184,5 @@ void InterruptInitSMP(int, const char**) {
 
   TimerInitSMP();
 
-  klog::Info("Hello InterruptInitSMP");
+  klog::info << "Hello InterruptInitSMP";
 }

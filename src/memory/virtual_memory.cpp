@@ -34,16 +34,17 @@ VirtualMemory::VirtualMemory() {
   // 映射全部物理内存
   MapMMIO(basic_info.physical_memory_addr, basic_info.physical_memory_size)
       .or_else([](auto&& err) -> Expected<void*> {
-        klog::Err("Failed to map kernel memory: {}", err.message());
+        klog::err << "Failed to map kernel memory: " << err.message();
         while (true) {
           cpu_io::Pause();
         }
         return {};
       });
 
-  klog::Info("Kernel memory mapped from {:#X} to {:#X}",
-             basic_info.physical_memory_addr,
-             basic_info.physical_memory_addr + basic_info.physical_memory_size);
+  klog::info << "Kernel memory mapped from " << klog::HEX
+             << basic_info.physical_memory_addr << " to " << klog::HEX
+             << basic_info.physical_memory_addr +
+                    basic_info.physical_memory_size;
 }
 
 void VirtualMemory::InitCurrentCore() const {
@@ -91,15 +92,18 @@ auto VirtualMemory::MapPage(void* page_dir, void* virtual_addr,
     if (existing_pa == reinterpret_cast<uint64_t>(physical_addr) &&
         (*pte & ((1ULL << cpu_io::virtual_memory::kPteAttributeBits) - 1)) ==
             flags) {
-      klog::Debug(
-          "MapPage: duplicate va = {:#x}, pa = {:#X}, flags = {:#X}, skip\n",
-          reinterpret_cast<uintptr_t>(virtual_addr), existing_pa, flags);
+      klog::debug() << "MapPage: duplicate va = " << klog::hex
+                    << reinterpret_cast<uintptr_t>(virtual_addr)
+                    << ", pa = " << klog::HEX << existing_pa
+                    << ", flags = " << klog::HEX << flags << ", skip\\n";
       // 重复映射，但不是错误
       return {};
     }
-    klog::Warn("MapPage: remap va = {:#x} from pa = {:#X} to pa = {:#x}",
-               reinterpret_cast<uintptr_t>(virtual_addr), existing_pa,
-               reinterpret_cast<uintptr_t>(physical_addr));
+    klog::warn << "MapPage: remap va = " << klog::hex
+               << reinterpret_cast<uintptr_t>(virtual_addr)
+               << " from pa = " << klog::HEX << existing_pa
+               << " to pa = " << klog::hex
+               << reinterpret_cast<uintptr_t>(physical_addr);
   }
 
   // 设置页表项
@@ -167,8 +171,8 @@ void VirtualMemory::DestroyPageDirectory(void* page_dir, bool free_pages) {
   // 释放根页表目录本身
   aligned_free(page_dir);
 
-  klog::Debug("Destroyed page directory at address: {:#x}",
-              reinterpret_cast<uintptr_t>(page_dir));
+  klog::debug() << "Destroyed page directory at address: " << klog::hex
+                << reinterpret_cast<uintptr_t>(page_dir);
 }
 
 auto VirtualMemory::ClonePageDirectory(void* src_page_dir, bool copy_mappings)
@@ -197,9 +201,9 @@ auto VirtualMemory::ClonePageDirectory(void* src_page_dir, bool copy_mappings)
     return std::unexpected(result.error());
   }
 
-  klog::Debug("Cloned page directory from {:#x} to {:#x}",
-              reinterpret_cast<uintptr_t>(src_page_dir),
-              reinterpret_cast<uintptr_t>(dst_page_dir));
+  klog::debug() << "Cloned page directory from " << klog::hex
+                << reinterpret_cast<uintptr_t>(src_page_dir) << " to "
+                << klog::hex << reinterpret_cast<uintptr_t>(dst_page_dir);
   return dst_page_dir;
 }
 

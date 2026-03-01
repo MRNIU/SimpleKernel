@@ -67,14 +67,14 @@ struct BasicInfo {
   template <typename OStream>
   friend auto operator<<(OStream& ostream, const BasicInfo& basic_info)
       -> OStream& {
-    klog::Info("physical_memory_addr: {:#X}, size {:#X}.",
-               basic_info.physical_memory_addr,
-               basic_info.physical_memory_size);
-    klog::Info("kernel_addr: {:#X}, size {:#X}.", basic_info.kernel_addr,
-               basic_info.kernel_size);
-    klog::Info("elf_addr: {:#X}", basic_info.elf_addr);
-    klog::Info("fdt_addr: {:#X}", basic_info.fdt_addr);
-    klog::Info("core_count: {}", basic_info.core_count);
+    klog::info << "physical_memory_addr: " << klog::HEX
+               << basic_info.physical_memory_addr << ", size " << klog::HEX
+               << basic_info.physical_memory_size << ".";
+    klog::info << "kernel_addr: " << klog::HEX << basic_info.kernel_addr
+               << ", size " << klog::HEX << basic_info.kernel_size << ".";
+    klog::info << "elf_addr: " << klog::HEX << basic_info.elf_addr;
+    klog::info << "fdt_addr: " << klog::HEX << basic_info.fdt_addr;
+    klog::info << "core_count: " << basic_info.core_count;
     return ostream;
   }
 };

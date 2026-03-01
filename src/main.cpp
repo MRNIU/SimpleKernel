@@ -32,21 +32,23 @@ std::atomic<uint64_t> global_counter{0};
 
 /// Task1: 每 1s 打印一次，测试 sys_exit
 void task1_func(void* arg) {
-  klog::Info("Task1: arg = {:#x}", reinterpret_cast<uintptr_t>(arg));
+  klog::info << "Task1: arg = " << klog::hex
+             << reinterpret_cast<uintptr_t>(arg);
   for (int i = 0; i < 5; ++i) {
-    klog::Info("Task1: iteration {}/5", i + 1);
+    klog::info << "Task1: iteration " << i + 1 << "/5";
     sys_sleep(1000);
   }
-  klog::Info("Task1: exiting with code 0");
+  klog::info << "Task1: exiting with code 0";
   sys_exit(0);
 }
 
 /// Task2: 每 2s 打印一次，测试 sys_yield
 void task2_func(void* arg) {
-  klog::Info("Task2: arg = {:#x}", reinterpret_cast<uintptr_t>(arg));
+  klog::info << "Task2: arg = " << klog::hex
+             << reinterpret_cast<uintptr_t>(arg);
   uint64_t count = 0;
   while (1) {
-    klog::Info("Task2: yield count={}", count++);
+    klog::info << "Task2: yield count=" << count++;
     sys_sleep(2000);
     // 主动让出 CPU
     sys_yield();
@@ -55,25 +57,29 @@ void task2_func(void* arg) {
 
 /// Task3: 每 3s 打印一次，同时修改全局变量，测试多核同步
 void task3_func(void* arg) {
-  klog::Info("Task3: arg = {:#x}", reinterpret_cast<uintptr_t>(arg));
+  klog::info << "Task3: arg = " << klog::hex
+             << reinterpret_cast<uintptr_t>(arg);
   while (1) {
     uint64_t old_value = global_counter.fetch_add(1, std::memory_order_seq_cst);
-    klog::Info("Task3: global_counter {} -> {}", old_value, old_value + 1);
+    klog::info << "Task3: global_counter " << old_value << " -> "
+               << old_value + 1;
     sys_sleep(3000);
   }
 }
 
 /// Task4: 每 4s 打印一次，测试 sys_sleep
 void task4_func(void* arg) {
-  klog::Info("Task4: arg = {:#x}", reinterpret_cast<uintptr_t>(arg));
+  klog::info << "Task4: arg = " << klog::hex
+             << reinterpret_cast<uintptr_t>(arg);
   uint64_t iteration = 0;
   while (1) {
     auto* cpu_sched = per_cpu::GetCurrentCore().sched_data;
     auto start_tick = cpu_sched->local_tick;
-    klog::Info("Task4: sleeping for 4s (iteration {})", iteration++);
+    klog::info << "Task4: sleeping for 4s (iteration " << iteration++ << ")";
     sys_sleep(4000);
     auto end_tick = cpu_sched->local_tick;
-    klog::Info("Task4: woke up (slept ~{} ticks)", end_tick - start_tick);
+    klog::info << "Task4: woke up (slept ~" << end_tick - start_tick
+               << " ticks)";
   }
 }
 
@@ -102,7 +108,7 @@ void create_test_tasks() {
   tm.AddTask(task3.release());
   tm.AddTask(task4.release());
 
-  klog::Info("Created 4 test tasks");
+  klog::info << "Created 4 test tasks";
 }
 
 /// 非启动核入口
@@ -113,7 +119,7 @@ auto main_smp(int argc, const char** argv) -> int {
   InterruptInitSMP(argc, argv);
   TaskManagerSingleton::instance().InitCurrentCore();
 
-  klog::Info("Hello SimpleKernel SMP");
+  klog::info << "Hello SimpleKernel SMP";
 
   // 为当前核心创建测试任务
   create_test_tasks();
@@ -166,12 +172,12 @@ auto main(int argc, const char** argv) -> int {
 
   klog::info << "Hello SimpleKernel";
 
-  klog::Info("Initializing test tasks...");
+  klog::info << "Initializing test tasks...";
 
   // 为主核心创建测试任务
   create_test_tasks();
 
-  klog::Info("Main: Starting scheduler...");
+  klog::info << "Main: Starting scheduler...";
 
   // 启动调度器，不再返回
   TaskManagerSingleton::instance().Schedule();

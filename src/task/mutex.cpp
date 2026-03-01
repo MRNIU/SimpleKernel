@@ -11,8 +11,8 @@
 auto Mutex::Lock() -> bool {
   auto current_task = TaskManagerSingleton::instance().GetCurrentTask();
   if (current_task == nullptr) {
-    klog::Err("Mutex::Lock: Cannot lock mutex '{}' outside task context",
-              name_);
+    klog::err << "Mutex::Lock: Cannot lock mutex '" << name_
+              << "' outside task context";
     return false;
   }
 
@@ -20,8 +20,8 @@ auto Mutex::Lock() -> bool {
 
   // 检查是否递归获取锁
   if (IsLockedByCurrentTask()) {
-    klog::Warn("Mutex::Lock: Task {} tried to recursively lock mutex '{}'",
-               current_pid, name_);
+    klog::warn << "Mutex::Lock: Task " << current_pid
+               << " tried to recursively lock mutex '" << name_ << "'";
     return false;
   }
 
@@ -30,8 +30,8 @@ auto Mutex::Lock() -> bool {
   while (!locked_.compare_exchange_weak(
       expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
     // 锁被占用，阻塞当前任务
-    klog::Debug("Mutex::Lock: Task {} blocking on mutex '{}'", current_pid,
-                name_);
+    klog::debug() << "Mutex::Lock: Task " << current_pid
+                  << " blocking on mutex '" << name_ << "'";
     TaskManagerSingleton::instance().Block(resource_id_);
 
     // 被唤醒后重新尝试
@@ -40,15 +40,16 @@ auto Mutex::Lock() -> bool {
 
   // 成功获取锁，记录所有者
   owner_.store(current_pid, std::memory_order_release);
-  klog::Debug("Mutex::Lock: Task {} acquired mutex '{}'", current_pid, name_);
+  klog::debug() << "Mutex::Lock: Task " << current_pid << " acquired mutex '"
+                << name_ << "'";
   return true;
 }
 
 auto Mutex::UnLock() -> bool {
   auto current_task = TaskManagerSingleton::instance().GetCurrentTask();
   if (current_task == nullptr) {
-    klog::Err("Mutex::UnLock: Cannot unlock mutex '{}' outside task context",
-              name_);
+    klog::err << "Mutex::UnLock: Cannot unlock mutex '" << name_
+              << "' outside task context";
     return false;
   }
 
@@ -56,9 +57,8 @@ auto Mutex::UnLock() -> bool {
 
   // 检查是否由持有锁的任务释放
   if (!IsLockedByCurrentTask()) {
-    klog::Warn(
-        "Mutex::UnLock: Task {} tried to unlock mutex '{}' it doesn't own\n",
-        current_pid, name_);
+    klog::warn << "Mutex::UnLock: Task " << current_pid
+               << " tried to unlock mutex '" << name_ << "' it doesn't own\\n";
     return false;
   }
 
@@ -66,7 +66,8 @@ auto Mutex::UnLock() -> bool {
   owner_.store(std::numeric_limits<Pid>::max(), std::memory_order_release);
   locked_.store(false, std::memory_order_release);
 
-  klog::Debug("Mutex::UnLock: Task {} released mutex '{}'", current_pid, name_);
+  klog::debug() << "Mutex::UnLock: Task " << current_pid << " released mutex '"
+                << name_ << "'";
 
   // 唤醒等待此锁的任务
   TaskManagerSingleton::instance().Wakeup(resource_id_);
@@ -77,9 +78,8 @@ auto Mutex::UnLock() -> bool {
 auto Mutex::TryLock() -> bool {
   auto current_task = TaskManagerSingleton::instance().GetCurrentTask();
   if (current_task == nullptr) {
-    klog::Err(
-        "Mutex::TryLock: Cannot trylock mutex '{}' outside task context\n",
-        name_);
+    klog::err << "Mutex::TryLock: Cannot trylock mutex '" << name_
+              << "' outside task context\\n";
     return false;
   }
 
@@ -87,9 +87,8 @@ auto Mutex::TryLock() -> bool {
 
   // 检查是否递归获取锁
   if (IsLockedByCurrentTask()) {
-    klog::Debug(
-        "Mutex::TryLock: Task {} tried to recursively trylock mutex '{}'\n",
-        current_pid, name_);
+    klog::debug() << "Mutex::TryLock: Task " << current_pid
+                  << " tried to recursively trylock mutex '" << name_ << "'\\n";
     return false;
   }
 
@@ -99,14 +98,14 @@ auto Mutex::TryLock() -> bool {
                                       std::memory_order_relaxed)) {
     // 成功获取锁，记录所有者
     owner_.store(current_pid, std::memory_order_release);
-    klog::Debug("Mutex::TryLock: Task {} acquired mutex '{}'", current_pid,
-                name_);
+    klog::debug() << "Mutex::TryLock: Task " << current_pid
+                  << " acquired mutex '" << name_ << "'";
     return true;
   }
 
   // 锁被占用
-  klog::Debug("Mutex::TryLock: Task {} failed to acquire mutex '{}'",
-              current_pid, name_);
+  klog::debug() << "Mutex::TryLock: Task " << current_pid
+                << " failed to acquire mutex '" << name_ << "'";
   return false;
 }
 

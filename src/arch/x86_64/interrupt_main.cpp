@@ -33,8 +33,8 @@ uint64_t ApicTimerHandler(uint64_t cause, cpu_io::TrapContext* context) {
 
   // 每100次中断打印一次信息（减少日志输出）
   if (tick_count % 100 == 0) {
-    klog::Info("APIC Timer interrupt {}, vector {:#x}", tick_count,
-               static_cast<uint32_t>(cause));
+    klog::info << "APIC Timer interrupt " << tick_count << ", vector "
+               << klog::hex << static_cast<uint32_t>(cause);
   }
 
   // 发送 EOI 信号给 Local APIC
@@ -49,8 +49,8 @@ uint64_t ApicTimerHandler(uint64_t cause, cpu_io::TrapContext* context) {
  * @return uint64_t 返回值
  */
 uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
-  klog::Info("Keyboard interrupt received, vector {:#x}",
-             static_cast<uint32_t>(cause));
+  klog::info << "Keyboard interrupt received, vector " << klog::hex
+             << static_cast<uint32_t>(cause);
 
   // 读取键盘扫描码
   // 8042 键盘控制器的数据端口是 0x60
@@ -58,7 +58,7 @@ uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
 
   // 简单的扫描码处理 - 仅显示按下的键（忽略释放事件）
   if (!(scancode & 0x80)) {  // 最高位为0表示按下
-    klog::Info("Key pressed: scancode {:#04x}", scancode);
+    klog::info << "Key pressed: scancode " << klog::hex << scancode;
 
     // 简单的扫描码到ASCII的映射（仅作为示例）
     static const char scancode_to_ascii[] = {
@@ -70,7 +70,7 @@ uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
 
     if (scancode < sizeof(scancode_to_ascii) && scancode_to_ascii[scancode]) {
       char ascii_char = scancode_to_ascii[scancode];
-      klog::Info("Key: '{}'", ascii_char);
+      klog::info << "Key: '" << ascii_char << "'";
     }
   }
 
@@ -89,7 +89,7 @@ void InterruptInit(int, const char**) {
       BasicInfoSingleton::instance().core_count);
   InterruptSingleton::instance().apic().InitCurrentCpuLocalApic().or_else(
       [](Error err) -> Expected<void> {
-        klog::Err("Failed to initialize APIC: {}", err.message());
+        klog::err << "Failed to initialize APIC: " << err.message();
         while (true) {
           cpu_io::Pause();
         }
@@ -109,7 +109,7 @@ void InterruptInit(int, const char**) {
       .RegisterExternalInterrupt(kKeyboardIrq, cpu_io::GetCurrentCoreId(), 0,
                                  InterruptDelegate::create<KeyboardHandler>())
       .or_else([](Error err) -> Expected<void> {
-        klog::Err("Failed to register keyboard IRQ: {}", err.message());
+        klog::err << "Failed to register keyboard IRQ: " << err.message();
         return std::unexpected(err);
       });
 
@@ -119,7 +119,7 @@ void InterruptInit(int, const char**) {
   // 开启中断
   cpu_io::Rflags::If::Set();
 
-  klog::Info("Hello InterruptInit");
+  klog::info << "Hello InterruptInit";
 }
 
 void InterruptInitSMP(int, const char**) {
@@ -128,7 +128,7 @@ void InterruptInitSMP(int, const char**) {
   // 初始化当前 AP 核的 Local APIC
   InterruptSingleton::instance().apic().InitCurrentCpuLocalApic().or_else(
       [](Error err) -> Expected<void> {
-        klog::Err("Failed to initialize APIC for AP: {}", err.message());
+        klog::err << "Failed to initialize APIC for AP: " << err.message();
         while (true) {
           cpu_io::Pause();
         }
@@ -139,5 +139,5 @@ void InterruptInitSMP(int, const char**) {
   InterruptSingleton::instance().apic().SetupPeriodicTimer(
       kApicTimerFrequencyHz, kApicTimerVector);
   cpu_io::Rflags::If::Set();
-  klog::Info("Hello InterruptInit SMP");
+  klog::info << "Hello InterruptInit SMP";
 }

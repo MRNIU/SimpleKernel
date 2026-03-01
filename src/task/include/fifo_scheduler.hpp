@@ -33,7 +33,7 @@ class FifoScheduler : public SchedulerBase {
    */
   void Enqueue(TaskControlBlock* task) override {
     if (ready_queue.full()) {
-      klog::Err("FifoScheduler::Enqueue: ready_queue full, dropping task");
+      klog::err << "FifoScheduler::Enqueue: ready_queue full, dropping task";
       return;
     }
     ready_queue.push_back(task);
