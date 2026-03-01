@@ -88,7 +88,7 @@ auto SerialIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
   while (Ns16550aSingleton::instance().HasData()) {
     uint8_t ch = Ns16550aSingleton::instance().GetChar();
-    sk_putchar(ch, nullptr);
+    etl_putchar(ch);
   }
   return 0;
 }

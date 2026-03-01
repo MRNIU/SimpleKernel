@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-/** Output primitive — set by each arch's EarlyConsole constructor */
-extern void (*sk_putchar)(int c, void* ctx);
+/** Output primitive — implemented per-arch in early_console.cpp */
+void etl_putchar(int c);
 
 /* ── Freestanding emit helpers (always-inline, no format strings) ────────── */
 
@@ -22,7 +22,7 @@ static __attribute__((always_inline)) inline void sk_emit_str(const char* s) {
     s = "(null)";
   }
   while (*s) {
-    sk_putchar((unsigned char)*s, NULL);
+    etl_putchar((unsigned char)*s);
     ++s;
   }
 }
@@ -32,11 +32,11 @@ static __attribute__((always_inline)) inline void sk_emit_sint(long long v) {
   char buf[20];
   int n = 0;
   if (v < 0) {
-    sk_putchar('-', NULL);
+    etl_putchar('-');
     /* avoid UB on LLONG_MIN: cast before negation */
     unsigned long long uv = (unsigned long long)(-(v + 1)) + 1ULL;
     if (uv == 0) {
-      sk_putchar('0', NULL);
+      etl_putchar('0');
       return;
     }
     while (uv) {
@@ -46,7 +46,7 @@ static __attribute__((always_inline)) inline void sk_emit_sint(long long v) {
   } else {
     unsigned long long uv = (unsigned long long)v;
     if (uv == 0) {
-      sk_putchar('0', NULL);
+      etl_putchar('0');
       return;
     }
     while (uv) {
@@ -54,7 +54,7 @@ static __attribute__((always_inline)) inline void sk_emit_sint(long long v) {
       uv /= 10;
     }
   }
-  for (int i = n - 1; i >= 0; i--) sk_putchar(buf[i], NULL);
+  for (int i = n - 1; i >= 0; i--) etl_putchar(buf[i]);
 }
 
 /** Emit an unsigned 64-bit integer in decimal. */
@@ -63,14 +63,14 @@ static __attribute__((always_inline)) inline void sk_emit_uint(
   char buf[20];
   int n = 0;
   if (v == 0) {
-    sk_putchar('0', NULL);
+    etl_putchar('0');
     return;
   }
   while (v) {
     buf[n++] = (char)('0' + (int)(v % 10));
     v /= 10;
   }
-  for (int i = n - 1; i >= 0; i--) sk_putchar(buf[i], NULL);
+  for (int i = n - 1; i >= 0; i--) etl_putchar(buf[i]);
 }
 
 /**
@@ -94,8 +94,8 @@ static __attribute__((always_inline)) inline void sk_emit_hex(
       v >>= 4;
     }
   }
-  for (int i = n; i < width; i++) sk_putchar('0', NULL);
-  for (int i = n - 1; i >= 0; i--) sk_putchar(buf[i], NULL);
+  for (int i = n; i < width; i++) etl_putchar('0');
+  for (int i = n - 1; i >= 0; i--) etl_putchar(buf[i]);
 }
 
 #ifdef __cplusplus

@@ -201,13 +201,13 @@ extern "C" __attribute__((noreturn)) void __assert_fail(const char* assertion,
                                                         const char* function) {
   sk_emit_str("\n[ASSERT FAILED] ");
   sk_emit_str(file);
-  sk_putchar(':', nullptr);
+  etl_putchar(':');
   sk_emit_uint((unsigned long long)line);
   sk_emit_str(" in ");
   sk_emit_str(function);
   sk_emit_str("\n Expression: ");
   sk_emit_str(assertion);
-  sk_putchar('\n', nullptr);
+  etl_putchar('\n');
   while (1) {
     cpu_io::Pause();
   }

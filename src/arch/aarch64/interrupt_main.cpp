@@ -142,7 +142,7 @@ extern "C" void error_lower_el_aarch32_handler(cpu_io::TrapContext* context) {
 
 auto uart_handler(uint64_t cause, cpu_io::TrapContext*) -> uint64_t {
   Pl011Singleton::instance().HandleInterrupt(
-      [](uint8_t ch) { sk_putchar(ch, nullptr); });
+      [](uint8_t ch) { etl_putchar(ch); });
   return cause;
 }
 

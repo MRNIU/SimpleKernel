@@ -141,7 +141,7 @@ class LockGuard {
     mutex_.Lock().or_else([](auto&& err) {
       sk_emit_str("LockGuard: Failed to acquire lock: ");
       sk_emit_str(err.message());
-      sk_putchar('\n', nullptr);
+      etl_putchar('\n');
       while (true) {
         cpu_io::Pause();
       }
@@ -156,7 +156,7 @@ class LockGuard {
     mutex_.UnLock().or_else([](auto&& err) {
       sk_emit_str("LockGuard: Failed to release lock: ");
       sk_emit_str(err.message());
-      sk_putchar('\n', nullptr);
+      etl_putchar('\n');
       while (true) {
         cpu_io::Pause();
       }

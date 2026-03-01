@@ -154,15 +154,15 @@ __always_inline void FormatArg(bool val) {
 }
 
 /// 输出字符
-__always_inline void FormatArg(char val) { sk_putchar(val, nullptr); }
+__always_inline void FormatArg(char val) { etl_putchar(val); }
 
 /// 输出 C 字符串
 __always_inline void FormatArg(const char* val) { sk_emit_str(val); }
 
 /// 输出指针地址
 __always_inline void FormatArg(const void* val) {
-  sk_putchar('0', nullptr);
-  sk_putchar('x', nullptr);
+  etl_putchar('0');
+  etl_putchar('x');
   sk_emit_hex((unsigned long long)(uintptr_t)val, (int)(sizeof(void*) * 2),
               /*upper=*/0);
 }
@@ -177,12 +177,12 @@ __always_inline void FormatArg(void* val) {
 __always_inline auto EmitUntilNextArg(const char* s) -> const char* {
   while (*s != '\0') {
     if (s[0] == '{' && s[1] == '{') {
-      sk_putchar('{', nullptr);
+      etl_putchar('{');
       s += 2;
       continue;
     }
     if (s[0] == '}' && s[1] == '}') {
-      sk_putchar('}', nullptr);
+      etl_putchar('}');
       s += 2;
       continue;
     }
@@ -196,7 +196,7 @@ __always_inline auto EmitUntilNextArg(const char* s) -> const char* {
       }
       return s;
     }
-    sk_putchar(*s, nullptr);
+    etl_putchar(*s);
     ++s;
   }
   return s;
@@ -206,13 +206,13 @@ __always_inline auto EmitUntilNextArg(const char* s) -> const char* {
 __always_inline void LogFormat(const char* s) {
   while (*s != '\0') {
     if (s[0] == '{' && s[1] == '{') {
-      sk_putchar('{', nullptr);
+      etl_putchar('{');
       s += 2;
     } else if (s[0] == '}' && s[1] == '}') {
-      sk_putchar('}', nullptr);
+      etl_putchar('}');
       s += 2;
     } else {
-      sk_putchar(*s, nullptr);
+      etl_putchar(*s);
       ++s;
     }
   }
@@ -245,16 +245,16 @@ class LogLine {
     log_lock.Lock().or_else([](auto&& err) {
       sk_emit_str("LogLine: Failed to acquire lock: ");
       sk_emit_str(err.message());
-      sk_putchar('\n', nullptr);
+      etl_putchar('\n');
       while (true) {
         cpu_io::Pause();
       }
       return Expected<void>{};
     });
     sk_emit_str(kLogColors[Level]);
-    sk_putchar('[', nullptr);
+    etl_putchar('[');
     sk_emit_sint((long long)cpu_io::GetCurrentCoreId());
-    sk_putchar(']', nullptr);
+    etl_putchar(']');
   }
 
   LogLine(LogLine&& other) noexcept : released_(other.released_) {
@@ -271,7 +271,7 @@ class LogLine {
       log_lock.UnLock().or_else([](auto&& err) {
         sk_emit_str("LogLine: Failed to release lock: ");
         sk_emit_str(err.message());
-        sk_putchar('\n', nullptr);
+        etl_putchar('\n');
         while (true) {
           cpu_io::Pause();
         }
@@ -305,7 +305,7 @@ class LogLine {
 
   /// 输出单个字符
   auto operator<<(char val) -> LogLine& {
-    sk_putchar(val, nullptr);
+    etl_putchar(val);
     return *this;
   }
 
@@ -317,8 +317,8 @@ class LogLine {
 
   /// 输出指针地址
   auto operator<<(const void* val) -> LogLine& {
-    sk_putchar('0', nullptr);
-    sk_putchar('x', nullptr);
+    etl_putchar('0');
+    etl_putchar('x');
     sk_emit_hex((unsigned long long)(uintptr_t)val, (int)(sizeof(void*) * 2),
                 0);
     return *this;
@@ -370,18 +370,18 @@ __always_inline void LogEmit(
   }
   LockGuard<SpinLock> lock_guard(log_lock);
   sk_emit_str(kLogColors[Level]);
-  sk_putchar('[', nullptr);
+  etl_putchar('[');
   sk_emit_sint((long long)cpu_io::GetCurrentCoreId());
-  sk_putchar(']', nullptr);
+  etl_putchar(']');
   if constexpr (Level == LogLevel::kDebug) {
-    sk_putchar('[', nullptr);
+    etl_putchar('[');
     sk_emit_str(location.file_name());
-    sk_putchar(':', nullptr);
+    etl_putchar(':');
     sk_emit_uint((unsigned long long)location.line());
-    sk_putchar(' ', nullptr);
+    etl_putchar(' ');
     sk_emit_str(location.function_name());
-    sk_putchar(']', nullptr);
-    sk_putchar(' ', nullptr);
+    etl_putchar(']');
+    etl_putchar(' ');
   }
   LogFormat(fmt.str, static_cast<Args&&>(args)...);
   sk_emit_str(kReset);
@@ -419,19 +419,19 @@ __always_inline void DebugBlob([[maybe_unused]] const void* data,
   if constexpr (detail::LogLevel::kDebug >= detail::kMinLogLevel) {
     LockGuard<SpinLock> lock_guard(klog::detail::log_lock);
     sk_emit_str(detail::kMagenta);
-    sk_putchar('[', nullptr);
+    etl_putchar('[');
     sk_emit_sint((long long)cpu_io::GetCurrentCoreId());
-    sk_putchar(']', nullptr);
-    sk_putchar(' ', nullptr);
+    etl_putchar(']');
+    etl_putchar(' ');
     for (size_t i = 0; i < size; i++) {
-      sk_putchar('0', nullptr);
-      sk_putchar('x', nullptr);
+      etl_putchar('0');
+      etl_putchar('x');
       sk_emit_hex((unsigned long long)reinterpret_cast<const uint8_t*>(data)[i],
                   /*width=*/2, /*upper=*/1);
-      sk_putchar(' ', nullptr);
+      etl_putchar(' ');
     }
     sk_emit_str(detail::kReset);
-    sk_putchar('\n', nullptr);
+    etl_putchar('\n');
   }
 #endif
 }
