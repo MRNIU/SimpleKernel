@@ -8,8 +8,8 @@
 
 #include <etl/singleton.h>
 
-#include <device_framework/pl011.hpp>
+#include "driver/pl011_driver.hpp"
 
-using Pl011Singleton = etl::singleton<device_framework::pl011::Pl011Device>;
+using Pl011Singleton = etl::singleton<pl011::Pl011Device>;
 
 #endif  // SIMPLEKERNEL_SRC_ARCH_AARCH64_INCLUDE_PL011_SINGLETON_H_

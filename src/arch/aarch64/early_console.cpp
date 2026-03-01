@@ -2,14 +2,13 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include <device_framework/pl011.hpp>
-
+#include "driver/pl011_driver.hpp"
 #include "kstd_cstdio"
 #include "pl011_singleton.h"
 
 namespace {
 
-device_framework::pl011::Pl011Device* pl011 = nullptr;
+pl011::Pl011Device* pl011 = nullptr;
 
 void console_putchar(int c, [[maybe_unused]] void* ctx) {
   if (pl011) {
@@ -21,8 +20,7 @@ struct EarlyConsole {
   EarlyConsole() {
     Pl011Singleton::create(SIMPLEKERNEL_EARLY_CONSOLE_BASE);
     pl011 = &Pl011Singleton::instance();
-    auto result = pl011->Open(
-        device_framework::OpenFlags(device_framework::OpenFlags::kReadWrite));
+    auto result = pl011->Open(OpenFlags{OpenFlags::kReadWrite});
     if (result) {
       sk_putchar = console_putchar;
     }

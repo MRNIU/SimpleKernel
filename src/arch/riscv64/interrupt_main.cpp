@@ -4,10 +4,9 @@
 
 #include <cpu_io.h>
 
-#include <device_framework/ns16550a.hpp>
-
 #include "arch.h"
 #include "basic_info.hpp"
+#include "driver/detail/ns16550a/ns16550a_device.hpp"
 #include "driver/virtio_blk_driver.hpp"
 #include "interrupt.h"
 #include "kernel.h"
@@ -20,8 +19,7 @@
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
-using Ns16550aSingleton =
-    etl::singleton<device_framework::ns16550a::Ns16550aDevice>;
+using Ns16550aSingleton = etl::singleton<detail::ns16550a::Ns16550aDevice>;
 using InterruptDelegate = InterruptBase::InterruptDelegate;
 namespace {
 // 外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
@@ -97,8 +95,8 @@ auto SerialIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
 auto VirtioBlkIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
   VirtioBlkDriver::Instance().HandleInterrupt(
-      [](void* /*token*/, device_framework::ErrorCode status) {
-        if (status != device_framework::ErrorCode::kSuccess) {
+      [](void* /*token*/, ErrorCode status) {
+        if (status != ErrorCode::kSuccess) {
           klog::Err("VirtIO blk IO error: %d\n", static_cast<int>(status));
         }
       });
@@ -113,7 +111,7 @@ void RegisterInterrupts() {
       InterruptDelegate::create<ExternalInterruptHandler>());
 
   auto [base, size, irq] = KernelFdtSingleton::instance().GetSerial().value();
-  auto uart_result = device_framework::ns16550a::Ns16550aDevice::Create(base);
+  auto uart_result = detail::ns16550a::Ns16550aDevice::Create(base);
   if (uart_result) {
     Ns16550aSingleton::create(std::move(*uart_result));
   } else {
@@ -121,11 +119,10 @@ void RegisterInterrupts() {
               static_cast<int>(uart_result.error().code));
   }
   Ns16550aSingleton::instance().OpenReadWrite().or_else(
-      [](device_framework::Error e) -> device_framework::Expected<void> {
-        klog::Err(
-            "Failed to open device_framework::ns16550a::Ns16550aDevice: %d\n",
-            static_cast<int>(e.code));
-        return device_framework::Expected<void>{};
+      [](Error e) -> Expected<void> {
+        klog::Err("Failed to open Ns16550aDevice: %d\n",
+                  static_cast<int>(e.code));
+        return Expected<void>{};
       });
 
   // 注册 ebreak 中断

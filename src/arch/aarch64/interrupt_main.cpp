@@ -4,10 +4,9 @@
 
 #include <cpu_io.h>
 
-#include <device_framework/pl011.hpp>
-
 #include "arch.h"
 #include "basic_info.hpp"
+#include "driver/pl011_driver.hpp"
 #include "interrupt.h"
 #include "kernel.h"
 #include "kernel_fdt.hpp"
