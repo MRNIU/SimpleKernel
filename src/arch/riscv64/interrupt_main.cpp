@@ -6,17 +6,17 @@
 
 #include "arch.h"
 #include "basic_info.hpp"
-#include "driver/detail/ns16550a/ns16550a.hpp"
-#include "driver/virtio_driver.hpp"
 #include "interrupt.h"
 #include "kernel.h"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
 #include "kstd_iostream"
+#include "ns16550a/ns16550a.hpp"
 #include "opensbi_interface.h"
 #include "syscall.hpp"
 #include "task_manager.hpp"
+#include "virtio/virtio_driver.hpp"
 #include "virtual_memory.hpp"
 
 using Ns16550aSingleton = etl::singleton<detail::ns16550a::Ns16550a>;

@@ -1,9 +1,8 @@
 /** @copyright Copyright The SimpleKernel Contributors */
 
-#include <gtest/gtest.h>
+#include "virtio/virtio_driver.hpp"
 
-// 测试目标在 Task 3 中创建，现在这个测试应当编译失败（找不到头文件）
-#include "driver/virtio_driver.hpp"
+#include <gtest/gtest.h>
 
 TEST(VirtioDriverTest, GetEntryNameIsVirtio) {
   const auto& entry = VirtioDriver::GetEntry();

@@ -8,7 +8,7 @@
 
 #include <etl/singleton.h>
 
-#include "driver/pl011_driver.hpp"
+#include "pl011/pl011_driver.hpp"
 
 using Pl011Singleton = etl::singleton<pl011::Pl011Device>;
 

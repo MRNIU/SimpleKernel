@@ -2,28 +2,25 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#include "driver/pl011_driver.hpp"
 #include "kstd_cstdio"
+#include "pl011/pl011_driver.hpp"
 #include "pl011_singleton.h"
 
 namespace {
 
-pl011::Pl011Device* pl011 = nullptr;
+pl011::Pl011Device* pl011_uart = nullptr;
 
 void console_putchar(int c, [[maybe_unused]] void* ctx) {
-  if (pl011) {
-    pl011->PutChar(c);
+  if (pl011_uart) {
+    pl011_uart->PutChar(c);
   }
 }
 
 struct EarlyConsole {
   EarlyConsole() {
     Pl011Singleton::create(SIMPLEKERNEL_EARLY_CONSOLE_BASE);
-    pl011 = &Pl011Singleton::instance();
-    auto result = pl011->Open(OpenFlags{OpenFlags::kReadWrite});
-    if (result) {
-      sk_putchar = console_putchar;
-    }
+    pl011_uart = &Pl011Singleton::instance();
+    sk_putchar = console_putchar;  // Pl011 ctor already initializes HW
   }
 };
 

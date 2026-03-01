@@ -6,12 +6,12 @@
 
 #include "arch.h"
 #include "basic_info.hpp"
-#include "driver/pl011_driver.hpp"
 #include "interrupt.h"
 #include "kernel.h"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
+#include "pl011/pl011_driver.hpp"
 #include "pl011_singleton.h"
 
 using InterruptDelegate = InterruptBase::InterruptDelegate;

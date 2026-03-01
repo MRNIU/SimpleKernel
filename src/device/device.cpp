@@ -2,12 +2,12 @@
 
 #include "block_device_provider.hpp"
 #include "device_manager.hpp"
-#include "driver/ns16550a_driver.hpp"
-#include "driver/virtio_driver.hpp"
 #include "kernel.h"
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
+#include "ns16550a/ns16550a_driver.hpp"
 #include "platform_bus.hpp"
+#include "virtio/virtio_driver.hpp"
 
 /// Device subsystem initialisation entry point
 auto DeviceInit() -> void {

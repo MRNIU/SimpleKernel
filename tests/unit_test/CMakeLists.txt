@@ -31,9 +31,7 @@ ADD_EXECUTABLE (
     ${CMAKE_SOURCE_DIR}/src/task/task_manager.cpp
     ${CMAKE_SOURCE_DIR}/src/task/tick_update.cpp
     ${CMAKE_SOURCE_DIR}/src/task/wait.cpp
-    ${CMAKE_SOURCE_DIR}/src/device/device.cpp
-    virtio_driver_test.cpp
-    ${CMAKE_SOURCE_DIR}/src/device/virtio_driver.cpp)
+    virtio_driver_test.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME}
@@ -62,7 +60,13 @@ TARGET_INCLUDE_DIRECTORIES (
             ${CMAKE_SOURCE_DIR}/src/task/include
             ${CMAKE_SOURCE_DIR}/src/filesystem/include
             ${CMAKE_SOURCE_DIR}/src/filesystem/vfs/include
-            ${CMAKE_SOURCE_DIR}/src/filesystem/ramfs/include)
+            ${CMAKE_SOURCE_DIR}/src/filesystem/ramfs/include
+            ${CMAKE_SOURCE_DIR}/src/device
+            ${CMAKE_SOURCE_DIR}/src/device/include
+            ${CMAKE_SOURCE_DIR}/src/device/ns16550a
+            ${CMAKE_SOURCE_DIR}/src/device/pl011
+            ${CMAKE_SOURCE_DIR}/src/device/acpi
+            ${CMAKE_SOURCE_DIR}/src/device/virtio)
 
 TARGET_COMPILE_OPTIONS (${PROJECT_NAME} PRIVATE ${DEFAULT_TEST_COMPILE_OPTIONS})
 

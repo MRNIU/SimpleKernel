@@ -6,9 +6,30 @@ Header-only device framework using C++23 concepts and ETL (Embedded Template Lib
 ## STRUCTURE
 ```
 device.cpp              # DeviceInit() — registers buses, drivers, calls ProbeAll()
-virtio_driver.cpp       # VirtIO device-id dispatch (the only other .cpp besides device.cpp)
+traits.hpp              # EnvironmentTraits / BarrierTraits / DmaTraits concepts
+ns16550a/
+  CMakeLists.txt        # ADD_LIBRARY(ns16550a_driver INTERFACE)
+  mmio_accessor.hpp     # Shared MMIO register accessor
+  ns16550a.hpp          # NS16550A UART hardware implementation
+  ns16550a_driver.hpp   # NS16550A DriverEntry + Probe/Remove
+pl011/
+  CMakeLists.txt        # ADD_LIBRARY(pl011_driver INTERFACE)
+  pl011.hpp             # PL011 UART hardware implementation + Pl011Device alias
+  pl011_driver.hpp      # pl011::Pl011Device type alias (for singleton usage)
+acpi/
+  CMakeLists.txt        # ADD_LIBRARY(acpi_driver INTERFACE)
+  acpi.hpp              # ACPI table structures
+  acpi_driver.hpp       # ACPI driver interface
+virtio/
+  CMakeLists.txt        # ADD_LIBRARY(virtio_driver INTERFACE) + virtio_driver.cpp
+  virtio_driver.hpp     # Unified VirtIO driver header
+  virtio_driver.cpp     # VirtIO device-id dispatch (the only other .cpp)
+  defs.h / traits.hpp / platform_config.hpp
+  device/               # Per-device-type headers (virtio_blk, virtio_net, ...)
+  transport/            # MMIO and PCI transport layers
+  virt_queue/           # Split/packed virtqueue implementations
 include/
-  device_manager.hpp    # DeviceManagerSingleton (etl::singleton<DeviceManager>) — owns buses, ProbeAll/RemoveAll
+  device_manager.hpp    # DeviceManagerSingleton — owns buses, ProbeAll/RemoveAll
   driver_registry.hpp   # DriverRegistry — DriverEntry lookup via etl::flat_map
   platform_bus.hpp      # PlatformBus — FDT-driven device enumeration
   bus.hpp               # Bus ABC — Enumerate/Probe/Remove interface
@@ -17,21 +38,20 @@ include/
   pci_bus.hpp           # PCI bus (placeholder)
   platform_traits.hpp   # Compile-time platform feature detection
   block_device_provider.hpp  # Block device abstraction for filesystem layer
-  driver/
-    ns16550a_driver.hpp      # NS16550A UART — reference driver implementation
-    virtio_driver.hpp        # Unified VirtIO driver — auto-detects device type at runtime
+  mmio_helper.hpp       # Safe MMIO region setup helpers
 ```
 
 ## WHERE TO LOOK
-- **Adding a driver** → Copy `ns16550a_driver.hpp` pattern: `Probe()`, `Remove()`, `GetEntry()`, `kMatchTable[]`
+- **Adding a driver** → Copy `ns16550a/ns16550a_driver.hpp` pattern: `Probe()`, `Remove()`, `GetEntry()`, `kMatchTable[]`
 - **Device init flow** → `device.cpp`: register buses → register drivers → `ProbeAll()`
 - **FDT enumeration** → `platform_bus.hpp`: walks device tree, matches `compatible` strings
 - **Block devices** → `block_device_provider.hpp` + `virtio_driver.hpp`
-- **Adding a new VirtIO device** → Add `detail/virtio/device/virtio_xxx.hpp`, add a `case DeviceId::kXxx` to `virtio_driver.cpp`, no changes to DeviceInit needed.
+- **Adding a new VirtIO device** → Add `virtio/device/virtio_xxx.hpp`, add a `case DeviceId::kXxx` to `virtio/virtio_driver.cpp`, no changes to DeviceInit needed.
 
 ## CONVENTIONS
 - **Mostly header-only** — `device.cpp` and `virtio_driver.cpp` are the only .cpp files.
   Do NOT create additional .cpp files without strong justification.
+- **Compile-time isolation** → `device` is STATIC and PRIVATE-links all `xxx_driver` INTERFACE targets. External code can only access hardware through `DeviceManager`. Arch code that needs direct driver access must explicitly `TARGET_LINK_LIBRARIES(... xxx_driver)`.
 - Drivers define static `kMatchTable[]` using `MatchEntry` struct with FDT `compatible` strings
 - `GetEntry()` returns `DriverEntry` containing:
   - `name`: `const char*` driver name
