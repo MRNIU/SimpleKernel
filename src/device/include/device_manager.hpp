@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief Device manager — owns device nodes and driver registry
  */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_MANAGER_HPP_
@@ -17,19 +16,19 @@
 #include "spinlock.hpp"
 
 /**
- * @brief Device manager — manages all device nodes and drivers.
+ * @brief 设备管理器 — 管理所有设备节点和驱动程序。
  *
- * @pre  Memory subsystem must be initialised before calling any method
- * @post After ProbeAll(), bound devices are ready for use
+ * @pre  调用任何方法前，内存子系统必须已完成初始化
+ * @post ProbeAll() 执行完成后，已绑定的设备可供使用
  */
 class DeviceManager {
  public:
   /**
-   * @brief Register a bus and immediately enumerate its devices.
+   * @brief 注册总线并立即枚举其设备。
    *
-   * @tparam B              Bus type (must satisfy Bus concept)
-   * @param  bus            Bus instance
-   * @return Expected<void> void on success, error on failure
+   * @tparam B              总线类型（必须满足 Bus 概念约束）
+   * @param  bus            总线实例
+   * @return Expected<void> 成功返回 void，失败返回错误
    */
   template <Bus B>
   auto RegisterBus(B& bus) -> Expected<void> {
@@ -59,41 +58,41 @@ class DeviceManager {
   }
 
   /**
-   * @brief Match registered drivers and probe all unbound devices.
+   * @brief 匹配已注册的驱动程序并探测所有未绑定的设备。
    *
-   * @return Expected<void> void on success, error on failure
+   * @return Expected<void> 成功返回 void，失败返回错误
    */
   auto ProbeAll() -> Expected<void>;
 
   /**
-   * @brief Find a device by name.
+   * @brief 根据名称查找设备。
    *
-   * @note  Read-only path — safe for concurrent callers once device_count_
-   *        and devices_ are stable (post-enumeration).
-   * @param  name           Device name
-   * @return Expected<DeviceNode*> device pointer, or kDeviceNotFound
+   * @note  只读路径 — 枚举完成后 device_count_ 和 devices_ 稳定，
+   *        并发调用者可安全使用。
+   * @param  name           设备名称
+   * @return Expected<DeviceNode*> 设备指针，或 kDeviceNotFound
    */
   auto FindDevice(const char* name) -> Expected<DeviceNode*>;
 
   /**
-   * @brief Enumerate devices by type.
+   * @brief 按类型枚举设备。
    *
-   * @param  type           Device type
-   * @param  out            Output array of device node pointers
-   * @param  max            Maximum results
-   * @return size_t         Number of matching devices found
+   * @param  type           设备类型
+   * @param  out            输出的设备节点指针数组
+   * @param  max            最大结果数量
+   * @return size_t         找到的匹配设备数量
    */
   auto FindDevicesByType(DeviceType type, DeviceNode** out, size_t max)
       -> size_t;
 
   /**
-   * @brief Access the driver registry.
+   * @brief 访问驱动注册表。
    *
-   * @return DriverRegistry& driver registry instance
+   * @return DriverRegistry& 驱动注册表实例
    */
   auto GetRegistry() -> DriverRegistry& { return registry_; }
 
-  /// @name Construction / destruction
+  /// @name 构造 / 析构
   /// @{
   DeviceManager() = default;
   ~DeviceManager() = default;

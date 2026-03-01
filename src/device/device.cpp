@@ -1,4 +1,6 @@
-/** @copyright Copyright The SimpleKernel Contributors */
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
 
 #include "device_manager.hpp"
 #include "kernel.h"
@@ -8,7 +10,7 @@
 #include "platform_bus.hpp"
 #include "virtio/virtio_driver.hpp"
 
-/// Device subsystem initialisation entry point
+/// 设备子系统初始化入口
 auto DeviceInit() -> void {
   DeviceManagerSingleton::create();
   auto& dm = DeviceManagerSingleton::instance();

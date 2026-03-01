@@ -136,15 +136,15 @@ class DeviceInitializer {
       return std::unexpected(Error{ErrorCode::kTransportNotInitialized});
     }
 
-    klog::Debug("Setting up queue %u (size=%u)", queue_idx, queue_size);
+    klog::Debug("Setting up queue %u (size=%u)\n", queue_idx, queue_size);
 
     uint32_t max_size = transport_.GetQueueNumMax(queue_idx);
     if (max_size == 0) {
-      klog::Debug("Queue %u not available", queue_idx);
+      klog::Debug("Queue %u not available\n", queue_idx);
       return std::unexpected(Error{ErrorCode::kQueueNotAvailable});
     }
     if (queue_size > max_size) {
-      klog::Debug("Queue %u size %u exceeds max %u", queue_idx, queue_size,
+      klog::Debug("Queue %u size %u exceeds max %u\n", queue_idx, queue_size,
                   max_size);
       return std::unexpected(Error{ErrorCode::kQueueTooLarge});
     }
@@ -156,7 +156,8 @@ class DeviceInitializer {
     transport_.SetQueueReady(queue_idx, true);
 
     klog::Debug(
-        "Queue %u configured: desc=0x%016llx, avail=0x%016llx, used=0x%016llx",
+        "Queue %u configured: desc=0x%016llx, avail=0x%016llx, "
+        "used=0x%016llx\n",
         queue_idx, static_cast<unsigned long long>(desc_phys),
         static_cast<unsigned long long>(avail_phys),
         static_cast<unsigned long long>(used_phys));

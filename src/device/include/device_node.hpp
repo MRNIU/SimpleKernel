@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief Device node — per-device hardware description (plain data struct)
  */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_NODE_HPP_
@@ -12,15 +11,19 @@
 
 #include "expected.hpp"
 
-/// Bus type discriminator — extension point for future PCI/ACPI buses
+/// 总线类型标识 — 为将来扩展 PCI/ACPI 总线预留的扩展点
 enum class BusType : uint8_t { kPlatform, kPci, kAcpi };
 
-/// Device category
+/// 设备分类
 enum class DeviceType : uint8_t {
-  kChar,      ///< Character device (serial, etc.)
-  kBlock,     ///< Block device (disk, etc.)
-  kNet,       ///< Network device
-  kPlatform,  ///< Platform device (interrupt controller, timer, etc.)
+  /// 字符设备（串口等）
+  kChar,
+  /// 块设备（磁盘等）
+  kBlock,
+  /// 网络设备
+  kNet,
+  /// 平台设备（中断控制器、定时器等）
+  kPlatform,
 };
 
 namespace vfs {
@@ -28,38 +31,38 @@ class BlockDevice;
 }  // namespace vfs
 
 /**
- * @brief Hardware resource description for a single device.
+ * @brief 单个设备的硬件资源描述。
  *
- * Plain data struct — no lifecycle management, no DMA buffers,
- * no concurrency primitives. `bound` is protected by
- * DeviceManager::lock_ (held for the entire ProbeAll() loop).
+ * 纯数据结构 — 无生命周期管理、无 DMA 缓冲区、
+ * 无并发原语。`bound` 受 DeviceManager::lock_ 保护
+ *（在整个 ProbeAll() 循环期间持有）。
  */
 struct DeviceNode {
-  /// Human-readable device name (from FDT node name)
+  /// 可读的设备名称（来自 FDT 节点名）
   char name[32]{};
 
   BusType bus_type{BusType::kPlatform};
   DeviceType type{DeviceType::kPlatform};
 
-  /// First MMIO region (extend to array when multi-BAR support is needed)
+  /// 第一个 MMIO 区域（需要多 BAR 支持时扩展为数组）
   uint64_t mmio_base{0};
   size_t mmio_size{0};
 
-  /// First interrupt line (extend when multi-IRQ support is needed)
+  /// 第一条中断线（需要多 IRQ 支持时扩展）
   uint32_t irq{0};
 
-  /// FDT compatible stringlist ('\0'-separated, e.g. "ns16550a\0ns16550\0")
+  /// FDT compatible 字符串列表（以 '\0' 分隔，如 "ns16550a\0ns16550\0"）
   char compatible[128]{};
   size_t compatible_len{0};
 
-  /// Global device ID assigned by DeviceManager
+  /// 由 DeviceManager 分配的全局设备 ID
   uint32_t dev_id{0};
 
-  /// Set by ProbeAll() under DeviceManager::lock_ — no per-node lock needed.
+  /// 由 ProbeAll() 在 DeviceManager::lock_ 保护下设置 — 无需每节点锁。
   bool bound{false};
 
-  /// Set by the driver's Probe() — points to a kernel-lifetime adapter.
-  /// nullptr if not a block device or not yet probed.
+  /// 由驱动 Probe() 设置 — 指向内核生命周期的适配器。
+  /// 若不是块设备或尚未探测则为 nullptr。
   vfs::BlockDevice* block_device{nullptr};
 };
 

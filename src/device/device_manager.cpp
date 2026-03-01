@@ -1,4 +1,6 @@
-/** @copyright Copyright The SimpleKernel Contributors */
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
 
 #include "device_manager.hpp"
 
@@ -27,7 +29,9 @@ auto DeviceManager::ProbeAll() -> Expected<void> {
       continue;
     }
 
-    if (node.bound) continue;
+    if (node.bound) {
+      continue;
+    }
     node.bound = true;
 
     klog::Info("DeviceManager: probing '%s' with driver '%s'\n", node.name,

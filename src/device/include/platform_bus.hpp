@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief Platform bus — FDT-driven device discovery
  */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_PLATFORM_BUS_HPP_
@@ -12,7 +11,7 @@
 #include "kernel_log.hpp"
 #include "kstd_cstring"
 
-/// Platform bus — enumerates devices from the Flattened Device Tree (FDT)
+/// 平台总线 — 从扁平设备树（FDT）枚举设备
 class PlatformBus {
  public:
   explicit PlatformBus(KernelFdt& fdt) : fdt_(fdt) {}
@@ -20,11 +19,11 @@ class PlatformBus {
   static auto GetName() -> const char* { return "platform"; }
 
   /**
-   * @brief Enumerate all FDT device nodes with a compatible string.
+   * @brief 枚举所有含 compatible 字符串的 FDT 设备节点。
    *
-   * @param  out  Output array of DeviceNode
-   * @param  max  Maximum number of nodes to write
-   * @return Expected<size_t> number of nodes written
+   * @param  out  输出的 DeviceNode 数组
+   * @param  max  最多写入的节点数
+   * @return Expected<size_t> 已写入的节点数
    */
   auto Enumerate(DeviceNode* out, size_t max) -> Expected<size_t> {
     size_t count = 0;
@@ -73,12 +72,15 @@ class PlatformBus {
     return count;
   }
 
+  /// @name 构造 / 析构
+  /// @{
   PlatformBus() = delete;
   ~PlatformBus() = default;
   PlatformBus(const PlatformBus&) = delete;
   PlatformBus(PlatformBus&&) = delete;
   auto operator=(const PlatformBus&) -> PlatformBus& = delete;
   auto operator=(PlatformBus&&) -> PlatformBus& = delete;
+  /// @}
 
  private:
   KernelFdt& fdt_;

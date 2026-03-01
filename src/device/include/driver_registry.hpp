@@ -1,7 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief Driver registry — ETL-based entries with delegate callbacks;
- *        mmio_helper — safe MMIO region setup helpers
  */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_REGISTRY_HPP_
@@ -24,27 +22,31 @@
 #include "spinlock.hpp"
 #include "virtual_memory.hpp"
 
-/// One entry in a driver's static match table
+/// 驱动静态匹配表中的一条记录
 struct MatchEntry {
   BusType bus_type;
-  const char* compatible;  ///< FDT compatible string (Platform)
-                           ///< or vendor/HID string (PCI/ACPI — future)
+  /// FDT compatible 字符串（平台总线）
+  /// 或 vendor/HID 字符串（PCI/ACPI — 未来扩展）
+  const char* compatible;
 };
 
 /**
- * @brief Type-erased driver entry — one per registered driver.
+ * @brief 类型擦除的驱动条目 — 每个已注册驱动对应一条。
  *
- * @pre  match/probe/remove delegates are bound before registration
+ * @pre  注册前 match/probe/remove 委托必须已绑定
  */
 struct DriverEntry {
   const char* name;
   etl::span<const MatchEntry> match_table;
-  etl::delegate<bool(DeviceNode&)> match;             ///< Hardware detection
-  etl::delegate<Expected<void>(DeviceNode&)> probe;   ///< Driver initialization
-  etl::delegate<Expected<void>(DeviceNode&)> remove;  ///< Driver teardown
+  /// 硬件检测
+  etl::delegate<bool(DeviceNode&)> match;
+  /// 驱动初始化
+  etl::delegate<Expected<void>(DeviceNode&)> probe;
+  /// 驱动卸载
+  etl::delegate<Expected<void>(DeviceNode&)> remove;
 };
 
-/// Comparator for const char* keys in flat_map (uses kstd::strcmp).
+/// flat_map 中 const char* 键的比较器（使用 kstd::strcmp）。
 struct CStrLess {
   auto operator()(const char* a, const char* b) const -> bool {
     return kstd::strcmp(a, b) < 0;
@@ -52,41 +54,73 @@ struct CStrLess {
 };
 
 /**
- * @brief Driver registry — ETL vector of DriverEntry with flat_map compat
- * index.
+ * @brief 驱动注册表 — 以 ETL vector 存储 DriverEntry，并附带 flat_map
+ * 兼容索引。
  *
- * Registration builds an etl::flat_map from compatible string → driver index,
- * reducing FindDriver from O(N·M·K) to O(Cn · log T).
+ * 注册时构建 etl::flat_map（compatible 字符串 → 驱动索引），
+ * 将 FindDriver 的复杂度从 O(N·M·K) 降至 O(Cn · log T)。
  */
 class DriverRegistry {
  public:
   /**
-   * @brief Register a driver entry.
+   * @brief 注册一个驱动条目。
    *
-   * @pre  entry.match/probe/remove delegates are bound
-   * @return Expected<void> kOutOfMemory if registry is full
+   * @pre  entry.match/probe/remove 委托已绑定
+   * @return Expected<void> 注册表已满时返回 kOutOfMemory
    */
-  auto Register(const DriverEntry& entry) -> Expected<void>;
+  auto Register(const DriverEntry& entry) -> Expected<void> {
+    LockGuard guard(lock_);
+    if (drivers_.full()) {
+      return std::unexpected(Error(ErrorCode::kOutOfMemory));
+    }
+    const size_t idx = drivers_.size();
+    for (const auto& me : entry.match_table) {
+      if (compat_map_.full()) {
+        return std::unexpected(Error(ErrorCode::kOutOfMemory));
+      }
+      // 重复键时 insert() 为空操作 — 先注册的驱动优先。
+      compat_map_.insert({me.compatible, idx});
+    }
+    drivers_.push_back(entry);
+    return {};
+  }
 
   /**
-   * @brief Find the first driver whose match_table has a compatible string
-   *        present in node.compatible (flat_map lookup, O(Cn · log T)).
+   * @brief 查找 match_table 中含有 node.compatible 字符串的第一个驱动
+   *        （flat_map 查找，O(Cn · log T)）。
    *
-   * @return pointer to DriverEntry, or nullptr if no match
+   * @return DriverEntry 指针，若无匹配则返回 nullptr
    */
-  auto FindDriver(const DeviceNode& node) -> const DriverEntry*;
+  auto FindDriver(const DeviceNode& node) -> const DriverEntry* {
+    // 遍历节点的 compatible 字符串列表，对每个字符串执行 flat_map 查找。
+    const char* p = node.compatible;
+    const char* end = node.compatible + node.compatible_len;
+    while (p < end) {
+      const auto it = compat_map_.find(p);
+      if (it != compat_map_.end()) {
+        auto& entry = drivers_[it->second];
+        if (entry.match(const_cast<DeviceNode&>(node))) {
+          return &entry;
+        }
+      }
+      p += kstd::strlen(p) + 1;
+    }
+    return nullptr;
+  }
 
+  /// @name 构造 / 析构
+  /// @{
   DriverRegistry() = default;
   ~DriverRegistry() = default;
   DriverRegistry(const DriverRegistry&) = delete;
   DriverRegistry(DriverRegistry&&) = delete;
   auto operator=(const DriverRegistry&) -> DriverRegistry& = delete;
   auto operator=(DriverRegistry&&) -> DriverRegistry& = delete;
+  /// @}
 
  private:
   static constexpr size_t kMaxDrivers = 32;
-  /// Max total MatchEntry rows across all drivers (32 drivers × ~3 compat
-  /// strings)
+  /// 所有驱动 MatchEntry 行数上限（32 个驱动 × 约 3 条 compatible 字符串）
   static constexpr size_t kMaxCompatEntries = 96;
 
   etl::vector<DriverEntry, kMaxDrivers> drivers_;
@@ -94,65 +128,22 @@ class DriverRegistry {
   SpinLock lock_{"driver_registry"};
 };
 
-// --- Inline implementations (header-only per module convention) ---
-
-inline auto DriverRegistry::Register(const DriverEntry& entry)
-    -> Expected<void> {
-  LockGuard guard(lock_);
-  if (drivers_.full()) {
-    return std::unexpected(Error(ErrorCode::kOutOfMemory));
-  }
-  const size_t idx = drivers_.size();
-  for (const auto& me : entry.match_table) {
-    if (compat_map_.full()) {
-      return std::unexpected(Error(ErrorCode::kOutOfMemory));
-    }
-    // insert() is a no-op on duplicate key — first-registered driver wins.
-    compat_map_.insert({me.compatible, idx});
-  }
-  drivers_.push_back(entry);
-  return {};
-}
-
-inline auto DriverRegistry::FindDriver(const DeviceNode& node)
-    -> const DriverEntry* {
-  // Walk the node's compatible stringlist; for each string, do a flat_map
-  // lookup.
-  const char* p = node.compatible;
-  const char* end = node.compatible + node.compatible_len;
-  while (p < end) {
-    const auto it = compat_map_.find(p);
-    if (it != compat_map_.end()) {
-      auto& entry = drivers_[it->second];
-      if (entry.match(const_cast<DeviceNode&>(node))) {
-        return &entry;
-      }
-    }
-    p += kstd::strlen(p) + 1;
-  }
-  return nullptr;
-}
-
-// ---------------------------------------------------------------------------
-// mmio_helper — safe MMIO region setup (formerly mmio_helper.hpp)
-// ---------------------------------------------------------------------------
-
 namespace mmio_helper {
 
-/// MMIO region after mapping
+/// 映射完成后的 MMIO 区域信息
 struct ProbeContext {
   uint64_t base;
   size_t size;
 };
 
 /**
- * @brief Extract MMIO base/size from node and map region via VirtualMemory.
+ * @brief 从节点提取 MMIO base/size 并通过 VirtualMemory 映射该区域。
  *
- * Does NOT set node.bound — caller (driver Probe()) is responsible for
- * setting node.bound = true under DeviceManager::lock_.
+ * 不设置 node.bound — 调用方（驱动的 Probe()）负责在
+ * DeviceManager::lock_ 保护下将 node.bound 置为 true。
  *
- * @param  node         Device node (must have mmio_base != 0)
- * @param  default_size Fallback size when node.mmio_size == 0
+ * @param  node         设备节点（mmio_base 必须非零）
+ * @param  default_size 当 node.mmio_size == 0 时使用的默认大小
  * @return Expected<ProbeContext>
  */
 [[nodiscard]] inline auto Prepare(const DeviceNode& node, size_t default_size)
