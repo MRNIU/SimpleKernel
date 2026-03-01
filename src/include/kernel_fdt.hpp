@@ -40,7 +40,8 @@
  * @pre  FDT 数据必须是有效的 DTB 格式
  * @post 通过各 Get* 方法可获取设备树中的硬件信息
  *
- * @note ForEachNode 和 ForEachCompatibleNode 是模板方法，保留在头文件中
+ * @note ForEachNode、ForEachCompatibleNode 和 ForEachDeviceNode
+ *       是模板方法，保留在头文件中
  * @note compatible 属性是 stringlist 格式（多个以 '\0' 分隔的字符串），
  *       回调接收完整的 compatible 数据和长度
  */
@@ -522,6 +523,121 @@ class KernelFdt {
       }
 
       if (!callback(offset, node_name, mmio_base, mmio_size, irq)) {
+        break;
+      }
+    }
+
+    return {};
+  }
+
+  /**
+   * @brief 遍历 FDT 中所有"叶设备"节点，自动跳过基础设施节点。
+   *
+   * 在 ForEachNode 的基础上，额外过滤掉以下节点：
+   *   - 具有 `interrupt-controller` 属性（中断控制器）
+   *   - 具有 `#clock-cells` 属性（时钟提供者）
+   *   - `device_type = "cpu"` 或 `device_type = "memory"`
+   *
+   * @tparam Callback 签名与 ForEachNode 完全相同：
+   *   bool(const char* node_name, const char* compatible_data,
+   *        size_t compatible_len, uint64_t mmio_base, size_t mmio_size,
+   *        uint32_t irq)
+   * @param  callback 节点处理函数，返回 false 停止遍历
+   * @return Expected<void>
+   * @pre    fdt_header_ 不为空
+   */
+  template <typename Callback>
+  [[nodiscard]] auto ForEachDeviceNode(Callback&& callback) const
+      -> Expected<void> {
+    assert(fdt_header_ != nullptr && "ForEachDeviceNode: fdt_header_ is null");
+
+    int offset = -1;
+    int depth = 0;
+
+    while (true) {
+      offset = fdt_next_node(fdt_header_, offset, &depth);
+      if (offset < 0) {
+        if (offset == -FDT_ERR_NOTFOUND) {
+          break;
+        }
+        return std::unexpected(Error(ErrorCode::kFdtParseFailed));
+      }
+
+      const char* node_name = fdt_get_name(fdt_header_, offset, nullptr);
+      if (node_name == nullptr) {
+        continue;
+      }
+
+      // status 过滤（与 ForEachNode 相同）
+      int status_len = 0;
+      const auto* status_prop =
+          fdt_get_property(fdt_header_, offset, "status", &status_len);
+      if (status_prop != nullptr) {
+        const char* status = reinterpret_cast<const char*>(status_prop->data);
+        if (strcmp(status, "okay") != 0 && strcmp(status, "ok") != 0) {
+          continue;
+        }
+      }
+
+      // 基础设施节点过滤
+      if (fdt_getprop(fdt_header_, offset, "interrupt-controller", nullptr) !=
+          nullptr) {
+        continue;
+      }
+      if (fdt_getprop(fdt_header_, offset, "#clock-cells", nullptr) !=
+          nullptr) {
+        continue;
+      }
+      {
+        int dt_len = 0;
+        const auto* dt_prop =
+            fdt_get_property(fdt_header_, offset, "device_type", &dt_len);
+        if (dt_prop != nullptr) {
+          const char* dt = reinterpret_cast<const char*>(dt_prop->data);
+          if (strcmp(dt, "cpu") == 0 || strcmp(dt, "memory") == 0) {
+            continue;
+          }
+        }
+      }
+
+      // compatible 提取
+      const char* compatible_data = nullptr;
+      size_t compatible_len = 0;
+      int compat_len = 0;
+      const auto* compat_prop =
+          fdt_get_property(fdt_header_, offset, "compatible", &compat_len);
+      if (compat_prop != nullptr && compat_len > 0) {
+        compatible_data = reinterpret_cast<const char*>(compat_prop->data);
+        compatible_len = static_cast<size_t>(compat_len);
+      }
+
+      // reg 提取
+      uint64_t mmio_base = 0;
+      size_t mmio_size = 0;
+      int reg_len = 0;
+      const auto* reg_prop =
+          fdt_get_property(fdt_header_, offset, "reg", &reg_len);
+      if (reg_prop != nullptr &&
+          static_cast<size_t>(reg_len) >= 2 * sizeof(uint64_t)) {
+        const auto* reg = reinterpret_cast<const uint64_t*>(reg_prop->data);
+        mmio_base = fdt64_to_cpu(reg[0]);
+        mmio_size = fdt64_to_cpu(reg[1]);
+      }
+
+      // interrupts 提取
+      uint32_t irq = 0;
+      int irq_len = 0;
+      const auto* irq_prop =
+          fdt_get_property(fdt_header_, offset, "interrupts", &irq_len);
+      if (irq_prop != nullptr &&
+          static_cast<size_t>(irq_len) >= sizeof(uint32_t)) {
+        const auto* interrupts =
+            reinterpret_cast<const uint32_t*>(irq_prop->data);
+        irq = fdt32_to_cpu(interrupts[0]);
+      }
+
+      if (!callback(node_name, compatible_data, compatible_len, mmio_base,
+                    mmio_size, irq)) {
         break;
       }
     }

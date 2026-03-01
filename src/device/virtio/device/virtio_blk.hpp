@@ -113,7 +113,7 @@ class VirtioBlk {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
     if (queue_count > 1) {
-      klog::Debug("Multi-queue not yet supported, using 1 queue");
+      klog::Debug("Multi-queue not yet supported, using 1 queue\n");
     }
 
     // 1. 创建传输层
@@ -135,7 +135,7 @@ class VirtioBlk {
     uint64_t negotiated = *negotiated_result;
 
     if ((negotiated & static_cast<uint64_t>(ReservedFeature::kVersion1)) == 0) {
-      klog::Debug("Device does not support VERSION_1 (modern mode)");
+      klog::Debug("Device does not support VERSION_1 (modern mode)\n");
       return std::unexpected(Error{ErrorCode::kFeatureNegotiationFailed});
     }
 
@@ -144,7 +144,7 @@ class VirtioBlk {
         (negotiated & static_cast<uint64_t>(ReservedFeature::kEventIdx)) != 0;
     if (event_idx) {
       klog::Debug(
-          "VIRTIO_F_EVENT_IDX negotiated, notification suppression enabled");
+          "VIRTIO_F_EVENT_IDX negotiated, notification suppression enabled\n");
     }
     // 3. 创建 Virtqueue
     uint64_t dma_phys = reinterpret_cast<uintptr_t>(vq_dma_buf);

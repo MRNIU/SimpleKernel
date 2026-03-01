@@ -9,7 +9,7 @@ ADD_SUBDIRECTORY (virtio)
 
 TARGET_INCLUDE_DIRECTORIES (device INTERFACE include)
 
-TARGET_SOURCES (device INTERFACE device.cpp)
+TARGET_SOURCES (device INTERFACE device.cpp device_manager.cpp)
 
 TARGET_LINK_LIBRARIES (device INTERFACE ns16550a_driver pl011_driver
                                         acpi_driver virtio_driver)

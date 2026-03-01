@@ -154,7 +154,7 @@ class MmioTransport final : public Transport {
     this->Reset();
     is_valid_ = true;
 
-    klog::Debug("MMIO device initialized: DeviceID=0x%08x, VendorID=0x%08x",
+    klog::Debug("MMIO device initialized: DeviceID=0x%08x, VendorID=0x%08x\n",
                 device_id_, vendor_id_);
   }
 
