@@ -38,7 +38,7 @@ void TaskManager::Sleep(uint64_t ms) {
 
     // 将任务加入睡眠队列（优先队列会自动按 wake_tick 排序）
     if (cpu_sched.sleeping_tasks.full()) {
-      klog::Err("Sleep: sleeping_tasks full, cannot sleep task %zu\n",
+      klog::Err("Sleep: sleeping_tasks full, cannot sleep task {}\n",
                 current->pid);
       return;
     }

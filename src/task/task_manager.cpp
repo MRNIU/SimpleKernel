@@ -90,7 +90,7 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   {
     LockGuard lock_guard{task_table_lock_};
     if (task_table_.full()) {
-      klog::Err("AddTask: task_table_ full, cannot add task (pid=%zu)\n",
+      klog::Err("AddTask: task_table_ full, cannot add task (pid={})\n",
                 task->pid);
       return;
     }
@@ -161,7 +161,7 @@ void TaskManager::ReapTask(TaskControlBlock* task) {
   // 确保任务处于僵尸或退出状态
   if (task->GetStatus() != TaskStatus::kZombie &&
       task->GetStatus() != TaskStatus::kExited) {
-    klog::Warn("ReapTask: Task %zu is not in zombie/exited state\n", task->pid);
+    klog::Warn("ReapTask: Task {} is not in zombie/exited state\n", task->pid);
     return;
   }
 
@@ -174,7 +174,7 @@ void TaskManager::ReapTask(TaskControlBlock* task) {
     task_table_.erase(pid);
   }
 
-  klog::Debug("ReapTask: Task %zu resources freed\n", pid);
+  klog::Debug("ReapTask: Task {} resources freed\n", pid);
 }
 
 void TaskManager::ReparentChildren(TaskControlBlock* parent) {
@@ -193,7 +193,7 @@ void TaskManager::ReparentChildren(TaskControlBlock* parent) {
     if (task && task->parent_pid == parent->pid) {
       // 将子进程过继给 init 进程
       task->parent_pid = kInitPid;
-      klog::Debug("ReparentChildren: Task %zu reparented to init (PID %zu)\n",
+      klog::Debug("ReparentChildren: Task {} reparented to init (PID {})\n",
                   task->pid, kInitPid);
 
       // 如果子进程已经是僵尸状态，通知 init 进程回收
@@ -220,8 +220,8 @@ TaskManager::GetThreadGroup(Pid tgid) {
 
 void TaskManager::SignalThreadGroup(Pid tgid, int signal) {
   /// @todo 实现信号机制后，向线程组中的所有线程发送信号
-  klog::Debug("SignalThreadGroup: tgid=%zu, signal=%d (not implemented)\n",
-              tgid, signal);
+  klog::Debug("SignalThreadGroup: tgid={}, signal={} (not implemented)\n", tgid,
+              signal);
 
   // 预期实现：
   // auto threads = GetThreadGroup(tgid);

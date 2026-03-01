@@ -25,7 +25,7 @@ void TaskManager::Block(ResourceId resource_id) {
     if (list.full()) {
       klog::Err(
           "Block: blocked_tasks list full for resource, cannot block task "
-          "%zu\n",
+          "{}\n",
           current->pid);
       // Rollback: task stays kRunning, do not transition FSM
       return;
@@ -36,7 +36,7 @@ void TaskManager::Block(ResourceId resource_id) {
     current->blocked_on = resource_id;
     list.push_back(current);
 
-    klog::Debug("Block: pid=%zu blocked on resource=%s, data=0x%lx\n",
+    klog::Debug("Block: pid={} blocked on resource={}, data={:#x}\n",
                 current->pid, resource_id.GetTypeName(), resource_id.GetData());
   }
 

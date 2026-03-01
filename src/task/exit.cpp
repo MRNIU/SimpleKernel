@@ -28,8 +28,8 @@ void TaskManager::Exit(int exit_code) {
     // 如果是线程组的主线程，需要检查是否还有其他线程
     if (is_group_leader && current->GetThreadGroupSize() > 1) {
       klog::Warn(
-          "Exit: Thread group leader (pid=%zu, tgid=%zu) exiting, but "
-          "group still has %zu threads\n",
+          "Exit: Thread group leader (pid={}, tgid={}) exiting, but "
+          "group still has {} threads\n",
           current->pid, current->tgid, current->GetThreadGroupSize());
       /// @todo 实现信号机制后，发送 SIGKILL 给线程组中的所有线程
     }
@@ -55,7 +55,7 @@ void TaskManager::Exit(int exit_code) {
 
       /// @todo 通知父进程 (发送 SIGCHLD)
 
-      klog::Debug("Exit: pid=%zu waking up parent=%zu on resource=%s\n",
+      klog::Debug("Exit: pid={} waking up parent={} on resource={}\n",
                   current->pid, current->parent_pid,
                   wait_resource_id.GetTypeName());
     } else {
@@ -70,7 +70,7 @@ void TaskManager::Exit(int exit_code) {
   Schedule();
 
   // 退出后不应执行到这里
-  klog::Err("Exit: Task %zu should not return from Schedule()\n", current->pid);
+  klog::Err("Exit: Task {} should not return from Schedule()\n", current->pid);
 
   __builtin_unreachable();
 }

@@ -199,8 +199,8 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   const char* clone_type = (flags & clone_flag::kThread) ? "thread" : "process";
   const char* vm_type = (flags & clone_flag::kVm) ? "shared" : "copied";
   klog::Debug(
-      "Clone: created %s - parent=%zu, child=%zu, tgid=%zu, vm=%s, "
-      "flags=0x%lx\n",
+      "Clone: created {} - parent={}, child={}, tgid={}, vm={}, "
+      "flags={:#x}\n",
       clone_type, parent->pid, new_pid, child->tgid, vm_type, flags);
 
   return new_pid;

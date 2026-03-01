@@ -138,7 +138,7 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority,
   kernel_stack = static_cast<uint8_t*>(aligned_alloc(
       cpu_io::virtual_memory::kPageSize, kDefaultKernelStackSize));
   if (!kernel_stack) {
-    klog::Err("Failed to allocate kernel stack for task %s\n", name);
+    klog::Err("Failed to allocate kernel stack for task {}\n", name);
     return;
   }
 
