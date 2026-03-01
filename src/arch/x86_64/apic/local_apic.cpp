@@ -322,7 +322,7 @@ void LocalApic::SendInitIpi(uint32_t destination_apic_id) const {
     }
   }
 
-  klog::Info("INIT IPI sent to APIC ID 0x%x\n", destination_apic_id);
+  klog::Info("INIT IPI sent to APIC ID {:#x}\n", destination_apic_id);
 }
 
 void LocalApic::SendStartupIpi(uint32_t destination_apic_id,
@@ -404,57 +404,57 @@ uint32_t LocalApic::ReadErrorStatus() const {
 }
 
 void LocalApic::PrintInfo() const {
-  klog::Info("APIC Version: 0x%x\n", GetApicVersion());
-  klog::Info("Mode: %s\n", is_x2apic_mode_ ? "x2APIC" : "xAPIC");
-  klog::Info("x2APIC Enabled: %s\n", IsX2ApicEnabled() ? "Yes" : "No");
-  klog::Info("Task Priority: 0x%x\n", GetTaskPriority());
-  klog::Info("Timer Current Count: %u\n", GetTimerCurrentCount());
+  klog::Info("APIC Version: {:#x}\n", GetApicVersion());
+  klog::Info("Mode: {}\n", is_x2apic_mode_ ? "x2APIC" : "xAPIC");
+  klog::Info("x2APIC Enabled: {}\n", IsX2ApicEnabled() ? "Yes" : "No");
+  klog::Info("Task Priority: {:#x}\n", GetTaskPriority());
+  klog::Info("Timer Current Count: {}\n", GetTimerCurrentCount());
 
   // 读取各种寄存器状态
   if (is_x2apic_mode_) {
     uint32_t sivr = cpu_io::msr::apic::ReadSivr();
-    klog::Info("SIVR: 0x%x (APIC %s)\n", sivr,
+    klog::Info("SIVR: {:#x} (APIC {})\n", sivr,
                (sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled");
 
     uint32_t lvt_timer = cpu_io::msr::apic::ReadLvtTimer();
-    klog::Info("LVT Timer: 0x%x\n", lvt_timer);
+    klog::Info("LVT Timer: {:#x}\n", lvt_timer);
 
     uint32_t lvt_lint0 = cpu_io::msr::apic::ReadLvtLint0();
-    klog::Info("LVT LINT0: 0x%x\n", lvt_lint0);
+    klog::Info("LVT LINT0: {:#x}\n", lvt_lint0);
 
     uint32_t lvt_lint1 = cpu_io::msr::apic::ReadLvtLint1();
-    klog::Info("LVT LINT1: 0x%x\n", lvt_lint1);
+    klog::Info("LVT LINT1: {:#x}\n", lvt_lint1);
 
     uint32_t lvt_error = cpu_io::msr::apic::ReadLvtError();
-    klog::Info("LVT Error: 0x%x\n", lvt_error);
+    klog::Info("LVT Error: {:#x}\n", lvt_error);
   } else {
     etl::io_port_ro<uint32_t> sivr_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicSivrOffset)};
     uint32_t sivr = sivr_reg.read();
-    klog::Info("SIVR: 0x%x (APIC %s)\n", sivr,
+    klog::Info("SIVR: {:#x} (APIC {})\n", sivr,
                (sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled");
 
     etl::io_port_ro<uint32_t> lvt_timer_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtTimerOffset)};
     uint32_t lvt_timer = lvt_timer_reg.read();
-    klog::Info("LVT Timer: 0x%x\n", lvt_timer);
+    klog::Info("LVT Timer: {:#x}\n", lvt_timer);
 
     etl::io_port_ro<uint32_t> lvt_lint0_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtLint0Offset)};
     uint32_t lvt_lint0 = lvt_lint0_reg.read();
-    klog::Info("LVT LINT0: 0x%x\n", lvt_lint0);
+    klog::Info("LVT LINT0: {:#x}\n", lvt_lint0);
 
     etl::io_port_ro<uint32_t> lvt_lint1_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtLint1Offset)};
     uint32_t lvt_lint1 = lvt_lint1_reg.read();
-    klog::Info("LVT LINT1: 0x%x\n", lvt_lint1);
+    klog::Info("LVT LINT1: {:#x}\n", lvt_lint1);
 
     etl::io_port_ro<uint32_t> lvt_error_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtErrorOffset)};
     uint32_t lvt_error = lvt_error_reg.read();
-    klog::Info("LVT Error: 0x%x\n", lvt_error);
+    klog::Info("LVT Error: {:#x}\n", lvt_error);
 
-    klog::Info("APIC Base Address: 0x%lx\n", apic_base_);
+    klog::Info("APIC Base Address: {:#x}\n", apic_base_);
   }
 }
 

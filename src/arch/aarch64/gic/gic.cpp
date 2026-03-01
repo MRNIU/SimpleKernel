@@ -49,7 +49,7 @@ Gic::Gicd::Gicd(uint64_t base_addr) : base_addr_(base_addr) {
   // 读取 ITLinesNumber 数量
   auto it_lines_number = Read(kTYPER) & kTYPER_ITLinesNumberMask;
 
-  klog::Info("it_lines_number %d\n", it_lines_number);
+  klog::Info("it_lines_number {}\n", it_lines_number);
 
   // 设置中断为 Non-secure Group 1
   for (uint32_t i = 0; i < it_lines_number; i++) {

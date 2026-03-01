@@ -47,7 +47,7 @@ auto EbreakHandler(uint64_t exception_code, cpu_io::TrapContext* context)
     // 4 字节指令
     context->sepc += 4;
   }
-  klog::Info("Handle %s\n",
+  klog::Info("Handle {}\n",
              cpu_io::ScauseInfo::kExceptionNames[exception_code]);
   return 0;
 }
@@ -56,10 +56,10 @@ auto EbreakHandler(uint64_t exception_code, cpu_io::TrapContext* context)
 auto PageFaultHandler(uint64_t exception_code, cpu_io::TrapContext* context)
     -> uint64_t {
   auto addr = cpu_io::Stval::Read();
-  klog::Err("PageFault: %s(0x%lx), addr: 0x%lx\n",
+  klog::Err("PageFault: {}({:#x}), addr: {:#x}\n",
             cpu_io::ScauseInfo::kExceptionNames[exception_code], exception_code,
             addr);
-  klog::Err("sepc: 0x%lx\n", context->sepc);
+  klog::Err("sepc: {:#x}\n", context->sepc);
   DumpStack();
   while (1) {
     cpu_io::Pause();
@@ -79,7 +79,7 @@ auto IpiHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
   // 清软中断 pending 位
   cpu_io::Sip::Ssip::Clear();
-  klog::Debug("Core %d received IPI\n", cpu_io::GetCurrentCoreId());
+  klog::Debug("Core {} received IPI\n", cpu_io::GetCurrentCoreId());
   return 0;
 }
 
@@ -99,7 +99,7 @@ auto VirtioBlkIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
   VirtioDriver::Instance().HandleInterrupt(
       [](void* /*token*/, ErrorCode status) {
         if (status != ErrorCode::kSuccess) {
-          klog::Err("VirtIO blk IO error: %d\n", static_cast<int>(status));
+          klog::Err("VirtIO blk IO error: {}\n", static_cast<int>(status));
         }
       });
   return 0;
@@ -116,7 +116,7 @@ void RegisterInterrupts() {
   if (uart_result) {
     Ns16550aSingleton::create(std::move(*uart_result));
   } else {
-    klog::Err("Failed to create Ns16550a: %d\n",
+    klog::Err("Failed to create Ns16550a: {}\n",
               static_cast<int>(uart_result.error().code));
   }
 
@@ -190,7 +190,7 @@ void InterruptInit(int, const char**) {
       .RegisterExternalInterrupt(serial_irq, cpu_io::GetCurrentCoreId(), 1,
                                  InterruptDelegate::create<SerialIrqHandler>())
       .or_else([](Error err) -> Expected<void> {
-        klog::Err("Failed to register serial IRQ: %s\n", err.message());
+        klog::Err("Failed to register serial IRQ: {}\n", err.message());
         return std::unexpected(err);
       });
 
@@ -203,7 +203,7 @@ void InterruptInit(int, const char**) {
             blk_irq, cpu_io::GetCurrentCoreId(), 1,
             InterruptDelegate::create<VirtioBlkIrqHandler>())
         .or_else([blk_irq](Error err) -> Expected<void> {
-          klog::Err("Failed to register virtio-blk IRQ %u: %s\n", blk_irq,
+          klog::Err("Failed to register virtio-blk IRQ {}: {}\n", blk_irq,
                     err.message());
           return std::unexpected(err);
         });

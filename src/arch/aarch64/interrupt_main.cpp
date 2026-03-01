@@ -24,20 +24,20 @@ namespace {
  */
 static void HandleException(const char* exception_msg,
                             cpu_io::TrapContext* context, int print_regs = 0) {
-  klog::Err("%s\n", exception_msg);
+  klog::Err("{}\n", exception_msg);
   klog::Err(
-      "  ESR_EL1: 0x%016lX, ELR_EL1: 0x%016lX, SP_EL0: 0x%016lX, SP_EL1: "
-      "0x%016lX, SPSR_EL1: 0x%016lX\n",
+      "  ESR_EL1: {:#016X}, ELR_EL1: {:#016X}, SP_EL0: {:#016X}, SP_EL1: "
+      "{:#016X}, SPSR_EL1: {:#016X}\n",
       context->esr_el1, context->elr_el1, context->sp_el0, context->sp_el1,
       context->spsr_el1);
 
   if (print_regs == 4) {
-    klog::Err("  x0-x3: 0x%016lX 0x%016lX 0x%016lX 0x%016lX\n", context->x0,
+    klog::Err("  x0-x3: {:#016X} {:#016X} {:#016X} {:#016X}\n", context->x0,
               context->x1, context->x2, context->x3);
   } else if (print_regs == 8) {
     klog::Err(
-        "  x0-x7: 0x%016lX 0x%016lX 0x%016lX 0x%016lX 0x%016lX 0x%016lX "
-        "0x%016lX 0x%016lX\n",
+        "  x0-x7: {:#016X} {:#016X} {:#016X} {:#016X} {:#016X} {:#016X} "
+        "{:#016X} {:#016X}\n",
         context->x0, context->x1, context->x2, context->x3, context->x4,
         context->x5, context->x6, context->x7);
   }
@@ -155,14 +155,14 @@ void InterruptInit(int, const char**) {
       KernelFdtSingleton::instance().GetAarch64Intid("arm,pl011").value() +
       Gic::kSPIBase;
 
-  klog::Info("uart_intid: %d\n", uart_intid);
+  klog::Info("uart_intid: {}\n", uart_intid);
 
   // 通过统一接口注册 UART 外部中断（先注册 handler，再启用 GIC SPI）
   InterruptSingleton::instance()
       .RegisterExternalInterrupt(uart_intid, cpu_io::GetCurrentCoreId(), 0,
                                  InterruptDelegate::create<uart_handler>())
       .or_else([](Error err) -> Expected<void> {
-        klog::Err("Failed to register UART IRQ: %s\n", err.message());
+        klog::Err("Failed to register UART IRQ: {}\n", err.message());
         return std::unexpected(err);
       });
 

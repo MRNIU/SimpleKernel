@@ -13,8 +13,8 @@
 namespace {
 auto DefaultPlicHandler(uint64_t cause, cpu_io::TrapContext* context)
     -> uint64_t {
-  klog::Info("Default PLIC handler, cause: 0x%X, context: 0x%p\n", cause,
-             context);
+  klog::Info("Default PLIC handler, cause: {:#x}, context: {:#x}\n", cause,
+             reinterpret_cast<uintptr_t>(context));
   return 0;
 }
 }  // namespace
