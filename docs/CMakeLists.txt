@@ -1,6 +1,6 @@
 # Copyright The SimpleKernel Contributors
 
-PROJECT (doc)
+PROJECT (docs)
 
 # 设置 doxygen 相关参数
 SET (DOXYGEN_HAVE_DOT YES)
@@ -39,6 +39,6 @@ SET (DOXYGEN_HTML_TIMESTAMP YES)
 
 # 创建 target 并通过 VERBATIM 将 cmake 参数传递给 doxygen
 DOXYGEN_ADD_DOCS (
-    doc
+    docs
     COMMENT "Generating docs at ${PROJECT_SOURCE_DIR}/html/index.html ..."
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} ${CMAKE_SOURCE_DIR})

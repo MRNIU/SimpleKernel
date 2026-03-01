@@ -5,7 +5,7 @@
 build_aarch64
 build_riscv64
 build_x86_64
-doc/html
+docs/html
 .vscode/*
 !.vscode/tasks.json
 !.vscode/launch.json

@@ -32,7 +32,7 @@ jobs:
           options: -v ${{ github.workspace }}:/root -e CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
           run: |
             cmake --preset=build_x86_64
-            cmake --build build_x86_64 --target SimpleKernel unit-test coverage doc
+            cmake --build build_x86_64 --target SimpleKernel unit-test coverage docs
 
       - name: riscv64
         uses: addnab/docker-run-action@v3
@@ -63,7 +63,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ github.workspace }}/doc/html
+          publish_dir: ${{ github.workspace }}/docs/html
 
       # - name: Super-Linter
       #   uses: super-linter/super-linter@v7.2.0
