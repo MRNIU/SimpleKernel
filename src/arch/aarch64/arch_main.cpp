@@ -53,8 +53,6 @@ void ArchInit(int argc, const char** argv) {
   // 解析内核 elf 信息
   KernelElfSingleton::create(BasicInfoSingleton::instance().elf_addr);
 
-  kstd::cout << BasicInfoSingleton::instance();
-
   KernelFdtSingleton::instance().CheckPSCI().or_else(
       [](Error err) -> Expected<void> {
         klog::err << "CheckPSCI failed: " << err.message();
