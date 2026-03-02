@@ -59,10 +59,10 @@ class VirtioDriver {
             DeviceNode&)>::create<&VirtioDriver::MatchStatic>(),
         .probe = etl::delegate<Expected<void>(DeviceNode&)>::create<
             VirtioDriver, &VirtioDriver::Probe>(
-            VirtioDriverSingleton::instance()),
+            etl::singleton<VirtioDriver>::instance()),
         .remove = etl::delegate<Expected<void>(DeviceNode&)>::create<
             VirtioDriver, &VirtioDriver::Remove>(
-            VirtioDriverSingleton::instance()),
+            etl::singleton<VirtioDriver>::instance()),
     };
     return entry;
   }

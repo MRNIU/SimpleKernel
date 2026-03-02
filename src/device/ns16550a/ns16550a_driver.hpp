@@ -28,10 +28,10 @@ class Ns16550aDriver {
             DeviceNode&)>::create<&Ns16550aDriver::MatchStatic>(),
         .probe = etl::delegate<Expected<void>(DeviceNode&)>::create<
             Ns16550aDriver, &Ns16550aDriver::Probe>(
-            Ns16550aDriverSingleton::instance()),
+            etl::singleton<Ns16550aDriver>::instance()),
         .remove = etl::delegate<Expected<void>(DeviceNode&)>::create<
             Ns16550aDriver, &Ns16550aDriver::Remove>(
-            Ns16550aDriverSingleton::instance()),
+            etl::singleton<Ns16550aDriver>::instance()),
     };
     return entry;
   }
