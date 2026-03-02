@@ -44,11 +44,11 @@ void DumpStack() {
       if ((ELF64_ST_TYPE(symtab.st_info) == STT_FUNC) &&
           (buffer[current_frame_idx] >= symtab.st_value) &&
           (buffer[current_frame_idx] <= symtab.st_value + symtab.st_size)) {
-        klog::err << "["
-                  << reinterpret_cast<const char*>(
-                         KernelElfSingleton::instance().strtab_ +
-                         symtab.st_name)
-                  << "] " << klog::hex << buffer[current_frame_idx];
+        klog::raw_err << "["
+                      << reinterpret_cast<const char*>(
+                             KernelElfSingleton::instance().strtab_ +
+                             symtab.st_name)
+                      << "] " << klog::hex << buffer[current_frame_idx];
       }
     }
   }
