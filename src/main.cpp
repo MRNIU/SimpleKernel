@@ -120,6 +120,7 @@ auto main_smp(int argc, const char** argv) -> int {
 
   klog::info << "Hello SimpleKernel SMP";
 
+  while (1);
   // 为当前核心创建测试任务
   // create_test_tasks();
 
