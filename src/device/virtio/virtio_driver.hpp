@@ -6,6 +6,7 @@
 #define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRTIO_DRIVER_HPP_
 
 #include <etl/io_port.h>
+#include <etl/singleton.h>
 #include <etl/span.h>
 
 #include <array>
@@ -45,10 +46,7 @@ class VirtioDriver {
   static constexpr uint32_t kDefaultQueueSize = 128;
   static constexpr size_t kMinDmaBufferSize = 32768;
 
-  static auto Instance() -> VirtioDriver& {
-    static VirtioDriver inst;
-    return inst;
-  }
+  /// @note 使用 VirtioDriverSingleton::instance() 访问单例。
 
   /**
    * @brief 返回驱动注册入口
@@ -62,9 +60,11 @@ class VirtioDriver {
         .match = etl::delegate<bool(
             DeviceNode&)>::create<&VirtioDriver::MatchStatic>(),
         .probe = etl::delegate<Expected<void>(DeviceNode&)>::create<
-            VirtioDriver, &VirtioDriver::Probe>(Instance()),
+            VirtioDriver, &VirtioDriver::Probe>(
+            VirtioDriverSingleton::instance()),
         .remove = etl::delegate<Expected<void>(DeviceNode&)>::create<
-            VirtioDriver, &VirtioDriver::Remove>(Instance()),
+            VirtioDriver, &VirtioDriver::Remove>(
+            VirtioDriverSingleton::instance()),
     };
     return entry;
   }
@@ -138,5 +138,7 @@ class VirtioDriver {
       blk_adapters_;
   size_t blk_adapter_count_{0};
 };
+
+using VirtioDriverSingleton = etl::singleton<VirtioDriver>;
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRTIO_DRIVER_HPP_

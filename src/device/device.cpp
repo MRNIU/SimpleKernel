@@ -29,6 +29,11 @@ auto DeviceInit() -> void {
   DeviceManagerSingleton::create();
   auto& dm = DeviceManagerSingleton::instance();
 
+  // 创建驱动单例（etl::singleton 要求在 instance() 之前调用 create()）
+  Ns16550aDriverSingleton::create();
+  Pl011DriverSingleton::create();
+  VirtioDriverSingleton::create();
+
   for (const auto& get_entry : kBuiltinDrivers) {
     const auto& entry = get_entry();
     if (auto r = dm.GetRegistry().Register(entry); !r) {

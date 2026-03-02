@@ -5,6 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_PL011_PL011_DRIVER_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_PL011_PL011_DRIVER_HPP_
 
+#include <etl/singleton.h>
+
 #include "device_node.hpp"
 #include "driver_registry.hpp"
 #include "expected.hpp"
@@ -20,11 +22,7 @@ class Pl011Driver {
  public:
   using Pl011Type = pl011::Pl011;
 
-  /// 返回驱动单例实例。
-  static auto Instance() -> Pl011Driver& {
-    static Pl011Driver inst;
-    return inst;
-  }
+  /// @note 使用 Pl011DriverSingleton::instance() 访问单例。
 
   /// 返回用于注册的 DriverEntry。
   static auto GetEntry() -> const DriverEntry& {
@@ -33,10 +31,11 @@ class Pl011Driver {
         .match_table = etl::span<const MatchEntry>(kMatchTable),
         .match = etl::delegate<bool(
             DeviceNode&)>::create<&Pl011Driver::MatchStatic>(),
-        .probe = etl::delegate<Expected<void>(
-            DeviceNode&)>::create<Pl011Driver, &Pl011Driver::Probe>(Instance()),
+        .probe = etl::delegate<Expected<void>(DeviceNode&)>::create<
+            Pl011Driver, &Pl011Driver::Probe>(Pl011DriverSingleton::instance()),
         .remove = etl::delegate<Expected<void>(DeviceNode&)>::create<
-            Pl011Driver, &Pl011Driver::Remove>(Instance()),
+            Pl011Driver, &Pl011Driver::Remove>(
+            Pl011DriverSingleton::instance()),
     };
     return entry;
   }
@@ -86,5 +85,7 @@ class Pl011Driver {
 
   Pl011Type uart_;
 };
+
+using Pl011DriverSingleton = etl::singleton<Pl011Driver>;
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_PL011_PL011_DRIVER_HPP_

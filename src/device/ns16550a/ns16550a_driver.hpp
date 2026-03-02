@@ -5,6 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_DRIVER_HPP_
 #define SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_DRIVER_HPP_
 
+#include <etl/singleton.h>
+
 #include "device_node.hpp"
 #include "driver_registry.hpp"
 #include "expected.hpp"
@@ -15,11 +17,7 @@ class Ns16550aDriver {
  public:
   using Ns16550aType = ns16550a::Ns16550a;
 
-  /// 返回驱动单例实例。
-  static auto Instance() -> Ns16550aDriver& {
-    static Ns16550aDriver inst;
-    return inst;
-  }
+  /// @note 使用 Ns16550aDriverSingleton::instance() 访问单例。
 
   /// 返回用于注册的 DriverEntry。
   static auto GetEntry() -> const DriverEntry& {
@@ -29,9 +27,11 @@ class Ns16550aDriver {
         .match = etl::delegate<bool(
             DeviceNode&)>::create<&Ns16550aDriver::MatchStatic>(),
         .probe = etl::delegate<Expected<void>(DeviceNode&)>::create<
-            Ns16550aDriver, &Ns16550aDriver::Probe>(Instance()),
+            Ns16550aDriver, &Ns16550aDriver::Probe>(
+            Ns16550aDriverSingleton::instance()),
         .remove = etl::delegate<Expected<void>(DeviceNode&)>::create<
-            Ns16550aDriver, &Ns16550aDriver::Remove>(Instance()),
+            Ns16550aDriver, &Ns16550aDriver::Remove>(
+            Ns16550aDriverSingleton::instance()),
     };
     return entry;
   }
@@ -86,5 +86,7 @@ class Ns16550aDriver {
 
   Ns16550aType uart_;
 };
+
+using Ns16550aDriverSingleton = etl::singleton<Ns16550aDriver>;
 
 #endif  // SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_DRIVER_HPP_
