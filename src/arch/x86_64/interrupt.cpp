@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 中断初始化
  */
 
 #include "interrupt.h"
@@ -11,7 +10,6 @@
 #include "kernel.h"
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
-#include "kstd_iostream"
 
 namespace {
 /**

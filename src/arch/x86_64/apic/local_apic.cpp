@@ -405,8 +405,8 @@ uint32_t LocalApic::ReadErrorStatus() const {
 
 void LocalApic::PrintInfo() const {
   klog::info << "APIC Version: " << klog::hex << GetApicVersion();
-  klog::info << "Mode: " << is_x2apic_mode_ ? "x2APIC" : "xAPIC";
-  klog::info << "x2APIC Enabled: " << IsX2ApicEnabled() ? "Yes" : "No";
+  klog::info << "Mode: " << (is_x2apic_mode_ ? "x2APIC" : "xAPIC");
+  klog::info << "x2APIC Enabled: " << (IsX2ApicEnabled() ? "Yes" : "No");
   klog::info << "Task Priority: " << klog::hex << GetTaskPriority();
   klog::info << "Timer Current Count: " << GetTimerCurrentCount();
 
@@ -414,9 +414,8 @@ void LocalApic::PrintInfo() const {
   if (is_x2apic_mode_) {
     uint32_t sivr = cpu_io::msr::apic::ReadSivr();
     klog::info << "SIVR: " << klog::hex << sivr << " (APIC "
-               << (sivr & kApicSoftwareEnableBit)
-        ? "Enabled"
-        : "Disabled" << ")";
+               << ((sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled")
+               << ")";
 
     uint32_t lvt_timer = cpu_io::msr::apic::ReadLvtTimer();
     klog::info << "LVT Timer: " << klog::hex << lvt_timer;
@@ -434,9 +433,8 @@ void LocalApic::PrintInfo() const {
         reinterpret_cast<void*>(apic_base_ + kXApicSivrOffset)};
     uint32_t sivr = sivr_reg.read();
     klog::info << "SIVR: " << klog::hex << sivr << " (APIC "
-               << (sivr & kApicSoftwareEnableBit)
-        ? "Enabled"
-        : "Disabled" << ")";
+               << ((sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled")
+               << ")";
 
     etl::io_port_ro<uint32_t> lvt_timer_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtTimerOffset)};

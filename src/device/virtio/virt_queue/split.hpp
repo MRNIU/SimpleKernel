@@ -77,7 +77,7 @@ class SplitVirtqueue final : public VirtqueueBase {
    * @note 16 字节对齐
    * @see virtio-v1.2#2.7.5 The Virtqueue Descriptor Table
    */
-  struct Desc {
+  struct [[gnu::packed]] Desc {
     /// Descriptor Table 对齐要求(字节)
     static constexpr size_t kAlign = 16;
     /// 缓冲区的客户机物理地址 (little-endian)
@@ -88,7 +88,7 @@ class SplitVirtqueue final : public VirtqueueBase {
     uint16_t flags;
     /// 下一个描述符的索引(当 flags & kDescFNext 时有效) (little-endian)
     uint16_t next;
-  } __attribute__((packed));
+  };
 
   /**
    * @brief Virtqueue Available Ring
@@ -100,7 +100,7 @@ class SplitVirtqueue final : public VirtqueueBase {
    * @note 2 字节对齐
    * @see virtio-v1.2#2.7.6 The Virtqueue Available Ring
    */
-  struct Avail {
+  struct [[gnu::packed]] Avail {
     /// Available Ring 对齐要求(字节)
     static constexpr size_t kAlign = 2;
     /// 标志位: AvailFlags (little-endian)
@@ -129,7 +129,7 @@ class SplitVirtqueue final : public VirtqueueBase {
         volatile uint16_t* {
       return ring + queue_size;
     }
-  } __attribute__((packed));
+  };
 
   /**
    * @brief Virtqueue Used Ring 元素
@@ -138,12 +138,12 @@ class SplitVirtqueue final : public VirtqueueBase {
    *
    * @see virtio-v1.2#2.7.8 The Virtqueue Used Ring
    */
-  struct UsedElem {
+  struct [[gnu::packed]] UsedElem {
     /// 描述符链头的索引 (little-endian)
     uint32_t id;
     /// 设备写入描述符链的总字节数 (little-endian)
     uint32_t len;
-  } __attribute__((packed));
+  };
 
   /**
    * @brief Virtqueue Used Ring
@@ -155,7 +155,7 @@ class SplitVirtqueue final : public VirtqueueBase {
    * @note 4 字节对齐
    * @see virtio-v1.2#2.7.8 The Virtqueue Used Ring
    */
-  struct Used {
+  struct [[gnu::packed]] Used {
     /// Used Ring 对齐要求(字节)
     static constexpr size_t kAlign = 4;
     /// 标志位: UsedFlags (little-endian)
@@ -189,7 +189,7 @@ class SplitVirtqueue final : public VirtqueueBase {
       return reinterpret_cast<const volatile uint16_t*>(
           byte_ptr + sizeof(UsedElem) * queue_size);
     }
-  } __attribute__((packed));
+  };
 
   /**
    * @brief 计算给定队列大小所需的 DMA 内存字节数

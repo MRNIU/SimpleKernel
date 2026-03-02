@@ -57,7 +57,7 @@ enum class BlkFeatureBit : uint64_t {
  * @note 配置空间使用小端格式
  * @note 多字节字段需要使用 generation counter 机制确保读取一致性
  */
-struct BlkConfig {
+struct [[gnu::packed]] BlkConfig {
   /// 设备容量（以 512 字节扇区为单位）
   uint64_t capacity;
   /// 任意单个段的最大字节数（如果 VIRTIO_BLK_F_SIZE_MAX 被协商）
@@ -66,20 +66,20 @@ struct BlkConfig {
   uint32_t seg_max;
 
   /// 磁盘几何信息（如果 VIRTIO_BLK_F_GEOMETRY 被协商）
-  struct {
+  struct [[gnu::packed]] {
     /// 柱面数
     uint16_t cylinders;
     /// 磁头数
     uint8_t heads;
     /// 每磁道扇区数
     uint8_t sectors;
-  } __attribute__((packed)) geometry;
+  } geometry;
 
   /// 块大小（字节），用于性能优化（如果 VIRTIO_BLK_F_BLK_SIZE 被协商）
   uint32_t blk_size;
 
   /// I/O 拓扑信息（如果 VIRTIO_BLK_F_TOPOLOGY 被协商）
-  struct {
+  struct [[gnu::packed]] {
     /// 每个物理块包含的逻辑块数 (log2)
     uint8_t physical_block_exp;
     /// 第一个对齐逻辑块的偏移
@@ -88,7 +88,7 @@ struct BlkConfig {
     uint16_t min_io_size;
     /// 建议的最优 I/O 大小（块数）
     uint32_t opt_io_size;
-  } __attribute__((packed)) topology;
+  } topology;
 
   /// 缓存模式：0=直写(writethrough)，1=回写(writeback)
   /// （如果 VIRTIO_BLK_F_CONFIG_WCE 被协商）
@@ -123,7 +123,7 @@ struct BlkConfig {
   uint16_t num_queues;
   /// 保留字段，用于未来扩展
   uint8_t unused2[6];
-} __attribute__((packed));
+};
 
 /**
  * @brief 块设备配置空间字段偏移量
@@ -207,14 +207,14 @@ enum class BlkStatus : uint8_t {
  * @note 协议中所有字段采用小端格式
  * @note 请求头后跟数据缓冲区（可选），最后是状态字节（设备只写）
  */
-struct BlkReqHeader {
+struct [[gnu::packed]] BlkReqHeader {
   /// 请求类型 (ReqType)
   uint32_t type;
   /// 保留字段，必须为 0
   uint32_t reserved;
   /// 起始扇区号（仅对读/写请求有效，其他类型应设为 0）
   uint64_t sector;
-} __attribute__((packed));
+};
 
 /**
  * @brief Discard/Write Zeroes/Secure Erase 请求段
@@ -223,20 +223,20 @@ struct BlkReqHeader {
  * VIRTIO_BLK_T_DISCARD、VIRTIO_BLK_T_WRITE_ZEROES 和
  * VIRTIO_BLK_T_SECURE_ERASE 请求的数据部分由一个或多个此结构的实例组成。
  */
-struct BlkDiscardWriteZeroes {
+struct [[gnu::packed]] BlkDiscardWriteZeroes {
   /// 起始扇区（以 512 字节为单位）
   uint64_t sector;
   /// 扇区数（以 512 字节为单位）
   uint32_t num_sectors;
   /// 标志位
-  struct {
+  struct [[gnu::packed]] {
     /// 对于 write zeroes: 允许设备 unmap（取消映射）指定范围
     /// 对于 discard/secure erase: 保留，必须为 0
     uint32_t unmap : 1;
     /// 保留位，必须为 0
     uint32_t reserved : 31;
   } flags;
-} __attribute__((packed));
+};
 
 /**
  * @brief 设备生命周期信息
@@ -245,7 +245,7 @@ struct BlkDiscardWriteZeroes {
  * VIRTIO_BLK_T_GET_LIFETIME 请求的响应数据。
  * 用于 eMMC/UFS 等存储设备报告磨损程度。
  */
-struct BlkLifetime {
+struct [[gnu::packed]] BlkLifetime {
   /**
    * @brief Pre-EOL 信息常量
    */
@@ -269,7 +269,7 @@ struct BlkLifetime {
   /// 设备生命周期估计 B（MLC 单元磨损）
   /// 含义同 device_lifetime_est_typ_a
   uint16_t device_lifetime_est_typ_b;
-} __attribute__((packed));
+};
 
 /// 标准扇区大小（字节）
 static constexpr size_t kSectorSize = 512;

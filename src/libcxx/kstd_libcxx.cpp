@@ -195,10 +195,9 @@ extern "C" void abort() {
  * @param line       行号
  * @param function   函数名
  */
-extern "C" __attribute__((noreturn)) void __assert_fail(const char* assertion,
-                                                        const char* file,
-                                                        unsigned int line,
-                                                        const char* function) {
+extern "C" [[noreturn]] void __assert_fail(const char* assertion,
+                                           const char* file, unsigned int line,
+                                           const char* function) {
   sk_print_str("\n[ASSERT FAILED] ");
   sk_print_str(file);
   etl_putchar(':');

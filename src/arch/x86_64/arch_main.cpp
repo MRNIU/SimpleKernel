@@ -13,7 +13,6 @@
 #include "kernel.h"
 #include "kernel_elf.hpp"
 #include "kernel_log.hpp"
-#include "kstd_iostream"
 #include "per_cpu.hpp"
 #include "sipi.h"
 
@@ -105,7 +104,6 @@ BasicInfo::BasicInfo(int, const char**) {
 
 auto ArchInit(int, const char**) -> int {
   BasicInfoSingleton::create(0, nullptr);
-  kstd::cout << BasicInfoSingleton::instance();
 
   // 解析内核 elf 信息
   KernelElfSingleton::create(BasicInfoSingleton::instance().elf_addr);

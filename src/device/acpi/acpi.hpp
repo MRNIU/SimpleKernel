@@ -39,19 +39,19 @@ class Acpi {
    * @brief Generic Address Structure
    * @see ACPI_Spec_6_5_Aug29.pdf#5.2.3.2
    */
-  struct GenericAddressStructure {
+  struct [[gnu::packed]] GenericAddressStructure {
     uint8_t address_space_id;
     uint8_t register_bit_width;
     uint8_t register_bit_offset;
     uint8_t access_size;
     uint64_t address;
-  } __attribute__((packed));
+  };
 
   /**
    * @brief Root System Description Pointer (RSDP) Structure
    * @see ACPI_Spec_6_5_Aug29.pdf#5.2.5.3
    */
-  struct Rsdp {
+  struct [[gnu::packed]] Rsdp {
     char signature[8];
     uint8_t checksum;
     char oemid[6];
@@ -61,13 +61,13 @@ class Acpi {
     uint64_t xsdt_address;
     uint8_t extended_checksum;
     uint8_t reserved[3];
-  } __attribute__((packed));
+  };
 
   /**
    * @brief System Description Table Header
    * @see ACPI_Spec_6_5_Aug29.pdf#5.2.6
    */
-  struct DescriptionHeader {
+  struct [[gnu::packed]] DescriptionHeader {
     char signature[4];
     uint32_t length;
     uint8_t revision;
@@ -77,31 +77,31 @@ class Acpi {
     uint32_t oem_revision;
     uint32_t creator_id;
     uint32_t creator_revision;
-  } __attribute__((packed));
+  };
 
   /**
    * @brief Root System Description Table (RSDT)
    * @see ACPI_Spec_6_5_Aug29.pdf#5.2.7
    */
-  struct Rsdt {
+  struct [[gnu::packed]] Rsdt {
     DescriptionHeader header;
     uint32_t* entry;
-  } __attribute__((packed));
+  };
 
   /**
    * @brief Extended System Description Table (XSDT)
    * @see ACPI_Spec_6_5_Aug29.pdf#5.2.8
    */
-  struct Xsdt {
+  struct [[gnu::packed]] Xsdt {
     DescriptionHeader header;
     uint64_t* entry;
-  } __attribute__((packed));
+  };
 
   /**
    * @brief Fixed ACPI Description Table (FADT)
    * @see ACPI_Spec_6_5_Aug29.pdf#5.2.9
    */
-  struct Fadt {
+  struct [[gnu::packed]] Fadt {
     DescriptionHeader header;
     uint32_t firmware_ctrl;
     uint32_t dsdt;
@@ -158,16 +158,16 @@ class Acpi {
     GenericAddressStructure sleep_control_reg;
     GenericAddressStructure sleep_status_reg;
     uint64_t hypervisor_vendor_id;
-  } __attribute__((packed));
+  };
 
   /**
    * @brief Differentiated System Description Table (DSDT)
    * @see ACPI_Spec_6_5_Aug29.pdf#5.2.11.1
    */
-  struct Dsdt {
+  struct [[gnu::packed]] Dsdt {
     DescriptionHeader header;
     uint8_t* definition_block;
-  } __attribute__((packed));
+  };
 
   uint64_t rsdp_addr_ = 0;
 };
