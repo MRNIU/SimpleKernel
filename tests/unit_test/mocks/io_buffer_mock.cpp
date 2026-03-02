@@ -44,3 +44,11 @@ auto IoBuffer::GetBuffer() const -> std::span<const uint8_t> {
 auto IoBuffer::GetBuffer() -> std::span<uint8_t> { return {data_, size_}; }
 
 auto IoBuffer::IsValid() const -> bool { return data_ != nullptr; }
+
+auto IoBuffer::ToDmaRegion(VirtToPhysFunc v2p) const -> DmaRegion {
+  return DmaRegion{
+      .virt = data_,
+      .phys = v2p(reinterpret_cast<uintptr_t>(data_)),
+      .size = size_,
+  };
+}

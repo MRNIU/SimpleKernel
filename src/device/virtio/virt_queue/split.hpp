@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "expected.hpp"
+#include "io_buffer.hpp"
 #include "virtio/virt_queue/misc.hpp"
 #include "virtio/virt_queue/virtqueue_base.hpp"
 
@@ -230,19 +231,19 @@ class SplitVirtqueue final : public VirtqueueBase {
   /**
    * @brief 从预分配的 DMA 缓冲区构造 SplitVirtqueue
    *
-   * @param dma_buf  DMA 缓冲区虚拟地址（必须已清零，大小 >= CalcSize()）
-   * @param phys_base DMA 缓冲区的客户机物理基地址
+   * @param dma  DMA 区域描述符（包含虚拟地址、物理地址和大小，
+   *             必须已清零，大小 >= CalcSize()）
    * @param queue_size 队列大小（必须为 2 的幂）
    * @param event_idx 是否启用 VIRTIO_F_EVENT_IDX 特性
    * @param used_align Used Ring 的对齐要求（modern = 4，legacy MMIO = 4096）
    * @see virtio-v1.2#2.7
    */
-  SplitVirtqueue(void* dma_buf, uint64_t phys_base, uint16_t queue_size,
-                 bool event_idx, size_t used_align = Used::kAlign)
+  SplitVirtqueue(const DmaRegion& dma, uint16_t queue_size, bool event_idx,
+                 size_t used_align = Used::kAlign)
       : queue_size_(queue_size),
-        phys_base_(phys_base),
+        phys_base_(dma.phys),
         event_idx_enabled_(event_idx) {
-    if (dma_buf == nullptr || !IsPowerOfTwo(queue_size)) {
+    if (!dma.IsValid() || !IsPowerOfTwo(queue_size)) {
       return;
     }
 
@@ -260,7 +261,7 @@ class SplitVirtqueue final : public VirtqueueBase {
     }
     used_offset_ = AlignUp(avail_offset_ + avail_total, used_align);
 
-    auto* base = static_cast<uint8_t*>(dma_buf);
+    auto* base = dma.data();
     desc_ = reinterpret_cast<volatile Desc*>(base + desc_offset_);
     avail_ = reinterpret_cast<volatile Avail*>(base + avail_offset_);
     used_ = reinterpret_cast<volatile Used*>(base + used_offset_);

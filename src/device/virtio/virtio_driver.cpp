@@ -7,6 +7,7 @@
 #include <etl/io_port.h>
 
 #include "expected.hpp"
+#include "io_buffer.hpp"
 #include "kernel_log.hpp"
 #include "virtio/transport/mmio.hpp"
 
@@ -55,6 +56,17 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
         return std::unexpected(Error(ErrorCode::kOutOfMemory));
       }
 
+      // Allocate slot DMA buffer
+      auto [slot_size, slot_align] =
+          virtio::blk::VirtioBlk<>::GetRequiredSlotMemSize();
+      slot_buffers_[idx] = kstd::make_unique<IoBuffer>(slot_size);
+      if (!slot_buffers_[idx] || !slot_buffers_[idx]->IsValid()) {
+        klog::err << "VirtioDriver: failed to allocate slot DMA buffer at "
+                  << klog::hex << ctx->base;
+        dma_buffers_[idx].reset();
+        return std::unexpected(Error(ErrorCode::kOutOfMemory));
+      }
+
       uint64_t extra_features =
           static_cast<uint64_t>(virtio::blk::BlkFeatureBit::kSegMax) |
           static_cast<uint64_t>(virtio::blk::BlkFeatureBit::kSizeMax) |
@@ -62,13 +74,17 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
           static_cast<uint64_t>(virtio::blk::BlkFeatureBit::kFlush) |
           static_cast<uint64_t>(virtio::blk::BlkFeatureBit::kGeometry);
 
+      auto vq_dma = dma_buffers_[idx]->ToDmaRegion();
+      auto slot_dma = slot_buffers_[idx]->ToDmaRegion();
+
       auto result = virtio::blk::VirtioBlk<>::Create(
-          ctx->base, dma_buffers_[idx]->GetBuffer().data(), kDefaultQueueCount,
+          ctx->base, vq_dma, slot_dma, IdentityVirtToPhys, kDefaultQueueCount,
           kDefaultQueueSize, extra_features);
       if (!result.has_value()) {
         klog::err << "VirtioDriver: VirtioBlk Create failed at " << klog::hex
                   << ctx->base;
         dma_buffers_[idx].reset();
+        slot_buffers_[idx].reset();
         return std::unexpected(Error(result.error().code));
       }
 

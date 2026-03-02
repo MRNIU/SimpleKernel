@@ -31,7 +31,8 @@ ADD_EXECUTABLE (
     ${CMAKE_SOURCE_DIR}/src/task/task_manager.cpp
     ${CMAKE_SOURCE_DIR}/src/task/tick_update.cpp
     ${CMAKE_SOURCE_DIR}/src/task/wait.cpp
-    virtio_driver_test.cpp)
+    virtio_driver_test.cpp
+    dma_region_test.cpp)
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME}

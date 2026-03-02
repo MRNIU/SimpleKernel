@@ -31,10 +31,11 @@ class Pl011Driver {
         .match = etl::delegate<bool(
             DeviceNode&)>::create<&Pl011Driver::MatchStatic>(),
         .probe = etl::delegate<Expected<void>(DeviceNode&)>::create<
-            Pl011Driver, &Pl011Driver::Probe>(Pl011DriverSingleton::instance()),
+            Pl011Driver, &Pl011Driver::Probe>(
+            etl::singleton<Pl011Driver>::instance()),
         .remove = etl::delegate<Expected<void>(DeviceNode&)>::create<
             Pl011Driver, &Pl011Driver::Remove>(
-            Pl011DriverSingleton::instance()),
+            etl::singleton<Pl011Driver>::instance()),
     };
     return entry;
   }
