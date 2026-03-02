@@ -47,6 +47,8 @@ class SpinLock {
           cpu_io::EnableInterrupt();
         }
         sk_print_str("spinlock ");
+        sk_print_int(cpu_io::GetCurrentCoreId());
+        sk_print_str(": ");
         sk_print_str(name_);
         sk_print_str(" recursive lock detected.\n");
         return std::unexpected(Error{ErrorCode::kSpinLockRecursiveLock});

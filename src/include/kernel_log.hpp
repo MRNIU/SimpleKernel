@@ -70,8 +70,6 @@ inline constexpr const char* kLogColors[LogLevel::kMax] = {
     kRed,
 };
 
-// ── Header prefix emission ────────────────────────────────────────────────
-
 /**
  * @brief 仅供 DebugBlob 使用：直接向终端输出日志行前缀（ANSI 颜色码 +
  *        [core_id]），不经过 LogLine 缓冲区。
@@ -87,9 +85,7 @@ __always_inline void EmitHeader() {
   etl_putchar(']');
 }
 
-// ── LogLine: RAII stream-style log line ──────────────────────────────────
-
-/// @brief No-op tag for disabled log levels
+/// No-op tag for disabled log levels
 struct NoOpTag {};
 
 /**
@@ -99,19 +95,18 @@ struct NoOpTag {};
  * 析构时通过 sk_print_str 原子输出完整日志行并释放锁。
  *
  * @tparam Level 日志级别
- * @note Only one LogLine may be live at a time (protected by log_lock).
- * @note Buffer capacity is 512 bytes; content exceeding this limit is
- *       silently truncated by etl::string_stream.
+ * @note 同一时刻只能存活一个 LogLine（由 log_lock 保护）。
+ * @note 缓冲区容量为 512 字节，超出部分将被 etl::string_stream 静默截断。
  */
 template <LogLevel::enum_type Level>
 class LogLine {
  public:
-  /// @brief Construct a no-op LogLine (for disabled log levels)
+  /// 构造空操作 LogLine（用于被禁用的日志级别）
   explicit LogLine(NoOpTag) : released_(true) {}
 
   /**
-   * @brief Construct an active LogLine, acquire lock and emit prefix
-   * @param loc source location (captured at call site for kDebug)
+   * @brief 构造活跃 LogLine，获取锁并输出前缀
+   * @param loc 调用处的源码位置（仅 kDebug 级别捕获）
    */
   explicit LogLine(
       const std::source_location& loc = std::source_location::current()) {
@@ -142,7 +137,7 @@ class LogLine {
     }
   }
 
-  /// @brief Stream any value supported by etl::string_stream
+  /// 向流写入 etl::string_stream 支持的任意类型
   template <typename T>
   auto operator<<(T&& val) -> LogLine& {
     if (!released_) {
@@ -151,7 +146,7 @@ class LogLine {
     return *this;
   }
 
-  /// @brief Stream bool as "true"/"false"
+  /// 将 bool 以 "true"/"false" 形式写入流
   auto operator<<(bool val) -> LogLine& {
     if (!released_) {
       stream_ << (val ? "true" : "false");
@@ -159,7 +154,7 @@ class LogLine {
     return *this;
   }
 
-  /// @brief Stream a single char directly (bypasses ETL integral formatting)
+  /// 直接写入单个字符（绕过 ETL 整数格式化）
   auto operator<<(char c) -> LogLine& {
     if (!released_) {
       s_buf_.push_back(c);
@@ -167,7 +162,7 @@ class LogLine {
     return *this;
   }
 
-  /// @brief Stream pointer as "0x<hex>"
+  /// 将指针以 "0x<hex>" 形式写入流
   auto operator<<(const void* val) -> LogLine& {
     if (!released_) {
       stream_ << "0x";
@@ -183,7 +178,7 @@ class LogLine {
   }
 
  private:
-  /// @brief Acquire log_lock; spin-halt on failure (e.g. recursive lock).
+  /// 获取 log_lock；失败时自旋停机（如递归加锁）。
   static void AcquireLock() {
     log_lock.Lock().or_else([](auto&& err) -> Expected<void> {
       sk_print_str("LogLine: Failed to acquire lock: ");
@@ -196,7 +191,7 @@ class LogLine {
     });
   }
 
-  /// @brief Release log_lock; spin-halt on failure (e.g. not owned).
+  /// 释放 log_lock；失败时自旋停机（如未持有锁）。
   static void ReleaseLock() {
     log_lock.UnLock().or_else([](auto&& err) -> Expected<void> {
       sk_print_str("LogLine: Failed to release lock: ");
@@ -214,41 +209,33 @@ class LogLine {
   bool released_ = false;
 };
 
-// ── Per-CPU emergency log buffer (lock-free) ─────────────────────────────
-
-/// @brief Per-CPU emergency log buffers for lock-free logging.
-///        Index is provided by cpu_io::GetCurrentCoreId().
-///        Array length reuses SIMPLEKERNEL_MAX_CORE_COUNT (CMake macro, value
-///        4).
+/// per-cpu 紧急日志缓冲区，用于无锁日志输出
 inline etl::string<512> raw_log_buf_[SIMPLEKERNEL_MAX_CORE_COUNT]{};
 
 /**
  * @brief Lock-free RAII stream-style log line (per-CPU buffer)
  *
- * Mirrors LogLine<Level> but replaces log_lock with per-CPU buffer indexing.
- * Construction gets CPU ID, clears that core's buffer, writes ANSI color
- * prefix. Destruction calls sk_print_str() on the per-CPU buffer — no lock
- * acquired.
+ * 与 LogLine<Level> 类似，但以每 CPU 缓冲区索引替代 log_lock。
+ * 构造时获取 CPU ID、清空对应核心的缓冲区并写入 ANSI 颜色前缀。
+ * 析构时对每 CPU 缓冲区调用 sk_print_str()，无需持有锁。
  *
- * @tparam Level log level
+ * @tparam Level 日志级别
  *
- * @note Safe to use from interrupt/exception context even if log_lock is held.
- * @note Nested LogLineRaw on the same CPU (re-entrant interrupt) will overwrite
- *       the same buffer — the first line's content is lost. In practice,
- *       interrupts are disabled during panic/exception, so this is rare.
- * @note Buffer capacity is 512 bytes; content exceeding this is silently
- *       truncated by etl::string_stream.
+ * @note 即使 log_lock 被持有，也可在中断/异常上下文中安全使用。
+ * @note 同一 CPU 上的嵌套 LogLineRaw（可重入中断）将覆盖同一缓冲区，
+ *       先前行的内容将丢失。实际上，panic/异常期间中断已关闭，此情况极少发生。
+ * @note 缓冲区容量为 512 字节，超出部分将被 etl::string_stream 静默截断。
  */
 template <LogLevel::enum_type Level>
 class LogLineRaw {
  public:
-  /// @brief Construct a no-op LogLineRaw (for disabled log levels)
+  /// 构造空操作 LogLineRaw（用于被禁用的日志级别）
   explicit LogLineRaw(NoOpTag)
       : cpu_id_(0), stream_(raw_log_buf_[0]), released_(true) {}
 
   /**
-   * @brief Construct an active LogLineRaw; writes prefix to per-CPU buffer.
-   * @param loc source location (captured at call site for kDebug)
+   * @brief 构造活跃 LogLineRaw，将前缀写入每 CPU 缓冲区。
+   * @param loc 调用处的源码位置（仅 kDebug 级别捕获）
    */
   explicit LogLineRaw(
       const std::source_location& loc = std::source_location::current())
@@ -263,8 +250,7 @@ class LogLineRaw {
     }
   }
 
-  /// @brief Move constructor: transfer cpu_id_, rebuild stream_ ref to same
-  /// buffer.
+  /// 移动构造函数：转移 cpu_id_，重新绑定 stream_ 到同一缓冲区。
   LogLineRaw(LogLineRaw&& other) noexcept
       : cpu_id_(other.cpu_id_),
         stream_(raw_log_buf_[cpu_id_]),
@@ -283,7 +269,7 @@ class LogLineRaw {
     }
   }
 
-  /// @brief Stream any value supported by etl::string_stream
+  /// 向流写入 etl::string_stream 支持的任意类型
   template <typename T>
   auto operator<<(T&& val) -> LogLineRaw& {
     if (!released_) {
@@ -292,7 +278,7 @@ class LogLineRaw {
     return *this;
   }
 
-  /// @brief Stream bool as "true"/"false"
+  /// 将 bool 以 "true"/"false" 形式写入流
   auto operator<<(bool val) -> LogLineRaw& {
     if (!released_) {
       stream_ << (val ? "true" : "false");
@@ -300,7 +286,7 @@ class LogLineRaw {
     return *this;
   }
 
-  /// @brief Stream a single char directly
+  /// 直接写入单个字符
   auto operator<<(char c) -> LogLineRaw& {
     if (!released_) {
       raw_log_buf_[cpu_id_].push_back(c);
@@ -308,7 +294,7 @@ class LogLineRaw {
     return *this;
   }
 
-  /// @brief Stream pointer as "0x<hex>"
+  /// 将指针以 "0x<hex>" 形式写入流
   auto operator<<(const void* val) -> LogLineRaw& {
     if (!released_) {
       stream_ << "0x";
@@ -324,23 +310,25 @@ class LogLineRaw {
   }
 
  private:
-  uint64_t cpu_id_;            // MUST be declared before stream_ (init order)
-  etl::string_stream stream_;  // references raw_log_buf_[cpu_id_]
+  // 必须在 stream_ 之前声明（初始化顺序）
+  uint64_t cpu_id_;
+  // 引用 raw_log_buf_[cpu_id_]
+  etl::string_stream stream_;
   bool released_ = false;
 };
 
 /**
- * @brief Lock-free lazy stream proxy (LogStreamRaw)
+ * @brief 无锁惰性流式日志代理（LogStreamRaw）
  *
- * Global instances (klog::raw_info, etc.). First operator<< creates a
- * LogLineRaw temporary; subsequent << chains on the same temporary;
- * statement end destroys LogLineRaw which flushes the per-CPU buffer.
+ * 全局实例（如 klog::raw_info 等）。第一次 operator<< 创建 LogLineRaw
+ * 临时对象， 后续 << 链式调用在同一临时对象上进行， 语句结束时 LogLineRaw
+ * 析构并刷新每 CPU 缓冲区。
  *
- * @tparam Level log level
+ * @tparam Level 日志级别
  */
 template <LogLevel::enum_type Level>
 struct LogStreamRaw {
-  /// @brief Create LogLineRaw and output first value
+  /// 创建 LogLineRaw 并输出第一个值
   template <typename T>
   auto operator<<(T&& val) -> LogLineRaw<Level> {
     if constexpr (Level < kMinLogLevel) {
@@ -363,12 +351,14 @@ struct LogStreamRaw {
  */
 template <LogLevel::enum_type Level>
 struct LogStream {
-  /// @brief 通过 << 创建 LogLine 并输出第一个值
-  /// @param val  第一个要输出的值
-  /// @note source_location 仅在 klog::debug() 函数调用时捕获；
-  ///       info/warn/err 的流式 << 接口不支持捕获调用方位置，
-  ///       因为 C++ 不允许在成员函数模板的 operator<< 上使用
-  ///       std::source_location 默认参数。
+  /**
+   * @brief 通过 << 创建 LogLine 并输出第一个值
+   * @param val  第一个要输出的值
+   * @note source_location 仅在 klog::debug() 函数调用时捕获；
+   *       info/warn/err 的流式 << 接口不支持捕获调用方位置，
+   *       因为 C++ 不允许在成员函数模板的 operator<< 上使用
+   *       std::source_location 默认参数。
+   */
   template <typename T>
   auto operator<<(T&& val) -> LogLine<Level> {
     if constexpr (Level < kMinLogLevel) {
@@ -406,28 +396,11 @@ __always_inline void DebugBlob([[maybe_unused]] const void* data,
   }
 }
 
-/// @brief Hex format spec for stream-style integer formatting (lowercase 0x
-/// prefix)
-inline const etl::format_spec hex = etl::format_spec{}.hex().show_base(true);
-
-/// @brief Hex format spec for stream-style integer formatting (uppercase 0X
-/// prefix)
-inline const etl::format_spec HEX =
-    etl::format_spec{}.hex().upper_case(true).show_base(true);
-
-/// @brief 流式日志实例（使用 inline 避免跨 TU 重复定义）
-/// @{
-[[maybe_unused]] inline detail::LogStream<detail::LogLevel::kInfo> info;
-[[maybe_unused]] inline detail::LogStream<detail::LogLevel::kWarn> warn;
-[[maybe_unused]] inline detail::LogStream<detail::LogLevel::kErr> err;
-/// @}
-
 /**
- * @brief Create a Debug-level LogLine with source location captured at call
- * site
+ * @brief 创建 Debug 级别的 LogLine，并在调用处捕获源码位置
  *
- * Usage: `klog::debug() << "msg " << val;`
- * @param loc automatically captured source location
+ * 用法：`klog::debug() << "msg " << val;`
+ * @param loc 自动捕获的源码位置
  * @note [[nodiscard]] 修饰确保返回的 LogLine 不被意外丢弃——若丢弃，析构函数
  *       将立即执行，日志内容在未写入任何消息的情况下输出（仅含前缀），
  *       且持有的 log_lock 会被立即释放。
@@ -441,19 +414,12 @@ inline const etl::format_spec HEX =
   return detail::LogLine<detail::LogLevel::kDebug>{loc};
 }
 
-/// @brief Lock-free stream log instances — safe in interrupt/exception context
-/// @{
-[[maybe_unused]] inline detail::LogStreamRaw<detail::LogLevel::kInfo> raw_info;
-[[maybe_unused]] inline detail::LogStreamRaw<detail::LogLevel::kWarn> raw_warn;
-[[maybe_unused]] inline detail::LogStreamRaw<detail::LogLevel::kErr> raw_err;
-/// @}
-
 /**
- * @brief Create a lock-free Debug-level LogLineRaw with source location.
+ * @brief 创建无锁 Debug 级别的 LogLineRaw，并捕获源码位置。
  *
- * Usage: `klog::raw_debug() << "msg " << val;`
- * @param loc automatically captured source location
- * @note Safe in interrupt/exception context (no lock acquired).
+ * 用法：`klog::raw_debug() << "msg " << val;`
+ * @param loc 自动捕获的源码位置
+ * @note 可在中断/异常上下文中安全使用（不获取锁）。
  */
 [[nodiscard]] inline auto raw_debug(
     std::source_location loc = std::source_location::current())
@@ -463,6 +429,27 @@ inline const etl::format_spec HEX =
   }
   return detail::LogLineRaw<detail::LogLevel::kDebug>{loc};
 }
+
+/// 流式整数格式化用的十六进制格式规格（小写 0x 前缀）
+inline const etl::format_spec hex = etl::format_spec{}.hex().show_base(true);
+
+/// 流式整数格式化用的十六进制格式规格（大写 0X 前缀）
+inline const etl::format_spec HEX =
+    etl::format_spec{}.hex().upper_case(true).show_base(true);
+
+/// 流式日志实例（使用 inline 避免跨 TU 重复定义）
+/// @{
+[[maybe_unused]] inline detail::LogStream<detail::LogLevel::kInfo> info;
+[[maybe_unused]] inline detail::LogStream<detail::LogLevel::kWarn> warn;
+[[maybe_unused]] inline detail::LogStream<detail::LogLevel::kErr> err;
+/// @}
+
+/// 无锁流式日志实例 — 可在中断/异常上下文中安全使用
+/// @{
+[[maybe_unused]] inline detail::LogStreamRaw<detail::LogLevel::kInfo> raw_info;
+[[maybe_unused]] inline detail::LogStreamRaw<detail::LogLevel::kWarn> raw_warn;
+[[maybe_unused]] inline detail::LogStreamRaw<detail::LogLevel::kErr> raw_err;
+/// @}
 
 /// @todo 可插拔输出 sink：使用 etl::delegate 将输出重定向到串口/内存缓冲区等
 /// 需要引入缓冲机制后实现

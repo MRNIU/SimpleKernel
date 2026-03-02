@@ -51,16 +51,16 @@ auto EbreakHandler(uint64_t exception_code, cpu_io::TrapContext* context)
   return 0;
 }
 
-// 缺页中断处理
 auto PageFaultHandler(uint64_t exception_code, cpu_io::TrapContext* context)
     -> uint64_t {
   auto addr = cpu_io::Stval::Read();
-  klog::err << "PageFault: "
-            << cpu_io::ScauseInfo::kExceptionNames[exception_code] << "("
-            << klog::hex << exception_code << "), addr: " << klog::hex << addr;
-  klog::err << "sepc: " << klog::hex << context->sepc;
+  klog::raw_err << "PageFault: "
+                << cpu_io::ScauseInfo::kExceptionNames[exception_code] << "("
+                << klog::hex << exception_code << "), addr: " << klog::hex
+                << addr;
+  klog::raw_err << "sepc: " << klog::hex << context->sepc;
   DumpStack();
-  while (1) {
+  while (true) {
     cpu_io::Pause();
   }
   return 0;
