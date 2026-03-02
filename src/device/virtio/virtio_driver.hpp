@@ -92,6 +92,7 @@ class VirtioDriver {
     for (size_t i = 0; i < blk_device_count_; ++i) {
       blk_devices_[i].reset();
       dma_buffers_[i].reset();
+      slot_buffers_[i].reset();
     }
     blk_device_count_ = 0;
     blk_adapter_count_ = 0;
@@ -128,6 +129,7 @@ class VirtioDriver {
   std::array<std::optional<virtio::blk::VirtioBlk<>>, kMaxBlkDevices>
       blk_devices_;
   std::array<etl::unique_ptr<IoBuffer>, kMaxBlkDevices> dma_buffers_;
+  std::array<etl::unique_ptr<IoBuffer>, kMaxBlkDevices> slot_buffers_;
   std::array<uint32_t, kMaxBlkDevices> irqs_{};
   size_t blk_device_count_{0};
 

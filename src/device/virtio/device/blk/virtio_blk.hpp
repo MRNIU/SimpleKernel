@@ -8,11 +8,13 @@
 #include <cpu_io.h>
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
 
 #include "expected.hpp"
+#include "io_buffer.hpp"
 #include "kernel_log.hpp"
 #include "virtio/defs.h"
 #include "virtio/device/blk/virtio_blk_defs.h"
@@ -89,6 +91,16 @@ class VirtioBlk {
   }
 
   /**
+   * @brief 计算 RequestSlot DMA 内存所需字节数
+   *
+   * @return pair.first = 总字节数，pair.second = 对齐要求（字节）
+   */
+  [[nodiscard]] static constexpr auto GetRequiredSlotMemSize()
+      -> std::pair<size_t, size_t> {
+    return {sizeof(RequestSlot) * kMaxInflight, alignof(RequestSlot)};
+  }
+
+  /**
    * @brief 创建并初始化块设备
    *
    * 内部自动完成：
@@ -97,19 +109,22 @@ class VirtioBlk {
    * 3. VirtIO 设备初始化序列（重置、特性协商、队列配置、设备激活）
    *
    * @param mmio_base MMIO 设备基地址
-   * @param vq_dma_buf 预分配的 DMA 缓冲区虚拟地址
+   * @param vq_dma 预分配的 Virtqueue DMA 内存区域
    *        （页对齐，已清零，大小 >= GetRequiredVqMemSize()）
+   * @param slot_dma 预分配的 RequestSlot DMA 内存区域
+   *        （大小 >= GetRequiredSlotMemSize()）
+   * @param virt_to_phys 虚拟地址到物理地址转换函数（默认恒等映射）
    * @param queue_count 期望的队列数量（当前仅支持 1）
    * @param queue_size 每个队列的描述符数量（2 的幂，默认 128）
    * @param driver_features 额外的驱动特性位（VERSION_1 自动包含）
    * @return 成功返回 VirtioBlk 实例，失败返回错误
    * @see virtio-v1.2#3.1.1 Driver Requirements: Device Initialization
    */
-  [[nodiscard]] static auto Create(uint64_t mmio_base, void* vq_dma_buf,
-                                   uint16_t queue_count = 1,
-                                   uint32_t queue_size = 128,
-                                   uint64_t driver_features = 0)
-      -> Expected<VirtioBlk> {
+  [[nodiscard]] static auto Create(
+      uint64_t mmio_base, const DmaRegion& vq_dma, const DmaRegion& slot_dma,
+      VirtToPhysFunc virt_to_phys = IdentityVirtToPhys,
+      uint16_t queue_count = 1, uint32_t queue_size = 128,
+      uint64_t driver_features = 0) -> Expected<VirtioBlk> {
     if (queue_count == 0) {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
@@ -148,9 +163,7 @@ class VirtioBlk {
                        "suppression enabled";
     }
     // 3. 创建 Virtqueue
-    uint64_t dma_phys = reinterpret_cast<uintptr_t>(vq_dma_buf);
-    VirtqueueT vq(vq_dma_buf, dma_phys, static_cast<uint16_t>(queue_size),
-                  event_idx);
+    VirtqueueT vq(vq_dma, static_cast<uint16_t>(queue_size), event_idx);
     if (!vq.IsValid()) {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
@@ -169,7 +182,8 @@ class VirtioBlk {
       return std::unexpected(activate_result.error());
     }
 
-    return VirtioBlk(std::move(transport), std::move(vq), negotiated);
+    return VirtioBlk(std::move(transport), std::move(vq), negotiated, slot_dma,
+                     virt_to_phys);
   }
 
   // ======== 异步 IO 接口 (Enqueue/Kick/HandleInterrupt) ========
@@ -315,7 +329,8 @@ class VirtioBlk {
     if (data == nullptr) {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
-    IoVec data_iov{reinterpret_cast<uintptr_t>(data), kSectorSize};
+    IoVec data_iov{virt_to_phys_(reinterpret_cast<uintptr_t>(data)),
+                   kSectorSize};
     return SubmitSyncRequest(ReqType::kIn, sector, &data_iov, 1);
   }
 
@@ -335,8 +350,9 @@ class VirtioBlk {
     if (data == nullptr) {
       return std::unexpected(Error{ErrorCode::kInvalidArgument});
     }
-    IoVec data_iov{reinterpret_cast<uintptr_t>(const_cast<uint8_t*>(data)),
-                   kSectorSize};
+    IoVec data_iov{
+        virt_to_phys_(reinterpret_cast<uintptr_t>(const_cast<uint8_t*>(data))),
+        kSectorSize};
     return SubmitSyncRequest(ReqType::kOut, sector, &data_iov, 1);
   }
 
@@ -468,11 +484,14 @@ class VirtioBlk {
       : transport_(std::move(other.transport_)),
         vq_(std::move(other.vq_)),
         negotiated_features_(other.negotiated_features_),
+        slot_dma_(other.slot_dma_),
+        slots_(other.slots_),
+        virt_to_phys_(other.virt_to_phys_),
         stats_(other.stats_),
         slot_bitmap_(other.slot_bitmap_),
         old_avail_idx_(other.old_avail_idx_),
         request_completed_(other.request_completed_) {
-    CopySlots(other);
+    other.slots_ = nullptr;
     other.slot_bitmap_ = 0;
   }
   auto operator=(VirtioBlk&& other) noexcept -> VirtioBlk& {
@@ -480,11 +499,14 @@ class VirtioBlk {
       transport_ = std::move(other.transport_);
       vq_ = std::move(other.vq_);
       negotiated_features_ = other.negotiated_features_;
+      slot_dma_ = other.slot_dma_;
+      slots_ = other.slots_;
+      virt_to_phys_ = other.virt_to_phys_;
       stats_ = other.stats_;
       slot_bitmap_ = other.slot_bitmap_;
       old_avail_idx_ = other.old_avail_idx_;
       request_completed_ = other.request_completed_;
-      CopySlots(other);
+      other.slots_ = nullptr;
       other.slot_bitmap_ = 0;
     }
     return *this;
@@ -518,10 +540,14 @@ class VirtioBlk {
    *
    * 只能通过 Create() 静态工厂方法创建实例。
    */
-  VirtioBlk(TransportT transport, VirtqueueT vq, uint64_t features)
+  VirtioBlk(TransportT transport, VirtqueueT vq, uint64_t features,
+            const DmaRegion& slot_dma, VirtToPhysFunc v2p)
       : transport_(std::move(transport)),
         vq_(std::move(vq)),
         negotiated_features_(features),
+        slot_dma_(slot_dma),
+        slots_(reinterpret_cast<RequestSlot*>(slot_dma.data())),
+        virt_to_phys_(v2p),
         stats_{},
         slot_bitmap_(0),
         old_avail_idx_(0),
@@ -572,8 +598,10 @@ class VirtioBlk {
     size_t readable_count = 0;
     size_t writable_count = 0;
 
+    auto slot_base_phys =
+        slot_dma_.phys + static_cast<size_t>(slot_idx) * sizeof(RequestSlot);
     readable_iovs[readable_count++] = {
-        reinterpret_cast<uintptr_t>(&slot.header), sizeof(BlkReqHeader)};
+        slot_base_phys + offsetof(RequestSlot, header), sizeof(BlkReqHeader)};
 
     if (type == ReqType::kIn) {
       for (size_t i = 0; i < buffer_count; ++i) {
@@ -587,8 +615,7 @@ class VirtioBlk {
 
     // 状态字节始终为 device-writable
     writable_iovs[writable_count++] = {
-        reinterpret_cast<uintptr_t>(const_cast<uint8_t*>(&slot.status)),
-        sizeof(uint8_t)};
+        slot_base_phys + offsetof(RequestSlot, status), sizeof(uint8_t)};
 
     cpu_io::Wmb();
 
@@ -803,31 +830,20 @@ class VirtioBlk {
     }
     return {};
   }
-
-  /**
-   * @brief 逐字段复制请求槽（处理 volatile status 字段）
-   *
-   * @param other 源 VirtioBlk 实例
-   */
-  auto CopySlots(const VirtioBlk& other) -> void {
-    for (uint16_t i = 0; i < kMaxInflight; ++i) {
-      slots_[i].header = other.slots_[i].header;
-      slots_[i].status = other.slots_[i].status;
-      slots_[i].token = other.slots_[i].token;
-      slots_[i].desc_head = other.slots_[i].desc_head;
-    }
-  }
-
   /// 传输层实例
   TransportT transport_;
   /// Virtqueue 实例（当前支持单队列）
   VirtqueueT vq_;
   /// 协商后的特性位掩码
   uint64_t negotiated_features_;
+  /// DMA region backing the request slot pool
+  DmaRegion slot_dma_;
+  /// Pointer to request slot array (lives in slot_dma_ memory)
+  RequestSlot* slots_{nullptr};
+  /// Address translation callback
+  VirtToPhysFunc virt_to_phys_{IdentityVirtToPhys};
   /// 性能统计数据
   VirtioStats stats_;
-  /// 请求槽池（用于跟踪 in-flight 异步请求）
-  std::array<RequestSlot, kMaxInflight> slots_{};
   /// 请求槽占用位图（bit i = 1 表示 slots_[i] 被占用）
   uint64_t slot_bitmap_{};
   /// 上次 Kick 时的 avail idx（用于 Event Index 通知抑制）
