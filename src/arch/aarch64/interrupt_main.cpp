@@ -29,7 +29,7 @@ static void HandleException(const char* exception_msg,
             << ", ELR_EL1: " << klog::HEX << context->elr_el1
             << ", SP_EL0: " << klog::HEX << context->sp_el0
             << ", SP_EL1: " << klog::HEX << context->sp_el1
-            << ", SPSR_EL1: " << klog::HEX << context->spsr_el1 << "\\n";
+            << ", SPSR_EL1: " << klog::HEX << context->spsr_el1;
 
   if (print_regs == 4) {
     klog::err << "  x0-x3: " << klog::HEX << context->x0 << " " << klog::HEX
@@ -40,7 +40,7 @@ static void HandleException(const char* exception_msg,
               << context->x1 << " " << klog::HEX << context->x2 << " "
               << klog::HEX << context->x3 << " " << klog::HEX << context->x4
               << " " << klog::HEX << context->x5 << " " << klog::HEX
-              << context->x6 << " " << klog::HEX << context->x7 << "\\n";
+              << context->x6 << " " << klog::HEX << context->x7;
   }
 
   while (true) {

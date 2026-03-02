@@ -43,7 +43,7 @@ Plic::Plic(uint64_t dev_addr, size_t ndev, size_t context_count)
   }
 
   klog::info
-      << "PLIC initialization: all interrupts disabled, priorities set to 0\\n";
+      << "PLIC initialization: all interrupts disabled, priorities set to 0";
 
   for (auto& h : interrupt_handlers_) {
     h = InterruptDelegate::create<DefaultPlicHandler>();

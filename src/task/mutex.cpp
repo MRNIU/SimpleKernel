@@ -58,7 +58,7 @@ auto Mutex::UnLock() -> bool {
   // 检查是否由持有锁的任务释放
   if (!IsLockedByCurrentTask()) {
     klog::warn << "Mutex::UnLock: Task " << current_pid
-               << " tried to unlock mutex '" << name_ << "' it doesn't own\\n";
+               << " tried to unlock mutex '" << name_ << "' it doesn't own";
     return false;
   }
 
@@ -79,7 +79,7 @@ auto Mutex::TryLock() -> bool {
   auto current_task = TaskManagerSingleton::instance().GetCurrentTask();
   if (current_task == nullptr) {
     klog::err << "Mutex::TryLock: Cannot trylock mutex '" << name_
-              << "' outside task context\\n";
+              << "' outside task context";
     return false;
   }
 
@@ -88,7 +88,7 @@ auto Mutex::TryLock() -> bool {
   // 检查是否递归获取锁
   if (IsLockedByCurrentTask()) {
     klog::debug() << "Mutex::TryLock: Task " << current_pid
-                  << " tried to recursively trylock mutex '" << name_ << "'\\n";
+                  << " tried to recursively trylock mutex '" << name_;
     return false;
   }
 

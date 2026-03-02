@@ -145,7 +145,7 @@ class VirtioBlk {
         (negotiated & static_cast<uint64_t>(ReservedFeature::kEventIdx)) != 0;
     if (event_idx) {
       klog::debug() << "VIRTIO_F_EVENT_IDX negotiated, notification "
-                       "suppression enabled\\n";
+                       "suppression enabled";
     }
     // 3. 创建 Virtqueue
     uint64_t dma_phys = reinterpret_cast<uintptr_t>(vq_dma_buf);

@@ -27,8 +27,6 @@
  * 匹配所有 virtio,mmio 和 virtio,pci 兼容设备。
  * Probe() 运行期读取 device_id 寄存器，自动分发到对应设备实现
  * 并注册到 DeviceManager。调用方无需关心具体 VirtIO 设备类型。
- *
- * @see docs/plans/2026-03-01-device-refactor-design.md
  */
 class VirtioDriver {
  public:
@@ -42,7 +40,6 @@ class VirtioDriver {
     kInput = 18,
   };
 
-  static constexpr uint32_t kMmioRegionSize = 0x1000;
   static constexpr uint32_t kDefaultQueueCount = 1;
   static constexpr uint32_t kDefaultQueueSize = 128;
   static constexpr size_t kMinDmaBufferSize = 32768;

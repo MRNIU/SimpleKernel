@@ -10,25 +10,26 @@
 #include "kernel_log.hpp"
 #include "virtio/transport/mmio.hpp"
 
-auto VirtioDriver::MatchStatic(DeviceNode& node) -> bool {
-  if (node.mmio_base == 0) return false;
+auto VirtioDriver::MatchStatic([[maybe_unused]] DeviceNode& node) -> bool {
+  return node.mmio_base != 0 && node.mmio_size != 0;
+}
 
-  auto ctx = mmio_helper::Prepare(node, kMmioRegionSize);
-  if (!ctx) return false;
+auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
+  if (node.mmio_size == 0) {
+    klog::err << "VirtioDriver: FDT reg property missing size for node '"
+              << node.name << "'\n";
+    return std::unexpected(Error(ErrorCode::kInvalidArgument));
+  }
+  auto ctx = mmio_helper::Prepare(node, node.mmio_size);
+  if (!ctx) {
+    return std::unexpected(ctx.error());
+  }
 
   etl::io_port_ro<uint32_t> magic_reg{reinterpret_cast<void*>(ctx->base)};
   if (magic_reg.read() != virtio::kMmioMagicValue) {
     klog::debug() << "VirtioDriver: " << klog::hex << ctx->base
                   << " not a VirtIO device";
-    return false;
-  }
-  return true;
-}
-
-auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
-  auto ctx = mmio_helper::Prepare(node, kMmioRegionSize);
-  if (!ctx) {
-    return std::unexpected(ctx.error());
+    return std::unexpected(Error(ErrorCode::kNotSupported));
   }
 
   // 读取 device_id
@@ -75,12 +76,12 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
         ++blk_adapter_count_;
       } else {
         klog::warn << "VirtioDriver: blk adapter pool full, device at "
-                   << klog::hex << ctx->base << " skipped\\n";
+                   << klog::hex << ctx->base << " skipped";
       }
 
       klog::info << "VirtioDriver: block device at " << klog::hex << ctx->base
                  << ", capacity=" << blk_device_.value().GetCapacity()
-                 << " sectors, irq=" << irq_ << "\\n";
+                 << " sectors, irq=" << irq_;
       return {};
     }
 

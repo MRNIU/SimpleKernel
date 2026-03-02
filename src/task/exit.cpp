@@ -30,7 +30,7 @@ void TaskManager::Exit(int exit_code) {
       klog::warn << "Exit: Thread group leader (pid=" << current->pid
                  << ", tgid=" << current->tgid
                  << ") exiting, but group still has "
-                 << current->GetThreadGroupSize() << " threads\\n";
+                 << current->GetThreadGroupSize() << " threads";
       /// @todo 实现信号机制后，发送 SIGKILL 给线程组中的所有线程
     }
 

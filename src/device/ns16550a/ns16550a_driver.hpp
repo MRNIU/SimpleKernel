@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief NS16550A UART driver
  */
 
 #ifndef SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_DRIVER_HPP_
@@ -16,15 +15,13 @@ class Ns16550aDriver {
  public:
   using Ns16550aType = ns16550a::Ns16550a;
 
-  // --- Registration API ---
-
-  /// Return the singleton driver instance.
+  /// 返回驱动单例实例。
   static auto Instance() -> Ns16550aDriver& {
     static Ns16550aDriver inst;
     return inst;
   }
 
-  /// Return the DriverEntry for registration.
+  /// 返回用于注册的 DriverEntry。
   static auto GetEntry() -> const DriverEntry& {
     static const DriverEntry entry{
         .name = "ns16550a",
@@ -39,27 +36,23 @@ class Ns16550aDriver {
     return entry;
   }
 
-  // --- Driver lifecycle ---
-
   /**
-   * @brief Hardware detection: does the MMIO region respond as NS16550A?
+   * @brief 硬件检测：MMIO 区域是否响应为 NS16550A？
    *
-   * For NS16550A this is a compatible-string-only match — no MMIO reads
-   * needed (the device has no readable signature register).
+   * NS16550A 仅使用 compatible 字符串匹配，无需读取 MMIO
+   *（设备没有可读的签名寄存器）。
    *
-   * @return true if node.compatible contains "ns16550a" or "ns16550"
+   * @return true 如果 node.compatible 包含 "ns16550a" 或 "ns16550"
    */
   static auto MatchStatic([[maybe_unused]] DeviceNode& node) -> bool {
-    // Compatible match was already done by FindDriver(); return true to
-    // confirm.
     return true;
   }
 
   /**
-   * @brief Initialize the NS16550A UART.
+   * @brief 初始化 NS16550A UART。
    *
    * @pre  node.mmio_base != 0
-   * @post uart_ is valid; node.type == DeviceType::kChar
+   * @post uart_ 有效；node.type == DeviceType::kChar
    */
   auto Probe(DeviceNode& node) -> Expected<void> {
     auto ctx = mmio_helper::Prepare(node, 0x100);

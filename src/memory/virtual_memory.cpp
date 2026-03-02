@@ -95,7 +95,7 @@ auto VirtualMemory::MapPage(void* page_dir, void* virtual_addr,
       klog::debug() << "MapPage: duplicate va = " << klog::hex
                     << reinterpret_cast<uintptr_t>(virtual_addr)
                     << ", pa = " << klog::HEX << existing_pa
-                    << ", flags = " << klog::HEX << flags << ", skip\\n";
+                    << ", flags = " << klog::HEX << flags << ", skip";
       // 重复映射，但不是错误
       return {};
     }

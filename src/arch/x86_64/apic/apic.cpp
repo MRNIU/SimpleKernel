@@ -21,7 +21,7 @@ auto Apic::InitCurrentCpuLocalApic() -> Expected<void> {
       .and_then([]() -> Expected<void> {
         klog::info
             << "Local APIC initialized successfully for CPU with APIC ID "
-            << klog::hex << cpu_io::GetCurrentCoreId() << "\\n";
+            << klog::hex << cpu_io::GetCurrentCoreId();
         return {};
       })
       .or_else([](Error err) -> Expected<void> {

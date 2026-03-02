@@ -93,8 +93,7 @@ class DeviceInitializer {
                   << ", driver=" << klog::hex
                   << static_cast<unsigned long long>(driver_features)
                   << ", negotiated=" << klog::hex
-                  << static_cast<unsigned long long>(negotiated_features)
-                  << "\\n";
+                  << static_cast<unsigned long long>(negotiated_features);
 
     transport_.SetDriverFeatures(negotiated_features);
 
@@ -162,7 +161,7 @@ class DeviceInitializer {
                   << ", avail=" << klog::hex
                   << static_cast<unsigned long long>(avail_phys)
                   << ", used=" << klog::hex
-                  << static_cast<unsigned long long>(used_phys) << "\\n";
+                  << static_cast<unsigned long long>(used_phys);
 
     return {};
   }

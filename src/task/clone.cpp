@@ -25,7 +25,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
       (!(flags & clone_flag::kVm) || !(flags & clone_flag::kFiles) ||
        !(flags & clone_flag::kSighand))) {
     klog::warn << "Clone: kCloneThread requires kCloneVm, kCloneFiles, "
-                  "kCloneSighand\\n";
+                  "kCloneSighand";
     // 自动补全必需的标志
     flags |= (clone_flag::kVm | clone_flag::kFiles | clone_flag::kSighand);
   }
@@ -201,7 +201,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   klog::debug() << "Clone: created " << clone_type
                 << " - parent=" << parent->pid << ", child=" << new_pid
                 << ", tgid=" << child->tgid << ", vm=" << vm_type
-                << ", flags=" << klog::hex << flags << "\\n";
+                << ", flags=" << klog::hex << flags;
 
   return new_pid;
 }

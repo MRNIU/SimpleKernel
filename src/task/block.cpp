@@ -25,7 +25,7 @@ void TaskManager::Block(ResourceId resource_id) {
     if (list.full()) {
       klog::err
           << "Block: blocked_tasks list full for resource, cannot block task "
-          << current->pid << "\\n";
+          << current->pid;
       // Rollback: task stays kRunning, do not transition FSM
       return;
     }
