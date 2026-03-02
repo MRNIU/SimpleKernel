@@ -214,6 +214,144 @@ class LogLine {
   bool released_ = false;
 };
 
+// ── Per-CPU emergency log buffer (lock-free) ─────────────────────────────
+
+/// @brief Per-CPU emergency log buffers for lock-free logging.
+///        Index is provided by cpu_io::GetCurrentCoreId().
+///        Array length reuses SIMPLEKERNEL_MAX_CORE_COUNT (CMake macro, value
+///        4).
+inline etl::string<512> raw_log_buf_[SIMPLEKERNEL_MAX_CORE_COUNT]{};
+
+/**
+ * @brief Lock-free RAII stream-style log line (per-CPU buffer)
+ *
+ * Mirrors LogLine<Level> but replaces log_lock with per-CPU buffer indexing.
+ * Construction gets CPU ID, clears that core's buffer, writes ANSI color
+ * prefix. Destruction calls sk_print_str() on the per-CPU buffer — no lock
+ * acquired.
+ *
+ * @tparam Level log level
+ *
+ * @note Safe to use from interrupt/exception context even if log_lock is held.
+ * @note Nested LogLineRaw on the same CPU (re-entrant interrupt) will overwrite
+ *       the same buffer — the first line's content is lost. In practice,
+ *       interrupts are disabled during panic/exception, so this is rare.
+ * @note Buffer capacity is 512 bytes; content exceeding this is silently
+ *       truncated by etl::string_stream.
+ */
+template <LogLevel::enum_type Level>
+class LogLineRaw {
+ public:
+  /// @brief Construct a no-op LogLineRaw (for disabled log levels)
+  explicit LogLineRaw(NoOpTag)
+      : cpu_id_(0), stream_(raw_log_buf_[0]), released_(true) {}
+
+  /**
+   * @brief Construct an active LogLineRaw; writes prefix to per-CPU buffer.
+   * @param loc source location (captured at call site for kDebug)
+   */
+  explicit LogLineRaw(
+      const std::source_location& loc = std::source_location::current())
+      : cpu_id_(cpu_io::GetCurrentCoreId()),
+        stream_(raw_log_buf_[cpu_id_]),
+        released_(false) {
+    raw_log_buf_[cpu_id_].clear();
+    stream_ << kLogColors[Level] << "[" << cpu_id_ << "]";
+    if constexpr (Level == LogLevel::kDebug) {
+      stream_ << "[" << loc.file_name() << ":" << loc.line() << " "
+              << loc.function_name() << "] ";
+    }
+  }
+
+  /// @brief Move constructor: transfer cpu_id_, rebuild stream_ ref to same
+  /// buffer.
+  LogLineRaw(LogLineRaw&& other) noexcept
+      : cpu_id_(other.cpu_id_),
+        stream_(raw_log_buf_[cpu_id_]),
+        released_(other.released_) {
+    other.released_ = true;
+  }
+
+  LogLineRaw(const LogLineRaw&) = delete;
+  auto operator=(const LogLineRaw&) -> LogLineRaw& = delete;
+  auto operator=(LogLineRaw&&) -> LogLineRaw& = delete;
+
+  ~LogLineRaw() {
+    if (!released_) {
+      stream_ << "\n" << kReset;
+      sk_print_str(raw_log_buf_[cpu_id_].c_str());
+    }
+  }
+
+  /// @brief Stream any value supported by etl::string_stream
+  template <typename T>
+  auto operator<<(T&& val) -> LogLineRaw& {
+    if (!released_) {
+      stream_ << static_cast<T&&>(val);
+    }
+    return *this;
+  }
+
+  /// @brief Stream bool as "true"/"false"
+  auto operator<<(bool val) -> LogLineRaw& {
+    if (!released_) {
+      stream_ << (val ? "true" : "false");
+    }
+    return *this;
+  }
+
+  /// @brief Stream a single char directly
+  auto operator<<(char c) -> LogLineRaw& {
+    if (!released_) {
+      raw_log_buf_[cpu_id_].push_back(c);
+    }
+    return *this;
+  }
+
+  /// @brief Stream pointer as "0x<hex>"
+  auto operator<<(const void* val) -> LogLineRaw& {
+    if (!released_) {
+      stream_ << "0x";
+      etl::format_spec spec{};
+      spec.hex();
+      stream_ << spec << reinterpret_cast<uintptr_t>(val);
+    }
+    return *this;
+  }
+
+  auto operator<<(void* val) -> LogLineRaw& {
+    return operator<<(static_cast<const void*>(val));
+  }
+
+ private:
+  uint64_t cpu_id_;            // MUST be declared before stream_ (init order)
+  etl::string_stream stream_;  // references raw_log_buf_[cpu_id_]
+  bool released_ = false;
+};
+
+/**
+ * @brief Lock-free lazy stream proxy (LogStreamRaw)
+ *
+ * Global instances (klog::raw_info, etc.). First operator<< creates a
+ * LogLineRaw temporary; subsequent << chains on the same temporary;
+ * statement end destroys LogLineRaw which flushes the per-CPU buffer.
+ *
+ * @tparam Level log level
+ */
+template <LogLevel::enum_type Level>
+struct LogStreamRaw {
+  /// @brief Create LogLineRaw and output first value
+  template <typename T>
+  auto operator<<(T&& val) -> LogLineRaw<Level> {
+    if constexpr (Level < kMinLogLevel) {
+      return LogLineRaw<Level>{NoOpTag{}};
+    }
+    LogLineRaw<Level> line{};
+    line << static_cast<T&&>(val);
+    return line;
+  }
+};
+
 /**
  * @brief 惰性流式日志代理（LogStream）
  *
@@ -301,6 +439,29 @@ inline const etl::format_spec HEX =
     return detail::LogLine<detail::LogLevel::kDebug>{detail::NoOpTag{}};
   }
   return detail::LogLine<detail::LogLevel::kDebug>{loc};
+}
+
+/// @brief Lock-free stream log instances — safe in interrupt/exception context
+/// @{
+[[maybe_unused]] inline detail::LogStreamRaw<detail::LogLevel::kInfo> raw_info;
+[[maybe_unused]] inline detail::LogStreamRaw<detail::LogLevel::kWarn> raw_warn;
+[[maybe_unused]] inline detail::LogStreamRaw<detail::LogLevel::kErr> raw_err;
+/// @}
+
+/**
+ * @brief Create a lock-free Debug-level LogLineRaw with source location.
+ *
+ * Usage: `klog::raw_debug() << "msg " << val;`
+ * @param loc automatically captured source location
+ * @note Safe in interrupt/exception context (no lock acquired).
+ */
+[[nodiscard]] inline auto raw_debug(
+    std::source_location loc = std::source_location::current())
+    -> detail::LogLineRaw<detail::LogLevel::kDebug> {
+  if constexpr (detail::LogLevel::kDebug < detail::kMinLogLevel) {
+    return detail::LogLineRaw<detail::LogLevel::kDebug>{detail::NoOpTag{}};
+  }
+  return detail::LogLineRaw<detail::LogLevel::kDebug>{loc};
 }
 
 /// @todo 可插拔输出 sink：使用 etl::delegate 将输出重定向到串口/内存缓冲区等
