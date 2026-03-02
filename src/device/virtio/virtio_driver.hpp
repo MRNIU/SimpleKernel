@@ -46,8 +46,6 @@ class VirtioDriver {
   static constexpr uint32_t kDefaultQueueSize = 128;
   static constexpr size_t kMinDmaBufferSize = 32768;
 
-  /// @note 使用 VirtioDriverSingleton::instance() 访问单例。
-
   /**
    * @brief 返回驱动注册入口
    *

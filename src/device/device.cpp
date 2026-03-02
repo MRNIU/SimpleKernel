@@ -29,7 +29,7 @@ auto DeviceInit() -> void {
   DeviceManagerSingleton::create();
   auto& dm = DeviceManagerSingleton::instance();
 
-  // 创建驱动单例（etl::singleton 要求在 instance() 之前调用 create()）
+  // 创建驱动单例
   Ns16550aDriverSingleton::create();
   Pl011DriverSingleton::create();
   VirtioDriverSingleton::create();

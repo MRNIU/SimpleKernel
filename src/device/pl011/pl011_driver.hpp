@@ -13,7 +13,6 @@
 #include "kernel_log.hpp"
 #include "pl011/pl011.hpp"
 
-/// 向后兼容：aarch64 的 early_console 和 pl011_singleton 使用此别名。
 namespace pl011 {
 using Pl011Device = Pl011;
 }  // namespace pl011
