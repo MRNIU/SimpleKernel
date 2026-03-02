@@ -28,8 +28,6 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
 
   etl::io_port_ro<uint32_t> magic_reg{reinterpret_cast<void*>(ctx->base)};
   if (magic_reg.read() != virtio::kMmioMagicValue) {
-    klog::debug() << "VirtioDriver: " << klog::hex << ctx->base
-                  << " not a VirtIO device";
     return std::unexpected(Error(ErrorCode::kNotSupported));
   }
 

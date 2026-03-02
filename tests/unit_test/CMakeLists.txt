@@ -22,6 +22,7 @@ ADD_EXECUTABLE (
     ramfs_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory/virtual_memory.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp
+    ${CMAKE_SOURCE_DIR}/src/libc/sk_stdio.c
     ${CMAKE_SOURCE_DIR}/src/task/block.cpp
     ${CMAKE_SOURCE_DIR}/src/task/clone.cpp
     ${CMAKE_SOURCE_DIR}/src/task/exit.cpp
@@ -36,9 +37,7 @@ ADD_EXECUTABLE (
 
 TARGET_COMPILE_DEFINITIONS (
     ${PROJECT_NAME}
-    PRIVATE -Dsk_printf=printf
-            -Dsk_vsnprintf=vsnprintf
-            -DUNIT_TEST
+    PRIVATE -DUNIT_TEST
             -DSIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_NEW_
             -DSIMPLEKERNEL_MAX_CORE_COUNT=4
             -DSIMPLEKERNEL_PER_CPU_ALIGN_SIZE=4096

@@ -126,36 +126,27 @@ class MmioTransport final : public Transport {
   explicit MmioTransport(uint64_t base)
       : mmio_(base), is_valid_(false), device_id_(0), vendor_id_(0) {
     if (base == 0) {
-      klog::debug() << "MMIO base address is null";
       return;
     }
 
     auto magic = mmio_.Read<uint32_t>(MmioReg::kMagicValue);
     if (magic != kMmioMagicValue) {
-      klog::debug() << "MMIO magic value mismatch: expected " << klog::hex
-                    << kMmioMagicValue << ", got " << klog::hex << magic;
       return;
     }
 
     auto version = mmio_.Read<uint32_t>(MmioReg::kVersion);
     if (version != kMmioVersionModern) {
-      klog::debug() << "MMIO version not supported: expected "
-                    << kMmioVersionModern << ", got " << version;
       return;
     }
 
     device_id_ = mmio_.Read<uint32_t>(MmioReg::kDeviceId);
     if (device_id_ == 0) {
-      klog::debug() << "MMIO device ID is 0, no device found";
       return;
     }
 
     vendor_id_ = mmio_.Read<uint32_t>(MmioReg::kVendorId);
     this->Reset();
     is_valid_ = true;
-
-    klog::debug() << "MMIO device initialized: DeviceID=" << klog::hex
-                  << device_id_ << ", VendorID=" << klog::hex << vendor_id_;
   }
 
   /**
