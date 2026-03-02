@@ -49,6 +49,10 @@ class DeviceManager {
     size_t count = result.value();
     for (size_t i = 0; i < count; ++i) {
       devices_[device_count_ + i].dev_id = next_dev_id_++;
+      if (!name_index_.full()) {
+        name_index_.insert(
+            {devices_[device_count_ + i].name, device_count_ + i});
+      }
     }
     device_count_ += count;
 
@@ -109,6 +113,7 @@ class DeviceManager {
   uint32_t next_dev_id_{0};
   DriverRegistry registry_;
   SpinLock lock_{"device_manager"};
+  etl::flat_map<const char*, size_t, kMaxDevices, CStrLess> name_index_;
 };
 
 using DeviceManagerSingleton = etl::singleton<DeviceManager>;

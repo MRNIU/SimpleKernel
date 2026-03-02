@@ -7,24 +7,35 @@
 #include "kernel_fdt.hpp"
 #include "kernel_log.hpp"
 #include "ns16550a/ns16550a_driver.hpp"
+#include "pl011/pl011_driver.hpp"
 #include "platform_bus.hpp"
 #include "virtio/virtio_driver.hpp"
+
+namespace {
+
+/// 内建驱动表 — 编译期构建，运行期批量注册。
+/// 添加新驱动只需在此追加一行。
+using GetEntryFn = auto (*)() -> const DriverEntry&;
+constexpr GetEntryFn kBuiltinDrivers[] = {
+    &Ns16550aDriver::GetEntry,
+    &Pl011Driver::GetEntry,
+    &VirtioDriver::GetEntry,
+};
+
+}  // namespace
 
 /// 设备子系统初始化入口
 auto DeviceInit() -> void {
   DeviceManagerSingleton::create();
   auto& dm = DeviceManagerSingleton::instance();
 
-  if (auto r = dm.GetRegistry().Register(Ns16550aDriver::GetEntry()); !r) {
-    klog::err << "DeviceInit: register Ns16550aDriver failed: "
-              << r.error().message();
-    return;
-  }
-
-  if (auto r = dm.GetRegistry().Register(VirtioDriver::GetEntry()); !r) {
-    klog::err << "DeviceInit: register VirtioDriver failed: "
-              << r.error().message();
-    return;
+  for (const auto& get_entry : kBuiltinDrivers) {
+    const auto& entry = get_entry();
+    if (auto r = dm.GetRegistry().Register(entry); !r) {
+      klog::err << "DeviceInit: register driver '" << entry.name
+                << "' failed: " << r.error().message();
+      return;
+    }
   }
 
   PlatformBus platform_bus(KernelFdtSingleton::instance());

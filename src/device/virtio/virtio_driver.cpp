@@ -39,10 +39,17 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
 
   switch (device_id) {
     case DeviceId::kBlock: {
+      if (blk_device_count_ >= kMaxBlkDevices) {
+        klog::warn << "VirtioDriver: blk device pool full, device at "
+                   << klog::hex << ctx->base << " skipped";
+        return std::unexpected(Error(ErrorCode::kOutOfMemory));
+      }
+      const size_t idx = blk_device_count_;
+
       // 分配 DMA buffer
-      dma_buffer_ = kstd::make_unique<IoBuffer>(kMinDmaBufferSize);
-      if (!dma_buffer_ || !dma_buffer_->IsValid() ||
-          dma_buffer_->GetBuffer().size() < kMinDmaBufferSize) {
+      dma_buffers_[idx] = kstd::make_unique<IoBuffer>(kMinDmaBufferSize);
+      if (!dma_buffers_[idx] || !dma_buffers_[idx]->IsValid() ||
+          dma_buffers_[idx]->GetBuffer().size() < kMinDmaBufferSize) {
         klog::err << "VirtioDriver: failed to allocate DMA buffer at "
                   << klog::hex << ctx->base;
         return std::unexpected(Error(ErrorCode::kOutOfMemory));
@@ -56,22 +63,24 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
           static_cast<uint64_t>(virtio::blk::BlkFeatureBit::kGeometry);
 
       auto result = virtio::blk::VirtioBlk<>::Create(
-          ctx->base, dma_buffer_->GetBuffer().data(), kDefaultQueueCount,
+          ctx->base, dma_buffers_[idx]->GetBuffer().data(), kDefaultQueueCount,
           kDefaultQueueSize, extra_features);
       if (!result.has_value()) {
         klog::err << "VirtioDriver: VirtioBlk Create failed at " << klog::hex
                   << ctx->base;
+        dma_buffers_[idx].reset();
         return std::unexpected(Error(result.error().code));
       }
 
-      blk_device_.emplace(std::move(*result));
+      blk_devices_[idx].emplace(std::move(*result));
       node.type = DeviceType::kBlock;
-      irq_ = node.irq;
+      irqs_[idx] = node.irq;
 
       // Register adapter in pool and expose via DeviceNode.
       if (blk_adapter_count_ < kMaxBlkDevices) {
-        const auto idx = static_cast<uint32_t>(blk_adapter_count_);
-        blk_adapters_[blk_adapter_count_].emplace(&blk_device_.value(), idx);
+        const auto adapter_idx = static_cast<uint32_t>(blk_adapter_count_);
+        blk_adapters_[blk_adapter_count_].emplace(&blk_devices_[idx].value(),
+                                                  adapter_idx);
         node.block_device = &blk_adapters_[blk_adapter_count_].value();
         ++blk_adapter_count_;
       } else {
@@ -79,9 +88,10 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
                    << klog::hex << ctx->base << " skipped";
       }
 
+      ++blk_device_count_;
       klog::info << "VirtioDriver: block device at " << klog::hex << ctx->base
-                 << ", capacity=" << blk_device_.value().GetCapacity()
-                 << " sectors, irq=" << irq_;
+                 << ", capacity=" << blk_devices_[idx].value().GetCapacity()
+                 << " sectors, irq=" << irqs_[idx];
       return {};
     }
 

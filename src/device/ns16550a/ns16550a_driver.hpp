@@ -37,15 +37,15 @@ class Ns16550aDriver {
   }
 
   /**
-   * @brief 硬件检测：MMIO 区域是否响应为 NS16550A？
+   * @brief 硬件检测：MMIO 区域大小是否足够 NS16550A？
    *
-   * NS16550A 仅使用 compatible 字符串匹配，无需读取 MMIO
-   *（设备没有可读的签名寄存器）。
+   * NS16550A 没有可读的 magic 寄存器，仅验证 MMIO 资源。
    *
-   * @return true 如果 node.compatible 包含 "ns16550a" 或 "ns16550"
+   * @return true 如果 mmio_base 非零且 mmio_size 足够
    */
   static auto MatchStatic([[maybe_unused]] DeviceNode& node) -> bool {
-    return true;
+    static constexpr size_t kMinRegisterSpace = 8;
+    return node.mmio_base != 0 && node.mmio_size >= kMinRegisterSpace;
   }
 
   /**

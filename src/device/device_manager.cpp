@@ -7,7 +7,6 @@
 #include <cassert>
 
 #include "kernel_log.hpp"
-#include "kstd_cstring"
 
 auto DeviceManager::ProbeAll() -> Expected<void> {
   LockGuard guard(lock_);
@@ -57,10 +56,10 @@ auto DeviceManager::ProbeAll() -> Expected<void> {
 
 auto DeviceManager::FindDevice(const char* name) -> Expected<DeviceNode*> {
   assert(name != nullptr && "FindDevice: name must not be null");
-  for (size_t i = 0; i < device_count_; ++i) {
-    if (kstd::strcmp(devices_[i].name, name) == 0) {
-      return &devices_[i];
-    }
+  LockGuard guard(lock_);
+  const auto it = name_index_.find(name);
+  if (it != name_index_.end()) {
+    return &devices_[it->second];
   }
   return std::unexpected(Error(ErrorCode::kDeviceNotFound));
 }
@@ -69,6 +68,7 @@ auto DeviceManager::FindDevicesByType(DeviceType type, DeviceNode** out,
                                       size_t max) -> size_t {
   assert((out != nullptr || max == 0) &&
          "FindDevicesByType: out must not be null when max > 0");
+  LockGuard guard(lock_);
   size_t found = 0;
   for (size_t i = 0; i < device_count_ && found < max; ++i) {
     if (devices_[i].type == type) {

@@ -6,9 +6,10 @@
 #define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRTIO_DRIVER_HPP_
 
 #include <etl/io_port.h>
-#include <etl/optional.h>
 #include <etl/span.h>
 
+#include <array>
+#include <optional>
 #include <variant>
 
 #include "device_manager.hpp"
@@ -90,22 +91,32 @@ class VirtioDriver {
   auto Probe(DeviceNode& node) -> Expected<void>;
 
   auto Remove([[maybe_unused]] DeviceNode& node) -> Expected<void> {
-    blk_device_.reset();
-    dma_buffer_.reset();
+    for (size_t i = 0; i < blk_device_count_; ++i) {
+      blk_devices_[i].reset();
+      dma_buffers_[i].reset();
+    }
+    blk_device_count_ = 0;
+    blk_adapter_count_ = 0;
     return {};
   }
 
   [[nodiscard]] auto GetBlkDevice() -> virtio::blk::VirtioBlk<>* {
-    return blk_device_.has_value() ? &blk_device_.value() : nullptr;
+    return (blk_device_count_ > 0 && blk_devices_[0].has_value())
+               ? &blk_devices_[0].value()
+               : nullptr;
   }
 
-  [[nodiscard]] auto GetIrq() const -> uint32_t { return irq_; }
+  [[nodiscard]] auto GetIrq() const -> uint32_t {
+    return blk_device_count_ > 0 ? irqs_[0] : 0;
+  }
 
   template <typename CompletionCallback>
   auto HandleInterrupt(CompletionCallback&& on_complete) -> void {
-    if (blk_device_.has_value()) {
-      blk_device_.value().HandleInterrupt(
-          static_cast<CompletionCallback&&>(on_complete));
+    for (size_t i = 0; i < blk_device_count_; ++i) {
+      if (blk_devices_[i].has_value()) {
+        blk_devices_[i].value().HandleInterrupt(
+            static_cast<CompletionCallback&&>(on_complete));
+      }
     }
   }
 
@@ -114,13 +125,17 @@ class VirtioDriver {
       {BusType::kPlatform, "virtio,mmio"},
   };
 
-  etl::optional<virtio::blk::VirtioBlk<>> blk_device_;
-  etl::unique_ptr<IoBuffer> dma_buffer_;
-  uint32_t irq_{0};
+  static constexpr size_t kMaxBlkDevices = 4;
+
+  std::array<std::optional<virtio::blk::VirtioBlk<>>, kMaxBlkDevices>
+      blk_devices_;
+  std::array<etl::unique_ptr<IoBuffer>, kMaxBlkDevices> dma_buffers_;
+  std::array<uint32_t, kMaxBlkDevices> irqs_{};
+  size_t blk_device_count_{0};
 
   // Static adapter pool — one slot per probed blk device (kernel lifetime).
-  static constexpr size_t kMaxBlkDevices = 4;
-  etl::optional<virtio::blk::VirtioBlkVfsAdapter> blk_adapters_[kMaxBlkDevices];
+  std::array<std::optional<virtio::blk::VirtioBlkVfsAdapter>, kMaxBlkDevices>
+      blk_adapters_;
   size_t blk_adapter_count_{0};
 };
 

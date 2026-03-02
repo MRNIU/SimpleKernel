@@ -14,7 +14,7 @@ ns16550a/
 pl011/
   CMakeLists.txt        # ADD_LIBRARY(pl011_driver INTERFACE)
   pl011.hpp             # PL011 UART hardware implementation + Pl011Device alias
-  pl011_driver.hpp      # pl011::Pl011Device type alias (for singleton usage)
+  pl011_driver.hpp      # PL011 DriverEntry + Probe/Remove (mirrors Ns16550aDriver pattern)
 acpi/
   CMakeLists.txt        # ADD_LIBRARY(acpi_driver INTERFACE)
   acpi.hpp              # ACPI table structures
@@ -47,7 +47,7 @@ include/
 
 ## CONVENTIONS
 - **Mostly header-only** — `device.cpp` and `virtio_driver.cpp` are the primary .cpp files.
-- **Compile-time isolation** → `device` is STATIC and PRIVATE-links all `xxx_driver` INTERFACE targets. External code can only access hardware through `DeviceManager`. Arch code that needs direct driver access must explicitly `TARGET_LINK_LIBRARIES(... xxx_driver)`.
+- **Compile-time isolation** → `device` is an INTERFACE library that links all `xxx_driver` INTERFACE targets. External code can only access hardware through `DeviceManager`. Arch code that needs direct driver access must explicitly `TARGET_LINK_LIBRARIES(... xxx_driver)`.
 - Drivers define static `kMatchTable[]` using `MatchEntry` struct with FDT `compatible` strings
 - `GetEntry()` returns `DriverEntry` containing:
   - `name`: `const char*` driver name

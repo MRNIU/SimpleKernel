@@ -153,7 +153,11 @@ struct ProbeContext {
       "mmio_helper::Prepare: node has no MMIO base; driver matched wrong node");
 
   size_t size = node.mmio_size > 0 ? node.mmio_size : default_size;
-  VirtualMemorySingleton::instance().MapMMIO(node.mmio_base, size);
+  auto map_result =
+      VirtualMemorySingleton::instance().MapMMIO(node.mmio_base, size);
+  if (!map_result.has_value()) {
+    return std::unexpected(map_result.error());
+  }
 
   return ProbeContext{node.mmio_base, size};
 }
