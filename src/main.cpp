@@ -121,7 +121,7 @@ auto main_smp(int argc, const char** argv) -> int {
   klog::info << "Hello SimpleKernel SMP";
 
   // 为当前核心创建测试任务
-  create_test_tasks();
+  // create_test_tasks();
 
   // 启动调度器
   TaskManagerSingleton::instance().Schedule();
@@ -165,7 +165,7 @@ auto main(int argc, const char** argv) -> int {
   TaskManagerSingleton::instance().InitCurrentCore();
 
   // 唤醒其余 core
-  // WakeUpOtherCores();
+  WakeUpOtherCores();
 
   DumpStack();
 
@@ -174,7 +174,7 @@ auto main(int argc, const char** argv) -> int {
   klog::info << "Initializing test tasks...";
 
   // 为主核心创建测试任务
-  create_test_tasks();
+  // create_test_tasks();
 
   klog::info << "Main: Starting scheduler...";
 

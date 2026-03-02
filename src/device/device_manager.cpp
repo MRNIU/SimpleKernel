@@ -31,13 +31,12 @@ auto DeviceManager::ProbeAll() -> Expected<void> {
     }
     node.bound = true;
 
-    auto result = drv->probe(node);
-    if (!result.has_value()) {
+    drv->probe(node).or_else([&](auto&& err) {
       klog::err << "DeviceManager: probe '" << node.name
-                << "' failed: " << result.error().message();
+                << "' failed: " << err.message();
       node.bound = false;
-      continue;
-    }
+      return Expected<void>{};
+    });
 
     ++probed;
   }

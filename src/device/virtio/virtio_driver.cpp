@@ -110,9 +110,6 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
     }
 
     default:
-      klog::warn << "VirtioDriver: unsupported device_id="
-                 << static_cast<uint32_t>(device_id) << " at " << klog::hex
-                 << ctx->base;
       return std::unexpected(Error(ErrorCode::kNotSupported));
   }
 }
