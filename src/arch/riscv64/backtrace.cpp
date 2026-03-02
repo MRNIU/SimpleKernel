@@ -60,7 +60,9 @@ void DumpStack() {
           (buffer[current_frame_idx] >= symtab.st_value) &&
           (buffer[current_frame_idx] <= symtab.st_value + symtab.st_size)) {
         klog::err << "["
-                  << KernelElfSingleton::instance().strtab_ + symtab.st_name
+                  << reinterpret_cast<const char*>(
+                         KernelElfSingleton::instance().strtab_ +
+                         symtab.st_name)
                   << "] " << klog::hex << buffer[current_frame_idx];
       }
     }
