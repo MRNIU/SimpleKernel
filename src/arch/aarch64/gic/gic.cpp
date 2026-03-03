@@ -17,7 +17,7 @@ Gic::Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
 
   gicd_.EnableGrp1NS();
 
-  klog::info << "Gic init.";
+  klog::Info("Gic init.");
 }
 
 void Gic::SetUP() const {
@@ -49,7 +49,7 @@ Gic::Gicd::Gicd(uint64_t base_addr) : base_addr_(base_addr) {
   // 读取 ITLinesNumber 数量
   auto it_lines_number = Read(kTYPER) & kTYPER_ITLinesNumberMask;
 
-  klog::info << "it_lines_number " << it_lines_number;
+  klog::Info("it_lines_number %u", it_lines_number);
 
   // 设置中断为 Non-secure Group 1
   for (uint32_t i = 0; i < it_lines_number; i++) {
