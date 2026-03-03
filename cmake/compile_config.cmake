@@ -13,10 +13,7 @@ TARGET_COMPILE_DEFINITIONS (
         $<$<BOOL:${SIMPLEKERNEL_DEFAULT_STACK_SIZE}>:SIMPLEKERNEL_DEFAULT_STACK_SIZE=${SIMPLEKERNEL_DEFAULT_STACK_SIZE}>
         $<$<BOOL:${SIMPLEKERNEL_PER_CPU_ALIGN_SIZE}>:SIMPLEKERNEL_PER_CPU_ALIGN_SIZE=${SIMPLEKERNEL_PER_CPU_ALIGN_SIZE}>
         SIMPLEKERNEL_EARLY_CONSOLE_BASE=${SIMPLEKERNEL_EARLY_CONSOLE_BASE}
-        $<$<BOOL:${SIMPLEKERNEL_TICK}>:SIMPLEKERNEL_TICK=${SIMPLEKERNEL_TICK}>
-        ETL_CPP23_SUPPORTED
-        ETL_NO_STD_OSTREAM
-        ETL_VERBOSE_ERRORS)
+        $<$<BOOL:${SIMPLEKERNEL_TICK}>:SIMPLEKERNEL_TICK=${SIMPLEKERNEL_TICK}>)
 
 # 获取 gcc 的 include 路径
 EXECUTE_PROCESS (
@@ -161,6 +158,7 @@ TARGET_LINK_LIBRARIES (
               kernel_compile_definitions
               kernel_compile_options
               kernel_link_options
+              3rd_compile_definitions
               dtc-lib
               cpu_io
               bmalloc

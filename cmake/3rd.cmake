@@ -228,3 +228,9 @@ IF(CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR)
     # lcov 生成测试覆盖率报告
     FIND_PROGRAM (LCOV_EXE lcov)
 ENDIF()
+
+# 第三方宏定义
+ADD_LIBRARY (3rd_compile_definitions INTERFACE)
+TARGET_COMPILE_DEFINITIONS (
+    3rd_compile_definitions INTERFACE ETL_CPP23_SUPPORTED ETL_NO_STD_OSTREAM
+                                      ETL_VERBOSE_ERRORS)
