@@ -5,6 +5,8 @@
 #ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_
 #define SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_
 
+#include <cpu_io.h>
+
 #include <MPMCQueue.hpp>
 #include <atomic>
 #include <cstdarg>
