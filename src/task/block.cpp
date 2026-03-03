@@ -23,9 +23,9 @@ void TaskManager::Block(ResourceId resource_id) {
     // Check capacity before transitioning FSM
     auto& list = cpu_sched.blocked_tasks[resource_id];
     if (list.full()) {
-      klog::err
-          << "Block: blocked_tasks list full for resource, cannot block task "
-          << current->pid;
+      klog::Err(
+          "Block: blocked_tasks list full for resource, cannot block task %d",
+          current->pid);
       // Rollback: task stays kRunning, do not transition FSM
       return;
     }
@@ -35,9 +35,9 @@ void TaskManager::Block(ResourceId resource_id) {
     current->blocked_on = resource_id;
     list.push_back(current);
 
-    klog::debug() << "Block: pid=" << current->pid
-                  << " blocked on resource=" << resource_id.GetTypeName()
-                  << ", data=" << klog::hex << resource_id.GetData();
+    klog::Debug("Block: pid=%d blocked on resource=%s, data=0x%llx",
+                current->pid, resource_id.GetTypeName(),
+                static_cast<unsigned long long>(resource_id.GetData()));
   }
 
   // 调度到其他任务
