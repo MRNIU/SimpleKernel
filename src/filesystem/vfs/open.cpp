@@ -121,7 +121,8 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
     // 这里不直接操作，而是通过后续的 write 来处理
   }
 
-  klog::debug() << "VFS: opened '" << path << "', flags=" << klog::hex << flags;
+  klog::Debug("VFS: opened '%s', flags=0x%llx", path,
+              static_cast<unsigned long long>(flags));
   return file;
 }
 

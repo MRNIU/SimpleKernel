@@ -52,8 +52,8 @@ auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
   // 挂载文件系统
   auto mount_result = fs->Mount(device);
   if (!mount_result.has_value()) {
-    klog::err << "MountTable: failed to mount filesystem '" << fs->GetName()
-              << "': " << mount_result.error().message();
+    klog::Err("MountTable: failed to mount filesystem '%s': %s", fs->GetName(),
+              mount_result.error().message());
     return std::unexpected(Error(ErrorCode::kFsMountFailed));
   }
 
@@ -114,8 +114,7 @@ auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
     SetRootDentry(root_dentry);
   }
 
-  klog::info << "MountTable: mounted '" << fs->GetName() << "' on '" << path
-             << "'";
+  klog::Info("MountTable: mounted '%s' on '%s'", fs->GetName(), path);
   return {};
 }
 
@@ -165,7 +164,7 @@ auto MountTable::Unmount(const char* path) -> Expected<void> {
     SetRootDentry(nullptr);
   }
 
-  klog::info << "MountTable: unmounted '" << path << "'";
+  klog::Info("MountTable: unmounted '%s'", path);
   return {};
 }
 
