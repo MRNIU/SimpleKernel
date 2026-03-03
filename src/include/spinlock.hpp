@@ -13,7 +13,6 @@
 #include <limits>
 
 #include "expected.hpp"
-#include "kernel_log.hpp"
 #include "kstd_cstdio"
 
 /**
@@ -47,8 +46,8 @@ class SpinLock {
         if (intr_enable) {
           cpu_io::EnableInterrupt();
         }
-        klog::raw_err << "spinlock " << cpu_io::GetCurrentCoreId() << ": "
-                      << name_ << " recursive lock detected.";
+        // klog::raw_err << "spinlock " << cpu_io::GetCurrentCoreId() << ": "
+        //               << name_ << " recursive lock detected.";
         return std::unexpected(Error{ErrorCode::kSpinLockRecursiveLock});
       }
       cpu_io::Pause();
@@ -66,8 +65,8 @@ class SpinLock {
    */
   [[nodiscard]] __always_inline auto UnLock() -> Expected<void> {
     if (!IsLockedByCurrentCore()) {
-      klog::raw_err << "spinlock " << cpu_io::GetCurrentCoreId() << ": "
-                    << name_ << " unlock by non-owner detected.";
+      // klog::raw_err << "spinlock " << cpu_io::GetCurrentCoreId() << ": "
+      //               << name_ << " unlock by non-owner detected.";
       return std::unexpected(Error{ErrorCode::kSpinLockNotOwned});
     }
 
@@ -138,7 +137,7 @@ class LockGuard {
    */
   explicit LockGuard(mutex_type& mutex) : mutex_(mutex) {
     mutex_.Lock().or_else([](auto&& err) {
-      klog::raw_err << "LockGuard: Failed to acquire lock: " << err.message();
+      // klog::raw_err << "LockGuard: Failed to acquire lock: " << err.message();
       while (true) {
         cpu_io::Pause();
       }
@@ -151,7 +150,7 @@ class LockGuard {
    */
   ~LockGuard() {
     mutex_.UnLock().or_else([](auto&& err) {
-      klog::raw_err << "LockGuard: Failed to release lock: " << err.message();
+      // klog::raw_err << "LockGuard: Failed to release lock: " << err.message();
       while (true) {
         cpu_io::Pause();
       }
