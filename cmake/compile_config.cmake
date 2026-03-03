@@ -161,6 +161,7 @@ TARGET_LINK_LIBRARIES (
               3rd_compile_definitions
               dtc-lib
               cpu_io
+              stb_lib
               bmalloc
               MPMCQueue
               fatfs_lib

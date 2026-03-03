@@ -2,6 +2,8 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <stb_sprintf.h>
+
 #include <MPMCQueue.hpp>
 #include <cerrno>
 #include <cstdint>

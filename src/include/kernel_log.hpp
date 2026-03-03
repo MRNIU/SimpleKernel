@@ -20,6 +20,17 @@
 namespace klog {
 namespace detail {
 
+/// 底层字符串输出原语（逐字符调用 etl_putchar），NULL 安全
+__always_inline void PutStr(const char* s) {
+  if (!s) {
+    s = "(null)";
+  }
+  while (*s) {
+    etl_putchar(static_cast<unsigned char>(*s));
+    ++s;
+  }
+}
+
 // 日志专用的自旋锁实例
 inline SpinLock log_lock("kernel_log");
 
@@ -79,9 +90,12 @@ inline constexpr const char* kLogColors[LogLevel::kMax] = {
  */
 template <LogLevel::enum_type Level>
 __always_inline void EmitHeader() {
-  sk_print_str(kLogColors[Level]);
+  PutStr(kLogColors[Level]);
   etl_putchar('[');
-  sk_print_int(static_cast<long long>(cpu_io::GetCurrentCoreId()));
+  char buf_core[8];
+  stbsp_snprintf(buf_core, (int)sizeof(buf_core), "%lld",
+                 static_cast<long long>(cpu_io::GetCurrentCoreId()));
+  PutStr(buf_core);
   etl_putchar(']');
 }
 
@@ -92,7 +106,7 @@ struct NoOpTag {};
  * @brief RAII 流式日志行（基于 etl::string 实例缓冲）
  *
  * 构造时获取自旋锁并向 etl::string<512> 写入颜色前缀+核心ID，
- * 析构时通过 sk_print_str 原子输出完整日志行并释放锁。
+ * 析构时通过 PutStr 原子输出完整日志行并释放锁。
  *
  * @tparam Level 日志级别
  * @note 同一时刻只能存活一个 LogLine（由 log_lock 保护）。
@@ -132,7 +146,7 @@ class LogLine {
   ~LogLine() {
     if (!released_) {
       stream_ << "\n" << kReset;
-      sk_print_str(s_buf_.c_str());
+      PutStr(s_buf_.c_str());
       ReleaseLock();
     }
   }
@@ -181,8 +195,8 @@ class LogLine {
   /// 获取 log_lock；失败时自旋停机（如递归加锁）。
   static void AcquireLock() {
     log_lock.Lock().or_else([](auto&& err) -> Expected<void> {
-      sk_print_str("LogLine: Failed to acquire lock: ");
-      sk_print_str(err.message());
+      PutStr("LogLine: Failed to acquire lock: ");
+      PutStr(err.message());
       etl_putchar('\n');
       while (true) {
         cpu_io::Pause();
@@ -194,8 +208,8 @@ class LogLine {
   /// 释放 log_lock；失败时自旋停机（如未持有锁）。
   static void ReleaseLock() {
     log_lock.UnLock().or_else([](auto&& err) -> Expected<void> {
-      sk_print_str("LogLine: Failed to release lock: ");
-      sk_print_str(err.message());
+      PutStr("LogLine: Failed to release lock: ");
+      PutStr(err.message());
       etl_putchar('\n');
       while (true) {
         cpu_io::Pause();
@@ -217,7 +231,7 @@ inline etl::string<512> raw_log_buf_[SIMPLEKERNEL_MAX_CORE_COUNT]{};
  *
  * 与 LogLine<Level> 类似，但以每 CPU 缓冲区索引替代 log_lock。
  * 构造时获取 CPU ID、清空对应核心的缓冲区并写入 ANSI 颜色前缀。
- * 析构时对每 CPU 缓冲区调用 sk_print_str()，无需持有锁。
+ * 析构时对每 CPU 缓冲区调用 PutStr()，无需持有锁。
  *
  * @tparam Level 日志级别
  *
@@ -265,7 +279,7 @@ class LogLineRaw {
   ~LogLineRaw() {
     if (!released_) {
       stream_ << "\n" << kReset;
-      sk_print_str(raw_log_buf_[cpu_id_].c_str());
+      PutStr(raw_log_buf_[cpu_id_].c_str());
     }
   }
 
@@ -386,12 +400,14 @@ __always_inline void DebugBlob([[maybe_unused]] const void* data,
     for (size_t i = 0; i < size; i++) {
       etl_putchar('0');
       etl_putchar('x');
-      sk_print_hex(static_cast<unsigned long long>(
-                       reinterpret_cast<const uint8_t*>(data)[i]),
-                   /*width=*/2, /*upper=*/1);
+      char buf_hex[5];
+      stbsp_snprintf(
+          buf_hex, (int)sizeof(buf_hex), "%02X",
+          static_cast<unsigned int>(reinterpret_cast<const uint8_t*>(data)[i]));
+      PutStr(buf_hex);
       etl_putchar(' ');
     }
-    sk_print_str(detail::kReset);
+    PutStr(detail::kReset);
     etl_putchar('\n');
   }
 }

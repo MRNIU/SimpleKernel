@@ -70,6 +70,15 @@ ADD_SUBDIRECTORY (3rd/MPMCQueue)
 # https://github.com/ETLCPP/etl.git
 ADD_SUBDIRECTORY (3rd/etl)
 
+# https://github.com/armink/EasyLogger.git
+# ADD_SUBDIRECTORY (3rd/EasyLogger)
+
+# https://github.com/nothings/stb.git
+SET (stb_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/stb)
+SET (stb_BINARY_DIR ${stb_SOURCE_DIR})
+ADD_LIBRARY (stb_lib INTERFACE)
+TARGET_INCLUDE_DIRECTORIES (stb_lib INTERFACE ${stb_BINARY_DIR})
+
 # https://github.com/abbrev/fatfs.git
 # @todo 计划使用 c++ 重写
 SET (fatfs_SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rd/fatfs)
@@ -233,4 +242,4 @@ ENDIF()
 ADD_LIBRARY (3rd_compile_definitions INTERFACE)
 TARGET_COMPILE_DEFINITIONS (
     3rd_compile_definitions INTERFACE ETL_CPP23_SUPPORTED ETL_NO_STD_OSTREAM
-                                      ETL_VERBOSE_ERRORS)
+                                      ETL_VERBOSE_ERRORS STB_SPRINTF_NOFLOAT)

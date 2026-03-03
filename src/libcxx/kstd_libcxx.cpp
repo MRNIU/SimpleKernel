@@ -198,14 +198,16 @@ extern "C" void abort() {
 extern "C" [[noreturn]] void __assert_fail(const char* assertion,
                                            const char* file, unsigned int line,
                                            const char* function) {
-  sk_print_str("\n[ASSERT FAILED] ");
-  sk_print_str(file);
+  klog::detail::PutStr("\n[ASSERT FAILED] ");
+  klog::detail::PutStr(file);
   etl_putchar(':');
-  sk_print_uint((unsigned long long)line);
-  sk_print_str(" in ");
-  sk_print_str(function);
-  sk_print_str("\n Expression: ");
-  sk_print_str(assertion);
+  char buf_line[12];
+  stbsp_snprintf(buf_line, (int)sizeof(buf_line), "%u", line);
+  klog::detail::PutStr(buf_line);
+  klog::detail::PutStr(" in ");
+  klog::detail::PutStr(function);
+  klog::detail::PutStr("\n Expression: ");
+  klog::detail::PutStr(assertion);
   etl_putchar('\n');
   while (1) {
     cpu_io::Pause();
