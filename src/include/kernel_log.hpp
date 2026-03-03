@@ -143,7 +143,7 @@ __always_inline void Log(const char* fmt, va_list args) {
 }  // namespace detail
 
 /// @brief Log at DEBUG level (compiled out when SIMPLEKERNEL_MIN_LOG_LEVEL > 0)
-__always_inline void Debug(const char* fmt, ...) {
+inline void Debug(const char* fmt, ...) {
   if constexpr (detail::Level::kDebug < detail::kMinLevel) {
     return;
   }
@@ -154,7 +154,7 @@ __always_inline void Debug(const char* fmt, ...) {
 }
 
 /// @brief Log at INFO level
-__always_inline void Info(const char* fmt, ...) {
+inline void Info(const char* fmt, ...) {
   if constexpr (detail::Level::kInfo < detail::kMinLevel) {
     return;
   }
@@ -165,7 +165,7 @@ __always_inline void Info(const char* fmt, ...) {
 }
 
 /// @brief Log at WARN level
-__always_inline void Warn(const char* fmt, ...) {
+inline void Warn(const char* fmt, ...) {
   if constexpr (detail::Level::kWarn < detail::kMinLevel) {
     return;
   }
@@ -176,7 +176,7 @@ __always_inline void Warn(const char* fmt, ...) {
 }
 
 /// @brief Log at ERROR level
-__always_inline void Err(const char* fmt, ...) {
+inline void Err(const char* fmt, ...) {
   if constexpr (detail::Level::kErr < detail::kMinLevel) {
     return;
   }
