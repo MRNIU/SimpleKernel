@@ -76,9 +76,10 @@ void MemoryInit() {
                         BasicInfoSingleton::instance().physical_memory_size -
                         reinterpret_cast<uint64_t>(allocator_addr);
 
-  klog::info << "bmalloc address: " << klog::hex
-             << reinterpret_cast<uintptr_t>(allocator_addr)
-             << ", size: " << klog::HEX << allocator_size;
+  klog::Info("bmalloc address: 0x%llx, size: 0x%llX",
+             static_cast<unsigned long long>(
+                 reinterpret_cast<uintptr_t>(allocator_addr)),
+             static_cast<unsigned long long>(allocator_size));
 
   static bmalloc::Bmalloc<BmallocLogger> bmallocator(allocator_addr,
                                                      allocator_size);
@@ -94,10 +95,10 @@ void MemoryInit() {
         SIMPLEKERNEL_EARLY_CONSOLE_BASE, cpu_io::virtual_memory::kPageSize);
   }
 
-  klog::info << "Memory initialization completed";
+  klog::Info("Memory initialization completed");
 }
 
 void MemoryInitSMP() {
   VirtualMemorySingleton::instance().InitCurrentCore();
-  klog::info << "SMP Memory initialization completed";
+  klog::Info("SMP Memory initialization completed");
 }
