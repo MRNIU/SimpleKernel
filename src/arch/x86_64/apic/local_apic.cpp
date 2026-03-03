@@ -18,7 +18,7 @@ auto LocalApic::Init() -> Expected<void> {
     is_x2apic_mode_ = true;
   } else {
     if (!EnableXApic()) {
-      klog::err << "Failed to enable APIC in any mode";
+      klog::Err("Failed to enable APIC in any mode");
       return std::unexpected(Error(ErrorCode::kApicInitFailed));
     }
     is_x2apic_mode_ = false;
@@ -322,7 +322,8 @@ void LocalApic::SendInitIpi(uint32_t destination_apic_id) const {
     }
   }
 
-  klog::info << "INIT IPI sent to APIC ID " << klog::hex << destination_apic_id;
+  klog::Info("INIT IPI sent to APIC ID 0x%llx",
+             static_cast<unsigned long long>(destination_apic_id));
 }
 
 void LocalApic::SendStartupIpi(uint32_t destination_apic_id,
@@ -404,59 +405,60 @@ uint32_t LocalApic::ReadErrorStatus() const {
 }
 
 void LocalApic::PrintInfo() const {
-  klog::info << "APIC Version: " << klog::hex << GetApicVersion();
-  klog::info << "Mode: " << (is_x2apic_mode_ ? "x2APIC" : "xAPIC");
-  klog::info << "x2APIC Enabled: " << (IsX2ApicEnabled() ? "Yes" : "No");
-  klog::info << "Task Priority: " << klog::hex << GetTaskPriority();
-  klog::info << "Timer Current Count: " << GetTimerCurrentCount();
+  klog::Info("APIC Version: 0x%llx",
+             static_cast<unsigned long long>(GetApicVersion()));
+  klog::Info("Mode: %s", is_x2apic_mode_ ? "x2APIC" : "xAPIC");
+  klog::Info("x2APIC Enabled: %s", IsX2ApicEnabled() ? "Yes" : "No");
+  klog::Info("Task Priority: 0x%llx",
+             static_cast<unsigned long long>(GetTaskPriority()));
+  klog::Info("Timer Current Count: %u", GetTimerCurrentCount());
 
   // 读取各种寄存器状态
   if (is_x2apic_mode_) {
     uint32_t sivr = cpu_io::msr::apic::ReadSivr();
-    klog::info << "SIVR: " << klog::hex << sivr << " (APIC "
-               << ((sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled")
-               << ")";
+    klog::Info("SIVR: 0x%llx (APIC %s)", static_cast<unsigned long long>(sivr),
+               (sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled");
 
     uint32_t lvt_timer = cpu_io::msr::apic::ReadLvtTimer();
-    klog::info << "LVT Timer: " << klog::hex << lvt_timer;
+    klog::Info("LVT Timer: 0x%llx", static_cast<unsigned long long>(lvt_timer));
 
     uint32_t lvt_lint0 = cpu_io::msr::apic::ReadLvtLint0();
-    klog::info << "LVT LINT0: " << klog::hex << lvt_lint0;
+    klog::Info("LVT LINT0: 0x%llx", static_cast<unsigned long long>(lvt_lint0));
 
     uint32_t lvt_lint1 = cpu_io::msr::apic::ReadLvtLint1();
-    klog::info << "LVT LINT1: " << klog::hex << lvt_lint1;
+    klog::Info("LVT LINT1: 0x%llx", static_cast<unsigned long long>(lvt_lint1));
 
     uint32_t lvt_error = cpu_io::msr::apic::ReadLvtError();
-    klog::info << "LVT Error: " << klog::hex << lvt_error;
+    klog::Info("LVT Error: 0x%llx", static_cast<unsigned long long>(lvt_error));
   } else {
     etl::io_port_ro<uint32_t> sivr_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicSivrOffset)};
     uint32_t sivr = sivr_reg.read();
-    klog::info << "SIVR: " << klog::hex << sivr << " (APIC "
-               << ((sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled")
-               << ")";
+    klog::Info("SIVR: 0x%llx (APIC %s)", static_cast<unsigned long long>(sivr),
+               (sivr & kApicSoftwareEnableBit) ? "Enabled" : "Disabled");
 
     etl::io_port_ro<uint32_t> lvt_timer_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtTimerOffset)};
     uint32_t lvt_timer = lvt_timer_reg.read();
-    klog::info << "LVT Timer: " << klog::hex << lvt_timer;
+    klog::Info("LVT Timer: 0x%llx", static_cast<unsigned long long>(lvt_timer));
 
     etl::io_port_ro<uint32_t> lvt_lint0_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtLint0Offset)};
     uint32_t lvt_lint0 = lvt_lint0_reg.read();
-    klog::info << "LVT LINT0: " << klog::hex << lvt_lint0;
+    klog::Info("LVT LINT0: 0x%llx", static_cast<unsigned long long>(lvt_lint0));
 
     etl::io_port_ro<uint32_t> lvt_lint1_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtLint1Offset)};
     uint32_t lvt_lint1 = lvt_lint1_reg.read();
-    klog::info << "LVT LINT1: " << klog::hex << lvt_lint1;
+    klog::Info("LVT LINT1: 0x%llx", static_cast<unsigned long long>(lvt_lint1));
 
     etl::io_port_ro<uint32_t> lvt_error_reg{
         reinterpret_cast<void*>(apic_base_ + kXApicLvtErrorOffset)};
     uint32_t lvt_error = lvt_error_reg.read();
-    klog::info << "LVT Error: " << klog::hex << lvt_error;
+    klog::Info("LVT Error: 0x%llx", static_cast<unsigned long long>(lvt_error));
 
-    klog::info << "APIC Base Address: " << klog::hex << apic_base_;
+    klog::Info("APIC Base Address: 0x%llx",
+               static_cast<unsigned long long>(apic_base_));
   }
 }
 
