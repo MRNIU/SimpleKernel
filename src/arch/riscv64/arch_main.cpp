@@ -27,7 +27,7 @@ BasicInfo::BasicInfo(int, const char** argv) {
         return {};
       })
       .or_else([](Error err) -> Expected<void> {
-        klog::err << "Failed to get memory info: " << err.message();
+        klog::Err("Failed to get memory info: %s", err.message());
         while (true) {
           cpu_io::Pause();
         }
@@ -54,7 +54,7 @@ void ArchInit(int argc, const char** argv) {
   // 解析内核 elf 信息
   KernelElfSingleton::create(BasicInfoSingleton::instance().elf_addr);
 
-  klog::info << "Hello riscv64 ArchInit";
+  klog::Info("Hello riscv64 ArchInit");
 }
 
 void ArchInitSMP(int, const char**) {}
@@ -64,7 +64,8 @@ void WakeUpOtherCores() {
     auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret.error != SBI_SUCCESS) &&
         (ret.error != SBI_ERR_ALREADY_AVAILABLE)) {
-      klog::warn << "hart " << i << " start failed: " << ret.error;
+      klog::Warn("hart %llu start failed: %d",
+                 static_cast<unsigned long long>(i), ret.error);
     }
   }
 }

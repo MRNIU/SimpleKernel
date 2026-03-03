@@ -17,19 +17,21 @@
 namespace {
 auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)
     -> uint64_t {
-  klog::info << "Default Interrupt handler ["
-             << cpu_io::ScauseInfo::kInterruptNames[cause] << "] " << klog::HEX
-             << cause << ", " << klog::hex
-             << reinterpret_cast<uintptr_t>(context);
+  klog::Info(
+      "Default Interrupt handler [%s] 0x%llX, 0x%llx",
+      cpu_io::ScauseInfo::kInterruptNames[cause],
+      static_cast<unsigned long long>(cause),
+      static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(context)));
   return 0;
 }
 
 auto DefaultExceptionHandler(uint64_t cause, cpu_io::TrapContext* context)
     -> uint64_t {
-  klog::err << "Default Exception handler ["
-            << cpu_io::ScauseInfo::kExceptionNames[cause] << "] " << klog::HEX
-            << cause << ", " << klog::hex
-            << reinterpret_cast<uintptr_t>(context);
+  klog::Err(
+      "Default Exception handler [%s] 0x%llX, 0x%llx",
+      cpu_io::ScauseInfo::kExceptionNames[cause],
+      static_cast<unsigned long long>(cause),
+      static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(context)));
   while (true) {
     cpu_io::Pause();
   }
@@ -45,7 +47,7 @@ Interrupt::Interrupt() {
   for (auto& i : exception_handlers_) {
     i = InterruptDelegate::create<DefaultExceptionHandler>();
   }
-  klog::info << "Interrupt init.";
+  klog::Info("Interrupt init.");
 }
 
 void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
@@ -74,17 +76,17 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) {
            "Interrupt code out of range");
 
     interrupt_handlers_[exception_code] = func;
-    klog::info << "RegisterInterruptFunc ["
-               << cpu_io::ScauseInfo::kInterruptNames[exception_code] << "] "
-               << klog::HEX << cause;
+    klog::Info("RegisterInterruptFunc [%s] 0x%llX",
+               cpu_io::ScauseInfo::kInterruptNames[exception_code],
+               static_cast<unsigned long long>(cause));
   } else {
     assert(exception_code < cpu_io::ScauseInfo::kExceptionMaxCount &&
            "Exception code out of range");
 
     exception_handlers_[exception_code] = func;
-    klog::info << "RegisterInterruptFunc ["
-               << cpu_io::ScauseInfo::kExceptionNames[exception_code] << "] "
-               << klog::HEX << cause;
+    klog::Info("RegisterInterruptFunc [%s] 0x%llX",
+               cpu_io::ScauseInfo::kExceptionNames[exception_code],
+               static_cast<unsigned long long>(cause));
   }
 }
 
@@ -131,8 +133,8 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
   // 再在 PLIC 上为指定核心启用该中断
   plic_.Set(cpu_id, irq, priority, true);
 
-  klog::info << "RegisterExternalInterrupt: IRQ " << irq << ", cpu " << cpu_id
-             << ", priority " << priority;
+  klog::Info("RegisterExternalInterrupt: IRQ %u, cpu %u, priority %u", irq,
+             cpu_id, priority);
   return {};
 }
 
