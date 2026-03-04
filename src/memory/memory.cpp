@@ -77,9 +77,8 @@ void MemoryInit() {
                         reinterpret_cast<uint64_t>(allocator_addr);
 
   klog::Info("bmalloc address: 0x%llx, size: 0x%llX",
-             static_cast<unsigned long long>(
-                 reinterpret_cast<uintptr_t>(allocator_addr)),
-             static_cast<unsigned long long>(allocator_size));
+             static_cast<uint64_t>(reinterpret_cast<uintptr_t>(allocator_addr)),
+             static_cast<uint64_t>(allocator_size));
 
   static bmalloc::Bmalloc<BmallocLogger> bmallocator(allocator_addr,
                                                      allocator_size);

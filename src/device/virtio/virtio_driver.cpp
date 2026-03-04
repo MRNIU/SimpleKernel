@@ -41,7 +41,7 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
       if (blk_device_count_ >= kMaxBlkDevices) {
         klog::Warn(
             "VirtioDriver: blk device pool full, device at 0x%llx skipped",
-            static_cast<unsigned long long>(ctx->base));
+            static_cast<uint64_t>(ctx->base));
         return std::unexpected(Error(ErrorCode::kOutOfMemory));
       }
       const size_t idx = blk_device_count_;
@@ -51,7 +51,7 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
       if (!dma_buffers_[idx] || !dma_buffers_[idx]->IsValid() ||
           dma_buffers_[idx]->GetBuffer().size() < kMinDmaBufferSize) {
         klog::Err("VirtioDriver: failed to allocate DMA buffer at 0x%llx",
-                  static_cast<unsigned long long>(ctx->base));
+                  static_cast<uint64_t>(ctx->base));
         return std::unexpected(Error(ErrorCode::kOutOfMemory));
       }
 
@@ -61,7 +61,7 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
       slot_buffers_[idx] = kstd::make_unique<IoBuffer>(slot_size);
       if (!slot_buffers_[idx] || !slot_buffers_[idx]->IsValid()) {
         klog::Err("VirtioDriver: failed to allocate slot DMA buffer at 0x%llx",
-                  static_cast<unsigned long long>(ctx->base));
+                  static_cast<uint64_t>(ctx->base));
         dma_buffers_[idx].reset();
         return std::unexpected(Error(ErrorCode::kOutOfMemory));
       }
@@ -81,7 +81,7 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
           kDefaultQueueSize, extra_features);
       if (!result.has_value()) {
         klog::Err("VirtioDriver: VirtioBlk Create failed at 0x%llx",
-                  static_cast<unsigned long long>(ctx->base));
+                  static_cast<uint64_t>(ctx->base));
         dma_buffers_[idx].reset();
         slot_buffers_[idx].reset();
         return std::unexpected(Error(result.error().code));
@@ -101,13 +101,13 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
       } else {
         klog::Warn(
             "VirtioDriver: blk adapter pool full, device at 0x%llx skipped",
-            static_cast<unsigned long long>(ctx->base));
+            static_cast<uint64_t>(ctx->base));
       }
 
       ++blk_device_count_;
       klog::Info(
-          "VirtioDriver: block device at 0x%llx, capacity=%llu sectors, irq=%u",
-          static_cast<unsigned long long>(ctx->base),
+          "VirtioDriver: block device at 0x%llx, capacity=%lu sectors, irq=%u",
+          static_cast<uint64_t>(ctx->base),
           blk_devices_[idx].value().GetCapacity(), irqs_[idx]);
       return {};
     }

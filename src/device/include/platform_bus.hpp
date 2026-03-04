@@ -60,9 +60,8 @@ class PlatformBus {
           klog::Info(
               "PlatformBus: found '%s' compatible='%s' mmio=0x%llx size=0x%llx "
               "irq=%u",
-              node_name, compatible_data,
-              static_cast<unsigned long long>(mmio_base),
-              static_cast<unsigned long long>(mmio_size), irq);
+              node_name, compatible_data, static_cast<uint64_t>(mmio_base),
+              static_cast<uint64_t>(mmio_size), irq);
 
           ++count;
           return true;

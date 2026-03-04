@@ -64,8 +64,8 @@ void WakeUpOtherCores() {
     auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret.error != SBI_SUCCESS) &&
         (ret.error != SBI_ERR_ALREADY_AVAILABLE)) {
-      klog::Warn("hart %llu start failed: %d",
-                 static_cast<unsigned long long>(i), ret.error);
+      klog::Warn("hart %lu start failed: %d", static_cast<uint64_t>(i),
+                 ret.error);
     }
   }
 }

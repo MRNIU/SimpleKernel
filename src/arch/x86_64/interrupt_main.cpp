@@ -31,9 +31,9 @@ uint64_t ApicTimerHandler(uint64_t cause, cpu_io::TrapContext* context) {
 
   // 每100次中断打印一次信息（减少日志输出）
   if (tick_count % 100 == 0) {
-    klog::Info("APIC Timer interrupt %llu, vector 0x%llx",
-               static_cast<unsigned long long>(tick_count),
-               static_cast<unsigned long long>(static_cast<uint32_t>(cause)));
+    klog::Info("APIC Timer interrupt %lu, vector 0x%llx",
+               static_cast<uint64_t>(tick_count),
+               static_cast<uint64_t>(static_cast<uint32_t>(cause)));
   }
 
   // 发送 EOI 信号给 Local APIC
@@ -49,7 +49,7 @@ uint64_t ApicTimerHandler(uint64_t cause, cpu_io::TrapContext* context) {
  */
 uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
   klog::Info("Keyboard interrupt received, vector 0x%llx",
-             static_cast<unsigned long long>(static_cast<uint32_t>(cause)));
+             static_cast<uint64_t>(static_cast<uint32_t>(cause)));
 
   // 读取键盘扫描码
   // 8042 键盘控制器的数据端口是 0x60
@@ -57,8 +57,7 @@ uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
 
   // 简单的扫描码处理 - 仅显示按下的键（忽略释放事件）
   if (!(scancode & 0x80)) {  // 最高位为0表示按下
-    klog::Info("Key pressed: scancode 0x%llx",
-               static_cast<unsigned long long>(scancode));
+    klog::Info("Key pressed: scancode 0x%llx", static_cast<uint64_t>(scancode));
 
     // 简单的扫描码到ASCII的映射（仅作为示例）
     static const char scancode_to_ascii[] = {

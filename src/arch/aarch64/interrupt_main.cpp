@@ -28,29 +28,24 @@ static void HandleException(const char* exception_msg,
   klog::Err(
       "  ESR_EL1: 0x%llX, ELR_EL1: 0x%llX, SP_EL0: 0x%llX, SP_EL1: 0x%llX, "
       "SPSR_EL1: 0x%llX",
-      static_cast<unsigned long long>(context->esr_el1),
-      static_cast<unsigned long long>(context->elr_el1),
-      static_cast<unsigned long long>(context->sp_el0),
-      static_cast<unsigned long long>(context->sp_el1),
-      static_cast<unsigned long long>(context->spsr_el1));
+      static_cast<uint64_t>(context->esr_el1),
+      static_cast<uint64_t>(context->elr_el1),
+      static_cast<uint64_t>(context->sp_el0),
+      static_cast<uint64_t>(context->sp_el1),
+      static_cast<uint64_t>(context->spsr_el1));
 
   if (print_regs == 4) {
-    klog::Err("  x0-x3: 0x%llX 0x%llX 0x%llX 0x%llX",
-              static_cast<unsigned long long>(context->x0),
-              static_cast<unsigned long long>(context->x1),
-              static_cast<unsigned long long>(context->x2),
-              static_cast<unsigned long long>(context->x3));
+    klog::Err(
+        "  x0-x3: 0x%llX 0x%llX 0x%llX 0x%llX",
+        static_cast<uint64_t>(context->x0), static_cast<uint64_t>(context->x1),
+        static_cast<uint64_t>(context->x2), static_cast<uint64_t>(context->x3));
   } else if (print_regs == 8) {
     klog::Err(
         "  x0-x7: 0x%llX 0x%llX 0x%llX 0x%llX 0x%llX 0x%llX 0x%llX 0x%llX",
-        static_cast<unsigned long long>(context->x0),
-        static_cast<unsigned long long>(context->x1),
-        static_cast<unsigned long long>(context->x2),
-        static_cast<unsigned long long>(context->x3),
-        static_cast<unsigned long long>(context->x4),
-        static_cast<unsigned long long>(context->x5),
-        static_cast<unsigned long long>(context->x6),
-        static_cast<unsigned long long>(context->x7));
+        static_cast<uint64_t>(context->x0), static_cast<uint64_t>(context->x1),
+        static_cast<uint64_t>(context->x2), static_cast<uint64_t>(context->x3),
+        static_cast<uint64_t>(context->x4), static_cast<uint64_t>(context->x5),
+        static_cast<uint64_t>(context->x6), static_cast<uint64_t>(context->x7));
   }
 
   while (true) {

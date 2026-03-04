@@ -21,7 +21,7 @@ auto Apic::InitCurrentCpuLocalApic() -> Expected<void> {
       .and_then([]() -> Expected<void> {
         klog::Info(
             "Local APIC initialized successfully for CPU with APIC ID 0x%llx",
-            static_cast<unsigned long long>(cpu_io::GetCurrentCoreId()));
+            static_cast<uint64_t>(cpu_io::GetCurrentCoreId()));
         return {};
       })
       .or_else([](Error err) -> Expected<void> {
@@ -126,7 +126,7 @@ void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
               target_addr)
         .or_else([apic_id](Error err) -> Expected<void> {
           klog::Err("Failed to start AP with APIC ID 0x%llx: %s",
-                    static_cast<unsigned long long>(apic_id), err.message());
+                    static_cast<uint64_t>(apic_id), err.message());
           return std::unexpected(err);
         });
   }

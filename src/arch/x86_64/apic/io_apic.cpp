@@ -83,10 +83,9 @@ uint32_t IoApic::GetMaxRedirectionEntries() const {
 
 void IoApic::PrintInfo() const {
   klog::Info("IO APIC Information");
-  klog::Info("Base Address: 0x%llx",
-             static_cast<unsigned long long>(base_address_));
-  klog::Info("ID: 0x%llx", static_cast<unsigned long long>(GetId()));
-  klog::Info("Version: 0x%llx", static_cast<unsigned long long>(GetVersion()));
+  klog::Info("Base Address: 0x%llx", static_cast<uint64_t>(base_address_));
+  klog::Info("ID: 0x%llx", static_cast<uint64_t>(GetId()));
+  klog::Info("Version: 0x%llx", static_cast<uint64_t>(GetVersion()));
   klog::Info("Max Redirection Entries: %u", GetMaxRedirectionEntries());
 }
 

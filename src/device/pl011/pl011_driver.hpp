@@ -67,7 +67,7 @@ class Pl011Driver {
     uart_ = Pl011Type(ctx->base);
     node.type = DeviceType::kChar;
     klog::Info("Pl011Driver: UART at 0x%llx bound",
-               static_cast<unsigned long long>(node.mmio_base));
+               static_cast<uint64_t>(node.mmio_base));
     return {};
   }
 

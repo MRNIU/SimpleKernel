@@ -62,7 +62,7 @@ void DumpStack() {
         klog::Err("[%s] 0x%llx",
                   reinterpret_cast<const char*>(
                       KernelElfSingleton::instance().strtab_ + symtab.st_name),
-                  static_cast<unsigned long long>(buffer[current_frame_idx]));
+                  static_cast<uint64_t>(buffer[current_frame_idx]));
       }
     }
   }

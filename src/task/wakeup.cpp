@@ -21,7 +21,7 @@ void TaskManager::Wakeup(ResourceId resource_id) {
     // 没有任务等待该资源
     klog::Debug("Wakeup: No tasks waiting on resource=%s, data=0x%llx",
                 resource_id.GetTypeName(),
-                static_cast<unsigned long long>(resource_id.GetData()));
+                static_cast<uint64_t>(resource_id.GetData()));
     return;
   }
 
@@ -54,5 +54,5 @@ void TaskManager::Wakeup(ResourceId resource_id) {
 
   klog::Debug("Wakeup: Woke up %zu tasks from resource=%s, data=0x%llx",
               wakeup_count, resource_id.GetTypeName(),
-              static_cast<unsigned long long>(resource_id.GetData()));
+              static_cast<uint64_t>(resource_id.GetData()));
 }

@@ -137,6 +137,7 @@ class LockGuard {
    */
   explicit LockGuard(mutex_type& mutex) : mutex_(mutex) {
     mutex_.Lock().or_else([](auto&& err) {
+      (void)err;
       // klog::Err("LockGuard: Failed to acquire lock: %s", err.message());
       while (true) {
         cpu_io::Pause();
@@ -150,6 +151,7 @@ class LockGuard {
    */
   ~LockGuard() {
     mutex_.UnLock().or_else([](auto&& err) {
+      (void)err;
       // klog::Err("LockGuard: Failed to release lock: %s", err.message());
       while (true) {
         cpu_io::Pause();

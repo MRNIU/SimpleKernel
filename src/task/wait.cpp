@@ -105,9 +105,9 @@ Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
 
     Block(wait_resource_id);
 
-    klog::Debug("Wait: pid=%d blocked on resource=%s, data=%llu", current->pid,
+    klog::Debug("Wait: pid=%d blocked on resource=%s, data=%lu", current->pid,
                 wait_resource_id.GetTypeName(),
-                static_cast<unsigned long long>(wait_resource_id.GetData()));
+                static_cast<uint64_t>(wait_resource_id.GetData()));
 
     // 被唤醒后重新检查
   }

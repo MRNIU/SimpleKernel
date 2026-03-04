@@ -26,11 +26,10 @@ TarpEntry(cpu_io::TrapContext* interrupt_context) {
 
 auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)
     -> uint64_t {
-  klog::Info(
-      "Default Interrupt handler [%s] %llX, 0x%llx",
-      cpu_io::IdtrInfo::kInterruptNames[cause],
-      static_cast<unsigned long long>(cause),
-      static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(context)));
+  klog::Info("Default Interrupt handler [%s] %llX, 0x%llx",
+             cpu_io::IdtrInfo::kInterruptNames[cause],
+             static_cast<uint64_t>(cause),
+             static_cast<uint64_t>(reinterpret_cast<uintptr_t>(context)));
   DumpStack();
   while (true) {
     ;
@@ -58,7 +57,7 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) {
     interrupt_handlers_[cause] = func;
     klog::Debug("RegisterInterruptFunc [%s] %llX",
                 cpu_io::IdtrInfo::kInterruptNames[cause],
-                static_cast<unsigned long long>(cause));
+                static_cast<uint64_t>(cause));
   }
 }
 
@@ -86,8 +85,8 @@ void Interrupt::SetUpIdtr() {
     for (size_t i = 0;
          i < (cpu_io::Idtr::Read().limit + 1) / sizeof(cpu_io::IdtrInfo::Idtr);
          i++) {
-      klog::Debug("idtr[%llu] 0x%llx", static_cast<unsigned long long>(i),
-                  static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(
+      klog::Debug("idtr[%lu] 0x%llx", static_cast<uint64_t>(i),
+                  static_cast<uint64_t>(reinterpret_cast<uintptr_t>(
                       cpu_io::Idtr::Read().base + i)));
     }
   }
@@ -125,8 +124,7 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
   }
 
   klog::Info("RegisterExternalInterrupt: IRQ %u -> vector %llX, cpu %u", irq,
-             static_cast<unsigned long long>(static_cast<uint32_t>(vector)),
-             cpu_id);
+             static_cast<uint64_t>(static_cast<uint32_t>(vector)), cpu_id);
   return {};
 }
 

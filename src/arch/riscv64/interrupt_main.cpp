@@ -55,9 +55,8 @@ auto PageFaultHandler(uint64_t exception_code, cpu_io::TrapContext* context)
   auto addr = cpu_io::Stval::Read();
   klog::Err("PageFault: %s(0x%llx), addr: 0x%llx",
             cpu_io::ScauseInfo::kExceptionNames[exception_code],
-            static_cast<unsigned long long>(exception_code),
-            static_cast<unsigned long long>(addr));
-  klog::Err("sepc: 0x%llx", static_cast<unsigned long long>(context->sepc));
+            static_cast<uint64_t>(exception_code), static_cast<uint64_t>(addr));
+  klog::Err("sepc: 0x%llx", static_cast<uint64_t>(context->sepc));
   DumpStack();
   while (true) {
     cpu_io::Pause();
@@ -77,8 +76,8 @@ auto IpiHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
   // 清软中断 pending 位
   cpu_io::Sip::Ssip::Clear();
-  klog::Debug("Core %llu received IPI",
-              static_cast<unsigned long long>(cpu_io::GetCurrentCoreId()));
+  klog::Debug("Core %lu received IPI",
+              static_cast<uint64_t>(cpu_io::GetCurrentCoreId()));
   return 0;
 }
 
@@ -190,6 +189,7 @@ void InterruptInit(int, const char**) {
                                  InterruptDelegate::create<SerialIrqHandler>())
       .or_else([](Error err) -> Expected<void> {
         klog::Err("Failed to register serial IRQ: %s", err.message());
+        return std::unexpected(err);
       });
 
   // 通过统一接口注册 virtio-blk 外部中断
@@ -201,8 +201,8 @@ void InterruptInit(int, const char**) {
             blk_irq, cpu_io::GetCurrentCoreId(), 1,
             InterruptDelegate::create<VirtioBlkIrqHandler>())
         .or_else([blk_irq](Error err) -> Expected<void> {
-          klog::Err("Failed to register virtio-blk IRQ %llu: %s",
-                    static_cast<unsigned long long>(blk_irq), err.message());
+          klog::Err("Failed to register virtio-blk IRQ %lu: %s",
+                    static_cast<uint64_t>(blk_irq), err.message());
           return std::unexpected(err);
         });
   }

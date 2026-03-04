@@ -63,11 +63,9 @@ class KernelFdt {
       return Expected<void>{};
     });
 
-    klog::Debug(
-        "Load dtb at [0x%llX], size [0x%llX]",
-        static_cast<unsigned long long>(
-            reinterpret_cast<uintptr_t>(fdt_header_)),
-        static_cast<unsigned long long>(fdt32_to_cpu(fdt_header_->totalsize)));
+    klog::Debug("Load dtb at [0x%llX], size [0x%llX]",
+                static_cast<uint64_t>(reinterpret_cast<uintptr_t>(fdt_header_)),
+                static_cast<uint64_t>(fdt32_to_cpu(fdt_header_->totalsize)));
   }
 
   /// @name 构造/析构函数
@@ -812,11 +810,11 @@ class KernelFdt {
         uint32_t id =
             fdt32_to_cpu(*reinterpret_cast<const uint32_t*>(prop->data));
         klog::Debug("PSCI %s function ID: 0x%llX", name,
-                    static_cast<unsigned long long>(id));
+                    static_cast<uint64_t>(id));
         if (id != expected) {
           klog::Err("PSCI %s function ID mismatch: expected 0x%llX, got 0x%llX",
-                    name, static_cast<unsigned long long>(expected),
-                    static_cast<unsigned long long>(id));
+                    name, static_cast<uint64_t>(expected),
+                    static_cast<uint64_t>(id));
           return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
         }
       }

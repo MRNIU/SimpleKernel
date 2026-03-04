@@ -805,8 +805,8 @@ class VirtioBlk {
     }
 
     if (!vq_.HasUsed()) {
-      klog::Warn("Sync request timeout: sector=%llu",
-                 static_cast<unsigned long long>(sector));
+      klog::Warn("Sync request timeout: sector=%lu",
+                 static_cast<uint64_t>(sector));
       return std::unexpected(Error{ErrorCode::kTimeout});
     }
 

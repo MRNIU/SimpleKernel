@@ -98,8 +98,8 @@ inline void TryDrain() {
   if (dropped > 0) {
     char drop_buf[64];
     stbsp_snprintf(drop_buf, static_cast<int>(sizeof(drop_buf)),
-                   "\033[31m[LOG] dropped %llu entries\033[0m\n",
-                   static_cast<unsigned long long>(dropped));
+                   "\033[31m[LOG] dropped %lu entries\033[0m\n",
+                   static_cast<uint64_t>(dropped));
     PutStr(drop_buf);
   }
 

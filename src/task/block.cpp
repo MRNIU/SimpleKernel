@@ -37,7 +37,7 @@ void TaskManager::Block(ResourceId resource_id) {
 
     klog::Debug("Block: pid=%d blocked on resource=%s, data=0x%llx",
                 current->pid, resource_id.GetTypeName(),
-                static_cast<unsigned long long>(resource_id.GetData()));
+                static_cast<uint64_t>(resource_id.GetData()));
   }
 
   // 调度到其他任务

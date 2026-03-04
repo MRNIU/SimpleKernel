@@ -121,9 +121,9 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   if (flags & clone_flag::kVm) {
     // 共享地址空间（线程）
     child->page_table = parent->page_table;
-    klog::Debug("Clone: sharing page table 0x%llx",
-                static_cast<unsigned long long>(
-                    reinterpret_cast<uintptr_t>(child->page_table)));
+    klog::Debug(
+        "Clone: sharing page table 0x%llx",
+        static_cast<uint64_t>(reinterpret_cast<uintptr_t>(child->page_table)));
   } else {
     // 复制地址空间（进程）
     if (parent->page_table) {
@@ -138,9 +138,9 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
       }
       child->page_table = reinterpret_cast<uint64_t*>(result.value());
       klog::Debug("Clone: cloned page table from 0x%llx to 0x%llx",
-                  static_cast<unsigned long long>(
+                  static_cast<uint64_t>(
                       reinterpret_cast<uintptr_t>(parent->page_table)),
-                  static_cast<unsigned long long>(
+                  static_cast<uint64_t>(
                       reinterpret_cast<uintptr_t>(child->page_table)));
     } else {
       // 父进程没有页表（内核线程），子进程也不需要
@@ -206,7 +206,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   klog::Debug(
       "Clone: created %s - parent=%d, child=%d, tgid=%d, vm=%s, flags=0x%llx",
       clone_type, parent->pid, new_pid, child->tgid, vm_type,
-      static_cast<unsigned long long>(flags));
+      static_cast<uint64_t>(flags));
 
   return new_pid;
 }

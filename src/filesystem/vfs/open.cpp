@@ -122,7 +122,7 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
   }
 
   klog::Debug("VFS: opened '%s', flags=0x%llx", path,
-              static_cast<unsigned long long>(flags));
+              static_cast<uint64_t>(flags));
   return file;
 }
 

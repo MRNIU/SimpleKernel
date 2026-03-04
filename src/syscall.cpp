@@ -183,10 +183,9 @@ int sys_futex(int* uaddr, int op, int val, [[maybe_unused]] const void* timeout,
       // 检查 *uaddr 是否等于 val，如果相等则阻塞
       /// @todo需要实现原子比较和阻塞逻辑
       /// @todo需要在 TaskManager 中添加 futex 等待队列
-      klog::Debug(
-          "[Syscall] FUTEX_WAIT on 0x%llx (val=%d)",
-          static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(uaddr)),
-          val);
+      klog::Debug("[Syscall] FUTEX_WAIT on 0x%llx (val=%d)",
+                  static_cast<uint64_t>(reinterpret_cast<uintptr_t>(uaddr)),
+                  val);
 
       // 简化实现：直接检查值并阻塞
       if (*uaddr == val) {
@@ -200,10 +199,9 @@ int sys_futex(int* uaddr, int op, int val, [[maybe_unused]] const void* timeout,
 
     case FUTEX_WAKE: {
       // 唤醒最多 val 个等待 uaddr 的线程
-      klog::Debug(
-          "[Syscall] FUTEX_WAKE on 0x%llx (count=%d)",
-          static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(uaddr)),
-          val);
+      klog::Debug("[Syscall] FUTEX_WAKE on 0x%llx (count=%d)",
+                  static_cast<uint64_t>(reinterpret_cast<uintptr_t>(uaddr)),
+                  val);
 
       // 唤醒等待该 futex 的所有线程（简化实现，应该只唤醒 val 个）
       ResourceId futex_id(ResourceType::kFutex,
@@ -283,7 +281,7 @@ int sys_sched_setaffinity(int pid, size_t cpusetsize, const uint64_t* mask) {
   target->cpu_affinity = *mask;
 
   klog::Debug("[Syscall] Set CPU affinity for task %d to 0x%llx", target->pid,
-              static_cast<unsigned long long>(*mask));
+              static_cast<uint64_t>(*mask));
 
   /// @todo 如果当前任务不在允许的 CPU 上运行，应该触发迁移
 
