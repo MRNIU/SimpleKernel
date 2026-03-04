@@ -5,8 +5,6 @@
 #ifndef SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDIO_H_
 #define SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDIO_H_
 
-#include "stb_sprintf.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -27,7 +27,7 @@ BasicInfo::BasicInfo(int, const char** argv) {
         return {};
       })
       .or_else([](Error err) -> Expected<void> {
-        klog::Err("Failed to get memory info: %s", err.message());
+        klog::Err("Failed to get memory info: {}", err.message());
         while (true) {
           cpu_io::Pause();
         }
@@ -64,8 +64,7 @@ void WakeUpOtherCores() {
     auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret.error != SBI_SUCCESS) &&
         (ret.error != SBI_ERR_ALREADY_AVAILABLE)) {
-      klog::Warn("hart %lu start failed: %d", static_cast<uint64_t>(i),
-                 ret.error);
+      klog::Warn("hart {} start failed: {}", i, ret.error);
     }
   }
 }

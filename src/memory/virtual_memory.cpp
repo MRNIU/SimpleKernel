@@ -34,17 +34,16 @@ VirtualMemory::VirtualMemory() {
   // 映射全部物理内存
   MapMMIO(basic_info.physical_memory_addr, basic_info.physical_memory_size)
       .or_else([](auto&& err) -> Expected<void*> {
-        klog::Err("Failed to map kernel memory: %s", err.message());
+        klog::Err("Failed to map kernel memory: {}", err.message());
         while (true) {
           cpu_io::Pause();
         }
         return {};
       });
 
-  klog::Info("Kernel memory mapped from 0x%llX to 0x%llX",
-             static_cast<uint64_t>(basic_info.physical_memory_addr),
-             static_cast<uint64_t>(basic_info.physical_memory_addr +
-                                   basic_info.physical_memory_size));
+  klog::Info("Kernel memory mapped from {:#X} to {:#X}",
+             basic_info.physical_memory_addr,
+             basic_info.physical_memory_addr + basic_info.physical_memory_size);
 }
 
 void VirtualMemory::InitCurrentCore() const {
@@ -93,14 +92,14 @@ auto VirtualMemory::MapPage(void* page_dir, void* virtual_addr,
         (*pte & ((1ULL << cpu_io::virtual_memory::kPteAttributeBits) - 1)) ==
             flags) {
       klog::Debug(
-          "MapPage: duplicate va = 0x%llx, pa = 0x%llX, flags = 0x%llX, skip",
+          "MapPage: duplicate va = {:#x}, pa = {:#X}, flags = {:#X}, skip",
           static_cast<uint64_t>(reinterpret_cast<uintptr_t>(virtual_addr)),
           static_cast<uint64_t>(existing_pa), static_cast<uint64_t>(flags));
       // 重复映射，但不是错误
       return {};
     }
     klog::Warn(
-        "MapPage: remap va = 0x%llx from pa = 0x%llX to pa = 0x%llx",
+        "MapPage: remap va = {:#x} from pa = {:#X} to pa = {:#x}",
         static_cast<uint64_t>(reinterpret_cast<uintptr_t>(virtual_addr)),
         static_cast<uint64_t>(existing_pa),
         static_cast<uint64_t>(reinterpret_cast<uintptr_t>(physical_addr)));
@@ -171,7 +170,7 @@ void VirtualMemory::DestroyPageDirectory(void* page_dir, bool free_pages) {
   // 释放根页表目录本身
   aligned_free(page_dir);
 
-  klog::Debug("Destroyed page directory at address: 0x%llx",
+  klog::Debug("Destroyed page directory at address: {:#x}",
               static_cast<uint64_t>(reinterpret_cast<uintptr_t>(page_dir)));
 }
 
@@ -201,7 +200,7 @@ auto VirtualMemory::ClonePageDirectory(void* src_page_dir, bool copy_mappings)
     return std::unexpected(result.error());
   }
 
-  klog::Debug("Cloned page directory from 0x%llx to 0x%llx",
+  klog::Debug("Cloned page directory from {:#x} to {:#x}",
               static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src_page_dir)),
               static_cast<uint64_t>(reinterpret_cast<uintptr_t>(dst_page_dir)));
   return dst_page_dir;

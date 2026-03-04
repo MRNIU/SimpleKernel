@@ -32,7 +32,7 @@ auto DeviceManager::ProbeAll() -> Expected<void> {
     node.bound = true;
 
     drv->probe(node).or_else([&](auto&& err) {
-      klog::Err("DeviceManager: probe '%s' failed: %s", node.name,
+      klog::Err("DeviceManager: probe '{}' failed: {}", node.name,
                 err.message());
       node.bound = false;
       return Expected<void>{};
@@ -41,7 +41,7 @@ auto DeviceManager::ProbeAll() -> Expected<void> {
     ++probed;
   }
 
-  klog::Info("DeviceManager: probed %zu device(s), %zu skipped (no driver)",
+  klog::Info("DeviceManager: probed {} device(s), {} skipped (no driver)",
              probed, no_driver_count);
   return {};
 }

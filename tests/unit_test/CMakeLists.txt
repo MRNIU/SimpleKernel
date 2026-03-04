@@ -22,7 +22,6 @@ ADD_EXECUTABLE (
     ramfs_test.cpp
     ${CMAKE_SOURCE_DIR}/src/memory/virtual_memory.cpp
     ${CMAKE_SOURCE_DIR}/src/syscall.cpp
-    ${CMAKE_SOURCE_DIR}/src/libc/sk_stdio.c
     ${CMAKE_SOURCE_DIR}/src/task/block.cpp
     ${CMAKE_SOURCE_DIR}/src/task/clone.cpp
     ${CMAKE_SOURCE_DIR}/src/task/exit.cpp

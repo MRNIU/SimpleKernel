@@ -6,16 +6,70 @@
 #define SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_
 
 #include <cpu_io.h>
+#include <etl/format.h>
 
 #include <MPMCQueue.hpp>
 #include <atomic>
-#include <cstdarg>
 #include <cstdint>
+#include <tuple>
+#include <type_traits>
 
 #include "kstd_cstdio"
 
 namespace klog {
 namespace detail {
+
+/// @brief Map types unsupported by ETL's basic_format_arg to supported ones.
+/// ETL format lacks constructors for `long` and `unsigned long` (LP64 issue).
+/// This maps them to `long long` / `unsigned long long` respectively.
+/// All other types pass through unchanged.
+/// @{
+template <typename T>
+struct EtlArgMap {
+  using type = std::decay_t<T>;
+};
+template <>
+struct EtlArgMap<long> {
+  using type = long long;
+};
+template <>
+struct EtlArgMap<unsigned long> {
+  using type = unsigned long long;
+};
+/// @}
+
+/// @brief Non-template bridge to etl::vformat_to.
+/// Defined in klog_format.cpp which is compiled without -mgeneral-regs-only
+/// so that ETL's floating-point formatting templates can be instantiated.
+auto VFormatToN(
+    char* buf, size_t n, etl::string_view fmt,
+    etl::format_args<etl::private_format::limit_iterator<char*>> args) -> char*;
+
+/// @brief Safe wrapper around etl::format_to_n that casts args to
+/// ETL-compatible types before formatting.  Works around the missing
+/// `long` / `unsigned long` constructors in ETL's basic_format_arg.
+/// The actual vformat_to call is in a separate TU (klog_format.cpp)
+/// to avoid floating-point template instantiation under -mgeneral-regs-only.
+template <typename... Args>
+__always_inline auto FormatToN(char* buf, size_t n,
+                               etl::format_string<Args...> fmt, Args&&... args)
+    -> char* {
+  using WrapperIt = etl::private_format::limit_iterator<char*>;
+  // Materialize cast values as named locals so make_format_args gets lvalue
+  // refs. EtlArgMap converts long -> long long, unsigned long -> unsigned long
+  // long.
+  auto cast_tuple =
+      std::tuple<typename EtlArgMap<std::remove_cvref_t<Args>>::type...>(
+          static_cast<typename EtlArgMap<std::remove_cvref_t<Args>>::type>(
+              args)...);
+  return std::apply(
+      [&](auto&... cast_args) -> char* {
+        auto the_args = etl::make_format_args<WrapperIt>(cast_args...);
+        return VFormatToN(buf, n, fmt.get(),
+                          etl::format_args<WrapperIt>(the_args));
+      },
+      cast_tuple);
+}
 
 /// ANSI escape codes
 inline constexpr auto kReset = "\033[0m";
@@ -97,9 +151,10 @@ inline void TryDrain() {
   auto dropped = dropped_count.exchange(0, std::memory_order_relaxed);
   if (dropped > 0) {
     char drop_buf[64];
-    stbsp_snprintf(drop_buf, static_cast<int>(sizeof(drop_buf)),
-                   "\033[31m[LOG] dropped %lu entries\033[0m\n",
-                   static_cast<uint64_t>(dropped));
+    auto* end = FormatToN(drop_buf, sizeof(drop_buf) - 1,
+                          "\033[31m[LOG] dropped {} entries\033[0m\n",
+                          static_cast<uint64_t>(dropped));
+    *end = '\0';
     PutStr(drop_buf);
   }
 
@@ -118,8 +173,9 @@ inline void TryDrain() {
 
 /// Core implementation: format message, push to queue, try drain.
 /// @tparam Lvl compile-time log level for filtering
-template <Level Lvl>
-__always_inline void Log(const char* fmt, va_list args) {
+/// @tparam Args variadic format argument types
+template <Level Lvl, typename... Args>
+__always_inline void Log(etl::format_string<Args...> fmt, Args&&... args) {
   if constexpr (Lvl < kMinLevel) {
     return;
   }
@@ -128,7 +184,9 @@ __always_inline void Log(const char* fmt, va_list args) {
   entry.seq = log_seq.fetch_add(1, std::memory_order_relaxed);
   entry.core_id = cpu_io::GetCurrentCoreId();
   entry.level = Lvl;
-  stbsp_vsnprintf(entry.msg, static_cast<int>(sizeof(entry.msg)), fmt, args);
+  auto* end = FormatToN(entry.msg, sizeof(entry.msg) - 1, fmt,
+                        static_cast<Args&&>(args)...);
+  *end = '\0';
 
   if (!log_queue.push(entry)) {
     // Queue full: try drain, then retry once
@@ -145,47 +203,39 @@ __always_inline void Log(const char* fmt, va_list args) {
 }  // namespace detail
 
 /// @brief Log at DEBUG level (compiled out when SIMPLEKERNEL_MIN_LOG_LEVEL > 0)
-inline void Debug(const char* fmt, ...) {
+template <typename... Args>
+inline void Debug(etl::format_string<Args...> fmt, Args&&... args) {
   if constexpr (detail::Level::kDebug < detail::kMinLevel) {
     return;
   }
-  va_list args;
-  va_start(args, fmt);
-  detail::Log<detail::Level::kDebug>(fmt, args);
-  va_end(args);
+  detail::Log<detail::Level::kDebug>(fmt, static_cast<Args&&>(args)...);
 }
 
 /// @brief Log at INFO level
-inline void Info(const char* fmt, ...) {
+template <typename... Args>
+inline void Info(etl::format_string<Args...> fmt, Args&&... args) {
   if constexpr (detail::Level::kInfo < detail::kMinLevel) {
     return;
   }
-  va_list args;
-  va_start(args, fmt);
-  detail::Log<detail::Level::kInfo>(fmt, args);
-  va_end(args);
+  detail::Log<detail::Level::kInfo>(fmt, static_cast<Args&&>(args)...);
 }
 
 /// @brief Log at WARN level
-inline void Warn(const char* fmt, ...) {
+template <typename... Args>
+inline void Warn(etl::format_string<Args...> fmt, Args&&... args) {
   if constexpr (detail::Level::kWarn < detail::kMinLevel) {
     return;
   }
-  va_list args;
-  va_start(args, fmt);
-  detail::Log<detail::Level::kWarn>(fmt, args);
-  va_end(args);
+  detail::Log<detail::Level::kWarn>(fmt, static_cast<Args&&>(args)...);
 }
 
 /// @brief Log at ERROR level
-inline void Err(const char* fmt, ...) {
+template <typename... Args>
+inline void Err(etl::format_string<Args...> fmt, Args&&... args) {
   if constexpr (detail::Level::kErr < detail::kMinLevel) {
     return;
   }
-  va_list args;
-  va_start(args, fmt);
-  detail::Log<detail::Level::kErr>(fmt, args);
-  va_end(args);
+  detail::Log<detail::Level::kErr>(fmt, static_cast<Args&&>(args)...);
 }
 
 /// @brief Force-drain all queued log entries to serial output

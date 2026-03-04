@@ -76,7 +76,7 @@ void MemoryInit() {
                         BasicInfoSingleton::instance().physical_memory_size -
                         reinterpret_cast<uint64_t>(allocator_addr);
 
-  klog::Info("bmalloc address: 0x%llx, size: 0x%llX",
+  klog::Info("bmalloc address: {:#x}, size: {:#X}",
              static_cast<uint64_t>(reinterpret_cast<uintptr_t>(allocator_addr)),
              static_cast<uint64_t>(allocator_size));
 

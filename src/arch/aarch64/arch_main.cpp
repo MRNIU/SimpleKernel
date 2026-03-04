@@ -26,7 +26,7 @@ BasicInfo::BasicInfo(int, const char** argv) {
         return {};
       })
       .or_else([](Error err) -> Expected<void> {
-        klog::Err("Failed to get memory info: %s", err.message());
+        klog::Err("Failed to get memory info: {}", err.message());
         while (true) {
           cpu_io::Pause();
         }
@@ -55,7 +55,7 @@ void ArchInit(int argc, const char** argv) {
 
   KernelFdtSingleton::instance().CheckPSCI().or_else(
       [](Error err) -> Expected<void> {
-        klog::Err("CheckPSCI failed: %s", err.message());
+        klog::Err("CheckPSCI failed: {}", err.message());
         return {};
       });
 
@@ -68,7 +68,7 @@ void WakeUpOtherCores() {
   for (size_t i = 0; i < BasicInfoSingleton::instance().core_count; i++) {
     auto ret = cpu_io::psci::CpuOn(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret != cpu_io::psci::SUCCESS) && (ret != cpu_io::psci::ALREADY_ON)) {
-      klog::Warn("hart %zu start failed: %lld", i, static_cast<long long>(ret));
+      klog::Warn("hart {} start failed: {}", i, ret);
     }
   }
 }

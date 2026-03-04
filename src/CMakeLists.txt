@@ -29,7 +29,9 @@ TARGET_LINK_LIBRARIES (
             memory
             device
             task
-            filesystem)
+            filesystem
+            klog_format_obj
+            sk_math_obj)
 
 SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES OUTPUT_NAME
                                                   ${KERNEL_ELF_OUTPUT_NAME})

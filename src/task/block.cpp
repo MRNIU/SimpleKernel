@@ -24,18 +24,19 @@ void TaskManager::Block(ResourceId resource_id) {
     auto& list = cpu_sched.blocked_tasks[resource_id];
     if (list.full()) {
       klog::Err(
-          "Block: blocked_tasks list full for resource, cannot block task %d",
+          "Block: blocked_tasks list full for resource, cannot block task {}",
           current->pid);
       // Rollback: task stays kRunning, do not transition FSM
       return;
     }
+
     // Transition: kRunning -> kBlocked
     current->fsm.Receive(MsgBlock{resource_id});
     // Record blocked resource
     current->blocked_on = resource_id;
     list.push_back(current);
 
-    klog::Debug("Block: pid=%d blocked on resource=%s, data=0x%llx",
+    klog::Debug("Block: pid={} blocked on resource={}, data={:#x}",
                 current->pid, resource_id.GetTypeName(),
                 static_cast<uint64_t>(resource_id.GetData()));
   }

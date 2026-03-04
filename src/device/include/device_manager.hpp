@@ -41,7 +41,7 @@ class DeviceManager {
     size_t remaining = kMaxDevices - device_count_;
     auto result = bus.Enumerate(devices_ + device_count_, remaining);
     if (!result.has_value()) {
-      klog::Err("DeviceManager: bus '%s' enumeration failed: %s", B::GetName(),
+      klog::Err("DeviceManager: bus '{}' enumeration failed: {}", B::GetName(),
                 result.error().message());
       return std::unexpected(result.error());
     }
@@ -56,7 +56,7 @@ class DeviceManager {
     }
     device_count_ += count;
 
-    klog::Info("DeviceManager: bus '%s' enumerated %zu device(s)", B::GetName(),
+    klog::Info("DeviceManager: bus '{}' enumerated {} device(s)", B::GetName(),
                count);
     return {};
   }

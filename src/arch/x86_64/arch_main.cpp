@@ -122,7 +122,7 @@ auto ArchInitSMP(int, const char**) -> int {
 
   InterruptSingleton::instance().apic().InitCurrentCpuLocalApic().or_else(
       [](Error err) -> Expected<void> {
-        klog::Err("Failed to initialize APIC for AP: %s", err.message());
+        klog::Err("Failed to initialize APIC for AP: {}", err.message());
         while (true) {
           cpu_io::Pause();
         }

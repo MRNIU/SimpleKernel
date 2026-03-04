@@ -37,7 +37,7 @@ auto DeviceInit() -> void {
   for (const auto& get_entry : kBuiltinDrivers) {
     const auto& entry = get_entry();
     if (auto r = dm.GetRegistry().Register(entry); !r) {
-      klog::Err("DeviceInit: register driver '%s' failed: %s", entry.name,
+      klog::Err("DeviceInit: register driver '{}' failed: {}", entry.name,
                 r.error().message());
       return;
     }
@@ -45,13 +45,13 @@ auto DeviceInit() -> void {
 
   PlatformBus platform_bus(KernelFdtSingleton::instance());
   if (auto r = dm.RegisterBus(platform_bus); !r) {
-    klog::Err("DeviceInit: PlatformBus enumeration failed: %s",
+    klog::Err("DeviceInit: PlatformBus enumeration failed: {}",
               r.error().message());
     return;
   }
 
   if (auto r = dm.ProbeAll(); !r) {
-    klog::Err("DeviceInit: ProbeAll failed: %s", r.error().message());
+    klog::Err("DeviceInit: ProbeAll failed: {}", r.error().message());
     return;
   }
 

@@ -26,7 +26,7 @@
 void TaskManager::Schedule() {
   auto& cpu_sched = GetCurrentCpuSched();
   cpu_sched.lock.Lock().or_else([](auto&& err) {
-    klog::Err("Schedule: Failed to acquire lock: %s", err.message());
+    klog::Err("Schedule: Failed to acquire lock: {}", err.message());
     while (true) {
       cpu_io::Pause();
     }
@@ -72,7 +72,7 @@ void TaskManager::Schedule() {
       // 否则统计空闲时间并返回
       cpu_sched.idle_time++;
       cpu_sched.lock.UnLock().or_else([](auto&& err) {
-        klog::Err("Schedule: Failed to release lock: %s", err.message());
+        klog::Err("Schedule: Failed to release lock: {}", err.message());
         while (true) {
           cpu_io::Pause();
         }
@@ -104,7 +104,7 @@ void TaskManager::Schedule() {
   per_cpu::GetCurrentCore().running_task = next;
 
   cpu_sched.lock.UnLock().or_else([](auto&& err) {
-    klog::Err("Schedule: Failed to release lock: %s", err.message());
+    klog::Err("Schedule: Failed to release lock: {}", err.message());
     while (true) {
       cpu_io::Pause();
     }

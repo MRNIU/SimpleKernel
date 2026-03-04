@@ -19,7 +19,7 @@ void TaskManager::Wakeup(ResourceId resource_id) {
 
   if (it == cpu_sched.blocked_tasks.end()) {
     // 没有任务等待该资源
-    klog::Debug("Wakeup: No tasks waiting on resource=%s, data=0x%llx",
+    klog::Debug("Wakeup: No tasks waiting on resource={}, data={:#x}",
                 resource_id.GetTypeName(),
                 static_cast<uint64_t>(resource_id.GetData()));
     return;
@@ -52,7 +52,7 @@ void TaskManager::Wakeup(ResourceId resource_id) {
   // 移除空的资源队列
   cpu_sched.blocked_tasks.erase(resource_id);
 
-  klog::Debug("Wakeup: Woke up %zu tasks from resource=%s, data=0x%llx",
+  klog::Debug("Wakeup: Woke up {} tasks from resource={}, data={:#x}",
               wakeup_count, resource_id.GetTypeName(),
               static_cast<uint64_t>(resource_id.GetData()));
 }

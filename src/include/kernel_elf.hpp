@@ -38,7 +38,7 @@ class KernelElf {
 
     // 检查 elf 头数据
     CheckElfIdentity().or_else([](Error err) -> Expected<void> {
-      klog::Err("KernelElf NOT valid ELF file: %s", err.message());
+      klog::Err("KernelElf NOT valid ELF file: {}", err.message());
       while (true) {
         cpu_io::Pause();
       }

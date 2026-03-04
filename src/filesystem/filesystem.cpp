@@ -18,7 +18,7 @@ auto FileSystemInit() -> void {
   // 初始化 VFS
   auto init_result = vfs::Init();
   if (!init_result.has_value()) {
-    klog::Err("FileSystemInit: vfs::Init failed: %s",
+    klog::Err("FileSystemInit: vfs::Init failed: {}",
               init_result.error().message());
     return;
   }
@@ -27,7 +27,7 @@ auto FileSystemInit() -> void {
   static ramfs::RamFs root_ramfs;
   auto mount_result = vfs::GetMountTable().Mount("/", &root_ramfs, nullptr);
   if (!mount_result.has_value()) {
-    klog::Err("FileSystemInit: failed to mount ramfs at /: %s",
+    klog::Err("FileSystemInit: failed to mount ramfs at /: {}",
               mount_result.error().message());
     return;
   }
@@ -42,15 +42,15 @@ auto FileSystemInit() -> void {
     static fatfs::FatFsFileSystem fat_fs(kRootFsDriveId);
     auto fat_mount = fat_fs.Mount(blk);
     if (!fat_mount.has_value()) {
-      klog::Err("FileSystemInit: FatFsFileSystem::Mount failed: %s",
+      klog::Err("FileSystemInit: FatFsFileSystem::Mount failed: {}",
                 fat_mount.error().message());
     } else {
       auto vfs_mount = vfs::GetMountTable().Mount("/mnt/fat", &fat_fs, blk);
       if (!vfs_mount.has_value()) {
-        klog::Err("FileSystemInit: vfs mount at /mnt/fat failed: %s",
+        klog::Err("FileSystemInit: vfs mount at /mnt/fat failed: {}",
                   vfs_mount.error().message());
       } else {
-        klog::Info("FileSystemInit: FatFS mounted at /mnt/fat (device: %s)",
+        klog::Info("FileSystemInit: FatFS mounted at /mnt/fat (device: {})",
                    blk->GetName());
       }
     }

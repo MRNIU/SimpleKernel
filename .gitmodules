@@ -40,9 +40,6 @@
 [submodule "3rd/etl"]
 	path = 3rd/etl
 	url = https://github.com/ETLCPP/etl.git
-[submodule "3rd/stb"]
-	path = 3rd/stb
-	url = https://github.com/nothings/stb.git
 [submodule "3rd/EasyLogger"]
 	path = 3rd/EasyLogger
 	url = https://github.com/armink/EasyLogger.git
