@@ -64,9 +64,9 @@ DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count) {
   }
   auto result = dev->ReadSectors(sector, static_cast<uint32_t>(count), buff);
   if (!result) {
-    klog::err << "disk_read: pdrv=" << static_cast<unsigned>(pdrv)
-              << " sector=" << static_cast<unsigned long long>(sector)
-              << " count=" << static_cast<unsigned>(count) << " failed";
+    klog::Err("disk_read: pdrv=%u sector=%lu count=%u failed",
+              static_cast<unsigned>(pdrv), static_cast<uint64_t>(sector),
+              static_cast<unsigned>(count));
     return RES_ERROR;
   }
   return RES_OK;
@@ -88,9 +88,9 @@ DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count) {
   }
   auto result = dev->WriteSectors(sector, static_cast<uint32_t>(count), buff);
   if (!result) {
-    klog::err << "disk_write: pdrv=" << static_cast<unsigned>(pdrv)
-              << " sector=" << static_cast<unsigned long long>(sector)
-              << " count=" << static_cast<unsigned>(count) << " failed";
+    klog::Err("disk_write: pdrv=%u sector=%lu count=%u failed",
+              static_cast<unsigned>(pdrv), static_cast<uint64_t>(sector),
+              static_cast<unsigned>(count));
     return RES_ERROR;
   }
   return RES_OK;

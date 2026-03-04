@@ -90,8 +90,8 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   {
     LockGuard lock_guard{task_table_lock_};
     if (task_table_.full()) {
-      klog::err << "AddTask: task_table_ full, cannot add task (pid="
-                << task->pid << ")";
+      klog::Err("AddTask: task_table_ full, cannot add task (pid=%d)",
+                task->pid);
       return;
     }
     task_table_[task->pid] = etl::unique_ptr<TaskControlBlock>(task);
@@ -161,8 +161,7 @@ void TaskManager::ReapTask(TaskControlBlock* task) {
   // 确保任务处于僵尸或退出状态
   if (task->GetStatus() != TaskStatus::kZombie &&
       task->GetStatus() != TaskStatus::kExited) {
-    klog::warn << "ReapTask: Task " << task->pid
-               << " is not in zombie/exited state";
+    klog::Warn("ReapTask: Task %d is not in zombie/exited state", task->pid);
     return;
   }
 
@@ -175,7 +174,7 @@ void TaskManager::ReapTask(TaskControlBlock* task) {
     task_table_.erase(pid);
   }
 
-  klog::debug() << "ReapTask: Task " << pid << " resources freed";
+  klog::Debug("ReapTask: Task %d resources freed", pid);
 }
 
 void TaskManager::ReparentChildren(TaskControlBlock* parent) {
@@ -194,8 +193,8 @@ void TaskManager::ReparentChildren(TaskControlBlock* parent) {
     if (task && task->parent_pid == parent->pid) {
       // 将子进程过继给 init 进程
       task->parent_pid = kInitPid;
-      klog::debug() << "ReparentChildren: Task " << task->pid
-                    << " reparented to init (PID " << kInitPid << ")";
+      klog::Debug("ReparentChildren: Task %d reparented to init (PID %d)",
+                  task->pid, kInitPid);
 
       // 如果子进程已经是僵尸状态，通知 init 进程回收
       /// @todo 实现向 init 进程发送 SIGCHLD 信号
@@ -221,8 +220,8 @@ TaskManager::GetThreadGroup(Pid tgid) {
 
 void TaskManager::SignalThreadGroup(Pid tgid, int signal) {
   /// @todo 实现信号机制后，向线程组中的所有线程发送信号
-  klog::debug() << "SignalThreadGroup: tgid=" << tgid << ", signal=" << signal
-                << " (not implemented)";
+  klog::Debug("SignalThreadGroup: tgid=%d, signal=%d (not implemented)", tgid,
+              signal);
 
   // 预期实现：
   // auto threads = GetThreadGroup(tgid);

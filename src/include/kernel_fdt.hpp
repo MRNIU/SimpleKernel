@@ -56,16 +56,16 @@ class KernelFdt {
   explicit KernelFdt(uint64_t header)
       : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
     ValidateFdtHeader().or_else([](auto&& err) {
-      klog::err << "KernelFdt init failed: " << err.message();
+      klog::Err("KernelFdt init failed: %s", err.message());
       while (true) {
         cpu_io::Pause();
       }
       return Expected<void>{};
     });
 
-    klog::debug() << "Load dtb at [" << klog::HEX
-                  << reinterpret_cast<uintptr_t>(fdt_header_) << "], size ["
-                  << klog::HEX << fdt32_to_cpu(fdt_header_->totalsize) << "]";
+    klog::Debug("Load dtb at [0x%llX], size [0x%llX]",
+                static_cast<uint64_t>(reinterpret_cast<uintptr_t>(fdt_header_)),
+                static_cast<uint64_t>(fdt32_to_cpu(fdt_header_->totalsize)));
   }
 
   /// @name 构造/析构函数
@@ -106,7 +106,7 @@ class KernelFdt {
     return FindNode("/psci").and_then([this](int offset) -> Expected<void> {
       return GetPsciMethod(offset).and_then(
           [this, offset](const char* method) -> Expected<void> {
-            klog::debug() << "PSCI method: " << method;
+            klog::Debug("PSCI method: %s", method);
             if (strcmp(method, "smc") != 0) {
               return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
             }
@@ -317,9 +317,8 @@ class KernelFdt {
       auto trigger = fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xF;
       auto cpuid_mask =
           fdt32_to_cpu(interrupts[i / sizeof(uint32_t) + 2]) & 0xFF00;
-      klog::debug() << "type: " << type << ", intid: " << intid
-                    << ", trigger: " << trigger
-                    << ", cpuid_mask: " << cpuid_mask;
+      klog::Debug("type: %u, intid: %u, trigger: %u, cpuid_mask: %u", type,
+                  intid, trigger, cpuid_mask);
     }
 #endif
 
@@ -810,10 +809,12 @@ class KernelFdt {
       if (prop != nullptr && static_cast<size_t>(len) >= sizeof(uint32_t)) {
         uint32_t id =
             fdt32_to_cpu(*reinterpret_cast<const uint32_t*>(prop->data));
-        klog::debug() << "PSCI " << name << " function ID: " << klog::HEX << id;
+        klog::Debug("PSCI %s function ID: 0x%llX", name,
+                    static_cast<uint64_t>(id));
         if (id != expected) {
-          klog::err << "PSCI " << name << " function ID mismatch: expected "
-                    << klog::HEX << expected << ", got " << klog::HEX << id;
+          klog::Err("PSCI %s function ID mismatch: expected 0x%llX, got 0x%llX",
+                    name, static_cast<uint64_t>(expected),
+                    static_cast<uint64_t>(id));
           return std::unexpected(Error(ErrorCode::kFdtPropertyNotFound));
         }
       }

@@ -42,7 +42,7 @@ auto RamFs::Mount(BlockDevice* device) -> Expected<Inode*> {
     return std::unexpected(Error(ErrorCode::kInvalidArgument));
   }
 
-  klog::info << "RamFs: mounting...";
+  klog::Info("RamFs: mounting...");
 
   // 初始化 inode 空闲链表
   free_list_ = nullptr;
@@ -70,7 +70,7 @@ auto RamFs::Mount(BlockDevice* device) -> Expected<Inode*> {
   used_inodes_ = 1;
   mounted_ = true;
 
-  klog::info << "RamFs: mounted successfully";
+  klog::Info("RamFs: mounted successfully");
   return root_inode_;
 }
 
@@ -79,7 +79,7 @@ auto RamFs::Unmount() -> Expected<void> {
     return std::unexpected(Error(ErrorCode::kFsNotMounted));
   }
 
-  klog::info << "RamFs: unmounting...";
+  klog::Info("RamFs: unmounting...");
 
   // Clear all inode data pointers (data lives in static pools)
   for (size_t i = 0; i < kMaxInodes; ++i) {
@@ -97,7 +97,7 @@ auto RamFs::Unmount() -> Expected<void> {
   file_data_pool_used_ = 0;
   dir_data_pool_used_ = 0;
 
-  klog::info << "RamFs: unmounted";
+  klog::Info("RamFs: unmounted");
   return {};
 }
 

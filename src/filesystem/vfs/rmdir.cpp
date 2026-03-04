@@ -76,7 +76,7 @@ auto RmDir(const char* path) -> Expected<void> {
   RemoveChild(parent_dentry, target_dentry);
   delete target_dentry;
 
-  klog::debug() << "VFS: removed directory '" << path << "'";
+  klog::Debug("VFS: removed directory '%s'", path);
   return {};
 }
 

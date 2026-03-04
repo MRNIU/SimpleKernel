@@ -111,7 +111,7 @@ auto ArchInit(int, const char**) -> int {
   // 设置 GDT 和段寄存器
   SetupGdtAndSegmentRegisters();
 
-  klog::info << "Hello x86_64 ArchInit";
+  klog::Info("Hello x86_64 ArchInit");
 
   return 0;
 }
@@ -122,7 +122,7 @@ auto ArchInitSMP(int, const char**) -> int {
 
   InterruptSingleton::instance().apic().InitCurrentCpuLocalApic().or_else(
       [](Error err) -> Expected<void> {
-        klog::err << "Failed to initialize APIC for AP: " << err.message();
+        klog::Err("Failed to initialize APIC for AP: %s", err.message());
         while (true) {
           cpu_io::Pause();
         }

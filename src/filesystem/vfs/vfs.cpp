@@ -108,13 +108,13 @@ auto Init() -> Expected<void> {
   }
 
   LockGuard<SpinLock> guard(GetVfsState().vfs_lock_);
-  klog::info << "VFS: initializing...";
+  klog::Info("VFS: initializing...");
 
   // 初始化挂载表（使用全局单例，与 GetMountTable() 统一）
   GetVfsState().mount_table = &GetMountTable();
 
   GetVfsState().initialized = true;
-  klog::info << "VFS: initialization complete";
+  klog::Info("VFS: initialization complete");
   return {};
 }
 

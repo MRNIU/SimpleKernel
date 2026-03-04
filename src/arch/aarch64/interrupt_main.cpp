@@ -24,23 +24,28 @@ namespace {
  */
 static void HandleException(const char* exception_msg,
                             cpu_io::TrapContext* context, int print_regs = 0) {
-  klog::err << exception_msg;
-  klog::err << "  ESR_EL1: " << klog::HEX << context->esr_el1
-            << ", ELR_EL1: " << klog::HEX << context->elr_el1
-            << ", SP_EL0: " << klog::HEX << context->sp_el0
-            << ", SP_EL1: " << klog::HEX << context->sp_el1
-            << ", SPSR_EL1: " << klog::HEX << context->spsr_el1;
+  klog::Err("%s", exception_msg);
+  klog::Err(
+      "  ESR_EL1: 0x%llX, ELR_EL1: 0x%llX, SP_EL0: 0x%llX, SP_EL1: 0x%llX, "
+      "SPSR_EL1: 0x%llX",
+      static_cast<uint64_t>(context->esr_el1),
+      static_cast<uint64_t>(context->elr_el1),
+      static_cast<uint64_t>(context->sp_el0),
+      static_cast<uint64_t>(context->sp_el1),
+      static_cast<uint64_t>(context->spsr_el1));
 
   if (print_regs == 4) {
-    klog::err << "  x0-x3: " << klog::HEX << context->x0 << " " << klog::HEX
-              << context->x1 << " " << klog::HEX << context->x2 << " "
-              << klog::HEX << context->x3;
+    klog::Err(
+        "  x0-x3: 0x%llX 0x%llX 0x%llX 0x%llX",
+        static_cast<uint64_t>(context->x0), static_cast<uint64_t>(context->x1),
+        static_cast<uint64_t>(context->x2), static_cast<uint64_t>(context->x3));
   } else if (print_regs == 8) {
-    klog::err << "  x0-x7: " << klog::HEX << context->x0 << " " << klog::HEX
-              << context->x1 << " " << klog::HEX << context->x2 << " "
-              << klog::HEX << context->x3 << " " << klog::HEX << context->x4
-              << " " << klog::HEX << context->x5 << " " << klog::HEX
-              << context->x6 << " " << klog::HEX << context->x7;
+    klog::Err(
+        "  x0-x7: 0x%llX 0x%llX 0x%llX 0x%llX 0x%llX 0x%llX 0x%llX 0x%llX",
+        static_cast<uint64_t>(context->x0), static_cast<uint64_t>(context->x1),
+        static_cast<uint64_t>(context->x2), static_cast<uint64_t>(context->x3),
+        static_cast<uint64_t>(context->x4), static_cast<uint64_t>(context->x5),
+        static_cast<uint64_t>(context->x6), static_cast<uint64_t>(context->x7));
   }
 
   while (true) {
@@ -61,14 +66,14 @@ extern "C" void sync_current_el_sp0_handler(cpu_io::TrapContext* context) {
 
 extern "C" void irq_current_el_sp0_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::err << "IRQ Exception at Current EL with SP0";
+  klog::Err("IRQ Exception at Current EL with SP0");
   // 处理 IRQ 中断
   // ...
 }
 
 extern "C" void fiq_current_el_sp0_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::err << "FIQ Exception at Current EL with SP0";
+  klog::Err("FIQ Exception at Current EL with SP0");
   // 处理 FIQ 中断
   // ...
 }
@@ -88,7 +93,7 @@ extern "C" void irq_current_el_spx_handler(cpu_io::TrapContext* context) {
 
 extern "C" void fiq_current_el_spx_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::err << "FIQ Exception at Current EL with SPx";
+  klog::Err("FIQ Exception at Current EL with SPx");
   // 处理 FIQ 中断
   // ...
 }
@@ -103,14 +108,14 @@ extern "C" void sync_lower_el_aarch64_handler(cpu_io::TrapContext* context) {
 
 extern "C" void irq_lower_el_aarch64_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::err << "IRQ Exception at Lower EL using AArch64";
+  klog::Err("IRQ Exception at Lower EL using AArch64");
   // 处理 IRQ 中断
   // ...
 }
 
 extern "C" void fiq_lower_el_aarch64_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::err << "FIQ Exception at Lower EL using AArch64";
+  klog::Err("FIQ Exception at Lower EL using AArch64");
   // 处理 FIQ 中断
   // ...
 }
@@ -125,14 +130,14 @@ extern "C" void sync_lower_el_aarch32_handler(cpu_io::TrapContext* context) {
 
 extern "C" void irq_lower_el_aarch32_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::err << "IRQ Exception at Lower EL using AArch32";
+  klog::Err("IRQ Exception at Lower EL using AArch32");
   // 处理 IRQ 中断
   // ...
 }
 
 extern "C" void fiq_lower_el_aarch32_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) {
-  klog::err << "FIQ Exception at Lower EL using AArch32";
+  klog::Err("FIQ Exception at Lower EL using AArch32");
   // 处理 FIQ 中断
   // ...
 }
@@ -156,14 +161,14 @@ void InterruptInit(int, const char**) {
       KernelFdtSingleton::instance().GetAarch64Intid("arm,pl011").value() +
       Gic::kSPIBase;
 
-  klog::info << "uart_intid: " << uart_intid;
+  klog::Info("uart_intid: %u", uart_intid);
 
   // 通过统一接口注册 UART 外部中断（先注册 handler，再启用 GIC SPI）
   InterruptSingleton::instance()
       .RegisterExternalInterrupt(uart_intid, cpu_io::GetCurrentCoreId(), 0,
                                  InterruptDelegate::create<uart_handler>())
       .or_else([](Error err) -> Expected<void> {
-        klog::err << "Failed to register UART IRQ: " << err.message();
+        klog::Err("Failed to register UART IRQ: %s", err.message());
         return std::unexpected(err);
       });
 
@@ -172,7 +177,7 @@ void InterruptInit(int, const char**) {
   // 初始化定时器
   TimerInit();
 
-  klog::info << "Hello InterruptInit";
+  klog::Info("Hello InterruptInit");
 }
 
 void InterruptInitSMP(int, const char**) {
@@ -184,5 +189,5 @@ void InterruptInitSMP(int, const char**) {
 
   TimerInitSMP();
 
-  klog::info << "Hello InterruptInitSMP";
+  klog::Info("Hello InterruptInitSMP");
 }

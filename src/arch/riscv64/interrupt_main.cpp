@@ -46,19 +46,17 @@ auto EbreakHandler(uint64_t exception_code, cpu_io::TrapContext* context)
     // 4 字节指令
     context->sepc += 4;
   }
-  klog::info << "Handle "
-             << cpu_io::ScauseInfo::kExceptionNames[exception_code];
+  klog::Info("Handle %s", cpu_io::ScauseInfo::kExceptionNames[exception_code]);
   return 0;
 }
 
 auto PageFaultHandler(uint64_t exception_code, cpu_io::TrapContext* context)
     -> uint64_t {
   auto addr = cpu_io::Stval::Read();
-  klog::raw_err << "PageFault: "
-                << cpu_io::ScauseInfo::kExceptionNames[exception_code] << "("
-                << klog::hex << exception_code << "), addr: " << klog::hex
-                << addr;
-  klog::raw_err << "sepc: " << klog::hex << context->sepc;
+  klog::Err("PageFault: %s(0x%llx), addr: 0x%llx",
+            cpu_io::ScauseInfo::kExceptionNames[exception_code],
+            static_cast<uint64_t>(exception_code), static_cast<uint64_t>(addr));
+  klog::Err("sepc: 0x%llx", static_cast<uint64_t>(context->sepc));
   DumpStack();
   while (true) {
     cpu_io::Pause();
@@ -78,7 +76,8 @@ auto IpiHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
   // 清软中断 pending 位
   cpu_io::Sip::Ssip::Clear();
-  klog::debug() << "Core " << cpu_io::GetCurrentCoreId() << " received IPI";
+  klog::Debug("Core %lu received IPI",
+              static_cast<uint64_t>(cpu_io::GetCurrentCoreId()));
   return 0;
 }
 
@@ -98,7 +97,7 @@ auto VirtioBlkIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
   VirtioDriverSingleton::instance().HandleInterrupt(
       [](void* /*token*/, ErrorCode status) {
         if (status != ErrorCode::kSuccess) {
-          klog::err << "VirtIO blk IO error: " << static_cast<int>(status);
+          klog::Err("VirtIO blk IO error: %d", static_cast<int>(status));
         }
       });
   return 0;
@@ -115,8 +114,8 @@ void RegisterInterrupts() {
   if (uart_result) {
     Ns16550aSingleton::create(std::move(*uart_result));
   } else {
-    klog::err << "Failed to create Ns16550a: "
-              << static_cast<int>(uart_result.error().code);
+    klog::Err("Failed to create Ns16550a: %d",
+              static_cast<int>(uart_result.error().code));
   }
 
   // 注册 ebreak 中断
@@ -170,7 +169,7 @@ void InterruptInit(int, const char**) {
   auto success =
       cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));
   if (!success) {
-    klog::err << "Failed to set trap vector";
+    klog::Err("Failed to set trap vector");
   }
 
   // 开启 Supervisor 中断
@@ -189,7 +188,7 @@ void InterruptInit(int, const char**) {
       .RegisterExternalInterrupt(serial_irq, cpu_io::GetCurrentCoreId(), 1,
                                  InterruptDelegate::create<SerialIrqHandler>())
       .or_else([](Error err) -> Expected<void> {
-        klog::err << "Failed to register serial IRQ: " << err.message();
+        klog::Err("Failed to register serial IRQ: %s", err.message());
         return std::unexpected(err);
       });
 
@@ -202,8 +201,8 @@ void InterruptInit(int, const char**) {
             blk_irq, cpu_io::GetCurrentCoreId(), 1,
             InterruptDelegate::create<VirtioBlkIrqHandler>())
         .or_else([blk_irq](Error err) -> Expected<void> {
-          klog::err << "Failed to register virtio-blk IRQ " << blk_irq << ": "
-                    << err.message();
+          klog::Err("Failed to register virtio-blk IRQ %lu: %s",
+                    static_cast<uint64_t>(blk_irq), err.message());
           return std::unexpected(err);
         });
   }
@@ -211,7 +210,7 @@ void InterruptInit(int, const char**) {
   // 初始化定时器
   TimerInit();
 
-  klog::info << "Hello InterruptInit";
+  klog::Info("Hello InterruptInit");
 }
 
 void InterruptInitSMP(int, const char**) {
@@ -219,7 +218,7 @@ void InterruptInitSMP(int, const char**) {
   auto success =
       cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));
   if (!success) {
-    klog::err << "Failed to set trap vector";
+    klog::Err("Failed to set trap vector");
   }
 
   // 开启 Supervisor 中断
@@ -234,5 +233,5 @@ void InterruptInitSMP(int, const char**) {
   // 初始化定时器
   TimerInitSMP();
 
-  klog::info << "Hello InterruptInitSMP";
+  klog::Info("Hello InterruptInitSMP");
 }
