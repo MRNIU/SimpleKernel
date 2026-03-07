@@ -119,9 +119,9 @@ inline void TryDrain() {
   while (log_queue.pop(entry)) {
     // 格式: [id][core_id1 core_id2 LEVEL] msg
     char hdr_buf[48];
-    auto* hdr_end = etl::format_to_n(
-        hdr_buf, sizeof(hdr_buf) - 1, "[{}][{} {} {}] ", entry.seq,
-        entry.core_id, printer_core, kLevelLabel[entry.level]);
+    auto* hdr_end = etl::format_to_n(hdr_buf, sizeof(hdr_buf) - 1,
+                                     "[{}][{} {} {}]", entry.seq, entry.core_id,
+                                     printer_core, kLevelLabel[entry.level]);
     *hdr_end = '\0';
     PutStr(kLevelColor[entry.level]);
     PutStr(hdr_buf);
