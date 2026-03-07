@@ -202,8 +202,7 @@ extern "C" [[noreturn]] void __assert_fail(const char* assertion,
   klog::detail::PutStr(file);
   etl_putchar(':');
   char buf_line[12];
-  auto* end =
-      klog::detail::FormatToN(buf_line, sizeof(buf_line) - 1, "{}", line);
+  auto* end = etl::format_to_n(buf_line, sizeof(buf_line) - 1, "{}", line);
   *end = '\0';
   klog::detail::PutStr(" in ");
   klog::detail::PutStr(function);

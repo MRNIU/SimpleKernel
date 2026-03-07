@@ -11,75 +11,11 @@
 #include <MPMCQueue.hpp>
 #include <atomic>
 #include <cstdint>
-#include <tuple>
-#include <type_traits>
 
 #include "kstd_cstdio"
 
 namespace klog {
 namespace detail {
-
-/**
- * @brief 将 ETL basic_format_arg 不支持的类型映射为受支持的类型
- *
- * ETL format 缺少 `long` 和 `unsigned long` 的构造函数（LP64 问题），
- * 此处将其分别映射为 `long long` / `unsigned long long`，其余类型保持不变。
- */
-/// @{
-template <typename T>
-struct EtlArgMap {
-  using type = std::decay_t<T>;
-};
-template <>
-struct EtlArgMap<long> {
-  using type = long long;
-};
-template <>
-struct EtlArgMap<unsigned long> {
-  using type = unsigned long long;
-};
-/// @}
-
-using WrapperIt = etl::private_format::limit_iterator<char*>;
-
-/**
- * @brief 非模板桥接函数，转发调用至 etl::vformat_to
- *
- * 使用 __always_inline 保证零开销内联。
- */
-__always_inline auto VFormatToN(
-    char* buf, size_t n, etl::string_view fmt,
-    etl::format_args<etl::private_format::limit_iterator<char*>> args)
-    -> char* {
-  return etl::vformat_to(WrapperIt(buf, n), fmt, args).get();
-}
-
-/**
- * @brief etl::vformat_to 的安全封装，格式化前将参数转换为 ETL 兼容类型
- *
- * 解决 ETL basic_format_arg 缺少 `long` / `unsigned long` 构造函数的问题。
- *
- * @note 实际的 vformat_to 调用位于 VFormatToN；若在 -mgeneral-regs-only
- *       下需要浮点实例化，可使用独立编译单元 (klog_format.cpp)。
- */
-template <typename... Args>
-__always_inline auto FormatToN(char* buf, size_t n,
-                               etl::format_string<Args...> fmt, Args&&... args)
-    -> char* {
-  // 将转换后的值物化为具名局部变量，使 make_format_args 获得左值引用
-  // EtlArgMap 将 long -> long long，unsigned long -> unsigned long long
-  auto cast_tuple =
-      std::tuple<typename EtlArgMap<std::remove_cvref_t<Args>>::type...>(
-          static_cast<typename EtlArgMap<std::remove_cvref_t<Args>>::type>(
-              args)...);
-  return std::apply(
-      [&](auto&... cast_args) -> char* {
-        auto the_args = etl::make_format_args<WrapperIt>(cast_args...);
-        return VFormatToN(buf, n, fmt.get(),
-                          etl::format_args<WrapperIt>(the_args));
-      },
-      cast_tuple);
-}
 
 /// @name ANSI 转义码
 /// @{
@@ -170,9 +106,9 @@ inline void TryDrain() {
   auto dropped = dropped_count.exchange(0, std::memory_order_relaxed);
   if (dropped > 0) {
     char drop_buf[64];
-    auto* end = FormatToN(drop_buf, sizeof(drop_buf) - 1,
-                          "\033[31m[LOG] dropped {} entries\033[0m\n",
-                          static_cast<uint64_t>(dropped));
+    auto* end = etl::format_to_n(drop_buf, sizeof(drop_buf) - 1,
+                                 "\033[31m[LOG] dropped {} entries\033[0m\n",
+                                 static_cast<uint64_t>(dropped));
     *end = '\0';
     PutStr(drop_buf);
   }
@@ -206,8 +142,8 @@ __always_inline void Log(etl::format_string<Args...> fmt, Args&&... args) {
   entry.seq = log_seq.fetch_add(1, std::memory_order_relaxed);
   entry.core_id = cpu_io::GetCurrentCoreId();
   entry.level = Lvl;
-  auto* end = FormatToN(entry.msg, sizeof(entry.msg) - 1, fmt,
-                        static_cast<Args&&>(args)...);
+  auto* end = etl::format_to_n(entry.msg, sizeof(entry.msg) - 1, fmt,
+                               static_cast<Args&&>(args)...);
   *end = '\0';
 
   if (!log_queue.push(entry)) {
