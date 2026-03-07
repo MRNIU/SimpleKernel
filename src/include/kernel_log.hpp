@@ -40,10 +40,10 @@ inline constexpr auto kMinLevel =
 
 /// 日志级别标签（定宽，对齐输出）
 inline constexpr const char* kLevelLabel[] = {
-    "[DEBUG] ",
-    "[INFO ] ",
-    "[WARN ] ",
-    "[ERROR] ",
+    "DEBUG",
+    "INFO ",
+    "WARN ",
+    "ERROR",
 };
 
 /// 日志级别对应的颜色（按 Level 枚举索引）
@@ -114,15 +114,17 @@ inline void TryDrain() {
   }
 
   // 排空循环
+  auto printer_core = cpu_io::GetCurrentCoreId();
   LogEntry entry{};
   while (log_queue.pop(entry)) {
+    // 格式: [id][core_id1 core_id2 LEVEL] msg
+    char hdr_buf[48];
+    auto* hdr_end = etl::format_to_n(
+        hdr_buf, sizeof(hdr_buf) - 1, "[{}][{} {} {}] ", entry.seq,
+        entry.core_id, printer_core, kLevelLabel[entry.level]);
+    *hdr_end = '\0';
     PutStr(kLevelColor[entry.level]);
-    PutStr(kLevelLabel[entry.level]);
-    char core_buf[8];
-    auto* core_end = etl::format_to_n(core_buf, sizeof(core_buf) - 1, "[C{}] ",
-                                      entry.core_id);
-    *core_end = '\0';
-    PutStr(core_buf);
+    PutStr(hdr_buf);
     PutStr(entry.msg);
     PutStr(kReset);
     PutStr("\n");

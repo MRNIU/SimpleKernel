@@ -198,16 +198,16 @@ extern "C" void abort() {
 extern "C" [[noreturn]] void __assert_fail(const char* assertion,
                                            const char* file, unsigned int line,
                                            const char* function) {
-  klog::detail::PutStr("\n[ASSERT FAILED] ");
-  klog::detail::PutStr(file);
+  klog::RawPut("\n[ASSERT FAILED] ");
+  klog::RawPut(file);
   etl_putchar(':');
   char buf_line[12];
   auto* end = etl::format_to_n(buf_line, sizeof(buf_line) - 1, "{}", line);
   *end = '\0';
-  klog::detail::PutStr(" in ");
-  klog::detail::PutStr(function);
-  klog::detail::PutStr("\n Expression: ");
-  klog::detail::PutStr(assertion);
+  klog::RawPut(" in ");
+  klog::RawPut(function);
+  klog::RawPut("\n Expression: ");
+  klog::RawPut(assertion);
   etl_putchar('\n');
   while (1) {
     cpu_io::Pause();
