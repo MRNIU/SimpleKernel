@@ -38,12 +38,17 @@ struct EtlArgMap<unsigned long> {
 };
 /// @}
 
+using WrapperIt = etl::private_format::limit_iterator<char*>;
+
 /// @brief Non-template bridge to etl::vformat_to.
 /// Defined in klog_format.cpp which is compiled without -mgeneral-regs-only
 /// so that ETL's floating-point formatting templates can be instantiated.
-auto VFormatToN(
+__always_inline auto VFormatToN(
     char* buf, size_t n, etl::string_view fmt,
-    etl::format_args<etl::private_format::limit_iterator<char*>> args) -> char*;
+    etl::format_args<etl::private_format::limit_iterator<char*>> args)
+    -> char* {
+  return etl::vformat_to(WrapperIt(buf, n), fmt, args).get();
+}
 
 /// @brief Safe wrapper around etl::format_to_n that casts args to
 /// ETL-compatible types before formatting.  Works around the missing
