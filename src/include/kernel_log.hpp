@@ -118,6 +118,11 @@ inline void TryDrain() {
   while (log_queue.pop(entry)) {
     PutStr(kLevelColor[entry.level]);
     PutStr(kLevelLabel[entry.level]);
+    char core_buf[8];
+    auto* core_end = etl::format_to_n(core_buf, sizeof(core_buf) - 1, "[C{}] ",
+                                      entry.core_id);
+    *core_end = '\0';
+    PutStr(core_buf);
     PutStr(entry.msg);
     PutStr(kReset);
     PutStr("\n");
