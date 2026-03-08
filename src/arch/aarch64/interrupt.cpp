@@ -14,6 +14,7 @@ auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)
     -> uint64_t {
   klog::Info("Default Interrupt handler {:#X}, {:#x}", cause,
              reinterpret_cast<uintptr_t>(context));
+  return 0;
 }
 }  // namespace
 
@@ -102,4 +103,5 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
 
   klog::Info("RegisterExternalInterrupt: INTID {}, cpu {}, priority {}", irq,
              cpu_id, priority);
+  return {};
 }
