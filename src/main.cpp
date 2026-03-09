@@ -120,7 +120,7 @@ auto main_smp(int argc, const char** argv) -> int {
   klog::Info("Hello SimpleKernel SMP");
 
   // 为当前核心创建测试任务
-  // create_test_tasks();
+  create_test_tasks();
 
   // 启动调度器
   TaskManagerSingleton::instance().Schedule();
