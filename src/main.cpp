@@ -115,6 +115,7 @@ auto main_smp(int argc, const char** argv) -> int {
   MemoryInitSMP();
   InterruptInitSMP(argc, argv);
   TaskManagerSingleton::instance().InitCurrentCore();
+  TimerInitSMP();
 
   klog::Info("Hello SimpleKernel SMP");
 
@@ -166,6 +167,9 @@ auto main(int argc, const char** argv) -> int {
   WakeUpOtherCores();
 
   DumpStack();
+
+  // 初始化定时器
+  TimerInit();
 
   klog::Info("Hello SimpleKernel");
 

@@ -166,9 +166,6 @@ void InterruptInit(int, const char**) {
 
   cpu_io::EnableInterrupt();
 
-  // 初始化定时器
-  TimerInit();
-
   klog::Info("Hello InterruptInit");
 }
 
@@ -178,8 +175,6 @@ void InterruptInitSMP(int, const char**) {
   InterruptSingleton::instance().SetUP();
 
   cpu_io::EnableInterrupt();
-
-  TimerInitSMP();
 
   klog::Info("Hello InterruptInitSMP");
 }

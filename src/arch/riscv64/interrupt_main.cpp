@@ -206,9 +206,6 @@ void InterruptInit(int, const char**) {
         });
   }
 
-  // 初始化定时器
-  TimerInit();
-
   klog::Info("Hello InterruptInit");
 }
 
@@ -228,9 +225,6 @@ void InterruptInitSMP(int, const char**) {
 
   // 开启外部中断
   cpu_io::Sie::Seie::Set();
-
-  // 初始化定时器
-  TimerInitSMP();
 
   klog::Info("Hello InterruptInitSMP");
 }
