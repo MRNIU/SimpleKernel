@@ -9,7 +9,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include <climits>
+#include <limits>
 #include <memory>
 #include <new>
 
@@ -55,8 +55,27 @@ void TaskManager::InitCurrentCore() {
   auto& cpu_data = per_cpu::GetCurrentCore();
   cpu_data.sched_data = &cpu_sched;
 
+  // 创建 boot 任务作为当前执行上下文的占位符
+  // 首次 Schedule():
+  // current(boot_task) != next(idle_task) -> switch_to -> idle_thread
+  auto* boot_task = new TaskControlBlock(
+      "Boot",
+      std::numeric_limits<
+          decltype(TaskControlBlock::SchedInfo::priority)>::max(),
+      nullptr, nullptr);
+  // kUnInit -> kReady
+  boot_task->fsm.Receive(MsgSchedule{});
+  // kReady -> kRunning
+  boot_task->fsm.Receive(MsgSchedule{});
+  boot_task->policy = SchedPolicy::kIdle;
+  cpu_data.running_task = boot_task;
+
   // 创建独立的 Idle 线程
-  auto* idle_task = new TaskControlBlock("Idle", INT_MAX, idle_thread, nullptr);
+  auto* idle_task = new TaskControlBlock(
+      "Idle",
+      std::numeric_limits<
+          decltype(TaskControlBlock::SchedInfo::priority)>::max(),
+      idle_thread, nullptr);
   // kUnInit -> kReady
   idle_task->fsm.Receive(MsgSchedule{});
   idle_task->policy = SchedPolicy::kIdle;
@@ -66,10 +85,7 @@ void TaskManager::InitCurrentCore() {
     cpu_sched.schedulers[SchedPolicy::kIdle]->Enqueue(idle_task);
   }
 
-  // kReady -> kRunning
-  idle_task->fsm.Receive(MsgSchedule{});
   cpu_data.idle_task = idle_task;
-  cpu_data.running_task = idle_task;
 }
 
 void TaskManager::AddTask(TaskControlBlock* task) {
