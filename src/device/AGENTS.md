@@ -1,14 +1,14 @@
 # AGENTS.md — src/device/
 
 ## OVERVIEW
-Header-only device framework using C++23 concepts and ETL (Embedded Template Library) idioms. FDT-based device enumeration, bus abstraction, driver registry with delegate-based Probe/Remove lifecycle. Two .cpp files: device.cpp (init entry point) and virtio_driver.cpp (VirtIO device-type dispatch).
+Header-only device framework using C++23 concepts and ETL (Embedded Template Library) idioms. FDT-based device enumeration, bus abstraction, driver registry with delegate-based Probe/Remove lifecycle. Three .cpp files: device.cpp (init entry point), device_manager.cpp (ProbeAll implementation), and virtio_driver.cpp (VirtIO device-type dispatch).
 
 ## STRUCTURE
 ```
 device.cpp              # DeviceInit() — registers buses, drivers, calls ProbeAll()
+device_manager.cpp      # DeviceManager::ProbeAll() and related methods
 ns16550a/
   CMakeLists.txt        # ADD_LIBRARY(ns16550a_driver INTERFACE)
-  mmio_accessor.hpp     # Shared MMIO register accessor
   ns16550a.hpp          # NS16550A UART hardware implementation
   ns16550a_driver.hpp   # NS16550A DriverEntry + Probe/Remove
 pl011/
@@ -22,7 +22,7 @@ acpi/
 virtio/
   CMakeLists.txt        # ADD_LIBRARY(virtio_driver INTERFACE) + virtio_driver.cpp
   virtio_driver.hpp     # Unified VirtIO driver header
-  virtio_driver.cpp     # VirtIO device-id dispatch (the only other .cpp)
+  virtio_driver.cpp     # VirtIO device-id dispatch
   defs.h / virtio_driver.hpp
   device/               # Per-device-type headers (virtio_blk, virtio_net, ...)
   transport/            # MMIO and PCI transport layers
@@ -46,7 +46,7 @@ include/
 - **Adding a new VirtIO device** → Add `virtio/device/virtio_xxx.hpp`, add a `case DeviceId::kXxx` to `virtio/virtio_driver.cpp`, no changes to DeviceInit needed.
 
 ## CONVENTIONS
-- **Mostly header-only** — `device.cpp` and `virtio_driver.cpp` are the primary .cpp files.
+- **Mostly header-only** — `device.cpp`, `device_manager.cpp`, and `virtio_driver.cpp` are the .cpp files.
 - **Compile-time isolation** → `device` is an INTERFACE library that links all `xxx_driver` INTERFACE targets. External code can only access hardware through `DeviceManager`. Arch code that needs direct driver access must explicitly `TARGET_LINK_LIBRARIES(... xxx_driver)`.
 - Drivers define static `kMatchTable[]` using `MatchEntry` struct with FDT `compatible` strings
 - `GetEntry()` returns `DriverEntry` containing:

@@ -10,8 +10,9 @@ src/arch/             # Per-architecture code (see src/arch/AGENTS.md)
 src/device/           # Device framework, drivers (see src/device/AGENTS.md)
 src/task/             # Schedulers, TCB, sync (see src/task/AGENTS.md)
 src/filesystem/       # VFS, RamFS, FatFS (see src/filesystem/AGENTS.md)
+src/memory/           # Virtual/physical memory management
 src/libc/             # Kernel C stdlib (sk_ prefix headers)
-src/libcxx/           # Kernel C++ runtime (sk_ prefix headers)
+src/libcxx/           # Kernel C++ runtime (kstd_ prefix headers)
 tests/                # Unit/integration/system tests (see tests/AGENTS.md)
 cmake/                # Toolchain files, build helpers
 3rd/                  # Git submodules (opensbi, u-boot, googletest, bmalloc, ...)
@@ -22,7 +23,7 @@ cmake/                # Toolchain files, build helpers
 - **Adding a driver** → `src/device/include/driver/` for examples, `driver_registry.hpp` for registration
 - **Adding a scheduler** → `src/task/include/scheduler_base.hpp` for base class
 - **Boot flow** → `src/main.cpp`: _start → ArchInit → MemoryInit → InterruptInit → DeviceInit → FileSystemInit → Schedule()
-- **Error handling** → `Expected<T>` (std::expected alias) in `src/include/kernel_error.h`
+- **Error handling** → `Expected<T>` (std::expected alias) in `src/include/expected.hpp`
 - **Logging** → `klog::Debug/Info/Warn/Err()` or `klog::info <<` stream API
 
 ## CODE MAP
@@ -30,12 +31,22 @@ cmake/                # Toolchain files, build helpers
 |-----------|---------|----------------|
 | `src/arch/arch.h` | Arch-agnostic entry points | `src/arch/{arch}/*.cpp` |
 | `src/include/interrupt_base.h` | Interrupt subsystem ABC | `src/arch/{arch}/interrupt.cpp` |
-| `src/include/virtual_memory.hpp` | Virtual memory mgmt | `src/virtual_memory.cpp` |
-| `src/include/kernel_fdt.hpp` | Device tree parser | header-only (utility exception) |
-| `src/include/kernel_elf.hpp` | ELF parser | header-only (utility exception) |
+| `src/memory/include/virtual_memory.hpp` | Virtual memory mgmt | `src/memory/virtual_memory.cpp` |
+| `src/include/expected.hpp` | `Expected<T>`, `Error`, `ErrorCode` | header-only |
+| `src/include/kernel_fdt.hpp` | Device tree parser | header-only (utility) |
+| `src/include/kernel_elf.hpp` | ELF parser | header-only (utility) |
+| `src/include/kernel_log.hpp` | Logging (MPMC queue, levels) | header-only |
 | `src/include/spinlock.hpp` | Spinlock | header-only (__always_inline) |
 | `src/include/mutex.hpp` | Mutex | `src/task/mutex.cpp` |
-| `src/device/include/*.hpp` | Device framework | header-only |
+| `src/include/per_cpu.hpp` | Per-CPU data + singleton | header-only |
+| `src/include/basic_info.hpp` | Kernel info (memory, cores) | header-only |
+| `src/include/io_buffer.hpp` | RAII aligned I/O buffers | `src/io_buffer.cpp` |
+| `src/include/syscall.hpp` | Syscall numbers + declarations | `src/syscall.cpp` |
+| `src/include/mmio_accessor.hpp` | Generic MMIO register access | header-only |
+| `src/include/panic_observer.hpp` | Panic event observer | header-only |
+| `src/include/tick_observer.hpp` | Tick event observer | header-only |
+| `src/include/kernel_config.hpp` | Task/observer limit constants | header-only |
+| `src/device/include/*.hpp` | Device framework | header-only + `device.cpp`, `device_manager.cpp` |
 | `src/task/include/*.hpp` | Task/scheduler interfaces | `src/task/*.cpp` |
 
 ## CONVENTIONS
