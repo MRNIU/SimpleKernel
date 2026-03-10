@@ -46,7 +46,7 @@ VirtualMemory::VirtualMemory() {
              basic_info.physical_memory_addr + basic_info.physical_memory_size);
 }
 
-void VirtualMemory::InitCurrentCore() const {
+auto VirtualMemory::InitCurrentCore() const -> void {
   cpu_io::virtual_memory::SetPageDirectory(
       reinterpret_cast<uint64_t>(kernel_page_dir_));
   // 开启分页
@@ -157,7 +157,8 @@ auto VirtualMemory::GetMapping(void* page_dir, void* virtual_addr)
       cpu_io::virtual_memory::PageTableEntryToPhysical(*pte));
 }
 
-void VirtualMemory::DestroyPageDirectory(void* page_dir, bool free_pages) {
+auto VirtualMemory::DestroyPageDirectory(void* page_dir, bool free_pages)
+    -> void {
   if (page_dir == nullptr) {
     return;
   }
@@ -206,8 +207,8 @@ auto VirtualMemory::ClonePageDirectory(void* src_page_dir, bool copy_mappings)
   return dst_page_dir;
 }
 
-void VirtualMemory::RecursiveFreePageTable(uint64_t* table, size_t level,
-                                           bool free_pages) {
+auto VirtualMemory::RecursiveFreePageTable(uint64_t* table, size_t level,
+                                           bool free_pages) -> void {
   if (table == nullptr) {
     return;
   }

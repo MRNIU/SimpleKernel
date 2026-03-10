@@ -22,7 +22,7 @@ auto TimerHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
   return 0;
 }
 }  // namespace
-void TimerInitSMP() {
+auto TimerInitSMP() -> void {
   // 开启时钟中断
   cpu_io::Sie::Stie::Set();
 
@@ -30,7 +30,7 @@ void TimerInitSMP() {
   sbi_set_timer(interval);
 }
 
-void TimerInit() {
+auto TimerInit() -> void {
   // 计算 interval
   interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;
 

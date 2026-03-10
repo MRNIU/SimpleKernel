@@ -23,7 +23,7 @@
 #include "task_messages.hpp"
 #include "virtual_memory.hpp"
 
-void TaskManager::Schedule() {
+auto TaskManager::Schedule() -> void {
   auto& cpu_sched = GetCurrentCpuSched();
   cpu_sched.lock.Lock().or_else([](auto&& err) {
     klog::Err("Schedule: Failed to acquire lock: {}", err.message());

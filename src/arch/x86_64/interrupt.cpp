@@ -19,8 +19,8 @@ namespace {
  * InterruptContextErrorCode
  */
 template <uint8_t no>
-__attribute__((target("general-regs-only"))) __attribute__((interrupt)) void
-TarpEntry(cpu_io::TrapContext* interrupt_context) {
+__attribute__((target("general-regs-only"))) __attribute__((interrupt)) auto
+TarpEntry(cpu_io::TrapContext* interrupt_context) -> void {
   InterruptSingleton::instance().Do(no, interrupt_context);
 }
 
@@ -44,13 +44,14 @@ Interrupt::Interrupt() {
   klog::Info("Interrupt init.");
 }
 
-void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
+auto Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) -> void {
   if (cause < cpu_io::IdtrInfo::kInterruptMaxCount) {
     interrupt_handlers_[cause](cause, context);
   }
 }
 
-void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) {
+auto Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func)
+    -> void {
   if (cause < cpu_io::IdtrInfo::kInterruptMaxCount) {
     interrupt_handlers_[cause] = func;
     klog::Debug("RegisterInterruptFunc [{}] {:#X}",
@@ -58,10 +59,10 @@ void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) {
   }
 }
 
-void Interrupt::SetUpIdtr() { SetUpIdtr<0>(); }
+auto Interrupt::SetUpIdtr() -> void { SetUpIdtr<0>(); }
 
 template <uint8_t no>
-void Interrupt::SetUpIdtr() {
+auto Interrupt::SetUpIdtr() -> void {
   if constexpr (no < cpu_io::IdtrInfo::kInterruptMaxCount - 1) {
     idts_[no] = cpu_io::IdtrInfo::Idt(
         reinterpret_cast<uint64_t>(TarpEntry<no>), 8, 0x0,
@@ -124,4 +125,4 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
   return {};
 }
 
-void Interrupt::InitApic(size_t cpu_count) { apic_ = Apic(cpu_count); }
+auto Interrupt::InitApic(size_t cpu_count) -> void { apic_ = Apic(cpu_count); }

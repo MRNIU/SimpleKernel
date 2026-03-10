@@ -31,7 +31,7 @@ auto backtrace(std::array<uint64_t, kMaxFrameCount>& buffer) -> int {
   return int(count);
 }
 
-void DumpStack() {
+auto DumpStack() -> void {
   std::array<uint64_t, kMaxFrameCount> buffer{};
 
   // 获取调用栈中的地址

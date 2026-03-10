@@ -9,7 +9,7 @@
 #include "task_manager.hpp"
 #include "task_messages.hpp"
 
-void TaskManager::Wakeup(ResourceId resource_id) {
+auto TaskManager::Wakeup(ResourceId resource_id) -> void {
   auto& cpu_sched = GetCurrentCpuSched();
 
   LockGuard<SpinLock> lock_guard(cpu_sched.lock);

@@ -54,21 +54,22 @@ auto Plic::Which() const -> uint32_t {
   return ClaimComplete(context_id);
 }
 
-void Plic::Done(uint32_t source_id) const {
+auto Plic::Done(uint32_t source_id) const -> void {
   auto context_id = GetContextId(cpu_io::GetCurrentCoreId());
   ClaimComplete(context_id) = source_id;
 }
 
-void Plic::RegisterInterruptFunc(uint8_t cause, InterruptDelegate func) {
+auto Plic::RegisterInterruptFunc(uint8_t cause, InterruptDelegate func)
+    -> void {
   interrupt_handlers_[cause] = func;
 }
 
-void Plic::Do(uint64_t cause, cpu_io::TrapContext* context) {
+auto Plic::Do(uint64_t cause, cpu_io::TrapContext* context) -> void {
   interrupt_handlers_[cause](cause, context);
 }
 
-void Plic::Set(uint32_t hart_id, uint32_t source_id, uint32_t priority,
-               bool enable) const {
+auto Plic::Set(uint32_t hart_id, uint32_t source_id, uint32_t priority,
+               bool enable) const -> void {
   // 设置中断优先级
   SourcePriority(source_id) = priority;
 

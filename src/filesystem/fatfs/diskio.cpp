@@ -19,7 +19,7 @@ extern "C" {
  * @note FF_FS_READONLY == 0 时 FatFS 要求此函数存在。
  * @return DWORD 始终返回 0。
  */
-DWORD get_fattime() { return 0; }
+auto get_fattime() -> DWORD { return 0; }
 
 /**
  * @brief 查询磁盘驱动器状态。
@@ -27,7 +27,7 @@ DWORD get_fattime() { return 0; }
  * @param pdrv 物理驱动器编号。
  * @return DSTATUS 驱动器状态标志；如果设备未注册则返回 STA_NOINIT。
  */
-DSTATUS disk_status(BYTE pdrv) {
+auto disk_status(BYTE pdrv) -> DSTATUS {
   if (fatfs::FatFsFileSystem::GetBlockDevice(pdrv) == nullptr) {
     return STA_NOINIT;
   }
@@ -41,7 +41,7 @@ DSTATUS disk_status(BYTE pdrv) {
  * @param pdrv 物理驱动器编号。
  * @return DSTATUS 驱动器状态标志；如果设备未注册则返回 STA_NOINIT。
  */
-DSTATUS disk_initialize(BYTE pdrv) {
+auto disk_initialize(BYTE pdrv) -> DSTATUS {
   if (fatfs::FatFsFileSystem::GetBlockDevice(pdrv) == nullptr) {
     return STA_NOINIT;
   }
@@ -57,7 +57,7 @@ DSTATUS disk_initialize(BYTE pdrv) {
  * @param count  要读取的扇区数。
  * @return DRESULT 操作结果；RES_OK 表示成功。
  */
-DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count) {
+auto disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count) -> DRESULT {
   auto* dev = fatfs::FatFsFileSystem::GetBlockDevice(pdrv);
   if (dev == nullptr) {
     return RES_NOTRDY;
@@ -81,7 +81,8 @@ DRESULT disk_read(BYTE pdrv, BYTE* buff, LBA_t sector, UINT count) {
  * @param count  要写入的扇区数。
  * @return DRESULT 操作结果；RES_OK 表示成功。
  */
-DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count) {
+auto disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count)
+    -> DRESULT {
   auto* dev = fatfs::FatFsFileSystem::GetBlockDevice(pdrv);
   if (dev == nullptr) {
     return RES_NOTRDY;
@@ -104,7 +105,7 @@ DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count) {
  * @param buff 命令参数/结果缓冲区，含义取决于 cmd。
  * @return DRESULT 操作结果；不支持的命令返回 RES_PARERR。
  */
-DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff) {
+auto disk_ioctl(BYTE pdrv, BYTE cmd, void* buff) -> DRESULT {
   auto* dev = fatfs::FatFsFileSystem::GetBlockDevice(pdrv);
   if (dev == nullptr) {
     return RES_NOTRDY;

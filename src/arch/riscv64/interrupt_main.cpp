@@ -102,7 +102,7 @@ auto VirtioBlkIrqHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
   return 0;
 }
 
-void RegisterInterrupts() {
+auto RegisterInterrupts() -> void {
   // 注册外部中断分发器：CPU 外部中断 -> PLIC -> 设备 handler
   InterruptSingleton::instance().RegisterInterruptFunc(
       cpu_io::ScauseInfo::kSupervisorExternalInterrupt,
@@ -151,7 +151,7 @@ extern "C" cpu_io::TrapContext* HandleTrap(cpu_io::TrapContext* context) {
   return context;
 }
 
-void InterruptInit(int, const char**) {
+auto InterruptInit(int, const char**) -> void {
   InterruptSingleton::create();
 
   // 注册中断处理函数
@@ -209,7 +209,7 @@ void InterruptInit(int, const char**) {
   klog::Info("Hello InterruptInit");
 }
 
-void InterruptInitSMP(int, const char**) {
+auto InterruptInitSMP(int, const char**) -> void {
   // 设置 trap vector
   auto success =
       cpu_io::Stvec::SetDirect(reinterpret_cast<uint64_t>(trap_entry));

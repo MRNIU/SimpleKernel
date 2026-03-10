@@ -24,7 +24,8 @@ constexpr uint32_t kApicTimerFrequencyHz = 100;
  * @param context 中断上下文
  * @return uint64_t 返回值
  */
-uint64_t ApicTimerHandler(uint64_t cause, cpu_io::TrapContext* context) {
+auto ApicTimerHandler(uint64_t cause, cpu_io::TrapContext* context)
+    -> uint64_t {
   // APIC 时钟中断处理
   static uint64_t tick_count = 0;
   tick_count++;
@@ -46,7 +47,7 @@ uint64_t ApicTimerHandler(uint64_t cause, cpu_io::TrapContext* context) {
  * @param context 中断上下文
  * @return uint64_t 返回值
  */
-uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
+auto KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
   klog::Info("Keyboard interrupt received, vector {:#x}",
              static_cast<uint32_t>(cause));
   // 读取键盘扫描码
@@ -78,7 +79,7 @@ uint64_t KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) {
 
 };  // namespace
 
-void InterruptInit(int, const char**) {
+auto InterruptInit(int, const char**) -> void {
   InterruptSingleton::create();
 
   // 初始化 APIC（从 ArchInit 移至此处）
@@ -119,7 +120,7 @@ void InterruptInit(int, const char**) {
   klog::Info("Hello InterruptInit");
 }
 
-void InterruptInitSMP(int, const char**) {
+auto InterruptInitSMP(int, const char**) -> void {
   InterruptSingleton::instance().SetUpIdtr();
 
   // 初始化当前 AP 核的 Local APIC

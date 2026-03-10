@@ -46,7 +46,7 @@ BasicInfo::BasicInfo(int, const char** argv) {
   interval = KernelFdtSingleton::instance().GetTimebaseFrequency().value_or(0);
 }
 
-void ArchInit(int argc, const char** argv) {
+auto ArchInit(int argc, const char** argv) -> void {
   KernelFdtSingleton::create(reinterpret_cast<uint64_t>(argv));
 
   BasicInfoSingleton::create(argc, argv);
@@ -57,9 +57,9 @@ void ArchInit(int argc, const char** argv) {
   klog::Info("Hello riscv64 ArchInit");
 }
 
-void ArchInitSMP(int, const char**) {}
+auto ArchInitSMP(int, const char** argv) -> void {}
 
-void WakeUpOtherCores() {
+auto WakeUpOtherCores() -> void {
   for (size_t i = 0; i < BasicInfoSingleton::instance().core_count; i++) {
     auto ret = sbi_hart_start(i, reinterpret_cast<uint64_t>(_boot), 0);
     if ((ret.error != SBI_SUCCESS) &&
@@ -69,8 +69,9 @@ void WakeUpOtherCores() {
   }
 }
 
-void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
-                     void (*entry)(void*), void* arg, uint64_t stack_top) {
+auto InitTaskContext(cpu_io::CalleeSavedContext* task_context,
+                     void (*entry)(void*), void* arg, uint64_t stack_top)
+    -> void {
   // 清零上下文
   std::memset(task_context, 0, sizeof(cpu_io::CalleeSavedContext));
 
@@ -81,9 +82,9 @@ void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
   task_context->StackPointer() = stack_top;
 }
 
-void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
-                     cpu_io::TrapContext* trap_context_ptr,
-                     uint64_t stack_top) {
+auto InitTaskContext(cpu_io::CalleeSavedContext* task_context,
+                     cpu_io::TrapContext* trap_context_ptr, uint64_t stack_top)
+    -> void {
   // 清零上下文
   std::memset(task_context, 0, sizeof(cpu_io::CalleeSavedContext));
 

@@ -45,7 +45,7 @@ Interrupt::Interrupt() {
   klog::Info("Interrupt init.");
 }
 
-void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
+auto Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) -> void {
   auto interrupt = cpu_io::Scause::Interrupt::Get(cause);
   auto exception_code = cpu_io::Scause::ExceptionCode::Get(cause);
 
@@ -62,7 +62,8 @@ void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
   }
 }
 
-void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) {
+auto Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func)
+    -> void {
   auto interrupt = cpu_io::Scause::Interrupt::Get(cause);
   auto exception_code = cpu_io::Scause::ExceptionCode::Get(cause);
 
@@ -131,6 +132,7 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
   return {};
 }
 
-void Interrupt::InitPlic(uint64_t dev_addr, size_t ndev, size_t context_count) {
+auto Interrupt::InitPlic(uint64_t dev_addr, size_t ndev, size_t context_count)
+    -> void {
   plic_ = Plic(dev_addr, ndev, context_count);
 }

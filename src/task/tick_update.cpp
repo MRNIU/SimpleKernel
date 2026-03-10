@@ -6,7 +6,7 @@
 #include "task_manager.hpp"
 #include "task_messages.hpp"
 
-void TaskManager::TickUpdate() {
+auto TaskManager::TickUpdate() -> void {
   auto& cpu_sched = GetCurrentCpuSched();
 
   bool need_preempt = false;

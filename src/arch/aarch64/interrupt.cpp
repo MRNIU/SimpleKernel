@@ -38,12 +38,13 @@ Interrupt::Interrupt() {
   klog::Info("Interrupt init.");
 }
 
-void Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) {
+auto Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) -> void {
   interrupt_handlers_[cause](cause, context);
   cpu_io::ICC_EOIR1_EL1::Write(cause);
 }
 
-void Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) {
+auto Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func)
+    -> void {
   if (func) {
     interrupt_handlers_[cause] = func;
   }

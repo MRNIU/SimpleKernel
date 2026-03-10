@@ -65,7 +65,7 @@ extern "C" auto __cxa_atexit(void (*destructor_func)(void*), void* obj_ptr,
  * @param destructor_func 要调用的析构函数指针，为 nullptr
  * 时调用所有注册的析构函数。
  */
-extern "C" void __cxa_finalize(void* destructor_func) {
+extern "C" auto __cxa_finalize(void* destructor_func) -> void {
   if (destructor_func == nullptr) {
     // 如果 destructor_func 为 nullptr，调用所有析构函数
     for (size_t i = atexit_func_count; i > 0; --i) {
@@ -154,7 +154,7 @@ extern "C" auto __cxa_guard_acquire(GuardType* guard) -> int {
  * @param guard 锁，一个 64 位变量
  * @return 未初始化返回非零值并设置锁，已初始化返回 0
  */
-extern "C" void __cxa_guard_release(GuardType* guard) {
+extern "C" auto __cxa_guard_release(GuardType* guard) -> void {
   // 设置 initialized 位，清除 in_use 位
   guard->guard.store(GuardType::kInitializedMask, std::memory_order_release);
 }
@@ -163,7 +163,7 @@ extern "C" void __cxa_guard_release(GuardType* guard) {
  * 如果在初始化过程中出现异常或其他错误，调用此函数以释放锁而不标记变量为已初始化
  * @param guard 锁
  */
-extern "C" void __cxa_guard_abort(GuardType* guard) {
+extern "C" auto __cxa_guard_abort(GuardType* guard) -> void {
   // 清除所有位
   guard->guard.store(0, std::memory_order_release);
 }
@@ -173,7 +173,7 @@ extern "C" void __cxa_guard_abort(GuardType* guard) {
 /**
  * 纯虚函数调用处理
  */
-extern "C" void __cxa_pure_virtual() {
+extern "C" auto __cxa_pure_virtual() -> void {
   while (true) {
     cpu_io::Pause();
   }
@@ -182,7 +182,7 @@ extern "C" void __cxa_pure_virtual() {
 /**
  * 终止程序
  */
-extern "C" void abort() {
+extern "C" auto abort() -> void {
   while (true) {
     cpu_io::Pause();
   }
@@ -217,7 +217,7 @@ extern "C" [[noreturn]] void __assert_fail(const char* assertion,
 /**
  * c++ 全局对象构造
  */
-void CppInit() {
+auto CppInit() -> void {
   // 调用构造函数
   std::for_each(&__init_array_start, &__init_array_end,
                 [](function_t func) { (func)(); });
@@ -226,7 +226,7 @@ void CppInit() {
 /**
  * c++ 全局对象析构
  */
-void CppDeInit() {
+auto CppDeInit() -> void {
   // 调用析构函数
   std::for_each(&__fini_array_start, &__fini_array_end,
                 [](function_t func) { (func)(); });

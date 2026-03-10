@@ -20,7 +20,7 @@ Gic::Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
   klog::Info("Gic init.");
 }
 
-void Gic::SetUP() const {
+auto Gic::SetUP() const -> void {
   cpu_io::ICC_IGRPEN1_EL1::Enable::Clear();
   cpu_io::ICC_PMR_EL1::Priority::Set();
   gicd_.EnableGrp1NS();
@@ -28,15 +28,15 @@ void Gic::SetUP() const {
   gicr_.SetUP();
 }
 
-void Gic::SPI(uint32_t intid, uint32_t cpuid) const {
+auto Gic::SPI(uint32_t intid, uint32_t cpuid) const -> void {
   gicd_.SetupSPI(intid, cpuid);
 }
 
-void Gic::PPI(uint32_t intid, uint32_t cpuid) const {
+auto Gic::PPI(uint32_t intid, uint32_t cpuid) const -> void {
   gicr_.SetupPPI(intid, cpuid);
 }
 
-void Gic::SGI(uint32_t intid, uint32_t cpuid) const {
+auto Gic::SGI(uint32_t intid, uint32_t cpuid) const -> void {
   gicr_.SetupSGI(intid, cpuid);
 }
 
@@ -57,19 +57,19 @@ Gic::Gicd::Gicd(uint64_t base_addr) : base_addr_(base_addr) {
   }
 }
 
-void Gic::Gicd::Enable(uint32_t intid) const {
+auto Gic::Gicd::Enable(uint32_t intid) const -> void {
   auto is = Read(ISENABLERn(intid / kISENABLERn_SIZE));
   is |= 1 << (intid % kISENABLERn_SIZE);
   Write(ISENABLERn(intid / kISENABLERn_SIZE), is);
 }
 
-void Gic::Gicd::Disable(uint32_t intid) const {
+auto Gic::Gicd::Disable(uint32_t intid) const -> void {
   auto ic = Read(ICENABLERn(intid / kICENABLERn_SIZE));
   ic |= 1 << (intid % kICENABLERn_SIZE);
   Write(ICENABLERn(intid / kICENABLERn_SIZE), ic);
 }
 
-void Gic::Gicd::Clear(uint32_t intid) const {
+auto Gic::Gicd::Clear(uint32_t intid) const -> void {
   auto ic = Read(ICPENDRn(intid / kICPENDRn_SIZE));
   ic |= 1 << (intid % kICPENDRn_SIZE);
   Write(ICPENDRn(intid / kICPENDRn_SIZE), ic);
@@ -80,7 +80,7 @@ auto Gic::Gicd::IsEnable(uint32_t intid) const -> bool {
   return is & (1 << (intid % kISENABLERn_SIZE));
 }
 
-void Gic::Gicd::SetPrio(uint32_t intid, uint32_t prio) const {
+auto Gic::Gicd::SetPrio(uint32_t intid, uint32_t prio) const -> void {
   auto shift = (intid % kIPRIORITYRn_SIZE) * kIPRIORITYRn_BITS;
   auto ip = Read(IPRIORITYRn(intid / kIPRIORITYRn_SIZE));
   ip &= ~(kIPRIORITYRn_BITS_MASK << shift);
@@ -88,7 +88,7 @@ void Gic::Gicd::SetPrio(uint32_t intid, uint32_t prio) const {
   Write(IPRIORITYRn(intid / kIPRIORITYRn_SIZE), ip);
 }
 
-void Gic::Gicd::SetConfig(uint32_t intid, uint32_t config) const {
+auto Gic::Gicd::SetConfig(uint32_t intid, uint32_t config) const -> void {
   auto shift = (intid % kICFGRn_SIZE) * kICFGRn_BITS;
   auto ic = Read(ICFGRn(intid / kICFGRn_SIZE));
   ic &= ~(kICFGRn_BITS_MASK << shift);
@@ -96,7 +96,7 @@ void Gic::Gicd::SetConfig(uint32_t intid, uint32_t config) const {
   Write(ICFGRn(intid / kICFGRn_SIZE), ic);
 }
 
-void Gic::Gicd::SetTarget(uint32_t intid, uint32_t cpuid) const {
+auto Gic::Gicd::SetTarget(uint32_t intid, uint32_t cpuid) const -> void {
   auto target = Read(ITARGETSRn(intid / kITARGETSRn_SIZE));
   target &=
       ~(kICFGRn_BITS_MASK << ((intid % kITARGETSRn_SIZE) * kITARGETSRn_BITS));
@@ -105,7 +105,7 @@ void Gic::Gicd::SetTarget(uint32_t intid, uint32_t cpuid) const {
             ((1 << cpuid) << ((intid % kITARGETSRn_SIZE) * kITARGETSRn_BITS)));
 }
 
-void Gic::Gicr::SetUP() const {
+auto Gic::Gicr::SetUP() const -> void {
   auto cpuid = cpu_io::GetCurrentCoreId();
 
   // 将 GICR_CTLR 清零
@@ -130,7 +130,7 @@ void Gic::Gicr::SetUP() const {
   }
 }
 
-void Gic::Gicd::SetupSPI(uint32_t intid, uint32_t cpuid) const {
+auto Gic::Gicd::SetupSPI(uint32_t intid, uint32_t cpuid) const -> void {
   // 电平触发
   SetConfig(intid, kICFGRn_LevelSensitive);
 
@@ -172,25 +172,26 @@ Gic::Gicr::Gicr(uint64_t base_addr) : base_addr_(base_addr) {
   }
 }
 
-void Gic::Gicr::Enable(uint32_t intid, uint32_t cpuid) const {
+auto Gic::Gicr::Enable(uint32_t intid, uint32_t cpuid) const -> void {
   auto is = Read(cpuid, kISENABLER0);
   is |= 1 << (intid % kISENABLER0_SIZE);
   Write(cpuid, kISENABLER0, is);
 }
 
-void Gic::Gicr::Disable(uint32_t intid, uint32_t cpuid) const {
+auto Gic::Gicr::Disable(uint32_t intid, uint32_t cpuid) const -> void {
   auto ic = Read(cpuid, kICENABLER0);
   ic |= 1 << (intid % kICENABLER0_SIZE);
   Write(cpuid, kICENABLER0, ic);
 }
 
-void Gic::Gicr::Clear(uint32_t intid, uint32_t cpuid) const {
+auto Gic::Gicr::Clear(uint32_t intid, uint32_t cpuid) const -> void {
   auto ic = Read(cpuid, kICPENDR0);
   ic |= 1 << (intid % kICPENDR0_SIZE);
   Write(cpuid, kICPENDR0, ic);
 }
 
-void Gic::Gicr::SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const {
+auto Gic::Gicr::SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const
+    -> void {
   auto shift = (intid % kIPRIORITYRn_SIZE) * kIPRIORITYRn_BITS;
   auto ip = Read(cpuid, IPRIORITYRn(intid / kIPRIORITYRn_SIZE));
   ip &= ~(kIPRIORITYRn_BITS_MASK << shift);
@@ -198,13 +199,13 @@ void Gic::Gicr::SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const {
   Write(cpuid, IPRIORITYRn(intid / kIPRIORITYRn_SIZE), ip);
 }
 
-void Gic::Gicr::SetupPPI(uint32_t intid, uint32_t cpuid) const {
+auto Gic::Gicr::SetupPPI(uint32_t intid, uint32_t cpuid) const -> void {
   SetPrio(intid, cpuid, 0);
   Clear(intid, cpuid);
   Enable(intid, cpuid);
 }
 
-void Gic::Gicr::SetupSGI(uint32_t intid, uint32_t cpuid) const {
+auto Gic::Gicr::SetupSGI(uint32_t intid, uint32_t cpuid) const -> void {
   SetPrio(intid, cpuid, 0);
   Clear(intid, cpuid);
   Enable(intid, cpuid);

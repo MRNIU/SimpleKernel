@@ -30,7 +30,7 @@ namespace {
 std::atomic<uint64_t> global_counter{0};
 
 /// Task1: 每 1s 打印一次，测试 sys_exit
-void task1_func(void* arg) {
+auto task1_func(void* arg) -> void {
   klog::Info("Task1: arg = {:#x}",
              static_cast<uint64_t>(reinterpret_cast<uintptr_t>(arg)));
   for (int i = 0; i < 5; ++i) {
@@ -42,7 +42,7 @@ void task1_func(void* arg) {
 }
 
 /// Task2: 每 2s 打印一次，测试 sys_yield
-void task2_func(void* arg) {
+auto task2_func(void* arg) -> void {
   klog::Info("Task2: arg = {:#x}",
              static_cast<uint64_t>(reinterpret_cast<uintptr_t>(arg)));
   uint64_t count = 0;
@@ -55,7 +55,7 @@ void task2_func(void* arg) {
 }
 
 /// Task3: 每 3s 打印一次，同时修改全局变量，测试多核同步
-void task3_func(void* arg) {
+auto task3_func(void* arg) -> void {
   klog::Info("Task3: arg = {:#x}",
              static_cast<uint64_t>(reinterpret_cast<uintptr_t>(arg)));
   while (1) {
@@ -66,7 +66,7 @@ void task3_func(void* arg) {
 }
 
 /// Task4: 每 4s 打印一次，测试 sys_sleep
-void task4_func(void* arg) {
+auto task4_func(void* arg) -> void {
   klog::Info("Task4: arg = {:#x}",
              static_cast<uint64_t>(reinterpret_cast<uintptr_t>(arg)));
   uint64_t iteration = 0;
@@ -81,7 +81,7 @@ void task4_func(void* arg) {
 }
 
 /// 为当前核心创建测试任务
-void create_test_tasks() {
+auto create_test_tasks() -> void {
   size_t core_id = cpu_io::GetCurrentCoreId();
   auto& tm = TaskManagerSingleton::instance();
 
@@ -131,7 +131,7 @@ auto main_smp(int argc, const char** argv) -> int {
 
 }  // namespace
 
-void _start(int argc, const char** argv) {
+auto _start(int argc, const char** argv) -> void {
   if (argv != nullptr) {
     CppInit();
     main(argc, argv);

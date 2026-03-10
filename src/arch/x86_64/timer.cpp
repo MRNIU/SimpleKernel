@@ -8,6 +8,6 @@
 #include "basic_info.hpp"
 #include "interrupt.h"
 
-void TimerInitSMP() {}
+auto TimerInitSMP() -> void {}
 
-void TimerInit() {}
+auto TimerInit() -> void {}

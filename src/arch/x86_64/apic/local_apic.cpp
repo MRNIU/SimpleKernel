@@ -74,7 +74,7 @@ auto LocalApic::Init() -> Expected<void> {
   return {};
 }
 
-uint32_t LocalApic::GetApicVersion() const {
+auto LocalApic::GetApicVersion() const -> uint32_t {
   if (is_x2apic_mode_) {
     return cpu_io::msr::apic::ReadVersion();
   } else {
@@ -85,7 +85,7 @@ uint32_t LocalApic::GetApicVersion() const {
   }
 }
 
-void LocalApic::SendEoi() const {
+auto LocalApic::SendEoi() const -> void {
   if (is_x2apic_mode_) {
     cpu_io::msr::apic::WriteEoi(0);
   } else {
@@ -168,7 +168,7 @@ auto LocalApic::BroadcastIpi(uint8_t vector) const -> Expected<void> {
   return {};
 }
 
-void LocalApic::SetTaskPriority(uint8_t priority) const {
+auto LocalApic::SetTaskPriority(uint8_t priority) const -> void {
   if (is_x2apic_mode_) {
     cpu_io::msr::apic::WriteTpr(static_cast<uint32_t>(priority));
   } else {
@@ -178,7 +178,7 @@ void LocalApic::SetTaskPriority(uint8_t priority) const {
   }
 }
 
-uint8_t LocalApic::GetTaskPriority() const {
+auto LocalApic::GetTaskPriority() const -> uint8_t {
   if (is_x2apic_mode_) {
     return static_cast<uint8_t>(cpu_io::msr::apic::ReadTpr() & kApicIdMask);
   } else {
@@ -189,8 +189,8 @@ uint8_t LocalApic::GetTaskPriority() const {
   }
 }
 
-void LocalApic::EnableTimer(uint32_t initial_count, uint32_t divide_value,
-                            uint8_t vector, bool periodic) const {
+auto LocalApic::EnableTimer(uint32_t initial_count, uint32_t divide_value,
+                            uint8_t vector, bool periodic) const -> void {
   if (is_x2apic_mode_) {
     cpu_io::msr::apic::WriteTimerDivide(divide_value);
 
@@ -224,7 +224,7 @@ void LocalApic::EnableTimer(uint32_t initial_count, uint32_t divide_value,
   }
 }
 
-void LocalApic::DisableTimer() const {
+auto LocalApic::DisableTimer() const -> void {
   if (is_x2apic_mode_) {
     auto lvt_timer = cpu_io::msr::apic::ReadLvtTimer();
     lvt_timer |= kLvtMaskBit;
@@ -242,7 +242,7 @@ void LocalApic::DisableTimer() const {
   }
 }
 
-uint32_t LocalApic::GetTimerCurrentCount() const {
+auto LocalApic::GetTimerCurrentCount() const -> uint32_t {
   if (is_x2apic_mode_) {
     return cpu_io::msr::apic::ReadTimerCurrCount();
   } else {
@@ -253,8 +253,8 @@ uint32_t LocalApic::GetTimerCurrentCount() const {
   }
 }
 
-void LocalApic::SetupPeriodicTimer(uint32_t frequency_hz,
-                                   uint8_t vector) const {
+auto LocalApic::SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const
+    -> void {
   // 使用 APIC 定时器的典型配置
   // 假设 APIC 时钟频率为 100MHz(实际应从 CPU 频率计算)
 
@@ -272,7 +272,8 @@ void LocalApic::SetupPeriodicTimer(uint32_t frequency_hz,
   EnableTimer(initial_count, divide_value, vector, true);
 }
 
-void LocalApic::SetupOneShotTimer(uint32_t microseconds, uint8_t vector) const {
+auto LocalApic::SetupOneShotTimer(uint32_t microseconds, uint8_t vector) const
+    -> void {
   // 假设 APIC 时钟频率为 100MHz
 
   // 计算初始计数值(微秒转换为时钟周期)
@@ -290,7 +291,7 @@ void LocalApic::SetupOneShotTimer(uint32_t microseconds, uint8_t vector) const {
   EnableTimer(initial_count, divide_value, vector, false);
 }
 
-void LocalApic::SendInitIpi(uint32_t destination_apic_id) const {
+auto LocalApic::SendInitIpi(uint32_t destination_apic_id) const -> void {
   if (is_x2apic_mode_) {
     auto icr = kInitIpiMode;
     icr |= static_cast<uint64_t>(destination_apic_id) << 32;
@@ -325,8 +326,8 @@ void LocalApic::SendInitIpi(uint32_t destination_apic_id) const {
   klog::Info("INIT IPI sent to APIC ID {:#x}", destination_apic_id);
 }
 
-void LocalApic::SendStartupIpi(uint32_t destination_apic_id,
-                               uint8_t start_page) const {
+auto LocalApic::SendStartupIpi(uint32_t destination_apic_id,
+                               uint8_t start_page) const -> void {
   if (is_x2apic_mode_) {
     // SIPI with start page (delivery mode = 110b)
     auto icr = kSipiMode | start_page;
@@ -360,7 +361,7 @@ void LocalApic::SendStartupIpi(uint32_t destination_apic_id,
   }
 }
 
-void LocalApic::ConfigureLvtEntries() const {
+auto LocalApic::ConfigureLvtEntries() const -> void {
   if (is_x2apic_mode_) {
     // 配置 LINT0 (通常连接到 8259 PIC 的 INTR)
     cpu_io::msr::apic::WriteLvtLint0(kExtIntMode);
@@ -388,7 +389,7 @@ void LocalApic::ConfigureLvtEntries() const {
   }
 }
 
-uint32_t LocalApic::ReadErrorStatus() const {
+auto LocalApic::ReadErrorStatus() const -> uint32_t {
   if (is_x2apic_mode_) {
     // x2APIC 模式下没有直接的 ESR 访问方式
     // 这里返回 0 表示没有错误
@@ -403,7 +404,7 @@ uint32_t LocalApic::ReadErrorStatus() const {
   }
 }
 
-void LocalApic::PrintInfo() const {
+auto LocalApic::PrintInfo() const -> void {
   klog::Info("APIC Version: {:#x}", GetApicVersion());
   klog::Info("Mode: {}", is_x2apic_mode_ ? "x2APIC" : "xAPIC");
   klog::Info("x2APIC Enabled: {}", IsX2ApicEnabled() ? "Yes" : "No");
@@ -458,11 +459,11 @@ void LocalApic::PrintInfo() const {
   }
 }
 
-bool LocalApic::CheckX2ApicSupport() const {
+auto LocalApic::CheckX2ApicSupport() const -> bool {
   return cpu_io::cpuid::HasX2Apic();
 }
 
-bool LocalApic::EnableXApic() const {
+auto LocalApic::EnableXApic() const -> bool {
   // 设置 IA32_APIC_BASE.Global_Enable (位11) = 1
   cpu_io::msr::apic::EnableGlobally();
   // 清除 IA32_APIC_BASE.x2APIC_Enable (位10) = 0
@@ -470,19 +471,19 @@ bool LocalApic::EnableXApic() const {
   return IsXApicEnabled();
 }
 
-bool LocalApic::DisableXApic() const {
+auto LocalApic::DisableXApic() const -> bool {
   // 清除 IA32_APIC_BASE.Global_Enable (位11) = 0
   cpu_io::msr::apic::DisableGlobally();
   return !IsXApicEnabled();
 }
 
-bool LocalApic::IsXApicEnabled() const {
+auto LocalApic::IsXApicEnabled() const -> bool {
   // Global_Enable = 1 && x2APIC_Enable = 0
   return cpu_io::msr::apic::IsGloballyEnabled() &&
          !cpu_io::msr::apic::IsX2ApicEnabled();
 }
 
-bool LocalApic::EnableX2Apic() const {
+auto LocalApic::EnableX2Apic() const -> bool {
   // 检查 CPU 是否支持 x2APIC
   if (!CheckX2ApicSupport()) {
     return false;
@@ -496,18 +497,18 @@ bool LocalApic::EnableX2Apic() const {
   return IsX2ApicEnabled();
 }
 
-bool LocalApic::DisableX2Apic() const {
+auto LocalApic::DisableX2Apic() const -> bool {
   // 清除 IA32_APIC_BASE.x2APIC_Enable (位10) = 0
   cpu_io::msr::apic::DisableX2Apic();
   return !IsX2ApicEnabled();
 }
 
-bool LocalApic::IsX2ApicEnabled() const {
+auto LocalApic::IsX2ApicEnabled() const -> bool {
   return cpu_io::msr::apic::IsX2ApicEnabled();
 }
 
-void LocalApic::WakeupAp(uint32_t destination_apic_id,
-                         uint8_t start_vector) const {
+auto LocalApic::WakeupAp(uint32_t destination_apic_id,
+                         uint8_t start_vector) const -> void {
   // 发送 INIT IPI
   SendInitIpi(destination_apic_id);
 

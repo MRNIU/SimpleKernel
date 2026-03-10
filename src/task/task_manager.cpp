@@ -28,7 +28,7 @@
 namespace {
 
 /// idle 线程入口函数
-void idle_thread(void*) {
+auto idle_thread(void*) -> void {
   while (1) {
     cpu_io::Pause();
   }
@@ -36,7 +36,7 @@ void idle_thread(void*) {
 
 }  // namespace
 
-void TaskManager::InitCurrentCore() {
+auto TaskManager::InitCurrentCore() -> void {
   auto core_id = cpu_io::GetCurrentCoreId();
   auto& cpu_sched = cpu_schedulers_[core_id];
 
@@ -89,7 +89,7 @@ void TaskManager::InitCurrentCore() {
   cpu_data.idle_task = idle_task;
 }
 
-void TaskManager::AddTask(TaskControlBlock* task) {
+auto TaskManager::AddTask(TaskControlBlock* task) -> void {
   assert(task != nullptr && "AddTask: task must not be null");
   assert(task->GetStatus() == TaskStatus::kUnInit &&
          "AddTask: task status must be kUnInit");
@@ -157,7 +157,9 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   }
 }
 
-size_t TaskManager::AllocatePid() { return pid_allocator_.fetch_add(1); }
+auto TaskManager::AllocatePid() -> size_t {
+  return pid_allocator_.fetch_add(1);
+}
 
 TaskControlBlock* TaskManager::FindTask(Pid pid) {
   LockGuard lock_guard{task_table_lock_};
@@ -165,12 +167,12 @@ TaskControlBlock* TaskManager::FindTask(Pid pid) {
   return (it != task_table_.end()) ? it->second.get() : nullptr;
 }
 
-void TaskManager::Balance() {
+auto TaskManager::Balance() -> void {
   // 算法留空
   // TODO: 检查其他核心的运行队列长度，如果比当前核心长，则窃取任务
 }
 
-void TaskManager::ReapTask(TaskControlBlock* task) {
+auto TaskManager::ReapTask(TaskControlBlock* task) -> void {
   if (!task) {
     return;
   }
@@ -194,7 +196,7 @@ void TaskManager::ReapTask(TaskControlBlock* task) {
   klog::Debug("ReapTask: Task {} resources freed", pid);
 }
 
-void TaskManager::ReparentChildren(TaskControlBlock* parent) {
+auto TaskManager::ReparentChildren(TaskControlBlock* parent) -> void {
   if (!parent) {
     return;
   }
@@ -234,7 +236,7 @@ TaskManager::GetThreadGroup(Pid tgid) {
   return result;
 }
 
-void TaskManager::SignalThreadGroup(Pid tgid, int signal) {
+auto TaskManager::SignalThreadGroup(Pid tgid, int signal) -> void {
   /// @todo 实现信号机制后，向线程组中的所有线程发送信号
   klog::Debug("SignalThreadGroup: tgid={}, signal={} (not implemented)", tgid,
               signal);

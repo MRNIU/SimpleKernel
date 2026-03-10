@@ -106,8 +106,8 @@ auto Apic::StartupAp(uint32_t apic_id, uint64_t ap_code_addr,
   return {};
 }
 
-void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
-                         uint64_t target_addr) const {
+auto Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
+                         uint64_t target_addr) const -> void {
   assert(ap_code_addr != 0 && "AP code address must not be null");
   assert(ap_code_size != 0 && "AP code size must not be zero");
   assert((target_addr & 0xFFF) == 0 && "Target address must be 4KB aligned");
@@ -131,13 +131,14 @@ void Apic::StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
   }
 }
 
-void Apic::SendEoi() const { local_apic_.SendEoi(); }
+auto Apic::SendEoi() const -> void { local_apic_.SendEoi(); }
 
-void Apic::SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const {
+auto Apic::SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const
+    -> void {
   local_apic_.SetupPeriodicTimer(frequency_hz, vector);
 }
 
-void Apic::PrintInfo() const {
+auto Apic::PrintInfo() const -> void {
   local_apic_.PrintInfo();
   io_apic_.PrintInfo();
 }

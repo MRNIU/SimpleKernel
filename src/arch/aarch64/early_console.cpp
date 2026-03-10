@@ -20,7 +20,7 @@ EarlyConsole early_console;
 
 }  // namespace
 
-extern "C" void etl_putchar(int c) {
+extern "C" auto etl_putchar(int c) -> void {
   if (pl011_uart) {
     pl011_uart->PutChar(c);
   }

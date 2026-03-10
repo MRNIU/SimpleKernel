@@ -13,7 +13,7 @@ namespace {
 constexpr uint64_t kMillisecondsPerSecond = 1000;
 }  // namespace
 
-void TaskManager::Sleep(uint64_t ms) {
+auto TaskManager::Sleep(uint64_t ms) -> void {
   auto& cpu_sched = GetCurrentCpuSched();
 
   auto* current = GetCurrentTask();

@@ -65,7 +65,7 @@ cpu_io::GdtrInfo::Gdtr gdtr{
 };
 
 /// 设置 GDT 和段寄存器
-void SetupGdtAndSegmentRegisters() {
+auto SetupGdtAndSegmentRegisters() -> void {
   // 设置 gdt
   cpu_io::Gdtr::Write(gdtr);
 
@@ -131,7 +131,7 @@ auto ArchInitSMP(int, const char**) -> int {
   return 0;
 }
 
-void WakeUpOtherCores() {
+auto WakeUpOtherCores() -> void {
   // 填充 sipi_params 结构体
   auto target_sipi_params = reinterpret_cast<sipi_params_t*>(sipi_params);
   target_sipi_params->cr3 = cpu_io::Cr3::Read();
@@ -143,8 +143,9 @@ void WakeUpOtherCores() {
       kDefaultAPBase);
 }
 
-void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
-                     void (*entry)(void*), void* arg, uint64_t stack_top) {
+auto InitTaskContext(cpu_io::CalleeSavedContext* task_context,
+                     void (*entry)(void*), void* arg, uint64_t stack_top)
+    -> void {
   // 清零上下文
   std::memset(task_context, 0, sizeof(cpu_io::CalleeSavedContext));
 
@@ -155,9 +156,9 @@ void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
   (void)stack_top;
 }
 
-void InitTaskContext(cpu_io::CalleeSavedContext* task_context,
-                     cpu_io::TrapContext* trap_context_ptr,
-                     uint64_t stack_top) {
+auto InitTaskContext(cpu_io::CalleeSavedContext* task_context,
+                     cpu_io::TrapContext* trap_context_ptr, uint64_t stack_top)
+    -> void {
   // 清零上下文
   std::memset(task_context, 0, sizeof(cpu_io::CalleeSavedContext));
 

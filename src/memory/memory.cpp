@@ -27,47 +27,47 @@ struct BmallocLogger {
 bmalloc::Bmalloc<BmallocLogger>* allocator = nullptr;
 }  // namespace
 
-extern "C" void* malloc(size_t size) {
+extern "C" auto malloc(size_t size) -> void* {
   if (allocator) {
     return allocator->malloc(size);
   }
   return nullptr;
 }
 
-extern "C" void free(void* ptr) {
+extern "C" auto free(void* ptr) -> void {
   if (allocator) {
     allocator->free(ptr);
   }
 }
 
-extern "C" void* calloc(size_t num, size_t size) {
+extern "C" auto calloc(size_t num, size_t size) -> void* {
   if (allocator) {
     return allocator->calloc(num, size);
   }
   return nullptr;
 }
 
-extern "C" void* realloc(void* ptr, size_t new_size) {
+extern "C" auto realloc(void* ptr, size_t new_size) -> void* {
   if (allocator) {
     return allocator->realloc(ptr, new_size);
   }
   return nullptr;
 }
 
-extern "C" void* aligned_alloc(size_t alignment, size_t size) {
+extern "C" auto aligned_alloc(size_t alignment, size_t size) -> void* {
   if (allocator) {
     return allocator->aligned_alloc(alignment, size);
   }
   return nullptr;
 }
 
-extern "C" void aligned_free(void* ptr) {
+extern "C" auto aligned_free(void* ptr) -> void {
   if (allocator) {
     allocator->aligned_free(ptr);
   }
 }
 
-void MemoryInit() {
+auto MemoryInit() -> void {
   auto allocator_addr =
       reinterpret_cast<void*>(cpu_io::virtual_memory::PageAlignUp(
           BasicInfoSingleton::instance().elf_addr +
@@ -97,7 +97,7 @@ void MemoryInit() {
   klog::Info("Memory initialization completed");
 }
 
-void MemoryInitSMP() {
+auto MemoryInitSMP() -> void {
   VirtualMemorySingleton::instance().InitCurrentCore();
   klog::Info("SMP Memory initialization completed");
 }

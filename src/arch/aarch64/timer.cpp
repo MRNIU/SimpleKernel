@@ -24,7 +24,7 @@ auto TimerHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
 }
 }  // namespace
 
-void TimerInitSMP() {
+auto TimerInitSMP() -> void {
   InterruptSingleton::instance().PPI(timer_intid, cpu_io::GetCurrentCoreId());
 
   cpu_io::CNTV_CTL_EL0::ENABLE::Clear();
@@ -36,7 +36,7 @@ void TimerInitSMP() {
   cpu_io::CNTV_CTL_EL0::IMASK::Clear();
 }
 
-void TimerInit() {
+auto TimerInit() -> void {
   // 计算 interval
   interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;
 

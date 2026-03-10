@@ -9,7 +9,7 @@
 #include "task_manager.hpp"
 #include "task_messages.hpp"
 
-void TaskManager::Exit(int exit_code) {
+auto TaskManager::Exit(int exit_code) -> void {
   auto& cpu_sched = GetCurrentCpuSched();
   auto* current = GetCurrentTask();
   assert(current != nullptr && "Exit: No current task to exit");

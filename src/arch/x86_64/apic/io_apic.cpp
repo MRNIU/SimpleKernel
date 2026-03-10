@@ -19,8 +19,9 @@ IoApic::IoApic() {
   klog::Info("IO APIC initialization completed");
 }
 
-void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
-                               uint32_t destination_apic_id, bool mask) const {
+auto IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
+                               uint32_t destination_apic_id, bool mask) const
+    -> void {
   // 检查 IRQ 是否在有效范围内
   auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
@@ -44,7 +45,7 @@ void IoApic::SetIrqRedirection(uint8_t irq, uint8_t vector,
   WriteRedirectionEntry(irq, entry);
 }
 
-void IoApic::MaskIrq(uint8_t irq) const {
+auto IoApic::MaskIrq(uint8_t irq) const -> void {
   auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
     klog::Err("IRQ {} exceeds maximum entries {}", irq, max_entries);
@@ -55,7 +56,7 @@ void IoApic::MaskIrq(uint8_t irq) const {
   WriteRedirectionEntry(irq, entry);
 }
 
-void IoApic::UnmaskIrq(uint8_t irq) const {
+auto IoApic::UnmaskIrq(uint8_t irq) const -> void {
   auto max_entries = GetMaxRedirectionEntries();
   if (irq >= max_entries) {
     klog::Err("IRQ {} exceeds maximum entries {}", irq, max_entries);
@@ -66,22 +67,22 @@ void IoApic::UnmaskIrq(uint8_t irq) const {
   WriteRedirectionEntry(irq, entry);
 }
 
-uint32_t IoApic::GetId() const {
+auto IoApic::GetId() const -> uint32_t {
   // ID 位于位 24-27
   return (Read(kRegId) >> 24) & 0x0F;
 }
 
-uint32_t IoApic::GetVersion() const {
+auto IoApic::GetVersion() const -> uint32_t {
   // 版本位于位 0-7
   return Read(kRegVer) & 0xFF;
 }
 
-uint32_t IoApic::GetMaxRedirectionEntries() const {
+auto IoApic::GetMaxRedirectionEntries() const -> uint32_t {
   // MRE 位于位 16-23，实际数量需要 +1
   return ((Read(kRegVer) >> 16) & 0xFF) + 1;
 }
 
-void IoApic::PrintInfo() const {
+auto IoApic::PrintInfo() const -> void {
   klog::Info("IO APIC Information");
   klog::Info("Base Address: {:#x}", base_address_);
   klog::Info("ID: {:#x}", GetId());
@@ -89,7 +90,7 @@ void IoApic::PrintInfo() const {
   klog::Info("Max Redirection Entries: {}", GetMaxRedirectionEntries());
 }
 
-uint32_t IoApic::Read(uint32_t reg) const {
+auto IoApic::Read(uint32_t reg) const -> uint32_t {
   etl::io_port_wo<uint32_t> sel{
       reinterpret_cast<void*>(base_address_ + kRegSel)};
   sel.write(reg);
@@ -98,7 +99,7 @@ uint32_t IoApic::Read(uint32_t reg) const {
   return win.read();
 }
 
-void IoApic::Write(uint32_t reg, uint32_t value) const {
+auto IoApic::Write(uint32_t reg, uint32_t value) const -> void {
   etl::io_port_wo<uint32_t> sel{
       reinterpret_cast<void*>(base_address_ + kRegSel)};
   sel.write(reg);
@@ -107,7 +108,7 @@ void IoApic::Write(uint32_t reg, uint32_t value) const {
   win.write(value);
 }
 
-uint64_t IoApic::ReadRedirectionEntry(uint8_t irq) const {
+auto IoApic::ReadRedirectionEntry(uint8_t irq) const -> uint64_t {
   auto low_reg = kRedTblBase + (irq * 2);
   auto high_reg = low_reg + 1;
 
@@ -117,7 +118,7 @@ uint64_t IoApic::ReadRedirectionEntry(uint8_t irq) const {
   return (static_cast<uint64_t>(high) << 32) | low;
 }
 
-void IoApic::WriteRedirectionEntry(uint8_t irq, uint64_t value) const {
+auto IoApic::WriteRedirectionEntry(uint8_t irq, uint64_t value) const -> void {
   auto low_reg = kRedTblBase + (irq * 2);
   auto high_reg = low_reg + 1;
 

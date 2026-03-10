@@ -9,7 +9,7 @@
 #include "task_manager.hpp"
 #include "task_messages.hpp"
 
-void TaskManager::Block(ResourceId resource_id) {
+auto TaskManager::Block(ResourceId resource_id) -> void {
   auto& cpu_sched = GetCurrentCpuSched();
 
   auto* current = GetCurrentTask();

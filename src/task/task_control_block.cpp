@@ -18,7 +18,7 @@
 
 namespace {
 
-uint64_t LoadElf(const uint8_t* elf_data, uint64_t* page_table) {
+auto LoadElf(const uint8_t* elf_data, uint64_t* page_table) -> uint64_t {
   // Check ELF magic
   auto* ehdr = reinterpret_cast<const Elf64_Ehdr*>(elf_data);
   if (ehdr->e_ident[EI_MAG0] != ELFMAG0 || ehdr->e_ident[EI_MAG1] != ELFMAG1 ||
@@ -88,7 +88,7 @@ auto TaskControlBlock::GetStatus() const -> TaskStatus {
   return static_cast<TaskStatus>(fsm.GetStateId());
 }
 
-void TaskControlBlock::JoinThreadGroup(TaskControlBlock* leader) {
+auto TaskControlBlock::JoinThreadGroup(TaskControlBlock* leader) -> void {
   if (!leader || leader == this) {
     return;
   }
@@ -100,9 +100,9 @@ void TaskControlBlock::JoinThreadGroup(TaskControlBlock* leader) {
   etl::link_splice<ThreadGroupLink>(*leader, *this);
 }
 
-void TaskControlBlock::LeaveThreadGroup() { ThreadGroupLink::unlink(); }
+auto TaskControlBlock::LeaveThreadGroup() -> void { ThreadGroupLink::unlink(); }
 
-size_t TaskControlBlock::GetThreadGroupSize() const {
+auto TaskControlBlock::GetThreadGroupSize() const -> size_t {
   if (tgid == 0) {
     // 未加入任何线程组
     return 1;

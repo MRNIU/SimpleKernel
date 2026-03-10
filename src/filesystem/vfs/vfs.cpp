@@ -96,7 +96,9 @@ auto Init() -> Expected<void> {
 auto GetRootDentry() -> Dentry* { return GetVfsState().root_dentry; }
 
 // 内部接口：设置根 dentry
-void SetRootDentry(Dentry* dentry) { GetVfsState().root_dentry = dentry; }
+auto SetRootDentry(Dentry* dentry) -> void {
+  GetVfsState().root_dentry = dentry;
+}
 
 // 内部接口：获取挂载表
 auto GetMountTableInternal() -> MountTable* {
