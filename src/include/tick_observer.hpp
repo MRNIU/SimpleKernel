@@ -12,15 +12,15 @@
 
 #include "kernel_config.hpp"
 
-/// @brief Tick event payload
+/// Tick event payload
 struct TickEvent {
   uint64_t jiffies;
 };
 
-/// @brief Observer interface for tick events
+/// Observer interface for tick events
 using ITickObserver = etl::observer<TickEvent>;
 
-/// @brief Observable base for tick event publishers
+/// Observable base for tick event publishers
 using TickObservable =
     etl::observable<ITickObserver, kernel::config::kTickObservers>;
 

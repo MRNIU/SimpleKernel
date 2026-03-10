@@ -45,13 +45,13 @@ inline constexpr uint64_t kAllMask =
     kVm | kFs | kFiles | kSighand | kParent | kThread;
 }  // namespace clone_flag
 
-/// @brief 类型安全的克隆标志位
+/// 克隆标志位
 using CloneFlags = etl::flags<uint64_t, clone_flag::kAllMask>;
 
-/// @brief 类型安全的 CPU 亲和性位掩码
+/// CPU 亲和性位掩码
 using CpuAffinity = etl::flags<uint64_t>;
 
-/// @brief Task status type alias — backed by FSM state IDs
+/// Task status type alias — backed by FSM state IDs
 using TaskStatus = TaskStatusId;
 
 /**

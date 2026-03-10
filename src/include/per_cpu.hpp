@@ -47,7 +47,7 @@ struct PerCpu {
 static_assert(sizeof(PerCpu) <= SIMPLEKERNEL_PER_CPU_ALIGN_SIZE,
               "PerCpu size should not exceed cache line size");
 
-/// @brief PerCpu 数组单例类型
+/// PerCpu 数组单例类型
 using PerCpuArraySingleton =
     etl::singleton<std::array<PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT>>;
 
