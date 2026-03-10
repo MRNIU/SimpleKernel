@@ -21,14 +21,14 @@ namespace per_cpu {
 
 struct PerCpu {
   /// 核心 ID
-  size_t core_id;
+  size_t core_id{0};
 
   /// 当前运行的任务
-  TaskControlBlock* running_task = nullptr;
+  TaskControlBlock* running_task{nullptr};
   /// 空闲任务
-  TaskControlBlock* idle_task = nullptr;
+  TaskControlBlock* idle_task{nullptr};
   /// 调度数据 (RunQueue) 指针
-  CpuSchedData* sched_data = nullptr;
+  CpuSchedData* sched_data{nullptr};
 
   explicit PerCpu(size_t id) : core_id(id) {}
 
@@ -50,6 +50,7 @@ static_assert(sizeof(PerCpu) <= SIMPLEKERNEL_PER_CPU_ALIGN_SIZE,
 using PerCpuArraySingleton =
     etl::singleton<std::array<PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT>>;
 
+/// @brief 获取当前核心的 PerCpu 数据
 static __always_inline auto GetCurrentCore() -> PerCpu& {
   return PerCpuArraySingleton::instance()[cpu_io::GetCurrentCoreId()];
 }

@@ -30,7 +30,7 @@ class FifoScheduler : public SchedulerBase {
    * @brief 将任务加入就绪队列尾部
    * @param task 要加入的任务
    */
-  void Enqueue(TaskControlBlock* task) override {
+  auto Enqueue(TaskControlBlock* task) -> void override {
     if (ready_queue.full()) {
       klog::Err("FifoScheduler::Enqueue: ready_queue full, dropping task");
       return;
@@ -43,7 +43,7 @@ class FifoScheduler : public SchedulerBase {
    * @brief 从就绪队列中移除指定任务
    * @param task 要移除的任务
    */
-  void Dequeue(TaskControlBlock* task) override {
+  auto Dequeue(TaskControlBlock* task) -> void override {
     ready_queue.remove(task);
     stats_.total_dequeues++;
   }
@@ -52,7 +52,7 @@ class FifoScheduler : public SchedulerBase {
    * @brief 选择下一个要运行的任务（队列头部）
    * @return 下一个任务，如果队列为空则返回 nullptr
    */
-  TaskControlBlock* PickNext() override {
+  [[nodiscard]] auto PickNext() -> TaskControlBlock* override {
     if (ready_queue.empty()) {
       return nullptr;
     }
@@ -66,13 +66,17 @@ class FifoScheduler : public SchedulerBase {
    * @brief 获取就绪队列大小
    * @return 队列中的任务数量
    */
-  auto GetQueueSize() const -> size_t override { return ready_queue.size(); }
+  [[nodiscard]] auto GetQueueSize() const -> size_t override {
+    return ready_queue.size();
+  }
 
   /**
    * @brief 判断队列是否为空
    * @return 队列为空返回 true，否则返回 false
    */
-  auto IsEmpty() const -> bool override { return ready_queue.empty(); }
+  [[nodiscard]] auto IsEmpty() const -> bool override {
+    return ready_queue.empty();
+  }
 
   /**
    * @brief 任务被抢占时调用
@@ -81,7 +85,7 @@ class FifoScheduler : public SchedulerBase {
    *
    * @param task 被抢占的任务
    */
-  void OnPreempted([[maybe_unused]] TaskControlBlock* task) override {
+  auto OnPreempted([[maybe_unused]] TaskControlBlock* task) -> void override {
     stats_.total_preemptions++;
   }
 

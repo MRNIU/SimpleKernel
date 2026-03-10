@@ -17,17 +17,17 @@
 #include "kernel_log.hpp"
 
 /**
- * elf 文件相关
+ * @brief ELF 文件相关
  */
 class KernelElf {
  public:
   /// 符号表
-  std::span<Elf64_Sym> symtab_;
+  std::span<Elf64_Sym> symtab;
   /// 字符串表
-  uint8_t* strtab_ = nullptr;
+  uint8_t* strtab{nullptr};
 
   /**
-   * 构造函数
+   * @brief 构造函数
    * @param elf_addr elf 地址
    */
   explicit KernelElf(uint64_t elf_addr) {
@@ -82,11 +82,11 @@ class KernelElf {
                            shdr_[ehdr_.e_shstrndx].sh_offset;
     for (auto shdr : shdr_) {
       if (strcmp(shstrtab + shdr.sh_name, ".symtab") == 0) {
-        symtab_ = std::span<Elf64_Sym>(
+        symtab = std::span<Elf64_Sym>(
             reinterpret_cast<Elf64_Sym*>(elf_.data() + shdr.sh_offset),
             (shdr.sh_size / sizeof(Elf64_Sym)));
       } else if (strcmp(shstrtab + shdr.sh_name, ".strtab") == 0) {
-        strtab_ = elf_.data() + shdr.sh_offset;
+        strtab = elf_.data() + shdr.sh_offset;
       }
     }
   }
@@ -102,7 +102,7 @@ class KernelElf {
   /// @}
 
   /**
-   * 获取 elf 文件大小
+   * @brief 获取 elf 文件大小
    * @return elf 文件大小
    */
   [[nodiscard]] auto GetElfSize() const -> size_t { return elf_.size(); }

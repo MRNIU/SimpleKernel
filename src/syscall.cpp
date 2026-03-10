@@ -8,36 +8,36 @@
 #include "kernel_log.hpp"
 #include "task_manager.hpp"
 
-int syscall_dispatcher(int64_t syscall_id, uint64_t args[6]) {
+auto syscall_dispatcher(int64_t syscall_id, uint64_t args[6]) -> int {
   int64_t ret = 0;
   switch (syscall_id) {
-    case SYSCALL_WRITE:
+    case kSyscallWrite:
       ret = sys_write(static_cast<int>(args[0]),
                       reinterpret_cast<const char*>(args[1]),
                       static_cast<size_t>(args[2]));
       break;
-    case SYSCALL_EXIT:
+    case kSyscallExit:
       ret = sys_exit(static_cast<int>(args[0]));
       break;
-    case SYSCALL_YIELD:
+    case kSyscallYield:
       ret = sys_yield();
       break;
-    case SYSCALL_CLONE:
+    case kSyscallClone:
       ret = sys_clone(args[0], reinterpret_cast<void*>(args[1]),
                       reinterpret_cast<int*>(args[2]),
                       reinterpret_cast<int*>(args[3]),
                       reinterpret_cast<void*>(args[4]));
       break;
-    case SYSCALL_FORK:
+    case kSyscallFork:
       ret = sys_fork();
       break;
-    case SYSCALL_GETTID:
+    case kSyscallGettid:
       ret = sys_gettid();
       break;
-    case SYSCALL_SET_TID_ADDRESS:
+    case kSyscallSetTidAddress:
       ret = sys_set_tid_address(reinterpret_cast<int*>(args[0]));
       break;
-    case SYSCALL_FUTEX:
+    case kSyscallFutex:
       ret = sys_futex(
           reinterpret_cast<int*>(args[0]), static_cast<int>(args[1]),
           static_cast<int>(args[2]), reinterpret_cast<const void*>(args[3]),
@@ -51,7 +51,7 @@ int syscall_dispatcher(int64_t syscall_id, uint64_t args[6]) {
   return ret;
 }
 
-int sys_write(int fd, const char* buf, size_t len) {
+[[nodiscard]] auto sys_write(int fd, const char* buf, size_t len) -> int {
   // 简单实现：仅支持向标准输出(1)和错误输出(2)打印
   if (fd == 1 || fd == 2) {
     /// @todo应该检查 buf 是否在用户空间合法范围内
@@ -63,7 +63,7 @@ int sys_write(int fd, const char* buf, size_t len) {
   return -1;
 }
 
-int sys_exit(int code) {
+auto sys_exit(int code) -> int {
   klog::Info("[Syscall] Process {} exited with code {}",
              TaskManagerSingleton::instance().GetCurrentTask()->pid, code);
   // 调用 TaskManager 的 Exit 方法处理线程退出
@@ -73,18 +73,18 @@ int sys_exit(int code) {
   return 0;
 }
 
-int sys_yield() {
+[[nodiscard]] auto sys_yield() -> int {
   TaskManagerSingleton::instance().Schedule();
   return 0;
 }
 
-int sys_sleep(uint64_t ms) {
+[[nodiscard]] auto sys_sleep(uint64_t ms) -> int {
   TaskManagerSingleton::instance().Sleep(ms);
   return 0;
 }
 
-int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
-              void* tls) {
+[[nodiscard]] auto sys_clone(uint64_t flags, void* stack, int* parent_tid,
+                             int* child_tid, void* tls) -> int {
   auto& task_manager = TaskManagerSingleton::instance();
   auto current = task_manager.GetCurrentTask();
 
@@ -113,7 +113,7 @@ int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
   }
 }
 
-int sys_fork() {
+[[nodiscard]] auto sys_fork() -> int {
   auto& task_manager = TaskManagerSingleton::instance();
   auto current = task_manager.GetCurrentTask();
 
@@ -142,7 +142,7 @@ int sys_fork() {
   }
 }
 
-int sys_gettid() {
+[[nodiscard]] auto sys_gettid() -> int {
   auto current = TaskManagerSingleton::instance().GetCurrentTask();
   if (!current) {
     klog::Err("[Syscall] sys_gettid: No current task");
@@ -151,7 +151,7 @@ int sys_gettid() {
   return static_cast<int>(current->pid);
 }
 
-int sys_set_tid_address([[maybe_unused]] int* tidptr) {
+[[nodiscard]] auto sys_set_tid_address([[maybe_unused]] int* tidptr) -> int {
   auto current = TaskManagerSingleton::instance().GetCurrentTask();
   if (!current) {
     klog::Err("[Syscall] sys_set_tid_address: No current task");
@@ -166,8 +166,10 @@ int sys_set_tid_address([[maybe_unused]] int* tidptr) {
   return static_cast<int>(current->pid);
 }
 
-int sys_futex(int* uaddr, int op, int val, [[maybe_unused]] const void* timeout,
-              [[maybe_unused]] int* uaddr2, [[maybe_unused]] int val3) {
+[[nodiscard]] auto sys_futex(int* uaddr, int op, int val,
+                             [[maybe_unused]] const void* timeout,
+                             [[maybe_unused]] int* uaddr2,
+                             [[maybe_unused]] int val3) -> int {
   // Futex 常量定义
   constexpr int FUTEX_WAIT = 0;
   constexpr int FUTEX_WAKE = 1;
@@ -225,7 +227,8 @@ int sys_futex(int* uaddr, int op, int val, [[maybe_unused]] const void* timeout,
   }
 }
 
-int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask) {
+[[nodiscard]] auto sys_sched_getaffinity(int pid, size_t cpusetsize,
+                                         uint64_t* mask) -> int {
   auto& task_manager = TaskManagerSingleton::instance();
 
   TaskControlBlock* target;
@@ -254,7 +257,8 @@ int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask) {
   return 0;
 }
 
-int sys_sched_setaffinity(int pid, size_t cpusetsize, const uint64_t* mask) {
+[[nodiscard]] auto sys_sched_setaffinity(int pid, size_t cpusetsize,
+                                         const uint64_t* mask) -> int {
   auto& task_manager = TaskManagerSingleton::instance();
 
   TaskControlBlock* target;

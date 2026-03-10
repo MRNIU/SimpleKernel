@@ -42,12 +42,12 @@ void TaskManager::InitCurrentCore() {
 
   LockGuard lock_guard{cpu_sched.lock};
 
-  if (!cpu_sched.schedulers[SchedPolicy::kNormal]) {
-    cpu_sched.schedulers[SchedPolicy::kRealTime] =
+  if (!cpu_sched.schedulers[static_cast<uint8_t>(SchedPolicy::kNormal)]) {
+    cpu_sched.schedulers[static_cast<uint8_t>(SchedPolicy::kRealTime)] =
         kstd::make_unique<FifoScheduler>();
-    cpu_sched.schedulers[SchedPolicy::kNormal] =
+    cpu_sched.schedulers[static_cast<uint8_t>(SchedPolicy::kNormal)] =
         kstd::make_unique<RoundRobinScheduler>();
-    cpu_sched.schedulers[SchedPolicy::kIdle] =
+    cpu_sched.schedulers[static_cast<uint8_t>(SchedPolicy::kIdle)] =
         kstd::make_unique<IdleScheduler>();
   }
 
@@ -81,8 +81,9 @@ void TaskManager::InitCurrentCore() {
   idle_task->policy = SchedPolicy::kIdle;
 
   // 将 idle 任务加入 Idle 调度器
-  if (cpu_sched.schedulers[SchedPolicy::kIdle]) {
-    cpu_sched.schedulers[SchedPolicy::kIdle]->Enqueue(idle_task);
+  if (cpu_sched.schedulers[static_cast<uint8_t>(SchedPolicy::kIdle)]) {
+    cpu_sched.schedulers[static_cast<uint8_t>(SchedPolicy::kIdle)]->Enqueue(
+        idle_task);
   }
 
   cpu_data.idle_task = idle_task;
@@ -136,8 +137,8 @@ void TaskManager::AddTask(TaskControlBlock* task) {
   {
     LockGuard<SpinLock> lock_guard(cpu_sched.lock);
     if (task->policy < SchedPolicy::kPolicyCount) {
-      if (cpu_sched.schedulers[task->policy]) {
-        cpu_sched.schedulers[task->policy]->Enqueue(task);
+      if (cpu_sched.schedulers[static_cast<uint8_t>(task->policy)]) {
+        cpu_sched.schedulers[static_cast<uint8_t>(task->policy)]->Enqueue(task);
       }
     }
   }

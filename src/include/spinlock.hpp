@@ -26,7 +26,7 @@
 class SpinLock {
  public:
   /// 自旋锁名称
-  const char* name_{"unnamed"};
+  const char* name{"unnamed"};
 
   /**
    * @brief 获得锁
@@ -46,7 +46,7 @@ class SpinLock {
           cpu_io::EnableInterrupt();
         }
         // klog::Err("spinlock {}: {} recursive lock detected.",
-        //           cpu_io::GetCurrentCoreId(), name_);
+        //           cpu_io::GetCurrentCoreId(), name);
         return std::unexpected(Error{ErrorCode::kSpinLockRecursiveLock});
       }
       cpu_io::Pause();
@@ -65,7 +65,7 @@ class SpinLock {
   [[nodiscard]] __always_inline auto UnLock() -> Expected<void> {
     if (!IsLockedByCurrentCore()) {
       // klog::Err("spinlock {}: {} unlock by non-owner detected.",
-      //           cpu_io::GetCurrentCoreId(), name_);
+      //           cpu_io::GetCurrentCoreId(), name);
       return std::unexpected(Error{ErrorCode::kSpinLockNotOwned});
     }
 
@@ -80,15 +80,16 @@ class SpinLock {
     return {};
   }
 
+  /// @name 构造/析构函数
+  /// @{
+
   /**
    * @brief 构造函数
    * @param  _name            锁名
    * @note 需要堆初始化后可用
    */
-  explicit SpinLock(const char* _name) : name_(_name) {}
+  explicit SpinLock(const char* _name) : name(_name) {}
 
-  /// @name 构造/析构函数
-  /// @{
   SpinLock() = default;
   SpinLock(const SpinLock&) = delete;
   SpinLock(SpinLock&&) = default;
@@ -100,7 +101,7 @@ class SpinLock {
  protected:
   /// 是否 Lock
   std::atomic_flag locked_{ATOMIC_FLAG_INIT};
-  /// 获得此锁的 core_id_
+  /// 获得此锁的 core_id
   std::atomic<size_t> core_id_{std::numeric_limits<size_t>::max()};
   /// 保存的中断状态
   bool saved_intr_enable_{false};
@@ -159,10 +160,13 @@ class LockGuard {
     });
   }
 
+  /// @name 构造/析构函数
+  /// @{
   LockGuard(const LockGuard&) = delete;
   LockGuard(LockGuard&&) = delete;
   auto operator=(const LockGuard&) -> LockGuard& = delete;
   auto operator=(LockGuard&&) -> LockGuard& = delete;
+  /// @}
 
  private:
   mutex_type& mutex_;

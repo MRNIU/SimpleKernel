@@ -12,8 +12,8 @@
 
 /// Panic event payload
 struct PanicEvent {
-  const char* reason;
-  uint64_t pc;
+  const char* reason{nullptr};
+  uint64_t pc{0};
 };
 
 /// Observer interface for panic events

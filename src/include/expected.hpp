@@ -331,7 +331,17 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
 struct Error {
   ErrorCode code;
 
-  constexpr Error(ErrorCode c) : code(c) {}
+  explicit constexpr Error(ErrorCode c) : code(c) {}
+
+  /// @name 构造/析构函数
+  /// @{
+  Error() = default;
+  Error(const Error&) = default;
+  Error(Error&&) = default;
+  auto operator=(const Error&) -> Error& = default;
+  auto operator=(Error&&) -> Error& = default;
+  ~Error() = default;
+  /// @}
 
   [[nodiscard]] constexpr auto message() const -> const char* {
     return GetErrorMessage(code);

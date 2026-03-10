@@ -29,7 +29,7 @@
 class Mutex {
  public:
   /// 锁的名称
-  const char* name_{"unnamed_mutex"};
+  const char* name{"unnamed_mutex"};
 
   /**
    * @brief 获取锁（阻塞）
@@ -40,7 +40,7 @@ class Mutex {
    * @return true  成功获取锁
    * @return false 失败（如递归获取）
    */
-  auto Lock() -> bool;
+  [[nodiscard]] auto Lock() -> bool;
 
   /**
    * @brief 释放锁
@@ -51,7 +51,7 @@ class Mutex {
    * @return true  成功释放锁
    * @return false 失败（如当前线程未持有锁）
    */
-  auto UnLock() -> bool;
+  [[nodiscard]] auto UnLock() -> bool;
 
   /**
    * @brief 尝试获取锁（非阻塞）
@@ -61,26 +61,22 @@ class Mutex {
    * @return true  成功获取锁
    * @return false 锁不可用或递归获取
    */
-  auto TryLock() -> bool;
+  [[nodiscard]] auto TryLock() -> bool;
 
   /**
    * @brief 检查锁是否被当前线程持有
    * @return true  当前线程持有锁
    * @return false 当前线程未持有锁
    */
-  auto IsLockedByCurrentTask() const -> bool;
-
-  /**
-   * @brief 构造函数
-   * @param name 互斥锁名称
-   */
-  explicit Mutex(const char* name)
-      : name_(name),
-        resource_id_(ResourceType::kMutex, reinterpret_cast<uint64_t>(this)) {}
+  [[nodiscard]] auto IsLockedByCurrentTask() const -> bool;
 
   /// @name 构造/析构函数
   /// @{
+  explicit Mutex(const char* _name)
+      : name(_name),
+        resource_id_(ResourceType::kMutex, reinterpret_cast<uint64_t>(this)) {}
   Mutex() = default;
+
   Mutex(const Mutex&) = delete;
   Mutex(Mutex&&) = delete;
   auto operator=(const Mutex&) -> Mutex& = delete;

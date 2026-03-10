@@ -40,7 +40,8 @@ void TaskManager::Schedule() {
   if (current->GetStatus() == TaskStatus::kRunning) {
     // 将当前任务标记为就绪并重新入队（如果它还能运行）
     current->fsm.Receive(MsgYield{});
-    auto* scheduler = cpu_sched.schedulers[current->policy].get();
+    auto* scheduler =
+        cpu_sched.schedulers[static_cast<uint8_t>(current->policy)].get();
 
     if (scheduler) {
       scheduler->OnPreempted(current);
@@ -95,7 +96,8 @@ void TaskManager::Schedule() {
   cpu_sched.total_schedules++;
 
   // 调用调度器钩子
-  auto* scheduler = cpu_sched.schedulers[next->policy].get();
+  auto* scheduler =
+      cpu_sched.schedulers[static_cast<uint8_t>(next->policy)].get();
   if (scheduler) {
     scheduler->OnScheduled(next);
   }

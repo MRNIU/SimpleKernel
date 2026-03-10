@@ -53,7 +53,7 @@ class CfsScheduler : public SchedulerBase {
    *
    * 新加入的任务的 vruntime 设置为当前 min_vruntime，防止饥饿。
    */
-  void Enqueue(TaskControlBlock* task) override {
+  auto Enqueue(TaskControlBlock* task) -> void override {
     if (!task) {
       return;
     }
@@ -83,7 +83,7 @@ class CfsScheduler : public SchedulerBase {
    * 注意：优先队列不支持高效的任意元素删除，这里需要重建队列。
    * 实际实现中建议使用红黑树替代优先队列以支持 O(log n) 删除。
    */
-  void Dequeue(TaskControlBlock* task) override {
+  auto Dequeue(TaskControlBlock* task) -> void override {
     if (!task) {
       return;
     }
@@ -123,7 +123,7 @@ class CfsScheduler : public SchedulerBase {
    *
    * 选择 vruntime 最小的任务，实现完全公平调度。
    */
-  TaskControlBlock* PickNext() override {
+  [[nodiscard]] auto PickNext() -> TaskControlBlock* override {
     if (ready_queue_.empty()) {
       return nullptr;
     }
@@ -146,13 +146,17 @@ class CfsScheduler : public SchedulerBase {
    * @brief 获取就绪队列大小
    * @return size_t 队列中的任务数量
    */
-  auto GetQueueSize() const -> size_t override { return ready_queue_.size(); }
+  [[nodiscard]] auto GetQueueSize() const -> size_t override {
+    return ready_queue_.size();
+  }
 
   /**
    * @brief 判断队列是否为空
    * @return bool 队列为空返回 true
    */
-  auto IsEmpty() const -> bool override { return ready_queue_.empty(); }
+  [[nodiscard]] auto IsEmpty() const -> bool override {
+    return ready_queue_.empty();
+  }
 
   /**
    * @brief 每个 tick 更新任务的 vruntime
@@ -163,7 +167,7 @@ class CfsScheduler : public SchedulerBase {
    * 1. 更新当前任务的 vruntime（考虑权重）
    * 2. 检查是否有 vruntime 更小的任务需要抢占
    */
-  auto OnTick(TaskControlBlock* current) -> bool override {
+  [[nodiscard]] auto OnTick(TaskControlBlock* current) -> bool override {
     assert(current != nullptr &&
            "CfsScheduler::OnTick: current task must not be null");
 
@@ -192,7 +196,7 @@ class CfsScheduler : public SchedulerBase {
    *
    * 被抢占的任务需要重新入队，保持其 vruntime。
    */
-  void OnPreempted(TaskControlBlock* task) override {
+  auto OnPreempted(TaskControlBlock* task) -> void override {
     if (task) {
       stats_.total_preemptions++;
       // CFS 不需要额外处理，Schedule() 会将任务重新入队
@@ -203,7 +207,9 @@ class CfsScheduler : public SchedulerBase {
    * @brief 获取当前 min_vruntime
    * @return uint64_t 最小虚拟运行时间
    */
-  auto GetMinVruntime() const -> uint64_t { return min_vruntime_; }
+  [[nodiscard]] auto GetMinVruntime() const -> uint64_t {
+    return min_vruntime_;
+  }
 
   /// @name 构造/析构函数
   /// @{

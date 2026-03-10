@@ -26,7 +26,7 @@ inline constexpr auto kCyan = "\033[36m";
 /// @}
 
 /// 日志级别
-enum Level : uint8_t {
+enum class Level : uint8_t {
   kDebug = 0,
   kInfo = 1,
   kWarn = 2,
@@ -57,12 +57,12 @@ inline constexpr const char* kLevelColor[] = {
     kRed,
 };
 
-/// 存储于 MPMC 队列中的日志条目
+/// @brief 存储于 MPMC 队列中的日志条目
 struct LogEntry {
-  uint64_t seq;
-  uint64_t core_id;
-  Level level;
-  char msg[239];
+  uint64_t seq{0};
+  uint64_t core_id{0};
+  Level level{Level::kDebug};
+  char msg[239]{};
 };
 static_assert(sizeof(LogEntry) == 256, "LogEntry must be 256 bytes");
 
@@ -79,7 +79,7 @@ inline std::atomic_flag drain_flag = ATOMIC_FLAG_INIT;
 inline std::atomic<uint64_t> dropped_count{0};
 
 /// 通过 etl_putchar 输出字符串（空指针安全）
-__always_inline void PutStr(const char* s) {
+__always_inline auto PutStr(const char* s) -> void {
   if (!s) {
     s = "(null)";
   }
@@ -95,7 +95,7 @@ __always_inline void PutStr(const char* s) {
  * 使用 atomic_flag 实现非阻塞 try-lock，同一时刻仅一个核心执行排空，
  * 其他核心直接返回，等待下次调用时再排空。
  */
-inline void TryDrain() {
+inline auto TryDrain() -> void {
   // 非阻塞 try-lock：若其他核心正在排空则立即返回
   if (drain_flag.test_and_set(std::memory_order_acquire)) {
     return;
@@ -118,11 +118,12 @@ inline void TryDrain() {
   while (log_queue.pop(entry)) {
     // 格式: [id][core_id1 core_id2 LEVEL] msg
     char hdr_buf[48];
-    auto* hdr_end = etl::format_to_n(hdr_buf, sizeof(hdr_buf) - 1,
-                                     "[{}][{} {} {}]", entry.seq, entry.core_id,
-                                     printer_core, kLevelLabel[entry.level]);
+    auto* hdr_end =
+        etl::format_to_n(hdr_buf, sizeof(hdr_buf) - 1, "[{}][{} {} {}]",
+                         entry.seq, entry.core_id, printer_core,
+                         kLevelLabel[static_cast<uint8_t>(entry.level)]);
     *hdr_end = '\0';
-    PutStr(kLevelColor[entry.level]);
+    PutStr(kLevelColor[static_cast<uint8_t>(entry.level)]);
     PutStr(hdr_buf);
     PutStr(entry.msg);
     PutStr(kReset);
@@ -139,7 +140,8 @@ inline void TryDrain() {
  * @tparam Args 可变格式化参数类型
  */
 template <Level Lvl, typename... Args>
-__always_inline void Log(etl::format_string<Args...> fmt, Args&&... args) {
+__always_inline auto Log(etl::format_string<Args...> fmt, Args&&... args)
+    -> void {
   if constexpr (Lvl < kMinLevel) {
     return;
   }
@@ -168,7 +170,7 @@ __always_inline void Log(etl::format_string<Args...> fmt, Args&&... args) {
 
 /// 以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL > 0 时编译期消除）
 template <typename... Args>
-inline void Debug(etl::format_string<Args...> fmt, Args&&... args) {
+inline auto Debug(etl::format_string<Args...> fmt, Args&&... args) -> void {
   if constexpr (detail::Level::kDebug < detail::kMinLevel) {
     return;
   }
@@ -177,7 +179,7 @@ inline void Debug(etl::format_string<Args...> fmt, Args&&... args) {
 
 /// 以 INFO 级别记录日志
 template <typename... Args>
-inline void Info(etl::format_string<Args...> fmt, Args&&... args) {
+inline auto Info(etl::format_string<Args...> fmt, Args&&... args) -> void {
   if constexpr (detail::Level::kInfo < detail::kMinLevel) {
     return;
   }
@@ -186,7 +188,7 @@ inline void Info(etl::format_string<Args...> fmt, Args&&... args) {
 
 /// 以 WARN 级别记录日志
 template <typename... Args>
-inline void Warn(etl::format_string<Args...> fmt, Args&&... args) {
+inline auto Warn(etl::format_string<Args...> fmt, Args&&... args) -> void {
   if constexpr (detail::Level::kWarn < detail::kMinLevel) {
     return;
   }
@@ -195,7 +197,7 @@ inline void Warn(etl::format_string<Args...> fmt, Args&&... args) {
 
 /// 以 ERROR 级别记录日志
 template <typename... Args>
-inline void Err(etl::format_string<Args...> fmt, Args&&... args) {
+inline auto Err(etl::format_string<Args...> fmt, Args&&... args) -> void {
   if constexpr (detail::Level::kErr < detail::kMinLevel) {
     return;
   }
@@ -203,9 +205,9 @@ inline void Err(etl::format_string<Args...> fmt, Args&&... args) {
 }
 
 /// 强制将队列中所有日志条目输出至串口
-__always_inline void Flush() { detail::TryDrain(); }
+__always_inline auto Flush() -> void { detail::TryDrain(); }
 
 /// 绕过队列直接输出至串口（用于 panic 路径）
-__always_inline void RawPut(const char* msg) { detail::PutStr(msg); }
+__always_inline auto RawPut(const char* msg) -> void { detail::PutStr(msg); }
 
 }  // namespace klog

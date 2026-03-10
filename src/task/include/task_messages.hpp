@@ -27,27 +27,27 @@ static constexpr etl::message_router_id_t kVirtioBlk = 2;
 static constexpr etl::message_router_id_t kVirtioNet = 3;
 }  // namespace router_id
 
-/// Task FSM 消息结构体（无负载，用作事件）
+/// @brief Task FSM 消息结构体（无负载，用作事件）
 struct MsgSchedule : public etl::message<task_msg_id::kSchedule> {};
 struct MsgYield : public etl::message<task_msg_id::kYield> {};
 struct MsgWakeup : public etl::message<task_msg_id::kWakeup> {};
 struct MsgReap : public etl::message<task_msg_id::kReap> {};
 
-/// 睡眠消息，携带唤醒时钟
+/// @brief 睡眠消息，携带唤醒时钟
 struct MsgSleep : public etl::message<task_msg_id::kSleep> {
-  uint64_t wake_tick;
+  uint64_t wake_tick{0};
   explicit MsgSleep(uint64_t tick) : wake_tick(tick) {}
 };
 
-/// 阻塞消息，携带资源 ID
+/// @brief 阻塞消息，携带资源 ID
 struct MsgBlock : public etl::message<task_msg_id::kBlock> {
-  ResourceId resource_id;
+  ResourceId resource_id{};
   explicit MsgBlock(ResourceId id) : resource_id(id) {}
 };
 
-/// 退出消息，携带退出码与父任务标志
+/// @brief 退出消息，携带退出码与父任务标志
 struct MsgExit : public etl::message<task_msg_id::kExit> {
-  int exit_code;
-  bool has_parent;
+  int exit_code{0};
+  bool has_parent{false};
   MsgExit(int code, bool parent) : exit_code(code), has_parent(parent) {}
 };

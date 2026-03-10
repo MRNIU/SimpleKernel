@@ -24,26 +24,26 @@ extern "C" void _boot();
 
 struct BasicInfo {
   /// physical_memory 地址
-  uint64_t physical_memory_addr;
+  uint64_t physical_memory_addr{0};
   /// physical_memory 大小
-  size_t physical_memory_size;
+  size_t physical_memory_size{0};
 
   /// kernel 地址
-  uint64_t kernel_addr;
+  uint64_t kernel_addr{0};
   /// kernel 大小
-  size_t kernel_size;
+  size_t kernel_size{0};
 
   /// elf 地址
-  uint64_t elf_addr;
+  uint64_t elf_addr{0};
 
   /// fdt 地址
-  uint64_t fdt_addr;
+  uint64_t fdt_addr{0};
 
   /// cpu 核数
-  size_t core_count;
+  size_t core_count{0};
 
   /// 时钟频率
-  size_t interval;
+  size_t interval{0};
 
   /**
    * 构造函数，在 arch_main.cpp 中定义

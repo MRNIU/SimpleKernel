@@ -42,7 +42,7 @@ enum class ResourceType : uint8_t {
  * @param type 资源类型
  * @return 类型名称字符串
  */
-constexpr const char* GetResourceTypeName(ResourceType type) {
+constexpr auto GetResourceTypeName(ResourceType type) -> const char* {
   switch (type) {
     case ResourceType::kNone:
       return "None";
@@ -75,15 +75,17 @@ constexpr const char* GetResourceTypeName(ResourceType type) {
  */
 struct ResourceId {
   /// 获取资源类型
-  constexpr ResourceType GetType() const {
+  [[nodiscard]] constexpr auto GetType() const -> ResourceType {
     return static_cast<ResourceType>((value_ >> kTypeShift) & 0xFF);
   }
 
   /// 获取资源数据
-  constexpr uint64_t GetData() const { return value_ & kDataMask; }
+  [[nodiscard]] constexpr auto GetData() const -> uint64_t {
+    return value_ & kDataMask;
+  }
 
   /// 获取类型名称（用于调试）
-  constexpr const char* GetTypeName() const {
+  [[nodiscard]] constexpr auto GetTypeName() const -> const char* {
     return GetResourceTypeName(GetType());
   }
 
@@ -96,11 +98,11 @@ struct ResourceId {
   constexpr operator uint64_t() const { return value_; }
 
   /// 比较操作符
-  constexpr bool operator==(const ResourceId& other) const {
+  constexpr auto operator==(const ResourceId& other) const -> bool {
     return value_ == other.value_;
   }
 
-  constexpr bool operator!=(const ResourceId& other) const {
+  constexpr auto operator!=(const ResourceId& other) const -> bool {
     return value_ != other.value_;
   }
 
@@ -129,7 +131,7 @@ struct ResourceId {
   static constexpr uint64_t kDataMask = 0x00FFFFFFFFFFFFFFULL;
 
   // 内部存储的原始值
-  uint64_t value_;
+  uint64_t value_{0};
 };
 
 // std::hash 特化，使 ResourceId 可以作为 unordered_map 的键

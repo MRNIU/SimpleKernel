@@ -12,7 +12,7 @@
 
 /// Tick event payload
 struct TickEvent {
-  uint64_t jiffies;
+  uint64_t jiffies{0};
 };
 
 /// Observer interface for tick events

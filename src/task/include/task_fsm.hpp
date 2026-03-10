@@ -144,13 +144,15 @@ class TaskFsm {
   }
 
   /// 启动 FSM（在 TCB 完全构造后调用）
-  void Start() { fsm_.start(); }
+  auto Start() -> void { fsm_.start(); }
 
   /// 向 FSM 发送消息
-  void Receive(const etl::imessage& msg) { fsm_.receive(msg); }
+  auto Receive(const etl::imessage& msg) -> void { fsm_.receive(msg); }
 
   /// 获取当前状态 ID
-  auto GetStateId() const -> etl::fsm_state_id_t { return fsm_.get_state_id(); }
+  [[nodiscard]] auto GetStateId() const -> etl::fsm_state_id_t {
+    return fsm_.get_state_id();
+  }
 
  private:
   StateUnInit state_uninit_;

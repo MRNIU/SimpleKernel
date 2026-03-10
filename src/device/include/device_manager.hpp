@@ -65,7 +65,7 @@ class DeviceManager {
    *
    * @return Expected<void> 成功返回 void，失败返回错误
    */
-  auto ProbeAll() -> Expected<void>;
+  [[nodiscard]] auto ProbeAll() -> Expected<void>;
 
   /**
    * @brief 根据名称查找设备。
@@ -75,7 +75,7 @@ class DeviceManager {
    * @param  name           设备名称
    * @return Expected<DeviceNode*> 设备指针，或 kDeviceNotFound
    */
-  auto FindDevice(const char* name) -> Expected<DeviceNode*>;
+  [[nodiscard]] auto FindDevice(const char* name) -> Expected<DeviceNode*>;
 
   /**
    * @brief 按类型枚举设备。
@@ -85,15 +85,15 @@ class DeviceManager {
    * @param  max            最大结果数量
    * @return size_t         找到的匹配设备数量
    */
-  auto FindDevicesByType(DeviceType type, DeviceNode** out, size_t max)
-      -> size_t;
+  [[nodiscard]] auto FindDevicesByType(DeviceType type, DeviceNode** out,
+                                       size_t max) -> size_t;
 
   /**
    * @brief 访问驱动注册表。
    *
    * @return DriverRegistry& 驱动注册表实例
    */
-  auto GetRegistry() -> DriverRegistry& { return registry_; }
+  [[nodiscard]] auto GetRegistry() -> DriverRegistry& { return registry_; }
 
   /// @name 构造 / 析构
   /// @{

@@ -60,7 +60,7 @@ class Ns16550a {
    * @brief 写入一个字符
    * @param c 待写入的字符
    */
-  void PutChar(uint8_t c) const {
+  auto PutChar(uint8_t c) const -> void {
     while ((mmio_.Read<uint8_t>(kRegLSR) & (1 << 5)) == 0) {
     }
     mmio_.Write<uint8_t>(kRegTHR, c);

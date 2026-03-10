@@ -15,7 +15,7 @@ class PlatformBus {
  public:
   explicit PlatformBus(KernelFdt& fdt) : fdt_(fdt) {}
 
-  static auto GetName() -> const char* { return "platform"; }
+  [[nodiscard]] static auto GetName() -> const char* { return "platform"; }
 
   /**
    * @brief 枚举所有含 compatible 字符串的 FDT 设备节点。

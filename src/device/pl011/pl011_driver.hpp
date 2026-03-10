@@ -16,6 +16,11 @@ namespace pl011 {
 using Pl011Device = Pl011;
 }  // namespace pl011
 
+/**
+ * @brief PL011 UART 驱动
+ *
+ * 提供 PL011 UART 设备的驱动程序实现，包括设备检测、初始化和访问接口。
+ */
 class Pl011Driver {
  public:
   using Pl011Type = pl011::Pl011;
@@ -23,7 +28,7 @@ class Pl011Driver {
   /// @note 使用 Pl011DriverSingleton::instance() 访问单例。
 
   /// 返回用于注册的 DriverEntry。
-  static auto GetEntry() -> const DriverEntry& {
+  [[nodiscard]] static auto GetEntry() -> const DriverEntry& {
     static const DriverEntry entry{
         .name = "pl011",
         .match_table = etl::span<const MatchEntry>(kMatchTable),
@@ -46,10 +51,19 @@ class Pl011Driver {
    *
    * @return true 如果 mmio_base 非零且 mmio_size 足够
    */
-  static auto MatchStatic(DeviceNode& node) -> bool {
+  [[nodiscard]] static auto MatchStatic(DeviceNode& node) -> bool {
     static constexpr size_t kMinRegisterSpace = 0x48;
     return node.mmio_base != 0 && node.mmio_size >= kMinRegisterSpace;
   }
+  /// @name 构造/析构函数
+  /// @{
+  Pl011Driver() = default;
+  Pl011Driver(const Pl011Driver&) = delete;
+  Pl011Driver(Pl011Driver&&) = default;
+  auto operator=(const Pl011Driver&) -> Pl011Driver& = delete;
+  auto operator=(Pl011Driver&&) -> Pl011Driver& = default;
+  ~Pl011Driver() = default;
+  /// @}
 
   /**
    * @brief 初始化 PL011 UART。

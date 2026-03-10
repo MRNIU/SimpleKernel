@@ -12,32 +12,32 @@
 // 参考 Linux 系统调用号
 #if defined(__riscv) || defined(__aarch64__)
 // RISC-V 64 和 AArch64 使用 asm-generic 编号
-static constexpr const uint64_t SYSCALL_WRITE = 64;
-static constexpr const uint64_t SYSCALL_EXIT = 93;
-static constexpr const uint64_t SYSCALL_YIELD = 124;
-static constexpr const uint64_t SYSCALL_CLONE = 220;
-static constexpr const uint64_t SYSCALL_GETTID = 178;
-static constexpr const uint64_t SYSCALL_FUTEX = 98;
-static constexpr const uint64_t SYSCALL_SET_TID_ADDRESS = 96;
-static constexpr const uint64_t SYSCALL_FORK = 1220;
+static constexpr const uint64_t kSyscallWrite = 64;
+static constexpr const uint64_t kSyscallExit = 93;
+static constexpr const uint64_t kSyscallYield = 124;
+static constexpr const uint64_t kSyscallClone = 220;
+static constexpr const uint64_t kSyscallGettid = 178;
+static constexpr const uint64_t kSyscallFutex = 98;
+static constexpr const uint64_t kSyscallSetTidAddress = 96;
+static constexpr const uint64_t kSyscallFork = 1220;
 #elif defined(__x86_64__)
 // x86_64 使用自己的编号
-static constexpr const uint64_t SYSCALL_WRITE = 1;
-static constexpr const uint64_t SYSCALL_EXIT = 60;
-static constexpr const uint64_t SYSCALL_YIELD = 24;
-static constexpr const uint64_t SYSCALL_CLONE = 56;
-static constexpr const uint64_t SYSCALL_GETTID = 186;
-static constexpr const uint64_t SYSCALL_FUTEX = 202;
-static constexpr const uint64_t SYSCALL_SET_TID_ADDRESS = 218;
-static constexpr const uint64_t SYSCALL_FORK = 57;
+static constexpr const uint64_t kSyscallWrite = 1;
+static constexpr const uint64_t kSyscallExit = 60;
+static constexpr const uint64_t kSyscallYield = 24;
+static constexpr const uint64_t kSyscallClone = 56;
+static constexpr const uint64_t kSyscallGettid = 186;
+static constexpr const uint64_t kSyscallFutex = 202;
+static constexpr const uint64_t kSyscallSetTidAddress = 218;
+static constexpr const uint64_t kSyscallFork = 57;
 #else
 #error "Unsupported architecture for syscall numbers"
 #endif
 
 // 由各个架构实现
-void Syscall(uint64_t cause, cpu_io::TrapContext* context);
+auto Syscall(uint64_t cause, cpu_io::TrapContext* context) -> void;
 
-int syscall_dispatcher(int64_t syscall_id, uint64_t args[6]);
+auto syscall_dispatcher(int64_t syscall_id, uint64_t args[6]) -> int;
 
 /**
  * @brief 向文件描述符写入数据
@@ -47,7 +47,7 @@ int syscall_dispatcher(int64_t syscall_id, uint64_t args[6]);
  * @return 成功写入的字节数，失败返回负数
  * @note 使用场景：标准输出、日志输出等
  */
-int sys_write(int fd, const char* buf, size_t len);
+[[nodiscard]] auto sys_write(int fd, const char* buf, size_t len) -> int;
 
 /**
  * @brief 退出当前进程或线程
@@ -60,14 +60,14 @@ int sys_write(int fd, const char* buf, size_t len);
  *          - 普通进程：退出整个进程
  *          - CLONE_THREAD 线程：仅退出当前线程
  */
-int sys_exit(int code);
+auto sys_exit(int code) -> int;
 
 /**
  * @brief 主动放弃CPU，让出时间片
  * @return 0 表示成功
  * @note 使用场景：协作式调度、忙等待优化
  */
-int sys_yield();
+[[nodiscard]] auto sys_yield() -> int;
 
 /**
  * @brief 休眠指定毫秒数
@@ -75,7 +75,7 @@ int sys_yield();
  * @return 0 表示成功
  * @note 使用场景：定时任务、延迟执行
  */
-int sys_sleep(uint64_t ms);
+[[nodiscard]] auto sys_sleep(uint64_t ms) -> int;
 
 /**
  * @brief 创建新线程（或进程）
@@ -93,8 +93,8 @@ int sys_sleep(uint64_t ms);
  *          - CLONE_VM | CLONE_THREAD | CLONE_SIGHAND: 创建共享地址空间的线程
  *          - 0: 创建独立进程（类似 fork）
  */
-int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
-              void* tls);
+[[nodiscard]] auto sys_clone(uint64_t flags, void* stack, int* parent_tid,
+                             int* child_tid, void* tls) -> int;
 
 /**
  * @brief 创建新进程（fork）
@@ -108,7 +108,7 @@ int sys_clone(uint64_t flags, void* stack, int* parent_tid, int* child_tid,
  *          - 继承父进程的文件描述符、信号处理器等
  *          - 父子进程独立运行，互不影响
  */
-int sys_fork();
+[[nodiscard]] auto sys_fork() -> int;
 
 /**
  * @brief 获取当前线程ID
@@ -118,7 +118,7 @@ int sys_fork();
  *       - 调试信息输出
  *       - 线程本地数据索引
  */
-int sys_gettid();
+[[nodiscard]] auto sys_gettid() -> int;
 
 /**
  * @brief 设置线程ID地址（用于线程退出时的清理）
@@ -128,7 +128,7 @@ int sys_gettid();
  *       - 线程库内部使用
  *       - 实现线程退出时的通知机制
  */
-int sys_set_tid_address(int* tidptr);
+[[nodiscard]] auto sys_set_tid_address(int* tidptr) -> int;
 
 /**
  * @brief 快速用户空间互斥锁操作（futex）
@@ -151,8 +151,8 @@ int sys_set_tid_address(int* tidptr);
  *          - FUTEX_WAKE: 唤醒等待的线程
  *          - FUTEX_REQUEUE: 重新排队等待的线程
  */
-int sys_futex(int* uaddr, int op, int val, const void* timeout, int* uaddr2,
-              int val3);
+[[nodiscard]] auto sys_futex(int* uaddr, int op, int val, const void* timeout,
+                             int* uaddr2, int val3) -> int;
 
 /**
  * @brief 获取线程的CPU亲和性
@@ -161,7 +161,8 @@ int sys_futex(int* uaddr, int op, int val, const void* timeout, int* uaddr2,
  * @param mask CPU亲和性掩码
  * @return 成功返回 0，失败返回负数
  */
-int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask);
+[[nodiscard]] auto sys_sched_getaffinity(int pid, size_t cpusetsize,
+                                         uint64_t* mask) -> int;
 
 /**
  * @brief 设置线程的CPU亲和性
@@ -174,4 +175,5 @@ int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask);
  *       - 实时任务调度
  *       - NUMA优化
  */
-int sys_sched_setaffinity(int pid, size_t cpusetsize, const uint64_t* mask);
+[[nodiscard]] auto sys_sched_setaffinity(int pid, size_t cpusetsize,
+                                         const uint64_t* mask) -> int;

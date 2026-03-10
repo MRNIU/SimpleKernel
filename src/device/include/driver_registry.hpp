@@ -23,10 +23,10 @@
 
 /// 驱动静态匹配表中的一条记录
 struct MatchEntry {
-  BusType bus_type;
+  BusType bus_type{BusType::kPlatform};
   /// FDT compatible 字符串（平台总线）
   /// 或 vendor/HID 字符串（PCI/ACPI — 未来扩展）
-  const char* compatible;
+  const char* compatible{nullptr};
 };
 
 /**
@@ -35,7 +35,7 @@ struct MatchEntry {
  * @pre  注册前 match/probe/remove 委托必须已绑定
  */
 struct DriverEntry {
-  const char* name;
+  const char* name{nullptr};
   etl::span<const MatchEntry> match_table;
   /// 硬件检测
   etl::delegate<bool(DeviceNode&)> match;
@@ -67,7 +67,7 @@ class DriverRegistry {
    * @pre  entry.match/probe/remove 委托已绑定
    * @return Expected<void> 注册表已满时返回 kOutOfMemory
    */
-  auto Register(const DriverEntry& entry) -> Expected<void> {
+  [[nodiscard]] auto Register(const DriverEntry& entry) -> Expected<void> {
     LockGuard guard(lock_);
     if (drivers_.full()) {
       return std::unexpected(Error(ErrorCode::kOutOfMemory));
@@ -90,7 +90,7 @@ class DriverRegistry {
    *
    * @return DriverEntry 指针，若无匹配则返回 nullptr
    */
-  auto FindDriver(const DeviceNode& node) -> const DriverEntry* {
+  [[nodiscard]] auto FindDriver(const DeviceNode& node) -> const DriverEntry* {
     // 遍历节点的 compatible 字符串列表，对每个字符串执行 flat_map 查找。
     const char* p = node.compatible;
     const char* end = node.compatible + node.compatible_len;
@@ -131,8 +131,8 @@ namespace mmio_helper {
 
 /// 映射完成后的 MMIO 区域信息
 struct ProbeContext {
-  uint64_t base;
-  size_t size;
+  uint64_t base{0};
+  size_t size{0};
 };
 
 /**

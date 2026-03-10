@@ -50,7 +50,7 @@ class VirtioDriver {
    *
    * 匹配 virtio,mmio 兼容字符串；MatchStatic 检查 VirtIO magic number。
    */
-  static auto GetEntry() -> const DriverEntry& {
+  [[nodiscard]] static auto GetEntry() -> const DriverEntry& {
     static const DriverEntry entry{
         .name = "virtio",
         .match_table = etl::span<const MatchEntry>(kMatchTable),

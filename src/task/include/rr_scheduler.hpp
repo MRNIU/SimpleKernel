@@ -25,7 +25,7 @@ class RoundRobinScheduler : public SchedulerBase {
    *
    * 重置任务的时间片并将其加入队列尾部，实现公平的时间片轮转。
    */
-  void Enqueue(TaskControlBlock* task) override {
+  auto Enqueue(TaskControlBlock* task) -> void override {
     if (task) {
       if (ready_queue.full()) {
         klog::Err(
@@ -46,7 +46,7 @@ class RoundRobinScheduler : public SchedulerBase {
    *
    * 用于任务主动退出或被阻塞等场景。
    */
-  void Dequeue(TaskControlBlock* task) override {
+  auto Dequeue(TaskControlBlock* task) -> void override {
     if (!task) {
       return;
     }
@@ -66,7 +66,7 @@ class RoundRobinScheduler : public SchedulerBase {
    *
    * 从队列头部取出任务，实现 Round-Robin 轮转。
    */
-  TaskControlBlock* PickNext() override {
+  [[nodiscard]] auto PickNext() -> TaskControlBlock* override {
     if (ready_queue.empty()) {
       return nullptr;
     }
@@ -80,13 +80,17 @@ class RoundRobinScheduler : public SchedulerBase {
    * @brief 获取就绪队列大小
    * @return size_t 队列中的任务数量
    */
-  auto GetQueueSize() const -> size_t override { return ready_queue.size(); }
+  [[nodiscard]] auto GetQueueSize() const -> size_t override {
+    return ready_queue.size();
+  }
 
   /**
    * @brief 判断队列是否为空
    * @return bool 队列为空返回 true
    */
-  auto IsEmpty() const -> bool override { return ready_queue.empty(); }
+  [[nodiscard]] auto IsEmpty() const -> bool override {
+    return ready_queue.empty();
+  }
 
   /**
    * @brief 时间片耗尽处理
@@ -95,7 +99,8 @@ class RoundRobinScheduler : public SchedulerBase {
    *
    * Round-Robin 调度器在时间片耗尽时重置时间片并将任务放回队列尾部。
    */
-  auto OnTimeSliceExpired(TaskControlBlock* task) -> bool override {
+  [[nodiscard]] auto OnTimeSliceExpired(TaskControlBlock* task)
+      -> bool override {
     if (task) {
       // 重新分配时间片
       task->sched_info.time_slice_remaining =
@@ -108,7 +113,7 @@ class RoundRobinScheduler : public SchedulerBase {
    * @brief 任务被抢占时调用
    * @param task 被抢占的任务
    */
-  void OnPreempted([[maybe_unused]] TaskControlBlock* task) override {
+  auto OnPreempted([[maybe_unused]] TaskControlBlock* task) -> void override {
     stats_.total_preemptions++;
   }
 

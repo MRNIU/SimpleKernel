@@ -25,9 +25,13 @@ extern "C" [[maybe_unused]] [[noreturn]] void _start(int argc,
  */
 auto main(int argc, const char** argv) -> int;
 
-void MemoryInit();
-void MemoryInitSMP();
+/// @brief 内存子系统初始化
+auto MemoryInit() -> void;
+/// @brief 多核内存子系统初始化
+auto MemoryInitSMP() -> void;
 
-void DeviceInit();
+/// @brief 设备子系统初始化
+auto DeviceInit() -> void;
 
-void FileSystemInit();
+/// @brief 文件系统初始化
+auto FileSystemInit() -> void;

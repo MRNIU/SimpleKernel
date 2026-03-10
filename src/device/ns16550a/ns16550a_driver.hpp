@@ -12,6 +12,11 @@
 #include "kernel_log.hpp"
 #include "ns16550a/ns16550a.hpp"
 
+/**
+ * @brief NS16550A UART 驱动
+ *
+ * 提供 NS16550A UART 设备的驱动程序实现，包括设备检测、初始化和访问接口。
+ */
 class Ns16550aDriver {
  public:
   using Ns16550aType = ns16550a::Ns16550a;
@@ -19,7 +24,7 @@ class Ns16550aDriver {
   /// @note 使用 Ns16550aDriverSingleton::instance() 访问单例。
 
   /// 返回用于注册的 DriverEntry。
-  static auto GetEntry() -> const DriverEntry& {
+  [[nodiscard]] static auto GetEntry() -> const DriverEntry& {
     static const DriverEntry entry{
         .name = "ns16550a",
         .match_table = etl::span<const MatchEntry>(kMatchTable),
@@ -42,10 +47,20 @@ class Ns16550aDriver {
    *
    * @return true 如果 mmio_base 非零且 mmio_size 足够
    */
-  static auto MatchStatic([[maybe_unused]] DeviceNode& node) -> bool {
+  [[nodiscard]] static auto MatchStatic([[maybe_unused]] DeviceNode& node)
+      -> bool {
     static constexpr size_t kMinRegisterSpace = 8;
     return node.mmio_base != 0 && node.mmio_size >= kMinRegisterSpace;
   }
+  /// @name 构造/析构函数
+  /// @{
+  Ns16550aDriver() = default;
+  Ns16550aDriver(const Ns16550aDriver&) = delete;
+  Ns16550aDriver(Ns16550aDriver&&) = default;
+  auto operator=(const Ns16550aDriver&) -> Ns16550aDriver& = delete;
+  auto operator=(Ns16550aDriver&&) -> Ns16550aDriver& = default;
+  ~Ns16550aDriver() = default;
+  /// @}
 
   /**
    * @brief 初始化 NS16550A UART。

@@ -36,15 +36,15 @@ class InterruptBase {
    * @brief 执行中断处理
    * @param 不同平台有不同含义
    */
-  virtual void Do(uint64_t, cpu_io::TrapContext*) = 0;
+  virtual auto Do(uint64_t, cpu_io::TrapContext*) -> void = 0;
 
   /**
    * @brief 注册中断处理函数
    * @param cause 中断号，不同平台有不同含义
    * @param func 处理函数
    */
-  virtual void RegisterInterruptFunc(uint64_t cause,
-                                     InterruptDelegate func) = 0;
+  virtual auto RegisterInterruptFunc(uint64_t cause, InterruptDelegate func)
+      -> void = 0;
 
   /**
    * @brief 发送 IPI 到指定核心

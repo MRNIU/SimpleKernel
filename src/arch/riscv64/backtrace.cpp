@@ -55,13 +55,13 @@ void DumpStack() {
   // 打印函数名
   for (auto current_frame_idx = 0; current_frame_idx < num_frames;
        current_frame_idx++) {
-    for (auto symtab : KernelElfSingleton::instance().symtab_) {
+    for (auto symtab : KernelElfSingleton::instance().symtab) {
       if ((ELF64_ST_TYPE(symtab.st_info) == STT_FUNC) &&
           (buffer[current_frame_idx] >= symtab.st_value) &&
           (buffer[current_frame_idx] <= symtab.st_value + symtab.st_size)) {
         klog::Err("[{}] {:#x}",
                   reinterpret_cast<const char*>(
-                      KernelElfSingleton::instance().strtab_ + symtab.st_name),
+                      KernelElfSingleton::instance().strtab + symtab.st_name),
                   buffer[current_frame_idx]);
       }
     }
