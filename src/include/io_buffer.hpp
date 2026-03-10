@@ -11,52 +11,57 @@
 
 #include "expected.hpp"
 
-/// @brief Address translation callback type
-/// @param virt Virtual address to translate
-/// @return Corresponding physical address
+/**
+ * @brief 虚拟地址到物理地址转换回调类型
+ * @param virt 需要转换的虚拟地址
+ * @return 对应的物理地址
+ */
 using VirtToPhysFunc = auto (*)(uintptr_t virt) -> uintptr_t;
 
-/// @brief Identity mapping: phys == virt (default for early boot / no MMU)
+/**
+ * @brief 恒等映射：物理地址 == 虚拟地址（早期启动 / 无 MMU 时的默认实现）
+ * @param virt 虚拟地址
+ * @return 与输入相同的物理地址
+ */
 [[nodiscard]] inline auto IdentityVirtToPhys(uintptr_t virt) -> uintptr_t {
   return virt;
 }
 
 /**
- * @brief Non-owning descriptor for a DMA-accessible memory region
+ * @brief DMA 可访问内存区域的非拥有描述符
  *
- * Bundles virtual address, physical (bus) address, and size into a single
- * value type. Does NOT own the memory — lifetime is managed by the allocator
- * (e.g. IoBuffer).
+ * 将虚拟地址、物理（总线）地址和大小封装为单一值类型。
+ * 不拥有内存所有权——生命周期由分配器（如 IoBuffer）管理。
  *
- * @note POD-like, trivially copyable, safe to pass by value or const-ref.
+ * @note 类 POD 类型，可平凡拷贝，可安全按值或 const 引用传递。
  */
 struct DmaRegion {
-  /// Virtual (CPU-accessible) base address
+  /// 虚拟（CPU 可访问）基地址
   void* virt{nullptr};
-  /// Physical (bus/DMA) base address
+  /// 物理（总线/DMA）基地址
   uintptr_t phys{0};
-  /// Region size in bytes
+  /// 区域大小（字节）
   size_t size{0};
 
-  /// @brief Check if the region is valid (non-null, non-zero size)
+  /// 检查区域是否有效（非空指针且大小非零）
   [[nodiscard]] auto IsValid() const -> bool {
     return virt != nullptr && size > 0;
   }
 
-  /// @brief Get typed pointer to the virtual base
+  /// 获取虚拟基地址的类型化指针
   [[nodiscard]] auto data() const -> uint8_t* {
     return static_cast<uint8_t*>(virt);
   }
 
   /**
-   * @brief Create a sub-region at the given offset
+   * @brief 在指定偏移处创建子区域
    *
-   * @param offset Byte offset from the start of this region
-   * @param len Byte length of the sub-region
-   * @return Sub-region on success, error if out of bounds
+   * @param offset 相对于当前区域起始处的字节偏移
+   * @param len 子区域的字节长度
+   * @return 成功返回子区域，越界则返回错误
    *
    * @pre offset + len <= size
-   * @post Returned region shares the same underlying memory
+   * @post 返回的区域与当前区域共享同一底层内存
    */
   [[nodiscard]] auto SubRegion(size_t offset, size_t len) const
       -> Expected<DmaRegion> {
@@ -72,15 +77,14 @@ struct DmaRegion {
 };
 
 /**
- * @brief RAII wrapper for dynamically allocated, aligned IO buffers.
+ * @brief 动态分配、对齐 IO 缓冲区的 RAII 封装
  *
- * @pre  None
- * @post The buffer memory is correctly allocated and aligned. It will be freed
- * upon destruction.
+ * @pre  无
+ * @post 缓冲区内存已正确分配并对齐，析构时自动释放
  */
 class IoBuffer {
  public:
-  /// Default alignment for IO buffers (e.g., page size)
+  /// IO 缓冲区的默认对齐大小（如页大小）
   static constexpr size_t kDefaultAlignment = 4096;
 
   /// @name 构造/析构函数
@@ -130,13 +134,13 @@ class IoBuffer {
   [[nodiscard]] auto IsValid() const -> bool;
 
   /**
-   * @brief Create a DmaRegion view of this buffer
+   * @brief 创建此缓冲区的 DmaRegion 视图
    *
-   * @param v2p Address translation function (default: identity mapping)
-   * @return DmaRegion describing this buffer's memory
+   * @param v2p 地址转换函数（默认：恒等映射）
+   * @return 描述此缓冲区内存的 DmaRegion
    *
    * @pre IsValid() == true
-   * @post Returned DmaRegion does not own the memory
+   * @post 返回的 DmaRegion 不拥有内存所有权
    */
   [[nodiscard]] auto ToDmaRegion(VirtToPhysFunc v2p = IdentityVirtToPhys) const
       -> DmaRegion;
