@@ -188,7 +188,7 @@ SimpleKernel 的接口按功能分为以下层次：
 | `src/include/spinlock.hpp` | 自旋锁接口 | header-only（性能要求） |
 | `src/include/mutex.hpp` | 互斥锁接口 | `src/task/mutex.cpp` |
 
-> 📋 完整接口重构计划见 [doc/TODO_interface_refactor.md](./doc/TODO_interface_refactor.md)
+> 📋 完整接口重构计划见 [docs/TODO_interface_refactor.md](./docs/TODO_interface_refactor.md)
 
 ## 🏗️ 支持架构
 
@@ -228,7 +228,7 @@ docker exec -it SimpleKernel-dev /bin/zsh
 
 **方式二：本地环境**
 
-参考 [工具链文档](./doc/0_工具链.md) 配置本地开发环境。
+参考 [工具链文档](./docs/0_工具链.md) 配置本地开发环境。
 
 ### ⚡ 编译与运行
 
@@ -304,7 +304,7 @@ SimpleKernel/
 │   ├── unit_test/              #   单元测试
 │   ├── integration_test/       #   集成测试
 │   └── system_test/            #   系统测试（QEMU 运行）
-├── doc/                        # 📚 文档
+├── docs/                        # 📚 文档
 │   ├── TODO_interface_refactor.md  # 接口重构计划
 │   └── ...
 ├── cmake/                      # CMake 构建配置
@@ -406,12 +406,12 @@ subject: 不超过50字符，不加句号
 
 ### 📚 文档
 
-- **工具链**: [doc/0_工具链.md](./doc/0_工具链.md)
-- **系统启动**: [doc/1_系统启动.md](./doc/1_系统启动.md)
-- **调试输出**: [doc/2_调试输出.md](./doc/2_调试输出.md)
-- **中断**: [doc/3_中断.md](./doc/3_中断.md)
-- **Docker**: [doc/docker.md](./doc/docker.md)
-- **接口重构计划**: [doc/TODO_interface_refactor.md](./doc/TODO_interface_refactor.md)
+- **工具链**: [docs/0_工具链.md](./docs/0_工具链.md)
+- **系统启动**: [docs/1_系统启动.md](./docs/1_系统启动.md)
+- **调试输出**: [docs/2_调试输出.md](./docs/2_调试输出.md)
+- **中断**: [docs/3_中断.md](./docs/3_中断.md)
+- **Docker**: [docs/docker.md](./docs/docker.md)
+- **接口重构计划**: [docs/TODO_interface_refactor.md](./docs/TODO_interface_refactor.md)
 
 ## 🤝 贡献指南
 

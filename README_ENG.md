@@ -189,7 +189,7 @@ SimpleKernel's interfaces are organized into the following layers:
 | `src/include/spinlock.hpp` | Spinlock interface | header-only (performance) |
 | `src/include/mutex.hpp` | Mutex interface | `src/task/mutex.cpp` |
 
-> 📋 See [doc/TODO_interface_refactor.md](./doc/TODO_interface_refactor.md) for the complete interface refactoring plan.
+> 📋 See [docs/TODO_interface_refactor.md](./docs/TODO_interface_refactor.md) for the complete interface refactoring plan.
 
 ## 🏗️ Supported Architectures
 
@@ -229,7 +229,7 @@ docker exec -it SimpleKernel-dev /bin/zsh
 
 **Option 2: Local Environment**
 
-Refer to [Toolchain Documentation](./doc/0_工具链.md) for local development environment setup.
+Refer to [Toolchain Documentation](./docs/0_工具链.md) for local development environment setup.
 
 ### ⚡ Build and Run
 
@@ -305,7 +305,7 @@ SimpleKernel/
 │   ├── unit_test/              #   Unit tests
 │   ├── integration_test/       #   Integration tests
 │   └── system_test/            #   System tests (QEMU-based)
-├── doc/                        # 📚 Documentation
+├── docs/                        # 📚 Documentation
 │   ├── TODO_interface_refactor.md  # Interface refactoring plan
 │   └── ...
 ├── cmake/                      # CMake build configuration
@@ -407,12 +407,12 @@ subject: max 50 chars, no period
 
 ### 📚 Documentation
 
-- **Toolchain**: [doc/0_工具链.md](./doc/0_工具链.md)
-- **System Boot**: [doc/1_系统启动.md](./doc/1_系统启动.md)
-- **Debug Output**: [doc/2_调试输出.md](./doc/2_调试输出.md)
-- **Interrupts**: [doc/3_中断.md](./doc/3_中断.md)
-- **Docker**: [doc/docker.md](./doc/docker.md)
-- **Interface Refactoring Plan**: [doc/TODO_interface_refactor.md](./doc/TODO_interface_refactor.md)
+- **Toolchain**: [docs/0_工具链.md](./docs/0_工具链.md)
+- **System Boot**: [docs/1_系统启动.md](./docs/1_系统启动.md)
+- **Debug Output**: [docs/2_调试输出.md](./docs/2_调试输出.md)
+- **Interrupts**: [docs/3_中断.md](./docs/3_中断.md)
+- **Docker**: [docs/docker.md](./docs/docker.md)
+- **Interface Refactoring Plan**: [docs/TODO_interface_refactor.md](./docs/TODO_interface_refactor.md)
 
 ## 🤝 Contributing
 
