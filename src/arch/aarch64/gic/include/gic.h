@@ -28,6 +28,7 @@ class Gic {
   static constexpr size_t kSPIBase = 32;
   static constexpr size_t kSPICount = 988;
 
+  /// @brief GIC Distributor 接口
   class Gicd {
    public:
     /// @see
@@ -267,10 +268,9 @@ class Gic {
      * 构造函数
      * @param dev_addr 设备地址
      */
-    explicit Gicd(uint64_t base_addr);
-
-    /// @name 默认构造/析构函数
+    /// @name 构造/析构函数
     /// @{
+    explicit Gicd(uint64_t base_addr);
     Gicd() = default;
     Gicd(const Gicd& na16550a) = delete;
     Gicd(Gicd&& na16550a) = delete;
@@ -283,12 +283,12 @@ class Gic {
      * 允许从 Distributor 转发到 redistributor
      * @param intid 中断号
      */
-    void Enable(uint32_t intid) const;
+    auto Enable(uint32_t intid) const -> void;
 
     /**
      * 允许 no-sec group1 中断
      */
-    void EnableGrp1NS() const {
+    auto EnableGrp1NS() const -> void {
       Write(kCTLR, kCTLR_EnableGrp1NS);
       cpu_io::ICC_IGRPEN1_EL1::Enable::Set();
     }
@@ -297,41 +297,41 @@ class Gic {
      * 禁止从 Distributor 转发到 redistributor
      * @param intid 中断号
      */
-    void Disable(uint32_t intid) const;
+    auto Disable(uint32_t intid) const -> void;
 
     /**
      * 清除 intid 的中断
      * @param intid 中断号
      */
-    void Clear(uint32_t intid) const;
+    auto Clear(uint32_t intid) const -> void;
 
     /**
      * 判断 intid 中断是否使能
      * @param intid 中断号
      * @return true 允许
      */
-    auto IsEnable(uint32_t intid) const -> bool;
+    [[nodiscard]] auto IsEnable(uint32_t intid) const -> bool;
 
     /**
      * 设置 intid 的优先级
      * @param intid 中断号
      * @param prio 优先级
      */
-    void SetPrio(uint32_t intid, uint32_t prio) const;
+    auto SetPrio(uint32_t intid, uint32_t prio) const -> void;
 
     /**
      * 设置 intid 的属性
      * @param intid 中断号
      * @param config 属性
      */
-    void SetConfig(uint32_t intid, uint32_t config) const;
+    auto SetConfig(uint32_t intid, uint32_t config) const -> void;
 
     /**
      * 设置 intid 的由指定 cpu 处理
      * @param intid 中断号
      * @param cpuid cpu 编号
      */
-    void SetTarget(uint32_t intid, uint32_t cpuid) const;
+    auto SetTarget(uint32_t intid, uint32_t cpuid) const -> void;
 
     /**
      * 设置指定 SPI 中断
@@ -340,22 +340,23 @@ class Gic {
      * @param intid 中断号
      * @param cpuid cpu 编号
      */
-    void SetupSPI(uint32_t intid, uint32_t cpuid) const;
+    auto SetupSPI(uint32_t intid, uint32_t cpuid) const -> void;
 
    private:
-    uint64_t base_addr_ = 0;
+    uint64_t base_addr_{0};
 
-    __always_inline auto Read(uint32_t off) const -> uint32_t {
+    [[nodiscard]] __always_inline auto Read(uint32_t off) const -> uint32_t {
       etl::io_port_ro<uint32_t> reg{reinterpret_cast<void*>(base_addr_ + off)};
       return reg.read();
     }
 
-    __always_inline void Write(uint32_t off, uint32_t val) const {
+    __always_inline auto Write(uint32_t off, uint32_t val) const -> void {
       etl::io_port_wo<uint32_t> reg{reinterpret_cast<void*>(base_addr_ + off)};
       reg.write(val);
     }
   };
 
+  /// @brief GIC Redistributor 接口
   class Gicr {
    public:
     /// 每个 GICR 长度 2 * 64 * 1024
@@ -489,10 +490,9 @@ class Gic {
      * 构造函数
      * @param dev_addr 设备地址
      */
-    explicit Gicr(uint64_t base_addr);
-
-    /// @name 默认构造/析构函数
+    /// @name 构造/析构函数
     /// @{
+    explicit Gicr(uint64_t base_addr);
     Gicr() = default;
     Gicr(const Gicr& na16550a) = delete;
     Gicr(Gicr&& na16550a) = delete;
@@ -506,21 +506,21 @@ class Gic {
      * @param intid 中断号
      * @param cpuid cpu 编号
      */
-    void Enable(uint32_t intid, uint32_t cpuid) const;
+    auto Enable(uint32_t intid, uint32_t cpuid) const -> void;
 
     /**
      * 禁止从 redistributor 转发到 CPU interface
      * @param intid 中断号
      * @param cpuid cpu 编号
      */
-    void Disable(uint32_t intid, uint32_t cpuid) const;
+    auto Disable(uint32_t intid, uint32_t cpuid) const -> void;
 
     /**
      * 清除指定 cpu intid 的中断
      * @param intid 中断号
      * @param cpuid cpu 编号
      */
-    void Clear(uint32_t intid, uint32_t cpuid) const;
+    auto Clear(uint32_t intid, uint32_t cpuid) const -> void;
 
     /**
      * 设置 intid 的优先级
@@ -528,12 +528,12 @@ class Gic {
      * @param cpuid cpu 编号
      * @param prio 优先级
      */
-    void SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const;
+    auto SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const -> void;
 
     /**
      * 初始化 gicr，在多核场景使用
      */
-    void SetUP() const;
+    auto SetUP() const -> void;
 
     /**
      * 设置指定 PPI 中断
@@ -542,7 +542,7 @@ class Gic {
      * @param intid 中断号
      * @param cpuid cpu 编号
      */
-    void SetupPPI(uint32_t intid, uint32_t cpuid) const;
+    auto SetupPPI(uint32_t intid, uint32_t cpuid) const -> void;
 
     /**
      * 设置指定 SGI 中断
@@ -551,19 +551,20 @@ class Gic {
      * @param intid 中断号 (0-15)
      * @param cpuid cpu 编号
      */
-    void SetupSGI(uint32_t intid, uint32_t cpuid) const;
+    auto SetupSGI(uint32_t intid, uint32_t cpuid) const -> void;
 
    private:
-    uint64_t base_addr_ = 0;
+    uint64_t base_addr_{0};
 
-    __always_inline auto Read(uint32_t cpuid, uint32_t off) const -> uint32_t {
+    [[nodiscard]] __always_inline auto Read(uint32_t cpuid, uint32_t off) const
+        -> uint32_t {
       etl::io_port_ro<uint32_t> reg{
           reinterpret_cast<void*>(base_addr_ + cpuid * kSTRIDE + off)};
       return reg.read();
     }
 
-    __always_inline void Write(uint32_t cpuid, uint32_t off,
-                               uint32_t val) const {
+    __always_inline auto Write(uint32_t cpuid, uint32_t off, uint32_t val) const
+        -> void {
       etl::io_port_wo<uint32_t> reg{
           reinterpret_cast<void*>(base_addr_ + cpuid * kSTRIDE + off)};
       reg.write(val);
@@ -575,10 +576,9 @@ class Gic {
    * @param gicd_base_addr gic distributor 地址
    * @param gicr_base_addr gic redistributor 地址
    */
-  explicit Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr);
-
-  /// @name 默认构造/析构函数
+  /// @name 构造/析构函数
   /// @{
+  explicit Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr);
   Gic() = default;
   Gic(const Gic& na16550a) = delete;
   Gic(Gic&& na16550a) = delete;
@@ -587,10 +587,14 @@ class Gic {
   ~Gic() = default;
   /// @}
 
-  void SetUP() const;
-  void SPI(uint32_t intid, uint32_t cpuid) const;
-  void PPI(uint32_t intid, uint32_t cpuid) const;
-  void SGI(uint32_t intid, uint32_t cpuid) const;
+  /** @brief 初始化当前 CPU 的 GIC 配置 */
+  auto SetUP() const -> void;
+  /** @brief 配置共享外设中断 (SPI) */
+  auto SPI(uint32_t intid, uint32_t cpuid) const -> void;
+  /** @brief 配置私有外设中断 (PPI) */
+  auto PPI(uint32_t intid, uint32_t cpuid) const -> void;
+  /** @brief 配置软件生成中断 (SGI) */
+  auto SGI(uint32_t intid, uint32_t cpuid) const -> void;
 
  private:
   Gicd gicd_;

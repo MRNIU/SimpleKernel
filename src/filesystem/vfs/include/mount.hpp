@@ -45,14 +45,15 @@ class MountTable {
   /// 最大挂载点数
   static constexpr size_t kMaxMounts = 16;
 
+  /// @name 构造/析构函数
+  /// @{
   MountTable() : mounts_{}, mount_count_(0), root_mount_(nullptr) {}
-  ~MountTable() = default;
-
-  // 禁止拷贝和移动
   MountTable(const MountTable&) = delete;
   MountTable(MountTable&&) = delete;
   auto operator=(const MountTable&) -> MountTable& = delete;
   auto operator=(MountTable&&) -> MountTable& = delete;
+  ~MountTable() = default;
+  /// @}
 
   /**
    * @brief 挂载文件系统到指定路径
@@ -78,14 +79,14 @@ class MountTable {
    * @param path 文件路径
    * @return MountPoint* 最长前缀匹配的挂载点，未找到返回 nullptr
    */
-  auto Lookup(const char* path) -> MountPoint*;
+  [[nodiscard]] auto Lookup(const char* path) -> MountPoint*;
 
   /**
    * @brief 获取指定挂载点的根 dentry
    * @param mp 挂载点
    * @return Dentry* 挂载点根 dentry
    */
-  auto GetRootDentry(MountPoint* mp) -> Dentry*;
+  [[nodiscard]] auto GetRootDentry(MountPoint* mp) -> Dentry*;
 
   /**
    * @brief 检查路径是否是挂载点
@@ -93,13 +94,13 @@ class MountTable {
    * @return true 是挂载点
    * @return false 不是挂载点
    */
-  auto IsMountPoint(const char* path) -> bool;
+  [[nodiscard]] auto IsMountPoint(const char* path) -> bool;
 
   /**
    * @brief 获取根挂载点
    * @return MountPoint* 根挂载点
    */
-  auto GetRootMount() -> MountPoint*;
+  [[nodiscard]] auto GetRootMount() -> MountPoint*;
 
  private:
   MountPoint mounts_[kMaxMounts];

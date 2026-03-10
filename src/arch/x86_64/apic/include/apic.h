@@ -21,10 +21,9 @@
  */
 class Apic {
  public:
-  explicit Apic(const size_t cpu_count);
-
-  /// @name 默认构造/析构函数
+  /// @name 构造/析构函数
   /// @{
+  explicit Apic(const size_t cpu_count);
   Apic() = default;
   Apic(const Apic&) = delete;
   Apic(Apic&&) = default;
@@ -38,7 +37,7 @@ class Apic {
    * @return Expected<void> 初始化成功返回空值，失败返回错误
    * @note 每个 CPU 核心启动时都需要调用此函数
    */
-  auto InitCurrentCpuLocalApic() -> Expected<void>;
+  [[nodiscard]] auto InitCurrentCpuLocalApic() -> Expected<void>;
 
   /**
    * @brief 设置 IRQ 重定向
@@ -48,23 +47,23 @@ class Apic {
    * @param mask 是否屏蔽中断
    * @return Expected<void> 设置成功返回空值，失败返回错误
    */
-  auto SetIrqRedirection(uint8_t irq, uint8_t vector,
-                         uint32_t destination_apic_id, bool mask = false)
-      -> Expected<void>;
+  [[nodiscard]] auto SetIrqRedirection(uint8_t irq, uint8_t vector,
+                                       uint32_t destination_apic_id,
+                                       bool mask = false) -> Expected<void>;
 
   /**
    * @brief 屏蔽 IRQ
    * @param irq IRQ 号
    * @return Expected<void> 操作成功返回空值，失败返回错误
    */
-  auto MaskIrq(uint8_t irq) -> Expected<void>;
+  [[nodiscard]] auto MaskIrq(uint8_t irq) -> Expected<void>;
 
   /**
    * @brief 取消屏蔽 IRQ
    * @param irq IRQ 号
    * @return Expected<void> 操作成功返回空值，失败返回错误
    */
-  auto UnmaskIrq(uint8_t irq) -> Expected<void>;
+  [[nodiscard]] auto UnmaskIrq(uint8_t irq) -> Expected<void>;
 
   /**
    * @brief 发送 IPI 到指定 CPU
@@ -72,14 +71,15 @@ class Apic {
    * @param vector 中断向量
    * @return Expected<void> 发送成功返回空值，失败返回错误
    */
-  auto SendIpi(uint32_t target_apic_id, uint8_t vector) const -> Expected<void>;
+  [[nodiscard]] auto SendIpi(uint32_t target_apic_id, uint8_t vector) const
+      -> Expected<void>;
 
   /**
    * @brief 广播 IPI 到所有其他 CPU
    * @param vector 中断向量
    * @return Expected<void> 广播成功返回空值，失败返回错误
    */
-  auto BroadcastIpi(uint8_t vector) const -> Expected<void>;
+  [[nodiscard]] auto BroadcastIpi(uint8_t vector) const -> Expected<void>;
 
   /**
    * @brief 启动 AP (Application Processor)
@@ -90,8 +90,9 @@ class Apic {
    * @return Expected<void> 启动成功返回空值，失败返回错误
    * @note 函数内部会将启动代码复制到指定的目标地址，并计算 start_vector
    */
-  auto StartupAp(uint32_t apic_id, uint64_t ap_code_addr, size_t ap_code_size,
-                 uint64_t target_addr) const -> Expected<void>;
+  [[nodiscard]] auto StartupAp(uint32_t apic_id, uint64_t ap_code_addr,
+                               size_t ap_code_size, uint64_t target_addr) const
+      -> Expected<void>;
 
   /**
    * @brief 唤醒所有应用处理器 (AP)
@@ -101,25 +102,25 @@ class Apic {
    * @note 此方法会尝试唤醒除当前 BSP 外的所有 CPU 核心
    * @note 函数内部会将启动代码复制到指定的目标地址，并计算 start_vector
    */
-  void StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
-                     uint64_t target_addr) const;
+  auto StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size,
+                     uint64_t target_addr) const -> void;
 
   /**
    * @brief 发送 EOI 信号给当前 CPU 的 Local APIC
    */
-  void SendEoi() const;
+  auto SendEoi() const -> void;
 
   /**
    * @brief 设置 Local APIC 定时器
    * @param frequency_hz 定时器频率（Hz）
    * @param vector 中断向量号
    */
-  void SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const;
+  auto SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const -> void;
 
   /**
    * @brief 打印所有 APIC 信息（调试用）
    */
-  void PrintInfo() const;
+  auto PrintInfo() const -> void;
 
  private:
   /// Local APIC 操作接口（静态实例，用于当前 CPU）

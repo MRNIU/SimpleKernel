@@ -99,7 +99,7 @@ struct File {
  * @note 线程安全：应在系统启动时单线程调用
  * @note 幂等性：重复调用会返回成功（无操作）
  */
-auto Init() -> Expected<void>;
+[[nodiscard]] auto Init() -> Expected<void>;
 
 /**
  * @brief 路径解析，查找 dentry
@@ -109,7 +109,7 @@ auto Init() -> Expected<void>;
  * @note 线程安全：是，内部使用 MountTable 锁
  * @note 会自动跨越挂载点解析路径
  */
-auto Lookup(const char* path) -> Expected<Dentry*>;
+[[nodiscard]] auto Lookup(const char* path) -> Expected<Dentry*>;
 
 /**
  * @brief 打开文件
@@ -121,7 +121,7 @@ auto Lookup(const char* path) -> Expected<Dentry*>;
  * @note 调用者负责调用 Close() 释放 File 对象
  * @note 若 flags 包含 kOCreate，文件不存在时会自动创建
  */
-auto Open(const char* path, uint32_t flags) -> Expected<File*>;
+[[nodiscard]] auto Open(const char* path, uint32_t flags) -> Expected<File*>;
 
 /**
  * @brief 关闭文件
@@ -131,7 +131,7 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*>;
  * @note 会调用文件系统特定的 close 回调
  * @note 关闭后 File 指针失效，不应再使用
  */
-auto Close(File* file) -> Expected<void>;
+[[nodiscard]] auto Close(File* file) -> Expected<void>;
 
 /**
  * @brief 从文件读取数据
@@ -143,7 +143,8 @@ auto Close(File* file) -> Expected<void>;
  * @note 实际读取字节数可能小于 count（到达文件末尾）
  * @note 会自动更新 file->offset
  */
-auto Read(File* file, void* buf, size_t count) -> Expected<size_t>;
+[[nodiscard]] auto Read(File* file, void* buf, size_t count)
+    -> Expected<size_t>;
 
 /**
  * @brief 向文件写入数据
@@ -155,7 +156,8 @@ auto Read(File* file, void* buf, size_t count) -> Expected<size_t>;
  * @note 文件系统可能需要在写入前扩展文件大小
  * @note 会自动更新 file->offset 和 file->inode->size
  */
-auto Write(File* file, const void* buf, size_t count) -> Expected<size_t>;
+[[nodiscard]] auto Write(File* file, const void* buf, size_t count)
+    -> Expected<size_t>;
 
 /**
  * @brief 调整文件偏移量
@@ -167,7 +169,8 @@ auto Write(File* file, const void* buf, size_t count) -> Expected<size_t>;
  * @note 如果 whence 为 kEnd 且 offset 为正，可能超过文件末尾
  * @note 返回的偏移量是绝对位置（从文件开头计算）
  */
-auto Seek(File* file, int64_t offset, SeekWhence whence) -> Expected<uint64_t>;
+[[nodiscard]] auto Seek(File* file, int64_t offset, SeekWhence whence)
+    -> Expected<uint64_t>;
 
 /**
  * @brief 创建目录
@@ -177,7 +180,7 @@ auto Seek(File* file, int64_t offset, SeekWhence whence) -> Expected<uint64_t>;
  * @note 父目录必须存在
  * @note 如果目录已存在会返回错误
  */
-auto MkDir(const char* path) -> Expected<void>;
+[[nodiscard]] auto MkDir(const char* path) -> Expected<void>;
 
 /**
  * @brief 删除目录
@@ -187,7 +190,7 @@ auto MkDir(const char* path) -> Expected<void>;
  * @note 目录必须为空（不含子项）
  * @note 不能删除挂载点
  */
-auto RmDir(const char* path) -> Expected<void>;
+[[nodiscard]] auto RmDir(const char* path) -> Expected<void>;
 
 /**
  * @brief 删除文件
@@ -197,7 +200,7 @@ auto RmDir(const char* path) -> Expected<void>;
  * @note 不能删除目录（使用 RmDir）
  * @note 如果多个硬链接，只会减少链接计数
  */
-auto Unlink(const char* path) -> Expected<void>;
+[[nodiscard]] auto Unlink(const char* path) -> Expected<void>;
 
 /**
  * @brief 读取目录内容
@@ -209,7 +212,8 @@ auto Unlink(const char* path) -> Expected<void>;
  * @note 会返回 . 和 .. 目录项
  * @note 多次调用可遍历整个目录，自动维护偏移量
  */
-auto ReadDir(File* file, DirEntry* dirent, size_t count) -> Expected<size_t>;
+[[nodiscard]] auto ReadDir(File* file, DirEntry* dirent, size_t count)
+    -> Expected<size_t>;
 
 /**
  * @brief 获取根目录 dentry
@@ -218,6 +222,6 @@ auto ReadDir(File* file, DirEntry* dirent, size_t count) -> Expected<size_t>;
  * @note 返回 nullptr 表示根文件系统未挂载
  * @note 返回的指针由 VFS 内部管理，不应释放
  */
-auto GetRootDentry() -> Dentry*;
+[[nodiscard]] auto GetRootDentry() -> Dentry*;
 
 }  // namespace vfs

@@ -57,7 +57,7 @@ enum class SeekWhence : int {
   kEnd = 2,
 };
 
-/// Inode 操作接口
+/// @brief Inode 操作接口
 class InodeOps {
  public:
   virtual ~InodeOps() = default;
@@ -116,17 +116,17 @@ class InodeOps {
    */
   virtual auto Rmdir(Inode* dir, const char* name) -> Expected<void> = 0;
 };
-/// 目录项结构（用于 readdir）
+/// @brief 目录项结构（用于 readdir）
 struct DirEntry {
   /// inode 编号
-  uint64_t ino;
+  uint64_t ino{0};
   /// 文件类型
-  uint8_t type;
+  uint8_t type{0};
   /// 文件名
   char name[256];
 };
 
-/// File 操作接口
+/// @brief File 操作接口
 class FileOps {
  public:
   virtual ~FileOps() = default;

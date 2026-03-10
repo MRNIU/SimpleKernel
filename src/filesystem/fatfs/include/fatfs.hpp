@@ -98,7 +98,7 @@ class FatFsFileSystem : public vfs::FileSystem {
   /**
    * @brief 返回本文件系统的 FileOps 实例
    */
-  auto GetFileOps() -> vfs::FileOps* override;
+  [[nodiscard]] auto GetFileOps() -> vfs::FileOps* override;
 
   /**
    * @brief 为 inode 打开底层 FatFS FIL 对象
@@ -122,7 +122,7 @@ class FatFsFileSystem : public vfs::FileSystem {
    * @param pdrv FatFS 物理驱动器号
    * @return vfs::BlockDevice* 若未注册则返回 nullptr
    */
-  static auto GetBlockDevice(uint8_t pdrv) -> vfs::BlockDevice*;
+  [[nodiscard]] static auto GetBlockDevice(uint8_t pdrv) -> vfs::BlockDevice*;
 
   /**
    * @brief FatFS inode 操作实现
@@ -293,7 +293,7 @@ class FatFsFileSystem : public vfs::FileSystem {
    * @brief 从 inode 池中分配一个空闲槽位
    * @return FatInode* 成功返回指针，池满返回 nullptr
    */
-  auto AllocateFatInode() -> FatInode*;
+  [[nodiscard]] auto AllocateFatInode() -> FatInode*;
 
   /**
    * @brief 释放 inode 池槽位
@@ -305,7 +305,7 @@ class FatFsFileSystem : public vfs::FileSystem {
    * @brief 从 FIL 池中分配一个空闲 FIL 对象
    * @return FIL* 成功返回指针，池满返回 nullptr
    */
-  auto AllocateFil() -> FIL*;
+  [[nodiscard]] auto AllocateFil() -> FIL*;
 
   /**
    * @brief 归还 FIL 对象到池中
@@ -317,7 +317,7 @@ class FatFsFileSystem : public vfs::FileSystem {
    * @brief 从 DIR 池中分配一个空闲 DIR 对象
    * @return DIR* 成功返回指针，池满返回 nullptr
    */
-  auto AllocateDir() -> DIR*;
+  [[nodiscard]] auto AllocateDir() -> DIR*;
 
   /**
    * @brief 归还 DIR 对象到池中

@@ -13,14 +13,14 @@
 #include "interrupt_base.h"
 #include "sk_stdio.h"
 
+/// @brief AArch64 中断控制器实现
 class Interrupt final : public InterruptBase {
  public:
   static constexpr size_t kMaxInterrupt = 128;
 
-  Interrupt();
-
   /// @name 构造/析构函数
   /// @{
+  Interrupt();
   Interrupt(const Interrupt&) = delete;
   Interrupt(Interrupt&&) = delete;
   auto operator=(const Interrupt&) -> Interrupt& = delete;
@@ -28,22 +28,31 @@ class Interrupt final : public InterruptBase {
   ~Interrupt() = default;
   /// @}
 
-  void Do(uint64_t cause, cpu_io::TrapContext* context) override;
-  void RegisterInterruptFunc(uint64_t cause, InterruptDelegate func) override;
-  auto SendIpi(uint64_t target_cpu_mask) -> Expected<void> override;
-  auto BroadcastIpi() -> Expected<void> override;
-  auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
-                                 uint32_t priority, InterruptDelegate handler)
+  /** @brief 执行中断处理 */
+  auto Do(uint64_t cause, cpu_io::TrapContext* context) -> void override;
+  /** @brief 注册中断处理函数 */
+  auto RegisterInterruptFunc(uint64_t cause, InterruptDelegate func)
+      -> void override;
+  [[nodiscard]] auto SendIpi(uint64_t target_cpu_mask)
+      -> Expected<void> override;
+  [[nodiscard]] auto BroadcastIpi() -> Expected<void> override;
+  [[nodiscard]] auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
+                                               uint32_t priority,
+                                               InterruptDelegate handler)
       -> Expected<void> override;
 
-  __always_inline void SetUP() const { gic_.SetUP(); }
-  __always_inline void SPI(uint32_t intid, uint32_t cpuid) const {
+  /** @brief 设置 GIC */
+  __always_inline auto SetUP() const -> void { gic_.SetUP(); }
+  /** @brief 设置 SPI 中断 */
+  __always_inline auto SPI(uint32_t intid, uint32_t cpuid) const -> void {
     gic_.SPI(intid, cpuid);
   }
-  __always_inline void PPI(uint32_t intid, uint32_t cpuid) const {
+  /** @brief 设置 PPI 中断 */
+  __always_inline auto PPI(uint32_t intid, uint32_t cpuid) const -> void {
     gic_.PPI(intid, cpuid);
   }
-  __always_inline void SGI(uint32_t intid, uint32_t cpuid) const {
+  /** @brief 设置 SGI 中断 */
+  __always_inline auto SGI(uint32_t intid, uint32_t cpuid) const -> void {
     gic_.SGI(intid, cpuid);
   }
 

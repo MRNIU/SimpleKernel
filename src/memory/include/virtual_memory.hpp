@@ -49,7 +49,7 @@ class VirtualMemory {
    * @param flags 页表属性，默认为内核设备内存属性（如果架构支持区分的话）
    * @return Expected<void*> 映射后的虚拟地址，失败时返回错误
    */
-  auto MapMMIO(
+  [[nodiscard]] auto MapMMIO(
       uint64_t phys_addr, size_t size,
       uint32_t flags = cpu_io::virtual_memory::GetKernelPagePermissions())
       -> Expected<void*>;
@@ -62,8 +62,9 @@ class VirtualMemory {
    * @param flags 页表属性
    * @return Expected<void> 成功时返回 void，失败时返回错误
    */
-  auto MapPage(void* page_dir, void* virtual_addr, void* physical_addr,
-               uint32_t flags) -> Expected<void>;
+  [[nodiscard]] auto MapPage(void* page_dir, void* virtual_addr,
+                             void* physical_addr, uint32_t flags)
+      -> Expected<void>;
 
   /**
    * @brief 取消映射单个页面
@@ -71,7 +72,8 @@ class VirtualMemory {
    * @param virtual_addr 虚拟地址
    * @return Expected<void> 成功时返回 void，失败时返回错误
    */
-  auto UnmapPage(void* page_dir, void* virtual_addr) -> Expected<void>;
+  [[nodiscard]] auto UnmapPage(void* page_dir, void* virtual_addr)
+      -> Expected<void>;
 
   /**
    * @brief 获取虚拟地址对应的物理地址映射
@@ -98,7 +100,8 @@ class VirtualMemory {
    * @note 如果 copy_mappings 为 true，会复制所有的页表项；
    *       如果为 false，只复制页表结构，不复制最后一级的映射
    */
-  auto ClonePageDirectory(void* src_page_dir, bool copy_mappings = true)
+  [[nodiscard]] auto ClonePageDirectory(void* src_page_dir,
+                                        bool copy_mappings = true)
       -> Expected<void*>;
 
  private:

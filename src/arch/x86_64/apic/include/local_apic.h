@@ -17,7 +17,7 @@
  */
 class LocalApic {
  public:
-  /// @name 默认构造/析构函数
+  /// @name 构造/析构函数
   /// @{
   LocalApic() = default;
   LocalApic(const LocalApic&) = delete;
@@ -31,7 +31,7 @@ class LocalApic {
    * @brief 初始化 Local APIC
    * @return Expected<void> 初始化成功返回空值，失败返回错误
    */
-  auto Init() -> Expected<void>;
+  [[nodiscard]] auto Init() -> Expected<void>;
 
   /**
    * @brief 获取 APIC 版本信息
@@ -42,7 +42,7 @@ class LocalApic {
   /**
    * @brief 发送中断结束信号 (EOI)
    */
-  void SendEoi() const;
+  auto SendEoi() const -> void;
 
   /**
    * @brief 发送处理器间中断 (IPI)
@@ -50,7 +50,7 @@ class LocalApic {
    * @param vector 中断向量
    * @return Expected<void> 发送成功返回空值，失败返回错误
    */
-  auto SendIpi(uint32_t destination_apic_id, uint8_t vector) const
+  [[nodiscard]] auto SendIpi(uint32_t destination_apic_id, uint8_t vector) const
       -> Expected<void>;
 
   /**
@@ -58,13 +58,13 @@ class LocalApic {
    * @param vector 中断向量
    * @return Expected<void> 广播成功返回空值，失败返回错误
    */
-  auto BroadcastIpi(uint8_t vector) const -> Expected<void>;
+  [[nodiscard]] auto BroadcastIpi(uint8_t vector) const -> Expected<void>;
 
   /**
    * @brief 设置任务优先级
    * @param priority 优先级值
    */
-  void SetTaskPriority(uint8_t priority) const;
+  auto SetTaskPriority(uint8_t priority) const -> void;
 
   /**
    * @brief 获取任务优先级
@@ -79,13 +79,13 @@ class LocalApic {
    * @param vector 定时器中断向量
    * @param periodic 是否为周期性定时器
    */
-  void EnableTimer(uint32_t initial_count, uint32_t divide_value,
-                   uint8_t vector, bool periodic = true) const;
+  auto EnableTimer(uint32_t initial_count, uint32_t divide_value,
+                   uint8_t vector, bool periodic = true) const -> void;
 
   /**
    * @brief 禁用 Local APIC 定时器
    */
-  void DisableTimer() const;
+  auto DisableTimer() const -> void;
 
   /**
    * @brief 获取定时器当前计数值
@@ -98,27 +98,28 @@ class LocalApic {
    * @param frequency_hz 定时器频率（Hz）
    * @param vector 定时器中断向量
    */
-  void SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const;
+  auto SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const -> void;
 
   /**
    * @brief 设置单次定时器
    * @param microseconds 延时时间（微秒）
    * @param vector 定时器中断向量
    */
-  void SetupOneShotTimer(uint32_t microseconds, uint8_t vector) const;
+  auto SetupOneShotTimer(uint32_t microseconds, uint8_t vector) const -> void;
 
   /**
    * @brief 发送 INIT IPI
    * @param destination_apic_id 目标 APIC ID
    */
-  void SendInitIpi(uint32_t destination_apic_id) const;
+  auto SendInitIpi(uint32_t destination_apic_id) const -> void;
 
   /**
    * @brief 发送 SIPI (Startup IPI)
    * @param destination_apic_id 目标 APIC ID
    * @param start_page 启动页面地址（4KB 页面）
    */
-  void SendStartupIpi(uint32_t destination_apic_id, uint8_t start_page) const;
+  auto SendStartupIpi(uint32_t destination_apic_id, uint8_t start_page) const
+      -> void;
 
   /**
    * @brief 唤醒应用处理器 (AP)
@@ -127,12 +128,13 @@ class LocalApic {
    * @return true 唤醒成功
    * @note 执行标准的 INIT-SIPI-SIPI 序列来唤醒 AP
    */
-  void WakeupAp(uint32_t destination_apic_id, uint8_t start_vector) const;
+  auto WakeupAp(uint32_t destination_apic_id, uint8_t start_vector) const
+      -> void;
 
   /**
    * @brief 配置 Local Vector Table 条目
    */
-  void ConfigureLvtEntries() const;
+  auto ConfigureLvtEntries() const -> void;
 
   /**
    * @brief 读取错误状态
@@ -143,7 +145,7 @@ class LocalApic {
   /**
    * @brief 打印 Local APIC 信息（调试用）
    */
-  void PrintInfo() const;
+  auto PrintInfo() const -> void;
 
  private:
   /// @name xAPIC 寄存器偏移量常数
@@ -245,10 +247,10 @@ class LocalApic {
   /// @}
 
   /// @brief 当前 APIC 模式（true = x2APIC, false = xAPIC）
-  bool is_x2apic_mode_ = false;
+  bool is_x2apic_mode_{false};
 
   /// @brief APIC 基地址（仅用于 xAPIC 模式）
-  uint64_t apic_base_ = kDefaultApicBase;
+  uint64_t apic_base_{kDefaultApicBase};
 
   /**
    * @brief 检查 CPU 是否支持 x2APIC

@@ -30,17 +30,15 @@ class FileDescriptorTable {
   static constexpr int kStdoutFd = 1;
   static constexpr int kStderrFd = 2;
 
-  /// @brief 构造函数
+  /// @name 构造/析构函数
+  /// @{
   FileDescriptorTable();
-
-  /// @brief 析构函数
-  ~FileDescriptorTable();
-
-  // 禁止拷贝，允许移动
   FileDescriptorTable(const FileDescriptorTable&) = delete;
   FileDescriptorTable(FileDescriptorTable&& other);
   auto operator=(const FileDescriptorTable&) -> FileDescriptorTable& = delete;
   auto operator=(FileDescriptorTable&& other) -> FileDescriptorTable&;
+  ~FileDescriptorTable();
+  /// @}
 
   /**
    * @brief 分配一个最小可用 fd 并关联 File
@@ -56,7 +54,7 @@ class FileDescriptorTable {
    * @return vfs::File* 指针，无效 fd 返回 nullptr
    * @pre 0 <= fd < kMaxFd
    */
-  auto Get(int fd) -> vfs::File*;
+  [[nodiscard]] auto Get(int fd) -> vfs::File*;
 
   /**
    * @brief 释放 fd
@@ -99,7 +97,7 @@ class FileDescriptorTable {
 
  private:
   std::array<vfs::File*, kMaxFd> table_;
-  int open_count_;
+  int open_count_{0};
   SpinLock lock_{"fd_table"};
 };
 

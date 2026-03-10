@@ -15,6 +15,9 @@ namespace ramfs {
  */
 class RamFs : public vfs::FileSystem {
  public:
+  /// @name 构造/析构函数
+  /// @{
+
   /**
    * @brief 构造函数
    */
@@ -31,6 +34,7 @@ class RamFs : public vfs::FileSystem {
   auto operator=(const RamFs&) -> RamFs& = delete;
   auto operator=(RamFs&&) -> RamFs& = delete;
 
+  /// @}
   /**
    * @brief 获取文件系统类型名
    * @return "ramfs"
@@ -81,9 +85,9 @@ class RamFs : public vfs::FileSystem {
    * @brief 获取文件操作实例
    * @return vfs::FileOps* 文件操作实例指针
    */
-  auto GetFileOps() -> vfs::FileOps*;
+  [[nodiscard]] auto GetFileOps() -> vfs::FileOps*;
 
-  // Inode 操作实现类
+  /// @brief Inode 操作实现类
   class RamFsInodeOps : public vfs::InodeOps {
    public:
     explicit RamFsInodeOps(RamFs* fs) : fs_(fs) {}
@@ -100,7 +104,7 @@ class RamFs : public vfs::FileSystem {
     RamFs* fs_;
   };
 
-  // File 操作实现类
+  /// @brief File 操作实现类
   class RamFsFileOps : public vfs::FileOps {
    public:
     explicit RamFsFileOps(RamFs* fs) : fs_(fs) {}
@@ -153,19 +157,19 @@ class RamFs : public vfs::FileSystem {
 
   RamInode inodes_[kMaxInodes];
   /// 空闲 inode 链表头
-  RamInode* free_list_;
+  RamInode* free_list_{nullptr};
   /// 根目录 inode
-  vfs::Inode* root_inode_;
+  vfs::Inode* root_inode_{nullptr};
   /// 已使用的 inode 数量
-  size_t used_inodes_;
+  size_t used_inodes_{0};
   /// 是否已挂载
-  bool mounted_;
+  bool mounted_{false};
 
   // Static pools (bump allocator, reset on Unmount)
   alignas(16) uint8_t file_data_pool_[kFileDataPoolSize];
-  size_t file_data_pool_used_;
+  size_t file_data_pool_used_{0};
   alignas(alignof(RamDirEntry)) uint8_t dir_data_pool_[kDirDataPoolSize];
-  size_t dir_data_pool_used_;
+  size_t dir_data_pool_used_{0};
 
   // 操作实例
   RamFsInodeOps inode_ops_;

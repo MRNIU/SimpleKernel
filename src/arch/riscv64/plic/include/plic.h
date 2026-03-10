@@ -30,10 +30,9 @@ class Plic {
    * @param ndev 支持的中断源数量 (riscv,ndev)
    * @param context_count 上下文数量 (通常为 2 * core_count)
    */
-  explicit Plic(uint64_t dev_addr, size_t ndev, size_t context_count);
-
-  /// @name 默认构造/析构函数
+  /// @name 构造/析构函数
   /// @{
+  explicit Plic(uint64_t dev_addr, size_t ndev, size_t context_count);
   Plic() = default;
   Plic(const Plic& plic) = default;
   Plic(Plic&& plic) = default;
@@ -47,19 +46,19 @@ class Plic {
    * @param  cause 中断或异常号
    * @param  context 中断上下文
    */
-  void Do(uint64_t cause, cpu_io::TrapContext* context) const;
+  auto Do(uint64_t cause, cpu_io::TrapContext* context) const -> void;
 
   /**
    * @brief 向 Plic 询问中断
    * @return uint32_t 中断源 ID (1-1023)
    */
-  auto Which() const -> uint32_t;
+  [[nodiscard]] auto Which() const -> uint32_t;
 
   /**
    * @brief 告知 Plic 已经处理了当前 IRQ
    * @param  source_id 中断源 ID (1-1023)
    */
-  void Done(uint32_t source_id) const;
+  auto Done(uint32_t source_id) const -> void;
 
   /**
    * @brief 设置指定中断源的使能状态
@@ -68,8 +67,8 @@ class Plic {
    * @param priority 中断优先级 (0-7, 0 表示禁用)
    * @param enable 是否使能该中断
    */
-  void Set(uint32_t hart_id, uint32_t source_id, uint32_t priority,
-           bool enable) const;
+  auto Set(uint32_t hart_id, uint32_t source_id, uint32_t priority,
+           bool enable) const -> void;
 
   /**
    * @brief 获取指定中断源的状态信息
@@ -77,7 +76,7 @@ class Plic {
    * @param source_id 中断源 ID (1-1023)
    * @return <优先级, 使能状态, 挂起状态>
    */
-  auto Get(uint32_t hart_id, uint32_t source_id) const
+  [[nodiscard]] auto Get(uint32_t hart_id, uint32_t source_id) const
       -> std::tuple<uint32_t, bool, bool>;
 
   /**
@@ -85,14 +84,14 @@ class Plic {
    * @param  cause             外部中断号
    * @param  func 外部中断处理函数
    */
-  void RegisterInterruptFunc(uint8_t cause, InterruptDelegate func);
+  auto RegisterInterruptFunc(uint8_t cause, InterruptDelegate func) -> void;
 
   /**
    * @brief 执行外部中断处理
    * @param  cause              外部中断号
    * @param  context 中断上下文
    */
-  void Do(uint64_t cause, cpu_io::TrapContext* context);
+  auto Do(uint64_t cause, cpu_io::TrapContext* context) -> void;
 
  private:
   static constexpr uint64_t kSourcePriorityOffset = 0x000000;
@@ -111,9 +110,9 @@ class Plic {
   /// 外部中断处理函数数组
   static std::array<InterruptDelegate, kInterruptMaxCount> interrupt_handlers_;
 
-  uint64_t base_addr_ = 0;
-  size_t ndev_ = 0;
-  size_t context_count_ = 0;
+  uint64_t base_addr_{0};
+  size_t ndev_{0};
+  size_t context_count_{0};
 
   /**
    * @brief 计算 context ID
@@ -122,7 +121,8 @@ class Plic {
    * @return uint32_t context ID
    * @note 2 个模式的 context ID 计算方式为: hart_id * 2 + mode
    */
-  __always_inline auto GetContextId(uint32_t hart_id, uint32_t mode = 1) const
+  [[nodiscard]] __always_inline auto GetContextId(uint32_t hart_id,
+                                                  uint32_t mode = 1) const
       -> uint32_t {
     return hart_id * 2 + mode;
   }
@@ -133,7 +133,8 @@ class Plic {
    * @param source_id 中断源 ID (1-1023，0 保留)
    * @return bool 对应位的状态
    */
-  auto GetEnableBit(uint32_t context_id, uint32_t source_id) const -> bool;
+  [[nodiscard]] auto GetEnableBit(uint32_t context_id, uint32_t source_id) const
+      -> bool;
 
   /**
    * @brief 设置使能位寄存器中指定中断源的状态
@@ -149,14 +150,14 @@ class Plic {
    * @param source_id 中断源 ID (1-1023，0 保留)
    * @return uint32_t& 寄存器引用
    */
-  auto SourcePriority(uint32_t source_id) const -> uint32_t&;
+  [[nodiscard]] auto SourcePriority(uint32_t source_id) const -> uint32_t&;
 
   /**
    * @brief 获取挂起位寄存器中指定中断源的状态
    * @param source_id 中断源 ID (1-1023，0 保留)
    * @return bool 对应位的状态
    */
-  auto GetPendingBit(uint32_t source_id) const -> bool;
+  [[nodiscard]] auto GetPendingBit(uint32_t source_id) const -> bool;
 
   /**
    * @brief 设置挂起位寄存器中指定中断源的状态
@@ -170,12 +171,12 @@ class Plic {
    * @param context_id context ID
    * @return uint32_t& 寄存器引用
    */
-  auto PriorityThreshold(uint32_t context_id) const -> uint32_t&;
+  [[nodiscard]] auto PriorityThreshold(uint32_t context_id) const -> uint32_t&;
 
   /**
    * @brief 获取声明/完成寄存器
    * @param context_id context ID
    * @return uint32_t& 寄存器引用
    */
-  auto ClaimComplete(uint32_t context_id) const -> uint32_t&;
+  [[nodiscard]] auto ClaimComplete(uint32_t context_id) const -> uint32_t&;
 };

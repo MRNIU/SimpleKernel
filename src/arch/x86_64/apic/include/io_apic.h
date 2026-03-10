@@ -15,10 +15,9 @@
  */
 class IoApic {
  public:
-  IoApic();
-
-  /// @name 默认构造/析构函数
+  /// @name 构造/析构函数
   /// @{
+  IoApic();
   IoApic(const IoApic&) = delete;
   IoApic(IoApic&&) = default;
   auto operator=(const IoApic&) -> IoApic& = delete;
@@ -33,20 +32,21 @@ class IoApic {
    * @param destination_apic_id 目标 APIC ID
    * @param mask 是否屏蔽中断
    */
-  void SetIrqRedirection(uint8_t irq, uint8_t vector,
-                         uint32_t destination_apic_id, bool mask = false) const;
+  auto SetIrqRedirection(uint8_t irq, uint8_t vector,
+                         uint32_t destination_apic_id, bool mask = false) const
+      -> void;
 
   /**
    * @brief 屏蔽 IRQ
    * @param irq IRQ 号
    */
-  void MaskIrq(uint8_t irq) const;
+  auto MaskIrq(uint8_t irq) const -> void;
 
   /**
    * @brief 取消屏蔽 IRQ
    * @param irq IRQ 号
    */
-  void UnmaskIrq(uint8_t irq) const;
+  auto UnmaskIrq(uint8_t irq) const -> void;
 
   /**
    * @brief 获取 IO APIC ID
@@ -69,7 +69,7 @@ class IoApic {
   /**
    * @brief 打印 IO APIC 信息（调试用）
    */
-  void PrintInfo() const;
+  auto PrintInfo() const -> void;
 
  private:
   /// @name IO APIC 寄存器偏移常数
@@ -139,7 +139,7 @@ class IoApic {
   /// @}
 
   /// @brief IO APIC 基地址
-  uint64_t base_address_ = kDefaultIoApicBase;
+  uint64_t base_address_{kDefaultIoApicBase};
 
   /**
    * @brief 读取 IO APIC 寄存器
@@ -153,7 +153,7 @@ class IoApic {
    * @param reg 寄存器索引
    * @param value 要写入的值
    */
-  void Write(uint32_t reg, uint32_t value) const;
+  auto Write(uint32_t reg, uint32_t value) const -> void;
 
   /**
    * @brief 读取 IO APIC 重定向表项
@@ -167,5 +167,5 @@ class IoApic {
    * @param irq IRQ 号
    * @param value 重定向表项值
    */
-  void WriteRedirectionEntry(uint8_t irq, uint64_t value) const;
+  auto WriteRedirectionEntry(uint8_t irq, uint64_t value) const -> void;
 };
