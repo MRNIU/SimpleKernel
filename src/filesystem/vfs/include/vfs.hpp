@@ -31,11 +31,18 @@ struct Inode {
   /// 所属文件系统
   FileSystem* fs;
 
-  /// inode 操作接口
+  /// 文件操作接口
   InodeOps* ops = nullptr;
 
-  /// @brief 构造函数
-  Inode();
+  Inode()
+      : ino(0),
+        type(FileType::kUnknown),
+        size(0),
+        permissions(0644),
+        link_count(1),
+        fs_private(nullptr),
+        fs(nullptr),
+        ops(nullptr) {}
 };
 
 /**
@@ -57,8 +64,13 @@ struct Dentry {
   /// 文件系统私有数据
   void* fs_private;
 
-  /// @brief 构造函数
-  Dentry();
+  Dentry()
+      : name{0},
+        inode(nullptr),
+        parent(nullptr),
+        children(nullptr),
+        next_sibling(nullptr),
+        fs_private(nullptr) {}
 };
 
 /**
@@ -79,8 +91,7 @@ struct File {
   /// 文件操作接口
   FileOps* ops = nullptr;
 
-  /// @brief 构造函数
-  File();
+  File() : inode(nullptr), dentry(nullptr), offset(0), flags(0), ops(nullptr) {}
 };
 
 /**

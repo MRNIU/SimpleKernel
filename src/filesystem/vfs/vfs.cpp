@@ -77,31 +77,6 @@ auto RemoveChild(Dentry* parent, Dentry* child) -> void {
   }
 }
 
-// Inode 构造函数实现
-Inode::Inode()
-    : ino(0),
-      type(FileType::kUnknown),
-      size(0),
-      permissions(0644),
-      link_count(1),
-      fs_private(nullptr),
-      fs(nullptr),
-      ops(nullptr) {}
-
-// Dentry 构造函数实现
-Dentry::Dentry()
-    : inode(nullptr),
-      parent(nullptr),
-      children(nullptr),
-      next_sibling(nullptr),
-      fs_private(nullptr) {
-  name[0] = '\0';
-}
-
-// File 构造函数实现
-File::File()
-    : inode(nullptr), dentry(nullptr), offset(0), flags(0), ops(nullptr) {}
-
 auto Init() -> Expected<void> {
   if (GetVfsState().initialized) {
     return {};
