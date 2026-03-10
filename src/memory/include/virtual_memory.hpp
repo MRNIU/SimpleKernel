@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_VIRTUAL_MEMORY_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_VIRTUAL_MEMORY_HPP_
+#pragma once
 
 #include <cpu_io.h>
 #include <etl/singleton.h>
@@ -141,5 +140,3 @@ class VirtualMemory {
 };
 
 using VirtualMemorySingleton = etl::singleton<VirtualMemory>;
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_VIRTUAL_MEMORY_HPP_

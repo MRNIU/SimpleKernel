@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_LIBCXX_H_
-#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_LIBCXX_H_
+#pragma once
 
 #include <cstdint>
 
@@ -16,5 +15,3 @@ void CppInit();
  * @brief 析构 c++ 全局对象
  */
 void CppDeInit();
-
-#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_LIBCXX_H_

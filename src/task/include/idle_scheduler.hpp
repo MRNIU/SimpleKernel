@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_IDLE_SCHEDULER_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_IDLE_SCHEDULER_HPP_
+#pragma once
 
 #include "scheduler_base.hpp"
 #include "task_control_block.hpp"
@@ -113,5 +112,3 @@ class IdleScheduler : public SchedulerBase {
   /// Idle 任务指针（通常只有一个）
   TaskControlBlock* idle_task_ = nullptr;
 };
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_IDLE_SCHEDULER_HPP_

@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 中断初始化
  */
 
 #include "interrupt.h"

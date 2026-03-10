@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_HPP_
+#pragma once
 
 #include <cpu_io.h>
 
@@ -848,5 +847,3 @@ class VirtioBlk {
 };
 
 }  // namespace virtio::blk
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_HPP_

@@ -2,7 +2,4 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_GPU_H_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_GPU_H_
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_VIRTIO_GPU_H_
+#pragma once

@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_SPINLOCK_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_SPINLOCK_HPP_
+#pragma once
 
 #include <cpu_io.h>
 
@@ -168,5 +167,3 @@ class LockGuard {
  private:
   mutex_type& mutex_;
 };
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_SPINLOCK_HPP_

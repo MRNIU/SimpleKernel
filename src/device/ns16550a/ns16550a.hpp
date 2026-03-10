@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_HPP_
+#pragma once
 
 #include <cstdint>
 #include <optional>
@@ -152,5 +151,3 @@ class Ns16550a {
 };
 
 }  // namespace ns16550a
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_HPP_

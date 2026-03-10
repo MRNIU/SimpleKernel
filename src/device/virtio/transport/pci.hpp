@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_PCI_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_PCI_HPP_
+#pragma once
 
 #include "virtio/transport/transport.hpp"
 
@@ -58,5 +57,3 @@ class PciTransport final : public Transport {
 };
 
 }  // namespace virtio
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_PCI_HPP_

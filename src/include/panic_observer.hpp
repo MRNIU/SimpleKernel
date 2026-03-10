@@ -1,10 +1,8 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief Panic event observer interface (etl::observer pattern)
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_PANIC_OBSERVER_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_PANIC_OBSERVER_HPP_
+#pragma once
 
 #include <etl/observer.h>
 
@@ -24,5 +22,3 @@ using IPanicObserver = etl::observer<PanicEvent>;
 /// Observable base for panic event publishers
 using PanicObservable =
     etl::observable<IPanicObserver, kernel::config::kPanicObservers>;
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_PANIC_OBSERVER_HPP_

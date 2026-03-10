@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_DEVICE_INITIALIZER_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_DEVICE_INITIALIZER_HPP_
+#pragma once
 
 #include "expected.hpp"
 #include "kernel_log.hpp"
@@ -186,5 +185,3 @@ class DeviceInitializer {
 };
 
 }  // namespace virtio
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_DEVICE_INITIALIZER_HPP_

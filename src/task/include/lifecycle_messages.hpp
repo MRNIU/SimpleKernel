@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_TASK_INCLUDE_LIFECYCLE_MESSAGES_HPP_
-#define SIMPLEKERNEL_SRC_TASK_INCLUDE_LIFECYCLE_MESSAGES_HPP_
+#pragma once
 
 #include <etl/message.h>
 
@@ -24,5 +23,3 @@ struct ThreadExitMsg : public etl::message<lifecycle_msg_id::kThreadExit> {
   int exit_code;
   ThreadExitMsg(size_t p, int code) : pid(p), exit_code(code) {}
 };
-
-#endif  // SIMPLEKERNEL_SRC_TASK_INCLUDE_LIFECYCLE_MESSAGES_HPP_

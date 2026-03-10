@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_KERNEL_DRIVER_GIC_INCLUDE_GIC_H_
-#define SIMPLEKERNEL_SRC_KERNEL_DRIVER_GIC_INCLUDE_GIC_H_
+#pragma once
 
 #include <etl/io_port.h>
 
@@ -597,5 +596,3 @@ class Gic {
   Gicd gicd_;
   Gicr gicr_;
 };
-
-#endif  // SIMPLEKERNEL_SRC_KERNEL_DRIVER_GIC_INCLUDE_GIC_H_

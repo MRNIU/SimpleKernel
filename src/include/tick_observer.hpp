@@ -1,10 +1,8 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief Tick event observer interface (etl::observer pattern)
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_TICK_OBSERVER_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_TICK_OBSERVER_HPP_
+#pragma once
 
 #include <etl/observer.h>
 
@@ -23,5 +21,3 @@ using ITickObserver = etl::observer<TickEvent>;
 /// Observable base for tick event publishers
 using TickObservable =
     etl::observable<ITickObserver, kernel::config::kTickObservers>;
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_TICK_OBSERVER_HPP_

@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_MMIO_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_MMIO_HPP_
+#pragma once
 
 #include "expected.hpp"
 #include "kernel_log.hpp"
@@ -382,5 +381,3 @@ class MmioTransport final : public Transport {
 };
 
 }  // namespace virtio
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_TRANSPORT_MMIO_HPP_

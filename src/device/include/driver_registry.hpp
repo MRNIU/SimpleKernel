@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_REGISTRY_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_REGISTRY_HPP_
+#pragma once
 
 #include <etl/delegate.h>
 #include <etl/flat_map.h>
@@ -163,5 +162,3 @@ struct ProbeContext {
 }
 
 }  // namespace mmio_helper
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DRIVER_REGISTRY_HPP_

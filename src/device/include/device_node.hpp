@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_NODE_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_NODE_HPP_
+#pragma once
 
 #include <concepts>
 #include <cstddef>
@@ -74,5 +73,3 @@ concept Bus = requires(B b, DeviceNode* out, size_t max) {
   /// 返回总线名称（用于日志）
   { B::GetName() } -> std::same_as<const char*>;
 };
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_NODE_HPP_

@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STRING_H_
-#define SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STRING_H_
+#pragma once
 
 #include <stddef.h>
 
@@ -47,5 +46,3 @@ size_t strnlen(const char* s, size_t n);
 #ifdef __cplusplus
 }
 #endif
-
-#endif  // SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STRING_H_

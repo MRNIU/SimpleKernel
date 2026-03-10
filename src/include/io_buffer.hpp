@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_IO_BUFFER_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_IO_BUFFER_HPP_
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -151,5 +150,3 @@ class IoBuffer {
   /// 缓冲区大小
   size_t size_{0};
 };
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_IO_BUFFER_HPP_

@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_EXPECTED_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_EXPECTED_HPP_
+#pragma once
 
 #include <cstdint>
 #include <expected>
@@ -342,5 +341,3 @@ struct Error {
 /// std::expected 别名模板
 template <typename T>
 using Expected = std::expected<T, Error>;
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_EXPECTED_HPP_

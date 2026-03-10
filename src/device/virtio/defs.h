@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEFS_H_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEFS_H_
+#pragma once
 
 #include <cstdint>
 
@@ -87,5 +86,3 @@ enum class ReservedFeature : uint64_t {
 };
 
 }  // namespace virtio
-
-#endif /* SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEFS_H_ */

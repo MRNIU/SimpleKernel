@@ -1,7 +1,6 @@
 /** @copyright Copyright The SimpleKernel Contributors */
 
-#ifndef SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_FSM_HPP_
-#define SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_FSM_HPP_
+#pragma once
 
 #include <etl/fsm.h>
 
@@ -166,5 +165,3 @@ class TaskFsm {
 
   etl::fsm fsm_;
 };
-
-#endif  // SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_FSM_HPP_

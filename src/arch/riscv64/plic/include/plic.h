@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DRIVER_PLIC_INCLUDE_PLIC_H_
-#define SIMPLEKERNEL_SRC_DRIVER_PLIC_INCLUDE_PLIC_H_
+#pragma once
 
 #include <cpu_io.h>
 
@@ -180,4 +179,3 @@ class Plic {
    */
   auto ClaimComplete(uint32_t context_id) const -> uint32_t&;
 };
-#endif  // SIMPLEKERNEL_SRC_DRIVER_PLIC_INCLUDE_PLIC_H_

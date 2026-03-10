@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_MANAGER_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_MANAGER_HPP_
+#pragma once
 
 #include <etl/singleton.h>
 
@@ -117,5 +116,3 @@ class DeviceManager {
 };
 
 using DeviceManagerSingleton = etl::singleton<DeviceManager>;
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_DEVICE_MANAGER_HPP_

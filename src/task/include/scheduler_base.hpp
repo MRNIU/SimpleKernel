@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_SCHEDULER_BASE_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_SCHEDULER_BASE_HPP_
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -148,5 +147,3 @@ class SchedulerBase {
  protected:
   Stats stats_;
 };
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_SCHEDULER_BASE_HPP_

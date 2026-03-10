@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_ACPI_ACPI_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_ACPI_ACPI_HPP_
+#pragma once
 
 #include <cstdint>
 
@@ -173,5 +172,3 @@ class Acpi {
 };
 
 }  // namespace acpi
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_ACPI_ACPI_HPP_

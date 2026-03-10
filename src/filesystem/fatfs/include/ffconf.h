@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FFCONF_H_
-#define SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FFCONF_H_
+#pragma once
 
 #define FFCONF_DEF 80386
 
@@ -52,5 +51,3 @@
 #define FF_FS_LOCK 0
 #define FF_FS_REENTRANT 0
 #define FF_FS_TIMEOUT 1000
-
-#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FFCONF_H_

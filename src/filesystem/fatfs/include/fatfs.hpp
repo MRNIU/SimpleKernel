@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_
-#define SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_
+#pragma once
 
 #include <ff.h>
 
@@ -328,5 +327,3 @@ class FatFsFileSystem : public vfs::FileSystem {
 };
 
 }  // namespace fatfs
-
-#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_FATFS_INCLUDE_FATFS_HPP_

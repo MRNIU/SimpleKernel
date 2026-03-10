@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_SYSCALL_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_SYSCALL_HPP_
+#pragma once
 
 #include <cpu_io.h>
 
@@ -176,5 +175,3 @@ int sys_sched_getaffinity(int pid, size_t cpusetsize, uint64_t* mask);
  *       - NUMA优化
  */
 int sys_sched_setaffinity(int pid, size_t cpusetsize, const uint64_t* mask);
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_SYSCALL_HPP_

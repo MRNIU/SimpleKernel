@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_MISC_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_MISC_HPP_
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -49,5 +48,3 @@ struct IoVec {
 };
 
 }  // namespace virtio
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_MISC_HPP_

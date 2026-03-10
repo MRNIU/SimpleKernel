@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_TASK_INCLUDE_MUTEX_HPP_
-#define SIMPLEKERNEL_SRC_TASK_INCLUDE_MUTEX_HPP_
+#pragma once
 
 #include <atomic>
 #include <cstddef>
@@ -99,5 +98,3 @@ class Mutex {
   /// 资源 ID，用于任务阻塞队列
   ResourceId resource_id_;
 };
-
-#endif  // SIMPLEKERNEL_SRC_TASK_INCLUDE_MUTEX_HPP_

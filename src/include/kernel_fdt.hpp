@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_FDT_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_KERNEL_FDT_HPP_
+#pragma once
 
 // 禁用 GCC/Clang 的警告
 #include <libfdt_env.h>
@@ -828,5 +827,3 @@ class KernelFdt {
 };
 
 using KernelFdtSingleton = etl::singleton<KernelFdt>;
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_KERNEL_FDT_HPP_

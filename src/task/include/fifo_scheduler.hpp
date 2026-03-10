@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_
+#pragma once
 
 #include <etl/list.h>
 
@@ -99,5 +98,3 @@ class FifoScheduler : public SchedulerBase {
   /// 就绪队列 (先进先出，固定容量)
   etl::list<TaskControlBlock*, kernel::config::kMaxReadyTasks> ready_queue;
 };
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_FIFO_SCHEDULER_HPP_

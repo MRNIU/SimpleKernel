@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_DEFS_H_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_DEFS_H_
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -293,5 +292,3 @@ struct VirtioStats {
 };
 
 }  // namespace virtio::blk
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_DEVICE_BLK_VIRTIO_BLK_DEFS_H_

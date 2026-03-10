@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_
-#define SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_
+#pragma once
 
 #include <stddef.h>
 
@@ -111,5 +110,3 @@ unsigned long long int strtoull(const char* nptr, char** endptr, int base);
 #ifdef __cplusplus
 }
 #endif
-
-#endif  // SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_STDLIB_H_

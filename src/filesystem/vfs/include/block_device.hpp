@@ -1,10 +1,8 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 块设备抽象接口
  */
 
-#ifndef SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_BLOCK_DEVICE_HPP_
-#define SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_BLOCK_DEVICE_HPP_
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -76,5 +74,3 @@ class BlockDevice {
 };
 
 }  // namespace vfs
-
-#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_BLOCK_DEVICE_HPP_

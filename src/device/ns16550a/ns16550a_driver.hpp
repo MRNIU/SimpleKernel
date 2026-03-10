@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_DRIVER_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_DRIVER_HPP_
+#pragma once
 
 #include <etl/singleton.h>
 
@@ -87,5 +86,3 @@ class Ns16550aDriver {
 };
 
 using Ns16550aDriverSingleton = etl::singleton<Ns16550aDriver>;
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_NS16550A_NS16550A_DRIVER_HPP_

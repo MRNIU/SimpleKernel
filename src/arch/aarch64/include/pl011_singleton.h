@@ -1,15 +1,11 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief AArch64 PL011 singleton type alias
  */
 
-#ifndef SIMPLEKERNEL_SRC_ARCH_AARCH64_INCLUDE_PL011_SINGLETON_H_
-#define SIMPLEKERNEL_SRC_ARCH_AARCH64_INCLUDE_PL011_SINGLETON_H_
+#pragma once
 
 #include <etl/singleton.h>
 
 #include "pl011/pl011_driver.hpp"
 
 using Pl011Singleton = etl::singleton<pl011::Pl011Device>;
-
-#endif  // SIMPLEKERNEL_SRC_ARCH_AARCH64_INCLUDE_PL011_SINGLETON_H_

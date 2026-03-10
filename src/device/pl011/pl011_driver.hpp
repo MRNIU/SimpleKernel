@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_PL011_PL011_DRIVER_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_PL011_PL011_DRIVER_HPP_
+#pragma once
 
 #include <etl/singleton.h>
 
@@ -86,5 +85,3 @@ class Pl011Driver {
 };
 
 using Pl011DriverSingleton = etl::singleton<Pl011Driver>;
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_PL011_PL011_DRIVER_HPP_

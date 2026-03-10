@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_INCLUDE_PLATFORM_BUS_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_INCLUDE_PLATFORM_BUS_HPP_
+#pragma once
 
 #include "device_node.hpp"
 #include "expected.hpp"
@@ -84,5 +83,3 @@ class PlatformBus {
  private:
   KernelFdt& fdt_;
 };
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_INCLUDE_PLATFORM_BUS_HPP_

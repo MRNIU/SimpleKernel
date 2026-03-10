@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_PL011_PL011_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_PL011_PL011_HPP_
+#pragma once
 
 #include <cstdint>
 #include <optional>
@@ -191,5 +190,3 @@ class Pl011 {
 };
 
 }  // namespace pl011
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_PL011_PL011_HPP_

@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_VIRTQUEUE_BASE_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_VIRTQUEUE_BASE_HPP_
+#pragma once
 
 #include <cpu_io.h>
 
@@ -117,5 +116,3 @@ class VirtqueueBase {
 };
 
 }  // namespace virtio
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_VIRTQUEUE_BASE_HPP_

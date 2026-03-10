@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_SPLIT_HPP_
-#define SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_SPLIT_HPP_
+#pragma once
 
 #include <utility>
 
@@ -694,5 +693,3 @@ class SplitVirtqueue final : public VirtqueueBase {
 };
 
 }  // namespace virtio
-
-#endif  // SIMPLEKERNEL_SRC_DEVICE_VIRTIO_VIRT_QUEUE_SPLIT_HPP_

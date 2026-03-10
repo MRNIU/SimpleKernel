@@ -1,10 +1,8 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 文件系统基类接口
  */
 
-#ifndef SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_FILESYSTEM_HPP_
-#define SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_FILESYSTEM_HPP_
+#pragma once
 
 #include "block_device.hpp"
 #include "vfs_types.hpp"
@@ -72,5 +70,3 @@ class FileSystem {
 };
 
 }  // namespace vfs
-
-#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_FILESYSTEM_HPP_

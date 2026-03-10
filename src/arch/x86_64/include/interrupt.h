@@ -1,10 +1,8 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 中断处理
  */
 
-#ifndef SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INTERRUPT_H_
-#define SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INTERRUPT_H_
+#pragma once
 
 #include <cpu_io.h>
 #include <etl/singleton.h>
@@ -78,5 +76,3 @@ class Interrupt final : public InterruptBase {
 };
 
 using InterruptSingleton = etl::singleton<Interrupt>;
-
-#endif  // SIMPLEKERNEL_SRC_KERNEL_ARCH_X86_64_INTERRUPT_H_

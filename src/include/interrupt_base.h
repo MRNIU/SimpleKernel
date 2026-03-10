@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_
-#define SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_
+#pragma once
 
 #include <cpu_io.h>
 #include <etl/delegate.h>
@@ -73,5 +72,3 @@ class InterruptBase {
                                          InterruptDelegate handler)
       -> Expected<void> = 0;
 };
-
-#endif  // SIMPLEKERNEL_SRC_KERNEL_INCLUDE_INTERRUPT_BASE_H_

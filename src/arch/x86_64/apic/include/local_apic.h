@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_LOCAL_APIC_H_
-#define SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_LOCAL_APIC_H_
+#pragma once
 
 #include <cpu_io.h>
 
@@ -300,5 +299,3 @@ class LocalApic {
    */
   [[nodiscard]] auto IsX2ApicEnabled() const -> bool;
 };
-
-#endif  // SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_LOCAL_APIC_H_

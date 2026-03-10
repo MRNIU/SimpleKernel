@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_CFS_SCHEDULER_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_CFS_SCHEDULER_HPP_
+#pragma once
 
 #include <etl/priority_queue.h>
 #include <etl/vector.h>
@@ -227,5 +226,3 @@ class CfsScheduler : public SchedulerBase {
   /// 当前最小 vruntime (用于新任务初始化)
   uint64_t min_vruntime_ = 0;
 };
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_CFS_SCHEDULER_HPP_

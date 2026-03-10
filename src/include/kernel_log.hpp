@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_
+#pragma once
 
 #include <cpu_io.h>
 #include <etl/format.h>
@@ -210,5 +209,3 @@ __always_inline void Flush() { detail::TryDrain(); }
 __always_inline void RawPut(const char* msg) { detail::PutStr(msg); }
 
 }  // namespace klog
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_KERNEL_LOG_HPP_

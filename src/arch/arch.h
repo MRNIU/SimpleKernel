@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_ARCH_ARCH_H_
-#define SIMPLEKERNEL_SRC_ARCH_ARCH_H_
+#pragma once
 
 #include <cpu_io.h>
 #include <sys/cdefs.h>
@@ -118,5 +117,3 @@ __always_inline auto backtrace(void** buffer, int size) -> int;
  * @note 调用 backtrace 获取调用栈并解析符号后输出到日志
  */
 void DumpStack();
-
-#endif  // SIMPLEKERNEL_SRC_ARCH_ARCH_H_

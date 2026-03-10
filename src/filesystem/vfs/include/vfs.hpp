@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_VFS_HPP_
-#define SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_VFS_HPP_
+#pragma once
 
 #include "vfs_types.hpp"
 
@@ -222,5 +221,3 @@ auto ReadDir(File* file, DirEntry* dirent, size_t count) -> Expected<size_t>;
 auto GetRootDentry() -> Dentry*;
 
 }  // namespace vfs
-
-#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_VFS_HPP_

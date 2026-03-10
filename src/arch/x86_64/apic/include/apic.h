@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_APIC_H_
-#define SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_APIC_H_
+#pragma once
 
 #include <cpu_io.h>
 
@@ -132,5 +131,3 @@ class Apic {
   /// 系统 CPU 数量
   size_t cpu_count_;
 };
-
-#endif  // SIMPLEKERNEL_SRC_DRIVER_APIC_INCLUDE_APIC_H_

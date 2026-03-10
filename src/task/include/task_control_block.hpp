@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_TASK_CONTROL_BLOCK_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_TASK_CONTROL_BLOCK_HPP_
+#pragma once
 
 #include <cpu_io.h>
 #include <etl/flags.h>
@@ -253,5 +252,3 @@ struct TaskControlBlock : public ThreadGroupLink {
   ~TaskControlBlock();
   /// @}
 };
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_TASK_CONTROL_BLOCK_HPP_

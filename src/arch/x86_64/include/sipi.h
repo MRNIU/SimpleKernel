@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_ARCH_X86_64_SIPI_H_
-#define SIMPLEKERNEL_SRC_ARCH_X86_64_SIPI_H_
+#pragma once
 
 #include <sys/cdefs.h>
 
@@ -20,5 +19,3 @@ extern "C" void* sipi_params[];
 struct [[gnu::packed]] sipi_params_t {
   uint32_t cr3;
 };
-
-#endif  // SIMPLEKERNEL_SRC_ARCH_X86_64_SIPI_H_

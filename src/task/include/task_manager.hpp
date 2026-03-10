@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_TASK_MANAGER_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_TASK_MANAGER_HPP_
+#pragma once
 
 #include <cpu_io.h>
 #include <etl/list.h>
@@ -281,5 +280,3 @@ class TaskManager {
 };
 
 using TaskManagerSingleton = etl::singleton<TaskManager>;
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_TASK_MANAGER_HPP_

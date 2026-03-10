@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_BASIC_INFO_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_BASIC_INFO_HPP_
+#pragma once
 
 #include <etl/singleton.h>
 
@@ -65,5 +64,3 @@ struct BasicInfo {
 };
 
 using BasicInfoSingleton = etl::singleton<BasicInfo>;
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_BASIC_INFO_HPP_

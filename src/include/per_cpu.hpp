@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_PER_CPU_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_PER_CPU_HPP_
+#pragma once
 
 #include <cpu_io.h>
 #include <etl/singleton.h>
@@ -56,5 +55,3 @@ static __always_inline auto GetCurrentCore() -> PerCpu& {
 }
 
 }  // namespace per_cpu
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_PER_CPU_HPP_

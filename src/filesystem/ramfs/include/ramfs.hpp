@@ -1,10 +1,8 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief ramfs - 内存文件系统
  */
 
-#ifndef SIMPLEKERNEL_SRC_FILESYSTEM_RAMFS_INCLUDE_RAMFS_HPP_
-#define SIMPLEKERNEL_SRC_FILESYSTEM_RAMFS_INCLUDE_RAMFS_HPP_
+#pragma once
 
 #include "filesystem.hpp"
 #include "vfs.hpp"
@@ -187,5 +185,3 @@ class RamFs : public vfs::FileSystem {
 };
 
 }  // namespace ramfs
-
-#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_RAMFS_INCLUDE_RAMFS_HPP_

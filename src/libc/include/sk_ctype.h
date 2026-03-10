@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_CTYPE_H_
-#define SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_CTYPE_H_
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,5 +40,3 @@ int toupper(int c);
 #ifdef __cplusplus
 }
 #endif
-
-#endif  // SIMPLEKERNEL_SRC_LIBC_INCLUDE_SK_CTYPE_H_

@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_
+#pragma once
 
 #include <etl/list.h>
 
@@ -127,5 +126,3 @@ class RoundRobinScheduler : public SchedulerBase {
   /// 就绪队列 (双向链表，支持从头部取、向尾部放，固定容量)
   etl::list<TaskControlBlock*, kernel::config::kMaxReadyTasks> ready_queue;
 };
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_SCHEDULER_RR_SCHEDULER_HPP_

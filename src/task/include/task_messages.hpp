@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_MESSAGES_HPP_
-#define SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_MESSAGES_HPP_
+#pragma once
 
 #include <etl/message.h>
 
@@ -52,5 +51,3 @@ struct MsgExit : public etl::message<task_msg_id::kExit> {
   bool has_parent;
   MsgExit(int code, bool parent) : exit_code(code), has_parent(parent) {}
 };
-
-#endif  // SIMPLEKERNEL_SRC_TASK_INCLUDE_TASK_MESSAGES_HPP_

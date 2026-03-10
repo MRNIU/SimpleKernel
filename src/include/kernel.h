@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_
-#define SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_
+#pragma once
 
 #include <cstdint>
 
@@ -32,5 +31,3 @@ void MemoryInitSMP();
 void DeviceInit();
 
 void FileSystemInit();
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_KERNEL_H_

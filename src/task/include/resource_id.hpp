@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_TASK_INCLUDE_RESOURCE_ID_HPP_
-#define SIMPLEKERNEL_SRC_TASK_INCLUDE_RESOURCE_ID_HPP_
+#pragma once
 
 #include <etl/hash.h>
 
@@ -153,5 +152,3 @@ struct hash<ResourceId> {
   }
 };
 }  // namespace etl
-
-#endif  // SIMPLEKERNEL_SRC_TASK_INCLUDE_RESOURCE_ID_HPP_

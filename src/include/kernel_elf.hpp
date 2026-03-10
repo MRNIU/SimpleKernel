@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_INCLUDE_KERNEL_ELF_HPP_
-#define SIMPLEKERNEL_SRC_INCLUDE_KERNEL_ELF_HPP_
+#pragma once
 
 #include <elf.h>
 #include <etl/singleton.h>
@@ -152,5 +151,3 @@ class KernelElf {
 };
 
 using KernelElfSingleton = etl::singleton<KernelElf>;
-
-#endif  // SIMPLEKERNEL_SRC_INCLUDE_KERNEL_ELF_HPP_

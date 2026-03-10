@@ -1,10 +1,8 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 文件描述符表
  */
 
-#ifndef SIMPLEKERNEL_SRC_FILESYSTEM_INCLUDE_FILE_DESCRIPTOR_HPP_
-#define SIMPLEKERNEL_SRC_FILESYSTEM_INCLUDE_FILE_DESCRIPTOR_HPP_
+#pragma once
 
 #include <array>
 #include <cstddef>
@@ -106,5 +104,3 @@ class FileDescriptorTable {
 };
 
 }  // namespace filesystem
-
-#endif  // SIMPLEKERNEL_SRC_FILESYSTEM_INCLUDE_FILE_DESCRIPTOR_HPP_
