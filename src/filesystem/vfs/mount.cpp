@@ -13,18 +13,6 @@
 
 namespace vfs {
 
-// MountPoint 构造函数实现
-MountPoint::MountPoint()
-    : mount_path(nullptr),
-      mount_dentry(nullptr),
-      filesystem(nullptr),
-      device(nullptr),
-      root_inode(nullptr),
-      root_dentry(nullptr),
-      active(false) {}
-
-MountTable::MountTable() : mounts_{}, mount_count_(0), root_mount_(nullptr) {}
-
 auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
     -> Expected<void> {
   if (path == nullptr || fs == nullptr) {

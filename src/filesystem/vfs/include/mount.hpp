@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief 挂载管理
  */
 
 #ifndef SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_MOUNT_HPP_
@@ -30,8 +29,14 @@ struct MountPoint {
   /// 是否处于活动状态
   bool active;
 
-  /// @brief 构造函数
-  MountPoint();
+  MountPoint()
+      : mount_path(nullptr),
+        mount_dentry(nullptr),
+        filesystem(nullptr),
+        device(nullptr),
+        root_inode(nullptr),
+        root_dentry(nullptr),
+        active(false) {}
 };
 /**
  * @brief 挂载表管理器
@@ -41,10 +46,7 @@ class MountTable {
   /// 最大挂载点数
   static constexpr size_t kMaxMounts = 16;
 
-  /// @brief 构造函数
-  /// @brief 构造函数
-  MountTable();
-  /// @brief 析构函数
+  MountTable() : mounts_{}, mount_count_(0), root_mount_(nullptr) {}
   ~MountTable() = default;
 
   // 禁止拷贝和移动

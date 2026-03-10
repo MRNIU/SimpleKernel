@@ -1,6 +1,5 @@
 /**
  * @copyright Copyright The SimpleKernel Contributors
- * @brief VFS 核心数据结构和接口
  */
 
 #ifndef SIMPLEKERNEL_SRC_FILESYSTEM_VFS_INCLUDE_VFS_HPP_
