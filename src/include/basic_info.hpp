@@ -45,6 +45,8 @@ struct BasicInfo {
   /// 时钟频率
   size_t interval{0};
 
+  /// @name 构造/析构函数
+  /// @{
   /**
    * 构造函数，在 arch_main.cpp 中定义
    * @param argc 同 _start
@@ -52,8 +54,6 @@ struct BasicInfo {
    */
   explicit BasicInfo(int argc, const char** argv);
 
-  /// @name 构造/析构函数
-  /// @{
   BasicInfo() = default;
   BasicInfo(const BasicInfo&) = default;
   BasicInfo(BasicInfo&&) = default;

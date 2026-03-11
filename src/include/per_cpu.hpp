@@ -30,10 +30,10 @@ struct PerCpu {
   /// 调度数据 (RunQueue) 指针
   CpuSchedData* sched_data{nullptr};
 
-  explicit PerCpu(size_t id) : core_id(id) {}
-
   /// @name 构造/析构函数
   /// @{
+  explicit PerCpu(size_t id) : core_id(id) {}
+
   PerCpu() = default;
   PerCpu(const PerCpu&) = default;
   PerCpu(PerCpu&&) = default;

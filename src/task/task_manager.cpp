@@ -203,7 +203,7 @@ auto TaskManager::ReparentChildren(TaskControlBlock* parent) -> void {
 
   // init 进程的 PID 通常是 1
   /// @todo 当前的 pid 是自增的，需要考虑多核情况
-  constexpr Pid kInitPid = 1;
+  static constexpr Pid kInitPid = 1;
 
   LockGuard lock_guard{task_table_lock_};
 

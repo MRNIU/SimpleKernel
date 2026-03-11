@@ -171,9 +171,9 @@ auto sys_exit(int code) -> int {
                              [[maybe_unused]] int* uaddr2,
                              [[maybe_unused]] int val3) -> int {
   // Futex 常量定义
-  constexpr int FUTEX_WAIT = 0;
-  constexpr int FUTEX_WAKE = 1;
-  constexpr int FUTEX_REQUEUE = 3;
+  static constexpr int kFutexWait = 0;
+  static constexpr int kFutexWake = 1;
+  static constexpr int kFutexRequeue = 3;
 
   // 提取操作类型（低位）
   int cmd = op & 0x7F;
@@ -181,7 +181,7 @@ auto sys_exit(int code) -> int {
   auto& task_manager = TaskManagerSingleton::instance();
 
   switch (cmd) {
-    case FUTEX_WAIT: {
+    case kFutexWait: {
       // 检查 *uaddr 是否等于 val，如果相等则阻塞
       /// @todo需要实现原子比较和阻塞逻辑
       /// @todo需要在 TaskManager 中添加 futex 等待队列
@@ -199,7 +199,7 @@ auto sys_exit(int code) -> int {
       return 0;
     }
 
-    case FUTEX_WAKE: {
+    case kFutexWake: {
       // 唤醒最多 val 个等待 uaddr 的线程
       klog::Debug("[Syscall] FUTEX_WAKE on {:#x} (count={})",
                   static_cast<uint64_t>(reinterpret_cast<uintptr_t>(uaddr)),
@@ -214,7 +214,7 @@ auto sys_exit(int code) -> int {
       return val;
     }
 
-    case FUTEX_REQUEUE: {
+    case kFutexRequeue: {
       // 将等待 uaddr 的线程重新排队到 uaddr2
       /// @todo实现 FUTEX_REQUEUE
       klog::Warn("[Syscall] FUTEX_REQUEUE not implemented");

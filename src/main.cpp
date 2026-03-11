@@ -125,7 +125,7 @@ auto main_smp(int argc, const char** argv) -> int {
   // 启动调度器
   TaskManagerSingleton::instance().Schedule();
 
-  // 不应该执行到这里
+  // UNREACHABLE: Schedule() 不应返回
   __builtin_unreachable();
 }
 
@@ -183,6 +183,6 @@ auto main(int argc, const char** argv) -> int {
   // 启动调度器，不再返回
   TaskManagerSingleton::instance().Schedule();
 
-  // 不应该执行到这里
+  // UNREACHABLE: Schedule() 不应返回
   __builtin_unreachable();
 }

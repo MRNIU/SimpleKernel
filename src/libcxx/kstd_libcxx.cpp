@@ -78,7 +78,8 @@ extern "C" auto __cxa_finalize(void* destructor_func) -> void {
     // 不为空时只调用对应的析构函数
     for (size_t i = atexit_func_count; i > 0; --i) {
       size_t idx = i - 1;
-      if ((void*)atexit_funcs[idx].destructor_func == destructor_func) {
+      if (reinterpret_cast<void*>(atexit_funcs[idx].destructor_func) ==
+          destructor_func) {
         (*atexit_funcs[idx].destructor_func)(atexit_funcs[idx].obj_ptr);
         atexit_funcs[idx].destructor_func = nullptr;
       }

@@ -68,7 +68,7 @@ auto TaskManager::Exit(int exit_code) -> void {
 
   Schedule();
 
-  // 退出后不应执行到这里
+  // UNREACHABLE: 任务退出后 Schedule() 不应返回
   klog::Err("Exit: Task {} should not return from Schedule()", current->pid);
 
   __builtin_unreachable();

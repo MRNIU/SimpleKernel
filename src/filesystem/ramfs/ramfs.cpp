@@ -620,7 +620,7 @@ auto RamFs::AllocateFileData(size_t size) -> void* {
 auto RamFs::AllocateDirEntries(size_t count) -> RamDirEntry* {
   size_t bytes = count * sizeof(RamDirEntry);
   // Align up to alignof(RamDirEntry)
-  constexpr size_t kAlign = alignof(RamDirEntry);
+  static constexpr size_t kAlign = alignof(RamDirEntry);
   size_t aligned = (bytes + kAlign - 1UL) & ~(kAlign - 1UL);
   if (dir_data_pool_used_ + aligned > kDirDataPoolSize) {
     return nullptr;

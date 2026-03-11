@@ -10,7 +10,7 @@
 
 namespace {
 /// 每秒的毫秒数
-constexpr uint64_t kMillisecondsPerSecond = 1000;
+static constexpr uint64_t kMillisecondsPerSecond = 1000;
 }  // namespace
 
 auto TaskManager::Sleep(uint64_t ms) -> void {

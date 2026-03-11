@@ -18,7 +18,7 @@
 namespace {
 
 struct BmallocLogger {
-  int operator()(const char* format, ...) const {
+  auto operator()(const char* format, ...) const -> int {
     (void)format;
     return 0;
   }

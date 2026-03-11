@@ -15,8 +15,8 @@ namespace {
 using InterruptDelegate = InterruptBase::InterruptDelegate;
 
 // 定义 APIC 时钟中断向量号（使用高优先级向量）
-constexpr uint8_t kApicTimerVector = 0xF0;
-constexpr uint32_t kApicTimerFrequencyHz = 100;
+static constexpr uint8_t kApicTimerVector = 0xF0;
+static constexpr uint32_t kApicTimerFrequencyHz = 100;
 
 /**
  * @brief APIC 时钟中断处理函数
@@ -102,7 +102,7 @@ auto InterruptInit(int, const char**) -> void {
 
   // 通过统一接口注册键盘外部中断（IRQ 1 = PS/2 键盘，先注册 handler 再启用 IO
   // APIC）
-  constexpr uint8_t kKeyboardIrq = 1;
+  static constexpr uint8_t kKeyboardIrq = 1;
   InterruptSingleton::instance()
       .RegisterExternalInterrupt(kKeyboardIrq, cpu_io::GetCurrentCoreId(), 0,
                                  InterruptDelegate::create<KeyboardHandler>())

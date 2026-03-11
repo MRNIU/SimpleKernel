@@ -51,6 +51,8 @@ using CloneFlags = etl::flags<uint64_t, clone_flag::kAllMask>;
 using CpuAffinity = etl::flags<uint64_t>;
 
 /// Task status type alias — backed by FSM state IDs
+/// @todo 为什么要定义 TaskStatusId 与 TaskStatus 两个命名空间？可以直接用
+/// TaskStatus 吗？
 namespace TaskStatus = TaskStatusId;
 
 /**

@@ -73,7 +73,8 @@ constexpr auto GetResourceTypeName(ResourceType type) -> const char* {
  * [63:56] - 资源类型 (8 bits)
  * [55:0]  - 资源数据 (56 bits)
  */
-struct ResourceId {
+class ResourceId {
+ public:
   /// 获取资源类型
   [[nodiscard]] constexpr auto GetType() const -> ResourceType {
     return static_cast<ResourceType>((value_ >> kTypeShift) & 0xFF);

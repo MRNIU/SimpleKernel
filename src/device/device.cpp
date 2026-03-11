@@ -16,7 +16,7 @@ namespace {
 /// 内建驱动表 — 编译期构建，运行期批量注册。
 /// 添加新驱动只需在此追加一行。
 using GetEntryFn = auto (*)() -> const DriverEntry&;
-constexpr GetEntryFn kBuiltinDrivers[] = {
+static constexpr GetEntryFn kBuiltinDrivers[] = {
     &Ns16550aDriver::GetEntry,
     &Pl011Driver::GetEntry,
     &VirtioDriver::GetEntry,

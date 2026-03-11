@@ -96,9 +96,9 @@ auto Plic::Get(uint32_t hart_id, uint32_t source_id) const
 auto Plic::GetEnableBit(uint32_t context_id, uint32_t source_id) const -> bool {
   uint32_t word_index = source_id / 32;
   uint32_t bit_index = source_id % 32;
-  uint32_t* word_addr =
-      (uint32_t*)(base_addr_ + kEnableBitsOffset + (context_id * kEnableSize) +
-                  (word_index * 4));
+  uint32_t* word_addr = reinterpret_cast<uint32_t*>(
+      base_addr_ + kEnableBitsOffset + (context_id * kEnableSize) +
+      (word_index * 4));
   return (*word_addr >> bit_index) & 1;
 }
 
@@ -106,9 +106,9 @@ auto Plic::SetEnableBit(uint32_t context_id, uint32_t source_id,
                         bool value) const -> void {
   uint32_t word_index = source_id / 32;
   uint32_t bit_index = source_id % 32;
-  uint32_t* word_addr =
-      (uint32_t*)(base_addr_ + kEnableBitsOffset + (context_id * kEnableSize) +
-                  (word_index * 4));
+  uint32_t* word_addr = reinterpret_cast<uint32_t*>(
+      base_addr_ + kEnableBitsOffset + (context_id * kEnableSize) +
+      (word_index * 4));
   if (value) {
     *word_addr |= (1U << bit_index);
   } else {
@@ -117,23 +117,23 @@ auto Plic::SetEnableBit(uint32_t context_id, uint32_t source_id,
 }
 
 auto Plic::SourcePriority(uint32_t source_id) const -> uint32_t& {
-  return *(uint32_t*)(base_addr_ + kSourcePriorityOffset +
-                      (source_id * sizeof(uint32_t)));
+  return *reinterpret_cast<uint32_t*>(base_addr_ + kSourcePriorityOffset +
+                                      (source_id * sizeof(uint32_t)));
 }
 
 auto Plic::GetPendingBit(uint32_t source_id) const -> bool {
   uint32_t word_index = source_id / 32;
   uint32_t bit_index = source_id % 32;
-  uint32_t* word_addr =
-      (uint32_t*)(base_addr_ + kPendingBitsOffset + (word_index * 4));
+  uint32_t* word_addr = reinterpret_cast<uint32_t*>(
+      base_addr_ + kPendingBitsOffset + (word_index * 4));
   return (*word_addr >> bit_index) & 1;
 }
 
 auto Plic::SetPendingBit(uint32_t source_id, bool value) const -> void {
   uint32_t word_index = source_id / 32;
   uint32_t bit_index = source_id % 32;
-  uint32_t* word_addr =
-      (uint32_t*)(base_addr_ + kPendingBitsOffset + (word_index * 4));
+  uint32_t* word_addr = reinterpret_cast<uint32_t*>(
+      base_addr_ + kPendingBitsOffset + (word_index * 4));
   if (value) {
     *word_addr |= (1U << bit_index);
   } else {
@@ -142,11 +142,13 @@ auto Plic::SetPendingBit(uint32_t source_id, bool value) const -> void {
 }
 
 auto Plic::PriorityThreshold(uint32_t context_id) const -> uint32_t& {
-  return *(uint32_t*)(base_addr_ + kContextOffset +
-                      (context_id * kContextSize) + kPriorityThresholdOffset);
+  return *reinterpret_cast<uint32_t*>(base_addr_ + kContextOffset +
+                                      (context_id * kContextSize) +
+                                      kPriorityThresholdOffset);
 }
 
 auto Plic::ClaimComplete(uint32_t context_id) const -> uint32_t& {
-  return *(uint32_t*)(base_addr_ + kContextOffset +
-                      (context_id * kContextSize) + kClaimCompleteOffset);
+  return *reinterpret_cast<uint32_t*>(base_addr_ + kContextOffset +
+                                      (context_id * kContextSize) +
+                                      kClaimCompleteOffset);
 }

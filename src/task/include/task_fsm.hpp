@@ -9,13 +9,13 @@
 
 /// 任务状态 ID — 用作 etl::fsm 的状态 ID
 namespace TaskStatusId {
-constexpr etl::fsm_state_id_t kUnInit = 0;
-constexpr etl::fsm_state_id_t kReady = 1;
-constexpr etl::fsm_state_id_t kRunning = 2;
-constexpr etl::fsm_state_id_t kSleeping = 3;
-constexpr etl::fsm_state_id_t kBlocked = 4;
-constexpr etl::fsm_state_id_t kExited = 5;
-constexpr etl::fsm_state_id_t kZombie = 6;
+inline constexpr etl::fsm_state_id_t kUnInit = 0;
+inline constexpr etl::fsm_state_id_t kReady = 1;
+inline constexpr etl::fsm_state_id_t kRunning = 2;
+inline constexpr etl::fsm_state_id_t kSleeping = 3;
+inline constexpr etl::fsm_state_id_t kBlocked = 4;
+inline constexpr etl::fsm_state_id_t kExited = 5;
+inline constexpr etl::fsm_state_id_t kZombie = 6;
 }  // namespace TaskStatusId
 
 // 前向声明所有状态类，以便在转换表中相互引用
@@ -132,6 +132,19 @@ struct StateZombie : public etl::fsm_state<etl::fsm, StateZombie,
 
 class TaskFsm {
  public:
+  /// 启动 FSM（在 TCB 完全构造后调用）
+  auto Start() -> void { fsm_.start(); }
+
+  /// 向 FSM 发送消息
+  auto Receive(const etl::imessage& msg) -> void { fsm_.receive(msg); }
+
+  /// 获取当前状态 ID
+  [[nodiscard]] auto GetStateId() const -> etl::fsm_state_id_t {
+    return fsm_.get_state_id();
+  }
+
+  /// @name 构造/析构函数
+  /// @{
   TaskFsm() : fsm_(router_id::kTaskFsm) {
     state_list_[0] = &state_uninit_;
     state_list_[1] = &state_ready_;
@@ -143,16 +156,12 @@ class TaskFsm {
     fsm_.set_states(state_list_, 7);
   }
 
-  /// 启动 FSM（在 TCB 完全构造后调用）
-  auto Start() -> void { fsm_.start(); }
-
-  /// 向 FSM 发送消息
-  auto Receive(const etl::imessage& msg) -> void { fsm_.receive(msg); }
-
-  /// 获取当前状态 ID
-  [[nodiscard]] auto GetStateId() const -> etl::fsm_state_id_t {
-    return fsm_.get_state_id();
-  }
+  TaskFsm(const TaskFsm&) = delete;
+  TaskFsm(TaskFsm&&) = delete;
+  auto operator=(const TaskFsm&) -> TaskFsm& = delete;
+  auto operator=(TaskFsm&&) -> TaskFsm& = delete;
+  ~TaskFsm() = default;
+  /// @}
 
  private:
   StateUnInit state_uninit_;

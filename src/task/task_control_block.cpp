@@ -69,11 +69,12 @@ auto LoadElf(const uint8_t* elf_data, uint64_t* page_table) -> uint64_t {
       if (copy_end > copy_start) {
         uintptr_t dst_off = copy_start - v_start;
         uintptr_t src_off = (copy_start - vaddr) + offset;
-        kstd::memcpy((uint8_t*)p_page + dst_off, elf_data + src_off,
-                     copy_end - copy_start);
+        kstd::memcpy(static_cast<uint8_t*>(p_page) + dst_off,
+                     elf_data + src_off, copy_end - copy_start);
       }
 
-      if (!vm.MapPage(page_table, (void*)page, p_page, flags)) {
+      if (!vm.MapPage(page_table, reinterpret_cast<void*>(page), p_page,
+                      flags)) {
         klog::Err("MapPage failed");
         return 0;
       }
