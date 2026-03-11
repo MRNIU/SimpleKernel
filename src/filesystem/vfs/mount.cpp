@@ -56,10 +56,9 @@ auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
     fs->Unmount();
     return std::unexpected(Error(ErrorCode::kOutOfMemory));
   }
-  Dentry* root_dentry = root_dentry_ptr.release();
 
-  root_dentry->inode = root_inode;
-  strncpy(root_dentry->name, "/", sizeof(root_dentry->name));
+  root_dentry_ptr->inode = root_inode;
+  strncpy(root_dentry_ptr->name, "/", sizeof(root_dentry_ptr->name));
 
   // 查找挂载点 dentry（如果是非根挂载）
   Dentry* mount_dentry = nullptr;
@@ -78,7 +77,7 @@ auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
   }
 
   if (slot >= kMaxMounts) {
-    delete root_dentry;
+    // root_dentry_ptr 自动释放（RAII）
     fs->Unmount();
     return std::unexpected(Error(ErrorCode::kFsMountFailed));
   }
@@ -89,7 +88,7 @@ auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
   mounts_[slot].filesystem = fs;
   mounts_[slot].device = device;
   mounts_[slot].root_inode = root_inode;
-  mounts_[slot].root_dentry = root_dentry;
+  mounts_[slot].root_dentry = root_dentry_ptr.release();
   mounts_[slot].active = true;
 
   ++mount_count_;
@@ -99,7 +98,7 @@ auto MountTable::Mount(const char* path, FileSystem* fs, BlockDevice* device)
     root_mount_ = &mounts_[slot];
     // 更新 VFS 根 dentry
     extern void SetRootDentry(Dentry*);
-    SetRootDentry(root_dentry);
+    SetRootDentry(mounts_[slot].root_dentry);
   }
 
   klog::Info("MountTable: mounted '{}' on '{}'", fs->GetName(), path);
@@ -132,8 +131,8 @@ auto MountTable::Unmount(const char* path) -> Expected<void> {
     return std::unexpected(result.error());
   }
 
-  // 清理挂载点
-  delete mp->root_dentry;
+  // 清理挂载点（RAII）
+  etl::unique_ptr<Dentry> root_guard(mp->root_dentry);
 
   mp->active = false;
   mp->mount_path = nullptr;

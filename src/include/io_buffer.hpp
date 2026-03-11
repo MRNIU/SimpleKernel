@@ -47,8 +47,9 @@ struct DmaRegion {
     return virt != nullptr && size > 0;
   }
 
-  /// 获取虚拟基地址的类型化指针
-  [[nodiscard]] auto data() const -> uint8_t* {
+  /// @brief 获取虚拟基地址的类型化指针
+  /// @return uint8_t* 缓冲区数据指针
+  [[nodiscard]] auto Data() const -> uint8_t* {
     return static_cast<uint8_t*>(virt);
   }
 
@@ -133,7 +134,7 @@ class IoBuffer {
    * @pre size > 0, alignment 必须是 2 的幂
    * @post 缓冲区内存已正确分配并对齐
    */
-  IoBuffer(size_t size, size_t alignment = kDefaultAlignment);
+  explicit IoBuffer(size_t size, size_t alignment = kDefaultAlignment);
 
   ~IoBuffer();
 

@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_MEMORY_
-#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_MEMORY_
+#pragma once
 
 #include <etl/memory.h>
 
@@ -30,5 +29,3 @@ auto make_unique(Args&&... args) -> etl::unique_ptr<T> {
 }
 
 }  // namespace kstd
-
-#endif  // SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_MEMORY_

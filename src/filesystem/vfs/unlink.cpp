@@ -2,6 +2,8 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <etl/memory.h>
+
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cstring"
@@ -73,7 +75,7 @@ auto Unlink(const char* path) -> Expected<void> {
 
   // 从父目录中移除 dentry
   RemoveChild(parent_dentry, target_dentry);
-  delete target_dentry;
+  etl::unique_ptr<Dentry> dentry_guard(target_dentry);
 
   klog::Debug("VFS: unlinked '{}'", path);
   return {};

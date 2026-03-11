@@ -14,28 +14,19 @@ namespace vfs {
  */
 struct MountPoint {
   /// 挂载路径（如 "/mnt/disk"）
-  const char* mount_path;
+  const char* mount_path{nullptr};
   /// 挂载点在父文件系统中的 dentry
-  Dentry* mount_dentry;
+  Dentry* mount_dentry{nullptr};
   /// 挂载的文件系统实例
-  FileSystem* filesystem;
+  FileSystem* filesystem{nullptr};
   /// 关联的块设备（可为 nullptr）
-  BlockDevice* device;
+  BlockDevice* device{nullptr};
   /// 该文件系统的根 inode
-  Inode* root_inode;
+  Inode* root_inode{nullptr};
   /// 该文件系统的根 dentry
-  Dentry* root_dentry;
+  Dentry* root_dentry{nullptr};
   /// 是否处于活动状态
-  bool active;
-
-  MountPoint()
-      : mount_path(nullptr),
-        mount_dentry(nullptr),
-        filesystem(nullptr),
-        device(nullptr),
-        root_inode(nullptr),
-        root_dentry(nullptr),
-        active(false) {}
+  bool active{false};
 };
 /**
  * @brief 挂载表管理器
@@ -47,7 +38,7 @@ class MountTable {
 
   /// @name 构造/析构函数
   /// @{
-  MountTable() : mounts_{}, mount_count_(0), root_mount_(nullptr) {}
+  MountTable() = default;
   MountTable(const MountTable&) = delete;
   MountTable(MountTable&&) = delete;
   auto operator=(const MountTable&) -> MountTable& = delete;
@@ -103,9 +94,9 @@ class MountTable {
   [[nodiscard]] auto GetRootMount() -> MountPoint*;
 
  private:
-  MountPoint mounts_[kMaxMounts];
-  size_t mount_count_;
-  MountPoint* root_mount_;
+  MountPoint mounts_[kMaxMounts]{};
+  size_t mount_count_{0};
+  MountPoint* root_mount_{nullptr};
 };
 
 /**

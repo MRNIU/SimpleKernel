@@ -260,7 +260,7 @@ class SplitVirtqueue final : public VirtqueueBase {
     }
     used_offset_ = AlignUp(avail_offset_ + avail_total, used_align);
 
-    auto* base = dma.data();
+    auto* base = dma.Data();
     desc_ = reinterpret_cast<volatile Desc*>(base + desc_offset_);
     avail_ = reinterpret_cast<volatile Avail*>(base + avail_offset_);
     used_ = reinterpret_cast<volatile Used*>(base + used_offset_);

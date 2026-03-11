@@ -2,8 +2,7 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
-#ifndef SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_CSTRING_
-#define SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_CSTRING_
+#pragma once
 
 #include "string.h"
 
@@ -23,5 +22,3 @@ using ::strncpy;
 using ::strnlen;
 
 }  // namespace kstd
-
-#endif /* SIMPLEKERNEL_SRC_LIBCXX_INCLUDE_KSTD_CSTRING_ */

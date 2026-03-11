@@ -2,6 +2,8 @@
  * @copyright Copyright The SimpleKernel Contributors
  */
 
+#include <etl/memory.h>
+
 #include "filesystem.hpp"
 #include "kernel_log.hpp"
 #include "kstd_cstring"
@@ -23,7 +25,7 @@ auto Close(File* file) -> Expected<void> {
     }
   }
 
-  delete file;
+  etl::unique_ptr<File> file_guard(file);
   return {};
 }
 

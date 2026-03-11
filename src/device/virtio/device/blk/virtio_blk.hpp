@@ -541,7 +541,7 @@ class VirtioBlk {
         vq_(std::move(vq)),
         negotiated_features_(features),
         slot_dma_(slot_dma),
-        slots_(reinterpret_cast<RequestSlot*>(slot_dma.data())),
+        slots_(reinterpret_cast<RequestSlot*>(slot_dma.Data())),
         virt_to_phys_(v2p),
         stats_{},
         slot_bitmap_(0),
