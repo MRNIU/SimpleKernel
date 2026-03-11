@@ -32,9 +32,8 @@ auto TimerHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
 }
 }  // namespace
 
-/// @brief SMP 定时器初始化
 auto TimerInitSMP() -> void {
-  InterruptSingleton::instance().PPI(timer_intid, cpu_io::GetCurrentCoreId());
+  InterruptSingleton::instance().Ppi(timer_intid, cpu_io::GetCurrentCoreId());
 
   cpu_io::CNTV_CTL_EL0::ENABLE::Clear();
   cpu_io::CNTV_CTL_EL0::IMASK::Set();
@@ -45,7 +44,6 @@ auto TimerInitSMP() -> void {
   cpu_io::CNTV_CTL_EL0::IMASK::Clear();
 }
 
-/// @brief 定时器初始化
 auto TimerInit() -> void {
   // 计算 interval
   interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;
@@ -54,12 +52,12 @@ auto TimerInit() -> void {
   timer_intid = KernelFdtSingleton::instance()
                     .GetAarch64Intid("arm,armv8-timer")
                     .value() +
-                Gic::kPPIBase;
+                Gic::kPpiBase;
 
   InterruptSingleton::instance().RegisterInterruptFunc(
       timer_intid, InterruptDelegate::create<TimerHandler>());
 
-  InterruptSingleton::instance().PPI(timer_intid, cpu_io::GetCurrentCoreId());
+  InterruptSingleton::instance().Ppi(timer_intid, cpu_io::GetCurrentCoreId());
 
   cpu_io::CNTV_CTL_EL0::ENABLE::Clear();
   cpu_io::CNTV_CTL_EL0::IMASK::Set();

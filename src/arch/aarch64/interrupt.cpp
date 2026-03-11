@@ -41,7 +41,7 @@ Interrupt::Interrupt() {
 
   // 设置 SGI 0 用于 IPI
   auto cpuid = cpu_io::GetCurrentCoreId();
-  gic_.SGI(0, cpuid);
+  gic_.Sgi(0, cpuid);
 
   klog::Info("Interrupt init.");
 }
@@ -116,7 +116,7 @@ auto Interrupt::BroadcastIpi() -> Expected<void> {
 
 /**
  * @brief 注册外部中断
- * @param irq GIC INTID（已含 kSPIBase 偏移）
+ * @param irq GIC INTID（已含 kSpiBase 偏移）
  * @param cpu_id CPU 编号
  * @param priority 中断优先级
  * @param handler 中断处理委托
@@ -126,7 +126,7 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
                                           uint32_t priority,
                                           InterruptDelegate handler)
     -> Expected<void> {
-  // irq 为 GIC INTID（已含 kSPIBase 偏移）
+  // irq 为 GIC INTID（已含 kSpiBase 偏移）
   if (irq >= kMaxInterrupt) {
     return std::unexpected(Error(ErrorCode::kIrqChipInvalidIrq));
   }
@@ -135,7 +135,7 @@ auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
   RegisterInterruptFunc(irq, handler);
 
   // 再在 GIC 上为指定核心配置并启用 SPI
-  gic_.SPI(irq, cpu_id);
+  gic_.Spi(irq, cpu_id);
 
   klog::Info("RegisterExternalInterrupt: INTID {}, cpu {}, priority {}", irq,
              cpu_id, priority);

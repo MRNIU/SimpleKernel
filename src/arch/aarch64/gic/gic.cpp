@@ -15,7 +15,7 @@ Gic::Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
   cpu_io::ICC_IGRPEN1_EL1::Enable::Clear();
   cpu_io::ICC_PMR_EL1::Priority::Set();
 
-  gicd_.EnableGrp1NS();
+  gicd_.EnableGrp1Ns();
 
   klog::Info("Gic init.");
 }
@@ -23,126 +23,120 @@ Gic::Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
 auto Gic::SetUp() const -> void {
   cpu_io::ICC_IGRPEN1_EL1::Enable::Clear();
   cpu_io::ICC_PMR_EL1::Priority::Set();
-  gicd_.EnableGrp1NS();
+  gicd_.EnableGrp1Ns();
 
   gicr_.SetUp();
 }
 
-auto Gic::SPI(uint32_t intid, uint32_t cpuid) const -> void {
-  gicd_.SetupSPI(intid, cpuid);
+auto Gic::Spi(uint32_t intid, uint32_t cpuid) const -> void {
+  gicd_.SetupSpi(intid, cpuid);
 }
 
-auto Gic::PPI(uint32_t intid, uint32_t cpuid) const -> void {
-  gicr_.SetupPPI(intid, cpuid);
+auto Gic::Ppi(uint32_t intid, uint32_t cpuid) const -> void {
+  gicr_.SetupPpi(intid, cpuid);
 }
 
-auto Gic::SGI(uint32_t intid, uint32_t cpuid) const -> void {
-  gicr_.SetupSGI(intid, cpuid);
+auto Gic::Sgi(uint32_t intid, uint32_t cpuid) const -> void {
+  gicr_.SetupSgi(intid, cpuid);
 }
 
 Gic::Gicd::Gicd(uint64_t _base_addr) : base_addr_(_base_addr) {
   assert(base_addr_ != 0 && "GICD base address is invalid");
 
   // 将 GICD_CTLR 清零
-  Write(kCTLR, 0);
+  Write(kCtlr, 0);
 
   // 读取 ITLinesNumber 数量
-  auto it_lines_number = Read(kTYPER) & kTYPER_ITLinesNumberMask;
+  auto it_lines_number = Read(kTyper) & kTyperItLinesNumberMask;
 
   klog::Info("it_lines_number {}", it_lines_number);
 
   // 设置中断为 Non-secure Group 1
   for (uint32_t i = 0; i < it_lines_number; i++) {
-    Write(IGROUPRn(i), UINT32_MAX);
+    Write(Igrouprn(i), UINT32_MAX);
   }
 }
 
 auto Gic::Gicd::Enable(uint32_t intid) const -> void {
-  auto is = Read(ISENABLERn(intid / kISENABLERn_SIZE));
-  is |= 1 << (intid % kISENABLERn_SIZE);
-  Write(ISENABLERn(intid / kISENABLERn_SIZE), is);
+  auto is = Read(Isenablern(intid / kIsEnablernSize));
+  is |= 1 << (intid % kIsEnablernSize);
+  Write(Isenablern(intid / kIsEnablernSize), is);
 }
 
-auto Gic::Gicd::EnableGrp1NS() const -> void {
-  Write(kCTLR, kCTLR_EnableGrp1NS);
+auto Gic::Gicd::EnableGrp1Ns() const -> void {
+  Write(kCtlr, kCtlrEnableGrp1Ns);
   cpu_io::ICC_IGRPEN1_EL1::Enable::Set();
 }
 
 auto Gic::Gicd::Disable(uint32_t intid) const -> void {
-  auto ic = Read(ICENABLERn(intid / kICENABLERn_SIZE));
-  ic |= 1 << (intid % kICENABLERn_SIZE);
-  Write(ICENABLERn(intid / kICENABLERn_SIZE), ic);
+  auto ic = Read(Icenablern(intid / kIcEnablernSize));
+  ic |= 1 << (intid % kIcEnablernSize);
+  Write(Icenablern(intid / kIcEnablernSize), ic);
 }
 
 auto Gic::Gicd::Clear(uint32_t intid) const -> void {
-  auto ic = Read(ICPENDRn(intid / kICPENDRn_SIZE));
-  ic |= 1 << (intid % kICPENDRn_SIZE);
-  Write(ICPENDRn(intid / kICPENDRn_SIZE), ic);
+  auto ic = Read(Icpendrn(intid / kIcPendrnSize));
+  ic |= 1 << (intid % kIcPendrnSize);
+  Write(Icpendrn(intid / kIcPendrnSize), ic);
 }
 
 auto Gic::Gicd::IsEnable(uint32_t intid) const -> bool {
-  auto is = Read(ISENABLERn(intid / kISENABLERn_SIZE));
-  return is & (1 << (intid % kISENABLERn_SIZE));
+  auto is = Read(Isenablern(intid / kIsEnablernSize));
+  return is & (1 << (intid % kIsEnablernSize));
 }
 
 auto Gic::Gicd::SetPrio(uint32_t intid, uint32_t prio) const -> void {
-  auto shift = (intid % kIPRIORITYRn_SIZE) * kIPRIORITYRn_BITS;
-  auto ip = Read(IPRIORITYRn(intid / kIPRIORITYRn_SIZE));
-  ip &= ~(kIPRIORITYRn_BITS_MASK << shift);
+  auto shift = (intid % kIpriorityrnSize) * kIpriorityrnBits;
+  auto ip = Read(Ipriorityrn(intid / kIpriorityrnSize));
+  ip &= ~(kIpriorityrnBitsMask << shift);
   ip |= prio << shift;
-  Write(IPRIORITYRn(intid / kIPRIORITYRn_SIZE), ip);
+  Write(Ipriorityrn(intid / kIpriorityrnSize), ip);
 }
 
 auto Gic::Gicd::SetConfig(uint32_t intid, uint32_t config) const -> void {
-  auto shift = (intid % kICFGRn_SIZE) * kICFGRn_BITS;
-  auto ic = Read(ICFGRn(intid / kICFGRn_SIZE));
-  ic &= ~(kICFGRn_BITS_MASK << shift);
+  auto shift = (intid % kIcfgrnSize) * kIcfgrnBits;
+  auto ic = Read(Icfgrn(intid / kIcfgrnSize));
+  ic &= ~(kIcfgrnBitsMask << shift);
   ic |= config << shift;
-  Write(ICFGRn(intid / kICFGRn_SIZE), ic);
+  Write(Icfgrn(intid / kIcfgrnSize), ic);
 }
 
 auto Gic::Gicd::SetTarget(uint32_t intid, uint32_t cpuid) const -> void {
-  auto target = Read(ITARGETSRn(intid / kITARGETSRn_SIZE));
-  target &=
-      ~(kICFGRn_BITS_MASK << ((intid % kITARGETSRn_SIZE) * kITARGETSRn_BITS));
-  Write(ITARGETSRn(intid / kITARGETSRn_SIZE),
-        target |
-            ((1 << cpuid) << ((intid % kITARGETSRn_SIZE) * kITARGETSRn_BITS)));
+  auto target = Read(Itargetsrn(intid / kItargetsrnSize));
+  target &= ~(kIcfgrnBitsMask << ((intid % kItargetsrnSize) * kItargetsrnBits));
+  Write(
+      Itargetsrn(intid / kItargetsrnSize),
+      target | ((1 << cpuid) << ((intid % kItargetsrnSize) * kItargetsrnBits)));
 }
 
 auto Gic::Gicr::SetUp() const -> void {
   auto cpuid = cpu_io::GetCurrentCoreId();
 
   // 将 GICR_CTLR 清零
-  Write(cpuid, kCTLR, 0);
+  Write(cpuid, kCtlr, 0);
 
   // The System register interface for the current Security state is enabled.
   cpu_io::ICC_SRE_EL1::SRE::Set();
 
   // 允许 Non-secure Group 1 中断
-  Write(cpuid, kIGROUPR0, kIGROUPR0_Set);
-  Write(cpuid, kIGRPMODR0, kIGRPMODR0_Clear);
+  Write(cpuid, kIgroupr0, kIgroupr0Set);
+  Write(cpuid, kIgrpmodr0, kIgrpmodr0Clear);
 
   // 唤醒 Redistributor
   // @see
   // https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-WAKER--Redistributor-Wake-Register?lang=en
-  auto waker = Read(cpuid, kWAKER);
+  auto waker = Read(cpuid, kWaker);
   // Clear the ProcessorSleep bit
-  Write(cpuid, kWAKER, waker & ~kWAKER_ProcessorSleepMASK);
+  Write(cpuid, kWaker, waker & ~kWakerProcessorSleepMask);
   // 等待唤醒完成
-  while (Read(cpuid, kWAKER) & kWAKER_ChildrenAsleepMASK) {
+  while (Read(cpuid, kWaker) & kWakerChildrenAsleepMask) {
     cpu_io::Pause();
   }
 }
 
-/**
- * @brief 配置 SPI 中断
- * @param intid 中断号
- * @param cpuid CPU 编号
- */
-auto Gic::Gicd::SetupSPI(uint32_t intid, uint32_t cpuid) const -> void {
+auto Gic::Gicd::SetupSpi(uint32_t intid, uint32_t cpuid) const -> void {
   // 电平触发
-  SetConfig(intid, kICFGRn_LevelSensitive);
+  SetConfig(intid, kIcfgrnLevelSensitive);
 
   // 优先级设定
   SetPrio(intid, 0);
@@ -155,102 +149,67 @@ auto Gic::Gicd::SetupSPI(uint32_t intid, uint32_t cpuid) const -> void {
   Enable(intid);
 }
 
-/**
- * @brief GICR 构造函数，初始化 Redistributor
- * @param _base_addr GICR 基地址
- */
 Gic::Gicr::Gicr(uint64_t _base_addr) : base_addr_(_base_addr) {
   assert(base_addr_ != 0 && "GICR base address is invalid");
 
   auto cpuid = cpu_io::GetCurrentCoreId();
 
   // 将 GICR_CTLR 清零
-  Write(cpuid, kCTLR, 0);
+  Write(cpuid, kCtlr, 0);
 
   // The System register interface for the current Security state is enabled.
   cpu_io::ICC_SRE_EL1::SRE::Set();
 
   // 允许 Non-secure Group 1 中断
-  Write(cpuid, kIGROUPR0, kIGROUPR0_Set);
-  Write(cpuid, kIGRPMODR0, kIGRPMODR0_Clear);
+  Write(cpuid, kIgroupr0, kIgroupr0Set);
+  Write(cpuid, kIgrpmodr0, kIgrpmodr0Clear);
 
   // 唤醒 Redistributor
   // @see
   // https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICR-WAKER--Redistributor-Wake-Register?lang=en
-  auto waker = Read(cpuid, kWAKER);
+  auto waker = Read(cpuid, kWaker);
   // Clear the ProcessorSleep bit
-  Write(cpuid, kWAKER, waker & ~kWAKER_ProcessorSleepMASK);
+  Write(cpuid, kWaker, waker & ~kWakerProcessorSleepMask);
   // 等待唤醒完成
-  while (Read(cpuid, kWAKER) & kWAKER_ChildrenAsleepMASK) {
+  while (Read(cpuid, kWaker) & kWakerChildrenAsleepMask) {
     cpu_io::Pause();
   }
 }
 
-/**
- * @brief 使能指定中断
- * @param intid 中断号
- * @param cpuid CPU 编号
- */
 auto Gic::Gicr::Enable(uint32_t intid, uint32_t cpuid) const -> void {
-  auto is = Read(cpuid, kISENABLER0);
-  is |= 1 << (intid % kISENABLER0_SIZE);
-  Write(cpuid, kISENABLER0, is);
+  auto is = Read(cpuid, kIsEnabler0);
+  is |= 1 << (intid % kIsEnabler0Size);
+  Write(cpuid, kIsEnabler0, is);
 }
 
-/**
- * @brief 禁止指定中断
- * @param intid 中断号
- * @param cpuid CPU 编号
- */
 auto Gic::Gicr::Disable(uint32_t intid, uint32_t cpuid) const -> void {
-  auto ic = Read(cpuid, kICENABLER0);
-  ic |= 1 << (intid % kICENABLER0_SIZE);
-  Write(cpuid, kICENABLER0, ic);
+  auto ic = Read(cpuid, kIcEnabler0);
+  ic |= 1 << (intid % kIcEnabler0Size);
+  Write(cpuid, kIcEnabler0, ic);
 }
 
-/**
- * @brief 清除指定中断
- * @param intid 中断号
- * @param cpuid CPU 编号
- */
 auto Gic::Gicr::Clear(uint32_t intid, uint32_t cpuid) const -> void {
-  auto ic = Read(cpuid, kICPENDR0);
-  ic |= 1 << (intid % kICPENDR0_SIZE);
-  Write(cpuid, kICPENDR0, ic);
+  auto ic = Read(cpuid, kIcPendr0);
+  ic |= 1 << (intid % kIcPendr0Size);
+  Write(cpuid, kIcPendr0, ic);
 }
 
-/**
- * @brief 设置指定中断的优先级
- * @param intid 中断号
- * @param cpuid CPU 编号
- * @param prio 优先级
- */
 auto Gic::Gicr::SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const
     -> void {
-  auto shift = (intid % kIPRIORITYRn_SIZE) * kIPRIORITYRn_BITS;
-  auto ip = Read(cpuid, IPRIORITYRn(intid / kIPRIORITYRn_SIZE));
-  ip &= ~(kIPRIORITYRn_BITS_MASK << shift);
+  auto shift = (intid % kIpriorityrnSize) * kIpriorityrnBits;
+  auto ip = Read(cpuid, Ipriorityrn(intid / kIpriorityrnSize));
+  ip &= ~(kIpriorityrnBitsMask << shift);
   ip |= prio << shift;
-  Write(cpuid, IPRIORITYRn(intid / kIPRIORITYRn_SIZE), ip);
+  Write(cpuid, Ipriorityrn(intid / kIpriorityrnSize), ip);
 }
 
-/**
- * @brief 配置 PPI 中断
- * @param intid 中断号
- * @param cpuid CPU 编号
- */
-auto Gic::Gicr::SetupPPI(uint32_t intid, uint32_t cpuid) const -> void {
+auto Gic::Gicr::SetupPpi(uint32_t intid, uint32_t cpuid) const -> void {
   SetPrio(intid, cpuid, 0);
   Clear(intid, cpuid);
   Enable(intid, cpuid);
 }
 
-/**
- * @brief 配置 SGI 中断
- * @param intid 中断号
- * @param cpuid CPU 编号
- */
-auto Gic::Gicr::SetupSGI(uint32_t intid, uint32_t cpuid) const -> void {
+auto Gic::Gicr::SetupSgi(uint32_t intid, uint32_t cpuid) const -> void {
   SetPrio(intid, cpuid, 0);
   Clear(intid, cpuid);
   Enable(intid, cpuid);

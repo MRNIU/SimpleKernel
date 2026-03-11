@@ -187,7 +187,7 @@ auto InterruptInit(int, const char**) -> void {
 
   auto uart_intid =
       KernelFdtSingleton::instance().GetAarch64Intid("arm,pl011").value() +
-      Gic::kSPIBase;
+      Gic::kSpiBase;
 
   klog::Info("uart_intid: {}", uart_intid);
 
