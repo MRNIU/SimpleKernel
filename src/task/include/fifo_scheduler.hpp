@@ -22,20 +22,15 @@
 class FifoScheduler : public SchedulerBase {
  public:
   /**
-   * @brief 构造函数
-   */
-  FifoScheduler() { name = "FIFO"; }
-
-  /**
    * @brief 将任务加入就绪队列尾部
    * @param task 要加入的任务
    */
   auto Enqueue(TaskControlBlock* task) -> void override {
-    if (ready_queue.full()) {
+    if (ready_queue_.full()) {
       klog::Err("FifoScheduler::Enqueue: ready_queue full, dropping task");
       return;
     }
-    ready_queue.push_back(task);
+    ready_queue_.push_back(task);
     stats_.total_enqueues++;
   }
 
@@ -44,7 +39,7 @@ class FifoScheduler : public SchedulerBase {
    * @param task 要移除的任务
    */
   auto Dequeue(TaskControlBlock* task) -> void override {
-    ready_queue.remove(task);
+    ready_queue_.remove(task);
     stats_.total_dequeues++;
   }
 
@@ -53,11 +48,11 @@ class FifoScheduler : public SchedulerBase {
    * @return 下一个任务，如果队列为空则返回 nullptr
    */
   [[nodiscard]] auto PickNext() -> TaskControlBlock* override {
-    if (ready_queue.empty()) {
+    if (ready_queue_.empty()) {
       return nullptr;
     }
-    TaskControlBlock* next = ready_queue.front();
-    ready_queue.pop_front();
+    TaskControlBlock* next = ready_queue_.front();
+    ready_queue_.pop_front();
     stats_.total_picks++;
     return next;
   }
@@ -67,7 +62,7 @@ class FifoScheduler : public SchedulerBase {
    * @return 队列中的任务数量
    */
   [[nodiscard]] auto GetQueueSize() const -> size_t override {
-    return ready_queue.size();
+    return ready_queue_.size();
   }
 
   /**
@@ -75,7 +70,7 @@ class FifoScheduler : public SchedulerBase {
    * @return 队列为空返回 true，否则返回 false
    */
   [[nodiscard]] auto IsEmpty() const -> bool override {
-    return ready_queue.empty();
+    return ready_queue_.empty();
   }
 
   /**
@@ -91,6 +86,7 @@ class FifoScheduler : public SchedulerBase {
 
   /// @name 构造/析构函数
   /// @{
+  FifoScheduler() { name = "FIFO"; }
   FifoScheduler(const FifoScheduler&) = delete;
   FifoScheduler(FifoScheduler&&) = delete;
   auto operator=(const FifoScheduler&) -> FifoScheduler& = delete;
@@ -100,5 +96,5 @@ class FifoScheduler : public SchedulerBase {
 
  private:
   /// 就绪队列 (先进先出，固定容量)
-  etl::list<TaskControlBlock*, kernel::config::kMaxReadyTasks> ready_queue;
+  etl::list<TaskControlBlock*, kernel::config::kMaxReadyTasks> ready_queue_;
 };

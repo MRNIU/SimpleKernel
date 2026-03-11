@@ -15,32 +15,22 @@ namespace vfs {
  */
 struct Inode {
   /// inode 编号（文件系统内唯一）
-  uint64_t ino;
+  uint64_t ino{0};
   /// 文件类型
-  FileType type;
+  FileType type{FileType::kUnknown};
   /// 文件大小（字节）
-  uint64_t size;
+  uint64_t size{0};
   /// 权限位（简化版）
-  uint32_t permissions;
+  uint32_t permissions{0644};
   /// 硬链接计数
-  uint32_t link_count;
+  uint32_t link_count{1};
   /// 文件系统私有数据指针
-  void* fs_private;
+  void* fs_private{nullptr};
   /// 所属文件系统
-  FileSystem* fs;
+  FileSystem* fs{nullptr};
 
   /// 文件操作接口
-  InodeOps* ops = nullptr;
-
-  Inode()
-      : ino(0),
-        type(FileType::kUnknown),
-        size(0),
-        permissions(0644),
-        link_count(1),
-        fs_private(nullptr),
-        fs(nullptr),
-        ops(nullptr) {}
+  InodeOps* ops{nullptr};
 };
 
 /**
@@ -50,25 +40,17 @@ struct Inode {
  */
 struct Dentry {
   /// 文件/目录名
-  char name[256];
+  char name[256]{};
   /// 关联的 inode
-  Inode* inode;
+  Inode* inode{nullptr};
   /// 父目录项
-  Dentry* parent;
+  Dentry* parent{nullptr};
   /// 子目录项链表头
-  Dentry* children;
+  Dentry* children{nullptr};
   /// 兄弟目录项（同一父目录下）
-  Dentry* next_sibling;
+  Dentry* next_sibling{nullptr};
   /// 文件系统私有数据
-  void* fs_private;
-
-  Dentry()
-      : name{0},
-        inode(nullptr),
-        parent(nullptr),
-        children(nullptr),
-        next_sibling(nullptr),
-        fs_private(nullptr) {}
+  void* fs_private{nullptr};
 };
 
 /**
@@ -78,18 +60,16 @@ struct Dentry {
  */
 struct File {
   /// 关联的 inode
-  Inode* inode;
+  Inode* inode{nullptr};
   /// 关联的 dentry
-  Dentry* dentry;
+  Dentry* dentry{nullptr};
   /// 当前读写偏移量
-  uint64_t offset;
+  uint64_t offset{0};
   /// 打开标志 (OpenFlags)
-  uint32_t flags;
+  uint32_t flags{0};
 
   /// 文件操作接口
-  FileOps* ops = nullptr;
-
-  File() : inode(nullptr), dentry(nullptr), offset(0), flags(0), ops(nullptr) {}
+  FileOps* ops{nullptr};
 };
 
 /**

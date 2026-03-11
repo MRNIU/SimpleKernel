@@ -230,5 +230,5 @@ class CfsScheduler : public SchedulerBase {
       ready_queue_;
 
   /// 当前最小 vruntime (用于新任务初始化)
-  uint64_t min_vruntime_ = 0;
+  uint64_t min_vruntime_{0};
 };

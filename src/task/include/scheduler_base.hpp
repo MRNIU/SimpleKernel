@@ -18,7 +18,7 @@
 class SchedulerBase {
  public:
   /// 调度器名称
-  const char* name = "Unnamed Scheduler";
+  const char* name{"Unnamed Scheduler"};
 
   /**
    * @brief 调度器统计信息
@@ -147,5 +147,5 @@ class SchedulerBase {
   /// @}
 
  protected:
-  Stats stats_;
+  Stats stats_{};
 };

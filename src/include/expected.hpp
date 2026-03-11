@@ -329,7 +329,7 @@ constexpr auto GetErrorMessage(ErrorCode code) -> const char* {
 
 /// 错误类型，用于 std::expected
 struct Error {
-  ErrorCode code;
+  ErrorCode code{ErrorCode::kSuccess};
 
   explicit constexpr Error(ErrorCode c) : code(c) {}
 

@@ -27,7 +27,7 @@ class RoundRobinScheduler : public SchedulerBase {
    */
   auto Enqueue(TaskControlBlock* task) -> void override {
     if (task) {
-      if (ready_queue.full()) {
+      if (ready_queue_.full()) {
         klog::Err(
             "RoundRobinScheduler::Enqueue: ready_queue full, dropping task");
         return;
@@ -35,7 +35,7 @@ class RoundRobinScheduler : public SchedulerBase {
       // 重新分配时间片
       task->sched_info.time_slice_remaining =
           task->sched_info.time_slice_default;
-      ready_queue.push_back(task);
+      ready_queue_.push_back(task);
       stats_.total_enqueues++;
     }
   }
@@ -51,9 +51,9 @@ class RoundRobinScheduler : public SchedulerBase {
       return;
     }
 
-    for (auto it = ready_queue.begin(); it != ready_queue.end(); ++it) {
+    for (auto it = ready_queue_.begin(); it != ready_queue_.end(); ++it) {
       if (*it == task) {
-        ready_queue.erase(it);
+        ready_queue_.erase(it);
         stats_.total_dequeues++;
         break;
       }
@@ -67,11 +67,11 @@ class RoundRobinScheduler : public SchedulerBase {
    * 从队列头部取出任务，实现 Round-Robin 轮转。
    */
   [[nodiscard]] auto PickNext() -> TaskControlBlock* override {
-    if (ready_queue.empty()) {
+    if (ready_queue_.empty()) {
       return nullptr;
     }
-    auto next = ready_queue.front();
-    ready_queue.pop_front();
+    auto next = ready_queue_.front();
+    ready_queue_.pop_front();
     stats_.total_picks++;
     return next;
   }
@@ -81,7 +81,7 @@ class RoundRobinScheduler : public SchedulerBase {
    * @return size_t 队列中的任务数量
    */
   [[nodiscard]] auto GetQueueSize() const -> size_t override {
-    return ready_queue.size();
+    return ready_queue_.size();
   }
 
   /**
@@ -89,7 +89,7 @@ class RoundRobinScheduler : public SchedulerBase {
    * @return bool 队列为空返回 true
    */
   [[nodiscard]] auto IsEmpty() const -> bool override {
-    return ready_queue.empty();
+    return ready_queue_.empty();
   }
 
   /**
@@ -129,5 +129,5 @@ class RoundRobinScheduler : public SchedulerBase {
 
  private:
   /// 就绪队列 (双向链表，支持从头部取、向尾部放，固定容量)
-  etl::list<TaskControlBlock*, kernel::config::kMaxReadyTasks> ready_queue;
+  etl::list<TaskControlBlock*, kernel::config::kMaxReadyTasks> ready_queue_;
 };

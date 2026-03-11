@@ -60,8 +60,6 @@ enum class SeekWhence : int {
 /// @brief Inode 操作接口
 class InodeOps {
  public:
-  virtual ~InodeOps() = default;
-
   /**
    * @brief 在目录中查找指定名称的 inode
    * @param dir 父目录 inode
@@ -115,6 +113,16 @@ class InodeOps {
    * @pre name != nullptr
    */
   virtual auto Rmdir(Inode* dir, const char* name) -> Expected<void> = 0;
+
+  /// @name 构造/析构函数
+  /// @{
+  InodeOps() = default;
+  InodeOps(const InodeOps&) = delete;
+  InodeOps(InodeOps&&) = delete;
+  auto operator=(const InodeOps&) -> InodeOps& = delete;
+  auto operator=(InodeOps&&) -> InodeOps& = delete;
+  virtual ~InodeOps() = default;
+  /// @}
 };
 /// @brief 目录项结构（用于 readdir）
 struct DirEntry {
@@ -123,14 +131,12 @@ struct DirEntry {
   /// 文件类型
   uint8_t type{0};
   /// 文件名
-  char name[256];
+  char name[256]{};
 };
 
 /// @brief File 操作接口
 class FileOps {
  public:
-  virtual ~FileOps() = default;
-
   /**
    * @brief 从文件读取数据
    * @param file 文件对象
@@ -186,6 +192,16 @@ class FileOps {
    */
   virtual auto ReadDir(File* file, DirEntry* dirent, size_t count)
       -> Expected<size_t> = 0;
+
+  /// @name 构造/析构函数
+  /// @{
+  FileOps() = default;
+  FileOps(const FileOps&) = delete;
+  FileOps(FileOps&&) = delete;
+  auto operator=(const FileOps&) -> FileOps& = delete;
+  auto operator=(FileOps&&) -> FileOps& = delete;
+  virtual ~FileOps() = default;
+  /// @}
 };
 
 }  // namespace vfs

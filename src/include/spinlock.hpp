@@ -131,6 +131,9 @@ class LockGuard {
  public:
   using mutex_type = Mutex;
 
+  /// @name 构造/析构函数
+  /// @{
+
   /**
    * @brief 构造函数，自动获取锁
    * @param mutex 要保护的锁对象
@@ -160,8 +163,6 @@ class LockGuard {
     });
   }
 
-  /// @name 构造/析构函数
-  /// @{
   LockGuard(const LockGuard&) = delete;
   LockGuard(LockGuard&&) = delete;
   auto operator=(const LockGuard&) -> LockGuard& = delete;

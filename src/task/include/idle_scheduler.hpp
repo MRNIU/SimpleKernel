@@ -19,11 +19,6 @@
 class IdleScheduler : public SchedulerBase {
  public:
   /**
-   * @brief 构造函数
-   */
-  IdleScheduler() { name = "Idle"; }
-
-  /**
    * @brief 将 idle 任务加入队列
    * @param task 要加入的任务（通常只有一个 idle 任务）
    */
@@ -110,14 +105,15 @@ class IdleScheduler : public SchedulerBase {
 
   /// @name 构造/析构函数
   /// @{
+  IdleScheduler() { name = "Idle"; }
   IdleScheduler(const IdleScheduler&) = delete;
   IdleScheduler(IdleScheduler&&) = delete;
   auto operator=(const IdleScheduler&) -> IdleScheduler& = delete;
   auto operator=(IdleScheduler&&) -> IdleScheduler& = delete;
-  virtual ~IdleScheduler() = default;
+  ~IdleScheduler() override = default;
   /// @}
 
  private:
   /// Idle 任务指针（通常只有一个）
-  TaskControlBlock* idle_task_ = nullptr;
+  TaskControlBlock* idle_task_{nullptr};
 };

@@ -36,13 +36,13 @@ struct MatchEntry {
  */
 struct DriverEntry {
   const char* name{nullptr};
-  etl::span<const MatchEntry> match_table;
+  etl::span<const MatchEntry> match_table{};
   /// 硬件检测
-  etl::delegate<bool(DeviceNode&)> match;
+  etl::delegate<bool(DeviceNode&)> match{};
   /// 驱动初始化
-  etl::delegate<Expected<void>(DeviceNode&)> probe;
+  etl::delegate<Expected<void>(DeviceNode&)> probe{};
   /// 驱动卸载
-  etl::delegate<Expected<void>(DeviceNode&)> remove;
+  etl::delegate<Expected<void>(DeviceNode&)> remove{};
 };
 
 /// flat_map 中 const char* 键的比较器（使用 kstd::strcmp）。

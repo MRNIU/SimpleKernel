@@ -92,5 +92,5 @@ class Mutex {
   std::atomic<Pid> owner_{std::numeric_limits<Pid>::max()};
 
   /// 资源 ID，用于任务阻塞队列
-  ResourceId resource_id_;
+  ResourceId resource_id_{};
 };

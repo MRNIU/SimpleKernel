@@ -11,6 +11,15 @@
 
 #include "expected.hpp"
 
+/**
+ * @brief 中断子系统抽象基类
+ *
+ * 所有架构的中断处理必须实现此接口。
+ * 已知实现：PLIC（RISC-V）、GIC（AArch64）、APIC（x86_64）
+ *
+ * @pre  硬件中断控制器已初始化
+ * @post 可通过 RegisterInterruptFunc 注册中断处理函数
+ */
 class InterruptBase {
  public:
   /**
@@ -51,13 +60,14 @@ class InterruptBase {
    * @param target_cpu_mask 目标核心的位掩码
    * @return Expected<void> 成功时返回 void，失败时返回错误
    */
-  virtual auto SendIpi(uint64_t target_cpu_mask) -> Expected<void> = 0;
+  [[nodiscard]] virtual auto SendIpi(uint64_t target_cpu_mask)
+      -> Expected<void> = 0;
 
   /**
    * @brief 广播 IPI 到所有其他核心
    * @return Expected<void> 成功时返回 void，失败时返回错误
    */
-  virtual auto BroadcastIpi() -> Expected<void> = 0;
+  [[nodiscard]] virtual auto BroadcastIpi() -> Expected<void> = 0;
 
   /**
    * @brief 注册外部中断处理函数
@@ -67,8 +77,7 @@ class InterruptBase {
    * @param handler 中断处理函数
    * @return Expected<void> 成功时返回 void，失败时返回错误
    */
-  virtual auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
-                                         uint32_t priority,
-                                         InterruptDelegate handler)
-      -> Expected<void> = 0;
+  [[nodiscard]] virtual auto RegisterExternalInterrupt(
+      uint32_t irq, uint32_t cpu_id, uint32_t priority,
+      InterruptDelegate handler) -> Expected<void> = 0;
 };

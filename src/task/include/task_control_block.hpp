@@ -106,7 +106,7 @@ struct TaskControlBlock : public ThreadGroupLink {
   Pid tgid{0};
 
   /// 任务状态机
-  TaskFsm fsm;
+  TaskFsm fsm{};
 
   /// 调度策略
   SchedPolicy policy{SchedPolicy::kNormal};
