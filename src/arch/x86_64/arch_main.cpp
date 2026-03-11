@@ -102,7 +102,7 @@ BasicInfo::BasicInfo(int, const char**) {
   core_count = cpu_io::cpuid::GetLogicalProcessorCount();
 }
 
-auto ArchInit(int, const char**) -> int {
+auto ArchInit(int, const char**) -> void {
   BasicInfoSingleton::create(0, nullptr);
 
   // 解析内核 elf 信息
@@ -112,11 +112,9 @@ auto ArchInit(int, const char**) -> int {
   SetupGdtAndSegmentRegisters();
 
   klog::Info("Hello x86_64 ArchInit");
-
-  return 0;
 }
 
-auto ArchInitSMP(int, const char**) -> int {
+auto ArchInitSMP(int, const char**) -> void {
   // 设置 GDT 和段寄存器
   SetupGdtAndSegmentRegisters();
 
@@ -128,12 +126,11 @@ auto ArchInitSMP(int, const char**) -> int {
         }
         return std::unexpected(err);
       });
-  return 0;
 }
 
 auto WakeUpOtherCores() -> void {
   // 填充 sipi_params 结构体
-  auto target_sipi_params = reinterpret_cast<sipi_params_t*>(sipi_params);
+  auto target_sipi_params = reinterpret_cast<SipiParams*>(sipi_params);
   target_sipi_params->cr3 = cpu_io::Cr3::Read();
 
   InterruptSingleton::instance().apic().StartupAllAps(

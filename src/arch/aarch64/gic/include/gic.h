@@ -264,18 +264,19 @@ class Gic {
     /// Component ID 3 Register, RO
     static constexpr uint32_t kCIDR3 = 0xFFFC;
 
-    /**
-     * 构造函数
-     * @param dev_addr 设备地址
-     */
     /// @name 构造/析构函数
     /// @{
+
+    /**
+     * @brief 构造函数
+     * @param base_addr GICD 基地址
+     */
     explicit Gicd(uint64_t base_addr);
     Gicd() = default;
-    Gicd(const Gicd& na16550a) = delete;
-    Gicd(Gicd&& na16550a) = delete;
-    auto operator=(const Gicd& na16550a) -> Gicd& = delete;
-    auto operator=(Gicd&& na16550a) -> Gicd& = default;
+    Gicd(const Gicd&) = delete;
+    Gicd(Gicd&&) = delete;
+    auto operator=(const Gicd&) -> Gicd& = delete;
+    auto operator=(Gicd&&) -> Gicd& = default;
     ~Gicd() = default;
     /// @}
 
@@ -486,18 +487,19 @@ class Gic {
     /// Configuration ID1 Register, RO
     static constexpr uint32_t kCFGID1 = 0xF004;
 
-    /**
-     * 构造函数
-     * @param dev_addr 设备地址
-     */
     /// @name 构造/析构函数
     /// @{
+
+    /**
+     * @brief 构造函数
+     * @param base_addr GICR 基地址
+     */
     explicit Gicr(uint64_t base_addr);
     Gicr() = default;
-    Gicr(const Gicr& na16550a) = delete;
-    Gicr(Gicr&& na16550a) = delete;
-    auto operator=(const Gicr& na16550a) -> Gicr& = delete;
-    auto operator=(Gicr&& na16550a) -> Gicr& = default;
+    Gicr(const Gicr&) = delete;
+    Gicr(Gicr&&) = delete;
+    auto operator=(const Gicr&) -> Gicr& = delete;
+    auto operator=(Gicr&&) -> Gicr& = default;
     ~Gicr() = default;
     /// @}
 
@@ -571,19 +573,20 @@ class Gic {
     }
   };
 
-  /**
-   * 构造函数
-   * @param gicd_base_addr gic distributor 地址
-   * @param gicr_base_addr gic redistributor 地址
-   */
   /// @name 构造/析构函数
   /// @{
+
+  /**
+   * @brief 构造函数
+   * @param gicd_base_addr GIC Distributor 地址
+   * @param gicr_base_addr GIC Redistributor 地址
+   */
   explicit Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr);
   Gic() = default;
-  Gic(const Gic& na16550a) = delete;
-  Gic(Gic&& na16550a) = delete;
-  auto operator=(const Gic& na16550a) -> Gic& = delete;
-  auto operator=(Gic&& na16550a) -> Gic& = default;
+  Gic(const Gic&) = delete;
+  Gic(Gic&&) = delete;
+  auto operator=(const Gic&) -> Gic& = delete;
+  auto operator=(Gic&&) -> Gic& = default;
   ~Gic() = default;
   /// @}
 

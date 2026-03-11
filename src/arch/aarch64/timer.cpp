@@ -13,8 +13,8 @@
 
 using InterruptDelegate = InterruptBase::InterruptDelegate;
 namespace {
-uint64_t interval = 0;
-uint64_t timer_intid = 0;
+uint64_t interval{0};
+uint64_t timer_intid{0};
 
 auto TimerHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {

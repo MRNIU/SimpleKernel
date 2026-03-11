@@ -146,7 +146,8 @@ auto RegisterInterrupts() -> void {
 
 }  // namespace
 
-extern "C" cpu_io::TrapContext* HandleTrap(cpu_io::TrapContext* context) {
+extern "C" auto HandleTrap(cpu_io::TrapContext* context)
+    -> cpu_io::TrapContext* {
   InterruptSingleton::instance().Do(context->scause, context);
   return context;
 }
@@ -154,7 +155,6 @@ extern "C" cpu_io::TrapContext* HandleTrap(cpu_io::TrapContext* context) {
 auto InterruptInit(int, const char**) -> void {
   InterruptSingleton::create();
 
-  // 注册中断处理函数
   // 注册中断处理函数
   RegisterInterrupts();
 

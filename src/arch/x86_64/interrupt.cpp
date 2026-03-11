@@ -33,7 +33,7 @@ auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)
     ;
   }
 }
-};  // namespace
+}  // namespace
 
 Interrupt::Interrupt() {
   // 注册默认中断处理函数

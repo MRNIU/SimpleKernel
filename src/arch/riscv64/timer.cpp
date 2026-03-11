@@ -13,7 +13,7 @@
 
 using InterruptDelegate = InterruptBase::InterruptDelegate;
 namespace {
-uint64_t interval = 0;
+uint64_t interval{0};
 
 auto TimerHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
@@ -22,6 +22,7 @@ auto TimerHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
   return 0;
 }
 }  // namespace
+
 auto TimerInitSMP() -> void {
   // 开启时钟中断
   cpu_io::Sie::Stie::Set();

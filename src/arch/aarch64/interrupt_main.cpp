@@ -58,14 +58,14 @@ extern "C" auto sync_current_el_sp0_handler(cpu_io::TrapContext* context)
 }
 
 extern "C" auto irq_current_el_sp0_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
+    [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("IRQ Exception at Current EL with SP0");
   // 处理 IRQ 中断
   // ...
 }
 
 extern "C" auto fiq_current_el_sp0_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
+    [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("FIQ Exception at Current EL with SP0");
   // 处理 FIQ 中断
   // ...
@@ -88,7 +88,7 @@ extern "C" auto irq_current_el_spx_handler(cpu_io::TrapContext* context)
 }
 
 extern "C" auto fiq_current_el_spx_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
+    [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("FIQ Exception at Current EL with SPx");
   // 处理 FIQ 中断
   // ...
@@ -105,14 +105,14 @@ extern "C" auto sync_lower_el_aarch64_handler(cpu_io::TrapContext* context)
 }
 
 extern "C" auto irq_lower_el_aarch64_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
+    [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("IRQ Exception at Lower EL using AArch64");
   // 处理 IRQ 中断
   // ...
 }
 
 extern "C" auto fiq_lower_el_aarch64_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
+    [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("FIQ Exception at Lower EL using AArch64");
   // 处理 FIQ 中断
   // ...
@@ -129,14 +129,14 @@ extern "C" auto sync_lower_el_aarch32_handler(cpu_io::TrapContext* context)
 }
 
 extern "C" auto irq_lower_el_aarch32_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
+    [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("IRQ Exception at Lower EL using AArch32");
   // 处理 IRQ 中断
   // ...
 }
 
 extern "C" auto fiq_lower_el_aarch32_handler(
-    [[maybe_unused]] cpu_io::TrapContext* context) {
+    [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("FIQ Exception at Lower EL using AArch32");
   // 处理 FIQ 中断
   // ...

@@ -15,8 +15,8 @@ namespace {
 using InterruptDelegate = InterruptBase::InterruptDelegate;
 
 // 定义 APIC 时钟中断向量号（使用高优先级向量）
-static constexpr uint8_t kApicTimerVector = 0xF0;
-static constexpr uint32_t kApicTimerFrequencyHz = 100;
+static constexpr uint8_t kApicTimerVector{0xF0};
+static constexpr uint32_t kApicTimerFrequencyHz{100};
 
 /**
  * @brief APIC 时钟中断处理函数
@@ -77,7 +77,7 @@ auto KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
   return 0;
 }
 
-};  // namespace
+}  // namespace
 
 auto InterruptInit(int, const char**) -> void {
   InterruptSingleton::create();
