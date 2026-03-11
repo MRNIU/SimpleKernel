@@ -36,7 +36,7 @@ enum class FileType : uint8_t {
 };
 
 /// 文件打开标志（兼容 Linux O_* 定义）
-enum OpenFlags : uint32_t {
+enum class OpenFlags : uint32_t {
   kOReadOnly = 0x0000,
   kOWriteOnly = 0x0001,
   kOReadWrite = 0x0002,
@@ -46,6 +46,49 @@ enum OpenFlags : uint32_t {
   /// 必须是目录
   kODirectory = 0x010000,
 };
+
+/// @brief 按位或
+[[nodiscard]] inline constexpr auto operator|(OpenFlags lhs, OpenFlags rhs)
+    -> OpenFlags {
+  return static_cast<OpenFlags>(static_cast<uint32_t>(lhs) |
+                                static_cast<uint32_t>(rhs));
+}
+
+/// @brief 按位与
+[[nodiscard]] inline constexpr auto operator&(OpenFlags lhs, OpenFlags rhs)
+    -> OpenFlags {
+  return static_cast<OpenFlags>(static_cast<uint32_t>(lhs) &
+                                static_cast<uint32_t>(rhs));
+}
+
+/// @brief 按位取反
+[[nodiscard]] inline constexpr auto operator~(OpenFlags flags) -> OpenFlags {
+  return static_cast<OpenFlags>(~static_cast<uint32_t>(flags));
+}
+
+/// @brief 按位或赋值
+inline constexpr auto operator|=(OpenFlags& lhs, OpenFlags rhs) -> OpenFlags& {
+  lhs = lhs | rhs;
+  return lhs;
+}
+
+/// @brief 按位与赋值
+inline constexpr auto operator&=(OpenFlags& lhs, OpenFlags rhs) -> OpenFlags& {
+  lhs = lhs & rhs;
+  return lhs;
+}
+
+/// @brief 检查 OpenFlags 是否为零（无标志位设置）
+[[nodiscard]] inline constexpr auto operator==(OpenFlags flags, uint32_t val)
+    -> bool {
+  return static_cast<uint32_t>(flags) == val;
+}
+
+/// @brief 检查 OpenFlags 是否不为零
+[[nodiscard]] inline constexpr auto operator!=(OpenFlags flags, uint32_t val)
+    -> bool {
+  return static_cast<uint32_t>(flags) != val;
+}
 
 /// 文件 seek 基准
 enum class SeekWhence : int {

@@ -261,7 +261,7 @@ auto FatFsFileSystem::FreeDir(DIR* dir) -> void {
   }
 }
 
-auto FatFsFileSystem::OpenFil(vfs::Inode* inode, uint32_t open_flags)
+auto FatFsFileSystem::OpenFil(vfs::Inode* inode, vfs::OpenFlags open_flags)
     -> Expected<void> {
   auto* fi = static_cast<FatInode*>(inode->fs_private);
   if (fi->fil != nullptr) {
@@ -274,19 +274,19 @@ auto FatFsFileSystem::OpenFil(vfs::Inode* inode, uint32_t open_flags)
   }
   BYTE fa_mode = 0;
   // kOReadOnly == 0，需单独检查
-  if (open_flags == vfs::kOReadOnly) {
+  if (open_flags == vfs::OpenFlags::kOReadOnly) {
     fa_mode = FA_READ;
   }
-  if ((open_flags & vfs::kOWriteOnly) != 0U) {
+  if ((open_flags & vfs::OpenFlags::kOWriteOnly) != 0U) {
     fa_mode = FA_WRITE;
   }
-  if ((open_flags & vfs::kOReadWrite) != 0U) {
+  if ((open_flags & vfs::OpenFlags::kOReadWrite) != 0U) {
     fa_mode = FA_READ | FA_WRITE;
   }
-  if ((open_flags & vfs::kOCreate) != 0U) {
+  if ((open_flags & vfs::OpenFlags::kOCreate) != 0U) {
     fa_mode |= FA_OPEN_ALWAYS;
   }
-  if ((open_flags & vfs::kOTruncate) != 0U) {
+  if ((open_flags & vfs::OpenFlags::kOTruncate) != 0U) {
     fa_mode |= FA_CREATE_ALWAYS;
   }
   FRESULT fr = f_open(fil, fi->path.data(), fa_mode);

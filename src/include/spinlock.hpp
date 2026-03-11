@@ -163,6 +163,7 @@ class LockGuard {
     });
   }
 
+  LockGuard() = delete;
   LockGuard(const LockGuard&) = delete;
   LockGuard(LockGuard&&) = delete;
   auto operator=(const LockGuard&) -> LockGuard& = delete;

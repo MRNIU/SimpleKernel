@@ -17,7 +17,8 @@ auto Write(File* file, const void* buf, size_t count) -> Expected<size_t> {
 
   // 检查写入权限
   LockGuard<SpinLock> guard(GetVfsState().vfs_lock_);
-  if ((file->flags & kOWriteOnly) == 0 && (file->flags & kOReadWrite) == 0) {
+  if ((file->flags & OpenFlags::kOWriteOnly) == 0U &&
+      (file->flags & OpenFlags::kOReadWrite) == 0U) {
     return std::unexpected(Error(ErrorCode::kFsPermissionDenied));
   }
 

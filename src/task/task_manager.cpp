@@ -58,11 +58,12 @@ auto TaskManager::InitCurrentCore() -> void {
   // 创建 boot 任务作为当前执行上下文的占位符
   // 首次 Schedule():
   // current(boot_task) != next(idle_task) -> switch_to -> idle_thread
-  auto* boot_task = new TaskControlBlock(
+  auto boot_task_ptr = kstd::make_unique<TaskControlBlock>(
       "Boot",
       std::numeric_limits<
           decltype(TaskControlBlock::SchedInfo::priority)>::max(),
       nullptr, nullptr);
+  auto* boot_task = boot_task_ptr.release();
   // kUnInit -> kReady
   boot_task->fsm.Receive(MsgSchedule{});
   // kReady -> kRunning
@@ -71,11 +72,12 @@ auto TaskManager::InitCurrentCore() -> void {
   cpu_data.running_task = boot_task;
 
   // 创建独立的 Idle 线程
-  auto* idle_task = new TaskControlBlock(
+  auto idle_task_ptr = kstd::make_unique<TaskControlBlock>(
       "Idle",
       std::numeric_limits<
           decltype(TaskControlBlock::SchedInfo::priority)>::max(),
       idle_thread, nullptr);
+  auto* idle_task = idle_task_ptr.release();
   // kUnInit -> kReady
   idle_task->fsm.Receive(MsgSchedule{});
   idle_task->policy = SchedPolicy::kIdle;

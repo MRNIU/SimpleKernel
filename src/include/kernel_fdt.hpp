@@ -47,37 +47,6 @@
 class KernelFdt {
  public:
   /**
-   * @brief 构造函数
-   * @param header fdt 数据地址
-   * @pre header 指向有效的 DTB 数据
-   * @post fdt_header_ 已初始化并通过校验
-   */
-  explicit KernelFdt(uint64_t header)
-      : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
-    ValidateFdtHeader().or_else([](auto&& err) {
-      klog::Err("KernelFdt init failed: {}", err.message());
-      while (true) {
-        cpu_io::Pause();
-      }
-      return Expected<void>{};
-    });
-
-    klog::Debug("Load dtb at [{:#X}], size [{:#X}]",
-                static_cast<uint64_t>(reinterpret_cast<uintptr_t>(fdt_header_)),
-                static_cast<uint64_t>(fdt32_to_cpu(fdt_header_->totalsize)));
-  }
-
-  /// @name 构造/析构函数
-  /// @{
-  KernelFdt() = default;
-  KernelFdt(const KernelFdt&) = default;
-  KernelFdt(KernelFdt&&) = default;
-  auto operator=(const KernelFdt&) -> KernelFdt& = default;
-  auto operator=(KernelFdt&&) -> KernelFdt& = default;
-  ~KernelFdt() = default;
-  /// @}
-
-  /**
    * @brief 获取 CPU 核心数量
    * @return Expected<size_t> 成功返回核心数，失败返回错误
    * @pre fdt_header_ 不为空
@@ -644,6 +613,38 @@ class KernelFdt {
 
     return {};
   }
+
+  /// @name 构造/析构函数
+  /// @{
+
+  /**
+   * @brief 构造函数
+   * @param header fdt 数据地址
+   * @pre header 指向有效的 DTB 数据
+   * @post fdt_header_ 已初始化并通过校验
+   */
+  explicit KernelFdt(uint64_t header)
+      : fdt_header_(reinterpret_cast<fdt_header*>(header)) {
+    ValidateFdtHeader().or_else([](auto&& err) {
+      klog::Err("KernelFdt init failed: {}", err.message());
+      while (true) {
+        cpu_io::Pause();
+      }
+      return Expected<void>{};
+    });
+
+    klog::Debug("Load dtb at [{:#X}], size [{:#X}]",
+                static_cast<uint64_t>(reinterpret_cast<uintptr_t>(fdt_header_)),
+                static_cast<uint64_t>(fdt32_to_cpu(fdt_header_->totalsize)));
+  }
+
+  KernelFdt() = default;
+  KernelFdt(const KernelFdt&) = default;
+  KernelFdt(KernelFdt&&) = default;
+  auto operator=(const KernelFdt&) -> KernelFdt& = default;
+  auto operator=(KernelFdt&&) -> KernelFdt& = default;
+  ~KernelFdt() = default;
+  /// @}
 
  private:
   /// FDT header 指针

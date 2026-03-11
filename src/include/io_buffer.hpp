@@ -86,28 +86,6 @@ class IoBuffer {
   /// IO 缓冲区的默认对齐大小（如页大小）
   static constexpr size_t kDefaultAlignment = 4096;
 
-  /// @name 构造/析构函数
-  /// @{
-  IoBuffer() = default;
-
-  /**
-   * @brief 构造函数
-   * @param  size 缓冲区大小
-   * @param  alignment 对齐要求
-   * @pre size > 0, alignment 必须是 2 的幂
-   * @post 缓冲区内存已正确分配并对齐
-   */
-  IoBuffer(size_t size, size_t alignment = kDefaultAlignment);
-
-  ~IoBuffer();
-
-  IoBuffer(const IoBuffer&) = delete;
-  auto operator=(const IoBuffer&) -> IoBuffer& = delete;
-
-  IoBuffer(IoBuffer&& other);
-  auto operator=(IoBuffer&& other) noexcept -> IoBuffer&;
-  /// @}
-
   /**
    * @brief 获取缓冲区数据与大小 (只读)
    * @return std::span<const uint8_t> 缓冲区数据的只读视图
@@ -143,6 +121,28 @@ class IoBuffer {
    */
   [[nodiscard]] auto ToDmaRegion(VirtToPhysFunc v2p = IdentityVirtToPhys) const
       -> DmaRegion;
+
+  /// @name 构造/析构函数
+  /// @{
+  IoBuffer() = default;
+
+  /**
+   * @brief 构造函数
+   * @param  size 缓冲区大小
+   * @param  alignment 对齐要求
+   * @pre size > 0, alignment 必须是 2 的幂
+   * @post 缓冲区内存已正确分配并对齐
+   */
+  IoBuffer(size_t size, size_t alignment = kDefaultAlignment);
+
+  ~IoBuffer();
+
+  IoBuffer(const IoBuffer&) = delete;
+  auto operator=(const IoBuffer&) -> IoBuffer& = delete;
+
+  IoBuffer(IoBuffer&& other);
+  auto operator=(IoBuffer&& other) noexcept -> IoBuffer&;
+  /// @}
 
  private:
   /// 缓冲区数据指针

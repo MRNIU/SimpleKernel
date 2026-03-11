@@ -38,11 +38,12 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   }
 
   // 创建子任务控制块
-  auto* child = new TaskControlBlock();
-  if (!child) {
+  auto child_ptr = kstd::make_unique<TaskControlBlock>();
+  if (!child_ptr) {
     klog::Err("Clone: Failed to allocate child task");
     return std::unexpected(Error(ErrorCode::kTaskAllocationFailed));
   }
+  auto* child = child_ptr.get();
   // Default ctor leaves FSM in set_states-but-not-started state.
   // Start it so get_state_id() returns kUnInit instead of deref null.
   child->fsm.Start();
@@ -131,7 +132,13 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
       if (!result.has_value()) {
         klog::Err("Clone: Failed to clone page table: {}",
                   result.error().message());
-        delete child;
+        // 独立页表已由 unique_ptr 在作用域结束时自动释放
+        // 仅需清理页表
+        if (child->page_table && !(flags & clone_flag::kVm)) {
+          VirtualMemorySingleton::instance().DestroyPageDirectory(
+              child->page_table, false);
+          child->page_table = nullptr;
+        }
         return std::unexpected(Error(ErrorCode::kTaskAllocationFailed));
       }
       child->page_table = reinterpret_cast<uint64_t*>(result.value());
@@ -152,11 +159,10 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
     klog::Err("Clone: Failed to allocate kernel stack");
     // 清理已分配的资源
     if (child->page_table && !(flags & clone_flag::kVm)) {
-      // 如果是独立的页表，需要释放
       VirtualMemorySingleton::instance().DestroyPageDirectory(child->page_table,
                                                               false);
+      child->page_table = nullptr;
     }
-    delete child;
     return std::unexpected(Error(ErrorCode::kTaskKernelStackAllocationFailed));
   }
 
@@ -194,7 +200,7 @@ Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
   }
 
   // 将子任务添加到调度器
-  AddTask(child);
+  AddTask(child_ptr.release());
 
   // 打印详细的 clone 信息
   const char* clone_type = (flags & clone_flag::kThread) ? "thread" : "process";

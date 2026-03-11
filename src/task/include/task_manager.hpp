@@ -62,7 +62,15 @@ struct CpuSchedData {
   /// 本核心的总调度次数
   uint64_t total_schedules{0};
 
+  /// @name 构造/析构函数
+  /// @{
   CpuSchedData() = default;
+  CpuSchedData(const CpuSchedData&) = delete;
+  CpuSchedData(CpuSchedData&&) = delete;
+  auto operator=(const CpuSchedData&) -> CpuSchedData& = delete;
+  auto operator=(CpuSchedData&&) -> CpuSchedData& = delete;
+  ~CpuSchedData() = default;
+  /// @}
 };
 
 /**

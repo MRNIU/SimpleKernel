@@ -108,7 +108,7 @@ class FatFsFileSystem : public vfs::FileSystem {
    * @pre inode != nullptr && inode->type == vfs::FileType::kRegular
    * @post 成功时 inode->fs_private->fil != nullptr
    */
-  auto OpenFil(vfs::Inode* inode, uint32_t open_flags) -> Expected<void>;
+  auto OpenFil(vfs::Inode* inode, vfs::OpenFlags open_flags) -> Expected<void>;
 
   /**
    * @brief 注册块设备（由 Mount 调用，供 diskio.cpp 的 C 回调使用）

@@ -59,7 +59,7 @@ auto task3_func(void* arg) -> void {
   klog::Info("Task3: arg = {:#x}",
              static_cast<uint64_t>(reinterpret_cast<uintptr_t>(arg)));
   while (1) {
-    uint64_t old_value = global_counter.fetch_add(1, std::memory_order_seq_cst);
+    uint64_t old_value = global_counter.fetch_add(1, std::memory_order_relaxed);
     klog::Info("Task3: global_counter {} -> {}", old_value, old_value + 1);
     sys_sleep(3000);
   }

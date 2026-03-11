@@ -11,7 +11,7 @@
 
 namespace vfs {
 
-auto Open(const char* path, uint32_t flags) -> Expected<File*> {
+auto Open(const char* path, OpenFlags flags) -> Expected<File*> {
   if (!GetVfsState().initialized) {
     return std::unexpected(Error(ErrorCode::kFsNotMounted));
   }
@@ -27,7 +27,7 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
 
   if (!lookup_result.has_value()) {
     // 文件不存在，检查是否需要创建
-    if ((flags & kOCreate) == 0) {
+    if ((flags & OpenFlags::kOCreate) == 0U) {
       return std::unexpected(lookup_result.error());
     }
 
@@ -93,7 +93,7 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
   }
 
   // 检查打开模式
-  if ((flags & kODirectory) != 0 &&
+  if ((flags & OpenFlags::kODirectory) != 0U &&
       dentry->inode->type != FileType::kDirectory) {
     return std::unexpected(Error(ErrorCode::kFsNotADirectory));
   }
@@ -116,12 +116,14 @@ auto Open(const char* path, uint32_t flags) -> Expected<File*> {
   }
 
   // 处理 O_TRUNC
-  if ((flags & kOTruncate) != 0 && dentry->inode->type == FileType::kRegular) {
+  if ((flags & OpenFlags::kOTruncate) != 0U &&
+      dentry->inode->type == FileType::kRegular) {
     // 截断文件，由具体文件系统处理
     // 这里不直接操作，而是通过后续的 write 来处理
   }
 
-  klog::Debug("VFS: opened '{}', flags={:#x}", path, flags);
+  klog::Debug("VFS: opened '{}', flags={:#x}", path,
+              static_cast<uint32_t>(flags));
   return file;
 }
 

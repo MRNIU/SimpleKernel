@@ -22,9 +22,18 @@
 class KernelElf {
  public:
   /// 符号表
-  std::span<Elf64_Sym> symtab;
+  std::span<Elf64_Sym> symtab{};
   /// 字符串表
   uint8_t* strtab{nullptr};
+
+  /**
+   * @brief 获取 elf 文件大小
+   * @return elf 文件大小
+   */
+  [[nodiscard]] auto GetElfSize() const -> size_t { return elf_.size(); }
+
+  /// @name 构造/析构函数
+  /// @{
 
   /**
    * @brief 构造函数
@@ -91,8 +100,6 @@ class KernelElf {
     }
   }
 
-  /// @name 构造/析构函数
-  /// @{
   KernelElf() = default;
   KernelElf(const KernelElf&) = default;
   KernelElf(KernelElf&&) = default;
@@ -101,19 +108,13 @@ class KernelElf {
   ~KernelElf() = default;
   /// @}
 
-  /**
-   * @brief 获取 elf 文件大小
-   * @return elf 文件大小
-   */
-  [[nodiscard]] auto GetElfSize() const -> size_t { return elf_.size(); }
-
  protected:
   /// @name elf 文件相关
   /// @{
-  std::span<uint8_t> elf_;
+  std::span<uint8_t> elf_{};
   Elf64_Ehdr ehdr_{};
-  std::span<Elf64_Phdr> phdr_;
-  std::span<Elf64_Shdr> shdr_;
+  std::span<Elf64_Phdr> phdr_{};
+  std::span<Elf64_Shdr> shdr_{};
   /// @}
 
   /**

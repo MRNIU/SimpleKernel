@@ -11,16 +11,6 @@
  * @brief 通用 MMIO 寄存器访问器
  */
 struct MmioAccessor {
-  /// @name 构造/析构函数
-  /// @{
-  explicit MmioAccessor(uint64_t base_addr = 0) : base(base_addr) {}
-  MmioAccessor(const MmioAccessor&) = default;
-  MmioAccessor(MmioAccessor&&) = default;
-  auto operator=(const MmioAccessor&) -> MmioAccessor& = default;
-  auto operator=(MmioAccessor&&) -> MmioAccessor& = default;
-  ~MmioAccessor() = default;
-  /// @}
-
   /// @brief Read from MMIO register
   /// @tparam T Register value type
   /// @param offset Byte offset from base address
@@ -40,4 +30,14 @@ struct MmioAccessor {
   }
 
   uint64_t base{0};
+
+  /// @name 构造/析构函数
+  /// @{
+  explicit MmioAccessor(uint64_t base_addr = 0) : base(base_addr) {}
+  MmioAccessor(const MmioAccessor&) = default;
+  MmioAccessor(MmioAccessor&&) = default;
+  auto operator=(const MmioAccessor&) -> MmioAccessor& = default;
+  auto operator=(MmioAccessor&&) -> MmioAccessor& = default;
+  ~MmioAccessor() = default;
+  /// @}
 };

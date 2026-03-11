@@ -19,6 +19,7 @@ struct CpuSchedData;
 
 namespace per_cpu {
 
+/// @brief 每个 CPU 核心的局部数据
 struct PerCpu {
   /// 核心 ID
   size_t core_id{0};

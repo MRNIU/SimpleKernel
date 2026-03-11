@@ -22,6 +22,7 @@ extern "C" void* end[];
 /// 内核入口，在 boot.S 中定义
 extern "C" void _boot();
 
+/// @brief 内核基础信息（物理内存、内核地址、CPU 核数等）
 struct BasicInfo {
   /// physical_memory 地址
   uint64_t physical_memory_addr{0};

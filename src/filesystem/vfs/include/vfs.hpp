@@ -66,7 +66,7 @@ struct File {
   /// 当前读写偏移量
   uint64_t offset{0};
   /// 打开标志 (OpenFlags)
-  uint32_t flags{0};
+  OpenFlags flags{OpenFlags::kOReadOnly};
 
   /// 文件操作接口
   FileOps* ops{nullptr};
@@ -101,7 +101,7 @@ struct File {
  * @note 调用者负责调用 Close() 释放 File 对象
  * @note 若 flags 包含 kOCreate，文件不存在时会自动创建
  */
-[[nodiscard]] auto Open(const char* path, uint32_t flags) -> Expected<File*>;
+[[nodiscard]] auto Open(const char* path, OpenFlags flags) -> Expected<File*>;
 
 /**
  * @brief 关闭文件
