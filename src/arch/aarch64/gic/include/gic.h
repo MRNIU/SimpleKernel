@@ -43,23 +43,23 @@ class Gic {
      * https://developer.arm.com/documentation/101206/0003/Programmers-model/Distributor-registers--GICD-GICDA--summary/GICD-CTLR--Distributor-Control-Register?lang=en
      */
     struct GICD_CTLR {
-      // [31] Register Write Pending:
+      /// [31] Register Write Pending
       uint32_t rwp : 1;
       uint32_t reserved1 : 23;
-      // [7] E1NWF Enable 1 of N Wakeup Functionality
+      /// [7] E1NWF Enable 1 of N Wakeup Functionality
       uint32_t e1nwf : 1;
-      // [6] DS Disable Security
+      /// [6] DS Disable Security
       uint32_t ds : 1;
-      // [5] ARE_NS Affinity Routing Enable, Non-secure state
+      /// [5] ARE_NS Affinity Routing Enable, Non-secure state
       uint32_t are_ns : 1;
-      // [4] ARE_S Affinity Routing Enable, Secure state
+      /// [4] ARE_S Affinity Routing Enable, Secure state
       uint32_t are_s : 1;
       uint32_t reserved0 : 1;
-      // [2] EnableGrp1S Enable Secure Group 1 interrupts
+      /// [2] EnableGrp1S Enable Secure Group 1 interrupts
       uint32_t enable_grp1_s : 1;
-      // [1] EnableGrp1NS Enable Non-secure Group 1 interrupts
+      /// [1] EnableGrp1NS Enable Non-secure Group 1 interrupts
       uint32_t enable_grp1_ns : 1;
-      // [0] EnableGrp0 Enable Group 0 interrupts
+      /// [0] EnableGrp0 Enable Group 0 interrupts
       uint32_t enable_grp0 : 1;
     };
 
@@ -72,33 +72,33 @@ class Gic {
      * https://developer.arm.com/documentation/101206/0003/Programmers-model/Distributor-registers--GICD-GICDA--summary/GICD-TYPER--Interrupt-Controller-Type-Register?lang=en
      */
     struct GICD_TYPER {
-      // [31:26] Reserved, returns 0b000000
+      /// [31:26] Reserved, returns 0b000000
       uint32_t reserved1 : 6;
-      // [25] No1N 1 of N SPI
+      /// [25] No1N 1 of N SPI
       uint32_t no1n : 1;
-      // [24] A3V Affinity level 3 values.
+      /// [24] A3V Affinity level 3 values
       uint32_t a3v : 1;
-      // [23:19] IDbits Interrupt identifier bits
+      /// [23:19] IDbits Interrupt identifier bits
       uint32_t idbits : 5;
-      // [18] DVIS Direct virtual LPI injection support
+      /// [18] DVIS Direct virtual LPI injection support
       uint32_t dvis : 1;
-      // [17] LPIS Indicates whether the implementation supports LPIs.
+      /// [17] LPIS Indicates whether the implementation supports LPIs
       uint32_t lpis : 1;
-      // [16] MBIS Message-based interrupt support
+      /// [16] MBIS Message-based interrupt support
       uint32_t mbis : 1;
-      // [15:11] num_LPIs Returns 0b00000 because
-      // GICD_TYPER.IDbits indicates the number of LPIs that the GIC supports.
+      /// [15:11] num_LPIs Returns 0b00000 because
+      /// GICD_TYPER.IDbits indicates the number of LPIs that the GIC supports
       uint32_t num_lpis : 5;
-      // [10] SecurityExtn Security state support.
+      /// [10] SecurityExtn Security state support
       uint32_t security_extn : 1;
-      // [9:8] - Reserved, returns 0b00000
+      /// [9:8] Reserved, returns 0b00000
       uint32_t reserved0 : 2;
-      // [7:5] CPUNumber Returns 0b000 because GICD_CTLR.ARE==1 (ARE_NS &
-      // ARE_S).
+      /// [7:5] CPUNumber Returns 0b000 because GICD_CTLR.ARE==1
+      /// (ARE_NS & ARE_S)
       uint32_t cpu_number : 3;
-      // [4:0] ITLinesNumber Returns the maximum SPI INTID that this
-      // GIC-600AE implementation supports, and is given by 32×(ITLinesNumber +
-      // 1) − 1.
+      /// [4:0] ITLinesNumber Returns the maximum SPI INTID that this
+      /// GIC-600AE implementation supports, given by
+      /// 32×(ITLinesNumber + 1) − 1
       uint32_t it_lines_number : 5;
     };
 
@@ -111,18 +111,18 @@ class Gic {
      * https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-IIDR--Distributor-Implementer-Identification-Register?lang=en
      */
     struct GICD_IIDR {
-      // [31:24] Product Identifier.
+      /// [31:24] Product Identifier
       uint32_t product_id : 8;
-      // [23:20] Reserved, RES0.
+      /// [23:20] Reserved, RES0
       uint32_t reserved0 : 4;
-      // [19:16] Variant number. Typically, this field is used to distinguish
-      // product variants, or major revisions of a product.
+      /// [19:16] Variant number. Typically used to distinguish
+      /// product variants or major revisions of a product
       uint32_t variant : 4;
-      // [15:12] Revision number. Typically, this field is used to distinguish
-      // minor revisions of a product.
+      /// [15:12] Revision number. Typically used to distinguish
+      /// minor revisions of a product
       uint32_t revision : 4;
-      // [11:0] Contains the JEP106 manufacturer's identification code of the
-      // designer of the Distributor.
+      /// [11:0] Contains the JEP106 manufacturer's identification code
+      /// of the designer of the Distributor
       uint32_t implementer : 12;
     };
 
@@ -281,13 +281,13 @@ class Gic {
     /// @}
 
     /**
-     * 允许从 Distributor 转发到 redistributor
+     * @brief 允许从 Distributor 转发到 redistributor
      * @param intid 中断号
      */
     auto Enable(uint32_t intid) const -> void;
 
     /**
-     * 允许 no-sec group1 中断
+     * @brief 允许 no-sec group1 中断
      */
     auto EnableGrp1NS() const -> void {
       Write(kCTLR, kCTLR_EnableGrp1NS);
@@ -295,47 +295,48 @@ class Gic {
     }
 
     /**
-     * 禁止从 Distributor 转发到 redistributor
+     * @brief 禁止从 Distributor 转发到 redistributor
      * @param intid 中断号
      */
     auto Disable(uint32_t intid) const -> void;
 
     /**
-     * 清除 intid 的中断
+     * @brief 清除 intid 的中断
      * @param intid 中断号
      */
     auto Clear(uint32_t intid) const -> void;
 
     /**
-     * 判断 intid 中断是否使能
+     * @brief 判断 intid 中断是否使能
      * @param intid 中断号
      * @return true 允许
+     * @return false 未使能
      */
     [[nodiscard]] auto IsEnable(uint32_t intid) const -> bool;
 
     /**
-     * 设置 intid 的优先级
+     * @brief 设置 intid 的优先级
      * @param intid 中断号
      * @param prio 优先级
      */
     auto SetPrio(uint32_t intid, uint32_t prio) const -> void;
 
     /**
-     * 设置 intid 的属性
+     * @brief 设置 intid 的属性
      * @param intid 中断号
      * @param config 属性
      */
     auto SetConfig(uint32_t intid, uint32_t config) const -> void;
 
     /**
-     * 设置 intid 的由指定 cpu 处理
+     * @brief 设置 intid 的由指定 cpu 处理
      * @param intid 中断号
      * @param cpuid cpu 编号
      */
     auto SetTarget(uint32_t intid, uint32_t cpuid) const -> void;
 
     /**
-     * 设置指定 SPI 中断
+     * @brief 设置指定 SPI 中断
      * SPI: shared peripheral interrupt,
      * 共享外设中断，该中断来源于外设，但是该中断可以对所有的 core 有效
      * @param intid 中断号
@@ -344,6 +345,7 @@ class Gic {
     auto SetupSPI(uint32_t intid, uint32_t cpuid) const -> void;
 
    private:
+    /// GICD 基地址
     uint64_t base_addr_{0};
 
     [[nodiscard]] __always_inline auto Read(uint32_t off) const -> uint32_t {
@@ -504,28 +506,28 @@ class Gic {
     /// @}
 
     /**
-     * 允许从 redistributor 转发到 CPU interface
+     * @brief 允许从 redistributor 转发到 CPU interface
      * @param intid 中断号
      * @param cpuid cpu 编号
      */
     auto Enable(uint32_t intid, uint32_t cpuid) const -> void;
 
     /**
-     * 禁止从 redistributor 转发到 CPU interface
+     * @brief 禁止从 redistributor 转发到 CPU interface
      * @param intid 中断号
      * @param cpuid cpu 编号
      */
     auto Disable(uint32_t intid, uint32_t cpuid) const -> void;
 
     /**
-     * 清除指定 cpu intid 的中断
+     * @brief 清除指定 cpu intid 的中断
      * @param intid 中断号
      * @param cpuid cpu 编号
      */
     auto Clear(uint32_t intid, uint32_t cpuid) const -> void;
 
     /**
-     * 设置 intid 的优先级
+     * @brief 设置 intid 的优先级
      * @param intid 中断号
      * @param cpuid cpu 编号
      * @param prio 优先级
@@ -533,12 +535,12 @@ class Gic {
     auto SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const -> void;
 
     /**
-     * 初始化 gicr，在多核场景使用
+     * @brief 初始化 gicr，在多核场景使用
      */
     auto SetUP() const -> void;
 
     /**
-     * 设置指定 PPI 中断
+     * @brief 设置指定 PPI 中断
      * PPI: private peripheral interrupt,
      * 私有外设中断，该中断来源于外设，但是该中断只对指定的 core 有效
      * @param intid 中断号
@@ -547,7 +549,7 @@ class Gic {
     auto SetupPPI(uint32_t intid, uint32_t cpuid) const -> void;
 
     /**
-     * 设置指定 SGI 中断
+     * @brief 设置指定 SGI 中断
      * SGI: Software Generated Interrupt,
      * 软件生成中断，用于处理器间通信
      * @param intid 中断号 (0-15)
@@ -556,6 +558,7 @@ class Gic {
     auto SetupSGI(uint32_t intid, uint32_t cpuid) const -> void;
 
    private:
+    /// GICR 基地址
     uint64_t base_addr_{0};
 
     [[nodiscard]] __always_inline auto Read(uint32_t cpuid, uint32_t off) const
@@ -590,16 +593,32 @@ class Gic {
   ~Gic() = default;
   /// @}
 
-  /** @brief 初始化当前 CPU 的 GIC 配置 */
+  /**
+   * @brief 初始化当前 CPU 的 GIC 配置
+   */
   auto SetUP() const -> void;
-  /** @brief 配置共享外设中断 (SPI) */
+  /**
+   * @brief 配置共享外设中断 (SPI)
+   * @param intid 中断号
+   * @param cpuid CPU 编号
+   */
   auto SPI(uint32_t intid, uint32_t cpuid) const -> void;
-  /** @brief 配置私有外设中断 (PPI) */
+  /**
+   * @brief 配置私有外设中断 (PPI)
+   * @param intid 中断号
+   * @param cpuid CPU 编号
+   */
   auto PPI(uint32_t intid, uint32_t cpuid) const -> void;
-  /** @brief 配置软件生成中断 (SGI) */
+  /**
+   * @brief 配置软件生成中断 (SGI)
+   * @param intid 中断号
+   * @param cpuid CPU 编号
+   */
   auto SGI(uint32_t intid, uint32_t cpuid) const -> void;
 
  private:
+  /// Distributor 实例
   Gicd gicd_;
+  /// Redistributor 实例
   Gicr gicr_;
 };

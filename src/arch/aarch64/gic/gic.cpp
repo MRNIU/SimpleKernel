@@ -10,6 +10,11 @@
 
 #include "kernel_log.hpp"
 
+/**
+ * @brief GIC 构造函数，初始化 Distributor 和 Redistributor
+ * @param gicd_base_addr GICD 基地址
+ * @param gicr_base_addr GICR 基地址
+ */
 Gic::Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
     : gicd_(gicd_base_addr), gicr_(gicr_base_addr) {
   cpu_io::ICC_IGRPEN1_EL1::Enable::Clear();
@@ -20,6 +25,7 @@ Gic::Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
   klog::Info("Gic init.");
 }
 
+/// @brief 初始化当前 CPU 的 GIC 配置
 auto Gic::SetUP() const -> void {
   cpu_io::ICC_IGRPEN1_EL1::Enable::Clear();
   cpu_io::ICC_PMR_EL1::Priority::Set();
@@ -28,18 +34,37 @@ auto Gic::SetUP() const -> void {
   gicr_.SetUP();
 }
 
+/**
+ * @brief 配置共享外设中断 (SPI)
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ */
 auto Gic::SPI(uint32_t intid, uint32_t cpuid) const -> void {
   gicd_.SetupSPI(intid, cpuid);
 }
 
+/**
+ * @brief 配置私有外设中断 (PPI)
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ */
 auto Gic::PPI(uint32_t intid, uint32_t cpuid) const -> void {
   gicr_.SetupPPI(intid, cpuid);
 }
 
+/**
+ * @brief 配置软件生成中断 (SGI)
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ */
 auto Gic::SGI(uint32_t intid, uint32_t cpuid) const -> void {
   gicr_.SetupSGI(intid, cpuid);
 }
 
+/**
+ * @brief GICD 构造函数，初始化 Distributor
+ * @param base_addr GICD 基地址
+ */
 Gic::Gicd::Gicd(uint64_t base_addr) : base_addr_(base_addr) {
   assert(base_addr_ != 0 && "GICD base address is invalid");
 
@@ -57,29 +82,52 @@ Gic::Gicd::Gicd(uint64_t base_addr) : base_addr_(base_addr) {
   }
 }
 
+/**
+ * @brief 使能指定中断
+ * @param intid 中断号
+ */
 auto Gic::Gicd::Enable(uint32_t intid) const -> void {
   auto is = Read(ISENABLERn(intid / kISENABLERn_SIZE));
   is |= 1 << (intid % kISENABLERn_SIZE);
   Write(ISENABLERn(intid / kISENABLERn_SIZE), is);
 }
 
+/**
+ * @brief 禁止指定中断
+ * @param intid 中断号
+ */
 auto Gic::Gicd::Disable(uint32_t intid) const -> void {
   auto ic = Read(ICENABLERn(intid / kICENABLERn_SIZE));
   ic |= 1 << (intid % kICENABLERn_SIZE);
   Write(ICENABLERn(intid / kICENABLERn_SIZE), ic);
 }
 
+/**
+ * @brief 清除指定中断
+ * @param intid 中断号
+ */
 auto Gic::Gicd::Clear(uint32_t intid) const -> void {
   auto ic = Read(ICPENDRn(intid / kICPENDRn_SIZE));
   ic |= 1 << (intid % kICPENDRn_SIZE);
   Write(ICPENDRn(intid / kICPENDRn_SIZE), ic);
 }
 
+/**
+ * @brief 判断指定中断是否使能
+ * @param intid 中断号
+ * @return true 已使能
+ * @return false 未使能
+ */
 auto Gic::Gicd::IsEnable(uint32_t intid) const -> bool {
   auto is = Read(ISENABLERn(intid / kISENABLERn_SIZE));
   return is & (1 << (intid % kISENABLERn_SIZE));
 }
 
+/**
+ * @brief 设置指定中断的优先级
+ * @param intid 中断号
+ * @param prio 优先级
+ */
 auto Gic::Gicd::SetPrio(uint32_t intid, uint32_t prio) const -> void {
   auto shift = (intid % kIPRIORITYRn_SIZE) * kIPRIORITYRn_BITS;
   auto ip = Read(IPRIORITYRn(intid / kIPRIORITYRn_SIZE));
@@ -88,6 +136,11 @@ auto Gic::Gicd::SetPrio(uint32_t intid, uint32_t prio) const -> void {
   Write(IPRIORITYRn(intid / kIPRIORITYRn_SIZE), ip);
 }
 
+/**
+ * @brief 设置指定中断的配置属性
+ * @param intid 中断号
+ * @param config 配置值
+ */
 auto Gic::Gicd::SetConfig(uint32_t intid, uint32_t config) const -> void {
   auto shift = (intid % kICFGRn_SIZE) * kICFGRn_BITS;
   auto ic = Read(ICFGRn(intid / kICFGRn_SIZE));
@@ -96,6 +149,11 @@ auto Gic::Gicd::SetConfig(uint32_t intid, uint32_t config) const -> void {
   Write(ICFGRn(intid / kICFGRn_SIZE), ic);
 }
 
+/**
+ * @brief 设置指定中断的目标 CPU
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ */
 auto Gic::Gicd::SetTarget(uint32_t intid, uint32_t cpuid) const -> void {
   auto target = Read(ITARGETSRn(intid / kITARGETSRn_SIZE));
   target &=
@@ -105,6 +163,7 @@ auto Gic::Gicd::SetTarget(uint32_t intid, uint32_t cpuid) const -> void {
             ((1 << cpuid) << ((intid % kITARGETSRn_SIZE) * kITARGETSRn_BITS)));
 }
 
+/// @brief 初始化当前 CPU 的 Redistributor
 auto Gic::Gicr::SetUP() const -> void {
   auto cpuid = cpu_io::GetCurrentCoreId();
 
@@ -130,6 +189,11 @@ auto Gic::Gicr::SetUP() const -> void {
   }
 }
 
+/**
+ * @brief 配置 SPI 中断
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ */
 auto Gic::Gicd::SetupSPI(uint32_t intid, uint32_t cpuid) const -> void {
   // 电平触发
   SetConfig(intid, kICFGRn_LevelSensitive);
@@ -145,6 +209,10 @@ auto Gic::Gicd::SetupSPI(uint32_t intid, uint32_t cpuid) const -> void {
   Enable(intid);
 }
 
+/**
+ * @brief GICR 构造函数，初始化 Redistributor
+ * @param base_addr GICR 基地址
+ */
 Gic::Gicr::Gicr(uint64_t base_addr) : base_addr_(base_addr) {
   assert(base_addr_ != 0 && "GICR base address is invalid");
 
@@ -172,24 +240,45 @@ Gic::Gicr::Gicr(uint64_t base_addr) : base_addr_(base_addr) {
   }
 }
 
+/**
+ * @brief 使能指定中断
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ */
 auto Gic::Gicr::Enable(uint32_t intid, uint32_t cpuid) const -> void {
   auto is = Read(cpuid, kISENABLER0);
   is |= 1 << (intid % kISENABLER0_SIZE);
   Write(cpuid, kISENABLER0, is);
 }
 
+/**
+ * @brief 禁止指定中断
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ */
 auto Gic::Gicr::Disable(uint32_t intid, uint32_t cpuid) const -> void {
   auto ic = Read(cpuid, kICENABLER0);
   ic |= 1 << (intid % kICENABLER0_SIZE);
   Write(cpuid, kICENABLER0, ic);
 }
 
+/**
+ * @brief 清除指定中断
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ */
 auto Gic::Gicr::Clear(uint32_t intid, uint32_t cpuid) const -> void {
   auto ic = Read(cpuid, kICPENDR0);
   ic |= 1 << (intid % kICPENDR0_SIZE);
   Write(cpuid, kICPENDR0, ic);
 }
 
+/**
+ * @brief 设置指定中断的优先级
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ * @param prio 优先级
+ */
 auto Gic::Gicr::SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const
     -> void {
   auto shift = (intid % kIPRIORITYRn_SIZE) * kIPRIORITYRn_BITS;
@@ -199,12 +288,22 @@ auto Gic::Gicr::SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const
   Write(cpuid, IPRIORITYRn(intid / kIPRIORITYRn_SIZE), ip);
 }
 
+/**
+ * @brief 配置 PPI 中断
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ */
 auto Gic::Gicr::SetupPPI(uint32_t intid, uint32_t cpuid) const -> void {
   SetPrio(intid, cpuid, 0);
   Clear(intid, cpuid);
   Enable(intid, cpuid);
 }
 
+/**
+ * @brief 配置 SGI 中断
+ * @param intid 中断号
+ * @param cpuid CPU 编号
+ */
 auto Gic::Gicr::SetupSGI(uint32_t intid, uint32_t cpuid) const -> void {
   SetPrio(intid, cpuid, 0);
   Clear(intid, cpuid);

@@ -9,11 +9,23 @@ namespace {
 
 pl011::Pl011Device* pl011_uart = nullptr;
 
-struct EarlyConsole {
+/// @brief 早期控制台初始化类
+/// @note 通过全局构造在内核 main 之前初始化 PL011 串口输出
+class EarlyConsole {
+ public:
   EarlyConsole() {
     Pl011Singleton::create(SIMPLEKERNEL_EARLY_CONSOLE_BASE);
     pl011_uart = &Pl011Singleton::instance();
   }
+
+  /// @name 构造/析构函数
+  /// @{
+  EarlyConsole(const EarlyConsole&) = delete;
+  EarlyConsole(EarlyConsole&&) = delete;
+  auto operator=(const EarlyConsole&) -> EarlyConsole& = delete;
+  auto operator=(EarlyConsole&&) -> EarlyConsole& = delete;
+  ~EarlyConsole() = default;
+  /// @}
 };
 
 EarlyConsole early_console;

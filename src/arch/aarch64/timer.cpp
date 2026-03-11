@@ -13,9 +13,17 @@
 
 using InterruptDelegate = InterruptBase::InterruptDelegate;
 namespace {
+/// 定时器中断间隔
 uint64_t interval{0};
+/// 定时器中断号
 uint64_t timer_intid{0};
 
+/**
+ * @brief 定时器中断处理函数
+ * @param cause 中断号（未使用）
+ * @param context 中断上下文（未使用）
+ * @return 始终返回 0
+ */
 auto TimerHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
     -> uint64_t {
   cpu_io::CNTV_TVAL_EL0::Write(interval);
@@ -24,6 +32,7 @@ auto TimerHandler(uint64_t /*cause*/, cpu_io::TrapContext* /*context*/)
 }
 }  // namespace
 
+/// @brief SMP 定时器初始化
 auto TimerInitSMP() -> void {
   InterruptSingleton::instance().PPI(timer_intid, cpu_io::GetCurrentCoreId());
 
@@ -36,6 +45,7 @@ auto TimerInitSMP() -> void {
   cpu_io::CNTV_CTL_EL0::IMASK::Clear();
 }
 
+/// @brief 定时器初始化
 auto TimerInit() -> void {
   // 计算 interval
   interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;

@@ -4,13 +4,15 @@
 
 #include "syscall.hpp"
 
+#include <array>
+
 #include "interrupt.h"
 #include "kernel_log.hpp"
 
 auto Syscall(uint64_t, cpu_io::TrapContext* context_ptr) -> void {
   // 获取系统调用号和参数
   uint64_t syscall_id = 0;
-  uint64_t args[6] = {0};
+  std::array<uint64_t, 6> args{};
 
   syscall_id = context_ptr->x8;
   args[0] = context_ptr->x0;
@@ -21,7 +23,7 @@ auto Syscall(uint64_t, cpu_io::TrapContext* context_ptr) -> void {
   args[5] = context_ptr->x5;
 
   // 执行处理函数
-  auto ret = syscall_dispatcher(syscall_id, args);
+  auto ret = syscall_dispatcher(syscall_id, args.data());
 
   // 设置返回值
   context_ptr->x0 = static_cast<uint64_t>(ret);

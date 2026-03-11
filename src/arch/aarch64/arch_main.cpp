@@ -62,7 +62,8 @@ auto ArchInit(int argc, const char** argv) -> void {
   klog::Info("Hello aarch64 ArchInit");
 }
 
-auto ArchInitSMP(int, const char** argv) -> void {}
+auto ArchInitSMP([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
+    -> void {}
 
 auto WakeUpOtherCores() -> void {
   for (size_t i = 0; i < BasicInfoSingleton::instance().core_count; i++) {

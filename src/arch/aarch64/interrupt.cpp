@@ -9,7 +9,14 @@
 #include "kernel_log.hpp"
 #include "virtual_memory.hpp"
 
+/// @brief 默认中断处理函数命名空间
 namespace {
+/**
+ * @brief 默认中断处理函数
+ * @param cause 中断号
+ * @param context 中断上下文
+ * @return 始终返回 0
+ */
 auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)
     -> uint64_t {
   klog::Info("Default Interrupt handler {:#X}, {:#x}", cause,
@@ -18,6 +25,7 @@ auto DefaultInterruptHandler(uint64_t cause, cpu_io::TrapContext* context)
 }
 }  // namespace
 
+/// @brief Interrupt 构造函数，初始化 GIC 并注册默认中断处理函数
 Interrupt::Interrupt() {
   auto [dist_base_addr, dist_size, redist_base_addr, redist_size] =
       KernelFdtSingleton::instance().GetGIC().value();
@@ -38,11 +46,21 @@ Interrupt::Interrupt() {
   klog::Info("Interrupt init.");
 }
 
+/**
+ * @brief 执行中断处理
+ * @param cause 中断号
+ * @param context 中断上下文
+ */
 auto Interrupt::Do(uint64_t cause, cpu_io::TrapContext* context) -> void {
   interrupt_handlers_[cause](cause, context);
   cpu_io::ICC_EOIR1_EL1::Write(cause);
 }
 
+/**
+ * @brief 注册中断处理函数
+ * @param cause 中断号
+ * @param func 中断处理委托
+ */
 auto Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func)
     -> void {
   if (func) {
@@ -50,6 +68,11 @@ auto Interrupt::RegisterInterruptFunc(uint64_t cause, InterruptDelegate func)
   }
 }
 
+/**
+ * @brief 发送 IPI 到指定 CPU
+ * @param target_cpu_mask 目标 CPU 位掩码
+ * @return Expected<void> 成功或失败
+ */
 auto Interrupt::SendIpi(uint64_t target_cpu_mask) -> Expected<void> {
   /// @todo 默认使用 SGI 0 作为 IPI 中断
   static constexpr uint64_t kIPISGI = 0;
@@ -68,6 +91,10 @@ auto Interrupt::SendIpi(uint64_t target_cpu_mask) -> Expected<void> {
   return {};
 }
 
+/**
+ * @brief 广播 IPI 到所有 CPU
+ * @return Expected<void> 成功或失败
+ */
 auto Interrupt::BroadcastIpi() -> Expected<void> {
   /// @todo 默认使用 SGI 0 作为 IPI 中断
   static constexpr uint64_t kIPISGI = 0;
@@ -87,6 +114,14 @@ auto Interrupt::BroadcastIpi() -> Expected<void> {
   return {};
 }
 
+/**
+ * @brief 注册外部中断
+ * @param irq GIC INTID（已含 kSPIBase 偏移）
+ * @param cpu_id CPU 编号
+ * @param priority 中断优先级
+ * @param handler 中断处理委托
+ * @return Expected<void> 成功或失败
+ */
 auto Interrupt::RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
                                           uint32_t priority,
                                           InterruptDelegate handler)

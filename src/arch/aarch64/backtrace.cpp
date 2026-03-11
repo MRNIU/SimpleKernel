@@ -28,7 +28,7 @@ __always_inline auto backtrace(std::array<uint64_t, kMaxFrameCount>& buffer)
     buffer[count++] = lr;
   }
 
-  return int(count);
+  return static_cast<int>(count);
 }
 
 auto DumpStack() -> void {
