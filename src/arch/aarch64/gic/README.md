@@ -25,7 +25,7 @@ Gic(uint64_t gicd_base_addr, uint64_t gicr_base_addr)
 
 ### 主要方法
 ```cpp
-void SetUP() const
+void SetUp() const
 ```
 初始化当前 CPU 的 GIC 配置
 
@@ -64,7 +64,7 @@ Gic gic(0x8000000,   // GICD 基地址
         0x80A0000);  // GICR 基地址
 
 // 多核环境初始化
-gic.SetUP();
+gic.SetUp();
 
 // 配置 SPI 中断 35，由 CPU 0 处理
 gic.SPI(35, 0);

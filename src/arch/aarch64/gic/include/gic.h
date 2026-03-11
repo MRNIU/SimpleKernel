@@ -6,11 +6,8 @@
 
 #include <etl/io_port.h>
 
-#include <array>
+#include <cstddef>
 #include <cstdint>
-
-#include "kernel_log.hpp"
-#include "per_cpu.hpp"
 
 /**
  * @brief gic 中断控制器驱动
@@ -37,12 +34,13 @@ class Gic {
     /// Configuration dependent Distributor Control Register, RW
     static constexpr uint32_t kCTLR = 0x0000;
     static constexpr uint32_t kCTLR_EnableGrp1NS = 0x2;
+
     /**
      * @brief GICD_CTLR, Distributor Control Register
      * @see
      * https://developer.arm.com/documentation/101206/0003/Programmers-model/Distributor-registers--GICD-GICDA--summary/GICD-CTLR--Distributor-Control-Register?lang=en
      */
-    struct GICD_CTLR {
+    struct GicdCtlr {
       /// [31] Register Write Pending
       uint32_t rwp : 1;
       uint32_t reserved1 : 23;
@@ -66,12 +64,13 @@ class Gic {
     /// Configuration dependent Interrupt Controller Type Register, RO
     static constexpr uint32_t kTYPER = 0x0004;
     static constexpr uint32_t kTYPER_ITLinesNumberMask = 0x1F;
+
     /**
      * @brief GICD_TYPER, Interrupt Controller Type Register
      * @see
      * https://developer.arm.com/documentation/101206/0003/Programmers-model/Distributor-registers--GICD-GICDA--summary/GICD-TYPER--Interrupt-Controller-Type-Register?lang=en
      */
-    struct GICD_TYPER {
+    struct GicdTyper {
       /// [31:26] Reserved, returns 0b000000
       uint32_t reserved1 : 6;
       /// [25] No1N 1 of N SPI
@@ -105,12 +104,13 @@ class Gic {
     /// Configuration dependent Distributor Implementer Identification Register,
     /// RO
     static constexpr uint32_t kIIDR = 0x0008;
+
     /**
      * @brief GICD_IIDR, Distributor Implementer Identification Register
      * @see
      * https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-IIDR--Distributor-Implementer-Identification-Register?lang=en
      */
-    struct GICD_IIDR {
+    struct GicdIidr {
       /// [31:24] Product Identifier
       uint32_t product_id : 8;
       /// [23:20] Reserved, RES0
@@ -143,7 +143,13 @@ class Gic {
     /// @see
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-IGROUPR-n---Interrupt-Group-Registers?lang=en
     static constexpr uint32_t kIGROUPRn = 0x0080;
-    __always_inline auto IGROUPRn(uint64_t n) const -> uint64_t {
+
+    /**
+     * @brief 计算 IGROUPR 寄存器偏移
+     * @param n 寄存器索引
+     * @return uint64_t 寄存器偏移地址
+     */
+    [[nodiscard]] __always_inline auto IGROUPRn(uint64_t n) const -> uint64_t {
       return kIGROUPRn + n * 4;
     }
 
@@ -152,7 +158,14 @@ class Gic {
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-ISENABLER-n---Interrupt-Set-Enable-Registers?lang=en
     static constexpr uint32_t kISENABLERn = 0x0100;
     static constexpr uint32_t kISENABLERn_SIZE = 32;
-    __always_inline auto ISENABLERn(uint64_t n) const -> uint64_t {
+
+    /**
+     * @brief 计算 ISENABLER 寄存器偏移
+     * @param n 寄存器索引
+     * @return uint64_t 寄存器偏移地址
+     */
+    [[nodiscard]] __always_inline auto ISENABLERn(uint64_t n) const
+        -> uint64_t {
       return kISENABLERn + n * 4;
     }
 
@@ -161,7 +174,14 @@ class Gic {
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-ICENABLER-n---Interrupt-Clear-Enable-Registers?lang=en
     static constexpr uint32_t kICENABLERn = 0x0180;
     static constexpr uint32_t kICENABLERn_SIZE = 32;
-    __always_inline auto ICENABLERn(uint64_t n) const -> uint64_t {
+
+    /**
+     * @brief 计算 ICENABLER 寄存器偏移
+     * @param n 寄存器索引
+     * @return uint64_t 寄存器偏移地址
+     */
+    [[nodiscard]] __always_inline auto ICENABLERn(uint64_t n) const
+        -> uint64_t {
       return kICENABLERn + n * 4;
     }
 
@@ -173,7 +193,13 @@ class Gic {
     /// https://developer.arm.com/documentation/ddi0601/2024-12/External-Registers/GICD-ICPENDR-n---Interrupt-Clear-Pending-Registers?lang=en
     static constexpr uint32_t kICPENDRn = 0x0280;
     static constexpr uint32_t kICPENDRn_SIZE = 32;
-    __always_inline auto ICPENDRn(uint64_t n) const -> uint64_t {
+
+    /**
+     * @brief 计算 ICPENDR 寄存器偏移
+     * @param n 寄存器索引
+     * @return uint64_t 寄存器偏移地址
+     */
+    [[nodiscard]] __always_inline auto ICPENDRn(uint64_t n) const -> uint64_t {
       return kICPENDRn + n * 4;
     }
 
@@ -190,7 +216,14 @@ class Gic {
     static constexpr uint32_t kIPRIORITYRn_SIZE = 4;
     static constexpr uint32_t kIPRIORITYRn_BITS = 8;
     static constexpr uint32_t kIPRIORITYRn_BITS_MASK = 0xFF;
-    __always_inline auto IPRIORITYRn(uint64_t n) const -> uint64_t {
+
+    /**
+     * @brief 计算 IPRIORITYR 寄存器偏移
+     * @param n 寄存器索引
+     * @return uint64_t 寄存器偏移地址
+     */
+    [[nodiscard]] __always_inline auto IPRIORITYRn(uint64_t n) const
+        -> uint64_t {
       return kIPRIORITYRn + n * 4;
     }
 
@@ -201,7 +234,14 @@ class Gic {
     static constexpr uint32_t kITARGETSRn_SIZE = 4;
     static constexpr uint32_t kITARGETSRn_BITS = 8;
     static constexpr uint32_t kITARGETSRn_BITS_MASK = 0xFF;
-    __always_inline auto ITARGETSRn(uint64_t n) const -> uint64_t {
+
+    /**
+     * @brief 计算 ITARGETSR 寄存器偏移
+     * @param n 寄存器索引
+     * @return uint64_t 寄存器偏移地址
+     */
+    [[nodiscard]] __always_inline auto ITARGETSRn(uint64_t n) const
+        -> uint64_t {
       return kITARGETSRn + n * 4;
     }
 
@@ -214,7 +254,13 @@ class Gic {
     static constexpr uint32_t kICFGRn_BITS_MASK = 0x3;
     static constexpr uint32_t kICFGRn_LevelSensitive = 0;
     static constexpr uint32_t kICFGRn_EdgeTriggered = 1;
-    __always_inline auto ICFGRn(uint64_t n) const -> uint64_t {
+
+    /**
+     * @brief 计算 ICFGR 寄存器偏移
+     * @param n 寄存器索引
+     * @return uint64_t 寄存器偏移地址
+     */
+    [[nodiscard]] __always_inline auto ICFGRn(uint64_t n) const -> uint64_t {
       return kICFGRn + n * 4;
     }
 
@@ -264,22 +310,6 @@ class Gic {
     /// Component ID 3 Register, RO
     static constexpr uint32_t kCIDR3 = 0xFFFC;
 
-    /// @name 构造/析构函数
-    /// @{
-
-    /**
-     * @brief 构造函数
-     * @param base_addr GICD 基地址
-     */
-    explicit Gicd(uint64_t base_addr);
-    Gicd() = default;
-    Gicd(const Gicd&) = delete;
-    Gicd(Gicd&&) = delete;
-    auto operator=(const Gicd&) -> Gicd& = delete;
-    auto operator=(Gicd&&) -> Gicd& = default;
-    ~Gicd() = default;
-    /// @}
-
     /**
      * @brief 允许从 Distributor 转发到 redistributor
      * @param intid 中断号
@@ -289,10 +319,7 @@ class Gic {
     /**
      * @brief 允许 no-sec group1 中断
      */
-    auto EnableGrp1NS() const -> void {
-      Write(kCTLR, kCTLR_EnableGrp1NS);
-      cpu_io::ICC_IGRPEN1_EL1::Enable::Set();
-    }
+    auto EnableGrp1NS() const -> void;
 
     /**
      * @brief 禁止从 Distributor 转发到 redistributor
@@ -343,6 +370,22 @@ class Gic {
      * @param cpuid cpu 编号
      */
     auto SetupSPI(uint32_t intid, uint32_t cpuid) const -> void;
+
+    /// @name 构造/析构函数
+    /// @{
+
+    /**
+     * @brief 构造函数
+     * @param _base_addr GICD 基地址
+     */
+    explicit Gicd(uint64_t _base_addr);
+    Gicd() = default;
+    Gicd(const Gicd&) = delete;
+    Gicd(Gicd&&) = delete;
+    auto operator=(const Gicd&) -> Gicd& = delete;
+    auto operator=(Gicd&&) -> Gicd& = default;
+    ~Gicd() = default;
+    /// @}
 
    private:
     /// GICD 基地址
@@ -458,7 +501,14 @@ class Gic {
     static constexpr uint32_t kIPRIORITYRn_SIZE = 4;
     static constexpr uint32_t kIPRIORITYRn_BITS = 8;
     static constexpr uint32_t kIPRIORITYRn_BITS_MASK = 0xFF;
-    __always_inline auto IPRIORITYRn(uint64_t n) const -> uint64_t {
+
+    /**
+     * @brief 计算 IPRIORITYR 寄存器偏移
+     * @param n 寄存器索引
+     * @return uint64_t 寄存器偏移地址
+     */
+    [[nodiscard]] __always_inline auto IPRIORITYRn(uint64_t n) const
+        -> uint64_t {
       return kIPRIORITYRn + n * 4;
     }
 
@@ -488,22 +538,6 @@ class Gic {
     static constexpr uint32_t kCFGID0 = 0xF000;
     /// Configuration ID1 Register, RO
     static constexpr uint32_t kCFGID1 = 0xF004;
-
-    /// @name 构造/析构函数
-    /// @{
-
-    /**
-     * @brief 构造函数
-     * @param base_addr GICR 基地址
-     */
-    explicit Gicr(uint64_t base_addr);
-    Gicr() = default;
-    Gicr(const Gicr&) = delete;
-    Gicr(Gicr&&) = delete;
-    auto operator=(const Gicr&) -> Gicr& = delete;
-    auto operator=(Gicr&&) -> Gicr& = default;
-    ~Gicr() = default;
-    /// @}
 
     /**
      * @brief 允许从 redistributor 转发到 CPU interface
@@ -537,7 +571,7 @@ class Gic {
     /**
      * @brief 初始化 gicr，在多核场景使用
      */
-    auto SetUP() const -> void;
+    auto SetUp() const -> void;
 
     /**
      * @brief 设置指定 PPI 中断
@@ -556,6 +590,22 @@ class Gic {
      * @param cpuid cpu 编号
      */
     auto SetupSGI(uint32_t intid, uint32_t cpuid) const -> void;
+
+    /// @name 构造/析构函数
+    /// @{
+
+    /**
+     * @brief 构造函数
+     * @param _base_addr GICR 基地址
+     */
+    explicit Gicr(uint64_t _base_addr);
+    Gicr() = default;
+    Gicr(const Gicr&) = delete;
+    Gicr(Gicr&&) = delete;
+    auto operator=(const Gicr&) -> Gicr& = delete;
+    auto operator=(Gicr&&) -> Gicr& = default;
+    ~Gicr() = default;
+    /// @}
 
    private:
     /// GICR 基地址
@@ -576,6 +626,32 @@ class Gic {
     }
   };
 
+  /**
+   * @brief 初始化当前 CPU 的 GIC 配置
+   */
+  auto SetUp() const -> void;
+
+  /**
+   * @brief 配置共享外设中断 (SPI)
+   * @param intid 中断号
+   * @param cpuid CPU 编号
+   */
+  auto SPI(uint32_t intid, uint32_t cpuid) const -> void;
+
+  /**
+   * @brief 配置私有外设中断 (PPI)
+   * @param intid 中断号
+   * @param cpuid CPU 编号
+   */
+  auto PPI(uint32_t intid, uint32_t cpuid) const -> void;
+
+  /**
+   * @brief 配置软件生成中断 (SGI)
+   * @param intid 中断号
+   * @param cpuid CPU 编号
+   */
+  auto SGI(uint32_t intid, uint32_t cpuid) const -> void;
+
   /// @name 构造/析构函数
   /// @{
 
@@ -593,32 +669,9 @@ class Gic {
   ~Gic() = default;
   /// @}
 
-  /**
-   * @brief 初始化当前 CPU 的 GIC 配置
-   */
-  auto SetUP() const -> void;
-  /**
-   * @brief 配置共享外设中断 (SPI)
-   * @param intid 中断号
-   * @param cpuid CPU 编号
-   */
-  auto SPI(uint32_t intid, uint32_t cpuid) const -> void;
-  /**
-   * @brief 配置私有外设中断 (PPI)
-   * @param intid 中断号
-   * @param cpuid CPU 编号
-   */
-  auto PPI(uint32_t intid, uint32_t cpuid) const -> void;
-  /**
-   * @brief 配置软件生成中断 (SGI)
-   * @param intid 中断号
-   * @param cpuid CPU 编号
-   */
-  auto SGI(uint32_t intid, uint32_t cpuid) const -> void;
-
  private:
   /// Distributor 实例
-  Gicd gicd_;
+  Gicd gicd_{};
   /// Redistributor 实例
-  Gicr gicr_;
+  Gicr gicr_{};
 };

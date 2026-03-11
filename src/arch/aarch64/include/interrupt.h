@@ -70,7 +70,7 @@ class Interrupt final : public InterruptBase {
   /**
    * @brief 设置 GIC
    */
-  __always_inline auto SetUP() const -> void { gic_.SetUP(); }
+  __always_inline auto SetUp() const -> void { gic_.SetUp(); }
   /**
    * @brief 设置 SPI 中断
    * @param intid 中断号

@@ -213,7 +213,7 @@ auto InterruptInit(int, const char**) -> void {
 auto InterruptInitSMP(int, const char**) -> void {
   cpu_io::VBAR_EL1::Write(reinterpret_cast<uint64_t>(vector_table));
 
-  InterruptSingleton::instance().SetUP();
+  InterruptSingleton::instance().SetUp();
 
   cpu_io::EnableInterrupt();
 

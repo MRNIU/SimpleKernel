@@ -220,6 +220,8 @@ mutex_.Lock().or_else([](auto&& err) {
 
 `@brief` **必须**。`@note`, `@pre`, `@post` 按需添加。
 
+如果函数声明处已经有注释，函数实现则不必添加。
+
 ### 方法
 
 ```cpp
