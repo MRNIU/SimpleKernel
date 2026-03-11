@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include "expected.hpp"
 #include "virtio/defs.h"
 
@@ -84,7 +86,7 @@ class Transport {
    * @brief 设备状态位定义
    * @see virtio-v1.2#2.1 Device Status Field
    */
-  enum DeviceStatus : uint32_t {
+  enum class DeviceStatus : uint32_t {
     /// 重置状态，驱动程序将此写入以重置设备
     kReset = 0,
     /// 表示客户操作系统已找到设备并识别为有效的 virtio 设备
@@ -105,7 +107,9 @@ class Transport {
    * @brief 重置设备
    * @see virtio-v1.2#2.1 Device Status Field
    */
-  auto Reset(this auto&& self) -> void { self.SetStatus(kReset); }
+  auto Reset(this auto&& self) -> void {
+    self.SetStatus(std::to_underlying(DeviceStatus::kReset));
+  }
 
   /**
    * @brief 检查设备是否需要重置
@@ -114,14 +118,16 @@ class Transport {
    * @see virtio-v1.2#2.1 Device Status Field
    */
   [[nodiscard]] auto NeedsReset(this auto const& self) -> bool {
-    return (self.GetStatus() & kDeviceNeedsReset) != 0;
+    return (self.GetStatus() &
+            std::to_underlying(DeviceStatus::kDeviceNeedsReset)) != 0;
   }
 
   /**
    * @brief 检查设备是否已激活（DRIVER_OK 已设置）
    */
   [[nodiscard]] auto IsActive(this auto const& self) -> bool {
-    return (self.GetStatus() & kDriverOk) != 0;
+    return (self.GetStatus() & std::to_underlying(DeviceStatus::kDriverOk)) !=
+           0;
   }
 
   /**

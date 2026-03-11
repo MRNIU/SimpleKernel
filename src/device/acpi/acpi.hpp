@@ -168,7 +168,7 @@ class Acpi {
     uint8_t* definition_block;
   };
 
-  uint64_t rsdp_addr_ = 0;
+  uint64_t rsdp_addr_{0};
 };
 
 }  // namespace acpi

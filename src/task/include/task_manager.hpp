@@ -185,7 +185,7 @@ class TaskManager {
 
  private:
   /// 中断工作队列容量
-  static constexpr const size_t kInterruptQueueCapacity = 256;
+  static constexpr size_t kInterruptQueueCapacity = 256;
 
   /// 中断线程处理结构体
   struct InterruptWork {

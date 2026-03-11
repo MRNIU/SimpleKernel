@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include "expected.hpp"
 #include "kernel_log.hpp"
 #include "mmio_accessor.hpp"
@@ -58,12 +60,11 @@ static constexpr uint32_t kMmioVersionModern = 0x02;
  */
 class MmioTransport final : public Transport {
  public:
- public:
   /**
    * @brief MMIO 寄存器偏移量
    * @see virtio-v1.2#4.2.2 MMIO Device Register Layout
    */
-  enum MmioReg : size_t {
+  enum class MmioReg : size_t {
     kMagicValue = 0x000,
     kVersion = 0x004,
     kDeviceId = 0x008,
@@ -128,22 +129,22 @@ class MmioTransport final : public Transport {
       return;
     }
 
-    auto magic = mmio_.Read<uint32_t>(MmioReg::kMagicValue);
+    auto magic = mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kMagicValue));
     if (magic != kMmioMagicValue) {
       return;
     }
 
-    auto version = mmio_.Read<uint32_t>(MmioReg::kVersion);
+    auto version = mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kVersion));
     if (version != kMmioVersionModern) {
       return;
     }
 
-    device_id_ = mmio_.Read<uint32_t>(MmioReg::kDeviceId);
+    device_id_ = mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kDeviceId));
     if (device_id_ == 0) {
       return;
     }
 
-    vendor_id_ = mmio_.Read<uint32_t>(MmioReg::kVendorId);
+    vendor_id_ = mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kVendorId));
     this->Reset();
     is_valid_ = true;
   }
@@ -173,11 +174,11 @@ class MmioTransport final : public Transport {
   [[nodiscard]] auto GetVendorId() const -> uint32_t { return vendor_id_; }
 
   [[nodiscard]] auto GetStatus() const -> uint32_t {
-    return mmio_.Read<uint32_t>(MmioReg::kStatus);
+    return mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kStatus));
   }
 
   auto SetStatus(uint32_t status) -> void {
-    mmio_.Write<uint32_t>(MmioReg::kStatus, status);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kStatus), status);
   }
 
   /**
@@ -190,11 +191,13 @@ class MmioTransport final : public Transport {
    * @see virtio-v1.2#4.2.2.1
    */
   [[nodiscard]] auto GetDeviceFeatures() -> uint64_t {
-    mmio_.Write<uint32_t>(MmioReg::kDeviceFeaturesSel, 0);
-    uint64_t lo = mmio_.Read<uint32_t>(MmioReg::kDeviceFeatures);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kDeviceFeaturesSel), 0);
+    uint64_t lo =
+        mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kDeviceFeatures));
 
-    mmio_.Write<uint32_t>(MmioReg::kDeviceFeaturesSel, 1);
-    uint64_t hi = mmio_.Read<uint32_t>(MmioReg::kDeviceFeatures);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kDeviceFeaturesSel), 1);
+    uint64_t hi =
+        mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kDeviceFeatures));
 
     return (hi << 32) | lo;
   }
@@ -206,12 +209,12 @@ class MmioTransport final : public Transport {
    * @see virtio-v1.2#4.2.2.1
    */
   auto SetDriverFeatures(uint64_t features) -> void {
-    mmio_.Write<uint32_t>(MmioReg::kDriverFeaturesSel, 0);
-    mmio_.Write<uint32_t>(MmioReg::kDriverFeatures,
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kDriverFeaturesSel), 0);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kDriverFeatures),
                           static_cast<uint32_t>(features));
 
-    mmio_.Write<uint32_t>(MmioReg::kDriverFeaturesSel, 1);
-    mmio_.Write<uint32_t>(MmioReg::kDriverFeatures,
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kDriverFeaturesSel), 1);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kDriverFeatures),
                           static_cast<uint32_t>(features >> 32));
   }
 
@@ -225,13 +228,13 @@ class MmioTransport final : public Transport {
    * @see virtio-v1.2#4.2.3.2
    */
   [[nodiscard]] auto GetQueueNumMax(uint32_t queue_idx) -> uint32_t {
-    mmio_.Write<uint32_t>(MmioReg::kQueueSel, queue_idx);
-    return mmio_.Read<uint32_t>(MmioReg::kQueueNumMax);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueSel), queue_idx);
+    return mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kQueueNumMax));
   }
 
   auto SetQueueNum(uint32_t queue_idx, uint32_t num) -> void {
-    mmio_.Write<uint32_t>(MmioReg::kQueueSel, queue_idx);
-    mmio_.Write<uint32_t>(MmioReg::kQueueNum, num);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueSel), queue_idx);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueNum), num);
   }
 
   /**
@@ -241,9 +244,10 @@ class MmioTransport final : public Transport {
    * @param addr 描述符表的 64 位物理地址
    */
   auto SetQueueDesc(uint32_t queue_idx, uint64_t addr) -> void {
-    mmio_.Write<uint32_t>(MmioReg::kQueueSel, queue_idx);
-    mmio_.Write<uint32_t>(MmioReg::kQueueDescLow, static_cast<uint32_t>(addr));
-    mmio_.Write<uint32_t>(MmioReg::kQueueDescHigh,
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueSel), queue_idx);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueDescLow),
+                          static_cast<uint32_t>(addr));
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueDescHigh),
                           static_cast<uint32_t>(addr >> 32));
   }
 
@@ -254,10 +258,10 @@ class MmioTransport final : public Transport {
    * @param addr Available Ring 的 64 位物理地址
    */
   auto SetQueueAvail(uint32_t queue_idx, uint64_t addr) -> void {
-    mmio_.Write<uint32_t>(MmioReg::kQueueSel, queue_idx);
-    mmio_.Write<uint32_t>(MmioReg::kQueueDriverLow,
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueSel), queue_idx);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueDriverLow),
                           static_cast<uint32_t>(addr));
-    mmio_.Write<uint32_t>(MmioReg::kQueueDriverHigh,
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueDriverHigh),
                           static_cast<uint32_t>(addr >> 32));
   }
 
@@ -268,34 +272,35 @@ class MmioTransport final : public Transport {
    * @param addr Used Ring 的 64 位物理地址
    */
   auto SetQueueUsed(uint32_t queue_idx, uint64_t addr) -> void {
-    mmio_.Write<uint32_t>(MmioReg::kQueueSel, queue_idx);
-    mmio_.Write<uint32_t>(MmioReg::kQueueDeviceLow,
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueSel), queue_idx);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueDeviceLow),
                           static_cast<uint32_t>(addr));
-    mmio_.Write<uint32_t>(MmioReg::kQueueDeviceHigh,
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueDeviceHigh),
                           static_cast<uint32_t>(addr >> 32));
   }
 
   [[nodiscard]] auto GetQueueReady(uint32_t queue_idx) -> bool {
-    mmio_.Write<uint32_t>(MmioReg::kQueueSel, queue_idx);
-    return mmio_.Read<uint32_t>(MmioReg::kQueueReady) != 0;
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueSel), queue_idx);
+    return mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kQueueReady)) != 0;
   }
 
   auto SetQueueReady(uint32_t queue_idx, bool ready) -> void {
-    mmio_.Write<uint32_t>(MmioReg::kQueueSel, queue_idx);
-    mmio_.Write<uint32_t>(MmioReg::kQueueReady, ready ? 1 : 0);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueSel), queue_idx);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueReady),
+                          ready ? 1 : 0);
   }
 
   /// 通知设备有新的可用缓冲区
   auto NotifyQueue(uint32_t queue_idx) -> void {
-    mmio_.Write<uint32_t>(MmioReg::kQueueNotify, queue_idx);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kQueueNotify), queue_idx);
   }
 
   [[nodiscard]] auto GetInterruptStatus() const -> uint32_t {
-    return mmio_.Read<uint32_t>(MmioReg::kInterruptStatus);
+    return mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kInterruptStatus));
   }
 
   auto AckInterrupt(uint32_t ack_bits) -> void {
-    mmio_.Write<uint32_t>(MmioReg::kInterruptAck, ack_bits);
+    mmio_.Write<uint32_t>(std::to_underlying(MmioReg::kInterruptAck), ack_bits);
   }
 
   /**
@@ -305,7 +310,7 @@ class MmioTransport final : public Transport {
    * @see virtio-v1.2#4.2.2.2
    */
   [[nodiscard]] auto ReadConfigU8(uint32_t offset) const -> uint8_t {
-    return mmio_.Read<uint8_t>(MmioReg::kConfig + offset);
+    return mmio_.Read<uint8_t>(std::to_underlying(MmioReg::kConfig) + offset);
   }
 
   /**
@@ -314,7 +319,7 @@ class MmioTransport final : public Transport {
    * @param offset 相对于配置空间起始的偏移量
    */
   [[nodiscard]] auto ReadConfigU16(uint32_t offset) const -> uint16_t {
-    return mmio_.Read<uint16_t>(MmioReg::kConfig + offset);
+    return mmio_.Read<uint16_t>(std::to_underlying(MmioReg::kConfig) + offset);
   }
 
   /**
@@ -323,7 +328,7 @@ class MmioTransport final : public Transport {
    * @param offset 相对于配置空间起始的偏移量
    */
   [[nodiscard]] auto ReadConfigU32(uint32_t offset) const -> uint32_t {
-    return mmio_.Read<uint32_t>(MmioReg::kConfig + offset);
+    return mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kConfig) + offset);
   }
 
   /**
@@ -351,7 +356,7 @@ class MmioTransport final : public Transport {
       gen1 = GetConfigGeneration();
 
       auto* ptr = reinterpret_cast<volatile uint32_t*>(
-          mmio_.base + MmioReg::kConfig + offset);
+          mmio_.base + std::to_underlying(MmioReg::kConfig) + offset);
       uint64_t lo = ptr[0];
       uint64_t hi = ptr[1];
       value = (hi << 32) | lo;
@@ -363,7 +368,7 @@ class MmioTransport final : public Transport {
   }
 
   [[nodiscard]] auto GetConfigGeneration() const -> uint32_t {
-    return mmio_.Read<uint32_t>(MmioReg::kConfigGeneration);
+    return mmio_.Read<uint32_t>(std::to_underlying(MmioReg::kConfigGeneration));
   }
 
  private:

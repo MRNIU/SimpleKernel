@@ -6,6 +6,8 @@
 
 #include <etl/io_port.h>
 
+#include <utility>
+
 #include "expected.hpp"
 #include "io_buffer.hpp"
 #include "kernel_log.hpp"
@@ -33,7 +35,8 @@ auto VirtioDriver::Probe(DeviceNode& node) -> Expected<void> {
 
   // 读取 device_id
   etl::io_port_ro<uint32_t> device_id_reg{reinterpret_cast<void*>(
-      ctx->base + virtio::MmioTransport::MmioReg::kDeviceId)};
+      ctx->base +
+      std::to_underlying(virtio::MmioTransport::MmioReg::kDeviceId))};
   const auto device_id = static_cast<DeviceId>(device_id_reg.read());
 
   switch (device_id) {

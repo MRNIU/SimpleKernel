@@ -40,7 +40,7 @@ class VirtualMemory {
    * @pre 内核页表目录已初始化
    * @post 当前核心的页表目录已设置并启用分页
    */
-  void InitCurrentCore() const;
+  auto InitCurrentCore() const -> void;
 
   /**
    * @brief 映射设备内存 (MMIO)
@@ -90,7 +90,7 @@ class VirtualMemory {
    * @param free_pages 是否同时释放映射的物理页
    * @note 此函数会递归释放所有层级的页表
    */
-  void DestroyPageDirectory(void* page_dir, bool free_pages = false);
+  auto DestroyPageDirectory(void* page_dir, bool free_pages = false) -> void;
 
   /**
    * @brief 复制页表
@@ -105,7 +105,7 @@ class VirtualMemory {
       -> Expected<void*>;
 
  private:
-  void* kernel_page_dir_ = nullptr;
+  void* kernel_page_dir_{nullptr};
 
   static constexpr size_t kEntriesPerTable =
       cpu_io::virtual_memory::kPageSize / sizeof(void*);
@@ -116,8 +116,8 @@ class VirtualMemory {
    * @param level 当前层级
    * @param free_pages 是否释放物理页
    */
-  void RecursiveFreePageTable(uint64_t* table, size_t level, bool free_pages);
-
+  auto RecursiveFreePageTable(uint64_t* table, size_t level, bool free_pages)
+      -> void;
   /**
    * @brief 递归复制页表
    * @param src_table 源页表

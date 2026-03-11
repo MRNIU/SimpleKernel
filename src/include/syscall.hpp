@@ -12,24 +12,24 @@
 // 参考 Linux 系统调用号
 #if defined(__riscv) || defined(__aarch64__)
 // RISC-V 64 和 AArch64 使用 asm-generic 编号
-static constexpr const uint64_t kSyscallWrite = 64;
-static constexpr const uint64_t kSyscallExit = 93;
-static constexpr const uint64_t kSyscallYield = 124;
-static constexpr const uint64_t kSyscallClone = 220;
-static constexpr const uint64_t kSyscallGettid = 178;
-static constexpr const uint64_t kSyscallFutex = 98;
-static constexpr const uint64_t kSyscallSetTidAddress = 96;
-static constexpr const uint64_t kSyscallFork = 1220;
+inline constexpr uint64_t kSyscallWrite = 64;
+inline constexpr uint64_t kSyscallExit = 93;
+inline constexpr uint64_t kSyscallYield = 124;
+inline constexpr uint64_t kSyscallClone = 220;
+inline constexpr uint64_t kSyscallGettid = 178;
+inline constexpr uint64_t kSyscallFutex = 98;
+inline constexpr uint64_t kSyscallSetTidAddress = 96;
+inline constexpr uint64_t kSyscallFork = 1220;
 #elif defined(__x86_64__)
 // x86_64 使用自己的编号
-static constexpr const uint64_t kSyscallWrite = 1;
-static constexpr const uint64_t kSyscallExit = 60;
-static constexpr const uint64_t kSyscallYield = 24;
-static constexpr const uint64_t kSyscallClone = 56;
-static constexpr const uint64_t kSyscallGettid = 186;
-static constexpr const uint64_t kSyscallFutex = 202;
-static constexpr const uint64_t kSyscallSetTidAddress = 218;
-static constexpr const uint64_t kSyscallFork = 57;
+inline constexpr uint64_t kSyscallWrite = 1;
+inline constexpr uint64_t kSyscallExit = 60;
+inline constexpr uint64_t kSyscallYield = 24;
+inline constexpr uint64_t kSyscallClone = 56;
+inline constexpr uint64_t kSyscallGettid = 186;
+inline constexpr uint64_t kSyscallFutex = 202;
+inline constexpr uint64_t kSyscallSetTidAddress = 218;
+inline constexpr uint64_t kSyscallFork = 57;
 #else
 #error "Unsupported architecture for syscall numbers"
 #endif

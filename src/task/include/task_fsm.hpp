@@ -8,15 +8,15 @@
 #include "task_messages.hpp"
 
 /// 任务状态 ID — 用作 etl::fsm 的状态 ID
-enum TaskStatusId : uint8_t {
-  kUnInit = 0,
-  kReady = 1,
-  kRunning = 2,
-  kSleeping = 3,
-  kBlocked = 4,
-  kExited = 5,
-  kZombie = 6,
-};
+namespace TaskStatusId {
+constexpr etl::fsm_state_id_t kUnInit = 0;
+constexpr etl::fsm_state_id_t kReady = 1;
+constexpr etl::fsm_state_id_t kRunning = 2;
+constexpr etl::fsm_state_id_t kSleeping = 3;
+constexpr etl::fsm_state_id_t kBlocked = 4;
+constexpr etl::fsm_state_id_t kExited = 5;
+constexpr etl::fsm_state_id_t kZombie = 6;
+}  // namespace TaskStatusId
 
 // 前向声明所有状态类，以便在转换表中相互引用
 struct StateUnInit;

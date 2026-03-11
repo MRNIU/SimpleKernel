@@ -41,7 +41,7 @@ class SplitVirtqueue final : public VirtqueueBase {
    * @brief Descriptor Flags
    * @see virtio-v1.2#2.7.5 The Virtqueue Descriptor Table
    */
-  enum DescFlags : uint16_t {
+  enum class DescFlags : uint16_t {
     /// 标记缓冲区通过 next 字段继续
     kDescFNext = 1,
     /// 标记缓冲区为设备只写(否则为设备只读)
@@ -54,7 +54,7 @@ class SplitVirtqueue final : public VirtqueueBase {
    * @brief Available Ring Flags
    * @see virtio-v1.2#2.7.6 The Virtqueue Available Ring
    */
-  enum AvailFlags : uint16_t {
+  enum class AvailFlags : uint16_t {
     /// 设备应该不发送中断
     kAvailFNoInterrupt = 1
   };
@@ -63,7 +63,7 @@ class SplitVirtqueue final : public VirtqueueBase {
    * @brief Used Ring Flags
    * @see virtio-v1.2#2.7.8 The Virtqueue Used Ring
    */
-  enum UsedFlags : uint16_t {
+  enum class UsedFlags : uint16_t {
     /// 驱动不需要通知
     kUsedFNoNotify = 1
   };
@@ -478,7 +478,7 @@ class SplitVirtqueue final : public VirtqueueBase {
 
       desc_[idx].addr = readable[i].phys_addr;
       desc_[idx].len = static_cast<uint32_t>(readable[i].len);
-      desc_[idx].flags = kDescFNext;
+      desc_[idx].flags = std::to_underlying(DescFlags::kDescFNext);
 
       if (prev_idx != 0xFFFF) {
         desc_[prev_idx].next = idx;
@@ -493,8 +493,8 @@ class SplitVirtqueue final : public VirtqueueBase {
 
       desc_[idx].addr = writable[i].phys_addr;
       desc_[idx].len = static_cast<uint32_t>(writable[i].len);
-      desc_[idx].flags = kDescFNext | kDescFWrite;
-
+      desc_[idx].flags = std::to_underlying(DescFlags::kDescFNext) |
+                         std::to_underlying(DescFlags::kDescFWrite);
       if (prev_idx != 0xFFFF) {
         desc_[prev_idx].next = idx;
       }
@@ -502,7 +502,7 @@ class SplitVirtqueue final : public VirtqueueBase {
     }
 
     desc_[prev_idx].flags =
-        desc_[prev_idx].flags & ~static_cast<uint16_t>(kDescFNext);
+        desc_[prev_idx].flags & ~std::to_underlying(DescFlags::kDescFNext);
 
     // 写屏障：确保描述符写入在 Available Ring 更新之前对设备可见
     cpu_io::Wmb();
@@ -539,7 +539,8 @@ class SplitVirtqueue final : public VirtqueueBase {
       }
 
       uint16_t next = desc_[idx].next;
-      bool has_next = (desc_[idx].flags & kDescFNext) != 0;
+      bool has_next =
+          (desc_[idx].flags & std::to_underlying(DescFlags::kDescFNext)) != 0;
 
       desc_[idx].next = free_head_;
       free_head_ = idx;
@@ -670,26 +671,26 @@ class SplitVirtqueue final : public VirtqueueBase {
   volatile Used* used_ = nullptr;
 
   /// 队列大小（描述符数量，必须为 2 的幂）
-  uint16_t queue_size_ = 0;
+  uint16_t queue_size_{0};
   /// 空闲描述符链表头索引
-  uint16_t free_head_ = 0;
+  uint16_t free_head_{0};
   /// 空闲描述符数量
-  uint16_t num_free_ = 0;
+  uint16_t num_free_{0};
   /// 上次处理到的 Used Ring 索引（用于 PopUsed）
-  uint16_t last_used_idx_ = 0;
+  uint16_t last_used_idx_{0};
 
   /// DMA 内存物理基地址（客户机物理地址）
-  uint64_t phys_base_ = 0;
+  uint64_t phys_base_{0};
   /// 描述符表在 DMA 内存中的偏移量（字节）
-  size_t desc_offset_ = 0;
+  size_t desc_offset_{0};
   /// Available Ring 在 DMA 内存中的偏移量（字节）
-  size_t avail_offset_ = 0;
+  size_t avail_offset_{0};
   /// Used Ring 在 DMA 内存中的偏移量（字节）
-  size_t used_offset_ = 0;
+  size_t used_offset_{0};
   /// 是否启用 VIRTIO_F_EVENT_IDX 特性
-  bool event_idx_enabled_ = false;
+  bool event_idx_enabled_{false};
   /// 初始化是否成功
-  bool is_valid_ = false;
+  bool is_valid_{false};
 };
 
 }  // namespace virtio

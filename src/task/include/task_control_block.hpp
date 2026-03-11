@@ -51,7 +51,7 @@ using CloneFlags = etl::flags<uint64_t, clone_flag::kAllMask>;
 using CpuAffinity = etl::flags<uint64_t>;
 
 /// Task status type alias — backed by FSM state IDs
-using TaskStatus = TaskStatusId;
+namespace TaskStatus = TaskStatusId;
 
 /**
  * @brief 调度策略
@@ -75,7 +75,7 @@ using ThreadGroupLink = etl::bidirectional_link<0>;
  */
 struct TaskControlBlock : public ThreadGroupLink {
   /// 默认内核栈大小 (16 KB)
-  static constexpr const size_t kDefaultKernelStackSize = 16 * 1024;
+  static constexpr size_t kDefaultKernelStackSize = 16 * 1024;
 
   /// 任务优先级比较函数，优先级数值越小，优先级越高
   struct PriorityCompare {
@@ -185,7 +185,7 @@ struct TaskControlBlock : public ThreadGroupLink {
   filesystem::FileDescriptorTable* fd_table{nullptr};
 
   /// 获取当前任务状态
-  [[nodiscard]] auto GetStatus() const -> TaskStatus;
+  [[nodiscard]] auto GetStatus() const -> etl::fsm_state_id_t;
 
   /**
    * @brief 检查是否是线程组的主线程

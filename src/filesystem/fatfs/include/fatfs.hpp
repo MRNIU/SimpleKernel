@@ -248,7 +248,7 @@ class FatFsFileSystem : public vfs::FileSystem {
   /// 根目录 inode（Mount 时设置）
   vfs::Inode* root_inode_ = nullptr;
   /// 当前卷是否已挂载
-  bool mounted_ = false;
+  bool mounted_{false};
 
   /// FatFS inode 私有数据
   struct FatInode {

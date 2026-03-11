@@ -138,7 +138,7 @@ struct ResourceId {
 namespace std {
 template <>
 struct hash<ResourceId> {
-  constexpr size_t operator()(const ResourceId& id) const noexcept {
+  constexpr auto operator()(const ResourceId& id) const noexcept -> size_t {
     return hash<uint64_t>{}(static_cast<uint64_t>(id));
   }
 };
@@ -149,7 +149,7 @@ struct hash<ResourceId> {
 namespace etl {
 template <>
 struct hash<ResourceId> {
-  size_t operator()(const ResourceId& id) const {
+  auto operator()(const ResourceId& id) const -> size_t {
     return etl::hash<uint64_t>{}(static_cast<uint64_t>(id));
   }
 };

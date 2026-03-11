@@ -185,8 +185,8 @@ class Pl011 {
   static constexpr uint32_t kIMSCRxim = (1 << 4);
 
   MmioAccessor mmio_;
-  uint64_t base_clock_ = 0;
-  uint64_t baud_rate_ = 0;
+  uint64_t base_clock_{0};
+  uint64_t baud_rate_{0};
 };
 
 }  // namespace pl011

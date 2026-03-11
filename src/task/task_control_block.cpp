@@ -84,8 +84,8 @@ auto LoadElf(const uint8_t* elf_data, uint64_t* page_table) -> uint64_t {
 
 }  // namespace
 
-auto TaskControlBlock::GetStatus() const -> TaskStatus {
-  return static_cast<TaskStatus>(fsm.GetStateId());
+auto TaskControlBlock::GetStatus() const -> etl::fsm_state_id_t {
+  return fsm.GetStateId();
 }
 
 auto TaskControlBlock::JoinThreadGroup(TaskControlBlock* leader) -> void {

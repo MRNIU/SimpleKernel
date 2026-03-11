@@ -111,7 +111,7 @@ class KernelElf {
   /// @name elf 文件相关
   /// @{
   std::span<uint8_t> elf_;
-  Elf64_Ehdr ehdr_ = {};
+  Elf64_Ehdr ehdr_{};
   std::span<Elf64_Phdr> phdr_;
   std::span<Elf64_Shdr> shdr_;
   /// @}

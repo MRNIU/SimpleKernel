@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include "expected.hpp"
 #include "kernel_log.hpp"
 #include "virtio/transport/transport.hpp"
@@ -76,21 +78,28 @@ class DeviceInitializer {
 
     transport_.Reset();
 
-    transport_.SetStatus(TransportImpl::kAcknowledge);
+    transport_.SetStatus(
+        std::to_underlying(Transport::DeviceStatus::kAcknowledge));
 
-    transport_.SetStatus(TransportImpl::kAcknowledge | TransportImpl::kDriver);
+    transport_.SetStatus(
+        std::to_underlying(Transport::DeviceStatus::kAcknowledge) |
+        std::to_underlying(Transport::DeviceStatus::kDriver));
 
     uint64_t device_features = transport_.GetDeviceFeatures();
     uint64_t negotiated_features = device_features & driver_features;
 
     transport_.SetDriverFeatures(negotiated_features);
 
-    transport_.SetStatus(TransportImpl::kAcknowledge | TransportImpl::kDriver |
-                         TransportImpl::kFeaturesOk);
+    transport_.SetStatus(
+        std::to_underlying(Transport::DeviceStatus::kAcknowledge) |
+        std::to_underlying(Transport::DeviceStatus::kDriver) |
+        std::to_underlying(Transport::DeviceStatus::kFeaturesOk));
 
     uint32_t status = transport_.GetStatus();
-    if ((status & TransportImpl::kFeaturesOk) == 0) {
-      transport_.SetStatus(status | TransportImpl::kFailed);
+    if ((status & std::to_underlying(Transport::DeviceStatus::kFeaturesOk)) ==
+        0) {
+      transport_.SetStatus(
+          status | std::to_underlying(Transport::DeviceStatus::kFailed));
       return std::unexpected(Error{ErrorCode::kFeatureNegotiationFailed});
     }
 
@@ -156,10 +165,13 @@ class DeviceInitializer {
     }
 
     uint32_t current_status = transport_.GetStatus();
-    transport_.SetStatus(current_status | TransportImpl::kDriverOk);
+    transport_.SetStatus(
+        current_status |
+        std::to_underlying(Transport::DeviceStatus::kDriverOk));
 
     uint32_t new_status = transport_.GetStatus();
-    if ((new_status & TransportImpl::kDeviceNeedsReset) != 0) {
+    if ((new_status &
+         std::to_underlying(Transport::DeviceStatus::kDeviceNeedsReset)) != 0) {
       return std::unexpected(Error{ErrorCode::kDeviceError});
     }
 
