@@ -14,19 +14,8 @@
 #include "plic.h"
 #include "sk_stdio.h"
 
-/// @brief RISC-V 中断控制器实现
 class Interrupt final : public InterruptBase {
  public:
-  /// @name 构造/析构函数
-  /// @{
-  Interrupt();
-  Interrupt(const Interrupt&) = delete;
-  Interrupt(Interrupt&&) = delete;
-  auto operator=(const Interrupt&) -> Interrupt& = delete;
-  auto operator=(Interrupt&&) -> Interrupt& = delete;
-  ~Interrupt() = default;
-  /// @}
-
   /** @brief 执行中断处理 */
   auto Do(uint64_t cause, cpu_io::TrapContext* context) -> void override;
   /** @brief 注册中断处理函数 */
@@ -56,14 +45,24 @@ class Interrupt final : public InterruptBase {
   auto InitPlic(uint64_t dev_addr, size_t ndev, size_t context_count) -> void;
   /// @}
 
+  /// @name 构造/析构函数
+  /// @{
+  Interrupt();
+  Interrupt(const Interrupt&) = delete;
+  Interrupt(Interrupt&&) = delete;
+  auto operator=(const Interrupt&) -> Interrupt& = delete;
+  auto operator=(Interrupt&&) -> Interrupt& = delete;
+  ~Interrupt() = default;
+  /// @}
+
  private:
   /// 中断处理函数数组
   std::array<InterruptDelegate, cpu_io::ScauseInfo::kInterruptMaxCount>
-      interrupt_handlers_;
+      interrupt_handlers_{};
   /// 异常处理函数数组
   std::array<InterruptDelegate, cpu_io::ScauseInfo::kExceptionMaxCount>
-      exception_handlers_;
-  Plic plic_;
+      exception_handlers_{};
+  Plic plic_{};
 };
 
 using InterruptSingleton = etl::singleton<Interrupt>;

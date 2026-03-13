@@ -25,23 +25,6 @@ class Plic {
   static constexpr size_t kInterruptMaxCount = 16;
 
   /**
-   * 构造函数
-   * @param dev_addr 设备地址
-   * @param ndev 支持的中断源数量 (riscv,ndev)
-   * @param context_count 上下文数量 (通常为 2 * core_count)
-   */
-  /// @name 构造/析构函数
-  /// @{
-  explicit Plic(uint64_t dev_addr, size_t ndev, size_t context_count);
-  Plic() = default;
-  Plic(const Plic& plic) = default;
-  Plic(Plic&& plic) = default;
-  auto operator=(const Plic& plic) -> Plic& = default;
-  auto operator=(Plic&& plic) -> Plic& = default;
-  ~Plic() = default;
-  /// @}
-
-  /**
    * @brief 执行中断处理
    * @param  cause 中断或异常号
    * @param  context 中断上下文
@@ -92,6 +75,25 @@ class Plic {
    * @param  context 中断上下文
    */
   auto Do(uint64_t cause, cpu_io::TrapContext* context) -> void;
+
+  /// @name 构造/析构函数
+  /// @{
+
+  /**
+   * @brief 构造函数
+   * @param dev_addr 设备地址
+   * @param ndev 支持的中断源数量 (riscv,ndev)
+   * @param context_count 上下文数量 (通常为 2 * core_count)
+   */
+  explicit Plic(uint64_t dev_addr, size_t ndev, size_t context_count);
+
+  Plic() = default;
+  Plic(const Plic& plic) = default;
+  Plic(Plic&& plic) = default;
+  auto operator=(const Plic& plic) -> Plic& = default;
+  auto operator=(Plic&& plic) -> Plic& = default;
+  ~Plic() = default;
+  /// @}
 
  private:
   static constexpr uint64_t kSourcePriorityOffset = 0x000000;

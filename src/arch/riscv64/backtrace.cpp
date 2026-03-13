@@ -43,7 +43,7 @@ __always_inline auto backtrace(std::array<uint64_t, kMaxFrameCount>& buffer)
     }
     fp_value = saved_fp;
   }
-  return int(count);
+  return static_cast<int>(count);
 }
 
 auto DumpStack() -> void {
