@@ -167,13 +167,15 @@ auto TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
   }
 
   // 初始化内核栈内容
-  memset(child->kernel_stack, 0, TaskControlBlock::kDefaultKernelStackSize);
+  kstd::memset(child->kernel_stack, 0,
+               TaskControlBlock::kDefaultKernelStackSize);
 
   // 复制 trap context
   child->trap_context_ptr = reinterpret_cast<cpu_io::TrapContext*>(
       child->kernel_stack + TaskControlBlock::kDefaultKernelStackSize -
       sizeof(cpu_io::TrapContext));
-  memcpy(child->trap_context_ptr, &parent_context, sizeof(cpu_io::TrapContext));
+  kstd::memcpy(child->trap_context_ptr, &parent_context,
+               sizeof(cpu_io::TrapContext));
 
   // 设置用户栈
   if (user_stack) {

@@ -28,7 +28,7 @@
 namespace {
 
 /// idle 线程入口函数
-auto idle_thread(void*) -> void {
+auto IdleThread(void*) -> void {
   while (true) {
     cpu_io::Pause();
   }
@@ -76,7 +76,7 @@ auto TaskManager::InitCurrentCore() -> void {
       "Idle",
       std::numeric_limits<
           decltype(TaskControlBlock::SchedInfo::priority)>::max(),
-      idle_thread, nullptr);
+      IdleThread, nullptr);
   auto* idle_task = idle_task_ptr.release();
   // kUnInit -> kReady
   idle_task->fsm.Receive(MsgSchedule{});
