@@ -3,12 +3,12 @@
  */
 
 #include <cpu_io.h>
+#include <opensbi_interface.h>
 
 #include "arch.h"
 #include "basic_info.hpp"
 #include "interrupt.h"
 #include "kernel.h"
-#include "opensbi_interface.h"
 #include "task_manager.hpp"
 
 using InterruptDelegate = InterruptBase::InterruptDelegate;

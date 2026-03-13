@@ -3,6 +3,7 @@
  */
 
 #include <cpu_io.h>
+#include <opensbi_interface.h>
 
 #include "arch.h"
 #include "basic_info.hpp"
@@ -12,7 +13,6 @@
 #include "kernel_log.hpp"
 #include "kstd_cstdio"
 #include "ns16550a/ns16550a.hpp"
-#include "opensbi_interface.h"
 #include "syscall.hpp"
 #include "task_manager.hpp"
 #include "virtio/virtio_driver.hpp"

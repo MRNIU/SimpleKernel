@@ -8,7 +8,6 @@
 
 #include "basic_info.hpp"
 #include "kernel_log.hpp"
-#include "sk_string.h"
 
 namespace {
 auto DefaultPlicHandler(uint64_t cause, cpu_io::TrapContext* context)

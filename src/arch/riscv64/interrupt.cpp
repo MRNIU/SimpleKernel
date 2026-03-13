@@ -27,7 +27,7 @@ auto DefaultExceptionHandler(uint64_t cause, cpu_io::TrapContext* context)
   klog::Err("Default Exception handler [{}] {:#X}, {:#x}",
             cpu_io::ScauseInfo::kExceptionNames[cause], cause,
             reinterpret_cast<uintptr_t>(context));
-  while (1) {
+  while (true) {
     cpu_io::Pause();
   }
 }

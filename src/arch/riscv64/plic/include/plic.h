@@ -25,13 +25,6 @@ class Plic {
   static constexpr size_t kInterruptMaxCount = 16;
 
   /**
-   * @brief 执行中断处理
-   * @param  cause 中断或异常号
-   * @param  context 中断上下文
-   */
-  auto Do(uint64_t cause, cpu_io::TrapContext* context) const -> void;
-
-  /**
    * @brief 向 Plic 询问中断
    * @return uint32_t 中断源 ID (1-1023)
    */
@@ -88,10 +81,10 @@ class Plic {
   explicit Plic(uint64_t dev_addr, size_t ndev, size_t context_count);
 
   Plic() = default;
-  Plic(const Plic& plic) = default;
-  Plic(Plic&& plic) = default;
-  auto operator=(const Plic& plic) -> Plic& = default;
-  auto operator=(Plic&& plic) -> Plic& = default;
+  Plic(const Plic&) = default;
+  Plic(Plic&&) = default;
+  auto operator=(const Plic&) -> Plic& = default;
+  auto operator=(Plic&&) -> Plic& = default;
   ~Plic() = default;
   /// @}
 

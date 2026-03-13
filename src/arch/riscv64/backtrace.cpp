@@ -6,7 +6,6 @@
 #include <elf.h>
 
 #include <array>
-#include <cerrno>
 #include <cstdint>
 
 #include "arch.h"
