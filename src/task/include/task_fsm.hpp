@@ -1,4 +1,6 @@
-/** @copyright Copyright The SimpleKernel Contributors */
+/**
+ * @copyright Copyright The SimpleKernel Contributors
+ */
 
 #pragma once
 
@@ -27,7 +29,9 @@ struct StateBlocked;
 struct StateExited;
 struct StateZombie;
 
-/// 状态：UnInit — 任务尚未初始化
+/**
+ * @brief UnInit 状态 — 任务尚未初始化
+ */
 struct StateUnInit : public etl::fsm_state<etl::fsm, StateUnInit,
                                            TaskStatusId::kUnInit, MsgSchedule> {
   auto on_event(const MsgSchedule&) -> etl::fsm_state_id_t {
@@ -40,7 +44,9 @@ struct StateUnInit : public etl::fsm_state<etl::fsm, StateUnInit,
   }
 };
 
-/// 状态：Ready — 任务已就绪，等待调度
+/**
+ * @brief Ready 状态 — 任务已就绪，等待调度
+ */
 struct StateReady : public etl::fsm_state<etl::fsm, StateReady,
                                           TaskStatusId::kReady, MsgSchedule> {
   auto on_event(const MsgSchedule&) -> etl::fsm_state_id_t {
@@ -53,7 +59,9 @@ struct StateReady : public etl::fsm_state<etl::fsm, StateReady,
   }
 };
 
-/// 状态：Running — 任务正在执行
+/**
+ * @brief Running 状态 — 任务正在执行
+ */
 struct StateRunning
     : public etl::fsm_state<etl::fsm, StateRunning, TaskStatusId::kRunning,
                             MsgYield, MsgSleep, MsgBlock, MsgExit> {
@@ -79,7 +87,9 @@ struct StateRunning
   }
 };
 
-/// 状态：Sleeping — 任务已挂起，等待唤醒时钟
+/**
+ * @brief Sleeping 状态 — 任务已挂起，等待唤醒时钟
+ */
 struct StateSleeping
     : public etl::fsm_state<etl::fsm, StateSleeping, TaskStatusId::kSleeping,
                             MsgWakeup> {
@@ -93,7 +103,9 @@ struct StateSleeping
   }
 };
 
-/// 状态：Blocked — 任务阻塞，等待资源
+/**
+ * @brief Blocked 状态 — 任务阻塞，等待资源
+ */
 struct StateBlocked : public etl::fsm_state<etl::fsm, StateBlocked,
                                             TaskStatusId::kBlocked, MsgWakeup> {
   auto on_event(const MsgWakeup&) -> etl::fsm_state_id_t {
@@ -106,7 +118,9 @@ struct StateBlocked : public etl::fsm_state<etl::fsm, StateBlocked,
   }
 };
 
-/// 状态：Exited — 任务已退出，无父任务回收
+/**
+ * @brief Exited 状态 — 任务已退出，无父任务回收
+ */
 struct StateExited : public etl::fsm_state<etl::fsm, StateExited,
                                            TaskStatusId::kExited, MsgReap> {
   auto on_event(const MsgReap&) -> etl::fsm_state_id_t { return STATE_ID; }
@@ -117,7 +131,9 @@ struct StateExited : public etl::fsm_state<etl::fsm, StateExited,
   }
 };
 
-/// 状态：Zombie — 任务已退出，等待父任务回收
+/**
+ * @brief Zombie 状态 — 任务已退出，等待父任务回收
+ */
 struct StateZombie : public etl::fsm_state<etl::fsm, StateZombie,
                                            TaskStatusId::kZombie, MsgReap> {
   auto on_event(const MsgReap&) -> etl::fsm_state_id_t {
@@ -130,15 +146,26 @@ struct StateZombie : public etl::fsm_state<etl::fsm, StateZombie,
   }
 };
 
+/**
+ * @brief 任务有限状态机
+ */
 class TaskFsm {
  public:
-  /// 启动 FSM（在 TCB 完全构造后调用）
+  /**
+   * @brief 启动 FSM（在 TCB 完全构造后调用）
+   */
   auto Start() -> void { fsm_.start(); }
 
-  /// 向 FSM 发送消息
+  /**
+   * @brief 向 FSM 发送消息
+   * @param msg 要发送的消息
+   */
   auto Receive(const etl::imessage& msg) -> void { fsm_.receive(msg); }
 
-  /// 获取当前状态 ID
+  /**
+   * @brief 获取当前状态 ID
+   * @return etl::fsm_state_id_t 当前状态 ID
+   */
   [[nodiscard]] auto GetStateId() const -> etl::fsm_state_id_t {
     return fsm_.get_state_id();
   }

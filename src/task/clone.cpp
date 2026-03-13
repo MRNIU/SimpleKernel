@@ -10,9 +10,9 @@
 #include "task_manager.hpp"
 #include "virtual_memory.hpp"
 
-Expected<Pid> TaskManager::Clone(uint64_t flags, void* user_stack,
-                                 int* parent_tid, int* child_tid, void* tls,
-                                 cpu_io::TrapContext& parent_context) {
+auto TaskManager::Clone(uint64_t flags, void* user_stack, int* parent_tid,
+                        int* child_tid, void* tls,
+                        cpu_io::TrapContext& parent_context) -> Expected<Pid> {
   auto* parent = GetCurrentTask();
   if (!parent) {
     klog::Err("Clone: No current task");

@@ -195,17 +195,20 @@ class TaskManager {
   /// 中断工作队列容量
   static constexpr size_t kInterruptQueueCapacity = 256;
 
-  /// 中断线程处理结构体
+  /**
+   * @brief 中断线程处理结构体
+   */
   struct InterruptWork {
     using WorkHandler = void (*)(InterruptWork*);
 
-    // 中断号
+    /// 中断号
     uint64_t interrupt_no{0};
-    // 中断上下文
+    /// 中断上下文
     cpu_io::TrapContext* data{nullptr};
-    // 时间戳
+    /// 时间戳
     uint64_t timestamp{0};
 
+    /// 工作处理函数
     WorkHandler handler{nullptr};
   };
 

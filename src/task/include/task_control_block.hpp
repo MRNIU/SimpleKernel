@@ -79,14 +79,18 @@ struct TaskControlBlock : public ThreadGroupLink {
   /// 默认内核栈大小 (16 KB)
   static constexpr size_t kDefaultKernelStackSize = 16 * 1024;
 
-  /// 任务优先级比较函数，优先级数值越小，优先级越高
+  /**
+   * @brief 任务优先级比较函数，优先级数值越小，优先级越高
+   */
   struct PriorityCompare {
     auto operator()(TaskControlBlock* a, TaskControlBlock* b) -> bool {
       return a->sched_info.priority > b->sched_info.priority;
     }
   };
 
-  /// 任务唤醒时间比较函数，时间越早优先级越高
+  /**
+   * @brief 任务唤醒时间比较函数，时间越早优先级越高
+   */
   struct WakeTickCompare {
     auto operator()(TaskControlBlock* a, TaskControlBlock* b) -> bool {
       return a->sched_info.wake_tick > b->sched_info.wake_tick;
@@ -186,7 +190,10 @@ struct TaskControlBlock : public ThreadGroupLink {
   /// 文件描述符表
   filesystem::FileDescriptorTable* fd_table{nullptr};
 
-  /// 获取当前任务状态
+  /**
+   * @brief 获取当前任务状态
+   * @return etl::fsm_state_id_t 当前任务状态 ID
+   */
   [[nodiscard]] auto GetStatus() const -> etl::fsm_state_id_t;
 
   /**

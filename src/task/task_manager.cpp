@@ -29,7 +29,7 @@ namespace {
 
 /// idle 线程入口函数
 auto idle_thread(void*) -> void {
-  while (1) {
+  while (true) {
     cpu_io::Pause();
   }
 }
@@ -163,7 +163,7 @@ auto TaskManager::AllocatePid() -> size_t {
   return pid_allocator_.fetch_add(1);
 }
 
-TaskControlBlock* TaskManager::FindTask(Pid pid) {
+auto TaskManager::FindTask(Pid pid) -> TaskControlBlock* {
   LockGuard lock_guard{task_table_lock_};
   auto it = task_table_.find(pid);
   return (it != task_table_.end()) ? it->second.get() : nullptr;
@@ -222,8 +222,8 @@ auto TaskManager::ReparentChildren(TaskControlBlock* parent) -> void {
   }
 }
 
-etl::vector<TaskControlBlock*, kernel::config::kMaxReadyTasks>
-TaskManager::GetThreadGroup(Pid tgid) {
+auto TaskManager::GetThreadGroup(Pid tgid)
+    -> etl::vector<TaskControlBlock*, kernel::config::kMaxReadyTasks> {
   etl::vector<TaskControlBlock*, kernel::config::kMaxReadyTasks> result;
 
   LockGuard lock_guard(task_table_lock_);

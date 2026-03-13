@@ -10,8 +10,8 @@
 #include "task_manager.hpp"
 #include "task_messages.hpp"
 
-Expected<Pid> TaskManager::Wait(Pid pid, int* status, bool no_hang,
-                                bool untraced) {
+auto TaskManager::Wait(Pid pid, int* status, bool no_hang, bool untraced)
+    -> Expected<Pid> {
   auto* current = GetCurrentTask();
   assert(current != nullptr && "Wait: No current task");
   assert(current->GetStatus() == TaskStatus::kRunning &&

@@ -81,7 +81,7 @@ auto LoadElf(const uint8_t* elf_data, uint64_t* page_table) -> uint64_t {
     }
   }
   return ehdr->e_entry;
-};
+}
 
 }  // namespace
 
@@ -128,9 +128,9 @@ auto TaskControlBlock::GetThreadGroupSize() const -> size_t {
   return count;
 }
 
-TaskControlBlock::TaskControlBlock(const char* name, int priority,
+TaskControlBlock::TaskControlBlock(const char* _name, int priority,
                                    ThreadEntry entry, void* arg)
-    : name(name) {
+    : name(_name) {
   // 设置优先级
   sched_info.priority = priority;
   sched_info.base_priority = priority;
@@ -157,15 +157,15 @@ TaskControlBlock::TaskControlBlock(const char* name, int priority,
   fsm.Start();
 }
 
-TaskControlBlock::TaskControlBlock(const char* name, int priority, uint8_t* elf,
-                                   int argc, char** argv)
-    : name(name) {
+TaskControlBlock::TaskControlBlock(const char* _name, int priority,
+                                   uint8_t* elf, int argc, char** argv)
+    : name(_name) {
   // 设置优先级
   sched_info.priority = priority;
   sched_info.base_priority = priority;
 
   /// @todo
-  (void)name;
+  (void)_name;
   (void)priority;
   (void)elf;
   (void)argc;
