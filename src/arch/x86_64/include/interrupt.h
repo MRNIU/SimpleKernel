@@ -16,14 +16,19 @@
 
 class Interrupt final : public InterruptBase {
  public:
-  /** @brief 执行中断处理 */
+  /// 外部中断向量基址（IO APIC IRQ 到 IDT 向量的映射）
+  static constexpr uint8_t kExternalVectorBase = 0x20;
+
   auto Do(uint64_t cause, cpu_io::TrapContext* context) -> void override;
-  /** @brief 注册中断处理函数 */
+
   auto RegisterInterruptFunc(uint64_t cause, InterruptDelegate func)
       -> void override;
+
   [[nodiscard]] auto SendIpi(uint64_t target_cpu_mask)
       -> Expected<void> override;
+
   [[nodiscard]] auto BroadcastIpi() -> Expected<void> override;
+
   [[nodiscard]] auto RegisterExternalInterrupt(uint32_t irq, uint32_t cpu_id,
                                                uint32_t priority,
                                                InterruptDelegate handler)
@@ -42,9 +47,6 @@ class Interrupt final : public InterruptBase {
    * @param cpu_count CPU 核心数
    */
   auto InitApic(size_t cpu_count) -> void;
-
-  /// 外部中断向量基址（IO APIC IRQ 到 IDT 向量的映射）
-  static constexpr uint8_t kExternalVectorBase = 0x20;
 
   /**
    * @brief 初始化 idtr

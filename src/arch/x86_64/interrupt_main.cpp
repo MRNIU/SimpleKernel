@@ -59,7 +59,7 @@ auto KeyboardHandler(uint64_t cause, cpu_io::TrapContext* context) -> uint64_t {
     klog::Info("Key pressed: scancode {:#x}", scancode);
 
     // 简单的扫描码到ASCII的映射（仅作为示例）
-    static const char scancode_to_ascii[] = {
+    static constexpr char scancode_to_ascii[] = {
         0,   27,  '1',  '2',  '3',  '4', '5', '6',  '7', '8', '9', '0',
         '-', '=', '\b', '\t', 'q',  'w', 'e', 'r',  't', 'y', 'u', 'i',
         'o', 'p', '[',  ']',  '\n', 0,   'a', 's',  'd', 'f', 'g', 'h',

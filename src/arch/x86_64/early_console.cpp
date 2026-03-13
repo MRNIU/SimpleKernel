@@ -11,6 +11,7 @@ namespace {
 
 cpu_io::Serial* serial = nullptr;
 
+/// 早期控制台初始化结构体
 struct EarlyConsole {
   EarlyConsole() {
     SerialSingleton::create(cpu_io::kCom1);
