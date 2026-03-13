@@ -15,16 +15,6 @@
  */
 class IoApic {
  public:
-  /// @name 构造/析构函数
-  /// @{
-  IoApic();
-  IoApic(const IoApic&) = delete;
-  IoApic(IoApic&&) = default;
-  auto operator=(const IoApic&) -> IoApic& = delete;
-  auto operator=(IoApic&&) -> IoApic& = default;
-  ~IoApic() = default;
-  /// @}
-
   /**
    * @brief 设置 IO APIC 重定向表项
    * @param irq IRQ 号
@@ -70,6 +60,16 @@ class IoApic {
    * @brief 打印 IO APIC 信息（调试用）
    */
   auto PrintInfo() const -> void;
+
+  /// @name 构造/析构函数
+  /// @{
+  IoApic();
+  IoApic(const IoApic&) = delete;
+  IoApic(IoApic&&) = default;
+  auto operator=(const IoApic&) -> IoApic& = delete;
+  auto operator=(IoApic&&) -> IoApic& = default;
+  ~IoApic() = default;
+  /// @}
 
  private:
   /// @name IO APIC 寄存器偏移常数
@@ -138,7 +138,7 @@ class IoApic {
   static constexpr uint64_t kDefaultIoApicBase = 0xFEC00000;
   /// @}
 
-  /// @brief IO APIC 基地址
+  /// IO APIC 基地址
   uint64_t base_address_{kDefaultIoApicBase};
 
   /**

@@ -14,19 +14,8 @@
 #include "interrupt_base.h"
 #include "sk_stdio.h"
 
-/// @brief x86_64 中断控制器实现
 class Interrupt final : public InterruptBase {
  public:
-  /// @name 构造/析构函数
-  /// @{
-  Interrupt();
-  Interrupt(const Interrupt&) = delete;
-  Interrupt(Interrupt&&) = delete;
-  auto operator=(const Interrupt&) -> Interrupt& = delete;
-  auto operator=(Interrupt&&) -> Interrupt& = delete;
-  ~Interrupt() override = default;
-  /// @}
-
   /** @brief 执行中断处理 */
   auto Do(uint64_t cause, cpu_io::TrapContext* context) -> void override;
   /** @brief 注册中断处理函数 */
@@ -62,17 +51,27 @@ class Interrupt final : public InterruptBase {
    */
   auto SetUpIdtr() -> void;
 
+  /// @name 构造/析构函数
+  /// @{
+  Interrupt();
+  Interrupt(const Interrupt&) = delete;
+  Interrupt(Interrupt&&) = delete;
+  auto operator=(const Interrupt&) -> Interrupt& = delete;
+  auto operator=(Interrupt&&) -> Interrupt& = delete;
+  ~Interrupt() override = default;
+  /// @}
+
  private:
   /// 中断处理函数数组
   alignas(4096)
       std::array<InterruptDelegate,
-                 cpu_io::IdtrInfo::kInterruptMaxCount> interrupt_handlers_;
+                 cpu_io::IdtrInfo::kInterruptMaxCount> interrupt_handlers_{};
 
   alignas(4096) std::array<cpu_io::IdtrInfo::Idt,
-                           cpu_io::IdtrInfo::kInterruptMaxCount> idts_;
+                           cpu_io::IdtrInfo::kInterruptMaxCount> idts_{};
 
   /// APIC 中断控制器实例
-  Apic apic_;
+  Apic apic_{};
 
   /**
    * @brief 初始化 idtr

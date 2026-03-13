@@ -17,16 +17,6 @@
  */
 class LocalApic {
  public:
-  /// @name 构造/析构函数
-  /// @{
-  LocalApic() = default;
-  LocalApic(const LocalApic&) = delete;
-  LocalApic(LocalApic&&) = default;
-  auto operator=(const LocalApic&) -> LocalApic& = delete;
-  auto operator=(LocalApic&&) -> LocalApic& = default;
-  ~LocalApic() = default;
-  /// @}
-
   /**
    * @brief 初始化 Local APIC
    * @return Expected<void> 初始化成功返回空值，失败返回错误
@@ -147,6 +137,16 @@ class LocalApic {
    */
   auto PrintInfo() const -> void;
 
+  /// @name 构造/析构函数
+  /// @{
+  LocalApic() = default;
+  LocalApic(const LocalApic&) = delete;
+  LocalApic(LocalApic&&) = default;
+  auto operator=(const LocalApic&) -> LocalApic& = delete;
+  auto operator=(LocalApic&&) -> LocalApic& = default;
+  ~LocalApic() = default;
+  /// @}
+
  private:
   /// @name xAPIC 寄存器偏移量常数
   /// @{
@@ -246,10 +246,10 @@ class LocalApic {
   static constexpr uint64_t kApicBaseControlMask = 0xFFF;
   /// @}
 
-  /// @brief 当前 APIC 模式（true = x2APIC, false = xAPIC）
+  /// 当前 APIC 模式（true = x2APIC, false = xAPIC）
   bool is_x2apic_mode_{false};
 
-  /// @brief APIC 基地址（仅用于 xAPIC 模式）
+  /// APIC 基地址（仅用于 xAPIC 模式）
   uint64_t apic_base_{kDefaultApicBase};
 
   /**

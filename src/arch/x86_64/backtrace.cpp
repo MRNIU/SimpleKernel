@@ -28,7 +28,7 @@ auto backtrace(std::array<uint64_t, kMaxFrameCount>& buffer) -> int {
     buffer[count++] = rip;
   }
 
-  return int(count);
+  return static_cast<int>(count);
 }
 
 auto DumpStack() -> void {

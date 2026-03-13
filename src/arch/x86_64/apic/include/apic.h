@@ -21,17 +21,6 @@
  */
 class Apic {
  public:
-  /// @name 构造/析构函数
-  /// @{
-  explicit Apic(const size_t cpu_count);
-  Apic() = default;
-  Apic(const Apic&) = delete;
-  Apic(Apic&&) = default;
-  auto operator=(const Apic&) -> Apic& = delete;
-  auto operator=(Apic&&) -> Apic& = default;
-  ~Apic() = default;
-  /// @}
-
   /**
    * @brief 初始化当前 CPU 的 Local APIC
    * @return Expected<void> 初始化成功返回空值，失败返回错误
@@ -117,6 +106,17 @@ class Apic {
    */
   auto SetupPeriodicTimer(uint32_t frequency_hz, uint8_t vector) const -> void;
 
+  /// @name 构造/析构函数
+  /// @{
+  explicit Apic(const size_t cpu_count);
+  Apic() = default;
+  Apic(const Apic&) = delete;
+  Apic(Apic&&) = default;
+  auto operator=(const Apic&) -> Apic& = delete;
+  auto operator=(Apic&&) -> Apic& = default;
+  ~Apic() = default;
+  /// @}
+
   /**
    * @brief 打印所有 APIC 信息（调试用）
    */
@@ -124,11 +124,11 @@ class Apic {
 
  private:
   /// Local APIC 操作接口（静态实例，用于当前 CPU）
-  LocalApic local_apic_;
+  LocalApic local_apic_{};
 
   /// 只支持一个 IO APIC
-  IoApic io_apic_;
+  IoApic io_apic_{};
 
   /// 系统 CPU 数量
-  size_t cpu_count_;
+  size_t cpu_count_{0};
 };
