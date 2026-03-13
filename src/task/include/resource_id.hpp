@@ -42,7 +42,8 @@ enum class ResourceType : uint8_t {
  * @param type 资源类型
  * @return 类型名称字符串
  */
-constexpr auto GetResourceTypeName(ResourceType type) -> const char* {
+[[nodiscard]] constexpr auto GetResourceTypeName(ResourceType type) -> const
+    char* {
   switch (type) {
     case ResourceType::kNone:
       return "None";

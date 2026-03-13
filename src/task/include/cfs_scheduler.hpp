@@ -41,6 +41,12 @@ class CfsScheduler : public SchedulerBase {
    * 按 vruntime 从小到大排序，确保最小 vruntime 的任务在队列顶部。
    */
   struct VruntimeCompare {
+    /**
+     * @brief 比较两个任务的 vruntime
+     * @param a 第一个任务控制块指针
+     * @param b 第二个任务控制块指针
+     * @return bool 如果 a 的 vruntime 大于 b 返回 true
+     */
     auto operator()(const TaskControlBlock* a, const TaskControlBlock* b) const
         -> bool {
       return a->sched_data.cfs.vruntime > b->sched_data.cfs.vruntime;

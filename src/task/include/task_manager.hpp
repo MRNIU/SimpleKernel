@@ -255,8 +255,9 @@ class TaskManager {
 
   /**
    * @brief 获取当前核心的调度数据
+   * @return CpuSchedData& 当前核心的调度数据引用
    */
-  auto GetCurrentCpuSched() -> CpuSchedData& {
+  [[nodiscard]] auto GetCurrentCpuSched() -> CpuSchedData& {
     return cpu_schedulers_[cpu_io::GetCurrentCoreId()];
   }
 

@@ -27,19 +27,19 @@ using ThreadEntry = void (*)(void*);
  * @note 参考 Linux clone flags
  */
 namespace clone_flag {
-// 共享地址空间
+/// 共享地址空间
 inline constexpr uint64_t kVm = 0x00000100;
-// 共享文件系统信息
+/// 共享文件系统信息
 inline constexpr uint64_t kFs = 0x00000200;
-// 共享文件描述符表
+/// 共享文件描述符表
 inline constexpr uint64_t kFiles = 0x00000400;
-// 共享信号处理器
+/// 共享信号处理器
 inline constexpr uint64_t kSighand = 0x00000800;
-// 保持相同父进程
+/// 保持相同父进程
 inline constexpr uint64_t kParent = 0x00008000;
-// 同一线程组
+/// 同一线程组
 inline constexpr uint64_t kThread = 0x00010000;
-// 全部标志掩码
+/// 全部标志掩码
 inline constexpr uint64_t kAllMask =
     kVm | kFs | kFiles | kSighand | kParent | kThread;
 }  // namespace clone_flag
@@ -59,13 +59,13 @@ namespace TaskStatus = TaskStatusId;
  * @brief 调度策略
  */
 enum class SchedPolicy : uint8_t {
-  // 实时任务 (最高优先级)
+  /// 实时任务 (最高优先级)
   kRealTime = 0,
-  // 普通任务
+  /// 普通任务
   kNormal = 1,
-  // 空闲任务 (最低优先级)
+  /// 空闲任务 (最低优先级)
   kIdle = 2,
-  // 策略数量
+  /// 策略数量
   kPolicyCount
 };
 
@@ -83,6 +83,12 @@ struct TaskControlBlock : public ThreadGroupLink {
    * @brief 任务优先级比较函数，优先级数值越小，优先级越高
    */
   struct PriorityCompare {
+    /**
+     * @brief 比较两个任务的优先级
+     * @param a 第一个任务控制块指针
+     * @param b 第二个任务控制块指针
+     * @return bool 如果 a 的优先级低于 b 返回 true
+     */
     auto operator()(TaskControlBlock* a, TaskControlBlock* b) -> bool {
       return a->sched_info.priority > b->sched_info.priority;
     }
@@ -92,6 +98,12 @@ struct TaskControlBlock : public ThreadGroupLink {
    * @brief 任务唤醒时间比较函数，时间越早优先级越高
    */
   struct WakeTickCompare {
+    /**
+     * @brief 比较两个任务的唤醒时间
+     * @param a 第一个任务控制块指针
+     * @param b 第二个任务控制块指针
+     * @return bool 如果 a 的唤醒时间晚于 b 返回 true
+     */
     auto operator()(TaskControlBlock* a, TaskControlBlock* b) -> bool {
       return a->sched_info.wake_tick > b->sched_info.wake_tick;
     }
