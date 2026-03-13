@@ -10,7 +10,7 @@
 #include <cstdint>
 
 /**
- * @brief gic 中断控制器驱动
+ * @brief GIC 中断控制器驱动
  * @see
  * https://developer.arm.com/documentation/100095/0003/Generic-Interrupt-Controller-CPU-Interface/GIC-programmers-model/CPU-interface-memory-mapped-register-descriptions
  */
@@ -25,9 +25,89 @@ class Gic {
   static constexpr size_t kSpiBase = 32;
   static constexpr size_t kSpiCount = 988;
 
-  /// @brief GIC Distributor 接口
+  /**
+   * @brief GIC Distributor 接口
+   */
   class Gicd {
    public:
+    /**
+     * @brief 允许从 Distributor 转发到 redistributor
+     * @param intid 中断号
+     */
+    auto Enable(uint32_t intid) const -> void;
+
+    /**
+     * @brief 允许 no-sec group1 中断
+     */
+    auto EnableGrp1Ns() const -> void;
+
+    /**
+     * @brief 禁止从 Distributor 转发到 redistributor
+     * @param intid 中断号
+     */
+    auto Disable(uint32_t intid) const -> void;
+
+    /**
+     * @brief 清除 intid 的中断
+     * @param intid 中断号
+     */
+    auto Clear(uint32_t intid) const -> void;
+
+    /**
+     * @brief 判断 intid 中断是否使能
+     * @param intid 中断号
+     * @return true 允许
+     * @return false 未使能
+     */
+    [[nodiscard]] auto IsEnable(uint32_t intid) const -> bool;
+
+    /**
+     * @brief 设置 intid 的优先级
+     * @param intid 中断号
+     * @param prio 优先级
+     */
+    auto SetPrio(uint32_t intid, uint32_t prio) const -> void;
+
+    /**
+     * @brief 设置 intid 的属性
+     * @param intid 中断号
+     * @param config 属性
+     */
+    auto SetConfig(uint32_t intid, uint32_t config) const -> void;
+
+    /**
+     * @brief 设置 intid 的由指定 cpu 处理
+     * @param intid 中断号
+     * @param cpuid cpu 编号
+     */
+    auto SetTarget(uint32_t intid, uint32_t cpuid) const -> void;
+
+    /**
+     * @brief 设置指定 SPI 中断
+     * SPI: shared peripheral interrupt,
+     * 共享外设中断，该中断来源于外设，但是该中断可以对所有的 core 有效
+     * @param intid 中断号
+     * @param cpuid cpu 编号
+     */
+    auto SetupSpi(uint32_t intid, uint32_t cpuid) const -> void;
+
+    /// @name 构造/析构函数
+    /// @{
+
+    /**
+     * @brief 构造函数
+     * @param _base_addr GICD 基地址
+     */
+    explicit Gicd(uint64_t _base_addr);
+    Gicd() = default;
+    Gicd(const Gicd&) = delete;
+    Gicd(Gicd&&) = delete;
+    auto operator=(const Gicd&) -> Gicd& = delete;
+    auto operator=(Gicd&&) -> Gicd& = default;
+    ~Gicd() = default;
+    /// @}
+
+   private:
     /// @see
     /// https://developer.arm.com/documentation/101206/0003/Programmers-model/Distributor-registers--GICD-GICDA--summary
     /// GICD Register offsets
@@ -310,84 +390,6 @@ class Gic {
     /// Component ID 3 Register, RO
     static constexpr uint32_t kCidr3 = 0xFFFC;
 
-    /**
-     * @brief 允许从 Distributor 转发到 redistributor
-     * @param intid 中断号
-     */
-    auto Enable(uint32_t intid) const -> void;
-
-    /**
-     * @brief 允许 no-sec group1 中断
-     */
-    auto EnableGrp1Ns() const -> void;
-
-    /**
-     * @brief 禁止从 Distributor 转发到 redistributor
-     * @param intid 中断号
-     */
-    auto Disable(uint32_t intid) const -> void;
-
-    /**
-     * @brief 清除 intid 的中断
-     * @param intid 中断号
-     */
-    auto Clear(uint32_t intid) const -> void;
-
-    /**
-     * @brief 判断 intid 中断是否使能
-     * @param intid 中断号
-     * @return true 允许
-     * @return false 未使能
-     */
-    [[nodiscard]] auto IsEnable(uint32_t intid) const -> bool;
-
-    /**
-     * @brief 设置 intid 的优先级
-     * @param intid 中断号
-     * @param prio 优先级
-     */
-    auto SetPrio(uint32_t intid, uint32_t prio) const -> void;
-
-    /**
-     * @brief 设置 intid 的属性
-     * @param intid 中断号
-     * @param config 属性
-     */
-    auto SetConfig(uint32_t intid, uint32_t config) const -> void;
-
-    /**
-     * @brief 设置 intid 的由指定 cpu 处理
-     * @param intid 中断号
-     * @param cpuid cpu 编号
-     */
-    auto SetTarget(uint32_t intid, uint32_t cpuid) const -> void;
-
-    /**
-     * @brief 设置指定 SPI 中断
-     * SPI: shared peripheral interrupt,
-     * 共享外设中断，该中断来源于外设，但是该中断可以对所有的 core 有效
-     * @param intid 中断号
-     * @param cpuid cpu 编号
-     */
-    auto SetupSpi(uint32_t intid, uint32_t cpuid) const -> void;
-
-    /// @name 构造/析构函数
-    /// @{
-
-    /**
-     * @brief 构造函数
-     * @param _base_addr GICD 基地址
-     */
-    explicit Gicd(uint64_t _base_addr);
-    Gicd() = default;
-    Gicd(const Gicd&) = delete;
-    Gicd(Gicd&&) = delete;
-    auto operator=(const Gicd&) -> Gicd& = delete;
-    auto operator=(Gicd&&) -> Gicd& = default;
-    ~Gicd() = default;
-    /// @}
-
-   private:
     /// GICD 基地址
     uint64_t base_addr_{0};
 
@@ -402,9 +404,80 @@ class Gic {
     }
   };
 
-  /// @brief GIC Redistributor 接口
+  /**
+   * @brief GIC Redistributor 接口
+   */
   class Gicr {
    public:
+    /**
+     * @brief 允许从 redistributor 转发到 CPU interface
+     * @param intid 中断号
+     * @param cpuid cpu 编号
+     */
+    auto Enable(uint32_t intid, uint32_t cpuid) const -> void;
+
+    /**
+     * @brief 禁止从 redistributor 转发到 CPU interface
+     * @param intid 中断号
+     * @param cpuid cpu 编号
+     */
+    auto Disable(uint32_t intid, uint32_t cpuid) const -> void;
+
+    /**
+     * @brief 清除指定 cpu intid 的中断
+     * @param intid 中断号
+     * @param cpuid cpu 编号
+     */
+    auto Clear(uint32_t intid, uint32_t cpuid) const -> void;
+
+    /**
+     * @brief 设置 intid 的优先级
+     * @param intid 中断号
+     * @param cpuid cpu 编号
+     * @param prio 优先级
+     */
+    auto SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const -> void;
+
+    /**
+     * @brief 初始化 gicr，在多核场景使用
+     */
+    auto SetUp() const -> void;
+
+    /**
+     * @brief 设置指定 PPI 中断
+     * PPI: private peripheral interrupt,
+     * 私有外设中断，该中断来源于外设，但是该中断只对指定的 core 有效
+     * @param intid 中断号
+     * @param cpuid cpu 编号
+     */
+    auto SetupPpi(uint32_t intid, uint32_t cpuid) const -> void;
+
+    /**
+     * @brief 设置指定 SGI 中断
+     * SGI: Software Generated Interrupt,
+     * 软件生成中断，用于处理器间通信
+     * @param intid 中断号 (0-15)
+     * @param cpuid cpu 编号
+     */
+    auto SetupSgi(uint32_t intid, uint32_t cpuid) const -> void;
+
+    /// @name 构造/析构函数
+    /// @{
+
+    /**
+     * @brief 构造函数
+     * @param _base_addr GICR 基地址
+     */
+    explicit Gicr(uint64_t _base_addr);
+    Gicr() = default;
+    Gicr(const Gicr&) = delete;
+    Gicr(Gicr&&) = delete;
+    auto operator=(const Gicr&) -> Gicr& = delete;
+    auto operator=(Gicr&&) -> Gicr& = default;
+    ~Gicr() = default;
+    /// @}
+
+   private:
     /// 每个 GICR 长度 2 * 64 * 1024
     static constexpr uint32_t kStride = 0x20000;
 
@@ -539,75 +612,6 @@ class Gic {
     /// Configuration ID1 Register, RO
     static constexpr uint32_t kCfgid1 = 0xF004;
 
-    /**
-     * @brief 允许从 redistributor 转发到 CPU interface
-     * @param intid 中断号
-     * @param cpuid cpu 编号
-     */
-    auto Enable(uint32_t intid, uint32_t cpuid) const -> void;
-
-    /**
-     * @brief 禁止从 redistributor 转发到 CPU interface
-     * @param intid 中断号
-     * @param cpuid cpu 编号
-     */
-    auto Disable(uint32_t intid, uint32_t cpuid) const -> void;
-
-    /**
-     * @brief 清除指定 cpu intid 的中断
-     * @param intid 中断号
-     * @param cpuid cpu 编号
-     */
-    auto Clear(uint32_t intid, uint32_t cpuid) const -> void;
-
-    /**
-     * @brief 设置 intid 的优先级
-     * @param intid 中断号
-     * @param cpuid cpu 编号
-     * @param prio 优先级
-     */
-    auto SetPrio(uint32_t intid, uint32_t cpuid, uint32_t prio) const -> void;
-
-    /**
-     * @brief 初始化 gicr，在多核场景使用
-     */
-    auto SetUp() const -> void;
-
-    /**
-     * @brief 设置指定 PPI 中断
-     * PPI: private peripheral interrupt,
-     * 私有外设中断，该中断来源于外设，但是该中断只对指定的 core 有效
-     * @param intid 中断号
-     * @param cpuid cpu 编号
-     */
-    auto SetupPpi(uint32_t intid, uint32_t cpuid) const -> void;
-
-    /**
-     * @brief 设置指定 SGI 中断
-     * SGI: Software Generated Interrupt,
-     * 软件生成中断，用于处理器间通信
-     * @param intid 中断号 (0-15)
-     * @param cpuid cpu 编号
-     */
-    auto SetupSgi(uint32_t intid, uint32_t cpuid) const -> void;
-
-    /// @name 构造/析构函数
-    /// @{
-
-    /**
-     * @brief 构造函数
-     * @param _base_addr GICR 基地址
-     */
-    explicit Gicr(uint64_t _base_addr);
-    Gicr() = default;
-    Gicr(const Gicr&) = delete;
-    Gicr(Gicr&&) = delete;
-    auto operator=(const Gicr&) -> Gicr& = delete;
-    auto operator=(Gicr&&) -> Gicr& = default;
-    ~Gicr() = default;
-    /// @}
-
-   private:
     /// GICR 基地址
     uint64_t base_addr_{0};
 
