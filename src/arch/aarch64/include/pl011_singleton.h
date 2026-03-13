@@ -8,5 +8,5 @@
 
 #include "pl011/pl011_driver.hpp"
 
-/// @brief PL011 串口设备单例类型别名
+/// PL011 串口设备单例类型别名
 using Pl011Singleton = etl::singleton<pl011::Pl011Device>;

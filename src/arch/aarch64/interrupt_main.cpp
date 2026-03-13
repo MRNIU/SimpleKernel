@@ -23,7 +23,7 @@ namespace {
  * @param print_regs 要打印的寄存器数量 (0, 4, 或 8)
  */
 auto HandleException(const char* exception_msg, cpu_io::TrapContext* context,
-                     int print_regs = 0) {
+                     int print_regs = 0) -> void {
   klog::Err("{}", exception_msg);
   klog::Err(
       "  ESR_EL1: {:#X}, ELR_EL1: {:#X}, SP_EL0: {:#X}, SP_EL1: {:#X}, "
@@ -46,20 +46,17 @@ auto HandleException(const char* exception_msg, cpu_io::TrapContext* context,
 }
 }  // namespace
 
-/**
- * @brief 中断处理函数
- */
-/// @brief 异常向量表入口
+/// 异常向量表入口
 extern "C" auto vector_table() -> void;
 
 // 同步异常处理程序
-/// @brief 同步异常处理 - Current EL with SP0
+/// 同步异常处理 - Current EL with SP0
 extern "C" auto sync_current_el_sp0_handler(cpu_io::TrapContext* context)
     -> void {
   HandleException("Sync Exception at Current EL with SP0", context, 4);
 }
 
-/// @brief IRQ 异常处理 - Current EL with SP0
+/// IRQ 异常处理 - Current EL with SP0
 extern "C" auto irq_current_el_sp0_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("IRQ Exception at Current EL with SP0");
@@ -67,7 +64,7 @@ extern "C" auto irq_current_el_sp0_handler(
   // ...
 }
 
-/// @brief FIQ 异常处理 - Current EL with SP0
+/// FIQ 异常处理 - Current EL with SP0
 extern "C" auto fiq_current_el_sp0_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("FIQ Exception at Current EL with SP0");
@@ -75,26 +72,26 @@ extern "C" auto fiq_current_el_sp0_handler(
   // ...
 }
 
-/// @brief 错误异常处理 - Current EL with SP0
+/// 错误异常处理 - Current EL with SP0
 extern "C" auto error_current_el_sp0_handler(cpu_io::TrapContext* context)
     -> void {
   HandleException("Error Exception at Current EL with SP0", context);
 }
 
-/// @brief 同步异常处理 - Current EL with SPx
+/// 同步异常处理 - Current EL with SPx
 extern "C" auto sync_current_el_spx_handler(cpu_io::TrapContext* context)
     -> void {
   HandleException("Sync Exception at Current EL with SPx", context, 4);
 }
 
-/// @brief IRQ 异常处理 - Current EL with SPx
+/// IRQ 异常处理 - Current EL with SPx
 extern "C" auto irq_current_el_spx_handler(cpu_io::TrapContext* context)
     -> void {
   auto cause = cpu_io::ICC_IAR1_EL1::INTID::Get();
   InterruptSingleton::instance().Do(cause, context);
 }
 
-/// @brief FIQ 异常处理 - Current EL with SPx
+/// FIQ 异常处理 - Current EL with SPx
 extern "C" auto fiq_current_el_spx_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("FIQ Exception at Current EL with SPx");
@@ -102,19 +99,19 @@ extern "C" auto fiq_current_el_spx_handler(
   // ...
 }
 
-/// @brief 错误异常处理 - Current EL with SPx
+/// 错误异常处理 - Current EL with SPx
 extern "C" auto error_current_el_spx_handler(cpu_io::TrapContext* context)
     -> void {
   HandleException("Error Exception at Current EL with SPx", context);
 }
 
-/// @brief 同步异常处理 - Lower EL using AArch64
+/// 同步异常处理 - Lower EL using AArch64
 extern "C" auto sync_lower_el_aarch64_handler(cpu_io::TrapContext* context)
     -> void {
   HandleException("Sync Exception at Lower EL using AArch64", context, 8);
 }
 
-/// @brief IRQ 异常处理 - Lower EL using AArch64
+/// IRQ 异常处理 - Lower EL using AArch64
 extern "C" auto irq_lower_el_aarch64_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("IRQ Exception at Lower EL using AArch64");
@@ -122,7 +119,7 @@ extern "C" auto irq_lower_el_aarch64_handler(
   // ...
 }
 
-/// @brief FIQ 异常处理 - Lower EL using AArch64
+/// FIQ 异常处理 - Lower EL using AArch64
 extern "C" auto fiq_lower_el_aarch64_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("FIQ Exception at Lower EL using AArch64");
@@ -130,19 +127,19 @@ extern "C" auto fiq_lower_el_aarch64_handler(
   // ...
 }
 
-/// @brief 错误异常处理 - Lower EL using AArch64
+/// 错误异常处理 - Lower EL using AArch64
 extern "C" auto error_lower_el_aarch64_handler(cpu_io::TrapContext* context)
     -> void {
   HandleException("Error Exception at Lower EL using AArch64", context);
 }
 
-/// @brief 同步异常处理 - Lower EL using AArch32
+/// 同步异常处理 - Lower EL using AArch32
 extern "C" auto sync_lower_el_aarch32_handler(cpu_io::TrapContext* context)
     -> void {
   HandleException("Sync Exception at Lower EL using AArch32", context);
 }
 
-/// @brief IRQ 异常处理 - Lower EL using AArch32
+/// IRQ 异常处理 - Lower EL using AArch32
 extern "C" auto irq_lower_el_aarch32_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("IRQ Exception at Lower EL using AArch32");
@@ -150,7 +147,7 @@ extern "C" auto irq_lower_el_aarch32_handler(
   // ...
 }
 
-/// @brief FIQ 异常处理 - Lower EL using AArch32
+/// FIQ 异常处理 - Lower EL using AArch32
 extern "C" auto fiq_lower_el_aarch32_handler(
     [[maybe_unused]] cpu_io::TrapContext* context) -> void {
   klog::Err("FIQ Exception at Lower EL using AArch32");
@@ -158,7 +155,7 @@ extern "C" auto fiq_lower_el_aarch32_handler(
   // ...
 }
 
-/// @brief 错误异常处理 - Lower EL using AArch32
+/// 错误异常处理 - Lower EL using AArch32
 extern "C" auto error_lower_el_aarch32_handler(cpu_io::TrapContext* context)
     -> void {
   HandleException("Error Exception at Lower EL using AArch32", context);
@@ -175,11 +172,6 @@ auto uart_handler(uint64_t cause, cpu_io::TrapContext*) -> uint64_t {
   return cause;
 }
 
-/**
- * @brief 中断子系统初始化
- * @param argc 参数数量（未使用）
- * @param argv 参数列表（未使用）
- */
 auto InterruptInit(int, const char**) -> void {
   InterruptSingleton::create();
 
@@ -205,11 +197,6 @@ auto InterruptInit(int, const char**) -> void {
   klog::Info("Hello InterruptInit");
 }
 
-/**
- * @brief SMP 中断子系统初始化
- * @param argc 参数数量（未使用）
- * @param argv 参数列表（未使用）
- */
 auto InterruptInitSMP(int, const char**) -> void {
   cpu_io::VBAR_EL1::Write(reinterpret_cast<uint64_t>(vector_table));
 

@@ -13,21 +13,13 @@
 #include "interrupt_base.h"
 #include "sk_stdio.h"
 
-/// AArch64 中断控制器实现
+/**
+ * @brief AArch64 中断控制器实现
+ */
 class Interrupt final : public InterruptBase {
  public:
   /// 最大中断号
   static constexpr size_t kMaxInterrupt = 128;
-
-  /// @name 构造/析构函数
-  /// @{
-  Interrupt();
-  Interrupt(const Interrupt&) = delete;
-  Interrupt(Interrupt&&) = delete;
-  auto operator=(const Interrupt&) -> Interrupt& = delete;
-  auto operator=(Interrupt&&) -> Interrupt& = delete;
-  ~Interrupt() = default;
-  /// @}
 
   /**
    * @brief 执行中断处理
@@ -103,13 +95,23 @@ class Interrupt final : public InterruptBase {
     gic_.Sgi(intid, cpuid);
   }
 
+  /// @name 构造/析构函数
+  /// @{
+  Interrupt();
+  Interrupt(const Interrupt&) = delete;
+  Interrupt(Interrupt&&) = delete;
+  auto operator=(const Interrupt&) -> Interrupt& = delete;
+  auto operator=(Interrupt&&) -> Interrupt& = delete;
+  ~Interrupt() = default;
+  /// @}
+
  private:
   /// 中断处理函数数组
-  std::array<InterruptDelegate, kMaxInterrupt> interrupt_handlers_;
+  std::array<InterruptDelegate, kMaxInterrupt> interrupt_handlers_{};
 
   /// GIC 中断控制器实例
-  Gic gic_;
+  Gic gic_{};
 };
 
-/// @brief Interrupt 单例类型别名
+/// Interrupt 单例类型别名
 using InterruptSingleton = etl::singleton<Interrupt>;

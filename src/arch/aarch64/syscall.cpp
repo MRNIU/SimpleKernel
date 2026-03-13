@@ -9,6 +9,10 @@
 #include "interrupt.h"
 #include "kernel_log.hpp"
 
+/**
+ * @brief AArch64 系统调用处理
+ * @param context_ptr 中断上下文，包含系统调用号和参数
+ */
 auto Syscall(uint64_t, cpu_io::TrapContext* context_ptr) -> void {
   // 获取系统调用号和参数
   uint64_t syscall_id = 0;
