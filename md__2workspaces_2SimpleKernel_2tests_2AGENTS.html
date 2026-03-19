@@ -92,11 +92,11 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2tests_2
   <div class="headertitle"><div class="title">AGENTS.md — tests/</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md452"></a> </p>
-<h1><a class="anchor" id="autotoc_md453"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md434"></a> </p>
+<h1><a class="anchor" id="autotoc_md435"></a>
 OVERVIEW</h1>
 <p>Three test categories: unit_test (GoogleTest, host-only, ASan+coverage), system_test (freestanding, QEMU, custom runner), integration_test (minimal boot validation). Test binary: <code>tests/unit_test/unit-test</code>.</p>
-<h1><a class="anchor" id="autotoc_md454"></a>
+<h1><a class="anchor" id="autotoc_md436"></a>
 STRUCTURE</h1>
 <div class="fragment"><div class="line">unit_test/</div>
 <div class="line">  CMakeLists.txt            # gtest_discover_tests(), --coverage, -fsanitize=leak,address</div>
@@ -119,7 +119,7 @@ STRUCTURE</h1>
 <div class="line">  CMakeLists.txt            # Minimal boot tests</div>
 <div class="line">  aarch64_minimal/          # AArch64 bare-metal boot test</div>
 <div class="line">  opensbi_test/             # OpenSBI boot validation</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md455"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md437"></a>
 WHERE TO LOOK</h1>
 <ul>
 <li><b>Adding unit tests</b> → Create <code>tests/unit_test/{module}_test.cpp</code>, add to CMakeLists.txt</li>
@@ -129,7 +129,7 @@ WHERE TO LOOK</h1>
 <li><b>Run unit tests</b> → <code>cd build_x86_64 &amp;&amp; make unit-test</code></li>
 <li><b>Run system tests</b> → <code>cd build_{arch} &amp;&amp; make run</code> (system tests embedded in kernel)</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md456"></a>
+<h1><a class="anchor" id="autotoc_md438"></a>
 CONVENTIONS</h1>
 <ul>
 <li>Unit tests: GoogleTest, <code>gtest_discover_tests()</code>, host architecture only</li>
@@ -140,7 +140,7 @@ CONVENTIONS</h1>
 <li>Mocks stub out hardware-dependent code for host compilation</li>
 <li><code>--coverage</code> + <code>-fsanitize=leak</code> + <code>-fsanitize=address</code> on unit tests</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md457"></a>
+<h1><a class="anchor" id="autotoc_md439"></a>
 ANTI-PATTERNS</h1>
 <ul>
 <li><b>DO NOT</b> use GoogleTest in system_test — it uses a custom freestanding runner</li>

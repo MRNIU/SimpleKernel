@@ -236,18 +236,20 @@ QEMU 模拟器</h1>
 </div><!-- fragment --><h1><a class="anchor" id="autotoc_md26"></a>
 辅助工具</h1>
 <h2><a class="anchor" id="autotoc_md27"></a>
-Docker 容器化构建</h2>
-<p>项目提供 Docker 支持，确保构建环境的一致性：</p>
+Dev Container 开发环境</h2>
+<p>项目提供 <a href="https://containers.dev/">Dev Container</a> 支持，确保开发环境的一致性：</p>
 <ul>
-<li><b>Dockerfile</b>: 定义了包含所有必要工具链的构建镜像</li>
-<li>支持所有目标架构的交叉编译</li>
-<li>详细使用方法见 doc/docker.md</li>
+<li>基于 Ubuntu，包含 GCC 14 交叉编译工具链（x86_64 / riscv64 / aarch64）</li>
+<li>预装 QEMU、CMake、GDB 等全部构建和调试依赖</li>
+<li>支持 VS Code Dev Containers、GitHub Codespaces 和 devcontainer CLI</li>
+<li>详细使用方法见 <a class="el" href="md_docker.html">Dev Container 文档</a></li>
 </ul>
-<div class="fragment"><div class="line"># 使用预构建的 Docker 镜像</div>
-<div class="line">docker run -it simplekernel/dev</div>
+<div class="fragment"><div class="line"># VS Code: 安装 Dev Containers 扩展后，选择 &quot;Reopen in Container&quot;</div>
 <div class="line"> </div>
-<div class="line"># 或从源码构建镜像</div>
-<div class="line">docker build -t simplekernel-dev .</div>
+<div class="line"># CLI 方式</div>
+<div class="line">npm install -g @devcontainers/cli</div>
+<div class="line">devcontainer up --workspace-folder .</div>
+<div class="line">devcontainer exec --workspace-folder . bash</div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md28"></a>
 项目配置工具</h2>
 <ul>
@@ -286,7 +288,7 @@ VS Code 集成</h2>
 <p>ARM 工具链：https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads</p>
 <p>RISC-V 工具链：https://github.com/riscv/riscv-gnu-toolchain</p>
 <p>构建系统详细文档：doc/build_system.md</p>
-<p>Docker 使用说明：<a class="el" href="md_docker.html">doc/docker.md</a> </p>
+<p>Dev Container 使用说明：<a class="el" href="md_docker.html">docs/docker.md</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

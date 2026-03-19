@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['面向_20ai_20的设计理念_0',['🤖 面向 AI 的设计理念',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md305',1,'']]],
-  ['面向_20ai_20？_1',['为什么要&quot;面向 AI&quot;？',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md306',1,'']]]
+  ['📊_20性能特点_0',['📊 性能特点',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md176',1,'📊 性能特点'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md202',1,'📊 性能特点'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md228',1,'📊 性能特点']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['约束_0',['9. Freestanding 约束',['../md_coding__standards.html#autotoc_md270',1,'']]]
+  ['许可证_0',['📄 许可证',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md319',1,'']]]
 ];

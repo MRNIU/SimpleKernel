@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['🎨_20代码风格_0',['🎨 代码风格',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md330',1,'']]],
-  ['🎨_20code_20style_1',['🎨 Code Style',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md368',1,'']]]
+  ['🔍_20多架构对比分析_0',['🔍 多架构对比分析',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md232',1,'']]]
 ];

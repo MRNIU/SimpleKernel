@@ -92,11 +92,11 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2src_2ar
   <div class="headertitle"><div class="title">AGENTS.md — src/arch/</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md387"></a> </p>
-<h1><a class="anchor" id="autotoc_md388"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md369"></a> </p>
+<h1><a class="anchor" id="autotoc_md370"></a>
 OVERVIEW</h1>
 <p>Per-architecture implementations of <code><a class="el" href="arch_8h.html">arch.h</a></code> unified interface. Each arch has identical file structure: boot.S, arch_main.cpp, early_console.cpp, interrupt.S, interrupt_main.cpp, interrupt.cpp, timer.cpp, switch.S, syscall.cpp, backtrace.cpp, macro.S, link.ld.</p>
-<h1><a class="anchor" id="autotoc_md389"></a>
+<h1><a class="anchor" id="autotoc_md371"></a>
 STRUCTURE</h1>
 <div class="fragment"><div class="line">arch.h                  # Unified interface — ArchInit, InterruptInit, TimerInit, SyscallInit</div>
 <div class="line">aarch64/</div>
@@ -109,7 +109,7 @@ STRUCTURE</h1>
 <div class="line">  apic/                 # APIC: local_apic.cpp, io_apic.cpp, apic.cpp + include/</div>
 <div class="line">  include/              # Arch-private headers</div>
 <div class="line">  sipi.h                # SMP startup IPI definitions</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md390"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md372"></a>
 WHERE TO LOOK</h1>
 <ul>
 <li><b>Boot entry</b> → <code>boot.S</code> → sets stack, jumps to <code>_start</code> in <code><a class="el" href="src_2main_8cpp.html">src/main.cpp</a></code></li>
@@ -120,7 +120,7 @@ WHERE TO LOOK</h1>
 <li><b>Timer</b> → <code>timer.cpp</code> → arch-specific timer init and tick handler</li>
 <li><b>Link layout</b> → <code>link.ld</code> → memory map, section placement, symbol exports</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md391"></a>
+<h1><a class="anchor" id="autotoc_md373"></a>
 CONVENTIONS</h1>
 <ul>
 <li>Each arch directory mirrors the same file set — 1:1 correspondence</li>
@@ -129,7 +129,7 @@ CONVENTIONS</h1>
 <li><code>include/</code> subdirs contain arch-private headers NOT exported to other modules</li>
 <li><code>early_console.cpp</code> provides pre-device-framework output via arch-specific MMIO/SBI</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md392"></a>
+<h1><a class="anchor" id="autotoc_md374"></a>
 ANTI-PATTERNS</h1>
 <ul>
 <li><b>DO NOT</b> add arch-specific code outside <code>src/arch/{arch}/</code> — use <code><a class="el" href="arch_8h.html">arch.h</a></code> abstraction</li>
@@ -138,7 +138,7 @@ ANTI-PATTERNS</h1>
 <li><code>static_assert</code> guards on PerCpu alignment and <a class="el" href="structGuardType.html">GuardType</a> ABI — do not remove</li>
 <li><code>#error</code> in <a class="el" href="syscall_8hpp.html">syscall.hpp</a> for unsupported arch — intentional, add new arch case instead</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md393"></a>
+<h1><a class="anchor" id="autotoc_md375"></a>
 NOTES</h1>
 <ul>
 <li>Boot chains: x86_64 (U-Boot), riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)</li>

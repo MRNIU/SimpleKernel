@@ -27,7 +27,7 @@ var searchData=
   ['enum_20class_20tt_24',['&lt;tt&gt;enum class&lt;/tt&gt;',['../md_coding__standards.html#autotoc_md246',1,'']]],
   ['enumerate_25',['Enumerate',['../classPlatformBus.html#a312a2275ab715ceabd6aeb06228716c1',1,'PlatformBus']]],
   ['env_5fstate_5f_26',['env_state_',['../classBaseEnvTest.html#aa7156fd42d93f149bdbb84ed900b766c',1,'BaseEnvTest::env_state_'],['../classVfsTest.html#afa70d1da54a204e5e7005f2a8fe24efc',1,'VfsTest::env_state_'],['../classTaskTestHarness.html#aeb7ed2145b091bc5764f88f0b87762f4',1,'TaskTestHarness::env_state_'],['../classRamFsTest.html#aecca1c725137214120b0b538dae5b495',1,'RamFsTest::env_state_'],['../classKernelFdtTest.html#abe69d836a48f6a1e9102de4735ef9197',1,'KernelFdtTest::env_state_']]],
-  ['environment_20setup_27',['🛠️ Environment Setup',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md356',1,'']]],
+  ['environment_20setup_27',['🛠️ Environment Setup',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md338',1,'']]],
   ['err_28',['Err',['../namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7',1,'klog']]],
   ['error_29',['error',['../structError.html#a832e3dca1adbf321f0616b2d7081e19d',1,'Error::Error(ErrorCode c)'],['../structError.html#af7272f57306a656ad4f8dbb6d7dd88d7',1,'Error::Error()=default'],['../structError.html#a8d407e0ae233cb05e169968a64a38ee4',1,'Error::Error(const Error &amp;)=default'],['../structError.html#acadaef437d7bd0705b024bb4596088e1',1,'Error::Error(Error &amp;&amp;)=default'],['../structError.html',1,'Error']]],
   ['error_5fcurrent_5fel_5fsp0_5fhandler_30',['error_current_el_sp0_handler',['../aarch64_2interrupt__main_8cpp.html#ac6378507f4eee6e4a9b901988831dbc1',1,'interrupt_main.cpp']]],

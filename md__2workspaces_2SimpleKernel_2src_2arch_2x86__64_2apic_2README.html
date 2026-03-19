@@ -92,10 +92,10 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2src_2ar
   <div class="headertitle"><div class="title">APIC 驱动</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md413"></a> 这个目录包含了 Advanced Programmable <a class="el" href="classInterrupt.html" title="AArch64 中断控制器实现">Interrupt</a> Controller (APIC) 的驱动实现，专为多核系统设计。</p>
-<h1><a class="anchor" id="autotoc_md414"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md395"></a> 这个目录包含了 Advanced Programmable <a class="el" href="classInterrupt.html" title="AArch64 中断控制器实现">Interrupt</a> Controller (APIC) 的驱动实现，专为多核系统设计。</p>
+<h1><a class="anchor" id="autotoc_md396"></a>
 架构设计</h1>
-<h2><a class="anchor" id="autotoc_md415"></a>
+<h2><a class="anchor" id="autotoc_md397"></a>
 多核系统中的 APIC 结构</h2>
 <p>在多核系统中，APIC 系统包含：</p>
 <ol type="1">
@@ -113,9 +113,9 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2src_2ar
 </ul>
 </li>
 </ol>
-<h2><a class="anchor" id="autotoc_md416"></a>
+<h2><a class="anchor" id="autotoc_md398"></a>
 支持的 APIC 模式</h2>
-<h3><a class="anchor" id="autotoc_md417"></a>
+<h3><a class="anchor" id="autotoc_md399"></a>
 x2APIC 模式 (推荐)</h3>
 <ul>
 <li>使用 MSR 接口访问</li>
@@ -123,7 +123,7 @@ x2APIC 模式 (推荐)</h3>
 <li>更高的性能</li>
 <li>需要 CPU 硬件支持</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md418"></a>
+<h3><a class="anchor" id="autotoc_md400"></a>
 xAPIC 模式 (兼容性)</h3>
 <ul>
 <li>使用内存映射接口访问</li>
@@ -132,7 +132,7 @@ xAPIC 模式 (兼容性)</h3>
 <li>所有现代 CPU 都支持</li>
 </ul>
 <p>驱动会自动检测 CPU 能力并选择最佳模式。</p>
-<h2><a class="anchor" id="autotoc_md419"></a>
+<h2><a class="anchor" id="autotoc_md401"></a>
 类结构</h2>
 <ol type="1">
 <li><b><a class="el" href="classLocalApic.html" title="Local APIC 驱动类">LocalApic</a></b> - 管理 Local APIC 功能（per-CPU）<ul>
@@ -157,7 +157,7 @@ xAPIC 模式 (兼容性)</h3>
 </ul>
 </li>
 </ol>
-<h2><a class="anchor" id="autotoc_md420"></a>
+<h2><a class="anchor" id="autotoc_md402"></a>
 使用方式</h2>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;<a class="code" href="apic_8h.html">apic.h</a>&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;<a class="code" href="kernel_8h.html">kernel.h</a>&quot;</span></div>
@@ -199,9 +199,9 @@ xAPIC 模式 (兼容性)</h3>
 <div class="line">apic.SetCpuOnline(apic.GetCurrentApicId());</div>
 <div class="ttc" id="aapic_8h_html"><div class="ttname"><a href="apic_8h.html">apic.h</a></div></div>
 <div class="ttc" id="akernel_8h_html"><div class="ttname"><a href="kernel_8h.html">kernel.h</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md421"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md403"></a>
 特性</h1>
-<h2><a class="anchor" id="autotoc_md422"></a>
+<h2><a class="anchor" id="autotoc_md404"></a>
 Local APIC (per-CPU)</h2>
 <ul>
 <li>✅ x2APIC 模式支持</li>
@@ -210,7 +210,7 @@ Local APIC (per-CPU)</h2>
 <li>✅ 任务优先级管理</li>
 <li>✅ CPU 启动支持 (INIT/SIPI)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md423"></a>
+<h2><a class="anchor" id="autotoc_md405"></a>
 IO APIC (系统级)</h2>
 <ul>
 <li>✅ IRQ 重定向</li>
@@ -219,7 +219,7 @@ IO APIC (系统级)</h2>
 <li>✅ GSI (Global System <a class="el" href="classInterrupt.html" title="AArch64 中断控制器实现">Interrupt</a>) 管理</li>
 <li>✅ 重定向表管理</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md424"></a>
+<h2><a class="anchor" id="autotoc_md406"></a>
 多核系统管理</h2>
 <ul>
 <li>✅ 支持最多 256 个 CPU 核心</li>
@@ -228,9 +228,9 @@ IO APIC (系统级)</h2>
 <li>✅ IPI 广播和单播</li>
 <li>✅ 多 IO APIC 管理（最多 8 个）</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md425"></a>
+<h1><a class="anchor" id="autotoc_md407"></a>
 多核系统工作流程</h1>
-<h2><a class="anchor" id="autotoc_md426"></a>
+<h2><a class="anchor" id="autotoc_md408"></a>
 1. 系统启动阶段（BSP）</h2>
 <div class="fragment"><div class="line"><span class="keyword">auto</span>&amp; apic = ApicSingleton::instance();</div>
 <div class="line"> </div>
@@ -245,7 +245,7 @@ IO APIC (系统级)</h2>
 <div class="line"><span class="comment">// 3. 初始化 BSP 的 Local APIC</span></div>
 <div class="line">apic.InitCurrentCpuLocalApic();</div>
 <div class="line">apic.SetCpuOnline(apic.GetCurrentApicId());</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md427"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md409"></a>
 2. AP 启动阶段</h2>
 <div class="fragment"><div class="line"><span class="comment">// 在 BSP 上启动 AP</span></div>
 <div class="line"><span class="keywordflow">for</span> (<span class="keyword">auto</span> apic_id : ap_list) {</div>
@@ -258,7 +258,7 @@ IO APIC (系统级)</h2>
 <div class="line">    apic.InitCurrentCpuLocalApic();</div>
 <div class="line">    apic.SetCpuOnline(apic.GetCurrentApicId());</div>
 <div class="line">}</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md428"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md410"></a>
 3. 运行时中断管理</h2>
 <div class="fragment"><div class="line"><span class="comment">// 设置设备中断路由</span></div>
 <div class="line">apic.SetIrqRedirection(keyboard_irq, KEYBOARD_VECTOR, target_cpu);</div>
@@ -267,7 +267,7 @@ IO APIC (系统级)</h2>
 <div class="line"><span class="comment">// 发送 IPI 通知其他 CPU</span></div>
 <div class="line">apic.SendIpi(target_cpu, IPI_VECTOR);</div>
 <div class="line">apic.BroadcastIpi(BROADCAST_VECTOR);</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md429"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md411"></a>
 限制</h1>
 <ul>
 <li>仅支持 x2APIC 模式</li>
@@ -276,7 +276,7 @@ IO APIC (系统级)</h2>
 <li>最多支持 8 个 IO APIC</li>
 <li>当前实现为接口定义，具体功能需要实现</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md430"></a>
+<h1><a class="anchor" id="autotoc_md412"></a>
 文件结构</h1>
 <div class="fragment"><div class="line">apic/</div>
 <div class="line">├── include/</div>
@@ -286,14 +286,14 @@ IO APIC (系统级)</h2>
 <div class="line">├── io_apic.cpp         # IoApic 类实现</div>
 <div class="line">├── CMakeLists.txt      # 构建配置</div>
 <div class="line">└── README.md           # 说明文档</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md431"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md413"></a>
 依赖</h1>
 <ul>
 <li><a class="el" href="namespacecpu__io.html">cpu_io</a> 库（用于 MSR 操作）</li>
 <li>kernel_log.hpp（用于日志输出）</li>
 <li>kernel.h（用于 etl::singleton 命名别名，如 ApicSingleton）</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md432"></a>
+<h1><a class="anchor" id="autotoc_md414"></a>
 注意事项</h1>
 <ol type="1">
 <li>Local APIC 操作是 per-CPU 的，每个 CPU 访问自己的 Local APIC</li>

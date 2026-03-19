@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['故障排除_0',['故障排除',['../md_docker.html#autotoc_md297',1,'']]]
+  ['权限级别转换_0',['2. 权限级别转换',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md130',1,'']]]
 ];

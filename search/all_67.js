@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['栈分配_0',['栈分配',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md45',1,'栈分配'],['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md72',1,'栈分配'],['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md98',1,'栈分配']]]
+  ['波特率设置_0',['2. 波特率设置',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md148',1,'']]]
 ];

@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['集成_0',['VS Code 集成',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md30',1,'']]]
+  ['📄_20许可证_0',['📄 许可证',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md319',1,'']]],
+  ['📄_20license_1',['📄 License',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md357',1,'']]]
 ];

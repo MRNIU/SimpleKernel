@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['要点_0',['要点',['../md_coding__standards.html#autotoc_md249',1,'']]]
+  ['软件中断分发_0',['2. 软件中断分发',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md165',1,'']]]
 ];

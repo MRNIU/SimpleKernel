@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['🏛️_20接口体系总览_0',['🏛️ 接口体系总览',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md313',1,'']]],
-  ['🏛️_20interface_20architecture_20overview_1',['🏛️ Interface Architecture Overview',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md351',1,'']]]
+  ['🛠️_20环境搭建_0',['🛠️ 环境搭建',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md300',1,'']]],
+  ['🛠️_20environment_20setup_1',['🛠️ Environment Setup',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md338',1,'']]]
 ];

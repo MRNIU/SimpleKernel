@@ -1,8 +1,7 @@
 var searchData=
 [
-  ['阶段_201：基础设施（boot）_0',['阶段 1：基础设施（Boot）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md323',1,'']]],
-  ['阶段_202：中断系统（interrupt）_1',['阶段 2：中断系统（Interrupt）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md324',1,'']]],
-  ['阶段_203：内存管理（memory）_2',['阶段 3：内存管理（Memory）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md325',1,'']]],
-  ['阶段_204：任务管理（thread_20task）_3',['阶段 4：任务管理（Thread/Task）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md326',1,'']]],
-  ['阶段_205：系统调用（syscall）_4',['阶段 5：系统调用（Syscall）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md327',1,'']]]
+  ['🏗️_20支持架构_0',['🏗️ 支持架构',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md297',1,'']]],
+  ['🏗️_20架构对比总览_1',['🏗️ 架构对比总览',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md154',1,'']]],
+  ['🏗️_20系统架构_2',['🏗️ 系统架构',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md157',1,'🏗️ 系统架构'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md181',1,'🏗️ 系统架构'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md207',1,'🏗️ 系统架构']]],
+  ['🏗️_20supported_20architectures_3',['🏗️ Supported Architectures',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md335',1,'']]]
 ];

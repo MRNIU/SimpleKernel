@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['生成_20ssh_20密钥（本地）_0',['1. 生成 SSH 密钥（本地）',['../md_docker.html#autotoc_md285',1,'']]]
+  ['禁止事项_0',['禁止事项',['../md_coding__standards.html#autotoc_md259',1,'禁止事项'],['../md_coding__standards.html#autotoc_md266',1,'禁止事项'],['../md_coding__standards.html#autotoc_md272',1,'10. 禁止事项']]]
 ];

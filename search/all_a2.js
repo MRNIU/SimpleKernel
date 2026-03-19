@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['🏗️_20支持架构_0',['🏗️ 支持架构',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md315',1,'']]],
-  ['🏗️_20架构对比总览_1',['🏗️ 架构对比总览',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md154',1,'']]],
-  ['🏗️_20系统架构_2',['🏗️ 系统架构',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md157',1,'🏗️ 系统架构'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md181',1,'🏗️ 系统架构'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md207',1,'🏗️ 系统架构']]],
-  ['🏗️_20supported_20architectures_3',['🏗️ Supported Architectures',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md353',1,'']]]
+  ['🚀_20快速开始_0',['🚀 快速开始',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md298',1,'']]],
+  ['🚀_20系统初始化_1',['🚀 系统初始化',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md173',1,'🚀 系统初始化'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md199',1,'🚀 系统初始化'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md224',1,'🚀 系统初始化']]],
+  ['🚀_20quick_20start_2',['🚀 Quick Start',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md336',1,'']]]
 ];

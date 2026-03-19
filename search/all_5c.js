@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['接口体系总览_0',['🏛️ 接口体系总览',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md313',1,'']]],
-  ['接口_1',['接口',['../md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md382',1,'Distributor (GICD) 接口'],['../md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md383',1,'Redistributor (GICR) 接口']]]
+  ['新增错误码_0',['新增错误码',['../md_coding__standards.html#autotoc_md258',1,'']]]
 ];

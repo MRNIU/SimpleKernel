@@ -8,7 +8,7 @@ var searchData=
   ['variant_5',['variant',['../structGic_1_1Gicd_1_1GicdIidr.html#af3c69653d77d29c9203ba9210ffdca3f',1,'Gic::Gicd::GicdIidr']]],
   ['vector_5ftable_6',['vector_table',['../aarch64_2interrupt__main_8cpp.html#a2919dc0dfaf51370359170295f4c4b96',1,'interrupt_main.cpp']]],
   ['vendor_5fid_5f_7',['vendor_id_',['../classvirtio_1_1MmioTransport.html#a4c8958754e492142a56b6eac2e5b834c',1,'virtio::MmioTransport']]],
-  ['verify_8',['3️⃣ Test and Verify',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md348',1,'']]],
+  ['verify_8',['3️⃣ Test and Verify',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md330',1,'']]],
   ['vfs_9',['vfs',['../namespacevfs.html',1,'']]],
   ['vfs_2ecpp_10',['vfs.cpp',['../vfs_8cpp.html',1,'']]],
   ['vfs_2ehpp_11',['vfs.hpp',['../vfs_8hpp.html',1,'']]],
@@ -54,8 +54,8 @@ var searchData=
   ['vringneedevent_51',['VringNeedEvent',['../classvirtio_1_1blk_1_1VirtioBlk.html#a2e45e2d49fd7e55241c86643bcbb67f2',1,'virtio::blk::VirtioBlk']]],
   ['vruntime_52',['vruntime',['../unionTaskControlBlock_1_1SchedData.html#ad7af8dac9a951e32073987b56ada9c4d',1,'TaskControlBlock::SchedData']]],
   ['vruntimecompare_53',['VruntimeCompare',['../structCfsScheduler_1_1VruntimeCompare.html',1,'CfsScheduler']]],
-  ['vs_20code_20任务集成_54',['VS Code 任务集成',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md20',1,'']]],
-  ['vs_20code_20集成_55',['VS Code 集成',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md30',1,'']]],
-  ['vs_20tt_20struct_20tt_56',['&lt;tt&gt;class&lt;/tt&gt; vs &lt;tt&gt;struct&lt;/tt&gt;',['../md_coding__standards.html#autotoc_md245',1,'']]],
-  ['vscode_20远程开发_57',['VSCode 远程开发',['../md_docker.html#autotoc_md288',1,'']]]
+  ['vs_20code_54',['VS Code',['../md_docker.html#autotoc_md277',1,'']]],
+  ['vs_20code_20任务集成_55',['VS Code 任务集成',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md20',1,'']]],
+  ['vs_20code_20集成_56',['VS Code 集成',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md30',1,'']]],
+  ['vs_20tt_20struct_20tt_57',['&lt;tt&gt;class&lt;/tt&gt; vs &lt;tt&gt;struct&lt;/tt&gt;',['../md_coding__standards.html#autotoc_md245',1,'']]]
 ];

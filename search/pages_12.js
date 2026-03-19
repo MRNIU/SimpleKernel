@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['开发环境配置_0',['Docker 开发环境配置',['../md_docker.html',1,'']]]
+  ['开发环境_0',['Dev Container 开发环境',['../md_docker.html',1,'']]]
 ];

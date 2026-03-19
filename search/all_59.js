@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['成员变量_0',['成员变量',['../md_coding__standards.html#autotoc_md242',1,'成员变量'],['../md_coding__standards.html#autotoc_md264',1,'成员变量']]]
+  ['推荐_0',['x2APIC 模式 (推荐)',['../md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md399',1,'']]]
 ];
