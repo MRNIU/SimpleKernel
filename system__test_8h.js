@@ -18,6 +18,7 @@ var system__test_8h =
     ] ],
     [ "cfs_scheduler_test", "system__test_8h.html#ac3069ba7e9bb7a60adb5c90069dc9c0b", null ],
     [ "clone_system_test", "system__test_8h.html#a22a28daf23b20387a79c91fa118a1689", null ],
+    [ "cross_core_test", "system__test_8h.html#af3128d72db78d086501c7a2ca6e76c73", null ],
     [ "ctor_dtor_test", "system__test_8h.html#afe415420c72c400f3156b40cbd68c16f", null ],
     [ "exit_system_test", "system__test_8h.html#a1ad372ba4b1c37c4dd0fa4cfec12038d", null ],
     [ "expect_eq_helper", "system__test_8h.html#aa65c78c72f83432078d407f7b46440d4", null ],

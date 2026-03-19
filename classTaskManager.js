@@ -33,6 +33,7 @@ var classTaskManager =
     [ "Wait", "classTaskManager.html#ae546fc5dad8a73a6b17894beefa181e4", null ],
     [ "Wakeup", "classTaskManager.html#a56b51842866033db39ad8c1227e7281d", null ],
     [ "Wakeup", "classTaskManager.html#a96d2a8187ce732bac7d0d952fd502181", null ],
+    [ "WakeupOne", "classTaskManager.html#a31f143a78b2e95b1d3e9fb98c910959f", null ],
     [ "cpu_schedulers_", "classTaskManager.html#aaebe944e28d505769c2acc4ce1c8cca5", null ],
     [ "interrupt_threads_", "classTaskManager.html#a8f9c23b80b7c55ebc8c839026b7f0a78", null ],
     [ "interrupt_threads_lock_", "classTaskManager.html#aa130b9c08feb39a8d8c653fbff4a4fa6", null ],

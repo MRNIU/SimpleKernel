@@ -1,0 +1,5 @@
+<map id="TaskManager::WakeupOne" name="TaskManager::WakeupOne">
+<area shape="rect" id="Node000001" title="唤醒等待指定资源的第一个任务（跨核搜索）" alt="" coords="5,5,199,31"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="247,5,347,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,15,233,15,233,21,199,21"/>
+</map>

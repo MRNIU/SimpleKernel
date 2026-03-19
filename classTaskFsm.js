@@ -9,6 +9,7 @@ var classTaskFsm =
     [ "operator=", "classTaskFsm.html#a58e47c3bcb634a0bf3df8946ad1c7906", null ],
     [ "Receive", "classTaskFsm.html#a3bc7b6c5bb2b61f619450e1fef401268", null ],
     [ "Start", "classTaskFsm.html#aa51051086374affc76f2d516d3531889", null ],
+    [ "cached_state_", "classTaskFsm.html#a12a743865d826282756ed27d1225b1ab", null ],
     [ "fsm_", "classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36", null ],
     [ "state_blocked_", "classTaskFsm.html#ad079e7d4f6b1f710ce59e6a3c48ccccd", null ],
     [ "state_exited_", "classTaskFsm.html#ac6d7c768a3a511cd96c161d25d2587d2", null ],

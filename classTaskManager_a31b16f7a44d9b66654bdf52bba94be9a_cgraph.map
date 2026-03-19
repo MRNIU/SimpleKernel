@@ -16,7 +16,7 @@
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="666,214,700,214,700,219,666,219"/>
 <area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="947,222,1209,262"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="899,223,933,226,932,231,899,228"/>
-<area shape="rect" id="Node000007" href="$classTaskFsm.html#ae980ff471cb089a7effbf5bb9dfdeeb4" title="获取当前状态 ID" alt="" coords="496,55,652,80"/>
+<area shape="rect" id="Node000007" href="$classTaskFsm.html#ae980ff471cb089a7effbf5bb9dfdeeb4" title="获取当前状态 ID（线程安全）" alt="" coords="496,55,652,80"/>
 <area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="435,65,482,65,482,70,435,70"/>
 <area shape="poly" id="edge10_Node000010_Node000003" title=" " alt="" coords="373,256,499,230,500,235,374,261"/>
 <area shape="poly" id="edge11_Node000010_Node000005" title=" " alt="" coords="374,263,933,244,933,250,374,269"/>

@@ -2,6 +2,7 @@ var dir_9792f77b7388247cc984bf8bf02ef530 =
 [
     [ "cfs_scheduler_test.cpp", "system__test_2cfs__scheduler__test_8cpp.html", "system__test_2cfs__scheduler__test_8cpp" ],
     [ "clone_system_test.cpp", "clone__system__test_8cpp.html", "clone__system__test_8cpp" ],
+    [ "cross_core_test.cpp", "cross__core__test_8cpp.html", "cross__core__test_8cpp" ],
     [ "ctor_dtor_test.cpp", "ctor__dtor__test_8cpp.html", "ctor__dtor__test_8cpp" ],
     [ "exit_system_test.cpp", "exit__system__test_8cpp.html", "exit__system__test_8cpp" ],
     [ "fatfs_system_test.cpp", "fatfs__system__test_8cpp.html", "fatfs__system__test_8cpp" ],

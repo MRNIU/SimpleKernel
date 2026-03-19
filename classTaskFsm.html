@@ -106,17 +106,17 @@ Collaboration diagram for TaskFsm:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTaskFsm__coll__graph.png" border="0" usemap="#aTaskFsm_coll__map" alt="Collaboration graph"/></div>
 <map name="aTaskFsm_coll__map" id="aTaskFsm_coll__map">
-<area shape="rect" title="任务有限状态机" alt="" coords="703,387,811,752"/>
+<area shape="rect" title="任务有限状态机" alt="" coords="696,387,817,772"/>
 <area shape="rect" href="structStateUnInit.html" title="UnInit 状态 — 任务尚未初始化" alt="" coords="15,209,181,294"/>
-<area shape="poly" title=" " alt="" coords="182,291,246,322,689,533,686,538,244,326,180,296"/>
+<area shape="poly" title=" " alt="" coords="182,291,682,538,680,543,180,296"/>
 <area shape="rect" title=" " alt="" coords="5,13,164,122"/>
 <area shape="poly" title=" " alt="" coords="92,136,98,208,92,209,87,136"/>
 <area shape="rect" href="structStateReady.html" title="Ready 状态 — 任务已就绪，等待调度" alt="" coords="257,209,422,294"/>
-<area shape="poly" title=" " alt="" coords="396,292,691,515,687,519,393,296"/>
+<area shape="poly" title=" " alt="" coords="394,292,685,518,681,523,391,296"/>
 <area shape="rect" title=" " alt="" coords="189,20,397,115"/>
 <area shape="poly" title=" " alt="" coords="311,128,331,208,326,209,305,129"/>
 <area shape="rect" href="structStateRunning.html" title="Running 状态 — 任务正在执行" alt="" coords="471,179,637,324"/>
-<area shape="poly" title=" " alt="" coords="602,323,696,469,692,472,598,326"/>
+<area shape="poly" title=" " alt="" coords="601,323,689,465,685,468,596,325"/>
 <area shape="rect" title=" " alt="" coords="421,5,644,129"/>
 <area shape="poly" title=" " alt="" coords="544,143,548,178,543,179,539,143"/>
 <area shape="rect" href="structStateSleeping.html" title="Sleeping 状态 — 任务已挂起，等待唤醒时钟" alt="" coords="674,209,839,294"/>
@@ -124,15 +124,15 @@ Collaboration diagram for TaskFsm:</div>
 <area shape="rect" title=" " alt="" coords="669,13,845,122"/>
 <area shape="poly" title=" " alt="" coords="759,136,759,208,754,208,754,136"/>
 <area shape="rect" href="structStateBlocked.html" title="Blocked 状态 — 任务阻塞，等待资源" alt="" coords="867,209,1033,294"/>
-<area shape="poly" title=" " alt="" coords="927,296,822,467,817,464,922,293"/>
+<area shape="poly" title=" " alt="" coords="927,296,828,463,823,461,923,293"/>
 <area shape="rect" title=" " alt="" coords="869,13,1039,122"/>
 <area shape="poly" title=" " alt="" coords="955,136,954,209,948,208,950,136"/>
 <area shape="rect" href="structStateExited.html" title="Exited 状态 — 任务已退出，无父任务回收" alt="" coords="1059,209,1225,294"/>
-<area shape="poly" title=" " alt="" coords="1093,296,826,515,822,511,1090,292"/>
+<area shape="poly" title=" " alt="" coords="1095,296,832,518,828,514,1091,292"/>
 <area shape="rect" title=" " alt="" coords="1064,13,1225,122"/>
 <area shape="poly" title=" " alt="" coords="1146,136,1145,208,1140,208,1141,136"/>
 <area shape="rect" href="structStateZombie.html" title="Zombie 状态 — 任务已退出，等待父任务回收" alt="" coords="1251,209,1417,294"/>
-<area shape="poly" title=" " alt="" coords="1282,296,1238,326,1128,390,1015,449,827,540,825,535,1013,444,1125,385,1235,322,1279,292"/>
+<area shape="poly" title=" " alt="" coords="1282,296,1238,326,1130,390,1020,451,833,545,831,540,1017,446,1127,386,1235,322,1279,292"/>
 <area shape="rect" title=" " alt="" coords="1250,13,1421,122"/>
 <area shape="poly" title=" " alt="" coords="1338,136,1337,208,1332,208,1332,136"/>
 </map>
@@ -147,7 +147,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a3bc7b6c5bb2b61f619450e1fef401268"><td class="mdescLeft">&#160;</td><td class="mdescRight">向 FSM 发送消息  <br /></td></tr>
 <tr class="separator:a3bc7b6c5bb2b61f619450e1fef401268"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae980ff471cb089a7effbf5bb9dfdeeb4" id="r_ae980ff471cb089a7effbf5bb9dfdeeb4"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTaskFsm.html#ae980ff471cb089a7effbf5bb9dfdeeb4">GetStateId</a> () const -&gt; etl::fsm_state_id_t</td></tr>
-<tr class="memdesc:ae980ff471cb089a7effbf5bb9dfdeeb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取当前状态 ID  <br /></td></tr>
+<tr class="memdesc:ae980ff471cb089a7effbf5bb9dfdeeb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取当前状态 ID（线程安全）  <br /></td></tr>
 <tr class="separator:ae980ff471cb089a7effbf5bb9dfdeeb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">构造/析构函数</div></td></tr>
 <tr class="memitem:ae5d8ef9c3884721165fb2d2e9f35fdd0" id="r_ae5d8ef9c3884721165fb2d2e9f35fdd0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTaskFsm.html#ae5d8ef9c3884721165fb2d2e9f35fdd0">TaskFsm</a> ()</td></tr>
@@ -183,11 +183,14 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a2e7e259528855eed3692d55e31d602b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6cbed158608a4979f2a34f6eda97b36" id="r_ac6cbed158608a4979f2a34f6eda97b36"><td class="memItemLeft" align="right" valign="top">etl::fsm&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a></td></tr>
 <tr class="separator:ac6cbed158608a4979f2a34f6eda97b36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12a743865d826282756ed27d1225b1ab" id="r_a12a743865d826282756ed27d1225b1ab"><td class="memItemLeft" align="right" valign="top">std::atomic&lt; etl::fsm_state_id_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTaskFsm.html#a12a743865d826282756ed27d1225b1ab">cached_state_</a> {<a class="el" href="namespaceTaskStatusId.html#a0eed6a9b03a0ce32cabc79819ffc3cd6">TaskStatusId::kUnInit</a>}</td></tr>
+<tr class="memdesc:a12a743865d826282756ed27d1225b1ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">跨核可见的状态缓存，解决 etl::fsm 非线程安全的问题  <br /></td></tr>
+<tr class="separator:a12a743865d826282756ed27d1225b1ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>任务有限状态机 </p>
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00152">152</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00154">154</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ae5d8ef9c3884721165fb2d2e9f35fdd0" name="ae5d8ef9c3884721165fb2d2e9f35fdd0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae5d8ef9c3884721165fb2d2e9f35fdd0">&#9670;&#160;</a></span>TaskFsm() <span class="overload">[1/3]</span></h2>
@@ -212,26 +215,26 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00175">175</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  175</span>            : <a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>(<a class="code hl_variable" href="namespacerouter__id.html#ad0ce05e34a1a8f39c852ee8f6ff55d28">router_id::kTaskFsm</a>) {</div>
-<div class="line"><span class="lineno">  176</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[0] = &amp;<a class="code hl_variable" href="classTaskFsm.html#a84aa66376daf24750aeab50f0fd817c3">state_uninit_</a>;</div>
-<div class="line"><span class="lineno">  177</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[1] = &amp;<a class="code hl_variable" href="classTaskFsm.html#a2fbe9cc7b4e5329b22c783a7c0244416">state_ready_</a>;</div>
-<div class="line"><span class="lineno">  178</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[2] = &amp;<a class="code hl_variable" href="classTaskFsm.html#a98d4eda8ed3bcc30c44b881828bc0106">state_running_</a>;</div>
-<div class="line"><span class="lineno">  179</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[3] = &amp;<a class="code hl_variable" href="classTaskFsm.html#afa55d313d4ee027748bac70f3df73895">state_sleeping_</a>;</div>
-<div class="line"><span class="lineno">  180</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[4] = &amp;<a class="code hl_variable" href="classTaskFsm.html#ad079e7d4f6b1f710ce59e6a3c48ccccd">state_blocked_</a>;</div>
-<div class="line"><span class="lineno">  181</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[5] = &amp;<a class="code hl_variable" href="classTaskFsm.html#ac6d7c768a3a511cd96c161d25d2587d2">state_exited_</a>;</div>
-<div class="line"><span class="lineno">  182</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[6] = &amp;<a class="code hl_variable" href="classTaskFsm.html#a72f95e6d32426965aff9717765c11ec6">state_zombie_</a>;</div>
-<div class="line"><span class="lineno">  183</span>    <a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>.set_states(<a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>, 7);</div>
-<div class="line"><span class="lineno">  184</span>  }</div>
-<div class="ttc" id="aclassTaskFsm_html_a2e7e259528855eed3692d55e31d602b4"><div class="ttname"><a href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">TaskFsm::state_list_</a></div><div class="ttdeci">etl::ifsm_state * state_list_[7]</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00202">task_fsm.hpp:202</a></div></div>
-<div class="ttc" id="aclassTaskFsm_html_a2fbe9cc7b4e5329b22c783a7c0244416"><div class="ttname"><a href="classTaskFsm.html#a2fbe9cc7b4e5329b22c783a7c0244416">TaskFsm::state_ready_</a></div><div class="ttdeci">StateReady state_ready_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00195">task_fsm.hpp:195</a></div></div>
-<div class="ttc" id="aclassTaskFsm_html_a72f95e6d32426965aff9717765c11ec6"><div class="ttname"><a href="classTaskFsm.html#a72f95e6d32426965aff9717765c11ec6">TaskFsm::state_zombie_</a></div><div class="ttdeci">StateZombie state_zombie_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00200">task_fsm.hpp:200</a></div></div>
-<div class="ttc" id="aclassTaskFsm_html_a84aa66376daf24750aeab50f0fd817c3"><div class="ttname"><a href="classTaskFsm.html#a84aa66376daf24750aeab50f0fd817c3">TaskFsm::state_uninit_</a></div><div class="ttdeci">StateUnInit state_uninit_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00194">task_fsm.hpp:194</a></div></div>
-<div class="ttc" id="aclassTaskFsm_html_a98d4eda8ed3bcc30c44b881828bc0106"><div class="ttname"><a href="classTaskFsm.html#a98d4eda8ed3bcc30c44b881828bc0106">TaskFsm::state_running_</a></div><div class="ttdeci">StateRunning state_running_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00196">task_fsm.hpp:196</a></div></div>
-<div class="ttc" id="aclassTaskFsm_html_ac6cbed158608a4979f2a34f6eda97b36"><div class="ttname"><a href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">TaskFsm::fsm_</a></div><div class="ttdeci">etl::fsm fsm_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00204">task_fsm.hpp:204</a></div></div>
-<div class="ttc" id="aclassTaskFsm_html_ac6d7c768a3a511cd96c161d25d2587d2"><div class="ttname"><a href="classTaskFsm.html#ac6d7c768a3a511cd96c161d25d2587d2">TaskFsm::state_exited_</a></div><div class="ttdeci">StateExited state_exited_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00199">task_fsm.hpp:199</a></div></div>
-<div class="ttc" id="aclassTaskFsm_html_ad079e7d4f6b1f710ce59e6a3c48ccccd"><div class="ttname"><a href="classTaskFsm.html#ad079e7d4f6b1f710ce59e6a3c48ccccd">TaskFsm::state_blocked_</a></div><div class="ttdeci">StateBlocked state_blocked_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00198">task_fsm.hpp:198</a></div></div>
-<div class="ttc" id="aclassTaskFsm_html_afa55d313d4ee027748bac70f3df73895"><div class="ttname"><a href="classTaskFsm.html#afa55d313d4ee027748bac70f3df73895">TaskFsm::state_sleeping_</a></div><div class="ttdeci">StateSleeping state_sleeping_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00197">task_fsm.hpp:197</a></div></div>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00187">187</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  187</span>            : <a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>(<a class="code hl_variable" href="namespacerouter__id.html#ad0ce05e34a1a8f39c852ee8f6ff55d28">router_id::kTaskFsm</a>) {</div>
+<div class="line"><span class="lineno">  188</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[0] = &amp;<a class="code hl_variable" href="classTaskFsm.html#a84aa66376daf24750aeab50f0fd817c3">state_uninit_</a>;</div>
+<div class="line"><span class="lineno">  189</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[1] = &amp;<a class="code hl_variable" href="classTaskFsm.html#a2fbe9cc7b4e5329b22c783a7c0244416">state_ready_</a>;</div>
+<div class="line"><span class="lineno">  190</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[2] = &amp;<a class="code hl_variable" href="classTaskFsm.html#a98d4eda8ed3bcc30c44b881828bc0106">state_running_</a>;</div>
+<div class="line"><span class="lineno">  191</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[3] = &amp;<a class="code hl_variable" href="classTaskFsm.html#afa55d313d4ee027748bac70f3df73895">state_sleeping_</a>;</div>
+<div class="line"><span class="lineno">  192</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[4] = &amp;<a class="code hl_variable" href="classTaskFsm.html#ad079e7d4f6b1f710ce59e6a3c48ccccd">state_blocked_</a>;</div>
+<div class="line"><span class="lineno">  193</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[5] = &amp;<a class="code hl_variable" href="classTaskFsm.html#ac6d7c768a3a511cd96c161d25d2587d2">state_exited_</a>;</div>
+<div class="line"><span class="lineno">  194</span>    <a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>[6] = &amp;<a class="code hl_variable" href="classTaskFsm.html#a72f95e6d32426965aff9717765c11ec6">state_zombie_</a>;</div>
+<div class="line"><span class="lineno">  195</span>    <a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>.set_states(<a class="code hl_variable" href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">state_list_</a>, 7);</div>
+<div class="line"><span class="lineno">  196</span>  }</div>
+<div class="ttc" id="aclassTaskFsm_html_a2e7e259528855eed3692d55e31d602b4"><div class="ttname"><a href="classTaskFsm.html#a2e7e259528855eed3692d55e31d602b4">TaskFsm::state_list_</a></div><div class="ttdeci">etl::ifsm_state * state_list_[7]</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00214">task_fsm.hpp:214</a></div></div>
+<div class="ttc" id="aclassTaskFsm_html_a2fbe9cc7b4e5329b22c783a7c0244416"><div class="ttname"><a href="classTaskFsm.html#a2fbe9cc7b4e5329b22c783a7c0244416">TaskFsm::state_ready_</a></div><div class="ttdeci">StateReady state_ready_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00207">task_fsm.hpp:207</a></div></div>
+<div class="ttc" id="aclassTaskFsm_html_a72f95e6d32426965aff9717765c11ec6"><div class="ttname"><a href="classTaskFsm.html#a72f95e6d32426965aff9717765c11ec6">TaskFsm::state_zombie_</a></div><div class="ttdeci">StateZombie state_zombie_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00212">task_fsm.hpp:212</a></div></div>
+<div class="ttc" id="aclassTaskFsm_html_a84aa66376daf24750aeab50f0fd817c3"><div class="ttname"><a href="classTaskFsm.html#a84aa66376daf24750aeab50f0fd817c3">TaskFsm::state_uninit_</a></div><div class="ttdeci">StateUnInit state_uninit_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00206">task_fsm.hpp:206</a></div></div>
+<div class="ttc" id="aclassTaskFsm_html_a98d4eda8ed3bcc30c44b881828bc0106"><div class="ttname"><a href="classTaskFsm.html#a98d4eda8ed3bcc30c44b881828bc0106">TaskFsm::state_running_</a></div><div class="ttdeci">StateRunning state_running_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00208">task_fsm.hpp:208</a></div></div>
+<div class="ttc" id="aclassTaskFsm_html_ac6cbed158608a4979f2a34f6eda97b36"><div class="ttname"><a href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">TaskFsm::fsm_</a></div><div class="ttdeci">etl::fsm fsm_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00216">task_fsm.hpp:216</a></div></div>
+<div class="ttc" id="aclassTaskFsm_html_ac6d7c768a3a511cd96c161d25d2587d2"><div class="ttname"><a href="classTaskFsm.html#ac6d7c768a3a511cd96c161d25d2587d2">TaskFsm::state_exited_</a></div><div class="ttdeci">StateExited state_exited_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00211">task_fsm.hpp:211</a></div></div>
+<div class="ttc" id="aclassTaskFsm_html_ad079e7d4f6b1f710ce59e6a3c48ccccd"><div class="ttname"><a href="classTaskFsm.html#ad079e7d4f6b1f710ce59e6a3c48ccccd">TaskFsm::state_blocked_</a></div><div class="ttdeci">StateBlocked state_blocked_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00210">task_fsm.hpp:210</a></div></div>
+<div class="ttc" id="aclassTaskFsm_html_afa55d313d4ee027748bac70f3df73895"><div class="ttname"><a href="classTaskFsm.html#afa55d313d4ee027748bac70f3df73895">TaskFsm::state_sleeping_</a></div><div class="ttdeci">StateSleeping state_sleeping_</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00209">task_fsm.hpp:209</a></div></div>
 <div class="ttc" id="anamespacerouter__id_html_ad0ce05e34a1a8f39c852ee8f6ff55d28"><div class="ttname"><a href="namespacerouter__id.html#ad0ce05e34a1a8f39c852ee8f6ff55d28">router_id::kTaskFsm</a></div><div class="ttdeci">constexpr etl::message_router_id_t kTaskFsm</div><div class="ttdef"><b>Definition</b> <a href="task__messages_8hpp_source.html#l00025">task_messages.hpp:25</a></div></div>
 </div><!-- fragment -->
 </div>
@@ -337,19 +340,21 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>获取当前状态 ID </p>
+<p>获取当前状态 ID（线程安全） </p>
 <dl class="section return"><dt>Returns</dt><dd>etl::fsm_state_id_t 当前状态 ID </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>使用 acquire 语义从 atomic 缓存读取， 无需持有与 <a class="el" href="classTaskFsm.html#a3bc7b6c5bb2b61f619450e1fef401268" title="向 FSM 发送消息">Receive()</a> 相同的锁即可安全调用 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00169">169</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  169</span>                                                             {</div>
-<div class="line"><span class="lineno">  170</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>.get_state_id();</div>
-<div class="line"><span class="lineno">  171</span>  }</div>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00181">181</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  181</span>                                                             {</div>
+<div class="line"><span class="lineno">  182</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="classTaskFsm.html#a12a743865d826282756ed27d1225b1ab">cached_state_</a>.load(std::memory_order_acquire);</div>
+<div class="line"><span class="lineno">  183</span>  }</div>
+<div class="ttc" id="aclassTaskFsm_html_a12a743865d826282756ed27d1225b1ab"><div class="ttname"><a href="classTaskFsm.html#a12a743865d826282756ed27d1225b1ab">TaskFsm::cached_state_</a></div><div class="ttdeci">std::atomic&lt; etl::fsm_state_id_t &gt; cached_state_</div><div class="ttdoc">跨核可见的状态缓存，解决 etl::fsm 非线程安全的问题</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00219">task_fsm.hpp:219</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTaskFsm_ae980ff471cb089a7effbf5bb9dfdeeb4_icgraph.png" border="0" usemap="#aclassTaskFsm_ae980ff471cb089a7effbf5bb9dfdeeb4_icgraph" alt=""/></div>
 <map name="aclassTaskFsm_ae980ff471cb089a7effbf5bb9dfdeeb4_icgraph" id="aclassTaskFsm_ae980ff471cb089a7effbf5bb9dfdeeb4_icgraph">
-<area shape="rect" title="获取当前状态 ID" alt="" coords="496,55,652,80"/>
+<area shape="rect" title="获取当前状态 ID（线程安全）" alt="" coords="496,55,652,80"/>
 <area shape="rect" href="structTaskControlBlock.html#a76c836142838b3127b032710242c9606" title="获取当前任务状态" alt="" coords="241,55,448,80"/>
 <area shape="poly" title=" " alt="" coords="482,70,448,70,448,65,482,65"/>
 <area shape="rect" href="classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="调度函数 选择下一个任务并切换上下文" alt="" coords="12,5,187,31"/>
@@ -446,9 +451,14 @@ Here is the caller graph for this function:</div>
   </table>
   </dd>
 </dl>
+<dl class="section pre"><dt>Precondition</dt><dd>调用者持有保护此 TCB 的锁（如 cpu_sched.lock） </dd></dl>
+<dl class="section post"><dt>Postcondition</dt><dd>cached_state_ 以 release 语义更新，跨核可见 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00163">163</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  163</span>{ <a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>.receive(msg); }</div>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00170">170</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  170</span>                                               {</div>
+<div class="line"><span class="lineno">  171</span>    <a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>.receive(msg);</div>
+<div class="line"><span class="lineno">  172</span>    <a class="code hl_variable" href="classTaskFsm.html#a12a743865d826282756ed27d1225b1ab">cached_state_</a>.store(<a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>.get_state_id(), std::memory_order_release);</div>
+<div class="line"><span class="lineno">  173</span>  }</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -489,8 +499,11 @@ Here is the caller graph for this function:</div>
 
 <p>启动 FSM（在 TCB 完全构造后调用） </p>
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00157">157</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  157</span>{ <a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>.start(); }</div>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00159">159</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  159</span>                       {</div>
+<div class="line"><span class="lineno">  160</span>    <a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>.start();</div>
+<div class="line"><span class="lineno">  161</span>    <a class="code hl_variable" href="classTaskFsm.html#a12a743865d826282756ed27d1225b1ab">cached_state_</a>.store(<a class="code hl_variable" href="classTaskFsm.html#ac6cbed158608a4979f2a34f6eda97b36">fsm_</a>.get_state_id(), std::memory_order_release);</div>
+<div class="line"><span class="lineno">  162</span>  }</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -507,6 +520,34 @@ Here is the caller graph for this function:</div>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a12a743865d826282756ed27d1225b1ab" name="a12a743865d826282756ed27d1225b1ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12a743865d826282756ed27d1225b1ab">&#9670;&#160;</a></span>cached_state_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::atomic&lt;etl::fsm_state_id_t&gt; TaskFsm::cached_state_ {<a class="el" href="namespaceTaskStatusId.html#a0eed6a9b03a0ce32cabc79819ffc3cd6">TaskStatusId::kUnInit</a>}</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>跨核可见的状态缓存，解决 etl::fsm 非线程安全的问题 </p>
+
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00219">219</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  219</span>{<a class="code hl_variable" href="namespaceTaskStatusId.html#a0eed6a9b03a0ce32cabc79819ffc3cd6">TaskStatusId::kUnInit</a>};</div>
+<div class="ttc" id="anamespaceTaskStatusId_html_a0eed6a9b03a0ce32cabc79819ffc3cd6"><div class="ttname"><a href="namespaceTaskStatusId.html#a0eed6a9b03a0ce32cabc79819ffc3cd6">TaskStatusId::kUnInit</a></div><div class="ttdeci">constexpr etl::fsm_state_id_t kUnInit</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00016">task_fsm.hpp:16</a></div></div>
+</div><!-- fragment -->
+</div>
+</div>
 <a id="ac6cbed158608a4979f2a34f6eda97b36" name="ac6cbed158608a4979f2a34f6eda97b36"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac6cbed158608a4979f2a34f6eda97b36">&#9670;&#160;</a></span>fsm_</h2>
 
@@ -527,7 +568,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00204">204</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00216">216</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 
 </div>
 </div>
@@ -551,7 +592,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00198">198</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00210">210</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 
 </div>
 </div>
@@ -575,7 +616,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00199">199</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00211">211</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 
 </div>
 </div>
@@ -599,7 +640,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00202">202</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00214">214</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 
 </div>
 </div>
@@ -623,7 +664,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00195">195</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00207">207</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 
 </div>
 </div>
@@ -647,7 +688,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00196">196</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00208">208</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 
 </div>
 </div>
@@ -671,7 +712,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00197">197</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00209">209</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 
 </div>
 </div>
@@ -695,7 +736,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00194">194</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00206">206</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 
 </div>
 </div>
@@ -719,7 +760,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00200">200</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00212">212</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 
 </div>
 </div>

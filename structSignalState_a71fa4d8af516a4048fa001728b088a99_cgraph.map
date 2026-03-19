@@ -1,0 +1,5 @@
+<map id="SignalState::SetPending" name="SignalState::SetPending">
+<area shape="rect" id="Node000001" title="设置待处理信号" alt="" coords="5,5,183,31"/>
+<area shape="rect" id="Node000002" href="$structSignalState.html#a7d4d89d904c5281e976feee6ef7f3732" title="检查信号编号是否有效" alt="" coords="231,5,377,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="183,15,217,15,217,21,183,21"/>
+</map>

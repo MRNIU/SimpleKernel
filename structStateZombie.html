@@ -131,7 +131,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Zombie 状态 — 任务已退出，等待父任务回收 </p>
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00137">137</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00139">139</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a78b79974bac8b59b6c01ac31748a422d" name="a78b79974bac8b59b6c01ac31748a422d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a78b79974bac8b59b6c01ac31748a422d">&#9670;&#160;</a></span>on_event()</h2>
@@ -157,11 +157,11 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00139">139</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  139</span>                                                     {</div>
-<div class="line"><span class="lineno">  140</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="namespaceTaskStatusId.html#a0e39aa134e22148c1a17c626c5ecf183">TaskStatusId::kExited</a>;</div>
-<div class="line"><span class="lineno">  141</span>  }</div>
-<div class="ttc" id="anamespaceTaskStatusId_html_a0e39aa134e22148c1a17c626c5ecf183"><div class="ttname"><a href="namespaceTaskStatusId.html#a0e39aa134e22148c1a17c626c5ecf183">TaskStatusId::kExited</a></div><div class="ttdeci">constexpr etl::fsm_state_id_t kExited</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00019">task_fsm.hpp:19</a></div></div>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00141">141</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  141</span>                                                     {</div>
+<div class="line"><span class="lineno">  142</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="namespaceTaskStatusId.html#a0e39aa134e22148c1a17c626c5ecf183">TaskStatusId::kExited</a>;</div>
+<div class="line"><span class="lineno">  143</span>  }</div>
+<div class="ttc" id="anamespaceTaskStatusId_html_a0e39aa134e22148c1a17c626c5ecf183"><div class="ttname"><a href="namespaceTaskStatusId.html#a0e39aa134e22148c1a17c626c5ecf183">TaskStatusId::kExited</a></div><div class="ttdeci">constexpr etl::fsm_state_id_t kExited</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00021">task_fsm.hpp:21</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -189,12 +189,12 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00142">142</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  142</span>                                                                     {</div>
-<div class="line"><span class="lineno">  143</span>    <a class="code hl_function" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb">klog::Warn</a>(<span class="stringliteral">&quot;TaskFsm: Zombie received unexpected message id={}&quot;</span>,</div>
-<div class="line"><span class="lineno">  144</span>               <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(msg.get_message_id()));</div>
-<div class="line"><span class="lineno">  145</span>    <span class="keywordflow">return</span> STATE_ID;</div>
-<div class="line"><span class="lineno">  146</span>  }</div>
+<p class="definition">Definition at line <a class="el" href="task__fsm_8hpp_source.html#l00144">144</a> of file <a class="el" href="task__fsm_8hpp_source.html">task_fsm.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  144</span>                                                                     {</div>
+<div class="line"><span class="lineno">  145</span>    <a class="code hl_function" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb">klog::Warn</a>(<span class="stringliteral">&quot;TaskFsm: Zombie received unexpected message id={}&quot;</span>,</div>
+<div class="line"><span class="lineno">  146</span>               <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(msg.get_message_id()));</div>
+<div class="line"><span class="lineno">  147</span>    <span class="keywordflow">return</span> STATE_ID;</div>
+<div class="line"><span class="lineno">  148</span>  }</div>
 <div class="ttc" id="anamespaceklog_html_a9e1498fdd041865e7e917ef040d186eb"><div class="ttname"><a href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb">klog::Warn</a></div><div class="ttdeci">auto Warn(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 WARN 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00191">kernel_log.hpp:191</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>

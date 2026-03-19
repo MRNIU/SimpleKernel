@@ -6,10 +6,11 @@
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="163,101,267,80,268,85,164,107"/>
 <area shape="rect" id="Node000004" href="$structTaskControlBlock.html#a76c836142838b3127b032710242c9606" title="获取当前任务状态" alt="" coords="241,104,448,129"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="193,114,228,114,228,119,193,119"/>
-<area shape="rect" id="Node000006" href="$structSignalState.html#a7d4d89d904c5281e976feee6ef7f3732" title="检查信号编号是否有效" alt="" coords="271,153,418,179"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="164,127,268,148,267,153,163,132"/>
-<area shape="rect" id="Node000007" href="$structSignalState.html#a4fe4b7800230777826b857808e977eb8" title="设置待处理信号" alt="" coords="256,203,433,228"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="123,127,176,157,242,188,270,197,268,202,240,192,173,162,120,132"/>
-<area shape="rect" id="Node000005" href="$classTaskFsm.html#ae980ff471cb089a7effbf5bb9dfdeeb4" title="获取当前状态 ID" alt="" coords="496,104,652,129"/>
+<area shape="rect" id="Node000006" href="$structSignalState.html#a7d4d89d904c5281e976feee6ef7f3732" title="检查信号编号是否有效" alt="" coords="501,180,647,205"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="174,127,242,138,487,177,486,182,241,143,174,132"/>
+<area shape="rect" id="Node000007" href="$structSignalState.html#a71fa4d8af516a4048fa001728b088a99" title="设置待处理信号" alt="" coords="256,205,433,231"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="125,127,178,155,242,184,286,199,284,204,240,188,176,159,123,132"/>
+<area shape="rect" id="Node000005" href="$classTaskFsm.html#ae980ff471cb089a7effbf5bb9dfdeeb4" title="获取当前状态 ID（线程安全）" alt="" coords="496,104,652,129"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="448,114,482,114,482,119,448,119"/>
+<area shape="poly" id="edge7_Node000007_Node000006" title=" " alt="" coords="433,206,486,200,487,205,434,211"/>
 </map>

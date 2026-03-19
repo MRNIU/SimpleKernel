@@ -1,16 +1,14 @@
 <map id="_start" name="_start">
-<area shape="rect" id="Node000001" title="负责 crtbegin 的工作" alt="" coords="5,56,64,81"/>
-<area shape="rect" id="Node000002" href="$kstd__libcxx_8cpp.html#af560a93d5e246576e878702a1869a75e" title="构造 c++ 全局对象" alt="" coords="133,7,201,32"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="63,55,120,34,122,39,65,60"/>
-<area shape="rect" id="Node000003" href="$tests_2integration__test_2aarch64__minimal_2main_8cpp.html#acdef7a1fd863a6d3770c1268cb06add3" title=" " alt="" coords="140,56,195,81"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="64,66,126,66,126,71,64,71"/>
-<area shape="rect" id="Node000007" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="112,105,223,131"/>
-<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="65,77,120,98,118,103,63,82"/>
-<area shape="rect" id="Node000004" href="$tests_2integration__test_2aarch64__minimal_2main_8cpp.html#a5edd8ed15ba1e6af9ee3fea0b2e33542" title=" " alt="" coords="281,5,343,31"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="194,57,267,31,269,36,196,62"/>
-<area shape="rect" id="Node000005" href="$tests_2integration__test_2aarch64__minimal_2main_8cpp.html#ad4f8ea699a908e7075b9a4ed2f0010f2" title=" " alt="" coords="401,31,452,56"/>
-<area shape="poly" id="edge5_Node000003_Node000005" title=" " alt="" coords="194,63,387,44,388,50,195,69"/>
-<area shape="rect" id="Node000006" href="$tests_2integration__test_2aarch64__minimal_2main_8cpp.html#ae4c122955327cf2c32cc6ecb0e5d8e18" title=" " alt="" coords="271,107,353,132"/>
-<area shape="poly" id="edge6_Node000003_Node000006" title=" " alt="" coords="196,75,263,100,261,105,194,80"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="343,22,388,32,387,37,342,27"/>
+<area shape="rect" id="Node000001" title="负责 crtbegin 的工作" alt="" coords="5,55,64,80"/>
+<area shape="rect" id="Node000002" href="$kstd__libcxx_8cpp.html#af560a93d5e246576e878702a1869a75e" title="构造 c++ 全局对象" alt="" coords="133,5,201,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="63,54,120,33,122,38,65,59"/>
+<area shape="rect" id="Node000003" href="$tests_2integration__test_2aarch64__minimal_2main_8cpp.html#acdef7a1fd863a6d3770c1268cb06add3" title=" " alt="" coords="140,55,195,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="64,65,126,65,126,70,64,70"/>
+<area shape="rect" id="Node000006" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="112,104,223,129"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="65,76,120,96,118,101,63,81"/>
+<area shape="rect" id="Node000004" href="$tests_2integration__test_2aarch64__minimal_2main_8cpp.html#a5edd8ed15ba1e6af9ee3fea0b2e33542" title=" " alt="" coords="271,29,332,55"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="195,60,256,48,257,53,196,65"/>
+<area shape="rect" id="Node000005" href="$tests_2integration__test_2aarch64__minimal_2main_8cpp.html#ad4f8ea699a908e7075b9a4ed2f0010f2" title=" " alt="" coords="380,55,431,80"/>
+<area shape="poly" id="edge5_Node000003_Node000005" title=" " alt="" coords="195,65,366,65,366,70,195,70"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="333,47,367,55,366,61,332,52"/>
 </map>

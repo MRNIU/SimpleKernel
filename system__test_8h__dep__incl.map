@@ -1,41 +1,43 @@
 <map id="/workspaces/SimpleKernel/tests/system_test/system_test.h" name="/workspaces/SimpleKernel/tests/system_test/system_test.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="1956,5,2195,45"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="2061,5,2300,45"/>
 <area shape="rect" id="Node000002" href="$system__test_2cfs__scheduler__test_8cpp.html" title=" " alt="" coords="5,93,199,148"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1943,31,1564,36,1064,48,570,67,366,80,210,96,199,98,199,92,210,91,365,75,570,62,1064,42,1564,31,1943,25"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="2047,30,1649,35,1119,46,594,66,376,79,210,96,199,98,199,92,210,91,375,74,593,60,1119,41,1649,30,2047,25"/>
 <area shape="rect" id="Node000003" href="$clone__system__test_8cpp.html" title=" " alt="" coords="223,93,416,148"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="1942,31,1603,38,1167,51,739,70,562,82,428,96,417,98,416,92,427,91,562,76,739,64,1167,45,1603,33,1942,26"/>
-<area shape="rect" id="Node000004" href="$ctor__dtor__test_8cpp.html" title=" " alt="" coords="440,93,633,148"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="1942,32,1272,54,909,72,759,83,645,96,634,98,633,92,644,91,759,78,909,67,1272,48,1942,27"/>
-<area shape="rect" id="Node000005" href="$exit__system__test_8cpp.html" title=" " alt="" coords="657,93,851,148"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="1942,29,1734,32,1464,41,1164,62,1011,77,862,96,851,98,851,92,862,91,1011,71,1163,56,1464,36,1734,26,1942,23"/>
-<area shape="rect" id="Node000006" href="$fatfs__system__test_8cpp.html" title=" " alt="" coords="875,93,1068,148"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="1942,31,1770,36,1554,48,1317,67,1080,96,1069,98,1068,93,1079,91,1316,61,1554,42,1770,31,1942,26"/>
-<area shape="rect" id="Node000007" href="$system__test_2fifo__scheduler__test_8cpp.html" title=" " alt="" coords="1092,93,1285,148"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="1943,35,1646,54,1471,72,1297,96,1286,98,1285,93,1296,91,1470,67,1645,49,1942,29"/>
-<area shape="rect" id="Node000008" href="$idle__scheduler__test_8cpp.html" title=" " alt="" coords="1309,93,1503,148"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="1942,41,1741,63,1516,96,1504,98,1503,93,1515,91,1740,58,1942,36"/>
-<area shape="rect" id="Node000009" href="$interrupt__test_8cpp.html" title=" " alt="" coords="1527,93,1730,148"/>
-<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="1966,51,1743,96,1731,98,1730,93,1741,91,1964,45"/>
-<area shape="rect" id="Node000010" href="$kernel__task__test_8cpp.html" title=" " alt="" coords="1755,93,1948,148"/>
-<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="2018,53,1915,96,1913,91,2016,48"/>
-<area shape="rect" id="Node000011" href="$tests_2system__test_2main_8cpp.html" title=" " alt="" coords="1972,101,2179,141"/>
-<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="2078,59,2078,101,2073,101,2073,59"/>
-<area shape="rect" id="Node000012" href="$memory__test_8cpp.html" title=" " alt="" coords="2203,93,2404,148"/>
-<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="2135,48,2240,91,2238,96,2133,53"/>
-<area shape="rect" id="Node000013" href="$mutex__test_8cpp.html" title=" " alt="" coords="2428,93,2621,148"/>
-<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="2191,45,2417,91,2428,93,2427,98,2416,96,2190,50"/>
-<area shape="rect" id="Node000014" href="$ramfs__system__test_8cpp.html" title=" " alt="" coords="2645,93,2839,148"/>
-<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="2209,35,2410,57,2634,91,2645,93,2644,98,2634,96,2409,63,2208,41"/>
-<area shape="rect" id="Node000015" href="$system__test_2rr__scheduler__test_8cpp.html" title=" " alt="" coords="2863,93,3090,148"/>
-<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="2209,31,2504,52,2678,69,2852,91,2863,93,2863,98,2851,96,2678,74,2504,57,2208,36"/>
-<area shape="rect" id="Node000016" href="$system__test_2spinlock__test_8cpp.html" title=" " alt="" coords="3114,93,3314,148"/>
-<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="2209,26,2387,31,2610,42,2856,61,3102,91,3114,93,3113,98,3102,96,2856,67,2610,47,2386,36,2209,31"/>
-<area shape="rect" id="Node000017" href="$thread__group__system__test_8cpp.html" title=" " alt="" coords="3339,93,3532,148"/>
-<area shape="poly" id="edge16_Node000001_Node000017" title=" " alt="" coords="2208,23,2423,26,2702,35,3013,56,3172,71,3326,91,3339,93,3338,98,3326,96,3171,76,3013,61,2702,41,2423,31,2208,29"/>
-<area shape="rect" id="Node000018" href="$user__task__test_8cpp.html" title=" " alt="" coords="3556,93,3749,148"/>
-<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="2209,27,2898,48,3272,66,3427,78,3545,91,3556,92,3555,98,3544,96,3426,83,3272,72,2898,53,2209,32"/>
-<area shape="rect" id="Node000019" href="$system__test_2virtual__memory__test_8cpp.html" title=" " alt="" coords="3773,93,3967,148"/>
-<area shape="poly" id="edge18_Node000001_Node000019" title=" " alt="" coords="2208,26,2554,32,3002,45,3442,64,3624,76,3762,91,3773,92,3773,98,3762,96,3623,82,3441,69,3002,50,2554,38,2208,31"/>
-<area shape="rect" id="Node000020" href="$wait__system__test_8cpp.html" title=" " alt="" coords="3991,93,4184,148"/>
-<area shape="poly" id="edge19_Node000001_Node000020" title=" " alt="" coords="2209,25,2595,30,3106,42,3611,61,3820,75,3980,91,3991,92,3990,98,3979,96,3820,80,3611,67,3106,47,2595,36,2209,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="2047,31,1689,37,1222,49,763,68,572,81,428,96,417,98,416,92,427,91,572,76,762,63,1222,44,1689,32,2047,26"/>
+<area shape="rect" id="Node000004" href="$cross__core__test_8cpp.html" title=" " alt="" coords="440,93,633,148"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="2048,32,1731,39,1327,52,932,71,769,83,645,96,634,98,633,92,644,91,769,77,932,66,1326,47,1731,34,2048,26"/>
+<area shape="rect" id="Node000005" href="$ctor__dtor__test_8cpp.html" title=" " alt="" coords="657,93,851,148"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="2048,33,1432,55,1102,74,966,84,862,96,851,98,851,92,862,91,966,79,1102,68,1432,50,2048,28"/>
+<area shape="rect" id="Node000006" href="$exit__system__test_8cpp.html" title=" " alt="" coords="875,93,1068,148"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="2048,30,1857,34,1616,44,1348,64,1080,96,1069,98,1068,93,1079,91,1347,59,1615,39,1857,29,2048,25"/>
+<area shape="rect" id="Node000007" href="$fatfs__system__test_8cpp.html" title=" " alt="" coords="1092,93,1285,148"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="2048,33,1894,39,1706,51,1501,69,1297,96,1286,98,1285,93,1296,91,1501,64,1706,46,1894,34,2047,27"/>
+<area shape="rect" id="Node000008" href="$system__test_2fifo__scheduler__test_8cpp.html" title=" " alt="" coords="1309,93,1503,148"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="2047,37,1799,58,1656,75,1514,96,1503,98,1503,93,1514,91,1655,70,1798,53,2047,32"/>
+<area shape="rect" id="Node000009" href="$idle__scheduler__test_8cpp.html" title=" " alt="" coords="1527,93,1720,148"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="2048,46,1896,68,1733,96,1721,98,1720,93,1732,91,1896,63,2047,41"/>
+<area shape="rect" id="Node000010" href="$interrupt__test_8cpp.html" title=" " alt="" coords="1745,93,1947,148"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="2100,52,1941,96,1940,91,2099,47"/>
+<area shape="rect" id="Node000011" href="$kernel__task__test_8cpp.html" title=" " alt="" coords="1972,93,2165,148"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="2149,56,2102,95,2099,91,2146,52"/>
+<area shape="rect" id="Node000012" href="$tests_2system__test_2main_8cpp.html" title=" " alt="" coords="2189,101,2396,141"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="2216,52,2272,99,2268,103,2212,56"/>
+<area shape="rect" id="Node000013" href="$memory__test_8cpp.html" title=" " alt="" coords="2420,93,2621,148"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="2264,46,2426,91,2424,96,2262,52"/>
+<area shape="rect" id="Node000014" href="$mutex__test_8cpp.html" title=" " alt="" coords="2645,93,2839,148"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="2315,40,2468,62,2634,91,2645,93,2644,98,2634,96,2468,68,2314,46"/>
+<area shape="rect" id="Node000015" href="$ramfs__system__test_8cpp.html" title=" " alt="" coords="2863,93,3056,148"/>
+<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="2314,32,2564,53,2709,70,2852,91,2863,93,2862,98,2851,96,2708,75,2564,58,2314,37"/>
+<area shape="rect" id="Node000016" href="$system__test_2rr__scheduler__test_8cpp.html" title=" " alt="" coords="3081,93,3307,148"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="2314,29,2657,48,2863,66,3069,91,3081,92,3080,98,3068,96,2863,72,2657,54,2314,34"/>
+<area shape="rect" id="Node000017" href="$system__test_2spinlock__test_8cpp.html" title=" " alt="" coords="3331,93,3531,148"/>
+<area shape="poly" id="edge16_Node000001_Node000017" title=" " alt="" coords="2314,24,2510,29,2761,39,3040,59,3182,73,3320,91,3331,93,3330,98,3319,96,3181,78,3040,64,2761,44,2510,34,2314,30"/>
+<area shape="rect" id="Node000018" href="$thread__group__system__test_8cpp.html" title=" " alt="" coords="3556,93,3749,148"/>
+<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="2314,27,2951,50,3294,68,3435,79,3544,91,3556,93,3555,98,3543,96,3435,84,3294,73,2951,55,2314,33"/>
+<area shape="rect" id="Node000019" href="$user__task__test_8cpp.html" title=" " alt="" coords="3773,93,3967,148"/>
+<area shape="poly" id="edge18_Node000001_Node000019" title=" " alt="" coords="2314,26,2639,33,3057,46,3465,65,3634,77,3762,91,3773,92,3773,98,3762,96,3633,82,3464,70,3056,52,2639,39,2313,32"/>
+<area shape="rect" id="Node000020" href="$system__test_2virtual__memory__test_8cpp.html" title=" " alt="" coords="3991,93,4184,148"/>
+<area shape="poly" id="edge19_Node000001_Node000020" title=" " alt="" coords="2314,25,2680,31,3161,43,3634,62,3830,75,3980,91,3991,92,3990,98,3979,96,3830,81,3634,68,3160,49,2680,37,2314,31"/>
+<area shape="rect" id="Node000021" href="$wait__system__test_8cpp.html" title=" " alt="" coords="4208,93,4401,148"/>
+<area shape="poly" id="edge20_Node000001_Node000021" title=" " alt="" coords="2314,25,2721,30,3264,40,3803,60,4027,74,4197,91,4208,92,4207,98,4196,96,4027,79,3803,65,3264,46,2720,35,2314,30"/>
 </map>

@@ -1,5 +1,5 @@
 <map id="TaskFsm::GetStateId" name="TaskFsm::GetStateId">
-<area shape="rect" id="Node000001" title="获取当前状态 ID" alt="" coords="496,55,652,80"/>
+<area shape="rect" id="Node000001" title="获取当前状态 ID（线程安全）" alt="" coords="496,55,652,80"/>
 <area shape="rect" id="Node000002" href="$structTaskControlBlock.html#a76c836142838b3127b032710242c9606" title="获取当前任务状态" alt="" coords="241,55,448,80"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="482,70,448,70,448,65,482,65"/>
 <area shape="rect" id="Node000003" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="调度函数 选择下一个任务并切换上下文" alt="" coords="12,5,187,31"/>

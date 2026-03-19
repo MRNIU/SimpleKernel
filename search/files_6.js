@@ -7,5 +7,6 @@ var searchData=
   ['close_2ecpp_4',['close.cpp',['../close_8cpp.html',1,'']]],
   ['coding_5fstandards_2emd_5',['coding_standards.md',['../coding__standards_8md.html',1,'']]],
   ['cpu_5fio_2eh_6',['cpu_io.h',['../cpu__io_8h.html',1,'']]],
-  ['ctor_5fdtor_5ftest_2ecpp_7',['ctor_dtor_test.cpp',['../ctor__dtor__test_8cpp.html',1,'']]]
+  ['cross_5fcore_5ftest_2ecpp_7',['cross_core_test.cpp',['../cross__core__test_8cpp.html',1,'']]],
+  ['ctor_5fdtor_5ftest_2ecpp_8',['ctor_dtor_test.cpp',['../ctor__dtor__test_8cpp.html',1,'']]]
 ];

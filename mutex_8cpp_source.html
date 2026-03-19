@@ -131,121 +131,124 @@ $(document).ready(function(){initNavTree('mutex_8cpp_source.html',''); initResiz
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>  }</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>  <span class="comment">// 慢路径：在调度器锁保护下进行 re-check + block，防止丢失唤醒</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    {</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>      <span class="keyword">auto</span>&amp; cpu_sched = tm.GetCurrentCpuSched();</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>      <a class="code hl_class" href="classLockGuard.html">LockGuard&lt;SpinLock&gt;</a> lock_guard(cpu_sched.lock);</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>      expected = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>      <span class="keywordflow">if</span> (locked_.compare_exchange_strong(expected, <span class="keyword">true</span>,</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>                                          std::memory_order_acquire,</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>                                          std::memory_order_relaxed)) {</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        owner_.store(current_pid, std::memory_order_release);</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::Lock: Task {} acquired mutex &#39;{}&#39; (re-check)&quot;</span>,</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>                    current_pid, name);</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        <span class="keywordflow">return</span> {};</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>      }</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>      <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::Lock: Task {} blocking on mutex &#39;{}&#39;&quot;</span>, current_pid,</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>                  name);</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>      tm.Block(cpu_sched, resource_id_);</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    }</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    tm.Schedule();</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    expected = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordflow">if</span> (locked_.compare_exchange_strong(expected, <span class="keyword">true</span>,</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>                                        std::memory_order_acquire,</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>                                        std::memory_order_relaxed)) {</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>      owner_.store(current_pid, std::memory_order_release);</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>      <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::Lock: Task {} acquired mutex &#39;{}&#39; (after wake)&quot;</span>,</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>                  current_pid, name);</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>      <span class="keywordflow">return</span> {};</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    }</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  }</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>}</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  <span class="comment">// @todo: 当前实现在高竞争下可能不公平——被唤醒的任务的 CAS 可能被快速路径</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  <span class="comment">// 的新到达者抢占，导致被唤醒任务重新 Block。考虑实现 handoff 模式：</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  <span class="comment">// UnLock 直接将 owner_ 转移给被唤醒任务，避免竞争。</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    {</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>      <span class="keyword">auto</span>&amp; cpu_sched = tm.GetCurrentCpuSched();</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>      <a class="code hl_class" href="classLockGuard.html">LockGuard&lt;SpinLock&gt;</a> lock_guard(cpu_sched.lock);</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>      expected = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>      <span class="keywordflow">if</span> (locked_.compare_exchange_strong(expected, <span class="keyword">true</span>,</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>                                          std::memory_order_acquire,</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>                                          std::memory_order_relaxed)) {</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        owner_.store(current_pid, std::memory_order_release);</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::Lock: Task {} acquired mutex &#39;{}&#39; (re-check)&quot;</span>,</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>                    current_pid, name);</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>        <span class="keywordflow">return</span> {};</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>      }</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>      <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::Lock: Task {} blocking on mutex &#39;{}&#39;&quot;</span>, current_pid,</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>                  name);</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>      tm.Block(cpu_sched, resource_id_);</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    }</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    tm.Schedule();</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    expected = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keywordflow">if</span> (locked_.compare_exchange_strong(expected, <span class="keyword">true</span>,</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>                                        std::memory_order_acquire,</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>                                        std::memory_order_relaxed)) {</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>      owner_.store(current_pid, std::memory_order_release);</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>      <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::Lock: Task {} acquired mutex &#39;{}&#39; (after wake)&quot;</span>,</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>                  current_pid, name);</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>      <span class="keywordflow">return</span> {};</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    }</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  }</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>}</div>
 </div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="foldopen" id="foldopen00071" data-start="{" data-end="}">
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="classMutex.html#adb826acb26d01965e1467558275ffe03">   71</a></span><span class="keyword">auto</span> <a class="code hl_function" href="classMutex.html#adb826acb26d01965e1467558275ffe03">Mutex::UnLock</a>() -&gt; <a class="code hl_typedef" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected&lt;void&gt;</a> {</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  <span class="keyword">auto</span> current_task = TaskManagerSingleton::instance().GetCurrentTask();</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  <span class="keywordflow">if</span> (current_task == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Mutex::UnLock: Cannot unlock mutex &#39;{}&#39; outside task context&quot;</span>,</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>              name);</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa387fc2921066e4539ca8918fd8beb3bd">ErrorCode::kMutexNoTaskContext</a>});</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  }</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  <a class="code hl_typedef" href="task__control__block_8hpp.html#a7b3497faea769e764efc8647bc2103f1">Pid</a> current_pid = current_task-&gt;pid;</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  <span class="keywordflow">if</span> (!IsLockedByCurrentTask()) {</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <a class="code hl_function" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb">klog::Warn</a>(</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>        <span class="stringliteral">&quot;Mutex::UnLock: Task {} tried to unlock mutex &#39;{}&#39; it doesn&#39;t own&quot;</span>,</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>        current_pid, name);</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3499a03cb9c4b33b3282568eb9414380">ErrorCode::kMutexNotOwned</a>});</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  }</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  owner_.store(std::numeric_limits&lt;Pid&gt;::max(), std::memory_order_release);</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  locked_.store(<span class="keyword">false</span>, std::memory_order_release);</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="foldopen" id="foldopen00074" data-start="{" data-end="}">
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno"><a class="line" href="classMutex.html#adb826acb26d01965e1467558275ffe03">   74</a></span><span class="keyword">auto</span> <a class="code hl_function" href="classMutex.html#adb826acb26d01965e1467558275ffe03">Mutex::UnLock</a>() -&gt; <a class="code hl_typedef" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected&lt;void&gt;</a> {</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  <span class="keyword">auto</span> current_task = TaskManagerSingleton::instance().GetCurrentTask();</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  <span class="keywordflow">if</span> (current_task == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Mutex::UnLock: Cannot unlock mutex &#39;{}&#39; outside task context&quot;</span>,</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>              name);</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa387fc2921066e4539ca8918fd8beb3bd">ErrorCode::kMutexNoTaskContext</a>});</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  }</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  <a class="code hl_typedef" href="task__control__block_8hpp.html#a7b3497faea769e764efc8647bc2103f1">Pid</a> current_pid = current_task-&gt;pid;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  <span class="keywordflow">if</span> (!IsLockedByCurrentTask()) {</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <a class="code hl_function" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb">klog::Warn</a>(</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>        <span class="stringliteral">&quot;Mutex::UnLock: Task {} tried to unlock mutex &#39;{}&#39; it doesn&#39;t own&quot;</span>,</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        current_pid, name);</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3499a03cb9c4b33b3282568eb9414380">ErrorCode::kMutexNotOwned</a>});</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  }</div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>  <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::UnLock: Task {} released mutex &#39;{}&#39;&quot;</span>, current_pid, name);</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>  TaskManagerSingleton::instance().Wakeup(resource_id_);</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  <span class="keywordflow">return</span> {};</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>}</div>
-</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>  owner_.store(std::numeric_limits&lt;Pid&gt;::max(), std::memory_order_release);</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>  locked_.store(<span class="keyword">false</span>, std::memory_order_release);</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>  <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::UnLock: Task {} released mutex &#39;{}&#39;&quot;</span>, current_pid, name);</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>  TaskManagerSingleton::instance().WakeupOne(resource_id_);</div>
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span> </div>
-<div class="foldopen" id="foldopen00098" data-start="{" data-end="}">
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno"><a class="line" href="classMutex.html#af23ea1e8b1117a948437451da7041227">   98</a></span><span class="keyword">auto</span> <a class="code hl_function" href="classMutex.html#af23ea1e8b1117a948437451da7041227">Mutex::TryLock</a>() -&gt; <a class="code hl_typedef" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected&lt;void&gt;</a> {</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>  <span class="keyword">auto</span> current_task = TaskManagerSingleton::instance().GetCurrentTask();</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>  <span class="keywordflow">if</span> (current_task == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Mutex::TryLock: Cannot trylock mutex &#39;{}&#39; outside task context&quot;</span>,</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>              name);</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa387fc2921066e4539ca8918fd8beb3bd">ErrorCode::kMutexNoTaskContext</a>});</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>  }</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>  <a class="code hl_typedef" href="task__control__block_8hpp.html#a7b3497faea769e764efc8647bc2103f1">Pid</a> current_pid = current_task-&gt;pid;</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>  <span class="keywordflow">if</span> (IsLockedByCurrentTask()) {</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>        <span class="stringliteral">&quot;Mutex::TryLock: Task {} tried to recursively trylock mutex &#39;{}&#39;&quot;</span>,</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>        current_pid, name);</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fada0d1d25600f9f29b8c047e9d6abc8a9">ErrorCode::kMutexRecursiveLock</a>});</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>  }</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>  <span class="keywordtype">bool</span> expected = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>  <span class="keywordflow">if</span> (locked_.compare_exchange_strong(expected, <span class="keyword">true</span>, std::memory_order_acquire,</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>                                      std::memory_order_relaxed)) {</div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    owner_.store(current_pid, std::memory_order_release);</div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>    <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::TryLock: Task {} acquired mutex &#39;{}&#39;&quot;</span>, current_pid,</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>                name);</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    <span class="keywordflow">return</span> {};</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>  }</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span> </div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>  <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::TryLock: Task {} failed to acquire mutex &#39;{}&#39;&quot;</span>,</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>              current_pid, name);</div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>  <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fafcf56adc5b03762c753bab3f68cb4470">ErrorCode::kMutexNotLocked</a>});</div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>}</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  <span class="keywordflow">return</span> {};</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>}</div>
 </div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span> </div>
-<div class="foldopen" id="foldopen00129" data-start="{" data-end="}">
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno"><a class="line" href="classMutex.html#a99d18d08046311956a9a69f1f8c9daaa">  129</a></span><span class="keyword">auto</span> <a class="code hl_function" href="classMutex.html#a99d18d08046311956a9a69f1f8c9daaa">Mutex::IsLockedByCurrentTask</a>() const -&gt; <span class="keywordtype">bool</span> {</div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>  <span class="keyword">auto</span> current_task = TaskManagerSingleton::instance().GetCurrentTask();</div>
-<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>  <span class="keywordflow">if</span> (current_task == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>  }</div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span> </div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>  <span class="keywordflow">return</span> <a class="code hl_variable" href="classMutex.html#aea34fa6d1c4e0dde23cfae09cb595784">locked_</a>.load(std::memory_order_acquire) &amp;&amp;</div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>         <a class="code hl_variable" href="classMutex.html#a33b4def5d3e4788c850e8594f92c07c7">owner_</a>.load(std::memory_order_acquire) == current_task-&gt;pid;</div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>}</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
+<div class="foldopen" id="foldopen00101" data-start="{" data-end="}">
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno"><a class="line" href="classMutex.html#af23ea1e8b1117a948437451da7041227">  101</a></span><span class="keyword">auto</span> <a class="code hl_function" href="classMutex.html#af23ea1e8b1117a948437451da7041227">Mutex::TryLock</a>() -&gt; <a class="code hl_typedef" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected&lt;void&gt;</a> {</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  <span class="keyword">auto</span> current_task = TaskManagerSingleton::instance().GetCurrentTask();</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>  <span class="keywordflow">if</span> (current_task == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Mutex::TryLock: Cannot trylock mutex &#39;{}&#39; outside task context&quot;</span>,</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>              name);</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa387fc2921066e4539ca8918fd8beb3bd">ErrorCode::kMutexNoTaskContext</a>});</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>  }</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span> </div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>  <a class="code hl_typedef" href="task__control__block_8hpp.html#a7b3497faea769e764efc8647bc2103f1">Pid</a> current_pid = current_task-&gt;pid;</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>  <span class="keywordflow">if</span> (IsLockedByCurrentTask()) {</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>        <span class="stringliteral">&quot;Mutex::TryLock: Task {} tried to recursively trylock mutex &#39;{}&#39;&quot;</span>,</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>        current_pid, name);</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fada0d1d25600f9f29b8c047e9d6abc8a9">ErrorCode::kMutexRecursiveLock</a>});</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>  }</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span> </div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>  <span class="keywordtype">bool</span> expected = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>  <span class="keywordflow">if</span> (locked_.compare_exchange_strong(expected, <span class="keyword">true</span>, std::memory_order_acquire,</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>                                      std::memory_order_relaxed)) {</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    owner_.store(current_pid, std::memory_order_release);</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::TryLock: Task {} acquired mutex &#39;{}&#39;&quot;</span>, current_pid,</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>                name);</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>    <span class="keywordflow">return</span> {};</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>  }</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span> </div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>  <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;Mutex::TryLock: Task {} failed to acquire mutex &#39;{}&#39;&quot;</span>,</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>              current_pid, name);</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>  <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fafcf56adc5b03762c753bab3f68cb4470">ErrorCode::kMutexNotLocked</a>});</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>}</div>
+</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span> </div>
+<div class="foldopen" id="foldopen00132" data-start="{" data-end="}">
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno"><a class="line" href="classMutex.html#a99d18d08046311956a9a69f1f8c9daaa">  132</a></span><span class="keyword">auto</span> <a class="code hl_function" href="classMutex.html#a99d18d08046311956a9a69f1f8c9daaa">Mutex::IsLockedByCurrentTask</a>() const -&gt; <span class="keywordtype">bool</span> {</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>  <span class="keyword">auto</span> current_task = TaskManagerSingleton::instance().GetCurrentTask();</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>  <span class="keywordflow">if</span> (current_task == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>  }</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span> </div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>  <span class="keywordflow">return</span> <a class="code hl_variable" href="classMutex.html#aea34fa6d1c4e0dde23cfae09cb595784">locked_</a>.load(std::memory_order_acquire) &amp;&amp;</div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>         <a class="code hl_variable" href="classMutex.html#a33b4def5d3e4788c850e8594f92c07c7">owner_</a>.load(std::memory_order_acquire) == current_task-&gt;pid;</div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>}</div>
 </div>
 <div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 风格的锁守卫模板类</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00131">spinlock.hpp:131</a></div></div>
 <div class="ttc" id="aclassMutex_html_a33b4def5d3e4788c850e8594f92c07c7"><div class="ttname"><a href="classMutex.html#a33b4def5d3e4788c850e8594f92c07c7">Mutex::owner_</a></div><div class="ttdeci">std::atomic&lt; Pid &gt; owner_</div><div class="ttdoc">持有锁的任务 ID，max() 表示未被持有</div><div class="ttdef"><b>Definition</b> <a href="mutex_8hpp_source.html#l00090">mutex.hpp:90</a></div></div>
 <div class="ttc" id="aclassMutex_html_a73f2d128f19570bd0000e57d8b6b8521"><div class="ttname"><a href="classMutex.html#a73f2d128f19570bd0000e57d8b6b8521">Mutex::Lock</a></div><div class="ttdeci">auto Lock() -&gt; Expected&lt; void &gt;</div><div class="ttdoc">获取锁（阻塞）</div><div class="ttdef"><b>Definition</b> <a href="mutex_8cpp_source.html#l00011">mutex.cpp:11</a></div></div>
-<div class="ttc" id="aclassMutex_html_a99d18d08046311956a9a69f1f8c9daaa"><div class="ttname"><a href="classMutex.html#a99d18d08046311956a9a69f1f8c9daaa">Mutex::IsLockedByCurrentTask</a></div><div class="ttdeci">auto IsLockedByCurrentTask() const -&gt; bool</div><div class="ttdoc">检查锁是否被当前线程持有</div><div class="ttdef"><b>Definition</b> <a href="mutex_8cpp_source.html#l00129">mutex.cpp:129</a></div></div>
-<div class="ttc" id="aclassMutex_html_adb826acb26d01965e1467558275ffe03"><div class="ttname"><a href="classMutex.html#adb826acb26d01965e1467558275ffe03">Mutex::UnLock</a></div><div class="ttdeci">auto UnLock() -&gt; Expected&lt; void &gt;</div><div class="ttdoc">释放锁</div><div class="ttdef"><b>Definition</b> <a href="mutex_8cpp_source.html#l00071">mutex.cpp:71</a></div></div>
+<div class="ttc" id="aclassMutex_html_a99d18d08046311956a9a69f1f8c9daaa"><div class="ttname"><a href="classMutex.html#a99d18d08046311956a9a69f1f8c9daaa">Mutex::IsLockedByCurrentTask</a></div><div class="ttdeci">auto IsLockedByCurrentTask() const -&gt; bool</div><div class="ttdoc">检查锁是否被当前线程持有</div><div class="ttdef"><b>Definition</b> <a href="mutex_8cpp_source.html#l00132">mutex.cpp:132</a></div></div>
+<div class="ttc" id="aclassMutex_html_adb826acb26d01965e1467558275ffe03"><div class="ttname"><a href="classMutex.html#adb826acb26d01965e1467558275ffe03">Mutex::UnLock</a></div><div class="ttdeci">auto UnLock() -&gt; Expected&lt; void &gt;</div><div class="ttdoc">释放锁</div><div class="ttdef"><b>Definition</b> <a href="mutex_8cpp_source.html#l00074">mutex.cpp:74</a></div></div>
 <div class="ttc" id="aclassMutex_html_aea34fa6d1c4e0dde23cfae09cb595784"><div class="ttname"><a href="classMutex.html#aea34fa6d1c4e0dde23cfae09cb595784">Mutex::locked_</a></div><div class="ttdeci">std::atomic&lt; bool &gt; locked_</div><div class="ttdoc">锁状态</div><div class="ttdef"><b>Definition</b> <a href="mutex_8hpp_source.html#l00087">mutex.hpp:87</a></div></div>
-<div class="ttc" id="aclassMutex_html_af23ea1e8b1117a948437451da7041227"><div class="ttname"><a href="classMutex.html#af23ea1e8b1117a948437451da7041227">Mutex::TryLock</a></div><div class="ttdeci">auto TryLock() -&gt; Expected&lt; void &gt;</div><div class="ttdoc">尝试获取锁（非阻塞）</div><div class="ttdef"><b>Definition</b> <a href="mutex_8cpp_source.html#l00098">mutex.cpp:98</a></div></div>
+<div class="ttc" id="aclassMutex_html_af23ea1e8b1117a948437451da7041227"><div class="ttname"><a href="classMutex.html#af23ea1e8b1117a948437451da7041227">Mutex::TryLock</a></div><div class="ttdeci">auto TryLock() -&gt; Expected&lt; void &gt;</div><div class="ttdoc">尝试获取锁（非阻塞）</div><div class="ttdef"><b>Definition</b> <a href="mutex_8cpp_source.html#l00101">mutex.cpp:101</a></div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa3499a03cb9c4b33b3282568eb9414380"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3499a03cb9c4b33b3282568eb9414380">ErrorCode::kMutexNotOwned</a></div><div class="ttdeci">@ kMutexNotOwned</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa387fc2921066e4539ca8918fd8beb3bd"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa387fc2921066e4539ca8918fd8beb3bd">ErrorCode::kMutexNoTaskContext</a></div><div class="ttdeci">@ kMutexNoTaskContext</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fada0d1d25600f9f29b8c047e9d6abc8a9"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fada0d1d25600f9f29b8c047e9d6abc8a9">ErrorCode::kMutexRecursiveLock</a></div><div class="ttdeci">@ kMutexRecursiveLock</div></div>

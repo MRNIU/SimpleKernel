@@ -11,7 +11,7 @@ var searchData=
   ['hart_20id管理_8',['Hart ID管理',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md66',1,'']]],
   ['has_5fparent_9',['has_parent',['../structMsgExit.html#a3750ec3f7edb2609237fe366c0645819',1,'MsgExit']]],
   ['hasdata_10',['hasdata',['../classns16550a_1_1Ns16550a.html#a9ab11ae2c2980473e95870e12f5da54c',1,'ns16550a::Ns16550a::HasData()'],['../classpl011_1_1Pl011.html#a265bb63d948c01f759aa58080cd4da64',1,'pl011::Pl011::HasData()']]],
-  ['hasdeliverablesignal_11',['HasDeliverableSignal',['../structSignalState.html#ab8610f3b1d49561d7930de2bcd95d8b9',1,'SignalState']]],
+  ['hasdeliverablesignal_11',['HasDeliverableSignal',['../structSignalState.html#a36e143167c2cede4d2614da7126d196b',1,'SignalState']]],
   ['hash_3c_20resourceid_20_3e_12',['hash&lt; resourceid &gt;',['../structstd_1_1hash_3_01ResourceId_01_4.html',1,'std::hash&lt; ResourceId &gt;'],['../structetl_1_1hash_3_01ResourceId_01_4.html',1,'etl::hash&lt; ResourceId &gt;']]],
   ['hasused_13',['HasUsed',['../classvirtio_1_1SplitVirtqueue.html#abec01f30f0d158691d8a3083a646c4f9',1,'virtio::SplitVirtqueue']]],
   ['header_14',['header',['../structvirtio_1_1blk_1_1VirtioBlk_1_1RequestSlot.html#a7d0348be003f4bb34f022633eae6385a',1,'virtio::blk::VirtioBlk::RequestSlot::header'],['../structacpi_1_1Acpi_1_1Dsdt.html#a36f9e7b713c6a4ac36669a63c8d7454b',1,'acpi::Acpi::Dsdt::header'],['../structacpi_1_1Acpi_1_1Fadt.html#ac3013ed290bc360e997ddce085d5de1a',1,'acpi::Acpi::Fadt::header'],['../structacpi_1_1Acpi_1_1Xsdt.html#a7c835dfc1888520774d7388edf5efb66',1,'acpi::Acpi::Xsdt::header'],['../structacpi_1_1Acpi_1_1Rsdt.html#aabcb6e607fa1765e7a20101879465ac4',1,'acpi::Acpi::Rsdt::header']]],

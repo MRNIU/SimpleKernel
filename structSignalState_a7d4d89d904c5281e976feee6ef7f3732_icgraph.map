@@ -1,7 +1,12 @@
 <map id="SignalState::IsValid" name="SignalState::IsValid">
-<area shape="rect" id="Node000001" title="检查信号编号是否有效" alt="" coords="272,31,419,56"/>
-<area shape="rect" id="Node000002" href="$classTaskManager.html#a5be9eb3ca7748910414eea0c7b386c60" title="向指定任务发送信号" alt="" coords="21,5,209,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="258,36,209,31,209,26,259,31"/>
-<area shape="rect" id="Node000003" href="$classTaskManager.html#a507c8ea32c40f686791ef0ec1ed75daa" title="设置信号处理函数" alt="" coords="5,55,224,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="259,55,225,59,224,53,258,50"/>
+<area shape="rect" id="Node000001" title="检查信号编号是否有效" alt="" coords="508,81,655,107"/>
+<area shape="rect" id="Node000002" href="$structSignalState.html#adc3337a2bc559cfca4179d4f27c80925" title="清除待处理信号" alt="" coords="255,5,446,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="534,79,459,53,397,33,398,28,461,47,535,74"/>
+<area shape="rect" id="Node000003" href="$classTaskManager.html#a5be9eb3ca7748910414eea0c7b386c60" title="向指定任务发送信号" alt="" coords="5,81,193,107"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="494,97,194,97,194,91,494,91"/>
+<area shape="rect" id="Node000004" href="$structSignalState.html#a71fa4d8af516a4048fa001728b088a99" title="设置待处理信号" alt="" coords="262,107,439,132"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="495,106,440,112,439,107,494,101"/>
+<area shape="rect" id="Node000005" href="$classTaskManager.html#a507c8ea32c40f686791ef0ec1ed75daa" title="设置信号处理函数" alt="" coords="241,156,460,181"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="541,115,461,146,415,158,413,153,459,141,539,110"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="248,112,193,106,194,101,248,106"/>
 </map>

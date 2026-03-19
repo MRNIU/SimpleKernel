@@ -1,0 +1,5 @@
+<map id="SignalState::ClearPending" name="SignalState::ClearPending">
+<area shape="rect" id="Node000001" title="清除待处理信号" alt="" coords="5,5,196,31"/>
+<area shape="rect" id="Node000002" href="$structSignalState.html#a7d4d89d904c5281e976feee6ef7f3732" title="检查信号编号是否有效" alt="" coords="244,5,391,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="196,15,230,15,230,21,196,21"/>
+</map>
