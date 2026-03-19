@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['项目简介_0',['✨ 项目简介',['../md__2root_2README.html#autotoc_md341',1,'']]],
-  ['项目结构_1',['📂 项目结构',['../md__2root_2README.html#autotoc_md359',1,'']]],
-  ['项目配置工具_2',['项目配置工具',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md18',1,'']]]
+  ['🛠️_20环境搭建_0',['🛠️ 环境搭建',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md318',1,'']]],
+  ['🛠️_20environment_20setup_1',['🛠️ Environment Setup',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md356',1,'']]]
 ];

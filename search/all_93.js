@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['规范_0',['规范',['../md__2root_2README.html#autotoc_md370',1,'📋 Git Commit 规范'],['../md_git__commit.html',1,'Git Commit 规范']]]
+  ['镜像管理_0',['镜像管理',['../md_docker.html#autotoc_md295',1,'']]]
 ];

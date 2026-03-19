@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['访问_0',['2. 配置容器 SSH 访问',['../md_docker.html#autotoc_md238',1,'']]]
+  ['限制_0',['限制',['../md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md429',1,'']]]
 ];

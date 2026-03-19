@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['单元测试环境层实现总结_0',['Task 单元测试环境层实现总结',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html',1,'']]],
-  ['单元测试（host_20运行）_1',['单元测试（Host 运行）',['../md_filesystem__design.html#autotoc_md294',1,'']]],
-  ['单核测试_2',['单核测试',['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md536',1,'']]],
-  ['单核环境状态_3',['&lt;tt&gt;CoreEnvironment&lt;/tt&gt; - 单核环境状态',['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md528',1,'']]]
+  ['启动代码位置_0',['AP 启动代码位置',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md46',1,'']]],
+  ['启动代码_1',['启动代码',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md41',1,'2. AP 启动代码'],['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md62',1,'2. Hart 启动代码']]],
+  ['启动自建镜像容器_2',['2. 启动自建镜像容器',['../md_docker.html#autotoc_md282',1,'']]],
+  ['启动阶段_3',['2. AP 启动阶段',['../md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md427',1,'']]]
 ];

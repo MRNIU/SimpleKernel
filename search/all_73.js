@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['易于扩展_0',['3. 易于扩展',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md511',1,'']]]
+  ['的设计理念_0',['🤖 面向 AI 的设计理念',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md305',1,'']]]
 ];

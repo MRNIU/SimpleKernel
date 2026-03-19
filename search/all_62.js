@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['快速开始（推荐）_0',['快速开始（推荐）',['../md_docker.html#autotoc_md229',1,'']]],
-  ['快速开始_1',['🚀 快速开始',['../md__2root_2README.html#autotoc_md354',1,'']]]
+  ['方法签名_0',['5. 方法签名',['../md_coding__standards.html#autotoc_md251',1,'']]],
+  ['方法_1',['方法',['../md_coding__standards.html#autotoc_md263',1,'']]]
 ];

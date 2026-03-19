@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['可以开始编写的测试_0',['可以开始编写的测试',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md516',1,'']]],
-  ['可观测性强_1',['2. 可观测性强',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md510',1,'']]]
+  ['处理程序入口_0',['Trap 处理程序入口',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md185',1,'']]],
+  ['处理错误_1',['处理错误',['../md_coding__standards.html#autotoc_md257',1,'']]]
 ];

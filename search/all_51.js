@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['安装插件_0',['1. 安装插件',['../md_docker.html#autotoc_md241',1,'']]],
-  ['安装_20qemu_1',['安装 QEMU',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md12',1,'']]]
+  ['工具的结合方式_0',['与 AI 工具的结合方式',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md312',1,'']]],
+  ['工具链获取_1',['工具链获取',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md18',1,'']]],
+  ['工具链_2',['工具链',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html',1,'']]]
 ];

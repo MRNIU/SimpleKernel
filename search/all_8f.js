@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['编写测试类_0',['1. 编写测试类',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md502',1,'']]],
-  ['编译与运行_1',['⚡ 编译与运行',['../md__2root_2README.html#autotoc_md357',1,'']]],
-  ['编译配置_2',['编译配置',['../md__2root_2src_2arch_2README.html#autotoc_md425',1,'']]]
+  ['配置容器_20ssh_20访问_0',['2. 配置容器 SSH 访问',['../md_docker.html#autotoc_md286',1,'']]],
+  ['配置_1',['配置',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md13',1,'2. CMake Presets 配置'],['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md47',1,'APIC 配置'],['../md_docker.html#autotoc_md284',1,'SSH 配置']]],
+  ['配置_20ssh_20连接_2',['2. 配置 SSH 连接',['../md_docker.html#autotoc_md290',1,'']]]
 ];

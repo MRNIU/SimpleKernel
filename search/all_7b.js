@@ -1,11 +1,10 @@
 var searchData=
 [
-  ['模块单元测试环境层设计_0',['Task 模块单元测试环境层设计',['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html',1,'']]],
-  ['模块_1',['3. 辅助 CMake 模块',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md4',1,'']]],
-  ['模块_20unit_20test_20设计（精简版）_2',['Task 模块 Unit Test 设计（精简版）',['../md_task__unit__test__new__design.html',1,'']]],
-  ['模式_3',['支持的 APIC 模式',['../md__2root_2src_2driver_2apic_2README.html#autotoc_md432',1,'']]],
-  ['模式_20兼容性_4',['xAPIC 模式 (兼容性)',['../md__2root_2src_2driver_2apic_2README.html#autotoc_md434',1,'']]],
-  ['模式_20推荐_5',['x2APIC 模式 (推荐)',['../md__2root_2src_2driver_2apic_2README.html#autotoc_md433',1,'']]],
-  ['模拟器_6',['QEMU 模拟器',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md11',1,'']]],
-  ['模板递归初始化机制_7',['模板递归初始化机制',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md151',1,'']]]
+  ['系统初始化_0',['系统初始化',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md173',1,'🚀 系统初始化'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md199',1,'🚀 系统初始化'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md224',1,'🚀 系统初始化']]],
+  ['系统启动阶段（bsp）_1',['1. 系统启动阶段（BSP）',['../md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md426',1,'']]],
+  ['系统启动_2',['系统启动',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html',1,'']]],
+  ['系统架构_3',['系统架构',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md157',1,'🏗️ 系统架构'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md181',1,'🏗️ 系统架构'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md207',1,'🏗️ 系统架构']]],
+  ['系统级_4',['IO APIC (系统级)',['../md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md423',1,'']]],
+  ['系统要求_5',['📋 系统要求',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md317',1,'']]],
+  ['系统_6',['1. APIC 系统',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md37',1,'']]]
 ];

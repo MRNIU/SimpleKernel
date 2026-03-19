@@ -1,5 +1,0 @@
-var searchData=
-[
-  ['🌟_20核心亮点_0',['🌟 核心亮点',['../md__2root_2README.html#autotoc_md342',1,'']]],
-  ['🌟_20core_20highlights_1',['🌟 Core Highlights',['../md__2root_2README__ENG.html#autotoc_md380',1,'']]]
-];

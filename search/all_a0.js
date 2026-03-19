@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['远程开发_0',['VSCode 远程开发',['../md_docker.html#autotoc_md240',1,'']]]
+  ['🎨_20代码风格_0',['🎨 代码风格',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md330',1,'']]],
+  ['🎨_20code_20style_1',['🎨 Code Style',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md368',1,'']]]
 ];

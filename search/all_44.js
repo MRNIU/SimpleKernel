@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['参考文档_0',['参考文档',['../md__2root_2src_2driver_2gic_2README.html#autotoc_md457',1,'参考文档'],['../md__2root_2src_2driver_2pl011_2README.html#autotoc_md479',1,'参考文档'],['../md__2root_2src_2driver_2plic_2README.html#autotoc_md486',1,'参考文档']]],
-  ['参考资料_1',['10. 参考资料',['../md_filesystem__design.html#autotoc_md299',1,'']]]
+  ['命名约定_0',['命名约定',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md331',1,'']]],
+  ['命名规范_1',['2. 命名规范',['../md_coding__standards.html#autotoc_md241',1,'']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['命名约定_0',['命名约定',['../md__2root_2README.html#autotoc_md369',1,'']]]
+  ['学习路线_0',['🎯 学习路线',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md322',1,'']]]
 ];

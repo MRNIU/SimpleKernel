@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['建议优先实现的功能_0',['建议优先实现的功能',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md515',1,'']]]
+  ['推荐插件（远程环境）_0',['4. 推荐插件（远程环境）',['../md_docker.html#autotoc_md292',1,'']]],
+  ['推荐_1',['x2APIC 模式 (推荐)',['../md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md417',1,'']]]
 ];

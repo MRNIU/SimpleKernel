@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['框架_0',['P1: VFS 框架',['../md_filesystem__design.html#autotoc_md279',1,'']]]
+  ['管理_0',['📋 中断描述符表 (IDT) 管理',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md159',1,'']]]
 ];

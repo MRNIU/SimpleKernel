@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['需修改的已有文件_0',['5.2 需修改的已有文件',['../md_filesystem__design.html#autotoc_md270',1,'']]]
+  ['🔧_20代码贡献流程_0',['🔧 代码贡献流程',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md336',1,'']]],
+  ['🔧_20code_20contribution_20workflow_1',['🔧 Code Contribution Workflow',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md374',1,'']]]
 ];

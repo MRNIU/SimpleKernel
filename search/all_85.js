@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['的设计理念_0',['🤖 面向 AI 的设计理念',['../md__2root_2README.html#autotoc_md343',1,'']]]
+  ['访问_0',['2. 配置容器 SSH 访问',['../md_docker.html#autotoc_md286',1,'']]]
 ];

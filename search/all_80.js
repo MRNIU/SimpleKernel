@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['添加性能计数器_0',['添加性能计数器',['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md543',1,'']]],
-  ['添加新的硬件特性_1',['添加新的硬件特性',['../md__2root_2tests_2unit__test_2task_2README__ENVIRONMENT__LAYER.html#autotoc_md542',1,'']]]
+  ['要点_0',['要点',['../md_coding__standards.html#autotoc_md249',1,'']]]
 ];

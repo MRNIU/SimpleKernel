@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['重新设计_20tt_20driver_20h_20tt_0',['TODO-3: 重新设计 &lt;tt&gt;driver.h&lt;/tt&gt;',['../md_TODO__interface__refactor.html#autotoc_md320',1,'']]],
-  ['重置环境_1',['重置环境',['../md_docker.html#autotoc_md251',1,'']]]
+  ['📄_20许可证_0',['📄 许可证',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md337',1,'']]],
+  ['📄_20license_1',['📄 License',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md375',1,'']]]
 ];

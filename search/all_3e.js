@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['兼容性_0',['xAPIC 模式 (兼容性)',['../md__2root_2src_2driver_2apic_2README.html#autotoc_md434',1,'']]]
+  ['功能特性_0',['功能特性',['../md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md378',1,'']]]
 ];

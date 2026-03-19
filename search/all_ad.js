@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['集成_0',['VS Code 集成',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md20',1,'']]]
+  ['🔍_20多架构对比分析_0',['🔍 多架构对比分析',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md232',1,'']]]
 ];

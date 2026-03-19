@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['总结_0',['总结',['../md__2root_2tests_2unit__test_2task_2IMPLEMENTATION__SUMMARY.html#autotoc_md523',1,'']]]
+  ['权限级别转换_0',['2. 权限级别转换',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md130',1,'']]]
 ];
