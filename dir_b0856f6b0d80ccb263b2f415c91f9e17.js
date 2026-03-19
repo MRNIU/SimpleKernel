@@ -13,6 +13,7 @@ var dir_b0856f6b0d80ccb263b2f415c91f9e17 =
     [ "mutex.hpp", "mutex_8hpp.html", "mutex_8hpp" ],
     [ "panic_observer.hpp", "panic__observer_8hpp.html", "panic__observer_8hpp" ],
     [ "per_cpu.hpp", "per__cpu_8hpp.html", "per__cpu_8hpp" ],
+    [ "signal.hpp", "signal_8hpp.html", "signal_8hpp" ],
     [ "spinlock.hpp", "spinlock_8hpp.html", "spinlock_8hpp" ],
     [ "syscall.hpp", "syscall_8hpp.html", "syscall_8hpp" ],
     [ "tick_observer.hpp", "tick__observer_8hpp.html", "tick__observer_8hpp" ]

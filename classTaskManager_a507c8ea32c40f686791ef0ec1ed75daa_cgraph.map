@@ -1,0 +1,11 @@
+<map id="TaskManager::SetSignalAction" name="TaskManager::SetSignalAction">
+<area shape="rect" id="Node000001" title="设置信号处理函数" alt="" coords="5,80,224,105"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="325,5,425,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,77,271,39,311,29,313,34,273,45,153,82"/>
+<area shape="rect" id="Node000003" href="$structSignalState.html#ab1fce9e5316166ca88eb420054b5d977" title="获取信号名称（调试用）" alt="" coords="272,55,479,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="224,79,258,76,258,81,225,85"/>
+<area shape="rect" id="Node000004" href="$structSignalState.html#ab7d2920bce21e8ecac97370b46679a66" title="检查信号是否不可捕获 (SIGKILL, SIGSTOP)" alt="" coords="277,104,473,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="225,100,264,104,263,109,224,105"/>
+<area shape="rect" id="Node000005" href="$structSignalState.html#a7d4d89d904c5281e976feee6ef7f3732" title="检查信号编号是否有效" alt="" coords="302,153,449,179"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="156,103,273,138,308,147,307,153,271,143,155,108"/>
+</map>

@@ -6,6 +6,7 @@ var dir_2446a0d63b267fbc56c08872bbbb5182 =
     [ "exit.cpp", "exit_8cpp.html", null ],
     [ "mutex.cpp", "mutex_8cpp.html", null ],
     [ "schedule.cpp", "schedule_8cpp.html", null ],
+    [ "signal.cpp", "signal_8cpp.html", null ],
     [ "sleep.cpp", "sleep_8cpp.html", "sleep_8cpp" ],
     [ "task_control_block.cpp", "task__control__block_8cpp.html", null ],
     [ "task_manager.cpp", "task__manager_8cpp.html", null ],

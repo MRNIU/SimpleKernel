@@ -118,7 +118,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>任务唤醒时间比较函数，时间越早优先级越高 </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00143">143</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00147">147</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a311b744a6aab1e817866817b21472aaa" name="a311b744a6aab1e817866817b21472aaa"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a311b744a6aab1e817866817b21472aaa">&#9670;&#160;</a></span>operator()()</h2>
@@ -164,11 +164,11 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>bool 如果 a 的唤醒时间晚于 b 返回 true </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00150">150</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  150</span>                                                                      {</div>
-<div class="line"><span class="lineno">  151</span>      <span class="keywordflow">return</span> a-&gt;<a class="code hl_variable" href="structTaskControlBlock.html#a3075e45ca454dbb5309161896e432ace">sched_info</a>.<a class="code hl_variable" href="structTaskControlBlock_1_1SchedInfo.html#ae0b893b503976ca280b3c17e540e240a">wake_tick</a> &gt; b-&gt;<a class="code hl_variable" href="structTaskControlBlock.html#a3075e45ca454dbb5309161896e432ace">sched_info</a>.<a class="code hl_variable" href="structTaskControlBlock_1_1SchedInfo.html#ae0b893b503976ca280b3c17e540e240a">wake_tick</a>;</div>
-<div class="line"><span class="lineno">  152</span>    }</div>
-<div class="ttc" id="astructTaskControlBlock_1_1SchedInfo_html_ae0b893b503976ca280b3c17e540e240a"><div class="ttname"><a href="structTaskControlBlock_1_1SchedInfo.html#ae0b893b503976ca280b3c17e540e240a">TaskControlBlock::SchedInfo::wake_tick</a></div><div class="ttdeci">uint64_t wake_tick</div><div class="ttdoc">唤醒时间</div><div class="ttdef"><b>Definition</b> <a href="task__control__block_8hpp_source.html#l00178">task_control_block.hpp:178</a></div></div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00154">154</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  154</span>                                                                      {</div>
+<div class="line"><span class="lineno">  155</span>      <span class="keywordflow">return</span> a-&gt;<a class="code hl_variable" href="structTaskControlBlock.html#a3075e45ca454dbb5309161896e432ace">sched_info</a>.<a class="code hl_variable" href="structTaskControlBlock_1_1SchedInfo.html#ae0b893b503976ca280b3c17e540e240a">wake_tick</a> &gt; b-&gt;<a class="code hl_variable" href="structTaskControlBlock.html#a3075e45ca454dbb5309161896e432ace">sched_info</a>.<a class="code hl_variable" href="structTaskControlBlock_1_1SchedInfo.html#ae0b893b503976ca280b3c17e540e240a">wake_tick</a>;</div>
+<div class="line"><span class="lineno">  156</span>    }</div>
+<div class="ttc" id="astructTaskControlBlock_1_1SchedInfo_html_ae0b893b503976ca280b3c17e540e240a"><div class="ttname"><a href="structTaskControlBlock_1_1SchedInfo.html#ae0b893b503976ca280b3c17e540e240a">TaskControlBlock::SchedInfo::wake_tick</a></div><div class="ttdeci">uint64_t wake_tick</div><div class="ttdoc">唤醒时间</div><div class="ttdef"><b>Definition</b> <a href="task__control__block_8hpp_source.html#l00182">task_control_block.hpp:182</a></div></div>
 <div class="ttc" id="astructTaskControlBlock_html_a3075e45ca454dbb5309161896e432ace"><div class="ttname"><a href="structTaskControlBlock.html#a3075e45ca454dbb5309161896e432ace">TaskControlBlock::sched_info</a></div><div class="ttdeci">struct TaskControlBlock::SchedInfo sched_info</div></div>
 </div><!-- fragment -->
 </div>

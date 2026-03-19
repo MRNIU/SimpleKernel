@@ -1,0 +1,7 @@
+<map id="SignalState::IsValid" name="SignalState::IsValid">
+<area shape="rect" id="Node000001" title="检查信号编号是否有效" alt="" coords="272,31,419,56"/>
+<area shape="rect" id="Node000002" href="$classTaskManager.html#a5be9eb3ca7748910414eea0c7b386c60" title="向指定任务发送信号" alt="" coords="21,5,209,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="258,36,209,31,209,26,259,31"/>
+<area shape="rect" id="Node000003" href="$classTaskManager.html#a507c8ea32c40f686791ef0ec1ed75daa" title="设置信号处理函数" alt="" coords="5,55,224,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="259,55,225,59,224,53,258,50"/>
+</map>

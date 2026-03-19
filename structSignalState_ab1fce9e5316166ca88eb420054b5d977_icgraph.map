@@ -1,0 +1,9 @@
+<map id="SignalState::GetSignalName" name="SignalState::GetSignalName">
+<area shape="rect" id="Node000001" title="获取信号名称（调试用）" alt="" coords="272,70,479,95"/>
+<area shape="rect" id="Node000002" href="$classTaskManager.html#a51523e68195df203aac3f96af6337707" title="检查并处理当前任务的待处理信号" alt="" coords="11,5,219,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="303,70,205,48,207,43,304,64"/>
+<area shape="rect" id="Node000003" href="$classTaskManager.html#a5be9eb3ca7748910414eea0c7b386c60" title="向指定任务发送信号" alt="" coords="21,70,209,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="258,85,209,85,209,80,258,80"/>
+<area shape="rect" id="Node000004" href="$classTaskManager.html#a507c8ea32c40f686791ef0ec1ed75daa" title="设置信号处理函数" alt="" coords="5,119,224,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="295,101,183,122,182,117,294,95"/>
+</map>

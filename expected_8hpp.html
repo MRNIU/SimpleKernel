@@ -348,74 +348,81 @@ Enumerations</h2></td></tr>
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa5056c291a29caa59de23de85842d958">kTaskNoChildFound</a> = 0x706
 , <br />
 &#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa758a48c0b68169b1e5186a5933ce264a">kTaskInvalidPid</a> = 0x707
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa98073d23478acea6cbc5ce6937b99602">kSignalInvalidNumber</a> = 0xC00
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5e9cad33391ab1d9d65b2ee83180dd29">kSignalInvalidPid</a> = 0xC01
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fabf9de5b26b5b5463d4cf4fd08bf3c6b4">kSignalPermissionDenied</a> = 0xC02
+, <br />
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faca72ed21d13fb55b582c27bd0336cbc0">kSignalUncatchable</a> = 0xC03
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3eaad0857ba70a868fac81433de967d1">kSignalTaskNotFound</a> = 0xC04
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308">kDeviceNotFound</a> = 0x800
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa86018dbf10039e1f57709bc7078ce1af">kDeviceAlreadyOpen</a> = 0x801
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3fe2766432e522705a18ed9d1b73b960">kDeviceNotOpen</a> = 0x802
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa837f801e771168675bd5d9cfedb2e1b0">kDeviceReadFailed</a> = 0x803
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3fe2766432e522705a18ed9d1b73b960">kDeviceNotOpen</a> = 0x802
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa837f801e771168675bd5d9cfedb2e1b0">kDeviceReadFailed</a> = 0x803
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8595654eb39ba07efa2046cb5fb58291">kDeviceWriteFailed</a> = 0x804
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac702718ac446c0ea3feba3b3f426de8d">kDeviceIoctlFailed</a> = 0x805
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0136d9e25a482ebdb1bf94c850e3af00">kDeviceMmapFailed</a> = 0x806
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa81c2a007e9fea4a9feb00c0f5c55fd39">kDeviceNotSupported</a> = 0x807
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0136d9e25a482ebdb1bf94c850e3af00">kDeviceMmapFailed</a> = 0x806
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa81c2a007e9fea4a9feb00c0f5c55fd39">kDeviceNotSupported</a> = 0x807
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa24bf87462e771732d10a496b349f0eb2">kDeviceBusy</a> = 0x808
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7e99d35a8645dc958d20c5790cf346e4">kDevicePermissionDenied</a> = 0x809
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0ef86191b66fc30a33a38e13bbd8410e">kDeviceInvalidOffset</a> = 0x80A
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa65c686942a300faa22cc8c1ff64d68b5">kDeviceBlockUnaligned</a> = 0x80B
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0ef86191b66fc30a33a38e13bbd8410e">kDeviceInvalidOffset</a> = 0x80A
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa65c686942a300faa22cc8c1ff64d68b5">kDeviceBlockUnaligned</a> = 0x80B
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab265f75dc9044c97e509ea10100b82e0">kDeviceBlockOutOfRange</a> = 0x80C
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab63e7379b6adbcbd57784497fc6b4d9c">kDeviceFlushFailed</a> = 0x80D
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8b4dea80f2be2fe5fa3657256c92e09f">kDeviceError</a> = 0x80E
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa89f9f5ef642ef2ee3c7c01baa948d8dd">kIoError</a> = 0x80F
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8b4dea80f2be2fe5fa3657256c92e09f">kDeviceError</a> = 0x80E
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa89f9f5ef642ef2ee3c7c01baa948d8dd">kIoError</a> = 0x80F
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895facf1352147c4a48f0403e882668260188">kNotSupported</a> = 0x810
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7f27861ff1d3f550c6aa77150d7edabd">kTimeout</a> = 0x811
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895face8c769bbe7b8dc595d9ca4586078030">kInvalidMagic</a> = 0x820
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa698aa7b9588a5cab536e5c9cc3762f92">kInvalidVersion</a> = 0x821
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895face8c769bbe7b8dc595d9ca4586078030">kInvalidMagic</a> = 0x820
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa698aa7b9588a5cab536e5c9cc3762f92">kInvalidVersion</a> = 0x821
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae87b5b99400cb4de4fdd7dc6c6f2599b">kInvalidDeviceId</a> = 0x822
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa76499df353cd64bb48fa19ad13375ecc">kTransportNotInitialized</a> = 0x823
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa804e595589b0e4b2bd274b17e03d1bfa">kFeatureNegotiationFailed</a> = 0x824
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9db54492c067293bceb521f8a08f5d09">kQueueNotAvailable</a> = 0x830
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa804e595589b0e4b2bd274b17e03d1bfa">kFeatureNegotiationFailed</a> = 0x824
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9db54492c067293bceb521f8a08f5d09">kQueueNotAvailable</a> = 0x830
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5079e81d1ccf61d4eb923cb2b1a50205">kQueueAlreadyUsed</a> = 0x831
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa795bb67c5323028598ed6067e2702491">kQueueTooLarge</a> = 0x832
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa83a78432fa4fd1764986e45d4fe76778">kNoFreeDescriptors</a> = 0x833
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9ad8827c9cbf63469706b307baee5c5d">kInvalidDescriptor</a> = 0x834
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa83a78432fa4fd1764986e45d4fe76778">kNoFreeDescriptors</a> = 0x833
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9ad8827c9cbf63469706b307baee5c5d">kInvalidDescriptor</a> = 0x834
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac41bbf38feb16c69efd6fe9973439985">kNoUsedBuffers</a> = 0x835
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf843aa00f0c8b67c46bceaa5e62773d5">kFsFileNotFound</a> = 0xA00
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3ed0a4d020e38a0fd3490d77a0d57365">kFsPermissionDenied</a> = 0xA01
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf9cd407d4676d81e87724c9a9d42ed5a">kFsNotADirectory</a> = 0xA02
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3ed0a4d020e38a0fd3490d77a0d57365">kFsPermissionDenied</a> = 0xA01
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf9cd407d4676d81e87724c9a9d42ed5a">kFsNotADirectory</a> = 0xA02
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8762395ec6597e1c0ed2c89d8bcdfd92">kFsIsADirectory</a> = 0xA03
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa0f10eb6320fa2f4f711d4f1588284d2">kFsFileExists</a> = 0xA04
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa503136841296686dfdce1286e8a8f7e8">kFsNoSpace</a> = 0xA05
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa068b9808683df66a134d8bc251962a7f">kFsMountFailed</a> = 0xA06
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa503136841296686dfdce1286e8a8f7e8">kFsNoSpace</a> = 0xA05
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa068b9808683df66a134d8bc251962a7f">kFsMountFailed</a> = 0xA06
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5665830ab9553511a73b27d19ac26b9d">kFsUnmountFailed</a> = 0xA07
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0b5bbd63dfccadbee5c8a7d0d30bdbc9">kFsInvalidPath</a> = 0xA08
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faad892fe61bff83786f5cb40ad6cc650b">kFsFdTableFull</a> = 0xA09
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa1d771c21296ba5f8181c116929b845f0">kFsInvalidFd</a> = 0xA0A
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faad892fe61bff83786f5cb40ad6cc650b">kFsFdTableFull</a> = 0xA09
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa1d771c21296ba5f8181c116929b845f0">kFsInvalidFd</a> = 0xA0A
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa285e31704d083e657851e639d1f2c551">kFsNotMounted</a> = 0xA0B
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae6e0e6a1183a9c2884bd9a96f4ed2aad">kFsReadOnly</a> = 0xA0C
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad39984ff3f4883663f71af3f46ed582a">kFsCorrupted</a> = 0xA0D
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa8abba321ae5546cebd9c70c5dd8af51">kFsAlreadyMounted</a> = 0xA0E
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad39984ff3f4883663f71af3f46ed582a">kFsCorrupted</a> = 0xA0D
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa8abba321ae5546cebd9c70c5dd8af51">kFsAlreadyMounted</a> = 0xA0E
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa94afa39f34ee08b4cbb1dbc00a1af16f">kFsNotEmpty</a> = 0xA0F
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa4c8aed433bcbafc55145e68a30fe7c68">kBlkDeviceNotFound</a> = 0xB00
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab7ca8f66890a1869b65727b89003ac90">kBlkReadFailed</a> = 0xB01
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf6a20ee710b37f2ae8f75051f027d578">kBlkWriteFailed</a> = 0xB02
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab7ca8f66890a1869b65727b89003ac90">kBlkReadFailed</a> = 0xB01
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf6a20ee710b37f2ae8f75051f027d578">kBlkWriteFailed</a> = 0xB02
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa71c4e95a17cbaca40f67e2803dc23e11">kBlkSectorOutOfRange</a> = 0xB03
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa794bf2d246318195f0fe4b5b8c453e90">kIrqChipInvalidIrq</a> = 0x900
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa87c92752e79a0d7262f26c979f5a1802">kIrqChipIrqNotEnabled</a> = 0x901
 , <br />
-&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa287683de042a258497a37bb081c7435c">kIrqChipAffinityFailed</a> = 0x902
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa87c92752e79a0d7262f26c979f5a1802">kIrqChipIrqNotEnabled</a> = 0x901
+, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa287683de042a258497a37bb081c7435c">kIrqChipAffinityFailed</a> = 0x902
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fadd2852c9d8661e5e82a33a546ab31ed0">kIrqChipIpiTimeout</a> = 0x903
 , <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa80fdc050363ea6925fa2e7eb7f0a94a0">kInvalidArgument</a> = 0xF00
-, <a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab681eacb215899549d45805f02eeb40c">kOutOfMemory</a> = 0xF01
+, <br />
+&#160;&#160;<a class="el" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab681eacb215899549d45805f02eeb40c">kOutOfMemory</a> = 0xF01
 <br />
  }</td></tr>
 <tr class="memdesc:a4d45a9675d1bf454764383179f3c895f"><td class="mdescLeft">&#160;</td><td class="mdescRight">内核错误码  <a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895f">More...</a><br /></td></tr>
@@ -444,7 +451,7 @@ template&lt;typename T &gt; </div>
 
 <p>std::expected 别名模板 </p>
 
-<p class="definition">Definition at line <a class="el" href="expected_8hpp_source.html#l00365">365</a> of file <a class="el" href="expected_8hpp_source.html">expected.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expected_8hpp_source.html#l00381">381</a> of file <a class="el" href="expected_8hpp_source.html">expected.hpp</a>.</p>
 
 </div>
 </div>
@@ -513,6 +520,11 @@ template&lt;typename T &gt; </div>
 <tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895faf26b7603aac2c3614065124e03b12b07" name="a4d45a9675d1bf454764383179f3c895faf26b7603aac2c3614065124e03b12b07"></a>kTaskKernelStackAllocationFailed&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895faa5056c291a29caa59de23de85842d958" name="a4d45a9675d1bf454764383179f3c895faa5056c291a29caa59de23de85842d958"></a>kTaskNoChildFound&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895fa758a48c0b68169b1e5186a5933ce264a" name="a4d45a9675d1bf454764383179f3c895fa758a48c0b68169b1e5186a5933ce264a"></a>kTaskInvalidPid&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895fa98073d23478acea6cbc5ce6937b99602" name="a4d45a9675d1bf454764383179f3c895fa98073d23478acea6cbc5ce6937b99602"></a>kSignalInvalidNumber&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895fa5e9cad33391ab1d9d65b2ee83180dd29" name="a4d45a9675d1bf454764383179f3c895fa5e9cad33391ab1d9d65b2ee83180dd29"></a>kSignalInvalidPid&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895fabf9de5b26b5b5463d4cf4fd08bf3c6b4" name="a4d45a9675d1bf454764383179f3c895fabf9de5b26b5b5463d4cf4fd08bf3c6b4"></a>kSignalPermissionDenied&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895faca72ed21d13fb55b582c27bd0336cbc0" name="a4d45a9675d1bf454764383179f3c895faca72ed21d13fb55b582c27bd0336cbc0"></a>kSignalUncatchable&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895fa3eaad0857ba70a868fac81433de967d1" name="a4d45a9675d1bf454764383179f3c895fa3eaad0857ba70a868fac81433de967d1"></a>kSignalTaskNotFound&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308" name="a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308"></a>kDeviceNotFound&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895fa86018dbf10039e1f57709bc7078ce1af" name="a4d45a9675d1bf454764383179f3c895fa86018dbf10039e1f57709bc7078ce1af"></a>kDeviceAlreadyOpen&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a4d45a9675d1bf454764383179f3c895fa3fe2766432e522705a18ed9d1b73b960" name="a4d45a9675d1bf454764383179f3c895fa3fe2766432e522705a18ed9d1b73b960"></a>kDeviceNotOpen&#160;</td><td class="fielddoc"></td></tr>
@@ -636,69 +648,75 @@ template&lt;typename T &gt; </div>
 <div class="line"><span class="lineno">   58</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf26b7603aac2c3614065124e03b12b07">kTaskKernelStackAllocationFailed</a> = 0x705,</div>
 <div class="line"><span class="lineno">   59</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa5056c291a29caa59de23de85842d958">kTaskNoChildFound</a> = 0x706,</div>
 <div class="line"><span class="lineno">   60</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa758a48c0b68169b1e5186a5933ce264a">kTaskInvalidPid</a> = 0x707,</div>
-<div class="line"><span class="lineno">   61</span>  <span class="comment">// Device 相关错误 (0x800 - 0x8FF)</span></div>
-<div class="line"><span class="lineno">   62</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308">kDeviceNotFound</a> = 0x800,</div>
-<div class="line"><span class="lineno">   63</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa86018dbf10039e1f57709bc7078ce1af">kDeviceAlreadyOpen</a> = 0x801,</div>
-<div class="line"><span class="lineno">   64</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3fe2766432e522705a18ed9d1b73b960">kDeviceNotOpen</a> = 0x802,</div>
-<div class="line"><span class="lineno">   65</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa837f801e771168675bd5d9cfedb2e1b0">kDeviceReadFailed</a> = 0x803,</div>
-<div class="line"><span class="lineno">   66</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8595654eb39ba07efa2046cb5fb58291">kDeviceWriteFailed</a> = 0x804,</div>
-<div class="line"><span class="lineno">   67</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac702718ac446c0ea3feba3b3f426de8d">kDeviceIoctlFailed</a> = 0x805,</div>
-<div class="line"><span class="lineno">   68</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0136d9e25a482ebdb1bf94c850e3af00">kDeviceMmapFailed</a> = 0x806,</div>
-<div class="line"><span class="lineno">   69</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa81c2a007e9fea4a9feb00c0f5c55fd39">kDeviceNotSupported</a> = 0x807,</div>
-<div class="line"><span class="lineno">   70</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa24bf87462e771732d10a496b349f0eb2">kDeviceBusy</a> = 0x808,</div>
-<div class="line"><span class="lineno">   71</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7e99d35a8645dc958d20c5790cf346e4">kDevicePermissionDenied</a> = 0x809,</div>
-<div class="line"><span class="lineno">   72</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0ef86191b66fc30a33a38e13bbd8410e">kDeviceInvalidOffset</a> = 0x80A,</div>
-<div class="line"><span class="lineno">   73</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa65c686942a300faa22cc8c1ff64d68b5">kDeviceBlockUnaligned</a> = 0x80B,</div>
-<div class="line"><span class="lineno">   74</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab265f75dc9044c97e509ea10100b82e0">kDeviceBlockOutOfRange</a> = 0x80C,</div>
-<div class="line"><span class="lineno">   75</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab63e7379b6adbcbd57784497fc6b4d9c">kDeviceFlushFailed</a> = 0x80D,</div>
-<div class="line"><span class="lineno">   77</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8b4dea80f2be2fe5fa3657256c92e09f">kDeviceError</a> = 0x80E,</div>
-<div class="line"><span class="lineno">   79</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa89f9f5ef642ef2ee3c7c01baa948d8dd">kIoError</a> = 0x80F,</div>
-<div class="line"><span class="lineno">   81</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895facf1352147c4a48f0403e882668260188">kNotSupported</a> = 0x810,</div>
-<div class="line"><span class="lineno">   83</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7f27861ff1d3f550c6aa77150d7edabd">kTimeout</a> = 0x811,</div>
-<div class="line"><span class="lineno">   84</span>  <span class="comment">// VirtIO 传输层错误 (0x820 - 0x82F)</span></div>
-<div class="line"><span class="lineno">   86</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895face8c769bbe7b8dc595d9ca4586078030">kInvalidMagic</a> = 0x820,</div>
-<div class="line"><span class="lineno">   88</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa698aa7b9588a5cab536e5c9cc3762f92">kInvalidVersion</a> = 0x821,</div>
-<div class="line"><span class="lineno">   90</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae87b5b99400cb4de4fdd7dc6c6f2599b">kInvalidDeviceId</a> = 0x822,</div>
-<div class="line"><span class="lineno">   92</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa76499df353cd64bb48fa19ad13375ecc">kTransportNotInitialized</a> = 0x823,</div>
-<div class="line"><span class="lineno">   94</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa804e595589b0e4b2bd274b17e03d1bfa">kFeatureNegotiationFailed</a> = 0x824,</div>
-<div class="line"><span class="lineno">   95</span>  <span class="comment">// VirtIO 虚拟队列错误 (0x830 - 0x83F)</span></div>
-<div class="line"><span class="lineno">   97</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9db54492c067293bceb521f8a08f5d09">kQueueNotAvailable</a> = 0x830,</div>
-<div class="line"><span class="lineno">   99</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5079e81d1ccf61d4eb923cb2b1a50205">kQueueAlreadyUsed</a> = 0x831,</div>
-<div class="line"><span class="lineno">  101</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa795bb67c5323028598ed6067e2702491">kQueueTooLarge</a> = 0x832,</div>
-<div class="line"><span class="lineno">  103</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa83a78432fa4fd1764986e45d4fe76778">kNoFreeDescriptors</a> = 0x833,</div>
-<div class="line"><span class="lineno">  105</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9ad8827c9cbf63469706b307baee5c5d">kInvalidDescriptor</a> = 0x834,</div>
-<div class="line"><span class="lineno">  107</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac41bbf38feb16c69efd6fe9973439985">kNoUsedBuffers</a> = 0x835,</div>
-<div class="line"><span class="lineno">  108</span>  <span class="comment">// 文件系统相关错误 (0xA00 - 0xAFF)</span></div>
-<div class="line"><span class="lineno">  109</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf843aa00f0c8b67c46bceaa5e62773d5">kFsFileNotFound</a> = 0xA00,</div>
-<div class="line"><span class="lineno">  110</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3ed0a4d020e38a0fd3490d77a0d57365">kFsPermissionDenied</a> = 0xA01,</div>
-<div class="line"><span class="lineno">  111</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf9cd407d4676d81e87724c9a9d42ed5a">kFsNotADirectory</a> = 0xA02,</div>
-<div class="line"><span class="lineno">  112</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8762395ec6597e1c0ed2c89d8bcdfd92">kFsIsADirectory</a> = 0xA03,</div>
-<div class="line"><span class="lineno">  113</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa0f10eb6320fa2f4f711d4f1588284d2">kFsFileExists</a> = 0xA04,</div>
-<div class="line"><span class="lineno">  114</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa503136841296686dfdce1286e8a8f7e8">kFsNoSpace</a> = 0xA05,</div>
-<div class="line"><span class="lineno">  115</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa068b9808683df66a134d8bc251962a7f">kFsMountFailed</a> = 0xA06,</div>
-<div class="line"><span class="lineno">  116</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5665830ab9553511a73b27d19ac26b9d">kFsUnmountFailed</a> = 0xA07,</div>
-<div class="line"><span class="lineno">  117</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0b5bbd63dfccadbee5c8a7d0d30bdbc9">kFsInvalidPath</a> = 0xA08,</div>
-<div class="line"><span class="lineno">  118</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faad892fe61bff83786f5cb40ad6cc650b">kFsFdTableFull</a> = 0xA09,</div>
-<div class="line"><span class="lineno">  119</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa1d771c21296ba5f8181c116929b845f0">kFsInvalidFd</a> = 0xA0A,</div>
-<div class="line"><span class="lineno">  120</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa285e31704d083e657851e639d1f2c551">kFsNotMounted</a> = 0xA0B,</div>
-<div class="line"><span class="lineno">  121</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae6e0e6a1183a9c2884bd9a96f4ed2aad">kFsReadOnly</a> = 0xA0C,</div>
-<div class="line"><span class="lineno">  122</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad39984ff3f4883663f71af3f46ed582a">kFsCorrupted</a> = 0xA0D,</div>
-<div class="line"><span class="lineno">  123</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa8abba321ae5546cebd9c70c5dd8af51">kFsAlreadyMounted</a> = 0xA0E,</div>
-<div class="line"><span class="lineno">  124</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa94afa39f34ee08b4cbb1dbc00a1af16f">kFsNotEmpty</a> = 0xA0F,</div>
-<div class="line"><span class="lineno">  125</span>  <span class="comment">// BlockDevice 相关错误 (0xB00 - 0xBFF)</span></div>
-<div class="line"><span class="lineno">  126</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa4c8aed433bcbafc55145e68a30fe7c68">kBlkDeviceNotFound</a> = 0xB00,</div>
-<div class="line"><span class="lineno">  127</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab7ca8f66890a1869b65727b89003ac90">kBlkReadFailed</a> = 0xB01,</div>
-<div class="line"><span class="lineno">  128</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf6a20ee710b37f2ae8f75051f027d578">kBlkWriteFailed</a> = 0xB02,</div>
-<div class="line"><span class="lineno">  129</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa71c4e95a17cbaca40f67e2803dc23e11">kBlkSectorOutOfRange</a> = 0xB03,</div>
-<div class="line"><span class="lineno">  130</span>  <span class="comment">// IrqChip 相关错误 (0x900 - 0x9FF)</span></div>
-<div class="line"><span class="lineno">  131</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa794bf2d246318195f0fe4b5b8c453e90">kIrqChipInvalidIrq</a> = 0x900,</div>
-<div class="line"><span class="lineno">  132</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa87c92752e79a0d7262f26c979f5a1802">kIrqChipIrqNotEnabled</a> = 0x901,</div>
-<div class="line"><span class="lineno">  133</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa287683de042a258497a37bb081c7435c">kIrqChipAffinityFailed</a> = 0x902,</div>
-<div class="line"><span class="lineno">  134</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fadd2852c9d8661e5e82a33a546ab31ed0">kIrqChipIpiTimeout</a> = 0x903,</div>
-<div class="line"><span class="lineno">  135</span>  <span class="comment">// 通用错误 (0xF00 - 0xFFF)</span></div>
-<div class="line"><span class="lineno">  136</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa80fdc050363ea6925fa2e7eb7f0a94a0">kInvalidArgument</a> = 0xF00,</div>
-<div class="line"><span class="lineno">  137</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab681eacb215899549d45805f02eeb40c">kOutOfMemory</a> = 0xF01,</div>
-<div class="line"><span class="lineno">  138</span>};</div>
+<div class="line"><span class="lineno">   61</span>  <span class="comment">// Signal 相关错误 (0xC00 - 0xCFF)</span></div>
+<div class="line"><span class="lineno">   62</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa98073d23478acea6cbc5ce6937b99602">kSignalInvalidNumber</a> = 0xC00,</div>
+<div class="line"><span class="lineno">   63</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5e9cad33391ab1d9d65b2ee83180dd29">kSignalInvalidPid</a> = 0xC01,</div>
+<div class="line"><span class="lineno">   64</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fabf9de5b26b5b5463d4cf4fd08bf3c6b4">kSignalPermissionDenied</a> = 0xC02,</div>
+<div class="line"><span class="lineno">   65</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faca72ed21d13fb55b582c27bd0336cbc0">kSignalUncatchable</a> = 0xC03,</div>
+<div class="line"><span class="lineno">   66</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3eaad0857ba70a868fac81433de967d1">kSignalTaskNotFound</a> = 0xC04,</div>
+<div class="line"><span class="lineno">   67</span>  <span class="comment">// Device 相关错误 (0x800 - 0x8FF)</span></div>
+<div class="line"><span class="lineno">   68</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308">kDeviceNotFound</a> = 0x800,</div>
+<div class="line"><span class="lineno">   69</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa86018dbf10039e1f57709bc7078ce1af">kDeviceAlreadyOpen</a> = 0x801,</div>
+<div class="line"><span class="lineno">   70</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3fe2766432e522705a18ed9d1b73b960">kDeviceNotOpen</a> = 0x802,</div>
+<div class="line"><span class="lineno">   71</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa837f801e771168675bd5d9cfedb2e1b0">kDeviceReadFailed</a> = 0x803,</div>
+<div class="line"><span class="lineno">   72</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8595654eb39ba07efa2046cb5fb58291">kDeviceWriteFailed</a> = 0x804,</div>
+<div class="line"><span class="lineno">   73</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac702718ac446c0ea3feba3b3f426de8d">kDeviceIoctlFailed</a> = 0x805,</div>
+<div class="line"><span class="lineno">   74</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0136d9e25a482ebdb1bf94c850e3af00">kDeviceMmapFailed</a> = 0x806,</div>
+<div class="line"><span class="lineno">   75</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa81c2a007e9fea4a9feb00c0f5c55fd39">kDeviceNotSupported</a> = 0x807,</div>
+<div class="line"><span class="lineno">   76</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa24bf87462e771732d10a496b349f0eb2">kDeviceBusy</a> = 0x808,</div>
+<div class="line"><span class="lineno">   77</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7e99d35a8645dc958d20c5790cf346e4">kDevicePermissionDenied</a> = 0x809,</div>
+<div class="line"><span class="lineno">   78</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0ef86191b66fc30a33a38e13bbd8410e">kDeviceInvalidOffset</a> = 0x80A,</div>
+<div class="line"><span class="lineno">   79</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa65c686942a300faa22cc8c1ff64d68b5">kDeviceBlockUnaligned</a> = 0x80B,</div>
+<div class="line"><span class="lineno">   80</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab265f75dc9044c97e509ea10100b82e0">kDeviceBlockOutOfRange</a> = 0x80C,</div>
+<div class="line"><span class="lineno">   81</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab63e7379b6adbcbd57784497fc6b4d9c">kDeviceFlushFailed</a> = 0x80D,</div>
+<div class="line"><span class="lineno">   83</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8b4dea80f2be2fe5fa3657256c92e09f">kDeviceError</a> = 0x80E,</div>
+<div class="line"><span class="lineno">   85</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa89f9f5ef642ef2ee3c7c01baa948d8dd">kIoError</a> = 0x80F,</div>
+<div class="line"><span class="lineno">   87</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895facf1352147c4a48f0403e882668260188">kNotSupported</a> = 0x810,</div>
+<div class="line"><span class="lineno">   89</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7f27861ff1d3f550c6aa77150d7edabd">kTimeout</a> = 0x811,</div>
+<div class="line"><span class="lineno">   90</span>  <span class="comment">// VirtIO 传输层错误 (0x820 - 0x82F)</span></div>
+<div class="line"><span class="lineno">   92</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895face8c769bbe7b8dc595d9ca4586078030">kInvalidMagic</a> = 0x820,</div>
+<div class="line"><span class="lineno">   94</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa698aa7b9588a5cab536e5c9cc3762f92">kInvalidVersion</a> = 0x821,</div>
+<div class="line"><span class="lineno">   96</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae87b5b99400cb4de4fdd7dc6c6f2599b">kInvalidDeviceId</a> = 0x822,</div>
+<div class="line"><span class="lineno">   98</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa76499df353cd64bb48fa19ad13375ecc">kTransportNotInitialized</a> = 0x823,</div>
+<div class="line"><span class="lineno">  100</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa804e595589b0e4b2bd274b17e03d1bfa">kFeatureNegotiationFailed</a> = 0x824,</div>
+<div class="line"><span class="lineno">  101</span>  <span class="comment">// VirtIO 虚拟队列错误 (0x830 - 0x83F)</span></div>
+<div class="line"><span class="lineno">  103</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9db54492c067293bceb521f8a08f5d09">kQueueNotAvailable</a> = 0x830,</div>
+<div class="line"><span class="lineno">  105</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5079e81d1ccf61d4eb923cb2b1a50205">kQueueAlreadyUsed</a> = 0x831,</div>
+<div class="line"><span class="lineno">  107</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa795bb67c5323028598ed6067e2702491">kQueueTooLarge</a> = 0x832,</div>
+<div class="line"><span class="lineno">  109</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa83a78432fa4fd1764986e45d4fe76778">kNoFreeDescriptors</a> = 0x833,</div>
+<div class="line"><span class="lineno">  111</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9ad8827c9cbf63469706b307baee5c5d">kInvalidDescriptor</a> = 0x834,</div>
+<div class="line"><span class="lineno">  113</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac41bbf38feb16c69efd6fe9973439985">kNoUsedBuffers</a> = 0x835,</div>
+<div class="line"><span class="lineno">  114</span>  <span class="comment">// 文件系统相关错误 (0xA00 - 0xAFF)</span></div>
+<div class="line"><span class="lineno">  115</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf843aa00f0c8b67c46bceaa5e62773d5">kFsFileNotFound</a> = 0xA00,</div>
+<div class="line"><span class="lineno">  116</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3ed0a4d020e38a0fd3490d77a0d57365">kFsPermissionDenied</a> = 0xA01,</div>
+<div class="line"><span class="lineno">  117</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf9cd407d4676d81e87724c9a9d42ed5a">kFsNotADirectory</a> = 0xA02,</div>
+<div class="line"><span class="lineno">  118</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8762395ec6597e1c0ed2c89d8bcdfd92">kFsIsADirectory</a> = 0xA03,</div>
+<div class="line"><span class="lineno">  119</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa0f10eb6320fa2f4f711d4f1588284d2">kFsFileExists</a> = 0xA04,</div>
+<div class="line"><span class="lineno">  120</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa503136841296686dfdce1286e8a8f7e8">kFsNoSpace</a> = 0xA05,</div>
+<div class="line"><span class="lineno">  121</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa068b9808683df66a134d8bc251962a7f">kFsMountFailed</a> = 0xA06,</div>
+<div class="line"><span class="lineno">  122</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5665830ab9553511a73b27d19ac26b9d">kFsUnmountFailed</a> = 0xA07,</div>
+<div class="line"><span class="lineno">  123</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0b5bbd63dfccadbee5c8a7d0d30bdbc9">kFsInvalidPath</a> = 0xA08,</div>
+<div class="line"><span class="lineno">  124</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faad892fe61bff83786f5cb40ad6cc650b">kFsFdTableFull</a> = 0xA09,</div>
+<div class="line"><span class="lineno">  125</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa1d771c21296ba5f8181c116929b845f0">kFsInvalidFd</a> = 0xA0A,</div>
+<div class="line"><span class="lineno">  126</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa285e31704d083e657851e639d1f2c551">kFsNotMounted</a> = 0xA0B,</div>
+<div class="line"><span class="lineno">  127</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae6e0e6a1183a9c2884bd9a96f4ed2aad">kFsReadOnly</a> = 0xA0C,</div>
+<div class="line"><span class="lineno">  128</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad39984ff3f4883663f71af3f46ed582a">kFsCorrupted</a> = 0xA0D,</div>
+<div class="line"><span class="lineno">  129</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa8abba321ae5546cebd9c70c5dd8af51">kFsAlreadyMounted</a> = 0xA0E,</div>
+<div class="line"><span class="lineno">  130</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa94afa39f34ee08b4cbb1dbc00a1af16f">kFsNotEmpty</a> = 0xA0F,</div>
+<div class="line"><span class="lineno">  131</span>  <span class="comment">// BlockDevice 相关错误 (0xB00 - 0xBFF)</span></div>
+<div class="line"><span class="lineno">  132</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa4c8aed433bcbafc55145e68a30fe7c68">kBlkDeviceNotFound</a> = 0xB00,</div>
+<div class="line"><span class="lineno">  133</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab7ca8f66890a1869b65727b89003ac90">kBlkReadFailed</a> = 0xB01,</div>
+<div class="line"><span class="lineno">  134</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf6a20ee710b37f2ae8f75051f027d578">kBlkWriteFailed</a> = 0xB02,</div>
+<div class="line"><span class="lineno">  135</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa71c4e95a17cbaca40f67e2803dc23e11">kBlkSectorOutOfRange</a> = 0xB03,</div>
+<div class="line"><span class="lineno">  136</span>  <span class="comment">// IrqChip 相关错误 (0x900 - 0x9FF)</span></div>
+<div class="line"><span class="lineno">  137</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa794bf2d246318195f0fe4b5b8c453e90">kIrqChipInvalidIrq</a> = 0x900,</div>
+<div class="line"><span class="lineno">  138</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa87c92752e79a0d7262f26c979f5a1802">kIrqChipIrqNotEnabled</a> = 0x901,</div>
+<div class="line"><span class="lineno">  139</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa287683de042a258497a37bb081c7435c">kIrqChipAffinityFailed</a> = 0x902,</div>
+<div class="line"><span class="lineno">  140</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fadd2852c9d8661e5e82a33a546ab31ed0">kIrqChipIpiTimeout</a> = 0x903,</div>
+<div class="line"><span class="lineno">  141</span>  <span class="comment">// 通用错误 (0xF00 - 0xFFF)</span></div>
+<div class="line"><span class="lineno">  142</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa80fdc050363ea6925fa2e7eb7f0a94a0">kInvalidArgument</a> = 0xF00,</div>
+<div class="line"><span class="lineno">  143</span>  <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab681eacb215899549d45805f02eeb40c">kOutOfMemory</a> = 0xF01,</div>
+<div class="line"><span class="lineno">  144</span>};</div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa0136d9e25a482ebdb1bf94c850e3af00"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0136d9e25a482ebdb1bf94c850e3af00">ErrorCode::kDeviceMmapFailed</a></div><div class="ttdeci">@ kDeviceMmapFailed</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa068b9808683df66a134d8bc251962a7f"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa068b9808683df66a134d8bc251962a7f">ErrorCode::kFsMountFailed</a></div><div class="ttdeci">@ kFsMountFailed</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa0b5bbd63dfccadbee5c8a7d0d30bdbc9"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0b5bbd63dfccadbee5c8a7d0d30bdbc9">ErrorCode::kFsInvalidPath</a></div><div class="ttdeci">@ kFsInvalidPath</div></div>
@@ -717,6 +735,7 @@ template&lt;typename T &gt; </div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa32ca326dc5b2e9f90a5b70d4838c7101"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa32ca326dc5b2e9f90a5b70d4838c7101">ErrorCode::kIpiSendFailed</a></div><div class="ttdeci">@ kIpiSendFailed</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa3499a03cb9c4b33b3282568eb9414380"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3499a03cb9c4b33b3282568eb9414380">ErrorCode::kMutexNotOwned</a></div><div class="ttdeci">@ kMutexNotOwned</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa387fc2921066e4539ca8918fd8beb3bd"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa387fc2921066e4539ca8918fd8beb3bd">ErrorCode::kMutexNoTaskContext</a></div><div class="ttdeci">@ kMutexNoTaskContext</div></div>
+<div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa3eaad0857ba70a868fac81433de967d1"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3eaad0857ba70a868fac81433de967d1">ErrorCode::kSignalTaskNotFound</a></div><div class="ttdeci">@ kSignalTaskNotFound</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa3ed0a4d020e38a0fd3490d77a0d57365"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3ed0a4d020e38a0fd3490d77a0d57365">ErrorCode::kFsPermissionDenied</a></div><div class="ttdeci">@ kFsPermissionDenied</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa3fe2766432e522705a18ed9d1b73b960"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3fe2766432e522705a18ed9d1b73b960">ErrorCode::kDeviceNotOpen</a></div><div class="ttdeci">@ kDeviceNotOpen</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa455ed57086b062e2a7edb83d42dcd8e0"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa455ed57086b062e2a7edb83d42dcd8e0">ErrorCode::kVmPageNotMapped</a></div><div class="ttdeci">@ kVmPageNotMapped</div></div>
@@ -727,6 +746,7 @@ template&lt;typename T &gt; </div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa531a47ef0ea83f4f692b2830fdecfd47"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa531a47ef0ea83f4f692b2830fdecfd47">ErrorCode::kElfUnsupported32Bit</a></div><div class="ttdeci">@ kElfUnsupported32Bit</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa5665830ab9553511a73b27d19ac26b9d"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5665830ab9553511a73b27d19ac26b9d">ErrorCode::kFsUnmountFailed</a></div><div class="ttdeci">@ kFsUnmountFailed</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa5d577b6c8e60b27518c84eadacdaa062"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5d577b6c8e60b27518c84eadacdaa062">ErrorCode::kVmMapFailed</a></div><div class="ttdeci">@ kVmMapFailed</div></div>
+<div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa5e9cad33391ab1d9d65b2ee83180dd29"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5e9cad33391ab1d9d65b2ee83180dd29">ErrorCode::kSignalInvalidPid</a></div><div class="ttdeci">@ kSignalInvalidPid</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa65c686942a300faa22cc8c1ff64d68b5"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa65c686942a300faa22cc8c1ff64d68b5">ErrorCode::kDeviceBlockUnaligned</a></div><div class="ttdeci">@ kDeviceBlockUnaligned</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa6678016037c61da6489784787f22a205"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa6678016037c61da6489784787f22a205">ErrorCode::kVmAllocationFailed</a></div><div class="ttdeci">@ kVmAllocationFailed</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa68eb49762fa253afda272250dda92a48"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa68eb49762fa253afda272250dda92a48">ErrorCode::kIpiTargetOutOfRange</a></div><div class="ttdeci">@ kIpiTargetOutOfRange</div></div>
@@ -755,6 +775,7 @@ template&lt;typename T &gt; </div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa8b4dea80f2be2fe5fa3657256c92e09f"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8b4dea80f2be2fe5fa3657256c92e09f">ErrorCode::kDeviceError</a></div><div class="ttdeci">@ kDeviceError</div><div class="ttdoc">通用设备报告错误</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa8c632159fa131f09d04f94e3cbcd8782"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8c632159fa131f09d04f94e3cbcd8782">ErrorCode::kSuccess</a></div><div class="ttdeci">@ kSuccess</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa94afa39f34ee08b4cbb1dbc00a1af16f"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa94afa39f34ee08b4cbb1dbc00a1af16f">ErrorCode::kFsNotEmpty</a></div><div class="ttdeci">@ kFsNotEmpty</div></div>
+<div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa98073d23478acea6cbc5ce6937b99602"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa98073d23478acea6cbc5ce6937b99602">ErrorCode::kSignalInvalidNumber</a></div><div class="ttdeci">@ kSignalInvalidNumber</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa9841149d6b1233e4c759524748271452"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9841149d6b1233e4c759524748271452">ErrorCode::kFdtInvalidPropertySize</a></div><div class="ttdeci">@ kFdtInvalidPropertySize</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa99fbe9e0ddd9d2b0a209750f5823f6bb"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa99fbe9e0ddd9d2b0a209750f5823f6bb">ErrorCode::kApicInvalidParameter</a></div><div class="ttdeci">@ kApicInvalidParameter</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa9ad8827c9cbf63469706b307baee5c5d"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9ad8827c9cbf63469706b307baee5c5d">ErrorCode::kInvalidDescriptor</a></div><div class="ttdeci">@ kInvalidDescriptor</div><div class="ttdoc">无效的描述符索引</div></div>
@@ -771,11 +792,13 @@ template&lt;typename T &gt; </div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fab63e7379b6adbcbd57784497fc6b4d9c"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab63e7379b6adbcbd57784497fc6b4d9c">ErrorCode::kDeviceFlushFailed</a></div><div class="ttdeci">@ kDeviceFlushFailed</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fab681eacb215899549d45805f02eeb40c"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab681eacb215899549d45805f02eeb40c">ErrorCode::kOutOfMemory</a></div><div class="ttdeci">@ kOutOfMemory</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fab7ca8f66890a1869b65727b89003ac90"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab7ca8f66890a1869b65727b89003ac90">ErrorCode::kBlkReadFailed</a></div><div class="ttdeci">@ kBlkReadFailed</div></div>
+<div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fabf9de5b26b5b5463d4cf4fd08bf3c6b4"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fabf9de5b26b5b5463d4cf4fd08bf3c6b4">ErrorCode::kSignalPermissionDenied</a></div><div class="ttdeci">@ kSignalPermissionDenied</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fac3ec97ef7572129d1bbf351d36551302"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac3ec97ef7572129d1bbf351d36551302">ErrorCode::kElfInvalidClass</a></div><div class="ttdeci">@ kElfInvalidClass</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fac41bbf38feb16c69efd6fe9973439985"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac41bbf38feb16c69efd6fe9973439985">ErrorCode::kNoUsedBuffers</a></div><div class="ttdeci">@ kNoUsedBuffers</div><div class="ttdoc">没有已使用的缓冲区可回收</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fac5f5be6d4ae2a03086ae82abd6cd8fca"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac5f5be6d4ae2a03086ae82abd6cd8fca">ErrorCode::kFdtInvalidAddress</a></div><div class="ttdeci">@ kFdtInvalidAddress</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fac702718ac446c0ea3feba3b3f426de8d"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac702718ac446c0ea3feba3b3f426de8d">ErrorCode::kDeviceIoctlFailed</a></div><div class="ttdeci">@ kDeviceIoctlFailed</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fac70fe0f40fb08199ffee50bdd343925a"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac70fe0f40fb08199ffee50bdd343925a">ErrorCode::kVmUnmapFailed</a></div><div class="ttdeci">@ kVmUnmapFailed</div></div>
+<div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895faca72ed21d13fb55b582c27bd0336cbc0"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faca72ed21d13fb55b582c27bd0336cbc0">ErrorCode::kSignalUncatchable</a></div><div class="ttdeci">@ kSignalUncatchable</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895face8c769bbe7b8dc595d9ca4586078030"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895face8c769bbe7b8dc595d9ca4586078030">ErrorCode::kInvalidMagic</a></div><div class="ttdeci">@ kInvalidMagic</div><div class="ttdoc">无效的 MMIO 魔数</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895facf1352147c4a48f0403e882668260188"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895facf1352147c4a48f0403e882668260188">ErrorCode::kNotSupported</a></div><div class="ttdeci">@ kNotSupported</div><div class="ttdoc">不支持的操作（通用，非设备特定）</div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fad24e2c30450a187996f26076ee6dc164"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad24e2c30450a187996f26076ee6dc164">ErrorCode::kApicAddressNotAligned</a></div><div class="ttdeci">@ kApicAddressNotAligned</div></div>
@@ -825,207 +848,217 @@ template&lt;typename T &gt; </div>
 
 <p>获取错误码对应的错误信息 </p>
 
-<p class="definition">Definition at line <a class="el" href="expected_8hpp_source.html#l00141">141</a> of file <a class="el" href="expected_8hpp_source.html">expected.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  141</span>                                                              {</div>
-<div class="line"><span class="lineno">  142</span>  <span class="keywordflow">switch</span> (code) {</div>
-<div class="line"><span class="lineno">  143</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8c632159fa131f09d04f94e3cbcd8782">ErrorCode::kSuccess</a>:</div>
-<div class="line"><span class="lineno">  144</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Success&quot;</span>;</div>
-<div class="line"><span class="lineno">  145</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab28f437e194023ce45909a440b063583">ErrorCode::kElfInvalidAddress</a>:</div>
-<div class="line"><span class="lineno">  146</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid ELF address&quot;</span>;</div>
-<div class="line"><span class="lineno">  147</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa79eccec0fbbb209464fffa0ab721ff70">ErrorCode::kElfInvalidMagic</a>:</div>
-<div class="line"><span class="lineno">  148</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid ELF magic number&quot;</span>;</div>
-<div class="line"><span class="lineno">  149</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa531a47ef0ea83f4f692b2830fdecfd47">ErrorCode::kElfUnsupported32Bit</a>:</div>
-<div class="line"><span class="lineno">  150</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;32-bit ELF not supported&quot;</span>;</div>
-<div class="line"><span class="lineno">  151</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac3ec97ef7572129d1bbf351d36551302">ErrorCode::kElfInvalidClass</a>:</div>
-<div class="line"><span class="lineno">  152</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid ELF class&quot;</span>;</div>
-<div class="line"><span class="lineno">  153</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa197283b56925f4113f028cd195849a98">ErrorCode::kElfSymtabNotFound</a>:</div>
-<div class="line"><span class="lineno">  154</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;.symtab section not found&quot;</span>;</div>
-<div class="line"><span class="lineno">  155</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa176680b9b96ddc3c51e52211135822e5">ErrorCode::kElfStrtabNotFound</a>:</div>
-<div class="line"><span class="lineno">  156</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;.strtab section not found&quot;</span>;</div>
-<div class="line"><span class="lineno">  157</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac5f5be6d4ae2a03086ae82abd6cd8fca">ErrorCode::kFdtInvalidAddress</a>:</div>
-<div class="line"><span class="lineno">  158</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid FDT address&quot;</span>;</div>
-<div class="line"><span class="lineno">  159</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae157b0b96fc07c6f80568709f61dc59d">ErrorCode::kFdtInvalidHeader</a>:</div>
-<div class="line"><span class="lineno">  160</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid FDT header&quot;</span>;</div>
-<div class="line"><span class="lineno">  161</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab0033e9e46a539960815b6d6fbd6aca0">ErrorCode::kFdtNodeNotFound</a>:</div>
-<div class="line"><span class="lineno">  162</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;FDT node not found&quot;</span>;</div>
-<div class="line"><span class="lineno">  163</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa500b9af6d0b3de15af39e5eceac0e9b8">ErrorCode::kFdtPropertyNotFound</a>:</div>
-<div class="line"><span class="lineno">  164</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;FDT property not found&quot;</span>;</div>
-<div class="line"><span class="lineno">  165</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab61ed44c1191c72e0421b4b5f32f092b">ErrorCode::kFdtParseFailed</a>:</div>
-<div class="line"><span class="lineno">  166</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;FDT parse failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  167</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9841149d6b1233e4c759524748271452">ErrorCode::kFdtInvalidPropertySize</a>:</div>
-<div class="line"><span class="lineno">  168</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid FDT property size&quot;</span>;</div>
-<div class="line"><span class="lineno">  169</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae2450f32679f62bb24de820bb951efe5">ErrorCode::kSpinLockRecursiveLock</a>:</div>
-<div class="line"><span class="lineno">  170</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Recursive spinlock detected&quot;</span>;</div>
-<div class="line"><span class="lineno">  171</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae6358517c164c6f0b8d2f1f3332af205">ErrorCode::kSpinLockNotOwned</a>:</div>
-<div class="line"><span class="lineno">  172</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Spinlock not owned by current core&quot;</span>;</div>
-<div class="line"><span class="lineno">  173</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa387fc2921066e4539ca8918fd8beb3bd">ErrorCode::kMutexNoTaskContext</a>:</div>
-<div class="line"><span class="lineno">  174</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Mutex operation outside task context&quot;</span>;</div>
-<div class="line"><span class="lineno">  175</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fada0d1d25600f9f29b8c047e9d6abc8a9">ErrorCode::kMutexRecursiveLock</a>:</div>
-<div class="line"><span class="lineno">  176</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Recursive mutex lock detected&quot;</span>;</div>
-<div class="line"><span class="lineno">  177</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3499a03cb9c4b33b3282568eb9414380">ErrorCode::kMutexNotOwned</a>:</div>
-<div class="line"><span class="lineno">  178</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Mutex not owned by current task&quot;</span>;</div>
-<div class="line"><span class="lineno">  179</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fafcf56adc5b03762c753bab3f68cb4470">ErrorCode::kMutexNotLocked</a>:</div>
-<div class="line"><span class="lineno">  180</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Mutex not locked&quot;</span>;</div>
-<div class="line"><span class="lineno">  181</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa6678016037c61da6489784787f22a205">ErrorCode::kVmAllocationFailed</a>:</div>
-<div class="line"><span class="lineno">  182</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Virtual memory allocation failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  183</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5d577b6c8e60b27518c84eadacdaa062">ErrorCode::kVmMapFailed</a>:</div>
-<div class="line"><span class="lineno">  184</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Virtual memory mapping failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  185</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac70fe0f40fb08199ffee50bdd343925a">ErrorCode::kVmUnmapFailed</a>:</div>
-<div class="line"><span class="lineno">  186</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Virtual memory unmapping failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  187</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa254d3758a72b954bfd0822763136ea04">ErrorCode::kVmInvalidPageTable</a>:</div>
-<div class="line"><span class="lineno">  188</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid page table&quot;</span>;</div>
-<div class="line"><span class="lineno">  189</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa455ed57086b062e2a7edb83d42dcd8e0">ErrorCode::kVmPageNotMapped</a>:</div>
-<div class="line"><span class="lineno">  190</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Page not mapped&quot;</span>;</div>
-<div class="line"><span class="lineno">  191</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa68eb49762fa253afda272250dda92a48">ErrorCode::kIpiTargetOutOfRange</a>:</div>
-<div class="line"><span class="lineno">  192</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IPI target CPU mask out of range&quot;</span>;</div>
-<div class="line"><span class="lineno">  193</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa32ca326dc5b2e9f90a5b70d4838c7101">ErrorCode::kIpiSendFailed</a>:</div>
-<div class="line"><span class="lineno">  194</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IPI send failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  195</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad92a0fb89b771039bda66b5d8726d5d4">ErrorCode::kApicInitFailed</a>:</div>
-<div class="line"><span class="lineno">  196</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;APIC initialization failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  197</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0fcf97f4fa849ec449424ba729a6b52d">ErrorCode::kApicInvalidIrq</a>:</div>
-<div class="line"><span class="lineno">  198</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid IRQ number&quot;</span>;</div>
-<div class="line"><span class="lineno">  199</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa99fbe9e0ddd9d2b0a209750f5823f6bb">ErrorCode::kApicInvalidParameter</a>:</div>
-<div class="line"><span class="lineno">  200</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid APIC parameter&quot;</span>;</div>
-<div class="line"><span class="lineno">  201</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7a5c2aa9d221e08ca71fe4bf72ba7002">ErrorCode::kApicCodeCopyFailed</a>:</div>
-<div class="line"><span class="lineno">  202</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;AP code copy verification failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  203</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad24e2c30450a187996f26076ee6dc164">ErrorCode::kApicAddressNotAligned</a>:</div>
-<div class="line"><span class="lineno">  204</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Address not aligned to required boundary&quot;</span>;</div>
-<div class="line"><span class="lineno">  205</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa2cdc508f29e0d448b89987b7f48c98b7">ErrorCode::kApicAddressOutOfRange</a>:</div>
-<div class="line"><span class="lineno">  206</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Address out of valid range&quot;</span>;</div>
-<div class="line"><span class="lineno">  207</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fadf9c7cefbd0b6476f3d51616bdbcb3af">ErrorCode::kApicIpiTimeout</a>:</div>
-<div class="line"><span class="lineno">  208</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IPI delivery timeout&quot;</span>;</div>
-<div class="line"><span class="lineno">  209</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8289607398b9e67b8e32d39836589a0f">ErrorCode::kTaskNoCurrentTask</a>:</div>
-<div class="line"><span class="lineno">  210</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;No current task&quot;</span>;</div>
-<div class="line"><span class="lineno">  211</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae774e683556860daced2efcf38ac9074">ErrorCode::kTaskPidAllocationFailed</a>:</div>
-<div class="line"><span class="lineno">  212</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;PID allocation failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  213</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faabbb7417b1f40d1dc1f5699f2154bcf6">ErrorCode::kTaskAllocationFailed</a>:</div>
-<div class="line"><span class="lineno">  214</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Task allocation failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  215</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa2175411fbe0d1975841073004ea3fff5">ErrorCode::kTaskInvalidCloneFlags</a>:</div>
-<div class="line"><span class="lineno">  216</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid clone flags&quot;</span>;</div>
-<div class="line"><span class="lineno">  217</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa204c13063865e4bf4b0666e41c04fe39">ErrorCode::kTaskPageTableCloneFailed</a>:</div>
-<div class="line"><span class="lineno">  218</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Page table clone failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  219</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf26b7603aac2c3614065124e03b12b07">ErrorCode::kTaskKernelStackAllocationFailed</a>:</div>
-<div class="line"><span class="lineno">  220</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Kernel stack allocation failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  221</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa5056c291a29caa59de23de85842d958">ErrorCode::kTaskNoChildFound</a>:</div>
-<div class="line"><span class="lineno">  222</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;No child process found&quot;</span>;</div>
-<div class="line"><span class="lineno">  223</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa758a48c0b68169b1e5186a5933ce264a">ErrorCode::kTaskInvalidPid</a>:</div>
-<div class="line"><span class="lineno">  224</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid PID&quot;</span>;</div>
-<div class="line"><span class="lineno">  225</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308">ErrorCode::kDeviceNotFound</a>:</div>
-<div class="line"><span class="lineno">  226</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device not found&quot;</span>;</div>
-<div class="line"><span class="lineno">  227</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa86018dbf10039e1f57709bc7078ce1af">ErrorCode::kDeviceAlreadyOpen</a>:</div>
-<div class="line"><span class="lineno">  228</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device already open&quot;</span>;</div>
-<div class="line"><span class="lineno">  229</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3fe2766432e522705a18ed9d1b73b960">ErrorCode::kDeviceNotOpen</a>:</div>
-<div class="line"><span class="lineno">  230</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device not open&quot;</span>;</div>
-<div class="line"><span class="lineno">  231</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa837f801e771168675bd5d9cfedb2e1b0">ErrorCode::kDeviceReadFailed</a>:</div>
-<div class="line"><span class="lineno">  232</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device read failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  233</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8595654eb39ba07efa2046cb5fb58291">ErrorCode::kDeviceWriteFailed</a>:</div>
-<div class="line"><span class="lineno">  234</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device write failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  235</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac702718ac446c0ea3feba3b3f426de8d">ErrorCode::kDeviceIoctlFailed</a>:</div>
-<div class="line"><span class="lineno">  236</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device ioctl failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  237</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0136d9e25a482ebdb1bf94c850e3af00">ErrorCode::kDeviceMmapFailed</a>:</div>
-<div class="line"><span class="lineno">  238</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device mmap failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  239</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa81c2a007e9fea4a9feb00c0f5c55fd39">ErrorCode::kDeviceNotSupported</a>:</div>
-<div class="line"><span class="lineno">  240</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Operation not supported by device&quot;</span>;</div>
-<div class="line"><span class="lineno">  241</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa24bf87462e771732d10a496b349f0eb2">ErrorCode::kDeviceBusy</a>:</div>
-<div class="line"><span class="lineno">  242</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device busy&quot;</span>;</div>
-<div class="line"><span class="lineno">  243</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7e99d35a8645dc958d20c5790cf346e4">ErrorCode::kDevicePermissionDenied</a>:</div>
-<div class="line"><span class="lineno">  244</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device permission denied&quot;</span>;</div>
-<div class="line"><span class="lineno">  245</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0ef86191b66fc30a33a38e13bbd8410e">ErrorCode::kDeviceInvalidOffset</a>:</div>
-<div class="line"><span class="lineno">  246</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid device offset&quot;</span>;</div>
-<div class="line"><span class="lineno">  247</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa65c686942a300faa22cc8c1ff64d68b5">ErrorCode::kDeviceBlockUnaligned</a>:</div>
-<div class="line"><span class="lineno">  248</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Block access not aligned to block size&quot;</span>;</div>
-<div class="line"><span class="lineno">  249</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab265f75dc9044c97e509ea10100b82e0">ErrorCode::kDeviceBlockOutOfRange</a>:</div>
-<div class="line"><span class="lineno">  250</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Block number out of device range&quot;</span>;</div>
-<div class="line"><span class="lineno">  251</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab63e7379b6adbcbd57784497fc6b4d9c">ErrorCode::kDeviceFlushFailed</a>:</div>
-<div class="line"><span class="lineno">  252</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device flush failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  253</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8b4dea80f2be2fe5fa3657256c92e09f">ErrorCode::kDeviceError</a>:</div>
-<div class="line"><span class="lineno">  254</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device reported an error&quot;</span>;</div>
-<div class="line"><span class="lineno">  255</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa89f9f5ef642ef2ee3c7c01baa948d8dd">ErrorCode::kIoError</a>:</div>
-<div class="line"><span class="lineno">  256</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;I/O operation failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  257</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895facf1352147c4a48f0403e882668260188">ErrorCode::kNotSupported</a>:</div>
-<div class="line"><span class="lineno">  258</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Operation not supported&quot;</span>;</div>
-<div class="line"><span class="lineno">  259</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7f27861ff1d3f550c6aa77150d7edabd">ErrorCode::kTimeout</a>:</div>
-<div class="line"><span class="lineno">  260</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Operation timed out&quot;</span>;</div>
-<div class="line"><span class="lineno">  261</span>    <span class="comment">// VirtIO 传输层错误 (0x820 - 0x82F)</span></div>
-<div class="line"><span class="lineno">  262</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895face8c769bbe7b8dc595d9ca4586078030">ErrorCode::kInvalidMagic</a>:</div>
-<div class="line"><span class="lineno">  263</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid MMIO magic value&quot;</span>;</div>
-<div class="line"><span class="lineno">  264</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa698aa7b9588a5cab536e5c9cc3762f92">ErrorCode::kInvalidVersion</a>:</div>
-<div class="line"><span class="lineno">  265</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Unsupported virtio version&quot;</span>;</div>
-<div class="line"><span class="lineno">  266</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae87b5b99400cb4de4fdd7dc6c6f2599b">ErrorCode::kInvalidDeviceId</a>:</div>
-<div class="line"><span class="lineno">  267</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid device ID (device does not exist)&quot;</span>;</div>
-<div class="line"><span class="lineno">  268</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa76499df353cd64bb48fa19ad13375ecc">ErrorCode::kTransportNotInitialized</a>:</div>
-<div class="line"><span class="lineno">  269</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Transport layer not initialized&quot;</span>;</div>
-<div class="line"><span class="lineno">  270</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa804e595589b0e4b2bd274b17e03d1bfa">ErrorCode::kFeatureNegotiationFailed</a>:</div>
-<div class="line"><span class="lineno">  271</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Feature negotiation failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  272</span>    <span class="comment">// VirtIO 虚拟队列错误 (0x830 - 0x83F)</span></div>
-<div class="line"><span class="lineno">  273</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9db54492c067293bceb521f8a08f5d09">ErrorCode::kQueueNotAvailable</a>:</div>
-<div class="line"><span class="lineno">  274</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Queue not available (queue_num_max == 0)&quot;</span>;</div>
-<div class="line"><span class="lineno">  275</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5079e81d1ccf61d4eb923cb2b1a50205">ErrorCode::kQueueAlreadyUsed</a>:</div>
-<div class="line"><span class="lineno">  276</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Queue already used&quot;</span>;</div>
-<div class="line"><span class="lineno">  277</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa795bb67c5323028598ed6067e2702491">ErrorCode::kQueueTooLarge</a>:</div>
-<div class="line"><span class="lineno">  278</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Requested queue size exceeds maximum&quot;</span>;</div>
-<div class="line"><span class="lineno">  279</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa83a78432fa4fd1764986e45d4fe76778">ErrorCode::kNoFreeDescriptors</a>:</div>
-<div class="line"><span class="lineno">  280</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;No free descriptors available&quot;</span>;</div>
-<div class="line"><span class="lineno">  281</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9ad8827c9cbf63469706b307baee5c5d">ErrorCode::kInvalidDescriptor</a>:</div>
-<div class="line"><span class="lineno">  282</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid descriptor index&quot;</span>;</div>
-<div class="line"><span class="lineno">  283</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac41bbf38feb16c69efd6fe9973439985">ErrorCode::kNoUsedBuffers</a>:</div>
-<div class="line"><span class="lineno">  284</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;No used buffers to reclaim&quot;</span>;</div>
-<div class="line"><span class="lineno">  285</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf843aa00f0c8b67c46bceaa5e62773d5">ErrorCode::kFsFileNotFound</a>:</div>
-<div class="line"><span class="lineno">  286</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;File not found&quot;</span>;</div>
-<div class="line"><span class="lineno">  287</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3ed0a4d020e38a0fd3490d77a0d57365">ErrorCode::kFsPermissionDenied</a>:</div>
-<div class="line"><span class="lineno">  288</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Filesystem permission denied&quot;</span>;</div>
-<div class="line"><span class="lineno">  289</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf9cd407d4676d81e87724c9a9d42ed5a">ErrorCode::kFsNotADirectory</a>:</div>
-<div class="line"><span class="lineno">  290</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Not a directory&quot;</span>;</div>
-<div class="line"><span class="lineno">  291</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8762395ec6597e1c0ed2c89d8bcdfd92">ErrorCode::kFsIsADirectory</a>:</div>
-<div class="line"><span class="lineno">  292</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Is a directory&quot;</span>;</div>
-<div class="line"><span class="lineno">  293</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa0f10eb6320fa2f4f711d4f1588284d2">ErrorCode::kFsFileExists</a>:</div>
-<div class="line"><span class="lineno">  294</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;File already exists&quot;</span>;</div>
-<div class="line"><span class="lineno">  295</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa503136841296686dfdce1286e8a8f7e8">ErrorCode::kFsNoSpace</a>:</div>
-<div class="line"><span class="lineno">  296</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;No space left on device&quot;</span>;</div>
-<div class="line"><span class="lineno">  297</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa068b9808683df66a134d8bc251962a7f">ErrorCode::kFsMountFailed</a>:</div>
-<div class="line"><span class="lineno">  298</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Mount failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  299</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5665830ab9553511a73b27d19ac26b9d">ErrorCode::kFsUnmountFailed</a>:</div>
-<div class="line"><span class="lineno">  300</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Unmount failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  301</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0b5bbd63dfccadbee5c8a7d0d30bdbc9">ErrorCode::kFsInvalidPath</a>:</div>
-<div class="line"><span class="lineno">  302</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid path&quot;</span>;</div>
-<div class="line"><span class="lineno">  303</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faad892fe61bff83786f5cb40ad6cc650b">ErrorCode::kFsFdTableFull</a>:</div>
-<div class="line"><span class="lineno">  304</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;File descriptor table full&quot;</span>;</div>
-<div class="line"><span class="lineno">  305</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa1d771c21296ba5f8181c116929b845f0">ErrorCode::kFsInvalidFd</a>:</div>
-<div class="line"><span class="lineno">  306</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid file descriptor&quot;</span>;</div>
-<div class="line"><span class="lineno">  307</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa285e31704d083e657851e639d1f2c551">ErrorCode::kFsNotMounted</a>:</div>
-<div class="line"><span class="lineno">  308</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Filesystem not mounted&quot;</span>;</div>
-<div class="line"><span class="lineno">  309</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae6e0e6a1183a9c2884bd9a96f4ed2aad">ErrorCode::kFsReadOnly</a>:</div>
-<div class="line"><span class="lineno">  310</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Read-only filesystem&quot;</span>;</div>
-<div class="line"><span class="lineno">  311</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad39984ff3f4883663f71af3f46ed582a">ErrorCode::kFsCorrupted</a>:</div>
-<div class="line"><span class="lineno">  312</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Filesystem corrupted&quot;</span>;</div>
-<div class="line"><span class="lineno">  313</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa8abba321ae5546cebd9c70c5dd8af51">ErrorCode::kFsAlreadyMounted</a>:</div>
-<div class="line"><span class="lineno">  314</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Filesystem already mounted&quot;</span>;</div>
-<div class="line"><span class="lineno">  315</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa94afa39f34ee08b4cbb1dbc00a1af16f">ErrorCode::kFsNotEmpty</a>:</div>
-<div class="line"><span class="lineno">  316</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Directory not empty&quot;</span>;</div>
-<div class="line"><span class="lineno">  317</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa4c8aed433bcbafc55145e68a30fe7c68">ErrorCode::kBlkDeviceNotFound</a>:</div>
-<div class="line"><span class="lineno">  318</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Block device not found&quot;</span>;</div>
-<div class="line"><span class="lineno">  319</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab7ca8f66890a1869b65727b89003ac90">ErrorCode::kBlkReadFailed</a>:</div>
-<div class="line"><span class="lineno">  320</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Block read failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  321</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf6a20ee710b37f2ae8f75051f027d578">ErrorCode::kBlkWriteFailed</a>:</div>
-<div class="line"><span class="lineno">  322</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Block write failed&quot;</span>;</div>
-<div class="line"><span class="lineno">  323</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa71c4e95a17cbaca40f67e2803dc23e11">ErrorCode::kBlkSectorOutOfRange</a>:</div>
-<div class="line"><span class="lineno">  324</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Sector out of range&quot;</span>;</div>
-<div class="line"><span class="lineno">  325</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa794bf2d246318195f0fe4b5b8c453e90">ErrorCode::kIrqChipInvalidIrq</a>:</div>
-<div class="line"><span class="lineno">  326</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IRQ number out of controller range&quot;</span>;</div>
-<div class="line"><span class="lineno">  327</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa87c92752e79a0d7262f26c979f5a1802">ErrorCode::kIrqChipIrqNotEnabled</a>:</div>
-<div class="line"><span class="lineno">  328</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IRQ not enabled&quot;</span>;</div>
-<div class="line"><span class="lineno">  329</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa287683de042a258497a37bb081c7435c">ErrorCode::kIrqChipAffinityFailed</a>:</div>
-<div class="line"><span class="lineno">  330</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Failed to set IRQ CPU affinity&quot;</span>;</div>
-<div class="line"><span class="lineno">  331</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fadd2852c9d8661e5e82a33a546ab31ed0">ErrorCode::kIrqChipIpiTimeout</a>:</div>
-<div class="line"><span class="lineno">  332</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IPI delivery timeout&quot;</span>;</div>
-<div class="line"><span class="lineno">  333</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa80fdc050363ea6925fa2e7eb7f0a94a0">ErrorCode::kInvalidArgument</a>:</div>
-<div class="line"><span class="lineno">  334</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid argument&quot;</span>;</div>
-<div class="line"><span class="lineno">  335</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab681eacb215899549d45805f02eeb40c">ErrorCode::kOutOfMemory</a>:</div>
-<div class="line"><span class="lineno">  336</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Out of memory&quot;</span>;</div>
-<div class="line"><span class="lineno">  337</span>    <span class="keywordflow">default</span>:</div>
-<div class="line"><span class="lineno">  338</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Unknown error&quot;</span>;</div>
-<div class="line"><span class="lineno">  339</span>  }</div>
-<div class="line"><span class="lineno">  340</span>}</div>
+<p class="definition">Definition at line <a class="el" href="expected_8hpp_source.html#l00147">147</a> of file <a class="el" href="expected_8hpp_source.html">expected.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  147</span>                                                              {</div>
+<div class="line"><span class="lineno">  148</span>  <span class="keywordflow">switch</span> (code) {</div>
+<div class="line"><span class="lineno">  149</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8c632159fa131f09d04f94e3cbcd8782">ErrorCode::kSuccess</a>:</div>
+<div class="line"><span class="lineno">  150</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Success&quot;</span>;</div>
+<div class="line"><span class="lineno">  151</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab28f437e194023ce45909a440b063583">ErrorCode::kElfInvalidAddress</a>:</div>
+<div class="line"><span class="lineno">  152</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid ELF address&quot;</span>;</div>
+<div class="line"><span class="lineno">  153</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa79eccec0fbbb209464fffa0ab721ff70">ErrorCode::kElfInvalidMagic</a>:</div>
+<div class="line"><span class="lineno">  154</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid ELF magic number&quot;</span>;</div>
+<div class="line"><span class="lineno">  155</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa531a47ef0ea83f4f692b2830fdecfd47">ErrorCode::kElfUnsupported32Bit</a>:</div>
+<div class="line"><span class="lineno">  156</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;32-bit ELF not supported&quot;</span>;</div>
+<div class="line"><span class="lineno">  157</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac3ec97ef7572129d1bbf351d36551302">ErrorCode::kElfInvalidClass</a>:</div>
+<div class="line"><span class="lineno">  158</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid ELF class&quot;</span>;</div>
+<div class="line"><span class="lineno">  159</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa197283b56925f4113f028cd195849a98">ErrorCode::kElfSymtabNotFound</a>:</div>
+<div class="line"><span class="lineno">  160</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;.symtab section not found&quot;</span>;</div>
+<div class="line"><span class="lineno">  161</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa176680b9b96ddc3c51e52211135822e5">ErrorCode::kElfStrtabNotFound</a>:</div>
+<div class="line"><span class="lineno">  162</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;.strtab section not found&quot;</span>;</div>
+<div class="line"><span class="lineno">  163</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac5f5be6d4ae2a03086ae82abd6cd8fca">ErrorCode::kFdtInvalidAddress</a>:</div>
+<div class="line"><span class="lineno">  164</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid FDT address&quot;</span>;</div>
+<div class="line"><span class="lineno">  165</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae157b0b96fc07c6f80568709f61dc59d">ErrorCode::kFdtInvalidHeader</a>:</div>
+<div class="line"><span class="lineno">  166</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid FDT header&quot;</span>;</div>
+<div class="line"><span class="lineno">  167</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab0033e9e46a539960815b6d6fbd6aca0">ErrorCode::kFdtNodeNotFound</a>:</div>
+<div class="line"><span class="lineno">  168</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;FDT node not found&quot;</span>;</div>
+<div class="line"><span class="lineno">  169</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa500b9af6d0b3de15af39e5eceac0e9b8">ErrorCode::kFdtPropertyNotFound</a>:</div>
+<div class="line"><span class="lineno">  170</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;FDT property not found&quot;</span>;</div>
+<div class="line"><span class="lineno">  171</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab61ed44c1191c72e0421b4b5f32f092b">ErrorCode::kFdtParseFailed</a>:</div>
+<div class="line"><span class="lineno">  172</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;FDT parse failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  173</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9841149d6b1233e4c759524748271452">ErrorCode::kFdtInvalidPropertySize</a>:</div>
+<div class="line"><span class="lineno">  174</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid FDT property size&quot;</span>;</div>
+<div class="line"><span class="lineno">  175</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae2450f32679f62bb24de820bb951efe5">ErrorCode::kSpinLockRecursiveLock</a>:</div>
+<div class="line"><span class="lineno">  176</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Recursive spinlock detected&quot;</span>;</div>
+<div class="line"><span class="lineno">  177</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae6358517c164c6f0b8d2f1f3332af205">ErrorCode::kSpinLockNotOwned</a>:</div>
+<div class="line"><span class="lineno">  178</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Spinlock not owned by current core&quot;</span>;</div>
+<div class="line"><span class="lineno">  179</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa387fc2921066e4539ca8918fd8beb3bd">ErrorCode::kMutexNoTaskContext</a>:</div>
+<div class="line"><span class="lineno">  180</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Mutex operation outside task context&quot;</span>;</div>
+<div class="line"><span class="lineno">  181</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fada0d1d25600f9f29b8c047e9d6abc8a9">ErrorCode::kMutexRecursiveLock</a>:</div>
+<div class="line"><span class="lineno">  182</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Recursive mutex lock detected&quot;</span>;</div>
+<div class="line"><span class="lineno">  183</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3499a03cb9c4b33b3282568eb9414380">ErrorCode::kMutexNotOwned</a>:</div>
+<div class="line"><span class="lineno">  184</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Mutex not owned by current task&quot;</span>;</div>
+<div class="line"><span class="lineno">  185</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fafcf56adc5b03762c753bab3f68cb4470">ErrorCode::kMutexNotLocked</a>:</div>
+<div class="line"><span class="lineno">  186</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Mutex not locked&quot;</span>;</div>
+<div class="line"><span class="lineno">  187</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa6678016037c61da6489784787f22a205">ErrorCode::kVmAllocationFailed</a>:</div>
+<div class="line"><span class="lineno">  188</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Virtual memory allocation failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  189</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5d577b6c8e60b27518c84eadacdaa062">ErrorCode::kVmMapFailed</a>:</div>
+<div class="line"><span class="lineno">  190</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Virtual memory mapping failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  191</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac70fe0f40fb08199ffee50bdd343925a">ErrorCode::kVmUnmapFailed</a>:</div>
+<div class="line"><span class="lineno">  192</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Virtual memory unmapping failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  193</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa254d3758a72b954bfd0822763136ea04">ErrorCode::kVmInvalidPageTable</a>:</div>
+<div class="line"><span class="lineno">  194</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid page table&quot;</span>;</div>
+<div class="line"><span class="lineno">  195</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa455ed57086b062e2a7edb83d42dcd8e0">ErrorCode::kVmPageNotMapped</a>:</div>
+<div class="line"><span class="lineno">  196</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Page not mapped&quot;</span>;</div>
+<div class="line"><span class="lineno">  197</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa68eb49762fa253afda272250dda92a48">ErrorCode::kIpiTargetOutOfRange</a>:</div>
+<div class="line"><span class="lineno">  198</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IPI target CPU mask out of range&quot;</span>;</div>
+<div class="line"><span class="lineno">  199</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa32ca326dc5b2e9f90a5b70d4838c7101">ErrorCode::kIpiSendFailed</a>:</div>
+<div class="line"><span class="lineno">  200</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IPI send failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  201</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad92a0fb89b771039bda66b5d8726d5d4">ErrorCode::kApicInitFailed</a>:</div>
+<div class="line"><span class="lineno">  202</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;APIC initialization failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  203</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0fcf97f4fa849ec449424ba729a6b52d">ErrorCode::kApicInvalidIrq</a>:</div>
+<div class="line"><span class="lineno">  204</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid IRQ number&quot;</span>;</div>
+<div class="line"><span class="lineno">  205</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa99fbe9e0ddd9d2b0a209750f5823f6bb">ErrorCode::kApicInvalidParameter</a>:</div>
+<div class="line"><span class="lineno">  206</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid APIC parameter&quot;</span>;</div>
+<div class="line"><span class="lineno">  207</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7a5c2aa9d221e08ca71fe4bf72ba7002">ErrorCode::kApicCodeCopyFailed</a>:</div>
+<div class="line"><span class="lineno">  208</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;AP code copy verification failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  209</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad24e2c30450a187996f26076ee6dc164">ErrorCode::kApicAddressNotAligned</a>:</div>
+<div class="line"><span class="lineno">  210</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Address not aligned to required boundary&quot;</span>;</div>
+<div class="line"><span class="lineno">  211</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa2cdc508f29e0d448b89987b7f48c98b7">ErrorCode::kApicAddressOutOfRange</a>:</div>
+<div class="line"><span class="lineno">  212</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Address out of valid range&quot;</span>;</div>
+<div class="line"><span class="lineno">  213</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fadf9c7cefbd0b6476f3d51616bdbcb3af">ErrorCode::kApicIpiTimeout</a>:</div>
+<div class="line"><span class="lineno">  214</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IPI delivery timeout&quot;</span>;</div>
+<div class="line"><span class="lineno">  215</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8289607398b9e67b8e32d39836589a0f">ErrorCode::kTaskNoCurrentTask</a>:</div>
+<div class="line"><span class="lineno">  216</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;No current task&quot;</span>;</div>
+<div class="line"><span class="lineno">  217</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae774e683556860daced2efcf38ac9074">ErrorCode::kTaskPidAllocationFailed</a>:</div>
+<div class="line"><span class="lineno">  218</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;PID allocation failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  219</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faabbb7417b1f40d1dc1f5699f2154bcf6">ErrorCode::kTaskAllocationFailed</a>:</div>
+<div class="line"><span class="lineno">  220</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Task allocation failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  221</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa2175411fbe0d1975841073004ea3fff5">ErrorCode::kTaskInvalidCloneFlags</a>:</div>
+<div class="line"><span class="lineno">  222</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid clone flags&quot;</span>;</div>
+<div class="line"><span class="lineno">  223</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa204c13063865e4bf4b0666e41c04fe39">ErrorCode::kTaskPageTableCloneFailed</a>:</div>
+<div class="line"><span class="lineno">  224</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Page table clone failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  225</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf26b7603aac2c3614065124e03b12b07">ErrorCode::kTaskKernelStackAllocationFailed</a>:</div>
+<div class="line"><span class="lineno">  226</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Kernel stack allocation failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  227</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa5056c291a29caa59de23de85842d958">ErrorCode::kTaskNoChildFound</a>:</div>
+<div class="line"><span class="lineno">  228</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;No child process found&quot;</span>;</div>
+<div class="line"><span class="lineno">  229</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa758a48c0b68169b1e5186a5933ce264a">ErrorCode::kTaskInvalidPid</a>:</div>
+<div class="line"><span class="lineno">  230</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid PID&quot;</span>;</div>
+<div class="line"><span class="lineno">  231</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa98073d23478acea6cbc5ce6937b99602">ErrorCode::kSignalInvalidNumber</a>:</div>
+<div class="line"><span class="lineno">  232</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid signal number&quot;</span>;</div>
+<div class="line"><span class="lineno">  233</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5e9cad33391ab1d9d65b2ee83180dd29">ErrorCode::kSignalInvalidPid</a>:</div>
+<div class="line"><span class="lineno">  234</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid PID for signal delivery&quot;</span>;</div>
+<div class="line"><span class="lineno">  235</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fabf9de5b26b5b5463d4cf4fd08bf3c6b4">ErrorCode::kSignalPermissionDenied</a>:</div>
+<div class="line"><span class="lineno">  236</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Signal delivery permission denied&quot;</span>;</div>
+<div class="line"><span class="lineno">  237</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faca72ed21d13fb55b582c27bd0336cbc0">ErrorCode::kSignalUncatchable</a>:</div>
+<div class="line"><span class="lineno">  238</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Cannot catch or ignore this signal&quot;</span>;</div>
+<div class="line"><span class="lineno">  239</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3eaad0857ba70a868fac81433de967d1">ErrorCode::kSignalTaskNotFound</a>:</div>
+<div class="line"><span class="lineno">  240</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Target task not found for signal delivery&quot;</span>;</div>
+<div class="line"><span class="lineno">  241</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308">ErrorCode::kDeviceNotFound</a>:</div>
+<div class="line"><span class="lineno">  242</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device not found&quot;</span>;</div>
+<div class="line"><span class="lineno">  243</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa86018dbf10039e1f57709bc7078ce1af">ErrorCode::kDeviceAlreadyOpen</a>:</div>
+<div class="line"><span class="lineno">  244</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device already open&quot;</span>;</div>
+<div class="line"><span class="lineno">  245</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3fe2766432e522705a18ed9d1b73b960">ErrorCode::kDeviceNotOpen</a>:</div>
+<div class="line"><span class="lineno">  246</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device not open&quot;</span>;</div>
+<div class="line"><span class="lineno">  247</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa837f801e771168675bd5d9cfedb2e1b0">ErrorCode::kDeviceReadFailed</a>:</div>
+<div class="line"><span class="lineno">  248</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device read failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  249</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8595654eb39ba07efa2046cb5fb58291">ErrorCode::kDeviceWriteFailed</a>:</div>
+<div class="line"><span class="lineno">  250</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device write failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  251</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac702718ac446c0ea3feba3b3f426de8d">ErrorCode::kDeviceIoctlFailed</a>:</div>
+<div class="line"><span class="lineno">  252</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device ioctl failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  253</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0136d9e25a482ebdb1bf94c850e3af00">ErrorCode::kDeviceMmapFailed</a>:</div>
+<div class="line"><span class="lineno">  254</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device mmap failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  255</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa81c2a007e9fea4a9feb00c0f5c55fd39">ErrorCode::kDeviceNotSupported</a>:</div>
+<div class="line"><span class="lineno">  256</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Operation not supported by device&quot;</span>;</div>
+<div class="line"><span class="lineno">  257</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa24bf87462e771732d10a496b349f0eb2">ErrorCode::kDeviceBusy</a>:</div>
+<div class="line"><span class="lineno">  258</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device busy&quot;</span>;</div>
+<div class="line"><span class="lineno">  259</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7e99d35a8645dc958d20c5790cf346e4">ErrorCode::kDevicePermissionDenied</a>:</div>
+<div class="line"><span class="lineno">  260</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device permission denied&quot;</span>;</div>
+<div class="line"><span class="lineno">  261</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0ef86191b66fc30a33a38e13bbd8410e">ErrorCode::kDeviceInvalidOffset</a>:</div>
+<div class="line"><span class="lineno">  262</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid device offset&quot;</span>;</div>
+<div class="line"><span class="lineno">  263</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa65c686942a300faa22cc8c1ff64d68b5">ErrorCode::kDeviceBlockUnaligned</a>:</div>
+<div class="line"><span class="lineno">  264</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Block access not aligned to block size&quot;</span>;</div>
+<div class="line"><span class="lineno">  265</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab265f75dc9044c97e509ea10100b82e0">ErrorCode::kDeviceBlockOutOfRange</a>:</div>
+<div class="line"><span class="lineno">  266</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Block number out of device range&quot;</span>;</div>
+<div class="line"><span class="lineno">  267</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab63e7379b6adbcbd57784497fc6b4d9c">ErrorCode::kDeviceFlushFailed</a>:</div>
+<div class="line"><span class="lineno">  268</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device flush failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  269</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8b4dea80f2be2fe5fa3657256c92e09f">ErrorCode::kDeviceError</a>:</div>
+<div class="line"><span class="lineno">  270</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Device reported an error&quot;</span>;</div>
+<div class="line"><span class="lineno">  271</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa89f9f5ef642ef2ee3c7c01baa948d8dd">ErrorCode::kIoError</a>:</div>
+<div class="line"><span class="lineno">  272</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;I/O operation failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  273</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895facf1352147c4a48f0403e882668260188">ErrorCode::kNotSupported</a>:</div>
+<div class="line"><span class="lineno">  274</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Operation not supported&quot;</span>;</div>
+<div class="line"><span class="lineno">  275</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa7f27861ff1d3f550c6aa77150d7edabd">ErrorCode::kTimeout</a>:</div>
+<div class="line"><span class="lineno">  276</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Operation timed out&quot;</span>;</div>
+<div class="line"><span class="lineno">  277</span>    <span class="comment">// VirtIO 传输层错误 (0x820 - 0x82F)</span></div>
+<div class="line"><span class="lineno">  278</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895face8c769bbe7b8dc595d9ca4586078030">ErrorCode::kInvalidMagic</a>:</div>
+<div class="line"><span class="lineno">  279</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid MMIO magic value&quot;</span>;</div>
+<div class="line"><span class="lineno">  280</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa698aa7b9588a5cab536e5c9cc3762f92">ErrorCode::kInvalidVersion</a>:</div>
+<div class="line"><span class="lineno">  281</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Unsupported virtio version&quot;</span>;</div>
+<div class="line"><span class="lineno">  282</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae87b5b99400cb4de4fdd7dc6c6f2599b">ErrorCode::kInvalidDeviceId</a>:</div>
+<div class="line"><span class="lineno">  283</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid device ID (device does not exist)&quot;</span>;</div>
+<div class="line"><span class="lineno">  284</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa76499df353cd64bb48fa19ad13375ecc">ErrorCode::kTransportNotInitialized</a>:</div>
+<div class="line"><span class="lineno">  285</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Transport layer not initialized&quot;</span>;</div>
+<div class="line"><span class="lineno">  286</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa804e595589b0e4b2bd274b17e03d1bfa">ErrorCode::kFeatureNegotiationFailed</a>:</div>
+<div class="line"><span class="lineno">  287</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Feature negotiation failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  288</span>    <span class="comment">// VirtIO 虚拟队列错误 (0x830 - 0x83F)</span></div>
+<div class="line"><span class="lineno">  289</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9db54492c067293bceb521f8a08f5d09">ErrorCode::kQueueNotAvailable</a>:</div>
+<div class="line"><span class="lineno">  290</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Queue not available (queue_num_max == 0)&quot;</span>;</div>
+<div class="line"><span class="lineno">  291</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5079e81d1ccf61d4eb923cb2b1a50205">ErrorCode::kQueueAlreadyUsed</a>:</div>
+<div class="line"><span class="lineno">  292</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Queue already used&quot;</span>;</div>
+<div class="line"><span class="lineno">  293</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa795bb67c5323028598ed6067e2702491">ErrorCode::kQueueTooLarge</a>:</div>
+<div class="line"><span class="lineno">  294</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Requested queue size exceeds maximum&quot;</span>;</div>
+<div class="line"><span class="lineno">  295</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa83a78432fa4fd1764986e45d4fe76778">ErrorCode::kNoFreeDescriptors</a>:</div>
+<div class="line"><span class="lineno">  296</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;No free descriptors available&quot;</span>;</div>
+<div class="line"><span class="lineno">  297</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa9ad8827c9cbf63469706b307baee5c5d">ErrorCode::kInvalidDescriptor</a>:</div>
+<div class="line"><span class="lineno">  298</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid descriptor index&quot;</span>;</div>
+<div class="line"><span class="lineno">  299</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fac41bbf38feb16c69efd6fe9973439985">ErrorCode::kNoUsedBuffers</a>:</div>
+<div class="line"><span class="lineno">  300</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;No used buffers to reclaim&quot;</span>;</div>
+<div class="line"><span class="lineno">  301</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf843aa00f0c8b67c46bceaa5e62773d5">ErrorCode::kFsFileNotFound</a>:</div>
+<div class="line"><span class="lineno">  302</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;File not found&quot;</span>;</div>
+<div class="line"><span class="lineno">  303</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa3ed0a4d020e38a0fd3490d77a0d57365">ErrorCode::kFsPermissionDenied</a>:</div>
+<div class="line"><span class="lineno">  304</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Filesystem permission denied&quot;</span>;</div>
+<div class="line"><span class="lineno">  305</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf9cd407d4676d81e87724c9a9d42ed5a">ErrorCode::kFsNotADirectory</a>:</div>
+<div class="line"><span class="lineno">  306</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Not a directory&quot;</span>;</div>
+<div class="line"><span class="lineno">  307</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa8762395ec6597e1c0ed2c89d8bcdfd92">ErrorCode::kFsIsADirectory</a>:</div>
+<div class="line"><span class="lineno">  308</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Is a directory&quot;</span>;</div>
+<div class="line"><span class="lineno">  309</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa0f10eb6320fa2f4f711d4f1588284d2">ErrorCode::kFsFileExists</a>:</div>
+<div class="line"><span class="lineno">  310</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;File already exists&quot;</span>;</div>
+<div class="line"><span class="lineno">  311</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa503136841296686dfdce1286e8a8f7e8">ErrorCode::kFsNoSpace</a>:</div>
+<div class="line"><span class="lineno">  312</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;No space left on device&quot;</span>;</div>
+<div class="line"><span class="lineno">  313</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa068b9808683df66a134d8bc251962a7f">ErrorCode::kFsMountFailed</a>:</div>
+<div class="line"><span class="lineno">  314</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Mount failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  315</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa5665830ab9553511a73b27d19ac26b9d">ErrorCode::kFsUnmountFailed</a>:</div>
+<div class="line"><span class="lineno">  316</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Unmount failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  317</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa0b5bbd63dfccadbee5c8a7d0d30bdbc9">ErrorCode::kFsInvalidPath</a>:</div>
+<div class="line"><span class="lineno">  318</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid path&quot;</span>;</div>
+<div class="line"><span class="lineno">  319</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faad892fe61bff83786f5cb40ad6cc650b">ErrorCode::kFsFdTableFull</a>:</div>
+<div class="line"><span class="lineno">  320</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;File descriptor table full&quot;</span>;</div>
+<div class="line"><span class="lineno">  321</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa1d771c21296ba5f8181c116929b845f0">ErrorCode::kFsInvalidFd</a>:</div>
+<div class="line"><span class="lineno">  322</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid file descriptor&quot;</span>;</div>
+<div class="line"><span class="lineno">  323</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa285e31704d083e657851e639d1f2c551">ErrorCode::kFsNotMounted</a>:</div>
+<div class="line"><span class="lineno">  324</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Filesystem not mounted&quot;</span>;</div>
+<div class="line"><span class="lineno">  325</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae6e0e6a1183a9c2884bd9a96f4ed2aad">ErrorCode::kFsReadOnly</a>:</div>
+<div class="line"><span class="lineno">  326</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Read-only filesystem&quot;</span>;</div>
+<div class="line"><span class="lineno">  327</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fad39984ff3f4883663f71af3f46ed582a">ErrorCode::kFsCorrupted</a>:</div>
+<div class="line"><span class="lineno">  328</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Filesystem corrupted&quot;</span>;</div>
+<div class="line"><span class="lineno">  329</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faa8abba321ae5546cebd9c70c5dd8af51">ErrorCode::kFsAlreadyMounted</a>:</div>
+<div class="line"><span class="lineno">  330</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Filesystem already mounted&quot;</span>;</div>
+<div class="line"><span class="lineno">  331</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa94afa39f34ee08b4cbb1dbc00a1af16f">ErrorCode::kFsNotEmpty</a>:</div>
+<div class="line"><span class="lineno">  332</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Directory not empty&quot;</span>;</div>
+<div class="line"><span class="lineno">  333</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa4c8aed433bcbafc55145e68a30fe7c68">ErrorCode::kBlkDeviceNotFound</a>:</div>
+<div class="line"><span class="lineno">  334</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Block device not found&quot;</span>;</div>
+<div class="line"><span class="lineno">  335</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab7ca8f66890a1869b65727b89003ac90">ErrorCode::kBlkReadFailed</a>:</div>
+<div class="line"><span class="lineno">  336</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Block read failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  337</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895faf6a20ee710b37f2ae8f75051f027d578">ErrorCode::kBlkWriteFailed</a>:</div>
+<div class="line"><span class="lineno">  338</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Block write failed&quot;</span>;</div>
+<div class="line"><span class="lineno">  339</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa71c4e95a17cbaca40f67e2803dc23e11">ErrorCode::kBlkSectorOutOfRange</a>:</div>
+<div class="line"><span class="lineno">  340</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Sector out of range&quot;</span>;</div>
+<div class="line"><span class="lineno">  341</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa794bf2d246318195f0fe4b5b8c453e90">ErrorCode::kIrqChipInvalidIrq</a>:</div>
+<div class="line"><span class="lineno">  342</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IRQ number out of controller range&quot;</span>;</div>
+<div class="line"><span class="lineno">  343</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa87c92752e79a0d7262f26c979f5a1802">ErrorCode::kIrqChipIrqNotEnabled</a>:</div>
+<div class="line"><span class="lineno">  344</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IRQ not enabled&quot;</span>;</div>
+<div class="line"><span class="lineno">  345</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa287683de042a258497a37bb081c7435c">ErrorCode::kIrqChipAffinityFailed</a>:</div>
+<div class="line"><span class="lineno">  346</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Failed to set IRQ CPU affinity&quot;</span>;</div>
+<div class="line"><span class="lineno">  347</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fadd2852c9d8661e5e82a33a546ab31ed0">ErrorCode::kIrqChipIpiTimeout</a>:</div>
+<div class="line"><span class="lineno">  348</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;IPI delivery timeout&quot;</span>;</div>
+<div class="line"><span class="lineno">  349</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa80fdc050363ea6925fa2e7eb7f0a94a0">ErrorCode::kInvalidArgument</a>:</div>
+<div class="line"><span class="lineno">  350</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Invalid argument&quot;</span>;</div>
+<div class="line"><span class="lineno">  351</span>    <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab681eacb215899549d45805f02eeb40c">ErrorCode::kOutOfMemory</a>:</div>
+<div class="line"><span class="lineno">  352</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Out of memory&quot;</span>;</div>
+<div class="line"><span class="lineno">  353</span>    <span class="keywordflow">default</span>:</div>
+<div class="line"><span class="lineno">  354</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;Unknown error&quot;</span>;</div>
+<div class="line"><span class="lineno">  355</span>  }</div>
+<div class="line"><span class="lineno">  356</span>}</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">

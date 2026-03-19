@@ -1,0 +1,5 @@
+<map id="SignalState::IsUncatchable" name="SignalState::IsUncatchable">
+<area shape="rect" id="Node000001" title="检查信号是否不可捕获 (SIGKILL, SIGSTOP)" alt="" coords="272,5,468,31"/>
+<area shape="rect" id="Node000002" href="$classTaskManager.html#a507c8ea32c40f686791ef0ec1ed75daa" title="设置信号处理函数" alt="" coords="5,5,224,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="258,21,224,21,224,15,258,15"/>
+</map>

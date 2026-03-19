@@ -1,9 +1,11 @@
 <map id="TaskFsm::GetStateId" name="TaskFsm::GetStateId">
-<area shape="rect" id="Node000001" title="获取当前状态 ID" alt="" coords="483,31,639,56"/>
-<area shape="rect" id="Node000002" href="$structTaskControlBlock.html#a76c836142838b3127b032710242c9606" title="获取当前任务状态" alt="" coords="228,31,435,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="469,46,435,46,435,41,469,41"/>
-<area shape="rect" id="Node000003" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="调度函数 选择下一个任务并切换上下文" alt="" coords="5,5,180,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="214,34,180,30,180,25,215,28"/>
-<area shape="rect" id="Node000004" href="$classTaskManager.html#ae546fc5dad8a73a6b17894beefa181e4" title="等待子进程退出" alt="" coords="20,55,165,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="215,58,166,63,165,57,214,52"/>
+<area shape="rect" id="Node000001" title="获取当前状态 ID" alt="" coords="496,55,652,80"/>
+<area shape="rect" id="Node000002" href="$structTaskControlBlock.html#a76c836142838b3127b032710242c9606" title="获取当前任务状态" alt="" coords="241,55,448,80"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="482,70,448,70,448,65,482,65"/>
+<area shape="rect" id="Node000003" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="调度函数 选择下一个任务并切换上下文" alt="" coords="12,5,187,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="267,55,163,33,164,28,268,49"/>
+<area shape="rect" id="Node000004" href="$classTaskManager.html#a5be9eb3ca7748910414eea0c7b386c60" title="向指定任务发送信号" alt="" coords="5,55,193,80"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="228,70,193,70,193,65,228,65"/>
+<area shape="rect" id="Node000005" href="$classTaskManager.html#ae546fc5dad8a73a6b17894beefa181e4" title="等待子进程退出" alt="" coords="27,104,172,129"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="268,85,164,107,163,101,267,80"/>
 </map>

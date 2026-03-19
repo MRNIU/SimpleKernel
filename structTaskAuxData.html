@@ -105,13 +105,15 @@ Collaboration diagram for TaskAuxData:</div>
 <div class="dyncontent">
 <div class="center"><img src="structTaskAuxData__coll__graph.png" border="0" usemap="#aTaskAuxData_coll__map" alt="Collaboration graph"/></div>
 <map name="aTaskAuxData_coll__map" id="aTaskAuxData_coll__map">
-<area shape="rect" title="非调度热路径的任务辅助数据" alt="" coords="82,1116,234,1341"/>
+<area shape="rect" title="非调度热路径的任务辅助数据" alt="" coords="209,1116,361,1341"/>
 <area shape="rect" href="classResourceId.html" title="资源 ID" alt="" coords="5,521,156,1046"/>
-<area shape="poly" title=" " alt="" coords="111,1046,119,1091,121,1100,116,1101,114,1093,105,1047"/>
-<area shape="rect" href="classfilesystem_1_1FileDescriptorTable.html" title="进程级文件描述符表" alt="" coords="180,513,360,1053"/>
-<area shape="poly" title=" " alt="" coords="219,1054,209,1093,206,1101,201,1100,203,1091,214,1053"/>
-<area shape="rect" href="classSpinLock.html" title="自旋锁" alt="" coords="175,5,365,451"/>
-<area shape="poly" title=" " alt="" coords="273,451,273,497,267,497,267,451"/>
+<area shape="poly" title=" " alt="" coords="158,1027,192,1091,202,1106,197,1109,188,1093,154,1030"/>
+<area shape="rect" href="structSignalState.html" title="每个任务的信号状态" alt="" coords="181,551,389,1016"/>
+<area shape="poly" title=" " alt="" coords="287,1016,287,1100,282,1100,282,1016"/>
+<area shape="rect" href="classfilesystem_1_1FileDescriptorTable.html" title="进程级文件描述符表" alt="" coords="413,513,593,1053"/>
+<area shape="poly" title=" " alt="" coords="416,1029,403,1055,372,1108,368,1106,398,1052,411,1027"/>
+<area shape="rect" href="classSpinLock.html" title="自旋锁" alt="" coords="409,5,598,451"/>
+<area shape="poly" title=" " alt="" coords="506,451,506,497,501,497,501,451"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -141,6 +143,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a9271d020de8f2cab4024dfe13f508a1e" id="r_a9271d020de8f2cab4024dfe13f508a1e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classResourceId.html">ResourceId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTaskAuxData.html#a9271d020de8f2cab4024dfe13f508a1e">blocked_on</a> {}</td></tr>
 <tr class="memdesc:a9271d020de8f2cab4024dfe13f508a1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">等待的资源 ID  <br /></td></tr>
 <tr class="separator:a9271d020de8f2cab4024dfe13f508a1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ee5cf59d099746fd517f549f45bc11c" id="r_a1ee5cf59d099746fd517f549f45bc11c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSignalState.html">SignalState</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTaskAuxData.html#a1ee5cf59d099746fd517f549f45bc11c">signals</a> {}</td></tr>
+<tr class="memdesc:a1ee5cf59d099746fd517f549f45bc11c"><td class="mdescLeft">&#160;</td><td class="mdescRight">信号状态  <br /></td></tr>
+<tr class="separator:a1ee5cf59d099746fd517f549f45bc11c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3d0c636bdeab12baf7aa515a02a548c" id="r_af3d0c636bdeab12baf7aa515a02a548c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTaskAuxData.html#af3d0c636bdeab12baf7aa515a02a548c">is_interrupt_thread</a> {false}</td></tr>
 <tr class="memdesc:af3d0c636bdeab12baf7aa515a02a548c"><td class="mdescLeft">&#160;</td><td class="mdescRight">是否为中断线程  <br /></td></tr>
 <tr class="separator:af3d0c636bdeab12baf7aa515a02a548c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,7 +160,7 @@ Public Attributes</h2></td></tr>
 <div class="textblock"><p>非调度热路径的任务辅助数据 </p>
 <p>包含进程/线程的标识、克隆标志、CPU 亲和性、文件描述符等 仅在 clone/exit/wait/block 等慢路径中访问的字段。 从 <a class="el" href="structTaskControlBlock.html" title="任务控制块，管理进程/线程的核心数据结构">TaskControlBlock</a> 分离以减少调度热路径的缓存压力。 </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00082">82</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00083">83</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
 <a id="a9271d020de8f2cab4024dfe13f508a1e" name="a9271d020de8f2cab4024dfe13f508a1e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9271d020de8f2cab4024dfe13f508a1e">&#9670;&#160;</a></span>blocked_on</h2>
@@ -171,8 +176,8 @@ Public Attributes</h2></td></tr>
 
 <p>等待的资源 ID </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00102">102</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  102</span>{};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00103">103</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  103</span>{};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -190,8 +195,8 @@ Public Attributes</h2></td></tr>
 
 <p>克隆标志位 </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00096">96</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   96</span>{};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00097">97</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   97</span>{};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -209,8 +214,8 @@ Public Attributes</h2></td></tr>
 
 <p>CPU 亲和性位掩码 </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00099">99</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   99</span>{UINT64_MAX};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00100">100</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  100</span>{UINT64_MAX};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -228,8 +233,8 @@ Public Attributes</h2></td></tr>
 
 <p>退出码 </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00093">93</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   93</span>{0};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00094">94</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   94</span>{0};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -246,10 +251,10 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>文件描述符表 </p>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000021">Todo:</a></b></dt><dd>优先级继承相关 </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000020">Todo:</a></b></dt><dd>优先级继承相关 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00112">112</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  112</span>{<span class="keyword">nullptr</span>};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00116">116</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  116</span>{<span class="keyword">nullptr</span>};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -267,8 +272,8 @@ Public Attributes</h2></td></tr>
 
 <p>关联的中断号 </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00107">107</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  107</span>{0};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00111">111</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  111</span>{0};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -286,8 +291,8 @@ Public Attributes</h2></td></tr>
 
 <p>是否为中断线程 </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00105">105</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  105</span>{<span class="keyword">false</span>};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00109">109</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  109</span>{<span class="keyword">false</span>};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -305,8 +310,8 @@ Public Attributes</h2></td></tr>
 
 <p>父线程 ID </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00084">84</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   84</span>{0};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00085">85</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   85</span>{0};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -324,8 +329,8 @@ Public Attributes</h2></td></tr>
 
 <p>进程组 ID </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00086">86</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   86</span>{0};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00087">87</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   87</span>{0};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -343,8 +348,27 @@ Public Attributes</h2></td></tr>
 
 <p>会话 ID </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00088">88</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   88</span>{0};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00089">89</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   89</span>{0};</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a1ee5cf59d099746fd517f549f45bc11c" name="a1ee5cf59d099746fd517f549f45bc11c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1ee5cf59d099746fd517f549f45bc11c">&#9670;&#160;</a></span>signals</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structSignalState.html">SignalState</a> TaskAuxData::signals {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>信号状态 </p>
+
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00106">106</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  106</span>{};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -362,8 +386,8 @@ Public Attributes</h2></td></tr>
 
 <p>线程组 ID (主线程的 PID) </p>
 
-<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00090">90</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   90</span>{0};</div>
+<p class="definition">Definition at line <a class="el" href="task__control__block_8hpp_source.html#l00091">91</a> of file <a class="el" href="task__control__block_8hpp_source.html">task_control_block.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   91</span>{0};</div>
 </div><!-- fragment -->
 </div>
 </div>

@@ -2,7 +2,7 @@ var searchData=
 [
   ['wait_0',['Wait',['../classTaskManager.html#ae546fc5dad8a73a6b17894beefa181e4',1,'TaskManager']]],
   ['wait_5fsystem_5ftest_1',['wait_system_test',['../wait__system__test_8cpp.html#a1d61aadd4f03596c1c9a64a5e4e5191c',1,'wait_system_test() -&gt; bool:&#160;wait_system_test.cpp'],['../system__test_8h.html#a1d61aadd4f03596c1c9a64a5e4e5191c',1,'wait_system_test() -&gt; bool:&#160;wait_system_test.cpp']]],
-  ['wakeup_2',['Wakeup',['../classTaskManager.html#a96d2a8187ce732bac7d0d952fd502181',1,'TaskManager']]],
+  ['wakeup_2',['wakeup',['../classTaskManager.html#a96d2a8187ce732bac7d0d952fd502181',1,'TaskManager::Wakeup(ResourceId resource_id) -&gt; void'],['../classTaskManager.html#a56b51842866033db39ad8c1227e7281d',1,'TaskManager::Wakeup(CpuSchedData &amp;cpu_sched, ResourceId resource_id) -&gt; void']]],
   ['wakeupap_3',['WakeupAp',['../classLocalApic.html#afb7c98a96f586c46f98b0cbd92f1fbf4',1,'LocalApic']]],
   ['wakeupothercores_4',['wakeupothercores',['../x86__64_2arch__main_8cpp.html#a45bade4d9944a7cbaf145a73dbafbf71',1,'WakeUpOtherCores() -&gt; void:&#160;arch_main.cpp'],['../riscv64_2arch__main_8cpp.html#a45bade4d9944a7cbaf145a73dbafbf71',1,'WakeUpOtherCores() -&gt; void:&#160;arch_main.cpp'],['../arch_8h.html#a45bade4d9944a7cbaf145a73dbafbf71',1,'WakeUpOtherCores() -&gt; void:&#160;arch_main.cpp'],['../aarch64_2arch__main_8cpp.html#a45bade4d9944a7cbaf145a73dbafbf71',1,'WakeUpOtherCores() -&gt; void:&#160;arch_main.cpp']]],
   ['warn_5',['Warn',['../namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb',1,'klog']]],

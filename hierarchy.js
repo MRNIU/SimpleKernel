@@ -126,6 +126,8 @@ var hierarchy =
       [ "IdleScheduler", "classIdleScheduler.html", null ],
       [ "RoundRobinScheduler", "classRoundRobinScheduler.html", null ]
     ] ],
+    [ "SignalAction", "structSignalAction.html", null ],
+    [ "SignalState", "structSignalState.html", null ],
     [ "SipiParams", "structSipiParams.html", null ],
     [ "SpinLock", "classSpinLock.html", null ],
     [ "SchedulerBase::Stats", "structSchedulerBase_1_1Stats.html", null ],

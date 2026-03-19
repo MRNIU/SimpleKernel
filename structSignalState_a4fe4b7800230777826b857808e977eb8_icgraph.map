@@ -1,0 +1,5 @@
+<map id="SignalState::SetPending" name="SignalState::SetPending">
+<area shape="rect" id="Node000001" title="设置待处理信号" alt="" coords="241,5,419,31"/>
+<area shape="rect" id="Node000002" href="$classTaskManager.html#a5be9eb3ca7748910414eea0c7b386c60" title="向指定任务发送信号" alt="" coords="5,5,193,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="228,21,194,21,194,15,228,15"/>
+</map>

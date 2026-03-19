@@ -31,6 +31,31 @@ var namespaces_dup =
       [ "kVirtioBlk", "namespacerouter__id.html#a70704836c3ec9be707ba0cae5b443661", null ],
       [ "kVirtioNet", "namespacerouter__id.html#acfa8a2c99dce3a021254412b8cb0d9d5", null ]
     ] ],
+    [ "signal_mask_op", "namespacesignal__mask__op.html", [
+      [ "kSigBlock", "namespacesignal__mask__op.html#a68a1379c86e0ef523bfe2483b8dc3fe3", null ],
+      [ "kSigSetmask", "namespacesignal__mask__op.html#a9def90569396401bf47f8a22d7a60edc", null ],
+      [ "kSigUnblock", "namespacesignal__mask__op.html#acc55fe72124a834483cefe3f52548497", null ]
+    ] ],
+    [ "signal_number", "namespacesignal__number.html", [
+      [ "kSigAbrt", "namespacesignal__number.html#a83a05e33f5716123a228b7512e3f43df", null ],
+      [ "kSigAlrm", "namespacesignal__number.html#a824db9b33607c3c94339c6b4a570ed4e", null ],
+      [ "kSigChld", "namespacesignal__number.html#a211312d87b5814dcfe810934bb8410ef", null ],
+      [ "kSigCont", "namespacesignal__number.html#a18c602d1c39589e585ea0c6ca1a52524", null ],
+      [ "kSigFpe", "namespacesignal__number.html#abed0dd99f708ad14256a16a8f3a32fb8", null ],
+      [ "kSigHup", "namespacesignal__number.html#a90d679a41e674d4227b7b5d3e55bddde", null ],
+      [ "kSigIll", "namespacesignal__number.html#a24673946d6a3e752ee0ae28ea44d018b", null ],
+      [ "kSigInt", "namespacesignal__number.html#a2e55d3adf76f15de31a56e4d946c47fb", null ],
+      [ "kSigKill", "namespacesignal__number.html#a2afbf429266564c9fe4c32aa2b790646", null ],
+      [ "kSigNone", "namespacesignal__number.html#a3bc0479f5a2b56a95414be2d392ef9a3", null ],
+      [ "kSigPipe", "namespacesignal__number.html#aae7f2a799275a143d086bac14a9a77f9", null ],
+      [ "kSigQuit", "namespacesignal__number.html#a06c3ad8bb4dd72e11bc5a9aded5e3a3a", null ],
+      [ "kSigSegv", "namespacesignal__number.html#a799edd22168d84fe5ea7b48971273519", null ],
+      [ "kSigStop", "namespacesignal__number.html#a94a4b6cb9c1eab95053ea5ca9ae8f2d9", null ],
+      [ "kSigTerm", "namespacesignal__number.html#a2924eac5d4ed9feeb9b89641bb735474", null ],
+      [ "kSigTstp", "namespacesignal__number.html#af3be663a353a5cc7ea301908a67a3bde", null ],
+      [ "kSigUsr1", "namespacesignal__number.html#aca1826e13483641b8aad273b3e7283d9", null ],
+      [ "kSigUsr2", "namespacesignal__number.html#aab358644f0f8b911fc9a01d3f4b47c44", null ]
+    ] ],
     [ "std", "namespacestd.html", "namespacestd" ],
     [ "task_msg_id", "namespacetask__msg__id.html", [
       [ "kBlock", "namespacetask__msg__id.html#a7603cd8ff1702fccf727de3cfddb4fe4", null ],

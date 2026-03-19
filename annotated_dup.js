@@ -126,6 +126,8 @@ var annotated_dup =
     [ "ResourceId", "classResourceId.html", "classResourceId" ],
     [ "RoundRobinScheduler", "classRoundRobinScheduler.html", "classRoundRobinScheduler" ],
     [ "SchedulerBase", "classSchedulerBase.html", "classSchedulerBase" ],
+    [ "SignalAction", "structSignalAction.html", "structSignalAction" ],
+    [ "SignalState", "structSignalState.html", "structSignalState" ],
     [ "SipiParams", "structSipiParams.html", "structSipiParams" ],
     [ "SpinLock", "classSpinLock.html", "classSpinLock" ],
     [ "StateBlocked", "structStateBlocked.html", "structStateBlocked" ],

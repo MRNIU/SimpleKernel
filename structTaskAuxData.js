@@ -10,5 +10,6 @@ var structTaskAuxData =
     [ "parent_pid", "structTaskAuxData.html#acfbfc8c5f75b46e2f06eeb71e5c39edc", null ],
     [ "pgid", "structTaskAuxData.html#acab7c5f856182f28101302c338889b98", null ],
     [ "sid", "structTaskAuxData.html#a47144d129c15efffbed8a126a4d322d2", null ],
+    [ "signals", "structTaskAuxData.html#a1ee5cf59d099746fd517f549f45bc11c", null ],
     [ "tgid", "structTaskAuxData.html#a192120a29c0ba83e029ab7107982c49c", null ]
 ];
