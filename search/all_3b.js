@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['分组_0',['分组',['../md_coding__standards.html#autotoc_md265',1,'']]]
+  ['兼容性_0',['xAPIC 模式 (兼容性)',['../md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md400',1,'']]]
 ];

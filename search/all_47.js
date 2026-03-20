@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['字符输出实现_0',['3. 字符输出实现',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md140',1,'']]]
+  ['处理程序入口_0',['Trap 处理程序入口',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md185',1,'']]],
+  ['处理错误_1',['处理错误',['../md_coding__standards.html#autotoc_md257',1,'']]]
 ];

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['处理程序入口_0',['Trap 处理程序入口',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md185',1,'']]],
-  ['处理错误_1',['处理错误',['../md_coding__standards.html#autotoc_md257',1,'']]]
+  ['命名约定_0',['命名约定',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md313',1,'']]],
+  ['命名规范_1',['2. 命名规范',['../md_coding__standards.html#autotoc_md241',1,'']]]
 ];

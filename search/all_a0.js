@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['🔍_20多架构对比分析_0',['🔍 多架构对比分析',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md232',1,'']]]
+  ['📦_20第三方依赖_0',['📦 第三方依赖',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md310',1,'']]],
+  ['📦_20third_20party_20dependencies_1',['📦 Third-Party Dependencies',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md348',1,'']]]
 ];

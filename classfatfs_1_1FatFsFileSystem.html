@@ -123,10 +123,10 @@ Collaboration diagram for fatfs::FatFsFileSystem:</div>
 <div class="center"><img src="classfatfs_1_1FatFsFileSystem__coll__graph.png" border="0" usemap="#afatfs_1_1FatFsFileSystem_coll__map" alt="Collaboration graph"/></div>
 <map name="afatfs_1_1FatFsFileSystem_coll__map" id="afatfs_1_1FatFsFileSystem_coll__map">
 <area shape="rect" title="FatFS VFS 适配器" alt="" coords="135,681,322,1507"/>
-<area shape="rect" href="classfatfs_1_1FatFsFileSystem_1_1FatFsInodeOps.html" title="FatFS inode 操作实现" alt="" coords="5,1569,164,1749"/>
-<area shape="poly" title=" " alt="" coords="138,1325,106,1427,83,1531,81,1553,76,1552,78,1530,101,1425,133,1323"/>
-<area shape="rect" href="classfatfs_1_1FatFsFileSystem_1_1FatFsFileOps.html" title="FatFS 文件操作实现" alt="" coords="239,1569,397,1749"/>
-<area shape="poly" title=" " alt="" coords="257,1507,266,1545,268,1553,263,1554,261,1546,251,1508"/>
+<area shape="rect" href="classfatfs_1_1FatFsFileSystem_1_1FatFsInodeOps.html" title="FatFS inode 操作实现" alt="" coords="5,1579,164,1759"/>
+<area shape="poly" title=" " alt="" coords="138,1328,107,1428,85,1531,81,1563,76,1563,79,1530,102,1427,133,1326"/>
+<area shape="rect" href="classfatfs_1_1FatFsFileSystem_1_1FatFsFileOps.html" title="FatFS 文件操作实现" alt="" coords="239,1569,397,1769"/>
+<area shape="poly" title=" " alt="" coords="257,1506,266,1545,268,1553,263,1555,261,1546,252,1508"/>
 <area shape="rect" href="classvfs_1_1FileSystem.html" title="文件系统类型基类" alt="" coords="142,95,270,301"/>
 <area shape="poly" title=" " alt="" coords="212,314,221,681,216,681,206,315"/>
 <area shape="rect" href="structvfs_1_1Inode.html" title="Inode — 文件元数据（独立于路径名）" alt="" coords="79,453,187,619"/>
@@ -134,11 +134,11 @@ Collaboration diagram for fatfs::FatFsFileSystem:</div>
 <area shape="poly" title=" " alt="" coords="127,619,129,657,135,706,130,707,123,658,122,619"/>
 <area shape="rect" href="classvfs_1_1InodeOps.html" title="Inode 操作接口" alt="" coords="7,5,117,391"/>
 <area shape="poly" title=" " alt="" coords="105,390,115,436,109,437,100,392"/>
-<area shape="poly" title=" " alt="" coords="61,405,60,923,65,1234,77,1545,78,1569,73,1569,71,1545,60,1234,54,923,56,405"/>
-<area shape="poly" title=" " alt="" coords="107,1568,113,1545,129,1484,134,1485,118,1546,112,1570"/>
-<area shape="poly" title=" " alt="" coords="301,1570,294,1523,299,1523,307,1569"/>
-<area shape="rect" href="classvfs_1_1FileOps.html" title="File 操作接口" alt="" coords="352,901,457,1287"/>
-<area shape="poly" title=" " alt="" coords="420,1301,413,1423,403,1486,389,1546,380,1570,375,1568,383,1545,398,1485,408,1423,415,1300"/>
+<area shape="poly" title=" " alt="" coords="67,404,69,619,68,1082,70,1285,78,1545,80,1579,75,1579,73,1545,64,1285,63,1082,63,619,61,404"/>
+<area shape="poly" title=" " alt="" coords="104,1579,129,1482,134,1483,110,1580"/>
+<area shape="poly" title=" " alt="" coords="300,1570,293,1523,298,1522,305,1569"/>
+<area shape="rect" href="classvfs_1_1FileOps.html" title="File 操作接口" alt="" coords="352,891,457,1297"/>
+<area shape="poly" title=" " alt="" coords="419,1310,411,1428,402,1488,389,1546,380,1570,375,1568,383,1545,397,1487,406,1428,413,1310"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -343,13 +343,13 @@ Friends</h2></td></tr>
 <div class="line"><span class="lineno">   97</span>      <a class="code hl_variable" href="classfatfs_1_1FatFsFileSystem.html#ab53efe634c081d15f96c80eea02164f8">dir_pool_</a>{},</div>
 <div class="line"><span class="lineno">   98</span>      <a class="code hl_variable" href="classfatfs_1_1FatFsFileSystem.html#a62996fea8117abf24b0a27fa2294cfe1">inode_ops_</a>(<span class="keyword">this</span>),</div>
 <div class="line"><span class="lineno">   99</span>      <a class="code hl_variable" href="classfatfs_1_1FatFsFileSystem.html#a70fd66ac9e18c1a2be825a2c37f7d610">file_ops_</a>(<span class="keyword">this</span>) {}</div>
-<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a00c5739e720cec80cf53408b9519d39d"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a00c5739e720cec80cf53408b9519d39d">fatfs::FatFsFileSystem::volume_id_</a></div><div class="ttdeci">uint8_t volume_id_</div><div class="ttdoc">FatFS 逻辑驱动器号</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00245">fatfs.hpp:245</a></div></div>
-<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a1c958df2698838611740339a8119b086"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a1c958df2698838611740339a8119b086">fatfs::FatFsFileSystem::fil_pool_</a></div><div class="ttdeci">std::array&lt; FatFileHandle, kMaxOpenFiles &gt; fil_pool_</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00274">fatfs.hpp:274</a></div></div>
-<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a62996fea8117abf24b0a27fa2294cfe1"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a62996fea8117abf24b0a27fa2294cfe1">fatfs::FatFsFileSystem::inode_ops_</a></div><div class="ttdeci">FatFsInodeOps inode_ops_</div><div class="ttdoc">inode 操作单例</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00285">fatfs.hpp:285</a></div></div>
-<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a70fd66ac9e18c1a2be825a2c37f7d610"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a70fd66ac9e18c1a2be825a2c37f7d610">fatfs::FatFsFileSystem::file_ops_</a></div><div class="ttdeci">FatFsFileOps file_ops_</div><div class="ttdoc">文件操作单例</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00287">fatfs.hpp:287</a></div></div>
-<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_ab53efe634c081d15f96c80eea02164f8"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#ab53efe634c081d15f96c80eea02164f8">fatfs::FatFsFileSystem::dir_pool_</a></div><div class="ttdeci">std::array&lt; FatDirHandle, kMaxOpenDirs &gt; dir_pool_</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00282">fatfs.hpp:282</a></div></div>
-<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_acbb938c2dd79f1c06010a1ea5ce5b53e"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#acbb938c2dd79f1c06010a1ea5ce5b53e">fatfs::FatFsFileSystem::inodes_</a></div><div class="ttdeci">std::array&lt; FatInode, kMaxInodes &gt; inodes_</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00266">fatfs.hpp:266</a></div></div>
-<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_aeb2e1d61226810a727af702523bfde8d"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#aeb2e1d61226810a727af702523bfde8d">fatfs::FatFsFileSystem::fatfs_obj_</a></div><div class="ttdeci">FATFS fatfs_obj_</div><div class="ttdoc">FatFS 文件系统对象（每卷一个）</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00247">fatfs.hpp:247</a></div></div>
+<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a00c5739e720cec80cf53408b9519d39d"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a00c5739e720cec80cf53408b9519d39d">fatfs::FatFsFileSystem::volume_id_</a></div><div class="ttdeci">uint8_t volume_id_</div><div class="ttdoc">FatFS 逻辑驱动器号</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00252">fatfs.hpp:252</a></div></div>
+<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a1c958df2698838611740339a8119b086"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a1c958df2698838611740339a8119b086">fatfs::FatFsFileSystem::fil_pool_</a></div><div class="ttdeci">std::array&lt; FatFileHandle, kMaxOpenFiles &gt; fil_pool_</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00281">fatfs.hpp:281</a></div></div>
+<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a62996fea8117abf24b0a27fa2294cfe1"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a62996fea8117abf24b0a27fa2294cfe1">fatfs::FatFsFileSystem::inode_ops_</a></div><div class="ttdeci">FatFsInodeOps inode_ops_</div><div class="ttdoc">inode 操作单例</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00292">fatfs.hpp:292</a></div></div>
+<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a70fd66ac9e18c1a2be825a2c37f7d610"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a70fd66ac9e18c1a2be825a2c37f7d610">fatfs::FatFsFileSystem::file_ops_</a></div><div class="ttdeci">FatFsFileOps file_ops_</div><div class="ttdoc">文件操作单例</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00294">fatfs.hpp:294</a></div></div>
+<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_ab53efe634c081d15f96c80eea02164f8"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#ab53efe634c081d15f96c80eea02164f8">fatfs::FatFsFileSystem::dir_pool_</a></div><div class="ttdeci">std::array&lt; FatDirHandle, kMaxOpenDirs &gt; dir_pool_</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00289">fatfs.hpp:289</a></div></div>
+<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_acbb938c2dd79f1c06010a1ea5ce5b53e"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#acbb938c2dd79f1c06010a1ea5ce5b53e">fatfs::FatFsFileSystem::inodes_</a></div><div class="ttdeci">std::array&lt; FatInode, kMaxInodes &gt; inodes_</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00273">fatfs.hpp:273</a></div></div>
+<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_aeb2e1d61226810a727af702523bfde8d"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#aeb2e1d61226810a727af702523bfde8d">fatfs::FatFsFileSystem::fatfs_obj_</a></div><div class="ttdeci">FATFS fatfs_obj_</div><div class="ttdoc">FatFS 文件系统对象（每卷一个）</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00254">fatfs.hpp:254</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -382,7 +382,7 @@ Friends</h2></td></tr>
 <div class="line"><span class="lineno">  103</span>    (void)<a class="code hl_function" href="classfatfs_1_1FatFsFileSystem.html#a54ade709a68902362ce9bcf0881e5f5a">Unmount</a>();</div>
 <div class="line"><span class="lineno">  104</span>  }</div>
 <div class="line"><span class="lineno">  105</span>}</div>
-<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a4efbd0d2f9fd45396434d1bf784017af"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a4efbd0d2f9fd45396434d1bf784017af">fatfs::FatFsFileSystem::mounted_</a></div><div class="ttdeci">bool mounted_</div><div class="ttdoc">当前卷是否已挂载</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00251">fatfs.hpp:251</a></div></div>
+<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a4efbd0d2f9fd45396434d1bf784017af"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a4efbd0d2f9fd45396434d1bf784017af">fatfs::FatFsFileSystem::mounted_</a></div><div class="ttdeci">bool mounted_</div><div class="ttdoc">当前卷是否已挂载</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00258">fatfs.hpp:258</a></div></div>
 <div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a54ade709a68902362ce9bcf0881e5f5a"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a54ade709a68902362ce9bcf0881e5f5a">fatfs::FatFsFileSystem::Unmount</a></div><div class="ttdeci">auto Unmount() -&gt; Expected&lt; void &gt; override</div><div class="ttdoc">卸载 FatFS 卷</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8cpp_source.html#l00155">fatfs.cpp:155</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -837,7 +837,7 @@ inode-&gt;link_count == 0 </dd></dl>
 <div class="line"><span class="lineno">   88</span>  }</div>
 <div class="line"><span class="lineno">   89</span>  <span class="keywordflow">return</span> <a class="code hl_variable" href="classfatfs_1_1FatFsFileSystem.html#a51388a685b529a1ca8af24c907e252a2">block_devices_</a>[pdrv];</div>
 <div class="line"><span class="lineno">   90</span>}</div>
-<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a51388a685b529a1ca8af24c907e252a2"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a51388a685b529a1ca8af24c907e252a2">fatfs::FatFsFileSystem::block_devices_</a></div><div class="ttdeci">static std::array&lt; vfs::BlockDevice *, FF_VOLUMES &gt; block_devices_</div><div class="ttdoc">每卷块设备注册表（静态，供 diskio.cpp C 回调访问）</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00290">fatfs.hpp:290</a></div></div>
+<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a51388a685b529a1ca8af24c907e252a2"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a51388a685b529a1ca8af24c907e252a2">fatfs::FatFsFileSystem::block_devices_</a></div><div class="ttdeci">static std::array&lt; vfs::BlockDevice *, FF_VOLUMES &gt; block_devices_</div><div class="ttdoc">每卷块设备注册表（静态，供 diskio.cpp C 回调访问）</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00297">fatfs.hpp:297</a></div></div>
 <div class="ttc" id="affconf_8h_html_a2343dca8b59f249f6a88574fda8ac31c"><div class="ttname"><a href="ffconf_8h.html#a2343dca8b59f249f6a88574fda8ac31c">FF_VOLUMES</a></div><div class="ttdeci">#define FF_VOLUMES</div><div class="ttdef"><b>Definition</b> <a href="ffconf_8h_source.html#l00033">ffconf.h:33</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
@@ -1009,7 +1009,7 @@ Here is the caller graph for this function:</div>
 <div class="line"><span class="lineno">  153</span>}</div>
 <div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a439c51d3c20702e305e616cf2e0f0210"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a439c51d3c20702e305e616cf2e0f0210">fatfs::FatFsFileSystem::SetBlockDevice</a></div><div class="ttdeci">static auto SetBlockDevice(uint8_t pdrv, vfs::BlockDevice *device) -&gt; void</div><div class="ttdoc">注册块设备（由 Mount 调用，供 diskio.cpp 的 C 回调使用）</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8cpp_source.html#l00078">fatfs.cpp:78</a></div></div>
 <div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a663297b1a6b7ce450ba1c625966b0b50"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a663297b1a6b7ce450ba1c625966b0b50">fatfs::FatFsFileSystem::kRootDirPermissions</a></div><div class="ttdeci">static constexpr uint32_t kRootDirPermissions</div><div class="ttdoc">根目录权限位</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00028">fatfs.hpp:28</a></div></div>
-<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a81f4cdc6361424f12d4613924d24193d"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a81f4cdc6361424f12d4613924d24193d">fatfs::FatFsFileSystem::root_inode_</a></div><div class="ttdeci">vfs::Inode * root_inode_</div><div class="ttdoc">根目录 inode（Mount 时设置）</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00249">fatfs.hpp:249</a></div></div>
+<div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a81f4cdc6361424f12d4613924d24193d"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a81f4cdc6361424f12d4613924d24193d">fatfs::FatFsFileSystem::root_inode_</a></div><div class="ttdeci">vfs::Inode * root_inode_</div><div class="ttdoc">根目录 inode（Mount 时设置）</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00256">fatfs.hpp:256</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
 <div class="ttc" id="anamespacevfs_html_a343f9844029f8d2a27c7a6d19ce24350a76d424355601791a04e7f55c4276cd87"><div class="ttname"><a href="namespacevfs.html#a343f9844029f8d2a27c7a6d19ce24350a76d424355601791a04e7f55c4276cd87">vfs::FileType::kDirectory</a></div><div class="ttdeci">@ kDirectory</div><div class="ttdoc">目录</div></div>
 <div class="ttc" id="ask__string__test_8cpp_html_a5ad0cad79c46e9a6e2bc4b77ac50e271"><div class="ttname"><a href="sk__string__test_8cpp.html#a5ad0cad79c46e9a6e2bc4b77ac50e271">strncpy</a></div><div class="ttdeci">#define strncpy</div><div class="ttdef"><b>Definition</b> <a href="sk__string__test_8cpp_source.html#l00014">sk_string_test.cpp:14</a></div></div>
@@ -1353,7 +1353,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00241">241</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00248">248</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>
@@ -1377,7 +1377,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00240">240</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00247">247</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>
@@ -1404,7 +1404,7 @@ Here is the caller graph for this function:</div>
 
 <p>每卷块设备注册表（静态，供 <a class="el" href="diskio_8cpp.html">diskio.cpp</a> C 回调访问） </p>
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00290">290</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00297">297</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>
@@ -1428,7 +1428,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00282">282</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00289">289</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>
@@ -1454,7 +1454,7 @@ Here is the caller graph for this function:</div>
 
 <p>FatFS 文件系统对象（每卷一个） </p>
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00247">247</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00254">254</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>
@@ -1478,7 +1478,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00274">274</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00281">281</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>
@@ -1504,7 +1504,7 @@ Here is the caller graph for this function:</div>
 
 <p>文件操作单例 </p>
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00287">287</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00294">294</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>
@@ -1530,7 +1530,7 @@ Here is the caller graph for this function:</div>
 
 <p>inode 操作单例 </p>
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00285">285</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00292">292</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>
@@ -1554,7 +1554,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00266">266</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00273">273</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>
@@ -1736,8 +1736,8 @@ Here is the caller graph for this function:</div>
 
 <p>当前卷是否已挂载 </p>
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00251">251</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  251</span>{<span class="keyword">false</span>};</div>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00258">258</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  258</span>{<span class="keyword">false</span>};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -1763,7 +1763,7 @@ Here is the caller graph for this function:</div>
 
 <p>根目录 inode（Mount 时设置） </p>
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00249">249</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00256">256</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>
@@ -1789,7 +1789,7 @@ Here is the caller graph for this function:</div>
 
 <p>FatFS 逻辑驱动器号 </p>
 
-<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00245">245</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="fatfs_8hpp_source.html#l00252">252</a> of file <a class="el" href="fatfs_8hpp_source.html">fatfs.hpp</a>.</p>
 
 </div>
 </div>

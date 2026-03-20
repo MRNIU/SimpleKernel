@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['🎨_20代码风格_0',['🎨 代码风格',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md312',1,'']]],
-  ['🎨_20code_20style_1',['🎨 Code Style',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md350',1,'']]]
+  ['🌟_20核心亮点_0',['🌟 核心亮点',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md286',1,'']]],
+  ['🌟_20core_20highlights_1',['🌟 Core Highlights',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md324',1,'']]]
 ];

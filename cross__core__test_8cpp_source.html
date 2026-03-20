@@ -254,211 +254,214 @@ $(document).ready(function(){initNavTree('cross__core__test_8cpp_source.html',''
 <div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>  child-&gt;aux-&gt;pgid = current-&gt;aux-&gt;pgid;</div>
 <div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  child-&gt;aux-&gt;cpu_affinity = (1UL &lt;&lt; 1);</div>
 <div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span> </div>
-<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>  <a class="code hl_typedef" href="task__control__block_8hpp.html#a7b3497faea769e764efc8647bc2103f1">Pid</a> child_pid = child-&gt;pid;</div>
-<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>  task_mgr.AddTask(std::move(child));</div>
-<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span> </div>
-<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(</div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>      <span class="stringliteral">&quot;[CrossCore ExitWait] Parent: created child pid={}, calling &quot;</span></div>
-<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>      <span class="stringliteral">&quot;Wait()&quot;</span>,</div>
-<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>      child_pid);</div>
-<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span> </div>
-<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>  <span class="keywordtype">int</span> status = 0;</div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>  <span class="keyword">auto</span> wait_result = task_mgr.Wait(<span class="keyword">static_cast&lt;</span><a class="code hl_typedef" href="task__control__block_8hpp.html#a7b3497faea769e764efc8647bc2103f1">Pid</a><span class="keyword">&gt;</span>(-1), &amp;status, <span class="keyword">false</span>, <span class="keyword">false</span>);</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>  <span class="comment">// Save raw pointer: pid is assigned inside AddTask() by AllocatePid(),</span></div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>  <span class="comment">// so we must read it *after* the call (unique_ptr is moved).</span></div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>  <span class="keyword">auto</span>* child_ptr = child.get();</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>  task_mgr.AddTask(std::move(child));</div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>  <a class="code hl_typedef" href="task__control__block_8hpp.html#a7b3497faea769e764efc8647bc2103f1">Pid</a> child_pid = child_ptr-&gt;pid;</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span> </div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(</div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>      <span class="stringliteral">&quot;[CrossCore ExitWait] Parent: created child pid={}, calling &quot;</span></div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>      <span class="stringliteral">&quot;Wait()&quot;</span>,</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>      child_pid);</div>
 <div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span> </div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>  <span class="keywordflow">if</span> (wait_result.has_value() &amp;&amp; wait_result.value() == child_pid) {</div>
-<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>    ctx-&gt;result_code-&gt;store(status, std::memory_order_release);</div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;[CrossCore ExitWait] Parent: child exited with code {}&quot;</span>,</div>
-<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>               status);</div>
-<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>  } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>    ctx-&gt;result_code-&gt;store(-1, std::memory_order_release);</div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;[CrossCore ExitWait] Parent: Wait() failed or wrong pid&quot;</span>);</div>
-<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>  }</div>
-<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span> </div>
-<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>  ctx-&gt;result_ready-&gt;store(1, std::memory_order_release);</div>
-<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>  <a class="code hl_function" href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a>(0);</div>
-<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>}</div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span> </div>
-<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span><span class="keywordtype">void</span> test_cross_core_exit_wait(<span class="keywordtype">void</span>* <span class="comment">/*arg*/</span>) {</div>
-<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;=== Cross-Core Exit/Wait Test ===&quot;</span>);</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>  <span class="keywordtype">int</span> status = 0;</div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>  <span class="keyword">auto</span> wait_result = task_mgr.Wait(<span class="keyword">static_cast&lt;</span><a class="code hl_typedef" href="task__control__block_8hpp.html#a7b3497faea769e764efc8647bc2103f1">Pid</a><span class="keyword">&gt;</span>(-1), &amp;status, <span class="keyword">false</span>, <span class="keyword">false</span>);</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span> </div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>  <span class="keywordflow">if</span> (wait_result.has_value() &amp;&amp; wait_result.value() == child_pid) {</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>    ctx-&gt;result_code-&gt;store(status, std::memory_order_release);</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;[CrossCore ExitWait] Parent: child exited with code {}&quot;</span>,</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>               status);</div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>    ctx-&gt;result_code-&gt;store(-1, std::memory_order_release);</div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;[CrossCore ExitWait] Parent: Wait() failed or wrong pid&quot;</span>);</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>  }</div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span> </div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>  ctx-&gt;result_ready-&gt;store(1, std::memory_order_release);</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>  <a class="code hl_function" href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a>(0);</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>}</div>
 <div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span> </div>
-<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>  std::atomic&lt;int&gt; result_code{-1};</div>
-<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>  std::atomic&lt;int&gt; result_ready{0};</div>
-<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>  <span class="keywordtype">bool</span> passed = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span> </div>
-<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>  ExitWaitArgs ctx;</div>
-<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>  ctx.result_code = &amp;result_code;</div>
-<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>  ctx.result_ready = &amp;result_ready;</div>
-<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span> </div>
-<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>  <span class="keyword">auto</span> parent_task = kstd::make_unique&lt;TaskControlBlock&gt;(</div>
-<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>      <span class="stringliteral">&quot;CCExitParent&quot;</span>, 10, exit_wait_parent, <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">void</span>*<span class="keyword">&gt;</span>(&amp;ctx));</div>
-<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>  parent_task-&gt;aux-&gt;cpu_affinity = (1UL &lt;&lt; 0);</div>
-<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span> </div>
-<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>  TaskManagerSingleton::instance().AddTask(std::move(parent_task));</div>
-<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span> </div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>  <span class="comment">// Wait for parent to finish</span></div>
-<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>  <span class="keywordtype">int</span> timeout = 200;</div>
-<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>  <span class="keywordflow">while</span> (timeout &gt; 0 &amp;&amp; result_ready.load(std::memory_order_acquire) == 0) {</div>
-<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>    (void)<a class="code hl_function" href="syscall_8hpp.html#a25c4acbedb0e92618dfb30e0e67827c7">sys_sleep</a>(50);</div>
-<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>    timeout--;</div>
-<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>  }</div>
-<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span> </div>
-<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>  <span class="keywordflow">if</span> (result_ready.load(std::memory_order_acquire) != 1) {</div>
-<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;test_cross_core_exit_wait: FAIL — timed out&quot;</span>);</div>
-<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>    passed = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (result_code.load(std::memory_order_acquire) != 42) {</div>
-<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;test_cross_core_exit_wait: FAIL — exit_code={}, expected 42&quot;</span>,</div>
-<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>              result_code.load());</div>
-<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>    passed = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span>  }</div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span> </div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>  <span class="keywordflow">if</span> (passed) {</div>
-<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Cross-Core Exit/Wait Test: PASSED&quot;</span>);</div>
-<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>  } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Cross-Core Exit/Wait Test: FAILED&quot;</span>);</div>
-<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>    g_tests_failed++;</div>
-<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>  }</div>
-<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span> </div>
-<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>  g_tests_completed++;</div>
-<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>  <a class="code hl_function" href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a>(0);</div>
-<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>}</div>
-<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span> </div>
-<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span><span class="comment">// ===========================================================================</span></div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span><span class="comment">// test_cross_core_mutex_counter</span></div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span><span class="comment">//</span></div>
-<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span><span class="comment">// 4 tasks (2 on core 0, 2 on core 1) each increment a shared counter</span></div>
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span><span class="comment">// 100 times under mutex protection. Final counter must be 400.</span></div>
-<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span><span class="comment">// ===========================================================================</span></div>
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span> </div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span><span class="keyword">struct </span>MutexCounterArgs {</div>
-<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>  <a class="code hl_class" href="classMutex.html">Mutex</a>* mtx;</div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>  std::atomic&lt;int&gt;* counter;</div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>  <span class="keywordtype">int</span> iterations;</div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>};</div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span> </div>
-<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span><span class="keywordtype">void</span> mutex_counter_worker(<span class="keywordtype">void</span>* arg) {</div>
-<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>  <span class="keyword">auto</span>* ctx = <span class="keyword">reinterpret_cast&lt;</span>MutexCounterArgs*<span class="keyword">&gt;</span>(arg);</div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span><span class="keywordtype">void</span> test_cross_core_exit_wait(<span class="keywordtype">void</span>* <span class="comment">/*arg*/</span>) {</div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;=== Cross-Core Exit/Wait Test ===&quot;</span>);</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span> </div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>  std::atomic&lt;int&gt; result_code{-1};</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>  std::atomic&lt;int&gt; result_ready{0};</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>  <span class="keywordtype">bool</span> passed = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span> </div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>  ExitWaitArgs ctx;</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>  ctx.result_code = &amp;result_code;</div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>  ctx.result_ready = &amp;result_ready;</div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span> </div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>  <span class="keyword">auto</span> parent_task = kstd::make_unique&lt;TaskControlBlock&gt;(</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>      <span class="stringliteral">&quot;CCExitParent&quot;</span>, 10, exit_wait_parent, <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">void</span>*<span class="keyword">&gt;</span>(&amp;ctx));</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>  parent_task-&gt;aux-&gt;cpu_affinity = (1UL &lt;&lt; 0);</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span> </div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>  TaskManagerSingleton::instance().AddTask(std::move(parent_task));</div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span> </div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>  <span class="comment">// Wait for parent to finish</span></div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>  <span class="keywordtype">int</span> timeout = 200;</div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>  <span class="keywordflow">while</span> (timeout &gt; 0 &amp;&amp; result_ready.load(std::memory_order_acquire) == 0) {</div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>    (void)<a class="code hl_function" href="syscall_8hpp.html#a25c4acbedb0e92618dfb30e0e67827c7">sys_sleep</a>(50);</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>    timeout--;</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>  }</div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span> </div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>  <span class="keywordflow">if</span> (result_ready.load(std::memory_order_acquire) != 1) {</div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;test_cross_core_exit_wait: FAIL — timed out&quot;</span>);</div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>    passed = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (result_code.load(std::memory_order_acquire) != 42) {</div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;test_cross_core_exit_wait: FAIL — exit_code={}, expected 42&quot;</span>,</div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>              result_code.load());</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>    passed = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>  }</div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span> </div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>  <span class="keywordflow">if</span> (passed) {</div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Cross-Core Exit/Wait Test: PASSED&quot;</span>);</div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Cross-Core Exit/Wait Test: FAILED&quot;</span>);</div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>    g_tests_failed++;</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>  }</div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span> </div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>  g_tests_completed++;</div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>  <a class="code hl_function" href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a>(0);</div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>}</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span> </div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span><span class="comment">// ===========================================================================</span></div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span><span class="comment">// test_cross_core_mutex_counter</span></div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span><span class="comment">//</span></div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span><span class="comment">// 4 tasks (2 on core 0, 2 on core 1) each increment a shared counter</span></div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span><span class="comment">// 100 times under mutex protection. Final counter must be 400.</span></div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span><span class="comment">// ===========================================================================</span></div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span> </div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span><span class="keyword">struct </span>MutexCounterArgs {</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>  <a class="code hl_class" href="classMutex.html">Mutex</a>* mtx;</div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>  std::atomic&lt;int&gt;* counter;</div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>  <span class="keywordtype">int</span> iterations;</div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>};</div>
 <div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span> </div>
-<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; ctx-&gt;iterations; ++i) {</div>
-<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>    (void)ctx-&gt;mtx-&gt;Lock();</div>
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>    <span class="keywordtype">int</span> val = ctx-&gt;counter-&gt;load(std::memory_order_relaxed);</div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>    ctx-&gt;counter-&gt;store(val + 1, std::memory_order_relaxed);</div>
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>    (void)ctx-&gt;mtx-&gt;UnLock();</div>
-<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>  }</div>
-<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span> </div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>  <a class="code hl_function" href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a>(0);</div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>}</div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span><span class="keywordtype">void</span> mutex_counter_worker(<span class="keywordtype">void</span>* arg) {</div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>  <span class="keyword">auto</span>* ctx = <span class="keyword">reinterpret_cast&lt;</span>MutexCounterArgs*<span class="keyword">&gt;</span>(arg);</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span> </div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; ctx-&gt;iterations; ++i) {</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>    (void)ctx-&gt;mtx-&gt;Lock();</div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>    <span class="keywordtype">int</span> val = ctx-&gt;counter-&gt;load(std::memory_order_relaxed);</div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>    ctx-&gt;counter-&gt;store(val + 1, std::memory_order_relaxed);</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>    (void)ctx-&gt;mtx-&gt;UnLock();</div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>  }</div>
 <div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span> </div>
-<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span><span class="keywordtype">void</span> test_cross_core_mutex_counter(<span class="keywordtype">void</span>* <span class="comment">/*arg*/</span>) {</div>
-<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;=== Cross-Core Mutex Counter Test ===&quot;</span>);</div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>  <a class="code hl_function" href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a>(0);</div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>}</div>
 <div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span> </div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>  <a class="code hl_class" href="classMutex.html">Mutex</a> mtx(<span class="stringliteral">&quot;cc_counter&quot;</span>);</div>
-<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>  std::atomic&lt;int&gt; counter{0};</div>
-<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>  <span class="keywordtype">bool</span> passed = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span> </div>
-<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>  <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kIterations = 100;</div>
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>  <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kWorkers = 4;</div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>  <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kExpectedTotal = kWorkers * kIterations;</div>
-<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span> </div>
-<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>  MutexCounterArgs ctx;</div>
-<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>  ctx.mtx = &amp;mtx;</div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>  ctx.counter = &amp;counter;</div>
-<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>  ctx.iterations = kIterations;</div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span> </div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>  <span class="comment">// 2 workers on core 0, 2 on core 1</span></div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; kWorkers; ++i) {</div>
-<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>    uint64_t core = (i &lt; 2) ? 0 : 1;</div>
-<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>    <span class="keyword">auto</span> task = kstd::make_unique&lt;TaskControlBlock&gt;(</div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>        <span class="stringliteral">&quot;CCCounterW&quot;</span>, 10, mutex_counter_worker, <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">void</span>*<span class="keyword">&gt;</span>(&amp;ctx));</div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>    task-&gt;aux-&gt;cpu_affinity = (1UL &lt;&lt; core);</div>
-<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>    TaskManagerSingleton::instance().AddTask(std::move(task));</div>
-<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>  }</div>
-<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span> </div>
-<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>  <span class="comment">// Wait for counter to reach expected value</span></div>
-<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>  <span class="keywordtype">int</span> timeout = 400;</div>
-<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>  <span class="keywordflow">while</span> (timeout &gt; 0 &amp;&amp;</div>
-<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>         counter.load(std::memory_order_acquire) &lt; kExpectedTotal) {</div>
-<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>    (void)<a class="code hl_function" href="syscall_8hpp.html#a25c4acbedb0e92618dfb30e0e67827c7">sys_sleep</a>(50);</div>
-<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>    timeout--;</div>
-<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>  }</div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span> </div>
-<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>  <span class="keywordtype">int</span> final_count = counter.load(std::memory_order_acquire);</div>
-<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>  <span class="keywordflow">if</span> (final_count != kExpectedTotal) {</div>
-<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;test_cross_core_mutex_counter: FAIL — counter={}, expected {}&quot;</span>,</div>
-<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>              final_count, kExpectedTotal);</div>
-<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>    passed = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>  }</div>
-<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span> </div>
-<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>  <span class="keywordflow">if</span> (passed) {</div>
-<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Cross-Core Mutex Counter Test: PASSED&quot;</span>);</div>
-<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>  } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Cross-Core Mutex Counter Test: FAILED&quot;</span>);</div>
-<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>    g_tests_failed++;</div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>  }</div>
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span> </div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>  g_tests_completed++;</div>
-<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>  <a class="code hl_function" href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a>(0);</div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>}</div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span> </div>
-<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>}  <span class="comment">// namespace</span></div>
-<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span> </div>
-<div class="foldopen" id="foldopen00308" data-start="{" data-end="}">
-<div class="line"><a id="l00308" name="l00308"></a><span class="lineno"><a class="line" href="cross__core__test_8cpp.html#af3128d72db78d086501c7a2ca6e76c73">  308</a></span><span class="keyword">auto</span> <a class="code hl_function" href="cross__core__test_8cpp.html#af3128d72db78d086501c7a2ca6e76c73">cross_core_test</a>() -&gt; <span class="keywordtype">bool</span> {</div>
-<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;=== Cross-Core System Test Suite ===&quot;</span>);</div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span><span class="keywordtype">void</span> test_cross_core_mutex_counter(<span class="keywordtype">void</span>* <span class="comment">/*arg*/</span>) {</div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;=== Cross-Core Mutex Counter Test ===&quot;</span>);</div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span> </div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>  <a class="code hl_class" href="classMutex.html">Mutex</a> mtx(<span class="stringliteral">&quot;cc_counter&quot;</span>);</div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>  std::atomic&lt;int&gt; counter{0};</div>
+<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>  <span class="keywordtype">bool</span> passed = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span> </div>
+<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>  <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kIterations = 100;</div>
+<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>  <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kWorkers = 4;</div>
+<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>  <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kExpectedTotal = kWorkers * kIterations;</div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span> </div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>  MutexCounterArgs ctx;</div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>  ctx.mtx = &amp;mtx;</div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>  ctx.counter = &amp;counter;</div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>  ctx.iterations = kIterations;</div>
+<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span> </div>
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>  <span class="comment">// 2 workers on core 0, 2 on core 1</span></div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; kWorkers; ++i) {</div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>    uint64_t core = (i &lt; 2) ? 0 : 1;</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>    <span class="keyword">auto</span> task = kstd::make_unique&lt;TaskControlBlock&gt;(</div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>        <span class="stringliteral">&quot;CCCounterW&quot;</span>, 10, mutex_counter_worker, <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">void</span>*<span class="keyword">&gt;</span>(&amp;ctx));</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>    task-&gt;aux-&gt;cpu_affinity = (1UL &lt;&lt; core);</div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>    TaskManagerSingleton::instance().AddTask(std::move(task));</div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>  }</div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span> </div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>  <span class="comment">// Wait for counter to reach expected value</span></div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>  <span class="keywordtype">int</span> timeout = 400;</div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>  <span class="keywordflow">while</span> (timeout &gt; 0 &amp;&amp;</div>
+<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>         counter.load(std::memory_order_acquire) &lt; kExpectedTotal) {</div>
+<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>    (void)<a class="code hl_function" href="syscall_8hpp.html#a25c4acbedb0e92618dfb30e0e67827c7">sys_sleep</a>(50);</div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>    timeout--;</div>
+<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>  }</div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span> </div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>  <span class="keywordtype">int</span> final_count = counter.load(std::memory_order_acquire);</div>
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>  <span class="keywordflow">if</span> (final_count != kExpectedTotal) {</div>
+<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;test_cross_core_mutex_counter: FAIL — counter={}, expected {}&quot;</span>,</div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>              final_count, kExpectedTotal);</div>
+<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>    passed = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>  }</div>
+<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span> </div>
+<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>  <span class="keywordflow">if</span> (passed) {</div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Cross-Core Mutex Counter Test: PASSED&quot;</span>);</div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>    <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Cross-Core Mutex Counter Test: FAILED&quot;</span>);</div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>    g_tests_failed++;</div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>  }</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span> </div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>  g_tests_completed++;</div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>  <a class="code hl_function" href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a>(0);</div>
+<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>}</div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span> </div>
+<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>}  <span class="comment">// namespace</span></div>
 <div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span> </div>
-<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>  <span class="keyword">auto</span> core_count = BasicInfoSingleton::instance().core_count;</div>
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>  <span class="keywordflow">if</span> (core_count &lt; 2) {</div>
-<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Skipping cross-core tests: need &gt;= 2 cores, have {}&quot;</span>,</div>
-<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>               core_count);</div>
-<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>  }</div>
-<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span> </div>
-<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>  g_tests_completed = 0;</div>
-<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>  g_tests_failed = 0;</div>
+<div class="foldopen" id="foldopen00311" data-start="{" data-end="}">
+<div class="line"><a id="l00311" name="l00311"></a><span class="lineno"><a class="line" href="cross__core__test_8cpp.html#af3128d72db78d086501c7a2ca6e76c73">  311</a></span><span class="keyword">auto</span> <a class="code hl_function" href="cross__core__test_8cpp.html#af3128d72db78d086501c7a2ca6e76c73">cross_core_test</a>() -&gt; <span class="keywordtype">bool</span> {</div>
+<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;=== Cross-Core System Test Suite ===&quot;</span>);</div>
+<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span> </div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>  <span class="keyword">auto</span> core_count = BasicInfoSingleton::instance().core_count;</div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>  <span class="keywordflow">if</span> (core_count &lt; 2) {</div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Skipping cross-core tests: need &gt;= 2 cores, have {}&quot;</span>,</div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>               core_count);</div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>  }</div>
 <div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span> </div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>  <span class="keyword">auto</span>&amp; task_mgr = TaskManagerSingleton::instance();</div>
-<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span> </div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>  <span class="keyword">auto</span> test1 = kstd::make_unique&lt;TaskControlBlock&gt;(</div>
-<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>      <span class="stringliteral">&quot;TestCCWakeup&quot;</span>, 10, test_cross_core_wakeup, <span class="keyword">nullptr</span>);</div>
-<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>  task_mgr.AddTask(std::move(test1));</div>
-<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span> </div>
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>  <span class="keyword">auto</span> test2 = kstd::make_unique&lt;TaskControlBlock&gt;(</div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>      <span class="stringliteral">&quot;TestCCExitWait&quot;</span>, 10, test_cross_core_exit_wait, <span class="keyword">nullptr</span>);</div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>  task_mgr.AddTask(std::move(test2));</div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span> </div>
-<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>  <span class="keyword">auto</span> test3 = kstd::make_unique&lt;TaskControlBlock&gt;(</div>
-<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>      <span class="stringliteral">&quot;TestCCMutexCnt&quot;</span>, 10, test_cross_core_mutex_counter, <span class="keyword">nullptr</span>);</div>
-<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>  task_mgr.AddTask(std::move(test3));</div>
-<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span> </div>
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>  <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kExpectedTests = 3;</div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>  <span class="keywordtype">int</span> timeout = 600;</div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>  <span class="keywordflow">while</span> (timeout &gt; 0) {</div>
-<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>    (void)<a class="code hl_function" href="syscall_8hpp.html#a25c4acbedb0e92618dfb30e0e67827c7">sys_sleep</a>(50);</div>
-<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>    <span class="keywordflow">if</span> (g_tests_completed &gt;= kExpectedTests) {</div>
-<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>      <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>    }</div>
-<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>    timeout--;</div>
-<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>  }</div>
-<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span> </div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>  <a class="code hl_define" href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a>(g_tests_completed.load(), kExpectedTests,</div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>            <span class="stringliteral">&quot;All cross-core tests should complete&quot;</span>);</div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>  <a class="code hl_define" href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a>(g_tests_failed.load(), 0, <span class="stringliteral">&quot;No cross-core tests should fail&quot;</span>);</div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span> </div>
-<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Cross-Core System Test Suite: COMPLETED&quot;</span>);</div>
-<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>}</div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>  g_tests_completed = 0;</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>  g_tests_failed = 0;</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span> </div>
+<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>  <span class="keyword">auto</span>&amp; task_mgr = TaskManagerSingleton::instance();</div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span> </div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>  <span class="keyword">auto</span> test1 = kstd::make_unique&lt;TaskControlBlock&gt;(</div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>      <span class="stringliteral">&quot;TestCCWakeup&quot;</span>, 10, test_cross_core_wakeup, <span class="keyword">nullptr</span>);</div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>  task_mgr.AddTask(std::move(test1));</div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span> </div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>  <span class="keyword">auto</span> test2 = kstd::make_unique&lt;TaskControlBlock&gt;(</div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>      <span class="stringliteral">&quot;TestCCExitWait&quot;</span>, 10, test_cross_core_exit_wait, <span class="keyword">nullptr</span>);</div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>  task_mgr.AddTask(std::move(test2));</div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span> </div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>  <span class="keyword">auto</span> test3 = kstd::make_unique&lt;TaskControlBlock&gt;(</div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>      <span class="stringliteral">&quot;TestCCMutexCnt&quot;</span>, 10, test_cross_core_mutex_counter, <span class="keyword">nullptr</span>);</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>  task_mgr.AddTask(std::move(test3));</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span> </div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>  <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kExpectedTests = 3;</div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>  <span class="keywordtype">int</span> timeout = 600;</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>  <span class="keywordflow">while</span> (timeout &gt; 0) {</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>    (void)<a class="code hl_function" href="syscall_8hpp.html#a25c4acbedb0e92618dfb30e0e67827c7">sys_sleep</a>(50);</div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>    <span class="keywordflow">if</span> (g_tests_completed &gt;= kExpectedTests) {</div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>      <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>    }</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>    timeout--;</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>  }</div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span> </div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>  <a class="code hl_define" href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a>(g_tests_completed.load(), kExpectedTests,</div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>            <span class="stringliteral">&quot;All cross-core tests should complete&quot;</span>);</div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>  <a class="code hl_define" href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a>(g_tests_failed.load(), 0, <span class="stringliteral">&quot;No cross-core tests should fail&quot;</span>);</div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span> </div>
+<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Cross-Core System Test Suite: COMPLETED&quot;</span>);</div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span>}</div>
 </div>
 <div class="ttc" id="abasic__info_8hpp_html"><div class="ttname"><a href="basic__info_8hpp.html">basic_info.hpp</a></div></div>
 <div class="ttc" id="aclassMutex_html"><div class="ttname"><a href="classMutex.html">Mutex</a></div><div class="ttdoc">互斥锁（Mutex）</div><div class="ttdef"><b>Definition</b> <a href="mutex_8hpp_source.html#l00030">mutex.hpp:30</a></div></div>
 <div class="ttc" id="aclassMutex_html_a73f2d128f19570bd0000e57d8b6b8521"><div class="ttname"><a href="classMutex.html#a73f2d128f19570bd0000e57d8b6b8521">Mutex::Lock</a></div><div class="ttdeci">auto Lock() -&gt; Expected&lt; void &gt;</div><div class="ttdoc">获取锁（阻塞）</div><div class="ttdef"><b>Definition</b> <a href="mutex_8cpp_source.html#l00011">mutex.cpp:11</a></div></div>
-<div class="ttc" id="across__core__test_8cpp_html_af3128d72db78d086501c7a2ca6e76c73"><div class="ttname"><a href="cross__core__test_8cpp.html#af3128d72db78d086501c7a2ca6e76c73">cross_core_test</a></div><div class="ttdeci">auto cross_core_test() -&gt; bool</div><div class="ttdef"><b>Definition</b> <a href="cross__core__test_8cpp_source.html#l00308">cross_core_test.cpp:308</a></div></div>
+<div class="ttc" id="across__core__test_8cpp_html_af3128d72db78d086501c7a2ca6e76c73"><div class="ttname"><a href="cross__core__test_8cpp.html#af3128d72db78d086501c7a2ca6e76c73">cross_core_test</a></div><div class="ttdeci">auto cross_core_test() -&gt; bool</div><div class="ttdef"><b>Definition</b> <a href="cross__core__test_8cpp_source.html#l00311">cross_core_test.cpp:311</a></div></div>
 <div class="ttc" id="akernel_8h_html"><div class="ttname"><a href="kernel_8h.html">kernel.h</a></div></div>
 <div class="ttc" id="amutex_8hpp_html"><div class="ttname"><a href="mutex_8hpp.html">mutex.hpp</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00182">kernel_log.hpp:182</a></div></div>
 <div class="ttc" id="aper__cpu_8hpp_html"><div class="ttname"><a href="per__cpu_8hpp.html">per_cpu.hpp</a></div></div>
 <div class="ttc" id="asyscall_8hpp_html"><div class="ttname"><a href="syscall_8hpp.html">syscall.hpp</a></div></div>
-<div class="ttc" id="asyscall_8hpp_html_a25c4acbedb0e92618dfb30e0e67827c7"><div class="ttname"><a href="syscall_8hpp.html#a25c4acbedb0e92618dfb30e0e67827c7">sys_sleep</a></div><div class="ttdeci">auto sys_sleep(uint64_t ms) -&gt; int</div><div class="ttdoc">休眠指定毫秒数</div><div class="ttdef"><b>Definition</b> <a href="syscall_8cpp_source.html#l00090">syscall.cpp:90</a></div></div>
-<div class="ttc" id="asyscall_8hpp_html_a7604e519b5138da9c1db6a2626e1998f"><div class="ttname"><a href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a></div><div class="ttdeci">auto sys_exit(int code) -&gt; int</div><div class="ttdoc">退出当前进程或线程</div><div class="ttdef"><b>Definition</b> <a href="syscall_8cpp_source.html#l00075">syscall.cpp:75</a></div></div>
+<div class="ttc" id="asyscall_8hpp_html_a25c4acbedb0e92618dfb30e0e67827c7"><div class="ttname"><a href="syscall_8hpp.html#a25c4acbedb0e92618dfb30e0e67827c7">sys_sleep</a></div><div class="ttdeci">auto sys_sleep(uint64_t ms) -&gt; int</div><div class="ttdoc">休眠指定毫秒数</div><div class="ttdef"><b>Definition</b> <a href="syscall_8cpp_source.html#l00112">syscall.cpp:112</a></div></div>
+<div class="ttc" id="asyscall_8hpp_html_a7604e519b5138da9c1db6a2626e1998f"><div class="ttname"><a href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a></div><div class="ttdeci">auto sys_exit(int code) -&gt; int</div><div class="ttdoc">退出当前进程或线程</div><div class="ttdef"><b>Definition</b> <a href="syscall_8cpp_source.html#l00097">syscall.cpp:97</a></div></div>
 <div class="ttc" id="asystem__test_8h_html"><div class="ttname"><a href="system__test_8h.html">system_test.h</a></div></div>
 <div class="ttc" id="asystem__test_8h_html_abfc1b6826e51b93338e02cabfa5cfcd1"><div class="ttname"><a href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a></div><div class="ttdeci">#define EXPECT_EQ(val1, val2, msg)</div><div class="ttdef"><b>Definition</b> <a href="system__test_8h_source.html#l00129">system_test.h:129</a></div></div>
 <div class="ttc" id="atask__control__block_8hpp_html"><div class="ttname"><a href="task__control__block_8hpp.html">task_control_block.hpp</a></div></div>

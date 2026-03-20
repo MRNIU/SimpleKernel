@@ -97,31 +97,31 @@ $(document).ready(function(){initNavTree('namespacekernel_1_1config.html',''); i
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a8dec7593c4d38492c181ed00cc013dcd" id="r_a8dec7593c4d38492c181ed00cc013dcd"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a8dec7593c4d38492c181ed00cc013dcd">kMaxTasks</a> = 128</td></tr>
+<tr class="memitem:a8dec7593c4d38492c181ed00cc013dcd" id="r_a8dec7593c4d38492c181ed00cc013dcd"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a8dec7593c4d38492c181ed00cc013dcd">kMaxTasks</a> = 256</td></tr>
 <tr class="memdesc:a8dec7593c4d38492c181ed00cc013dcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">全局最大任务数（task_table_ 容量）  <br /></td></tr>
 <tr class="separator:a8dec7593c4d38492c181ed00cc013dcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac6e837453fdb6391fb19d8c28362b4a6" id="r_ac6e837453fdb6391fb19d8c28362b4a6"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#ac6e837453fdb6391fb19d8c28362b4a6">kMaxTasksBuckets</a> = 256</td></tr>
-<tr class="memdesc:ac6e837453fdb6391fb19d8c28362b4a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">task_table_ 桶数（建议 = 2 × kMaxTasks）  <br /></td></tr>
+<tr class="memitem:ac6e837453fdb6391fb19d8c28362b4a6" id="r_ac6e837453fdb6391fb19d8c28362b4a6"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#ac6e837453fdb6391fb19d8c28362b4a6">kMaxTasksBuckets</a> = 2 * <a class="el" href="namespacekernel_1_1config.html#a8dec7593c4d38492c181ed00cc013dcd">kMaxTasks</a></td></tr>
+<tr class="memdesc:ac6e837453fdb6391fb19d8c28362b4a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">task_table_ 桶数  <br /></td></tr>
 <tr class="separator:ac6e837453fdb6391fb19d8c28362b4a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2fab54b63fa3433e858acf9b67f74a15" id="r_a2fab54b63fa3433e858acf9b67f74a15"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a2fab54b63fa3433e858acf9b67f74a15">kMaxSleepingTasks</a> = 64</td></tr>
+<tr class="memitem:a2fab54b63fa3433e858acf9b67f74a15" id="r_a2fab54b63fa3433e858acf9b67f74a15"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a2fab54b63fa3433e858acf9b67f74a15">kMaxSleepingTasks</a> = 128</td></tr>
 <tr class="memdesc:a2fab54b63fa3433e858acf9b67f74a15"><td class="mdescLeft">&#160;</td><td class="mdescRight">每个 CPU 的最大睡眠任务数（sleeping_tasks 容量）  <br /></td></tr>
 <tr class="separator:a2fab54b63fa3433e858acf9b67f74a15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a017191f7241a2b9dbd6e32660e10fbb0" id="r_a017191f7241a2b9dbd6e32660e10fbb0"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a017191f7241a2b9dbd6e32660e10fbb0">kMaxBlockedGroups</a> = 32</td></tr>
+<tr class="memitem:a017191f7241a2b9dbd6e32660e10fbb0" id="r_a017191f7241a2b9dbd6e32660e10fbb0"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a017191f7241a2b9dbd6e32660e10fbb0">kMaxBlockedGroups</a> = 64</td></tr>
 <tr class="memdesc:a017191f7241a2b9dbd6e32660e10fbb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">阻塞队列：最大资源组数（blocked_tasks 的 map 容量）  <br /></td></tr>
 <tr class="separator:a017191f7241a2b9dbd6e32660e10fbb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc951a583d6da1edbfc3d2cf6aa19157" id="r_adc951a583d6da1edbfc3d2cf6aa19157"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#adc951a583d6da1edbfc3d2cf6aa19157">kMaxBlockedGroupsBuckets</a> = 64</td></tr>
+<tr class="memitem:adc951a583d6da1edbfc3d2cf6aa19157" id="r_adc951a583d6da1edbfc3d2cf6aa19157"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#adc951a583d6da1edbfc3d2cf6aa19157">kMaxBlockedGroupsBuckets</a> = 2 * <a class="el" href="namespacekernel_1_1config.html#a017191f7241a2b9dbd6e32660e10fbb0">kMaxBlockedGroups</a></td></tr>
 <tr class="memdesc:adc951a583d6da1edbfc3d2cf6aa19157"><td class="mdescLeft">&#160;</td><td class="mdescRight">阻塞队列：map 桶数  <br /></td></tr>
 <tr class="separator:adc951a583d6da1edbfc3d2cf6aa19157"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acac6ab85c312c27bbe6edfd81c10ce6f" id="r_acac6ab85c312c27bbe6edfd81c10ce6f"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#acac6ab85c312c27bbe6edfd81c10ce6f">kMaxBlockedPerGroup</a> = 16</td></tr>
+<tr class="memitem:acac6ab85c312c27bbe6edfd81c10ce6f" id="r_acac6ab85c312c27bbe6edfd81c10ce6f"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#acac6ab85c312c27bbe6edfd81c10ce6f">kMaxBlockedPerGroup</a> = 32</td></tr>
 <tr class="memdesc:acac6ab85c312c27bbe6edfd81c10ce6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">阻塞队列：每组最大阻塞任务数（etl::list 容量）  <br /></td></tr>
 <tr class="separator:acac6ab85c312c27bbe6edfd81c10ce6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a043f85958e035a9db24ff4aadf06dc9c" id="r_a043f85958e035a9db24ff4aadf06dc9c"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a043f85958e035a9db24ff4aadf06dc9c">kMaxReadyTasks</a> = 64</td></tr>
+<tr class="memitem:a043f85958e035a9db24ff4aadf06dc9c" id="r_a043f85958e035a9db24ff4aadf06dc9c"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a043f85958e035a9db24ff4aadf06dc9c">kMaxReadyTasks</a> = 128</td></tr>
 <tr class="memdesc:a043f85958e035a9db24ff4aadf06dc9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">调度器就绪队列容量（FIFO / RR / CFS）  <br /></td></tr>
 <tr class="separator:a043f85958e035a9db24ff4aadf06dc9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab6aee55c5b05c657241ff7cd2520ae46" id="r_ab6aee55c5b05c657241ff7cd2520ae46"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#ab6aee55c5b05c657241ff7cd2520ae46">kMaxInterruptThreads</a> = 32</td></tr>
 <tr class="memdesc:ab6aee55c5b05c657241ff7cd2520ae46"><td class="mdescLeft">&#160;</td><td class="mdescRight">最大中断线程数  <br /></td></tr>
 <tr class="separator:ab6aee55c5b05c657241ff7cd2520ae46"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9596f7d8ded17a0b71ac4d4b1efaee50" id="r_a9596f7d8ded17a0b71ac4d4b1efaee50"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a9596f7d8ded17a0b71ac4d4b1efaee50">kMaxInterruptThreadsBuckets</a> = 64</td></tr>
+<tr class="memitem:a9596f7d8ded17a0b71ac4d4b1efaee50" id="r_a9596f7d8ded17a0b71ac4d4b1efaee50"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a9596f7d8ded17a0b71ac4d4b1efaee50">kMaxInterruptThreadsBuckets</a> = 2 * <a class="el" href="namespacekernel_1_1config.html#ab6aee55c5b05c657241ff7cd2520ae46">kMaxInterruptThreads</a></td></tr>
 <tr class="memdesc:a9596f7d8ded17a0b71ac4d4b1efaee50"><td class="mdescLeft">&#160;</td><td class="mdescRight">中断线程 map 桶数  <br /></td></tr>
 <tr class="separator:a9596f7d8ded17a0b71ac4d4b1efaee50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9bde14e16d3c9da0efb108d1a49cc2a4" id="r_a9bde14e16d3c9da0efb108d1a49cc2a4"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekernel_1_1config.html#a9bde14e16d3c9da0efb108d1a49cc2a4">kTickObservers</a> = 8</td></tr>
@@ -144,7 +144,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr size_t kernel::config::kMaxBlockedGroups = 32</td>
+          <td class="memname">constexpr size_t kernel::config::kMaxBlockedGroups = 64</td>
         </tr>
       </table>
   </td>
@@ -170,7 +170,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr size_t kernel::config::kMaxBlockedGroupsBuckets = 64</td>
+          <td class="memname">constexpr size_t kernel::config::kMaxBlockedGroupsBuckets = 2 * <a class="el" href="namespacekernel_1_1config.html#a017191f7241a2b9dbd6e32660e10fbb0">kMaxBlockedGroups</a></td>
         </tr>
       </table>
   </td>
@@ -196,7 +196,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr size_t kernel::config::kMaxBlockedPerGroup = 16</td>
+          <td class="memname">constexpr size_t kernel::config::kMaxBlockedPerGroup = 32</td>
         </tr>
       </table>
   </td>
@@ -248,7 +248,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr size_t kernel::config::kMaxInterruptThreadsBuckets = 64</td>
+          <td class="memname">constexpr size_t kernel::config::kMaxInterruptThreadsBuckets = 2 * <a class="el" href="namespacekernel_1_1config.html#ab6aee55c5b05c657241ff7cd2520ae46">kMaxInterruptThreads</a></td>
         </tr>
       </table>
   </td>
@@ -274,7 +274,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr size_t kernel::config::kMaxReadyTasks = 64</td>
+          <td class="memname">constexpr size_t kernel::config::kMaxReadyTasks = 128</td>
         </tr>
       </table>
   </td>
@@ -300,7 +300,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr size_t kernel::config::kMaxSleepingTasks = 64</td>
+          <td class="memname">constexpr size_t kernel::config::kMaxSleepingTasks = 128</td>
         </tr>
       </table>
   </td>
@@ -326,7 +326,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr size_t kernel::config::kMaxTasks = 128</td>
+          <td class="memname">constexpr size_t kernel::config::kMaxTasks = 256</td>
         </tr>
       </table>
   </td>
@@ -352,7 +352,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr size_t kernel::config::kMaxTasksBuckets = 256</td>
+          <td class="memname">constexpr size_t kernel::config::kMaxTasksBuckets = 2 * <a class="el" href="namespacekernel_1_1config.html#a8dec7593c4d38492c181ed00cc013dcd">kMaxTasks</a></td>
         </tr>
       </table>
   </td>
@@ -362,7 +362,7 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>task_table_ 桶数（建议 = 2 × kMaxTasks） </p>
+<p>task_table_ 桶数 </p>
 
 <p class="definition">Definition at line <a class="el" href="kernel__config_8hpp_source.html#l00016">16</a> of file <a class="el" href="kernel__config_8hpp_source.html">kernel_config.hpp</a>.</p>
 

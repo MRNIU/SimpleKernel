@@ -144,7 +144,9 @@ $(document).ready(function(){initNavTree('sleep_8cpp_source.html',''); initResiz
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  Schedule();</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  <span class="comment">// 任务被唤醒后会从这里继续执行</span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>}</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <span class="comment">// 检查是否有待处理的信号（可能是信号导致了提前唤醒）</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  (void)CheckPendingSignals();</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>}</div>
 </div>
 <div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 风格的锁守卫模板类</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00131">spinlock.hpp:131</a></div></div>
 <div class="ttc" id="aclassTaskManager_html_aad5c48a74bb228c1046e0255793a9972"><div class="ttname"><a href="classTaskManager.html#aad5c48a74bb228c1046e0255793a9972">TaskManager::Sleep</a></div><div class="ttdeci">auto Sleep(uint64_t ms) -&gt; void</div><div class="ttdoc">线程睡眠</div><div class="ttdef"><b>Definition</b> <a href="sleep_8cpp_source.html#l00014">sleep.cpp:14</a></div></div>

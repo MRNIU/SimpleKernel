@@ -237,13 +237,13 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00058">58</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   58</span>                                                                      {</div>
-<div class="line"><span class="lineno">   59</span>  <span class="keywordflow">if</span> (allocator) {</div>
-<div class="line"><span class="lineno">   60</span>    <span class="keywordflow">return</span> allocator-&gt;aligned_alloc(alignment, size);</div>
-<div class="line"><span class="lineno">   61</span>  }</div>
-<div class="line"><span class="lineno">   62</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><span class="lineno">   63</span>}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00089">89</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   89</span>                                                                      {</div>
+<div class="line"><span class="lineno">   90</span>  <span class="keywordflow">if</span> (allocator) {</div>
+<div class="line"><span class="lineno">   91</span>    <span class="keywordflow">return</span> allocator-&gt;aligned_alloc(alignment, size);</div>
+<div class="line"><span class="lineno">   92</span>  }</div>
+<div class="line"><span class="lineno">   93</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><span class="lineno">   94</span>}</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -273,12 +273,12 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00038">38</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   38</span>                                        {</div>
-<div class="line"><span class="lineno">   39</span>  <span class="keywordflow">if</span> (allocator) {</div>
-<div class="line"><span class="lineno">   40</span>    allocator-&gt;free(ptr);</div>
-<div class="line"><span class="lineno">   41</span>  }</div>
-<div class="line"><span class="lineno">   42</span>}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00069">69</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   69</span>                                        {</div>
+<div class="line"><span class="lineno">   70</span>  <span class="keywordflow">if</span> (allocator) {</div>
+<div class="line"><span class="lineno">   71</span>    allocator-&gt;free(ptr);</div>
+<div class="line"><span class="lineno">   72</span>  }</div>
+<div class="line"><span class="lineno">   73</span>}</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -309,13 +309,13 @@ Here is the caller graph for this function:</div>
 </div><div class="memdoc">
 <dl class="section copyright"><dt>Copyright</dt><dd>Copyright The SimpleKernel Contributors </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00031">31</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   31</span>                                             {</div>
-<div class="line"><span class="lineno">   32</span>  <span class="keywordflow">if</span> (allocator) {</div>
-<div class="line"><span class="lineno">   33</span>    <span class="keywordflow">return</span> allocator-&gt;malloc(size);</div>
-<div class="line"><span class="lineno">   34</span>  }</div>
-<div class="line"><span class="lineno">   35</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><span class="lineno">   36</span>}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00062">62</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   62</span>                                             {</div>
+<div class="line"><span class="lineno">   63</span>  <span class="keywordflow">if</span> (allocator) {</div>
+<div class="line"><span class="lineno">   64</span>    <span class="keywordflow">return</span> allocator-&gt;malloc(size);</div>
+<div class="line"><span class="lineno">   65</span>  }</div>
+<div class="line"><span class="lineno">   66</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><span class="lineno">   67</span>}</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -401,9 +401,9 @@ Here is the caller graph for this function:</div>
 <div class="line"><span class="lineno">   77</span> </div>
 <div class="line"><span class="lineno">   78</span>  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><span class="lineno">   79</span>}</div>
-<div class="ttc" id="amemory__test_8cpp_html_a8006724372b77924155bd8618fe57516"><div class="ttname"><a href="memory__test_8cpp.html#a8006724372b77924155bd8618fe57516">aligned_alloc</a></div><div class="ttdeci">void * aligned_alloc(size_t alignment, size_t size)</div><div class="ttdef"><b>Definition</b> <a href="memory_8cpp_source.html#l00058">memory.cpp:58</a></div></div>
-<div class="ttc" id="amemory__test_8cpp_html_a9c36d0fe3ec4675cbffdc9b52f5fb399"><div class="ttname"><a href="memory__test_8cpp.html#a9c36d0fe3ec4675cbffdc9b52f5fb399">malloc</a></div><div class="ttdeci">void * malloc(size_t size)</div><div class="ttdef"><b>Definition</b> <a href="memory_8cpp_source.html#l00031">memory.cpp:31</a></div></div>
-<div class="ttc" id="amemory__test_8cpp_html_afbedc913aa4651b3c3b4b3aecd9b4711"><div class="ttname"><a href="memory__test_8cpp.html#afbedc913aa4651b3c3b4b3aecd9b4711">free</a></div><div class="ttdeci">void free(void *ptr)</div><div class="ttdef"><b>Definition</b> <a href="memory_8cpp_source.html#l00038">memory.cpp:38</a></div></div>
+<div class="ttc" id="amemory__test_8cpp_html_a8006724372b77924155bd8618fe57516"><div class="ttname"><a href="memory__test_8cpp.html#a8006724372b77924155bd8618fe57516">aligned_alloc</a></div><div class="ttdeci">void * aligned_alloc(size_t alignment, size_t size)</div><div class="ttdef"><b>Definition</b> <a href="memory_8cpp_source.html#l00089">memory.cpp:89</a></div></div>
+<div class="ttc" id="amemory__test_8cpp_html_a9c36d0fe3ec4675cbffdc9b52f5fb399"><div class="ttname"><a href="memory__test_8cpp.html#a9c36d0fe3ec4675cbffdc9b52f5fb399">malloc</a></div><div class="ttdeci">void * malloc(size_t size)</div><div class="ttdef"><b>Definition</b> <a href="memory_8cpp_source.html#l00062">memory.cpp:62</a></div></div>
+<div class="ttc" id="amemory__test_8cpp_html_afbedc913aa4651b3c3b4b3aecd9b4711"><div class="ttname"><a href="memory__test_8cpp.html#afbedc913aa4651b3c3b4b3aecd9b4711">free</a></div><div class="ttdeci">void free(void *ptr)</div><div class="ttdef"><b>Definition</b> <a href="memory_8cpp_source.html#l00069">memory.cpp:69</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00182">kernel_log.hpp:182</a></div></div>
 <div class="ttc" id="asystem__test_8h_html_a00a870caa41dce04e9db04bd0c2fca57"><div class="ttname"><a href="system__test_8h.html#a00a870caa41dce04e9db04bd0c2fca57">EXPECT_TRUE</a></div><div class="ttdeci">#define EXPECT_TRUE(cond, msg)</div><div class="ttdef"><b>Definition</b> <a href="system__test_8h_source.html#l00159">system_test.h:159</a></div></div>
 <div class="ttc" id="asystem__test_8h_html_abfc1b6826e51b93338e02cabfa5cfcd1"><div class="ttname"><a href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a></div><div class="ttdeci">#define EXPECT_EQ(val1, val2, msg)</div><div class="ttdef"><b>Definition</b> <a href="system__test_8h_source.html#l00129">system_test.h:129</a></div></div>

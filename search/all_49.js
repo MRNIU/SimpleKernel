@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['安装_20qemu_0',['安装 QEMU',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md22',1,'']]]
+  ['字符输出实现_0',['3. 字符输出实现',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md140',1,'']]]
 ];

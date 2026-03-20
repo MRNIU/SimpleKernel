@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['规范_0',['规范',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md314',1,'📋 Git Commit 规范'],['../md_git__commit.html',1,'Git Commit 规范']]]
+  ['编译与运行_0',['⚡ 编译与运行',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md301',1,'']]],
+  ['编译配置_1',['编译配置',['../md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md386',1,'']]]
 ];

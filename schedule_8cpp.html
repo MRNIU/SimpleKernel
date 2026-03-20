@@ -89,6 +89,8 @@ $(document).ready(function(){initNavTree('schedule_8cpp.html',''); initResizable
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">schedule.cpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -281,6 +283,71 @@ Include dependency graph for schedule.cpp:</div>
 </div>
 </div>
 <p><a href="schedule_8cpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:adf76a019ba47bc42d5ee5d996b3f1fe0" id="r_adf76a019ba47bc42d5ee5d996b3f1fe0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="schedule_8cpp.html#adf76a019ba47bc42d5ee5d996b3f1fe0">kernel_thread_bootstrap</a> (void(*entry)(void *), void *arg)</td></tr>
+<tr class="memdesc:adf76a019ba47bc42d5ee5d996b3f1fe0"><td class="mdescLeft">&#160;</td><td class="mdescRight">新任务首次执行时的引导函数 (由 kernel_thread_entry 汇编调用)  <br /></td></tr>
+<tr class="separator:adf76a019ba47bc42d5ee5d996b3f1fe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="adf76a019ba47bc42d5ee5d996b3f1fe0" name="adf76a019ba47bc42d5ee5d996b3f1fe0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf76a019ba47bc42d5ee5d996b3f1fe0">&#9670;&#160;</a></span>kernel_thread_bootstrap()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kernel_thread_bootstrap </td>
+          <td>(</td>
+          <td class="paramtype">void(*)(void *)&#160;</td>
+          <td class="paramname"><em>entry</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>新任务首次执行时的引导函数 (由 kernel_thread_entry 汇编调用) </p>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright The SimpleKernel Contributors </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="schedule_8cpp_source.html#l00026">26</a> of file <a class="el" href="schedule_8cpp_source.html">schedule.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   27</span>                                                                {</div>
+<div class="line"><span class="lineno">   28</span>  <a class="code hl_function" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451">cpu_io::EnableInterrupt</a>();</div>
+<div class="line"><span class="lineno">   29</span>  entry(arg);</div>
+<div class="line"><span class="lineno">   30</span>  assert(<span class="keyword">false</span> &amp;&amp; <span class="stringliteral">&quot;kernel thread returned without calling sys_exit()&quot;</span>);</div>
+<div class="line"><span class="lineno">   31</span>  <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
+<div class="line"><span class="lineno">   32</span>    <a class="code hl_function" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a>();</div>
+<div class="line"><span class="lineno">   33</span>  }</div>
+<div class="line"><span class="lineno">   34</span>}</div>
+<div class="ttc" id="anamespacecpu__io_html_acf7d7c3a4a0720cfd4f57914b52c7e9b"><div class="ttname"><a href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a></div><div class="ttdeci">void Pause()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00020">cpu_io.h:20</a></div></div>
+<div class="ttc" id="anamespacecpu__io_html_afe7f925ac3cb632ed212166712288451"><div class="ttname"><a href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451">cpu_io::EnableInterrupt</a></div><div class="ttdeci">void EnableInterrupt()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00034">cpu_io.h:34</a></div></div>
+</div><!-- fragment --><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="schedule_8cpp_adf76a019ba47bc42d5ee5d996b3f1fe0_cgraph.png" border="0" usemap="#aschedule_8cpp_adf76a019ba47bc42d5ee5d996b3f1fe0_cgraph" alt=""/></div>
+<map name="aschedule_8cpp_adf76a019ba47bc42d5ee5d996b3f1fe0_cgraph" id="aschedule_8cpp_adf76a019ba47bc42d5ee5d996b3f1fe0_cgraph">
+<area shape="rect" title="新任务首次执行时的引导函数 (由 kernel_thread_entry 汇编调用)" alt="" coords="5,38,185,63"/>
+<area shape="rect" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="233,13,405,38"/>
+<area shape="poly" title=" " alt="" coords="185,38,220,34,220,39,186,43"/>
+<area shape="rect" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="264,62,375,87"/>
+<area shape="poly" title=" " alt="" coords="186,58,250,65,250,70,185,63"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="453,5,716,45"/>
+<area shape="poly" title=" " alt="" coords="406,23,439,23,439,28,406,28"/>
+</map>
+</div>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

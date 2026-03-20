@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['✨_20项目简介_0',['✨ 项目简介',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md285',1,'']]],
-  ['✨_20project_20overview_1',['✨ Project Overview',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md323',1,'']]]
+  ['⏰_20apic_20定时器中断_0',['⏰ APIC 定时器中断',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md167',1,'']]],
+  ['⏰_20generic_20timer_20中断_1',['⏰ Generic Timer 中断',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md218',1,'']]],
+  ['⏰_20sbi_20定时器中断_2',['⏰ SBI 定时器中断',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md193',1,'']]]
 ];

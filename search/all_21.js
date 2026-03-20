@@ -2,8 +2,8 @@ var searchData=
 [
   ['wait_0',['Wait',['../classTaskManager.html#ae546fc5dad8a73a6b17894beefa181e4',1,'TaskManager']]],
   ['wait_2ecpp_1',['wait.cpp',['../wait_8cpp.html',1,'']]],
-  ['wait_5fsystem_5ftest_2',['wait_system_test',['../system__test_8h.html#a1d61aadd4f03596c1c9a64a5e4e5191c',1,'wait_system_test() -&gt; bool:&#160;wait_system_test.cpp'],['../wait__system__test_8cpp.html#a1d61aadd4f03596c1c9a64a5e4e5191c',1,'wait_system_test() -&gt; bool:&#160;wait_system_test.cpp']]],
-  ['wait_5fsystem_5ftest_2ecpp_3',['wait_system_test.cpp',['../wait__system__test_8cpp.html',1,'']]],
+  ['wait_5ftest_2',['wait_test',['../system__test_8h.html#a0bc418877ce0d6081c5edc9e705070c5',1,'wait_test() -&gt; bool:&#160;wait_test.cpp'],['../wait__test_8cpp.html#a0bc418877ce0d6081c5edc9e705070c5',1,'wait_test() -&gt; bool:&#160;wait_test.cpp']]],
+  ['wait_5ftest_2ecpp_3',['wait_test.cpp',['../wait__test_8cpp.html',1,'']]],
   ['wake_5ftick_4',['wake_tick',['../structTaskControlBlock_1_1SchedInfo.html#ae0b893b503976ca280b3c17e540e240a',1,'TaskControlBlock::SchedInfo::wake_tick'],['../structMsgSleep.html#a9ad03d042a7542b5e271a7feec7b7e3f',1,'MsgSleep::wake_tick']]],
   ['waketickcompare_5',['WakeTickCompare',['../structTaskControlBlock_1_1WakeTickCompare.html',1,'TaskControlBlock']]],
   ['wakeup_6',['wakeup',['../classTaskManager.html#a96d2a8187ce732bac7d0d952fd502181',1,'TaskManager::Wakeup(ResourceId resource_id) -&gt; void'],['../classTaskManager.html#a56b51842866033db39ad8c1227e7281d',1,'TaskManager::Wakeup(CpuSchedData &amp;cpu_sched, ResourceId resource_id) -&gt; void']]],

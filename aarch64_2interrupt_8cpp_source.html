@@ -154,8 +154,8 @@ $(document).ready(function(){initNavTree('aarch64_2interrupt_8cpp_source.html','
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
 <div class="foldopen" id="foldopen00063" data-start="{" data-end="}">
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno"><a class="line" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">   63</a></span><span class="keyword">auto</span> <a class="code hl_function" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Interrupt::Do</a>(uint64_t cause, <a class="code hl_struct" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a>* context) -&gt; <span class="keywordtype">void</span> {</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  interrupt_handlers_[cause](cause, context);</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  cpu_io::ICC_EOIR1_EL1::Write(cause);</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  cpu_io::ICC_EOIR1_EL1::Write(cause);</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  interrupt_handlers_[cause](cause, context);</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>}</div>
 </div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>

@@ -351,22 +351,22 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>uint32_t 正常返回 0 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="tests_2system__test_2main_8cpp_source.html#l00251">251</a> of file <a class="el" href="tests_2system__test_2main_8cpp_source.html">main.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  251</span>                                                 {</div>
-<div class="line"><span class="lineno">  252</span>  <span class="keywordflow">if</span> (!<a class="code hl_variable" href="src_2main_8cpp.html#a95ef4892b5d0eaa0ff0a4198a93936be">primary_booted_</a>.test_and_set(std::memory_order_acquire)) {</div>
-<div class="line"><span class="lineno">  253</span>    <a class="code hl_function" href="kstd__libcxx_8h.html#af560a93d5e246576e878702a1869a75e">CppInit</a>();</div>
-<div class="line"><span class="lineno">  254</span>    <a class="code hl_function" href="tests_2integration__test_2aarch64__minimal_2main_8cpp.html#acdef7a1fd863a6d3770c1268cb06add3">main</a>(argc, argv);</div>
-<div class="line"><span class="lineno">  255</span>  } <span class="keywordflow">else</span> {</div>
-<div class="line"><span class="lineno">  256</span>    main_smp(argc, argv);</div>
-<div class="line"><span class="lineno">  257</span>  }</div>
-<div class="line"><span class="lineno">  258</span> </div>
-<div class="line"><span class="lineno">  259</span>  <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
-<div class="line"><span class="lineno">  260</span>    <a class="code hl_function" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a>();</div>
-<div class="line"><span class="lineno">  261</span>  }</div>
-<div class="line"><span class="lineno">  262</span>}</div>
+<p class="definition">Definition at line <a class="el" href="tests_2system__test_2main_8cpp_source.html#l00258">258</a> of file <a class="el" href="tests_2system__test_2main_8cpp_source.html">main.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  258</span>                                                 {</div>
+<div class="line"><span class="lineno">  259</span>  <span class="keywordflow">if</span> (!<a class="code hl_variable" href="src_2main_8cpp.html#a95ef4892b5d0eaa0ff0a4198a93936be">primary_booted_</a>.test_and_set(std::memory_order_acquire)) {</div>
+<div class="line"><span class="lineno">  260</span>    <a class="code hl_function" href="kstd__libcxx_8h.html#af560a93d5e246576e878702a1869a75e">CppInit</a>();</div>
+<div class="line"><span class="lineno">  261</span>    <a class="code hl_function" href="tests_2integration__test_2aarch64__minimal_2main_8cpp.html#acdef7a1fd863a6d3770c1268cb06add3">main</a>(argc, argv);</div>
+<div class="line"><span class="lineno">  262</span>  } <span class="keywordflow">else</span> {</div>
+<div class="line"><span class="lineno">  263</span>    main_smp(argc, argv);</div>
+<div class="line"><span class="lineno">  264</span>  }</div>
+<div class="line"><span class="lineno">  265</span> </div>
+<div class="line"><span class="lineno">  266</span>  <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
+<div class="line"><span class="lineno">  267</span>    <a class="code hl_function" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a>();</div>
+<div class="line"><span class="lineno">  268</span>  }</div>
+<div class="line"><span class="lineno">  269</span>}</div>
 <div class="ttc" id="akstd__libcxx_8h_html_af560a93d5e246576e878702a1869a75e"><div class="ttname"><a href="kstd__libcxx_8h.html#af560a93d5e246576e878702a1869a75e">CppInit</a></div><div class="ttdeci">auto CppInit() -&gt; void</div><div class="ttdoc">构造 c++ 全局对象</div><div class="ttdef"><b>Definition</b> <a href="kstd__libcxx_8cpp_source.html#l00221">kstd_libcxx.cpp:221</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_acf7d7c3a4a0720cfd4f57914b52c7e9b"><div class="ttname"><a href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a></div><div class="ttdeci">void Pause()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00020">cpu_io.h:20</a></div></div>
-<div class="ttc" id="asrc_2main_8cpp_html_a95ef4892b5d0eaa0ff0a4198a93936be"><div class="ttname"><a href="src_2main_8cpp.html#a95ef4892b5d0eaa0ff0a4198a93936be">primary_booted_</a></div><div class="ttdeci">std::atomic_flag primary_booted_</div><div class="ttdef"><b>Definition</b> <a href="src_2main_8cpp_source.html#l00135">main.cpp:135</a></div></div>
+<div class="ttc" id="asrc_2main_8cpp_html_a95ef4892b5d0eaa0ff0a4198a93936be"><div class="ttname"><a href="src_2main_8cpp.html#a95ef4892b5d0eaa0ff0a4198a93936be">primary_booted_</a></div><div class="ttdeci">std::atomic_flag primary_booted_</div><div class="ttdef"><b>Definition</b> <a href="src_2main_8cpp_source.html#l00038">main.cpp:38</a></div></div>
 <div class="ttc" id="atests_2integration__test_2aarch64__minimal_2main_8cpp_html_acdef7a1fd863a6d3770c1268cb06add3"><div class="ttname"><a href="tests_2integration__test_2aarch64__minimal_2main_8cpp.html#acdef7a1fd863a6d3770c1268cb06add3">main</a></div><div class="ttdeci">void main()</div><div class="ttdef"><b>Definition</b> <a href="tests_2integration__test_2aarch64__minimal_2main_8cpp_source.html#l00023">main.cpp:23</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -426,78 +426,78 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>int 正常返回 0 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="tests_2system__test_2main_8cpp_source.html#l00264">264</a> of file <a class="el" href="tests_2system__test_2main_8cpp_source.html">main.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  264</span>                                              {</div>
-<div class="line"><span class="lineno">  265</span>  per_cpu::PerCpuArraySingleton::create();</div>
-<div class="line"><span class="lineno">  266</span>  <a class="code hl_function" href="namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f">per_cpu::GetCurrentCore</a>() = <a class="code hl_struct" href="structper__cpu_1_1PerCpu.html">per_cpu::PerCpu</a>(<a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
-<div class="line"><span class="lineno">  267</span> </div>
-<div class="line"><span class="lineno">  268</span>  <a class="code hl_function" href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd">ArchInit</a>(argc, argv);</div>
-<div class="line"><span class="lineno">  269</span>  <a class="code hl_function" href="kernel_8h.html#a97dad1f7048065936858b6302fb25eab">MemoryInit</a>();</div>
-<div class="line"><span class="lineno">  270</span>  <a class="code hl_function" href="aarch64_2interrupt__main_8cpp.html#a51f9c37118da7a1c32e70f272cc7b3e8">InterruptInit</a>(argc, argv);</div>
-<div class="line"><span class="lineno">  271</span>  <a class="code hl_function" href="device_8cpp.html#a2bddae538bbd6d759ecfe3085f1dfbe4">DeviceInit</a>();</div>
-<div class="line"><span class="lineno">  272</span>  <a class="code hl_function" href="filesystem_8cpp.html#a2b9f450648a51d217091f5923c64a449">FileSystemInit</a>();</div>
-<div class="line"><span class="lineno">  273</span> </div>
-<div class="line"><span class="lineno">  274</span>  TaskManagerSingleton::create();</div>
-<div class="line"><span class="lineno">  275</span>  TaskManagerSingleton::instance().InitCurrentCore();</div>
-<div class="line"><span class="lineno">  276</span> </div>
-<div class="line"><span class="lineno">  277</span>  <a class="code hl_function" href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a>();</div>
-<div class="line"><span class="lineno">  278</span> </div>
-<div class="line"><span class="lineno">  279</span>  <a class="code hl_function" href="aarch64_2arch__main_8cpp.html#a45bade4d9944a7cbaf145a73dbafbf71">WakeUpOtherCores</a>();</div>
+<p class="definition">Definition at line <a class="el" href="tests_2system__test_2main_8cpp_source.html#l00271">271</a> of file <a class="el" href="tests_2system__test_2main_8cpp_source.html">main.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  271</span>                                              {</div>
+<div class="line"><span class="lineno">  272</span>  per_cpu::PerCpuArraySingleton::create();</div>
+<div class="line"><span class="lineno">  273</span>  <a class="code hl_function" href="namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f">per_cpu::GetCurrentCore</a>() = <a class="code hl_struct" href="structper__cpu_1_1PerCpu.html">per_cpu::PerCpu</a>(<a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
+<div class="line"><span class="lineno">  274</span> </div>
+<div class="line"><span class="lineno">  275</span>  <a class="code hl_function" href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd">ArchInit</a>(argc, argv);</div>
+<div class="line"><span class="lineno">  276</span>  <a class="code hl_function" href="kernel_8h.html#a97dad1f7048065936858b6302fb25eab">MemoryInit</a>();</div>
+<div class="line"><span class="lineno">  277</span>  <a class="code hl_function" href="aarch64_2interrupt__main_8cpp.html#a51f9c37118da7a1c32e70f272cc7b3e8">InterruptInit</a>(argc, argv);</div>
+<div class="line"><span class="lineno">  278</span>  <a class="code hl_function" href="device_8cpp.html#a2bddae538bbd6d759ecfe3085f1dfbe4">DeviceInit</a>();</div>
+<div class="line"><span class="lineno">  279</span>  <a class="code hl_function" href="filesystem_8cpp.html#a2b9f450648a51d217091f5923c64a449">FileSystemInit</a>();</div>
 <div class="line"><span class="lineno">  280</span> </div>
-<div class="line"><span class="lineno">  281</span>  <a class="code hl_function" href="aarch64_2backtrace_8cpp.html#a393a5995bbd64c00f1902a4ae0110847">DumpStack</a>();</div>
-<div class="line"><span class="lineno">  282</span> </div>
-<div class="line"><span class="lineno">  283</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Hello SimpleKernel&quot;</span>);</div>
-<div class="line"><span class="lineno">  284</span> </div>
-<div class="line"><span class="lineno">  285</span>  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; kTestCount; ++i) {</div>
-<div class="line"><span class="lineno">  286</span>    test_results[i].name = test_cases[i].name;</div>
-<div class="line"><span class="lineno">  287</span>    test_results[i].status = <a class="code hl_enumvalue" href="system__test_8h.html#af9e5b0a761857519c43daef48527fdc5aa09be96128822643f3487a1415eb861c">TestThreadStatus::kPending</a>;</div>
-<div class="line"><span class="lineno">  288</span>    test_results[i].exit_code = -1;</div>
-<div class="line"><span class="lineno">  289</span>    test_results[i].pid = 0;</div>
-<div class="line"><span class="lineno">  290</span>  }</div>
+<div class="line"><span class="lineno">  281</span>  TaskManagerSingleton::create();</div>
+<div class="line"><span class="lineno">  282</span>  TaskManagerSingleton::instance().InitCurrentCore();</div>
+<div class="line"><span class="lineno">  283</span> </div>
+<div class="line"><span class="lineno">  284</span>  <a class="code hl_function" href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a>();</div>
+<div class="line"><span class="lineno">  285</span> </div>
+<div class="line"><span class="lineno">  286</span>  <a class="code hl_function" href="aarch64_2arch__main_8cpp.html#a45bade4d9944a7cbaf145a73dbafbf71">WakeUpOtherCores</a>();</div>
+<div class="line"><span class="lineno">  287</span> </div>
+<div class="line"><span class="lineno">  288</span>  <a class="code hl_function" href="aarch64_2backtrace_8cpp.html#a393a5995bbd64c00f1902a4ae0110847">DumpStack</a>();</div>
+<div class="line"><span class="lineno">  289</span> </div>
+<div class="line"><span class="lineno">  290</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Hello SimpleKernel&quot;</span>);</div>
 <div class="line"><span class="lineno">  291</span> </div>
-<div class="line"><span class="lineno">  292</span>  <span class="comment">// Phase 1: SMP 测试同步运行（需要跨核屏障协调，必须在调度器启动前完成）</span></div>
-<div class="line"><span class="lineno">  293</span>  <span class="keywordtype">size_t</span> expected_cores = BasicInfoSingleton::instance().core_count - 1;</div>
-<div class="line"><span class="lineno">  294</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;[RUNNER] Waiting for {} secondary core(s) to initialize...&quot;</span>,</div>
-<div class="line"><span class="lineno">  295</span>             expected_cores);</div>
-<div class="line"><span class="lineno">  296</span>  <span class="keywordflow">while</span> (g_cores_ready.load(std::memory_order_acquire) &lt; expected_cores) {</div>
-<div class="line"><span class="lineno">  297</span>    <a class="code hl_function" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a>();</div>
-<div class="line"><span class="lineno">  298</span>  }</div>
-<div class="line"><span class="lineno">  299</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;[RUNNER] All cores ready, starting SMP tests&quot;</span>);</div>
-<div class="line"><span class="lineno">  300</span> </div>
-<div class="line"><span class="lineno">  301</span>  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; kTestCount; ++i) {</div>
-<div class="line"><span class="lineno">  302</span>    <span class="keywordflow">if</span> (!test_cases[i].is_smp_test) {</div>
-<div class="line"><span class="lineno">  303</span>      <span class="keywordflow">continue</span>;</div>
-<div class="line"><span class="lineno">  304</span>    }</div>
-<div class="line"><span class="lineno">  305</span>    <span class="keyword">auto</span>&amp; result = test_results[i];</div>
-<div class="line"><span class="lineno">  306</span>    result.status = <a class="code hl_enumvalue" href="system__test_8h.html#af9e5b0a761857519c43daef48527fdc5a2fc7fbf0d19294f85dd3880460dd3c0a">TestThreadStatus::kRunning</a>;</div>
+<div class="line"><span class="lineno">  292</span>  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; kTestCount; ++i) {</div>
+<div class="line"><span class="lineno">  293</span>    test_results[i].name = test_cases[i].name;</div>
+<div class="line"><span class="lineno">  294</span>    test_results[i].status = <a class="code hl_enumvalue" href="system__test_8h.html#af9e5b0a761857519c43daef48527fdc5aa09be96128822643f3487a1415eb861c">TestThreadStatus::kPending</a>;</div>
+<div class="line"><span class="lineno">  295</span>    test_results[i].exit_code = -1;</div>
+<div class="line"><span class="lineno">  296</span>    test_results[i].pid = 0;</div>
+<div class="line"><span class="lineno">  297</span>  }</div>
+<div class="line"><span class="lineno">  298</span> </div>
+<div class="line"><span class="lineno">  299</span>  <span class="comment">// Phase 1: SMP 测试同步运行（需要跨核屏障协调，必须在调度器启动前完成）</span></div>
+<div class="line"><span class="lineno">  300</span>  <span class="keywordtype">size_t</span> expected_cores = BasicInfoSingleton::instance().core_count - 1;</div>
+<div class="line"><span class="lineno">  301</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;[RUNNER] Waiting for {} secondary core(s) to initialize...&quot;</span>,</div>
+<div class="line"><span class="lineno">  302</span>             expected_cores);</div>
+<div class="line"><span class="lineno">  303</span>  <span class="keywordflow">while</span> (g_cores_ready.load(std::memory_order_acquire) &lt; expected_cores) {</div>
+<div class="line"><span class="lineno">  304</span>    <a class="code hl_function" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a>();</div>
+<div class="line"><span class="lineno">  305</span>  }</div>
+<div class="line"><span class="lineno">  306</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;[RUNNER] All cores ready, starting SMP tests&quot;</span>);</div>
 <div class="line"><span class="lineno">  307</span> </div>
-<div class="line"><span class="lineno">  308</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;[SMP] Running: {}&quot;</span>, test_cases[i].name);</div>
-<div class="line"><span class="lineno">  309</span>    <span class="keywordtype">bool</span> smp_passed = test_cases[i].func();</div>
-<div class="line"><span class="lineno">  310</span> </div>
-<div class="line"><span class="lineno">  311</span>    result.exit_code = smp_passed ? 0 : 1;</div>
-<div class="line"><span class="lineno">  312</span>    result.status =</div>
-<div class="line"><span class="lineno">  313</span>        smp_passed ? <a class="code hl_enumvalue" href="system__test_8h.html#af9e5b0a761857519c43daef48527fdc5a2e1165dab7cbb5e985ea3b1e5d64f619">TestThreadStatus::kPassed</a> : <a class="code hl_enumvalue" href="system__test_8h.html#af9e5b0a761857519c43daef48527fdc5ab62fa3c9492b6dae76c23d6dfa466611">TestThreadStatus::kFailed</a>;</div>
+<div class="line"><span class="lineno">  308</span>  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; kTestCount; ++i) {</div>
+<div class="line"><span class="lineno">  309</span>    <span class="keywordflow">if</span> (!test_cases[i].is_smp_test) {</div>
+<div class="line"><span class="lineno">  310</span>      <span class="keywordflow">continue</span>;</div>
+<div class="line"><span class="lineno">  311</span>    }</div>
+<div class="line"><span class="lineno">  312</span>    <span class="keyword">auto</span>&amp; result = test_results[i];</div>
+<div class="line"><span class="lineno">  313</span>    result.status = <a class="code hl_enumvalue" href="system__test_8h.html#af9e5b0a761857519c43daef48527fdc5a2fc7fbf0d19294f85dd3880460dd3c0a">TestThreadStatus::kRunning</a>;</div>
 <div class="line"><span class="lineno">  314</span> </div>
-<div class="line"><span class="lineno">  315</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;[SMP] Finished: {} — {}&quot;</span>, test_cases[i].name,</div>
-<div class="line"><span class="lineno">  316</span>               smp_passed ? <span class="stringliteral">&quot;PASS&quot;</span> : <span class="stringliteral">&quot;FAIL&quot;</span>);</div>
-<div class="line"><span class="lineno">  317</span>  }</div>
-<div class="line"><span class="lineno">  318</span> </div>
-<div class="line"><span class="lineno">  319</span>  <span class="keyword">auto</span> runner = kstd::make_unique&lt;TaskControlBlock&gt;(<span class="stringliteral">&quot;test_runner&quot;</span>, 10,</div>
-<div class="line"><span class="lineno">  320</span>                                                    test_runner_entry, <span class="keyword">nullptr</span>);</div>
-<div class="line"><span class="lineno">  321</span>  TaskManagerSingleton::instance().AddTask(std::move(runner));</div>
-<div class="line"><span class="lineno">  322</span> </div>
-<div class="line"><span class="lineno">  323</span>  TaskManagerSingleton::instance().Schedule();</div>
-<div class="line"><span class="lineno">  324</span> </div>
-<div class="line"><span class="lineno">  325</span>  __builtin_unreachable();</div>
-<div class="line"><span class="lineno">  326</span>}</div>
+<div class="line"><span class="lineno">  315</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;[SMP] Running: {}&quot;</span>, test_cases[i].name);</div>
+<div class="line"><span class="lineno">  316</span>    <span class="keywordtype">bool</span> smp_passed = test_cases[i].func();</div>
+<div class="line"><span class="lineno">  317</span> </div>
+<div class="line"><span class="lineno">  318</span>    result.exit_code = smp_passed ? 0 : 1;</div>
+<div class="line"><span class="lineno">  319</span>    result.status =</div>
+<div class="line"><span class="lineno">  320</span>        smp_passed ? <a class="code hl_enumvalue" href="system__test_8h.html#af9e5b0a761857519c43daef48527fdc5a2e1165dab7cbb5e985ea3b1e5d64f619">TestThreadStatus::kPassed</a> : <a class="code hl_enumvalue" href="system__test_8h.html#af9e5b0a761857519c43daef48527fdc5ab62fa3c9492b6dae76c23d6dfa466611">TestThreadStatus::kFailed</a>;</div>
+<div class="line"><span class="lineno">  321</span> </div>
+<div class="line"><span class="lineno">  322</span>    <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;[SMP] Finished: {} — {}&quot;</span>, test_cases[i].name,</div>
+<div class="line"><span class="lineno">  323</span>               smp_passed ? <span class="stringliteral">&quot;PASS&quot;</span> : <span class="stringliteral">&quot;FAIL&quot;</span>);</div>
+<div class="line"><span class="lineno">  324</span>  }</div>
+<div class="line"><span class="lineno">  325</span> </div>
+<div class="line"><span class="lineno">  326</span>  <span class="keyword">auto</span> runner = kstd::make_unique&lt;TaskControlBlock&gt;(<span class="stringliteral">&quot;test_runner&quot;</span>, 10,</div>
+<div class="line"><span class="lineno">  327</span>                                                    test_runner_entry, <span class="keyword">nullptr</span>);</div>
+<div class="line"><span class="lineno">  328</span>  TaskManagerSingleton::instance().AddTask(std::move(runner));</div>
+<div class="line"><span class="lineno">  329</span> </div>
+<div class="line"><span class="lineno">  330</span>  TaskManagerSingleton::instance().Schedule();</div>
+<div class="line"><span class="lineno">  331</span> </div>
+<div class="line"><span class="lineno">  332</span>  __builtin_unreachable();</div>
+<div class="line"><span class="lineno">  333</span>}</div>
 <div class="ttc" id="aaarch64_2arch__main_8cpp_html_a45bade4d9944a7cbaf145a73dbafbf71"><div class="ttname"><a href="aarch64_2arch__main_8cpp.html#a45bade4d9944a7cbaf145a73dbafbf71">WakeUpOtherCores</a></div><div class="ttdeci">auto WakeUpOtherCores() -&gt; void</div><div class="ttdoc">唤醒其余 core</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2arch__main_8cpp_source.html#l00068">arch_main.cpp:68</a></div></div>
 <div class="ttc" id="aaarch64_2arch__main_8cpp_html_a6a670facdde513eab1f26f8a04e2efbd"><div class="ttname"><a href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd">ArchInit</a></div><div class="ttdeci">auto ArchInit(int argc, const char **argv) -&gt; void</div><div class="ttdoc">体系结构相关初始化</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2arch__main_8cpp_source.html#l00048">arch_main.cpp:48</a></div></div>
 <div class="ttc" id="aaarch64_2backtrace_8cpp_html_a393a5995bbd64c00f1902a4ae0110847"><div class="ttname"><a href="aarch64_2backtrace_8cpp.html#a393a5995bbd64c00f1902a4ae0110847">DumpStack</a></div><div class="ttdeci">auto DumpStack() -&gt; void</div><div class="ttdoc">打印调用栈</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2backtrace_8cpp_source.html#l00034">backtrace.cpp:34</a></div></div>
 <div class="ttc" id="aaarch64_2interrupt__main_8cpp_html_a51f9c37118da7a1c32e70f272cc7b3e8"><div class="ttname"><a href="aarch64_2interrupt__main_8cpp.html#a51f9c37118da7a1c32e70f272cc7b3e8">InterruptInit</a></div><div class="ttdeci">auto InterruptInit(int, const char **) -&gt; void</div><div class="ttdoc">体系结构相关中断初始化</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2interrupt__main_8cpp_source.html#l00180">interrupt_main.cpp:180</a></div></div>
-<div class="ttc" id="aaarch64_2timer_8cpp_html_aadcb63b822cced321aaf1cc58cfea3cc"><div class="ttname"><a href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a></div><div class="ttdeci">auto TimerInit() -&gt; void</div><div class="ttdoc">初始化定时器</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2timer_8cpp_source.html#l00047">timer.cpp:47</a></div></div>
+<div class="ttc" id="aaarch64_2timer_8cpp_html_aadcb63b822cced321aaf1cc58cfea3cc"><div class="ttname"><a href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a></div><div class="ttdeci">auto TimerInit() -&gt; void</div><div class="ttdoc">初始化定时器</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2timer_8cpp_source.html#l00049">timer.cpp:49</a></div></div>
 <div class="ttc" id="adevice_8cpp_html_a2bddae538bbd6d759ecfe3085f1dfbe4"><div class="ttname"><a href="device_8cpp.html#a2bddae538bbd6d759ecfe3085f1dfbe4">DeviceInit</a></div><div class="ttdeci">auto DeviceInit() -&gt; void</div><div class="ttdoc">设备子系统初始化入口</div><div class="ttdef"><b>Definition</b> <a href="device_8cpp_source.html#l00028">device.cpp:28</a></div></div>
 <div class="ttc" id="afilesystem_8cpp_html_a2b9f450648a51d217091f5923c64a449"><div class="ttname"><a href="filesystem_8cpp.html#a2b9f450648a51d217091f5923c64a449">FileSystemInit</a></div><div class="ttdeci">auto FileSystemInit() -&gt; void</div><div class="ttdoc">文件系统子系统初始化入口</div><div class="ttdef"><b>Definition</b> <a href="filesystem_8cpp_source.html#l00017">filesystem.cpp:17</a></div></div>
-<div class="ttc" id="akernel_8h_html_a97dad1f7048065936858b6302fb25eab"><div class="ttname"><a href="kernel_8h.html#a97dad1f7048065936858b6302fb25eab">MemoryInit</a></div><div class="ttdeci">auto MemoryInit() -&gt; void</div><div class="ttdoc">内存子系统初始化</div><div class="ttdef"><b>Definition</b> <a href="memory_8cpp_source.html#l00071">memory.cpp:71</a></div></div>
+<div class="ttc" id="akernel_8h_html_a97dad1f7048065936858b6302fb25eab"><div class="ttname"><a href="kernel_8h.html#a97dad1f7048065936858b6302fb25eab">MemoryInit</a></div><div class="ttdeci">auto MemoryInit() -&gt; void</div><div class="ttdoc">内存子系统初始化</div><div class="ttdef"><b>Definition</b> <a href="memory_8cpp_source.html#l00102">memory.cpp:102</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_a52b8a7263a31e6670ef4dec7922d9e72"><div class="ttname"><a href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a></div><div class="ttdeci">auto GetCurrentCoreId() -&gt; size_t</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00026">cpu_io.h:26</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00182">kernel_log.hpp:182</a></div></div>
 <div class="ttc" id="anamespaceper__cpu_html_ad9745465fefcd58504031bfcfcc1c13f"><div class="ttname"><a href="namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f">per_cpu::GetCurrentCore</a></div><div class="ttdeci">static __always_inline auto GetCurrentCore() -&gt; PerCpu &amp;</div><div class="ttdoc">获取当前核心的 PerCpu 数据</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00055">per_cpu.hpp:55</a></div></div>
@@ -604,7 +604,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="tests_2system__test_2main_8cpp_source.html#l00249">249</a> of file <a class="el" href="tests_2system__test_2main_8cpp_source.html">main.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tests_2system__test_2main_8cpp_source.html#l00256">256</a> of file <a class="el" href="tests_2system__test_2main_8cpp_source.html">main.cpp</a>.</p>
 
 </div>
 </div>

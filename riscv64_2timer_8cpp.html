@@ -313,22 +313,22 @@ Functions</h2></td></tr>
 <dl class="section pre"><dt>Precondition</dt><dd>InterruptInit 已完成 </dd></dl>
 <dl class="section post"><dt>Postcondition</dt><dd>定时器中断已启用，系统 tick 开始计数 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="riscv64_2timer_8cpp_source.html#l00034">34</a> of file <a class="el" href="riscv64_2timer_8cpp_source.html">timer.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   34</span>                         {</div>
-<div class="line"><span class="lineno">   35</span>  <span class="comment">// 计算 interval</span></div>
-<div class="line"><span class="lineno">   36</span>  interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;</div>
-<div class="line"><span class="lineno">   37</span> </div>
-<div class="line"><span class="lineno">   38</span>  <span class="comment">// 注册时钟中断</span></div>
-<div class="line"><span class="lineno">   39</span>  InterruptSingleton::instance().RegisterInterruptFunc(</div>
-<div class="line"><span class="lineno">   40</span>      cpu_io::ScauseInfo::kSupervisorTimerInterrupt,</div>
-<div class="line"><span class="lineno">   41</span>      InterruptDelegate::create&lt;TimerHandler&gt;());</div>
-<div class="line"><span class="lineno">   42</span> </div>
-<div class="line"><span class="lineno">   43</span>  <span class="comment">// 开启时钟中断</span></div>
-<div class="line"><span class="lineno">   44</span>  cpu_io::Sie::Stie::Set();</div>
-<div class="line"><span class="lineno">   45</span> </div>
-<div class="line"><span class="lineno">   46</span>  <span class="comment">// 设置初次时钟中断时间</span></div>
-<div class="line"><span class="lineno">   47</span>  sbi_set_timer(cpu_io::Time::Read() + interval);</div>
-<div class="line"><span class="lineno">   48</span>}</div>
+<p class="definition">Definition at line <a class="el" href="riscv64_2timer_8cpp_source.html#l00036">36</a> of file <a class="el" href="riscv64_2timer_8cpp_source.html">timer.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   36</span>                         {</div>
+<div class="line"><span class="lineno">   37</span>  <span class="comment">// 计算 interval</span></div>
+<div class="line"><span class="lineno">   38</span>  interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;</div>
+<div class="line"><span class="lineno">   39</span> </div>
+<div class="line"><span class="lineno">   40</span>  <span class="comment">// 注册时钟中断</span></div>
+<div class="line"><span class="lineno">   41</span>  InterruptSingleton::instance().RegisterInterruptFunc(</div>
+<div class="line"><span class="lineno">   42</span>      cpu_io::ScauseInfo::kSupervisorTimerInterrupt,</div>
+<div class="line"><span class="lineno">   43</span>      InterruptDelegate::create&lt;TimerHandler&gt;());</div>
+<div class="line"><span class="lineno">   44</span> </div>
+<div class="line"><span class="lineno">   45</span>  <span class="comment">// 开启时钟中断</span></div>
+<div class="line"><span class="lineno">   46</span>  cpu_io::Sie::Stie::Set();</div>
+<div class="line"><span class="lineno">   47</span> </div>
+<div class="line"><span class="lineno">   48</span>  <span class="comment">// 设置初次时钟中断时间</span></div>
+<div class="line"><span class="lineno">   49</span>  sbi_set_timer(cpu_io::Time::Read() + interval);</div>
+<div class="line"><span class="lineno">   50</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -351,14 +351,14 @@ Functions</h2></td></tr>
 <dl class="section pre"><dt>Precondition</dt><dd>主核已完成 TimerInit，从核已完成 InterruptInitSMP </dd></dl>
 <dl class="section post"><dt>Postcondition</dt><dd>从核的定时器中断已启用 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="riscv64_2timer_8cpp_source.html#l00026">26</a> of file <a class="el" href="riscv64_2timer_8cpp_source.html">timer.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   26</span>                            {</div>
-<div class="line"><span class="lineno">   27</span>  <span class="comment">// 开启时钟中断</span></div>
-<div class="line"><span class="lineno">   28</span>  cpu_io::Sie::Stie::Set();</div>
-<div class="line"><span class="lineno">   29</span> </div>
-<div class="line"><span class="lineno">   30</span>  <span class="comment">// 设置初次时钟中断时间</span></div>
-<div class="line"><span class="lineno">   31</span>  sbi_set_timer(cpu_io::Time::Read() + interval);</div>
-<div class="line"><span class="lineno">   32</span>}</div>
+<p class="definition">Definition at line <a class="el" href="riscv64_2timer_8cpp_source.html#l00028">28</a> of file <a class="el" href="riscv64_2timer_8cpp_source.html">timer.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   28</span>                            {</div>
+<div class="line"><span class="lineno">   29</span>  <span class="comment">// 开启时钟中断</span></div>
+<div class="line"><span class="lineno">   30</span>  cpu_io::Sie::Stie::Set();</div>
+<div class="line"><span class="lineno">   31</span> </div>
+<div class="line"><span class="lineno">   32</span>  <span class="comment">// 设置初次时钟中断时间</span></div>
+<div class="line"><span class="lineno">   33</span>  sbi_set_timer(cpu_io::Time::Read() + interval);</div>
+<div class="line"><span class="lineno">   34</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>

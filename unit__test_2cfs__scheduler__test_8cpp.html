@@ -884,7 +884,7 @@ Here is the call graph for this function:</div>
 <div class="line"><span class="lineno">  232</span>  scheduler.<a class="code hl_function" href="classSchedulerBase.html#abc638a97168078cc3cd949844b1ca714">OnScheduled</a>(<span class="keyword">nullptr</span>);</div>
 <div class="line"><span class="lineno">  233</span>}</div>
 <div class="ttc" id="aclassCfsScheduler_html_ab51f62668696f5adbf4bee9db2507a13"><div class="ttname"><a href="classCfsScheduler.html#ab51f62668696f5adbf4bee9db2507a13">CfsScheduler::OnPreempted</a></div><div class="ttdeci">auto OnPreempted(TaskControlBlock *task) -&gt; void override</div><div class="ttdoc">任务被抢占时调用</div><div class="ttdef"><b>Definition</b> <a href="cfs__scheduler_8hpp_source.html#l00176">cfs_scheduler.hpp:176</a></div></div>
-<div class="ttc" id="aclassSchedulerBase_html_abc638a97168078cc3cd949844b1ca714"><div class="ttname"><a href="classSchedulerBase.html#abc638a97168078cc3cd949844b1ca714">SchedulerBase::OnScheduled</a></div><div class="ttdeci">virtual auto OnScheduled(TaskControlBlock *task) -&gt; void</div><div class="ttdoc">任务开始运行时调用 (从 Ready 变为 Running)</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00126">scheduler_base.hpp:126</a></div></div>
+<div class="ttc" id="aclassSchedulerBase_html_abc638a97168078cc3cd949844b1ca714"><div class="ttname"><a href="classSchedulerBase.html#abc638a97168078cc3cd949844b1ca714">SchedulerBase::OnScheduled</a></div><div class="ttdeci">virtual auto OnScheduled(TaskControlBlock *task) -&gt; void</div><div class="ttdoc">任务开始运行时调用 (从 Ready 变为 Running)</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00138">scheduler_base.hpp:138</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1088,7 +1088,7 @@ Here is the call graph for this function:</div>
 <div class="line"><span class="lineno">  467</span>  stats = scheduler.<a class="code hl_function" href="classSchedulerBase.html#a914b45bb9c30d74dba59458826601d1e">GetStats</a>();</div>
 <div class="line"><span class="lineno">  468</span>  <a class="code hl_define" href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a>(stats.total_preemptions, 2);</div>
 <div class="line"><span class="lineno">  469</span>}</div>
-<div class="ttc" id="aclassSchedulerBase_html_a914b45bb9c30d74dba59458826601d1e"><div class="ttname"><a href="classSchedulerBase.html#a914b45bb9c30d74dba59458826601d1e">SchedulerBase::GetStats</a></div><div class="ttdeci">virtual auto GetStats() const -&gt; const Stats &amp;</div><div class="ttdoc">获取调度器统计信息</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00132">scheduler_base.hpp:132</a></div></div>
+<div class="ttc" id="aclassSchedulerBase_html_a914b45bb9c30d74dba59458826601d1e"><div class="ttname"><a href="classSchedulerBase.html#a914b45bb9c30d74dba59458826601d1e">SchedulerBase::GetStats</a></div><div class="ttdeci">virtual auto GetStats() const -&gt; const Stats &amp;</div><div class="ttdoc">获取调度器统计信息</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00144">scheduler_base.hpp:144</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1266,7 +1266,7 @@ Here is the call graph for this function:</div>
 <div class="line"><span class="lineno">  288</span>  <a class="code hl_define" href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a>(stats.total_dequeues, 0);</div>
 <div class="line"><span class="lineno">  289</span>  <a class="code hl_define" href="system__test_8h.html#abfc1b6826e51b93338e02cabfa5cfcd1">EXPECT_EQ</a>(stats.total_preemptions, 0);</div>
 <div class="line"><span class="lineno">  290</span>}</div>
-<div class="ttc" id="aclassSchedulerBase_html_ae49df54bf03d2b6d302e052614ba3b2e"><div class="ttname"><a href="classSchedulerBase.html#ae49df54bf03d2b6d302e052614ba3b2e">SchedulerBase::ResetStats</a></div><div class="ttdeci">virtual auto ResetStats() -&gt; void</div><div class="ttdoc">重置统计信息</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00137">scheduler_base.hpp:137</a></div></div>
+<div class="ttc" id="aclassSchedulerBase_html_ae49df54bf03d2b6d302e052614ba3b2e"><div class="ttname"><a href="classSchedulerBase.html#ae49df54bf03d2b6d302e052614ba3b2e">SchedulerBase::ResetStats</a></div><div class="ttdeci">virtual auto ResetStats() -&gt; void</div><div class="ttdoc">重置统计信息</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00149">scheduler_base.hpp:149</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

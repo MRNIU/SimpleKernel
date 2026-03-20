@@ -7,7 +7,7 @@ var dir_cde76fe2c02caf4a1f67af3da0aa6a16 =
     [ "fifo_scheduler_test.cpp", "unit__test_2fifo__scheduler__test_8cpp.html", "unit__test_2fifo__scheduler__test_8cpp" ],
     [ "kernel_elf_test.cpp", "kernel__elf__test_8cpp.html", "kernel__elf__test_8cpp" ],
     [ "kernel_fdt_test.cpp", "kernel__fdt__test_8cpp.html", "kernel__fdt__test_8cpp" ],
-    [ "ramfs_test.cpp", "ramfs__test_8cpp.html", "ramfs__test_8cpp" ],
+    [ "ramfs_test.cpp", "unit__test_2ramfs__test_8cpp.html", "unit__test_2ramfs__test_8cpp" ],
     [ "rr_scheduler_test.cpp", "unit__test_2rr__scheduler__test_8cpp.html", "unit__test_2rr__scheduler__test_8cpp" ],
     [ "sk_ctype_test.cpp", "sk__ctype__test_8cpp.html", "sk__ctype__test_8cpp" ],
     [ "sk_libc_test.cpp", "sk__libc__test_8cpp.html", "sk__libc__test_8cpp" ],

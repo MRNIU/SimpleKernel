@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['开发指南_0',['📝 开发指南',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md311',1,'']]],
-  ['开发环境_1',['开发环境',['../md_docker.html',1,'Dev Container 开发环境'],['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md27',1,'Dev Container 开发环境']]],
-  ['开启方式_2',['开启方式',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md112',1,'']]]
+  ['常用属性_0',['常用属性',['../md_coding__standards.html#autotoc_md253',1,'']]],
+  ['常量与变量_1',['8. 常量与变量',['../md_coding__standards.html#autotoc_md268',1,'']]]
 ];

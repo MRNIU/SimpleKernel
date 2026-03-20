@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['依赖_0',['依赖',['../md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md413',1,'']]]
+  ['优势_0',['优势',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md177',1,'优势'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md203',1,'优势'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md229',1,'优势']]]
 ];

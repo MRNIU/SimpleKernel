@@ -1,0 +1,74 @@
+<map id="ramfs_test" name="ramfs_test">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,339,97,364"/>
+<area shape="rect" id="Node000002" href="$namespacevfs.html#a725b260aab10e05c940db28c16d18424" title="关闭文件" alt="" coords="353,204,440,229"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="76,336,171,290,295,239,340,226,341,231,297,245,173,295,78,341"/>
+<area shape="rect" id="Node000004" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="155,908,238,933"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="56,364,63,466,78,625,91,709,106,786,125,851,148,895,149,897,145,901,143,898,120,852,101,787,85,709,73,626,57,467,51,365"/>
+<area shape="rect" id="Node000005" href="$namespacevfs.html#a628f118a94d2d7c9d5747cc63f76f155" title="创建目录" alt="" coords="152,605,241,631"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="62,363,184,592,180,595,57,365"/>
+<area shape="rect" id="Node000014" href="$namespacevfs.html#a3ff991d7efce0508dad20b97f2a2bda7" title="打开文件" alt="" coords="155,400,239,425"/>
+<area shape="poly" id="edge17_Node000001_Node000014" title=" " alt="" coords="83,362,154,392,152,397,81,366"/>
+<area shape="rect" id="Node000018" href="$namespacevfs.html#a2d0244ac0168c124ae12d287e28e7549" title="从文件读取数据" alt="" coords="155,5,238,31"/>
+<area shape="poly" id="edge25_Node000001_Node000018" title=" " alt="" coords="51,338,56,286,70,210,98,125,118,84,143,46,152,37,156,41,147,49,123,86,103,127,75,212,61,287,56,339"/>
+<area shape="rect" id="Node000019" href="$namespacevfs.html#a4aaacc6c8faabb3e6c0fd18427670959" title="读取目录内容" alt="" coords="145,60,248,85"/>
+<area shape="poly" id="edge27_Node000001_Node000019" title=" " alt="" coords="52,338,61,296,78,236,105,169,123,136,143,106,158,91,162,95,147,109,127,139,110,171,83,237,66,297,57,339"/>
+<area shape="rect" id="Node000020" href="$namespacevfs.html#a9a3d6b35240ad82e6eb2920d3a3d02fb" title="删除目录" alt="" coords="151,809,242,835"/>
+<area shape="poly" id="edge29_Node000001_Node000020" title=" " alt="" coords="59,364,190,795,185,797,54,365"/>
+<area shape="rect" id="Node000023" href="$namespacevfs.html#aaaaf9c74a1d6c5fcf048c740be2da84d" title="调整文件偏移量" alt="" coords="155,120,238,145"/>
+<area shape="poly" id="edge36_Node000001_Node000023" title=" " alt="" coords="55,337,87,265,113,218,143,174,165,152,168,156,147,177,117,221,92,267,60,339"/>
+<area shape="rect" id="Node000024" href="$namespacevfs.html#a921acc95350b2eb0f731cba27d862892" title="删除文件" alt="" coords="151,859,243,884"/>
+<area shape="poly" id="edge38_Node000001_Node000024" title=" " alt="" coords="56,364,64,457,81,602,93,677,108,747,127,806,148,846,149,848,145,851,143,849,122,808,103,749,88,678,76,602,59,458,51,364"/>
+<area shape="rect" id="Node000026" href="$namespacevfs.html#a354e3f160eb026acaea0a5d6b3afade3" title="向文件写入数据" alt="" coords="154,188,239,213"/>
+<area shape="poly" id="edge45_Node000001_Node000026" title=" " alt="" coords="63,337,172,221,176,225,67,340"/>
+<area shape="rect" id="Node000003" href="$namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="575,304,703,329"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="441,223,498,240,557,266,607,295,604,299,554,271,496,244,440,228"/>
+<area shape="poly" id="edge8_Node000005_Node000003" title=" " alt="" coords="213,603,294,541,395,479,496,417,608,336,612,340,499,422,398,483,298,546,216,607"/>
+<area shape="rect" id="Node000006" href="$namespacevfs.html#a1f319700095b5c6a4308289a9f190aa7" title="添加子 dentry" alt="" coords="585,605,693,631"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="242,615,571,615,571,621,242,621"/>
+<area shape="rect" id="Node000007" href="$namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="347,859,447,884"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="203,631,211,671,228,726,257,786,275,813,298,837,315,849,334,858,332,863,312,854,294,841,271,817,252,789,223,728,206,672,197,632"/>
+<area shape="rect" id="Node000008" href="$namespacevfs.html#a1ff3d436875fc8c5da193242bf010442" title="在 dentry 的子节点中查找指定名称" alt="" coords="583,907,694,932"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="204,630,214,663,233,708,261,754,278,775,298,793,323,810,347,820,392,828,440,831,468,835,498,845,556,871,606,897,603,902,554,875,496,850,466,841,439,836,391,833,345,825,321,815,294,797,274,779,256,757,228,710,209,665,199,632"/>
+<area shape="rect" id="Node000009" href="$namespacevfs.html#ab13a5ee8d7ce0e205943bf30c6d5fffa" title="路径解析，查找 dentry" alt="" coords="349,757,445,783"/>
+<area shape="poly" id="edge9_Node000005_Node000009" title=" " alt="" coords="216,629,369,747,366,751,213,633"/>
+<area shape="rect" id="Node000013" href="$classvfs_1_1InodeOps.html#ae32850507aff7e8dfdc46f813cad31d1" title="创建目录" alt="" coords="319,555,475,580"/>
+<area shape="poly" id="edge16_Node000005_Node000013" title=" " alt="" coords="241,604,332,581,333,586,242,609"/>
+<area shape="poly" id="edge13_Node000009_Node000003" title=" " alt="" coords="444,762,472,752,495,736,626,342,631,343,499,740,474,757,446,767"/>
+<area shape="poly" id="edge10_Node000009_Node000006" title=" " alt="" coords="444,757,496,736,521,717,544,695,610,638,614,642,547,699,524,721,499,740,446,761"/>
+<area shape="poly" id="edge12_Node000009_Node000008" title=" " alt="" coords="446,778,499,800,524,820,547,843,612,896,609,900,544,847,521,824,496,804,444,783"/>
+<area shape="rect" id="Node000010" href="$namespacevfs.html#aa856f00891a7489bb883b8501f25d703" title="复制路径组件到缓冲区" alt="" coords="545,807,732,832"/>
+<area shape="poly" id="edge11_Node000009_Node000010" title=" " alt="" coords="445,777,563,801,562,807,444,782"/>
+<area shape="rect" id="Node000011" href="$classvfs_1_1InodeOps.html#af27f0ad7fd502bb65eafa84e6e282306" title="在目录中查找指定名称的 inode" alt="" coords="556,708,721,733"/>
+<area shape="poly" id="edge14_Node000009_Node000011" title=" " alt="" coords="444,758,562,733,563,739,445,763"/>
+<area shape="rect" id="Node000012" href="$namespacevfs.html#a490771ecf458352f6712396d6585358a" title="跳过路径中的前导斜杠" alt="" coords="549,757,728,783"/>
+<area shape="poly" id="edge15_Node000009_Node000012" title=" " alt="" coords="445,767,536,767,536,773,445,773"/>
+<area shape="poly" id="edge22_Node000014_Node000003" title=" " alt="" coords="239,412,356,410,427,402,497,387,556,363,606,335,609,339,558,368,498,393,428,408,357,415,239,417"/>
+<area shape="poly" id="edge18_Node000014_Node000006" title=" " alt="" coords="230,423,349,473,499,541,604,596,602,601,496,546,347,478,228,428"/>
+<area shape="poly" id="edge20_Node000014_Node000007" title=" " alt="" coords="204,425,251,593,261,652,264,699,273,743,283,767,298,794,327,825,360,849,357,854,323,829,294,797,278,769,268,745,259,700,255,653,245,595,199,426"/>
+<area shape="poly" id="edge23_Node000014_Node000009" title=" " alt="" coords="207,424,298,591,384,744,379,746,294,594,202,427"/>
+<area shape="rect" id="Node000015" href="$classvfs_1_1InodeOps.html#a45b634889f988376eac511bd6215ddda" title="在目录中创建新文件" alt="" coords="315,303,478,328"/>
+<area shape="poly" id="edge19_Node000014_Node000015" title=" " alt="" coords="210,397,247,368,295,338,316,330,318,335,297,343,250,372,214,402"/>
+<area shape="rect" id="Node000016" href="$classvfs_1_1FileSystem.html#a2db4470f64b2b51611fd397715e9f154" title="获取文件系统的文件操作接口" alt="" coords="296,352,497,377"/>
+<area shape="poly" id="edge21_Node000014_Node000016" title=" " alt="" coords="238,400,330,378,331,383,240,405"/>
+<area shape="rect" id="Node000017" href="$classvfs_1_1FileOps.html#a549592d8a9220de440964b61da1384e0" title="打开文件，准备底层 I/O 句柄" alt="" coords="327,253,467,279"/>
+<area shape="poly" id="edge24_Node000014_Node000017" title=" " alt="" coords="202,398,237,345,263,315,295,289,312,280,315,284,297,294,267,319,241,348,207,401"/>
+<area shape="poly" id="edge26_Node000018_Node000003" title=" " alt="" coords="238,14,294,16,362,25,433,44,467,59,499,79,526,101,549,127,588,186,615,243,632,290,627,291,610,245,583,188,545,131,522,105,496,83,465,64,431,49,361,30,294,21,238,19"/>
+<area shape="poly" id="edge28_Node000019_Node000003" title=" " alt="" coords="248,68,303,70,368,78,435,94,468,107,499,124,544,161,581,207,610,252,629,290,624,293,605,255,577,210,540,165,496,128,466,112,434,100,367,83,303,75,248,73"/>
+<area shape="poly" id="edge32_Node000020_Node000003" title=" " alt="" coords="204,808,239,757,265,726,294,699,323,678,349,664,398,647,446,629,470,613,495,591,521,561,545,528,583,458,610,393,627,342,632,344,615,395,588,461,549,531,526,564,499,595,473,618,448,633,400,652,352,669,326,683,298,703,269,730,244,760,208,811"/>
+<area shape="poly" id="edge30_Node000020_Node000007" title=" " alt="" coords="243,830,334,853,333,858,242,836"/>
+<area shape="poly" id="edge31_Node000020_Node000008" title=" " alt="" coords="232,833,250,845,260,859,267,873,272,899,278,923,285,934,297,944,334,961,373,971,414,973,456,971,533,955,596,935,597,940,535,961,456,976,414,979,373,976,332,966,295,948,282,938,273,926,267,901,262,875,256,862,246,849,229,837"/>
+<area shape="poly" id="edge33_Node000020_Node000009" title=" " alt="" coords="242,808,335,783,336,788,243,813"/>
+<area shape="rect" id="Node000021" href="$namespacevfs.html#a06e542e5a64ecef3b0e2df5427d0ed17" title="从父 dentry 中移除子 dentry" alt="" coords="328,1009,465,1035"/>
+<area shape="poly" id="edge34_Node000020_Node000021" title=" " alt="" coords="234,833,250,846,263,865,270,884,273,920,277,954,284,971,298,988,317,1002,314,1006,294,992,280,974,272,956,268,920,265,885,258,867,246,849,231,837"/>
+<area shape="rect" id="Node000022" href="$classvfs_1_1InodeOps.html#ab2cffc8e80fe733824100cbe78cdd4a4" title="删除目录" alt="" coords="317,908,476,933"/>
+<area shape="poly" id="edge35_Node000020_Node000022" title=" " alt="" coords="229,833,250,845,264,859,273,872,283,883,297,894,311,901,308,906,295,899,279,887,269,875,260,862,246,849,226,837"/>
+<area shape="poly" id="edge37_Node000023_Node000003" title=" " alt="" coords="238,125,292,123,359,125,430,137,465,147,499,161,540,189,576,224,605,260,625,291,621,294,600,263,572,227,537,193,496,166,464,152,429,142,358,131,292,128,238,131"/>
+<area shape="poly" id="edge41_Node000024_Node000003" title=" " alt="" coords="231,856,246,846,262,820,268,794,275,769,282,756,294,744,321,728,348,721,398,722,422,724,446,723,471,715,495,699,517,650,555,548,626,342,631,343,560,549,522,652,499,702,473,720,447,728,422,729,398,727,348,726,323,733,298,748,286,759,279,771,273,796,267,822,250,849,234,861"/>
+<area shape="poly" id="edge39_Node000024_Node000007" title=" " alt="" coords="243,869,333,869,333,874,243,874"/>
+<area shape="poly" id="edge40_Node000024_Node000008" title=" " alt="" coords="235,882,250,895,266,923,272,950,269,1003,267,1027,269,1051,278,1073,298,1095,323,1112,347,1123,370,1129,393,1129,441,1118,496,1094,519,1080,541,1063,577,1022,605,980,624,944,629,946,610,983,581,1026,544,1067,522,1085,499,1099,443,1123,393,1135,369,1134,345,1128,320,1116,294,1099,273,1076,264,1052,262,1027,264,1002,267,950,261,924,246,898,231,886"/>
+<area shape="poly" id="edge42_Node000024_Node000009" title=" " alt="" coords="224,856,247,845,358,787,361,792,249,850,226,861"/>
+<area shape="poly" id="edge43_Node000024_Node000021" title=" " alt="" coords="232,882,250,895,267,920,274,944,281,966,298,988,319,1002,316,1006,294,992,276,969,269,945,262,922,246,899,229,886"/>
+<area shape="rect" id="Node000025" href="$classvfs_1_1InodeOps.html#a1af54003e9a15445c4a4976e230cc5c2" title="删除文件（解除链接）" alt="" coords="316,1059,477,1084"/>
+<area shape="poly" id="edge44_Node000024_Node000025" title=" " alt="" coords="234,882,250,895,263,915,270,936,272,974,276,1010,283,1028,298,1045,305,1051,302,1055,294,1049,279,1031,271,1012,267,974,265,937,259,918,246,898,231,886"/>
+<area shape="poly" id="edge46_Node000026_Node000003" title=" " alt="" coords="239,187,292,177,358,170,429,172,464,179,498,189,537,209,572,236,622,291,618,295,568,240,534,214,496,194,463,184,428,178,358,176,293,182,240,192"/>
+</map>

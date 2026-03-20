@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['可失败操作优先使用_20tt_20expected_20t_20tt_0',['可失败操作优先使用 &lt;tt&gt;Expected&lt;T&gt;&lt;/tt&gt;',['../md_coding__standards.html#autotoc_md256',1,'']]]
+  ['参考文档_0',['参考文档',['../md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md367',1,'参考文档'],['../md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md394',1,'参考文档']]]
 ];

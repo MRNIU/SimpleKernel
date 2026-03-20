@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['内存布局_0',['内存布局',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md44',1,'内存布局'],['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md71',1,'内存布局'],['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md97',1,'内存布局']]]
+  ['典型设备树配置_0',['2. 典型设备树配置',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md144',1,'']]]
 ];

@@ -321,30 +321,30 @@ Functions</h2></td></tr>
 <dl class="section pre"><dt>Precondition</dt><dd>InterruptInit 已完成 </dd></dl>
 <dl class="section post"><dt>Postcondition</dt><dd>定时器中断已启用，系统 tick 开始计数 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="aarch64_2timer_8cpp_source.html#l00047">47</a> of file <a class="el" href="aarch64_2timer_8cpp_source.html">timer.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   47</span>                         {</div>
-<div class="line"><span class="lineno">   48</span>  <span class="comment">// 计算 interval</span></div>
-<div class="line"><span class="lineno">   49</span>  interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;</div>
-<div class="line"><span class="lineno">   50</span> </div>
-<div class="line"><span class="lineno">   51</span>  <span class="comment">// 获取定时器中断号</span></div>
-<div class="line"><span class="lineno">   52</span>  timer_intid = KernelFdtSingleton::instance()</div>
-<div class="line"><span class="lineno">   53</span>                    .GetAarch64Intid(<span class="stringliteral">&quot;arm,armv8-timer&quot;</span>)</div>
-<div class="line"><span class="lineno">   54</span>                    .value() +</div>
-<div class="line"><span class="lineno">   55</span>                <a class="code hl_variable" href="classGic.html#abeca94707673918c42d6dc523360816f">Gic::kPpiBase</a>;</div>
-<div class="line"><span class="lineno">   56</span> </div>
-<div class="line"><span class="lineno">   57</span>  InterruptSingleton::instance().RegisterInterruptFunc(</div>
-<div class="line"><span class="lineno">   58</span>      timer_intid, InterruptDelegate::create&lt;TimerHandler&gt;());</div>
-<div class="line"><span class="lineno">   59</span> </div>
-<div class="line"><span class="lineno">   60</span>  InterruptSingleton::instance().Ppi(timer_intid, <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
+<p class="definition">Definition at line <a class="el" href="aarch64_2timer_8cpp_source.html#l00049">49</a> of file <a class="el" href="aarch64_2timer_8cpp_source.html">timer.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   49</span>                         {</div>
+<div class="line"><span class="lineno">   50</span>  <span class="comment">// 计算 interval</span></div>
+<div class="line"><span class="lineno">   51</span>  interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;</div>
+<div class="line"><span class="lineno">   52</span> </div>
+<div class="line"><span class="lineno">   53</span>  <span class="comment">// 获取定时器中断号</span></div>
+<div class="line"><span class="lineno">   54</span>  timer_intid = KernelFdtSingleton::instance()</div>
+<div class="line"><span class="lineno">   55</span>                    .GetAarch64Intid(<span class="stringliteral">&quot;arm,armv8-timer&quot;</span>)</div>
+<div class="line"><span class="lineno">   56</span>                    .value() +</div>
+<div class="line"><span class="lineno">   57</span>                <a class="code hl_variable" href="classGic.html#abeca94707673918c42d6dc523360816f">Gic::kPpiBase</a>;</div>
+<div class="line"><span class="lineno">   58</span> </div>
+<div class="line"><span class="lineno">   59</span>  InterruptSingleton::instance().RegisterInterruptFunc(</div>
+<div class="line"><span class="lineno">   60</span>      timer_intid, InterruptDelegate::create&lt;TimerHandler&gt;());</div>
 <div class="line"><span class="lineno">   61</span> </div>
-<div class="line"><span class="lineno">   62</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Clear();</div>
-<div class="line"><span class="lineno">   63</span>  cpu_io::CNTV_CTL_EL0::IMASK::Set();</div>
-<div class="line"><span class="lineno">   64</span> </div>
-<div class="line"><span class="lineno">   65</span>  cpu_io::CNTV_TVAL_EL0::Write(interval);</div>
+<div class="line"><span class="lineno">   62</span>  InterruptSingleton::instance().Ppi(timer_intid, <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
+<div class="line"><span class="lineno">   63</span> </div>
+<div class="line"><span class="lineno">   64</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Clear();</div>
+<div class="line"><span class="lineno">   65</span>  cpu_io::CNTV_CTL_EL0::IMASK::Set();</div>
 <div class="line"><span class="lineno">   66</span> </div>
-<div class="line"><span class="lineno">   67</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Set();</div>
-<div class="line"><span class="lineno">   68</span>  cpu_io::CNTV_CTL_EL0::IMASK::Clear();</div>
-<div class="line"><span class="lineno">   69</span>}</div>
+<div class="line"><span class="lineno">   67</span>  cpu_io::CNTV_TVAL_EL0::Write(interval);</div>
+<div class="line"><span class="lineno">   68</span> </div>
+<div class="line"><span class="lineno">   69</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Set();</div>
+<div class="line"><span class="lineno">   70</span>  cpu_io::CNTV_CTL_EL0::IMASK::Clear();</div>
+<div class="line"><span class="lineno">   71</span>}</div>
 <div class="ttc" id="aclassGic_html_abeca94707673918c42d6dc523360816f"><div class="ttname"><a href="classGic.html#abeca94707673918c42d6dc523360816f">Gic::kPpiBase</a></div><div class="ttdeci">static constexpr size_t kPpiBase</div><div class="ttdef"><b>Definition</b> <a href="gic_8h_source.html#l00023">gic.h:23</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_a52b8a7263a31e6670ef4dec7922d9e72"><div class="ttname"><a href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a></div><div class="ttdeci">auto GetCurrentCoreId() -&gt; size_t</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00026">cpu_io.h:26</a></div></div>
 </div><!-- fragment --><div class="dynheader">
@@ -391,18 +391,18 @@ Here is the caller graph for this function:</div>
 <dl class="section pre"><dt>Precondition</dt><dd>主核已完成 TimerInit，从核已完成 InterruptInitSMP </dd></dl>
 <dl class="section post"><dt>Postcondition</dt><dd>从核的定时器中断已启用 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="aarch64_2timer_8cpp_source.html#l00035">35</a> of file <a class="el" href="aarch64_2timer_8cpp_source.html">timer.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   35</span>                            {</div>
-<div class="line"><span class="lineno">   36</span>  InterruptSingleton::instance().Ppi(timer_intid, <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
-<div class="line"><span class="lineno">   37</span> </div>
-<div class="line"><span class="lineno">   38</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Clear();</div>
-<div class="line"><span class="lineno">   39</span>  cpu_io::CNTV_CTL_EL0::IMASK::Set();</div>
-<div class="line"><span class="lineno">   40</span> </div>
-<div class="line"><span class="lineno">   41</span>  cpu_io::CNTV_TVAL_EL0::Write(interval);</div>
+<p class="definition">Definition at line <a class="el" href="aarch64_2timer_8cpp_source.html#l00037">37</a> of file <a class="el" href="aarch64_2timer_8cpp_source.html">timer.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   37</span>                            {</div>
+<div class="line"><span class="lineno">   38</span>  InterruptSingleton::instance().Ppi(timer_intid, <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
+<div class="line"><span class="lineno">   39</span> </div>
+<div class="line"><span class="lineno">   40</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Clear();</div>
+<div class="line"><span class="lineno">   41</span>  cpu_io::CNTV_CTL_EL0::IMASK::Set();</div>
 <div class="line"><span class="lineno">   42</span> </div>
-<div class="line"><span class="lineno">   43</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Set();</div>
-<div class="line"><span class="lineno">   44</span>  cpu_io::CNTV_CTL_EL0::IMASK::Clear();</div>
-<div class="line"><span class="lineno">   45</span>}</div>
+<div class="line"><span class="lineno">   43</span>  cpu_io::CNTV_TVAL_EL0::Write(interval);</div>
+<div class="line"><span class="lineno">   44</span> </div>
+<div class="line"><span class="lineno">   45</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Set();</div>
+<div class="line"><span class="lineno">   46</span>  cpu_io::CNTV_CTL_EL0::IMASK::Clear();</div>
+<div class="line"><span class="lineno">   47</span>}</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

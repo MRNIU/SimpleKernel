@@ -1,37 +1,53 @@
 <map id="syscall_dispatcher" name="syscall_dispatcher">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,215,148,241"/>
-<area shape="rect" id="Node000002" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="409,141,485,166"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="78,214,90,175,112,123,146,69,169,46,195,27,236,8,272,3,309,10,351,27,380,47,404,74,437,127,433,130,400,77,377,51,348,32,307,15,272,8,237,14,197,32,172,50,151,72,117,125,95,177,84,216"/>
-<area shape="rect" id="Node000003" href="$syscall_8cpp.html#afad53ff6b95bf6179b42aac97f2c609e" title="创建新线程（或进程）" alt="" coords="229,42,316,67"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="82,214,124,149,156,110,194,77,215,66,217,70,198,81,160,114,128,152,87,217"/>
-<area shape="rect" id="Node000004" href="$syscall_8cpp.html#a7604e519b5138da9c1db6a2626e1998f" title="退出当前进程或线程" alt="" coords="235,239,311,265"/>
-<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="149,234,221,243,220,248,148,239"/>
-<area shape="rect" id="Node000006" href="$syscall_8cpp.html#aacb8aae87d617d88cea5c7515a1cf622" title="创建新进程（fork）" alt="" coords="234,91,311,117"/>
-<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="88,213,132,171,162,147,195,126,220,115,222,120,197,130,165,151,136,175,92,217"/>
-<area shape="rect" id="Node000007" href="$syscall_8cpp.html#a7e0465bdb3adc9a861f78e561bb0cf0c" title="快速用户空间互斥锁操作（futex）" alt="" coords="230,289,315,314"/>
-<area shape="poly" id="edge9_Node000001_Node000007" title=" " alt="" coords="107,238,197,275,217,282,216,287,195,280,105,243"/>
-<area shape="rect" id="Node000010" href="$syscall_8cpp.html#aa3457b4ff33f8308631329d0ccdafd26" title="获取当前线程ID" alt="" coords="228,141,317,166"/>
-<area shape="poly" id="edge13_Node000001_Node000010" title=" " alt="" coords="105,213,195,175,215,168,217,173,197,180,107,218"/>
-<area shape="rect" id="Node000011" href="$syscall_8cpp.html#a29162da1696b208f87b148aef8449e5f" title="设置线程ID地址（用于线程退出时的清理）" alt="" coords="196,190,349,215"/>
-<area shape="poly" id="edge15_Node000001_Node000011" title=" " alt="" coords="148,216,182,212,183,217,149,222"/>
-<area shape="rect" id="Node000012" href="$syscall_8cpp.html#a25c4acbedb0e92618dfb30e0e67827c7" title="休眠指定毫秒数" alt="" coords="229,338,316,363"/>
-<area shape="poly" id="edge17_Node000001_Node000012" title=" " alt="" coords="92,239,136,281,165,304,197,324,218,334,215,338,195,329,162,308,132,285,88,243"/>
-<area shape="rect" id="Node000013" href="$syscall_8cpp.html#af2cff00ae45f6e285b75cff49dff52d4" title="向文件描述符写入数据" alt="" coords="231,387,315,413"/>
-<area shape="poly" id="edge18_Node000001_Node000013" title=" " alt="" coords="87,239,128,304,160,341,197,374,219,385,217,390,195,378,156,345,124,307,82,242"/>
-<area shape="rect" id="Node000015" href="$syscall_8cpp.html#aec4395077c896b991b8d8beb2eefd40f" title="主动放弃CPU，让出时间片" alt="" coords="231,437,314,462"/>
-<area shape="poly" id="edge20_Node000001_Node000015" title=" " alt="" coords="85,240,98,276,121,326,155,378,175,402,198,423,220,436,217,440,194,428,171,406,150,381,117,328,93,278,80,242"/>
-<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="317,63,351,76,391,102,424,129,421,133,387,106,348,81,315,68"/>
-<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="310,241,348,226,387,201,421,174,424,178,391,205,351,230,312,246"/>
-<area shape="rect" id="Node000005" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="406,239,489,265"/>
-<area shape="poly" id="edge6_Node000004_Node000005" title=" " alt="" coords="311,249,392,249,392,255,311,255"/>
-<area shape="poly" id="edge8_Node000006_Node000002" title=" " alt="" coords="312,112,397,136,395,142,311,117"/>
-<area shape="poly" id="edge11_Node000007_Node000002" title=" " alt="" coords="314,291,348,275,387,233,428,176,432,179,391,236,351,280,317,295"/>
-<area shape="rect" id="Node000008" href="$namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="397,338,497,363"/>
-<area shape="poly" id="edge10_Node000007_Node000008" title=" " alt="" coords="316,311,390,332,388,337,315,316"/>
-<area shape="rect" id="Node000009" href="$namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="402,289,493,314"/>
-<area shape="poly" id="edge12_Node000007_Node000009" title=" " alt="" coords="316,299,388,299,388,304,316,304"/>
-<area shape="poly" id="edge14_Node000010_Node000002" title=" " alt="" coords="317,151,395,151,395,156,317,156"/>
-<area shape="poly" id="edge16_Node000011_Node000002" title=" " alt="" coords="318,187,395,165,396,170,319,193"/>
-<area shape="rect" id="Node000014" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="400,387,495,413"/>
-<area shape="poly" id="edge19_Node000013_Node000014" title=" " alt="" coords="315,397,386,397,386,403,315,403"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,353,148,379"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="419,280,495,305"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="76,353,83,302,101,229,117,190,137,153,162,119,195,92,237,69,277,62,317,70,360,92,382,109,400,129,427,177,445,226,454,266,449,267,440,227,423,179,396,132,378,113,357,96,315,75,277,67,239,74,197,96,166,123,141,155,121,192,106,230,88,303,82,354"/>
+<area shape="rect" id="Node000003" href="$syscall_8cpp.html#afad53ff6b95bf6179b42aac97f2c609e" title="创建新线程（或进程）" alt="" coords="234,107,321,132"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="78,352,91,312,113,255,147,194,169,166,194,141,220,127,222,132,198,145,173,169,152,197,118,257,96,313,84,354"/>
+<area shape="rect" id="Node000004" href="$syscall_8cpp.html#a7604e519b5138da9c1db6a2626e1998f" title="退出当前进程或线程" alt="" coords="239,5,315,31"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="76,353,84,298,103,218,119,173,138,128,163,86,194,48,209,36,225,28,228,33,212,41,198,52,168,89,143,131,124,175,108,219,89,299,82,354"/>
+<area shape="rect" id="Node000006" href="$syscall_8cpp.html#aacb8aae87d617d88cea5c7515a1cf622" title="创建新进程（fork）" alt="" coords="239,156,316,181"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="81,352,96,319,120,276,153,230,194,190,224,176,227,181,198,195,157,233,124,279,100,322,86,354"/>
+<area shape="rect" id="Node000007" href="$syscall_8cpp.html#a7e0465bdb3adc9a861f78e561bb0cf0c" title="快速用户空间互斥锁操作（futex）" alt="" coords="235,551,320,576"/>
+<area shape="poly" id="edge9_Node000001_Node000007" title=" " alt="" coords="86,378,100,410,124,453,157,499,198,537,223,550,220,555,194,542,153,502,120,456,96,413,81,380"/>
+<area shape="rect" id="Node000010" href="$syscall_8cpp.html#aa3457b4ff33f8308631329d0ccdafd26" title="获取当前线程ID" alt="" coords="233,205,322,231"/>
+<area shape="poly" id="edge13_Node000001_Node000010" title=" " alt="" coords="85,351,128,298,159,267,195,240,218,228,221,233,197,244,162,271,132,301,89,355"/>
+<area shape="rect" id="Node000011" href="$syscall_8cpp.html#a68477c081721f602e62df82563f19b80" title="向指定进程发送信号" alt="" coords="242,255,313,280"/>
+<area shape="poly" id="edge15_Node000001_Node000011" title=" " alt="" coords="93,351,138,321,195,289,228,277,230,282,197,294,141,325,96,356"/>
+<area shape="rect" id="Node000012" href="$syscall_8cpp.html#a414c1ccbcab1407025b73fee1ad24b73" title="获取线程的CPU亲和性" alt="" coords="196,304,359,329"/>
+<area shape="poly" id="edge17_Node000001_Node000012" title=" " alt="" coords="128,351,211,330,212,335,130,356"/>
+<area shape="rect" id="Node000013" href="$syscall_8cpp.html#a7c490d0367177a75035cb12b79b24416" title="设置线程的CPU亲和性" alt="" coords="196,501,359,527"/>
+<area shape="poly" id="edge19_Node000001_Node000013" title=" " alt="" coords="89,377,132,430,163,460,197,486,211,494,209,499,195,491,159,464,128,433,85,380"/>
+<area shape="rect" id="Node000014" href="$syscall_8cpp.html#a29162da1696b208f87b148aef8449e5f" title="设置线程ID地址（用于线程退出时的清理）" alt="" coords="201,353,354,379"/>
+<area shape="poly" id="edge22_Node000001_Node000014" title=" " alt="" coords="148,363,187,363,187,369,148,369"/>
+<area shape="rect" id="Node000015" href="$syscall_8cpp.html#a5237833565677bd163e512cca59d26d9" title="设置信号处理函数" alt="" coords="222,403,333,428"/>
+<area shape="poly" id="edge24_Node000001_Node000015" title=" " alt="" coords="130,376,212,397,211,402,128,381"/>
+<area shape="rect" id="Node000016" href="$syscall_8cpp.html#aee74232f8db96747000229fc05c54fd4" title="修改进程信号掩码" alt="" coords="210,452,345,477"/>
+<area shape="poly" id="edge26_Node000001_Node000016" title=" " alt="" coords="97,377,141,406,197,437,217,445,215,450,195,442,139,411,94,381"/>
+<area shape="rect" id="Node000017" href="$syscall_8cpp.html#a25c4acbedb0e92618dfb30e0e67827c7" title="休眠指定毫秒数" alt="" coords="234,600,321,625"/>
+<area shape="poly" id="edge28_Node000001_Node000017" title=" " alt="" coords="84,378,96,419,118,475,152,535,173,563,198,587,222,600,220,605,194,591,169,566,147,538,113,477,91,420,78,380"/>
+<area shape="rect" id="Node000018" href="$syscall_8cpp.html#af2cff00ae45f6e285b75cff49dff52d4" title="向文件描述符写入数据" alt="" coords="235,649,319,675"/>
+<area shape="poly" id="edge29_Node000001_Node000018" title=" " alt="" coords="82,379,92,427,112,496,127,534,146,571,170,606,198,636,223,651,221,655,194,640,165,609,142,574,122,536,107,498,86,428,77,380"/>
+<area shape="rect" id="Node000020" href="$syscall_8cpp.html#aec4395077c896b991b8d8beb2eefd40f" title="主动放弃CPU，让出时间片" alt="" coords="236,699,319,724"/>
+<area shape="poly" id="edge31_Node000001_Node000020" title=" " alt="" coords="81,379,88,435,106,518,121,563,141,607,166,649,198,685,224,700,221,705,194,689,162,652,136,610,116,565,101,519,83,436,76,380"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="322,124,342,131,360,141,390,170,415,203,448,266,443,268,411,206,386,173,357,145,339,135,320,129"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="317,24,340,33,360,48,382,73,400,102,428,162,445,220,454,266,449,267,440,221,423,164,396,104,378,77,357,52,337,38,315,28"/>
+<area shape="rect" id="Node000005" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="415,5,498,31"/>
+<area shape="poly" id="edge6_Node000004_Node000005" title=" " alt="" coords="316,15,402,15,402,21,316,21"/>
+<area shape="poly" id="edge8_Node000006_Node000002" title=" " alt="" coords="317,173,360,190,406,228,440,267,436,271,402,232,357,195,315,178"/>
+<area shape="poly" id="edge11_Node000007_Node000002" title=" " alt="" coords="319,556,339,549,357,537,379,513,398,485,425,425,442,366,450,319,455,320,447,367,430,426,402,488,383,516,360,541,342,554,321,561"/>
+<area shape="rect" id="Node000008" href="$namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="407,501,507,527"/>
+<area shape="poly" id="edge10_Node000007_Node000008" title=" " alt="" coords="319,549,396,528,397,533,321,554"/>
+<area shape="rect" id="Node000009" href="$namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="411,551,502,576"/>
+<area shape="poly" id="edge12_Node000007_Node000009" title=" " alt="" coords="320,561,397,561,397,566,320,566"/>
+<area shape="poly" id="edge14_Node000010_Node000002" title=" " alt="" coords="323,227,360,240,423,271,421,276,358,244,322,232"/>
+<area shape="poly" id="edge16_Node000011_Node000002" title=" " alt="" coords="313,270,405,283,405,288,312,275"/>
+<area shape="poly" id="edge18_Node000012_Node000002" title=" " alt="" coords="358,303,405,297,405,302,359,308"/>
+<area shape="poly" id="edge21_Node000013_Node000002" title=" " alt="" coords="337,499,357,487,392,447,418,401,436,356,447,318,452,320,441,358,422,403,396,450,360,491,339,504"/>
+<area shape="poly" id="edge20_Node000013_Node000008" title=" " alt="" coords="359,511,393,511,393,517,359,517"/>
+<area shape="poly" id="edge23_Node000014_Node000002" title=" " alt="" coords="322,351,358,338,419,309,421,314,360,343,324,356"/>
+<area shape="poly" id="edge25_Node000015_Node000002" title=" " alt="" coords="330,400,357,388,402,352,435,315,439,318,405,356,360,392,333,405"/>
+<area shape="poly" id="edge27_Node000016_Node000002" title=" " alt="" coords="334,450,357,437,386,410,410,377,443,316,448,319,415,380,390,413,360,441,337,454"/>
+<area shape="rect" id="Node000019" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="409,649,504,675"/>
+<area shape="poly" id="edge30_Node000018_Node000019" title=" " alt="" coords="320,659,396,659,396,665,320,665"/>
 </map>

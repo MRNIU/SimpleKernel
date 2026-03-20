@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['环境搭建_0',['🛠️ 环境搭建',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md300',1,'']]]
+  ['测试验证_0',['3️⃣ 测试验证',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md292',1,'']]]
 ];

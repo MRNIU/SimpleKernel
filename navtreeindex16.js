@@ -1,5 +1,7 @@
 var NAVTREEINDEX16 =
 {
+"structDmaRegion.html#a5a38263ca76d092357b9191b90b79d3f":[27,0,25,4],
+"structDmaRegion.html#a8e496c547268d1ee391a4aa69a1ace8b":[27,0,25,2],
 "structDmaRegion.html#ab7969e4e9b23fe85beb424e303b1d7b2":[27,0,25,1],
 "structDmaRegion.html#ae973e8be84ebb9484c961c0254dbf8d3":[27,0,25,3],
 "structDriverEntry.html":[27,0,26],
@@ -244,10 +246,8 @@ var NAVTREEINDEX16 =
 "structTickEvent.html#a191ece7b61127508a52baca1610068dc":[27,0,87,0],
 "structacpi_1_1Acpi_1_1DescriptionHeader.html":[25,0,0,0,0],
 "structacpi_1_1Acpi_1_1DescriptionHeader.html":[27,0,0,0,0],
-"structacpi_1_1Acpi_1_1DescriptionHeader.html#a02f68af0b7314d819d78a36d97df5208":[25,0,0,0,0,6],
 "structacpi_1_1Acpi_1_1DescriptionHeader.html#a02f68af0b7314d819d78a36d97df5208":[27,0,0,0,0,6],
+"structacpi_1_1Acpi_1_1DescriptionHeader.html#a02f68af0b7314d819d78a36d97df5208":[25,0,0,0,0,6],
 "structacpi_1_1Acpi_1_1DescriptionHeader.html#a103559f99e32bae8ca5b3863fb6c66bf":[27,0,0,0,0,7],
-"structacpi_1_1Acpi_1_1DescriptionHeader.html#a103559f99e32bae8ca5b3863fb6c66bf":[25,0,0,0,0,7],
-"structacpi_1_1Acpi_1_1DescriptionHeader.html#a22843ba7e5649ee0bca07def83880b31":[25,0,0,0,0,2],
-"structacpi_1_1Acpi_1_1DescriptionHeader.html#a22843ba7e5649ee0bca07def83880b31":[27,0,0,0,0,2]
+"structacpi_1_1Acpi_1_1DescriptionHeader.html#a103559f99e32bae8ca5b3863fb6c66bf":[25,0,0,0,0,7]
 };

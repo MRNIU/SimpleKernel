@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['相关文档_0',['相关文档',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md32',1,'']]]
+  ['的设计理念_0',['🤖 面向 AI 的设计理念',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md287',1,'']]]
 ];

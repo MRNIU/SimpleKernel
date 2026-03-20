@@ -244,7 +244,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="fifo__scheduler_8hpp_source.html#l00089">89</a> of file <a class="el" href="fifo__scheduler_8hpp_source.html">fifo_scheduler.hpp</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">   89</span>{ <a class="code hl_variable" href="classSchedulerBase.html#abbd29119b4aa4dfb73e363c8538fb456">name</a> = <span class="stringliteral">&quot;FIFO&quot;</span>; }</div>
-<div class="ttc" id="aclassSchedulerBase_html_abbd29119b4aa4dfb73e363c8538fb456"><div class="ttname"><a href="classSchedulerBase.html#abbd29119b4aa4dfb73e363c8538fb456">SchedulerBase::name</a></div><div class="ttdeci">const char * name</div><div class="ttdoc">调度器名称</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00021">scheduler_base.hpp:21</a></div></div>
+<div class="ttc" id="aclassSchedulerBase_html_abbd29119b4aa4dfb73e363c8538fb456"><div class="ttname"><a href="classSchedulerBase.html#abbd29119b4aa4dfb73e363c8538fb456">SchedulerBase::name</a></div><div class="ttdeci">const char * name</div><div class="ttdoc">调度器名称</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00033">scheduler_base.hpp:33</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -366,8 +366,8 @@ Additional Inherited Members</h2></td></tr>
 <div class="line"><span class="lineno">   43</span>    <a class="code hl_variable" href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">stats_</a>.<a class="code hl_variable" href="structSchedulerBase_1_1Stats.html#a2b77710183b8706262c53dc712f0ba0d">total_dequeues</a>++;</div>
 <div class="line"><span class="lineno">   44</span>  }</div>
 <div class="ttc" id="aclassFifoScheduler_html_a1cdeee2a7f7823dfc823e38c3e84799d"><div class="ttname"><a href="classFifoScheduler.html#a1cdeee2a7f7823dfc823e38c3e84799d">FifoScheduler::ready_queue_</a></div><div class="ttdeci">etl::list&lt; TaskControlBlock *, kernel::config::kMaxReadyTasks &gt; ready_queue_</div><div class="ttdoc">就绪队列 (先进先出，固定容量)</div><div class="ttdef"><b>Definition</b> <a href="fifo__scheduler_8hpp_source.html#l00099">fifo_scheduler.hpp:99</a></div></div>
-<div class="ttc" id="aclassSchedulerBase_html_ac24df137a9e613ca5c5de71345cf5f94"><div class="ttname"><a href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">SchedulerBase::stats_</a></div><div class="ttdeci">Stats stats_</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00150">scheduler_base.hpp:150</a></div></div>
-<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a2b77710183b8706262c53dc712f0ba0d"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a2b77710183b8706262c53dc712f0ba0d">SchedulerBase::Stats::total_dequeues</a></div><div class="ttdeci">size_t total_dequeues</div><div class="ttdoc">总出队次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00030">scheduler_base.hpp:30</a></div></div>
+<div class="ttc" id="aclassSchedulerBase_html_ac24df137a9e613ca5c5de71345cf5f94"><div class="ttname"><a href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">SchedulerBase::stats_</a></div><div class="ttdeci">Stats stats_</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00162">scheduler_base.hpp:162</a></div></div>
+<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a2b77710183b8706262c53dc712f0ba0d"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a2b77710183b8706262c53dc712f0ba0d">SchedulerBase::Stats::total_dequeues</a></div><div class="ttdeci">size_t total_dequeues</div><div class="ttdoc">总出队次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00042">scheduler_base.hpp:42</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -435,7 +435,7 @@ Here is the caller graph for this function:</div>
 <div class="line"><span class="lineno">   34</span>    <a class="code hl_variable" href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">stats_</a>.<a class="code hl_variable" href="structSchedulerBase_1_1Stats.html#ad5a40384c3c0c779491463433e2a311e">total_enqueues</a>++;</div>
 <div class="line"><span class="lineno">   35</span>  }</div>
 <div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
-<div class="ttc" id="astructSchedulerBase_1_1Stats_html_ad5a40384c3c0c779491463433e2a311e"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#ad5a40384c3c0c779491463433e2a311e">SchedulerBase::Stats::total_enqueues</a></div><div class="ttdeci">size_t total_enqueues</div><div class="ttdoc">总入队次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00028">scheduler_base.hpp:28</a></div></div>
+<div class="ttc" id="astructSchedulerBase_1_1Stats_html_ad5a40384c3c0c779491463433e2a311e"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#ad5a40384c3c0c779491463433e2a311e">SchedulerBase::Stats::total_enqueues</a></div><div class="ttdeci">size_t total_enqueues</div><div class="ttdoc">总入队次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00040">scheduler_base.hpp:40</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -632,7 +632,7 @@ Here is the caller graph for this function:</div>
 <div class="fragment"><div class="line"><span class="lineno">   83</span>                                                                             {</div>
 <div class="line"><span class="lineno">   84</span>    <a class="code hl_variable" href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">stats_</a>.<a class="code hl_variable" href="structSchedulerBase_1_1Stats.html#a4e5165fd2356707d9c3cfa69b773a7f6">total_preemptions</a>++;</div>
 <div class="line"><span class="lineno">   85</span>  }</div>
-<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a4e5165fd2356707d9c3cfa69b773a7f6"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a4e5165fd2356707d9c3cfa69b773a7f6">SchedulerBase::Stats::total_preemptions</a></div><div class="ttdeci">size_t total_preemptions</div><div class="ttdoc">总抢占次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00034">scheduler_base.hpp:34</a></div></div>
+<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a4e5165fd2356707d9c3cfa69b773a7f6"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a4e5165fd2356707d9c3cfa69b773a7f6">SchedulerBase::Stats::total_preemptions</a></div><div class="ttdeci">size_t total_preemptions</div><div class="ttdoc">总抢占次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00046">scheduler_base.hpp:46</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -738,7 +738,7 @@ Here is the caller graph for this function:</div>
 <div class="line"><span class="lineno">   56</span>    <a class="code hl_variable" href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">stats_</a>.<a class="code hl_variable" href="structSchedulerBase_1_1Stats.html#a8659b427d166ead02a1cb2a6d44f14fa">total_picks</a>++;</div>
 <div class="line"><span class="lineno">   57</span>    <span class="keywordflow">return</span> next;</div>
 <div class="line"><span class="lineno">   58</span>  }</div>
-<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a8659b427d166ead02a1cb2a6d44f14fa"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a8659b427d166ead02a1cb2a6d44f14fa">SchedulerBase::Stats::total_picks</a></div><div class="ttdeci">size_t total_picks</div><div class="ttdoc">总选择次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00032">scheduler_base.hpp:32</a></div></div>
+<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a8659b427d166ead02a1cb2a6d44f14fa"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a8659b427d166ead02a1cb2a6d44f14fa">SchedulerBase::Stats::total_picks</a></div><div class="ttdeci">size_t total_picks</div><div class="ttdoc">总选择次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00044">scheduler_base.hpp:44</a></div></div>
 <div class="ttc" id="astructTaskControlBlock_html"><div class="ttname"><a href="structTaskControlBlock.html">TaskControlBlock</a></div><div class="ttdoc">任务控制块，管理进程/线程的核心数据结构</div><div class="ttdef"><b>Definition</b> <a href="task__control__block_8hpp_source.html#l00125">task_control_block.hpp:125</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>

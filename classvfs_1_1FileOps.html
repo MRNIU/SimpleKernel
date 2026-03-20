@@ -105,13 +105,13 @@ Inheritance diagram for vfs::FileOps:</div>
 <div class="dyncontent">
 <div class="center"><img src="classvfs_1_1FileOps__inherit__graph.png" border="0" usemap="#avfs_1_1FileOps_inherit__map" alt="Inheritance graph"/></div>
 <map name="avfs_1_1FileOps_inherit__map" id="avfs_1_1FileOps_inherit__map">
-<area shape="rect" title="File 操作接口" alt="" coords="153,5,259,391"/>
-<area shape="rect" href="classMockFileOps.html" title=" " alt="" coords="5,456,103,601"/>
-<area shape="poly" title=" " alt="" coords="150,327,90,457,85,455,145,324"/>
-<area shape="rect" href="classfatfs_1_1FatFsFileSystem_1_1FatFsFileOps.html" title="FatFS 文件操作实现" alt="" coords="127,439,285,619"/>
-<area shape="poly" title=" " alt="" coords="209,404,209,438,203,438,203,404"/>
-<area shape="rect" href="classramfs_1_1RamFs_1_1RamFsFileOps.html" title="File 操作实现类" alt="" coords="309,446,516,611"/>
-<area shape="poly" title=" " alt="" coords="268,293,363,444,359,447,264,296"/>
+<area shape="rect" title="File 操作接口" alt="" coords="153,5,259,411"/>
+<area shape="rect" href="classMockFileOps.html" title=" " alt="" coords="5,486,103,631"/>
+<area shape="poly" title=" " alt="" coords="150,343,88,487,83,484,145,341"/>
+<area shape="rect" href="classfatfs_1_1FatFsFileSystem_1_1FatFsFileOps.html" title="FatFS 文件操作实现" alt="" coords="127,459,285,659"/>
+<area shape="poly" title=" " alt="" coords="209,424,209,458,203,458,203,424"/>
+<area shape="rect" href="classramfs_1_1RamFs_1_1RamFsFileOps.html" title="File 操作实现类" alt="" coords="309,476,516,641"/>
+<area shape="poly" title=" " alt="" coords="268,308,367,475,362,477,263,311"/>
 </map>
 </div>
 <div class="dynheader">
@@ -119,12 +119,15 @@ Collaboration diagram for vfs::FileOps:</div>
 <div class="dyncontent">
 <div class="center"><img src="classvfs_1_1FileOps__coll__graph.png" border="0" usemap="#avfs_1_1FileOps_coll__map" alt="Collaboration graph"/></div>
 <map name="avfs_1_1FileOps_coll__map" id="avfs_1_1FileOps_coll__map">
-<area shape="rect" title="File 操作接口" alt="" coords="5,5,111,391"/>
+<area shape="rect" title="File 操作接口" alt="" coords="5,5,111,411"/>
 </map>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a549592d8a9220de440964b61da1384e0" id="r_a549592d8a9220de440964b61da1384e0"><td class="memItemLeft" align="right" valign="top">virtual auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classvfs_1_1FileOps.html#a549592d8a9220de440964b61da1384e0">Open</a> (<a class="el" href="structvfs_1_1File.html">File</a> *) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; void &gt;</td></tr>
+<tr class="memdesc:a549592d8a9220de440964b61da1384e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">打开文件，准备底层 I/O 句柄  <br /></td></tr>
+<tr class="separator:a549592d8a9220de440964b61da1384e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ef53d89fb2903479939c160ae475f1c" id="r_a0ef53d89fb2903479939c160ae475f1c"><td class="memItemLeft" align="right" valign="top">virtual auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classvfs_1_1FileOps.html#a0ef53d89fb2903479939c160ae475f1c">Read</a> (<a class="el" href="structvfs_1_1File.html">File</a> *file, void *buf, size_t count) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; size_t &gt;=0</td></tr>
 <tr class="memdesc:a0ef53d89fb2903479939c160ae475f1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">从文件读取数据  <br /></td></tr>
 <tr class="separator:a0ef53d89fb2903479939c160ae475f1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -157,7 +160,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="structvfs_1_1File.html" title="File — 打开的文件实例（每次 open 产生一个）">File</a> 操作接口 </p>
 
-<p class="definition">Definition at line <a class="el" href="vfs__types_8hpp_source.html#l00181">181</a> of file <a class="el" href="vfs__types_8hpp_source.html">vfs_types.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="vfs__types_8hpp_source.html#l00182">182</a> of file <a class="el" href="vfs__types_8hpp_source.html">vfs_types.hpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a6e18a7aa58d51056aff39d8d30c86038" name="a6e18a7aa58d51056aff39d8d30c86038"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6e18a7aa58d51056aff39d8d30c86038">&#9670;&#160;</a></span>FileOps() <span class="overload">[1/3]</span></h2>
@@ -301,6 +304,62 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a549592d8a9220de440964b61da1384e0" name="a549592d8a9220de440964b61da1384e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a549592d8a9220de440964b61da1384e0">&#9670;&#160;</a></span>Open()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual auto vfs::FileOps::Open </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structvfs_1_1File.html">File</a> *&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt;void&gt; </td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>打开文件，准备底层 I/O 句柄 </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">file</td><td>文件对象 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Expected&lt;void&gt; 成功或错误 </dd></dl>
+<dl class="section pre"><dt>Precondition</dt><dd>file != nullptr </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>默认实现为空操作，适用于不需要额外打开步骤的文件系统（如 ramfs） </dd></dl>
+
+<p>Reimplemented in <a class="el" href="classfatfs_1_1FatFsFileSystem_1_1FatFsFileOps.html#ab065b49c62f029127b97b1bfec5aeb99">fatfs::FatFsFileSystem::FatFsFileOps</a>.</p>
+
+<p class="definition">Definition at line <a class="el" href="vfs__types_8hpp_source.html#l00191">191</a> of file <a class="el" href="vfs__types_8hpp_source.html">vfs_types.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  191</span>{ <span class="keywordflow">return</span> {}; }</div>
+</div><!-- fragment --><div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classvfs_1_1FileOps_a549592d8a9220de440964b61da1384e0_icgraph.png" border="0" usemap="#aclassvfs_1_1FileOps_a549592d8a9220de440964b61da1384e0_icgraph" alt=""/></div>
+<map name="aclassvfs_1_1FileOps_a549592d8a9220de440964b61da1384e0_icgraph" id="aclassvfs_1_1FileOps_a549592d8a9220de440964b61da1384e0_icgraph">
+<area shape="rect" title="打开文件，准备底层 I/O 句柄" alt="" coords="277,31,417,56"/>
+<area shape="rect" href="namespacevfs.html#a3ff991d7efce0508dad20b97f2a2bda7" title="打开文件" alt="" coords="145,31,229,56"/>
+<area shape="poly" title=" " alt="" coords="264,46,230,46,230,41,264,41"/>
+<area shape="rect" href="fatfs__test_8cpp.html#afb81d7818811d88b500d6bef12c7128a" title=" " alt="" coords="9,5,93,31"/>
+<area shape="poly" title=" " alt="" coords="131,36,93,28,94,23,132,30"/>
+<area shape="rect" href="system__test_2ramfs__test_8cpp.html#ab04a3cc15e007fd782545ab5e4d78d59" title=" " alt="" coords="5,55,97,80"/>
+<area shape="poly" title=" " alt="" coords="132,56,98,62,97,57,131,50"/>
+</map>
+</div>
+
+</div>
+</div>
 <a id="a1bc2fb9755bc62b1ac1a2977f300c096" name="a1bc2fb9755bc62b1ac1a2977f300c096"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1bc2fb9755bc62b1ac1a2977f300c096">&#9670;&#160;</a></span>operator=() <span class="overload">[1/2]</span></h2>
 
@@ -413,7 +472,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="classvfs_1_1FileOps_a0ef53d89fb2903479939c160ae475f1c_icgraph.png" border="0" usemap="#aclassvfs_1_1FileOps_a0ef53d89fb2903479939c160ae475f1c_icgraph" alt=""/></div>
 <map name="aclassvfs_1_1FileOps_a0ef53d89fb2903479939c160ae475f1c_icgraph" id="aclassvfs_1_1FileOps_a0ef53d89fb2903479939c160ae475f1c_icgraph">
 <area shape="rect" title="从文件读取数据" alt="" coords="123,5,261,31"/>
-<area shape="rect" href="ramfs__test_8cpp.html#addf8ed2d26861661f5aa5578b3a21afa" title=" " alt="" coords="5,5,75,31"/>
+<area shape="rect" href="unit__test_2ramfs__test_8cpp.html#addf8ed2d26861661f5aa5578b3a21afa" title=" " alt="" coords="5,5,75,31"/>
 <area shape="poly" title=" " alt="" coords="109,21,75,21,75,15,109,15"/>
 </map>
 </div>
@@ -481,7 +540,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="classvfs_1_1FileOps_ab41d9ea7507afa0a49fde63164d01491_icgraph.png" border="0" usemap="#aclassvfs_1_1FileOps_ab41d9ea7507afa0a49fde63164d01491_icgraph" alt=""/></div>
 <map name="aclassvfs_1_1FileOps_ab41d9ea7507afa0a49fde63164d01491_icgraph" id="aclassvfs_1_1FileOps_ab41d9ea7507afa0a49fde63164d01491_icgraph">
 <area shape="rect" title="读取目录项" alt="" coords="123,5,281,31"/>
-<area shape="rect" href="ramfs__test_8cpp.html#a82ef6f0be5139d6338d66dec2af138c9" title=" " alt="" coords="5,5,75,31"/>
+<area shape="rect" href="unit__test_2ramfs__test_8cpp.html#a82ef6f0be5139d6338d66dec2af138c9" title=" " alt="" coords="5,5,75,31"/>
 <area shape="poly" title=" " alt="" coords="109,21,75,21,75,15,109,15"/>
 </map>
 </div>
@@ -547,7 +606,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="classvfs_1_1FileOps_a7aef73346cabd213e5523bcef65eca03_icgraph.png" border="0" usemap="#aclassvfs_1_1FileOps_a7aef73346cabd213e5523bcef65eca03_icgraph" alt=""/></div>
 <map name="aclassvfs_1_1FileOps_a7aef73346cabd213e5523bcef65eca03_icgraph" id="aclassvfs_1_1FileOps_a7aef73346cabd213e5523bcef65eca03_icgraph">
 <area shape="rect" title="调整文件偏移量" alt="" coords="123,5,261,31"/>
-<area shape="rect" href="ramfs__test_8cpp.html#afc8a3a6132dbf44937af0c1675651556" title=" " alt="" coords="5,5,75,31"/>
+<area shape="rect" href="unit__test_2ramfs__test_8cpp.html#afc8a3a6132dbf44937af0c1675651556" title=" " alt="" coords="5,5,75,31"/>
 <area shape="poly" title=" " alt="" coords="109,21,75,21,75,15,109,15"/>
 </map>
 </div>
@@ -614,9 +673,9 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="classvfs_1_1FileOps_ae44071b818591e0f8fd04982e6501ce4_icgraph.png" border="0" usemap="#aclassvfs_1_1FileOps_ae44071b818591e0f8fd04982e6501ce4_icgraph" alt=""/></div>
 <map name="aclassvfs_1_1FileOps_ae44071b818591e0f8fd04982e6501ce4_icgraph" id="aclassvfs_1_1FileOps_ae44071b818591e0f8fd04982e6501ce4_icgraph">
 <area shape="rect" title="向文件写入数据" alt="" coords="123,31,264,56"/>
-<area shape="rect" href="ramfs__test_8cpp.html#addf8ed2d26861661f5aa5578b3a21afa" title=" " alt="" coords="5,5,75,31"/>
+<area shape="rect" href="unit__test_2ramfs__test_8cpp.html#addf8ed2d26861661f5aa5578b3a21afa" title=" " alt="" coords="5,5,75,31"/>
 <area shape="poly" title=" " alt="" coords="109,32,75,26,75,21,110,27"/>
-<area shape="rect" href="ramfs__test_8cpp.html#afc8a3a6132dbf44937af0c1675651556" title=" " alt="" coords="5,55,75,80"/>
+<area shape="rect" href="unit__test_2ramfs__test_8cpp.html#afc8a3a6132dbf44937af0c1675651556" title=" " alt="" coords="5,55,75,80"/>
 <area shape="poly" title=" " alt="" coords="109,59,75,65,75,59,108,54"/>
 </map>
 </div>

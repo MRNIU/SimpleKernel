@@ -124,15 +124,15 @@ Collaboration diagram for fatfs::FatFsFileSystem::FatFsInodeOps:</div>
 <area shape="rect" href="structvfs_1_1Inode.html" title="Inode — 文件元数据（独立于路径名）" alt="" coords="140,461,248,626"/>
 <area shape="poly" title=" " alt="" coords="238,391,223,446,218,444,233,390"/>
 <area shape="poly" title=" " alt="" coords="319,865,347,769,367,672,369,650,374,650,373,672,352,770,325,866"/>
-<area shape="rect" href="classfatfs_1_1FatFsFileSystem_1_1FatFsFileOps.html" title="FatFS 文件操作实现" alt="" coords="89,1584,248,1764"/>
-<area shape="poly" title=" " alt="" coords="169,1522,167,1546,166,1568,161,1567,162,1545,164,1521"/>
+<area shape="rect" href="classfatfs_1_1FatFsFileSystem_1_1FatFsFileOps.html" title="FatFS 文件操作实现" alt="" coords="89,1584,248,1784"/>
+<area shape="poly" title=" " alt="" coords="168,1522,167,1560,167,1567,162,1567,162,1560,162,1522"/>
 <area shape="rect" href="classvfs_1_1FileSystem.html" title="文件系统类型基类" alt="" coords="46,95,174,301"/>
 <area shape="poly" title=" " alt="" coords="112,315,116,467,130,633,139,695,134,696,125,634,111,467,107,315"/>
 <area shape="poly" title=" " alt="" coords="137,300,173,444,168,445,132,301"/>
 <area shape="poly" title=" " alt="" coords="176,626,174,672,174,679,169,680,169,672,171,626"/>
-<area shape="poly" title=" " alt="" coords="192,1583,197,1560,200,1538,205,1538,202,1560,197,1584"/>
-<area shape="rect" href="classvfs_1_1FileOps.html" title="File 操作接口" alt="" coords="5,916,111,1301"/>
-<area shape="poly" title=" " alt="" coords="88,1315,105,1418,126,1521,143,1583,137,1585,121,1522,100,1419,82,1315"/>
+<area shape="poly" title=" " alt="" coords="192,1583,197,1560,200,1538,205,1538,202,1560,198,1584"/>
+<area shape="rect" href="classvfs_1_1FileOps.html" title="File 操作接口" alt="" coords="5,906,111,1311"/>
+<area shape="poly" title=" " alt="" coords="90,1325,126,1521,141,1583,136,1584,121,1522,85,1326"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -274,7 +274,7 @@ Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">  343</span> </div>
 <div class="line"><span class="lineno">  344</span>  <span class="keywordflow">if</span> (type == <a class="code hl_enumvalue" href="namespacevfs.html#a343f9844029f8d2a27c7a6d19ce24350a76d424355601791a04e7f55c4276cd87">vfs::FileType::kDirectory</a>) {</div>
 <div class="line"><span class="lineno">  345</span>    FRESULT fr = f_mkdir(full_path.data());</div>
-<div class="line"><span class="lineno">  346</span>    <span class="keywordflow">if</span> (fr != FR_OK) {</div>
+<div class="line"><span class="lineno">  346</span>    <span class="keywordflow">if</span> (fr != FR_OK &amp;&amp; fr != FR_EXIST) {</div>
 <div class="line"><span class="lineno">  347</span>      <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{FresultToErrorCode(fr)});</div>
 <div class="line"><span class="lineno">  348</span>    }</div>
 <div class="line"><span class="lineno">  349</span>  } <span class="keywordflow">else</span> {</div>

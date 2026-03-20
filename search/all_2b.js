@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['串口信息获取_0',['1. 串口信息获取',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md143',1,'']]]
+  ['与_20ai_20工具的结合方式_0',['与 AI 工具的结合方式',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md294',1,'']]]
 ];

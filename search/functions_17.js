@@ -1,7 +1,7 @@
 var searchData=
 [
   ['wait_0',['Wait',['../classTaskManager.html#ae546fc5dad8a73a6b17894beefa181e4',1,'TaskManager']]],
-  ['wait_5fsystem_5ftest_1',['wait_system_test',['../wait__system__test_8cpp.html#a1d61aadd4f03596c1c9a64a5e4e5191c',1,'wait_system_test() -&gt; bool:&#160;wait_system_test.cpp'],['../system__test_8h.html#a1d61aadd4f03596c1c9a64a5e4e5191c',1,'wait_system_test() -&gt; bool:&#160;wait_system_test.cpp']]],
+  ['wait_5ftest_1',['wait_test',['../wait__test_8cpp.html#a0bc418877ce0d6081c5edc9e705070c5',1,'wait_test() -&gt; bool:&#160;wait_test.cpp'],['../system__test_8h.html#a0bc418877ce0d6081c5edc9e705070c5',1,'wait_test() -&gt; bool:&#160;wait_test.cpp']]],
   ['wakeup_2',['wakeup',['../classTaskManager.html#a96d2a8187ce732bac7d0d952fd502181',1,'TaskManager::Wakeup(ResourceId resource_id) -&gt; void'],['../classTaskManager.html#a56b51842866033db39ad8c1227e7281d',1,'TaskManager::Wakeup(CpuSchedData &amp;cpu_sched, ResourceId resource_id) -&gt; void']]],
   ['wakeupap_3',['WakeupAp',['../classLocalApic.html#afb7c98a96f586c46f98b0cbd92f1fbf4',1,'LocalApic']]],
   ['wakeupone_4',['WakeupOne',['../classTaskManager.html#a31f143a78b2e95b1d3e9fb98c910959f',1,'TaskManager']]],
