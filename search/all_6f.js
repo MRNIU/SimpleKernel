@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['的设计理念_0',['🤖 面向 AI 的设计理念',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md287',1,'']]]
+  ['禁止事项_0',['禁止事项',['../md_coding__standards.html#autotoc_md261',1,'10. 禁止事项'],['../md_coding__standards.html#autotoc_md248',1,'禁止事项'],['../md_coding__standards.html#autotoc_md255',1,'禁止事项']]]
 ];

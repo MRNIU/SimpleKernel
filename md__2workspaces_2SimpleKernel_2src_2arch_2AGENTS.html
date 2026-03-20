@@ -92,11 +92,11 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2src_2ar
   <div class="headertitle"><div class="title">AGENTS.md — src/arch/</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md369"></a> </p>
-<h1><a class="anchor" id="autotoc_md370"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md358"></a> </p>
+<h1><a class="anchor" id="autotoc_md359"></a>
 OVERVIEW</h1>
 <p>Per-architecture implementations of <code><a class="el" href="arch_8h.html">arch.h</a></code> unified interface. Each arch has identical file structure: boot.S, arch_main.cpp, early_console.cpp, interrupt.S, interrupt_main.cpp, interrupt.cpp, timer.cpp, switch.S, syscall.cpp, backtrace.cpp, macro.S, link.ld.</p>
-<h1><a class="anchor" id="autotoc_md371"></a>
+<h1><a class="anchor" id="autotoc_md360"></a>
 STRUCTURE</h1>
 <div class="fragment"><div class="line">arch.h                  # Unified interface — ArchInit, InterruptInit, TimerInit, SyscallInit</div>
 <div class="line">aarch64/</div>
@@ -105,11 +105,7 @@ STRUCTURE</h1>
 <div class="line">riscv64/</div>
 <div class="line">  plic/                 # PLIC interrupt controller (plic.cpp + include/plic.h)</div>
 <div class="line">  include/              # Arch-private headers</div>
-<div class="line">x86_64/</div>
-<div class="line">  apic/                 # APIC: local_apic.cpp, io_apic.cpp, apic.cpp + include/</div>
-<div class="line">  include/              # Arch-private headers</div>
-<div class="line">  sipi.h                # SMP startup IPI definitions</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md372"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md361"></a>
 WHERE TO LOOK</h1>
 <ul>
 <li><b>Boot entry</b> → <code>boot.S</code> → sets stack, jumps to <code>_start</code> in <code><a class="el" href="src_2main_8cpp.html">src/main.cpp</a></code></li>
@@ -120,30 +116,29 @@ WHERE TO LOOK</h1>
 <li><b>Timer</b> → <code>timer.cpp</code> → arch-specific timer init and tick handler</li>
 <li><b>Link layout</b> → <code>link.ld</code> → memory map, section placement, symbol exports</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md373"></a>
+<h1><a class="anchor" id="autotoc_md362"></a>
 CONVENTIONS</h1>
 <ul>
 <li>Each arch directory mirrors the same file set — 1:1 correspondence</li>
-<li><a class="el" href="classInterrupt.html" title="AArch64 中断控制器实现">Interrupt</a> controllers live in subdirectories (gic/, plic/, apic/) with own CMakeLists.txt</li>
-<li>Assembly files use <code>.S</code> (preprocessed), <code>macro.S</code> for shared macros (riscv64, x86_64)</li>
+<li><a class="el" href="classInterrupt.html" title="AArch64 中断控制器实现">Interrupt</a> controllers live in subdirectories (gic/, plic/) with own CMakeLists.txt</li>
+<li>Assembly files use <code>.S</code> (preprocessed), <code>macro.S</code> for shared macros (riscv64)</li>
 <li><code>include/</code> subdirs contain arch-private headers NOT exported to other modules</li>
 <li><code>early_console.cpp</code> provides pre-device-framework output via arch-specific MMIO/SBI</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md374"></a>
+<h1><a class="anchor" id="autotoc_md363"></a>
 ANTI-PATTERNS</h1>
 <ul>
 <li><b>DO NOT</b> add arch-specific code outside <code>src/arch/{arch}/</code> — use <code><a class="el" href="arch_8h.html">arch.h</a></code> abstraction</li>
 <li><b>DO NOT</b> include arch-private headers from outside the arch directory</li>
-<li>x86_64 interrupt: template-heavy ISR registration can cause stack overflow — watch stack depth</li>
 <li><code>static_assert</code> guards on PerCpu alignment and <a class="el" href="structGuardType.html">GuardType</a> ABI — do not remove</li>
 <li><code>#error</code> in <a class="el" href="syscall_8hpp.html">syscall.hpp</a> for unsupported arch — intentional, add new arch case instead</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md375"></a>
+<h1><a class="anchor" id="autotoc_md364"></a>
 NOTES</h1>
 <ul>
-<li>Boot chains: x86_64 (U-Boot), riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)</li>
-<li>SMP: aarch64=PSCI, riscv64=SBI hart_start, x86_64=SIPI via APIC</li>
-<li>Early console: aarch64=PL011 MMIO, riscv64=SBI call, x86_64=COM1 port I/O</li>
+<li>Boot chains: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)</li>
+<li>SMP: aarch64=PSCI, riscv64=SBI hart_start</li>
+<li>Early console: aarch64=PL011 MMIO, riscv64=SBI call</li>
 <li>Backtrace uses ELF symbol table from <code><a class="el" href="kernel__elf_8hpp.html">kernel_elf.hpp</a></code> for address→name resolution </li>
 </ul>
 </div></div><!-- contents -->

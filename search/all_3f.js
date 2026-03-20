@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['功能特性_0',['功能特性',['../md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md360',1,'']]]
+  ['各架构实现_0',['各架构实现',['../md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md369',1,'']]]
 ];

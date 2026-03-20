@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['📖_20目录_0',['📖 目录',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md284',1,'']]],
-  ['📖_20table_20of_20contents_1',['📖 Table of Contents',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md322',1,'']]]
+  ['🔄_20多核处理特性_0',['🔄 多核处理特性',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md216',1,'']]]
 ];

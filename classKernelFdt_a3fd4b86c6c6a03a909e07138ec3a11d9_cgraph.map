@@ -1,7 +1,20 @@
 <map id="KernelFdt::GetAarch64Intid" name="KernelFdt::GetAarch64Intid">
-<area shape="rect" id="Node000001" title="获取 aarch64 中断号" alt="" coords="5,31,203,56"/>
-<area shape="rect" id="Node000002" href="$namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="341,5,441,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,32,327,21,327,26,203,37"/>
-<area shape="rect" id="Node000003" href="$classKernelFdt.html#a9ef34e2623b2d840a600a069393b5d24" title="根据 compatible 查找已启用的节点（跳过 status=&quot;disabled&quot;）" alt="" coords="251,55,531,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="203,49,237,52,237,57,202,54"/>
+<area shape="rect" id="Node000001" title="获取 aarch64 中断号" alt="" coords="5,66,203,91"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="341,41,441,66"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,67,327,56,327,62,203,73"/>
+<area shape="rect" id="Node000009" href="$classKernelFdt.html#a9ef34e2623b2d840a600a069393b5d24" title="根据 compatible 查找已启用的节点（跳过 status=&quot;disabled&quot;）" alt="" coords="251,90,531,115"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="203,84,237,87,237,92,202,90"/>
+<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="579,41,705,66"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="441,51,565,51,565,56,441,56"/>
+<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="959,15,1144,41"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="705,47,945,32,945,37,706,52"/>
+<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="753,66,911,91"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="706,59,740,64,739,69,705,64"/>
+<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1192,5,1455,45"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="1144,24,1178,24,1178,29,1144,30"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="887,63,982,41,983,46,889,68"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="980,67,1123,93"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="911,76,966,77,966,82,911,82"/>
+<area shape="rect" id="Node000008" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1276,70,1371,95"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="1123,78,1263,79,1263,85,1123,83"/>
 </map>

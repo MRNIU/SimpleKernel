@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['对照参考实现_0',['4️⃣ 对照参考实现',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md293',1,'']]]
+  ['应用核心_20ap_20初始化_0',['应用核心 (AP) 初始化',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md206',1,'']]]
 ];

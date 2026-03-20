@@ -11,11 +11,11 @@
 <area shape="rect" id="Node000010" href="$classvirtio_1_1blk_1_1VirtioBlk.html#a2eba21cbbca77632e2e999fbfe52d967" title="处理 Used Ring 中已完成的请求" alt="" coords="627,248,789,288"/>
 <area shape="poly" id="edge10_Node000003_Node000010" title=" " alt="" coords="579,246,613,251,613,256,578,251"/>
 <area shape="rect" id="Node000013" href="$namespacecpu__io.html#ac9fcdd47fa1ff396470a667dec3a1597" title=" " alt="" coords="869,377,971,402"/>
-<area shape="poly" id="edge15_Node000003_Node000013" title=" " alt="" coords="537,254,628,298,863,370,862,375,626,302,535,259"/>
+<area shape="poly" id="edge15_Node000003_Node000013" title=" " alt="" coords="537,254,628,298,748,340,856,371,854,376,746,345,626,302,535,259"/>
 <area shape="rect" id="Node000014" href="$classvirtio_1_1blk_1_1VirtioBlk.html#acbd79b96538cd9e7b97954f57e399c09" title="更新 avail&#45;&gt;used_event 字段" alt="" coords="634,120,782,160"/>
 <area shape="poly" id="edge16_Node000003_Node000014" title=" " alt="" coords="537,213,626,170,641,163,643,168,628,174,539,218"/>
-<area shape="rect" id="Node000015" href="$namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="663,363,753,389"/>
-<area shape="poly" id="edge18_Node000003_Node000015" title=" " alt="" coords="521,254,568,297,628,342,656,356,654,360,625,346,565,302,518,258"/>
+<area shape="rect" id="Node000015" href="$namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="663,410,753,435"/>
+<area shape="poly" id="edge18_Node000003_Node000015" title=" " alt="" coords="521,254,628,358,680,399,676,404,625,362,517,258"/>
 <area shape="rect" id="Node000005" href="$classvirtio_1_1blk_1_1VirtioBlk.html#a3291dde37cac408e3d4730148219439b" title="从请求槽池中分配一个空闲槽（O(1) 位图算法）" alt="" coords="846,120,994,160"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="774,181,839,161,841,167,776,186"/>
 <area shape="rect" id="Node000006" href="$classvirtio_1_1blk_1_1VirtioBlk.html#a928f265d102c1e2fd68c653f504fed8e" title="释放请求槽" alt="" coords="846,184,994,224"/>
@@ -26,10 +26,23 @@
 <area shape="rect" id="Node000009" href="$classvirtio_1_1blk_1_1VirtioBlk.html#a2e45e2d49fd7e55241c86643bcbb67f2" title="判断是否需要发送通知（处理 wrap&#45;around）" alt="" coords="846,5,994,45"/>
 <area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="782,56,832,44,833,49,783,61"/>
 <area shape="poly" id="edge12_Node000010_Node000006" title=" " alt="" coords="774,245,839,225,841,231,776,250"/>
-<area shape="rect" id="Node000011" href="$classvirtio_1_1blk_1_1VirtioBlk.html#aae42cda1f43edaa3c9e0a07d3a156edc" title="根据描述符链头索引查找请求槽" alt="" coords="837,312,1003,352"/>
-<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="776,286,841,305,839,311,774,291"/>
-<area shape="rect" id="Node000012" href="$classvirtio_1_1blk_1_1VirtioBlk.html#aea67e100df43d1ca6348ad3589ff7f8b" title="将设备 BlkStatus 映射为 ErrorCode" alt="" coords="846,248,994,288"/>
-<area shape="poly" id="edge13_Node000010_Node000012" title=" " alt="" coords="790,265,832,265,832,271,790,271"/>
-<area shape="poly" id="edge14_Node000010_Node000013" title=" " alt="" coords="761,286,791,305,806,320,815,335,824,348,839,362,857,371,855,376,836,366,820,352,811,337,802,323,788,309,758,290"/>
+<area shape="rect" id="Node000011" href="$classvirtio_1_1blk_1_1VirtioBlk.html#aae42cda1f43edaa3c9e0a07d3a156edc" title="根据描述符链头索引查找请求槽" alt="" coords="837,248,1003,288"/>
+<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="790,265,823,265,823,271,790,271"/>
+<area shape="rect" id="Node000012" href="$classvirtio_1_1blk_1_1VirtioBlk.html#aea67e100df43d1ca6348ad3589ff7f8b" title="将设备 BlkStatus 映射为 ErrorCode" alt="" coords="846,312,994,352"/>
+<area shape="poly" id="edge13_Node000010_Node000012" title=" " alt="" coords="776,286,841,305,839,311,774,291"/>
+<area shape="poly" id="edge14_Node000010_Node000013" title=" " alt="" coords="742,286,791,321,814,343,839,362,857,370,854,375,836,366,811,347,788,325,739,290"/>
 <area shape="poly" id="edge17_Node000014_Node000007" title=" " alt="" coords="782,117,858,97,859,102,783,123"/>
+<area shape="rect" id="Node000016" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="857,426,983,451"/>
+<area shape="poly" id="edge19_Node000015_Node000016" title=" " alt="" coords="754,423,843,430,843,436,754,429"/>
+<area shape="rect" id="Node000017" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="1256,401,1441,426"/>
+<area shape="poly" id="edge20_Node000016_Node000017" title=" " alt="" coords="984,432,1242,417,1242,422,984,438"/>
+<area shape="rect" id="Node000019" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="1051,451,1208,477"/>
+<area shape="poly" id="edge22_Node000016_Node000019" title=" " alt="" coords="984,444,1037,450,1037,455,983,449"/>
+<area shape="rect" id="Node000018" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1489,391,1752,431"/>
+<area shape="poly" id="edge21_Node000017_Node000018" title=" " alt="" coords="1442,410,1475,409,1475,415,1442,415"/>
+<area shape="poly" id="edge23_Node000019_Node000017" title=" " alt="" coords="1185,449,1279,427,1281,432,1186,454"/>
+<area shape="rect" id="Node000020" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="1277,453,1420,478"/>
+<area shape="poly" id="edge24_Node000019_Node000020" title=" " alt="" coords="1208,462,1263,462,1263,467,1208,467"/>
+<area shape="rect" id="Node000021" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1573,455,1668,481"/>
+<area shape="poly" id="edge25_Node000020_Node000021" title=" " alt="" coords="1420,463,1560,465,1560,470,1420,469"/>
 </map>

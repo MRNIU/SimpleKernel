@@ -2,24 +2,24 @@
 <area shape="rect" id="Node000001" title="返回驱动注册入口" alt="" coords="5,330,168,355"/>
 <area shape="rect" id="Node000002" href="$classVirtioDriver.html#a87cc3f14f78089d301df1837f9df1c34" title="初始化 VirtIO 设备" alt="" coords="235,281,377,306"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,327,235,306,236,312,144,333"/>
-<area shape="rect" id="Node000014" href="$classVirtioDriver.html#a611b0c80f6b510346d13c0af2950cb83" title="卸载所有 VirtIO 块设备" alt="" coords="227,330,385,355"/>
-<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="168,340,213,340,213,345,168,345"/>
-<area shape="rect" id="Node000015" href="$classVirtioDriver.html#a7b756d04289af177d1e52c2a14dbda3e" title=" " alt="" coords="216,379,396,405"/>
-<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="144,353,236,374,235,379,143,358"/>
+<area shape="rect" id="Node000020" href="$classVirtioDriver.html#a611b0c80f6b510346d13c0af2950cb83" title="卸载所有 VirtIO 块设备" alt="" coords="227,330,385,355"/>
+<area shape="poly" id="edge22_Node000001_Node000020" title=" " alt="" coords="168,340,213,340,213,345,168,345"/>
+<area shape="rect" id="Node000021" href="$classVirtioDriver.html#a7b756d04289af177d1e52c2a14dbda3e" title=" " alt="" coords="216,379,396,405"/>
+<area shape="poly" id="edge23_Node000001_Node000021" title=" " alt="" coords="144,353,236,374,235,379,143,358"/>
 <area shape="rect" id="Node000003" href="$classvirtio_1_1blk_1_1VirtioBlk.html#a65b2cb378de4a64bee98948681b93503" title="创建并初始化块设备" alt="" coords="468,101,616,141"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="314,279,364,218,401,182,443,151,454,145,457,149,445,156,405,186,368,222,318,282"/>
 <area shape="rect" id="Node000008" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="504,166,580,191"/>
 <area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="322,278,374,241,443,202,490,186,492,191,445,206,377,245,325,283"/>
-<area shape="rect" id="Node000009" href="$classvirtio_1_1blk_1_1VirtioBlk.html#aaed018a55b3d101003bf798b07c525a6" title="计算 RequestSlot DMA 内存所需字节数" alt="" coords="444,216,640,256"/>
-<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="358,278,446,257,447,262,360,283"/>
-<area shape="rect" id="Node000010" href="$io__buffer_8hpp.html#a3116fc9c19dccfa18d7134aa02a930c6" title="恒等映射：物理地址 == 虚拟地址（早期启动 / 无 MMU 时的默认实现）" alt="" coords="472,281,612,306"/>
-<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="377,291,458,291,458,296,377,296"/>
-<area shape="rect" id="Node000011" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="501,330,583,355"/>
-<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="368,303,488,329,487,334,367,309"/>
-<area shape="rect" id="Node000012" href="$namespacemmio__helper.html#abef9cac26ccb76a6b4b911f8f1ccae76" title="从节点提取 MMIO base/size 并通过 VirtualMemory 映射该区域。" alt="" coords="459,379,625,405"/>
-<area shape="poly" id="edge11_Node000002_Node000012" title=" " alt="" coords="369,304,397,316,413,329,422,342,431,354,445,366,458,372,456,377,443,370,427,358,418,345,409,333,395,321,367,309"/>
-<area shape="rect" id="Node000013" href="$namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="497,429,587,454"/>
-<area shape="poly" id="edge12_Node000002_Node000013" title=" " alt="" coords="377,304,398,317,409,329,416,342,422,368,428,392,435,404,446,415,464,426,484,433,482,438,462,431,442,419,430,407,423,394,417,369,411,344,405,332,394,321,374,308"/>
+<area shape="rect" id="Node000015" href="$classvirtio_1_1blk_1_1VirtioBlk.html#aaed018a55b3d101003bf798b07c525a6" title="计算 RequestSlot DMA 内存所需字节数" alt="" coords="444,216,640,256"/>
+<area shape="poly" id="edge15_Node000002_Node000015" title=" " alt="" coords="358,278,446,257,447,262,360,283"/>
+<area shape="rect" id="Node000016" href="$io__buffer_8hpp.html#a3116fc9c19dccfa18d7134aa02a930c6" title="恒等映射：物理地址 == 虚拟地址（早期启动 / 无 MMU 时的默认实现）" alt="" coords="472,281,612,306"/>
+<area shape="poly" id="edge16_Node000002_Node000016" title=" " alt="" coords="377,291,458,291,458,296,377,296"/>
+<area shape="rect" id="Node000017" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="501,330,583,355"/>
+<area shape="poly" id="edge17_Node000002_Node000017" title=" " alt="" coords="368,303,488,329,487,334,367,309"/>
+<area shape="rect" id="Node000018" href="$namespacemmio__helper.html#abef9cac26ccb76a6b4b911f8f1ccae76" title="从节点提取 MMIO base/size 并通过 VirtualMemory 映射该区域。" alt="" coords="459,379,625,405"/>
+<area shape="poly" id="edge19_Node000002_Node000018" title=" " alt="" coords="372,304,397,315,413,328,422,340,431,353,445,364,461,372,459,377,443,369,427,356,418,344,409,331,395,320,370,309"/>
+<area shape="rect" id="Node000019" href="$namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="497,429,587,454"/>
+<area shape="poly" id="edge20_Node000002_Node000019" title=" " alt="" coords="379,304,398,315,410,328,417,341,422,367,428,392,435,404,446,415,464,426,484,433,482,438,461,431,442,419,430,407,423,394,417,368,412,343,405,331,394,319,376,308"/>
 <area shape="rect" id="Node000004" href="$classvirtio_1_1DeviceInitializer.html#a152f516d005f2c89a0d1cff4587675c5" title="激活设备，开始正常运行" alt="" coords="688,5,859,45"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="586,99,687,55,704,48,706,53,689,60,588,104"/>
 <area shape="rect" id="Node000005" href="$classvirtio_1_1DeviceInitializer.html#a4b04ddf221c72f7d9942fd0f6d06a547" title="执行 virtio 设备初始化序列" alt="" coords="688,69,859,109"/>
@@ -28,4 +28,19 @@
 <area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="617,129,675,137,674,142,616,134"/>
 <area shape="rect" id="Node000007" href="$classvirtio_1_1blk_1_1VirtioBlk.html#ac3a1f8b1fd22b8f3cd749d66505fb40e" title=" " alt="" coords="699,197,847,237"/>
 <area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="613,139,641,151,666,167,689,183,703,190,701,194,687,188,663,171,639,156,611,144"/>
+<area shape="rect" id="Node000009" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="710,330,837,355"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="581,181,611,188,641,202,690,249,754,318,750,322,686,253,639,206,609,194,579,186"/>
+<area shape="rect" id="Node000010" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="1112,305,1297,330"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="837,336,1098,321,1098,326,837,342"/>
+<area shape="rect" id="Node000012" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="907,355,1064,381"/>
+<area shape="poly" id="edge11_Node000009_Node000012" title=" " alt="" coords="837,348,893,354,892,360,837,353"/>
+<area shape="rect" id="Node000011" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1345,295,1608,335"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="1298,314,1331,313,1331,319,1298,319"/>
+<area shape="poly" id="edge12_Node000012_Node000010" title=" " alt="" coords="1041,353,1135,331,1137,336,1042,358"/>
+<area shape="rect" id="Node000013" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="1133,358,1276,383"/>
+<area shape="poly" id="edge13_Node000012_Node000013" title=" " alt="" coords="1064,366,1119,367,1119,372,1064,372"/>
+<area shape="rect" id="Node000014" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1429,359,1524,385"/>
+<area shape="poly" id="edge14_Node000013_Node000014" title=" " alt="" coords="1276,368,1416,369,1416,374,1276,374"/>
+<area shape="poly" id="edge18_Node000017_Node000009" title=" " alt="" coords="584,340,696,340,696,345,584,345"/>
+<area shape="poly" id="edge21_Node000019_Node000009" title=" " alt="" coords="587,430,639,415,694,389,740,361,743,365,696,393,641,420,588,436"/>
 </map>

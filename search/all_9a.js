@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['📄_20许可证_0',['📄 许可证',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md319',1,'']]],
-  ['📄_20license_1',['📄 License',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md357',1,'']]]
+  ['📝_20development_20guide_0',['📝 Development Guide',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md338',1,'']]],
+  ['📝_20开发指南_1',['📝 开发指南',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md300',1,'']]]
 ];

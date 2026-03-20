@@ -324,7 +324,7 @@ Static Private Attributes</h2></td></tr>
 <div class="ttc" id="aclassDeviceManager_html_a7befb7a1dbca853ce213114c14790ac4"><div class="ttname"><a href="classDeviceManager.html#a7befb7a1dbca853ce213114c14790ac4">DeviceManager::lock_</a></div><div class="ttdeci">SpinLock lock_</div><div class="ttdef"><b>Definition</b> <a href="device__manager_8hpp_source.html#l00114">device_manager.hpp:114</a></div></div>
 <div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 风格的锁守卫模板类</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00131">spinlock.hpp:131</a></div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308">ErrorCode::kDeviceNotFound</a></div><div class="ttdeci">@ kDeviceNotFound</div></div>
-<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00359">expected.hpp:359</a></div></div>
+<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00337">expected.hpp:337</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -530,7 +530,7 @@ Static Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">   46</span>  <span class="keywordflow">return</span> {};</div>
 <div class="line"><span class="lineno">   47</span>}</div>
 <div class="ttc" id="aclassDriverRegistry_html_a3d7af1a30c6d209ee40cabd6fb2e973f"><div class="ttname"><a href="classDriverRegistry.html#a3d7af1a30c6d209ee40cabd6fb2e973f">DriverRegistry::FindDriver</a></div><div class="ttdeci">auto FindDriver(const DeviceNode &amp;node) -&gt; const DriverEntry *</div><div class="ttdoc">查找 match_table 中含有 node.compatible 字符串的第一个驱动 （flat_map 查找，O(Cn · log T)）。</div><div class="ttdef"><b>Definition</b> <a href="driver__registry_8hpp_source.html#l00093">driver_registry.hpp:93</a></div></div>
-<div class="ttc" id="aexpected_8hpp_html_a87330dc74eb67e824914b8d343050757"><div class="ttname"><a href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a></div><div class="ttdeci">std::expected&lt; T, Error &gt; Expected</div><div class="ttdoc">std::expected 别名模板</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00381">expected.hpp:381</a></div></div>
+<div class="ttc" id="aexpected_8hpp_html_a87330dc74eb67e824914b8d343050757"><div class="ttname"><a href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a></div><div class="ttdeci">std::expected&lt; T, Error &gt; Expected</div><div class="ttdoc">std::expected 别名模板</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00359">expected.hpp:359</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00182">kernel_log.hpp:182</a></div></div>
 </div><!-- fragment --><div class="dynheader">
@@ -538,11 +538,25 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classDeviceManager_aa0b23acd4810877111074d7ab5ba55c5_cgraph.png" border="0" usemap="#aclassDeviceManager_aa0b23acd4810877111074d7ab5ba55c5_cgraph" alt=""/></div>
 <map name="aclassDeviceManager_aa0b23acd4810877111074d7ab5ba55c5_cgraph" id="aclassDeviceManager_aa0b23acd4810877111074d7ab5ba55c5_cgraph">
-<area shape="rect" title="匹配已注册的驱动程序并探测所有未绑定的设备。" alt="" coords="5,31,192,56"/>
-<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="243,5,319,31"/>
-<area shape="poly" title=" " alt="" coords="190,28,229,22,230,28,191,33"/>
-<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="240,55,323,80"/>
-<area shape="poly" title=" " alt="" coords="192,53,227,58,226,63,192,58"/>
+<area shape="rect" title="匹配已注册的驱动程序并探测所有未绑定的设备。" alt="" coords="5,41,192,66"/>
+<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="243,15,319,41"/>
+<area shape="poly" title=" " alt="" coords="190,38,229,32,230,38,191,43"/>
+<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="240,65,323,90"/>
+<area shape="poly" title=" " alt="" coords="192,63,227,68,226,73,192,68"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="371,41,497,66"/>
+<area shape="poly" title=" " alt="" coords="320,32,358,38,357,43,319,37"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="751,15,936,41"/>
+<area shape="poly" title=" " alt="" coords="497,47,737,32,737,37,498,52"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="545,66,703,91"/>
+<area shape="poly" title=" " alt="" coords="498,59,532,64,531,69,497,64"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="984,5,1247,45"/>
+<area shape="poly" title=" " alt="" coords="936,24,970,24,970,29,936,30"/>
+<area shape="poly" title=" " alt="" coords="679,63,774,41,775,46,681,68"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="772,69,915,94"/>
+<area shape="poly" title=" " alt="" coords="703,77,758,78,758,83,703,82"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1068,70,1163,95"/>
+<area shape="poly" title=" " alt="" coords="915,79,1055,80,1055,85,915,84"/>
+<area shape="poly" title=" " alt="" coords="322,68,357,63,357,68,323,74"/>
 </map>
 </div>
 
@@ -629,11 +643,25 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classDeviceManager_ab324c9a2bb0b1132f8df8ff809660e87_cgraph.png" border="0" usemap="#aclassDeviceManager_ab324c9a2bb0b1132f8df8ff809660e87_cgraph" alt=""/></div>
 <map name="aclassDeviceManager_ab324c9a2bb0b1132f8df8ff809660e87_cgraph" id="aclassDeviceManager_ab324c9a2bb0b1132f8df8ff809660e87_cgraph">
-<area shape="rect" title="注册总线并立即枚举其设备。" alt="" coords="5,31,216,56"/>
-<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="267,5,343,31"/>
-<area shape="poly" title=" " alt="" coords="208,28,254,22,254,27,209,33"/>
-<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="264,55,347,80"/>
-<area shape="poly" title=" " alt="" coords="214,53,251,58,250,63,213,59"/>
+<area shape="rect" title="注册总线并立即枚举其设备。" alt="" coords="5,41,216,66"/>
+<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="267,15,343,41"/>
+<area shape="poly" title=" " alt="" coords="208,38,254,32,254,37,209,43"/>
+<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="264,65,347,90"/>
+<area shape="poly" title=" " alt="" coords="214,63,251,68,250,73,213,69"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="395,41,521,66"/>
+<area shape="poly" title=" " alt="" coords="344,32,382,38,381,43,343,37"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="775,15,960,41"/>
+<area shape="poly" title=" " alt="" coords="521,47,761,32,761,37,522,52"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="569,66,727,91"/>
+<area shape="poly" title=" " alt="" coords="522,59,556,64,555,69,521,64"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1008,5,1271,45"/>
+<area shape="poly" title=" " alt="" coords="960,24,994,24,994,29,960,30"/>
+<area shape="poly" title=" " alt="" coords="703,63,798,41,799,46,705,68"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="796,69,939,94"/>
+<area shape="poly" title=" " alt="" coords="727,77,782,78,782,83,727,82"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1092,70,1187,95"/>
+<area shape="poly" title=" " alt="" coords="939,79,1079,80,1079,85,939,84"/>
+<area shape="poly" title=" " alt="" coords="346,68,381,63,381,68,347,74"/>
 </map>
 </div>
 

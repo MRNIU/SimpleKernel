@@ -615,7 +615,7 @@ template&lt;typename TransportT  = MmioTransport, typename VirtqueueT  = SplitVi
 <div class="line"><span class="lineno">  690</span>  }</div>
 <div class="ttc" id="aclassvirtio_1_1blk_1_1VirtioBlk_html_ab54372853b7646b8105e467941de09f6"><div class="ttname"><a href="classvirtio_1_1blk_1_1VirtioBlk.html#ab54372853b7646b8105e467941de09f6">virtio::blk::VirtioBlk::kMaxInflight</a></div><div class="ttdeci">static constexpr uint16_t kMaxInflight</div><div class="ttdoc">每个设备的最大并发(in-flight)请求数</div><div class="ttdef"><b>Definition</b> <a href="virtio__blk_8hpp_source.html#l00056">virtio_blk.hpp:56</a></div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa83a78432fa4fd1764986e45d4fe76778"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa83a78432fa4fd1764986e45d4fe76778">ErrorCode::kNoFreeDescriptors</a></div><div class="ttdeci">@ kNoFreeDescriptors</div><div class="ttdoc">没有空闲描述符</div></div>
-<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00359">expected.hpp:359</a></div></div>
+<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00337">expected.hpp:337</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -2204,11 +2204,11 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a2eba21cbbca77632e2e999fbfe52d967" title="处理 Used Ring 中已完成的请求" alt="" coords="409,248,572,288"/>
 <area shape="poly" title=" " alt="" coords="362,246,396,251,395,256,361,251"/>
 <area shape="rect" href="namespacecpu__io.html#ac9fcdd47fa1ff396470a667dec3a1597" title=" " alt="" coords="651,377,754,402"/>
-<area shape="poly" title=" " alt="" coords="320,254,410,298,646,370,645,375,408,302,317,259"/>
+<area shape="poly" title=" " alt="" coords="320,254,410,298,531,340,639,371,637,376,529,345,408,302,317,259"/>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#acbd79b96538cd9e7b97954f57e399c09" title="更新 avail&#45;&gt;used_event 字段" alt="" coords="417,120,565,160"/>
 <area shape="poly" title=" " alt="" coords="319,213,408,170,424,163,426,168,410,174,322,218"/>
-<area shape="rect" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="445,363,536,389"/>
-<area shape="poly" title=" " alt="" coords="304,254,351,297,411,342,439,356,436,360,408,346,347,302,300,258"/>
+<area shape="rect" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="445,410,536,435"/>
+<area shape="poly" title=" " alt="" coords="304,254,411,358,462,399,459,404,408,362,300,258"/>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a3291dde37cac408e3d4730148219439b" title="从请求槽池中分配一个空闲槽（O(1) 位图算法）" alt="" coords="629,120,777,160"/>
 <area shape="poly" title=" " alt="" coords="557,181,622,161,624,167,558,186"/>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a928f265d102c1e2fd68c653f504fed8e" title="释放请求槽" alt="" coords="629,184,777,224"/>
@@ -2219,12 +2219,25 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a2e45e2d49fd7e55241c86643bcbb67f2" title="判断是否需要发送通知（处理 wrap&#45;around）" alt="" coords="629,5,777,45"/>
 <area shape="poly" title=" " alt="" coords="565,56,615,44,616,49,566,61"/>
 <area shape="poly" title=" " alt="" coords="557,245,622,225,624,231,558,250"/>
-<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aae42cda1f43edaa3c9e0a07d3a156edc" title="根据描述符链头索引查找请求槽" alt="" coords="620,312,785,352"/>
+<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aae42cda1f43edaa3c9e0a07d3a156edc" title="根据描述符链头索引查找请求槽" alt="" coords="620,248,785,288"/>
+<area shape="poly" title=" " alt="" coords="572,265,606,265,606,271,572,271"/>
+<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aea67e100df43d1ca6348ad3589ff7f8b" title="将设备 BlkStatus 映射为 ErrorCode" alt="" coords="629,312,777,352"/>
 <area shape="poly" title=" " alt="" coords="558,286,624,305,622,311,557,291"/>
-<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aea67e100df43d1ca6348ad3589ff7f8b" title="将设备 BlkStatus 映射为 ErrorCode" alt="" coords="629,248,777,288"/>
-<area shape="poly" title=" " alt="" coords="572,265,615,265,615,271,572,271"/>
-<area shape="poly" title=" " alt="" coords="544,286,574,305,589,320,598,335,607,348,622,362,640,371,637,376,618,366,602,352,593,337,585,323,570,309,541,290"/>
+<area shape="poly" title=" " alt="" coords="525,286,574,321,597,343,621,362,639,370,637,375,619,366,593,347,570,325,522,290"/>
 <area shape="poly" title=" " alt="" coords="565,117,640,97,642,102,566,123"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="639,426,766,451"/>
+<area shape="poly" title=" " alt="" coords="537,423,626,430,625,436,536,429"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="1039,401,1224,426"/>
+<area shape="poly" title=" " alt="" coords="766,432,1024,417,1025,422,767,438"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="833,451,991,477"/>
+<area shape="poly" title=" " alt="" coords="766,444,820,450,819,455,766,449"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1272,391,1535,431"/>
+<area shape="poly" title=" " alt="" coords="1224,410,1258,409,1258,415,1224,415"/>
+<area shape="poly" title=" " alt="" coords="967,449,1062,427,1063,432,969,454"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="1060,453,1203,478"/>
+<area shape="poly" title=" " alt="" coords="991,462,1046,462,1046,467,991,467"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1356,455,1451,481"/>
+<area shape="poly" title=" " alt="" coords="1203,463,1343,465,1343,470,1203,469"/>
 </map>
 </div>
 <div class="dynheader">
@@ -2502,11 +2515,11 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a2eba21cbbca77632e2e999fbfe52d967" title="处理 Used Ring 中已完成的请求" alt="" coords="213,248,376,288"/>
 <area shape="poly" title=" " alt="" coords="166,246,200,251,199,256,165,251"/>
 <area shape="rect" href="namespacecpu__io.html#ac9fcdd47fa1ff396470a667dec3a1597" title=" " alt="" coords="455,377,558,402"/>
-<area shape="poly" title=" " alt="" coords="124,254,214,298,450,370,449,375,212,302,121,259"/>
+<area shape="poly" title=" " alt="" coords="124,254,214,298,335,340,443,371,441,376,333,345,212,302,121,259"/>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#acbd79b96538cd9e7b97954f57e399c09" title="更新 avail&#45;&gt;used_event 字段" alt="" coords="221,120,369,160"/>
 <area shape="poly" title=" " alt="" coords="123,213,212,170,228,163,230,168,214,174,126,218"/>
-<area shape="rect" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="249,363,340,389"/>
-<area shape="poly" title=" " alt="" coords="108,254,155,297,215,342,243,356,240,360,212,346,151,302,104,258"/>
+<area shape="rect" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="249,410,340,435"/>
+<area shape="poly" title=" " alt="" coords="108,254,215,358,266,399,263,404,212,362,104,258"/>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a3291dde37cac408e3d4730148219439b" title="从请求槽池中分配一个空闲槽（O(1) 位图算法）" alt="" coords="433,120,581,160"/>
 <area shape="poly" title=" " alt="" coords="361,181,426,161,428,167,362,186"/>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a928f265d102c1e2fd68c653f504fed8e" title="释放请求槽" alt="" coords="433,184,581,224"/>
@@ -2517,12 +2530,25 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a2e45e2d49fd7e55241c86643bcbb67f2" title="判断是否需要发送通知（处理 wrap&#45;around）" alt="" coords="433,5,581,45"/>
 <area shape="poly" title=" " alt="" coords="369,56,419,44,420,49,370,61"/>
 <area shape="poly" title=" " alt="" coords="361,245,426,225,428,231,362,250"/>
-<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aae42cda1f43edaa3c9e0a07d3a156edc" title="根据描述符链头索引查找请求槽" alt="" coords="424,312,589,352"/>
+<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aae42cda1f43edaa3c9e0a07d3a156edc" title="根据描述符链头索引查找请求槽" alt="" coords="424,248,589,288"/>
+<area shape="poly" title=" " alt="" coords="376,265,410,265,410,271,376,271"/>
+<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aea67e100df43d1ca6348ad3589ff7f8b" title="将设备 BlkStatus 映射为 ErrorCode" alt="" coords="433,312,581,352"/>
 <area shape="poly" title=" " alt="" coords="362,286,428,305,426,311,361,291"/>
-<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aea67e100df43d1ca6348ad3589ff7f8b" title="将设备 BlkStatus 映射为 ErrorCode" alt="" coords="433,248,581,288"/>
-<area shape="poly" title=" " alt="" coords="376,265,419,265,419,271,376,271"/>
-<area shape="poly" title=" " alt="" coords="348,286,378,305,393,320,402,335,411,348,426,362,444,371,441,376,422,366,406,352,397,337,389,323,374,309,345,290"/>
+<area shape="poly" title=" " alt="" coords="329,286,378,321,401,343,425,362,443,370,441,375,423,366,397,347,374,325,326,290"/>
 <area shape="poly" title=" " alt="" coords="369,117,444,97,446,102,370,123"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="443,426,570,451"/>
+<area shape="poly" title=" " alt="" coords="341,423,430,430,429,436,340,429"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="843,401,1028,426"/>
+<area shape="poly" title=" " alt="" coords="570,432,828,417,829,422,571,438"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="637,451,795,477"/>
+<area shape="poly" title=" " alt="" coords="570,444,624,450,623,455,570,449"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1076,391,1339,431"/>
+<area shape="poly" title=" " alt="" coords="1028,410,1062,409,1062,415,1028,415"/>
+<area shape="poly" title=" " alt="" coords="771,449,866,427,867,432,773,454"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="864,453,1007,478"/>
+<area shape="poly" title=" " alt="" coords="795,462,850,462,850,467,795,467"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1160,455,1255,481"/>
+<area shape="poly" title=" " alt="" coords="1007,463,1147,465,1147,470,1007,469"/>
 </map>
 </div>
 <div class="dynheader">
@@ -2773,11 +2799,11 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a2eba21cbbca77632e2e999fbfe52d967" title="处理 Used Ring 中已完成的请求" alt="" coords="409,248,572,288"/>
 <area shape="poly" title=" " alt="" coords="362,246,396,251,395,256,361,251"/>
 <area shape="rect" href="namespacecpu__io.html#ac9fcdd47fa1ff396470a667dec3a1597" title=" " alt="" coords="651,377,754,402"/>
-<area shape="poly" title=" " alt="" coords="320,254,410,298,646,370,645,375,408,302,317,259"/>
+<area shape="poly" title=" " alt="" coords="320,254,410,298,531,340,639,371,637,376,529,345,408,302,317,259"/>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#acbd79b96538cd9e7b97954f57e399c09" title="更新 avail&#45;&gt;used_event 字段" alt="" coords="417,120,565,160"/>
 <area shape="poly" title=" " alt="" coords="319,213,408,170,424,163,426,168,410,174,322,218"/>
-<area shape="rect" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="445,363,536,389"/>
-<area shape="poly" title=" " alt="" coords="304,254,351,297,411,342,439,356,436,360,408,346,347,302,300,258"/>
+<area shape="rect" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="445,410,536,435"/>
+<area shape="poly" title=" " alt="" coords="304,254,411,358,462,399,459,404,408,362,300,258"/>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a3291dde37cac408e3d4730148219439b" title="从请求槽池中分配一个空闲槽（O(1) 位图算法）" alt="" coords="629,120,777,160"/>
 <area shape="poly" title=" " alt="" coords="557,181,622,161,624,167,558,186"/>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a928f265d102c1e2fd68c653f504fed8e" title="释放请求槽" alt="" coords="629,184,777,224"/>
@@ -2788,12 +2814,25 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#a2e45e2d49fd7e55241c86643bcbb67f2" title="判断是否需要发送通知（处理 wrap&#45;around）" alt="" coords="629,5,777,45"/>
 <area shape="poly" title=" " alt="" coords="565,56,615,44,616,49,566,61"/>
 <area shape="poly" title=" " alt="" coords="557,245,622,225,624,231,558,250"/>
-<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aae42cda1f43edaa3c9e0a07d3a156edc" title="根据描述符链头索引查找请求槽" alt="" coords="620,312,785,352"/>
+<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aae42cda1f43edaa3c9e0a07d3a156edc" title="根据描述符链头索引查找请求槽" alt="" coords="620,248,785,288"/>
+<area shape="poly" title=" " alt="" coords="572,265,606,265,606,271,572,271"/>
+<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aea67e100df43d1ca6348ad3589ff7f8b" title="将设备 BlkStatus 映射为 ErrorCode" alt="" coords="629,312,777,352"/>
 <area shape="poly" title=" " alt="" coords="558,286,624,305,622,311,557,291"/>
-<area shape="rect" href="classvirtio_1_1blk_1_1VirtioBlk.html#aea67e100df43d1ca6348ad3589ff7f8b" title="将设备 BlkStatus 映射为 ErrorCode" alt="" coords="629,248,777,288"/>
-<area shape="poly" title=" " alt="" coords="572,265,615,265,615,271,572,271"/>
-<area shape="poly" title=" " alt="" coords="544,286,574,305,589,320,598,335,607,348,622,362,640,371,637,376,618,366,602,352,593,337,585,323,570,309,541,290"/>
+<area shape="poly" title=" " alt="" coords="525,286,574,321,597,343,621,362,639,370,637,375,619,366,593,347,570,325,522,290"/>
 <area shape="poly" title=" " alt="" coords="565,117,640,97,642,102,566,123"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="639,426,766,451"/>
+<area shape="poly" title=" " alt="" coords="537,423,626,430,625,436,536,429"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="1039,401,1224,426"/>
+<area shape="poly" title=" " alt="" coords="766,432,1024,417,1025,422,767,438"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="833,451,991,477"/>
+<area shape="poly" title=" " alt="" coords="766,444,820,450,819,455,766,449"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1272,391,1535,431"/>
+<area shape="poly" title=" " alt="" coords="1224,410,1258,409,1258,415,1224,415"/>
+<area shape="poly" title=" " alt="" coords="967,449,1062,427,1063,432,969,454"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="1060,453,1203,478"/>
+<area shape="poly" title=" " alt="" coords="991,462,1046,462,1046,467,991,467"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1356,455,1451,481"/>
+<area shape="poly" title=" " alt="" coords="1203,463,1343,465,1343,470,1203,469"/>
 </map>
 </div>
 <div class="dynheader">

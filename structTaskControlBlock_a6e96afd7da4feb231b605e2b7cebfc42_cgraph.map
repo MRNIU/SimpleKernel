@@ -1,21 +1,34 @@
 <map id="TaskControlBlock::TaskControlBlock" name="TaskControlBlock::TaskControlBlock">
-<area shape="rect" id="Node000001" title="构造函数 (内核线程)" alt="" coords="5,103,224,143"/>
-<area shape="rect" id="Node000002" href="$memory_8cpp.html#a1c66c5ed90bbf8c21483fdf9c769636f" title=" " alt="" coords="279,35,387,61"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,100,281,63,283,68,175,105"/>
-<area shape="rect" id="Node000003" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="295,85,371,110"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="224,107,281,101,282,106,225,113"/>
-<area shape="rect" id="Node000004" href="$aarch64_2arch__main_8cpp.html#a51a1f934a70cf48db916c9c6c7bb5cad" title="初始化内核线程的任务上下文（重载1）" alt="" coords="272,134,395,159"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="225,132,259,136,258,141,224,137"/>
-<area shape="rect" id="Node000010" href="$classTaskFsm.html#aa51051086374affc76f2d516d3531889" title="启动 FSM（在 TCB 完全构造后调用）" alt="" coords="274,183,393,209"/>
-<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="176,140,282,176,280,181,174,145"/>
-<area shape="rect" id="Node000005" href="$structcpu__io_1_1CalleeSavedContext.html#a1ae45175010d9b66ef6db82b668baa1d" title=" " alt="" coords="443,5,647,45"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="372,132,393,119,408,103,416,88,425,71,441,55,450,49,453,54,444,59,429,75,421,90,412,107,396,123,375,136"/>
-<area shape="rect" id="Node000006" href="$structcpu__io_1_1CalleeSavedContext.html#a057438d663910d4cb7abcbb5615397ab" title=" " alt="" coords="443,69,647,109"/>
-<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="380,131,457,110,458,116,382,137"/>
-<area shape="rect" id="Node000007" href="$arch_8cpp.html#a7241001f2323bd5690c3ee10606fb8c4" title=" " alt="" coords="469,134,621,159"/>
-<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="395,144,455,144,455,149,395,149"/>
-<area shape="rect" id="Node000008" href="$structcpu__io_1_1CalleeSavedContext.html#a4dc21308ff38303ff2484b49c84daa2d" title=" " alt="" coords="443,184,647,224"/>
-<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="382,157,458,178,457,183,380,162"/>
-<area shape="rect" id="Node000009" href="$structcpu__io_1_1CalleeSavedContext.html#a90361985987010520dd23face113731f" title=" " alt="" coords="443,248,647,288"/>
-<area shape="poly" id="edge8_Node000004_Node000009" title=" " alt="" coords="377,157,396,169,412,186,421,203,429,218,444,234,453,239,450,244,441,238,425,222,416,205,408,189,393,173,374,162"/>
+<area shape="rect" id="Node000001" title="构造函数 (内核线程)" alt="" coords="5,160,224,200"/>
+<area shape="rect" id="Node000002" href="$memory_8cpp.html#a1c66c5ed90bbf8c21483fdf9c769636f" title=" " alt="" coords="279,93,387,118"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,157,281,120,283,125,175,163"/>
+<area shape="rect" id="Node000003" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="295,142,371,167"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="224,165,281,158,282,163,225,170"/>
+<area shape="rect" id="Node000010" href="$aarch64_2arch__main_8cpp.html#a51a1f934a70cf48db916c9c6c7bb5cad" title="初始化内核线程的任务上下文（重载1）" alt="" coords="272,191,395,217"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="225,189,259,193,258,198,224,195"/>
+<area shape="rect" id="Node000016" href="$classTaskFsm.html#aa51051086374affc76f2d516d3531889" title="启动 FSM（在 TCB 完全构造后调用）" alt="" coords="274,241,393,266"/>
+<area shape="poly" id="edge16_Node000001_Node000016" title=" " alt="" coords="176,198,282,234,280,239,174,203"/>
+<area shape="rect" id="Node000004" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="481,41,608,66"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="370,140,393,127,407,114,416,102,426,89,441,76,467,65,469,70,444,81,429,93,420,105,411,118,396,132,373,144"/>
+<area shape="rect" id="Node000005" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="900,15,1085,41"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="608,47,886,31,886,37,609,52"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="695,66,852,91"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="609,58,681,66,681,71,608,63"/>
+<area shape="rect" id="Node000006" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1133,5,1396,45"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1086,24,1119,24,1119,29,1086,30"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="829,63,923,41,925,46,830,68"/>
+<area shape="rect" id="Node000008" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="921,67,1064,93"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="852,76,907,77,907,82,852,82"/>
+<area shape="rect" id="Node000009" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1217,70,1312,95"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="1064,78,1204,79,1204,85,1064,83"/>
+<area shape="rect" id="Node000011" href="$structcpu__io_1_1CalleeSavedContext.html#a1ae45175010d9b66ef6db82b668baa1d" title=" " alt="" coords="443,91,647,131"/>
+<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="368,189,393,176,417,158,441,140,456,133,459,138,444,145,420,162,396,181,370,194"/>
+<area shape="rect" id="Node000012" href="$structcpu__io_1_1CalleeSavedContext.html#a057438d663910d4cb7abcbb5615397ab" title=" " alt="" coords="443,155,647,195"/>
+<area shape="poly" id="edge12_Node000010_Node000012" title=" " alt="" coords="395,193,429,188,430,193,395,198"/>
+<area shape="rect" id="Node000013" href="$arch_8cpp.html#a7241001f2323bd5690c3ee10606fb8c4" title=" " alt="" coords="469,219,621,245"/>
+<area shape="poly" id="edge13_Node000010_Node000013" title=" " alt="" coords="395,209,456,218,455,223,395,215"/>
+<area shape="rect" id="Node000014" href="$structcpu__io_1_1CalleeSavedContext.html#a4dc21308ff38303ff2484b49c84daa2d" title=" " alt="" coords="443,269,647,309"/>
+<area shape="poly" id="edge14_Node000010_Node000014" title=" " alt="" coords="370,214,396,226,444,254,464,262,462,267,441,258,393,230,368,219"/>
+<area shape="rect" id="Node000015" href="$structcpu__io_1_1CalleeSavedContext.html#a90361985987010520dd23face113731f" title=" " alt="" coords="443,333,647,373"/>
+<area shape="poly" id="edge15_Node000010_Node000015" title=" " alt="" coords="379,214,397,226,414,250,421,274,427,297,445,319,451,324,447,328,441,323,423,300,416,276,409,253,393,230,376,219"/>
 </map>

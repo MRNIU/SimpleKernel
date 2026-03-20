@@ -262,7 +262,7 @@ $(document).ready(function(){initNavTree('kernel__log_8hpp_source.html',''); ini
 <div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (<a class="code hl_enumvalue" href="namespaceklog_1_1detail.html#a8151f46c462f0921e4003dd0a78b07aeabb53ce21b7c0b7c8a8f7860a41901d29">detail::Level::kDebug</a> &lt; <a class="code hl_variable" href="namespaceklog_1_1detail.html#aeaf0e45dd4afbfcb02110f1ee5d9a84f">detail::kMinLevel</a>) {</div>
 <div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>    <span class="keywordflow">return</span>;</div>
 <div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>  }</div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>  detail::Log&lt;detail::Level::kDebug&gt;(fmt, <span class="keyword">static_cast&lt;</span>Args&amp;&amp;<span class="keyword">&gt;</span>(args)...);</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>  <a class="code hl_function" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004">detail::Log&lt;detail::Level::kDebug&gt;</a>(fmt, <span class="keyword">static_cast&lt;</span>Args&amp;&amp;<span class="keyword">&gt;</span>(args)...);</div>
 <div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>}</div>
 </div>
 <div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span> </div>
@@ -272,7 +272,7 @@ $(document).ready(function(){initNavTree('kernel__log_8hpp_source.html',''); ini
 <div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (<a class="code hl_enumvalue" href="namespaceklog_1_1detail.html#a8151f46c462f0921e4003dd0a78b07aea176a473e63c17ccdac91640c67f149bf">detail::Level::kInfo</a> &lt; <a class="code hl_variable" href="namespaceklog_1_1detail.html#aeaf0e45dd4afbfcb02110f1ee5d9a84f">detail::kMinLevel</a>) {</div>
 <div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>    <span class="keywordflow">return</span>;</div>
 <div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>  }</div>
-<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>  detail::Log&lt;detail::Level::kInfo&gt;(fmt, <span class="keyword">static_cast&lt;</span>Args&amp;&amp;<span class="keyword">&gt;</span>(args)...);</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>  <a class="code hl_function" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004">detail::Log&lt;detail::Level::kInfo&gt;</a>(fmt, <span class="keyword">static_cast&lt;</span>Args&amp;&amp;<span class="keyword">&gt;</span>(args)...);</div>
 <div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>}</div>
 </div>
 <div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span> </div>
@@ -282,7 +282,7 @@ $(document).ready(function(){initNavTree('kernel__log_8hpp_source.html',''); ini
 <div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (<a class="code hl_enumvalue" href="namespaceklog_1_1detail.html#a8151f46c462f0921e4003dd0a78b07aea61a920eb4a24199ec6a36dd90f2a30b7">detail::Level::kWarn</a> &lt; <a class="code hl_variable" href="namespaceklog_1_1detail.html#aeaf0e45dd4afbfcb02110f1ee5d9a84f">detail::kMinLevel</a>) {</div>
 <div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>    <span class="keywordflow">return</span>;</div>
 <div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>  }</div>
-<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>  detail::Log&lt;detail::Level::kWarn&gt;(fmt, <span class="keyword">static_cast&lt;</span>Args&amp;&amp;<span class="keyword">&gt;</span>(args)...);</div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>  <a class="code hl_function" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004">detail::Log&lt;detail::Level::kWarn&gt;</a>(fmt, <span class="keyword">static_cast&lt;</span>Args&amp;&amp;<span class="keyword">&gt;</span>(args)...);</div>
 <div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>}</div>
 </div>
 <div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span> </div>
@@ -292,7 +292,7 @@ $(document).ready(function(){initNavTree('kernel__log_8hpp_source.html',''); ini
 <div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (<a class="code hl_enumvalue" href="namespaceklog_1_1detail.html#a8151f46c462f0921e4003dd0a78b07aea9b99a2b91d086cb660c4e3fdbdd8a2b0">detail::Level::kErr</a> &lt; <a class="code hl_variable" href="namespaceklog_1_1detail.html#aeaf0e45dd4afbfcb02110f1ee5d9a84f">detail::kMinLevel</a>) {</div>
 <div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>    <span class="keywordflow">return</span>;</div>
 <div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>  }</div>
-<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>  detail::Log&lt;detail::Level::kErr&gt;(fmt, <span class="keyword">static_cast&lt;</span>Args&amp;&amp;<span class="keyword">&gt;</span>(args)...);</div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>  <a class="code hl_function" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004">detail::Log&lt;detail::Level::kErr&gt;</a>(fmt, <span class="keyword">static_cast&lt;</span>Args&amp;&amp;<span class="keyword">&gt;</span>(args)...);</div>
 <div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>}</div>
 </div>
 <div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span> </div>

@@ -435,35 +435,46 @@ Functions</h2></td></tr>
 <div class="line"><span class="lineno">  217</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Hello InterruptInit&quot;</span>);</div>
 <div class="line"><span class="lineno">  218</span>}</div>
 <div class="ttc" id="aarch_8h_html_a8cc2b53f09e3fe7139e152bdbfcc4a11"><div class="ttname"><a href="arch_8h.html#a8cc2b53f09e3fe7139e152bdbfcc4a11">trap_entry</a></div><div class="ttdeci">auto trap_entry() -&gt; void</div><div class="ttdef"><b>Definition</b> <a href="arch_8cpp_source.html#l00046">arch.cpp:46</a></div></div>
-<div class="ttc" id="aexpected_8hpp_html_a87330dc74eb67e824914b8d343050757"><div class="ttname"><a href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a></div><div class="ttdeci">std::expected&lt; T, Error &gt; Expected</div><div class="ttdoc">std::expected 别名模板</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00381">expected.hpp:381</a></div></div>
+<div class="ttc" id="aexpected_8hpp_html_a87330dc74eb67e824914b8d343050757"><div class="ttname"><a href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a></div><div class="ttdeci">std::expected&lt; T, Error &gt; Expected</div><div class="ttdoc">std::expected 别名模板</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00359">expected.hpp:359</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_a52b8a7263a31e6670ef4dec7922d9e72"><div class="ttname"><a href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a></div><div class="ttdeci">auto GetCurrentCoreId() -&gt; size_t</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00026">cpu_io.h:26</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_acf7d7c3a4a0720cfd4f57914b52c7e9b"><div class="ttname"><a href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a></div><div class="ttdeci">void Pause()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00020">cpu_io.h:20</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00182">kernel_log.hpp:182</a></div></div>
-<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00359">expected.hpp:359</a></div></div>
-<div class="ttc" id="astructError_html_aa63ee10532d668f25a5147d7dc753749"><div class="ttname"><a href="structError.html#aa63ee10532d668f25a5147d7dc753749">Error::message</a></div><div class="ttdeci">constexpr auto message() const -&gt; const char *</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00374">expected.hpp:374</a></div></div>
+<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00337">expected.hpp:337</a></div></div>
+<div class="ttc" id="astructError_html_aa63ee10532d668f25a5147d7dc753749"><div class="ttname"><a href="structError.html#aa63ee10532d668f25a5147d7dc753749">Error::message</a></div><div class="ttdeci">constexpr auto message() const -&gt; const char *</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00352">expected.hpp:352</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="riscv64_2interrupt__main_8cpp_a51f9c37118da7a1c32e70f272cc7b3e8_cgraph.png" border="0" usemap="#ariscv64_2interrupt__main_8cpp_a51f9c37118da7a1c32e70f272cc7b3e8_cgraph" alt=""/></div>
 <map name="ariscv64_2interrupt__main_8cpp_a51f9c37118da7a1c32e70f272cc7b3e8_cgraph" id="ariscv64_2interrupt__main_8cpp_a51f9c37118da7a1c32e70f272cc7b3e8_cgraph">
-<area shape="rect" title="体系结构相关中断初始化" alt="" coords="5,129,104,155"/>
-<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="207,5,283,31"/>
-<area shape="poly" title=" " alt="" coords="63,127,98,84,122,60,151,40,192,23,194,28,153,44,126,64,101,88,67,131"/>
-<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="152,55,337,80"/>
-<area shape="poly" title=" " alt="" coords="75,127,110,108,151,89,173,81,174,86,153,94,113,112,78,132"/>
-<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="203,104,286,129"/>
-<area shape="poly" title=" " alt="" coords="104,133,189,121,190,127,105,138"/>
-<area shape="rect" href="structError.html#aa63ee10532d668f25a5147d7dc753749" title=" " alt="" coords="185,153,305,179"/>
-<area shape="poly" title=" " alt="" coords="105,146,171,154,171,159,104,151"/>
-<area shape="rect" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="189,203,300,228"/>
-<area shape="poly" title=" " alt="" coords="79,152,153,189,177,197,175,202,151,194,76,157"/>
-<area shape="rect" href="arch_8cpp.html#ac73d8c3647dca189d5c572ba9c48f471" title=" " alt="" coords="200,252,289,277"/>
-<area shape="poly" title=" " alt="" coords="67,153,102,195,126,219,153,238,187,252,185,257,151,243,123,223,98,199,63,156"/>
-<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="385,47,648,87"/>
-<area shape="poly" title=" " alt="" coords="338,65,371,65,371,70,338,70"/>
-<area shape="rect" href="expected_8hpp.html#a707ff37b9c7f7c83cf7f984840fa7a16" title="获取错误码对应的错误信息" alt="" coords="449,153,584,179"/>
-<area shape="poly" title=" " alt="" coords="305,163,435,163,435,169,305,169"/>
+<area shape="rect" title="体系结构相关中断初始化" alt="" coords="5,135,104,160"/>
+<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="174,9,250,35"/>
+<area shape="poly" title=" " alt="" coords="63,133,99,90,123,66,150,44,160,38,163,43,154,48,127,70,103,94,67,136"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="708,60,893,85"/>
+<area shape="poly" title=" " alt="" coords="104,140,694,81,695,86,104,145"/>
+<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="171,59,253,84"/>
+<area shape="poly" title=" " alt="" coords="81,132,171,88,174,92,83,137"/>
+<area shape="rect" href="structError.html#aa63ee10532d668f25a5147d7dc753749" title=" " alt="" coords="152,160,272,185"/>
+<area shape="poly" title=" " alt="" coords="105,153,139,158,138,163,104,158"/>
+<area shape="rect" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="157,209,267,235"/>
+<area shape="poly" title=" " alt="" coords="80,158,153,196,166,201,164,206,151,200,77,162"/>
+<area shape="rect" href="arch_8cpp.html#ac73d8c3647dca189d5c572ba9c48f471" title=" " alt="" coords="167,259,257,284"/>
+<area shape="poly" title=" " alt="" coords="67,158,103,200,127,224,154,245,162,250,159,255,150,250,123,228,99,204,63,162"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="324,35,451,60"/>
+<area shape="poly" title=" " alt="" coords="251,25,311,34,310,39,250,30"/>
+<area shape="poly" title=" " alt="" coords="451,49,694,64,694,69,451,54"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="503,8,660,33"/>
+<area shape="poly" title=" " alt="" coords="450,36,489,31,489,36,451,41"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="941,55,1204,95"/>
+<area shape="poly" title=" " alt="" coords="894,71,927,71,927,77,894,76"/>
+<area shape="poly" title=" " alt="" coords="636,31,734,54,733,59,635,36"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="729,7,872,32"/>
+<area shape="poly" title=" " alt="" coords="660,18,715,17,715,23,660,23"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1025,5,1120,31"/>
+<area shape="poly" title=" " alt="" coords="872,16,1012,16,1012,21,872,22"/>
+<area shape="poly" title=" " alt="" coords="253,63,310,55,311,60,254,68"/>
+<area shape="rect" href="expected_8hpp.html#a707ff37b9c7f7c83cf7f984840fa7a16" title="获取错误码对应的错误信息" alt="" coords="320,160,455,185"/>
+<area shape="poly" title=" " alt="" coords="272,170,306,170,306,175,272,175"/>
 </map>
 </div>
 
@@ -531,13 +542,27 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="riscv64_2interrupt__main_8cpp_ad310aa2bb690e3d8b4e6a036aae3dd93_cgraph.png" border="0" usemap="#ariscv64_2interrupt__main_8cpp_ad310aa2bb690e3d8b4e6a036aae3dd93_cgraph" alt=""/></div>
 <map name="ariscv64_2interrupt__main_8cpp_ad310aa2bb690e3d8b4e6a036aae3dd93_cgraph" id="ariscv64_2interrupt__main_8cpp_ad310aa2bb690e3d8b4e6a036aae3dd93_cgraph">
-<area shape="rect" title="从核的体系结构相关中断初始化" alt="" coords="5,55,132,80"/>
-<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="187,5,263,31"/>
-<area shape="poly" title=" " alt="" coords="109,52,173,31,174,37,110,57"/>
-<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="183,55,266,80"/>
-<area shape="poly" title=" " alt="" coords="132,65,169,65,169,70,132,70"/>
-<area shape="rect" href="arch_8cpp.html#ac73d8c3647dca189d5c572ba9c48f471" title=" " alt="" coords="180,104,269,129"/>
-<area shape="poly" title=" " alt="" coords="110,77,171,97,170,102,109,83"/>
+<area shape="rect" title="从核的体系结构相关中断初始化" alt="" coords="5,65,132,90"/>
+<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="187,15,263,41"/>
+<area shape="poly" title=" " alt="" coords="109,62,173,41,174,47,110,67"/>
+<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="183,65,266,90"/>
+<area shape="poly" title=" " alt="" coords="132,75,169,75,169,80,132,80"/>
+<area shape="rect" href="arch_8cpp.html#ac73d8c3647dca189d5c572ba9c48f471" title=" " alt="" coords="180,114,269,139"/>
+<area shape="poly" title=" " alt="" coords="110,87,171,107,170,112,109,93"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="317,41,444,66"/>
+<area shape="poly" title=" " alt="" coords="263,31,304,38,303,43,262,37"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="697,15,883,41"/>
+<area shape="poly" title=" " alt="" coords="444,47,683,32,684,37,444,52"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="492,66,649,91"/>
+<area shape="poly" title=" " alt="" coords="445,59,479,64,478,69,444,64"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="931,5,1193,45"/>
+<area shape="poly" title=" " alt="" coords="883,24,917,24,917,29,883,30"/>
+<area shape="poly" title=" " alt="" coords="626,63,721,41,722,46,627,68"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="719,69,861,94"/>
+<area shape="poly" title=" " alt="" coords="650,77,705,78,705,83,650,82"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1015,70,1109,95"/>
+<area shape="poly" title=" " alt="" coords="861,79,1001,80,1001,85,861,84"/>
+<area shape="poly" title=" " alt="" coords="266,68,303,63,304,68,267,74"/>
 </map>
 </div>
 

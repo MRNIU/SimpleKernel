@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['异常向量表管理_0',['📋 异常向量表管理',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md209',1,'']]],
-  ['异常向量表结构_1',['异常向量表结构',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md210',1,'']]],
-  ['异常处理器实现_2',['异常处理器实现',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md211',1,'']]]
+  ['性能优化特性_0',['⚡ 性能优化特性',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md212',1,'']]],
+  ['性能特征_1',['性能特征',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md182',1,'']]],
+  ['性能特点_2',['性能特点',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md148',1,'📊 性能特点'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md174',1,'📊 性能特点']]]
 ];

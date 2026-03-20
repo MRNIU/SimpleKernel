@@ -1,7 +1,6 @@
 <map id="InterruptBase" name="InterruptBase">
 <area shape="rect" id="Node000001" title="中断子系统抽象基类" alt="" coords="5,5,208,391"/>
-<area shape="rect" id="Node000002" href="$classInterrupt.html" title="AArch64 中断控制器实现" alt="" coords="5,439,208,1544"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,404,93,439,87,439,88,404"/>
-<area shape="poly" id="edge2_Node000001_Node000002" title=" " alt="" coords="109,404,109,439,104,439,104,404"/>
-<area shape="poly" id="edge3_Node000001_Node000002" title=" " alt="" coords="125,404,126,439,121,439,120,404"/>
+<area shape="rect" id="Node000002" href="$classInterrupt.html" title="AArch64 中断控制器实现" alt="" coords="5,439,208,1464"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,404,101,438,96,438,96,404"/>
+<area shape="poly" id="edge2_Node000001_Node000002" title=" " alt="" coords="117,404,118,438,112,438,112,404"/>
 </map>

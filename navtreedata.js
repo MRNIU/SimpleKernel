@@ -66,504 +66,466 @@ var NAVTREE =
       [ "相关文档", "md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md32", null ]
     ] ],
     [ "系统启动", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html", [
-      [ "x86_64", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md34", [
+      [ "RISCV64", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md34", [
         [ "概述", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md35", null ],
         [ "关键组件", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md36", [
-          [ "1. APIC 系统", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md37", null ],
+          [ "1. OpenSBI HSM 扩展", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md37", null ],
           [ "2. 核心数据结构", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md38", null ]
         ] ],
         [ "多核启动流程", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md39", [
           [ "1. BSP (Bootstrap Processor) 初始化", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md40", null ],
-          [ "2. AP 启动代码", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md41", null ],
-          [ "3. INIT-SIPI-SIPI 序列", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md42", null ],
-          [ "4. AP 入口处理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md43", null ]
+          [ "2. Hart 启动代码", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md41", null ],
+          [ "3. SBI Hart启动接口", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md42", null ],
+          [ "4. Hart入口处理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md43", null ]
         ] ],
-        [ "内存布局", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md44", [
-          [ "栈分配", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md45", null ],
-          [ "AP 启动代码位置", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md46", null ]
+        [ "核心ID获取机制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md44", [
+          [ "Hart ID管理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md45", null ],
+          [ "Tp寄存器访问", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md46", null ]
         ] ],
-        [ "APIC 配置", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md47", [
-          [ "Local APIC 初始化", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md48", null ],
-          [ "IPI 发送机制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md49", null ]
+        [ "设备树信息获取", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md47", [
+          [ "CPU核心数量获取", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md48", null ],
+          [ "基本信息初始化", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md49", null ],
+          [ "内存布局", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md50", null ],
+          [ "栈分配", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md51", null ]
         ] ],
-        [ "关键常量定义", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md50", null ],
-        [ "特性和限制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md51", [
-          [ "支持特性", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md52", null ],
-          [ "当前限制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md53", null ]
+        [ "SBI接口详解", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md52", [
+          [ "Hart状态管理接口", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md53", null ],
+          [ "错误码定义", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md54", null ]
         ] ],
-        [ "调试和监控", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md54", null ]
+        [ "特性和限制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md55", [
+          [ "支持特性", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md56", null ],
+          [ "当前限制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md57", null ]
+        ] ],
+        [ "调试和监控", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md58", null ]
       ] ],
-      [ "RISCV64", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md55", [
-        [ "概述", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md56", null ],
-        [ "关键组件", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md57", [
-          [ "1. OpenSBI HSM 扩展", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md58", null ],
-          [ "2. 核心数据结构", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md59", null ]
+      [ "AARCH64", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md59", [
+        [ "概述", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md60", null ],
+        [ "关键组件", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md61", [
+          [ "1. PSCI (Power State Coordination Interface)", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md62", null ],
+          [ "2. 核心数据结构", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md63", null ]
         ] ],
-        [ "多核启动流程", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md60", [
-          [ "1. BSP (Bootstrap Processor) 初始化", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md61", null ],
-          [ "2. Hart 启动代码", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md62", null ],
-          [ "3. SBI Hart启动接口", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md63", null ],
-          [ "4. Hart入口处理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md64", null ]
+        [ "多核启动流程", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md64", [
+          [ "1. BSP (Bootstrap Processor) 初始化", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md65", null ],
+          [ "2. CPU启动代码", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md66", null ],
+          [ "3. PSCI CpuOn接口", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md67", null ],
+          [ "4. SMC (Secure Monitor Call) 实现", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md68", null ],
+          [ "5. CPU入口处理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md69", null ]
         ] ],
-        [ "核心ID获取机制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md65", [
-          [ "Hart ID管理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md66", null ],
-          [ "Tp寄存器访问", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md67", null ]
+        [ "核心ID获取机制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md70", [
+          [ "MPIDR_EL1寄存器", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md71", null ],
+          [ "亲和性级别含义", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md72", null ],
+          [ "寄存器访问实现", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md73", null ]
         ] ],
-        [ "设备树信息获取", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md68", [
-          [ "CPU核心数量获取", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md69", null ],
-          [ "基本信息初始化", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md70", null ],
-          [ "内存布局", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md71", null ],
-          [ "栈分配", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md72", null ]
+        [ "PSCI设备树检查", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md74", [
+          [ "CheckPSCI实现", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md75", null ]
         ] ],
-        [ "SBI接口详解", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md73", [
-          [ "Hart状态管理接口", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md74", null ],
-          [ "错误码定义", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md75", null ]
+        [ "内存布局", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md76", [
+          [ "栈分配", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md77", null ]
         ] ],
-        [ "特性和限制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md76", [
-          [ "支持特性", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md77", null ],
-          [ "当前限制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md78", null ]
+        [ "PSCI功能接口", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md78", [
+          [ "核心电源管理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md79", null ],
+          [ "target_cpu参数格式", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md80", null ],
+          [ "电源状态结构", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md81", null ]
         ] ],
-        [ "调试和监控", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md79", null ]
-      ] ],
-      [ "AARCH64", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md80", [
-        [ "概述", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md81", null ],
-        [ "关键组件", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md82", [
-          [ "1. PSCI (Power State Coordination Interface)", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md83", null ],
-          [ "2. 核心数据结构", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md84", null ]
+        [ "特性和限制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md82", [
+          [ "支持特性", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md83", null ],
+          [ "当前限制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md84", null ]
         ] ],
-        [ "多核启动流程", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md85", [
-          [ "1. BSP (Bootstrap Processor) 初始化", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md86", null ],
-          [ "2. CPU启动代码", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md87", null ],
-          [ "3. PSCI CpuOn接口", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md88", null ],
-          [ "4. SMC (Secure Monitor Call) 实现", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md89", null ],
-          [ "5. CPU入口处理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md90", null ]
+        [ "调试和监控", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md85", [
+          [ "PSCI功能验证", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md86", null ],
+          [ "CPU状态查询", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md87", null ]
         ] ],
-        [ "核心ID获取机制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md91", [
-          [ "MPIDR_EL1寄存器", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md92", null ],
-          [ "亲和性级别含义", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md93", null ],
-          [ "寄存器访问实现", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md94", null ]
-        ] ],
-        [ "PSCI设备树检查", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md95", [
-          [ "CheckPSCI实现", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md96", null ]
-        ] ],
-        [ "内存布局", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md97", [
-          [ "栈分配", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md98", null ]
-        ] ],
-        [ "PSCI功能接口", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md99", [
-          [ "核心电源管理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md100", null ],
-          [ "target_cpu参数格式", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md101", null ],
-          [ "电源状态结构", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md102", null ]
-        ] ],
-        [ "特性和限制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md103", [
-          [ "支持特性", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md104", null ],
-          [ "当前限制", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md105", null ]
-        ] ],
-        [ "调试和监控", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md106", [
-          [ "PSCI功能验证", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md107", null ],
-          [ "CPU状态查询", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md108", null ]
-        ] ],
-        [ "错误处理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md109", null ]
+        [ "错误处理", "md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md88", null ]
       ] ]
     ] ],
     [ "调试输出", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html", [
-      [ "早期控制台 (Early Console)", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md111", [
-        [ "开启方式", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md112", null ],
-        [ "实现机制", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md113", null ]
+      [ "早期控制台 (Early Console)", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md90", [
+        [ "开启方式", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md91", null ],
+        [ "实现机制", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md92", null ]
       ] ],
-      [ "x86_64", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md114", [
-        [ "概述", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md115", null ],
-        [ "关键组件", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md116", [
-          [ "1. Serial 类实现", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md117", null ],
-          [ "2. 调试输出接口", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md118", null ]
+      [ "RISCV64", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md93", [
+        [ "概述", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md94", null ],
+        [ "关键组件", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md95", [
+          [ "1. SBI 调试控制台扩展", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md96", null ],
+          [ "2. 调试输出接口", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md97", null ]
         ] ],
-        [ "初始化流程", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md119", null ],
-        [ "寄存器定义", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md120", null ],
-        [ "特性和优势", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md121", null ],
-        [ "使用示例", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md122", null ]
+        [ "SBI 调用机制", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md98", [
+          [ "1. SBI 调用实现", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md99", null ],
+          [ "2. 权限级别转换", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md100", null ]
+        ] ],
+        [ "初始化流程", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md101", null ],
+        [ "支持的SBI调试功能", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md102", null ],
+        [ "特性和优势", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md103", null ],
+        [ "使用示例", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md104", null ]
       ] ],
-      [ "RISCV64", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md123", [
-        [ "概述", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md124", null ],
-        [ "关键组件", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md125", [
-          [ "1. SBI 调试控制台扩展", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md126", null ],
-          [ "2. 调试输出接口", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md127", null ]
+      [ "AARCH64", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md105", [
+        [ "概述", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md106", null ],
+        [ "关键组件", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md107", [
+          [ "1. PL011 驱动实现", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md108", null ],
+          [ "2. 初始化实现", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md109", null ],
+          [ "3. 字符输出实现", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md110", null ],
+          [ "4. 调试输出接口", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md111", null ]
         ] ],
-        [ "SBI 调用机制", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md128", [
-          [ "1. SBI 调用实现", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md129", null ],
-          [ "2. 权限级别转换", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md130", null ]
+        [ "设备树配置", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md112", [
+          [ "1. 串口信息获取", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md113", null ],
+          [ "2. 典型设备树配置", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md114", null ]
         ] ],
-        [ "初始化流程", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md131", null ],
-        [ "支持的SBI调试功能", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md132", null ],
-        [ "特性和优势", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md133", null ],
-        [ "使用示例", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md134", null ]
-      ] ],
-      [ "AARCH64", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md135", [
-        [ "概述", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md136", null ],
-        [ "关键组件", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md137", [
-          [ "1. PL011 驱动实现", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md138", null ],
-          [ "2. 初始化实现", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md139", null ],
-          [ "3. 字符输出实现", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md140", null ],
-          [ "4. 调试输出接口", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md141", null ]
+        [ "初始化流程", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md115", null ],
+        [ "寄存器详解", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md116", [
+          [ "1. 核心寄存器", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md117", null ],
+          [ "2. 波特率设置", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md118", null ]
         ] ],
-        [ "设备树配置", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md142", [
-          [ "1. 串口信息获取", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md143", null ],
-          [ "2. 典型设备树配置", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md144", null ]
-        ] ],
-        [ "初始化流程", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md145", null ],
-        [ "寄存器详解", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md146", [
-          [ "1. 核心寄存器", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md147", null ],
-          [ "2. 波特率设置", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md148", null ]
-        ] ],
-        [ "特性和优势", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md149", null ],
-        [ "中断支持", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md150", null ],
-        [ "使用示例", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md151", null ],
-        [ "错误处理", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md152", null ]
+        [ "特性和优势", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md119", null ],
+        [ "中断支持", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md120", null ],
+        [ "使用示例", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md121", null ],
+        [ "错误处理", "md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md122", null ]
       ] ]
     ] ],
     [ "多架构中断处理系统", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html", [
-      [ "🏗️ 架构对比总览", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md154", null ],
-      [ "x86_64 中断处理系统", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md156", [
-        [ "🏗️ 系统架构", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md157", [
-          [ "核心组件", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md158", null ]
+      [ "🏗️ 架构对比总览", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md124", null ],
+      [ "RISC-V 64 中断处理系统", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md126", [
+        [ "🏗️ 系统架构", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md127", [
+          [ "核心组件", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md128", null ]
         ] ],
-        [ "📋 中断描述符表 (IDT) 管理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md159", [
-          [ "IDT 初始化流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md160", null ],
-          [ "模板递归初始化机制", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md161", null ],
-          [ "中断入口模板", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md162", null ]
+        [ "📋 CSR 寄存器管理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md129", [
+          [ "关键控制状态寄存器", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md130", null ],
+          [ "Trap 处理程序入口", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md131", null ]
         ] ],
-        [ "🎯 中断处理流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md163", [
-          [ "1. 硬件中断触发", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md164", null ],
-          [ "2. 软件中断分发", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md165", null ],
-          [ "3. 中断处理函数注册", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md166", null ]
+        [ "🎯 中断处理流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md132", [
+          [ "1. 硬件中断流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md133", null ],
+          [ "2. 定时器中断流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md134", null ],
+          [ "3. 中断分发机制", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md135", null ]
         ] ],
-        [ "⏰ APIC 定时器中断", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md167", [
-          [ "定时器配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md168", null ],
-          [ "定时器中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md169", null ]
+        [ "🎛️ PLIC 中断控制器", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md136", [
+          [ "PLIC 初始化配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md137", null ],
+          [ "PLIC 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md138", null ]
         ] ],
-        [ "⌨️ 键盘中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md170", [
-          [ "键盘中断配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md171", null ],
-          [ "键盘扫描码处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md172", null ]
+        [ "⏰ SBI 定时器中断", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md139", [
+          [ "定时器配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md140", null ],
+          [ "定时器中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md141", null ]
         ] ],
-        [ "🚀 系统初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md173", [
-          [ "主处理器初始化 (BSP)", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md174", null ],
-          [ "从处理器初始化 (AP)", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md175", null ]
+        [ "🔌 UART 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md142", [
+          [ "UART 中断配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md143", null ],
+          [ "UART 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md144", null ]
         ] ],
-        [ "📊 性能特点", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md176", [
-          [ "优势", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md177", null ],
-          [ "设计考量", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md178", null ]
+        [ "🚀 系统初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md145", [
+          [ "主hart初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md146", null ],
+          [ "从hart初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md147", null ]
+        ] ],
+        [ "📊 性能特点", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md148", [
+          [ "优势", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md149", null ],
+          [ "设计考量", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md150", null ]
         ] ]
       ] ],
-      [ "RISC-V 64 中断处理系统", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md180", [
-        [ "🏗️ 系统架构", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md181", [
-          [ "核心组件", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md182", null ]
+      [ "AArch64 中断处理系统", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md152", [
+        [ "🏗️ 系统架构", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md153", [
+          [ "核心组件", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md154", null ]
         ] ],
-        [ "📋 CSR 寄存器管理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md183", [
-          [ "关键控制状态寄存器", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md184", null ],
-          [ "Trap 处理程序入口", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md185", null ]
+        [ "📋 异常向量表管理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md155", [
+          [ "异常向量表结构", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md156", null ],
+          [ "异常处理器实现", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md157", null ]
         ] ],
-        [ "🎯 中断处理流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md186", [
-          [ "1. 硬件中断流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md187", null ],
-          [ "2. 定时器中断流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md188", null ],
-          [ "3. 中断分发机制", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md189", null ]
+        [ "🎯 中断处理流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md158", [
+          [ "1. 硬件中断流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md159", null ],
+          [ "2. 中断ID获取和处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md160", null ]
         ] ],
-        [ "🎛️ PLIC 中断控制器", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md190", [
-          [ "PLIC 初始化配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md191", null ],
-          [ "PLIC 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md192", null ]
+        [ "🎛️ GIC 中断控制器", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md161", [
+          [ "GIC 初始化配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md162", null ],
+          [ "GIC 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md163", null ]
         ] ],
-        [ "⏰ SBI 定时器中断", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md193", [
-          [ "定时器配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md194", null ],
-          [ "定时器中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md195", null ]
+        [ "⏰ Generic Timer 中断", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md164", [
+          [ "定时器配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md165", null ],
+          [ "定时器中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md166", null ]
         ] ],
-        [ "🔌 UART 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md196", [
-          [ "UART 中断配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md197", null ],
-          [ "UART 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md198", null ]
+        [ "🔌 UART 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md167", [
+          [ "UART 中断配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md168", null ],
+          [ "UART 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md169", null ]
         ] ],
-        [ "🚀 系统初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md199", [
-          [ "主hart初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md200", null ],
-          [ "从hart初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md201", null ]
+        [ "🚀 系统初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md170", [
+          [ "主处理器初始化 (Primary CPU)", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md171", null ],
+          [ "从处理器初始化 (Secondary CPUs)", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md172", null ],
+          [ "多核启动流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md173", null ]
         ] ],
-        [ "📊 性能特点", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md202", [
-          [ "优势", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md203", null ],
-          [ "设计考量", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md204", null ]
+        [ "📊 性能特点", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md174", [
+          [ "优势", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md175", null ],
+          [ "设计考量", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md176", null ]
         ] ]
       ] ],
-      [ "AArch64 中断处理系统", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md206", [
-        [ "🏗️ 系统架构", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md207", [
-          [ "核心组件", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md208", null ]
+      [ "🔍 多架构对比分析", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md178", [
+        [ "中断控制器对比", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md179", null ],
+        [ "定时器机制对比", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md180", null ],
+        [ "初始化复杂度", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md181", null ],
+        [ "性能特征", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md182", null ],
+        [ "🏗️ 系统架构", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md183", [
+          [ "核心组件", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md184", null ]
         ] ],
-        [ "📋 异常向量表管理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md209", [
-          [ "异常向量表结构", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md210", null ],
-          [ "异常处理器实现", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md211", null ]
+        [ "📋 CSR 寄存器管理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md185", [
+          [ "关键 CSR 寄存器", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md186", null ],
+          [ "scause 寄存器解码", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md187", null ],
+          [ "陷阱入口设置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md188", null ]
         ] ],
-        [ "🎯 中断处理流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md212", [
-          [ "1. 硬件中断流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md213", null ],
-          [ "2. 中断ID获取和处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md214", null ]
+        [ "🎯 中断/异常分类处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md189", [
+          [ "中断类型 (scause[63] = 1)", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md190", null ],
+          [ "异常类型 (scause[63] = 0)", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md191", null ]
         ] ],
-        [ "🎛️ GIC 中断控制器", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md215", [
-          [ "GIC 初始化配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md216", null ],
-          [ "GIC 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md217", null ]
+        [ "⏰ SBI 定时器中断", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md192", [
+          [ "定时器配置和处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md193", null ],
+          [ "OpenSBI 定时器接口", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md194", null ]
         ] ],
-        [ "⏰ Generic Timer 中断", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md218", [
-          [ "定时器配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md219", null ],
-          [ "定时器中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md220", null ]
+        [ "🔌 PLIC 外部中断控制", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md195", [
+          [ "PLIC 初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md196", null ],
+          [ "PLIC 寄存器布局", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md197", null ],
+          [ "PLIC 中断处理流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md198", null ]
         ] ],
-        [ "🔌 UART 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md221", [
-          [ "UART 中断配置", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md222", null ],
-          [ "UART 中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md223", null ]
+        [ "📡 串口中断处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md199", [
+          [ "NS16550A 串口中断", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md200", null ]
         ] ],
-        [ "🚀 系统初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md224", [
-          [ "主处理器初始化 (Primary CPU)", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md225", null ],
-          [ "从处理器初始化 (Secondary CPUs)", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md226", null ],
-          [ "多核启动流程", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md227", null ]
+        [ "🛑 异常处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md201", [
+          [ "断点异常 (ebreak)", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md202", null ],
+          [ "默认异常处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md203", null ]
         ] ],
-        [ "📊 性能特点", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md228", [
-          [ "优势", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md229", null ],
-          [ "设计考量", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md230", null ]
+        [ "🚀 多核系统初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md204", [
+          [ "主核心 (BSP) 初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md205", null ],
+          [ "应用核心 (AP) 初始化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md206", null ]
+        ] ],
+        [ "🔧 OpenSBI 集成", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md207", [
+          [ "SBI 调用接口", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md208", null ],
+          [ "SBI 错误处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md209", null ]
+        ] ],
+        [ "📊 设备树 (Device Tree) 集成", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md210", [
+          [ "从设备树获取硬件信息", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md211", null ]
+        ] ],
+        [ "⚡ 性能优化特性", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md212", [
+          [ "1. 对齐优化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md213", null ],
+          [ "2. 分离的中断/异常处理", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md214", null ],
+          [ "3. 硬件特定优化", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md215", null ]
+        ] ],
+        [ "🔄 多核处理特性", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md216", [
+          [ "BSP vs AP 初始化差异", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md217", null ],
+          [ "多核中断安全性", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md218", null ]
+        ] ],
+        [ "🐛 调试和监控", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md219", [
+          [ "中断信息输出", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md220", null ],
+          [ "异常调试", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md221", null ]
+        ] ],
+        [ "📚 相关文档", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md222", null ],
+        [ "🔗 关键数据结构", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md223", [
+          [ "RISC-V 中断/异常编号", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md224", null ],
+          [ "PLIC 上下文映射", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md225", null ]
         ] ]
-      ] ],
-      [ "🔍 多架构对比分析", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md232", [
-        [ "中断控制器对比", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md233", null ],
-        [ "定时器机制对比", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md234", null ],
-        [ "初始化复杂度", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md235", null ],
-        [ "性能特征", "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md236", null ]
       ] ]
     ] ],
     [ "SimpleKernel 代码规范", "md_coding__standards.html", [
-      [ "1. 文件结构", "md_coding__standards.html#autotoc_md239", null ],
-      [ "2. 命名规范", "md_coding__standards.html#autotoc_md241", [
-        [ "成员变量", "md_coding__standards.html#autotoc_md242", null ]
+      [ "1. 文件结构", "md_coding__standards.html#autotoc_md228", null ],
+      [ "2. 命名规范", "md_coding__standards.html#autotoc_md230", [
+        [ "成员变量", "md_coding__standards.html#autotoc_md231", null ]
       ] ],
-      [ "3. 类型选择", "md_coding__standards.html#autotoc_md244", [
-        [ "<tt>class</tt> vs <tt>struct</tt>", "md_coding__standards.html#autotoc_md245", null ],
-        [ "<tt>enum class</tt>", "md_coding__standards.html#autotoc_md246", null ]
+      [ "3. 类型选择", "md_coding__standards.html#autotoc_md233", [
+        [ "<tt>class</tt> vs <tt>struct</tt>", "md_coding__standards.html#autotoc_md234", null ],
+        [ "<tt>enum class</tt>", "md_coding__standards.html#autotoc_md235", null ]
       ] ],
-      [ "4. 类布局", "md_coding__standards.html#autotoc_md248", [
-        [ "要点", "md_coding__standards.html#autotoc_md249", null ]
+      [ "4. 类布局", "md_coding__standards.html#autotoc_md237", [
+        [ "要点", "md_coding__standards.html#autotoc_md238", null ]
       ] ],
-      [ "5. 方法签名", "md_coding__standards.html#autotoc_md251", [
-        [ "Trailing Return Type（强制）", "md_coding__standards.html#autotoc_md252", null ],
-        [ "常用属性", "md_coding__standards.html#autotoc_md253", null ]
+      [ "5. 方法签名", "md_coding__standards.html#autotoc_md240", [
+        [ "Trailing Return Type（强制）", "md_coding__standards.html#autotoc_md241", null ],
+        [ "常用属性", "md_coding__standards.html#autotoc_md242", null ]
       ] ],
-      [ "6. 错误处理", "md_coding__standards.html#autotoc_md255", [
-        [ "可失败操作优先使用 <tt>Expected<T></tt>", "md_coding__standards.html#autotoc_md256", null ],
-        [ "处理错误", "md_coding__standards.html#autotoc_md257", null ],
-        [ "新增错误码", "md_coding__standards.html#autotoc_md258", null ],
-        [ "禁止事项", "md_coding__standards.html#autotoc_md259", null ]
+      [ "6. 错误处理", "md_coding__standards.html#autotoc_md244", [
+        [ "可失败操作优先使用 <tt>Expected<T></tt>", "md_coding__standards.html#autotoc_md245", null ],
+        [ "处理错误", "md_coding__standards.html#autotoc_md246", null ],
+        [ "新增错误码", "md_coding__standards.html#autotoc_md247", null ],
+        [ "禁止事项", "md_coding__standards.html#autotoc_md248", null ]
       ] ],
-      [ "7. Doxygen 文档", "md_coding__standards.html#autotoc_md261", [
-        [ "类/结构体", "md_coding__standards.html#autotoc_md262", null ],
-        [ "方法", "md_coding__standards.html#autotoc_md263", null ],
-        [ "成员变量", "md_coding__standards.html#autotoc_md264", null ],
-        [ "分组", "md_coding__standards.html#autotoc_md265", null ],
-        [ "禁止事项", "md_coding__standards.html#autotoc_md266", null ]
+      [ "7. Doxygen 文档", "md_coding__standards.html#autotoc_md250", [
+        [ "类/结构体", "md_coding__standards.html#autotoc_md251", null ],
+        [ "方法", "md_coding__standards.html#autotoc_md252", null ],
+        [ "成员变量", "md_coding__standards.html#autotoc_md253", null ],
+        [ "分组", "md_coding__standards.html#autotoc_md254", null ],
+        [ "禁止事项", "md_coding__standards.html#autotoc_md255", null ]
       ] ],
-      [ "8. 常量与变量", "md_coding__standards.html#autotoc_md268", null ],
-      [ "9. Freestanding 约束", "md_coding__standards.html#autotoc_md270", null ],
-      [ "10. 禁止事项", "md_coding__standards.html#autotoc_md272", null ],
-      [ "附录: 检查清单", "md_coding__standards.html#autotoc_md274", null ]
+      [ "8. 常量与变量", "md_coding__standards.html#autotoc_md257", null ],
+      [ "9. Freestanding 约束", "md_coding__standards.html#autotoc_md259", null ],
+      [ "10. 禁止事项", "md_coding__standards.html#autotoc_md261", null ],
+      [ "附录: 检查清单", "md_coding__standards.html#autotoc_md263", null ]
     ] ],
     [ "Dev Container 开发环境", "md_docker.html", [
-      [ "快速开始", "md_docker.html#autotoc_md276", [
-        [ "VS Code", "md_docker.html#autotoc_md277", null ],
-        [ "GitHub Codespaces", "md_docker.html#autotoc_md278", null ],
-        [ "CLI", "md_docker.html#autotoc_md279", null ]
+      [ "快速开始", "md_docker.html#autotoc_md265", [
+        [ "VS Code", "md_docker.html#autotoc_md266", null ],
+        [ "GitHub Codespaces", "md_docker.html#autotoc_md267", null ],
+        [ "CLI", "md_docker.html#autotoc_md268", null ]
       ] ],
-      [ "验证环境", "md_docker.html#autotoc_md280", null ],
-      [ "构建与运行", "md_docker.html#autotoc_md281", null ]
+      [ "验证环境", "md_docker.html#autotoc_md269", null ],
+      [ "构建与运行", "md_docker.html#autotoc_md270", null ]
     ] ],
     [ "Git Commit 规范", "md_git__commit.html", null ],
     [ "README", "md__2workspaces_2SimpleKernel_2README.html", [
-      [ "SimpleKernel", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md283", [
-        [ "📖 目录", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md284", null ],
-        [ "✨ 项目简介", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md285", [
-          [ "🌟 核心亮点", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md286", null ]
+      [ "SimpleKernel", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md272", [
+        [ "📖 目录", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md273", null ],
+        [ "✨ 项目简介", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md274", [
+          [ "🌟 核心亮点", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md275", null ]
         ] ],
-        [ "🤖 面向 AI 的设计理念", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md287", [
-          [ "为什么要\"面向 AI\"？", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md288", null ],
-          [ "核心工作流", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md289", [
-            [ "1️⃣ 阅读接口，理解契约", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md290", null ],
-            [ "2️⃣ 让 AI 实现", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md291", null ],
-            [ "3️⃣ 测试验证", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md292", null ],
-            [ "4️⃣ 对照参考实现", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md293", null ]
+        [ "🤖 面向 AI 的设计理念", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md276", [
+          [ "为什么要\"面向 AI\"？", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md277", null ],
+          [ "核心工作流", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md278", [
+            [ "1️⃣ 阅读接口，理解契约", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md279", null ],
+            [ "2️⃣ 让 AI 实现", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md280", null ],
+            [ "3️⃣ 测试验证", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md281", null ],
+            [ "4️⃣ 对照参考实现", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md282", null ]
           ] ],
-          [ "与 AI 工具的结合方式", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md294", null ]
+          [ "与 AI 工具的结合方式", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md283", null ]
         ] ],
-        [ "🏛️ 接口体系总览", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md295", [
-          [ "关键接口文件", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md296", null ]
+        [ "🏛️ 接口体系总览", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md284", [
+          [ "关键接口文件", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md285", null ]
         ] ],
-        [ "🏗️ 支持架构", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md297", null ],
-        [ "🚀 快速开始", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md298", [
-          [ "📋 系统要求", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md299", null ],
-          [ "🛠️ 环境搭建", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md300", null ],
-          [ "⚡ 编译与运行", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md301", null ],
-          [ "🎯 AI 辅助开发工作流", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md302", null ]
+        [ "🏗️ 支持架构", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md286", null ],
+        [ "🚀 快速开始", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md287", [
+          [ "📋 系统要求", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md288", null ],
+          [ "🛠️ 环境搭建", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md289", null ],
+          [ "⚡ 编译与运行", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md290", null ],
+          [ "🎯 AI 辅助开发工作流", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md291", null ]
         ] ],
-        [ "📂 项目结构", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md303", null ],
-        [ "🎯 学习路线", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md304", [
-          [ "阶段 1：基础设施（Boot）", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md305", null ],
-          [ "阶段 2：中断系统（Interrupt）", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md306", null ],
-          [ "阶段 3：内存管理（Memory）", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md307", null ],
-          [ "阶段 4：任务管理（Thread/Task）", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md308", null ],
-          [ "阶段 5：系统调用（Syscall）", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md309", null ]
+        [ "📂 项目结构", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md292", null ],
+        [ "🎯 学习路线", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md293", [
+          [ "阶段 1：基础设施（Boot）", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md294", null ],
+          [ "阶段 2：中断系统（Interrupt）", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md295", null ],
+          [ "阶段 3：内存管理（Memory）", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md296", null ],
+          [ "阶段 4：任务管理（Thread/Task）", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md297", null ],
+          [ "阶段 5：系统调用（Syscall）", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md298", null ]
         ] ],
-        [ "📦 第三方依赖", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md310", null ],
-        [ "📝 开发指南", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md311", [
-          [ "🎨 代码风格", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md312", null ],
-          [ "命名约定", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md313", null ],
-          [ "📋 Git Commit 规范", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md314", null ],
-          [ "📚 文档", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md315", null ]
+        [ "📦 第三方依赖", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md299", null ],
+        [ "📝 开发指南", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md300", [
+          [ "🎨 代码风格", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md301", null ],
+          [ "命名约定", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md302", null ],
+          [ "📋 Git Commit 规范", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md303", null ],
+          [ "📚 文档", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md304", null ]
         ] ],
-        [ "🤝 贡献指南", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md316", [
-          [ "🎯 贡献方式", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md317", null ],
-          [ "🔧 代码贡献流程", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md318", null ]
+        [ "🤝 贡献指南", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md305", [
+          [ "🎯 贡献方式", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md306", null ],
+          [ "🔧 代码贡献流程", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md307", null ]
         ] ],
-        [ "📄 许可证", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md319", null ]
+        [ "📄 许可证", "md__2workspaces_2SimpleKernel_2README.html#autotoc_md308", null ]
       ] ]
     ] ],
     [ "README_ENG", "md__2workspaces_2SimpleKernel_2README__ENG.html", [
-      [ "SimpleKernel", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md321", [
-        [ "📖 Table of Contents", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md322", null ],
-        [ "✨ Project Overview", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md323", [
-          [ "🌟 Core Highlights", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md324", null ]
+      [ "SimpleKernel", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md310", [
+        [ "📖 Table of Contents", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md311", null ],
+        [ "✨ Project Overview", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md312", [
+          [ "🌟 Core Highlights", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md313", null ]
         ] ],
-        [ "🤖 AI-Oriented Design Philosophy", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md325", [
-          [ "Why \"AI-Oriented\"?", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md326", null ],
-          [ "Core Workflow", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md327", [
-            [ "1️⃣ Read Interface, Understand Contract", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md328", null ],
-            [ "2️⃣ Let AI Implement", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md329", null ],
-            [ "3️⃣ Test and Verify", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md330", null ],
-            [ "4️⃣ Compare with Reference Implementation", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md331", null ]
+        [ "🤖 AI-Oriented Design Philosophy", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md314", [
+          [ "Why \"AI-Oriented\"?", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md315", null ],
+          [ "Core Workflow", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md316", [
+            [ "1️⃣ Read Interface, Understand Contract", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md317", null ],
+            [ "2️⃣ Let AI Implement", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md318", null ],
+            [ "3️⃣ Test and Verify", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md319", null ],
+            [ "4️⃣ Compare with Reference Implementation", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md320", null ]
           ] ],
-          [ "Integration with AI Tools", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md332", null ]
+          [ "Integration with AI Tools", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md321", null ]
         ] ],
-        [ "🏛️ Interface Architecture Overview", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md333", [
-          [ "Key Interface Files", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md334", null ]
+        [ "🏛️ Interface Architecture Overview", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md322", [
+          [ "Key Interface Files", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md323", null ]
         ] ],
-        [ "🏗️ Supported Architectures", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md335", null ],
-        [ "🚀 Quick Start", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md336", [
-          [ "📋 System Requirements", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md337", null ],
-          [ "🛠️ Environment Setup", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md338", null ],
-          [ "⚡ Build and Run", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md339", null ],
-          [ "🎯 AI-Assisted Development Workflow", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md340", null ]
+        [ "🏗️ Supported Architectures", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md324", null ],
+        [ "🚀 Quick Start", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md325", [
+          [ "📋 System Requirements", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md326", null ],
+          [ "🛠️ Environment Setup", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md327", null ],
+          [ "⚡ Build and Run", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md328", null ],
+          [ "🎯 AI-Assisted Development Workflow", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md329", null ]
         ] ],
-        [ "📂 Project Structure", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md341", null ],
-        [ "🎯 Learning Path", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md342", [
-          [ "Phase 1: Infrastructure (Boot)", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md343", null ],
-          [ "Phase 2: Interrupt System", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md344", null ],
-          [ "Phase 3: Memory Management", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md345", null ],
-          [ "Phase 4: Task Management (Thread/Task)", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md346", null ],
-          [ "Phase 5: System Calls", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md347", null ]
+        [ "📂 Project Structure", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md330", null ],
+        [ "🎯 Learning Path", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md331", [
+          [ "Phase 1: Infrastructure (Boot)", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md332", null ],
+          [ "Phase 2: Interrupt System", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md333", null ],
+          [ "Phase 3: Memory Management", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md334", null ],
+          [ "Phase 4: Task Management (Thread/Task)", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md335", null ],
+          [ "Phase 5: System Calls", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md336", null ]
         ] ],
-        [ "📦 Third-Party Dependencies", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md348", null ],
-        [ "📝 Development Guide", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md349", [
-          [ "🎨 Code Style", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md350", null ],
-          [ "Naming Conventions", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md351", null ],
-          [ "📋 Git Commit Convention", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md352", null ],
-          [ "📚 Documentation", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md353", null ]
+        [ "📦 Third-Party Dependencies", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md337", null ],
+        [ "📝 Development Guide", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md338", [
+          [ "🎨 Code Style", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md339", null ],
+          [ "Naming Conventions", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md340", null ],
+          [ "📋 Git Commit Convention", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md341", null ],
+          [ "📚 Documentation", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md342", null ]
         ] ],
-        [ "🤝 Contributing", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md354", [
-          [ "🎯 Ways to Contribute", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md355", null ],
-          [ "🔧 Code Contribution Workflow", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md356", null ]
+        [ "🤝 Contributing", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md343", [
+          [ "🎯 Ways to Contribute", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md344", null ],
+          [ "🔧 Code Contribution Workflow", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md345", null ]
         ] ],
-        [ "📄 License", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md357", null ]
+        [ "📄 License", "md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md346", null ]
       ] ]
     ] ],
     [ "GIC (Generic Interrupt Controller)", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html", [
-      [ "功能特性", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md360", null ],
-      [ "类接口", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md361", [
-        [ "构造函数", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md362", null ],
-        [ "主要方法", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md363", null ],
-        [ "Distributor (GICD) 接口", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md364", null ],
-        [ "Redistributor (GICR) 接口", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md365", null ]
+      [ "功能特性", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md349", null ],
+      [ "类接口", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md350", [
+        [ "构造函数", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md351", null ],
+        [ "主要方法", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md352", null ],
+        [ "Distributor (GICD) 接口", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md353", null ],
+        [ "Redistributor (GICR) 接口", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md354", null ]
       ] ],
-      [ "使用示例", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md366", null ],
-      [ "参考文档", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md367", null ],
-      [ "设备树配置示例", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md368", null ]
+      [ "使用示例", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md355", null ],
+      [ "参考文档", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md356", null ],
+      [ "设备树配置示例", "md__2workspaces_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md357", null ]
     ] ],
     [ "AGENTS.md — src/arch/", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html", [
-      [ "OVERVIEW", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md370", null ],
-      [ "STRUCTURE", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md371", null ],
-      [ "WHERE TO LOOK", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md372", null ],
-      [ "CONVENTIONS", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md373", null ],
-      [ "ANTI-PATTERNS", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md374", null ],
-      [ "NOTES", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md375", null ]
+      [ "OVERVIEW", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md359", null ],
+      [ "STRUCTURE", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md360", null ],
+      [ "WHERE TO LOOK", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md361", null ],
+      [ "CONVENTIONS", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md362", null ],
+      [ "ANTI-PATTERNS", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md363", null ],
+      [ "NOTES", "md__2workspaces_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md364", null ]
     ] ],
     [ "arch", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html", [
-      [ "目录结构", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md377", null ],
-      [ "核心接口", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md378", [
-        [ "arch.h", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md379", null ]
+      [ "目录结构", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md366", null ],
+      [ "核心接口", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md367", [
+        [ "arch.h", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md368", null ]
       ] ],
-      [ "各架构实现", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md380", [
-        [ "通用功能", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md381", null ],
-        [ "架构特定功能", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md382", [
-          [ "aarch64", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md383", null ],
-          [ "riscv64", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md384", null ],
-          [ "x86_64", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md385", null ]
+      [ "各架构实现", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md369", [
+        [ "通用功能", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md370", null ],
+        [ "架构特定功能", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md371", [
+          [ "aarch64", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md372", null ],
+          [ "riscv64", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md373", null ]
         ] ]
       ] ],
-      [ "编译配置", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md386", null ],
-      [ "多核支持", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md387", null ],
-      [ "调试支持", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md388", null ]
+      [ "编译配置", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md374", null ],
+      [ "多核支持", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md375", null ],
+      [ "调试支持", "md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md376", null ]
     ] ],
     [ "Platform-Level Interrupt Controller (PLIC)", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html", [
-      [ "特性", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md390", null ],
-      [ "类接口", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md391", null ],
-      [ "使用示例", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md392", null ],
-      [ "设备树配置", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md393", null ],
-      [ "参考文档", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md394", null ]
-    ] ],
-    [ "APIC 驱动", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html", [
-      [ "架构设计", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md396", [
-        [ "多核系统中的 APIC 结构", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md397", null ],
-        [ "支持的 APIC 模式", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md398", [
-          [ "x2APIC 模式 (推荐)", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md399", null ],
-          [ "xAPIC 模式 (兼容性)", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md400", null ]
-        ] ],
-        [ "类结构", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md401", null ],
-        [ "使用方式", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md402", null ]
-      ] ],
-      [ "特性", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md403", [
-        [ "Local APIC (per-CPU)", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md404", null ],
-        [ "IO APIC (系统级)", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md405", null ],
-        [ "多核系统管理", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md406", null ]
-      ] ],
-      [ "多核系统工作流程", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md407", [
-        [ "1. 系统启动阶段（BSP）", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md408", null ],
-        [ "2. AP 启动阶段", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md409", null ],
-        [ "3. 运行时中断管理", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md410", null ]
-      ] ],
-      [ "限制", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md411", null ],
-      [ "文件结构", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md412", null ],
-      [ "依赖", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md413", null ],
-      [ "注意事项", "md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md414", null ]
+      [ "特性", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md378", null ],
+      [ "类接口", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md379", null ],
+      [ "使用示例", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md380", null ],
+      [ "设备树配置", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md381", null ],
+      [ "参考文档", "md__2workspaces_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md382", null ]
     ] ],
     [ "AGENTS.md — src/device/", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html", [
-      [ "OVERVIEW", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md416", null ],
-      [ "STRUCTURE", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md417", null ],
-      [ "WHERE TO LOOK", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md418", null ],
-      [ "CONVENTIONS", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md419", null ],
-      [ "DISCOVERIES / KEY PATTERNS", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md420", null ],
-      [ "ANTI-PATTERNS", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md421", null ]
+      [ "OVERVIEW", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md384", null ],
+      [ "STRUCTURE", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md385", null ],
+      [ "WHERE TO LOOK", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md386", null ],
+      [ "CONVENTIONS", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md387", null ],
+      [ "DISCOVERIES / KEY PATTERNS", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md388", null ],
+      [ "ANTI-PATTERNS", "md__2workspaces_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md389", null ]
     ] ],
     [ "AGENTS.md — src/filesystem/", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html", [
-      [ "OVERVIEW", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md423", null ],
-      [ "STRUCTURE", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md424", null ],
-      [ "WHERE TO LOOK", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md425", null ],
-      [ "CONVENTIONS", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md426", null ],
-      [ "ANTI-PATTERNS", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md427", null ]
+      [ "OVERVIEW", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md391", null ],
+      [ "STRUCTURE", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md392", null ],
+      [ "WHERE TO LOOK", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md393", null ],
+      [ "CONVENTIONS", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md394", null ],
+      [ "ANTI-PATTERNS", "md__2workspaces_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md395", null ]
     ] ],
     [ "AGENTS.md — src/task/", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html", [
-      [ "OVERVIEW", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md429", null ],
-      [ "STRUCTURE", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md430", null ],
-      [ "WHERE TO LOOK", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md431", null ],
-      [ "CONVENTIONS", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md432", null ],
-      [ "ANTI-PATTERNS", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md433", null ]
+      [ "OVERVIEW", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md397", null ],
+      [ "STRUCTURE", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md398", null ],
+      [ "WHERE TO LOOK", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md399", null ],
+      [ "CONVENTIONS", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md400", null ],
+      [ "ANTI-PATTERNS", "md__2workspaces_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md401", null ]
     ] ],
     [ "AGENTS.md — tests/", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html", [
-      [ "OVERVIEW", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html#autotoc_md435", null ],
-      [ "STRUCTURE", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html#autotoc_md436", null ],
-      [ "WHERE TO LOOK", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html#autotoc_md437", null ],
-      [ "CONVENTIONS", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html#autotoc_md438", null ],
-      [ "ANTI-PATTERNS", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html#autotoc_md439", null ]
+      [ "OVERVIEW", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html#autotoc_md403", null ],
+      [ "STRUCTURE", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html#autotoc_md404", null ],
+      [ "WHERE TO LOOK", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html#autotoc_md405", null ],
+      [ "CONVENTIONS", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html#autotoc_md406", null ],
+      [ "ANTI-PATTERNS", "md__2workspaces_2SimpleKernel_2tests_2AGENTS.html#autotoc_md407", null ]
     ] ],
     [ "aarch64_minimal", "md__2workspaces_2SimpleKernel_2tests_2integration__test_2aarch64__minimal_2README.html", null ],
     [ "opensbi_test", "md__2workspaces_2SimpleKernel_2tests_2integration__test_2opensbi__test_2README.html", null ],
@@ -612,27 +574,26 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "aarch64_2arch__main_8cpp.html",
-"classGic_1_1Gicd.html#a357b231d7f2333c78108d1fc6cfa348d",
-"classIoApic.html#aa82a45942dc696d8553604f526080806",
-"classPlic.html#a0fda6a41bcf14fcabf05e844ff23befd",
-"classacpi_1_1Acpi.html#ab97a2d9af41b0c7418becb0c6ae46ab4",
-"classpl011_1_1Pl011.html#a62a784f385feb3be29b29c45c7e8431a",
-"classvfs_1_1FileOps.html#ad95434b2782ec684d26c3059b0123164",
-"classvirtio_1_1PciTransport.html#a5ef8969b1458371071a16bb6c441a811",
-"classvirtio_1_1blk_1_1VirtioBlk.html#aaed018a55b3d101003bf798b07c525a6",
-"dir_cb3b6696d9a0602084c83f0916102e63.html",
-"functions_m.html",
-"kstd__new_8cpp.html#ae32f48344fe9f9febbade800183c3af6",
-"md__2workspaces_2SimpleKernel_2AGENTS.html#autotoc_md7",
-"namespaceTaskStatusId.html#a9267be817306e553fc88afb09aed82b0",
-"namespacevirtio.html#afb39ef4b5e21152457db755c0d6f8fb2a877c53b2806195208206485bfb91d751",
-"sk__ctype__test_8cpp.html",
-"structDmaRegion.html#a5a38263ca76d092357b9191b90b79d3f",
-"structacpi_1_1Acpi_1_1DescriptionHeader.html#a22843ba7e5649ee0bca07def83880b31",
-"structklog_1_1detail_1_1LogEntry.html#a453086818ee887129ef9c70f89bb1a7f",
-"structvirtio_1_1blk_1_1BlkConfig.html#a954e23caff5b670d955cba1282451484",
-"tests_2integration__test_2aarch64__minimal_2main_8cpp.html",
-"virtio__blk__vfs__adapter_8hpp_source.html"
+"classGic_1_1Gicd.html#a7740b031207c23476f4339f2e0897343",
+"classLockGuard.html#ac9dddb7967ff5f0139a9b9ef7e09c6e1",
+"classTaskManager.html#ae546fc5dad8a73a6b17894beefa181e4",
+"classns16550a_1_1Ns16550a.html",
+"classtest__env_1_1TestEnvironmentState.html#a29e17fa71ecdf165c3c931cdba0c992d",
+"classvirtio_1_1MmioTransport.html#a10fae98798be13b77da6b2c395fe182fae35c310d5c5745ecd536345b4196fca4",
+"classvirtio_1_1Transport.html#a9eec2ec7ffe086cdb5c1cb65f5f99ad4",
+"defs_8h.html#a89679bb4194647b213044dde2d436baead4fe16a15b75691aac9f6dda50f3873d",
+"ffconf_8h.html#aa23a9857382e458421fb87ef11ff9c63",
+"kernel__fdt__test_8cpp.html#aec284f7ae352c73442302defcffac018",
+"md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md178",
+"misc_8hpp.html",
+"namespacevirtio.html#a89679bb4194647b213044dde2d436baea479055bb54cc62627e708103cc2f4aed",
+"sk__ctype_8c.html#a49f40fd869fd0c90e4497fda08c89561",
+"structCpuSchedData.html#a25f3afad6b642c4db9ca6e9520f63480",
+"structThreadCreateMsg.html#a0e20f693c30b8a0fc0193fb71d9fadcf",
+"structfatfs_1_1FatFsFileSystem_1_1FatDirHandle.html#a2db3289ae8b205f36da8ccb8e4b47a31",
+"structvirtio_1_1blk_1_1BlkConfig.html",
+"task__manager_8cpp_source.html",
+"virtio__blk__defs_8h.html#a8c4c74da0d68070a14522aa4593668b8ab633f0d00bf29a02a4fda986cd0762ef"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

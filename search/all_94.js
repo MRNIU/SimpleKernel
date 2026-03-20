@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['🎛️_20gic_20中断控制器_0',['🎛️ GIC 中断控制器',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md215',1,'']]],
-  ['🎛️_20plic_20中断控制器_1',['🎛️ PLIC 中断控制器',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md190',1,'']]]
+  ['📂_20project_20structure_0',['📂 Project Structure',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md330',1,'']]],
+  ['📂_20项目结构_1',['📂 项目结构',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md292',1,'']]]
 ];

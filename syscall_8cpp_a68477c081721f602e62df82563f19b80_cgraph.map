@@ -1,5 +1,18 @@
 <map id="sys_kill" name="sys_kill">
-<area shape="rect" id="Node000001" title="向指定进程发送信号" alt="" coords="5,5,76,31"/>
-<area shape="rect" id="Node000002" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="124,5,200,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="76,15,110,15,110,21,76,21"/>
+<area shape="rect" id="Node000001" title="向指定进程发送信号" alt="" coords="5,41,76,66"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="124,41,200,66"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="76,51,110,51,110,56,76,56"/>
+<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="248,41,375,66"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="200,51,235,51,235,56,200,56"/>
+<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="628,15,813,41"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="375,47,614,32,614,37,375,52"/>
+<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="423,66,580,91"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="375,59,409,64,408,69,375,64"/>
+<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="861,5,1124,45"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="814,24,847,24,847,29,814,30"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="557,63,651,41,653,46,558,68"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="649,67,792,93"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="580,76,635,77,635,82,580,82"/>
+<area shape="rect" id="Node000008" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="945,70,1040,95"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="792,78,932,79,932,85,792,83"/>
 </map>

@@ -1,12 +1,26 @@
 <map id="vfs::MountTable::Mount" name="vfs::MountTable::Mount">
-<area shape="rect" id="Node000001" title="挂载文件系统到指定路径" alt="" coords="5,81,180,107"/>
-<area shape="rect" id="Node000002" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="263,5,339,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="127,79,251,33,253,38,129,84"/>
-<area shape="rect" id="Node000003" href="$namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="421,107,549,132"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="180,86,274,85,374,91,427,101,426,106,373,97,273,91,181,92"/>
-<area shape="rect" id="Node000004" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="259,107,342,132"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="181,102,245,110,245,115,180,107"/>
-<area shape="rect" id="Node000005" href="$namespacevfs.html#a717ddd37ea8d1fd42d4e21941bd03dc4" title=" " alt="" coords="228,156,373,181"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="129,104,229,141,252,149,250,154,227,146,127,109"/>
-<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="348,153,423,133,424,138,350,159"/>
+<area shape="rect" id="Node000001" title="挂载文件系统到指定路径" alt="" coords="5,90,180,115"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="263,15,339,41"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,87,227,49,249,42,251,47,229,55,128,92"/>
+<area shape="rect" id="Node000009" href="$namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="421,141,549,166"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="180,111,408,141,407,146,180,116"/>
+<area shape="rect" id="Node000010" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="259,65,342,90"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="180,89,245,81,245,87,181,95"/>
+<area shape="rect" id="Node000011" href="$namespacevfs.html#a717ddd37ea8d1fd42d4e21941bd03dc4" title=" " alt="" coords="228,166,373,191"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="129,113,253,159,251,164,127,118"/>
+<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="422,41,549,66"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="339,30,409,40,408,45,338,36"/>
+<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="803,15,988,41"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="549,47,789,32,789,37,549,52"/>
+<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="597,66,755,91"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="549,59,584,64,584,69,548,64"/>
+<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1036,5,1299,45"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="988,24,1022,24,1022,29,988,30"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="731,63,826,41,827,46,733,68"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="824,67,967,93"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="755,76,810,77,810,82,755,82"/>
+<area shape="rect" id="Node000008" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1120,70,1215,95"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="967,78,1107,79,1107,85,967,83"/>
+<area shape="poly" id="edge11_Node000010_Node000003" title=" " alt="" coords="342,69,408,61,408,66,343,75"/>
+<area shape="poly" id="edge13_Node000011_Node000009" title=" " alt="" coords="373,166,407,161,408,167,374,171"/>
 </map>

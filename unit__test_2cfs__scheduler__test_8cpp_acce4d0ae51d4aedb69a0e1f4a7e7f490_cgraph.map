@@ -3,13 +3,26 @@
 <area shape="rect" id="Node000002" href="$classCfsScheduler.html#a43333e0f013127e182ca764171403d76" title="从就绪队列中移除指定任务" alt="" coords="119,5,293,31"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="41,102,68,71,107,40,120,33,122,38,109,44,72,75,45,106"/>
 <area shape="rect" id="Node000003" href="$classCfsScheduler.html#a9de164228221ab5a8e15184998e17062" title="将任务加入就绪队列" alt="" coords="121,55,291,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="59,105,107,89,136,81,137,86,109,94,61,110"/>
-<area shape="rect" id="Node000005" href="$classSchedulerBase.html#a914b45bb9c30d74dba59458826601d1e" title="获取调度器统计信息" alt="" coords="115,104,297,129"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="60,114,101,114,101,119,60,119"/>
-<area shape="rect" id="Node000006" href="$classCfsScheduler.html#a8f4c08f61512a799fc059e4e50adc2ea" title="选择下一个要运行的任务" alt="" coords="119,153,293,179"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="61,123,109,138,141,147,140,152,107,143,59,128"/>
-<area shape="rect" id="Node000007" href="$classSchedulerBase.html#ae49df54bf03d2b6d302e052614ba3b2e" title="重置统计信息" alt="" coords="108,203,304,228"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="46,128,72,158,109,188,126,196,123,200,107,192,68,162,41,131"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="59,105,107,90,140,81,141,86,109,95,61,110"/>
+<area shape="rect" id="Node000011" href="$classSchedulerBase.html#a914b45bb9c30d74dba59458826601d1e" title="获取调度器统计信息" alt="" coords="115,104,297,129"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="60,114,101,114,101,119,60,119"/>
+<area shape="rect" id="Node000012" href="$classCfsScheduler.html#a8f4c08f61512a799fc059e4e50adc2ea" title="选择下一个要运行的任务" alt="" coords="119,153,293,179"/>
+<area shape="poly" id="edge12_Node000001_Node000012" title=" " alt="" coords="61,124,109,139,137,147,136,152,107,145,59,129"/>
+<area shape="rect" id="Node000013" href="$classSchedulerBase.html#ae49df54bf03d2b6d302e052614ba3b2e" title="重置统计信息" alt="" coords="108,203,304,228"/>
+<area shape="poly" id="edge13_Node000001_Node000013" title=" " alt="" coords="45,128,72,159,109,189,122,195,120,200,107,194,68,163,41,131"/>
 <area shape="rect" id="Node000004" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="352,55,428,80"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="292,65,338,65,338,70,292,70"/>
+<area shape="rect" id="Node000005" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="476,55,603,80"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="428,65,463,65,463,70,428,70"/>
+<area shape="rect" id="Node000006" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="856,29,1041,55"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="603,61,842,46,842,51,603,66"/>
+<area shape="rect" id="Node000008" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="651,80,808,105"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="603,73,637,78,636,83,603,78"/>
+<area shape="rect" id="Node000007" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1089,19,1352,59"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="1042,38,1075,38,1075,43,1042,44"/>
+<area shape="poly" id="edge8_Node000008_Node000006" title=" " alt="" coords="785,77,879,55,881,60,786,82"/>
+<area shape="rect" id="Node000009" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="877,81,1020,107"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="808,90,863,91,863,96,808,96"/>
+<area shape="rect" id="Node000010" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1173,84,1268,109"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="1020,92,1160,93,1160,99,1020,97"/>
 </map>

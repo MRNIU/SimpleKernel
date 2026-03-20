@@ -1,77 +1,89 @@
 <map id="main" name="main">
-<area shape="rect" id="Node000001" title="内核入口" alt="" coords="5,752,60,777"/>
-<area shape="rect" id="Node000002" href="$aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd" title="体系结构相关初始化" alt="" coords="163,652,235,677"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="51,749,107,713,161,682,163,686,109,718,54,754"/>
-<area shape="rect" id="Node000004" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="662,551,745,576"/>
-<area shape="poly" id="edge28_Node000001_Node000004" title=" " alt="" coords="35,751,58,696,79,664,107,638,138,627,191,616,343,595,648,565,649,570,344,600,192,621,139,632,109,643,83,668,63,698,40,753"/>
-<area shape="rect" id="Node000007" href="$device_8cpp.html#a2bddae538bbd6d759ecfe3085f1dfbe4" title="设备子系统初始化入口" alt="" coords="387,475,475,500"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="32,752,37,715,49,666,71,613,87,589,106,568,136,545,170,527,242,502,313,489,374,484,374,489,313,494,243,507,172,532,139,550,110,572,91,592,76,616,54,668,42,716,38,752"/>
-<area shape="rect" id="Node000008" href="$aarch64_2backtrace_8cpp.html#a393a5995bbd64c00f1902a4ae0110847" title="打印调用栈" alt="" coords="151,157,248,183"/>
-<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="32,752,39,657,52,510,74,360,89,298,106,253,133,216,165,189,168,193,137,220,110,255,94,299,80,361,58,511,44,658,37,752"/>
-<area shape="rect" id="Node000010" href="$filesystem_8cpp.html#a2b9f450648a51d217091f5923c64a449" title="文件系统子系统初始化入口" alt="" coords="142,265,257,291"/>
-<area shape="poly" id="edge12_Node000001_Node000010" title=" " alt="" coords="34,751,61,644,105,493,147,386,184,302,189,304,152,388,111,495,66,645,40,752"/>
-<area shape="rect" id="Node000016" href="$namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f" title="获取当前核心的 PerCpu 数据" alt="" coords="108,877,291,903"/>
-<area shape="poly" id="edge24_Node000001_Node000016" title=" " alt="" coords="42,776,67,820,86,844,110,864,119,869,116,874,106,868,83,847,63,823,37,779"/>
-<area shape="rect" id="Node000017" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="339,877,524,903"/>
-<area shape="poly" id="edge27_Node000001_Node000017" title=" " alt="" coords="60,762,106,765,165,773,230,789,292,814,308,827,317,840,326,852,340,864,353,870,350,875,337,868,322,856,313,843,304,830,289,819,228,794,164,778,106,771,60,768"/>
-<area shape="rect" id="Node000019" href="$aarch64_2interrupt__main_8cpp.html#a51f9c37118da7a1c32e70f272cc7b3e8" title="体系结构相关中断初始化" alt="" coords="150,727,249,752"/>
-<area shape="poly" id="edge29_Node000001_Node000019" title=" " alt="" coords="60,758,136,746,137,751,61,763"/>
-<area shape="rect" id="Node000022" href="$memory_8cpp.html#a97dad1f7048065936858b6302fb25eab" title="内存子系统初始化" alt="" coords="151,976,248,1001"/>
-<area shape="poly" id="edge37_Node000001_Node000022" title=" " alt="" coords="37,777,42,814,54,864,75,917,91,942,110,963,139,979,136,983,106,967,87,945,71,920,49,866,37,815,32,778"/>
-<area shape="rect" id="Node000025" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="144,927,255,952"/>
-<area shape="poly" id="edge42_Node000001_Node000025" title=" " alt="" coords="39,777,47,805,60,842,81,881,110,913,132,926,130,931,106,917,76,884,55,844,41,807,34,778"/>
-<area shape="rect" id="Node000026" href="$aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc" title="初始化定时器" alt="" coords="159,828,240,853"/>
-<area shape="poly" id="edge43_Node000001_Node000026" title=" " alt="" coords="55,775,109,806,147,822,145,826,107,811,52,780"/>
-<area shape="rect" id="Node000027" href="$aarch64_2arch__main_8cpp.html#a45bade4d9944a7cbaf145a73dbafbf71" title="唤醒其余 core" alt="" coords="125,1043,273,1068"/>
-<area shape="poly" id="edge45_Node000001_Node000027" title=" " alt="" coords="37,778,40,821,51,883,73,951,89,983,110,1012,124,1025,141,1035,138,1039,121,1029,106,1016,85,986,68,953,46,885,35,822,32,778"/>
-<area shape="rect" id="Node000003" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="665,320,741,345"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="201,651,215,605,242,542,282,474,307,443,337,416,384,398,469,377,651,340,652,345,470,382,386,403,340,420,311,446,286,477,247,544,220,607,207,652"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="235,657,363,635,523,605,648,575,649,580,525,610,364,641,236,662"/>
-<area shape="rect" id="Node000005" href="$structError.html#aa63ee10532d668f25a5147d7dc753749" title=" " alt="" coords="371,779,491,804"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="225,675,397,770,394,774,223,680"/>
-<area shape="rect" id="Node000006" href="$expected_8hpp.html#a707ff37b9c7f7c83cf7f984840fa7a16" title="获取错误码对应的错误信息" alt="" coords="636,779,771,804"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="492,789,622,789,622,794,492,794"/>
-<area shape="poly" id="edge7_Node000007_Node000003" title=" " alt="" coords="474,472,523,453,608,401,674,352,678,356,611,406,525,458,476,477"/>
-<area shape="poly" id="edge8_Node000007_Node000004" title=" " alt="" coords="476,497,649,546,648,551,475,502"/>
-<area shape="poly" id="edge11_Node000008_Node000003" title=" " alt="" coords="248,169,375,183,451,197,525,220,569,239,611,263,677,310,674,314,608,268,567,244,523,224,450,202,375,188,248,174"/>
-<area shape="rect" id="Node000009" href="$aarch64_2backtrace_8cpp.html#a7986cc449f6e96ca1ee111a6ee7940bb" title=" " alt="" coords="388,5,475,31"/>
-<area shape="poly" id="edge10_Node000008_Node000009" title=" " alt="" coords="210,155,262,104,298,74,337,48,374,31,376,36,340,52,301,78,266,108,214,159"/>
-<area shape="poly" id="edge13_Node000010_Node000003" title=" " alt="" coords="242,263,298,249,369,238,447,234,486,237,525,243,567,256,607,274,673,310,671,315,605,279,565,261,523,249,486,242,447,240,370,243,299,255,243,268"/>
-<area shape="poly" id="edge15_Node000010_Node000004" title=" " alt="" coords="206,290,220,334,246,395,286,459,311,487,340,510,377,531,417,546,459,557,501,564,581,569,648,567,648,572,581,575,500,570,458,563,415,552,375,536,337,515,307,491,282,462,242,397,215,336,201,292"/>
-<area shape="rect" id="Node000011" href="$namespacevfs.html#acec885fcabeaba10d159e2634911dc39" title="获取全局挂载表实例" alt="" coords="629,57,777,83"/>
-<area shape="poly" id="edge14_Node000010_Node000011" title=" " alt="" coords="216,263,252,233,288,194,302,166,308,139,316,115,324,103,337,92,372,72,409,59,448,50,488,45,565,45,631,52,631,58,564,50,488,50,449,55,411,64,374,77,340,96,328,107,320,117,313,141,307,167,293,197,256,237,220,267"/>
-<area shape="rect" id="Node000012" href="$namespacevfs.html#ad10df9cc721f7881387ddfc914a26bee" title="VFS 全局初始化" alt="" coords="396,107,467,132"/>
-<area shape="poly" id="edge16_Node000010_Node000012" title=" " alt="" coords="218,263,399,138,402,142,221,267"/>
-<area shape="rect" id="Node000014" href="$classfatfs_1_1FatFsFileSystem.html#ac05aa43dff2d10d945924b35257c3fac" title="挂载 FatFS 卷" alt="" coords="348,258,515,298"/>
-<area shape="poly" id="edge20_Node000010_Node000014" title=" " alt="" coords="257,275,334,275,334,281,257,281"/>
-<area shape="rect" id="Node000015" href="$classramfs_1_1RamFs.html#a5ad3d246da876565ea0f39c424db553f" title="挂载 ramfs" alt="" coords="350,323,513,348"/>
-<area shape="poly" id="edge22_Node000010_Node000015" title=" " alt="" coords="252,288,366,317,365,322,251,293"/>
-<area shape="poly" id="edge19_Node000012_Node000004" title=" " alt="" coords="445,130,483,179,526,245,542,276,551,301,574,357,634,459,687,538,683,541,630,461,570,359,546,303,537,278,522,247,479,182,441,134"/>
-<area shape="poly" id="edge17_Node000012_Node000011" title=" " alt="" coords="466,110,619,83,620,88,467,116"/>
-<area shape="rect" id="Node000013" href="$namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="639,107,767,132"/>
-<area shape="poly" id="edge18_Node000012_Node000013" title=" " alt="" coords="467,117,625,117,625,122,467,122"/>
-<area shape="poly" id="edge21_Node000014_Node000003" title=" " alt="" coords="515,292,652,320,651,325,514,297"/>
-<area shape="poly" id="edge23_Node000015_Node000004" title=" " alt="" coords="450,346,678,540,675,544,446,350"/>
-<area shape="poly" id="edge25_Node000016_Node000017" title=" " alt="" coords="291,887,325,887,325,893,291,893"/>
-<area shape="rect" id="Node000018" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="572,849,835,889"/>
-<area shape="poly" id="edge26_Node000017_Node000018" title=" " alt="" coords="524,880,558,877,558,883,524,885"/>
-<area shape="poly" id="edge32_Node000019_Node000003" title=" " alt="" coords="239,724,266,709,289,688,305,659,311,630,311,602,308,574,306,546,307,518,316,490,337,462,359,443,380,432,402,427,423,426,470,426,495,423,523,415,600,383,666,350,668,354,603,388,525,421,496,428,470,431,424,431,403,432,382,437,362,447,341,465,321,492,312,519,311,546,313,573,317,601,317,630,310,661,293,692,269,714,241,729"/>
-<area shape="poly" id="edge34_Node000019_Node000004" title=" " alt="" coords="249,742,306,745,376,744,451,734,523,713,572,686,617,652,654,616,681,585,685,589,658,620,620,656,575,691,525,718,452,739,377,749,306,750,249,747"/>
-<area shape="poly" id="edge35_Node000019_Node000005" title=" " alt="" coords="249,748,361,773,360,778,248,753"/>
-<area shape="poly" id="edge33_Node000019_Node000017" title=" " alt="" coords="250,747,272,756,293,769,310,794,317,819,323,842,341,864,347,869,344,873,337,868,318,844,312,820,306,796,289,773,270,761,248,752"/>
-<area shape="rect" id="Node000020" href="$namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="345,828,517,853"/>
-<area shape="poly" id="edge30_Node000019_Node000020" title=" " alt="" coords="249,750,292,769,307,781,316,793,326,804,340,814,353,821,351,826,337,819,322,808,312,796,303,785,289,774,247,755"/>
-<area shape="rect" id="Node000021" href="$aarch64_2interrupt__main_8cpp.html#a2919dc0dfaf51370359170295f4c4b96" title="异常向量表入口" alt="" coords="380,677,483,703"/>
-<area shape="poly" id="edge36_Node000019_Node000021" title=" " alt="" coords="248,726,366,701,367,706,249,732"/>
-<area shape="poly" id="edge31_Node000020_Node000018" title=" " alt="" coords="518,847,559,851,558,856,517,852"/>
-<area shape="poly" id="edge38_Node000022_Node000004" title=" " alt="" coords="248,978,410,947,483,929,522,913,537,897,546,880,553,847,557,810,570,766,597,714,628,664,682,586,686,589,632,667,602,716,574,768,562,811,559,848,551,882,542,900,526,918,485,934,411,952,249,983"/>
-<area shape="poly" id="edge39_Node000022_Node000005" title=" " alt="" coords="247,982,270,975,289,963,303,945,310,928,312,891,315,853,322,833,337,815,357,801,360,806,340,819,327,836,320,854,317,891,315,929,307,948,292,967,272,980,249,988"/>
-<area shape="rect" id="Node000023" href="$namespacecpu__io_1_1virtual__memory.html#af3d08561d5c588f1cf2f260951522f6c" title=" " alt="" coords="343,978,519,1018"/>
-<area shape="poly" id="edge40_Node000022_Node000023" title=" " alt="" coords="248,988,330,991,330,997,248,993"/>
-<area shape="rect" id="Node000024" href="$namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="386,1043,477,1068"/>
-<area shape="poly" id="edge41_Node000022_Node000024" title=" " alt="" coords="243,999,339,1027,374,1037,372,1042,338,1033,242,1004"/>
-<area shape="poly" id="edge44_Node000026_Node000017" title=" " alt="" coords="241,847,358,872,357,877,240,852"/>
-<area shape="poly" id="edge47_Node000027_Node000024" title=" " alt="" coords="274,1053,372,1053,372,1058,274,1058"/>
-<area shape="rect" id="Node000028" href="$basic__info_8hpp.html#a698036b5e342c2164fb7fd7249d0e801" title="内核入口，在 boot.S 中定义" alt="" coords="402,1092,461,1117"/>
-<area shape="poly" id="edge46_Node000027_Node000028" title=" " alt="" coords="260,1065,389,1093,388,1098,259,1071"/>
+<area shape="rect" id="Node000001" title="内核入口" alt="" coords="5,651,60,676"/>
+<area shape="rect" id="Node000002" href="$aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd" title="体系结构相关初始化" alt="" coords="318,575,390,600"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="50,648,76,631,107,617,159,603,211,593,304,585,304,591,212,599,160,608,109,622,78,636,53,653"/>
+<area shape="rect" id="Node000005" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="1123,571,1308,596"/>
+<area shape="poly" id="edge34_Node000001_Node000005" title=" " alt="" coords="31,650,31,585,38,482,47,422,61,361,80,301,106,245,152,167,176,136,202,111,232,91,266,77,306,69,353,66,778,66,826,70,870,83,912,102,951,128,987,159,1021,194,1079,272,1127,355,1165,436,1209,556,1204,558,1160,438,1122,358,1075,275,1017,197,984,163,948,132,910,107,868,88,825,76,778,71,353,71,307,74,268,82,234,96,206,115,180,140,157,170,110,247,85,303,66,363,52,423,44,482,36,585,36,650"/>
+<area shape="rect" id="Node000010" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="532,471,615,496"/>
+<area shape="poly" id="edge35_Node000001_Node000010" title=" " alt="" coords="60,658,276,635,384,621,436,610,448,599,454,587,460,561,465,534,472,520,484,507,500,496,518,489,520,494,502,501,487,511,476,523,470,536,465,562,459,589,452,603,439,615,385,626,276,640,61,663"/>
+<area shape="rect" id="Node000013" href="$device_8cpp.html#a2bddae538bbd6d759ecfe3085f1dfbe4" title="设备子系统初始化入口" alt="" coords="310,424,398,449"/>
+<area shape="poly" id="edge14_Node000001_Node000013" title=" " alt="" coords="43,648,78,611,131,560,196,506,269,460,296,449,298,453,272,464,199,510,134,564,82,615,47,652"/>
+<area shape="rect" id="Node000014" href="$aarch64_2backtrace_8cpp.html#a393a5995bbd64c00f1902a4ae0110847" title="打印调用栈" alt="" coords="117,259,214,284"/>
+<area shape="poly" id="edge17_Node000001_Node000014" title=" " alt="" coords="33,650,55,529,76,445,106,361,124,325,144,294,149,297,129,327,110,363,81,447,60,531,38,651"/>
+<area shape="rect" id="Node000016" href="$filesystem_8cpp.html#a2b9f450648a51d217091f5923c64a449" title="文件系统子系统初始化入口" alt="" coords="108,373,223,399"/>
+<area shape="poly" id="edge20_Node000001_Node000016" title=" " alt="" coords="35,650,61,571,81,518,106,466,143,409,147,411,110,469,86,520,66,572,40,651"/>
+<area shape="rect" id="Node000022" href="$namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f" title="获取当前核心的 PerCpu 数据" alt="" coords="892,672,1075,697"/>
+<area shape="poly" id="edge32_Node000001_Node000022" title=" " alt="" coords="36,676,38,720,47,783,56,816,69,848,87,878,110,904,139,927,167,941,193,950,220,953,279,951,353,947,575,947,658,944,692,938,723,928,752,915,781,896,842,840,854,824,861,808,864,775,869,742,876,725,890,708,898,702,901,706,894,712,881,727,874,743,870,775,866,809,859,827,846,844,784,900,755,919,725,933,694,943,659,949,575,953,353,953,280,956,220,958,192,955,165,946,136,931,106,908,82,881,64,851,51,818,42,784,33,721,31,676"/>
+<area shape="rect" id="Node000023" href="$aarch64_2interrupt__main_8cpp.html#a51f9c37118da7a1c32e70f272cc7b3e8" title="体系结构相关中断初始化" alt="" coords="305,676,403,701"/>
+<area shape="poly" id="edge36_Node000001_Node000023" title=" " alt="" coords="60,663,291,681,291,686,60,668"/>
+<area shape="rect" id="Node000026" href="$memory_8cpp.html#a97dad1f7048065936858b6302fb25eab" title="内存子系统初始化" alt="" coords="305,727,403,752"/>
+<area shape="poly" id="edge44_Node000001_Node000026" title=" " alt="" coords="61,668,109,681,292,723,291,729,107,686,60,673"/>
+<area shape="rect" id="Node000029" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="110,828,221,853"/>
+<area shape="poly" id="edge50_Node000001_Node000029" title=" " alt="" coords="40,675,64,736,84,773,110,807,124,819,121,823,106,811,80,776,59,739,35,677"/>
+<area shape="rect" id="Node000030" href="$aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc" title="初始化定时器" alt="" coords="736,804,817,829"/>
+<area shape="poly" id="edge51_Node000001_Node000030" title=" " alt="" coords="37,676,40,715,50,767,59,795,72,821,89,844,110,864,131,876,156,885,220,899,296,905,377,905,538,892,661,871,705,855,744,834,747,839,708,860,662,877,539,897,377,910,295,910,219,904,155,891,128,881,106,868,84,848,67,824,54,797,45,768,34,715,31,676"/>
+<area shape="rect" id="Node000031" href="$aarch64_2arch__main_8cpp.html#a45bade4d9944a7cbaf145a73dbafbf71" title="唤醒其余 core" alt="" coords="280,787,428,812"/>
+<area shape="poly" id="edge53_Node000001_Node000031" title=" " alt="" coords="51,674,78,694,109,713,203,753,291,780,289,786,201,758,107,718,75,698,48,678"/>
+<area shape="rect" id="Node000003" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="535,421,611,447"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="368,572,435,510,458,482,468,469,484,457,521,441,523,446,487,462,472,473,462,485,439,513,372,576"/>
+<area shape="poly" id="edge10_Node000002_Node000010" title=" " alt="" coords="389,575,436,553,450,541,459,530,469,518,484,506,518,492,520,497,487,511,472,522,463,533,454,545,439,558,391,580"/>
+<area shape="rect" id="Node000011" href="$structError.html#aa63ee10532d668f25a5147d7dc753749" title=" " alt="" coords="513,621,633,647"/>
+<area shape="poly" id="edge12_Node000002_Node000011" title=" " alt="" coords="391,592,500,616,499,621,390,597"/>
+<area shape="rect" id="Node000004" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="713,471,840,496"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="612,440,711,465,710,470,611,446"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="834,494,1146,565,1145,570,833,499"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="905,5,1062,31"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="781,469,968,43,973,45,786,471"/>
+<area shape="rect" id="Node000006" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1356,613,1619,653"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1287,593,1364,608,1363,613,1286,599"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="1048,29,1077,48,1103,89,1126,147,1148,218,1167,296,1196,447,1213,557,1208,557,1191,448,1161,297,1142,220,1121,149,1098,91,1073,52,1045,33"/>
+<area shape="rect" id="Node000008" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="1144,5,1287,31"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="1062,15,1130,15,1130,21,1062,21"/>
+<area shape="rect" id="Node000009" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1440,5,1535,31"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="1287,15,1427,15,1427,21,1287,21"/>
+<area shape="poly" id="edge11_Node000010_Node000004" title=" " alt="" coords="615,481,700,481,700,486,615,486"/>
+<area shape="rect" id="Node000012" href="$expected_8hpp.html#a707ff37b9c7f7c83cf7f984840fa7a16" title="获取错误码对应的错误信息" alt="" coords="709,621,844,647"/>
+<area shape="poly" id="edge13_Node000011_Node000012" title=" " alt="" coords="634,631,696,631,696,637,634,637"/>
+<area shape="poly" id="edge15_Node000013_Node000003" title=" " alt="" coords="398,433,521,432,521,437,398,439"/>
+<area shape="poly" id="edge16_Node000013_Node000010" title=" " alt="" coords="399,443,519,469,518,474,398,448"/>
+<area shape="poly" id="edge19_Node000014_Node000003" title=" " alt="" coords="214,264,263,262,320,264,381,274,438,294,477,318,511,349,559,408,554,412,507,353,474,323,436,299,379,279,320,270,263,267,214,269"/>
+<area shape="rect" id="Node000015" href="$aarch64_2backtrace_8cpp.html#a7986cc449f6e96ca1ee111a6ee7940bb" title=" " alt="" coords="311,107,397,132"/>
+<area shape="poly" id="edge18_Node000014_Node000015" title=" " alt="" coords="173,257,210,205,238,176,269,149,297,134,299,139,272,154,242,179,214,209,177,260"/>
+<area shape="poly" id="edge21_Node000016_Node000003" title=" " alt="" coords="223,388,438,410,522,423,521,428,437,415,222,393"/>
+<area shape="poly" id="edge23_Node000016_Node000010" title=" " alt="" coords="175,397,188,423,210,455,238,485,272,509,315,523,351,523,437,509,518,494,519,500,438,514,352,529,314,528,269,514,234,489,205,458,184,426,170,400"/>
+<area shape="rect" id="Node000017" href="$namespacevfs.html#acec885fcabeaba10d159e2634911dc39" title="获取全局挂载表实例" alt="" coords="499,157,647,183"/>
+<area shape="poly" id="edge22_Node000016_Node000017" title=" " alt="" coords="173,372,220,295,232,266,238,239,247,216,269,193,294,178,321,167,378,154,435,151,488,153,488,159,435,156,379,159,323,172,297,183,272,197,251,218,243,241,237,267,225,298,178,374"/>
+<area shape="rect" id="Node000018" href="$namespacevfs.html#ad10df9cc721f7881387ddfc914a26bee" title="VFS 全局初始化" alt="" coords="319,208,389,233"/>
+<area shape="poly" id="edge24_Node000016_Node000018" title=" " alt="" coords="179,371,326,241,330,245,183,375"/>
+<area shape="rect" id="Node000020" href="$classfatfs_1_1FatFsFileSystem.html#ac05aa43dff2d10d945924b35257c3fac" title="挂载 FatFS 卷" alt="" coords="271,309,437,349"/>
+<area shape="poly" id="edge28_Node000016_Node000020" title=" " alt="" coords="207,371,274,350,275,355,209,376"/>
+<area shape="rect" id="Node000021" href="$classramfs_1_1RamFs.html#a5ad3d246da876565ea0f39c424db553f" title="挂载 ramfs" alt="" coords="273,473,435,499"/>
+<area shape="poly" id="edge30_Node000016_Node000021" title=" " alt="" coords="182,397,221,428,272,460,287,466,285,471,269,464,218,432,179,401"/>
+<area shape="poly" id="edge27_Node000018_Node000010" title=" " alt="" coords="376,232,409,258,440,295,451,319,457,341,459,382,463,420,472,438,487,457,502,468,520,475,518,480,500,473,484,461,467,441,458,421,453,382,451,342,446,321,435,298,405,262,373,236"/>
+<area shape="poly" id="edge25_Node000018_Node000017" title=" " alt="" coords="389,210,504,183,505,188,390,215"/>
+<area shape="rect" id="Node000019" href="$namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="509,208,637,233"/>
+<area shape="poly" id="edge26_Node000018_Node000019" title=" " alt="" coords="390,218,495,218,495,223,390,223"/>
+<area shape="poly" id="edge29_Node000020_Node000003" title=" " alt="" coords="400,346,438,365,536,413,534,418,436,370,397,351"/>
+<area shape="poly" id="edge31_Node000021_Node000010" title=" " alt="" coords="435,482,518,481,518,487,435,488"/>
+<area shape="poly" id="edge33_Node000022_Node000005" title=" " alt="" coords="1023,669,1074,650,1177,600,1180,605,1076,655,1025,674"/>
+<area shape="poly" id="edge39_Node000023_Node000003" title=" " alt="" coords="372,674,404,647,435,611,446,590,451,570,454,532,459,495,468,476,484,457,501,445,521,437,523,442,504,450,487,461,472,479,464,497,459,532,456,571,451,592,440,614,408,651,376,678"/>
+<area shape="poly" id="edge40_Node000023_Node000005" title=" " alt="" coords="379,674,436,641,459,623,469,614,484,607,567,585,652,569,738,559,823,554,981,556,1110,566,1109,572,981,562,823,560,738,564,653,574,568,590,486,613,472,619,462,627,439,646,381,678"/>
+<area shape="poly" id="edge41_Node000023_Node000010" title=" " alt="" coords="402,675,420,667,435,655,449,637,455,619,458,582,461,544,469,525,483,507,499,495,518,488,520,493,502,500,487,511,473,528,466,546,463,582,460,620,453,639,439,659,423,671,405,680"/>
+<area shape="poly" id="edge42_Node000023_Node000011" title=" " alt="" coords="403,674,508,647,509,653,404,679"/>
+<area shape="rect" id="Node000024" href="$namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="897,721,1069,747"/>
+<area shape="poly" id="edge37_Node000023_Node000024" title=" " alt="" coords="404,689,662,707,884,724,883,729,661,713,403,695"/>
+<area shape="rect" id="Node000025" href="$aarch64_2interrupt__main_8cpp.html#a2919dc0dfaf51370359170295f4c4b96" title="异常向量表入口" alt="" coords="522,520,625,545"/>
+<area shape="poly" id="edge43_Node000023_Node000025" title=" " alt="" coords="402,674,436,655,452,632,459,610,466,586,484,563,508,547,511,552,487,567,470,589,464,611,457,635,439,659,405,679"/>
+<area shape="poly" id="edge38_Node000024_Node000006" title=" " alt="" coords="1047,719,1373,653,1374,658,1048,724"/>
+<area shape="poly" id="edge45_Node000026_Node000010" title=" " alt="" coords="402,731,420,724,435,712,453,687,460,662,461,637,458,611,456,586,457,559,465,533,483,507,499,495,517,487,519,492,502,499,487,511,470,535,462,560,461,585,464,611,466,637,465,663,458,689,439,716,423,728,404,736"/>
+<area shape="poly" id="edge46_Node000026_Node000011" title=" " alt="" coords="402,724,436,712,493,682,541,652,544,657,495,687,438,716,404,729"/>
+<area shape="rect" id="Node000027" href="$namespacecpu__io_1_1virtual__memory.html#af3d08561d5c588f1cf2f260951522f6c" title=" " alt="" coords="485,722,661,762"/>
+<area shape="poly" id="edge47_Node000026_Node000027" title=" " alt="" coords="403,737,472,738,472,743,403,743"/>
+<area shape="rect" id="Node000028" href="$namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="528,787,619,812"/>
+<area shape="poly" id="edge48_Node000026_Node000028" title=" " alt="" coords="402,749,516,781,514,786,401,755"/>
+<area shape="poly" id="edge49_Node000028_Node000004" title=" " alt="" coords="618,793,640,785,660,772,675,753,685,735,692,698,695,657,707,609,733,553,758,507,763,509,738,556,712,611,700,658,697,699,690,737,680,756,663,776,643,790,620,798"/>
+<area shape="poly" id="edge52_Node000030_Node000005" title=" " alt="" coords="781,803,796,773,820,734,851,693,891,658,931,640,989,623,1120,596,1121,601,990,628,933,645,893,663,855,696,824,737,801,775,786,805"/>
+<area shape="poly" id="edge55_Node000031_Node000028" title=" " alt="" coords="428,797,514,797,514,802,428,802"/>
+<area shape="rect" id="Node000032" href="$basic__info_8hpp.html#a698036b5e342c2164fb7fd7249d0e801" title="内核入口，在 boot.S 中定义" alt="" coords="544,836,603,861"/>
+<area shape="poly" id="edge54_Node000031_Node000032" title=" " alt="" coords="412,809,531,837,530,842,411,815"/>
 </map>

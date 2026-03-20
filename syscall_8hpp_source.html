@@ -124,63 +124,47 @@ $(document).ready(function(){initNavTree('syscall_8hpp_source.html',''); initRes
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallSigprocmask = 135;</div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallSchedGetaffinity = 123;</div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallSchedSetaffinity = 122;</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#elif defined(__x86_64__)</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="comment">// x86_64 使用自己的编号</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallWrite = 1;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallExit = 60;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallYield = 24;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallClone = 56;</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallGettid = 186;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallFutex = 202;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallSetTidAddress = 218;</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallFork = 57;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallSleep = 35;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallKill = 62;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallSigaction = 13;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallSigprocmask = 14;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallSchedGetaffinity = 204;</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">inline</span> <span class="keyword">constexpr</span> uint64_t kSyscallSchedSetaffinity = 203;</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#error &quot;Unsupported architecture for syscall numbers&quot;</span></div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="comment">// 由各个架构实现</span></div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#aa87eb679ee873a53e1ea660bc52819c1">Syscall</a>(uint64_t cause, <a class="code hl_struct" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a>* context) -&gt; void;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a7f71c582273219080713170bdd1d4323">syscall_dispatcher</a>(int64_t syscall_id, uint64_t args[6]) -&gt; int;</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#af2cff00ae45f6e285b75cff49dff52d4">sys_write</a>(<span class="keywordtype">int</span> fd, <span class="keyword">const</span> <span class="keywordtype">char</span>* buf, <span class="keywordtype">size_t</span> len) -&gt; int;</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a>(<span class="keywordtype">int</span> code) -&gt; int;</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#aec4395077c896b991b8d8beb2eefd40f">sys_yield</a>() -&gt; int;</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a25c4acbedb0e92618dfb30e0e67827c7">sys_sleep</a>(uint64_t ms) -&gt; int;</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#afad53ff6b95bf6179b42aac97f2c609e">sys_clone</a>(uint64_t flags, <span class="keywordtype">void</span>* stack, <span class="keywordtype">int</span>* parent_tid,</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>                             <span class="keywordtype">int</span>* child_tid, <span class="keywordtype">void</span>* tls) -&gt; int;</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span> </div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#aacb8aae87d617d88cea5c7515a1cf622">sys_fork</a>() -&gt; int;</div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span> </div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#aa3457b4ff33f8308631329d0ccdafd26">sys_gettid</a>() -&gt; int;</div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span> </div>
-<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a29162da1696b208f87b148aef8449e5f">sys_set_tid_address</a>(<span class="keywordtype">int</span>* tidptr) -&gt; int;</div>
-<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span> </div>
-<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a7e0465bdb3adc9a861f78e561bb0cf0c">sys_futex</a>(<span class="keywordtype">int</span>* uaddr, <span class="keywordtype">int</span> op, <span class="keywordtype">int</span> val, <span class="keyword">const</span> <span class="keywordtype">void</span>* timeout,</div>
-<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>                             <span class="keywordtype">int</span>* uaddr2, <span class="keywordtype">int</span> val3) -&gt; int;</div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span> </div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a414c1ccbcab1407025b73fee1ad24b73">sys_sched_getaffinity</a>(<span class="keywordtype">int</span> pid, <span class="keywordtype">size_t</span> cpusetsize,</div>
-<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>                                         uint64_t* mask) -&gt; int;</div>
-<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span> </div>
-<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a7c490d0367177a75035cb12b79b24416">sys_sched_setaffinity</a>(<span class="keywordtype">int</span> pid, <span class="keywordtype">size_t</span> cpusetsize,</div>
-<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>                                         <span class="keyword">const</span> uint64_t* mask) -&gt; int;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#error &quot;Unsupported architecture for syscall numbers&quot;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="comment">// 由各个架构实现</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#aa87eb679ee873a53e1ea660bc52819c1">Syscall</a>(uint64_t cause, <a class="code hl_struct" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a>* context) -&gt; void;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a7f71c582273219080713170bdd1d4323">syscall_dispatcher</a>(int64_t syscall_id, uint64_t args[6]) -&gt; int;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#af2cff00ae45f6e285b75cff49dff52d4">sys_write</a>(<span class="keywordtype">int</span> fd, <span class="keyword">const</span> <span class="keywordtype">char</span>* buf, <span class="keywordtype">size_t</span> len) -&gt; int;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a7604e519b5138da9c1db6a2626e1998f">sys_exit</a>(<span class="keywordtype">int</span> code) -&gt; int;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#aec4395077c896b991b8d8beb2eefd40f">sys_yield</a>() -&gt; int;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a25c4acbedb0e92618dfb30e0e67827c7">sys_sleep</a>(uint64_t ms) -&gt; int;</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#afad53ff6b95bf6179b42aac97f2c609e">sys_clone</a>(uint64_t flags, <span class="keywordtype">void</span>* stack, <span class="keywordtype">int</span>* parent_tid,</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>                             <span class="keywordtype">int</span>* child_tid, <span class="keywordtype">void</span>* tls) -&gt; int;</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#aacb8aae87d617d88cea5c7515a1cf622">sys_fork</a>() -&gt; int;</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#aa3457b4ff33f8308631329d0ccdafd26">sys_gettid</a>() -&gt; int;</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span> </div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a29162da1696b208f87b148aef8449e5f">sys_set_tid_address</a>(<span class="keywordtype">int</span>* tidptr) -&gt; int;</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span> </div>
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a7e0465bdb3adc9a861f78e561bb0cf0c">sys_futex</a>(<span class="keywordtype">int</span>* uaddr, <span class="keywordtype">int</span> op, <span class="keywordtype">int</span> val, <span class="keyword">const</span> <span class="keywordtype">void</span>* timeout,</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>                             <span class="keywordtype">int</span>* uaddr2, <span class="keywordtype">int</span> val3) -&gt; int;</div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span> </div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a414c1ccbcab1407025b73fee1ad24b73">sys_sched_getaffinity</a>(<span class="keywordtype">int</span> pid, <span class="keywordtype">size_t</span> cpusetsize,</div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>                                         uint64_t* mask) -&gt; int;</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span> </div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a7c490d0367177a75035cb12b79b24416">sys_sched_setaffinity</a>(<span class="keywordtype">int</span> pid, <span class="keywordtype">size_t</span> cpusetsize,</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>                                         <span class="keyword">const</span> uint64_t* mask) -&gt; int;</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span> </div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a68477c081721f602e62df82563f19b80">sys_kill</a>(<span class="keywordtype">int</span> pid, <span class="keywordtype">int</span> sig) -&gt; int;</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span> </div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a5237833565677bd163e512cca59d26d9">sys_sigaction</a>(<span class="keywordtype">int</span> signum, <a class="code hl_typedef" href="signal_8hpp.html#a3ca6c2c32c9f41ad5c08971aef00afcc">SignalHandler</a> handler) -&gt; int;</div>
 <div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span> </div>
-<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a68477c081721f602e62df82563f19b80">sys_kill</a>(<span class="keywordtype">int</span> pid, <span class="keywordtype">int</span> sig) -&gt; int;</div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span> </div>
-<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#a5237833565677bd163e512cca59d26d9">sys_sigaction</a>(<span class="keywordtype">int</span> signum, <a class="code hl_typedef" href="signal_8hpp.html#a3ca6c2c32c9f41ad5c08971aef00afcc">SignalHandler</a> handler) -&gt; int;</div>
-<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span> </div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#aee74232f8db96747000229fc05c54fd4">sys_sigprocmask</a>(<span class="keywordtype">int</span> how, uint32_t set, uint32_t* oldset)</div>
-<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>    -&gt; int;</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>[[nodiscard]] <span class="keyword">auto</span> <a class="code hl_function" href="syscall_8hpp.html#aee74232f8db96747000229fc05c54fd4">sys_sigprocmask</a>(<span class="keywordtype">int</span> how, uint32_t set, uint32_t* oldset)</div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    -&gt; int;</div>
 <div class="ttc" id="acpu__io_8h_html"><div class="ttname"><a href="cpu__io_8h.html">cpu_io.h</a></div></div>
 <div class="ttc" id="asignal_8hpp_html"><div class="ttname"><a href="signal_8hpp.html">signal.hpp</a></div></div>
 <div class="ttc" id="asignal_8hpp_html_a3ca6c2c32c9f41ad5c08971aef00afcc"><div class="ttname"><a href="signal_8hpp.html#a3ca6c2c32c9f41ad5c08971aef00afcc">SignalHandler</a></div><div class="ttdeci">void(*)(int) SignalHandler</div><div class="ttdoc">信号处理函数类型</div><div class="ttdef"><b>Definition</b> <a href="signal_8hpp_source.html#l00070">signal.hpp:70</a></div></div>

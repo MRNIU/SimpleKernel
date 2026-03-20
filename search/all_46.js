@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['基本信息初始化_0',['基本信息初始化',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md70',1,'']]]
+  ['字符输出实现_0',['3. 字符输出实现',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md110',1,'']]]
 ];

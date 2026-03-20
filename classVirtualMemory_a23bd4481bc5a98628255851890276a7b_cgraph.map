@@ -4,4 +4,17 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,28,247,23,248,29,214,33"/>
 <area shape="rect" id="Node000003" href="$namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="263,55,363,80"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="214,53,249,57,249,63,213,58"/>
+<area shape="rect" id="Node000004" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="412,55,539,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="363,65,398,65,398,70,363,70"/>
+<area shape="rect" id="Node000005" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="792,29,977,55"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="539,61,778,46,778,51,539,66"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="587,80,744,105"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="539,73,573,78,572,83,539,78"/>
+<area shape="rect" id="Node000006" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1025,19,1288,59"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="978,38,1011,38,1011,43,978,44"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="721,77,815,55,817,60,722,82"/>
+<area shape="rect" id="Node000008" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="813,81,956,107"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="744,90,799,91,799,96,744,96"/>
+<area shape="rect" id="Node000009" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1109,84,1204,109"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="956,92,1096,93,1096,99,956,97"/>
 </map>

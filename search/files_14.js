@@ -14,6 +14,6 @@ var searchData=
   ['tick_5fobserver_2ehpp_11',['tick_observer.hpp',['../tick__observer_8hpp.html',1,'']]],
   ['tick_5ftest_2ecpp_12',['tick_test.cpp',['../tick__test_8cpp.html',1,'']]],
   ['tick_5fupdate_2ecpp_13',['tick_update.cpp',['../tick__update_8cpp.html',1,'']]],
-  ['timer_2ecpp_14',['timer.cpp',['../x86__64_2timer_8cpp.html',1,'(Global Namespace)'],['../riscv64_2timer_8cpp.html',1,'(Global Namespace)'],['../aarch64_2timer_8cpp.html',1,'(Global Namespace)']]],
+  ['timer_2ecpp_14',['timer.cpp',['../riscv64_2timer_8cpp.html',1,'(Global Namespace)'],['../aarch64_2timer_8cpp.html',1,'(Global Namespace)']]],
   ['transport_2ehpp_15',['transport.hpp',['../transport_8hpp.html',1,'']]]
 ];

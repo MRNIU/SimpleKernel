@@ -1,9 +1,0 @@
-<map id="/workspaces/SimpleKernel/src/arch/x86_64/apic/include/apic.h" name="/workspaces/SimpleKernel/src/arch/x86_64/apic/include/apic.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="218,5,471,45"/>
-<area shape="rect" id="Node000002" href="$apic_8cpp.html" title=" " alt="" coords="5,101,223,141"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="286,53,162,103,160,98,284,48"/>
-<area shape="rect" id="Node000003" href="$local__apic_8cpp.html" title=" " alt="" coords="247,93,442,148"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="347,59,347,93,342,93,342,59"/>
-<area shape="rect" id="Node000004" href="$x86__64_2include_2interrupt_8h.html" title=" " alt="" coords="467,93,660,148"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="402,48,503,91,501,96,400,53"/>
-</map>

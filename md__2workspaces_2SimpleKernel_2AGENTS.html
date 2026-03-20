@@ -95,7 +95,7 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2AGENTS.
 <div class="textblock"><p><a class="anchor" id="autotoc_md0"></a> </p>
 <h1><a class="anchor" id="autotoc_md1"></a>
 OVERVIEW</h1>
-<p>Interface-driven OS kernel for AI-assisted learning. C++23/C23, freestanding, no RTTI/exceptions. Three architectures: x86_64, riscv64, aarch64. Headers define contracts (Doxygen </p><dl class="section pre"><dt>Precondition</dt><dd>/</dd></dl>
+<p>Interface-driven OS kernel for AI-assisted learning. C++23/C23, freestanding, no RTTI/exceptions. Two architectures: riscv64, aarch64. Headers define contracts (Doxygen </p><dl class="section pre"><dt>Precondition</dt><dd>/</dd></dl>
 <dl class="section post"><dt>Postcondition</dt><dd>), AI generates .cpp implementations, tests verify compliance.</dd></dl>
 <h1><a class="anchor" id="autotoc_md2"></a>
 STRUCTURE</h1>
@@ -193,7 +193,7 @@ UNIQUE STYLES</h1>
 <h1><a class="anchor" id="autotoc_md8"></a>
 COMMANDS</h1>
 <div class="fragment"><div class="line">git submodule update --init --recursive   # First clone setup</div>
-<div class="line">cmake --preset build_{riscv64|aarch64|x86_64}</div>
+<div class="line">cmake --preset build_{riscv64|aarch64}</div>
 <div class="line">cd build_{arch} &amp;&amp; make SimpleKernel       # Build kernel (NOT &#39;make kernel&#39;)</div>
 <div class="line">make run                                   # Run in QEMU</div>
 <div class="line">make debug                                 # GDB on localhost:1234</div>
@@ -204,7 +204,7 @@ COMMANDS</h1>
 NOTES</h1>
 <ul>
 <li>Interface-driven: headers are contracts, .cpp files are implementations AI generates</li>
-<li>Boot chains differ: x86_64 (U-Boot), riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)</li>
+<li>Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)</li>
 <li>aarch64 needs two serial terminal tasks (::54320, ::54321) before <code>make run</code></li>
 <li>Unit tests only run on host arch (<code>build_{arch}</code> on {arch} host)</li>
 <li>Git commits: <code>&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;</code> with <code>--signoff</code></li>

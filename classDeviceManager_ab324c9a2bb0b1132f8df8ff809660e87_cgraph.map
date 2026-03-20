@@ -1,7 +1,21 @@
 <map id="DeviceManager::RegisterBus" name="DeviceManager::RegisterBus">
-<area shape="rect" id="Node000001" title="注册总线并立即枚举其设备。" alt="" coords="5,31,216,56"/>
-<area shape="rect" id="Node000002" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="267,5,343,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="208,28,254,22,254,27,209,33"/>
-<area shape="rect" id="Node000003" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="264,55,347,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="214,53,251,58,250,63,213,59"/>
+<area shape="rect" id="Node000001" title="注册总线并立即枚举其设备。" alt="" coords="5,41,216,66"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="267,15,343,41"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="208,38,254,32,254,37,209,43"/>
+<area shape="rect" id="Node000009" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="264,65,347,90"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="214,63,251,68,250,73,213,69"/>
+<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="395,41,521,66"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="344,32,382,38,381,43,343,37"/>
+<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="775,15,960,41"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="521,47,761,32,761,37,522,52"/>
+<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="569,66,727,91"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="522,59,556,64,555,69,521,64"/>
+<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1008,5,1271,45"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="960,24,994,24,994,29,960,30"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="703,63,798,41,799,46,705,68"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="796,69,939,94"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="727,77,782,78,782,83,727,82"/>
+<area shape="rect" id="Node000008" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1092,70,1187,95"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="939,79,1079,80,1079,85,939,84"/>
+<area shape="poly" id="edge10_Node000009_Node000003" title=" " alt="" coords="346,68,381,63,381,68,347,74"/>
 </map>

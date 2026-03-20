@@ -94,13 +94,13 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2README.
 <div class="contents">
 <div class="textblock"><p><a href="https://codecov.io/gh/Simple-XX/SimpleKernel"><img src="https://codecov.io/gh/Simple-XX/SimpleKernel/graph/badge.svg?token=J7NKK3SBNJ" alt="codecov" style="pointer-events: none;" class="inline"/></a> <img src="https://github.com/Simple-XX/SimpleKernel/actions/workflows/workflow.yml/badge.svg" alt="workflow" style="pointer-events: none;" class="inline"/> <img src="https://img.shields.io/github/commit-activity/t/Simple-XX/SimpleKernel" alt="commit-activity" class="inline"/> <img src="https://img.shields.io/github/last-commit/Simple-XX/SimpleKernel/main" alt="last-commit-interrupt" class="inline"/> <img src="https://img.shields.io/github/license/mashape/apistatus.svg" alt="MIT License" style="pointer-events: none;" class="inline"/> <a href="https://github.com/996icu/996.ICU/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-Anti%20996-blue.svg" alt="LICENSE" style="pointer-events: none;" class="inline"/></a> <a href="https://996.icu"><img src="https://img.shields.io/badge/link-996.icu-red.svg" alt="996.icu" style="pointer-events: none;" class="inline"/></a></p>
 <p><a class="el" href="md__2workspaces_2SimpleKernel_2README__ENG.html">English</a> | <a class="el" href="md__2workspaces_2SimpleKernel_2README.html">中文</a></p>
-<h1><a class="anchor" id="autotoc_md283"></a>
+<h1><a class="anchor" id="autotoc_md272"></a>
 SimpleKernel</h1>
 <p><b>面向 AI 的操作系统学习项目 | Interface-Driven OS Kernel for AI-Assisted Learning</b></p>
 <blockquote class="doxtable">
 <p>&zwj;🤖 **设计理念**：定义清晰的内核接口，由 AI 完成实现——学习操作系统的新范式 </p>
 </blockquote>
-<h2><a class="anchor" id="autotoc_md284"></a>
+<h2><a class="anchor" id="autotoc_md273"></a>
 📖 目录</h2>
 <ul>
 <li>✨ 项目简介</li>
@@ -115,16 +115,16 @@ SimpleKernel</h1>
 <li>🤝 贡献指南</li>
 <li>📄 许可证</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md285"></a>
+<h2><a class="anchor" id="autotoc_md274"></a>
 ✨ 项目简介</h2>
-<p>SimpleKernel 是一个**面向 AI 辅助学习的现代化操作系统内核项目**。采用 C++23 编写，支持 x86_64、RISC-V 64 和 AArch64 三种架构。</p>
+<p>SimpleKernel 是一个**面向 AI 辅助学习的现代化操作系统内核项目**。采用 C++23 编写，支持 RISC-V 64 和 AArch64 两种架构。</p>
 <p>与传统 OS 教学项目不同，SimpleKernel 采用**接口驱动（Interface-Driven）** 的设计：</p>
 <ul>
 <li>**项目主体是接口定义**——完整的头文件（<code>.h/.hpp</code>）包含类声明、纯虚接口、类型定义、Doxygen 文档</li>
 <li>**实现由 AI 完成**——你只需要理解接口契约，让 AI 根据接口文档生成实现代码</li>
 <li>**参考实现可供对照**——项目提供完整的参考实现，用于验证 AI 生成代码的正确性</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md286"></a>
+<h3><a class="anchor" id="autotoc_md275"></a>
 🌟 核心亮点</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -134,7 +134,7 @@ SimpleKernel</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">📐 <b>接口与实现分离</b>   </td><td class="markdownTableBodyNone">头文件只有声明和契约，实现在独立的 <code>.cpp</code> 中    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">🌐 <b>三架构支持</b>   </td><td class="markdownTableBodyNone">x86_64、RISC-V 64、AArch64，同一套接口适配不同硬件    </td></tr>
+<td class="markdownTableBodyNone">🌐 <b>双架构支持</b>   </td><td class="markdownTableBodyNone">RISC-V 64、AArch64，同一套接口适配不同硬件    </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">🧪 <b>测试驱动验证</b>   </td><td class="markdownTableBodyNone">GoogleTest 测试套件验证 AI 生成的实现是否符合接口契约    </td></tr>
 <tr class="markdownTableRowOdd">
@@ -142,9 +142,9 @@ SimpleKernel</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">🏗️ <b>工程化基础设施</b>   </td><td class="markdownTableBodyNone">CMake 构建、Dev Container 环境、CI/CD、clang-format/clang-tidy   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md287"></a>
+<h2><a class="anchor" id="autotoc_md276"></a>
 🤖 面向 AI 的设计理念</h2>
-<h3><a class="anchor" id="autotoc_md288"></a>
+<h3><a class="anchor" id="autotoc_md277"></a>
 为什么要"面向 AI"？</h3>
 <p>传统 OS 教学项目的学习路径：**读代码 → 理解原理 → 模仿修改**。这种方式存在几个问题：</p>
 <ol type="1">
@@ -167,9 +167,9 @@ SimpleKernel</h1>
 <div class="line">│                  │ 实现对照  │                           │</div>
 <div class="line">│                  └──────────┘                           │</div>
 <div class="line">└─────────────────────────────────────────────────────────┘</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md289"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md278"></a>
 核心工作流</h3>
-<h4><a class="anchor" id="autotoc_md290"></a>
+<h4><a class="anchor" id="autotoc_md279"></a>
 1️⃣ 阅读接口，理解契约</h4>
 <p>每个模块的头文件都包含完整的接口文档：</p>
 <div class="fragment"><div class="line"> </div>
@@ -186,18 +186,18 @@ SimpleKernel</h1>
 <div class="ttc" id="aclassInterruptBase_html_a6f91b2d190c76d5e918cf06a2dc3ee73"><div class="ttname"><a href="classInterruptBase.html#a6f91b2d190c76d5e918cf06a2dc3ee73">InterruptBase::~InterruptBase</a></div><div class="ttdeci">virtual ~InterruptBase()=default</div></div>
 <div class="ttc" id="aclassInterruptBase_html_a7d8e636c70f1c40857b372f86d7091de"><div class="ttname"><a href="classInterruptBase.html#a7d8e636c70f1c40857b372f86d7091de">InterruptBase::Do</a></div><div class="ttdeci">virtual auto Do(uint64_t, cpu_io::TrapContext *) -&gt; void=0</div><div class="ttdoc">执行中断处理</div></div>
 <div class="ttc" id="astructcpu__io_1_1TrapContext_html"><div class="ttname"><a href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a></div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00186">cpu_io.h:186</a></div></div>
-</div><!-- fragment --><h4><a class="anchor" id="autotoc_md291"></a>
+</div><!-- fragment --><h4><a class="anchor" id="autotoc_md280"></a>
 2️⃣ 让 AI 实现</h4>
 <p>将头文件作为上下文提供给 AI（如 GitHub Copilot、ChatGPT、Claude 等），要求其生成 <code>.cpp</code> 实现。接口的 Doxygen 注释就是最好的 prompt。</p>
-<h4><a class="anchor" id="autotoc_md292"></a>
+<h4><a class="anchor" id="autotoc_md281"></a>
 3️⃣ 测试验证</h4>
 <p>运行项目自带的测试套件，验证 AI 生成的实现是否符合接口契约：</p>
 <div class="fragment"><div class="line">cmake --preset build_riscv64</div>
 <div class="line">cd build_riscv64 &amp;&amp; make unit-test</div>
-</div><!-- fragment --><h4><a class="anchor" id="autotoc_md293"></a>
+</div><!-- fragment --><h4><a class="anchor" id="autotoc_md282"></a>
 4️⃣ 对照参考实现</h4>
 <p>如果测试不通过，可以参考项目提供的参考实现进行对照和学习。</p>
-<h3><a class="anchor" id="autotoc_md294"></a>
+<h3><a class="anchor" id="autotoc_md283"></a>
 与 AI 工具的结合方式</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -211,7 +211,7 @@ SimpleKernel</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>自主学习</b>   </td><td class="markdownTableBodyNone">先独立思考实现思路，再让 AI 生成，对比差异   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md295"></a>
+<h2><a class="anchor" id="autotoc_md284"></a>
 🏛️ 接口体系总览</h2>
 <p>SimpleKernel 的接口按功能分为以下层次：</p>
 <div class="fragment"><div class="line">┌──────────────────────────────────────────┐</div>
@@ -243,9 +243,9 @@ SimpleKernel</h1>
 <div class="line">│  libcxx (kstd_vector, __cxa_*, ...)      │</div>
 <div class="line">├──────────────────────────────────────────┤</div>
 <div class="line">│            硬件 / QEMU                    │</div>
-<div class="line">│  x86_64 · RISC-V 64 · AArch64           │</div>
+<div class="line">│  RISC-V 64 · AArch64                    │</div>
 <div class="line">└──────────────────────────────────────────┘</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md296"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md285"></a>
 关键接口文件</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -278,21 +278,19 @@ SimpleKernel</h1>
 <blockquote class="doxtable">
 <p>&zwj;📋 完整接口重构计划见 docs/TODO_interface_refactor.md </p>
 </blockquote>
-<h2><a class="anchor" id="autotoc_md297"></a>
+<h2><a class="anchor" id="autotoc_md286"></a>
 🏗️ 支持架构</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
 <th class="markdownTableHeadCenter">架构   </th><th class="markdownTableHeadCenter">引导链   </th><th class="markdownTableHeadCenter">串口   </th><th class="markdownTableHeadCenter">中断控制器   </th><th class="markdownTableHeadCenter">时钟    </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyCenter"><b>x86_64</b>   </td><td class="markdownTableBodyCenter">U-Boot   </td><td class="markdownTableBodyCenter">NS16550A   </td><td class="markdownTableBodyCenter">8259A PIC   </td><td class="markdownTableBodyCenter">8253/8254    </td></tr>
-<tr class="markdownTableRowEven">
 <td class="markdownTableBodyCenter"><b>RISC-V 64</b>   </td><td class="markdownTableBodyCenter">U-Boot + OpenSBI   </td><td class="markdownTableBodyCenter">SBI Call   </td><td class="markdownTableBodyCenter">Direct 模式   </td><td class="markdownTableBodyCenter">SBI Timer    </td></tr>
-<tr class="markdownTableRowOdd">
+<tr class="markdownTableRowEven">
 <td class="markdownTableBodyCenter"><b>AArch64</b>   </td><td class="markdownTableBodyCenter">U-Boot + ATF + OP-TEE   </td><td class="markdownTableBodyCenter">PL011   </td><td class="markdownTableBodyCenter">GICv3   </td><td class="markdownTableBodyCenter">Generic Timer   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md298"></a>
+<h2><a class="anchor" id="autotoc_md287"></a>
 🚀 快速开始</h2>
-<h3><a class="anchor" id="autotoc_md299"></a>
+<h3><a class="anchor" id="autotoc_md288"></a>
 📋 系统要求</h3>
 <ul>
 <li><b>操作系统</b>: Linux (推荐 Ubuntu 24.04) 或 macOS</li>
@@ -300,7 +298,7 @@ SimpleKernel</h1>
 <li><b>工具链</b>: 已包含在 Dev Container 中（GCC 14 交叉编译器、CMake、QEMU 等）</li>
 <li><b>AI 工具（推荐）</b>: GitHub Copilot / ChatGPT / Claude</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md300"></a>
+<h3><a class="anchor" id="autotoc_md289"></a>
 🛠️ 环境搭建</h3>
 <p><b>方式一：使用 Dev Container（推荐）</b></p>
 <div class="fragment"><div class="line"># 1. 克隆项目</div>
@@ -321,7 +319,7 @@ SimpleKernel</h1>
 </blockquote>
 <p><b>方式二：本地环境</b></p>
 <p>参考 <a class="el" href="md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html">工具链文档</a> 配置本地开发环境。</p>
-<h3><a class="anchor" id="autotoc_md301"></a>
+<h3><a class="anchor" id="autotoc_md290"></a>
 ⚡ 编译与运行</h3>
 <div class="fragment"><div class="line">cd SimpleKernel</div>
 <div class="line"> </div>
@@ -340,9 +338,8 @@ SimpleKernel</h1>
 </div><!-- fragment --><p><b>支持的架构预设：</b></p><ul>
 <li><code>build_riscv64</code> - RISC-V 64 位架构</li>
 <li><code>build_aarch64</code> - ARM 64 位架构</li>
-<li><code>build_x86_64</code> - x86 64 位架构</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md302"></a>
+<h3><a class="anchor" id="autotoc_md291"></a>
 🎯 AI 辅助开发工作流</h3>
 <div class="fragment"><div class="line"># 1. 在 VS Code 中打开项目（推荐安装 GitHub Copilot 扩展）</div>
 <div class="line">code ./SimpleKernel</div>
@@ -359,7 +356,7 @@ SimpleKernel</h1>
 <div class="line"> </div>
 <div class="line"># 6. 在 QEMU 中运行，观察行为</div>
 <div class="line">make run</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md303"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md292"></a>
 📂 项目结构</h2>
 <div class="fragment"><div class="line">SimpleKernel/</div>
 <div class="line">├── src/                        # 内核源码</div>
@@ -373,8 +370,7 @@ SimpleKernel</h1>
 <div class="line">│   ├── arch/                   # 架构相关代码</div>
 <div class="line">│   │   ├── arch.h              # 📐 架构无关统一接口</div>
 <div class="line">│   │   ├── aarch64/            #   AArch64 实现</div>
-<div class="line">│   │   ├── riscv64/            #   RISC-V 64 实现</div>
-<div class="line">│   │   └── x86_64/             #   x86_64 实现</div>
+<div class="line">│   │   └── riscv64/            #   RISC-V 64 实现</div>
 <div class="line">│   ├── device/                 # 设备管理框架</div>
 <div class="line">│   │   ├── include/            # 📐 设备框架接口（DeviceManager, DriverRegistry, Bus 等）</div>
 <div class="line">│   │   │   └── driver/         #   具体驱动（ns16550a_driver.hpp, virtio_blk_driver.hpp）</div>
@@ -397,10 +393,10 @@ SimpleKernel</h1>
 </div><!-- fragment --><blockquote class="doxtable">
 <p>&zwj;📐 标记的目录/文件是**接口定义**——这是你需要重点阅读的内容。 </p>
 </blockquote>
-<h2><a class="anchor" id="autotoc_md304"></a>
+<h2><a class="anchor" id="autotoc_md293"></a>
 🎯 学习路线</h2>
 <p>建议按以下顺序学习和实现各模块：</p>
-<h3><a class="anchor" id="autotoc_md305"></a>
+<h3><a class="anchor" id="autotoc_md294"></a>
 阶段 1：基础设施（Boot）</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -414,7 +410,7 @@ SimpleKernel</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">ELF 解析   </td><td class="markdownTableBodyNone"><code><a class="el" href="kernel__elf_8hpp.html">kernel_elf.hpp</a></code>   </td><td class="markdownTableBodyCenter">⭐⭐   </td><td class="markdownTableBodyNone">符号表解析，用于栈回溯   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md306"></a>
+<h3><a class="anchor" id="autotoc_md295"></a>
 阶段 2：中断系统（Interrupt）</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -422,11 +418,11 @@ SimpleKernel</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">中断基类   </td><td class="markdownTableBodyNone"><code><a class="el" href="interrupt__base_8h.html">interrupt_base.h</a></code>   </td><td class="markdownTableBodyCenter">⭐⭐   </td><td class="markdownTableBodyNone">理解中断处理的统一抽象    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">中断控制器   </td><td class="markdownTableBodyNone">各架构驱动头文件   </td><td class="markdownTableBodyCenter">⭐⭐⭐   </td><td class="markdownTableBodyNone">GIC/PLIC/PIC 硬件编程    </td></tr>
+<td class="markdownTableBodyNone">中断控制器   </td><td class="markdownTableBodyNone">各架构驱动头文件   </td><td class="markdownTableBodyCenter">⭐⭐⭐   </td><td class="markdownTableBodyNone">GIC/PLIC 硬件编程    </td></tr>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">时钟中断   </td><td class="markdownTableBodyNone"><code><a class="el" href="arch_8h.html">arch.h</a> → TimerInit</code>   </td><td class="markdownTableBodyCenter">⭐⭐   </td><td class="markdownTableBodyNone">定时器配置，tick 驱动   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md307"></a>
+<h3><a class="anchor" id="autotoc_md296"></a>
 阶段 3：内存管理（Memory）</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -436,7 +432,7 @@ SimpleKernel</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">物理内存   </td><td class="markdownTableBodyNone">相关接口   </td><td class="markdownTableBodyCenter">⭐⭐⭐   </td><td class="markdownTableBodyNone">帧分配器、伙伴系统   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md308"></a>
+<h3><a class="anchor" id="autotoc_md297"></a>
 阶段 4：任务管理（Thread/Task）</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -448,7 +444,7 @@ SimpleKernel</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">调度器   </td><td class="markdownTableBodyNone"><code><a class="el" href="scheduler__base_8hpp.html">scheduler_base.hpp</a></code>   </td><td class="markdownTableBodyCenter">⭐⭐⭐   </td><td class="markdownTableBodyNone">CFS/FIFO/RR 调度算法   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md309"></a>
+<h3><a class="anchor" id="autotoc_md298"></a>
 阶段 5：系统调用（Syscall）</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -456,7 +452,7 @@ SimpleKernel</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">系统调用   </td><td class="markdownTableBodyNone"><code><a class="el" href="arch_8h.html">arch.h</a> → SyscallInit</code>   </td><td class="markdownTableBodyCenter">⭐⭐⭐   </td><td class="markdownTableBodyNone">用户态/内核态切换   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md310"></a>
+<h2><a class="anchor" id="autotoc_md299"></a>
 📦 第三方依赖</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -486,9 +482,9 @@ SimpleKernel</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><a href="https://github.com/MRNIU/device_framework.git">MRNIU/device_framework</a>   </td><td class="markdownTableBodyNone">设备管理框架   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md311"></a>
+<h2><a class="anchor" id="autotoc_md300"></a>
 📝 开发指南</h2>
-<h3><a class="anchor" id="autotoc_md312"></a>
+<h3><a class="anchor" id="autotoc_md301"></a>
 🎨 代码风格</h3>
 <ul>
 <li><b>语言标准</b>: C23 / C++23</li>
@@ -496,7 +492,7 @@ SimpleKernel</h1>
 <li><b>自动格式化</b>: <code>.clang-format</code> + <code>.clang-tidy</code></li>
 <li><b>注释规范</b>: Doxygen 风格，接口文件必须包含完整的契约文档</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md313"></a>
+<h3><a class="anchor" id="autotoc_md302"></a>
 命名约定</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -516,14 +512,14 @@ SimpleKernel</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">内核 libc/libc++ 头文件   </td><td class="markdownTableBodyNone">libc: <code>sk_</code> 前缀, libcxx: <code>kstd_</code> 前缀   </td><td class="markdownTableBodyNone"><code><a class="el" href="sk__stdio_8h.html">sk_stdio.h</a></code> / <code>kstd_vector</code>   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md314"></a>
+<h3><a class="anchor" id="autotoc_md303"></a>
 📋 Git Commit 规范</h3>
 <div class="fragment"><div class="line">&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;</div>
 <div class="line"> </div>
 <div class="line">type: feat|fix|docs|style|refactor|perf|test|build|revert</div>
 <div class="line">scope: 可选，影响的模块 (arch, device, libc)</div>
 <div class="line">subject: 不超过50字符，不加句号</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md315"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md304"></a>
 📚 文档</h3>
 <ul>
 <li><b>工具链</b>: <a class="el" href="md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html">docs/0_工具链.md</a></li>
@@ -533,10 +529,10 @@ SimpleKernel</h1>
 <li><b>Dev Container</b>: <a class="el" href="md_docker.html">docs/docker.md</a></li>
 <li><b>接口重构计划</b>: docs/TODO_interface_refactor.md</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md316"></a>
+<h2><a class="anchor" id="autotoc_md305"></a>
 🤝 贡献指南</h2>
 <p>我们欢迎所有形式的贡献！</p>
-<h3><a class="anchor" id="autotoc_md317"></a>
+<h3><a class="anchor" id="autotoc_md306"></a>
 🎯 贡献方式</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -552,7 +548,7 @@ SimpleKernel</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">🔧 <b>提交实现</b>   </td><td class="markdownTableBodyNone">提交接口的参考实现或替代实现   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md318"></a>
+<h3><a class="anchor" id="autotoc_md307"></a>
 🔧 代码贡献流程</h3>
 <ol type="1">
 <li>Fork 本仓库</li>
@@ -562,7 +558,7 @@ SimpleKernel</h1>
 <li>提交变更: &lsquo;git commit -m 'feat(scope): add amazing feature&rsquo;`</li>
 <li>创建 Pull Request</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md319"></a>
+<h2><a class="anchor" id="autotoc_md308"></a>
 📄 许可证</h2>
 <p>本项目采用多重许可证：</p>
 <ul>

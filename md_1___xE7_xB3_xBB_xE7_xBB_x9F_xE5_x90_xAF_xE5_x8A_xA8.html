@@ -94,405 +94,20 @@ $(document).ready(function(){initNavTree('md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="autotoc_md33"></a> </p>
 <h1><a class="anchor" id="autotoc_md34"></a>
-x86_64</h1>
+RISCV64</h1>
 <h2><a class="anchor" id="autotoc_md35"></a>
 概述</h2>
-<p>x86_64 架构的多核唤醒机制基于 APIC (Advanced Programmable <a class="el" href="classInterrupt.html" title="AArch64 中断控制器实现">Interrupt</a> Controller) 系统，通过 INIT-SIPI-SIPI 序列来唤醒应用处理器 (Application Processors, APs)。</p>
+<p>RISC-V64 架构的多核唤醒机制基于 OpenSBI (Supervisor Binary Interface) 标准，通过 HSM (Hart State Management) 扩展来管理硬件线程（Hart）的启动和状态。RISC-V 提供了简单统一的多核启动接口。</p>
 <h2><a class="anchor" id="autotoc_md36"></a>
 关键组件</h2>
 <h3><a class="anchor" id="autotoc_md37"></a>
-1. APIC 系统</h3>
-<ul>
-<li><b>Local APIC</b>: 每个 CPU 核心都有一个 Local APIC，负责处理核心间通信</li>
-<li><b>IO APIC</b>: 系统级别的中断控制器，处理外部中断</li>
-<li><b>支持两种模式</b>:<ul>
-<li>xAPIC: 传统模式，通过内存映射访问</li>
-<li>x2APIC: 扩展模式，通过 MSR 访问，性能更好</li>
-</ul>
-</li>
-</ul>
-<h3><a class="anchor" id="autotoc_md38"></a>
-2. 核心数据结构</h3>
-<p><b>SIPI 参数结构</b> (<code>src/arch/x86_64/sipi.h</code>): </p><div class="fragment"><div class="line"><span class="keyword">struct </span>sipi_params_t {</div>
-<div class="line">  uint32_t cr3;  <span class="comment">// 页表基地址</span></div>
-<div class="line">} __attribute__((packed));</div>
-</div><!-- fragment --><p><b>Per-CPU 数据</b> (<code><a class="el" href="per__cpu_8hpp.html">src/include/per_cpu.hpp</a></code>): </p><div class="fragment"><div class="line"><span class="keyword">class </span><a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a> {</div>
-<div class="line">  <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">size_t</span> kMaxCoreCount = 4;</div>
-<div class="line">  <span class="keyword">const</span> <span class="keywordtype">size_t</span> core_id_;</div>
-<div class="line">  ssize_t noff_{0};          <span class="comment">// 中断嵌套深度</span></div>
-<div class="line">  <span class="keywordtype">bool</span> intr_enable_{<span class="keyword">false</span>};  <span class="comment">// 中断使能状态</span></div>
-<div class="line">};</div>
-<div class="ttc" id="aper__cpu_8hpp_html_af9f69638066e596aabf0ff6f3b58ced9"><div class="ttname"><a href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a></div><div class="ttdeci">PerCpu()=default</div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md39"></a>
-多核启动流程</h2>
-<h3><a class="anchor" id="autotoc_md40"></a>
-1. BSP (Bootstrap Processor) 初始化</h3>
-<p>在 <code><a class="el" href="x86__64_2arch__main_8cpp.html">src/arch/x86_64/arch_main.cpp</a></code> 的 <code><a class="el" href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd" title="体系结构相关初始化">ArchInit()</a></code> 函数中：</p>
-<div class="fragment"><div class="line"><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd">ArchInit</a>(<span class="keywordtype">int</span>, <span class="keyword">const</span> <span class="keywordtype">char</span> **) -&gt; <span class="keywordtype">int</span> {</div>
-<div class="line">  <span class="comment">// 1. 初始化串口和基本信息</span></div>
-<div class="line">  SerialSingleton::create(cpu_io::kCom1);</div>
-<div class="line">  BasicInfoSingleton::create(0, <span class="keyword">nullptr</span>);</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 2. 解析内核 ELF 信息</span></div>
-<div class="line">  KernelElfSingleton::create(BasicInfoSingleton::instance().elf_addr);</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 3. 初始化 APIC 系统</span></div>
-<div class="line">  ApicSingleton::create(BasicInfoSingleton::instance().core_count);</div>
-<div class="line">  ApicSingleton::instance().InitCurrentCpuLocalApic();</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 4. 填充 SIPI 参数</span></div>
-<div class="line">  <span class="keyword">auto</span> target_sipi_params = <span class="keyword">reinterpret_cast&lt;</span>sipi_params_t *<span class="keyword">&gt;</span>(<a class="code hl_variable" href="sipi_8h.html#a32702e3ad83c6b6890156c1019d9b212">sipi_params</a>);</div>
-<div class="line">  target_sipi_params-&gt;cr3 = cpu_io::Cr3::Read();</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 5. 唤醒所有 AP</span></div>
-<div class="line">  ApicSingleton::instance().StartupAllAps(</div>
-<div class="line">      <span class="keyword">reinterpret_cast&lt;</span>uint64_t<span class="keyword">&gt;</span>(<a class="code hl_variable" href="sipi_8h.html#a07a57de9cb60e2d021c86cad5661685d">ap_start16</a>),</div>
-<div class="line">      <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(<a class="code hl_variable" href="sipi_8h.html#a09112885e666deab3901a558c383fa20">ap_start64_end</a>) -</div>
-<div class="line">          <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(<a class="code hl_variable" href="sipi_8h.html#a07a57de9cb60e2d021c86cad5661685d">ap_start16</a>),</div>
-<div class="line">      <a class="code hl_variable" href="sipi_8h.html#aa69ae5dfed08043489ffa640ffc81521">kDefaultAPBase</a>);</div>
-<div class="line"> </div>
-<div class="line">  <span class="keywordflow">return</span> 0;</div>
-<div class="line">}</div>
-<div class="ttc" id="aaarch64_2arch__main_8cpp_html_a6a670facdde513eab1f26f8a04e2efbd"><div class="ttname"><a href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd">ArchInit</a></div><div class="ttdeci">auto ArchInit(int argc, const char **argv) -&gt; void</div><div class="ttdoc">体系结构相关初始化</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2arch__main_8cpp_source.html#l00048">arch_main.cpp:48</a></div></div>
-<div class="ttc" id="asipi_8h_html_a07a57de9cb60e2d021c86cad5661685d"><div class="ttname"><a href="sipi_8h.html#a07a57de9cb60e2d021c86cad5661685d">ap_start16</a></div><div class="ttdeci">void * ap_start16[]</div><div class="ttdef"><b>Definition</b> <a href="sipi_8h_source.html#l00015">sipi.h:15</a></div></div>
-<div class="ttc" id="asipi_8h_html_a09112885e666deab3901a558c383fa20"><div class="ttname"><a href="sipi_8h.html#a09112885e666deab3901a558c383fa20">ap_start64_end</a></div><div class="ttdeci">void * ap_start64_end[]</div><div class="ttdef"><b>Definition</b> <a href="sipi_8h_source.html#l00016">sipi.h:16</a></div></div>
-<div class="ttc" id="asipi_8h_html_a32702e3ad83c6b6890156c1019d9b212"><div class="ttname"><a href="sipi_8h.html#a32702e3ad83c6b6890156c1019d9b212">sipi_params</a></div><div class="ttdeci">void * sipi_params[]</div><div class="ttdef"><b>Definition</b> <a href="sipi_8h_source.html#l00017">sipi.h:17</a></div></div>
-<div class="ttc" id="asipi_8h_html_aa69ae5dfed08043489ffa640ffc81521"><div class="ttname"><a href="sipi_8h.html#aa69ae5dfed08043489ffa640ffc81521">kDefaultAPBase</a></div><div class="ttdeci">constexpr uint64_t kDefaultAPBase</div><div class="ttdoc">启动 APs 的默认地址</div><div class="ttdef"><b>Definition</b> <a href="sipi_8h_source.html#l00013">sipi.h:13</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md41"></a>
-2. AP 启动代码</h3>
-<p>位于 <code>src/arch/x86_64/boot.S</code>，包含完整的模式切换序列：</p>
-<p><b>16位实模式启动</b> (<code>ap_start16</code>): </p><div class="fragment"><div class="line">// 关中断，清除 TLB</div>
-<div class="line">cli</div>
-<div class="line">xor %eax, %eax</div>
-<div class="line">mov %eax, %cr3</div>
-<div class="line"> </div>
-<div class="line">// 加载 GDT 并启用保护模式</div>
-<div class="line">mov $gdtdesc, %ebx</div>
-<div class="line">sub $ap_start16, %ebx</div>
-<div class="line">data32 lgdt (%ebx)</div>
-<div class="line"> </div>
-<div class="line">mov %cr0, %eax</div>
-<div class="line">or $PROTECTION_MODE_BIT,%eax</div>
-<div class="line">mov %eax, %cr0</div>
-</div><!-- fragment --><p><b>32位保护模式</b> (<code>ap_start32</code>): </p><div class="fragment"><div class="line">// 启用 PAE</div>
-<div class="line">mov %cr4, %eax</div>
-<div class="line">or $PAE_BIT, %eax</div>
-<div class="line">mov %eax, %cr4</div>
-<div class="line"> </div>
-<div class="line">// 设置页表（使用 BSP 的 CR3）</div>
-<div class="line">mov $cr3, %ebx</div>
-<div class="line">sub $ap_start16, %ebx</div>
-<div class="line">mov (%ebx), %eax</div>
-<div class="line">mov %eax, %cr3</div>
-<div class="line"> </div>
-<div class="line">// 启用长模式</div>
-<div class="line">mov $IA32_EFER_MSR, %ecx</div>
-<div class="line">rdmsr</div>
-<div class="line">or $LONG_MODE_BIT, %eax</div>
-<div class="line">wrmsr</div>
-<div class="line"> </div>
-<div class="line">// 启用分页</div>
-<div class="line">mov %cr0, %eax</div>
-<div class="line">or $PAGING_BIT, %eax</div>
-<div class="line">mov %eax, %cr0</div>
-</div><!-- fragment --><p><b>64位长模式</b> (<code>_boot</code>): </p><div class="fragment"><div class="line">// 关中断</div>
-<div class="line">cli</div>
-<div class="line"> </div>
-<div class="line">// 获取 APIC ID 作为 CPU ID</div>
-<div class="line">mov $CPUID_LEAF_1, %eax</div>
-<div class="line">cpuid</div>
-<div class="line">// EBX bits 31-24 是初始 APIC ID</div>
-<div class="line">shr $APIC_ID_SHIFT, %ebx</div>
-<div class="line">// 保留低 8 位</div>
-<div class="line">and $APIC_ID_MASK, %ebx</div>
-<div class="line"> </div>
-<div class="line">// 根据 CPU ID 设置独立栈</div>
-<div class="line">mov %ebx, %eax</div>
-<div class="line">mov $STACK_SIZE_PER_CPU, %edx</div>
-<div class="line">mul %edx</div>
-<div class="line"> </div>
-<div class="line">// 计算该 CPU 的栈顶地址</div>
-<div class="line">mov $stack_top, %rsp</div>
-<div class="line">add %rax, %rsp</div>
-<div class="line">add $STACK_SIZE_PER_CPU, %rsp</div>
-<div class="line"> </div>
-<div class="line">// 跳转到内核入口</div>
-<div class="line">call _start</div>
-<div class="line">hlt</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md42"></a>
-3. INIT-SIPI-SIPI 序列</h3>
-<p>在 <code>src/driver/apic/local_apic.cpp</code> 的 <code>WakeupAp()</code> 函数中实现：</p>
-<div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="classLocalApic.html#afb7c98a96f586c46f98b0cbd92f1fbf4">LocalApic::WakeupAp</a>(uint32_t destination_apic_id, uint8_t start_vector)<span class="keyword"> const </span>{</div>
-<div class="line">  <span class="comment">// 1. 发送 INIT IPI</span></div>
-<div class="line">  <a class="code hl_function" href="classLocalApic.html#af28c8bd5c0f39f75d2bc2bcf1f3b3679">SendInitIpi</a>(destination_apic_id);</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 2. 等待 10ms (INIT IPI 后的标准等待时间)</span></div>
-<div class="line">  <span class="keyword">auto</span> delay = 10 * <a class="code hl_variable" href="classLocalApic.html#a31b67cb7cf0571d12699fbc517128dab">kCalibrationDelayLoop</a>;</div>
-<div class="line">  <span class="keywordflow">while</span> (delay--) { __asm__ <span class="keyword">volatile</span>(<span class="stringliteral">&quot;nop&quot;</span>); }</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 3. 发送第一个 SIPI</span></div>
-<div class="line">  <a class="code hl_function" href="classLocalApic.html#a5cecbf6adaae928fbcd26016988e417e">SendStartupIpi</a>(destination_apic_id, start_vector);</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 4. 等待 200μs (SIPI 后的标准等待时间)</span></div>
-<div class="line">  delay = 200 * (<a class="code hl_variable" href="classLocalApic.html#a31b67cb7cf0571d12699fbc517128dab">kCalibrationDelayLoop</a> / 1000);</div>
-<div class="line">  <span class="keywordflow">while</span> (delay--) { __asm__ <span class="keyword">volatile</span>(<span class="stringliteral">&quot;nop&quot;</span>); }</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 5. 发送第二个 SIPI（提高可靠性）</span></div>
-<div class="line">  <a class="code hl_function" href="classLocalApic.html#a5cecbf6adaae928fbcd26016988e417e">SendStartupIpi</a>(destination_apic_id, start_vector);</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 6. 等待 200μs</span></div>
-<div class="line">  delay = 200 * (<a class="code hl_variable" href="classLocalApic.html#a31b67cb7cf0571d12699fbc517128dab">kCalibrationDelayLoop</a> / 1000);</div>
-<div class="line">  <span class="keywordflow">while</span> (delay--) { __asm__ <span class="keyword">volatile</span>(<span class="stringliteral">&quot;nop&quot;</span>); }</div>
-<div class="line">}</div>
-<div class="ttc" id="aclassLocalApic_html_a31b67cb7cf0571d12699fbc517128dab"><div class="ttname"><a href="classLocalApic.html#a31b67cb7cf0571d12699fbc517128dab">LocalApic::kCalibrationDelayLoop</a></div><div class="ttdeci">static constexpr uint32_t kCalibrationDelayLoop</div><div class="ttdoc">校准延时循环次数</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00228">local_apic.h:228</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a5cecbf6adaae928fbcd26016988e417e"><div class="ttname"><a href="classLocalApic.html#a5cecbf6adaae928fbcd26016988e417e">LocalApic::SendStartupIpi</a></div><div class="ttdeci">auto SendStartupIpi(uint32_t destination_apic_id, uint8_t start_page) const -&gt; void</div><div class="ttdoc">发送 SIPI (Startup IPI)</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8cpp_source.html#l00329">local_apic.cpp:329</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_af28c8bd5c0f39f75d2bc2bcf1f3b3679"><div class="ttname"><a href="classLocalApic.html#af28c8bd5c0f39f75d2bc2bcf1f3b3679">LocalApic::SendInitIpi</a></div><div class="ttdeci">auto SendInitIpi(uint32_t destination_apic_id) const -&gt; void</div><div class="ttdoc">发送 INIT IPI</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8cpp_source.html#l00294">local_apic.cpp:294</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_afb7c98a96f586c46f98b0cbd92f1fbf4"><div class="ttname"><a href="classLocalApic.html#afb7c98a96f586c46f98b0cbd92f1fbf4">LocalApic::WakeupAp</a></div><div class="ttdeci">auto WakeupAp(uint32_t destination_apic_id, uint8_t start_vector) const -&gt; void</div><div class="ttdoc">唤醒应用处理器 (AP)</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8cpp_source.html#l00510">local_apic.cpp:510</a></div></div>
-</div><!-- fragment --><p>其中 <code>kCalibrationDelayLoop = 1000000</code> 用于延时校准。</p>
-<h3><a class="anchor" id="autotoc_md43"></a>
-4. AP 入口处理</h3>
-<p>AP 启动后通过 <code><a class="el" href="src_2main_8cpp.html">src/main.cpp</a></code> 的 <code><a class="el" href="kernel_8h.html#a1051fb5b0c9ae8b443c542089ac538bd" title="负责 crtbegin 的工作">_start()</a></code> 函数进入：</p>
-<div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="kernel_8h.html#a1051fb5b0c9ae8b443c542089ac538bd">_start</a>(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span> **argv) {</div>
-<div class="line">  <span class="keywordflow">if</span> (argv != <span class="keyword">nullptr</span>) {</div>
-<div class="line">    <span class="comment">// BSP 路径</span></div>
-<div class="line">    <a class="code hl_function" href="kstd__libcxx_8h.html#af560a93d5e246576e878702a1869a75e">CppInit</a>();</div>
-<div class="line">    <a class="code hl_function" href="tests_2integration__test_2aarch64__minimal_2main_8cpp.html#acdef7a1fd863a6d3770c1268cb06add3">main</a>(argc, argv);</div>
-<div class="line">    <a class="code hl_function" href="kstd__libcxx_8h.html#a4624536be7013c14721d5ac1c06f65a5">CppDeInit</a>();</div>
-<div class="line">  } <span class="keywordflow">else</span> {</div>
-<div class="line">    <span class="comment">// AP 路径</span></div>
-<div class="line">    main_smp(argc, argv);</div>
-<div class="line">  }</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 进入死循环</span></div>
-<div class="line">  <span class="keywordflow">while</span> (<span class="keyword">true</span>) { ; }</div>
-<div class="line">}</div>
-<div class="ttc" id="akernel_8h_html_a1051fb5b0c9ae8b443c542089ac538bd"><div class="ttname"><a href="kernel_8h.html#a1051fb5b0c9ae8b443c542089ac538bd">_start</a></div><div class="ttdeci">void _start(int argc, const char **argv)</div><div class="ttdoc">负责 crtbegin 的工作</div><div class="ttdef"><b>Definition</b> <a href="src_2main_8cpp_source.html#l00040">main.cpp:40</a></div></div>
-<div class="ttc" id="akstd__libcxx_8h_html_a4624536be7013c14721d5ac1c06f65a5"><div class="ttname"><a href="kstd__libcxx_8h.html#a4624536be7013c14721d5ac1c06f65a5">CppDeInit</a></div><div class="ttdeci">auto CppDeInit() -&gt; void</div><div class="ttdoc">析构 c++ 全局对象</div><div class="ttdef"><b>Definition</b> <a href="kstd__libcxx_8cpp_source.html#l00230">kstd_libcxx.cpp:230</a></div></div>
-<div class="ttc" id="akstd__libcxx_8h_html_af560a93d5e246576e878702a1869a75e"><div class="ttname"><a href="kstd__libcxx_8h.html#af560a93d5e246576e878702a1869a75e">CppInit</a></div><div class="ttdeci">auto CppInit() -&gt; void</div><div class="ttdoc">构造 c++ 全局对象</div><div class="ttdef"><b>Definition</b> <a href="kstd__libcxx_8cpp_source.html#l00221">kstd_libcxx.cpp:221</a></div></div>
-<div class="ttc" id="atests_2integration__test_2aarch64__minimal_2main_8cpp_html_acdef7a1fd863a6d3770c1268cb06add3"><div class="ttname"><a href="tests_2integration__test_2aarch64__minimal_2main_8cpp.html#acdef7a1fd863a6d3770c1268cb06add3">main</a></div><div class="ttdeci">void main()</div><div class="ttdef"><b>Definition</b> <a href="tests_2integration__test_2aarch64__minimal_2main_8cpp_source.html#l00023">main.cpp:23</a></div></div>
-</div><!-- fragment --><p>AP 执行 <code>main_smp()</code> -&gt; <code><a class="el" href="aarch64_2arch__main_8cpp.html#a85d4c6ade0d5178dc12a2609621e2d45" title="从核的体系结构相关初始化">ArchInitSMP()</a></code> -&gt; <code>InitCurrentCpuLocalApic()</code>：</p>
-<div class="fragment"><div class="line"><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2arch__main_8cpp.html#a85d4c6ade0d5178dc12a2609621e2d45">ArchInitSMP</a>(<span class="keywordtype">int</span>, <span class="keyword">const</span> <span class="keywordtype">char</span> **) -&gt; <span class="keywordtype">int</span> {</div>
-<div class="line">  ApicSingleton::instance().InitCurrentCpuLocalApic();</div>
-<div class="line">  <span class="keywordflow">return</span> 0;</div>
-<div class="line">}</div>
-<div class="ttc" id="aaarch64_2arch__main_8cpp_html_a85d4c6ade0d5178dc12a2609621e2d45"><div class="ttname"><a href="aarch64_2arch__main_8cpp.html#a85d4c6ade0d5178dc12a2609621e2d45">ArchInitSMP</a></div><div class="ttdeci">auto ArchInitSMP(int argc, const char **argv) -&gt; void</div><div class="ttdoc">从核的体系结构相关初始化</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2arch__main_8cpp_source.html#l00065">arch_main.cpp:65</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md44"></a>
-内存布局</h2>
-<h3><a class="anchor" id="autotoc_md45"></a>
-栈分配</h3>
-<p>每个 CPU 分配 4KB 独立栈空间： </p><div class="fragment"><div class="line"><span class="comment">// 每个 CPU 的栈大小：4KB</span></div>
-<div class="line"><span class="preprocessor">#define STACK_SIZE_PER_CPU      0x1000</span></div>
-<div class="line"><span class="comment">// 最大 CPU 数量</span></div>
-<div class="line"><span class="preprocessor">#define MAX_CPU_COUNT           4</span></div>
-<div class="line"><span class="comment">// 总栈大小</span></div>
-<div class="line"><span class="preprocessor">#define TOTAL_STACK_SIZE        (STACK_SIZE_PER_CPU * MAX_CPU_COUNT)</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// CPU ID * 4KB + stack_top 作为该 CPU 的栈顶</span></div>
-</div><!-- fragment --><div class="fragment"><div class="line">// 声明所属段</div>
-<div class="line">.section .bss</div>
-<div class="line">// MAX_CPU_COUNT 个 CPU × STACK_SIZE_PER_CPU 每个 = TOTAL_STACK_SIZE 总栈空间</div>
-<div class="line">stack_top:</div>
-<div class="line">    .space TOTAL_STACK_SIZE</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md46"></a>
-AP 启动代码位置</h3>
-<ul>
-<li>默认复制到物理地址 <code>0x30000</code> (<code>kDefaultAPBase</code>)</li>
-<li>必须在 1MB 以下（实模式限制）</li>
-<li>必须 4KB 对齐（SIPI 要求）</li>
-</ul>
-<h2><a class="anchor" id="autotoc_md47"></a>
-APIC 配置</h2>
-<h3><a class="anchor" id="autotoc_md48"></a>
-Local APIC 初始化</h3>
-<div class="fragment"><div class="line"><span class="keywordtype">bool</span> <a class="code hl_function" href="classLocalApic.html#ad94b3e7dc5659cd5bf9378cf9fa308dc">LocalApic::Init</a>() {</div>
-<div class="line">  <span class="comment">// 1. 检查并启用 APIC 模式（优先 x2APIC）</span></div>
-<div class="line">  <span class="keywordflow">if</span> (<a class="code hl_function" href="classLocalApic.html#ac486f0870848020742904363060a2419">EnableX2Apic</a>()) {</div>
-<div class="line">    <a class="code hl_variable" href="classLocalApic.html#a4a63c5378da856c2a5f1ea0460a6744e">is_x2apic_mode_</a> = <span class="keyword">true</span>;</div>
-<div class="line">  } <span class="keywordflow">else</span> {</div>
-<div class="line">    <span class="keywordflow">if</span> (!<a class="code hl_function" href="classLocalApic.html#a0f0de4998da2e305182dd73bf1e00660">EnableXApic</a>()) {</div>
-<div class="line">      <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line">    }</div>
-<div class="line">    <a class="code hl_variable" href="classLocalApic.html#a4a63c5378da856c2a5f1ea0460a6744e">is_x2apic_mode_</a> = <span class="keyword">false</span>;</div>
-<div class="line">  }</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 2. 启用 Local APIC (通过设置 SIVR)</span></div>
-<div class="line">  uint32_t sivr = <a class="code hl_variable" href="classLocalApic.html#a4a63c5378da856c2a5f1ea0460a6744e">is_x2apic_mode_</a> ?</div>
-<div class="line">      cpu_io::msr::apic::ReadSivr() :</div>
-<div class="line">      io::In&lt;uint32_t&gt;(<a class="code hl_variable" href="classLocalApic.html#a14dea9be5f7231166d31af785352a911">apic_base_</a> + <a class="code hl_variable" href="classLocalApic.html#a2f1b868d6d1f37f3a1e61d23d84cc05b">kXApicSivrOffset</a>);</div>
-<div class="line"> </div>
-<div class="line">  sivr |= <a class="code hl_variable" href="classLocalApic.html#a2699706a3c2b0dd4b351e4a4890dc679">kApicSoftwareEnableBit</a>;  <span class="comment">// 启用 APIC</span></div>
-<div class="line">  sivr |= <a class="code hl_variable" href="classLocalApic.html#a5c5ad4a79967cb4aedf6955ecd1606db">kSpuriousVector</a>;         <span class="comment">// 设置虚假中断向量</span></div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 3. 清除任务优先级</span></div>
-<div class="line">  <a class="code hl_function" href="classLocalApic.html#afc991c5ed07f99e1d3d19552b97624f4">SetTaskPriority</a>(0);</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 4. 屏蔽所有 LVT 条目</span></div>
-<div class="line">  <span class="keywordflow">if</span> (<a class="code hl_variable" href="classLocalApic.html#a4a63c5378da856c2a5f1ea0460a6744e">is_x2apic_mode_</a>) {</div>
-<div class="line">    cpu_io::msr::apic::WriteLvtTimer(<a class="code hl_variable" href="classLocalApic.html#a6b0f3174fb096b99ee386a0a9c40f933">kLvtMaskBit</a>);</div>
-<div class="line">    cpu_io::msr::apic::WriteLvtLint0(<a class="code hl_variable" href="classLocalApic.html#a6b0f3174fb096b99ee386a0a9c40f933">kLvtMaskBit</a>);</div>
-<div class="line">    cpu_io::msr::apic::WriteLvtLint1(<a class="code hl_variable" href="classLocalApic.html#a6b0f3174fb096b99ee386a0a9c40f933">kLvtMaskBit</a>);</div>
-<div class="line">    cpu_io::msr::apic::WriteLvtError(<a class="code hl_variable" href="classLocalApic.html#a6b0f3174fb096b99ee386a0a9c40f933">kLvtMaskBit</a>);</div>
-<div class="line">  } <span class="keywordflow">else</span> {</div>
-<div class="line">    io::Out&lt;uint32_t&gt;(<a class="code hl_variable" href="classLocalApic.html#a14dea9be5f7231166d31af785352a911">apic_base_</a> + <a class="code hl_variable" href="classLocalApic.html#aeecdfbc459bb53490b50ef3ff0652c27">kXApicLvtTimerOffset</a>, <a class="code hl_variable" href="classLocalApic.html#a6b0f3174fb096b99ee386a0a9c40f933">kLvtMaskBit</a>);</div>
-<div class="line">    io::Out&lt;uint32_t&gt;(<a class="code hl_variable" href="classLocalApic.html#a14dea9be5f7231166d31af785352a911">apic_base_</a> + <a class="code hl_variable" href="classLocalApic.html#a0b0e7fd16a723057766596953363bbf5">kXApicLvtLint0Offset</a>, <a class="code hl_variable" href="classLocalApic.html#a6b0f3174fb096b99ee386a0a9c40f933">kLvtMaskBit</a>);</div>
-<div class="line">    io::Out&lt;uint32_t&gt;(<a class="code hl_variable" href="classLocalApic.html#a14dea9be5f7231166d31af785352a911">apic_base_</a> + <a class="code hl_variable" href="classLocalApic.html#a34b2b41f250ef010adfe4c1fe680a53d">kXApicLvtLint1Offset</a>, <a class="code hl_variable" href="classLocalApic.html#a6b0f3174fb096b99ee386a0a9c40f933">kLvtMaskBit</a>);</div>
-<div class="line">    io::Out&lt;uint32_t&gt;(<a class="code hl_variable" href="classLocalApic.html#a14dea9be5f7231166d31af785352a911">apic_base_</a> + <a class="code hl_variable" href="classLocalApic.html#a8c7af96d0822ef425029761b383195b5">kXApicLvtErrorOffset</a>, <a class="code hl_variable" href="classLocalApic.html#a6b0f3174fb096b99ee386a0a9c40f933">kLvtMaskBit</a>);</div>
-<div class="line">  }</div>
-<div class="line"> </div>
-<div class="line">  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line">}</div>
-<div class="ttc" id="aclassLocalApic_html_a0b0e7fd16a723057766596953363bbf5"><div class="ttname"><a href="classLocalApic.html#a0b0e7fd16a723057766596953363bbf5">LocalApic::kXApicLvtLint0Offset</a></div><div class="ttdeci">static constexpr uint32_t kXApicLvtLint0Offset</div><div class="ttdoc">LVT LINT0 寄存器偏移</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00172">local_apic.h:172</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a0f0de4998da2e305182dd73bf1e00660"><div class="ttname"><a href="classLocalApic.html#a0f0de4998da2e305182dd73bf1e00660">LocalApic::EnableXApic</a></div><div class="ttdeci">auto EnableXApic() const -&gt; bool</div><div class="ttdoc">启用传统 xAPIC 模式</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8cpp_source.html#l00466">local_apic.cpp:466</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a14dea9be5f7231166d31af785352a911"><div class="ttname"><a href="classLocalApic.html#a14dea9be5f7231166d31af785352a911">LocalApic::apic_base_</a></div><div class="ttdeci">uint64_t apic_base_</div><div class="ttdoc">APIC 基地址（仅用于 xAPIC 模式）</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00253">local_apic.h:253</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a2699706a3c2b0dd4b351e4a4890dc679"><div class="ttname"><a href="classLocalApic.html#a2699706a3c2b0dd4b351e4a4890dc679">LocalApic::kApicSoftwareEnableBit</a></div><div class="ttdeci">static constexpr uint32_t kApicSoftwareEnableBit</div><div class="ttdoc">APIC 软件启用位</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00192">local_apic.h:192</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a2f1b868d6d1f37f3a1e61d23d84cc05b"><div class="ttname"><a href="classLocalApic.html#a2f1b868d6d1f37f3a1e61d23d84cc05b">LocalApic::kXApicSivrOffset</a></div><div class="ttdeci">static constexpr uint32_t kXApicSivrOffset</div><div class="ttdoc">虚假中断向量寄存器偏移</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00162">local_apic.h:162</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a34b2b41f250ef010adfe4c1fe680a53d"><div class="ttname"><a href="classLocalApic.html#a34b2b41f250ef010adfe4c1fe680a53d">LocalApic::kXApicLvtLint1Offset</a></div><div class="ttdeci">static constexpr uint32_t kXApicLvtLint1Offset</div><div class="ttdoc">LVT LINT1 寄存器偏移</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00174">local_apic.h:174</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a4a63c5378da856c2a5f1ea0460a6744e"><div class="ttname"><a href="classLocalApic.html#a4a63c5378da856c2a5f1ea0460a6744e">LocalApic::is_x2apic_mode_</a></div><div class="ttdeci">bool is_x2apic_mode_</div><div class="ttdoc">当前 APIC 模式（true = x2APIC, false = xAPIC）</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00250">local_apic.h:250</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a5c5ad4a79967cb4aedf6955ecd1606db"><div class="ttname"><a href="classLocalApic.html#a5c5ad4a79967cb4aedf6955ecd1606db">LocalApic::kSpuriousVector</a></div><div class="ttdeci">static constexpr uint32_t kSpuriousVector</div><div class="ttdoc">虚假中断向量</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00194">local_apic.h:194</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a6b0f3174fb096b99ee386a0a9c40f933"><div class="ttname"><a href="classLocalApic.html#a6b0f3174fb096b99ee386a0a9c40f933">LocalApic::kLvtMaskBit</a></div><div class="ttdeci">static constexpr uint32_t kLvtMaskBit</div><div class="ttdoc">LVT 掩码位</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00196">local_apic.h:196</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a8c7af96d0822ef425029761b383195b5"><div class="ttname"><a href="classLocalApic.html#a8c7af96d0822ef425029761b383195b5">LocalApic::kXApicLvtErrorOffset</a></div><div class="ttdeci">static constexpr uint32_t kXApicLvtErrorOffset</div><div class="ttdoc">LVT 错误寄存器偏移</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00176">local_apic.h:176</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_ac486f0870848020742904363060a2419"><div class="ttname"><a href="classLocalApic.html#ac486f0870848020742904363060a2419">LocalApic::EnableX2Apic</a></div><div class="ttdeci">auto EnableX2Apic() const -&gt; bool</div><div class="ttdoc">启用 x2APIC 模式</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8cpp_source.html#l00486">local_apic.cpp:486</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_ad94b3e7dc5659cd5bf9378cf9fa308dc"><div class="ttname"><a href="classLocalApic.html#ad94b3e7dc5659cd5bf9378cf9fa308dc">LocalApic::Init</a></div><div class="ttdeci">auto Init() -&gt; Expected&lt; void &gt;</div><div class="ttdoc">初始化 Local APIC</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8cpp_source.html#l00010">local_apic.cpp:10</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_aeecdfbc459bb53490b50ef3ff0652c27"><div class="ttname"><a href="classLocalApic.html#aeecdfbc459bb53490b50ef3ff0652c27">LocalApic::kXApicLvtTimerOffset</a></div><div class="ttdeci">static constexpr uint32_t kXApicLvtTimerOffset</div><div class="ttdoc">LVT 定时器寄存器偏移</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00170">local_apic.h:170</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_afc991c5ed07f99e1d3d19552b97624f4"><div class="ttname"><a href="classLocalApic.html#afc991c5ed07f99e1d3d19552b97624f4">LocalApic::SetTaskPriority</a></div><div class="ttdeci">auto SetTaskPriority(uint8_t priority) const -&gt; void</div><div class="ttdoc">设置任务优先级</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8cpp_source.html#l00171">local_apic.cpp:171</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md49"></a>
-IPI 发送机制</h3>
-<p>支持两种 IPI 类型：</p><ul>
-<li><b>点对点 IPI</b>: <code>SendIpi(target_apic_id, vector)</code></li>
-<li><b>广播 IPI</b>: <code>BroadcastIpi(vector)</code></li>
-</ul>
-<p><b>INIT IPI 发送</b>: </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="classLocalApic.html#af28c8bd5c0f39f75d2bc2bcf1f3b3679">LocalApic::SendInitIpi</a>(uint32_t destination_apic_id)<span class="keyword"> const </span>{</div>
-<div class="line">  <span class="keywordflow">if</span> (<a class="code hl_variable" href="classLocalApic.html#a4a63c5378da856c2a5f1ea0460a6744e">is_x2apic_mode_</a>) {</div>
-<div class="line">    <span class="keyword">auto</span> icr = <a class="code hl_variable" href="classLocalApic.html#ab2eb29834e6af43ecb26fc60702d6161">kInitIpiMode</a>;  <span class="comment">// 0x500</span></div>
-<div class="line">    icr |= <span class="keyword">static_cast&lt;</span>uint64_t<span class="keyword">&gt;</span>(destination_apic_id) &lt;&lt; 32;</div>
-<div class="line">    cpu_io::msr::apic::WriteIcr(icr);</div>
-<div class="line">  } <span class="keywordflow">else</span> {</div>
-<div class="line">    <span class="comment">// xAPIC 模式通过内存映射访问</span></div>
-<div class="line">    <span class="keyword">auto</span> icr_high = (destination_apic_id &amp; <a class="code hl_variable" href="classLocalApic.html#a539a57e81b47d6c352d9d187b0f095cf">kApicIdMask</a>) &lt;&lt; <a class="code hl_variable" href="classLocalApic.html#a0e39371e01acd73f35fe96b8111b32f9">kIcrDestShift</a>;</div>
-<div class="line">    io::Out&lt;uint32_t&gt;(<a class="code hl_variable" href="classLocalApic.html#a14dea9be5f7231166d31af785352a911">apic_base_</a> + <a class="code hl_variable" href="classLocalApic.html#aa4158043664830ff0d09c9c9297d6d0d">kXApicIcrHighOffset</a>, icr_high);</div>
-<div class="line">    io::Out&lt;uint32_t&gt;(<a class="code hl_variable" href="classLocalApic.html#a14dea9be5f7231166d31af785352a911">apic_base_</a> + <a class="code hl_variable" href="classLocalApic.html#a34703c093c2de15bba9a3a0bb985c49f">kXApicIcrLowOffset</a>, <a class="code hl_variable" href="classLocalApic.html#ab2eb29834e6af43ecb26fc60702d6161">kInitIpiMode</a>);</div>
-<div class="line">  }</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 等待传递状态清除</span></div>
-<div class="line">  <span class="keywordflow">while</span> ((ReadIcr() &amp; <a class="code hl_variable" href="classLocalApic.html#a71161337180fb23c37d8fd9b1bfb9731">kIcrDeliveryStatusBit</a>) != 0) { ; }</div>
-<div class="line">}</div>
-<div class="ttc" id="aclassLocalApic_html_a0e39371e01acd73f35fe96b8111b32f9"><div class="ttname"><a href="classLocalApic.html#a0e39371e01acd73f35fe96b8111b32f9">LocalApic::kIcrDestShift</a></div><div class="ttdeci">static constexpr uint32_t kIcrDestShift</div><div class="ttdoc">ICR 目标位移</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00202">local_apic.h:202</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a34703c093c2de15bba9a3a0bb985c49f"><div class="ttname"><a href="classLocalApic.html#a34703c093c2de15bba9a3a0bb985c49f">LocalApic::kXApicIcrLowOffset</a></div><div class="ttdeci">static constexpr uint32_t kXApicIcrLowOffset</div><div class="ttdoc">ICR 低位寄存器偏移</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00166">local_apic.h:166</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a539a57e81b47d6c352d9d187b0f095cf"><div class="ttname"><a href="classLocalApic.html#a539a57e81b47d6c352d9d187b0f095cf">LocalApic::kApicIdMask</a></div><div class="ttdeci">static constexpr uint32_t kApicIdMask</div><div class="ttdoc">xAPIC ID 掩码</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00190">local_apic.h:190</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a71161337180fb23c37d8fd9b1bfb9731"><div class="ttname"><a href="classLocalApic.html#a71161337180fb23c37d8fd9b1bfb9731">LocalApic::kIcrDeliveryStatusBit</a></div><div class="ttdeci">static constexpr uint32_t kIcrDeliveryStatusBit</div><div class="ttdoc">ICR 传递状态位</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00200">local_apic.h:200</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_aa4158043664830ff0d09c9c9297d6d0d"><div class="ttname"><a href="classLocalApic.html#aa4158043664830ff0d09c9c9297d6d0d">LocalApic::kXApicIcrHighOffset</a></div><div class="ttdeci">static constexpr uint32_t kXApicIcrHighOffset</div><div class="ttdoc">ICR 高位寄存器偏移</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00168">local_apic.h:168</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_ab2eb29834e6af43ecb26fc60702d6161"><div class="ttname"><a href="classLocalApic.html#ab2eb29834e6af43ecb26fc60702d6161">LocalApic::kInitIpiMode</a></div><div class="ttdeci">static constexpr uint32_t kInitIpiMode</div><div class="ttdoc">INIT IPI 模式</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00206">local_apic.h:206</a></div></div>
-</div><!-- fragment --><p><b>SIPI 发送</b>: </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="classLocalApic.html#a5cecbf6adaae928fbcd26016988e417e">LocalApic::SendStartupIpi</a>(uint32_t destination_apic_id,</div>
-<div class="line">                               uint8_t start_page)<span class="keyword"> const </span>{</div>
-<div class="line">  <span class="keywordflow">if</span> (<a class="code hl_variable" href="classLocalApic.html#a4a63c5378da856c2a5f1ea0460a6744e">is_x2apic_mode_</a>) {</div>
-<div class="line">    <span class="keyword">auto</span> icr = <a class="code hl_variable" href="classLocalApic.html#a33d4d4ec4aa19a4af8667b4215c93710">kSipiMode</a> | start_page;  <span class="comment">// 0x600 | start_page</span></div>
-<div class="line">    icr |= <span class="keyword">static_cast&lt;</span>uint64_t<span class="keyword">&gt;</span>(destination_apic_id) &lt;&lt; 32;</div>
-<div class="line">    cpu_io::msr::apic::WriteIcr(icr);</div>
-<div class="line">  } <span class="keywordflow">else</span> {</div>
-<div class="line">    <span class="keyword">auto</span> icr_high = (destination_apic_id &amp; <a class="code hl_variable" href="classLocalApic.html#a539a57e81b47d6c352d9d187b0f095cf">kApicIdMask</a>) &lt;&lt; <a class="code hl_variable" href="classLocalApic.html#a0e39371e01acd73f35fe96b8111b32f9">kIcrDestShift</a>;</div>
-<div class="line">    io::Out&lt;uint32_t&gt;(<a class="code hl_variable" href="classLocalApic.html#a14dea9be5f7231166d31af785352a911">apic_base_</a> + <a class="code hl_variable" href="classLocalApic.html#aa4158043664830ff0d09c9c9297d6d0d">kXApicIcrHighOffset</a>, icr_high);</div>
-<div class="line">    io::Out&lt;uint32_t&gt;(<a class="code hl_variable" href="classLocalApic.html#a14dea9be5f7231166d31af785352a911">apic_base_</a> + <a class="code hl_variable" href="classLocalApic.html#a34703c093c2de15bba9a3a0bb985c49f">kXApicIcrLowOffset</a>, <a class="code hl_variable" href="classLocalApic.html#a33d4d4ec4aa19a4af8667b4215c93710">kSipiMode</a> | start_page);</div>
-<div class="line">  }</div>
-<div class="line"> </div>
-<div class="line">  <span class="comment">// 等待传递状态清除</span></div>
-<div class="line">  <span class="keywordflow">while</span> ((ReadIcr() &amp; <a class="code hl_variable" href="classLocalApic.html#a71161337180fb23c37d8fd9b1bfb9731">kIcrDeliveryStatusBit</a>) != 0) { ; }</div>
-<div class="line">}</div>
-<div class="ttc" id="aclassLocalApic_html_a33d4d4ec4aa19a4af8667b4215c93710"><div class="ttname"><a href="classLocalApic.html#a33d4d4ec4aa19a4af8667b4215c93710">LocalApic::kSipiMode</a></div><div class="ttdeci">static constexpr uint32_t kSipiMode</div><div class="ttdoc">SIPI 模式</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8h_source.html#l00208">local_apic.h:208</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md50"></a>
-关键常量定义</h2>
-<div class="fragment"><div class="line"><span class="comment">// APIC 基址和向量</span></div>
-<div class="line"><span class="keyword">static</span> <span class="keyword">constexpr</span> uint64_t <a class="code hl_variable" href="sipi_8h.html#aa69ae5dfed08043489ffa640ffc81521">kDefaultAPBase</a> = 0x30000;</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// 模式切换位</span></div>
-<div class="line"><span class="preprocessor">#define PAE_BIT                 0x20        </span><span class="comment">// CR4.PAE</span></div>
-<div class="line"><span class="preprocessor">#define PROTECTION_MODE_BIT     0x1         </span><span class="comment">// CR0.PE</span></div>
-<div class="line"><span class="preprocessor">#define LONG_MODE_BIT           0x100       </span><span class="comment">// EFER.LME</span></div>
-<div class="line"><span class="preprocessor">#define PAGING_BIT              0x80000000  </span><span class="comment">// CR0.PG</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// APIC ID 相关</span></div>
-<div class="line"><span class="preprocessor">#define APIC_ID_SHIFT           24</span></div>
-<div class="line"><span class="preprocessor">#define APIC_ID_MASK            0xFF</span></div>
-<div class="line"><span class="preprocessor">#define CPUID_LEAF_1            1</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// IPI 模式</span></div>
-<div class="line"><span class="keyword">static</span> <span class="keyword">constexpr</span> uint32_t kInitIpiMode = 0x500;     <span class="comment">// INIT</span></div>
-<div class="line"><span class="keyword">static</span> <span class="keyword">constexpr</span> uint32_t kSipiMode = 0x600;        <span class="comment">// SIPI</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// 栈配置</span></div>
-<div class="line"><span class="preprocessor">#define STACK_SIZE_PER_CPU      0x1000      </span><span class="comment">// 4KB per CPU</span></div>
-<div class="line"><span class="preprocessor">#define MAX_CPU_COUNT           4</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// 延时校准</span></div>
-<div class="line"><span class="keyword">static</span> <span class="keyword">constexpr</span> uint32_t kCalibrationDelayLoop = 1000000;</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md51"></a>
-特性和限制</h2>
-<h3><a class="anchor" id="autotoc_md52"></a>
-支持特性</h3>
-<ul>
-<li>支持最多 4 个 CPU 核心</li>
-<li>支持 x2APIC 和 xAPIC 两种模式</li>
-<li>完整的 INIT-SIPI-SIPI 启动序列</li>
-<li>每个 CPU 独立的栈空间</li>
-<li>Per-CPU 数据结构管理</li>
-<li>基于 APIC ID 的 CPU 标识</li>
-</ul>
-<h3><a class="anchor" id="autotoc_md53"></a>
-当前限制</h3>
-<ul>
-<li>最大 CPU 数量硬编码为 4</li>
-<li>IO APIC 功能部分待实现</li>
-<li>缺少 CPU 热插拔支持</li>
-<li>简化的错误处理机制</li>
-<li>延时使用简单的循环计数，不够精确</li>
-</ul>
-<h2><a class="anchor" id="autotoc_md54"></a>
-调试和监控</h2>
-<p>系统提供 APIC 信息打印功能： </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="classLocalApic.html#aa1cd6eb49010de2f5a31e58f233ed841">LocalApic::PrintInfo</a>()<span class="keyword"> const </span>{</div>
-<div class="line">  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;=== Local APIC Information ===\n&quot;</span>);</div>
-<div class="line">  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;APIC Version: 0x%x\n&quot;</span>, <a class="code hl_function" href="classLocalApic.html#a410675fb205fda049e4b067e98712a11">GetApicVersion</a>());</div>
-<div class="line">  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Mode: %s\n&quot;</span>, <a class="code hl_variable" href="classLocalApic.html#a4a63c5378da856c2a5f1ea0460a6744e">is_x2apic_mode_</a> ? <span class="stringliteral">&quot;x2APIC&quot;</span> : <span class="stringliteral">&quot;xAPIC&quot;</span>);</div>
-<div class="line">  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Task Priority: 0x%x\n&quot;</span>, <a class="code hl_function" href="classLocalApic.html#a5f61f81efd6dd8491f498f7c0aa05d8c">GetTaskPriority</a>());</div>
-<div class="line">  <span class="comment">// ... 更多寄存器状态</span></div>
-<div class="line">}</div>
-<div class="ttc" id="aclassLocalApic_html_a410675fb205fda049e4b067e98712a11"><div class="ttname"><a href="classLocalApic.html#a410675fb205fda049e4b067e98712a11">LocalApic::GetApicVersion</a></div><div class="ttdeci">auto GetApicVersion() const -&gt; uint32_t</div><div class="ttdoc">获取 APIC 版本信息</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8cpp_source.html#l00077">local_apic.cpp:77</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_a5f61f81efd6dd8491f498f7c0aa05d8c"><div class="ttname"><a href="classLocalApic.html#a5f61f81efd6dd8491f498f7c0aa05d8c">LocalApic::GetTaskPriority</a></div><div class="ttdeci">auto GetTaskPriority() const -&gt; uint8_t</div><div class="ttdoc">获取任务优先级</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8cpp_source.html#l00181">local_apic.cpp:181</a></div></div>
-<div class="ttc" id="aclassLocalApic_html_aa1cd6eb49010de2f5a31e58f233ed841"><div class="ttname"><a href="classLocalApic.html#aa1cd6eb49010de2f5a31e58f233ed841">LocalApic::PrintInfo</a></div><div class="ttdeci">auto PrintInfo() const -&gt; void</div><div class="ttdoc">打印 Local APIC 信息（调试用）</div><div class="ttdef"><b>Definition</b> <a href="local__apic_8cpp_source.html#l00407">local_apic.cpp:407</a></div></div>
-<div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00182">kernel_log.hpp:182</a></div></div>
-</div><!-- fragment --><p><b>CPU ID 获取机制</b>: </p><div class="fragment"><div class="line"><span class="comment">// 通过 APIC ID 获取当前 CPU ID</span></div>
-<div class="line"><span class="keyword">static</span> __always_inline <span class="keyword">auto</span> GetCurrentCoreId() -&gt; <span class="keywordtype">size_t</span> {</div>
-<div class="line">  <span class="keyword">auto</span> apic_info = GetApicInfo();</div>
-<div class="line">  <span class="keywordflow">return</span> apic_info.apic_id;</div>
-<div class="line">}</div>
-</div><!-- fragment --><p><b>多核启动管理</b>: </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="classApic.html#a81b4abb694e982a05ce313053759b8d1">Apic::StartupAllAps</a>(uint64_t ap_code_addr, <span class="keywordtype">size_t</span> ap_code_size,</div>
-<div class="line">                         uint64_t target_addr)<span class="keyword"> const </span>{</div>
-<div class="line">  <span class="comment">// 尝试启动 APIC ID 0 到 cpu_count_-1 的所有处理器</span></div>
-<div class="line">  <span class="comment">// 跳过当前的 BSP (Bootstrap Processor)</span></div>
-<div class="line">  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> apic_id = 0; apic_id &lt; <a class="code hl_variable" href="classApic.html#ac4f645668b3c41bdffc63a52825c96f2">cpu_count_</a>; apic_id++) {</div>
-<div class="line">    <span class="keywordflow">if</span> (<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(apic_id) == cpu_io::GetApicInfo().apic_id) {</div>
-<div class="line">      <span class="keywordflow">continue</span>;  <span class="comment">// 跳过当前 BSP</span></div>
-<div class="line">    }</div>
-<div class="line">    <a class="code hl_function" href="classApic.html#a9777b7b1e7864680faba6e8bafd529dc">StartupAp</a>(<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(apic_id), ap_code_addr,</div>
-<div class="line">              ap_code_size, target_addr);</div>
-<div class="line">  }</div>
-<div class="line">}</div>
-<div class="ttc" id="aclassApic_html_a81b4abb694e982a05ce313053759b8d1"><div class="ttname"><a href="classApic.html#a81b4abb694e982a05ce313053759b8d1">Apic::StartupAllAps</a></div><div class="ttdeci">auto StartupAllAps(uint64_t ap_code_addr, size_t ap_code_size, uint64_t target_addr) const -&gt; void</div><div class="ttdoc">唤醒所有应用处理器 (AP)</div><div class="ttdef"><b>Definition</b> <a href="apic_8cpp_source.html#l00110">apic.cpp:110</a></div></div>
-<div class="ttc" id="aclassApic_html_a9777b7b1e7864680faba6e8bafd529dc"><div class="ttname"><a href="classApic.html#a9777b7b1e7864680faba6e8bafd529dc">Apic::StartupAp</a></div><div class="ttdeci">auto StartupAp(uint32_t apic_id, uint64_t ap_code_addr, size_t ap_code_size, uint64_t target_addr) const -&gt; Expected&lt; void &gt;</div><div class="ttdoc">启动 AP (Application Processor)</div><div class="ttdef"><b>Definition</b> <a href="apic_8cpp_source.html#l00082">apic.cpp:82</a></div></div>
-<div class="ttc" id="aclassApic_html_ac4f645668b3c41bdffc63a52825c96f2"><div class="ttname"><a href="classApic.html#ac4f645668b3c41bdffc63a52825c96f2">Apic::cpu_count_</a></div><div class="ttdeci">size_t cpu_count_</div><div class="ttdoc">系统 CPU 数量</div><div class="ttdef"><b>Definition</b> <a href="apic_8h_source.html#l00133">apic.h:133</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md55"></a>
-RISCV64</h1>
-<h2><a class="anchor" id="autotoc_md56"></a>
-概述</h2>
-<p>RISC-V64 架构的多核唤醒机制基于 OpenSBI (Supervisor Binary Interface) 标准，通过 HSM (Hart State Management) 扩展来管理硬件线程（Hart）的启动和状态。与x86_64的复杂INIT-SIPI-SIPI序列不同，RISC-V提供了更简单统一的多核启动接口。</p>
-<h2><a class="anchor" id="autotoc_md57"></a>
-关键组件</h2>
-<h3><a class="anchor" id="autotoc_md58"></a>
 1. OpenSBI HSM 扩展</h3>
 <ul>
 <li><b>HSM (Hart State Management)</b>: RISC-V标准的硬件线程管理接口</li>
 <li><b>SBI调用</b>: 通过<code>ecall</code>指令与Machine模式的OpenSBI固件通信</li>
 <li><b>Hart状态管理</b>: 包括STARTED、STOPPED、START_PENDING等状态</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md59"></a>
+<h3><a class="anchor" id="autotoc_md38"></a>
 2. 核心数据结构</h3>
 <p><b>Hart状态枚举</b> (<code>3rd/opensbi_interface/src/include/opensbi_interface.h</code>): </p><div class="fragment"><div class="line"><span class="keyword">enum</span> {</div>
 <div class="line">  HSM_HART_STATE_STARTED = 0,</div>
@@ -507,9 +122,9 @@ RISCV64</h1>
 <div class="line">  <span class="keywordtype">long</span> error;   <span class="comment">// 错误码</span></div>
 <div class="line">  <span class="keywordtype">long</span> value;   <span class="comment">// 返回值</span></div>
 <div class="line">};</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md60"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md39"></a>
 多核启动流程</h2>
-<h3><a class="anchor" id="autotoc_md61"></a>
+<h3><a class="anchor" id="autotoc_md40"></a>
 1. BSP (Bootstrap Processor) 初始化</h3>
 <p>在 <code><a class="el" href="riscv64_2arch__main_8cpp.html">src/arch/riscv64/arch_main.cpp</a></code> 的 <code><a class="el" href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd" title="体系结构相关初始化">ArchInit()</a></code> 函数中：</p>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd">ArchInit</a>(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span> **argv) {</div>
@@ -531,9 +146,10 @@ RISCV64</h1>
 <div class="line">    }</div>
 <div class="line">  }</div>
 <div class="line">}</div>
+<div class="ttc" id="aaarch64_2arch__main_8cpp_html_a6a670facdde513eab1f26f8a04e2efbd"><div class="ttname"><a href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd">ArchInit</a></div><div class="ttdeci">auto ArchInit(int argc, const char **argv) -&gt; void</div><div class="ttdoc">体系结构相关初始化</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2arch__main_8cpp_source.html#l00048">arch_main.cpp:48</a></div></div>
 <div class="ttc" id="abasic__info_8hpp_html_a698036b5e342c2164fb7fd7249d0e801"><div class="ttname"><a href="basic__info_8hpp.html#a698036b5e342c2164fb7fd7249d0e801">_boot</a></div><div class="ttdeci">void _boot()</div><div class="ttdoc">内核入口，在 boot.S 中定义</div></div>
 <div class="ttc" id="anamespaceklog_html_a9e1498fdd041865e7e917ef040d186eb"><div class="ttname"><a href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb">klog::Warn</a></div><div class="ttdeci">auto Warn(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 WARN 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00191">kernel_log.hpp:191</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md62"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md41"></a>
 2. Hart 启动代码</h3>
 <p>位于 <code>src/arch/riscv64/boot.S</code>，实现简洁的64位启动序列：</p>
 <div class="fragment"><div class="line">.section .text.boot</div>
@@ -570,7 +186,7 @@ RISCV64</h1>
 <div class="line"> </div>
 <div class="line">    // 如果返回则进入等待状态</div>
 <div class="line">    wfi</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md63"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md42"></a>
 3. SBI Hart启动接口</h3>
 <p><code>sbi_hart_start()</code> 函数实现 (<code>3rd/opensbi_interface/src/opensbi_interface.c</code>):</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>sbiret sbi_hart_start(unsigned long hartid, unsigned long start_addr,</div>
@@ -578,7 +194,7 @@ RISCV64</h1>
 <div class="line">  <span class="keywordflow">return</span> ecall(hartid, start_addr, opaque, 0, 0, 0,</div>
 <div class="line">               SBI_EXT_HSM_HART_START, SBI_EXT_HSM);</div>
 <div class="line">}</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md64"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md43"></a>
 4. Hart入口处理</h3>
 <p>Hart启动后通过 <code><a class="el" href="src_2main_8cpp.html">src/main.cpp</a></code> 的 <code><a class="el" href="kernel_8h.html#a1051fb5b0c9ae8b443c542089ac538bd" title="负责 crtbegin 的工作">_start()</a></code> 函数进入：</p>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="kernel_8h.html#a1051fb5b0c9ae8b443c542089ac538bd">_start</a>(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span> **argv) {</div>
@@ -595,11 +211,16 @@ RISCV64</h1>
 <div class="line">  <span class="comment">// 进入死循环</span></div>
 <div class="line">  <span class="keywordflow">while</span> (<span class="keyword">true</span>) { ; }</div>
 <div class="line">}</div>
+<div class="ttc" id="akernel_8h_html_a1051fb5b0c9ae8b443c542089ac538bd"><div class="ttname"><a href="kernel_8h.html#a1051fb5b0c9ae8b443c542089ac538bd">_start</a></div><div class="ttdeci">void _start(int argc, const char **argv)</div><div class="ttdoc">负责 crtbegin 的工作</div><div class="ttdef"><b>Definition</b> <a href="src_2main_8cpp_source.html#l00040">main.cpp:40</a></div></div>
+<div class="ttc" id="akstd__libcxx_8h_html_a4624536be7013c14721d5ac1c06f65a5"><div class="ttname"><a href="kstd__libcxx_8h.html#a4624536be7013c14721d5ac1c06f65a5">CppDeInit</a></div><div class="ttdeci">auto CppDeInit() -&gt; void</div><div class="ttdoc">析构 c++ 全局对象</div><div class="ttdef"><b>Definition</b> <a href="kstd__libcxx_8cpp_source.html#l00230">kstd_libcxx.cpp:230</a></div></div>
+<div class="ttc" id="akstd__libcxx_8h_html_af560a93d5e246576e878702a1869a75e"><div class="ttname"><a href="kstd__libcxx_8h.html#af560a93d5e246576e878702a1869a75e">CppInit</a></div><div class="ttdeci">auto CppInit() -&gt; void</div><div class="ttdoc">构造 c++ 全局对象</div><div class="ttdef"><b>Definition</b> <a href="kstd__libcxx_8cpp_source.html#l00221">kstd_libcxx.cpp:221</a></div></div>
+<div class="ttc" id="atests_2integration__test_2aarch64__minimal_2main_8cpp_html_acdef7a1fd863a6d3770c1268cb06add3"><div class="ttname"><a href="tests_2integration__test_2aarch64__minimal_2main_8cpp.html#acdef7a1fd863a6d3770c1268cb06add3">main</a></div><div class="ttdeci">void main()</div><div class="ttdef"><b>Definition</b> <a href="tests_2integration__test_2aarch64__minimal_2main_8cpp_source.html#l00023">main.cpp:23</a></div></div>
 </div><!-- fragment --><p>AP执行 <code>main_smp()</code> -&gt; <code><a class="el" href="aarch64_2arch__main_8cpp.html#a85d4c6ade0d5178dc12a2609621e2d45" title="从核的体系结构相关初始化">ArchInitSMP()</a></code> (当前为空实现)：</p>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="aarch64_2arch__main_8cpp.html#a85d4c6ade0d5178dc12a2609621e2d45">ArchInitSMP</a>(<span class="keywordtype">int</span>, <span class="keyword">const</span> <span class="keywordtype">char</span> **) {}</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md65"></a>
+<div class="ttc" id="aaarch64_2arch__main_8cpp_html_a85d4c6ade0d5178dc12a2609621e2d45"><div class="ttname"><a href="aarch64_2arch__main_8cpp.html#a85d4c6ade0d5178dc12a2609621e2d45">ArchInitSMP</a></div><div class="ttdeci">auto ArchInitSMP(int argc, const char **argv) -&gt; void</div><div class="ttdoc">从核的体系结构相关初始化</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2arch__main_8cpp_source.html#l00065">arch_main.cpp:65</a></div></div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md44"></a>
 核心ID获取机制</h2>
-<h3><a class="anchor" id="autotoc_md66"></a>
+<h3><a class="anchor" id="autotoc_md45"></a>
 Hart ID管理</h3>
 <p>RISC-V使用 <code>tp</code> (Thread Pointer) 寄存器存储当前Hart ID：</p>
 <div class="fragment"><div class="line">// 在boot.S中设置</div>
@@ -608,7 +229,7 @@ Hart ID管理</h3>
 <div class="line"><span class="keyword">static</span> __always_inline <span class="keyword">auto</span> GetCurrentCoreId() -&gt; <span class="keywordtype">size_t</span> {</div>
 <div class="line">  <span class="keywordflow">return</span> Tp::Read();</div>
 <div class="line">}</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md67"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md46"></a>
 Tp寄存器访问</h3>
 <p>通过内联汇编实现： </p><div class="fragment"><div class="line"><span class="comment">// 读取tp寄存器</span></div>
 <div class="line"><span class="keyword">static</span> __always_inline <span class="keyword">auto</span> Read() -&gt; <span class="keyword">typename</span> RegInfo::DataType {</div>
@@ -622,9 +243,9 @@ Tp寄存器访问</h3>
 <div class="line">  __asm__ <span class="keyword">volatile</span>(<span class="stringliteral">&quot;mv tp, %0&quot;</span> : : <span class="stringliteral">&quot;r&quot;</span>(value) :);</div>
 <div class="line">}</div>
 <div class="ttc" id="anamespacevfs_html_a354e3f160eb026acaea0a5d6b3afade3"><div class="ttname"><a href="namespacevfs.html#a354e3f160eb026acaea0a5d6b3afade3">vfs::Write</a></div><div class="ttdeci">auto Write(File *file, const void *buf, size_t count) -&gt; Expected&lt; size_t &gt;</div><div class="ttdoc">向文件写入数据</div><div class="ttdef"><b>Definition</b> <a href="write_8cpp_source.html#l00013">write.cpp:13</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md68"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md47"></a>
 设备树信息获取</h2>
-<h3><a class="anchor" id="autotoc_md69"></a>
+<h3><a class="anchor" id="autotoc_md48"></a>
 CPU核心数量获取</h3>
 <p>通过解析设备树获取系统CPU核心数：</p>
 <div class="fragment"><div class="line">[[nodiscard]] <span class="keyword">auto</span> GetCoreCount() const -&gt; <span class="keywordtype">size_t</span> {</div>
@@ -647,7 +268,7 @@ CPU核心数量获取</h3>
 <div class="line">  <span class="keywordflow">return</span> core_count;</div>
 <div class="line">}</div>
 <div class="ttc" id="ask__string__test_8cpp_html_a6b5d9a1031ac2602e31df1ba551bfafe"><div class="ttname"><a href="sk__string__test_8cpp.html#a6b5d9a1031ac2602e31df1ba551bfafe">strcmp</a></div><div class="ttdeci">#define strcmp</div><div class="ttdef"><b>Definition</b> <a href="sk__string__test_8cpp_source.html#l00016">sk_string_test.cpp:16</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md70"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md49"></a>
 基本信息初始化</h3>
 <div class="fragment"><div class="line"><a class="code hl_function" href="structBasicInfo.html#a625c7f57e4c10bce67b5acc5f71d4423">BasicInfo::BasicInfo</a>(<span class="keywordtype">int</span>, <span class="keyword">const</span> <span class="keywordtype">char</span> **argv) {</div>
 <div class="line">  <span class="comment">// 从设备树获取内存信息</span></div>
@@ -676,9 +297,9 @@ CPU核心数量获取</h3>
 <div class="ttc" id="astructBasicInfo_html_a5ba8394c69be0fb4d2de460905e77e84"><div class="ttname"><a href="structBasicInfo.html#a5ba8394c69be0fb4d2de460905e77e84">BasicInfo::physical_memory_size</a></div><div class="ttdeci">size_t physical_memory_size</div><div class="ttdoc">physical_memory 大小</div><div class="ttdef"><b>Definition</b> <a href="basic__info_8hpp_source.html#l00030">basic_info.hpp:30</a></div></div>
 <div class="ttc" id="astructBasicInfo_html_a625c7f57e4c10bce67b5acc5f71d4423"><div class="ttname"><a href="structBasicInfo.html#a625c7f57e4c10bce67b5acc5f71d4423">BasicInfo::BasicInfo</a></div><div class="ttdeci">BasicInfo()=default</div></div>
 <div class="ttc" id="astructBasicInfo_html_afcc7549719d077196d96fe64cd4debbd"><div class="ttname"><a href="structBasicInfo.html#afcc7549719d077196d96fe64cd4debbd">BasicInfo::kernel_size</a></div><div class="ttdeci">size_t kernel_size</div><div class="ttdoc">kernel 大小</div><div class="ttdef"><b>Definition</b> <a href="basic__info_8hpp_source.html#l00035">basic_info.hpp:35</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md71"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md50"></a>
 内存布局</h3>
-<h3><a class="anchor" id="autotoc_md72"></a>
+<h3><a class="anchor" id="autotoc_md51"></a>
 栈分配</h3>
 <p>每个Hart分配4KB独立栈空间： </p><div class="fragment"><div class="line">// Hart栈地址计算: stack_top + (hart_id + 1) * 4KB</div>
 <div class="line">add t0, a0, 1        // hart_id + 1</div>
@@ -691,9 +312,9 @@ CPU核心数量获取</h3>
 <div class="line">.global stack_top</div>
 <div class="line">stack_top:</div>
 <div class="line">    .space 4096 * 4  // 总共16KB栈空间</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md73"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md52"></a>
 SBI接口详解</h2>
-<h3><a class="anchor" id="autotoc_md74"></a>
+<h3><a class="anchor" id="autotoc_md53"></a>
 Hart状态管理接口</h3>
 <div class="fragment"><div class="line"><span class="comment">// 启动Hart</span></div>
 <div class="line"><span class="keyword">struct </span>sbiret sbi_hart_start(unsigned long hartid,</div>
@@ -710,7 +331,7 @@ Hart状态管理接口</h3>
 <div class="line"><span class="keyword">struct </span>sbiret sbi_hart_suspend(uint32_t suspend_type,</div>
 <div class="line">                               unsigned long resume_addr,</div>
 <div class="line">                               unsigned long opaque);</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md75"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md54"></a>
 错误码定义</h3>
 <div class="fragment"><div class="line"><span class="keyword">enum</span> {</div>
 <div class="line">  SBI_SUCCESS = 0,</div>
@@ -724,9 +345,9 @@ Hart状态管理接口</h3>
 <div class="line">  SBI_ERR_ALREADY_STOPPED = -8,</div>
 <div class="line">  SBI_ERR_NO_SHMEM = -9,</div>
 <div class="line">};</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md76"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md55"></a>
 特性和限制</h2>
-<h3><a class="anchor" id="autotoc_md77"></a>
+<h3><a class="anchor" id="autotoc_md56"></a>
 支持特性</h3>
 <ul>
 <li>基于标准SBI HSM扩展的多核启动</li>
@@ -736,7 +357,7 @@ Hart状态管理接口</h3>
 <li>完整的Hart状态管理支持</li>
 <li>使用OpenSBI固件接口</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md78"></a>
+<h3><a class="anchor" id="autotoc_md57"></a>
 当前限制</h3>
 <ul>
 <li><a class="el" href="aarch64_2arch__main_8cpp.html#a85d4c6ade0d5178dc12a2609621e2d45" title="从核的体系结构相关初始化">ArchInitSMP()</a>函数为空实现，缺少AP特定初始化</li>
@@ -745,13 +366,14 @@ Hart状态管理接口</h3>
 <li>简化的错误处理机制</li>
 <li>依赖外部OpenSBI固件支持</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md79"></a>
+<h2><a class="anchor" id="autotoc_md58"></a>
 调试和监控</h2>
 <p>系统提供Hart状态查询功能： </p><div class="fragment"><div class="line"><span class="keyword">auto</span> status = sbi_hart_get_status(hart_id);</div>
 <div class="line"><span class="keywordflow">if</span> (status.error == SBI_SUCCESS) {</div>
 <div class="line">  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Hart %d status: %s\n&quot;</span>, hart_id,</div>
 <div class="line">             HSM_HART_STATES_NAME[status.value]);</div>
 <div class="line">}</div>
+<div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00182">kernel_log.hpp:182</a></div></div>
 </div><!-- fragment --><p>支持的状态包括：</p><ul>
 <li>STARTED: Hart正在运行</li>
 <li>STOPPED: Hart已停止</li>
@@ -761,21 +383,21 @@ Hart状态管理接口</h3>
 <li>SUSPEND_PENDING: Hart挂起中</li>
 <li>RESUME_PENDING: Hart恢复中</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md80"></a>
+<h1><a class="anchor" id="autotoc_md59"></a>
 AARCH64</h1>
-<h2><a class="anchor" id="autotoc_md81"></a>
+<h2><a class="anchor" id="autotoc_md60"></a>
 概述</h2>
 <p>AArch64 架构的多核唤醒机制基于 PSCI (Power State Coordination Interface) 标准，通过 SMC (Secure Monitor Call) 指令与 EL3 固件通信来管理 CPU 核心的电源状态。PSCI 提供了标准化的多核管理接口，简化了操作系统的多核启动流程。</p>
-<h2><a class="anchor" id="autotoc_md82"></a>
+<h2><a class="anchor" id="autotoc_md61"></a>
 关键组件</h2>
-<h3><a class="anchor" id="autotoc_md83"></a>
+<h3><a class="anchor" id="autotoc_md62"></a>
 1. PSCI (Power State Coordination Interface)</h3>
 <ul>
 <li><b>标准化接口</b>: ARM 标准的电源管理和多核控制接口</li>
 <li><b>SMC调用</b>: 通过 Secure Monitor Call 与 EL3 固件通信</li>
 <li><b>电源状态管理</b>: 支持 CPU ON/OFF、SUSPEND/RESUME 等状态转换</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md84"></a>
+<h3><a class="anchor" id="autotoc_md63"></a>
 2. 核心数据结构</h3>
 <p><b>PSCI错误码</b> (<code>3rd/cpu_io/include/aarch64/cpu.hpp</code>): </p><div class="fragment"><div class="line"><span class="keyword">enum</span> <a class="code hl_enumeration" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895f">ErrorCode</a> {</div>
 <div class="line">  SUCCESS = 0,</div>
@@ -804,9 +426,9 @@ AARCH64</h1>
 <div class="line">  <span class="keyword">struct </span>MT   { <span class="comment">/* 位[24]    多线程标志 */</span> };</div>
 <div class="line">  <span class="keyword">struct </span>U    { <span class="comment">/* 位[30]    单/多处理器标志 */</span> };</div>
 <div class="line">};</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md85"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md64"></a>
 多核启动流程</h2>
-<h3><a class="anchor" id="autotoc_md86"></a>
+<h3><a class="anchor" id="autotoc_md65"></a>
 1. BSP (Bootstrap Processor) 初始化</h3>
 <p>在 <code><a class="el" href="aarch64_2arch__main_8cpp.html">src/arch/aarch64/arch_main.cpp</a></code> 的 <code><a class="el" href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd" title="体系结构相关初始化">ArchInit()</a></code> 函数中：</p>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="aarch64_2arch__main_8cpp.html#a6a670facdde513eab1f26f8a04e2efbd">ArchInit</a>(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span> **argv) {</div>
@@ -836,7 +458,7 @@ AARCH64</h1>
 <div class="line">  }</div>
 <div class="line">}</div>
 <div class="ttc" id="ask__libc__test_8cpp_html_acbc25345a39784031ea891c317ab6f4e"><div class="ttname"><a href="sk__libc__test_8cpp.html#acbc25345a39784031ea891c317ab6f4e">strtoull</a></div><div class="ttdeci">#define strtoull</div><div class="ttdef"><b>Definition</b> <a href="sk__libc__test_8cpp_source.html#l00018">sk_libc_test.cpp:18</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md87"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md66"></a>
 2. CPU启动代码</h3>
 <p>位于 <code>src/arch/aarch64/boot.S</code>，实现简洁的AArch64启动序列：</p>
 <div class="fragment"><div class="line">.section .text.boot</div>
@@ -861,7 +483,7 @@ AARCH64</h1>
 <div class="line"> </div>
 <div class="line">    // 如果返回则进入死循环</div>
 <div class="line">    b .</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md88"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md67"></a>
 3. PSCI CpuOn接口</h3>
 <p><code>cpu_io::psci::CpuOn()</code> 函数实现：</p>
 <div class="fragment"><div class="line"><span class="keyword">static</span> __always_inline <span class="keyword">auto</span> CpuOn(uint64_t target_cpu,</div>
@@ -872,7 +494,7 @@ AARCH64</h1>
 <div class="line">                                      0, 0, 0, 0).a0;</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>其中<code>kCPU_ON_64 = 0xC4000003</code>是PSCI标准定义的64位CPU启动功能码。</p>
-<h3><a class="anchor" id="autotoc_md89"></a>
+<h3><a class="anchor" id="autotoc_md68"></a>
 4. SMC (Secure Monitor Call) 实现</h3>
 <div class="fragment"><div class="line"><span class="keyword">static</span> __always_inline <span class="keyword">auto</span> SecureMonitorCall(uint64_t a0, uint64_t a1,</div>
 <div class="line">                                              uint64_t a2, uint64_t a3,</div>
@@ -900,7 +522,7 @@ AARCH64</h1>
 <div class="line">  result.a3 = x3;</div>
 <div class="line">  <span class="keywordflow">return</span> result;</div>
 <div class="line">}</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md90"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md69"></a>
 5. CPU入口处理</h3>
 <p>CPU启动后通过 <code><a class="el" href="src_2main_8cpp.html">src/main.cpp</a></code> 的 <code><a class="el" href="kernel_8h.html#a1051fb5b0c9ae8b443c542089ac538bd" title="负责 crtbegin 的工作">_start()</a></code> 函数进入：</p>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="kernel_8h.html#a1051fb5b0c9ae8b443c542089ac538bd">_start</a>(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span> **argv) {</div>
@@ -918,16 +540,16 @@ AARCH64</h1>
 <div class="line">  <span class="keywordflow">while</span> (<span class="keyword">true</span>) { ; }</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>AP执行 <code>main_smp()</code> -&gt; <code><a class="el" href="aarch64_2arch__main_8cpp.html#a85d4c6ade0d5178dc12a2609621e2d45" title="从核的体系结构相关初始化">ArchInitSMP()</a></code> (当前为空实现)</p>
-<h2><a class="anchor" id="autotoc_md91"></a>
+<h2><a class="anchor" id="autotoc_md70"></a>
 核心ID获取机制</h2>
-<h3><a class="anchor" id="autotoc_md92"></a>
+<h3><a class="anchor" id="autotoc_md71"></a>
 MPIDR_EL1寄存器</h3>
 <p>AArch64使用MPIDR_EL1 (Multiprocessor Affinity Register) 获取CPU亲和性信息：</p>
 <div class="fragment"><div class="line"><span class="comment">// 获取当前CPU ID</span></div>
 <div class="line"><span class="keyword">static</span> __always_inline <span class="keyword">auto</span> GetCurrentCoreId() -&gt; <span class="keywordtype">size_t</span> {</div>
 <div class="line">  <span class="keywordflow">return</span> MPIDR_EL1::Aff0::Get();  <span class="comment">// 返回亲和性级别0值</span></div>
 <div class="line">}</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md93"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md72"></a>
 亲和性级别含义</h3>
 <ul>
 <li><b>Aff0 [7:0]</b>: 核心级别 - 同一集群内的核心编号</li>
@@ -935,7 +557,7 @@ MPIDR_EL1寄存器</h3>
 <li><b>Aff2 [23:16]</b>: 更高级别亲和性</li>
 <li><b>Aff3 [39:32]</b>: 最高级别亲和性</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md94"></a>
+<h3><a class="anchor" id="autotoc_md73"></a>
 寄存器访问实现</h3>
 <div class="fragment"><div class="line"><span class="comment">// 读取MPIDR_EL1寄存器</span></div>
 <div class="line"><span class="keyword">static</span> __always_inline <span class="keyword">auto</span> Read() -&gt; <span class="keyword">typename</span> RegInfo::DataType {</div>
@@ -950,9 +572,9 @@ MPIDR_EL1寄存器</h3>
 <div class="line">      (<a class="code hl_function" href="namespacevfs.html#a2d0244ac0168c124ae12d287e28e7549">Read</a>() &amp; RegInfo::kBitMask) &gt;&gt; RegInfo::kBitOffset);</div>
 <div class="line">}</div>
 <div class="ttc" id="anamespacevfs_html_a2d0244ac0168c124ae12d287e28e7549"><div class="ttname"><a href="namespacevfs.html#a2d0244ac0168c124ae12d287e28e7549">vfs::Read</a></div><div class="ttdeci">auto Read(File *file, void *buf, size_t count) -&gt; Expected&lt; size_t &gt;</div><div class="ttdoc">从文件读取数据</div><div class="ttdef"><b>Definition</b> <a href="read_8cpp_source.html#l00013">read.cpp:13</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md95"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md74"></a>
 PSCI设备树检查</h2>
-<h3><a class="anchor" id="autotoc_md96"></a>
+<h3><a class="anchor" id="autotoc_md75"></a>
 CheckPSCI实现</h3>
 <p>验证设备树中的PSCI配置：</p>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> CheckPSCI()<span class="keyword"> const </span>{</div>
@@ -980,9 +602,9 @@ CheckPSCI实现</h3>
 <div class="line">}</div>
 <div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a5303b815d2299fd2fa306bd4b43a3963"><div class="ttname"><a href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a></div><div class="ttdeci">auto Debug(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00173">kernel_log.hpp:173</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md97"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md76"></a>
 内存布局</h2>
-<h3><a class="anchor" id="autotoc_md98"></a>
+<h3><a class="anchor" id="autotoc_md77"></a>
 栈分配</h3>
 <p>每个CPU分配4KB独立栈空间： </p><div class="fragment"><div class="line">// CPU栈地址计算: stack_top + (cpu_id + 1) * 4KB</div>
 <div class="line">add x10, x10, #1        // cpu_id + 1</div>
@@ -995,9 +617,9 @@ CheckPSCI实现</h3>
 <div class="line">.global stack_top</div>
 <div class="line">stack_top:</div>
 <div class="line">    .space 4096 * 4     // 总共16KB栈空间</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md99"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md78"></a>
 PSCI功能接口</h2>
-<h3><a class="anchor" id="autotoc_md100"></a>
+<h3><a class="anchor" id="autotoc_md79"></a>
 核心电源管理</h3>
 <div class="fragment"><div class="line"><span class="comment">// CPU启动</span></div>
 <div class="line"><span class="keyword">auto</span> CpuOn(uint64_t target_cpu, uint64_t entry_point_address,</div>
@@ -1009,7 +631,7 @@ PSCI功能接口</h2>
 <div class="line"><span class="comment">// CPU挂起</span></div>
 <div class="line"><span class="keyword">auto</span> CpuSuspend(PowerState power_state, uint64_t entry_point_address,</div>
 <div class="line">                uint64_t context_id) -&gt; <span class="keyword">enum</span> <a class="code hl_enumeration" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895f">ErrorCode</a>;</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md101"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md80"></a>
 target_cpu参数格式</h3>
 <p>CPU标识符遵循MPIDR格式：</p><ul>
 <li><b>位[39:32]</b>: Aff3 - 匹配目标CPU的MPIDR Aff3</li>
@@ -1018,7 +640,7 @@ target_cpu参数格式</h3>
 <li><b>位[7:0]</b>: Aff0 - 匹配目标CPU的MPIDR Aff0</li>
 <li><b>位[63:40]</b> 和 <b>位[31:24]</b>: 必须为0</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md102"></a>
+<h3><a class="anchor" id="autotoc_md81"></a>
 电源状态结构</h3>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>PowerState {</div>
 <div class="line">  uint32_t reserved1 : 6;      <span class="comment">// [31:26] 保留</span></div>
@@ -1027,9 +649,9 @@ target_cpu参数格式</h3>
 <div class="line">  uint32_t state_type : 1;     <span class="comment">// [16] 状态类型</span></div>
 <div class="line">  <span class="keyword">struct </span>StateID state_id;     <span class="comment">// [15:0] 状态ID</span></div>
 <div class="line">} __attribute__((packed));</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md103"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md82"></a>
 特性和限制</h2>
-<h3><a class="anchor" id="autotoc_md104"></a>
+<h3><a class="anchor" id="autotoc_md83"></a>
 支持特性</h3>
 <ul>
 <li>基于ARM标准PSCI接口的多核启动</li>
@@ -1038,7 +660,7 @@ target_cpu参数格式</h3>
 <li>设备树驱动的动态配置</li>
 <li>完整的CPU电源状态管理</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md105"></a>
+<h3><a class="anchor" id="autotoc_md84"></a>
 当前限制</h3>
 <ul>
 <li><a class="el" href="aarch64_2arch__main_8cpp.html#a85d4c6ade0d5178dc12a2609621e2d45" title="从核的体系结构相关初始化">ArchInitSMP()</a>函数为空实现，缺少AP特定初始化</li>
@@ -1046,9 +668,9 @@ target_cpu参数格式</h3>
 <li>固定的栈大小分配（4KB per CPU）</li>
 <li>简化的错误处理机制</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md106"></a>
+<h2><a class="anchor" id="autotoc_md85"></a>
 调试和监控</h2>
-<h3><a class="anchor" id="autotoc_md107"></a>
+<h3><a class="anchor" id="autotoc_md86"></a>
 PSCI功能验证</h3>
 <div class="fragment"><div class="line"><span class="comment">// 检查PSCI版本</span></div>
 <div class="line"><span class="keyword">auto</span> version = SecureMonitorCall(kVERSION, 0, 0, 0, 0, 0, 0, 0);</div>
@@ -1060,13 +682,13 @@ PSCI功能验证</h3>
 <div class="line"><span class="keywordflow">if</span> (features.a0 == SUCCESS) {</div>
 <div class="line">  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;PSCI CPU_ON_64 supported\n&quot;</span>);</div>
 <div class="line">}</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md108"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md87"></a>
 CPU状态查询</h3>
 <div class="fragment"><div class="line"><span class="comment">// 获取CPU亲和性信息</span></div>
 <div class="line"><span class="keyword">auto</span> affinity_info = SecureMonitorCall(kAFFINITY_INFO_64, target_cpu,</div>
 <div class="line">                                      0, 0, 0, 0, 0, 0);</div>
 <div class="line"><a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;CPU %d affinity state: %d\n&quot;</span>, target_cpu, affinity_info.a0);</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md109"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md88"></a>
 错误处理</h2>
 <p>常见的PSCI错误码处理：</p><ul>
 <li><b>ALREADY_ON</b>: CPU已经在运行，可以忽略</li>

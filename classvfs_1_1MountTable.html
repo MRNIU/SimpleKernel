@@ -664,7 +664,7 @@ Here is the caller graph for this function:</div>
 <div class="ttc" id="anamespacevfs_html_a717ddd37ea8d1fd42d4e21941bd03dc4"><div class="ttname"><a href="namespacevfs.html#a717ddd37ea8d1fd42d4e21941bd03dc4">vfs::SetRootDentry</a></div><div class="ttdeci">auto SetRootDentry(Dentry *dentry) -&gt; void</div><div class="ttdef"><b>Definition</b> <a href="vfs_8cpp_source.html#l00099">vfs.cpp:99</a></div></div>
 <div class="ttc" id="anamespacevfs_html_aa5aeb25168763769b1d16de4f480c55a"><div class="ttname"><a href="namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a">vfs::GetVfsState</a></div><div class="ttdeci">auto GetVfsState() -&gt; VfsState &amp;</div><div class="ttdef"><b>Definition</b> <a href="vfs_8cpp_source.html#l00017">vfs.cpp:17</a></div></div>
 <div class="ttc" id="ask__string__test_8cpp_html_a5ad0cad79c46e9a6e2bc4b77ac50e271"><div class="ttname"><a href="sk__string__test_8cpp.html#a5ad0cad79c46e9a6e2bc4b77ac50e271">strncpy</a></div><div class="ttdeci">#define strncpy</div><div class="ttdef"><b>Definition</b> <a href="sk__string__test_8cpp_source.html#l00014">sk_string_test.cpp:14</a></div></div>
-<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00359">expected.hpp:359</a></div></div>
+<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00337">expected.hpp:337</a></div></div>
 <div class="ttc" id="astructvfs_1_1MountPoint_html_a1532ccab22bf9248868fce57abb86ca8"><div class="ttname"><a href="structvfs_1_1MountPoint.html#a1532ccab22bf9248868fce57abb86ca8">vfs::MountPoint::root_dentry</a></div><div class="ttdeci">Dentry * root_dentry</div><div class="ttdoc">该文件系统的根 dentry</div><div class="ttdef"><b>Definition</b> <a href="mount_8hpp_source.html#l00027">mount.hpp:27</a></div></div>
 <div class="ttc" id="astructvfs_1_1MountPoint_html_a36bdcb3363a7ca1f6a4dd9c9e9484327"><div class="ttname"><a href="structvfs_1_1MountPoint.html#a36bdcb3363a7ca1f6a4dd9c9e9484327">vfs::MountPoint::device</a></div><div class="ttdeci">BlockDevice * device</div><div class="ttdoc">关联的块设备（可为 nullptr）</div><div class="ttdef"><b>Definition</b> <a href="mount_8hpp_source.html#l00023">mount.hpp:23</a></div></div>
 <div class="ttc" id="astructvfs_1_1MountPoint_html_a4ab4e861be27edfdd91ae196316ceae7"><div class="ttname"><a href="structvfs_1_1MountPoint.html#a4ab4e861be27edfdd91ae196316ceae7">vfs::MountPoint::mount_dentry</a></div><div class="ttdeci">Dentry * mount_dentry</div><div class="ttdoc">挂载点在父文件系统中的 dentry</div><div class="ttdef"><b>Definition</b> <a href="mount_8hpp_source.html#l00019">mount.hpp:19</a></div></div>
@@ -676,16 +676,30 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classvfs_1_1MountTable_ada87c6a7b5a166ae713a10ab0eb1346f_cgraph.png" border="0" usemap="#aclassvfs_1_1MountTable_ada87c6a7b5a166ae713a10ab0eb1346f_cgraph" alt=""/></div>
 <map name="aclassvfs_1_1MountTable_ada87c6a7b5a166ae713a10ab0eb1346f_cgraph" id="aclassvfs_1_1MountTable_ada87c6a7b5a166ae713a10ab0eb1346f_cgraph">
-<area shape="rect" title="挂载文件系统到指定路径" alt="" coords="5,81,180,107"/>
-<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="263,5,339,31"/>
-<area shape="poly" title=" " alt="" coords="127,79,251,33,253,38,129,84"/>
-<area shape="rect" href="namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="421,107,549,132"/>
-<area shape="poly" title=" " alt="" coords="180,86,274,85,374,91,427,101,426,106,373,97,273,91,181,92"/>
-<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="259,107,342,132"/>
-<area shape="poly" title=" " alt="" coords="181,102,245,110,245,115,180,107"/>
-<area shape="rect" href="namespacevfs.html#a717ddd37ea8d1fd42d4e21941bd03dc4" title=" " alt="" coords="228,156,373,181"/>
-<area shape="poly" title=" " alt="" coords="129,104,229,141,252,149,250,154,227,146,127,109"/>
-<area shape="poly" title=" " alt="" coords="348,153,423,133,424,138,350,159"/>
+<area shape="rect" title="挂载文件系统到指定路径" alt="" coords="5,90,180,115"/>
+<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="263,15,339,41"/>
+<area shape="poly" title=" " alt="" coords="126,87,227,49,249,42,251,47,229,55,128,92"/>
+<area shape="rect" href="namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="421,141,549,166"/>
+<area shape="poly" title=" " alt="" coords="180,111,408,141,407,146,180,116"/>
+<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="259,65,342,90"/>
+<area shape="poly" title=" " alt="" coords="180,89,245,81,245,87,181,95"/>
+<area shape="rect" href="namespacevfs.html#a717ddd37ea8d1fd42d4e21941bd03dc4" title=" " alt="" coords="228,166,373,191"/>
+<area shape="poly" title=" " alt="" coords="129,113,253,159,251,164,127,118"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="422,41,549,66"/>
+<area shape="poly" title=" " alt="" coords="339,30,409,40,408,45,338,36"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="803,15,988,41"/>
+<area shape="poly" title=" " alt="" coords="549,47,789,32,789,37,549,52"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="597,66,755,91"/>
+<area shape="poly" title=" " alt="" coords="549,59,584,64,584,69,548,64"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1036,5,1299,45"/>
+<area shape="poly" title=" " alt="" coords="988,24,1022,24,1022,29,988,30"/>
+<area shape="poly" title=" " alt="" coords="731,63,826,41,827,46,733,68"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="824,67,967,93"/>
+<area shape="poly" title=" " alt="" coords="755,76,810,77,810,82,755,82"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1120,70,1215,95"/>
+<area shape="poly" title=" " alt="" coords="967,78,1107,79,1107,85,967,83"/>
+<area shape="poly" title=" " alt="" coords="342,69,408,61,408,66,343,75"/>
+<area shape="poly" title=" " alt="" coords="373,166,407,161,408,167,374,171"/>
 </map>
 </div>
 <div class="dynheader">
@@ -836,15 +850,28 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classvfs_1_1MountTable_a12babf36adbecba4cf0a74084d132dc2_cgraph.png" border="0" usemap="#aclassvfs_1_1MountTable_a12babf36adbecba4cf0a74084d132dc2_cgraph" alt=""/></div>
 <map name="aclassvfs_1_1MountTable_a12babf36adbecba4cf0a74084d132dc2_cgraph" id="aclassvfs_1_1MountTable_a12babf36adbecba4cf0a74084d132dc2_cgraph">
-<area shape="rect" title="卸载指定路径的文件系统" alt="" coords="5,55,199,80"/>
-<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="301,5,383,31"/>
-<area shape="poly" title=" " alt="" coords="164,52,287,26,288,32,165,57"/>
-<area shape="rect" href="namespacevfs.html#a717ddd37ea8d1fd42d4e21941bd03dc4" title=" " alt="" coords="269,55,415,80"/>
-<area shape="poly" title=" " alt="" coords="199,65,255,65,255,70,199,70"/>
-<area shape="rect" href="classvfs_1_1FileSystem.html#a6c29613ea81de1fcfcc18c6e7c5c64c3" title="卸载文件系统" alt="" coords="247,104,437,129"/>
-<area shape="poly" title=" " alt="" coords="165,77,267,99,266,104,164,83"/>
-<area shape="rect" href="namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="485,55,613,80"/>
-<area shape="poly" title=" " alt="" coords="415,65,472,65,472,70,415,70"/>
+<area shape="rect" title="卸载指定路径的文件系统" alt="" coords="5,90,199,115"/>
+<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="301,41,383,66"/>
+<area shape="poly" title=" " alt="" coords="164,87,287,62,288,67,165,93"/>
+<area shape="rect" href="namespacevfs.html#a717ddd37ea8d1fd42d4e21941bd03dc4" title=" " alt="" coords="269,90,415,115"/>
+<area shape="poly" title=" " alt="" coords="199,100,255,100,255,105,199,105"/>
+<area shape="rect" href="classvfs_1_1FileSystem.html#a6c29613ea81de1fcfcc18c6e7c5c64c3" title="卸载文件系统" alt="" coords="247,139,437,165"/>
+<area shape="poly" title=" " alt="" coords="165,113,267,134,266,139,164,118"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="486,41,613,66"/>
+<area shape="poly" title=" " alt="" coords="384,51,472,51,472,56,384,56"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="867,15,1052,41"/>
+<area shape="poly" title=" " alt="" coords="613,47,853,32,853,37,613,52"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="661,66,819,91"/>
+<area shape="poly" title=" " alt="" coords="613,59,648,64,648,69,612,64"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1100,5,1363,45"/>
+<area shape="poly" title=" " alt="" coords="1052,24,1086,24,1086,29,1052,30"/>
+<area shape="poly" title=" " alt="" coords="795,63,890,41,891,46,797,68"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="888,67,1031,93"/>
+<area shape="poly" title=" " alt="" coords="819,76,874,77,874,82,819,82"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1184,70,1279,95"/>
+<area shape="poly" title=" " alt="" coords="1031,78,1171,79,1171,85,1031,83"/>
+<area shape="rect" href="namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="485,90,613,115"/>
+<area shape="poly" title=" " alt="" coords="415,100,472,100,472,105,415,105"/>
 </map>
 </div>
 <div class="dynheader">

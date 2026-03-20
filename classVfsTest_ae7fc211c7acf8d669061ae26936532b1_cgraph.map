@@ -4,14 +4,27 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="84,97,123,76,168,55,192,47,194,52,170,60,125,80,87,101"/>
 <area shape="rect" id="Node000003" href="$namespacevfs.html#ad10df9cc721f7881387ddfc914a26bee" title="VFS 全局初始化" alt="" coords="265,70,335,95"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="122,102,251,86,251,91,122,107"/>
-<area shape="rect" id="Node000007" href="$classtest__env_1_1TestEnvironmentState.html#a3daed93eb011fe37c2fd3ae5824fff1b" title="初始化指定数量的核心" alt="" coords="203,120,397,160"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="122,116,189,124,188,130,122,121"/>
-<area shape="rect" id="Node000008" href="$classtest__env_1_1TestEnvironmentState.html#ab05dc3b7eda4beb5233d58b197c70a58" title="设置当前线程的环境实例指针" alt="" coords="169,184,431,224"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="85,122,123,146,170,170,192,177,191,183,168,174,121,151,82,127"/>
+<area shape="rect" id="Node000013" href="$classtest__env_1_1TestEnvironmentState.html#a3daed93eb011fe37c2fd3ae5824fff1b" title="初始化指定数量的核心" alt="" coords="203,120,397,160"/>
+<area shape="poly" id="edge13_Node000001_Node000013" title=" " alt="" coords="122,116,189,124,188,130,122,121"/>
+<area shape="rect" id="Node000014" href="$classtest__env_1_1TestEnvironmentState.html#ab05dc3b7eda4beb5233d58b197c70a58" title="设置当前线程的环境实例指针" alt="" coords="169,184,431,224"/>
+<area shape="poly" id="edge14_Node000001_Node000014" title=" " alt="" coords="85,122,123,146,170,170,192,177,191,183,168,174,121,151,82,127"/>
 <area shape="rect" id="Node000004" href="$namespacevfs.html#acec885fcabeaba10d159e2634911dc39" title="获取全局挂载表实例" alt="" coords="479,21,627,46"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="335,73,430,55,474,46,475,51,431,60,336,79"/>
 <area shape="rect" id="Node000005" href="$namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="489,70,617,95"/>
 <area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="336,80,475,80,475,85,336,85"/>
 <area shape="rect" id="Node000006" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="511,119,594,145"/>
 <area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="336,87,431,105,498,119,497,124,430,111,335,92"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="675,119,801,145"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="594,129,660,129,660,135,594,135"/>
+<area shape="rect" id="Node000008" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="1055,94,1240,119"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="801,125,1041,111,1041,116,802,131"/>
+<area shape="rect" id="Node000010" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="849,145,1007,170"/>
+<area shape="poly" id="edge9_Node000007_Node000010" title=" " alt="" coords="802,138,836,142,835,148,801,143"/>
+<area shape="rect" id="Node000009" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1288,84,1551,124"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="1240,103,1274,103,1274,108,1240,108"/>
+<area shape="poly" id="edge10_Node000010_Node000008" title=" " alt="" coords="983,142,1078,120,1079,125,985,147"/>
+<area shape="rect" id="Node000011" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="1076,146,1219,171"/>
+<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="1007,155,1062,155,1062,161,1007,160"/>
+<area shape="rect" id="Node000012" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1372,149,1467,174"/>
+<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="1219,157,1359,158,1359,163,1219,162"/>
 </map>

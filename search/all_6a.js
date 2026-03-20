@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['注意事项_0',['注意事项',['../md__2workspaces_2SimpleKernel_2src_2arch_2x86__64_2apic_2README.html#autotoc_md414',1,'']]]
+  ['电源状态结构_0',['电源状态结构',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md81',1,'']]]
 ];

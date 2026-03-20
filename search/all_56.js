@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['快速开始_0',['快速开始',['../md_docker.html#autotoc_md276',1,'快速开始'],['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md298',1,'🚀 快速开始']]]
+  ['扩展_0',['1. OpenSBI HSM 扩展',['../md_1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8.html#autotoc_md37',1,'']]]
 ];

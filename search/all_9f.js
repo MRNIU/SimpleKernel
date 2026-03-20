@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['📝_20开发指南_0',['📝 开发指南',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md311',1,'']]],
-  ['📝_20development_20guide_1',['📝 Development Guide',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md349',1,'']]]
+  ['🔍_20多架构对比分析_0',['🔍 多架构对比分析',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md178',1,'']]]
 ];

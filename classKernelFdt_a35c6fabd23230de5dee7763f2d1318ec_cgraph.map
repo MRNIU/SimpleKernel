@@ -1,11 +1,25 @@
 <map id="KernelFdt::KernelFdt" name="KernelFdt::KernelFdt">
-<area shape="rect" id="Node000001" title="构造函数" alt="" coords="5,80,160,105"/>
-<area shape="rect" id="Node000002" href="$namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="265,5,365,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="111,77,207,39,251,28,252,33,209,45,113,82"/>
-<area shape="rect" id="Node000003" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="277,55,353,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="160,82,263,70,263,76,161,87"/>
-<area shape="rect" id="Node000004" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="259,104,370,129"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="161,98,246,107,245,112,160,103"/>
-<area shape="rect" id="Node000005" href="$classKernelFdt.html#a8f5ffa0c639e590b60f8a00f60f13731" title="验证 FDT header" alt="" coords="208,153,421,179"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="115,103,209,138,242,147,241,153,207,143,113,108"/>
+<area shape="rect" id="Node000001" title="构造函数" alt="" coords="5,90,160,115"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="265,15,365,41"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,87,207,51,250,39,252,44,209,56,114,92"/>
+<area shape="rect" id="Node000009" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="277,65,353,90"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="160,92,263,80,263,86,161,97"/>
+<area shape="rect" id="Node000010" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="259,114,370,139"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="161,108,246,117,245,122,160,113"/>
+<area shape="rect" id="Node000011" href="$classKernelFdt.html#a8f5ffa0c639e590b60f8a00f60f13731" title="验证 FDT header" alt="" coords="208,163,421,189"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="114,113,209,149,237,157,236,163,207,155,112,118"/>
+<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="469,41,596,66"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="365,31,456,42,455,47,365,36"/>
+<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="849,15,1035,41"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="596,47,835,32,836,37,596,52"/>
+<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="644,66,801,91"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="597,59,631,64,630,69,596,64"/>
+<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1083,5,1345,45"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="1035,24,1069,24,1069,29,1035,30"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="778,63,873,41,874,46,779,68"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="871,69,1013,94"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="802,77,857,78,857,83,802,82"/>
+<area shape="rect" id="Node000008" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1167,70,1261,95"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="1013,79,1153,80,1153,85,1013,84"/>
+<area shape="poly" id="edge10_Node000009_Node000003" title=" " alt="" coords="353,71,455,59,456,64,353,76"/>
 </map>

@@ -175,7 +175,7 @@ Static Private Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>虚拟内存管理器（具体类，非抽象基类） </p>
 <dl class="section copyright"><dt>Copyright</dt><dd>Copyright The SimpleKernel Contributors </dd></dl>
-<p>本类是内核虚拟内存子系统的唯一实现，通过 <a class="el" href="namespacecpu__io_1_1virtual__memory.html">cpu_io::virtual_memory</a> 命名空间中的架构相关辅助函数 实现跨架构（x86_64/riscv64/aarch64）的页表操作。 架构差异由 <a class="el" href="namespacecpu__io.html">cpu_io</a> 库在编译期分发，本类本身不使用虚函数 或条件编译。</p>
+<p>本类是内核虚拟内存子系统的唯一实现，通过 <a class="el" href="namespacecpu__io_1_1virtual__memory.html">cpu_io::virtual_memory</a> 命名空间中的架构相关辅助函数 实现跨架构（riscv64/aarch64）的页表操作。 架构差异由 <a class="el" href="namespacecpu__io.html">cpu_io</a> 库在编译期分发，本类本身不使用虚函数 或条件编译。</p>
 <p>物理页帧的分配/释放由外部分配器（bmalloc）提供， 本类通过 aligned_alloc/aligned_free 间接调用。</p>
 <dl class="section note"><dt>Note</dt><dd>地址操作、页表项操作等实用函数请使用 <a class="el" href="namespacecpu__io.html">cpu_io</a> 库提供的接口 </dd>
 <dd>
@@ -234,7 +234,7 @@ Static Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">   47</span>}</div>
 <div class="ttc" id="aclassVirtualMemory_html_a19ea83e0f3f85e55b12deec2a20972a2"><div class="ttname"><a href="classVirtualMemory.html#a19ea83e0f3f85e55b12deec2a20972a2">VirtualMemory::MapMMIO</a></div><div class="ttdeci">auto MapMMIO(uint64_t phys_addr, size_t size, uint32_t flags=cpu_io::virtual_memory::GetKernelPagePermissions()) -&gt; Expected&lt; void * &gt;</div><div class="ttdoc">映射设备内存 (MMIO)</div><div class="ttdef"><b>Definition</b> <a href="virtual__memory_8cpp_source.html#l00056">virtual_memory.cpp:56</a></div></div>
 <div class="ttc" id="aclassVirtualMemory_html_a86bb7e23cfe099007a88b8b88f0f374a"><div class="ttname"><a href="classVirtualMemory.html#a86bb7e23cfe099007a88b8b88f0f374a">VirtualMemory::kernel_page_dir_</a></div><div class="ttdeci">void * kernel_page_dir_</div><div class="ttdef"><b>Definition</b> <a href="virtual__memory_8hpp_source.html#l00117">virtual_memory.hpp:117</a></div></div>
-<div class="ttc" id="aexpected_8hpp_html_a87330dc74eb67e824914b8d343050757"><div class="ttname"><a href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a></div><div class="ttdeci">std::expected&lt; T, Error &gt; Expected</div><div class="ttdoc">std::expected 别名模板</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00381">expected.hpp:381</a></div></div>
+<div class="ttc" id="aexpected_8hpp_html_a87330dc74eb67e824914b8d343050757"><div class="ttname"><a href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a></div><div class="ttdeci">std::expected&lt; T, Error &gt; Expected</div><div class="ttdoc">std::expected 别名模板</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00359">expected.hpp:359</a></div></div>
 <div class="ttc" id="anamespacecpu__io_1_1virtual__memory_html_a24fb424f54d414703cda572dc076d71a"><div class="ttname"><a href="namespacecpu__io_1_1virtual__memory.html#a24fb424f54d414703cda572dc076d71a">cpu_io::virtual_memory::kPageSize</a></div><div class="ttdeci">static constexpr size_t kPageSize</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00063">cpu_io.h:63</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_acf7d7c3a4a0720cfd4f57914b52c7e9b"><div class="ttname"><a href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a></div><div class="ttdeci">void Pause()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00020">cpu_io.h:20</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
@@ -256,10 +256,24 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="184,127,293,148,292,153,183,132"/>
 <area shape="rect" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="317,203,427,228"/>
 <area shape="poly" title=" " alt="" coords="143,127,203,157,277,189,304,197,302,202,275,194,200,162,140,132"/>
-<area shape="rect" href="namespacecpu__io_1_1virtual__memory.html#a7413c8abb7eabfcfae4d2aaac3c124cc" title=" " alt="" coords="516,114,692,154"/>
-<area shape="poly" title=" " alt="" coords="464,151,502,145,503,151,465,156"/>
-<area shape="rect" href="namespacecpu__io_1_1virtual__memory.html#af3d08561d5c588f1cf2f260951522f6c" title=" " alt="" coords="516,178,692,218"/>
-<area shape="poly" title=" " alt="" coords="465,176,503,181,502,187,464,181"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="541,65,667,91"/>
+<area shape="poly" title=" " alt="" coords="410,66,527,72,527,77,410,72"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="945,40,1131,65"/>
+<area shape="poly" title=" " alt="" coords="667,72,931,56,932,62,668,77"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="740,91,897,116"/>
+<area shape="poly" title=" " alt="" coords="668,83,727,90,726,95,667,88"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1179,30,1441,70"/>
+<area shape="poly" title=" " alt="" coords="1131,49,1165,49,1165,54,1131,54"/>
+<area shape="poly" title=" " alt="" coords="874,88,969,66,970,71,875,93"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="967,92,1109,117"/>
+<area shape="poly" title=" " alt="" coords="898,101,953,101,953,107,898,106"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1263,95,1357,120"/>
+<area shape="poly" title=" " alt="" coords="1109,103,1249,104,1249,109,1109,108"/>
+<area shape="poly" title=" " alt="" coords="413,107,527,88,527,93,414,112"/>
+<area shape="rect" href="namespacecpu__io_1_1virtual__memory.html#a7413c8abb7eabfcfae4d2aaac3c124cc" title=" " alt="" coords="516,135,692,175"/>
+<area shape="poly" title=" " alt="" coords="468,159,502,157,502,163,469,164"/>
+<area shape="rect" href="namespacecpu__io_1_1virtual__memory.html#af3d08561d5c588f1cf2f260951522f6c" title=" " alt="" coords="516,199,692,239"/>
+<area shape="poly" title=" " alt="" coords="429,176,504,194,502,199,428,181"/>
 </map>
 </div>
 
@@ -416,7 +430,7 @@ Here is the call graph for this function:</div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa6678016037c61da6489784787f22a205"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa6678016037c61da6489784787f22a205">ErrorCode::kVmAllocationFailed</a></div><div class="ttdeci">@ kVmAllocationFailed</div></div>
 <div class="ttc" id="anamespacecpu__io_1_1virtual__memory_html_aa477c683e1a30439416431db45bf3b6b"><div class="ttname"><a href="namespacecpu__io_1_1virtual__memory.html#aa477c683e1a30439416431db45bf3b6b">cpu_io::virtual_memory::kPageTableLevels</a></div><div class="ttdeci">static constexpr size_t kPageTableLevels</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00068">cpu_io.h:68</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a5303b815d2299fd2fa306bd4b43a3963"><div class="ttname"><a href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a></div><div class="ttdeci">auto Debug(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00173">kernel_log.hpp:173</a></div></div>
-<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00359">expected.hpp:359</a></div></div>
+<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00337">expected.hpp:337</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -427,6 +441,19 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="200,28,234,24,234,29,200,34"/>
 <area shape="rect" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="252,55,352,80"/>
 <area shape="poly" title=" " alt="" coords="200,52,239,57,238,62,200,58"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="404,55,531,80"/>
+<area shape="poly" title=" " alt="" coords="352,65,390,65,390,70,352,70"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="784,29,969,55"/>
+<area shape="poly" title=" " alt="" coords="531,61,770,46,770,51,531,66"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="579,80,736,105"/>
+<area shape="poly" title=" " alt="" coords="531,73,565,78,564,83,531,78"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1017,19,1280,59"/>
+<area shape="poly" title=" " alt="" coords="970,38,1003,38,1003,43,970,44"/>
+<area shape="poly" title=" " alt="" coords="713,77,807,55,809,60,714,82"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="805,81,948,107"/>
+<area shape="poly" title=" " alt="" coords="736,90,791,91,791,96,736,96"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1101,84,1196,109"/>
+<area shape="poly" title=" " alt="" coords="948,92,1088,93,1088,99,948,97"/>
 </map>
 </div>
 
@@ -497,6 +524,19 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="213,28,247,23,248,29,214,33"/>
 <area shape="rect" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="263,55,363,80"/>
 <area shape="poly" title=" " alt="" coords="214,53,249,57,249,63,213,58"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="412,55,539,80"/>
+<area shape="poly" title=" " alt="" coords="363,65,398,65,398,70,363,70"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="792,29,977,55"/>
+<area shape="poly" title=" " alt="" coords="539,61,778,46,778,51,539,66"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="587,80,744,105"/>
+<area shape="poly" title=" " alt="" coords="539,73,573,78,572,83,539,78"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1025,19,1288,59"/>
+<area shape="poly" title=" " alt="" coords="978,38,1011,38,1011,43,978,44"/>
+<area shape="poly" title=" " alt="" coords="721,77,815,55,817,60,722,82"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="813,81,956,107"/>
+<area shape="poly" title=" " alt="" coords="744,90,799,91,799,96,744,96"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1109,84,1204,109"/>
+<area shape="poly" title=" " alt="" coords="956,92,1096,93,1096,99,956,97"/>
 </map>
 </div>
 
@@ -942,6 +982,20 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="126,182,240,233,259,240,257,245,238,238,124,186"/>
 <area shape="rect" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="292,312,383,337"/>
 <area shape="poly" title=" " alt="" coords="111,182,163,238,199,270,240,297,279,312,277,317,237,302,196,274,159,242,107,186"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="484,159,611,184"/>
+<area shape="poly" title=" " alt="" coords="388,22,413,30,437,41,468,65,495,92,534,145,529,149,491,96,464,69,435,46,411,35,387,27"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="864,133,1049,159"/>
+<area shape="poly" title=" " alt="" coords="611,165,850,150,850,155,611,170"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="659,184,816,209"/>
+<area shape="poly" title=" " alt="" coords="611,177,645,182,644,187,611,182"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1097,123,1360,163"/>
+<area shape="poly" title=" " alt="" coords="1050,142,1083,142,1083,147,1050,148"/>
+<area shape="poly" title=" " alt="" coords="793,181,887,159,889,164,794,186"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="885,187,1028,212"/>
+<area shape="poly" title=" " alt="" coords="816,195,871,196,871,201,816,200"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1181,188,1276,213"/>
+<area shape="poly" title=" " alt="" coords="1028,197,1168,198,1168,203,1028,202"/>
+<area shape="poly" title=" " alt="" coords="382,316,409,309,435,297,464,274,491,247,529,194,534,197,495,250,468,278,437,302,411,314,384,322"/>
 </map>
 </div>
 

@@ -107,10 +107,9 @@ Inheritance diagram for InterruptBase:</div>
 <div class="center"><img src="classInterruptBase__inherit__graph.png" border="0" usemap="#aInterruptBase_inherit__map" alt="Inheritance graph"/></div>
 <map name="aInterruptBase_inherit__map" id="aInterruptBase_inherit__map">
 <area shape="rect" title="中断子系统抽象基类" alt="" coords="5,5,208,391"/>
-<area shape="rect" href="classInterrupt.html" title="AArch64 中断控制器实现" alt="" coords="5,439,208,1544"/>
-<area shape="poly" title=" " alt="" coords="93,404,93,439,87,439,88,404"/>
-<area shape="poly" title=" " alt="" coords="109,404,109,439,104,439,104,404"/>
-<area shape="poly" title=" " alt="" coords="125,404,126,439,121,439,120,404"/>
+<area shape="rect" href="classInterrupt.html" title="AArch64 中断控制器实现" alt="" coords="5,439,208,1464"/>
+<area shape="poly" title=" " alt="" coords="101,404,101,438,96,438,96,404"/>
+<area shape="poly" title=" " alt="" coords="117,404,118,438,112,438,112,404"/>
 </map>
 </div>
 <div class="dynheader">
@@ -162,7 +161,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>中断子系统抽象基类 </p>
 <dl class="section copyright"><dt>Copyright</dt><dd>Copyright The SimpleKernel Contributors </dd></dl>
-<p>所有架构的中断处理必须实现此接口。 已知实现：PLIC（RISC-V）、GIC（AArch64）、APIC（x86_64）</p>
+<p>所有架构的中断处理必须实现此接口。 已知实现：PLIC（RISC-V）、GIC（AArch64）</p>
 <dl class="section pre"><dt>Precondition</dt><dd>硬件中断控制器已初始化 </dd></dl>
 <dl class="section post"><dt>Postcondition</dt><dd>可通过 RegisterInterruptFunc 注册中断处理函数 </dd></dl>
 
@@ -324,7 +323,7 @@ Public Member Functions</h2></td></tr>
 <p>广播 IPI 到所有其他核心 </p>
 <dl class="section return"><dt>Returns</dt><dd>Expected&lt;void&gt; 成功时返回 void，失败时返回错误 </dd></dl>
 
-<p>Implemented in <a class="el" href="classInterrupt.html#ab8c5204a97ad86dad0cb5f9de59192b8">Interrupt</a>, <a class="el" href="classInterrupt.html#ab8c5204a97ad86dad0cb5f9de59192b8">Interrupt</a>, and <a class="el" href="classInterrupt.html#ab8c5204a97ad86dad0cb5f9de59192b8">Interrupt</a>.</p>
+<p>Implemented in <a class="el" href="classInterrupt.html#ab8c5204a97ad86dad0cb5f9de59192b8">Interrupt</a>, and <a class="el" href="classInterrupt.html#ab8c5204a97ad86dad0cb5f9de59192b8">Interrupt</a>.</p>
 
 </div>
 </div>
@@ -370,7 +369,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Interrupt</a>, <a class="el" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Interrupt</a>, and <a class="el" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Interrupt</a>.</p>
+<p>Implemented in <a class="el" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Interrupt</a>, and <a class="el" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Interrupt</a>.</p>
 
 </div>
 </div>
@@ -475,7 +474,7 @@ Public Member Functions</h2></td></tr>
 <p>注册外部中断处理函数 </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">irq</td><td>外部中断号（平台相关: PLIC source_id / GIC INTID / APIC IRQ） </td></tr>
+    <tr><td class="paramname">irq</td><td>外部中断号（平台相关: PLIC source_id / GIC INTID） </td></tr>
     <tr><td class="paramname">cpu_id</td><td>目标 CPU 核心 ID，中断将路由到该核心 </td></tr>
     <tr><td class="paramname">priority</td><td>中断优先级 </td></tr>
     <tr><td class="paramname">handler</td><td>中断处理函数 </td></tr>
@@ -484,7 +483,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Expected&lt;void&gt; 成功时返回 void，失败时返回错误 </dd></dl>
 
-<p>Implemented in <a class="el" href="classInterrupt.html#aa2d8a2a32dd46cf168f90fe8af02d6f5">Interrupt</a>, <a class="el" href="classInterrupt.html#aa2d8a2a32dd46cf168f90fe8af02d6f5">Interrupt</a>, and <a class="el" href="classInterrupt.html#aa2d8a2a32dd46cf168f90fe8af02d6f5">Interrupt</a>.</p>
+<p>Implemented in <a class="el" href="classInterrupt.html#aa2d8a2a32dd46cf168f90fe8af02d6f5">Interrupt</a>, and <a class="el" href="classInterrupt.html#aa2d8a2a32dd46cf168f90fe8af02d6f5">Interrupt</a>.</p>
 
 </div>
 </div>
@@ -531,7 +530,7 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">Interrupt</a>, <a class="el" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">Interrupt</a>, and <a class="el" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">Interrupt</a>.</p>
+<p>Implemented in <a class="el" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">Interrupt</a>, and <a class="el" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">Interrupt</a>.</p>
 
 </div>
 </div>
@@ -568,7 +567,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Expected&lt;void&gt; 成功时返回 void，失败时返回错误 </dd></dl>
 
-<p>Implemented in <a class="el" href="classInterrupt.html#a149cbd9b84e4f91772d610882c84b329">Interrupt</a>, <a class="el" href="classInterrupt.html#a149cbd9b84e4f91772d610882c84b329">Interrupt</a>, and <a class="el" href="classInterrupt.html#a149cbd9b84e4f91772d610882c84b329">Interrupt</a>.</p>
+<p>Implemented in <a class="el" href="classInterrupt.html#a149cbd9b84e4f91772d610882c84b329">Interrupt</a>, and <a class="el" href="classInterrupt.html#a149cbd9b84e4f91772d610882c84b329">Interrupt</a>.</p>
 
 </div>
 </div>

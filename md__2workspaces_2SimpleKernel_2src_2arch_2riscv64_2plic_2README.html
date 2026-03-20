@@ -92,8 +92,8 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2src_2ar
   <div class="headertitle"><div class="title">Platform-Level Interrupt Controller (PLIC)</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md389"></a> RISC-V 64 外部中断控制器</p>
-<h1><a class="anchor" id="autotoc_md390"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md377"></a> RISC-V 64 外部中断控制器</p>
+<h1><a class="anchor" id="autotoc_md378"></a>
 特性</h1>
 <ul>
 <li>支持最多 1024 个中断源 (ID 1-1023，ID 0 保留)</li>
@@ -104,7 +104,7 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2src_2ar
 <li>中断声明与完成机制</li>
 <li>优先级阈值配置</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md391"></a>
+<h1><a class="anchor" id="autotoc_md379"></a>
 类接口</h1>
 <div class="fragment"><div class="line"><span class="keyword">class </span><a class="code hl_class" href="classPlic.html">Plic</a> {</div>
 <div class="line"><span class="keyword">public</span>:</div>
@@ -145,7 +145,7 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2src_2ar
 <div class="ttc" id="aclassPlic_html_af0c185dd91e6f439ddd5d8e0a37dc7cd"><div class="ttname"><a href="classPlic.html#af0c185dd91e6f439ddd5d8e0a37dc7cd">Plic::SetPendingBit</a></div><div class="ttdeci">auto SetPendingBit(uint32_t source_id, bool value) const -&gt; void</div><div class="ttdoc">设置挂起位寄存器中指定中断源的状态</div><div class="ttdef"><b>Definition</b> <a href="plic_8cpp_source.html#l00131">plic.cpp:131</a></div></div>
 <div class="ttc" id="aclassPlic_html_af2b804cc1061268aeae27586acf8cd6f"><div class="ttname"><a href="classPlic.html#af2b804cc1061268aeae27586acf8cd6f">Plic::RegisterInterruptFunc</a></div><div class="ttdeci">auto RegisterInterruptFunc(uint8_t cause, InterruptDelegate func) -&gt; void</div><div class="ttdoc">注册外部中断处理函数</div><div class="ttdef"><b>Definition</b> <a href="plic_8cpp_source.html#l00061">plic.cpp:61</a></div></div>
 <div class="ttc" id="anamespacestd_html"><div class="ttname"><a href="namespacestd.html">std</a></div><div class="ttdef"><b>Definition</b> <a href="resource__id_8hpp_source.html#l00165">resource_id.hpp:165</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md392"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md380"></a>
 使用示例</h1>
 <div class="fragment"><div class="line"><span class="comment">// 初始化 PLIC</span></div>
 <div class="line"><a class="code hl_class" href="classPlic.html">Plic</a> plic(0xc000000, 95, 4);  <span class="comment">// base_addr, ndev, context_count</span></div>
@@ -164,7 +164,7 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2src_2ar
 <div class="line">    plic.Do(source_id, context);  <span class="comment">// 执行中断处理</span></div>
 <div class="line">    plic.Done(source_id);         <span class="comment">// 完成中断处理</span></div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md393"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md381"></a>
 设备树配置</h1>
 <div class="fragment"><div class="line">plic@c000000 {</div>
 <div class="line">    phandle = &lt;0x05&gt;;</div>
@@ -176,7 +176,7 @@ $(document).ready(function(){initNavTree('md__2workspaces_2SimpleKernel_2src_2ar
 <div class="line">    #address-cells = &lt;0x00&gt;;</div>
 <div class="line">    #interrupt-cells = &lt;0x01&gt;;</div>
 <div class="line">};</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md394"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md382"></a>
 参考文档</h1>
 <p><a href="https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic-1.0.0.pdf">https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic-1.0.0.pdf</a> </p>
 </div></div><!-- contents -->

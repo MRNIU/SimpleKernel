@@ -1,6 +1,8 @@
 var searchData=
 [
-  ['辅助工具_0',['辅助工具',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md26',1,'']]],
-  ['辅助开发工作流_1',['🎯 AI 辅助开发工作流',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md302',1,'']]],
-  ['辅助_20cmake_20模块_2',['3. 辅助 CMake 模块',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md14',1,'']]]
+  ['阶段_201：基础设施（boot）_0',['阶段 1：基础设施（Boot）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md294',1,'']]],
+  ['阶段_202：中断系统（interrupt）_1',['阶段 2：中断系统（Interrupt）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md295',1,'']]],
+  ['阶段_203：内存管理（memory）_2',['阶段 3：内存管理（Memory）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md296',1,'']]],
+  ['阶段_204：任务管理（thread_20task）_3',['阶段 4：任务管理（Thread/Task）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md297',1,'']]],
+  ['阶段_205：系统调用（syscall）_4',['阶段 5：系统调用（Syscall）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md298',1,'']]]
 ];

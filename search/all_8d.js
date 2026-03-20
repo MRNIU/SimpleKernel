@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['集成_0',['VS Code 集成',['../md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93_xBE.html#autotoc_md30',1,'']]]
+  ['🌟_20core_20highlights_0',['🌟 Core Highlights',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md313',1,'']]],
+  ['🌟_20核心亮点_1',['🌟 核心亮点',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md275',1,'']]]
 ];

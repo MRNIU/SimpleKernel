@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['软件中断分发_0',['2. 软件中断分发',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md165',1,'']]]
+  ['阅读接口，理解契约_0',['1️⃣ 阅读接口，理解契约',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md279',1,'']]]
 ];

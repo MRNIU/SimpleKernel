@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['通用功能_0',['通用功能',['../md__2workspaces_2SimpleKernel_2src_2arch_2README.html#autotoc_md381',1,'']]]
+  ['陷阱入口设置_0',['陷阱入口设置',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md188',1,'']]]
 ];

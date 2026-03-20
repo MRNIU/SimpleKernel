@@ -92,10 +92,10 @@ $(document).ready(function(){initNavTree('md_docker.html',''); initResizable(); 
   <div class="headertitle"><div class="title">Dev Container 开发环境</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md275"></a> 本项目使用 <a href="https://containers.dev/">Dev Container</a> 提供一致的开发环境，包含 GCC 14 交叉编译工具链、QEMU 和全部构建依赖。</p>
-<h1><a class="anchor" id="autotoc_md276"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md264"></a> 本项目使用 <a href="https://containers.dev/">Dev Container</a> 提供一致的开发环境，包含 GCC 14 交叉编译工具链、QEMU 和全部构建依赖。</p>
+<h1><a class="anchor" id="autotoc_md265"></a>
 快速开始</h1>
-<h2><a class="anchor" id="autotoc_md277"></a>
+<h2><a class="anchor" id="autotoc_md266"></a>
 VS Code</h2>
 <ol type="1">
 <li>安装 <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers">Dev Containers</a> 扩展</li>
@@ -103,10 +103,10 @@ VS Code</h2>
 <li>点击左下角 <code>&gt;&lt;</code> 图标，选择 <b>Reopen in Container</b></li>
 <li>等待容器构建完成（首次约 5-10 分钟）</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md278"></a>
+<h2><a class="anchor" id="autotoc_md267"></a>
 GitHub Codespaces</h2>
 <p>点击仓库页面的 **Code → Codespaces → Create codespace on main**，环境自动就绪。</p>
-<h2><a class="anchor" id="autotoc_md279"></a>
+<h2><a class="anchor" id="autotoc_md268"></a>
 CLI</h2>
 <div class="fragment"><div class="line"># 安装 devcontainer CLI</div>
 <div class="line">npm install -g @devcontainers/cli</div>
@@ -115,18 +115,17 @@ CLI</h2>
 <div class="line">devcontainer up --workspace-folder .</div>
 <div class="line"> </div>
 <div class="line"># 在容器内执行命令</div>
-<div class="line">devcontainer exec --workspace-folder . cmake --preset=build_x86_64</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md280"></a>
+<div class="line">devcontainer exec --workspace-folder . cmake --preset=build_riscv64</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md269"></a>
 验证环境</h1>
 <div class="fragment"><div class="line">gcc --version                      # GCC 14</div>
 <div class="line">aarch64-linux-gnu-gcc --version    # aarch64 交叉编译器</div>
 <div class="line">riscv64-linux-gnu-gcc --version    # riscv64 交叉编译器</div>
 <div class="line">cmake --version</div>
-<div class="line">qemu-system-x86_64 --version</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md281"></a>
+<div class="line">qemu-system-riscv64 --version</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md270"></a>
 构建与运行</h1>
-<div class="fragment"><div class="line"># 配置 + 编译（三选一）</div>
-<div class="line">cmake --preset=build_x86_64  &amp;&amp; cmake --build build_x86_64  --target SimpleKernel</div>
+<div class="fragment"><div class="line"># 配置 + 编译（二选一）</div>
 <div class="line">cmake --preset=build_riscv64 &amp;&amp; cmake --build build_riscv64 --target SimpleKernel</div>
 <div class="line">cmake --preset=build_aarch64 &amp;&amp; cmake --build build_aarch64 --target SimpleKernel</div>
 <div class="line"> </div>
@@ -136,8 +135,8 @@ CLI</h2>
 <div class="line"># 调试</div>
 <div class="line">make debug    # GDB 连接 localhost:1234</div>
 <div class="line"> </div>
-<div class="line"># 单元测试 + 覆盖率（仅 host 架构）</div>
-<div class="line">cmake --build build_x86_64 --target unit-test coverage</div>
+<div class="line"># 单元测试 + 覆盖率</div>
+<div class="line">cmake --build build_riscv64 --target unit-test coverage</div>
 </div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

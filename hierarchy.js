@@ -4,7 +4,6 @@ var hierarchy =
       [ "InsClass", "classInsClass.html", null ]
     ] ],
     [ "acpi::Acpi", "classacpi_1_1Acpi.html", null ],
-    [ "Apic", "classApic.html", null ],
     [ "atexit_func_entry_t", "structatexit__func__entry__t.html", null ],
     [ "virtio::SplitVirtqueue::Avail", "structvirtio_1_1SplitVirtqueue_1_1Avail.html", null ],
     [ "BasicInfo", "structBasicInfo.html", null ],
@@ -73,16 +72,13 @@ var hierarchy =
     ] ],
     [ "InterruptBase", "classInterruptBase.html", [
       [ "Interrupt", "classInterrupt.html", null ],
-      [ "Interrupt", "classInterrupt.html", null ],
       [ "Interrupt", "classInterrupt.html", null ]
     ] ],
     [ "TaskManager::InterruptWork", "structTaskManager_1_1InterruptWork.html", null ],
-    [ "IoApic", "classIoApic.html", null ],
     [ "IoBuffer", "classIoBuffer.html", null ],
     [ "virtio::IoVec", "structvirtio_1_1IoVec.html", null ],
     [ "KernelElf", "classKernelElf.html", null ],
     [ "KernelFdt", "classKernelFdt.html", null ],
-    [ "LocalApic", "classLocalApic.html", null ],
     [ "LockGuard< Mutex >", "classLockGuard.html", null ],
     [ "klog::detail::LogEntry", "structklog_1_1detail_1_1LogEntry.html", null ],
     [ "MatchEntry", "structMatchEntry.html", null ],
@@ -128,7 +124,6 @@ var hierarchy =
     ] ],
     [ "SignalAction", "structSignalAction.html", null ],
     [ "SignalState", "structSignalState.html", null ],
-    [ "SipiParams", "structSipiParams.html", null ],
     [ "SpinLock", "classSpinLock.html", null ],
     [ "SchedulerBase::Stats", "structSchedulerBase_1_1Stats.html", null ],
     [ "test_env::CoreEnvironment::SwitchEvent", "structtest__env_1_1CoreEnvironment_1_1SwitchEvent.html", null ],

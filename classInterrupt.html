@@ -92,7 +92,6 @@ $(document).ready(function(){initNavTree('classInterrupt.html',''); initResizabl
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-attribs">Static Public Attributes</a> &#124;
-<a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="classInterrupt-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">Interrupt Class Reference<span class="mlabels"><span class="mlabel">final</span></span></div></div>
@@ -108,11 +107,10 @@ Inheritance diagram for Interrupt:</div>
 <div class="dyncontent">
 <div class="center"><img src="classInterrupt__inherit__graph.png" border="0" usemap="#aInterrupt_inherit__map" alt="Inheritance graph"/></div>
 <map name="aInterrupt_inherit__map" id="aInterrupt_inherit__map">
-<area shape="rect" title="AArch64 中断控制器实现" alt="" coords="5,439,208,1544"/>
+<area shape="rect" title="AArch64 中断控制器实现" alt="" coords="5,439,208,1464"/>
 <area shape="rect" href="classInterruptBase.html" title="中断子系统抽象基类" alt="" coords="5,5,208,391"/>
-<area shape="poly" title=" " alt="" coords="93,404,93,439,87,439,88,404"/>
-<area shape="poly" title=" " alt="" coords="109,404,109,439,104,439,104,404"/>
-<area shape="poly" title=" " alt="" coords="125,404,126,439,121,439,120,404"/>
+<area shape="poly" title=" " alt="" coords="101,404,101,438,96,438,96,404"/>
+<area shape="poly" title=" " alt="" coords="117,404,118,438,112,438,112,404"/>
 </map>
 </div>
 <div class="dynheader">
@@ -120,145 +118,100 @@ Collaboration diagram for Interrupt:</div>
 <div class="dyncontent">
 <div class="center"><img src="classInterrupt__coll__graph.png" border="0" usemap="#aInterrupt_coll__map" alt="Collaboration graph"/></div>
 <map name="aInterrupt_coll__map" id="aInterrupt_coll__map">
-<area shape="rect" title="AArch64 中断控制器实现" alt="" coords="72,3281,275,4327"/>
-<area shape="rect" href="classInterruptBase.html" title="中断子系统抽象基类" alt="" coords="5,2603,208,2989"/>
-<area shape="poly" title=" " alt="" coords="108,3002,123,3281,118,3281,103,3002"/>
-<area shape="poly" title=" " alt="" coords="123,3002,141,3281,136,3281,118,3002"/>
-<area shape="poly" title=" " alt="" coords="138,3002,159,3281,154,3281,132,3002"/>
-<area shape="rect" href="classGic.html" title="GIC 中断控制器驱动" alt="" coords="233,2533,383,3059"/>
-<area shape="poly" title=" " alt="" coords="276,3059,248,3265,243,3265,270,3058"/>
-<area shape="rect" href="classGic_1_1Gicd.html" title="GIC Distributor 接口" alt="" coords="19,705,221,1611"/>
-<area shape="poly" title=" " alt="" coords="161,1610,195,1954,236,2310,265,2517,260,2517,231,2311,190,1954,156,1611"/>
-<area shape="rect" href="classGic_1_1Gicr.html" title="GIC Redistributor 接口" alt="" coords="245,785,456,1531"/>
-<area shape="poly" title=" " alt="" coords="344,1531,318,2517,313,2517,338,1531"/>
-<area shape="rect" href="classPlic.html" title="Plic 驱动" alt="" coords="408,2373,595,3219"/>
-<area shape="poly" title=" " alt="" coords="410,3176,397,3219,342,3382,283,3540,278,3538,337,3380,392,3218,405,3174"/>
-<area shape="rect" href="classApic.html" title="APIC 管理类，管理整个系统的 Local APIC 和 IO APIC." alt="" coords="619,2523,813,3069"/>
-<area shape="poly" title=" " alt="" coords="664,3070,640,3146,609,3220,575,3285,537,3350,454,3475,368,3588,288,3683,284,3679,364,3584,450,3472,533,3347,571,3283,604,3218,635,3145,659,3068"/>
-<area shape="rect" href="classLocalApic.html" title="Local APIC 驱动类" alt="" coords="565,5,781,2311"/>
-<area shape="poly" title=" " alt="" coords="706,2311,711,2506,706,2507,701,2311"/>
-<area shape="rect" href="classIoApic.html" title="IO APIC 驱动类" alt="" coords="805,445,1027,1871"/>
-<area shape="poly" title=" " alt="" coords="852,1871,795,2350,771,2508,765,2507,789,2349,847,1871"/>
+<area shape="rect" title="AArch64 中断控制器实现" alt="" coords="71,1881,273,2867"/>
+<area shape="rect" href="classInterruptBase.html" title="中断子系统抽象基类" alt="" coords="5,1203,208,1589"/>
+<area shape="poly" title=" " alt="" coords="116,1602,133,1881,127,1881,110,1603"/>
+<area shape="poly" title=" " alt="" coords="131,1602,151,1881,145,1881,125,1603"/>
+<area shape="rect" href="classGic.html" title="GIC 中断控制器驱动" alt="" coords="233,1133,383,1659"/>
+<area shape="poly" title=" " alt="" coords="274,1659,245,1865,240,1865,269,1658"/>
+<area shape="rect" href="classGic_1_1Gicd.html" title="GIC Distributor 接口" alt="" coords="91,5,293,911"/>
+<area shape="poly" title=" " alt="" coords="251,911,276,1117,271,1117,245,911"/>
+<area shape="rect" href="classGic_1_1Gicr.html" title="GIC Redistributor 接口" alt="" coords="317,85,528,831"/>
+<area shape="poly" title=" " alt="" coords="380,831,345,1117,339,1117,374,830"/>
+<area shape="rect" href="classPlic.html" title="Plic 驱动" alt="" coords="408,973,595,1819"/>
+<area shape="poly" title=" " alt="" coords="410,1782,399,1820,343,1977,282,2128,277,2126,338,1975,393,1818,405,1780"/>
 </map>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ab2108e338d21ed15e1f5e77562063f8c" id="r_ab2108e338d21ed15e1f5e77562063f8c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Do</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cause</a>, <a class="el" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a> *<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">context</a>) -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
+<tr class="memitem:ab2108e338d21ed15e1f5e77562063f8c" id="r_ab2108e338d21ed15e1f5e77562063f8c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Do</a> (uint64_t cause, <a class="el" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a> *context) -&gt; void override</td></tr>
 <tr class="memdesc:ab2108e338d21ed15e1f5e77562063f8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">执行中断处理  <br /></td></tr>
 <tr class="separator:ab2108e338d21ed15e1f5e77562063f8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab65600cf366375d6551752420171ff21" id="r_ab65600cf366375d6551752420171ff21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">RegisterInterruptFunc</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cause</a>, <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> func) -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
+<tr class="memitem:ab65600cf366375d6551752420171ff21" id="r_ab65600cf366375d6551752420171ff21"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">RegisterInterruptFunc</a> (uint64_t cause, <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> func) -&gt; void override</td></tr>
 <tr class="memdesc:ab65600cf366375d6551752420171ff21"><td class="mdescLeft">&#160;</td><td class="mdescRight">注册中断处理函数  <br /></td></tr>
 <tr class="separator:ab65600cf366375d6551752420171ff21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a149cbd9b84e4f91772d610882c84b329" id="r_a149cbd9b84e4f91772d610882c84b329"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a149cbd9b84e4f91772d610882c84b329">SendIpi</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">target_cpu_mask</a>) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
+<tr class="memitem:a149cbd9b84e4f91772d610882c84b329" id="r_a149cbd9b84e4f91772d610882c84b329"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a149cbd9b84e4f91772d610882c84b329">SendIpi</a> (uint64_t target_cpu_mask) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; void &gt; override</td></tr>
 <tr class="memdesc:a149cbd9b84e4f91772d610882c84b329"><td class="mdescLeft">&#160;</td><td class="mdescRight">发送 IPI 到指定 CPU  <br /></td></tr>
 <tr class="separator:a149cbd9b84e4f91772d610882c84b329"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8c5204a97ad86dad0cb5f9de59192b8" id="r_ab8c5204a97ad86dad0cb5f9de59192b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab8c5204a97ad86dad0cb5f9de59192b8">BroadcastIpi</a> () -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
+<tr class="memitem:ab8c5204a97ad86dad0cb5f9de59192b8" id="r_ab8c5204a97ad86dad0cb5f9de59192b8"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab8c5204a97ad86dad0cb5f9de59192b8">BroadcastIpi</a> () -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; void &gt; override</td></tr>
 <tr class="memdesc:ab8c5204a97ad86dad0cb5f9de59192b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">广播 IPI 到所有 CPU  <br /></td></tr>
 <tr class="separator:ab8c5204a97ad86dad0cb5f9de59192b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2d8a2a32dd46cf168f90fe8af02d6f5" id="r_aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa2d8a2a32dd46cf168f90fe8af02d6f5">RegisterExternalInterrupt</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> irq, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpu_id</a>, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> priority, <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> handler) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
+<tr class="memitem:aa2d8a2a32dd46cf168f90fe8af02d6f5" id="r_aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa2d8a2a32dd46cf168f90fe8af02d6f5">RegisterExternalInterrupt</a> (uint32_t irq, uint32_t cpu_id, uint32_t priority, <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> handler) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; void &gt; override</td></tr>
 <tr class="memdesc:aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">注册外部中断  <br /></td></tr>
 <tr class="separator:aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1f7722f172ff28d1618f123bc815ec1d" id="r_a1f7722f172ff28d1618f123bc815ec1d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a1f7722f172ff28d1618f123bc815ec1d">SetUp</a> () <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td></tr>
+<tr class="memitem:a1f7722f172ff28d1618f123bc815ec1d" id="r_a1f7722f172ff28d1618f123bc815ec1d"><td class="memItemLeft" align="right" valign="top">__always_inline auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a1f7722f172ff28d1618f123bc815ec1d">SetUp</a> () const -&gt; void</td></tr>
 <tr class="memdesc:a1f7722f172ff28d1618f123bc815ec1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置 GIC  <br /></td></tr>
 <tr class="separator:a1f7722f172ff28d1618f123bc815ec1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab3464e8c6528fd248ed91a3b90b67973" id="r_ab3464e8c6528fd248ed91a3b90b67973"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab3464e8c6528fd248ed91a3b90b67973">Spi</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">intid</a>, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpuid</a>) <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td></tr>
+<tr class="memitem:ab3464e8c6528fd248ed91a3b90b67973" id="r_ab3464e8c6528fd248ed91a3b90b67973"><td class="memItemLeft" align="right" valign="top">__always_inline auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab3464e8c6528fd248ed91a3b90b67973">Spi</a> (uint32_t intid, uint32_t cpuid) const -&gt; void</td></tr>
 <tr class="memdesc:ab3464e8c6528fd248ed91a3b90b67973"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置 SPI 中断  <br /></td></tr>
 <tr class="separator:ab3464e8c6528fd248ed91a3b90b67973"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a696d9ab85fd7ca861656d7a73d58f2" id="r_a3a696d9ab85fd7ca861656d7a73d58f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a3a696d9ab85fd7ca861656d7a73d58f2">Ppi</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">intid</a>, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpuid</a>) <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td></tr>
+<tr class="memitem:a3a696d9ab85fd7ca861656d7a73d58f2" id="r_a3a696d9ab85fd7ca861656d7a73d58f2"><td class="memItemLeft" align="right" valign="top">__always_inline auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a3a696d9ab85fd7ca861656d7a73d58f2">Ppi</a> (uint32_t intid, uint32_t cpuid) const -&gt; void</td></tr>
 <tr class="memdesc:a3a696d9ab85fd7ca861656d7a73d58f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置 PPI 中断  <br /></td></tr>
 <tr class="separator:a3a696d9ab85fd7ca861656d7a73d58f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6c293913342a70fdb3d2513b88f7dc54" id="r_a6c293913342a70fdb3d2513b88f7dc54"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a6c293913342a70fdb3d2513b88f7dc54">Sgi</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">intid</a>, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpuid</a>) <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td></tr>
+<tr class="memitem:a6c293913342a70fdb3d2513b88f7dc54" id="r_a6c293913342a70fdb3d2513b88f7dc54"><td class="memItemLeft" align="right" valign="top">__always_inline auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a6c293913342a70fdb3d2513b88f7dc54">Sgi</a> (uint32_t intid, uint32_t cpuid) const -&gt; void</td></tr>
 <tr class="memdesc:a6c293913342a70fdb3d2513b88f7dc54"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置 SGI 中断  <br /></td></tr>
 <tr class="separator:a6c293913342a70fdb3d2513b88f7dc54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2108e338d21ed15e1f5e77562063f8c" id="r_ab2108e338d21ed15e1f5e77562063f8c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Do</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cause</a>, <a class="el" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a> *<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">context</a>) -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
+<tr class="memitem:ab2108e338d21ed15e1f5e77562063f8c" id="r_ab2108e338d21ed15e1f5e77562063f8c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Do</a> (uint64_t cause, <a class="el" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a> *context) -&gt; void override</td></tr>
 <tr class="memdesc:ab2108e338d21ed15e1f5e77562063f8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">执行中断处理  <br /></td></tr>
 <tr class="separator:ab2108e338d21ed15e1f5e77562063f8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab65600cf366375d6551752420171ff21" id="r_ab65600cf366375d6551752420171ff21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">RegisterInterruptFunc</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cause</a>, <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> func) -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
+<tr class="memitem:ab65600cf366375d6551752420171ff21" id="r_ab65600cf366375d6551752420171ff21"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">RegisterInterruptFunc</a> (uint64_t cause, <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> func) -&gt; void override</td></tr>
 <tr class="memdesc:ab65600cf366375d6551752420171ff21"><td class="mdescLeft">&#160;</td><td class="mdescRight">注册中断处理函数  <br /></td></tr>
 <tr class="separator:ab65600cf366375d6551752420171ff21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a149cbd9b84e4f91772d610882c84b329" id="r_a149cbd9b84e4f91772d610882c84b329"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a149cbd9b84e4f91772d610882c84b329">SendIpi</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">target_cpu_mask</a>) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
+<tr class="memitem:a149cbd9b84e4f91772d610882c84b329" id="r_a149cbd9b84e4f91772d610882c84b329"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a149cbd9b84e4f91772d610882c84b329">SendIpi</a> (uint64_t target_cpu_mask) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; void &gt; override</td></tr>
 <tr class="memdesc:a149cbd9b84e4f91772d610882c84b329"><td class="mdescLeft">&#160;</td><td class="mdescRight">发送 IPI 到指定核心  <br /></td></tr>
 <tr class="separator:a149cbd9b84e4f91772d610882c84b329"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8c5204a97ad86dad0cb5f9de59192b8" id="r_ab8c5204a97ad86dad0cb5f9de59192b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab8c5204a97ad86dad0cb5f9de59192b8">BroadcastIpi</a> () -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
+<tr class="memitem:ab8c5204a97ad86dad0cb5f9de59192b8" id="r_ab8c5204a97ad86dad0cb5f9de59192b8"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab8c5204a97ad86dad0cb5f9de59192b8">BroadcastIpi</a> () -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; void &gt; override</td></tr>
 <tr class="memdesc:ab8c5204a97ad86dad0cb5f9de59192b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">广播 IPI 到所有其他核心  <br /></td></tr>
 <tr class="separator:ab8c5204a97ad86dad0cb5f9de59192b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2d8a2a32dd46cf168f90fe8af02d6f5" id="r_aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa2d8a2a32dd46cf168f90fe8af02d6f5">RegisterExternalInterrupt</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> irq, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpu_id</a>, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> priority, <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> handler) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
+<tr class="memitem:aa2d8a2a32dd46cf168f90fe8af02d6f5" id="r_aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa2d8a2a32dd46cf168f90fe8af02d6f5">RegisterExternalInterrupt</a> (uint32_t irq, uint32_t cpu_id, uint32_t priority, <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> handler) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; void &gt; override</td></tr>
 <tr class="memdesc:aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">注册外部中断处理函数  <br /></td></tr>
 <tr class="separator:aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2108e338d21ed15e1f5e77562063f8c" id="r_ab2108e338d21ed15e1f5e77562063f8c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab2108e338d21ed15e1f5e77562063f8c">Do</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cause</a>, <a class="el" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a> *<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">context</a>) -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
-<tr class="memdesc:ab2108e338d21ed15e1f5e77562063f8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">执行中断处理  <br /></td></tr>
-<tr class="separator:ab2108e338d21ed15e1f5e77562063f8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab65600cf366375d6551752420171ff21" id="r_ab65600cf366375d6551752420171ff21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">RegisterInterruptFunc</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cause</a>, <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> func) -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
-<tr class="memdesc:ab65600cf366375d6551752420171ff21"><td class="mdescLeft">&#160;</td><td class="mdescRight">注册中断处理函数  <br /></td></tr>
-<tr class="separator:ab65600cf366375d6551752420171ff21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a149cbd9b84e4f91772d610882c84b329" id="r_a149cbd9b84e4f91772d610882c84b329"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a149cbd9b84e4f91772d610882c84b329">SendIpi</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">target_cpu_mask</a>) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
-<tr class="memdesc:a149cbd9b84e4f91772d610882c84b329"><td class="mdescLeft">&#160;</td><td class="mdescRight">发送 IPI 到指定核心  <br /></td></tr>
-<tr class="separator:a149cbd9b84e4f91772d610882c84b329"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8c5204a97ad86dad0cb5f9de59192b8" id="r_ab8c5204a97ad86dad0cb5f9de59192b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab8c5204a97ad86dad0cb5f9de59192b8">BroadcastIpi</a> () -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
-<tr class="memdesc:ab8c5204a97ad86dad0cb5f9de59192b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">广播 IPI 到所有其他核心  <br /></td></tr>
-<tr class="separator:ab8c5204a97ad86dad0cb5f9de59192b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2d8a2a32dd46cf168f90fe8af02d6f5" id="r_aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa2d8a2a32dd46cf168f90fe8af02d6f5">RegisterExternalInterrupt</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> irq, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpu_id</a>, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a> priority, <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> handler) -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a></td></tr>
-<tr class="memdesc:aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">注册外部中断处理函数  <br /></td></tr>
-<tr class="separator:aa2d8a2a32dd46cf168f90fe8af02d6f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a77bc6eee4ed31b6dd645da546d30f1bf" id="r_a77bc6eee4ed31b6dd645da546d30f1bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a77bc6eee4ed31b6dd645da546d30f1bf">InitApic</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">size_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpu_count</a>) -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td></tr>
-<tr class="memdesc:a77bc6eee4ed31b6dd645da546d30f1bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">初始化 APIC  <br /></td></tr>
-<tr class="separator:a77bc6eee4ed31b6dd645da546d30f1bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7214c5dde8ca509678acd6825bdbeba7" id="r_a7214c5dde8ca509678acd6825bdbeba7"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">SetUpIdtr</a> () -&gt; void</td></tr>
-<tr class="memdesc:a7214c5dde8ca509678acd6825bdbeba7"><td class="mdescLeft">&#160;</td><td class="mdescRight">初始化 idtr  <br /></td></tr>
-<tr class="separator:a7214c5dde8ca509678acd6825bdbeba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">构造/析构函数</div></td></tr>
 <tr class="memitem:a736dd658be198f3dc94db0f876fb2499" id="r_a736dd658be198f3dc94db0f876fb2499"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a736dd658be198f3dc94db0f876fb2499">Interrupt</a> ()</td></tr>
 <tr class="separator:a736dd658be198f3dc94db0f876fb2499"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a83b785865d34bb5a407b0e4997c7a31d" id="r_a83b785865d34bb5a407b0e4997c7a31d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a83b785865d34bb5a407b0e4997c7a31d">Interrupt</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;)=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
+<tr class="memitem:a83b785865d34bb5a407b0e4997c7a31d" id="r_a83b785865d34bb5a407b0e4997c7a31d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a83b785865d34bb5a407b0e4997c7a31d">Interrupt</a> (const <a class="el" href="classInterrupt.html">Interrupt</a> &amp;)=delete</td></tr>
 <tr class="separator:a83b785865d34bb5a407b0e4997c7a31d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acda9003a55382f7309c4b5b338580e1e" id="r_acda9003a55382f7309c4b5b338580e1e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#acda9003a55382f7309c4b5b338580e1e">Interrupt</a> (<a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;)=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
+<tr class="memitem:acda9003a55382f7309c4b5b338580e1e" id="r_acda9003a55382f7309c4b5b338580e1e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#acda9003a55382f7309c4b5b338580e1e">Interrupt</a> (<a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;)=delete</td></tr>
 <tr class="separator:acda9003a55382f7309c4b5b338580e1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06b0e7fb669e1b216eab7aefafcca291" id="r_a06b0e7fb669e1b216eab7aefafcca291"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a06b0e7fb669e1b216eab7aefafcca291">operator=</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;) -&gt; <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
+<tr class="memitem:a06b0e7fb669e1b216eab7aefafcca291" id="r_a06b0e7fb669e1b216eab7aefafcca291"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a06b0e7fb669e1b216eab7aefafcca291">operator=</a> (const <a class="el" href="classInterrupt.html">Interrupt</a> &amp;) -&gt; <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=delete</td></tr>
 <tr class="separator:a06b0e7fb669e1b216eab7aefafcca291"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2f308b9fabe07cbe0188f998ed77b5e" id="r_aa2f308b9fabe07cbe0188f998ed77b5e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa2f308b9fabe07cbe0188f998ed77b5e">operator=</a> (<a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;) -&gt; <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
+<tr class="memitem:aa2f308b9fabe07cbe0188f998ed77b5e" id="r_aa2f308b9fabe07cbe0188f998ed77b5e"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa2f308b9fabe07cbe0188f998ed77b5e">operator=</a> (<a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;) -&gt; <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=delete</td></tr>
 <tr class="separator:aa2f308b9fabe07cbe0188f998ed77b5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2fe3087bcb1e6554dc9cfe8cdf890c5" id="r_ae2fe3087bcb1e6554dc9cfe8cdf890c5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ae2fe3087bcb1e6554dc9cfe8cdf890c5">~Interrupt</a> ()=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">default</a></td></tr>
+<tr class="memitem:ae2fe3087bcb1e6554dc9cfe8cdf890c5" id="r_ae2fe3087bcb1e6554dc9cfe8cdf890c5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ae2fe3087bcb1e6554dc9cfe8cdf890c5">~Interrupt</a> ()=default</td></tr>
 <tr class="separator:ae2fe3087bcb1e6554dc9cfe8cdf890c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a736dd658be198f3dc94db0f876fb2499" id="r_a736dd658be198f3dc94db0f876fb2499"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a736dd658be198f3dc94db0f876fb2499">Interrupt</a> ()</td></tr>
 <tr class="separator:a736dd658be198f3dc94db0f876fb2499"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a83b785865d34bb5a407b0e4997c7a31d" id="r_a83b785865d34bb5a407b0e4997c7a31d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a83b785865d34bb5a407b0e4997c7a31d">Interrupt</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;)=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
+<tr class="memitem:a83b785865d34bb5a407b0e4997c7a31d" id="r_a83b785865d34bb5a407b0e4997c7a31d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a83b785865d34bb5a407b0e4997c7a31d">Interrupt</a> (const <a class="el" href="classInterrupt.html">Interrupt</a> &amp;)=delete</td></tr>
 <tr class="separator:a83b785865d34bb5a407b0e4997c7a31d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acda9003a55382f7309c4b5b338580e1e" id="r_acda9003a55382f7309c4b5b338580e1e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#acda9003a55382f7309c4b5b338580e1e">Interrupt</a> (<a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;)=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
+<tr class="memitem:acda9003a55382f7309c4b5b338580e1e" id="r_acda9003a55382f7309c4b5b338580e1e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#acda9003a55382f7309c4b5b338580e1e">Interrupt</a> (<a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;)=delete</td></tr>
 <tr class="separator:acda9003a55382f7309c4b5b338580e1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06b0e7fb669e1b216eab7aefafcca291" id="r_a06b0e7fb669e1b216eab7aefafcca291"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a06b0e7fb669e1b216eab7aefafcca291">operator=</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;) -&gt; <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
+<tr class="memitem:a06b0e7fb669e1b216eab7aefafcca291" id="r_a06b0e7fb669e1b216eab7aefafcca291"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a06b0e7fb669e1b216eab7aefafcca291">operator=</a> (const <a class="el" href="classInterrupt.html">Interrupt</a> &amp;) -&gt; <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=delete</td></tr>
 <tr class="separator:a06b0e7fb669e1b216eab7aefafcca291"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2f308b9fabe07cbe0188f998ed77b5e" id="r_aa2f308b9fabe07cbe0188f998ed77b5e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa2f308b9fabe07cbe0188f998ed77b5e">operator=</a> (<a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;) -&gt; <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
+<tr class="memitem:aa2f308b9fabe07cbe0188f998ed77b5e" id="r_aa2f308b9fabe07cbe0188f998ed77b5e"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa2f308b9fabe07cbe0188f998ed77b5e">operator=</a> (<a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;) -&gt; <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=delete</td></tr>
 <tr class="separator:aa2f308b9fabe07cbe0188f998ed77b5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2fe3087bcb1e6554dc9cfe8cdf890c5" id="r_ae2fe3087bcb1e6554dc9cfe8cdf890c5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ae2fe3087bcb1e6554dc9cfe8cdf890c5">~Interrupt</a> ()=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">default</a></td></tr>
+<tr class="memitem:ae2fe3087bcb1e6554dc9cfe8cdf890c5" id="r_ae2fe3087bcb1e6554dc9cfe8cdf890c5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ae2fe3087bcb1e6554dc9cfe8cdf890c5">~Interrupt</a> ()=default</td></tr>
 <tr class="separator:ae2fe3087bcb1e6554dc9cfe8cdf890c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a736dd658be198f3dc94db0f876fb2499" id="r_a736dd658be198f3dc94db0f876fb2499"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a736dd658be198f3dc94db0f876fb2499">Interrupt</a> ()</td></tr>
-<tr class="separator:a736dd658be198f3dc94db0f876fb2499"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a83b785865d34bb5a407b0e4997c7a31d" id="r_a83b785865d34bb5a407b0e4997c7a31d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a83b785865d34bb5a407b0e4997c7a31d">Interrupt</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;)=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
-<tr class="separator:a83b785865d34bb5a407b0e4997c7a31d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acda9003a55382f7309c4b5b338580e1e" id="r_acda9003a55382f7309c4b5b338580e1e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#acda9003a55382f7309c4b5b338580e1e">Interrupt</a> (<a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;)=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
-<tr class="separator:acda9003a55382f7309c4b5b338580e1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06b0e7fb669e1b216eab7aefafcca291" id="r_a06b0e7fb669e1b216eab7aefafcca291"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a06b0e7fb669e1b216eab7aefafcca291">operator=</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;) -&gt; <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
-<tr class="separator:a06b0e7fb669e1b216eab7aefafcca291"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2f308b9fabe07cbe0188f998ed77b5e" id="r_aa2f308b9fabe07cbe0188f998ed77b5e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa2f308b9fabe07cbe0188f998ed77b5e">operator=</a> (<a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;) -&gt; <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td></tr>
-<tr class="separator:aa2f308b9fabe07cbe0188f998ed77b5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a205371c5dda210308f487cf1ed942301" id="r_a205371c5dda210308f487cf1ed942301"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a205371c5dda210308f487cf1ed942301">~Interrupt</a> () <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">override</a>=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">default</a></td></tr>
-<tr class="separator:a205371c5dda210308f487cf1ed942301"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">PLIC 访问接口</div></td></tr>
-<tr class="memitem:ae7704cb05bc858c94bdf92fc30a28539" id="r_ae7704cb05bc858c94bdf92fc30a28539"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ae7704cb05bc858c94bdf92fc30a28539">plic</a> () -&gt; <a class="el" href="classPlic.html">Plic</a> &amp;</td></tr>
+<tr class="memitem:ae7704cb05bc858c94bdf92fc30a28539" id="r_ae7704cb05bc858c94bdf92fc30a28539"><td class="memItemLeft" align="right" valign="top">__always_inline auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ae7704cb05bc858c94bdf92fc30a28539">plic</a> () -&gt; <a class="el" href="classPlic.html">Plic</a> &amp;</td></tr>
 <tr class="memdesc:ae7704cb05bc858c94bdf92fc30a28539"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取 PLIC 引用  <br /></td></tr>
 <tr class="separator:ae7704cb05bc858c94bdf92fc30a28539"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe5522a3a436c4f94e21dd507b522400" id="r_abe5522a3a436c4f94e21dd507b522400"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#abe5522a3a436c4f94e21dd507b522400">plic</a> () <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classPlic.html">Plic</a> &amp;</td></tr>
+<tr class="memitem:abe5522a3a436c4f94e21dd507b522400" id="r_abe5522a3a436c4f94e21dd507b522400"><td class="memItemLeft" align="right" valign="top">__always_inline auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#abe5522a3a436c4f94e21dd507b522400">plic</a> () const -&gt; const <a class="el" href="classPlic.html">Plic</a> &amp;</td></tr>
 <tr class="memdesc:abe5522a3a436c4f94e21dd507b522400"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取 PLIC 的只读引用  <br /></td></tr>
 <tr class="separator:abe5522a3a436c4f94e21dd507b522400"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7e226d0639ec711fe2b4d22104fb54c" id="r_ab7e226d0639ec711fe2b4d22104fb54c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab7e226d0639ec711fe2b4d22104fb54c">InitPlic</a> (<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">dev_addr</a>, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">size_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">ndev</a>, <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">size_t</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">context_count</a>) -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td></tr>
+<tr class="memitem:ab7e226d0639ec711fe2b4d22104fb54c" id="r_ab7e226d0639ec711fe2b4d22104fb54c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ab7e226d0639ec711fe2b4d22104fb54c">InitPlic</a> (uint64_t dev_addr, size_t ndev, size_t context_count) -&gt; void</td></tr>
 <tr class="memdesc:ab7e226d0639ec711fe2b4d22104fb54c"><td class="mdescLeft">&#160;</td><td class="mdescRight">初始化 PLIC  <br /></td></tr>
 <tr class="separator:ab7e226d0639ec711fe2b4d22104fb54c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr><td colspan="2"><div class="groupHeader">APIC 访问接口</div></td></tr>
-<tr class="memitem:ad3994bbf20b83c8ad05d306fe980d5f0" id="r_ad3994bbf20b83c8ad05d306fe980d5f0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ad3994bbf20b83c8ad05d306fe980d5f0">apic</a> () -&gt; <a class="el" href="classApic.html">Apic</a> &amp;</td></tr>
-<tr class="separator:ad3994bbf20b83c8ad05d306fe980d5f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a397c81f030b31d65fb2deacb4f9ba8db" id="r_a397c81f030b31d65fb2deacb4f9ba8db"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a397c81f030b31d65fb2deacb4f9ba8db">apic</a> () <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classApic.html">Apic</a> &amp;</td></tr>
-<tr class="separator:a397c81f030b31d65fb2deacb4f9ba8db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classInterruptBase"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classInterruptBase')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classInterruptBase.html">InterruptBase</a></td></tr>
 <tr class="memitem:aef88d49f6a5374276585d241c49b8c3a inherit pub_methods_classInterruptBase" id="r_aef88d49f6a5374276585d241c49b8c3a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterruptBase.html#aef88d49f6a5374276585d241c49b8c3a">InterruptBase</a> ()=default</td></tr>
 <tr class="separator:aef88d49f6a5374276585d241c49b8c3a inherit pub_methods_classInterruptBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -275,19 +228,9 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
-<tr class="memitem:a822811c4d9c519d39a4889c2d8377ee2" id="r_a822811c4d9c519d39a4889c2d8377ee2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">static</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">constexpr</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">size_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a822811c4d9c519d39a4889c2d8377ee2">kMaxInterrupt</a> = 128</td></tr>
+<tr class="memitem:a822811c4d9c519d39a4889c2d8377ee2" id="r_a822811c4d9c519d39a4889c2d8377ee2"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a822811c4d9c519d39a4889c2d8377ee2">kMaxInterrupt</a> = 128</td></tr>
 <tr class="memdesc:a822811c4d9c519d39a4889c2d8377ee2"><td class="mdescLeft">&#160;</td><td class="mdescRight">最大中断号  <br /></td></tr>
 <tr class="separator:a822811c4d9c519d39a4889c2d8377ee2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa41a41cc67be2c59489d9f253e3a1982" id="r_aa41a41cc67be2c59489d9f253e3a1982"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">static</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">constexpr</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint8_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#aa41a41cc67be2c59489d9f253e3a1982">kExternalVectorBase</a> = 0x20</td></tr>
-<tr class="memdesc:aa41a41cc67be2c59489d9f253e3a1982"><td class="mdescLeft">&#160;</td><td class="mdescRight">外部中断向量基址（IO APIC IRQ 到 IDT 向量的映射）  <br /></td></tr>
-<tr class="separator:aa41a41cc67be2c59489d9f253e3a1982"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
-Private Member Functions</h2></td></tr>
-<tr class="memitem:a835af1dfff0488977d5b2767c9df4c54" id="r_a835af1dfff0488977d5b2767c9df4c54"><td class="memTemplParams" colspan="2">template&lt;uint8_t no = 0&gt; </td></tr>
-<tr class="memitem:a835af1dfff0488977d5b2767c9df4c54"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a835af1dfff0488977d5b2767c9df4c54">SetUpIdtr</a> () -&gt; void</td></tr>
-<tr class="memdesc:a835af1dfff0488977d5b2767c9df4c54"><td class="mdescLeft">&#160;</td><td class="mdescRight">初始化 idtr  <br /></td></tr>
-<tr class="separator:a835af1dfff0488977d5b2767c9df4c54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -305,14 +248,6 @@ Private Attributes</h2></td></tr>
 <tr class="separator:abde0431a97f983997c45ab415e7764e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ed65be5c7145e0992ebebbc377387c0" id="r_a6ed65be5c7145e0992ebebbc377387c0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPlic.html">Plic</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a6ed65be5c7145e0992ebebbc377387c0">plic_</a> {}</td></tr>
 <tr class="separator:a6ed65be5c7145e0992ebebbc377387c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3610f77ffabdc43ad8a2768dd5a24eb6" id="r_a3610f77ffabdc43ad8a2768dd5a24eb6"><td class="memItemLeft" align="right" valign="top">std::array&lt; <a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a>, cpu_io::IdtrInfo::kInterruptMaxCount &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a3610f77ffabdc43ad8a2768dd5a24eb6">interrupt_handlers_</a> {}</td></tr>
-<tr class="memdesc:a3610f77ffabdc43ad8a2768dd5a24eb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">中断处理函数数组  <br /></td></tr>
-<tr class="separator:a3610f77ffabdc43ad8a2768dd5a24eb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ea743b953a591cf5d009c56508a53fd" id="r_a4ea743b953a591cf5d009c56508a53fd"><td class="memItemLeft" align="right" valign="top">std::array&lt; cpu_io::IdtrInfo::Idt, cpu_io::IdtrInfo::kInterruptMaxCount &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#a4ea743b953a591cf5d009c56508a53fd">idts_</a> {}</td></tr>
-<tr class="separator:a4ea743b953a591cf5d009c56508a53fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace01daf4cad8f01a6382455ee7ff306a" id="r_ace01daf4cad8f01a6382455ee7ff306a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classApic.html">Apic</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInterrupt.html#ace01daf4cad8f01a6382455ee7ff306a">apic_</a> {}</td></tr>
-<tr class="memdesc:ace01daf4cad8f01a6382455ee7ff306a"><td class="mdescLeft">&#160;</td><td class="mdescRight">APIC 中断控制器实例  <br /></td></tr>
-<tr class="separator:ace01daf4cad8f01a6382455ee7ff306a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -328,7 +263,7 @@ Additional Inherited Members</h2></td></tr>
 <p class="definition">Definition at line <a class="el" href="aarch64_2include_2interrupt_8h_source.html#l00019">19</a> of file <a class="el" href="aarch64_2include_2interrupt_8h_source.html">interrupt.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a736dd658be198f3dc94db0f876fb2499" name="a736dd658be198f3dc94db0f876fb2499"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a736dd658be198f3dc94db0f876fb2499">&#9670;&#160;</a></span>Interrupt() <span class="overload">[1/9]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a736dd658be198f3dc94db0f876fb2499">&#9670;&#160;</a></span>Interrupt() <span class="overload">[1/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -344,80 +279,91 @@ Additional Inherited Members</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="aarch64_2interrupt_8cpp_source.html#l00027">27</a> of file <a class="el" href="aarch64_2interrupt_8cpp_source.html">interrupt.cpp</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">   27</span>                     {</div>
-<div class="line"><span class="lineno">   28</span>  <span class="keyword">auto</span> [<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">dist_base_addr</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">dist_size</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">redist_base_addr</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">redist_size</a>] =</div>
+<div class="line"><span class="lineno">   28</span>  <span class="keyword">auto</span> [dist_base_addr, dist_size, redist_base_addr, redist_size] =</div>
 <div class="line"><span class="lineno">   29</span>      KernelFdtSingleton::instance().GetGIC().value();</div>
 <div class="line"><span class="lineno">   30</span>  VirtualMemorySingleton::instance()</div>
-<div class="line"><span class="lineno">   31</span>      .MapMMIO(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">dist_base_addr</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">dist_size</a>)</div>
-<div class="line"><span class="lineno">   32</span>      .or_else([](<a class="code hl_struct" href="structError.html">Error</a> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">err</a>) -&gt; <a class="code hl_typedef" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected&lt;void*&gt;</a> {</div>
-<div class="line"><span class="lineno">   33</span>        <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Failed to map GIC distributor MMIO: {}&quot;</span>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">err</a>.message());</div>
+<div class="line"><span class="lineno">   31</span>      .MapMMIO(dist_base_addr, dist_size)</div>
+<div class="line"><span class="lineno">   32</span>      .or_else([](<a class="code hl_struct" href="structError.html">Error</a> err) -&gt; <a class="code hl_typedef" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected&lt;void*&gt;</a> {</div>
+<div class="line"><span class="lineno">   33</span>        <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Failed to map GIC distributor MMIO: {}&quot;</span>, err.<a class="code hl_function" href="structError.html#aa63ee10532d668f25a5147d7dc753749">message</a>());</div>
 <div class="line"><span class="lineno">   34</span>        <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
 <div class="line"><span class="lineno">   35</span>          <a class="code hl_function" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a>();</div>
 <div class="line"><span class="lineno">   36</span>        }</div>
-<div class="line"><span class="lineno">   37</span>        <span class="keywordflow">return</span> std::unexpected(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">err</a>);</div>
+<div class="line"><span class="lineno">   37</span>        <span class="keywordflow">return</span> std::unexpected(err);</div>
 <div class="line"><span class="lineno">   38</span>      });</div>
 <div class="line"><span class="lineno">   39</span>  VirtualMemorySingleton::instance()</div>
-<div class="line"><span class="lineno">   40</span>      .MapMMIO(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">redist_base_addr</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">redist_size</a>)</div>
-<div class="line"><span class="lineno">   41</span>      .or_else([](<a class="code hl_struct" href="structError.html">Error</a> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">err</a>) -&gt; <a class="code hl_typedef" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected&lt;void*&gt;</a> {</div>
-<div class="line"><span class="lineno">   42</span>        <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Failed to map GIC redistributor MMIO: {}&quot;</span>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">err</a>.message());</div>
+<div class="line"><span class="lineno">   40</span>      .MapMMIO(redist_base_addr, redist_size)</div>
+<div class="line"><span class="lineno">   41</span>      .or_else([](<a class="code hl_struct" href="structError.html">Error</a> err) -&gt; <a class="code hl_typedef" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected&lt;void*&gt;</a> {</div>
+<div class="line"><span class="lineno">   42</span>        <a class="code hl_function" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a>(<span class="stringliteral">&quot;Failed to map GIC redistributor MMIO: {}&quot;</span>, err.<a class="code hl_function" href="structError.html#aa63ee10532d668f25a5147d7dc753749">message</a>());</div>
 <div class="line"><span class="lineno">   43</span>        <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
 <div class="line"><span class="lineno">   44</span>          <a class="code hl_function" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a>();</div>
 <div class="line"><span class="lineno">   45</span>        }</div>
-<div class="line"><span class="lineno">   46</span>        <span class="keywordflow">return</span> std::unexpected(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">err</a>);</div>
+<div class="line"><span class="lineno">   46</span>        <span class="keywordflow">return</span> std::unexpected(err);</div>
 <div class="line"><span class="lineno">   47</span>      });</div>
 <div class="line"><span class="lineno">   48</span> </div>
-<div class="line"><span class="lineno">   49</span>  <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a> = std::move(<a class="code hl_class" href="classGic.html">Gic</a>(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">dist_base_addr</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">redist_base_addr</a>));</div>
+<div class="line"><span class="lineno">   49</span>  <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a> = std::move(<a class="code hl_class" href="classGic.html">Gic</a>(dist_base_addr, redist_base_addr));</div>
 <div class="line"><span class="lineno">   50</span> </div>
 <div class="line"><span class="lineno">   51</span>  <span class="comment">// 注册默认中断处理函数</span></div>
-<div class="line"><span class="lineno">   52</span>  <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">i</a> : <a class="code hl_variable" href="classInterrupt.html#aeae60810035a86ed1bf3e9df62dd7f4e">interrupt_handlers_</a>) {</div>
-<div class="line"><span class="lineno">   53</span>    <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">i</a> = InterruptDelegate::create&lt;DefaultInterruptHandler&gt;();</div>
+<div class="line"><span class="lineno">   52</span>  <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; i : <a class="code hl_variable" href="classInterrupt.html#aeae60810035a86ed1bf3e9df62dd7f4e">interrupt_handlers_</a>) {</div>
+<div class="line"><span class="lineno">   53</span>    i = InterruptDelegate::create&lt;DefaultInterruptHandler&gt;();</div>
 <div class="line"><span class="lineno">   54</span>  }</div>
 <div class="line"><span class="lineno">   55</span> </div>
 <div class="line"><span class="lineno">   56</span>  <span class="comment">// 设置 SGI 0 用于 IPI</span></div>
-<div class="line"><span class="lineno">   57</span>  <span class="keyword">auto</span> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpuid</a> = <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>();</div>
-<div class="line"><span class="lineno">   58</span>  <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a>.<a class="code hl_function" href="classGic.html#a1c36f1585f54075b78b09acf00a80eaa">Sgi</a>(0, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpuid</a>);</div>
+<div class="line"><span class="lineno">   57</span>  <span class="keyword">auto</span> cpuid = <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>();</div>
+<div class="line"><span class="lineno">   58</span>  <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a>.<a class="code hl_function" href="classGic.html#a1c36f1585f54075b78b09acf00a80eaa">Sgi</a>(0, cpuid);</div>
 <div class="line"><span class="lineno">   59</span> </div>
 <div class="line"><span class="lineno">   60</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;Interrupt init.&quot;</span>);</div>
 <div class="line"><span class="lineno">   61</span>}</div>
 <div class="ttc" id="aclassGic_html"><div class="ttname"><a href="classGic.html">Gic</a></div><div class="ttdoc">GIC 中断控制器驱动</div><div class="ttdef"><b>Definition</b> <a href="gic_8h_source.html#l00017">gic.h:17</a></div></div>
 <div class="ttc" id="aclassGic_html_a1c36f1585f54075b78b09acf00a80eaa"><div class="ttname"><a href="classGic.html#a1c36f1585f54075b78b09acf00a80eaa">Gic::Sgi</a></div><div class="ttdeci">auto Sgi(uint32_t intid, uint32_t cpuid) const -&gt; void</div><div class="ttdoc">配置软件生成中断 (SGI)</div><div class="ttdef"><b>Definition</b> <a href="gic_8cpp_source.html#l00039">gic.cpp:39</a></div></div>
-<div class="ttc" id="aclassInterrupt_html_a7214c5dde8ca509678acd6825bdbeba7"><div class="ttname"><a href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">Interrupt::SetUpIdtr</a></div><div class="ttdeci">auto SetUpIdtr() -&gt; void</div><div class="ttdoc">初始化 idtr</div><div class="ttdef"><b>Definition</b> <a href="x86__64_2interrupt_8cpp_source.html#l00062">interrupt.cpp:62</a></div></div>
 <div class="ttc" id="aclassInterrupt_html_aa9f43e1e97d63b757aa4b51f3807a2ee"><div class="ttname"><a href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">Interrupt::gic_</a></div><div class="ttdeci">Gic gic_</div><div class="ttdoc">GIC 中断控制器实例</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2include_2interrupt_8h_source.html#l00113">interrupt.h:113</a></div></div>
 <div class="ttc" id="aclassInterrupt_html_aeae60810035a86ed1bf3e9df62dd7f4e"><div class="ttname"><a href="classInterrupt.html#aeae60810035a86ed1bf3e9df62dd7f4e">Interrupt::interrupt_handlers_</a></div><div class="ttdeci">std::array&lt; InterruptDelegate, kMaxInterrupt &gt; interrupt_handlers_</div><div class="ttdoc">中断处理函数数组</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2include_2interrupt_8h_source.html#l00110">interrupt.h:110</a></div></div>
-<div class="ttc" id="aexpected_8hpp_html_a87330dc74eb67e824914b8d343050757"><div class="ttname"><a href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a></div><div class="ttdeci">std::expected&lt; T, Error &gt; Expected</div><div class="ttdoc">std::expected 别名模板</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00381">expected.hpp:381</a></div></div>
+<div class="ttc" id="aexpected_8hpp_html_a87330dc74eb67e824914b8d343050757"><div class="ttname"><a href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a></div><div class="ttdeci">std::expected&lt; T, Error &gt; Expected</div><div class="ttdoc">std::expected 别名模板</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00359">expected.hpp:359</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_a52b8a7263a31e6670ef4dec7922d9e72"><div class="ttname"><a href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a></div><div class="ttdeci">auto GetCurrentCoreId() -&gt; size_t</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00026">cpu_io.h:26</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_acf7d7c3a4a0720cfd4f57914b52c7e9b"><div class="ttname"><a href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a></div><div class="ttdeci">void Pause()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00020">cpu_io.h:20</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00182">kernel_log.hpp:182</a></div></div>
-<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00359">expected.hpp:359</a></div></div>
+<div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00337">expected.hpp:337</a></div></div>
+<div class="ttc" id="astructError_html_aa63ee10532d668f25a5147d7dc753749"><div class="ttname"><a href="structError.html#aa63ee10532d668f25a5147d7dc753749">Error::message</a></div><div class="ttdeci">constexpr auto message() const -&gt; const char *</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00352">expected.hpp:352</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classInterrupt_a736dd658be198f3dc94db0f876fb2499_cgraph.png" border="0" usemap="#aclassInterrupt_a736dd658be198f3dc94db0f876fb2499_cgraph" alt=""/></div>
 <map name="aclassInterrupt_a736dd658be198f3dc94db0f876fb2499_cgraph" id="aclassInterrupt_a736dd658be198f3dc94db0f876fb2499_cgraph">
-<area shape="rect" title=" " alt="" coords="5,129,148,155"/>
-<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="251,5,327,31"/>
-<area shape="poly" title=" " alt="" coords="88,127,132,84,162,60,195,40,236,24,238,29,197,44,165,65,135,88,91,131"/>
-<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="196,55,381,80"/>
-<area shape="poly" title=" " alt="" coords="104,127,195,89,220,81,221,86,197,94,106,132"/>
-<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="247,104,330,129"/>
-<area shape="poly" title=" " alt="" coords="148,131,233,121,234,126,149,136"/>
-<area shape="rect" href="structError.html#aa63ee10532d668f25a5147d7dc753749" title=" " alt="" coords="229,153,349,179"/>
-<area shape="poly" title=" " alt="" coords="149,147,215,155,214,160,148,153"/>
-<area shape="rect" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="233,203,344,228"/>
-<area shape="poly" title=" " alt="" coords="107,152,197,189,222,196,220,202,195,194,105,157"/>
-<area shape="rect" href="classGic.html#a1c36f1585f54075b78b09acf00a80eaa" title="配置软件生成中断 (SGI)" alt="" coords="253,252,324,277"/>
-<area shape="poly" title=" " alt="" coords="92,153,136,195,165,218,197,238,241,254,239,259,195,243,162,223,132,199,88,157"/>
-<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="429,47,692,87"/>
-<area shape="poly" title=" " alt="" coords="382,65,415,65,415,70,382,70"/>
-<area shape="rect" href="expected_8hpp.html#a707ff37b9c7f7c83cf7f984840fa7a16" title="获取错误码对应的错误信息" alt="" coords="493,153,628,179"/>
-<area shape="poly" title=" " alt="" coords="349,163,479,163,479,169,349,169"/>
+<area shape="rect" title=" " alt="" coords="5,135,148,160"/>
+<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="218,9,294,35"/>
+<area shape="poly" title=" " alt="" coords="88,133,133,90,195,44,205,38,208,43,197,48,136,94,92,137"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="752,60,937,85"/>
+<area shape="poly" title=" " alt="" coords="148,138,738,80,738,86,149,143"/>
+<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="215,59,297,84"/>
+<area shape="poly" title=" " alt="" coords="107,132,211,87,213,92,109,137"/>
+<area shape="rect" href="structError.html#aa63ee10532d668f25a5147d7dc753749" title=" " alt="" coords="196,160,316,185"/>
+<area shape="poly" title=" " alt="" coords="149,155,183,160,182,165,148,160"/>
+<area shape="rect" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="201,209,311,235"/>
+<area shape="poly" title=" " alt="" coords="109,158,197,196,211,201,209,206,195,200,106,163"/>
+<area shape="rect" href="classGic.html#a1c36f1585f54075b78b09acf00a80eaa" title="配置软件生成中断 (SGI)" alt="" coords="221,259,291,284"/>
+<area shape="poly" title=" " alt="" coords="93,159,137,200,197,245,209,251,207,256,195,250,134,204,89,162"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="368,35,495,60"/>
+<area shape="poly" title=" " alt="" coords="295,25,355,34,354,39,294,30"/>
+<area shape="poly" title=" " alt="" coords="495,49,738,64,738,69,495,54"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="547,8,704,33"/>
+<area shape="poly" title=" " alt="" coords="494,36,533,31,533,36,495,41"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="985,55,1248,95"/>
+<area shape="poly" title=" " alt="" coords="938,71,971,71,971,77,938,76"/>
+<area shape="poly" title=" " alt="" coords="680,31,778,54,777,59,679,36"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="773,7,916,32"/>
+<area shape="poly" title=" " alt="" coords="704,18,759,17,759,23,704,23"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1069,5,1164,31"/>
+<area shape="poly" title=" " alt="" coords="916,16,1056,16,1056,21,916,22"/>
+<area shape="poly" title=" " alt="" coords="297,63,354,55,355,60,298,68"/>
+<area shape="rect" href="expected_8hpp.html#a707ff37b9c7f7c83cf7f984840fa7a16" title="获取错误码对应的错误信息" alt="" coords="364,160,499,185"/>
+<area shape="poly" title=" " alt="" coords="316,170,350,170,350,175,316,175"/>
 </map>
 </div>
 
 </div>
 </div>
 <a id="a83b785865d34bb5a407b0e4997c7a31d" name="a83b785865d34bb5a407b0e4997c7a31d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a83b785865d34bb5a407b0e4997c7a31d">&#9670;&#160;</a></span>Interrupt() <span class="overload">[2/9]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a83b785865d34bb5a407b0e4997c7a31d">&#9670;&#160;</a></span>Interrupt() <span class="overload">[2/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -428,7 +374,7 @@ Here is the call graph for this function:</div>
         <tr>
           <td class="memname">Interrupt::Interrupt </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classInterrupt.html">Interrupt</a> &amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -443,7 +389,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="acda9003a55382f7309c4b5b338580e1e" name="acda9003a55382f7309c4b5b338580e1e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acda9003a55382f7309c4b5b338580e1e">&#9670;&#160;</a></span>Interrupt() <span class="overload">[3/9]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#acda9003a55382f7309c4b5b338580e1e">&#9670;&#160;</a></span>Interrupt() <span class="overload">[3/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -469,7 +415,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="ae2fe3087bcb1e6554dc9cfe8cdf890c5" name="ae2fe3087bcb1e6554dc9cfe8cdf890c5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae2fe3087bcb1e6554dc9cfe8cdf890c5">&#9670;&#160;</a></span>~Interrupt() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2fe3087bcb1e6554dc9cfe8cdf890c5">&#9670;&#160;</a></span>~Interrupt() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -494,7 +440,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="a736dd658be198f3dc94db0f876fb2499" name="a736dd658be198f3dc94db0f876fb2499"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a736dd658be198f3dc94db0f876fb2499">&#9670;&#160;</a></span>Interrupt() <span class="overload">[4/9]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a736dd658be198f3dc94db0f876fb2499">&#9670;&#160;</a></span>Interrupt() <span class="overload">[4/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -511,7 +457,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="a83b785865d34bb5a407b0e4997c7a31d" name="a83b785865d34bb5a407b0e4997c7a31d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a83b785865d34bb5a407b0e4997c7a31d">&#9670;&#160;</a></span>Interrupt() <span class="overload">[5/9]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a83b785865d34bb5a407b0e4997c7a31d">&#9670;&#160;</a></span>Interrupt() <span class="overload">[5/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -522,7 +468,7 @@ Here is the call graph for this function:</div>
         <tr>
           <td class="memname">Interrupt::Interrupt </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classInterrupt.html">Interrupt</a> &amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -537,7 +483,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="acda9003a55382f7309c4b5b338580e1e" name="acda9003a55382f7309c4b5b338580e1e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acda9003a55382f7309c4b5b338580e1e">&#9670;&#160;</a></span>Interrupt() <span class="overload">[6/9]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#acda9003a55382f7309c4b5b338580e1e">&#9670;&#160;</a></span>Interrupt() <span class="overload">[6/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -563,7 +509,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="ae2fe3087bcb1e6554dc9cfe8cdf890c5" name="ae2fe3087bcb1e6554dc9cfe8cdf890c5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae2fe3087bcb1e6554dc9cfe8cdf890c5">&#9670;&#160;</a></span>~Interrupt() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2fe3087bcb1e6554dc9cfe8cdf890c5">&#9670;&#160;</a></span>~Interrupt() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -581,100 +527,6 @@ Here is the call graph for this function:</div>
   </td>
   <td class="mlabels-right">
 <span class="mlabels"><span class="mlabel">default</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a736dd658be198f3dc94db0f876fb2499" name="a736dd658be198f3dc94db0f876fb2499"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a736dd658be198f3dc94db0f876fb2499">&#9670;&#160;</a></span>Interrupt() <span class="overload">[7/9]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">Interrupt::Interrupt </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a83b785865d34bb5a407b0e4997c7a31d" name="a83b785865d34bb5a407b0e4997c7a31d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a83b785865d34bb5a407b0e4997c7a31d">&#9670;&#160;</a></span>Interrupt() <span class="overload">[8/9]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">Interrupt::Interrupt </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">delete</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="acda9003a55382f7309c4b5b338580e1e" name="acda9003a55382f7309c4b5b338580e1e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acda9003a55382f7309c4b5b338580e1e">&#9670;&#160;</a></span>Interrupt() <span class="overload">[9/9]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">Interrupt::Interrupt </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">delete</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a205371c5dda210308f487cf1ed942301" name="a205371c5dda210308f487cf1ed942301"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a205371c5dda210308f487cf1ed942301">&#9670;&#160;</a></span>~Interrupt() <span class="overload">[3/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">Interrupt::~Interrupt </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">default</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -682,67 +534,8 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ad3994bbf20b83c8ad05d306fe980d5f0" name="ad3994bbf20b83c8ad05d306fe980d5f0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad3994bbf20b83c8ad05d306fe980d5f0">&#9670;&#160;</a></span>apic() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::apic </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> -&gt; <a class="el" href="classApic.html">Apic</a>&amp; </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="x86__64_2include_2interrupt_8h_source.html#l00039">39</a> of file <a class="el" href="x86__64_2include_2interrupt_8h_source.html">interrupt.h</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   39</span>{ <span class="keywordflow">return</span> <a class="code hl_variable" href="classInterrupt.html#ace01daf4cad8f01a6382455ee7ff306a">apic_</a>; }</div>
-<div class="ttc" id="aclassInterrupt_html_ace01daf4cad8f01a6382455ee7ff306a"><div class="ttname"><a href="classInterrupt.html#ace01daf4cad8f01a6382455ee7ff306a">Interrupt::apic_</a></div><div class="ttdeci">Apic apic_</div><div class="ttdoc">APIC 中断控制器实例</div><div class="ttdef"><b>Definition</b> <a href="x86__64_2include_2interrupt_8h_source.html#l00076">interrupt.h:76</a></div></div>
-</div><!-- fragment -->
-</div>
-</div>
-<a id="a397c81f030b31d65fb2deacb4f9ba8db" name="a397c81f030b31d65fb2deacb4f9ba8db"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a397c81f030b31d65fb2deacb4f9ba8db">&#9670;&#160;</a></span>apic() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::apic </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classApic.html">Apic</a>&amp; </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="x86__64_2include_2interrupt_8h_source.html#l00040">40</a> of file <a class="el" href="x86__64_2include_2interrupt_8h_source.html">interrupt.h</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   40</span>                                                                 {</div>
-<div class="line"><span class="lineno">   41</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="classInterrupt.html#ace01daf4cad8f01a6382455ee7ff306a">apic_</a>;</div>
-<div class="line"><span class="lineno">   42</span>  }</div>
-</div><!-- fragment -->
-</div>
-</div>
 <a id="ab8c5204a97ad86dad0cb5f9de59192b8" name="ab8c5204a97ad86dad0cb5f9de59192b8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab8c5204a97ad86dad0cb5f9de59192b8">&#9670;&#160;</a></span>BroadcastIpi() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8c5204a97ad86dad0cb5f9de59192b8">&#9670;&#160;</a></span>BroadcastIpi() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -751,10 +544,10 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::BroadcastIpi </td>
+          <td class="memname">auto Interrupt::BroadcastIpi </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td> -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt;<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a>&gt;</td>
+          <td> -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt;void&gt;</td>
         </tr>
       </table>
   </td>
@@ -772,19 +565,19 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="aarch64_2interrupt_8cpp_source.html#l00093">93</a> of file <a class="el" href="aarch64_2interrupt_8cpp_source.html">interrupt.cpp</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">   93</span>                                               {</div>
-<div class="line"><span class="lineno">   95</span>  <span class="keyword">static</span> <span class="keyword">constexpr</span> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">kIPISGI</a> = 0;</div>
+<div class="line"><span class="lineno">   95</span>  <span class="keyword">static</span> <span class="keyword">constexpr</span> uint64_t kIPISGI = 0;</div>
 <div class="line"><span class="lineno">   96</span> </div>
 <div class="line"><span class="lineno">   97</span>  <span class="comment">// 构造 ICC_SGI1R_EL1 寄存器的值</span></div>
-<div class="line"><span class="lineno">   98</span>  <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">sgi_value</a> = 0;</div>
+<div class="line"><span class="lineno">   98</span>  uint64_t sgi_value = 0;</div>
 <div class="line"><span class="lineno">   99</span> </div>
 <div class="line"><span class="lineno">  100</span>  <span class="comment">// 设置 INTID 为 0 (SGI 0)</span></div>
-<div class="line"><span class="lineno">  101</span>  <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">sgi_value</a> |= (<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">kIPISGI</a> &amp; 0xF) &lt;&lt; 24;</div>
+<div class="line"><span class="lineno">  101</span>  sgi_value |= (kIPISGI &amp; 0xF) &lt;&lt; 24;</div>
 <div class="line"><span class="lineno">  102</span> </div>
 <div class="line"><span class="lineno">  103</span>  <span class="comment">// 设置 IRM (Interrupt Routing Mode) 为 1，表示广播到所有 PE</span></div>
-<div class="line"><span class="lineno">  104</span>  <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">sgi_value</a> |= (1ULL &lt;&lt; 40);</div>
+<div class="line"><span class="lineno">  104</span>  sgi_value |= (1ULL &lt;&lt; 40);</div>
 <div class="line"><span class="lineno">  105</span> </div>
 <div class="line"><span class="lineno">  106</span>  <span class="comment">// 写入 ICC_SGI1R_EL1 寄存器发送 SGI</span></div>
-<div class="line"><span class="lineno">  107</span>  cpu_io::ICC_SGI1R_EL1::Write(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">sgi_value</a>);</div>
+<div class="line"><span class="lineno">  107</span>  cpu_io::ICC_SGI1R_EL1::Write(sgi_value);</div>
 <div class="line"><span class="lineno">  108</span> </div>
 <div class="line"><span class="lineno">  109</span>  <span class="keywordflow">return</span> {};</div>
 <div class="line"><span class="lineno">  110</span>}</div>
@@ -792,7 +585,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="ab8c5204a97ad86dad0cb5f9de59192b8" name="ab8c5204a97ad86dad0cb5f9de59192b8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab8c5204a97ad86dad0cb5f9de59192b8">&#9670;&#160;</a></span>BroadcastIpi() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8c5204a97ad86dad0cb5f9de59192b8">&#9670;&#160;</a></span>BroadcastIpi() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -801,40 +594,10 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::BroadcastIpi </td>
+          <td class="memname">auto Interrupt::BroadcastIpi </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td> -&gt;  <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt;</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>广播 IPI 到所有其他核心 </p>
-<dl class="section return"><dt>Returns</dt><dd>Expected&lt;void&gt; 成功时返回 void，失败时返回错误 </dd></dl>
-
-<p>Implements <a class="el" href="classInterruptBase.html#a0c3fbbd3d8cc4d459ddd9b1b64121433">InterruptBase</a>.</p>
-
-</div>
-</div>
-<a id="ab8c5204a97ad86dad0cb5f9de59192b8" name="ab8c5204a97ad86dad0cb5f9de59192b8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab8c5204a97ad86dad0cb5f9de59192b8">&#9670;&#160;</a></span>BroadcastIpi() <span class="overload">[3/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::BroadcastIpi </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> -&gt;  <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt;</td>
+          <td> -&gt;  <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; void &gt;</td>
         </tr>
       </table>
   </td>
@@ -852,7 +615,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="ab2108e338d21ed15e1f5e77562063f8c" name="ab2108e338d21ed15e1f5e77562063f8c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab2108e338d21ed15e1f5e77562063f8c">&#9670;&#160;</a></span>Do() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2108e338d21ed15e1f5e77562063f8c">&#9670;&#160;</a></span>Do() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -861,9 +624,9 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::Do </td>
+          <td class="memname">auto Interrupt::Do </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a>&#160;</td>
+          <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>cause</em>, </td>
         </tr>
         <tr>
@@ -875,7 +638,7 @@ Here is the call graph for this function:</div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td>
+          <td></td><td> -&gt; void</td>
         </tr>
       </table>
   </td>
@@ -898,14 +661,14 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="aarch64_2interrupt_8cpp_source.html#l00063">63</a> of file <a class="el" href="aarch64_2interrupt_8cpp_source.html">interrupt.cpp</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">   63</span>                                                                     {</div>
-<div class="line"><span class="lineno">   64</span>  cpu_io::ICC_EOIR1_EL1::Write(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cause</a>);</div>
-<div class="line"><span class="lineno">   65</span>  <a class="code hl_variable" href="classInterrupt.html#aeae60810035a86ed1bf3e9df62dd7f4e">interrupt_handlers_</a>[<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cause</a>](<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cause</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">context</a>);</div>
+<div class="line"><span class="lineno">   64</span>  cpu_io::ICC_EOIR1_EL1::Write(cause);</div>
+<div class="line"><span class="lineno">   65</span>  <a class="code hl_variable" href="classInterrupt.html#aeae60810035a86ed1bf3e9df62dd7f4e">interrupt_handlers_</a>[cause](cause, context);</div>
 <div class="line"><span class="lineno">   66</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>
 <a id="ab2108e338d21ed15e1f5e77562063f8c" name="ab2108e338d21ed15e1f5e77562063f8c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab2108e338d21ed15e1f5e77562063f8c">&#9670;&#160;</a></span>Do() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2108e338d21ed15e1f5e77562063f8c">&#9670;&#160;</a></span>Do() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -914,9 +677,9 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::Do </td>
+          <td class="memname">auto Interrupt::Do </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a>&#160;</td>
+          <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>cause</em>, </td>
         </tr>
         <tr>
@@ -928,7 +691,7 @@ Here is the call graph for this function:</div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt;  <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td>
+          <td></td><td> -&gt;  void</td>
         </tr>
       </table>
   </td>
@@ -951,82 +714,6 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="ab2108e338d21ed15e1f5e77562063f8c" name="ab2108e338d21ed15e1f5e77562063f8c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab2108e338d21ed15e1f5e77562063f8c">&#9670;&#160;</a></span>Do() <span class="overload">[3/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::Do </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a>&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a> *&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td> -&gt;  <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>执行中断处理 </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">不同平台有不同含义</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>Implements <a class="el" href="classInterruptBase.html#a7d8e636c70f1c40857b372f86d7091de">InterruptBase</a>.</p>
-
-</div>
-</div>
-<a id="a77bc6eee4ed31b6dd645da546d30f1bf" name="a77bc6eee4ed31b6dd645da546d30f1bf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a77bc6eee4ed31b6dd645da546d30f1bf">&#9670;&#160;</a></span>InitApic()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::InitApic </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">size_t</a>&#160;</td>
-          <td class="paramname"><em>cpu_count</em></td><td>)</td>
-          <td> -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>初始化 APIC </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">cpu_count</td><td>CPU 核心数 </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="x86__64_2interrupt_8cpp_source.html#l00128">128</a> of file <a class="el" href="x86__64_2interrupt_8cpp_source.html">interrupt.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  128</span>{ <a class="code hl_variable" href="classInterrupt.html#ace01daf4cad8f01a6382455ee7ff306a">apic_</a> = <a class="code hl_class" href="classApic.html">Apic</a>(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpu_count</a>); }</div>
-<div class="ttc" id="aclassApic_html"><div class="ttname"><a href="classApic.html">Apic</a></div><div class="ttdoc">APIC 管理类，管理整个系统的 Local APIC 和 IO APIC.</div><div class="ttdef"><b>Definition</b> <a href="apic_8h_source.html#l00022">apic.h:22</a></div></div>
-</div><!-- fragment -->
-</div>
-</div>
 <a id="ab7e226d0639ec711fe2b4d22104fb54c" name="ab7e226d0639ec711fe2b4d22104fb54c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab7e226d0639ec711fe2b4d22104fb54c">&#9670;&#160;</a></span>InitPlic()</h2>
 
@@ -1034,27 +721,27 @@ Here is the call graph for this function:</div>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::InitPlic </td>
+          <td class="memname">auto Interrupt::InitPlic </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a>&#160;</td>
+          <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>dev_addr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">size_t</a>&#160;</td>
+          <td class="paramtype">size_t&#160;</td>
           <td class="paramname"><em>ndev</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">size_t</a>&#160;</td>
+          <td class="paramtype">size_t&#160;</td>
           <td class="paramname"><em>context_count</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td>
+          <td></td><td> -&gt; void</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1071,7 +758,7 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="riscv64_2interrupt_8cpp_source.html#l00135">135</a> of file <a class="el" href="riscv64_2interrupt_8cpp_source.html">interrupt.cpp</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">  136</span>            {</div>
-<div class="line"><span class="lineno">  137</span>  <a class="code hl_variable" href="classInterrupt.html#a6ed65be5c7145e0992ebebbc377387c0">plic_</a> = <a class="code hl_class" href="classPlic.html">Plic</a>(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">dev_addr</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">ndev</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">context_count</a>);</div>
+<div class="line"><span class="lineno">  137</span>  <a class="code hl_variable" href="classInterrupt.html#a6ed65be5c7145e0992ebebbc377387c0">plic_</a> = <a class="code hl_class" href="classPlic.html">Plic</a>(dev_addr, ndev, context_count);</div>
 <div class="line"><span class="lineno">  138</span>}</div>
 <div class="ttc" id="aclassInterrupt_html_a6ed65be5c7145e0992ebebbc377387c0"><div class="ttname"><a href="classInterrupt.html#a6ed65be5c7145e0992ebebbc377387c0">Interrupt::plic_</a></div><div class="ttdeci">Plic plic_</div><div class="ttdef"><b>Definition</b> <a href="riscv64_2include_2interrupt_8h_source.html#l00098">interrupt.h:98</a></div></div>
 <div class="ttc" id="aclassPlic_html"><div class="ttname"><a href="classPlic.html">Plic</a></div><div class="ttdoc">Plic 驱动</div><div class="ttdef"><b>Definition</b> <a href="plic_8h_source.html#l00020">plic.h:20</a></div></div>
@@ -1079,7 +766,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="a06b0e7fb669e1b216eab7aefafcca291" name="a06b0e7fb669e1b216eab7aefafcca291"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a06b0e7fb669e1b216eab7aefafcca291">&#9670;&#160;</a></span>operator=() <span class="overload">[1/6]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a06b0e7fb669e1b216eab7aefafcca291">&#9670;&#160;</a></span>operator=() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1088,11 +775,11 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">Interrupt::operator</a>= </td>
+          <td class="memname">auto Interrupt::operator= </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classInterrupt.html">Interrupt</a> &amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
-          <td> -&gt;  <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td>
+          <td> -&gt;  <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=delete</td>
         </tr>
       </table>
   </td>
@@ -1105,7 +792,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="a06b0e7fb669e1b216eab7aefafcca291" name="a06b0e7fb669e1b216eab7aefafcca291"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a06b0e7fb669e1b216eab7aefafcca291">&#9670;&#160;</a></span>operator=() <span class="overload">[2/6]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a06b0e7fb669e1b216eab7aefafcca291">&#9670;&#160;</a></span>operator=() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1114,37 +801,11 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">Interrupt::operator</a>= </td>
+          <td class="memname">auto Interrupt::operator= </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classInterrupt.html">Interrupt</a> &amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
-          <td> -&gt;  <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">delete</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a06b0e7fb669e1b216eab7aefafcca291" name="a06b0e7fb669e1b216eab7aefafcca291"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a06b0e7fb669e1b216eab7aefafcca291">&#9670;&#160;</a></span>operator=() <span class="overload">[3/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">Interrupt::operator</a>= </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classInterrupt.html">Interrupt</a> &amp;&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td> -&gt;  <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td>
+          <td> -&gt;  <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=delete</td>
         </tr>
       </table>
   </td>
@@ -1157,7 +818,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="aa2f308b9fabe07cbe0188f998ed77b5e" name="aa2f308b9fabe07cbe0188f998ed77b5e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa2f308b9fabe07cbe0188f998ed77b5e">&#9670;&#160;</a></span>operator=() <span class="overload">[4/6]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2f308b9fabe07cbe0188f998ed77b5e">&#9670;&#160;</a></span>operator=() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1166,11 +827,11 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">Interrupt::operator</a>= </td>
+          <td class="memname">auto Interrupt::operator= </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
-          <td> -&gt;  <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td>
+          <td> -&gt;  <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=delete</td>
         </tr>
       </table>
   </td>
@@ -1183,7 +844,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="aa2f308b9fabe07cbe0188f998ed77b5e" name="aa2f308b9fabe07cbe0188f998ed77b5e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa2f308b9fabe07cbe0188f998ed77b5e">&#9670;&#160;</a></span>operator=() <span class="overload">[5/6]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2f308b9fabe07cbe0188f998ed77b5e">&#9670;&#160;</a></span>operator=() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1192,37 +853,11 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">Interrupt::operator</a>= </td>
+          <td class="memname">auto Interrupt::operator= </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
-          <td> -&gt;  <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">delete</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aa2f308b9fabe07cbe0188f998ed77b5e" name="aa2f308b9fabe07cbe0188f998ed77b5e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa2f308b9fabe07cbe0188f998ed77b5e">&#9670;&#160;</a></span>operator=() <span class="overload">[6/6]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">Interrupt::operator</a>= </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html">Interrupt</a> &amp;&amp;&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td> -&gt;  <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">delete</a></td>
+          <td> -&gt;  <a class="el" href="classInterrupt.html">Interrupt</a> &amp;=delete</td>
         </tr>
       </table>
   </td>
@@ -1244,7 +879,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::plic </td>
+          <td class="memname">__always_inline auto Interrupt::plic </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> -&gt; <a class="el" href="classPlic.html">Plic</a>&amp; </td>
@@ -1275,10 +910,10 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::plic </td>
+          <td class="memname">__always_inline auto Interrupt::plic </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td> const -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">const</a> <a class="el" href="classPlic.html">Plic</a>&amp; </td>
+          <td> const -&gt; const <a class="el" href="classPlic.html">Plic</a>&amp; </td>
         </tr>
       </table>
   </td>
@@ -1308,21 +943,21 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::Ppi </td>
+          <td class="memname">__always_inline auto Interrupt::Ppi </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>intid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>cpuid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> const -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> </td>
+          <td></td><td> const -&gt; void </td>
         </tr>
       </table>
   </td>
@@ -1343,7 +978,7 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="aarch64_2include_2interrupt_8h_source.html#l00085">85</a> of file <a class="el" href="aarch64_2include_2interrupt_8h_source.html">interrupt.h</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">   85</span>                                                                         {</div>
-<div class="line"><span class="lineno">   86</span>    <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a>.<a class="code hl_function" href="classGic.html#a61fe90349f98f56ca6f675e4135ca675">Ppi</a>(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">intid</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpuid</a>);</div>
+<div class="line"><span class="lineno">   86</span>    <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a>.<a class="code hl_function" href="classGic.html#a61fe90349f98f56ca6f675e4135ca675">Ppi</a>(intid, cpuid);</div>
 <div class="line"><span class="lineno">   87</span>  }</div>
 <div class="ttc" id="aclassGic_html_a61fe90349f98f56ca6f675e4135ca675"><div class="ttname"><a href="classGic.html#a61fe90349f98f56ca6f675e4135ca675">Gic::Ppi</a></div><div class="ttdeci">auto Ppi(uint32_t intid, uint32_t cpuid) const -&gt; void</div><div class="ttdoc">配置私有外设中断 (PPI)</div><div class="ttdef"><b>Definition</b> <a href="gic_8cpp_source.html#l00035">gic.cpp:35</a></div></div>
 </div><!-- fragment --><div class="dynheader">
@@ -1360,7 +995,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="aa2d8a2a32dd46cf168f90fe8af02d6f5" name="aa2d8a2a32dd46cf168f90fe8af02d6f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa2d8a2a32dd46cf168f90fe8af02d6f5">&#9670;&#160;</a></span>RegisterExternalInterrupt() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2d8a2a32dd46cf168f90fe8af02d6f5">&#9670;&#160;</a></span>RegisterExternalInterrupt() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1369,21 +1004,21 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::RegisterExternalInterrupt </td>
+          <td class="memname">auto Interrupt::RegisterExternalInterrupt </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>irq</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>cpu_id</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>priority</em>, </td>
         </tr>
         <tr>
@@ -1395,7 +1030,7 @@ Here is the call graph for this function:</div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt;<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a>&gt;</td>
+          <td></td><td> -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt;void&gt;</td>
         </tr>
       </table>
   </td>
@@ -1430,10 +1065,10 @@ Here is the call graph for this function:</div>
 <div class="line"><span class="lineno">  122</span>  <a class="code hl_function" href="classInterrupt.html#ab65600cf366375d6551752420171ff21">RegisterInterruptFunc</a>(irq, handler);</div>
 <div class="line"><span class="lineno">  123</span> </div>
 <div class="line"><span class="lineno">  124</span>  <span class="comment">// 再在 GIC 上为指定核心配置并启用 SPI</span></div>
-<div class="line"><span class="lineno">  125</span>  <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a>.<a class="code hl_function" href="classGic.html#a0635a4d4b30049040df77591253f1a1d">Spi</a>(irq, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpu_id</a>);</div>
+<div class="line"><span class="lineno">  125</span>  <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a>.<a class="code hl_function" href="classGic.html#a0635a4d4b30049040df77591253f1a1d">Spi</a>(irq, cpu_id);</div>
 <div class="line"><span class="lineno">  126</span> </div>
 <div class="line"><span class="lineno">  127</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;RegisterExternalInterrupt: INTID {}, cpu {}, priority {}&quot;</span>, irq,</div>
-<div class="line"><span class="lineno">  128</span>             <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpu_id</a>, priority);</div>
+<div class="line"><span class="lineno">  128</span>             cpu_id, priority);</div>
 <div class="line"><span class="lineno">  129</span>  <span class="keywordflow">return</span> {};</div>
 <div class="line"><span class="lineno">  130</span>}</div>
 <div class="ttc" id="aclassGic_html_a0635a4d4b30049040df77591253f1a1d"><div class="ttname"><a href="classGic.html#a0635a4d4b30049040df77591253f1a1d">Gic::Spi</a></div><div class="ttdeci">auto Spi(uint32_t intid, uint32_t cpuid) const -&gt; void</div><div class="ttdoc">配置共享外设中断 (SPI)</div><div class="ttdef"><b>Definition</b> <a href="gic_8cpp_source.html#l00031">gic.cpp:31</a></div></div>
@@ -1445,16 +1080,29 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classInterrupt_aa2d8a2a32dd46cf168f90fe8af02d6f5_cgraph.png" border="0" usemap="#aclassInterrupt_aa2d8a2a32dd46cf168f90fe8af02d6f5_cgraph" alt=""/></div>
 <map name="aclassInterrupt_aa2d8a2a32dd46cf168f90fe8af02d6f5_cgraph" id="aclassInterrupt_aa2d8a2a32dd46cf168f90fe8af02d6f5_cgraph">
-<area shape="rect" title="注册外部中断" alt="" coords="5,5,200,45"/>
-<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="248,13,331,38"/>
-<area shape="poly" title=" " alt="" coords="200,23,234,23,234,28,200,28"/>
+<area shape="rect" title="注册外部中断" alt="" coords="5,33,200,73"/>
+<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="248,41,331,66"/>
+<area shape="poly" title=" " alt="" coords="200,51,234,51,234,56,200,56"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="379,41,505,66"/>
+<area shape="poly" title=" " alt="" coords="331,51,365,51,365,56,331,56"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="759,15,944,41"/>
+<area shape="poly" title=" " alt="" coords="505,47,745,32,745,37,506,52"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="553,66,711,91"/>
+<area shape="poly" title=" " alt="" coords="506,59,540,64,539,69,505,64"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="992,5,1255,45"/>
+<area shape="poly" title=" " alt="" coords="944,24,978,24,978,29,944,30"/>
+<area shape="poly" title=" " alt="" coords="687,63,782,41,783,46,689,68"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="780,67,923,93"/>
+<area shape="poly" title=" " alt="" coords="711,76,766,77,766,82,711,82"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1076,70,1171,95"/>
+<area shape="poly" title=" " alt="" coords="923,78,1063,79,1063,85,923,83"/>
 </map>
 </div>
 
 </div>
 </div>
 <a id="aa2d8a2a32dd46cf168f90fe8af02d6f5" name="aa2d8a2a32dd46cf168f90fe8af02d6f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa2d8a2a32dd46cf168f90fe8af02d6f5">&#9670;&#160;</a></span>RegisterExternalInterrupt() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2d8a2a32dd46cf168f90fe8af02d6f5">&#9670;&#160;</a></span>RegisterExternalInterrupt() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1463,21 +1111,21 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::RegisterExternalInterrupt </td>
+          <td class="memname">auto Interrupt::RegisterExternalInterrupt </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>irq</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>cpu_id</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>priority</em>, </td>
         </tr>
         <tr>
@@ -1489,7 +1137,7 @@ Here is the call graph for this function:</div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt;  <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt;</td>
+          <td></td><td> -&gt;  <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; void &gt;</td>
         </tr>
       </table>
   </td>
@@ -1515,70 +1163,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="aa2d8a2a32dd46cf168f90fe8af02d6f5" name="aa2d8a2a32dd46cf168f90fe8af02d6f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa2d8a2a32dd46cf168f90fe8af02d6f5">&#9670;&#160;</a></span>RegisterExternalInterrupt() <span class="overload">[3/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::RegisterExternalInterrupt </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
-          <td class="paramname"><em>irq</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
-          <td class="paramname"><em>cpu_id</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
-          <td class="paramname"><em>priority</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a>&#160;</td>
-          <td class="paramname"><em>handler</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td> -&gt;  <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt;</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>注册外部中断处理函数 </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">irq</td><td>外部中断号（平台相关: PLIC source_id / GIC INTID / APIC IRQ） </td></tr>
-    <tr><td class="paramname">cpu_id</td><td>目标 CPU 核心 ID，中断将路由到该核心 </td></tr>
-    <tr><td class="paramname">priority</td><td>中断优先级 </td></tr>
-    <tr><td class="paramname">handler</td><td>中断处理函数 </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Expected&lt;void&gt; 成功时返回 void，失败时返回错误 </dd></dl>
-
-<p>Implements <a class="el" href="classInterruptBase.html#abbf783418c1b12abae9660008d53c021">InterruptBase</a>.</p>
-
-</div>
-</div>
 <a id="ab65600cf366375d6551752420171ff21" name="ab65600cf366375d6551752420171ff21"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab65600cf366375d6551752420171ff21">&#9670;&#160;</a></span>RegisterInterruptFunc() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab65600cf366375d6551752420171ff21">&#9670;&#160;</a></span>RegisterInterruptFunc() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1587,9 +1173,9 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::RegisterInterruptFunc </td>
+          <td class="memname">auto Interrupt::RegisterInterruptFunc </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a>&#160;</td>
+          <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>cause</em>, </td>
         </tr>
         <tr>
@@ -1601,7 +1187,7 @@ Here is the call graph for this function:</div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td>
+          <td></td><td> -&gt; void</td>
         </tr>
       </table>
   </td>
@@ -1625,14 +1211,14 @@ Here is the call graph for this function:</div>
 <p class="definition">Definition at line <a class="el" href="aarch64_2interrupt_8cpp_source.html#l00068">68</a> of file <a class="el" href="aarch64_2interrupt_8cpp_source.html">interrupt.cpp</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">   69</span>            {</div>
 <div class="line"><span class="lineno">   70</span>  <span class="keywordflow">if</span> (func) {</div>
-<div class="line"><span class="lineno">   71</span>    <a class="code hl_variable" href="classInterrupt.html#aeae60810035a86ed1bf3e9df62dd7f4e">interrupt_handlers_</a>[<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cause</a>] = func;</div>
+<div class="line"><span class="lineno">   71</span>    <a class="code hl_variable" href="classInterrupt.html#aeae60810035a86ed1bf3e9df62dd7f4e">interrupt_handlers_</a>[cause] = func;</div>
 <div class="line"><span class="lineno">   72</span>  }</div>
 <div class="line"><span class="lineno">   73</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>
 <a id="ab65600cf366375d6551752420171ff21" name="ab65600cf366375d6551752420171ff21"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab65600cf366375d6551752420171ff21">&#9670;&#160;</a></span>RegisterInterruptFunc() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab65600cf366375d6551752420171ff21">&#9670;&#160;</a></span>RegisterInterruptFunc() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1641,9 +1227,9 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::RegisterInterruptFunc </td>
+          <td class="memname">auto Interrupt::RegisterInterruptFunc </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a>&#160;</td>
+          <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>cause</em>, </td>
         </tr>
         <tr>
@@ -1655,7 +1241,7 @@ Here is the call graph for this function:</div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt;  <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td>
+          <td></td><td> -&gt;  void</td>
         </tr>
       </table>
   </td>
@@ -1678,55 +1264,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="ab65600cf366375d6551752420171ff21" name="ab65600cf366375d6551752420171ff21"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab65600cf366375d6551752420171ff21">&#9670;&#160;</a></span>RegisterInterruptFunc() <span class="overload">[3/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::RegisterInterruptFunc </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a>&#160;</td>
-          <td class="paramname"><em>cause</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a>&#160;</td>
-          <td class="paramname"><em>func</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td> -&gt;  <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>注册中断处理函数 </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">cause</td><td>中断号，不同平台有不同含义 </td></tr>
-    <tr><td class="paramname">func</td><td>处理函数 </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>Implements <a class="el" href="classInterruptBase.html#a0f8e03652ccab8984d75befe335bc08a">InterruptBase</a>.</p>
-
-</div>
-</div>
 <a id="a149cbd9b84e4f91772d610882c84b329" name="a149cbd9b84e4f91772d610882c84b329"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a149cbd9b84e4f91772d610882c84b329">&#9670;&#160;</a></span>SendIpi() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a149cbd9b84e4f91772d610882c84b329">&#9670;&#160;</a></span>SendIpi() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1735,11 +1274,11 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::SendIpi </td>
+          <td class="memname">auto Interrupt::SendIpi </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a>&#160;</td>
+          <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>target_cpu_mask</em></td><td>)</td>
-          <td> -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt;<a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a>&gt;</td>
+          <td> -&gt; <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt;void&gt;</td>
         </tr>
       </table>
   </td>
@@ -1763,18 +1302,18 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="aarch64_2interrupt_8cpp_source.html#l00075">75</a> of file <a class="el" href="aarch64_2interrupt_8cpp_source.html">interrupt.cpp</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">   75</span>                                                                  {</div>
-<div class="line"><span class="lineno">   77</span>  <span class="keyword">static</span> <span class="keyword">constexpr</span> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">kIPISGI</a> = 0;</div>
+<div class="line"><span class="lineno">   77</span>  <span class="keyword">static</span> <span class="keyword">constexpr</span> uint64_t kIPISGI = 0;</div>
 <div class="line"><span class="lineno">   78</span> </div>
-<div class="line"><span class="lineno">   79</span>  <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">sgi_value</a> = 0;</div>
+<div class="line"><span class="lineno">   79</span>  uint64_t sgi_value = 0;</div>
 <div class="line"><span class="lineno">   80</span> </div>
 <div class="line"><span class="lineno">   81</span>  <span class="comment">// 设置 INTID 为 0 (SGI 0)</span></div>
-<div class="line"><span class="lineno">   82</span>  <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">sgi_value</a> |= (<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">kIPISGI</a> &amp; 0xF) &lt;&lt; 24;</div>
+<div class="line"><span class="lineno">   82</span>  sgi_value |= (kIPISGI &amp; 0xF) &lt;&lt; 24;</div>
 <div class="line"><span class="lineno">   83</span> </div>
 <div class="line"><span class="lineno">   84</span>  <span class="comment">// 设置 TargetList (Aff0 级别，低 16 位)</span></div>
-<div class="line"><span class="lineno">   85</span>  <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">sgi_value</a> |= (<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">target_cpu_mask</a> &amp; 0xFFFF);</div>
+<div class="line"><span class="lineno">   85</span>  sgi_value |= (target_cpu_mask &amp; 0xFFFF);</div>
 <div class="line"><span class="lineno">   86</span> </div>
 <div class="line"><span class="lineno">   87</span>  <span class="comment">// 写入 ICC_SGI1R_EL1 寄存器发送 SGI</span></div>
-<div class="line"><span class="lineno">   88</span>  cpu_io::ICC_SGI1R_EL1::Write(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">sgi_value</a>);</div>
+<div class="line"><span class="lineno">   88</span>  cpu_io::ICC_SGI1R_EL1::Write(sgi_value);</div>
 <div class="line"><span class="lineno">   89</span> </div>
 <div class="line"><span class="lineno">   90</span>  <span class="keywordflow">return</span> {};</div>
 <div class="line"><span class="lineno">   91</span>}</div>
@@ -1782,7 +1321,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="a149cbd9b84e4f91772d610882c84b329" name="a149cbd9b84e4f91772d610882c84b329"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a149cbd9b84e4f91772d610882c84b329">&#9670;&#160;</a></span>SendIpi() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a149cbd9b84e4f91772d610882c84b329">&#9670;&#160;</a></span>SendIpi() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1791,48 +1330,11 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::SendIpi </td>
+          <td class="memname">auto Interrupt::SendIpi </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a>&#160;</td>
+          <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>target_cpu_mask</em></td><td>)</td>
-          <td> -&gt;  <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt;</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>发送 IPI 到指定核心 </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">target_cpu_mask</td><td>目标核心的位掩码 </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Expected&lt;void&gt; 成功时返回 void，失败时返回错误 </dd></dl>
-
-<p>Implements <a class="el" href="classInterruptBase.html#a9b56471b63d7c73a45d9674df7da8084">InterruptBase</a>.</p>
-
-</div>
-</div>
-<a id="a149cbd9b84e4f91772d610882c84b329" name="a149cbd9b84e4f91772d610882c84b329"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a149cbd9b84e4f91772d610882c84b329">&#9670;&#160;</a></span>SendIpi() <span class="overload">[3/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::SendIpi </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a>&#160;</td>
-          <td class="paramname"><em>target_cpu_mask</em></td><td>)</td>
-          <td> -&gt;  <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> &gt;</td>
+          <td> -&gt;  <a class="el" href="expected_8hpp.html#a87330dc74eb67e824914b8d343050757">Expected</a>&lt; void &gt;</td>
         </tr>
       </table>
   </td>
@@ -1865,10 +1367,10 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::SetUp </td>
+          <td class="memname">__always_inline auto Interrupt::SetUp </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td> const -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> </td>
+          <td> const -&gt; void </td>
         </tr>
       </table>
   </td>
@@ -1906,98 +1408,6 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a7214c5dde8ca509678acd6825bdbeba7" name="a7214c5dde8ca509678acd6825bdbeba7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7214c5dde8ca509678acd6825bdbeba7">&#9670;&#160;</a></span>SetUpIdtr() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto Interrupt::SetUpIdtr </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> -&gt; void</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>初始化 idtr </p>
-
-<p class="definition">Definition at line <a class="el" href="x86__64_2interrupt_8cpp_source.html#l00062">62</a> of file <a class="el" href="x86__64_2interrupt_8cpp_source.html">interrupt.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   62</span>{ <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">SetUpIdtr&lt;0&gt;</a>(); }</div>
-</div><!-- fragment -->
-</div>
-</div>
-<a id="a835af1dfff0488977d5b2767c9df4c54" name="a835af1dfff0488977d5b2767c9df4c54"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a835af1dfff0488977d5b2767c9df4c54">&#9670;&#160;</a></span>SetUpIdtr() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;uint8_t no&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto Interrupt::SetUpIdtr </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> -&gt; void</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>初始化 idtr </p>
-<dl class="section note"><dt>Note</dt><dd>注意模板展开时的栈溢出 </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="x86__64_2interrupt_8cpp_source.html#l00065">65</a> of file <a class="el" href="x86__64_2interrupt_8cpp_source.html">interrupt.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   65</span>                                  {</div>
-<div class="line"><span class="lineno">   66</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">no</a> &lt; cpu_io::IdtrInfo::kInterruptMaxCount - 1) {</div>
-<div class="line"><span class="lineno">   67</span>    <a class="code hl_variable" href="classInterrupt.html#a4ea743b953a591cf5d009c56508a53fd">idts_</a>[<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">no</a>] = cpu_io::IdtrInfo::Idt(</div>
-<div class="line"><span class="lineno">   68</span>        <span class="keyword">reinterpret_cast&lt;</span><a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint64_t</a><span class="keyword">&gt;</span>(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">TarpEntry&lt;no&gt;</a>), 8, 0x0,</div>
-<div class="line"><span class="lineno">   69</span>        cpu_io::IdtrInfo::Idt::Type::k64BitInterruptGate,</div>
-<div class="line"><span class="lineno">   70</span>        cpu_io::IdtrInfo::Idt::DPL::kRing0, cpu_io::IdtrInfo::Idt::P::kPresent);</div>
-<div class="line"><span class="lineno">   71</span>    <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">SetUpIdtr&lt;no + 1&gt;</a>();</div>
-<div class="line"><span class="lineno">   72</span>  } <span class="keywordflow">else</span> {</div>
-<div class="line"><span class="lineno">   73</span>    <span class="comment">// 写入 idtr</span></div>
-<div class="line"><span class="lineno">   74</span>    <span class="keyword">static</span> <span class="keyword">auto</span> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">idtr</a> = cpu_io::IdtrInfo::Idtr{</div>
-<div class="line"><span class="lineno">   75</span>        .limit = <span class="keyword">sizeof</span>(cpu_io::IdtrInfo::Idt) *</div>
-<div class="line"><span class="lineno">   76</span>                     cpu_io::IdtrInfo::kInterruptMaxCount -</div>
-<div class="line"><span class="lineno">   77</span>                 1,</div>
-<div class="line"><span class="lineno">   78</span>        .base = <a class="code hl_variable" href="classInterrupt.html#a4ea743b953a591cf5d009c56508a53fd">idts_</a>.data(),</div>
-<div class="line"><span class="lineno">   79</span>    };</div>
-<div class="line"><span class="lineno">   80</span>    cpu_io::Idtr::Write(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">idtr</a>);</div>
-<div class="line"><span class="lineno">   81</span> </div>
-<div class="line"><span class="lineno">   82</span>    <span class="comment">// 输出 idtr 信息</span></div>
-<div class="line"><span class="lineno">   83</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">i</a> = 0;</div>
-<div class="line"><span class="lineno">   84</span>         <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">i</a> &lt; (cpu_io::Idtr::Read().limit + 1) / <span class="keyword">sizeof</span>(cpu_io::IdtrInfo::Idtr);</div>
-<div class="line"><span class="lineno">   85</span>         <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">i</a>++) {</div>
-<div class="line"><span class="lineno">   86</span>      <a class="code hl_function" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a>(<span class="stringliteral">&quot;idtr[{}] {:#x}&quot;</span>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">i</a>,</div>
-<div class="line"><span class="lineno">   87</span>                  <span class="keyword">reinterpret_cast&lt;</span><a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uintptr_t</a><span class="keyword">&gt;</span>(cpu_io::Idtr::Read().base + <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">i</a>));</div>
-<div class="line"><span class="lineno">   88</span>    }</div>
-<div class="line"><span class="lineno">   89</span>  }</div>
-<div class="line"><span class="lineno">   90</span>}</div>
-<div class="ttc" id="aclassInterrupt_html_a4ea743b953a591cf5d009c56508a53fd"><div class="ttname"><a href="classInterrupt.html#a4ea743b953a591cf5d009c56508a53fd">Interrupt::idts_</a></div><div class="ttdeci">std::array&lt; cpu_io::IdtrInfo::Idt, cpu_io::IdtrInfo::kInterruptMaxCount &gt; idts_</div><div class="ttdef"><b>Definition</b> <a href="x86__64_2include_2interrupt_8h_source.html#l00073">interrupt.h:73</a></div></div>
-<div class="ttc" id="anamespaceklog_html_a5303b815d2299fd2fa306bd4b43a3963"><div class="ttname"><a href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a></div><div class="ttdeci">auto Debug(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00173">kernel_log.hpp:173</a></div></div>
-</div><!-- fragment --><div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="classInterrupt_a835af1dfff0488977d5b2767c9df4c54_cgraph.png" border="0" usemap="#aclassInterrupt_a835af1dfff0488977d5b2767c9df4c54_cgraph" alt=""/></div>
-<map name="aclassInterrupt_a835af1dfff0488977d5b2767c9df4c54_cgraph" id="aclassInterrupt_a835af1dfff0488977d5b2767c9df4c54_cgraph">
-<area shape="rect" title="初始化 idtr" alt="" coords="5,5,152,31"/>
-<area shape="rect" href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963" title="以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）" alt="" coords="200,5,300,31"/>
-<area shape="poly" title=" " alt="" coords="152,15,186,15,186,21,152,21"/>
-</map>
-</div>
-
-</div>
-</div>
 <a id="a6c293913342a70fdb3d2513b88f7dc54" name="a6c293913342a70fdb3d2513b88f7dc54"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6c293913342a70fdb3d2513b88f7dc54">&#9670;&#160;</a></span>Sgi()</h2>
 
@@ -2008,21 +1418,21 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::Sgi </td>
+          <td class="memname">__always_inline auto Interrupt::Sgi </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>intid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>cpuid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> const -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> </td>
+          <td></td><td> const -&gt; void </td>
         </tr>
       </table>
   </td>
@@ -2043,7 +1453,7 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="aarch64_2include_2interrupt_8h_source.html#l00094">94</a> of file <a class="el" href="aarch64_2include_2interrupt_8h_source.html">interrupt.h</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">   94</span>                                                                         {</div>
-<div class="line"><span class="lineno">   95</span>    <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a>.<a class="code hl_function" href="classGic.html#a1c36f1585f54075b78b09acf00a80eaa">Sgi</a>(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">intid</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpuid</a>);</div>
+<div class="line"><span class="lineno">   95</span>    <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a>.<a class="code hl_function" href="classGic.html#a1c36f1585f54075b78b09acf00a80eaa">Sgi</a>(intid, cpuid);</div>
 <div class="line"><span class="lineno">   96</span>  }</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -2068,21 +1478,21 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">__always_inline</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">auto</a> Interrupt::Spi </td>
+          <td class="memname">__always_inline auto Interrupt::Spi </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>intid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint32_t</a>&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>cpuid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> const -&gt; <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">void</a> </td>
+          <td></td><td> const -&gt; void </td>
         </tr>
       </table>
   </td>
@@ -2103,7 +1513,7 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="aarch64_2include_2interrupt_8h_source.html#l00076">76</a> of file <a class="el" href="aarch64_2include_2interrupt_8h_source.html">interrupt.h</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">   76</span>                                                                         {</div>
-<div class="line"><span class="lineno">   77</span>    <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a>.<a class="code hl_function" href="classGic.html#a0635a4d4b30049040df77591253f1a1d">Spi</a>(<a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">intid</a>, <a class="code hl_function" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">cpuid</a>);</div>
+<div class="line"><span class="lineno">   77</span>    <a class="code hl_variable" href="classInterrupt.html#aa9f43e1e97d63b757aa4b51f3807a2ee">gic_</a>.<a class="code hl_function" href="classGic.html#a0635a4d4b30049040df77591253f1a1d">Spi</a>(intid, cpuid);</div>
 <div class="line"><span class="lineno">   78</span>  }</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -2119,33 +1529,6 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="ace01daf4cad8f01a6382455ee7ff306a" name="ace01daf4cad8f01a6382455ee7ff306a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace01daf4cad8f01a6382455ee7ff306a">&#9670;&#160;</a></span>apic_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classApic.html">Apic</a> Interrupt::apic_ {}</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>APIC 中断控制器实例 </p>
-
-<p class="definition">Definition at line <a class="el" href="x86__64_2include_2interrupt_8h_source.html#l00076">76</a> of file <a class="el" href="x86__64_2include_2interrupt_8h_source.html">interrupt.h</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   76</span>{};</div>
-</div><!-- fragment -->
-</div>
-</div>
 <a id="abde0431a97f983997c45ab415e7764e8" name="abde0431a97f983997c45ab415e7764e8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abde0431a97f983997c45ab415e7764e8">&#9670;&#160;</a></span>exception_handlers_</h2>
 
@@ -2200,33 +1583,8 @@ Here is the call graph for this function:</div>
 </div><!-- fragment -->
 </div>
 </div>
-<a id="a4ea743b953a591cf5d009c56508a53fd" name="a4ea743b953a591cf5d009c56508a53fd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4ea743b953a591cf5d009c56508a53fd">&#9670;&#160;</a></span>idts_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::array&lt;cpu_io::IdtrInfo::Idt, cpu_io::IdtrInfo::kInterruptMaxCount&gt; Interrupt::idts_ {}</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="x86__64_2include_2interrupt_8h_source.html#l00073">73</a> of file <a class="el" href="x86__64_2include_2interrupt_8h_source.html">interrupt.h</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   73</span>{};</div>
-</div><!-- fragment -->
-</div>
-</div>
 <a id="aeae60810035a86ed1bf3e9df62dd7f4e" name="aeae60810035a86ed1bf3e9df62dd7f4e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeae60810035a86ed1bf3e9df62dd7f4e">&#9670;&#160;</a></span>interrupt_handlers_ <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aeae60810035a86ed1bf3e9df62dd7f4e">&#9670;&#160;</a></span>interrupt_handlers_ <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2253,7 +1611,7 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a id="ac9284ecf977e8977f44d6db0f2e65750" name="ac9284ecf977e8977f44d6db0f2e65750"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac9284ecf977e8977f44d6db0f2e65750">&#9670;&#160;</a></span>interrupt_handlers_ <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9284ecf977e8977f44d6db0f2e65750">&#9670;&#160;</a></span>interrupt_handlers_ <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2279,59 +1637,6 @@ Here is the call graph for this function:</div>
 </div><!-- fragment -->
 </div>
 </div>
-<a id="a3610f77ffabdc43ad8a2768dd5a24eb6" name="a3610f77ffabdc43ad8a2768dd5a24eb6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3610f77ffabdc43ad8a2768dd5a24eb6">&#9670;&#160;</a></span>interrupt_handlers_ <span class="overload">[3/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::array&lt;<a class="el" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a>, cpu_io::IdtrInfo::kInterruptMaxCount&gt; Interrupt::interrupt_handlers_ {}</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>中断处理函数数组 </p>
-
-<p class="definition">Definition at line <a class="el" href="x86__64_2include_2interrupt_8h_source.html#l00070">70</a> of file <a class="el" href="x86__64_2include_2interrupt_8h_source.html">interrupt.h</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   70</span>{};</div>
-</div><!-- fragment -->
-</div>
-</div>
-<a id="aa41a41cc67be2c59489d9f253e3a1982" name="aa41a41cc67be2c59489d9f253e3a1982"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa41a41cc67be2c59489d9f253e3a1982">&#9670;&#160;</a></span>kExternalVectorBase</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">constexpr</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">uint8_t</a> Interrupt::kExternalVectorBase = 0x20</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>外部中断向量基址（IO APIC IRQ 到 IDT 向量的映射） </p>
-
-<p class="definition">Definition at line <a class="el" href="x86__64_2include_2interrupt_8h_source.html#l00020">20</a> of file <a class="el" href="x86__64_2include_2interrupt_8h_source.html">interrupt.h</a>.</p>
-
-</div>
-</div>
 <a id="a822811c4d9c519d39a4889c2d8377ee2" name="a822811c4d9c519d39a4889c2d8377ee2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a822811c4d9c519d39a4889c2d8377ee2">&#9670;&#160;</a></span>kMaxInterrupt</h2>
 
@@ -2342,7 +1647,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">constexpr</a> <a class="el" href="classInterrupt.html#a7214c5dde8ca509678acd6825bdbeba7">size_t</a> Interrupt::kMaxInterrupt = 128</td>
+          <td class="memname">constexpr size_t Interrupt::kMaxInterrupt = 128</td>
         </tr>
       </table>
   </td>
@@ -2386,10 +1691,8 @@ Here is the call graph for this function:</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>/workspaces/SimpleKernel/src/arch/aarch64/include/<a class="el" href="aarch64_2include_2interrupt_8h_source.html">interrupt.h</a></li>
 <li>/workspaces/SimpleKernel/src/arch/riscv64/include/<a class="el" href="riscv64_2include_2interrupt_8h_source.html">interrupt.h</a></li>
-<li>/workspaces/SimpleKernel/src/arch/x86_64/include/<a class="el" href="x86__64_2include_2interrupt_8h_source.html">interrupt.h</a></li>
 <li>/workspaces/SimpleKernel/src/arch/aarch64/<a class="el" href="aarch64_2interrupt_8cpp_source.html">interrupt.cpp</a></li>
 <li>/workspaces/SimpleKernel/src/arch/riscv64/<a class="el" href="riscv64_2interrupt_8cpp_source.html">interrupt.cpp</a></li>
-<li>/workspaces/SimpleKernel/src/arch/x86_64/<a class="el" href="x86__64_2interrupt_8cpp_source.html">interrupt.cpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

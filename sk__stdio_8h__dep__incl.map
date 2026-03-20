@@ -1,9 +1,7 @@
 <map id="/workspaces/SimpleKernel/src/libc/include/sk_stdio.h" name="/workspaces/SimpleKernel/src/libc/include/sk_stdio.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="223,5,416,45"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="113,5,307,45"/>
 <area shape="rect" id="Node000002" href="$aarch64_2include_2interrupt_8h.html" title=" " alt="" coords="5,93,199,148"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="264,53,164,96,162,91,262,48"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,56,134,95,131,91,176,52"/>
 <area shape="rect" id="Node000003" href="$riscv64_2include_2interrupt_8h.html" title=" " alt="" coords="223,93,416,148"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="322,59,322,93,317,93,317,59"/>
-<area shape="rect" id="Node000004" href="$x86__64_2include_2interrupt_8h.html" title=" " alt="" coords="440,93,633,148"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="377,48,477,91,474,96,375,53"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="244,52,290,91,287,95,241,56"/>
 </map>

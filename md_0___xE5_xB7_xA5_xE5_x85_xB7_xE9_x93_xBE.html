@@ -98,7 +98,7 @@ $(document).ready(function(){initNavTree('md_0___xE5_xB7_xA5_xE5_x85_xB7_xE9_x93
 <p class="startli">使用 CMake 对代码进行管理，同时控制编译选项。支持 CMake Presets 进行预配置管理。</p>
 </li>
 <li><p class="startli"><b>内核的编译</b></p>
-<p class="startli">使用 GCC 工具链进行交叉编译，支持 x86_64、RISC-V 64、AArch64 三种架构。</p>
+<p class="startli">使用 GCC 工具链进行交叉编译，支持 RISC-V 64、AArch64 两种架构。</p>
 </li>
 <li><p class="startli"><b>模拟器</b></p>
 <p class="startli">主要使用 QEMU 作为统一的模拟器，支持所有目标架构。</p>
@@ -133,7 +133,6 @@ CMake</h1>
 2. CMake Presets 配置</h2>
 <p>项目使用 <code>CMakePresets.json</code> 提供预定义的构建配置：</p>
 <ul>
-<li><b>build_x86_64</b>: x86_64 架构构建配置</li>
 <li><b>build_riscv64</b>: RISC-V 64 架构构建配置</li>
 <li><b>build_aarch64</b>: AArch64 架构构建配置</li>
 </ul>
@@ -141,7 +140,7 @@ CMake</h1>
 3. 辅助 CMake 模块</h2>
 <p>位于 <code>./cmake/</code> 目录下的模块文件：</p>
 <ul>
-<li><b>工具链文件</b>: <code>x86_64-gcc.cmake</code>, <code>riscv64-gcc.cmake</code>, <code>aarch64-gcc.cmake</code> - 定义各架构的交叉编译工具链</li>
+<li><b>工具链文件</b>: <code>riscv64-gcc.cmake</code>, <code>aarch64-gcc.cmake</code> - 定义各架构的交叉编译工具链</li>
 <li><b>3rd.cmake</b>: 管理第三方依赖库</li>
 <li><b>project_config.cmake</b>: 项目配置和变量定义</li>
 <li><b>compile_config.cmake</b>: 编译选项和标志配置</li>
@@ -152,20 +151,19 @@ CMake</h1>
 <h2><a class="anchor" id="autotoc_md15"></a>
 4. 使用方法</h2>
 <div class="fragment"><div class="line"># 使用预设配置构建</div>
-<div class="line">cmake --preset build_x86_64</div>
-<div class="line">cd build_x86_64</div>
-<div class="line">make kernel</div>
+<div class="line">cmake --preset build_riscv64</div>
+<div class="line">cd build_riscv64</div>
+<div class="line">make SimpleKernel</div>
 <div class="line">make run</div>
 <div class="line"> </div>
 <div class="line"># 或者手动指定配置</div>
-<div class="line">cmake -B build_custom -DTARGET_ARCH=x86_64</div>
+<div class="line">cmake -B build_custom -DTARGET_ARCH=riscv64</div>
 </div><!-- fragment --><h1><a class="anchor" id="autotoc_md16"></a>
 GCC 交叉编译工具链</h1>
 <p>SimpleKernel 支持多架构交叉编译，需要根据目标平台配置相应的 GCC 工具链。</p>
 <h2><a class="anchor" id="autotoc_md17"></a>
 支持的架构</h2>
 <ul>
-<li><b>x86_64</b>: 64位 x86 架构</li>
 <li><b>riscv64</b>: 64位 RISC-V 架构</li>
 <li><b>aarch64</b>: 64位 ARM 架构</li>
 </ul>
@@ -181,20 +179,14 @@ GCC 交叉编译工具链</h1>
 <li>从 <a href="https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads">ARM Developer</a> 下载</li>
 <li>Ubuntu: <code>sudo apt install gcc-aarch64-linux-gnu</code></li>
 </ul>
-<p><b>x86_64 工具链</b>:</p><ul>
-<li>通常使用系统自带的 GCC，或安装 <code>gcc-multilib</code></li>
-</ul>
 <h2><a class="anchor" id="autotoc_md20"></a>
 VS Code 任务集成</h2>
 <p>项目提供了预配置的 VS Code 任务，位于 <code>.vscode/tasks.json</code>：</p>
 <ul>
-<li><b>build_x86_64</b>: 构建 x86_64 内核</li>
 <li><b>build_riscv64</b>: 构建 RISC-V 64 内核</li>
 <li><b>build_aarch64</b>: 构建 AArch64 内核</li>
-<li><b>run_x86_64</b>: 在 QEMU 中运行 x86_64 内核</li>
 <li><b>run_riscv64</b>: 在 QEMU 中运行 RISC-V 64 内核</li>
 <li><b>run_aarch64</b>: 在 QEMU 中运行 ARM 64 内核</li>
-<li><b>debug_x86_64</b>: 在 QEMU 中调试 x86_64 内核</li>
 <li><b>debug_riscv64</b>: 在 QEMU 中调试 RISC-V 64 内核</li>
 <li><b>debug_aarch64</b>: 在 QEMU 中调试 ARM 64 内核</li>
 </ul>
@@ -204,21 +196,20 @@ QEMU 模拟器</h1>
 <h2><a class="anchor" id="autotoc_md22"></a>
 安装 QEMU</h2>
 <div class="fragment"><div class="line"># Ubuntu/Debian</div>
-<div class="line">sudo apt install qemu-system-x86 qemu-system-riscv64 qemu-system-aarch64</div>
+<div class="line">sudo apt install qemu-system-riscv64 qemu-system-aarch64</div>
 <div class="line"> </div>
 <div class="line"># macOS</div>
 <div class="line">brew install qemu</div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md23"></a>
 架构支持</h2>
 <ul>
-<li><b>qemu-system-x86_64</b>: 运行 x86_64 内核</li>
 <li><b>qemu-system-riscv64</b>: 运行 RISC-V 64 内核</li>
 <li><b>qemu-system-aarch64</b>: 运行 AArch64 内核</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md24"></a>
 运行方式</h2>
 <div class="fragment"><div class="line"># 构建并运行</div>
-<div class="line">cd build_x86_64</div>
+<div class="line">cd build_riscv64</div>
 <div class="line">make run</div>
 <div class="line"> </div>
 <div class="line"># 或者直接使用 VS Code 任务</div>
@@ -239,7 +230,7 @@ QEMU 模拟器</h1>
 Dev Container 开发环境</h2>
 <p>项目提供 <a href="https://containers.dev/">Dev Container</a> 支持，确保开发环境的一致性：</p>
 <ul>
-<li>基于 Ubuntu，包含 GCC 14 交叉编译工具链（x86_64 / riscv64 / aarch64）</li>
+<li>基于 Ubuntu，包含 GCC 14 交叉编译工具链（riscv64 / aarch64）</li>
 <li>预装 QEMU、CMake、GDB 等全部构建和调试依赖</li>
 <li>支持 VS Code Dev Containers、GitHub Codespaces 和 devcontainer CLI</li>
 <li>详细使用方法见 <a class="el" href="md_docker.html">Dev Container 文档</a></li>

@@ -1,6 +1,6 @@
 var indexSectionsWithContent =
 {
-  0: "0123456789_abcdefghijklmnopqrstuvwxyz~—⌨⏰⚡✨与中串为主交亲从代任优使依入关典兼内分初功参发可各启命基处多字学安定实寄对工常序开异当快性成扩接推支文新方早权构架栈核检概模波注测特环电的目相硬禁第管类系约结编要规让许设调贡软辅运通配错键阅阶附限集面项驱验？🌟🎛🎨🎯🏗🏛📂📄📊📋📖📚📝📦🔌🔍🔧🚀🛠🤖🤝",
+  0: "0123456789_abcdefghijklmnopqrstuvwxyz~—⏰⚡✨上与中串为主交亲从代任优使关典内分初功参可各启命基处外多字学安定实寄对工常应开异当快性成扩接支文断新方早权构架栈核检概模波测特环电的目相硬禁第类系约结编要规让许设调贡辅运通配错阅阶附陷集面项驱验默？🌟🎛🎨🎯🏗🏛🐛📂📄📊📋📖📚📝📡📦🔄🔌🔍🔗🔧🚀🛑🛠🤖🤝",
   1: "abcdefghiklmnprstuvwx",
   2: "acefklmnprstv",
   3: "0123abcdefgiklmnoprstuvwyz",
@@ -11,7 +11,7 @@ var indexSectionsWithContent =
   8: "k",
   9: "fr",
   10: "aefimst",
-  11: "acdfgilmoprstu—代多工开系规调驱",
+  11: "acdfgilmoprstu—代多工开系规调",
   12: "bv"
 };
 

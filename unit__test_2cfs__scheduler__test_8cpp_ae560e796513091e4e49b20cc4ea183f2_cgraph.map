@@ -1,11 +1,24 @@
 <map id="TEST" name="TEST">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,55,60,80"/>
-<area shape="rect" id="Node000002" href="$classCfsScheduler.html#a9de164228221ab5a8e15184998e17062" title="将任务加入就绪队列" alt="" coords="134,5,305,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="59,55,107,39,140,31,141,36,109,45,61,60"/>
-<area shape="rect" id="Node000004" href="$classCfsScheduler.html#af7364c6a1919471e2ce41a45d734f64f" title="获取当前 min_vruntime" alt="" coords="108,55,331,80"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="60,65,94,65,94,70,60,70"/>
-<area shape="rect" id="Node000005" href="$classCfsScheduler.html#a8f4c08f61512a799fc059e4e50adc2ea" title="选择下一个要运行的任务" alt="" coords="133,104,306,129"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="61,74,109,89,146,98,144,103,107,94,59,79"/>
-<area shape="rect" id="Node000003" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="379,5,455,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="305,15,365,15,365,21,305,21"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,90,60,115"/>
+<area shape="rect" id="Node000002" href="$classCfsScheduler.html#a9de164228221ab5a8e15184998e17062" title="将任务加入就绪队列" alt="" coords="134,41,305,66"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="59,91,107,76,144,67,146,72,109,81,61,96"/>
+<area shape="rect" id="Node000010" href="$classCfsScheduler.html#af7364c6a1919471e2ce41a45d734f64f" title="获取当前 min_vruntime" alt="" coords="108,90,331,115"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="60,100,94,100,94,105,60,105"/>
+<area shape="rect" id="Node000011" href="$classCfsScheduler.html#a8f4c08f61512a799fc059e4e50adc2ea" title="选择下一个要运行的任务" alt="" coords="133,139,306,165"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="61,110,109,125,141,134,140,139,107,131,59,115"/>
+<area shape="rect" id="Node000003" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="379,41,455,66"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="305,51,365,51,365,56,305,56"/>
+<area shape="rect" id="Node000004" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="503,41,629,66"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="455,51,489,51,489,56,455,56"/>
+<area shape="rect" id="Node000005" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="883,15,1068,41"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="629,47,869,32,869,37,630,52"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="677,66,835,91"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="630,59,664,64,663,69,629,64"/>
+<area shape="rect" id="Node000006" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1116,5,1379,45"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1068,24,1102,24,1102,29,1068,30"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="811,63,906,41,907,46,813,68"/>
+<area shape="rect" id="Node000008" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="904,67,1047,93"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="835,76,890,77,890,82,835,82"/>
+<area shape="rect" id="Node000009" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1200,70,1295,95"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="1047,78,1187,79,1187,85,1047,83"/>
 </map>
