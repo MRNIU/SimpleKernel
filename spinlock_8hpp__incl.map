@@ -1,11 +1,11 @@
-<map id="/workspaces/SimpleKernel/src/include/spinlock.hpp" name="/workspaces/SimpleKernel/src/include/spinlock.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="585,5,779,45"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/include/spinlock.hpp" name="/__w/SimpleKernel/SimpleKernel/src/include/spinlock.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="571,5,793,45"/>
 <area shape="rect" id="Node000002" href="$cpu__io_8h.html" title=" " alt="" coords="265,167,341,192"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="593,48,519,68,443,96,382,128,331,161,329,156,379,123,441,91,517,63,592,43"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="606,240,673,265"/>
 <area shape="poly" id="edge16_Node000001_Node000003" title=" " alt="" coords="731,43,785,70,836,105,855,125,867,147,868,170,857,194,830,213,785,228,687,248,686,243,784,223,827,208,853,190,863,169,862,149,851,128,833,109,782,74,728,48"/>
 <area shape="rect" id="Node000005" title=" " alt="" coords="5,313,76,339"/>
-<area shape="poly" id="edge18_Node000001_Node000005" title=" " alt="" coords="586,46,491,67,391,96,295,124,220,146,186,161,152,180,117,206,79,242,60,270,49,301,44,299,55,268,75,238,113,202,149,175,183,156,218,141,294,119,389,91,489,62,585,41"/>
+<area shape="poly" id="edge18_Node000001_Node000005" title=" " alt="" coords="576,48,485,68,391,96,295,124,220,146,186,161,152,180,117,206,79,242,60,270,49,301,44,299,55,268,75,238,113,202,149,175,183,156,218,141,294,119,389,91,483,63,574,43"/>
 <area shape="rect" id="Node000012" title=" " alt="" coords="595,93,675,119"/>
 <area shape="poly" id="edge17_Node000001_Node000012" title=" " alt="" coords="673,47,652,83,647,80,668,44"/>
 <area shape="rect" id="Node000013" title=" " alt="" coords="699,93,758,119"/>

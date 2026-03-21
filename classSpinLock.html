@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">SimpleKernel<span id="projectnumber">&#160;1.17.0</span>
+   <div id="projectname">SimpleKernel
    </div>
   </td>
  </tr>
@@ -208,8 +208,8 @@ Protected Attributes</h2></td></tr>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>需要堆初始化后可用 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00092">92</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   92</span>: <a class="code hl_variable" href="classSpinLock.html#a76a268f610393fbd268506018feb0fef">name</a>(_name) {}</div>
+<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00087">87</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   87</span>: <a class="code hl_variable" href="classSpinLock.html#a76a268f610393fbd268506018feb0fef">name</a>(_name) {}</div>
 <div class="ttc" id="aclassSpinLock_html_a76a268f610393fbd268506018feb0fef"><div class="ttname"><a href="classSpinLock.html#a76a268f610393fbd268506018feb0fef">SpinLock::name</a></div><div class="ttdeci">const char * name</div><div class="ttdoc">自旋锁名称</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00030">spinlock.hpp:30</a></div></div>
 </div><!-- fragment -->
 </div>
@@ -345,14 +345,14 @@ Protected Attributes</h2></td></tr>
 <dd>
 false 否 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00115">115</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  115</span>                                                       {</div>
-<div class="line"><span class="lineno">  116</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="classSpinLock.html#a0f44bb2186bb648733c6ae7e452893bb">locked_</a>.test(std::memory_order_acquire) &amp;&amp;</div>
-<div class="line"><span class="lineno">  117</span>           (<a class="code hl_variable" href="classSpinLock.html#abd4b5f1d813d2bfc29c5bee5da8a8aad">core_id_</a>.load(std::memory_order_acquire) ==</div>
-<div class="line"><span class="lineno">  118</span>            <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
-<div class="line"><span class="lineno">  119</span>  }</div>
-<div class="ttc" id="aclassSpinLock_html_a0f44bb2186bb648733c6ae7e452893bb"><div class="ttname"><a href="classSpinLock.html#a0f44bb2186bb648733c6ae7e452893bb">SpinLock::locked_</a></div><div class="ttdeci">std::atomic_flag locked_</div><div class="ttdoc">是否 Lock</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00104">spinlock.hpp:104</a></div></div>
-<div class="ttc" id="aclassSpinLock_html_abd4b5f1d813d2bfc29c5bee5da8a8aad"><div class="ttname"><a href="classSpinLock.html#abd4b5f1d813d2bfc29c5bee5da8a8aad">SpinLock::core_id_</a></div><div class="ttdeci">std::atomic&lt; size_t &gt; core_id_</div><div class="ttdoc">获得此锁的 core_id</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00106">spinlock.hpp:106</a></div></div>
+<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00110">110</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  110</span>                                                       {</div>
+<div class="line"><span class="lineno">  111</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="classSpinLock.html#a0f44bb2186bb648733c6ae7e452893bb">locked_</a>.test(std::memory_order_acquire) &amp;&amp;</div>
+<div class="line"><span class="lineno">  112</span>           (<a class="code hl_variable" href="classSpinLock.html#abd4b5f1d813d2bfc29c5bee5da8a8aad">core_id_</a>.load(std::memory_order_acquire) ==</div>
+<div class="line"><span class="lineno">  113</span>            <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
+<div class="line"><span class="lineno">  114</span>  }</div>
+<div class="ttc" id="aclassSpinLock_html_a0f44bb2186bb648733c6ae7e452893bb"><div class="ttname"><a href="classSpinLock.html#a0f44bb2186bb648733c6ae7e452893bb">SpinLock::locked_</a></div><div class="ttdeci">std::atomic_flag locked_</div><div class="ttdoc">是否 Lock</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00099">spinlock.hpp:99</a></div></div>
+<div class="ttc" id="aclassSpinLock_html_abd4b5f1d813d2bfc29c5bee5da8a8aad"><div class="ttname"><a href="classSpinLock.html#abd4b5f1d813d2bfc29c5bee5da8a8aad">SpinLock::core_id_</a></div><div class="ttdeci">std::atomic&lt; size_t &gt; core_id_</div><div class="ttdoc">获得此锁的 core_id</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00101">spinlock.hpp:101</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_a52b8a7263a31e6670ef4dec7922d9e72"><div class="ttname"><a href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a></div><div class="ttdeci">auto GetCurrentCoreId() -&gt; size_t</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00026">cpu_io.h:26</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -415,23 +415,20 @@ Here is the caller graph for this function:</div>
 <div class="line"><span class="lineno">   42</span>      <span class="comment">// 在等待时检查是否是当前核心持有锁（递归锁检测）</span></div>
 <div class="line"><span class="lineno">   43</span>      <span class="keywordflow">if</span> (<a class="code hl_variable" href="classSpinLock.html#abd4b5f1d813d2bfc29c5bee5da8a8aad">core_id_</a>.load(std::memory_order_acquire) ==</div>
 <div class="line"><span class="lineno">   44</span>          <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>()) {</div>
-<div class="line"><span class="lineno">   45</span>        <span class="comment">// 递归锁定，恢复中断状态并返回失败</span></div>
-<div class="line"><span class="lineno">   46</span>        <span class="keywordflow">if</span> (intr_enable) {</div>
-<div class="line"><span class="lineno">   47</span>          <a class="code hl_function" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451">cpu_io::EnableInterrupt</a>();</div>
-<div class="line"><span class="lineno">   48</span>        }</div>
-<div class="line"><span class="lineno">   49</span>        <span class="comment">// klog::Err(&quot;spinlock {}: {} recursive lock detected.&quot;,</span></div>
-<div class="line"><span class="lineno">   50</span>        <span class="comment">//           cpu_io::GetCurrentCoreId(), name);</span></div>
-<div class="line"><span class="lineno">   51</span>        <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae2450f32679f62bb24de820bb951efe5">ErrorCode::kSpinLockRecursiveLock</a>});</div>
-<div class="line"><span class="lineno">   52</span>      }</div>
-<div class="line"><span class="lineno">   53</span>      <a class="code hl_function" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a>();</div>
-<div class="line"><span class="lineno">   54</span>    }</div>
-<div class="line"><span class="lineno">   55</span> </div>
-<div class="line"><span class="lineno">   56</span>    <span class="comment">// 获取锁成功后立即设置 core_id_</span></div>
-<div class="line"><span class="lineno">   57</span>    <a class="code hl_variable" href="classSpinLock.html#abd4b5f1d813d2bfc29c5bee5da8a8aad">core_id_</a>.store(<a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>(), std::memory_order_release);</div>
-<div class="line"><span class="lineno">   58</span>    <a class="code hl_variable" href="classSpinLock.html#ad3fbd04e65ccc13b68d1334a018afefa">saved_intr_enable_</a> = intr_enable;</div>
-<div class="line"><span class="lineno">   59</span>    <span class="keywordflow">return</span> {};</div>
-<div class="line"><span class="lineno">   60</span>  }</div>
-<div class="ttc" id="aclassSpinLock_html_ad3fbd04e65ccc13b68d1334a018afefa"><div class="ttname"><a href="classSpinLock.html#ad3fbd04e65ccc13b68d1334a018afefa">SpinLock::saved_intr_enable_</a></div><div class="ttdeci">bool saved_intr_enable_</div><div class="ttdoc">保存的中断状态</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00108">spinlock.hpp:108</a></div></div>
+<div class="line"><span class="lineno">   45</span>        <span class="keywordflow">if</span> (intr_enable) {</div>
+<div class="line"><span class="lineno">   46</span>          <a class="code hl_function" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451">cpu_io::EnableInterrupt</a>();</div>
+<div class="line"><span class="lineno">   47</span>        }</div>
+<div class="line"><span class="lineno">   48</span>        <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae2450f32679f62bb24de820bb951efe5">ErrorCode::kSpinLockRecursiveLock</a>});</div>
+<div class="line"><span class="lineno">   49</span>      }</div>
+<div class="line"><span class="lineno">   50</span>      <a class="code hl_function" href="namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b">cpu_io::Pause</a>();</div>
+<div class="line"><span class="lineno">   51</span>    }</div>
+<div class="line"><span class="lineno">   52</span> </div>
+<div class="line"><span class="lineno">   53</span>    <span class="comment">// 获取锁成功后立即设置 core_id_</span></div>
+<div class="line"><span class="lineno">   54</span>    <a class="code hl_variable" href="classSpinLock.html#abd4b5f1d813d2bfc29c5bee5da8a8aad">core_id_</a>.store(<a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>(), std::memory_order_release);</div>
+<div class="line"><span class="lineno">   55</span>    <a class="code hl_variable" href="classSpinLock.html#ad3fbd04e65ccc13b68d1334a018afefa">saved_intr_enable_</a> = intr_enable;</div>
+<div class="line"><span class="lineno">   56</span>    <span class="keywordflow">return</span> {};</div>
+<div class="line"><span class="lineno">   57</span>  }</div>
+<div class="ttc" id="aclassSpinLock_html_ad3fbd04e65ccc13b68d1334a018afefa"><div class="ttname"><a href="classSpinLock.html#ad3fbd04e65ccc13b68d1334a018afefa">SpinLock::saved_intr_enable_</a></div><div class="ttdeci">bool saved_intr_enable_</div><div class="ttdoc">保存的中断状态</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00103">spinlock.hpp:103</a></div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fae2450f32679f62bb24de820bb951efe5"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae2450f32679f62bb24de820bb951efe5">ErrorCode::kSpinLockRecursiveLock</a></div><div class="ttdeci">@ kSpinLockRecursiveLock</div></div>
 <div class="ttc" id="anamespacecpu__io_html_a6c4ee629d8129247969cace77d47fecb"><div class="ttname"><a href="namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb">cpu_io::DisableInterrupt</a></div><div class="ttdeci">void DisableInterrupt()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00041">cpu_io.h:41</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_aaab46268534006b116de3e112c237f7f"><div class="ttname"><a href="namespacecpu__io.html#aaab46268534006b116de3e112c237f7f">cpu_io::GetInterruptStatus</a></div><div class="ttdeci">bool GetInterruptStatus()</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00048">cpu_io.h:48</a></div></div>
@@ -542,25 +539,23 @@ Here is the call graph for this function:</div>
 <p>释放锁 </p>
 <dl class="section return"><dt>Returns</dt><dd>Expected&lt;void&gt; 成功返回空值，失败返回错误 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00066">66</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   66</span>                                                                {</div>
-<div class="line"><span class="lineno">   67</span>    <span class="keywordflow">if</span> (!<a class="code hl_function" href="classSpinLock.html#a1d44719e4d83977dd51f200b3a19cefc">IsLockedByCurrentCore</a>()) {</div>
-<div class="line"><span class="lineno">   68</span>      <span class="comment">// klog::Err(&quot;spinlock {}: {} unlock by non-owner detected.&quot;,</span></div>
-<div class="line"><span class="lineno">   69</span>      <span class="comment">//           cpu_io::GetCurrentCoreId(), name);</span></div>
-<div class="line"><span class="lineno">   70</span>      <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae6358517c164c6f0b8d2f1f3332af205">ErrorCode::kSpinLockNotOwned</a>});</div>
-<div class="line"><span class="lineno">   71</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00063">63</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   63</span>                                                                {</div>
+<div class="line"><span class="lineno">   64</span>    <span class="keywordflow">if</span> (!<a class="code hl_function" href="classSpinLock.html#a1d44719e4d83977dd51f200b3a19cefc">IsLockedByCurrentCore</a>()) {</div>
+<div class="line"><span class="lineno">   65</span>      <span class="keywordflow">return</span> std::unexpected(<a class="code hl_struct" href="structError.html">Error</a>{<a class="code hl_enumvalue" href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae6358517c164c6f0b8d2f1f3332af205">ErrorCode::kSpinLockNotOwned</a>});</div>
+<div class="line"><span class="lineno">   66</span>    }</div>
+<div class="line"><span class="lineno">   67</span> </div>
+<div class="line"><span class="lineno">   68</span>    <span class="comment">// 先重置 core_id_，再释放锁</span></div>
+<div class="line"><span class="lineno">   69</span>    <a class="code hl_variable" href="classSpinLock.html#abd4b5f1d813d2bfc29c5bee5da8a8aad">core_id_</a>.store(std::numeric_limits&lt;size_t&gt;::max(),</div>
+<div class="line"><span class="lineno">   70</span>                   std::memory_order_release);</div>
+<div class="line"><span class="lineno">   71</span>    <a class="code hl_variable" href="classSpinLock.html#a0f44bb2186bb648733c6ae7e452893bb">locked_</a>.clear(std::memory_order_release);</div>
 <div class="line"><span class="lineno">   72</span> </div>
-<div class="line"><span class="lineno">   73</span>    <span class="comment">// 先重置 core_id_，再释放锁</span></div>
-<div class="line"><span class="lineno">   74</span>    <a class="code hl_variable" href="classSpinLock.html#abd4b5f1d813d2bfc29c5bee5da8a8aad">core_id_</a>.store(std::numeric_limits&lt;size_t&gt;::max(),</div>
-<div class="line"><span class="lineno">   75</span>                   std::memory_order_release);</div>
-<div class="line"><span class="lineno">   76</span>    <a class="code hl_variable" href="classSpinLock.html#a0f44bb2186bb648733c6ae7e452893bb">locked_</a>.clear(std::memory_order_release);</div>
-<div class="line"><span class="lineno">   77</span> </div>
-<div class="line"><span class="lineno">   78</span>    <span class="keywordflow">if</span> (<a class="code hl_variable" href="classSpinLock.html#ad3fbd04e65ccc13b68d1334a018afefa">saved_intr_enable_</a>) {</div>
-<div class="line"><span class="lineno">   79</span>      <a class="code hl_function" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451">cpu_io::EnableInterrupt</a>();</div>
-<div class="line"><span class="lineno">   80</span>    }</div>
-<div class="line"><span class="lineno">   81</span>    <span class="keywordflow">return</span> {};</div>
-<div class="line"><span class="lineno">   82</span>  }</div>
-<div class="ttc" id="aclassSpinLock_html_a1d44719e4d83977dd51f200b3a19cefc"><div class="ttname"><a href="classSpinLock.html#a1d44719e4d83977dd51f200b3a19cefc">SpinLock::IsLockedByCurrentCore</a></div><div class="ttdeci">__always_inline auto IsLockedByCurrentCore() -&gt; bool</div><div class="ttdoc">检查当前 core 是否获得此锁</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00115">spinlock.hpp:115</a></div></div>
+<div class="line"><span class="lineno">   73</span>    <span class="keywordflow">if</span> (<a class="code hl_variable" href="classSpinLock.html#ad3fbd04e65ccc13b68d1334a018afefa">saved_intr_enable_</a>) {</div>
+<div class="line"><span class="lineno">   74</span>      <a class="code hl_function" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451">cpu_io::EnableInterrupt</a>();</div>
+<div class="line"><span class="lineno">   75</span>    }</div>
+<div class="line"><span class="lineno">   76</span>    <span class="keywordflow">return</span> {};</div>
+<div class="line"><span class="lineno">   77</span>  }</div>
+<div class="ttc" id="aclassSpinLock_html_a1d44719e4d83977dd51f200b3a19cefc"><div class="ttname"><a href="classSpinLock.html#a1d44719e4d83977dd51f200b3a19cefc">SpinLock::IsLockedByCurrentCore</a></div><div class="ttdeci">__always_inline auto IsLockedByCurrentCore() -&gt; bool</div><div class="ttdoc">检查当前 core 是否获得此锁</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00110">spinlock.hpp:110</a></div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fae6358517c164c6f0b8d2f1f3332af205"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fae6358517c164c6f0b8d2f1f3332af205">ErrorCode::kSpinLockNotOwned</a></div><div class="ttdeci">@ kSpinLockNotOwned</div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -605,8 +600,8 @@ Here is the call graph for this function:</div>
 
 <p>获得此锁的 core_id </p>
 
-<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00106">106</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  106</span>{std::numeric_limits&lt;size_t&gt;::max()};</div>
+<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00101">101</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  101</span>{std::numeric_limits&lt;size_t&gt;::max()};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -632,8 +627,8 @@ Here is the call graph for this function:</div>
 
 <p>是否 Lock </p>
 
-<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00104">104</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  104</span>{ATOMIC_FLAG_INIT};</div>
+<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00099">99</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   99</span>{ATOMIC_FLAG_INIT};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -678,13 +673,13 @@ Here is the call graph for this function:</div>
 
 <p>保存的中断状态 </p>
 
-<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00108">108</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  108</span>{<span class="keyword">false</span>};</div>
+<p class="definition">Definition at line <a class="el" href="spinlock_8hpp_source.html#l00103">103</a> of file <a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  103</span>{<span class="keyword">false</span>};</div>
 </div><!-- fragment -->
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/workspaces/SimpleKernel/src/include/<a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a></li>
+<li>/__w/SimpleKernel/SimpleKernel/src/include/<a class="el" href="spinlock_8hpp_source.html">spinlock.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

@@ -19,7 +19,7 @@
 <area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="607,421,539,390,500,379,501,373,541,385,610,416"/>
 <area shape="rect" id="Node000010" href="$riscv64_2interrupt__main_8cpp.html#a51f9c37118da7a1c32e70f272cc7b3e8" title="体系结构相关中断初始化" alt="" coords="379,400,478,425"/>
 <area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="574,433,478,421,478,416,575,427"/>
-<area shape="rect" id="Node000011" href="$schedule_8cpp.html#adf76a019ba47bc42d5ee5d996b3f1fe0" title="新任务首次执行时的引导函数 (由 kernel_thread_entry 汇编调用)" alt="" coords="339,449,519,475"/>
+<area shape="rect" id="Node000011" href="$schedule_8cpp.html#adf76a019ba47bc42d5ee5d996b3f1fe0" title="内核线程启动入口 — 完成 Schedule() 的锁交接后执行任务函数" alt="" coords="339,449,519,475"/>
 <area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="575,448,519,455,519,449,574,443"/>
 <area shape="rect" id="Node000012" href="$classKernelElf.html#af02f46849b67568666efd984ece31a67" title="构造函数" alt="" coords="356,499,501,524"/>
 <area shape="poly" id="edge12_Node000001_Node000012" title=" " alt="" coords="607,460,541,489,497,501,495,496,539,483,605,455"/>
@@ -31,7 +31,7 @@
 <area shape="poly" id="edge15_Node000001_Node000015" title=" " alt="" coords="639,465,627,503,607,550,579,597,562,618,542,636,514,651,512,646,538,632,558,614,575,593,603,547,622,502,633,463"/>
 <area shape="rect" id="Node000016" href="$tests_2system__test_2main_8cpp.html#ab85c3edfd2aada0e059dccf8d002924d" title="内核入口" alt="" coords="401,696,456,721"/>
 <area shape="poly" id="edge16_Node000001_Node000016" title=" " alt="" coords="641,465,632,513,615,573,585,633,566,661,542,685,522,698,499,706,456,712,456,706,498,701,519,693,538,681,561,658,581,631,610,571,627,512,636,464"/>
-<area shape="rect" id="Node000017" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="调度函数 选择下一个任务并切换上下文" alt="" coords="341,745,516,771"/>
+<area shape="rect" id="Node000017" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="核心调度函数 — 选择下一个任务并执行上下文切换" alt="" coords="341,745,516,771"/>
 <area shape="poly" id="edge17_Node000001_Node000017" title=" " alt="" coords="644,465,638,521,622,594,609,632,591,670,569,704,542,735,518,749,515,745,538,731,565,701,587,667,604,630,617,593,632,520,638,464"/>
 <area shape="rect" id="Node000018" href="$classGic_1_1Gicr.html#a3aa2fc7b86ab6a8f40889bf7e405db7b" title="初始化 gicr，在多核场景使用" alt="" coords="367,795,491,820"/>
 <area shape="poly" id="edge18_Node000001_Node000018" title=" " alt="" coords="645,464,642,529,628,615,616,661,597,706,573,748,542,784,518,799,492,807,490,802,516,794,538,780,569,744,593,704,610,659,623,614,637,529,640,464"/>

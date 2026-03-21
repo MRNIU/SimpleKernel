@@ -1,9 +1,9 @@
-<map id="/workspaces/SimpleKernel/src/task/include/resource_id.hpp" name="/workspaces/SimpleKernel/src/task/include/resource_id.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="33,5,267,45"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,93,92,119"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="127,48,76,87,73,82,124,43"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="117,93,183,119"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,46,153,79,147,79,147,46"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="208,93,295,119"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="176,43,227,82,224,87,173,48"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/task/include/resource_id.hpp" name="/__w/SimpleKernel/SimpleKernel/src/task/include/resource_id.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="55,5,245,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,92,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="121,62,74,101,71,97,117,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="117,108,183,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,60,153,94,147,94,147,60"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="208,108,295,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="183,58,229,97,226,101,179,62"/>
 </map>

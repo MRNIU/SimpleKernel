@@ -11,6 +11,7 @@ var aarch64_2interrupt__main_8cpp =
     [ "fiq_lower_el_aarch64_handler", "aarch64_2interrupt__main_8cpp.html#a321cebaa02ba420309c7c174d1b3fbb7", null ],
     [ "InterruptInit", "aarch64_2interrupt__main_8cpp.html#a51f9c37118da7a1c32e70f272cc7b3e8", null ],
     [ "InterruptInitSMP", "aarch64_2interrupt__main_8cpp.html#ad310aa2bb690e3d8b4e6a036aae3dd93", null ],
+    [ "IpiHandler", "aarch64_2interrupt__main_8cpp.html#a32697e234809d4efa1d9ad3432f61cc6", null ],
     [ "irq_current_el_sp0_handler", "aarch64_2interrupt__main_8cpp.html#a4e61bc89663772bbad345565ddde4ed8", null ],
     [ "irq_current_el_spx_handler", "aarch64_2interrupt__main_8cpp.html#a870a6b56d94e42ddce9f96cd6fec4333", null ],
     [ "irq_lower_el_aarch32_handler", "aarch64_2interrupt__main_8cpp.html#aa70b7a25129a3073110af8973b3bc299", null ],

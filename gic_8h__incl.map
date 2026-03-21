@@ -1,9 +1,9 @@
-<map id="/workspaces/SimpleKernel/src/arch/aarch64/gic/include/gic.h" name="/workspaces/SimpleKernel/src/arch/aarch64/gic/include/gic.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="43,5,286,45"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,93,105,119"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,48,84,87,81,83,137,43"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="129,93,200,119"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="167,46,167,79,162,79,162,46"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="225,93,291,119"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="189,44,235,82,232,86,186,48"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/arch/aarch64/gic/include/gic.h" name="/__w/SimpleKernel/SimpleKernel/src/arch/aarch64/gic/include/gic.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="69,5,260,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,105,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,62,83,102,79,97,130,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="129,108,200,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="167,60,167,94,162,94,162,60"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="225,108,291,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="195,58,237,96,233,100,191,62"/>
 </map>

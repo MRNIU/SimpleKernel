@@ -1,0 +1,24 @@
+<map id="TEST" name="TEST">
+<area shape="rect" id="Node000001" title="Test that stealing only picks from kNormal (RR) queues. kRealTime (FIFO) and kIdle tasks should never..." alt="" coords="5,105,60,130"/>
+<area shape="rect" id="Node000002" href="$classRoundRobinScheduler.html#ab778d507f3903cbbd2bda4e474ebe2e8" title="将任务加入就绪队列尾部" alt="" coords="108,33,272,73"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="59,103,107,83,124,76,126,81,109,88,61,108"/>
+<area shape="rect" id="Node000010" href="$classRoundRobinScheduler.html#ac19781beca8fe766198f368fc592923d" title="获取就绪队列大小" alt="" coords="108,97,272,137"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="60,115,94,115,94,120,60,120"/>
+<area shape="rect" id="Node000011" href="$classRoundRobinScheduler.html#a814ec718c7c65ad0aa5e0043e9615a8c" title="选择下一个要运行的任务" alt="" coords="108,161,272,201"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="61,126,109,147,126,154,124,159,107,152,59,131"/>
+<area shape="rect" id="Node000003" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="320,41,396,66"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="272,51,306,51,306,56,272,56"/>
+<area shape="rect" id="Node000004" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="444,41,571,66"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="396,51,431,51,431,56,396,56"/>
+<area shape="rect" id="Node000005" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="824,15,1009,41"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="571,47,810,32,810,37,571,52"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="619,66,776,91"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="571,59,605,64,604,69,571,64"/>
+<area shape="rect" id="Node000006" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1057,5,1320,45"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1010,24,1043,24,1043,29,1010,30"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="753,63,847,41,849,46,754,68"/>
+<area shape="rect" id="Node000008" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="845,67,988,93"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="776,76,831,77,831,82,776,82"/>
+<area shape="rect" id="Node000009" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1141,70,1236,95"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="988,78,1128,79,1128,85,988,83"/>
+</map>

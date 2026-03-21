@@ -1,6 +1,7 @@
 var dir_9792f77b7388247cc984bf8bf02ef530 =
 [
     [ "affinity_test.cpp", "affinity__test_8cpp.html", "affinity__test_8cpp" ],
+    [ "balance_test.cpp", "system__test_2balance__test_8cpp.html", "system__test_2balance__test_8cpp" ],
     [ "cfs_scheduler_test.cpp", "system__test_2cfs__scheduler__test_8cpp.html", "system__test_2cfs__scheduler__test_8cpp" ],
     [ "clone_test.cpp", "clone__test_8cpp.html", "clone__test_8cpp" ],
     [ "cross_core_test.cpp", "cross__core__test_8cpp.html", "cross__core__test_8cpp" ],
@@ -11,6 +12,7 @@ var dir_9792f77b7388247cc984bf8bf02ef530 =
     [ "fork_test.cpp", "fork__test_8cpp.html", "fork__test_8cpp" ],
     [ "idle_scheduler_test.cpp", "idle__scheduler__test_8cpp.html", "idle__scheduler__test_8cpp" ],
     [ "interrupt_test.cpp", "interrupt__test_8cpp.html", "interrupt__test_8cpp" ],
+    [ "ipi_test.cpp", "ipi__test_8cpp.html", "ipi__test_8cpp" ],
     [ "kernel_task_test.cpp", "kernel__task__test_8cpp.html", "kernel__task__test_8cpp" ],
     [ "main.cpp", "tests_2system__test_2main_8cpp.html", "tests_2system__test_2main_8cpp" ],
     [ "memory_test.cpp", "memory__test_8cpp.html", "memory__test_8cpp" ],

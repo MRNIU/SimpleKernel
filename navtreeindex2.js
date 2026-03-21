@@ -1,5 +1,6 @@
 var NAVTREEINDEX2 =
 {
+"classLockGuard.html#ac1664a102208ce90c46bdcb615ba30e3":[26,0,40,7],
 "classLockGuard.html#ac9dddb7967ff5f0139a9b9ef7e09c6e1":[26,0,40,5],
 "classLockGuard.html#af889562d8ed81c2337c94d0c915d65ca":[26,0,40,2],
 "classMockFileOps.html":[26,0,43],
@@ -248,6 +249,5 @@ var NAVTREEINDEX2 =
 "classTaskManager.html#ab1adaa0f5b87d8fb26c09e7883fdd9fe":[26,0,77,2],
 "classTaskManager.html#ab6af3924c32886aa39a29c2a233a227e":[26,0,77,8],
 "classTaskManager.html#ab84b3ad25407358299166c2443cd1719":[26,0,77,29],
-"classTaskManager.html#ad2fdc9ffa97ac49ce08133d7ce0728bb":[26,0,77,12],
-"classTaskManager.html#ae0eb341aea4d994c72e4267bb78d8658":[26,0,77,4]
+"classTaskManager.html#ad2fdc9ffa97ac49ce08133d7ce0728bb":[26,0,77,12]
 };

@@ -1,4 +1,4 @@
-<map id="/workspaces/SimpleKernel/src/arch/aarch64" name="/workspaces/SimpleKernel/src/arch/aarch64">
+<map id="/__w/SimpleKernel/SimpleKernel/src/arch/aarch64" name="/__w/SimpleKernel/SimpleKernel/src/arch/aarch64">
 <area shape="rect" id="node3" href="dir_6d693586352c5de27c3358747cb8d536.html" title="include" alt="" coords="156,136,225,161"/>
 <area shape="poly" id="edge4" href="dir_000000_000014.html" alt="" coords="193,88,193,122,188,122,188,88"/>
 <area shape="rect" id="edge4-headlabel" href="dir_000000_000014.html" title="2" alt="" coords="195,110,204,125"/>
@@ -16,7 +16,7 @@
 <area shape="rect" id="edge5-headlabel" href="dir_000000_000031.html" title="2" alt="" coords="266,111,275,126"/>
 <area shape="rect" id="node8" href="dir_b0856f6b0d80ccb263b2f415c91f9e17.html" title="include" alt="" coords="97,283,167,308"/>
 <area shape="poly" id="edge6" href="dir_000000_000022.html" alt="" coords="154,86,99,105,72,119,47,138,33,155,24,170,15,210,8,234,9,244,14,254,28,268,46,278,85,289,83,294,43,283,25,273,10,258,4,245,3,234,9,209,19,168,28,151,44,134,69,115,97,100,152,81"/>
-<area shape="rect" id="edge6-headlabel" href="dir_000000_000022.html" title="23" alt="" coords="72,276,89,290"/>
+<area shape="rect" id="edge6-headlabel" href="dir_000000_000022.html" title="24" alt="" coords="72,276,89,290"/>
 <area shape="rect" id="node9" href="dir_ee3448fa1dc3d93b4fb7d6fba5be0d5c.html" title="libc" alt="" coords="315,209,360,235"/>
 <area shape="poly" id="edge7" href="dir_000000_000029.html" alt="" coords="229,76,260,82,294,92,326,109,352,135,358,150,359,166,352,197,347,196,354,166,353,151,347,137,323,113,292,97,259,87,228,82"/>
 <area shape="rect" id="edge7-headlabel" href="dir_000000_000029.html" title="2" alt="" coords="354,189,363,203"/>

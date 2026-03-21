@@ -1,27 +1,37 @@
 <map id="RoundRobinScheduler::PickNext" name="RoundRobinScheduler::PickNext">
-<area shape="rect" id="Node000001" title="选择下一个要运行的任务" alt="" coords="108,270,272,310"/>
-<area shape="rect" id="Node000002" href="$unit__test_2rr__scheduler__test_8cpp.html#a7ecce18a18e7b912167806a4e04a1304" title=" " alt="" coords="5,5,60,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,258,128,158,96,100,58,44,48,33,52,29,62,40,100,97,133,156,178,256"/>
-<area shape="rect" id="Node000003" href="$unit__test_2rr__scheduler__test_8cpp.html#afb38f381971603ef31363c7688b2f6d1" title=" " alt="" coords="5,55,60,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="169,259,122,181,58,93,48,82,51,79,62,90,126,178,173,256"/>
-<area shape="rect" id="Node000004" href="$unit__test_2rr__scheduler__test_8cpp.html#af5e24e2b2948f38f9cade6d269ddd3bc" title=" " alt="" coords="5,104,60,129"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="162,261,58,143,47,131,50,128,62,139,166,257"/>
-<area shape="rect" id="Node000005" href="$unit__test_2rr__scheduler__test_8cpp.html#aae266699d49d200a1f0ddba55a6e0ff8" title=" " alt="" coords="5,153,60,179"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="151,263,49,181,52,177,154,259"/>
-<area shape="rect" id="Node000006" href="$unit__test_2rr__scheduler__test_8cpp.html#afe38ba33820ab08a0b24f18920c59653" title=" " alt="" coords="5,203,60,228"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="134,267,59,230,61,225,136,262"/>
-<area shape="rect" id="Node000007" href="$unit__test_2rr__scheduler__test_8cpp.html#ac254c447e96a6125cf547ef2aab13f28" title=" " alt="" coords="5,252,60,277"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="94,277,60,272,61,266,95,272"/>
-<area shape="rect" id="Node000008" href="$unit__test_2rr__scheduler__test_8cpp.html#a740df6f7b6e1cca33ca0367803cbf1c1" title=" " alt="" coords="5,301,60,327"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="95,307,61,313,60,307,94,302"/>
-<area shape="rect" id="Node000009" href="$unit__test_2rr__scheduler__test_8cpp.html#a0506aebc3da9917a2571711de76ef845" title=" " alt="" coords="5,351,60,376"/>
-<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="135,318,61,353,59,349,133,313"/>
-<area shape="rect" id="Node000010" href="$unit__test_2rr__scheduler__test_8cpp.html#ae1cb633c27a85fcfcec3e45f4b1ea4f7" title=" " alt="" coords="5,400,60,425"/>
-<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="154,321,52,402,48,398,151,317"/>
-<area shape="rect" id="Node000011" href="$unit__test_2rr__scheduler__test_8cpp.html#aa1fd6659ff152594523ec94b754a9df7" title=" " alt="" coords="5,449,60,475"/>
-<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="165,322,62,438,49,451,46,447,58,435,161,319"/>
-<area shape="rect" id="Node000012" href="$unit__test_2rr__scheduler__test_8cpp.html#a607a23b14d99e6bf7d25596063a8497c" title=" " alt="" coords="5,499,60,524"/>
-<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="173,324,125,401,62,488,50,500,46,497,58,484,121,398,168,321"/>
-<area shape="rect" id="Node000013" href="$unit__test_2rr__scheduler__test_8cpp.html#a143e91347951d281c4ff56d9005ddc74" title=" " alt="" coords="5,548,60,573"/>
-<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="178,324,132,423,99,481,62,537,51,549,47,546,58,534,95,478,127,420,173,322"/>
+<area shape="rect" id="Node000001" title="选择下一个要运行的任务" alt="" coords="108,393,272,433"/>
+<area shape="rect" id="Node000002" href="$unit__test_2balance__test_8cpp.html#aa32fc1bfe9cca9e590a35c1d4cbc123d" title="Test load imbalance detection across multiple schedulers." alt="" coords="5,5,60,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="180,380,166,314,141,228,106,133,83,87,58,44,49,33,53,29,62,40,88,84,111,131,146,226,171,313,185,379"/>
+<area shape="rect" id="Node000003" href="$unit__test_2balance__test_8cpp.html#af782c37f274c6c67b78fb7e44d4b4488" title="Test that stealing only picks from kNormal (RR) queues. kRealTime (FIFO) and kIdle tasks should never..." alt="" coords="5,55,60,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="178,380,162,322,136,249,102,169,58,93,48,82,52,78,62,90,106,166,141,247,167,321,183,378"/>
+<area shape="rect" id="Node000004" href="$unit__test_2balance__test_8cpp.html#aa4a325d54e19c2b35e16ec7b0a6742cf" title="Test that stealing from empty source returns nullptr." alt="" coords="5,104,60,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="175,381,131,271,98,205,58,142,48,131,52,128,62,139,102,202,136,268,180,379"/>
+<area shape="rect" id="Node000005" href="$unit__test_2balance__test_8cpp.html#ac35a992ff40422397996e74b6842d59f" title="Test that stealing from a loaded RR scheduler works correctly. This validates the core primitive that..." alt="" coords="5,153,60,179"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="171,381,125,293,93,241,58,192,48,181,52,177,62,188,98,238,130,290,176,379"/>
+<area shape="rect" id="Node000006" href="$unit__test_2balance__test_8cpp.html#a137b9dc1ccdb1b3d9844df8dc39c5ef0" title="Test steal&#45;one&#45;at&#45;a&#45;time semantics." alt="" coords="5,203,60,228"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="166,383,119,316,58,241,47,230,51,226,62,238,123,313,170,380"/>
+<area shape="rect" id="Node000007" href="$unit__test_2rr__scheduler__test_8cpp.html#a7ecce18a18e7b912167806a4e04a1304" title=" " alt="" coords="5,252,60,277"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="156,385,58,291,47,280,50,276,62,287,160,381"/>
+<area shape="rect" id="Node000008" href="$unit__test_2rr__scheduler__test_8cpp.html#afb38f381971603ef31363c7688b2f6d1" title=" " alt="" coords="5,301,60,327"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="144,387,52,329,55,324,147,383"/>
+<area shape="rect" id="Node000009" href="$unit__test_2rr__scheduler__test_8cpp.html#af5e24e2b2948f38f9cade6d269ddd3bc" title=" " alt="" coords="5,351,60,376"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="112,391,59,374,61,369,114,386"/>
+<area shape="rect" id="Node000010" href="$unit__test_2rr__scheduler__test_8cpp.html#aae266699d49d200a1f0ddba55a6e0ff8" title=" " alt="" coords="5,400,60,425"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="94,415,60,415,60,410,94,410"/>
+<area shape="rect" id="Node000011" href="$unit__test_2rr__scheduler__test_8cpp.html#afe38ba33820ab08a0b24f18920c59653" title=" " alt="" coords="5,449,60,475"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="114,439,61,456,59,451,112,434"/>
+<area shape="rect" id="Node000012" href="$unit__test_2rr__scheduler__test_8cpp.html#ac254c447e96a6125cf547ef2aab13f28" title=" " alt="" coords="5,499,60,524"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="147,442,55,501,52,496,144,438"/>
+<area shape="rect" id="Node000013" href="$unit__test_2rr__scheduler__test_8cpp.html#a740df6f7b6e1cca33ca0367803cbf1c1" title=" " alt="" coords="5,548,60,573"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="159,445,49,550,46,546,156,441"/>
+<area shape="rect" id="Node000014" href="$unit__test_2rr__scheduler__test_8cpp.html#a0506aebc3da9917a2571711de76ef845" title=" " alt="" coords="5,597,60,623"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="170,446,122,512,62,586,50,599,46,595,58,583,118,509,165,443"/>
+<area shape="rect" id="Node000015" href="$unit__test_2rr__scheduler__test_8cpp.html#ae1cb633c27a85fcfcec3e45f4b1ea4f7" title=" " alt="" coords="5,647,60,672"/>
+<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="176,446,129,534,97,586,62,636,50,648,47,645,58,632,93,583,124,532,171,444"/>
+<area shape="rect" id="Node000016" href="$unit__test_2rr__scheduler__test_8cpp.html#aa1fd6659ff152594523ec94b754a9df7" title=" " alt="" coords="5,696,60,721"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="180,447,135,556,102,622,62,685,51,697,47,694,58,682,97,619,130,554,175,445"/>
+<area shape="rect" id="Node000017" href="$unit__test_2rr__scheduler__test_8cpp.html#a607a23b14d99e6bf7d25596063a8497c" title=" " alt="" coords="5,745,60,771"/>
+<area shape="poly" id="edge16_Node000001_Node000017" title=" " alt="" coords="183,447,166,504,140,577,106,658,62,734,51,747,47,743,58,731,101,655,135,576,161,502,178,445"/>
+<area shape="rect" id="Node000018" href="$unit__test_2rr__scheduler__test_8cpp.html#a143e91347951d281c4ff56d9005ddc74" title=" " alt="" coords="5,795,60,820"/>
+<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="185,447,170,512,145,599,110,693,87,739,62,784,52,796,48,793,58,780,83,737,105,691,140,597,165,511,180,446"/>
 </map>

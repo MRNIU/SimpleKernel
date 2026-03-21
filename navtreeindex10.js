@@ -1,7 +1,11 @@
 var NAVTREEINDEX10 =
 {
-"kernel__fdt__test_8cpp.html#aec284f7ae352c73442302defcffac018":[27,0,1,2,6,8],
-"kernel__fdt__test_8cpp_source.html":[27,0,1,2,6],
+"kernel__fdt__test_8cpp.html#a97226890d940da2ba211728d437e6c71":[27,0,1,2,7,13],
+"kernel__fdt__test_8cpp.html#aafcd71eb5b897500f16d4d34aebbbc87":[27,0,1,2,7,5],
+"kernel__fdt__test_8cpp.html#ab5a9b9a82cf3d717e39f264a52f3e957":[27,0,1,2,7,12],
+"kernel__fdt__test_8cpp.html#ac1486d6780bd7ca3c9d023f67617a74a":[27,0,1,2,7,14],
+"kernel__fdt__test_8cpp.html#aec284f7ae352c73442302defcffac018":[27,0,1,2,7,8],
+"kernel__fdt__test_8cpp_source.html":[27,0,1,2,7],
 "kernel__log_8hpp.html":[27,0,0,3,8],
 "kernel__log_8hpp.html#a018a8e41af17ca14a1ea56c9ff7347fb":[27,0,0,3,8,11],
 "kernel__log_8hpp.html#a0562f234b6226d15eb2a3c4750078004":[27,0,0,3,8,6],
@@ -30,9 +34,9 @@ var NAVTREEINDEX10 =
 "kernel__log_8hpp.html#af12a8dfb2db2c5e8ba09d43b4ade5050":[27,0,0,3,8,15],
 "kernel__log_8hpp.html#af74195a26f05fb0b3ad5edc17d27dd1e":[27,0,0,3,8,12],
 "kernel__log_8hpp_source.html":[27,0,0,3,8],
-"kernel__task__test_8cpp.html":[27,0,1,1,11],
-"kernel__task__test_8cpp.html#ae49d3755a7181bd34a1c87abe708b4da":[27,0,1,1,11,0],
-"kernel__task__test_8cpp_source.html":[27,0,1,1,11],
+"kernel__task__test_8cpp.html":[27,0,1,1,13],
+"kernel__task__test_8cpp.html#ae49d3755a7181bd34a1c87abe708b4da":[27,0,1,1,13,0],
+"kernel__task__test_8cpp_source.html":[27,0,1,1,13],
 "kstd__libcxx_8cpp.html":[27,0,0,5,1],
 "kstd__libcxx_8cpp.html#a19df960d2907e9c08a720ae7683e632c":[27,0,0,5,1,13],
 "kstd__libcxx_8cpp.html#a274fc39b50e61c00c4653b5bbc1f0baf":[27,0,0,5,1,18],
@@ -245,9 +249,5 @@ var NAVTREEINDEX10 =
 "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md169":[4,2,5,1],
 "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md170":[4,2,6],
 "md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md171":[4,2,6,0],
-"md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md172":[4,2,6,1],
-"md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md173":[4,2,6,2],
-"md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md174":[4,2,7],
-"md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md175":[4,2,7,0],
-"md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md176":[4,2,7,1]
+"md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md172":[4,2,6,1]
 };

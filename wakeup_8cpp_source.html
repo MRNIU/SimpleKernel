@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SimpleKernel: /workspaces/SimpleKernel/src/task/wakeup.cpp Source File</title>
+<title>SimpleKernel: /__w/SimpleKernel/SimpleKernel/src/task/wakeup.cpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">SimpleKernel<span id="projectnumber">&#160;1.17.0</span>
+   <div id="projectname">SimpleKernel
    </div>
   </td>
  </tr>
@@ -202,7 +202,7 @@ $(document).ready(function(){initNavTree('wakeup_8cpp_source.html',''); initResi
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>              <span class="keyword">static_cast&lt;</span>uint64_t<span class="keyword">&gt;</span>(resource_id.GetData()));</div>
 <div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>}</div>
 </div>
-<div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 风格的锁守卫模板类</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00131">spinlock.hpp:131</a></div></div>
+<div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 风格的锁守卫模板类</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00126">spinlock.hpp:126</a></div></div>
 <div class="ttc" id="aclassResourceId_html"><div class="ttname"><a href="classResourceId.html">ResourceId</a></div><div class="ttdoc">资源 ID</div><div class="ttdef"><b>Definition</b> <a href="resource__id_8hpp_source.html#l00077">resource_id.hpp:77</a></div></div>
 <div class="ttc" id="aclassTaskManager_html_a31f143a78b2e95b1d3e9fb98c910959f"><div class="ttname"><a href="classTaskManager.html#a31f143a78b2e95b1d3e9fb98c910959f">TaskManager::WakeupOne</a></div><div class="ttdeci">auto WakeupOne(ResourceId resource_id) -&gt; void</div><div class="ttdoc">唤醒等待指定资源的第一个任务（跨核搜索）</div><div class="ttdef"><b>Definition</b> <a href="wakeup_8cpp_source.html#l00060">wakeup.cpp:60</a></div></div>
 <div class="ttc" id="aclassTaskManager_html_a96d2a8187ce732bac7d0d952fd502181"><div class="ttname"><a href="classTaskManager.html#a96d2a8187ce732bac7d0d952fd502181">TaskManager::Wakeup</a></div><div class="ttdeci">auto Wakeup(ResourceId resource_id) -&gt; void</div><div class="ttdoc">唤醒等待指定资源的所有任务</div><div class="ttdef"><b>Definition</b> <a href="wakeup_8cpp_source.html#l00052">wakeup.cpp:52</a></div></div>
@@ -210,7 +210,7 @@ $(document).ready(function(){initNavTree('wakeup_8cpp_source.html',''); initResi
 <div class="ttc" id="anamespaceTaskStatusId_html_adf7ae7068c820b286ec29a4e72da04e2"><div class="ttname"><a href="namespaceTaskStatusId.html#adf7ae7068c820b286ec29a4e72da04e2">TaskStatusId::kBlocked</a></div><div class="ttdeci">constexpr etl::fsm_state_id_t kBlocked</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00020">task_fsm.hpp:20</a></div></div>
 <div class="ttc" id="anamespaceklog_html_a5303b815d2299fd2fa306bd4b43a3963"><div class="ttname"><a href="namespaceklog.html#a5303b815d2299fd2fa306bd4b43a3963">klog::Debug</a></div><div class="ttdeci">auto Debug(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 DEBUG 级别记录日志（SIMPLEKERNEL_MIN_LOG_LEVEL &gt; 0 时编译期消除）</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00173">kernel_log.hpp:173</a></div></div>
 <div class="ttc" id="aresource__id_8hpp_html"><div class="ttname"><a href="resource__id_8hpp.html">resource_id.hpp</a></div></div>
-<div class="ttc" id="astructCpuSchedData_html"><div class="ttname"><a href="structCpuSchedData.html">CpuSchedData</a></div><div class="ttdoc">每个核心的调度数据 (RunQueue)</div><div class="ttdef"><b>Definition</b> <a href="task__manager_8hpp_source.html#l00034">task_manager.hpp:34</a></div></div>
+<div class="ttc" id="astructCpuSchedData_html"><div class="ttname"><a href="structCpuSchedData.html">CpuSchedData</a></div><div class="ttdoc">每个核心的调度数据 (RunQueue)</div><div class="ttdef"><b>Definition</b> <a href="task__manager_8hpp_source.html#l00055">task_manager.hpp:55</a></div></div>
 <div class="ttc" id="astructMsgWakeup_html"><div class="ttname"><a href="structMsgWakeup.html">MsgWakeup</a></div><div class="ttdoc">唤醒消息（无负载，用作事件）</div><div class="ttdef"><b>Definition</b> <a href="task__messages_8hpp_source.html#l00043">task_messages.hpp:43</a></div></div>
 <div class="ttc" id="atask__manager_8hpp_html"><div class="ttname"><a href="task__manager_8hpp.html">task_manager.hpp</a></div></div>
 <div class="ttc" id="atask__messages_8hpp_html"><div class="ttname"><a href="task__messages_8hpp.html">task_messages.hpp</a></div></div>

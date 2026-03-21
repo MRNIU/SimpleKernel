@@ -1,7 +1,7 @@
-<map id="/workspaces/SimpleKernel/src/arch/riscv64/plic/plic.cpp" name="/workspaces/SimpleKernel/src/arch/riscv64/plic/plic.cpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="625,5,818,60"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/arch/riscv64/plic/plic.cpp" name="/__w/SimpleKernel/SimpleKernel/src/arch/riscv64/plic/plic.cpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="626,5,817,60"/>
 <area shape="rect" id="Node000002" href="$plic_8h.html" title=" " alt="" coords="1270,108,1327,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="819,46,1256,110,1256,116,818,51"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="817,45,1256,110,1255,116,816,51"/>
 <area shape="rect" id="Node000003" href="$cpu__io_8h.html" title=" " alt="" coords="835,255,911,280"/>
 <area shape="poly" id="edge28_Node000001_Node000003" title=" " alt="" coords="741,59,861,242,856,244,736,62"/>
 <area shape="rect" id="Node000019" href="$basic__info_8hpp.html" title=" " alt="" coords="591,108,707,133"/>

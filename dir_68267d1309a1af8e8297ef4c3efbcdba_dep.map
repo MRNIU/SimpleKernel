@@ -1,10 +1,10 @@
-<map id="/workspaces/SimpleKernel/src" name="/workspaces/SimpleKernel/src">
+<map id="/__w/SimpleKernel/SimpleKernel/src" name="/__w/SimpleKernel/SimpleKernel/src">
 <area shape="rect" id="node2" href="dir_70d5e250c66d001b18da37689179cade.html" title="arch" alt="" coords="109,100,160,125"/>
 <area shape="poly" id="edge2" href="dir_000040_000003.html" alt="" coords="159,53,146,88,141,86,154,51"/>
 <area shape="rect" id="edge2-headlabel" href="dir_000040_000003.html" title="10" alt="" coords="145,79,162,93"/>
 <area shape="rect" id="node5" href="dir_b0856f6b0d80ccb263b2f415c91f9e17.html" title="include" alt="" coords="240,320,309,345"/>
 <area shape="poly" id="edge4" href="dir_000040_000022.html" alt="" coords="184,48,217,66,257,93,296,128,313,149,326,172,334,211,333,240,325,273,314,294,300,311,296,308,310,291,320,271,328,239,329,211,322,174,309,152,293,132,254,97,214,70,181,52"/>
-<area shape="rect" id="edge4-headlabel" href="dir_000040_000022.html" title="186" alt="" coords="294,305,320,320"/>
+<area shape="rect" id="edge4-headlabel" href="dir_000040_000022.html" title="188" alt="" coords="294,305,320,320"/>
 <area shape="rect" id="node6" href="dir_ee3448fa1dc3d93b4fb7d6fba5be0d5c.html" title="libc" alt="" coords="111,540,156,565"/>
 <area shape="poly" id="edge6" href="dir_000040_000029.html" alt="" coords="142,53,109,73,72,103,43,140,34,162,31,185,31,407,38,445,58,478,83,507,108,530,104,534,79,511,53,482,33,447,25,408,25,184,29,160,38,138,68,99,106,69,139,49"/>
 <area shape="rect" id="edge6-headlabel" href="dir_000040_000029.html" title="15" alt="" coords="99,515,116,530"/>
@@ -21,7 +21,7 @@
 <area shape="poly" id="edge7" href="dir_000003_000006.html" alt="" coords="159,123,244,165,242,169,157,128"/>
 <area shape="rect" id="edge7-headlabel" href="dir_000003_000006.html" title="5" alt="" coords="238,150,247,165"/>
 <area shape="poly" id="edge11" href="dir_000003_000022.html" alt="" coords="140,125,161,190,179,232,203,270,224,292,246,310,243,314,220,296,199,274,175,234,156,192,135,127"/>
-<area shape="rect" id="edge11-headlabel" href="dir_000003_000022.html" title="48" alt="" coords="237,295,254,310"/>
+<area shape="rect" id="edge11-headlabel" href="dir_000003_000022.html" title="50" alt="" coords="237,295,254,310"/>
 <area shape="poly" id="edge12" href="dir_000003_000029.html" alt="" coords="125,127,105,150,83,181,65,218,57,258,57,407,63,442,77,475,96,505,115,528,110,531,92,508,73,478,58,444,52,408,52,258,60,216,78,178,101,146,121,124"/>
 <area shape="rect" id="edge12-headlabel" href="dir_000003_000029.html" title="4" alt="" coords="111,513,120,528"/>
 <area shape="poly" id="edge10" href="dir_000003_000031.html" alt="" coords="127,126,108,183,101,220,99,258,99,334,105,370,122,404,145,433,168,456,165,460,141,437,118,407,100,372,93,334,93,258,96,219,103,181,122,125"/>

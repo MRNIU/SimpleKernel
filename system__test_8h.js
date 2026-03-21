@@ -17,6 +17,7 @@ var system__test_8h =
       [ "kTimeout", "system__test_8h.html#af9e5b0a761857519c43daef48527fdc5a7f27861ff1d3f550c6aa77150d7edabd", null ]
     ] ],
     [ "affinity_test", "system__test_8h.html#ab712103e4e4c4359b4645e5c70322d75", null ],
+    [ "balance_test", "system__test_8h.html#a34b326e57093259c2da580cf526f9e7a", null ],
     [ "cfs_scheduler_test", "system__test_8h.html#ac3069ba7e9bb7a60adb5c90069dc9c0b", null ],
     [ "clone_test", "system__test_8h.html#a5c8b1c104155c9a296f094fe5ef6b3fb", null ],
     [ "cross_core_test", "system__test_8h.html#af3128d72db78d086501c7a2ca6e76c73", null ],
@@ -33,6 +34,7 @@ var system__test_8h =
     [ "fork_test", "system__test_8h.html#a6441b65735e43afbd15b79e4dad5e39b", null ],
     [ "idle_scheduler_test", "system__test_8h.html#a124151818611b6698e2b092e2aed421a", null ],
     [ "interrupt_test", "system__test_8h.html#a16953e19a2974c8249f2109a4522237e", null ],
+    [ "ipi_test", "system__test_8h.html#a4a15c8cebecd889c9b6bfdb8d783a1fe", null ],
     [ "kernel_task_test", "system__test_8h.html#ae49d3755a7181bd34a1c87abe708b4da", null ],
     [ "memory_test", "system__test_8h.html#adcdd769af8aefa39375682eedd3cac7f", null ],
     [ "mutex_test", "system__test_8h.html#a7c0a7b9c6c8ca59eaaa84173e5c002af", null ],

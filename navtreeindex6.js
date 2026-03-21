@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"classvirtio_1_1MmioTransport.html#a10fae98798be13b77da6b2c395fe182fadbe41578e329b9879feb3f7335a4225c":[24,0,22,3,0,10],
 "classvirtio_1_1MmioTransport.html#a10fae98798be13b77da6b2c395fe182fae35c310d5c5745ecd536345b4196fca4":[24,0,22,3,0,6],
 "classvirtio_1_1MmioTransport.html#a10fae98798be13b77da6b2c395fe182fae35c310d5c5745ecd536345b4196fca4":[26,0,14,3,0,6],
 "classvirtio_1_1MmioTransport.html#a10fae98798be13b77da6b2c395fe182faf2d8088059edbe5b55e4059e39d042f5":[26,0,14,3,0,20],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "classvirtio_1_1Transport.html#a6b9a16ba02a79e4d25b9d602f1b608b1":[24,0,22,6,5],
 "classvirtio_1_1Transport.html#a738526f1646bdbca8a746dfe7677d6b2":[26,0,14,6,9],
 "classvirtio_1_1Transport.html#a738526f1646bdbca8a746dfe7677d6b2":[24,0,22,6,9],
-"classvirtio_1_1Transport.html#a80f4a86346e014e67dd103ef80efcd02":[26,0,14,6,10],
-"classvirtio_1_1Transport.html#a80f4a86346e014e67dd103ef80efcd02":[24,0,22,6,10]
+"classvirtio_1_1Transport.html#a80f4a86346e014e67dd103ef80efcd02":[26,0,14,6,10]
 };

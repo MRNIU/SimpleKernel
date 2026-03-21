@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SimpleKernel: /workspaces/SimpleKernel/src/arch/aarch64/timer.cpp Source File</title>
+<title>SimpleKernel: /__w/SimpleKernel/SimpleKernel/src/arch/aarch64/timer.cpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">SimpleKernel<span id="projectnumber">&#160;1.17.0</span>
+   <div id="projectname">SimpleKernel
    </div>
   </td>
  </tr>
@@ -105,65 +105,74 @@ $(document).ready(function(){initNavTree('aarch64_2timer_8cpp_source.html',''); 
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &quot;interrupt.h&quot;</span></div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &quot;<a class="code" href="kernel_8h.html">kernel.h</a>&quot;</span></div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &quot;<a class="code" href="kernel__fdt_8hpp.html">kernel_fdt.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &quot;<a class="code" href="task__manager_8hpp.html">task_manager.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="aarch64_2timer_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">   14</a></span><span class="keyword">using </span><a class="code hl_typedef" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> = <a class="code hl_typedef" href="classInterruptBase.html#a92d086a7d2510a3626ed51660efcb313">InterruptBase::InterruptDelegate</a>;</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">namespace </span>{</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>uint64_t interval{0};</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>uint64_t timer_intid{0};</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">auto</span> TimerHandler(uint64_t <span class="comment">/*cause*/</span>, <a class="code hl_struct" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a>* <span class="comment">/*context*/</span>)</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    -&gt; uint64_t {</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  cpu_io::CNTV_TVAL_EL0::Write(interval);</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>  <span class="keyword">auto</span>&amp; tm = TaskManagerSingleton::instance();</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>  tm.TickUpdate();</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  (void)tm.CheckPendingSignals();</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>}</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>}  <span class="comment">// namespace</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="foldopen" id="foldopen00037" data-start="{" data-end="}">
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="aarch64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">   37</a></span><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">TimerInitSMP</a>() -&gt; <span class="keywordtype">void</span> {</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  InterruptSingleton::instance().Ppi(timer_intid, <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &quot;<a class="code" href="per__cpu_8hpp.html">per_cpu.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &quot;<a class="code" href="task__manager_8hpp.html">task_manager.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno"><a class="line" href="aarch64_2timer_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">   15</a></span><span class="keyword">using </span><a class="code hl_typedef" href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a> = <a class="code hl_typedef" href="classInterruptBase.html#a92d086a7d2510a3626ed51660efcb313">InterruptBase::InterruptDelegate</a>;</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">namespace </span>{</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>uint64_t interval{0};</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>uint64_t timer_intid{0};</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">auto</span> TimerHandler(uint64_t, <a class="code hl_struct" href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a>*) -&gt; uint64_t {</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>  cpu_io::CNTV_TVAL_EL0::Write(interval);</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>  <span class="keyword">auto</span> <a class="code hl_variable" href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a> = <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>();</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>  <span class="keywordflow">if</span> (<a class="code hl_variable" href="namespaceper__cpu.html#af35ee4e7eef4f89655b25dcd4fda3ef5">per_cpu::in_timer_handler</a>[<a class="code hl_variable" href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a>]) {</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>  }</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  <a class="code hl_variable" href="namespaceper__cpu.html#af35ee4e7eef4f89655b25dcd4fda3ef5">per_cpu::in_timer_handler</a>[<a class="code hl_variable" href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a>] = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>  <span class="keyword">auto</span>&amp; tm = TaskManagerSingleton::instance();</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  tm.TickUpdate();</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>  (void)tm.CheckPendingSignals();</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>  <a class="code hl_variable" href="namespaceper__cpu.html#af35ee4e7eef4f89655b25dcd4fda3ef5">per_cpu::in_timer_handler</a>[<a class="code hl_variable" href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a>] = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>}</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>}  <span class="comment">// namespace</span></div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Clear();</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  cpu_io::CNTV_CTL_EL0::IMASK::Set();</div>
+<div class="foldopen" id="foldopen00040" data-start="{" data-end="}">
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="aarch64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">   40</a></span><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">TimerInitSMP</a>() -&gt; <span class="keywordtype">void</span> {</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  InterruptSingleton::instance().Ppi(timer_intid, <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  cpu_io::CNTV_TVAL_EL0::Write(interval);</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Set();</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  cpu_io::CNTV_CTL_EL0::IMASK::Clear();</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>}</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Clear();</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  cpu_io::CNTV_CTL_EL0::IMASK::Set();</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  cpu_io::CNTV_TVAL_EL0::Write(interval);</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Set();</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  cpu_io::CNTV_CTL_EL0::IMASK::Clear();</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>}</div>
 </div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="foldopen" id="foldopen00049" data-start="{" data-end="}">
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">   49</a></span><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a>() -&gt; <span class="keywordtype">void</span> {</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  <span class="comment">// 计算 interval</span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  <span class="comment">// 获取定时器中断号</span></div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  timer_intid = KernelFdtSingleton::instance()</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>                    .GetAarch64Intid(<span class="stringliteral">&quot;arm,armv8-timer&quot;</span>)</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>                    .value() +</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>                <a class="code hl_variable" href="classGic.html#abeca94707673918c42d6dc523360816f">Gic::kPpiBase</a>;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  InterruptSingleton::instance().RegisterInterruptFunc(</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>      timer_intid, InterruptDelegate::create&lt;TimerHandler&gt;());</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
+<div class="foldopen" id="foldopen00052" data-start="{" data-end="}">
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno"><a class="line" href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">   52</a></span><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a>() -&gt; <span class="keywordtype">void</span> {</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  <span class="comment">// 计算 interval</span></div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <span class="comment">// 获取定时器中断号</span></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  timer_intid = KernelFdtSingleton::instance()</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>                    .GetAarch64Intid(<span class="stringliteral">&quot;arm,armv8-timer&quot;</span>)</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>                    .value() +</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>                <a class="code hl_variable" href="classGic.html#abeca94707673918c42d6dc523360816f">Gic::kPpiBase</a>;</div>
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  InterruptSingleton::instance().Ppi(timer_intid, <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Clear();</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  cpu_io::CNTV_CTL_EL0::IMASK::Set();</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  InterruptSingleton::instance().RegisterInterruptFunc(</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>      timer_intid, InterruptDelegate::create&lt;TimerHandler&gt;());</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  InterruptSingleton::instance().Ppi(timer_intid, <a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>());</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  cpu_io::CNTV_TVAL_EL0::Write(interval);</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Set();</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  cpu_io::CNTV_CTL_EL0::IMASK::Clear();</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>}</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Clear();</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  cpu_io::CNTV_CTL_EL0::IMASK::Set();</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  cpu_io::CNTV_TVAL_EL0::Write(interval);</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  cpu_io::CNTV_CTL_EL0::ENABLE::Set();</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  cpu_io::CNTV_CTL_EL0::IMASK::Clear();</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>}</div>
 </div>
-<div class="ttc" id="aaarch64_2interrupt__main_8cpp_html_abe4c331dc3efca0cf6b367ec6cfe968f"><div class="ttname"><a href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a></div><div class="ttdeci">InterruptBase::InterruptDelegate InterruptDelegate</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2interrupt__main_8cpp_source.html#l00017">interrupt_main.cpp:17</a></div></div>
-<div class="ttc" id="aaarch64_2timer_8cpp_html_a1e59270c44fa60a8b1304ee3c56b2907"><div class="ttname"><a href="aarch64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">TimerInitSMP</a></div><div class="ttdeci">auto TimerInitSMP() -&gt; void</div><div class="ttdoc">从核的定时器初始化</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2timer_8cpp_source.html#l00037">timer.cpp:37</a></div></div>
-<div class="ttc" id="aaarch64_2timer_8cpp_html_aadcb63b822cced321aaf1cc58cfea3cc"><div class="ttname"><a href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a></div><div class="ttdeci">auto TimerInit() -&gt; void</div><div class="ttdoc">初始化定时器</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2timer_8cpp_source.html#l00049">timer.cpp:49</a></div></div>
+<div class="ttc" id="aaarch64_2interrupt__main_8cpp_html_abe4c331dc3efca0cf6b367ec6cfe968f"><div class="ttname"><a href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a></div><div class="ttdeci">InterruptBase::InterruptDelegate InterruptDelegate</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2interrupt__main_8cpp_source.html#l00019">interrupt_main.cpp:19</a></div></div>
+<div class="ttc" id="aaarch64_2timer_8cpp_html_a1e59270c44fa60a8b1304ee3c56b2907"><div class="ttname"><a href="aarch64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">TimerInitSMP</a></div><div class="ttdeci">auto TimerInitSMP() -&gt; void</div><div class="ttdoc">从核的定时器初始化</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2timer_8cpp_source.html#l00040">timer.cpp:40</a></div></div>
+<div class="ttc" id="aaarch64_2timer_8cpp_html_aadcb63b822cced321aaf1cc58cfea3cc"><div class="ttname"><a href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a></div><div class="ttdeci">auto TimerInit() -&gt; void</div><div class="ttdoc">初始化定时器</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2timer_8cpp_source.html#l00052">timer.cpp:52</a></div></div>
 <div class="ttc" id="aarch_8h_html"><div class="ttname"><a href="arch_8h.html">arch.h</a></div></div>
 <div class="ttc" id="abasic__info_8hpp_html"><div class="ttname"><a href="basic__info_8hpp.html">basic_info.hpp</a></div></div>
 <div class="ttc" id="aclassGic_html_abeca94707673918c42d6dc523360816f"><div class="ttname"><a href="classGic.html#abeca94707673918c42d6dc523360816f">Gic::kPpiBase</a></div><div class="ttdeci">static constexpr size_t kPpiBase</div><div class="ttdef"><b>Definition</b> <a href="gic_8h_source.html#l00023">gic.h:23</a></div></div>
@@ -172,6 +181,9 @@ $(document).ready(function(){initNavTree('aarch64_2timer_8cpp_source.html',''); 
 <div class="ttc" id="akernel_8h_html"><div class="ttname"><a href="kernel_8h.html">kernel.h</a></div></div>
 <div class="ttc" id="akernel__fdt_8hpp_html"><div class="ttname"><a href="kernel__fdt_8hpp.html">kernel_fdt.hpp</a></div></div>
 <div class="ttc" id="anamespacecpu__io_html_a52b8a7263a31e6670ef4dec7922d9e72"><div class="ttname"><a href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a></div><div class="ttdeci">auto GetCurrentCoreId() -&gt; size_t</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00026">cpu_io.h:26</a></div></div>
+<div class="ttc" id="anamespaceper__cpu_html_af35ee4e7eef4f89655b25dcd4fda3ef5"><div class="ttname"><a href="namespaceper__cpu.html#af35ee4e7eef4f89655b25dcd4fda3ef5">per_cpu::in_timer_handler</a></div><div class="ttdeci">bool in_timer_handler[SIMPLEKERNEL_MAX_CORE_COUNT]</div><div class="ttdoc">TimerHandler 重入保护（per-CPU，防止嵌套 timer 中断导致递归调度）</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00023">per_cpu.hpp:23</a></div></div>
+<div class="ttc" id="aper__cpu_8hpp_html"><div class="ttname"><a href="per__cpu_8hpp.html">per_cpu.hpp</a></div></div>
+<div class="ttc" id="aper__cpu_8hpp_html_af349ef2aacd2314294eac3283d14e3ca"><div class="ttname"><a href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a></div><div class="ttdeci">size_t core_id</div><div class="ttdoc">核心 ID</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00001">per_cpu.hpp:1</a></div></div>
 <div class="ttc" id="astructcpu__io_1_1TrapContext_html"><div class="ttname"><a href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a></div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00186">cpu_io.h:186</a></div></div>
 <div class="ttc" id="atask__manager_8hpp_html"><div class="ttname"><a href="task__manager_8hpp.html">task_manager.hpp</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

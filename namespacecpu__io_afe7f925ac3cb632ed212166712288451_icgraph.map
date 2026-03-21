@@ -4,7 +4,7 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="389,99,342,71,287,44,247,31,248,26,289,40,344,66,392,94"/>
 <area shape="rect" id="Node000004" href="$aarch64_2interrupt__main_8cpp.html#ad310aa2bb690e3d8b4e6a036aae3dd93" title="从核的体系结构相关中断初始化" alt="" coords="135,55,261,80"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="350,104,256,83,257,77,351,98"/>
-<area shape="rect" id="Node000005" href="$schedule_8cpp.html#adf76a019ba47bc42d5ee5d996b3f1fe0" title="新任务首次执行时的引导函数 (由 kernel_thread_entry 汇编调用)" alt="" coords="108,104,288,129"/>
+<area shape="rect" id="Node000005" href="$schedule_8cpp.html#adf76a019ba47bc42d5ee5d996b3f1fe0" title="内核线程启动入口 — 完成 Schedule() 的锁交接后执行任务函数" alt="" coords="108,104,288,129"/>
 <area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="322,119,288,119,288,114,322,114"/>
 <area shape="rect" id="Node000006" href="$classSpinLock.html#a1552c84e7da6f0b350fd4f4ae12a1079" title="获得锁" alt="" coords="139,153,257,179"/>
 <area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="351,135,257,156,256,151,350,130"/>

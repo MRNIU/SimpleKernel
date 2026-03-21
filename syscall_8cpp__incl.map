@@ -1,7 +1,7 @@
-<map id="/workspaces/SimpleKernel/src/syscall.cpp" name="/workspaces/SimpleKernel/src/syscall.cpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="198,5,391,45"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/syscall.cpp" name="/__w/SimpleKernel/SimpleKernel/src/syscall.cpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="199,5,390,45"/>
 <area shape="rect" id="Node000002" href="$syscall_8hpp.html" title=" " alt="" coords="2165,387,2259,412"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="392,27,859,43,1502,73,1815,92,2082,114,2275,138,2335,151,2364,165,2381,193,2382,224,2371,255,2351,285,2325,314,2296,340,2243,381,2239,377,2293,336,2321,310,2347,282,2366,252,2377,223,2376,195,2361,169,2333,156,2274,143,2082,119,1814,97,1501,78,858,49,391,32"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="390,27,857,43,1500,73,1814,92,2082,114,2275,138,2334,151,2364,165,2381,193,2382,224,2371,255,2351,285,2325,314,2296,340,2243,381,2239,377,2293,336,2321,310,2347,282,2366,252,2377,223,2376,195,2361,169,2333,156,2274,143,2081,119,1813,97,1500,78,856,49,390,32"/>
 <area shape="rect" id="Node000015" href="$kernel_8h.html" title=" " alt="" coords="51,93,125,119"/>
 <area shape="poly" id="edge24_Node000001_Node000015" title=" " alt="" coords="246,48,132,91,130,86,244,43"/>
 <area shape="rect" id="Node000016" href="$kernel__log_8hpp.html" title=" " alt="" coords="140,460,257,485"/>
@@ -9,7 +9,7 @@
 <area shape="rect" id="Node000020" href="$spinlock_8hpp.html" title=" " alt="" coords="421,387,525,412"/>
 <area shape="poly" id="edge33_Node000001_Node000020" title=" " alt="" coords="297,46,297,178,297,254,301,277,310,298,323,316,341,333,382,360,424,379,422,384,380,365,338,337,319,320,305,300,295,278,292,254,292,178,292,46"/>
 <area shape="rect" id="Node000025" href="$task__manager_8hpp.html" title=" " alt="" coords="1073,93,1215,119"/>
-<area shape="poly" id="edge44_Node000001_Node000025" title=" " alt="" coords="392,33,1059,94,1059,99,391,38"/>
+<area shape="poly" id="edge44_Node000001_Node000025" title=" " alt="" coords="390,33,1059,94,1059,100,390,38"/>
 <area shape="rect" id="Node000003" href="$cpu__io_8h.html" title=" " alt="" coords="643,533,719,559"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="2165,412,1954,449,1816,470,1676,488,733,544,733,539,1676,483,1815,465,1953,444,2164,407"/>
 <area shape="rect" id="Node000006" title=" " alt="" coords="2110,680,2181,705"/>

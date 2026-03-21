@@ -1,9 +1,9 @@
-<map id="/workspaces/SimpleKernel/src/memory/include/virtual_memory.hpp" name="/workspaces/SimpleKernel/src/memory/include/virtual_memory.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="635,5,836,60"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/memory/include/virtual_memory.hpp" name="/__w/SimpleKernel/SimpleKernel/src/memory/include/virtual_memory.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="637,5,833,60"/>
 <area shape="rect" id="Node000002" href="$cpu__io_8h.html" title=" " alt="" coords="473,108,549,133"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="668,63,555,105,553,100,666,58"/>
 <area shape="rect" id="Node000005" title=" " alt="" coords="5,255,76,280"/>
-<area shape="poly" id="edge17_Node000001_Node000005" title=" " alt="" coords="635,36,515,44,446,53,374,67,300,86,227,111,157,143,93,183,68,211,52,243,47,240,63,208,90,179,155,139,225,106,298,81,373,62,446,48,515,39,634,31"/>
+<area shape="poly" id="edge17_Node000001_Node000005" title=" " alt="" coords="637,36,518,44,449,53,376,66,302,85,228,111,158,143,93,183,68,211,52,243,47,240,63,208,90,179,155,138,226,106,300,80,375,61,448,48,518,39,637,31"/>
 <area shape="rect" id="Node000006" title=" " alt="" coords="677,255,743,280"/>
 <area shape="poly" id="edge18_Node000001_Node000006" title=" " alt="" coords="735,60,715,241,710,240,730,60"/>
 <area shape="rect" id="Node000012" title=" " alt="" coords="773,108,887,133"/>

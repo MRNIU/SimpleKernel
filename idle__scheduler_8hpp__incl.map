@@ -1,5 +1,5 @@
-<map id="/workspaces/SimpleKernel/src/task/include/idle_scheduler.hpp" name="/workspaces/SimpleKernel/src/task/include/idle_scheduler.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="543,5,737,60"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/task/include/idle_scheduler.hpp" name="/__w/SimpleKernel/SimpleKernel/src/task/include/idle_scheduler.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="545,5,735,60"/>
 <area shape="rect" id="Node000002" href="$scheduler__base_8hpp.html" title=" " alt="" coords="509,108,659,133"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="625,62,601,98,597,95,621,59"/>
 <area shape="rect" id="Node000005" href="$task__control__block_8hpp.html" title=" " alt="" coords="830,181,1002,207"/>

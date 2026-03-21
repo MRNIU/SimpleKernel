@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">SimpleKernel<span id="projectnumber">&#160;1.17.0</span>
+   <div id="projectname">SimpleKernel
    </div>
   </td>
  </tr>
@@ -368,8 +368,8 @@ Additional Inherited Members</h2></td></tr>
 <div class="line"><span class="lineno">   60</span>    }</div>
 <div class="line"><span class="lineno">   61</span>  }</div>
 <div class="ttc" id="aclassRoundRobinScheduler_html_a0b7da365062fed877da37ba90a3a410c"><div class="ttname"><a href="classRoundRobinScheduler.html#a0b7da365062fed877da37ba90a3a410c">RoundRobinScheduler::ready_queue_</a></div><div class="ttdeci">etl::list&lt; TaskControlBlock *, kernel::config::kMaxReadyTasks &gt; ready_queue_</div><div class="ttdoc">就绪队列 (双向链表，支持从头部取、向尾部放，固定容量)</div><div class="ttdef"><b>Definition</b> <a href="rr__scheduler_8hpp_source.html#l00132">rr_scheduler.hpp:132</a></div></div>
-<div class="ttc" id="aclassSchedulerBase_html_ac24df137a9e613ca5c5de71345cf5f94"><div class="ttname"><a href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">SchedulerBase::stats_</a></div><div class="ttdeci">Stats stats_</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00162">scheduler_base.hpp:162</a></div></div>
-<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a2b77710183b8706262c53dc712f0ba0d"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a2b77710183b8706262c53dc712f0ba0d">SchedulerBase::Stats::total_dequeues</a></div><div class="ttdeci">size_t total_dequeues</div><div class="ttdoc">总出队次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00042">scheduler_base.hpp:42</a></div></div>
+<div class="ttc" id="aclassSchedulerBase_html_ac24df137a9e613ca5c5de71345cf5f94"><div class="ttname"><a href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">SchedulerBase::stats_</a></div><div class="ttdeci">Stats stats_</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00150">scheduler_base.hpp:150</a></div></div>
+<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a2b77710183b8706262c53dc712f0ba0d"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a2b77710183b8706262c53dc712f0ba0d">SchedulerBase::Stats::total_dequeues</a></div><div class="ttdeci">size_t total_dequeues</div><div class="ttdoc">总出队次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00030">scheduler_base.hpp:30</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -440,7 +440,7 @@ Here is the caller graph for this function:</div>
 <div class="line"><span class="lineno">   40</span>    }</div>
 <div class="line"><span class="lineno">   41</span>  }</div>
 <div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
-<div class="ttc" id="astructSchedulerBase_1_1Stats_html_ad5a40384c3c0c779491463433e2a311e"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#ad5a40384c3c0c779491463433e2a311e">SchedulerBase::Stats::total_enqueues</a></div><div class="ttdeci">size_t total_enqueues</div><div class="ttdoc">总入队次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00040">scheduler_base.hpp:40</a></div></div>
+<div class="ttc" id="astructSchedulerBase_1_1Stats_html_ad5a40384c3c0c779491463433e2a311e"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#ad5a40384c3c0c779491463433e2a311e">SchedulerBase::Stats::total_enqueues</a></div><div class="ttdeci">size_t total_enqueues</div><div class="ttdoc">总入队次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00028">scheduler_base.hpp:28</a></div></div>
 <div class="ttc" id="astructTaskControlBlock_1_1SchedInfo_html_a1285800eebf37bb44c68ebc43ccdbc86"><div class="ttname"><a href="structTaskControlBlock_1_1SchedInfo.html#a1285800eebf37bb44c68ebc43ccdbc86">TaskControlBlock::SchedInfo::time_slice_default</a></div><div class="ttdeci">uint64_t time_slice_default</div><div class="ttdoc">默认时间片</div><div class="ttdef"><b>Definition</b> <a href="task__control__block_8hpp_source.html#l00186">task_control_block.hpp:186</a></div></div>
 <div class="ttc" id="astructTaskControlBlock_1_1SchedInfo_html_acbbd6ad7913e4f93e31eabd16c1691ee"><div class="ttname"><a href="structTaskControlBlock_1_1SchedInfo.html#acbbd6ad7913e4f93e31eabd16c1691ee">TaskControlBlock::SchedInfo::time_slice_remaining</a></div><div class="ttdeci">uint64_t time_slice_remaining</div><div class="ttdoc">剩余时间片</div><div class="ttdef"><b>Definition</b> <a href="task__control__block_8hpp_source.html#l00184">task_control_block.hpp:184</a></div></div>
 <div class="ttc" id="astructTaskControlBlock_html_a3075e45ca454dbb5309161896e432ace"><div class="ttname"><a href="structTaskControlBlock.html#a3075e45ca454dbb5309161896e432ace">TaskControlBlock::sched_info</a></div><div class="ttdeci">struct TaskControlBlock::SchedInfo sched_info</div></div>
@@ -472,33 +472,43 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classRoundRobinScheduler_ab778d507f3903cbbd2bda4e474ebe2e8_icgraph.png" border="0" usemap="#aclassRoundRobinScheduler_ab778d507f3903cbbd2bda4e474ebe2e8_icgraph" alt=""/></div>
 <map name="aclassRoundRobinScheduler_ab778d507f3903cbbd2bda4e474ebe2e8_icgraph" id="aclassRoundRobinScheduler_ab778d507f3903cbbd2bda4e474ebe2e8_icgraph">
-<area shape="rect" title="将任务加入就绪队列尾部" alt="" coords="108,294,272,334"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a7ecce18a18e7b912167806a4e04a1304" title=" " alt="" coords="5,5,60,31"/>
-<area shape="poly" title=" " alt="" coords="175,282,131,172,98,106,58,44,48,33,52,29,62,40,102,103,136,170,180,280"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afb38f381971603ef31363c7688b2f6d1" title=" " alt="" coords="5,55,60,80"/>
-<area shape="poly" title=" " alt="" coords="171,283,125,194,93,142,58,93,48,82,52,78,62,90,98,139,130,191,176,280"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#af5e24e2b2948f38f9cade6d269ddd3bc" title=" " alt="" coords="5,104,60,129"/>
-<area shape="poly" title=" " alt="" coords="166,284,119,217,58,142,47,131,51,128,62,139,123,214,170,281"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aae266699d49d200a1f0ddba55a6e0ff8" title=" " alt="" coords="5,153,60,179"/>
-<area shape="poly" title=" " alt="" coords="156,286,58,192,47,181,50,177,62,188,160,282"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afe38ba33820ab08a0b24f18920c59653" title=" " alt="" coords="5,203,60,228"/>
-<area shape="poly" title=" " alt="" coords="144,289,52,230,55,226,147,284"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#ac254c447e96a6125cf547ef2aab13f28" title=" " alt="" coords="5,252,60,277"/>
-<area shape="poly" title=" " alt="" coords="112,292,59,276,61,270,114,287"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a740df6f7b6e1cca33ca0367803cbf1c1" title=" " alt="" coords="5,301,60,327"/>
-<area shape="poly" title=" " alt="" coords="94,317,60,317,60,311,94,311"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a0506aebc3da9917a2571711de76ef845" title=" " alt="" coords="5,351,60,376"/>
-<area shape="poly" title=" " alt="" coords="114,341,61,358,59,352,112,336"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#ae1cb633c27a85fcfcec3e45f4b1ea4f7" title=" " alt="" coords="5,400,60,425"/>
-<area shape="poly" title=" " alt="" coords="147,344,55,402,52,398,144,339"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aa1fd6659ff152594523ec94b754a9df7" title=" " alt="" coords="5,449,60,475"/>
-<area shape="poly" title=" " alt="" coords="159,346,49,451,46,447,156,342"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a607a23b14d99e6bf7d25596063a8497c" title=" " alt="" coords="5,499,60,524"/>
-<area shape="poly" title=" " alt="" coords="170,347,122,413,62,488,50,500,46,496,58,484,118,410,165,344"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a143e91347951d281c4ff56d9005ddc74" title=" " alt="" coords="5,548,60,573"/>
-<area shape="poly" title=" " alt="" coords="176,347,129,435,97,487,62,537,50,550,47,546,58,534,93,484,124,433,171,345"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a25282293c62d4b8eb8874227f3314313" title=" " alt="" coords="5,597,60,623"/>
-<area shape="poly" title=" " alt="" coords="180,348,135,457,102,523,62,586,51,599,47,595,58,583,97,521,130,455,175,346"/>
+<area shape="rect" title="将任务加入就绪队列尾部" alt="" coords="108,418,272,458"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#aa32fc1bfe9cca9e590a35c1d4cbc123d" title="Test load imbalance detection across multiple schedulers." alt="" coords="5,5,60,31"/>
+<area shape="poly" title=" " alt="" coords="181,405,168,335,144,242,108,140,85,90,58,44,49,33,53,29,62,40,89,88,113,138,149,241,173,334,186,404"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#a5ecb290b5ecb3ed5b44693b7b4e247e1" title="Test that no stealing occurs when queues are balanced." alt="" coords="5,55,60,80"/>
+<area shape="poly" title=" " alt="" coords="179,405,164,343,139,263,104,176,58,93,49,82,53,79,62,90,109,173,144,261,169,342,184,404"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#af782c37f274c6c67b78fb7e44d4b4488" title="Test that stealing only picks from kNormal (RR) queues. kRealTime (FIFO) and kIdle tasks should never..." alt="" coords="5,104,60,129"/>
+<area shape="poly" title=" " alt="" coords="177,406,160,352,134,285,100,212,58,142,48,131,52,128,62,139,104,209,139,283,165,351,182,404"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#ac35a992ff40422397996e74b6842d59f" title="Test that stealing from a loaded RR scheduler works correctly. This validates the core primitive that..." alt="" coords="5,153,60,179"/>
+<area shape="poly" title=" " alt="" coords="173,406,128,306,96,248,58,192,48,181,52,177,62,188,100,245,133,304,178,404"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#a137b9dc1ccdb1b3d9844df8dc39c5ef0" title="Test steal&#45;one&#45;at&#45;a&#45;time semantics." alt="" coords="5,203,60,228"/>
+<area shape="poly" title=" " alt="" coords="169,407,122,329,58,241,48,230,51,227,62,238,126,326,173,404"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a7ecce18a18e7b912167806a4e04a1304" title=" " alt="" coords="5,252,60,277"/>
+<area shape="poly" title=" " alt="" coords="162,409,58,291,47,279,50,276,62,287,166,405"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afb38f381971603ef31363c7688b2f6d1" title=" " alt="" coords="5,301,60,327"/>
+<area shape="poly" title=" " alt="" coords="151,411,49,329,52,325,154,407"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#af5e24e2b2948f38f9cade6d269ddd3bc" title=" " alt="" coords="5,351,60,376"/>
+<area shape="poly" title=" " alt="" coords="134,415,59,378,61,373,136,410"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aae266699d49d200a1f0ddba55a6e0ff8" title=" " alt="" coords="5,400,60,425"/>
+<area shape="poly" title=" " alt="" coords="94,425,60,420,61,414,95,420"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afe38ba33820ab08a0b24f18920c59653" title=" " alt="" coords="5,449,60,475"/>
+<area shape="poly" title=" " alt="" coords="95,455,61,461,60,455,94,450"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#ac254c447e96a6125cf547ef2aab13f28" title=" " alt="" coords="5,499,60,524"/>
+<area shape="poly" title=" " alt="" coords="135,466,61,501,59,497,133,461"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a740df6f7b6e1cca33ca0367803cbf1c1" title=" " alt="" coords="5,548,60,573"/>
+<area shape="poly" title=" " alt="" coords="154,469,52,550,48,546,151,465"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a0506aebc3da9917a2571711de76ef845" title=" " alt="" coords="5,597,60,623"/>
+<area shape="poly" title=" " alt="" coords="165,470,62,586,49,599,46,595,58,583,161,467"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#ae1cb633c27a85fcfcec3e45f4b1ea4f7" title=" " alt="" coords="5,647,60,672"/>
+<area shape="poly" title=" " alt="" coords="173,472,125,549,62,636,50,648,46,645,58,632,121,546,168,469"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aa1fd6659ff152594523ec94b754a9df7" title=" " alt="" coords="5,696,60,721"/>
+<area shape="poly" title=" " alt="" coords="178,472,132,571,99,629,62,685,51,697,47,694,58,682,95,626,127,568,173,470"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a607a23b14d99e6bf7d25596063a8497c" title=" " alt="" coords="5,745,60,771"/>
+<area shape="poly" title=" " alt="" coords="181,472,138,592,104,665,62,734,51,747,47,743,58,731,99,662,133,590,176,470"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a143e91347951d281c4ff56d9005ddc74" title=" " alt="" coords="5,795,60,820"/>
+<area shape="poly" title=" " alt="" coords="184,472,168,533,143,613,108,700,62,784,52,796,47,793,58,780,103,698,138,611,163,531,179,470"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a25282293c62d4b8eb8874227f3314313" title=" " alt="" coords="5,844,60,869"/>
+<area shape="poly" title=" " alt="" coords="186,472,172,541,148,634,112,735,89,785,62,833,52,846,48,842,58,830,84,783,107,733,143,632,167,540,181,471"/>
 </map>
 </div>
 
@@ -541,15 +551,25 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classRoundRobinScheduler_ac19781beca8fe766198f368fc592923d_icgraph.png" border="0" usemap="#aclassRoundRobinScheduler_ac19781beca8fe766198f368fc592923d_icgraph" alt=""/></div>
 <map name="aclassRoundRobinScheduler_ac19781beca8fe766198f368fc592923d_icgraph" id="aclassRoundRobinScheduler_ac19781beca8fe766198f368fc592923d_icgraph">
-<area shape="rect" title="获取就绪队列大小" alt="" coords="108,73,272,113"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afb38f381971603ef31363c7688b2f6d1" title=" " alt="" coords="5,5,60,31"/>
-<area shape="poly" title=" " alt="" coords="134,69,59,33,61,28,136,64"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aae266699d49d200a1f0ddba55a6e0ff8" title=" " alt="" coords="5,55,60,80"/>
-<area shape="poly" title=" " alt="" coords="94,80,60,74,61,69,95,75"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a0506aebc3da9917a2571711de76ef845" title=" " alt="" coords="5,104,60,129"/>
-<area shape="poly" title=" " alt="" coords="95,110,61,115,60,110,94,105"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a607a23b14d99e6bf7d25596063a8497c" title=" " alt="" coords="5,153,60,179"/>
-<area shape="poly" title=" " alt="" coords="135,121,61,156,59,151,133,116"/>
+<area shape="rect" title="获取就绪队列大小" alt="" coords="108,195,272,235"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#aa32fc1bfe9cca9e590a35c1d4cbc123d" title="Test load imbalance detection across multiple schedulers." alt="" coords="5,5,60,31"/>
+<area shape="poly" title=" " alt="" coords="166,186,119,119,58,44,47,33,51,29,62,40,123,115,170,182"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#a5ecb290b5ecb3ed5b44693b7b4e247e1" title="Test that no stealing occurs when queues are balanced." alt="" coords="5,55,60,80"/>
+<area shape="poly" title=" " alt="" coords="156,188,58,93,47,82,50,79,62,89,160,184"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#af782c37f274c6c67b78fb7e44d4b4488" title="Test that stealing only picks from kNormal (RR) queues. kRealTime (FIFO) and kIdle tasks should never..." alt="" coords="5,104,60,129"/>
+<area shape="poly" title=" " alt="" coords="144,190,52,132,55,127,147,186"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#ac35a992ff40422397996e74b6842d59f" title="Test that stealing from a loaded RR scheduler works correctly. This validates the core primitive that..." alt="" coords="5,153,60,179"/>
+<area shape="poly" title=" " alt="" coords="112,194,59,177,61,172,114,189"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#a137b9dc1ccdb1b3d9844df8dc39c5ef0" title="Test steal&#45;one&#45;at&#45;a&#45;time semantics." alt="" coords="5,203,60,228"/>
+<area shape="poly" title=" " alt="" coords="94,218,60,218,60,213,94,213"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afb38f381971603ef31363c7688b2f6d1" title=" " alt="" coords="5,252,60,277"/>
+<area shape="poly" title=" " alt="" coords="114,242,61,259,59,254,112,237"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aae266699d49d200a1f0ddba55a6e0ff8" title=" " alt="" coords="5,301,60,327"/>
+<area shape="poly" title=" " alt="" coords="147,245,55,304,52,299,144,241"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a0506aebc3da9917a2571711de76ef845" title=" " alt="" coords="5,351,60,376"/>
+<area shape="poly" title=" " alt="" coords="159,247,49,352,46,348,156,243"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a607a23b14d99e6bf7d25596063a8497c" title=" " alt="" coords="5,400,60,425"/>
+<area shape="poly" title=" " alt="" coords="170,248,122,314,62,389,50,401,46,398,58,386,118,311,165,245"/>
 </map>
 </div>
 
@@ -592,17 +612,19 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classRoundRobinScheduler_aef7310a4a226746667d28bbb4d97e736_icgraph.png" border="0" usemap="#aclassRoundRobinScheduler_aef7310a4a226746667d28bbb4d97e736_icgraph" alt=""/></div>
 <map name="aclassRoundRobinScheduler_aef7310a4a226746667d28bbb4d97e736_icgraph" id="aclassRoundRobinScheduler_aef7310a4a226746667d28bbb4d97e736_icgraph">
-<area shape="rect" title="判断队列是否为空" alt="" coords="108,97,272,137"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afb38f381971603ef31363c7688b2f6d1" title=" " alt="" coords="5,5,60,31"/>
-<area shape="poly" title=" " alt="" coords="144,91,52,33,55,28,147,87"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aae266699d49d200a1f0ddba55a6e0ff8" title=" " alt="" coords="5,55,60,80"/>
-<area shape="poly" title=" " alt="" coords="112,95,59,78,61,73,114,90"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#ac254c447e96a6125cf547ef2aab13f28" title=" " alt="" coords="5,104,60,129"/>
-<area shape="poly" title=" " alt="" coords="94,119,60,119,60,114,94,114"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a0506aebc3da9917a2571711de76ef845" title=" " alt="" coords="5,153,60,179"/>
-<area shape="poly" title=" " alt="" coords="114,143,61,160,59,155,112,138"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a607a23b14d99e6bf7d25596063a8497c" title=" " alt="" coords="5,203,60,228"/>
-<area shape="poly" title=" " alt="" coords="147,146,55,205,52,200,144,142"/>
+<area shape="rect" title="判断队列是否为空" alt="" coords="108,122,272,162"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#aa4a325d54e19c2b35e16ec7b0a6742cf" title="Test that stealing from empty source returns nullptr." alt="" coords="5,5,60,31"/>
+<area shape="poly" title=" " alt="" coords="151,115,49,33,52,29,154,111"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afb38f381971603ef31363c7688b2f6d1" title=" " alt="" coords="5,55,60,80"/>
+<area shape="poly" title=" " alt="" coords="134,119,59,82,61,77,136,114"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aae266699d49d200a1f0ddba55a6e0ff8" title=" " alt="" coords="5,104,60,129"/>
+<area shape="poly" title=" " alt="" coords="94,129,60,124,61,118,95,124"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#ac254c447e96a6125cf547ef2aab13f28" title=" " alt="" coords="5,153,60,179"/>
+<area shape="poly" title=" " alt="" coords="95,159,61,165,60,159,94,154"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a0506aebc3da9917a2571711de76ef845" title=" " alt="" coords="5,203,60,228"/>
+<area shape="poly" title=" " alt="" coords="135,170,61,205,59,201,133,165"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a607a23b14d99e6bf7d25596063a8497c" title=" " alt="" coords="5,252,60,277"/>
+<area shape="poly" title=" " alt="" coords="154,173,52,254,48,250,151,169"/>
 </map>
 </div>
 
@@ -646,7 +668,7 @@ Here is the caller graph for this function:</div>
 <div class="fragment"><div class="line"><span class="lineno">  116</span>                                                                             {</div>
 <div class="line"><span class="lineno">  117</span>    <a class="code hl_variable" href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">stats_</a>.<a class="code hl_variable" href="structSchedulerBase_1_1Stats.html#a4e5165fd2356707d9c3cfa69b773a7f6">total_preemptions</a>++;</div>
 <div class="line"><span class="lineno">  118</span>  }</div>
-<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a4e5165fd2356707d9c3cfa69b773a7f6"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a4e5165fd2356707d9c3cfa69b773a7f6">SchedulerBase::Stats::total_preemptions</a></div><div class="ttdeci">size_t total_preemptions</div><div class="ttdoc">总抢占次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00046">scheduler_base.hpp:46</a></div></div>
+<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a4e5165fd2356707d9c3cfa69b773a7f6"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a4e5165fd2356707d9c3cfa69b773a7f6">SchedulerBase::Stats::total_preemptions</a></div><div class="ttdeci">size_t total_preemptions</div><div class="ttdoc">总抢占次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00034">scheduler_base.hpp:34</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -809,37 +831,47 @@ Here is the caller graph for this function:</div>
 <div class="line"><span class="lineno">   75</span>    <a class="code hl_variable" href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">stats_</a>.<a class="code hl_variable" href="structSchedulerBase_1_1Stats.html#a8659b427d166ead02a1cb2a6d44f14fa">total_picks</a>++;</div>
 <div class="line"><span class="lineno">   76</span>    <span class="keywordflow">return</span> next;</div>
 <div class="line"><span class="lineno">   77</span>  }</div>
-<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a8659b427d166ead02a1cb2a6d44f14fa"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a8659b427d166ead02a1cb2a6d44f14fa">SchedulerBase::Stats::total_picks</a></div><div class="ttdeci">size_t total_picks</div><div class="ttdoc">总选择次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00044">scheduler_base.hpp:44</a></div></div>
+<div class="ttc" id="astructSchedulerBase_1_1Stats_html_a8659b427d166ead02a1cb2a6d44f14fa"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#a8659b427d166ead02a1cb2a6d44f14fa">SchedulerBase::Stats::total_picks</a></div><div class="ttdeci">size_t total_picks</div><div class="ttdoc">总选择次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00032">scheduler_base.hpp:32</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classRoundRobinScheduler_a814ec718c7c65ad0aa5e0043e9615a8c_icgraph.png" border="0" usemap="#aclassRoundRobinScheduler_a814ec718c7c65ad0aa5e0043e9615a8c_icgraph" alt=""/></div>
 <map name="aclassRoundRobinScheduler_a814ec718c7c65ad0aa5e0043e9615a8c_icgraph" id="aclassRoundRobinScheduler_a814ec718c7c65ad0aa5e0043e9615a8c_icgraph">
-<area shape="rect" title="选择下一个要运行的任务" alt="" coords="108,270,272,310"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a7ecce18a18e7b912167806a4e04a1304" title=" " alt="" coords="5,5,60,31"/>
-<area shape="poly" title=" " alt="" coords="173,258,128,158,96,100,58,44,48,33,52,29,62,40,100,97,133,156,178,256"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afb38f381971603ef31363c7688b2f6d1" title=" " alt="" coords="5,55,60,80"/>
-<area shape="poly" title=" " alt="" coords="169,259,122,181,58,93,48,82,51,79,62,90,126,178,173,256"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#af5e24e2b2948f38f9cade6d269ddd3bc" title=" " alt="" coords="5,104,60,129"/>
-<area shape="poly" title=" " alt="" coords="162,261,58,143,47,131,50,128,62,139,166,257"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aae266699d49d200a1f0ddba55a6e0ff8" title=" " alt="" coords="5,153,60,179"/>
-<area shape="poly" title=" " alt="" coords="151,263,49,181,52,177,154,259"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afe38ba33820ab08a0b24f18920c59653" title=" " alt="" coords="5,203,60,228"/>
-<area shape="poly" title=" " alt="" coords="134,267,59,230,61,225,136,262"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#ac254c447e96a6125cf547ef2aab13f28" title=" " alt="" coords="5,252,60,277"/>
-<area shape="poly" title=" " alt="" coords="94,277,60,272,61,266,95,272"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a740df6f7b6e1cca33ca0367803cbf1c1" title=" " alt="" coords="5,301,60,327"/>
-<area shape="poly" title=" " alt="" coords="95,307,61,313,60,307,94,302"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a0506aebc3da9917a2571711de76ef845" title=" " alt="" coords="5,351,60,376"/>
-<area shape="poly" title=" " alt="" coords="135,318,61,353,59,349,133,313"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#ae1cb633c27a85fcfcec3e45f4b1ea4f7" title=" " alt="" coords="5,400,60,425"/>
-<area shape="poly" title=" " alt="" coords="154,321,52,402,48,398,151,317"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aa1fd6659ff152594523ec94b754a9df7" title=" " alt="" coords="5,449,60,475"/>
-<area shape="poly" title=" " alt="" coords="165,322,62,438,49,451,46,447,58,435,161,319"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a607a23b14d99e6bf7d25596063a8497c" title=" " alt="" coords="5,499,60,524"/>
-<area shape="poly" title=" " alt="" coords="173,324,125,401,62,488,50,500,46,497,58,484,121,398,168,321"/>
-<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a143e91347951d281c4ff56d9005ddc74" title=" " alt="" coords="5,548,60,573"/>
-<area shape="poly" title=" " alt="" coords="178,324,132,423,99,481,62,537,51,549,47,546,58,534,95,478,127,420,173,322"/>
+<area shape="rect" title="选择下一个要运行的任务" alt="" coords="108,393,272,433"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#aa32fc1bfe9cca9e590a35c1d4cbc123d" title="Test load imbalance detection across multiple schedulers." alt="" coords="5,5,60,31"/>
+<area shape="poly" title=" " alt="" coords="180,380,166,314,141,228,106,133,83,87,58,44,49,33,53,29,62,40,88,84,111,131,146,226,171,313,185,379"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#af782c37f274c6c67b78fb7e44d4b4488" title="Test that stealing only picks from kNormal (RR) queues. kRealTime (FIFO) and kIdle tasks should never..." alt="" coords="5,55,60,80"/>
+<area shape="poly" title=" " alt="" coords="178,380,162,322,136,249,102,169,58,93,48,82,52,78,62,90,106,166,141,247,167,321,183,378"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#aa4a325d54e19c2b35e16ec7b0a6742cf" title="Test that stealing from empty source returns nullptr." alt="" coords="5,104,60,129"/>
+<area shape="poly" title=" " alt="" coords="175,381,131,271,98,205,58,142,48,131,52,128,62,139,102,202,136,268,180,379"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#ac35a992ff40422397996e74b6842d59f" title="Test that stealing from a loaded RR scheduler works correctly. This validates the core primitive that..." alt="" coords="5,153,60,179"/>
+<area shape="poly" title=" " alt="" coords="171,381,125,293,93,241,58,192,48,181,52,177,62,188,98,238,130,290,176,379"/>
+<area shape="rect" href="unit__test_2balance__test_8cpp.html#a137b9dc1ccdb1b3d9844df8dc39c5ef0" title="Test steal&#45;one&#45;at&#45;a&#45;time semantics." alt="" coords="5,203,60,228"/>
+<area shape="poly" title=" " alt="" coords="166,383,119,316,58,241,47,230,51,226,62,238,123,313,170,380"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a7ecce18a18e7b912167806a4e04a1304" title=" " alt="" coords="5,252,60,277"/>
+<area shape="poly" title=" " alt="" coords="156,385,58,291,47,280,50,276,62,287,160,381"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afb38f381971603ef31363c7688b2f6d1" title=" " alt="" coords="5,301,60,327"/>
+<area shape="poly" title=" " alt="" coords="144,387,52,329,55,324,147,383"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#af5e24e2b2948f38f9cade6d269ddd3bc" title=" " alt="" coords="5,351,60,376"/>
+<area shape="poly" title=" " alt="" coords="112,391,59,374,61,369,114,386"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aae266699d49d200a1f0ddba55a6e0ff8" title=" " alt="" coords="5,400,60,425"/>
+<area shape="poly" title=" " alt="" coords="94,415,60,415,60,410,94,410"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#afe38ba33820ab08a0b24f18920c59653" title=" " alt="" coords="5,449,60,475"/>
+<area shape="poly" title=" " alt="" coords="114,439,61,456,59,451,112,434"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#ac254c447e96a6125cf547ef2aab13f28" title=" " alt="" coords="5,499,60,524"/>
+<area shape="poly" title=" " alt="" coords="147,442,55,501,52,496,144,438"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a740df6f7b6e1cca33ca0367803cbf1c1" title=" " alt="" coords="5,548,60,573"/>
+<area shape="poly" title=" " alt="" coords="159,445,49,550,46,546,156,441"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a0506aebc3da9917a2571711de76ef845" title=" " alt="" coords="5,597,60,623"/>
+<area shape="poly" title=" " alt="" coords="170,446,122,512,62,586,50,599,46,595,58,583,118,509,165,443"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#ae1cb633c27a85fcfcec3e45f4b1ea4f7" title=" " alt="" coords="5,647,60,672"/>
+<area shape="poly" title=" " alt="" coords="176,446,129,534,97,586,62,636,50,648,47,645,58,632,93,583,124,532,171,444"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#aa1fd6659ff152594523ec94b754a9df7" title=" " alt="" coords="5,696,60,721"/>
+<area shape="poly" title=" " alt="" coords="180,447,135,556,102,622,62,685,51,697,47,694,58,682,97,619,130,554,175,445"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a607a23b14d99e6bf7d25596063a8497c" title=" " alt="" coords="5,745,60,771"/>
+<area shape="poly" title=" " alt="" coords="183,447,166,504,140,577,106,658,62,734,51,747,47,743,58,731,101,655,135,576,161,502,178,445"/>
+<area shape="rect" href="unit__test_2rr__scheduler__test_8cpp.html#a143e91347951d281c4ff56d9005ddc74" title=" " alt="" coords="5,795,60,820"/>
+<area shape="poly" title=" " alt="" coords="185,447,170,512,145,599,110,693,87,739,62,784,52,796,48,793,58,780,83,737,105,691,140,597,165,511,180,446"/>
 </map>
 </div>
 
@@ -873,7 +905,7 @@ Here is the caller graph for this function:</div>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/workspaces/SimpleKernel/src/task/include/<a class="el" href="rr__scheduler_8hpp_source.html">rr_scheduler.hpp</a></li>
+<li>/__w/SimpleKernel/SimpleKernel/src/task/include/<a class="el" href="rr__scheduler_8hpp_source.html">rr_scheduler.hpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

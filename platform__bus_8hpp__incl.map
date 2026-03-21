@@ -1,7 +1,7 @@
-<map id="/workspaces/SimpleKernel/src/device/include/platform_bus.hpp" name="/workspaces/SimpleKernel/src/device/include/platform_bus.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="657,5,860,60"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/device/include/platform_bus.hpp" name="/__w/SimpleKernel/SimpleKernel/src/device/include/platform_bus.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="663,5,854,60"/>
 <area shape="rect" id="Node000002" href="$device__node_8hpp.html" title=" " alt="" coords="72,108,204,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="657,51,218,111,217,106,657,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="663,50,218,111,217,106,662,45"/>
 <area shape="rect" id="Node000006" href="$expected_8hpp.html" title=" " alt="" coords="176,181,287,207"/>
 <area shape="poly" id="edge8_Node000001_Node000006" title=" " alt="" coords="673,63,283,180,282,175,671,57"/>
 <area shape="rect" id="Node000008" href="$kernel__fdt_8hpp.html" title=" " alt="" coords="701,108,816,133"/>

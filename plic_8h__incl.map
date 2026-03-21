@@ -1,9 +1,9 @@
-<map id="/workspaces/SimpleKernel/src/arch/riscv64/plic/include/plic.h" name="/workspaces/SimpleKernel/src/arch/riscv64/plic/include/plic.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="815,5,1008,60"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/arch/riscv64/plic/include/plic.h" name="/__w/SimpleKernel/SimpleKernel/src/arch/riscv64/plic/include/plic.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="816,5,1007,60"/>
 <area shape="rect" id="Node000002" href="$cpu__io_8h.html" title=" " alt="" coords="436,181,512,207"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="841,63,519,179,517,174,839,58"/>
 <area shape="rect" id="Node000005" title=" " alt="" coords="5,328,76,353"/>
-<area shape="poly" id="edge17_Node000001_Node000005" title=" " alt="" coords="815,37,660,49,567,63,467,83,366,111,265,148,170,197,126,225,84,257,62,285,49,316,44,314,57,282,80,253,123,221,168,192,263,143,364,106,466,77,566,57,659,44,814,32"/>
+<area shape="poly" id="edge17_Node000001_Node000005" title=" " alt="" coords="816,37,661,49,568,62,468,82,366,111,266,148,170,196,126,225,84,257,62,285,49,316,44,314,57,282,80,253,123,221,168,192,264,143,365,106,467,77,567,57,660,44,815,32"/>
 <area shape="rect" id="Node000006" title=" " alt="" coords="691,328,758,353"/>
 <area shape="poly" id="edge18_Node000001_Node000006" title=" " alt="" coords="943,58,971,88,996,125,1005,145,1010,166,1010,187,1003,208,984,238,958,263,929,284,897,301,831,324,772,337,771,331,829,319,895,296,926,280,955,259,979,235,998,206,1004,186,1004,167,1000,147,991,128,967,91,940,62"/>
 <area shape="rect" id="Node000012" title=" " alt="" coords="1063,108,1119,133"/>

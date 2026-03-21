@@ -1,9 +1,9 @@
-<map id="/workspaces/SimpleKernel/src/arch/arch.h" name="/workspaces/SimpleKernel/src/arch/arch.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="464,5,657,45"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/arch/arch.h" name="/__w/SimpleKernel/SimpleKernel/src/arch/arch.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="465,5,656,45"/>
 <area shape="rect" id="Node000002" href="$cpu__io_8h.html" title=" " alt="" coords="377,93,453,119"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="527,48,450,89,447,84,525,43"/>
 <area shape="rect" id="Node000005" title=" " alt="" coords="5,240,76,265"/>
-<area shape="poly" id="edge17_Node000001_Node000005" title=" " alt="" coords="464,42,350,61,224,89,166,106,114,125,74,146,47,168,40,181,36,196,37,226,32,226,31,195,35,179,43,165,71,141,112,120,164,100,223,83,349,56,464,37"/>
+<area shape="poly" id="edge17_Node000001_Node000005" title=" " alt="" coords="466,42,351,61,225,88,166,105,115,124,74,146,47,168,40,181,36,196,37,226,32,226,31,195,35,179,43,165,71,141,112,120,164,100,223,83,350,56,465,37"/>
 <area shape="rect" id="Node000006" title=" " alt="" coords="641,240,707,265"/>
 <area shape="poly" id="edge18_Node000001_Node000006" title=" " alt="" coords="573,44,664,226,660,229,568,47"/>
 <area shape="rect" id="Node000012" title=" " alt="" coords="745,93,840,119"/>

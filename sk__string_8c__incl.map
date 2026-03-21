@@ -1,7 +1,7 @@
-<map id="/workspaces/SimpleKernel/src/libc/sk_string.c" name="/workspaces/SimpleKernel/src/libc/sk_string.c">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,199,45"/>
-<area shape="rect" id="Node000002" href="$sk__string_8h.html" title=" " alt="" coords="55,93,149,119"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,46,105,79,99,79,99,46"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="65,167,139,192"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="105,119,105,153,99,153,99,119"/>
+<map id="/__w/SimpleKernel/SimpleKernel/src/libc/sk_string.c" name="/__w/SimpleKernel/SimpleKernel/src/libc/sk_string.c">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,196,45"/>
+<area shape="rect" id="Node000002" href="$sk__string_8h.html" title=" " alt="" coords="54,93,147,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,46,103,79,98,79,98,46"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="63,167,138,192"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,119,103,153,98,153,98,119"/>
 </map>

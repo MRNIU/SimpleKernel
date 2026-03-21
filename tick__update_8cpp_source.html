@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SimpleKernel: /workspaces/SimpleKernel/src/task/tick_update.cpp Source File</title>
+<title>SimpleKernel: /__w/SimpleKernel/SimpleKernel/src/task/tick_update.cpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">SimpleKernel<span id="projectnumber">&#160;1.17.0</span>
+   <div id="projectname">SimpleKernel
    </div>
   </td>
  </tr>
@@ -164,12 +164,16 @@ $(document).ready(function(){initNavTree('tick__update_8cpp_source.html',''); in
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    }</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  }</div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  <span class="keywordflow">if</span> (need_preempt &amp;&amp; cpu_sched.scheduler_started) {</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    Schedule();</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  <span class="keywordflow">if</span> (cpu_sched.scheduler_started &amp;&amp; (cpu_sched.local_tick % 64) == 0) {</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    Balance();</div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  }</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>}</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  <span class="keywordflow">if</span> (need_preempt &amp;&amp; cpu_sched.scheduler_started) {</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    Schedule();</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  }</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>}</div>
 </div>
-<div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 风格的锁守卫模板类</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00131">spinlock.hpp:131</a></div></div>
+<div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 风格的锁守卫模板类</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00126">spinlock.hpp:126</a></div></div>
 <div class="ttc" id="aclassTaskManager_html_ab84b3ad25407358299166c2443cd1719"><div class="ttname"><a href="classTaskManager.html#ab84b3ad25407358299166c2443cd1719">TaskManager::TickUpdate</a></div><div class="ttdeci">auto TickUpdate() -&gt; void</div><div class="ttdoc">更新系统 tick</div><div class="ttdef"><b>Definition</b> <a href="tick__update_8cpp_source.html#l00009">tick_update.cpp:9</a></div></div>
 <div class="ttc" id="akernel__log_8hpp_html"><div class="ttname"><a href="kernel__log_8hpp.html">kernel_log.hpp</a></div></div>
 <div class="ttc" id="anamespaceTaskStatusId_html_af7167f1d56896df1c2e6e43535113e9a"><div class="ttname"><a href="namespaceTaskStatusId.html#af7167f1d56896df1c2e6e43535113e9a">TaskStatusId::kRunning</a></div><div class="ttdeci">constexpr etl::fsm_state_id_t kRunning</div><div class="ttdef"><b>Definition</b> <a href="task__fsm_8hpp_source.html#l00018">task_fsm.hpp:18</a></div></div>

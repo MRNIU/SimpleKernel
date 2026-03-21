@@ -14,9 +14,9 @@ var searchData=
   ['1_20核心寄存器_11',['1. 核心寄存器',['../md_2___xE8_xB0_x83_xE8_xAF_x95_xE8_xBE_x93_xE5_x87_xBA.html#autotoc_md117',1,'']]],
   ['1_20硬件中断流程_12',['1 硬件中断流程',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md159',1,'1. 硬件中断流程'],['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md133',1,'1. 硬件中断流程']]],
   ['10_20禁止事项_13',['10. 禁止事项',['../md_coding__standards.html#autotoc_md261',1,'']]],
-  ['1_3a_20infrastructure_20boot_14',['Phase 1: Infrastructure (Boot)',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md332',1,'']]],
+  ['1_3a_20infrastructure_20boot_14',['Phase 1: Infrastructure (Boot)',['../md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md332',1,'']]],
   ['1_5f系统启动_2emd_15',['1_系统启动.md',['../1___xE7_xB3_xBB_xE7_xBB_x9F_xE5_x90_xAF_xE5_x8A_xA8_8md.html',1,'']]],
-  ['1️⃣_20read_20interface_20understand_20contract_16',['1️⃣ Read Interface, Understand Contract',['../md__2workspaces_2SimpleKernel_2README__ENG.html#autotoc_md317',1,'']]],
-  ['1️⃣_20阅读接口，理解契约_17',['1️⃣ 阅读接口，理解契约',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md279',1,'']]],
-  ['1：基础设施（boot）_18',['阶段 1：基础设施（Boot）',['../md__2workspaces_2SimpleKernel_2README.html#autotoc_md294',1,'']]]
+  ['1️⃣_20read_20interface_20understand_20contract_16',['1️⃣ Read Interface, Understand Contract',['../md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md317',1,'']]],
+  ['1️⃣_20阅读接口，理解契约_17',['1️⃣ 阅读接口，理解契约',['../md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md279',1,'']]],
+  ['1：基础设施（boot）_18',['阶段 1：基础设施（Boot）',['../md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md294',1,'']]]
 ];

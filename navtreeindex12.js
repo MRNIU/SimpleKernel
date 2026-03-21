@@ -1,5 +1,9 @@
 var NAVTREEINDEX12 =
 {
+"memory__test_8cpp.html#a9c36d0fe3ec4675cbffdc9b52f5fb399":[27,0,1,1,15,2],
+"memory__test_8cpp.html#adcdd769af8aefa39375682eedd3cac7f":[27,0,1,1,15,3],
+"memory__test_8cpp.html#afbedc913aa4651b3c3b4b3aecd9b4711":[27,0,1,1,15,1],
+"memory__test_8cpp_source.html":[27,0,1,1,15],
 "misc_8hpp.html":[27,0,0,1,4,2,0],
 "misc_8hpp.html#a6a279a1e565ceb51babf6abc4b1599ba":[27,0,0,1,4,2,0,2],
 "misc_8hpp.html#ab38c6151952e8d4343a483a2021b7935":[27,0,0,1,4,2,0,1],
@@ -26,9 +30,9 @@ var NAVTREEINDEX12 =
 "mutex_8cpp_source.html":[27,0,0,7,4],
 "mutex_8hpp.html":[27,0,0,3,10],
 "mutex_8hpp_source.html":[27,0,0,3,10],
-"mutex__test_8cpp.html":[27,0,1,1,14],
-"mutex__test_8cpp.html#a7c0a7b9c6c8ca59eaaa84173e5c002af":[27,0,1,1,14,0],
-"mutex__test_8cpp_source.html":[27,0,1,1,14],
+"mutex__test_8cpp.html":[27,0,1,1,16],
+"mutex__test_8cpp.html#a7c0a7b9c6c8ca59eaaa84173e5c002af":[27,0,1,1,16,0],
+"mutex__test_8cpp_source.html":[27,0,1,1,16],
 "namespaceTaskStatusId.html":[24,0,19],
 "namespaceTaskStatusId.html#a0e39aa134e22148c1a17c626c5ecf183":[24,0,19,1],
 "namespaceTaskStatusId.html#a0eed6a9b03a0ce32cabc79819ffc3cd6":[24,0,19,5],
@@ -141,6 +145,7 @@ var NAVTREEINDEX12 =
 "namespaceper__cpu.html#a2956cf2e0afed456ba355b57cc5965db":[24,0,11,1],
 "namespaceper__cpu.html#a3f116a6df9566ddec4351f08f26eab47":[24,0,11,2],
 "namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f":[24,0,11,3],
+"namespaceper__cpu.html#af35ee4e7eef4f89655b25dcd4fda3ef5":[24,0,11,4],
 "namespacepl011.html":[24,0,12],
 "namespacepl011.html#a4343144cd59a3f0b31b0f3a4ac51cc0d":[24,0,12,1],
 "namespaceramfs.html":[24,0,13],
@@ -244,10 +249,5 @@ var NAVTREEINDEX12 =
 "namespacevirtio.html#a89679bb4194647b213044dde2d436baea03f682d36182f007ba659160e8fbeeee":[24,0,22,9,27],
 "namespacevirtio.html#a89679bb4194647b213044dde2d436baea08482a4475dcdf55e08db416298c2bbc":[24,0,22,9,30],
 "namespacevirtio.html#a89679bb4194647b213044dde2d436baea0a619e07b7c49897c940677681f0b1fb":[24,0,22,9,23],
-"namespacevirtio.html#a89679bb4194647b213044dde2d436baea10bc3eeea6471cd730616a1dda9e2cd4":[24,0,22,9,22],
-"namespacevirtio.html#a89679bb4194647b213044dde2d436baea1c36b5d4b394ccfa74493edb4fce3c2b":[24,0,22,9,0],
-"namespacevirtio.html#a89679bb4194647b213044dde2d436baea2bd062ddc8cd2444d6e0a3218cc4ae85":[24,0,22,9,11],
-"namespacevirtio.html#a89679bb4194647b213044dde2d436baea2ffd771aee18ffc318a614e35ff1f532":[24,0,22,9,6],
-"namespacevirtio.html#a89679bb4194647b213044dde2d436baea3a111363b7cd0c658cd260e51254c5ea":[24,0,22,9,26],
-"namespacevirtio.html#a89679bb4194647b213044dde2d436baea43304ddfb71d2b81d087d532c6081997":[24,0,22,9,3]
+"namespacevirtio.html#a89679bb4194647b213044dde2d436baea10bc3eeea6471cd730616a1dda9e2cd4":[24,0,22,9,22]
 };

@@ -1,7 +1,7 @@
-<map id="/workspaces/SimpleKernel/tests/integration_test/aarch64_minimal/main.cpp" name="/workspaces/SimpleKernel/tests/integration_test/aarch64_minimal/main.cpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,208,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="25,108,95,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,61,75,97,70,95,90,59"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="120,108,187,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="123,59,143,95,138,97,119,61"/>
+<map id="/__w/SimpleKernel/SimpleKernel/tests/integration_test/aarch64_minimal/main.cpp" name="/__w/SimpleKernel/SimpleKernel/tests/integration_test/aarch64_minimal/main.cpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,240,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="41,108,111,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="111,61,91,97,86,95,106,59"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="136,108,203,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="139,59,159,95,154,97,135,61"/>
 </map>

@@ -1,5 +1,5 @@
 <map id="switch_to" name="switch_to">
 <area shape="rect" id="Node000001" title=" " alt="" coords="228,5,312,31"/>
-<area shape="rect" id="Node000002" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="调度函数 选择下一个任务并切换上下文" alt="" coords="5,5,180,31"/>
+<area shape="rect" id="Node000002" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="核心调度函数 — 选择下一个任务并执行上下文切换" alt="" coords="5,5,180,31"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="214,21,180,21,180,15,214,15"/>
 </map>

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['opensbi_5ftest_0',['opensbi_test',['../md__2workspaces_2SimpleKernel_2tests_2integration__test_2opensbi__test_2README.html',1,'']]]
+  ['opensbi_5ftest_0',['opensbi_test',['../md__2____w_2SimpleKernel_2SimpleKernel_2tests_2integration__test_2opensbi__test_2README.html',1,'']]]
 ];
