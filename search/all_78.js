@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['让_20ai_20实现_0',['2️⃣ 让 AI 实现',['../md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md280',1,'']]]
+  ['让_20ai_20实现_0',['2️⃣ 让 AI 实现',['../md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md293',1,'']]]
 ];

@@ -1,5 +1,7 @@
 <map id="cpu_io::DisableInterrupt" name="cpu_io::DisableInterrupt">
-<area shape="rect" id="Node000001" title=" " alt="" coords="172,5,349,31"/>
-<area shape="rect" id="Node000002" href="$classSpinLock.html#a1552c84e7da6f0b350fd4f4ae12a1079" title="获得锁" alt="" coords="5,5,124,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,21,125,21,125,15,158,15"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="228,31,405,56"/>
+<area shape="rect" id="Node000002" href="$classLockGuard.html#ab5b05541962f70a0e42765e1a729a168" title=" " alt="" coords="9,5,177,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="214,34,177,30,177,25,215,29"/>
+<area shape="rect" id="Node000003" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="核心调度函数 — 选择下一个任务并执行上下文切换" alt="" coords="5,55,180,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="215,57,180,61,180,55,214,52"/>
 </map>

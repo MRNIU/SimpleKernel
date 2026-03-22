@@ -107,9 +107,9 @@ Collaboration diagram for filesystem::FileDescriptorTable:</div>
 <div class="dyncontent">
 <div class="center"><img src="classfilesystem_1_1FileDescriptorTable__coll__graph.png" border="0" usemap="#afilesystem_1_1FileDescriptorTable_coll__map" alt="Collaboration graph"/></div>
 <map name="afilesystem_1_1FileDescriptorTable_coll__map" id="afilesystem_1_1FileDescriptorTable_coll__map">
-<area shape="rect" title="进程级文件描述符表" alt="" coords="10,513,190,1053"/>
-<area shape="rect" href="classSpinLock.html" title="自旋锁" alt="" coords="5,5,195,451"/>
-<area shape="poly" title=" " alt="" coords="103,451,103,497,97,497,97,451"/>
+<area shape="rect" title="进程级文件描述符表" alt="" coords="10,493,190,1033"/>
+<area shape="rect" href="classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）" alt="" coords="5,5,195,431"/>
+<area shape="poly" title=" " alt="" coords="103,431,103,477,97,477,97,431"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -254,7 +254,7 @@ Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">   29</span> </div>
 <div class="line"><span class="lineno">   30</span>  other.open_count_ = 0;</div>
 <div class="line"><span class="lineno">   31</span>}</div>
-<div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 风格的锁守卫模板类</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00126">spinlock.hpp:126</a></div></div>
+<div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 锁守卫，中断状态保存在本对象中</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00087">spinlock.hpp:87</a></div></div>
 <div class="ttc" id="aclassfilesystem_1_1FileDescriptorTable_html_ad03a6bcdf47df1722c87ae741bcb252d"><div class="ttname"><a href="classfilesystem_1_1FileDescriptorTable.html#ad03a6bcdf47df1722c87ae741bcb252d">filesystem::FileDescriptorTable::kMaxFd</a></div><div class="ttdeci">static constexpr int kMaxFd</div><div class="ttdoc">最大文件描述符数</div><div class="ttdef"><b>Definition</b> <a href="file__descriptor_8hpp_source.html#l00026">file_descriptor.hpp:26</a></div></div>
 </div><!-- fragment -->
 </div>

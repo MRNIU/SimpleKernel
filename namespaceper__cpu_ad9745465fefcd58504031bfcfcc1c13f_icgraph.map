@@ -1,18 +1,14 @@
 <map id="per_cpu::GetCurrentCore" name="per_cpu::GetCurrentCore">
-<area shape="rect" id="Node000001" title="获取当前核心的 PerCpu 数据" alt="" coords="492,153,675,179"/>
-<area shape="rect" id="Node000002" href="$classTaskManager.html#a493c3edb3d27eada4a3e58937e2ace01" title="添加任务（接管所有权）" alt="" coords="251,5,421,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="561,144,511,93,478,67,443,44,415,33,417,28,445,40,481,62,514,89,565,141"/>
-<area shape="rect" id="Node000003" href="$classTaskManager.html#a370fcd225b5795a06fd76ad7c39f6d08" title="获取当前任务" alt="" coords="228,55,444,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="550,148,501,120,443,94,406,83,408,78,445,89,503,116,553,144"/>
-<area shape="rect" id="Node000004" href="$classTaskManager.html#aa43228da3cb31deee114ace7ff02b293" title="初始化 per cpu 的调度数据，创建 idle 线程" alt="" coords="229,104,443,129"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="505,153,400,132,401,127,506,148"/>
-<area shape="rect" id="Node000005" href="$schedule_8cpp.html#adf76a019ba47bc42d5ee5d996b3f1fe0" title="内核线程启动入口 — 完成 Schedule() 的锁交接后执行任务函数" alt="" coords="246,153,426,179"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="478,169,426,169,426,163,478,163"/>
-<area shape="rect" id="Node000006" href="$tests_2system__test_2main_8cpp.html#ab85c3edfd2aada0e059dccf8d002924d" title="内核入口" alt="" coords="309,203,363,228"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="506,184,364,213,363,207,505,179"/>
-<area shape="rect" id="Node000007" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="核心调度函数 — 选择下一个任务并执行上下文切换" alt="" coords="5,279,180,304"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="553,188,503,217,445,242,377,261,307,274,180,289,180,284,306,269,375,255,443,237,501,212,550,184"/>
-<area shape="rect" id="Node000008" href="$arch_8cpp.html#ad982abdb7f3d8729656c6b5422b2e61d" title=" " alt="" coords="294,304,378,329"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="563,191,513,239,480,265,445,287,412,301,379,311,378,306,410,296,443,282,477,260,509,235,560,187"/>
-<area shape="poly" id="edge8_Node000008_Node000007" title=" " alt="" coords="280,314,180,303,180,298,281,308"/>
+<area shape="rect" id="Node000001" title="获取当前核心的 PerCpu 数据" alt="" coords="492,104,675,129"/>
+<area shape="rect" id="Node000002" href="$classTaskManager.html#a370fcd225b5795a06fd76ad7c39f6d08" title="获取当前任务" alt="" coords="228,5,444,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="550,99,501,71,443,44,406,33,408,28,445,40,503,66,553,95"/>
+<area shape="rect" id="Node000003" href="$classTaskManager.html#a8bbd1157a162051ae2c2d7b193d98d55" title="初始化 per cpu 的调度数据，创建 idle 线程" alt="" coords="229,55,443,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="505,104,400,83,401,77,506,99"/>
+<area shape="rect" id="Node000004" href="$tests_2system__test_2main_8cpp.html#ab85c3edfd2aada0e059dccf8d002924d" title="内核入口" alt="" coords="309,104,363,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="478,119,363,119,363,114,478,114"/>
+<area shape="rect" id="Node000005" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="核心调度函数 — 选择下一个任务并执行上下文切换" alt="" coords="5,180,180,205"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="498,134,444,143,180,183,180,178,444,138,497,129"/>
+<area shape="rect" id="Node000006" href="$arch_8cpp.html#ad982abdb7f3d8729656c6b5422b2e61d" title=" " alt="" coords="294,205,378,231"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="549,138,501,164,445,188,379,210,378,205,443,184,498,159,547,134"/>
+<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="280,215,180,204,180,199,281,210"/>
 </map>

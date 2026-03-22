@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['platform_20level_20interrupt_20controller_20plic_0',['Platform-Level Interrupt Controller (PLIC)',['../md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html',1,'']]],
-  ['plic_1',['Platform-Level Interrupt Controller (PLIC)',['../md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html',1,'']]]
+  ['opensbi_5ftest_0',['opensbi_test',['../md__2____w_2SimpleKernel_2SimpleKernel_2tests_2integration__test_2opensbi__test_2README.html',1,'']]]
 ];

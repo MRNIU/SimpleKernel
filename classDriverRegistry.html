@@ -107,9 +107,9 @@ Collaboration diagram for DriverRegistry:</div>
 <div class="dyncontent">
 <div class="center"><img src="classDriverRegistry__coll__graph.png" border="0" usemap="#aDriverRegistry_coll__map" alt="Collaboration graph"/></div>
 <map name="aDriverRegistry_coll__map" id="aDriverRegistry_coll__map">
-<area shape="rect" title="驱动注册表 — 以 ETL vector 存储 DriverEntry，并附带 flat_map 兼容索引。" alt="" coords="19,513,181,899"/>
-<area shape="rect" href="classSpinLock.html" title="自旋锁" alt="" coords="5,5,195,451"/>
-<area shape="poly" title=" " alt="" coords="103,451,103,497,97,497,97,451"/>
+<area shape="rect" title="驱动注册表 — 以 ETL vector 存储 DriverEntry，并附带 flat_map 兼容索引。" alt="" coords="19,493,181,879"/>
+<area shape="rect" href="classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）" alt="" coords="5,5,195,431"/>
+<area shape="poly" title=" " alt="" coords="103,431,103,477,97,477,97,431"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -412,7 +412,7 @@ Static Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">   84</span>    <span class="keywordflow">return</span> {};</div>
 <div class="line"><span class="lineno">   85</span>  }</div>
 <div class="ttc" id="aclassDriverRegistry_html_a8007e989f990227cfa8e140c7bc6918f"><div class="ttname"><a href="classDriverRegistry.html#a8007e989f990227cfa8e140c7bc6918f">DriverRegistry::lock_</a></div><div class="ttdeci">SpinLock lock_</div><div class="ttdef"><b>Definition</b> <a href="driver__registry_8hpp_source.html#l00127">driver_registry.hpp:127</a></div></div>
-<div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 风格的锁守卫模板类</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00126">spinlock.hpp:126</a></div></div>
+<div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 锁守卫，中断状态保存在本对象中</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00087">spinlock.hpp:87</a></div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fab681eacb215899549d45805f02eeb40c"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fab681eacb215899549d45805f02eeb40c">ErrorCode::kOutOfMemory</a></div><div class="ttdeci">@ kOutOfMemory</div></div>
 <div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00337">expected.hpp:337</a></div></div>
 </div><!-- fragment -->

@@ -2,7 +2,7 @@ var searchData=
 [
   ['name_0',['name',['../structTestResult.html#ab20a53f6ac62965f8de447294fa1da36',1,'TestResult::name'],['../structTaskControlBlock.html#af98827b16fc1af01c793e7aef9b0608a',1,'TaskControlBlock::name'],['../classSchedulerBase.html#abbd29119b4aa4dfb73e363c8538fb456',1,'SchedulerBase::name'],['../structDeviceNode.html#a7a420ebb20b3618732f38383b2d5c321',1,'DeviceNode::name'],['../structDriverEntry.html#ab39dda98d43d475d4748073e2ab6f5f7',1,'DriverEntry::name'],['../structramfs_1_1RamFs_1_1RamDirEntry.html#a3ef7871092ba76e6b60af00821a0e8ee',1,'ramfs::RamFs::RamDirEntry::name'],['../structvfs_1_1Dentry.html#a57046364978b88805d747044759af6d6',1,'vfs::Dentry::name'],['../structvfs_1_1DirEntry.html#a802f8b2684586804cf9a98180eceac6a',1,'vfs::DirEntry::name'],['../classMutex.html#a1ed1ac62517dc17cfdc6f1144dabaac2',1,'Mutex::name'],['../classSpinLock.html#a76a268f610393fbd268506018feb0fef',1,'SpinLock::name']]],
   ['name_5findex_5f_1',['name_index_',['../classDeviceManager.html#a5e5b6a3383a072565007c8c9d9723562',1,'DeviceManager']]],
-  ['naming_20conventions_2',['Naming Conventions',['../md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md340',1,'']]],
+  ['naming_20conventions_2',['Naming Conventions',['../md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md353',1,'']]],
   ['ndev_5f_3',['ndev_',['../classPlic.html#a0fda6a41bcf14fcabf05e844ff23befd',1,'Plic']]],
   ['needsreset_4',['NeedsReset',['../classvirtio_1_1Transport.html#aece3d1b02ef583e49c60bb6752fef78c',1,'virtio::Transport']]],
   ['negotiated_5ffeatures_5f_5',['negotiated_features_',['../classvirtio_1_1blk_1_1VirtioBlk.html#abc0689593abbd8ee9516dba4c72b6855',1,'virtio::blk::VirtioBlk']]],
@@ -12,7 +12,7 @@ var searchData=
   ['next_5ffree_9',['next_free',['../structramfs_1_1RamFs_1_1RamInode.html#a4b53df17cf2e2f32ae666db81aeaa001',1,'ramfs::RamFs::RamInode']]],
   ['next_5fsibling_10',['next_sibling',['../structvfs_1_1Dentry.html#aee3b9a346d61c159e9fe5d776e4f2148',1,'vfs::Dentry']]],
   ['no1n_11',['no1n',['../structGic_1_1Gicd_1_1GicdTyper.html#aa721837c03350dcffc59213bea20dc97',1,'Gic::Gicd::GicdTyper']]],
-  ['notes_12',['notes',['../md__2____w_2SimpleKernel_2SimpleKernel_2AGENTS.html#autotoc_md9',1,'NOTES'],['../md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md364',1,'NOTES']]],
+  ['notes_12',['notes',['../md__2____w_2SimpleKernel_2SimpleKernel_2AGENTS.html#autotoc_md9',1,'NOTES'],['../md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md377',1,'NOTES']]],
   ['notifyqueue_13',['notifyqueue',['../classvirtio_1_1MmioTransport.html#ab99e4d0fe283d98d800c3542dc3deb22',1,'virtio::MmioTransport::NotifyQueue()'],['../classvirtio_1_1PciTransport.html#a2ac253c995c8d6d373cd71f3c2524f22',1,'virtio::PciTransport::NotifyQueue()']]],
   ['ns16550a_14',['ns16550a',['../classns16550a_1_1Ns16550a.html',1,'ns16550a::Ns16550a'],['../classns16550a_1_1Ns16550a.html#a1bd52415f2b8e733f1c344d4627f919a',1,'ns16550a::Ns16550a::Ns16550a()=default'],['../classns16550a_1_1Ns16550a.html#a25f200afc38279f8c01296cf281f491b',1,'ns16550a::Ns16550a::Ns16550a(const Ns16550a &amp;)=delete'],['../classns16550a_1_1Ns16550a.html#a5da4d01edd66793159c09c29f06ac78c',1,'ns16550a::Ns16550a::Ns16550a(Ns16550a &amp;&amp;)=default'],['../classns16550a_1_1Ns16550a.html#a94cb873e980eeaaaff250bdc218895e7',1,'ns16550a::Ns16550a::Ns16550a(uint64_t dev_addr)'],['../namespacens16550a.html',1,'ns16550a']]],
   ['ns16550a_20串口中断_15',['NS16550A 串口中断',['../md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md200',1,'']]],

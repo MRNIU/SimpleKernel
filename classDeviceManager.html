@@ -107,16 +107,16 @@ Collaboration diagram for DeviceManager:</div>
 <div class="dyncontent">
 <div class="center"><img src="classDeviceManager__coll__graph.png" border="0" usemap="#aDeviceManager_coll__map" alt="Collaboration graph"/></div>
 <map name="aDeviceManager_coll__map" id="aDeviceManager_coll__map">
-<area shape="rect" title="设备管理器 — 管理所有设备节点和驱动程序。" alt="" coords="115,961,280,1407"/>
-<area shape="rect" href="structDeviceNode.html" title="单个设备的硬件资源描述。" alt="" coords="15,583,145,829"/>
-<area shape="poly" title=" " alt="" coords="95,828,115,937,117,945,111,946,109,938,90,829"/>
-<area shape="rect" href="classvfs_1_1BlockDevice.html" title="块设备抽象基类" alt="" coords="5,135,147,321"/>
-<area shape="poly" title=" " alt="" coords="79,321,80,489,81,567,75,567,75,489,74,321"/>
-<area shape="rect" href="classDriverRegistry.html" title="驱动注册表 — 以 ETL vector 存储 DriverEntry，并附带 flat_map 兼容索引。" alt="" coords="266,513,427,899"/>
-<area shape="poly" title=" " alt="" coords="289,900,274,946,269,945,284,898"/>
-<area shape="rect" href="classSpinLock.html" title="自旋锁" alt="" coords="211,5,400,451"/>
-<area shape="poly" title=" " alt="" coords="227,452,213,514,199,623,190,734,187,843,187,945,182,945,182,843,185,734,193,622,208,513,222,450"/>
-<area shape="poly" title=" " alt="" coords="327,451,331,497,326,498,322,451"/>
+<area shape="rect" title="设备管理器 — 管理所有设备节点和驱动程序。" alt="" coords="115,941,280,1387"/>
+<area shape="rect" href="structDeviceNode.html" title="单个设备的硬件资源描述。" alt="" coords="15,563,145,809"/>
+<area shape="poly" title=" " alt="" coords="95,808,115,917,117,925,111,926,109,918,90,809"/>
+<area shape="rect" href="classvfs_1_1BlockDevice.html" title="块设备抽象基类" alt="" coords="5,125,147,311"/>
+<area shape="poly" title=" " alt="" coords="79,311,80,469,81,547,75,547,75,469,74,311"/>
+<area shape="rect" href="classDriverRegistry.html" title="驱动注册表 — 以 ETL vector 存储 DriverEntry，并附带 flat_map 兼容索引。" alt="" coords="266,493,427,879"/>
+<area shape="poly" title=" " alt="" coords="289,880,274,926,269,925,284,878"/>
+<area shape="rect" href="classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）" alt="" coords="211,5,400,431"/>
+<area shape="poly" title=" " alt="" coords="228,431,213,494,198,603,190,714,186,823,187,925,181,925,181,823,184,714,193,602,208,493,222,430"/>
+<area shape="poly" title=" " alt="" coords="327,431,331,477,326,477,321,431"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -322,7 +322,7 @@ Static Private Attributes</h2></td></tr>
 <div class="ttc" id="aclassDeviceManager_html_a5e5b6a3383a072565007c8c9d9723562"><div class="ttname"><a href="classDeviceManager.html#a5e5b6a3383a072565007c8c9d9723562">DeviceManager::name_index_</a></div><div class="ttdeci">etl::flat_map&lt; const char *, size_t, kMaxDevices, CStrLess &gt; name_index_</div><div class="ttdef"><b>Definition</b> <a href="device__manager_8hpp_source.html#l00115">device_manager.hpp:115</a></div></div>
 <div class="ttc" id="aclassDeviceManager_html_a69359205eed76c4cd3b310c836ad054d"><div class="ttname"><a href="classDeviceManager.html#a69359205eed76c4cd3b310c836ad054d">DeviceManager::devices_</a></div><div class="ttdeci">DeviceNode devices_[kMaxDevices]</div><div class="ttdef"><b>Definition</b> <a href="device__manager_8hpp_source.html#l00110">device_manager.hpp:110</a></div></div>
 <div class="ttc" id="aclassDeviceManager_html_a7befb7a1dbca853ce213114c14790ac4"><div class="ttname"><a href="classDeviceManager.html#a7befb7a1dbca853ce213114c14790ac4">DeviceManager::lock_</a></div><div class="ttdeci">SpinLock lock_</div><div class="ttdef"><b>Definition</b> <a href="device__manager_8hpp_source.html#l00114">device_manager.hpp:114</a></div></div>
-<div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 风格的锁守卫模板类</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00126">spinlock.hpp:126</a></div></div>
+<div class="ttc" id="aclassLockGuard_html"><div class="ttname"><a href="classLockGuard.html">LockGuard</a></div><div class="ttdoc">RAII 锁守卫，中断状态保存在本对象中</div><div class="ttdef"><b>Definition</b> <a href="spinlock_8hpp_source.html#l00087">spinlock.hpp:87</a></div></div>
 <div class="ttc" id="aexpected_8hpp_html_a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308"><div class="ttname"><a href="expected_8hpp.html#a4d45a9675d1bf454764383179f3c895fa868fe5f57d170e724a72b8181fd13308">ErrorCode::kDeviceNotFound</a></div><div class="ttdeci">@ kDeviceNotFound</div></div>
 <div class="ttc" id="astructError_html"><div class="ttname"><a href="structError.html">Error</a></div><div class="ttdoc">错误类型，用于 std::expected</div><div class="ttdef"><b>Definition</b> <a href="expected_8hpp_source.html#l00337">expected.hpp:337</a></div></div>
 </div><!-- fragment -->

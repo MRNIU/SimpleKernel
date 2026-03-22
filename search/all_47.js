@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['学习路线_0',['🎯 学习路线',['../md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md293',1,'']]]
+  ['学习路线_0',['🎯 学习路线',['../md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md306',1,'']]]
 ];

@@ -92,11 +92,11 @@ $(document).ready(function(){initNavTree('md__2____w_2SimpleKernel_2SimpleKernel
   <div class="headertitle"><div class="title">AGENTS.md — src/filesystem/</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md390"></a> </p>
-<h1><a class="anchor" id="autotoc_md391"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md403"></a> </p>
+<h1><a class="anchor" id="autotoc_md404"></a>
 OVERVIEW</h1>
 <p>Three-layer filesystem: VFS abstraction (types in <a class="el" href="vfs__types_8hpp.html">vfs_types.hpp</a>, filesystem ops in <a class="el" href="filesystem_8hpp.html">filesystem.hpp</a>), RamFS (in-memory, static pool allocation), FatFS (3rd-party FAT wrapper over VirtIO block device). FileDescriptor table per-task.</p>
-<h1><a class="anchor" id="autotoc_md392"></a>
+<h1><a class="anchor" id="autotoc_md405"></a>
 STRUCTURE</h1>
 <div class="fragment"><div class="line">include/</div>
 <div class="line">  file_descriptor.hpp     # FileDescriptor — per-task FD table</div>
@@ -123,7 +123,7 @@ STRUCTURE</h1>
 <div class="line">    ffconf.h              # FatFS configuration (3rd-party)</div>
 <div class="line">  fatfs.cpp               # FatFS → VFS bridge</div>
 <div class="line">  diskio.cpp              # FatFS disk I/O — routes to VirtIO block device</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md393"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md406"></a>
 WHERE TO LOOK</h1>
 <ul>
 <li><b>Adding a filesystem</b> → Implement ops from <code><a class="el" href="vfs__types_8hpp.html">vfs_types.hpp</a></code>, register via <code><a class="el" href="filesystem_8hpp.html">filesystem.hpp</a></code></li>
@@ -131,7 +131,7 @@ WHERE TO LOOK</h1>
 <li><b>Block device I/O</b> → <code><a class="el" href="diskio_8cpp.html">fatfs/diskio.cpp</a></code> → <code><a class="el" href="block__device_8hpp.html">vfs/include/block_device.hpp</a></code></li>
 <li><b>Mount flow</b> → <code><a class="el" href="filesystem_8cpp.html">filesystem.cpp</a></code> → mounts "/" as RamFS at boot</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md394"></a>
+<h1><a class="anchor" id="autotoc_md407"></a>
 CONVENTIONS</h1>
 <ul>
 <li>VFS follows Linux-style layering: Superblock → Inode → Dentry → File (all types in <code><a class="el" href="vfs__types_8hpp.html">vfs_types.hpp</a></code>)</li>
@@ -140,7 +140,7 @@ CONVENTIONS</h1>
 <li>FatFS wraps 3rd-party <code>ff.h</code> library — <code><a class="el" href="diskio_8cpp.html">diskio.cpp</a></code> is the HAL adaptation layer</li>
 <li><code><a class="el" href="vfs__internal_8hpp.html">vfs_internal.hpp</a></code> is VFS-private — not included outside <code>vfs/</code></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md395"></a>
+<h1><a class="anchor" id="autotoc_md408"></a>
 ANTI-PATTERNS</h1>
 <ul>
 <li><b>DO NOT</b> include <code><a class="el" href="vfs__internal_8hpp.html">vfs_internal.hpp</a></code> outside <code>vfs/</code> directory</li>

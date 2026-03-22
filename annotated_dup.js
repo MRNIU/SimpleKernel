@@ -28,7 +28,8 @@ var annotated_dup =
       [ "Ns16550a", "classns16550a_1_1Ns16550a.html", "classns16550a_1_1Ns16550a" ]
     ] ],
     [ "per_cpu", "namespaceper__cpu.html", [
-      [ "PerCpu", "structper__cpu_1_1PerCpu.html", "structper__cpu_1_1PerCpu" ]
+      [ "PerCpu", "structper__cpu_1_1PerCpu.html", "structper__cpu_1_1PerCpu" ],
+      [ "PreemptState", "structper__cpu_1_1PreemptState.html", "structper__cpu_1_1PreemptState" ]
     ] ],
     [ "pl011", "namespacepl011.html", [
       [ "Pl011", "classpl011_1_1Pl011.html", "classpl011_1_1Pl011" ]

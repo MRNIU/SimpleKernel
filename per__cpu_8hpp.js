@@ -1,5 +1,6 @@
 var per__cpu_8hpp =
 [
+    [ "per_cpu::PreemptState", "structper__cpu_1_1PreemptState.html", "structper__cpu_1_1PreemptState" ],
     [ "per_cpu::PerCpu", "structper__cpu_1_1PerCpu.html", "structper__cpu_1_1PerCpu" ],
     [ "PerCpuArraySingleton", "per__cpu_8hpp.html#a2956cf2e0afed456ba355b57cc5965db", null ],
     [ "__attribute__", "per__cpu_8hpp.html#a3f116a6df9566ddec4351f08f26eab47", null ],
@@ -13,7 +14,7 @@ var per__cpu_8hpp =
     [ "~PerCpu", "per__cpu_8hpp.html#a80e1c96f894b8d3b7c1d42221563841c", null ],
     [ "core_id", "per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca", null ],
     [ "idle_task", "per__cpu_8hpp.html#a9a31203c3769eb7cefbb5433eec968dd", null ],
-    [ "in_timer_handler", "per__cpu_8hpp.html#af35ee4e7eef4f89655b25dcd4fda3ef5", null ],
+    [ "preempt", "per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27", null ],
     [ "running_task", "per__cpu_8hpp.html#ae11edf9e98e4600dead9f9050a80970a", null ],
     [ "sched_data", "per__cpu_8hpp.html#a2212638d15cc941050a49d7089c8ca9d", null ]
 ];

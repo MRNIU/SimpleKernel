@@ -1,26 +1,9 @@
 <map id="kernel_thread_bootstrap" name="kernel_thread_bootstrap">
-<area shape="rect" id="Node000001" title="内核线程启动入口 — 完成 Schedule() 的锁交接后执行任务函数" alt="" coords="5,132,185,157"/>
-<area shape="rect" id="Node000002" href="$namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="392,157,564,183"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="186,148,378,161,378,166,186,153"/>
-<area shape="rect" id="Node000004" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="251,56,327,81"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="128,129,242,84,244,89,130,134"/>
-<area shape="rect" id="Node000010" href="$namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f" title="获取当前核心的 PerCpu 数据" alt="" coords="612,107,795,132"/>
-<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="185,138,233,135,598,121,598,126,233,141,186,143"/>
-<area shape="rect" id="Node000011" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="233,208,344,233"/>
-<area shape="poly" id="edge13_Node000001_Node000011" title=" " alt="" coords="130,155,244,200,242,205,128,160"/>
-<area shape="rect" id="Node000003" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1076,102,1339,142"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="564,162,1062,129,1062,134,564,167"/>
-<area shape="rect" id="Node000005" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="415,56,541,81"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="327,66,401,66,401,71,327,71"/>
-<area shape="rect" id="Node000006" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="843,59,1028,84"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="542,66,829,68,829,73,542,72"/>
-<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="625,5,782,31"/>
-<area shape="poly" id="edge7_Node000005_Node000007" title=" " alt="" coords="535,53,633,31,634,36,536,58"/>
-<area shape="poly" id="edge6_Node000006_Node000003" title=" " alt="" coords="1005,81,1087,97,1086,102,1004,87"/>
-<area shape="poly" id="edge8_Node000007_Node000006" title=" " alt="" coords="760,28,867,53,866,58,759,33"/>
-<area shape="rect" id="Node000008" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="864,5,1007,31"/>
-<area shape="poly" id="edge9_Node000007_Node000008" title=" " alt="" coords="782,15,850,15,850,21,782,21"/>
-<area shape="rect" id="Node000009" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1160,5,1255,31"/>
-<area shape="poly" id="edge10_Node000008_Node000009" title=" " alt="" coords="1007,15,1147,15,1147,21,1007,21"/>
-<area shape="poly" id="edge12_Node000010_Node000006" title=" " alt="" coords="765,104,859,84,861,89,766,109"/>
+<area shape="rect" id="Node000001" title="内核线程启动入口 — 完成 Schedule() 的锁交接后执行任务函数" alt="" coords="5,38,185,63"/>
+<area shape="rect" id="Node000002" href="$namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="233,13,405,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="185,38,220,34,220,39,186,43"/>
+<area shape="rect" id="Node000004" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="264,62,375,87"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="186,58,250,65,250,70,185,63"/>
+<area shape="rect" id="Node000003" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="453,5,716,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="406,23,439,23,439,28,406,28"/>
 </map>

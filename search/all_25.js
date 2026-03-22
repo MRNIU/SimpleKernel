@@ -25,7 +25,7 @@ var searchData=
   ['_7eiobuffer_22',['~IoBuffer',['../classIoBuffer.html#affad1b6973e167107f3a1841a9968fbf',1,'IoBuffer']]],
   ['_7ekernelelf_23',['~KernelElf',['../classKernelElf.html#a4e436bb4ad01c1f843810b18f2a218a5',1,'KernelElf']]],
   ['_7ekernelfdt_24',['~KernelFdt',['../classKernelFdt.html#a9b445f19837c649470bf5f8608b18de5',1,'KernelFdt']]],
-  ['_7elockguard_25',['~LockGuard',['../classLockGuard.html#af889562d8ed81c2337c94d0c915d65ca',1,'LockGuard']]],
+  ['_7elockguard_25',['~LockGuard',['../classLockGuard.html#a9bcdf058788fcc30baf936c8190abe51',1,'LockGuard']]],
   ['_7emmioaccessor_26',['~MmioAccessor',['../structMmioAccessor.html#a2d6fd5261c14c03556fdd6cab36ef06b',1,'MmioAccessor']]],
   ['_7emounttable_27',['~MountTable',['../classvfs_1_1MountTable.html#a148fe9e5890fdf176809874d1df39c5a',1,'vfs::MountTable']]],
   ['_7emsgblock_28',['~MsgBlock',['../structMsgBlock.html#af3ddf60abb842021050e6ce38ad718bb',1,'MsgBlock']]],

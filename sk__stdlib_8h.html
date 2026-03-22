@@ -225,13 +225,13 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00089">89</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   89</span>                                                                      {</div>
-<div class="line"><span class="lineno">   90</span>  <span class="keywordflow">if</span> (allocator) {</div>
-<div class="line"><span class="lineno">   91</span>    <span class="keywordflow">return</span> allocator-&gt;aligned_alloc(alignment, size);</div>
-<div class="line"><span class="lineno">   92</span>  }</div>
-<div class="line"><span class="lineno">   93</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><span class="lineno">   94</span>}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00101">101</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  101</span>                                                                      {</div>
+<div class="line"><span class="lineno">  102</span>  <span class="keywordflow">if</span> (allocator) {</div>
+<div class="line"><span class="lineno">  103</span>    <span class="keywordflow">return</span> allocator-&gt;aligned_alloc(alignment, size);</div>
+<div class="line"><span class="lineno">  104</span>  }</div>
+<div class="line"><span class="lineno">  105</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><span class="lineno">  106</span>}</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -277,12 +277,12 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00096">96</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   96</span>                                                {</div>
-<div class="line"><span class="lineno">   97</span>  <span class="keywordflow">if</span> (allocator) {</div>
-<div class="line"><span class="lineno">   98</span>    allocator-&gt;aligned_free(ptr);</div>
-<div class="line"><span class="lineno">   99</span>  }</div>
-<div class="line"><span class="lineno">  100</span>}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00108">108</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  108</span>                                                {</div>
+<div class="line"><span class="lineno">  109</span>  <span class="keywordflow">if</span> (allocator) {</div>
+<div class="line"><span class="lineno">  110</span>    allocator-&gt;aligned_free(ptr);</div>
+<div class="line"><span class="lineno">  111</span>  }</div>
+<div class="line"><span class="lineno">  112</span>}</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -463,13 +463,13 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00075">75</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   75</span>                                                         {</div>
-<div class="line"><span class="lineno">   76</span>  <span class="keywordflow">if</span> (allocator) {</div>
-<div class="line"><span class="lineno">   77</span>    <span class="keywordflow">return</span> allocator-&gt;calloc(num, size);</div>
-<div class="line"><span class="lineno">   78</span>  }</div>
-<div class="line"><span class="lineno">   79</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><span class="lineno">   80</span>}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00087">87</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   87</span>                                                         {</div>
+<div class="line"><span class="lineno">   88</span>  <span class="keywordflow">if</span> (allocator) {</div>
+<div class="line"><span class="lineno">   89</span>    <span class="keywordflow">return</span> allocator-&gt;calloc(num, size);</div>
+<div class="line"><span class="lineno">   90</span>  }</div>
+<div class="line"><span class="lineno">   91</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><span class="lineno">   92</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -489,12 +489,12 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00069">69</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   69</span>                                        {</div>
-<div class="line"><span class="lineno">   70</span>  <span class="keywordflow">if</span> (allocator) {</div>
-<div class="line"><span class="lineno">   71</span>    allocator-&gt;free(ptr);</div>
-<div class="line"><span class="lineno">   72</span>  }</div>
-<div class="line"><span class="lineno">   73</span>}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00081">81</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   81</span>                                        {</div>
+<div class="line"><span class="lineno">   82</span>  <span class="keywordflow">if</span> (allocator) {</div>
+<div class="line"><span class="lineno">   83</span>    allocator-&gt;free(ptr);</div>
+<div class="line"><span class="lineno">   84</span>  }</div>
+<div class="line"><span class="lineno">   85</span>}</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -531,13 +531,13 @@ Here is the caller graph for this function:</div>
 </div><div class="memdoc">
 <dl class="section copyright"><dt>Copyright</dt><dd>Copyright The SimpleKernel Contributors </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00062">62</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   62</span>                                             {</div>
-<div class="line"><span class="lineno">   63</span>  <span class="keywordflow">if</span> (allocator) {</div>
-<div class="line"><span class="lineno">   64</span>    <span class="keywordflow">return</span> allocator-&gt;malloc(size);</div>
-<div class="line"><span class="lineno">   65</span>  }</div>
-<div class="line"><span class="lineno">   66</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><span class="lineno">   67</span>}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00074">74</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   74</span>                                             {</div>
+<div class="line"><span class="lineno">   75</span>  <span class="keywordflow">if</span> (allocator) {</div>
+<div class="line"><span class="lineno">   76</span>    <span class="keywordflow">return</span> allocator-&gt;malloc(size);</div>
+<div class="line"><span class="lineno">   77</span>  }</div>
+<div class="line"><span class="lineno">   78</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><span class="lineno">   79</span>}</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -583,13 +583,13 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00082">82</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   82</span>                                                             {</div>
-<div class="line"><span class="lineno">   83</span>  <span class="keywordflow">if</span> (allocator) {</div>
-<div class="line"><span class="lineno">   84</span>    <span class="keywordflow">return</span> allocator-&gt;realloc(ptr, new_size);</div>
-<div class="line"><span class="lineno">   85</span>  }</div>
-<div class="line"><span class="lineno">   86</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><span class="lineno">   87</span>}</div>
+<p class="definition">Definition at line <a class="el" href="memory_8cpp_source.html#l00094">94</a> of file <a class="el" href="memory_8cpp_source.html">memory.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   94</span>                                                             {</div>
+<div class="line"><span class="lineno">   95</span>  <span class="keywordflow">if</span> (allocator) {</div>
+<div class="line"><span class="lineno">   96</span>    <span class="keywordflow">return</span> allocator-&gt;realloc(ptr, new_size);</div>
+<div class="line"><span class="lineno">   97</span>  }</div>
+<div class="line"><span class="lineno">   98</span>  <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><span class="lineno">   99</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>

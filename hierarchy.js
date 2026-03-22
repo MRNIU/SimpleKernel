@@ -79,7 +79,7 @@ var hierarchy =
     [ "virtio::IoVec", "structvirtio_1_1IoVec.html", null ],
     [ "KernelElf", "classKernelElf.html", null ],
     [ "KernelFdt", "classKernelFdt.html", null ],
-    [ "LockGuard< Mutex >", "classLockGuard.html", null ],
+    [ "LockGuard< T >", "classLockGuard.html", null ],
     [ "klog::detail::LogEntry", "structklog_1_1detail_1_1LogEntry.html", null ],
     [ "MatchEntry", "structMatchEntry.html", null ],
     [ "etl::message", null, [
@@ -106,6 +106,7 @@ var hierarchy =
     [ "Pl011Driver", "classPl011Driver.html", null ],
     [ "PlatformBus", "classPlatformBus.html", null ],
     [ "Plic", "classPlic.html", null ],
+    [ "per_cpu::PreemptState", "structper__cpu_1_1PreemptState.html", null ],
     [ "TaskControlBlock::PriorityCompare", "structTaskControlBlock_1_1PriorityCompare.html", null ],
     [ "mmio_helper::ProbeContext", "structmmio__helper_1_1ProbeContext.html", null ],
     [ "ramfs::RamFs::RamDirEntry", "structramfs_1_1RamFs_1_1RamDirEntry.html", null ],

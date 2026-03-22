@@ -124,7 +124,7 @@ $(document).ready(function(){initNavTree('md_coding__standards.html',''); initRe
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">文件   </td><td class="markdownTableBodyNone"><code>snake_case</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="kernel__log_8hpp.html">kernel_log.hpp</a></code>    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">类 / 结构体   </td><td class="markdownTableBodyNone"><code>PascalCase</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="classSpinLock.html" title="自旋锁">SpinLock</a></code>, <code><a class="el" href="structDmaRegion.html" title="DMA 可访问内存区域的非拥有描述符">DmaRegion</a></code>    </td></tr>
+<td class="markdownTableBodyNone">类 / 结构体   </td><td class="markdownTableBodyNone"><code>PascalCase</code>   </td><td class="markdownTableBodyNone"><code><a class="el" href="classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）">SpinLock</a></code>, <code><a class="el" href="structDmaRegion.html" title="DMA 可访问内存区域的非拥有描述符">DmaRegion</a></code>    </td></tr>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">枚举类型   </td><td class="markdownTableBodyNone"><code>enum class</code>   </td><td class="markdownTableBodyNone"><code>enum class ErrorCode : uint64_t</code>    </td></tr>
 <tr class="markdownTableRowEven">
@@ -156,7 +156,7 @@ $(document).ready(function(){initNavTree('md_coding__standards.html',''); initRe
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>struct</code>   </td><td class="markdownTableBodyNone">全部   </td><td class="markdownTableBodyNone"><code>snake_case</code>（**无**后缀）   </td><td class="markdownTableBodyNone"><code>virt</code>, <code>phys</code>, <code>core_id</code>   </td></tr>
 </table>
-<p>构造函数参数与成员重名时，参数加 <code>_</code> 前缀：<code>explicit <a class="el" href="classSpinLock.html" title="自旋锁">SpinLock(const char* _name)</a> : name(_name) {}</code></p>
+<p>构造函数参数与成员重名时，参数加 <code>_</code> 前缀：<code>explicit <a class="el" href="classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）">SpinLock(const char* _name)</a> : name(_name) {}</code></p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md233"></a>
 3. 类型选择</h1>
@@ -172,7 +172,7 @@ $(document).ready(function(){initNavTree('md_coding__standards.html',''); initRe
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">管理资源（RAII）   </td><td class="markdownTableBodyNone">可聚合初始化   </td></tr>
 </table>
-<p>示例：<code>class <a class="el" href="classSpinLock.html" title="自旋锁">SpinLock</a></code>（有锁行为）、<code>class <a class="el" href="classIoBuffer.html" title="动态分配、对齐 IO 缓冲区的 RAII 封装">IoBuffer</a></code>（RAII）、<code>struct <a class="el" href="structDmaRegion.html" title="DMA 可访问内存区域的非拥有描述符">DmaRegion</a></code>（纯数据）、<code>struct LogEntry</code>（队列条目）</p>
+<p>示例：<code>class <a class="el" href="classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）">SpinLock</a></code>（有锁行为）、<code>class <a class="el" href="classIoBuffer.html" title="动态分配、对齐 IO 缓冲区的 RAII 封装">IoBuffer</a></code>（RAII）、<code>struct <a class="el" href="structDmaRegion.html" title="DMA 可访问内存区域的非拥有描述符">DmaRegion</a></code>（纯数据）、<code>struct LogEntry</code>（队列条目）</p>
 <h2><a class="anchor" id="autotoc_md235"></a>
 &lt;tt&gt;enum class&lt;/tt&gt;</h2>
 <div class="fragment"><div class="line"> </div>
@@ -190,7 +190,7 @@ $(document).ready(function(){initNavTree('md_coding__standards.html',''); initRe
 <hr  />
 <h1><a class="anchor" id="autotoc_md237"></a>
 4. 类布局</h1>
-<p>以 <code><a class="el" href="classSpinLock.html" title="自旋锁">SpinLock</a></code> 为基准的典型布局：</p>
+<p>以 <code><a class="el" href="classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）">SpinLock</a></code> 为基准的典型布局：</p>
 <div class="fragment"><div class="line"> </div>
 <div class="line"><span class="keyword">class </span>ClassName {</div>
 <div class="line"> <span class="keyword">public</span>:</div>

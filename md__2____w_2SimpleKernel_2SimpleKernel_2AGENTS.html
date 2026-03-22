@@ -188,7 +188,7 @@ ANTI-PATTERNS</h1>
 UNIQUE STYLES</h1>
 <ul>
 <li><code>etl::singleton&lt;T&gt;</code> with named aliases in <code><a class="el" href="kernel_8h.html">kernel.h</a></code> (e.g. <code>TaskManagerSingleton::instance()</code>, <code>DeviceManagerSingleton::create()</code>)</li>
-<li><code><a class="el" href="classLockGuard.html" title="RAII 风格的锁守卫模板类">LockGuard</a>&lt;<a class="el" href="classSpinLock.html" title="自旋锁">SpinLock</a>&gt;</code> RAII locking</li>
+<li><code><a class="el" href="classLockGuard.html" title="RAII 锁守卫，中断状态保存在本对象中">LockGuard</a>&lt;<a class="el" href="classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）">SpinLock</a>&gt;</code> RAII locking</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md8"></a>
 COMMANDS</h1>

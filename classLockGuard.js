@@ -1,12 +1,13 @@
 var classLockGuard =
 [
-    [ "mutex_type", "classLockGuard.html#a2ca6faf65933dbe4a70f2cd235dd2b81", null ],
-    [ "LockGuard", "classLockGuard.html#aa283d6b19fddd2287f84dcf937b92e5b", null ],
-    [ "~LockGuard", "classLockGuard.html#af889562d8ed81c2337c94d0c915d65ca", null ],
-    [ "LockGuard", "classLockGuard.html#a57fc5642ee94e6e804c834e52d60ec2d", null ],
-    [ "LockGuard", "classLockGuard.html#a090b9f25d76b144d124b2caa2c4d1075", null ],
-    [ "LockGuard", "classLockGuard.html#ac9dddb7967ff5f0139a9b9ef7e09c6e1", null ],
-    [ "operator=", "classLockGuard.html#a53cd2aee27d1f2c4dfe17b462c0f890d", null ],
-    [ "operator=", "classLockGuard.html#ac1664a102208ce90c46bdcb615ba30e3", null ],
-    [ "mutex_", "classLockGuard.html#a4ed8b2884a1c9e7a57b300343af21539", null ]
+    [ "mutex_type", "classLockGuard.html#afc6dbd2be43e1ca1c4258c15b1807bc4", null ],
+    [ "LockGuard", "classLockGuard.html#ab5b05541962f70a0e42765e1a729a168", null ],
+    [ "~LockGuard", "classLockGuard.html#a9bcdf058788fcc30baf936c8190abe51", null ],
+    [ "LockGuard", "classLockGuard.html#ad10ab8ec693743aa385f202fbaa3a66c", null ],
+    [ "LockGuard", "classLockGuard.html#a656b1522c63e2e913ac3fe569c5c5996", null ],
+    [ "LockGuard", "classLockGuard.html#a5ee863423db250107632bc950dcd353d", null ],
+    [ "operator=", "classLockGuard.html#a72758bb43985ae544e4a20daa38ace28", null ],
+    [ "operator=", "classLockGuard.html#a312844c9217c4ae57d163f4de344078f", null ],
+    [ "mutex_", "classLockGuard.html#a6b92cb9c048393bdafcfa0f670373943", null ],
+    [ "saved_intr_", "classLockGuard.html#a323abab3854d06f12bee5176c102e3d3", null ]
 ];

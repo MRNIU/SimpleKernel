@@ -1,0 +1,21 @@
+<map id="LockGuard::LockGuard" name="LockGuard::LockGuard">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,104,173,129"/>
+<area shape="rect" id="Node000002" href="$namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb" title=" " alt="" coords="229,5,406,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,102,157,71,220,40,242,32,243,37,222,44,160,75,111,106"/>
+<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="225,55,410,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="148,101,244,80,245,86,149,107"/>
+<area shape="rect" id="Node000005" href="$namespacecpu__io.html#aaab46268534006b116de3e112c237f7f" title=" " alt="" coords="221,104,413,129"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="174,114,208,114,208,119,174,119"/>
+<area shape="rect" id="Node000006" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="262,153,373,179"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="149,127,249,149,248,154,148,132"/>
+<area shape="rect" id="Node000007" href="$namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e" title="绕过队列直接输出至串口（用于 panic 路径）" alt="" coords="264,203,371,228"/>
+<area shape="poly" id="edge8_Node000001_Node000007" title=" " alt="" coords="111,127,160,158,222,189,251,199,250,204,220,194,157,163,108,132"/>
+<area shape="rect" id="Node000003" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="461,47,724,87"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="389,28,468,42,467,48,388,33"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="410,65,448,65,448,70,410,70"/>
+<area shape="poly" id="edge6_Node000005_Node000003" title=" " alt="" coords="388,101,467,87,468,92,389,107"/>
+<area shape="rect" id="Node000008" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="521,203,664,228"/>
+<area shape="poly" id="edge9_Node000007_Node000008" title=" " alt="" coords="371,213,507,213,507,218,371,218"/>
+<area shape="rect" id="Node000009" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="772,203,867,228"/>
+<area shape="poly" id="edge10_Node000008_Node000009" title=" " alt="" coords="664,213,758,213,758,218,664,218"/>
+</map>

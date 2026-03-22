@@ -92,8 +92,7 @@ $(document).ready(function(){initNavTree('namespaceper__cpu.html',''); initResiz
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">per_cpu Namespace Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -102,6 +101,9 @@ $(document).ready(function(){initNavTree('namespaceper__cpu.html',''); initResiz
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structper__cpu_1_1PerCpu.html">PerCpu</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">每个 CPU 核心的局部数据  <a href="structper__cpu_1_1PerCpu.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structper__cpu_1_1PreemptState.html">PreemptState</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">抢占/中断嵌套状态（per-CPU）  <a href="structper__cpu_1_1PreemptState.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
@@ -117,12 +119,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ad9745465fefcd58504031bfcfcc1c13f" id="r_ad9745465fefcd58504031bfcfcc1c13f"><td class="memItemLeft" align="right" valign="top">static __always_inline auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f">GetCurrentCore</a> () -&gt; <a class="el" href="structper__cpu_1_1PerCpu.html">PerCpu</a> &amp;</td></tr>
 <tr class="memdesc:ad9745465fefcd58504031bfcfcc1c13f"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取当前核心的 <a class="el" href="structper__cpu_1_1PerCpu.html" title="每个 CPU 核心的局部数据">PerCpu</a> 数据  <br /></td></tr>
 <tr class="separator:ad9745465fefcd58504031bfcfcc1c13f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:af35ee4e7eef4f89655b25dcd4fda3ef5" id="r_af35ee4e7eef4f89655b25dcd4fda3ef5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceper__cpu.html#af35ee4e7eef4f89655b25dcd4fda3ef5">in_timer_handler</a> [SIMPLEKERNEL_MAX_CORE_COUNT] {}</td></tr>
-<tr class="memdesc:af35ee4e7eef4f89655b25dcd4fda3ef5"><td class="mdescLeft">&#160;</td><td class="mdescRight">TimerHandler 重入保护（per-CPU，防止嵌套 timer 中断导致递归调度）  <br /></td></tr>
-<tr class="separator:af35ee4e7eef4f89655b25dcd4fda3ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a2956cf2e0afed456ba355b57cc5965db" name="a2956cf2e0afed456ba355b57cc5965db"></a>
@@ -139,7 +135,7 @@ Variables</h2></td></tr>
 
 <p><a class="el" href="structper__cpu_1_1PerCpu.html" title="每个 CPU 核心的局部数据">PerCpu</a> 数组单例类型 </p>
 
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00054">54</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00082">82</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
 
 </div>
 </div>
@@ -187,10 +183,10 @@ Variables</h2></td></tr>
 
 <p>获取当前核心的 <a class="el" href="structper__cpu_1_1PerCpu.html" title="每个 CPU 核心的局部数据">PerCpu</a> 数据 </p>
 
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00058">58</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   58</span>                                                        {</div>
-<div class="line"><span class="lineno">   59</span>  <span class="keywordflow">return</span> PerCpuArraySingleton::instance()[<a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>()];</div>
-<div class="line"><span class="lineno">   60</span>}</div>
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00086">86</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   86</span>                                                        {</div>
+<div class="line"><span class="lineno">   87</span>  <span class="keywordflow">return</span> PerCpuArraySingleton::instance()[<a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>()];</div>
+<div class="line"><span class="lineno">   88</span>}</div>
 <div class="ttc" id="anamespacecpu__io_html_a52b8a7263a31e6670ef4dec7922d9e72"><div class="ttname"><a href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a></div><div class="ttdeci">auto GetCurrentCoreId() -&gt; size_t</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00026">cpu_io.h:26</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -209,53 +205,21 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="namespaceper__cpu_ad9745465fefcd58504031bfcfcc1c13f_icgraph.png" border="0" usemap="#anamespaceper__cpu_ad9745465fefcd58504031bfcfcc1c13f_icgraph" alt=""/></div>
 <map name="anamespaceper__cpu_ad9745465fefcd58504031bfcfcc1c13f_icgraph" id="anamespaceper__cpu_ad9745465fefcd58504031bfcfcc1c13f_icgraph">
-<area shape="rect" title="获取当前核心的 PerCpu 数据" alt="" coords="492,153,675,179"/>
-<area shape="rect" href="classTaskManager.html#a493c3edb3d27eada4a3e58937e2ace01" title="添加任务（接管所有权）" alt="" coords="251,5,421,31"/>
-<area shape="poly" title=" " alt="" coords="561,144,511,93,478,67,443,44,415,33,417,28,445,40,481,62,514,89,565,141"/>
-<area shape="rect" href="classTaskManager.html#a370fcd225b5795a06fd76ad7c39f6d08" title="获取当前任务" alt="" coords="228,55,444,80"/>
-<area shape="poly" title=" " alt="" coords="550,148,501,120,443,94,406,83,408,78,445,89,503,116,553,144"/>
-<area shape="rect" href="classTaskManager.html#aa43228da3cb31deee114ace7ff02b293" title="初始化 per cpu 的调度数据，创建 idle 线程" alt="" coords="229,104,443,129"/>
-<area shape="poly" title=" " alt="" coords="505,153,400,132,401,127,506,148"/>
-<area shape="rect" href="schedule_8cpp.html#adf76a019ba47bc42d5ee5d996b3f1fe0" title="内核线程启动入口 — 完成 Schedule() 的锁交接后执行任务函数" alt="" coords="246,153,426,179"/>
-<area shape="poly" title=" " alt="" coords="478,169,426,169,426,163,478,163"/>
-<area shape="rect" href="tests_2system__test_2main_8cpp.html#ab85c3edfd2aada0e059dccf8d002924d" title="内核入口" alt="" coords="309,203,363,228"/>
-<area shape="poly" title=" " alt="" coords="506,184,364,213,363,207,505,179"/>
-<area shape="rect" href="classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="核心调度函数 — 选择下一个任务并执行上下文切换" alt="" coords="5,279,180,304"/>
-<area shape="poly" title=" " alt="" coords="553,188,503,217,445,242,377,261,307,274,180,289,180,284,306,269,375,255,443,237,501,212,550,184"/>
-<area shape="rect" href="arch_8cpp.html#ad982abdb7f3d8729656c6b5422b2e61d" title=" " alt="" coords="294,304,378,329"/>
-<area shape="poly" title=" " alt="" coords="563,191,513,239,480,265,445,287,412,301,379,311,378,306,410,296,443,282,477,260,509,235,560,187"/>
-<area shape="poly" title=" " alt="" coords="280,314,180,303,180,298,281,308"/>
+<area shape="rect" title="获取当前核心的 PerCpu 数据" alt="" coords="492,104,675,129"/>
+<area shape="rect" href="classTaskManager.html#a370fcd225b5795a06fd76ad7c39f6d08" title="获取当前任务" alt="" coords="228,5,444,31"/>
+<area shape="poly" title=" " alt="" coords="550,99,501,71,443,44,406,33,408,28,445,40,503,66,553,95"/>
+<area shape="rect" href="classTaskManager.html#a8bbd1157a162051ae2c2d7b193d98d55" title="初始化 per cpu 的调度数据，创建 idle 线程" alt="" coords="229,55,443,80"/>
+<area shape="poly" title=" " alt="" coords="505,104,400,83,401,77,506,99"/>
+<area shape="rect" href="tests_2system__test_2main_8cpp.html#ab85c3edfd2aada0e059dccf8d002924d" title="内核入口" alt="" coords="309,104,363,129"/>
+<area shape="poly" title=" " alt="" coords="478,119,363,119,363,114,478,114"/>
+<area shape="rect" href="classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="核心调度函数 — 选择下一个任务并执行上下文切换" alt="" coords="5,180,180,205"/>
+<area shape="poly" title=" " alt="" coords="498,134,444,143,180,183,180,178,444,138,497,129"/>
+<area shape="rect" href="arch_8cpp.html#ad982abdb7f3d8729656c6b5422b2e61d" title=" " alt="" coords="294,205,378,231"/>
+<area shape="poly" title=" " alt="" coords="549,138,501,164,445,188,379,210,378,205,443,184,498,159,547,134"/>
+<area shape="poly" title=" " alt="" coords="280,215,180,204,180,199,281,210"/>
 </map>
 </div>
 
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="af35ee4e7eef4f89655b25dcd4fda3ef5" name="af35ee4e7eef4f89655b25dcd4fda3ef5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af35ee4e7eef4f89655b25dcd4fda3ef5">&#9670;&#160;</a></span>in_timer_handler</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool per_cpu::in_timer_handler[SIMPLEKERNEL_MAX_CORE_COUNT] {}</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>TimerHandler 重入保护（per-CPU，防止嵌套 timer 中断导致递归调度） </p>
-
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00023">23</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   23</span>{};</div>
-</div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->

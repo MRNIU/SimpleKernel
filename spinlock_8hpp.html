@@ -99,6 +99,7 @@ $(document).ready(function(){initNavTree('spinlock_8hpp.html',''); initResizable
 <code>#include &lt;concepts&gt;</code><br />
 <code>#include &lt;cstddef&gt;</code><br />
 <code>#include &lt;limits&gt;</code><br />
+<code>#include &lt;type_traits&gt;</code><br />
 <code>#include &quot;<a class="el" href="expected_8hpp_source.html">expected.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="kernel__log_8hpp_source.html">kernel_log.hpp</a>&quot;</code><br />
 <code>#include &quot;kstd_cstdio&quot;</code><br />
@@ -107,23 +108,25 @@ Include dependency graph for spinlock.hpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="spinlock_8hpp__incl.png" border="0" usemap="#a_2____w_2SimpleKernel_2SimpleKernel_2src_2include_2spinlock_8hpp" alt=""/></div>
 <map name="a_2____w_2SimpleKernel_2SimpleKernel_2src_2include_2spinlock_8hpp" id="a_2____w_2SimpleKernel_2SimpleKernel_2src_2include_2spinlock_8hpp">
-<area shape="rect" title=" " alt="" coords="571,5,793,45"/>
+<area shape="rect" title=" " alt="" coords="535,5,757,45"/>
 <area shape="rect" href="cpu__io_8h.html" title=" " alt="" coords="265,167,341,192"/>
-<area shape="poly" title=" " alt="" coords="593,48,519,68,443,96,382,128,331,161,329,156,379,123,441,91,517,63,592,43"/>
+<area shape="poly" title=" " alt="" coords="535,36,491,43,446,55,401,72,361,95,334,123,316,155,311,152,330,120,358,91,399,68,444,50,490,38,534,31"/>
 <area shape="rect" title=" " alt="" coords="606,240,673,265"/>
-<area shape="poly" title=" " alt="" coords="731,43,785,70,836,105,855,125,867,147,868,170,857,194,830,213,785,228,687,248,686,243,784,223,827,208,853,190,863,169,862,149,851,128,833,109,782,74,728,48"/>
+<area shape="poly" title=" " alt="" coords="741,43,787,62,828,91,850,115,866,140,870,166,857,194,830,213,785,228,687,248,686,243,784,223,827,208,853,190,864,165,861,142,846,119,824,95,785,67,739,48"/>
 <area shape="rect" title=" " alt="" coords="5,313,76,339"/>
-<area shape="poly" title=" " alt="" coords="576,48,485,68,391,96,295,124,220,146,186,161,152,180,117,206,79,242,60,270,49,301,44,299,55,268,75,238,113,202,149,175,183,156,218,141,294,119,389,91,483,63,574,43"/>
-<area shape="rect" title=" " alt="" coords="595,93,675,119"/>
-<area shape="poly" title=" " alt="" coords="673,47,652,83,647,80,668,44"/>
-<area shape="rect" title=" " alt="" coords="699,93,758,119"/>
-<area shape="poly" title=" " alt="" coords="696,44,717,80,712,83,691,47"/>
+<area shape="poly" title=" " alt="" coords="535,44,434,64,331,96,252,125,191,150,137,185,79,242,60,271,49,301,44,299,56,268,75,238,134,180,189,145,250,120,329,91,433,59,534,39"/>
+<area shape="rect" title=" " alt="" coords="513,93,593,119"/>
+<area shape="poly" title=" " alt="" coords="625,48,579,86,576,82,622,44"/>
+<area shape="rect" title=" " alt="" coords="617,93,675,119"/>
+<area shape="poly" title=" " alt="" coords="649,46,649,79,643,79,643,46"/>
+<area shape="rect" title=" " alt="" coords="700,93,792,119"/>
+<area shape="poly" title=" " alt="" coords="672,43,722,82,719,87,669,48"/>
 <area shape="rect" href="expected_8hpp.html" title=" " alt="" coords="919,93,1029,119"/>
-<area shape="poly" title=" " alt="" coords="753,43,919,87,917,92,751,48"/>
-<area shape="rect" href="kernel__log_8hpp.html" title=" " alt="" coords="454,93,571,119"/>
-<area shape="poly" title=" " alt="" coords="643,48,551,90,549,85,640,43"/>
+<area shape="poly" title=" " alt="" coords="725,43,913,88,912,93,724,48"/>
+<area shape="rect" href="kernel__log_8hpp.html" title=" " alt="" coords="371,93,489,119"/>
+<area shape="poly" title=" " alt="" coords="595,48,475,91,474,86,593,43"/>
 <area shape="rect" title=" " alt="" coords="747,167,843,192"/>
-<area shape="poly" title=" " alt="" coords="718,43,747,64,772,92,787,122,795,153,790,154,782,124,768,95,743,68,715,48"/>
+<area shape="poly" title=" " alt="" coords="739,43,776,62,792,76,806,92,812,107,814,123,808,154,803,153,808,123,807,108,801,95,788,79,773,67,736,48"/>
 <area shape="poly" title=" " alt="" coords="342,186,588,237,593,238,592,244,587,243,341,191"/>
 <area shape="rect" title=" " alt="" coords="462,240,531,265"/>
 <area shape="poly" title=" " alt="" coords="335,190,453,233,452,238,333,195"/>
@@ -148,14 +151,14 @@ Include dependency graph for spinlock.hpp:</div>
 <area shape="poly" title=" " alt="" coords="965,121,930,155,882,194,828,230,773,262,678,310,675,305,770,257,826,225,879,190,926,151,961,117"/>
 <area shape="rect" title=" " alt="" coords="969,167,1051,192"/>
 <area shape="poly" title=" " alt="" coords="982,118,1000,153,996,156,978,120"/>
-<area shape="poly" title=" " alt="" coords="480,121,351,165,350,160,478,116"/>
-<area shape="poly" title=" " alt="" coords="477,121,445,134,417,151,408,160,402,170,402,180,406,190,428,198,477,211,593,238,592,244,475,216,426,203,403,194,396,181,397,168,404,157,414,147,443,129,475,116"/>
-<area shape="poly" title=" " alt="" coords="567,116,638,137,668,150,687,165,700,191,702,214,697,238,687,266,677,287,663,305,659,302,672,284,682,264,692,237,697,214,695,192,683,168,665,155,636,142,566,121"/>
+<area shape="poly" title=" " alt="" coords="411,121,337,162,335,157,408,116"/>
+<area shape="poly" title=" " alt="" coords="423,120,404,155,401,174,407,190,428,198,477,211,593,238,592,244,475,216,426,203,403,194,395,174,399,153,418,118"/>
+<area shape="poly" title=" " alt="" coords="490,115,610,138,660,152,686,165,701,190,703,213,697,238,687,266,677,287,663,305,659,302,672,284,682,264,692,236,698,213,696,192,683,169,658,157,608,143,489,120"/>
 <area shape="rect" title=" " alt="" coords="417,167,515,192"/>
-<area shape="poly" title=" " alt="" coords="507,120,483,157,479,154,503,118"/>
+<area shape="poly" title=" " alt="" coords="438,118,456,153,452,156,434,120"/>
 <area shape="rect" title=" " alt="" coords="539,167,673,192"/>
-<area shape="poly" title=" " alt="" coords="529,117,582,156,578,160,526,121"/>
-<area shape="poly" title=" " alt="" coords="559,116,737,161,736,166,557,121"/>
+<area shape="poly" title=" " alt="" coords="459,116,565,159,563,164,457,121"/>
+<area shape="poly" title=" " alt="" coords="489,116,734,163,733,169,488,121"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -295,10 +298,10 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpinLock.html">SpinLock</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">自旋锁  <a href="classSpinLock.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">自旋锁（纯原子操作，不管理中断状态）  <a href="classSpinLock.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLockGuard.html">LockGuard&lt; Mutex &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">RAII 风格的锁守卫模板类  <a href="classLockGuard.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLockGuard.html">LockGuard&lt; T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">RAII 锁守卫，中断状态保存在本对象中  <a href="classLockGuard.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->

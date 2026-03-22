@@ -18,6 +18,6 @@
 <area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="205,391,202,437,197,437,199,391"/>
 <area shape="rect" id="Node000008" href="$classvfs_1_1BlockDevice.html" title="块设备抽象基类" alt="" coords="283,681,424,867"/>
 <area shape="poly" id="edge9_Node000003_Node000008" title=" " alt="" coords="325,867,320,891,317,928,312,927,315,890,320,866"/>
-<area shape="rect" id="Node000009" href="$classSpinLock.html" title="自旋锁" alt="" coords="569,1107,759,1552"/>
-<area shape="poly" id="edge12_Node000001_Node000009" title=" " alt="" coords="574,1553,554,1600,549,1598,569,1551"/>
+<area shape="rect" id="Node000009" href="$classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）" alt="" coords="569,1117,759,1542"/>
+<area shape="poly" id="edge12_Node000001_Node000009" title=" " alt="" coords="578,1543,554,1600,549,1598,573,1541"/>
 </map>

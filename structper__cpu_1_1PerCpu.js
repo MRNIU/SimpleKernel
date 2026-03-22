@@ -9,6 +9,7 @@ var structper__cpu_1_1PerCpu =
     [ "operator=", "structper__cpu_1_1PerCpu.html#a7059c522c4afaaf542d8498a6ae645e3", null ],
     [ "core_id", "structper__cpu_1_1PerCpu.html#a9350604c0f4b37d3acda077569d4e766", null ],
     [ "idle_task", "structper__cpu_1_1PerCpu.html#a859b16b924d4d11d01ec72ead0e5b3f2", null ],
+    [ "preempt", "structper__cpu_1_1PerCpu.html#a988056b1cfa88a0439538ee996c9416d", null ],
     [ "running_task", "structper__cpu_1_1PerCpu.html#a2ad676bb796dc66fcd41607bf4846fe9", null ],
     [ "sched_data", "structper__cpu_1_1PerCpu.html#a2f5f0d8a8272a9cf2d0c3e99f1de7fbd", null ]
 ];

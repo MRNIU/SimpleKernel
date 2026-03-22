@@ -11,7 +11,7 @@ var indexSectionsWithContent =
   8: "k",
   9: "fr",
   10: "aefimst",
-  11: "acdfgilmoprstu—代多工开系规调",
+  11: "acdfghilmoprstu—代多工开系规调",
   12: "bv"
 };
 

@@ -249,6 +249,9 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structper__cpu_1_1PreemptState.html">per_cpu::PreemptState</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">抢占/中断嵌套状态（per-CPU）  <a href="structper__cpu_1_1PreemptState.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structper__cpu_1_1PerCpu.html">per_cpu::PerCpu</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">每个 CPU 核心的局部数据  <a href="structper__cpu_1_1PerCpu.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -289,9 +292,6 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:af35ee4e7eef4f89655b25dcd4fda3ef5" id="r_af35ee4e7eef4f89655b25dcd4fda3ef5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceper__cpu.html#af35ee4e7eef4f89655b25dcd4fda3ef5">per_cpu::in_timer_handler</a> [SIMPLEKERNEL_MAX_CORE_COUNT] {}</td></tr>
-<tr class="memdesc:af35ee4e7eef4f89655b25dcd4fda3ef5"><td class="mdescLeft">&#160;</td><td class="mdescRight">TimerHandler 重入保护（per-CPU，防止嵌套 timer 中断导致递归调度）  <br /></td></tr>
-<tr class="separator:af35ee4e7eef4f89655b25dcd4fda3ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af349ef2aacd2314294eac3283d14e3ca" id="r_af349ef2aacd2314294eac3283d14e3ca"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a> {0}</td></tr>
 <tr class="memdesc:af349ef2aacd2314294eac3283d14e3ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">核心 ID  <br /></td></tr>
 <tr class="separator:af349ef2aacd2314294eac3283d14e3ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -304,6 +304,9 @@ Variables</h2></td></tr>
 <tr class="memitem:a2212638d15cc941050a49d7089c8ca9d" id="r_a2212638d15cc941050a49d7089c8ca9d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structCpuSchedData.html">CpuSchedData</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="per__cpu_8hpp.html#a2212638d15cc941050a49d7089c8ca9d">sched_data</a> {nullptr}</td></tr>
 <tr class="memdesc:a2212638d15cc941050a49d7089c8ca9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">调度数据 (RunQueue) 指针  <br /></td></tr>
 <tr class="separator:a2212638d15cc941050a49d7089c8ca9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1daad5be0ea886a068f81d064617b27" id="r_ad1daad5be0ea886a068f81d064617b27"><td class="memItemLeft" align="right" valign="top">PreemptState&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27">preempt</a> {}</td></tr>
+<tr class="memdesc:ad1daad5be0ea886a068f81d064617b27"><td class="mdescLeft">&#160;</td><td class="mdescRight">抢占/中断嵌套状态  <br /></td></tr>
+<tr class="separator:ad1daad5be0ea886a068f81d064617b27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="affe403512f414f6cfe2f8b48465d17a1" name="affe403512f414f6cfe2f8b48465d17a1"></a>
@@ -459,47 +462,64 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00012">12</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   20</span>{</div>
-<div class="line"><span class="lineno">   21</span> </div>
-<div class="line"><span class="lineno">   23</span><span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code hl_variable" href="namespaceper__cpu.html#af35ee4e7eef4f89655b25dcd4fda3ef5">in_timer_handler</a>[SIMPLEKERNEL_MAX_CORE_COUNT]{};</div>
-<div class="line"><span class="lineno">   24</span> </div>
-<div class="line"><span class="lineno">   26</span><span class="keyword">struct </span><a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a> {</div>
-<div class="line"><span class="lineno">   28</span>  <span class="keywordtype">size_t</span> <a class="code hl_variable" href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a>{0};</div>
-<div class="line"><span class="lineno">   29</span> </div>
-<div class="line"><span class="lineno">   31</span>  <a class="code hl_struct" href="structTaskControlBlock.html">TaskControlBlock</a>* <a class="code hl_variable" href="per__cpu_8hpp.html#ae11edf9e98e4600dead9f9050a80970a">running_task</a>{<span class="keyword">nullptr</span>};</div>
-<div class="line"><span class="lineno">   33</span>  <a class="code hl_struct" href="structTaskControlBlock.html">TaskControlBlock</a>* <a class="code hl_variable" href="per__cpu_8hpp.html#a9a31203c3769eb7cefbb5433eec968dd">idle_task</a>{<span class="keyword">nullptr</span>};</div>
-<div class="line"><span class="lineno">   35</span>  <a class="code hl_struct" href="structCpuSchedData.html">CpuSchedData</a>* <a class="code hl_variable" href="per__cpu_8hpp.html#a2212638d15cc941050a49d7089c8ca9d">sched_data</a>{<span class="keyword">nullptr</span>};</div>
-<div class="line"><span class="lineno">   36</span> </div>
-<div class="line"><span class="lineno">   39</span>  <span class="keyword">explicit</span> <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>(<span class="keywordtype">size_t</span> <span class="keywordtype">id</span>) : <a class="code hl_variable" href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a>(id) {}</div>
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00015">15</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   19</span>{</div>
+<div class="line"><span class="lineno">   20</span> </div>
+<div class="line"><span class="lineno">   25</span><span class="keyword">struct </span>PreemptState {</div>
+<div class="line"><span class="lineno">   27</span>  uint32_t hardirq_count{0};</div>
+<div class="line"><span class="lineno">   29</span>  uint32_t softirq_count{0};</div>
+<div class="line"><span class="lineno">   31</span>  uint32_t preempt_disable_count{0};</div>
+<div class="line"><span class="lineno">   32</span> </div>
+<div class="line"><span class="lineno">   34</span>  [[nodiscard]] <span class="keyword">auto</span> InInterrupt() const -&gt; <span class="keywordtype">bool</span> {</div>
+<div class="line"><span class="lineno">   35</span>    <span class="keywordflow">return</span> hardirq_count &gt; 0 || softirq_count &gt; 0;</div>
+<div class="line"><span class="lineno">   36</span>  }</div>
+<div class="line"><span class="lineno">   37</span> </div>
+<div class="line"><span class="lineno">   39</span>  [[nodiscard]] <span class="keyword">auto</span> InHardIrq() const -&gt; <span class="keywordtype">bool</span> { <span class="keywordflow">return</span> hardirq_count &gt; 0; }</div>
 <div class="line"><span class="lineno">   40</span> </div>
-<div class="line"><span class="lineno">   41</span>  <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>() = <span class="keywordflow">default</span>;</div>
-<div class="line"><span class="lineno">   42</span>  <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>(<span class="keyword">const</span> <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp;) = <span class="keywordflow">default</span>;</div>
-<div class="line"><span class="lineno">   43</span>  <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>(<a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp;&amp;) = <span class="keywordflow">default</span>;</div>
-<div class="line"><span class="lineno">   44</span>  <span class="keyword">auto</span> <a class="code hl_function" href="per__cpu_8hpp.html#affe403512f414f6cfe2f8b48465d17a1">operator=</a>(<span class="keyword">const</span> <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp;) -&gt; <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp; = <span class="keywordflow">default</span>;</div>
-<div class="line"><span class="lineno">   45</span>  <span class="keyword">auto</span> <a class="code hl_function" href="per__cpu_8hpp.html#affe403512f414f6cfe2f8b48465d17a1">operator=</a>(<a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp;&amp;) -&gt; <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp; = <span class="keywordflow">default</span>;</div>
-<div class="line"><span class="lineno">   46</span>  <a class="code hl_function" href="per__cpu_8hpp.html#a80e1c96f894b8d3b7c1d42221563841c">~PerCpu</a>() = <span class="keywordflow">default</span>;</div>
-<div class="line"><span class="lineno">   48</span>} <a class="code hl_function" href="namespaceper__cpu.html#a3f116a6df9566ddec4351f08f26eab47">__attribute__</a>((aligned(SIMPLEKERNEL_PER_CPU_ALIGN_SIZE)));</div>
-<div class="line"><span class="lineno">   49</span> </div>
-<div class="line"><span class="lineno">   50</span><span class="keyword">static_assert</span>(<span class="keyword">sizeof</span>(<a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>) &lt;= SIMPLEKERNEL_PER_CPU_ALIGN_SIZE,</div>
-<div class="line"><span class="lineno">   51</span>              <span class="stringliteral">&quot;PerCpu size should not exceed cache line size&quot;</span>);</div>
-<div class="line"><span class="lineno">   52</span> </div>
-<div class="line"><span class="lineno">   54</span><span class="keyword">using </span><a class="code hl_typedef" href="namespaceper__cpu.html#a2956cf2e0afed456ba355b57cc5965db">PerCpuArraySingleton</a> =</div>
-<div class="line"><span class="lineno">   55</span>    etl::singleton&lt;std::array&lt;PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT&gt;&gt;;</div>
-<div class="line"><span class="lineno">   56</span> </div>
-<div class="line"><span class="lineno">   58</span><span class="keyword">static</span> __always_inline <span class="keyword">auto</span> <a class="code hl_function" href="namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f">GetCurrentCore</a>() -&gt; <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp; {</div>
-<div class="line"><span class="lineno">   59</span>  <span class="keywordflow">return</span> PerCpuArraySingleton::instance()[<a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>()];</div>
-<div class="line"><span class="lineno">   60</span>}</div>
-<div class="line"><span class="lineno">   61</span> </div>
-<div class="line"><span class="lineno">   62</span>}  <span class="comment">// namespace per_cpu</span></div>
+<div class="line"><span class="lineno">   43</span>  [[nodiscard]] <span class="keyword">auto</span> Preemptible() const -&gt; <span class="keywordtype">bool</span> {</div>
+<div class="line"><span class="lineno">   44</span>    <span class="keywordflow">return</span> hardirq_count == 0 &amp;&amp; softirq_count == 0 &amp;&amp;</div>
+<div class="line"><span class="lineno">   45</span>           preempt_disable_count == 0;</div>
+<div class="line"><span class="lineno">   46</span>  }</div>
+<div class="line"><span class="lineno">   47</span>};</div>
+<div class="line"><span class="lineno">   48</span> </div>
+<div class="line"><span class="lineno">   50</span><span class="keyword">struct </span><a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a> {</div>
+<div class="line"><span class="lineno">   52</span>  <span class="keywordtype">size_t</span> <a class="code hl_variable" href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a>{0};</div>
+<div class="line"><span class="lineno">   53</span> </div>
+<div class="line"><span class="lineno">   55</span>  <a class="code hl_struct" href="structTaskControlBlock.html">TaskControlBlock</a>* <a class="code hl_variable" href="per__cpu_8hpp.html#ae11edf9e98e4600dead9f9050a80970a">running_task</a>{<span class="keyword">nullptr</span>};</div>
+<div class="line"><span class="lineno">   57</span>  <a class="code hl_struct" href="structTaskControlBlock.html">TaskControlBlock</a>* <a class="code hl_variable" href="per__cpu_8hpp.html#a9a31203c3769eb7cefbb5433eec968dd">idle_task</a>{<span class="keyword">nullptr</span>};</div>
+<div class="line"><span class="lineno">   59</span>  <a class="code hl_struct" href="structCpuSchedData.html">CpuSchedData</a>* <a class="code hl_variable" href="per__cpu_8hpp.html#a2212638d15cc941050a49d7089c8ca9d">sched_data</a>{<span class="keyword">nullptr</span>};</div>
+<div class="line"><span class="lineno">   60</span> </div>
+<div class="line"><span class="lineno">   62</span>  PreemptState <a class="code hl_variable" href="per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27">preempt</a>{};</div>
+<div class="line"><span class="lineno">   63</span> </div>
+<div class="line"><span class="lineno">   66</span>  <span class="keyword">explicit</span> <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>(<span class="keywordtype">size_t</span> <span class="keywordtype">id</span>) : <a class="code hl_variable" href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a>(id) {}</div>
+<div class="line"><span class="lineno">   67</span> </div>
+<div class="line"><span class="lineno">   68</span>  <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><span class="lineno">   69</span>  <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>(<span class="keyword">const</span> <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><span class="lineno">   70</span>  <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>(<a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp;&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><span class="lineno">   71</span>  <span class="keyword">auto</span> <a class="code hl_function" href="per__cpu_8hpp.html#affe403512f414f6cfe2f8b48465d17a1">operator=</a>(<span class="keyword">const</span> <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp;) -&gt; <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp; = <span class="keywordflow">default</span>;</div>
+<div class="line"><span class="lineno">   72</span>  <span class="keyword">auto</span> <a class="code hl_function" href="per__cpu_8hpp.html#affe403512f414f6cfe2f8b48465d17a1">operator=</a>(<a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp;&amp;) -&gt; <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp; = <span class="keywordflow">default</span>;</div>
+<div class="line"><span class="lineno">   73</span>  <a class="code hl_function" href="per__cpu_8hpp.html#a80e1c96f894b8d3b7c1d42221563841c">~PerCpu</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><span class="lineno">   75</span>} <a class="code hl_function" href="namespaceper__cpu.html#a3f116a6df9566ddec4351f08f26eab47">__attribute__</a>((aligned(SIMPLEKERNEL_PER_CPU_ALIGN_SIZE)));</div>
+<div class="line"><span class="lineno">   76</span> </div>
+<div class="line"><span class="lineno">   77</span><span class="keyword">static_assert</span>(<span class="keyword">sizeof</span>(<a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>) &lt;= SIMPLEKERNEL_PER_CPU_ALIGN_SIZE,</div>
+<div class="line"><span class="lineno">   78</span>              <span class="stringliteral">&quot;PerCpu size should not exceed cache line size&quot;</span>);</div>
+<div class="line"><span class="lineno">   79</span> </div>
+<div class="line"><span class="lineno">   81</span><span class="keyword">using </span><a class="code hl_typedef" href="namespaceper__cpu.html#a2956cf2e0afed456ba355b57cc5965db">PerCpuArraySingleton</a> =</div>
+<div class="line"><span class="lineno">   82</span>    etl::singleton&lt;std::array&lt;PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT&gt;&gt;;</div>
+<div class="line"><span class="lineno">   83</span> </div>
+<div class="line"><span class="lineno">   85</span><span class="keyword">static</span> __always_inline <span class="keyword">auto</span> <a class="code hl_function" href="namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f">GetCurrentCore</a>() -&gt; <a class="code hl_function" href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a>&amp; {</div>
+<div class="line"><span class="lineno">   86</span>  <span class="keywordflow">return</span> PerCpuArraySingleton::instance()[<a class="code hl_function" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a>()];</div>
+<div class="line"><span class="lineno">   87</span>}</div>
+<div class="line"><span class="lineno">   88</span> </div>
+<div class="line"><span class="lineno">   89</span>}  <span class="comment">// namespace per_cpu</span></div>
 <div class="ttc" id="anamespacecpu__io_html_a52b8a7263a31e6670ef4dec7922d9e72"><div class="ttname"><a href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72">cpu_io::GetCurrentCoreId</a></div><div class="ttdeci">auto GetCurrentCoreId() -&gt; size_t</div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00026">cpu_io.h:26</a></div></div>
-<div class="ttc" id="anamespaceper__cpu_html_a2956cf2e0afed456ba355b57cc5965db"><div class="ttname"><a href="namespaceper__cpu.html#a2956cf2e0afed456ba355b57cc5965db">per_cpu::PerCpuArraySingleton</a></div><div class="ttdeci">etl::singleton&lt; std::array&lt; PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT &gt; &gt; PerCpuArraySingleton</div><div class="ttdoc">PerCpu 数组单例类型</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00054">per_cpu.hpp:55</a></div></div>
+<div class="ttc" id="anamespaceper__cpu_html_a2956cf2e0afed456ba355b57cc5965db"><div class="ttname"><a href="namespaceper__cpu.html#a2956cf2e0afed456ba355b57cc5965db">per_cpu::PerCpuArraySingleton</a></div><div class="ttdeci">etl::singleton&lt; std::array&lt; PerCpu, SIMPLEKERNEL_MAX_CORE_COUNT &gt; &gt; PerCpuArraySingleton</div><div class="ttdoc">PerCpu 数组单例类型</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00082">per_cpu.hpp:83</a></div></div>
 <div class="ttc" id="anamespaceper__cpu_html_a3f116a6df9566ddec4351f08f26eab47"><div class="ttname"><a href="namespaceper__cpu.html#a3f116a6df9566ddec4351f08f26eab47">per_cpu::__attribute__</a></div><div class="ttdeci">struct per_cpu::PerCpu __attribute__((aligned(SIMPLEKERNEL_PER_CPU_ALIGN_SIZE)))</div></div>
-<div class="ttc" id="anamespaceper__cpu_html_ad9745465fefcd58504031bfcfcc1c13f"><div class="ttname"><a href="namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f">per_cpu::GetCurrentCore</a></div><div class="ttdeci">static __always_inline auto GetCurrentCore() -&gt; PerCpu &amp;</div><div class="ttdoc">获取当前核心的 PerCpu 数据</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00058">per_cpu.hpp:58</a></div></div>
-<div class="ttc" id="anamespaceper__cpu_html_af35ee4e7eef4f89655b25dcd4fda3ef5"><div class="ttname"><a href="namespaceper__cpu.html#af35ee4e7eef4f89655b25dcd4fda3ef5">per_cpu::in_timer_handler</a></div><div class="ttdeci">bool in_timer_handler[SIMPLEKERNEL_MAX_CORE_COUNT]</div><div class="ttdoc">TimerHandler 重入保护（per-CPU，防止嵌套 timer 中断导致递归调度）</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00023">per_cpu.hpp:23</a></div></div>
+<div class="ttc" id="anamespaceper__cpu_html_ad9745465fefcd58504031bfcfcc1c13f"><div class="ttname"><a href="namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f">per_cpu::GetCurrentCore</a></div><div class="ttdeci">static __always_inline auto GetCurrentCore() -&gt; PerCpu &amp;</div><div class="ttdoc">获取当前核心的 PerCpu 数据</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00086">per_cpu.hpp:86</a></div></div>
 <div class="ttc" id="aper__cpu_8hpp_html_a2212638d15cc941050a49d7089c8ca9d"><div class="ttname"><a href="per__cpu_8hpp.html#a2212638d15cc941050a49d7089c8ca9d">sched_data</a></div><div class="ttdeci">CpuSchedData * sched_data</div><div class="ttdoc">调度数据 (RunQueue) 指针</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00008">per_cpu.hpp:8</a></div></div>
 <div class="ttc" id="aper__cpu_8hpp_html_a80e1c96f894b8d3b7c1d42221563841c"><div class="ttname"><a href="per__cpu_8hpp.html#a80e1c96f894b8d3b7c1d42221563841c">~PerCpu</a></div><div class="ttdeci">~PerCpu()=default</div></div>
 <div class="ttc" id="aper__cpu_8hpp_html_a9a31203c3769eb7cefbb5433eec968dd"><div class="ttname"><a href="per__cpu_8hpp.html#a9a31203c3769eb7cefbb5433eec968dd">idle_task</a></div><div class="ttdeci">TaskControlBlock * idle_task</div><div class="ttdoc">空闲任务</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00006">per_cpu.hpp:6</a></div></div>
+<div class="ttc" id="aper__cpu_8hpp_html_ad1daad5be0ea886a068f81d064617b27"><div class="ttname"><a href="per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27">preempt</a></div><div class="ttdeci">PreemptState preempt</div><div class="ttdoc">抢占/中断嵌套状态</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00011">per_cpu.hpp:11</a></div></div>
 <div class="ttc" id="aper__cpu_8hpp_html_ae11edf9e98e4600dead9f9050a80970a"><div class="ttname"><a href="per__cpu_8hpp.html#ae11edf9e98e4600dead9f9050a80970a">running_task</a></div><div class="ttdeci">TaskControlBlock * running_task</div><div class="ttdoc">当前运行的任务</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00004">per_cpu.hpp:4</a></div></div>
 <div class="ttc" id="aper__cpu_8hpp_html_af349ef2aacd2314294eac3283d14e3ca"><div class="ttname"><a href="per__cpu_8hpp.html#af349ef2aacd2314294eac3283d14e3ca">core_id</a></div><div class="ttdeci">size_t core_id</div><div class="ttdoc">核心 ID</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00001">per_cpu.hpp:1</a></div></div>
 <div class="ttc" id="aper__cpu_8hpp_html_af9f69638066e596aabf0ff6f3b58ced9"><div class="ttname"><a href="per__cpu_8hpp.html#af9f69638066e596aabf0ff6f3b58ced9">PerCpu</a></div><div class="ttdeci">PerCpu()=default</div></div>
@@ -568,6 +588,24 @@ Variables</h2></td></tr>
 <p>空闲任务 </p>
 
 <p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00006">6</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+
+</div>
+</div>
+<a id="ad1daad5be0ea886a068f81d064617b27" name="ad1daad5be0ea886a068f81d064617b27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1daad5be0ea886a068f81d064617b27">&#9670;&#160;</a></span>preempt</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PreemptState preempt {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>抢占/中断嵌套状态 </p>
+
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00011">11</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
 
 </div>
 </div>

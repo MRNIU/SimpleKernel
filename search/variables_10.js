@@ -20,7 +20,7 @@ var searchData=
   ['physical_5fblock_5fexp_17',['physical_block_exp',['../structvirtio_1_1blk_1_1BlkConfig.html#ae3057e552ffa53e86331083a4fec6807',1,'virtio::blk::BlkConfig']]],
   ['physical_5fmemory_5faddr_18',['physical_memory_addr',['../structBasicInfo.html#a112ca865b11d6e6fdb47eb42c902e47e',1,'BasicInfo']]],
   ['physical_5fmemory_5fsize_19',['physical_memory_size',['../structBasicInfo.html#a5ba8394c69be0fb4d2de460905e77e84',1,'BasicInfo']]],
-  ['pid_20',['pid',['../structTestResult.html#a894249ba153557fdbc403255050a72b5',1,'TestResult::pid'],['../structTaskControlBlock.html#aca9ca152ecda65751f10c515c4dbb867',1,'TaskControlBlock::pid'],['../structThreadCreateMsg.html#ae83c3d41d817ba2fd9bf086b3ac1d97a',1,'ThreadCreateMsg::pid'],['../structThreadExitMsg.html#a9a8660443c97c2227f23fa81ce31ec86',1,'ThreadExitMsg::pid']]],
+  ['pid_20',['pid',['../structThreadCreateMsg.html#ae83c3d41d817ba2fd9bf086b3ac1d97a',1,'ThreadCreateMsg::pid'],['../structThreadExitMsg.html#a9a8660443c97c2227f23fa81ce31ec86',1,'ThreadExitMsg::pid'],['../structTaskControlBlock.html#aca9ca152ecda65751f10c515c4dbb867',1,'TaskControlBlock::pid'],['../structTestResult.html#a894249ba153557fdbc403255050a72b5',1,'TestResult::pid']]],
   ['pid_5fallocator_5f_21',['pid_allocator_',['../classTaskManager.html#a026b9f97c64f3b355240c970e95dc6a6',1,'TaskManager']]],
   ['plic_5f_22',['plic_',['../classInterrupt.html#a6ed65be5c7145e0992ebebbc377387c0',1,'Interrupt']]],
   ['pm1_5fcnt_5flen_23',['pm1_cnt_len',['../structacpi_1_1Acpi_1_1Fadt.html#a86011ba60e8271dd92034d5784afbc4d',1,'acpi::Acpi::Fadt']]],
@@ -35,10 +35,13 @@ var searchData=
   ['pm_5ftmr_5flen_32',['pm_tmr_len',['../structacpi_1_1Acpi_1_1Fadt.html#a511ccde40c26af5afd82052cb10a0ac9',1,'acpi::Acpi::Fadt']]],
   ['policy_33',['policy',['../structTaskControlBlock.html#a017d7cfbc80709c0dfd826de0199a2a2',1,'TaskControlBlock']]],
   ['pre_5feol_5finfo_34',['pre_eol_info',['../structvirtio_1_1blk_1_1BlkLifetime.html#a3906529ea280edcc352d2f5a2ed1edcf',1,'virtio::blk::BlkLifetime']]],
-  ['preferred_5fpm_5fprofile_35',['preferred_pm_profile',['../structacpi_1_1Acpi_1_1Fadt.html#a99d61d69eaabf071451c78c0fd8295dc',1,'acpi::Acpi::Fadt']]],
-  ['primary_5fbooted_5f_36',['primary_booted_',['../src_2main_8cpp.html#a95ef4892b5d0eaa0ff0a4198a93936be',1,'primary_booted_:&#160;main.cpp'],['../tests_2system__test_2main_8cpp.html#a95ef4892b5d0eaa0ff0a4198a93936be',1,'primary_booted_:&#160;main.cpp']]],
-  ['priority_37',['priority',['../structTaskControlBlock_1_1SchedInfo.html#ac2111c5fb74dd8f8113f7734540caa00',1,'TaskControlBlock::SchedInfo']]],
-  ['probe_38',['probe',['../structDriverEntry.html#a0a1a1aab9c6399d5864be6b5ba09caf3',1,'DriverEntry']]],
-  ['product_5fid_39',['product_id',['../structGic_1_1Gicd_1_1GicdIidr.html#a18c79b150cf2e6043f3494c349f4d4b1',1,'Gic::Gicd::GicdIidr']]],
-  ['pstate_5fcnt_40',['pstate_cnt',['../structacpi_1_1Acpi_1_1Fadt.html#acc412c8222ca57e392b889679fff713c',1,'acpi::Acpi::Fadt']]]
+  ['preempt_35',['preempt',['../structper__cpu_1_1PerCpu.html#a988056b1cfa88a0439538ee996c9416d',1,'per_cpu::PerCpu::preempt'],['../per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27',1,'preempt:&#160;per_cpu.hpp']]],
+  ['preempt_5fdisable_5fcount_36',['preempt_disable_count',['../structper__cpu_1_1PreemptState.html#ae03434d7902d20f303cddba9041cef17',1,'per_cpu::PreemptState']]],
+  ['preferred_5fpm_5fprofile_37',['preferred_pm_profile',['../structacpi_1_1Acpi_1_1Fadt.html#a99d61d69eaabf071451c78c0fd8295dc',1,'acpi::Acpi::Fadt']]],
+  ['prev_5ftask_38',['prev_task',['../structCpuSchedData.html#a6bcc2d8829bc9154da9fa8ed527946b6',1,'CpuSchedData']]],
+  ['primary_5fbooted_5f_39',['primary_booted_',['../src_2main_8cpp.html#a95ef4892b5d0eaa0ff0a4198a93936be',1,'primary_booted_:&#160;main.cpp'],['../tests_2system__test_2main_8cpp.html#a95ef4892b5d0eaa0ff0a4198a93936be',1,'primary_booted_:&#160;main.cpp']]],
+  ['priority_40',['priority',['../structTaskControlBlock_1_1SchedInfo.html#ac2111c5fb74dd8f8113f7734540caa00',1,'TaskControlBlock::SchedInfo']]],
+  ['probe_41',['probe',['../structDriverEntry.html#a0a1a1aab9c6399d5864be6b5ba09caf3',1,'DriverEntry']]],
+  ['product_5fid_42',['product_id',['../structGic_1_1Gicd_1_1GicdIidr.html#a18c79b150cf2e6043f3494c349f4d4b1',1,'Gic::Gicd::GicdIidr']]],
+  ['pstate_5fcnt_43',['pstate_cnt',['../structacpi_1_1Acpi_1_1Fadt.html#acc412c8222ca57e392b889679fff713c',1,'acpi::Acpi::Fadt']]]
 ];
