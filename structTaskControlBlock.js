@@ -23,6 +23,7 @@ var structTaskControlBlock =
     [ "kDefaultKernelStackSize", "structTaskControlBlock.html#af12109542293f6bba85cbe4dda86306f", null ],
     [ "kernel_stack", "structTaskControlBlock.html#ad3caa0ee9155156382e9224e9b3d811f", null ],
     [ "name", "structTaskControlBlock.html#af98827b16fc1af01c793e7aef9b0608a", null ],
+    [ "owns_resources", "structTaskControlBlock.html#a5d0187b6376a08190de1c9849fa1b550", null ],
     [ "page_table", "structTaskControlBlock.html#ad6be0a3e64ef7334a846d9444014d867", null ],
     [ "pid", "structTaskControlBlock.html#aca9ca152ecda65751f10c515c4dbb867", null ],
     [ "policy", "structTaskControlBlock.html#a017d7cfbc80709c0dfd826de0199a2a2", null ],

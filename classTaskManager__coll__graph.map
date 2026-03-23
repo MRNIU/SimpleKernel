@@ -1,5 +1,5 @@
 <map id="TaskManager" name="TaskManager">
-<area shape="rect" id="Node000001" title="任务管理器" alt="" coords="5,523,197,1428"/>
-<area shape="rect" id="Node000002" href="$classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）" alt="" coords="7,5,196,431"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,431,104,506,99,506,99,431"/>
+<area shape="rect" id="Node000001" title="任务管理器" alt="" coords="5,563,197,1448"/>
+<area shape="rect" id="Node000002" href="$classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）" alt="" coords="46,5,157,471"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,471,104,546,99,546,99,471"/>
 </map>

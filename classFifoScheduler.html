@@ -434,29 +434,38 @@ Here is the caller graph for this function:</div>
 <div class="line"><span class="lineno">   33</span>    <a class="code hl_variable" href="classFifoScheduler.html#a1cdeee2a7f7823dfc823e38c3e84799d">ready_queue_</a>.push_back(task);</div>
 <div class="line"><span class="lineno">   34</span>    <a class="code hl_variable" href="classSchedulerBase.html#ac24df137a9e613ca5c5de71345cf5f94">stats_</a>.<a class="code hl_variable" href="structSchedulerBase_1_1Stats.html#ad5a40384c3c0c779491463433e2a311e">total_enqueues</a>++;</div>
 <div class="line"><span class="lineno">   35</span>  }</div>
-<div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
+<div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00207">kernel_log.hpp:207</a></div></div>
 <div class="ttc" id="astructSchedulerBase_1_1Stats_html_ad5a40384c3c0c779491463433e2a311e"><div class="ttname"><a href="structSchedulerBase_1_1Stats.html#ad5a40384c3c0c779491463433e2a311e">SchedulerBase::Stats::total_enqueues</a></div><div class="ttdeci">size_t total_enqueues</div><div class="ttdoc">总入队次数</div><div class="ttdef"><b>Definition</b> <a href="scheduler__base_8hpp_source.html#l00028">scheduler_base.hpp:28</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classFifoScheduler_a31c7f31c21f2ed7aa9546ba956ecf225_cgraph.png" border="0" usemap="#aclassFifoScheduler_a31c7f31c21f2ed7aa9546ba956ecf225_cgraph" alt=""/></div>
 <map name="aclassFifoScheduler_a31c7f31c21f2ed7aa9546ba956ecf225_cgraph" id="aclassFifoScheduler_a31c7f31c21f2ed7aa9546ba956ecf225_cgraph">
-<area shape="rect" title="将任务加入就绪队列尾部" alt="" coords="5,41,180,66"/>
-<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="228,41,304,66"/>
-<area shape="poly" title=" " alt="" coords="180,51,214,51,214,56,180,56"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="352,41,479,66"/>
-<area shape="poly" title=" " alt="" coords="304,51,339,51,339,56,304,56"/>
-<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="732,15,917,41"/>
-<area shape="poly" title=" " alt="" coords="479,47,718,32,718,37,479,52"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="527,66,684,91"/>
-<area shape="poly" title=" " alt="" coords="479,59,513,64,512,69,479,64"/>
-<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="965,5,1228,45"/>
-<area shape="poly" title=" " alt="" coords="918,24,951,24,951,29,918,30"/>
-<area shape="poly" title=" " alt="" coords="661,63,755,41,757,46,662,68"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="753,67,896,93"/>
-<area shape="poly" title=" " alt="" coords="684,76,739,77,739,82,684,82"/>
-<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1049,70,1144,95"/>
-<area shape="poly" title=" " alt="" coords="896,78,1036,79,1036,85,896,83"/>
+<area shape="rect" title="将任务加入就绪队列尾部" alt="" coords="5,55,180,80"/>
+<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="228,55,304,80"/>
+<area shape="poly" title=" " alt="" coords="180,65,214,65,214,70,180,70"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="352,55,479,80"/>
+<area shape="poly" title=" " alt="" coords="304,65,339,65,339,70,304,70"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="735,5,921,31"/>
+<area shape="poly" title=" " alt="" coords="479,57,721,28,722,33,479,62"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="527,80,684,105"/>
+<area shape="poly" title=" " alt="" coords="479,73,513,78,512,83,479,78"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="972,73,1235,113"/>
+<area shape="poly" title=" " alt="" coords="881,28,925,39,1021,66,1019,71,923,45,880,33"/>
+<area shape="poly" title=" " alt="" coords="634,77,731,39,758,32,759,37,733,45,636,82"/>
+<area shape="rect" href="namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb" title=" " alt="" coords="739,55,917,80"/>
+<area shape="poly" title=" " alt="" coords="684,81,726,76,726,82,685,86"/>
+<area shape="rect" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="742,104,914,129"/>
+<area shape="poly" title=" " alt="" coords="685,98,729,103,728,109,684,104"/>
+<area shape="rect" href="namespacecpu__io.html#aaab46268534006b116de3e112c237f7f" title=" " alt="" coords="732,153,924,179"/>
+<area shape="poly" title=" " alt="" coords="638,103,733,138,763,147,761,152,731,143,636,108"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="757,203,899,228"/>
+<area shape="poly" title=" " alt="" coords="621,104,668,146,699,169,733,189,749,196,747,201,731,194,696,174,665,150,618,108"/>
+<area shape="poly" title=" " alt="" coords="917,73,959,77,958,82,916,78"/>
+<area shape="poly" title=" " alt="" coords="914,107,958,103,959,108,914,112"/>
+<area shape="poly" title=" " alt="" coords="876,151,923,138,1014,114,1015,119,925,143,878,156"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1056,203,1151,228"/>
+<area shape="poly" title=" " alt="" coords="900,213,1042,213,1042,218,900,218"/>
 </map>
 </div>
 <div class="dynheader">

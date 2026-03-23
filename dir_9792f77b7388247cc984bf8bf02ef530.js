@@ -10,7 +10,6 @@ var dir_9792f77b7388247cc984bf8bf02ef530 =
     [ "fatfs_test.cpp", "fatfs__test_8cpp.html", "fatfs__test_8cpp" ],
     [ "fifo_scheduler_test.cpp", "system__test_2fifo__scheduler__test_8cpp.html", "system__test_2fifo__scheduler__test_8cpp" ],
     [ "fork_test.cpp", "fork__test_8cpp.html", "fork__test_8cpp" ],
-    [ "idle_scheduler_test.cpp", "idle__scheduler__test_8cpp.html", "idle__scheduler__test_8cpp" ],
     [ "interrupt_test.cpp", "interrupt__test_8cpp.html", "interrupt__test_8cpp" ],
     [ "ipi_test.cpp", "ipi__test_8cpp.html", "ipi__test_8cpp" ],
     [ "kernel_task_test.cpp", "kernel__task__test_8cpp.html", "kernel__task__test_8cpp" ],

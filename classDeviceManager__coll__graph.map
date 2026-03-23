@@ -1,12 +1,12 @@
 <map id="DeviceManager" name="DeviceManager">
-<area shape="rect" id="Node000001" title="设备管理器 — 管理所有设备节点和驱动程序。" alt="" coords="115,941,280,1387"/>
-<area shape="rect" id="Node000002" href="$structDeviceNode.html" title="单个设备的硬件资源描述。" alt="" coords="15,563,145,809"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,808,115,917,117,925,111,926,109,918,90,809"/>
-<area shape="rect" id="Node000003" href="$classvfs_1_1BlockDevice.html" title="块设备抽象基类" alt="" coords="5,125,147,311"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="79,311,80,469,81,547,75,547,75,469,74,311"/>
-<area shape="rect" id="Node000004" href="$classDriverRegistry.html" title="驱动注册表 — 以 ETL vector 存储 DriverEntry，并附带 flat_map 兼容索引。" alt="" coords="266,493,427,879"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="289,880,274,926,269,925,284,878"/>
-<area shape="rect" id="Node000005" href="$classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）" alt="" coords="211,5,400,431"/>
-<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="228,431,213,494,198,603,190,714,186,823,187,925,181,925,181,823,184,714,193,602,208,493,222,430"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="327,431,331,477,326,477,321,431"/>
+<area shape="rect" id="Node000001" title="设备管理器 — 管理所有设备节点和驱动程序。" alt="" coords="115,981,280,1427"/>
+<area shape="rect" id="Node000002" href="$structDeviceNode.html" title="单个设备的硬件资源描述。" alt="" coords="15,603,145,849"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,848,115,957,117,965,111,966,109,958,90,849"/>
+<area shape="rect" id="Node000003" href="$classvfs_1_1BlockDevice.html" title="块设备抽象基类" alt="" coords="5,145,147,331"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="79,331,80,509,81,587,75,587,75,509,74,331"/>
+<area shape="rect" id="Node000004" href="$classDriverRegistry.html" title="驱动注册表 — 以 ETL vector 存储 DriverEntry，并附带 flat_map 兼容索引。" alt="" coords="266,533,427,919"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="289,920,274,966,269,965,284,918"/>
+<area shape="rect" id="Node000005" href="$classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）" alt="" coords="178,5,289,471"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="217,471,213,533,205,755,201,965,196,965,200,755,208,533,212,471"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="290,470,301,517,296,518,285,472"/>
 </map>

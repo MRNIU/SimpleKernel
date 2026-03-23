@@ -1,12 +1,26 @@
 <map id="TaskManager::InitCurrentCore" name="TaskManager::InitCurrentCore">
-<area shape="rect" id="Node000001" title="初始化 per cpu 的调度数据，创建 idle 线程" alt="" coords="5,56,220,81"/>
-<area shape="rect" id="Node000002" href="$namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f" title="获取当前核心的 PerCpu 数据" alt="" coords="268,5,451,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="175,53,283,31,284,36,176,58"/>
-<area shape="rect" id="Node000003" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="499,31,684,56"/>
-<area shape="poly" id="edge4_Node000001_Node000003" title=" " alt="" coords="220,60,485,46,485,52,220,66"/>
-<area shape="rect" id="Node000005" href="$classTaskFsm.html#a3bc7b6c5bb2b61f619450e1fef401268" title="向 FSM 发送消息" alt="" coords="290,107,429,132"/>
-<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="176,79,284,101,283,106,175,84"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="452,25,485,29,485,34,451,31"/>
-<area shape="rect" id="Node000004" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="732,23,995,63"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="684,41,718,41,718,46,684,46"/>
+<area shape="rect" id="Node000001" title="初始化 per cpu 的调度数据，创建 idle 线程" alt="" coords="5,134,220,159"/>
+<area shape="rect" id="Node000002" href="$namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f" title="获取当前核心的 PerCpu 数据" alt="" coords="268,18,451,43"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,131,267,66,312,46,314,51,269,70,139,136"/>
+<area shape="rect" id="Node000003" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="508,13,693,38"/>
+<area shape="poly" id="edge4_Node000001_Node000003" title=" " alt="" coords="164,131,535,39,536,44,166,136"/>
+<area shape="rect" id="Node000005" href="$aarch64_2arch__main_8cpp.html#a51a1f934a70cf48db916c9c6c7bb5cad" title="初始化内核线程的任务上下文（重载1）" alt="" coords="298,134,421,159"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="220,144,284,144,284,149,220,149"/>
+<area shape="rect" id="Node000011" href="$classTaskFsm.html#a3bc7b6c5bb2b61f619450e1fef401268" title="向 FSM 发送消息" alt="" coords="290,183,429,209"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="177,157,282,178,281,183,176,162"/>
+<area shape="rect" id="Node000012" href="$classTaskFsm.html#aa51051086374affc76f2d516d3531889" title="启动 FSM（在 TCB 完全构造后调用）" alt="" coords="300,233,419,258"/>
+<area shape="poly" id="edge12_Node000001_Node000012" title=" " alt="" coords="139,157,197,186,269,218,295,226,293,231,267,222,195,191,136,162"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="451,26,494,25,494,30,451,31"/>
+<area shape="rect" id="Node000004" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="751,5,1013,45"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="694,23,737,23,737,28,694,28"/>
+<area shape="rect" id="Node000006" href="$structcpu__io_1_1CalleeSavedContext.html#a1ae45175010d9b66ef6db82b668baa1d" title=" " alt="" coords="499,63,703,103"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="408,131,511,104,512,109,409,136"/>
+<area shape="rect" id="Node000007" href="$structcpu__io_1_1CalleeSavedContext.html#a057438d663910d4cb7abcbb5615397ab" title=" " alt="" coords="499,127,703,167"/>
+<area shape="poly" id="edge7_Node000005_Node000007" title=" " alt="" coords="421,144,485,144,485,149,421,149"/>
+<area shape="rect" id="Node000008" href="$arch_8cpp.html#a7241001f2323bd5690c3ee10606fb8c4" title=" " alt="" coords="525,191,677,217"/>
+<area shape="poly" id="edge8_Node000005_Node000008" title=" " alt="" coords="414,157,534,185,532,191,413,162"/>
+<area shape="rect" id="Node000009" href="$structcpu__io_1_1CalleeSavedContext.html#a4dc21308ff38303ff2484b49c84daa2d" title=" " alt="" coords="499,241,703,281"/>
+<area shape="poly" id="edge9_Node000005_Node000009" title=" " alt="" coords="422,155,452,168,468,183,477,198,486,212,500,226,512,233,509,238,497,230,481,215,473,200,464,186,449,173,420,160"/>
+<area shape="rect" id="Node000010" href="$structcpu__io_1_1CalleeSavedContext.html#a90361985987010520dd23face113731f" title=" " alt="" coords="499,305,703,345"/>
+<area shape="poly" id="edge10_Node000005_Node000010" title=" " alt="" coords="422,152,452,169,466,184,473,200,478,231,482,262,488,277,501,291,506,296,502,300,497,295,484,280,477,263,472,232,468,201,461,187,449,173,420,157"/>
 </map>

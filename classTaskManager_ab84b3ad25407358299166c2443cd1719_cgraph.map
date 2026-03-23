@@ -1,0 +1,9 @@
+<map id="TaskManager::TickUpdate" name="TaskManager::TickUpdate">
+<area shape="rect" id="Node000001" title="更新系统 tick" alt="" coords="5,13,196,38"/>
+<area shape="rect" id="Node000002" href="$namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f" title="获取当前核心的 PerCpu 数据" alt="" coords="244,13,427,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="196,23,231,23,231,28,196,28"/>
+<area shape="rect" id="Node000003" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="475,13,660,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="427,23,461,23,461,28,427,28"/>
+<area shape="rect" id="Node000004" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="708,5,971,45"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="660,23,694,23,694,28,660,28"/>
+</map>

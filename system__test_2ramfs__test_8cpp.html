@@ -362,7 +362,7 @@ Functions</h2></td></tr>
 <div class="line"><span class="lineno">  169</span>  <a class="code hl_function" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a>(<span class="stringliteral">&quot;ramfs_test: all tests passed&quot;</span>);</div>
 <div class="line"><span class="lineno">  170</span>  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><span class="lineno">  171</span>}</div>
-<div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00182">kernel_log.hpp:182</a></div></div>
+<div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00189">kernel_log.hpp:189</a></div></div>
 <div class="ttc" id="anamespacevfs_html_a11fc8cf56a75d027f0911f56c4fffe7ca2b9ed4a923bfb2cfb132e76b103b8011"><div class="ttname"><a href="namespacevfs.html#a11fc8cf56a75d027f0911f56c4fffe7ca2b9ed4a923bfb2cfb132e76b103b8011">vfs::OpenFlags::kODirectory</a></div><div class="ttdeci">@ kODirectory</div><div class="ttdoc">必须是目录</div></div>
 <div class="ttc" id="anamespacevfs_html_a11fc8cf56a75d027f0911f56c4fffe7ca59672d4b273c60efa5819a3e2f1e4762"><div class="ttname"><a href="namespacevfs.html#a11fc8cf56a75d027f0911f56c4fffe7ca59672d4b273c60efa5819a3e2f1e4762">vfs::OpenFlags::kOReadWrite</a></div><div class="ttdeci">@ kOReadWrite</div></div>
 <div class="ttc" id="anamespacevfs_html_a11fc8cf56a75d027f0911f56c4fffe7ca5a3d64cdaf425fcd8671678f9a979bcf"><div class="ttname"><a href="namespacevfs.html#a11fc8cf56a75d027f0911f56c4fffe7ca5a3d64cdaf425fcd8671678f9a979bcf">vfs::OpenFlags::kOReadOnly</a></div><div class="ttdeci">@ kOReadOnly</div></div>
@@ -415,17 +415,26 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="441,121,470,130,499,145,540,179,576,219,625,290,621,293,571,222,536,183,496,150,468,135,439,126"/>
 <area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="575,1021,702,1047"/>
 <area shape="poly" title=" " alt="" coords="220,1108,255,1126,297,1141,353,1153,398,1159,442,1156,496,1141,532,1124,565,1102,616,1055,619,1059,568,1106,535,1129,498,1146,443,1161,398,1164,352,1158,295,1146,253,1131,217,1113"/>
-<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="985,996,1171,1021"/>
-<area shape="poly" title=" " alt="" coords="702,1028,971,1012,972,1017,702,1033"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="989,996,1174,1021"/>
+<area shape="poly" title=" " alt="" coords="702,1028,975,1012,975,1017,702,1033"/>
 <area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="780,1047,937,1072"/>
 <area shape="poly" title=" " alt="" coords="703,1039,767,1046,766,1051,702,1044"/>
-<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1219,986,1481,1026"/>
-<area shape="poly" title=" " alt="" coords="1171,1005,1205,1005,1205,1010,1171,1010"/>
-<area shape="poly" title=" " alt="" coords="914,1044,1009,1022,1010,1027,915,1049"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="1007,1049,1149,1075"/>
-<area shape="poly" title=" " alt="" coords="938,1058,993,1058,993,1064,938,1063"/>
-<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1303,1051,1397,1076"/>
-<area shape="poly" title=" " alt="" coords="1149,1060,1289,1060,1289,1066,1149,1065"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1225,1062,1488,1102"/>
+<area shape="poly" title=" " alt="" coords="1131,1019,1178,1031,1269,1056,1267,1061,1177,1037,1130,1024"/>
+<area shape="poly" title=" " alt="" coords="915,1044,1011,1022,1012,1027,916,1049"/>
+<area shape="rect" href="namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb" title=" " alt="" coords="993,1144,1170,1169"/>
+<area shape="poly" title=" " alt="" coords="880,1070,927,1100,986,1130,1007,1138,1005,1143,984,1135,924,1105,877,1074"/>
+<area shape="rect" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="995,1045,1167,1071"/>
+<area shape="poly" title=" " alt="" coords="938,1056,982,1056,982,1061,938,1062"/>
+<area shape="rect" href="namespacecpu__io.html#aaab46268534006b116de3e112c237f7f" title=" " alt="" coords="985,1095,1177,1120"/>
+<area shape="poly" title=" " alt="" coords="919,1069,1009,1089,1008,1094,918,1075"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="1010,947,1153,972"/>
+<area shape="poly" title=" " alt="" coords="876,1044,924,1014,984,982,1008,973,1010,978,986,987,927,1018,879,1049"/>
+<area shape="poly" title=" " alt="" coords="1133,1141,1177,1130,1273,1103,1274,1108,1178,1135,1135,1147"/>
+<area shape="poly" title=" " alt="" coords="1168,1063,1212,1067,1212,1072,1167,1068"/>
+<area shape="poly" title=" " alt="" coords="1177,1096,1211,1093,1212,1098,1178,1101"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1309,947,1404,972"/>
+<area shape="poly" title=" " alt="" coords="1153,957,1296,957,1296,962,1153,962"/>
 <area shape="poly" title=" " alt="" coords="204,656,240,603,265,572,294,543,347,502,392,476,439,453,496,418,608,336,612,340,499,423,441,457,395,481,350,506,298,547,269,576,244,607,208,659"/>
 <area shape="rect" href="namespacevfs.html#a1f319700095b5c6a4308289a9f190aa7" title="添加子 dentry" alt="" coords="585,633,693,659"/>
 <area shape="poly" title=" " alt="" coords="242,665,571,647,571,652,242,670"/>

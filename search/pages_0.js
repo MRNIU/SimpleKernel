@@ -7,6 +7,7 @@ var searchData=
   ['agents_20md_20—_20src_20filesystem_4',['AGENTS.md — src/filesystem/',['../md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html',1,'']]],
   ['agents_20md_20—_20src_20task_5',['AGENTS.md — src/task/',['../md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html',1,'']]],
   ['agents_20md_20—_20tests_6',['AGENTS.md — tests/',['../md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html',1,'']]],
-  ['and_20lock_20handoff_7',['Scheduler Design: Unified Preemption and Lock Handoff',['../md_superpowers_2specs_22026-03-22-scheduler-design.html',1,'']]],
-  ['arch_8',['arch',['../md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html',1,'AGENTS.md — src/arch/'],['../md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html',1,'arch']]]
+  ['analysis_7',['Design Spec: SimpleKernel vs. Linux Scheduler Comparative Analysis',['../md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html',1,'']]],
+  ['analysis_20implementation_20plan_8',['Linux Scheduler Internals Comparative Analysis Implementation Plan',['../md_superpowers_2plans_22026-03-23-linux-scheduler-comparison-execution.html',1,'']]],
+  ['arch_9',['arch',['../md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html',1,'AGENTS.md — src/arch/'],['../md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html',1,'arch']]]
 ];

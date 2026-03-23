@@ -106,7 +106,7 @@ Collaboration diagram for per_cpu::PreemptState:</div>
 <div class="dyncontent">
 <div class="center"><img src="structper__cpu_1_1PreemptState__coll__graph.png" border="0" usemap="#aper__cpu_1_1PreemptState_coll__map" alt="Collaboration graph"/></div>
 <map name="aper__cpu_1_1PreemptState_coll__map" id="aper__cpu_1_1PreemptState_coll__map">
-<area shape="rect" title="抢占/中断嵌套状态（per&#45;CPU）" alt="" coords="5,5,187,151"/>
+<area shape="rect" title="抢占/中断嵌套状态（per&#45;CPU）" alt="" coords="5,5,187,191"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -132,12 +132,16 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ae03434d7902d20f303cddba9041cef17" id="r_ae03434d7902d20f303cddba9041cef17"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structper__cpu_1_1PreemptState.html#ae03434d7902d20f303cddba9041cef17">preempt_disable_count</a> {0}</td></tr>
 <tr class="memdesc:ae03434d7902d20f303cddba9041cef17"><td class="mdescLeft">&#160;</td><td class="mdescRight">显式抢占禁用深度  <br /></td></tr>
 <tr class="separator:ae03434d7902d20f303cddba9041cef17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a296adaf8f2bd54e2e33ec01f875f4380" id="r_a296adaf8f2bd54e2e33ec01f875f4380"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structper__cpu_1_1PreemptState.html#a296adaf8f2bd54e2e33ec01f875f4380">need_resched</a> {false}</td></tr>
+<tr class="separator:a296adaf8f2bd54e2e33ec01f875f4380"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64fd4fd4c9a9da0a117ca4e13404b803" id="r_a64fd4fd4c9a9da0a117ca4e13404b803"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structper__cpu_1_1PreemptState.html#a64fd4fd4c9a9da0a117ca4e13404b803">need_balance</a> {false}</td></tr>
+<tr class="separator:a64fd4fd4c9a9da0a117ca4e13404b803"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>抢占/中断嵌套状态（per-CPU） </p>
 <dl class="section note"><dt>Note</dt><dd>只能在关中断或持有 per-CPU 数据时访问，不需要原子操作 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00026">26</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00037">37</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="af8b2dc101e8a3049931ea08a61b40059" name="af8b2dc101e8a3049931ea08a61b40059"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af8b2dc101e8a3049931ea08a61b40059">&#9670;&#160;</a></span>InHardIrq()</h2>
@@ -164,9 +168,9 @@ Public Attributes</h2></td></tr>
 
 <p>是否处于硬中断上下文 </p>
 
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00040">40</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   40</span>{ <span class="keywordflow">return</span> <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#a5cb58a584790bab52a97c0ff7eff5de3">hardirq_count</a> &gt; 0; }</div>
-<div class="ttc" id="astructper__cpu_1_1PreemptState_html_a5cb58a584790bab52a97c0ff7eff5de3"><div class="ttname"><a href="structper__cpu_1_1PreemptState.html#a5cb58a584790bab52a97c0ff7eff5de3">per_cpu::PreemptState::hardirq_count</a></div><div class="ttdeci">uint32_t hardirq_count</div><div class="ttdoc">硬中断嵌套深度（替代原 in_timer_handler 布尔标志）</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00028">per_cpu.hpp:28</a></div></div>
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00059">59</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   59</span>{ <span class="keywordflow">return</span> <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#a5cb58a584790bab52a97c0ff7eff5de3">hardirq_count</a> &gt; 0; }</div>
+<div class="ttc" id="astructper__cpu_1_1PreemptState_html_a5cb58a584790bab52a97c0ff7eff5de3"><div class="ttname"><a href="structper__cpu_1_1PreemptState.html#a5cb58a584790bab52a97c0ff7eff5de3">per_cpu::PreemptState::hardirq_count</a></div><div class="ttdeci">uint32_t hardirq_count</div><div class="ttdoc">硬中断嵌套深度（替代原 in_timer_handler 布尔标志）</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00039">per_cpu.hpp:39</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -195,11 +199,11 @@ Public Attributes</h2></td></tr>
 
 <p>是否处于中断上下文（硬中断或软中断） </p>
 
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00035">35</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   35</span>                                                 {</div>
-<div class="line"><span class="lineno">   36</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#a5cb58a584790bab52a97c0ff7eff5de3">hardirq_count</a> &gt; 0 || <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#a39110ea442dcf8d27502a380c835763d">softirq_count</a> &gt; 0;</div>
-<div class="line"><span class="lineno">   37</span>  }</div>
-<div class="ttc" id="astructper__cpu_1_1PreemptState_html_a39110ea442dcf8d27502a380c835763d"><div class="ttname"><a href="structper__cpu_1_1PreemptState.html#a39110ea442dcf8d27502a380c835763d">per_cpu::PreemptState::softirq_count</a></div><div class="ttdeci">uint32_t softirq_count</div><div class="ttdoc">软中断嵌套深度（预留，当前未使用）</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00030">per_cpu.hpp:30</a></div></div>
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00054">54</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   54</span>                                                 {</div>
+<div class="line"><span class="lineno">   55</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#a5cb58a584790bab52a97c0ff7eff5de3">hardirq_count</a> &gt; 0 || <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#a39110ea442dcf8d27502a380c835763d">softirq_count</a> &gt; 0;</div>
+<div class="line"><span class="lineno">   56</span>  }</div>
+<div class="ttc" id="astructper__cpu_1_1PreemptState_html_a39110ea442dcf8d27502a380c835763d"><div class="ttname"><a href="structper__cpu_1_1PreemptState.html#a39110ea442dcf8d27502a380c835763d">per_cpu::PreemptState::softirq_count</a></div><div class="ttdeci">uint32_t softirq_count</div><div class="ttdoc">软中断嵌套深度（预留，当前未使用）</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00041">per_cpu.hpp:41</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -228,12 +232,12 @@ Public Attributes</h2></td></tr>
 <p>当前是否可被抢占</p>
 <p>仅当不在中断上下文且抢占未被显式禁用时可抢占 </p>
 
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00044">44</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   44</span>                                                 {</div>
-<div class="line"><span class="lineno">   45</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#a5cb58a584790bab52a97c0ff7eff5de3">hardirq_count</a> == 0 &amp;&amp; <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#a39110ea442dcf8d27502a380c835763d">softirq_count</a> == 0 &amp;&amp;</div>
-<div class="line"><span class="lineno">   46</span>           <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#ae03434d7902d20f303cddba9041cef17">preempt_disable_count</a> == 0;</div>
-<div class="line"><span class="lineno">   47</span>  }</div>
-<div class="ttc" id="astructper__cpu_1_1PreemptState_html_ae03434d7902d20f303cddba9041cef17"><div class="ttname"><a href="structper__cpu_1_1PreemptState.html#ae03434d7902d20f303cddba9041cef17">per_cpu::PreemptState::preempt_disable_count</a></div><div class="ttdeci">uint32_t preempt_disable_count</div><div class="ttdoc">显式抢占禁用深度</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00032">per_cpu.hpp:32</a></div></div>
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00063">63</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   63</span>                                                 {</div>
+<div class="line"><span class="lineno">   64</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#a5cb58a584790bab52a97c0ff7eff5de3">hardirq_count</a> == 0 &amp;&amp; <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#a39110ea442dcf8d27502a380c835763d">softirq_count</a> == 0 &amp;&amp;</div>
+<div class="line"><span class="lineno">   65</span>           <a class="code hl_variable" href="structper__cpu_1_1PreemptState.html#ae03434d7902d20f303cddba9041cef17">preempt_disable_count</a> == 0;</div>
+<div class="line"><span class="lineno">   66</span>  }</div>
+<div class="ttc" id="astructper__cpu_1_1PreemptState_html_ae03434d7902d20f303cddba9041cef17"><div class="ttname"><a href="structper__cpu_1_1PreemptState.html#ae03434d7902d20f303cddba9041cef17">per_cpu::PreemptState::preempt_disable_count</a></div><div class="ttdeci">uint32_t preempt_disable_count</div><div class="ttdoc">显式抢占禁用深度</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00043">per_cpu.hpp:43</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -252,8 +256,44 @@ Public Attributes</h2></td></tr>
 
 <p>硬中断嵌套深度（替代原 in_timer_handler 布尔标志） </p>
 
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00028">28</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   28</span>{0};</div>
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00039">39</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   39</span>{0};</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a64fd4fd4c9a9da0a117ca4e13404b803" name="a64fd4fd4c9a9da0a117ca4e13404b803"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64fd4fd4c9a9da0a117ca4e13404b803">&#9670;&#160;</a></span>need_balance</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool per_cpu::PreemptState::need_balance {false}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>延迟负载均衡标志：由 TickUpdate 在中断上下文中设置， 在 TimerHandler 退出硬中断后检查并调用 Balance() </p>
+
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00051">51</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   51</span>{<span class="keyword">false</span>};</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a296adaf8f2bd54e2e33ec01f875f4380" name="a296adaf8f2bd54e2e33ec01f875f4380"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a296adaf8f2bd54e2e33ec01f875f4380">&#9670;&#160;</a></span>need_resched</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool per_cpu::PreemptState::need_resched {false}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>延迟调度标志：由 TickUpdate 在中断上下文中设置， 在 TimerHandler 退出硬中断后检查并调用 Schedule() </p>
+
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00047">47</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   47</span>{<span class="keyword">false</span>};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -271,8 +311,8 @@ Public Attributes</h2></td></tr>
 
 <p>显式抢占禁用深度 </p>
 
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00032">32</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   32</span>{0};</div>
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00043">43</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   43</span>{0};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -290,8 +330,8 @@ Public Attributes</h2></td></tr>
 
 <p>软中断嵌套深度（预留，当前未使用） </p>
 
-<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00030">30</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   30</span>{0};</div>
+<p class="definition">Definition at line <a class="el" href="per__cpu_8hpp_source.html#l00041">41</a> of file <a class="el" href="per__cpu_8hpp_source.html">per_cpu.hpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   41</span>{0};</div>
 </div><!-- fragment -->
 </div>
 </div>

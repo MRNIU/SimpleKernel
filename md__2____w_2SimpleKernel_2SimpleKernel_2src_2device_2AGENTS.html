@@ -92,11 +92,11 @@ $(document).ready(function(){initNavTree('md__2____w_2SimpleKernel_2SimpleKernel
   <div class="headertitle"><div class="title">AGENTS.md — src/device/</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md396"></a> </p>
-<h1><a class="anchor" id="autotoc_md397"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md402"></a> </p>
+<h1><a class="anchor" id="autotoc_md403"></a>
 OVERVIEW</h1>
 <p>Header-only device framework using C++23 concepts and ETL (Embedded Template Library) idioms. FDT-based device enumeration, bus abstraction, driver registry with delegate-based Probe/Remove lifecycle. Three .cpp files: <a class="el" href="device_8cpp.html">device.cpp</a> (init entry point), <a class="el" href="device__manager_8cpp.html">device_manager.cpp</a> (ProbeAll implementation), and <a class="el" href="virtio__driver_8cpp.html">virtio_driver.cpp</a> (VirtIO device-type dispatch).</p>
-<h1><a class="anchor" id="autotoc_md398"></a>
+<h1><a class="anchor" id="autotoc_md404"></a>
 STRUCTURE</h1>
 <div class="fragment"><div class="line">device.cpp              # DeviceInit() — registers buses, drivers, calls ProbeAll()</div>
 <div class="line">device_manager.cpp      # DeviceManager::ProbeAll() and related methods</div>
@@ -125,7 +125,7 @@ STRUCTURE</h1>
 <div class="line">  driver_registry.hpp   # DriverRegistry + mmio_helper::Prepare (MMIO setup helper)</div>
 <div class="line">  device_node.hpp       # DeviceNode, BusType, DeviceType + Bus concept</div>
 <div class="line">  platform_bus.hpp      # PlatformBus — FDT-driven device enumeration</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md399"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md405"></a>
 WHERE TO LOOK</h1>
 <ul>
 <li><b>Adding a driver</b> → Copy <code><a class="el" href="ns16550a__driver_8hpp.html">ns16550a/ns16550a_driver.hpp</a></code> pattern: <code>Probe()</code>, <code>Remove()</code>, <code>GetEntry()</code>, <code>kMatchTable[]</code></li>
@@ -134,7 +134,7 @@ WHERE TO LOOK</h1>
 <li><b>Block devices</b> → <code><a class="el" href="structDeviceNode.html#a7593ddd15beb303f06b198361365de20">DeviceNode::block_device</a></code> field (set by <code><a class="el" href="classVirtioDriver.html#a87cc3f14f78089d301df1837f9df1c34" title="初始化 VirtIO 设备">VirtioDriver::Probe</a></code>); enumerate via <code>DeviceManager::FindDevicesByType(DeviceType::kBlock, ...)</code></li>
 <li><b>Adding a new VirtIO device</b> → Add <code>virtio/device/virtio_xxx.hpp</code>, add a <code>case DeviceId::kXxx</code> to <code><a class="el" href="virtio__driver_8cpp.html">virtio/virtio_driver.cpp</a></code>, no changes to DeviceInit needed.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md400"></a>
+<h1><a class="anchor" id="autotoc_md406"></a>
 CONVENTIONS</h1>
 <ul>
 <li><b>Mostly header-only</b> — <code><a class="el" href="device_8cpp.html">device.cpp</a></code>, <code><a class="el" href="device__manager_8cpp.html">device_manager.cpp</a></code>, and <code><a class="el" href="virtio__driver_8cpp.html">virtio_driver.cpp</a></code> are the .cpp files.</li>
@@ -150,14 +150,14 @@ CONVENTIONS</h1>
 <li>Uses named <code>etl::singleton&lt;T&gt;</code> aliases (e.g. <code>DeviceManagerSingleton::instance()</code>) defined in <code><a class="el" href="kernel_8h.html">kernel.h</a></code></li>
 <li><code>etl::string_view</code> is safe for freestanding code via ETL's own headers (does not pull in <code>&lt;string&gt;</code>). Use <code>const char*</code> with <code><a class="el" href="structCStrLess.html" title="flat_map 中 const char* 键的比较器（使用 kstd::strcmp）。">CStrLess</a></code> comparator for map keys.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md401"></a>
+<h1><a class="anchor" id="autotoc_md407"></a>
 DISCOVERIES / KEY PATTERNS</h1>
 <ul>
 <li><b>ETL Delegates</b>: Built using <code>etl::delegate&lt;Signature&gt;::create&lt;&amp;Class::Method&gt;(instance)</code> or <code>::create&lt;&amp;Class::StaticMethod&gt;()</code>.</li>
 <li><b>Match Priority</b>: <code><a class="el" href="classDriverRegistry.html" title="驱动注册表 — 以 ETL vector 存储 DriverEntry，并附带 flat_map 兼容索引。">DriverRegistry</a></code> uses <code>etl::flat_map</code> for O(log N) lookup; first registered driver for a <code>compatible</code> string wins.</li>
 <li><b>MMIO Access</b>: Always use <code><a class="el" href="structDeviceNode.html" title="单个设备的硬件资源描述。">DeviceNode</a></code> resource accessors or <code><a class="el" href="namespacemmio__helper.html#abef9cac26ccb76a6b4b911f8f1ccae76" title="从节点提取 MMIO base/size 并通过 VirtualMemory 映射该区域。">mmio_helper::Prepare</a></code> for safe MMIO region setup.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md402"></a>
+<h1><a class="anchor" id="autotoc_md408"></a>
 ANTI-PATTERNS</h1>
 <ul>
 <li><b>DO NOT</b> create .cpp files without justification — drivers are header-only by default, but .cpp files are allowed when needed</li>

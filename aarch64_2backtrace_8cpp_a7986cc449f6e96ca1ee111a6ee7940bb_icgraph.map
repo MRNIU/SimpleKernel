@@ -1,7 +1,17 @@
 <map id="backtrace" name="backtrace">
-<area shape="rect" id="Node000001" title=" " alt="" coords="253,5,340,31"/>
-<area shape="rect" id="Node000002" href="$aarch64_2backtrace_8cpp.html#a393a5995bbd64c00f1902a4ae0110847" title="打印调用栈" alt="" coords="108,5,205,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="240,21,206,21,206,15,240,15"/>
-<area shape="rect" id="Node000003" href="$tests_2system__test_2main_8cpp.html#ab85c3edfd2aada0e059dccf8d002924d" title="内核入口" alt="" coords="5,5,60,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="94,21,60,21,60,15,94,15"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="405,80,492,105"/>
+<area shape="rect" id="Node000002" href="$aarch64_2backtrace_8cpp.html#a393a5995bbd64c00f1902a4ae0110847" title="打印调用栈" alt="" coords="246,31,343,56"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="394,78,335,59,336,54,396,73"/>
+<area shape="rect" id="Node000004" href="$aarch64_2backtrace_8cpp.html#a7ec7552af58759281893e893bfaecb2e" title="打印调用栈（raw 版本，绕过日志队列）" alt="" coords="232,104,357,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="392,104,358,110,357,104,392,99"/>
+<area shape="rect" id="Node000003" href="$tests_2system__test_2main_8cpp.html#ab85c3edfd2aada0e059dccf8d002924d" title="内核入口" alt="" coords="67,5,122,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="232,38,122,24,123,19,232,33"/>
+<area shape="rect" id="Node000005" href="$kstd__libcxx_8cpp.html#ac9ea6a9e63fc867f857c3dff70463280" title="libc assert() 失败时调用的底层接口" alt="" coords="43,55,147,80"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="229,103,146,83,148,77,230,98"/>
+<area shape="rect" id="Node000006" href="$classSpinLock.html#a1552c84e7da6f0b350fd4f4ae12a1079" title="获得锁" alt="" coords="35,104,154,129"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="218,119,154,119,154,114,218,114"/>
+<area shape="rect" id="Node000007" href="$classLockGuard.html#ab5b05541962f70a0e42765e1a729a168" title=" " alt="" coords="11,153,179,179"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="230,135,148,156,146,151,229,130"/>
+<area shape="rect" id="Node000008" href="$classLockGuard.html#a9bcdf058788fcc30baf936c8190abe51" title=" " alt="" coords="5,203,184,228"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="268,140,230,167,185,192,151,205,149,200,183,188,227,162,265,136"/>
 </map>

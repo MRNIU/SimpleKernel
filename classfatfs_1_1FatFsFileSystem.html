@@ -1010,7 +1010,7 @@ Here is the caller graph for this function:</div>
 <div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a439c51d3c20702e305e616cf2e0f0210"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a439c51d3c20702e305e616cf2e0f0210">fatfs::FatFsFileSystem::SetBlockDevice</a></div><div class="ttdeci">static auto SetBlockDevice(uint8_t pdrv, vfs::BlockDevice *device) -&gt; void</div><div class="ttdoc">注册块设备（由 Mount 调用，供 diskio.cpp 的 C 回调使用）</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8cpp_source.html#l00078">fatfs.cpp:78</a></div></div>
 <div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a663297b1a6b7ce450ba1c625966b0b50"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a663297b1a6b7ce450ba1c625966b0b50">fatfs::FatFsFileSystem::kRootDirPermissions</a></div><div class="ttdeci">static constexpr uint32_t kRootDirPermissions</div><div class="ttdoc">根目录权限位</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00028">fatfs.hpp:28</a></div></div>
 <div class="ttc" id="aclassfatfs_1_1FatFsFileSystem_html_a81f4cdc6361424f12d4613924d24193d"><div class="ttname"><a href="classfatfs_1_1FatFsFileSystem.html#a81f4cdc6361424f12d4613924d24193d">fatfs::FatFsFileSystem::root_inode_</a></div><div class="ttdeci">vfs::Inode * root_inode_</div><div class="ttdoc">根目录 inode（Mount 时设置）</div><div class="ttdef"><b>Definition</b> <a href="fatfs_8hpp_source.html#l00256">fatfs.hpp:256</a></div></div>
-<div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
+<div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00207">kernel_log.hpp:207</a></div></div>
 <div class="ttc" id="anamespacevfs_html_a343f9844029f8d2a27c7a6d19ce24350a76d424355601791a04e7f55c4276cd87"><div class="ttname"><a href="namespacevfs.html#a343f9844029f8d2a27c7a6d19ce24350a76d424355601791a04e7f55c4276cd87">vfs::FileType::kDirectory</a></div><div class="ttdeci">@ kDirectory</div><div class="ttdoc">目录</div></div>
 <div class="ttc" id="ask__string__test_8cpp_html_a5ad0cad79c46e9a6e2bc4b77ac50e271"><div class="ttname"><a href="sk__string__test_8cpp.html#a5ad0cad79c46e9a6e2bc4b77ac50e271">strncpy</a></div><div class="ttdeci">#define strncpy</div><div class="ttdef"><b>Definition</b> <a href="sk__string__test_8cpp_source.html#l00014">sk_string_test.cpp:14</a></div></div>
 </div><!-- fragment --><div class="dynheader">
@@ -1018,22 +1018,31 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classfatfs_1_1FatFsFileSystem_ac05aa43dff2d10d945924b35257c3fac_cgraph.png" border="0" usemap="#aclassfatfs_1_1FatFsFileSystem_ac05aa43dff2d10d945924b35257c3fac_cgraph" alt=""/></div>
 <map name="aclassfatfs_1_1FatFsFileSystem_ac05aa43dff2d10d945924b35257c3fac_cgraph" id="aclassfatfs_1_1FatFsFileSystem_ac05aa43dff2d10d945924b35257c3fac_cgraph">
-<area shape="rect" title="挂载 FatFS 卷" alt="" coords="5,33,172,73"/>
-<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="220,41,296,66"/>
-<area shape="poly" title=" " alt="" coords="172,51,206,51,206,56,172,56"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="344,41,471,66"/>
-<area shape="poly" title=" " alt="" coords="296,51,331,51,331,56,296,56"/>
-<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="724,15,909,41"/>
-<area shape="poly" title=" " alt="" coords="471,47,710,32,710,37,471,52"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="519,66,676,91"/>
-<area shape="poly" title=" " alt="" coords="471,59,505,64,504,69,471,64"/>
-<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="957,5,1220,45"/>
-<area shape="poly" title=" " alt="" coords="910,24,943,24,943,29,910,30"/>
-<area shape="poly" title=" " alt="" coords="653,63,747,41,749,46,654,68"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="745,67,888,93"/>
-<area shape="poly" title=" " alt="" coords="676,76,731,77,731,82,676,82"/>
-<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1041,70,1136,95"/>
-<area shape="poly" title=" " alt="" coords="888,78,1028,79,1028,85,888,83"/>
+<area shape="rect" title="挂载 FatFS 卷" alt="" coords="5,47,172,87"/>
+<area shape="rect" href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="220,55,296,80"/>
+<area shape="poly" title=" " alt="" coords="172,65,206,65,206,70,172,70"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="344,55,471,80"/>
+<area shape="poly" title=" " alt="" coords="296,65,331,65,331,70,296,70"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="727,5,913,31"/>
+<area shape="poly" title=" " alt="" coords="471,57,713,28,714,33,471,62"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="519,80,676,105"/>
+<area shape="poly" title=" " alt="" coords="471,73,505,78,504,83,471,78"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="964,73,1227,113"/>
+<area shape="poly" title=" " alt="" coords="873,28,917,39,1013,66,1011,71,915,45,872,33"/>
+<area shape="poly" title=" " alt="" coords="626,77,723,39,750,32,751,37,725,45,628,82"/>
+<area shape="rect" href="namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb" title=" " alt="" coords="731,55,909,80"/>
+<area shape="poly" title=" " alt="" coords="676,81,718,76,718,82,677,86"/>
+<area shape="rect" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="734,104,906,129"/>
+<area shape="poly" title=" " alt="" coords="677,98,721,103,720,109,676,104"/>
+<area shape="rect" href="namespacecpu__io.html#aaab46268534006b116de3e112c237f7f" title=" " alt="" coords="724,153,916,179"/>
+<area shape="poly" title=" " alt="" coords="630,103,725,138,755,147,753,152,723,143,628,108"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="749,203,891,228"/>
+<area shape="poly" title=" " alt="" coords="613,104,660,146,691,169,725,189,741,196,739,201,723,194,688,174,657,150,610,108"/>
+<area shape="poly" title=" " alt="" coords="909,73,951,77,950,82,908,78"/>
+<area shape="poly" title=" " alt="" coords="906,107,950,103,951,108,906,112"/>
+<area shape="poly" title=" " alt="" coords="868,151,915,138,1006,114,1007,119,917,143,870,156"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1048,203,1143,228"/>
+<area shape="poly" title=" " alt="" coords="892,213,1034,213,1034,218,892,218"/>
 </map>
 </div>
 <div class="dynheader">

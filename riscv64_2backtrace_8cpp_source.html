@@ -166,17 +166,61 @@ $(document).ready(function(){initNavTree('riscv64_2backtrace_8cpp_source.html','
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  }</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>}</div>
 </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
+<div class="foldopen" id="foldopen00070" data-start="{" data-end="}">
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="riscv64_2backtrace_8cpp.html#a7ec7552af58759281893e893bfaecb2e">   70</a></span><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2backtrace_8cpp.html#a7ec7552af58759281893e893bfaecb2e">RawDumpStack</a>() -&gt; <span class="keywordtype">void</span> {</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  std::array&lt;uint64_t, kMaxFrameCount&gt; buffer{};</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  <span class="keyword">auto</span> num_frames = <a class="code hl_function" href="aarch64_2backtrace_8cpp.html#a7986cc449f6e96ca1ee111a6ee7940bb">backtrace</a>(buffer);</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  <a class="code hl_function" href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e">klog::RawPut</a>(<span class="stringliteral">&quot;\n--- Raw Stack Trace ---\n&quot;</span>);</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  <span class="keywordtype">char</span> line_buf[256];</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  <span class="keywordflow">for</span> (<span class="keyword">auto</span> i = 0; i &lt; num_frames; i++) {</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordtype">bool</span> found = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordflow">for</span> (<span class="keyword">auto</span> symtab : KernelElfSingleton::instance().symtab) {</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>      <span class="keywordflow">if</span> ((ELF64_ST_TYPE(symtab.st_info) == STT_FUNC) &amp;&amp;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>          (buffer[i] &gt;= symtab.st_value) &amp;&amp;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>          (buffer[i] &lt;= symtab.st_value + symtab.st_size)) {</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>        <span class="keyword">auto</span>* <a class="code hl_variable" href="basic__info_8hpp.html#a6a57db0096456f14176cf7e7affa1929">end</a> = etl::format_to_n(</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>            line_buf, <span class="keyword">sizeof</span>(line_buf) - 1, <span class="stringliteral">&quot;  #{} {:#018x} [{}]+{:#x}&quot;</span>, i,</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>            buffer[i],</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>            <span class="keyword">reinterpret_cast&lt;</span><span class="keyword">const </span><span class="keywordtype">char</span>*<span class="keyword">&gt;</span>(</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>                KernelElfSingleton::instance().strtab + symtab.st_name),</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>            buffer[i] - symtab.st_value);</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>        *<a class="code hl_variable" href="basic__info_8hpp.html#a6a57db0096456f14176cf7e7affa1929">end</a> = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>        <a class="code hl_function" href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e">klog::RawPut</a>(line_buf);</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>        <a class="code hl_function" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60">etl_putchar</a>(<span class="charliteral">&#39;\n&#39;</span>);</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>        found = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>      }</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    }</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keywordflow">if</span> (!found) {</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>      <span class="keyword">auto</span>* <a class="code hl_variable" href="basic__info_8hpp.html#a6a57db0096456f14176cf7e7affa1929">end</a> = etl::format_to_n(line_buf, <span class="keyword">sizeof</span>(line_buf) - 1,</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>                                   <span class="stringliteral">&quot;  #{} {:#018x} [???]&quot;</span>, i, buffer[i]);</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>      *<a class="code hl_variable" href="basic__info_8hpp.html#a6a57db0096456f14176cf7e7affa1929">end</a> = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>      <a class="code hl_function" href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e">klog::RawPut</a>(line_buf);</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>      <a class="code hl_function" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60">etl_putchar</a>(<span class="charliteral">&#39;\n&#39;</span>);</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    }</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>  }</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>  <a class="code hl_function" href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e">klog::RawPut</a>(<span class="stringliteral">&quot;--- End Stack Trace ---\n&quot;</span>);</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>}</div>
+</div>
 <div class="ttc" id="aaarch64_2backtrace_8cpp_html_a393a5995bbd64c00f1902a4ae0110847"><div class="ttname"><a href="aarch64_2backtrace_8cpp.html#a393a5995bbd64c00f1902a4ae0110847">DumpStack</a></div><div class="ttdeci">auto DumpStack() -&gt; void</div><div class="ttdoc">打印调用栈</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2backtrace_8cpp_source.html#l00034">backtrace.cpp:34</a></div></div>
 <div class="ttc" id="aaarch64_2backtrace_8cpp_html_a7986cc449f6e96ca1ee111a6ee7940bb"><div class="ttname"><a href="aarch64_2backtrace_8cpp.html#a7986cc449f6e96ca1ee111a6ee7940bb">backtrace</a></div><div class="ttdeci">__always_inline auto backtrace(std::array&lt; uint64_t, kMaxFrameCount &gt; &amp;buffer) -&gt; int</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2backtrace_8cpp_source.html#l00018">backtrace.cpp:18</a></div></div>
+<div class="ttc" id="aaarch64_2backtrace_8cpp_html_a7ec7552af58759281893e893bfaecb2e"><div class="ttname"><a href="aarch64_2backtrace_8cpp.html#a7ec7552af58759281893e893bfaecb2e">RawDumpStack</a></div><div class="ttdeci">auto RawDumpStack() -&gt; void</div><div class="ttdoc">打印调用栈（raw 版本，绕过日志队列）</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2backtrace_8cpp_source.html#l00056">backtrace.cpp:56</a></div></div>
+<div class="ttc" id="aaarch64_2early__console_8cpp_html_a00b66d463088c2b14f7766792ee8bc60"><div class="ttname"><a href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60">etl_putchar</a></div><div class="ttdeci">auto etl_putchar(int c) -&gt; void</div><div class="ttdoc">早期控制台字符输出</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2early__console_8cpp_source.html#l00043">early_console.cpp:43</a></div></div>
 <div class="ttc" id="aarch_8h_html"><div class="ttname"><a href="arch_8h.html">arch.h</a></div></div>
 <div class="ttc" id="abasic__info_8hpp_html"><div class="ttname"><a href="basic__info_8hpp.html">basic_info.hpp</a></div></div>
 <div class="ttc" id="abasic__info_8hpp_html_a4441c495b112f8419dfbf1e0cf2102fb"><div class="ttname"><a href="basic__info_8hpp.html#a4441c495b112f8419dfbf1e0cf2102fb">__etext</a></div><div class="ttdeci">void * __etext[]</div><div class="ttdoc">代码段结束</div><div class="ttdef"><b>Definition</b> <a href="basic__info_8hpp_source.html#l00019">basic_info.hpp:19</a></div></div>
+<div class="ttc" id="abasic__info_8hpp_html_a6a57db0096456f14176cf7e7affa1929"><div class="ttname"><a href="basic__info_8hpp.html#a6a57db0096456f14176cf7e7affa1929">end</a></div><div class="ttdeci">void * end[]</div><div class="ttdoc">内核结束</div><div class="ttdef"><b>Definition</b> <a href="basic__info_8hpp_source.html#l00021">basic_info.hpp:21</a></div></div>
 <div class="ttc" id="abasic__info_8hpp_html_a9c6fbf9a57242794712975337a624b43"><div class="ttname"><a href="basic__info_8hpp.html#a9c6fbf9a57242794712975337a624b43">__executable_start</a></div><div class="ttdeci">void * __executable_start[]</div><div class="ttdef"><b>Definition</b> <a href="basic__info_8hpp_source.html#l00017">basic_info.hpp:17</a></div></div>
 <div class="ttc" id="acpu__io_8h_html"><div class="ttname"><a href="cpu__io_8h.html">cpu_io.h</a></div></div>
 <div class="ttc" id="akernel_8h_html"><div class="ttname"><a href="kernel_8h.html">kernel.h</a></div></div>
 <div class="ttc" id="akernel__elf_8hpp_html"><div class="ttname"><a href="kernel__elf_8hpp.html">kernel_elf.hpp</a></div></div>
 <div class="ttc" id="akernel__log_8hpp_html"><div class="ttname"><a href="kernel__log_8hpp.html">kernel_log.hpp</a></div></div>
-<div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
+<div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00207">kernel_log.hpp:207</a></div></div>
+<div class="ttc" id="anamespaceklog_html_a1f3394a52018d711b32b8c26e8ff429e"><div class="ttname"><a href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e">klog::RawPut</a></div><div class="ttdeci">__always_inline auto RawPut(const char *msg) -&gt; void</div><div class="ttdoc">绕过队列直接输出至串口（用于 panic 路径）</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00218">kernel_log.hpp:218</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

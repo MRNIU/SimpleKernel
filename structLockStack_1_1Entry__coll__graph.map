@@ -1,0 +1,5 @@
+<map id="LockStack::Entry" name="LockStack::Entry">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,533,128,599"/>
+<area shape="rect" id="Node000002" href="$classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）" alt="" coords="11,5,122,471"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="69,471,69,517,64,517,64,471"/>
+</map>

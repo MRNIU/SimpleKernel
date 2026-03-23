@@ -327,34 +327,43 @@ Static Private Attributes</h2></td></tr>
 <div class="ttc" id="aclassPlic_html_a5bae1983a5596af119d947b17b10339b"><div class="ttname"><a href="classPlic.html#a5bae1983a5596af119d947b17b10339b">Plic::SourcePriority</a></div><div class="ttdeci">auto SourcePriority(uint32_t source_id) const -&gt; uint32_t &amp;</div><div class="ttdoc">获取中断源优先级寄存器</div><div class="ttdef"><b>Definition</b> <a href="plic_8cpp_source.html#l00118">plic.cpp:118</a></div></div>
 <div class="ttc" id="aclassPlic_html_a81f982b9566deb66ae68f48dd980563e"><div class="ttname"><a href="classPlic.html#a81f982b9566deb66ae68f48dd980563e">Plic::SetEnableBit</a></div><div class="ttdeci">auto SetEnableBit(uint32_t context_id, uint32_t source_id, bool value) const -&gt; void</div><div class="ttdoc">设置使能位寄存器中指定中断源的状态</div><div class="ttdef"><b>Definition</b> <a href="plic_8cpp_source.html#l00104">plic.cpp:104</a></div></div>
 <div class="ttc" id="aclassPlic_html_af46ed772bd88eddd7f46d18a561a5476"><div class="ttname"><a href="classPlic.html#af46ed772bd88eddd7f46d18a561a5476">Plic::interrupt_handlers_</a></div><div class="ttdeci">static std::array&lt; InterruptDelegate, kInterruptMaxCount &gt; interrupt_handlers_</div><div class="ttdoc">外部中断处理函数数组</div><div class="ttdef"><b>Definition</b> <a href="plic_8h_source.html#l00106">plic.h:106</a></div></div>
-<div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00182">kernel_log.hpp:182</a></div></div>
+<div class="ttc" id="anamespaceklog_html_a1f6b347e95b475341e195f363a9f20a3"><div class="ttname"><a href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3">klog::Info</a></div><div class="ttdeci">auto Info(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 INFO 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00189">kernel_log.hpp:189</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classPlic_a5af803e29ad50b52fbb8e51bcb4dcf36_cgraph.png" border="0" usemap="#aclassPlic_a5af803e29ad50b52fbb8e51bcb4dcf36_cgraph" alt=""/></div>
 <map name="aclassPlic_a5af803e29ad50b52fbb8e51bcb4dcf36_cgraph" id="aclassPlic_a5af803e29ad50b52fbb8e51bcb4dcf36_cgraph">
-<area shape="rect" title="构造函数" alt="" coords="5,115,81,141"/>
-<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="170,41,253,66"/>
-<area shape="poly" title=" " alt="" coords="63,113,128,76,156,66,158,71,130,81,65,117"/>
-<area shape="rect" href="classPlic.html#a54c3cd6e3325dfe97f89bc00c304c42c" title="获取优先级阈值寄存器" alt="" coords="129,90,293,115"/>
-<area shape="poly" title=" " alt="" coords="81,120,115,114,116,120,82,125"/>
-<area shape="rect" href="classPlic.html#a81f982b9566deb66ae68f48dd980563e" title="设置使能位寄存器中指定中断源的状态" alt="" coords="143,139,279,165"/>
-<area shape="poly" title=" " alt="" coords="82,131,130,138,129,143,81,136"/>
-<area shape="rect" href="classPlic.html#a5bae1983a5596af119d947b17b10339b" title="获取中断源优先级寄存器" alt="" coords="139,189,283,214"/>
-<area shape="poly" title=" " alt="" coords="65,138,130,175,148,182,147,187,128,180,62,143"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="341,41,468,66"/>
-<area shape="poly" title=" " alt="" coords="253,51,328,51,328,56,253,56"/>
-<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="721,15,907,41"/>
-<area shape="poly" title=" " alt="" coords="468,47,707,32,708,37,468,52"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="516,66,673,91"/>
-<area shape="poly" title=" " alt="" coords="469,59,503,64,502,69,468,64"/>
-<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="955,5,1217,45"/>
-<area shape="poly" title=" " alt="" coords="907,24,941,24,941,29,907,30"/>
-<area shape="poly" title=" " alt="" coords="650,63,745,41,746,46,651,68"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="743,67,885,93"/>
-<area shape="poly" title=" " alt="" coords="674,76,729,77,729,82,674,82"/>
-<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1039,70,1133,95"/>
-<area shape="poly" title=" " alt="" coords="885,78,1025,79,1025,85,885,83"/>
+<area shape="rect" title="构造函数" alt="" coords="5,129,81,155"/>
+<area shape="rect" href="namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="170,55,253,80"/>
+<area shape="poly" title=" " alt="" coords="62,127,92,108,128,89,156,79,158,84,130,94,95,112,65,131"/>
+<area shape="rect" href="classPlic.html#a54c3cd6e3325dfe97f89bc00c304c42c" title="获取优先级阈值寄存器" alt="" coords="129,104,293,129"/>
+<area shape="poly" title=" " alt="" coords="81,134,115,128,116,134,82,139"/>
+<area shape="rect" href="classPlic.html#a81f982b9566deb66ae68f48dd980563e" title="设置使能位寄存器中指定中断源的状态" alt="" coords="143,153,279,179"/>
+<area shape="poly" title=" " alt="" coords="82,145,130,152,129,157,81,150"/>
+<area shape="rect" href="classPlic.html#a5bae1983a5596af119d947b17b10339b" title="获取中断源优先级寄存器" alt="" coords="139,203,283,228"/>
+<area shape="poly" title=" " alt="" coords="65,152,130,189,148,196,147,201,128,194,62,157"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="341,55,468,80"/>
+<area shape="poly" title=" " alt="" coords="253,65,328,65,328,70,253,70"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="725,5,910,31"/>
+<area shape="poly" title=" " alt="" coords="468,57,711,28,711,33,469,62"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="516,80,673,105"/>
+<area shape="poly" title=" " alt="" coords="469,73,503,78,502,83,468,78"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="961,73,1224,113"/>
+<area shape="poly" title=" " alt="" coords="871,28,914,39,1010,66,1009,71,913,45,869,33"/>
+<area shape="poly" title=" " alt="" coords="623,77,720,39,747,32,748,37,722,45,625,82"/>
+<area shape="rect" href="namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb" title=" " alt="" coords="729,55,906,80"/>
+<area shape="poly" title=" " alt="" coords="673,81,715,76,716,82,674,86"/>
+<area shape="rect" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="731,104,903,129"/>
+<area shape="poly" title=" " alt="" coords="674,98,718,103,717,109,673,104"/>
+<area shape="rect" href="namespacecpu__io.html#aaab46268534006b116de3e112c237f7f" title=" " alt="" coords="721,153,913,179"/>
+<area shape="poly" title=" " alt="" coords="628,103,722,138,752,147,751,152,720,143,626,108"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="746,203,889,228"/>
+<area shape="poly" title=" " alt="" coords="610,104,657,146,689,169,723,189,738,196,736,201,720,194,686,174,654,150,607,108"/>
+<area shape="poly" title=" " alt="" coords="906,73,948,77,947,82,906,78"/>
+<area shape="poly" title=" " alt="" coords="903,107,948,103,948,108,904,112"/>
+<area shape="poly" title=" " alt="" coords="866,151,913,138,1003,114,1005,119,914,143,867,156"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1045,203,1140,228"/>
+<area shape="poly" title=" " alt="" coords="889,213,1032,213,1032,218,889,218"/>
 </map>
 </div>
 

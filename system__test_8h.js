@@ -32,7 +32,6 @@ var system__test_8h =
     [ "fatfs_test", "system__test_8h.html#afb81d7818811d88b500d6bef12c7128a", null ],
     [ "fifo_scheduler_test", "system__test_8h.html#ab1f7bcb3ad9778f98e5a6eb91aa56f2b", null ],
     [ "fork_test", "system__test_8h.html#a6441b65735e43afbd15b79e4dad5e39b", null ],
-    [ "idle_scheduler_test", "system__test_8h.html#a124151818611b6698e2b092e2aed421a", null ],
     [ "interrupt_test", "system__test_8h.html#a16953e19a2974c8249f2109a4522237e", null ],
     [ "ipi_test", "system__test_8h.html#a4a15c8cebecd889c9b6bfdb8d783a1fe", null ],
     [ "kernel_task_test", "system__test_8h.html#ae49d3755a7181bd34a1c87abe708b4da", null ],

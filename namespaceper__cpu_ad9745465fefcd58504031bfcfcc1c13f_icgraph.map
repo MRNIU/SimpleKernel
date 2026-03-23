@@ -1,14 +1,20 @@
 <map id="per_cpu::GetCurrentCore" name="per_cpu::GetCurrentCore">
-<area shape="rect" id="Node000001" title="获取当前核心的 PerCpu 数据" alt="" coords="492,104,675,129"/>
+<area shape="rect" id="Node000001" title="获取当前核心的 PerCpu 数据" alt="" coords="492,179,675,204"/>
 <area shape="rect" id="Node000002" href="$classTaskManager.html#a370fcd225b5795a06fd76ad7c39f6d08" title="获取当前任务" alt="" coords="228,5,444,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="550,99,501,71,443,44,406,33,408,28,445,40,503,66,553,95"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="565,169,515,105,481,72,443,44,417,33,420,28,445,40,485,68,519,102,569,165"/>
 <area shape="rect" id="Node000003" href="$classTaskManager.html#a8bbd1157a162051ae2c2d7b193d98d55" title="初始化 per cpu 的调度数据，创建 idle 线程" alt="" coords="229,55,443,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="505,104,400,83,401,77,506,99"/>
-<area shape="rect" id="Node000004" href="$tests_2system__test_2main_8cpp.html#ab85c3edfd2aada0e059dccf8d002924d" title="内核入口" alt="" coords="309,104,363,129"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="478,119,363,119,363,114,478,114"/>
-<area shape="rect" id="Node000005" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="核心调度函数 — 选择下一个任务并执行上下文切换" alt="" coords="5,180,180,205"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="498,134,444,143,180,183,180,178,444,138,497,129"/>
-<area shape="rect" id="Node000006" href="$arch_8cpp.html#ad982abdb7f3d8729656c6b5422b2e61d" title=" " alt="" coords="294,205,378,231"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="549,138,501,164,445,188,379,210,378,205,443,184,498,159,547,134"/>
-<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="280,215,180,204,180,199,281,210"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="557,172,506,131,475,111,443,94,411,83,413,78,445,89,478,106,509,127,560,167"/>
+<area shape="rect" id="Node000004" href="$classSpinLock.html#a1552c84e7da6f0b350fd4f4ae12a1079" title="获得锁" alt="" coords="277,104,395,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="537,176,443,143,395,131,396,126,445,138,539,171"/>
+<area shape="rect" id="Node000005" href="$tests_2system__test_2main_8cpp.html#ab85c3edfd2aada0e059dccf8d002924d" title="内核入口" alt="" coords="309,153,363,179"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="478,183,363,171,364,166,479,178"/>
+<area shape="rect" id="Node000006" href="$classTaskManager.html#a31b16f7a44d9b66654bdf52bba94be9a" title="核心调度函数 — 选择下一个任务并执行上下文切换" alt="" coords="5,229,180,255"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="479,205,181,236,180,230,478,199"/>
+<area shape="rect" id="Node000007" href="$arch_8cpp.html#ad982abdb7f3d8729656c6b5422b2e61d" title=" " alt="" coords="294,255,378,280"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="531,211,445,238,379,258,378,253,443,233,529,206"/>
+<area shape="rect" id="Node000008" href="$classTaskManager.html#ab84b3ad25407358299166c2443cd1719" title="更新系统 tick" alt="" coords="241,304,431,329"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="560,215,509,255,445,294,410,306,408,301,443,289,506,251,557,211"/>
+<area shape="rect" id="Node000009" href="$classSpinLock.html#aef0f49fb04aa9d32bb17158788ce8cd3" title="释放锁" alt="" coords="268,353,404,379"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="569,217,519,281,485,314,445,343,406,359,404,354,443,338,481,310,515,277,564,214"/>
+<area shape="poly" id="edge7_Node000007_Node000006" title=" " alt="" coords="280,264,180,254,180,248,281,259"/>
 </map>

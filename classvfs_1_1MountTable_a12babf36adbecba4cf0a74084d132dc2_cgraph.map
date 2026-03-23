@@ -1,24 +1,33 @@
 <map id="vfs::MountTable::Unmount" name="vfs::MountTable::Unmount">
-<area shape="rect" id="Node000001" title="卸载指定路径的文件系统" alt="" coords="5,90,199,115"/>
-<area shape="rect" id="Node000002" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="301,41,383,66"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,87,287,62,288,67,165,93"/>
-<area shape="rect" id="Node000009" href="$namespacevfs.html#a717ddd37ea8d1fd42d4e21941bd03dc4" title=" " alt="" coords="269,90,415,115"/>
-<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="199,100,255,100,255,105,199,105"/>
-<area shape="rect" id="Node000011" href="$classvfs_1_1FileSystem.html#a6c29613ea81de1fcfcc18c6e7c5c64c3" title="卸载文件系统" alt="" coords="247,139,437,165"/>
-<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="165,113,267,134,266,139,164,118"/>
-<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="486,41,613,66"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="384,51,472,51,472,56,384,56"/>
-<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="867,15,1052,41"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="613,47,853,32,853,37,613,52"/>
-<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="661,66,819,91"/>
-<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="613,59,648,64,648,69,612,64"/>
-<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1100,5,1363,45"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="1052,24,1086,24,1086,29,1052,30"/>
-<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="795,63,890,41,891,46,797,68"/>
-<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="888,67,1031,93"/>
-<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="819,76,874,77,874,82,819,82"/>
-<area shape="rect" id="Node000008" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1184,70,1279,95"/>
-<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="1031,78,1171,79,1171,85,1031,83"/>
-<area shape="rect" id="Node000010" href="$namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="485,90,613,115"/>
-<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="415,100,472,100,472,105,415,105"/>
+<area shape="rect" id="Node000001" title="卸载指定路径的文件系统" alt="" coords="5,97,199,123"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="301,48,383,73"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,95,287,69,288,74,165,100"/>
+<area shape="rect" id="Node000012" href="$namespacevfs.html#a717ddd37ea8d1fd42d4e21941bd03dc4" title=" " alt="" coords="269,97,415,123"/>
+<area shape="poly" id="edge15_Node000001_Node000012" title=" " alt="" coords="199,107,255,107,255,113,199,113"/>
+<area shape="rect" id="Node000014" href="$classvfs_1_1FileSystem.html#a6c29613ea81de1fcfcc18c6e7c5c64c3" title="卸载文件系统" alt="" coords="247,147,437,172"/>
+<area shape="poly" id="edge17_Node000001_Node000014" title=" " alt="" coords="165,120,267,141,266,146,164,125"/>
+<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="486,48,613,73"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="384,58,472,58,472,63,384,63"/>
+<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="870,5,1055,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="613,52,856,26,856,32,613,57"/>
+<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="661,80,819,105"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="613,69,651,75,650,80,612,74"/>
+<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1107,73,1369,113"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="1016,28,1059,39,1156,66,1154,71,1058,45,1014,33"/>
+<area shape="poly" id="edge10_Node000006_Node000004" title=" " alt="" coords="769,77,866,39,892,32,894,37,868,45,771,82"/>
+<area shape="rect" id="Node000007" href="$namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb" title=" " alt="" coords="874,55,1051,80"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="819,81,860,76,861,82,819,86"/>
+<area shape="rect" id="Node000008" href="$namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="877,104,1049,129"/>
+<area shape="poly" id="edge8_Node000006_Node000008" title=" " alt="" coords="819,98,863,103,863,109,819,104"/>
+<area shape="rect" id="Node000009" href="$namespacecpu__io.html#aaab46268534006b116de3e112c237f7f" title=" " alt="" coords="867,153,1059,179"/>
+<area shape="poly" id="edge11_Node000006_Node000009" title=" " alt="" coords="772,103,868,139,894,147,892,152,866,145,770,108"/>
+<area shape="rect" id="Node000010" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="891,203,1034,228"/>
+<area shape="poly" id="edge13_Node000006_Node000010" title=" " alt="" coords="756,104,803,146,834,169,868,189,884,196,882,201,865,194,831,174,799,150,752,108"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="1052,73,1093,77,1093,82,1051,78"/>
+<area shape="poly" id="edge9_Node000008_Node000005" title=" " alt="" coords="1049,107,1093,103,1093,108,1049,112"/>
+<area shape="poly" id="edge12_Node000009_Node000005" title=" " alt="" coords="1014,151,1058,139,1152,114,1154,119,1059,145,1016,156"/>
+<area shape="rect" id="Node000011" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1191,203,1285,228"/>
+<area shape="poly" id="edge14_Node000010_Node000011" title=" " alt="" coords="1034,213,1177,213,1177,218,1034,218"/>
+<area shape="rect" id="Node000013" href="$namespacevfs.html#aa5aeb25168763769b1d16de4f480c55a" title=" " alt="" coords="485,97,613,123"/>
+<area shape="poly" id="edge16_Node000012_Node000013" title=" " alt="" coords="415,107,472,107,472,113,415,113"/>
 </map>

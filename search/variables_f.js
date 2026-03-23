@@ -9,5 +9,7 @@ var searchData=
   ['open_5fcount_5f_6',['open_count_',['../classfilesystem_1_1FileDescriptorTable.html#a03d5fe13a56abdf409d0acb7d8155ec8',1,'filesystem::FileDescriptorTable']]],
   ['ops_7',['ops',['../structvfs_1_1Inode.html#a8a472b08c223fdcae8b5105747298007',1,'vfs::Inode::ops'],['../structvfs_1_1File.html#aafe68cb95bce2b43b7b3f730707d13e6',1,'vfs::File::ops']]],
   ['opt_5fio_5fsize_8',['opt_io_size',['../structvirtio_1_1blk_1_1BlkConfig.html#a7f9e35a4a78845fc5bfb1bb3a78c3b99',1,'virtio::blk::BlkConfig']]],
-  ['owner_5f_9',['owner_',['../classMutex.html#a33b4def5d3e4788c850e8594f92c07c7',1,'Mutex']]]
+  ['owner_5f_9',['owner_',['../classMutex.html#a33b4def5d3e4788c850e8594f92c07c7',1,'Mutex']]],
+  ['owner_5fcore_5f_10',['owner_core_',['../classSpinLock.html#a954b278262d0c2812c6a8d7244f82eca',1,'SpinLock']]],
+  ['owns_5fresources_11',['owns_resources',['../structTaskControlBlock.html#a5d0187b6376a08190de1c9849fa1b550',1,'TaskControlBlock']]]
 ];

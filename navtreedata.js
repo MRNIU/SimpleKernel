@@ -359,190 +359,186 @@ var NAVTREE =
       [ "构建与运行", "md_docker.html#autotoc_md270", null ]
     ] ],
     [ "Git Commit 规范", "md_git__commit.html", null ],
-    [ "Scheduler Design: Unified Preemption and Lock Handoff", "md_superpowers_2specs_22026-03-22-scheduler-design.html", [
-      [ "1. Overview", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md273", null ],
-      [ "2. Goals", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md274", null ],
-      [ "3. Architecture", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md275", [
-        [ "3.1 <tt>PreemptCount</tt> Structure", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md276", null ],
-        [ "3.2 Helpers and Invariants", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md277", null ]
+    [ "Linux Scheduler Internals Comparative Analysis Implementation Plan", "md_superpowers_2plans_22026-03-23-linux-scheduler-comparison-execution.html", null ],
+    [ "Design Spec: SimpleKernel vs. Linux Scheduler Comparative Analysis", "md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html", [
+      [ "1. Overview", "md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html#autotoc_md282", null ],
+      [ "2. Research Targets", "md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html#autotoc_md283", [
+        [ "2.1 Scheduling & Locking", "md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html#autotoc_md284", null ],
+        [ "2.2 Task Lifecycle & Lookup", "md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html#autotoc_md285", null ],
+        [ "2.3 Signal Delivery from IRQ", "md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html#autotoc_md286", null ],
+        [ "2.4 Load Balancing Locking", "md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html#autotoc_md287", null ]
       ] ],
-      [ "4. Context Switch Mechanism", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md278", [
-        [ "4.1 Lock Handoff Protocol", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md279", null ],
-        [ "4.2 Deferred Preemption", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md280", null ]
-      ] ],
-      [ "5. Implementation Details", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md281", [
-        [ "5.1 RAII Guards", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md282", null ],
-        [ "5.2 Header Updates", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md283", null ]
-      ] ],
-      [ "6. Testing Strategy", "md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md284", null ]
+      [ "3. Comparison Format", "md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html#autotoc_md288", null ],
+      [ "4. Technical Constraints", "md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html#autotoc_md289", null ],
+      [ "5. Success Criteria", "md_superpowers_2specs_22026-03-23-linux-scheduler-comparison-design.html#autotoc_md290", null ]
     ] ],
     [ "README", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html", [
-      [ "SimpleKernel", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md285", [
-        [ "📖 目录", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md286", null ],
-        [ "✨ 项目简介", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md287", [
-          [ "🌟 核心亮点", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md288", null ]
+      [ "SimpleKernel", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md291", [
+        [ "📖 目录", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md292", null ],
+        [ "✨ 项目简介", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md293", [
+          [ "🌟 核心亮点", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md294", null ]
         ] ],
-        [ "🤖 面向 AI 的设计理念", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md289", [
-          [ "为什么要\"面向 AI\"？", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md290", null ],
-          [ "核心工作流", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md291", [
-            [ "1️⃣ 阅读接口，理解契约", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md292", null ],
-            [ "2️⃣ 让 AI 实现", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md293", null ],
-            [ "3️⃣ 测试验证", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md294", null ],
-            [ "4️⃣ 对照参考实现", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md295", null ]
+        [ "🤖 面向 AI 的设计理念", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md295", [
+          [ "为什么要\"面向 AI\"？", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md296", null ],
+          [ "核心工作流", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md297", [
+            [ "1️⃣ 阅读接口，理解契约", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md298", null ],
+            [ "2️⃣ 让 AI 实现", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md299", null ],
+            [ "3️⃣ 测试验证", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md300", null ],
+            [ "4️⃣ 对照参考实现", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md301", null ]
           ] ],
-          [ "与 AI 工具的结合方式", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md296", null ]
+          [ "与 AI 工具的结合方式", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md302", null ]
         ] ],
-        [ "🏛️ 接口体系总览", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md297", [
-          [ "关键接口文件", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md298", null ]
+        [ "🏛️ 接口体系总览", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md303", [
+          [ "关键接口文件", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md304", null ]
         ] ],
-        [ "🏗️ 支持架构", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md299", null ],
-        [ "🚀 快速开始", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md300", [
-          [ "📋 系统要求", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md301", null ],
-          [ "🛠️ 环境搭建", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md302", null ],
-          [ "⚡ 编译与运行", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md303", null ],
-          [ "🎯 AI 辅助开发工作流", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md304", null ]
+        [ "🏗️ 支持架构", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md305", null ],
+        [ "🚀 快速开始", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md306", [
+          [ "📋 系统要求", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md307", null ],
+          [ "🛠️ 环境搭建", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md308", null ],
+          [ "⚡ 编译与运行", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md309", null ],
+          [ "🎯 AI 辅助开发工作流", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md310", null ]
         ] ],
-        [ "📂 项目结构", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md305", null ],
-        [ "🎯 学习路线", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md306", [
-          [ "阶段 1：基础设施（Boot）", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md307", null ],
-          [ "阶段 2：中断系统（Interrupt）", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md308", null ],
-          [ "阶段 3：内存管理（Memory）", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md309", null ],
-          [ "阶段 4：任务管理（Thread/Task）", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md310", null ],
-          [ "阶段 5：系统调用（Syscall）", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md311", null ]
+        [ "📂 项目结构", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md311", null ],
+        [ "🎯 学习路线", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md312", [
+          [ "阶段 1：基础设施（Boot）", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md313", null ],
+          [ "阶段 2：中断系统（Interrupt）", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md314", null ],
+          [ "阶段 3：内存管理（Memory）", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md315", null ],
+          [ "阶段 4：任务管理（Thread/Task）", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md316", null ],
+          [ "阶段 5：系统调用（Syscall）", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md317", null ]
         ] ],
-        [ "📦 第三方依赖", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md312", null ],
-        [ "📝 开发指南", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md313", [
-          [ "🎨 代码风格", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md314", null ],
-          [ "命名约定", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md315", null ],
-          [ "📋 Git Commit 规范", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md316", null ],
-          [ "📚 文档", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md317", null ]
+        [ "📦 第三方依赖", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md318", null ],
+        [ "📝 开发指南", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md319", [
+          [ "🎨 代码风格", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md320", null ],
+          [ "命名约定", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md321", null ],
+          [ "📋 Git Commit 规范", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md322", null ],
+          [ "📚 文档", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md323", null ]
         ] ],
-        [ "🤝 贡献指南", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md318", [
-          [ "🎯 贡献方式", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md319", null ],
-          [ "🔧 代码贡献流程", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md320", null ]
+        [ "🤝 贡献指南", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md324", [
+          [ "🎯 贡献方式", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md325", null ],
+          [ "🔧 代码贡献流程", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md326", null ]
         ] ],
-        [ "📄 许可证", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md321", null ]
+        [ "📄 许可证", "md__2____w_2SimpleKernel_2SimpleKernel_2README.html#autotoc_md327", null ]
       ] ]
     ] ],
     [ "README_ENG", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html", [
-      [ "SimpleKernel", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md323", [
-        [ "📖 Table of Contents", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md324", null ],
-        [ "✨ Project Overview", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md325", [
-          [ "🌟 Core Highlights", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md326", null ]
+      [ "SimpleKernel", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md329", [
+        [ "📖 Table of Contents", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md330", null ],
+        [ "✨ Project Overview", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md331", [
+          [ "🌟 Core Highlights", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md332", null ]
         ] ],
-        [ "🤖 AI-Oriented Design Philosophy", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md327", [
-          [ "Why \"AI-Oriented\"?", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md328", null ],
-          [ "Core Workflow", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md329", [
-            [ "1️⃣ Read Interface, Understand Contract", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md330", null ],
-            [ "2️⃣ Let AI Implement", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md331", null ],
-            [ "3️⃣ Test and Verify", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md332", null ],
-            [ "4️⃣ Compare with Reference Implementation", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md333", null ]
+        [ "🤖 AI-Oriented Design Philosophy", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md333", [
+          [ "Why \"AI-Oriented\"?", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md334", null ],
+          [ "Core Workflow", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md335", [
+            [ "1️⃣ Read Interface, Understand Contract", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md336", null ],
+            [ "2️⃣ Let AI Implement", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md337", null ],
+            [ "3️⃣ Test and Verify", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md338", null ],
+            [ "4️⃣ Compare with Reference Implementation", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md339", null ]
           ] ],
-          [ "Integration with AI Tools", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md334", null ]
+          [ "Integration with AI Tools", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md340", null ]
         ] ],
-        [ "🏛️ Interface Architecture Overview", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md335", [
-          [ "Key Interface Files", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md336", null ]
+        [ "🏛️ Interface Architecture Overview", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md341", [
+          [ "Key Interface Files", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md342", null ]
         ] ],
-        [ "🏗️ Supported Architectures", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md337", null ],
-        [ "🚀 Quick Start", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md338", [
-          [ "📋 System Requirements", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md339", null ],
-          [ "🛠️ Environment Setup", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md340", null ],
-          [ "⚡ Build and Run", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md341", null ],
-          [ "🎯 AI-Assisted Development Workflow", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md342", null ]
+        [ "🏗️ Supported Architectures", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md343", null ],
+        [ "🚀 Quick Start", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md344", [
+          [ "📋 System Requirements", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md345", null ],
+          [ "🛠️ Environment Setup", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md346", null ],
+          [ "⚡ Build and Run", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md347", null ],
+          [ "🎯 AI-Assisted Development Workflow", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md348", null ]
         ] ],
-        [ "📂 Project Structure", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md343", null ],
-        [ "🎯 Learning Path", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md344", [
-          [ "Phase 1: Infrastructure (Boot)", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md345", null ],
-          [ "Phase 2: Interrupt System", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md346", null ],
-          [ "Phase 3: Memory Management", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md347", null ],
-          [ "Phase 4: Task Management (Thread/Task)", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md348", null ],
-          [ "Phase 5: System Calls", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md349", null ]
+        [ "📂 Project Structure", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md349", null ],
+        [ "🎯 Learning Path", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md350", [
+          [ "Phase 1: Infrastructure (Boot)", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md351", null ],
+          [ "Phase 2: Interrupt System", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md352", null ],
+          [ "Phase 3: Memory Management", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md353", null ],
+          [ "Phase 4: Task Management (Thread/Task)", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md354", null ],
+          [ "Phase 5: System Calls", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md355", null ]
         ] ],
-        [ "📦 Third-Party Dependencies", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md350", null ],
-        [ "📝 Development Guide", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md351", [
-          [ "🎨 Code Style", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md352", null ],
-          [ "Naming Conventions", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md353", null ],
-          [ "📋 Git Commit Convention", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md354", null ],
-          [ "📚 Documentation", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md355", null ]
+        [ "📦 Third-Party Dependencies", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md356", null ],
+        [ "📝 Development Guide", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md357", [
+          [ "🎨 Code Style", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md358", null ],
+          [ "Naming Conventions", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md359", null ],
+          [ "📋 Git Commit Convention", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md360", null ],
+          [ "📚 Documentation", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md361", null ]
         ] ],
-        [ "🤝 Contributing", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md356", [
-          [ "🎯 Ways to Contribute", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md357", null ],
-          [ "🔧 Code Contribution Workflow", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md358", null ]
+        [ "🤝 Contributing", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md362", [
+          [ "🎯 Ways to Contribute", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md363", null ],
+          [ "🔧 Code Contribution Workflow", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md364", null ]
         ] ],
-        [ "📄 License", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md359", null ]
+        [ "📄 License", "md__2____w_2SimpleKernel_2SimpleKernel_2README__ENG.html#autotoc_md365", null ]
       ] ]
     ] ],
     [ "GIC (Generic Interrupt Controller)", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html", [
-      [ "功能特性", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md362", null ],
-      [ "类接口", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md363", [
-        [ "构造函数", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md364", null ],
-        [ "主要方法", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md365", null ],
-        [ "Distributor (GICD) 接口", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md366", null ],
-        [ "Redistributor (GICR) 接口", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md367", null ]
+      [ "功能特性", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md368", null ],
+      [ "类接口", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md369", [
+        [ "构造函数", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md370", null ],
+        [ "主要方法", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md371", null ],
+        [ "Distributor (GICD) 接口", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md372", null ],
+        [ "Redistributor (GICR) 接口", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md373", null ]
       ] ],
-      [ "使用示例", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md368", null ],
-      [ "参考文档", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md369", null ],
-      [ "设备树配置示例", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md370", null ]
+      [ "使用示例", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md374", null ],
+      [ "参考文档", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md375", null ],
+      [ "设备树配置示例", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2aarch64_2gic_2README.html#autotoc_md376", null ]
     ] ],
     [ "AGENTS.md — src/arch/", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html", [
-      [ "OVERVIEW", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md372", null ],
-      [ "STRUCTURE", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md373", null ],
-      [ "WHERE TO LOOK", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md374", null ],
-      [ "CONVENTIONS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md375", null ],
-      [ "ANTI-PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md376", null ],
-      [ "NOTES", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md377", null ]
+      [ "OVERVIEW", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md378", null ],
+      [ "STRUCTURE", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md379", null ],
+      [ "WHERE TO LOOK", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md380", null ],
+      [ "CONVENTIONS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md381", null ],
+      [ "ANTI-PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md382", null ],
+      [ "NOTES", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2AGENTS.html#autotoc_md383", null ]
     ] ],
     [ "arch", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html", [
-      [ "目录结构", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md379", null ],
-      [ "核心接口", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md380", [
-        [ "arch.h", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md381", null ]
+      [ "目录结构", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md385", null ],
+      [ "核心接口", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md386", [
+        [ "arch.h", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md387", null ]
       ] ],
-      [ "各架构实现", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md382", [
-        [ "通用功能", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md383", null ],
-        [ "架构特定功能", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md384", [
-          [ "aarch64", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md385", null ],
-          [ "riscv64", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md386", null ]
+      [ "各架构实现", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md388", [
+        [ "通用功能", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md389", null ],
+        [ "架构特定功能", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md390", [
+          [ "aarch64", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md391", null ],
+          [ "riscv64", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md392", null ]
         ] ]
       ] ],
-      [ "编译配置", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md387", null ],
-      [ "多核支持", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md388", null ],
-      [ "调试支持", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md389", null ]
+      [ "编译配置", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md393", null ],
+      [ "多核支持", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md394", null ],
+      [ "调试支持", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2README.html#autotoc_md395", null ]
     ] ],
     [ "Platform-Level Interrupt Controller (PLIC)", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html", [
-      [ "特性", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md391", null ],
-      [ "类接口", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md392", null ],
-      [ "使用示例", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md393", null ],
-      [ "设备树配置", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md394", null ],
-      [ "参考文档", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md395", null ]
+      [ "特性", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md397", null ],
+      [ "类接口", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md398", null ],
+      [ "使用示例", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md399", null ],
+      [ "设备树配置", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md400", null ],
+      [ "参考文档", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2arch_2riscv64_2plic_2README.html#autotoc_md401", null ]
     ] ],
     [ "AGENTS.md — src/device/", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html", [
-      [ "OVERVIEW", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md397", null ],
-      [ "STRUCTURE", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md398", null ],
-      [ "WHERE TO LOOK", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md399", null ],
-      [ "CONVENTIONS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md400", null ],
-      [ "DISCOVERIES / KEY PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md401", null ],
-      [ "ANTI-PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md402", null ]
+      [ "OVERVIEW", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md403", null ],
+      [ "STRUCTURE", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md404", null ],
+      [ "WHERE TO LOOK", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md405", null ],
+      [ "CONVENTIONS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md406", null ],
+      [ "DISCOVERIES / KEY PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md407", null ],
+      [ "ANTI-PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2device_2AGENTS.html#autotoc_md408", null ]
     ] ],
     [ "AGENTS.md — src/filesystem/", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html", [
-      [ "OVERVIEW", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md404", null ],
-      [ "STRUCTURE", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md405", null ],
-      [ "WHERE TO LOOK", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md406", null ],
-      [ "CONVENTIONS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md407", null ],
-      [ "ANTI-PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md408", null ]
+      [ "OVERVIEW", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md410", null ],
+      [ "STRUCTURE", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md411", null ],
+      [ "WHERE TO LOOK", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md412", null ],
+      [ "CONVENTIONS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md413", null ],
+      [ "ANTI-PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2filesystem_2AGENTS.html#autotoc_md414", null ]
     ] ],
     [ "AGENTS.md — src/task/", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html", [
-      [ "OVERVIEW", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md410", null ],
-      [ "STRUCTURE", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md411", null ],
-      [ "WHERE TO LOOK", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md412", null ],
-      [ "CONVENTIONS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md413", null ],
-      [ "ANTI-PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md414", null ]
+      [ "OVERVIEW", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md416", null ],
+      [ "STRUCTURE", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md417", null ],
+      [ "WHERE TO LOOK", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md418", null ],
+      [ "CONVENTIONS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md419", null ],
+      [ "ANTI-PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2src_2task_2AGENTS.html#autotoc_md420", null ]
     ] ],
     [ "AGENTS.md — tests/", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html", [
-      [ "OVERVIEW", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html#autotoc_md416", null ],
-      [ "STRUCTURE", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html#autotoc_md417", null ],
-      [ "WHERE TO LOOK", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html#autotoc_md418", null ],
-      [ "CONVENTIONS", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html#autotoc_md419", null ],
-      [ "ANTI-PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html#autotoc_md420", null ]
+      [ "OVERVIEW", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html#autotoc_md422", null ],
+      [ "STRUCTURE", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html#autotoc_md423", null ],
+      [ "WHERE TO LOOK", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html#autotoc_md424", null ],
+      [ "CONVENTIONS", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html#autotoc_md425", null ],
+      [ "ANTI-PATTERNS", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2AGENTS.html#autotoc_md426", null ]
     ] ],
     [ "aarch64_minimal", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2integration__test_2aarch64__minimal_2README.html", null ],
     [ "opensbi_test", "md__2____w_2SimpleKernel_2SimpleKernel_2tests_2integration__test_2opensbi__test_2README.html", null ],
@@ -591,26 +587,26 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "aarch64_2arch__main_8cpp.html",
-"classGic_1_1Gicd.html#a74ac52e221ab2cf24e54e3ff5857de5c",
-"classLockGuard.html#a9bcdf058788fcc30baf936c8190abe51",
-"classTaskManager.html#ad2fdc9ffa97ac49ce08133d7ce0728bb",
-"classfilesystem_1_1FileDescriptorTable.html#ae9812d22e765fc7b9b13eb343480d5ef",
-"classtest__env_1_1TestEnvironmentState.html#a26906d7b9c8f64bcd556c325f1232582",
-"classvirtio_1_1MmioTransport.html#a10fae98798be13b77da6b2c395fe182fadbe41578e329b9879feb3f7335a4225c",
-"classvirtio_1_1Transport.html#a80f4a86346e014e67dd103ef80efcd02",
-"defs_8h.html#a89679bb4194647b213044dde2d436baeac6f32b96e946cd65174ad2121214366b",
-"ffconf_8h.html#a81c59406fe9df657bfb6d75e409da207",
-"kernel__fdt__test_8cpp.html#a8fe016514d6e87482fc37e6442a052eb",
-"md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md170",
-"md_superpowers_2specs_22026-03-22-scheduler-design.html#autotoc_md281",
-"namespacevfs.html#acec885fcabeaba10d159e2634911dc39",
-"signal_8hpp.html#a83a05e33f5716123a228b7512e3f43df",
-"structBasicInfo.html#a0948f05fbea22eae3fd445ee206afffb",
-"structTaskControlBlock_1_1SchedInfo.html#a372bec2a94e4ec1783bcf80d2b42e43b",
-"structcpu__io_1_1TrapContext.html",
-"structvirtio_1_1SplitVirtqueue_1_1Avail.html#a758117608f07d7a3bd555155c806e29d",
-"system__test_8h.html#ae49d3755a7181bd34a1c87abe708b4da",
-"vfs__types_8hpp.html#a343f9844029f8d2a27c7a6d19ce24350"
+"classGic_1_1Gicd.html#a61eb43813d24d53e810ccf7b3c1dcb15",
+"classMockFs.html#a296525a9f8355294a3061e13a21ff517",
+"classTaskTestHarness.html#abd23e1097c83263824a62f66a024a900",
+"classns16550a_1_1Ns16550a.html#a1cfe1ad96f7ea62aebf745078661506a",
+"classtest__env_1_1TestEnvironmentState.html#a427f09355ea5c4df766b7f03945e905a",
+"classvirtio_1_1MmioTransport.html#a10fae98798be13b77da6b2c395fe182faff2d9efcce55ac3fed44952d7322433c",
+"classvirtio_1_1VirtqueueBase.html",
+"defs_8h.html#afb39ef4b5e21152457db755c0d6f8fb2a234a24059eb3cf273ed7d8eba37ae315",
+"ffconf_8h.html#abd750099aa8f8e7afbccf96fcdf059f7",
+"kernel__log_8hpp.html#a1f6b347e95b475341e195f363a9f20a3",
+"md_3___xE4_xB8_xAD_xE6_x96_xAD.html#autotoc_md185",
+"memory__test_8cpp.html#a9c36d0fe3ec4675cbffdc9b52f5fb399",
+"namespacevirtio.html#a89679bb4194647b213044dde2d436baea02e268380a67009ab5ff19d8e009004c",
+"signal_8hpp.html#a9def90569396401bf47f8a22d7a60edc",
+"structBasicInfo.html#a4020826d3d2755a9e5ad8f3cc5d68bc4",
+"structTaskControlBlock.html#af98827b16fc1af01c793e7aef9b0608a",
+"structcpu__io_1_1CalleeSavedContext.html#ac01b904ee21b17af224947000ac5b3e8",
+"structvfs_1_1MountPoint.html#ae6ec009ed87fd0be8b4bbda7e18d3ba8",
+"system__test_8h.html#a47f200fae161f662e366d06b4d2ecff4",
+"vfs__internal_8hpp_source.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

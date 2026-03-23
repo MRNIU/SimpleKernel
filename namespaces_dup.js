@@ -20,6 +20,13 @@ var namespaces_dup =
       [ "kThreadCreate", "namespacelifecycle__msg__id.html#adb5c903afcd3575d768e7a9e78d7593e", null ],
       [ "kThreadExit", "namespacelifecycle__msg__id.html#a2207fa5195506306c99286a378d8769b", null ]
     ] ],
+    [ "lock_level", "namespacelock__level.html", [
+      [ "kCount", "namespacelock__level.html#a16750ce05af43531356c47d44857d70d", null ],
+      [ "kInterruptThreadsLock", "namespacelock__level.html#a57c78edf6e0acc097b8fe7ecd883070c", null ],
+      [ "kSchedLock", "namespacelock__level.html#a7301260bde3cd5d28fbc85d7943f76b8", null ],
+      [ "kTaskTableLock", "namespacelock__level.html#a295436fc139694496c7ef0b3c3cae3af", null ],
+      [ "kUnclassified", "namespacelock__level.html#a6adb0053b6fc7509b2f33d2194f67b0d", null ]
+    ] ],
     [ "mmio_helper", "namespacemmio__helper.html", "namespacemmio__helper" ],
     [ "ns16550a", "namespacens16550a.html", "namespacens16550a" ],
     [ "per_cpu", "namespaceper__cpu.html", "namespaceper__cpu" ],

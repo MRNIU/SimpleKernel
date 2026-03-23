@@ -1,3 +1,9 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）" alt="" coords="5,5,85,31"/>
+<area shape="rect" id="Node000000" href="$classSchedulerBase.html" title="调度器基类接口" alt="" coords="5,55,124,80"/>
+<area shape="rect" id="Node000001" href="$classCfsScheduler.html" title="CFS (Completely Fair Scheduler) 调度器" alt="" coords="201,5,307,31"/>
+<area shape="poly" id="edge19_Node000000_Node000001" title=" " alt="" coords="126,49,203,28,205,33,128,54"/>
+<area shape="rect" id="Node000002" href="$classFifoScheduler.html" title="先来先服务 (FIFO) 调度器" alt="" coords="199,55,309,80"/>
+<area shape="poly" id="edge20_Node000000_Node000002" title=" " alt="" coords="138,65,198,65,198,70,138,70"/>
+<area shape="rect" id="Node000003" href="$classRoundRobinScheduler.html" title="Round&#45;Robin 调度器" alt="" coords="172,104,336,129"/>
+<area shape="poly" id="edge21_Node000000_Node000003" title=" " alt="" coords="128,81,205,101,203,106,126,86"/>
 </map>

@@ -1,7 +1,9 @@
 <map id="InitTaskContext" name="InitTaskContext">
-<area shape="rect" id="Node000001" title="初始化内核线程的任务上下文（重载1）" alt="" coords="272,35,395,60"/>
+<area shape="rect" id="Node000001" title="初始化内核线程的任务上下文（重载1）" alt="" coords="272,55,395,80"/>
 <area shape="rect" id="Node000002" href="$classTaskManager.html#ad2fdc9ffa97ac49ce08133d7ce0728bb" title="克隆当前任务 (fork/clone 系统调用)" alt="" coords="38,5,191,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="258,40,191,31,192,26,258,35"/>
-<area shape="rect" id="Node000003" href="$structTaskControlBlock.html#a6e96afd7da4feb231b605e2b7cebfc42" title="构造函数 (内核线程)" alt="" coords="5,55,224,95"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="259,59,225,64,224,59,258,54"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="264,54,223,45,173,33,174,28,225,39,266,49"/>
+<area shape="rect" id="Node000003" href="$classTaskManager.html#a8bbd1157a162051ae2c2d7b193d98d55" title="初始化 per cpu 的调度数据，创建 idle 线程" alt="" coords="7,55,222,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="258,70,222,70,222,65,258,65"/>
+<area shape="rect" id="Node000004" href="$structTaskControlBlock.html#a6e96afd7da4feb231b605e2b7cebfc42" title="构造函数 (内核线程)" alt="" coords="5,105,224,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="272,86,192,107,191,102,270,81"/>
 </map>

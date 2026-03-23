@@ -195,28 +195,37 @@ Public Member Functions</h2></td></tr>
 <div class="line"><span class="lineno">   44</span>               <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(msg.get_message_id()));</div>
 <div class="line"><span class="lineno">   45</span>    <span class="keywordflow">return</span> STATE_ID;</div>
 <div class="line"><span class="lineno">   46</span>  }</div>
-<div class="ttc" id="anamespaceklog_html_a9e1498fdd041865e7e917ef040d186eb"><div class="ttname"><a href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb">klog::Warn</a></div><div class="ttdeci">auto Warn(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 WARN 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00191">kernel_log.hpp:191</a></div></div>
+<div class="ttc" id="anamespaceklog_html_a9e1498fdd041865e7e917ef040d186eb"><div class="ttname"><a href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb">klog::Warn</a></div><div class="ttdeci">auto Warn(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 WARN 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00198">kernel_log.hpp:198</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="structStateUnInit_a0be7461d141fc15fec5899f4841ed5e2_cgraph.png" border="0" usemap="#astructStateUnInit_a0be7461d141fc15fec5899f4841ed5e2_cgraph" alt=""/></div>
 <map name="astructStateUnInit_a0be7461d141fc15fec5899f4841ed5e2_cgraph" id="astructStateUnInit_a0be7461d141fc15fec5899f4841ed5e2_cgraph">
-<area shape="rect" title=" " alt="" coords="5,33,168,73"/>
-<area shape="rect" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="216,41,307,66"/>
-<area shape="poly" title=" " alt="" coords="168,51,202,51,202,56,168,56"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="355,41,481,66"/>
-<area shape="poly" title=" " alt="" coords="307,51,341,51,341,56,307,56"/>
-<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="735,15,920,41"/>
-<area shape="poly" title=" " alt="" coords="481,47,721,32,721,37,482,52"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="529,66,687,91"/>
-<area shape="poly" title=" " alt="" coords="482,59,516,64,515,69,481,64"/>
-<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="968,5,1231,45"/>
-<area shape="poly" title=" " alt="" coords="920,24,954,24,954,29,920,30"/>
-<area shape="poly" title=" " alt="" coords="663,63,758,41,759,46,665,68"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="756,67,899,93"/>
-<area shape="poly" title=" " alt="" coords="687,76,742,77,742,82,687,82"/>
-<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1052,70,1147,95"/>
-<area shape="poly" title=" " alt="" coords="899,78,1039,79,1039,85,899,83"/>
+<area shape="rect" title=" " alt="" coords="5,47,168,87"/>
+<area shape="rect" href="namespaceklog.html#a9e1498fdd041865e7e917ef040d186eb" title="以 WARN 级别记录日志" alt="" coords="216,55,307,80"/>
+<area shape="poly" title=" " alt="" coords="168,65,202,65,202,70,168,70"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="355,55,481,80"/>
+<area shape="poly" title=" " alt="" coords="307,65,341,65,341,70,307,70"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="738,5,923,31"/>
+<area shape="poly" title=" " alt="" coords="481,57,724,28,725,33,482,62"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="529,80,687,105"/>
+<area shape="poly" title=" " alt="" coords="482,73,516,78,515,83,481,78"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="975,73,1237,113"/>
+<area shape="poly" title=" " alt="" coords="884,28,927,39,1024,66,1022,71,926,45,882,33"/>
+<area shape="poly" title=" " alt="" coords="637,77,734,39,760,32,762,37,736,45,639,82"/>
+<area shape="rect" href="namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb" title=" " alt="" coords="742,55,919,80"/>
+<area shape="poly" title=" " alt="" coords="687,81,728,76,729,82,687,86"/>
+<area shape="rect" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="745,104,917,129"/>
+<area shape="poly" title=" " alt="" coords="687,98,731,103,731,109,687,104"/>
+<area shape="rect" href="namespacecpu__io.html#aaab46268534006b116de3e112c237f7f" title=" " alt="" coords="735,153,927,179"/>
+<area shape="poly" title=" " alt="" coords="641,103,736,138,766,147,764,152,734,143,639,108"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="759,203,902,228"/>
+<area shape="poly" title=" " alt="" coords="624,104,671,146,702,169,736,189,752,196,750,201,733,194,699,174,667,150,620,108"/>
+<area shape="poly" title=" " alt="" coords="920,73,961,77,961,82,919,78"/>
+<area shape="poly" title=" " alt="" coords="917,107,961,103,961,108,917,112"/>
+<area shape="poly" title=" " alt="" coords="879,151,926,138,1017,114,1018,119,927,143,880,156"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1059,203,1153,228"/>
+<area shape="poly" title=" " alt="" coords="902,213,1045,213,1045,218,902,218"/>
 </map>
 </div>
 

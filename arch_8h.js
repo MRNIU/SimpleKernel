@@ -9,6 +9,7 @@ var arch_8h =
     [ "InterruptInit", "arch_8h.html#ae764dbdc23dcb6bfcc0e5d8b9d603dbd", null ],
     [ "InterruptInitSMP", "arch_8h.html#a0b1bfe64c7faf963edd2292f84b4cf64", null ],
     [ "kernel_thread_entry", "arch_8h.html#ad8ffe19e8ba57db664c358800ed5928c", null ],
+    [ "RawDumpStack", "arch_8h.html#a7ec7552af58759281893e893bfaecb2e", null ],
     [ "switch_to", "arch_8h.html#a3247f2fd6f3f67fc5c3e8af2409613e7", null ],
     [ "TimerInit", "arch_8h.html#aadcb63b822cced321aaf1cc58cfea3cc", null ],
     [ "TimerInitSMP", "arch_8h.html#a1e59270c44fa60a8b1304ee3c56b2907", null ],

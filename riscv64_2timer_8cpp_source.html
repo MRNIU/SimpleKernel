@@ -123,49 +123,59 @@ $(document).ready(function(){initNavTree('riscv64_2timer_8cpp_source.html',''); 
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>  <span class="keyword">auto</span>&amp; tm = TaskManagerSingleton::instance();</div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  tm.TickUpdate();</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>  (void)tm.CheckPendingSignals();</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  <a class="code hl_variable" href="per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27">preempt</a>.hardirq_count--;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>}</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>}  <span class="comment">// namespace</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="foldopen" id="foldopen00037" data-start="{" data-end="}">
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="riscv64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">   37</a></span><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">TimerInitSMP</a>() -&gt; <span class="keywordtype">void</span> {</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  <span class="comment">// 开启时钟中断</span></div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  cpu_io::Sie::Stie::Set();</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  <span class="comment">// 设置初次时钟中断时间</span></div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  sbi_set_timer(cpu_io::Time::Read() + interval);</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>}</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>  <a class="code hl_variable" href="per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27">preempt</a>.hardirq_count--;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>  <span class="keywordflow">if</span> (<a class="code hl_variable" href="per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27">preempt</a>.need_balance) {</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    <a class="code hl_variable" href="per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27">preempt</a>.need_balance = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    tm.Balance();</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>  }</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  <span class="keywordflow">if</span> (<a class="code hl_variable" href="per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27">preempt</a>.need_resched) {</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <a class="code hl_variable" href="per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27">preempt</a>.need_resched = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    tm.Schedule();</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  }</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>}</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>}  <span class="comment">// namespace</span></div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
+<div class="foldopen" id="foldopen00047" data-start="{" data-end="}">
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno"><a class="line" href="riscv64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">   47</a></span><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">TimerInitSMP</a>() -&gt; <span class="keywordtype">void</span> {</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="comment">// 开启时钟中断</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  cpu_io::Sie::Stie::Set();</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <span class="comment">// 设置初次时钟中断时间</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  sbi_set_timer(cpu_io::Time::Read() + interval);</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>}</div>
 </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="foldopen" id="foldopen00045" data-start="{" data-end="}">
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="riscv64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">   45</a></span><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a>() -&gt; <span class="keywordtype">void</span> {</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="comment">// 计算 interval</span></div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  <span class="comment">// 注册时钟中断</span></div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  InterruptSingleton::instance().RegisterInterruptFunc(</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>      cpu_io::ScauseInfo::kSupervisorTimerInterrupt,</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>      InterruptDelegate::create&lt;TimerHandler&gt;());</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  <span class="comment">// 开启时钟中断</span></div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  cpu_io::Sie::Stie::Set();</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  <span class="comment">// 设置初次时钟中断时间</span></div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  sbi_set_timer(cpu_io::Time::Read() + interval);</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>}</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
+<div class="foldopen" id="foldopen00055" data-start="{" data-end="}">
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="riscv64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">   55</a></span><span class="keyword">auto</span> <a class="code hl_function" href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a>() -&gt; <span class="keywordtype">void</span> {</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <span class="comment">// 计算 interval</span></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  interval = BasicInfoSingleton::instance().interval / SIMPLEKERNEL_TICK;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  <span class="comment">// 注册时钟中断</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  InterruptSingleton::instance().RegisterInterruptFunc(</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>      cpu_io::ScauseInfo::kSupervisorTimerInterrupt,</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>      InterruptDelegate::create&lt;TimerHandler&gt;());</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  <span class="comment">// 开启时钟中断</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  cpu_io::Sie::Stie::Set();</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  <span class="comment">// 设置初次时钟中断时间</span></div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  sbi_set_timer(cpu_io::Time::Read() + interval);</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>}</div>
 </div>
 <div class="ttc" id="aaarch64_2interrupt__main_8cpp_html_abe4c331dc3efca0cf6b367ec6cfe968f"><div class="ttname"><a href="aarch64_2interrupt__main_8cpp.html#abe4c331dc3efca0cf6b367ec6cfe968f">InterruptDelegate</a></div><div class="ttdeci">InterruptBase::InterruptDelegate InterruptDelegate</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2interrupt__main_8cpp_source.html#l00019">interrupt_main.cpp:19</a></div></div>
-<div class="ttc" id="aaarch64_2timer_8cpp_html_a1e59270c44fa60a8b1304ee3c56b2907"><div class="ttname"><a href="aarch64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">TimerInitSMP</a></div><div class="ttdeci">auto TimerInitSMP() -&gt; void</div><div class="ttdoc">从核的定时器初始化</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2timer_8cpp_source.html#l00040">timer.cpp:40</a></div></div>
-<div class="ttc" id="aaarch64_2timer_8cpp_html_aadcb63b822cced321aaf1cc58cfea3cc"><div class="ttname"><a href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a></div><div class="ttdeci">auto TimerInit() -&gt; void</div><div class="ttdoc">初始化定时器</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2timer_8cpp_source.html#l00052">timer.cpp:52</a></div></div>
+<div class="ttc" id="aaarch64_2timer_8cpp_html_a1e59270c44fa60a8b1304ee3c56b2907"><div class="ttname"><a href="aarch64_2timer_8cpp.html#a1e59270c44fa60a8b1304ee3c56b2907">TimerInitSMP</a></div><div class="ttdeci">auto TimerInitSMP() -&gt; void</div><div class="ttdoc">从核的定时器初始化</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2timer_8cpp_source.html#l00050">timer.cpp:50</a></div></div>
+<div class="ttc" id="aaarch64_2timer_8cpp_html_aadcb63b822cced321aaf1cc58cfea3cc"><div class="ttname"><a href="aarch64_2timer_8cpp.html#aadcb63b822cced321aaf1cc58cfea3cc">TimerInit</a></div><div class="ttdeci">auto TimerInit() -&gt; void</div><div class="ttdoc">初始化定时器</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2timer_8cpp_source.html#l00062">timer.cpp:62</a></div></div>
 <div class="ttc" id="aarch_8h_html"><div class="ttname"><a href="arch_8h.html">arch.h</a></div></div>
 <div class="ttc" id="abasic__info_8hpp_html"><div class="ttname"><a href="basic__info_8hpp.html">basic_info.hpp</a></div></div>
 <div class="ttc" id="aclassInterruptBase_html_a92d086a7d2510a3626ed51660efcb313"><div class="ttname"><a href="classInterruptBase.html#a92d086a7d2510a3626ed51660efcb313">InterruptBase::InterruptDelegate</a></div><div class="ttdeci">etl::delegate&lt; uint64_t(uint64_t, cpu_io::TrapContext *)&gt; InterruptDelegate</div><div class="ttdoc">类型安全的中断处理委托</div><div class="ttdef"><b>Definition</b> <a href="interrupt__base_8h_source.html#l00031">interrupt_base.h:32</a></div></div>
 <div class="ttc" id="acpu__io_8h_html"><div class="ttname"><a href="cpu__io_8h.html">cpu_io.h</a></div></div>
 <div class="ttc" id="akernel_8h_html"><div class="ttname"><a href="kernel_8h.html">kernel.h</a></div></div>
-<div class="ttc" id="anamespaceper__cpu_html_ad9745465fefcd58504031bfcfcc1c13f"><div class="ttname"><a href="namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f">per_cpu::GetCurrentCore</a></div><div class="ttdeci">static __always_inline auto GetCurrentCore() -&gt; PerCpu &amp;</div><div class="ttdoc">获取当前核心的 PerCpu 数据</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00086">per_cpu.hpp:86</a></div></div>
+<div class="ttc" id="anamespaceper__cpu_html_ad9745465fefcd58504031bfcfcc1c13f"><div class="ttname"><a href="namespaceper__cpu.html#ad9745465fefcd58504031bfcfcc1c13f">per_cpu::GetCurrentCore</a></div><div class="ttdeci">static __always_inline auto GetCurrentCore() -&gt; PerCpu &amp;</div><div class="ttdoc">获取当前核心的 PerCpu 数据</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00125">per_cpu.hpp:125</a></div></div>
 <div class="ttc" id="aper__cpu_8hpp_html"><div class="ttname"><a href="per__cpu_8hpp.html">per_cpu.hpp</a></div></div>
 <div class="ttc" id="aper__cpu_8hpp_html_ad1daad5be0ea886a068f81d064617b27"><div class="ttname"><a href="per__cpu_8hpp.html#ad1daad5be0ea886a068f81d064617b27">preempt</a></div><div class="ttdeci">PreemptState preempt</div><div class="ttdoc">抢占/中断嵌套状态</div><div class="ttdef"><b>Definition</b> <a href="per__cpu_8hpp_source.html#l00011">per_cpu.hpp:11</a></div></div>
 <div class="ttc" id="astructcpu__io_1_1TrapContext_html"><div class="ttname"><a href="structcpu__io_1_1TrapContext.html">cpu_io::TrapContext</a></div><div class="ttdef"><b>Definition</b> <a href="cpu__io_8h_source.html#l00186">cpu_io.h:186</a></div></div>

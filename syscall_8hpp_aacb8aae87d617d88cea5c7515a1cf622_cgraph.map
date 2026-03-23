@@ -1,18 +1,27 @@
 <map id="sys_fork" name="sys_fork">
-<area shape="rect" id="Node000001" title="创建新进程（fork）" alt="" coords="5,41,83,66"/>
-<area shape="rect" id="Node000002" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="131,41,207,66"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="83,51,117,51,117,56,83,56"/>
-<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="255,41,381,66"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="207,51,241,51,241,56,207,56"/>
-<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="635,15,820,41"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="381,47,621,32,621,37,382,52"/>
-<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="429,66,587,91"/>
-<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="382,59,416,64,415,69,381,64"/>
-<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="868,5,1131,45"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="820,24,854,24,854,29,820,30"/>
-<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="563,63,658,41,659,46,565,68"/>
-<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="656,67,799,93"/>
-<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="587,76,642,77,642,82,587,82"/>
-<area shape="rect" id="Node000008" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="952,70,1047,95"/>
-<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="799,78,939,79,939,85,799,83"/>
+<area shape="rect" id="Node000001" title="创建新进程（fork）" alt="" coords="5,55,83,80"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7" title="以 ERROR 级别记录日志" alt="" coords="131,55,207,80"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="83,65,117,65,117,70,83,70"/>
+<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="255,55,381,80"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="207,65,241,65,241,70,207,70"/>
+<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="638,5,823,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="381,57,624,28,625,33,382,62"/>
+<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="429,80,587,105"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="382,73,416,78,415,83,381,78"/>
+<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="875,73,1137,113"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="784,28,827,39,924,66,922,71,826,45,782,33"/>
+<area shape="poly" id="edge10_Node000006_Node000004" title=" " alt="" coords="537,77,634,39,660,32,662,37,636,45,539,82"/>
+<area shape="rect" id="Node000007" href="$namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb" title=" " alt="" coords="642,55,819,80"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="587,81,628,76,629,82,587,86"/>
+<area shape="rect" id="Node000008" href="$namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="645,104,817,129"/>
+<area shape="poly" id="edge8_Node000006_Node000008" title=" " alt="" coords="587,98,631,103,631,109,587,104"/>
+<area shape="rect" id="Node000009" href="$namespacecpu__io.html#aaab46268534006b116de3e112c237f7f" title=" " alt="" coords="635,153,827,179"/>
+<area shape="poly" id="edge11_Node000006_Node000009" title=" " alt="" coords="541,103,636,138,666,147,664,152,634,143,539,108"/>
+<area shape="rect" id="Node000010" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="659,203,802,228"/>
+<area shape="poly" id="edge13_Node000006_Node000010" title=" " alt="" coords="524,104,571,146,602,169,636,189,652,196,650,201,633,194,599,174,567,150,520,108"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="820,73,861,77,861,82,819,78"/>
+<area shape="poly" id="edge9_Node000008_Node000005" title=" " alt="" coords="817,107,861,103,861,108,817,112"/>
+<area shape="poly" id="edge12_Node000009_Node000005" title=" " alt="" coords="779,151,826,138,917,114,918,119,827,143,780,156"/>
+<area shape="rect" id="Node000011" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="959,203,1053,228"/>
+<area shape="poly" id="edge14_Node000010_Node000011" title=" " alt="" coords="802,213,945,213,945,218,802,218"/>
 </map>

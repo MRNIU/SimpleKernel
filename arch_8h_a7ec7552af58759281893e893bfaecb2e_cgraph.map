@@ -1,0 +1,12 @@
+<map id="RawDumpStack" name="RawDumpStack">
+<area shape="rect" id="Node000001" title="打印调用栈（raw 版本，绕过日志队列）" alt="" coords="5,56,131,81"/>
+<area shape="rect" id="Node000002" href="$aarch64_2backtrace_8cpp.html#a7986cc449f6e96ca1ee111a6ee7940bb" title=" " alt="" coords="189,5,275,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,53,176,32,178,37,111,58"/>
+<area shape="rect" id="Node000003" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="524,81,619,107"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="131,69,510,88,510,94,131,74"/>
+<area shape="rect" id="Node000004" href="$namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e" title="绕过队列直接输出至串口（用于 panic 路径）" alt="" coords="179,107,285,132"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="111,79,178,100,176,105,109,84"/>
+<area shape="rect" id="Node000005" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="333,107,476,132"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="286,117,320,117,320,122,286,122"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="476,106,510,101,511,106,476,111"/>
+</map>

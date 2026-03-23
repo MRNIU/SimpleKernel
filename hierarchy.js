@@ -29,6 +29,8 @@ var hierarchy =
     [ "DriverEntry", "structDriverEntry.html", null ],
     [ "DriverRegistry", "classDriverRegistry.html", null ],
     [ "acpi::Acpi::Dsdt", "structacpi_1_1Acpi_1_1Dsdt.html", null ],
+    [ "LockStack::Entry", "structLockStack_1_1Entry.html", null ],
+    [ "per_cpu::PerCpu::LockStack::Entry", "structper__cpu_1_1PerCpu_1_1LockStack_1_1Entry.html", null ],
     [ "Error", "structError.html", null ],
     [ "acpi::Acpi::Fadt", "structacpi_1_1Acpi_1_1Fadt.html", null ],
     [ "fatfs::FatFsFileSystem::FatDirHandle", "structfatfs_1_1FatFsFileSystem_1_1FatDirHandle.html", null ],
@@ -80,6 +82,8 @@ var hierarchy =
     [ "KernelElf", "classKernelElf.html", null ],
     [ "KernelFdt", "classKernelFdt.html", null ],
     [ "LockGuard< T >", "classLockGuard.html", null ],
+    [ "LockStack", "structLockStack.html", null ],
+    [ "per_cpu::PerCpu::LockStack", "structper__cpu_1_1PerCpu_1_1LockStack.html", null ],
     [ "klog::detail::LogEntry", "structklog_1_1detail_1_1LogEntry.html", null ],
     [ "MatchEntry", "structMatchEntry.html", null ],
     [ "etl::message", null, [
@@ -120,7 +124,6 @@ var hierarchy =
     [ "SchedulerBase", "classSchedulerBase.html", [
       [ "CfsScheduler", "classCfsScheduler.html", null ],
       [ "FifoScheduler", "classFifoScheduler.html", null ],
-      [ "IdleScheduler", "classIdleScheduler.html", null ],
       [ "RoundRobinScheduler", "classRoundRobinScheduler.html", null ]
     ] ],
     [ "SignalAction", "structSignalAction.html", null ],

@@ -1,12 +1,18 @@
 <map id="__assert_fail" name="__assert_fail">
-<area shape="rect" id="Node000001" title="libc assert() 失败时调用的底层接口" alt="" coords="5,24,109,50"/>
-<area shape="rect" id="Node000002" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="507,23,601,48"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,22,157,9,249,3,341,6,425,13,493,22,493,28,424,18,340,11,249,8,158,14,99,27"/>
-<area shape="rect" id="Node000003" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="157,24,268,50"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="110,34,143,34,143,40,110,40"/>
-<area shape="rect" id="Node000004" href="$namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e" title="绕过队列直接输出至串口（用于 panic 路径）" alt="" coords="159,74,266,99"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="99,47,160,67,158,72,97,52"/>
-<area shape="rect" id="Node000005" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="316,48,459,74"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="266,76,302,71,303,76,266,81"/>
-<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="458,47,493,42,494,47,459,53"/>
+<area shape="rect" id="Node000001" title="libc assert() 失败时调用的底层接口" alt="" coords="5,64,109,90"/>
+<area shape="rect" id="Node000002" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="676,39,771,64"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="76,62,112,41,157,24,226,11,297,4,369,3,438,6,565,19,663,36,662,41,565,24,438,11,369,8,298,10,227,16,158,29,114,46,78,67"/>
+<area shape="rect" id="Node000003" href="$namespacecpu__io.html#acf7d7c3a4a0720cfd4f57914b52c7e9b" title=" " alt="" coords="165,39,275,64"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="109,66,150,60,151,65,110,72"/>
+<area shape="rect" id="Node000004" href="$aarch64_2backtrace_8cpp.html#a7ec7552af58759281893e893bfaecb2e" title="打印调用栈（raw 版本，绕过日志队列）" alt="" coords="157,88,283,114"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="110,82,144,87,143,93,109,87"/>
+<area shape="rect" id="Node000006" href="$namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e" title="绕过队列直接输出至串口（用于 panic 路径）" alt="" coords="331,139,437,164"/>
+<area shape="poly" id="edge9_Node000001_Node000006" title=" " alt="" coords="80,88,116,107,158,124,240,141,317,148,317,153,239,146,157,129,114,112,78,92"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="271,86,330,75,511,57,662,50,662,56,512,62,331,80,272,91"/>
+<area shape="rect" id="Node000005" href="$aarch64_2backtrace_8cpp.html#a7986cc449f6e96ca1ee111a6ee7940bb" title=" " alt="" coords="341,90,427,115"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="283,99,327,99,327,105,283,104"/>
+<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="263,111,330,132,328,137,261,116"/>
+<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="485,114,628,139"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="437,141,471,136,472,142,438,147"/>
+<area shape="poly" id="edge8_Node000007_Node000002" title=" " alt="" coords="585,111,681,68,683,73,587,116"/>
 </map>

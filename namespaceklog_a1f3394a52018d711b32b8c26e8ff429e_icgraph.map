@@ -1,9 +1,17 @@
 <map id="klog::RawPut" name="klog::RawPut">
-<area shape="rect" id="Node000001" title="绕过队列直接输出至串口（用于 panic 路径）" alt="" coords="232,55,339,80"/>
+<area shape="rect" id="Node000001" title="绕过队列直接输出至串口（用于 panic 路径）" alt="" coords="405,93,512,119"/>
 <area shape="rect" id="Node000002" href="$kstd__libcxx_8cpp.html#ac9ea6a9e63fc867f857c3dff70463280" title="libc assert() 失败时调用的底层接口" alt="" coords="43,5,147,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="222,54,144,33,146,28,223,49"/>
-<area shape="rect" id="Node000003" href="$classLockGuard.html#ab5b05541962f70a0e42765e1a729a168" title=" " alt="" coords="11,55,179,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="218,70,179,70,179,65,218,65"/>
-<area shape="rect" id="Node000004" href="$classLockGuard.html#a9bcdf058788fcc30baf936c8190abe51" title=" " alt="" coords="5,104,184,129"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="223,86,146,106,144,101,222,81"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="421,90,356,63,301,49,245,38,147,25,147,20,246,33,302,44,358,58,423,85"/>
+<area shape="rect" id="Node000003" href="$classSpinLock.html#a1552c84e7da6f0b350fd4f4ae12a1079" title="获得锁" alt="" coords="35,80,154,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="403,92,357,83,304,79,250,80,155,87,154,82,250,74,304,74,358,78,404,87"/>
+<area shape="rect" id="Node000004" href="$classLockGuard.html#ab5b05541962f70a0e42765e1a729a168" title=" " alt="" coords="11,137,179,163"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="398,125,358,133,265,144,179,150,179,144,265,138,357,127,397,119"/>
+<area shape="rect" id="Node000005" href="$aarch64_2backtrace_8cpp.html#a7ec7552af58759281893e893bfaecb2e" title="打印调用栈（raw 版本，绕过日志队列）" alt="" coords="232,93,357,119"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="392,109,358,109,358,103,392,103"/>
+<area shape="rect" id="Node000006" href="$classLockGuard.html#a9bcdf058788fcc30baf936c8190abe51" title=" " alt="" coords="5,187,184,212"/>
+<area shape="poly" id="edge9_Node000001_Node000006" title=" " alt="" coords="421,127,358,153,269,175,185,190,184,185,268,170,357,147,419,122"/>
+<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="251,90,124,33,126,28,254,85"/>
+<area shape="poly" id="edge6_Node000005_Node000003" title=" " alt="" coords="218,104,154,99,154,94,218,98"/>
+<area shape="poly" id="edge7_Node000005_Node000004" title=" " alt="" coords="224,124,154,140,152,135,222,119"/>
+<area shape="poly" id="edge8_Node000005_Node000006" title=" " alt="" coords="267,129,229,154,185,178,154,189,152,184,183,173,227,149,265,124"/>
 </map>

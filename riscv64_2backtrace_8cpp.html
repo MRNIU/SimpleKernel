@@ -196,6 +196,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a393a5995bbd64c00f1902a4ae0110847" id="r_a393a5995bbd64c00f1902a4ae0110847"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="riscv64_2backtrace_8cpp.html#a393a5995bbd64c00f1902a4ae0110847">DumpStack</a> () -&gt; void</td></tr>
 <tr class="memdesc:a393a5995bbd64c00f1902a4ae0110847"><td class="mdescLeft">&#160;</td><td class="mdescRight">打印调用栈  <br /></td></tr>
 <tr class="separator:a393a5995bbd64c00f1902a4ae0110847"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ec7552af58759281893e893bfaecb2e" id="r_a7ec7552af58759281893e893bfaecb2e"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="riscv64_2backtrace_8cpp.html#a7ec7552af58759281893e893bfaecb2e">RawDumpStack</a> () -&gt; void</td></tr>
+<tr class="memdesc:a7ec7552af58759281893e893bfaecb2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">打印调用栈（raw 版本，绕过日志队列）  <br /></td></tr>
+<tr class="separator:a7ec7552af58759281893e893bfaecb2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="a7986cc449f6e96ca1ee111a6ee7940bb" name="a7986cc449f6e96ca1ee111a6ee7940bb"></a>
@@ -292,7 +295,7 @@ Functions</h2></td></tr>
 <div class="line"><span class="lineno">   68</span>}</div>
 <div class="ttc" id="aaarch64_2backtrace_8cpp_html_a7986cc449f6e96ca1ee111a6ee7940bb"><div class="ttname"><a href="aarch64_2backtrace_8cpp.html#a7986cc449f6e96ca1ee111a6ee7940bb">backtrace</a></div><div class="ttdeci">__always_inline auto backtrace(std::array&lt; uint64_t, kMaxFrameCount &gt; &amp;buffer) -&gt; int</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2backtrace_8cpp_source.html#l00018">backtrace.cpp:18</a></div></div>
 <div class="ttc" id="akernel__elf_8hpp_html_aabf1808205f4ceaa3a3d7d6378e14872"><div class="ttname"><a href="kernel__elf_8hpp.html#aabf1808205f4ceaa3a3d7d6378e14872">KernelElfSingleton</a></div><div class="ttdeci">etl::singleton&lt; KernelElf &gt; KernelElfSingleton</div><div class="ttdef"><b>Definition</b> <a href="kernel__elf_8hpp_source.html#l00154">kernel_elf.hpp:154</a></div></div>
-<div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00200">kernel_log.hpp:200</a></div></div>
+<div class="ttc" id="anamespaceklog_html_a16b493848cd618512fc9fb61d3980bd7"><div class="ttname"><a href="namespaceklog.html#a16b493848cd618512fc9fb61d3980bd7">klog::Err</a></div><div class="ttdeci">auto Err(etl::format_string&lt; Args... &gt; fmt, Args &amp;&amp;... args) -&gt; void</div><div class="ttdoc">以 ERROR 级别记录日志</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00207">kernel_log.hpp:207</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -305,17 +308,106 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="103,49,143,56,142,61,103,54"/>
 <area shape="rect" href="namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="285,55,412,80"/>
 <area shape="poly" title=" " alt="" coords="232,65,271,65,271,70,232,70"/>
-<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="665,29,851,55"/>
-<area shape="poly" title=" " alt="" coords="412,61,651,46,652,51,412,66"/>
+<area shape="rect" href="namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="669,5,854,31"/>
+<area shape="poly" title=" " alt="" coords="412,57,655,28,655,33,413,62"/>
 <area shape="rect" href="namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="460,80,617,105"/>
 <area shape="poly" title=" " alt="" coords="413,73,447,78,446,83,412,78"/>
-<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="899,19,1161,59"/>
-<area shape="poly" title=" " alt="" coords="851,38,885,38,885,43,851,44"/>
-<area shape="poly" title=" " alt="" coords="594,77,689,55,690,60,595,82"/>
-<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="687,81,829,107"/>
-<area shape="poly" title=" " alt="" coords="618,90,673,91,673,96,618,96"/>
-<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="983,84,1077,109"/>
-<area shape="poly" title=" " alt="" coords="829,92,969,93,969,99,829,97"/>
+<area shape="rect" href="classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="905,73,1168,113"/>
+<area shape="poly" title=" " alt="" coords="815,28,858,39,954,66,953,71,857,45,813,33"/>
+<area shape="poly" title=" " alt="" coords="567,77,664,39,691,32,692,37,666,45,569,82"/>
+<area shape="rect" href="namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb" title=" " alt="" coords="673,55,850,80"/>
+<area shape="poly" title=" " alt="" coords="617,81,659,76,660,82,618,86"/>
+<area shape="rect" href="namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="675,104,847,129"/>
+<area shape="poly" title=" " alt="" coords="618,98,662,103,661,109,617,104"/>
+<area shape="rect" href="namespacecpu__io.html#aaab46268534006b116de3e112c237f7f" title=" " alt="" coords="665,153,857,179"/>
+<area shape="poly" title=" " alt="" coords="572,103,666,138,696,147,695,152,664,143,570,108"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="690,203,833,228"/>
+<area shape="poly" title=" " alt="" coords="554,104,601,146,633,169,667,189,682,196,680,201,664,194,630,174,598,150,551,108"/>
+<area shape="poly" title=" " alt="" coords="850,73,892,77,891,82,850,78"/>
+<area shape="poly" title=" " alt="" coords="847,107,892,103,892,108,848,112"/>
+<area shape="poly" title=" " alt="" coords="810,151,857,138,947,114,949,119,858,143,811,156"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="989,203,1084,228"/>
+<area shape="poly" title=" " alt="" coords="833,213,976,213,976,218,833,218"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="a7ec7552af58759281893e893bfaecb2e" name="a7ec7552af58759281893e893bfaecb2e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ec7552af58759281893e893bfaecb2e">&#9670;&#160;</a></span>RawDumpStack()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto RawDumpStack </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> -&gt;  void</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>打印调用栈（raw 版本，绕过日志队列） </p>
+<dl class="section note"><dt>Note</dt><dd>使用 <a class="el" href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e" title="绕过队列直接输出至串口（用于 panic 路径）">klog::RawPut</a> 直接输出至串口，用于 assert/panic 等紧急路径 </dd></dl>
+<dl class="section pre"><dt>Precondition</dt><dd>可在中断禁用、队列不可用等极端环境下安全调用 </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="riscv64_2backtrace_8cpp_source.html#l00070">70</a> of file <a class="el" href="riscv64_2backtrace_8cpp_source.html">backtrace.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   70</span>                            {</div>
+<div class="line"><span class="lineno">   71</span>  std::array&lt;uint64_t, kMaxFrameCount&gt; buffer{};</div>
+<div class="line"><span class="lineno">   72</span>  <span class="keyword">auto</span> num_frames = <a class="code hl_function" href="aarch64_2backtrace_8cpp.html#a7986cc449f6e96ca1ee111a6ee7940bb">backtrace</a>(buffer);</div>
+<div class="line"><span class="lineno">   73</span> </div>
+<div class="line"><span class="lineno">   74</span>  <a class="code hl_function" href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e">klog::RawPut</a>(<span class="stringliteral">&quot;\n--- Raw Stack Trace ---\n&quot;</span>);</div>
+<div class="line"><span class="lineno">   75</span> </div>
+<div class="line"><span class="lineno">   76</span>  <span class="keywordtype">char</span> line_buf[256];</div>
+<div class="line"><span class="lineno">   77</span>  <span class="keywordflow">for</span> (<span class="keyword">auto</span> i = 0; i &lt; num_frames; i++) {</div>
+<div class="line"><span class="lineno">   78</span>    <span class="keywordtype">bool</span> found = <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">   79</span>    <span class="keywordflow">for</span> (<span class="keyword">auto</span> symtab : <a class="code hl_typedef" href="kernel__elf_8hpp.html#aabf1808205f4ceaa3a3d7d6378e14872">KernelElfSingleton</a>::instance().symtab) {</div>
+<div class="line"><span class="lineno">   80</span>      <span class="keywordflow">if</span> ((ELF64_ST_TYPE(symtab.st_info) == STT_FUNC) &amp;&amp;</div>
+<div class="line"><span class="lineno">   81</span>          (buffer[i] &gt;= symtab.st_value) &amp;&amp;</div>
+<div class="line"><span class="lineno">   82</span>          (buffer[i] &lt;= symtab.st_value + symtab.st_size)) {</div>
+<div class="line"><span class="lineno">   83</span>        <span class="keyword">auto</span>* <a class="code hl_variable" href="basic__info_8hpp.html#a6a57db0096456f14176cf7e7affa1929">end</a> = etl::format_to_n(</div>
+<div class="line"><span class="lineno">   84</span>            line_buf, <span class="keyword">sizeof</span>(line_buf) - 1, <span class="stringliteral">&quot;  #{} {:#018x} [{}]+{:#x}&quot;</span>, i,</div>
+<div class="line"><span class="lineno">   85</span>            buffer[i],</div>
+<div class="line"><span class="lineno">   86</span>            <span class="keyword">reinterpret_cast&lt;</span><span class="keyword">const </span><span class="keywordtype">char</span>*<span class="keyword">&gt;</span>(</div>
+<div class="line"><span class="lineno">   87</span>                KernelElfSingleton::instance().strtab + symtab.st_name),</div>
+<div class="line"><span class="lineno">   88</span>            buffer[i] - symtab.st_value);</div>
+<div class="line"><span class="lineno">   89</span>        *<a class="code hl_variable" href="basic__info_8hpp.html#a6a57db0096456f14176cf7e7affa1929">end</a> = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><span class="lineno">   90</span>        <a class="code hl_function" href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e">klog::RawPut</a>(line_buf);</div>
+<div class="line"><span class="lineno">   91</span>        <a class="code hl_function" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60">etl_putchar</a>(<span class="charliteral">&#39;\n&#39;</span>);</div>
+<div class="line"><span class="lineno">   92</span>        found = <span class="keyword">true</span>;</div>
+<div class="line"><span class="lineno">   93</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><span class="lineno">   94</span>      }</div>
+<div class="line"><span class="lineno">   95</span>    }</div>
+<div class="line"><span class="lineno">   96</span>    <span class="keywordflow">if</span> (!found) {</div>
+<div class="line"><span class="lineno">   97</span>      <span class="keyword">auto</span>* <a class="code hl_variable" href="basic__info_8hpp.html#a6a57db0096456f14176cf7e7affa1929">end</a> = etl::format_to_n(line_buf, <span class="keyword">sizeof</span>(line_buf) - 1,</div>
+<div class="line"><span class="lineno">   98</span>                                   <span class="stringliteral">&quot;  #{} {:#018x} [???]&quot;</span>, i, buffer[i]);</div>
+<div class="line"><span class="lineno">   99</span>      *<a class="code hl_variable" href="basic__info_8hpp.html#a6a57db0096456f14176cf7e7affa1929">end</a> = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><span class="lineno">  100</span>      <a class="code hl_function" href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e">klog::RawPut</a>(line_buf);</div>
+<div class="line"><span class="lineno">  101</span>      <a class="code hl_function" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60">etl_putchar</a>(<span class="charliteral">&#39;\n&#39;</span>);</div>
+<div class="line"><span class="lineno">  102</span>    }</div>
+<div class="line"><span class="lineno">  103</span>  }</div>
+<div class="line"><span class="lineno">  104</span> </div>
+<div class="line"><span class="lineno">  105</span>  <a class="code hl_function" href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e">klog::RawPut</a>(<span class="stringliteral">&quot;--- End Stack Trace ---\n&quot;</span>);</div>
+<div class="line"><span class="lineno">  106</span>}</div>
+<div class="ttc" id="aaarch64_2early__console_8cpp_html_a00b66d463088c2b14f7766792ee8bc60"><div class="ttname"><a href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60">etl_putchar</a></div><div class="ttdeci">auto etl_putchar(int c) -&gt; void</div><div class="ttdoc">早期控制台字符输出</div><div class="ttdef"><b>Definition</b> <a href="aarch64_2early__console_8cpp_source.html#l00043">early_console.cpp:43</a></div></div>
+<div class="ttc" id="abasic__info_8hpp_html_a6a57db0096456f14176cf7e7affa1929"><div class="ttname"><a href="basic__info_8hpp.html#a6a57db0096456f14176cf7e7affa1929">end</a></div><div class="ttdeci">void * end[]</div><div class="ttdoc">内核结束</div><div class="ttdef"><b>Definition</b> <a href="basic__info_8hpp_source.html#l00021">basic_info.hpp:21</a></div></div>
+<div class="ttc" id="anamespaceklog_html_a1f3394a52018d711b32b8c26e8ff429e"><div class="ttname"><a href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e">klog::RawPut</a></div><div class="ttdeci">__always_inline auto RawPut(const char *msg) -&gt; void</div><div class="ttdoc">绕过队列直接输出至串口（用于 panic 路径）</div><div class="ttdef"><b>Definition</b> <a href="kernel__log_8hpp_source.html#l00218">kernel_log.hpp:218</a></div></div>
+</div><!-- fragment --><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="riscv64_2backtrace_8cpp_a7ec7552af58759281893e893bfaecb2e_cgraph.png" border="0" usemap="#ariscv64_2backtrace_8cpp_a7ec7552af58759281893e893bfaecb2e_cgraph" alt=""/></div>
+<map name="ariscv64_2backtrace_8cpp_a7ec7552af58759281893e893bfaecb2e_cgraph" id="ariscv64_2backtrace_8cpp_a7ec7552af58759281893e893bfaecb2e_cgraph">
+<area shape="rect" title="打印调用栈（raw 版本，绕过日志队列）" alt="" coords="5,56,131,81"/>
+<area shape="rect" href="aarch64_2backtrace_8cpp.html#a7986cc449f6e96ca1ee111a6ee7940bb" title=" " alt="" coords="189,5,275,31"/>
+<area shape="poly" title=" " alt="" coords="109,53,176,32,178,37,111,58"/>
+<area shape="rect" href="aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="524,81,619,107"/>
+<area shape="poly" title=" " alt="" coords="131,69,510,88,510,94,131,74"/>
+<area shape="rect" href="namespaceklog.html#a1f3394a52018d711b32b8c26e8ff429e" title="绕过队列直接输出至串口（用于 panic 路径）" alt="" coords="179,107,285,132"/>
+<area shape="poly" title=" " alt="" coords="111,79,178,100,176,105,109,84"/>
+<area shape="rect" href="namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="333,107,476,132"/>
+<area shape="poly" title=" " alt="" coords="286,117,320,117,320,122,286,122"/>
+<area shape="poly" title=" " alt="" coords="476,106,510,101,511,106,476,111"/>
 </map>
 </div>
 

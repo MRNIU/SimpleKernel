@@ -92,18 +92,17 @@ $(document).ready(function(){initNavTree('md__2____w_2SimpleKernel_2SimpleKernel
   <div class="headertitle"><div class="title">AGENTS.md — src/task/</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md409"></a> </p>
-<h1><a class="anchor" id="autotoc_md410"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md415"></a> </p>
+<h1><a class="anchor" id="autotoc_md416"></a>
 OVERVIEW</h1>
-<p>Task management subsystem: schedulers (CFS/FIFO/RR/Idle), <a class="el" href="structTaskControlBlock.html" title="任务控制块，管理进程/线程的核心数据结构">TaskControlBlock</a>, <a class="el" href="classTaskManager.html" title="任务管理器">TaskManager</a> singleton, sync primitives (mutex via spinlock), syscall-level task operations (clone, exit, sleep, wait, wakeup, block).</p>
-<h1><a class="anchor" id="autotoc_md411"></a>
+<p>Task management subsystem: schedulers (CFS/FIFO/RR), <a class="el" href="structTaskControlBlock.html" title="任务控制块，管理进程/线程的核心数据结构">TaskControlBlock</a>, <a class="el" href="classTaskManager.html" title="任务管理器">TaskManager</a> singleton, sync primitives (mutex via spinlock), syscall-level task operations (clone, exit, sleep, wait, wakeup, block). Idle tasks are statically allocated per-CPU and managed directly via per_cpu::idle_task (no dedicated scheduler).</p>
+<h1><a class="anchor" id="autotoc_md417"></a>
 STRUCTURE</h1>
 <div class="fragment"><div class="line">include/</div>
 <div class="line">  scheduler_base.hpp       # SchedulerBase ABC — PickNext, Enqueue, Dequeue, OnTick, OnTimeSliceExpired</div>
 <div class="line">  cfs_scheduler.hpp        # CFS (Completely Fair Scheduler) — vruntime-based</div>
 <div class="line">  fifo_scheduler.hpp       # FIFO — first-in first-out, no preemption</div>
 <div class="line">  rr_scheduler.hpp         # Round-Robin — time-slice based preemption</div>
-<div class="line">  idle_scheduler.hpp       # Idle — runs when no other tasks ready</div>
 <div class="line">  task_control_block.hpp   # TCB — task state, context, priority, stack</div>
 <div class="line">  task_fsm.hpp             # Task state machine — valid state transitions</div>
 <div class="line">  task_manager.hpp         # TaskManagerSingleton (etl::singleton&lt;TaskManager&gt;) — owns schedulers, dispatches</div>
@@ -113,6 +112,7 @@ STRUCTURE</h1>
 <div class="line">schedule.cpp               # Schedule() — main scheduling loop, context switch trigger</div>
 <div class="line">task_control_block.cpp     # TCB construction, state transitions</div>
 <div class="line">task_manager.cpp           # TaskManager — AddTask, InitCurrentCore, scheduler selection</div>
+<div class="line">balance.cpp                # Balance() — cross-core work-stealing load balancer</div>
 <div class="line">tick_update.cpp            # Timer tick handler — calls scheduler TickUpdate</div>
 <div class="line">clone.cpp                  # sys_clone — task creation</div>
 <div class="line">exit.cpp                   # sys_exit — task termination, cleanup</div>
@@ -121,7 +121,7 @@ STRUCTURE</h1>
 <div class="line">wakeup.cpp                 # Wakeup — move task from blocked to ready</div>
 <div class="line">block.cpp                  # Block — move task from ready to blocked</div>
 <div class="line">mutex.cpp                  # Mutex implementation (uses SpinLock internally)</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md412"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md418"></a>
 WHERE TO LOOK</h1>
 <ul>
 <li><b>Adding a scheduler</b> → Subclass <code><a class="el" href="classSchedulerBase.html" title="调度器基类接口">SchedulerBase</a></code> (see <code><a class="el" href="cfs__scheduler_8hpp.html">cfs_scheduler.hpp</a></code>), implement <code>PickNext()</code>, <code>Enqueue()</code>, <code>Dequeue()</code>, <code>OnTick()</code></li>
@@ -129,16 +129,16 @@ WHERE TO LOOK</h1>
 <li><b>Context switch</b> → <code><a class="el" href="schedule_8cpp.html">schedule.cpp</a></code> calls arch-specific <code>switch.S</code> via function pointer</li>
 <li><b>Sync primitives</b> → <code><a class="el" href="mutex_8cpp.html">mutex.cpp</a></code> uses <code><a class="el" href="classSpinLock.html" title="自旋锁（纯原子操作，不管理中断状态）">SpinLock</a></code> + task blocking; <code><a class="el" href="spinlock_8hpp.html">spinlock.hpp</a></code> in <code>src/include/</code></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md413"></a>
+<h1><a class="anchor" id="autotoc_md419"></a>
 CONVENTIONS</h1>
 <ul>
 <li>One syscall operation per .cpp file (clone, exit, sleep, wait, wakeup, block)</li>
 <li>Schedulers own their internal run queues — <a class="el" href="classTaskManager.html" title="任务管理器">TaskManager</a> dispatches to per-policy schedulers</li>
 <li><code>TaskManagerSingleton::instance()</code> (defined in <code><a class="el" href="task__manager_8hpp.html">task_manager.hpp</a></code>) is the global entry point</li>
 <li>TCB contains arch-specific context pointer — populated by <code>switch.S</code></li>
-<li><code>Balance()</code> in <code><a class="el" href="task__manager_8cpp.html">task_manager.cpp</a></code>: cross-core work-stealing (steals kNormal tasks from most-loaded core, called every 64 ticks)</li>
+<li><code>Balance()</code> in <code><a class="el" href="balance_8cpp.html">balance.cpp</a></code>: cross-core work-stealing (steals kNormal tasks from most-loaded core, called every 64 ticks)</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md414"></a>
+<h1><a class="anchor" id="autotoc_md420"></a>
 ANTI-PATTERNS</h1>
 <ul>
 <li><b>DO NOT</b> call Schedule() before <a class="el" href="classTaskManager.html" title="任务管理器">TaskManager</a> initialization in boot sequence</li>

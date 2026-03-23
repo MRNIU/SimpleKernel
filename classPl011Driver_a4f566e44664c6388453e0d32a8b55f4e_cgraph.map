@@ -1,20 +1,29 @@
 <map id="Pl011Driver::Probe" name="Pl011Driver::Probe">
-<area shape="rect" id="Node000001" title="初始化 PL011 UART。" alt="" coords="5,66,148,91"/>
-<area shape="rect" id="Node000002" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="238,41,321,66"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,67,224,58,224,63,149,72"/>
-<area shape="rect" id="Node000009" href="$namespacemmio__helper.html#abef9cac26ccb76a6b4b911f8f1ccae76" title="从节点提取 MMIO base/size 并通过 VirtualMemory 映射该区域。" alt="" coords="196,90,363,115"/>
-<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="149,84,183,89,182,94,148,90"/>
-<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="411,41,537,66"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="321,51,397,51,397,56,321,56"/>
-<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="791,15,976,41"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="537,47,777,32,777,37,538,52"/>
-<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="585,66,743,91"/>
-<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="538,59,572,64,571,69,537,64"/>
-<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1024,5,1287,45"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="976,24,1010,24,1010,29,976,30"/>
-<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="719,63,814,41,815,46,721,68"/>
-<area shape="rect" id="Node000007" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="812,67,955,93"/>
-<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="743,76,798,77,798,82,743,82"/>
-<area shape="rect" id="Node000008" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1108,70,1203,95"/>
-<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="955,78,1095,79,1095,85,955,83"/>
+<area shape="rect" id="Node000001" title="初始化 PL011 UART。" alt="" coords="5,80,148,105"/>
+<area shape="rect" id="Node000002" href="$namespaceklog.html#a1f6b347e95b475341e195f363a9f20a3" title="以 INFO 级别记录日志" alt="" coords="238,55,321,80"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,81,224,72,224,77,149,86"/>
+<area shape="rect" id="Node000012" href="$namespacemmio__helper.html#abef9cac26ccb76a6b4b911f8f1ccae76" title="从节点提取 MMIO base/size 并通过 VirtualMemory 映射该区域。" alt="" coords="196,104,363,129"/>
+<area shape="poly" id="edge15_Node000001_Node000012" title=" " alt="" coords="149,98,183,103,182,108,148,104"/>
+<area shape="rect" id="Node000003" href="$namespaceklog_1_1detail.html#a0562f234b6226d15eb2a3c4750078004" title="核心实现：格式化消息并入队，随后尝试排空" alt="" coords="411,55,537,80"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="321,65,397,65,397,70,321,70"/>
+<area shape="rect" id="Node000004" href="$namespacecpu__io.html#a52b8a7263a31e6670ef4dec7922d9e72" title=" " alt="" coords="794,5,979,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="537,57,780,28,781,33,538,62"/>
+<area shape="rect" id="Node000006" href="$namespaceklog_1_1detail.html#af04e0d33a64c0a74c672361396bc644b" title="将队列中所有条目输出至串口" alt="" coords="585,80,743,105"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="538,73,572,78,571,83,537,78"/>
+<area shape="rect" id="Node000005" href="$classtest__env_1_1TestEnvironmentState.html#a562424679984595e70361b0dad2ef96d" title="获取当前线程的环境实例指针（供 Mock 层调用）" alt="" coords="1031,73,1293,113"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="940,28,983,39,1080,66,1078,71,982,45,938,33"/>
+<area shape="poly" id="edge10_Node000006_Node000004" title=" " alt="" coords="693,77,790,39,816,32,818,37,792,45,695,82"/>
+<area shape="rect" id="Node000007" href="$namespacecpu__io.html#a6c4ee629d8129247969cace77d47fecb" title=" " alt="" coords="798,55,975,80"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="743,81,784,76,785,82,743,86"/>
+<area shape="rect" id="Node000008" href="$namespacecpu__io.html#afe7f925ac3cb632ed212166712288451" title=" " alt="" coords="801,104,973,129"/>
+<area shape="poly" id="edge8_Node000006_Node000008" title=" " alt="" coords="743,98,787,103,787,109,743,104"/>
+<area shape="rect" id="Node000009" href="$namespacecpu__io.html#aaab46268534006b116de3e112c237f7f" title=" " alt="" coords="791,153,983,179"/>
+<area shape="poly" id="edge11_Node000006_Node000009" title=" " alt="" coords="697,103,792,138,822,147,820,152,790,143,695,108"/>
+<area shape="rect" id="Node000010" href="$namespaceklog_1_1detail.html#af01b0252de3bdf62356b8f5905c0cb1a" title="通过 etl_putchar 输出字符串（空指针安全）" alt="" coords="815,203,958,228"/>
+<area shape="poly" id="edge13_Node000006_Node000010" title=" " alt="" coords="680,104,727,146,758,169,792,189,808,196,806,201,789,194,755,174,723,150,676,108"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="976,73,1017,77,1017,82,975,78"/>
+<area shape="poly" id="edge9_Node000008_Node000005" title=" " alt="" coords="973,107,1017,103,1017,108,973,112"/>
+<area shape="poly" id="edge12_Node000009_Node000005" title=" " alt="" coords="935,151,982,138,1073,114,1074,119,983,143,936,156"/>
+<area shape="rect" id="Node000011" href="$aarch64_2early__console_8cpp.html#a00b66d463088c2b14f7766792ee8bc60" title="早期控制台字符输出" alt="" coords="1115,203,1209,228"/>
+<area shape="poly" id="edge14_Node000010_Node000011" title=" " alt="" coords="958,213,1101,213,1101,218,958,218"/>
 </map>
