@@ -142,7 +142,7 @@ pub fn interrupt_init() {
     // SAFETY: stvec/sie/sstatus 是 S 模式 CSR，在 S 模式下可安全写入
     unsafe {
         // 设置 stvec（Direct 模式：低 2 位 = 00）
-        let trap_entry_addr = trap_entry as usize;
+        let trap_entry_addr = trap_entry as unsafe extern "C" fn() as usize;
         core::arch::asm!(
             "csrw stvec, {addr}",
             addr = in(reg) trap_entry_addr,
@@ -169,7 +169,7 @@ pub fn interrupt_init() {
 pub fn interrupt_init_smp() {
     // SAFETY: CSR 写入在 S 模式下安全
     unsafe {
-        let trap_entry_addr = trap_entry as usize;
+        let trap_entry_addr = trap_entry as unsafe extern "C" fn() as usize;
         core::arch::asm!(
             "csrw stvec, {addr}",
             addr = in(reg) trap_entry_addr,

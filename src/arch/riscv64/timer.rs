@@ -30,7 +30,7 @@ fn read_time() -> u64 {
 /// 注意：SIE.STIE 位由 `interrupt_init()` 统一使能，此处只负责设置首个超时值。
 pub fn timer_init() {
     let next = read_time() + TIMER_INTERVAL;
-    sbi_rt::legacy::set_timer(next);
+    sbi_rt::set_timer(next).ok();
     log::info!("TimerInit: 10MHz, 1Hz tick");
 }
 
@@ -40,7 +40,7 @@ pub fn timer_init() {
 /// - `hart_id`：当前从核的 hart ID
 pub fn timer_init_smp(hart_id: usize) {
     let next = read_time() + TIMER_INTERVAL;
-    sbi_rt::legacy::set_timer(next);
+    sbi_rt::set_timer(next).ok();
     log::info!("TimerInitSMP core {}", hart_id);
 }
 
@@ -55,7 +55,7 @@ pub fn handle_timer() {
 
     // 重新设置下一次超时
     let next = read_time() + TIMER_INTERVAL;
-    sbi_rt::legacy::set_timer(next);
+    sbi_rt::set_timer(next).ok();
 
     // 更新 per-CPU 抢占状态中的硬中断计数
     // SAFETY: 在中断处理程序中调用，此时中断已被 CPU 自动关闭（sstatus.SIE=0）

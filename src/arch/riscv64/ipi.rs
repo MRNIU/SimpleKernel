@@ -14,7 +14,9 @@ unsafe extern "C" {
 /// # 参数
 /// - `hart_id`：目标 hart 的 ID
 pub fn send_ipi(hart_id: usize) {
-    sbi_rt::legacy::send_ipi(1 << hart_id);
+    // HartMask::from_mask_base(mask=1, base=hart_id) 表示精确指定单个 hart
+    let mask = sbi_rt::HartMask::from_mask_base(1, hart_id);
+    sbi_rt::send_ipi(mask).ok();
     log::info!("IPI sent to hart {}", hart_id);
 }
 
@@ -53,7 +55,8 @@ pub fn wake_up_other_cores() {
     }
 
     // SAFETY: _start 由链接器定义，地址在内核镜像生命周期内有效
-    let start_addr = _start as usize;
+    // 先转为函数指针类型再转为 usize（Rust 2024 不允许函数 item 直接转 usize）
+    let start_addr = _start as unsafe extern "C" fn(i32, *const *const u8) as usize;
 
     for hart_id in 1..core_count {
         let ret = sbi_rt::hart_start(hart_id, start_addr, 0);

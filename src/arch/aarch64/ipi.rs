@@ -49,7 +49,8 @@ pub fn wake_up_other_cores() {
     }
 
     // SAFETY: _start 由链接器定义，地址在内核镜像生命周期内有效
-    let entry = _start as usize as u64;
+    // 先转为函数指针类型再转为 usize（Rust 2024 不允许函数 item 直接转 usize）
+    let entry = _start as unsafe extern "C" fn(i32, *const *const u8) as usize as u64;
 
     for cpu_id in 1..core_count {
         // PSCI CPU_ON (64-bit): 功能号 0xC400_0003
