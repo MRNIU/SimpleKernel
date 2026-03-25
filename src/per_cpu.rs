@@ -70,10 +70,39 @@ impl LockStack {
     }
 }
 
+/// 抢占状态 — 跟踪中断嵌套层数与调度标志
+#[derive(Debug, Default)]
+pub struct PreemptState {
+    /// 硬中断嵌套计数（>0 表示在 hardirq 上下文中）
+    pub hardirq_count: u32,
+    /// 软中断嵌套计数（>0 表示在 softirq 上下文中）
+    pub softirq_count: u32,
+    /// 抢占关闭计数（>0 表示抢占被禁用）
+    pub preempt_disable_count: u32,
+    /// 是否需要调度
+    pub need_resched: bool,
+    /// 是否需要负载均衡
+    pub need_balance: bool,
+}
+
+impl PreemptState {
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            hardirq_count: 0,
+            softirq_count: 0,
+            preempt_disable_count: 0,
+            need_resched: false,
+            need_balance: false,
+        }
+    }
+}
+
 #[repr(C, align(128))]
 pub struct PerCpu {
     pub core_id: usize,
     pub lock_stack: LockStack,
+    pub preempt: PreemptState,
 }
 
 impl PerCpu {
@@ -82,6 +111,7 @@ impl PerCpu {
         Self {
             core_id: id,
             lock_stack: LockStack::new(),
+            preempt: PreemptState::new(),
         }
     }
 }

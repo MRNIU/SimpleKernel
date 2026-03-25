@@ -26,9 +26,10 @@ mod panic;
 mod per_cpu;
 mod scope_guard;
 mod sync;
+mod syscall;
 
 #[cfg(not(test))]
-use core::sync::atomic::{AtomicU64, Ordering};
+use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 #[cfg(not(test))]
 #[used]
@@ -42,6 +43,10 @@ static DATA_SENTINEL: AtomicU64 = AtomicU64::new(1);
 #[used]
 static BSS_SENTINEL: AtomicU64 = AtomicU64::new(0);
 
+/// 标记主核是否已完成初始化，用于区分主核/从核引导路径
+#[cfg(not(test))]
+static PRIMARY_BOOTED: AtomicBool = AtomicBool::new(false);
+
 #[cfg(not(test))]
 #[unsafe(no_mangle)]
 pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
@@ -50,7 +55,12 @@ pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
     let _ = unsafe { core::ptr::read_volatile(&RODATA_SENTINEL[0]) };
     let _ = BSS_SENTINEL.load(Ordering::Relaxed);
 
-    arch::bootstrap(argc, argv);
+    // swap 返回旧值：false → 当前核是第一个到达的核（主核）
+    if !PRIMARY_BOOTED.swap(true, Ordering::AcqRel) {
+        arch::bootstrap(argc, argv);
+    } else {
+        arch::bootstrap_smp(argc, argv);
+    }
 }
 
 #[cfg(not(test))]
@@ -94,6 +104,11 @@ pub fn phase3_smoke_test() {
     assert_eq!(*val, 42);
 
     log::info!("Phase 3 complete");
+}
+
+#[cfg(not(test))]
+pub fn phase4_smoke_test() {
+    log::info!("Phase 4 complete");
 }
 
 #[cfg(test)]

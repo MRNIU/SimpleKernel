@@ -57,6 +57,12 @@ pub fn arch_init(_argc: i32, argv: *const *const u8) {
     logging::flush();
 }
 
-/// TODO(P4): 从核架构初始化（当前为空）
-#[allow(dead_code)]
-pub fn arch_init_smp(_argc: i32, _argv: *const *const u8) {}
+/// 从核架构初始化
+///
+/// 从核不需要解析 FDT；BASIC_INFO 已由主核初始化。
+///
+/// # 参数
+/// - `hart_id`：当前从核的 hart ID
+pub fn arch_init_smp(hart_id: usize) {
+    log::info!("arch_init_smp: hart {} starting", hart_id);
+}
