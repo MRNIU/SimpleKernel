@@ -1,6 +1,12 @@
 /// AArch64 中断子系统
 ///
-/// 负责 GICv2 初始化、VBAR_EL1 设置，以及 16 个异常向量处理函数的实现。
+/// 使用 `arm-gic` crate 初始化 GICv3，通过 `GicCpuInterface` 系统寄存器
+/// 完成 IAR/EOIR 操作。VBAR_EL1 设置及 16 个异常向量处理函数。
+use arm_gic::gicv3::registers::{Gicd, GicrSgi};
+use arm_gic::gicv3::{GicCpuInterface, GicV3};
+use arm_gic::{IntId, InterruptGroup, UniqueMmioPointer};
+use core::ptr::NonNull;
+
 use crate::memory::address::PhysAddr;
 use crate::memory::map_mmio;
 
@@ -13,116 +19,50 @@ unsafe extern "C" {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GICv2 地址常量与辅助函数
+// GICv3 地址常量（QEMU virt 平台）
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// GIC 分发器（GICD）基地址（QEMU virt 平台）
+/// GIC Distributor（GICD）基地址
 const GICD_BASE: usize = 0x0800_0000;
-/// GIC 分发器映射大小
+/// GICD 映射大小
 const GICD_SIZE: usize = 0x1_0000;
 
-/// GIC CPU 接口（GICC）基地址（QEMU virt 平台）
-const GICC_BASE: usize = 0x0801_0000;
-/// GIC CPU 接口映射大小
-const GICC_SIZE: usize = 0x1_0000;
+/// GIC Redistributor（GICR）基地址
+const GICR_BASE: usize = 0x080A_0000;
+/// 每核 GICR 帧大小（RD_base 64KB + SGI_base 64KB = 0x20000）
+const GICR_STRIDE: usize = 0x2_0000;
+/// GICR 映射总大小（MAX_CORE_COUNT 个核）
+const GICR_SIZE: usize = GICR_STRIDE * crate::config::MAX_CORE_COUNT;
 
-// GICD 寄存器偏移
-const GICD_CTLR: usize = 0x000;
-const GICD_ISENABLER: usize = 0x100;
-const GICD_IPRIORITYR: usize = 0x400;
+/// 虚拟定时器 PPI 编号（PPI 11 = GIC IRQ 27）
+const VTIMER_PPI: u32 = 11;
 
-// GICC 寄存器偏移
-const GICC_CTLR: usize = 0x000;
-const GICC_PMR: usize = 0x004;
-const GICC_IAR: usize = 0x00C;
-const GICC_EOIR: usize = 0x010;
-
-/// 虚拟定时器 PPI 中断号（GIC IRQ 27）
-const VTIMER_IRQ: u32 = 27;
-
-/// 写 GICD 32 位寄存器
-///
-/// # Safety
-/// 调用前必须已通过 `map_mmio` 映射 GICD 区域。
-#[inline]
-unsafe fn gicd_write32(offset: usize, val: u32) {
-    let addr = (GICD_BASE + offset) as *mut u32;
-    // SAFETY: 调用方保证地址已映射且对齐
-    unsafe { core::ptr::write_volatile(addr, val) };
-}
-
-/// 写 GICC 32 位寄存器
-///
-/// # Safety
-/// 调用前必须已通过 `map_mmio` 映射 GICC 区域。
-#[inline]
-unsafe fn gicc_write32(offset: usize, val: u32) {
-    let addr = (GICC_BASE + offset) as *mut u32;
-    // SAFETY: 调用方保证地址已映射且对齐
-    unsafe { core::ptr::write_volatile(addr, val) };
-}
-
-/// 读 GICC 32 位寄存器
-///
-/// # Safety
-/// 调用前必须已通过 `map_mmio` 映射 GICC 区域。
-#[inline]
-unsafe fn gicc_read32(offset: usize) -> u32 {
-    let addr = (GICC_BASE + offset) as *const u32;
-    // SAFETY: 调用方保证地址已映射且对齐
-    unsafe { core::ptr::read_volatile(addr) }
-}
+/// 定时器中断优先级
+const VTIMER_PRIORITY: u8 = 0xA0;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GICv2 初始化
+// GICv3 初始化辅助
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// 初始化 GICv2
+/// 创建临时 GicV3 实例
 ///
-/// 1. Identity-map GICD 和 GICC 寄存器区域
-/// 2. 使能 GICD（GICD_CTLR = 1）
-/// 3. 设置虚拟定时器（IRQ 27）优先级为 0xA0
-/// 4. 使能 IRQ 27（GICD_ISENABLER 对应位）
-/// 5. 设置 GICC_PMR = 0xFF（接受所有优先级）
-/// 6. 使能 GICC（GICC_CTLR = 1）
-fn gic_init() {
-    // Step 1: 映射 GICD 和 GICC
-    map_mmio(PhysAddr::new(GICD_BASE), GICD_SIZE).expect("gic_init: 映射 GICD 失败");
-    map_mmio(PhysAddr::new(GICC_BASE), GICC_SIZE).expect("gic_init: 映射 GICC 失败");
+/// GIC 硬件状态在 setup/init_cpu 后持续有效；调用方使用后可安全 drop。
+/// IAR/EOIR 通过 `GicCpuInterface` 静态方法访问，不依赖此实例。
+///
+/// # Safety
+/// GICD 和 GICR 区域必须已通过 `map_mmio` 映射。
+unsafe fn create_gic<'a>() -> GicV3<'a> {
+    let cpu_count = crate::per_cpu::BASIC_INFO
+        .get()
+        .map(|info| info.core_count)
+        .unwrap_or(1);
 
-    // SAFETY: GICD/GICC 已通过 map_mmio 映射
+    // SAFETY: GICD/GICR 已映射，identity mapping 保证地址有效
     unsafe {
-        // Step 2: 使能 GICD
-        gicd_write32(GICD_CTLR, 1);
-
-        // Step 3: 设置 IRQ 27 优先级
-        // GICD_IPRIORITYR 每个寄存器包含 4 个 IRQ 的优先级（每 8 位一个）
-        // IRQ 27 → 寄存器 GICD_IPRIORITYR[27/4] = GICD_IPRIORITYR[6]，偏移量 = 0x400 + 6*4 = 0x418
-        // byte offset in the register: 27 % 4 = 3 → 第 3 个字节（bits 31:24）
-        let ipriorityr_reg_offset = GICD_IPRIORITYR + (VTIMER_IRQ as usize / 4) * 4;
-        let byte_offset = (VTIMER_IRQ % 4) * 8;
-        // 读-修改-写：仅设置 IRQ 27 对应字节，保持其他 IRQ 优先级不变
-        let current = {
-            let addr = (GICD_BASE + ipriorityr_reg_offset) as *const u32;
-            core::ptr::read_volatile(addr)
-        };
-        let mask = !(0xFFu32 << byte_offset);
-        let new_val = (current & mask) | (0xA0u32 << byte_offset);
-        {
-            let addr = (GICD_BASE + ipriorityr_reg_offset) as *mut u32;
-            core::ptr::write_volatile(addr, new_val);
-        }
-
-        // Step 4: 使能 IRQ 27
-        // GICD_ISENABLER[27/32] = GICD_ISENABLER[0]，位 27%32 = 27
-        let isenabler_offset = GICD_ISENABLER + (VTIMER_IRQ as usize / 32) * 4;
-        gicd_write32(isenabler_offset, 1u32 << (VTIMER_IRQ % 32));
-
-        // Step 5: 设置 GICC_PMR = 0xFF（接受所有优先级）
-        gicc_write32(GICC_PMR, 0xFF);
-
-        // Step 6: 使能 GICC
-        gicc_write32(GICC_CTLR, 1);
+        let gicd_ptr: *mut Gicd = GICD_BASE as *mut Gicd;
+        let gicd = UniqueMmioPointer::new(NonNull::new(gicd_ptr).expect("GICD_BASE is null"));
+        let gicr = NonNull::new(GICR_BASE as *mut GicrSgi).expect("GICR_BASE is null");
+        GicV3::new(gicd, gicr, cpu_count, false)
     }
 }
 
@@ -133,36 +73,11 @@ fn gic_init() {
 /// 初始化主核中断系统
 ///
 /// 1. 设置 VBAR_EL1 为向量表地址
-/// 2. 初始化 GICv2
-/// 3. 通过 DAIFCLR 使能 IRQ（bit 1）
+/// 2. 映射 GICD/GICR 并通过 arm-gic 初始化 GICv3
+/// 3. 使能虚拟定时器 PPI（IRQ 27）
+/// 4. 通过 DAIFCLR 使能 IRQ
 pub fn interrupt_init() {
-    // SAFETY: vector_table 由链接器定义，.balign 0x800 对齐，在内核生命周期内有效
-    let vbar = unsafe { &vector_table as *const u8 as u64 };
-    // SAFETY: msr vbar_el1 在 EL1 下合法；daifclr 使能 IRQ
-    unsafe {
-        core::arch::asm!(
-            "msr vbar_el1, {vbar}",
-            "isb",
-            vbar = in(reg) vbar,
-        );
-    }
-
-    gic_init();
-
-    // 使能 IRQ（清除 DAIF.I 位，bit 1 of daifclr）
-    // SAFETY: msr daifclr 是特权指令，在 EL1 下合法
-    unsafe {
-        core::arch::asm!("msr daifclr, #2");
-    }
-
-    log::info!("InterruptInit done");
-}
-
-/// 初始化从核中断系统
-///
-/// 设置 VBAR_EL1，使能 IRQ。GICv2 GICD 由主核统一初始化。
-pub fn interrupt_init_smp() {
-    // SAFETY: vector_table 由链接器定义，在内核生命周期内有效
+    // SAFETY: vector_table 由链接器定义，.balign 0x800 对齐
     let vbar = unsafe { &vector_table as *const u8 as u64 };
     // SAFETY: msr vbar_el1 在 EL1 下合法
     unsafe {
@@ -171,6 +86,80 @@ pub fn interrupt_init_smp() {
             "isb",
             vbar = in(reg) vbar,
         );
+    }
+
+    // 映射 GICD 和 GICR MMIO 区域
+    map_mmio(PhysAddr::new(GICD_BASE), GICD_SIZE).expect("interrupt_init: 映射 GICD 失败");
+    map_mmio(PhysAddr::new(GICR_BASE), GICR_SIZE).expect("interrupt_init: 映射 GICR 失败");
+
+    let cpu_id = crate::per_cpu::current_core_id();
+
+    // SAFETY: GICD/GICR 已映射
+    unsafe {
+        let mut gic = create_gic();
+        // setup() 完成：ICC_SRE 使能、Redistributor 唤醒、GICD 配置、Group 1 使能
+        gic.setup(cpu_id);
+
+        // 使能虚拟定时器 PPI
+        let vtimer_intid = IntId::ppi(VTIMER_PPI);
+        gic.set_interrupt_priority(vtimer_intid, Some(cpu_id), VTIMER_PRIORITY)
+            .expect("set_interrupt_priority 失败");
+        gic.enable_interrupt(vtimer_intid, Some(cpu_id), true)
+            .expect("enable_interrupt 失败");
+    }
+
+    // 设置优先级掩码（接受所有优先级）
+    GicCpuInterface::set_priority_mask(0xFF);
+
+    // 使能 IRQ（仅清除 DAIF.I 位）
+    // SAFETY: msr daifclr 是特权指令，在 EL1 下合法
+    unsafe {
+        core::arch::asm!("msr daifclr, #2");
+    }
+
+    log::info!("InterruptInit: GICv3 (arm-gic) done");
+}
+
+/// 初始化从核中断系统
+///
+/// GICD 和 GICR 区域已由主核映射。从核仅需：
+/// 1. 设置 VBAR_EL1
+/// 2. 初始化本核 GIC CPU 接口和 Redistributor
+/// 3. 使能虚拟定时器 PPI
+/// 4. 使能 IRQ
+pub fn interrupt_init_smp() {
+    // SAFETY: vector_table 由链接器定义
+    let vbar = unsafe { &vector_table as *const u8 as u64 };
+    // SAFETY: msr vbar_el1 在 EL1 下合法
+    unsafe {
+        core::arch::asm!(
+            "msr vbar_el1, {vbar}",
+            "isb",
+            vbar = in(reg) vbar,
+        );
+    }
+
+    let cpu_id = crate::per_cpu::current_core_id();
+
+    // SAFETY: GICD/GICR 已由主核映射
+    unsafe {
+        let mut gic = create_gic();
+        // init_cpu：ICC_SRE 使能 + Redistributor 唤醒
+        gic.init_cpu(cpu_id);
+
+        // 使能本核虚拟定时器 PPI
+        let vtimer_intid = IntId::ppi(VTIMER_PPI);
+        gic.set_interrupt_priority(vtimer_intid, Some(cpu_id), VTIMER_PRIORITY)
+            .expect("set_interrupt_priority 失败");
+        gic.enable_interrupt(vtimer_intid, Some(cpu_id), true)
+            .expect("enable_interrupt 失败");
+    }
+
+    GicCpuInterface::set_priority_mask(0xFF);
+    GicCpuInterface::enable_group1(true);
+
+    // SAFETY: msr daifclr 在 EL1 下合法
+    unsafe {
         core::arch::asm!("msr daifclr, #2");
     }
 }
@@ -179,29 +168,25 @@ pub fn interrupt_init_smp() {
 // 中央分发函数
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// 分发 IRQ（读取 GICC_IAR，分发，写 GICC_EOIR）
+/// 分发 IRQ（通过 GicCpuInterface 系统寄存器完成 IAR/EOIR）
 fn dispatch_irq(ctx: &mut TrapContext) {
-    // SAFETY: GICC 已在 gic_init 中映射
-    let iar = unsafe { gicc_read32(GICC_IAR) };
-    let irq_id = iar & 0x3FF; // 低 10 位为中断 ID
+    let intid = GicCpuInterface::get_and_acknowledge_interrupt(InterruptGroup::Group1);
 
-    match irq_id {
-        n if n == VTIMER_IRQ => {
+    let Some(intid) = intid else {
+        // Spurious interrupt（IntId::SPECIAL_NONE = 1023），忽略
+        return;
+    };
+
+    match intid {
+        id if id == IntId::ppi(VTIMER_PPI) => {
             super::timer::handle_timer(ctx);
         }
-        1023 => {
-            // spurious interrupt（GICv2 1023 = no interrupt pending），忽略
-        }
-        n => {
-            log::warn!("dispatch_irq: 未知 IRQ {}", n);
+        id => {
+            log::warn!("dispatch_irq: 未知 IRQ {:?}", id);
         }
     }
 
-    // 写 EOIR 完成中断处理
-    if irq_id != 1023 {
-        // SAFETY: GICC 已映射
-        unsafe { gicc_write32(GICC_EOIR, iar) };
-    }
+    GicCpuInterface::end_interrupt(intid, InterruptGroup::Group1);
 }
 
 /// 分发同步异常（读取 ctx.esr_el1，根据 EC 字段路由）
@@ -238,20 +223,19 @@ fn dispatch_sync(ctx: &mut TrapContext) {
 // 16 个异常向量处理函数（由 interrupt.S 调用）
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Current EL with SP0 — 同步异常
+// ── Current EL with SP0 ──────────────────────────────────────────────────────
+
 #[unsafe(no_mangle)]
 pub extern "C" fn sync_current_el_sp0_handler(ctx: &mut TrapContext) {
     log::warn!("sync_current_el_sp0: ESR=0x{:x}", ctx.esr_el1);
     dispatch_sync(ctx);
 }
 
-/// Current EL with SP0 — IRQ
 #[unsafe(no_mangle)]
 pub extern "C" fn irq_current_el_sp0_handler(ctx: &mut TrapContext) {
     dispatch_irq(ctx);
 }
 
-/// Current EL with SP0 — FIQ
 #[unsafe(no_mangle)]
 pub extern "C" fn fiq_current_el_sp0_handler(ctx: &mut TrapContext) {
     log::error!(
@@ -262,7 +246,6 @@ pub extern "C" fn fiq_current_el_sp0_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-/// Current EL with SP0 — 系统错误
 #[unsafe(no_mangle)]
 pub extern "C" fn error_current_el_sp0_handler(ctx: &mut TrapContext) {
     log::error!(
@@ -273,19 +256,18 @@ pub extern "C" fn error_current_el_sp0_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-/// Current EL with SPx — 同步异常
+// ── Current EL with SPx ──────────────────────────────────────────────────────
+
 #[unsafe(no_mangle)]
 pub extern "C" fn sync_current_el_spx_handler(ctx: &mut TrapContext) {
     dispatch_sync(ctx);
 }
 
-/// Current EL with SPx — IRQ
 #[unsafe(no_mangle)]
 pub extern "C" fn irq_current_el_spx_handler(ctx: &mut TrapContext) {
     dispatch_irq(ctx);
 }
 
-/// Current EL with SPx — FIQ
 #[unsafe(no_mangle)]
 pub extern "C" fn fiq_current_el_spx_handler(ctx: &mut TrapContext) {
     log::error!(
@@ -296,7 +278,6 @@ pub extern "C" fn fiq_current_el_spx_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-/// Current EL with SPx — 系统错误
 #[unsafe(no_mangle)]
 pub extern "C" fn error_current_el_spx_handler(ctx: &mut TrapContext) {
     log::error!(
@@ -307,19 +288,18 @@ pub extern "C" fn error_current_el_spx_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-/// Lower EL AArch64 — 同步异常
+// ── Lower EL AArch64 ────────────────────────────────────────────────────────
+
 #[unsafe(no_mangle)]
 pub extern "C" fn sync_lower_el_aarch64_handler(ctx: &mut TrapContext) {
     dispatch_sync(ctx);
 }
 
-/// Lower EL AArch64 — IRQ
 #[unsafe(no_mangle)]
 pub extern "C" fn irq_lower_el_aarch64_handler(ctx: &mut TrapContext) {
     dispatch_irq(ctx);
 }
 
-/// Lower EL AArch64 — FIQ
 #[unsafe(no_mangle)]
 pub extern "C" fn fiq_lower_el_aarch64_handler(ctx: &mut TrapContext) {
     log::error!(
@@ -330,7 +310,6 @@ pub extern "C" fn fiq_lower_el_aarch64_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-/// Lower EL AArch64 — 系统错误
 #[unsafe(no_mangle)]
 pub extern "C" fn error_lower_el_aarch64_handler(ctx: &mut TrapContext) {
     log::error!(
@@ -341,7 +320,8 @@ pub extern "C" fn error_lower_el_aarch64_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-/// Lower EL AArch32 — 同步异常
+// ── Lower EL AArch32 ────────────────────────────────────────────────────────
+
 #[unsafe(no_mangle)]
 pub extern "C" fn sync_lower_el_aarch32_handler(ctx: &mut TrapContext) {
     log::error!(
@@ -352,13 +332,11 @@ pub extern "C" fn sync_lower_el_aarch32_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-/// Lower EL AArch32 — IRQ
 #[unsafe(no_mangle)]
 pub extern "C" fn irq_lower_el_aarch32_handler(ctx: &mut TrapContext) {
     dispatch_irq(ctx);
 }
 
-/// Lower EL AArch32 — FIQ
 #[unsafe(no_mangle)]
 pub extern "C" fn fiq_lower_el_aarch32_handler(ctx: &mut TrapContext) {
     log::error!(
@@ -369,7 +347,6 @@ pub extern "C" fn fiq_lower_el_aarch32_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-/// Lower EL AArch32 — 系统错误
 #[unsafe(no_mangle)]
 pub extern "C" fn error_lower_el_aarch32_handler(ctx: &mut TrapContext) {
     log::error!(

@@ -79,6 +79,7 @@ riscv = { version = "0.16", features = ["s-mode"] }  # CSR 访问、S-mode 支�
 [target.'cfg(target_arch = "aarch64")'.dependencies]
 aarch64-cpu = "9"                     # 系统寄存器访问
 tock-registers = "0.9"                # 类型安全的 MMIO 寄存器抽象
+arm-gic = "0.8"                       # GICv3 驱动（Arm Trusted Firmware 官方）
 
 # --- 构建依赖 ---
 [build-dependencies]
