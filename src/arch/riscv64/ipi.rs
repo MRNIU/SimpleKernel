@@ -3,10 +3,14 @@
 /// 通过 SBI legacy send_ipi 发送软件中断，通过 PSCI（hart_start）唤醒从核。
 use super::context::TrapContext;
 
-// _start 入口点（boot.S 中定义）
+// _boot 入口点（boot.S 中定义）
+// 从核必须经过 _boot 而非 _start，因为 _boot 负责：
+//   1. 按 hart_id 设置 per-core 栈（sp）
+//   2. 将 hart_id 写入 tp 寄存器（current_core_id() 依赖）
+//   3. 初始化 gp 寄存器
 // SAFETY: 链接器保证该符号存在于内核镜像中
 unsafe extern "C" {
-    fn _start(argc: i32, argv: *const *const u8);
+    fn _boot();
 }
 
 /// 向指定 hart 发送 IPI（S 模式软件中断）
@@ -54,14 +58,16 @@ pub fn wake_up_other_cores() {
         return;
     }
 
-    // SAFETY: _start 由链接器定义，地址在内核镜像生命周期内有效
+    // SAFETY: _boot 由链接器定义，地址在内核镜像生命周期内有效
     // 先转为函数指针类型再转为 usize（Rust 2024 不允许函数 item 直接转 usize）
-    let start_addr = _start as unsafe extern "C" fn(i32, *const *const u8) as usize;
+    let boot_addr = _boot as unsafe extern "C" fn() as usize;
 
     for hart_id in 1..core_count {
-        let ret = sbi_rt::hart_start(hart_id, start_addr, 0);
+        // SBI hart_start 传递：a0 = hart_id, a1 = opaque（此处为 0）
+        // _boot 利用 a0 设置 tp 和 per-core 栈，然后跳转到 _start
+        let ret = sbi_rt::hart_start(hart_id, boot_addr, 0);
         if ret.is_ok() {
-            log::info!("SMP: hart {} 启动成功 (entry=0x{:x})", hart_id, start_addr);
+            log::info!("SMP: hart {} 启动成功 (entry=0x{:x})", hart_id, boot_addr);
         } else {
             log::warn!(
                 "SMP: hart {} 启动失败 (error={}, value={})",
