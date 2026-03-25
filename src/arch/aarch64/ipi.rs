@@ -4,10 +4,13 @@
 /// - SMP：通过 `arm-psci` crate 构造 PSCI CPU_ON 调用唤醒从核
 use arm_psci::{EntryPoint, Function, Mpidr};
 
-// _start 入口点（boot.S 中定义）
+// _boot 入口点（boot.S 中定义）
+// 从核必须经过 _boot 而非 _start，因为 _boot 负责：
+//   1. 读取 MPIDR_EL1 获取 core ID
+//   2. 按 core ID 设置 per-core 栈（sp）
 // SAFETY: 链接器保证该符号存在于内核镜像中
 unsafe extern "C" {
-    fn _start(argc: i32, argv: *const *const u8);
+    fn _boot();
 }
 
 /// 向指定 CPU 发送 IPI（使用 GICv3 SGI 0）
@@ -60,7 +63,7 @@ unsafe fn psci_hvc_call(regs: &[u64; 4]) -> i64 {
 /// 启动所有从核
 ///
 /// 使用 `arm-psci` crate 构造 `Function::CpuOn` 请求，通过 HVC 发送给固件。
-/// 每个从核以 `_start` 为入口，context_id = 0。
+/// 每个从核以 `_boot` 为入口（初始化栈后跳转到 `_start`），context_id = 0。
 pub fn wake_up_other_cores() {
     let core_count = crate::per_cpu::BASIC_INFO
         .get()
@@ -72,9 +75,9 @@ pub fn wake_up_other_cores() {
         return;
     }
 
-    // SAFETY: _start 由链接器定义，地址在内核镜像生命周期内有效
+    // SAFETY: _boot 由链接器定义，地址在内核镜像生命周期内有效
     // 先转为函数指针类型再转为 usize（Rust 2024 不允许函数 item 直接转 usize）
-    let entry_addr = _start as unsafe extern "C" fn(i32, *const *const u8) as usize as u64;
+    let entry_addr = _boot as unsafe extern "C" fn() as usize as u64;
 
     for cpu_id in 1..core_count {
         // 构造 PSCI CPU_ON 64-bit 请求
