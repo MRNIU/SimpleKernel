@@ -66,7 +66,7 @@ pub fn wake_up_other_cores() {
             log::warn!(
                 "SMP: hart {} 启动失败 (error={}, value={})",
                 hart_id,
-                ret.error,
+                ret.error as isize,
                 ret.value
             );
         }

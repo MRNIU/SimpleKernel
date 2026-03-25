@@ -139,8 +139,14 @@ fn handle_external() {
 /// 3. 设置 sstatus.SIE（bit1）使能全局中断
 /// 4. 初始化 PLIC
 pub fn interrupt_init() {
-    // SAFETY: stvec/sie/sstatus 是 S 模式 CSR，在 S 模式下可安全写入
+    // SAFETY: stvec/sscratch/sie/sstatus 是 S 模式 CSR，在 S 模式下可安全写入
     unsafe {
+        // sscratch = 0 表示当前处于内核态。
+        // trap_entry 通过 csrrw sp, sscratch, sp 交换后检查 sp 是否为 0
+        // 来区分内核态/用户态。若 sscratch 非 0，内核态中断会被误判为用户态，
+        // 导致 sp 被替换为垃圾值、上下文全部写坏。
+        core::arch::asm!("csrw sscratch, zero");
+
         // 设置 stvec（Direct 模式：低 2 位 = 00）
         let trap_entry_addr = trap_entry as unsafe extern "C" fn() as usize;
         core::arch::asm!(
@@ -148,7 +154,7 @@ pub fn interrupt_init() {
             addr = in(reg) trap_entry_addr,
         );
 
-        // 使能 sie: SSIE(1) | STIE(5) | SEIE(9) → mask = 0b10_0010 = 0x222
+        // 使能 sie: SSIE(1) | STIE(5) | SEIE(9) → mask = 0x222
         core::arch::asm!(
             "csrs sie, {mask}",
             mask = in(reg) 0x222usize,
@@ -169,6 +175,9 @@ pub fn interrupt_init() {
 pub fn interrupt_init_smp() {
     // SAFETY: CSR 写入在 S 模式下安全
     unsafe {
+        // sscratch = 0 标记内核态（与主核相同）
+        core::arch::asm!("csrw sscratch, zero");
+
         let trap_entry_addr = trap_entry as unsafe extern "C" fn() as usize;
         core::arch::asm!(
             "csrw stvec, {addr}",
