@@ -37,16 +37,19 @@ pub fn send_ipi(cpu_id: usize) {
     log::info!("IPI sent to cpu {}", cpu_id);
 }
 
-/// 通过 HVC 执行 PSCI 调用，返回 x0（ReturnCode）
+/// 通过 SMC 执行 PSCI 调用，返回 x0（ReturnCode）
+///
+/// QEMU virt + ATF 的 PSCI conduit 是 SMC（EL1→EL3），不是 HVC（EL1→EL2）。
+/// 若使用 HVC 但 EL2 未配置，CPU 会产生 EC=0x00 "Unknown reason" 同步异常。
 ///
 /// # Safety
-/// HVC 是 EL1→EL2 特权转换指令。调用方必须确保 `regs` 的内容构成合法的 PSCI 请求。
-unsafe fn psci_hvc_call(regs: &[u64; 4]) -> i64 {
+/// SMC 是 EL1→EL3 安全监视调用。调用方必须确保 `regs` 构成合法的 PSCI 请求。
+unsafe fn psci_smc_call(regs: &[u64; 4]) -> i64 {
     let ret: u64;
-    // SAFETY: HVC 是标准固件接口入口；regs 由 arm-psci crate 构造，保证格式合法
+    // SAFETY: SMC 是标准固件接口入口；regs 由 arm-psci crate 构造，保证格式合法
     unsafe {
         core::arch::asm!(
-            "hvc #0",
+            "smc #0",
             inout("x0") regs[0] => ret,
             in("x1") regs[1],
             in("x2") regs[2],
@@ -99,7 +102,7 @@ pub fn wake_up_other_cores() {
         func.copy_to_array(&mut regs);
 
         // SAFETY: regs 由 arm-psci 构造，格式合法
-        let ret = unsafe { psci_hvc_call(&regs) };
+        let ret = unsafe { psci_smc_call(&regs) };
 
         if ret == 0 {
             log::info!("SMP: cpu {} 启动成功 (entry=0x{:x})", cpu_id, entry_addr);
