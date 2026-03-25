@@ -80,6 +80,7 @@ riscv = { version = "0.16", features = ["s-mode"] }  # CSR 访问、S-mode 支�
 aarch64-cpu = "9"                     # 系统寄存器访问
 tock-registers = "0.9"                # 类型安全的 MMIO 寄存器抽象
 arm-gic = "0.8"                       # GICv3 驱动（Arm Trusted Firmware 官方）
+arm-psci = "0.1"                      # PSCI 电源管理接口（CPU on/off/reset）
 
 # --- 构建依赖 ---
 [build-dependencies]
