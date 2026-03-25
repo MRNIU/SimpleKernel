@@ -197,12 +197,15 @@ pub fn interrupt_init_smp() {
 
 /// 陷阱处理入口 — 由汇编 interrupt.S 中的 trap_entry 调用
 ///
+/// **必须返回 `*mut TrapContext`**：汇编 trap_return 使用返回值（a0）
+/// 恢复 sp，若返回 void 则 a0 为垃圾值导致 RestoreTrapContext 从错误地址加载。
+///
 /// # Safety
 /// 调用方（汇编）保证：
 /// - `ctx` 指向栈上已正确保存的 TrapContext
 /// - 当前处于 S 模式，中断已被 CPU 自动关闭（sstatus.SIE=0）
 #[unsafe(no_mangle)]
-pub extern "C" fn HandleTrap(ctx: &mut TrapContext) {
+pub extern "C" fn HandleTrap(ctx: &mut TrapContext) -> *mut TrapContext {
     let scause = ctx.scause;
     // scause 最高位为 1 表示中断，为 0 表示异常
     let is_interrupt = (scause >> 63) != 0;
@@ -241,4 +244,6 @@ pub extern "C" fn HandleTrap(ctx: &mut TrapContext) {
             }
         }
     }
+
+    ctx as *mut TrapContext
 }
