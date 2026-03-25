@@ -12,9 +12,11 @@ use address::{PhysAddr, VirtAddr};
 use page_table::{PageFlags, PageTable};
 
 #[cfg(not(test))]
+use crate::arch::ArchOps;
+#[cfg(not(test))]
 use crate::sync::SpinLock;
 
-/// 全局内核页表 —— `map_mmio()` 和 `memory_init_smp()` 共享。
+/// 全局内核页表 —— `map_mmio()` 和 `init_smp()` 共享。
 #[cfg(not(test))]
 static KERNEL_PAGE_TABLE: spin::Once<SpinLock<PageTable>> = spin::Once::new();
 
@@ -34,7 +36,7 @@ pub fn virt_to_phys(va: VirtAddr) -> PhysAddr {
 
 /// Map a range of pages with identity mapping (VA == PA).
 #[cfg(not(test))]
-fn identity_map_range(
+pub(crate) fn identity_map_range(
     pt: &mut PageTable,
     start: PhysAddr,
     end: PhysAddr,
@@ -57,9 +59,9 @@ fn identity_map_range(
 /// 4. 映射分页激活前必须就绪的架构特定 MMIO
 /// 5. 激活分页，将页表存入全局
 #[cfg(not(test))]
-pub fn memory_init() {
+pub fn init() {
     // Step 1: Heap — must come first so we can use Vec/Box
-    unsafe { heap::heap_init() };
+    unsafe { heap::init() };
 
     // Step 2: Frame allocator
     let info = crate::per_cpu::BASIC_INFO
@@ -73,7 +75,7 @@ pub fn memory_init() {
     let alloc_start = kernel_end.align_up();
     let alloc_size = mem_size - (alloc_start - mem_start);
 
-    unsafe { frame::frame_init(alloc_start, alloc_size) };
+    unsafe { frame::init(alloc_start, alloc_size) };
 
     // Step 3: 创建内核页表，identity map 整个物理内存（RWX，初期不区分代码/数据段）
     let mut pt = PageTable::new().expect("failed to create kernel page table");
@@ -93,47 +95,27 @@ pub fn memory_init() {
     );
 
     // Step 4: 映射分页激活前必须就绪的架构特定 MMIO
-    map_early_mmio(&mut pt);
+    crate::arch::Arch::map_early_mmio(&mut pt).expect("failed to map early MMIO");
 
     // Step 5: 激活分页
     // SAFETY: 页表已覆盖所有内核代码/数据（RAM identity map）及早期 MMIO
-    unsafe { page_table::activate_page_table(&pt) };
+    unsafe { crate::arch::Arch::activate_page_table(&pt) };
     log::info!("MemoryInit: paging enabled");
 
-    // 将页表存入全局，供 map_mmio() / memory_init_smp() 使用
+    // 将页表存入全局，供 map_mmio() / init_smp() 使用
     // pt 所有权转移至 KERNEL_PAGE_TABLE，页表帧永不释放（内核页表生命周期无限）
     KERNEL_PAGE_TABLE.call_once(|| SpinLock::new(pt, "kernel_pt"));
 }
 
-/// 映射分页激活前必须就绪的控制台 MMIO。
-///
-/// - RISC-V：console 通过 SBI ecall（M-mode，绕过 MMU），无需 MMIO 映射。
-/// - AArch64：console 直接读写 PL011 MMIO，必须在激活分页前完成映射。
-#[cfg(not(test))]
-fn map_early_mmio(pt: &mut PageTable) {
-    #[cfg(target_arch = "aarch64")]
-    {
-        // PL011 UART @ 0x0900_0000, 1 页 —— console 直接 MMIO 访问
-        identity_map_range(
-            pt,
-            PhysAddr::new(0x0900_0000),
-            PhysAddr::new(0x0900_1000),
-            PageFlags::kernel_rw(),
-        )
-        .expect("failed to map PL011 UART MMIO");
-        log::info!("MemoryInit: mapped PL011 UART @ 0x09000000");
-    }
-}
-
 /// 从核内存初始化 — 加载主核创建的内核页表到本核 MMU。
 #[cfg(not(test))]
-pub fn memory_init_smp() {
+pub fn init_smp() {
     let kpt = KERNEL_PAGE_TABLE
         .get()
         .expect("KERNEL_PAGE_TABLE not initialized");
     let guard = kpt.lock();
     // SAFETY: 主核已验证页表正确性；从核仅将同一根地址写入本核 MMU 寄存器
-    unsafe { page_table::activate_page_table(&*guard) };
+    unsafe { crate::arch::Arch::activate_page_table(&*guard) };
     log::info!(
         "MemoryInitSMP: paging enabled on core {}",
         crate::per_cpu::current_core_id()
@@ -152,14 +134,6 @@ pub fn map_mmio(paddr: PhysAddr, size: usize) -> crate::error::KResult<VirtAddr>
     let mut guard = kpt.lock();
     identity_map_range(&mut *guard, paddr, paddr + size, PageFlags::kernel_rw())?;
     // 添加新映射后刷新 TLB，确保后续访问命中新条目
-    // SAFETY: sfence.vma / tlbi 是特权指令，在对应特权级下有效
-    #[cfg(target_arch = "riscv64")]
-    unsafe {
-        core::arch::asm!("sfence.vma")
-    };
-    #[cfg(target_arch = "aarch64")]
-    unsafe {
-        core::arch::asm!("tlbi vmalle1", "dsb sy", "isb")
-    };
+    crate::arch::Arch::flush_tlb();
     Ok(VirtAddr::new(paddr.as_usize()))
 }

@@ -9,7 +9,7 @@ use spin::Once;
 static KERNEL_ELF: Once<KernelElf> = Once::new();
 
 const MAX_OBSERVERS: usize = 4;
-const MAX_BACKTRACE_DEPTH: usize = 16;
+const MAX_BACKTRACE_DEPTH: usize = crate::config::MAX_BACKTRACE_DEPTH;
 
 pub struct PanicEvent<'a> {
     pub reason: &'a str,

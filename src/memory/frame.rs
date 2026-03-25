@@ -30,10 +30,16 @@ impl FrameAllocatorInner {
 /// # Safety
 /// The memory region must be valid, not overlap with kernel/heap, and
 /// this must be called exactly once.
-pub unsafe fn frame_init(start: PhysAddr, size: usize) {
+pub unsafe fn init(start: PhysAddr, size: usize) {
     let mut alloc = FRAME_ALLOCATOR.lock();
-    assert!(!alloc.initialized, "frame_init called twice");
-    assert!(start.is_aligned(), "frame_init: start not page-aligned");
+    assert!(!alloc.initialized, "frame::init called twice");
+    assert!(start.is_aligned(), "frame::init: start not page-aligned");
+    assert!(size > 0, "frame::init: size is zero");
+    // 防止可分配区域地址回绕（例如内核镜像过大导致 start 超出物理内存范围）
+    assert!(
+        start.as_usize().checked_add(size).is_some(),
+        "frame::init: allocation region overflows address space"
+    );
 
     let start_frame = start.as_usize() / PAGE_SIZE;
     let end_frame = start_frame + size / PAGE_SIZE;

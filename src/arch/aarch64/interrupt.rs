@@ -18,21 +18,18 @@ unsafe extern "C" {
     static vector_table: u8;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GICv3 地址常量（QEMU virt 平台）
-// ─────────────────────────────────────────────────────────────────────────────
+/// GIC 地址信息（运行时初始化）
+struct GicAddrs {
+    gicd_base: usize,
+    gicd_size: usize,
+    gicr_base: usize,
+    gicr_size: usize,
+}
 
-/// GIC Distributor（GICD）基地址
-const GICD_BASE: usize = 0x0800_0000;
-/// GICD 映射大小
-const GICD_SIZE: usize = 0x1_0000;
+static GIC_ADDRS: spin::Once<GicAddrs> = spin::Once::new();
 
-/// GIC Redistributor（GICR）基地址
-const GICR_BASE: usize = 0x080A_0000;
 /// 每核 GICR 帧大小（RD_base 64KB + SGI_base 64KB = 0x20000）
 const GICR_STRIDE: usize = 0x2_0000;
-/// GICR 映射总大小（MAX_CORE_COUNT 个核）
-const GICR_SIZE: usize = GICR_STRIDE * crate::config::MAX_CORE_COUNT;
 
 /// 虚拟定时器 PPI 编号（PPI 11 = GIC IRQ 27）
 const VTIMER_PPI: u32 = 11;
@@ -40,9 +37,55 @@ const VTIMER_PPI: u32 = 11;
 /// 定时器中断优先级
 const VTIMER_PRIORITY: u8 = 0xA0;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GICv3 初始化辅助
-// ─────────────────────────────────────────────────────────────────────────────
+/// 从 FDT 解析 GICv3 的 GICD 和 GICR 基地址。
+///
+/// GICv3 `reg` 属性包含两组区域：GICD (addr, size) + GICR (addr, size)。
+/// 使用通用的 `find_compatible_reg` 获取第一组（GICD），
+/// 第二组（GICR）从 reg 属性偏移 16 字节处读取。
+fn init_gic_addrs() {
+    use crate::error::ErrorCode;
+
+    GIC_ADDRS.call_once(|| {
+        let info = crate::per_cpu::BASIC_INFO
+            .get()
+            .expect("init_gic_addrs: BASIC_INFO 未初始化");
+        let fdt = crate::fdt::KernelFdt::new(info.fdt_addr.as_usize())
+            .expect("init_gic_addrs: FDT 解析失败");
+
+        // 使用通用方法读取 GICD 基地址
+        let (gicd_addr, gicd_size) = fdt
+            .find_compatible_reg("arm,gic-v3")
+            .expect("init_gic_addrs: FDT 中未找到 arm,gic-v3 节点");
+
+        // GICR 地址需要从同一节点的 reg 属性偏移 16 字节处读取
+        // find_compatible_reg 只返回第一组，这里用默认值计算 GICR
+        let gicr_addr = gicd_addr + gicd_size as u64;
+        let gicr_size = GICR_STRIDE
+            * crate::per_cpu::BASIC_INFO
+                .get()
+                .map(|i| i.core_count)
+                .unwrap_or(1);
+
+        // 尝试从 FDT 精确读取 GICR（如果 reg 属性够长）
+        let (gicr_addr, gicr_size) = fdt
+            .find_compatible_reg_nth("arm,gic-v3", 1)
+            .unwrap_or((gicr_addr, gicr_size));
+
+        log::info!(
+            "GIC: GICD={:#x}({}), GICR={:#x}({})",
+            gicd_addr,
+            gicd_size,
+            gicr_addr,
+            gicr_size
+        );
+        GicAddrs {
+            gicd_base: gicd_addr as usize,
+            gicd_size,
+            gicr_base: gicr_addr as usize,
+            gicr_size,
+        }
+    });
+}
 
 /// 创建临时 GicV3 实例
 ///
@@ -57,18 +100,16 @@ unsafe fn create_gic<'a>() -> GicV3<'a> {
         .map(|info| info.core_count)
         .unwrap_or(1);
 
+    let addrs = GIC_ADDRS.get().expect("GIC_ADDRS 未初始化");
+
     // SAFETY: GICD/GICR 已映射，identity mapping 保证地址有效
     unsafe {
-        let gicd_ptr: *mut Gicd = GICD_BASE as *mut Gicd;
-        let gicd = UniqueMmioPointer::new(NonNull::new(gicd_ptr).expect("GICD_BASE is null"));
-        let gicr = NonNull::new(GICR_BASE as *mut GicrSgi).expect("GICR_BASE is null");
+        let gicd_ptr: *mut Gicd = addrs.gicd_base as *mut Gicd;
+        let gicd = UniqueMmioPointer::new(NonNull::new(gicd_ptr).expect("GICD 基地址为 null"));
+        let gicr = NonNull::new(addrs.gicr_base as *mut GicrSgi).expect("GICR 基地址为 null");
         GicV3::new(gicd, gicr, cpu_count, false)
     }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 中断初始化
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// 初始化主核中断系统
 ///
@@ -76,7 +117,7 @@ unsafe fn create_gic<'a>() -> GicV3<'a> {
 /// 2. 映射 GICD/GICR 并通过 arm-gic 初始化 GICv3
 /// 3. 使能虚拟定时器 PPI（IRQ 27）
 /// 4. 通过 DAIFCLR 使能 IRQ
-pub fn interrupt_init() {
+pub fn init() {
     // SAFETY: vector_table 由链接器定义，.balign 0x800 对齐
     let vbar = unsafe { &vector_table as *const u8 as u64 };
     // SAFETY: msr vbar_el1 在 EL1 下合法
@@ -88,9 +129,15 @@ pub fn interrupt_init() {
         );
     }
 
+    // 从 FDT 初始化 GIC 地址
+    init_gic_addrs();
+    let addrs = GIC_ADDRS.get().expect("GIC_ADDRS 未初始化");
+
     // 映射 GICD 和 GICR MMIO 区域
-    map_mmio(PhysAddr::new(GICD_BASE), GICD_SIZE).expect("interrupt_init: 映射 GICD 失败");
-    map_mmio(PhysAddr::new(GICR_BASE), GICR_SIZE).expect("interrupt_init: 映射 GICR 失败");
+    map_mmio(PhysAddr::new(addrs.gicd_base), addrs.gicd_size)
+        .expect("interrupt_init: 映射 GICD 失败");
+    map_mmio(PhysAddr::new(addrs.gicr_base), addrs.gicr_size)
+        .expect("interrupt_init: 映射 GICR 失败");
 
     let cpu_id = crate::per_cpu::current_core_id();
 
@@ -103,9 +150,9 @@ pub fn interrupt_init() {
         // 使能虚拟定时器 PPI
         let vtimer_intid = IntId::ppi(VTIMER_PPI);
         gic.set_interrupt_priority(vtimer_intid, Some(cpu_id), VTIMER_PRIORITY)
-            .expect("set_interrupt_priority 失败");
+            .expect("GIC: 设置定时器中断优先级失败");
         gic.enable_interrupt(vtimer_intid, Some(cpu_id), true)
-            .expect("enable_interrupt 失败");
+            .expect("GIC: 使能定时器中断失败");
     }
 
     // 设置优先级掩码（接受所有优先级）
@@ -127,7 +174,7 @@ pub fn interrupt_init() {
 /// 2. 初始化本核 GIC CPU 接口和 Redistributor
 /// 3. 使能虚拟定时器 PPI
 /// 4. 使能 IRQ
-pub fn interrupt_init_smp() {
+pub fn init_smp() {
     // SAFETY: vector_table 由链接器定义
     let vbar = unsafe { &vector_table as *const u8 as u64 };
     // SAFETY: msr vbar_el1 在 EL1 下合法
@@ -150,9 +197,9 @@ pub fn interrupt_init_smp() {
         // 使能本核虚拟定时器 PPI
         let vtimer_intid = IntId::ppi(VTIMER_PPI);
         gic.set_interrupt_priority(vtimer_intid, Some(cpu_id), VTIMER_PRIORITY)
-            .expect("set_interrupt_priority 失败");
+            .expect("GIC SMP: 设置定时器中断优先级失败");
         gic.enable_interrupt(vtimer_intid, Some(cpu_id), true)
-            .expect("enable_interrupt 失败");
+            .expect("GIC SMP: 使能定时器中断失败");
     }
 
     GicCpuInterface::set_priority_mask(0xFF);
@@ -163,10 +210,6 @@ pub fn interrupt_init_smp() {
         core::arch::asm!("msr daifclr, #2");
     }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 中央分发函数
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// 分发 IRQ（通过 GicCpuInterface 系统寄存器完成 IAR/EOIR）
 fn dispatch_irq(ctx: &mut TrapContext) {
@@ -219,11 +262,7 @@ fn dispatch_sync(ctx: &mut TrapContext) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 16 个异常向量处理函数（由 interrupt.S 调用）
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ── Current EL with SP0 ──────────────────────────────────────────────────────
+// Current EL with SP0
 
 #[unsafe(no_mangle)]
 pub extern "C" fn sync_current_el_sp0_handler(ctx: &mut TrapContext) {
@@ -256,7 +295,7 @@ pub extern "C" fn error_current_el_sp0_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-// ── Current EL with SPx ──────────────────────────────────────────────────────
+// Current EL with SPx
 
 #[unsafe(no_mangle)]
 pub extern "C" fn sync_current_el_spx_handler(ctx: &mut TrapContext) {
@@ -288,7 +327,7 @@ pub extern "C" fn error_current_el_spx_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-// ── Lower EL AArch64 ────────────────────────────────────────────────────────
+// Lower EL AArch64
 
 #[unsafe(no_mangle)]
 pub extern "C" fn sync_lower_el_aarch64_handler(ctx: &mut TrapContext) {
@@ -320,7 +359,7 @@ pub extern "C" fn error_lower_el_aarch64_handler(ctx: &mut TrapContext) {
     crate::halt::halt("致命异常，内核停止");
 }
 
-// ── Lower EL AArch32 ────────────────────────────────────────────────────────
+// Lower EL AArch32
 
 #[unsafe(no_mangle)]
 pub extern "C" fn sync_lower_el_aarch32_handler(ctx: &mut TrapContext) {

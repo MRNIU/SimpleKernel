@@ -1,6 +1,9 @@
+#[cfg(not(test))]
+use crate::arch::ArchOps;
 use crate::config;
 use crate::memory::address::PhysAddr;
 use core::cell::SyncUnsafeCell;
+use core::sync::atomic::{AtomicBool, Ordering};
 use spin::Once;
 
 // P3 将字段类型升级为 PhysAddr，P4+ 读取这些字段
@@ -71,7 +74,12 @@ impl LockStack {
 }
 
 /// 抢占状态 — 跟踪中断嵌套层数与调度标志
-#[derive(Debug, Default)]
+///
+/// `hardirq_count`/`softirq_count`/`preempt_disable_count` 为 per-CPU 字段，
+/// 仅由所属核心在中断关闭时访问，无需原子操作。
+///
+/// `need_resched`/`need_balance` 使用 `AtomicBool`，因为 P5+ 中其他核心
+/// 可能通过 IPI 设置这些标志（例如唤醒任务时设置目标核心的 need_resched）。
 pub struct PreemptState {
     /// 硬中断嵌套计数（>0 表示在 hardirq 上下文中）
     pub hardirq_count: u32,
@@ -79,10 +87,22 @@ pub struct PreemptState {
     pub softirq_count: u32,
     /// 抢占关闭计数（>0 表示抢占被禁用）
     pub preempt_disable_count: u32,
-    /// 是否需要调度
-    pub need_resched: bool,
-    /// 是否需要负载均衡
-    pub need_balance: bool,
+    /// 是否需要调度（原子：可被其他核心通过 IPI 设置）
+    pub need_resched: AtomicBool,
+    /// 是否需要负载均衡（原子：可被其他核心设置）
+    pub need_balance: AtomicBool,
+}
+
+impl core::fmt::Debug for PreemptState {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("PreemptState")
+            .field("hardirq_count", &self.hardirq_count)
+            .field("softirq_count", &self.softirq_count)
+            .field("preempt_disable_count", &self.preempt_disable_count)
+            .field("need_resched", &self.need_resched.load(Ordering::Relaxed))
+            .field("need_balance", &self.need_balance.load(Ordering::Relaxed))
+            .finish()
+    }
 }
 
 impl PreemptState {
@@ -92,9 +112,39 @@ impl PreemptState {
             hardirq_count: 0,
             softirq_count: 0,
             preempt_disable_count: 0,
-            need_resched: false,
-            need_balance: false,
+            need_resched: AtomicBool::new(false),
+            need_balance: AtomicBool::new(false),
         }
+    }
+
+    /// 进入硬中断上下文（递增 hardirq_count，饱和加法防止溢出）
+    #[inline]
+    #[allow(dead_code)]
+    pub fn enter_hardirq(&mut self) {
+        self.hardirq_count = self.hardirq_count.saturating_add(1);
+    }
+
+    /// 离开硬中断上下文
+    #[inline]
+    #[allow(dead_code)]
+    pub fn exit_hardirq(&mut self) {
+        self.hardirq_count = self.hardirq_count.saturating_sub(1);
+    }
+
+    /// 当前是否处于中断上下文（不可调度）
+    #[inline]
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn in_interrupt(&self) -> bool {
+        self.hardirq_count > 0 || self.softirq_count > 0
+    }
+
+    /// 当前是否可以抢占
+    #[inline]
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn preemptible(&self) -> bool {
+        self.preempt_disable_count == 0 && !self.in_interrupt()
     }
 }
 
@@ -124,23 +174,13 @@ static PER_CPU_ARRAY: SyncUnsafeCell<[PerCpu; config::MAX_CORE_COUNT]> = SyncUns
 ]);
 
 pub fn current_core_id() -> usize {
-    #[cfg(target_arch = "riscv64")]
+    #[cfg(not(test))]
     {
-        let id: usize;
-        // SAFETY: tp 寄存器在 boot.S 中由 mv tp, a0 设置为 hart ID
-        unsafe { core::arch::asm!("mv {id}, tp", id = out(reg) id) };
-        id
+        crate::arch::Arch::core_id()
     }
-    #[cfg(target_arch = "aarch64")]
+    #[cfg(test)]
     {
-        let mpidr: u64;
-        // SAFETY: MPIDR_EL1 在 EL1 下始终可读
-        unsafe { core::arch::asm!("mrs {mpidr}, mpidr_el1", mpidr = out(reg) mpidr) };
-        (mpidr & 0xFF) as usize
-    }
-    #[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
-    {
-        // 宿主机 (x86_64/aarch64-linux) 回退，用于单元测试——始终返回核心 0
+        // 宿主机单元测试——始终返回核心 0
         0
     }
 }
@@ -151,8 +191,15 @@ pub fn current_core_id() -> usize {
 /// 必须在中断关闭时调用（例如 SpinLock 临界区内），
 /// 以防止同核心上的并发访问。
 pub unsafe fn current_per_cpu() -> &'static mut PerCpu {
+    // debug 模式下验证中断已关闭，防止误用
+    #[cfg(all(debug_assertions, not(test)))]
+    debug_assert!(
+        !crate::arch::Arch::irq_enabled(),
+        "current_per_cpu() 必须在中断关闭时调用"
+    );
+
     let core_id = current_core_id();
     // SAFETY: core_id < MAX_CORE_COUNT 由硬件保证；
-    // 调用方保证无并发访问（中断已关闭）
+    // 调用方保证无并发访问（中断已关闭，已在上方断言验证）
     unsafe { &mut *(PER_CPU_ARRAY.get() as *mut PerCpu).add(core_id) }
 }

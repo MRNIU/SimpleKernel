@@ -1,30 +1,29 @@
-use crate::fdt::KernelFdt;
 use crate::logging;
-use crate::memory::address::PhysAddr;
-use crate::per_cpu::{BASIC_INFO, BasicInfo};
 
-unsafe extern "C" {
-    static __executable_start: u8;
-    static _end: u8;
+/// 从 argv[2] 解析 DTB 地址（十六进制字符串）。
+///
+/// AArch64 上 U-Boot bootm 将 DTB 地址作为 argv[2] 传入。
+/// 解析失败时记录警告并返回 0。
+pub fn dtb_addr_from_argv(argv: *const *const u8) -> usize {
+    // SAFETY: argv 由 _start 传入，_start 通过 boot.S 从 U-Boot 接收
+    let addr = unsafe { parse_hex_from_argv2(argv) };
+    addr as usize
 }
 
-macro_rules! fatal {
-    ($msg:expr) => {{
-        logging::raw_put(concat!("FATAL: ", $msg, "\n"));
-        loop {
-            core::hint::spin_loop();
-        }
-    }};
-}
-
-unsafe fn get_dtb_addr_from_argv(argv: *const *const u8) -> u64 {
+/// 从 argv[2] 解析十六进制地址
+///
+/// # Safety
+/// `argv` 必须是 U-Boot 传入的有效指针数组。
+unsafe fn parse_hex_from_argv2(argv: *const *const u8) -> u64 {
     if argv.is_null() {
+        logging::raw_put("WARNING: argv is null, cannot read DTB address\n");
         return 0;
     }
 
     // SAFETY: U-Boot bootm 传入的 argv 至少包含 3 个元素
     let argv2 = unsafe { *argv.add(2) };
     if argv2.is_null() {
+        logging::raw_put("WARNING: argv[2] is null, cannot read DTB address\n");
         return 0;
     }
 
@@ -45,54 +44,13 @@ unsafe fn get_dtb_addr_from_argv(argv: *const *const u8) -> u64 {
         .strip_prefix("0x")
         .or_else(|| s.strip_prefix("0X"))
         .unwrap_or(s);
-    u64::from_str_radix(hex, 16).unwrap_or(0)
-}
-
-pub fn arch_init(_argc: i32, argv: *const *const u8) {
-    logging::init();
-
-    // SAFETY: argv 由 _start 传入，_start 通过 boot.S 从 U-Boot 接收
-    let dtb_addr = unsafe { get_dtb_addr_from_argv(argv) } as usize;
-
-    let fdt = match KernelFdt::new(dtb_addr) {
-        Ok(f) => f,
-        Err(_) => fatal!("Failed to parse FDT"),
-    };
-
-    let node_count = fdt.node_count();
-    let core_count = fdt.core_count().unwrap_or(1);
-
-    let (mem_addr, mem_size) = match fdt.memory() {
-        Ok(m) => m,
-        Err(_) => fatal!("Failed to get memory info from FDT"),
-    };
-
-    // SAFETY: 链接器定义的符号，地址在内核生命周期内有效
-    let kernel_start = unsafe { &__executable_start as *const u8 as u64 };
-    let kernel_end = unsafe { &_end as *const u8 as u64 };
-
-    BASIC_INFO.call_once(|| BasicInfo {
-        physical_memory_addr: PhysAddr::new(mem_addr as usize),
-        physical_memory_size: mem_size,
-        kernel_addr: PhysAddr::new(kernel_start as usize),
-        kernel_size: (kernel_end - kernel_start) as usize,
-        elf_addr: PhysAddr::new(kernel_start as usize),
-        fdt_addr: PhysAddr::new(dtb_addr as usize),
-        core_count,
-    });
-
-    log::info!("FDT: found {} nodes, {} CPUs", node_count, core_count);
-    log::info!("Memory: {} MB", mem_size / (1024 * 1024));
-    log::info!("Hello SimpleKernel");
-    logging::flush();
-}
-
-/// 从核架构初始化
-///
-/// 从核不需要解析 FDT；BASIC_INFO 已由主核初始化。
-///
-/// # 参数
-/// - `cpu_id`：当前从核的 CPU ID
-pub fn arch_init_smp(cpu_id: usize) {
-    log::info!("arch_init_smp: cpu {} starting", cpu_id);
+    match u64::from_str_radix(hex, 16) {
+        Ok(addr) => addr,
+        Err(_) => {
+            logging::raw_put("WARNING: 无法解析 DTB 地址: '");
+            logging::raw_put(s);
+            logging::raw_put("'\n");
+            0
+        }
+    }
 }

@@ -17,57 +17,37 @@ pub mod lock_level {
     pub const UNCLASSIFIED: u8 = 0xFF;
 }
 
-#[cfg(all(target_arch = "riscv64", target_os = "none"))]
+/// 中断操作——通过 `ArchOps` trait 分派，测试模式下为 no-op 存根。
 mod interrupt_ops {
+    #[cfg(not(test))]
+    use crate::arch::ArchOps;
+
     #[inline(always)]
     pub fn get_status() -> bool {
-        riscv::register::sstatus::read().sie()
+        #[cfg(not(test))]
+        {
+            crate::arch::Arch::irq_enabled()
+        }
+        #[cfg(test)]
+        {
+            false
+        }
     }
 
     #[inline(always)]
     pub fn disable() {
-        riscv::interrupt::supervisor::disable();
+        #[cfg(not(test))]
+        crate::arch::Arch::irq_disable();
     }
 
     #[inline(always)]
     pub fn enable() {
-        unsafe { riscv::interrupt::supervisor::enable() };
+        #[cfg(not(test))]
+        // SAFETY: 由 SpinLockGuard::drop 调用，恢复获取锁前的中断状态
+        unsafe {
+            crate::arch::Arch::irq_enable()
+        };
     }
-}
-
-#[cfg(all(target_arch = "aarch64", target_os = "none"))]
-mod interrupt_ops {
-    #[inline(always)]
-    pub fn get_status() -> bool {
-        let daif: u64;
-        unsafe { core::arch::asm!("mrs {daif}, daif", daif = out(reg) daif) };
-        (daif & (1 << 7)) == 0
-    }
-
-    #[inline(always)]
-    pub fn disable() {
-        unsafe { core::arch::asm!("msr daifset, #2") };
-    }
-
-    #[inline(always)]
-    pub fn enable() {
-        unsafe { core::arch::asm!("msr daifclr, #2") };
-    }
-}
-
-#[cfg(not(all(
-    any(target_arch = "riscv64", target_arch = "aarch64"),
-    target_os = "none"
-)))]
-mod interrupt_ops {
-    #[inline(always)]
-    pub fn get_status() -> bool {
-        false
-    }
-    #[inline(always)]
-    pub fn disable() {}
-    #[inline(always)]
-    pub fn enable() {}
 }
 
 const NO_OWNER: usize = usize::MAX;
@@ -167,6 +147,44 @@ impl<T> SpinLock<T> {
         self.inner.is_locked()
     }
 
+    /// 获取裸锁（不使用 RAII guard）——用于上下文切换时的 lock handoff 协议。
+    ///
+    /// 调用方必须在适当时机手动调用 `unlock_raw()` 释放锁。
+    /// 此方法禁用中断，与 `lock()` 行为一致。
+    ///
+    /// # Safety
+    /// 调用方必须保证：
+    /// 1. 每次 `lock_raw()` 都有对应的 `unlock_raw()` 调用
+    /// 2. `unlock_raw()` 在正确的核心上调用（可以是不同任务上下文，
+    ///    但必须是同一物理核心）
+    pub unsafe fn lock_raw(&self) {
+        interrupt_ops::disable();
+
+        if self.owner_core.load(Ordering::Relaxed) == per_cpu::current_core_id() {
+            Self::fatal(self.name, "recursive lock (raw)");
+        }
+
+        // 自旋获取锁——spin::Mutex::lock() 返回 guard，
+        // 我们立即 forget 它以避免 RAII 释放
+        let guard = self.inner.lock();
+        core::mem::forget(guard);
+
+        self.post_acquire();
+    }
+
+    /// 释放裸锁（与 `lock_raw()` 配对使用）。
+    ///
+    /// # Safety
+    /// 必须在持有锁的情况下调用，且与 `lock_raw()` 配对。
+    pub unsafe fn unlock_raw(&self) {
+        self.pre_release();
+
+        // SAFETY: 调用方保证锁处于已获取状态
+        unsafe { self.inner.force_unlock() };
+
+        interrupt_ops::enable();
+    }
+
     fn post_acquire(&self) {
         self.owner_core
             .store(per_cpu::current_core_id(), Ordering::Release);
@@ -206,7 +224,10 @@ impl<T> SpinLock<T> {
         // SAFETY: 中断已禁用
         let stack = &mut unsafe { per_cpu::current_per_cpu() }.lock_stack;
         if stack.depth >= per_cpu::LockStack::MAX_DEPTH {
-            crate::halt::halt("FATAL: lock stack overflow\n");
+            panic!(
+                "SpinLock '{}': lock stack overflow (depth={})",
+                self.name, stack.depth
+            );
         }
         stack.entries[stack.depth] = per_cpu::LockStackEntry {
             lock_ptr: self as *const Self as *const (),
@@ -219,10 +240,13 @@ impl<T> SpinLock<T> {
         // SAFETY: 中断已禁用
         let stack = &mut unsafe { per_cpu::current_per_cpu() }.lock_stack;
         if stack.depth == 0 {
-            crate::halt::halt("FATAL: lock stack underflow\n");
+            panic!("SpinLock '{}': lock stack underflow", self.name);
         }
         if stack.entries[stack.depth - 1].lock_ptr != (self as *const Self as *const ()) {
-            Self::fatal(self.name, "lock stack corrupted");
+            panic!(
+                "SpinLock '{}': lock stack corrupted — 释放顺序与获取顺序不一致",
+                self.name
+            );
         }
         stack.depth -= 1;
     }

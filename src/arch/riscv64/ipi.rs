@@ -45,9 +45,9 @@ pub fn handle_ipi(_ctx: &mut TrapContext) {
 
 /// 启动所有从核
 ///
-/// 读取 BASIC_INFO 中的 core_count，对每个从核（hart 1..core_count）调用
-/// SBI hart_start，传入 `_start` 作为入口，hart_id 作为 argc，0 作为 argv。
-pub fn wake_up_other_cores() {
+/// 读取 BASIC_INFO 中的 core_count，对每个从核调用 SBI hart_start。
+/// 跳过当前核心（主核），因为任何 hart 都可能成为主核（取决于谁先到达 `_start`）。
+pub fn wake_secondary_cores() {
     let core_count = crate::per_cpu::BASIC_INFO
         .get()
         .map(|info| info.core_count)
@@ -58,11 +58,17 @@ pub fn wake_up_other_cores() {
         return;
     }
 
+    let my_hart = crate::per_cpu::current_core_id();
+
     // SAFETY: _boot 由链接器定义，地址在内核镜像生命周期内有效
     // 先转为函数指针类型再转为 usize（Rust 2024 不允许函数 item 直接转 usize）
     let boot_addr = _boot as unsafe extern "C" fn() as usize;
 
-    for hart_id in 1..core_count {
+    for hart_id in 0..core_count {
+        // 跳过当前核心（已经在运行）
+        if hart_id == my_hart {
+            continue;
+        }
         // SBI hart_start 传递：a0 = hart_id, a1 = opaque（此处为 0）
         // _boot 利用 a0 设置 tp 和 per-core 栈，然后跳转到 _start
         let ret = sbi_rt::hart_start(hart_id, boot_addr, 0);

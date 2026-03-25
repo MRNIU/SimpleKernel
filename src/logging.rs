@@ -16,11 +16,12 @@ static LOGGER_INIT: AtomicBool = AtomicBool::new(false);
 static LOGGER: KernelLogger = KernelLogger;
 
 fn put_str(s: &str) {
-    #[cfg(all(target_arch = "riscv64", not(test)))]
-    crate::arch::riscv64::console::puts(s);
-    #[cfg(all(target_arch = "aarch64", not(test)))]
-    crate::arch::aarch64::console::puts(s);
-    #[cfg(any(test, not(any(target_arch = "riscv64", target_arch = "aarch64"))))]
+    #[cfg(not(test))]
+    {
+        use crate::arch::ArchOps;
+        crate::arch::Arch::console_write(s);
+    }
+    #[cfg(test)]
     {
         let _ = s;
     }
@@ -95,7 +96,7 @@ pub fn init() {
         return;
     }
     if log::set_logger(&LOGGER).is_ok() {
-        log::set_max_level(log::LevelFilter::Debug);
+        log::set_max_level(crate::config::DEFAULT_LOG_LEVEL);
     }
 }
 

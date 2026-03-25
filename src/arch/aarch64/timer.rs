@@ -28,7 +28,7 @@ fn get_interval() -> u64 {
 /// 初始化主核虚拟定时器
 ///
 /// 设置 CNTV_TVAL_EL0 为计算的间隔值，然后使能定时器（CNTV_CTL_EL0 = 1）。
-pub fn timer_init() {
+pub fn init() {
     let interval = get_interval();
     // SAFETY: CNTV_TVAL_EL0 / CNTV_CTL_EL0 在 EL1 下可读写
     unsafe {
@@ -50,7 +50,7 @@ pub fn timer_init() {
 ///
 /// # 参数
 /// - `cpu_id`：当前从核的 CPU ID
-pub fn timer_init_smp(cpu_id: usize) {
+pub fn init_smp(cpu_id: usize) {
     let interval = get_interval();
     // SAFETY: CNTV_TVAL_EL0 / CNTV_CTL_EL0 在 EL1 下可读写
     unsafe {
@@ -71,7 +71,8 @@ pub fn timer_init_smp(cpu_id: usize) {
 /// # 参数
 /// - `_ctx`：陷阱上下文指针（当前未使用，为将来抢占调度预留）
 pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
-    let tick = TICK_COUNT.fetch_add(1, Ordering::Relaxed) + 1;
+    // 使用 Release 语序：确保 tick 更新对其他核心可见
+    let tick = TICK_COUNT.fetch_add(1, Ordering::Release) + 1;
 
     // 重新加载定时器计数值
     let interval = get_interval();
@@ -86,7 +87,11 @@ pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
     // 更新 per-CPU 抢占状态
     // SAFETY: 在中断处理程序中调用，中断已被 DAIF 屏蔽
     let per_cpu = unsafe { crate::per_cpu::current_per_cpu() };
-    per_cpu.preempt.hardirq_count = per_cpu.preempt.hardirq_count.wrapping_add(1);
+    per_cpu.preempt.enter_hardirq();
+
+    // TODO(P5): 调用 scheduler.on_tick()，设置 need_resched
+
+    per_cpu.preempt.exit_hardirq();
 
     if tick % 10 == 0 {
         let core_id = crate::per_cpu::current_core_id();

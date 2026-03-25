@@ -28,7 +28,7 @@ fn read_time() -> u64 {
 ///
 /// 通过 SBI legacy set_timer 设置第一次超时，使能 S 模式定时器中断。
 /// 注意：SIE.STIE 位由 `interrupt_init()` 统一使能，此处只负责设置首个超时值。
-pub fn timer_init() {
+pub fn init() {
     let next = read_time() + TIMER_INTERVAL;
     sbi_rt::set_timer(next).ok();
     log::info!("TimerInit: 10MHz, 1Hz tick");
@@ -38,7 +38,7 @@ pub fn timer_init() {
 ///
 /// # 参数
 /// - `hart_id`：当前从核的 hart ID
-pub fn timer_init_smp(hart_id: usize) {
+pub fn init_smp(hart_id: usize) {
     let next = read_time() + TIMER_INTERVAL;
     sbi_rt::set_timer(next).ok();
     log::info!("TimerInitSMP core {}", hart_id);
@@ -50,17 +50,23 @@ pub fn timer_init_smp(hart_id: usize) {
 ///
 /// 由 `interrupt.rs` 的 `HandleTrap` 在检测到定时器中断（scause=0x8000_0000_0000_0005）时调用。
 pub fn handle_timer() {
-    // 递增 tick 计数（原子操作，relaxed — 单核路径，内存顺序由中断返回保证）
-    let tick = TICK_COUNT.fetch_add(1, Ordering::Relaxed) + 1;
+    // 递增 tick 计数
+    // 使用 Release 语序：确保 tick 更新对其他核心（通过 Acquire 读取）可见，
+    // 为 P5 跨核调度决策提供正确的时序保证
+    let tick = TICK_COUNT.fetch_add(1, Ordering::Release) + 1;
 
     // 重新设置下一次超时
     let next = read_time() + TIMER_INTERVAL;
     sbi_rt::set_timer(next).ok();
 
-    // 更新 per-CPU 抢占状态中的硬中断计数
+    // 更新 per-CPU 抢占状态
     // SAFETY: 在中断处理程序中调用，此时中断已被 CPU 自动关闭（sstatus.SIE=0）
     let per_cpu = unsafe { crate::per_cpu::current_per_cpu() };
-    per_cpu.preempt.hardirq_count = per_cpu.preempt.hardirq_count.wrapping_add(1);
+    per_cpu.preempt.enter_hardirq();
+
+    // TODO(P5): 调用 scheduler.on_tick()，设置 need_resched
+
+    per_cpu.preempt.exit_hardirq();
 
     if tick % 10 == 0 {
         let core_id = crate::per_cpu::current_core_id();

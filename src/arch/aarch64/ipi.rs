@@ -65,9 +65,10 @@ unsafe fn psci_smc_call(regs: &[u64; 4]) -> i64 {
 
 /// 启动所有从核
 ///
-/// 使用 `arm-psci` crate 构造 `Function::CpuOn` 请求，通过 HVC 发送给固件。
+/// 使用 `arm-psci` crate 构造 `Function::CpuOn` 请求，通过 SMC 发送给固件。
 /// 每个从核以 `_boot` 为入口（初始化栈后跳转到 `_start`），context_id = 0。
-pub fn wake_up_other_cores() {
+/// 跳过当前核心（主核），因为任何 CPU 都可能成为主核。
+pub fn wake_secondary_cores() {
     let core_count = crate::per_cpu::BASIC_INFO
         .get()
         .map(|info| info.core_count)
@@ -78,11 +79,17 @@ pub fn wake_up_other_cores() {
         return;
     }
 
+    let my_cpu = crate::per_cpu::current_core_id();
+
     // SAFETY: _boot 由链接器定义，地址在内核镜像生命周期内有效
     // 先转为函数指针类型再转为 usize（Rust 2024 不允许函数 item 直接转 usize）
     let entry_addr = _boot as unsafe extern "C" fn() as usize as u64;
 
-    for cpu_id in 1..core_count {
+    for cpu_id in 0..core_count {
+        // 跳过当前核心（已经在运行）
+        if cpu_id == my_cpu {
+            continue;
+        }
         // 构造 PSCI CPU_ON 64-bit 请求
         let target_cpu = Mpidr {
             aff0: cpu_id as u8,

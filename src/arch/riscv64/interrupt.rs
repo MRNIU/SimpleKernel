@@ -12,15 +12,18 @@ unsafe extern "C" {
     fn trap_entry();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // PLIC 地址常量与辅助函数
-// ─────────────────────────────────────────────────────────────────────────────
 
-/// PLIC 基地址（QEMU virt 平台）
-const PLIC_BASE: usize = 0x0C00_0000;
+/// PLIC 基地址——运行时从 FDT 读取（FDT 是唯一来源，解析失败则 panic）
+static PLIC_BASE: spin::Once<usize> = spin::Once::new();
 
 /// PLIC 映射大小（4 MB，覆盖优先级、使能、阈值、claim 寄存器）
 const PLIC_SIZE: usize = 0x0040_0000;
+
+/// 获取 PLIC 基地址
+fn plic_base() -> usize {
+    *PLIC_BASE.get().expect("PLIC_BASE 未初始化")
+}
 
 /// UART 中断号（QEMU virt 平台）
 const UART_IRQ: u32 = 10;
@@ -34,7 +37,7 @@ const PLIC_S_CONTEXT_HART0: usize = 1;
 /// 调用前必须已通过 `map_mmio` 映射 PLIC 区域。
 #[inline]
 unsafe fn plic_write32(offset: usize, val: u32) {
-    let addr = (PLIC_BASE + offset) as *mut u32;
+    let addr = (plic_base() + offset) as *mut u32;
     // SAFETY: 调用方保证地址已映射且对齐
     unsafe { core::ptr::write_volatile(addr, val) };
 }
@@ -45,7 +48,7 @@ unsafe fn plic_write32(offset: usize, val: u32) {
 /// 调用前必须已通过 `map_mmio` 映射 PLIC 区域。
 #[inline]
 unsafe fn plic_read32(offset: usize) -> u32 {
-    let addr = (PLIC_BASE + offset) as *const u32;
+    let addr = (plic_base() + offset) as *const u32;
     // SAFETY: 调用方保证地址已映射且对齐
     unsafe { core::ptr::read_volatile(addr) }
 }
@@ -57,8 +60,24 @@ unsafe fn plic_read32(offset: usize) -> u32 {
 /// 3. 使能 hart 0 S-mode 上下文中的 UART IRQ
 /// 4. 设置 hart 0 S-mode 上下文阈值为 0（接受所有优先级 ≥1 的中断）
 fn plic_init() {
+    // Step 0: 从 FDT 读取 PLIC 基地址（FDT 是唯一来源）
+    let base = {
+        let info = crate::per_cpu::BASIC_INFO
+            .get()
+            .expect("plic_init: BASIC_INFO 未初始化");
+        let fdt =
+            crate::fdt::KernelFdt::new(info.fdt_addr.as_usize()).expect("plic_init: FDT 解析失败");
+        let (addr, _size) = fdt
+            .find_compatible_reg("riscv,plic0")
+            .or_else(|_| fdt.find_compatible_reg("sifive,plic-1.0.0"))
+            .expect("plic_init: FDT 中未找到 PLIC 节点（尝试 riscv,plic0 和 sifive,plic-1.0.0）");
+        log::info!("PLIC: 从 FDT 读取基地址 {:#x}", addr);
+        addr as usize
+    };
+    PLIC_BASE.call_once(|| base);
+
     // Step 1: 映射 PLIC MMIO 区域
-    map_mmio(PhysAddr::new(PLIC_BASE), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
+    map_mmio(PhysAddr::new(base), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
 
     // SAFETY: PLIC 已通过 map_mmio 映射
     unsafe {
@@ -103,14 +122,26 @@ unsafe fn plic_complete(context: usize, irq: u32) {
     unsafe { plic_write32(complete_offset, irq) };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 外部中断处理
-// ─────────────────────────────────────────────────────────────────────────────
+
+/// PLIC 最大有效 IRQ 编号（PLIC 规范支持最多 1024 个中断源）
+const PLIC_MAX_IRQ: u32 = 1023;
 
 /// 处理外部中断（PLIC IRQ）
 fn handle_external() {
     // SAFETY: plic_init 已在 interrupt_init 中调用，PLIC 已映射
     let irq = unsafe { plic_claim(PLIC_S_CONTEXT_HART0) };
+
+    // IRQ 范围校验：PLIC 有效 IRQ 为 1-1023，0 表示 spurious
+    if irq > PLIC_MAX_IRQ {
+        log::error!(
+            "handle_external: IRQ {} 超出 PLIC 有效范围 (0-{})",
+            irq,
+            PLIC_MAX_IRQ
+        );
+        return;
+    }
+
     match irq {
         0 => {
             // spurious interrupt, 忽略
@@ -128,9 +159,7 @@ fn handle_external() {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 中断初始化
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// 初始化主核中断系统
 ///
@@ -138,7 +167,7 @@ fn handle_external() {
 /// 2. 使能 sie 中的 STIE（bit5）、SEIE（bit9）、SSIE（bit1）
 /// 3. 设置 sstatus.SIE（bit1）使能全局中断
 /// 4. 初始化 PLIC
-pub fn interrupt_init() {
+pub fn init() {
     // SAFETY: stvec/sscratch/sie/sstatus 是 S 模式 CSR，在 S 模式下可安全写入
     unsafe {
         // sscratch = 0 表示当前处于内核态。
@@ -172,7 +201,7 @@ pub fn interrupt_init() {
 ///
 /// 设置 stvec，使能 sie，设置 sstatus.SIE。
 /// PLIC 由主核统一初始化，从核只需配置本核的 CSR。
-pub fn interrupt_init_smp() {
+pub fn init_smp() {
     // SAFETY: CSR 写入在 S 模式下安全
     unsafe {
         // sscratch = 0 标记内核态（与主核相同）
@@ -191,9 +220,7 @@ pub fn interrupt_init_smp() {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 陷阱分发入口（由 interrupt.S 调用）
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// 陷阱处理入口 — 由汇编 interrupt.S 中的 trap_entry 调用
 ///

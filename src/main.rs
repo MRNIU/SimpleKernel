@@ -29,19 +29,7 @@ mod sync;
 mod syscall;
 
 #[cfg(not(test))]
-use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-
-#[cfg(not(test))]
-#[used]
-static RODATA_SENTINEL: [u8; 1] = [0x42];
-
-#[cfg(not(test))]
-#[used]
-static DATA_SENTINEL: AtomicU64 = AtomicU64::new(1);
-
-#[cfg(not(test))]
-#[used]
-static BSS_SENTINEL: AtomicU64 = AtomicU64::new(0);
+use core::sync::atomic::{AtomicBool, Ordering};
 
 /// 标记主核是否已完成初始化，用于区分主核/从核引导路径
 #[cfg(not(test))]
@@ -50,21 +38,109 @@ static PRIMARY_BOOTED: AtomicBool = AtomicBool::new(false);
 #[cfg(not(test))]
 #[unsafe(no_mangle)]
 pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
-    DATA_SENTINEL.store(2, Ordering::Relaxed);
-    // SAFETY: 验证 .rodata 段正确加载；volatile 防止优化消除读取
-    let _ = unsafe { core::ptr::read_volatile(&RODATA_SENTINEL[0]) };
-    let _ = BSS_SENTINEL.load(Ordering::Relaxed);
-
     // swap 返回旧值：false → 当前核是第一个到达的核（主核）
     if !PRIMARY_BOOTED.swap(true, Ordering::AcqRel) {
-        arch::bootstrap(argc, argv);
+        bootstrap(argc, argv);
     } else {
-        arch::bootstrap_smp(argc, argv);
+        bootstrap_smp(argc, argv);
     }
 }
 
 #[cfg(not(test))]
-pub fn phase2_smoke_test() {
+use arch::{Arch, ArchOps};
+
+/// 主核引导序列
+///
+/// logging → DTB → FDT/BASIC_INFO → Phase2 → Memory → Phase3
+/// → Interrupt → Timer → SMP → Phase4 → 空转（等待 P5 Schedule）
+#[cfg(not(test))]
+fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
+    logging::init();
+    early_init(Arch::dtb_addr(argc, argv));
+    phase2_smoke_test();
+    memory::init();
+    phase3_smoke_test();
+    Arch::init_interrupt();
+    Arch::init_timer();
+    Arch::wake_secondary_cores();
+    phase4_smoke_test();
+    loop {
+        core::hint::spin_loop();
+    }
+}
+
+/// 从核引导序列
+///
+/// 由主核通过 `wake_secondary_cores()` 启动，经 `_start` 分流到此。
+#[cfg(not(test))]
+fn bootstrap_smp(argc: i32, argv: *const *const u8) -> ! {
+    let core_id = Arch::secondary_core_id(argc, argv);
+    memory::init_smp();
+    Arch::init_interrupt_smp();
+    Arch::init_timer_smp(core_id);
+    log::info!("SMP: core {} online", core_id);
+    loop {
+        core::hint::spin_loop();
+    }
+}
+
+/// 早期初始化（架构无关）——解析 FDT，填充 BASIC_INFO。
+///
+/// 在堆和分页启用之前运行，仅依赖 logging 和栈。
+#[cfg(not(test))]
+fn early_init(dtb_addr: usize) {
+    use fdt::KernelFdt;
+    use memory::address::PhysAddr;
+    use per_cpu::{BASIC_INFO, BasicInfo};
+
+    let fdt = match KernelFdt::new(dtb_addr) {
+        Ok(f) => f,
+        Err(_) => {
+            logging::raw_put("FATAL: Failed to parse FDT\n");
+            loop {
+                core::hint::spin_loop();
+            }
+        }
+    };
+
+    let node_count = fdt.node_count().unwrap_or(0);
+    let core_count = fdt.core_count().unwrap_or(1);
+
+    let (mem_addr, mem_size) = match fdt.memory() {
+        Ok(m) => m,
+        Err(_) => {
+            logging::raw_put("FATAL: Failed to get memory info from FDT\n");
+            loop {
+                core::hint::spin_loop();
+            }
+        }
+    };
+
+    // SAFETY: 链接器定义的符号，地址在内核生命周期内有效
+    unsafe extern "C" {
+        static __executable_start: u8;
+        static _end: u8;
+    }
+    let kernel_start = unsafe { &__executable_start as *const u8 as u64 };
+    let kernel_end = unsafe { &_end as *const u8 as u64 };
+
+    BASIC_INFO.call_once(|| BasicInfo {
+        physical_memory_addr: PhysAddr::new(mem_addr as usize),
+        physical_memory_size: mem_size,
+        kernel_addr: PhysAddr::new(kernel_start as usize),
+        kernel_size: (kernel_end - kernel_start) as usize,
+        elf_addr: PhysAddr::new(kernel_start as usize),
+        fdt_addr: PhysAddr::new(dtb_addr),
+        core_count,
+    });
+
+    log::info!("FDT: found {} nodes, {} CPUs", node_count, core_count);
+    log::info!("Memory: {} MB", mem_size / (1024 * 1024));
+    log::info!("Hello SimpleKernel");
+}
+
+#[cfg(not(test))]
+fn phase2_smoke_test() {
     use sync::SpinLock;
 
     log::info!("Testing SpinLock...");
@@ -91,12 +167,11 @@ pub fn phase2_smoke_test() {
     unsafe { panic::init_elf(elf_addr) };
     log::info!("ELF parser OK");
 
-    log::info!("TCB ownership prototype validated (host-only unit tests)");
     log::info!("Phase 2 complete");
 }
 
 #[cfg(not(test))]
-pub fn phase3_smoke_test() {
+fn phase3_smoke_test() {
     use alloc::boxed::Box;
 
     let val = Box::new(42u64);
@@ -107,9 +182,6 @@ pub fn phase3_smoke_test() {
 }
 
 #[cfg(not(test))]
-pub fn phase4_smoke_test() {
+fn phase4_smoke_test() {
     log::info!("Phase 4 complete");
 }
-
-#[cfg(test)]
-mod tcb_ownership_prototype;
