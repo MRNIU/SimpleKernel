@@ -22,6 +22,13 @@ pub trait Scheduler: Send {
         false
     }
 
+    /// 将刚让出 CPU 的任务放回队列——允许调度器保留运行时统计。
+    ///
+    /// 默认实现等同于 `enqueue`。CFS 会保留累积的 vruntime。
+    fn put_prev(&mut self, task: TaskRef) {
+        self.enqueue(task);
+    }
+
     /// 从队列尾部窃取一个任务（用于跨核负载均衡）。
     ///
     /// 默认返回 None。支持窃取的调度器应覆盖此方法。

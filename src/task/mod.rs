@@ -1,5 +1,6 @@
 //! 任务管理子系统——任务控制块、状态机、调度器接口。
 
+pub mod mutex;
 pub mod resource_id;
 pub mod scheduler;
 pub mod signal;
@@ -39,12 +40,8 @@ mod manager {
     ///
     /// 使用 `lock_raw()`/`unlock_raw()` 跨越 `switch_to`。
     /// 任务窃取时使用 `try_lock_raw_no_irq()` 获取其他核心的锁。
-    static PER_CPU_SCHED_LOCK: [SpinLock<()>; MAX_CORE_COUNT] = [
-        SpinLock::new_with_level((), "sched/0", lock_level::SCHED_LOCK),
-        SpinLock::new_with_level((), "sched/1", lock_level::SCHED_LOCK),
-        SpinLock::new_with_level((), "sched/2", lock_level::SCHED_LOCK),
-        SpinLock::new_with_level((), "sched/3", lock_level::SCHED_LOCK),
-    ];
+    static PER_CPU_SCHED_LOCK: [SpinLock<()>; MAX_CORE_COUNT] =
+        [const { SpinLock::new_with_level((), "sched", lock_level::SCHED_LOCK) }; MAX_CORE_COUNT];
 
     /// Per-CPU 调度状态（由对应的 PER_CPU_SCHED_LOCK[core_id] 保护）
     struct PerCpuSched {
@@ -369,7 +366,7 @@ mod manager {
         if prev.state() == TaskState::Running {
             prev.set_state(TaskState::Ready);
             if !prev.is_idle() {
-                sched.scheduler.enqueue(prev.clone());
+                sched.scheduler.put_prev(prev.clone());
             }
         }
 
@@ -504,8 +501,16 @@ mod manager {
             code
         );
 
-        wakeup_one(ResourceId::ChildExit(pid));
-        wakeup_one(ResourceId::ChildExit(0));
+        // 一次性获取两把锁，合并两次 wakeup
+        {
+            let core_id = per_cpu::current_core_id();
+            let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
+            let _table_guard = TASK_TABLE_LOCK.lock();
+            let table = unsafe { task_table() };
+            let sched = unsafe { per_cpu_sched(core_id) };
+            wake_blocked_on_inner(table, sched, ResourceId::ChildExit(pid));
+            wake_blocked_on_inner(table, sched, ResourceId::ChildExit(0));
+        }
 
         schedule();
         unreachable!("exited task was rescheduled");
@@ -577,53 +582,6 @@ mod manager {
         }
 
         Ok(())
-    }
-
-    // ─── mutex ──────────────────────────────────────────────────────────
-
-    /// 内核阻塞互斥锁
-    pub struct KMutex {
-        id: u64,
-        owner: core::sync::atomic::AtomicUsize,
-    }
-
-    const KMUTEX_NO_OWNER: usize = usize::MAX;
-
-    static NEXT_MUTEX_ID: core::sync::atomic::AtomicU64 = core::sync::atomic::AtomicU64::new(1);
-
-    impl KMutex {
-        pub fn new() -> Self {
-            Self {
-                id: NEXT_MUTEX_ID.fetch_add(1, core::sync::atomic::Ordering::Relaxed),
-                owner: core::sync::atomic::AtomicUsize::new(KMUTEX_NO_OWNER),
-            }
-        }
-
-        pub fn lock(&self) {
-            loop {
-                let current_pid = current_task().pid();
-                match self.owner.compare_exchange(
-                    KMUTEX_NO_OWNER,
-                    current_pid,
-                    core::sync::atomic::Ordering::Acquire,
-                    core::sync::atomic::Ordering::Relaxed,
-                ) {
-                    Ok(_) => return,
-                    Err(owner) => {
-                        if owner == current_pid {
-                            panic!("KMutex: recursive lock by pid={}", current_pid);
-                        }
-                        block_on(ResourceId::Mutex(self.id));
-                    }
-                }
-            }
-        }
-
-        pub fn unlock(&self) {
-            self.owner
-                .store(KMUTEX_NO_OWNER, core::sync::atomic::Ordering::Release);
-            wakeup_one(ResourceId::Mutex(self.id));
-        }
     }
 }
 

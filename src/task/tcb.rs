@@ -196,8 +196,33 @@ impl TaskControlBlock {
     }
 
     /// 写入任务状态（Release 语序）。
-    pub fn set_state(&self, state: TaskState) {
-        self.state.store(state);
+    ///
+    /// debug 模式下校验状态转移合法性，非法转移触发 panic。
+    pub fn set_state(&self, new: TaskState) {
+        #[cfg(debug_assertions)]
+        {
+            use crate::task::state::TaskState::*;
+            let old = self.state.load();
+            let valid = matches!(
+                (old, new),
+                (UnInit, Ready)
+                    | (Ready, Running)
+                    | (Running, Ready)
+                    | (Running, Sleeping)
+                    | (Running, Blocked)
+                    | (Running, Exited)
+                    | (Running, Stopped)
+                    | (Sleeping, Ready)
+                    | (Blocked, Ready)
+                    | (Stopped, Ready)
+            );
+            debug_assert!(
+                valid,
+                "非法状态转移: {:?} → {:?} (pid={})",
+                old, new, self.pid
+            );
+        }
+        self.state.store(new);
     }
 
     /// 读取退出码（Acquire 语序）。

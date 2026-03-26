@@ -56,6 +56,13 @@ impl Scheduler for CfsScheduler {
         self.queue.insert(pos, CfsEntry { vruntime, task });
     }
 
+    fn put_prev(&mut self, task: TaskRef) {
+        // 保留运行期间累积的 vruntime（至少为 min_vruntime，防止倒退）
+        let vruntime = self.current_vruntime.max(self.min_vruntime);
+        let pos = self.queue.partition_point(|e| e.vruntime <= vruntime);
+        self.queue.insert(pos, CfsEntry { vruntime, task });
+    }
+
     fn pick_next(&mut self) -> Option<TaskRef> {
         if self.queue.is_empty() {
             return None;
@@ -143,7 +150,7 @@ mod tests {
     }
 
     #[test]
-    fn reenqueue_preserves_vruntime_fairness() {
+    fn put_prev_preserves_vruntime() {
         let mut sched = CfsScheduler::new();
         let t1 = make_task(1);
         let t2 = make_task(2);
@@ -155,12 +162,16 @@ mod tests {
         sched.task_tick(&picked); // vruntime=1
         sched.task_tick(&picked); // vruntime=2
 
-        // 放回 t1（会以 min_vruntime=0 入队）
-        sched.enqueue(t1);
+        // 通过 put_prev 放回 t1（保留 vruntime=2）
+        sched.put_prev(t1);
 
-        // t2(vruntime=0) 应先被选中
+        // t2(vruntime=0) 应先被选中（因为 t1 的 vruntime=2 更大）
         let next = sched.pick_next().expect("t2");
         assert_eq!(next.pid(), 2);
+
+        // 再选应是 t1
+        let next = sched.pick_next().expect("t1");
+        assert_eq!(next.pid(), 1);
     }
 
     #[test]
