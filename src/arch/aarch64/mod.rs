@@ -96,14 +96,37 @@ impl ArchOps for Aarch64 {
 
     unsafe fn activate_page_table(pt: &crate::memory::page_table::PageTable) {
         let ttbr = pt.root_paddr().as_usize() as u64;
-        // SAFETY: 调用方保证页表映射正确
+
+        // MAIR_EL1: 定义内存属性索引
+        //   Attr0 = 0xFF: Normal, Write-Back, Read/Write-Allocate（内核代码/数据）
+        //   Attr1 = 0x00: Device-nGnRnE（MMIO 设备寄存器）
+        let mair: u64 = 0xFF | (0x00 << 8);
+
+        // TCR_EL1: 翻译控制
+        //   T0SZ  = 16  → 48 位虚拟地址空间（bits [5:0]）
+        //   TG0   = 0b00 → 4KB granule（bits [15:14]）
+        //   SH0   = 0b11 → Inner Shareable（bits [13:12]）
+        //   ORGN0 = 0b01 → Outer Write-Back, Write-Allocate（bits [11:10]）
+        //   IRGN0 = 0b01 → Inner Write-Back, Write-Allocate（bits [9:8]）
+        let tcr: u64 = 16 // T0SZ = 16
+            | (0b01 << 8)  // IRGN0
+            | (0b01 << 10) // ORGN0
+            | (0b11 << 12) // SH0
+            | (0b00 << 14); // TG0 = 4KB
+
+        // SAFETY: 调用方保证页表映射正确；MAIR/TCR 必须在写入 TTBR 并使能 MMU 前配置
         unsafe {
             core::arch::asm!(
+                "msr mair_el1, {mair}",
+                "msr tcr_el1, {tcr}",
+                "isb",
                 "msr ttbr0_el1, {ttbr}",
                 "isb",
                 "tlbi vmalle1",
                 "dsb sy",
                 "isb",
+                mair = in(reg) mair,
+                tcr = in(reg) tcr,
                 ttbr = in(reg) ttbr,
             );
             // 使能 MMU（SCTLR_EL1.M，bit 0）
@@ -123,12 +146,22 @@ impl ArchOps for Aarch64 {
     }
 }
 
-/// 内核线程引导存根（供 switch.S 调用）
+/// 内核线程引导函数（供 switch.S 中 `kernel_thread_entry` 调用）
 ///
-/// TODO(P5)：实现任务入口启动逻辑。
+/// 新任务首次被 `switch_to` 调度运行时，从此函数开始执行。
+/// 负责释放调度锁、调用入口函数、最终退出任务。
 #[unsafe(no_mangle)]
-pub extern "C" fn kernel_thread_bootstrap(_entry: usize, _arg: usize) -> ! {
-    loop {
-        core::hint::spin_loop();
-    }
+pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
+    // 释放 schedule() 中通过 lock_raw 获取的 sched_lock
+    // SAFETY: schedule() 在 switch_to 前获取了 sched_lock，
+    // 新任务首次运行时负责释放
+    unsafe { crate::task::release_sched_lock() };
+
+    // 调用入口函数
+    // SAFETY: entry 是由 new_kernel_thread 编码的合法 fn(usize) 指针
+    let entry_fn: fn(usize) = unsafe { core::mem::transmute(entry) };
+    entry_fn(arg);
+
+    // 入口函数返回 → 退出任务
+    crate::task::exit(0);
 }

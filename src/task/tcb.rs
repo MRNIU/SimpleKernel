@@ -135,10 +135,10 @@ unsafe impl Sync for TaskControlBlock {}
 
 /// 封装架构相关的 CalleeSavedContext，避免在 cfg 块内重复引用
 #[cfg(all(not(test), target_arch = "riscv64"))]
-type CalleeSavedContextWrapper = crate::arch::riscv64::context::CalleeSavedContext;
+pub(crate) type CalleeSavedContextWrapper = crate::arch::riscv64::context::CalleeSavedContext;
 
 #[cfg(all(not(test), target_arch = "aarch64"))]
-type CalleeSavedContextWrapper = crate::arch::aarch64::context::CalleeSavedContext;
+pub(crate) type CalleeSavedContextWrapper = crate::arch::aarch64::context::CalleeSavedContext;
 
 impl TaskControlBlock {
     // ─── 构造函数 ──────────────────────────────────────────────────────────
