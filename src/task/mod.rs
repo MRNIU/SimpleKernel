@@ -23,8 +23,8 @@ mod manager {
     use crate::sync::SpinLock;
     use crate::sync::spinlock::lock_level;
     use crate::task::resource_id::ResourceId;
+    use crate::task::scheduler::SchedPolicy;
     use crate::task::scheduler::Scheduler;
-    use crate::task::scheduler::fifo::FifoScheduler;
     use crate::task::signal::{Signal, SignalAction, SignalMask, first_deliverable};
     use crate::task::state::TaskState;
     use crate::task::tcb::{Pid, TaskControlBlock, TaskRef};
@@ -46,7 +46,7 @@ mod manager {
 
     /// Per-CPU 调度状态（由对应的 PER_CPU_SCHED_LOCK[core_id] 保护）
     struct PerCpuSched {
-        scheduler: FifoScheduler,
+        scheduler: SchedPolicy,
         current: Option<TaskRef>,
         idle: Option<TaskRef>,
     }
@@ -269,7 +269,7 @@ mod manager {
         // SAFETY: 此时仅 BSP 核心运行，无并发访问
         unsafe {
             (&mut *PER_CPU_SCHED.get())[core_id] = Some(PerCpuSched {
-                scheduler: FifoScheduler::new(),
+                scheduler: SchedPolicy::default_policy(),
                 current: Some(idle.clone()),
                 idle: Some(idle),
             });
@@ -292,7 +292,7 @@ mod manager {
         // SAFETY: 每个核心仅写自己的 slot
         unsafe {
             (&mut *PER_CPU_SCHED.get())[core_id] = Some(PerCpuSched {
-                scheduler: FifoScheduler::new(),
+                scheduler: SchedPolicy::default_policy(),
                 current: Some(idle.clone()),
                 idle: Some(idle),
             });

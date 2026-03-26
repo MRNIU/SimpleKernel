@@ -64,9 +64,21 @@ impl KernelElf {
         // 根据段头计算 ELF 总大小。
         // ELF64 头部布局：e_shoff 在 40（8 字节），e_shentsize 在 58（2 字节），
         // e_shnum 在 60（2 字节）。
-        let e_shoff = u64::from_le_bytes(header[40..48].try_into().unwrap()) as usize;
-        let e_shentsize = u16::from_le_bytes(header[58..60].try_into().unwrap()) as usize;
-        let e_shnum = u16::from_le_bytes(header[60..62].try_into().unwrap()) as usize;
+        let e_shoff = u64::from_le_bytes(
+            header[40..48]
+                .try_into()
+                .expect("e_shoff: 固定长度切片转换"),
+        ) as usize;
+        let e_shentsize = u16::from_le_bytes(
+            header[58..60]
+                .try_into()
+                .expect("e_shentsize: 固定长度切片转换"),
+        ) as usize;
+        let e_shnum = u16::from_le_bytes(
+            header[60..62]
+                .try_into()
+                .expect("e_shnum: 固定长度切片转换"),
+        ) as usize;
 
         let mut elf_size = e_shoff + e_shnum * e_shentsize;
 
@@ -79,10 +91,16 @@ impl KernelElf {
             for i in 0..e_shnum {
                 let off = i * e_shentsize;
                 // Elf64_Shdr：sh_offset 位于第 24 字节（8 字节），sh_size 位于第 32 字节（8 字节）
-                let sh_offset =
-                    u64::from_le_bytes(sh_bytes[off + 24..off + 32].try_into().unwrap()) as usize;
-                let sh_size =
-                    u64::from_le_bytes(sh_bytes[off + 32..off + 40].try_into().unwrap()) as usize;
+                let sh_offset = u64::from_le_bytes(
+                    sh_bytes[off + 24..off + 32]
+                        .try_into()
+                        .expect("sh_offset: 固定长度切片转换"),
+                ) as usize;
+                let sh_size = u64::from_le_bytes(
+                    sh_bytes[off + 32..off + 40]
+                        .try_into()
+                        .expect("sh_size: 固定长度切片转换"),
+                ) as usize;
                 let section_end = sh_offset + sh_size;
                 if section_end > elf_size {
                     elf_size = section_end;

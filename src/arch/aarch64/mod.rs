@@ -9,6 +9,15 @@ pub mod timer;
 
 use super::ArchOps;
 
+/// QEMU virt 平台 PL011 UART MMIO 基地址
+///
+/// 用于 early console，此时 FDT 尚未解析完成。
+/// 更换平台时需修改此常量。
+const PL011_BASE: usize = 0x0900_0000;
+
+/// PL011 MMIO 区域大小（1 页）
+const PL011_SIZE: usize = 0x1000;
+
 /// AArch64 架构实现
 pub struct Aarch64;
 
@@ -86,11 +95,11 @@ impl ArchOps for Aarch64 {
     fn map_early_mmio(pt: &mut crate::memory::page_table::PageTable) -> crate::error::KResult<()> {
         use crate::memory::address::PhysAddr;
         use crate::memory::page_table::PageFlags;
-        // PL011 UART @ 0x0900_0000, 1 页 —— console 直接 MMIO 访问
-        let start = PhysAddr::new(0x0900_0000);
-        let end = PhysAddr::new(0x0900_1000);
+        // PL011 UART —— console 直接 MMIO 访问
+        let start = PhysAddr::new(PL011_BASE);
+        let end = PhysAddr::new(PL011_BASE + PL011_SIZE);
         crate::memory::identity_map_range(pt, start, end, PageFlags::kernel_rw())?;
-        log::info!("MemoryInit: mapped PL011 UART @ 0x09000000");
+        log::info!("MemoryInit: mapped PL011 UART @ {:#010X}", PL011_BASE);
         Ok(())
     }
 

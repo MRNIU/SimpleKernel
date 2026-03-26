@@ -9,10 +9,7 @@ pub fn early_init(dtb_addr: usize) {
     let fdt = match KernelFdt::new(dtb_addr) {
         Ok(f) => f,
         Err(_) => {
-            crate::logging::raw_put("FATAL: Failed to parse FDT\n");
-            loop {
-                core::hint::spin_loop();
-            }
+            crate::util::halt::halt("无法解析 FDT");
         }
     };
 
@@ -22,10 +19,7 @@ pub fn early_init(dtb_addr: usize) {
     let (mem_addr, mem_size) = match fdt.memory() {
         Ok(m) => m,
         Err(_) => {
-            crate::logging::raw_put("FATAL: Failed to get memory info from FDT\n");
-            loop {
-                core::hint::spin_loop();
-            }
+            crate::util::halt::halt("无法从 FDT 获取内存信息");
         }
     };
 

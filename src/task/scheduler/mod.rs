@@ -39,3 +39,75 @@ pub trait Scheduler: Send {
     fn queue_size(&self) -> usize;
     fn is_empty(&self) -> bool;
 }
+
+/// 调度策略枚举——静态分发，避免 `Box<dyn Scheduler>` 的堆分配开销。
+pub enum SchedPolicy {
+    Fifo(fifo::FifoScheduler),
+    RoundRobin(round_robin::RoundRobinScheduler),
+    Cfs(cfs::CfsScheduler),
+}
+
+impl SchedPolicy {
+    /// 根据默认配置创建调度器。
+    pub fn default_policy() -> Self {
+        SchedPolicy::Fifo(fifo::FifoScheduler::new())
+    }
+}
+
+impl Scheduler for SchedPolicy {
+    fn enqueue(&mut self, task: TaskRef) {
+        match self {
+            SchedPolicy::Fifo(s) => s.enqueue(task),
+            SchedPolicy::RoundRobin(s) => s.enqueue(task),
+            SchedPolicy::Cfs(s) => s.enqueue(task),
+        }
+    }
+
+    fn pick_next(&mut self) -> Option<TaskRef> {
+        match self {
+            SchedPolicy::Fifo(s) => s.pick_next(),
+            SchedPolicy::RoundRobin(s) => s.pick_next(),
+            SchedPolicy::Cfs(s) => s.pick_next(),
+        }
+    }
+
+    fn task_tick(&mut self, current: &crate::task::tcb::TaskControlBlock) -> bool {
+        match self {
+            SchedPolicy::Fifo(s) => s.task_tick(current),
+            SchedPolicy::RoundRobin(s) => s.task_tick(current),
+            SchedPolicy::Cfs(s) => s.task_tick(current),
+        }
+    }
+
+    fn put_prev(&mut self, task: TaskRef) {
+        match self {
+            SchedPolicy::Fifo(s) => s.put_prev(task),
+            SchedPolicy::RoundRobin(s) => s.put_prev(task),
+            SchedPolicy::Cfs(s) => s.put_prev(task),
+        }
+    }
+
+    fn steal_one(&mut self) -> Option<TaskRef> {
+        match self {
+            SchedPolicy::Fifo(s) => s.steal_one(),
+            SchedPolicy::RoundRobin(s) => s.steal_one(),
+            SchedPolicy::Cfs(s) => s.steal_one(),
+        }
+    }
+
+    fn queue_size(&self) -> usize {
+        match self {
+            SchedPolicy::Fifo(s) => s.queue_size(),
+            SchedPolicy::RoundRobin(s) => s.queue_size(),
+            SchedPolicy::Cfs(s) => s.queue_size(),
+        }
+    }
+
+    fn is_empty(&self) -> bool {
+        match self {
+            SchedPolicy::Fifo(s) => s.is_empty(),
+            SchedPolicy::RoundRobin(s) => s.is_empty(),
+            SchedPolicy::Cfs(s) => s.is_empty(),
+        }
+    }
+}

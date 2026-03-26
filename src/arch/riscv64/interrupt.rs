@@ -31,6 +31,21 @@ const UART_IRQ: u32 = 10;
 /// hart 0 S-mode 上下文编号（S-mode context = 2*hart + 1）
 const PLIC_S_CONTEXT_HART0: usize = 1;
 
+/// PLIC 优先级寄存器基偏移
+const PLIC_PRIORITY_BASE: usize = 0x0000_0000;
+
+/// PLIC 使能寄存器基偏移
+const PLIC_ENABLE_BASE: usize = 0x0002_0000;
+
+/// PLIC 使能寄存器每上下文间距
+const PLIC_ENABLE_STRIDE: usize = 0x80;
+
+/// PLIC 阈值/claim 寄存器基偏移
+const PLIC_CONTEXT_BASE: usize = 0x0020_0000;
+
+/// PLIC 阈值/claim 寄存器每上下文间距
+const PLIC_CONTEXT_STRIDE: usize = 0x1000;
+
 /// 写 PLIC 32 位寄存器
 ///
 /// # Safety
@@ -83,19 +98,20 @@ fn plic_init() {
     unsafe {
         // Step 2: 设置 UART IRQ 优先级（偏移 = IRQ * 4）
         // 优先级寄存器: base + 0x000000 + irq*4
-        plic_write32(UART_IRQ as usize * 4, 1);
+        plic_write32(PLIC_PRIORITY_BASE + UART_IRQ as usize * 4, 1);
 
         // Step 3: 使能 IRQ 10 — hart 0 S-mode 上下文
         // 使能寄存器: base + 0x002000 + context*0x80 + (irq/32)*4
         // context=1, irq=10: offset = 0x2000 + 1*0x80 + 0 = 0x2080
-        let enable_offset =
-            0x0002_0000 + PLIC_S_CONTEXT_HART0 * 0x80 + (UART_IRQ as usize / 32) * 4;
+        let enable_offset = PLIC_ENABLE_BASE
+            + PLIC_S_CONTEXT_HART0 * PLIC_ENABLE_STRIDE
+            + (UART_IRQ as usize / 32) * 4;
         let current = plic_read32(enable_offset);
         plic_write32(enable_offset, current | (1 << (UART_IRQ % 32)));
 
         // Step 4: 设置阈值为 0
         // 阈值寄存器: base + 0x200000 + context*0x1000
-        let threshold_offset = 0x0020_0000 + PLIC_S_CONTEXT_HART0 * 0x1000;
+        let threshold_offset = PLIC_CONTEXT_BASE + PLIC_S_CONTEXT_HART0 * PLIC_CONTEXT_STRIDE;
         plic_write32(threshold_offset, 0);
     }
 }
@@ -106,7 +122,7 @@ fn plic_init() {
 /// 调用前必须已映射 PLIC。
 #[inline]
 unsafe fn plic_claim(context: usize) -> u32 {
-    let claim_offset = 0x0020_0000 + context * 0x1000 + 4;
+    let claim_offset = PLIC_CONTEXT_BASE + context * PLIC_CONTEXT_STRIDE + 4;
     // SAFETY: 调用方保证已映射
     unsafe { plic_read32(claim_offset) }
 }
@@ -117,7 +133,7 @@ unsafe fn plic_claim(context: usize) -> u32 {
 /// 调用前必须已映射 PLIC。
 #[inline]
 unsafe fn plic_complete(context: usize, irq: u32) {
-    let complete_offset = 0x0020_0000 + context * 0x1000 + 4;
+    let complete_offset = PLIC_CONTEXT_BASE + context * PLIC_CONTEXT_STRIDE + 4;
     // SAFETY: 调用方保证已映射
     unsafe { plic_write32(complete_offset, irq) };
 }
@@ -222,6 +238,18 @@ pub fn init_smp() {
 
 // 陷阱分发入口（由 interrupt.S 调用）
 
+// ─── scause 中断/异常编码 ────────────────────────────────────────────
+/// S-mode 软件中断（IPI）
+const CAUSE_S_SOFTWARE_INT: u64 = 1;
+/// S-mode 定时器中断
+const CAUSE_S_TIMER_INT: u64 = 5;
+/// S-mode 外部中断（PLIC）
+const CAUSE_S_EXTERNAL_INT: u64 = 9;
+/// U-mode 环境调用（ecall）
+const CAUSE_U_ECALL: u64 = 8;
+/// S-mode 环境调用（ecall）
+const CAUSE_S_ECALL: u64 = 9;
+
 /// 陷阱处理入口 — 由汇编 interrupt.S 中的 trap_entry 调用
 ///
 /// **必须返回 `*mut TrapContext`**：汇编 trap_return 使用返回值（a0）
@@ -240,12 +268,12 @@ pub extern "C" fn HandleTrap(ctx: &mut TrapContext) -> *mut TrapContext {
 
     if is_interrupt {
         match code {
-            // 定时器中断（STIP，code 5）
-            5 => super::timer::handle_timer(),
-            // 外部中断（SEIP，code 9）
-            9 => handle_external(),
-            // 软件中断 / IPI（SSIP，code 1）
-            1 => super::ipi::handle_ipi(ctx),
+            // 定时器中断（STIP）
+            CAUSE_S_TIMER_INT => super::timer::handle_timer(),
+            // 外部中断（SEIP）
+            CAUSE_S_EXTERNAL_INT => handle_external(),
+            // 软件中断 / IPI（SSIP）
+            CAUSE_S_SOFTWARE_INT => super::ipi::handle_ipi(ctx),
             _ => {
                 log::warn!(
                     "HandleTrap: 未知中断 code={}, sepc=0x{:x}, scause=0x{:x}",
@@ -257,8 +285,8 @@ pub extern "C" fn HandleTrap(ctx: &mut TrapContext) -> *mut TrapContext {
         }
     } else {
         match code {
-            // U-mode ecall (code 8) 或 S-mode ecall (code 9)
-            8 | 9 => super::syscall::handle_syscall(ctx),
+            // U-mode ecall 或 S-mode ecall
+            CAUSE_U_ECALL | CAUSE_S_ECALL => super::syscall::handle_syscall(ctx),
             _ => {
                 log::error!(
                     "HandleTrap: 异常 code={}, sepc=0x{:x}, stval=0x{:x}, scause=0x{:x}",
