@@ -69,7 +69,9 @@ impl FrameTracker {
         let frame_num = alloc.allocator.alloc(1).ok_or(ErrorCode::OutOfMemory)?;
         let paddr = PhysAddr::new(frame_num * PAGE_SIZE);
 
-        // Zero the frame
+        // SAFETY: 当前使用 identity mapping（VA == PA），物理地址可直接作为虚拟地址访问。
+        // 帧刚从分配器获取，不存在其他引用。
+        // 若未来切换为非 identity mapping，此处需通过 phys_to_virt() 转换。
         unsafe {
             core::ptr::write_bytes(paddr.as_usize() as *mut u8, 0, PAGE_SIZE);
         }

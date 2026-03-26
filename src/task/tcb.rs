@@ -68,7 +68,7 @@ unsafe fn init_kernel_thread_context(
     }
     // SAFETY: 调用者保证 ctx 有效；各字段均为 POD 类型，直接写入安全
     unsafe {
-        (*ctx).ra = kernel_thread_entry as u64;
+        (*ctx).ra = kernel_thread_entry as unsafe extern "C" fn() as u64;
         (*ctx).sp = kstack.top() as u64;
         (*ctx).s0 = entry as u64;
         (*ctx).s1 = arg as u64;
@@ -92,7 +92,7 @@ unsafe fn init_kernel_thread_context(
     }
     // SAFETY: 调用者保证 ctx 有效；各字段均为 POD 类型，直接写入安全
     unsafe {
-        (*ctx).pc = kernel_thread_entry as u64;
+        (*ctx).pc = kernel_thread_entry as unsafe extern "C" fn() as u64;
         (*ctx).sp = kstack.top() as u64;
         // x19 → entry 函数指针（第一个参数）
         (*ctx).regs[0] = entry as u64;

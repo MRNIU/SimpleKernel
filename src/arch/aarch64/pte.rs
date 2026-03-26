@@ -35,9 +35,19 @@ impl PageTableEntry {
             bits |= AP_RO;
         }
 
+        // 用户态访问：AP[1]=1 允许 EL0 访问
+        if flags.contains(PageFlags::USER) {
+            bits |= 0b01 << 6; // AP[1] = 1
+        }
+
         // 执行权限：未设 EXECUTE 则禁止执行
         if !flags.contains(PageFlags::EXECUTE) {
             bits |= PXN_BIT | UXN_BIT;
+        }
+
+        // nG bit (bit 11)：非全局映射（GLOBAL 未设置时设 nG=1）
+        if !flags.contains(PageFlags::GLOBAL) {
+            bits |= 1 << 11;
         }
 
         Self(bits)
@@ -57,22 +67,36 @@ impl PageTableEntry {
     }
 
     /// 将描述符位解码为 `PageFlags`。
+    ///
+    /// AArch64 描述符中部分标志没有直接对应位：
+    /// - `GLOBAL`：ARM 通过 nG（bit 11）取反表示，nG=0 → Global
+    /// - `DIRTY`：ARM 通过 DBM/AP 组合管理；此处简化为 AP_RW 即视为 dirty
+    /// - `USER`：AP[2:1]=0b01 表示 EL0 可访问
     pub fn flags(self) -> PageFlags {
         let mut f = PageFlags::empty();
         if self.is_valid() {
             f |= PageFlags::VALID;
         }
-        // AP[2:1]: RW = 0b00, RO = 0b10
+        // AP[2:1]: 0b00=EL1 RW, 0b10=EL1 RO, 0b01=EL0+EL1 RW, 0b11=EL0+EL1 RO
         let ap = (self.0 >> 6) & 0b11;
         f |= PageFlags::READ;
-        if ap == 0b00 {
+        if ap & 0b10 == 0 {
             f |= PageFlags::WRITE;
+            // 可写即视为 dirty（简化：不依赖 FEAT_HAFDBS 的硬件 dirty 管理）
+            f |= PageFlags::DIRTY;
+        }
+        if ap & 0b01 != 0 {
+            f |= PageFlags::USER;
         }
         if self.0 & PXN_BIT == 0 {
             f |= PageFlags::EXECUTE;
         }
         if self.0 & AF_BIT != 0 {
             f |= PageFlags::ACCESSED;
+        }
+        // nG bit (bit 11)：0 = Global，1 = non-Global
+        if self.0 & (1 << 11) == 0 {
+            f |= PageFlags::GLOBAL;
         }
         f
     }

@@ -2,6 +2,11 @@ use crate::config::KERNEL_HEAP_SIZE;
 use buddy_system_allocator::LockedHeap;
 use core::cell::SyncUnsafeCell;
 
+/// 全局堆分配器。
+///
+/// **中断安全限制**：`LockedHeap` 内部使用 `spin::Mutex`（不禁用中断）。
+/// 中断处理器中**禁止**进行堆分配（`Box::new`、`Vec::push`、`format!` 等），
+/// 否则会因同核心自旋导致死锁。日志宏 `log::info!` 等使用栈缓冲区，安全。
 #[global_allocator]
 static HEAP_ALLOCATOR: LockedHeap<32> = LockedHeap::empty();
 

@@ -128,8 +128,10 @@ mod inner {
     /// 将物理地址解释为页表项数组。
     ///
     /// # Safety
-    /// `paddr` 必须指向有效、页对齐、由 `FrameTracker` 分配的帧，
-    /// 且当前不存在其他可变引用。
+    /// - `paddr` 必须指向有效、页对齐、由 `FrameTracker` 分配的帧，
+    ///   且当前不存在其他可变引用。
+    /// - 当前使用 identity mapping（VA == PA），物理地址可直接作为虚拟地址解引用。
+    ///   若未来切换为非 identity mapping，此处需通过 `phys_to_virt()` 转换。
     unsafe fn pte_array(paddr: PhysAddr) -> &'static mut [PageTableEntry; ENTRIES_PER_PAGE] {
         unsafe { &mut *(paddr.as_usize() as *mut [PageTableEntry; ENTRIES_PER_PAGE]) }
     }
@@ -203,6 +205,25 @@ mod inner {
             Some(&table[idx])
         }
 
+        /// 可变遍历，不分配。用于 unmap 等无需创建中间节点的场景。
+        pub fn find_pte_mut(&mut self, va: VirtAddr) -> Option<&'static mut PageTableEntry> {
+            let mut paddr = self.root.paddr();
+
+            for level in (1..PT_LEVELS).rev() {
+                let table = unsafe { pte_array(paddr) };
+                let idx = vpn_index(va, level);
+                let pte = &table[idx];
+                if !pte.is_valid() {
+                    return None;
+                }
+                paddr = pte.paddr();
+            }
+
+            let table = unsafe { pte_array(paddr) };
+            let idx = vpn_index(va, 0);
+            Some(&mut table[idx])
+        }
+
         pub fn map_page(&mut self, va: VirtAddr, pa: PhysAddr, flags: PageFlags) -> KResult<()> {
             let pte = self.find_or_create_pte(va)?;
             if pte.is_valid() {
@@ -213,7 +234,7 @@ mod inner {
         }
 
         pub fn unmap_page(&mut self, va: VirtAddr) -> KResult<PhysAddr> {
-            let pte = self.find_or_create_pte(va)?;
+            let pte = self.find_pte_mut(va).ok_or(ErrorCode::VmPageNotMapped)?;
             if !pte.is_valid() {
                 return Err(ErrorCode::VmPageNotMapped);
             }

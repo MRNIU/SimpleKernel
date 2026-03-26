@@ -66,12 +66,20 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 
     // P5: 任务初始化（必须在 wake_secondary_cores 之前）
     task::init();
-    task::spawn_kernel_thread("test_a", test_thread_a, 0);
-    task::spawn_kernel_thread("test_b", test_thread_b, 0);
 
     Arch::wake_secondary_cores();
     phase4_smoke_test();
+
+    // 在从核启动后再创建测试线程，使从核有机会抢到任务
+    task::spawn_kernel_thread("counter_0", counter_thread, 0);
+    task::spawn_kernel_thread("counter_1", counter_thread, 1);
+    task::spawn_kernel_thread("counter_2", counter_thread, 2);
+    task::spawn_kernel_thread("counter_3", counter_thread, 3);
+    task::spawn_kernel_thread("verifier", verifier_thread, 0);
     phase5_smoke_test();
+
+    // 立即尝试调度，开始运行刚创建的线程
+    task::schedule();
 
     // Idle loop — bootstrap 上下文成为 idle 任务
     loop {
@@ -93,6 +101,9 @@ fn bootstrap_smp(argc: i32, argv: *const *const u8) -> ! {
     task::init_smp();
     Arch::init_timer_smp(core_id);
     log::info!("SMP: core {} online", core_id);
+
+    // 从核上线后立即尝试调度，抢全局队列中的任务
+    task::schedule();
 
     // Idle loop
     loop {
@@ -205,25 +216,85 @@ fn phase4_smoke_test() {
     log::info!("Phase 4 complete");
 }
 
-#[cfg(not(test))]
-fn test_thread_a(_arg: usize) {
-    for i in 0..5 {
-        log::info!("test_a: iteration {}", i);
-        task::yield_now();
-    }
-    log::info!("test_a: done");
-}
+// ─── P5 多核 + 锁竞争测试 ──────────────────────────────────────────────────
 
 #[cfg(not(test))]
-fn test_thread_b(_arg: usize) {
-    for i in 0..5 {
-        log::info!("test_b: iteration {}", i);
+use core::sync::atomic::AtomicU32;
+
+/// 多核锁竞争测试：多个线程在不同核心上对同一 SpinLock 保护的计数器做自增。
+/// 若锁实现正确，最终计数应等于 线程数 × 每线程迭代数。
+#[cfg(not(test))]
+static TEST_COUNTER: sync::SpinLock<u32> = sync::SpinLock::new(0, "test_counter");
+
+/// 已完成的测试线程数
+#[cfg(not(test))]
+static TEST_DONE: AtomicU32 = AtomicU32::new(0);
+
+/// 每个线程的迭代次数
+#[cfg(not(test))]
+const ITERS_PER_THREAD: u32 = 200;
+
+/// 测试线程数
+#[cfg(not(test))]
+const TEST_THREAD_COUNT: u32 = 4;
+
+/// 锁竞争测试线程——每个线程做 ITERS_PER_THREAD 次 lock-increment-unlock-yield 循环。
+/// 线程 ID 通过 arg 传入。
+#[cfg(not(test))]
+fn counter_thread(id: usize) {
+    let core = per_cpu::current_core_id();
+    log::info!("counter_{}: start on core {}", id, core);
+
+    for i in 0..ITERS_PER_THREAD {
+        {
+            let mut guard = TEST_COUNTER.lock();
+            *guard += 1;
+        }
+        // 每 50 次报告一次当前核心，验证是否发生了跨核调度
+        if i % 50 == 0 {
+            let core = per_cpu::current_core_id();
+            log::info!("counter_{}: i={} on core {}", id, i, core);
+        }
         task::yield_now();
     }
-    log::info!("test_b: done");
+
+    TEST_DONE.fetch_add(1, Ordering::Release);
+    let core = per_cpu::current_core_id();
+    log::info!("counter_{}: done on core {}", id, core);
+}
+
+/// 验证线程——等所有 counter 线程完成后检查计数是否正确
+#[cfg(not(test))]
+fn verifier_thread(_arg: usize) {
+    // 轮询等待所有 counter 线程完成
+    loop {
+        if TEST_DONE.load(Ordering::Acquire) >= TEST_THREAD_COUNT {
+            break;
+        }
+        task::yield_now();
+    }
+
+    let count = *TEST_COUNTER.lock();
+    let expected = TEST_THREAD_COUNT * ITERS_PER_THREAD;
+    if count == expected {
+        log::info!(
+            "=== LOCK TEST PASSED: counter={} (expected {}) ===",
+            count,
+            expected
+        );
+    } else {
+        log::error!(
+            "=== LOCK TEST FAILED: counter={} (expected {}) ===",
+            count,
+            expected
+        );
+    }
 }
 
 #[cfg(not(test))]
 fn phase5_smoke_test() {
-    log::info!("Phase 5 ready — test threads spawned");
+    log::info!(
+        "Phase 5: spawning {} counter threads + 1 verifier",
+        TEST_THREAD_COUNT
+    );
 }
