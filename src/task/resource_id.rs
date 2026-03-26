@@ -4,7 +4,7 @@
 ///
 /// 每种资源携带正确类型（Pid/VirtAddr/IrqNumber 等），
 /// 替代 C++ 的 bit-packing 方式，编译期类型安全。
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ResourceId {
     /// 互斥锁（ID）
     Mutex(u64),

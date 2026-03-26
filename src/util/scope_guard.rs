@@ -1,11 +1,9 @@
 /// RAII cleanup guard — runs cleanup on Drop, dismiss() cancels it.
 /// Pattern from Linux kernel Rust — used for init failure rollback.
-#[allow(dead_code)]
 pub struct ScopeGuard<F: FnOnce()> {
     cleanup: Option<F>,
 }
 
-#[allow(dead_code)]
 impl<F: FnOnce()> ScopeGuard<F> {
     pub fn new(cleanup: F) -> Self {
         Self {

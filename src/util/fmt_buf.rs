@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use core::fmt;
 
 const BUF_SIZE: usize = 256;

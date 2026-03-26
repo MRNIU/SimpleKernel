@@ -1,10 +1,9 @@
-#![allow(dead_code)]
-
 use core::mem::ManuallyDrop;
 use core::ops::{Deref, DerefMut};
 use core::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::per_cpu;
+use crate::sync::lock_stack::LockStackEntry;
 
 /// 用于强制获取顺序的锁级别常量。
 ///
@@ -208,7 +207,7 @@ impl<T> SpinLock<T> {
         crate::logging::raw_put("FATAL: SpinLock '");
         crate::logging::raw_put(name);
         crate::logging::raw_put("': ");
-        crate::halt::halt(reason);
+        crate::util::halt::halt(reason);
     }
 
     fn check_lock_order(&self) {
@@ -228,13 +227,13 @@ impl<T> SpinLock<T> {
     fn push_lock_stack(&self) {
         // SAFETY: 中断已禁用
         let stack = &mut unsafe { per_cpu::current_per_cpu() }.lock_stack;
-        if stack.depth >= per_cpu::LockStack::MAX_DEPTH {
+        if stack.depth >= crate::sync::lock_stack::LockStack::MAX_DEPTH {
             panic!(
                 "SpinLock '{}': lock stack overflow (depth={})",
                 self.name, stack.depth
             );
         }
-        stack.entries[stack.depth] = per_cpu::LockStackEntry {
+        stack.entries[stack.depth] = LockStackEntry {
             lock_ptr: self as *const Self as *const (),
             level: self.level,
         };

@@ -45,7 +45,6 @@ pub unsafe fn enable() {
 /// RAII 中断保存/恢复守卫
 ///
 /// 构造时保存中断状态并禁用中断，析构时恢复之前的状态。
-#[allow(dead_code)] // P5 调度器和 kernel_thread_bootstrap 会使用
 pub struct InterruptGuard {
     saved: bool,
 }

@@ -62,7 +62,7 @@ unsafe fn plic_read32(offset: usize) -> u32 {
 fn plic_init() {
     // Step 0: 从 FDT 读取 PLIC 基地址（FDT 是唯一来源）
     let base = {
-        let info = crate::per_cpu::BASIC_INFO
+        let info = crate::boot_info::BASIC_INFO
             .get()
             .expect("plic_init: BASIC_INFO 未初始化");
         let fdt =
@@ -267,7 +267,7 @@ pub extern "C" fn HandleTrap(ctx: &mut TrapContext) -> *mut TrapContext {
                     ctx.stval,
                     ctx.scause,
                 );
-                crate::halt::halt("致命异常，内核停止");
+                crate::util::halt::halt("致命异常，内核停止");
             }
         }
     }

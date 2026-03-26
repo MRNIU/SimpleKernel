@@ -1,7 +1,7 @@
 //! 系统集成冒烟测试——验证各子系统在 QEMU 上正确运行。
 //!
-//! 由 `main.rs` 中 bootstrap 调用 `spawn_all()`，
-//! 各测试作为独立内核线程运行。
+//! 由 `main.rs` 中 bootstrap 调用，
+//! 阶段测试在引导序列中内联运行，线程测试作为独立内核线程运行。
 
 use core::sync::atomic::{AtomicU32, Ordering};
 
@@ -9,6 +9,50 @@ use crate::arch::{Arch, ArchOps};
 use crate::per_cpu;
 use crate::sync::SpinLock;
 use crate::task;
+
+// ─── 引导阶段冒烟测试 ─────────────────────────────────────────────────────────
+
+pub fn phase2() {
+    log::info!("Testing SpinLock...");
+    let lock = SpinLock::new(42u32, "smoke_test");
+    {
+        let mut guard = lock.lock();
+        assert_eq!(*guard, 42);
+        *guard = 99;
+    }
+    {
+        let guard = lock.lock();
+        assert_eq!(*guard, 99);
+    }
+    assert!(!lock.is_locked());
+    log::info!("SpinLock OK");
+
+    log::info!("Initializing ELF parser...");
+    let elf_addr = crate::boot_info::BASIC_INFO
+        .get()
+        .expect("BASIC_INFO not initialized")
+        .elf_addr
+        .as_usize() as u64;
+    // SAFETY: elf_addr 是内核自身的 ELF 基地址，在内核生命周期内有效
+    unsafe { crate::panic::init_elf(elf_addr) };
+    log::info!("ELF parser OK");
+
+    log::info!("Phase 2 complete");
+}
+
+pub fn phase3() {
+    use alloc::boxed::Box;
+
+    let val = Box::new(42u64);
+    log::info!("HeapTest: Box::new(42) = {}", *val);
+    assert_eq!(*val, 42);
+
+    log::info!("Phase 3 complete");
+}
+
+pub fn phase4() {
+    log::info!("Phase 4 complete");
+}
 
 // ─── P5a: 多核锁竞争测试 ────────────────────────────────────────────────────
 

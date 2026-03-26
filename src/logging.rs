@@ -47,7 +47,7 @@ fn level_label(level: log::Level) -> &'static str {
     }
 }
 
-use crate::fmt_buf::FmtBuf;
+use crate::util::fmt_buf::FmtBuf;
 
 struct KernelLogger;
 

@@ -48,7 +48,7 @@ pub fn handle_ipi(_ctx: &mut TrapContext) {
 /// 读取 BASIC_INFO 中的 core_count，对每个从核调用 SBI hart_start。
 /// 跳过当前核心（主核），因为任何 hart 都可能成为主核（取决于谁先到达 `_start`）。
 pub fn wake_secondary_cores() {
-    let core_count = crate::per_cpu::BASIC_INFO
+    let core_count = crate::boot_info::BASIC_INFO
         .get()
         .map(|info| info.core_count)
         .unwrap_or(1);

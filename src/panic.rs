@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::elf::KernelElf;
 use crate::memory::address::VirtAddr;
 use crate::sync::SpinLock;
@@ -75,7 +73,7 @@ fn notify_observers(event: &PanicEvent<'_>) {
     }
 }
 
-use crate::fmt_buf::FmtBuf;
+use crate::util::fmt_buf::FmtBuf;
 
 /// 核心 panic 处理器。打印位置、消息、回溯，并通知观察者。
 #[cfg(not(test))]

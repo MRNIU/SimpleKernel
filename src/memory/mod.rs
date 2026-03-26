@@ -22,14 +22,12 @@ static KERNEL_PAGE_TABLE: spin::Once<SpinLock<PageTable>> = spin::Once::new();
 
 /// Identity mapping: phys_to_virt is identity for now.
 #[cfg(not(test))]
-#[allow(dead_code)]
 pub fn phys_to_virt(pa: PhysAddr) -> VirtAddr {
     VirtAddr::new(pa.as_usize())
 }
 
 /// Identity mapping: virt_to_phys is identity for now.
 #[cfg(not(test))]
-#[allow(dead_code)]
 pub fn virt_to_phys(va: VirtAddr) -> PhysAddr {
     PhysAddr::new(va.as_usize())
 }
@@ -64,7 +62,7 @@ pub fn init() {
     unsafe { heap::init() };
 
     // Step 2: Frame allocator
-    let info = crate::per_cpu::BASIC_INFO
+    let info = crate::boot_info::BASIC_INFO
         .get()
         .expect("BASIC_INFO not initialized");
     let mem_start = info.physical_memory_addr;

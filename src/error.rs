@@ -1,7 +1,7 @@
-#![allow(dead_code)]
-
 use core::fmt;
 
+// 错误码为后续各子系统（设备、文件系统等）预留变体，当前未全部使用
+#[allow(dead_code)]
 #[repr(u64)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ErrorCode {

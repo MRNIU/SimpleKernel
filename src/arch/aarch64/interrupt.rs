@@ -46,7 +46,7 @@ fn init_gic_addrs() {
     use crate::error::ErrorCode;
 
     GIC_ADDRS.call_once(|| {
-        let info = crate::per_cpu::BASIC_INFO
+        let info = crate::boot_info::BASIC_INFO
             .get()
             .expect("init_gic_addrs: BASIC_INFO 未初始化");
         let fdt = crate::fdt::KernelFdt::new(info.fdt_addr.as_usize())
@@ -61,7 +61,7 @@ fn init_gic_addrs() {
         // find_compatible_reg 只返回第一组，这里用默认值计算 GICR
         let gicr_addr = gicd_addr + gicd_size as u64;
         let gicr_size = GICR_STRIDE
-            * crate::per_cpu::BASIC_INFO
+            * crate::boot_info::BASIC_INFO
                 .get()
                 .map(|i| i.core_count)
                 .unwrap_or(1);
@@ -95,7 +95,7 @@ fn init_gic_addrs() {
 /// # Safety
 /// GICD 和 GICR 区域必须已通过 `map_mmio` 映射。
 unsafe fn create_gic<'a>() -> GicV3<'a> {
-    let cpu_count = crate::per_cpu::BASIC_INFO
+    let cpu_count = crate::boot_info::BASIC_INFO
         .get()
         .map(|info| info.core_count)
         .unwrap_or(1);
@@ -248,7 +248,7 @@ fn dispatch_sync(ctx: &mut TrapContext) {
                 esr,
                 ctx.elr_el1
             );
-            crate::halt::halt("致命异常，内核停止");
+            crate::util::halt::halt("致命异常，内核停止");
         }
         _ => {
             log::error!(
@@ -257,7 +257,7 @@ fn dispatch_sync(ctx: &mut TrapContext) {
                 esr,
                 ctx.elr_el1
             );
-            crate::halt::halt("致命异常，内核停止");
+            crate::util::halt::halt("致命异常，内核停止");
         }
     }
 }
@@ -282,7 +282,7 @@ pub extern "C" fn fiq_current_el_sp0_handler(ctx: &mut TrapContext) {
         ctx.esr_el1,
         ctx.elr_el1
     );
-    crate::halt::halt("致命异常，内核停止");
+    crate::util::halt::halt("致命异常，内核停止");
 }
 
 #[unsafe(no_mangle)]
@@ -292,7 +292,7 @@ pub extern "C" fn error_current_el_sp0_handler(ctx: &mut TrapContext) {
         ctx.esr_el1,
         ctx.elr_el1
     );
-    crate::halt::halt("致命异常，内核停止");
+    crate::util::halt::halt("致命异常，内核停止");
 }
 
 // Current EL with SPx
@@ -314,7 +314,7 @@ pub extern "C" fn fiq_current_el_spx_handler(ctx: &mut TrapContext) {
         ctx.esr_el1,
         ctx.elr_el1
     );
-    crate::halt::halt("致命异常，内核停止");
+    crate::util::halt::halt("致命异常，内核停止");
 }
 
 #[unsafe(no_mangle)]
@@ -324,7 +324,7 @@ pub extern "C" fn error_current_el_spx_handler(ctx: &mut TrapContext) {
         ctx.esr_el1,
         ctx.elr_el1
     );
-    crate::halt::halt("致命异常，内核停止");
+    crate::util::halt::halt("致命异常，内核停止");
 }
 
 // Lower EL AArch64
@@ -346,7 +346,7 @@ pub extern "C" fn fiq_lower_el_aarch64_handler(ctx: &mut TrapContext) {
         ctx.esr_el1,
         ctx.elr_el1
     );
-    crate::halt::halt("致命异常，内核停止");
+    crate::util::halt::halt("致命异常，内核停止");
 }
 
 #[unsafe(no_mangle)]
@@ -356,7 +356,7 @@ pub extern "C" fn error_lower_el_aarch64_handler(ctx: &mut TrapContext) {
         ctx.esr_el1,
         ctx.elr_el1
     );
-    crate::halt::halt("致命异常，内核停止");
+    crate::util::halt::halt("致命异常，内核停止");
 }
 
 // Lower EL AArch32
@@ -368,7 +368,7 @@ pub extern "C" fn sync_lower_el_aarch32_handler(ctx: &mut TrapContext) {
         ctx.esr_el1,
         ctx.elr_el1
     );
-    crate::halt::halt("致命异常，内核停止");
+    crate::util::halt::halt("致命异常，内核停止");
 }
 
 #[unsafe(no_mangle)]
@@ -383,7 +383,7 @@ pub extern "C" fn fiq_lower_el_aarch32_handler(ctx: &mut TrapContext) {
         ctx.esr_el1,
         ctx.elr_el1
     );
-    crate::halt::halt("致命异常，内核停止");
+    crate::util::halt::halt("致命异常，内核停止");
 }
 
 #[unsafe(no_mangle)]
@@ -393,5 +393,5 @@ pub extern "C" fn error_lower_el_aarch32_handler(ctx: &mut TrapContext) {
         ctx.esr_el1,
         ctx.elr_el1
     );
-    crate::halt::halt("致命异常，内核停止");
+    crate::util::halt::halt("致命异常，内核停止");
 }

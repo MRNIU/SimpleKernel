@@ -11,6 +11,7 @@ pub mod tcb;
 
 #[cfg(not(test))]
 mod manager {
+    use alloc::collections::BTreeMap;
     use alloc::sync::Arc;
     use alloc::vec::Vec;
     use core::cell::SyncUnsafeCell;
@@ -64,119 +65,147 @@ mod manager {
 
     // ─── 全局任务表 ──────────────────────────────────────────────────────
 
-    /// 全局任务表锁（级别 1，高于调度锁级别 0）
-    static TASK_TABLE_LOCK: SpinLock<()> =
-        SpinLock::new_with_level((), "task_table", lock_level::TASK_TABLE_LOCK);
-
-    struct WaitQueue {
-        resource: ResourceId,
-        waiters: Vec<TaskRef>,
-    }
-
+    /// 全局任务表——持有所有任务、睡眠队列和等待队列。
+    ///
+    /// 由 `TASK_TABLE` 的 `SpinLock` 保护（级别 1，高于调度锁级别 0）。
     struct TaskTable {
         tasks: Vec<TaskRef>,
         next_pid: Pid,
         sleep_queue: Vec<TaskRef>,
-        wait_queues: Vec<WaitQueue>,
+        wait_queues: BTreeMap<ResourceId, Vec<TaskRef>>,
     }
 
-    static TASK_TABLE: SyncUnsafeCell<Option<TaskTable>> = SyncUnsafeCell::new(None);
-
-    /// # Safety
-    ///
-    /// 调用者必须持有 TASK_TABLE_LOCK。
-    unsafe fn task_table() -> &'static mut TaskTable {
-        unsafe { &mut *TASK_TABLE.get() }
-            .as_mut()
-            .expect("task_table: 未初始化")
-    }
-
-    // ─── 内部辅助 ────────────────────────────────────────────────────────
-
-    /// 唤醒等待指定资源的一个任务——加入指定核心的就绪队列。
-    ///
-    /// 调用者必须同时持有 per-CPU 调度锁和 TASK_TABLE_LOCK。
-    fn wake_blocked_on_inner(table: &mut TaskTable, sched: &mut PerCpuSched, resource: ResourceId) {
-        if let Some(wq) = table
-            .wait_queues
-            .iter_mut()
-            .find(|wq| wq.resource == resource)
-        {
-            if !wq.waiters.is_empty() {
-                let task = wq.waiters.remove(0);
-                task.set_state(TaskState::Ready);
-                sched.scheduler.enqueue(task);
+    impl TaskTable {
+        fn new() -> Self {
+            Self {
+                tasks: Vec::new(),
+                next_pid: 1,
+                sleep_queue: Vec::new(),
+                wait_queues: BTreeMap::new(),
             }
         }
-        table.wait_queues.retain(|wq| !wq.waiters.is_empty());
-    }
 
-    /// 唤醒到期的睡眠任务。
-    ///
-    /// 调用者必须同时持有 per-CPU 调度锁和 TASK_TABLE_LOCK。
-    fn wake_expired_sleepers(table: &mut TaskTable, sched: &mut PerCpuSched) {
-        let now = crate::arch::Arch::get_current_tick();
-        let mut i = 0;
-        while i < table.sleep_queue.len() {
-            let task = &table.sleep_queue[i];
-            if task.wake_tick() != 0 && task.wake_tick() <= now {
-                let task = table.sleep_queue.remove(i);
-                task.set_wake_tick(0);
-                task.set_state(TaskState::Ready);
-                sched.scheduler.enqueue(task);
-            } else {
-                i += 1;
+        /// 唤醒等待指定资源的一个任务——加入指定核心的就绪队列。
+        fn wake_one(&mut self, sched: &mut PerCpuSched, resource: ResourceId) {
+            if let Some(waiters) = self.wait_queues.get_mut(&resource) {
+                if !waiters.is_empty() {
+                    let task = waiters.remove(0);
+                    task.set_state(TaskState::Ready);
+                    sched.scheduler.enqueue(task);
+                }
+                if waiters.is_empty() {
+                    self.wait_queues.remove(&resource);
+                }
             }
+        }
+
+        /// 唤醒等待指定资源的所有任务。
+        fn wake_all(&mut self, sched: &mut PerCpuSched, resource: ResourceId) {
+            if let Some(waiters) = self.wait_queues.remove(&resource) {
+                for task in waiters {
+                    task.set_state(TaskState::Ready);
+                    sched.scheduler.enqueue(task);
+                }
+            }
+        }
+
+        /// 唤醒到期的睡眠任务。
+        fn wake_expired_sleepers(&mut self, sched: &mut PerCpuSched) {
+            let now = crate::arch::Arch::get_current_tick();
+            let mut i = 0;
+            while i < self.sleep_queue.len() {
+                let task = &self.sleep_queue[i];
+                if task.wake_tick() != 0 && task.wake_tick() <= now {
+                    let task = self.sleep_queue.remove(i);
+                    task.set_wake_tick(0);
+                    task.set_state(TaskState::Ready);
+                    sched.scheduler.enqueue(task);
+                } else {
+                    i += 1;
+                }
+            }
+        }
+
+        /// 检查当前任务的待处理信号并执行默认动作。
+        fn deliver_pending_signals(&mut self, sched: &mut PerCpuSched) {
+            let task = match sched.current.as_ref() {
+                Some(t) => t.clone(),
+                None => return,
+            };
+            if task.is_idle() {
+                return;
+            }
+
+            let pending = task.pending_signals();
+            if pending == 0 {
+                return;
+            }
+            let mask = SignalMask::from_bits_truncate(task.signal_mask());
+            if let Some(sig) = first_deliverable(pending, mask) {
+                task.clear_signal(1 << (sig as u32));
+                match sig.default_action() {
+                    SignalAction::Terminate => {
+                        let pid = task.pid();
+                        let code = -(sig as i32);
+                        task.set_exit_code(code);
+                        task.set_state(TaskState::Exited);
+                        log::info!(
+                            "Task [pid={}] \"{}\" killed by {:?}",
+                            task.pid(),
+                            task.name(),
+                            sig
+                        );
+                        self.wake_one(sched, ResourceId::ChildExit(pid));
+                        self.wake_one(sched, ResourceId::ChildExit(0));
+                    }
+                    SignalAction::Stop => {
+                        task.set_state(TaskState::Stopped);
+                        log::info!(
+                            "Task [pid={}] \"{}\" stopped by {:?}",
+                            task.pid(),
+                            task.name(),
+                            sig
+                        );
+                    }
+                    SignalAction::Ignore => {}
+                }
+            }
+        }
+
+        /// 将任务加入等待队列。
+        fn add_waiter(&mut self, resource: ResourceId, task: TaskRef) {
+            self.wait_queues.entry(resource).or_default().push(task);
+        }
+
+        /// 分配下一个 PID 并注册任务。
+        fn register_task(&mut self, task: TaskRef) {
+            self.tasks.push(task);
+        }
+
+        /// 分配下一个 PID。
+        fn alloc_pid(&mut self) -> Pid {
+            let pid = self.next_pid;
+            self.next_pid += 1;
+            pid
         }
     }
 
-    /// 检查当前任务的待处理信号并执行默认动作。
-    ///
-    /// 调用者必须同时持有 per-CPU 调度锁和 TASK_TABLE_LOCK。
-    fn deliver_pending_signals(table: &mut TaskTable, sched: &mut PerCpuSched) {
-        let task = match sched.current.as_ref() {
-            Some(t) => t.clone(),
-            None => return,
+    static TASK_TABLE: SpinLock<TaskTable> =
+        SpinLock::new_with_level(TaskTable::EMPTY, "task_table", lock_level::TASK_TABLE_LOCK);
+
+    impl TaskTable {
+        /// 编译期空值——用于 SpinLock 静态初始化。
+        ///
+        /// `init()` 中会通过 `*guard = TaskTable::new()` 替换为真正的实例。
+        const EMPTY: Self = Self {
+            tasks: Vec::new(),
+            next_pid: 0,
+            sleep_queue: Vec::new(),
+            wait_queues: BTreeMap::new(),
         };
-        if task.is_idle() {
-            return;
-        }
-
-        let pending = task.pending_signals();
-        if pending == 0 {
-            return;
-        }
-        let mask = SignalMask::from_bits_truncate(task.signal_mask());
-        if let Some(sig) = first_deliverable(pending, mask) {
-            task.clear_signal(1 << (sig as u32));
-            match sig.default_action() {
-                SignalAction::Terminate => {
-                    let pid = task.pid();
-                    let code = -(sig as i32);
-                    task.set_exit_code(code);
-                    task.set_state(TaskState::Exited);
-                    log::info!(
-                        "Task [pid={}] \"{}\" killed by {:?}",
-                        task.pid(),
-                        task.name(),
-                        sig
-                    );
-                    wake_blocked_on_inner(table, sched, ResourceId::ChildExit(pid));
-                    wake_blocked_on_inner(table, sched, ResourceId::ChildExit(0));
-                }
-                SignalAction::Stop => {
-                    task.set_state(TaskState::Stopped);
-                    log::info!(
-                        "Task [pid={}] \"{}\" stopped by {:?}",
-                        task.pid(),
-                        task.name(),
-                        sig
-                    );
-                }
-                SignalAction::Ignore => {}
-            }
-        }
     }
+
+    // ─── 任务窃取 ──────────────────────────────────────────────────────────
 
     /// 从其他核心窃取一个任务——当本核就绪队列为空时调用。
     ///
@@ -244,12 +273,12 @@ mod manager {
                 current: Some(idle.clone()),
                 idle: Some(idle),
             });
-            *TASK_TABLE.get() = Some(TaskTable {
-                tasks: Vec::new(),
-                next_pid: 1,
-                sleep_queue: Vec::new(),
-                wait_queues: Vec::new(),
-            });
+        }
+
+        // 初始化任务表
+        {
+            let mut table = TASK_TABLE.lock();
+            *table = TaskTable::new();
         }
 
         log::info!("TaskInit: idle task created for core {}", core_id);
@@ -286,18 +315,16 @@ mod manager {
     ) -> TaskRef {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
-        let _table_guard = TASK_TABLE_LOCK.lock();
-        // SAFETY: 持有两把锁
-        let table = unsafe { task_table() };
+        let mut table = TASK_TABLE.lock();
+        // SAFETY: 持有本核调度锁
         let sched = unsafe { per_cpu_sched(core_id) };
 
-        let pid = table.next_pid;
-        table.next_pid += 1;
+        let pid = table.alloc_pid();
 
         let task = Arc::new(TaskControlBlock::new_kernel_thread(
             pid, name, entry, arg, parent_pid,
         ));
-        table.tasks.push(task.clone());
+        table.register_task(task.clone());
         sched.scheduler.enqueue(task.clone());
 
         log::info!(
@@ -325,8 +352,7 @@ mod manager {
 
     /// 按 PID 查找任务。
     pub fn find_task(pid: Pid) -> Option<TaskRef> {
-        let _guard = TASK_TABLE_LOCK.lock();
-        let table = unsafe { task_table() };
+        let table = TASK_TABLE.lock();
         table.tasks.iter().find(|t| t.pid() == pid).cloned()
     }
 
@@ -349,11 +375,11 @@ mod manager {
 
         // 1a. 获取任务表锁，唤醒到期睡眠任务 + 投递信号
         {
-            let _table_guard = TASK_TABLE_LOCK.lock();
-            let table = unsafe { task_table() };
+            let mut table = TASK_TABLE.lock();
+            // SAFETY: 持有本核调度锁
             let sched = unsafe { per_cpu_sched(core_id) };
-            wake_expired_sleepers(table, sched);
-            deliver_pending_signals(table, sched);
+            table.wake_expired_sleepers(sched);
+            table.deliver_pending_signals(sched);
         }
 
         // SAFETY: 持有本核调度锁
@@ -412,8 +438,7 @@ mod manager {
         task.set_state(TaskState::Sleeping);
 
         {
-            let _guard = TASK_TABLE_LOCK.lock();
-            let table = unsafe { task_table() };
+            let mut table = TASK_TABLE.lock();
             table.sleep_queue.push(task);
         }
 
@@ -435,20 +460,8 @@ mod manager {
         task.set_state(TaskState::Blocked);
 
         {
-            let _guard = TASK_TABLE_LOCK.lock();
-            let table = unsafe { task_table() };
-            if let Some(wq) = table
-                .wait_queues
-                .iter_mut()
-                .find(|wq| wq.resource == resource)
-            {
-                wq.waiters.push(task);
-            } else {
-                table.wait_queues.push(WaitQueue {
-                    resource,
-                    waiters: alloc::vec![task],
-                });
-            }
+            let mut table = TASK_TABLE.lock();
+            table.add_waiter(resource, task);
         }
 
         schedule();
@@ -458,32 +471,20 @@ mod manager {
     pub fn wakeup_one(resource: ResourceId) {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
-        let _table_guard = TASK_TABLE_LOCK.lock();
-        let table = unsafe { task_table() };
+        let mut table = TASK_TABLE.lock();
+        // SAFETY: 持有本核调度锁
         let sched = unsafe { per_cpu_sched(core_id) };
-        wake_blocked_on_inner(table, sched, resource);
+        table.wake_one(sched, resource);
     }
 
     /// 唤醒在指定资源上阻塞的所有任务。
     pub fn wakeup_all(resource: ResourceId) {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
-        let _table_guard = TASK_TABLE_LOCK.lock();
-        let table = unsafe { task_table() };
+        let mut table = TASK_TABLE.lock();
+        // SAFETY: 持有本核调度锁
         let sched = unsafe { per_cpu_sched(core_id) };
-        let wq = match table
-            .wait_queues
-            .iter_mut()
-            .find(|wq| wq.resource == resource)
-        {
-            Some(wq) => wq,
-            None => return,
-        };
-        for task in wq.waiters.drain(..) {
-            task.set_state(TaskState::Ready);
-            sched.scheduler.enqueue(task);
-        }
-        table.wait_queues.retain(|wq| !wq.waiters.is_empty());
+        table.wake_all(sched, resource);
     }
 
     // ─── exit / wait ────────────────────────────────────────────────────
@@ -505,11 +506,11 @@ mod manager {
         {
             let core_id = per_cpu::current_core_id();
             let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
-            let _table_guard = TASK_TABLE_LOCK.lock();
-            let table = unsafe { task_table() };
+            let mut table = TASK_TABLE.lock();
+            // SAFETY: 持有本核调度锁
             let sched = unsafe { per_cpu_sched(core_id) };
-            wake_blocked_on_inner(table, sched, ResourceId::ChildExit(pid));
-            wake_blocked_on_inner(table, sched, ResourceId::ChildExit(0));
+            table.wake_one(sched, ResourceId::ChildExit(pid));
+            table.wake_one(sched, ResourceId::ChildExit(0));
         }
 
         schedule();
@@ -520,8 +521,7 @@ mod manager {
     pub fn wait_child(child_pid: usize) -> KResult<(Pid, i32)> {
         loop {
             {
-                let _guard = TASK_TABLE_LOCK.lock();
-                let table = unsafe { task_table() };
+                let mut table = TASK_TABLE.lock();
                 let caller_pid = current_task().pid();
 
                 let found = table.tasks.iter().find(|t| {
@@ -564,8 +564,8 @@ mod manager {
     pub fn send_signal(pid: Pid, sig: Signal) -> KResult<()> {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
-        let _table_guard = TASK_TABLE_LOCK.lock();
-        let table = unsafe { task_table() };
+        let table = TASK_TABLE.lock();
+        // SAFETY: 持有本核调度锁
         let sched = unsafe { per_cpu_sched(core_id) };
 
         let task = table
