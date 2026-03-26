@@ -27,6 +27,7 @@ mod per_cpu;
 mod scope_guard;
 mod sync;
 mod syscall;
+mod task;
 
 #[cfg(not(test))]
 use core::sync::atomic::{AtomicBool, Ordering};
