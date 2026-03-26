@@ -1,18 +1,6 @@
-[submodule "3rd/opensbi_interface"]
-	path = 3rd/opensbi_interface
-	url = https://github.com/MRNIU/opensbi_interface.git
 [submodule "3rd/opensbi"]
 	path = 3rd/opensbi
 	url = https://github.com/riscv-software-src/opensbi.git
-[submodule "3rd/dtc"]
-	path = 3rd/dtc
-	url = https://git.kernel.org/pub/scm/utils/dtc/dtc.git
-[submodule "3rd/googletest"]
-	path = 3rd/googletest
-	url = https://github.com/google/googletest.git
-[submodule "3rd/cpu_io"]
-	path = 3rd/cpu_io
-	url = https://github.com/MRNIU/cpu_io.git
 [submodule "3rd/arm-trusted-firmware"]
 	path = 3rd/arm-trusted-firmware
 	url = https://github.com/ARM-software/arm-trusted-firmware.git
@@ -22,15 +10,3 @@
 [submodule "3rd/u-boot"]
 	path = 3rd/u-boot
 	url = https://github.com/u-boot/u-boot.git
-[submodule "3rd/bmalloc"]
-	path = 3rd/bmalloc
-	url = https://github.com/MRNIU/bmalloc.git
-[submodule "3rd/MPMCQueue"]
-	path = 3rd/MPMCQueue
-	url = https://github.com/MRNIU/MPMCQueue.git
-[submodule "3rd/fatfs"]
-	path = 3rd/fatfs
-	url = https://github.com/abbrev/fatfs.git
-[submodule "3rd/etl"]
-	path = 3rd/etl
-	url = https://github.com/ETLCPP/etl.git
