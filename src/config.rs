@@ -14,3 +14,6 @@ pub const DEFAULT_LOG_LEVEL: log::LevelFilter = log::LevelFilter::Debug;
 
 /// 回溯最大深度
 pub const MAX_BACKTRACE_DEPTH: usize = 16;
+
+/// 内核线程栈大小（16KB，与 boot.S 中 DEFAULT_STACK_SIZE 一致）
+pub const KERNEL_STACK_SIZE: usize = 16 * 1024;
