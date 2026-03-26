@@ -1,3 +1,4 @@
+pub mod interrupt_ops;
 mod spinlock;
 
 pub use spinlock::SpinLock;

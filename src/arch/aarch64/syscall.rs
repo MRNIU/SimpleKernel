@@ -1,13 +1,13 @@
-/// AArch64 系统调用分发
+/// AArch64 系统调用处理
 ///
 /// SVC 异常（ESR_EL1.EC = 0x15）的处理入口。
+/// 仅负责寄存器提取、指令指针推进和返回值写回，分发逻辑由 `crate::syscall::dispatch` 统一处理。
 use super::context::TrapContext;
-use crate::syscall::SyscallNumber;
 
 /// 处理系统调用
 ///
 /// 从 TrapContext 中提取系统调用号（x8）和参数（x0–x5），
-/// 分发到对应的系统调用处理函数，并将返回值写回 x0。
+/// 委托 `syscall::dispatch` 进行分发，并将返回值写回 x0。
 ///
 /// ELR_EL1 前进 4 字节以跳过 svc 指令。
 ///
@@ -18,20 +18,10 @@ pub fn handle_syscall(ctx: &mut TrapContext) {
     ctx.elr_el1 = ctx.elr_el1.wrapping_add(4);
 
     // AArch64 Linux ABI: 系统调用号在 x8，参数在 x0–x5
-    let syscall_num = ctx.x[8];
-    let a0 = ctx.x[0];
-    let a1 = ctx.x[1];
-    let a2 = ctx.x[2];
-
-    let ret = match SyscallNumber::from_u64(syscall_num) {
-        Some(SyscallNumber::Write) => crate::syscall::sys_write(a0, a1, a2),
-        Some(SyscallNumber::Exit) => crate::syscall::sys_exit(a0),
-        Some(SyscallNumber::Yield) => crate::syscall::sys_yield(),
-        None => {
-            log::warn!("handle_syscall: 未知系统调用号 {}", syscall_num);
-            -1i64
-        }
-    };
+    let ret = crate::syscall::dispatch(
+        ctx.x[8],
+        [ctx.x[0], ctx.x[1], ctx.x[2], ctx.x[3], ctx.x[4], ctx.x[5]],
+    );
 
     ctx.x[0] = ret as u64;
 }

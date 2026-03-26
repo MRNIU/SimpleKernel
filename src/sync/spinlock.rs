@@ -17,38 +17,7 @@ pub mod lock_level {
     pub const UNCLASSIFIED: u8 = 0xFF;
 }
 
-/// 中断操作——通过 `ArchOps` trait 分派，测试模式下为 no-op 存根。
-mod interrupt_ops {
-    #[cfg(not(test))]
-    use crate::arch::ArchOps;
-
-    #[inline(always)]
-    pub fn get_status() -> bool {
-        #[cfg(not(test))]
-        {
-            crate::arch::Arch::irq_enabled()
-        }
-        #[cfg(test)]
-        {
-            false
-        }
-    }
-
-    #[inline(always)]
-    pub fn disable() {
-        #[cfg(not(test))]
-        crate::arch::Arch::irq_disable();
-    }
-
-    #[inline(always)]
-    pub fn enable() {
-        #[cfg(not(test))]
-        // SAFETY: 由 SpinLockGuard::drop 调用，恢复获取锁前的中断状态
-        unsafe {
-            crate::arch::Arch::irq_enable()
-        };
-    }
-}
+use super::interrupt_ops;
 
 const NO_OWNER: usize = usize::MAX;
 
@@ -136,7 +105,8 @@ impl<T> SpinLock<T> {
             }
             None => {
                 if saved_intr {
-                    interrupt_ops::enable();
+                    // SAFETY: 恢复 try_lock 前的中断状态
+                    unsafe { interrupt_ops::enable() };
                 }
                 None
             }
@@ -182,7 +152,8 @@ impl<T> SpinLock<T> {
         // SAFETY: 调用方保证锁处于已获取状态
         unsafe { self.inner.force_unlock() };
 
-        interrupt_ops::enable();
+        // SAFETY: 恢复 lock_raw 前的中断状态
+        unsafe { interrupt_ops::enable() };
     }
 
     fn post_acquire(&self) {
@@ -279,7 +250,8 @@ impl<T> Drop for SpinLockGuard<'_, T> {
         // SAFETY: guard 有效且仅在此处 drop 一次
         unsafe { ManuallyDrop::drop(&mut self.guard) };
         if self.saved_intr {
-            interrupt_ops::enable();
+            // SAFETY: 恢复获取锁前的中断状态
+            unsafe { interrupt_ops::enable() };
         }
     }
 }
