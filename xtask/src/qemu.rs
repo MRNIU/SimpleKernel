@@ -188,23 +188,19 @@ pub fn launch_qemu(
             cmd.run()?;
         }
         Arch::Aarch64 => {
-            println!(
-                "[xtask] note: connect serial consoles with `nc 127.0.0.1 54320` and `nc 127.0.0.1 54321` in separate terminals."
-            );
             let bios = fw.join("arm-trusted-firmware/flash.bin");
             let fat_drive = format!("file=fat:rw:{},format=raw,media=disk", boot_dir.display());
             let mut cmd = base_qemu_cmd(sh, arch, &rootfs_drive)
+                .args([
+                    "-serial",
+                    "stdio", // 主串口：ATF + U-Boot + 内核 → 直接输出到终端
+                    "-serial", "null", // OP-TEE 串口：通常无输出，丢弃即可
+                ])
                 .args(["-d", "guest_errors,cpu_reset"])
                 .arg("-D")
                 .arg(&qemu_log)
                 .arg("-drive")
                 .arg(&fat_drive)
-                .args([
-                    "-serial",
-                    "tcp:127.0.0.1:54320",
-                    "-serial",
-                    "tcp:127.0.0.1:54321",
-                ])
                 .arg("-bios")
                 .arg(&bios)
                 .arg("-kernel")

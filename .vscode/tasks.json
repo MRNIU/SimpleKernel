@@ -2,45 +2,15 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "::54320",
-            "type": "shell",
-            "command": "python3",
-            "args": [
-                "${workspaceFolder}/3rd/optee/build/soc_term.py",
-                "54320"
-            ],
-            "isBackground": true,
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "group": "aarch64"
-            }
-        },
-        {
-            "label": "::54321",
-            "type": "shell",
-            "command": "python3",
-            "args": [
-                "${workspaceFolder}/3rd/optee/build/soc_term.py",
-                "54321"
-            ],
-            "isBackground": true,
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "group": "aarch64"
-            }
-        },
-        {
             "label": "build_riscv64",
             "type": "process",
-            "command": "make",
-            "args": [],
-            "options": {
-                "cwd": "${workspaceFolder}/build_riscv64"
-            },
+            "command": "cargo",
+            "args": [
+                "xtask",
+                "build",
+                "--arch",
+                "riscv64"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": false
@@ -60,13 +30,13 @@
         {
             "label": "run_riscv64",
             "type": "process",
-            "command": "make",
+            "command": "cargo",
             "args": [
-                "run"
+                "xtask",
+                "run",
+                "--arch",
+                "riscv64"
             ],
-            "options": {
-                "cwd": "${workspaceFolder}/build_riscv64"
-            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -85,13 +55,13 @@
         {
             "label": "debug_riscv64",
             "type": "process",
-            "command": "make",
+            "command": "cargo",
             "args": [
-                "debug"
+                "xtask",
+                "debug",
+                "--arch",
+                "riscv64"
             ],
-            "options": {
-                "cwd": "${workspaceFolder}/build_riscv64"
-            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -111,11 +81,13 @@
         {
             "label": "build_aarch64",
             "type": "process",
-            "command": "make",
-            "args": [],
-            "options": {
-                "cwd": "${workspaceFolder}/build_aarch64"
-            },
+            "command": "cargo",
+            "args": [
+                "xtask",
+                "build",
+                "--arch",
+                "aarch64"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": false
@@ -133,15 +105,15 @@
             }
         },
         {
-            "label": "run_aarch64_warp",
+            "label": "run_aarch64",
             "type": "process",
-            "command": "make",
+            "command": "cargo",
             "args": [
-                "run"
+                "xtask",
+                "run",
+                "--arch",
+                "aarch64"
             ],
-            "options": {
-                "cwd": "${workspaceFolder}/build_aarch64"
-            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -160,25 +132,15 @@
             "hide": true
         },
         {
-            "label": "run_aarch64",
-            "problemMatcher": [],
-            "dependsOn": [
-                "run_aarch64_warp",
-                "::54320",
-                "::54321"
-            ],
-            "dependsOrder": "parallel"
-        },
-        {
             "label": "debug_aarch64",
             "type": "process",
-            "command": "make",
+            "command": "cargo",
             "args": [
-                "debug"
+                "xtask",
+                "debug",
+                "--arch",
+                "aarch64"
             ],
-            "options": {
-                "cwd": "${workspaceFolder}/build_aarch64"
-            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -193,81 +155,6 @@
                 "showReuseMessage": true,
                 "clear": true,
                 "group": "aarch64"
-            },
-            "hide": true
-        },
-        {
-            "label": "build_x86_64",
-            "type": "process",
-            "command": "make",
-            "args": [],
-            "options": {
-                "cwd": "${workspaceFolder}/build_x86_64"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": true,
-                "panel": "dedicated",
-                "showReuseMessage": true,
-                "clear": true
-            }
-        },
-        {
-            "label": "run_x86_64",
-            "type": "process",
-            "command": "make",
-            "args": [
-                "run"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}/build_x86_64"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": [],
-            "isBackground": true,
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": true,
-                "panel": "dedicated",
-                "showReuseMessage": true,
-                "clear": true
-            }
-        },
-        {
-            "label": "debug_x86_64",
-            "type": "process",
-            "command": "make",
-            "args": [
-                "debug"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}/build_x86_64"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": [],
-            "isBackground": true,
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": true,
-                "panel": "dedicated",
-                "showReuseMessage": true,
-                "clear": true
             },
             "hide": true
         }

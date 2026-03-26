@@ -121,7 +121,6 @@ cargo doc --no-deps
 ## NOTES
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
-- aarch64 needs two serial terminal tasks (::54320, ::54321) before `cargo xtask run --arch aarch64`
 - Unit tests run on x86_64 host only (`cargo test`) — system tests use QEMU (`cargo xtask run`)
 - Debug: use `cargo xtask debug` + GDB, QEMU logs in build output
 - Design docs: `docs/rust-rewrite/00-概述.md` is the master reference for all design decisions
