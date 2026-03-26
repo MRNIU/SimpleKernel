@@ -173,6 +173,22 @@ static PER_CPU_ARRAY: SyncUnsafeCell<[PerCpu; config::MAX_CORE_COUNT]> = SyncUns
     PerCpu::new(3),
 ]);
 
+/// 检查并清除当前核心的 `need_resched` 标志。
+///
+/// 与 `current_per_cpu()` 不同，此函数不要求中断关闭，
+/// 因为 `need_resched` 是 `AtomicBool`，本身是原子操作。
+/// 用于 idle loop 轮询。
+#[cfg(not(test))]
+pub fn check_and_clear_need_resched() -> bool {
+    let core_id = current_core_id();
+    // SAFETY: core_id < MAX_CORE_COUNT；AtomicBool::swap 是原子操作，无需同步
+    let array = unsafe { &*PER_CPU_ARRAY.get() };
+    array[core_id]
+        .preempt
+        .need_resched
+        .swap(false, core::sync::atomic::Ordering::Acquire)
+}
+
 pub fn current_core_id() -> usize {
     #[cfg(not(test))]
     {

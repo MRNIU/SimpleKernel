@@ -75,8 +75,7 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 
     // Idle loop — bootstrap 上下文成为 idle 任务
     loop {
-        let per_cpu = unsafe { per_cpu::current_per_cpu() };
-        if per_cpu.preempt.need_resched.swap(false, Ordering::Acquire) {
+        if per_cpu::check_and_clear_need_resched() {
             task::schedule();
         }
         core::hint::spin_loop();
@@ -97,8 +96,7 @@ fn bootstrap_smp(argc: i32, argv: *const *const u8) -> ! {
 
     // Idle loop
     loop {
-        let per_cpu = unsafe { per_cpu::current_per_cpu() };
-        if per_cpu.preempt.need_resched.swap(false, Ordering::Acquire) {
+        if per_cpu::check_and_clear_need_resched() {
             task::schedule();
         }
         core::hint::spin_loop();
