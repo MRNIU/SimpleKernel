@@ -22,6 +22,13 @@ pub trait Scheduler: Send {
         false
     }
 
+    /// 从队列尾部窃取一个任务（用于跨核负载均衡）。
+    ///
+    /// 默认返回 None。支持窃取的调度器应覆盖此方法。
+    fn steal_one(&mut self) -> Option<TaskRef> {
+        None
+    }
+
     fn queue_size(&self) -> usize;
     fn is_empty(&self) -> bool;
 }

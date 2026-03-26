@@ -156,6 +156,40 @@ impl<T> SpinLock<T> {
         unsafe { interrupt_ops::enable() };
     }
 
+    /// 尝试获取裸锁（不操作中断、不检查锁级别、不压栈）——
+    /// 用于任务窃取时在已持有自身调度锁的情况下获取另一核心的调度锁。
+    ///
+    /// 成功返回 true，失败返回 false。
+    ///
+    /// # Safety
+    ///
+    /// 调用者必须保证：
+    /// 1. 中断已被禁用（通常因为已通过 `lock_raw` 持有另一把锁）
+    /// 2. 成功后必须调用 `unlock_raw_no_irq()` 释放
+    /// 3. 不会导致死锁（使用 try 语义，失败不阻塞）
+    pub unsafe fn try_lock_raw_no_irq(&self) -> bool {
+        match self.inner.try_lock() {
+            Some(guard) => {
+                core::mem::forget(guard);
+                self.owner_core
+                    .store(per_cpu::current_core_id(), Ordering::Release);
+                true
+            }
+            None => false,
+        }
+    }
+
+    /// 释放裸锁（不操作中断、不弹出锁栈）——与 `try_lock_raw_no_irq` 配对。
+    ///
+    /// # Safety
+    ///
+    /// 必须在持有锁的情况下调用，且与 `try_lock_raw_no_irq` 配对。
+    pub unsafe fn unlock_raw_no_irq(&self) {
+        self.owner_core.store(NO_OWNER, Ordering::Release);
+        // SAFETY: 调用方保证锁处于已获取状态
+        unsafe { self.inner.force_unlock() };
+    }
+
     fn post_acquire(&self) {
         self.owner_core
             .store(per_cpu::current_core_id(), Ordering::Release);

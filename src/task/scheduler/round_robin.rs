@@ -65,6 +65,10 @@ impl Scheduler for RoundRobinScheduler {
         self.queue.len()
     }
 
+    fn steal_one(&mut self) -> Option<TaskRef> {
+        self.queue.pop_back()
+    }
+
     fn is_empty(&self) -> bool {
         self.queue.is_empty()
     }

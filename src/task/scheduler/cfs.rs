@@ -84,6 +84,10 @@ impl Scheduler for CfsScheduler {
         self.queue.len()
     }
 
+    fn steal_one(&mut self) -> Option<TaskRef> {
+        self.queue.pop().map(|e| e.task)
+    }
+
     fn is_empty(&self) -> bool {
         self.queue.is_empty()
     }
