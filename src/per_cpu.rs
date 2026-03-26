@@ -166,12 +166,21 @@ impl PerCpu {
     }
 }
 
-static PER_CPU_ARRAY: SyncUnsafeCell<[PerCpu; config::MAX_CORE_COUNT]> = SyncUnsafeCell::new([
-    PerCpu::new(0),
-    PerCpu::new(1),
-    PerCpu::new(2),
-    PerCpu::new(3),
-]);
+/// 编译期生成 per-CPU 数组，每个元素的 `core_id` 与其下标一致。
+///
+/// 避免手动罗列 N 个元素——当 `MAX_CORE_COUNT` 变化时自动适配。
+const fn make_per_cpu_array() -> [PerCpu; config::MAX_CORE_COUNT] {
+    let mut arr = [const { PerCpu::new(0) }; config::MAX_CORE_COUNT];
+    let mut i = 0;
+    while i < config::MAX_CORE_COUNT {
+        arr[i].core_id = i;
+        i += 1;
+    }
+    arr
+}
+
+static PER_CPU_ARRAY: SyncUnsafeCell<[PerCpu; config::MAX_CORE_COUNT]> =
+    SyncUnsafeCell::new(make_per_cpu_array());
 
 /// 检查并清除当前核心的 `need_resched` 标志。
 ///

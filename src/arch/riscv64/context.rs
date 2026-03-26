@@ -151,3 +151,21 @@ const _: () = {
     assert!(offset_of!(CalleeSavedContext, s0) == 16);
     assert!(offset_of!(CalleeSavedContext, s11) == 13 * 8);
 };
+
+impl CalleeSavedContext {
+    /// 初始化内核线程上下文，使 `switch_to` 后跳转到 `kernel_thread_entry`。
+    ///
+    /// - `ra` → `kernel_thread_entry`（汇编入口）
+    /// - `sp` → 内核栈顶
+    /// - `s0` → 入口函数指针
+    /// - `s1` → 入口函数参数
+    pub fn init_for_kernel_thread(&mut self, kstack_top: usize, entry: fn(usize), arg: usize) {
+        unsafe extern "C" {
+            fn kernel_thread_entry();
+        }
+        self.ra = kernel_thread_entry as unsafe extern "C" fn() as u64;
+        self.sp = kstack_top as u64;
+        self.s0 = entry as u64;
+        self.s1 = arg as u64;
+    }
+}

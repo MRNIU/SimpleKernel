@@ -116,3 +116,21 @@ const _: () = {
     assert!(offset_of!(CalleeSavedContext, sp) == 96);
     assert!(offset_of!(CalleeSavedContext, pc) == 104);
 };
+
+impl CalleeSavedContext {
+    /// 初始化内核线程上下文，使 `switch_to` 后跳转到 `kernel_thread_entry`。
+    ///
+    /// - `pc` → `kernel_thread_entry`（汇编入口）
+    /// - `sp` → 内核栈顶
+    /// - `x19`（`regs[0]`）→ 入口函数指针
+    /// - `x20`（`regs[1]`）→ 入口函数参数
+    pub fn init_for_kernel_thread(&mut self, kstack_top: usize, entry: fn(usize), arg: usize) {
+        unsafe extern "C" {
+            fn kernel_thread_entry();
+        }
+        self.pc = kernel_thread_entry as unsafe extern "C" fn() as u64;
+        self.sp = kstack_top as u64;
+        self.regs[0] = entry as u64;
+        self.regs[1] = arg as u64;
+    }
+}

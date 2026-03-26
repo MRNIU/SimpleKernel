@@ -70,12 +70,16 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
     Arch::wake_secondary_cores();
     phase4_smoke_test();
 
-    // 在从核启动后再创建测试线程，使从核有机会抢到任务
+    // P5a: 多核锁竞争测试
     task::spawn_kernel_thread("counter_0", counter_thread, 0);
     task::spawn_kernel_thread("counter_1", counter_thread, 1);
     task::spawn_kernel_thread("counter_2", counter_thread, 2);
     task::spawn_kernel_thread("counter_3", counter_thread, 3);
     task::spawn_kernel_thread("verifier", verifier_thread, 0);
+
+    // P5b: sleep + clone/wait + KMutex + signal 测试
+    task::spawn_kernel_thread("p5b_test", p5b_test_thread, 0);
+
     phase5_smoke_test();
 
     // 立即尝试调度，开始运行刚创建的线程
@@ -291,10 +295,110 @@ fn verifier_thread(_arg: usize) {
     }
 }
 
+// ─── P5b 集成测试 ────────────────────────────────────────────────────────────
+
+/// P5b 综合测试线程——验证 sleep、clone/wait、KMutex、signal
+#[cfg(not(test))]
+fn p5b_test_thread(_arg: usize) {
+    // ── 测试 1: sleep ──
+    log::info!("P5b: testing sleep...");
+    let tick_before = arch::Arch::get_current_tick();
+    task::sleep(2); // 睡眠 2 个 tick
+    let tick_after = arch::Arch::get_current_tick();
+    let elapsed = tick_after.saturating_sub(tick_before);
+    log::info!("P5b: sleep(2) elapsed {} ticks", elapsed);
+    if elapsed >= 2 {
+        log::info!("=== SLEEP TEST PASSED ===");
+    } else {
+        log::error!("=== SLEEP TEST FAILED: elapsed={} < 2 ===", elapsed);
+    }
+
+    // ── 测试 2: clone + wait ──
+    log::info!("P5b: testing clone/wait...");
+    match task::clone_kernel_thread("child", child_thread, 42) {
+        Ok(child_pid) => {
+            log::info!("P5b: spawned child pid={}", child_pid);
+            match task::wait_child(child_pid) {
+                Ok((pid, code)) => {
+                    if pid == child_pid && code == 7 {
+                        log::info!("=== CLONE/WAIT TEST PASSED: pid={} code={} ===", pid, code);
+                    } else {
+                        log::error!(
+                            "=== CLONE/WAIT TEST FAILED: pid={} code={} (expected {}:7) ===",
+                            pid,
+                            code,
+                            child_pid
+                        );
+                    }
+                }
+                Err(e) => log::error!("=== CLONE/WAIT TEST FAILED: wait err={:?} ===", e),
+            }
+        }
+        Err(e) => log::error!("=== CLONE/WAIT TEST FAILED: clone err={:?} ===", e),
+    }
+
+    // ── 测试 3: KMutex（阻塞互斥锁） ──
+    log::info!("P5b: testing KMutex...");
+    static KMUTEX: spin::Once<task::KMutex> = spin::Once::new();
+    KMUTEX.call_once(task::KMutex::new);
+    let km = KMUTEX.get().expect("KMutex not initialized");
+    km.lock();
+    log::info!("P5b: KMutex acquired");
+    km.unlock();
+    log::info!("=== KMUTEX TEST PASSED ===");
+
+    // ── 测试 4: signal (SIGKILL) ──
+    log::info!("P5b: testing signal...");
+    match task::clone_kernel_thread("victim", victim_thread, 0) {
+        Ok(victim_pid) => {
+            // 让 victim 有机会运行
+            task::yield_now();
+            // 发送 SIGKILL
+            match task::send_signal(victim_pid, task::signal::Signal::SIGKILL) {
+                Ok(()) => {
+                    log::info!("P5b: sent SIGKILL to pid={}", victim_pid);
+                    // 等待 victim 被回收
+                    match task::wait_child(victim_pid) {
+                        Ok((pid, code)) => {
+                            log::info!(
+                                "=== SIGNAL TEST PASSED: pid={} killed, code={} ===",
+                                pid,
+                                code
+                            );
+                        }
+                        Err(e) => log::error!("=== SIGNAL TEST FAILED: wait err={:?} ===", e),
+                    }
+                }
+                Err(e) => log::error!("=== SIGNAL TEST FAILED: send err={:?} ===", e),
+            }
+        }
+        Err(e) => log::error!("=== SIGNAL TEST FAILED: clone err={:?} ===", e),
+    }
+
+    log::info!("=== ALL P5b TESTS COMPLETE ===");
+}
+
+/// clone/wait 测试的子线程——执行一些工作后以 code=7 退出
+#[cfg(not(test))]
+fn child_thread(arg: usize) {
+    log::info!("child_thread: arg={}", arg);
+    task::yield_now();
+    task::exit(7);
+}
+
+/// signal 测试的受害线程——循环 yield，等待被 SIGKILL
+#[cfg(not(test))]
+fn victim_thread(_arg: usize) {
+    log::info!("victim_thread: running, waiting for signal...");
+    loop {
+        task::yield_now();
+    }
+}
+
 #[cfg(not(test))]
 fn phase5_smoke_test() {
     log::info!(
-        "Phase 5: spawning {} counter threads + 1 verifier",
+        "Phase 5: spawning {} counter threads + 1 verifier + P5b tests",
         TEST_THREAD_COUNT
     );
 }

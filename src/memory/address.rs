@@ -6,153 +6,94 @@ use core::ops::{Add, Sub};
 
 use crate::config::PAGE_SIZE;
 
-/// 物理地址
-#[repr(transparent)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct PhysAddr(usize);
+/// 生成地址 newtype，包含对齐辅助、算术运算符和格式化输出。
+macro_rules! define_address {
+    ($(#[$meta:meta])* $name:ident) => {
+        $(#[$meta])*
+        #[repr(transparent)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        pub struct $name(usize);
 
-impl PhysAddr {
-    /// 从原始 usize 构造物理地址
-    #[inline]
-    pub const fn new(addr: usize) -> Self {
-        Self(addr)
-    }
+        impl $name {
+            /// 从原始 usize 构造地址
+            #[inline]
+            pub const fn new(addr: usize) -> Self {
+                Self(addr)
+            }
 
-    /// 返回内部 usize 值
-    #[inline]
-    pub const fn as_usize(self) -> usize {
-        self.0
-    }
+            /// 返回内部 usize 值
+            #[inline]
+            pub const fn as_usize(self) -> usize {
+                self.0
+            }
 
-    /// 页内偏移（低 PAGE_SIZE_BITS 位）
-    #[inline]
-    pub const fn page_offset(self) -> usize {
-        self.0 & (PAGE_SIZE - 1)
-    }
+            /// 页内偏移（低 PAGE_SIZE_BITS 位）
+            #[inline]
+            pub const fn page_offset(self) -> usize {
+                self.0 & (PAGE_SIZE - 1)
+            }
 
-    /// 是否页对齐
-    #[inline]
-    pub const fn is_aligned(self) -> bool {
-        self.page_offset() == 0
-    }
+            /// 是否页对齐
+            #[inline]
+            pub const fn is_aligned(self) -> bool {
+                self.page_offset() == 0
+            }
 
-    /// 向下对齐到页边界
-    #[inline]
-    pub const fn align_down(self) -> Self {
-        Self(self.0 & !(PAGE_SIZE - 1))
-    }
+            /// 向下对齐到页边界
+            #[inline]
+            pub const fn align_down(self) -> Self {
+                Self(self.0 & !(PAGE_SIZE - 1))
+            }
 
-    /// 向上对齐到页边界；已对齐时保持不变
-    #[inline]
-    pub const fn align_up(self) -> Self {
-        Self((self.0 + PAGE_SIZE - 1) & !(PAGE_SIZE - 1))
-    }
+            /// 向上对齐到页边界；已对齐时保持不变
+            #[inline]
+            pub const fn align_up(self) -> Self {
+                Self((self.0 + PAGE_SIZE - 1) & !(PAGE_SIZE - 1))
+            }
+        }
+
+        impl Add<usize> for $name {
+            type Output = Self;
+            #[inline]
+            fn add(self, rhs: usize) -> Self {
+                Self(self.0 + rhs)
+            }
+        }
+
+        impl Sub<usize> for $name {
+            type Output = Self;
+            #[inline]
+            fn sub(self, rhs: usize) -> Self {
+                Self(self.0 - rhs)
+            }
+        }
+
+        /// 两个地址相减，返回字节差值
+        impl Sub<$name> for $name {
+            type Output = usize;
+            #[inline]
+            fn sub(self, rhs: $name) -> usize {
+                self.0 - rhs.0
+            }
+        }
+
+        impl fmt::Display for $name {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "0x{:016x}", self.0)
+            }
+        }
+    };
 }
 
-impl Add<usize> for PhysAddr {
-    type Output = Self;
-    #[inline]
-    fn add(self, rhs: usize) -> Self {
-        Self(self.0 + rhs)
-    }
-}
+define_address!(
+    /// 物理地址
+    PhysAddr
+);
 
-impl Sub<usize> for PhysAddr {
-    type Output = Self;
-    #[inline]
-    fn sub(self, rhs: usize) -> Self {
-        Self(self.0 - rhs)
-    }
-}
-
-/// 两个物理地址相减，返回字节差值
-impl Sub<PhysAddr> for PhysAddr {
-    type Output = usize;
-    #[inline]
-    fn sub(self, rhs: PhysAddr) -> usize {
-        self.0 - rhs.0
-    }
-}
-
-impl fmt::Display for PhysAddr {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "0x{:016x}", self.0)
-    }
-}
-
-/// 虚拟地址
-#[repr(transparent)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct VirtAddr(usize);
-
-impl VirtAddr {
-    /// 从原始 usize 构造虚拟地址
-    #[inline]
-    pub const fn new(addr: usize) -> Self {
-        Self(addr)
-    }
-
-    /// 返回内部 usize 值
-    #[inline]
-    pub const fn as_usize(self) -> usize {
-        self.0
-    }
-
-    /// 页内偏移（低 PAGE_SIZE_BITS 位）
-    #[inline]
-    pub const fn page_offset(self) -> usize {
-        self.0 & (PAGE_SIZE - 1)
-    }
-
-    /// 是否页对齐
-    #[inline]
-    pub const fn is_aligned(self) -> bool {
-        self.page_offset() == 0
-    }
-
-    /// 向下对齐到页边界
-    #[inline]
-    pub const fn align_down(self) -> Self {
-        Self(self.0 & !(PAGE_SIZE - 1))
-    }
-
-    /// 向上对齐到页边界；已对齐时保持不变
-    #[inline]
-    pub const fn align_up(self) -> Self {
-        Self((self.0 + PAGE_SIZE - 1) & !(PAGE_SIZE - 1))
-    }
-}
-
-impl Add<usize> for VirtAddr {
-    type Output = Self;
-    #[inline]
-    fn add(self, rhs: usize) -> Self {
-        Self(self.0 + rhs)
-    }
-}
-
-impl Sub<usize> for VirtAddr {
-    type Output = Self;
-    #[inline]
-    fn sub(self, rhs: usize) -> Self {
-        Self(self.0 - rhs)
-    }
-}
-
-/// 两个虚拟地址相减，返回字节差值
-impl Sub<VirtAddr> for VirtAddr {
-    type Output = usize;
-    #[inline]
-    fn sub(self, rhs: VirtAddr) -> usize {
-        self.0 - rhs.0
-    }
-}
-
-impl fmt::Display for VirtAddr {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "0x{:016x}", self.0)
-    }
-}
+define_address!(
+    /// 虚拟地址
+    VirtAddr
+);
 
 #[cfg(test)]
 mod tests {

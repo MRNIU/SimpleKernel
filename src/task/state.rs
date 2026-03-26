@@ -20,8 +20,10 @@ pub enum TaskState {
     Sleeping = 3,
     /// 阻塞中——等待某个事件（锁、I/O 等）唤醒。
     Blocked = 4,
-    /// 已退出——已调用 exit，等待父进程回收。
+    /// 已退出——已调用 exit，等待父进程回收（僵尸态）。
     Exited = 5,
+    /// 已停止——收到 SIGSTOP/SIGTSTP。
+    Stopped = 6,
 }
 
 impl TaskState {
@@ -43,6 +45,7 @@ impl TaskState {
             3 => Some(Self::Sleeping),
             4 => Some(Self::Blocked),
             5 => Some(Self::Exited),
+            6 => Some(Self::Stopped),
             _ => None,
         }
     }
@@ -66,6 +69,16 @@ pub enum TaskMsg {
     },
     /// 外部事件（定时器/锁释放等）唤醒任务。
     Wakeup,
+    /// 任务进入睡眠。
+    Sleep,
+    /// 任务在资源上阻塞。
+    Block,
+    /// 停止信号（SIGSTOP/SIGTSTP）。
+    Stop,
+    /// 继续信号（SIGCONT）。
+    Cont,
+    /// 父进程回收僵尸子进程。
+    Reap,
 }
 
 // ─── InvalidTransition ────────────────────────────────────────────────────────
@@ -88,8 +101,13 @@ pub struct InvalidTransition {
 /// - `(Ready, PickUp)` → `Running`
 /// - `(Running, Yield)` → `Ready`
 /// - `(Running, Exit { .. })` → `Exited`
+/// - `(Running, Sleep)` → `Sleeping`
+/// - `(Running, Block)` → `Blocked`
+/// - `(Running, Stop)` → `Stopped`
 /// - `(Sleeping, Wakeup)` → `Ready`
 /// - `(Blocked, Wakeup)` → `Ready`
+/// - `(Stopped, Cont)` → `Ready`
+/// - `(Exited, Reap)` → `Exited`（保持，父进程回收后可释放）
 ///
 /// # Errors
 ///
@@ -100,8 +118,13 @@ pub fn transition(from: TaskState, msg: TaskMsg) -> Result<TaskState, InvalidTra
         (TaskState::Ready, TaskMsg::PickUp) => Ok(TaskState::Running),
         (TaskState::Running, TaskMsg::Yield) => Ok(TaskState::Ready),
         (TaskState::Running, TaskMsg::Exit { .. }) => Ok(TaskState::Exited),
+        (TaskState::Running, TaskMsg::Sleep) => Ok(TaskState::Sleeping),
+        (TaskState::Running, TaskMsg::Block) => Ok(TaskState::Blocked),
+        (TaskState::Running, TaskMsg::Stop) => Ok(TaskState::Stopped),
         (TaskState::Sleeping, TaskMsg::Wakeup) => Ok(TaskState::Ready),
         (TaskState::Blocked, TaskMsg::Wakeup) => Ok(TaskState::Ready),
+        (TaskState::Stopped, TaskMsg::Cont) => Ok(TaskState::Ready),
+        (TaskState::Exited, TaskMsg::Reap) => Ok(TaskState::Exited),
         _ => Err(InvalidTransition { from, msg }),
     }
 }
@@ -139,7 +162,7 @@ impl AtomicTaskState {
 mod tests {
     use super::*;
 
-    /// 验证所有 6 条合法转移路径均返回预期的目标状态。
+    /// 验证所有合法转移路径均返回预期的目标状态。
     #[test]
     fn valid_transitions() {
         assert_eq!(
@@ -163,12 +186,32 @@ mod tests {
             Ok(TaskState::Exited)
         );
         assert_eq!(
+            transition(TaskState::Running, TaskMsg::Sleep),
+            Ok(TaskState::Sleeping)
+        );
+        assert_eq!(
+            transition(TaskState::Running, TaskMsg::Block),
+            Ok(TaskState::Blocked)
+        );
+        assert_eq!(
+            transition(TaskState::Running, TaskMsg::Stop),
+            Ok(TaskState::Stopped)
+        );
+        assert_eq!(
             transition(TaskState::Sleeping, TaskMsg::Wakeup),
             Ok(TaskState::Ready)
         );
         assert_eq!(
             transition(TaskState::Blocked, TaskMsg::Wakeup),
             Ok(TaskState::Ready)
+        );
+        assert_eq!(
+            transition(TaskState::Stopped, TaskMsg::Cont),
+            Ok(TaskState::Ready)
+        );
+        assert_eq!(
+            transition(TaskState::Exited, TaskMsg::Reap),
+            Ok(TaskState::Exited)
         );
     }
 
@@ -232,16 +275,19 @@ mod tests {
 
         atomic.store(TaskState::Exited);
         assert_eq!(atomic.load(), TaskState::Exited);
+
+        atomic.store(TaskState::Stopped);
+        assert_eq!(atomic.load(), TaskState::Stopped);
     }
 
     /// 验证 `from_u8` 对所有已知变体正确往返。
     #[test]
     fn from_u8_roundtrip() {
-        for v in 0u8..=5 {
-            let state = TaskState::from_u8(v).expect("应能解析 0..=5");
+        for v in 0u8..=6 {
+            let state = TaskState::from_u8(v).expect("应能解析 0..=6");
             assert_eq!(state.as_u8(), v);
         }
-        assert!(TaskState::from_u8(6).is_none());
+        assert!(TaskState::from_u8(7).is_none());
         assert!(TaskState::from_u8(255).is_none());
     }
 }

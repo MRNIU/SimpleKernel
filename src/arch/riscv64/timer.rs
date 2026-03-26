@@ -12,6 +12,16 @@ pub const TIMER_INTERVAL: u64 = 10_000_000;
 /// 全局 tick 计数器
 static TICK_COUNT: AtomicU64 = AtomicU64::new(0);
 
+/// 读取当前 tick 计数（Acquire 语序，确保看到最新值）
+pub fn get_current_tick() -> u64 {
+    TICK_COUNT.load(Ordering::Acquire)
+}
+
+/// 返回每秒 tick 数（RISC-V：1 Hz）
+pub const fn ticks_per_second() -> u64 {
+    1
+}
+
 /// 读取 `time` CSR（参考时钟周期计数）
 ///
 /// # Safety

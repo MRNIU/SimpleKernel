@@ -1,6 +1,8 @@
 //! 调度器子系统——定义调度器接口与各种调度算法实现。
 
+pub mod cfs;
 pub mod fifo;
+pub mod round_robin;
 
 use crate::task::tcb::TaskRef;
 

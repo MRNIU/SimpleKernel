@@ -58,6 +58,12 @@ pub trait ArchOps {
 
     /// 向早期控制台输出字符串（SBI putchar / PL011 MMIO）
     fn console_write(s: &str);
+
+    /// 读取当前 tick 计数
+    fn get_current_tick() -> u64;
+
+    /// 返回每秒 tick 数
+    fn ticks_per_second() -> u64;
 }
 
 #[cfg(target_arch = "riscv64")]
@@ -65,3 +71,25 @@ pub type Arch = riscv64::Riscv64;
 
 #[cfg(target_arch = "aarch64")]
 pub type Arch = aarch64::Aarch64;
+
+/// 被调用者保存上下文——架构无关的统一类型别名
+#[cfg(target_arch = "riscv64")]
+pub type CalleeSavedContext = riscv64::context::CalleeSavedContext;
+
+/// 被调用者保存上下文——架构无关的统一类型别名
+#[cfg(target_arch = "aarch64")]
+pub type CalleeSavedContext = aarch64::context::CalleeSavedContext;
+
+/// 宿主机编译（`cargo clippy` / `cargo check`）占位类型，不会在目标架构上使用。
+#[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
+#[repr(C)]
+#[derive(Debug, Default, Clone)]
+pub struct CalleeSavedContext {
+    _placeholder: u64,
+}
+
+#[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
+impl CalleeSavedContext {
+    /// 宿主机编译占位——实际内核从不在 x86_64 上运行
+    pub fn init_for_kernel_thread(&mut self, _kstack_top: usize, _entry: fn(usize), _arg: usize) {}
+}

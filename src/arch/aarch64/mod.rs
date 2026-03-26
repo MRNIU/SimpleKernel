@@ -144,6 +144,16 @@ impl ArchOps for Aarch64 {
     fn console_write(s: &str) {
         console::puts(s);
     }
+
+    #[inline]
+    fn get_current_tick() -> u64 {
+        timer::get_current_tick()
+    }
+
+    #[inline]
+    fn ticks_per_second() -> u64 {
+        timer::ticks_per_second()
+    }
 }
 
 /// 内核线程引导函数（供 switch.S 中 `kernel_thread_entry` 调用）

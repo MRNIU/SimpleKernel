@@ -5,7 +5,7 @@ use alloc::sync::Arc;
 #[cfg(test)]
 use std::sync::Arc;
 
-use core::sync::atomic::AtomicI32;
+use core::sync::atomic::{AtomicI32, AtomicU32, AtomicU64, Ordering};
 
 use crate::task::state::{AtomicTaskState, TaskState};
 
@@ -49,57 +49,10 @@ impl Default for KernelStack {
     }
 }
 
-// ─── init_kernel_thread_context ───────────────────────────────────────────────
+// ─── CalleeSavedContext 统一导入 ──────────────────────────────────────────────
 
-/// 初始化内核线程的被调用者保存上下文，使 `switch_to` 后跳转到 `kernel_thread_entry`。
-///
-/// # Safety
-///
-/// 调用者必须确保 `ctx` 指针有效且当前未被其他线程访问。
-#[cfg(all(not(test), target_arch = "riscv64"))]
-unsafe fn init_kernel_thread_context(
-    ctx: *mut crate::arch::riscv64::context::CalleeSavedContext,
-    kstack: &KernelStack,
-    entry: fn(usize),
-    arg: usize,
-) {
-    unsafe extern "C" {
-        fn kernel_thread_entry();
-    }
-    // SAFETY: 调用者保证 ctx 有效；各字段均为 POD 类型，直接写入安全
-    unsafe {
-        (*ctx).ra = kernel_thread_entry as unsafe extern "C" fn() as u64;
-        (*ctx).sp = kstack.top() as u64;
-        (*ctx).s0 = entry as u64;
-        (*ctx).s1 = arg as u64;
-    }
-}
-
-/// 初始化内核线程的被调用者保存上下文，使 `switch_to` 后跳转到 `kernel_thread_entry`。
-///
-/// # Safety
-///
-/// 调用者必须确保 `ctx` 指针有效且当前未被其他线程访问。
-#[cfg(all(not(test), target_arch = "aarch64"))]
-unsafe fn init_kernel_thread_context(
-    ctx: *mut crate::arch::aarch64::context::CalleeSavedContext,
-    kstack: &KernelStack,
-    entry: fn(usize),
-    arg: usize,
-) {
-    unsafe extern "C" {
-        fn kernel_thread_entry();
-    }
-    // SAFETY: 调用者保证 ctx 有效；各字段均为 POD 类型，直接写入安全
-    unsafe {
-        (*ctx).pc = kernel_thread_entry as unsafe extern "C" fn() as u64;
-        (*ctx).sp = kstack.top() as u64;
-        // x19 → entry 函数指针（第一个参数）
-        (*ctx).regs[0] = entry as u64;
-        // x20 → arg（第二个参数）
-        (*ctx).regs[1] = arg as u64;
-    }
-}
+#[cfg(not(test))]
+use crate::arch::CalleeSavedContext;
 
 // ─── TaskControlBlock ─────────────────────────────────────────────────────────
 
@@ -116,13 +69,21 @@ pub struct TaskControlBlock {
     name: &'static str,
     /// 是否为 idle 任务
     is_idle: bool,
+    /// 父任务 PID（None 表示无父任务，idle/init 等）
+    parent_pid: Option<Pid>,
     /// 任务当前状态（原子）
     state: AtomicTaskState,
     /// 退出码（原子，仅 Exited 状态后有效）
     exit_code: AtomicI32,
+    /// 睡眠唤醒 tick（0 表示非睡眠状态；原子：timer 检查时无需持锁）
+    wake_tick: AtomicU64,
+    /// 待处理信号位图（原子：可由其他核心设置）
+    pending_signals: AtomicU32,
+    /// 信号屏蔽位图（原子：可由任务自身修改）
+    signal_mask: AtomicU32,
     /// 被调用者保存上下文（仅非测试模式）
     #[cfg(not(test))]
-    context: core::cell::UnsafeCell<CalleeSavedContextWrapper>,
+    context: core::cell::UnsafeCell<CalleeSavedContext>,
     /// 内核栈（idle 任务无栈，使用 Option）
     #[cfg(not(test))]
     kstack: Option<KernelStack>,
@@ -132,13 +93,6 @@ pub struct TaskControlBlock {
 unsafe impl Send for TaskControlBlock {}
 // SAFETY: 同上
 unsafe impl Sync for TaskControlBlock {}
-
-/// 封装架构相关的 CalleeSavedContext，避免在 cfg 块内重复引用
-#[cfg(all(not(test), target_arch = "riscv64"))]
-pub(crate) type CalleeSavedContextWrapper = crate::arch::riscv64::context::CalleeSavedContext;
-
-#[cfg(all(not(test), target_arch = "aarch64"))]
-pub(crate) type CalleeSavedContextWrapper = crate::arch::aarch64::context::CalleeSavedContext;
 
 impl TaskControlBlock {
     // ─── 构造函数 ──────────────────────────────────────────────────────────
@@ -160,9 +114,13 @@ impl TaskControlBlock {
             pid,
             name,
             is_idle: true,
+            parent_pid: None,
             state: AtomicTaskState::new(TaskState::Running),
             exit_code: AtomicI32::new(0),
-            context: core::cell::UnsafeCell::new(CalleeSavedContextWrapper::default()),
+            wake_tick: AtomicU64::new(0),
+            pending_signals: AtomicU32::new(0),
+            signal_mask: AtomicU32::new(0),
+            context: core::cell::UnsafeCell::new(CalleeSavedContext::default()),
             kstack: None,
         }
     }
@@ -172,19 +130,26 @@ impl TaskControlBlock {
     /// 分配内核栈，将 `entry` 和 `arg` 编码到 `CalleeSavedContext` 中，
     /// 使 `switch_to` 后首次执行从 `kernel_thread_entry` 开始。
     #[cfg(not(test))]
-    pub fn new_kernel_thread(pid: Pid, name: &'static str, entry: fn(usize), arg: usize) -> Self {
+    pub fn new_kernel_thread(
+        pid: Pid,
+        name: &'static str,
+        entry: fn(usize),
+        arg: usize,
+        parent_pid: Option<Pid>,
+    ) -> Self {
         let kstack = KernelStack::new();
-        let mut ctx = CalleeSavedContextWrapper::default();
-        // SAFETY: ctx 是本地变量，未被共享，指针有效
-        unsafe {
-            init_kernel_thread_context(&mut ctx as *mut _, &kstack, entry, arg);
-        }
+        let mut ctx = CalleeSavedContext::default();
+        ctx.init_for_kernel_thread(kstack.top(), entry, arg);
         Self {
             pid,
             name,
             is_idle: false,
+            parent_pid,
             state: AtomicTaskState::new(TaskState::Ready),
             exit_code: AtomicI32::new(0),
+            wake_tick: AtomicU64::new(0),
+            pending_signals: AtomicU32::new(0),
+            signal_mask: AtomicU32::new(0),
             context: core::cell::UnsafeCell::new(ctx),
             kstack: Some(kstack),
         }
@@ -199,8 +164,12 @@ impl TaskControlBlock {
             pid,
             name,
             is_idle: false,
+            parent_pid: None,
             state: AtomicTaskState::new(TaskState::Ready),
             exit_code: AtomicI32::new(0),
+            wake_tick: AtomicU64::new(0),
+            pending_signals: AtomicU32::new(0),
+            signal_mask: AtomicU32::new(0),
         }
     }
 
@@ -242,13 +211,53 @@ impl TaskControlBlock {
             .store(code, core::sync::atomic::Ordering::Release);
     }
 
+    /// 返回父任务 PID。
+    pub fn parent_pid(&self) -> Option<Pid> {
+        self.parent_pid
+    }
+
+    /// 读取睡眠唤醒 tick（0 表示非睡眠状态）。
+    pub fn wake_tick(&self) -> u64 {
+        self.wake_tick.load(Ordering::Acquire)
+    }
+
+    /// 设置睡眠唤醒 tick。
+    pub fn set_wake_tick(&self, tick: u64) {
+        self.wake_tick.store(tick, Ordering::Release);
+    }
+
+    /// 读取待处理信号位图。
+    pub fn pending_signals(&self) -> u32 {
+        self.pending_signals.load(Ordering::Acquire)
+    }
+
+    /// 原子设置一个待处理信号位。
+    pub fn raise_signal(&self, sig_bit: u32) {
+        self.pending_signals.fetch_or(sig_bit, Ordering::Release);
+    }
+
+    /// 原子清除一个待处理信号位。
+    pub fn clear_signal(&self, sig_bit: u32) {
+        self.pending_signals.fetch_and(!sig_bit, Ordering::Release);
+    }
+
+    /// 读取信号屏蔽位图。
+    pub fn signal_mask(&self) -> u32 {
+        self.signal_mask.load(Ordering::Acquire)
+    }
+
+    /// 写入信号屏蔽位图。
+    pub fn set_signal_mask(&self, mask: u32) {
+        self.signal_mask.store(mask, Ordering::Release);
+    }
+
     /// 获取被调用者保存上下文的可变原始指针。
     ///
     /// # Safety
     ///
     /// 调用者必须持有调度锁（IRQ 关闭），且保证同一时刻只有一个核访问。
     #[cfg(not(test))]
-    pub unsafe fn ctx_mut_ptr(&self) -> *mut CalleeSavedContextWrapper {
+    pub unsafe fn ctx_mut_ptr(&self) -> *mut CalleeSavedContext {
         self.context.get()
     }
 }
