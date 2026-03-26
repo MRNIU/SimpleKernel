@@ -64,9 +64,10 @@ pub fn handle_timer() {
     let per_cpu = unsafe { crate::per_cpu::current_per_cpu() };
     per_cpu.preempt.enter_hardirq();
 
-    // TODO(P5): 调用 scheduler.on_tick()，设置 need_resched
-
     per_cpu.preempt.exit_hardirq();
+
+    // 通知 idle loop 检查调度
+    per_cpu.preempt.need_resched.store(true, Ordering::Release);
 
     if tick % 10 == 0 {
         let core_id = crate::per_cpu::current_core_id();

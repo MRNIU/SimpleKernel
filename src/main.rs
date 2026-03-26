@@ -53,7 +53,7 @@ use arch::{Arch, ArchOps};
 /// 主核引导序列
 ///
 /// logging → DTB → FDT/BASIC_INFO → Phase2 → Memory → Phase3
-/// → Interrupt → Timer → SMP → Phase4 → 空转（等待 P5 Schedule）
+/// → Interrupt → Timer → Task → SMP → Phase4 → Phase5 → Idle loop
 #[cfg(not(test))]
 fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
     logging::init();
@@ -63,9 +63,22 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
     phase3_smoke_test();
     Arch::init_interrupt();
     Arch::init_timer();
+
+    // P5: 任务初始化（必须在 wake_secondary_cores 之前）
+    task::init();
+    task::spawn_kernel_thread("test_a", test_thread_a, 0);
+    task::spawn_kernel_thread("test_b", test_thread_b, 0);
+
     Arch::wake_secondary_cores();
     phase4_smoke_test();
+    phase5_smoke_test();
+
+    // Idle loop — bootstrap 上下文成为 idle 任务
     loop {
+        let per_cpu = unsafe { per_cpu::current_per_cpu() };
+        if per_cpu.preempt.need_resched.swap(false, Ordering::Acquire) {
+            task::schedule();
+        }
         core::hint::spin_loop();
     }
 }
@@ -78,9 +91,16 @@ fn bootstrap_smp(argc: i32, argv: *const *const u8) -> ! {
     let core_id = Arch::secondary_core_id(argc, argv);
     memory::init_smp();
     Arch::init_interrupt_smp();
+    task::init_smp();
     Arch::init_timer_smp(core_id);
     log::info!("SMP: core {} online", core_id);
+
+    // Idle loop
     loop {
+        let per_cpu = unsafe { per_cpu::current_per_cpu() };
+        if per_cpu.preempt.need_resched.swap(false, Ordering::Acquire) {
+            task::schedule();
+        }
         core::hint::spin_loop();
     }
 }
@@ -185,4 +205,27 @@ fn phase3_smoke_test() {
 #[cfg(not(test))]
 fn phase4_smoke_test() {
     log::info!("Phase 4 complete");
+}
+
+#[cfg(not(test))]
+fn test_thread_a(_arg: usize) {
+    for i in 0..5 {
+        log::info!("test_a: iteration {}", i);
+        task::yield_now();
+    }
+    log::info!("test_a: done");
+}
+
+#[cfg(not(test))]
+fn test_thread_b(_arg: usize) {
+    for i in 0..5 {
+        log::info!("test_b: iteration {}", i);
+        task::yield_now();
+    }
+    log::info!("test_b: done");
+}
+
+#[cfg(not(test))]
+fn phase5_smoke_test() {
+    log::info!("Phase 5 ready — test threads spawned");
 }
