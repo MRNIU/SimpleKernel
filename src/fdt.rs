@@ -53,8 +53,10 @@ impl<'a> KernelFdt<'a> {
         Ok((region.address, region.len))
     }
 
-    /// TODO(P4): 定时器初始化时读取此值
-    #[allow(dead_code)]
+    /// 从 FDT `/cpus` 节点读取 `timebase-frequency` 属性。
+    ///
+    /// RISC-V 平台必须提供此属性；AArch64 的 FDT 通常不含此属性，
+    /// 返回 `Err` 后由调用方回退到 `CNTFRQ_EL0`。
     pub fn timebase_frequency(&self) -> KResult<u32> {
         let fdt = parse_fdt!(self.fdt_addr)?;
         let cpus = fdt

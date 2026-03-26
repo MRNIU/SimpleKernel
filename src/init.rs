@@ -31,6 +31,9 @@ pub fn early_init(dtb_addr: usize) {
     let kernel_start = unsafe { &__executable_start as *const u8 as u64 };
     let kernel_end = unsafe { &_end as *const u8 as u64 };
 
+    // RISC-V 的 timebase-frequency 在 FDT /cpus 节点中；AArch64 通过 CNTFRQ_EL0 读取
+    let timer_freq = fdt.timebase_frequency().unwrap_or(0) as u64;
+
     BASIC_INFO.call_once(|| BasicInfo {
         physical_memory_addr: PhysAddr::new(mem_addr as usize),
         physical_memory_size: mem_size,
@@ -39,6 +42,7 @@ pub fn early_init(dtb_addr: usize) {
         elf_addr: PhysAddr::new(kernel_start as usize),
         fdt_addr: PhysAddr::new(dtb_addr),
         core_count,
+        timer_freq,
     });
 
     log::info!("FDT: found {} nodes, {} CPUs", node_count, core_count);

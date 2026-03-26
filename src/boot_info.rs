@@ -13,6 +13,9 @@ pub struct BasicInfo {
     pub elf_addr: PhysAddr,
     pub fdt_addr: PhysAddr,
     pub core_count: usize,
+    /// 定时器硬件频率（Hz）——RISC-V 从 FDT `timebase-frequency` 读取，
+    /// AArch64 从 `CNTFRQ_EL0` 读取。0 表示未知。
+    pub timer_freq: u64,
 }
 
 impl BasicInfo {
@@ -26,6 +29,7 @@ impl BasicInfo {
             elf_addr: PhysAddr::new(0),
             fdt_addr: PhysAddr::new(0),
             core_count: 0,
+            timer_freq: 0,
         }
     }
 }

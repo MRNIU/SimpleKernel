@@ -118,16 +118,17 @@ fn verifier_thread(_arg: usize) {
 /// P5b 综合测试
 fn p5b_test_thread(_arg: usize) {
     // ── sleep ──
-    log::info!("P5b: testing sleep...");
+    log::info!("P5b: testing sleep_ms(200)...");
     let tick_before = Arch::get_current_tick();
-    task::sleep(2);
+    task::sleep_ms(200);
     let tick_after = Arch::get_current_tick();
     let elapsed = tick_after.saturating_sub(tick_before);
-    log::info!("P5b: sleep(2) elapsed {} ticks", elapsed);
-    if elapsed >= 2 {
+    // 200ms @ 100Hz = 20 ticks，允许少量误差
+    log::info!("P5b: sleep_ms(200) elapsed {} ticks", elapsed);
+    if elapsed >= 15 {
         log::info!("=== SLEEP TEST PASSED ===");
     } else {
-        log::error!("=== SLEEP TEST FAILED: elapsed={} < 2 ===", elapsed);
+        log::error!("=== SLEEP TEST FAILED: elapsed={} < 15 ===", elapsed);
     }
 
     // ── clone + wait ──

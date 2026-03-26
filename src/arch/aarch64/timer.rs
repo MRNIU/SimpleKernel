@@ -1,11 +1,10 @@
 /// AArch64 通用定时器子系统
 ///
 /// 使用 AArch64 虚拟定时器（CNTV_*_EL0）实现周期性时钟中断。
-/// 目标 tick 频率：`TIMER_FREQ_HZ` Hz（默认 1000 Hz）。
+/// 目标 tick 频率：`config::TIMER_FREQ_HZ` Hz。
 use core::sync::atomic::{AtomicU64, Ordering};
 
-/// 目标 tick 频率（Hz）
-pub const TIMER_FREQ_HZ: u64 = 1000;
+use crate::config::TIMER_FREQ_HZ;
 
 /// 全局 tick 计数器
 static TICK_COUNT: AtomicU64 = AtomicU64::new(0);
@@ -15,7 +14,7 @@ pub fn get_current_tick() -> u64 {
     TICK_COUNT.load(Ordering::Acquire)
 }
 
-/// 返回每秒 tick 数（AArch64：1000 Hz）
+/// 返回每秒 tick 数
 pub const fn ticks_per_second() -> u64 {
     TIMER_FREQ_HZ
 }
@@ -24,7 +23,7 @@ pub const fn ticks_per_second() -> u64 {
 #[inline]
 fn read_cntfrq() -> u64 {
     let freq: u64;
-    // SAFETY: CNTFRQ_EL0 在 EL1 下可读
+    // SAFETY: CNTFRQ_EL0 在 EL1 下始终可读
     unsafe { core::arch::asm!("mrs {freq}, cntfrq_el0", freq = out(reg) freq) };
     freq
 }
@@ -39,6 +38,7 @@ fn get_interval() -> u64 {
 ///
 /// 设置 CNTV_TVAL_EL0 为计算的间隔值，然后使能定时器（CNTV_CTL_EL0 = 1）。
 pub fn init() {
+    let hw_freq = read_cntfrq();
     let interval = get_interval();
     // SAFETY: CNTV_TVAL_EL0 / CNTV_CTL_EL0 在 EL1 下可读写
     unsafe {
@@ -50,7 +50,8 @@ pub fn init() {
         );
     }
     log::info!(
-        "TimerInit: freq={} Hz, interval={} cycles",
+        "TimerInit: hw_freq={} Hz, tick_freq={} Hz, interval={} cycles",
+        hw_freq,
         TIMER_FREQ_HZ,
         interval
     );
@@ -76,7 +77,7 @@ pub fn init_smp(cpu_id: usize) {
 
 /// 处理定时器中断（虚拟定时器 PPI IRQ 27）
 ///
-/// 递增 tick 计数，重新加载 CNTV_TVAL_EL0，每 10 个 tick 输出日志。
+/// 递增 tick 计数，重新加载 CNTV_TVAL_EL0。
 ///
 /// # 参数
 /// - `_ctx`：陷阱上下文指针（当前未使用，为将来抢占调度预留）
@@ -104,7 +105,7 @@ pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
     // 通知 idle loop 检查调度
     per_cpu.preempt.need_resched.store(true, Ordering::Release);
 
-    if tick % 10 == 0 {
+    if tick % (TIMER_FREQ_HZ / 10) == 0 {
         let core_id = crate::per_cpu::current_core_id();
         log::info!("Tick #{} (core {})", tick, core_id);
     }

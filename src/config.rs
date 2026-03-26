@@ -17,3 +17,8 @@ pub const MAX_BACKTRACE_DEPTH: usize = 16;
 
 /// 内核线程栈大小（16KB，与 boot.S 中 DEFAULT_STACK_SIZE 一致）
 pub const KERNEL_STACK_SIZE: usize = 16 * 1024;
+
+/// 内核 tick 频率（Hz）——所有架构统一使用此值。
+///
+/// 100 Hz = 每 10ms 一次中断，适合调试和测试。
+pub const TIMER_FREQ_HZ: u64 = 100;
