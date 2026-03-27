@@ -9,7 +9,14 @@
 #   cargo xtask run --arch riscv64
 
 [workspace]
-members = ["xtask"]
+members = [
+    ".",
+    "crates/error",
+    "crates/config",
+    "crates/compat",
+    "crates/address",
+    "xtask",
+]
 default-members = ["."]
 resolver = "2"
 
@@ -35,6 +42,12 @@ edition.workspace = true
 build = "build.rs"                    # 编译汇编文件 (.S) 和链接脚本
 
 [dependencies]
+# --- 内部 crate ---
+error = { path = "crates/error" }
+config = { path = "crates/config" }
+compat = { path = "crates/compat" }
+address = { path = "crates/address" }
+
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中
 spin = { version = "0.9", default-features = false, features = ["once"] }

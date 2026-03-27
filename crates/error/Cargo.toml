@@ -1,0 +1,4 @@
+[package]
+name = "error"
+version.workspace = true
+edition.workspace = true

@@ -12,6 +12,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "address"
+version = "0.1.0"
+dependencies = [
+ "config",
+]
+
+[[package]]
 name = "arm-gic"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -112,6 +119,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "compat"
+version = "0.1.0"
+
+[[package]]
+name = "config"
+version = "0.1.0"
+dependencies = [
+ "log",
+]
+
+[[package]]
 name = "critical-section"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -128,6 +146,10 @@ name = "embedded-hal"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "361a90feb7004eca4019fb28352a9465666b24f840f5c3cddf0ff13920590b89"
+
+[[package]]
+name = "error"
+version = "0.1.0"
 
 [[package]]
 name = "fdt"
@@ -332,12 +354,16 @@ name = "simplekernel"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
+ "address",
  "arm-gic",
  "arm-psci",
  "bitflags 2.11.0",
  "buddy_system_allocator",
  "cc",
+ "compat",
+ "config",
  "elf",
+ "error",
  "fdt",
  "log",
  "riscv",

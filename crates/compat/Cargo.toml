@@ -1,0 +1,4 @@
+[package]
+name = "compat"
+version.workspace = true
+edition.workspace = true
