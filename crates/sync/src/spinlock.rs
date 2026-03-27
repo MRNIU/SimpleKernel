@@ -203,8 +203,6 @@ pub struct SpinLockIrq<T> {
     raw: RawSpinLock,
     data: UnsafeCell<T>,
     level: u8,
-    /// `lock_raw` 保存的中断状态——由锁持有者独占访问，无竞争。
-    raw_saved_irq: AtomicBool,
 }
 
 // SAFETY: 同 SpinLock
@@ -218,7 +216,6 @@ impl<T> SpinLockIrq<T> {
             raw: RawSpinLock::new(name),
             data: UnsafeCell::new(data),
             level: lock_level::UNCLASSIFIED,
-            raw_saved_irq: AtomicBool::new(false),
         }
     }
 
@@ -228,7 +225,6 @@ impl<T> SpinLockIrq<T> {
             raw: RawSpinLock::new(name),
             data: UnsafeCell::new(data),
             level,
-            raw_saved_irq: AtomicBool::new(false),
         }
     }
 
@@ -271,41 +267,6 @@ impl<T> SpinLockIrq<T> {
 
     pub fn is_locked(&self) -> bool {
         self.raw.is_locked()
-    }
-
-    /// 获取裸锁（不使用 RAII guard）——用于上下文切换时的 lock handoff 协议。
-    ///
-    /// 保存当前中断状态并禁用中断，`unlock_raw()` 恢复。
-    ///
-    /// # Safety
-    ///
-    /// 调用方必须保证每次 `lock_raw()` 都有对应的 `unlock_raw()` 调用。
-    pub unsafe fn lock_raw(&self) {
-        let was_enabled = crate::interrupt_ops::get_status();
-        crate::interrupt_ops::disable();
-
-        self.raw.check_recursive();
-        self.raw.acquire();
-
-        // 保存中断状态到锁中（持有锁期间独占访问，无竞争）
-        self.raw_saved_irq.store(was_enabled, Ordering::Relaxed);
-        self.post_acquire();
-    }
-
-    /// 释放裸锁（与 `lock_raw()` 配对）——恢复 `lock_raw` 前的中断状态。
-    ///
-    /// # Safety
-    ///
-    /// 必须在持有锁的情况下调用。
-    pub unsafe fn unlock_raw(&self) {
-        let was_enabled = self.raw_saved_irq.load(Ordering::Relaxed);
-        self.pre_release();
-        self.raw.release();
-
-        if was_enabled {
-            // SAFETY: 恢复 lock_raw 前的中断状态
-            unsafe { crate::interrupt_ops::enable() };
-        }
     }
 
     /// 尝试获取裸锁（不操作中断、不检查锁级别、不压栈）——
@@ -574,16 +535,7 @@ mod tests {
         assert_eq!(g.len(), 400, "应有 4×100=400 个元素");
     }
 
-    // ── lock_raw / unlock_raw ───────────────────────────
-
-    #[test]
-    fn lock_raw_and_unlock_raw() {
-        let lock = SpinLockIrq::new((), "raw_test");
-        unsafe { lock.lock_raw() };
-        assert!(lock.is_locked());
-        unsafe { lock.unlock_raw() };
-        assert!(!lock.is_locked());
-    }
+    // ── try_lock_raw_no_irq ────────────────────────────
 
     #[test]
     fn try_lock_raw_no_irq_and_unlock() {

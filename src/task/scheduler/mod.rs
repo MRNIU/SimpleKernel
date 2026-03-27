@@ -29,6 +29,21 @@ pub trait Scheduler: Send {
         self.enqueue(task);
     }
 
+    /// 获取当前运行任务的调度优先级快照（用于延迟入队）。
+    ///
+    /// CFS 返回 `current_vruntime`；其他调度器返回 0（不使用此值）。
+    fn snapshot_current_priority(&self) -> i64 {
+        0
+    }
+
+    /// 使用保存的优先级快照将延迟的 prev 任务入队。
+    ///
+    /// CFS 使用 `priority` 作为 vruntime 插入排序；
+    /// 默认实现忽略 `priority`，等同于 `enqueue`。
+    fn enqueue_prev_deferred(&mut self, task: TaskRef, _priority: i64) {
+        self.enqueue(task);
+    }
+
     /// 从队列尾部窃取一个任务（用于跨核负载均衡）。
     ///
     /// 默认返回 None。支持窃取的调度器应覆盖此方法。
@@ -84,6 +99,14 @@ impl Scheduler for SchedPolicy {
 
     fn steal_one(&mut self) -> Option<TaskRef> {
         dispatch_scheduler!(self, steal_one)
+    }
+
+    fn snapshot_current_priority(&self) -> i64 {
+        dispatch_scheduler!(self, snapshot_current_priority)
+    }
+
+    fn enqueue_prev_deferred(&mut self, task: TaskRef, priority: i64) {
+        dispatch_scheduler!(self, enqueue_prev_deferred, task, priority);
     }
 
     fn queue_size(&self) -> usize {

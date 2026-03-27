@@ -55,9 +55,10 @@ use crate::arch::{Arch, ArchOps};
 #[cfg(not(test))]
 #[unsafe(no_mangle)]
 pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
-    // 释放 schedule() 中通过 lock_raw 获取的 sched_lock
-    // SAFETY: schedule() 在 switch_to 前获取了 sched_lock，新任务首次运行时负责释放
-    unsafe { task::release_sched_lock() };
+    // 启用中断——schedule() 的 HeldInterrupts::hold() 禁用了中断，
+    // 调度锁已在 switch_to 前由 RAII guard 释放，此处只需恢复中断
+    // SAFETY: 调度锁已释放，启用中断是安全的
+    unsafe { task::bootstrap_enable_irq() };
 
     // SAFETY: entry 是由 new_kernel_thread 编码的合法 fn(usize) 指针
     let entry_fn: fn(usize) = unsafe { core::mem::transmute(entry) };

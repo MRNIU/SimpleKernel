@@ -13,7 +13,7 @@ mod sched;
 mod task_table;
 
 #[cfg(not(test))]
-pub use sched::{current_task, release_sched_lock, schedule, timer_tick, yield_now};
+pub use sched::{bootstrap_enable_irq, current_task, schedule, timer_tick, yield_now};
 
 // ─── 公开 API（仅非测试模式） ─────────────────────────────────────────────
 
@@ -40,11 +40,10 @@ mod api {
 
         // SAFETY: 此时仅 BSP 核心运行，无并发访问
         unsafe {
-            (&mut *PER_CPU_SCHED.get())[core_id] = Some(PerCpuSched {
-                scheduler: SchedPolicy::default_policy(),
-                current: Some(idle.clone()),
-                idle: Some(idle),
-            });
+            let mut sched = PerCpuSched::new(SchedPolicy::default_policy());
+            sched.current = Some(idle.clone());
+            sched.idle = Some(idle);
+            (&mut *PER_CPU_SCHED.get())[core_id] = Some(sched);
         }
 
         // 初始化任务表
@@ -63,11 +62,10 @@ mod api {
 
         // SAFETY: 每个核心仅写自己的 slot
         unsafe {
-            (&mut *PER_CPU_SCHED.get())[core_id] = Some(PerCpuSched {
-                scheduler: SchedPolicy::default_policy(),
-                current: Some(idle.clone()),
-                idle: Some(idle),
-            });
+            let mut sched = PerCpuSched::new(SchedPolicy::default_policy());
+            sched.current = Some(idle.clone());
+            sched.idle = Some(idle);
+            (&mut *PER_CPU_SCHED.get())[core_id] = Some(sched);
         }
 
         log::info!("TaskInit: idle task created for core {}", core_id);

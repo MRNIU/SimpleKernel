@@ -89,6 +89,14 @@ impl Scheduler for CfsScheduler {
         }
     }
 
+    fn snapshot_current_priority(&self) -> i64 {
+        self.current_vruntime.max(self.min_vruntime)
+    }
+
+    fn enqueue_prev_deferred(&mut self, task: TaskRef, priority: i64) {
+        self.insert_sorted(priority, task);
+    }
+
     fn queue_size(&self) -> usize {
         self.queue.len()
     }
