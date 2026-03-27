@@ -79,19 +79,21 @@ pub fn init() -> PageTable {
 
     let mut pt = PageTable::new().expect("failed to create kernel page table");
 
+    // SAFETY: 链接器定义的符号
     unsafe extern "C" {
-        static __executable_start: u8;
         static __etext: u8;
     }
-    let text_start = PhysAddr::new(unsafe { &__executable_start as *const u8 as usize });
     let text_end = PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up();
 
-    if mem_start.as_usize() < text_start.as_usize() {
-        identity_map_range(&mut pt, mem_start, text_start, PageFlags::kernel_rw())
-            .expect("failed to map pre-kernel region");
-    }
-    identity_map_range(&mut pt, text_start, text_end, PageFlags::kernel_rx())
-        .expect("failed to map kernel .text");
+    // W^X 分段映射：
+    // [mem_start, text_end) → RWX（包含 .boot 段的混合 code+data，无法拆分）
+    // [text_end, mem_end)   → RW（.rodata + .data + .bss + 空闲内存）
+    //
+    // 注意：链接脚本的 .boot 段混合了 .text.boot / .data.boot / .bss.boot，
+    // 位于 __etext 之前。如果映射为纯 RX，写 .data.boot 会触发 store page fault。
+    // 因此 __etext 之前的区域保留 X 权限。
+    identity_map_range(&mut pt, mem_start, text_end, PageFlags::kernel_rwx())
+        .expect("failed to map kernel code region");
     identity_map_range(
         &mut pt,
         text_end,
@@ -101,8 +103,8 @@ pub fn init() -> PageTable {
     .expect("failed to map kernel data + free memory");
 
     log::info!(
-        "MemoryInit: .text {}-{} (RX), data {}-{} (RW)",
-        text_start,
+        "MemoryInit: code {}-{} (RWX), data {}-{} (RW)",
+        mem_start,
         text_end,
         text_end,
         mem_start + mem_size

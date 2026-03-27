@@ -1,2 +1,2 @@
-//! Re-export from `memory` crate — 迁移中间层，保持 `use crate::memory::*` 兼容。
+//! Re-export from `memory` crate.
 pub use memory_crate::*;
