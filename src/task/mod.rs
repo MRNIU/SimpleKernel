@@ -13,7 +13,7 @@ mod sched;
 mod task_table;
 
 #[cfg(not(test))]
-pub use sched::{current_task, release_sched_lock, schedule, yield_now};
+pub use sched::{current_task, release_sched_lock, schedule, timer_tick, yield_now};
 
 // ─── 公开 API（仅非测试模式） ─────────────────────────────────────────────
 
@@ -119,15 +119,18 @@ mod api {
     // ─── sleep ──────────────────────────────────────────────────────────
 
     /// 挂起当前任务指定 tick 数。
+    ///
+    /// 必须在持有 TASK_TABLE 锁时原子完成「加入睡眠队列 + 设置状态」，
+    /// 否则另一核心的 `wake_expired_sleepers()` 可能在窗口期内遗漏该任务。
     pub fn sleep(ticks: u64) {
         let task = super::sched::current_task();
         let now = crate::arch::Arch::get_current_tick();
         task.set_wake_tick(now + ticks);
-        task.set_state(TaskState::Sleeping);
 
         {
             let mut table = TASK_TABLE.lock();
-            table.sleep_queue.push(task);
+            table.sleep_queue.push(task.clone());
+            task.set_state(TaskState::Sleeping);
         }
 
         schedule();
@@ -143,13 +146,16 @@ mod api {
     // ─── block / wakeup ─────────────────────────────────────────────────
 
     /// 在指定资源上阻塞当前任务。
+    ///
+    /// 必须在持有 TASK_TABLE 锁时原子完成「加入等待队列 + 设置状态」，
+    /// 否则另一核心的 `wakeup_one()` 可能在窗口期内遗漏该任务。
     pub fn block_on(resource: ResourceId) {
         let task = super::sched::current_task();
-        task.set_state(TaskState::Blocked);
 
         {
             let mut table = TASK_TABLE.lock();
-            table.add_waiter(resource, task);
+            table.add_waiter(resource, task.clone());
+            task.set_state(TaskState::Blocked);
         }
 
         schedule();

@@ -133,8 +133,17 @@ pub fn current_core_id() -> usize {
     }
     #[cfg(test)]
     {
-        // 宿主机单元测试——始终返回核心 0
-        0
+        // 宿主机单元测试——为每个线程分配唯一 ID，
+        // 避免多线程 SpinLock 测试因共享 core_id 触发误报的递归锁检测。
+        use std::cell::Cell;
+        thread_local! {
+            static TEST_CORE_ID: Cell<usize> = {
+                static COUNTER: core::sync::atomic::AtomicUsize =
+                    core::sync::atomic::AtomicUsize::new(0);
+                Cell::new(COUNTER.fetch_add(1, core::sync::atomic::Ordering::Relaxed))
+            };
+        }
+        TEST_CORE_ID.with(|id| id.get())
     }
 }
 

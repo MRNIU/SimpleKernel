@@ -3,6 +3,7 @@ use core::ops::{Deref, DerefMut};
 use core::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::per_cpu;
+#[cfg(not(test))]
 use crate::sync::lock_stack::LockStackEntry;
 
 /// 用于强制获取顺序的锁级别常量。
@@ -192,12 +193,20 @@ impl<T> SpinLock<T> {
     fn post_acquire(&self) {
         self.owner_core
             .store(per_cpu::current_core_id(), Ordering::Release);
-        self.check_lock_order();
-        self.push_lock_stack();
+        // 锁级别检查和锁栈依赖 per-CPU 数据（固定大小数组），
+        // 在宿主多线程测试中线程 ID 可能超出数组范围，因此仅在内核模式启用。
+        #[cfg(not(test))]
+        {
+            self.check_lock_order();
+            self.push_lock_stack();
+        }
     }
 
     fn pre_release(&self) {
-        self.pop_lock_stack();
+        #[cfg(not(test))]
+        {
+            self.pop_lock_stack();
+        }
         self.owner_core.store(NO_OWNER, Ordering::Release);
     }
 
@@ -210,6 +219,7 @@ impl<T> SpinLock<T> {
         crate::util::halt::halt(reason);
     }
 
+    #[cfg(not(test))]
     fn check_lock_order(&self) {
         if self.level == lock_level::UNCLASSIFIED {
             return;
@@ -224,6 +234,7 @@ impl<T> SpinLock<T> {
         }
     }
 
+    #[cfg(not(test))]
     fn push_lock_stack(&self) {
         // SAFETY: 中断已禁用
         let stack = &mut unsafe { per_cpu::current_per_cpu() }.lock_stack;
@@ -240,6 +251,7 @@ impl<T> SpinLock<T> {
         stack.depth += 1;
     }
 
+    #[cfg(not(test))]
     fn pop_lock_stack(&self) {
         // SAFETY: 中断已禁用
         let stack = &mut unsafe { per_cpu::current_per_cpu() }.lock_stack;

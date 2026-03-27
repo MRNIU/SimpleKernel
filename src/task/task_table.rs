@@ -1,6 +1,7 @@
 //! 全局任务表——持有所有任务、睡眠队列和等待队列。
 
 use alloc::collections::BTreeMap;
+use alloc::collections::VecDeque;
 use alloc::vec::Vec;
 
 use crate::arch::ArchOps;
@@ -19,7 +20,7 @@ pub(super) struct TaskTable {
     pub(super) tasks: Vec<TaskRef>,
     next_pid: Pid,
     pub(super) sleep_queue: Vec<TaskRef>,
-    wait_queues: BTreeMap<ResourceId, Vec<TaskRef>>,
+    wait_queues: BTreeMap<ResourceId, VecDeque<TaskRef>>,
 }
 
 impl TaskTable {
@@ -33,10 +34,11 @@ impl TaskTable {
     }
 
     /// 唤醒等待指定资源的一个任务——加入指定核心的就绪队列。
+    ///
+    /// 使用 `VecDeque::pop_front()` 实现 O(1) 出队（原 `Vec::remove(0)` 为 O(n)）。
     pub(super) fn wake_one(&mut self, sched: &mut PerCpuSched, resource: ResourceId) {
         if let Some(waiters) = self.wait_queues.get_mut(&resource) {
-            if !waiters.is_empty() {
-                let task = waiters.remove(0);
+            if let Some(task) = waiters.pop_front() {
                 task.set_state(TaskState::Ready);
                 sched.scheduler.enqueue(task);
             }
@@ -121,7 +123,10 @@ impl TaskTable {
 
     /// 将任务加入等待队列。
     pub(super) fn add_waiter(&mut self, resource: ResourceId, task: TaskRef) {
-        self.wait_queues.entry(resource).or_default().push(task);
+        self.wait_queues
+            .entry(resource)
+            .or_default()
+            .push_back(task);
     }
 
     /// 注册任务到全局任务列表。

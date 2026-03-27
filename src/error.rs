@@ -109,3 +109,46 @@ impl fmt::Display for ErrorCode {
 impl core::error::Error for ErrorCode {}
 
 pub type KResult<T> = Result<T, ErrorCode>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn display_delegates_to_debug() {
+        let e = ErrorCode::TaskNoChildFound;
+        let display = format!("{}", e);
+        let debug = format!("{:?}", e);
+        assert_eq!(display, debug);
+        assert!(display.contains("TaskNoChildFound"));
+    }
+
+    #[test]
+    fn error_code_implements_core_error() {
+        // 验证 ErrorCode 实现了 core::error::Error trait
+        fn assert_error<T: core::error::Error>(_: &T) {}
+        let e = ErrorCode::VmAllocationFailed;
+        assert_error(&e);
+        // Error::source() 默认返回 None
+        assert!(core::error::Error::source(&e).is_none());
+    }
+
+    #[test]
+    fn kresult_question_mark_operator() {
+        fn may_fail(fail: bool) -> KResult<u32> {
+            if fail {
+                Err(ErrorCode::InvalidArgument)?;
+            }
+            Ok(42)
+        }
+        assert_eq!(may_fail(false), Ok(42));
+        assert_eq!(may_fail(true), Err(ErrorCode::InvalidArgument));
+    }
+
+    #[test]
+    fn error_code_clone_and_eq() {
+        let a = ErrorCode::FsFileNotFound;
+        let b = a;
+        assert_eq!(a, b);
+    }
+}

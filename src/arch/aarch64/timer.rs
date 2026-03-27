@@ -100,9 +100,13 @@ pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
     let per_cpu = unsafe { crate::per_cpu::current_per_cpu() };
     per_cpu.preempt.enter_hardirq();
 
+    // 推进调度器内部记账（RR 时间片 / CFS vruntime），
+    // 由调度策略决定是否需要抢占
+    crate::task::timer_tick();
+
     per_cpu.preempt.exit_hardirq();
 
-    // 通知 idle loop 检查调度
+    // 通知 idle loop 检查调度（唤醒到期睡眠任务等）
     per_cpu.preempt.need_resched.store(true, Ordering::Release);
 
     if tick % (TIMER_FREQ_HZ / 10) == 0 {

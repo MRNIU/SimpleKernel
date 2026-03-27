@@ -75,20 +75,41 @@ pub fn init() {
 
     unsafe { frame::init(alloc_start, alloc_size) };
 
-    // Step 3: 创建内核页表，identity map 整个物理内存（RWX，初期不区分代码/数据段）
+    // Step 3: 创建内核页表，分段 identity map——
+    // .text → RX（可执行，不可写），其余 → RW（可写，不可执行）。
+    // 遵循 W^X 原则：同一页面不同时具备写和执行权限。
     let mut pt = PageTable::new().expect("failed to create kernel page table");
 
+    // SAFETY: 链接器定义的符号，地址在内核生命周期内有效
+    unsafe extern "C" {
+        static __executable_start: u8;
+        static __etext: u8;
+    }
+    let text_start = PhysAddr::new(unsafe { &__executable_start as *const u8 as usize });
+    let text_end = PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up();
+
+    // [mem_start, text_start): firmware 区域（如 OpenSBI），映射为 RW
+    if mem_start.as_usize() < text_start.as_usize() {
+        identity_map_range(&mut pt, mem_start, text_start, PageFlags::kernel_rw())
+            .expect("failed to map pre-kernel region");
+    }
+    // [text_start, text_end): 内核代码段，映射为 RX
+    identity_map_range(&mut pt, text_start, text_end, PageFlags::kernel_rx())
+        .expect("failed to map kernel .text");
+    // [text_end, mem_start + mem_size): 数据段 + 空闲内存，映射为 RW
     identity_map_range(
         &mut pt,
-        mem_start,
+        text_end,
         mem_start + mem_size,
-        PageFlags::kernel_rwx(),
+        PageFlags::kernel_rw(),
     )
-    .expect("failed to identity-map memory");
+    .expect("failed to map kernel data + free memory");
 
     log::info!(
-        "MemoryInit: kernel mapped {}-{}",
-        mem_start,
+        "MemoryInit: .text {}-{} (RX), data {}-{} (RW)",
+        text_start,
+        text_end,
+        text_end,
         mem_start + mem_size
     );
 

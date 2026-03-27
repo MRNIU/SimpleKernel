@@ -125,4 +125,16 @@ mod tests {
         let picked = sched.pick_next().expect("取到 t2");
         assert!(!sched.task_tick(&picked)); // tick 1（重置）
     }
+
+    #[test]
+    fn steal_one_takes_from_back() {
+        let mut sched = RoundRobinScheduler::new();
+        sched.enqueue(make_task(1));
+        sched.enqueue(make_task(2));
+        sched.enqueue(make_task(3));
+        let stolen = sched.steal_one().expect("应能偷到任务");
+        assert_eq!(stolen.pid(), 3);
+        // 剩余 [1, 2]
+        assert_eq!(sched.pick_next().expect("").pid(), 1);
+    }
 }

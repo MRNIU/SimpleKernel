@@ -83,4 +83,25 @@ mod tests {
         assert!(!sched.is_empty());
         assert_eq!(sched.queue_size(), 1);
     }
+
+    #[test]
+    fn steal_one_takes_from_back() {
+        let mut sched = FifoScheduler::new();
+        sched.enqueue(make_task(1));
+        sched.enqueue(make_task(2));
+        sched.enqueue(make_task(3));
+        // steal 从队尾取（最后入队的任务），与 pick_next 从队首取相反
+        let stolen = sched.steal_one().expect("应能偷到任务");
+        assert_eq!(stolen.pid(), 3);
+        assert_eq!(sched.queue_size(), 2);
+        // 队列中剩余 [1, 2]
+        assert_eq!(sched.pick_next().expect("").pid(), 1);
+        assert_eq!(sched.pick_next().expect("").pid(), 2);
+    }
+
+    #[test]
+    fn steal_one_returns_none_when_empty() {
+        let mut sched = FifoScheduler::new();
+        assert!(sched.steal_one().is_none());
+    }
 }

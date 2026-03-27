@@ -177,4 +177,22 @@ mod tests {
         assert!(sched.is_empty());
         assert!(sched.pick_next().is_none());
     }
+
+    #[test]
+    fn steal_one_takes_highest_vruntime() {
+        let mut sched = CfsScheduler::new();
+        sched.enqueue(make_task(1));
+        sched.enqueue(make_task(2));
+
+        // 运行 t1 几个 tick 后 put_prev，使其 vruntime > t2
+        let picked = sched.pick_next().expect("t1");
+        sched.task_tick(&picked);
+        sched.task_tick(&picked);
+        sched.put_prev(picked); // t1.vruntime=2
+
+        // 现在队列: t2(vruntime=0), t1(vruntime=2)
+        // steal_one 从 Vec 尾部弹出——排序后最大 vruntime 的在末尾
+        let stolen = sched.steal_one().expect("应能偷到任务");
+        assert_eq!(stolen.pid(), 1, "应偷走 vruntime 最大的任务");
+    }
 }

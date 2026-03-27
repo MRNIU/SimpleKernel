@@ -190,3 +190,24 @@ pub fn schedule() {
 pub fn yield_now() {
     schedule();
 }
+
+/// 由定时器中断调用——推进调度器内部记账（时间片、vruntime 等）。
+///
+/// 使用 `try_lock` 避免与正在进行的 `schedule()` 死锁：
+/// 如果调度锁已被持有（`schedule()` 正在上下文切换），跳过本次 tick。
+pub fn timer_tick() {
+    let core_id = per_cpu::current_core_id();
+    if let Some(_guard) = PER_CPU_SCHED_LOCK[core_id].try_lock() {
+        // SAFETY: 持有本核调度锁
+        let sched = unsafe { per_cpu_sched(core_id) };
+        if let Some(current) = sched.current.as_ref() {
+            if sched.scheduler.task_tick(current) {
+                // 调度策略判定需要抢占（时间片到期 / vruntime 超过队首）
+                unsafe { per_cpu::current_per_cpu() }
+                    .preempt
+                    .need_resched
+                    .store(true, core::sync::atomic::Ordering::Release);
+            }
+        }
+    }
+}
