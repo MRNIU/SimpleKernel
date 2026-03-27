@@ -1,5 +1,5 @@
-use crate::config::KERNEL_HEAP_SIZE;
 use buddy_system_allocator::LockedHeap;
+use config::KERNEL_HEAP_SIZE;
 use core::cell::SyncUnsafeCell;
 
 /// 全局堆分配器。

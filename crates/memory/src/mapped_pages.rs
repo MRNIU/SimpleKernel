@@ -31,15 +31,15 @@
 use alloc::vec::Vec;
 
 #[cfg(not(test))]
-use crate::config::PAGE_SIZE;
+use crate::address::{PhysAddr, VirtAddr};
 #[cfg(not(test))]
-use crate::error::KResult;
+use crate::frame::FrameTracker;
 #[cfg(not(test))]
-use crate::memory::address::{PhysAddr, VirtAddr};
+use crate::page_table::{PageFlags, PageTable};
 #[cfg(not(test))]
-use crate::memory::frame::FrameTracker;
+use config::PAGE_SIZE;
 #[cfg(not(test))]
-use crate::memory::page_table::{PageFlags, PageTable};
+use error::KResult;
 
 /// 仿射类型映射——持有此值即证明 VA→PA 映射有效。
 ///
@@ -212,7 +212,7 @@ impl Drop for MappedPages {
         }
 
         // 非永久映射——从内核页表中移除映射
-        if let Some(kpt) = crate::memory::kernel_page_table() {
+        if let Some(kpt) = crate::kernel_page_table() {
             let mut guard = kpt.lock();
             for i in 0..self.page_count {
                 let va = self.vaddr + i * PAGE_SIZE;

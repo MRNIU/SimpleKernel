@@ -1,0 +1,18 @@
+[package]
+name = "memory"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+error = { path = "../error" }
+config = { path = "../config" }
+address = { path = "../address" }
+arch-traits = { path = "../arch-traits" }
+sync_crate = { path = "../sync", package = "sync" }
+boot-info = { path = "../boot-info" }
+per-cpu = { path = "../per-cpu" }
+
+bitflags = "2"
+buddy_system_allocator = "0.11"
+log = { version = "0.4", default-features = false }
+spin = { version = "0.9", default-features = false, features = ["once"] }

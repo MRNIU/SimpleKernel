@@ -7,7 +7,7 @@
 
 use bitflags::bitflags;
 
-use crate::memory::address::PhysAddr;
+use crate::address::PhysAddr;
 
 bitflags! {
     /// 架构无关的页表项标志位。
@@ -107,7 +107,7 @@ impl PageTableEntry {
 #[cfg(all(not(test), target_arch = "riscv64"))]
 mod pte_encoding {
     use super::{PageFlags, PageTableEntry};
-    use crate::memory::address::PhysAddr;
+    use crate::address::PhysAddr;
 
     /// Sv39 PPN 掩码：bits [53:10]
     const PPN_MASK: u64 = 0x003F_FFFF_FFFF_FC00;
@@ -148,7 +148,7 @@ mod pte_encoding {
 #[cfg(all(not(test), target_arch = "aarch64"))]
 mod pte_encoding {
     use super::{PageFlags, PageTableEntry};
-    use crate::memory::address::PhysAddr;
+    use crate::address::PhysAddr;
 
     const VALID_BIT: u64 = 1 << 0;
     const TABLE_BIT: u64 = 1 << 1;
@@ -241,16 +241,16 @@ mod pte_encoding {
 #[cfg(not(test))]
 mod inner {
     use super::{PageFlags, PageTableEntry};
-    use crate::config::PAGE_SIZE;
-    use crate::error::{ErrorCode, KResult};
-    use crate::memory::address::{PhysAddr, VirtAddr};
-    use crate::memory::frame::FrameTracker;
+    use crate::address::{PhysAddr, VirtAddr};
+    use crate::frame::FrameTracker;
+    use config::PAGE_SIZE;
+    use error::{ErrorCode, KResult};
 
     /// 每页 PTE 数量（4KB / 8 = 512）
     pub const ENTRIES_PER_PAGE: usize = PAGE_SIZE / 8;
 
     /// 页表层级数——从 config crate 获取
-    pub const PT_LEVELS: usize = crate::config::PT_LEVELS;
+    pub const PT_LEVELS: usize = config::PT_LEVELS;
 
     /// 从虚拟地址中提取第 `level` 级的 9 位 VPN 索引。
     #[inline]
@@ -394,9 +394,9 @@ pub use inner::PageTable;
 #[cfg(test)]
 mod test_page_table {
     use super::{PageFlags, PageTableEntry};
-    use crate::config::PAGE_SIZE;
-    use crate::error::{ErrorCode, KResult};
-    use crate::memory::address::{PhysAddr, VirtAddr};
+    use crate::address::{PhysAddr, VirtAddr};
+    use config::PAGE_SIZE;
+    use error::{ErrorCode, KResult};
 
     const ENTRIES_PER_PAGE: usize = PAGE_SIZE / 8;
     /// Sv39 三级页表
@@ -541,8 +541,8 @@ mod test_page_table {
 mod tests {
     use super::test_page_table::TestPageTable;
     use super::*;
-    use crate::error::ErrorCode;
-    use crate::memory::address::VirtAddr;
+    use crate::address::VirtAddr;
+    use error::ErrorCode;
 
     #[test]
     fn pte_roundtrip() {

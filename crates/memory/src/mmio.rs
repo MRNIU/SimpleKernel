@@ -24,9 +24,9 @@
 //! ```
 
 #[cfg(not(test))]
-use crate::error::KResult;
+use crate::address::{PhysAddr, VirtAddr};
 #[cfg(not(test))]
-use crate::memory::address::{PhysAddr, VirtAddr};
+use error::KResult;
 
 /// 已映射的 MMIO 区域——提供类型安全的寄存器访问。
 ///

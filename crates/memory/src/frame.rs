@@ -1,7 +1,7 @@
-use crate::config::PAGE_SIZE;
-use crate::error::{ErrorCode, KResult};
-use crate::memory::address::PhysAddr;
-use crate::sync::SpinLock;
+use crate::address::PhysAddr;
+use config::PAGE_SIZE;
+use error::{ErrorCode, KResult};
+use sync_crate::SpinLock;
 
 /// Global frame allocator — wraps buddy_system_allocator::FrameAllocator.
 /// Operates in units of page frames (PAGE_SIZE bytes each).

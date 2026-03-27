@@ -19,6 +19,7 @@ members = [
     "crates/per-cpu",
     "crates/sync",
     "crates/boot-info",
+    "crates/memory",
     "xtask",
 ]
 default-members = ["."]
@@ -55,6 +56,7 @@ arch-traits = { path = "crates/arch-traits" }
 per-cpu = { path = "crates/per-cpu" }
 sync_crate = { path = "crates/sync", package = "sync" }
 boot-info = { path = "crates/boot-info" }
+memory_crate = { path = "crates/memory", package = "memory" }
 
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中
