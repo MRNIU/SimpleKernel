@@ -1,6 +1,10 @@
 [package]
 name = "config"
 version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description.workspace = true
 edition.workspace = true
 
 [dependencies]
