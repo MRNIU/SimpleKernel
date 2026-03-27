@@ -26,7 +26,7 @@
 #[cfg(not(test))]
 use crate::address::{PhysAddr, VirtAddr};
 #[cfg(not(test))]
-use error::KResult;
+use crate::error::MemoryError;
 
 /// 已映射的 MMIO 区域——提供类型安全的寄存器访问。
 ///
@@ -47,7 +47,7 @@ impl MmioRegion {
     /// # Errors
     ///
     /// 内核页表未初始化或映射失败时返回错误。
-    pub fn map(paddr: PhysAddr, size: usize) -> KResult<Self> {
+    pub fn map(paddr: PhysAddr, size: usize) -> Result<Self, MemoryError> {
         let va = super::map_mmio(paddr, size)?;
         Ok(Self { base: va, size })
     }

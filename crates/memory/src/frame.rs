@@ -1,6 +1,6 @@
 use crate::address::PhysAddr;
+use crate::error::MemoryError;
 use config::PAGE_SIZE;
-use error::{ErrorCode, KResult};
 use sync_crate::SpinLock;
 
 /// Global frame allocator — wraps buddy_system_allocator::FrameAllocator.
@@ -61,12 +61,12 @@ pub struct FrameTracker {
 
 impl FrameTracker {
     /// Allocate a single physical frame (PAGE_SIZE bytes), zeroed.
-    pub fn alloc() -> KResult<Self> {
+    pub fn alloc() -> Result<Self, MemoryError> {
         let mut alloc = FRAME_ALLOCATOR.lock();
         if !alloc.initialized {
-            return Err(ErrorCode::VmAllocationFailed);
+            return Err(MemoryError::AllocationFailed);
         }
-        let frame_num = alloc.allocator.alloc(1).ok_or(ErrorCode::OutOfMemory)?;
+        let frame_num = alloc.allocator.alloc(1).ok_or(MemoryError::OutOfMemory)?;
         let paddr = PhysAddr::new(frame_num * PAGE_SIZE);
 
         // SAFETY: 当前使用 identity mapping（VA == PA），物理地址可直接作为虚拟地址访问。

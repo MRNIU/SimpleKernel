@@ -7,6 +7,7 @@
 extern crate alloc;
 
 pub mod address;
+pub mod error;
 #[cfg(target_os = "none")]
 pub mod mapped_pages;
 #[cfg(target_os = "none")]
@@ -48,7 +49,7 @@ pub fn identity_map_range(
     start: PhysAddr,
     end: PhysAddr,
     flags: PageFlags,
-) -> error::KResult<()> {
+) -> Result<(), crate::error::MemoryError> {
     let mut addr = start.align_down();
     let end_aligned = end.align_up();
     while addr.as_usize() < end_aligned.as_usize() {
@@ -137,10 +138,10 @@ pub fn kernel_page_table() -> Option<&'static SpinLock<PageTable>> {
 }
 
 #[cfg(target_os = "none")]
-pub fn map_mmio(paddr: PhysAddr, size: usize) -> error::KResult<VirtAddr> {
+pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, crate::error::MemoryError> {
     let kpt = KERNEL_PAGE_TABLE
         .get()
-        .ok_or(error::ErrorCode::VmInvalidPageTable)?;
+        .ok_or(crate::error::MemoryError::InvalidPageTable)?;
     let mut guard = kpt.lock();
     identity_map_range(&mut *guard, paddr, paddr + size, PageFlags::kernel_rw())?;
     arch_traits::flush_tlb();

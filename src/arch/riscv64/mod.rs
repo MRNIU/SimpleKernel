@@ -79,7 +79,9 @@ impl ArchOps for Riscv64 {
         unsafe { core::arch::asm!("sfence.vma") };
     }
 
-    fn map_early_mmio(_pt: &mut memory::page_table::PageTable) -> error::KResult<()> {
+    fn map_early_mmio(
+        _pt: &mut memory::page_table::PageTable,
+    ) -> Result<(), memory::error::MemoryError> {
         // RISC-V console 通过 SBI ecall（M-mode），无需 MMIO 映射
         Ok(())
     }

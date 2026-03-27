@@ -33,13 +33,13 @@ use alloc::vec::Vec;
 #[cfg(not(test))]
 use crate::address::{PhysAddr, VirtAddr};
 #[cfg(not(test))]
+use crate::error::MemoryError;
+#[cfg(not(test))]
 use crate::frame::FrameTracker;
 #[cfg(not(test))]
 use crate::page_table::{PageFlags, PageTable};
 #[cfg(not(test))]
 use config::PAGE_SIZE;
-#[cfg(not(test))]
-use error::KResult;
 
 /// 仿射类型映射——持有此值即证明 VA→PA 映射有效。
 ///
@@ -74,7 +74,7 @@ impl MappedPages {
         pa_start: PhysAddr,
         page_count: usize,
         flags: PageFlags,
-    ) -> KResult<Self> {
+    ) -> Result<Self, MemoryError> {
         let va_start = VirtAddr::new(pa_start.as_usize());
         for i in 0..page_count {
             let pa = pa_start + i * PAGE_SIZE;
@@ -105,7 +105,7 @@ impl MappedPages {
         va_start: VirtAddr,
         page_count: usize,
         flags: PageFlags,
-    ) -> KResult<Self> {
+    ) -> Result<Self, MemoryError> {
         let mut frames = Vec::with_capacity(page_count);
         for i in 0..page_count {
             let frame = FrameTracker::alloc()?;

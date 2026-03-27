@@ -48,7 +48,9 @@ pub trait ArchOps {
     fn flush_tlb();
 
     /// 映射分页激活前必须就绪的架构特定 MMIO
-    fn map_early_mmio(pt: &mut memory::page_table::PageTable) -> error::KResult<()>;
+    fn map_early_mmio(
+        pt: &mut memory::page_table::PageTable,
+    ) -> Result<(), memory::error::MemoryError>;
 
     /// 激活页表（写入 satp / ttbr0_el1 等硬件寄存器）
     ///

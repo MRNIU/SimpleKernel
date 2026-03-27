@@ -7,6 +7,7 @@
 
 use bitflags::bitflags;
 
+#[cfg(test)]
 use crate::address::PhysAddr;
 
 bitflags! {
@@ -242,9 +243,9 @@ mod pte_encoding {
 mod inner {
     use super::{PageFlags, PageTableEntry};
     use crate::address::{PhysAddr, VirtAddr};
+    use crate::error::MemoryError;
     use crate::frame::FrameTracker;
     use config::PAGE_SIZE;
-    use error::{ErrorCode, KResult};
 
     /// 每页 PTE 数量（4KB / 8 = 512）
     pub const ENTRIES_PER_PAGE: usize = PAGE_SIZE / 8;
@@ -279,7 +280,7 @@ mod inner {
     }
 
     impl PageTable {
-        pub fn new() -> KResult<Self> {
+        pub fn new() -> Result<Self, MemoryError> {
             let root = FrameTracker::alloc()?;
             Ok(Self {
                 root,
@@ -293,7 +294,10 @@ mod inner {
         }
 
         /// 遍历到 `va` 对应的叶 PTE，必要时分配中间节点。
-        pub fn find_or_create_pte(&mut self, va: VirtAddr) -> KResult<&'static mut PageTableEntry> {
+        pub fn find_or_create_pte(
+            &mut self,
+            va: VirtAddr,
+        ) -> Result<&'static mut PageTableEntry, MemoryError> {
             let mut paddr = self.root.paddr();
 
             for level in (1..PT_LEVELS).rev() {
@@ -357,19 +361,24 @@ mod inner {
             Some(&mut table[idx])
         }
 
-        pub fn map_page(&mut self, va: VirtAddr, pa: PhysAddr, flags: PageFlags) -> KResult<()> {
+        pub fn map_page(
+            &mut self,
+            va: VirtAddr,
+            pa: PhysAddr,
+            flags: PageFlags,
+        ) -> Result<(), MemoryError> {
             let pte = self.find_or_create_pte(va)?;
             if pte.is_valid() {
-                return Err(ErrorCode::VmMapFailed);
+                return Err(MemoryError::MapFailed);
             }
             *pte = PageTableEntry::new(pa, flags);
             Ok(())
         }
 
-        pub fn unmap_page(&mut self, va: VirtAddr) -> KResult<PhysAddr> {
-            let pte = self.find_pte_mut(va).ok_or(ErrorCode::VmPageNotMapped)?;
+        pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, MemoryError> {
+            let pte = self.find_pte_mut(va).ok_or(MemoryError::PageNotMapped)?;
             if !pte.is_valid() {
-                return Err(ErrorCode::VmPageNotMapped);
+                return Err(MemoryError::PageNotMapped);
             }
             let old_pa = pte.paddr();
             *pte = PageTableEntry::empty();
@@ -395,8 +404,8 @@ pub use inner::PageTable;
 mod test_page_table {
     use super::{PageFlags, PageTableEntry};
     use crate::address::{PhysAddr, VirtAddr};
+    use crate::error::MemoryError;
     use config::PAGE_SIZE;
-    use error::{ErrorCode, KResult};
 
     const ENTRIES_PER_PAGE: usize = PAGE_SIZE / 8;
     /// Sv39 三级页表
@@ -448,7 +457,10 @@ mod test_page_table {
             self.root.paddr()
         }
 
-        pub fn find_or_create_pte(&mut self, va: VirtAddr) -> KResult<&'static mut PageTableEntry> {
+        pub fn find_or_create_pte(
+            &mut self,
+            va: VirtAddr,
+        ) -> Result<&'static mut PageTableEntry, MemoryError> {
             let mut paddr = self.root.paddr();
 
             for level in (1..PT_LEVELS).rev() {
@@ -507,19 +519,24 @@ mod test_page_table {
             Some(&mut table[idx])
         }
 
-        pub fn map_page(&mut self, va: VirtAddr, pa: PhysAddr, flags: PageFlags) -> KResult<()> {
+        pub fn map_page(
+            &mut self,
+            va: VirtAddr,
+            pa: PhysAddr,
+            flags: PageFlags,
+        ) -> Result<(), MemoryError> {
             let pte = self.find_or_create_pte(va)?;
             if pte.is_valid() {
-                return Err(ErrorCode::VmMapFailed);
+                return Err(MemoryError::MapFailed);
             }
             *pte = PageTableEntry::new(pa, flags);
             Ok(())
         }
 
-        pub fn unmap_page(&mut self, va: VirtAddr) -> KResult<PhysAddr> {
-            let pte = self.find_pte_mut(va).ok_or(ErrorCode::VmPageNotMapped)?;
+        pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, MemoryError> {
+            let pte = self.find_pte_mut(va).ok_or(MemoryError::PageNotMapped)?;
             if !pte.is_valid() {
-                return Err(ErrorCode::VmPageNotMapped);
+                return Err(MemoryError::PageNotMapped);
             }
             let old_pa = pte.paddr();
             *pte = PageTableEntry::empty();
@@ -542,7 +559,7 @@ mod tests {
     use super::test_page_table::TestPageTable;
     use super::*;
     use crate::address::VirtAddr;
-    use error::ErrorCode;
+    use crate::error::MemoryError;
 
     #[test]
     fn pte_roundtrip() {
@@ -648,7 +665,7 @@ mod tests {
         let err = pt
             .map_page(va, pa, PageFlags::kernel_rw())
             .expect_err("重复 map 应失败");
-        assert_eq!(err, ErrorCode::VmMapFailed);
+        assert_eq!(err, MemoryError::MapFailed);
     }
 
     #[test]
@@ -672,7 +689,7 @@ mod tests {
         let va = VirtAddr::new(0x1000);
 
         let err = pt.unmap_page(va).expect_err("unmap 未映射页应失败");
-        assert_eq!(err, ErrorCode::VmPageNotMapped);
+        assert_eq!(err, MemoryError::PageNotMapped);
     }
 
     #[test]
