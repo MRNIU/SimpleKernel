@@ -48,7 +48,7 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 | `src/error.rs` | `ErrorCode`, `KResult<T>` | error handling |
 | `src/logging.rs` | `log` crate backend + ANSI colors | kernel logging |
 | `src/config.rs` | Kernel constants (`MAX_CORE_COUNT`, etc.) | configuration |
-| `src/per_cpu.rs` | Per-CPU data + BasicInfo | SMP support |
+| `src/per_cpu.rs` | Per-CPU data + CORE_COUNT | SMP support |
 | `src/fdt.rs` | Device tree parser (`fdt` crate wrapper) | hardware discovery |
 | `src/elf.rs` | ELF symbol table parser | backtrace support |
 | `src/panic.rs` | Panic handler + observer pattern | error recovery |

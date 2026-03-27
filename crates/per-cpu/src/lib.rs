@@ -10,6 +10,11 @@ pub mod lock_stack;
 
 use lock_stack::LockStack;
 
+/// 实际在线核心数（从 FDT 解析，`early_init` 中初始化）。
+///
+/// 与 `config::MAX_CORE_COUNT`（编译期上限）不同，此值为运行时实际核心数。
+pub static CORE_COUNT: spin::Once<usize> = spin::Once::new();
+
 // ─── PreemptState ─────────────────────────────────────────────────────
 
 /// 抢占状态 — 跟踪中断嵌套层数与调度标志

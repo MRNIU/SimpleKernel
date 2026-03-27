@@ -1,14 +1,19 @@
 /// RISC-V 64 定时器子系统
 ///
 /// 通过 SBI set_timer 接口实现周期性时钟中断。
-/// 从 BASIC_INFO.timer_freq（FDT `timebase-frequency`）读取硬件频率，
+/// 硬件频率由 `early_init()` 通过 `set_hw_freq()` 设置（FDT `timebase-frequency`），
 /// 以 `config::TIMER_FREQ_HZ` 为目标 tick 频率计算触发间隔。
 use core::sync::atomic::{AtomicU64, Ordering};
 
 use config::TIMER_FREQ_HZ;
 
-/// 硬件定时器频率（Hz）——init 时从 BASIC_INFO 读取并缓存
+/// 硬件定时器频率（Hz）——`early_init` 阶段通过 `set_hw_freq()` 设置
 static HW_FREQ: AtomicU64 = AtomicU64::new(0);
+
+/// 设置硬件定时器频率（由 `early_init` 在 FDT 解析后调用）
+pub fn set_hw_freq(freq: u64) {
+    HW_FREQ.store(freq, Ordering::Relaxed);
+}
 
 /// 读取当前 tick 计数——委托给 arch-traits 全局计数器
 pub fn get_current_tick() -> u64 {
@@ -38,17 +43,13 @@ fn get_interval() -> u64 {
 
 /// 初始化主核定时器
 ///
-/// 从 BASIC_INFO 读取硬件频率，计算 tick 间隔，设置首个超时。
+/// 硬件频率已由 `set_hw_freq()` 设置，计算 tick 间隔，设置首个超时。
 pub fn init() {
-    let info = boot_info::BASIC_INFO
-        .get()
-        .expect("TimerInit: BASIC_INFO 未初始化");
-    let freq = info.timer_freq;
+    let freq = HW_FREQ.load(Ordering::Relaxed);
     assert!(
         freq > 0,
-        "TimerInit: timebase-frequency 为 0，FDT 缺少该属性"
+        "TimerInit: HW_FREQ 未设置（early_init 未调用 set_hw_freq？）"
     );
-    HW_FREQ.store(freq, Ordering::Relaxed);
 
     let interval = freq / TIMER_FREQ_HZ;
     let next = read_time() + interval;

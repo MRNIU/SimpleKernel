@@ -27,10 +27,10 @@ pub fn phase2() {
     log::info!("SpinLock OK");
 
     log::info!("Initializing ELF parser...");
-    let elf_addr = boot_info::BASIC_INFO
+    let elf_addr = memory::MEMORY_INFO
         .get()
-        .expect("BASIC_INFO not initialized")
-        .elf_addr
+        .expect("MEMORY_INFO not initialized")
+        .kernel_addr
         .as_usize() as u64;
     // SAFETY: elf_addr 是内核自身的 ELF 基地址，在内核生命周期内有效
     unsafe { crate::panic::init_elf(elf_addr) };

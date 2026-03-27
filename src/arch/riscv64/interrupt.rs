@@ -55,11 +55,10 @@ const PLIC_CONTEXT_STRIDE: usize = 0x1000;
 fn plic_init() {
     // Step 0: 从 FDT 读取 PLIC 基地址（FDT 是唯一来源）
     let base = {
-        let info = boot_info::BASIC_INFO
+        let fdt_addr = *crate::fdt::FDT_ADDR
             .get()
-            .expect("plic_init: BASIC_INFO 未初始化");
-        let fdt =
-            crate::fdt::KernelFdt::new(info.fdt_addr.as_usize()).expect("plic_init: FDT 解析失败");
+            .expect("plic_init: FDT_ADDR 未初始化");
+        let fdt = crate::fdt::KernelFdt::new(fdt_addr).expect("plic_init: FDT 解析失败");
         let (addr, _size) = fdt
             .find_compatible_reg("riscv,plic0")
             .or_else(|_| fdt.find_compatible_reg("sifive,plic-1.0.0"))

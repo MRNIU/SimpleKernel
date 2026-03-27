@@ -74,14 +74,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
 
 [[package]]
-name = "boot-info"
-version = "0.1.0"
-dependencies = [
- "address",
- "spin",
-]
-
-[[package]]
 name = "buddy_system_allocator"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -209,7 +201,6 @@ dependencies = [
  "address",
  "arch-traits",
  "bitflags 2.11.0",
- "boot-info",
  "buddy_system_allocator",
  "config",
  "log",
@@ -263,6 +254,7 @@ version = "0.1.0"
 dependencies = [
  "arch-traits",
  "config",
+ "spin",
 ]
 
 [[package]]
@@ -395,7 +387,6 @@ dependencies = [
  "arm-gic",
  "arm-psci",
  "bitflags 2.11.0",
- "boot-info",
  "buddy_system_allocator",
  "cc",
  "config",

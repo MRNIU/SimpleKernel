@@ -66,7 +66,7 @@ pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
 
 /// 主核引导序列
 ///
-/// logging → DTB → FDT/BASIC_INFO → Phase2 → Memory → Phase3
+/// logging → DTB → FDT → Phase2 → Memory → Phase3
 /// → Interrupt → Timer → Task → SMP → Phase4 → Phase5 → Idle loop
 #[cfg(not(test))]
 fn bootstrap(argc: i32, argv: *const *const u8) -> ! {

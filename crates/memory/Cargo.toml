@@ -12,7 +12,6 @@ config = { path = "../config" }
 address = { path = "../address" }
 arch-traits = { path = "../arch-traits" }
 sync_crate = { path = "../sync", package = "sync" }
-boot-info = { path = "../boot-info" }
 per-cpu = { path = "../per-cpu" }
 
 bitflags = "2"

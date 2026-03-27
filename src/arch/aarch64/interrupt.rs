@@ -43,14 +43,11 @@ const VTIMER_PRIORITY: u8 = 0xA0;
 /// 使用通用的 `find_compatible_reg` 获取第一组（GICD），
 /// 第二组（GICR）从 reg 属性偏移 16 字节处读取。
 fn init_gic_addrs() {
-    use error::ErrorCode;
-
     GIC_ADDRS.call_once(|| {
-        let info = boot_info::BASIC_INFO
+        let fdt_addr = *crate::fdt::FDT_ADDR
             .get()
-            .expect("init_gic_addrs: BASIC_INFO 未初始化");
-        let fdt = crate::fdt::KernelFdt::new(info.fdt_addr.as_usize())
-            .expect("init_gic_addrs: FDT 解析失败");
+            .expect("init_gic_addrs: FDT_ADDR 未初始化");
+        let fdt = crate::fdt::KernelFdt::new(fdt_addr).expect("init_gic_addrs: FDT 解析失败");
 
         // 使用通用方法读取 GICD 基地址
         let (gicd_addr, gicd_size) = fdt
@@ -60,11 +57,7 @@ fn init_gic_addrs() {
         // GICR 地址需要从同一节点的 reg 属性偏移 16 字节处读取
         // find_compatible_reg 只返回第一组，这里用默认值计算 GICR
         let gicr_addr = gicd_addr + gicd_size as u64;
-        let gicr_size = GICR_STRIDE
-            * boot_info::BASIC_INFO
-                .get()
-                .map(|i| i.core_count)
-                .unwrap_or(1);
+        let gicr_size = GICR_STRIDE * per_cpu::CORE_COUNT.get().copied().unwrap_or(1);
 
         // 尝试从 FDT 精确读取 GICR（如果 reg 属性够长）
         let (gicr_addr, gicr_size) = fdt
@@ -95,10 +88,7 @@ fn init_gic_addrs() {
 /// # Safety
 /// GICD 和 GICR 区域必须已通过 `map_mmio` 映射。
 unsafe fn create_gic<'a>() -> GicV3<'a> {
-    let cpu_count = boot_info::BASIC_INFO
-        .get()
-        .map(|info| info.core_count)
-        .unwrap_or(1);
+    let cpu_count = per_cpu::CORE_COUNT.get().copied().unwrap_or(1);
 
     let addrs = GIC_ADDRS.get().expect("GIC_ADDRS 未初始化");
 

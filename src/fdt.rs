@@ -1,6 +1,9 @@
 use core::marker::PhantomData;
 use error::{ErrorCode, KResult};
 
+/// FDT 基地址（`early_init` 中初始化，中断子系统解析 PLIC/GIC 时使用）
+pub static FDT_ADDR: spin::Once<usize> = spin::Once::new();
+
 #[derive(Debug)]
 pub struct KernelFdt<'a> {
     fdt_addr: usize,

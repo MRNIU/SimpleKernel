@@ -21,13 +21,34 @@ pub mod frame;
 #[cfg(target_os = "none")]
 pub mod heap;
 
+use address::PhysAddr;
 #[cfg(target_os = "none")]
-use address::{PhysAddr, VirtAddr};
+use address::VirtAddr;
 #[cfg(target_os = "none")]
 use page_table::{PageFlags, PageTable};
 
 #[cfg(target_os = "none")]
 use sync_crate::SpinLock;
+
+// ─── MemoryInfo ──────────────────────────────────────────────────────
+
+/// 内核启动时从 FDT 解析出的内存布局信息。
+///
+/// 在 `early_init()` 中通过 `MEMORY_INFO.call_once()` 填充，
+/// 之后由内存子系统只读访问。
+pub struct MemoryInfo {
+    /// 物理内存起始地址
+    pub physical_memory_addr: PhysAddr,
+    /// 物理内存大小（字节）
+    pub physical_memory_size: usize,
+    /// 内核镜像起始物理地址
+    pub kernel_addr: PhysAddr,
+    /// 内核镜像大小（字节）
+    pub kernel_size: usize,
+}
+
+/// 全局内存布局信息（一次性初始化，之后只读）
+pub static MEMORY_INFO: spin::Once<MemoryInfo> = spin::Once::new();
 
 /// 全局内核页表。
 #[cfg(target_os = "none")]
@@ -66,9 +87,7 @@ pub fn identity_map_range(
 pub fn init() -> PageTable {
     unsafe { heap::init() };
 
-    let info = boot_info::BASIC_INFO
-        .get()
-        .expect("BASIC_INFO not initialized");
+    let info = MEMORY_INFO.get().expect("MEMORY_INFO not initialized");
     let mem_start = info.physical_memory_addr;
     let mem_size = info.physical_memory_size;
     let kernel_end = info.kernel_addr + info.kernel_size;

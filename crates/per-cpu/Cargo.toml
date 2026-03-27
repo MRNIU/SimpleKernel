@@ -10,3 +10,4 @@ edition.workspace = true
 [dependencies]
 arch-traits = { path = "../arch-traits" }
 config = { path = "../config" }
+spin = { version = "0.9", default-features = false, features = ["once"] }

@@ -17,7 +17,7 @@ members = [
     "crates/arch-traits",
     "crates/per-cpu",
     "crates/sync",
-    "crates/boot-info",
+
     "crates/memory",
     "xtask",
 ]
@@ -53,7 +53,7 @@ address = { path = "crates/address" }
 arch-traits = { path = "crates/arch-traits" }
 per-cpu = { path = "crates/per-cpu" }
 sync = { path = "crates/sync" }
-boot-info = { path = "crates/boot-info" }
+
 memory = { path = "crates/memory" }
 
 # --- 同步 ---
