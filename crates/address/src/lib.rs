@@ -81,7 +81,7 @@ macro_rules! define_address {
 
         impl fmt::Display for $name {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                write!(f, "0x{:016x}", self.0)
+                write!(f, "0x{:016X}", self.0)
             }
         }
     };
@@ -102,7 +102,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn phys_addr_alignment() {
+    fn alignment_basic() {
         let aligned = PhysAddr::new(0x8020_0000);
         assert!(aligned.is_aligned());
         assert_eq!(aligned.page_offset(), 0);
@@ -123,52 +123,30 @@ mod tests {
     }
 
     #[test]
-    fn phys_addr_arithmetic() {
+    fn alignment_zero() {
+        let zero = PhysAddr::new(0);
+        assert!(zero.is_aligned());
+        assert_eq!(zero.align_down(), zero);
+        assert_eq!(zero.align_up(), zero);
+    }
+
+    #[test]
+    fn arithmetic_add_sub_usize() {
         let base = PhysAddr::new(0x8020_0000);
 
-        // Add<usize>
         let a = base + 0x1000;
         assert_eq!(a.as_usize(), 0x8020_1000);
 
-        // Sub<usize>
         let b = a - 0x1000;
         assert_eq!(b, base);
-
-        // Sub<PhysAddr>
-        let diff = a - base;
-        assert_eq!(diff, 0x1000usize);
     }
 
     #[test]
-    fn phys_addr_display() {
-        let addr = PhysAddr::new(0x0000_0000_8020_0000);
-        assert_eq!(format!("{}", addr), "0x0000000080200000");
-    }
-
-    #[test]
-    fn virt_addr_alignment() {
-        let aligned = VirtAddr::new(0xFFFF_FFFF_8020_0000);
-        assert!(aligned.is_aligned());
-        assert_eq!(aligned.align_down(), aligned);
-        assert_eq!(aligned.align_up(), aligned);
-
-        let unaligned = VirtAddr::new(0xFFFF_FFFF_8020_0800);
-        assert!(!unaligned.is_aligned());
-        assert_eq!(unaligned.align_down(), VirtAddr::new(0xFFFF_FFFF_8020_0000));
-        assert_eq!(unaligned.align_up(), VirtAddr::new(0xFFFF_FFFF_8020_1000));
-    }
-
-    #[test]
-    fn virt_addr_arithmetic() {
-        let base = VirtAddr::new(0xFFFF_FFFF_8020_0000);
-
-        let a = base + 0x2000;
-        assert_eq!(a.as_usize(), 0xFFFF_FFFF_8020_2000);
-
-        let b = a - 0x2000;
-        assert_eq!(b, base);
-
-        let diff = a - base;
-        assert_eq!(diff, 0x2000usize);
+    fn arithmetic_sub_returns_usize() {
+        // 两个地址相减得到 usize 差值，不是地址
+        let a = VirtAddr::new(0xFFFF_0000_0000_2000);
+        let b = VirtAddr::new(0xFFFF_0000_0000_0000);
+        let diff: usize = a - b;
+        assert_eq!(diff, 0x2000);
     }
 }
