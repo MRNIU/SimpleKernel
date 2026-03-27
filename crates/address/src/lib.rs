@@ -101,6 +101,8 @@ define_address!(
 mod tests {
     use super::*;
 
+    /// 页对齐：已对齐地址保持不变，未对齐地址 align_down 向下取整、
+    /// align_up 向上取整，页末地址（0xFFF）正确归入当前页。
     #[test]
     fn alignment_basic() {
         let aligned = PhysAddr::new(0x8020_0000);
@@ -122,6 +124,7 @@ mod tests {
         assert_eq!(end_of_page.align_up(), PhysAddr::new(0x8020_1000));
     }
 
+    /// 零地址边界：地址 0 应被视为页对齐，align_up/align_down 均返回自身。
     #[test]
     fn alignment_zero() {
         let zero = PhysAddr::new(0);
@@ -130,6 +133,7 @@ mod tests {
         assert_eq!(zero.align_up(), zero);
     }
 
+    /// 地址 ± usize 运算：加偏移得到新地址，减偏移回到原地址。
     #[test]
     fn arithmetic_add_sub_usize() {
         let base = PhysAddr::new(0x8020_0000);
@@ -141,9 +145,10 @@ mod tests {
         assert_eq!(b, base);
     }
 
+    /// 地址 - 地址 返回 usize（字节差值），而非地址类型，
+    /// 验证 Sub<VirtAddr> 的 Output 关联类型为 usize。
     #[test]
     fn arithmetic_sub_returns_usize() {
-        // 两个地址相减得到 usize 差值，不是地址
         let a = VirtAddr::new(0xFFFF_0000_0000_2000);
         let b = VirtAddr::new(0xFFFF_0000_0000_0000);
         let diff: usize = a - b;
