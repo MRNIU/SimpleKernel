@@ -3,46 +3,46 @@
 
 //! 内核内存管理——帧分配器、页表、堆、MMIO 映射。
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 extern crate alloc;
 
 pub mod address;
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub mod mapped_pages;
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub mod mmio;
 pub mod page_table;
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub mod frame;
 /// 堆分配器——使用 `target_os = "none"` 门控：
 /// `#[global_allocator]` 在宿主机上会与系统分配器冲突。
 #[cfg(target_os = "none")]
 pub mod heap;
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 use address::{PhysAddr, VirtAddr};
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 use page_table::{PageFlags, PageTable};
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 use sync_crate::SpinLock;
 
 /// 全局内核页表。
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 static KERNEL_PAGE_TABLE: spin::Once<SpinLock<PageTable>> = spin::Once::new();
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub fn phys_to_virt(pa: PhysAddr) -> VirtAddr {
     VirtAddr::new(pa.as_usize())
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub fn virt_to_phys(va: VirtAddr) -> PhysAddr {
     PhysAddr::new(va.as_usize())
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub fn identity_map_range(
     pt: &mut PageTable,
     start: PhysAddr,
@@ -113,12 +113,12 @@ pub fn init() -> PageTable {
     pt
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub fn store_kernel_page_table(pt: PageTable) {
     KERNEL_PAGE_TABLE.call_once(|| SpinLock::new(pt, "kernel_pt"));
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub fn init_smp(activate: impl FnOnce(&PageTable)) {
     let kpt = KERNEL_PAGE_TABLE
         .get()
@@ -131,12 +131,12 @@ pub fn init_smp(activate: impl FnOnce(&PageTable)) {
     );
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub fn kernel_page_table() -> Option<&'static SpinLock<PageTable>> {
     KERNEL_PAGE_TABLE.get()
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub fn map_mmio(paddr: PhysAddr, size: usize) -> error::KResult<VirtAddr> {
     let kpt = KERNEL_PAGE_TABLE
         .get()

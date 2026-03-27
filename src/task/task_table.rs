@@ -4,15 +4,15 @@ use alloc::collections::BTreeMap;
 use alloc::collections::VecDeque;
 use alloc::vec::Vec;
 
-use crate::error::ErrorCode;
-use crate::sync::SpinLock;
-use crate::sync::spinlock::lock_level;
 use crate::task::resource_id::ResourceId;
 use crate::task::sched::PerCpuSched;
 use crate::task::scheduler::Scheduler;
 use crate::task::signal::{SignalAction, SignalMask, first_deliverable};
 use crate::task::state::TaskState;
 use crate::task::tcb::{Pid, TaskRef};
+use error::ErrorCode;
+use sync::SpinLock;
+use sync::spinlock::lock_level;
 
 /// 全局任务表——由 `TASK_TABLE` 的 `SpinLock` 保护（级别 1，高于调度锁级别 0）。
 pub(super) struct TaskTable {

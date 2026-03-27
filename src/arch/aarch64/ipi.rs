@@ -69,7 +69,7 @@ unsafe fn psci_smc_call(regs: &[u64; 4]) -> i64 {
 /// 每个从核以 `_boot` 为入口（初始化栈后跳转到 `_start`），context_id = 0。
 /// 跳过当前核心（主核），因为任何 CPU 都可能成为主核。
 pub fn wake_secondary_cores() {
-    let core_count = crate::boot_info::BASIC_INFO
+    let core_count = boot_info::BASIC_INFO
         .get()
         .map(|info| info.core_count)
         .unwrap_or(1);
@@ -79,7 +79,7 @@ pub fn wake_secondary_cores() {
         return;
     }
 
-    let my_cpu = crate::per_cpu::current_core_id();
+    let my_cpu = per_cpu::current_core_id();
 
     // SAFETY: _boot 由链接器定义，地址在内核镜像生命周期内有效
     // 先转为函数指针类型再转为 usize（Rust 2024 不允许函数 item 直接转 usize）

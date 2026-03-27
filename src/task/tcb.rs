@@ -1,6 +1,6 @@
 //! 任务控制块（TCB）与内核栈——任务的核心数据结构。
 
-use crate::compat::Arc;
+use alloc::sync::Arc;
 
 use core::sync::atomic::{AtomicI32, AtomicU32, AtomicU64, Ordering};
 
@@ -29,7 +29,7 @@ impl KernelStack {
     /// 分配一个新的内核栈（大小由 `config::KERNEL_STACK_SIZE` 决定）。
     pub fn new() -> Self {
         Self {
-            data: alloc::vec![0u8; crate::config::KERNEL_STACK_SIZE],
+            data: alloc::vec![0u8; config::KERNEL_STACK_SIZE],
         }
     }
 

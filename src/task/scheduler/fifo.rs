@@ -1,6 +1,6 @@
 //! FIFO 调度器——先进先出，最简单的调度算法。
 
-use crate::compat::VecDeque;
+use alloc::collections::VecDeque;
 
 use crate::task::scheduler::Scheduler;
 use crate::task::tcb::{TaskControlBlock, TaskRef};
@@ -55,7 +55,7 @@ impl Scheduler for FifoScheduler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::compat::Arc;
+    use alloc::sync::Arc;
 
     fn make_task(pid: usize) -> TaskRef {
         Arc::new(TaskControlBlock::new_for_test(pid, "test"))

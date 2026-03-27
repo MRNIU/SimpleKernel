@@ -1,5 +1,5 @@
-use crate::error::{ErrorCode, KResult};
 use core::marker::PhantomData;
+use error::{ErrorCode, KResult};
 
 #[derive(Debug)]
 pub struct KernelFdt<'a> {

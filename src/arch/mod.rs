@@ -48,13 +48,13 @@ pub trait ArchOps {
     fn flush_tlb();
 
     /// 映射分页激活前必须就绪的架构特定 MMIO
-    fn map_early_mmio(pt: &mut crate::memory::page_table::PageTable) -> crate::error::KResult<()>;
+    fn map_early_mmio(pt: &mut memory::page_table::PageTable) -> error::KResult<()>;
 
     /// 激活页表（写入 satp / ttbr0_el1 等硬件寄存器）
     ///
     /// # Safety
     /// 调用方必须确保 `pt` 覆盖了激活后将执行的所有代码和数据。
-    unsafe fn activate_page_table(pt: &crate::memory::page_table::PageTable);
+    unsafe fn activate_page_table(pt: &memory::page_table::PageTable);
 
     /// 向早期控制台输出字符串（SBI putchar / PL011 MMIO）
     fn console_write(s: &str);

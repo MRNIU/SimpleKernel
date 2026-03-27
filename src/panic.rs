@@ -1,13 +1,13 @@
 use crate::elf::KernelElf;
-use crate::memory::address::VirtAddr;
-use crate::sync::SpinLock;
 use core::fmt::Write;
+use memory::address::VirtAddr;
 use spin::Once;
+use sync::SpinLock;
 
 static KERNEL_ELF: Once<KernelElf> = Once::new();
 
 const MAX_OBSERVERS: usize = 4;
-const MAX_BACKTRACE_DEPTH: usize = crate::config::MAX_BACKTRACE_DEPTH;
+const MAX_BACKTRACE_DEPTH: usize = config::MAX_BACKTRACE_DEPTH;
 
 pub struct PanicEvent<'a> {
     pub reason: &'a str,

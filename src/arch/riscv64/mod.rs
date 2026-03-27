@@ -79,12 +79,12 @@ impl ArchOps for Riscv64 {
         unsafe { core::arch::asm!("sfence.vma") };
     }
 
-    fn map_early_mmio(_pt: &mut crate::memory::page_table::PageTable) -> crate::error::KResult<()> {
+    fn map_early_mmio(_pt: &mut memory::page_table::PageTable) -> error::KResult<()> {
         // RISC-V console 通过 SBI ecall（M-mode），无需 MMIO 映射
         Ok(())
     }
 
-    unsafe fn activate_page_table(pt: &crate::memory::page_table::PageTable) {
+    unsafe fn activate_page_table(pt: &memory::page_table::PageTable) {
         let ppn = pt.root_paddr().as_usize() >> 12;
         let satp = (8usize << 60) | ppn; // MODE = 8 → Sv39
         // SAFETY: 调用方保证页表映射正确

@@ -22,8 +22,9 @@ pub const KERNEL_STACK_SIZE: usize = 16 * 1024;
 
 /// 内核 tick 频率（Hz）——所有架构统一使用此值。
 ///
-/// 100 Hz = 每 10ms 一次中断，适合调试和测试。
-pub const TIMER_FREQ_HZ: u64 = 100;
+/// 10 Hz = 每 100ms 一次中断。每次中断直接打印 Tick 日志，
+/// 避免使用全局计数器 modulo 导致的 SMP 输出偏斜。
+pub const TIMER_FREQ_HZ: u64 = 10;
 
 /// 页表层级数——由目标架构决定。
 ///

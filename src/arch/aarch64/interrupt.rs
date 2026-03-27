@@ -7,8 +7,8 @@ use arm_gic::gicv3::{GicCpuInterface, GicV3};
 use arm_gic::{IntId, InterruptGroup, UniqueMmioPointer};
 use core::ptr::NonNull;
 
-use crate::memory::address::PhysAddr;
-use crate::memory::map_mmio;
+use memory::address::PhysAddr;
+use memory::map_mmio;
 
 use super::context::TrapContext;
 
@@ -43,10 +43,10 @@ const VTIMER_PRIORITY: u8 = 0xA0;
 /// 使用通用的 `find_compatible_reg` 获取第一组（GICD），
 /// 第二组（GICR）从 reg 属性偏移 16 字节处读取。
 fn init_gic_addrs() {
-    use crate::error::ErrorCode;
+    use error::ErrorCode;
 
     GIC_ADDRS.call_once(|| {
-        let info = crate::boot_info::BASIC_INFO
+        let info = boot_info::BASIC_INFO
             .get()
             .expect("init_gic_addrs: BASIC_INFO 未初始化");
         let fdt = crate::fdt::KernelFdt::new(info.fdt_addr.as_usize())
@@ -61,7 +61,7 @@ fn init_gic_addrs() {
         // find_compatible_reg 只返回第一组，这里用默认值计算 GICR
         let gicr_addr = gicd_addr + gicd_size as u64;
         let gicr_size = GICR_STRIDE
-            * crate::boot_info::BASIC_INFO
+            * boot_info::BASIC_INFO
                 .get()
                 .map(|i| i.core_count)
                 .unwrap_or(1);
@@ -95,7 +95,7 @@ fn init_gic_addrs() {
 /// # Safety
 /// GICD 和 GICR 区域必须已通过 `map_mmio` 映射。
 unsafe fn create_gic<'a>() -> GicV3<'a> {
-    let cpu_count = crate::boot_info::BASIC_INFO
+    let cpu_count = boot_info::BASIC_INFO
         .get()
         .map(|info| info.core_count)
         .unwrap_or(1);
@@ -139,7 +139,7 @@ pub fn init() {
     map_mmio(PhysAddr::new(addrs.gicr_base), addrs.gicr_size)
         .expect("interrupt_init: 映射 GICR 失败");
 
-    let cpu_id = crate::per_cpu::current_core_id();
+    let cpu_id = per_cpu::current_core_id();
 
     // SAFETY: GICD/GICR 已映射
     unsafe {
@@ -186,7 +186,7 @@ pub fn init_smp() {
         );
     }
 
-    let cpu_id = crate::per_cpu::current_core_id();
+    let cpu_id = per_cpu::current_core_id();
 
     // SAFETY: GICD/GICR 已由主核映射
     unsafe {

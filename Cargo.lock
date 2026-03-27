@@ -403,7 +403,6 @@ dependencies = [
  "boot-info",
  "buddy_system_allocator",
  "cc",
- "compat",
  "config",
  "elf",
  "error",

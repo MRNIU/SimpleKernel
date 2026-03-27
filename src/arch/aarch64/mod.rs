@@ -92,18 +92,18 @@ impl ArchOps for Aarch64 {
         unsafe { core::arch::asm!("tlbi vmalle1", "dsb sy", "isb") };
     }
 
-    fn map_early_mmio(pt: &mut crate::memory::page_table::PageTable) -> crate::error::KResult<()> {
-        use crate::memory::address::PhysAddr;
-        use crate::memory::page_table::PageFlags;
+    fn map_early_mmio(pt: &mut memory::page_table::PageTable) -> error::KResult<()> {
+        use memory::address::PhysAddr;
+        use memory::page_table::PageFlags;
         // PL011 UART —— console 直接 MMIO 访问
         let start = PhysAddr::new(PL011_BASE);
         let end = PhysAddr::new(PL011_BASE + PL011_SIZE);
-        crate::memory::identity_map_range(pt, start, end, PageFlags::kernel_rw())?;
+        memory::identity_map_range(pt, start, end, PageFlags::kernel_rw())?;
         log::info!("MemoryInit: mapped PL011 UART @ {:#010X}", PL011_BASE);
         Ok(())
     }
 
-    unsafe fn activate_page_table(pt: &crate::memory::page_table::PageTable) {
+    unsafe fn activate_page_table(pt: &memory::page_table::PageTable) {
         let ttbr = pt.root_paddr().as_usize() as u64;
 
         // MAIR_EL1: 定义内存属性索引

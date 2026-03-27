@@ -4,14 +4,13 @@ use alloc::sync::Arc;
 use core::cell::SyncUnsafeCell;
 
 use crate::arch::CalleeSavedContext;
-use crate::config::MAX_CORE_COUNT;
-use crate::per_cpu;
-use crate::sync::SpinLock;
-use crate::sync::spinlock::lock_level;
 use crate::task::scheduler::SchedPolicy;
 use crate::task::scheduler::Scheduler;
 use crate::task::state::TaskState;
 use crate::task::tcb::TaskRef;
+use config::MAX_CORE_COUNT;
+use sync::SpinLock;
+use sync::spinlock::lock_level;
 
 // ─── switch_to 外部声明 ──────────────────────────────────────────────
 
@@ -54,6 +53,8 @@ pub(super) unsafe fn per_cpu_sched(core_id: usize) -> &'static mut PerCpuSched {
 /// 从其他核心窃取一个任务——当本核就绪队列为空时调用。
 ///
 /// 调用者已持有 PER_CPU_SCHED_LOCK[my_core]（通过 lock_raw）。
+/// 使用 `try_lock_raw_no_irq` 获取 victim 的锁：两核同时窃取对方时不会死锁，
+/// 因为 try_lock 失败后立即返回 None，不会阻塞等待。
 pub(super) fn try_steal(my_core: usize) -> Option<TaskRef> {
     let mut best_core = None;
     let mut best_size = 0usize;

@@ -1,6 +1,6 @@
-use crate::error::{ErrorCode, KResult};
 use elf::ElfBytes;
 use elf::endian::AnyEndian;
+use error::{ErrorCode, KResult};
 
 /// 用于内核二进制符号表的 ELF64 解析器。
 ///

@@ -2,9 +2,9 @@
 ///
 /// 在堆和分页启用之前运行，仅依赖 logging 和栈。
 pub fn early_init(dtb_addr: usize) {
-    use crate::boot_info::{BASIC_INFO, BasicInfo};
     use crate::fdt::KernelFdt;
-    use crate::memory::address::PhysAddr;
+    use boot_info::{BASIC_INFO, BasicInfo};
+    use memory::address::PhysAddr;
 
     let fdt = match KernelFdt::new(dtb_addr) {
         Ok(f) => f,

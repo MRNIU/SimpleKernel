@@ -6,16 +6,11 @@
 // 产生 dead_code 警告。这些代码在目标架构上被正常使用。
 #![cfg_attr(test, allow(dead_code))]
 
-#[cfg(not(test))]
 extern crate alloc;
 
 #[cfg(not(test))]
 mod arch;
-mod boot_info;
-mod compat;
-mod config;
 mod elf;
-mod error;
 #[cfg(not(test))]
 mod fdt;
 #[cfg(not(test))]
@@ -23,12 +18,9 @@ mod init;
 #[cfg(not(test))]
 mod lang_items;
 mod logging;
-mod memory;
 mod panic;
-mod per_cpu;
 #[cfg(not(test))]
 mod smoke_test;
-mod sync;
 mod syscall;
 mod task;
 mod util;
@@ -52,7 +44,7 @@ pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
 }
 
 #[cfg(not(test))]
-use arch::{Arch, ArchOps};
+use crate::arch::{Arch, ArchOps};
 
 /// 内核线程引导函数（供 switch.S 中 `kernel_thread_entry` 调用）
 ///

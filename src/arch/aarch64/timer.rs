@@ -4,7 +4,7 @@
 /// 目标 tick 频率：`config::TIMER_FREQ_HZ` Hz。
 use core::sync::atomic::Ordering;
 
-use crate::config::TIMER_FREQ_HZ;
+use config::TIMER_FREQ_HZ;
 
 /// 读取当前 tick 计数——委托给 arch-traits 全局计数器
 pub fn get_current_tick() -> u64 {
@@ -86,7 +86,7 @@ pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
 
     // 更新 per-CPU 抢占状态
     // SAFETY: 在中断处理程序中调用，中断已被 DAIF 屏蔽
-    let per_cpu = unsafe { crate::per_cpu::current_per_cpu() };
+    let per_cpu = unsafe { per_cpu::current_per_cpu() };
     per_cpu.preempt.enter_hardirq();
 
     // 通过 arch-traits 回调调用 task::timer_tick()（打破 arch→task 依赖）
@@ -97,8 +97,5 @@ pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
     // 通知 idle loop 检查调度（唤醒到期睡眠任务等）
     per_cpu.preempt.need_resched.store(true, Ordering::Release);
 
-    if tick % (TIMER_FREQ_HZ / 10) == 0 {
-        let core_id = crate::per_cpu::current_core_id();
-        log::info!("Tick #{} (core {})", tick, core_id);
-    }
+    log::info!("Tick #{} (core {})", tick, per_cpu::current_core_id());
 }

@@ -39,7 +39,7 @@ pub fn handle_ipi(_ctx: &mut TrapContext) {
             bit = in(reg) 2usize,
         );
     }
-    let core_id = crate::per_cpu::current_core_id();
+    let core_id = per_cpu::current_core_id();
     log::info!("IPI received on core {}", core_id);
 }
 
@@ -48,7 +48,7 @@ pub fn handle_ipi(_ctx: &mut TrapContext) {
 /// 读取 BASIC_INFO 中的 core_count，对每个从核调用 SBI hart_start。
 /// 跳过当前核心（主核），因为任何 hart 都可能成为主核（取决于谁先到达 `_start`）。
 pub fn wake_secondary_cores() {
-    let core_count = crate::boot_info::BASIC_INFO
+    let core_count = boot_info::BASIC_INFO
         .get()
         .map(|info| info.core_count)
         .unwrap_or(1);
@@ -58,7 +58,7 @@ pub fn wake_secondary_cores() {
         return;
     }
 
-    let my_hart = crate::per_cpu::current_core_id();
+    let my_hart = per_cpu::current_core_id();
 
     // SAFETY: _boot 由链接器定义，地址在内核镜像生命周期内有效
     // 先转为函数指针类型再转为 usize（Rust 2024 不允许函数 item 直接转 usize）

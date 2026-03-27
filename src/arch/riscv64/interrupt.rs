@@ -1,8 +1,8 @@
 /// RISC-V 64 中断子系统
 ///
 /// 负责 PLIC 初始化、stvec 设置，以及陷阱分发（定时器、外部中断、IPI、系统调用、异常）。
-use crate::memory::address::PhysAddr;
-use crate::memory::mmio::MmioRegion;
+use memory::address::PhysAddr;
+use memory::mmio::MmioRegion;
 
 use super::context::TrapContext;
 
@@ -55,7 +55,7 @@ const PLIC_CONTEXT_STRIDE: usize = 0x1000;
 fn plic_init() {
     // Step 0: 从 FDT 读取 PLIC 基地址（FDT 是唯一来源）
     let base = {
-        let info = crate::boot_info::BASIC_INFO
+        let info = boot_info::BASIC_INFO
             .get()
             .expect("plic_init: BASIC_INFO 未初始化");
         let fdt =

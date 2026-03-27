@@ -238,7 +238,7 @@ mod pte_encoding {
     }
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 mod inner {
     use super::{PageFlags, PageTableEntry};
     use crate::address::{PhysAddr, VirtAddr};
@@ -387,7 +387,7 @@ mod inner {
     }
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub use inner::PageTable;
 
 /// 测试用页表实现——使用堆分配模拟物理帧，可在宿主机上测试 walk/map/unmap 逻辑。

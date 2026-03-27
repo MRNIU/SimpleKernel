@@ -5,7 +5,7 @@
 /// 以 `config::TIMER_FREQ_HZ` 为目标 tick 频率计算触发间隔。
 use core::sync::atomic::{AtomicU64, Ordering};
 
-use crate::config::TIMER_FREQ_HZ;
+use config::TIMER_FREQ_HZ;
 
 /// 硬件定时器频率（Hz）——init 时从 BASIC_INFO 读取并缓存
 static HW_FREQ: AtomicU64 = AtomicU64::new(0);
@@ -40,7 +40,7 @@ fn get_interval() -> u64 {
 ///
 /// 从 BASIC_INFO 读取硬件频率，计算 tick 间隔，设置首个超时。
 pub fn init() {
-    let info = crate::boot_info::BASIC_INFO
+    let info = boot_info::BASIC_INFO
         .get()
         .expect("TimerInit: BASIC_INFO 未初始化");
     let freq = info.timer_freq;
@@ -92,7 +92,7 @@ pub fn handle_timer() {
 
     // 更新 per-CPU 抢占状态
     // SAFETY: 在中断处理程序中调用，此时中断已被 CPU 自动关闭（sstatus.SIE=0）
-    let per_cpu = unsafe { crate::per_cpu::current_per_cpu() };
+    let per_cpu = unsafe { per_cpu::current_per_cpu() };
     per_cpu.preempt.enter_hardirq();
 
     // 通过 arch-traits 回调调用 task::timer_tick()（打破 arch→task 依赖）
@@ -103,8 +103,5 @@ pub fn handle_timer() {
     // 通知 idle loop 检查调度（唤醒到期睡眠任务等）
     per_cpu.preempt.need_resched.store(true, Ordering::Release);
 
-    if tick % (TIMER_FREQ_HZ / 10) == 0 {
-        let core_id = crate::per_cpu::current_core_id();
-        log::info!("Tick #{} (core {})", tick, core_id);
-    }
+    log::info!("Tick #{} (core {})", tick, per_cpu::current_core_id());
 }

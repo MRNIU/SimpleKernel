@@ -1,7 +1,7 @@
 use core::fmt::Write;
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
-use crate::sync::SpinLock;
+use sync::SpinLock;
 
 const ANSI_RESET: &str = "\x1b[0m";
 const ANSI_RED: &str = "\x1b[31m";
@@ -62,7 +62,7 @@ impl log::Log for KernelLogger {
         }
 
         let seq = LOG_SEQ.fetch_add(1, Ordering::Relaxed);
-        let core_id = crate::per_cpu::current_core_id();
+        let core_id = per_cpu::current_core_id();
         let level = record.level();
 
         let mut buf = FmtBuf::new();
@@ -96,7 +96,7 @@ pub fn init() {
         return;
     }
     if log::set_logger(&LOGGER).is_ok() {
-        log::set_max_level(crate::config::DEFAULT_LOG_LEVEL);
+        log::set_max_level(config::DEFAULT_LOG_LEVEL);
     }
 }
 

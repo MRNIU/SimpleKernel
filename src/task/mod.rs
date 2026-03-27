@@ -21,8 +21,6 @@ pub use sched::{current_task, release_sched_lock, schedule, timer_tick, yield_no
 mod api {
     use alloc::sync::Arc;
 
-    use crate::error::{ErrorCode, KResult};
-    use crate::per_cpu;
     use crate::task::resource_id::ResourceId;
     use crate::task::sched::{
         PER_CPU_SCHED, PER_CPU_SCHED_LOCK, PerCpuSched, per_cpu_sched, schedule,
@@ -33,6 +31,7 @@ mod api {
     use crate::task::state::TaskState;
     use crate::task::task_table::{TASK_TABLE, TaskTable};
     use crate::task::tcb::{Pid, TaskControlBlock, TaskRef};
+    use error::{ErrorCode, KResult};
 
     /// BSP 初始化。
     pub fn init() {

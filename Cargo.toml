@@ -50,13 +50,12 @@ build = "build.rs"                    # 编译汇编文件 (.S) 和链接脚本
 # --- 内部 crate ---
 error = { path = "crates/error" }
 config = { path = "crates/config" }
-compat = { path = "crates/compat" }
 address = { path = "crates/address" }
 arch-traits = { path = "crates/arch-traits" }
 per-cpu = { path = "crates/per-cpu" }
-sync_crate = { path = "crates/sync", package = "sync" }
+sync = { path = "crates/sync" }
 boot-info = { path = "crates/boot-info" }
-memory_crate = { path = "crates/memory", package = "memory" }
+memory = { path = "crates/memory" }
 
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中

@@ -1,6 +1,6 @@
 //! Round-Robin 调度器——时间片轮转。
 
-use crate::compat::VecDeque;
+use alloc::collections::VecDeque;
 
 use crate::task::scheduler::Scheduler;
 use crate::task::tcb::{TaskControlBlock, TaskRef};
@@ -74,7 +74,7 @@ impl Scheduler for RoundRobinScheduler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::compat::Arc;
+    use alloc::sync::Arc;
 
     fn make_task(pid: usize) -> TaskRef {
         Arc::new(TaskControlBlock::new_for_test(pid, "rr_test"))

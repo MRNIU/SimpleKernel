@@ -1,6 +1,6 @@
 //! CFS（完全公平调度器）——基于虚拟运行时间的公平调度。
 
-use crate::compat::Vec;
+use alloc::collections::VecDeque;
 
 use crate::task::scheduler::Scheduler;
 use crate::task::tcb::{TaskControlBlock, TaskRef};
@@ -21,7 +21,7 @@ struct CfsEntry {
 /// 简化实现：不区分权重/nice 值，所有任务权重相同。
 pub struct CfsScheduler {
     /// 就绪队列（按 vruntime 升序排列）
-    queue: Vec<CfsEntry>,
+    queue: VecDeque<CfsEntry>,
     /// 全局最小 vruntime（防止新任务饥饿）
     min_vruntime: i64,
     /// 当前运行任务的 vruntime（用于 task_tick 判断）
@@ -31,7 +31,7 @@ pub struct CfsScheduler {
 impl CfsScheduler {
     pub fn new() -> Self {
         Self {
-            queue: Vec::new(),
+            queue: VecDeque::new(),
             min_vruntime: 0,
             current_vruntime: 0,
         }
@@ -44,27 +44,32 @@ impl Default for CfsScheduler {
     }
 }
 
+impl CfsScheduler {
+    /// 按 vruntime 升序插入——同 vruntime 内保持 FIFO 顺序。
+    fn insert_sorted(&mut self, vruntime: i64, task: TaskRef) {
+        let pos = self
+            .queue
+            .iter()
+            .position(|e| e.vruntime > vruntime)
+            .unwrap_or(self.queue.len());
+        self.queue.insert(pos, CfsEntry { vruntime, task });
+    }
+}
+
 impl Scheduler for CfsScheduler {
     fn enqueue(&mut self, task: TaskRef) {
         // 新任务的 vruntime 设为当前 min_vruntime，避免饥饿也避免不公平抢占
-        let vruntime = self.min_vruntime;
-        // partition_point 返回第一个 > vruntime 的位置，保证同 vruntime 内 FIFO 顺序
-        let pos = self.queue.partition_point(|e| e.vruntime <= vruntime);
-        self.queue.insert(pos, CfsEntry { vruntime, task });
+        self.insert_sorted(self.min_vruntime, task);
     }
 
     fn put_prev(&mut self, task: TaskRef) {
         // 保留运行期间累积的 vruntime（至少为 min_vruntime，防止倒退）
         let vruntime = self.current_vruntime.max(self.min_vruntime);
-        let pos = self.queue.partition_point(|e| e.vruntime <= vruntime);
-        self.queue.insert(pos, CfsEntry { vruntime, task });
+        self.insert_sorted(vruntime, task);
     }
 
     fn pick_next(&mut self) -> Option<TaskRef> {
-        if self.queue.is_empty() {
-            return None;
-        }
-        let entry = self.queue.remove(0);
+        let entry = self.queue.pop_front()?;
         self.current_vruntime = entry.vruntime;
         Some(entry.task)
     }
@@ -74,7 +79,7 @@ impl Scheduler for CfsScheduler {
         self.current_vruntime += 1;
 
         // 更新全局 min_vruntime
-        if let Some(front) = self.queue.first() {
+        if let Some(front) = self.queue.front() {
             self.min_vruntime = front.vruntime;
             // 如果当前任务的 vruntime 超过队首，需要抢占
             self.current_vruntime > front.vruntime
@@ -89,7 +94,7 @@ impl Scheduler for CfsScheduler {
     }
 
     fn steal_one(&mut self) -> Option<TaskRef> {
-        self.queue.pop().map(|e| e.task)
+        self.queue.pop_back().map(|e| e.task)
     }
 
     fn is_empty(&self) -> bool {
@@ -100,7 +105,7 @@ impl Scheduler for CfsScheduler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::compat::Arc;
+    use alloc::sync::Arc;
 
     fn make_task(pid: usize) -> TaskRef {
         Arc::new(TaskControlBlock::new_for_test(pid, "cfs_test"))
