@@ -1,0 +1,9 @@
+[package]
+name = "sync"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+arch-traits = { path = "../arch-traits" }
+per-cpu = { path = "../per-cpu" }
+spin = { version = "0.9", default-features = false, features = ["spin_mutex"] }

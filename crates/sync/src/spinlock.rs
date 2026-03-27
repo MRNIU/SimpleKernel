@@ -2,9 +2,8 @@ use core::mem::ManuallyDrop;
 use core::ops::{Deref, DerefMut};
 use core::sync::atomic::{AtomicUsize, Ordering};
 
-use crate::per_cpu;
 #[cfg(not(test))]
-use crate::sync::lock_stack::LockStackEntry;
+use per_cpu::lock_stack::LockStackEntry;
 
 /// 用于强制获取顺序的锁级别常量。
 ///
@@ -17,7 +16,7 @@ pub mod lock_level {
     pub const UNCLASSIFIED: u8 = 0xFF;
 }
 
-use super::interrupt_ops::{self, HeldInterrupts};
+use crate::interrupt_ops::HeldInterrupts;
 
 const NO_OWNER: usize = usize::MAX;
 
@@ -124,7 +123,7 @@ impl<T> SpinLock<T> {
     /// 2. `unlock_raw()` 在正确的核心上调用（可以是不同任务上下文，
     ///    但必须是同一物理核心）
     pub unsafe fn lock_raw(&self) {
-        interrupt_ops::disable();
+        crate::interrupt_ops::disable();
 
         if self.owner_core.load(Ordering::Relaxed) == per_cpu::current_core_id() {
             Self::fatal(self.name, "recursive lock (raw)");
@@ -149,7 +148,7 @@ impl<T> SpinLock<T> {
         unsafe { self.inner.force_unlock() };
 
         // SAFETY: 恢复 lock_raw 前的中断状态
-        unsafe { interrupt_ops::enable() };
+        unsafe { crate::interrupt_ops::enable() };
     }
 
     /// 尝试获取裸锁（不操作中断、不检查锁级别、不压栈）——
@@ -209,10 +208,7 @@ impl<T> SpinLock<T> {
     #[cold]
     #[inline(never)]
     fn fatal(name: &str, reason: &str) -> ! {
-        crate::logging::raw_put("FATAL: SpinLock '");
-        crate::logging::raw_put(name);
-        crate::logging::raw_put("': ");
-        crate::util::halt::halt(reason);
+        panic!("FATAL: SpinLock '{}': {}", name, reason);
     }
 
     #[cfg(not(test))]
@@ -234,7 +230,7 @@ impl<T> SpinLock<T> {
     fn push_lock_stack(&self) {
         // SAFETY: 中断已禁用
         let stack = &mut unsafe { per_cpu::current_per_cpu() }.lock_stack;
-        if stack.depth >= crate::sync::lock_stack::LockStack::MAX_DEPTH {
+        if stack.depth >= per_cpu::lock_stack::LockStack::MAX_DEPTH {
             panic!(
                 "SpinLock '{}': lock stack overflow (depth={})",
                 self.name, stack.depth

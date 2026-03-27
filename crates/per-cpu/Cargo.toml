@@ -1,0 +1,8 @@
+[package]
+name = "per-cpu"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+arch-traits = { path = "../arch-traits" }
+config = { path = "../config" }

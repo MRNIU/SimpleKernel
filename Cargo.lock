@@ -73,6 +73,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
 
 [[package]]
+name = "boot-info"
+version = "0.1.0"
+dependencies = [
+ "address",
+ "spin",
+]
+
+[[package]]
 name = "buddy_system_allocator"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -237,6 +245,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
+name = "per-cpu"
+version = "0.1.0"
+dependencies = [
+ "arch-traits",
+ "config",
+]
+
+[[package]]
 name = "proc-macro-error"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -366,6 +382,7 @@ dependencies = [
  "arm-gic",
  "arm-psci",
  "bitflags 2.11.0",
+ "boot-info",
  "buddy_system_allocator",
  "cc",
  "compat",
@@ -374,10 +391,12 @@ dependencies = [
  "error",
  "fdt",
  "log",
+ "per-cpu",
  "riscv",
  "rustc-demangle",
  "sbi-rt",
  "spin",
+ "sync",
  "tock-registers 0.9.0",
  "unwinding",
 ]
@@ -411,6 +430,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "sync"
+version = "0.1.0"
+dependencies = [
+ "arch-traits",
+ "per-cpu",
+ "spin",
 ]
 
 [[package]]

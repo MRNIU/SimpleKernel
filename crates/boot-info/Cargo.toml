@@ -1,0 +1,8 @@
+[package]
+name = "boot-info"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+address = { path = "../address" }
+spin = { version = "0.9", default-features = false, features = ["once"] }
