@@ -118,6 +118,13 @@ cargo fmt --check && cargo clippy -- -D warnings
 cargo doc --no-deps
 ```
 
+## DESIGN REFERENCES
+设计和实现新模块时，应参考以下成熟内核的对应实现，取其精华：
+- **Linux** — 工业级参考，尤其是调度器（CFS）、VFS、内存管理（`vm_area_struct`）、信号处理
+- **Zephyr** — 嵌入式/RTOS 视角，轻量级线程模型、设备驱动框架（device model + devicetree）、电源管理
+- **Theseus** — Rust 类型系统深度利用，`MappedPages` RAII 映射管理、crate 级模块化、`DeadlockPrevention` trait 参数化同步原语
+- **Redox** — Rust 微内核实践，scheme-based VFS、用户态驱动、`syscall` crate 设计、reliability crate 拆分
+
 ## NOTES
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)

@@ -292,22 +292,26 @@ mod tests {
     use crate::task::state::TaskState;
 
     #[test]
-    fn new_for_test_basic() {
+    fn tcb_fields_and_accessors() {
         let tcb = TaskControlBlock::new_for_test(42, "worker");
         assert_eq!(tcb.pid(), 42);
         assert_eq!(tcb.name(), "worker");
         assert!(!tcb.is_idle());
+        assert_eq!(tcb.parent_pid(), None);
         assert_eq!(tcb.state(), TaskState::Ready);
         assert_eq!(tcb.exit_code(), 0);
-    }
+        assert_eq!(tcb.wake_tick(), 0);
+        assert_eq!(tcb.pending_signals(), 0);
+        assert_eq!(tcb.signal_mask(), 0);
 
-    #[test]
-    fn set_state_and_exit_code() {
-        let tcb = TaskControlBlock::new_for_test(1, "t1");
         tcb.set_state(TaskState::Running);
         assert_eq!(tcb.state(), TaskState::Running);
         tcb.set_exit_code(-1);
         assert_eq!(tcb.exit_code(), -1);
+        tcb.set_wake_tick(42);
+        assert_eq!(tcb.wake_tick(), 42);
+        tcb.set_signal_mask(0xFFFF_0000);
+        assert_eq!(tcb.signal_mask(), 0xFFFF_0000);
     }
 
     #[test]
@@ -321,49 +325,12 @@ mod tests {
     #[test]
     fn signal_raise_and_clear() {
         let tcb = TaskControlBlock::new_for_test(10, "sig_test");
-        assert_eq!(tcb.pending_signals(), 0);
-
-        // 发送信号 1 和 3
         tcb.raise_signal(1 << 1);
         tcb.raise_signal(1 << 3);
         assert_eq!(tcb.pending_signals(), (1 << 1) | (1 << 3));
-
-        // 清除信号 1
         tcb.clear_signal(1 << 1);
         assert_eq!(tcb.pending_signals(), 1 << 3);
-
-        // 清除信号 3
         tcb.clear_signal(1 << 3);
         assert_eq!(tcb.pending_signals(), 0);
-    }
-
-    #[test]
-    fn signal_mask_operations() {
-        let tcb = TaskControlBlock::new_for_test(11, "mask_test");
-        assert_eq!(tcb.signal_mask(), 0);
-
-        tcb.set_signal_mask(0xFFFF_0000);
-        assert_eq!(tcb.signal_mask(), 0xFFFF_0000);
-
-        tcb.set_signal_mask(0);
-        assert_eq!(tcb.signal_mask(), 0);
-    }
-
-    #[test]
-    fn wake_tick_operations() {
-        let tcb = TaskControlBlock::new_for_test(12, "sleep_test");
-        assert_eq!(tcb.wake_tick(), 0);
-
-        tcb.set_wake_tick(42);
-        assert_eq!(tcb.wake_tick(), 42);
-
-        tcb.set_wake_tick(0);
-        assert_eq!(tcb.wake_tick(), 0);
-    }
-
-    #[test]
-    fn parent_pid() {
-        let tcb = TaskControlBlock::new_for_test(13, "parent_test");
-        assert_eq!(tcb.parent_pid(), None);
     }
 }

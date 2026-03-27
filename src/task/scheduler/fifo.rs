@@ -3,7 +3,7 @@
 use alloc::collections::VecDeque;
 
 use crate::task::scheduler::Scheduler;
-use crate::task::tcb::{TaskControlBlock, TaskRef};
+use crate::task::tcb::TaskRef;
 
 /// FIFO 调度器
 ///
@@ -55,6 +55,7 @@ impl Scheduler for FifoScheduler {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::task::tcb::TaskControlBlock;
     use alloc::sync::Arc;
 
     fn make_task(pid: usize) -> TaskRef {

@@ -135,10 +135,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "compat"
-version = "0.1.0"
-
-[[package]]
 name = "config"
 version = "0.1.0"
 dependencies = [
@@ -216,7 +212,6 @@ dependencies = [
  "boot-info",
  "buddy_system_allocator",
  "config",
- "error",
  "log",
  "per-cpu",
  "spin",

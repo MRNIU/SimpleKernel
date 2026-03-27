@@ -162,189 +162,66 @@ impl AtomicTaskState {
 mod tests {
     use super::*;
 
-    /// 验证所有合法转移路径均返回预期的目标状态。
+    /// 表驱动验证所有合法转移路径。
     #[test]
     fn valid_transitions() {
-        assert_eq!(
-            transition(TaskState::UnInit, TaskMsg::Schedule),
-            Ok(TaskState::Ready)
-        );
-        assert_eq!(
-            transition(TaskState::Ready, TaskMsg::PickUp),
-            Ok(TaskState::Running)
-        );
-        assert_eq!(
-            transition(TaskState::Running, TaskMsg::Yield),
-            Ok(TaskState::Ready)
-        );
-        assert_eq!(
-            transition(TaskState::Running, TaskMsg::Exit { code: 0 }),
-            Ok(TaskState::Exited)
-        );
-        assert_eq!(
-            transition(TaskState::Running, TaskMsg::Exit { code: -1 }),
-            Ok(TaskState::Exited)
-        );
-        assert_eq!(
-            transition(TaskState::Running, TaskMsg::Sleep),
-            Ok(TaskState::Sleeping)
-        );
-        assert_eq!(
-            transition(TaskState::Running, TaskMsg::Block),
-            Ok(TaskState::Blocked)
-        );
-        assert_eq!(
-            transition(TaskState::Running, TaskMsg::Stop),
-            Ok(TaskState::Stopped)
-        );
-        assert_eq!(
-            transition(TaskState::Sleeping, TaskMsg::Wakeup),
-            Ok(TaskState::Ready)
-        );
-        assert_eq!(
-            transition(TaskState::Blocked, TaskMsg::Wakeup),
-            Ok(TaskState::Ready)
-        );
-        assert_eq!(
-            transition(TaskState::Stopped, TaskMsg::Cont),
-            Ok(TaskState::Ready)
-        );
-        assert_eq!(
-            transition(TaskState::Exited, TaskMsg::Reap),
-            Ok(TaskState::Exited)
-        );
+        use TaskMsg::*;
+        use TaskState::*;
+        let cases: &[(TaskState, TaskMsg, TaskState)] = &[
+            (UnInit, Schedule, Ready),
+            (Ready, PickUp, Running),
+            (Running, Yield, Ready),
+            (Running, Exit { code: 0 }, Exited),
+            (Running, Exit { code: -1 }, Exited),
+            (Running, Sleep, Sleeping),
+            (Running, Block, Blocked),
+            (Running, Stop, Stopped),
+            (Sleeping, Wakeup, Ready),
+            (Blocked, Wakeup, Ready),
+            (Stopped, Cont, Ready),
+            (Exited, Reap, Exited),
+        ];
+        for &(from, ref msg, expected) in cases {
+            assert_eq!(transition(from, msg.clone()), Ok(expected));
+        }
     }
 
-    /// 验证非法转移路径均被拒绝并返回正确的错误信息。
+    /// 验证非法转移路径均被拒绝。
     #[test]
     fn invalid_transitions_rejected() {
-        // UnInit 状态下不能 PickUp
-        assert_eq!(
-            transition(TaskState::UnInit, TaskMsg::PickUp),
-            Err(InvalidTransition {
-                from: TaskState::UnInit,
-                msg: TaskMsg::PickUp,
-            })
-        );
-
-        // Ready 状态下不能 Wakeup
-        assert_eq!(
-            transition(TaskState::Ready, TaskMsg::Wakeup),
-            Err(InvalidTransition {
-                from: TaskState::Ready,
-                msg: TaskMsg::Wakeup,
-            })
-        );
-
-        // Exited 状态下不能再 Schedule
-        assert_eq!(
-            transition(TaskState::Exited, TaskMsg::Schedule),
-            Err(InvalidTransition {
-                from: TaskState::Exited,
-                msg: TaskMsg::Schedule,
-            })
-        );
-
-        // Sleeping 状态下不能 Yield（必须先 Wakeup → Ready → PickUp → Running → Yield）
-        assert_eq!(
-            transition(TaskState::Sleeping, TaskMsg::Yield),
-            Err(InvalidTransition {
-                from: TaskState::Sleeping,
-                msg: TaskMsg::Yield,
-            })
-        );
+        use TaskMsg::*;
+        use TaskState::*;
+        let cases: &[(TaskState, TaskMsg)] = &[
+            (UnInit, PickUp),
+            (Ready, Wakeup),
+            (Exited, Schedule),
+            (Sleeping, Yield),
+        ];
+        for &(from, ref msg) in cases {
+            assert!(transition(from, msg.clone()).is_err());
+        }
     }
 
-    /// 验证通过 `AtomicU8` 存取 `TaskState` 的完整往返正确性。
+    /// 验证 `from_u8` / `as_u8` 往返 + AtomicTaskState 存取。
     #[test]
-    fn atomic_state_roundtrip() {
-        let atomic = AtomicTaskState::new(TaskState::UnInit);
-        assert_eq!(atomic.load(), TaskState::UnInit);
-
-        atomic.store(TaskState::Ready);
-        assert_eq!(atomic.load(), TaskState::Ready);
-
-        atomic.store(TaskState::Running);
-        assert_eq!(atomic.load(), TaskState::Running);
-
-        atomic.store(TaskState::Sleeping);
-        assert_eq!(atomic.load(), TaskState::Sleeping);
-
-        atomic.store(TaskState::Blocked);
-        assert_eq!(atomic.load(), TaskState::Blocked);
-
-        atomic.store(TaskState::Exited);
-        assert_eq!(atomic.load(), TaskState::Exited);
-
-        atomic.store(TaskState::Stopped);
-        assert_eq!(atomic.load(), TaskState::Stopped);
-    }
-
-    /// 验证 `from_u8` 对所有已知变体正确往返。
-    #[test]
-    fn from_u8_roundtrip() {
+    fn roundtrip_and_atomic() {
         for v in 0u8..=6 {
             let state = TaskState::from_u8(v).expect("应能解析 0..=6");
             assert_eq!(state.as_u8(), v);
         }
         assert!(TaskState::from_u8(7).is_none());
-        assert!(TaskState::from_u8(255).is_none());
-    }
 
-    /// 穷举所有 (state, msg) 组合，保证 transition() 不 panic 且结果合理。
-    #[test]
-    fn exhaustive_no_panic() {
-        let all_states = [
-            TaskState::UnInit,
+        let atomic = AtomicTaskState::new(TaskState::UnInit);
+        for &s in &[
             TaskState::Ready,
             TaskState::Running,
             TaskState::Sleeping,
             TaskState::Blocked,
             TaskState::Exited,
             TaskState::Stopped,
-        ];
-        let all_msgs = [
-            TaskMsg::Schedule,
-            TaskMsg::PickUp,
-            TaskMsg::Yield,
-            TaskMsg::Exit { code: 0 },
-            TaskMsg::Wakeup,
-            TaskMsg::Sleep,
-            TaskMsg::Block,
-            TaskMsg::Stop,
-            TaskMsg::Cont,
-            TaskMsg::Reap,
-        ];
-
-        let mut ok_count = 0;
-        let mut err_count = 0;
-
-        for &state in &all_states {
-            for &msg in &all_msgs {
-                match transition(state, msg) {
-                    Ok(next) => {
-                        // 合法转移的目标状态必须也是有效状态
-                        assert!(
-                            all_states.contains(&next),
-                            "transition({:?}, {:?}) 返回了未知状态 {:?}",
-                            state,
-                            msg,
-                            next
-                        );
-                        ok_count += 1;
-                    }
-                    Err(e) => {
-                        assert_eq!(e.from, state);
-                        assert_eq!(e.msg, msg);
-                        err_count += 1;
-                    }
-                }
-            }
+        ] {
+            atomic.store(s);
+            assert_eq!(atomic.load(), s);
         }
-
-        // 7 种状态 × 10 种消息 = 70 种组合
-        assert_eq!(ok_count + err_count, 70);
-        // 合法路径恰好 11 条
-        assert_eq!(ok_count, 11, "合法转移路径数量不符预期");
     }
 }

@@ -10,7 +10,6 @@ use crate::task::scheduler::Scheduler;
 use crate::task::signal::{SignalAction, SignalMask, first_deliverable};
 use crate::task::state::TaskState;
 use crate::task::tcb::{Pid, TaskRef};
-use error::ErrorCode;
 use sync::SpinLock;
 use sync::spinlock::lock_level;
 

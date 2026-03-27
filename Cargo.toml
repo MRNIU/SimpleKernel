@@ -13,7 +13,6 @@ members = [
     ".",
     "crates/error",
     "crates/config",
-    "crates/compat",
     "crates/address",
     "crates/arch-traits",
     "crates/per-cpu",

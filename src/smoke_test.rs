@@ -214,10 +214,10 @@ pub fn spawn_all() {
         TEST_THREAD_COUNT
     );
 
-    task::spawn_kernel_thread("counter_0", counter_thread, 0);
-    task::spawn_kernel_thread("counter_1", counter_thread, 1);
-    task::spawn_kernel_thread("counter_2", counter_thread, 2);
-    task::spawn_kernel_thread("counter_3", counter_thread, 3);
+    static NAMES: [&str; 4] = ["counter_0", "counter_1", "counter_2", "counter_3"];
+    for (i, name) in NAMES.iter().enumerate() {
+        task::spawn_kernel_thread(name, counter_thread, i);
+    }
     task::spawn_kernel_thread("verifier", verifier_thread, 0);
     task::spawn_kernel_thread("p5b_test", p5b_test_thread, 0);
 }

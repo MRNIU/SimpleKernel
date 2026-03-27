@@ -262,136 +262,47 @@ fn dispatch_sync(ctx: &mut TrapContext) {
     }
 }
 
-// Current EL with SP0
-
-#[unsafe(no_mangle)]
-pub extern "C" fn sync_current_el_sp0_handler(ctx: &mut TrapContext) {
-    log::warn!("sync_current_el_sp0: ESR=0x{:x}", ctx.esr_el1);
-    dispatch_sync(ctx);
+/// 生成 `#[unsafe(no_mangle)] pub extern "C" fn` 异常处理函数。
+macro_rules! exception_handler {
+    ($name:ident => sync) => {
+        #[unsafe(no_mangle)]
+        pub extern "C" fn $name(ctx: &mut TrapContext) {
+            dispatch_sync(ctx);
+        }
+    };
+    ($name:ident => irq) => {
+        #[unsafe(no_mangle)]
+        pub extern "C" fn $name(ctx: &mut TrapContext) {
+            dispatch_irq(ctx);
+        }
+    };
+    ($name:ident => fatal) => {
+        #[unsafe(no_mangle)]
+        pub extern "C" fn $name(ctx: &mut TrapContext) {
+            log::error!(
+                "{}: ESR=0x{:x}, ELR=0x{:x}",
+                stringify!($name),
+                ctx.esr_el1,
+                ctx.elr_el1
+            );
+            crate::util::halt::halt("致命异常，内核停止");
+        }
+    };
 }
 
-#[unsafe(no_mangle)]
-pub extern "C" fn irq_current_el_sp0_handler(ctx: &mut TrapContext) {
-    dispatch_irq(ctx);
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn fiq_current_el_sp0_handler(ctx: &mut TrapContext) {
-    log::error!(
-        "fiq_current_el_sp0: ESR=0x{:x}, ELR=0x{:x}",
-        ctx.esr_el1,
-        ctx.elr_el1
-    );
-    crate::util::halt::halt("致命异常，内核停止");
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn error_current_el_sp0_handler(ctx: &mut TrapContext) {
-    log::error!(
-        "error_current_el_sp0: ESR=0x{:x}, ELR=0x{:x}",
-        ctx.esr_el1,
-        ctx.elr_el1
-    );
-    crate::util::halt::halt("致命异常，内核停止");
-}
-
-// Current EL with SPx
-
-#[unsafe(no_mangle)]
-pub extern "C" fn sync_current_el_spx_handler(ctx: &mut TrapContext) {
-    dispatch_sync(ctx);
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn irq_current_el_spx_handler(ctx: &mut TrapContext) {
-    dispatch_irq(ctx);
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn fiq_current_el_spx_handler(ctx: &mut TrapContext) {
-    log::error!(
-        "fiq_current_el_spx: ESR=0x{:x}, ELR=0x{:x}",
-        ctx.esr_el1,
-        ctx.elr_el1
-    );
-    crate::util::halt::halt("致命异常，内核停止");
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn error_current_el_spx_handler(ctx: &mut TrapContext) {
-    log::error!(
-        "error_current_el_spx: ESR=0x{:x}, ELR=0x{:x}",
-        ctx.esr_el1,
-        ctx.elr_el1
-    );
-    crate::util::halt::halt("致命异常，内核停止");
-}
-
-// Lower EL AArch64
-
-#[unsafe(no_mangle)]
-pub extern "C" fn sync_lower_el_aarch64_handler(ctx: &mut TrapContext) {
-    dispatch_sync(ctx);
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn irq_lower_el_aarch64_handler(ctx: &mut TrapContext) {
-    dispatch_irq(ctx);
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn fiq_lower_el_aarch64_handler(ctx: &mut TrapContext) {
-    log::error!(
-        "fiq_lower_el_aarch64: ESR=0x{:x}, ELR=0x{:x}",
-        ctx.esr_el1,
-        ctx.elr_el1
-    );
-    crate::util::halt::halt("致命异常，内核停止");
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn error_lower_el_aarch64_handler(ctx: &mut TrapContext) {
-    log::error!(
-        "error_lower_el_aarch64: ESR=0x{:x}, ELR=0x{:x}",
-        ctx.esr_el1,
-        ctx.elr_el1
-    );
-    crate::util::halt::halt("致命异常，内核停止");
-}
-
-// Lower EL AArch32
-
-#[unsafe(no_mangle)]
-pub extern "C" fn sync_lower_el_aarch32_handler(ctx: &mut TrapContext) {
-    log::error!(
-        "sync_lower_el_aarch32: ESR=0x{:x}, ELR=0x{:x}",
-        ctx.esr_el1,
-        ctx.elr_el1
-    );
-    crate::util::halt::halt("致命异常，内核停止");
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn irq_lower_el_aarch32_handler(ctx: &mut TrapContext) {
-    dispatch_irq(ctx);
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn fiq_lower_el_aarch32_handler(ctx: &mut TrapContext) {
-    log::error!(
-        "fiq_lower_el_aarch32: ESR=0x{:x}, ELR=0x{:x}",
-        ctx.esr_el1,
-        ctx.elr_el1
-    );
-    crate::util::halt::halt("致命异常，内核停止");
-}
-
-#[unsafe(no_mangle)]
-pub extern "C" fn error_lower_el_aarch32_handler(ctx: &mut TrapContext) {
-    log::error!(
-        "error_lower_el_aarch32: ESR=0x{:x}, ELR=0x{:x}",
-        ctx.esr_el1,
-        ctx.elr_el1
-    );
-    crate::util::halt::halt("致命异常，内核停止");
-}
+exception_handler!(sync_current_el_sp0_handler      => sync);
+exception_handler!(irq_current_el_sp0_handler       => irq);
+exception_handler!(fiq_current_el_sp0_handler       => fatal);
+exception_handler!(error_current_el_sp0_handler     => fatal);
+exception_handler!(sync_current_el_spx_handler      => sync);
+exception_handler!(irq_current_el_spx_handler       => irq);
+exception_handler!(fiq_current_el_spx_handler       => fatal);
+exception_handler!(error_current_el_spx_handler     => fatal);
+exception_handler!(sync_lower_el_aarch64_handler    => sync);
+exception_handler!(irq_lower_el_aarch64_handler     => irq);
+exception_handler!(fiq_lower_el_aarch64_handler     => fatal);
+exception_handler!(error_lower_el_aarch64_handler   => fatal);
+exception_handler!(sync_lower_el_aarch32_handler    => fatal);
+exception_handler!(irq_lower_el_aarch32_handler     => irq);
+exception_handler!(fiq_lower_el_aarch32_handler     => fatal);
+exception_handler!(error_lower_el_aarch32_handler   => fatal);

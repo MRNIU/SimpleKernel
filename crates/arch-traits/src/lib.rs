@@ -39,7 +39,7 @@ pub fn core_id() -> usize {
     #[cfg(not(target_os = "none"))]
     {
         // 宿主机——为每个线程分配唯一 core_id（支持 SpinLock 多线程测试）
-        use core::sync::atomic::{AtomicUsize, Ordering};
+        use core::sync::atomic::AtomicUsize;
         static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
         #[cfg(test)]
