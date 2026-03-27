@@ -131,6 +131,24 @@ pub fn flush_tlb() {
     // 宿主机: no-op
 }
 
+// ─── CalleeSavedContext 占位——宿主机编译用 ───────────────────────────
+
+/// 被调用者保存上下文——宿主机编译占位类型。
+///
+/// 裸机（target_os = "none"）时由 arch crate 提供真实的寄存器布局；
+/// 此占位仅供 task crate 在宿主机测试/clippy 中通过类型检查。
+#[cfg(not(target_os = "none"))]
+#[repr(C)]
+#[derive(Debug, Default, Clone)]
+pub struct CalleeSavedContext {
+    _placeholder: u64,
+}
+
+#[cfg(not(target_os = "none"))]
+impl CalleeSavedContext {
+    pub fn init_for_kernel_thread(&mut self, _kstack_top: usize, _entry: fn(usize), _arg: usize) {}
+}
+
 // ─── Tick 函数指针——由 arch timer 模块注册 ──────────────────────────
 
 use core::sync::atomic::{AtomicU64, Ordering};
