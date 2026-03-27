@@ -1,5 +1,7 @@
 pub mod address;
 #[cfg(not(test))]
+pub mod mapped_pages;
+#[cfg(not(test))]
 pub mod mmio;
 pub mod page_table;
 
@@ -141,6 +143,12 @@ pub fn init_smp() {
         "MemoryInitSMP: paging enabled on core {}",
         crate::per_cpu::current_core_id()
     );
+}
+
+/// 获取全局内核页表引用（供 `MappedPages::Drop` 等模块使用）。
+#[cfg(not(test))]
+pub(crate) fn kernel_page_table() -> Option<&'static SpinLock<PageTable>> {
+    KERNEL_PAGE_TABLE.get()
 }
 
 /// 映射 MMIO 区域，返回虚拟地址（当前为 identity mapping：VA == PA）。
