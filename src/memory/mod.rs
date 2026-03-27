@@ -163,6 +163,6 @@ pub fn map_mmio(paddr: PhysAddr, size: usize) -> crate::error::KResult<VirtAddr>
     let mut guard = kpt.lock();
     identity_map_range(&mut *guard, paddr, paddr + size, PageFlags::kernel_rw())?;
     // 添加新映射后刷新 TLB，确保后续访问命中新条目
-    crate::arch::Arch::flush_tlb();
+    arch_traits::flush_tlb();
     Ok(VirtAddr::new(paddr.as_usize()))
 }

@@ -19,6 +19,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "arch-traits"
+version = "0.1.0"
+dependencies = [
+ "riscv",
+]
+
+[[package]]
 name = "arm-gic"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -355,6 +362,7 @@ version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
  "address",
+ "arch-traits",
  "arm-gic",
  "arm-psci",
  "bitflags 2.11.0",

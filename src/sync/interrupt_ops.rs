@@ -9,29 +9,18 @@
 ///   借鉴 Theseus OS 的 intralingual 设计哲学：
 ///   将「中断已关闭」这一运行时不变量编码为编译期类型约束。
 
-#[cfg(not(test))]
-use crate::arch::ArchOps;
-
-// ─── 底层操作（模块内部使用） ────────────────────────────────────────
+// ─── 底层操作——委托给 arch-traits crate ─────────────────────────────
 
 /// 查询当前中断是否启用
 #[inline(always)]
 pub fn get_status() -> bool {
-    #[cfg(not(test))]
-    {
-        crate::arch::Arch::irq_enabled()
-    }
-    #[cfg(test)]
-    {
-        false
-    }
+    arch_traits::irq_enabled()
 }
 
 /// 禁用中断
 #[inline(always)]
 pub fn disable() {
-    #[cfg(not(test))]
-    crate::arch::Arch::irq_disable();
+    arch_traits::irq_disable();
 }
 
 /// 启用中断
@@ -40,11 +29,8 @@ pub fn disable() {
 /// 调用方必须确保在启用中断后不会破坏当前临界区的不变量。
 #[inline(always)]
 pub unsafe fn enable() {
-    #[cfg(not(test))]
     // SAFETY: 由调用方保证安全性
-    unsafe {
-        crate::arch::Arch::irq_enable()
-    };
+    unsafe { arch_traits::irq_enable() };
 }
 
 // ─── HeldInterrupts 证明令牌 ─────────────────────────────────────────

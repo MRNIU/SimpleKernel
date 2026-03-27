@@ -31,8 +31,6 @@
 use alloc::vec::Vec;
 
 #[cfg(not(test))]
-use crate::arch::ArchOps;
-#[cfg(not(test))]
 use crate::config::PAGE_SIZE;
 #[cfg(not(test))]
 use crate::error::KResult;
@@ -220,7 +218,7 @@ impl Drop for MappedPages {
                 let va = self.vaddr + i * PAGE_SIZE;
                 let _ = guard.unmap_page(va);
             }
-            crate::arch::Arch::flush_tlb();
+            arch_traits::flush_tlb();
         }
         // frames 在此处 drop，物理帧归还分配器
     }

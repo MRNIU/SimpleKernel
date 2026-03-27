@@ -15,6 +15,7 @@ members = [
     "crates/config",
     "crates/compat",
     "crates/address",
+    "crates/arch-traits",
     "xtask",
 ]
 default-members = ["."]
@@ -47,6 +48,7 @@ error = { path = "crates/error" }
 config = { path = "crates/config" }
 compat = { path = "crates/compat" }
 address = { path = "crates/address" }
+arch-traits = { path = "crates/arch-traits" }
 
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中

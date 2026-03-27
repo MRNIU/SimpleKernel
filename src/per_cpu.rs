@@ -1,5 +1,3 @@
-#[cfg(not(test))]
-use crate::arch::ArchOps;
 use crate::config;
 use crate::sync::lock_stack::LockStack;
 use core::cell::SyncUnsafeCell;
@@ -126,25 +124,10 @@ pub fn check_and_clear_need_resched() -> bool {
         .swap(false, core::sync::atomic::Ordering::Acquire)
 }
 
+/// 读取当前核心 ID——委托给 `arch-traits` crate。
+#[inline]
 pub fn current_core_id() -> usize {
-    #[cfg(not(test))]
-    {
-        crate::arch::Arch::core_id()
-    }
-    #[cfg(test)]
-    {
-        // 宿主机单元测试——为每个线程分配唯一 ID，
-        // 避免多线程 SpinLock 测试因共享 core_id 触发误报的递归锁检测。
-        use std::cell::Cell;
-        thread_local! {
-            static TEST_CORE_ID: Cell<usize> = {
-                static COUNTER: core::sync::atomic::AtomicUsize =
-                    core::sync::atomic::AtomicUsize::new(0);
-                Cell::new(COUNTER.fetch_add(1, core::sync::atomic::Ordering::Relaxed))
-            };
-        }
-        TEST_CORE_ID.with(|id| id.get())
-    }
+    arch_traits::core_id()
 }
 
 /// 返回当前核心的 `PerCpu` 数据的可变引用。
@@ -156,7 +139,7 @@ pub unsafe fn current_per_cpu() -> &'static mut PerCpu {
     // debug 模式下验证中断已关闭，防止误用
     #[cfg(all(debug_assertions, not(test)))]
     debug_assert!(
-        !crate::arch::Arch::irq_enabled(),
+        !arch_traits::irq_enabled(),
         "current_per_cpu() 必须在中断关闭时调用"
     );
 
