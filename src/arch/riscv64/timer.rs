@@ -7,15 +7,12 @@ use core::sync::atomic::{AtomicU64, Ordering};
 
 use crate::config::TIMER_FREQ_HZ;
 
-/// 全局 tick 计数器
-static TICK_COUNT: AtomicU64 = AtomicU64::new(0);
-
 /// 硬件定时器频率（Hz）——init 时从 BASIC_INFO 读取并缓存
 static HW_FREQ: AtomicU64 = AtomicU64::new(0);
 
-/// 读取当前 tick 计数（Acquire 语序，确保看到最新值）
+/// 读取当前 tick 计数——委托给 arch-traits 全局计数器
 pub fn get_current_tick() -> u64 {
-    TICK_COUNT.load(Ordering::Acquire)
+    arch_traits::get_current_tick()
 }
 
 /// 返回每秒 tick 数
@@ -77,8 +74,6 @@ pub fn init_smp(hart_id: usize) {
 /// 处理定时器中断
 ///
 /// 递增 tick 计数，重新设置下一次超时。
-///
-/// 由 `interrupt.rs` 的 `HandleTrap` 在检测到定时器中断（scause=0x8000_0000_0000_0005）时调用。
 pub fn handle_timer() {
     let interval = get_interval();
     // 防御性检查：HW_FREQ 未初始化时 interval == 0，
@@ -88,9 +83,8 @@ pub fn handle_timer() {
         return;
     }
 
-    // 递增 tick 计数
-    // 使用 Release 语序：确保 tick 更新对其他核心（通过 Acquire 读取）可见
-    let tick = TICK_COUNT.fetch_add(1, Ordering::Release) + 1;
+    // 递增全局 tick 计数（arch-traits 管理）
+    let tick = arch_traits::tick_advance();
 
     // 重新设置下一次超时
     let next = read_time() + interval;
@@ -101,9 +95,8 @@ pub fn handle_timer() {
     let per_cpu = unsafe { crate::per_cpu::current_per_cpu() };
     per_cpu.preempt.enter_hardirq();
 
-    // 推进调度器内部记账（RR 时间片 / CFS vruntime），
-    // 由调度策略决定是否需要抢占
-    crate::task::timer_tick();
+    // 通过 arch-traits 回调调用 task::timer_tick()（打破 arch→task 依赖）
+    arch_traits::call_timer_tick();
 
     per_cpu.preempt.exit_hardirq();
 

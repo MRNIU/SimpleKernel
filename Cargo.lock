@@ -22,6 +22,7 @@ dependencies = [
 name = "arch-traits"
 version = "0.1.0"
 dependencies = [
+ "config",
  "riscv",
 ]
 

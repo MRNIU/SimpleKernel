@@ -3,7 +3,7 @@
 use alloc::sync::Arc;
 use core::cell::SyncUnsafeCell;
 
-use crate::arch::{ArchOps, CalleeSavedContext};
+use crate::arch::CalleeSavedContext;
 use crate::config::MAX_CORE_COUNT;
 use crate::per_cpu;
 use crate::sync::SpinLock;

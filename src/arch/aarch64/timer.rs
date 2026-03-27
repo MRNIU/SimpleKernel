@@ -2,16 +2,13 @@
 ///
 /// 使用 AArch64 虚拟定时器（CNTV_*_EL0）实现周期性时钟中断。
 /// 目标 tick 频率：`config::TIMER_FREQ_HZ` Hz。
-use core::sync::atomic::{AtomicU64, Ordering};
+use core::sync::atomic::Ordering;
 
 use crate::config::TIMER_FREQ_HZ;
 
-/// 全局 tick 计数器
-static TICK_COUNT: AtomicU64 = AtomicU64::new(0);
-
-/// 读取当前 tick 计数（Acquire 语序，确保看到最新值）
+/// 读取当前 tick 计数——委托给 arch-traits 全局计数器
 pub fn get_current_tick() -> u64 {
-    TICK_COUNT.load(Ordering::Acquire)
+    arch_traits::get_current_tick()
 }
 
 /// 返回每秒 tick 数
@@ -58,9 +55,6 @@ pub fn init() {
 }
 
 /// 初始化从核虚拟定时器
-///
-/// # 参数
-/// - `cpu_id`：当前从核的 CPU ID
 pub fn init_smp(cpu_id: usize) {
     let interval = get_interval();
     // SAFETY: CNTV_TVAL_EL0 / CNTV_CTL_EL0 在 EL1 下可读写
@@ -76,14 +70,9 @@ pub fn init_smp(cpu_id: usize) {
 }
 
 /// 处理定时器中断（虚拟定时器 PPI IRQ 27）
-///
-/// 递增 tick 计数，重新加载 CNTV_TVAL_EL0。
-///
-/// # 参数
-/// - `_ctx`：陷阱上下文指针（当前未使用，为将来抢占调度预留）
 pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
-    // 使用 Release 语序：确保 tick 更新对其他核心可见
-    let tick = TICK_COUNT.fetch_add(1, Ordering::Release) + 1;
+    // 递增全局 tick 计数（arch-traits 管理）
+    let tick = arch_traits::tick_advance();
 
     // 重新加载定时器计数值
     let interval = get_interval();
@@ -100,9 +89,8 @@ pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
     let per_cpu = unsafe { crate::per_cpu::current_per_cpu() };
     per_cpu.preempt.enter_hardirq();
 
-    // 推进调度器内部记账（RR 时间片 / CFS vruntime），
-    // 由调度策略决定是否需要抢占
-    crate::task::timer_tick();
+    // 通过 arch-traits 回调调用 task::timer_tick()（打破 arch→task 依赖）
+    arch_traits::call_timer_tick();
 
     per_cpu.preempt.exit_hardirq();
 

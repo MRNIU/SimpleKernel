@@ -4,7 +4,6 @@ use alloc::collections::BTreeMap;
 use alloc::collections::VecDeque;
 use alloc::vec::Vec;
 
-use crate::arch::ArchOps;
 use crate::error::ErrorCode;
 use crate::sync::SpinLock;
 use crate::sync::spinlock::lock_level;
@@ -60,7 +59,7 @@ impl TaskTable {
 
     /// 唤醒到期的睡眠任务。
     pub(super) fn wake_expired_sleepers(&mut self, sched: &mut PerCpuSched) {
-        let now = crate::arch::Arch::get_current_tick();
+        let now = arch_traits::get_current_tick();
         let mut i = 0;
         while i < self.sleep_queue.len() {
             let task = &self.sleep_queue[i];

@@ -4,6 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+config = { path = "../config" }
+
 # RISC-V CSR 访问（irq_enabled/disable/enable 使用 riscv crate 的 sstatus/interrupt 模块）
 [target.'cfg(target_arch = "riscv64")'.dependencies]
 riscv = { version = "0.16", features = ["s-mode"] }

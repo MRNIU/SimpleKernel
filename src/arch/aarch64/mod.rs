@@ -165,22 +165,4 @@ impl ArchOps for Aarch64 {
     }
 }
 
-/// 内核线程引导函数（供 switch.S 中 `kernel_thread_entry` 调用）
-///
-/// 新任务首次被 `switch_to` 调度运行时，从此函数开始执行。
-/// 负责释放调度锁、调用入口函数、最终退出任务。
-#[unsafe(no_mangle)]
-pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
-    // 释放 schedule() 中通过 lock_raw 获取的 sched_lock
-    // SAFETY: schedule() 在 switch_to 前获取了 sched_lock，
-    // 新任务首次运行时负责释放
-    unsafe { crate::task::release_sched_lock() };
-
-    // 调用入口函数
-    // SAFETY: entry 是由 new_kernel_thread 编码的合法 fn(usize) 指针
-    let entry_fn: fn(usize) = unsafe { core::mem::transmute(entry) };
-    entry_fn(arg);
-
-    // 入口函数返回 → 退出任务
-    crate::task::exit(0);
-}
+// kernel_thread_bootstrap 已迁移到 main.rs（打破 arch→task 循环依赖）

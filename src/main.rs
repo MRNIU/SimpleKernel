@@ -54,6 +54,24 @@ pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
 #[cfg(not(test))]
 use arch::{Arch, ArchOps};
 
+/// 内核线程引导函数（供 switch.S 中 `kernel_thread_entry` 调用）
+///
+/// 新任务首次被 `switch_to` 调度运行时，从此函数开始执行。
+/// 放在 kernel crate 中打破 arch→task 循环依赖。
+#[cfg(not(test))]
+#[unsafe(no_mangle)]
+pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
+    // 释放 schedule() 中通过 lock_raw 获取的 sched_lock
+    // SAFETY: schedule() 在 switch_to 前获取了 sched_lock，新任务首次运行时负责释放
+    unsafe { task::release_sched_lock() };
+
+    // SAFETY: entry 是由 new_kernel_thread 编码的合法 fn(usize) 指针
+    let entry_fn: fn(usize) = unsafe { core::mem::transmute(entry) };
+    entry_fn(arg);
+
+    task::exit(0);
+}
+
 /// 主核引导序列
 ///
 /// logging → DTB → FDT/BASIC_INFO → Phase2 → Memory → Phase3
@@ -80,6 +98,9 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 
     // P5: 任务初始化（必须在 wake_secondary_cores 之前）
     task::init();
+    // 注册 timer tick 回调——打破 arch→task 循环依赖
+    // SAFETY: task::timer_tick 在 task::init() 后有效且生命周期为整个内核
+    unsafe { arch_traits::register_timer_tick(task::timer_tick) };
 
     Arch::wake_secondary_cores();
     smoke_test::phase4();

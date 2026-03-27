@@ -131,6 +131,62 @@ pub fn flush_tlb() {
     // 宿主机: no-op
 }
 
+// ─── Tick 函数指针——由 arch timer 模块注册 ──────────────────────────
+
+use core::sync::atomic::{AtomicU64, Ordering};
+
+/// 全局 tick 计数器——由各架构 timer handler 递增。
+///
+/// 放在 arch-traits 中使 task 模块可以读取 tick 而不依赖 arch。
+static TICK_COUNT: AtomicU64 = AtomicU64::new(0);
+
+/// 递增 tick 计数器并返回新值——由 timer handler 调用。
+#[inline]
+pub fn tick_advance() -> u64 {
+    TICK_COUNT.fetch_add(1, Ordering::Release) + 1
+}
+
+/// 读取当前 tick 计数。
+#[inline]
+pub fn get_current_tick() -> u64 {
+    TICK_COUNT.load(Ordering::Acquire)
+}
+
+/// 返回每秒 tick 数——直接使用 config 常量，所有架构相同。
+#[inline]
+pub fn ticks_per_second() -> u64 {
+    config::TIMER_FREQ_HZ
+}
+
+// ─── 回调函数指针——由 kernel crate 注册 ─────────────────────────────
+
+use core::sync::atomic::AtomicPtr;
+
+/// timer_tick 回调——由 arch timer handler 调用。
+///
+/// 初始为空（裸机启动时 task 模块尚未初始化）。
+/// `task::init()` 后由 kernel 注册为 `task::timer_tick`。
+static TIMER_TICK_CB: AtomicPtr<()> = AtomicPtr::new(core::ptr::null_mut());
+
+/// 注册 timer tick 回调。
+///
+/// # Safety
+/// `cb` 必须是一个有效的 `fn()` 函数指针，且在注册后的整个内核生命周期内有效。
+pub unsafe fn register_timer_tick(cb: fn()) {
+    TIMER_TICK_CB.store(cb as *mut (), Ordering::Release);
+}
+
+/// 调用 timer tick 回调（如果已注册）。
+#[inline]
+pub fn call_timer_tick() {
+    let ptr = TIMER_TICK_CB.load(Ordering::Acquire);
+    if !ptr.is_null() {
+        // SAFETY: register_timer_tick 保证 ptr 是有效的 fn() 指针
+        let cb: fn() = unsafe { core::mem::transmute(ptr) };
+        cb();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

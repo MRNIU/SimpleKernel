@@ -21,7 +21,6 @@ pub use sched::{current_task, release_sched_lock, schedule, timer_tick, yield_no
 mod api {
     use alloc::sync::Arc;
 
-    use crate::arch::ArchOps;
     use crate::error::{ErrorCode, KResult};
     use crate::per_cpu;
     use crate::task::resource_id::ResourceId;
@@ -188,7 +187,7 @@ mod api {
     /// 否则另一核心的 `wake_expired_sleepers()` 可能在窗口期内遗漏该任务。
     pub fn sleep(ticks: u64) {
         let task = super::sched::current_task();
-        let now = crate::arch::Arch::get_current_tick();
+        let now = arch_traits::get_current_tick();
         task.set_wake_tick(now + ticks);
 
         {
@@ -202,7 +201,7 @@ mod api {
 
     /// 挂起当前任务指定毫秒数。
     pub fn sleep_ms(ms: u64) {
-        let tps = crate::arch::Arch::ticks_per_second();
+        let tps = arch_traits::ticks_per_second();
         let ticks = (ms * tps + 999) / 1000;
         sleep(ticks);
     }
