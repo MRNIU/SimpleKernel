@@ -75,13 +75,77 @@ mod api {
         log::info!("TaskInit: idle task created for core {}", core_id);
     }
 
+    // ─── TaskBuilder ────────────────────────────────────────────────────
+
+    /// 内核线程构建器——借鉴 Theseus OS 的 `TaskBuilder` 模式。
+    ///
+    /// 通过链式调用设置任务参数，最后调用 `spawn()` 创建任务。
+    /// 比直接函数调用更可扩展（新增参数无需改变现有调用点）。
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// let task = TaskBuilder::new(my_entry, 0)
+    ///     .name("worker")
+    ///     .parent(parent_pid)
+    ///     .spawn();
+    /// ```
+    pub struct TaskBuilder {
+        entry: fn(usize),
+        arg: usize,
+        name: &'static str,
+        parent_pid: Option<Pid>,
+    }
+
+    impl TaskBuilder {
+        /// 创建构建器，指定入口函数和参数。
+        #[must_use]
+        pub fn new(entry: fn(usize), arg: usize) -> Self {
+            Self {
+                entry,
+                arg,
+                name: "<unnamed>",
+                parent_pid: None,
+            }
+        }
+
+        /// 设置任务名称。
+        #[must_use]
+        pub fn name(mut self, name: &'static str) -> Self {
+            self.name = name;
+            self
+        }
+
+        /// 设置父任务 PID。
+        #[must_use]
+        pub fn parent(mut self, pid: Pid) -> Self {
+            self.parent_pid = Some(pid);
+            self
+        }
+
+        /// 创建任务并加入就绪队列。
+        pub fn spawn(self) -> TaskRef {
+            do_spawn(self.name, self.entry, self.arg, self.parent_pid)
+        }
+    }
+
     /// 创建内核线程并加入就绪队列（无父任务）。
     pub fn spawn_kernel_thread(name: &'static str, entry: fn(usize), arg: usize) -> TaskRef {
-        spawn_kernel_thread_with_parent(name, entry, arg, None)
+        do_spawn(name, entry, arg, None)
     }
 
     /// 创建内核线程并加入就绪队列，指定父任务。
     pub fn spawn_kernel_thread_with_parent(
+        name: &'static str,
+        entry: fn(usize),
+        arg: usize,
+        parent_pid: Option<Pid>,
+    ) -> TaskRef {
+        do_spawn(name, entry, arg, parent_pid)
+    }
+
+    /// 内部实现——供 TaskBuilder 和 spawn_kernel_thread 共用。
+    fn do_spawn(
         name: &'static str,
         entry: fn(usize),
         arg: usize,
@@ -280,4 +344,8 @@ mod api {
 }
 
 #[cfg(not(test))]
-pub use api::*;
+pub use api::{
+    TaskBuilder, block_on, clone_kernel_thread, exit, find_task, init, init_smp, send_signal,
+    sleep, sleep_ms, spawn_kernel_thread, spawn_kernel_thread_with_parent, wait_child, wakeup_all,
+    wakeup_one,
+};

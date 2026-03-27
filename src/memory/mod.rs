@@ -1,4 +1,6 @@
 pub mod address;
+#[cfg(not(test))]
+pub mod mmio;
 pub mod page_table;
 
 #[cfg(not(test))]

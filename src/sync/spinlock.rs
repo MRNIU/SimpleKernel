@@ -17,7 +17,7 @@ pub mod lock_level {
     pub const UNCLASSIFIED: u8 = 0xFF;
 }
 
-use super::interrupt_ops;
+use super::interrupt_ops::{self, HeldInterrupts};
 
 const NO_OWNER: usize = usize::MAX;
 
@@ -67,12 +67,14 @@ impl<T> SpinLock<T> {
 
     /// 获取锁，返回 RAII guard。
     ///
+    /// 使用 [`HeldInterrupts`] 证明令牌管理中断状态：
+    /// 获取时禁用中断并持有令牌，guard 析构时令牌自动恢复中断。
+    ///
     /// # Panics
     /// - 同一核心递归加锁
     /// - 锁级别顺序违反
     pub fn lock(&self) -> SpinLockGuard<'_, T> {
-        let saved_intr = interrupt_ops::get_status();
-        interrupt_ops::disable();
+        let held = HeldInterrupts::hold();
 
         // 中断已关闭，同核心递归加锁会导致永久自旋，必须提前检测
         if self.owner_core.load(Ordering::Relaxed) == per_cpu::current_core_id() {
@@ -85,14 +87,13 @@ impl<T> SpinLock<T> {
         SpinLockGuard {
             lock: self,
             guard: ManuallyDrop::new(guard),
-            saved_intr,
+            _held: held,
         }
     }
 
     /// 尝试在不阻塞的情况下获取锁。
     pub fn try_lock(&self) -> Option<SpinLockGuard<'_, T>> {
-        let saved_intr = interrupt_ops::get_status();
-        interrupt_ops::disable();
+        let held = HeldInterrupts::hold();
 
         match self.inner.try_lock() {
             Some(guard) => {
@@ -100,16 +101,11 @@ impl<T> SpinLock<T> {
                 Some(SpinLockGuard {
                     lock: self,
                     guard: ManuallyDrop::new(guard),
-                    saved_intr,
+                    _held: held,
                 })
             }
-            None => {
-                if saved_intr {
-                    // SAFETY: 恢复 try_lock 前的中断状态
-                    unsafe { interrupt_ops::enable() };
-                }
-                None
-            }
+            // held 在此处 drop，自动恢复中断状态
+            None => None,
         }
     }
 
@@ -269,10 +265,18 @@ impl<T> SpinLock<T> {
 }
 
 /// RAII guard。丢弃时释放锁并恢复中断状态。
+///
+/// 字段顺序决定 Drop 顺序（自定义 Drop 后、编译器按声明序析构字段）：
+/// 1. 自定义 `drop()`: `pre_release` + 释放 spin mutex（ManuallyDrop）
+/// 2. 编译器 drop `_held`: [`HeldInterrupts`] 恢复中断状态
+///
+/// 这保证了「先释放锁，后恢复中断」的正确顺序。
 pub struct SpinLockGuard<'a, T> {
     lock: &'a SpinLock<T>,
     guard: ManuallyDrop<spin::MutexGuard<'a, T>>,
-    saved_intr: bool,
+    /// 中断禁用的证明令牌——在 guard 和 lock 之后析构，
+    /// 确保中断恢复发生在锁释放之后。
+    _held: HeldInterrupts,
 }
 
 impl<T> Deref for SpinLockGuard<'_, T> {
@@ -294,10 +298,8 @@ impl<T> Drop for SpinLockGuard<'_, T> {
         self.lock.pre_release();
         // SAFETY: guard 有效且仅在此处 drop 一次
         unsafe { ManuallyDrop::drop(&mut self.guard) };
-        if self.saved_intr {
-            // SAFETY: 恢复获取锁前的中断状态
-            unsafe { interrupt_ops::enable() };
-        }
+        // _held（HeldInterrupts）在此之后由编译器自动 drop，恢复中断状态。
+        // 无需手动处理——这正是证明令牌模式的优势。
     }
 }
 

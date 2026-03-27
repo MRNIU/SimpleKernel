@@ -2,7 +2,7 @@
 ///
 /// 负责 PLIC 初始化、stvec 设置，以及陷阱分发（定时器、外部中断、IPI、系统调用、异常）。
 use crate::memory::address::PhysAddr;
-use crate::memory::map_mmio;
+use crate::memory::mmio::MmioRegion;
 
 use super::context::TrapContext;
 
@@ -12,17 +12,17 @@ unsafe extern "C" {
     fn trap_entry();
 }
 
-// PLIC 地址常量与辅助函数
+// PLIC 地址常量
 
-/// PLIC 基地址——运行时从 FDT 读取（FDT 是唯一来源，解析失败则 panic）
-static PLIC_BASE: spin::Once<usize> = spin::Once::new();
+/// PLIC MMIO 区域——使用 `MmioRegion` 提供类型安全的寄存器访问
+static PLIC: spin::Once<MmioRegion> = spin::Once::new();
 
 /// PLIC 映射大小（4 MB，覆盖优先级、使能、阈值、claim 寄存器）
 const PLIC_SIZE: usize = 0x0040_0000;
 
-/// 获取 PLIC 基地址
-fn plic_base() -> usize {
-    *PLIC_BASE.get().expect("PLIC_BASE 未初始化")
+/// 获取 PLIC MmioRegion 引用
+fn plic() -> &'static MmioRegion {
+    PLIC.get().expect("PLIC 未初始化")
 }
 
 /// UART 中断号（QEMU virt 平台）
@@ -46,31 +46,9 @@ const PLIC_CONTEXT_BASE: usize = 0x0020_0000;
 /// PLIC 阈值/claim 寄存器每上下文间距
 const PLIC_CONTEXT_STRIDE: usize = 0x1000;
 
-/// 写 PLIC 32 位寄存器
-///
-/// # Safety
-/// 调用前必须已通过 `map_mmio` 映射 PLIC 区域。
-#[inline]
-unsafe fn plic_write32(offset: usize, val: u32) {
-    let addr = (plic_base() + offset) as *mut u32;
-    // SAFETY: 调用方保证地址已映射且对齐
-    unsafe { core::ptr::write_volatile(addr, val) };
-}
-
-/// 读 PLIC 32 位寄存器
-///
-/// # Safety
-/// 调用前必须已通过 `map_mmio` 映射 PLIC 区域。
-#[inline]
-unsafe fn plic_read32(offset: usize) -> u32 {
-    let addr = (plic_base() + offset) as *const u32;
-    // SAFETY: 调用方保证地址已映射且对齐
-    unsafe { core::ptr::read_volatile(addr) }
-}
-
 /// 初始化 PLIC
 ///
-/// 1. 将 PLIC 寄存器区域 identity-map 进内核页表
+/// 1. 将 PLIC 寄存器区域 identity-map 进内核页表（返回 `MmioRegion`）
 /// 2. 设置 UART IRQ（10）优先级为 1
 /// 3. 使能 hart 0 S-mode 上下文中的 UART IRQ
 /// 4. 设置 hart 0 S-mode 上下文阈值为 0（接受所有优先级 ≥1 的中断）
@@ -89,53 +67,45 @@ fn plic_init() {
         log::info!("PLIC: 从 FDT 读取基地址 {:#x}", addr);
         addr as usize
     };
-    PLIC_BASE.call_once(|| base);
 
-    // Step 1: 映射 PLIC MMIO 区域
-    map_mmio(PhysAddr::new(base), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
+    // Step 1: 映射 PLIC MMIO 区域，返回 MmioRegion（类型安全的 MMIO 访问）
+    let region =
+        MmioRegion::map(PhysAddr::new(base), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
+    PLIC.call_once(|| region);
 
-    // SAFETY: PLIC 已通过 map_mmio 映射
+    let plic = plic();
+    // SAFETY: PLIC 已通过 MmioRegion::map 映射，偏移在 PLIC_SIZE 范围内
     unsafe {
         // Step 2: 设置 UART IRQ 优先级（偏移 = IRQ * 4）
-        // 优先级寄存器: base + 0x000000 + irq*4
-        plic_write32(PLIC_PRIORITY_BASE + UART_IRQ as usize * 4, 1);
+        plic.write_reg::<u32>(PLIC_PRIORITY_BASE + UART_IRQ as usize * 4, 1);
 
         // Step 3: 使能 IRQ 10 — hart 0 S-mode 上下文
-        // 使能寄存器: base + 0x002000 + context*0x80 + (irq/32)*4
-        // context=1, irq=10: offset = 0x2000 + 1*0x80 + 0 = 0x2080
         let enable_offset = PLIC_ENABLE_BASE
             + PLIC_S_CONTEXT_HART0 * PLIC_ENABLE_STRIDE
             + (UART_IRQ as usize / 32) * 4;
-        let current = plic_read32(enable_offset);
-        plic_write32(enable_offset, current | (1 << (UART_IRQ % 32)));
+        let current: u32 = plic.read_reg(enable_offset);
+        plic.write_reg::<u32>(enable_offset, current | (1 << (UART_IRQ % 32)));
 
         // Step 4: 设置阈值为 0
-        // 阈值寄存器: base + 0x200000 + context*0x1000
         let threshold_offset = PLIC_CONTEXT_BASE + PLIC_S_CONTEXT_HART0 * PLIC_CONTEXT_STRIDE;
-        plic_write32(threshold_offset, 0);
+        plic.write_reg::<u32>(threshold_offset, 0);
     }
 }
 
 /// 从 PLIC claim 寄存器读取待处理中断号
-///
-/// # Safety
-/// 调用前必须已映射 PLIC。
 #[inline]
-unsafe fn plic_claim(context: usize) -> u32 {
+fn plic_claim(context: usize) -> u32 {
     let claim_offset = PLIC_CONTEXT_BASE + context * PLIC_CONTEXT_STRIDE + 4;
-    // SAFETY: 调用方保证已映射
-    unsafe { plic_read32(claim_offset) }
+    // SAFETY: PLIC 已初始化，偏移在范围内
+    unsafe { plic().read_reg(claim_offset) }
 }
 
 /// 向 PLIC complete 寄存器写入中断号，完成处理
-///
-/// # Safety
-/// 调用前必须已映射 PLIC。
 #[inline]
-unsafe fn plic_complete(context: usize, irq: u32) {
+fn plic_complete(context: usize, irq: u32) {
     let complete_offset = PLIC_CONTEXT_BASE + context * PLIC_CONTEXT_STRIDE + 4;
-    // SAFETY: 调用方保证已映射
-    unsafe { plic_write32(complete_offset, irq) };
+    // SAFETY: PLIC 已初始化，偏移在范围内
+    unsafe { plic().write_reg(complete_offset, irq) };
 }
 
 // 外部中断处理
@@ -145,8 +115,7 @@ const PLIC_MAX_IRQ: u32 = 1023;
 
 /// 处理外部中断（PLIC IRQ）
 fn handle_external() {
-    // SAFETY: plic_init 已在 interrupt_init 中调用，PLIC 已映射
-    let irq = unsafe { plic_claim(PLIC_S_CONTEXT_HART0) };
+    let irq = plic_claim(PLIC_S_CONTEXT_HART0);
 
     // IRQ 范围校验：PLIC 有效 IRQ 为 1-1023，0 表示 spurious
     if irq > PLIC_MAX_IRQ {
@@ -170,8 +139,7 @@ fn handle_external() {
         }
     }
     if irq != 0 {
-        // SAFETY: PLIC 已映射
-        unsafe { plic_complete(PLIC_S_CONTEXT_HART0, irq) };
+        plic_complete(PLIC_S_CONTEXT_HART0, irq);
     }
 }
 
