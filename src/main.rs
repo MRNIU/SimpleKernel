@@ -63,7 +63,13 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
     logging::init();
     init::early_init(Arch::dtb_addr(argc, argv));
     smoke_test::phase2();
-    memory::init();
+    // memory::init() 返回页表，不再内部调用 arch（打破 memory↔arch 循环）
+    let mut pt = memory::init();
+    Arch::map_early_mmio(&mut pt).expect("failed to map early MMIO");
+    // SAFETY: 页表覆盖所有内核代码/数据及早期 MMIO
+    unsafe { Arch::activate_page_table(&pt) };
+    log::info!("MemoryInit: paging enabled");
+    memory::store_kernel_page_table(pt);
     smoke_test::phase3();
     // 必须先初始化 timer（设置 HW_FREQ 和首次超时），再开启中断。
     // 否则开启中断后挂起的 timer 中断立刻触发，handle_timer() 中
@@ -99,7 +105,10 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 #[cfg(not(test))]
 fn bootstrap_smp(argc: i32, argv: *const *const u8) -> ! {
     let core_id = Arch::secondary_core_id(argc, argv);
-    memory::init_smp();
+    memory::init_smp(|pt| {
+        // SAFETY: 主核已验证页表正确性
+        unsafe { Arch::activate_page_table(pt) };
+    });
     task::init_smp();
     // 与主核一致：先 timer 再 interrupt，避免中断风暴
     Arch::init_timer_smp(core_id);

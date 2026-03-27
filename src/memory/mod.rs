@@ -16,8 +16,6 @@ use address::{PhysAddr, VirtAddr};
 use page_table::{PageFlags, PageTable};
 
 #[cfg(not(test))]
-use crate::arch::ArchOps;
-#[cfg(not(test))]
 use crate::sync::SpinLock;
 
 /// 全局内核页表 —— `map_mmio()` 和 `init_smp()` 共享。
@@ -55,13 +53,14 @@ pub(crate) fn identity_map_range(
 
 /// 主核内存初始化 — BSP 调用。
 ///
-/// 1. 初始化堆分配器（静态 BSS 区域）
-/// 2. 初始化帧分配器（从 FDT 获取物理内存范围）
-/// 3. 创建内核页表，identity map 整个 RAM
-/// 4. 映射分页激活前必须就绪的架构特定 MMIO
-/// 5. 激活分页，将页表存入全局
+/// 返回初始化完成的内核页表。调用方负责：
+/// 1. 调用 `Arch::map_early_mmio(&mut pt)` 映射架构特定 MMIO
+/// 2. 调用 `Arch::activate_page_table(&pt)` 激活分页
+/// 3. 调用 `store_kernel_page_table(pt)` 存入全局
+///
+/// 此函数不依赖 `arch` 模块，可作为独立 crate 的一部分。
 #[cfg(not(test))]
-pub fn init() {
+pub fn init() -> PageTable {
     // Step 1: Heap — must come first so we can use Vec/Box
     unsafe { heap::init() };
 
@@ -117,28 +116,26 @@ pub fn init() {
         mem_start + mem_size
     );
 
-    // Step 4: 映射分页激活前必须就绪的架构特定 MMIO
-    crate::arch::Arch::map_early_mmio(&mut pt).expect("failed to map early MMIO");
+    pt
+}
 
-    // Step 5: 激活分页
-    // SAFETY: 页表已覆盖所有内核代码/数据（RAM identity map）及早期 MMIO
-    unsafe { crate::arch::Arch::activate_page_table(&pt) };
-    log::info!("MemoryInit: paging enabled");
-
-    // 将页表存入全局，供 map_mmio() / init_smp() 使用
-    // pt 所有权转移至 KERNEL_PAGE_TABLE，页表帧永不释放（内核页表生命周期无限）
+/// 将已激活的内核页表存入全局——由 `main.rs` 在 `activate_page_table` 后调用。
+#[cfg(not(test))]
+pub fn store_kernel_page_table(pt: PageTable) {
     KERNEL_PAGE_TABLE.call_once(|| SpinLock::new(pt, "kernel_pt"));
 }
 
 /// 从核内存初始化 — 加载主核创建的内核页表到本核 MMU。
+///
+/// `activate` 闭包由调用方提供，封装 `Arch::activate_page_table()`，
+/// 使此函数不依赖 `arch` 模块。
 #[cfg(not(test))]
-pub fn init_smp() {
+pub fn init_smp(activate: impl FnOnce(&PageTable)) {
     let kpt = KERNEL_PAGE_TABLE
         .get()
         .expect("KERNEL_PAGE_TABLE not initialized");
     let guard = kpt.lock();
-    // SAFETY: 主核已验证页表正确性；从核仅将同一根地址写入本核 MMU 寄存器
-    unsafe { crate::arch::Arch::activate_page_table(&*guard) };
+    activate(&*guard);
     log::info!(
         "MemoryInitSMP: paging enabled on core {}",
         crate::per_cpu::current_core_id()
