@@ -1,7 +1,7 @@
 use core::fmt::Write;
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
-use sync::SpinLock;
+use sync::SpinLockIrq;
 
 const ANSI_RESET: &str = "\x1b[0m";
 const ANSI_RED: &str = "\x1b[31m";
@@ -10,7 +10,7 @@ const ANSI_YELLOW: &str = "\x1b[33m";
 const ANSI_CYAN: &str = "\x1b[36m";
 const ANSI_GRAY: &str = "\x1b[90m";
 
-static CONSOLE_LOCK: SpinLock<()> = SpinLock::new((), "console");
+static CONSOLE_LOCK: SpinLockIrq<()> = SpinLockIrq::new((), "console");
 static LOG_SEQ: AtomicU64 = AtomicU64::new(0);
 static LOGGER_INIT: AtomicBool = AtomicBool::new(false);
 static LOGGER: KernelLogger = KernelLogger;

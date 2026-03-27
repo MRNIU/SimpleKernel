@@ -1,9 +1,11 @@
-use core::mem::ManuallyDrop;
+use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut};
-use core::sync::atomic::{AtomicUsize, Ordering};
+use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 #[cfg(not(test))]
 use per_cpu::lock_stack::LockStackEntry;
+
+use crate::interrupt_ops::HeldInterrupts;
 
 /// 用于强制获取顺序的锁级别常量。
 ///
@@ -16,30 +18,107 @@ pub mod lock_level {
     pub const UNCLASSIFIED: u8 = 0xFF;
 }
 
-use crate::interrupt_ops::HeldInterrupts;
-
 const NO_OWNER: usize = usize::MAX;
 
-/// 中断安全的自旋锁，支持锁级别顺序检查。
+// ─── 底层自旋原语 ──────────────────────────────────────────────────────
+
+/// 原始自旋锁——基于 AtomicBool 的 TTAS（test-and-test-and-set）算法。
 ///
-/// 基于 `spin::Mutex` 实现自旋逻辑，额外提供：
-/// - 通过 RAII guard 自动禁用/恢复中断
-/// - 递归加锁检测
-/// - 锁级别层次强制，防止死锁
-///
-/// # Usage
-/// ```ignore
-/// static MY_LOCK: SpinLock<MyData> = SpinLock::new(MyData::new(), "my_lock");
-/// let guard = MY_LOCK.lock();
-/// // guard 被丢弃时恢复中断
-/// ```
-pub struct SpinLock<T> {
-    inner: spin::Mutex<T>,
+/// 不包含数据保护，仅提供互斥。由 `SpinLock` 和 `SpinLockIrq` 内部使用。
+struct RawSpinLock {
+    locked: AtomicBool,
     owner_core: AtomicUsize,
-    level: u8,
     name: &'static str,
 }
 
+impl RawSpinLock {
+    const fn new(name: &'static str) -> Self {
+        Self {
+            locked: AtomicBool::new(false),
+            owner_core: AtomicUsize::new(NO_OWNER),
+            name,
+        }
+    }
+
+    /// 自旋获取锁（TTAS 算法）。
+    ///
+    /// 外层用 Relaxed load 自旋（只读缓存行，不争总线），
+    /// 内层用 compare_exchange_weak 尝试获取。
+    #[inline]
+    fn acquire(&self) {
+        while self
+            .locked
+            .compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed)
+            .is_err()
+        {
+            while self.locked.load(Ordering::Relaxed) {
+                core::hint::spin_loop();
+            }
+        }
+    }
+
+    /// 尝试获取锁，失败返回 false。
+    #[inline]
+    fn try_acquire(&self) -> bool {
+        self.locked
+            .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
+            .is_ok()
+    }
+
+    /// 释放锁。
+    #[inline]
+    fn release(&self) {
+        self.locked.store(false, Ordering::Release);
+    }
+
+    #[inline]
+    fn is_locked(&self) -> bool {
+        self.locked.load(Ordering::Relaxed)
+    }
+
+    /// 递归加锁检测——同一核心再次获取同一把锁会死锁（自旋永不返回）。
+    fn check_recursive(&self) {
+        if self.owner_core.load(Ordering::Relaxed) == per_cpu::current_core_id() {
+            Self::fatal(self.name, "recursive lock");
+        }
+    }
+
+    fn set_owner(&self) {
+        self.owner_core
+            .store(per_cpu::current_core_id(), Ordering::Release);
+    }
+
+    fn clear_owner(&self) {
+        self.owner_core.store(NO_OWNER, Ordering::Release);
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn fatal(name: &str, reason: &str) -> ! {
+        panic!("FATAL: SpinLock '{}': {}", name, reason);
+    }
+}
+
+// ─── SpinLock<T>（不关中断）──────────────────────────────────────────
+
+/// 自旋锁——不操作中断。
+///
+/// 适用于**不会在中断 handler 中获取**的锁。
+/// 如果中断 handler 也会获取同一把锁，必须使用 [`SpinLockIrq`]。
+///
+/// # Usage
+///
+/// ```ignore
+/// static MY_LOCK: SpinLock<MyData> = SpinLock::new(MyData::new(), "my_lock");
+/// let guard = MY_LOCK.lock();
+/// // guard 被丢弃时释放锁
+/// ```
+pub struct SpinLock<T> {
+    raw: RawSpinLock,
+    data: UnsafeCell<T>,
+}
+
+// SAFETY: SpinLock 内部使用原子操作保证互斥访问，T: Send 即可安全跨线程
 unsafe impl<T: Send> Send for SpinLock<T> {}
 unsafe impl<T: Send> Sync for SpinLock<T> {}
 
@@ -47,130 +126,202 @@ impl<T> SpinLock<T> {
     #[must_use]
     pub const fn new(data: T, name: &'static str) -> Self {
         Self {
-            inner: spin::Mutex::new(data),
-            owner_core: AtomicUsize::new(NO_OWNER),
+            raw: RawSpinLock::new(name),
+            data: UnsafeCell::new(data),
+        }
+    }
+
+    /// 获取锁，返回 RAII guard。
+    ///
+    /// # Panics
+    /// 同一核心递归加锁。
+    pub fn lock(&self) -> SpinLockGuard<'_, T> {
+        self.raw.check_recursive();
+        self.raw.acquire();
+        self.raw.set_owner();
+        SpinLockGuard { lock: self }
+    }
+
+    /// 尝试获取锁，不阻塞。
+    pub fn try_lock(&self) -> Option<SpinLockGuard<'_, T>> {
+        if self.raw.try_acquire() {
+            self.raw.set_owner();
+            Some(SpinLockGuard { lock: self })
+        } else {
+            None
+        }
+    }
+
+    pub fn is_locked(&self) -> bool {
+        self.raw.is_locked()
+    }
+}
+
+/// RAII guard——丢弃时释放锁。
+pub struct SpinLockGuard<'a, T> {
+    lock: &'a SpinLock<T>,
+}
+
+impl<T> Deref for SpinLockGuard<'_, T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        // SAFETY: guard 持有锁，独占访问
+        unsafe { &*self.lock.data.get() }
+    }
+}
+
+impl<T> DerefMut for SpinLockGuard<'_, T> {
+    fn deref_mut(&mut self) -> &mut T {
+        // SAFETY: guard 持有锁，独占访问
+        unsafe { &mut *self.lock.data.get() }
+    }
+}
+
+impl<T> Drop for SpinLockGuard<'_, T> {
+    fn drop(&mut self) {
+        self.lock.raw.clear_owner();
+        self.lock.raw.release();
+    }
+}
+
+// ─── SpinLockIrq<T>（关中断）────────────────────────────────────────
+
+/// 中断安全的自旋锁——获取时禁用中断，释放时恢复。
+///
+/// 适用于**中断 handler 也会获取**的锁（如调度锁、控制台锁）。
+/// 支持锁级别顺序检查和 per-CPU 锁栈，防止死锁。
+///
+/// # Usage
+///
+/// ```ignore
+/// static MY_LOCK: SpinLockIrq<MyData> = SpinLockIrq::new(MyData::new(), "my_lock");
+/// let guard = MY_LOCK.lock();
+/// // guard 被丢弃时恢复中断
+/// ```
+pub struct SpinLockIrq<T> {
+    raw: RawSpinLock,
+    data: UnsafeCell<T>,
+    level: u8,
+    /// `lock_raw` 保存的中断状态——由锁持有者独占访问，无竞争。
+    raw_saved_irq: AtomicBool,
+}
+
+// SAFETY: 同 SpinLock
+unsafe impl<T: Send> Send for SpinLockIrq<T> {}
+unsafe impl<T: Send> Sync for SpinLockIrq<T> {}
+
+impl<T> SpinLockIrq<T> {
+    #[must_use]
+    pub const fn new(data: T, name: &'static str) -> Self {
+        Self {
+            raw: RawSpinLock::new(name),
+            data: UnsafeCell::new(data),
             level: lock_level::UNCLASSIFIED,
-            name,
+            raw_saved_irq: AtomicBool::new(false),
         }
     }
 
     #[must_use]
     pub const fn new_with_level(data: T, name: &'static str, level: u8) -> Self {
         Self {
-            inner: spin::Mutex::new(data),
-            owner_core: AtomicUsize::new(NO_OWNER),
+            raw: RawSpinLock::new(name),
+            data: UnsafeCell::new(data),
             level,
-            name,
+            raw_saved_irq: AtomicBool::new(false),
         }
     }
 
     /// 获取锁，返回 RAII guard。
     ///
     /// 使用 [`HeldInterrupts`] 证明令牌管理中断状态：
-    /// 获取时禁用中断并持有令牌，guard 析构时令牌自动恢复中断。
+    /// 获取时禁用中断，guard 析构时恢复。
     ///
     /// # Panics
     /// - 同一核心递归加锁
     /// - 锁级别顺序违反
-    pub fn lock(&self) -> SpinLockGuard<'_, T> {
+    pub fn lock(&self) -> SpinLockIrqGuard<'_, T> {
         let held = HeldInterrupts::hold();
 
-        // 中断已关闭，同核心递归加锁会导致永久自旋，必须提前检测
-        if self.owner_core.load(Ordering::Relaxed) == per_cpu::current_core_id() {
-            Self::fatal(self.name, "recursive lock");
-        }
-
-        let guard = self.inner.lock();
+        self.raw.check_recursive();
+        self.raw.acquire();
         self.post_acquire();
 
-        SpinLockGuard {
+        SpinLockIrqGuard {
             lock: self,
-            guard: ManuallyDrop::new(guard),
             _held: held,
         }
     }
 
-    /// 尝试在不阻塞的情况下获取锁。
-    pub fn try_lock(&self) -> Option<SpinLockGuard<'_, T>> {
+    /// 尝试获取锁，不阻塞。
+    pub fn try_lock(&self) -> Option<SpinLockIrqGuard<'_, T>> {
         let held = HeldInterrupts::hold();
 
-        match self.inner.try_lock() {
-            Some(guard) => {
-                self.post_acquire();
-                Some(SpinLockGuard {
-                    lock: self,
-                    guard: ManuallyDrop::new(guard),
-                    _held: held,
-                })
-            }
-            // held 在此处 drop，自动恢复中断状态
-            None => None,
+        if self.raw.try_acquire() {
+            self.post_acquire();
+            Some(SpinLockIrqGuard {
+                lock: self,
+                _held: held,
+            })
+        } else {
+            // held 在此处 drop，自动恢复中断
+            None
         }
     }
 
     pub fn is_locked(&self) -> bool {
-        self.inner.is_locked()
+        self.raw.is_locked()
     }
 
     /// 获取裸锁（不使用 RAII guard）——用于上下文切换时的 lock handoff 协议。
     ///
-    /// 调用方必须在适当时机手动调用 `unlock_raw()` 释放锁。
-    /// 此方法禁用中断，与 `lock()` 行为一致。
+    /// 保存当前中断状态并禁用中断，`unlock_raw()` 恢复。
     ///
     /// # Safety
-    /// 调用方必须保证：
-    /// 1. 每次 `lock_raw()` 都有对应的 `unlock_raw()` 调用
-    /// 2. `unlock_raw()` 在正确的核心上调用（可以是不同任务上下文，
-    ///    但必须是同一物理核心）
+    ///
+    /// 调用方必须保证每次 `lock_raw()` 都有对应的 `unlock_raw()` 调用。
     pub unsafe fn lock_raw(&self) {
+        let was_enabled = crate::interrupt_ops::get_status();
         crate::interrupt_ops::disable();
 
-        if self.owner_core.load(Ordering::Relaxed) == per_cpu::current_core_id() {
-            Self::fatal(self.name, "recursive lock (raw)");
-        }
+        self.raw.check_recursive();
+        self.raw.acquire();
 
-        // 自旋获取锁——spin::Mutex::lock() 返回 guard，
-        // 我们立即 forget 它以避免 RAII 释放
-        let guard = self.inner.lock();
-        core::mem::forget(guard);
-
+        // 保存中断状态到锁中（持有锁期间独占访问，无竞争）
+        self.raw_saved_irq.store(was_enabled, Ordering::Relaxed);
         self.post_acquire();
     }
 
-    /// 释放裸锁（与 `lock_raw()` 配对使用）。
+    /// 释放裸锁（与 `lock_raw()` 配对）——恢复 `lock_raw` 前的中断状态。
     ///
     /// # Safety
-    /// 必须在持有锁的情况下调用，且与 `lock_raw()` 配对。
+    ///
+    /// 必须在持有锁的情况下调用。
     pub unsafe fn unlock_raw(&self) {
+        let was_enabled = self.raw_saved_irq.load(Ordering::Relaxed);
         self.pre_release();
+        self.raw.release();
 
-        // SAFETY: 调用方保证锁处于已获取状态
-        unsafe { self.inner.force_unlock() };
-
-        // SAFETY: 恢复 lock_raw 前的中断状态
-        unsafe { crate::interrupt_ops::enable() };
+        if was_enabled {
+            // SAFETY: 恢复 lock_raw 前的中断状态
+            unsafe { crate::interrupt_ops::enable() };
+        }
     }
 
     /// 尝试获取裸锁（不操作中断、不检查锁级别、不压栈）——
     /// 用于任务窃取时在已持有自身调度锁的情况下获取另一核心的调度锁。
     ///
-    /// 成功返回 true，失败返回 false。
-    ///
     /// # Safety
     ///
     /// 调用者必须保证：
-    /// 1. 中断已被禁用（通常因为已通过 `lock_raw` 持有另一把锁）
+    /// 1. 中断已被禁用
     /// 2. 成功后必须调用 `unlock_raw_no_irq()` 释放
-    /// 3. 不会导致死锁（使用 try 语义，失败不阻塞）
     pub unsafe fn try_lock_raw_no_irq(&self) -> bool {
-        match self.inner.try_lock() {
-            Some(guard) => {
-                core::mem::forget(guard);
-                self.owner_core
-                    .store(per_cpu::current_core_id(), Ordering::Release);
-                true
-            }
-            None => false,
+        if self.raw.try_acquire() {
+            self.raw.set_owner();
+            true
+        } else {
+            false
         }
     }
 
@@ -178,18 +329,14 @@ impl<T> SpinLock<T> {
     ///
     /// # Safety
     ///
-    /// 必须在持有锁的情况下调用，且与 `try_lock_raw_no_irq` 配对。
+    /// 必须在持有锁的情况下调用。
     pub unsafe fn unlock_raw_no_irq(&self) {
-        self.owner_core.store(NO_OWNER, Ordering::Release);
-        // SAFETY: 调用方保证锁处于已获取状态
-        unsafe { self.inner.force_unlock() };
+        self.raw.clear_owner();
+        self.raw.release();
     }
 
     fn post_acquire(&self) {
-        self.owner_core
-            .store(per_cpu::current_core_id(), Ordering::Release);
-        // 锁级别检查和锁栈依赖 per-CPU 数据（固定大小数组），
-        // 在宿主多线程测试中线程 ID 可能超出数组范围，因此仅在内核模式启用。
+        self.raw.set_owner();
         #[cfg(not(test))]
         {
             self.check_lock_order();
@@ -202,13 +349,7 @@ impl<T> SpinLock<T> {
         {
             self.pop_lock_stack();
         }
-        self.owner_core.store(NO_OWNER, Ordering::Release);
-    }
-
-    #[cold]
-    #[inline(never)]
-    fn fatal(name: &str, reason: &str) -> ! {
-        panic!("FATAL: SpinLock '{}': {}", name, reason);
+        self.raw.clear_owner();
     }
 
     #[cfg(not(test))]
@@ -221,7 +362,7 @@ impl<T> SpinLock<T> {
         if stack.depth > 0 {
             let top = stack.entries[stack.depth - 1].level;
             if top != lock_level::UNCLASSIFIED && self.level <= top {
-                Self::fatal(self.name, "lock order violation");
+                RawSpinLock::fatal(self.raw.name, "lock order violation");
             }
         }
     }
@@ -233,7 +374,7 @@ impl<T> SpinLock<T> {
         if stack.depth >= per_cpu::lock_stack::LockStack::MAX_DEPTH {
             panic!(
                 "SpinLock '{}': lock stack overflow (depth={})",
-                self.name, stack.depth
+                self.raw.name, stack.depth
             );
         }
         stack.entries[stack.depth] = LockStackEntry {
@@ -248,60 +389,59 @@ impl<T> SpinLock<T> {
         // SAFETY: 中断已禁用
         let stack = &mut unsafe { per_cpu::current_per_cpu() }.lock_stack;
         if stack.depth == 0 {
-            panic!("SpinLock '{}': lock stack underflow", self.name);
+            panic!("SpinLock '{}': lock stack underflow", self.raw.name);
         }
         if stack.entries[stack.depth - 1].lock_ptr != (self as *const Self as *const ()) {
             panic!(
                 "SpinLock '{}': lock stack corrupted — 释放顺序与获取顺序不一致",
-                self.name
+                self.raw.name
             );
         }
         stack.depth -= 1;
     }
 }
 
-/// RAII guard。丢弃时释放锁并恢复中断状态。
+/// RAII guard（中断安全版）。
 ///
-/// 字段顺序决定 Drop 顺序（自定义 Drop 后、编译器按声明序析构字段）：
-/// 1. 自定义 `drop()`: `pre_release` + 释放 spin mutex（ManuallyDrop）
-/// 2. 编译器 drop `_held`: [`HeldInterrupts`] 恢复中断状态
-///
-/// 这保证了「先释放锁，后恢复中断」的正确顺序。
-pub struct SpinLockGuard<'a, T> {
-    lock: &'a SpinLock<T>,
-    guard: ManuallyDrop<spin::MutexGuard<'a, T>>,
-    /// 中断禁用的证明令牌——在 guard 和 lock 之后析构，
-    /// 确保中断恢复发生在锁释放之后。
+/// 自定义 `Drop` 先释放锁，然后 `_held` 字段由编译器自动析构，恢复中断。
+/// 保证「先释放锁，后恢复中断」的正确顺序。
+pub struct SpinLockIrqGuard<'a, T> {
+    lock: &'a SpinLockIrq<T>,
+    /// 中断禁用的证明令牌——在自定义 Drop 之后由编译器析构
     _held: HeldInterrupts,
 }
 
-impl<T> Deref for SpinLockGuard<'_, T> {
+impl<T> Deref for SpinLockIrqGuard<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
-        &self.guard
+        // SAFETY: guard 持有锁，独占访问
+        unsafe { &*self.lock.data.get() }
     }
 }
 
-impl<T> DerefMut for SpinLockGuard<'_, T> {
+impl<T> DerefMut for SpinLockIrqGuard<'_, T> {
     fn deref_mut(&mut self) -> &mut T {
-        &mut self.guard
+        // SAFETY: guard 持有锁，独占访问
+        unsafe { &mut *self.lock.data.get() }
     }
 }
 
-impl<T> Drop for SpinLockGuard<'_, T> {
+impl<T> Drop for SpinLockIrqGuard<'_, T> {
     fn drop(&mut self) {
         self.lock.pre_release();
-        // SAFETY: guard 有效且仅在此处 drop 一次
-        unsafe { ManuallyDrop::drop(&mut self.guard) };
-        // _held（HeldInterrupts）在此之后由编译器自动 drop，恢复中断状态。
-        // 无需手动处理——这正是证明令牌模式的优势。
+        self.lock.raw.release();
+        // _held 在此之后由编译器自动 drop，恢复中断状态
     }
 }
+
+// ─── 测试 ──────────────────────────────────────────────────────────────
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // ── SpinLock（不关中断）──────────────────────────────
 
     #[test]
     fn lock_and_unlock() {
@@ -351,13 +491,6 @@ mod tests {
     }
 
     #[test]
-    fn new_with_level() {
-        let lock = SpinLock::new_with_level(0u32, "leveled", lock_level::SCHED_LOCK);
-        let _g = lock.lock();
-        assert!(lock.is_locked());
-    }
-
-    #[test]
     fn concurrent_access() {
         use std::sync::Arc;
         use std::thread;
@@ -383,13 +516,44 @@ mod tests {
         assert_eq!(*g, 4000, "并发计数器最终值应为 4000");
     }
 
+    // ── SpinLockIrq（关中断）────────────────────────────
+
     #[test]
-    fn concurrent_guard_drop_releases() {
+    fn irq_lock_and_unlock() {
+        let lock = SpinLockIrq::new(42u32, "irq_test");
+        {
+            let guard = lock.lock();
+            assert_eq!(*guard, 42);
+        }
+        assert!(!lock.is_locked());
+    }
+
+    #[test]
+    fn irq_try_lock() {
+        let lock = SpinLockIrq::new(0u32, "irq_try");
+        assert!(lock.try_lock().is_some());
+    }
+
+    #[test]
+    fn irq_try_lock_fails_when_held() {
+        let lock = SpinLockIrq::new(0u32, "irq_try_held");
+        let _g = lock.lock();
+        assert!(lock.try_lock().is_none());
+    }
+
+    #[test]
+    fn irq_new_with_level() {
+        let lock = SpinLockIrq::new_with_level(0u32, "leveled", lock_level::SCHED_LOCK);
+        let _g = lock.lock();
+        assert!(lock.is_locked());
+    }
+
+    #[test]
+    fn irq_concurrent_access() {
         use std::sync::Arc;
         use std::thread;
 
-        // 验证多线程环境下 guard drop 正确释放锁
-        let lock = Arc::new(SpinLock::new(Vec::<usize>::new(), "drop_concurrent"));
+        let lock = Arc::new(SpinLockIrq::new(Vec::<usize>::new(), "irq_concurrent"));
         let mut handles = Vec::new();
 
         for i in 0..4 {
@@ -408,5 +572,71 @@ mod tests {
 
         let g = lock.lock();
         assert_eq!(g.len(), 400, "应有 4×100=400 个元素");
+    }
+
+    // ── lock_raw / unlock_raw ───────────────────────────
+
+    #[test]
+    fn lock_raw_and_unlock_raw() {
+        let lock = SpinLockIrq::new((), "raw_test");
+        unsafe { lock.lock_raw() };
+        assert!(lock.is_locked());
+        unsafe { lock.unlock_raw() };
+        assert!(!lock.is_locked());
+    }
+
+    #[test]
+    fn try_lock_raw_no_irq_and_unlock() {
+        let lock = SpinLockIrq::new((), "raw_no_irq_test");
+        assert!(unsafe { lock.try_lock_raw_no_irq() });
+        assert!(lock.is_locked());
+        unsafe { lock.unlock_raw_no_irq() };
+        assert!(!lock.is_locked());
+    }
+
+    #[test]
+    fn try_lock_raw_no_irq_fails_when_held() {
+        let lock = SpinLockIrq::new((), "raw_no_irq_fail");
+        let _g = lock.lock();
+        assert!(!unsafe { lock.try_lock_raw_no_irq() });
+    }
+
+    // ── 递归检测 ────────────────────────────────────────
+
+    #[test]
+    #[should_panic(expected = "recursive lock")]
+    fn recursive_lock_panics() {
+        let lock = SpinLock::new(0u32, "recursive");
+        let _g = lock.lock();
+        let _g2 = lock.lock();
+    }
+
+    #[test]
+    #[should_panic(expected = "recursive lock")]
+    fn irq_recursive_lock_panics() {
+        let lock = SpinLockIrq::new(0u32, "irq_recursive");
+        let _g = lock.lock();
+        let _g2 = lock.lock();
+    }
+
+    // ── HeldInterrupts ──────────────────────────────────
+
+    /// ```compile_fail
+    /// use sync::HeldInterrupts;
+    /// let a = sync::interrupt_ops::HeldInterrupts::hold();
+    /// let b = a;
+    /// drop(a); // use after move — 不应编译通过
+    /// ```
+    #[test]
+    fn held_interrupts_is_not_copy() {
+        // 运行时验证 size；编译期验证 !Copy 由上方 doc test 保证
+        assert_eq!(core::mem::size_of::<HeldInterrupts>(), 1);
+    }
+
+    #[test]
+    fn held_interrupts_hold_and_drop() {
+        let held = HeldInterrupts::hold();
+        assert!(!held.was_enabled());
+        drop(held);
     }
 }

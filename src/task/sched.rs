@@ -9,7 +9,7 @@ use crate::task::scheduler::Scheduler;
 use crate::task::state::TaskState;
 use crate::task::tcb::TaskRef;
 use config::MAX_CORE_COUNT;
-use sync::SpinLock;
+use sync::SpinLockIrq;
 use sync::spinlock::lock_level;
 
 // ─── switch_to 外部声明 ──────────────────────────────────────────────
@@ -24,8 +24,8 @@ unsafe extern "C" {
 ///
 /// 使用 `lock_raw()`/`unlock_raw()` 跨越 `switch_to`。
 /// 任务窃取时使用 `try_lock_raw_no_irq()` 获取其他核心的锁。
-pub(super) static PER_CPU_SCHED_LOCK: [SpinLock<()>; MAX_CORE_COUNT] =
-    [const { SpinLock::new_with_level((), "sched", lock_level::SCHED_LOCK) }; MAX_CORE_COUNT];
+pub(super) static PER_CPU_SCHED_LOCK: [SpinLockIrq<()>; MAX_CORE_COUNT] =
+    [const { SpinLockIrq::new_with_level((), "sched", lock_level::SCHED_LOCK) }; MAX_CORE_COUNT];
 
 // ─── Per-CPU 调度状态 ────────────────────────────────────────────────
 

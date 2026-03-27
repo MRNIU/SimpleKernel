@@ -10,10 +10,10 @@ use crate::task::scheduler::Scheduler;
 use crate::task::signal::{SignalAction, SignalMask, first_deliverable};
 use crate::task::state::TaskState;
 use crate::task::tcb::{Pid, TaskRef};
-use sync::SpinLock;
+use sync::SpinLockIrq;
 use sync::spinlock::lock_level;
 
-/// 全局任务表——由 `TASK_TABLE` 的 `SpinLock` 保护（级别 1，高于调度锁级别 0）。
+/// 全局任务表——由 `TASK_TABLE` 的 `SpinLockIrq` 保护（级别 1，高于调度锁级别 0）。
 pub(super) struct TaskTable {
     pub(super) tasks: Vec<TaskRef>,
     next_pid: Pid,
@@ -140,11 +140,11 @@ impl TaskTable {
     }
 }
 
-pub(super) static TASK_TABLE: SpinLock<TaskTable> =
-    SpinLock::new_with_level(TaskTable::EMPTY, "task_table", lock_level::TASK_TABLE_LOCK);
+pub(super) static TASK_TABLE: SpinLockIrq<TaskTable> =
+    SpinLockIrq::new_with_level(TaskTable::EMPTY, "task_table", lock_level::TASK_TABLE_LOCK);
 
 impl TaskTable {
-    /// 编译期空值——用于 SpinLock 静态初始化。
+    /// 编译期空值——用于 SpinLockIrq 静态初始化。
     ///
     /// `init()` 中会通过 `*guard = TaskTable::new()` 替换为真正的实例。
     const EMPTY: Self = Self {

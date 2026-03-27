@@ -444,7 +444,6 @@ version = "0.1.0"
 dependencies = [
  "arch-traits",
  "per-cpu",
- "spin",
 ]
 
 [[package]]
