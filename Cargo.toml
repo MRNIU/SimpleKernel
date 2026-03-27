@@ -45,10 +45,6 @@ bitflags = "2"                        # 类型安全的位标志 (寄存器字�
 # --- 日志 ---
 log = { version = "0.4", default-features = false }  # 日志门面, 后端在 logging.rs
 
-# --- 集合 ---
-# 固定容量集合, 用于热路径 (调度队列等), 不依赖堆分配
-heapless = "0.8"
-
 # --- 内存 ---
 # buddy system 堆分配器, 实现 GlobalAlloc trait
 buddy_system_allocator = "0.11"

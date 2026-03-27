@@ -12,6 +12,7 @@ extern crate alloc;
 #[cfg(not(test))]
 mod arch;
 mod boot_info;
+mod compat;
 mod config;
 mod elf;
 mod error;
@@ -64,8 +65,12 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
     smoke_test::phase2();
     memory::init();
     smoke_test::phase3();
-    Arch::init_interrupt();
+    // 必须先初始化 timer（设置 HW_FREQ 和首次超时），再开启中断。
+    // 否则开启中断后挂起的 timer 中断立刻触发，handle_timer() 中
+    // get_interval() 返回 0（HW_FREQ 未初始化），导致 timer 以最高
+    // 频率无限触发，形成中断风暴，主线程代码永远得不到执行。
     Arch::init_timer();
+    Arch::init_interrupt();
 
     // P5: 任务初始化（必须在 wake_secondary_cores 之前）
     task::init();
@@ -95,9 +100,10 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 fn bootstrap_smp(argc: i32, argv: *const *const u8) -> ! {
     let core_id = Arch::secondary_core_id(argc, argv);
     memory::init_smp();
-    Arch::init_interrupt_smp();
     task::init_smp();
+    // 与主核一致：先 timer 再 interrupt，避免中断风暴
     Arch::init_timer_smp(core_id);
+    Arch::init_interrupt_smp();
     log::info!("SMP: core {} online", core_id);
 
     // 从核上线后立即尝试调度，抢全局队列中的任务

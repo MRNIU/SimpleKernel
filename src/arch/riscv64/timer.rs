@@ -80,12 +80,20 @@ pub fn init_smp(hart_id: usize) {
 ///
 /// 由 `interrupt.rs` 的 `HandleTrap` 在检测到定时器中断（scause=0x8000_0000_0000_0005）时调用。
 pub fn handle_timer() {
+    let interval = get_interval();
+    // 防御性检查：HW_FREQ 未初始化时 interval == 0，
+    // 此时不递增 tick，直接设置一个安全间隔避免中断风暴
+    if interval == 0 {
+        sbi_rt::set_timer(read_time() + 10_000_000).ok();
+        return;
+    }
+
     // 递增 tick 计数
     // 使用 Release 语序：确保 tick 更新对其他核心（通过 Acquire 读取）可见
     let tick = TICK_COUNT.fetch_add(1, Ordering::Release) + 1;
 
     // 重新设置下一次超时
-    let next = read_time() + get_interval();
+    let next = read_time() + interval;
     sbi_rt::set_timer(next).ok();
 
     // 更新 per-CPU 抢占状态

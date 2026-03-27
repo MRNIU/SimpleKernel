@@ -1,9 +1,6 @@
 //! CFS（完全公平调度器）——基于虚拟运行时间的公平调度。
 
-#[cfg(not(test))]
-use alloc::vec::Vec;
-#[cfg(test)]
-use std::vec::Vec;
+use crate::compat::Vec;
 
 use crate::task::scheduler::Scheduler;
 use crate::task::tcb::{TaskControlBlock, TaskRef};
@@ -103,7 +100,7 @@ impl Scheduler for CfsScheduler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Arc;
+    use crate::compat::Arc;
 
     fn make_task(pid: usize) -> TaskRef {
         Arc::new(TaskControlBlock::new_for_test(pid, "cfs_test"))

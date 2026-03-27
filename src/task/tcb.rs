@@ -1,9 +1,6 @@
 //! 任务控制块（TCB）与内核栈——任务的核心数据结构。
 
-#[cfg(not(test))]
-use alloc::sync::Arc;
-#[cfg(test)]
-use std::sync::Arc;
+use crate::compat::Arc;
 
 use core::sync::atomic::{AtomicI32, AtomicU32, AtomicU64, Ordering};
 
@@ -83,15 +80,15 @@ pub struct TaskControlBlock {
     signal_mask: AtomicU32,
     /// 被调用者保存上下文（仅非测试模式）
     #[cfg(not(test))]
-    context: core::cell::UnsafeCell<CalleeSavedContext>,
+    context: core::cell::SyncUnsafeCell<CalleeSavedContext>,
     /// 内核栈（idle 任务无栈，使用 Option）
     #[cfg(not(test))]
     kstack: Option<KernelStack>,
 }
 
-// SAFETY: state 与 exit_code 是原子的；context/kstack 仅在调度锁（IRQ off）下访问
+// SAFETY: state 与 exit_code 是原子的；context 使用 SyncUnsafeCell（已实现 Sync）；
+// kstack 仅在调度锁（IRQ off）下访问，同一时刻只有一个核持有
 unsafe impl Send for TaskControlBlock {}
-// SAFETY: 同上
 unsafe impl Sync for TaskControlBlock {}
 
 impl TaskControlBlock {
@@ -120,7 +117,7 @@ impl TaskControlBlock {
             wake_tick: AtomicU64::new(0),
             pending_signals: AtomicU32::new(0),
             signal_mask: AtomicU32::new(0),
-            context: core::cell::UnsafeCell::new(CalleeSavedContext::default()),
+            context: core::cell::SyncUnsafeCell::new(CalleeSavedContext::default()),
             kstack: None,
         }
     }
@@ -150,7 +147,7 @@ impl TaskControlBlock {
             wake_tick: AtomicU64::new(0),
             pending_signals: AtomicU32::new(0),
             signal_mask: AtomicU32::new(0),
-            context: core::cell::UnsafeCell::new(ctx),
+            context: core::cell::SyncUnsafeCell::new(ctx),
             kstack: Some(kstack),
         }
     }
@@ -319,5 +316,54 @@ mod tests {
         let r2 = Arc::clone(&r1);
         assert_eq!(r1.pid(), r2.pid());
         assert_eq!(Arc::strong_count(&r1), 2);
+    }
+
+    #[test]
+    fn signal_raise_and_clear() {
+        let tcb = TaskControlBlock::new_for_test(10, "sig_test");
+        assert_eq!(tcb.pending_signals(), 0);
+
+        // 发送信号 1 和 3
+        tcb.raise_signal(1 << 1);
+        tcb.raise_signal(1 << 3);
+        assert_eq!(tcb.pending_signals(), (1 << 1) | (1 << 3));
+
+        // 清除信号 1
+        tcb.clear_signal(1 << 1);
+        assert_eq!(tcb.pending_signals(), 1 << 3);
+
+        // 清除信号 3
+        tcb.clear_signal(1 << 3);
+        assert_eq!(tcb.pending_signals(), 0);
+    }
+
+    #[test]
+    fn signal_mask_operations() {
+        let tcb = TaskControlBlock::new_for_test(11, "mask_test");
+        assert_eq!(tcb.signal_mask(), 0);
+
+        tcb.set_signal_mask(0xFFFF_0000);
+        assert_eq!(tcb.signal_mask(), 0xFFFF_0000);
+
+        tcb.set_signal_mask(0);
+        assert_eq!(tcb.signal_mask(), 0);
+    }
+
+    #[test]
+    fn wake_tick_operations() {
+        let tcb = TaskControlBlock::new_for_test(12, "sleep_test");
+        assert_eq!(tcb.wake_tick(), 0);
+
+        tcb.set_wake_tick(42);
+        assert_eq!(tcb.wake_tick(), 42);
+
+        tcb.set_wake_tick(0);
+        assert_eq!(tcb.wake_tick(), 0);
+    }
+
+    #[test]
+    fn parent_pid() {
+        let tcb = TaskControlBlock::new_for_test(13, "parent_test");
+        assert_eq!(tcb.parent_pid(), None);
     }
 }

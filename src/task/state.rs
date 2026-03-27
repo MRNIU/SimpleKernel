@@ -290,4 +290,61 @@ mod tests {
         assert!(TaskState::from_u8(7).is_none());
         assert!(TaskState::from_u8(255).is_none());
     }
+
+    /// 穷举所有 (state, msg) 组合，保证 transition() 不 panic 且结果合理。
+    #[test]
+    fn exhaustive_no_panic() {
+        let all_states = [
+            TaskState::UnInit,
+            TaskState::Ready,
+            TaskState::Running,
+            TaskState::Sleeping,
+            TaskState::Blocked,
+            TaskState::Exited,
+            TaskState::Stopped,
+        ];
+        let all_msgs = [
+            TaskMsg::Schedule,
+            TaskMsg::PickUp,
+            TaskMsg::Yield,
+            TaskMsg::Exit { code: 0 },
+            TaskMsg::Wakeup,
+            TaskMsg::Sleep,
+            TaskMsg::Block,
+            TaskMsg::Stop,
+            TaskMsg::Cont,
+            TaskMsg::Reap,
+        ];
+
+        let mut ok_count = 0;
+        let mut err_count = 0;
+
+        for &state in &all_states {
+            for &msg in &all_msgs {
+                match transition(state, msg) {
+                    Ok(next) => {
+                        // 合法转移的目标状态必须也是有效状态
+                        assert!(
+                            all_states.contains(&next),
+                            "transition({:?}, {:?}) 返回了未知状态 {:?}",
+                            state,
+                            msg,
+                            next
+                        );
+                        ok_count += 1;
+                    }
+                    Err(e) => {
+                        assert_eq!(e.from, state);
+                        assert_eq!(e.msg, msg);
+                        err_count += 1;
+                    }
+                }
+            }
+        }
+
+        // 7 种状态 × 10 种消息 = 70 种组合
+        assert_eq!(ok_count + err_count, 70);
+        // 合法路径恰好 11 条
+        assert_eq!(ok_count, 11, "合法转移路径数量不符预期");
+    }
 }

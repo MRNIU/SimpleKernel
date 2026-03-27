@@ -106,4 +106,6 @@ impl fmt::Display for ErrorCode {
     }
 }
 
+impl core::error::Error for ErrorCode {}
+
 pub type KResult<T> = Result<T, ErrorCode>;

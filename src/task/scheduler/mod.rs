@@ -54,60 +54,43 @@ impl SchedPolicy {
     }
 }
 
+/// 为 `SchedPolicy` 自动转发 `Scheduler` trait 的所有方法。
+macro_rules! dispatch_scheduler {
+    ($self:expr, $method:ident $(, $arg:expr)*) => {
+        match $self {
+            SchedPolicy::Fifo(s) => s.$method($($arg),*),
+            SchedPolicy::RoundRobin(s) => s.$method($($arg),*),
+            SchedPolicy::Cfs(s) => s.$method($($arg),*),
+        }
+    };
+}
+
 impl Scheduler for SchedPolicy {
     fn enqueue(&mut self, task: TaskRef) {
-        match self {
-            SchedPolicy::Fifo(s) => s.enqueue(task),
-            SchedPolicy::RoundRobin(s) => s.enqueue(task),
-            SchedPolicy::Cfs(s) => s.enqueue(task),
-        }
+        dispatch_scheduler!(self, enqueue, task);
     }
 
     fn pick_next(&mut self) -> Option<TaskRef> {
-        match self {
-            SchedPolicy::Fifo(s) => s.pick_next(),
-            SchedPolicy::RoundRobin(s) => s.pick_next(),
-            SchedPolicy::Cfs(s) => s.pick_next(),
-        }
+        dispatch_scheduler!(self, pick_next)
     }
 
     fn task_tick(&mut self, current: &crate::task::tcb::TaskControlBlock) -> bool {
-        match self {
-            SchedPolicy::Fifo(s) => s.task_tick(current),
-            SchedPolicy::RoundRobin(s) => s.task_tick(current),
-            SchedPolicy::Cfs(s) => s.task_tick(current),
-        }
+        dispatch_scheduler!(self, task_tick, current)
     }
 
     fn put_prev(&mut self, task: TaskRef) {
-        match self {
-            SchedPolicy::Fifo(s) => s.put_prev(task),
-            SchedPolicy::RoundRobin(s) => s.put_prev(task),
-            SchedPolicy::Cfs(s) => s.put_prev(task),
-        }
+        dispatch_scheduler!(self, put_prev, task);
     }
 
     fn steal_one(&mut self) -> Option<TaskRef> {
-        match self {
-            SchedPolicy::Fifo(s) => s.steal_one(),
-            SchedPolicy::RoundRobin(s) => s.steal_one(),
-            SchedPolicy::Cfs(s) => s.steal_one(),
-        }
+        dispatch_scheduler!(self, steal_one)
     }
 
     fn queue_size(&self) -> usize {
-        match self {
-            SchedPolicy::Fifo(s) => s.queue_size(),
-            SchedPolicy::RoundRobin(s) => s.queue_size(),
-            SchedPolicy::Cfs(s) => s.queue_size(),
-        }
+        dispatch_scheduler!(self, queue_size)
     }
 
     fn is_empty(&self) -> bool {
-        match self {
-            SchedPolicy::Fifo(s) => s.is_empty(),
-            SchedPolicy::RoundRobin(s) => s.is_empty(),
-            SchedPolicy::Cfs(s) => s.is_empty(),
-        }
+        dispatch_scheduler!(self, is_empty)
     }
 }

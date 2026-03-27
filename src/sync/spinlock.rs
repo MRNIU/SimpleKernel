@@ -346,4 +346,57 @@ mod tests {
         let _g = lock.lock();
         assert!(lock.is_locked());
     }
+
+    #[test]
+    fn concurrent_access() {
+        use std::sync::Arc;
+        use std::thread;
+
+        let lock = Arc::new(SpinLock::new(0u64, "concurrent"));
+        let mut handles = Vec::new();
+
+        for _ in 0..4 {
+            let lock = Arc::clone(&lock);
+            handles.push(thread::spawn(move || {
+                for _ in 0..1000 {
+                    let mut g = lock.lock();
+                    *g += 1;
+                }
+            }));
+        }
+
+        for h in handles {
+            h.join().expect("线程应正常结束");
+        }
+
+        let g = lock.lock();
+        assert_eq!(*g, 4000, "并发计数器最终值应为 4000");
+    }
+
+    #[test]
+    fn concurrent_guard_drop_releases() {
+        use std::sync::Arc;
+        use std::thread;
+
+        // 验证多线程环境下 guard drop 正确释放锁
+        let lock = Arc::new(SpinLock::new(Vec::<usize>::new(), "drop_concurrent"));
+        let mut handles = Vec::new();
+
+        for i in 0..4 {
+            let lock = Arc::clone(&lock);
+            handles.push(thread::spawn(move || {
+                for j in 0..100 {
+                    let mut g = lock.lock();
+                    g.push(i * 100 + j);
+                }
+            }));
+        }
+
+        for h in handles {
+            h.join().expect("线程应正常结束");
+        }
+
+        let g = lock.lock();
+        assert_eq!(g.len(), 400, "应有 4×100=400 个元素");
+    }
 }

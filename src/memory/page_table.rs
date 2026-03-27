@@ -257,9 +257,159 @@ mod inner {
 #[cfg(not(test))]
 pub use inner::PageTable;
 
+/// 测试用页表实现——使用堆分配模拟物理帧，可在宿主机上测试 walk/map/unmap 逻辑。
+#[cfg(test)]
+mod test_page_table {
+    use super::{PageFlags, PageTableEntry};
+    use crate::config::PAGE_SIZE;
+    use crate::error::{ErrorCode, KResult};
+    use crate::memory::address::{PhysAddr, VirtAddr};
+
+    const ENTRIES_PER_PAGE: usize = PAGE_SIZE / 8;
+    /// Sv39 三级页表
+    const PT_LEVELS: usize = 3;
+
+    #[inline]
+    fn vpn_index(va: VirtAddr, level: usize) -> usize {
+        (va.as_usize() >> (12 + level * 9)) & 0x1FF
+    }
+
+    /// 堆分配的帧——模拟 FrameTracker
+    struct TestFrame {
+        data: Box<[u8; PAGE_SIZE]>,
+    }
+
+    impl TestFrame {
+        fn alloc() -> Self {
+            Self {
+                data: Box::new([0u8; PAGE_SIZE]),
+            }
+        }
+
+        fn paddr(&self) -> PhysAddr {
+            PhysAddr::new(self.data.as_ptr() as usize)
+        }
+    }
+
+    /// # Safety
+    /// `paddr` 必须指向 TestFrame 分配的堆内存。
+    unsafe fn pte_array(paddr: PhysAddr) -> &'static mut [PageTableEntry; ENTRIES_PER_PAGE] {
+        unsafe { &mut *(paddr.as_usize() as *mut [PageTableEntry; ENTRIES_PER_PAGE]) }
+    }
+
+    /// 测试用页表
+    pub struct TestPageTable {
+        root: TestFrame,
+        frames: Vec<TestFrame>,
+    }
+
+    impl TestPageTable {
+        pub fn new() -> Self {
+            Self {
+                root: TestFrame::alloc(),
+                frames: Vec::new(),
+            }
+        }
+
+        pub fn root_paddr(&self) -> PhysAddr {
+            self.root.paddr()
+        }
+
+        pub fn find_or_create_pte(&mut self, va: VirtAddr) -> KResult<&'static mut PageTableEntry> {
+            let mut paddr = self.root.paddr();
+
+            for level in (1..PT_LEVELS).rev() {
+                let table = unsafe { pte_array(paddr) };
+                let idx = vpn_index(va, level);
+                let pte = &mut table[idx];
+
+                if !pte.is_valid() {
+                    let frame = TestFrame::alloc();
+                    let frame_paddr = frame.paddr();
+                    *pte = PageTableEntry::new_intermediate(frame_paddr);
+                    self.frames.push(frame);
+                }
+
+                paddr = pte.paddr();
+            }
+
+            let table = unsafe { pte_array(paddr) };
+            let idx = vpn_index(va, 0);
+            Ok(&mut table[idx])
+        }
+
+        pub fn find_pte(&self, va: VirtAddr) -> Option<&'static PageTableEntry> {
+            let mut paddr = self.root.paddr();
+
+            for level in (1..PT_LEVELS).rev() {
+                let table = unsafe { pte_array(paddr) };
+                let idx = vpn_index(va, level);
+                let pte = &table[idx];
+                if !pte.is_valid() {
+                    return None;
+                }
+                paddr = pte.paddr();
+            }
+
+            let table = unsafe { pte_array(paddr) };
+            let idx = vpn_index(va, 0);
+            Some(&table[idx])
+        }
+
+        pub fn find_pte_mut(&mut self, va: VirtAddr) -> Option<&'static mut PageTableEntry> {
+            let mut paddr = self.root.paddr();
+
+            for level in (1..PT_LEVELS).rev() {
+                let table = unsafe { pte_array(paddr) };
+                let idx = vpn_index(va, level);
+                let pte = &table[idx];
+                if !pte.is_valid() {
+                    return None;
+                }
+                paddr = pte.paddr();
+            }
+
+            let table = unsafe { pte_array(paddr) };
+            let idx = vpn_index(va, 0);
+            Some(&mut table[idx])
+        }
+
+        pub fn map_page(&mut self, va: VirtAddr, pa: PhysAddr, flags: PageFlags) -> KResult<()> {
+            let pte = self.find_or_create_pte(va)?;
+            if pte.is_valid() {
+                return Err(ErrorCode::VmMapFailed);
+            }
+            *pte = PageTableEntry::new(pa, flags);
+            Ok(())
+        }
+
+        pub fn unmap_page(&mut self, va: VirtAddr) -> KResult<PhysAddr> {
+            let pte = self.find_pte_mut(va).ok_or(ErrorCode::VmPageNotMapped)?;
+            if !pte.is_valid() {
+                return Err(ErrorCode::VmPageNotMapped);
+            }
+            let old_pa = pte.paddr();
+            *pte = PageTableEntry::empty();
+            Ok(old_pa)
+        }
+
+        pub fn get_mapping(&self, va: VirtAddr) -> Option<(PhysAddr, PageFlags)> {
+            let pte = self.find_pte(va)?;
+            if pte.is_valid() && pte.is_leaf() {
+                Some((pte.paddr(), pte.flags()))
+            } else {
+                None
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::test_page_table::TestPageTable;
     use super::*;
+    use crate::error::ErrorCode;
+    use crate::memory::address::VirtAddr;
 
     #[test]
     fn pte_roundtrip() {
@@ -313,5 +463,103 @@ mod tests {
         let intermediate = PageTableEntry::new(pa, PageFlags::VALID);
         assert!(intermediate.is_valid());
         assert!(!intermediate.is_leaf());
+    }
+
+    // ─── PageTable walk/map/unmap 测试 ──────────────────────────────────────
+
+    #[test]
+    fn map_and_get_mapping() {
+        let mut pt = TestPageTable::new();
+        let va = VirtAddr::new(0x1000); // 第一个用户页
+        let pa = PhysAddr::new(0x8020_0000);
+        let flags = PageFlags::kernel_rw();
+
+        pt.map_page(va, pa, flags).expect("map_page 应成功");
+
+        let (mapped_pa, mapped_flags) = pt.get_mapping(va).expect("应能找到映射");
+        assert_eq!(mapped_pa, pa);
+        assert!(mapped_flags.contains(PageFlags::VALID));
+        assert!(mapped_flags.contains(PageFlags::READ));
+        assert!(mapped_flags.contains(PageFlags::WRITE));
+    }
+
+    #[test]
+    fn map_different_pages() {
+        let mut pt = TestPageTable::new();
+
+        // 映射两个不同的虚拟页到不同的物理页
+        let va1 = VirtAddr::new(0x0000_1000);
+        let va2 = VirtAddr::new(0x0000_2000);
+        let pa1 = PhysAddr::new(0x8020_0000);
+        let pa2 = PhysAddr::new(0x8020_1000);
+
+        pt.map_page(va1, pa1, PageFlags::kernel_rw())
+            .expect("map va1");
+        pt.map_page(va2, pa2, PageFlags::kernel_rx())
+            .expect("map va2");
+
+        let (got_pa1, _) = pt.get_mapping(va1).expect("va1 应已映射");
+        let (got_pa2, _) = pt.get_mapping(va2).expect("va2 应已映射");
+        assert_eq!(got_pa1, pa1);
+        assert_eq!(got_pa2, pa2);
+    }
+
+    #[test]
+    fn double_map_fails() {
+        let mut pt = TestPageTable::new();
+        let va = VirtAddr::new(0x1000);
+        let pa = PhysAddr::new(0x8020_0000);
+
+        pt.map_page(va, pa, PageFlags::kernel_rw())
+            .expect("首次 map 应成功");
+        let err = pt
+            .map_page(va, pa, PageFlags::kernel_rw())
+            .expect_err("重复 map 应失败");
+        assert_eq!(err, ErrorCode::VmMapFailed);
+    }
+
+    #[test]
+    fn unmap_page_returns_old_pa() {
+        let mut pt = TestPageTable::new();
+        let va = VirtAddr::new(0x1000);
+        let pa = PhysAddr::new(0x8020_0000);
+
+        pt.map_page(va, pa, PageFlags::kernel_rw())
+            .expect("map 应成功");
+        let old_pa = pt.unmap_page(va).expect("unmap 应成功");
+        assert_eq!(old_pa, pa);
+
+        // unmap 后再查询应为 None（PTE 已清零，is_leaf 为 false）
+        assert!(pt.get_mapping(va).is_none());
+    }
+
+    #[test]
+    fn unmap_unmapped_page_fails() {
+        let mut pt = TestPageTable::new();
+        let va = VirtAddr::new(0x1000);
+
+        let err = pt.unmap_page(va).expect_err("unmap 未映射页应失败");
+        assert_eq!(err, ErrorCode::VmPageNotMapped);
+    }
+
+    #[test]
+    fn map_pages_in_different_vpn_ranges() {
+        let mut pt = TestPageTable::new();
+
+        // 跨不同 VPN[2] 范围的地址，会触发不同的二级页表分配
+        let va_low = VirtAddr::new(0x0000_1000);
+        let va_high = VirtAddr::new(0x4000_0000); // VPN[2] = 1
+        let pa1 = PhysAddr::new(0x8020_0000);
+        let pa2 = PhysAddr::new(0x8020_1000);
+
+        pt.map_page(va_low, pa1, PageFlags::kernel_rw())
+            .expect("map low");
+        pt.map_page(va_high, pa2, PageFlags::kernel_rw())
+            .expect("map high");
+
+        let (got1, _) = pt.get_mapping(va_low).expect("low 应已映射");
+        let (got2, _) = pt.get_mapping(va_high).expect("high 应已映射");
+        assert_eq!(got1, pa1);
+        assert_eq!(got2, pa2);
     }
 }
