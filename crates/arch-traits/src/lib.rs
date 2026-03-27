@@ -3,38 +3,39 @@
 //! 架构 CPU 原语——打破 sync ↔ arch ↔ per_cpu 循环依赖。
 //!
 //! 此 crate 提供最底层的 CPU 操作（core_id、中断控制），
-//! 它们是简单的 inline asm 指令，无需依赖上层模块。
+//! 尽可能使用架构 crate（`riscv`、`aarch64-cpu`）代替内联汇编。
 //!
 //! 使用 `target_os = "none"` 区分裸机（内核）和宿主机（测试/clippy）：
-//! - `cfg(target_os = "none")`: 裸机编译，执行真实的特权 asm
+//! - `cfg(target_os = "none")`: 裸机编译，执行真实的特权操作
 //! - `cfg(not(target_os = "none"))`: 宿主机编译，no-op 或 mock
 //!
 //! 不能使用 `cfg(test)` 因为 `test` 仅对当前正在测试的 crate 生效，
 //! 不对其依赖传播。当 simplekernel 运行测试时，arch-traits 作为依赖
 //! 被编译时 `cfg(test)` 为 false，会导致特权 asm 在用户态执行 → SIGILL。
 
+#[cfg(all(target_os = "none", target_arch = "aarch64"))]
+use aarch64_cpu::registers::{DAIF, MPIDR_EL1, Readable};
+
 // ─── core_id ─────────────────────────────────────────────────────────
 
 /// 读取当前核心 ID。
 ///
 /// - RISC-V: 从 `tp` 寄存器读取（boot.S 中设置为 hart ID）
-/// - AArch64: 从 `MPIDR_EL1.Aff0` 读取
+/// - AArch64: 从 `MPIDR_EL1.Aff0` 读取（通过 `aarch64-cpu` crate）
 /// - 宿主机: 每线程分配唯一 ID（thread_local）
 #[inline(always)]
 pub fn core_id() -> usize {
     #[cfg(all(target_os = "none", target_arch = "riscv64"))]
     {
         let id: usize;
-        // SAFETY: tp 寄存器在 boot.S 中设置为 hart ID
+        // SAFETY: tp 寄存器在 boot.S 中设置为 hart ID，是通用寄存器（非 CSR），
+        // riscv crate 不提供访问接口，只能使用内联汇编
         unsafe { core::arch::asm!("mv {id}, tp", id = out(reg) id) };
         id
     }
     #[cfg(all(target_os = "none", target_arch = "aarch64"))]
     {
-        let mpidr: u64;
-        // SAFETY: MPIDR_EL1 在 EL1 下始终可读
-        unsafe { core::arch::asm!("mrs {mpidr}, mpidr_el1", mpidr = out(reg) mpidr) };
-        (mpidr & 0xFF) as usize
+        MPIDR_EL1.read(MPIDR_EL1::Aff0) as usize
     }
     #[cfg(not(target_os = "none"))]
     {
@@ -70,10 +71,8 @@ pub fn irq_enabled() -> bool {
     }
     #[cfg(all(target_os = "none", target_arch = "aarch64"))]
     {
-        let daif: u64;
-        // SAFETY: DAIF 在 EL1 下可读
-        unsafe { core::arch::asm!("mrs {daif}, daif", daif = out(reg) daif) };
-        (daif & (1 << 7)) == 0
+        // DAIF.I = 0 表示 IRQ 未屏蔽（即中断启用）
+        DAIF.read(DAIF::I) == 0
     }
     #[cfg(not(target_os = "none"))]
     {
@@ -87,10 +86,12 @@ pub fn irq_disable() {
     #[cfg(all(target_os = "none", target_arch = "riscv64"))]
     riscv::interrupt::supervisor::disable();
     #[cfg(all(target_os = "none", target_arch = "aarch64"))]
-    // SAFETY: msr daifset 是 EL1 特权指令
+    // SAFETY: daifset 是 EL1 特权指令，原子地设置 DAIF 位。
+    // 不能使用 DAIF.write()（msr DAIF, Xn），因为它会覆盖整个寄存器，
+    // 可能意外取消屏蔽 Debug/SError/FIQ 异常。
     unsafe {
-        core::arch::asm!("msr daifset, #2")
-    };
+        core::arch::asm!("msr daifset, #2");
+    }
     // 宿主机: no-op
 }
 
@@ -106,10 +107,11 @@ pub unsafe fn irq_enable() {
         riscv::interrupt::supervisor::enable()
     };
     #[cfg(all(target_os = "none", target_arch = "aarch64"))]
-    // SAFETY: msr daifclr 是 EL1 特权指令
+    // SAFETY: daifclr 是 EL1 特权指令，原子地清除 DAIF 位。
+    // 同 irq_disable，不能使用 DAIF.write()。
     unsafe {
-        core::arch::asm!("msr daifclr, #2")
-    };
+        core::arch::asm!("msr daifclr, #2");
+    }
     // 宿主机: no-op
 }
 
@@ -119,15 +121,13 @@ pub unsafe fn irq_enable() {
 #[inline(always)]
 pub fn flush_tlb() {
     #[cfg(all(target_os = "none", target_arch = "riscv64"))]
-    // SAFETY: sfence.vma 是 S-mode 特权指令
-    unsafe {
-        core::arch::asm!("sfence.vma")
-    };
+    riscv::asm::sfence_vma_all();
     #[cfg(all(target_os = "none", target_arch = "aarch64"))]
-    // SAFETY: tlbi/dsb/isb 是 EL1 特权指令
+    // SAFETY: tlbi/dsb/isb 是 EL1 特权指令。
+    // aarch64-cpu crate 不提供 TLBI 封装，只能使用内联汇编。
     unsafe {
-        core::arch::asm!("tlbi vmalle1", "dsb sy", "isb")
-    };
+        core::arch::asm!("tlbi vmalle1", "dsb sy", "isb");
+    }
     // 宿主机: no-op
 }
 
@@ -149,7 +149,7 @@ impl CalleeSavedContext {
     pub fn init_for_kernel_thread(&mut self, _kstack_top: usize, _entry: fn(usize), _arg: usize) {}
 }
 
-// ─── Tick 函数指针——由 arch timer 模块注册 ──────────────────────────
+// ─── Tick 计数器 ────────────────────────────────────────────────────
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -174,35 +174,6 @@ pub fn get_current_tick() -> u64 {
 #[inline]
 pub fn ticks_per_second() -> u64 {
     config::TIMER_FREQ_HZ
-}
-
-// ─── 回调函数指针——由 kernel crate 注册 ─────────────────────────────
-
-use core::sync::atomic::AtomicPtr;
-
-/// timer_tick 回调——由 arch timer handler 调用。
-///
-/// 初始为空（裸机启动时 task 模块尚未初始化）。
-/// `task::init()` 后由 kernel 注册为 `task::timer_tick`。
-static TIMER_TICK_CB: AtomicPtr<()> = AtomicPtr::new(core::ptr::null_mut());
-
-/// 注册 timer tick 回调。
-///
-/// # Safety
-/// `cb` 必须是一个有效的 `fn()` 函数指针，且在注册后的整个内核生命周期内有效。
-pub unsafe fn register_timer_tick(cb: fn()) {
-    TIMER_TICK_CB.store(cb as *mut (), Ordering::Release);
-}
-
-/// 调用 timer tick 回调（如果已注册）。
-#[inline]
-pub fn call_timer_tick() {
-    let ptr = TIMER_TICK_CB.load(Ordering::Acquire);
-    if !ptr.is_null() {
-        // SAFETY: register_timer_tick 保证 ptr 是有效的 fn() 指针
-        let cb: fn() = unsafe { core::mem::transmute(ptr) };
-        cb();
-    }
 }
 
 #[cfg(test)]

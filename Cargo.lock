@@ -22,8 +22,10 @@ dependencies = [
 name = "arch-traits"
 version = "0.1.0"
 dependencies = [
+ "aarch64-cpu",
  "config",
  "riscv",
+ "tock-registers 0.9.0",
 ]
 
 [[package]]

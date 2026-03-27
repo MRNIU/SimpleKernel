@@ -74,35 +74,20 @@ pub fn init_smp(hart_id: usize) {
 
 /// 处理定时器中断
 ///
-/// 递增 tick 计数，重新设置下一次超时。
+/// 重置定时器硬件后，调用架构无关的公共 tick 处理。
 pub fn handle_timer() {
     let interval = get_interval();
     // 防御性检查：HW_FREQ 未初始化时 interval == 0，
-    // 此时不递增 tick，直接设置一个安全间隔避免中断风暴
+    // 此时直接设置一个安全间隔避免中断风暴
     if interval == 0 {
         sbi_rt::set_timer(read_time() + 10_000_000).ok();
         return;
     }
 
-    // 递增全局 tick 计数（arch-traits 管理）
-    let tick = arch_traits::tick_advance();
-
-    // 重新设置下一次超时
+    // 架构相关：重置 SBI 定时器
     let next = read_time() + interval;
     sbi_rt::set_timer(next).ok();
 
-    // 更新 per-CPU 抢占状态
-    // SAFETY: 在中断处理程序中调用，此时中断已被 CPU 自动关闭（sstatus.SIE=0）
-    let per_cpu = unsafe { per_cpu::current_per_cpu() };
-    per_cpu.preempt.enter_hardirq();
-
-    // 通过 arch-traits 回调调用 task::timer_tick()（打破 arch→task 依赖）
-    arch_traits::call_timer_tick();
-
-    per_cpu.preempt.exit_hardirq();
-
-    // 通知 idle loop 检查调度（唤醒到期睡眠任务等）
-    per_cpu.preempt.need_resched.store(true, Ordering::Release);
-
-    log::info!("Tick #{} (core {})", tick, per_cpu::current_core_id());
+    // 架构无关：tick 计数、抢占状态、调度记账、日志
+    crate::timer::handle_timer_common();
 }

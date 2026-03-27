@@ -23,6 +23,8 @@ mod panic;
 mod smoke_test;
 mod syscall;
 mod task;
+#[cfg(not(test))]
+mod timer;
 mod util;
 
 #[cfg(not(test))]
@@ -90,9 +92,6 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 
     // P5: 任务初始化（必须在 wake_secondary_cores 之前）
     task::init();
-    // 注册 timer tick 回调——打破 arch→task 循环依赖
-    // SAFETY: task::timer_tick 在 task::init() 后有效且生命周期为整个内核
-    unsafe { arch_traits::register_timer_tick(task::timer_tick) };
 
     Arch::wake_secondary_cores();
     smoke_test::phase4();

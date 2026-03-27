@@ -10,6 +10,11 @@ edition.workspace = true
 [dependencies]
 config = { path = "../config" }
 
-# RISC-V CSR 访问（irq_enabled/disable/enable 使用 riscv crate 的 sstatus/interrupt 模块）
+# RISC-V CSR / 指令封装（sstatus、sfence.vma 等）
 [target.'cfg(target_arch = "riscv64")'.dependencies]
 riscv = { version = "0.16", features = ["s-mode"] }
+
+# AArch64 系统寄存器访问（MPIDR_EL1、DAIF 等）
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu = "9"
+tock-registers = "0.9"

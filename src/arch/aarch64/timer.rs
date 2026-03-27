@@ -2,8 +2,6 @@
 ///
 /// 使用 AArch64 虚拟定时器（CNTV_*_EL0）实现周期性时钟中断。
 /// 目标 tick 频率：`config::TIMER_FREQ_HZ` Hz。
-use core::sync::atomic::Ordering;
-
 use config::TIMER_FREQ_HZ;
 
 /// 读取当前 tick 计数——委托给 arch-traits 全局计数器
@@ -70,11 +68,10 @@ pub fn init_smp(cpu_id: usize) {
 }
 
 /// 处理定时器中断（虚拟定时器 PPI IRQ 27）
+///
+/// 重置定时器硬件后，调用架构无关的公共 tick 处理。
 pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
-    // 递增全局 tick 计数（arch-traits 管理）
-    let tick = arch_traits::tick_advance();
-
-    // 重新加载定时器计数值
+    // 架构相关：重新加载虚拟定时器计数值
     let interval = get_interval();
     // SAFETY: CNTV_TVAL_EL0 在 EL1 下可写
     unsafe {
@@ -84,18 +81,6 @@ pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
         );
     }
 
-    // 更新 per-CPU 抢占状态
-    // SAFETY: 在中断处理程序中调用，中断已被 DAIF 屏蔽
-    let per_cpu = unsafe { per_cpu::current_per_cpu() };
-    per_cpu.preempt.enter_hardirq();
-
-    // 通过 arch-traits 回调调用 task::timer_tick()（打破 arch→task 依赖）
-    arch_traits::call_timer_tick();
-
-    per_cpu.preempt.exit_hardirq();
-
-    // 通知 idle loop 检查调度（唤醒到期睡眠任务等）
-    per_cpu.preempt.need_resched.store(true, Ordering::Release);
-
-    log::info!("Tick #{} (core {})", tick, per_cpu::current_core_id());
+    // 架构无关：tick 计数、抢占状态、调度记账、日志
+    crate::timer::handle_timer_common();
 }
