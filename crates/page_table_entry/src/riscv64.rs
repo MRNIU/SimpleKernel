@@ -47,25 +47,21 @@ bitflags! {
 }
 
 impl PteFlagsOps for PteFlags {
-    /// 内核读写数据映射 (V | R | W | G | A | D)。
     #[inline]
     fn kernel_rw() -> Self {
         Self::VALID | Self::READ | Self::WRITE | Self::GLOBAL | Self::ACCESSED | Self::DIRTY
     }
 
-    /// 内核读-执行映射 (V | R | X | G | A)。
     #[inline]
     fn kernel_rx() -> Self {
         Self::VALID | Self::READ | Self::EXECUTE | Self::GLOBAL | Self::ACCESSED
     }
 
-    /// 内核只读映射 (V | R | G | A)。
     #[inline]
     fn kernel_ro() -> Self {
         Self::VALID | Self::READ | Self::GLOBAL | Self::ACCESSED
     }
 
-    /// 内核读写执行映射 (V | R | W | X | G | A | D)。
     #[inline]
     fn kernel_rwx() -> Self {
         Self::VALID

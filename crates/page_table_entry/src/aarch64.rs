@@ -74,45 +74,26 @@ bitflags! {
 }
 
 impl PteFlagsOps for PteFlags {
-    /// 内核读写数据映射。
-    ///
-    /// VALID | TABLE | AF | SH_INNER | PXN | UXN。
-    /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
     #[inline]
     fn kernel_rw() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::PXN | Self::UXN
     }
 
-    /// 内核读-执行映射。
-    ///
-    /// AP_RO 使 EL1 只读，未设 PXN 允许 EL1 执行，UXN 禁止 EL0 执行。
-    /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
     #[inline]
     fn kernel_rx() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::AP_RO | Self::UXN
     }
 
-    /// 内核只读映射。
-    ///
-    /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
     #[inline]
     fn kernel_ro() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::AP_RO | Self::PXN | Self::UXN
     }
 
-    /// 内核读写执行映射。
-    ///
-    /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
     #[inline]
     fn kernel_rwx() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::UXN
     }
 
-    /// 设备 MMIO 映射（Device-nGnRnE，不可缓存，不可执行）。
-    ///
-    /// 使用 MAIR 索引 1（`MAIR_IDX1`），对应 Device-nGnRnE 属性。
-    /// 内核态 MMIO 设备寄存器必须使用此 preset，
-    /// 使用 Normal memory 属性会导致 CPU cache 与设备状态不一致。
     #[inline]
     fn kernel_device() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::MAIR_IDX1 | Self::PXN | Self::UXN
