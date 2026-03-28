@@ -31,6 +31,10 @@ struct NodeFrame {
     layout: core::alloc::Layout,
 }
 
+// SAFETY: NodeFrame 独占其分配的内存，可安全跨线程传递。
+#[cfg(test)]
+unsafe impl Send for NodeFrame {}
+
 #[cfg(test)]
 impl Drop for NodeFrame {
     fn drop(&mut self) {

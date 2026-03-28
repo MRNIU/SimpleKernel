@@ -22,7 +22,7 @@ pub use pte_riscv64::PteFlags;
 
 #[cfg(any(test, target_os = "none"))]
 pub(crate) mod table;
-#[cfg(target_os = "none")]
+#[cfg(any(test, target_os = "none"))]
 pub use table::PageTable;
 
 #[cfg(test)]

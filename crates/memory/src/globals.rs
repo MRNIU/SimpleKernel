@@ -1,13 +1,13 @@
 //! 全局内存状态——`MemoryInfo`、内核页表、MMIO 便利映射。
 
 use address::PhysAddr;
-#[cfg(target_os = "none")]
+#[cfg(any(test, target_os = "none"))]
 use address::VirtAddr;
 
-#[cfg(target_os = "none")]
+#[cfg(any(test, target_os = "none"))]
 use sync_crate::SpinLock;
 
-#[cfg(target_os = "none")]
+#[cfg(any(test, target_os = "none"))]
 use crate::page_table::PageTable;
 
 /// 内核启动时从 FDT 解析出的内存布局信息。
@@ -29,17 +29,17 @@ pub struct MemoryInfo {
 pub static MEMORY_INFO: spin::Once<MemoryInfo> = spin::Once::new();
 
 /// 全局内核页表。
-#[cfg(target_os = "none")]
+#[cfg(any(test, target_os = "none"))]
 static KERNEL_PAGE_TABLE: spin::Once<SpinLock<PageTable>> = spin::Once::new();
 
 /// 将构建完成的内核页表存入全局 `KERNEL_PAGE_TABLE`。
-#[cfg(target_os = "none")]
+#[cfg(any(test, target_os = "none"))]
 pub fn store_kernel_page_table(pt: PageTable) {
     KERNEL_PAGE_TABLE.call_once(|| SpinLock::new(pt, "kernel_pt"));
 }
 
 /// 获取全局内核页表的引用；初始化前返回 `None`。
-#[cfg(target_os = "none")]
+#[cfg(any(test, target_os = "none"))]
 pub fn kernel_page_table() -> Option<&'static SpinLock<PageTable>> {
     KERNEL_PAGE_TABLE.get()
 }
@@ -52,7 +52,7 @@ pub fn kernel_page_table() -> Option<&'static SpinLock<PageTable>> {
 /// # Errors
 ///
 /// 内核页表未初始化或映射冲突时返回错误。
-#[cfg(target_os = "none")]
+#[cfg(any(test, target_os = "none"))]
 pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, crate::error::MemoryError> {
     let region = crate::mmio::MmioRegion::map(paddr, size)?;
     let vaddr = region.base();

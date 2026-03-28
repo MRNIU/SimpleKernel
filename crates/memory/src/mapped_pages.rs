@@ -11,18 +11,12 @@
 //! 3. **所有权三态**：`Owned`（持有帧）、`Borrowed`（不持有帧）、
 //!    `Permanent`（永不释放），防止 identity-map drop 灾难。
 
-#[cfg(not(test))]
 use alloc::vec::Vec;
 
-#[cfg(not(test))]
 use crate::error::MemoryError;
-#[cfg(not(test))]
 use crate::frame::{AllocatedFrames, MappedFrames};
-#[cfg(not(test))]
 use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
-#[cfg(not(test))]
 use address::{PhysAddr, VirtAddr};
-#[cfg(not(test))]
 use config::PAGE_SIZE;
 
 /// 帧所有权模型——解决 identity-map drop 灾难和 Theseus 的 Owned/Borrowed 区分。
@@ -31,7 +25,6 @@ use config::PAGE_SIZE;
 /// - `Owned`：帧由 `MappedPages` 持有，drop 时 unmap PTE + 释放帧
 /// - `Borrowed`：帧不由 `MappedPages` 持有（如 identity mapping），drop 时仅 unmap PTE
 /// - `Permanent`：永久映射，drop 时不做任何事
-#[cfg(not(test))]
 enum FrameOwnership {
     Owned(Vec<MappedFrames>),
     Borrowed,
@@ -39,7 +32,6 @@ enum FrameOwnership {
 }
 
 /// 永久帧注册表——持有永久映射的物理帧所有权，防止泄漏且保留追踪能力。
-#[cfg(not(test))]
 static PERMANENT_FRAMES: sync_crate::SpinLock<Vec<MappedFrames>> =
     sync_crate::SpinLock::new(Vec::new(), "perm_frames");
 
@@ -47,7 +39,6 @@ static PERMANENT_FRAMES: sync_crate::SpinLock<Vec<MappedFrames>> =
 ///
 /// 不可 Clone、不可 Copy（仿射类型约束）。
 /// Drop 时根据 [`FrameOwnership`] 决定清理策略。
-#[cfg(not(test))]
 pub struct MappedPages {
     /// 映射起始虚拟地址
     vaddr: VirtAddr,
@@ -59,7 +50,6 @@ pub struct MappedPages {
     ownership: FrameOwnership,
 }
 
-#[cfg(not(test))]
 impl MappedPages {
     /// Identity-map 一段物理地址区间（VA == PA）。
     ///
@@ -208,7 +198,7 @@ impl MappedPages {
         );
         let addr = self.vaddr.as_usize() + offset;
         assert!(
-            addr % core::mem::align_of::<T>() == 0,
+            addr.is_multiple_of(core::mem::align_of::<T>()),
             "MappedPages::as_type: 地址 {:#x} 未对齐到 {} 字节",
             addr,
             core::mem::align_of::<T>(),
@@ -241,7 +231,7 @@ impl MappedPages {
         );
         let addr = self.vaddr.as_usize() + offset;
         assert!(
-            addr % core::mem::align_of::<T>() == 0,
+            addr.is_multiple_of(core::mem::align_of::<T>()),
             "MappedPages::as_type_mut: 地址 {:#x} 未对齐到 {} 字节",
             addr,
             core::mem::align_of::<T>(),
@@ -269,7 +259,6 @@ impl MappedPages {
     }
 }
 
-#[cfg(not(test))]
 impl Drop for MappedPages {
     fn drop(&mut self) {
         if matches!(self.ownership, FrameOwnership::Permanent) {
@@ -288,7 +277,6 @@ impl Drop for MappedPages {
     }
 }
 
-#[cfg(not(test))]
 impl core::fmt::Debug for MappedPages {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let kind = match &self.ownership {
@@ -301,5 +289,73 @@ impl core::fmt::Debug for MappedPages {
             "MappedPages({}, {} pages, {:?}, {})",
             self.vaddr, self.page_count, self.flags, kind
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::page_table::table::PageTable;
+
+    /// map_identity 应建立正确的映射并可查询。
+    #[test]
+    fn map_identity_basic() {
+        let mut pt = PageTable::create().expect("创建页表");
+        let pa = PhysAddr::new(0x1_0000);
+        let mp = MappedPages::map_identity(&mut pt, pa, 1, PteFlags::kernel_rw())
+            .expect("map_identity 应成功");
+        assert_eq!(mp.vaddr(), VirtAddr::new(0x1_0000));
+        assert_eq!(mp.size(), PAGE_SIZE);
+
+        let (got_pa, _) = pt
+            .get_mapping(VirtAddr::new(0x1_0000))
+            .expect("应能查到映射");
+        assert_eq!(got_pa, pa);
+    }
+
+    /// map_identity 重复映射同一 VA 应失败并回滚。
+    #[test]
+    fn map_identity_conflict_rollback() {
+        let mut pt = PageTable::create().expect("创建页表");
+        let pa = PhysAddr::new(0x2_0000);
+        let _mp1 = MappedPages::map_identity(&mut pt, pa, 1, PteFlags::kernel_rw())
+            .expect("首次 map 应成功");
+        let err = MappedPages::map_identity(&mut pt, pa, 1, PteFlags::kernel_rw())
+            .expect_err("重复 map 应失败");
+        assert_eq!(err, MemoryError::MapFailed);
+    }
+
+    /// new_borrowed 应创建 Borrowed 所有权的映射。
+    #[test]
+    fn new_borrowed_ownership() {
+        let mp = MappedPages::new_borrowed(VirtAddr::new(0x3_0000), 2, PteFlags::kernel_rw());
+        assert_eq!(mp.vaddr(), VirtAddr::new(0x3_0000));
+        assert_eq!(mp.size(), 2 * PAGE_SIZE);
+        assert!(mp.flags().is_writable());
+        // Debug 输出应包含 "borrowed"
+        let dbg = alloc::format!("{:?}", mp);
+        assert!(dbg.contains("borrowed"));
+    }
+
+    /// into_permanent 应标记为永久映射。
+    #[test]
+    fn into_permanent_marks_permanent() {
+        let mp = MappedPages::new_borrowed(VirtAddr::new(0x4_0000), 1, PteFlags::kernel_rw());
+        let mp = mp.into_permanent();
+        let dbg = alloc::format!("{:?}", mp);
+        assert!(dbg.contains("permanent"));
+    }
+
+    /// 多页 map_identity 后逐页查询应都有效。
+    #[test]
+    fn map_identity_multi_page() {
+        let mut pt = PageTable::create().expect("创建页表");
+        let pa = PhysAddr::new(0x5_0000);
+        let _mp = MappedPages::map_identity(&mut pt, pa, 3, PteFlags::kernel_ro())
+            .expect("多页 map 应成功");
+        for i in 0..3 {
+            let va = VirtAddr::new(0x5_0000 + i * PAGE_SIZE);
+            assert!(pt.get_mapping(va).is_some(), "第 {} 页应已映射", i);
+        }
     }
 }

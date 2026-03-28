@@ -2,7 +2,7 @@
 //!
 //! 参考 Theseus OS 的 `Frames<const S: MemoryState>` 设计：
 //! - 帧以**范围**（[`FrameRange`]）为单位管理，而非单个地址
-//! - 四状态生命周期：`Free → Allocated → Mapped → Unmapped → Allocated → Free`
+//! - 状态生命周期：`Allocated → Mapped → Unmapped → Allocated → …`
 //! - 状态转换消费 self，编译期强制正确的生命周期路径
 //! - Drop 按状态分派：`Mapped` 状态 panic（必须经 unmap），其余归还分配器
 
@@ -236,5 +236,120 @@ impl<const S: MemoryState> Drop for Frames<S> {
             );
         }
         dealloc_frames(&self.range);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 初始化测试用帧分配器——分配一块堆内存模拟物理内存区域。
+    ///
+    /// 全局 static 只能 init 一次，用 `std::sync::Once` 保证幂等。
+    fn ensure_init() {
+        static INIT: std::sync::Once = std::sync::Once::new();
+        INIT.call_once(|| {
+            let layout =
+                std::alloc::Layout::from_size_align(64 * PAGE_SIZE, PAGE_SIZE).expect("layout");
+            // SAFETY: layout 有效且非零大小
+            let ptr = unsafe { std::alloc::alloc_zeroed(layout) };
+            assert!(!ptr.is_null());
+            let start = PhysAddr::new(ptr as usize);
+            // SAFETY: 测试专用内存区域，不与其他分配重叠
+            unsafe { init(start, 64 * PAGE_SIZE) };
+        });
+    }
+
+    /// 分配单帧后帧计数应为 1，地址应页对齐。
+    #[test]
+    fn alloc_one_frame() {
+        ensure_init();
+        let frame = AllocatedFrames::alloc_one().expect("alloc_one 应成功");
+        assert_eq!(frame.count(), 1);
+        assert!(frame.start_paddr().is_aligned());
+    }
+
+    /// 分配多帧后帧计数应正确。
+    #[test]
+    fn alloc_multiple_frames() {
+        ensure_init();
+        let frames = AllocatedFrames::alloc(4).expect("alloc(4) 应成功");
+        assert_eq!(frames.count(), 4);
+    }
+
+    /// 帧 drop 后应能重新分配（归还到分配器）。
+    #[test]
+    fn alloc_dealloc_realloc() {
+        ensure_init();
+        let addr1 = {
+            let frame = AllocatedFrames::alloc_one().expect("分配");
+            frame.start_paddr()
+        };
+        // frame 已 drop，帧应归还
+        let frame2 = AllocatedFrames::alloc_one().expect("重新分配应成功");
+        // buddy allocator 不保证地址相同，但至少分配成功
+        assert!(frame2.start_paddr().is_aligned());
+        _ = addr1;
+    }
+
+    /// Allocated → Mapped → Unmapped 状态转换链。
+    #[test]
+    fn typestate_transitions() {
+        ensure_init();
+        let allocated = AllocatedFrames::alloc_one().expect("分配");
+        let pa = allocated.start_paddr();
+
+        let mapped = allocated.into_mapped();
+        assert_eq!(mapped.start_paddr(), pa);
+
+        let unmapped = mapped.into_unmapped();
+        assert_eq!(unmapped.start_paddr(), pa);
+
+        // Unmapped drop 自动归还分配器
+    }
+
+    /// Unmapped → Allocated 回转。
+    #[test]
+    fn unmapped_back_to_allocated() {
+        ensure_init();
+        let allocated = AllocatedFrames::alloc_one().expect("分配");
+        let mapped = allocated.into_mapped();
+        let unmapped = mapped.into_unmapped();
+        let reallocated = unmapped.into_allocated();
+        assert_eq!(reallocated.count(), 1);
+    }
+
+    /// split_at 应正确分割帧范围。
+    #[test]
+    fn split_frames() {
+        ensure_init();
+        let frames = AllocatedFrames::alloc(4).expect("alloc(4)");
+        let mid = PhysPageNum::new(frames.start().as_usize() + 2);
+        let (left, right) = frames.split_at(mid);
+        assert_eq!(left.count(), 2);
+        assert_eq!(right.count(), 2);
+    }
+
+    /// merge 相邻帧应成功。
+    #[test]
+    fn merge_adjacent_frames() {
+        ensure_init();
+        let frames = AllocatedFrames::alloc(4).expect("alloc(4)");
+        let mid = PhysPageNum::new(frames.start().as_usize() + 2);
+        let (left, right) = frames.split_at(mid);
+        let merged = left
+            .merge(right)
+            .unwrap_or_else(|_| panic!("相邻帧 merge 应成功"));
+        assert_eq!(merged.count(), 4);
+    }
+
+    /// Mapped 帧 drop 时应 panic。
+    #[test]
+    #[should_panic(expected = "Frames<Mapped> dropped without unmapping")]
+    fn mapped_drop_panics() {
+        ensure_init();
+        let allocated = AllocatedFrames::alloc_one().expect("分配");
+        let _mapped = allocated.into_mapped();
+        // _mapped drop 时应 panic
     }
 }

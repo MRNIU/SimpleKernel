@@ -14,13 +14,9 @@
 //! 内部通过 [`MappedPages`] 管理页表映射和生命周期，
 //! 避免重复实现 unmap / permanent 逻辑。
 
-#[cfg(not(test))]
 use crate::error::MemoryError;
-#[cfg(not(test))]
 use crate::mapped_pages::MappedPages;
-#[cfg(not(test))]
 use crate::page_table::{PteFlags, PteFlagsOps};
-#[cfg(not(test))]
 use address::PhysAddr;
 
 /// 已映射的 MMIO 区域——提供类型安全的寄存器访问。
@@ -28,12 +24,10 @@ use address::PhysAddr;
 /// 持有此类型即证明底层物理地址区域已被 identity-map 到内核页表。
 /// 不可 Clone（一个映射只有一个 owner），可通过 `&self` 共享读取。
 /// Drop 时自动 unmap（由内部 `MappedPages` 负责，除非标记为永久映射）。
-#[cfg(not(test))]
 pub struct MmioRegion {
     mapping: MappedPages,
 }
 
-#[cfg(not(test))]
 impl MmioRegion {
     /// 映射 MMIO 区域并返回 `MmioRegion`。
     ///
@@ -99,7 +93,7 @@ impl MmioRegion {
         );
         let addr = self.mapping.vaddr().as_usize() + offset;
         assert!(
-            addr % core::mem::align_of::<T>() == 0,
+            addr.is_multiple_of(core::mem::align_of::<T>()),
             "MmioRegion::read_reg: 地址 {:#x} 未对齐到 {} 字节",
             addr,
             core::mem::align_of::<T>(),
@@ -128,7 +122,7 @@ impl MmioRegion {
         );
         let addr = self.mapping.vaddr().as_usize() + offset;
         assert!(
-            addr % core::mem::align_of::<T>() == 0,
+            addr.is_multiple_of(core::mem::align_of::<T>()),
             "MmioRegion::write_reg: 地址 {:#x} 未对齐到 {} 字节",
             addr,
             core::mem::align_of::<T>(),
@@ -139,7 +133,6 @@ impl MmioRegion {
     }
 }
 
-#[cfg(not(test))]
 impl core::fmt::Debug for MmioRegion {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(

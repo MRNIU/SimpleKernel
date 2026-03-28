@@ -2,7 +2,7 @@
 
 use address::{PhysAddr, VirtAddr};
 
-use crate::page_table::{PteFlags, PteFlagsOps};
+use crate::page_table::PteFlags;
 
 /// 物理地址转虚拟地址（当前为 identity mapping，直接透传）。
 pub fn phys_to_virt(pa: PhysAddr) -> VirtAddr {
@@ -43,7 +43,7 @@ pub fn identity_map_range(
         let mut mapped = false;
         for level in (1..config::PT_LEVELS).rev() {
             let page_size = crate::page_table::page_size_at_level(level);
-            if addr.as_usize() % page_size == 0 && remaining >= page_size {
+            if addr.as_usize().is_multiple_of(page_size) && remaining >= page_size {
                 pt.map_at_level(va, addr, flags, level)?;
                 addr += page_size;
                 mapped = true;
