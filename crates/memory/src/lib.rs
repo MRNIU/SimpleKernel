@@ -35,6 +35,9 @@ pub mod mapped_pages;
 /// 类型化 MMIO 区域。
 #[cfg(any(test, target_os = "none"))]
 pub mod mmio;
+/// 虚拟页分配器。
+#[cfg(any(test, target_os = "none"))]
+pub mod page_allocator;
 /// 多级页表与架构原生 PTE 标志位。
 pub mod page_table;
 /// TLB 刷新。
