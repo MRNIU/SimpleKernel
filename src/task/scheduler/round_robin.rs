@@ -5,9 +5,6 @@ use alloc::collections::VecDeque;
 use crate::task::scheduler::Scheduler;
 use crate::task::tcb::{TaskControlBlock, TaskRef};
 
-/// 默认时间片（tick 数）
-const DEFAULT_TIME_QUANTUM: u64 = 5;
-
 /// Round-Robin 调度器
 ///
 /// 在 FIFO 基础上增加时间片：当前任务运行满 `time_quantum` 个 tick 后
@@ -24,7 +21,7 @@ pub struct RoundRobinScheduler {
 impl RoundRobinScheduler {
     /// 创建 RR 调度器，使用默认时间片。
     pub fn new() -> Self {
-        Self::with_quantum(DEFAULT_TIME_QUANTUM)
+        Self::with_quantum(config::SCHED_RR_TIME_QUANTUM)
     }
 
     /// 创建 RR 调度器，指定时间片大小。

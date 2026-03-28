@@ -7,7 +7,6 @@ use sync::SpinLock;
 static KERNEL_ELF: Once<KernelElf> = Once::new();
 
 const MAX_OBSERVERS: usize = 4;
-const MAX_BACKTRACE_DEPTH: usize = config::MAX_BACKTRACE_DEPTH;
 
 pub struct PanicEvent<'a> {
     pub reason: &'a str,
@@ -136,7 +135,7 @@ fn dump_backtrace() {
         }
 
         let depth = DEPTH.fetch_add(1, Ordering::Relaxed);
-        if depth >= MAX_BACKTRACE_DEPTH {
+        if depth >= config::MAX_BACKTRACE_DEPTH {
             return UnwindReasonCode::NORMAL_STOP;
         }
 
