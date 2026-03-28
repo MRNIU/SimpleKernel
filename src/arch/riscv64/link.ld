@@ -74,6 +74,7 @@ SECTIONS {
     PROVIDE (etext = .);
     .rodata         : ALIGN(0x1000) { *(.rodata .rodata.* .gnu.linkonce.r.*) }
     .rodata1        : ALIGN(0x1000) { *(.rodata1) }
+    PROVIDE (__erodata = .);
     .sdata2         : ALIGN(0x1000) {
         *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
     }

@@ -51,6 +51,12 @@ pub const DEFAULT_LOG_LEVEL: log::LevelFilter = log::LevelFilter::Debug;
 /// 回溯最大帧数
 pub const MAX_BACKTRACE_DEPTH: usize = 16;
 
+/// 物理地址到虚拟地址的固定偏移量。
+///
+/// - `0`：identity mapping（VA == PA），当前使用
+/// - 非零值：higher-half kernel（VA = PA + PHYS_OFFSET）
+pub const PHYS_OFFSET: usize = 0;
+
 const _: () = assert!(
     PAGE_SIZE.is_power_of_two(),
     "PAGE_SIZE must be a power of two"

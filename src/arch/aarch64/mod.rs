@@ -61,7 +61,7 @@ impl ArchOps for Aarch64 {
         // PL011 UART —— console 直接 MMIO 访问
         let start = PhysAddr::new(PL011_BASE);
         let end = PhysAddr::new(PL011_BASE + PL011_SIZE);
-        memory::identity_map_range(pt, start, end, PteFlags::kernel_rw())?;
+        pt.identity_map_range(start, end, PteFlags::kernel_rw())?;
         log::info!("MemoryInit: mapped PL011 UART @ {:#010X}", PL011_BASE);
         Ok(())
     }

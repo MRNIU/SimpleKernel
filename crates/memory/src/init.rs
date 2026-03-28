@@ -28,27 +28,29 @@ pub fn init() -> PageTable {
     // SAFETY: 链接器定义的符号
     unsafe extern "C" {
         static __etext: u8;
+        static __erodata: u8;
     }
     let text_end = PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up();
+    let rodata_end = PhysAddr::new(unsafe { &__erodata as *const u8 as usize }).align_up();
 
     // 分段映射：
-    // [mem_start, text_end) → RWX（.boot 段混合了 code+data，无法拆分为 RX/RW）
-    // [text_end, mem_end)   → RW（.rodata + .data + .bss + 空闲内存）
-    crate::identity_map_range(&mut pt, mem_start, text_end, PteFlags::kernel_rwx())
+    // [mem_start, text_end)    → RWX（.boot 段混合了 code+data，无法拆分为 RX/RW）
+    // [text_end, rodata_end)   → RO（.rodata——只读数据，防止意外修改）
+    // [rodata_end, mem_end)    → RW（.data + .bss + 空闲内存）
+    pt.identity_map_range(mem_start, text_end, PteFlags::kernel_rwx())
         .expect("failed to map kernel code region");
-    crate::identity_map_range(
-        &mut pt,
-        text_end,
-        mem_start + mem_size,
-        PteFlags::kernel_rw(),
-    )
-    .expect("failed to map kernel data + free memory");
+    pt.identity_map_range(text_end, rodata_end, PteFlags::kernel_ro())
+        .expect("failed to map kernel rodata region");
+    pt.identity_map_range(rodata_end, mem_start + mem_size, PteFlags::kernel_rw())
+        .expect("failed to map kernel data + free memory");
 
     log::info!(
-        "MemoryInit: code {}-{} (RWX), data {}-{} (RW)",
+        "MemoryInit: code {}-{} (RWX), rodata {}-{} (RO), data {}-{} (RW)",
         mem_start,
         text_end,
         text_end,
+        rodata_end,
+        rodata_end,
         mem_start + mem_size
     );
 

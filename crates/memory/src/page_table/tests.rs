@@ -467,9 +467,9 @@ fn get_mapping_on_empty_table() {
     assert!(pt.get_mapping(VirtAddr::new(0)).is_none());
 }
 
-/// 中间节点存在但叶 PTE 为空时，unmap 应返回 PageNotMapped。
+/// unmap 唯一叶后，中间节点也被回收——同路径上的其他 VA unmap 应返回 PageNotMapped。
 #[test]
-fn unmap_empty_leaf_with_existing_intermediate() {
+fn unmap_reclaims_intermediate_then_sibling_fails() {
     let mut pt = PageTable::create().expect("创建测试页表失败");
 
     let va = VirtAddr::new(0x1000);
@@ -478,11 +478,55 @@ fn unmap_empty_leaf_with_existing_intermediate() {
         .expect("map 应成功");
     pt.unmap_page(va).expect("unmap 应成功");
 
-    let va_same_path = VirtAddr::new(0x2000);
+    // 中间节点已回收，同路径的兄弟 VA 也不可达
+    let va_sibling = VirtAddr::new(0x2000);
     let err = pt
-        .unmap_page(va_same_path)
-        .expect_err("叶 PTE 为空，应返回 PageNotMapped");
+        .unmap_page(va_sibling)
+        .expect_err("中间节点已回收，应返回 PageNotMapped");
     assert_eq!(err, MemoryError::PageNotMapped);
+}
+
+/// unmap 后中间节点回收：当同表有其他映射时不回收。
+#[test]
+fn unmap_preserves_intermediate_when_sibling_exists() {
+    let mut pt = PageTable::create().expect("创建测试页表失败");
+
+    let va1 = VirtAddr::new(0x1000);
+    let va2 = VirtAddr::new(0x2000);
+    let pa1 = PhysAddr::new(0x8020_0000);
+    let pa2 = PhysAddr::new(0x8020_1000);
+
+    pt.map_page(va1, pa1, PteFlags::kernel_rw())
+        .expect("map va1");
+    pt.map_page(va2, pa2, PteFlags::kernel_rw())
+        .expect("map va2");
+
+    // unmap va1，va2 仍在同一中间节点中——中间节点不应被回收
+    pt.unmap_page(va1).expect("unmap va1");
+    assert!(pt.get_mapping(va1).is_none(), "va1 应已 unmap");
+    assert!(pt.get_mapping(va2).is_some(), "va2 应仍然有效");
+
+    // unmap va2 后可重新映射（中间节点此时回收，重新分配）
+    pt.unmap_page(va2).expect("unmap va2");
+    pt.map_page(va1, pa1, PteFlags::kernel_rw())
+        .expect("重映射应成功");
+}
+
+/// identity_map_range 多页映射后应能逐页查询。
+#[test]
+fn identity_map_range_multi_page() {
+    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let start = PhysAddr::new(0x10_0000);
+    let end = PhysAddr::new(0x10_3000); // 3 pages
+
+    pt.identity_map_range(start, end, PteFlags::kernel_rw())
+        .expect("identity_map_range 应成功");
+
+    for i in 0..3 {
+        let va = VirtAddr::new(0x10_0000 + i * config::PAGE_SIZE);
+        let (pa, _) = pt.get_mapping(va).expect("应能查到映射");
+        assert_eq!(pa, PhysAddr::new(0x10_0000 + i * config::PAGE_SIZE));
+    }
 }
 
 /// 大页映射：Level 1（2MB）应能映射和查询。
@@ -502,7 +546,7 @@ fn map_at_level1_huge_page() {
     assert_eq!(mapped_flags, flags.for_leaf_at_level(1));
 }
 
-/// 大页范围内不同偏移处的 VA 都应命中同一大页映射。
+/// 大页范围内不同偏移处的 VA 应返回精确物理地址（基址 + 页内偏移）。
 #[test]
 fn get_mapping_within_huge_page() {
     let mut pt = PageTable::create().expect("创建测试页表失败");
@@ -514,9 +558,14 @@ fn get_mapping_within_huge_page() {
     pt.map_at_level(va_base, pa, PteFlags::kernel_rw(), 1)
         .expect("大页映射应成功");
 
+    // 基地址查询——偏移 0
+    let (got_pa_base, _) = pt.get_mapping(va_base).expect("大页基地址应命中映射");
+    assert_eq!(got_pa_base, pa);
+
+    // 偏移地址查询——应返回 pa + 0x1000
     let va_offset = VirtAddr::new(huge_size + 0x1000);
     let (got_pa, _) = pt.get_mapping(va_offset).expect("大页内偏移地址应命中映射");
-    assert_eq!(got_pa, pa);
+    assert_eq!(got_pa, pa + 0x1000);
 }
 
 /// 大页映射后，不可在同一路径上再映射子页。

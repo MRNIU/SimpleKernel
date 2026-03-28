@@ -1,26 +1,38 @@
 //! 多级页表——walk / map / unmap 逻辑。
 //!
 //! 裸机和宿主机测试共享同一份 walk 实现，
-//! 通过 `#[cfg]` 选择页表节点的帧类型（裸机用 buddy allocator，测试用堆分配）。
+//! 通过 [`NodeFrameOps`] trait 统一帧类型（裸机用 buddy allocator，测试用堆分配）。
 //!
-//! # TODO
-//!
-//! - **中间节点回收**：当前 `unmap_page` 不回收空的中间页表节点。
-//!   如果大量映射后 unmap，中间节点帧会一直保留直到整个 `PageTable` drop。
-//!   Linux 的 `free_pgtables()` 在 VMA 销毁时递归回收空中间页；
-//!   Theseus 在 unmap 时检查中间节点是否全空并回收。
-//!   后续可在 `unmap_page` 后检查同级所有 PTE 是否均为空，
-//!   若是则清除上级 PTE 并归还该中间节点帧。
+//! `unmap_page` 在清除叶 PTE 后回溯检查中间节点是否全空，
+//! 若是则清除上级 PTE 并回收该帧——参考 Linux `free_pgtables()`。
 
 extern crate alloc;
 
-use alloc::vec::Vec;
+use alloc::collections::BTreeMap;
 
-use super::{Level0, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index};
+use super::{Level0, PageLevel, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index};
 use crate::error::MemoryError;
 use address::{PhysAddr, VirtAddr};
 
 const PT_LEVELS: usize = config::PT_LEVELS;
+
+/// 页表节点帧的统一接口——裸机和测试各自实现。
+trait NodeFrameOps: Send + Sized {
+    /// 分配一个零初始化的页表节点帧。
+    fn alloc() -> Result<Self, MemoryError>;
+    /// 获取帧的物理地址（裸机 identity mapping）或堆地址（测试）。
+    fn paddr(&self) -> PhysAddr;
+}
+
+#[cfg(target_os = "none")]
+impl NodeFrameOps for crate::frame::AllocatedFrames {
+    fn alloc() -> Result<Self, MemoryError> {
+        Self::alloc_one()
+    }
+    fn paddr(&self) -> PhysAddr {
+        self.start_paddr()
+    }
+}
 
 #[cfg(target_os = "none")]
 type NodeFrame = crate::frame::AllocatedFrames;
@@ -43,32 +55,18 @@ impl Drop for NodeFrame {
     }
 }
 
-/// 分配一个页表节点帧（零初始化）。
-fn alloc_node() -> Result<NodeFrame, MemoryError> {
-    #[cfg(target_os = "none")]
-    {
-        crate::frame::AllocatedFrames::alloc_one()
-    }
-    #[cfg(test)]
-    {
+#[cfg(test)]
+impl NodeFrameOps for NodeFrame {
+    fn alloc() -> Result<Self, MemoryError> {
         let layout = core::alloc::Layout::from_size_align(config::PAGE_SIZE, config::PAGE_SIZE)
             .expect("NodeFrame: invalid layout");
         // SAFETY: layout 非零大小
         let ptr = unsafe { std::alloc::alloc_zeroed(layout) };
         assert!(!ptr.is_null(), "NodeFrame: allocation failed");
-        Ok(NodeFrame { ptr, layout })
+        Ok(Self { ptr, layout })
     }
-}
-
-/// 获取节点帧的物理地址（裸机 identity mapping）或堆地址（测试）。
-fn node_paddr(frame: &NodeFrame) -> PhysAddr {
-    #[cfg(target_os = "none")]
-    {
-        frame.start_paddr()
-    }
-    #[cfg(test)]
-    {
-        PhysAddr::new(frame.ptr as usize)
+    fn paddr(&self) -> PhysAddr {
+        PhysAddr::new(self.ptr as usize)
     }
 }
 
@@ -95,26 +93,19 @@ pub struct PageTable {
     /// 持有根帧所有权，阻止帧被释放——字段本身不直接访问。
     #[expect(dead_code, reason = "仅用于持有所有权，通过 root_paddr 访问")]
     root: NodeFrame,
-    frames: Vec<NodeFrame>,
-}
-
-/// Walker 行为——遇到无效中间节点时的策略。
-enum WalkAction {
-    /// 只读遍历，无效时返回错误
-    ReadOnly,
-    /// 自动分配中间节点
-    CreateIntermediate,
+    /// 中间页表节点——以物理地址为键，O(log n) 查找/删除。
+    frames: BTreeMap<PhysAddr, NodeFrame>,
 }
 
 impl PageTable {
     /// 创建新页表，分配根帧。
     pub fn create() -> Result<Self, MemoryError> {
-        let root = alloc_node()?;
-        let root_paddr = node_paddr(&root);
+        let root = <NodeFrame as NodeFrameOps>::alloc()?;
+        let root_paddr = NodeFrameOps::paddr(&root);
         Ok(Self {
             root_paddr,
             root,
-            frames: Vec::new(),
+            frames: BTreeMap::new(),
         })
     }
 
@@ -125,18 +116,14 @@ impl PageTable {
         self.root_paddr
     }
 
-    /// 统一 walker——遍历到 `target_level` 层级的 PTE 并返回裸指针。
-    ///
-    /// 从根（最高级）向下遍历至 `target_level`，中间层级根据 `action` 决定
-    /// 遇到无效 PTE 时是分配新节点还是返回错误。
+    /// 映射用 walker——遍历到 `target_level` 并按需分配中间节点。
     ///
     /// 遍历过程中若遇到叶节点（大页），返回 `MapFailed`
     /// （表示该路径上已有大页映射，不可再创建子映射）。
-    fn walk_to_level(
+    fn walk_create(
         &mut self,
         va: VirtAddr,
         target_level: usize,
-        action: WalkAction,
     ) -> Result<*mut PageTableEntry, MemoryError> {
         let mut paddr = self.root_paddr;
 
@@ -147,16 +134,11 @@ impl PageTable {
             let pte = table.read(idx);
 
             if !pte.is_valid() {
-                match action {
-                    WalkAction::ReadOnly => return Err(MemoryError::PageNotMapped),
-                    WalkAction::CreateIntermediate => {
-                        let frame = alloc_node()?;
-                        let frame_paddr = node_paddr(&frame);
-                        table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
-                        self.frames.push(frame);
-                        paddr = frame_paddr;
-                    }
-                }
+                let frame = <NodeFrame as NodeFrameOps>::alloc()?;
+                let frame_paddr = NodeFrameOps::paddr(&frame);
+                table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
+                self.frames.insert(frame_paddr, frame);
+                paddr = frame_paddr;
             } else if pte.is_leaf(level) {
                 // 路径上已有大页映射，不可在其子级创建新映射
                 return Err(MemoryError::MapFailed);
@@ -197,8 +179,8 @@ impl PageTable {
         flags: PteFlags,
         level: usize,
     ) -> Result<(), MemoryError> {
-        let pte_ptr = self.walk_to_level(va, level, WalkAction::CreateIntermediate)?;
-        // SAFETY: walk_to_level 返回的指针指向 self 持有的帧内存
+        let pte_ptr = self.walk_create(va, level)?;
+        // SAFETY: walk_create 返回的指针指向 self 持有的帧内存
         let current = unsafe { pte_ptr.read() };
         if current.is_valid() {
             return Err(MemoryError::MapFailed);
@@ -211,18 +193,64 @@ impl PageTable {
     }
 
     /// 取消映射单个虚拟页，返回其原始物理地址。
+    ///
+    /// unmap 后自动检查中间页表节点是否全空——若是则清除上级 PTE
+    /// 并回收该节点帧，参考 Linux `free_pgtables()` 的行为。
     pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, MemoryError> {
-        let pte_ptr = self
-            .walk_to_level(va, 0, WalkAction::ReadOnly)
-            .map_err(|_| MemoryError::PageNotMapped)?;
-        // SAFETY: walk_to_level 返回的指针指向 self 持有的帧内存
-        let pte = unsafe { pte_ptr.read() };
+        // 手动 walk 并记录路径（parent_paddr, index, child_paddr），
+        // 用于 unmap 后回溯检查空中间节点。
+        let mut path: [(PhysAddr, usize, PhysAddr); 4] =
+            [(PhysAddr::new(0), 0, PhysAddr::new(0)); 4];
+        let mut path_len = 0;
+        let mut paddr = self.root_paddr;
+
+        for level in (1..PT_LEVELS).rev() {
+            // SAFETY: paddr 指向由 self 持有的有效帧
+            let table = unsafe { table_at(paddr) };
+            let idx = vpn_index(va, level);
+            let pte = table.read(idx);
+            if !pte.is_valid() {
+                return Err(MemoryError::PageNotMapped);
+            }
+            if pte.is_leaf(level) {
+                return Err(MemoryError::PageNotMapped);
+            }
+            let child_paddr = pte.paddr();
+            path[path_len] = (paddr, idx, child_paddr);
+            path_len += 1;
+            paddr = child_paddr;
+        }
+
+        // Level 0：清除叶 PTE
+        // SAFETY: paddr 指向由 self 持有的有效帧
+        let mut table = unsafe { table_at(paddr) };
+        let idx = vpn_index(va, 0);
+        let pte = table.read(idx);
         if !pte.is_valid() {
             return Err(MemoryError::PageNotMapped);
         }
         let old_pa = pte.paddr();
-        // SAFETY: pte_ptr 指向 self 持有的帧内存，上方已确认该 PTE 有效
-        unsafe { pte_ptr.write(PageTableEntry::empty()) };
+        table.write(idx, PageTableEntry::empty());
+
+        // 回溯：从叶向根检查空中间节点并回收
+        let entries_per_table = Level0::ENTRIES;
+        let mut child_paddr = paddr;
+        for &(parent_paddr, parent_idx, _) in path[..path_len].iter().rev() {
+            // SAFETY: child_paddr 指向由 self 持有的有效帧
+            let child_table = unsafe { table_at(child_paddr) };
+            let all_empty = (0..entries_per_table).all(|j| !child_table.read(j).is_valid());
+            if !all_empty {
+                break;
+            }
+            // 清除父级 PTE
+            // SAFETY: parent_paddr 指向由 self 持有的有效帧
+            let mut parent_table = unsafe { table_at(parent_paddr) };
+            parent_table.write(parent_idx, PageTableEntry::empty());
+            // 从 self.frames 中移除并回收 child 帧（O(log n) 查找，Drop 归还分配器）
+            self.frames.remove(&child_paddr);
+            child_paddr = parent_paddr;
+        }
+
         Ok(old_pa)
     }
 
@@ -260,9 +288,55 @@ impl PageTable {
 
     /// 查询虚拟地址的映射信息，返回物理地址和标志。
     ///
-    /// 支持大页：遍历过程中若遇到叶节点即返回。
+    /// 支持大页：遇到叶节点时自动加上页内偏移，返回精确物理地址。
     pub fn get_mapping(&self, va: VirtAddr) -> Option<(PhysAddr, PteFlags)> {
-        let (pte, _level) = self.walk_readonly(va)?;
-        Some((pte.paddr(), pte.flags()))
+        let (pte, level) = self.walk_readonly(va)?;
+        let page_size = super::page_size_at_level(level);
+        let offset = va.as_usize() & (page_size - 1);
+        Some((pte.paddr() + offset, pte.flags()))
+    }
+
+    /// 将 `[start, end)` 物理地址区间 identity-map（VA == PA）。
+    ///
+    /// 自动使用最大可用页大小（1GB / 2MB / 4KB），减少 TLB 压力和页表内存占用。
+    /// 地址和剩余大小都对齐到大页边界时才使用大页映射。
+    ///
+    /// # Errors
+    ///
+    /// 映射冲突或 `start >= end` 时返回 `MapFailed`。
+    pub fn identity_map_range(
+        &mut self,
+        start: PhysAddr,
+        end: PhysAddr,
+        flags: PteFlags,
+    ) -> Result<(), MemoryError> {
+        let mut addr = start.align_down();
+        let end_aligned = end.align_up();
+
+        if addr.as_usize() >= end_aligned.as_usize() {
+            return Err(MemoryError::MapFailed);
+        }
+
+        while addr.as_usize() < end_aligned.as_usize() {
+            let remaining = end_aligned.as_usize() - addr.as_usize();
+            let va = VirtAddr::new(addr.as_usize());
+
+            // 从最大页尝试到最小页
+            let mut mapped = false;
+            for level in (1..PT_LEVELS).rev() {
+                let page_size = super::page_size_at_level(level);
+                if addr.as_usize().is_multiple_of(page_size) && remaining >= page_size {
+                    self.map_at_level(va, addr, flags, level)?;
+                    addr += page_size;
+                    mapped = true;
+                    break;
+                }
+            }
+            if !mapped {
+                self.map_page(va, addr, flags)?;
+                addr += config::PAGE_SIZE;
+            }
+        }
+        Ok(())
     }
 }

@@ -10,12 +10,15 @@
 //! 2. **RAII 自动清理**：drop 时自动 unmap 并根据 EXCLUSIVE 位释放物理帧。
 //! 3. **EXCLUSIVE 位追踪帧所有权**：帧的所有权信息编码在 PTE 中（而非软件枚举），
 //!    即使 `MappedPages` 对象丢失，遍历页表也能恢复所有权信息。
+//! 4. **显式页表绑定**：每个 `MappedPages` 持有其所属页表的引用，
+//!    Drop 时通过该引用 unmap，不依赖全局状态——为用户进程页表预留扩展点。
 
 use crate::error::MemoryError;
 use crate::frame::{AllocatedFrames, UnmappedFrames};
 use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
 use address::{FrameRange, PhysAddr, PhysPageNum, VirtAddr};
 use config::PAGE_SIZE;
+use sync_crate::SpinLock;
 
 /// 仿射类型映射——持有此值即证明 VA→PA 映射有效。
 ///
@@ -30,6 +33,12 @@ pub struct MappedPages {
     flags: PteFlags,
     /// 永久映射标记——drop 时不 unmap
     permanent: bool,
+    /// 所属页表引用——Drop 时通过此引用 unmap。
+    ///
+    /// 每个 `MappedPages` 绑定到创建它的页表。
+    /// 内核 `MappedPages` 绑定到全局内核页表（`'static` 生命周期），
+    /// 未来用户进程 `MappedPages` 将绑定到对应的进程页表。
+    page_table: &'static SpinLock<PageTable>,
 }
 
 impl MappedPages {
@@ -43,6 +52,7 @@ impl MappedPages {
     /// 映射冲突时返回错误。
     pub fn map_identity(
         pt: &mut PageTable,
+        pt_ref: &'static SpinLock<PageTable>,
         pa_start: PhysAddr,
         page_count: usize,
         flags: PteFlags,
@@ -63,6 +73,7 @@ impl MappedPages {
             page_count,
             flags,
             permanent: false,
+            page_table: pt_ref,
         })
     }
 
@@ -70,12 +81,18 @@ impl MappedPages {
     ///
     /// 调用方负责确保映射已在页表中建立。
     /// Drop 时仅 unmap PTE，帧回收由 PTE 的 EXCLUSIVE 位控制。
-    pub(crate) fn new_borrowed(vaddr: VirtAddr, page_count: usize, flags: PteFlags) -> Self {
+    pub(crate) fn new_borrowed(
+        pt_ref: &'static SpinLock<PageTable>,
+        vaddr: VirtAddr,
+        page_count: usize,
+        flags: PteFlags,
+    ) -> Self {
         Self {
             vaddr,
             page_count,
             flags,
             permanent: false,
+            page_table: pt_ref,
         }
     }
 
@@ -90,6 +107,7 @@ impl MappedPages {
     /// 帧分配失败或映射冲突时返回错误。
     pub fn map_alloc(
         pt: &mut PageTable,
+        pt_ref: &'static SpinLock<PageTable>,
         va_start: VirtAddr,
         page_count: usize,
         flags: PteFlags,
@@ -125,6 +143,7 @@ impl MappedPages {
             page_count,
             flags: exclusive_flags,
             permanent: false,
+            page_table: pt_ref,
         })
     }
 
@@ -220,24 +239,23 @@ impl MappedPages {
         unsafe { &mut *ptr }
     }
 
-    /// 从内核页表中 unmap 所有页，EXCLUSIVE 帧自动回收。
+    /// 从所属页表中 unmap 所有页，EXCLUSIVE 帧自动回收。
     fn unmap_and_reclaim(&self) {
-        if let Some(kpt) = crate::kernel_page_table() {
-            let mut guard = kpt.lock();
-            for i in 0..self.page_count {
-                let va = self.vaddr + i * PAGE_SIZE;
-                if let Some((pa, flags)) = guard.get_mapping(va) {
-                    let _ = guard.unmap_page(va);
-                    if flags.is_exclusive() {
-                        reclaim_exclusive_frame(pa);
-                    }
+        let mut guard = self.page_table.lock();
+        for i in 0..self.page_count {
+            let va = self.vaddr + i * PAGE_SIZE;
+            if let Some((pa, flags)) = guard.get_mapping(va) {
+                let _ = guard.unmap_page(va);
+                if flags.is_exclusive() {
+                    reclaim_exclusive_frame(pa);
                 }
             }
-            if self.page_count == 1 {
-                crate::tlb::flush_tlb_page(self.vaddr.as_usize());
-            } else {
-                crate::tlb::flush_tlb();
-            }
+        }
+        drop(guard);
+        if self.page_count == 1 {
+            crate::tlb::flush_tlb_page(self.vaddr.as_usize());
+        } else {
+            crate::tlb::flush_tlb();
         }
     }
 }
@@ -282,32 +300,43 @@ mod tests {
     use super::*;
     use crate::page_table::table::PageTable;
 
+    /// 创建测试用 `&'static SpinLock<PageTable>`（leak 获取 'static 引用）。
+    fn test_pt() -> &'static SpinLock<PageTable> {
+        let pt = PageTable::create().expect("创建页表");
+        Box::leak(Box::new(SpinLock::new(pt, "test_pt")))
+    }
+
     /// map_identity 应建立正确的映射并可查询。
     #[test]
     fn map_identity_basic() {
-        let mut pt = PageTable::create().expect("创建页表");
-        let pa = PhysAddr::new(0x1_0000);
-        let mp = MappedPages::map_identity(&mut pt, pa, 1, PteFlags::kernel_rw())
-            .expect("map_identity 应成功");
-        assert_eq!(mp.vaddr(), VirtAddr::new(0x1_0000));
-        assert_eq!(mp.size(), PAGE_SIZE);
-
-        let (got_pa, got_flags) = pt
-            .get_mapping(VirtAddr::new(0x1_0000))
-            .expect("应能查到映射");
-        assert_eq!(got_pa, pa);
-        // identity map 不应有 EXCLUSIVE 位
-        assert!(!got_flags.is_exclusive());
+        let pt_ref = test_pt();
+        let mp = {
+            let mut guard = pt_ref.lock();
+            let pa = PhysAddr::new(0x1_0000);
+            let mp = MappedPages::map_identity(&mut guard, pt_ref, pa, 1, PteFlags::kernel_rw())
+                .expect("map_identity 应成功");
+            assert_eq!(mp.vaddr(), VirtAddr::new(0x1_0000));
+            assert_eq!(mp.size(), PAGE_SIZE);
+            let (got_pa, got_flags) = guard
+                .get_mapping(VirtAddr::new(0x1_0000))
+                .expect("应能查到映射");
+            assert_eq!(got_pa, pa);
+            assert!(!got_flags.is_exclusive());
+            mp
+        }; // guard drops，mp 在 test 结束时 drop（可安全锁 pt_ref）
+        let _ = mp.into_permanent(); // 避免 drop 触发 unmap
     }
 
     /// map_identity 重复映射同一 VA 应失败并回滚。
     #[test]
     fn map_identity_conflict_rollback() {
-        let mut pt = PageTable::create().expect("创建页表");
+        let pt_ref = test_pt();
+        let mut guard = pt_ref.lock();
         let pa = PhysAddr::new(0x2_0000);
-        let _mp1 = MappedPages::map_identity(&mut pt, pa, 1, PteFlags::kernel_rw())
-            .expect("首次 map 应成功");
-        let err = MappedPages::map_identity(&mut pt, pa, 1, PteFlags::kernel_rw())
+        let _mp1 = MappedPages::map_identity(&mut guard, pt_ref, pa, 1, PteFlags::kernel_rw())
+            .expect("首次 map 应成功")
+            .into_permanent();
+        let err = MappedPages::map_identity(&mut guard, pt_ref, pa, 1, PteFlags::kernel_rw())
             .expect_err("重复 map 应失败");
         assert_eq!(err, MemoryError::MapFailed);
     }
@@ -315,19 +344,24 @@ mod tests {
     /// new_borrowed 应创建非 EXCLUSIVE 映射。
     #[test]
     fn new_borrowed_ownership() {
-        let mp = MappedPages::new_borrowed(VirtAddr::new(0x3_0000), 2, PteFlags::kernel_rw());
+        let pt_ref = test_pt();
+        let mp =
+            MappedPages::new_borrowed(pt_ref, VirtAddr::new(0x3_0000), 2, PteFlags::kernel_rw());
         assert_eq!(mp.vaddr(), VirtAddr::new(0x3_0000));
         assert_eq!(mp.size(), 2 * PAGE_SIZE);
         assert!(mp.flags().is_writable());
         assert!(!mp.flags().is_exclusive());
         let dbg = alloc::format!("{:?}", mp);
         assert!(dbg.contains("borrowed"));
+        let _ = mp.into_permanent();
     }
 
     /// into_permanent 应标记为永久映射。
     #[test]
     fn into_permanent_marks_permanent() {
-        let mp = MappedPages::new_borrowed(VirtAddr::new(0x4_0000), 1, PteFlags::kernel_rw());
+        let pt_ref = test_pt();
+        let mp =
+            MappedPages::new_borrowed(pt_ref, VirtAddr::new(0x4_0000), 1, PteFlags::kernel_rw());
         let mp = mp.into_permanent();
         let dbg = alloc::format!("{:?}", mp);
         assert!(dbg.contains("permanent"));
@@ -336,13 +370,15 @@ mod tests {
     /// 多页 map_identity 后逐页查询应都有效。
     #[test]
     fn map_identity_multi_page() {
-        let mut pt = PageTable::create().expect("创建页表");
+        let pt_ref = test_pt();
+        let mut guard = pt_ref.lock();
         let pa = PhysAddr::new(0x5_0000);
-        let _mp = MappedPages::map_identity(&mut pt, pa, 3, PteFlags::kernel_ro())
-            .expect("多页 map 应成功");
+        let _mp = MappedPages::map_identity(&mut guard, pt_ref, pa, 3, PteFlags::kernel_ro())
+            .expect("多页 map 应成功")
+            .into_permanent();
         for i in 0..3 {
             let va = VirtAddr::new(0x5_0000 + i * PAGE_SIZE);
-            assert!(pt.get_mapping(va).is_some(), "第 {} 页应已映射", i);
+            assert!(guard.get_mapping(va).is_some(), "第 {} 页应已映射", i);
         }
     }
 
@@ -350,31 +386,35 @@ mod tests {
     #[test]
     fn map_alloc_sets_exclusive() {
         crate::frame::ensure_test_init();
-        let mut pt = PageTable::create().expect("创建页表");
+        let pt_ref = test_pt();
+        let mut guard = pt_ref.lock();
         let va = VirtAddr::new(0x10_0000);
-        let mp = MappedPages::map_alloc(&mut pt, va, 1, PteFlags::kernel_rw())
+        let mp = MappedPages::map_alloc(&mut guard, pt_ref, va, 1, PteFlags::kernel_rw())
             .expect("map_alloc 应成功");
 
-        let (_, got_flags) = pt.get_mapping(va).expect("应能查到映射");
+        let (_, got_flags) = guard.get_mapping(va).expect("应能查到映射");
         assert!(
             got_flags.is_exclusive(),
             "map_alloc 映射应设置 EXCLUSIVE 位"
         );
         assert!(mp.flags().is_exclusive());
         assert_eq!(mp.size(), PAGE_SIZE);
+        let _ = mp.into_permanent(); // 测试中不执行 Drop unmap
     }
 
     /// map_alloc 多页后逐页应都有 EXCLUSIVE 位。
     #[test]
     fn map_alloc_multi_page_exclusive() {
         crate::frame::ensure_test_init();
-        let mut pt = PageTable::create().expect("创建页表");
+        let pt_ref = test_pt();
+        let mut guard = pt_ref.lock();
         let va = VirtAddr::new(0x20_0000);
-        let _mp = MappedPages::map_alloc(&mut pt, va, 3, PteFlags::kernel_rw())
-            .expect("多页 map_alloc 应成功");
+        let _mp = MappedPages::map_alloc(&mut guard, pt_ref, va, 3, PteFlags::kernel_rw())
+            .expect("多页 map_alloc 应成功")
+            .into_permanent();
         for i in 0..3 {
             let page_va = VirtAddr::new(0x20_0000 + i * PAGE_SIZE);
-            let (_, flags) = pt.get_mapping(page_va).expect("应已映射");
+            let (_, flags) = guard.get_mapping(page_va).expect("应已映射");
             assert!(flags.is_exclusive(), "第 {} 页应有 EXCLUSIVE 位", i);
         }
     }
@@ -384,7 +424,8 @@ mod tests {
     fn identity_map_range_empty_range_fails() {
         let mut pt = PageTable::create().expect("创建页表");
         let pa = PhysAddr::new(0x1000);
-        let err = crate::identity_map_range(&mut pt, pa, pa, PteFlags::kernel_rw())
+        let err = pt
+            .identity_map_range(pa, pa, PteFlags::kernel_rw())
             .expect_err("start == end 应失败");
         assert_eq!(err, MemoryError::MapFailed);
     }

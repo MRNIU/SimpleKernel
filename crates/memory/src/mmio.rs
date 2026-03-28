@@ -41,9 +41,10 @@ impl MmioRegion {
         let mut guard = kpt.lock();
         let pa_aligned = paddr.align_down();
         let end = paddr + size;
-        crate::identity_map_range(&mut guard, pa_aligned, end, PteFlags::kernel_device())?;
+        guard.identity_map_range(pa_aligned, end, PteFlags::kernel_device())?;
         let page_count = (end.align_up().as_usize() - pa_aligned.as_usize()) / config::PAGE_SIZE;
         let mapping = MappedPages::new_borrowed(
+            kpt,
             address::VirtAddr::new(pa_aligned.as_usize()),
             page_count,
             PteFlags::kernel_device(),

@@ -27,6 +27,13 @@ pub fn register_tlb_shootdown(f: fn(TlbFlushRequest)) {
 /// 刷新整个 TLB——用于批量页表操作（切换地址空间、初始化映射等）。
 ///
 /// 单页 unmap 应使用 [`flush_tlb_page`] 避免不必要的全局刷新。
+///
+/// # TODO
+///
+/// - **ASID 支持**：当前 TLB flush 是全局的（所有 ASID），引入用户进程后
+///   每次进程切换都需全局 flush，代价很高。后续应为每个地址空间分配 ASID，
+///   使用 `sfence.vma rs1, rs2`（RISC-V）/ `tlbi aside1, <asid>`（AArch64）
+///   实现按 ASID 刷新，避免影响其他进程的 TLB 缓存。
 #[inline(always)]
 pub fn flush_tlb() {
     #[cfg(all(target_os = "none", target_arch = "riscv64"))]
