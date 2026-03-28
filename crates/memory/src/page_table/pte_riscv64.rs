@@ -7,7 +7,7 @@
 
 use bitflags::bitflags;
 
-use super::PageTableEntry;
+use super::{PageTableEntry, PteFlagsOps, PteOps};
 use address::PhysAddr;
 
 const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
@@ -33,28 +33,28 @@ bitflags! {
     }
 }
 
-impl PteFlags {
+impl PteFlagsOps for PteFlags {
     /// 内核读写数据映射 (V | R | W | G | A | D)。
     #[inline]
-    pub fn kernel_rw() -> Self {
+    fn kernel_rw() -> Self {
         Self::VALID | Self::READ | Self::WRITE | Self::GLOBAL | Self::ACCESSED | Self::DIRTY
     }
 
     /// 内核读-执行映射 (V | R | X | G | A)。
     #[inline]
-    pub fn kernel_rx() -> Self {
+    fn kernel_rx() -> Self {
         Self::VALID | Self::READ | Self::EXECUTE | Self::GLOBAL | Self::ACCESSED
     }
 
     /// 内核只读映射 (V | R | G | A)。
     #[inline]
-    pub fn kernel_ro() -> Self {
+    fn kernel_ro() -> Self {
         Self::VALID | Self::READ | Self::GLOBAL | Self::ACCESSED
     }
 
     /// 内核读写执行映射 (V | R | W | X | G | A | D)。
     #[inline]
-    pub fn kernel_rwx() -> Self {
+    fn kernel_rwx() -> Self {
         Self::VALID
             | Self::READ
             | Self::WRITE
@@ -64,54 +64,74 @@ impl PteFlags {
             | Self::DIRTY
     }
 
+    /// 设备 MMIO 映射。
+    ///
+    /// RISC-V 没有页表级缓存属性控制（由 PMA/Svpbmt 扩展管理），
+    /// 当前与 `kernel_rw()` 相同。
+    #[inline]
+    fn kernel_device() -> Self {
+        Self::kernel_rw()
+    }
+
     /// 是否具有写权限。
     #[inline]
-    pub fn is_writable(self) -> bool {
+    fn is_writable(self) -> bool {
         self.contains(Self::WRITE)
+    }
+
+    /// RISC-V 的 PTE 格式与层级无关——叶节点仅由 R/W/X 位区分，
+    /// 无需为不同层级调整标志位，直接返回 self。
+    #[inline]
+    fn for_leaf_at_level(self, _level: usize) -> Self {
+        self
     }
 }
 
-impl PageTableEntry {
+impl PteOps for PageTableEntry {
+    type Flags = PteFlags;
+
     /// 从物理地址和标志构造 PTE。
     #[inline]
-    pub fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
+    fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
         let ppn = ((paddr.as_usize() as u64) >> PAGE_SHIFT) << FLAGS_BITS;
         Self(ppn | flags.bits())
     }
 
     /// 从 PTE 提取物理地址。
     #[inline]
-    pub fn paddr(self) -> PhysAddr {
+    fn paddr(self) -> PhysAddr {
         PhysAddr::new((((self.0 & PPN_MASK) >> FLAGS_BITS) << PAGE_SHIFT) as usize)
     }
 
     /// 从 PTE 提取标志位。
     #[inline]
-    pub fn flags(self) -> PteFlags {
+    fn flags(self) -> PteFlags {
         PteFlags::from_bits_truncate(self.0 & 0xFF)
     }
 
     /// PTE 是否有效（V 位）。
     #[inline]
-    pub fn is_valid(self) -> bool {
+    fn is_valid(self) -> bool {
         self.0 & PteFlags::VALID.bits() != 0
     }
 
-    /// 是否为叶节点（R/W/X 至少有一个设置）。
+    /// 是否为叶节点。
+    ///
+    /// RISC-V 规范：R/W/X 至少有一个设置即为叶节点，与层级无关。
     #[inline]
-    pub fn is_leaf(self) -> bool {
+    fn is_leaf(self, _level: usize) -> bool {
         self.0 & (PteFlags::READ | PteFlags::WRITE | PteFlags::EXECUTE).bits() != 0
     }
 
     /// 空 PTE（全零）。
     #[inline]
-    pub fn empty() -> Self {
+    fn empty() -> Self {
         Self(0)
     }
 
     /// 中间节点 PTE（仅 V 位，指向下一级页表）。
     #[inline]
-    pub fn new_intermediate(paddr: PhysAddr) -> Self {
+    fn new_intermediate(paddr: PhysAddr) -> Self {
         Self::new(paddr, PteFlags::VALID)
     }
 }

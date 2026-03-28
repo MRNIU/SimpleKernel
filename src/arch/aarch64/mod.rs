@@ -57,7 +57,7 @@ impl ArchOps for Aarch64 {
         pt: &mut memory::page_table::PageTable,
     ) -> Result<(), memory::error::MemoryError> {
         use address::PhysAddr;
-        use memory::page_table::PteFlags;
+        use memory::page_table::{PteFlags, PteFlagsOps};
         // PL011 UART —— console 直接 MMIO 访问
         let start = PhysAddr::new(PL011_BASE);
         let end = PhysAddr::new(PL011_BASE + PL011_SIZE);

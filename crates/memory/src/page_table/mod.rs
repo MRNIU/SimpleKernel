@@ -1,10 +1,13 @@
 //! 多级页表抽象。
 //!
+//! - [`PteFlagsOps`] / [`PteOps`]：统一 trait 接口，各架构必须实现
 //! - `PteFlags` / `PageTableEntry`：各架构在 `pte_*.rs` 中定义硬件原生标志位
 //! - `pte_*.rs`：各架构的 PTE 编码实现（Sv39 / ARMv8）
 //! - `table.rs`：页表 walk / map / unmap 逻辑
 
 use core::marker::PhantomData;
+
+use address::PhysAddr;
 
 #[cfg(all(not(test), target_arch = "aarch64"))]
 mod pte_aarch64;
@@ -24,10 +27,58 @@ pub use table::PageTable;
 #[cfg(test)]
 mod tests;
 
+/// 页表项标志位的统一接口——各架构必须实现。
+///
+/// 保证 RISC-V 和 AArch64 的 `PteFlags` 提供完全相同的方法集，
+/// 避免新增 preset 时某一架构遗漏。
+pub trait PteFlagsOps: Copy + core::fmt::Debug {
+    /// 内核读写数据映射。
+    fn kernel_rw() -> Self;
+    /// 内核读-执行映射。
+    fn kernel_rx() -> Self;
+    /// 内核只读映射。
+    fn kernel_ro() -> Self;
+    /// 内核读写执行映射。
+    fn kernel_rwx() -> Self;
+    /// 设备 MMIO 映射（不可缓存、不可执行）。
+    fn kernel_device() -> Self;
+    /// 是否具有写权限。
+    fn is_writable(self) -> bool;
+    /// 将标志位适配为指定层级的叶描述符格式。
+    ///
+    /// 在 AArch64 上，Level 0 (page descriptor) 需要 TABLE 位，
+    /// 而 Level > 0 (block descriptor) 不能设置 TABLE 位。
+    /// RISC-V 无此区分，直接返回 self。
+    fn for_leaf_at_level(self, level: usize) -> Self;
+}
+
+/// 页表项的统一接口——各架构必须实现。
+///
+/// 保证 RISC-V 和 AArch64 的 `PageTableEntry` 提供完全相同的操作集。
+/// 使用关联类型 `Flags` 引用对应架构的标志位类型，避免 cfg 循环依赖。
+pub trait PteOps: Copy + core::fmt::Debug {
+    /// 对应架构的标志位类型
+    type Flags: PteFlagsOps;
+    /// 从物理地址和标志构造叶 PTE。
+    fn new(paddr: PhysAddr, flags: Self::Flags) -> Self;
+    /// 从 PTE 提取物理地址。
+    fn paddr(self) -> PhysAddr;
+    /// 从 PTE 提取标志位。
+    fn flags(self) -> Self::Flags;
+    /// PTE 是否有效。
+    fn is_valid(self) -> bool;
+    /// 是否为叶节点（`level` 为该 PTE 所在的层级编号）。
+    fn is_leaf(self, level: usize) -> bool;
+    /// 空 PTE（全零）。
+    fn empty() -> Self;
+    /// 中间节点 PTE（指向下一级页表）。
+    fn new_intermediate(paddr: PhysAddr) -> Self;
+}
+
 /// 单个硬件页表项（64 位）。
 ///
-/// 方法 `new`、`paddr`、`flags`、`is_valid`、`is_leaf`、`empty`、`new_intermediate`
-/// 由各架构的 `pte_*.rs` 提供。标志位类型为 [`PteFlags`]。
+/// 各架构通过 [`PteOps`] trait 提供操作方法。
+/// 标志位类型为 [`PteFlags`]（各架构通过 [`PteFlagsOps`] trait 提供）。
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
 pub struct PageTableEntry(pub(crate) u64);
@@ -87,12 +138,14 @@ impl PageLevel for Level4 {
 ///
 /// 索引 0 = Level0, 1 = Level1, ..., 4 = Level4。
 /// 避免在运行时循环中使用编译期类型参数（Rust 不支持）。
-pub(crate) struct LevelInfo {
+pub struct LevelInfo {
+    /// 该级 VPN 在虚拟地址中的起始位位置
     pub shift: usize,
+    /// 索引掩码
     pub index_mask: usize,
 }
 
-pub(crate) const LEVEL_INFO: [LevelInfo; 5] = [
+pub const LEVEL_INFO: [LevelInfo; 5] = [
     LevelInfo {
         shift: Level0::SHIFT,
         index_mask: Level0::INDEX_MASK,
@@ -171,4 +224,24 @@ impl<L: PageLevel> Table<L> {
 pub(crate) fn vpn_index(va: address::VirtAddr, level: usize) -> usize {
     let info = &LEVEL_INFO[level];
     (va.as_usize() >> info.shift) & info.index_mask
+}
+
+/// 返回第 `level` 级映射的页大小（字节）。
+///
+/// - Level 0 = `PAGE_SIZE`（4KB）
+/// - Level 1 = 2MB（Sv39 megapage / ARMv8 block）
+/// - Level 2 = 1GB（Sv39 gigapage / ARMv8 block）
+#[inline]
+pub const fn page_size_at_level(level: usize) -> usize {
+    1usize << LEVEL_INFO[level].shift
+}
+
+/// 编译期断言：当前架构的 PageTableEntry 实现了 PteOps。
+///
+/// PteOps 的关联类型 `type Flags: PteFlagsOps` 同时保证标志位类型满足统一接口。
+/// 如果某架构遗漏了 trait 实现，此处会产生编译错误。
+#[cfg(any(test, target_os = "none"))]
+fn _assert_trait_impl() {
+    fn _assert<T: PteOps>() {}
+    _assert::<PageTableEntry>();
 }

@@ -229,15 +229,11 @@ fn dealloc_frames(range: &FrameRange) {
 
 impl<const S: MemoryState> Drop for Frames<S> {
     fn drop(&mut self) {
-        match S {
-            MemoryState::Mapped => {
-                debug_assert!(
-                    false,
-                    "Frames<Mapped> dropped without unmapping — frames at {} leaked",
-                    self.range.start()
-                );
-            }
-            MemoryState::Free | MemoryState::Allocated | MemoryState::Unmapped => {}
+        if S == MemoryState::Mapped {
+            panic!(
+                "Frames<Mapped> dropped without unmapping — frames at {} leaked",
+                self.range.start()
+            );
         }
         dealloc_frames(&self.range);
     }

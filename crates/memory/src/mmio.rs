@@ -19,7 +19,7 @@ use crate::error::MemoryError;
 #[cfg(not(test))]
 use crate::mapped_pages::MappedPages;
 #[cfg(not(test))]
-use crate::page_table::PteFlags;
+use crate::page_table::{PteFlags, PteFlagsOps};
 #[cfg(not(test))]
 use address::PhysAddr;
 
@@ -48,8 +48,12 @@ impl MmioRegion {
         let pa_aligned = paddr.align_down();
         let page_count = (paddr.as_usize() + size - pa_aligned.as_usize() + config::PAGE_SIZE - 1)
             / config::PAGE_SIZE;
-        let mapping =
-            MappedPages::map_identity(&mut guard, pa_aligned, page_count, PteFlags::kernel_rw())?;
+        let mapping = MappedPages::map_identity(
+            &mut guard,
+            pa_aligned,
+            page_count,
+            PteFlags::kernel_device(),
+        )?;
         drop(guard);
         crate::tlb::flush_tlb();
         Ok(Self { mapping })
@@ -93,9 +97,16 @@ impl MmioRegion {
             core::mem::size_of::<T>(),
             self.size(),
         );
-        let addr: *const T = (self.mapping.vaddr() + offset).as_ptr();
+        let addr = self.mapping.vaddr().as_usize() + offset;
+        assert!(
+            addr % core::mem::align_of::<T>() == 0,
+            "MmioRegion::read_reg: 地址 {:#x} 未对齐到 {} 字节",
+            addr,
+            core::mem::align_of::<T>(),
+        );
+        let ptr: *const T = addr as *const T;
         // SAFETY: 调用方保证偏移有效，volatile 防止编译器优化
-        unsafe { core::ptr::read_volatile(addr) }
+        unsafe { core::ptr::read_volatile(ptr) }
     }
 
     /// 写入指定偏移处的寄存器值。
@@ -115,9 +126,16 @@ impl MmioRegion {
             core::mem::size_of::<T>(),
             self.size(),
         );
-        let addr: *mut T = (self.mapping.vaddr() + offset).as_mut_ptr();
+        let addr = self.mapping.vaddr().as_usize() + offset;
+        assert!(
+            addr % core::mem::align_of::<T>() == 0,
+            "MmioRegion::write_reg: 地址 {:#x} 未对齐到 {} 字节",
+            addr,
+            core::mem::align_of::<T>(),
+        );
+        let ptr: *mut T = addr as *mut T;
         // SAFETY: 调用方保证偏移有效，volatile 防止编译器优化
-        unsafe { core::ptr::write_volatile(addr, val) }
+        unsafe { core::ptr::write_volatile(ptr, val) }
     }
 }
 

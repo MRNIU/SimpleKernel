@@ -34,7 +34,7 @@ use address::PhysAddr;
 #[cfg(target_os = "none")]
 use address::VirtAddr;
 #[cfg(target_os = "none")]
-use page_table::{PageTable, PteFlags};
+use page_table::{PageTable, PteFlags, PteFlagsOps};
 
 #[cfg(target_os = "none")]
 use sync_crate::SpinLock;
@@ -74,6 +74,9 @@ pub fn virt_to_phys(va: VirtAddr) -> PhysAddr {
 
 /// 将 `[start, end)` 物理地址区间 identity-map 到页表中。
 ///
+/// 自动使用最大可用页大小（1GB / 2MB / 4KB），减少 TLB 压力和页表内存占用。
+/// 地址和剩余大小都对齐到大页边界时才使用大页映射。
+///
 /// # Errors
 ///
 /// 映射冲突时返回错误。
@@ -86,9 +89,26 @@ pub fn identity_map_range(
 ) -> Result<(), crate::error::MemoryError> {
     let mut addr = start.align_down();
     let end_aligned = end.align_up();
+
     while addr.as_usize() < end_aligned.as_usize() {
-        pt.map_page(VirtAddr::new(addr.as_usize()), addr, flags)?;
-        addr += config::PAGE_SIZE;
+        let remaining = end_aligned.as_usize() - addr.as_usize();
+        let va = VirtAddr::new(addr.as_usize());
+
+        // 从最大页尝试到最小页
+        let mut mapped = false;
+        for level in (1..config::PT_LEVELS).rev() {
+            let page_size = page_table::page_size_at_level(level);
+            if addr.as_usize() % page_size == 0 && remaining >= page_size {
+                pt.map_at_level(va, addr, flags, level)?;
+                addr += page_size;
+                mapped = true;
+                break;
+            }
+        }
+        if !mapped {
+            pt.map_page(va, addr, flags)?;
+            addr += config::PAGE_SIZE;
+        }
     }
     Ok(())
 }
@@ -179,7 +199,7 @@ pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, crate::error::
         .get()
         .ok_or(crate::error::MemoryError::InvalidPageTable)?;
     let mut guard = kpt.lock();
-    identity_map_range(&mut *guard, paddr, paddr + size, PteFlags::kernel_rw())?;
+    identity_map_range(&mut *guard, paddr, paddr + size, PteFlags::kernel_device())?;
     crate::tlb::flush_tlb();
     Ok(VirtAddr::new(paddr.as_usize()))
 }

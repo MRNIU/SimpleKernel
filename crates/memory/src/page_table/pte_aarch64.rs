@@ -15,7 +15,7 @@
 
 use bitflags::bitflags;
 
-use super::PageTableEntry;
+use super::{PageTableEntry, PteFlagsOps, PteOps};
 use address::PhysAddr;
 
 const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
@@ -59,13 +59,13 @@ bitflags! {
     }
 }
 
-impl PteFlags {
+impl PteFlagsOps for PteFlags {
     /// 内核读写数据映射。
     ///
     /// VALID | TABLE | AF | SH_INNER | PXN | UXN。
     /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
     #[inline]
-    pub fn kernel_rw() -> Self {
+    fn kernel_rw() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::PXN | Self::UXN
     }
 
@@ -74,7 +74,7 @@ impl PteFlags {
     /// AP_RO 使 EL1 只读，未设 PXN 允许 EL1 执行，UXN 禁止 EL0 执行。
     /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
     #[inline]
-    pub fn kernel_rx() -> Self {
+    fn kernel_rx() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::AP_RO | Self::UXN
     }
 
@@ -82,7 +82,7 @@ impl PteFlags {
     ///
     /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
     #[inline]
-    pub fn kernel_ro() -> Self {
+    fn kernel_ro() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::AP_RO | Self::PXN | Self::UXN
     }
 
@@ -90,66 +90,106 @@ impl PteFlags {
     ///
     /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
     #[inline]
-    pub fn kernel_rwx() -> Self {
+    fn kernel_rwx() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::UXN
+    }
+
+    /// 设备 MMIO 映射（Device-nGnRnE，不可缓存，不可执行）。
+    ///
+    /// 使用 MAIR 索引 1（`MAIR_IDX1`），对应 Device-nGnRnE 属性。
+    /// 内核态 MMIO 设备寄存器必须使用此 preset，
+    /// 使用 Normal memory 属性会导致 CPU cache 与设备状态不一致。
+    #[inline]
+    fn kernel_device() -> Self {
+        Self::VALID | Self::TABLE | Self::AF | Self::MAIR_IDX1 | Self::PXN | Self::UXN
     }
 
     /// 是否具有写权限。
     #[inline]
-    pub fn is_writable(self) -> bool {
+    fn is_writable(self) -> bool {
         !self.contains(Self::AP_RO)
+    }
+
+    /// 将标志位适配为指定层级的叶描述符格式。
+    ///
+    /// ARMv8 在不同层级使用不同描述符格式：
+    /// - Level 0 (page descriptor)：TABLE 位 = 1（bit[1]）
+    /// - Level > 0 (block descriptor)：TABLE 位 = 0
+    ///
+    /// 所有 preset 默认设置 TABLE=1（适用于 Level 0）。
+    /// 映射大页时必须调用此方法清除 TABLE 位。
+    #[inline]
+    fn for_leaf_at_level(self, level: usize) -> Self {
+        if level == 0 {
+            self
+        } else {
+            // Block descriptor：清除 TABLE 位
+            Self::from_bits_truncate(self.bits() & !Self::TABLE.bits())
+        }
     }
 }
 
-impl PageTableEntry {
+/// AArch64 专用：构造 table descriptor（指向下一级页表）。
+fn new_table(paddr: PhysAddr) -> PageTableEntry {
+    let bits = (paddr.as_usize() as u64 & OUTPUT_ADDR_MASK)
+        | PteFlags::VALID.bits()
+        | PteFlags::TABLE.bits();
+    PageTableEntry(bits)
+}
+
+impl PteOps for PageTableEntry {
+    type Flags = PteFlags;
+
     /// 从物理地址和标志构造叶/页描述符。
     #[inline]
-    pub fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
+    fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
         Self((paddr.as_usize() as u64 & OUTPUT_ADDR_MASK) | flags.bits())
-    }
-
-    /// 构造表描述符（指向下一级页表）。
-    #[inline]
-    pub fn new_table(paddr: PhysAddr) -> Self {
-        let bits = (paddr.as_usize() as u64 & OUTPUT_ADDR_MASK)
-            | PteFlags::VALID.bits()
-            | PteFlags::TABLE.bits();
-        Self(bits)
     }
 
     /// 从 PTE 提取物理地址。
     #[inline]
-    pub fn paddr(self) -> PhysAddr {
+    fn paddr(self) -> PhysAddr {
         PhysAddr::new((self.0 & OUTPUT_ADDR_MASK) as usize)
     }
 
     /// 从 PTE 提取标志位（硬件原生位）。
     #[inline]
-    pub fn flags(self) -> PteFlags {
+    fn flags(self) -> PteFlags {
         PteFlags::from_bits_truncate(self.0 & !OUTPUT_ADDR_MASK)
     }
 
     /// PTE 是否有效。
     #[inline]
-    pub fn is_valid(self) -> bool {
+    fn is_valid(self) -> bool {
         self.0 & PteFlags::VALID.bits() != 0
     }
 
     /// 是否为叶节点（page/block 描述符，非 table 描述符）。
+    ///
+    /// ARMv8 的叶判断依赖层级：
+    /// - Level 0（最低级）：所有有效项都是 page descriptor（叶），TABLE 位 = 1
+    /// - Level 1-3：TABLE 位 = 0 表示 block descriptor（叶）
     #[inline]
-    pub fn is_leaf(self) -> bool {
-        self.is_valid() && (self.0 & PteFlags::AF.bits() != 0)
+    fn is_leaf(self, level: usize) -> bool {
+        if !self.is_valid() {
+            return false;
+        }
+        if level == 0 {
+            true
+        } else {
+            self.0 & PteFlags::TABLE.bits() == 0
+        }
     }
 
     /// 空 PTE（全零）。
     #[inline]
-    pub fn empty() -> Self {
+    fn empty() -> Self {
         Self(0)
     }
 
     /// 中间节点（table 描述符）。
     #[inline]
-    pub fn new_intermediate(paddr: PhysAddr) -> Self {
-        Self::new_table(paddr)
+    fn new_intermediate(paddr: PhysAddr) -> Self {
+        new_table(paddr)
     }
 }

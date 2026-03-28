@@ -19,7 +19,7 @@ use crate::error::MemoryError;
 #[cfg(not(test))]
 use crate::frame::{AllocatedFrames, MappedFrames};
 #[cfg(not(test))]
-use crate::page_table::{PageTable, PteFlags};
+use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
 #[cfg(not(test))]
 use address::{PhysAddr, VirtAddr};
 #[cfg(not(test))]
@@ -186,16 +186,23 @@ impl MappedPages {
     /// 3. 该地址处的内容可以安全地解释为 `T`
     #[inline]
     pub unsafe fn as_type<T: zerocopy::FromBytes>(&self, offset: usize) -> &T {
-        debug_assert!(
+        assert!(
             offset + core::mem::size_of::<T>() <= self.size(),
             "MappedPages::as_type: offset {:#x} + {} 超出映射大小 {:#x}",
             offset,
             core::mem::size_of::<T>(),
             self.size(),
         );
-        let addr: *const T = (self.vaddr + offset).as_ptr();
+        let addr = self.vaddr.as_usize() + offset;
+        assert!(
+            addr % core::mem::align_of::<T>() == 0,
+            "MappedPages::as_type: 地址 {:#x} 未对齐到 {} 字节",
+            addr,
+            core::mem::align_of::<T>(),
+        );
+        let ptr: *const T = addr as *const T;
         // SAFETY: 调用方保证偏移有效，self 的存在保证映射有效
-        unsafe { &*addr }
+        unsafe { &*ptr }
     }
 
     /// 获取映射区域内指定偏移处的可变类型化引用。
@@ -208,20 +215,27 @@ impl MappedPages {
         &mut self,
         offset: usize,
     ) -> &mut T {
-        debug_assert!(
+        assert!(
             offset + core::mem::size_of::<T>() <= self.size(),
             "MappedPages::as_type_mut: offset {:#x} + {} 超出映射大小 {:#x}",
             offset,
             core::mem::size_of::<T>(),
             self.size(),
         );
-        debug_assert!(
+        assert!(
             self.flags.is_writable(),
             "MappedPages::as_type_mut: 映射无 WRITE 权限"
         );
-        let addr: *mut T = (self.vaddr + offset).as_mut_ptr();
+        let addr = self.vaddr.as_usize() + offset;
+        assert!(
+            addr % core::mem::align_of::<T>() == 0,
+            "MappedPages::as_type_mut: 地址 {:#x} 未对齐到 {} 字节",
+            addr,
+            core::mem::align_of::<T>(),
+        );
+        let ptr: *mut T = addr as *mut T;
         // SAFETY: 调用方保证偏移有效、映射可写，&mut self 保证独占访问
-        unsafe { &mut *addr }
+        unsafe { &mut *ptr }
     }
 
     /// 从内核页表中 unmap 所有页并刷新 TLB。

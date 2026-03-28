@@ -1,23 +1,23 @@
+//! 中断安全的内核堆分配器。
+//!
+//! 通过 `SpinLock`（自动禁用/恢复中断）包装 `buddy_system_allocator`，
+//! 作为 `#[global_allocator]` 为内核提供 `Box`、`Vec` 等堆分配能力。
+
 use buddy_system_allocator::Heap;
 use config::KERNEL_HEAP_SIZE;
 use core::alloc::{GlobalAlloc, Layout};
 use core::cell::SyncUnsafeCell;
 use core::ptr::NonNull;
+use sync_crate::SpinLock;
 
 /// 中断安全的全局堆分配器——参考 Theseus OS 设计。
 ///
-/// 在分配/释放前通过 `HeldInterrupts` 禁用中断，
+/// 通过 `SpinLock`（自动禁用/恢复中断）保证多核互斥和中断安全，
 /// 防止中断处理器中的隐式分配导致同核心自旋死锁。
-/// 使用 `spin::Mutex` 保证多核互斥。
-struct IrqSafeHeap(spin::Mutex<Heap<32>>);
-
-// SAFETY: IrqSafeHeap 通过 spin::Mutex 保证内部互斥，
-// 通过 HeldInterrupts 保证中断安全。
-unsafe impl Sync for IrqSafeHeap {}
+struct IrqSafeHeap(SpinLock<Heap<32>>);
 
 unsafe impl GlobalAlloc for IrqSafeHeap {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        let _held = sync_crate::HeldInterrupts::hold();
         self.0
             .lock()
             .alloc(layout)
@@ -26,7 +26,6 @@ unsafe impl GlobalAlloc for IrqSafeHeap {
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-        let _held = sync_crate::HeldInterrupts::hold();
         // SAFETY: ptr 来自先前的 alloc 且尚未被释放
         unsafe {
             self.0.lock().dealloc(NonNull::new_unchecked(ptr), layout);
@@ -35,7 +34,7 @@ unsafe impl GlobalAlloc for IrqSafeHeap {
 }
 
 #[global_allocator]
-static HEAP_ALLOCATOR: IrqSafeHeap = IrqSafeHeap(spin::Mutex::new(Heap::empty()));
+static HEAP_ALLOCATOR: IrqSafeHeap = IrqSafeHeap(SpinLock::new(Heap::empty(), "heap"));
 
 /// BSS 区域堆后备存储。
 ///

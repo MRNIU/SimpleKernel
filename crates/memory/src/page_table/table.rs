@@ -2,12 +2,21 @@
 //!
 //! 裸机和宿主机测试共享同一份 walk 实现，
 //! 通过 `#[cfg]` 选择页表节点的帧类型（裸机用 buddy allocator，测试用堆分配）。
+//!
+//! # TODO
+//!
+//! - **中间节点回收**：当前 `unmap_page` 不回收空的中间页表节点。
+//!   如果大量映射后 unmap，中间节点帧会一直保留直到整个 `PageTable` drop。
+//!   Linux 的 `free_pgtables()` 在 VMA 销毁时递归回收空中间页；
+//!   Theseus 在 unmap 时检查中间节点是否全空并回收。
+//!   后续可在 `unmap_page` 后检查同级所有 PTE 是否均为空，
+//!   若是则清除上级 PTE 并归还该中间节点帧。
 
 extern crate alloc;
 
 use alloc::vec::Vec;
 
-use super::{Level0, PageTableEntry, PteFlags, Table, vpn_index};
+use super::{Level0, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index};
 use crate::error::MemoryError;
 use address::{PhysAddr, VirtAddr};
 
@@ -83,6 +92,14 @@ pub struct PageTable {
     frames: Vec<NodeFrame>,
 }
 
+/// Walker 行为——遇到无效中间节点时的策略。
+enum WalkAction {
+    /// 只读遍历，无效时返回错误
+    ReadOnly,
+    /// 自动分配中间节点
+    CreateIntermediate,
+}
+
 impl PageTable {
     /// 创建新页表，分配根帧。
     pub fn create() -> Result<Self, MemoryError> {
@@ -101,22 +118,41 @@ impl PageTable {
         self.root_paddr
     }
 
-    /// 遍历到 `va` 对应的叶 PTE，必要时分配中间节点。返回 PTE 裸指针。
-    fn find_or_create_pte(&mut self, va: VirtAddr) -> Result<*mut PageTableEntry, MemoryError> {
+    /// 统一 walker——遍历到 `target_level` 层级的 PTE 并返回裸指针。
+    ///
+    /// 从根（最高级）向下遍历至 `target_level`，中间层级根据 `action` 决定
+    /// 遇到无效 PTE 时是分配新节点还是返回错误。
+    ///
+    /// 遍历过程中若遇到叶节点（大页），返回 `MapFailed`
+    /// （表示该路径上已有大页映射，不可再创建子映射）。
+    fn walk_to_level(
+        &mut self,
+        va: VirtAddr,
+        target_level: usize,
+        action: WalkAction,
+    ) -> Result<*mut PageTableEntry, MemoryError> {
         let mut paddr = self.root_paddr;
 
-        for level in (1..PT_LEVELS).rev() {
+        for level in (target_level + 1..PT_LEVELS).rev() {
             // SAFETY: paddr 指向由 self.root 或 self.frames 持有的有效帧
             let mut table = unsafe { table_at(paddr) };
             let idx = vpn_index(va, level);
             let pte = table.read(idx);
 
             if !pte.is_valid() {
-                let frame = alloc_node()?;
-                let frame_paddr = node_paddr(&frame);
-                table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
-                self.frames.push(frame);
-                paddr = frame_paddr;
+                match action {
+                    WalkAction::ReadOnly => return Err(MemoryError::PageNotMapped),
+                    WalkAction::CreateIntermediate => {
+                        let frame = alloc_node()?;
+                        let frame_paddr = node_paddr(&frame);
+                        table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
+                        self.frames.push(frame);
+                        paddr = frame_paddr;
+                    }
+                }
+            } else if pte.is_leaf(level) {
+                // 路径上已有大页映射，不可在其子级创建新映射
+                return Err(MemoryError::MapFailed);
             } else {
                 paddr = pte.paddr();
             }
@@ -124,74 +160,55 @@ impl PageTable {
 
         // SAFETY: paddr 指向由 self 持有的有效帧
         let mut table = unsafe { table_at(paddr) };
-        let idx = vpn_index(va, 0);
+        let idx = vpn_index(va, target_level);
         Ok(table.entry_ptr(idx))
     }
 
-    /// 只读遍历，不分配。返回 PTE 值的拷贝。
-    fn find_pte(&self, va: VirtAddr) -> Option<PageTableEntry> {
-        let mut paddr = self.root_paddr;
-
-        for level in (1..PT_LEVELS).rev() {
-            // SAFETY: paddr 指向由 self 持有的有效帧
-            let table = unsafe { table_at(paddr) };
-            let idx = vpn_index(va, level);
-            let pte = table.read(idx);
-            if !pte.is_valid() {
-                return None;
-            }
-            paddr = pte.paddr();
-        }
-
-        // SAFETY: paddr 指向由 self 持有的有效帧
-        let table = unsafe { table_at(paddr) };
-        let idx = vpn_index(va, 0);
-        Some(table.read(idx))
-    }
-
-    /// 可变遍历，不分配。返回叶 PTE 裸指针。
-    fn find_pte_mut(&mut self, va: VirtAddr) -> Option<*mut PageTableEntry> {
-        let mut paddr = self.root_paddr;
-
-        for level in (1..PT_LEVELS).rev() {
-            // SAFETY: paddr 指向由 self 持有的有效帧
-            let table = unsafe { table_at(paddr) };
-            let idx = vpn_index(va, level);
-            let pte = table.read(idx);
-            if !pte.is_valid() {
-                return None;
-            }
-            paddr = pte.paddr();
-        }
-
-        // SAFETY: paddr 指向由 self 持有的有效帧
-        let mut table = unsafe { table_at(paddr) };
-        let idx = vpn_index(va, 0);
-        Some(table.entry_ptr(idx))
-    }
-
-    /// 映射单个虚拟页到物理帧。若该 VA 已被映射则返回错误。
+    /// 映射单个虚拟页到物理帧（Level 0，4KB）。若该 VA 已被映射则返回错误。
     pub fn map_page(
         &mut self,
         va: VirtAddr,
         pa: PhysAddr,
         flags: PteFlags,
     ) -> Result<(), MemoryError> {
-        let pte_ptr = self.find_or_create_pte(va)?;
-        // SAFETY: find_or_create_pte 返回的指针指向 self 持有的帧内存
+        self.map_at_level(va, pa, flags, 0)
+    }
+
+    /// 在指定层级映射虚拟地址到物理地址。
+    ///
+    /// - `level = 0`：4KB 页（标准映射）
+    /// - `level = 1`：2MB 大页（megapage / block）
+    /// - `level = 2`：1GB 大页（gigapage / block）
+    ///
+    /// # Errors
+    ///
+    /// 该 VA 已被映射（同级或路径上有大页）时返回 `MapFailed`。
+    pub fn map_at_level(
+        &mut self,
+        va: VirtAddr,
+        pa: PhysAddr,
+        flags: PteFlags,
+        level: usize,
+    ) -> Result<(), MemoryError> {
+        let pte_ptr = self.walk_to_level(va, level, WalkAction::CreateIntermediate)?;
+        // SAFETY: walk_to_level 返回的指针指向 self 持有的帧内存
         let current = unsafe { pte_ptr.read() };
         if current.is_valid() {
             return Err(MemoryError::MapFailed);
         }
+        // 适配标志位格式：AArch64 block entry (level > 0) 需清除 TABLE 位
+        let leaf_flags = flags.for_leaf_at_level(level);
         // SAFETY: pte_ptr 指向 self 持有的帧内存，上方已检查无冲突映射
-        unsafe { pte_ptr.write(PageTableEntry::new(pa, flags)) };
+        unsafe { pte_ptr.write(PageTableEntry::new(pa, leaf_flags)) };
         Ok(())
     }
 
     /// 取消映射单个虚拟页，返回其原始物理地址。
     pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, MemoryError> {
-        let pte_ptr = self.find_pte_mut(va).ok_or(MemoryError::PageNotMapped)?;
-        // SAFETY: find_pte_mut 返回的指针指向 self 持有的帧内存
+        let pte_ptr = self
+            .walk_to_level(va, 0, WalkAction::ReadOnly)
+            .map_err(|_| MemoryError::PageNotMapped)?;
+        // SAFETY: walk_to_level 返回的指针指向 self 持有的帧内存
         let pte = unsafe { pte_ptr.read() };
         if !pte.is_valid() {
             return Err(MemoryError::PageNotMapped);
@@ -203,9 +220,30 @@ impl PageTable {
     }
 
     /// 查询虚拟地址的映射信息，返回物理地址和标志。
+    ///
+    /// 支持大页：遍历过程中若遇到叶节点即返回。
     pub fn get_mapping(&self, va: VirtAddr) -> Option<(PhysAddr, PteFlags)> {
-        let pte = self.find_pte(va)?;
-        if pte.is_valid() && pte.is_leaf() {
+        let mut paddr = self.root_paddr;
+
+        for level in (1..PT_LEVELS).rev() {
+            // SAFETY: paddr 指向由 self 持有的有效帧
+            let table = unsafe { table_at(paddr) };
+            let idx = vpn_index(va, level);
+            let pte = table.read(idx);
+            if !pte.is_valid() {
+                return None;
+            }
+            if pte.is_leaf(level) {
+                return Some((pte.paddr(), pte.flags()));
+            }
+            paddr = pte.paddr();
+        }
+
+        // SAFETY: paddr 指向由 self 持有的有效帧
+        let table = unsafe { table_at(paddr) };
+        let idx = vpn_index(va, 0);
+        let pte = table.read(idx);
+        if pte.is_valid() && pte.is_leaf(0) {
             Some((pte.paddr(), pte.flags()))
         } else {
             None
