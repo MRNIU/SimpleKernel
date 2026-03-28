@@ -5,10 +5,7 @@
 #![cfg_attr(any(test, target_os = "none"), allow(incomplete_features))]
 #![cfg_attr(any(test, target_os = "none"), feature(adt_const_params))]
 
-#[cfg(target_os = "none")]
-extern crate alloc;
-
-#[cfg(test)]
+#[cfg(any(test, target_os = "none"))]
 extern crate alloc;
 
 /// 地址转换与映射工具。
@@ -42,6 +39,9 @@ pub mod page_allocator;
 pub mod page_table;
 /// TLB 刷新。
 pub mod tlb;
+/// 虚拟内存区域（VMA）与地址空间管理。
+#[cfg(any(test, target_os = "none"))]
+pub mod vma;
 
 // 公共 API re-export——保持外部调用方的 `memory::Xxx` 路径不变。
 pub use globals::{MEMORY_INFO, MemoryInfo};
@@ -49,7 +49,7 @@ pub use globals::{MEMORY_INFO, MemoryInfo};
 pub use globals::{kernel_page_table, map_mmio, store_kernel_page_table};
 
 #[cfg(any(test, target_os = "none"))]
-pub use addr_conv::{identity_map_range, phys_to_virt, virt_to_phys};
+pub use addr_conv::{phys_to_virt, virt_to_phys};
 
 #[cfg(target_os = "none")]
 pub use init::{init, init_smp};

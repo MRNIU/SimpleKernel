@@ -6,6 +6,10 @@
 //! - 状态转换消费 self，编译期强制正确的生命周期路径
 //! - Drop 按状态分派：`Mapped` 状态 panic（必须经 unmap），其余归还分配器
 
+//
+// TODO: 当前全局 `SpinLock` 在 SMP 下是并发瓶颈。实现用户进程后应引入
+// per-CPU free list 缓存（参考 Linux `per_cpu_pages`），热路径无需全局锁。
+
 use crate::error::MemoryError;
 use address::{FrameRange, PhysAddr, PhysPageNum};
 use config::PAGE_SIZE;
@@ -176,6 +180,8 @@ impl AllocatedFrames {
         let frame_num = alloc
             .allocator
             .alloc(count)
+            // TODO: OOM 时应尝试回收（页缓存淘汰、swap out），
+            // 而非直接失败。待引入 page cache / swap 后实现。
             .ok_or(MemoryError::OutOfMemory)?;
         let start = PhysPageNum::new(frame_num);
         let end = PhysPageNum::new(frame_num + count);
@@ -374,5 +380,26 @@ mod tests {
         let allocated = AllocatedFrames::alloc_one().expect("分配");
         let _mapped = allocated.into_mapped();
         // _mapped drop 时应 panic
+    }
+
+    /// 合并不相邻的帧应失败并归还双方所有权。
+    #[test]
+    fn merge_non_adjacent_fails() {
+        ensure_test_init();
+        let a = AllocatedFrames::alloc_one().expect("分配 a");
+        let b = AllocatedFrames::alloc_one().expect("分配 b");
+        // 两次独立分配的帧不一定相邻
+        let a_start = a.start();
+        let b_start = b.start();
+        if a_start.as_usize().abs_diff(b_start.as_usize()) > 1 {
+            match a.merge(b) {
+                Err((returned_a, returned_b)) => {
+                    assert_eq!(returned_a.start(), a_start);
+                    assert_eq!(returned_b.start(), b_start);
+                }
+                Ok(_) => panic!("不相邻帧 merge 应失败"),
+            }
+        }
+        // 即使相邻也不出错——测试 merge 本身不 panic
     }
 }

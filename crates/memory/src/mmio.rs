@@ -16,8 +16,9 @@
 
 use crate::error::MemoryError;
 use crate::mapped_pages::MappedPages;
-use crate::page_table::{PteFlags, PteFlagsOps};
+use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
 use address::PhysAddr;
+use sync_crate::SpinLock;
 
 /// 已映射的 MMIO 区域——提供类型安全的寄存器访问。
 ///
@@ -29,6 +30,35 @@ pub struct MmioRegion {
 }
 
 impl MmioRegion {
+    /// 映射 MMIO 区域到指定页表并返回 `MmioRegion`。
+    ///
+    /// 将 `[paddr, paddr+size)` identity-map 进指定页表。
+    /// 用于需要映射到非内核页表的场景（如未来的用户态 MMIO / VFIO）。
+    ///
+    /// # Errors
+    ///
+    /// 映射失败时返回错误。
+    pub fn map_to(
+        pt_ref: &'static SpinLock<PageTable>,
+        paddr: PhysAddr,
+        size: usize,
+    ) -> Result<Self, MemoryError> {
+        let mut guard = pt_ref.lock();
+        let pa_aligned = paddr.align_down();
+        let end = paddr + size;
+        guard.identity_map_range(pa_aligned, end, PteFlags::kernel_device())?;
+        let page_count = (end.align_up().as_usize() - pa_aligned.as_usize()) / config::PAGE_SIZE;
+        let mapping = MappedPages::new_borrowed(
+            pt_ref,
+            address::VirtAddr::new(pa_aligned.as_usize()),
+            page_count,
+            PteFlags::kernel_device(),
+        );
+        drop(guard);
+        crate::tlb::flush_tlb();
+        Ok(Self { mapping })
+    }
+
     /// 映射 MMIO 区域并返回 `MmioRegion`。
     ///
     /// 将 `[paddr, paddr+size)` identity-map 进内核页表。
@@ -38,20 +68,7 @@ impl MmioRegion {
     /// 内核页表未初始化或映射失败时返回错误。
     pub fn map(paddr: PhysAddr, size: usize) -> Result<Self, MemoryError> {
         let kpt = crate::kernel_page_table().ok_or(MemoryError::InvalidPageTable)?;
-        let mut guard = kpt.lock();
-        let pa_aligned = paddr.align_down();
-        let end = paddr + size;
-        guard.identity_map_range(pa_aligned, end, PteFlags::kernel_device())?;
-        let page_count = (end.align_up().as_usize() - pa_aligned.as_usize()) / config::PAGE_SIZE;
-        let mapping = MappedPages::new_borrowed(
-            kpt,
-            address::VirtAddr::new(pa_aligned.as_usize()),
-            page_count,
-            PteFlags::kernel_device(),
-        );
-        drop(guard);
-        crate::tlb::flush_tlb();
-        Ok(Self { mapping })
+        Self::map_to(kpt, paddr, size)
     }
 
     /// 标记为永久映射——drop 时不 unmap。

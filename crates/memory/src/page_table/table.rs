@@ -3,8 +3,9 @@
 //! 裸机和宿主机测试共享同一份 walk 实现，
 //! 通过 [`NodeFrameOps`] trait 统一帧类型（裸机用 buddy allocator，测试用堆分配）。
 //!
-//! `unmap_page` 在清除叶 PTE 后回溯检查中间节点是否全空，
+//! `unmap_at_level` 在清除叶 PTE 后回溯检查中间节点是否全空，
 //! 若是则清除上级 PTE 并回收该帧——参考 Linux `free_pgtables()`。
+//! `unmap_page` 委托给 `unmap_at_level(va, 0)` 处理 4KB 页。
 
 extern crate alloc;
 
@@ -94,6 +95,10 @@ pub struct PageTable {
     #[expect(dead_code, reason = "仅用于持有所有权，通过 root_paddr 访问")]
     root: NodeFrame,
     /// 中间页表节点——以物理地址为键，O(log n) 查找/删除。
+    ///
+    // TODO: 当前使用 BTreeMap 追踪中间节点，每次 map 可能触发堆分配。
+    // 可参考 Theseus 用 MappedPages 管理页表自身帧的设计，
+    // 使中间节点的生命周期与页表一致，但需解决 bootstrap 阶段的鸡生蛋问题。
     frames: BTreeMap<PhysAddr, NodeFrame>,
 }
 
@@ -192,11 +197,29 @@ impl PageTable {
         Ok(())
     }
 
-    /// 取消映射单个虚拟页，返回其原始物理地址。
+    /// 取消映射单个虚拟页（4KB），返回其原始物理地址。
     ///
-    /// unmap 后自动检查中间页表节点是否全空——若是则清除上级 PTE
-    /// 并回收该节点帧，参考 Linux `free_pgtables()` 的行为。
+    /// 等价于 `unmap_at_level(va, 0)`。
+    ///
+    /// # Errors
+    ///
+    /// 目标 VA 未映射时返回 `PageNotMapped`。
     pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, MemoryError> {
+        self.unmap_at_level(va, 0)
+    }
+
+    /// 在指定层级取消映射，返回原始物理地址。
+    ///
+    /// - `level = 0`：取消 4KB 页映射
+    /// - `level = 1`：取消 2MB 大页映射
+    /// - `level = 2`：取消 1GB 大页映射
+    ///
+    /// unmap 后自动检查中间页表节点是否全空并回收。
+    ///
+    /// # Errors
+    ///
+    /// 目标 VA 在指定层级未映射时返回 `PageNotMapped`。
+    pub fn unmap_at_level(&mut self, va: VirtAddr, level: usize) -> Result<PhysAddr, MemoryError> {
         // 手动 walk 并记录路径（parent_paddr, index, child_paddr），
         // 用于 unmap 后回溯检查空中间节点。
         let mut path: [(PhysAddr, usize, PhysAddr); 4] =
@@ -204,15 +227,17 @@ impl PageTable {
         let mut path_len = 0;
         let mut paddr = self.root_paddr;
 
-        for level in (1..PT_LEVELS).rev() {
+        // 从根向下遍历到 target_level + 1
+        for lv in (level + 1..PT_LEVELS).rev() {
             // SAFETY: paddr 指向由 self 持有的有效帧
             let table = unsafe { table_at(paddr) };
-            let idx = vpn_index(va, level);
+            let idx = vpn_index(va, lv);
             let pte = table.read(idx);
             if !pte.is_valid() {
                 return Err(MemoryError::PageNotMapped);
             }
-            if pte.is_leaf(level) {
+            if pte.is_leaf(lv) {
+                // 路径上遇到比目标层级更高的叶节点
                 return Err(MemoryError::PageNotMapped);
             }
             let child_paddr = pte.paddr();
@@ -221,12 +246,12 @@ impl PageTable {
             paddr = child_paddr;
         }
 
-        // Level 0：清除叶 PTE
+        // 在目标层级清除叶 PTE
         // SAFETY: paddr 指向由 self 持有的有效帧
         let mut table = unsafe { table_at(paddr) };
-        let idx = vpn_index(va, 0);
+        let idx = vpn_index(va, level);
         let pte = table.read(idx);
-        if !pte.is_valid() {
+        if !pte.is_valid() || !pte.is_leaf(level) {
             return Err(MemoryError::PageNotMapped);
         }
         let old_pa = pte.paddr();

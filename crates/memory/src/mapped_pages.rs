@@ -252,8 +252,10 @@ impl MappedPages {
             }
         }
         drop(guard);
-        if self.page_count == 1 {
-            crate::tlb::flush_tlb_page(self.vaddr.as_usize());
+        if self.page_count <= config::TLB_FLUSH_THRESHOLD {
+            for i in 0..self.page_count {
+                crate::tlb::flush_tlb_page((self.vaddr + i * config::PAGE_SIZE).as_usize());
+            }
         } else {
             crate::tlb::flush_tlb();
         }

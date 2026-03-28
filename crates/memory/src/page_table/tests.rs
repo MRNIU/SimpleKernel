@@ -603,3 +603,31 @@ fn double_map_at_level_fails() {
         .expect_err("重复大页映射应失败");
     assert_eq!(err, MemoryError::MapFailed);
 }
+
+/// unmap_at_level 应能取消大页映射。
+#[test]
+fn unmap_at_level1_huge_page() {
+    let mut pt = PageTable::create().expect("创建页表");
+    let va = VirtAddr::new(0x0000_0000_4000_0000); // 1GB aligned
+    let pa = PhysAddr::new(0x0000_0000_4000_0000);
+    pt.map_at_level(va, pa, PteFlags::kernel_rw(), 1)
+        .expect("map level1");
+    let old_pa = pt.unmap_at_level(va, 1).expect("unmap level1 应成功");
+    assert_eq!(old_pa, pa);
+    assert!(pt.get_mapping(va).is_none(), "unmap 后应无映射");
+}
+
+/// unmap_at_level 目标层级无叶节点时应失败。
+#[test]
+fn unmap_at_level_wrong_level_fails() {
+    let mut pt = PageTable::create().expect("创建页表");
+    let va = VirtAddr::new(0x0000_0000_4000_0000);
+    let pa = PhysAddr::new(0x0000_0000_4000_0000);
+    // 在 level 1 映射，尝试在 level 0 unmap 应失败
+    pt.map_at_level(va, pa, PteFlags::kernel_rw(), 1)
+        .expect("map level1");
+    let err = pt
+        .unmap_at_level(va, 0)
+        .expect_err("level 0 unmap 大页应失败");
+    assert_eq!(err, MemoryError::PageNotMapped);
+}

@@ -15,6 +15,10 @@ pub enum MemoryError {
     PageNotMapped,
     /// 全局内核页表未初始化
     InvalidPageTable,
+    /// VMA 区域与已有区域重叠
+    RegionOverlap,
+    /// 未找到包含指定地址的 VMA 区域
+    RegionNotFound,
 }
 
 impl fmt::Display for MemoryError {

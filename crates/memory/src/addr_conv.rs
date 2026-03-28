@@ -16,15 +16,3 @@ pub fn phys_to_virt(pa: PhysAddr) -> VirtAddr {
 pub fn virt_to_phys(va: VirtAddr) -> PhysAddr {
     PhysAddr::new(va.as_usize().wrapping_sub(config::PHYS_OFFSET))
 }
-
-/// 将 `[start, end)` 物理地址区间 identity-map 到页表中。
-///
-/// 委托给 [`PageTable::identity_map_range`]。保留此函数以兼容现有调用方。
-pub fn identity_map_range(
-    pt: &mut crate::page_table::PageTable,
-    start: PhysAddr,
-    end: PhysAddr,
-    flags: crate::page_table::PteFlags,
-) -> Result<(), crate::error::MemoryError> {
-    pt.identity_map_range(start, end, flags)
-}
