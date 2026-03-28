@@ -1,7 +1,6 @@
 //! AArch64 ARMv8 PTE 编码。
 //!
-//! Stage 1 页描述符格式（4KB/16KB/64KB granule 共用结构，
-//! 物理地址掩码随 PAGE_SIZE 变化）：
+//! Stage 1 页描述符格式（4KB granule）：
 //! - bit [0]：Valid
 //! - bit [1]：Table/Block 类型位（1 = table/page，0 = block）
 //! - bits [4:2]：MAIR 索引
@@ -9,7 +8,7 @@
 //! - bits [9:8]：SH (Shareability)
 //! - bit [10]：AF (Access Flag)
 //! - bit [11]：nG (non-Global)
-//! - bits [47:12]/[47:14]/[47:16]：Output Address（随 granule 变化）
+//! - bits [47:12]：Output Address
 //! - bit [53]：PXN
 //! - bit [54]：UXN/XN
 //!
@@ -21,18 +20,21 @@ use bitflags::bitflags;
 use crate::{PteFlagsOps, PteOps};
 use address::PhysAddr;
 
-const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
-
-/// 输出地址掩码——根据 PAGE_SIZE 自动适配：
-/// - 4KB (PAGE_SHIFT=12)：bits [47:12]
-/// - 16KB (PAGE_SHIFT=14)：bits [47:14]
-/// - 64KB (PAGE_SHIFT=16)：bits [47:16]
-const OUTPUT_ADDR_MASK: u64 = 0x0000_FFFF_FFFF_FFFF & !((1u64 << PAGE_SHIFT) - 1);
+/// 输出地址掩码：bits [47:12]（4KB granule）
+const OUTPUT_ADDR_MASK: u64 = 0x0000_FFFF_FFFF_F000;
 
 /// AArch64 页表项（64 位）。
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
-pub struct PageTableEntry(pub u64);
+pub struct PageTableEntry(u64);
+
+impl core::fmt::Debug for PageTableEntry {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("PageTableEntry")
+            .field(&format_args!("{:#018x}", self.0))
+            .finish()
+    }
+}
 
 bitflags! {
     /// AArch64 ARMv8 页表项标志位（硬件原生位位置）。
@@ -73,6 +75,9 @@ bitflags! {
     }
 }
 
+/// 标志位掩码——所有已定义标志位的并集，用于从 PTE 中精确提取标志。
+const FLAGS_MASK: u64 = PteFlags::all().bits();
+
 impl PteFlagsOps for PteFlags {
     #[inline]
     fn kernel_rw() -> Self {
@@ -89,11 +94,19 @@ impl PteFlagsOps for PteFlags {
         Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::AP_RO | Self::PXN | Self::UXN
     }
 
+    /// 内核读写执行映射。
+    ///
+    /// UXN = 1 阻止 EL0 执行此页——即使内核允许 RWX，用户态仍不可执行，
+    /// 防止特权提升后利用内核映射执行代码。
     #[inline]
     fn kernel_rwx() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::UXN
     }
 
+    /// 设备 MMIO 映射（Device-nGnRnE，不可缓存、不可执行）。
+    ///
+    /// 未设置 `SH_INNER`：Arm ARM §D8.5.10 规定 Device 内存类型下
+    /// shareability 字段被硬件忽略，省略以避免误导。
     #[inline]
     fn kernel_device() -> Self {
         Self::VALID | Self::TABLE | Self::AF | Self::MAIR_IDX1 | Self::PXN | Self::UXN
@@ -132,14 +145,6 @@ impl PteFlagsOps for PteFlags {
     }
 }
 
-/// 构造 table descriptor（指向下一级页表）。
-fn new_table(paddr: PhysAddr) -> PageTableEntry {
-    let bits = (paddr.as_usize() as u64 & OUTPUT_ADDR_MASK)
-        | PteFlags::VALID.bits()
-        | PteFlags::TABLE.bits();
-    PageTableEntry(bits)
-}
-
 impl PteOps for PageTableEntry {
     type Flags = PteFlags;
 
@@ -155,7 +160,7 @@ impl PteOps for PageTableEntry {
 
     #[inline]
     fn flags(self) -> PteFlags {
-        PteFlags::from_bits_truncate(self.0 & !OUTPUT_ADDR_MASK)
+        PteFlags::from_bits_truncate(self.0 & FLAGS_MASK)
     }
 
     #[inline]
@@ -185,7 +190,10 @@ impl PteOps for PageTableEntry {
 
     #[inline]
     fn new_intermediate(paddr: PhysAddr) -> Self {
-        new_table(paddr)
+        let bits = (paddr.as_usize() as u64 & OUTPUT_ADDR_MASK)
+            | PteFlags::VALID.bits()
+            | PteFlags::TABLE.bits();
+        Self(bits)
     }
 
     #[inline]
@@ -244,6 +252,11 @@ mod tests {
         assert!(ro.contains(PteFlags::PXN));
         assert!(ro.contains(PteFlags::UXN));
 
+        let rwx = PteFlags::kernel_rwx();
+        assert!(rwx.is_writable());
+        assert!(!rwx.contains(PteFlags::PXN));
+        assert!(rwx.contains(PteFlags::UXN));
+
         let dev = PteFlags::kernel_device();
         assert!(dev.contains(PteFlags::PXN));
         assert!(dev.contains(PteFlags::UXN));
@@ -294,5 +307,25 @@ mod tests {
 
         let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
         assert!(!pte_no_excl.flags().is_exclusive());
+    }
+
+    /// 无效 PTE 不应被视为叶节点。
+    #[test]
+    fn invalid_pte_is_not_leaf() {
+        let pte = PageTableEntry::from_raw(0);
+        assert!(!pte.is_valid());
+        assert!(!pte.is_leaf(0));
+        assert!(!pte.is_leaf(1));
+    }
+
+    /// 中间节点 PTE 保留地址且不是叶节点。
+    #[test]
+    fn intermediate_preserves_addr_and_is_not_leaf() {
+        let pa = PhysAddr::new(0x8020_0000);
+        let pte = PageTableEntry::new_intermediate(pa);
+        assert!(pte.is_valid());
+        assert_eq!(pte.paddr(), pa);
+        assert!(!pte.is_leaf(1));
+        assert!(!pte.is_leaf(2));
     }
 }

@@ -13,9 +13,14 @@ extern crate alloc;
 use address::PhysAddr;
 use core::sync::atomic::{AtomicU64, Ordering};
 
-// Re-export page_table_entry 的所有公共类型
-pub use page_table_entry::error;
-pub use page_table_entry::{PTE_SIZE_SHIFT, PageTableEntry, PteFlags, PteFlagsOps, PteOps};
+pub mod error;
+
+pub use page_table_entry::{PageTableEntry, PteFlags, PteFlagsOps, PteOps};
+
+/// PTE 大小的位移量——`log2(sizeof(u64))` = 3。
+///
+/// 两种架构的 PTE 均为 64 位，此常量在所有架构下一致。
+pub const PTE_SIZE_SHIFT: usize = core::mem::size_of::<u64>().trailing_zeros() as usize;
 
 pub mod table;
 pub use table::PageTable;

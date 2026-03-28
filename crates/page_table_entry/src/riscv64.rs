@@ -13,7 +13,8 @@ use bitflags::bitflags;
 use crate::{PteFlagsOps, PteOps};
 use address::PhysAddr;
 
-const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
+/// 4KB 页：PAGE_SHIFT = 12
+const PAGE_SHIFT: u32 = 12;
 
 /// flags 位宽（RISC-V PTE 格式固定 10 位：bits [9:0]）
 const FLAGS_BITS: u32 = 10;
@@ -22,9 +23,17 @@ const FLAGS_BITS: u32 = 10;
 const PPN_MASK: u64 = 0x003F_FFFF_FFFF_FC00;
 
 /// RISC-V 页表项（64 位）。
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
-pub struct PageTableEntry(pub u64);
+pub struct PageTableEntry(u64);
+
+impl core::fmt::Debug for PageTableEntry {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("PageTableEntry")
+            .field(&format_args!("{:#018x}", self.0))
+            .finish()
+    }
+}
 
 bitflags! {
     /// RISC-V Sv39/Sv48/Sv57 页表项标志位（硬件原生位位置）。
@@ -112,6 +121,10 @@ impl PteOps for PageTableEntry {
 
     #[inline]
     fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
+        debug_assert!(
+            !flags.contains(PteFlags::WRITE) || flags.contains(PteFlags::READ),
+            "RISC-V spec 禁止 W=1, R=0 的标志组合"
+        );
         let ppn = ((paddr.as_usize() as u64) >> PAGE_SHIFT) << FLAGS_BITS;
         Self(ppn | flags.bits())
     }
@@ -131,10 +144,12 @@ impl PteOps for PageTableEntry {
         self.0 & PteFlags::VALID.bits() != 0
     }
 
-    /// RISC-V 规范：R/W/X 至少有一个设置即为叶节点，与层级无关。
+    /// RISC-V 规范：V=1 且 R/W/X 至少有一个设置即为叶节点，与层级无关。
+    /// V=0 的 PTE 无效，不视为叶。
     #[inline]
     fn is_leaf(self, _level: usize) -> bool {
-        self.0 & (PteFlags::READ | PteFlags::WRITE | PteFlags::EXECUTE).bits() != 0
+        self.is_valid()
+            && self.0 & (PteFlags::READ | PteFlags::WRITE | PteFlags::EXECUTE).bits() != 0
     }
 
     #[inline]
@@ -145,7 +160,8 @@ impl PteOps for PageTableEntry {
     /// 中间节点 PTE（仅 V 位，指向下一级页表）。
     #[inline]
     fn new_intermediate(paddr: PhysAddr) -> Self {
-        Self::new(paddr, PteFlags::VALID)
+        let ppn = ((paddr.as_usize() as u64) >> PAGE_SHIFT) << FLAGS_BITS;
+        Self(ppn | PteFlags::VALID.bits())
     }
 
     #[inline]
@@ -163,14 +179,14 @@ impl PteOps for PageTableEntry {
 mod tests {
     use super::*;
 
-    /// 每个 PteFlags 单独编解码往返。
+    /// 每个 PteFlags 单独编解码往返（WRITE 需搭配 READ，因 W=1 R=0 非法）。
     #[test]
     fn each_flag_roundtrip() {
         let pa = PhysAddr::new(0x8020_0000);
         let all_flags = [
             PteFlags::VALID,
             PteFlags::READ,
-            PteFlags::WRITE,
+            PteFlags::READ | PteFlags::WRITE,
             PteFlags::EXECUTE,
             PteFlags::USER,
             PteFlags::GLOBAL,
@@ -199,6 +215,10 @@ mod tests {
         assert!(!ro.is_writable());
         assert!(!ro.contains(PteFlags::EXECUTE));
 
+        let rwx = PteFlags::kernel_rwx();
+        assert!(rwx.is_writable());
+        assert!(rwx.contains(PteFlags::EXECUTE));
+
         let dev = PteFlags::kernel_device();
         assert!(!dev.contains(PteFlags::EXECUTE));
     }
@@ -223,5 +243,24 @@ mod tests {
 
         let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
         assert!(!pte_no_excl.flags().is_exclusive());
+    }
+
+    /// V=0 的 PTE 不应被视为叶节点。
+    #[test]
+    fn invalid_pte_is_not_leaf() {
+        let pte = PageTableEntry::from_raw(PteFlags::READ.bits());
+        assert!(!pte.is_valid());
+        assert!(!pte.is_leaf(0));
+    }
+
+    /// 中间节点 PTE（V=1，无 R/W/X）保留地址且不是叶节点。
+    #[test]
+    fn intermediate_preserves_addr_and_is_not_leaf() {
+        let pa = PhysAddr::new(0x8020_0000);
+        let pte = PageTableEntry::new_intermediate(pa);
+        assert!(pte.is_valid());
+        assert_eq!(pte.paddr(), pa);
+        assert!(!pte.is_leaf(0));
+        assert!(!pte.is_leaf(1));
     }
 }

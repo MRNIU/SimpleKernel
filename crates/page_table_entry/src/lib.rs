@@ -4,13 +4,11 @@
 //! - [`aarch64`] / [`riscv64`]：各架构的 `PageTableEntry` + `PteFlags` 定义
 //! - [`PageTableEntry`] / [`PteFlags`]：当前目标架构的类型别名
 //!
-//! 本 crate 无 `alloc` 依赖，可在 heap 未初始化的早期启动阶段使用。
+//! 本 crate 无 `alloc` / `config` 依赖，可在 heap 未初始化的早期启动阶段使用。
 
 #![cfg_attr(not(test), no_std)]
 
 use address::PhysAddr;
-
-pub mod error;
 
 pub mod aarch64;
 pub mod riscv64;
@@ -47,6 +45,13 @@ pub trait PteFlagsOps: Copy + core::fmt::Debug {
 }
 
 /// 页表项的统一接口——各架构必须实现。
+///
+/// # Note
+///
+/// 修改页表项后，调用者**必须**执行对应架构的 TLB 维护操作
+/// （RISC-V `sfence.vma` / AArch64 `TLBI` + `DSB` + `ISB`），
+/// 否则 CPU 可能继续使用过期的 TLB 缓存条目。
+/// TLB 刷新不属于 PTE 编解码的职责，由上层页表管理器负责。
 pub trait PteOps: Copy + core::fmt::Debug {
     /// 对应架构的标志位类型
     type Flags: PteFlagsOps;
@@ -76,15 +81,3 @@ pub use aarch64::{PageTableEntry, PteFlags};
 pub use riscv64::{PageTableEntry, PteFlags};
 #[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
 pub use riscv64::{PageTableEntry, PteFlags};
-
-/// PTE 大小的位移量——`log2(sizeof(u64))` = 3。
-///
-/// 两种架构的 PTE 均为 64 位，此常量在所有架构下一致。
-pub const PTE_SIZE_SHIFT: usize = core::mem::size_of::<u64>().trailing_zeros() as usize;
-
-/// 编译期断言：两种架构的 PageTableEntry 均实现了 PteOps。
-const _: () = {
-    const fn _assert<T: PteOps>() {}
-    _assert::<riscv64::PageTableEntry>();
-    _assert::<aarch64::PageTableEntry>();
-};
