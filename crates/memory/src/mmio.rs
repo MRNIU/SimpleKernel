@@ -3,25 +3,11 @@
 //! `MmioRegion` 封装了一段已映射的 MMIO 地址区域，提供类型安全的
 //! 寄存器读写方法，替代裸指针 + `core::ptr::read_volatile` 的传统做法。
 //!
-//! # 设计理念
+//! # 与 `MappedPages` 的区别
 //!
-//! Theseus OS 通过 `MappedPages` 将所有内存访问绑定到映射的生命周期，
-//! 编译器保证不会发生 use-after-unmap。`MmioRegion` 采用类似思路：
-//! - `map()` 返回 owned `MmioRegion`（当前不支持 unmap，内核 MMIO 永久有效）
-//! - 寄存器访问通过 `read_reg` / `write_reg` 方法，带边界检查
-//! - 类型参数确保正确的寄存器宽度（u8/u16/u32/u64）
-//!
-//! # 与裸指针方式的对比
-//!
-//! ```ignore
-//! // 之前（裸指针）
-//! let addr = (base + offset) as *mut u32;
-//! unsafe { core::ptr::write_volatile(addr, val) };
-//!
-//! // 之后（MmioRegion）
-//! let region = MmioRegion::map(paddr, size)?;
-//! unsafe { region.write_reg::<u32>(offset, val) };
-//! ```
+//! `MappedPages` 使用普通内存语义（non-volatile），适合 RAM 映射。
+//! `MmioRegion` 使用 volatile 语义，适合设备寄存器——编译器不会优化掉
+//! 对同一地址的重复读写，也不会重排 MMIO 操作。
 
 #[cfg(not(test))]
 use crate::address::{PhysAddr, VirtAddr};
@@ -32,10 +18,12 @@ use crate::error::MemoryError;
 ///
 /// 持有此类型即证明底层物理地址区域已被 identity-map 到内核页表。
 /// 不可 Clone（一个映射只有一个 owner），可通过 `&self` 共享读取。
+/// Drop 时自动 unmap（除非标记为永久映射）。
 #[cfg(not(test))]
 pub struct MmioRegion {
     base: VirtAddr,
     size: usize,
+    permanent: bool,
 }
 
 #[cfg(not(test))]
@@ -49,7 +37,20 @@ impl MmioRegion {
     /// 内核页表未初始化或映射失败时返回错误。
     pub fn map(paddr: PhysAddr, size: usize) -> Result<Self, MemoryError> {
         let va = super::map_mmio(paddr, size)?;
-        Ok(Self { base: va, size })
+        Ok(Self {
+            base: va,
+            size,
+            permanent: false,
+        })
+    }
+
+    /// 标记为永久映射——drop 时不 unmap。
+    ///
+    /// 用于 PLIC、GIC 等内核生命周期内永远需要的 MMIO 区域。
+    #[must_use]
+    pub fn into_permanent(mut self) -> Self {
+        self.permanent = true;
+        self
     }
 
     /// 返回 MMIO 区域的基地址。
@@ -69,12 +70,12 @@ impl MmioRegion {
     /// # Safety
     ///
     /// 调用方必须确保：
-    /// 1. `offset + size_of::<T>() <= self.size`（由 debug_assert 检查）
+    /// 1. `offset + size_of::<T>() <= self.size`
     /// 2. 偏移对齐到 `T` 的自然对齐边界
     /// 3. 该偏移处的寄存器确实存在且可读
     #[inline]
-    pub unsafe fn read_reg<T: Copy>(&self, offset: usize) -> T {
-        debug_assert!(
+    pub unsafe fn read_reg<T: zerocopy::FromBytes>(&self, offset: usize) -> T {
+        assert!(
             offset + core::mem::size_of::<T>() <= self.size,
             "MmioRegion::read_reg: offset {:#x} + {} 超出区域大小 {:#x}",
             offset,
@@ -91,12 +92,12 @@ impl MmioRegion {
     /// # Safety
     ///
     /// 调用方必须确保：
-    /// 1. `offset + size_of::<T>() <= self.size`（由 debug_assert 检查）
+    /// 1. `offset + size_of::<T>() <= self.size`
     /// 2. 偏移对齐到 `T` 的自然对齐边界
     /// 3. 该偏移处的寄存器确实存在且可写
     #[inline]
-    pub unsafe fn write_reg<T: Copy>(&self, offset: usize, val: T) {
-        debug_assert!(
+    pub unsafe fn write_reg<T: zerocopy::IntoBytes>(&self, offset: usize, val: T) {
+        assert!(
             offset + core::mem::size_of::<T>() <= self.size,
             "MmioRegion::write_reg: offset {:#x} + {} 超出区域大小 {:#x}",
             offset,
@@ -110,8 +111,36 @@ impl MmioRegion {
 }
 
 #[cfg(not(test))]
+impl Drop for MmioRegion {
+    fn drop(&mut self) {
+        if self.permanent {
+            return;
+        }
+        if let Some(kpt) = crate::kernel_page_table() {
+            let mut guard = kpt.lock();
+            let start =
+                crate::address::VirtAddr::new(self.base.as_usize() & !(config::PAGE_SIZE - 1));
+            let end_raw = self.base.as_usize() + self.size;
+            let end = (end_raw + config::PAGE_SIZE - 1) & !(config::PAGE_SIZE - 1);
+            let mut addr = start;
+            while addr.as_usize() < end {
+                let _ = guard.unmap_page(addr);
+                addr += config::PAGE_SIZE;
+            }
+            crate::tlb::flush_tlb();
+        }
+    }
+}
+
+#[cfg(not(test))]
 impl core::fmt::Debug for MmioRegion {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "MmioRegion({}, size={:#x})", self.base, self.size)
+        write!(
+            f,
+            "MmioRegion({}, size={:#x}{})",
+            self.base,
+            self.size,
+            if self.permanent { ", permanent" } else { "" }
+        )
     }
 }

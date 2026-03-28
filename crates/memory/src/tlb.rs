@@ -1,6 +1,18 @@
-//! TLB 管理——架构无关的 TLB 刷新接口。
-//!
-//! 使用 `target_os = "none"` 区分裸机和宿主机编译。
+//! TLB 管理——架构无关的 TLB 刷新接口 + 跨核 shootdown 回调。
+
+/// 跨核 TLB shootdown 回调函数。
+///
+/// 参数约定：`0` = 全局刷新，非 `0` = 单页虚拟地址。
+/// 由中断子系统通过 [`register_tlb_shootdown`] 注册，实际 IPI 发送逻辑由调用方实现。
+static TLB_SHOOTDOWN_FN: spin::Once<fn(usize)> = spin::Once::new();
+
+/// 注册跨核 TLB shootdown 回调。
+///
+/// 在中断子系统初始化 IPI 后调用一次。注册后，所有 TLB 刷新操作
+/// 会在本核刷新后自动调用此回调通知其他核心。
+pub fn register_tlb_shootdown(f: fn(usize)) {
+    TLB_SHOOTDOWN_FN.call_once(|| f);
+}
 
 /// 刷新整个 TLB——用于批量页表操作（切换地址空间、初始化映射等）。
 ///
@@ -15,13 +27,16 @@ pub fn flush_tlb() {
     unsafe {
         core::arch::asm!("tlbi vmalle1", "dsb sy", "isb");
     }
-    // 宿主机: no-op
+
+    // 跨核 shootdown（0 表示全局刷新）
+    if let Some(shootdown) = TLB_SHOOTDOWN_FN.get() {
+        shootdown(0);
+    }
 }
 
 /// 刷新指定虚拟地址对应的单条 TLB 表项。
 ///
 /// 在 unmap 单页或修改单个 PTE 后调用，比 [`flush_tlb`] 精确、开销更低。
-/// 参考 Theseus 的 `tlb::flush_virt_addr` 和 Linux 的 `flush_tlb_page`。
 #[inline(always)]
 pub fn flush_tlb_page(vaddr: usize) {
     #[cfg(all(target_os = "none", target_arch = "riscv64"))]
@@ -35,14 +50,20 @@ pub fn flush_tlb_page(vaddr: usize) {
     }
     #[cfg(all(target_os = "none", target_arch = "aarch64"))]
     // SAFETY: tlbi/dsb/isb 是 EL1 特权指令。
-    // TLBI VAE1 操作数格式：虚拟地址右移 12 位（页号），低 48 位有效。
+    // TLBI VAE1 操作数格式：虚拟地址右移 PAGE_SHIFT 位（页号）。
     unsafe {
+        let page = vaddr >> config::PAGE_SIZE.trailing_zeros();
         core::arch::asm!(
             "tlbi vae1, {page}",
             "dsb sy",
             "isb",
-            page = in(reg) vaddr >> 12,
+            page = in(reg) page,
         );
     }
     let _ = vaddr; // 宿主机: no-op，消除 unused 警告
+
+    // 跨核 shootdown（非 0 表示单页地址）
+    if let Some(shootdown) = TLB_SHOOTDOWN_FN.get() {
+        shootdown(vaddr);
+    }
 }

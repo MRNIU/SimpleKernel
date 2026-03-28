@@ -1,29 +1,24 @@
 //! 裸机页表——walk / map / unmap 逻辑。
 
-use super::{PageFlags, PageTableEntry};
+use super::{Level0, PageFlags, PageTableEntry, Table, vpn_index};
 use crate::address::{PhysAddr, VirtAddr};
 use crate::error::MemoryError;
-use crate::frame::FrameTracker;
-use config::PAGE_SIZE;
+use crate::frame::AllocatedFrame;
 
-const ENTRIES_PER_PAGE: usize = PAGE_SIZE / 8;
 const PT_LEVELS: usize = config::PT_LEVELS;
 
-/// 从虚拟地址中提取第 `level` 级的 9 位 VPN 索引。
-#[inline]
-fn vpn_index(va: VirtAddr, level: usize) -> usize {
-    (va.as_usize() >> (12 + level * 9)) & 0x1FF
-}
-
-/// 将物理地址解释为页表项数组。
+/// 从物理地址构造 `Table<Level0>` 用于 walker 内部。
+///
+/// walker 在运行时循环中无法使用编译期类型参数区分层级，
+/// 统一使用 `Level0` 是因为当前所有层级的 entries 数量相同（均从 PAGE_SIZE 推导）。
+/// 索引计算通过 [`vpn_index`] + [`LEVEL_INFO`] 查表实现，不依赖 `L::ENTRIES`。
 ///
 /// # Safety
-/// - `paddr` 必须指向有效、页对齐、由 `FrameTracker` 分配的帧，
-///   且当前不存在其他可变引用。
-/// - 当前使用 identity mapping（VA == PA），物理地址可直接作为虚拟地址解引用。
-///   若未来切换为非 identity mapping，此处需通过 `phys_to_virt()` 转换。
-unsafe fn pte_array(paddr: PhysAddr) -> &'static mut [PageTableEntry; ENTRIES_PER_PAGE] {
-    unsafe { &mut *(paddr.as_usize() as *mut [PageTableEntry; ENTRIES_PER_PAGE]) }
+/// `paddr` 必须指向有效、页对齐的帧，当前使用 identity mapping（VA == PA）。
+#[inline]
+unsafe fn table_at(paddr: PhysAddr) -> Table<Level0> {
+    // SAFETY: 调用方保证 paddr 有效
+    unsafe { Table::<Level0>::from_paddr(paddr) }
 }
 
 /// 多级页表。
@@ -31,14 +26,14 @@ unsafe fn pte_array(paddr: PhysAddr) -> &'static mut [PageTableEntry; ENTRIES_PE
 /// 拥有根帧及所有遍历过程中分配的中间帧。
 /// drop 时自动归还所有帧。
 pub struct PageTable {
-    root: FrameTracker,
-    frames: alloc::vec::Vec<FrameTracker>,
+    root: AllocatedFrame,
+    frames: alloc::vec::Vec<AllocatedFrame>,
 }
 
 impl PageTable {
     /// 创建新页表，分配根帧。
     pub fn new() -> Result<Self, MemoryError> {
-        let root = FrameTracker::alloc()?;
+        let root = AllocatedFrame::alloc()?;
         Ok(Self {
             root,
             frames: alloc::vec::Vec::new(),
@@ -51,69 +46,73 @@ impl PageTable {
         self.root.paddr()
     }
 
-    /// 遍历到 `va` 对应的叶 PTE，必要时分配中间节点。
-    pub fn find_or_create_pte(
-        &mut self,
-        va: VirtAddr,
-    ) -> Result<&'static mut PageTableEntry, MemoryError> {
+    /// 遍历到 `va` 对应的叶 PTE，必要时分配中间节点。返回 PTE 裸指针。
+    fn find_or_create_pte(&mut self, va: VirtAddr) -> Result<*mut PageTableEntry, MemoryError> {
         let mut paddr = self.root.paddr();
 
         for level in (1..PT_LEVELS).rev() {
-            let table = unsafe { pte_array(paddr) };
+            // SAFETY: paddr 指向由 self.root 或 self.frames 持有的有效帧
+            let mut table = unsafe { table_at(paddr) };
             let idx = vpn_index(va, level);
-            let pte = &mut table[idx];
+            let pte = table.read(idx);
 
             if !pte.is_valid() {
-                let frame = FrameTracker::alloc()?;
+                let frame = AllocatedFrame::alloc()?;
                 let frame_paddr = frame.paddr();
-                *pte = PageTableEntry::new_intermediate(frame_paddr);
+                table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
                 self.frames.push(frame);
+                paddr = frame_paddr;
+            } else {
+                paddr = pte.paddr();
             }
-
-            paddr = pte.paddr();
         }
 
-        let table = unsafe { pte_array(paddr) };
+        // SAFETY: paddr 指向由 self 持有的有效帧
+        let mut table = unsafe { table_at(paddr) };
         let idx = vpn_index(va, 0);
-        Ok(&mut table[idx])
+        Ok(table.entry_ptr(idx))
     }
 
-    /// 只读遍历，不分配。
-    pub fn find_pte(&self, va: VirtAddr) -> Option<&'static PageTableEntry> {
+    /// 只读遍历，不分配。返回 PTE 值的拷贝。
+    fn find_pte(&self, va: VirtAddr) -> Option<PageTableEntry> {
         let mut paddr = self.root.paddr();
 
         for level in (1..PT_LEVELS).rev() {
-            let table = unsafe { pte_array(paddr) };
+            // SAFETY: paddr 指向由 self 持有的有效帧
+            let table = unsafe { table_at(paddr) };
             let idx = vpn_index(va, level);
-            let pte = &table[idx];
+            let pte = table.read(idx);
             if !pte.is_valid() {
                 return None;
             }
             paddr = pte.paddr();
         }
 
-        let table = unsafe { pte_array(paddr) };
+        // SAFETY: paddr 指向由 self 持有的有效帧
+        let table = unsafe { table_at(paddr) };
         let idx = vpn_index(va, 0);
-        Some(&table[idx])
+        Some(table.read(idx))
     }
 
-    /// 可变遍历，不分配。用于 unmap 等无需创建中间节点的场景。
-    pub fn find_pte_mut(&mut self, va: VirtAddr) -> Option<&'static mut PageTableEntry> {
+    /// 可变遍历，不分配。返回叶 PTE 裸指针。
+    fn find_pte_mut(&mut self, va: VirtAddr) -> Option<*mut PageTableEntry> {
         let mut paddr = self.root.paddr();
 
         for level in (1..PT_LEVELS).rev() {
-            let table = unsafe { pte_array(paddr) };
+            // SAFETY: paddr 指向由 self 持有的有效帧
+            let table = unsafe { table_at(paddr) };
             let idx = vpn_index(va, level);
-            let pte = &table[idx];
+            let pte = table.read(idx);
             if !pte.is_valid() {
                 return None;
             }
             paddr = pte.paddr();
         }
 
-        let table = unsafe { pte_array(paddr) };
+        // SAFETY: paddr 指向由 self 持有的有效帧
+        let mut table = unsafe { table_at(paddr) };
         let idx = vpn_index(va, 0);
-        Some(&mut table[idx])
+        Some(table.entry_ptr(idx))
     }
 
     /// 映射单个虚拟页到物理帧。若该 VA 已被映射则返回错误。
@@ -123,22 +122,28 @@ impl PageTable {
         pa: PhysAddr,
         flags: PageFlags,
     ) -> Result<(), MemoryError> {
-        let pte = self.find_or_create_pte(va)?;
-        if pte.is_valid() {
+        let pte_ptr = self.find_or_create_pte(va)?;
+        // SAFETY: pte_ptr 指向 self 持有的帧内存
+        let current = unsafe { pte_ptr.read() };
+        if current.is_valid() {
             return Err(MemoryError::MapFailed);
         }
-        *pte = PageTableEntry::new(pa, flags);
+        // SAFETY: 同上
+        unsafe { pte_ptr.write(PageTableEntry::new(pa, flags)) };
         Ok(())
     }
 
     /// 取消映射单个虚拟页，返回其原始物理地址。
     pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, MemoryError> {
-        let pte = self.find_pte_mut(va).ok_or(MemoryError::PageNotMapped)?;
+        let pte_ptr = self.find_pte_mut(va).ok_or(MemoryError::PageNotMapped)?;
+        // SAFETY: pte_ptr 指向 self 持有的帧内存
+        let pte = unsafe { pte_ptr.read() };
         if !pte.is_valid() {
             return Err(MemoryError::PageNotMapped);
         }
         let old_pa = pte.paddr();
-        *pte = PageTableEntry::empty();
+        // SAFETY: 同上
+        unsafe { pte_ptr.write(PageTableEntry::empty()) };
         Ok(old_pa)
     }
 

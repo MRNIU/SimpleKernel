@@ -70,7 +70,7 @@ fn plic_init() {
     // Step 1: 映射 PLIC MMIO 区域，返回 MmioRegion（类型安全的 MMIO 访问）
     let region =
         MmioRegion::map(PhysAddr::new(base), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
-    PLIC.call_once(|| region);
+    PLIC.call_once(|| region.into_permanent());
 
     let plic = plic();
     // SAFETY: PLIC 已通过 MmioRegion::map 映射，偏移在 PLIC_SIZE 范围内

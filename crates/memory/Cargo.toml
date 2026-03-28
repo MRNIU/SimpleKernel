@@ -14,6 +14,7 @@ sync_crate = { path = "../sync", package = "sync" }
 per-cpu = { path = "../per-cpu" }
 
 bitflags = "2"
+zerocopy = { version = "0.8", default-features = false, features = ["derive"] }
 buddy_system_allocator = "0.11"
 log = { version = "0.4", default-features = false }
 spin = { version = "0.9", default-features = false, features = ["once"] }
