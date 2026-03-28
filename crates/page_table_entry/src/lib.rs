@@ -72,7 +72,6 @@ pub trait PteOps: Copy + core::fmt::Debug {
 
 #[cfg(target_arch = "aarch64")]
 pub use aarch64::{PageTableEntry, PteFlags};
-/// 当前目标架构的 PTE 类型——`not(aarch64)` 兜底 x86_64 宿主机测试。
 #[cfg(not(target_arch = "aarch64"))]
 pub use riscv64::{PageTableEntry, PteFlags};
 
