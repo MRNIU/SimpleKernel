@@ -7,6 +7,11 @@ repository.workspace = true
 description.workspace = true
 edition.workspace = true
 
+[features]
+## 测试时使用 AArch64 PTE 编码（默认使用 RISC-V）。
+## 用法：`cargo test -p memory --features test-aarch64`
+test-aarch64 = []
+
 [dependencies]
 config = { path = "../config" }
 address = { path = "../address" }

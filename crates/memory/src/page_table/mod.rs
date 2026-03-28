@@ -10,14 +10,20 @@ use core::marker::PhantomData;
 
 use address::PhysAddr;
 
-#[cfg(all(not(test), target_arch = "aarch64"))]
+#[cfg(any(
+    all(not(test), target_arch = "aarch64"),
+    all(test, feature = "test-aarch64")
+))]
 mod pte_aarch64;
-#[cfg(any(test, target_arch = "riscv64"))]
+#[cfg(any(target_arch = "riscv64", all(test, not(feature = "test-aarch64"))))]
 mod pte_riscv64;
 
-#[cfg(all(not(test), target_arch = "aarch64"))]
+#[cfg(any(
+    all(not(test), target_arch = "aarch64"),
+    all(test, feature = "test-aarch64")
+))]
 pub use pte_aarch64::PteFlags;
-#[cfg(any(test, target_arch = "riscv64"))]
+#[cfg(any(target_arch = "riscv64", all(test, not(feature = "test-aarch64"))))]
 pub use pte_riscv64::PteFlags;
 
 #[cfg(any(test, target_os = "none"))]
