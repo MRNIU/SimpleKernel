@@ -17,7 +17,7 @@ use alloc::vec::Vec;
 #[cfg(not(test))]
 use crate::error::MemoryError;
 #[cfg(not(test))]
-use crate::frame::{Frames, MemoryState};
+use crate::frame::{AllocatedFrames, MappedFrames};
 #[cfg(not(test))]
 use crate::page_table::{PageFlags, PageTable};
 #[cfg(not(test))]
@@ -33,14 +33,14 @@ use config::PAGE_SIZE;
 /// - `Permanent`：永久映射，drop 时不做任何事
 #[cfg(not(test))]
 enum FrameOwnership {
-    Owned(Vec<Frames<{ MemoryState::Mapped }>>),
+    Owned(Vec<MappedFrames>),
     Borrowed,
     Permanent,
 }
 
 /// 永久帧注册表——持有永久映射的物理帧所有权，防止泄漏且保留追踪能力。
 #[cfg(not(test))]
-static PERMANENT_FRAMES: sync_crate::SpinLock<Vec<Frames<{ MemoryState::Mapped }>>> =
+static PERMANENT_FRAMES: sync_crate::SpinLock<Vec<MappedFrames>> =
     sync_crate::SpinLock::new(Vec::new(), "perm_frames");
 
 /// 仿射类型映射——持有此值即证明 VA→PA 映射有效。
@@ -109,10 +109,10 @@ impl MappedPages {
         page_count: usize,
         flags: PageFlags,
     ) -> Result<Self, MemoryError> {
-        let mut frames: Vec<Frames<{ MemoryState::Mapped }>> = Vec::with_capacity(page_count);
+        let mut frames: Vec<MappedFrames> = Vec::with_capacity(page_count);
         for i in 0..page_count {
-            let frame = crate::frame::AllocatedFrame::alloc()?;
-            let pa = frame.paddr();
+            let frame = AllocatedFrames::alloc_one()?;
+            let pa = frame.start_paddr();
             let va = va_start + i * PAGE_SIZE;
             match pt.map_page(va, pa, flags) {
                 Ok(()) => {
@@ -123,9 +123,9 @@ impl MappedPages {
                     for j in (0..i).rev() {
                         let _ = pt.unmap_page(va_start + j * PAGE_SIZE);
                     }
-                    // 将已转为 Mapped 的帧转回 Allocated，触发正常释放
+                    // Mapped → Unmapped（drop 自动归还分配器）
                     for mapped_frame in frames.drain(..) {
-                        let _allocated = mapped_frame.into_unmapped();
+                        let _unmapped = mapped_frame.into_unmapped();
                     }
                     return Err(e);
                 }
@@ -252,10 +252,10 @@ impl Drop for MappedPages {
         // 先 unmap PTE（顺序关键：帧释放后地址可能被复用）
         self.unmap_ptes();
 
-        // Owned 帧转回 Allocated 触发正常释放
+        // Owned 帧走 Mapped → Unmapped（drop 自动归还分配器）
         if let FrameOwnership::Owned(frames) = &mut self.ownership {
             for frame in frames.drain(..) {
-                let _allocated = frame.into_unmapped();
+                let _unmapped = frame.into_unmapped();
             }
         }
     }

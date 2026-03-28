@@ -13,7 +13,10 @@ mod range;
 
 pub use addr::{PhysAddr, VirtAddr};
 pub use page_num::{PhysPageNum, VirtPageNum};
-pub use range::AddrRange;
+pub use range::{AddrRange, AddrRangeIter};
+
+/// 物理帧范围——`AddrRange<PhysPageNum>` 的便利别名。
+pub type FrameRange = AddrRange<PhysPageNum>;
 
 /// 为 `#[repr(transparent)] struct Foo(usize)` 生成通用基础设施。
 ///

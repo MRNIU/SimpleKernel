@@ -181,7 +181,7 @@ impl<F: FrameProvider> GenericPageTable<F> {
 }
 
 #[cfg(target_os = "none")]
-use crate::frame::AllocatedFrame;
+use crate::frame::AllocatedFrames;
 
 /// 裸机帧分配——委托给全局 buddy allocator。
 #[cfg(target_os = "none")]
@@ -189,14 +189,14 @@ pub struct BuddyProvider;
 
 #[cfg(target_os = "none")]
 impl FrameProvider for BuddyProvider {
-    type Frame = AllocatedFrame;
+    type Frame = AllocatedFrames;
 
     fn alloc_frame(&mut self) -> Result<Self::Frame, MemoryError> {
-        AllocatedFrame::alloc()
+        AllocatedFrames::alloc_one()
     }
 
     fn frame_paddr(frame: &Self::Frame) -> PhysAddr {
-        frame.paddr()
+        frame.start_paddr()
     }
 }
 
