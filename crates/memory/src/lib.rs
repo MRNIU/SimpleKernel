@@ -28,7 +28,7 @@ use address::PhysAddr;
 #[cfg(target_os = "none")]
 use address::VirtAddr;
 #[cfg(target_os = "none")]
-use page_table::{PageFlags, PageTable};
+use page_table::{PageTable, PteFlags};
 
 #[cfg(target_os = "none")]
 use sync_crate::SpinLock;
@@ -76,7 +76,7 @@ pub fn identity_map_range(
     pt: &mut PageTable,
     start: PhysAddr,
     end: PhysAddr,
-    flags: PageFlags,
+    flags: PteFlags,
 ) -> Result<(), crate::error::MemoryError> {
     let mut addr = start.align_down();
     let end_aligned = end.align_up();
@@ -115,13 +115,13 @@ pub fn init() -> PageTable {
     // 分段映射：
     // [mem_start, text_end) → RWX（.boot 段混合了 code+data，无法拆分为 RX/RW）
     // [text_end, mem_end)   → RW（.rodata + .data + .bss + 空闲内存）
-    identity_map_range(&mut pt, mem_start, text_end, PageFlags::kernel_rwx())
+    identity_map_range(&mut pt, mem_start, text_end, PteFlags::kernel_rwx())
         .expect("failed to map kernel code region");
     identity_map_range(
         &mut pt,
         text_end,
         mem_start + mem_size,
-        PageFlags::kernel_rw(),
+        PteFlags::kernel_rw(),
     )
     .expect("failed to map kernel data + free memory");
 
@@ -173,7 +173,7 @@ pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, crate::error::
         .get()
         .ok_or(crate::error::MemoryError::InvalidPageTable)?;
     let mut guard = kpt.lock();
-    identity_map_range(&mut *guard, paddr, paddr + size, PageFlags::kernel_rw())?;
+    identity_map_range(&mut *guard, paddr, paddr + size, PteFlags::kernel_rw())?;
     crate::tlb::flush_tlb();
     Ok(VirtAddr::new(paddr.as_usize()))
 }

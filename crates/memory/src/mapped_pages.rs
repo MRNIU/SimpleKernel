@@ -19,7 +19,7 @@ use crate::error::MemoryError;
 #[cfg(not(test))]
 use crate::frame::{AllocatedFrames, MappedFrames};
 #[cfg(not(test))]
-use crate::page_table::{PageFlags, PageTable};
+use crate::page_table::{PageTable, PteFlags};
 #[cfg(not(test))]
 use address::{PhysAddr, VirtAddr};
 #[cfg(not(test))]
@@ -54,7 +54,7 @@ pub struct MappedPages {
     /// 映射的页数
     page_count: usize,
     /// 映射权限
-    flags: PageFlags,
+    flags: PteFlags,
     /// 帧所有权模型
     ownership: FrameOwnership,
 }
@@ -73,7 +73,7 @@ impl MappedPages {
         pt: &mut PageTable,
         pa_start: PhysAddr,
         page_count: usize,
-        flags: PageFlags,
+        flags: PteFlags,
     ) -> Result<Self, MemoryError> {
         let va_start = VirtAddr::new(pa_start.as_usize());
         for i in 0..page_count {
@@ -107,7 +107,7 @@ impl MappedPages {
         pt: &mut PageTable,
         va_start: VirtAddr,
         page_count: usize,
-        flags: PageFlags,
+        flags: PteFlags,
     ) -> Result<Self, MemoryError> {
         let mut frames: Vec<MappedFrames> = Vec::with_capacity(page_count);
         for i in 0..page_count {
@@ -169,7 +169,7 @@ impl MappedPages {
 
     /// 返回映射权限。
     #[must_use]
-    pub fn flags(&self) -> PageFlags {
+    pub fn flags(&self) -> PteFlags {
         self.flags
     }
 
@@ -216,7 +216,7 @@ impl MappedPages {
             self.size(),
         );
         debug_assert!(
-            self.flags.contains(PageFlags::WRITE),
+            self.flags.is_writable(),
             "MappedPages::as_type_mut: 映射无 WRITE 权限"
         );
         let addr: *mut T = (self.vaddr + offset).as_mut_ptr();

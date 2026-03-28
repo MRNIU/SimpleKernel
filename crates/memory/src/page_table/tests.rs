@@ -57,33 +57,51 @@ fn vpn_index_extracts_correct_bits() {
 #[test]
 fn pte_roundtrip() {
     let pa = PhysAddr::new(0x8020_0000);
-    let flags = PageFlags::VALID | PageFlags::READ | PageFlags::WRITE;
+    let flags = PteFlags::VALID | PteFlags::READ | PteFlags::WRITE;
     let pte = PageTableEntry::new(pa, flags);
 
     assert_eq!(pte.paddr(), pa);
-    let recovered = pte.flags();
-    assert!(recovered.contains(PageFlags::VALID));
-    assert!(recovered.contains(PageFlags::READ));
-    assert!(recovered.contains(PageFlags::WRITE));
-    assert!(!recovered.contains(PageFlags::EXECUTE));
+    assert_eq!(pte.flags(), flags);
 }
 
-/// PTE 往返测试——零地址。
+/// PTE 往返测试——零地址，验证地址和标志均正确。
 #[test]
 fn pte_roundtrip_zero_addr() {
     let pa = PhysAddr::new(0);
-    let flags = PageFlags::VALID | PageFlags::READ;
+    let flags = PteFlags::VALID | PteFlags::READ;
     let pte = PageTableEntry::new(pa, flags);
     assert_eq!(pte.paddr(), pa);
+    assert_eq!(pte.flags(), flags);
 }
 
-/// PTE 往返测试——高位地址。
+/// PTE 往返测试——高位地址，验证地址高位不会污染标志字段。
 #[test]
 fn pte_roundtrip_high_addr() {
     let pa = PhysAddr::new(0x00FF_FFFF_F000);
-    let flags = PageFlags::VALID | PageFlags::READ | PageFlags::WRITE;
+    let flags = PteFlags::VALID | PteFlags::READ | PteFlags::WRITE;
     let pte = PageTableEntry::new(pa, flags);
     assert_eq!(pte.paddr(), pa);
+    assert_eq!(pte.flags(), flags);
+}
+
+/// 每个 PteFlags 单独编解码往返，确保各 bit 互不干扰。
+#[test]
+fn pte_each_flag_roundtrip() {
+    let pa = PhysAddr::new(0x8020_0000);
+    let all_flags = [
+        PteFlags::VALID,
+        PteFlags::READ,
+        PteFlags::WRITE,
+        PteFlags::EXECUTE,
+        PteFlags::USER,
+        PteFlags::GLOBAL,
+        PteFlags::ACCESSED,
+        PteFlags::DIRTY,
+    ];
+    for &flag in &all_flags {
+        let pte = PageTableEntry::new(pa, flag);
+        assert_eq!(pte.flags(), flag, "标志 {:?} 编解码往返失败", flag);
+    }
 }
 
 /// 空 PTE 应为 invalid 且非 leaf。
@@ -94,46 +112,69 @@ fn pte_empty_is_invalid() {
     assert!(!pte.is_leaf());
 }
 
-/// 验证各预设标志组合的正确性。
+/// 验证各预设标志组合的正确性（RISC-V Sv39 位布局）。
 #[test]
-fn page_flags_presets() {
-    let rw = PageFlags::kernel_rw();
-    assert!(rw.contains(PageFlags::VALID));
-    assert!(rw.contains(PageFlags::READ));
-    assert!(rw.contains(PageFlags::WRITE));
-    assert!(rw.contains(PageFlags::GLOBAL));
-    assert!(rw.contains(PageFlags::ACCESSED));
-    assert!(rw.contains(PageFlags::DIRTY));
-    assert!(!rw.contains(PageFlags::EXECUTE));
-    assert!(!rw.contains(PageFlags::USER));
+fn pte_flags_presets() {
+    let rw = PteFlags::kernel_rw();
+    assert_eq!(
+        rw,
+        PteFlags::VALID
+            | PteFlags::READ
+            | PteFlags::WRITE
+            | PteFlags::GLOBAL
+            | PteFlags::ACCESSED
+            | PteFlags::DIRTY
+    );
 
-    let rx = PageFlags::kernel_rx();
-    assert!(rx.contains(PageFlags::VALID));
-    assert!(rx.contains(PageFlags::READ));
-    assert!(rx.contains(PageFlags::EXECUTE));
-    assert!(!rx.contains(PageFlags::WRITE));
-    assert!(!rx.contains(PageFlags::DIRTY));
+    let rx = PteFlags::kernel_rx();
+    assert_eq!(
+        rx,
+        PteFlags::VALID
+            | PteFlags::READ
+            | PteFlags::EXECUTE
+            | PteFlags::GLOBAL
+            | PteFlags::ACCESSED
+    );
 
-    let ro = PageFlags::kernel_ro();
-    assert!(ro.contains(PageFlags::READ));
-    assert!(!ro.contains(PageFlags::WRITE));
-    assert!(!ro.contains(PageFlags::EXECUTE));
+    let ro = PteFlags::kernel_ro();
+    assert_eq!(
+        ro,
+        PteFlags::VALID | PteFlags::READ | PteFlags::GLOBAL | PteFlags::ACCESSED
+    );
 
-    let rwx = PageFlags::kernel_rwx();
-    assert!(rwx.contains(PageFlags::READ));
-    assert!(rwx.contains(PageFlags::WRITE));
-    assert!(rwx.contains(PageFlags::EXECUTE));
+    let rwx = PteFlags::kernel_rwx();
+    assert_eq!(
+        rwx,
+        PteFlags::VALID
+            | PteFlags::READ
+            | PteFlags::WRITE
+            | PteFlags::EXECUTE
+            | PteFlags::GLOBAL
+            | PteFlags::ACCESSED
+            | PteFlags::DIRTY
+    );
+}
+
+/// 验证 `is_writable()` 语义方法在各预设下的正确性。
+#[test]
+fn pte_flags_is_writable() {
+    assert!(PteFlags::kernel_rw().is_writable());
+    assert!(PteFlags::kernel_rwx().is_writable());
+    assert!(!PteFlags::kernel_rx().is_writable());
+    assert!(!PteFlags::kernel_ro().is_writable());
+    assert!(PteFlags::WRITE.is_writable());
+    assert!(!PteFlags::empty().is_writable());
 }
 
 /// 验证 PTE 的 valid 和 leaf 判断逻辑。
 #[test]
 fn pte_is_valid_and_leaf() {
     let pa = PhysAddr::new(0x0000_1000);
-    let leaf = PageTableEntry::new(pa, PageFlags::VALID | PageFlags::READ);
+    let leaf = PageTableEntry::new(pa, PteFlags::VALID | PteFlags::READ);
     assert!(leaf.is_valid());
     assert!(leaf.is_leaf());
 
-    let intermediate = PageTableEntry::new(pa, PageFlags::VALID);
+    let intermediate = PageTableEntry::new(pa, PteFlags::VALID);
     assert!(intermediate.is_valid());
     assert!(!intermediate.is_leaf());
 }
@@ -144,7 +185,7 @@ fn map_and_get_mapping() {
     let mut pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
-    let flags = PageFlags::kernel_rw();
+    let flags = PteFlags::kernel_rw();
 
     pt.map_page(va, pa, flags).expect("map_page 应成功");
 
@@ -163,17 +204,17 @@ fn map_different_pages() {
     let pa1 = PhysAddr::new(0x8020_0000);
     let pa2 = PhysAddr::new(0x8020_1000);
 
-    pt.map_page(va1, pa1, PageFlags::kernel_rw())
+    pt.map_page(va1, pa1, PteFlags::kernel_rw())
         .expect("map va1");
-    pt.map_page(va2, pa2, PageFlags::kernel_rx())
+    pt.map_page(va2, pa2, PteFlags::kernel_rx())
         .expect("map va2");
 
     let (got_pa1, got_flags1) = pt.get_mapping(va1).expect("va1 应已映射");
     let (got_pa2, got_flags2) = pt.get_mapping(va2).expect("va2 应已映射");
     assert_eq!(got_pa1, pa1);
     assert_eq!(got_pa2, pa2);
-    assert_eq!(got_flags1, PageFlags::kernel_rw());
-    assert_eq!(got_flags2, PageFlags::kernel_rx());
+    assert_eq!(got_flags1, PteFlags::kernel_rw());
+    assert_eq!(got_flags2, PteFlags::kernel_rx());
 }
 
 /// 对同一虚拟地址重复映射应返回 MapFailed 错误。
@@ -183,10 +224,10 @@ fn double_map_fails() {
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
 
-    pt.map_page(va, pa, PageFlags::kernel_rw())
+    pt.map_page(va, pa, PteFlags::kernel_rw())
         .expect("首次 map 应成功");
     let err = pt
-        .map_page(va, pa, PageFlags::kernel_rw())
+        .map_page(va, pa, PteFlags::kernel_rw())
         .expect_err("重复 map 应失败");
     assert_eq!(err, MemoryError::MapFailed);
 }
@@ -198,7 +239,7 @@ fn unmap_page_returns_old_pa() {
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
 
-    pt.map_page(va, pa, PageFlags::kernel_rw())
+    pt.map_page(va, pa, PteFlags::kernel_rw())
         .expect("map 应成功");
     let old_pa = pt.unmap_page(va).expect("unmap 应成功");
     assert_eq!(old_pa, pa);
@@ -226,9 +267,9 @@ fn map_pages_in_different_vpn_ranges() {
     let pa1 = PhysAddr::new(0x8020_0000);
     let pa2 = PhysAddr::new(0x8020_1000);
 
-    pt.map_page(va_low, pa1, PageFlags::kernel_rw())
+    pt.map_page(va_low, pa1, PteFlags::kernel_rw())
         .expect("map low");
-    pt.map_page(va_high, pa2, PageFlags::kernel_rw())
+    pt.map_page(va_high, pa2, PteFlags::kernel_rw())
         .expect("map high");
 
     let (got1, _) = pt.get_mapping(va_low).expect("low 应已映射");
@@ -245,15 +286,15 @@ fn remap_after_unmap() {
     let pa1 = PhysAddr::new(0x8020_0000);
     let pa2 = PhysAddr::new(0x8030_0000);
 
-    pt.map_page(va, pa1, PageFlags::kernel_rw())
+    pt.map_page(va, pa1, PteFlags::kernel_rw())
         .expect("首次 map");
     pt.unmap_page(va).expect("unmap");
-    pt.map_page(va, pa2, PageFlags::kernel_rx())
+    pt.map_page(va, pa2, PteFlags::kernel_rx())
         .expect("重映射应成功");
 
     let (got_pa, got_flags) = pt.get_mapping(va).expect("应找到新映射");
     assert_eq!(got_pa, pa2);
-    assert_eq!(got_flags, PageFlags::kernel_rx());
+    assert_eq!(got_flags, PteFlags::kernel_rx());
 }
 
 /// 查询从未映射过的地址应返回 None。
@@ -285,7 +326,7 @@ fn unmap_empty_leaf_with_existing_intermediate() {
     // 先映射再 unmap，留下中间节点但叶 PTE 为空
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
-    pt.map_page(va, pa, PageFlags::kernel_rw())
+    pt.map_page(va, pa, PteFlags::kernel_rw())
         .expect("map 应成功");
     pt.unmap_page(va).expect("unmap 应成功");
 

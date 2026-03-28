@@ -57,11 +57,11 @@ impl ArchOps for Aarch64 {
         pt: &mut memory::page_table::PageTable,
     ) -> Result<(), memory::error::MemoryError> {
         use address::PhysAddr;
-        use memory::page_table::PageFlags;
+        use memory::page_table::PteFlags;
         // PL011 UART —— console 直接 MMIO 访问
         let start = PhysAddr::new(PL011_BASE);
         let end = PhysAddr::new(PL011_BASE + PL011_SIZE);
-        memory::identity_map_range(pt, start, end, PageFlags::kernel_rw())?;
+        memory::identity_map_range(pt, start, end, PteFlags::kernel_rw())?;
         log::info!("MemoryInit: mapped PL011 UART @ {:#010X}", PL011_BASE);
         Ok(())
     }

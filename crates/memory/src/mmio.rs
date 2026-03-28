@@ -19,7 +19,7 @@ use crate::error::MemoryError;
 #[cfg(not(test))]
 use crate::mapped_pages::MappedPages;
 #[cfg(not(test))]
-use crate::page_table::PageFlags;
+use crate::page_table::PteFlags;
 #[cfg(not(test))]
 use address::PhysAddr;
 
@@ -49,7 +49,7 @@ impl MmioRegion {
         let page_count = (paddr.as_usize() + size - pa_aligned.as_usize() + config::PAGE_SIZE - 1)
             / config::PAGE_SIZE;
         let mapping =
-            MappedPages::map_identity(&mut guard, pa_aligned, page_count, PageFlags::kernel_rw())?;
+            MappedPages::map_identity(&mut guard, pa_aligned, page_count, PteFlags::kernel_rw())?;
         drop(guard);
         crate::tlb::flush_tlb();
         Ok(Self { mapping })

@@ -13,20 +13,12 @@
 //! - bit [53]：PXN
 //! - bit [54]：UXN/XN
 
-use super::{PageFlags, PageTableEntry};
+use bitflags::bitflags;
+
+use super::PageTableEntry;
 use address::PhysAddr;
 
 const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
-
-const VALID_BIT: u64 = 1 << 0;
-const TABLE_BIT: u64 = 1 << 1;
-const AF_BIT: u64 = 1 << 10;
-const SH_INNER: u64 = 0b11 << 8;
-const MAIR_IDX0: u64 = 0b000 << 2;
-const AP_RO: u64 = 0b10 << 6;
-const AP_RW: u64 = 0b00 << 6;
-const PXN_BIT: u64 = 1 << 53;
-const UXN_BIT: u64 = 1 << 54;
 
 /// 输出地址掩码——根据 PAGE_SIZE 自动适配：
 /// - 4KB (PAGE_SHIFT=12)：bits [47:12]
@@ -34,36 +26,94 @@ const UXN_BIT: u64 = 1 << 54;
 /// - 64KB (PAGE_SHIFT=16)：bits [47:16]
 const OUTPUT_ADDR_MASK: u64 = 0x0000_FFFF_FFFF_FFFF & !((1u64 << PAGE_SHIFT) - 1);
 
+bitflags! {
+    /// AArch64 ARMv8 页表项标志位（硬件原生位位置）。
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct PteFlags: u64 {
+        /// 有效位
+        const VALID     = 1 << 0;
+        /// Table/Page 描述符（1 = table/page，0 = block）
+        const TABLE     = 1 << 1;
+        /// MAIR 索引 0（Normal memory）：bits [4:2] = 0b000。
+        /// 零值常量——在 `|` 表达式中无实际作用，仅为文档可读性保留。
+        /// Normal memory 即 MAIR 索引位全零时的默认选择。
+        const MAIR_IDX0 = 0b000 << 2;
+        /// MAIR 索引 1（Device-nGnRnE）：bits [4:2] = 0b001
+        const MAIR_IDX1 = 0b001 << 2;
+        /// AP[2:1] = 0b01：EL0 可访问（unprivileged access）
+        const AP_UNPRIV = 0b01 << 6;
+        /// AP[2:1] = 0b10：只读（EL1 read-only，EL0 不可访问）。
+        /// 注意 AP 是双位字段 bits [7:6]，`AP_UNPRIV | AP_RO` = 0b11 表示
+        /// 内核+用户均只读。
+        const AP_RO     = 0b10 << 6;
+        /// Inner Shareable：bits [9:8] = 0b11
+        const SH_INNER  = 0b11 << 8;
+        /// Access Flag
+        const AF        = 1 << 10;
+        /// non-Global
+        const NG        = 1 << 11;
+        /// Privileged Execute-Never
+        const PXN       = 1 << 53;
+        /// Unprivileged Execute-Never / Execute-Never
+        const UXN       = 1 << 54;
+    }
+}
+
+impl PteFlags {
+    /// 内核读写数据映射。
+    ///
+    /// VALID | TABLE | AF | SH_INNER | PXN | UXN。
+    /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
+    #[inline]
+    pub fn kernel_rw() -> Self {
+        Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::PXN | Self::UXN
+    }
+
+    /// 内核读-执行映射。
+    ///
+    /// AP_RO 使 EL1 只读，未设 PXN 允许 EL1 执行，UXN 禁止 EL0 执行。
+    /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
+    #[inline]
+    pub fn kernel_rx() -> Self {
+        Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::AP_RO | Self::UXN
+    }
+
+    /// 内核只读映射。
+    ///
+    /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
+    #[inline]
+    pub fn kernel_ro() -> Self {
+        Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::AP_RO | Self::PXN | Self::UXN
+    }
+
+    /// 内核读写执行映射。
+    ///
+    /// MAIR 索引 0（Normal memory）由 bits [4:2] 全零隐式选择。
+    #[inline]
+    pub fn kernel_rwx() -> Self {
+        Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::UXN
+    }
+
+    /// 是否具有写权限。
+    #[inline]
+    pub fn is_writable(self) -> bool {
+        !self.contains(Self::AP_RO)
+    }
+}
+
 impl PageTableEntry {
     /// 从物理地址和标志构造叶/页描述符。
-    pub fn new(paddr: PhysAddr, flags: PageFlags) -> Self {
-        let mut bits = (paddr.as_usize() as u64 & OUTPUT_ADDR_MASK)
-            | VALID_BIT
-            | TABLE_BIT
-            | AF_BIT
-            | SH_INNER
-            | MAIR_IDX0;
-        if flags.contains(PageFlags::WRITE) {
-            bits |= AP_RW;
-        } else {
-            bits |= AP_RO;
-        }
-        if flags.contains(PageFlags::USER) {
-            bits |= 0b01 << 6;
-        }
-        if !flags.contains(PageFlags::EXECUTE) {
-            bits |= PXN_BIT | UXN_BIT;
-        }
-        if !flags.contains(PageFlags::GLOBAL) {
-            bits |= 1 << 11;
-        }
-        Self(bits)
+    #[inline]
+    pub fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
+        Self((paddr.as_usize() as u64 & OUTPUT_ADDR_MASK) | flags.bits())
     }
 
     /// 构造表描述符（指向下一级页表）。
     #[inline]
     pub fn new_table(paddr: PhysAddr) -> Self {
-        let bits = (paddr.as_usize() as u64 & OUTPUT_ADDR_MASK) | VALID_BIT | TABLE_BIT;
+        let bits = (paddr.as_usize() as u64 & OUTPUT_ADDR_MASK)
+            | PteFlags::VALID.bits()
+            | PteFlags::TABLE.bits();
         Self(bits)
     }
 
@@ -73,43 +123,22 @@ impl PageTableEntry {
         PhysAddr::new((self.0 & OUTPUT_ADDR_MASK) as usize)
     }
 
-    /// 从 PTE 提取架构无关标志。
-    pub fn flags(self) -> PageFlags {
-        let mut f = PageFlags::empty();
-        if self.is_valid() {
-            f |= PageFlags::VALID;
-        }
-        let ap = (self.0 >> 6) & 0b11;
-        f |= PageFlags::READ;
-        if ap & 0b10 == 0 {
-            f |= PageFlags::WRITE;
-            f |= PageFlags::DIRTY;
-        }
-        if ap & 0b01 != 0 {
-            f |= PageFlags::USER;
-        }
-        if self.0 & PXN_BIT == 0 {
-            f |= PageFlags::EXECUTE;
-        }
-        if self.0 & AF_BIT != 0 {
-            f |= PageFlags::ACCESSED;
-        }
-        if self.0 & (1 << 11) == 0 {
-            f |= PageFlags::GLOBAL;
-        }
-        f
+    /// 从 PTE 提取标志位（硬件原生位）。
+    #[inline]
+    pub fn flags(self) -> PteFlags {
+        PteFlags::from_bits_truncate(self.0 & !OUTPUT_ADDR_MASK)
     }
 
     /// PTE 是否有效。
     #[inline]
     pub fn is_valid(self) -> bool {
-        self.0 & VALID_BIT != 0
+        self.0 & PteFlags::VALID.bits() != 0
     }
 
     /// 是否为叶节点（page/block 描述符，非 table 描述符）。
     #[inline]
     pub fn is_leaf(self) -> bool {
-        self.is_valid() && (self.0 & AF_BIT != 0)
+        self.is_valid() && (self.0 & PteFlags::AF.bits() != 0)
     }
 
     /// 空 PTE（全零）。

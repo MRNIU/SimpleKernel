@@ -7,13 +7,11 @@ extern crate alloc;
 
 use alloc::vec::Vec;
 
-use super::{Level0, PageFlags, PageTableEntry, Table, vpn_index};
+use super::{Level0, PageTableEntry, PteFlags, Table, vpn_index};
 use crate::error::MemoryError;
 use address::{PhysAddr, VirtAddr};
 
 const PT_LEVELS: usize = config::PT_LEVELS;
-
-// --- 页表节点帧：裸机用 AllocatedFrames，测试用堆分配 ---
 
 #[cfg(target_os = "none")]
 type NodeFrame = crate::frame::AllocatedFrames;
@@ -177,7 +175,7 @@ impl PageTable {
         &mut self,
         va: VirtAddr,
         pa: PhysAddr,
-        flags: PageFlags,
+        flags: PteFlags,
     ) -> Result<(), MemoryError> {
         let pte_ptr = self.find_or_create_pte(va)?;
         // SAFETY: find_or_create_pte 返回的指针指向 self 持有的帧内存
@@ -205,7 +203,7 @@ impl PageTable {
     }
 
     /// 查询虚拟地址的映射信息，返回物理地址和标志。
-    pub fn get_mapping(&self, va: VirtAddr) -> Option<(PhysAddr, PageFlags)> {
+    pub fn get_mapping(&self, va: VirtAddr) -> Option<(PhysAddr, PteFlags)> {
         let pte = self.find_pte(va)?;
         if pte.is_valid() && pte.is_leaf() {
             Some((pte.paddr(), pte.flags()))
