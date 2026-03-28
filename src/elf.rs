@@ -1,6 +1,30 @@
+use core::fmt;
+
 use elf::ElfBytes;
 use elf::endian::AnyEndian;
-use error::{ErrorCode, KResult};
+
+/// ELF 解析错误。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ElfError {
+    /// 空地址
+    InvalidAddress,
+    /// 不是有效的 ELF 文件
+    InvalidMagic,
+    /// 32 位 ELF（仅支持 64 位）
+    Unsupported32Bit,
+    /// 未知的 ELF 类别
+    InvalidClass,
+    /// 没有 `.symtab` 段
+    SymtabNotFound,
+}
+
+impl fmt::Display for ElfError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
+    }
+}
+
+impl core::error::Error for ElfError {}
 
 /// 用于内核二进制符号表的 ELF64 解析器。
 ///
@@ -29,18 +53,18 @@ impl KernelElf {
     /// 并据此确定二进制总大小。
     ///
     /// # Errors
-    /// - `ElfInvalidAddress` — 空地址
-    /// - `ElfInvalidMagic` — 不是有效的 ELF 文件
-    /// - `ElfUnsupported32Bit` — 32 位 ELF（仅支持 64 位）
-    /// - `ElfInvalidClass` — 未知的 ELF 类别
-    /// - `ElfSymtabNotFound` — 没有 `.symtab` 段
+    /// - `InvalidAddress` — 空地址
+    /// - `InvalidMagic` — 不是有效的 ELF 文件
+    /// - `Unsupported32Bit` — 32 位 ELF（仅支持 64 位）
+    /// - `InvalidClass` — 未知的 ELF 类别
+    /// - `SymtabNotFound` — 没有 `.symtab` 段
     ///
     /// # Safety
     /// `elf_addr` 必须指向一个有效、完整映射的 ELF64 二进制文件，
     /// 并且在 `'static` 生命周期内保持有效。
-    pub unsafe fn new(elf_addr: u64) -> KResult<Self> {
+    pub unsafe fn new(elf_addr: u64) -> Result<Self, ElfError> {
         if elf_addr == 0 {
-            return Err(ErrorCode::ElfInvalidAddress);
+            return Err(ElfError::InvalidAddress);
         }
 
         let base = elf_addr as *const u8;
@@ -51,14 +75,14 @@ impl KernelElf {
 
         // 校验魔数
         if header[0..4] != [0x7F, b'E', b'L', b'F'] {
-            return Err(ErrorCode::ElfInvalidMagic);
+            return Err(ElfError::InvalidMagic);
         }
 
         // 校验类别
         match header[4] {
             2 => {} // ELFCLASS64（64 位）
-            1 => return Err(ErrorCode::ElfUnsupported32Bit),
-            _ => return Err(ErrorCode::ElfInvalidClass),
+            1 => return Err(ElfError::Unsupported32Bit),
+            _ => return Err(ElfError::InvalidClass),
         }
 
         // 根据段头计算 ELF 总大小。
@@ -113,14 +137,14 @@ impl KernelElf {
 
         // 使用 elf crate 进行校验，并确认存在 .symtab。
         let elf_file =
-            ElfBytes::<AnyEndian>::minimal_parse(data).map_err(|_| ErrorCode::ElfInvalidMagic)?;
+            ElfBytes::<AnyEndian>::minimal_parse(data).map_err(|_| ElfError::InvalidMagic)?;
 
         if elf_file
             .symbol_table()
-            .map_err(|_| ErrorCode::ElfSymtabNotFound)?
+            .map_err(|_| ElfError::SymtabNotFound)?
             .is_none()
         {
-            return Err(ErrorCode::ElfSymtabNotFound);
+            return Err(ElfError::SymtabNotFound);
         }
 
         Ok(Self { data })
@@ -199,33 +223,37 @@ mod tests {
         buf
     }
 
+    /// 空地址应返回 InvalidAddress 错误。
     #[test]
     fn reject_null_address() {
         let result = unsafe { KernelElf::new(0) };
-        assert_eq!(result.unwrap_err(), ErrorCode::ElfInvalidAddress);
+        assert_eq!(result.unwrap_err(), ElfError::InvalidAddress);
     }
 
+    /// 错误的魔数应返回 InvalidMagic 错误。
     #[test]
     fn reject_invalid_magic() {
         let mut buf = make_header_buf();
         buf[0] = 0x00;
         let result = unsafe { KernelElf::new(buf.as_ptr() as u64) };
-        assert_eq!(result.unwrap_err(), ErrorCode::ElfInvalidMagic);
+        assert_eq!(result.unwrap_err(), ElfError::InvalidMagic);
     }
 
+    /// 32 位 ELF 应返回 Unsupported32Bit 错误。
     #[test]
     fn reject_32bit_elf() {
         let mut buf = make_header_buf();
         buf[4] = 1; // ELFCLASS32（32 位）
         let result = unsafe { KernelElf::new(buf.as_ptr() as u64) };
-        assert_eq!(result.unwrap_err(), ErrorCode::ElfUnsupported32Bit);
+        assert_eq!(result.unwrap_err(), ElfError::Unsupported32Bit);
     }
 
+    /// 未知的 ELF 类别应返回 InvalidClass 错误。
     #[test]
     fn reject_unknown_class() {
         let mut buf = make_header_buf();
         buf[4] = 0xFF;
         let result = unsafe { KernelElf::new(buf.as_ptr() as u64) };
-        assert_eq!(result.unwrap_err(), ErrorCode::ElfInvalidClass);
+        assert_eq!(result.unwrap_err(), ElfError::InvalidClass);
     }
 }

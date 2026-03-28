@@ -15,13 +15,14 @@ unsafe impl Sync for LockStackEntry {}
 ///
 /// 每个核心维护一个当前持有锁的栈。
 /// 获取新锁时，SpinLock 检查新锁的级别是否高于栈顶。
+/// 最大深度由 `config::LOCK_STACK_DEPTH` 控制。
 pub struct LockStack {
     pub entries: [LockStackEntry; Self::MAX_DEPTH],
     pub depth: usize,
 }
 
 impl LockStack {
-    pub const MAX_DEPTH: usize = 8;
+    pub const MAX_DEPTH: usize = config::LOCK_STACK_DEPTH;
 
     #[must_use]
     pub const fn new() -> Self {
@@ -32,5 +33,11 @@ impl LockStack {
             }; Self::MAX_DEPTH],
             depth: 0,
         }
+    }
+}
+
+impl Default for LockStack {
+    fn default() -> Self {
+        Self::new()
     }
 }

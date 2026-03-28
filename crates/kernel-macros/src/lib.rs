@@ -44,6 +44,12 @@ pub fn cpu_local(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // 生成的代码
     let expanded = quote! {
+        // 编译期断言：T 必须实现 Sync（CpuLocal<T> 要求 T: Sync）
+        const _: () = {
+            fn _assert_sync<T: Sync>() {}
+            fn _check() { _assert_sync::<#ty>(); }
+        };
+
         // 裸机：放入 .percpu section
         #[cfg(target_os = "none")]
         #[unsafe(link_section = ".percpu")]

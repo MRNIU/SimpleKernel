@@ -1,13 +1,13 @@
-/// 公共中断控制接口
-///
-/// 通过 `ArchOps` trait 分派到具体架构实现，测试模式下为 no-op 存根。
-///
-/// # 核心类型
-///
-/// - [`HeldInterrupts`]：证明令牌（proof token），证明中断已被禁用。
-///   不可 Clone / Copy，析构时自动恢复中断状态。
-///   借鉴 Theseus OS 的 intralingual 设计哲学：
-///   将「中断已关闭」这一运行时不变量编码为编译期类型约束。
+//! 公共中断控制接口
+//!
+//! 通过 `ArchOps` trait 分派到具体架构实现，测试模式下为 no-op 存根。
+//!
+//! # 核心类型
+//!
+//! - [`HeldInterrupts`]：证明令牌（proof token），证明中断已被禁用。
+//!   不可 Clone / Copy，析构时自动恢复中断状态。
+//!   借鉴 Theseus OS 的 intralingual 设计哲学：
+//!   将「中断已关闭」这一运行时不变量编码为编译期类型约束。
 
 // ─── 底层操作——委托给 arch-traits crate ─────────────────────────────
 

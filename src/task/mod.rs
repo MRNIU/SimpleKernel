@@ -1,11 +1,30 @@
 //! 任务管理子系统——任务控制块、状态机、调度器接口。
 
+use core::fmt;
+
 pub mod mutex;
 pub mod resource_id;
 pub mod scheduler;
 pub mod signal;
 pub mod state;
 pub mod tcb;
+
+/// 任务子系统错误。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TaskError {
+    /// 找不到子进程
+    NoChildFound,
+    /// 找不到目标任务（信号发送）
+    TaskNotFound,
+}
+
+impl fmt::Display for TaskError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
+    }
+}
+
+impl core::error::Error for TaskError {}
 
 #[cfg(not(test))]
 mod sched;
@@ -21,6 +40,7 @@ pub use sched::{bootstrap_enable_irq, current_task, schedule, timer_tick, yield_
 mod api {
     use alloc::sync::Arc;
 
+    use super::TaskError;
     use crate::task::resource_id::ResourceId;
     use crate::task::sched::{
         PER_CPU_SCHED, PER_CPU_SCHED_LOCK, PerCpuSched, per_cpu_sched, schedule,
@@ -31,7 +51,6 @@ mod api {
     use crate::task::state::TaskState;
     use crate::task::task_table::{TASK_TABLE, TaskTable};
     use crate::task::tcb::{Pid, TaskControlBlock, TaskRef};
-    use error::{ErrorCode, KResult};
 
     /// BSP 初始化。
     pub fn init() {
@@ -272,7 +291,7 @@ mod api {
     }
 
     /// 等待子进程退出。
-    pub fn wait_child(child_pid: usize) -> KResult<(Pid, i32)> {
+    pub fn wait_child(child_pid: usize) -> Result<(Pid, i32), TaskError> {
         loop {
             {
                 let mut table = TASK_TABLE.lock();
@@ -295,7 +314,7 @@ mod api {
                     t.parent_pid() == Some(caller_pid) && (child_pid == 0 || t.pid() == child_pid)
                 });
                 if !has_children {
-                    return Err(ErrorCode::TaskNoChildFound);
+                    return Err(TaskError::NoChildFound);
                 }
             }
 
@@ -306,7 +325,11 @@ mod api {
     // ─── clone ──────────────────────────────────────────────────────────
 
     /// 克隆当前任务——创建子内核线程。
-    pub fn clone_kernel_thread(name: &'static str, entry: fn(usize), arg: usize) -> KResult<Pid> {
+    pub fn clone_kernel_thread(
+        name: &'static str,
+        entry: fn(usize),
+        arg: usize,
+    ) -> Result<Pid, TaskError> {
         let parent = super::sched::current_task();
         let child = spawn_kernel_thread_with_parent(name, entry, arg, Some(parent.pid()));
         Ok(child.pid())
@@ -314,8 +337,8 @@ mod api {
 
     // ─── signal ─────────────────────────────────────────────────────────
 
-    /// 向指定任务发送信号。
-    pub fn send_signal(pid: Pid, sig: Signal) -> KResult<()> {
+    /// 向指���任务发送信号。
+    pub fn send_signal(pid: Pid, sig: Signal) -> Result<(), TaskError> {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
         let table = TASK_TABLE.lock();
@@ -326,7 +349,7 @@ mod api {
             .tasks
             .iter()
             .find(|t| t.pid() == pid)
-            .ok_or(ErrorCode::SignalTaskNotFound)?;
+            .ok_or(TaskError::TaskNotFound)?;
 
         task.raise_signal(1 << (sig as u32));
 

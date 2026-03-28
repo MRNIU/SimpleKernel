@@ -126,10 +126,18 @@ use core::sync::atomic::{AtomicU64, Ordering};
 /// 放在 arch-traits 中使 task 模块可以读取 tick 而不依赖 arch。
 static TICK_COUNT: AtomicU64 = AtomicU64::new(0);
 
-/// 递增 tick 计数器并返回新值——由 timer handler 调用。
+/// 递增 tick 计数器并返回新值——仅由 BSP（core 0）的 timer handler 调用。
+///
+/// SMP 系统中每个核心独立收到 timer 中断，但全局 tick 只由 BSP 递增，
+/// 避免多核并发递增导致 tick 值膨胀（N 核 = N 倍速）。
+/// 非 BSP 核心调用此函数时直接返回当前值，不递增。
 #[inline]
 pub fn tick_advance() -> u64 {
-    TICK_COUNT.fetch_add(1, Ordering::Release) + 1
+    if core_id() == 0 {
+        TICK_COUNT.fetch_add(1, Ordering::Release) + 1
+    } else {
+        TICK_COUNT.load(Ordering::Acquire)
+    }
 }
 
 /// 读取当前 tick 计数。

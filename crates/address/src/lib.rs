@@ -6,7 +6,7 @@
 use core::fmt;
 use core::ops::{Add, Sub};
 
-use config::PAGE_SIZE;
+use config::{PAGE_SIZE, PAGE_SIZE_BITS};
 
 /// 生成地址 newtype，包含对齐辅助、算术运算符和格式化输出。
 macro_rules! define_address {
@@ -97,6 +97,111 @@ define_address!(
     VirtAddr
 );
 
+// ─── 页号类型 ────────────────────────────────────────────────────────
+
+/// 生成页号 newtype，包含与地址类型的互相转换。
+macro_rules! define_page_num {
+    ($(#[$meta:meta])* $name:ident, $addr:ident) => {
+        $(#[$meta])*
+        #[repr(transparent)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        pub struct $name(usize);
+
+        impl $name {
+            /// 从原始页号构造
+            #[inline]
+            pub const fn new(num: usize) -> Self {
+                Self(num)
+            }
+
+            /// 返回内部页号值
+            #[inline]
+            pub const fn as_usize(self) -> usize {
+                self.0
+            }
+
+            /// 转换为该页起始地址
+            #[inline]
+            pub const fn start_addr(self) -> $addr {
+                $addr::new(self.0 << PAGE_SIZE_BITS)
+            }
+        }
+
+        impl Add<usize> for $name {
+            type Output = Self;
+            #[inline]
+            fn add(self, rhs: usize) -> Self {
+                Self(self.0 + rhs)
+            }
+        }
+
+        impl Sub<usize> for $name {
+            type Output = Self;
+            #[inline]
+            fn sub(self, rhs: usize) -> Self {
+                Self(self.0 - rhs)
+            }
+        }
+
+        /// 两个页号相减，返回页数差值
+        impl Sub<$name> for $name {
+            type Output = usize;
+            #[inline]
+            fn sub(self, rhs: $name) -> usize {
+                self.0 - rhs.0
+            }
+        }
+
+        impl fmt::Display for $name {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "{}(0x{:X})", stringify!($name), self.0)
+            }
+        }
+
+        impl From<$addr> for $name {
+            /// 地址转页号（向下取整）
+            #[inline]
+            fn from(addr: $addr) -> Self {
+                Self(addr.as_usize() >> PAGE_SIZE_BITS)
+            }
+        }
+
+        impl From<$name> for $addr {
+            /// 页号转起始地址
+            #[inline]
+            fn from(pn: $name) -> Self {
+                pn.start_addr()
+            }
+        }
+    };
+}
+
+define_page_num!(
+    /// 物理页号——页表操作中的帧索引
+    PhysPageNum, PhysAddr
+);
+
+define_page_num!(
+    /// 虚拟页号——页表操作中的虚拟页索引
+    VirtPageNum, VirtAddr
+);
+
+impl PhysAddr {
+    /// 转换为物理页号（向下取整）
+    #[inline]
+    pub const fn page_number(self) -> PhysPageNum {
+        PhysPageNum::new(self.0 >> PAGE_SIZE_BITS)
+    }
+}
+
+impl VirtAddr {
+    /// 转换为虚拟页号（向下取整）
+    #[inline]
+    pub const fn page_number(self) -> VirtPageNum {
+        VirtPageNum::new(self.0 >> PAGE_SIZE_BITS)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -153,5 +258,45 @@ mod tests {
         let b = VirtAddr::new(0xFFFF_0000_0000_0000);
         let diff: usize = a - b;
         assert_eq!(diff, 0x2000);
+    }
+
+    // ─── 页号类型测试 ─────────────────────────────────────────────────
+
+    /// 地址与页号之间的转换：PhysAddr → PhysPageNum → PhysAddr 往返一致。
+    #[test]
+    fn phys_page_num_roundtrip() {
+        let addr = PhysAddr::new(0x8020_3000);
+        let pn = addr.page_number();
+        assert_eq!(pn.as_usize(), 0x8020_3);
+        assert_eq!(pn.start_addr(), addr);
+    }
+
+    /// 未对齐地址转页号时向下取整。
+    #[test]
+    fn page_num_truncates() {
+        let addr = PhysAddr::new(0x8020_3FFF);
+        let pn = addr.page_number();
+        assert_eq!(pn.as_usize(), 0x8020_3);
+        assert_eq!(pn.start_addr(), PhysAddr::new(0x8020_3000));
+    }
+
+    /// 页号算术：加减偏移。
+    #[test]
+    fn page_num_arithmetic() {
+        let pn = VirtPageNum::new(0x100);
+        assert_eq!((pn + 3).as_usize(), 0x103);
+        assert_eq!((pn - 1).as_usize(), 0xFF);
+        let diff: usize = VirtPageNum::new(0x105) - pn;
+        assert_eq!(diff, 5);
+    }
+
+    /// From trait 双向转换。
+    #[test]
+    fn page_num_from_trait() {
+        let addr = VirtAddr::new(0x1_0000);
+        let pn: VirtPageNum = addr.into();
+        assert_eq!(pn.as_usize(), 0x10);
+        let back: VirtAddr = pn.into();
+        assert_eq!(back, addr);
     }
 }

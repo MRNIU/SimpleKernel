@@ -41,6 +41,13 @@ use crate::page_table::{PageFlags, PageTable};
 #[cfg(not(test))]
 use config::PAGE_SIZE;
 
+/// 永久帧注册表——持有永久映射的物理帧所有权，防止泄漏且保留追踪能力。
+///
+/// 参考 Theseus OS：永久映射仍由全局 registry 持有，
+/// 只是生命周期与内核等长，而非通过 `mem::forget` 丢弃。
+#[cfg(not(test))]
+static PERMANENT_FRAMES: spin::Mutex<Vec<FrameTracker>> = spin::Mutex::new(Vec::new());
+
 /// 仿射类型映射——持有此值即证明 VA→PA 映射有效。
 ///
 /// 不可 Clone、不可 Copy（仿射类型约束）。
@@ -204,10 +211,11 @@ impl MappedPages {
 impl Drop for MappedPages {
     fn drop(&mut self) {
         if self.permanent {
-            // 永久映射——不 unmap，帧也不释放（已在 into_permanent 中泄漏或无帧）
-            // 将 frames 取出但不 drop（通过 ManuallyDrop 或 mem::forget）
+            // 永久映射——不 unmap，帧转移到全局注册表（不释放但保留追踪）
             let frames = core::mem::take(&mut self.frames);
-            core::mem::forget(frames);
+            if !frames.is_empty() {
+                PERMANENT_FRAMES.lock().extend(frames);
+            }
             return;
         }
 

@@ -11,7 +11,6 @@
 [workspace]
 members = [
     ".",
-    "crates/error",
     "crates/config",
     "crates/address",
     "crates/kernel-macros",
@@ -48,7 +47,6 @@ build = "build.rs"                    # 编译汇编文件 (.S) 和链接脚本
 
 [dependencies]
 # --- 内部 crate ---
-error = { path = "crates/error" }
 config = { path = "crates/config" }
 address = { path = "crates/address" }
 arch-traits = { path = "crates/arch-traits" }

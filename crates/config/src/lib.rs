@@ -26,6 +26,13 @@ pub const KERNEL_STACK_SIZE: usize = 16 * 1024;
 /// 避免使用全局计数器 modulo 导致的 SMP 输出偏斜。
 pub const TIMER_FREQ_HZ: u64 = 10;
 
+/// Per-CPU 锁栈最大深度。
+///
+/// 每个核心维护一个当前持有锁的栈，用于强制锁获取顺序。
+/// 复杂路径（中断嵌套 + 多层锁）可能需要较大的深度。
+/// 参考 Linux lockdep 默认 48 层，此处取 16 作为平衡。
+pub const LOCK_STACK_DEPTH: usize = 16;
+
 /// 每个 CPU 的 per-CPU 区域最大字节数。
 ///
 /// `#[cpu_local]` 变量的模板会在 boot 时复制到每个 CPU 的区域中。

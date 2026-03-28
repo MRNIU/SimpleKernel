@@ -1,5 +1,4 @@
 #![cfg_attr(not(test), no_std)]
-#![feature(sync_unsafe_cell)]
 
 //! 内核内存管理——帧分配器、页表、堆、MMIO 映射。
 

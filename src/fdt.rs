@@ -1,5 +1,28 @@
+use core::fmt;
 use core::marker::PhantomData;
-use error::{ErrorCode, KResult};
+
+/// FDT 解析错误。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FdtError {
+    /// FDT 头部无效
+    InvalidHeader,
+    /// 找不到所需节点
+    NodeNotFound,
+    /// 找不到所需属性
+    PropertyNotFound,
+    /// FDT 解析失败
+    ParseFailed,
+    /// 属性大小不匹配
+    InvalidPropertySize,
+}
+
+impl fmt::Display for FdtError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
+    }
+}
+
+impl core::error::Error for FdtError {}
 
 /// FDT 基地址（`early_init` 中初始化，中断子系统解析 PLIC/GIC 时使用）
 pub static FDT_ADDR: spin::Once<usize> = spin::Once::new();
@@ -14,45 +37,45 @@ macro_rules! parse_fdt {
     ($addr:expr) => {{
         // SAFETY: fdt_addr 已在 KernelFdt::new() 中校验
         unsafe { fdt::Fdt::from_ptr_unaligned_fallible($addr as *const u8) }
-            .map_err(|_| ErrorCode::FdtInvalidHeader)
+            .map_err(|_| FdtError::InvalidHeader)
     }};
 }
 
 impl<'a> KernelFdt<'a> {
-    pub fn new(fdt_addr: usize) -> KResult<Self> {
+    pub fn new(fdt_addr: usize) -> Result<Self, FdtError> {
         // SAFETY: fdt_addr 由调用方校验（引导加载程序通过 DTB 传入）
         unsafe { fdt::Fdt::from_ptr_unaligned(fdt_addr as *const u8) }
-            .map_err(|_| ErrorCode::FdtInvalidHeader)?;
+            .map_err(|_| FdtError::InvalidHeader)?;
         Ok(Self {
             fdt_addr,
             _marker: PhantomData,
         })
     }
 
-    pub fn core_count(&self) -> KResult<usize> {
+    pub fn core_count(&self) -> Result<usize, FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let root = fdt.root().map_err(|_| ErrorCode::FdtParseFailed)?;
-        let cpus = root.cpus().map_err(|_| ErrorCode::FdtNodeNotFound)?;
-        let iter = cpus.iter().map_err(|_| ErrorCode::FdtParseFailed)?;
+        let root = fdt.root().map_err(|_| FdtError::ParseFailed)?;
+        let cpus = root.cpus().map_err(|_| FdtError::NodeNotFound)?;
+        let iter = cpus.iter().map_err(|_| FdtError::ParseFailed)?;
         let count = iter.filter_map(|c| c.ok()).count();
         if count == 0 {
-            return Err(ErrorCode::FdtNodeNotFound);
+            return Err(FdtError::NodeNotFound);
         }
         Ok(count)
     }
 
-    pub fn memory(&self) -> KResult<(u64, usize)> {
+    pub fn memory(&self) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let root = fdt.root().map_err(|_| ErrorCode::FdtParseFailed)?;
-        let memory = root.memory().map_err(|_| ErrorCode::FdtNodeNotFound)?;
+        let root = fdt.root().map_err(|_| FdtError::ParseFailed)?;
+        let memory = root.memory().map_err(|_| FdtError::NodeNotFound)?;
         let mut regions = memory
             .reg()
-            .map_err(|_| ErrorCode::FdtPropertyNotFound)?
+            .map_err(|_| FdtError::PropertyNotFound)?
             .iter::<u64, usize>();
         let region = regions
             .next()
-            .ok_or(ErrorCode::FdtNodeNotFound)?
-            .map_err(|_| ErrorCode::FdtParseFailed)?;
+            .ok_or(FdtError::NodeNotFound)?
+            .map_err(|_| FdtError::ParseFailed)?;
         Ok((region.address, region.len))
     }
 
@@ -60,29 +83,29 @@ impl<'a> KernelFdt<'a> {
     ///
     /// RISC-V 平台必须提供此属性；AArch64 的 FDT 通常不含此属性，
     /// 返回 `Err` 后由调用方回退到 `CNTFRQ_EL0`。
-    pub fn timebase_frequency(&self) -> KResult<u32> {
+    pub fn timebase_frequency(&self) -> Result<u32, FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
         let cpus = fdt
             .find_node("/cpus")
-            .map_err(|_| ErrorCode::FdtParseFailed)?
-            .ok_or(ErrorCode::FdtNodeNotFound)?;
+            .map_err(|_| FdtError::ParseFailed)?
+            .ok_or(FdtError::NodeNotFound)?;
         let prop = cpus
             .raw_property("timebase-frequency")
-            .map_err(|_| ErrorCode::FdtParseFailed)?
-            .ok_or(ErrorCode::FdtPropertyNotFound)?;
+            .map_err(|_| FdtError::ParseFailed)?
+            .ok_or(FdtError::PropertyNotFound)?;
         let bytes: [u8; 4] = prop
             .value
             .try_into()
-            .map_err(|_| ErrorCode::FdtInvalidPropertySize)?;
+            .map_err(|_| FdtError::InvalidPropertySize)?;
         Ok(u32::from_be_bytes(bytes))
     }
 
     /// 返回 FDT 中的节点总数。
     ///
     /// 解析失败时返回错误而非静默返回 0。
-    pub fn node_count(&self) -> KResult<usize> {
+    pub fn node_count(&self) -> Result<usize, FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let nodes = fdt.all_nodes().map_err(|_| ErrorCode::FdtParseFailed)?;
+        let nodes = fdt.all_nodes().map_err(|_| FdtError::ParseFailed)?;
         Ok(nodes.filter_map(|n| n.ok()).count())
     }
 
@@ -91,9 +114,9 @@ impl<'a> KernelFdt<'a> {
     ///
     /// 用于从 FDT 动态获取 PLIC/GIC 等中断控制器的基地址。
     #[allow(dead_code)]
-    pub fn find_compatible_reg(&self, compat: &str) -> KResult<(u64, usize)> {
+    pub fn find_compatible_reg(&self, compat: &str) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let nodes = fdt.all_nodes().map_err(|_| ErrorCode::FdtParseFailed)?;
+        let nodes = fdt.all_nodes().map_err(|_| FdtError::ParseFailed)?;
 
         for node_result in nodes {
             let Ok((_depth, node)) = node_result else {
@@ -115,18 +138,18 @@ impl<'a> KernelFdt<'a> {
                 let addr = u64::from_be_bytes(
                     reg.value[0..8]
                         .try_into()
-                        .map_err(|_| ErrorCode::FdtParseFailed)?,
+                        .map_err(|_| FdtError::ParseFailed)?,
                 );
                 let size = u64::from_be_bytes(
                     reg.value[8..16]
                         .try_into()
-                        .map_err(|_| ErrorCode::FdtParseFailed)?,
+                        .map_err(|_| FdtError::ParseFailed)?,
                 ) as usize;
                 return Ok((addr, size));
             }
         }
 
-        Err(ErrorCode::FdtNodeNotFound)
+        Err(FdtError::NodeNotFound)
     }
 
     /// 与 `find_compatible_reg` 相同，但返回 `reg` 属性的第 N 组 (address, size)。
@@ -134,9 +157,13 @@ impl<'a> KernelFdt<'a> {
     /// `index=0` 等价于 `find_compatible_reg`。
     /// 用于 GICv3 等节点的 `reg` 属性包含多组区域的情况。
     #[allow(dead_code)]
-    pub fn find_compatible_reg_nth(&self, compat: &str, index: usize) -> KResult<(u64, usize)> {
+    pub fn find_compatible_reg_nth(
+        &self,
+        compat: &str,
+        index: usize,
+    ) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let nodes = fdt.all_nodes().map_err(|_| ErrorCode::FdtParseFailed)?;
+        let nodes = fdt.all_nodes().map_err(|_| FdtError::ParseFailed)?;
 
         let entry_size = 16; // 每组 (addr[8] + size[8])
         let offset = index * entry_size;
@@ -159,18 +186,18 @@ impl<'a> KernelFdt<'a> {
                 let addr = u64::from_be_bytes(
                     reg.value[offset..offset + 8]
                         .try_into()
-                        .map_err(|_| ErrorCode::FdtParseFailed)?,
+                        .map_err(|_| FdtError::ParseFailed)?,
                 );
                 let size = u64::from_be_bytes(
                     reg.value[offset + 8..offset + 16]
                         .try_into()
-                        .map_err(|_| ErrorCode::FdtParseFailed)?,
+                        .map_err(|_| FdtError::ParseFailed)?,
                 ) as usize;
                 return Ok((addr, size));
             }
         }
 
-        Err(ErrorCode::FdtNodeNotFound)
+        Err(FdtError::NodeNotFound)
     }
 }
 
