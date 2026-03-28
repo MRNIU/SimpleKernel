@@ -1,6 +1,4 @@
 //! 跨架构 PTE 编解码测试。
-//!
-//! 架构特有测试位于各自模块（`riscv64.rs` / `aarch64.rs`）末尾。
 
 use crate::{PteFlagsOps, PteOps};
 use address::PhysAddr;

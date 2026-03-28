@@ -4,9 +4,6 @@
 //! - [`aarch64`] / [`riscv64`]：各架构的 `PageTableEntry` + `PteFlags` 定义
 //! - [`PageTableEntry`] / [`PteFlags`]：当前目标架构的类型别名
 //!
-//! 两种架构始终编译——测试时同时覆盖所有架构编解码。
-//! `cfg(target_arch)` 仅用于选择公共类型别名。
-//!
 //! 本 crate 无 `alloc` 依赖，可在 heap 未初始化的早期启动阶段使用。
 
 #![cfg_attr(not(test), no_std)]
