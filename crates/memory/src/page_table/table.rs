@@ -7,8 +7,8 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use super::{Level0, PageFlags, PageTableEntry, Table, vpn_index};
-use crate::address::{PhysAddr, VirtAddr};
 use crate::error::MemoryError;
+use address::{PhysAddr, VirtAddr};
 
 const PT_LEVELS: usize = config::PT_LEVELS;
 
@@ -180,8 +180,6 @@ impl<F: FrameProvider> GenericPageTable<F> {
     }
 }
 
-// --- 裸机 FrameProvider：使用 buddy allocator ---
-
 #[cfg(target_os = "none")]
 use crate::frame::AllocatedFrame;
 
@@ -214,8 +212,6 @@ impl GenericPageTable<BuddyProvider> {
         Self::new(BuddyProvider)
     }
 }
-
-// --- 测试 FrameProvider：使用堆分配 ---
 
 #[cfg(test)]
 mod test_support {

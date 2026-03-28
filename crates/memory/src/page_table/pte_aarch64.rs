@@ -14,7 +14,7 @@
 //! - bit [54]：UXN/XN
 
 use super::{PageFlags, PageTableEntry};
-use crate::address::PhysAddr;
+use address::PhysAddr;
 
 const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
 

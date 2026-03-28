@@ -56,7 +56,7 @@ impl ArchOps for Aarch64 {
     fn map_early_mmio(
         pt: &mut memory::page_table::PageTable,
     ) -> Result<(), memory::error::MemoryError> {
-        use memory::address::PhysAddr;
+        use address::PhysAddr;
         use memory::page_table::PageFlags;
         // PL011 UART —— console 直接 MMIO 访问
         let start = PhysAddr::new(PL011_BASE);

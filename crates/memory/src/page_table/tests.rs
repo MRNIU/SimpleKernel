@@ -2,8 +2,8 @@
 
 use super::table::TestPageTable;
 use super::*;
-use crate::address::{PhysAddr, VirtAddr};
 use crate::error::MemoryError;
+use address::{PhysAddr, VirtAddr};
 
 /// 验证 Level0 的 SHIFT 和 INDEX_BITS 从 PAGE_SIZE 正确推导。
 #[test]

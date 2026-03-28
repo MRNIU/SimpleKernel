@@ -15,13 +15,13 @@
 //! 避免重复实现 unmap / permanent 逻辑。
 
 #[cfg(not(test))]
-use crate::address::PhysAddr;
-#[cfg(not(test))]
 use crate::error::MemoryError;
 #[cfg(not(test))]
 use crate::mapped_pages::MappedPages;
 #[cfg(not(test))]
 use crate::page_table::PageFlags;
+#[cfg(not(test))]
+use address::PhysAddr;
 
 /// 已映射的 MMIO 区域——提供类型安全的寄存器访问。
 ///
@@ -66,7 +66,7 @@ impl MmioRegion {
 
     /// 返回 MMIO 区域的基地址。
     #[must_use]
-    pub fn base(&self) -> crate::address::VirtAddr {
+    pub fn base(&self) -> address::VirtAddr {
         self.mapping.vaddr()
     }
 

@@ -1,15 +1,13 @@
 #![cfg_attr(not(test), no_std)]
 #![feature(sync_unsafe_cell)]
+#![allow(incomplete_features)]
+#![feature(adt_const_params)]
 
 //! 内核内存管理——帧分配器、页表、堆、MMIO 映射。
 
 #[cfg(target_os = "none")]
 extern crate alloc;
 
-pub mod address {
-    //! Re-export from `address` crate.
-    pub use address::*;
-}
 pub mod error;
 #[cfg(target_os = "none")]
 pub mod mapped_pages;

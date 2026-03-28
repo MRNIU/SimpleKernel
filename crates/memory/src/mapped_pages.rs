@@ -15,13 +15,13 @@
 use alloc::vec::Vec;
 
 #[cfg(not(test))]
-use crate::address::{PhysAddr, VirtAddr};
-#[cfg(not(test))]
 use crate::error::MemoryError;
 #[cfg(not(test))]
-use crate::frame::{Frames, Mapped};
+use crate::frame::{Frames, MemoryState};
 #[cfg(not(test))]
 use crate::page_table::{PageFlags, PageTable};
+#[cfg(not(test))]
+use address::{PhysAddr, VirtAddr};
 #[cfg(not(test))]
 use config::PAGE_SIZE;
 
@@ -33,14 +33,14 @@ use config::PAGE_SIZE;
 /// - `Permanent`：永久映射，drop 时不做任何事
 #[cfg(not(test))]
 enum FrameOwnership {
-    Owned(Vec<Frames<Mapped>>),
+    Owned(Vec<Frames<{ MemoryState::Mapped }>>),
     Borrowed,
     Permanent,
 }
 
 /// 永久帧注册表——持有永久映射的物理帧所有权，防止泄漏且保留追踪能力。
 #[cfg(not(test))]
-static PERMANENT_FRAMES: sync_crate::SpinLock<Vec<Frames<Mapped>>> =
+static PERMANENT_FRAMES: sync_crate::SpinLock<Vec<Frames<{ MemoryState::Mapped }>>> =
     sync_crate::SpinLock::new(Vec::new(), "perm_frames");
 
 /// 仿射类型映射——持有此值即证明 VA→PA 映射有效。
@@ -109,7 +109,7 @@ impl MappedPages {
         page_count: usize,
         flags: PageFlags,
     ) -> Result<Self, MemoryError> {
-        let mut frames: Vec<Frames<Mapped>> = Vec::with_capacity(page_count);
+        let mut frames: Vec<Frames<{ MemoryState::Mapped }>> = Vec::with_capacity(page_count);
         for i in 0..page_count {
             let frame = crate::frame::AllocatedFrame::alloc()?;
             let pa = frame.paddr();

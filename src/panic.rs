@@ -1,6 +1,6 @@
 use crate::elf::KernelElf;
+use address::VirtAddr;
 use core::fmt::Write;
-use memory::address::VirtAddr;
 use spin::Once;
 use sync::SpinLock;
 

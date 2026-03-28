@@ -177,7 +177,7 @@ impl<L: PageLevel> Table<L> {
     /// - `paddr` 必须指向有效、页对齐的帧
     /// - 当前使用 identity mapping（VA == PA）
     #[inline]
-    pub(crate) unsafe fn from_paddr(paddr: crate::address::PhysAddr) -> Self {
+    pub(crate) unsafe fn from_paddr(paddr: address::PhysAddr) -> Self {
         Self {
             base: paddr.as_usize() as *mut PageTableEntry,
             _level: PhantomData,
@@ -214,7 +214,7 @@ impl<L: PageLevel> Table<L> {
 /// 通过 [`LEVEL_INFO`] 查表获取每级的 SHIFT 和 INDEX_MASK，
 /// 支持不同 granule 下不同的每级位宽。
 #[inline]
-pub(crate) fn vpn_index(va: crate::address::VirtAddr, level: usize) -> usize {
+pub(crate) fn vpn_index(va: address::VirtAddr, level: usize) -> usize {
     let info = &LEVEL_INFO[level];
     (va.as_usize() >> info.shift) & info.index_mask
 }
