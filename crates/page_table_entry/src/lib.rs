@@ -70,17 +70,11 @@ pub trait PteOps: Copy + core::fmt::Debug {
     fn as_raw(self) -> u64;
 }
 
-/// 当前目标架构的页表项类型别名。
-#[cfg(not(target_arch = "aarch64"))]
-pub type PageTableEntry = riscv64::PageTableEntry;
 #[cfg(target_arch = "aarch64")]
-pub type PageTableEntry = aarch64::PageTableEntry;
-
-/// 当前目标架构的 PTE 标志位类型别名。
+pub use aarch64::{PageTableEntry, PteFlags};
+/// 当前目标架构的 PTE 类型——`not(aarch64)` 兜底 x86_64 宿主机测试。
 #[cfg(not(target_arch = "aarch64"))]
-pub type PteFlags = riscv64::PteFlags;
-#[cfg(target_arch = "aarch64")]
-pub type PteFlags = aarch64::PteFlags;
+pub use riscv64::{PageTableEntry, PteFlags};
 
 /// PTE 大小的位移量——`log2(sizeof(u64))` = 3。
 ///
