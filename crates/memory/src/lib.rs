@@ -75,7 +75,7 @@ pub fn identity_map_range(
     let end_aligned = end.align_up();
     while addr.as_usize() < end_aligned.as_usize() {
         pt.map_page(VirtAddr::new(addr.as_usize()), addr, flags)?;
-        addr = addr + config::PAGE_SIZE;
+        addr += config::PAGE_SIZE;
     }
     Ok(())
 }

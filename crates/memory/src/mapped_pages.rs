@@ -178,7 +178,7 @@ impl MappedPages {
             core::mem::size_of::<T>(),
             self.size(),
         );
-        let addr = (self.vaddr.as_usize() + offset) as *const T;
+        let addr: *const T = (self.vaddr + offset).as_ptr();
         // SAFETY: 调用方保证偏移有效，self 的存在保证映射有效
         unsafe { &*addr }
     }
@@ -201,7 +201,7 @@ impl MappedPages {
             self.flags.contains(PageFlags::WRITE),
             "MappedPages::as_type_mut: 映射无 WRITE 权限"
         );
-        let addr = (self.vaddr.as_usize() + offset) as *mut T;
+        let addr: *mut T = (self.vaddr + offset).as_mut_ptr();
         // SAFETY: 调用方保证偏移有效、映射可写，&mut self 保证独占访问
         unsafe { &mut *addr }
     }

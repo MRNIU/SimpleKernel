@@ -81,7 +81,7 @@ impl MmioRegion {
             core::mem::size_of::<T>(),
             self.size,
         );
-        let addr = (self.base.as_usize() + offset) as *const T;
+        let addr: *const T = (self.base + offset).as_ptr();
         // SAFETY: 调用方保证偏移有效，volatile 防止编译器优化
         unsafe { core::ptr::read_volatile(addr) }
     }
@@ -103,7 +103,7 @@ impl MmioRegion {
             core::mem::size_of::<T>(),
             self.size,
         );
-        let addr = (self.base.as_usize() + offset) as *mut T;
+        let addr: *mut T = (self.base + offset).as_mut_ptr();
         // SAFETY: 调用方保证偏移有效，volatile 防止编译器优化
         unsafe { core::ptr::write_volatile(addr, val) }
     }
