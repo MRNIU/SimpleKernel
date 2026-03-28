@@ -79,51 +79,16 @@ impl NodeFrameOps for HeapNodeFrame {
     }
 }
 
-/// 页表层级 4（根级，仅 Sv57 使用）。
-pub struct Level4;
-/// 页表层级 3（Sv48 根级 / Sv57 次级）。
-pub struct Level3;
-/// 页表层级 2（Sv39 根级，映射 1GB 大页）。
-pub struct Level2;
-/// 页表层级 1（映射 2MB 大页）。
-pub struct Level1;
-/// 页表层级 0（叶级，映射 4KB 页）。
-pub struct Level0;
+/// 每张页表中的条目数（PAGE_SIZE / sizeof(PTE)）。
+///
+/// 64 位架构中 PTE 均为 8 字节，4KB 页对应 512 条目。
+pub const ENTRIES_PER_TABLE: usize = config::PAGE_SIZE / core::mem::size_of::<u64>();
 
-/// 页表层级 trait——提供每级的结构参数。
-pub trait PageLevel {
-    /// 该级 VPN 在虚拟地址中的起始位位置
-    const SHIFT: usize;
-    /// 该级索引的位宽
-    const INDEX_BITS: usize;
-    /// 该级的 entries 数量
-    const ENTRIES: usize = 1 << Self::INDEX_BITS;
-    /// 索引掩码
-    const INDEX_MASK: usize = Self::ENTRIES - 1;
-}
+/// 单级索引位宽（log2(ENTRIES_PER_TABLE)）。
+pub(crate) const INDEX_BITS: usize = config::PAGE_SIZE_BITS - PTE_SIZE_SHIFT;
 
-impl PageLevel for Level0 {
-    const SHIFT: usize = config::PAGE_SIZE.trailing_zeros() as usize;
-    const INDEX_BITS: usize = Self::SHIFT - PTE_SIZE_SHIFT;
-}
-impl PageLevel for Level1 {
-    const SHIFT: usize = Level0::SHIFT + Level0::INDEX_BITS;
-    const INDEX_BITS: usize = Level0::INDEX_BITS;
-}
-impl PageLevel for Level2 {
-    const SHIFT: usize = Level1::SHIFT + Level1::INDEX_BITS;
-    const INDEX_BITS: usize = Level0::INDEX_BITS;
-}
-impl PageLevel for Level3 {
-    const SHIFT: usize = Level2::SHIFT + Level2::INDEX_BITS;
-    const INDEX_BITS: usize = Level0::INDEX_BITS;
-}
-impl PageLevel for Level4 {
-    const SHIFT: usize = Level3::SHIFT + Level3::INDEX_BITS;
-    const INDEX_BITS: usize = Level0::INDEX_BITS;
-}
-
-/// 运行时层级参数表。
+/// 层级参数。
+#[derive(Clone, Copy)]
 pub struct LevelInfo {
     /// 该级 VPN 在虚拟地址中的起始位位置
     pub shift: usize,
@@ -131,39 +96,36 @@ pub struct LevelInfo {
     pub index_mask: usize,
 }
 
-pub const LEVEL_INFO: [LevelInfo; 5] = [
-    LevelInfo {
-        shift: Level0::SHIFT,
-        index_mask: Level0::INDEX_MASK,
-    },
-    LevelInfo {
-        shift: Level1::SHIFT,
-        index_mask: Level1::INDEX_MASK,
-    },
-    LevelInfo {
-        shift: Level2::SHIFT,
-        index_mask: Level2::INDEX_MASK,
-    },
-    LevelInfo {
-        shift: Level3::SHIFT,
-        index_mask: Level3::INDEX_MASK,
-    },
-    LevelInfo {
-        shift: Level4::SHIFT,
-        index_mask: Level4::INDEX_MASK,
-    },
-];
+/// 最大页表层级数（Sv57 五级）。
+const MAX_LEVELS: usize = 5;
+
+/// 编译期计算各级层级参数。
+const fn compute_level_info() -> [LevelInfo; MAX_LEVELS] {
+    let mask = ENTRIES_PER_TABLE - 1;
+    let mut info = [LevelInfo {
+        shift: 0,
+        index_mask: mask,
+    }; MAX_LEVELS];
+    info[0].shift = config::PAGE_SIZE_BITS;
+    let mut i = 1;
+    while i < MAX_LEVELS {
+        info[i].shift = info[i - 1].shift + INDEX_BITS;
+        i += 1;
+    }
+    info
+}
+
+pub const LEVEL_INFO: [LevelInfo; MAX_LEVELS] = compute_level_info();
 
 /// 页表节点——封装 PTE 数组的原子访问。
 ///
 /// 使用 `AtomicU64` 保证 SMP 下单个 PTE 读写不会 torn read/write。
 /// 外层 `SpinLock` 负责更高层的互斥，此处仅保证单次访问的原子性。
-pub(crate) struct Table<L: PageLevel> {
+pub(crate) struct Table {
     base: *mut AtomicU64,
-    _level: core::marker::PhantomData<L>,
 }
 
-impl<L: PageLevel> Table<L> {
+impl Table {
     /// 从物理地址构造页表节点。
     ///
     /// # Safety
@@ -172,13 +134,12 @@ impl<L: PageLevel> Table<L> {
     pub(crate) unsafe fn from_paddr(paddr: address::PhysAddr) -> Self {
         Self {
             base: paddr.as_usize() as *mut AtomicU64,
-            _level: core::marker::PhantomData,
         }
     }
 
     #[inline]
     pub(crate) fn read(&self, index: usize) -> PageTableEntry {
-        debug_assert!(index < L::ENTRIES, "PTE index out of bounds");
+        debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
         // SAFETY: base 指向有效帧，index 经 debug_assert 检查。
         // Relaxed 即可——外层 SpinLock 提供必要的 memory barrier。
         let val = unsafe { (*self.base.add(index)).load(Ordering::Relaxed) };
@@ -187,7 +148,7 @@ impl<L: PageLevel> Table<L> {
 
     #[inline]
     pub(crate) fn write(&mut self, index: usize, pte: PageTableEntry) {
-        debug_assert!(index < L::ENTRIES, "PTE index out of bounds");
+        debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
         // SAFETY: base 指向有效帧，index 经 debug_assert 检查
         unsafe { (*self.base.add(index)).store(pte.as_raw(), Ordering::Relaxed) };
     }

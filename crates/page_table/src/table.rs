@@ -15,22 +15,10 @@ use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
 
 use crate::error::PageTableError;
-use crate::{
-    Level0, NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index,
-};
+use crate::{NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index};
 use address::{PhysAddr, VirtAddr};
 
 const PT_LEVELS: usize = config::PT_LEVELS;
-
-/// 从物理地址构造 `Table<Level0>` 用于 walker 内部。
-///
-/// # Safety
-/// `paddr` 必须指向有效、页对齐的帧。
-#[inline]
-unsafe fn table_at(paddr: PhysAddr) -> Table<Level0> {
-    // SAFETY: 调用方保证 paddr 有效
-    unsafe { Table::<Level0>::from_paddr(paddr) }
-}
 
 /// 多级页表。
 ///
@@ -108,7 +96,7 @@ impl<F: NodeFrameOps> PageTable<F> {
 
         for level in (target_level + 1..PT_LEVELS).rev() {
             // SAFETY: paddr 指向由 self.root 或 self.frames 持有的有效帧
-            let mut table = unsafe { table_at(paddr) };
+            let mut table = unsafe { Table::from_paddr(paddr) };
             let idx = vpn_index(va, level);
             let pte = table.read(idx);
 
@@ -188,7 +176,7 @@ impl<F: NodeFrameOps> PageTable<F> {
 
         let (frame_paddr, idx) = self.walk_create(va, level)?;
         // SAFETY: frame_paddr 指向由 self 持有的有效帧
-        let mut table = unsafe { table_at(frame_paddr) };
+        let mut table = unsafe { Table::from_paddr(frame_paddr) };
         let current = table.read(idx);
         if current.is_valid() {
             return Err(PageTableError::AlreadyMapped);
@@ -234,7 +222,7 @@ impl<F: NodeFrameOps> PageTable<F> {
 
         for lv in (level + 1..PT_LEVELS).rev() {
             // SAFETY: paddr 指向由 self 持有的有效帧
-            let table = unsafe { table_at(paddr) };
+            let table = unsafe { Table::from_paddr(paddr) };
             let idx = vpn_index(va, lv);
             let pte = table.read(idx);
             if !pte.is_valid() {
@@ -250,7 +238,7 @@ impl<F: NodeFrameOps> PageTable<F> {
         }
 
         // SAFETY: paddr 指向由 self 持有的有效帧
-        let mut table = unsafe { table_at(paddr) };
+        let mut table = unsafe { Table::from_paddr(paddr) };
         let idx = vpn_index(va, level);
         let pte = table.read(idx);
         if !pte.is_valid() || !pte.is_leaf(level) {
@@ -270,7 +258,7 @@ impl<F: NodeFrameOps> PageTable<F> {
                 break;
             }
             // SAFETY: parent_paddr 指向由 self 持有的有效帧
-            let mut parent_table = unsafe { table_at(parent_paddr) };
+            let mut parent_table = unsafe { Table::from_paddr(parent_paddr) };
             parent_table.write(parent_idx, PageTableEntry::empty());
             self.frames.remove(&child_paddr);
             self.ref_counts.remove(&child_paddr);
@@ -287,7 +275,7 @@ impl<F: NodeFrameOps> PageTable<F> {
 
         for level in (1..PT_LEVELS).rev() {
             // SAFETY: paddr 指向由 self 持有的有效帧
-            let table = unsafe { table_at(paddr) };
+            let table = unsafe { Table::from_paddr(paddr) };
             let idx = vpn_index(va, level);
             let pte = table.read(idx);
             if !pte.is_valid() {
@@ -300,7 +288,7 @@ impl<F: NodeFrameOps> PageTable<F> {
         }
 
         // SAFETY: paddr 指向由 self 持有的有效帧
-        let table = unsafe { table_at(paddr) };
+        let table = unsafe { Table::from_paddr(paddr) };
         let idx = vpn_index(va, 0);
         let pte = table.read(idx);
         if pte.is_valid() && pte.is_leaf(0) {

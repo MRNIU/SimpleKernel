@@ -8,8 +8,8 @@
 // Re-export 所有公共类型——保持 `memory::page_table::*` 路径不变
 pub use page_table_crate::error::PageTableError;
 pub use page_table_crate::{
-    LEVEL_INFO, Level0, Level1, Level2, Level3, Level4, LevelInfo, PageLevel, PageTableEntry,
-    PteFlags, PteFlagsOps, PteOps, page_size_at_level,
+    ENTRIES_PER_TABLE, LEVEL_INFO, LevelInfo, PageTableEntry, PteFlags, PteFlagsOps, PteOps,
+    page_size_at_level,
 };
 
 #[cfg(any(test, target_os = "none"))]
