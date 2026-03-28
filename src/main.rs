@@ -74,6 +74,8 @@ pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
 #[cfg(not(test))]
 fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
     logging::init();
+    // SAFETY: 主核调用一次，TP 持有 hart_id（riscv64）/ TPIDR_EL1 为 0（aarch64）
+    unsafe { per_cpu::percpu_init() };
     init::early_init(Arch::dtb_addr(argc, argv));
     smoke_test::phase2();
     // memory::init() 返回页表，不再内部调用 arch（打破 memory↔arch 循环）
@@ -118,6 +120,8 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 #[cfg(not(test))]
 fn bootstrap_smp(argc: i32, argv: *const *const u8) -> ! {
     let core_id = Arch::secondary_core_id(argc, argv);
+    // SAFETY: percpu_init() 已由主核完成，core_id 有效
+    unsafe { per_cpu::percpu_init_smp(core_id) };
     memory::init_smp(|pt| {
         // SAFETY: 主核已验证页表正确性
         unsafe { Arch::activate_page_table(pt) };

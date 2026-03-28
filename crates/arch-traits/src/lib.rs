@@ -18,46 +18,14 @@ use aarch64_cpu::registers::{DAIF, MPIDR_EL1, Readable};
 
 // ─── core_id ─────────────────────────────────────────────────────────
 
-/// 读取当前核心 ID。
+/// 读取当前核心 ID——委托给 `per-cpu` crate。
 ///
-/// - RISC-V: 从 `tp` 寄存器读取（boot.S 中设置为 hart ID）
-/// - AArch64: 从 `MPIDR_EL1.Aff0` 读取（通过 `aarch64-cpu` crate）
-/// - 宿主机: 每线程分配唯一 ID（thread_local）
+/// - 初始化后：从 per-CPU 区域的 `CORE_ID` 变量读取（通过 TP/TPIDR）
+/// - 初始化前：回退到读原始寄存器
+/// - 宿主机：线程局部唯一 ID
 #[inline(always)]
 pub fn core_id() -> usize {
-    #[cfg(all(target_os = "none", target_arch = "riscv64"))]
-    {
-        let id: usize;
-        // SAFETY: tp 寄存器在 boot.S 中设置为 hart ID，是通用寄存器（非 CSR），
-        // riscv crate 不提供访问接口，只能使用内联汇编
-        unsafe { core::arch::asm!("mv {id}, tp", id = out(reg) id) };
-        id
-    }
-    #[cfg(all(target_os = "none", target_arch = "aarch64"))]
-    {
-        MPIDR_EL1.read(MPIDR_EL1::Aff0) as usize
-    }
-    #[cfg(not(target_os = "none"))]
-    {
-        // 宿主机——为每个线程分配唯一 core_id（支持 SpinLock 多线程测试）
-        use core::sync::atomic::AtomicUsize;
-        static COUNTER: AtomicUsize = AtomicUsize::new(0);
-
-        #[cfg(test)]
-        {
-            use std::cell::Cell;
-            thread_local! {
-                static TID: Cell<usize> =
-                    Cell::new(COUNTER.fetch_add(1, Ordering::Relaxed));
-            }
-            TID.with(|id| id.get())
-        }
-        #[cfg(not(test))]
-        {
-            let _ = &COUNTER; // suppress unused warning
-            0 // clippy/check 占位
-        }
-    }
+    per_cpu::current_core_id()
 }
 
 // ─── 中断控制 ─────────────────────────────────────────────────────────

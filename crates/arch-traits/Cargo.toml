@@ -9,6 +9,7 @@ edition.workspace = true
 
 [dependencies]
 config = { path = "../config" }
+per-cpu = { path = "../per-cpu" }
 
 # RISC-V CSR / 指令封装（sstatus、sfence.vma 等）
 [target.'cfg(target_arch = "riscv64")'.dependencies]

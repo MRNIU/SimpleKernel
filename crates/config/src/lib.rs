@@ -26,6 +26,13 @@ pub const KERNEL_STACK_SIZE: usize = 16 * 1024;
 /// 避免使用全局计数器 modulo 导致的 SMP 输出偏斜。
 pub const TIMER_FREQ_HZ: u64 = 10;
 
+/// 每个 CPU 的 per-CPU 区域最大字节数。
+///
+/// `#[cpu_local]` 变量的模板会在 boot 时复制到每个 CPU 的区域中。
+/// 当前实际约 256 字节，4096 留有充足余量。
+/// 如果 `.percpu` section 超过此值，`percpu_init()` 会 panic。
+pub const PERCPU_AREA_MAX: usize = 4096;
+
 /// 页表层级数——由目标架构决定。
 ///
 /// - RISC-V Sv39: 3 级

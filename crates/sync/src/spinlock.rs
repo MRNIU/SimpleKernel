@@ -319,7 +319,7 @@ impl<T> SpinLockIrq<T> {
             return;
         }
         // SAFETY: 中断已禁用，无同核心并发访问
-        let stack = &unsafe { per_cpu::current_per_cpu() }.lock_stack;
+        let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
         if stack.depth > 0 {
             let top = stack.entries[stack.depth - 1].level;
             if top != lock_level::UNCLASSIFIED && self.level <= top {
@@ -331,7 +331,7 @@ impl<T> SpinLockIrq<T> {
     #[cfg(not(test))]
     fn push_lock_stack(&self) {
         // SAFETY: 中断已禁用
-        let stack = &mut unsafe { per_cpu::current_per_cpu() }.lock_stack;
+        let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
         if stack.depth >= per_cpu::lock_stack::LockStack::MAX_DEPTH {
             panic!(
                 "SpinLock '{}': lock stack overflow (depth={})",
@@ -348,7 +348,7 @@ impl<T> SpinLockIrq<T> {
     #[cfg(not(test))]
     fn pop_lock_stack(&self) {
         // SAFETY: 中断已禁用
-        let stack = &mut unsafe { per_cpu::current_per_cpu() }.lock_stack;
+        let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
         if stack.depth == 0 {
             panic!("SpinLock '{}': lock stack underflow", self.raw.name);
         }

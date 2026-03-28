@@ -10,16 +10,16 @@ pub fn handle_timer_common() {
     let tick = arch_traits::tick_advance();
 
     // SAFETY: 在中断处理程序中调用，中断已被 CPU 自动关闭
-    let per_cpu = unsafe { per_cpu::current_per_cpu() };
-    per_cpu.preempt.enter_hardirq();
+    unsafe { per_cpu::enter_hardirq() };
 
     // 直接调用 task::timer_tick()——同属 kernel crate，无需回调间接调用
     crate::task::timer_tick();
 
-    per_cpu.preempt.exit_hardirq();
-    per_cpu
-        .preempt
-        .need_resched
+    // SAFETY: 与 enter_hardirq 配对
+    unsafe { per_cpu::exit_hardirq() };
+
+    per_cpu::NEED_RESCHED
+        .get()
         .store(true, core::sync::atomic::Ordering::Release);
 
     log::info!("Tick #{} (core {})", tick, per_cpu::current_core_id());

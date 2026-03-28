@@ -8,6 +8,10 @@ description.workspace = true
 edition.workspace = true
 
 [dependencies]
-arch-traits = { path = "../arch-traits" }
+kernel-macros = { path = "../kernel-macros" }
 config = { path = "../config" }
 spin = { version = "0.9", default-features = false, features = ["once"] }
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu = "9"
+tock-registers = "0.9"

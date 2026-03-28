@@ -20,6 +20,9 @@ _boot:
     add x11, x11, x10
     mov sp, x11
 
+    // 初始化 TPIDR_EL1 为 0（percpu_init 会设置正确的 per-CPU 基地址）
+    msr tpidr_el1, xzr
+
     // 保存传递的参数（假设传递的参数在 x0 和 x1 中）
     // 开辟栈空间
     stp x0, x1, [sp, #-16]!

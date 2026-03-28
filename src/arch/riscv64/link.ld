@@ -171,6 +171,12 @@ SECTIONS {
     }
     _edata = .; PROVIDE (edata = .);
     . = .;
+    /* ── Per-CPU 模板段（由 #[cpu_local] 宏填充） ─── */
+    . = ALIGN(128);
+    __percpu_start = .;
+    .percpu : { KEEP(*(.percpu)) }
+    . = ALIGN(128);
+    __percpu_end = .;
     __bss_start = .;
     .sbss           : ALIGN(0x1000) {
         *(.dynsbss)
@@ -243,3 +249,5 @@ SECTIONS {
     .gnu.attributes 0 : { KEEP (*(.gnu.attributes)) }
     /DISCARD/ : { *(.note.GNU-stack) *(.gnu_debuglink) *(.gnu.lto_*) }
 }
+ASSERT(__percpu_end - __percpu_start <= 4096,
+       ".percpu section exceeds PERCPU_AREA_MAX (4096 bytes)")
