@@ -210,6 +210,16 @@ impl MappedFrames {
 }
 
 impl UnmappedFrames {
+    /// 从物理帧范围构造 `UnmappedFrames`——用于 EXCLUSIVE unmap 路径。
+    ///
+    /// # Safety
+    ///
+    /// 调用方必须确保该帧范围刚从页表 unmap，且 PTE 的 EXCLUSIVE 位已确认
+    /// 我们拥有该帧的唯一引用。Drop 时帧将归还分配器。
+    pub unsafe fn from_range(range: FrameRange) -> Self {
+        Self { range }
+    }
+
     /// 消费 Unmapped 帧，转换回 Allocated 状态。
     pub fn into_allocated(self) -> AllocatedFrames {
         self.into_state()

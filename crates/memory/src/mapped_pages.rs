@@ -7,38 +7,20 @@
 //!
 //! 1. **编译期 use-after-unmap 防护**：`as_type::<T>()` 返回的引用
 //!    生命周期绑定到 `&self`，编译器阻止在 `MappedPages` drop 后继续使用。
-//! 2. **RAII 自动清理**：drop 时自动 unmap 并释放物理帧。
-//! 3. **所有权三态**：`Owned`（持有帧）、`Borrowed`（不持有帧）、
-//!    `Permanent`（永不释放），防止 identity-map drop 灾难。
-
-use alloc::vec::Vec;
+//! 2. **RAII 自动清理**：drop 时自动 unmap 并根据 EXCLUSIVE 位释放物理帧。
+//! 3. **EXCLUSIVE 位追踪帧所有权**：帧的所有权信息编码在 PTE 中（而非软件枚举），
+//!    即使 `MappedPages` 对象丢失，遍历页表也能恢复所有权信息。
 
 use crate::error::MemoryError;
-use crate::frame::{AllocatedFrames, MappedFrames};
+use crate::frame::{AllocatedFrames, UnmappedFrames};
 use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
-use address::{PhysAddr, VirtAddr};
+use address::{FrameRange, PhysAddr, PhysPageNum, VirtAddr};
 use config::PAGE_SIZE;
-
-/// 帧所有权模型——解决 identity-map drop 灾难和 Theseus 的 Owned/Borrowed 区分。
-///
-/// 参考 Theseus PTE `EXCLUSIVE` 位的设计理念，但在软件层面实现：
-/// - `Owned`：帧由 `MappedPages` 持有，drop 时 unmap PTE + 释放帧
-/// - `Borrowed`：帧不由 `MappedPages` 持有（如 identity mapping），drop 时仅 unmap PTE
-/// - `Permanent`：永久映射，drop 时不做任何事
-enum FrameOwnership {
-    Owned(Vec<MappedFrames>),
-    Borrowed,
-    Permanent,
-}
-
-/// 永久帧注册表——持有永久映射的物理帧所有权，防止泄漏且保留追踪能力。
-static PERMANENT_FRAMES: sync_crate::SpinLock<Vec<MappedFrames>> =
-    sync_crate::SpinLock::new(Vec::new(), "perm_frames");
 
 /// 仿射类型映射——持有此值即证明 VA→PA 映射有效。
 ///
 /// 不可 Clone、不可 Copy（仿射类型约束）。
-/// Drop 时根据 [`FrameOwnership`] 决定清理策略。
+/// Drop 时根据 PTE 中的 EXCLUSIVE 位决定是否释放物理帧。
 pub struct MappedPages {
     /// 映射起始虚拟地址
     vaddr: VirtAddr,
@@ -46,14 +28,14 @@ pub struct MappedPages {
     page_count: usize,
     /// 映射权限
     flags: PteFlags,
-    /// 帧所有权模型
-    ownership: FrameOwnership,
+    /// 永久映射标记——drop 时不 unmap
+    permanent: bool,
 }
 
 impl MappedPages {
     /// Identity-map 一段物理地址区间（VA == PA）。
     ///
-    /// 不持有帧所有权（`Borrowed`）——drop 时仅 unmap PTE，不释放帧。
+    /// **不设置 EXCLUSIVE 位**——drop 时仅 unmap PTE，不释放帧。
     /// 使用场景：内核启动时的 RAM identity mapping、MMIO 映射。
     ///
     /// # Errors
@@ -70,7 +52,6 @@ impl MappedPages {
             let pa = pa_start + i * PAGE_SIZE;
             let va = va_start + i * PAGE_SIZE;
             if let Err(e) = pt.map_page(va, pa, flags) {
-                // 回滚：逆序 unmap 已映射的页
                 for j in (0..i).rev() {
                     let _ = pt.unmap_page(va_start + j * PAGE_SIZE);
                 }
@@ -81,27 +62,28 @@ impl MappedPages {
             vaddr: va_start,
             page_count,
             flags,
-            ownership: FrameOwnership::Borrowed,
+            permanent: false,
         })
     }
 
-    /// 包装已由外部建立的 Borrowed 映射——不执行 map 操作。
+    /// 包装已由外部建立的映射——不执行 map 操作。
     ///
-    /// 调用方负责确保 `[vaddr, vaddr + page_count * PAGE_SIZE)` 已在页表中映射。
-    /// Drop 时仅 unmap PTE，不释放帧。
+    /// 调用方负责确保映射已在页表中建立。
+    /// Drop 时仅 unmap PTE，帧回收由 PTE 的 EXCLUSIVE 位控制。
     pub(crate) fn new_borrowed(vaddr: VirtAddr, page_count: usize, flags: PteFlags) -> Self {
         Self {
             vaddr,
             page_count,
             flags,
-            ownership: FrameOwnership::Borrowed,
+            permanent: false,
         }
     }
 
-    /// 分配新帧并建立映射。
+    /// 分配新帧并建立映射——**设置 EXCLUSIVE 位**。
     ///
-    /// 持有帧所有权（`Owned`）——drop 时 unmap PTE + 释放帧。
-    /// 部分失败时自动回滚已映射的页。
+    /// 帧所有权通过 PTE 的 EXCLUSIVE 位追踪：
+    /// - 映射时：`AllocatedFrames → MappedFrames → mem::forget`（所有权转移到 PTE）
+    /// - unmap 时：读 PTE 的 EXCLUSIVE 位 → 重建 `UnmappedFrames` → drop 自动回收
     ///
     /// # Errors
     ///
@@ -112,24 +94,28 @@ impl MappedPages {
         page_count: usize,
         flags: PteFlags,
     ) -> Result<Self, MemoryError> {
-        let mut frames: Vec<MappedFrames> = Vec::with_capacity(page_count);
+        let exclusive_flags = flags.with_exclusive();
+        let mut mapped_count = 0usize;
         for i in 0..page_count {
             let frame = AllocatedFrames::alloc_one()?;
             let pa = frame.start_paddr();
             let va = va_start + i * PAGE_SIZE;
-            match pt.map_page(va, pa, flags) {
+            match pt.map_page(va, pa, exclusive_flags) {
                 Ok(()) => {
-                    frames.push(frame.into_mapped());
+                    // 帧所有权转移到 PTE：forget 阻止 drop 回收
+                    let mapped = frame.into_mapped();
+                    core::mem::forget(mapped);
+                    mapped_count += 1;
                 }
                 Err(e) => {
-                    // 回滚：逆序 unmap 已映射的页
-                    for j in (0..i).rev() {
-                        let _ = pt.unmap_page(va_start + j * PAGE_SIZE);
+                    // 回滚已映射的页——EXCLUSIVE 帧通过 unmap 路径回收
+                    for j in (0..mapped_count).rev() {
+                        let va = va_start + j * PAGE_SIZE;
+                        if let Ok(old_pa) = pt.unmap_page(va) {
+                            reclaim_exclusive_frame(old_pa);
+                        }
                     }
-                    // Mapped → Unmapped（drop 自动归还分配器）
-                    for mapped_frame in frames.drain(..) {
-                        let _unmapped = mapped_frame.into_unmapped();
-                    }
+                    // 当前这个未映射成功的 frame 会正常 drop 回收
                     return Err(e);
                 }
             }
@@ -137,8 +123,8 @@ impl MappedPages {
         Ok(Self {
             vaddr: va_start,
             page_count,
-            flags,
-            ownership: FrameOwnership::Owned(frames),
+            flags: exclusive_flags,
+            permanent: false,
         })
     }
 
@@ -147,14 +133,7 @@ impl MappedPages {
     /// 用于内核 identity mapping、MMIO 等永远不会释放的映射。
     #[must_use]
     pub fn into_permanent(mut self) -> Self {
-        match core::mem::replace(&mut self.ownership, FrameOwnership::Permanent) {
-            FrameOwnership::Owned(frames) => {
-                if !frames.is_empty() {
-                    PERMANENT_FRAMES.lock().extend(frames);
-                }
-            }
-            FrameOwnership::Borrowed | FrameOwnership::Permanent => {}
-        }
+        self.permanent = true;
         self
     }
 
@@ -241,15 +220,19 @@ impl MappedPages {
         unsafe { &mut *ptr }
     }
 
-    /// 从内核页表中 unmap 所有页并刷新 TLB。
-    fn unmap_ptes(&self) {
+    /// 从内核页表中 unmap 所有页，EXCLUSIVE 帧自动回收。
+    fn unmap_and_reclaim(&self) {
         if let Some(kpt) = crate::kernel_page_table() {
             let mut guard = kpt.lock();
             for i in 0..self.page_count {
                 let va = self.vaddr + i * PAGE_SIZE;
-                let _ = guard.unmap_page(va);
+                if let Some((pa, flags)) = guard.get_mapping(va) {
+                    let _ = guard.unmap_page(va);
+                    if flags.is_exclusive() {
+                        reclaim_exclusive_frame(pa);
+                    }
+                }
             }
-            // 单页用精确刷新，多页用全局刷新（避免逐页 barrier 的累积开销）
             if self.page_count == 1 {
                 crate::tlb::flush_tlb_page(self.vaddr.as_usize());
             } else {
@@ -259,30 +242,32 @@ impl MappedPages {
     }
 }
 
+/// 从物理地址重建 `UnmappedFrames` 并 drop 回收——EXCLUSIVE unmap 的核心路径。
+fn reclaim_exclusive_frame(pa: PhysAddr) {
+    let ppn = PhysPageNum::from(pa);
+    let range = FrameRange::new(ppn, ppn + 1);
+    // SAFETY: 帧刚从页表 unmap，EXCLUSIVE 保证我们拥有该帧的唯一引用。
+    // 构造 UnmappedFrames 使其 Drop 自动归还分配器。
+    let _reclaimed = unsafe { UnmappedFrames::from_range(range) };
+}
+
 impl Drop for MappedPages {
     fn drop(&mut self) {
-        if matches!(self.ownership, FrameOwnership::Permanent) {
+        if self.permanent {
             return;
         }
-
-        // 先 unmap PTE（顺序关键：帧释放后地址可能被复用）
-        self.unmap_ptes();
-
-        // Owned 帧走 Mapped → Unmapped（drop 自动归还分配器）
-        if let FrameOwnership::Owned(frames) = &mut self.ownership {
-            for frame in frames.drain(..) {
-                let _unmapped = frame.into_unmapped();
-            }
-        }
+        self.unmap_and_reclaim();
     }
 }
 
 impl core::fmt::Debug for MappedPages {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let kind = match &self.ownership {
-            FrameOwnership::Owned(_) => "owned",
-            FrameOwnership::Borrowed => "borrowed",
-            FrameOwnership::Permanent => "permanent",
+        let kind = if self.permanent {
+            "permanent"
+        } else if self.flags.is_exclusive() {
+            "exclusive"
+        } else {
+            "borrowed"
         };
         write!(
             f,
@@ -307,10 +292,12 @@ mod tests {
         assert_eq!(mp.vaddr(), VirtAddr::new(0x1_0000));
         assert_eq!(mp.size(), PAGE_SIZE);
 
-        let (got_pa, _) = pt
+        let (got_pa, got_flags) = pt
             .get_mapping(VirtAddr::new(0x1_0000))
             .expect("应能查到映射");
         assert_eq!(got_pa, pa);
+        // identity map 不应有 EXCLUSIVE 位
+        assert!(!got_flags.is_exclusive());
     }
 
     /// map_identity 重复映射同一 VA 应失败并回滚。
@@ -325,14 +312,14 @@ mod tests {
         assert_eq!(err, MemoryError::MapFailed);
     }
 
-    /// new_borrowed 应创建 Borrowed 所有权的映射。
+    /// new_borrowed 应创建非 EXCLUSIVE 映射。
     #[test]
     fn new_borrowed_ownership() {
         let mp = MappedPages::new_borrowed(VirtAddr::new(0x3_0000), 2, PteFlags::kernel_rw());
         assert_eq!(mp.vaddr(), VirtAddr::new(0x3_0000));
         assert_eq!(mp.size(), 2 * PAGE_SIZE);
         assert!(mp.flags().is_writable());
-        // Debug 输出应包含 "borrowed"
+        assert!(!mp.flags().is_exclusive());
         let dbg = alloc::format!("{:?}", mp);
         assert!(dbg.contains("borrowed"));
     }
