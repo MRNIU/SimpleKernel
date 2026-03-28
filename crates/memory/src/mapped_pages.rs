@@ -345,4 +345,47 @@ mod tests {
             assert!(pt.get_mapping(va).is_some(), "第 {} 页应已映射", i);
         }
     }
+
+    /// map_alloc 应分配帧并设置 EXCLUSIVE 位。
+    #[test]
+    fn map_alloc_sets_exclusive() {
+        crate::frame::ensure_test_init();
+        let mut pt = PageTable::create().expect("创建页表");
+        let va = VirtAddr::new(0x10_0000);
+        let mp = MappedPages::map_alloc(&mut pt, va, 1, PteFlags::kernel_rw())
+            .expect("map_alloc 应成功");
+
+        let (_, got_flags) = pt.get_mapping(va).expect("应能查到映射");
+        assert!(
+            got_flags.is_exclusive(),
+            "map_alloc 映射应设置 EXCLUSIVE 位"
+        );
+        assert!(mp.flags().is_exclusive());
+        assert_eq!(mp.size(), PAGE_SIZE);
+    }
+
+    /// map_alloc 多页后逐页应都有 EXCLUSIVE 位。
+    #[test]
+    fn map_alloc_multi_page_exclusive() {
+        crate::frame::ensure_test_init();
+        let mut pt = PageTable::create().expect("创建页表");
+        let va = VirtAddr::new(0x20_0000);
+        let _mp = MappedPages::map_alloc(&mut pt, va, 3, PteFlags::kernel_rw())
+            .expect("多页 map_alloc 应成功");
+        for i in 0..3 {
+            let page_va = VirtAddr::new(0x20_0000 + i * PAGE_SIZE);
+            let (_, flags) = pt.get_mapping(page_va).expect("应已映射");
+            assert!(flags.is_exclusive(), "第 {} 页应有 EXCLUSIVE 位", i);
+        }
+    }
+
+    /// identity_map_range 边界检查：start >= end 应返回错误。
+    #[test]
+    fn identity_map_range_empty_range_fails() {
+        let mut pt = PageTable::create().expect("创建页表");
+        let pa = PhysAddr::new(0x1000);
+        let err = crate::identity_map_range(&mut pt, pa, pa, PteFlags::kernel_rw())
+            .expect_err("start == end 应失败");
+        assert_eq!(err, MemoryError::MapFailed);
+    }
 }

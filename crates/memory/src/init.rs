@@ -6,6 +6,7 @@ use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
 
 /// 主核内存初始化——返回页表，不激活。
 pub fn init() -> PageTable {
+    // SAFETY: 在任何堆分配之前调用，且仅调用一次（由启动流程保证）
     unsafe { crate::heap::init() };
 
     let info = crate::globals::MEMORY_INFO
@@ -18,6 +19,8 @@ pub fn init() -> PageTable {
     let alloc_start = kernel_end.align_up();
     let alloc_size = mem_size - (alloc_start - mem_start);
 
+    // SAFETY: alloc_start 页对齐（由 align_up 保证），内存区域在内核镜像之后、
+    // 物理内存范围之内，不与堆重叠，且仅调用一次
     unsafe { crate::frame::init(alloc_start, alloc_size) };
 
     let mut pt = PageTable::create().expect("failed to create kernel page table");

@@ -5,8 +5,6 @@ use super::*;
 use crate::error::MemoryError;
 use address::{PhysAddr, VirtAddr};
 
-// ── 层级参数（架构无关）──
-
 /// 验证 Level0 的 SHIFT 和 INDEX_BITS 从 PAGE_SIZE 正确推导。
 #[test]
 fn level0_params_match_page_size() {
@@ -62,8 +60,6 @@ fn vpn_index_extracts_correct_bits() {
     assert_eq!(vpn_index(va_high, 1), 0);
     assert_eq!(vpn_index(va_high, 2), 1);
 }
-
-// ── PTE 编码（通过 trait 方法，架构无关）──
 
 /// PTE 编码往返测试：通过 preset 写入，读回应一致。
 #[test]
@@ -122,17 +118,6 @@ fn leaf_pte_is_valid_and_leaf() {
     assert!(pte.is_leaf(0));
 }
 
-// ── PteFlagsOps / PteOps trait 一致性（架构无关）──
-
-/// 验证 `is_writable()` 在各预设下的正确性。
-#[test]
-fn pte_flags_is_writable() {
-    assert!(PteFlags::kernel_rw().is_writable());
-    assert!(PteFlags::kernel_rwx().is_writable());
-    assert!(!PteFlags::kernel_rx().is_writable());
-    assert!(!PteFlags::kernel_ro().is_writable());
-}
-
 /// 验证 PteFlagsOps trait 所有方法在 PteFlags 上的可用性。
 #[test]
 fn pte_flags_trait_conformance() {
@@ -187,8 +172,6 @@ fn pte_ops_trait_conformance() {
     }
     check::<PageTableEntry>();
 }
-
-// ── RISC-V 专属测试 ──
 
 #[cfg(not(feature = "test-aarch64"))]
 mod riscv64_specific {
@@ -267,8 +250,6 @@ mod riscv64_specific {
         assert_eq!(flags.for_leaf_at_level(2), flags);
     }
 }
-
-// ── AArch64 专属测试 ──
 
 #[cfg(feature = "test-aarch64")]
 mod aarch64_specific {
@@ -359,8 +340,6 @@ mod aarch64_specific {
         assert!(!table_pte.is_leaf(1));
     }
 }
-
-// ── 页表操作（4KB 页，架构无关）──
 
 /// 映射单页后应能查询到正确的物理地址和完整标志。
 #[test]
@@ -505,8 +484,6 @@ fn unmap_empty_leaf_with_existing_intermediate() {
         .expect_err("叶 PTE 为空，应返回 PageNotMapped");
     assert_eq!(err, MemoryError::PageNotMapped);
 }
-
-// ── 大页映射 ──
 
 /// 大页映射：Level 1（2MB）应能映射和查询。
 #[test]

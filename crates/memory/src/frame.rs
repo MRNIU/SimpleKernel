@@ -249,31 +249,33 @@ impl<const S: MemoryState> Drop for Frames<S> {
     }
 }
 
+/// 测试用帧分配器初始化——分配堆内存模拟物理内存区域。
+///
+/// 全局 static 只能 init 一次，用 `std::sync::Once` 保证幂等。
+/// `pub(crate)` 可见性允许 `mapped_pages::tests` 等其他模块复用。
+#[cfg(test)]
+pub(crate) fn ensure_test_init() {
+    static INIT: std::sync::Once = std::sync::Once::new();
+    INIT.call_once(|| {
+        let layout =
+            std::alloc::Layout::from_size_align(64 * PAGE_SIZE, PAGE_SIZE).expect("layout");
+        // SAFETY: layout 有效且非零大小
+        let ptr = unsafe { std::alloc::alloc_zeroed(layout) };
+        assert!(!ptr.is_null());
+        let start = PhysAddr::new(ptr as usize);
+        // SAFETY: 测试专用内存区域，不与其他分配重叠
+        unsafe { init(start, 64 * PAGE_SIZE) };
+    });
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    /// 初始化测试用帧分配器——分配一块堆内存模拟物理内存区域。
-    ///
-    /// 全局 static 只能 init 一次，用 `std::sync::Once` 保证幂等。
-    fn ensure_init() {
-        static INIT: std::sync::Once = std::sync::Once::new();
-        INIT.call_once(|| {
-            let layout =
-                std::alloc::Layout::from_size_align(64 * PAGE_SIZE, PAGE_SIZE).expect("layout");
-            // SAFETY: layout 有效且非零大小
-            let ptr = unsafe { std::alloc::alloc_zeroed(layout) };
-            assert!(!ptr.is_null());
-            let start = PhysAddr::new(ptr as usize);
-            // SAFETY: 测试专用内存区域，不与其他分配重叠
-            unsafe { init(start, 64 * PAGE_SIZE) };
-        });
-    }
-
     /// 分配单帧后帧计数应为 1，地址应页对齐。
     #[test]
     fn alloc_one_frame() {
-        ensure_init();
+        ensure_test_init();
         let frame = AllocatedFrames::alloc_one().expect("alloc_one 应成功");
         assert_eq!(frame.count(), 1);
         assert!(frame.start_paddr().is_aligned());
@@ -282,7 +284,7 @@ mod tests {
     /// 分配多帧后帧计数应正确。
     #[test]
     fn alloc_multiple_frames() {
-        ensure_init();
+        ensure_test_init();
         let frames = AllocatedFrames::alloc(4).expect("alloc(4) 应成功");
         assert_eq!(frames.count(), 4);
     }
@@ -290,22 +292,19 @@ mod tests {
     /// 帧 drop 后应能重新分配（归还到分配器）。
     #[test]
     fn alloc_dealloc_realloc() {
-        ensure_init();
-        let addr1 = {
-            let frame = AllocatedFrames::alloc_one().expect("分配");
-            frame.start_paddr()
-        };
+        ensure_test_init();
+        {
+            let _frame = AllocatedFrames::alloc_one().expect("分配");
+        }
         // frame 已 drop，帧应归还
         let frame2 = AllocatedFrames::alloc_one().expect("重新分配应成功");
-        // buddy allocator 不保证地址相同，但至少分配成功
         assert!(frame2.start_paddr().is_aligned());
-        _ = addr1;
     }
 
     /// Allocated → Mapped → Unmapped 状态转换链。
     #[test]
     fn typestate_transitions() {
-        ensure_init();
+        ensure_test_init();
         let allocated = AllocatedFrames::alloc_one().expect("分配");
         let pa = allocated.start_paddr();
 
@@ -321,7 +320,7 @@ mod tests {
     /// Unmapped → Allocated 回转。
     #[test]
     fn unmapped_back_to_allocated() {
-        ensure_init();
+        ensure_test_init();
         let allocated = AllocatedFrames::alloc_one().expect("分配");
         let mapped = allocated.into_mapped();
         let unmapped = mapped.into_unmapped();
@@ -332,7 +331,7 @@ mod tests {
     /// split_at 应正确分割帧范围。
     #[test]
     fn split_frames() {
-        ensure_init();
+        ensure_test_init();
         let frames = AllocatedFrames::alloc(4).expect("alloc(4)");
         let mid = PhysPageNum::new(frames.start().as_usize() + 2);
         let (left, right) = frames.split_at(mid);
@@ -343,7 +342,7 @@ mod tests {
     /// merge 相邻帧应成功。
     #[test]
     fn merge_adjacent_frames() {
-        ensure_init();
+        ensure_test_init();
         let frames = AllocatedFrames::alloc(4).expect("alloc(4)");
         let mid = PhysPageNum::new(frames.start().as_usize() + 2);
         let (left, right) = frames.split_at(mid);
@@ -353,11 +352,25 @@ mod tests {
         assert_eq!(merged.count(), 4);
     }
 
+    /// `UnmappedFrames::from_range` 构造后 drop 应归还分配器。
+    #[test]
+    fn from_range_reclaims() {
+        ensure_test_init();
+        let frame = AllocatedFrames::alloc_one().expect("分配");
+        let range = frame.range();
+        let mapped = frame.into_mapped();
+        core::mem::forget(mapped);
+        // SAFETY: 帧已 forget（模拟 EXCLUSIVE unmap 路径），手动重建 Unmapped 以回收
+        let _unmapped = unsafe { UnmappedFrames::from_range(range) };
+        // drop 归还分配器，后续分配应成功
+        let _frame2 = AllocatedFrames::alloc_one().expect("from_range 回收后应能重新分配");
+    }
+
     /// Mapped 帧 drop 时应 panic。
     #[test]
     #[should_panic(expected = "Frames<Mapped> dropped without unmapping")]
     fn mapped_drop_panics() {
-        ensure_init();
+        ensure_test_init();
         let allocated = AllocatedFrames::alloc_one().expect("分配");
         let _mapped = allocated.into_mapped();
         // _mapped drop 时应 panic
