@@ -1,21 +1,27 @@
+//! 内核内存管理——帧分配器、页表、堆、MMIO 映射。
+
 #![cfg_attr(not(test), no_std)]
 #![feature(sync_unsafe_cell)]
 #![allow(incomplete_features)]
 #![feature(adt_const_params)]
 
-//! 内核内存管理——帧分配器、页表、堆、MMIO 映射。
-
 #[cfg(target_os = "none")]
 extern crate alloc;
 
+/// 错误类型。
 pub mod error;
+/// 仿射类型映射（Theseus 风格 `MappedPages`）。
 #[cfg(target_os = "none")]
 pub mod mapped_pages;
+/// 类型化 MMIO 区域。
 #[cfg(target_os = "none")]
 pub mod mmio;
+/// 多级页表与架构原生 PTE 标志位。
 pub mod page_table;
+/// TLB 刷新。
 pub mod tlb;
 
+/// 物理帧分配器与帧生命周期状态机。
 #[cfg(target_os = "none")]
 pub mod frame;
 /// 堆分配器。
