@@ -76,6 +76,7 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 - **Sync**: Custom `SpinLock<T>` (interrupt-aware), NOT `spin::Mutex` for kernel mutual exclusion
 - **Assembly**: `.S` files compiled via `cc` crate in `build.rs`; `#[repr(C)]` for ABI-compatible structs
 - **Attributes**: Rust 2024 edition syntax — `#[unsafe(no_mangle)]` (not `#[no_mangle]`)
+- **规范引用**: 涉及体系结构、硬件规范的代码，模块文档注释须附上官方文档链接并精确到章节（如 `[Arm ARM §D8.3](https://...)`）
 
 ## ANTI-PATTERNS
 
