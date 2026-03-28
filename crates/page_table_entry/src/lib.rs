@@ -72,7 +72,9 @@ pub trait PteOps: Copy + core::fmt::Debug {
 
 #[cfg(target_arch = "aarch64")]
 pub use aarch64::{PageTableEntry, PteFlags};
-#[cfg(not(target_arch = "aarch64"))]
+#[cfg(target_arch = "riscv64")]
+pub use riscv64::{PageTableEntry, PteFlags};
+#[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
 pub use riscv64::{PageTableEntry, PteFlags};
 
 /// PTE 大小的位移量——`log2(sizeof(u64))` = 3。
