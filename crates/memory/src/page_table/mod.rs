@@ -51,6 +51,15 @@ pub trait PteFlagsOps: Copy + core::fmt::Debug {
     /// 而 Level > 0 (block descriptor) 不能设置 TABLE 位。
     /// RISC-V 无此区分，直接返回 self。
     fn for_leaf_at_level(self, level: usize) -> Self;
+
+    /// 是否设置了 EXCLUSIVE 软件位。
+    ///
+    /// EXCLUSIVE 位标记该 PTE "拥有"其物理帧——unmap 时应归还帧分配器。
+    /// 未设置 EXCLUSIVE 的 PTE（如 identity mapping）unmap 时不回收帧。
+    fn is_exclusive(self) -> bool;
+
+    /// 返回设置了 EXCLUSIVE 位的新标志。
+    fn with_exclusive(self) -> Self;
 }
 
 /// 页表项的统一接口——各架构必须实现。

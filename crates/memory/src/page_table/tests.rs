@@ -228,8 +228,27 @@ fn pte_flags_trait_conformance() {
             flags.for_leaf_at_level(0).is_writable(),
             flags.is_writable()
         );
+        // EXCLUSIVE 位
+        assert!(!flags.is_exclusive());
+        let exclusive = flags.with_exclusive();
+        assert!(exclusive.is_exclusive());
+        assert!(exclusive.is_writable()); // EXCLUSIVE 不影响权限
     }
     check::<PteFlags>();
+}
+
+/// EXCLUSIVE 位编解码往返——通过 PTE 写入再读出后 EXCLUSIVE 位应保留。
+#[test]
+fn exclusive_flag_roundtrip() {
+    let pa = PhysAddr::new(0x8020_0000);
+    let flags = PteFlags::kernel_rw().with_exclusive();
+    let pte = PageTableEntry::new(pa, flags);
+    assert!(pte.flags().is_exclusive());
+    assert_eq!(pte.paddr(), pa);
+
+    // 无 EXCLUSIVE 的 PTE
+    let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
+    assert!(!pte_no_excl.flags().is_exclusive());
 }
 
 /// 验证 PteOps trait 所有方法在 PageTableEntry 上的可用性。

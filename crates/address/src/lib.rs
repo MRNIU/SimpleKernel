@@ -17,6 +17,8 @@ pub use range::{AddrRange, AddrRangeIter};
 
 /// 物理帧范围——`AddrRange<PhysPageNum>` 的便利别名。
 pub type FrameRange = AddrRange<PhysPageNum>;
+/// 虚拟页范围——`AddrRange<VirtPageNum>` 的便利别名。
+pub type PageRange = AddrRange<VirtPageNum>;
 
 /// 为 `#[repr(transparent)] struct Foo(usize)` 生成通用基础设施。
 ///

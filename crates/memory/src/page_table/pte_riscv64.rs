@@ -30,6 +30,11 @@ bitflags! {
         const GLOBAL   = 1 << 5;
         const ACCESSED = 1 << 6;
         const DIRTY    = 1 << 7;
+        /// 软件定义位——RSW bit 8，标记帧所有权（参考 Theseus EXCLUSIVE）。
+        ///
+        /// EXCLUSIVE = 1：unmap 时帧归还分配器。
+        /// EXCLUSIVE = 0：unmap 时不回收帧（identity map / 共享映射）。
+        const EXCLUSIVE = 1 << 8;
     }
 }
 
@@ -84,6 +89,16 @@ impl PteFlagsOps for PteFlags {
     #[inline]
     fn for_leaf_at_level(self, _level: usize) -> Self {
         self
+    }
+
+    #[inline]
+    fn is_exclusive(self) -> bool {
+        self.contains(Self::EXCLUSIVE)
+    }
+
+    #[inline]
+    fn with_exclusive(self) -> Self {
+        self | Self::EXCLUSIVE
     }
 }
 

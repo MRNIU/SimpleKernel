@@ -56,6 +56,12 @@ bitflags! {
         const PXN       = 1 << 53;
         /// Unprivileged Execute-Never / Execute-Never
         const UXN       = 1 << 54;
+        /// 软件定义位——bit 55，标记帧所有权（参考 Theseus EXCLUSIVE）。
+        ///
+        /// ARMv8 bits [58:55] 为软件可用位（IGNORED by hardware）。
+        /// EXCLUSIVE = 1：unmap 时帧归还分配器。
+        /// EXCLUSIVE = 0：unmap 时不回收帧。
+        const EXCLUSIVE = 1 << 55;
     }
 }
 
@@ -126,6 +132,16 @@ impl PteFlagsOps for PteFlags {
             // Block descriptor：清除 TABLE 位
             Self::from_bits_truncate(self.bits() & !Self::TABLE.bits())
         }
+    }
+
+    #[inline]
+    fn is_exclusive(self) -> bool {
+        self.contains(Self::EXCLUSIVE)
+    }
+
+    #[inline]
+    fn with_exclusive(self) -> Self {
+        self | Self::EXCLUSIVE
     }
 }
 
