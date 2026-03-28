@@ -1,9 +1,9 @@
 //! 内核内存管理——帧分配器、页表、堆、MMIO 映射。
 
 #![cfg_attr(not(test), no_std)]
-#![feature(sync_unsafe_cell)]
-#![allow(incomplete_features)]
-#![feature(adt_const_params)]
+#![cfg_attr(target_os = "none", feature(sync_unsafe_cell))]
+#![cfg_attr(target_os = "none", allow(incomplete_features))]
+#![cfg_attr(target_os = "none", feature(adt_const_params))]
 
 #[cfg(target_os = "none")]
 extern crate alloc;
@@ -89,6 +89,10 @@ pub fn identity_map_range(
 ) -> Result<(), crate::error::MemoryError> {
     let mut addr = start.align_down();
     let end_aligned = end.align_up();
+
+    if addr.as_usize() >= end_aligned.as_usize() {
+        return Err(crate::error::MemoryError::MapFailed);
+    }
 
     while addr.as_usize() < end_aligned.as_usize() {
         let remaining = end_aligned.as_usize() - addr.as_usize();
@@ -190,16 +194,16 @@ pub fn kernel_page_table() -> Option<&'static SpinLock<PageTable>> {
 
 /// 将 MMIO 物理地址区间 identity-map 到内核页表，返回对应虚拟地址。
 ///
+/// 映射标记为永久（drop 时不 unmap）。如需 RAII 管理的 MMIO 映射，
+/// 请使用 [`mmio::MmioRegion::map`]。
+///
 /// # Errors
 ///
 /// 内核页表未初始化或映射冲突时返回错误。
 #[cfg(target_os = "none")]
 pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, crate::error::MemoryError> {
-    let kpt = KERNEL_PAGE_TABLE
-        .get()
-        .ok_or(crate::error::MemoryError::InvalidPageTable)?;
-    let mut guard = kpt.lock();
-    identity_map_range(&mut *guard, paddr, paddr + size, PteFlags::kernel_device())?;
-    crate::tlb::flush_tlb();
-    Ok(VirtAddr::new(paddr.as_usize()))
+    let region = mmio::MmioRegion::map(paddr, size)?;
+    let vaddr = region.base();
+    let _permanent = region.into_permanent();
+    Ok(vaddr)
 }

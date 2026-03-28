@@ -95,6 +95,19 @@ impl MappedPages {
         })
     }
 
+    /// 包装已由外部建立的 Borrowed 映射——不执行 map 操作。
+    ///
+    /// 调用方负责确保 `[vaddr, vaddr + page_count * PAGE_SIZE)` 已在页表中映射。
+    /// Drop 时仅 unmap PTE，不释放帧。
+    pub(crate) fn new_borrowed(vaddr: VirtAddr, page_count: usize, flags: PteFlags) -> Self {
+        Self {
+            vaddr,
+            page_count,
+            flags,
+            ownership: FrameOwnership::Borrowed,
+        }
+    }
+
     /// 分配新帧并建立映射。
     ///
     /// 持有帧所有权（`Owned`）——drop 时 unmap PTE + 释放帧。

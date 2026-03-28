@@ -5,6 +5,7 @@
 //! - `pte_*.rs`：各架构的 PTE 编码实现（Sv39 / ARMv8）
 //! - `table.rs`：页表 walk / map / unmap 逻辑
 
+#[cfg(any(test, target_os = "none"))]
 use core::marker::PhantomData;
 
 use address::PhysAddr;
@@ -172,11 +173,13 @@ pub const LEVEL_INFO: [LevelInfo; 5] = [
 ///
 /// 类型参数 `L` 标记层级，用于编译期区分不同层级的表（如大页支持时
 /// 需要区分 Level1 block entry 和 Level0 page entry）。
+#[cfg(any(test, target_os = "none"))]
 pub(crate) struct Table<L: PageLevel> {
     base: *mut PageTableEntry,
     _level: PhantomData<L>,
 }
 
+#[cfg(any(test, target_os = "none"))]
 impl<L: PageLevel> Table<L> {
     /// 从物理地址构造页表节点。
     ///
@@ -221,6 +224,7 @@ impl<L: PageLevel> Table<L> {
 /// 通过 [`LEVEL_INFO`] 查表获取每级的 SHIFT 和 INDEX_MASK，
 /// 支持不同 granule 下不同的每级位宽。
 #[inline]
+#[cfg(any(test, target_os = "none"))]
 pub(crate) fn vpn_index(va: address::VirtAddr, level: usize) -> usize {
     let info = &LEVEL_INFO[level];
     (va.as_usize() >> info.shift) & info.index_mask

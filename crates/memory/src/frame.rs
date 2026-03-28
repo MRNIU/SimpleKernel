@@ -58,13 +58,13 @@ pub unsafe fn init(start: PhysAddr, size: usize) {
     );
 }
 
-/// 帧生命周期状态——参考 Theseus OS 的四状态模型。
+/// 帧生命周期状态——参考 Theseus OS 的状态模型。
 ///
-/// 状态机：`Free → Allocated → Mapped → Unmapped → Allocated → …`
+/// 状态机：`Allocated → Mapped → Unmapped → Allocated → …`
+///
+/// 空闲帧的追踪由 buddy allocator 内部管理，不需要 typestate 表示。
 #[derive(PartialEq, Eq, core::marker::ConstParamTy)]
 pub enum MemoryState {
-    /// 空闲帧——由分配器管理，Drop 归还 free list
-    Free,
     /// 已分配——用户持有，Drop 归还分配器
     Allocated,
     /// 已映射到页表——Drop panic（必须先 unmap）
@@ -83,8 +83,6 @@ pub struct Frames<const S: MemoryState> {
     range: FrameRange,
 }
 
-/// 便利别名。
-pub type FreeFrames = Frames<{ MemoryState::Free }>;
 /// 便利别名。
 pub type AllocatedFrames = Frames<{ MemoryState::Allocated }>;
 /// 便利别名。
@@ -123,9 +121,20 @@ impl<const S: MemoryState> Frames<S> {
         self.range.start().start_addr()
     }
 
+    /// 消费 self，以新的状态 `NEW` 返回——typestate 转换的共享实现。
+    ///
+    /// `mem::forget` 阻止旧状态的 Drop 执行，新 `Frames` 继承帧范围。
+    #[inline]
+    fn into_state<const NEW: MemoryState>(self) -> Frames<NEW> {
+        let range = self.range;
+        core::mem::forget(self);
+        Frames { range }
+    }
+
     /// 在 `mid` 处分割为两段，消费 self。
     ///
     /// # Panics
+    ///
     /// `mid` 不在范围内时 panic。
     pub fn split_at(self, mid: PhysPageNum) -> (Self, Self) {
         let (left, right) = self.range.split_at(mid);
@@ -171,14 +180,11 @@ impl AllocatedFrames {
         let start = PhysPageNum::new(frame_num);
         let end = PhysPageNum::new(frame_num + count);
 
-        // SAFETY: 当前使用 identity mapping（VA == PA），物理地址可直接作为虚拟地址访问。
+        // SAFETY: 通过 phys_to_virt 将物理地址转换为虚拟地址后写入。
         // 帧刚从分配器获取，不存在其他引用。
         unsafe {
-            core::ptr::write_bytes(
-                start.start_addr().as_usize() as *mut u8,
-                0,
-                count * PAGE_SIZE,
-            );
+            let va = crate::phys_to_virt(start.start_addr());
+            core::ptr::write_bytes(va.as_usize() as *mut u8, 0, count * PAGE_SIZE);
         }
 
         Ok(Self {
@@ -190,9 +196,7 @@ impl AllocatedFrames {
     ///
     /// 在帧被写入页表后调用。
     pub fn into_mapped(self) -> MappedFrames {
-        let range = self.range;
-        core::mem::forget(self);
-        Frames { range }
+        self.into_state()
     }
 }
 
@@ -201,18 +205,14 @@ impl MappedFrames {
     ///
     /// 在帧从页表中 unmap 后调用。
     pub fn into_unmapped(self) -> UnmappedFrames {
-        let range = self.range;
-        core::mem::forget(self);
-        Frames { range }
+        self.into_state()
     }
 }
 
 impl UnmappedFrames {
     /// 消费 Unmapped 帧，转换回 Allocated 状态。
     pub fn into_allocated(self) -> AllocatedFrames {
-        let range = self.range;
-        core::mem::forget(self);
-        Frames { range }
+        self.into_state()
     }
 }
 

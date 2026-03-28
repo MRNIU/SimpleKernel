@@ -46,14 +46,14 @@ impl MmioRegion {
         let kpt = crate::kernel_page_table().ok_or(MemoryError::InvalidPageTable)?;
         let mut guard = kpt.lock();
         let pa_aligned = paddr.align_down();
-        let page_count = (paddr.as_usize() + size - pa_aligned.as_usize() + config::PAGE_SIZE - 1)
-            / config::PAGE_SIZE;
-        let mapping = MappedPages::map_identity(
-            &mut guard,
-            pa_aligned,
+        let end = paddr + size;
+        crate::identity_map_range(&mut guard, pa_aligned, end, PteFlags::kernel_device())?;
+        let page_count = (end.align_up().as_usize() - pa_aligned.as_usize()) / config::PAGE_SIZE;
+        let mapping = MappedPages::new_borrowed(
+            address::VirtAddr::new(pa_aligned.as_usize()),
             page_count,
             PteFlags::kernel_device(),
-        )?;
+        );
         drop(guard);
         crate::tlb::flush_tlb();
         Ok(Self { mapping })

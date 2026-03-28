@@ -88,6 +88,8 @@ unsafe fn table_at(paddr: PhysAddr) -> Table<Level0> {
 /// drop 时自动归还所有帧。
 pub struct PageTable {
     root_paddr: PhysAddr,
+    /// 持有根帧所有权，阻止帧被释放——字段本身不直接访问。
+    #[expect(dead_code, reason = "仅用于持有所有权，通过 root_paddr 访问")]
     root: NodeFrame,
     frames: Vec<NodeFrame>,
 }
@@ -114,6 +116,7 @@ impl PageTable {
 
     /// 返回根页表的物理地址（用于写入 satp / TTBR 寄存器）。
     #[inline]
+    #[cfg(target_os = "none")]
     pub fn root_paddr(&self) -> PhysAddr {
         self.root_paddr
     }
@@ -219,10 +222,11 @@ impl PageTable {
         Ok(old_pa)
     }
 
-    /// 查询虚拟地址的映射信息，返回物理地址和标志。
+    /// 只读遍历——从根向下查找叶 PTE，返回 PTE 及其所在层级。
     ///
     /// 支持大页：遍历过程中若遇到叶节点即返回。
-    pub fn get_mapping(&self, va: VirtAddr) -> Option<(PhysAddr, PteFlags)> {
+    /// 不分配中间节点，遇到无效中间 PTE 返回 `None`。
+    fn walk_readonly(&self, va: VirtAddr) -> Option<(PageTableEntry, usize)> {
         let mut paddr = self.root_paddr;
 
         for level in (1..PT_LEVELS).rev() {
@@ -234,7 +238,7 @@ impl PageTable {
                 return None;
             }
             if pte.is_leaf(level) {
-                return Some((pte.paddr(), pte.flags()));
+                return Some((pte, level));
             }
             paddr = pte.paddr();
         }
@@ -244,9 +248,17 @@ impl PageTable {
         let idx = vpn_index(va, 0);
         let pte = table.read(idx);
         if pte.is_valid() && pte.is_leaf(0) {
-            Some((pte.paddr(), pte.flags()))
+            Some((pte, 0))
         } else {
             None
         }
+    }
+
+    /// 查询虚拟地址的映射信息，返回物理地址和标志。
+    ///
+    /// 支持大页：遍历过程中若遇到叶节点即返回。
+    pub fn get_mapping(&self, va: VirtAddr) -> Option<(PhysAddr, PteFlags)> {
+        let (pte, _level) = self.walk_readonly(va)?;
+        Some((pte.paddr(), pte.flags()))
     }
 }

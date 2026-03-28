@@ -106,7 +106,7 @@ impl PteOps for PageTableEntry {
     /// 从 PTE 提取标志位。
     #[inline]
     fn flags(self) -> PteFlags {
-        PteFlags::from_bits_truncate(self.0 & 0xFF)
+        PteFlags::from_bits_truncate(self.0 & ((1 << FLAGS_BITS) - 1))
     }
 
     /// PTE 是否有效（V 位）。

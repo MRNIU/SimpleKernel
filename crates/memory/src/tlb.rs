@@ -69,7 +69,7 @@ pub fn flush_tlb_page(vaddr: usize) {
             page = in(reg) page,
         );
     }
-    let _ = vaddr; // 宿主机: no-op，消除 unused 警告
+    _ = vaddr; // 宿主机: no-op，消除 unused 警告
 
     if let Some(shootdown) = TLB_SHOOTDOWN_FN.get() {
         shootdown(TlbFlushRequest::Page(vaddr));
