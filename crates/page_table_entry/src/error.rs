@@ -7,10 +7,14 @@ use core::fmt;
 pub enum PageTableError {
     /// 帧分配失败（分配器未初始化或帧耗尽）
     AllocationFailed,
-    /// 映射冲突（目标 VA 已被映射，或路径上有大页）
-    MapFailed,
+    /// 目标 VA 已被映射
+    AlreadyMapped,
+    /// walk 路径上遇到大页，无法继续向下遍历
+    HugePageConflict,
     /// 目标虚拟页未映射
     PageNotMapped,
+    /// 地址范围无效（start >= end）
+    InvalidRange,
 }
 
 impl fmt::Display for PageTableError {

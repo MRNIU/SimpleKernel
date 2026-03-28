@@ -39,7 +39,9 @@ impl From<PageTableError> for crate::error::MemoryError {
     fn from(e: PageTableError) -> Self {
         match e {
             PageTableError::AllocationFailed => Self::AllocationFailed,
-            PageTableError::MapFailed => Self::MapFailed,
+            PageTableError::AlreadyMapped
+            | PageTableError::HugePageConflict
+            | PageTableError::InvalidRange => Self::MapFailed,
             PageTableError::PageNotMapped => Self::PageNotMapped,
         }
     }

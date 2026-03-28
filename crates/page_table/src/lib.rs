@@ -1,8 +1,7 @@
 //! 架构无关的多级页表。
 //!
-//! - [`PteFlagsOps`] / [`PteOps`]：统一 trait 接口，各架构必须实现
-//! - `PteFlags` / `PageTableEntry`：各架构在 `pte_*.rs` 中定义硬件原生标志位
-//! - `table.rs`：页表 walk / map / unmap 逻辑（`PageTable<F>` 泛型）
+//! 页表 walk / map / unmap 逻辑（`PageTable<F>` 泛型）。
+//! PTE 编解码由 [`page_table_entry`] crate 提供。
 //!
 //! `PageTable` 对帧分配的依赖通过 [`NodeFrameOps`] trait 抽象——
 //! 消费方提供具体实现（裸机用物理帧分配器，测试用堆分配）。
@@ -12,18 +11,11 @@
 extern crate alloc;
 
 use address::PhysAddr;
+use core::sync::atomic::{AtomicU64, Ordering};
 
-pub mod error;
-
-#[cfg(any(target_arch = "aarch64", feature = "test-aarch64"))]
-mod pte_aarch64;
-#[cfg(not(any(target_arch = "aarch64", feature = "test-aarch64")))]
-mod pte_riscv64;
-
-#[cfg(any(target_arch = "aarch64", feature = "test-aarch64"))]
-pub use pte_aarch64::PteFlags;
-#[cfg(not(any(target_arch = "aarch64", feature = "test-aarch64")))]
-pub use pte_riscv64::PteFlags;
+// Re-export page_table_entry 的所有公共类型
+pub use page_table_entry::error;
+pub use page_table_entry::{PTE_SIZE_SHIFT, PageTableEntry, PteFlags, PteFlagsOps, PteOps};
 
 pub mod table;
 pub use table::PageTable;
@@ -52,7 +44,8 @@ pub struct HeapNodeFrame {
     layout: core::alloc::Layout,
 }
 
-// SAFETY: HeapNodeFrame 独占其分配的内存，可安全跨线程传递。
+// SAFETY: HeapNodeFrame 独占其分配的内存（*mut u8 阻止了 auto-Send），
+// 可安全跨线程传递。
 #[cfg(any(test, feature = "test-support"))]
 unsafe impl Send for HeapNodeFrame {}
 
@@ -71,63 +64,15 @@ impl NodeFrameOps for HeapNodeFrame {
             .expect("HeapNodeFrame: invalid layout");
         // SAFETY: layout 非零大小
         let ptr = unsafe { alloc::alloc::alloc_zeroed(layout) };
-        assert!(!ptr.is_null(), "HeapNodeFrame: allocation failed");
+        if ptr.is_null() {
+            return Err(error::PageTableError::AllocationFailed);
+        }
         Ok(Self { ptr, layout })
     }
     fn paddr(&self) -> PhysAddr {
         PhysAddr::new(self.ptr as usize)
     }
 }
-
-/// 页表项标志位的统一接口——各架构必须实现。
-///
-/// 保证 RISC-V 和 AArch64 的 `PteFlags` 提供完全相同的方法集，
-/// 避免新增 preset 时某一架构遗漏。
-pub trait PteFlagsOps: Copy + core::fmt::Debug {
-    /// 内核读写数据映射。
-    fn kernel_rw() -> Self;
-    /// 内核读-执行映射。
-    fn kernel_rx() -> Self;
-    /// 内核只读映射。
-    fn kernel_ro() -> Self;
-    /// 内核读写执行映射。
-    fn kernel_rwx() -> Self;
-    /// 设备 MMIO 映射（不可缓存、不可执行）。
-    fn kernel_device() -> Self;
-    /// 是否具有写权限。
-    fn is_writable(self) -> bool;
-    /// 将标志位适配为指定层级的叶描述符格式。
-    fn for_leaf_at_level(self, level: usize) -> Self;
-    /// 是否设置了 EXCLUSIVE 软件位。
-    fn is_exclusive(self) -> bool;
-    /// 返回设置了 EXCLUSIVE 位的新标志。
-    fn with_exclusive(self) -> Self;
-}
-
-/// 页表项的统一接口——各架构必须实现。
-pub trait PteOps: Copy + core::fmt::Debug {
-    /// 对应架构的标志位类型
-    type Flags: PteFlagsOps;
-    /// 从物理地址和标志构造叶 PTE。
-    fn new(paddr: PhysAddr, flags: Self::Flags) -> Self;
-    /// 从 PTE 提取物理地址。
-    fn paddr(self) -> PhysAddr;
-    /// 从 PTE 提取标志位。
-    fn flags(self) -> Self::Flags;
-    /// PTE 是否有效。
-    fn is_valid(self) -> bool;
-    /// 是否为叶节点。
-    fn is_leaf(self, level: usize) -> bool;
-    /// 空 PTE（全零）。
-    fn empty() -> Self;
-    /// 中间节点 PTE（指向下一级页表）。
-    fn new_intermediate(paddr: PhysAddr) -> Self;
-}
-
-/// 单个硬件页表项（64 位）。
-#[derive(Debug, Clone, Copy)]
-#[repr(transparent)]
-pub struct PageTableEntry(pub(crate) u64);
 
 /// 页表层级标记——最多五级（Level4 = 根，Level0 = 叶）。
 pub struct Level4;
@@ -150,7 +95,7 @@ pub trait PageLevel {
 
 impl PageLevel for Level0 {
     const SHIFT: usize = config::PAGE_SIZE.trailing_zeros() as usize;
-    const INDEX_BITS: usize = Self::SHIFT - 3;
+    const INDEX_BITS: usize = Self::SHIFT - PTE_SIZE_SHIFT;
 }
 impl PageLevel for Level1 {
     const SHIFT: usize = Level0::SHIFT + Level0::INDEX_BITS;
@@ -200,9 +145,12 @@ pub const LEVEL_INFO: [LevelInfo; 5] = [
     },
 ];
 
-/// 页表节点——封装 PTE 数组的裸指针访问。
+/// 页表节点——封装 PTE 数组的原子访问。
+///
+/// 使用 `AtomicU64` 保证 SMP 下单个 PTE 读写不会 torn read/write。
+/// 外层 `SpinLock` 负责更高层的互斥，此处仅保证单次访问的原子性。
 pub(crate) struct Table<L: PageLevel> {
-    base: *mut PageTableEntry,
+    base: *mut AtomicU64,
     _level: core::marker::PhantomData<L>,
 }
 
@@ -214,7 +162,7 @@ impl<L: PageLevel> Table<L> {
     #[inline]
     pub(crate) unsafe fn from_paddr(paddr: address::PhysAddr) -> Self {
         Self {
-            base: paddr.as_usize() as *mut PageTableEntry,
+            base: paddr.as_usize() as *mut AtomicU64,
             _level: core::marker::PhantomData,
         }
     }
@@ -222,22 +170,17 @@ impl<L: PageLevel> Table<L> {
     #[inline]
     pub(crate) fn read(&self, index: usize) -> PageTableEntry {
         debug_assert!(index < L::ENTRIES, "PTE index out of bounds");
-        // SAFETY: base 指向有效帧，index 经 debug_assert 检查
-        unsafe { self.base.add(index).read() }
+        // SAFETY: base 指向有效帧，index 经 debug_assert 检查。
+        // Relaxed 即可——外层 SpinLock 提供必要的 memory barrier。
+        let val = unsafe { (*self.base.add(index)).load(Ordering::Relaxed) };
+        PageTableEntry(val)
     }
 
     #[inline]
     pub(crate) fn write(&mut self, index: usize, pte: PageTableEntry) {
         debug_assert!(index < L::ENTRIES, "PTE index out of bounds");
         // SAFETY: base 指向有效帧，index 经 debug_assert 检查
-        unsafe { self.base.add(index).write(pte) }
-    }
-
-    #[inline]
-    pub(crate) fn entry_ptr(&mut self, index: usize) -> *mut PageTableEntry {
-        debug_assert!(index < L::ENTRIES, "PTE index out of bounds");
-        // SAFETY: base 指向有效帧，index 经 debug_assert 检查
-        unsafe { self.base.add(index) }
+        unsafe { (*self.base.add(index)).store(pte.0, Ordering::Relaxed) };
     }
 }
 
@@ -252,10 +195,4 @@ pub(crate) fn vpn_index(va: address::VirtAddr, level: usize) -> usize {
 #[inline]
 pub const fn page_size_at_level(level: usize) -> usize {
     1usize << LEVEL_INFO[level].shift
-}
-
-/// 编译期断言：当前架构的 PageTableEntry 实现了 PteOps。
-fn _assert_trait_impl() {
-    fn _assert<T: PteOps>() {}
-    _assert::<PageTableEntry>();
 }

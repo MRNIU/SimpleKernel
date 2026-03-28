@@ -1,0 +1,17 @@
+[package]
+name = "page_table_entry"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Hardware page table entry encoding/decoding — PTE traits and arch-specific flag definitions"
+edition.workspace = true
+
+[features]
+## 测试时使用 AArch64 PTE 编码（默认使用 RISC-V）。
+test-aarch64 = []
+
+[dependencies]
+config = { path = "../config" }
+address = { path = "../address" }
+bitflags = "2"

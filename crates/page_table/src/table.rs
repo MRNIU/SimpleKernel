@@ -3,17 +3,20 @@
 //! `PageTable<F>` 对帧分配的依赖通过 [`NodeFrameOps`] trait 泛型化——
 //! 裸机和宿主机测试共享同一份 walk 实现。
 //!
-//! `unmap_at_level` 在清除叶 PTE 后回溯检查中间节点是否全空，
-//! 若是则清除上级 PTE 并回收该帧——参考 Linux `free_pgtables()`。
-
-extern crate alloc;
+//! `unmap_at_level` 在清除叶 PTE 后通过引用计数判断中间节点是否全空，
+//! 若是则清除上级 PTE 并回收该帧——参考 Linux `free_pgtables()` + `struct page::_mapcount`。
+//!
+//! **大页分裂**：当前不支持 transparent huge page splitting——
+//! 不能 unmap 大页的一部分，也不能在大页覆盖范围内映射小页。
+//! 如需部分 unmap，须先手动将大页分裂为小页再操作。
+//! 此限制在引入 THP 支持前保持不变。
 
 use alloc::collections::BTreeMap;
+use alloc::vec::Vec;
 
 use crate::error::PageTableError;
 use crate::{
-    Level0, NodeFrameOps, PageLevel, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table,
-    vpn_index,
+    Level0, NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index,
 };
 use address::{PhysAddr, VirtAddr};
 
@@ -46,6 +49,10 @@ pub struct PageTable<F: NodeFrameOps> {
     root: F,
     /// 中间页表节点——以物理地址为键，O(log n) 查找/删除。
     frames: BTreeMap<PhysAddr, F>,
+    /// 每个页表帧（含根帧）中有效 PTE 的引用计数。
+    /// map 时 +1，unmap 时 -1，count == 0 且非根帧时可回收。
+    /// 避免 unmap 回溯时 O(entries_per_table) 全扫描。
+    ref_counts: BTreeMap<PhysAddr, u16>,
 }
 
 impl<F: NodeFrameOps> PageTable<F> {
@@ -53,26 +60,50 @@ impl<F: NodeFrameOps> PageTable<F> {
     pub fn create() -> Result<Self, PageTableError> {
         let root = F::alloc()?;
         let root_paddr = root.paddr();
+        let mut ref_counts = BTreeMap::new();
+        ref_counts.insert(root_paddr, 0);
         Ok(Self {
             root_paddr,
             root,
             frames: BTreeMap::new(),
+            ref_counts,
         })
     }
 
     /// 返回根页表的物理地址（用于写入 satp / TTBR 寄存器）。
     #[inline]
-    #[cfg(target_os = "none")]
     pub fn root_paddr(&self) -> PhysAddr {
         self.root_paddr
     }
 
+    /// 递增指定帧的引用计数。
+    #[inline]
+    fn inc_ref(&mut self, paddr: PhysAddr) {
+        *self
+            .ref_counts
+            .get_mut(&paddr)
+            .expect("ref_counts: 帧未注册") += 1;
+    }
+
+    /// 递减指定帧的引用计数，返回递减后的值。
+    #[inline]
+    fn dec_ref(&mut self, paddr: PhysAddr) -> u16 {
+        let count = self
+            .ref_counts
+            .get_mut(&paddr)
+            .expect("ref_counts: 帧未注册");
+        *count -= 1;
+        *count
+    }
+
     /// 映射用 walker——遍历到 `target_level` 并按需分配中间节点。
+    ///
+    /// 返回目标 PTE 所在帧的物理地址及该 PTE 在帧中的索引。
     fn walk_create(
         &mut self,
         va: VirtAddr,
         target_level: usize,
-    ) -> Result<*mut PageTableEntry, PageTableError> {
+    ) -> Result<(PhysAddr, usize), PageTableError> {
         let mut paddr = self.root_paddr;
 
         for level in (target_level + 1..PT_LEVELS).rev() {
@@ -86,18 +117,18 @@ impl<F: NodeFrameOps> PageTable<F> {
                 let frame_paddr = frame.paddr();
                 table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
                 self.frames.insert(frame_paddr, frame);
+                self.ref_counts.insert(frame_paddr, 0);
+                self.inc_ref(paddr);
                 paddr = frame_paddr;
             } else if pte.is_leaf(level) {
-                return Err(PageTableError::MapFailed);
+                return Err(PageTableError::HugePageConflict);
             } else {
                 paddr = pte.paddr();
             }
         }
 
-        // SAFETY: paddr 指向由 self 持有的有效帧
-        let mut table = unsafe { table_at(paddr) };
         let idx = vpn_index(va, target_level);
-        Ok(table.entry_ptr(idx))
+        Ok((paddr, idx))
     }
 
     /// 映射单个虚拟页到物理帧（Level 0，4KB）。
@@ -118,7 +149,8 @@ impl<F: NodeFrameOps> PageTable<F> {
     ///
     /// # Errors
     ///
-    /// 该 VA 已被映射时返回 `MapFailed`。
+    /// - 该 VA 已被映射时返回 `AlreadyMapped`。
+    /// - walk 路径上遇到大页时返回 `HugePageConflict`。
     pub fn map_at_level(
         &mut self,
         va: VirtAddr,
@@ -126,15 +158,16 @@ impl<F: NodeFrameOps> PageTable<F> {
         flags: PteFlags,
         level: usize,
     ) -> Result<(), PageTableError> {
-        let pte_ptr = self.walk_create(va, level)?;
-        // SAFETY: walk_create 返回的指针指向 self 持有的帧内存
-        let current = unsafe { pte_ptr.read() };
+        let (frame_paddr, idx) = self.walk_create(va, level)?;
+        // SAFETY: frame_paddr 指向由 self 持有的有效帧
+        let mut table = unsafe { table_at(frame_paddr) };
+        let current = table.read(idx);
         if current.is_valid() {
-            return Err(PageTableError::MapFailed);
+            return Err(PageTableError::AlreadyMapped);
         }
         let leaf_flags = flags.for_leaf_at_level(level);
-        // SAFETY: pte_ptr 指向 self 持有的帧内存，上方已检查无冲突映射
-        unsafe { pte_ptr.write(PageTableEntry::new(pa, leaf_flags)) };
+        table.write(idx, PageTableEntry::new(pa, leaf_flags));
+        self.inc_ref(frame_paddr);
         Ok(())
     }
 
@@ -149,11 +182,8 @@ impl<F: NodeFrameOps> PageTable<F> {
 
     /// 在指定层级取消映射，返回原始物理地址。
     ///
-    /// unmap 后自动检查中间页表节点是否全空并回收。
-    ///
-    /// **注意**：当前不支持大页分裂（transparent huge page splitting）——
-    /// 不能 unmap 大页的一部分。如需部分 unmap，须先手动将大页分裂为小页。
-    /// 此限制在引入 THP 支持前保持不变。
+    /// unmap 后通过引用计数判断中间页表节点是否全空并回收，
+    /// 避免遍历整个页表帧的 O(entries_per_table) 开销。
     ///
     /// # Errors
     ///
@@ -194,20 +224,23 @@ impl<F: NodeFrameOps> PageTable<F> {
         }
         let old_pa = pte.paddr();
         table.write(idx, PageTableEntry::empty());
+        self.dec_ref(paddr);
 
-        let entries_per_table = Level0::ENTRIES;
         let mut child_paddr = paddr;
         for &(parent_paddr, parent_idx, _) in path[..path_len].iter().rev() {
-            // SAFETY: child_paddr 指向由 self 持有的有效帧
-            let child_table = unsafe { table_at(child_paddr) };
-            let all_empty = (0..entries_per_table).all(|j| !child_table.read(j).is_valid());
-            if !all_empty {
+            let count = *self
+                .ref_counts
+                .get(&child_paddr)
+                .expect("ref_counts: 帧未注册");
+            if count > 0 {
                 break;
             }
             // SAFETY: parent_paddr 指向由 self 持有的有效帧
             let mut parent_table = unsafe { table_at(parent_paddr) };
             parent_table.write(parent_idx, PageTableEntry::empty());
             self.frames.remove(&child_paddr);
+            self.ref_counts.remove(&child_paddr);
+            self.dec_ref(parent_paddr);
             child_paddr = parent_paddr;
         }
 
@@ -254,11 +287,11 @@ impl<F: NodeFrameOps> PageTable<F> {
     /// 将 `[start, end)` 物理地址区间 identity-map（VA == PA）。
     ///
     /// 自动使用最大可用页大小（1GB / 2MB / 4KB）。
+    /// 失败时自动回滚已建立的映射，保证事务性。
     ///
     /// # Errors
     ///
-    /// 映射冲突或 `start >= end` 时返回 `MapFailed`。
-    /// 失败时已建立的部分映射**不会回滚**——调用方应 panic 或处理不一致状态。
+    /// 映射冲突或 `start >= end` 时返回错误。
     pub fn identity_map_range(
         &mut self,
         start: PhysAddr,
@@ -269,26 +302,36 @@ impl<F: NodeFrameOps> PageTable<F> {
         let end_aligned = end.align_up();
 
         if addr.as_usize() >= end_aligned.as_usize() {
-            return Err(PageTableError::MapFailed);
+            return Err(PageTableError::InvalidRange);
         }
 
+        // 第一阶段：收集所有 (va, pa, level) 映射
+        let mut mappings: Vec<(VirtAddr, PhysAddr, usize)> = Vec::new();
         while addr.as_usize() < end_aligned.as_usize() {
             let remaining = end_aligned.as_usize() - addr.as_usize();
             let va = VirtAddr::new(addr.as_usize());
 
-            let mut mapped = false;
+            let mut selected_level = 0;
+            let mut selected_size = config::PAGE_SIZE;
             for level in (1..PT_LEVELS).rev() {
                 let page_size = crate::page_size_at_level(level);
                 if addr.as_usize().is_multiple_of(page_size) && remaining >= page_size {
-                    self.map_at_level(va, addr, flags, level)?;
-                    addr += page_size;
-                    mapped = true;
+                    selected_level = level;
+                    selected_size = page_size;
                     break;
                 }
             }
-            if !mapped {
-                self.map_page(va, addr, flags)?;
-                addr += config::PAGE_SIZE;
+            mappings.push((va, addr, selected_level));
+            addr += selected_size;
+        }
+
+        // 第二阶段：逐个映射，失败时回滚
+        for (i, &(va, pa, level)) in mappings.iter().enumerate() {
+            if let Err(e) = self.map_at_level(va, pa, flags, level) {
+                for &(va, _, level) in mappings[..i].iter().rev() {
+                    let _ = self.unmap_at_level(va, level);
+                }
+                return Err(e);
             }
         }
         Ok(())

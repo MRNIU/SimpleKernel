@@ -7,7 +7,7 @@
 
 use bitflags::bitflags;
 
-use super::{PageTableEntry, PteFlagsOps, PteOps};
+use crate::{PageTableEntry, PteFlagsOps, PteOps};
 use address::PhysAddr;
 
 const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
@@ -73,6 +73,8 @@ impl PteFlagsOps for PteFlags {
     ///
     /// RISC-V 没有页表级缓存属性控制（由 PMA/Svpbmt 扩展管理），
     /// 当前与 `kernel_rw()` 相同。
+    // TODO(svpbmt): 当平台支持 Svpbmt 扩展时，需使用 PBMT 位设置
+    // NC（Non-Cacheable）或 IO 属性，避免 MMIO 区域被 CPU 缓存。
     #[inline]
     fn kernel_device() -> Self {
         Self::kernel_rw()

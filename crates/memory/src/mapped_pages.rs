@@ -444,7 +444,7 @@ mod tests {
         let err = pt
             .identity_map_range(pa, pa, PteFlags::kernel_rw())
             .expect_err("start == end 应失败");
-        assert_eq!(err, crate::page_table::PageTableError::MapFailed);
+        assert_eq!(err, crate::page_table::PageTableError::InvalidRange);
     }
 
     /// as_type 应返回映射区域内正确偏移处的引用。

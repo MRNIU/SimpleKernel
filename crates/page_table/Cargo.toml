@@ -9,12 +9,12 @@ edition.workspace = true
 
 [features]
 ## 测试时使用 AArch64 PTE 编码（默认使用 RISC-V）。
-test-aarch64 = []
+test-aarch64 = ["page_table_entry/test-aarch64"]
 ## 导出 HeapNodeFrame 供下游 crate 测试使用。
 test-support = []
 
 [dependencies]
 config = { path = "../config" }
 address = { path = "../address" }
-bitflags = "2"
+page_table_entry = { path = "../page_table_entry" }
 log = { version = "0.4", default-features = false }

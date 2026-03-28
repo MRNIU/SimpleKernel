@@ -15,7 +15,7 @@
 
 use bitflags::bitflags;
 
-use super::{PageTableEntry, PteFlagsOps, PteOps};
+use crate::{PageTableEntry, PteFlagsOps, PteOps};
 use address::PhysAddr;
 
 const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
@@ -130,7 +130,7 @@ impl PteFlagsOps for PteFlags {
             self
         } else {
             // Block descriptor：清除 TABLE 位
-            Self::from_bits_truncate(self.bits() & !Self::TABLE.bits())
+            self.difference(Self::TABLE)
         }
     }
 
