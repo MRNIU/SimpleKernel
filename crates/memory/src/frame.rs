@@ -3,8 +3,7 @@ use crate::error::MemoryError;
 use config::PAGE_SIZE;
 use sync_crate::SpinLock;
 
-/// Global frame allocator — wraps buddy_system_allocator::FrameAllocator.
-/// Operates in units of page frames (PAGE_SIZE bytes each).
+/// 全局帧分配器，以页帧（PAGE_SIZE 字节）为单位管理物理内存。
 static FRAME_ALLOCATOR: SpinLock<FrameAllocatorInner> =
     SpinLock::new(FrameAllocatorInner::new(), "frame_alloc");
 
@@ -22,14 +21,12 @@ impl FrameAllocatorInner {
     }
 }
 
-/// Initialize the frame allocator with available physical memory.
+/// 初始化帧分配器，将 `[start, start+size)` 区域加入可分配池。
 ///
-/// `start` must be page-aligned. The region `[start, start+size)` becomes
-/// available for frame allocation.
+/// `start` 必须页对齐。
 ///
 /// # Safety
-/// The memory region must be valid, not overlap with kernel/heap, and
-/// this must be called exactly once.
+/// 该内存区域必须有效、不与内核/堆重叠，且仅调用一次。
 pub unsafe fn init(start: PhysAddr, size: usize) {
     let mut alloc = FRAME_ALLOCATOR.lock();
     assert!(!alloc.initialized, "frame::init called twice");
@@ -53,14 +50,13 @@ pub unsafe fn init(start: PhysAddr, size: usize) {
     );
 }
 
-/// Physical frame RAII guard — automatically returns frame to allocator on Drop.
-/// Eliminates "forgot to free_frame" physical memory leaks (rCore pattern).
+/// 物理帧 RAII 守卫——drop 时自动归还帧到分配器。
 pub struct FrameTracker {
     paddr: PhysAddr,
 }
 
 impl FrameTracker {
-    /// Allocate a single physical frame (PAGE_SIZE bytes), zeroed.
+    /// 分配一个物理帧（PAGE_SIZE 字节），内容清零。
     pub fn alloc() -> Result<Self, MemoryError> {
         let mut alloc = FRAME_ALLOCATOR.lock();
         if !alloc.initialized {
@@ -79,6 +75,7 @@ impl FrameTracker {
         Ok(Self { paddr })
     }
 
+    /// 返回该帧的物理地址。
     pub fn paddr(&self) -> PhysAddr {
         self.paddr
     }

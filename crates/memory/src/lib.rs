@@ -17,8 +17,9 @@ pub mod tlb;
 
 #[cfg(target_os = "none")]
 pub mod frame;
-/// 堆分配器——使用 `target_os = "none"` 门控：
-/// `#[global_allocator]` 在宿主机上会与系统分配器冲突。
+/// 堆分配器。
+///
+/// `#[global_allocator]` 在宿主机上会与系统分配器冲突，因此门控为裸机专用。
 #[cfg(target_os = "none")]
 pub mod heap;
 
@@ -52,16 +53,23 @@ pub static MEMORY_INFO: spin::Once<MemoryInfo> = spin::Once::new();
 #[cfg(target_os = "none")]
 static KERNEL_PAGE_TABLE: spin::Once<SpinLock<PageTable>> = spin::Once::new();
 
+/// 物理地址转虚拟地址（当前为 identity mapping，直接透传）。
 #[cfg(target_os = "none")]
 pub fn phys_to_virt(pa: PhysAddr) -> VirtAddr {
     VirtAddr::new(pa.as_usize())
 }
 
+/// 虚拟地址转物理地址（当前为 identity mapping，直接透传）。
 #[cfg(target_os = "none")]
 pub fn virt_to_phys(va: VirtAddr) -> PhysAddr {
     PhysAddr::new(va.as_usize())
 }
 
+/// 将 `[start, end)` 物理地址区间 identity-map 到页表中。
+///
+/// # Errors
+///
+/// 映射冲突时返回错误。
 #[cfg(target_os = "none")]
 pub fn identity_map_range(
     pt: &mut PageTable,
@@ -103,13 +111,9 @@ pub fn init() -> PageTable {
     }
     let text_end = PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up();
 
-    // W^X 分段映射：
-    // [mem_start, text_end) → RWX（包含 .boot 段的混合 code+data，无法拆分）
+    // 分段映射：
+    // [mem_start, text_end) → RWX（.boot 段混合了 code+data，无法拆分为 RX/RW）
     // [text_end, mem_end)   → RW（.rodata + .data + .bss + 空闲内存）
-    //
-    // 注意：链接脚本的 .boot 段混合了 .text.boot / .data.boot / .bss.boot，
-    // 位于 __etext 之前。如果映射为纯 RX，写 .data.boot 会触发 store page fault。
-    // 因此 __etext 之前的区域保留 X 权限。
     identity_map_range(&mut pt, mem_start, text_end, PageFlags::kernel_rwx())
         .expect("failed to map kernel code region");
     identity_map_range(
@@ -131,6 +135,7 @@ pub fn init() -> PageTable {
     pt
 }
 
+/// 将构建完成的内核页表存入全局 `KERNEL_PAGE_TABLE`。
 #[cfg(target_os = "none")]
 pub fn store_kernel_page_table(pt: PageTable) {
     KERNEL_PAGE_TABLE.call_once(|| SpinLock::new(pt, "kernel_pt"));
@@ -149,6 +154,7 @@ pub fn init_smp(activate: impl FnOnce(&PageTable)) {
     );
 }
 
+/// 获取全局内核页表的引用；初始化前返回 `None`。
 #[cfg(target_os = "none")]
 pub fn kernel_page_table() -> Option<&'static SpinLock<PageTable>> {
     KERNEL_PAGE_TABLE.get()

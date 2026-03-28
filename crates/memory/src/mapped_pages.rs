@@ -233,7 +233,6 @@ impl Drop for MappedPages {
                 crate::tlb::flush_tlb();
             }
         }
-        // frames 在此处 drop，物理帧归还分配器
     }
 }
 
