@@ -1,4 +1,4 @@
-//! 连续地址范围 [`AddrRange<A>`]——支持包含判断、重叠检测和大小计算。
+//! 连续地址范围 [`AddrRange<A>`]——支持包含判断、重叠检测、分割、合并和迭代。
 
 use core::ops::Sub;
 
@@ -230,5 +230,45 @@ mod tests {
         assert_eq!(pages.len(), 3);
         assert_eq!(pages[0], PhysPageNum::new(10));
         assert_eq!(pages[2], PhysPageNum::new(12));
+    }
+
+    /// 空范围迭代应产生 0 个元素。
+    #[test]
+    fn iter_empty() {
+        use crate::PhysPageNum;
+        let r = AddrRange::new(PhysPageNum::new(5), PhysPageNum::new(5));
+        assert_eq!(r.iter().count(), 0);
+    }
+
+    /// split_at 越界应 panic。
+    #[test]
+    #[should_panic(expected = "mid out of range")]
+    fn split_at_out_of_range() {
+        use crate::PhysPageNum;
+        let r = AddrRange::new(PhysPageNum::new(2), PhysPageNum::new(4));
+        let _ = r.split_at(PhysPageNum::new(5));
+    }
+
+    /// merge 反序（b 在 a 前面）也能合并。
+    #[test]
+    fn merge_reversed_order() {
+        use crate::PhysPageNum;
+        let a = AddrRange::new(PhysPageNum::new(3), PhysPageNum::new(5));
+        let b = AddrRange::new(PhysPageNum::new(0), PhysPageNum::new(3));
+        let merged = a.merge(b).expect("反序也应能合并");
+        assert_eq!(merged.start(), PhysPageNum::new(0));
+        assert_eq!(merged.end(), PhysPageNum::new(5));
+    }
+
+    /// contiguous_with 判断首尾相接。
+    #[test]
+    fn contiguous_with_check() {
+        use crate::PhysPageNum;
+        let a = AddrRange::new(PhysPageNum::new(0), PhysPageNum::new(3));
+        let b = AddrRange::new(PhysPageNum::new(3), PhysPageNum::new(5));
+        let c = AddrRange::new(PhysPageNum::new(4), PhysPageNum::new(6));
+        assert!(a.contiguous_with(b));
+        assert!(!a.contiguous_with(c));
+        assert!(!b.contiguous_with(a));
     }
 }

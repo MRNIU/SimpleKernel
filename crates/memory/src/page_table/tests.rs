@@ -24,15 +24,19 @@ fn level_shifts_are_chained() {
     assert_eq!(Level4::SHIFT, Level3::SHIFT + Level3::INDEX_BITS);
 }
 
-/// 验证 LEVEL_INFO 查表与 PageLevel trait 常量一致。
+/// 验证 LEVEL_INFO 查表与 PageLevel trait 常量一致（shift 和 index_mask）。
 #[test]
 fn level_info_matches_trait() {
     assert_eq!(LEVEL_INFO[0].shift, Level0::SHIFT);
     assert_eq!(LEVEL_INFO[0].index_mask, Level0::INDEX_MASK);
     assert_eq!(LEVEL_INFO[1].shift, Level1::SHIFT);
+    assert_eq!(LEVEL_INFO[1].index_mask, Level1::INDEX_MASK);
     assert_eq!(LEVEL_INFO[2].shift, Level2::SHIFT);
+    assert_eq!(LEVEL_INFO[2].index_mask, Level2::INDEX_MASK);
     assert_eq!(LEVEL_INFO[3].shift, Level3::SHIFT);
+    assert_eq!(LEVEL_INFO[3].index_mask, Level3::INDEX_MASK);
     assert_eq!(LEVEL_INFO[4].shift, Level4::SHIFT);
+    assert_eq!(LEVEL_INFO[4].index_mask, Level4::INDEX_MASK);
 }
 
 /// vpn_index 应正确提取各级索引。
@@ -258,4 +262,37 @@ fn get_mapping_on_empty_table() {
     let pt = PageTable::create().expect("创建测试页表失败");
     assert!(pt.get_mapping(VirtAddr::new(0x1000)).is_none());
     assert!(pt.get_mapping(VirtAddr::new(0)).is_none());
+}
+
+/// 中间节点 PTE 应标记为 valid 但非 leaf。
+#[test]
+fn intermediate_pte_roundtrip() {
+    let pa = PhysAddr::new(0x8020_0000);
+    let pte = PageTableEntry::new_intermediate(pa);
+    assert!(pte.is_valid());
+    assert!(!pte.is_leaf());
+    assert_eq!(pte.paddr(), pa);
+}
+
+/// 中间节点存在但叶 PTE 为空时，unmap 应返回 PageNotMapped。
+///
+/// 与 `unmap_unmapped_page_fails`（完全空表）走不同的 find_pte_mut 路径：
+/// 前者在中间层级即返回 None，本测试在叶级发现 PTE 无效。
+#[test]
+fn unmap_empty_leaf_with_existing_intermediate() {
+    let mut pt = PageTable::create().expect("创建测试页表失败");
+
+    // 先映射再 unmap，留下中间节点但叶 PTE 为空
+    let va = VirtAddr::new(0x1000);
+    let pa = PhysAddr::new(0x8020_0000);
+    pt.map_page(va, pa, PageFlags::kernel_rw())
+        .expect("map 应成功");
+    pt.unmap_page(va).expect("unmap 应成功");
+
+    // 同一 VPN 路径下的不同叶 PTE（共享中间节点）
+    let va_same_path = VirtAddr::new(0x2000);
+    let err = pt
+        .unmap_page(va_same_path)
+        .expect_err("叶 PTE 为空，应返回 PageNotMapped");
+    assert_eq!(err, MemoryError::PageNotMapped);
 }
