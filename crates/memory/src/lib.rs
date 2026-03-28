@@ -8,9 +8,6 @@
 #[cfg(any(test, target_os = "none"))]
 extern crate alloc;
 
-/// 地址转换与映射工具。
-#[cfg(any(test, target_os = "none"))]
-pub mod addr_conv;
 /// 错误类型。
 pub mod error;
 /// 物理帧分配器与帧生命周期状态机。
@@ -53,7 +50,7 @@ pub use globals::{
 pub use mmio::map_mmio;
 
 #[cfg(any(test, target_os = "none"))]
-pub use addr_conv::{phys_to_virt, virt_to_phys};
+pub use address::{phys_to_virt, virt_to_phys};
 
 #[cfg(target_os = "none")]
 pub use init::{init, init_smp};

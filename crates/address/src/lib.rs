@@ -4,6 +4,8 @@
 //! - [`PhysAddr`] / [`VirtAddr`]——字节粒度地址，附带对齐辅助方法
 //! - [`PhysPageNum`] / [`VirtPageNum`]——页粒度索引，与地址双向转换
 //! - [`AddrRange<A>`]——半开区间 `[start, end)`，支持包含/重叠判断
+//!
+//! 以及物理-虚拟地址转换函数 [`phys_to_virt`] / [`virt_to_phys`]。
 
 #![cfg_attr(not(test), no_std)]
 
@@ -11,7 +13,7 @@ mod addr;
 mod page_num;
 mod range;
 
-pub use addr::{PhysAddr, VirtAddr};
+pub use addr::{PhysAddr, VirtAddr, phys_to_virt, virt_to_phys};
 pub use page_num::{PhysPageNum, VirtPageNum};
 pub use range::{AddrRange, AddrRangeIter};
 

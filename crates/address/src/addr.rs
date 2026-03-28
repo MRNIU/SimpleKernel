@@ -2,7 +2,7 @@
 
 use core::fmt;
 
-use config::PAGE_SIZE;
+use config::{PAGE_SIZE, PHYS_OFFSET};
 
 /// 为地址 newtype 生成对齐辅助方法和 `Display`。
 ///
@@ -128,6 +128,24 @@ impl<T> From<*mut T> for VirtAddr {
     fn from(p: *mut T) -> Self {
         Self(p as usize)
     }
+}
+
+/// 物理地址转虚拟地址。
+///
+/// 偏移量由 [`PHYS_OFFSET`] 控制，切换到 higher-half kernel 时
+/// 修改该常量即可。
+#[inline]
+pub fn phys_to_virt(pa: PhysAddr) -> VirtAddr {
+    VirtAddr::new(pa.as_usize().wrapping_add(PHYS_OFFSET))
+}
+
+/// 虚拟地址转物理地址。
+///
+/// 偏移量由 [`PHYS_OFFSET`] 控制，切换到 higher-half kernel 时
+/// 修改该常量即可。
+#[inline]
+pub fn virt_to_phys(va: VirtAddr) -> PhysAddr {
+    PhysAddr::new(va.as_usize().wrapping_sub(PHYS_OFFSET))
 }
 
 #[cfg(test)]
@@ -265,5 +283,23 @@ mod tests {
         let val: u64 = 0;
         let addr = VirtAddr::from(&val as *const u64);
         assert_eq!(addr.as_usize(), &val as *const u64 as usize);
+    }
+
+    /// phys_to_virt / virt_to_phys 互逆：任意物理地址经往返转换后应恢复原值。
+    #[test]
+    fn phys_virt_roundtrip() {
+        let pa = PhysAddr::new(0x8020_0000);
+        let va = phys_to_virt(pa);
+        assert_eq!(va.as_usize(), pa.as_usize().wrapping_add(PHYS_OFFSET));
+        assert_eq!(virt_to_phys(va), pa);
+    }
+
+    /// 零地址的物理-虚拟转换。
+    #[test]
+    fn phys_virt_zero() {
+        let pa = PhysAddr::new(0);
+        let va = phys_to_virt(pa);
+        assert_eq!(va.as_usize(), PHYS_OFFSET);
+        assert_eq!(virt_to_phys(va), pa);
     }
 }
