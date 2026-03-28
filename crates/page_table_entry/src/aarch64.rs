@@ -12,6 +12,9 @@
 //! - bits [47:12]/[47:14]/[47:16]：Output Address（随 granule 变化）
 //! - bit [53]：PXN
 //! - bit [54]：UXN/XN
+//!
+//! 参考文档：
+//! - [Arm ARM §D8.3 — VMSAv8-64 translation table descriptor formats](https://developer.arm.com/documentation/ddi0487/latest)
 
 use bitflags::bitflags;
 

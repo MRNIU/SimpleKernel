@@ -4,6 +4,9 @@
 //! - bits [9:0]：flags（V/R/W/X/U/G/A/D + RSW）
 //! - bits [53:10]：PPN（物理页号）
 //! - bits [63:54]：保留
+//!
+//! 参考文档：
+//! - [RISC-V Privileged Spec §5.4 — Sv39/Sv48/Sv57 Page Table Entry](https://github.com/riscv/riscv-isa-manual/releases)
 
 use bitflags::bitflags;
 
