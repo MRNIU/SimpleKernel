@@ -9,18 +9,14 @@ use core::marker::PhantomData;
 
 #[cfg(all(not(test), target_arch = "aarch64"))]
 mod pte_aarch64;
-#[cfg(all(not(test), target_arch = "riscv64"))]
+#[cfg(any(test, target_arch = "riscv64"))]
 mod pte_riscv64;
-#[cfg(test)]
-mod pte_test;
 
-#[cfg(target_os = "none")]
+#[cfg(any(test, target_os = "none"))]
 mod table;
 #[cfg(target_os = "none")]
 pub use table::PageTable;
 
-#[cfg(test)]
-mod test_table;
 #[cfg(test)]
 mod tests;
 

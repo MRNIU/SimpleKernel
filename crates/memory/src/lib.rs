@@ -6,7 +6,10 @@
 #[cfg(target_os = "none")]
 extern crate alloc;
 
-pub mod address;
+pub mod address {
+    //! Re-export from `address` crate.
+    pub use address::*;
+}
 pub mod error;
 #[cfg(target_os = "none")]
 pub mod mapped_pages;
@@ -103,7 +106,7 @@ pub fn init() -> PageTable {
 
     unsafe { frame::init(alloc_start, alloc_size) };
 
-    let mut pt = PageTable::new().expect("failed to create kernel page table");
+    let mut pt = PageTable::create().expect("failed to create kernel page table");
 
     // SAFETY: 链接器定义的符号
     unsafe extern "C" {
@@ -141,6 +144,7 @@ pub fn store_kernel_page_table(pt: PageTable) {
     KERNEL_PAGE_TABLE.call_once(|| SpinLock::new(pt, "kernel_pt"));
 }
 
+/// 从核内存初始化——复用主核页表并激活分页。
 #[cfg(target_os = "none")]
 pub fn init_smp(activate: impl FnOnce(&PageTable)) {
     let kpt = KERNEL_PAGE_TABLE
@@ -160,6 +164,11 @@ pub fn kernel_page_table() -> Option<&'static SpinLock<PageTable>> {
     KERNEL_PAGE_TABLE.get()
 }
 
+/// 将 MMIO 物理地址区间 identity-map 到内核页表，返回对应虚拟地址。
+///
+/// # Errors
+///
+/// 内核页表未初始化或映射冲突时返回错误。
 #[cfg(target_os = "none")]
 pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, crate::error::MemoryError> {
     let kpt = KERNEL_PAGE_TABLE

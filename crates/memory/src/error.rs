@@ -1,3 +1,5 @@
+//! 内存子系统错误定义。
+
 use core::fmt;
 
 /// 内存子系统错误类型。
@@ -15,7 +17,6 @@ pub enum MemoryError {
     InvalidPageTable,
 }
 
-// TODO: Display 当前委托给 Debug，未来可改为有意义的中文消息。
 impl fmt::Display for MemoryError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(self, f)

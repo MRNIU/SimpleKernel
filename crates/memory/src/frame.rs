@@ -1,8 +1,7 @@
-// TODO: 待 adt_const_params 稳定后，迁移为 const generic enum 方案：
-//   enum MemoryState { Free, Allocated, Mapped }
-//   struct Frames<const S: MemoryState> { ... }
-// 当前 nightly (2026-03-24) 的 adt_const_params 与分状态 Drop impl 存在
-// 循环依赖 ICE，因此使用 sealed trait + PhantomData 作为等价替代。
+//! 物理帧分配器 + typestate 生命周期追踪。
+//!
+//! 帧状态通过 sealed trait 的关联常量实现按状态 Drop 分派。
+//! 待 `adt_const_params` 稳定后可迁移为 `Frames<const S: MemoryState>`。
 
 use crate::address::PhysAddr;
 use crate::error::MemoryError;
@@ -14,6 +13,7 @@ use sync_crate::SpinLock;
 static FRAME_ALLOCATOR: SpinLock<FrameAllocatorInner> =
     SpinLock::new(FrameAllocatorInner::new(), "frame_alloc");
 
+/// 帧分配器内部状态。
 struct FrameAllocatorInner {
     allocator: buddy_system_allocator::FrameAllocator<32>,
     initialized: bool,
@@ -84,9 +84,7 @@ impl FrameState for Allocated {
 pub struct Mapped;
 impl sealed::Sealed for Mapped {}
 impl FrameState for Mapped {
-    // release 兜底释放，避免泄漏
     const DEALLOC_ON_DROP: bool = true;
-    // debug 构建 panic 报告 bug
     const PANIC_ON_DROP: bool = true;
 }
 

@@ -224,7 +224,7 @@ impl MappedPages {
         unsafe { &mut *addr }
     }
 
-    /// 从内核页表中 unmap 所有页并刷新 TLB（Drop 和 into_permanent 的共享逻辑）。
+    /// 从内核页表中 unmap 所有页并刷新 TLB。
     fn unmap_ptes(&self) {
         if let Some(kpt) = crate::kernel_page_table() {
             let mut guard = kpt.lock();
