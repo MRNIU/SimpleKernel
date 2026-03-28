@@ -2,9 +2,6 @@ use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut};
 use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
-#[cfg(not(test))]
-use per_cpu::lock_stack::LockStackEntry;
-
 use crate::interrupt_ops::HeldInterrupts;
 
 /// 用于强制获取顺序的锁级别常量。
@@ -19,8 +16,6 @@ pub mod lock_level {
 }
 
 const NO_OWNER: usize = usize::MAX;
-
-// ─── 底层自旋原语 ──────────────────────────────────────────────────────
 
 /// 原始自旋锁——基于 AtomicBool 的 TTAS（test-and-test-and-set）算法。
 ///
@@ -98,8 +93,6 @@ impl RawSpinLock {
         panic!("FATAL: SpinLock '{}': {}", name, reason);
     }
 }
-
-// ─── SpinLock<T>（不关中断）──────────────────────────────────────────
 
 /// 自旋锁——不操作中断。
 ///
@@ -184,8 +177,6 @@ impl<T> Drop for SpinLockGuard<'_, T> {
         self.lock.raw.release();
     }
 }
-
-// ─── SpinLockIrq<T>（关中断）────────────────────────────────────────
 
 /// 中断安全的自旋锁——获取时禁用中断，释放时恢复。
 ///
@@ -315,16 +306,10 @@ impl<T> SpinLockIrq<T> {
 
     #[cfg(not(test))]
     fn check_lock_order(&self) {
-        if self.level == lock_level::UNCLASSIFIED {
-            return;
-        }
         // SAFETY: 中断已禁用，无同核心并发访问
         let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
-        if stack.depth > 0 {
-            let top = stack.entries[stack.depth - 1].level;
-            if top != lock_level::UNCLASSIFIED && self.level <= top {
-                RawSpinLock::fatal(self.raw.name, "lock order violation");
-            }
+        if !stack.check_order(self.level, lock_level::UNCLASSIFIED) {
+            RawSpinLock::fatal(self.raw.name, "lock order violation");
         }
     }
 
@@ -332,33 +317,14 @@ impl<T> SpinLockIrq<T> {
     fn push_lock_stack(&self) {
         // SAFETY: 中断已禁用
         let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
-        if stack.depth >= per_cpu::lock_stack::LockStack::MAX_DEPTH {
-            panic!(
-                "SpinLock '{}': lock stack overflow (depth={})",
-                self.raw.name, stack.depth
-            );
-        }
-        stack.entries[stack.depth] = LockStackEntry {
-            lock_ptr: self as *const Self as *const (),
-            level: self.level,
-        };
-        stack.depth += 1;
+        stack.push(self as *const Self as *const (), self.level);
     }
 
     #[cfg(not(test))]
     fn pop_lock_stack(&self) {
         // SAFETY: 中断已禁用
         let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
-        if stack.depth == 0 {
-            panic!("SpinLock '{}': lock stack underflow", self.raw.name);
-        }
-        if stack.entries[stack.depth - 1].lock_ptr != (self as *const Self as *const ()) {
-            panic!(
-                "SpinLock '{}': lock stack corrupted — 释放顺序与获取顺序不一致",
-                self.raw.name
-            );
-        }
-        stack.depth -= 1;
+        stack.pop(self as *const Self as *const ());
     }
 }
 
@@ -396,14 +362,11 @@ impl<T> Drop for SpinLockIrqGuard<'_, T> {
     }
 }
 
-// ─── 测试 ──────────────────────────────────────────────────────────────
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // ── SpinLock（不关中断）──────────────────────────────
-
+    /// 基本的加锁/解锁流程
     #[test]
     fn lock_and_unlock() {
         let lock = SpinLock::new(42u32, "test");
@@ -414,6 +377,7 @@ mod tests {
         assert!(!lock.is_locked());
     }
 
+    /// guard 提供可变访问
     #[test]
     fn guard_provides_mutable_access() {
         let lock = SpinLock::new(0u32, "test_mut");
@@ -425,6 +389,7 @@ mod tests {
         assert_eq!(*guard, 99);
     }
 
+    /// try_lock 在锁空闲时成功
     #[test]
     fn try_lock_succeeds_when_free() {
         let lock = SpinLock::new(7u32, "try_lock_test");
@@ -433,6 +398,7 @@ mod tests {
         assert_eq!(*guard.expect("lock should succeed"), 7);
     }
 
+    /// try_lock 在锁已持有时失败
     #[test]
     fn try_lock_fails_when_held() {
         let lock = SpinLock::new(0u32, "try_lock_held");
@@ -441,6 +407,7 @@ mod tests {
         assert!(second.is_none());
     }
 
+    /// guard 析构时自动释放锁
     #[test]
     fn guard_drop_releases_lock() {
         let lock = SpinLock::new(0u32, "drop_test");
@@ -451,6 +418,7 @@ mod tests {
         assert!(!lock.is_locked());
     }
 
+    /// 多线程并发自增验证互斥正确性
     #[test]
     fn concurrent_access() {
         use std::sync::Arc;
@@ -477,8 +445,7 @@ mod tests {
         assert_eq!(*g, 4000, "并发计数器最终值应为 4000");
     }
 
-    // ── SpinLockIrq（关中断）────────────────────────────
-
+    /// SpinLockIrq 基本加锁/解锁流程
     #[test]
     fn irq_lock_and_unlock() {
         let lock = SpinLockIrq::new(42u32, "irq_test");
@@ -489,12 +456,14 @@ mod tests {
         assert!(!lock.is_locked());
     }
 
+    /// SpinLockIrq try_lock 成功
     #[test]
     fn irq_try_lock() {
         let lock = SpinLockIrq::new(0u32, "irq_try");
         assert!(lock.try_lock().is_some());
     }
 
+    /// SpinLockIrq try_lock 在锁已持有时失败
     #[test]
     fn irq_try_lock_fails_when_held() {
         let lock = SpinLockIrq::new(0u32, "irq_try_held");
@@ -502,6 +471,7 @@ mod tests {
         assert!(lock.try_lock().is_none());
     }
 
+    /// 带锁级别的 SpinLockIrq 构造
     #[test]
     fn irq_new_with_level() {
         let lock = SpinLockIrq::new_with_level(0u32, "leveled", lock_level::SCHED_LOCK);
@@ -509,6 +479,7 @@ mod tests {
         assert!(lock.is_locked());
     }
 
+    /// SpinLockIrq 多线程并发访问
     #[test]
     fn irq_concurrent_access() {
         use std::sync::Arc;
@@ -535,8 +506,7 @@ mod tests {
         assert_eq!(g.len(), 400, "应有 4×100=400 个元素");
     }
 
-    // ── try_lock_raw_no_irq ────────────────────────────
-
+    /// 裸锁获取/释放配对
     #[test]
     fn try_lock_raw_no_irq_and_unlock() {
         let lock = SpinLockIrq::new((), "raw_no_irq_test");
@@ -546,6 +516,7 @@ mod tests {
         assert!(!lock.is_locked());
     }
 
+    /// 裸锁在锁已持有时获取失败
     #[test]
     fn try_lock_raw_no_irq_fails_when_held() {
         let lock = SpinLockIrq::new((), "raw_no_irq_fail");
@@ -553,8 +524,7 @@ mod tests {
         assert!(!unsafe { lock.try_lock_raw_no_irq() });
     }
 
-    // ── 递归检测 ────────────────────────────────────────
-
+    /// SpinLock 递归加锁应 panic
     #[test]
     #[should_panic(expected = "recursive lock")]
     fn recursive_lock_panics() {
@@ -563,6 +533,7 @@ mod tests {
         let _g2 = lock.lock();
     }
 
+    /// SpinLockIrq 递归加锁应 panic
     #[test]
     #[should_panic(expected = "recursive lock")]
     fn irq_recursive_lock_panics() {
@@ -570,8 +541,6 @@ mod tests {
         let _g = lock.lock();
         let _g2 = lock.lock();
     }
-
-    // ── HeldInterrupts ──────────────────────────────────
 
     /// ```compile_fail
     /// use sync::HeldInterrupts;
@@ -585,6 +554,7 @@ mod tests {
         assert_eq!(core::mem::size_of::<HeldInterrupts>(), 1);
     }
 
+    /// HeldInterrupts hold 保存状态、drop 恢复
     #[test]
     fn held_interrupts_hold_and_drop() {
         let held = HeldInterrupts::hold();

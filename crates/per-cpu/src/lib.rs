@@ -1,4 +1,5 @@
 #![cfg_attr(not(test), no_std)]
+#![cfg_attr(target_os = "none", feature(sync_unsafe_cell))]
 //! Per-CPU 数据——通过 `#[cpu_local]` 分散声明，每核心独立副本。
 //!
 //! ## 原理
@@ -24,11 +25,13 @@ pub mod lock_stack;
 ///
 /// 与 `config::MAX_CORE_COUNT`（编译期上限）不同，此值为运行时实际核心数。
 pub static CORE_COUNT: spin::Once<usize> = spin::Once::new();
+
 #[cfg(target_os = "none")]
 unsafe extern "C" {
     static __percpu_start: u8;
     static __percpu_end: u8;
 }
+
 /// BSS 中为每个 CPU 预留的 per-CPU 区域。
 /// `percpu_init()` 将 `.percpu` 模板复制到每个槽位。
 #[cfg(target_os = "none")]
@@ -37,22 +40,31 @@ struct PerCpuArea {
     data: [u8; PERCPU_AREA_MAX],
 }
 
+// SAFETY: PerCpuArea 仅在 percpu_init()（单核、中断关闭）中写入，
+// 之后各核心只读自己的槽位，不存在数据竞争。
 #[cfg(target_os = "none")]
-static mut PERCPU_AREAS: [PerCpuArea; MAX_CORE_COUNT] = [const {
-    PerCpuArea {
-        data: [0u8; PERCPU_AREA_MAX],
-    }
-}; MAX_CORE_COUNT];
+unsafe impl Sync for PerCpuArea {}
+
+#[cfg(target_os = "none")]
+static PERCPU_AREAS: core::cell::SyncUnsafeCell<[PerCpuArea; MAX_CORE_COUNT]> =
+    core::cell::SyncUnsafeCell::new(
+        [const {
+            PerCpuArea {
+                data: [0u8; PERCPU_AREA_MAX],
+            }
+        }; MAX_CORE_COUNT],
+    );
 
 /// 每个 CPU 的 per-CPU 区域基地址，`percpu_init()` 填充。
 #[cfg(target_os = "none")]
-static mut PERCPU_BASES: [usize; MAX_CORE_COUNT] = [0; MAX_CORE_COUNT];
+static PERCPU_BASES: core::cell::SyncUnsafeCell<[usize; MAX_CORE_COUNT]> =
+    core::cell::SyncUnsafeCell::new([0; MAX_CORE_COUNT]);
 
 /// per-CPU 系统是否已初始化。
 /// `core_id()` 在初始化前回退到读原始寄存器。
 #[cfg(target_os = "none")]
-static PERCPU_INITIALIZED: core::sync::atomic::AtomicBool =
-    core::sync::atomic::AtomicBool::new(false);
+static PERCPU_INITIALIZED: AtomicBool = AtomicBool::new(false);
+
 /// 读取 TP（riscv64）或 TPIDR_EL1（aarch64）寄存器。
 #[cfg(target_os = "none")]
 #[inline(always)]
@@ -86,6 +98,7 @@ unsafe fn write_tp(val: usize) {
         core::arch::asm!("msr tpidr_el1, {}", in(reg) val);
     }
 }
+
 /// 主核 per-CPU 初始化——复制模板、设置每个 CPU 的基地址、设置 TP。
 ///
 /// 必须在任何 `#[cpu_local]` 访问之前调用（`logging::init()` 之后）。
@@ -99,18 +112,18 @@ pub unsafe fn percpu_init() {
     let template_size =
         unsafe { &__percpu_end as *const u8 as usize - &__percpu_start as *const u8 as usize };
 
-    // 大小检查由链接脚本 ASSERT 在链接期完成，无需运行时 assert
-
-    // 读取当前 hart_id（TP 在 boot.S 中被设为 hart_id）
     let my_core_id = raw_core_id();
+
+    // SAFETY: 单核调用，中断关闭，独占访问
+    let areas = unsafe { &mut *PERCPU_AREAS.get() };
+    let bases = unsafe { &mut *PERCPU_BASES.get() };
 
     // 复制模板到每个 CPU 的区域，并设置 CORE_ID
     for i in 0..MAX_CORE_COUNT {
-        let dest = unsafe { PERCPU_AREAS[i].data.as_mut_ptr() };
+        let dest = areas[i].data.as_mut_ptr();
         // SAFETY: 模板和目标不重叠，大小在范围内
         unsafe { core::ptr::copy_nonoverlapping(template, dest, template_size) };
-        // SAFETY: 写入正确索引
-        unsafe { PERCPU_BASES[i] = dest as usize };
+        bases[i] = dest as usize;
 
         // 将 CORE_ID 写入每个 CPU 的区域
         let core_id_offset =
@@ -120,10 +133,10 @@ pub unsafe fn percpu_init() {
     }
 
     // 设置当前核的 TP
-    // SAFETY: PERCPU_BASES 已正确初始化
-    unsafe { write_tp(PERCPU_BASES[my_core_id]) };
+    // SAFETY: bases 已正确初始化
+    unsafe { write_tp(bases[my_core_id]) };
 
-    PERCPU_INITIALIZED.store(true, core::sync::atomic::Ordering::Release);
+    PERCPU_INITIALIZED.store(true, Ordering::Release);
 }
 
 /// 从核 per-CPU 初始化——设置 TP 指向该核的 per-CPU 区域。
@@ -138,8 +151,10 @@ pub unsafe fn percpu_init() {
 pub unsafe fn percpu_init_smp() {
     let id = raw_core_id();
     // SAFETY: percpu_init() 已填充 PERCPU_BASES，id 来自硬件寄存器
-    unsafe { write_tp(PERCPU_BASES[id]) };
+    let bases = unsafe { &*PERCPU_BASES.get() };
+    unsafe { write_tp(bases[id]) };
 }
+
 /// 读取当前核心 ID。
 ///
 /// - 初始化后：从 per-CPU `CORE_ID` 变量读取（通过 TP）
@@ -149,7 +164,7 @@ pub unsafe fn percpu_init_smp() {
 pub fn current_core_id() -> usize {
     #[cfg(target_os = "none")]
     {
-        if PERCPU_INITIALIZED.load(core::sync::atomic::Ordering::Acquire) {
+        if PERCPU_INITIALIZED.load(Ordering::Acquire) {
             *CORE_ID.get()
         } else {
             raw_core_id()
@@ -197,9 +212,10 @@ fn host_core_id() -> usize {
     #[cfg(not(test))]
     {
         let _ = &COUNTER;
-        0 // clippy/check 占位
+        0
     }
 }
+
 /// Per-CPU 变量的包装器。
 ///
 /// 不直接持有数据——数据在 `.percpu` section 的模板中，
@@ -227,6 +243,13 @@ impl<T: Sync> CpuLocal<T> {
         Self { template_ptr: ptr }
     }
 
+    /// 计算当前变量在 per-CPU 区域内的偏移量。
+    #[cfg(target_os = "none")]
+    #[inline(always)]
+    fn offset(&self) -> usize {
+        self.template_ptr as usize - unsafe { &__percpu_start as *const u8 as usize }
+    }
+
     /// 获取当前 CPU 的变量的不可变引用。
     ///
     /// 对于 `AtomicBool` 等原子类型，无需关中断即可安全调用。
@@ -235,16 +258,13 @@ impl<T: Sync> CpuLocal<T> {
     pub fn get(&self) -> &T {
         #[cfg(target_os = "none")]
         {
-            let offset =
-                self.template_ptr as usize - unsafe { &__percpu_start as *const u8 as usize };
             let base = read_tp();
             // SAFETY: base 指向当前 CPU 的 per-CPU 区域，offset 在范围内
-            unsafe { &*((base + offset) as *const T) }
+            unsafe { &*((base + self.offset()) as *const T) }
         }
         #[cfg(not(target_os = "none"))]
         {
-            // 宿主机：模板指针直接指向 static 变量
-            // SAFETY: 指针由宏生成，指向合法 static
+            // SAFETY: 宿主机模板指针直接指向宏生成的 static 变量
             unsafe { &*self.template_ptr }
         }
     }
@@ -258,11 +278,9 @@ impl<T: Sync> CpuLocal<T> {
     pub unsafe fn get_mut(&self) -> &mut T {
         #[cfg(target_os = "none")]
         {
-            let offset =
-                self.template_ptr as usize - unsafe { &__percpu_start as *const u8 as usize };
             let base = read_tp();
             // SAFETY: 调用方保证无并发访问
-            unsafe { &mut *((base + offset) as *mut T) }
+            unsafe { &mut *((base + self.offset()) as *mut T) }
         }
         #[cfg(not(target_os = "none"))]
         {
@@ -274,17 +292,18 @@ impl<T: Sync> CpuLocal<T> {
     /// 访问指定 CPU 的变量副本（例如通过 IPI 设置其他核心的标志）。
     ///
     /// # Safety
-    /// 调用方必须确保访问安全（使用原子类型，或目标 CPU 已停止）。
+    /// - 调用方必须确保访问安全（使用原子类型，或目标 CPU 已停止）。
+    /// - `target_core` 必须 < `MAX_CORE_COUNT`。
     #[inline(always)]
     pub unsafe fn get_on(&self, target_core: usize) -> &T {
         #[cfg(target_os = "none")]
         {
-            let offset =
-                self.template_ptr as usize - unsafe { &__percpu_start as *const u8 as usize };
+            debug_assert!(target_core < MAX_CORE_COUNT, "无效的核心 ID: {target_core}");
             // SAFETY: percpu_init() 已填充 PERCPU_BASES
-            let base = unsafe { PERCPU_BASES[target_core] };
+            let bases = unsafe { &*PERCPU_BASES.get() };
+            let base = bases[target_core];
             // SAFETY: 调用方保证访问安全
-            unsafe { &*((base + offset) as *const T) }
+            unsafe { &*((base + self.offset()) as *const T) }
         }
         #[cfg(not(target_os = "none"))]
         {
@@ -294,6 +313,7 @@ impl<T: Sync> CpuLocal<T> {
         }
     }
 }
+
 /// 当前核心 ID（由 `percpu_init()` 写入每个 CPU 的区域）。
 #[cpu_local]
 static CORE_ID: usize = 0;
@@ -318,9 +338,6 @@ pub static PREEMPT_DISABLE_COUNT: u32 = 0;
 #[cpu_local]
 pub static NEED_RESCHED: AtomicBool = AtomicBool::new(false);
 
-/// 是否需要负载均衡（原子：可被其他核心设置）
-#[cpu_local]
-pub static NEED_BALANCE: AtomicBool = AtomicBool::new(false);
 /// 检查并清除当前核心的 `need_resched` 标志（原子操作，无需关中断）。
 ///
 /// 用于 idle loop 轮询。
@@ -330,18 +347,18 @@ pub fn check_and_clear_need_resched() -> bool {
 
 /// 进入硬中断上下文（递增 hardirq_count，饱和加法防止溢出）。
 ///
-/// # Safety
 /// 必须在中断处理程序中调用（中断已被 CPU 自动关闭）。
-pub unsafe fn enter_hardirq() {
+pub fn enter_hardirq() {
+    // SAFETY: 在中断处理程序中调用，中断已关闭，无同核心并发访问
     let count = unsafe { HARDIRQ_COUNT.get_mut() };
     *count = count.saturating_add(1);
 }
 
 /// 离开硬中断上下文。
 ///
-/// # Safety
 /// 必须与 `enter_hardirq()` 配对调用。
-pub unsafe fn exit_hardirq() {
+pub fn exit_hardirq() {
+    // SAFETY: 在中断处理程序中调用，中断已关闭，无同核心并发访问
     let count = unsafe { HARDIRQ_COUNT.get_mut() };
     *count = count.saturating_sub(1);
 }
