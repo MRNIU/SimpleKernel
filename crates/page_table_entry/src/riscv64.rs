@@ -159,3 +159,70 @@ impl PteOps for PageTableEntry {
         self.0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 每个 PteFlags 单独编解码往返。
+    #[test]
+    fn each_flag_roundtrip() {
+        let pa = PhysAddr::new(0x8020_0000);
+        let all_flags = [
+            PteFlags::VALID,
+            PteFlags::READ,
+            PteFlags::WRITE,
+            PteFlags::EXECUTE,
+            PteFlags::USER,
+            PteFlags::GLOBAL,
+            PteFlags::ACCESSED,
+            PteFlags::DIRTY,
+            PteFlags::EXCLUSIVE,
+        ];
+        for &flag in &all_flags {
+            let pte = PageTableEntry::new(pa, flag);
+            assert_eq!(pte.flags(), flag, "标志 {:?} 编解码往返失败", flag);
+        }
+    }
+
+    /// W^X 安全不变量：数据页不可执行，代码页不可写。
+    #[test]
+    fn wx_invariants() {
+        let rw = PteFlags::kernel_rw();
+        assert!(rw.is_writable());
+        assert!(!rw.contains(PteFlags::EXECUTE));
+
+        let rx = PteFlags::kernel_rx();
+        assert!(!rx.is_writable());
+        assert!(rx.contains(PteFlags::EXECUTE));
+
+        let ro = PteFlags::kernel_ro();
+        assert!(!ro.is_writable());
+        assert!(!ro.contains(PteFlags::EXECUTE));
+
+        let dev = PteFlags::kernel_device();
+        assert!(!dev.contains(PteFlags::EXECUTE));
+    }
+
+    /// for_leaf_at_level 不改变标志位（格式与层级无关）。
+    #[test]
+    fn for_leaf_at_level_is_identity() {
+        let flags = PteFlags::kernel_rw();
+        assert_eq!(flags.for_leaf_at_level(0), flags);
+        assert_eq!(flags.for_leaf_at_level(1), flags);
+        assert_eq!(flags.for_leaf_at_level(2), flags);
+    }
+
+    /// EXCLUSIVE 软件位编解码往返。
+    #[test]
+    fn exclusive_roundtrip() {
+        let pa = PhysAddr::new(0x8020_0000);
+        let flags = PteFlags::kernel_rw().with_exclusive();
+        let pte = PageTableEntry::new(pa, flags);
+        assert!(pte.flags().is_exclusive());
+        assert_eq!(pte.paddr(), pa);
+
+        let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
+        assert!(!pte_no_excl.flags().is_exclusive());
+    }
+}
