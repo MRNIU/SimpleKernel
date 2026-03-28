@@ -54,14 +54,16 @@ impl ArchOps for Aarch64 {
     }
 
     fn map_early_mmio(
-        pt: &mut memory::page_table::PageTable,
+        addr_space: &mut memory::vma::AddressSpace,
     ) -> Result<(), memory::error::MemoryError> {
-        use address::PhysAddr;
+        use address::VirtAddr;
         use memory::page_table::{PteFlags, PteFlagsOps};
         // PL011 UART —— console 直接 MMIO 访问
-        let start = PhysAddr::new(PL011_BASE);
-        let end = PhysAddr::new(PL011_BASE + PL011_SIZE);
-        pt.identity_map_range(start, end, PteFlags::kernel_rw())?;
+        addr_space.mmap_identity_range(
+            VirtAddr::new(PL011_BASE),
+            VirtAddr::new(PL011_BASE + PL011_SIZE),
+            PteFlags::kernel_rw(),
+        )?;
         log::info!("MemoryInit: mapped PL011 UART @ {:#010X}", PL011_BASE);
         Ok(())
     }

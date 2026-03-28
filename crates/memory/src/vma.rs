@@ -353,6 +353,81 @@ impl AddressSpace {
         Ok(true)
     }
 
+    /// Identity-map 一段物理地址区间（VA == PA），自动选择大页。
+    ///
+    /// 内部委托给 [`PageTable::identity_map_range`]，自动使用最大可用页大小
+    /// （1GB / 2MB / 4KB），减少 TLB 压力。映射标记为永久（drop 时不 unmap）。
+    ///
+    /// 与 [`mmap_identity`] 的区别：`mmap_identity` 逐页映射（通过 `MappedPages`），
+    /// 此方法使用大页映射，适合内核启动时的大段 RAM 映射。
+    ///
+    /// # Errors
+    ///
+    /// - `RegionOverlap`：与已有 VMA 重叠
+    /// - `MapFailed`：页表映射冲突或无效范围
+    pub fn mmap_identity_range(
+        &mut self,
+        start: VirtAddr,
+        end: VirtAddr,
+        flags: PteFlags,
+    ) -> Result<&Vma, MemoryError> {
+        let start_aligned = start.align_down();
+        let end_aligned = end.align_up();
+        if start_aligned.as_usize() >= end_aligned.as_usize() {
+            return Err(MemoryError::MapFailed);
+        }
+        let range = AddrRange::new(start_aligned, end_aligned);
+        self.check_overlap(range)?;
+
+        {
+            let mut pt = self.page_table.lock();
+            let pa_start = address::PhysAddr::new(start_aligned.as_usize());
+            let pa_end = address::PhysAddr::new(end_aligned.as_usize());
+            pt.identity_map_range(pa_start, pa_end, flags)?;
+        }
+
+        let vma = Vma {
+            range,
+            flags,
+            kind: VmaKind::Identity,
+            mapping: None, // 大页映射由页表直接管理，不通过 MappedPages
+        };
+        self.areas.insert(start_aligned, vma);
+        Ok(self.areas.get(&start_aligned).expect("刚插入的 VMA"))
+    }
+
+    /// 注册已由外部建立的映射——仅做簿记，不操作页表。
+    ///
+    /// 用于内核启动时：`PageTable::identity_map_range()` 已直接建立映射，
+    /// 此方法将这些区域记录到 `AddressSpace` 中以供 `find_vma` 查询。
+    ///
+    /// 与 `mmap_identity` 的区别：`mmap_identity` 会调用页表映射操作，
+    /// 而 `register_existing` 假设映射已存在，仅创建 VMA 记录。
+    ///
+    /// # Errors
+    ///
+    /// - `RegionOverlap`：与已有 VMA 重叠
+    pub fn register_existing(
+        &mut self,
+        start: VirtAddr,
+        size: usize,
+        flags: PteFlags,
+        kind: VmaKind,
+    ) -> Result<&Vma, MemoryError> {
+        let (start, end, _) = Self::validate_range(start, size)?;
+        let range = AddrRange::new(start, end);
+        self.check_overlap(range)?;
+
+        let vma = Vma {
+            range,
+            flags,
+            kind,
+            mapping: None, // 映射由外部管理，VMA 仅做记录
+        };
+        self.areas.insert(start, vma);
+        Ok(self.areas.get(&start).expect("刚插入的 VMA"))
+    }
+
     /// 修改 VMA 权限。
     ///
     /// 当前实现仅更新 VMA 的 flags 记录，**不修改已建立的 PTE**。
@@ -660,6 +735,72 @@ mod tests {
         // VMA 已映射，page fault 应返回 false（可能是权限错误）
         let handled = aspace.handle_page_fault(start).expect("不应出错");
         assert!(!handled);
+    }
+
+    /// mmap_identity_range 应使用大页映射并创建 VMA 记录。
+    #[test]
+    fn mmap_identity_range_creates_vma() {
+        let pt_ref = test_pt();
+        let mut aspace = AddressSpace::new(pt_ref);
+        let start = VirtAddr::new(0xD0_0000);
+        let end = VirtAddr::new(0xD0_0000 + 3 * PAGE_SIZE);
+        let vma = aspace
+            .mmap_identity_range(start, end, PteFlags::kernel_rw())
+            .expect("mmap_identity_range 应成功");
+        assert_eq!(vma.size(), 3 * PAGE_SIZE);
+        assert_eq!(vma.kind(), VmaKind::Identity);
+        // 页表中应能查到映射
+        let pt = pt_ref.lock();
+        assert!(pt.get_mapping(start).is_some());
+        assert!(pt.get_mapping(start + PAGE_SIZE).is_some());
+        assert!(pt.get_mapping(start + 2 * PAGE_SIZE).is_some());
+    }
+
+    /// mmap_identity_range start >= end 应失败。
+    #[test]
+    fn mmap_identity_range_empty_fails() {
+        let pt_ref = test_pt();
+        let mut aspace = AddressSpace::new(pt_ref);
+        let addr = VirtAddr::new(0xE0_0000);
+        let err = aspace
+            .mmap_identity_range(addr, addr, PteFlags::kernel_rw())
+            .expect_err("start == end 应失败");
+        assert_eq!(err, MemoryError::MapFailed);
+    }
+
+    /// register_existing 应创建 VMA 记录且可通过 find_vma 查询。
+    #[test]
+    fn register_existing_creates_record() {
+        let pt_ref = test_pt();
+        let mut aspace = AddressSpace::new(pt_ref);
+        let start = VirtAddr::new(0xF0_0000);
+        let vma = aspace
+            .register_existing(
+                start,
+                2 * PAGE_SIZE,
+                PteFlags::kernel_rw(),
+                VmaKind::Identity,
+            )
+            .expect("register_existing 应成功");
+        assert_eq!(vma.size(), 2 * PAGE_SIZE);
+        assert!(!vma.is_mapped()); // 仅簿记，mapping 为 None
+        assert!(aspace.find_vma(start).is_some());
+        assert!(aspace.find_vma(start + PAGE_SIZE).is_some());
+    }
+
+    /// register_existing 与已有区域重叠应失败。
+    #[test]
+    fn register_existing_overlap_fails() {
+        let pt_ref = test_pt();
+        let mut aspace = AddressSpace::new(pt_ref);
+        let start = VirtAddr::new(0x100_0000);
+        aspace
+            .register_existing(start, PAGE_SIZE, PteFlags::kernel_rw(), VmaKind::Identity)
+            .expect("首次注册");
+        let err = aspace
+            .register_existing(start, PAGE_SIZE, PteFlags::kernel_rw(), VmaKind::Identity)
+            .expect_err("重复注册应失败");
+        assert_eq!(err, MemoryError::RegionOverlap);
     }
 
     /// munmap 后重新 mmap 同一地址应成功。

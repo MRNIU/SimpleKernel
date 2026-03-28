@@ -33,7 +33,7 @@ pub trait ArchOps {
 
     /// 映射分页激活前必须就绪的架构特定 MMIO
     fn map_early_mmio(
-        pt: &mut memory::page_table::PageTable,
+        addr_space: &mut memory::vma::AddressSpace,
     ) -> Result<(), memory::error::MemoryError>;
 
     /// 激活页表（写入 satp / ttbr0_el1 等硬件寄存器）

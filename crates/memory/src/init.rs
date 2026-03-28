@@ -1,11 +1,16 @@
 //! 内存子系统初始化——主核 / 从核。
 
-use address::PhysAddr;
+use address::{PhysAddr, VirtAddr};
 
 use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
+use crate::vma::AddressSpace;
 
-/// 主核内存初始化——返回页表，不激活。
-pub fn init() -> PageTable {
+/// 主核内存初始化——返回内核地址空间（包含所有内核段映射）。
+///
+/// 页表在内部创建并存入全局 `KERNEL_PAGE_TABLE`，
+/// 返回的 `AddressSpace` 持有该页表的 `&'static` 引用。
+/// 调用方通过 `AddressSpace::page_table()` 获取页表引用以激活分页。
+pub fn init() -> AddressSpace {
     // SAFETY: 在任何堆分配之前调用，且仅调用一次（由启动流程保证）
     unsafe { crate::heap::init() };
 
@@ -23,7 +28,12 @@ pub fn init() -> PageTable {
     // 物理内存范围之内，不与堆重叠，且仅调用一次
     unsafe { crate::frame::init(alloc_start, alloc_size) };
 
-    let mut pt = PageTable::create().expect("failed to create kernel page table");
+    // 创建页表并存入全局——获取 &'static 引用以构建 AddressSpace
+    let pt = PageTable::create().expect("failed to create kernel page table");
+    crate::globals::store_kernel_page_table(pt);
+    let pt_ref = crate::globals::kernel_page_table().expect("just stored");
+
+    let mut kernel_as = AddressSpace::new(pt_ref);
 
     // SAFETY: 链接器定义的符号
     unsafe extern "C" {
@@ -32,16 +42,32 @@ pub fn init() -> PageTable {
     }
     let text_end = PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up();
     let rodata_end = PhysAddr::new(unsafe { &__erodata as *const u8 as usize }).align_up();
+    let mem_end = mem_start + mem_size;
 
-    // 分段映射：
+    // 分段映射（通过 VMA，自动选择大页）：
     // [mem_start, text_end)    → RWX（.boot 段混合了 code+data，无法拆分为 RX/RW）
     // [text_end, rodata_end)   → RO（.rodata——只读数据，防止意外修改）
     // [rodata_end, mem_end)    → RW（.data + .bss + 空闲内存）
-    pt.identity_map_range(mem_start, text_end, PteFlags::kernel_rwx())
+    kernel_as
+        .mmap_identity_range(
+            VirtAddr::new(mem_start.as_usize()),
+            VirtAddr::new(text_end.as_usize()),
+            PteFlags::kernel_rwx(),
+        )
         .expect("failed to map kernel code region");
-    pt.identity_map_range(text_end, rodata_end, PteFlags::kernel_ro())
+    kernel_as
+        .mmap_identity_range(
+            VirtAddr::new(text_end.as_usize()),
+            VirtAddr::new(rodata_end.as_usize()),
+            PteFlags::kernel_ro(),
+        )
         .expect("failed to map kernel rodata region");
-    pt.identity_map_range(rodata_end, mem_start + mem_size, PteFlags::kernel_rw())
+    kernel_as
+        .mmap_identity_range(
+            VirtAddr::new(rodata_end.as_usize()),
+            VirtAddr::new(mem_end.as_usize()),
+            PteFlags::kernel_rw(),
+        )
         .expect("failed to map kernel data + free memory");
 
     log::info!(
@@ -51,10 +77,10 @@ pub fn init() -> PageTable {
         text_end,
         rodata_end,
         rodata_end,
-        mem_start + mem_size
+        mem_end
     );
 
-    pt
+    kernel_as
 }
 
 /// 从核内存初始化——复用主核页表并激活分页。

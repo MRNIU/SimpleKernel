@@ -46,7 +46,10 @@ pub mod vma;
 // 公共 API re-export——保持外部调用方的 `memory::Xxx` 路径不变。
 pub use globals::{MEMORY_INFO, MemoryInfo};
 #[cfg(any(test, target_os = "none"))]
-pub use globals::{kernel_page_table, map_mmio, store_kernel_page_table};
+pub use globals::{
+    kernel_address_space, kernel_page_table, map_mmio, store_kernel_address_space,
+    store_kernel_page_table,
+};
 
 #[cfg(any(test, target_os = "none"))]
 pub use addr_conv::{phys_to_virt, virt_to_phys};

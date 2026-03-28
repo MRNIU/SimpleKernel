@@ -78,13 +78,16 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
     unsafe { per_cpu::percpu_init() };
     init::early_init(Arch::dtb_addr(argc, argv));
     smoke_test::phase2();
-    // memory::init() 返回页表，不再内部调用 arch（打破 memory↔arch 循环）
-    let mut pt = memory::init();
-    Arch::map_early_mmio(&mut pt).expect("failed to map early MMIO");
+    // memory::init() 返回内核地址空间（页表已存入全局）
+    let mut kernel_as = memory::init();
+    Arch::map_early_mmio(&mut kernel_as).expect("failed to map early MMIO");
     // SAFETY: 页表覆盖所有内核代码/数据及早期 MMIO
-    unsafe { Arch::activate_page_table(&pt) };
+    {
+        let pt = kernel_as.page_table().lock();
+        unsafe { Arch::activate_page_table(&pt) };
+    }
     log::info!("MemoryInit: paging enabled");
-    memory::store_kernel_page_table(pt);
+    memory::store_kernel_address_space(kernel_as);
     smoke_test::phase3();
     // 必须先初始化 timer（设置 HW_FREQ 和首次超时），再开启中断。
     // 否则开启中断后挂起的 timer 中断立刻触发，handle_timer() 中
