@@ -24,6 +24,45 @@ pub fn register_tlb_shootdown(f: fn(TlbFlushRequest)) {
     TLB_SHOOTDOWN_FN.call_once(|| f);
 }
 
+/// RAII TLB 刷新守卫——drop 时自动执行 TLB 刷新。
+///
+/// 将 TLB 刷新延迟到守卫 drop 时执行，确保在页表修改完成后、
+/// 帧回收之前统一刷新——避免"锁内 unmap、锁外 flush"的竞态窗口。
+#[cfg(any(test, target_os = "none"))]
+pub(crate) struct TlbFlushGuard {
+    /// 起始虚拟地址
+    start_vaddr: usize,
+    /// 需要刷新的页数
+    page_count: usize,
+}
+
+#[cfg(any(test, target_os = "none"))]
+impl TlbFlushGuard {
+    /// 创建连续范围的 TLB 刷新守卫。
+    pub fn new(start_vaddr: usize, page_count: usize) -> Self {
+        Self {
+            start_vaddr,
+            page_count,
+        }
+    }
+}
+
+#[cfg(any(test, target_os = "none"))]
+impl Drop for TlbFlushGuard {
+    fn drop(&mut self) {
+        if self.page_count == 0 {
+            return;
+        }
+        if self.page_count <= config::TLB_FLUSH_THRESHOLD {
+            for i in 0..self.page_count {
+                flush_tlb_page(self.start_vaddr + i * config::PAGE_SIZE);
+            }
+        } else {
+            flush_tlb();
+        }
+    }
+}
+
 /// 刷新整个 TLB——用于批量页表操作（切换地址空间、初始化映射等）。
 ///
 /// 单页 unmap 应使用 [`flush_tlb_page`] 避免不必要的全局刷新。

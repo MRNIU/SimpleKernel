@@ -10,13 +10,14 @@ edition.workspace = true
 [features]
 ## 测试时使用 AArch64 PTE 编码（默认使用 RISC-V）。
 ## 用法：`cargo test -p memory --features test-aarch64`
-test-aarch64 = []
+test-aarch64 = ["page_table_crate/test-aarch64"]
 
 [dependencies]
 config = { path = "../config" }
 address = { path = "../address" }
 sync_crate = { path = "../sync", package = "sync" }
 per-cpu = { path = "../per-cpu" }
+page_table_crate = { path = "../page_table", package = "page_table", features = ["test-support"] }
 
 bitflags = "2"
 zerocopy = { version = "0.8", default-features = false, features = ["derive"] }

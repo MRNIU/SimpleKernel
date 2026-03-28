@@ -18,6 +18,7 @@ members = [
     "crates/sync",
     "crates/tick",
 
+    "crates/page_table",
     "crates/memory",
     "xtask",
 ]

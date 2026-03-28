@@ -65,7 +65,7 @@ impl MappedPages {
                 for j in (0..i).rev() {
                     let _ = pt.unmap_page(va_start + j * PAGE_SIZE);
                 }
-                return Err(e);
+                return Err(e.into());
             }
         }
         Ok(Self {
@@ -134,7 +134,7 @@ impl MappedPages {
                         }
                     }
                     // 当前这个未映射成功的 frame 会正常 drop 回收
-                    return Err(e);
+                    return Err(e.into());
                 }
             }
         }
@@ -179,14 +179,13 @@ impl MappedPages {
     /// 返回的引用**生命周期绑定到 `&self`**——
     /// 编译器保证 `MappedPages` drop 后无法使用该引用（use-after-unmap 防护）。
     ///
-    /// # Safety
+    /// # Panics
     ///
-    /// 调用方必须确保：
+    /// 在以下条件不满足时 panic：
     /// 1. `offset + size_of::<T>()` 不超过映射大小
     /// 2. 偏移对齐到 `T` 的自然对齐边界
-    /// 3. 该地址处的内容可以安全地解释为 `T`
     #[inline]
-    pub unsafe fn as_type<T: zerocopy::FromBytes>(&self, offset: usize) -> &T {
+    pub fn as_type<T: zerocopy::FromBytes>(&self, offset: usize) -> &T {
         assert!(
             offset + core::mem::size_of::<T>() <= self.size(),
             "MappedPages::as_type: offset {:#x} + {} 超出映射大小 {:#x}",
@@ -202,17 +201,21 @@ impl MappedPages {
             core::mem::align_of::<T>(),
         );
         let ptr: *const T = addr as *const T;
-        // SAFETY: 调用方保证偏移有效，self 的存在保证映射有效
+        // SAFETY: assert 已验证偏移在映射范围内且地址对齐；FromBytes 保证任意位模式均为合法 T；
+        // &self 保证映射存活，引用生命周期绑定到 self
         unsafe { &*ptr }
     }
 
     /// 获取映射区域内指定偏移处的可变类型化引用。
     ///
-    /// # Safety
+    /// # Panics
     ///
-    /// 同 `as_type`，另外调用方必须确保映射具有 WRITE 权限。
+    /// 在以下条件不满足时 panic：
+    /// 1. `offset + size_of::<T>()` 不超过映射大小
+    /// 2. 映射具有 WRITE 权限
+    /// 3. 偏移对齐到 `T` 的自然对齐边界
     #[inline]
-    pub unsafe fn as_type_mut<T: zerocopy::FromBytes + zerocopy::IntoBytes>(
+    pub fn as_type_mut<T: zerocopy::FromBytes + zerocopy::IntoBytes>(
         &mut self,
         offset: usize,
     ) -> &mut T {
@@ -235,29 +238,41 @@ impl MappedPages {
             core::mem::align_of::<T>(),
         );
         let ptr: *mut T = addr as *mut T;
-        // SAFETY: 调用方保证偏移有效、映射可写，&mut self 保证独占访问
+        // SAFETY: assert 已验证偏移在映射范围内、映射可写且地址对齐；FromBytes 保证任意位模式均为合法 T；
+        // &mut self 保证映射存活且独占访问，引用生命周期绑定到 self
         unsafe { &mut *ptr }
     }
 
     /// 从所属页表中 unmap 所有页，EXCLUSIVE 帧自动回收。
+    ///
+    /// 正确的操作顺序（SMP 安全）：
+    /// 1. 清除 PTE（在页表锁内）
+    /// 2. TLB flush（确保所有核心的 stale TLB 失效）
+    /// 3. 回收物理帧（此时没有核心持有指向这些帧的 TLB 条目）
     fn unmap_and_reclaim(&self) {
-        let mut guard = self.page_table.lock();
-        for i in 0..self.page_count {
-            let va = self.vaddr + i * PAGE_SIZE;
-            if let Some((pa, flags)) = guard.get_mapping(va) {
-                let _ = guard.unmap_page(va);
-                if flags.is_exclusive() {
-                    reclaim_exclusive_frame(pa);
+        let mut frames_to_reclaim: alloc::vec::Vec<PhysAddr> = alloc::vec::Vec::new();
+
+        {
+            let mut guard = self.page_table.lock();
+            for i in 0..self.page_count {
+                let va = self.vaddr + i * PAGE_SIZE;
+                if let Some((pa, flags)) = guard.get_mapping(va) {
+                    let _ = guard.unmap_page(va);
+                    if flags.is_exclusive() {
+                        frames_to_reclaim.push(pa);
+                    }
                 }
             }
-        }
-        drop(guard);
-        if self.page_count <= config::TLB_FLUSH_THRESHOLD {
-            for i in 0..self.page_count {
-                crate::tlb::flush_tlb_page((self.vaddr + i * config::PAGE_SIZE).as_usize());
-            }
-        } else {
-            crate::tlb::flush_tlb();
+        } // 页表锁释放
+
+        // TLB flush——必须在帧回收之前完成
+        {
+            let _flush = crate::tlb::TlbFlushGuard::new(self.vaddr.as_usize(), self.page_count);
+        } // TlbFlushGuard drop 触发刷新
+
+        // 所有核心的 TLB 已刷新，安全回收帧
+        for pa in frames_to_reclaim {
+            reclaim_exclusive_frame(pa);
         }
     }
 }
@@ -297,16 +312,16 @@ impl core::fmt::Debug for MappedPages {
     }
 }
 
+/// 创建测试用 `&'static SpinLock<PageTable>`（leak 获取 'static 引用）。
+#[cfg(test)]
+pub(crate) fn test_pt() -> &'static SpinLock<PageTable> {
+    let pt = PageTable::create().expect("创建页表");
+    Box::leak(Box::new(SpinLock::new(pt, "test_pt")))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::page_table::table::PageTable;
-
-    /// 创建测试用 `&'static SpinLock<PageTable>`（leak 获取 'static 引用）。
-    fn test_pt() -> &'static SpinLock<PageTable> {
-        let pt = PageTable::create().expect("创建页表");
-        Box::leak(Box::new(SpinLock::new(pt, "test_pt")))
-    }
 
     /// map_identity 应建立正确的映射并可查询。
     #[test]
@@ -429,6 +444,53 @@ mod tests {
         let err = pt
             .identity_map_range(pa, pa, PteFlags::kernel_rw())
             .expect_err("start == end 应失败");
-        assert_eq!(err, MemoryError::MapFailed);
+        assert_eq!(err, crate::page_table::PageTableError::MapFailed);
+    }
+
+    /// as_type 应返回映射区域内正确偏移处的引用。
+    ///
+    /// 使用 `new_borrowed` 将堆上真实内存包装为 `MappedPages`，
+    /// 避免在主机测试中解引用未映射的虚拟地址。
+    #[test]
+    fn as_type_reads_mapped_memory() {
+        let pt_ref = test_pt();
+        // 分配一页真实内存并零初始化
+        let buf = alloc::vec![0u8; PAGE_SIZE];
+        let va = VirtAddr::new(buf.as_ptr() as usize);
+        let mp = MappedPages::new_borrowed(pt_ref, va, 1, PteFlags::kernel_rw());
+
+        let val: &u32 = mp.as_type::<u32>(0);
+        assert_eq!(*val, 0);
+        // buf 的生命周期覆盖 mp，安全
+        let _ = mp.into_permanent();
+        drop(buf);
+    }
+
+    /// as_type_mut 应能写入映射区域。
+    #[test]
+    fn as_type_mut_writes_mapped_memory() {
+        let pt_ref = test_pt();
+        let buf = alloc::vec![0u8; PAGE_SIZE];
+        let va = VirtAddr::new(buf.as_ptr() as usize);
+        let mut mp = MappedPages::new_borrowed(pt_ref, va, 1, PteFlags::kernel_rw());
+
+        let val: &mut u32 = mp.as_type_mut::<u32>(0);
+        *val = 0xDEAD_BEEF;
+        let readback: &u32 = mp.as_type::<u32>(0);
+        assert_eq!(*readback, 0xDEAD_BEEF);
+        let _ = mp.into_permanent();
+        drop(buf);
+    }
+
+    /// as_type 偏移越界应 panic。
+    #[test]
+    #[should_panic(expected = "超出映射大小")]
+    fn as_type_out_of_bounds_panics() {
+        let pt_ref = test_pt();
+        let buf = alloc::vec![0u8; PAGE_SIZE];
+        let va = VirtAddr::new(buf.as_ptr() as usize);
+        let mp = MappedPages::new_borrowed(pt_ref, va, 1, PteFlags::kernel_rw());
+        // 偏移超出单页大小应 panic
+        let _: &u32 = mp.as_type::<u32>(PAGE_SIZE);
     }
 }

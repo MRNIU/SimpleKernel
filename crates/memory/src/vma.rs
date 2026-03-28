@@ -491,13 +491,7 @@ impl core::fmt::Debug for AddressSpace {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::page_table::table::PageTable;
-
-    /// 创建测试用 `&'static SpinLock<PageTable>`。
-    fn test_pt() -> &'static SpinLock<PageTable> {
-        let pt = PageTable::create().expect("创建页表");
-        Box::leak(Box::new(SpinLock::new(pt, "test_pt")))
-    }
+    use crate::mapped_pages::test_pt;
 
     /// 空地址空间应无 VMA。
     #[test]

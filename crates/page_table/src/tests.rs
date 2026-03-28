@@ -1,9 +1,11 @@
 //! 页表单元测试。
 
-use super::table::PageTable;
-use super::*;
-use crate::error::MemoryError;
+use crate::error::PageTableError;
+use crate::*;
 use address::{PhysAddr, VirtAddr};
+
+use crate::HeapNodeFrame;
+type PageTable = crate::table::PageTable<HeapNodeFrame>;
 
 /// 验证 Level0 的 SHIFT 和 INDEX_BITS 从 PAGE_SIZE 正确推导。
 #[test]
@@ -391,7 +393,7 @@ fn double_map_fails() {
     let err = pt
         .map_page(va, pa, PteFlags::kernel_rw())
         .expect_err("重复 map 应失败");
-    assert_eq!(err, MemoryError::MapFailed);
+    assert_eq!(err, PageTableError::MapFailed);
 }
 
 /// unmap 应返回原始物理地址，且之后查询应为 None。
@@ -416,7 +418,7 @@ fn unmap_unmapped_page_fails() {
     let va = VirtAddr::new(0x1000);
 
     let err = pt.unmap_page(va).expect_err("unmap 未映射页应失败");
-    assert_eq!(err, MemoryError::PageNotMapped);
+    assert_eq!(err, PageTableError::PageNotMapped);
 }
 
 /// 跨不同 VPN[2] 范围的映射，会触发不同的二级页表分配。
@@ -483,7 +485,7 @@ fn unmap_reclaims_intermediate_then_sibling_fails() {
     let err = pt
         .unmap_page(va_sibling)
         .expect_err("中间节点已回收，应返回 PageNotMapped");
-    assert_eq!(err, MemoryError::PageNotMapped);
+    assert_eq!(err, PageTableError::PageNotMapped);
 }
 
 /// unmap 后中间节点回收：当同表有其他映射时不回收。
@@ -584,7 +586,7 @@ fn map_page_under_huge_page_fails() {
     let err = pt
         .map_page(sub_va, PhysAddr::new(0x9000_0000), PteFlags::kernel_rw())
         .expect_err("大页范围内的子映射应失败");
-    assert_eq!(err, MemoryError::MapFailed);
+    assert_eq!(err, PageTableError::MapFailed);
 }
 
 /// 重复大页映射应返回 MapFailed。
@@ -601,7 +603,7 @@ fn double_map_at_level_fails() {
     let err = pt
         .map_at_level(va, pa, PteFlags::kernel_rw(), 1)
         .expect_err("重复大页映射应失败");
-    assert_eq!(err, MemoryError::MapFailed);
+    assert_eq!(err, PageTableError::MapFailed);
 }
 
 /// unmap_at_level 应能取消大页映射。
@@ -629,5 +631,5 @@ fn unmap_at_level_wrong_level_fails() {
     let err = pt
         .unmap_at_level(va, 0)
         .expect_err("level 0 unmap 大页应失败");
-    assert_eq!(err, MemoryError::PageNotMapped);
+    assert_eq!(err, PageTableError::PageNotMapped);
 }

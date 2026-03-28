@@ -151,6 +151,43 @@ impl MmioRegion {
     }
 }
 
+/// 将 MMIO 物理地址区间 identity-map 到内核页表，返回对应虚拟地址。
+///
+/// 映射标记为永久（drop 时不 unmap），并在内核地址空间中注册 VMA 记录。
+/// 如需 RAII 管理的 MMIO 映射，请使用 [`MmioRegion::map`]。
+///
+/// # Errors
+///
+/// 内核页表未初始化或映射冲突时返回错误。
+///
+/// # Panics
+///
+/// 内核地址空间中注册 VMA 失败时 panic（通常是重复映射同一 MMIO 区域）。
+#[cfg(any(test, target_os = "none"))]
+pub fn map_mmio(
+    paddr: PhysAddr,
+    size: usize,
+) -> Result<address::VirtAddr, crate::error::MemoryError> {
+    let region = MmioRegion::map(paddr, size)?;
+    let vaddr = region.base();
+    let region_size = region.size();
+    let _permanent = region.into_permanent();
+
+    // 在内核地址空间中注册 MMIO 区域
+    if let Some(kas) = crate::globals::kernel_address_space() {
+        kas.lock()
+            .register_existing(
+                vaddr,
+                region_size,
+                PteFlags::kernel_device(),
+                crate::vma::VmaKind::Identity,
+            )
+            .expect("MMIO 区域注册到内核地址空间失败——可能是重复映射");
+    }
+
+    Ok(vaddr)
+}
+
 impl core::fmt::Debug for MmioRegion {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(

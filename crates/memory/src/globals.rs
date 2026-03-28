@@ -1,14 +1,12 @@
-//! 全局内存状态——`MemoryInfo`、内核页表、内核地址空间、MMIO 便利映射。
+//! 全局内存状态——`MemoryInfo`、内核页表、内核地址空间。
 
 use address::PhysAddr;
-#[cfg(any(test, target_os = "none"))]
-use address::VirtAddr;
 
 #[cfg(any(test, target_os = "none"))]
 use sync_crate::SpinLock;
 
 #[cfg(any(test, target_os = "none"))]
-use crate::page_table::{PageTable, PteFlagsOps};
+use crate::page_table::PageTable;
 #[cfg(any(test, target_os = "none"))]
 use crate::vma::AddressSpace;
 
@@ -60,32 +58,4 @@ pub fn store_kernel_address_space(addr_space: AddressSpace) {
 #[cfg(any(test, target_os = "none"))]
 pub fn kernel_address_space() -> Option<&'static SpinLock<AddressSpace>> {
     KERNEL_ADDRESS_SPACE.get()
-}
-
-/// 将 MMIO 物理地址区间 identity-map 到内核页表，返回对应虚拟地址。
-///
-/// 映射标记为永久（drop 时不 unmap），并在内核地址空间中注册 VMA 记录。
-/// 如需 RAII 管理的 MMIO 映射，请使用 [`crate::mmio::MmioRegion::map`]。
-///
-/// # Errors
-///
-/// 内核页表未初始化或映射冲突时返回错误。
-#[cfg(any(test, target_os = "none"))]
-pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, crate::error::MemoryError> {
-    let region = crate::mmio::MmioRegion::map(paddr, size)?;
-    let vaddr = region.base();
-    let region_size = region.size();
-    let _permanent = region.into_permanent();
-
-    // 在内核地址空间中注册 MMIO 区域
-    if let Some(kas) = KERNEL_ADDRESS_SPACE.get() {
-        let _ = kas.lock().register_existing(
-            vaddr,
-            region_size,
-            crate::page_table::PteFlags::kernel_device(),
-            crate::vma::VmaKind::Identity,
-        );
-    }
-
-    Ok(vaddr)
 }

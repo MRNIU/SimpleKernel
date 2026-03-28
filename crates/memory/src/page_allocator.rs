@@ -176,4 +176,21 @@ mod tests {
             VirtAddr::new(pages.start().as_usize() * PAGE_SIZE)
         );
     }
+
+    /// 分配器已初始化后分配应成功，验证 ensure_init 幂等性。
+    #[test]
+    fn alloc_after_init_succeeds() {
+        ensure_init();
+        // 确认分配器已初始化后的正常分配
+        let pages = AllocatedPages::alloc_one().expect("已初始化后分配应成功");
+        assert_eq!(pages.count(), 1);
+    }
+
+    /// size_bytes 应返回正确的字节大小。
+    #[test]
+    fn size_bytes_correct() {
+        ensure_init();
+        let pages = AllocatedPages::alloc(3).expect("分配 3 页");
+        assert_eq!(pages.size_bytes(), 3 * PAGE_SIZE);
+    }
 }

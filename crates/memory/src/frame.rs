@@ -188,6 +188,10 @@ impl AllocatedFrames {
 
         // SAFETY: 通过 phys_to_virt 将物理地址转换为虚拟地址后写入。
         // 帧刚从分配器获取，不存在其他引用。
+        //
+        // NOTE: 始终零初始化——安全默认，防止信息泄漏（用户进程不应看到前一个进程的数据）。
+        // 性能优化路径：未来可添加 `alloc_uninit()` 用于内核内部分配（如页表节点、
+        // 已知会立即覆写的缓冲区），跳过零初始化。当前为简洁起见保持统一零初始化。
         unsafe {
             let va = crate::phys_to_virt(start.start_addr());
             core::ptr::write_bytes(va.as_usize() as *mut u8, 0, count * PAGE_SIZE);
