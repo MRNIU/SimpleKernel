@@ -7,7 +7,7 @@
 
 use bitflags::bitflags;
 
-use crate::{PageTableEntry, PteFlagsOps, PteOps};
+use crate::{PteFlagsOps, PteOps};
 use address::PhysAddr;
 
 const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
@@ -17,6 +17,11 @@ const FLAGS_BITS: u32 = 10;
 
 /// PPN 掩码：bits [53:10]
 const PPN_MASK: u64 = 0x003F_FFFF_FFFF_FC00;
+
+/// RISC-V 页表项（64 位）。
+#[derive(Debug, Clone, Copy)]
+#[repr(transparent)]
+pub struct PageTableEntry(pub u64);
 
 bitflags! {
     /// RISC-V Sv39/Sv48/Sv57 页表项标志位（硬件原生位位置）。
@@ -80,7 +85,6 @@ impl PteFlagsOps for PteFlags {
         Self::kernel_rw()
     }
 
-    /// 是否具有写权限。
     #[inline]
     fn is_writable(self) -> bool {
         self.contains(Self::WRITE)
@@ -107,40 +111,33 @@ impl PteFlagsOps for PteFlags {
 impl PteOps for PageTableEntry {
     type Flags = PteFlags;
 
-    /// 从物理地址和标志构造 PTE。
     #[inline]
     fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
         let ppn = ((paddr.as_usize() as u64) >> PAGE_SHIFT) << FLAGS_BITS;
         Self(ppn | flags.bits())
     }
 
-    /// 从 PTE 提取物理地址。
     #[inline]
     fn paddr(self) -> PhysAddr {
         PhysAddr::new((((self.0 & PPN_MASK) >> FLAGS_BITS) << PAGE_SHIFT) as usize)
     }
 
-    /// 从 PTE 提取标志位。
     #[inline]
     fn flags(self) -> PteFlags {
         PteFlags::from_bits_truncate(self.0 & ((1 << FLAGS_BITS) - 1))
     }
 
-    /// PTE 是否有效（V 位）。
     #[inline]
     fn is_valid(self) -> bool {
         self.0 & PteFlags::VALID.bits() != 0
     }
 
-    /// 是否为叶节点。
-    ///
     /// RISC-V 规范：R/W/X 至少有一个设置即为叶节点，与层级无关。
     #[inline]
     fn is_leaf(self, _level: usize) -> bool {
         self.0 & (PteFlags::READ | PteFlags::WRITE | PteFlags::EXECUTE).bits() != 0
     }
 
-    /// 空 PTE（全零）。
     #[inline]
     fn empty() -> Self {
         Self(0)
@@ -150,5 +147,15 @@ impl PteOps for PageTableEntry {
     #[inline]
     fn new_intermediate(paddr: PhysAddr) -> Self {
         Self::new(paddr, PteFlags::VALID)
+    }
+
+    #[inline]
+    fn from_raw(raw: u64) -> Self {
+        Self(raw)
+    }
+
+    #[inline]
+    fn as_raw(self) -> u64 {
+        self.0
     }
 }

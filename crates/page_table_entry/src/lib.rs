@@ -1,8 +1,11 @@
 //! 硬件页表项编解码——PTE trait 定义与各架构实现。
 //!
 //! - [`PteFlagsOps`] / [`PteOps`]：统一 trait 接口，各架构必须实现
-//! - [`PteFlags`]：各架构在 `aarch64.rs` / `riscv64.rs` 中定义硬件原生标志位
-//! - [`PageTableEntry`]：64 位 PTE 值类型
+//! - [`aarch64`] / [`riscv64`]：各架构的 `PageTableEntry` + `PteFlags` 定义
+//! - [`PageTableEntry`] / [`PteFlags`]：当前目标架构的类型别名
+//!
+//! 两种架构始终编译——测试时同时覆盖所有架构编解码。
+//! `cfg(target_arch)` 仅用于选择公共类型别名。
 //!
 //! 本 crate 无 `alloc` 依赖，可在 heap 未初始化的早期启动阶段使用。
 
@@ -12,25 +15,19 @@ use address::PhysAddr;
 
 pub mod error;
 
+pub mod aarch64;
+pub mod riscv64;
+
 #[cfg(test)]
 mod tests;
 
-#[cfg(any(target_arch = "aarch64", feature = "test-aarch64"))]
-mod aarch64;
-#[cfg(not(any(target_arch = "aarch64", feature = "test-aarch64")))]
-mod riscv64;
-
-#[cfg(any(target_arch = "aarch64", feature = "test-aarch64"))]
-pub use aarch64::PteFlags;
-#[cfg(not(any(target_arch = "aarch64", feature = "test-aarch64")))]
-pub use riscv64::PteFlags;
+// TODO(user-space): 添加用户态映射 preset（user_rw / user_rx / user_ro 等），
+// 需要在各架构的 PteFlags 中同步实现 USER 位和 AP_UNPRIV 位组合。
 
 /// 页表项标志位的统一接口——各架构必须实现。
 ///
 /// 保证 RISC-V 和 AArch64 的 `PteFlags` 提供完全相同的方法集，
 /// 避免新增 preset 时某一架构遗漏。
-// TODO(user-space): 添加用户态映射 preset（user_rw / user_rx / user_ro 等），
-// 需要在各架构的 PteFlags 中同步实现 USER 位和 AP_UNPRIV 位组合。
 pub trait PteFlagsOps: Copy + core::fmt::Debug {
     /// 内核读写数据映射。
     fn kernel_rw() -> Self;
@@ -70,18 +67,34 @@ pub trait PteOps: Copy + core::fmt::Debug {
     fn empty() -> Self;
     /// 中间节点 PTE（指向下一级页表）。
     fn new_intermediate(paddr: PhysAddr) -> Self;
+    /// 从原始 u64 值构造 PTE。
+    fn from_raw(raw: u64) -> Self;
+    /// 获取 PTE 的原始 u64 值。
+    fn as_raw(self) -> u64;
 }
 
-/// 单个硬件页表项（64 位）。
-#[derive(Debug, Clone, Copy)]
-#[repr(transparent)]
-pub struct PageTableEntry(pub u64);
+/// 当前目标架构的页表项类型别名。
+#[cfg(target_arch = "aarch64")]
+pub type PageTableEntry = aarch64::PageTableEntry;
+/// 当前目标架构的页表项类型别名。
+#[cfg(not(target_arch = "aarch64"))]
+pub type PageTableEntry = riscv64::PageTableEntry;
 
-/// PTE 大小的位移量——`log2(sizeof(PageTableEntry))`。
-pub const PTE_SIZE_SHIFT: usize = core::mem::size_of::<PageTableEntry>().trailing_zeros() as usize;
+/// 当前目标架构的 PTE 标志位类型别名。
+#[cfg(target_arch = "aarch64")]
+pub type PteFlags = aarch64::PteFlags;
+/// 当前目标架构的 PTE 标志位类型别名。
+#[cfg(not(target_arch = "aarch64"))]
+pub type PteFlags = riscv64::PteFlags;
 
-/// 编译期断言：当前架构的 PageTableEntry 实现了 PteOps。
+/// PTE 大小的位移量——`log2(sizeof(u64))` = 3。
+///
+/// 两种架构的 PTE 均为 64 位，此常量在所有架构下一致。
+pub const PTE_SIZE_SHIFT: usize = core::mem::size_of::<u64>().trailing_zeros() as usize;
+
+/// 编译期断言：两种架构的 PageTableEntry 均实现了 PteOps。
 const _: () = {
     const fn _assert<T: PteOps>() {}
-    _assert::<PageTableEntry>();
+    _assert::<riscv64::PageTableEntry>();
+    _assert::<aarch64::PageTableEntry>();
 };

@@ -173,14 +173,14 @@ impl<L: PageLevel> Table<L> {
         // SAFETY: base 指向有效帧，index 经 debug_assert 检查。
         // Relaxed 即可——外层 SpinLock 提供必要的 memory barrier。
         let val = unsafe { (*self.base.add(index)).load(Ordering::Relaxed) };
-        PageTableEntry(val)
+        PageTableEntry::from_raw(val)
     }
 
     #[inline]
     pub(crate) fn write(&mut self, index: usize, pte: PageTableEntry) {
         debug_assert!(index < L::ENTRIES, "PTE index out of bounds");
         // SAFETY: base 指向有效帧，index 经 debug_assert 检查
-        unsafe { (*self.base.add(index)).store(pte.0, Ordering::Relaxed) };
+        unsafe { (*self.base.add(index)).store(pte.as_raw(), Ordering::Relaxed) };
     }
 }
 

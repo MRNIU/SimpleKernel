@@ -1,132 +1,102 @@
-//! PTE 编解码测试。
+//! PTE 编解码测试——同时覆盖 RISC-V 和 AArch64。
 
-use crate::*;
+use crate::{PteFlagsOps, PteOps};
 use address::PhysAddr;
 
 /// PTE_SIZE_SHIFT 应等于 log2(8) = 3（64 位 PTE）。
 #[test]
 fn pte_size_shift_matches_u64() {
-    assert_eq!(PTE_SIZE_SHIFT, 3);
-    assert_eq!(
-        1usize << PTE_SIZE_SHIFT,
-        core::mem::size_of::<PageTableEntry>()
-    );
+    assert_eq!(crate::PTE_SIZE_SHIFT, 3);
+    assert_eq!(1usize << crate::PTE_SIZE_SHIFT, core::mem::size_of::<u64>());
 }
 
-/// PTE 编码往返测试：通过 preset 写入，读回应一致。
-#[test]
-fn pte_roundtrip_via_preset() {
+/// 架构无关的 PTE trait 一致性测试——对任意 PteOps 实现进行验证。
+fn check_pte_ops<T: PteOps>()
+where
+    T::Flags: PartialEq,
+{
     let pa = PhysAddr::new(0x8020_0000);
-    let flags = PteFlags::kernel_rw();
-    let pte = PageTableEntry::new(pa, flags);
-    assert_eq!(pte.paddr(), pa);
-    assert_eq!(pte.flags(), flags);
-}
 
-/// PTE 往返测试——零地址。
-#[test]
-fn pte_roundtrip_zero_addr() {
-    let pa = PhysAddr::new(0);
-    let flags = PteFlags::kernel_ro();
-    let pte = PageTableEntry::new(pa, flags);
-    assert_eq!(pte.paddr(), pa);
-    assert_eq!(pte.flags(), flags);
-}
-
-/// PTE 往返测试——高位地址，验证地址高位不会污染标志字段。
-#[test]
-fn pte_roundtrip_high_addr() {
-    let pa = PhysAddr::new(0x00FF_FFFF_F000);
-    let flags = PteFlags::kernel_rw();
-    let pte = PageTableEntry::new(pa, flags);
-    assert_eq!(pte.paddr(), pa);
-    assert_eq!(pte.flags(), flags);
-}
-
-/// 空 PTE 应为 invalid 且非 leaf。
-#[test]
-fn pte_empty_is_invalid() {
-    let pte = PageTableEntry::empty();
-    assert!(!pte.is_valid());
-    assert!(!pte.is_leaf(0));
-}
-
-/// 中间节点 PTE 应标记为 valid 但非 leaf。
-#[test]
-fn intermediate_pte_roundtrip() {
-    let pa = PhysAddr::new(0x8020_0000);
-    let pte = PageTableEntry::new_intermediate(pa);
+    // 叶 PTE 往返
+    let flags = T::Flags::kernel_rw();
+    let pte = T::new(pa, flags);
     assert!(pte.is_valid());
-    assert!(!pte.is_leaf(1));
     assert_eq!(pte.paddr(), pa);
-}
-
-/// 叶 PTE（通过 kernel_rw）应为 valid 且 leaf。
-#[test]
-fn leaf_pte_is_valid_and_leaf() {
-    let pa = PhysAddr::new(0x0000_1000);
-    let pte = PageTableEntry::new(pa, PteFlags::kernel_rw());
-    assert!(pte.is_valid());
+    assert_eq!(pte.flags(), flags);
     assert!(pte.is_leaf(0));
+
+    // 空 PTE
+    let empty = T::empty();
+    assert!(!empty.is_valid());
+    assert!(!empty.is_leaf(0));
+
+    // 中间节点 PTE
+    let inter = T::new_intermediate(pa);
+    assert!(inter.is_valid());
+    assert!(!inter.is_leaf(1));
+    assert_eq!(inter.paddr(), pa);
+
+    // 零地址往返
+    let pa_zero = PhysAddr::new(0);
+    let pte_zero = T::new(pa_zero, T::Flags::kernel_ro());
+    assert_eq!(pte_zero.paddr(), pa_zero);
+    assert_eq!(pte_zero.flags(), T::Flags::kernel_ro());
+
+    // 高位地址往返
+    let pa_high = PhysAddr::new(0x00FF_FFFF_F000);
+    let pte_high = T::new(pa_high, T::Flags::kernel_rw());
+    assert_eq!(pte_high.paddr(), pa_high);
+    assert_eq!(pte_high.flags(), T::Flags::kernel_rw());
 }
 
-/// 验证 PteFlagsOps trait 所有方法在 PteFlags 上的可用性。
+/// 架构无关的 PteFlagsOps 一致性测试。
+fn check_flags_ops<T: PteFlagsOps>() {
+    assert!(T::kernel_rw().is_writable());
+    assert!(!T::kernel_rx().is_writable());
+    assert!(!T::kernel_ro().is_writable());
+    assert!(T::kernel_rwx().is_writable());
+    assert!(T::kernel_device().is_writable());
+
+    let flags = T::kernel_rw();
+    assert_eq!(
+        flags.for_leaf_at_level(0).is_writable(),
+        flags.is_writable()
+    );
+
+    // EXCLUSIVE 位
+    assert!(!flags.is_exclusive());
+    let exclusive = flags.with_exclusive();
+    assert!(exclusive.is_exclusive());
+    assert!(exclusive.is_writable());
+}
+
+/// RISC-V PTE trait 一致性。
 #[test]
-fn pte_flags_trait_conformance() {
-    fn check<T: PteFlagsOps>() {
-        assert!(T::kernel_rw().is_writable());
-        assert!(!T::kernel_rx().is_writable());
-        assert!(!T::kernel_ro().is_writable());
-        assert!(T::kernel_rwx().is_writable());
-        assert!(T::kernel_device().is_writable());
-        let flags = T::kernel_rw();
-        assert_eq!(
-            flags.for_leaf_at_level(0).is_writable(),
-            flags.is_writable()
-        );
-        assert!(!flags.is_exclusive());
-        let exclusive = flags.with_exclusive();
-        assert!(exclusive.is_exclusive());
-        assert!(exclusive.is_writable());
-    }
-    check::<PteFlags>();
+fn riscv64_pte_ops_conformance() {
+    check_pte_ops::<crate::riscv64::PageTableEntry>();
 }
 
-/// EXCLUSIVE 位编解码往返——通过 PTE 写入再读出后 EXCLUSIVE 位应保留。
+/// AArch64 PTE trait 一致性。
 #[test]
-fn exclusive_flag_roundtrip() {
-    let pa = PhysAddr::new(0x8020_0000);
-    let flags = PteFlags::kernel_rw().with_exclusive();
-    let pte = PageTableEntry::new(pa, flags);
-    assert!(pte.flags().is_exclusive());
-    assert_eq!(pte.paddr(), pa);
-
-    let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
-    assert!(!pte_no_excl.flags().is_exclusive());
+fn aarch64_pte_ops_conformance() {
+    check_pte_ops::<crate::aarch64::PageTableEntry>();
 }
 
-/// 验证 PteOps trait 所有方法在 PageTableEntry 上的可用性。
+/// RISC-V PteFlags trait 一致性。
 #[test]
-fn pte_ops_trait_conformance() {
-    fn check<T: PteOps>() {
-        let pa = PhysAddr::new(0x8020_0000);
-        let pte = T::new(pa, T::Flags::kernel_rw());
-        assert!(pte.is_valid());
-        assert_eq!(pte.paddr(), pa);
-
-        let empty = T::empty();
-        assert!(!empty.is_valid());
-
-        let inter = T::new_intermediate(pa);
-        assert!(inter.is_valid());
-        assert!(!inter.is_leaf(1));
-    }
-    check::<PageTableEntry>();
+fn riscv64_flags_ops_conformance() {
+    check_flags_ops::<crate::riscv64::PteFlags>();
 }
 
-#[cfg(not(feature = "test-aarch64"))]
-mod riscv64_specific {
+/// AArch64 PteFlags trait 一致性。
+#[test]
+fn aarch64_flags_ops_conformance() {
+    check_flags_ops::<crate::aarch64::PteFlags>();
+}
+
+mod riscv64 {
     use super::*;
+    use crate::riscv64::{PageTableEntry, PteFlags};
 
     /// 每个 RISC-V PteFlags 单独编解码往返。
     #[test]
@@ -203,11 +173,24 @@ mod riscv64_specific {
         assert_eq!(flags.for_leaf_at_level(1), flags);
         assert_eq!(flags.for_leaf_at_level(2), flags);
     }
+
+    /// EXCLUSIVE 位编解码往返。
+    #[test]
+    fn exclusive_flag_roundtrip() {
+        let pa = PhysAddr::new(0x8020_0000);
+        let flags = PteFlags::kernel_rw().with_exclusive();
+        let pte = PageTableEntry::new(pa, flags);
+        assert!(pte.flags().is_exclusive());
+        assert_eq!(pte.paddr(), pa);
+
+        let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
+        assert!(!pte_no_excl.flags().is_exclusive());
+    }
 }
 
-#[cfg(feature = "test-aarch64")]
-mod aarch64_specific {
+mod aarch64 {
     use super::*;
+    use crate::aarch64::{PageTableEntry, PteFlags};
 
     /// 每个 AArch64 PteFlags 单独编解码往返。
     #[test]
@@ -273,7 +256,7 @@ mod aarch64_specific {
         assert!(dev.contains(PteFlags::UXN));
     }
 
-    /// AArch64 的 is_leaf 依赖层级：Level 0 所有有效项都是叶，Level > 0 看 TABLE 位。
+    /// AArch64 的 is_leaf 依赖层级。
     #[test]
     fn is_leaf_level_dependent() {
         let pa = PhysAddr::new(0x8020_0000);
@@ -287,5 +270,18 @@ mod aarch64_specific {
 
         let table_pte = PageTableEntry::new_intermediate(pa);
         assert!(!table_pte.is_leaf(1));
+    }
+
+    /// EXCLUSIVE 位编解码往返。
+    #[test]
+    fn exclusive_flag_roundtrip() {
+        let pa = PhysAddr::new(0x8020_0000);
+        let flags = PteFlags::kernel_rw().with_exclusive();
+        let pte = PageTableEntry::new(pa, flags);
+        assert!(pte.flags().is_exclusive());
+        assert_eq!(pte.paddr(), pa);
+
+        let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
+        assert!(!pte_no_excl.flags().is_exclusive());
     }
 }

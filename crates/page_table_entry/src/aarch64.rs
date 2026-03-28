@@ -15,7 +15,7 @@
 
 use bitflags::bitflags;
 
-use crate::{PageTableEntry, PteFlagsOps, PteOps};
+use crate::{PteFlagsOps, PteOps};
 use address::PhysAddr;
 
 const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
@@ -25,6 +25,11 @@ const PAGE_SHIFT: u32 = config::PAGE_SIZE.trailing_zeros();
 /// - 16KB (PAGE_SHIFT=14)：bits [47:14]
 /// - 64KB (PAGE_SHIFT=16)：bits [47:16]
 const OUTPUT_ADDR_MASK: u64 = 0x0000_FFFF_FFFF_FFFF & !((1u64 << PAGE_SHIFT) - 1);
+
+/// AArch64 页表项（64 位）。
+#[derive(Debug, Clone, Copy)]
+#[repr(transparent)]
+pub struct PageTableEntry(pub u64);
 
 bitflags! {
     /// AArch64 ARMv8 页表项标志位（硬件原生位位置）。
@@ -110,7 +115,6 @@ impl PteFlagsOps for PteFlags {
         Self::VALID | Self::TABLE | Self::AF | Self::MAIR_IDX1 | Self::PXN | Self::UXN
     }
 
-    /// 是否具有写权限。
     #[inline]
     fn is_writable(self) -> bool {
         !self.contains(Self::AP_RO)
@@ -129,7 +133,6 @@ impl PteFlagsOps for PteFlags {
         if level == 0 {
             self
         } else {
-            // Block descriptor：清除 TABLE 位
             self.difference(Self::TABLE)
         }
     }
@@ -145,7 +148,7 @@ impl PteFlagsOps for PteFlags {
     }
 }
 
-/// AArch64 专用：构造 table descriptor（指向下一级页表）。
+/// 构造 table descriptor（指向下一级页表）。
 fn new_table(paddr: PhysAddr) -> PageTableEntry {
     let bits = (paddr.as_usize() as u64 & OUTPUT_ADDR_MASK)
         | PteFlags::VALID.bits()
@@ -156,32 +159,26 @@ fn new_table(paddr: PhysAddr) -> PageTableEntry {
 impl PteOps for PageTableEntry {
     type Flags = PteFlags;
 
-    /// 从物理地址和标志构造叶/页描述符。
     #[inline]
     fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
         Self((paddr.as_usize() as u64 & OUTPUT_ADDR_MASK) | flags.bits())
     }
 
-    /// 从 PTE 提取物理地址。
     #[inline]
     fn paddr(self) -> PhysAddr {
         PhysAddr::new((self.0 & OUTPUT_ADDR_MASK) as usize)
     }
 
-    /// 从 PTE 提取标志位（硬件原生位）。
     #[inline]
     fn flags(self) -> PteFlags {
         PteFlags::from_bits_truncate(self.0 & !OUTPUT_ADDR_MASK)
     }
 
-    /// PTE 是否有效。
     #[inline]
     fn is_valid(self) -> bool {
         self.0 & PteFlags::VALID.bits() != 0
     }
 
-    /// 是否为叶节点（page/block 描述符，非 table 描述符）。
-    ///
     /// ARMv8 的叶判断依赖层级：
     /// - Level 0（最低级）：所有有效项都是 page descriptor（叶），TABLE 位 = 1
     /// - Level 1-3：TABLE 位 = 0 表示 block descriptor（叶）
@@ -197,15 +194,23 @@ impl PteOps for PageTableEntry {
         }
     }
 
-    /// 空 PTE（全零）。
     #[inline]
     fn empty() -> Self {
         Self(0)
     }
 
-    /// 中间节点（table 描述符）。
     #[inline]
     fn new_intermediate(paddr: PhysAddr) -> Self {
         new_table(paddr)
+    }
+
+    #[inline]
+    fn from_raw(raw: u64) -> Self {
+        Self(raw)
+    }
+
+    #[inline]
+    fn as_raw(self) -> u64 {
+        self.0
     }
 }
