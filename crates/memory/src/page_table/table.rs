@@ -1,6 +1,7 @@
 //! 多级页表——walk / map / unmap 逻辑。
 //!
-//! 通过 [`FrameProvider`] trait 抽象帧分配，裸机和宿主机测试共享同一份 walk 实现。
+//! 裸机和宿主机测试共享同一份 walk 实现，
+//! 通过 `#[cfg]` 选择页表节点的帧类型（裸机用 buddy allocator，测试用堆分配）。
 
 extern crate alloc;
 
@@ -12,16 +13,52 @@ use address::{PhysAddr, VirtAddr};
 
 const PT_LEVELS: usize = config::PT_LEVELS;
 
-/// 帧分配抽象——页表遍历时按需分配中间节点。
-///
-/// 裸机使用 buddy allocator，宿主机测试使用堆分配。
-pub trait FrameProvider {
-    /// 持有帧所有权的类型
-    type Frame;
-    /// 分配一个零初始化的页帧
-    fn alloc_frame(&mut self) -> Result<Self::Frame, MemoryError>;
-    /// 获取帧的物理地址（裸机）或堆地址（测试）
-    fn frame_paddr(frame: &Self::Frame) -> PhysAddr;
+// --- 页表节点帧：裸机用 AllocatedFrames，测试用堆分配 ---
+
+#[cfg(target_os = "none")]
+type NodeFrame = crate::frame::AllocatedFrames;
+
+#[cfg(test)]
+struct NodeFrame {
+    ptr: *mut u8,
+    layout: core::alloc::Layout,
+}
+
+#[cfg(test)]
+impl Drop for NodeFrame {
+    fn drop(&mut self) {
+        // SAFETY: ptr 由同 layout 的 alloc_zeroed 分配
+        unsafe { std::alloc::dealloc(self.ptr, self.layout) };
+    }
+}
+
+/// 分配一个页表节点帧（零初始化）。
+fn alloc_node() -> Result<NodeFrame, MemoryError> {
+    #[cfg(target_os = "none")]
+    {
+        crate::frame::AllocatedFrames::alloc_one()
+    }
+    #[cfg(test)]
+    {
+        let layout = core::alloc::Layout::from_size_align(config::PAGE_SIZE, config::PAGE_SIZE)
+            .expect("NodeFrame: invalid layout");
+        // SAFETY: layout 非零大小
+        let ptr = unsafe { std::alloc::alloc_zeroed(layout) };
+        assert!(!ptr.is_null(), "NodeFrame: allocation failed");
+        Ok(NodeFrame { ptr, layout })
+    }
+}
+
+/// 获取节点帧的物理地址（裸机 identity mapping）或堆地址（测试）。
+fn node_paddr(frame: &NodeFrame) -> PhysAddr {
+    #[cfg(target_os = "none")]
+    {
+        frame.start_paddr()
+    }
+    #[cfg(test)]
+    {
+        PhysAddr::new(frame.ptr as usize)
+    }
 }
 
 /// 从物理地址构造 `Table<Level0>` 用于 walker 内部。
@@ -38,27 +75,25 @@ unsafe fn table_at(paddr: PhysAddr) -> Table<Level0> {
     unsafe { Table::<Level0>::from_paddr(paddr) }
 }
 
-/// 泛型多级页表——通过 [`FrameProvider`] 参数化帧分配。
+/// 多级页表。
 ///
 /// 拥有根帧及所有遍历过程中分配的中间帧。
-/// drop 时自动归还所有帧（具体行为由 `F::Frame` 的 Drop 决定）。
-pub struct GenericPageTable<F: FrameProvider> {
+/// drop 时自动归还所有帧。
+pub struct PageTable {
     root_paddr: PhysAddr,
-    root: F::Frame,
-    frames: Vec<F::Frame>,
-    provider: F,
+    root: NodeFrame,
+    frames: Vec<NodeFrame>,
 }
 
-impl<F: FrameProvider> GenericPageTable<F> {
+impl PageTable {
     /// 创建新页表，分配根帧。
-    pub fn new(mut provider: F) -> Result<Self, MemoryError> {
-        let root = provider.alloc_frame()?;
-        let root_paddr = F::frame_paddr(&root);
+    pub fn create() -> Result<Self, MemoryError> {
+        let root = alloc_node()?;
+        let root_paddr = node_paddr(&root);
         Ok(Self {
             root_paddr,
             root,
             frames: Vec::new(),
-            provider,
         })
     }
 
@@ -79,8 +114,8 @@ impl<F: FrameProvider> GenericPageTable<F> {
             let pte = table.read(idx);
 
             if !pte.is_valid() {
-                let frame = self.provider.alloc_frame()?;
-                let frame_paddr = F::frame_paddr(&frame);
+                let frame = alloc_node()?;
+                let frame_paddr = node_paddr(&frame);
                 table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
                 self.frames.push(frame);
                 paddr = frame_paddr;
@@ -179,97 +214,3 @@ impl<F: FrameProvider> GenericPageTable<F> {
         }
     }
 }
-
-#[cfg(target_os = "none")]
-use crate::frame::AllocatedFrames;
-
-/// 裸机帧分配——委托给全局 buddy allocator。
-#[cfg(target_os = "none")]
-pub struct BuddyProvider;
-
-#[cfg(target_os = "none")]
-impl FrameProvider for BuddyProvider {
-    type Frame = AllocatedFrames;
-
-    fn alloc_frame(&mut self) -> Result<Self::Frame, MemoryError> {
-        AllocatedFrames::alloc_one()
-    }
-
-    fn frame_paddr(frame: &Self::Frame) -> PhysAddr {
-        frame.start_paddr()
-    }
-}
-
-/// 裸机页表类型别名。
-#[cfg(target_os = "none")]
-pub type PageTable = GenericPageTable<BuddyProvider>;
-
-/// 裸机便捷构造函数——隐藏 `BuddyProvider` 细节。
-#[cfg(target_os = "none")]
-impl GenericPageTable<BuddyProvider> {
-    /// 创建新裸机页表，分配根帧。
-    pub fn create() -> Result<Self, MemoryError> {
-        Self::new(BuddyProvider)
-    }
-}
-
-#[cfg(test)]
-mod test_support {
-    use super::*;
-    use config::PAGE_SIZE;
-
-    /// 堆分配的帧，模拟裸机环境的物理帧。
-    ///
-    /// 使用页对齐分配——PTE 编码会截断低 12 位，
-    /// 非对齐地址经 PTE 往返后会丢失偏移量。
-    pub(crate) struct TestFrame {
-        ptr: *mut u8,
-        layout: core::alloc::Layout,
-    }
-
-    impl TestFrame {
-        fn alloc() -> Self {
-            let layout = core::alloc::Layout::from_size_align(PAGE_SIZE, PAGE_SIZE)
-                .expect("TestFrame: invalid layout");
-            // SAFETY: layout 非零大小
-            let ptr = unsafe { std::alloc::alloc_zeroed(layout) };
-            assert!(!ptr.is_null(), "TestFrame: allocation failed");
-            Self { ptr, layout }
-        }
-    }
-
-    impl Drop for TestFrame {
-        fn drop(&mut self) {
-            // SAFETY: ptr 由同 layout 的 alloc_zeroed 分配
-            unsafe { std::alloc::dealloc(self.ptr, self.layout) };
-        }
-    }
-
-    /// 宿主机测试帧分配——使用页对齐堆分配模拟物理帧。
-    pub(crate) struct HeapProvider;
-
-    impl FrameProvider for HeapProvider {
-        type Frame = TestFrame;
-
-        fn alloc_frame(&mut self) -> Result<Self::Frame, MemoryError> {
-            Ok(TestFrame::alloc())
-        }
-
-        fn frame_paddr(frame: &Self::Frame) -> PhysAddr {
-            PhysAddr::new(frame.ptr as usize)
-        }
-    }
-
-    /// 测试用页表类型别名。
-    pub type TestPageTable = GenericPageTable<HeapProvider>;
-
-    impl GenericPageTable<HeapProvider> {
-        /// 创建测试页表。
-        pub fn create() -> Self {
-            Self::new(HeapProvider).expect("TestPageTable: allocation failed")
-        }
-    }
-}
-
-#[cfg(test)]
-pub(crate) use test_support::TestPageTable;

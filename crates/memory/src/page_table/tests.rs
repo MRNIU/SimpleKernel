@@ -1,6 +1,6 @@
 //! 页表单元测试。
 
-use super::table::TestPageTable;
+use super::table::PageTable;
 use super::*;
 use crate::error::MemoryError;
 use address::{PhysAddr, VirtAddr};
@@ -137,7 +137,7 @@ fn pte_is_valid_and_leaf() {
 /// 映射单页后应能查询到正确的物理地址和完整标志。
 #[test]
 fn map_and_get_mapping() {
-    let mut pt = TestPageTable::create();
+    let mut pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
     let flags = PageFlags::kernel_rw();
@@ -152,7 +152,7 @@ fn map_and_get_mapping() {
 /// 映射两个不同的虚拟页到不同的物理页，互不干扰。
 #[test]
 fn map_different_pages() {
-    let mut pt = TestPageTable::create();
+    let mut pt = PageTable::create().expect("创建测试页表失败");
 
     let va1 = VirtAddr::new(0x0000_1000);
     let va2 = VirtAddr::new(0x0000_2000);
@@ -175,7 +175,7 @@ fn map_different_pages() {
 /// 对同一虚拟地址重复映射应返回 MapFailed 错误。
 #[test]
 fn double_map_fails() {
-    let mut pt = TestPageTable::create();
+    let mut pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
 
@@ -190,7 +190,7 @@ fn double_map_fails() {
 /// unmap 应返回原始物理地址，且之后查询应为 None。
 #[test]
 fn unmap_page_returns_old_pa() {
-    let mut pt = TestPageTable::create();
+    let mut pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
 
@@ -205,7 +205,7 @@ fn unmap_page_returns_old_pa() {
 /// 对未映射的页执行 unmap 应返回 PageNotMapped 错误。
 #[test]
 fn unmap_unmapped_page_fails() {
-    let mut pt = TestPageTable::create();
+    let mut pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
 
     let err = pt.unmap_page(va).expect_err("unmap 未映射页应失败");
@@ -215,7 +215,7 @@ fn unmap_unmapped_page_fails() {
 /// 跨不同 VPN[2] 范围的映射，会触发不同的二级页表分配。
 #[test]
 fn map_pages_in_different_vpn_ranges() {
-    let mut pt = TestPageTable::create();
+    let mut pt = PageTable::create().expect("创建测试页表失败");
 
     let va_low = VirtAddr::new(0x0000_1000);
     let va_high = VirtAddr::new(0x4000_0000);
@@ -236,7 +236,7 @@ fn map_pages_in_different_vpn_ranges() {
 /// unmap 后重新映射到不同物理地址应成功。
 #[test]
 fn remap_after_unmap() {
-    let mut pt = TestPageTable::create();
+    let mut pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa1 = PhysAddr::new(0x8020_0000);
     let pa2 = PhysAddr::new(0x8030_0000);
@@ -255,7 +255,7 @@ fn remap_after_unmap() {
 /// 查询从未映射过的地址应返回 None。
 #[test]
 fn get_mapping_on_empty_table() {
-    let pt = TestPageTable::create();
+    let pt = PageTable::create().expect("创建测试页表失败");
     assert!(pt.get_mapping(VirtAddr::new(0x1000)).is_none());
     assert!(pt.get_mapping(VirtAddr::new(0)).is_none());
 }

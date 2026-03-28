@@ -13,7 +13,7 @@ mod pte_aarch64;
 mod pte_riscv64;
 
 #[cfg(any(test, target_os = "none"))]
-mod table;
+pub(crate) mod table;
 #[cfg(target_os = "none")]
 pub use table::PageTable;
 
