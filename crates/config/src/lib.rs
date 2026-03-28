@@ -1,46 +1,39 @@
 #![cfg_attr(not(test), no_std)]
 
+/// 最大 CPU 核心数
 pub const MAX_CORE_COUNT: usize = 4;
 
-/// 页大小，单位字节
+/// 页大小
 pub const PAGE_SIZE: usize = 4096;
 
-/// 页大小的位数（log2(PAGE_SIZE)）
-pub const PAGE_SIZE_BITS: usize = 12;
+/// log2(PAGE_SIZE)
+pub const PAGE_SIZE_BITS: usize = PAGE_SIZE.trailing_zeros() as usize;
 
-/// Kernel heap size: 4 MB (backed by static BSS array)
-pub const KERNEL_HEAP_SIZE: usize = 4 * 1024 * 1024;
+/// 内核线程栈大小
+pub const KERNEL_STACK_SIZE: usize = 4 * PAGE_SIZE;
 
-/// 内核日志级别（可按需调整为 Trace/Info/Warn/Error）
+/// Per-CPU 区域对齐
+pub const PER_CPU_ALIGN_SIZE: usize = 128;
+
+/// 4 MB，由 BSS 段静态数组支撑
+pub const KERNEL_HEAP_SIZE: usize = 1024 * PAGE_SIZE;
+
+/// 内核默认日志级别
 pub const DEFAULT_LOG_LEVEL: log::LevelFilter = log::LevelFilter::Debug;
 
-/// 回溯最大深度
+/// 回溯最大帧数
 pub const MAX_BACKTRACE_DEPTH: usize = 16;
 
-/// 内核线程栈大小（16KB，与 boot.S 中 DEFAULT_STACK_SIZE 一致）
-pub const KERNEL_STACK_SIZE: usize = 16 * 1024;
-
-/// 内核 tick 频率（Hz）——所有架构统一使用此值。
-///
-/// 10 Hz = 每 100ms 一次中断。每次中断直接打印 Tick 日志，
-/// 避免使用全局计数器 modulo 导致的 SMP 输出偏斜。
+/// 10 Hz = 每 100ms 一次 tick 中断
 pub const TIMER_FREQ_HZ: u64 = 10;
 
-/// Per-CPU 锁栈最大深度。
-///
-/// 每个核心维护一个当前持有锁的栈，用于强制锁获取顺序。
-/// 复杂路径（中断嵌套 + 多层锁）可能需要较大的深度。
-/// 参考 Linux lockdep 默认 48 层，此处取 16 作为平衡。
+/// Per-CPU 锁顺序栈最大深度
 pub const LOCK_STACK_DEPTH: usize = 16;
 
-/// 每个 CPU 的 per-CPU 区域最大字节数。
-///
-/// `#[cpu_local]` 变量的模板会在 boot 时复制到每个 CPU 的区域中。
-/// 当前实际约 256 字节，4096 留有充足余量。
-/// 如果 `.percpu` section 超过此值，`percpu_init()` 会 panic。
-pub const PERCPU_AREA_MAX: usize = 4096;
+/// percpu 区域最大大小
+pub const PERCPU_AREA_MAX: usize = PAGE_SIZE;
 
-/// 页表层级数——由目标架构决定。
+/// 页表层级数
 ///
 /// - RISC-V Sv39: 3 级
 /// - AArch64 4KB granule: 4 级

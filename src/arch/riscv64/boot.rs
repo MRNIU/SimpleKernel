@@ -1,0 +1,57 @@
+use core::arch::global_asm;
+
+// KERNEL_STACK_SIZE 必须是 2 的幂，方便用移位替代乘法
+// （global_asm! 走 LLVM 汇编器，不自动继承 -march=rv64gc 的 M 扩展）
+const _: () = assert!(
+    config::KERNEL_STACK_SIZE.is_power_of_two(),
+    "KERNEL_STACK_SIZE must be a power of two"
+);
+const KERNEL_STACK_SIZE_LOG2: u32 = config::KERNEL_STACK_SIZE.trailing_zeros();
+
+global_asm!(
+    r#"
+.section .text.boot
+.global _boot
+.type _boot, @function
+.extern _start
+.extern __global_pointer$
+
+_boot:
+    // dtb 地址 (a1) 为零则跳过 gp 初始化
+    beqz a1, 2f
+
+    // 初始化 gp 寄存器
+    // @see riscv-abi.pdf#9.1.4
+.option push
+.option norelax
+1:  auipc gp, %pcrel_hi(__global_pointer$)
+    addi  gp, gp, %pcrel_lo(1b)
+.option pop
+
+2:  // 按照每个 core 设置栈地址：(hart_id + 1) << log2(KERNEL_STACK_SIZE)
+    add t0, a0, 1
+    slli t0, t0, {KERNEL_STACK_SIZE_LOG2}
+    la sp, stack_top
+    add sp, sp, t0
+
+    // 将 hart id 写入 tp
+    mv tp, a0
+
+    // 保存 SBI 传递的参数
+    addi sp, sp, -8*2
+    sd a0, (0 * 8)(sp)     // a0: 启动核 id
+    sd a1, (1 * 8)(sp)     // a1: dtb 地址
+
+    call _start
+    wfi
+
+.section .bss.boot
+.align 16
+.global stack_top
+stack_top:
+    .space {KERNEL_STACK_SIZE} * {MAX_CORE_COUNT}
+"#,
+    KERNEL_STACK_SIZE_LOG2 = const KERNEL_STACK_SIZE_LOG2,
+    KERNEL_STACK_SIZE = const config::KERNEL_STACK_SIZE,
+    MAX_CORE_COUNT = const config::MAX_CORE_COUNT,
+);

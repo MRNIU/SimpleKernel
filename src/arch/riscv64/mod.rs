@@ -1,3 +1,4 @@
+mod boot;
 pub mod console;
 pub mod context;
 pub mod interrupt;
