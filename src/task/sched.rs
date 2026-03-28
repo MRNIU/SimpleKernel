@@ -20,24 +20,15 @@ use crate::task::tcb::TaskRef;
 use config::MAX_CORE_COUNT;
 use sync::SpinLockIrq;
 use sync::spinlock::lock_level;
-
-// ─── switch_to 外部声明 ──────────────────────────────────────────────
-
 unsafe extern "C" {
     fn switch_to(prev: *mut CalleeSavedContext, next: *const CalleeSavedContext);
 }
-
-// ─── Per-CPU 调度锁 ──────────────────────────────────────────────────
-
 /// Per-CPU 调度锁数组——每个核心一把，保护对应核心的调度状态。
 ///
 /// `schedule()` 使用 RAII guard（`lock()`）获取和释放，锁在 `switch_to` 前释放。
 /// 任务窃取时使用 `try_lock_raw_no_irq()` 获取其他核心的锁。
 pub(super) static PER_CPU_SCHED_LOCK: [SpinLockIrq<()>; MAX_CORE_COUNT] =
     [const { SpinLockIrq::new_with_level((), "sched", lock_level::SCHED_LOCK) }; MAX_CORE_COUNT];
-
-// ─── Per-CPU 调度状态 ────────────────────────────────────────────────
-
 /// 延迟入队的 prev 任务——在下次 `schedule()` 开始时放回就绪队列。
 ///
 /// `switch_to` 前不将 prev 入队，避免其他核偷走后与当前核的
@@ -79,9 +70,6 @@ pub(super) unsafe fn per_cpu_sched(core_id: usize) -> &'static mut PerCpuSched {
     let array = unsafe { &mut *PER_CPU_SCHED.get() };
     array[core_id].as_mut().expect("per_cpu_sched: 未初始化")
 }
-
-// ─── 任务窃取 ──────────────────────────────────────────────────────────
-
 /// 从其他核心窃取一个任务——当本核就绪队列为空时调用。
 ///
 /// 调用者已持有 PER_CPU_SCHED_LOCK[my_core]（通过 RAII guard），中断已禁用。
@@ -135,9 +123,6 @@ pub(super) fn try_steal(my_core: usize) -> Option<TaskRef> {
 
     stolen
 }
-
-// ─── 调度函数 ────────────────────────────────────────────────────────
-
 /// 获取当前核上正在运行的任务。
 pub fn current_task() -> TaskRef {
     let core_id = per_cpu::current_core_id();
@@ -163,7 +148,7 @@ pub fn current_task() -> TaskRef {
 /// 仅供 `kernel_thread_bootstrap` 在新任务首次运行时调用一次。
 pub unsafe fn bootstrap_enable_irq() {
     // SAFETY: 调度锁已释放，启用中断是安全的
-    unsafe { sync::interrupt_ops::enable() };
+    unsafe { sync::irq_enable() };
 }
 
 /// 调度函数——选择下一个任务并执行上下文切换。

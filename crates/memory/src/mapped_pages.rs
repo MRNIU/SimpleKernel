@@ -226,7 +226,12 @@ impl Drop for MappedPages {
                 let va = self.vaddr + i * PAGE_SIZE;
                 let _ = guard.unmap_page(va);
             }
-            arch_traits::flush_tlb();
+            // 单页用精确刷新，多页用全局刷新（避免逐页 barrier 的累积开销）
+            if self.page_count == 1 {
+                crate::tlb::flush_tlb_page(self.vaddr.as_usize());
+            } else {
+                crate::tlb::flush_tlb();
+            }
         }
         // frames 在此处 drop，物理帧归还分配器
     }

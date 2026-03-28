@@ -33,9 +33,6 @@ mod task_table;
 
 #[cfg(not(test))]
 pub use sched::{bootstrap_enable_irq, current_task, schedule, timer_tick, yield_now};
-
-// ─── 公开 API（仅非测试模式） ─────────────────────────────────────────────
-
 #[cfg(not(test))]
 mod api {
     use alloc::sync::Arc;
@@ -89,9 +86,6 @@ mod api {
 
         log::info!("TaskInit: idle task created for core {}", core_id);
     }
-
-    // ─── TaskBuilder ────────────────────────────────────────────────────
-
     /// 内核线程构建器——借鉴 Theseus OS 的 `TaskBuilder` 模式。
     ///
     /// 通过链式调用设置任务参数，最后调用 `spawn()` 创建任务。
@@ -194,16 +188,13 @@ mod api {
         let table = TASK_TABLE.lock();
         table.tasks.iter().find(|t| t.pid() == pid).cloned()
     }
-
-    // ─── sleep ──────────────────────────────────────────────────────────
-
     /// 挂起当前任务指定 tick 数。
     ///
     /// 必须在持有 TASK_TABLE 锁时原子完成「加入睡眠队列 + 设置状态」，
     /// 否则另一核心的 `wake_expired_sleepers()` 可能在窗口期内遗漏该任务。
     pub fn sleep(ticks: u64) {
         let task = super::sched::current_task();
-        let now = arch_traits::get_current_tick();
+        let now = tick::get_current_tick();
         task.set_wake_tick(now + ticks);
 
         {
@@ -217,13 +208,9 @@ mod api {
 
     /// 挂起当前任务指定毫秒数。
     pub fn sleep_ms(ms: u64) {
-        let tps = arch_traits::ticks_per_second();
-        let ticks = (ms * tps + 999) / 1000;
+        let ticks = (ms * config::TIMER_FREQ_HZ + 999) / 1000;
         sleep(ticks);
     }
-
-    // ─── block / wakeup ─────────────────────────────────────────────────
-
     /// 在指定资源上阻塞当前任务。
     ///
     /// 必须在持有 TASK_TABLE 锁时原子完成「加入等待队列 + 设置状态」，
@@ -259,9 +246,6 @@ mod api {
         let sched = unsafe { per_cpu_sched(core_id) };
         table.wake_all(sched, resource);
     }
-
-    // ─── exit / wait ────────────────────────────────────────────────────
-
     /// 退出当前任务。
     pub fn exit(code: i32) -> ! {
         let task = super::sched::current_task();
@@ -321,9 +305,6 @@ mod api {
             block_on(ResourceId::ChildExit(child_pid));
         }
     }
-
-    // ─── clone ──────────────────────────────────────────────────────────
-
     /// 克隆当前任务——创建子内核线程。
     pub fn clone_kernel_thread(
         name: &'static str,
@@ -334,9 +315,6 @@ mod api {
         let child = spawn_kernel_thread_with_parent(name, entry, arg, Some(parent.pid()));
         Ok(child.pid())
     }
-
-    // ─── signal ─────────────────────────────────────────────────────────
-
     /// 向指���任务发送信号。
     pub fn send_signal(pid: Pid, sig: Signal) -> Result<(), TaskError> {
         let core_id = per_cpu::current_core_id();

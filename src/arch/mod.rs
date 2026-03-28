@@ -4,9 +4,14 @@ pub(crate) mod aarch64;
 #[cfg(target_arch = "riscv64")]
 pub(crate) mod riscv64;
 
-/// 架构操作契约——所有架构相关的函数。
+/// 架构操作契约——需要高层依赖（内存管理、硬件初始化）的架构相关函数。
 ///
 /// 所有方法均为关联函数（无 `self`），因为架构操作是全局的、无状态的。
+///
+/// 底层 CPU 原语（中断控制）在 `sync` crate 中提供，
+/// TLB 管理在 `memory` crate 中提供，
+/// core ID 在 `per-cpu` crate 中提供，tick 计数在 `tick` crate 中提供，
+/// 此 trait 仅定义初始化和硬件配置操作。
 pub trait ArchOps {
     /// 从引导参数中提取 DTB（设备树）物理地址
     fn dtb_addr(argc: i32, argv: *const *const u8) -> usize;
@@ -26,27 +31,6 @@ pub trait ArchOps {
     /// 唤醒所有从核
     fn wake_secondary_cores();
 
-    /// 从引导参数中提取从核 core ID
-    fn secondary_core_id(argc: i32, argv: *const *const u8) -> usize;
-
-    /// 读取当前核心 ID
-    fn core_id() -> usize;
-
-    /// 查询中断是否处于使能状态
-    fn irq_enabled() -> bool;
-
-    /// 禁用中断
-    fn irq_disable();
-
-    /// 使能中断
-    ///
-    /// # Safety
-    /// 调用方必须确保在使能中断后不会违反临界区不变量。
-    unsafe fn irq_enable();
-
-    /// 刷新 TLB（在新增页表映射后调用）
-    fn flush_tlb();
-
     /// 映射分页激活前必须就绪的架构特定 MMIO
     fn map_early_mmio(
         pt: &mut memory::page_table::PageTable,
@@ -60,12 +44,6 @@ pub trait ArchOps {
 
     /// 向早期控制台输出字符串（SBI putchar / PL011 MMIO）
     fn console_write(s: &str);
-
-    /// 读取当前 tick 计数
-    fn get_current_tick() -> u64;
-
-    /// 返回每秒 tick 数
-    fn ticks_per_second() -> u64;
 }
 
 #[cfg(target_arch = "riscv64")]

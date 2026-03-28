@@ -58,7 +58,7 @@ impl TaskTable {
 
     /// 唤醒到期的睡眠任务。
     pub(super) fn wake_expired_sleepers(&mut self, sched: &mut PerCpuSched) {
-        let now = arch_traits::get_current_tick();
+        let now = tick::get_current_tick();
         let mut i = 0;
         while i < self.sleep_queue.len() {
             let task = &self.sleep_queue[i];

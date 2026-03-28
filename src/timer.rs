@@ -7,7 +7,7 @@
 /// 4. 标记 need_resched
 /// 5. 日志
 pub fn handle_timer_common() {
-    let tick = arch_traits::tick_advance();
+    let tick = tick::tick_advance();
 
     // SAFETY: 在中断处理程序中调用，中断已被 CPU 自动关闭
     unsafe { per_cpu::enter_hardirq() };

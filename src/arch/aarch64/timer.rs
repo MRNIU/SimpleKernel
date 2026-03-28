@@ -4,16 +4,6 @@
 /// 目标 tick 频率：`config::TIMER_FREQ_HZ` Hz。
 use config::TIMER_FREQ_HZ;
 
-/// 读取当前 tick 计数——委托给 arch-traits 全局计数器
-pub fn get_current_tick() -> u64 {
-    arch_traits::get_current_tick()
-}
-
-/// 返回每秒 tick 数
-pub const fn ticks_per_second() -> u64 {
-    TIMER_FREQ_HZ
-}
-
 /// 读取 CNTFRQ_EL0（定时器硬件频率，Hz）
 #[inline]
 fn read_cntfrq() -> u64 {

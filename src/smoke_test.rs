@@ -5,11 +5,8 @@
 
 use core::sync::atomic::{AtomicU32, Ordering};
 
-use crate::arch::{Arch, ArchOps};
 use crate::task;
 use sync::SpinLock;
-
-// ─── 引导阶段冒烟测试 ─────────────────────────────────────────────────────────
 
 pub fn phase2() {
     log::info!("Testing SpinLock...");
@@ -52,8 +49,6 @@ pub fn phase3() {
 pub fn phase4() {
     log::info!("Phase 4 complete");
 }
-
-// ─── P5a: 多核锁竞争测试 ────────────────────────────────────────────────────
 
 static TEST_COUNTER: SpinLock<u32> = SpinLock::new(0, "test_counter");
 static TEST_DONE: AtomicU32 = AtomicU32::new(0);
@@ -112,15 +107,12 @@ fn verifier_thread(_arg: usize) {
     }
 }
 
-// ─── P5b: 生命周期测试 ──────────────────────────────────────────────────────
-
 /// P5b 综合测试
 fn p5b_test_thread(_arg: usize) {
-    // ── sleep ──
     log::info!("P5b: testing sleep_ms(500)...");
-    let tick_before = Arch::get_current_tick();
+    let tick_before = tick::get_current_tick();
     task::sleep_ms(500);
-    let tick_after = Arch::get_current_tick();
+    let tick_after = tick::get_current_tick();
     let elapsed = tick_after.saturating_sub(tick_before);
     // 500ms @ 10Hz = 5 ticks（全局计数器被双核推进，实际约 10），允许 ≥3
     log::info!("P5b: sleep_ms(500) elapsed {} ticks", elapsed);
@@ -130,7 +122,6 @@ fn p5b_test_thread(_arg: usize) {
         log::error!("=== SLEEP TEST FAILED: elapsed={} < 3 ===", elapsed);
     }
 
-    // ── clone + wait ──
     log::info!("P5b: testing clone/wait...");
     match task::clone_kernel_thread("child", child_thread, 42) {
         Ok(child_pid) => {
@@ -154,7 +145,6 @@ fn p5b_test_thread(_arg: usize) {
         Err(e) => log::error!("=== CLONE/WAIT TEST FAILED: clone err={:?} ===", e),
     }
 
-    // ── KMutex ──
     log::info!("P5b: testing KMutex...");
     static KMUTEX: spin::Once<task::mutex::KMutex> = spin::Once::new();
     KMUTEX.call_once(task::mutex::KMutex::new);
@@ -164,7 +154,6 @@ fn p5b_test_thread(_arg: usize) {
     km.unlock();
     log::info!("=== KMUTEX TEST PASSED ===");
 
-    // ── signal (SIGKILL) ──
     log::info!("P5b: testing signal...");
     match task::clone_kernel_thread("victim", victim_thread, 0) {
         Ok(victim_pid) => {
@@ -204,8 +193,6 @@ fn victim_thread(_arg: usize) {
         task::yield_now();
     }
 }
-
-// ─── 公开入口 ────────────────────────────────────────────────────────────────
 
 /// 创建所有冒烟测试线程。
 pub fn spawn_all() {

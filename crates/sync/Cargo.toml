@@ -8,5 +8,13 @@ description.workspace = true
 edition.workspace = true
 
 [dependencies]
-arch-traits = { path = "../arch-traits" }
 per-cpu = { path = "../per-cpu" }
+
+# RISC-V CSR / 指令封装（sstatus、中断控制）
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+riscv = { version = "0.16", features = ["s-mode"] }
+
+# AArch64 系统寄存器访问（DAIF）
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu = "9"
+tock-registers = "0.9"

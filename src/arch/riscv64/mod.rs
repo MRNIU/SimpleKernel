@@ -45,41 +45,6 @@ impl ArchOps for Riscv64 {
         ipi::wake_secondary_cores();
     }
 
-    #[inline]
-    fn secondary_core_id(argc: i32, _argv: *const *const u8) -> usize {
-        // SBI hart_start 将 hart_id 放入 a0（编码为 argc）
-        argc as usize
-    }
-
-    #[inline]
-    fn core_id() -> usize {
-        let id: usize;
-        // SAFETY: tp 寄存器在 boot.S 中由 mv tp, a0 设置为 hart ID
-        unsafe { core::arch::asm!("mv {id}, tp", id = out(reg) id) };
-        id
-    }
-
-    #[inline]
-    fn irq_enabled() -> bool {
-        riscv::register::sstatus::read().sie()
-    }
-
-    #[inline]
-    fn irq_disable() {
-        riscv::interrupt::supervisor::disable();
-    }
-
-    #[inline]
-    unsafe fn irq_enable() {
-        unsafe { riscv::interrupt::supervisor::enable() };
-    }
-
-    #[inline]
-    fn flush_tlb() {
-        // SAFETY: sfence.vma 是 S-mode 特权指令
-        unsafe { core::arch::asm!("sfence.vma") };
-    }
-
     fn map_early_mmio(
         _pt: &mut memory::page_table::PageTable,
     ) -> Result<(), memory::error::MemoryError> {
@@ -104,16 +69,6 @@ impl ArchOps for Riscv64 {
         for byte in s.bytes() {
             sbi_rt::console_write_byte(byte);
         }
-    }
-
-    #[inline]
-    fn get_current_tick() -> u64 {
-        timer::get_current_tick()
-    }
-
-    #[inline]
-    fn ticks_per_second() -> u64 {
-        timer::ticks_per_second()
     }
 }
 

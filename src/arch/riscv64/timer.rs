@@ -15,16 +15,6 @@ pub fn set_hw_freq(freq: u64) {
     HW_FREQ.store(freq, Ordering::Relaxed);
 }
 
-/// 读取当前 tick 计数——委托给 arch-traits 全局计数器
-pub fn get_current_tick() -> u64 {
-    arch_traits::get_current_tick()
-}
-
-/// 返回每秒 tick 数
-pub const fn ticks_per_second() -> u64 {
-    TIMER_FREQ_HZ
-}
-
 /// 读取 `time` CSR（参考时钟周期计数）
 #[inline]
 fn read_time() -> u64 {

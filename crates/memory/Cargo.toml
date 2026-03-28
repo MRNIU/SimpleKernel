@@ -10,7 +10,6 @@ edition.workspace = true
 [dependencies]
 config = { path = "../config" }
 address = { path = "../address" }
-arch-traits = { path = "../arch-traits" }
 sync_crate = { path = "../sync", package = "sync" }
 per-cpu = { path = "../per-cpu" }
 
@@ -18,3 +17,7 @@ bitflags = "2"
 buddy_system_allocator = "0.11"
 log = { version = "0.4", default-features = false }
 spin = { version = "0.9", default-features = false, features = ["once"] }
+
+# RISC-V sfence.vma 指令（TLB 刷新）
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+riscv = { version = "0.16", features = ["s-mode"] }

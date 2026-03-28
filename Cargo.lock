@@ -19,17 +19,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "arch-traits"
-version = "0.1.0"
-dependencies = [
- "aarch64-cpu",
- "config",
- "per-cpu",
- "riscv",
- "tock-registers 0.9.0",
-]
-
-[[package]]
 name = "arm-gic"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -207,12 +196,12 @@ name = "memory"
 version = "0.1.0"
 dependencies = [
  "address",
- "arch-traits",
  "bitflags 2.11.0",
  "buddy_system_allocator",
  "config",
  "log",
  "per-cpu",
+ "riscv",
  "spin",
  "sync",
 ]
@@ -393,7 +382,6 @@ version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
  "address",
- "arch-traits",
  "arm-gic",
  "arm-psci",
  "bitflags 2.11.0",
@@ -410,6 +398,7 @@ dependencies = [
  "sbi-rt",
  "spin",
  "sync",
+ "tick",
  "tock-registers 0.9.0",
  "unwinding",
 ]
@@ -449,8 +438,10 @@ dependencies = [
 name = "sync"
 version = "0.1.0"
 dependencies = [
- "arch-traits",
+ "aarch64-cpu",
  "per-cpu",
+ "riscv",
+ "tock-registers 0.9.0",
 ]
 
 [[package]]
@@ -471,6 +462,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.117",
+]
+
+[[package]]
+name = "tick"
+version = "0.1.0"
+dependencies = [
+ "per-cpu",
 ]
 
 [[package]]

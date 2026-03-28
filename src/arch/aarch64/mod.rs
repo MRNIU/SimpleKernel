@@ -53,46 +53,6 @@ impl ArchOps for Aarch64 {
         ipi::wake_secondary_cores();
     }
 
-    #[inline]
-    fn secondary_core_id(_argc: i32, _argv: *const *const u8) -> usize {
-        // PSCI cpu_on 后从 MPIDR_EL1 读取
-        Self::core_id()
-    }
-
-    #[inline]
-    fn core_id() -> usize {
-        let mpidr: u64;
-        // SAFETY: MPIDR_EL1 在 EL1 下始终可读
-        unsafe { core::arch::asm!("mrs {mpidr}, mpidr_el1", mpidr = out(reg) mpidr) };
-        (mpidr & 0xFF) as usize
-    }
-
-    #[inline]
-    fn irq_enabled() -> bool {
-        let daif: u64;
-        // SAFETY: DAIF 在 EL1 下可读
-        unsafe { core::arch::asm!("mrs {daif}, daif", daif = out(reg) daif) };
-        (daif & (1 << 7)) == 0
-    }
-
-    #[inline]
-    fn irq_disable() {
-        // SAFETY: msr daifset 是 EL1 特权指令
-        unsafe { core::arch::asm!("msr daifset, #2") };
-    }
-
-    #[inline]
-    unsafe fn irq_enable() {
-        // SAFETY: msr daifclr 是 EL1 特权指令
-        unsafe { core::arch::asm!("msr daifclr, #2") };
-    }
-
-    #[inline]
-    fn flush_tlb() {
-        // SAFETY: tlbi/dsb/isb 是 EL1 特权指令
-        unsafe { core::arch::asm!("tlbi vmalle1", "dsb sy", "isb") };
-    }
-
     fn map_early_mmio(
         pt: &mut memory::page_table::PageTable,
     ) -> Result<(), memory::error::MemoryError> {
@@ -155,16 +115,6 @@ impl ArchOps for Aarch64 {
 
     fn console_write(s: &str) {
         console::puts(s);
-    }
-
-    #[inline]
-    fn get_current_tick() -> u64 {
-        timer::get_current_tick()
-    }
-
-    #[inline]
-    fn ticks_per_second() -> u64 {
-        timer::ticks_per_second()
     }
 }
 

@@ -13,6 +13,7 @@ pub mod mapped_pages;
 #[cfg(target_os = "none")]
 pub mod mmio;
 pub mod page_table;
+pub mod tlb;
 
 #[cfg(target_os = "none")]
 pub mod frame;
@@ -29,9 +30,6 @@ use page_table::{PageFlags, PageTable};
 
 #[cfg(target_os = "none")]
 use sync_crate::SpinLock;
-
-// ─── MemoryInfo ──────────────────────────────────────────────────────
-
 /// 内核启动时从 FDT 解析出的内存布局信息。
 ///
 /// 在 `early_init()` 中通过 `MEMORY_INFO.call_once()` 填充，
@@ -163,6 +161,6 @@ pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, crate::error::
         .ok_or(crate::error::MemoryError::InvalidPageTable)?;
     let mut guard = kpt.lock();
     identity_map_range(&mut *guard, paddr, paddr + size, PageFlags::kernel_rw())?;
-    arch_traits::flush_tlb();
+    crate::tlb::flush_tlb();
     Ok(VirtAddr::new(paddr.as_usize()))
 }

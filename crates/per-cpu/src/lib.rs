@@ -24,17 +24,11 @@ pub mod lock_stack;
 ///
 /// 与 `config::MAX_CORE_COUNT`（编译期上限）不同，此值为运行时实际核心数。
 pub static CORE_COUNT: spin::Once<usize> = spin::Once::new();
-
-// ─── 链接器符号（裸机） ─────────────────────────────────────────────
-
 #[cfg(target_os = "none")]
 unsafe extern "C" {
     static __percpu_start: u8;
     static __percpu_end: u8;
 }
-
-// ─── Per-CPU 区域存储 ───────────────────────────────────────────────
-
 /// BSS 中为每个 CPU 预留的 per-CPU 区域。
 /// `percpu_init()` 将 `.percpu` 模板复制到每个槽位。
 #[cfg(target_os = "none")]
@@ -59,9 +53,6 @@ static mut PERCPU_BASES: [usize; MAX_CORE_COUNT] = [0; MAX_CORE_COUNT];
 #[cfg(target_os = "none")]
 static PERCPU_INITIALIZED: core::sync::atomic::AtomicBool =
     core::sync::atomic::AtomicBool::new(false);
-
-// ─── TP/TPIDR 读写 ─────────────────────────────────────────────────
-
 /// 读取 TP（riscv64）或 TPIDR_EL1（aarch64）寄存器。
 #[cfg(target_os = "none")]
 #[inline(always)]
@@ -95,9 +86,6 @@ unsafe fn write_tp(val: usize) {
         core::arch::asm!("msr tpidr_el1, {}", in(reg) val);
     }
 }
-
-// ─── 初始化 ─────────────────────────────────────────────────────────
-
 /// 主核 per-CPU 初始化——复制模板、设置每个 CPU 的基地址、设置 TP。
 ///
 /// 必须在任何 `#[cpu_local]` 访问之前调用（`logging::init()` 之后）。
@@ -140,17 +128,18 @@ pub unsafe fn percpu_init() {
 
 /// 从核 per-CPU 初始化——设置 TP 指向该核的 per-CPU 区域。
 ///
+/// 内部通过 `raw_core_id()` 直接读取硬件寄存器确定当前核心 ID
+/// （riscv64: TP 寄存器，aarch64: MPIDR_EL1），不依赖 per-CPU 变量。
+/// 调用完成后 `current_core_id()` 即可正常工作。
+///
 /// # Safety
 /// - `percpu_init()` 必须已由主核调用完成
-/// - `core_id` 必须是有效的核心 ID
 #[cfg(target_os = "none")]
-pub unsafe fn percpu_init_smp(id: usize) {
-    // SAFETY: percpu_init() 已填充 PERCPU_BASES
+pub unsafe fn percpu_init_smp() {
+    let id = raw_core_id();
+    // SAFETY: percpu_init() 已填充 PERCPU_BASES，id 来自硬件寄存器
     unsafe { write_tp(PERCPU_BASES[id]) };
 }
-
-// ─── core_id ─────────────────────────────────────────────────────────
-
 /// 读取当前核心 ID。
 ///
 /// - 初始化后：从 per-CPU `CORE_ID` 变量读取（通过 TP）
@@ -211,9 +200,6 @@ fn host_core_id() -> usize {
         0 // clippy/check 占位
     }
 }
-
-// ─── CpuLocal<T> ────────────────────────────────────────────────────
-
 /// Per-CPU 变量的包装器。
 ///
 /// 不直接持有数据——数据在 `.percpu` section 的模板中，
@@ -308,9 +294,6 @@ impl<T: Sync> CpuLocal<T> {
         }
     }
 }
-
-// ─── Per-CPU 变量声明 ───────────────────────────────────────────────
-
 /// 当前核心 ID（由 `percpu_init()` 写入每个 CPU 的区域）。
 #[cpu_local]
 static CORE_ID: usize = 0;
@@ -338,9 +321,6 @@ pub static NEED_RESCHED: AtomicBool = AtomicBool::new(false);
 /// 是否需要负载均衡（原子：可被其他核心设置）
 #[cpu_local]
 pub static NEED_BALANCE: AtomicBool = AtomicBool::new(false);
-
-// ─── 公共 API ────────────────────────────────────────────────────────
-
 /// 检查并清除当前核心的 `need_resched` 标志（原子操作，无需关中断）。
 ///
 /// 用于 idle loop 轮询。
