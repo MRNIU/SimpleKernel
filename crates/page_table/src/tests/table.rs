@@ -305,6 +305,55 @@ fn unmap_at_level_wrong_level_fails() {
     assert_eq!(err, PageTableError::PageNotMapped);
 }
 
+/// identity_map_range 对无效范围（start >= end）应返回 InvalidRange。
+#[test]
+fn identity_map_range_invalid_range() {
+    let mut pt = PageTable::create().expect("创建测试页表失败");
+
+    let err = pt
+        .identity_map_range(
+            PhysAddr::new(0x10_0000),
+            PhysAddr::new(0x10_0000),
+            PteFlags::kernel_rw(),
+        )
+        .expect_err("start == end 应返回 InvalidRange");
+    assert_eq!(err, PageTableError::InvalidRange);
+
+    let err = pt
+        .identity_map_range(
+            PhysAddr::new(0x20_0000),
+            PhysAddr::new(0x10_0000),
+            PteFlags::kernel_rw(),
+        )
+        .expect_err("start > end 应返回 InvalidRange");
+    assert_eq!(err, PageTableError::InvalidRange);
+}
+
+/// identity_map_range 在对齐且足够大的区间应自动使用大页。
+#[test]
+fn identity_map_range_auto_huge_page() {
+    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let huge_size = page_size_at_level(1); // 2MB
+    let start = PhysAddr::new(huge_size);
+    let end = PhysAddr::new(huge_size * 2);
+
+    pt.identity_map_range(start, end, PteFlags::kernel_rw())
+        .expect("identity_map_range 应成功");
+
+    // 大页基址应能查询到映射
+    let (pa, flags) = pt
+        .get_mapping(VirtAddr::new(huge_size))
+        .expect("大页基址应已映射");
+    assert_eq!(pa, start);
+    assert_eq!(flags, PteFlags::kernel_rw().for_leaf_at_level(1));
+
+    // 大页内偏移地址也应命中
+    let (pa_offset, _) = pt
+        .get_mapping(VirtAddr::new(huge_size + 0x1000))
+        .expect("大页内偏移应命中");
+    assert_eq!(pa_offset, PhysAddr::new(huge_size + 0x1000));
+}
+
 /// identity_map_range 失败时应回滚已建立的映射。
 #[test]
 fn identity_map_range_rollback_on_conflict() {

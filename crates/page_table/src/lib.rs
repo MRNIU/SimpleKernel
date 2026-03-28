@@ -79,11 +79,15 @@ impl NodeFrameOps for HeapNodeFrame {
     }
 }
 
-/// 页表层级标记——最多五级（Level4 = 根，Level0 = 叶）。
+/// 页表层级 4（根级，仅 Sv57 使用）。
 pub struct Level4;
+/// 页表层级 3（Sv48 根级 / Sv57 次级）。
 pub struct Level3;
+/// 页表层级 2（Sv39 根级，映射 1GB 大页）。
 pub struct Level2;
+/// 页表层级 1（映射 2MB 大页）。
 pub struct Level1;
+/// 页表层级 0（叶级，映射 4KB 页）。
 pub struct Level0;
 
 /// 页表层级 trait——提供每级的结构参数。

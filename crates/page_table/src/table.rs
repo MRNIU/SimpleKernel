@@ -132,6 +132,14 @@ impl<F: NodeFrameOps> PageTable<F> {
     }
 
     /// 映射单个虚拟页到物理帧（Level 0，4KB）。
+    ///
+    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
+    /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
+    ///
+    /// # Errors
+    ///
+    /// - 该 VA 已被映射时返回 `AlreadyMapped`。
+    /// - walk 路径上遇到大页时返回 `HugePageConflict`。
     pub fn map_page(
         &mut self,
         va: VirtAddr,
@@ -147,6 +155,9 @@ impl<F: NodeFrameOps> PageTable<F> {
     /// - `level = 1`：2MB 大页
     /// - `level = 2`：1GB 大页
     ///
+    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
+    /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
+    ///
     /// # Errors
     ///
     /// - 该 VA 已被映射时返回 `AlreadyMapped`。
@@ -158,6 +169,23 @@ impl<F: NodeFrameOps> PageTable<F> {
         flags: PteFlags,
         level: usize,
     ) -> Result<(), PageTableError> {
+        // 在执行任何操作前检查 VA/PA 对齐
+        let page_size = crate::page_size_at_level(level);
+        debug_assert!(
+            va.as_usize().is_multiple_of(page_size),
+            "map_at_level: VA {:#x} 未按 level {} 页大小 ({:#x}) 对齐",
+            va.as_usize(),
+            level,
+            page_size
+        );
+        debug_assert!(
+            pa.as_usize().is_multiple_of(page_size),
+            "map_at_level: PA {:#x} 未按 level {} 页大小 ({:#x}) 对齐",
+            pa.as_usize(),
+            level,
+            page_size
+        );
+
         let (frame_paddr, idx) = self.walk_create(va, level)?;
         // SAFETY: frame_paddr 指向由 self 持有的有效帧
         let mut table = unsafe { table_at(frame_paddr) };
@@ -173,6 +201,9 @@ impl<F: NodeFrameOps> PageTable<F> {
 
     /// 取消映射单个虚拟页（4KB），返回其原始物理地址。
     ///
+    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
+    /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
+    ///
     /// # Errors
     ///
     /// 目标 VA 未映射时返回 `PageNotMapped`。
@@ -185,6 +216,9 @@ impl<F: NodeFrameOps> PageTable<F> {
     /// unmap 后通过引用计数判断中间页表节点是否全空并回收，
     /// 避免遍历整个页表帧的 O(entries_per_table) 开销。
     ///
+    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
+    /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
+    ///
     /// # Errors
     ///
     /// 目标 VA 在指定层级未映射时返回 `PageNotMapped`。
@@ -193,8 +227,8 @@ impl<F: NodeFrameOps> PageTable<F> {
         va: VirtAddr,
         level: usize,
     ) -> Result<PhysAddr, PageTableError> {
-        let mut path: [(PhysAddr, usize, PhysAddr); 4] =
-            [(PhysAddr::new(0), 0, PhysAddr::new(0)); 4];
+        let mut path: [(PhysAddr, usize, PhysAddr); PT_LEVELS] =
+            [(PhysAddr::new(0), 0, PhysAddr::new(0)); PT_LEVELS];
         let mut path_len = 0;
         let mut paddr = self.root_paddr;
 
@@ -288,6 +322,9 @@ impl<F: NodeFrameOps> PageTable<F> {
     ///
     /// 自动使用最大可用页大小（1GB / 2MB / 4KB）。
     /// 失败时自动回滚已建立的映射，保证事务性。
+    ///
+    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
+    /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
     ///
     /// # Errors
     ///

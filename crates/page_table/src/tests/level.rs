@@ -29,16 +29,17 @@ fn level_shifts_are_chained() {
 /// 验证 LEVEL_INFO 查表与 PageLevel trait 常量一致。
 #[test]
 fn level_info_matches_trait() {
-    assert_eq!(LEVEL_INFO[0].shift, Level0::SHIFT);
-    assert_eq!(LEVEL_INFO[0].index_mask, Level0::INDEX_MASK);
-    assert_eq!(LEVEL_INFO[1].shift, Level1::SHIFT);
-    assert_eq!(LEVEL_INFO[1].index_mask, Level1::INDEX_MASK);
-    assert_eq!(LEVEL_INFO[2].shift, Level2::SHIFT);
-    assert_eq!(LEVEL_INFO[2].index_mask, Level2::INDEX_MASK);
-    assert_eq!(LEVEL_INFO[3].shift, Level3::SHIFT);
-    assert_eq!(LEVEL_INFO[3].index_mask, Level3::INDEX_MASK);
-    assert_eq!(LEVEL_INFO[4].shift, Level4::SHIFT);
-    assert_eq!(LEVEL_INFO[4].index_mask, Level4::INDEX_MASK);
+    macro_rules! check_level {
+        ($idx:expr, $L:ty) => {
+            assert_eq!(LEVEL_INFO[$idx].shift, <$L>::SHIFT);
+            assert_eq!(LEVEL_INFO[$idx].index_mask, <$L>::INDEX_MASK);
+        };
+    }
+    check_level!(0, Level0);
+    check_level!(1, Level1);
+    check_level!(2, Level2);
+    check_level!(3, Level3);
+    check_level!(4, Level4);
 }
 
 /// 验证 page_size_at_level 返回正确的页大小。

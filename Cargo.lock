@@ -247,7 +247,6 @@ version = "0.1.0"
 dependencies = [
  "address",
  "config",
- "log",
  "page_table_entry",
 ]
 

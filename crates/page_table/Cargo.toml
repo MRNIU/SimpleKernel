@@ -15,4 +15,3 @@ test-support = []
 config = { path = "../config" }
 address = { path = "../address" }
 page_table_entry = { path = "../page_table_entry" }
-log = { version = "0.4", default-features = false }
