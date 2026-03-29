@@ -10,10 +10,6 @@
 
 use address::PhysAddr;
 
-// TODO(asid): 用户态映射已设置 non-Global（RISC-V 不设 GLOBAL，AArch64 设 NG），
-// 但 ASID 分配、切换及 TLB 维护（sfence.vma rs1=x0,rs2=ASID / TLBI ASIDE1）
-// 需在上层页表管理器中实现，确保进程切换时 TLB 不会跨地址空间命中。
-
 pub mod aarch64;
 pub mod riscv64;
 
