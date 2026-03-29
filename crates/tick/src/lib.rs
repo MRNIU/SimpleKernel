@@ -1,5 +1,3 @@
-#![cfg_attr(not(test), no_std)]
-
 //! 全局 tick 计数器——内核调度时基。
 //!
 //! 提供单调递增的 tick 计数，由 BSP（core 0）的 timer handler 驱动。
@@ -8,6 +6,8 @@
 //!
 //! 参考 Theseus 的 `time` crate 和 Linux 的 `jiffies` 设计：
 //! 将时间管理与中断控制分离，各自职责单一。
+
+#![cfg_attr(not(test), no_std)]
 
 use core::sync::atomic::{AtomicU64, Ordering};
 

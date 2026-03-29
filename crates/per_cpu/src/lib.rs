@@ -1,5 +1,3 @@
-#![cfg_attr(not(test), no_std)]
-#![cfg_attr(target_os = "none", feature(sync_unsafe_cell))]
 //! Per-CPU 数据——通过 `#[cpu_local]` 分散声明，每核心独立副本。
 //!
 //! 本 crate 只提供 per-CPU 机制（声明、初始化、访问），
@@ -17,6 +15,9 @@
 //! 2. `percpu_init()` 将模板复制 N 份（每 CPU 一份）到 BSS 预留区
 //! 3. TP（riscv64）/ TPIDR_EL1（aarch64）指向当前 CPU 的副本
 //! 4. 访问：`TP + (模板地址 - __percpu_start)` = 当前 CPU 的变量地址
+
+#![cfg_attr(not(test), no_std)]
+#![cfg_attr(target_os = "none", feature(sync_unsafe_cell))]
 
 // 让 #[cpu_local] 宏展开的 `per_cpu::CpuLocal` 路径在本 crate 内部也能解析
 extern crate self as per_cpu;
