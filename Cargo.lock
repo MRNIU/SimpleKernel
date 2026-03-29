@@ -498,9 +498,6 @@ dependencies = [
 [[package]]
 name = "tick"
 version = "0.1.0"
-dependencies = [
- "per_cpu",
-]
 
 [[package]]
 name = "tock-registers"

@@ -7,7 +7,8 @@
 /// 4. 标记 need_resched
 /// 5. 日志
 pub fn handle_timer_common() {
-    let tick = tick::tick_advance();
+    // TODO: 引入 BSP ID 后替换硬编码的 `== 0`
+    let tick = tick::advance(per_cpu::current_core_id() == 0);
 
     crate::irq_context::enter_hardirq();
 

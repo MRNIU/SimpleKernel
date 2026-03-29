@@ -4,8 +4,5 @@ version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description.workspace = true
+description = "Global monotonic tick counter for kernel scheduling"
 edition.workspace = true
-
-[dependencies]
-per_cpu = { path = "../per_cpu" }

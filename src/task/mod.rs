@@ -194,7 +194,7 @@ mod api {
     /// 否则另一核心的 `wake_expired_sleepers()` 可能在窗口期内遗漏该任务。
     pub fn sleep(ticks: u64) {
         let task = super::sched::current_task();
-        let now = tick::get_current_tick();
+        let now = tick::current();
         task.set_wake_tick(now + ticks);
 
         {
