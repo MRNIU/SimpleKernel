@@ -1,8 +1,20 @@
 //! 全局 tick 计数器——内核调度时基。
 //!
-//! 提供单调递增的 tick 计数，由 BSP的 timer handler 驱动。
+//! 提供单调递增的 tick 计数，由 BSP 的 timer handler 驱动。
 //! 独立于具体的定时器硬件，
 //! 使 task/scheduler 等模块无需依赖架构层即可读取时间。
+//!
+//! # 局限
+//!
+//! 当前仅维护全局计数器（类似 Linux `jiffies`），BSP 单点递增。
+//! 缺少 per-CPU tick 记账，无法精确追踪每核时间片消耗。
+//!
+//! # TODO
+//!
+//! 参考 Linux `tick_sched` 引入 per-CPU 计数器，用于：
+//! - 调度记账（CFS vruntime 推进）
+//! - 时间片耗尽检测
+//! - 消除 BSP 单点故障对全局时间的影响
 
 #![no_std]
 
