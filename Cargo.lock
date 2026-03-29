@@ -163,7 +163,6 @@ dependencies = [
  "buddy_system_allocator",
  "config",
  "log",
- "page_table",
  "sync",
 ]
 

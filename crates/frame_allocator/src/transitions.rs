@@ -7,17 +7,6 @@ use crate::FrameAllocError;
 use crate::alloc::alloc_from_buddy;
 use crate::state::{AllocatedFrames, FreeFrames, MappedFrames, UnmappedFrames};
 
-// 裸机：为 AllocatedFrames 实现 NodeFrameOps，使页表可通过帧分配器分配节点。
-#[cfg(all(target_os = "none", feature = "page-table"))]
-impl page_table_crate::NodeFrameOps for AllocatedFrames {
-    fn alloc() -> Result<Self, page_table_crate::error::PageTableError> {
-        Self::alloc_one().map_err(|_| page_table_crate::error::PageTableError::AllocationFailed)
-    }
-    fn paddr(&self) -> address::PhysAddr {
-        self.start_paddr()
-    }
-}
-
 impl FreeFrames {
     /// 消费 Free 帧，转换为 Allocated 状态。
     pub fn into_allocated(self) -> AllocatedFrames {

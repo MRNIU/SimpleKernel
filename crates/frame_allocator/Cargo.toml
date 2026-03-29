@@ -14,8 +14,6 @@ sync_crate = { path = "../sync", package = "sync" }
 
 buddy_system_allocator = "0.11"
 log = { version = "0.4", default-features = false }
-page_table_crate = { path = "../page_table", package = "page_table", optional = true }
 
 [features]
 test-support = []
-page-table = ["dep:page_table_crate"]

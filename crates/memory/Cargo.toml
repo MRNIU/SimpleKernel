@@ -13,7 +13,7 @@ address = { path = "../address" }
 sync_crate = { path = "../sync", package = "sync" }
 per-cpu = { path = "../per-cpu" }
 page_table_crate = { path = "../page_table", package = "page_table", features = ["test-support"] }
-frame_allocator = { path = "../frame_allocator", features = ["page-table"] }
+frame_allocator = { path = "../frame_allocator" }
 
 bitflags = "2"
 zerocopy = { version = "0.8", default-features = false, features = ["derive"] }
