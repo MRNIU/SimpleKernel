@@ -93,9 +93,47 @@ impl PteFlagsOps for PteFlags {
         Self::kernel_rw()
     }
 
+    /// 用户态读写数据映射（不可执行）。
+    ///
+    /// 设置 USER 位使页面仅在 U-mode 可访问；不设 GLOBAL，
+    /// 因为用户页面是 per-process 的（配合 ASID 使用）。
+    #[inline]
+    fn user_rw() -> Self {
+        Self::VALID | Self::READ | Self::WRITE | Self::USER | Self::ACCESSED | Self::DIRTY
+    }
+
+    /// 用户态读-执行映射（不可写）。
+    #[inline]
+    fn user_rx() -> Self {
+        Self::VALID | Self::READ | Self::EXECUTE | Self::USER | Self::ACCESSED
+    }
+
+    /// 用户态只读映射。
+    #[inline]
+    fn user_ro() -> Self {
+        Self::VALID | Self::READ | Self::USER | Self::ACCESSED
+    }
+
+    /// 用户态读写执行映射。
+    #[inline]
+    fn user_rwx() -> Self {
+        Self::VALID
+            | Self::READ
+            | Self::WRITE
+            | Self::EXECUTE
+            | Self::USER
+            | Self::ACCESSED
+            | Self::DIRTY
+    }
+
     #[inline]
     fn is_writable(self) -> bool {
         self.contains(Self::WRITE)
+    }
+
+    #[inline]
+    fn is_user(self) -> bool {
+        self.contains(Self::USER)
     }
 
     /// RISC-V 的 PTE 格式与层级无关——叶节点仅由 R/W/X 位区分，
@@ -243,6 +281,46 @@ mod tests {
 
         let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
         assert!(!pte_no_excl.flags().is_exclusive());
+    }
+
+    /// 用户态 preset 设置了 USER 位且未设 GLOBAL。
+    #[test]
+    fn user_presets_have_user_bit() {
+        let rw = PteFlags::user_rw();
+        assert!(rw.is_user());
+        assert!(!rw.contains(PteFlags::GLOBAL));
+
+        let rx = PteFlags::user_rx();
+        assert!(rx.is_user());
+        assert!(!rx.contains(PteFlags::GLOBAL));
+
+        let ro = PteFlags::user_ro();
+        assert!(ro.is_user());
+        assert!(!ro.contains(PteFlags::GLOBAL));
+
+        let rwx = PteFlags::user_rwx();
+        assert!(rwx.is_user());
+        assert!(!rwx.contains(PteFlags::GLOBAL));
+    }
+
+    /// 用户态 preset 的 W^X 不变量。
+    #[test]
+    fn user_wx_invariants() {
+        let rw = PteFlags::user_rw();
+        assert!(rw.is_writable());
+        assert!(!rw.contains(PteFlags::EXECUTE));
+
+        let rx = PteFlags::user_rx();
+        assert!(!rx.is_writable());
+        assert!(rx.contains(PteFlags::EXECUTE));
+
+        let ro = PteFlags::user_ro();
+        assert!(!ro.is_writable());
+        assert!(!ro.contains(PteFlags::EXECUTE));
+
+        let rwx = PteFlags::user_rwx();
+        assert!(rwx.is_writable());
+        assert!(rwx.contains(PteFlags::EXECUTE));
     }
 
     /// V=0 的 PTE 不应被视为叶节点。

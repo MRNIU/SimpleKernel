@@ -21,6 +21,15 @@ where
     assert_eq!(pte_high.flags(), flags);
 }
 
+/// 内核 preset 不应被标记为用户态可访问。
+fn kernel_presets_not_user<F: PteFlagsOps>() {
+    assert!(!F::kernel_rw().is_user());
+    assert!(!F::kernel_rx().is_user());
+    assert!(!F::kernel_ro().is_user());
+    assert!(!F::kernel_rwx().is_user());
+    assert!(!F::kernel_device().is_user());
+}
+
 /// RISC-V 地址边界编解码。
 #[test]
 fn riscv64_addr_boundary_roundtrip() {
@@ -31,4 +40,16 @@ fn riscv64_addr_boundary_roundtrip() {
 #[test]
 fn aarch64_addr_boundary_roundtrip() {
     addr_boundary_roundtrip::<crate::aarch64::PageTableEntry>();
+}
+
+/// RISC-V 内核 preset 非用户态。
+#[test]
+fn riscv64_kernel_presets_not_user() {
+    kernel_presets_not_user::<crate::riscv64::PteFlags>();
+}
+
+/// AArch64 内核 preset 非用户态。
+#[test]
+fn aarch64_kernel_presets_not_user() {
+    kernel_presets_not_user::<crate::aarch64::PteFlags>();
 }

@@ -10,14 +10,15 @@
 
 use address::PhysAddr;
 
+// TODO(asid): 用户态映射已设置 non-Global（RISC-V 不设 GLOBAL，AArch64 设 NG），
+// 但 ASID 分配、切换及 TLB 维护（sfence.vma rs1=x0,rs2=ASID / TLBI ASIDE1）
+// 需在上层页表管理器中实现，确保进程切换时 TLB 不会跨地址空间命中。
+
 pub mod aarch64;
 pub mod riscv64;
 
 #[cfg(test)]
 mod tests;
-
-// TODO(user-space): 添加用户态映射 preset（user_rw / user_rx / user_ro 等），
-// 需要在各架构的 PteFlags 中同步实现 USER 位和 AP_UNPRIV 位组合。
 
 /// 页表项标志位的统一接口——各架构必须实现。
 ///
@@ -34,8 +35,18 @@ pub trait PteFlagsOps: Copy + core::fmt::Debug {
     fn kernel_rwx() -> Self;
     /// 设备 MMIO 映射（不可缓存、不可执行）。
     fn kernel_device() -> Self;
+    /// 用户态读写数据映射（不可执行）。
+    fn user_rw() -> Self;
+    /// 用户态读-执行映射（不可写）。
+    fn user_rx() -> Self;
+    /// 用户态只读映射。
+    fn user_ro() -> Self;
+    /// 用户态读写执行映射。
+    fn user_rwx() -> Self;
     /// 是否具有写权限。
     fn is_writable(self) -> bool;
+    /// 是否为用户态可访问的映射。
+    fn is_user(self) -> bool;
     /// 将标志位适配为指定层级的叶描述符格式。
     fn for_leaf_at_level(self, level: usize) -> Self;
     /// 是否设置了 EXCLUSIVE 软件位。

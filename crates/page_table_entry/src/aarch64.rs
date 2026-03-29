@@ -112,9 +112,78 @@ impl PteFlagsOps for PteFlags {
         Self::VALID | Self::TABLE | Self::AF | Self::MAIR_IDX1 | Self::PXN | Self::UXN
     }
 
+    /// 用户态读写数据映射（不可执行）。
+    ///
+    /// - `AP_UNPRIV`：允许 EL0 访问
+    /// - `NG`：non-Global，TLB 条目绑定 ASID（per-process）
+    /// - `PXN | UXN`：数据页不可执行（W^X）
+    #[inline]
+    fn user_rw() -> Self {
+        Self::VALID
+            | Self::TABLE
+            | Self::AF
+            | Self::SH_INNER
+            | Self::AP_UNPRIV
+            | Self::NG
+            | Self::PXN
+            | Self::UXN
+    }
+
+    /// 用户态读-执行映射（不可写）。
+    ///
+    /// - `AP_UNPRIV | AP_RO`：EL0 + EL1 均只读
+    /// - `PXN`：禁止内核执行用户代码页
+    /// - 不设 `UXN`：允许用户态执行
+    #[inline]
+    fn user_rx() -> Self {
+        Self::VALID
+            | Self::TABLE
+            | Self::AF
+            | Self::SH_INNER
+            | Self::AP_UNPRIV
+            | Self::AP_RO
+            | Self::NG
+            | Self::PXN
+    }
+
+    /// 用户态只读映射。
+    #[inline]
+    fn user_ro() -> Self {
+        Self::VALID
+            | Self::TABLE
+            | Self::AF
+            | Self::SH_INNER
+            | Self::AP_UNPRIV
+            | Self::AP_RO
+            | Self::NG
+            | Self::PXN
+            | Self::UXN
+    }
+
+    /// 用户态读写执行映射。
+    ///
+    /// - `PXN`：禁止内核执行
+    /// - 不设 `UXN`：允许用户态执行
+    /// - 不设 `AP_RO`：允许写入
+    #[inline]
+    fn user_rwx() -> Self {
+        Self::VALID
+            | Self::TABLE
+            | Self::AF
+            | Self::SH_INNER
+            | Self::AP_UNPRIV
+            | Self::NG
+            | Self::PXN
+    }
+
     #[inline]
     fn is_writable(self) -> bool {
         !self.contains(Self::AP_RO)
+    }
+
+    #[inline]
+    fn is_user(self) -> bool {
+        self.contains(Self::AP_UNPRIV)
     }
 
     /// 将标志位适配为指定层级的叶描述符格式。
@@ -307,6 +376,50 @@ mod tests {
 
         let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
         assert!(!pte_no_excl.flags().is_exclusive());
+    }
+
+    /// 用户态 preset 设置了 AP_UNPRIV 和 NG 位。
+    #[test]
+    fn user_presets_have_unpriv_and_ng() {
+        let rw = PteFlags::user_rw();
+        assert!(rw.is_user());
+        assert!(rw.contains(PteFlags::NG));
+
+        let rx = PteFlags::user_rx();
+        assert!(rx.is_user());
+        assert!(rx.contains(PteFlags::NG));
+
+        let ro = PteFlags::user_ro();
+        assert!(ro.is_user());
+        assert!(ro.contains(PteFlags::NG));
+
+        let rwx = PteFlags::user_rwx();
+        assert!(rwx.is_user());
+        assert!(rwx.contains(PteFlags::NG));
+    }
+
+    /// 用户态 preset 的 W^X 不变量及执行权限。
+    #[test]
+    fn user_wx_invariants() {
+        let rw = PteFlags::user_rw();
+        assert!(rw.is_writable());
+        assert!(rw.contains(PteFlags::PXN));
+        assert!(rw.contains(PteFlags::UXN));
+
+        let rx = PteFlags::user_rx();
+        assert!(!rx.is_writable());
+        assert!(rx.contains(PteFlags::PXN));
+        assert!(!rx.contains(PteFlags::UXN));
+
+        let ro = PteFlags::user_ro();
+        assert!(!ro.is_writable());
+        assert!(ro.contains(PteFlags::PXN));
+        assert!(ro.contains(PteFlags::UXN));
+
+        let rwx = PteFlags::user_rwx();
+        assert!(rwx.is_writable());
+        assert!(rwx.contains(PteFlags::PXN));
+        assert!(!rwx.contains(PteFlags::UXN));
     }
 
     /// 无效 PTE 不应被视为叶节点。
