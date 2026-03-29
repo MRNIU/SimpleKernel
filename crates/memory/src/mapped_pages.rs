@@ -10,11 +10,27 @@
 //! 2. **RAII 自动清理**：drop 时自动 unmap 并根据 EXCLUSIVE 位释放物理帧。
 //! 3. **EXCLUSIVE 位追踪帧所有权**：帧的所有权信息编码在 PTE 中（而非软件枚举），
 //!    即使 `MappedPages` 对象丢失，遍历页表也能恢复所有权信息。
-//! 4. **显式页表绑定**：每个 `MappedPages` 持有其所属页表的引用，
-//!    Drop 时通过该引用 unmap，不依赖全局状态——为用户进程页表预留扩展点。
+//! 4. **显式页表绑定**：每个 `MappedPages` 持有其所属页表的 `Arc` 引用，
+//!    Drop 时通过该引用 unmap，不依赖全局状态。
+//!    用户进程退出时其 `Arc` 引用计数归零，页表自动释放。
+//! 5. **虚拟页所有权追踪**：持有 `AllocatedPages` 时，Drop 自动归还虚拟页号给
+//!    页分配器，防止虚拟地址空间泄漏。
+//!
+// TODO: 实现 `split` / `merge` 操作——`munmap` 部分区域和 `mremap` 需要。
+// 参考 Theseus `MappedPages::split()` 和 Linux `split_vma()`。
+//
+// TODO: 支持 COW（Copy-on-Write）共享映射——`fork()` 需要多个进程共享同一物理帧
+// + 引用计数。需引入 `Frames` 的共享状态或 per-frame 引用计数器。
+// 参考 Linux `vm_area_struct::vm_flags` 中的 `VM_SHARED` 标记
+// 以及 `page::_mapcount` 引用计数。
+
+extern crate alloc;
+
+use alloc::sync::Arc;
 
 use crate::error::MemoryError;
 use crate::frame::{AllocatedFrames, UnmappedFrames};
+use crate::page_allocator::AllocatedPages;
 use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
 use address::{FrameRange, PhysAddr, PhysPageNum, VirtAddr};
 use config::PAGE_SIZE;
@@ -23,7 +39,8 @@ use sync_crate::SpinLock;
 /// 仿射类型映射——持有此值即证明 VA→PA 映射有效。
 ///
 /// 不可 Clone、不可 Copy（仿射类型约束）。
-/// Drop 时根据 PTE 中的 EXCLUSIVE 位决定是否释放物理帧。
+/// Drop 时根据 PTE 中的 EXCLUSIVE 位决定是否释放物理帧，
+/// 并归还虚拟页给页分配器（若持有 `AllocatedPages`）。
 pub struct MappedPages {
     /// 映射起始虚拟地址
     vaddr: VirtAddr,
@@ -33,18 +50,74 @@ pub struct MappedPages {
     flags: PteFlags,
     /// 永久映射标记——drop 时不 unmap
     permanent: bool,
-    /// 所属页表引用——Drop 时通过此引用 unmap。
+    /// 所属页表的 `Arc` 引用——Drop 时通过此引用 unmap。
     ///
-    /// 每个 `MappedPages` 绑定到创建它的页表。
-    /// 内核 `MappedPages` 绑定到全局内核页表（`'static` 生命周期），
-    /// 未来用户进程 `MappedPages` 将绑定到对应的进程页表。
-    page_table: &'static SpinLock<PageTable>,
+    /// 内核 `MappedPages` 持有全局内核页表的 `Arc`；
+    /// 用户进程 `MappedPages` 持有对应进程页表的 `Arc`。
+    /// 进程退出后其所有 `MappedPages` drop，`Arc` 引用计数归零时页表自动释放。
+    page_table: Arc<SpinLock<PageTable>>,
+    /// 虚拟页所有权——`Some` 表示虚拟页由页分配器分配，
+    /// Drop 时自动归还；`None` 表示虚拟地址由外部管理
+    /// （如 identity mapping 的 VA == PA，不经过页分配器）。
+    pages: Option<AllocatedPages>,
 }
 
 impl MappedPages {
+    /// 消耗 `AllocatedPages` + `AllocatedFrames` 建立映射——所有权链完整的底层入口。
+    ///
+    /// **设置 EXCLUSIVE 位**——drop 时 unmap PTE 并释放物理帧。
+    /// 虚拟页所有权由 `MappedPages` 持有，drop 时自动归还页分配器。
+    ///
+    /// 这是所有权最完整的映射方式：编译期保证同一 VA/PA 不被复用。
+    ///
+    /// # Errors
+    ///
+    /// 帧数量与页数量不匹配、或映射冲突时返回错误。
+    pub fn map_to(
+        pt: &mut PageTable,
+        pt_ref: Arc<SpinLock<PageTable>>,
+        pages: AllocatedPages,
+        frames: AllocatedFrames,
+        flags: PteFlags,
+    ) -> Result<Self, MemoryError> {
+        let page_count = pages.count();
+        if frames.count() != page_count {
+            return Err(MemoryError::MapFailed);
+        }
+        let va_start = pages.start_vaddr();
+        let pa_start = frames.start_paddr();
+        let exclusive_flags = flags.with_exclusive();
+        let mut mapped_count = 0usize;
+        for i in 0..page_count {
+            let pa = pa_start + i * PAGE_SIZE;
+            let va = va_start + i * PAGE_SIZE;
+            match pt.map_page(va, pa, exclusive_flags) {
+                Ok(()) => mapped_count += 1,
+                Err(e) => {
+                    for j in (0..mapped_count).rev() {
+                        let _ = pt.unmap_page(va_start + j * PAGE_SIZE);
+                    }
+                    return Err(e.into());
+                }
+            }
+        }
+        // 帧所有权转移到 PTE：forget 阻止 drop 回收
+        let mapped = frames.into_mapped();
+        core::mem::forget(mapped);
+        Ok(Self {
+            vaddr: va_start,
+            page_count,
+            flags: exclusive_flags,
+            permanent: false,
+            page_table: pt_ref,
+            pages: Some(pages),
+        })
+    }
+
     /// Identity-map 一段物理地址区间（VA == PA）。
     ///
     /// **不设置 EXCLUSIVE 位**——drop 时仅 unmap PTE，不释放帧。
+    /// 虚拟地址不经过页分配器（VA == PA，由物理布局决定）。
     /// 使用场景：内核启动时的 RAM identity mapping、MMIO 映射。
     ///
     /// # Errors
@@ -52,7 +125,7 @@ impl MappedPages {
     /// 映射冲突时返回错误。
     pub fn map_identity(
         pt: &mut PageTable,
-        pt_ref: &'static SpinLock<PageTable>,
+        pt_ref: Arc<SpinLock<PageTable>>,
         pa_start: PhysAddr,
         page_count: usize,
         flags: PteFlags,
@@ -74,6 +147,7 @@ impl MappedPages {
             flags,
             permanent: false,
             page_table: pt_ref,
+            pages: None,
         })
     }
 
@@ -82,7 +156,7 @@ impl MappedPages {
     /// 调用方负责确保映射已在页表中建立。
     /// Drop 时仅 unmap PTE，帧回收由 PTE 的 EXCLUSIVE 位控制。
     pub(crate) fn new_borrowed(
-        pt_ref: &'static SpinLock<PageTable>,
+        pt_ref: Arc<SpinLock<PageTable>>,
         vaddr: VirtAddr,
         page_count: usize,
         flags: PteFlags,
@@ -93,21 +167,22 @@ impl MappedPages {
             flags,
             permanent: false,
             page_table: pt_ref,
+            pages: None,
         }
     }
 
-    /// 分配新帧并建立映射——**设置 EXCLUSIVE 位**。
+    /// 分配新帧并建立映射——**设置 EXCLUSIVE 位**（便利方法）。
     ///
-    /// 帧所有权通过 PTE 的 EXCLUSIVE 位追踪：
-    /// - 映射时：`AllocatedFrames → MappedFrames → mem::forget`（所有权转移到 PTE）
-    /// - unmap 时：读 PTE 的 EXCLUSIVE 位 → 重建 `UnmappedFrames` → drop 自动回收
+    /// 内部分配帧并逐页映射，帧所有权通过 PTE 的 EXCLUSIVE 位追踪。
+    /// 不消耗 `AllocatedPages`——虚拟地址由调用方指定。
+    /// 如需完整的所有权链（含虚拟页），请使用 [`map_to`](Self::map_to)。
     ///
     /// # Errors
     ///
     /// 帧分配失败或映射冲突时返回错误。
     pub fn map_alloc(
         pt: &mut PageTable,
-        pt_ref: &'static SpinLock<PageTable>,
+        pt_ref: Arc<SpinLock<PageTable>>,
         va_start: VirtAddr,
         page_count: usize,
         flags: PteFlags,
@@ -144,6 +219,7 @@ impl MappedPages {
             flags: exclusive_flags,
             permanent: false,
             page_table: pt_ref,
+            pages: None,
         })
     }
 
@@ -312,11 +388,11 @@ impl core::fmt::Debug for MappedPages {
     }
 }
 
-/// 创建测试用 `&'static SpinLock<PageTable>`（leak 获取 'static 引用）。
+/// 创建测试用 `Arc<SpinLock<PageTable>>`。
 #[cfg(test)]
-pub(crate) fn test_pt() -> &'static SpinLock<PageTable> {
+pub(crate) fn test_pt() -> Arc<SpinLock<PageTable>> {
     let pt = PageTable::create().expect("创建页表");
-    Box::leak(Box::new(SpinLock::new(pt, "test_pt")))
+    Arc::new(SpinLock::new(pt, "test_pt"))
 }
 
 #[cfg(test)]
@@ -330,8 +406,9 @@ mod tests {
         let mp = {
             let mut guard = pt_ref.lock();
             let pa = PhysAddr::new(0x1_0000);
-            let mp = MappedPages::map_identity(&mut guard, pt_ref, pa, 1, PteFlags::kernel_rw())
-                .expect("map_identity 应成功");
+            let mp =
+                MappedPages::map_identity(&mut guard, pt_ref.clone(), pa, 1, PteFlags::kernel_rw())
+                    .expect("map_identity 应成功");
             assert_eq!(mp.vaddr(), VirtAddr::new(0x1_0000));
             assert_eq!(mp.size(), PAGE_SIZE);
             let (got_pa, got_flags) = guard
@@ -350,11 +427,13 @@ mod tests {
         let pt_ref = test_pt();
         let mut guard = pt_ref.lock();
         let pa = PhysAddr::new(0x2_0000);
-        let _mp1 = MappedPages::map_identity(&mut guard, pt_ref, pa, 1, PteFlags::kernel_rw())
-            .expect("首次 map 应成功")
-            .into_permanent();
-        let err = MappedPages::map_identity(&mut guard, pt_ref, pa, 1, PteFlags::kernel_rw())
-            .expect_err("重复 map 应失败");
+        let _mp1 =
+            MappedPages::map_identity(&mut guard, pt_ref.clone(), pa, 1, PteFlags::kernel_rw())
+                .expect("首次 map 应成功")
+                .into_permanent();
+        let err =
+            MappedPages::map_identity(&mut guard, pt_ref.clone(), pa, 1, PteFlags::kernel_rw())
+                .expect_err("重复 map 应失败");
         assert_eq!(err, MemoryError::MapFailed);
     }
 
@@ -390,9 +469,10 @@ mod tests {
         let pt_ref = test_pt();
         let mut guard = pt_ref.lock();
         let pa = PhysAddr::new(0x5_0000);
-        let _mp = MappedPages::map_identity(&mut guard, pt_ref, pa, 3, PteFlags::kernel_ro())
-            .expect("多页 map 应成功")
-            .into_permanent();
+        let _mp =
+            MappedPages::map_identity(&mut guard, pt_ref.clone(), pa, 3, PteFlags::kernel_ro())
+                .expect("多页 map 应成功")
+                .into_permanent();
         for i in 0..3 {
             let va = VirtAddr::new(0x5_0000 + i * PAGE_SIZE);
             assert!(guard.get_mapping(va).is_some(), "第 {} 页应已映射", i);
@@ -406,7 +486,7 @@ mod tests {
         let pt_ref = test_pt();
         let mut guard = pt_ref.lock();
         let va = VirtAddr::new(0x10_0000);
-        let mp = MappedPages::map_alloc(&mut guard, pt_ref, va, 1, PteFlags::kernel_rw())
+        let mp = MappedPages::map_alloc(&mut guard, pt_ref.clone(), va, 1, PteFlags::kernel_rw())
             .expect("map_alloc 应成功");
 
         let (_, got_flags) = guard.get_mapping(va).expect("应能查到映射");
@@ -426,7 +506,7 @@ mod tests {
         let pt_ref = test_pt();
         let mut guard = pt_ref.lock();
         let va = VirtAddr::new(0x20_0000);
-        let _mp = MappedPages::map_alloc(&mut guard, pt_ref, va, 3, PteFlags::kernel_rw())
+        let _mp = MappedPages::map_alloc(&mut guard, pt_ref.clone(), va, 3, PteFlags::kernel_rw())
             .expect("多页 map_alloc 应成功")
             .into_permanent();
         for i in 0..3 {

@@ -23,3 +23,6 @@ target/
 
 .worktrees/
 .claude
+
+# 参考内核源码
+ref/

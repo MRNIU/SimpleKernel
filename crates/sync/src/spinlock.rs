@@ -193,6 +193,7 @@ impl<T> Drop for SpinLockGuard<'_, T> {
 pub struct SpinLockIrq<T> {
     raw: RawSpinLock,
     data: UnsafeCell<T>,
+    #[cfg_attr(not(target_os = "none"), allow(dead_code))]
     level: u8,
 }
 
@@ -289,7 +290,7 @@ impl<T> SpinLockIrq<T> {
 
     fn post_acquire(&self) {
         self.raw.set_owner();
-        #[cfg(not(test))]
+        #[cfg(target_os = "none")]
         {
             self.check_lock_order();
             self.push_lock_stack();
@@ -297,14 +298,14 @@ impl<T> SpinLockIrq<T> {
     }
 
     fn pre_release(&self) {
-        #[cfg(not(test))]
+        #[cfg(target_os = "none")]
         {
             self.pop_lock_stack();
         }
         self.raw.clear_owner();
     }
 
-    #[cfg(not(test))]
+    #[cfg(target_os = "none")]
     fn check_lock_order(&self) {
         // SAFETY: 中断已禁用，无同核心并发访问
         let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
@@ -313,14 +314,14 @@ impl<T> SpinLockIrq<T> {
         }
     }
 
-    #[cfg(not(test))]
+    #[cfg(target_os = "none")]
     fn push_lock_stack(&self) {
         // SAFETY: 中断已禁用
         let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
         stack.push(self as *const Self as *const (), self.level);
     }
 
-    #[cfg(not(test))]
+    #[cfg(target_os = "none")]
     fn pop_lock_stack(&self) {
         // SAFETY: 中断已禁用
         let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };

@@ -26,7 +26,7 @@ pub fn init() -> AddressSpace {
 
     // SAFETY: alloc_start 页对齐（由 align_up 保证），内存区域在内核镜像之后、
     // 物理内存范围之内，不与堆重叠，且仅调用一次
-    unsafe { crate::frame::init(alloc_start, alloc_size) };
+    unsafe { frame_allocator::init(alloc_start, alloc_size) };
 
     // 创建页表并存入全局——获取 &'static 引用以构建 AddressSpace
     let pt = PageTable::create().expect("failed to create kernel page table");

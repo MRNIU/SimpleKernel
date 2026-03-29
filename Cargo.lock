@@ -156,6 +156,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5baebc0774151f905a1a2cc41989300b1e6fbb29aff0ceffa1064fdd3088d582"
 
 [[package]]
+name = "frame_allocator"
+version = "0.1.0"
+dependencies = [
+ "address",
+ "buddy_system_allocator",
+ "config",
+ "log",
+ "page_table",
+ "sync",
+]
+
+[[package]]
 name = "gimli"
 version = "0.32.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -199,6 +211,7 @@ dependencies = [
  "bitflags 2.11.0",
  "buddy_system_allocator",
  "config",
+ "frame_allocator",
  "log",
  "page_table",
  "per-cpu",

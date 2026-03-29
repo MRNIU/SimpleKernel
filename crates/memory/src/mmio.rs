@@ -14,6 +14,10 @@
 //! 内部通过 [`MappedPages`] 管理页表映射和生命周期，
 //! 避免重复实现 unmap / permanent 逻辑。
 
+extern crate alloc;
+
+use alloc::sync::Arc;
+
 use crate::error::MemoryError;
 use crate::mapped_pages::MappedPages;
 use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
@@ -39,7 +43,7 @@ impl MmioRegion {
     ///
     /// 映射失败时返回错误。
     pub fn map_to(
-        pt_ref: &'static SpinLock<PageTable>,
+        pt_ref: Arc<SpinLock<PageTable>>,
         paddr: PhysAddr,
         size: usize,
     ) -> Result<Self, MemoryError> {
@@ -49,7 +53,7 @@ impl MmioRegion {
         guard.identity_map_range(pa_aligned, end, PteFlags::kernel_device())?;
         let page_count = (end.align_up().as_usize() - pa_aligned.as_usize()) / config::PAGE_SIZE;
         let mapping = MappedPages::new_borrowed(
-            pt_ref,
+            pt_ref.clone(),
             address::VirtAddr::new(pa_aligned.as_usize()),
             page_count,
             PteFlags::kernel_device(),

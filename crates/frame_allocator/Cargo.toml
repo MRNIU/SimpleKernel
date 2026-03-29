@@ -1,0 +1,21 @@
+[package]
+name = "frame_allocator"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Physical frame allocator with typestate lifecycle tracking"
+edition.workspace = true
+
+[dependencies]
+config = { path = "../config" }
+address = { path = "../address" }
+sync_crate = { path = "../sync", package = "sync" }
+
+buddy_system_allocator = "0.11"
+log = { version = "0.4", default-features = false }
+page_table_crate = { path = "../page_table", package = "page_table", optional = true }
+
+[features]
+test-support = []
+page-table = ["dep:page_table_crate"]

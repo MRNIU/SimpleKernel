@@ -28,3 +28,13 @@ impl fmt::Display for MemoryError {
 }
 
 impl core::error::Error for MemoryError {}
+
+#[cfg(any(test, target_os = "none"))]
+impl From<frame_allocator::FrameAllocError> for MemoryError {
+    fn from(e: frame_allocator::FrameAllocError) -> Self {
+        match e {
+            frame_allocator::FrameAllocError::AllocationFailed => Self::AllocationFailed,
+            frame_allocator::FrameAllocError::OutOfMemory => Self::OutOfMemory,
+        }
+    }
+}

@@ -2,17 +2,15 @@
 
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(target_os = "none", feature(sync_unsafe_cell))]
-#![cfg_attr(any(test, target_os = "none"), allow(incomplete_features))]
-#![cfg_attr(any(test, target_os = "none"), feature(adt_const_params))]
 
 #[cfg(any(test, target_os = "none"))]
 extern crate alloc;
 
 /// 错误类型。
 pub mod error;
-/// 物理帧分配器与帧生命周期状态机。
+/// 物理帧分配器与帧生命周期状态机（re-export `frame_allocator` crate）。
 #[cfg(any(test, target_os = "none"))]
-pub mod frame;
+pub use frame_allocator as frame;
 /// 全局内存状态。
 pub mod globals;
 /// 堆分配器。

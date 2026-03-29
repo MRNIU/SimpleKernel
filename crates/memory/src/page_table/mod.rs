@@ -15,23 +15,12 @@ pub use page_table_crate::{
 #[cfg(any(test, target_os = "none"))]
 pub use page_table_crate::NodeFrameOps;
 
-// 裸机：为 AllocatedFrames 实现 NodeFrameOps
-#[cfg(target_os = "none")]
-impl page_table_crate::NodeFrameOps for crate::frame::AllocatedFrames {
-    fn alloc() -> Result<Self, PageTableError> {
-        Self::alloc_one().map_err(|_| PageTableError::AllocationFailed)
-    }
-    fn paddr(&self) -> address::PhysAddr {
-        self.start_paddr()
-    }
-}
-
 /// 具体化的页表类型——隐藏泛型参数 `F`。
 ///
 /// - 裸机：`PageTable<AllocatedFrames>`（物理帧分配器）
 /// - 测试：`PageTable<HeapNodeFrame>`（堆分配模拟）
 #[cfg(target_os = "none")]
-pub type PageTable = page_table_crate::PageTable<crate::frame::AllocatedFrames>;
+pub type PageTable = page_table_crate::PageTable<frame_allocator::AllocatedFrames>;
 #[cfg(test)]
 pub type PageTable = page_table_crate::PageTable<page_table_crate::HeapNodeFrame>;
 

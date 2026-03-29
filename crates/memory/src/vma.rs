@@ -19,6 +19,7 @@
 extern crate alloc;
 
 use alloc::collections::BTreeMap;
+use alloc::sync::Arc;
 
 use crate::error::MemoryError;
 use crate::mapped_pages::MappedPages;
@@ -126,29 +127,29 @@ impl core::fmt::Debug for Vma {
 ///
 /// # 所有权模型
 ///
-/// `AddressSpace` 通过 `&'static SpinLock<PageTable>` 引用页表，
-/// 与 [`MappedPages`] 的生命周期模型一致。内核地址空间使用全局页表；
-/// 用户进程地址空间将持有独立页表的 `'static` 引用（通过 `Box::leak`）。
+/// `AddressSpace` 通过 `Arc<SpinLock<PageTable>>` 共享页表引用。
+/// 内核地址空间共享全局内核页表；用户进程各自持有独立页表的 `Arc`。
+/// 进程退出后 `Arc` 引用计数归零，页表自动释放。
 pub struct AddressSpace {
-    /// 所属页表引用
-    page_table: &'static SpinLock<PageTable>,
+    /// 所属页表的 `Arc` 引用
+    page_table: Arc<SpinLock<PageTable>>,
     /// VMA 集合——以起始虚拟地址为键，保证有序且不重叠
     areas: BTreeMap<VirtAddr, Vma>,
 }
 
 impl AddressSpace {
     /// 创建空地址空间。
-    pub fn new(page_table: &'static SpinLock<PageTable>) -> Self {
+    pub fn new(page_table: Arc<SpinLock<PageTable>>) -> Self {
         Self {
             page_table,
             areas: BTreeMap::new(),
         }
     }
 
-    /// 返回页表引用。
+    /// 返回页表的 `Arc` 引用。
     #[must_use]
-    pub fn page_table(&self) -> &'static SpinLock<PageTable> {
-        self.page_table
+    pub fn page_table(&self) -> &Arc<SpinLock<PageTable>> {
+        &self.page_table
     }
 
     /// 返回所有 VMA 的迭代器。
@@ -197,7 +198,7 @@ impl AddressSpace {
 
         let mapping = {
             let mut pt = self.page_table.lock();
-            MappedPages::map_alloc(&mut pt, self.page_table, start, page_count, flags)?
+            MappedPages::map_alloc(&mut pt, self.page_table.clone(), start, page_count, flags)?
         };
 
         let vma = Vma {
@@ -231,7 +232,8 @@ impl AddressSpace {
         let mapping = {
             let mut pt = self.page_table.lock();
             let pa = address::PhysAddr::new(start.as_usize());
-            let mp = MappedPages::map_identity(&mut pt, self.page_table, pa, page_count, flags)?;
+            let mp =
+                MappedPages::map_identity(&mut pt, self.page_table.clone(), pa, page_count, flags)?;
             mp.into_permanent()
         };
 
@@ -328,7 +330,7 @@ impl AddressSpace {
                 let mut pt = self.page_table.lock();
                 MappedPages::map_alloc(
                     &mut pt,
-                    self.page_table,
+                    self.page_table.clone(),
                     vma.range.start(),
                     vma.page_count(),
                     vma.flags,
@@ -339,7 +341,7 @@ impl AddressSpace {
                 let pa = address::PhysAddr::new(vma.range.start().as_usize());
                 MappedPages::map_identity(
                     &mut pt,
-                    self.page_table,
+                    self.page_table.clone(),
                     pa,
                     vma.page_count(),
                     vma.flags,
@@ -744,7 +746,7 @@ mod tests {
         assert_eq!(vma.size(), 3 * PAGE_SIZE);
         assert_eq!(vma.kind(), VmaKind::Identity);
         // 页表中应能查到映射
-        let pt = pt_ref.lock();
+        let pt = aspace.page_table().lock();
         assert!(pt.get_mapping(start).is_some());
         assert!(pt.get_mapping(start + PAGE_SIZE).is_some());
         assert!(pt.get_mapping(start + 2 * PAGE_SIZE).is_some());
