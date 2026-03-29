@@ -59,13 +59,12 @@ pub fn cpu_local(attr: TokenStream, item: TokenStream) -> TokenStream {
         static #raw_name: #ty = #expr;
 
         #[cfg(not(target_os = "none"))]
-        #[used]
         static #raw_name: #ty = #expr;
 
         #(#attrs)*
         #[allow(non_upper_case_globals)]
         #vis static #name: ::per_cpu::CpuLocal<#ty> =
-            // SAFETY: raw_name 是由本宏生成的 .percpu section 变量，地址在整个内核生命周期内有效
+            // SAFETY: raw_name 是由本宏生成的 static 变量，地址在整个内核生命周期内有效
             unsafe { ::per_cpu::CpuLocal::__new(&#raw_name as *const #ty) };
     };
 

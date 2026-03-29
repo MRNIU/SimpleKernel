@@ -2,6 +2,15 @@
 #![cfg_attr(target_os = "none", feature(sync_unsafe_cell))]
 //! Per-CPU 数据——通过 `#[cpu_local]` 分散声明，每核心独立副本。
 //!
+//! 本 crate 只提供 per-CPU 机制（声明、初始化、访问），
+//! 不包含任何业务变量——各子系统在自己的模块中用 `#[cpu_local]` 声明。
+//!
+//! ## Per-CPU 状态
+//!
+//! | 变量 | 类型 | 说明 |
+//! |------|------|------|
+//! | `CORE_ID` | `usize` | 当前核心 ID（`percpu_init` 写入） |
+//!
 //! ## 原理
 //!
 //! 1. `#[cpu_local]` 将变量放入 `.percpu` ELF section（模板）
@@ -14,17 +23,11 @@ extern crate self as per_cpu;
 
 pub use macros::cpu_local;
 
+#[cfg(target_os = "none")]
 use core::sync::atomic::{AtomicBool, Ordering};
 
 #[cfg(target_os = "none")]
 use config::{MAX_CORE_COUNT, PERCPU_AREA_MAX};
-
-pub mod lock_stack;
-
-/// 实际在线核心数（从 FDT 解析，`early_init` 中初始化）。
-///
-/// 与 `config::MAX_CORE_COUNT`（编译期上限）不同，此值为运行时实际核心数。
-pub static CORE_COUNT: spin::Once<usize> = spin::Once::new();
 
 #[cfg(target_os = "none")]
 unsafe extern "C" {
@@ -108,6 +111,11 @@ unsafe fn write_tp(val: usize) {
 /// - 调用前 TP 必须持有当前 hart_id（riscv64）或 TPIDR_EL1 为 0（aarch64）
 #[cfg(target_os = "none")]
 pub unsafe fn percpu_init() {
+    assert!(
+        !PERCPU_INITIALIZED.load(Ordering::Acquire),
+        "percpu_init() 被重复调用"
+    );
+
     let template = unsafe { &__percpu_start as *const u8 };
     let template_size =
         unsafe { &__percpu_end as *const u8 as usize - &__percpu_start as *const u8 as usize };
@@ -194,15 +202,16 @@ fn raw_core_id() -> usize {
     }
 }
 
-/// 宿主机——为每个线程分配唯一 core_id（支持多线程测试）。
+/// 宿主机——返回当前线程的 core_id。
+///
+/// 测试时为每个线程分配唯一 ID，非测试时固定返回 0。
 #[cfg(not(target_os = "none"))]
 fn host_core_id() -> usize {
-    use core::sync::atomic::AtomicUsize;
-    static COUNTER: AtomicUsize = AtomicUsize::new(0);
-
     #[cfg(test)]
     {
+        use core::sync::atomic::{AtomicUsize, Ordering};
         use std::cell::Cell;
+        static COUNTER: AtomicUsize = AtomicUsize::new(0);
         thread_local! {
             static TID: Cell<usize> =
                 Cell::new(COUNTER.fetch_add(1, Ordering::Relaxed));
@@ -211,21 +220,20 @@ fn host_core_id() -> usize {
     }
     #[cfg(not(test))]
     {
-        let _ = &COUNTER;
         0
     }
 }
 
 /// Per-CPU 变量的包装器。
 ///
-/// 不直接持有数据——数据在 `.percpu` section 的模板中，
-/// 初始化后在每个 CPU 的区域中各有一份副本。
+/// 裸机：数据在 `.percpu` section 的模板中，初始化后每 CPU 各有一份副本，
+/// 通过 TP + 偏移量访问。
 ///
-/// 通过 `get()` / `get_mut()` 访问当前 CPU 的副本，
-/// 通过 `get_on(core_id)` 访问其他 CPU 的副本（需原子类型或 IPI 保护）。
+/// 宿主机：直接指向普通 static 变量（仅用于 `cargo check` / `cargo test`）。
 pub struct CpuLocal<T: Sync> {
-    /// 指向 `.percpu` section 中模板变量的指针。
-    /// 运行时用于计算偏移：`template_ptr - __percpu_start`。
+    /// 指向模板变量的指针。
+    /// 裸机：运行时计算偏移 `ptr - __percpu_start`。
+    /// 宿主机：直接解引用。
     template_ptr: *const T,
 }
 
@@ -237,7 +245,8 @@ impl<T: Sync> CpuLocal<T> {
     /// 由 `#[cpu_local]` 宏调用，不应手动使用。
     ///
     /// # Safety
-    /// `ptr` 必须指向 `.percpu` section 中由宏生成的 static 变量。
+    /// 裸机：`ptr` 必须指向 `.percpu` section 中由宏生成的 static 变量。
+    /// 宿主机：`ptr` 指向普通 static 变量。
     #[doc(hidden)]
     pub const unsafe fn __new(ptr: *const T) -> Self {
         Self { template_ptr: ptr }
@@ -264,7 +273,7 @@ impl<T: Sync> CpuLocal<T> {
         }
         #[cfg(not(target_os = "none"))]
         {
-            // SAFETY: 宿主机模板指针直接指向宏生成的 static 变量
+            // SAFETY: 宿主机上指向普通 static，T: Sync 保证共享引用安全
             unsafe { &*self.template_ptr }
         }
     }
@@ -284,7 +293,7 @@ impl<T: Sync> CpuLocal<T> {
         }
         #[cfg(not(target_os = "none"))]
         {
-            // SAFETY: 调用方保证无并发访问
+            // SAFETY: 宿主机上调用方须保证单线程访问
             unsafe { &mut *(self.template_ptr as *mut T) }
         }
     }
@@ -294,92 +303,28 @@ impl<T: Sync> CpuLocal<T> {
     /// # Safety
     /// - 调用方必须确保访问安全（使用原子类型，或目标 CPU 已停止）。
     /// - `target_core` 必须 < `MAX_CORE_COUNT`。
+    #[cfg(target_os = "none")]
     #[inline(always)]
     pub unsafe fn get_on(&self, target_core: usize) -> &T {
-        #[cfg(target_os = "none")]
-        {
-            debug_assert!(target_core < MAX_CORE_COUNT, "无效的核心 ID: {target_core}");
-            // SAFETY: percpu_init() 已填充 PERCPU_BASES
-            let bases = unsafe { &*PERCPU_BASES.get() };
-            let base = bases[target_core];
-            // SAFETY: 调用方保证访问安全
-            unsafe { &*((base + self.offset()) as *const T) }
-        }
-        #[cfg(not(target_os = "none"))]
-        {
-            let _ = target_core;
-            // SAFETY: 宿主机只有一份
-            unsafe { &*self.template_ptr }
-        }
+        debug_assert!(target_core < MAX_CORE_COUNT, "无效的核心 ID: {target_core}");
+        // SAFETY: percpu_init() 已填充 PERCPU_BASES
+        let bases = unsafe { &*PERCPU_BASES.get() };
+        let base = bases[target_core];
+        // SAFETY: 调用方保证访问安全
+        unsafe { &*((base + self.offset()) as *const T) }
+    }
+
+    /// 宿主机上无法真正跨核访问，返回当前值。
+    #[cfg(not(target_os = "none"))]
+    #[inline(always)]
+    pub unsafe fn get_on(&self, _target_core: usize) -> &T {
+        unsafe { &*self.template_ptr }
     }
 }
 
 /// 当前核心 ID（由 `percpu_init()` 写入每个 CPU 的区域）。
 #[cpu_local]
 static CORE_ID: usize = 0;
-
-/// Per-CPU 锁栈——强制锁获取顺序，防止死锁。
-#[cpu_local]
-pub static LOCK_STACK: lock_stack::LockStack = lock_stack::LockStack::new();
-
-/// 硬中断嵌套计数（>0 表示在 hardirq 上下文中）
-#[cpu_local]
-pub static HARDIRQ_COUNT: u32 = 0;
-
-/// 软中断嵌套计数（>0 表示在 softirq 上下文中）
-#[cpu_local]
-pub static SOFTIRQ_COUNT: u32 = 0;
-
-/// 抢占关闭计数（>0 表示抢占被禁用）
-#[cpu_local]
-pub static PREEMPT_DISABLE_COUNT: u32 = 0;
-
-/// 是否需要调度（原子：可被其他核心通过 IPI 设置）
-#[cpu_local]
-pub static NEED_RESCHED: AtomicBool = AtomicBool::new(false);
-
-/// 检查并清除当前核心的 `need_resched` 标志（原子操作，无需关中断）。
-///
-/// 用于 idle loop 轮询。
-pub fn check_and_clear_need_resched() -> bool {
-    NEED_RESCHED.get().swap(false, Ordering::Acquire)
-}
-
-/// 进入硬中断上下文（递增 hardirq_count，饱和加法防止溢出）。
-///
-/// 必须在中断处理程序中调用（中断已被 CPU 自动关闭）。
-pub fn enter_hardirq() {
-    // SAFETY: 在中断处理程序中调用，中断已关闭，无同核心并发访问
-    let count = unsafe { HARDIRQ_COUNT.get_mut() };
-    *count = count.saturating_add(1);
-}
-
-/// 离开硬中断上下文。
-///
-/// 必须与 `enter_hardirq()` 配对调用。
-pub fn exit_hardirq() {
-    // SAFETY: 在中断处理程序中调用，中断已关闭，无同核心并发访问
-    let count = unsafe { HARDIRQ_COUNT.get_mut() };
-    *count = count.saturating_sub(1);
-}
-
-/// 当前是否处于中断上下文（不可调度）。
-pub fn in_interrupt() -> bool {
-    *HARDIRQ_COUNT.get() > 0 || *SOFTIRQ_COUNT.get() > 0
-}
-
-/// 当前是否可以抢占。
-pub fn preemptible() -> bool {
-    *PREEMPT_DISABLE_COUNT.get() == 0 && !in_interrupt()
-}
-
-/// 设置指定核心的 `need_resched` 标志（用于 IPI 跨核唤醒）。
-///
-/// # Safety
-/// `target_core` 必须是有效的核心 ID。
-pub unsafe fn set_need_resched_on(target_core: usize) {
-    unsafe { NEED_RESCHED.get_on(target_core) }.store(true, Ordering::Release);
-}
 
 #[cfg(test)]
 mod tests {

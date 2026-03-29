@@ -62,7 +62,7 @@ pub static HARDIRQ_COUNT: ::per_cpu::CpuLocal<u32> =
 
 ### 1. 用户不直接依赖本 crate
 
-本 crate 不出现在其他 crate 的 `[dependencies]` 中（`per-cpu` 除外）。
+本 crate 不出现在其他 crate 的 `[dependencies]` 中（`per_cpu` 除外）。
 用户通过 `per_cpu::cpu_local` 等再导出路径使用宏，
 与 `serde` / `serde_derive` 的模式一致。
 

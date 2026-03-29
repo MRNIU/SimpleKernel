@@ -8,6 +8,11 @@
 
 extern crate alloc;
 
+/// 实际在线核心数（从 FDT 解析，`early_init` 中初始化）。
+///
+/// 与 `config::MAX_CORE_COUNT`（编译期上限）不同，此值为运行时实际核心数。
+pub(crate) static CORE_COUNT: spin::Once<usize> = spin::Once::new();
+
 #[cfg(not(test))]
 mod arch;
 mod elf;
@@ -15,10 +20,12 @@ mod elf;
 mod fdt;
 #[cfg(not(test))]
 mod init;
+mod irq_context;
 #[cfg(not(test))]
 mod lang_items;
 mod logging;
 mod panic;
+mod preempt;
 #[cfg(not(test))]
 mod smoke_test;
 mod syscall;
@@ -110,7 +117,7 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 
     // Idle loop — bootstrap 上下文成为 idle 任务
     loop {
-        if per_cpu::check_and_clear_need_resched() {
+        if crate::preempt::check_and_clear_need_resched() {
             task::schedule();
         }
         core::hint::spin_loop();
@@ -142,7 +149,7 @@ fn bootstrap_smp(_argc: i32, _argv: *const *const u8) -> ! {
 
     // Idle loop
     loop {
-        if per_cpu::check_and_clear_need_resched() {
+        if crate::preempt::check_and_clear_need_resched() {
             task::schedule();
         }
         core::hint::spin_loop();

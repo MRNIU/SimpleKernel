@@ -213,7 +213,7 @@ dependencies = [
  "frame_allocator",
  "log",
  "page_table",
- "per-cpu",
+ "per_cpu",
  "riscv",
  "spin",
  "sync",
@@ -277,13 +277,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
-name = "per-cpu"
+name = "per_cpu"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
  "config",
  "macros",
- "spin",
  "tock-registers 0.9.0",
 ]
 
@@ -423,7 +422,7 @@ dependencies = [
  "fdt",
  "log",
  "memory",
- "per-cpu",
+ "per_cpu",
  "riscv",
  "rustc-demangle",
  "sbi-rt",
@@ -470,7 +469,8 @@ name = "sync"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "per-cpu",
+ "config",
+ "per_cpu",
  "riscv",
  "tock-registers 0.9.0",
 ]
@@ -499,7 +499,7 @@ dependencies = [
 name = "tick"
 version = "0.1.0"
 dependencies = [
- "per-cpu",
+ "per_cpu",
 ]
 
 [[package]]

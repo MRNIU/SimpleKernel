@@ -247,7 +247,7 @@ pub fn timer_tick() {
         if let Some(current) = sched.current.as_ref() {
             if sched.scheduler.task_tick(current) {
                 // 调度策略判定需要抢占（时间片到期 / vruntime 超过队首）
-                per_cpu::NEED_RESCHED
+                crate::preempt::NEED_RESCHED
                     .get()
                     .store(true, core::sync::atomic::Ordering::Release);
             }

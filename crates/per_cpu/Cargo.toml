@@ -1,16 +1,15 @@
 [package]
-name = "per-cpu"
+name = "per_cpu"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description.workspace = true
+description = "Per-CPU data infrastructure — #[cpu_local] declaration, CpuLocal<T> access, percpu_init"
 edition.workspace = true
 
 [dependencies]
 macros = { path = "../macros" }
 config = { path = "../config" }
-spin = { version = "0.9", default-features = false, features = ["once"] }
 
 [target.'cfg(target_arch = "aarch64")'.dependencies]
 aarch64-cpu = "9"

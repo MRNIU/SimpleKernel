@@ -8,7 +8,8 @@ description.workspace = true
 edition.workspace = true
 
 [dependencies]
-per-cpu = { path = "../per-cpu" }
+config = { path = "../config" }
+per_cpu = { path = "../per_cpu" }
 
 # RISC-V CSR / 指令封装（sstatus、中断控制）
 [target.'cfg(target_arch = "riscv64")'.dependencies]

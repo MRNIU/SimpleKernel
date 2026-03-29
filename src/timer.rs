@@ -9,14 +9,14 @@
 pub fn handle_timer_common() {
     let tick = tick::tick_advance();
 
-    per_cpu::enter_hardirq();
+    crate::irq_context::enter_hardirq();
 
     // 直接调用 task::timer_tick()——同属 kernel crate，无需回调间接调用
     crate::task::timer_tick();
 
-    per_cpu::exit_hardirq();
+    crate::irq_context::exit_hardirq();
 
-    per_cpu::NEED_RESCHED
+    crate::preempt::NEED_RESCHED
         .get()
         .store(true, core::sync::atomic::Ordering::Release);
 

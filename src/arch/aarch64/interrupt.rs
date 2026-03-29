@@ -57,7 +57,7 @@ fn init_gic_addrs() {
         // GICR 地址需要从同一节点的 reg 属性偏移 16 字节处读取
         // find_compatible_reg 只返回第一组，这里用默认值计算 GICR
         let gicr_addr = gicd_addr + gicd_size as u64;
-        let gicr_size = GICR_STRIDE * per_cpu::CORE_COUNT.get().copied().unwrap_or(1);
+        let gicr_size = GICR_STRIDE * crate::CORE_COUNT.get().copied().unwrap_or(1);
 
         // 尝试从 FDT 精确读取 GICR（如果 reg 属性够长）
         let (gicr_addr, gicr_size) = fdt
@@ -88,7 +88,7 @@ fn init_gic_addrs() {
 /// # Safety
 /// GICD 和 GICR 区域必须已通过 `map_mmio` 映射。
 unsafe fn create_gic<'a>() -> GicV3<'a> {
-    let cpu_count = per_cpu::CORE_COUNT.get().copied().unwrap_or(1);
+    let cpu_count = crate::CORE_COUNT.get().copied().unwrap_or(1);
 
     let addrs = GIC_ADDRS.get().expect("GIC_ADDRS 未初始化");
 

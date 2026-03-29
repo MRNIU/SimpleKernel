@@ -11,7 +11,7 @@ edition.workspace = true
 config = { path = "../config" }
 address = { path = "../address" }
 sync_crate = { path = "../sync", package = "sync" }
-per-cpu = { path = "../per-cpu" }
+per_cpu = { path = "../per_cpu" }
 page_table_crate = { path = "../page_table", package = "page_table" }
 frame_allocator = { path = "../frame_allocator" }
 

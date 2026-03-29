@@ -308,7 +308,7 @@ impl<T> SpinLockIrq<T> {
     #[cfg(target_os = "none")]
     fn check_lock_order(&self) {
         // SAFETY: 中断已禁用，无同核心并发访问
-        let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
+        let stack = unsafe { crate::LOCK_STACK.get_mut() };
         if !stack.check_order(self.level, lock_level::UNCLASSIFIED) {
             RawSpinLock::fatal(self.raw.name, "lock order violation");
         }
@@ -317,14 +317,14 @@ impl<T> SpinLockIrq<T> {
     #[cfg(target_os = "none")]
     fn push_lock_stack(&self) {
         // SAFETY: 中断已禁用
-        let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
+        let stack = unsafe { crate::LOCK_STACK.get_mut() };
         stack.push(self as *const Self as *const (), self.level);
     }
 
     #[cfg(target_os = "none")]
     fn pop_lock_stack(&self) {
         // SAFETY: 中断已禁用
-        let stack = unsafe { per_cpu::LOCK_STACK.get_mut() };
+        let stack = unsafe { crate::LOCK_STACK.get_mut() };
         stack.pop(self as *const Self as *const ());
     }
 }

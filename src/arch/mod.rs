@@ -10,7 +10,7 @@ pub(crate) mod riscv64;
 ///
 /// 底层 CPU 原语（中断控制）在 `sync` crate 中提供，
 /// TLB 管理在 `memory` crate 中提供，
-/// core ID 在 `per-cpu` crate 中提供，tick 计数在 `tick` crate 中提供，
+/// core ID 在 `per_cpu` crate 中提供，tick 计数在 `tick` crate 中提供，
 /// 此 trait 仅定义初始化和硬件配置操作。
 pub trait ArchOps {
     /// 从引导参数中提取 DTB（设备树）物理地址
