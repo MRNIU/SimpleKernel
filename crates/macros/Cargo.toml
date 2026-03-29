@@ -1,6 +1,10 @@
 [package]
-name = "kernel-macros"
+name = "macros"
 version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Procedural macros for SimpleKernel (#[cpu_local], etc.)"
 edition.workspace = true
 
 [lib]

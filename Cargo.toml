@@ -13,7 +13,7 @@ members = [
     ".",
     "crates/config",
     "crates/address",
-    "crates/kernel-macros",
+    "crates/macros",
     "crates/per-cpu",
     "crates/sync",
     "crates/tick",

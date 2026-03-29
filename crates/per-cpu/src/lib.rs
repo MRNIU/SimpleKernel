@@ -12,7 +12,7 @@
 // 让 #[cpu_local] 宏展开的 `per_cpu::CpuLocal` 路径在本 crate 内部也能解析
 extern crate self as per_cpu;
 
-pub use kernel_macros::cpu_local;
+pub use macros::cpu_local;
 
 use core::sync::atomic::{AtomicBool, Ordering};
 
