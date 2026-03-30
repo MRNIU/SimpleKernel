@@ -9,4 +9,4 @@ edition.workspace = true
 
 [dependencies]
 address = { path = "../address" }
-bitflags = "2"
+bitflags.workspace = true

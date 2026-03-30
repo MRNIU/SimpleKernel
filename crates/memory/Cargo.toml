@@ -15,15 +15,15 @@ per_cpu = { path = "../per_cpu" }
 page_table_crate = { path = "../page_table", package = "page_table" }
 frame_allocator = { path = "../frame_allocator" }
 
-bitflags = "2"
-zerocopy = { version = "0.8", default-features = false, features = ["derive"] }
-buddy_system_allocator = "0.12"
-log = { version = "0.4", default-features = false }
-spin = { version = "0.10", default-features = false, features = ["once"] }
+bitflags.workspace = true
+zerocopy.workspace = true
+buddy_system_allocator.workspace = true
+log.workspace = true
+spin.workspace = true
 
 # RISC-V sfence.vma 指令（TLB 刷新）
 [target.'cfg(target_arch = "riscv64")'.dependencies]
-riscv = { version = "0.16", features = ["s-mode"] }
+riscv.workspace = true
 
 [dev-dependencies]
 page_table_crate = { path = "../page_table", package = "page_table", features = ["test-support"] }

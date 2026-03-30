@@ -8,7 +8,7 @@ description = "Interrupt state management — HeldInterrupts proof token and arc
 edition.workspace = true
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]
-riscv = { version = "0.16", features = ["s-mode"] }
+riscv.workspace = true
 
 [target.'cfg(target_arch = "aarch64")'.dependencies]
-aarch64-cpu = "11"
+aarch64-cpu.workspace = true

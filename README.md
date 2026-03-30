@@ -359,20 +359,70 @@ SimpleKernel/
 
 ## 📦 第三方依赖
 
+### Rust Crate 依赖（当前使用）
+
+| Crate | 用途 |
+|-------|------|
+| [`spin`](https://crates.io/crates/spin) | `Once<T>` 单例初始化 |
+| [`bitflags`](https://crates.io/crates/bitflags) | 类型安全的位标志（寄存器字段、页表项） |
+| [`bitfield-struct`](https://crates.io/crates/bitfield-struct) | 过程宏位域结构体（硬件寄存器字段定义） |
+| [`log`](https://crates.io/crates/log) | 日志门面，后端在 `logging.rs` |
+| [`buddy_system_allocator`](https://crates.io/crates/buddy_system_allocator) | Buddy system 堆分配器 |
+| [`heapless`](https://crates.io/crates/heapless) | 固定容量 `Vec`/`String`/`Queue`（无需堆分配，中断安全） |
+| [`hashbrown`](https://crates.io/crates/hashbrown) | no_std `HashMap`，O(1) 查找 |
+| [`intrusive-collections`](https://crates.io/crates/intrusive-collections) | 侵入式链表/红黑树（调度器队列、等待队列，零额外分配） |
+| [`elf`](https://crates.io/crates/elf) | 零拷贝 ELF 解析（no_std） |
+| [`rustc-demangle`](https://crates.io/crates/rustc-demangle) | Rust 符号 demangling（栈回溯） |
+| [`unwinding`](https://crates.io/crates/unwinding) | DWARF 栈回溯 |
+| [`fdt`](https://crates.io/crates/fdt) | 纯 Rust 设备树（FDT）解析器 |
+| [`zerocopy`](https://crates.io/crates/zerocopy) | 零拷贝序列化（derive 宏） |
+| [`gdbstub`](https://crates.io/crates/gdbstub) | 内核内嵌 GDB server（不依赖 QEMU `-s`） |
+| [`qemu-exit`](https://crates.io/crates/qemu-exit) | 用指定退出码结束 QEMU（集成测试） |
+| [`virtio-drivers`](https://crates.io/crates/virtio-drivers) | VirtIO 协议栈（blk/net/console/gpu） |
+| [`smoltcp`](https://crates.io/crates/smoltcp) | 轻量 TCP/IP 协议栈（无堆分配） |
+| [`sbi-rt`](https://crates.io/crates/sbi-rt) | RISC-V SBI 运行时接口 |
+| [`riscv`](https://crates.io/crates/riscv) | RISC-V CSR 访问、S-mode 支持 |
+| [`aarch64-cpu`](https://crates.io/crates/aarch64-cpu) | AArch64 系统寄存器访问 |
+| [`tock-registers`](https://crates.io/crates/tock-registers) | 类型安全的 MMIO 寄存器抽象 |
+| [`arm-gic`](https://crates.io/crates/arm-gic) | GICv3 中断控制器驱动 |
+| [`arm-psci`](https://crates.io/crates/arm-psci) | PSCI 电源管理接口 |
+
+### 固件 / 引导（Git Submodule）
+
 | 依赖 | 用途 |
 |------|------|
-| [google/googletest](https://github.com/google/googletest.git) | 测试框架 |
-| [charlesnicholson/nanoprintf](https://github.com/charlesnicholson/nanoprintf.git) | printf 实现 |
-| [MRNIU/cpu_io](https://github.com/MRNIU/cpu_io.git) | CPU I/O 操作 |
 | [riscv-software-src/opensbi](https://github.com/riscv-software-src/opensbi.git) | RISC-V SBI 实现 |
-| [MRNIU/opensbi_interface](https://github.com/MRNIU/opensbi_interface.git) | OpenSBI 接口 |
 | [u-boot/u-boot](https://github.com/u-boot/u-boot.git) | 通用引导程序 |
 | [OP-TEE/optee_os](https://github.com/OP-TEE/optee_os.git) | OP-TEE 操作系统 |
 | [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git) | ARM 可信固件 |
 | [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) | 设备树编译器 |
-| [MRNIU/bmalloc](https://github.com/MRNIU/bmalloc.git) | 内存分配器 |
-| [MRNIU/MPMCQueue](https://github.com/MRNIU/MPMCQueue.git) | 无锁 MPMC 队列 |
-| [MRNIU/device_framework](https://github.com/MRNIU/device_framework.git) | 设备管理框架 |
+
+### 推荐开发工具
+
+| 工具 | 用途 | 安装 |
+|------|------|------|
+| [`cargo-bloat`](https://github.com/RazrFalcon/cargo-bloat) | 分析内核二进制体积热点 | `cargo install cargo-bloat` |
+| [`cargo-call-stack`](https://crates.io/crates/cargo-call-stack) | 静态全程序栈使用分析（检查栈溢出风险） | `cargo install cargo-call-stack` |
+
+### 🗺️ 未来依赖路线图（TODO）
+
+以下 crate 已调研评估，计划在对应阶段引入：
+
+| 阶段 | Crate | 用途 | 备注 |
+|------|-------|------|------|
+| **P3** | [`page_table_multiarch`](https://crates.io/crates/page_table_multiarch) | 架构无关多级页表 | 可选——手写页表教育价值更高，快速推进可用此 crate |
+| **P5** | [`embedded-cli`](https://crates.io/crates/embedded-cli) | 内核调试 CLI（自动补全、子命令、历史记录） | 替代简单的 `log` 输出，提供交互式调试体验 |
+| **P6** | [`volatile`](https://crates.io/crates/volatile) | 安全的 volatile MMIO 寄存器访问 | 替代裸 `read_volatile`/`write_volatile` |
+| **P6** | [`device-driver`](https://crates.io/crates/device-driver) | 设备驱动开发工具包 | 加速驱动开发 |
+| **P7** | [`fatfs`](https://crates.io/crates/fatfs) | FAT 文件系统实现 | 配合 VirtIO 块设备 |
+| **P7** | [`embedded-sdmmc`](https://crates.io/crates/embedded-sdmmc) | SD/MMC 卡协议（纯 Rust） | `fatfs` 的替代选择 |
+| **P7+** | [`embassy`](https://github.com/embassy-rs/embassy) | 嵌入式异步运行时 | 未来考虑内核 async/await 支持 |
+| **P7+** | [`embedded-tls`](https://github.com/drogue-iot/embedded-tls) | no_std TLS 1.3 实现 | 网络安全通信 |
+| **工具** | [`defmt`](https://github.com/knurling-rs/defmt) | 高效嵌入式日志框架 | 比 `log` 更省空间，适合资源受限场景 |
+| **工具** | [`probe-rs`](https://probe.rs) | 现代嵌入式调试工具链 | 配合实际硬件调试 |
+| **工具** | [`embedded-test`](https://github.com/probe-rs/embedded-test) | 嵌入式测试框架 | 支持单元测试、集成测试、异步测试 |
+
+> 参考来源：[awesome-embedded-rust](https://github.com/rust-embedded/awesome-embedded-rust) 及 `docs/rust-rewrite/生态调研与改进建议.md`
 
 ## 📝 开发指南
 

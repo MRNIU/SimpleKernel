@@ -29,6 +29,72 @@ members = [
 default-members = ["."]
 resolver = "2"
 
+# ── workspace 级依赖版本管理 ──────────────────────────────────────
+# 各 crate 通过 `dep.workspace = true` 引用，避免版本漂移
+[workspace.dependencies]
+# 同步 / 单例
+spin = { version = "0.10", default-features = false, features = ["once"] }
+
+# 位操作
+bitflags = "2"
+bitfield-struct = "0.12"              # 过程宏位域结构体（硬件寄存器字段）
+
+# 日志
+log = { version = "0.4", default-features = false }
+
+# 内存分配
+buddy_system_allocator = "0.12"
+
+# 无堆数据结构
+heapless = "0.8"                      # 固定容量 Vec/String/Queue（无需堆分配）
+hashbrown = { version = "0.15", default-features = false, features = ["allocator-api2"] }
+intrusive-collections = { version = "0.10", default-features = false }
+
+# 零拷贝序列化
+zerocopy = { version = "0.8", default-features = false, features = ["derive"] }
+
+# ELF / 符号
+elf = { version = "0.8", default-features = false }
+rustc-demangle = { version = "0.1", default-features = false }
+
+# DWARF 回溯
+unwinding = { version = "0.2", default-features = false, features = [
+    "unwinder", "fde-static", "dwarf-expr", "hide-trace",
+] }
+
+# 设备树
+fdt = "0.2.0-alpha1"
+
+# 调试 / 测试
+gdbstub = { version = "0.7", default-features = false }   # 内核内嵌 GDB server
+qemu-exit = "3"                        # 用指定退出码结束 QEMU（集成测试）
+
+# VirtIO 驱动框架（P6 设备框架阶段启用）
+virtio-drivers = { version = "0.13", default-features = false }
+
+# 网络协议栈（P7+ 网络子系统阶段启用）
+smoltcp = { version = "0.13", default-features = false, features = [
+    "medium-ip", "proto-ipv4", "socket-tcp", "socket-udp",
+] }
+
+# RISC-V
+sbi-rt = { version = "0.0.3", features = ["legacy"] }
+riscv = { version = "0.16", features = ["s-mode"] }
+
+# AArch64
+aarch64-cpu = "11"
+tock-registers = "0.10"
+arm-gic = "0.8"
+arm-psci = "0.2"
+
+# 构建
+cc = "1"
+
+# 过程宏基础
+syn = { version = "2", features = ["full"] }
+quote = "1"
+proc-macro2 = "1"
+
 # 版权信息集中在 workspace 级别，各 crate 通过 `key.workspace = true` 继承
 [workspace.package]
 version = "0.1.0"
@@ -59,55 +125,64 @@ interrupt_state = { path = "crates/interrupt_state" }
 sync = { path = "crates/sync" }
 global_tick = { path = "crates/global_tick" }
 local_tick = { path = "crates/local_tick" }
-
 memory = { path = "crates/memory" }
 
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中
-spin = { version = "0.10", default-features = false, features = ["once"] }
+spin.workspace = true
 
 # --- 位操作 ---
-bitflags = "2"                        # 类型安全的位标志 (寄存器字段、页表项)
+bitflags.workspace = true             # 类型安全的位标志（寄存器字段、页表项）
+bitfield-struct.workspace = true      # 过程宏位域结构体（硬件寄存器字段定义）
 
 # --- 日志 ---
-log = { version = "0.4", default-features = false }  # 日志门面, 后端在 logging.rs
+log.workspace = true                  # 日志门面, 后端在 logging.rs
 
 # --- 内存 ---
-# buddy system 堆分配器, 实现 GlobalAlloc trait
-buddy_system_allocator = "0.12"
+buddy_system_allocator.workspace = true  # buddy system 堆分配器, 实现 GlobalAlloc trait
+
+# --- 无堆数据结构 ---
+heapless.workspace = true             # 固定容量 Vec/String/Queue，中断上下文安全
+hashbrown.workspace = true            # no_std HashMap，O(1) 查找（task_table 等）
+intrusive-collections.workspace = true  # 侵入式链表/红黑树（调度器队列、等待队列）
 
 # --- ELF 解析 ---
-elf = { version = "0.8", default-features = false }  # 零拷贝 ELF 解析 (no_std)
+elf.workspace = true                  # 零拷贝 ELF 解析 (no_std)
 
 # --- 符号解码 ---
-rustc-demangle = { version = "0.1", default-features = false }
+rustc-demangle.workspace = true
 
 # --- DWARF 回溯 ---
-unwinding = { version = "0.2", default-features = false, features = [
-    "unwinder",
-    "fde-static",
-    "dwarf-expr",
-    "hide-trace",
-] }
+unwinding.workspace = true
 
 # --- 设备树 ---
-fdt = "0.2.0-alpha1"                  # 纯 Rust FDT 解析器 (no_std)
+fdt.workspace = true                  # 纯 Rust FDT 解析器 (no_std)
+
+# --- 调试 / 测试 ---
+gdbstub.workspace = true              # 内核内嵌 GDB server（QEMU 外也能调试）
+qemu-exit.workspace = true            # 用指定退出码结束 QEMU（集成测试）
+
+# --- VirtIO ---
+virtio-drivers.workspace = true       # VirtIO 协议栈（blk/net/console/gpu）
+
+# --- 网络 ---
+smoltcp.workspace = true              # 轻量 TCP/IP 协议栈（无 alloc）
 
 # --- RISC-V 架构专用 ---
 [target.'cfg(target_arch = "riscv64")'.dependencies]
-sbi-rt = { version = "0.0.3", features = ["legacy"] }   # SBI 运行时接口
-riscv = { version = "0.16", features = ["s-mode"] }  # CSR 访问、S-mode 支持 (inline-asm is built-in since 0.16)
+sbi-rt.workspace = true               # SBI 运行时接口
+riscv.workspace = true                # CSR 访问、S-mode 支持
 
 # --- AArch64 架构专用 ---
 [target.'cfg(target_arch = "aarch64")'.dependencies]
-aarch64-cpu = "11"                    # 系统寄存器访问
-tock-registers = "0.10"               # 类型安全的 MMIO 寄存器抽象
-arm-gic = "0.8"                       # GICv3 驱动（Arm Trusted Firmware 官方）
-arm-psci = "0.2"                      # PSCI 电源管理接口（CPU on/off/reset）
+aarch64-cpu.workspace = true          # 系统寄存器访问
+tock-registers.workspace = true       # 类型安全的 MMIO 寄存器抽象
+arm-gic.workspace = true              # GICv3 驱动（Arm Trusted Firmware 官方）
+arm-psci.workspace = true             # PSCI 电源管理接口（CPU on/off/reset）
 
 # --- 构建依赖 ---
 [build-dependencies]
-cc = "1"                              # 编译由 GCC 预处理的汇编 (.S) 文件
+cc.workspace = true                   # 编译由 GCC 预处理的汇编 (.S) 文件
 
 # 内核即使在 debug 模式下也需要一定的优化，否则生成的代码过大
 [profile.dev]

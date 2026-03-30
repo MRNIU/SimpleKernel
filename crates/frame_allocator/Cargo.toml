@@ -12,8 +12,8 @@ config = { path = "../config" }
 address = { path = "../address" }
 sync_crate = { path = "../sync", package = "sync" }
 
-buddy_system_allocator = "0.12"
-log = { version = "0.4", default-features = false }
+buddy_system_allocator.workspace = true
+log.workspace = true
 
 [features]
 test-support = []
