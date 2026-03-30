@@ -12,8 +12,7 @@
 //! - bit [53]：PXN
 //! - bit [54]：UXN/XN
 //!
-//! 参考文档：
-//! - [Arm ARM §D8.3 — VMSAv8-64 translation table descriptor formats](https://developer.arm.com/documentation/ddi0487/latest)
+//! [Arm ARM §D8.3](https://developer.arm.com/documentation/ddi0487/latest)
 
 use bitflags::bitflags;
 
@@ -66,7 +65,7 @@ bitflags! {
         const PXN       = 1 << 53;
         /// Unprivileged Execute-Never / Execute-Never
         const UXN       = 1 << 54;
-        /// 软件定义位——bit 55，标记帧所有权（参考 Theseus EXCLUSIVE）。
+        /// 软件定义位——bit 55，标记帧所有权。
         ///
         /// ARMv8 bits [58:55] 为软件可用位（IGNORED by hardware）。
         /// EXCLUSIVE = 1：unmap 时帧归还分配器。

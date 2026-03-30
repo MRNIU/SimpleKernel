@@ -91,7 +91,7 @@
 
 ## EXCLUSIVE 软件位
 
-借鉴 Theseus OS 的设计，利用 PTE 中架构预留的软件可用位标记帧的所有权。
+利用 PTE 中架构预留的软件可用位标记帧的所有权。
 当 `frame_allocator` 中的 `MappedFrames` 映射到页表时，通过
 `with_exclusive()` 设置此位，表示当前 PTE 独占该物理帧的引用。
 unmap 时通过 `is_exclusive()` 判断是否需要归还帧——

@@ -4,7 +4,7 @@
 // TODO: Per-CPU 帧缓存——消除 SMP 全局锁瓶颈
 //
 // 当前所有 alloc/dealloc 都竞争同一把 `SpinLock`，核数越多缓存行弹跳越严重。
-// 应引入两级结构（参考 Linux `struct per_cpu_pages`，`include/linux/mmzone.h`）：
+// 应引入两级结构：
 //
 // 架构：
 //   每个 CPU 持有本地缓存（`#[cpu_local] static PER_CPU_CACHE`），

@@ -1,15 +1,4 @@
 //! 多级页表——walk / map / unmap 逻辑。
-//!
-//! `PageTable<F>` 对帧分配的依赖通过 [`NodeFrameOps`] trait 泛型化——
-//! 裸机和宿主机测试共享同一份 walk 实现。
-//!
-//! `unmap_at_level` 在清除叶 PTE 后通过引用计数判断中间节点是否全空，
-//! 若是则清除上级 PTE 并回收该帧——参考 Linux `free_pgtables()` + `struct page::_mapcount`。
-//!
-//! **大页分裂**：当前不支持 transparent huge page splitting——
-//! 不能 unmap 大页的一部分，也不能在大页覆盖范围内映射小页。
-//! 如需部分 unmap，须先手动将大页分裂为小页再操作。
-//! 此限制在引入 THP 支持前保持不变。
 
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;

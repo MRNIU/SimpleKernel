@@ -4,14 +4,12 @@ use address::{FrameRange, PhysAddr, PhysPageNum};
 
 use crate::alloc::dealloc_to_buddy;
 
-/// 帧生命周期状态——参考 Theseus OS 的状态模型。
+/// 帧生命周期状态。
 ///
 /// 状态机：`Free → Allocated → Mapped → Unmapped → Free → …`
 ///
 /// 所有解分配路径最终汇聚到 `Free` 状态，由 `Free` 的 Drop 统一归还
-/// buddy allocator。这使状态机在类型系统中完全闭环。
-///
-/// 参考 Theseus: `kernel/frame_allocator/src/lib.rs` 的 `FreeFrames` 类型。
+/// buddy allocator。
 #[derive(PartialEq, Eq, core::marker::ConstParamTy)]
 pub enum MemoryState {
     /// 空闲——被分配器持有，Drop 归还 buddy allocator

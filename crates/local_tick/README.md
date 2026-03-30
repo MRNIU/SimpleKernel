@@ -9,8 +9,8 @@ Per-CPU tick 计数器——每核独立的调度时基。
 调度器可据此进行精确的 per-CPU 时间片记账。
 
 与 `global_tick`（BSP 单点递增的全局计数器）互补：
-- `global_tick`：全局时间推进（类似 Linux `jiffies`）
-- `local_tick`：per-CPU 记账（类似 Linux `tick_sched`）
+- `global_tick`：全局时间推进（BSP 单点递增）
+- `local_tick`：per-CPU 记账（每核独立递增）
 
 ## API
 

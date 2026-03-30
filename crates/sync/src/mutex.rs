@@ -1,8 +1,4 @@
-//! Layer 1a: 泛型互斥锁——数据保护 + RAII guard。
-//!
-//! `Mutex<R, T>` 将任意 [`RawLock`] 实现与受保护数据组合，
-//! `MutexGuard` 提供 RAII 生命周期管理。
-//! `Deref` / `DerefMut` / `Drop` 只需实现一次，所有锁后端共享。
+//! 泛型互斥锁——数据保护 + RAII guard。
 
 use core::cell::UnsafeCell;
 use core::fmt;

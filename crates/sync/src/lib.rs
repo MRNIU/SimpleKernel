@@ -1,26 +1,6 @@
-//! 内核同步原语——分层架构。
+//! 内核同步原语——分层自旋锁、中断安全锁和锁序检查。
 //!
-//! ```text
-//! Layer 2: 类型别名（用户接触的具体类型）
-//!   SpinLock<T>    = Mutex<RawSpinLock, T>
-//!   SpinLockIrq<T> = IrqSafe<RawSpinLock, T>
-//!
-//! Layer 1: 组合层（两个独立维度）
-//!   Mutex<R, T>        — 数据保护 + RAII guard
-//!   IrqSafe<R, T>      — Mutex + 关中断 + 锁序检查
-//!
-//! Layer 0: 原始锁机制（trait 抽象）
-//!   trait RawLock       — acquire / try_acquire / …
-//!   RawSpinLock         — TTAS 实现
-//! ```
-//!
-//! 中断状态管理由 [`interrupt_state`] crate 提供，本 crate re-export 便捷访问。
-//!
-//! ## Per-CPU 状态
-//!
-//! | 变量 | 类型 | 说明 |
-//! |------|------|------|
-//! | `LOCK_STACK` | `LockStack` | 锁获取顺序栈（死锁检测） |
+//! 架构设计详见 `crates/sync/README.md`。
 
 #![cfg_attr(not(test), no_std)]
 

@@ -1,8 +1,4 @@
 //! 中断证明令牌——将「中断已关闭」编码为编译期类型约束。
-//!
-//! 借鉴 Theseus OS 的 intralingual 设计哲学：
-//! 持有 [`HeldInterrupts`] 即证明中断已被禁用，
-//! 函数签名可以要求 `&HeldInterrupts` 参数来强制调用方先关中断。
 
 use core::marker::PhantomData;
 
@@ -14,15 +10,6 @@ use crate::arch;
 /// 不可 Clone / Copy / Send —— 确保每次 `hold()` 与恢复一一对应，
 /// 且不可跨核心传递（一个核心上保存的中断状态在另一核心上恢复是错误的）。
 /// 析构时自动恢复之前的中断状态。
-///
-/// # 设计理念
-///
-/// 传统做法（`disable()` + 手动 `enable()`）容易遗漏恢复调用。
-/// `HeldInterrupts` 将「中断已关闭」编码为 Rust 类型：
-/// - 编译器保证 token 不会被复制或遗忘（非 Copy、RAII Drop）
-/// - 函数签名可以要求 `&HeldInterrupts` 参数，证明调用方已禁用中断
-/// - `!Send` 防止跨核心传递——中断状态是 per-CPU 的
-/// - 与 Theseus OS 的 `HeldInterrupts` 概念一致
 ///
 /// # Examples
 ///

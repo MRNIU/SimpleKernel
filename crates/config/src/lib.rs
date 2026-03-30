@@ -17,7 +17,7 @@ pub const PAGE_SIZE_BITS: usize = PAGE_SIZE.trailing_zeros() as usize;
 /// TLB 全局刷新阈值（页数）。
 ///
 /// unmap 页数超过此阈值时使用全局 TLB flush，否则逐页 flush。
-/// 参考 Linux `tlb_single_page_flush_ceiling`（默认 33）。
+/// 默认 33，与常见内核实现一致。
 pub const TLB_FLUSH_THRESHOLD: usize = 33;
 
 /// 内核线程栈大小

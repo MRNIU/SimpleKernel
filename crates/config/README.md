@@ -26,7 +26,7 @@
 | 常量 | 默认值 | 说明 |
 |------|--------|------|
 | `PT_LEVELS` | 3 (riscv64) / 4 (aarch64) | 页表层级数，按架构 `cfg` 选择 |
-| `TLB_FLUSH_THRESHOLD` | 33 | 超过此页数时用全局 TLB flush（参考 Linux） |
+| `TLB_FLUSH_THRESHOLD` | 33 | 超过此页数时用全局 TLB flush |
 
 ### SMP / Per-CPU
 

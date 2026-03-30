@@ -5,7 +5,7 @@
 ## 概览
 
 `interrupt_state` 将「中断已关闭」编码为 Rust 类型，
-借鉴 Theseus OS 的 intralingual 设计哲学。
+利用类型系统在编译期保证中断安全。
 
 核心原则：**关中断只能通过 guard，开中断由 guard 的 Drop 自动完成**。
 裸 `irq_disable()` 为 `pub(crate)`，外部无法直接调用——

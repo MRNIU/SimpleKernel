@@ -21,7 +21,7 @@ pub mod heap;
 /// 内存子系统初始化（依赖链接器符号，裸机专用）。
 #[cfg(target_os = "none")]
 pub mod init;
-/// 仿射类型映射（Theseus 风格 `MappedPages`）。
+/// 仿射类型映射。
 #[cfg(any(test, target_os = "none"))]
 pub mod mapped_pages;
 /// 类型化 MMIO 区域。

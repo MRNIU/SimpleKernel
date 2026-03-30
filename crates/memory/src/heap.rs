@@ -10,7 +10,7 @@ use core::cell::SyncUnsafeCell;
 use core::ptr::NonNull;
 use sync_crate::SpinLockIrq;
 
-/// 中断安全的全局堆分配器——参考 Theseus OS 设计。
+/// 中断安全的全局堆分配器。
 ///
 /// 通过 `SpinLockIrq`（获取时禁用中断、释放时恢复）保证多核互斥和中断安全，
 /// 防止中断处理器中的隐式分配导致同核心递归加锁。

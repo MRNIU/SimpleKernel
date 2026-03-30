@@ -1,7 +1,4 @@
-//! Layer 0: 原始锁机制——trait 抽象 + TTAS 自旋锁实现。
-//!
-//! `RawLock` trait 定义纯互斥协议，不涉及数据保护、中断管理或锁序检查。
-//! 更换锁算法（TTAS → ticket → MCS）只需新增一个 `impl RawLock`。
+//! 原始锁机制——`RawLock` trait 抽象 + TTAS 自旋锁实现。
 
 use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 

@@ -5,10 +5,7 @@
 
 use core::fmt;
 
-/// 用于强制获取顺序的锁级别常量。
-///
-/// 数值更小的级别必须优先获取。
-/// 在持有更高级别锁时获取更低级别的锁会触发 panic。
+/// 锁级别常量——数值小的必须先获取。
 pub mod lock_level {
     /// 调度锁——级别最低，必须最先获取
     pub const SCHED: u8 = 0;
@@ -37,11 +34,7 @@ pub struct LockStackEntry {
 unsafe impl Send for LockStackEntry {}
 unsafe impl Sync for LockStackEntry {}
 
-/// Per-CPU 锁栈，用于强制锁获取顺序。
-///
-/// 每个核心维护一个当前持有锁的栈。
-/// 获取新锁时，SpinLock 检查新锁的级别是否严格大于栈顶。
-/// 最大深度由 `config::LOCK_STACK_DEPTH` 控制。
+/// Per-CPU 锁栈——获取新锁时检查级别是否严格大于栈顶。
 pub struct LockStack {
     entries: [LockStackEntry; Self::MAX_DEPTH],
     depth: usize,

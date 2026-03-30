@@ -1,11 +1,4 @@
 //! 物理帧分配器 + typestate 生命周期追踪。
-//!
-//! 参考 Theseus OS 的 `Frames<const S: MemoryState>` 设计：
-//! - 帧以**范围**（[`FrameRange`]）为单位管理，而非单个地址
-//! - 完整状态机：`Free → Allocated → Mapped → Unmapped → Free → …`
-//! - 状态转换消费 self，编译期强制正确的生命周期路径
-//! - 只有 `Free` 状态直接与 buddy allocator 交互——所有解分配路径汇聚到 `Free`
-//! - Drop 按状态分派：`Mapped` 状态 panic（必须经 unmap），其余经由 `Free` 归还
 
 #![cfg_attr(not(any(test, feature = "test-support")), no_std)]
 #![allow(incomplete_features)]

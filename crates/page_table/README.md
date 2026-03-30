@@ -46,7 +46,7 @@ pub struct PageTable<F: NodeFrameOps> {
 - `unmap` 回溯时：count == 0 且非根帧 → 清除上级 PTE 并回收帧
 - 避免了 O(512) 全扫描判断帧是否为空
 
-设计参考 Linux `free_pgtables()` + `struct page::_mapcount`。
+每帧维护有效 PTE 计数，unmap 回溯时据此判断是否回收空帧。
 
 ## 操作流程
 
@@ -220,5 +220,5 @@ page_table = { path = "../page_table", features = ["test-support"] }
 
 ### SMP 细粒度锁
 
-当前依赖外层 `SpinLock` 全局互斥。可参考 Linux 的 split page table lock
+当前依赖外层 `SpinLock` 全局互斥。可引入 split page table lock
 （每帧一把锁）降低锁争抢，但需要更精细的引用计数同步。

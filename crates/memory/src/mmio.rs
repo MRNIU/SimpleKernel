@@ -1,4 +1,4 @@
-//! 类型化 MMIO 区域——借鉴 Theseus OS 的 `MappedPages::as_type` 模式。
+//! 类型化 MMIO 区域——提供 volatile 语义的寄存器读写。
 //!
 //! `MmioRegion` 封装了一段已映射的 MMIO 地址区域，提供类型安全的
 //! 寄存器读写方法，替代裸指针 + `core::ptr::read_volatile` 的传统做法。

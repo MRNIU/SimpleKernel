@@ -5,8 +5,7 @@
 //! - bits [53:10]：PPN（物理页号）
 //! - bits [63:54]：保留
 //!
-//! 参考文档：
-//! - [RISC-V Privileged Spec §5.4 — Sv39/Sv48/Sv57 Page Table Entry](https://github.com/riscv/riscv-isa-manual/releases)
+//! [RISC-V Privileged Spec §5.4](https://github.com/riscv/riscv-isa-manual/releases)
 
 use bitflags::bitflags;
 
@@ -47,7 +46,7 @@ bitflags! {
         const GLOBAL   = 1 << 5;
         const ACCESSED = 1 << 6;
         const DIRTY    = 1 << 7;
-        /// 软件定义位——RSW bit 8，标记帧所有权（参考 Theseus EXCLUSIVE）。
+        /// 软件定义位——RSW bit 8，标记帧所有权。
         ///
         /// EXCLUSIVE = 1：unmap 时帧归还分配器。
         /// EXCLUSIVE = 0：unmap 时不回收帧（identity map / 共享映射）。

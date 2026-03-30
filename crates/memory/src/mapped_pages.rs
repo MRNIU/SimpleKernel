@@ -1,4 +1,4 @@
-//! 仿射类型映射——借鉴 Theseus OS 的 `MappedPages` 设计。
+//! 仿射类型映射——move-only 的 VA→PA 映射所有权。
 //!
 //! `MappedPages` 是一个 move-only（非 Clone、非 Copy）类型，
 //! 持有一段已建立的 VA→PA 映射的所有权。
@@ -17,12 +17,9 @@
 //!    页分配器，防止虚拟地址空间泄漏。
 //!
 // TODO: 实现 `split` / `merge` 操作——`munmap` 部分区域和 `mremap` 需要。
-// 参考 Theseus `MappedPages::split()` 和 Linux `split_vma()`。
 //
 // TODO: 支持 COW（Copy-on-Write）共享映射——`fork()` 需要多个进程共享同一物理帧
 // + 引用计数。需引入 `Frames` 的共享状态或 per-frame 引用计数器。
-// 参考 Linux `vm_area_struct::vm_flags` 中的 `VM_SHARED` 标记
-// 以及 `page::_mapcount` 引用计数。
 
 extern crate alloc;
 

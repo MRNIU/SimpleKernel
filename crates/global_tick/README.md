@@ -1,6 +1,6 @@
 # global_tick
 
-全局单调 tick 计数器（类似 Linux `jiffies`）——内核调度时基。
+全局单调 tick 计数器——内核调度时基。
 
 ## 概览
 

@@ -1,20 +1,7 @@
 //! 虚拟内存区域（VMA）与地址空间管理。
 //!
-//! 参考 Linux `vm_area_struct` + `mm_struct` 设计，但大幅简化：
 //! - [`Vma`]：描述一段连续虚拟地址空间的属性（权限、backing 类型）
 //! - [`AddressSpace`]：管理一个页表及其所有 VMA
-//!
-//! # 与 `MappedPages` 的关系
-//!
-//! `Vma` 是**策略描述**——"这段地址应该如何映射"；
-//! [`MappedPages`](crate::mapped_pages::MappedPages) 是**实现**——"这些页已映射到物理帧"。
-//! 两者是 1:1 关系（eager mapping）或 1:0 关系（lazy/demand paging 时 VMA 存在但尚未映射）。
-//!
-//! # 设计参考
-//!
-//! - **Linux** `vm_area_struct`：区域级权限、backing file、COW 标记
-//! - **Redox** `Grant`：类似 VMA 的用户空间映射描述
-//! - **Theseus**：单地址空间，无 VMA——`MappedPages` 本身即区域描述
 
 extern crate alloc;
 
@@ -179,7 +166,7 @@ impl AddressSpace {
 
     /// 创建匿名映射——分配帧并建立 VA→PA 映射。
     ///
-    /// 等价于 Linux `mmap(addr, size, prot, MAP_ANONYMOUS | MAP_FIXED, -1, 0)`。
+    /// 等价于 `mmap(addr, size, prot, MAP_ANONYMOUS | MAP_FIXED, -1, 0)`。
     ///
     /// # Errors
     ///
@@ -435,7 +422,7 @@ impl AddressSpace {
     /// 当前实现仅更新 VMA 的 flags 记录，**不修改已建立的 PTE**。
     ///
     // TODO: 实现页表级权限更新——遍历 VMA 范围内的 PTE 修改标志位，
-    // 并执行 TLB flush。参考 Linux `mprotect` → `change_protection()`。
+    // 并执行 TLB flush。
     ///
     /// # Errors
     ///

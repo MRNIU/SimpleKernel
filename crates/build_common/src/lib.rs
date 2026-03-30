@@ -28,7 +28,6 @@ fn extra_flags_for(arch: &str) -> &'static [&'static str] {
 pub fn setup_kernel_build(arch_dir: &Path) {
     let arch = std::env::var("CARGO_CFG_TARGET_ARCH").expect("CARGO_CFG_TARGET_ARCH 未设置");
 
-    // ── 编译汇编文件 ──────────────────────────────────────────────────
     let mut build = cc::Build::new();
     build.compiler(compiler_for(&arch));
 
@@ -56,7 +55,6 @@ pub fn setup_kernel_build(arch_dir: &Path) {
         build.compile("asm");
     }
 
-    // ── 链接器参数 ───────────────────────────────────────────────────
     println!("cargo:rustc-link-arg=-z");
     println!("cargo:rustc-link-arg=norelro");
     println!(
