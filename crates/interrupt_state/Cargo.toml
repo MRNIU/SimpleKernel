@@ -11,4 +11,4 @@ edition.workspace = true
 riscv = { version = "0.16", features = ["s-mode"] }
 
 [target.'cfg(target_arch = "aarch64")'.dependencies]
-aarch64-cpu = "9"
+aarch64-cpu = "11"

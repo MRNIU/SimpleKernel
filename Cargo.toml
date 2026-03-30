@@ -64,7 +64,7 @@ memory = { path = "crates/memory" }
 
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中
-spin = { version = "0.9", default-features = false, features = ["once"] }
+spin = { version = "0.10", default-features = false, features = ["once"] }
 
 # --- 位操作 ---
 bitflags = "2"                        # 类型安全的位标志 (寄存器字段、页表项)
@@ -74,10 +74,10 @@ log = { version = "0.4", default-features = false }  # 日志门面, 后端在 l
 
 # --- 内存 ---
 # buddy system 堆分配器, 实现 GlobalAlloc trait
-buddy_system_allocator = "0.11"
+buddy_system_allocator = "0.12"
 
 # --- ELF 解析 ---
-elf = { version = "0.7", default-features = false }  # 零拷贝 ELF 解析 (no_std)
+elf = { version = "0.8", default-features = false }  # 零拷贝 ELF 解析 (no_std)
 
 # --- 符号解码 ---
 rustc-demangle = { version = "0.1", default-features = false }
@@ -100,10 +100,10 @@ riscv = { version = "0.16", features = ["s-mode"] }  # CSR 访问、S-mode 支�
 
 # --- AArch64 架构专用 ---
 [target.'cfg(target_arch = "aarch64")'.dependencies]
-aarch64-cpu = "9"                     # 系统寄存器访问
-tock-registers = "0.9"                # 类型安全的 MMIO 寄存器抽象
+aarch64-cpu = "11"                    # 系统寄存器访问
+tock-registers = "0.10"               # 类型安全的 MMIO 寄存器抽象
 arm-gic = "0.8"                       # GICv3 驱动（Arm Trusted Firmware 官方）
-arm-psci = "0.1"                      # PSCI 电源管理接口（CPU on/off/reset）
+arm-psci = "0.2"                      # PSCI 电源管理接口（CPU on/off/reset）
 
 # --- 构建依赖 ---
 [build-dependencies]

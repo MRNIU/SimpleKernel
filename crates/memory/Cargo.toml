@@ -17,9 +17,9 @@ frame_allocator = { path = "../frame_allocator" }
 
 bitflags = "2"
 zerocopy = { version = "0.8", default-features = false, features = ["derive"] }
-buddy_system_allocator = "0.11"
+buddy_system_allocator = "0.12"
 log = { version = "0.4", default-features = false }
-spin = { version = "0.9", default-features = false, features = ["once"] }
+spin = { version = "0.10", default-features = false, features = ["once"] }
 
 # RISC-V sfence.vma 指令（TLB 刷新）
 [target.'cfg(target_arch = "riscv64")'.dependencies]

@@ -12,5 +12,5 @@ macros = { path = "../macros" }
 config = { path = "../config" }
 
 [target.'cfg(target_arch = "aarch64")'.dependencies]
-aarch64-cpu = "9"
-tock-registers = "0.9"
+aarch64-cpu = "11"
+tock-registers = "0.10"
