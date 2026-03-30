@@ -1,15 +1,17 @@
-# tick
+# global_tick
 
-全局单调 tick 计数器——内核调度时基。
+全局单调 tick 计数器（类似 Linux `jiffies`）——内核调度时基。
 
 ## 概览
 
-`tick` 提供一个由 BSP（Bootstrap Processor）定时器中断驱动的全局计数器，
+`global_tick` 提供一个由 BSP（Bootstrap Processor）定时器中断驱动的全局计数器，
 使 `task`、`scheduler` 等上层模块无需依赖架构层即可读取时间。
 
 独立 crate 的原因：tick 计数是调度器和睡眠机制的基础依赖，
 但它本身不需要知道定时器硬件细节——只需一个原子计数器和两个函数。
-拆出来后，调度器依赖 `tick` 而非整个 `arch`，依赖方向更清晰。
+拆出来后，调度器依赖 `global_tick` 而非整个 `arch`，依赖方向更清晰。
+
+per-CPU tick 记账见 [`local_tick`](../local_tick/) crate。
 
 ## API
 
@@ -29,11 +31,11 @@ pub fn current() -> u64;
 
 ```
 arch::timer_handler()
-  └→ tick::advance(is_bsp)     ← BSP: fetch_add(1, AcqRel) + 1
-                                  从核: load(Acquire)
+  └→ global_tick::advance(is_bsp)  ← BSP: fetch_add(1, AcqRel) + 1
+                                      从核: load(Acquire)
 
 scheduler / sleep / timeout
-  └→ tick::current()           ← load(Acquire)
+  └→ global_tick::current()        ← load(Acquire)
 ```
 
 ## 与 `config::TIMER_FREQ_HZ` 的关系
@@ -42,19 +44,7 @@ scheduler / sleep / timeout
 即每秒调用 `advance()` 的次数。换算为时间：
 
 ```
-经过时间 = tick::current() / config::TIMER_FREQ_HZ
+经过时间 = global_tick::current() / config::TIMER_FREQ_HZ
 ```
 
 修改 `TIMER_FREQ_HZ` 不需要改动本 crate——只影响 `arch` 层的定时器配置。
-
-## TODO
-
-### Per-CPU tick 计数器
-
-当前仅维护全局计数器（类似 Linux `jiffies`），BSP 单点递增，
-缺少 per-CPU tick 记账，无法精确追踪每核时间片消耗。
-
-参考 Linux `tick_sched` 引入 per-CPU 计数器，用于：
-- 调度记账（CFS vruntime 推进）
-- 时间片耗尽检测
-- 消除 BSP 单点故障对全局时间的影响

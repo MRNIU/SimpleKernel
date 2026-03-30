@@ -1,8 +1,11 @@
 [package]
-name = "tick"
+name = "local_tick"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Global monotonic tick counter for kernel scheduling"
+description = "Per-CPU tick counter for scheduler accounting"
 edition.workspace = true
+
+[dependencies]
+per_cpu = { path = "../per_cpu" }

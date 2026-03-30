@@ -1,0 +1,8 @@
+[package]
+name = "global_tick"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Global monotonic tick counter (jiffies) for kernel scheduling"
+edition.workspace = true

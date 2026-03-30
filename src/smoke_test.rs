@@ -110,9 +110,9 @@ fn verifier_thread(_arg: usize) {
 /// P5b 综合测试
 fn p5b_test_thread(_arg: usize) {
     log::info!("P5b: testing sleep_ms(500)...");
-    let tick_before = tick::current();
+    let tick_before = global_tick::current();
     task::sleep_ms(500);
-    let tick_after = tick::current();
+    let tick_after = global_tick::current();
     let elapsed = tick_after.saturating_sub(tick_before);
     // 500ms @ 10Hz = 5 ticks（全局计数器被双核推进，实际约 10），允许 ≥3
     log::info!("P5b: sleep_ms(500) elapsed {} ticks", elapsed);

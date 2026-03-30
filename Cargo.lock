@@ -173,10 +173,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e629b9b98ef3dd8afe6ca2bd0f89306cec16d43d907889945bc5d6687f2f13c7"
 
 [[package]]
+name = "global_tick"
+version = "0.1.0"
+
+[[package]]
 name = "heck"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
+
+[[package]]
+name = "local_tick"
+version = "0.1.0"
+dependencies = [
+ "per_cpu",
+]
 
 [[package]]
 name = "lock_api"
@@ -420,6 +431,8 @@ dependencies = [
  "config",
  "elf",
  "fdt",
+ "global_tick",
+ "local_tick",
  "log",
  "memory",
  "per_cpu",
@@ -428,7 +441,6 @@ dependencies = [
  "sbi-rt",
  "spin",
  "sync",
- "tick",
  "tock-registers 0.9.0",
  "unwinding",
 ]
@@ -494,10 +506,6 @@ dependencies = [
  "quote",
  "syn 2.0.117",
 ]
-
-[[package]]
-name = "tick"
-version = "0.1.0"
 
 [[package]]
 name = "tock-registers"

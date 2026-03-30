@@ -16,7 +16,8 @@ members = [
     "crates/macros",
     "crates/per_cpu",
     "crates/sync",
-    "crates/tick",
+    "crates/global_tick",
+    "crates/local_tick",
 
     "crates/frame_allocator",
     "crates/page_table_entry",
@@ -54,7 +55,8 @@ config = { path = "crates/config" }
 address = { path = "crates/address" }
 per_cpu = { path = "crates/per_cpu" }
 sync = { path = "crates/sync" }
-tick = { path = "crates/tick" }
+global_tick = { path = "crates/global_tick" }
+local_tick = { path = "crates/local_tick" }
 
 memory = { path = "crates/memory" }
 
