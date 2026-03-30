@@ -1,0 +1,29 @@
+[package]
+name = "panic-test"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+build = "build.rs"
+
+[[bin]]
+name = "panic-test"
+path = "src/main.rs"
+test = false
+bench = false
+
+[dependencies]
+simplekernel = { path = "../../..", default-features = false }
+per_cpu = { path = "../../../crates/per_cpu" }
+memory = { path = "../../../crates/memory" }
+log.workspace = true
+qemu-exit.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[build-dependencies]
+cc.workspace = true

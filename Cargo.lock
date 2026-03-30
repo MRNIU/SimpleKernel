@@ -410,6 +410,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "panic-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "log",
+ "memory",
+ "per_cpu",
+ "qemu-exit",
+ "sbi-rt",
+ "simplekernel",
+]
+
+[[package]]
 name = "paste"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"

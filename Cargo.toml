@@ -25,6 +25,7 @@ members = [
     "crates/page_table",
     "crates/memory",
     "tests/system",
+    "tests/standalone/panic_test",
     "xtask",
 ]
 default-members = ["."]
