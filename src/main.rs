@@ -94,20 +94,8 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 ///
 /// 由主核通过 `wake_secondary_cores()` 启动，经 `_start` 分流到此。
 fn bootstrap_smp(_argc: i32, _argv: *const *const u8) -> ! {
-    // per-CPU 必须最先初始化——内部通过硬件寄存器确定核心 ID，
-    // 之后 current_core_id() 即可正常工作。
-    // SAFETY: percpu_init() 已由主核完成，raw_core_id() 返回有效核心 ID
-    unsafe { per_cpu::percpu_init_smp() };
-    let core_id = per_cpu::current_core_id();
-    memory::init_smp(|pt| {
-        // SAFETY: 主核已验证页表正确性
-        unsafe { Arch::activate_page_table(pt) };
-    });
-    task::init_smp();
-    // 与主核一致：先 timer 再 interrupt，避免中断风暴
-    Arch::init_timer_smp(core_id);
-    Arch::init_interrupt_smp();
-    log::info!("SMP: core {} online", core_id);
+    // SAFETY: 从核入口，汇编已设置栈和寄存器
+    unsafe { boot::kernel_init_smp() };
 
     // 从核上线后立即尝试调度，抢全局队列中的任务
     task::schedule();

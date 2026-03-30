@@ -14,6 +14,8 @@ pub static CORE_COUNT: spin::Once<usize> = spin::Once::new();
 
 #[cfg(target_os = "none")]
 pub mod arch;
+#[cfg(target_os = "none")]
+pub mod boot;
 pub mod elf;
 #[cfg(target_os = "none")]
 pub mod fdt;
