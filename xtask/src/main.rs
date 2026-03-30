@@ -12,6 +12,7 @@ mod arch;
 mod build;
 mod firmware;
 mod qemu;
+mod test;
 
 use clap::{Args, Parser, Subcommand};
 use std::path::PathBuf;
@@ -37,6 +38,23 @@ struct ArchArgs {
     release: bool,
 }
 
+#[derive(Args, Clone)]
+struct TestArgs {
+    #[arg(long, value_enum, default_value = "riscv64")]
+    arch: Arch,
+    #[arg(long)]
+    release: bool,
+    /// 运行指定的独立测试
+    #[arg(long)]
+    name: Option<String>,
+    /// 运行全部测试（统一 + 所有独立）
+    #[arg(long)]
+    all: bool,
+    /// 列出可用测试
+    #[arg(long)]
+    list: bool,
+}
+
 #[derive(Subcommand)]
 enum Commands {
     Build(ArchArgs),
@@ -44,6 +62,8 @@ enum Commands {
     /// 启动 QEMU 并暂停 CPU，等待 GDB 在 localhost:1234 连接
     Debug(ArchArgs),
     Firmware(ArchArgs),
+    /// 在 QEMU 中运行系统测试
+    Test(TestArgs),
 }
 
 fn main() {
@@ -109,6 +129,46 @@ fn run() -> Result<()> {
                 &rootfs_path,
                 true,
             )?;
+        }
+        Commands::Test(args) => {
+            if args.list {
+                test::list_tests(&project_root);
+                return Ok(());
+            }
+            let mut all_passed = true;
+            if let Some(name) = &args.name {
+                let passed =
+                    test::run_standalone_test(&sh, &project_root, args.arch, name, args.release)?;
+                all_passed &= passed;
+            } else {
+                let passed = test::run_system_test(&sh, &project_root, args.arch, args.release)?;
+                all_passed &= passed;
+            }
+            if args.all {
+                let standalone_dir = project_root.join("tests/standalone");
+                if standalone_dir.exists()
+                    && let Ok(entries) = std::fs::read_dir(&standalone_dir)
+                {
+                    for entry in entries.flatten() {
+                        if entry.path().join("Cargo.toml").exists() {
+                            let name = entry.file_name().to_string_lossy().to_string();
+                            let passed = test::run_standalone_test(
+                                &sh,
+                                &project_root,
+                                args.arch,
+                                &name,
+                                args.release,
+                            )?;
+                            all_passed &= passed;
+                        }
+                    }
+                }
+            }
+            if !all_passed {
+                eprintln!("[xtask] Some tests failed");
+                process::exit(1);
+            }
+            println!("[xtask] All tests passed");
         }
     }
 

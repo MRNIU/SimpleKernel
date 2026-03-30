@@ -131,3 +131,38 @@ pub fn ensure_rootfs_image(sh: &Shell, boot_dir: &Path) -> Result<PathBuf> {
     cmd!(sh, "mkfs.fat -F 32 {rootfs_path}").run()?;
     Ok(rootfs_path)
 }
+
+/// 编译系统测试内核 ELF，返回产物路径。
+pub fn build_test_kernel(
+    sh: &Shell,
+    project_root: &Path,
+    arch: Arch,
+    package: &str,
+    release: bool,
+) -> Result<PathBuf> {
+    println!(
+        "[xtask] Building test kernel '{}' for {}...",
+        package,
+        arch.as_str()
+    );
+    let target = arch.target_triple();
+    let mut build_cmd = cmd!(
+        sh,
+        "cargo build -p {package} -Z build-std=core,compiler_builtins,alloc -Z build-std-features=compiler-builtins-mem --target {target}"
+    );
+    if release {
+        build_cmd = build_cmd.arg("--release");
+    }
+    build_cmd.run()?;
+
+    let profile_dir = if release { "release" } else { "debug" };
+    let elf_path = project_root
+        .join("target")
+        .join(arch.target_triple())
+        .join(profile_dir)
+        .join(package);
+    if !elf_path.exists() {
+        return Err(format!("test kernel ELF not found at {}", elf_path.display()).into());
+    }
+    Ok(elf_path)
+}
