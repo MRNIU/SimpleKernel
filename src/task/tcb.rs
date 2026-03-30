@@ -81,7 +81,7 @@ pub struct TaskControlBlock {
     /// 被调用者保存上下文（仅裸机目标）
     #[cfg(target_os = "none")]
     context: core::cell::SyncUnsafeCell<CalleeSavedContext>,
-    /// 内核栈（idle 任务无栈，��用 Option）
+    /// 内核栈（idle 任务无栈，使用 Option）
     #[cfg(target_os = "none")]
     kstack: Option<KernelStack>,
 }

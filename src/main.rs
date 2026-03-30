@@ -3,11 +3,12 @@
 
 extern crate alloc;
 
+use core::sync::atomic::{AtomicBool, Ordering};
+
+use simplekernel::arch::{Arch, ArchOps};
 use simplekernel::*;
 
 mod smoke_test;
-
-use core::sync::atomic::{AtomicBool, Ordering};
 
 /// 标记主核是否已完成初始化，用于区分主核/从核引导路径
 static PRIMARY_BOOTED: AtomicBool = AtomicBool::new(false);
@@ -21,8 +22,6 @@ pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
         bootstrap_smp(argc, argv);
     }
 }
-
-use arch::{Arch, ArchOps};
 
 /// 内核线程引导函数（供 switch.S 中 `kernel_thread_entry` 调用）
 ///
