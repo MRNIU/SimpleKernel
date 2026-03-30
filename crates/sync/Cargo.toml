@@ -9,11 +9,5 @@ edition.workspace = true
 
 [dependencies]
 config = { path = "../config" }
+interrupt_state = { path = "../interrupt_state" }
 per_cpu = { path = "../per_cpu" }
-
-[target.'cfg(target_arch = "riscv64")'.dependencies]
-riscv = { version = "0.16", features = ["s-mode"] }
-
-[target.'cfg(target_arch = "aarch64")'.dependencies]
-aarch64-cpu = "9"
-tock-registers = "0.9"

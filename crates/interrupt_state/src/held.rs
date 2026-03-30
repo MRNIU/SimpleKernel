@@ -6,7 +6,7 @@
 
 use core::marker::PhantomData;
 
-use crate::irq;
+use crate::arch;
 
 /// 中断禁用的证明令牌（proof token）。
 ///
@@ -35,7 +35,7 @@ use crate::irq;
 ///
 /// HeldInterrupts 不可 Copy（use-after-move）：
 /// ```compile_fail
-/// use sync::interrupt_ops::HeldInterrupts;
+/// use interrupt_state::HeldInterrupts;
 /// let a = HeldInterrupts::hold();
 /// let b = a;
 /// drop(a); // 不应编译通过
@@ -43,7 +43,7 @@ use crate::irq;
 ///
 /// HeldInterrupts 不可 Send（不可跨线程传递）：
 /// ```compile_fail
-/// use sync::interrupt_ops::HeldInterrupts;
+/// use interrupt_state::HeldInterrupts;
 /// fn assert_send<T: Send>() {}
 /// assert_send::<HeldInterrupts>(); // 不应编译通过
 /// ```
@@ -58,8 +58,8 @@ impl HeldInterrupts {
     #[inline]
     #[must_use]
     pub fn hold() -> Self {
-        let was_enabled = irq::irq_enabled();
-        irq::irq_disable();
+        let was_enabled = arch::irq_enabled();
+        arch::irq_disable();
         Self {
             was_enabled,
             _not_send: PhantomData,
@@ -78,7 +78,7 @@ impl Drop for HeldInterrupts {
     fn drop(&mut self) {
         if self.was_enabled {
             // SAFETY: 恢复到获取令牌前的中断状态
-            unsafe { irq::irq_enable() };
+            unsafe { arch::irq_enable() };
         }
     }
 }
@@ -87,13 +87,11 @@ impl Drop for HeldInterrupts {
 mod tests {
     use super::*;
 
-    /// 验证 hold 保存状态并在 drop 时恢复。
     #[test]
     fn held_interrupts_hold_and_drop() {
-        // 测试环境下 irq_enabled 返回 false，所以 was_enabled = false
         let held = HeldInterrupts::hold();
         assert!(!held.was_enabled());
-        drop(held); // 不会调用 enable（因为 was_enabled = false）
+        drop(held);
     }
 
     /// 验证 HeldInterrupts 的 size（编译期 !Copy / !Send 由 doc test 保证）。

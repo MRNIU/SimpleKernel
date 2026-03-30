@@ -15,6 +15,7 @@ members = [
     "crates/address",
     "crates/macros",
     "crates/per_cpu",
+    "crates/interrupt_state",
     "crates/sync",
     "crates/global_tick",
     "crates/local_tick",
@@ -54,6 +55,7 @@ build = "build.rs"                    # 编译汇编文件 (.S) 和链接脚本
 config = { path = "crates/config" }
 address = { path = "crates/address" }
 per_cpu = { path = "crates/per_cpu" }
+interrupt_state = { path = "crates/interrupt_state" }
 sync = { path = "crates/sync" }
 global_tick = { path = "crates/global_tick" }
 local_tick = { path = "crates/local_tick" }

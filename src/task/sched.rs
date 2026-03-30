@@ -145,8 +145,8 @@ pub fn current_task() -> TaskRef {
 ///
 /// 仅供 `kernel_thread_bootstrap` 在新任务首次运行时调用一次。
 pub unsafe fn bootstrap_enable_irq() {
-    // SAFETY: 调度锁已释放，启用中断是安全的
-    unsafe { sync::irq_enable() };
+    // SAFETY: 调度锁已释放，向量表已初始化，启用中断是安全的
+    unsafe { interrupt_state::bootstrap_enable() };
 }
 
 /// 调度函数——选择下一个任务并执行上下文切换。

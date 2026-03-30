@@ -8,9 +8,9 @@
 
 use core::ops::{Deref, DerefMut};
 
-use crate::interrupt_ops::HeldInterrupts;
 use crate::mutex::{Mutex, MutexGuard};
 use crate::raw::{RawLock, RawSpinLock};
+use interrupt_state::HeldInterrupts;
 
 /// 用于强制获取顺序的锁级别常量。
 ///

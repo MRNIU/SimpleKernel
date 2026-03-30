@@ -16,14 +16,14 @@
 //!   RawSpinLock         — TTAS 实现
 //! ```
 //!
+//! 中断状态管理由 [`interrupt_state`] crate 提供，本 crate re-export 便捷访问。
+//!
 //! ## Per-CPU 状态
 //!
 //! | 变量 | 类型 | 说明 |
 //! |------|------|------|
 //! | `LOCK_STACK` | `LockStack` | 锁获取顺序栈（死锁检测） |
 
-pub mod interrupt_ops;
-pub mod irq;
 pub mod irq_safe;
 pub mod lock_stack;
 pub mod mutex;
@@ -51,6 +51,5 @@ pub type SpinLockIrqGuard<'a, T> = irq_safe::IrqSafeGuard<'a, raw::RawSpinLock, 
 
 // ── 便捷 re-export ──────────────────────────────────────────
 
-pub use interrupt_ops::HeldInterrupts;
-pub use irq::{irq_disable, irq_enable, irq_enabled};
+pub use interrupt_state::HeldInterrupts;
 pub use irq_safe::lock_level;

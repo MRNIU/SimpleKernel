@@ -183,6 +183,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
+name = "interrupt_state"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "riscv",
+]
+
+[[package]]
 name = "local_tick"
 version = "0.1.0"
 dependencies = [
@@ -432,6 +440,7 @@ dependencies = [
  "elf",
  "fdt",
  "global_tick",
+ "interrupt_state",
  "local_tick",
  "log",
  "memory",
@@ -480,11 +489,9 @@ dependencies = [
 name = "sync"
 version = "0.1.0"
 dependencies = [
- "aarch64-cpu",
  "config",
+ "interrupt_state",
  "per_cpu",
- "riscv",
- "tock-registers 0.9.0",
 ]
 
 [[package]]

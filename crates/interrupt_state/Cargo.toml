@@ -1,0 +1,14 @@
+[package]
+name = "interrupt_state"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Interrupt state management — HeldInterrupts proof token and arch-specific enable/disable"
+edition.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+riscv = { version = "0.16", features = ["s-mode"] }
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu = "9"
