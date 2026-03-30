@@ -15,10 +15,8 @@ pub mod lock_level {
     pub const INTERRUPT_THREADS: u8 = 2;
     /// 帧分配器锁
     pub const FRAME_ALLOC: u8 = 10;
-    /// 页分配器锁
-    pub const PAGE_ALLOC: u8 = 11;
     /// 堆分配器锁
-    pub const HEAP: u8 = 12;
+    pub const HEAP: u8 = 11;
     /// 控制台锁——级别最高，几乎可在任何上下文获取
     pub const CONSOLE: u8 = 200;
 }

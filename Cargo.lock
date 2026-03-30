@@ -371,7 +371,6 @@ dependencies = [
  "frame_allocator",
  "heap",
  "log",
- "page_allocator",
  "page_table",
  "per_cpu",
  "riscv",
@@ -408,17 +407,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "page_allocator"
-version = "0.1.0"
-dependencies = [
- "address",
- "buddy_system_allocator",
- "config",
- "log",
- "sync",
 ]
 
 [[package]]

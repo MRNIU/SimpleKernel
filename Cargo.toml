@@ -23,7 +23,6 @@ members = [
 
     "crates/frame_allocator",
     "crates/heap",
-    "crates/page_allocator",
     "crates/page_table_entry",
     "crates/page_table",
     "crates/memory",

@@ -14,9 +14,6 @@ pub use frame_allocator as frame;
 /// 堆分配器（re-export `heap` crate）。
 #[cfg(target_os = "none")]
 pub use heap_crate as heap;
-/// 虚拟页分配器（re-export `page_allocator` crate）。
-#[cfg(any(test, target_os = "none"))]
-pub use page_allocator as page;
 /// 全局内存状态。
 pub mod globals;
 /// 内存子系统初始化（依赖链接器符号，裸机专用）。

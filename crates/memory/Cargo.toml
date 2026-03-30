@@ -15,7 +15,6 @@ per_cpu = { path = "../per_cpu" }
 page_table_crate = { path = "../page_table", package = "page_table" }
 frame_allocator = { path = "../frame_allocator" }
 heap_crate = { path = "../heap", package = "heap" }
-page_allocator = { path = "../page_allocator" }
 
 bitflags.workspace = true
 zerocopy.workspace = true
@@ -29,4 +28,3 @@ riscv.workspace = true
 [dev-dependencies]
 page_table_crate = { path = "../page_table", package = "page_table", features = ["test-support"] }
 frame_allocator = { path = "../frame_allocator", features = ["test-support"] }
-page_allocator = { path = "../page_allocator", features = ["test-support"] }

@@ -13,8 +13,6 @@
 //! 4. **显式页表绑定**：每个 `MappedPages` 持有其所属页表的 `Arc` 引用，
 //!    Drop 时通过该引用 unmap，不依赖全局状态。
 //!    用户进程退出时其 `Arc` 引用计数归零，页表自动释放。
-//! 5. **虚拟页所有权追踪**：持有 `AllocatedPages` 时，Drop 自动归还虚拟页号给
-//!    页分配器，防止虚拟地址空间泄漏。
 //!
 // TODO: 实现 `split` / `merge` 操作——`munmap` 部分区域和 `mremap` 需要。
 //
@@ -28,14 +26,12 @@ use crate::frame::{AllocatedFrames, UnmappedFrames};
 use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
 use address::{FrameRange, PhysAddr, PhysPageNum, VirtAddr};
 use config::PAGE_SIZE;
-use page_allocator::AllocatedPages;
 use sync_crate::SpinLock;
 
 /// 仿射类型映射——持有此值即证明 VA→PA 映射有效。
 ///
 /// 不可 Clone、不可 Copy（仿射类型约束）。
-/// Drop 时根据 PTE 中的 EXCLUSIVE 位决定是否释放物理帧，
-/// 并归还虚拟页给页分配器（若持有 `AllocatedPages`）。
+/// Drop 时根据 PTE 中的 EXCLUSIVE 位决定是否释放物理帧。
 pub struct MappedPages {
     /// 映射起始虚拟地址
     vaddr: VirtAddr,
@@ -51,64 +47,9 @@ pub struct MappedPages {
     /// 用户进程 `MappedPages` 持有对应进程页表的 `Arc`。
     /// 进程退出后其所有 `MappedPages` drop，`Arc` 引用计数归零时页表自动释放。
     page_table: Arc<SpinLock<PageTable>>,
-    /// 虚拟页所有权——`Some` 表示虚拟页由页分配器分配，
-    /// Drop 时自动归还；`None` 表示虚拟地址由外部管理
-    /// （如 identity mapping 的 VA == PA，不经过页分配器）。
-    pages: Option<AllocatedPages>,
 }
 
 impl MappedPages {
-    /// 消耗 `AllocatedPages` + `AllocatedFrames` 建立映射——所有权链完整的底层入口。
-    ///
-    /// **设置 EXCLUSIVE 位**——drop 时 unmap PTE 并释放物理帧。
-    /// 虚拟页所有权由 `MappedPages` 持有，drop 时自动归还页分配器。
-    ///
-    /// 这是所有权最完整的映射方式：编译期保证同一 VA/PA 不被复用。
-    ///
-    /// # Errors
-    ///
-    /// 帧数量与页数量不匹配、或映射冲突时返回错误。
-    pub fn map_to(
-        pt: &mut PageTable,
-        pt_ref: Arc<SpinLock<PageTable>>,
-        pages: AllocatedPages,
-        frames: AllocatedFrames,
-        flags: PteFlags,
-    ) -> Result<Self, MemoryError> {
-        let page_count = pages.count();
-        if frames.count() != page_count {
-            return Err(MemoryError::MapFailed);
-        }
-        let va_start = pages.start_vaddr();
-        let pa_start = frames.start_paddr();
-        let exclusive_flags = flags.with_exclusive();
-        let mut mapped_count = 0usize;
-        for i in 0..page_count {
-            let pa = pa_start + i * PAGE_SIZE;
-            let va = va_start + i * PAGE_SIZE;
-            match pt.map_page(va, pa, exclusive_flags) {
-                Ok(()) => mapped_count += 1,
-                Err(e) => {
-                    for j in (0..mapped_count).rev() {
-                        let _ = pt.unmap_page(va_start + j * PAGE_SIZE);
-                    }
-                    return Err(e.into());
-                }
-            }
-        }
-        // 帧所有权转移到 PTE：forget 阻止 drop 回收
-        let mapped = frames.into_mapped();
-        core::mem::forget(mapped);
-        Ok(Self {
-            vaddr: va_start,
-            page_count,
-            flags: exclusive_flags,
-            permanent: false,
-            page_table: pt_ref,
-            pages: Some(pages),
-        })
-    }
-
     /// Identity-map 一段物理地址区间（VA == PA）。
     ///
     /// **不设置 EXCLUSIVE 位**——drop 时仅 unmap PTE，不释放帧。
@@ -142,7 +83,6 @@ impl MappedPages {
             flags,
             permanent: false,
             page_table: pt_ref,
-            pages: None,
         })
     }
 
@@ -162,15 +102,13 @@ impl MappedPages {
             flags,
             permanent: false,
             page_table: pt_ref,
-            pages: None,
         }
     }
 
-    /// 分配新帧并建立映射——**设置 EXCLUSIVE 位**（便利方法）。
+    /// 分配新帧并建立映射——**设置 EXCLUSIVE 位**。
     ///
     /// 内部分配帧并逐页映射，帧所有权通过 PTE 的 EXCLUSIVE 位追踪。
-    /// 不消耗 `AllocatedPages`——虚拟地址由调用方指定。
-    /// 如需完整的所有权链（含虚拟页），请使用 [`map_to`](Self::map_to)。
+    /// 虚拟地址由调用方指定（通常通过 `AddressSpace` 的 VMA 管理）。
     ///
     /// # Errors
     ///
@@ -214,7 +152,6 @@ impl MappedPages {
             flags: exclusive_flags,
             permanent: false,
             page_table: pt_ref,
-            pages: None,
         })
     }
 
