@@ -1,47 +1,17 @@
-#![cfg_attr(not(test), no_std)]
-#![cfg_attr(not(test), no_main)]
-#![cfg_attr(not(test), feature(alloc_error_handler))]
-#![feature(sync_unsafe_cell)]
-// 测试模式下部分模块不编译（arch, fdt, lang_items），导致它们的消费者
-// 产生 dead_code 警告。这些代码在目标架构上被正常使用。
-#![cfg_attr(test, allow(dead_code))]
+#![no_std]
+#![no_main]
 
 extern crate alloc;
 
-/// 实际在线核心数（从 FDT 解析，`early_init` 中初始化）。
-///
-/// 与 `config::MAX_CORE_COUNT`（编译期上限）不同，此值为运行时实际核心数。
-pub(crate) static CORE_COUNT: spin::Once<usize> = spin::Once::new();
+use simplekernel::*;
 
-#[cfg(not(test))]
-mod arch;
-mod elf;
-#[cfg(not(test))]
-mod fdt;
-#[cfg(not(test))]
-mod init;
-mod irq_context;
-#[cfg(not(test))]
-mod lang_items;
-mod logging;
-mod panic;
-mod preempt;
-#[cfg(not(test))]
 mod smoke_test;
-mod syscall;
-mod task;
-#[cfg(not(test))]
-mod timer;
-mod util;
 
-#[cfg(not(test))]
 use core::sync::atomic::{AtomicBool, Ordering};
 
 /// 标记主核是否已完成初始化，用于区分主核/从核引导路径
-#[cfg(not(test))]
 static PRIMARY_BOOTED: AtomicBool = AtomicBool::new(false);
 
-#[cfg(not(test))]
 #[unsafe(no_mangle)]
 pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
     // swap 返回旧值：false → 当前核是第一个到达的核（主核）
@@ -52,14 +22,12 @@ pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
     }
 }
 
-#[cfg(not(test))]
-use crate::arch::{Arch, ArchOps};
+use arch::{Arch, ArchOps};
 
 /// 内核线程引导函数（供 switch.S 中 `kernel_thread_entry` 调用）
 ///
 /// 新任务首次被 `switch_to` 调度运行时，从此函数开始执行。
 /// 放在 kernel crate 中打破 arch→task 循环依赖。
-#[cfg(not(test))]
 #[unsafe(no_mangle)]
 pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
     // 启用中断——schedule() 的 HeldInterrupts::hold() 禁用了中断，
@@ -78,7 +46,6 @@ pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
 ///
 /// logging → DTB → FDT → Phase2 → Memory → Phase3
 /// → Interrupt → Timer → Task → SMP → Phase4 → Phase5 → Idle loop
-#[cfg(not(test))]
 fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
     logging::init();
     // SAFETY: 主核调用一次，TP 持有 hart_id（riscv64）/ TPIDR_EL1 为 0（aarch64）
@@ -117,7 +84,7 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 
     // Idle loop — bootstrap 上下文成为 idle 任务
     loop {
-        if crate::preempt::check_and_clear_need_resched() {
+        if preempt::check_and_clear_need_resched() {
             task::schedule();
         }
         core::hint::spin_loop();
@@ -127,7 +94,6 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 /// 从核引导序列
 ///
 /// 由主核通过 `wake_secondary_cores()` 启动，经 `_start` 分流到此。
-#[cfg(not(test))]
 fn bootstrap_smp(_argc: i32, _argv: *const *const u8) -> ! {
     // per-CPU 必须最先初始化——内部通过硬件寄存器确定核心 ID，
     // 之后 current_core_id() 即可正常工作。
@@ -149,7 +115,7 @@ fn bootstrap_smp(_argc: i32, _argv: *const *const u8) -> ! {
 
     // Idle loop
     loop {
-        if crate::preempt::check_and_clear_need_resched() {
+        if preempt::check_and_clear_need_resched() {
             task::schedule();
         }
         core::hint::spin_loop();

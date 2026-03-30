@@ -19,12 +19,12 @@ pub type TaskRef = Arc<TaskControlBlock>;
 /// 内核线程栈
 ///
 /// 通过 `Vec<u8>` 在堆上分配，确保生命周期与 TCB 一致。
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub struct KernelStack {
     data: alloc::vec::Vec<u8>,
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 impl KernelStack {
     /// 分配一个新的内核栈（大小由 `config::KERNEL_STACK_SIZE` 决定）。
     pub fn new() -> Self {
@@ -39,7 +39,7 @@ impl KernelStack {
     }
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 impl Default for KernelStack {
     fn default() -> Self {
         Self::new()
@@ -48,7 +48,7 @@ impl Default for KernelStack {
 
 // ─── CalleeSavedContext 统一导入 ──────────────────────────────────────────────
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 use crate::arch::CalleeSavedContext;
 
 // ─── TaskControlBlock ─────────────────────────────────────────────────────────
@@ -78,11 +78,11 @@ pub struct TaskControlBlock {
     pending_signals: AtomicU32,
     /// 信号屏蔽位图（原子：可由任务自身修改）
     signal_mask: AtomicU32,
-    /// 被调用者保存上下文（仅非测试模式）
-    #[cfg(not(test))]
+    /// 被调用者保存上下文（仅裸机目标）
+    #[cfg(target_os = "none")]
     context: core::cell::SyncUnsafeCell<CalleeSavedContext>,
-    /// 内核栈（idle 任务无栈，使用 Option）
-    #[cfg(not(test))]
+    /// 内核栈（idle 任务无栈，��用 Option）
+    #[cfg(target_os = "none")]
     kstack: Option<KernelStack>,
 }
 
@@ -97,7 +97,7 @@ impl TaskControlBlock {
     /// 创建 idle 任务（每个 CPU 核一个）。
     ///
     /// idle 任务已处于 Running 状态，无需内核栈（复用引导栈）。
-    #[cfg(not(test))]
+    #[cfg(target_os = "none")]
     pub fn new_idle(pid: Pid, core_id: usize) -> Self {
         // SAFETY: 静态字符串字面量生命周期为 'static
         let name: &'static str = match core_id {
@@ -126,7 +126,7 @@ impl TaskControlBlock {
     ///
     /// 分配内核栈，将 `entry` 和 `arg` 编码到 `CalleeSavedContext` 中，
     /// 使 `switch_to` 后首次执行从 `kernel_thread_entry` 开始。
-    #[cfg(not(test))]
+    #[cfg(target_os = "none")]
     pub fn new_kernel_thread(
         pid: Pid,
         name: &'static str,
@@ -278,7 +278,7 @@ impl TaskControlBlock {
     /// # Safety
     ///
     /// 调用者必须持有调度锁（IRQ 关闭），且保证同一时刻只有一个核访问。
-    #[cfg(not(test))]
+    #[cfg(target_os = "none")]
     pub unsafe fn ctx_mut_ptr(&self) -> *mut CalleeSavedContext {
         self.context.get()
     }

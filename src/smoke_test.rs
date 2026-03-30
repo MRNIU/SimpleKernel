@@ -5,7 +5,7 @@
 
 use core::sync::atomic::{AtomicU32, Ordering};
 
-use crate::task;
+use simplekernel::task;
 use sync::SpinLock;
 
 pub fn phase2() {
@@ -30,7 +30,7 @@ pub fn phase2() {
         .kernel_addr
         .as_usize() as u64;
     // SAFETY: elf_addr 是内核自身的 ELF 基地址，在内核生命周期内有效
-    unsafe { crate::panic::init_elf(elf_addr) };
+    unsafe { simplekernel::panic::init_elf(elf_addr) };
     log::info!("ELF parser OK");
 
     log::info!("Phase 2 complete");

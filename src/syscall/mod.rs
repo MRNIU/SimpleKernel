@@ -3,9 +3,9 @@
 // 定义系统调用号枚举和中央分发函数。
 // 各系统调用的具体实现按类别放在子模块中。
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 mod io;
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 mod process;
 
 /// 系统调用号
@@ -56,7 +56,7 @@ impl SyscallNumber {
 ///
 /// # 返回值
 /// 系统调用返回值，-1 表示未知调用号
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub fn dispatch(nr: u64, args: [u64; 6]) -> i64 {
     match SyscallNumber::from_u64(nr) {
         Some(SyscallNumber::Write) => io::sys_write(args[0], args[1], args[2]),

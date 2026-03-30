@@ -26,14 +26,14 @@ impl fmt::Display for TaskError {
 
 impl core::error::Error for TaskError {}
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 mod sched;
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 mod task_table;
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub use sched::{bootstrap_enable_irq, current_task, schedule, timer_tick, yield_now};
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 mod api {
     use alloc::sync::Arc;
 
@@ -340,7 +340,7 @@ mod api {
     }
 }
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub use api::{
     TaskBuilder, block_on, clone_kernel_thread, exit, find_task, init, init_smp, send_signal,
     sleep, sleep_ms, spawn_kernel_thread, spawn_kernel_thread_with_parent, wait_child, wakeup_all,
