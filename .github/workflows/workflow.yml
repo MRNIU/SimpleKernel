@@ -99,12 +99,7 @@ jobs:
         run: |
           for i in $(seq 1 $SYSTEM_TEST_RUNS); do
             echo "=== riscv64 System Test Run $i/$SYSTEM_TEST_RUNS ==="
-            timeout 300 cargo xtask run --arch riscv64 > /tmp/st_out_$i.txt 2>&1 || true
-            cat /tmp/st_out_$i.txt
-            if ! grep -q "RESULT: ALL TESTS PASSED" /tmp/st_out_$i.txt; then
-              echo "riscv64 system test run $i/$SYSTEM_TEST_RUNS FAILED"
-              exit 1
-            fi
+            timeout 300 cargo xtask test --arch riscv64 --all
             echo "riscv64 system test run $i/$SYSTEM_TEST_RUNS passed"
           done
 
@@ -148,11 +143,6 @@ jobs:
         run: |
           for i in $(seq 1 $SYSTEM_TEST_RUNS); do
             echo "=== aarch64 System Test Run $i/$SYSTEM_TEST_RUNS ==="
-            timeout 300 cargo xtask run --arch aarch64 > /tmp/st_out_$i.txt 2>&1 || true
-            cat /tmp/st_out_$i.txt
-            if ! grep -q "RESULT: ALL TESTS PASSED" /tmp/st_out_$i.txt; then
-              echo "aarch64 system test run $i/$SYSTEM_TEST_RUNS FAILED"
-              exit 1
-            fi
+            timeout 300 cargo xtask test --arch aarch64 --all
             echo "aarch64 system test run $i/$SYSTEM_TEST_RUNS passed"
           done
