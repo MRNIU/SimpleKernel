@@ -59,23 +59,14 @@
 //! 当锁明显被持有时，先用 `Relaxed` load 检查，直接返回 `None`，
 //! 跳过无谓的中断状态切换。
 
+use core::fmt;
 use core::mem::ManuallyDrop;
 use core::ops::{Deref, DerefMut};
 
+use crate::lock_stack::lock_level;
 use crate::mutex::{Mutex, MutexGuard};
 use crate::raw::{RawLock, RawSpinLock};
 use interrupt_state::HeldInterrupts;
-
-/// 用于强制获取顺序的锁级别常量。
-///
-/// 数值更小的级别必须优先获取。
-/// 在持有更高级别锁时获取更低级别的锁会触发 panic。
-pub mod lock_level {
-    pub const SCHED_LOCK: u8 = 0;
-    pub const TASK_TABLE_LOCK: u8 = 1;
-    pub const INTERRUPT_THREADS_LOCK: u8 = 2;
-    pub const UNCLASSIFIED: u8 = 0xFF;
-}
 
 /// 中断安全锁——获取时禁用中断，释放时恢复。
 ///
@@ -91,7 +82,6 @@ pub mod lock_level {
 /// ```
 pub struct IrqSafe<R: RawLock, T> {
     mutex: Mutex<R, T>,
-    #[cfg_attr(not(target_os = "none"), allow(dead_code))]
     level: u8,
 }
 
@@ -101,11 +91,14 @@ unsafe impl<R: RawLock, T: Send> Sync for IrqSafe<R, T> {}
 
 /// `SpinLockIrq<T>` 特化构造器——保持与原 API 完全兼容。
 impl<T> IrqSafe<RawSpinLock, T> {
+    /// 创建中断安全锁，默认使用 [`lock_level::CONSOLE`] 级别。
+    ///
+    /// 生产代码中有明确锁序关系的锁应使用 [`new_with_level`](Self::new_with_level)。
     #[must_use]
     pub const fn new(data: T, name: &'static str) -> Self {
         Self {
             mutex: Mutex::new(data, name),
-            level: lock_level::UNCLASSIFIED,
+            level: lock_level::CONSOLE,
         }
     }
 
@@ -154,8 +147,7 @@ impl<R: RawLock, T> IrqSafe<R, T> {
                 };
             }
 
-            // 获取失败——立即恢复中断，避免关中断下长时间自旋。
-            // held 在此处 drop → 恢复中断状态。
+            // 获取失败——立即恢复中断，避免关中断下长时间自旋
             drop(held);
 
             // 中断开启状态下自旋等待——
@@ -172,7 +164,7 @@ impl<R: RawLock, T> IrqSafe<R, T> {
     /// 跳过中断状态切换的开销（参考 Theseus `EXPENSIVE` 优化）。
     pub fn try_lock(&self) -> Option<IrqSafeGuard<'_, R, T>> {
         // 快速路径：锁已被持有，避免无谓的中断状态切换。
-        // Relaxed load 在此足够——即使读到过期值（false negative），
+        // Relaxed load 在此足够——即使读到过期值，
         // 后续 try_lock 的 CAS 会正确判断。
         if self.mutex.is_locked() {
             return None;
@@ -188,7 +180,6 @@ impl<R: RawLock, T> IrqSafe<R, T> {
                 held: ManuallyDrop::new(held),
             })
         } else {
-            // held 在此处 drop，自动恢复中断
             None
         }
     }
@@ -218,10 +209,11 @@ impl<R: RawLock, T> IrqSafe<R, T> {
         {
             // SAFETY: 中断已禁用，无同核心并发访问
             let stack = unsafe { crate::LOCK_STACK.get_mut() };
-            if !stack.check_order(self.level, lock_level::UNCLASSIFIED) {
+            if !stack.check_order(self.level) {
                 panic!(
-                    "FATAL: SpinLock '{}': lock order violation",
-                    self.mutex.name()
+                    "FATAL: SpinLock '{}': lock order violation (level={})",
+                    self.mutex.name(),
+                    self.level,
                 );
             }
             stack.push(self as *const Self as *const (), self.level);
@@ -233,6 +225,16 @@ impl<R: RawLock, T> IrqSafe<R, T> {
         // SAFETY: 中断已禁用，无同核心并发访问
         let stack = unsafe { crate::LOCK_STACK.get_mut() };
         stack.pop(self as *const Self as *const ());
+    }
+}
+
+impl<R: RawLock, T> fmt::Debug for IrqSafe<R, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("IrqSafe")
+            .field("name", &self.mutex.name())
+            .field("locked", &self.mutex.is_locked())
+            .field("level", &self.level)
+            .finish()
     }
 }
 
@@ -270,8 +272,6 @@ impl<R: RawLock, T> DerefMut for IrqSafeGuard<'_, R, T> {
 
 impl<R: RawLock, T> Drop for IrqSafeGuard<'_, R, T> {
     fn drop(&mut self) {
-        // ── 显式析构顺序（不依赖字段声明顺序）──────────────
-        //
         // 1. 弹出锁栈（中断仍禁用，per-CPU 访问安全）
         #[cfg(target_os = "none")]
         self.irq_safe.pop_lock_stack();
@@ -283,6 +283,12 @@ impl<R: RawLock, T> Drop for IrqSafeGuard<'_, R, T> {
         // 3. 恢复中断（若获取前中断已启用）
         // SAFETY: held 在此之后不再被访问，且仅 drop 一次
         unsafe { ManuallyDrop::drop(&mut self.held) };
+    }
+}
+
+impl<R: RawLock, T: fmt::Debug> fmt::Debug for IrqSafeGuard<'_, R, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&**self, f)
     }
 }
 
@@ -304,6 +310,12 @@ impl<R: RawLock, T> Deref for IrqSafeNestedGuard<'_, R, T> {
 impl<R: RawLock, T> DerefMut for IrqSafeNestedGuard<'_, R, T> {
     fn deref_mut(&mut self) -> &mut T {
         &mut self.inner
+    }
+}
+
+impl<R: RawLock, T: fmt::Debug> fmt::Debug for IrqSafeNestedGuard<'_, R, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&**self, f)
     }
 }
 
@@ -344,7 +356,7 @@ mod tests {
     /// 带锁级别的构造
     #[test]
     fn irq_new_with_level() {
-        let lock = SpinLockIrq::new_with_level(0u32, "leveled", lock_level::SCHED_LOCK);
+        let lock = SpinLockIrq::new_with_level(0u32, "leveled", lock_level::SCHED);
         let _g = lock.lock();
         assert!(lock.is_locked());
     }

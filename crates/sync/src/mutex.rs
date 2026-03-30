@@ -5,6 +5,8 @@
 //! `Deref` / `DerefMut` / `Drop` 只需实现一次，所有锁后端共享。
 
 use core::cell::UnsafeCell;
+use core::fmt;
+use core::marker::PhantomData;
 use core::ops::{Deref, DerefMut};
 
 use crate::raw::{RawLock, RawSpinLock};
@@ -44,14 +46,20 @@ impl<R: RawLock, T> Mutex<R, T> {
         self.raw.check_recursive();
         self.raw.acquire();
         self.raw.set_owner();
-        MutexGuard { mutex: self }
+        MutexGuard {
+            mutex: self,
+            _not_send: PhantomData,
+        }
     }
 
     /// 尝试获取锁，不阻塞。
     pub fn try_lock(&self) -> Option<MutexGuard<'_, R, T>> {
         if self.raw.try_acquire() {
             self.raw.set_owner();
-            Some(MutexGuard { mutex: self })
+            Some(MutexGuard {
+                mutex: self,
+                _not_send: PhantomData,
+            })
         } else {
             None
         }
@@ -68,11 +76,24 @@ impl<R: RawLock, T> Mutex<R, T> {
     }
 }
 
+impl<R: RawLock, T> fmt::Debug for Mutex<R, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Mutex")
+            .field("name", &self.raw.name())
+            .field("locked", &self.raw.is_locked())
+            .finish()
+    }
+}
+
 /// RAII guard——丢弃时释放锁。
 ///
 /// 所有锁后端共享同一个 guard 实现。
+/// `!Send`——guard 必须在获取锁的同一核心上释放，
+/// 防止任务迁移导致跨核释放。
 pub struct MutexGuard<'a, R: RawLock, T> {
     mutex: &'a Mutex<R, T>,
+    /// `*mut ()` 是 `!Send`——使整个 guard 也变为 `!Send`。
+    _not_send: PhantomData<*mut ()>,
 }
 
 impl<R: RawLock, T> Deref for MutexGuard<'_, R, T> {
@@ -95,6 +116,12 @@ impl<R: RawLock, T> Drop for MutexGuard<'_, R, T> {
     fn drop(&mut self) {
         self.mutex.raw.clear_owner();
         self.mutex.raw.release();
+    }
+}
+
+impl<R: RawLock, T: fmt::Debug> fmt::Debug for MutexGuard<'_, R, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&**self, f)
     }
 }
 

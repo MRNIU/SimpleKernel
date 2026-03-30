@@ -1,5 +1,31 @@
+//! 锁级别常量 + per-CPU 锁栈——强制锁获取顺序，防止 ABBA 死锁。
+//!
+//! 每个核心维护一个 [`LockStack`]，记录当前持有锁的级别。
+//! 获取新锁时检查级别是否严格递增，违反则 panic。
+
+use core::fmt;
+
+/// 用于强制获取顺序的锁级别常量。
+///
+/// 数值更小的级别必须优先获取。
+/// 在持有更高级别锁时获取更低级别的锁会触发 panic。
+pub mod lock_level {
+    /// 调度锁——级别最低，必须最先获取
+    pub const SCHED: u8 = 0;
+    /// 任务表锁
+    pub const TASK_TABLE: u8 = 1;
+    /// 中断线程锁
+    pub const INTERRUPT_THREADS: u8 = 2;
+    /// 帧分配器锁
+    pub const FRAME_ALLOC: u8 = 10;
+    /// 堆分配器锁
+    pub const HEAP: u8 = 11;
+    /// 控制台锁——级别最高，几乎可在任何上下文获取
+    pub const CONSOLE: u8 = 200;
+}
+
 /// 锁栈条目——记录当前持有的 SpinLock 及其级别。
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct LockStackEntry {
     /// 指向 SpinLock 的类型擦除原始指针，仅用于诊断比较，不会解引用。
     pub lock_ptr: *const (),
@@ -14,7 +40,7 @@ unsafe impl Sync for LockStackEntry {}
 /// Per-CPU 锁栈，用于强制锁获取顺序。
 ///
 /// 每个核心维护一个当前持有锁的栈。
-/// 获取新锁时，SpinLock 检查新锁的级别是否高于栈顶。
+/// 获取新锁时，SpinLock 检查新锁的级别是否严格大于栈顶。
 /// 最大深度由 `config::LOCK_STACK_DEPTH` 控制。
 pub struct LockStack {
     entries: [LockStackEntry; Self::MAX_DEPTH],
@@ -43,20 +69,13 @@ impl LockStack {
 
     /// 检查锁顺序是否合法——新锁的级别必须严格大于栈顶级别。
     ///
-    /// `unclassified` 参数为"未分级"的级别值，该级别跳过检查。
     /// 返回 `true` 表示顺序合法，`false` 表示违反顺序。
     #[inline]
-    pub fn check_order(&self, new_level: u8, unclassified: u8) -> bool {
-        if new_level == unclassified {
+    pub fn check_order(&self, new_level: u8) -> bool {
+        if self.depth == 0 {
             return true;
         }
-        if self.depth > 0 {
-            let top = self.entries[self.depth - 1].level;
-            if top != unclassified && new_level <= top {
-                return false;
-            }
-        }
-        true
+        new_level > self.entries[self.depth - 1].level
     }
 
     /// 获取锁时压栈。
@@ -93,5 +112,14 @@ impl LockStack {
 impl Default for LockStack {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl fmt::Debug for LockStack {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("LockStack")
+            .field("depth", &self.depth)
+            .field("entries", &&self.entries[..self.depth])
+            .finish()
     }
 }

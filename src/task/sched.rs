@@ -28,7 +28,7 @@ unsafe extern "C" {
 /// `schedule()` 使用 RAII guard（`lock()`）获取和释放，锁在 `switch_to` 前释放。
 /// 任务窃取时使用 `try_lock_nested()` 获取其他核心的锁。
 pub(super) static PER_CPU_SCHED_LOCK: [SpinLockIrq<()>; MAX_CORE_COUNT] =
-    [const { SpinLockIrq::new_with_level((), "sched", lock_level::SCHED_LOCK) }; MAX_CORE_COUNT];
+    [const { SpinLockIrq::new_with_level((), "sched", lock_level::SCHED) }; MAX_CORE_COUNT];
 /// 延迟入队的 prev 任务——在下次 `schedule()` 开始时放回就绪队列。
 ///
 /// `switch_to` 前不将 prev 入队，避免其他核偷走后与当前核的

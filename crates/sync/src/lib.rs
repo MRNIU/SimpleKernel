@@ -1,5 +1,3 @@
-#![cfg_attr(not(test), no_std)]
-
 //! 内核同步原语——分层架构。
 //!
 //! ```text
@@ -24,18 +22,18 @@
 //! |------|------|------|
 //! | `LOCK_STACK` | `LockStack` | 锁获取顺序栈（死锁检测） |
 
-pub mod irq_safe;
+#![cfg_attr(not(test), no_std)]
+
+pub(crate) mod irq_safe;
 pub mod lock_stack;
-pub mod mutex;
-pub mod raw;
+pub(crate) mod mutex;
+pub(crate) mod raw;
 
 use per_cpu::cpu_local;
 
 /// Per-CPU 锁栈——强制锁获取顺序，防止死锁。
 #[cpu_local]
 pub static LOCK_STACK: lock_stack::LockStack = lock_stack::LockStack::new();
-
-// ── 类型别名：保持与原 API 完全兼容 ──────────────────────────
 
 /// 自旋锁——不操作中断。
 pub type SpinLock<T> = mutex::Mutex<raw::RawSpinLock, T>;
@@ -49,7 +47,5 @@ pub type SpinLockIrq<T> = irq_safe::IrqSafe<raw::RawSpinLock, T>;
 /// 中断安全的自旋锁 RAII guard。
 pub type SpinLockIrqGuard<'a, T> = irq_safe::IrqSafeGuard<'a, raw::RawSpinLock, T>;
 
-// ── 便捷 re-export ──────────────────────────────────────────
-
 pub use interrupt_state::HeldInterrupts;
-pub use irq_safe::lock_level;
+pub use lock_stack::lock_level;

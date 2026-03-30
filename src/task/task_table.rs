@@ -141,7 +141,7 @@ impl TaskTable {
 }
 
 pub(super) static TASK_TABLE: SpinLockIrq<TaskTable> =
-    SpinLockIrq::new_with_level(TaskTable::EMPTY, "task_table", lock_level::TASK_TABLE_LOCK);
+    SpinLockIrq::new_with_level(TaskTable::EMPTY, "task_table", lock_level::TASK_TABLE);
 
 impl TaskTable {
     /// 编译期空值——用于 SpinLockIrq 静态初始化。

@@ -34,7 +34,11 @@ unsafe impl GlobalAlloc for IrqSafeHeap {
 }
 
 #[global_allocator]
-static HEAP_ALLOCATOR: IrqSafeHeap = IrqSafeHeap(SpinLockIrq::new(Heap::empty(), "heap"));
+static HEAP_ALLOCATOR: IrqSafeHeap = IrqSafeHeap(SpinLockIrq::new_with_level(
+    Heap::empty(),
+    "heap",
+    sync_crate::lock_level::HEAP,
+));
 
 /// BSS 区域堆后备存储。
 ///
