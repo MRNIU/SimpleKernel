@@ -11,6 +11,7 @@
 [workspace]
 members = [
     ".",
+    "crates/build_common",
     "crates/config",
     "crates/address",
     "crates/macros",
@@ -198,6 +199,7 @@ arm-psci.workspace = true             # PSCI 电源管理接口（CPU on/off/res
 
 # --- 构建依赖 ---
 [build-dependencies]
+build_common = { path = "crates/build_common" }  # 构建脚本公共逻辑
 cc.workspace = true                   # 编译由 GCC 预处理的汇编 (.S) 文件
 
 # 内核即使在 debug 模式下也需要一定的优化，否则生成的代码过大

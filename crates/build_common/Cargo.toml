@@ -1,0 +1,10 @@
+[package]
+name = "build_common"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "内核构建脚本公共逻辑：编译汇编文件、设置链接器参数"
+
+[dependencies]
+cc.workspace = true
