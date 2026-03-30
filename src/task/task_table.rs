@@ -11,7 +11,7 @@ use crate::task::signal::{SignalAction, SignalMask, first_deliverable};
 use crate::task::state::TaskState;
 use crate::task::tcb::{Pid, TaskRef};
 use sync::SpinLockIrq;
-use sync::spinlock::lock_level;
+use sync::lock_level;
 
 /// 全局任务表——由 `TASK_TABLE` 的 `SpinLockIrq` 保护（级别 1，高于调度锁级别 0）。
 pub(super) struct TaskTable {

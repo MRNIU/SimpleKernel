@@ -19,14 +19,14 @@ use crate::task::state::TaskState;
 use crate::task::tcb::TaskRef;
 use config::MAX_CORE_COUNT;
 use sync::SpinLockIrq;
-use sync::spinlock::lock_level;
+use sync::lock_level;
 unsafe extern "C" {
     fn switch_to(prev: *mut CalleeSavedContext, next: *const CalleeSavedContext);
 }
 /// Per-CPU 调度锁数组——每个核心一把，保护对应核心的调度状态。
 ///
 /// `schedule()` 使用 RAII guard（`lock()`）获取和释放，锁在 `switch_to` 前释放。
-/// 任务窃取时使用 `try_lock_raw_no_irq()` 获取其他核心的锁。
+/// 任务窃取时使用 `try_lock_nested()` 获取其他核心的锁。
 pub(super) static PER_CPU_SCHED_LOCK: [SpinLockIrq<()>; MAX_CORE_COUNT] =
     [const { SpinLockIrq::new_with_level((), "sched", lock_level::SCHED_LOCK) }; MAX_CORE_COUNT];
 /// 延迟入队的 prev 任务——在下次 `schedule()` 开始时放回就绪队列。
@@ -73,9 +73,12 @@ pub(super) unsafe fn per_cpu_sched(core_id: usize) -> &'static mut PerCpuSched {
 /// 从其他核心窃取一个任务——当本核就绪队列为空时调用。
 ///
 /// 调用者已持有 PER_CPU_SCHED_LOCK[my_core]（通过 RAII guard），中断已禁用。
-/// 使用 `try_lock_raw_no_irq` 获取 victim 的锁：两核同时窃取对方时不会死锁，
+/// 使用 `try_lock_nested` 获取 victim 的锁：两核同时窃取对方时不会死锁，
 /// 因为 try_lock 失败后立即返回 None，不会阻塞等待。
-pub(super) fn try_steal(my_core: usize) -> Option<TaskRef> {
+///
+/// `held` 参数是 [`HeldInterrupts`](sync::HeldInterrupts) proof token，
+/// 编译期证明中断已禁用——替代原 unsafe `try_lock_raw_no_irq`。
+pub(super) fn try_steal(my_core: usize, held: &sync::HeldInterrupts) -> Option<TaskRef> {
     let mut best_core = None;
     let mut best_size = 0usize;
 
@@ -83,7 +86,7 @@ pub(super) fn try_steal(my_core: usize) -> Option<TaskRef> {
         if core == my_core {
             continue;
         }
-        // SAFETY: 只读快照，不需要严格一致性
+        // SAFETY: 只读快照（best-effort hint），不需要严格一致性
         let sched = match unsafe { &*PER_CPU_SCHED.get() }[core].as_ref() {
             Some(s) => s,
             None => continue,
@@ -100,17 +103,12 @@ pub(super) fn try_steal(my_core: usize) -> Option<TaskRef> {
         return None;
     }
 
-    // SAFETY: 中断已被外层 HeldInterrupts 禁用
-    if !unsafe { PER_CPU_SCHED_LOCK[victim].try_lock_raw_no_irq() } {
-        return None;
-    }
+    // proof token 证明中断已禁用，RAII guard 自动释放锁
+    let _guard = PER_CPU_SCHED_LOCK[victim].try_lock_nested(held)?;
 
     // SAFETY: 持有 victim 的调度锁
     let victim_sched = unsafe { per_cpu_sched(victim) };
     let stolen = victim_sched.scheduler.steal_one();
-
-    // SAFETY: 释放 victim 的锁（不操作中断）
-    unsafe { PER_CPU_SCHED_LOCK[victim].unlock_raw_no_irq() };
 
     if let Some(ref task) = stolen {
         log::info!(
@@ -202,7 +200,7 @@ pub fn schedule() {
         let next = sched
             .scheduler
             .pick_next()
-            .or_else(|| try_steal(core_id))
+            .or_else(|| try_steal(core_id, &held))
             .or_else(|| sched.deferred_prev.take().map(|dp| dp.task))
             .unwrap_or_else(|| sched.idle.as_ref().expect("schedule: no idle task").clone());
         next.set_state(TaskState::Running);

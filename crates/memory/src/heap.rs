@@ -8,13 +8,13 @@ use config::KERNEL_HEAP_SIZE;
 use core::alloc::{GlobalAlloc, Layout};
 use core::cell::SyncUnsafeCell;
 use core::ptr::NonNull;
-use sync_crate::SpinLock;
+use sync_crate::SpinLockIrq;
 
 /// 中断安全的全局堆分配器——参考 Theseus OS 设计。
 ///
-/// 通过 `SpinLock`（自动禁用/恢复中断）保证多核互斥和中断安全，
-/// 防止中断处理器中的隐式分配导致同核心自旋死锁。
-struct IrqSafeHeap(SpinLock<Heap<32>>);
+/// 通过 `SpinLockIrq`（获取时禁用中断、释放时恢复）保证多核互斥和中断安全，
+/// 防止中断处理器中的隐式分配导致同核心递归加锁。
+struct IrqSafeHeap(SpinLockIrq<Heap<32>>);
 
 unsafe impl GlobalAlloc for IrqSafeHeap {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
@@ -34,7 +34,7 @@ unsafe impl GlobalAlloc for IrqSafeHeap {
 }
 
 #[global_allocator]
-static HEAP_ALLOCATOR: IrqSafeHeap = IrqSafeHeap(SpinLock::new(Heap::empty(), "heap"));
+static HEAP_ALLOCATOR: IrqSafeHeap = IrqSafeHeap(SpinLockIrq::new(Heap::empty(), "heap"));
 
 /// BSS 区域堆后备存储。
 ///
