@@ -12,7 +12,7 @@ use crate::vma::AddressSpace;
 /// 调用方通过 `AddressSpace::page_table()` 获取页表引用以激活分页。
 pub fn init() -> AddressSpace {
     // SAFETY: 在任何堆分配之前调用，且仅调用一次（由启动流程保证）
-    unsafe { crate::heap::init() };
+    unsafe { heap_crate::init() };
 
     let info = crate::globals::MEMORY_INFO
         .get()

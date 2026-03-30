@@ -3,8 +3,6 @@
 //! - [`Vma`]：描述一段连续虚拟地址空间的属性（权限、backing 类型）
 //! - [`AddressSpace`]：管理一个页表及其所有 VMA
 
-extern crate alloc;
-
 use alloc::collections::BTreeMap;
 use alloc::sync::Arc;
 

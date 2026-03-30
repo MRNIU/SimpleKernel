@@ -13,10 +13,12 @@ mod held;
 
 pub use held::HeldInterrupts;
 
+use arch::{Arch, InterruptArch as _};
+
 /// 查询当前中断是否启用。
 #[inline(always)]
 pub fn is_enabled() -> bool {
-    arch::irq_enabled()
+    Arch::irq_enabled()
 }
 
 /// 首次启用中断——仅供 bootstrap 阶段调用。
@@ -32,5 +34,5 @@ pub fn is_enabled() -> bool {
 #[inline(always)]
 pub unsafe fn bootstrap_enable() {
     // SAFETY: 由调用方保证安全性
-    unsafe { arch::irq_enable() };
+    unsafe { Arch::irq_enable() };
 }

@@ -14,8 +14,6 @@
 //! 内部通过 [`MappedPages`] 管理页表映射和生命周期，
 //! 避免重复实现 unmap / permanent 逻辑。
 
-extern crate alloc;
-
 use alloc::sync::Arc;
 
 use crate::error::MemoryError;

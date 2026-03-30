@@ -15,6 +15,7 @@ bench = false
 
 [dependencies]
 simplekernel = { path = "../..", default-features = false }
+heap = { path = "../../crates/heap" }
 memory = { path = "../../crates/memory" }
 sync = { path = "../../crates/sync" }
 per_cpu = { path = "../../crates/per_cpu" }

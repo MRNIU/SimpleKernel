@@ -11,13 +11,14 @@ pub mod error;
 /// 物理帧分配器与帧生命周期状态机（re-export `frame_allocator` crate）。
 #[cfg(any(test, target_os = "none"))]
 pub use frame_allocator as frame;
+/// 堆分配器（re-export `heap` crate）。
+#[cfg(target_os = "none")]
+pub use heap_crate as heap;
+/// 虚拟页分配器（re-export `page_allocator` crate）。
+#[cfg(any(test, target_os = "none"))]
+pub use page_allocator as page;
 /// 全局内存状态。
 pub mod globals;
-/// 堆分配器。
-///
-/// `#[global_allocator]` 在宿主机上会与系统分配器冲突，因此门控为裸机专用。
-#[cfg(target_os = "none")]
-pub mod heap;
 /// 内存子系统初始化（依赖链接器符号，裸机专用）。
 #[cfg(target_os = "none")]
 pub mod init;
@@ -27,9 +28,6 @@ pub mod mapped_pages;
 /// 类型化 MMIO 区域。
 #[cfg(any(test, target_os = "none"))]
 pub mod mmio;
-/// 虚拟页分配器。
-#[cfg(any(test, target_os = "none"))]
-pub mod page_allocator;
 /// 多级页表与架构原生 PTE 标志位。
 pub mod page_table;
 /// TLB 刷新。

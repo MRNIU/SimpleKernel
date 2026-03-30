@@ -21,16 +21,14 @@
 // TODO: 支持 COW（Copy-on-Write）共享映射——`fork()` 需要多个进程共享同一物理帧
 // + 引用计数。需引入 `Frames` 的共享状态或 per-frame 引用计数器。
 
-extern crate alloc;
-
 use alloc::sync::Arc;
 
 use crate::error::MemoryError;
 use crate::frame::{AllocatedFrames, UnmappedFrames};
-use crate::page_allocator::AllocatedPages;
 use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
 use address::{FrameRange, PhysAddr, PhysPageNum, VirtAddr};
 use config::PAGE_SIZE;
+use page_allocator::AllocatedPages;
 use sync_crate::SpinLock;
 
 /// 仿射类型映射——持有此值即证明 VA→PA 映射有效。

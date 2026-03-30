@@ -22,6 +22,8 @@ members = [
     "crates/local_tick",
 
     "crates/frame_allocator",
+    "crates/heap",
+    "crates/page_allocator",
     "crates/page_table_entry",
     "crates/page_table",
     "crates/memory",
@@ -142,6 +144,7 @@ interrupt_state = { path = "crates/interrupt_state" }
 sync = { path = "crates/sync" }
 global_tick = { path = "crates/global_tick" }
 local_tick = { path = "crates/local_tick" }
+heap = { path = "crates/heap" }
 memory = { path = "crates/memory" }
 
 # --- 同步 ---

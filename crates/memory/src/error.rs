@@ -38,3 +38,13 @@ impl From<frame_allocator::FrameAllocError> for MemoryError {
         }
     }
 }
+
+#[cfg(any(test, target_os = "none"))]
+impl From<page_allocator::PageAllocError> for MemoryError {
+    fn from(e: page_allocator::PageAllocError) -> Self {
+        match e {
+            page_allocator::PageAllocError::AllocationFailed => Self::AllocationFailed,
+            page_allocator::PageAllocError::OutOfMemory => Self::OutOfMemory,
+        }
+    }
+}

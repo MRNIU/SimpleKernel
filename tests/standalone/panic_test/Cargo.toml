@@ -15,6 +15,7 @@ bench = false
 [dependencies]
 simplekernel = { path = "../../..", default-features = false }
 per_cpu = { path = "../../../crates/per_cpu" }
+heap = { path = "../../../crates/heap" }
 memory = { path = "../../../crates/memory" }
 log.workspace = true
 qemu-exit.workspace = true

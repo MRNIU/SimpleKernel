@@ -3,6 +3,9 @@
 //! 通过 `SpinLock`（自动禁用/恢复中断）包装 `buddy_system_allocator`，
 //! 作为 `#[global_allocator]` 为内核提供 `Box`、`Vec` 等堆分配能力。
 
+#![cfg_attr(not(test), no_std)]
+#![feature(sync_unsafe_cell)]
+
 use buddy_system_allocator::Heap;
 use config::KERNEL_HEAP_SIZE;
 use core::alloc::{GlobalAlloc, Layout};

@@ -1,7 +1,5 @@
 //! 全局内存状态——`MemoryInfo`、内核页表、内核地址空间。
 
-extern crate alloc;
-
 use address::PhysAddr;
 
 #[cfg(any(test, target_os = "none"))]

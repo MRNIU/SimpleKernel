@@ -2,7 +2,7 @@
 
 use core::marker::PhantomData;
 
-use crate::arch;
+use crate::arch::{Arch, InterruptArch as _};
 
 /// 中断禁用的证明令牌（proof token）。
 ///
@@ -45,8 +45,8 @@ impl HeldInterrupts {
     #[inline]
     #[must_use]
     pub fn hold() -> Self {
-        let was_enabled = arch::irq_enabled();
-        arch::irq_disable();
+        let was_enabled = Arch::irq_enabled();
+        Arch::irq_disable();
         Self {
             was_enabled,
             _not_send: PhantomData,
@@ -65,26 +65,49 @@ impl Drop for HeldInterrupts {
     fn drop(&mut self) {
         if self.was_enabled {
             // SAFETY: 恢复到获取令牌前的中断状态
-            unsafe { arch::irq_enable() };
+            unsafe { Arch::irq_enable() };
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Mutex;
+
+    use crate::arch::set_irq_enabled;
+
     use super::*;
 
+    /// 串行化访问全局 `IRQ_ENABLED`，防止并行测试相互干扰。
+    static IRQ_LOCK: Mutex<()> = Mutex::new(());
+
+    /// 中断关闭时 hold：was_enabled=false，drop 后中断仍为关闭。
     #[test]
-    fn held_interrupts_hold_and_drop() {
+    fn hold_when_disabled() {
+        let _guard = IRQ_LOCK.lock().expect("IRQ_LOCK poisoned");
+        set_irq_enabled(false);
         let held = HeldInterrupts::hold();
         assert!(!held.was_enabled());
+        assert!(!Arch::irq_enabled());
         drop(held);
+        assert!(!Arch::irq_enabled());
+    }
+
+    /// 中断开启时 hold：was_enabled=true，hold 期间中断关闭，drop 后恢复开启。
+    #[test]
+    fn hold_when_enabled_restores_on_drop() {
+        let _guard = IRQ_LOCK.lock().expect("IRQ_LOCK poisoned");
+        set_irq_enabled(true);
+        let held = HeldInterrupts::hold();
+        assert!(held.was_enabled());
+        assert!(!Arch::irq_enabled());
+        drop(held);
+        assert!(Arch::irq_enabled());
     }
 
     /// 验证 HeldInterrupts 的 size（编译期 !Copy / !Send 由 doc test 保证）。
     #[test]
     fn held_interrupts_size() {
-        // PhantomData<*const ()> 是 ZST，HeldInterrupts 仍为 1 byte（bool）
         assert_eq!(core::mem::size_of::<HeldInterrupts>(), 1);
     }
 }
