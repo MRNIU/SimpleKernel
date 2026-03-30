@@ -16,7 +16,7 @@ use core::alloc::Layout;
 use core::panic::PanicInfo;
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use framework::{CURRENT_TEST_FAILED, IN_TEST, TestGroup, TestRunner};
+use framework::{TestGroup, TestRunner};
 
 /// 标记主核是否已完成初始化，用于区分主核/从核引导路径
 static PRIMARY_BOOTED: AtomicBool = AtomicBool::new(false);
@@ -125,14 +125,8 @@ fn exit_qemu(code: u32) -> ! {
 
 #[panic_handler]
 fn panic(info: &PanicInfo<'_>) -> ! {
-    // 如果当前在测试执行上下文中，标记测试失败并返回（不终止内核）
-    if IN_TEST.load(Ordering::SeqCst) {
-        CURRENT_TEST_FAILED.store(true, Ordering::SeqCst);
-        // 打印 panic 信息以便调试
-        simplekernel::panic::handle_panic(info);
-    }
-
-    // 不在测试上下文中的 panic 直接终止
+    // bare-metal 环境无法捕获 panic，直接终止测试内核。
+    // handle_panic 会输出 backtrace 后进入无限循环。
     simplekernel::panic::handle_panic(info);
 }
 

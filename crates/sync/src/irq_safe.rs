@@ -5,7 +5,61 @@
 //! - per-CPU 锁栈 + 级别检查（死锁预防）
 //!
 //! 所有 `Deref`/`DerefMut`/锁释放逻辑由内部 `MutexGuard` 提供，不重复实现。
+//!
+//! ## 设计决策
+//!
+//! ### 1. 自旋期间恢复中断（loop-try-reopen 模式）
+//!
+//! 参考 Theseus OS 的 [`DeadlockPrevention::lock()`][theseus-lock] 实现：
+//! 当锁竞争失败时，**立即恢复中断**，在中断开启状态下自旋等待，
+//! 仅在 CAS 尝试获取的瞬间关闭中断。
+//!
+//! 这避免了"无界等待 + 全程关中断"的组合：
+//! - 等待期间 timer tick、IPI（如 TLB shootdown）可正常响应
+//! - 消除"Core A 等 Core B 响应 IPI，Core B 关中断等 Core A 释放锁"的活锁风险
+//!
+//! ```text
+//! ┌─ loop ──────────────────────────────────────────────┐
+//! │  HeldInterrupts::hold()     ← 关中断               │
+//! │  try_acquire()              ← CAS 尝试             │
+//! │  ├─ 成功 → set_owner, post_acquire, return guard   │
+//! │  └─ 失败 → drop(held)      ← 恢复中断             │
+//! │            while is_locked() { spin_loop() }        │
+//! └─────────────────────────────────────────────────────┘
+//! ```
+//!
+//! 对比 Linux：`spin_lock_irqsave` 全程关中断，但 Linux 使用 qspinlock（MCS）
+//! 保证 O(1) 等待和 FIFO 公平性。TTAS 等待时间无上界，
+//! 因此组合"无界等待 + 全程关中断"是危险的。
+//!
+//! [theseus-lock]: https://github.com/theseus-os/Theseus/blob/theseus_main/libs/sync/src/lib.rs
+//!
+//! ### 2. `ManuallyDrop` 显式析构顺序
+//!
+//! `IrqSafeGuard` 的析构必须严格遵守顺序：
+//! 1. 弹出 per-CPU 锁栈
+//! 2. 释放锁（clear_owner + release）
+//! 3. 恢复中断
+//!
+//! 若依赖字段声明顺序（[RFC 1857] / [Reference §Destructors]），
+//! 重构时交换字段会**静默破坏**此不变量——编译器不会报错，
+//! 但中断在锁释放前恢复，中断 handler 看到锁仍被持有而死锁。
+//!
+//! 采用 `ManuallyDrop` + 显式 `drop()` 调用
+//! （参考 Theseus OS [`MutexGuard`][theseus-guard]），
+//! 将析构顺序从隐式布局依赖提升为显式代码控制。
+//!
+//! [RFC 1857]: https://rust-lang.github.io/rfcs/1857-stabilize-drop-order.html
+//! [Reference §Destructors]: https://doc.rust-lang.org/reference/destructors.html
+//! [theseus-guard]: https://github.com/theseus-os/Theseus/blob/theseus_main/libs/sync/src/mutex.rs
+//!
+//! ### 3. `try_lock` 快速路径（参考 Theseus `EXPENSIVE` 优化）
+//!
+//! 关中断是昂贵操作（保存/恢复 CPU 状态寄存器）。
+//! 当锁明显被持有时，先用 `Relaxed` load 检查，直接返回 `None`，
+//! 跳过无谓的中断状态切换。
 
+use core::mem::ManuallyDrop;
 use core::ops::{Deref, DerefMut};
 
 use crate::mutex::{Mutex, MutexGuard};
@@ -68,35 +122,70 @@ impl<T> IrqSafe<RawSpinLock, T> {
 impl<R: RawLock, T> IrqSafe<R, T> {
     /// 获取锁，返回 RAII guard。
     ///
-    /// 使用 [`HeldInterrupts`] 证明令牌管理中断状态：
-    /// 获取时禁用中断，guard 析构时恢复。
+    /// 采用 **loop-try-reopen** 模式（参考 Theseus OS）：
+    /// 每次迭代仅在 CAS 尝试期间关中断，失败后立即恢复，
+    /// 避免长时间关中断导致的中断延迟和潜在活锁。
+    ///
+    /// ```text
+    /// loop {
+    ///     关中断 → check_recursive → try_acquire
+    ///     ├─ 成功 → 返回 guard（中断保持关闭）
+    ///     └─ 失败 → 恢复中断 → 自旋等待（中断开启）
+    /// }
+    /// ```
     ///
     /// # Panics
     /// - 同一核心递归加锁
     /// - 锁级别顺序违反
     pub fn lock(&self) -> IrqSafeGuard<'_, R, T> {
-        let held = HeldInterrupts::hold();
+        loop {
+            let held = HeldInterrupts::hold();
 
-        let inner = self.mutex.lock();
-        self.post_acquire();
+            // 递归检测必须在关中断后执行——
+            // 关中断保证 per-CPU owner_core 读取与当前核心一致
+            self.mutex.raw.check_recursive();
 
-        IrqSafeGuard {
-            inner,
-            irq_safe: self,
-            _held: held,
+            if let Some(inner) = self.mutex.try_lock() {
+                self.post_acquire();
+                return IrqSafeGuard {
+                    inner: ManuallyDrop::new(inner),
+                    irq_safe: self,
+                    held: ManuallyDrop::new(held),
+                };
+            }
+
+            // 获取失败——立即恢复中断，避免关中断下长时间自旋。
+            // held 在此处 drop → 恢复中断状态。
+            drop(held);
+
+            // 中断开启状态下自旋等待——
+            // timer tick、IPI 等可正常响应，不阻塞其他核心
+            while self.mutex.raw.is_locked() {
+                core::hint::spin_loop();
+            }
         }
     }
 
     /// 尝试获取锁，不阻塞。
+    ///
+    /// 快速路径：锁已被持有时直接返回 `None`，
+    /// 跳过中断状态切换的开销（参考 Theseus `EXPENSIVE` 优化）。
     pub fn try_lock(&self) -> Option<IrqSafeGuard<'_, R, T>> {
+        // 快速路径：锁已被持有，避免无谓的中断状态切换。
+        // Relaxed load 在此足够——即使读到过期值（false negative），
+        // 后续 try_lock 的 CAS 会正确判断。
+        if self.mutex.is_locked() {
+            return None;
+        }
+
         let held = HeldInterrupts::hold();
 
         if let Some(inner) = self.mutex.try_lock() {
             self.post_acquire();
             Some(IrqSafeGuard {
-                inner,
+                inner: ManuallyDrop::new(inner),
                 irq_safe: self,
-                _held: held,
+                held: ManuallyDrop::new(held),
             })
         } else {
             // held 在此处 drop，自动恢复中断
@@ -149,17 +238,20 @@ impl<R: RawLock, T> IrqSafe<R, T> {
 
 /// RAII guard（中断安全版）。
 ///
-/// Drop 顺序由 Rust 语言规则保证（[RFC 1857] / [Reference §Destructors]）：
-/// 1. 自定义 `Drop::drop()` 执行 → 弹出锁栈
-/// 2. `inner` (`MutexGuard`) 析构 → clear_owner + release 锁
-/// 3. `_held` (`HeldInterrupts`) 析构 → 恢复中断
+/// 使用 [`ManuallyDrop`] 显式控制析构顺序（参考 Theseus OS `MutexGuard`），
+/// 避免依赖字段声明顺序（RFC 1857）——重构时交换字段不会静默破坏安全不变量。
 ///
-/// [Reference §Destructors]: https://doc.rust-lang.org/reference/destructors.html
+/// 析构顺序：
+/// 1. 弹出 per-CPU 锁栈（中断仍禁用）
+/// 2. 释放锁（`MutexGuard::drop` → clear_owner + release）
+/// 3. 恢复中断（`HeldInterrupts::drop` → 若之前开启则重新启用）
 pub struct IrqSafeGuard<'a, R: RawLock, T> {
-    inner: MutexGuard<'a, R, T>,
+    /// 内部互斥 guard——`ManuallyDrop` 确保在自定义 `Drop` 中显式释放。
+    inner: ManuallyDrop<MutexGuard<'a, R, T>>,
+    #[cfg_attr(not(target_os = "none"), allow(dead_code))]
     irq_safe: &'a IrqSafe<R, T>,
-    /// 中断禁用的证明令牌——在自定义 Drop 和 inner 之后由编译器析构
-    _held: HeldInterrupts,
+    /// 中断禁用的证明令牌——`ManuallyDrop` 确保在锁释放**之后**才恢复中断。
+    held: ManuallyDrop<HeldInterrupts>,
 }
 
 impl<R: RawLock, T> Deref for IrqSafeGuard<'_, R, T> {
@@ -178,17 +270,19 @@ impl<R: RawLock, T> DerefMut for IrqSafeGuard<'_, R, T> {
 
 impl<R: RawLock, T> Drop for IrqSafeGuard<'_, R, T> {
     fn drop(&mut self) {
-        // 弹出锁栈（中断仍禁用，因为 _held 还没 drop）
+        // ── 显式析构顺序（不依赖字段声明顺序）──────────────
+        //
+        // 1. 弹出锁栈（中断仍禁用，per-CPU 访问安全）
         #[cfg(target_os = "none")]
         self.irq_safe.pop_lock_stack();
 
-        // irq_safe 字段在 bare-metal 上用于 pop_lock_stack；
-        // 非 bare-metal（测试）时未使用，消除 unused 警告
-        #[cfg(not(target_os = "none"))]
-        let _ = self.irq_safe;
+        // 2. 释放锁（clear_owner + release）
+        // SAFETY: inner 在此之后不再被访问，且仅 drop 一次
+        unsafe { ManuallyDrop::drop(&mut self.inner) };
 
-        // inner (MutexGuard) 随后 drop → clear_owner + release
-        // _held 最后 drop → 恢复中断
+        // 3. 恢复中断（若获取前中断已启用）
+        // SAFETY: held 在此之后不再被访问，且仅 drop 一次
+        unsafe { ManuallyDrop::drop(&mut self.held) };
     }
 }
 
@@ -279,7 +373,7 @@ mod tests {
         }
 
         let g = lock.lock();
-        assert_eq!(g.len(), 400, "应有 4×100=400 个元素");
+        assert_eq!(g.len(), 400, "应有 4x100=400 个元素");
     }
 
     /// 嵌套锁获取与自动释放

@@ -6,32 +6,43 @@ use xshell::{Shell, cmd};
 use crate::Result;
 use crate::arch::Arch;
 
-/// 编译内核 ELF，返回产物路径。
+/// 编译 Cargo 二进制（内核或测试内核），返回 ELF 产物路径。
 ///
-/// `release` 为 `true` 时附加 `--release`，输出路径切换到 `release/` 子目录。
-pub fn build_kernel(sh: &Shell, project_root: &Path, arch: Arch, release: bool) -> Result<PathBuf> {
-    println!("[xtask] Building kernel for {}...", arch.as_str());
+/// `package` 为 `None` 时编译默认 workspace binary（内核）；
+/// 为 `Some("name")` 时编译指定包。
+pub fn build_binary(
+    sh: &Shell,
+    project_root: &Path,
+    arch: Arch,
+    package: Option<&str>,
+    release: bool,
+) -> Result<PathBuf> {
+    let label = package.unwrap_or("kernel");
+    println!("[xtask] Building '{}' for {}...", label, arch.as_str());
     let target = arch.target_triple();
     let mut build_cmd = cmd!(
         sh,
         "cargo build -Z build-std=core,compiler_builtins,alloc -Z build-std-features=compiler-builtins-mem --target {target}"
     );
+    if let Some(pkg) = package {
+        build_cmd = build_cmd.args(["-p", pkg]);
+    }
     if release {
         build_cmd = build_cmd.arg("--release");
     }
     build_cmd.run()?;
 
     let profile_dir = if release { "release" } else { "debug" };
-    let kernel_elf_path = project_root
+    let binary_name = package.unwrap_or("simplekernel");
+    let elf_path = project_root
         .join("target")
-        .join(arch.target_triple())
+        .join(target)
         .join(profile_dir)
-        .join("simplekernel");
-    if !kernel_elf_path.exists() {
-        return Err(format!("kernel ELF not found at {}", kernel_elf_path.display()).into());
+        .join(binary_name);
+    if !elf_path.exists() {
+        return Err(format!("ELF not found at {}", elf_path.display()).into());
     }
-
-    Ok(kernel_elf_path)
+    Ok(elf_path)
 }
 
 /// 从 `rustc` sysroot 解析 `llvm-tools` 中指定工具的绝对路径。
@@ -130,39 +141,4 @@ pub fn ensure_rootfs_image(sh: &Shell, boot_dir: &Path) -> Result<PathBuf> {
     cmd!(sh, "dd if=/dev/zero {dd_out} bs=1M count=64").run()?;
     cmd!(sh, "mkfs.fat -F 32 {rootfs_path}").run()?;
     Ok(rootfs_path)
-}
-
-/// 编译系统测试内核 ELF，返回产物路径。
-pub fn build_test_kernel(
-    sh: &Shell,
-    project_root: &Path,
-    arch: Arch,
-    package: &str,
-    release: bool,
-) -> Result<PathBuf> {
-    println!(
-        "[xtask] Building test kernel '{}' for {}...",
-        package,
-        arch.as_str()
-    );
-    let target = arch.target_triple();
-    let mut build_cmd = cmd!(
-        sh,
-        "cargo build -p {package} -Z build-std=core,compiler_builtins,alloc -Z build-std-features=compiler-builtins-mem --target {target}"
-    );
-    if release {
-        build_cmd = build_cmd.arg("--release");
-    }
-    build_cmd.run()?;
-
-    let profile_dir = if release { "release" } else { "debug" };
-    let elf_path = project_root
-        .join("target")
-        .join(arch.target_triple())
-        .join(profile_dir)
-        .join(package);
-    if !elf_path.exists() {
-        return Err(format!("test kernel ELF not found at {}", elf_path.display()).into());
-    }
-    Ok(elf_path)
 }

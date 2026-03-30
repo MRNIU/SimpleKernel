@@ -81,7 +81,8 @@ fn run() -> Result<()> {
 
     match cli.command {
         Commands::Build(args) => {
-            let kernel_elf_path = build::build_kernel(&sh, &project_root, args.arch, args.release)?;
+            let kernel_elf_path =
+                build::build_binary(&sh, &project_root, args.arch, None, args.release)?;
             build::generate_debug_files(&sh, &kernel_elf_path)?;
         }
         Commands::Firmware(args) => {
@@ -91,7 +92,8 @@ fn run() -> Result<()> {
             let arch = args.arch;
             // 提前检查固件，避免内核编译完成后才发现固件缺失。
             firmware::ensure_firmware_exists(&project_root, arch)?;
-            let kernel_elf_path = build::build_kernel(&sh, &project_root, arch, args.release)?;
+            let kernel_elf_path =
+                build::build_binary(&sh, &project_root, arch, None, args.release)?;
             build::generate_debug_files(&sh, &kernel_elf_path)?;
             let boot_dir = build::prepare_boot_directory(&project_root, arch, args.release)?;
             let rootfs_path = build::ensure_rootfs_image(&sh, &boot_dir)?;
@@ -112,7 +114,8 @@ fn run() -> Result<()> {
         Commands::Debug(args) => {
             let arch = args.arch;
             firmware::ensure_firmware_exists(&project_root, arch)?;
-            let kernel_elf_path = build::build_kernel(&sh, &project_root, arch, args.release)?;
+            let kernel_elf_path =
+                build::build_binary(&sh, &project_root, arch, None, args.release)?;
             build::generate_debug_files(&sh, &kernel_elf_path)?;
             let boot_dir = build::prepare_boot_directory(&project_root, arch, args.release)?;
             let rootfs_path = build::ensure_rootfs_image(&sh, &boot_dir)?;
@@ -135,13 +138,22 @@ fn run() -> Result<()> {
                 test::list_tests(&project_root);
                 return Ok(());
             }
+            // 准备 QEMU 环境（固件、boot 目录、rootfs、DTB、boot script），仅执行一次
+            let qemu_env = test::prepare_qemu_env(&sh, &project_root, args.arch, args.release)?;
             let mut all_passed = true;
             if let Some(name) = &args.name {
-                let passed =
-                    test::run_standalone_test(&sh, &project_root, args.arch, name, args.release)?;
+                let passed = test::run_standalone_test(
+                    &sh,
+                    &project_root,
+                    args.arch,
+                    name,
+                    &qemu_env,
+                    args.release,
+                )?;
                 all_passed &= passed;
             } else {
-                let passed = test::run_system_test(&sh, &project_root, args.arch, args.release)?;
+                let passed =
+                    test::run_system_test(&sh, &project_root, args.arch, &qemu_env, args.release)?;
                 all_passed &= passed;
             }
             if args.all {
@@ -151,6 +163,7 @@ fn run() -> Result<()> {
                         &project_root,
                         args.arch,
                         &name,
+                        &qemu_env,
                         args.release,
                     )?;
                     all_passed &= passed;

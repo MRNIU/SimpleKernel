@@ -5,7 +5,6 @@ use alloc::boxed::Box;
 use alloc::vec;
 use alloc::vec::Vec;
 
-/// 返回内存测试组的所有测试用例
 pub fn tests() -> &'static [TestCase] {
     &[
         TestCase {
@@ -23,7 +22,6 @@ pub fn tests() -> &'static [TestCase] {
     ]
 }
 
-/// 测试 Box 分配：单个值 + 数组
 fn test_heap_box_alloc() {
     let val = Box::new(42u64);
     assert_eq!(*val, 42);
@@ -32,7 +30,6 @@ fn test_heap_box_alloc() {
     assert_eq!(val2[255], 0);
 }
 
-/// 测试 Vec 动态增长
 fn test_heap_vec_alloc() {
     let mut v: Vec<u32> = Vec::new();
     for i in 0..100 {
@@ -42,7 +39,6 @@ fn test_heap_vec_alloc() {
     assert_eq!(v[99], 99);
 }
 
-/// 测试大块分配（4096 字节）
 fn test_heap_large_alloc() {
     let v = vec![0xAAu8; 4096];
     assert_eq!(v.len(), 4096);

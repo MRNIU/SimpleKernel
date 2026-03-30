@@ -3,7 +3,6 @@
 use crate::framework::TestCase;
 use sync::SpinLock;
 
-/// 返回同步测试组的所有测试用例
 pub fn tests() -> &'static [TestCase] {
     &[
         TestCase {
@@ -21,14 +20,12 @@ pub fn tests() -> &'static [TestCase] {
     ]
 }
 
-/// 测试基本加锁和读取
 fn test_spinlock_basic() {
     let lock = SpinLock::new(42u32, "test_basic");
     let guard = lock.lock();
     assert_eq!(*guard, 42);
 }
 
-/// 测试通过 guard 修改数据
 fn test_spinlock_modify() {
     let lock = SpinLock::new(0u32, "test_modify");
     {
@@ -41,7 +38,6 @@ fn test_spinlock_modify() {
     }
 }
 
-/// 测试 guard drop 后锁不再被持有
 fn test_spinlock_not_held_after_drop() {
     let lock = SpinLock::new(0u32, "test_drop");
     {

@@ -53,16 +53,56 @@ pub mod lock_level {
 
 获取新锁时，级别必须严格大于 per-CPU 栈顶的级别，否则 panic。
 
-## IrqSafeGuard 的 Drop 顺序
+## loop-try-reopen：自旋期间恢复中断
 
-`IrqSafeGuard` 利用 Rust 的字段析构顺序（[Reference §Destructors]）
-保证「先释放锁，后恢复中断」：
+参考 [Theseus OS 的 `DeadlockPrevention::lock()`](https://github.com/theseus-os/Theseus/blob/theseus_main/libs/sync/src/lib.rs)，
+`SpinLockIrq::lock()` 采用 loop-try-reopen 模式：
 
-1. 自定义 `Drop::drop()` → 弹出锁栈
-2. `inner`（`MutexGuard`）析构 → clear_owner + release 锁
-3. `_held`（`HeldInterrupts`）析构 → 恢复中断
+```text
+┌─ loop ──────────────────────────────────────────────┐
+│  HeldInterrupts::hold()     ← 关中断               │
+│  try_acquire()              ← CAS 尝试             │
+│  ├─ 成功 → set_owner, post_acquire, return guard   │
+│  └─ 失败 → drop(held)      ← 恢复中断             │
+│            while is_locked() { spin_loop() }        │
+└─────────────────────────────────────────────────────┘
+```
 
-[Reference §Destructors]: https://doc.rust-lang.org/reference/destructors.html
+竞争失败时**立即恢复中断**，在中断开启状态下自旋等待。
+仅在 CAS 尝试获取的瞬间关闭中断。这避免了：
+- 等待期间 timer tick 丢失
+- IPI（如 TLB shootdown）被屏蔽导致发送方阻塞
+- Core A 等 Core B 响应 IPI，Core B 关中断等 Core A 释放锁的活锁
+
+对比 Linux `spin_lock_irqsave` 全程关中断——Linux 使用 qspinlock（MCS）
+保证 O(1) 等待和 FIFO 公平性，可承受全程关中断；
+本项目使用 TTAS，等待时间无上界，因此必须在等待期间恢复中断。
+
+## IrqSafeGuard 的 ManuallyDrop 显式析构
+
+`IrqSafeGuard` 使用 [`ManuallyDrop`] 显式控制析构顺序
+（参考 [Theseus OS `MutexGuard`](https://github.com/theseus-os/Theseus/blob/theseus_main/libs/sync/src/mutex.rs)），
+**不依赖字段声明顺序**（[RFC 1857]）：
+
+```rust
+impl Drop for IrqSafeGuard<'_, R, T> {
+    fn drop(&mut self) {
+        // 1. 弹出锁栈（中断仍禁用）
+        self.irq_safe.pop_lock_stack();
+        // 2. 释放锁（clear_owner + release）
+        ManuallyDrop::drop(&mut self.inner);
+        // 3. 恢复中断
+        ManuallyDrop::drop(&mut self.held);
+    }
+}
+```
+
+若使用隐式字段析构顺序，重构时交换字段会**静默破坏**安全不变量——
+中断在锁释放前恢复，中断 handler 看到锁仍被持有而死锁，且编译器不会报错。
+`ManuallyDrop` 将析构顺序从隐式布局依赖提升为显式代码控制。
+
+[`ManuallyDrop`]: https://doc.rust-lang.org/core/mem/struct.ManuallyDrop.html
+[RFC 1857]: https://rust-lang.github.io/rfcs/1857-stabilize-drop-order.html
 
 ## 嵌套锁获取
 
@@ -77,17 +117,26 @@ let _guard = other_lock.try_lock_nested(&held)?;
 
 编译期保证「中断已禁用」，RAII 保证「锁一定释放」。
 
+## try_lock 快速路径
+
+`SpinLockIrq::try_lock()` 在关中断前先用 `Relaxed` load 检查锁状态。
+关中断是昂贵操作（保存/恢复 CPU 状态寄存器），当锁明显被持有时直接返回 `None`，
+跳过无谓的中断状态切换。参考 Theseus 的 `EXPENSIVE` 优化。
+
 ## 模块结构
 
 ```
-src/
+sync/src/
 ├── lib.rs             crate 入口，类型别名 + re-export
 ├── raw.rs             Layer 0: RawLock trait + RawSpinLock (TTAS)
 ├── mutex.rs           Layer 1a: Mutex<R, T> + MutexGuard
 ├── irq_safe.rs        Layer 1b: IrqSafe<R, T> + IrqSafeGuard + lock_level
-├── interrupt_ops.rs   HeldInterrupts proof token
-├── irq.rs             架构中断控制原语（RISC-V sstatus / AArch64 DAIF）
 └── lock_stack.rs      Per-CPU 锁获取顺序栈
+
+interrupt_state/src/    （独立 crate）
+├── lib.rs             HeldInterrupts proof token 公开 API
+├── held.rs            HeldInterrupts 实现（!Copy, !Clone, !Send, RAII Drop）
+└── arch.rs            架构中断控制原语（RISC-V sstatus / AArch64 DAIF）
 ```
 
 ## 使用示例
