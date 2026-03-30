@@ -1,5 +1,11 @@
 //! TLB 管理——架构无关的 TLB 刷新接口 + 跨核 shootdown 回调。
 
+#![no_std]
+
+mod arch;
+
+use arch::{Arch, TlbArch};
+
 /// 跨核 TLB shootdown 请求类型。
 ///
 /// 类型安全的替代方案，避免用 `0` / 非零 约定区分全局/单页刷新。
@@ -28,15 +34,13 @@ pub fn register_tlb_shootdown(f: fn(TlbFlushRequest)) {
 ///
 /// 将 TLB 刷新延迟到守卫 drop 时执行，确保在页表修改完成后、
 /// 帧回收之前统一刷新——避免"锁内 unmap、锁外 flush"的竞态窗口。
-#[cfg(any(test, target_os = "none"))]
-pub(crate) struct TlbFlushGuard {
+pub struct TlbFlushGuard {
     /// 起始虚拟地址
     start_vaddr: usize,
     /// 需要刷新的页数
     page_count: usize,
 }
 
-#[cfg(any(test, target_os = "none"))]
 impl TlbFlushGuard {
     /// 创建连续范围的 TLB 刷新守卫。
     pub fn new(start_vaddr: usize, page_count: usize) -> Self {
@@ -47,7 +51,6 @@ impl TlbFlushGuard {
     }
 }
 
-#[cfg(any(test, target_os = "none"))]
 impl Drop for TlbFlushGuard {
     fn drop(&mut self) {
         if self.page_count == 0 {
@@ -75,14 +78,7 @@ impl Drop for TlbFlushGuard {
 ///   实现按 ASID 刷新，避免影响其他进程的 TLB 缓存。
 #[inline(always)]
 pub fn flush_tlb() {
-    #[cfg(all(target_os = "none", target_arch = "riscv64"))]
-    riscv::asm::sfence_vma_all();
-    #[cfg(all(target_os = "none", target_arch = "aarch64"))]
-    // SAFETY: tlbi/dsb/isb 是 EL1 特权指令。
-    // aarch64-cpu crate 不提供 TLBI 封装，只能使用内联汇编。
-    unsafe {
-        core::arch::asm!("tlbi vmalle1", "dsb sy", "isb");
-    }
+    Arch::flush_all();
 
     if let Some(shootdown) = TLB_SHOOTDOWN_FN.get() {
         shootdown(TlbFlushRequest::All);
@@ -94,28 +90,7 @@ pub fn flush_tlb() {
 /// 在 unmap 单页或修改单个 PTE 后调用，比 [`flush_tlb`] 精确、开销更低。
 #[inline(always)]
 pub fn flush_tlb_page(vaddr: usize) {
-    #[cfg(all(target_os = "none", target_arch = "riscv64"))]
-    // SAFETY: sfence.vma 是 S-mode 特权指令。
-    // rs1 = vaddr（虚拟地址），rs2 = x0（所有 ASID）。
-    unsafe {
-        core::arch::asm!(
-            "sfence.vma {vaddr}, zero",
-            vaddr = in(reg) vaddr,
-        );
-    }
-    #[cfg(all(target_os = "none", target_arch = "aarch64"))]
-    // SAFETY: tlbi/dsb/isb 是 EL1 特权指令。
-    // TLBI VAE1 操作数格式：虚拟地址右移 PAGE_SHIFT 位（页号）。
-    unsafe {
-        let page = vaddr >> config::PAGE_SIZE.trailing_zeros();
-        core::arch::asm!(
-            "tlbi vae1, {page}",
-            "dsb sy",
-            "isb",
-            page = in(reg) page,
-        );
-    }
-    _ = vaddr; // 宿主机: no-op，消除 unused 警告
+    Arch::flush_page(vaddr);
 
     if let Some(shootdown) = TLB_SHOOTDOWN_FN.get() {
         shootdown(TlbFlushRequest::Page(vaddr));

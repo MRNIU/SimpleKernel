@@ -8,7 +8,7 @@ use alloc::sync::Arc;
 use sync_crate::SpinLock;
 
 #[cfg(any(test, target_os = "none"))]
-use crate::page_table::PageTable;
+use crate::node_frame::PageTable;
 #[cfg(any(test, target_os = "none"))]
 use crate::vma::AddressSpace;
 

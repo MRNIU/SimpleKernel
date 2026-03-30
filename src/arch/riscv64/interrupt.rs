@@ -2,7 +2,7 @@
 ///
 /// 负责 PLIC 初始化、stvec 设置，以及陷阱分发（定时器、外部中断、IPI、系统调用、异常）。
 use address::PhysAddr;
-use memory::mmio::MmioRegion;
+use memory::{MmioRegion, kernel_page_table};
 
 use super::context::TrapContext;
 
@@ -68,43 +68,38 @@ fn plic_init() {
     };
 
     // Step 1: 映射 PLIC MMIO 区域，返回 MmioRegion（类型安全的 MMIO 访问）
-    let region =
-        MmioRegion::map(PhysAddr::new(base), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
+    let kpt = kernel_page_table().expect("plic_init: 内核页表未初始化");
+    let region = MmioRegion::map_to(kpt, PhysAddr::new(base), PLIC_SIZE)
+        .expect("plic_init: 映射 PLIC MMIO 失败");
     PLIC.call_once(|| region.into_permanent());
 
     let plic = plic();
-    // SAFETY: PLIC 已通过 MmioRegion::map 映射，偏移在 PLIC_SIZE 范围内
-    unsafe {
-        // Step 2: 设置 UART IRQ 优先级（偏移 = IRQ * 4）
-        plic.write_reg::<u32>(PLIC_PRIORITY_BASE + UART_IRQ as usize * 4, 1);
+    // Step 2: 设置 UART IRQ 优先级（偏移 = IRQ * 4）
+    plic.write_reg::<u32>(PLIC_PRIORITY_BASE + UART_IRQ as usize * 4, 1);
 
-        // Step 3: 使能 IRQ 10 — hart 0 S-mode 上下文
-        let enable_offset = PLIC_ENABLE_BASE
-            + PLIC_S_CONTEXT_HART0 * PLIC_ENABLE_STRIDE
-            + (UART_IRQ as usize / 32) * 4;
-        let current: u32 = plic.read_reg(enable_offset);
-        plic.write_reg::<u32>(enable_offset, current | (1 << (UART_IRQ % 32)));
+    // Step 3: 使能 IRQ 10 — hart 0 S-mode 上下文
+    let enable_offset =
+        PLIC_ENABLE_BASE + PLIC_S_CONTEXT_HART0 * PLIC_ENABLE_STRIDE + (UART_IRQ as usize / 32) * 4;
+    let current: u32 = plic.read_reg(enable_offset);
+    plic.write_reg::<u32>(enable_offset, current | (1 << (UART_IRQ % 32)));
 
-        // Step 4: 设置阈值为 0
-        let threshold_offset = PLIC_CONTEXT_BASE + PLIC_S_CONTEXT_HART0 * PLIC_CONTEXT_STRIDE;
-        plic.write_reg::<u32>(threshold_offset, 0);
-    }
+    // Step 4: 设置阈值为 0
+    let threshold_offset = PLIC_CONTEXT_BASE + PLIC_S_CONTEXT_HART0 * PLIC_CONTEXT_STRIDE;
+    plic.write_reg::<u32>(threshold_offset, 0);
 }
 
 /// 从 PLIC claim 寄存器读取待处理中断号
 #[inline]
 fn plic_claim(context: usize) -> u32 {
     let claim_offset = PLIC_CONTEXT_BASE + context * PLIC_CONTEXT_STRIDE + 4;
-    // SAFETY: PLIC 已初始化，偏移在范围内
-    unsafe { plic().read_reg(claim_offset) }
+    plic().read_reg(claim_offset)
 }
 
 /// 向 PLIC complete 寄存器写入中断号，完成处理
 #[inline]
 fn plic_complete(context: usize, irq: u32) {
     let complete_offset = PLIC_CONTEXT_BASE + context * PLIC_CONTEXT_STRIDE + 4;
-    // SAFETY: PLIC 已初始化，偏移在范围内
-    unsafe { plic().write_reg(complete_offset, irq) };
+    plic().write_reg(complete_offset, irq);
 }
 
 // 外部中断处理

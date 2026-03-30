@@ -1,18 +1,8 @@
-//! 多级页表与架构原生 PTE 标志位。
+//! NodeFrame 桥接与 PageTable 类型别名。
 //!
-//! 核心实现位于独立的 `page_table` crate，本模块提供：
-//! - 所有公共类型的 re-export（保持 `memory::page_table::*` 路径不变）
-//! - 裸机环境下 `NodeFrameOps` 的具体实现（[`NodeFrame`] newtype）
-//! - 类型别名 `PageTable`——隐藏泛型参数
-
-pub use page_table_crate::error::PageTableError;
-pub use page_table_crate::{
-    ENTRIES_PER_TABLE, LEVEL_INFO, LevelInfo, PageTableEntry, PteFlags, PteFlagsOps, PteOps,
-    page_size_at_level,
-};
-
-#[cfg(any(test, target_os = "none"))]
-pub use page_table_crate::NodeFrameOps;
+//! `NodeFrame` 是 `memory` crate 的本地 newtype，桥接
+//! `frame_allocator::AllocatedFrames`（外部类型）和
+//! `page_table::NodeFrameOps`（外部 trait），绕过孤儿规则。
 
 /// 页表节点帧——包装 `AllocatedFrames` 以实现 `NodeFrameOps`。
 ///
@@ -24,11 +14,11 @@ pub use page_table_crate::NodeFrameOps;
 pub struct NodeFrame(frame_allocator::AllocatedFrames);
 
 #[cfg(target_os = "none")]
-impl page_table_crate::NodeFrameOps for NodeFrame {
-    fn alloc() -> Result<Self, PageTableError> {
+impl page_table::NodeFrameOps for NodeFrame {
+    fn alloc() -> Result<Self, page_table::error::PageTableError> {
         frame_allocator::AllocatedFrames::alloc_one()
             .map(Self)
-            .map_err(|_| PageTableError::AllocationFailed)
+            .map_err(|_| page_table::error::PageTableError::AllocationFailed)
     }
     fn paddr(&self) -> address::PhysAddr {
         self.0.start_paddr()
@@ -40,12 +30,13 @@ impl page_table_crate::NodeFrameOps for NodeFrame {
 /// - 裸机：`PageTable<NodeFrame>`（物理帧分配器）
 /// - 测试：`PageTable<HeapNodeFrame>`（堆分配模拟）
 #[cfg(target_os = "none")]
-pub type PageTable = page_table_crate::PageTable<NodeFrame>;
+pub type PageTable = page_table::PageTable<NodeFrame>;
 #[cfg(test)]
-pub type PageTable = page_table_crate::PageTable<page_table_crate::HeapNodeFrame>;
+pub type PageTable = page_table::PageTable<page_table::HeapNodeFrame>;
 
-impl From<PageTableError> for crate::error::MemoryError {
-    fn from(e: PageTableError) -> Self {
+impl From<page_table::error::PageTableError> for crate::error::MemoryError {
+    fn from(e: page_table::error::PageTableError) -> Self {
+        use page_table::error::PageTableError;
         match e {
             PageTableError::AllocationFailed => Self::AllocationFailed,
             PageTableError::AlreadyMapped

@@ -25,6 +25,8 @@ members = [
     "crates/heap",
     "crates/page_table_entry",
     "crates/page_table",
+    "crates/tlb",
+    "crates/mapped_pages",
     "crates/memory",
     "tests/system",
     "tests/standalone/panic_test",
@@ -144,6 +146,7 @@ sync = { path = "crates/sync" }
 global_tick = { path = "crates/global_tick" }
 local_tick = { path = "crates/local_tick" }
 heap = { path = "crates/heap" }
+page_table = { path = "crates/page_table" }
 memory = { path = "crates/memory" }
 
 # --- 同步 ---

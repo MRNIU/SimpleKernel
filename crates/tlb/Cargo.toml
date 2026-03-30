@@ -1,0 +1,16 @@
+[package]
+name = "tlb"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Architecture-independent TLB flush with cross-core shootdown support"
+edition.workspace = true
+
+[dependencies]
+config = { path = "../config" }
+spin.workspace = true
+
+# RISC-V sfence.vma 指令
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+riscv.workspace = true

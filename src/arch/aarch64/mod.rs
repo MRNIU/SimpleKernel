@@ -57,7 +57,7 @@ impl ArchOps for Aarch64 {
         addr_space: &mut memory::vma::AddressSpace,
     ) -> Result<(), memory::error::MemoryError> {
         use address::VirtAddr;
-        use memory::page_table::{PteFlags, PteFlagsOps};
+        use page_table::{PteFlags, PteFlagsOps};
         // PL011 UART —— console 直接 MMIO 访问
         addr_space.mmap_identity_range(
             VirtAddr::new(PL011_BASE),
@@ -68,7 +68,7 @@ impl ArchOps for Aarch64 {
         Ok(())
     }
 
-    unsafe fn activate_page_table(pt: &memory::page_table::PageTable) {
+    unsafe fn activate_page_table(pt: &memory::node_frame::PageTable) {
         let ttbr = pt.root_paddr().as_usize() as u64;
 
         // MAIR_EL1: 定义内存属性索引

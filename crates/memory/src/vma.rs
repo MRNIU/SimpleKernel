@@ -6,11 +6,12 @@
 use alloc::collections::BTreeMap;
 use alloc::sync::Arc;
 
+use crate::MappedPages;
 use crate::error::MemoryError;
-use crate::mapped_pages::MappedPages;
-use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
+use crate::node_frame::PageTable;
 use address::{AddrRange, VirtAddr};
 use config::PAGE_SIZE;
+use page_table::{PteFlags, PteFlagsOps};
 use sync_crate::SpinLock;
 
 /// VMA backing 类型——描述物理内存的来源。
@@ -478,7 +479,7 @@ impl core::fmt::Debug for AddressSpace {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::mapped_pages::test_pt;
+    use mapped_pages_crate::test_pt;
 
     /// 空地址空间应无 VMA。
     #[test]

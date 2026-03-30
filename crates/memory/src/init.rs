@@ -2,8 +2,9 @@
 
 use address::{PhysAddr, VirtAddr};
 
-use crate::page_table::{PageTable, PteFlags, PteFlagsOps};
+use crate::node_frame::PageTable;
 use crate::vma::AddressSpace;
+use page_table::{PteFlags, PteFlagsOps};
 
 /// 主核内存初始化——返回内核地址空间（包含所有内核段映射）。
 ///

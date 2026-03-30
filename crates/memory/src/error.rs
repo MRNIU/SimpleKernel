@@ -38,3 +38,14 @@ impl From<frame_allocator::FrameAllocError> for MemoryError {
         }
     }
 }
+
+#[cfg(any(test, target_os = "none"))]
+impl From<mapped_pages_crate::error::MappedPagesError> for MemoryError {
+    fn from(e: mapped_pages_crate::error::MappedPagesError) -> Self {
+        use mapped_pages_crate::error::MappedPagesError;
+        match e {
+            MappedPagesError::PageTable(pt) => pt.into(),
+            MappedPagesError::FrameAlloc(fa) => fa.into(),
+        }
+    }
+}
