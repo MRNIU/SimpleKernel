@@ -7,10 +7,13 @@ Interface-driven OS kernel for AI-assisted learning. Rust (`no_std`, `no_main`),
 
 ## STRUCTURE
 ```
-src/                  # Kernel source — trait definitions + implementations
+src/                  # Kernel source — lib.rs (modules) + main.rs (entry)
 src/arch/             # Per-architecture code (riscv64/, aarch64/)
-xtask/                # Build tool (cargo xtask run/build/debug/firmware)
-tests/                # System tests (QEMU)
+src/boot.rs           # kernel_init() — staged init for kernel & test binaries
+crates/               # Workspace crates (memory, sync, per_cpu, page_table, ...)
+xtask/                # Build tool (cargo xtask run/build/debug/test/firmware)
+tests/system/         # Unified system test kernel (QEMU, all test groups)
+tests/standalone/     # Standalone test binaries (panic_test, oom_test, ...)
 docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 3rd/                  # Git submodules (opensbi, u-boot, optee, atf, dtc — firmware only)
 ```
@@ -19,7 +22,8 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 - **Implementing a module** → Read trait definition in the module's `mod.rs` or dedicated trait file first
 - **Adding a driver** → `src/device/` for examples, `Driver` trait for registration pattern
 - **Adding a scheduler** → `src/task/scheduler/mod.rs` for `Scheduler` trait
-- **Boot flow** → `src/main.rs`: `_start` → `arch::bootstrap` → `arch_init` → `MemoryInit` → `InterruptInit` → `DeviceInit` → `FileSystemInit` → `Schedule()`
+- **Boot flow** → `src/main.rs`: `_start` → `bootstrap()` → logging → percpu → early_init → memory → paging → timer → interrupt → task → SMP → schedule
+- **System tests** → `tests/system/` for unified test kernel, `tests/standalone/` for isolated tests
 - **Error handling** → `KResult<T> = Result<T, ErrorCode>` in `src/error.rs`
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
 - **C++ reference** → `src/` directory (read-only, for understanding original design intent)
@@ -52,7 +56,14 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 | `src/fdt.rs` | Device tree parser (`fdt` crate wrapper) | hardware discovery |
 | `src/elf.rs` | ELF symbol table parser | backtrace support |
 | `src/panic.rs` | Panic handler + observer pattern | error recovery |
-| `src/lang_items.rs` | `#[panic_handler]` | Rust runtime |
+| `src/lang_items.rs` | `#[panic_handler]` (gated on `lang_items` feature) | Rust runtime |
+| `src/boot.rs` | `kernel_init(InitLevel)` + `kernel_init_smp()` | staged init for kernel & tests |
+| `tests/system/src/framework.rs` | TestRunner, TestCase, TestGroup | test framework |
+| `tests/system/src/main.rs` | Test kernel entry: init → run tests → qemu_exit | system test binary |
+| `tests/system/src/memory_tests.rs` | Heap allocation tests (Box, Vec, large) | memory test group |
+| `tests/system/src/sync_tests.rs` | SpinLock tests (basic, modify, drop) | sync test group |
+| `tests/standalone/panic_test/` | Verifies panic handler triggers correctly | standalone test |
+| `xtask/src/test.rs` | `cargo xtask test` orchestration | test runner |
 
 ## CONVENTIONS
 
@@ -112,6 +123,12 @@ cargo xtask debug --arch riscv64
 # Unit tests (x86_64 host only)
 cargo test
 
+# System tests in QEMU
+cargo xtask test --arch riscv64           # unified test kernel
+cargo xtask test --arch riscv64 --all     # unified + all standalone
+cargo xtask test --arch riscv64 --name panic-test  # specific standalone test
+cargo xtask test --list                   # list available tests
+
 # Format + lint check
 cargo fmt --check && cargo clippy -- -D warnings
 
@@ -129,7 +146,9 @@ cargo doc --no-deps
 ## NOTES
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
-- Unit tests run on x86_64 host only (`cargo test`) — system tests use QEMU (`cargo xtask run`)
+- Unit tests run on x86_64 host only (`cargo test`) — system tests use QEMU (`cargo xtask test`)
+- System test architecture: unified test kernel (`tests/system/`) + standalone binaries (`tests/standalone/`)
+- Test crates depend on `simplekernel` lib, replace entry point, use `kernel_init()` for initialization
 - Debug: use `cargo xtask debug` + GDB, QEMU logs in build output
 - Design docs: `docs/rust-rewrite/00-概述.md` is the master reference for all design decisions
 - Phase plans: `docs/rust-rewrite/P0-P7` for step-by-step implementation guides

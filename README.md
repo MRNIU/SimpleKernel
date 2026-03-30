@@ -12,212 +12,116 @@
 
 **面向 AI 的操作系统学习项目 | Interface-Driven OS Kernel for AI-Assisted Learning**
 
-> 🤖 **设计理念**：定义清晰的内核接口，由 AI 完成实现——学习操作系统的新范式
+> 设计理念：定义清晰的内核接口（Rust trait），由 AI 完成实现——学习操作系统的新范式
 
-## 📖 目录
+## 目录
 
-- [✨ 项目简介](#-项目简介)
-- [🤖 面向 AI 的设计理念](#-面向-ai-的设计理念)
-- [🏛️ 接口体系总览](#️-接口体系总览)
-- [🏗️ 支持架构](#️-支持架构)
-- [🚀 快速开始](#-快速开始)
-- [📂 项目结构](#-项目结构)
-- [🎯 学习路线](#-学习路线)
-- [📦 第三方依赖](#-第三方依赖)
-- [📝 开发指南](#-开发指南)
-- [🤝 贡献指南](#-贡献指南)
-- [📄 许可证](#-许可证)
+- [项目简介](#项目简介)
+- [面向 AI 的设计理念](#面向-ai-的设计理念)
+- [支持架构](#支持架构)
+- [快速开始](#快速开始)
+- [项目结构](#项目结构)
+- [测试体系](#测试体系)
+- [第三方依赖](#第三方依赖)
+- [开发指南](#开发指南)
+- [贡献指南](#贡献指南)
+- [许可证](#许可证)
 
-## ✨ 项目简介
+## 项目简介
 
-SimpleKernel 是一个**面向 AI 辅助学习的现代化操作系统内核项目**。采用 C++23 编写，支持 RISC-V 64 和 AArch64 两种架构。
+SimpleKernel 是一个**面向 AI 辅助学习的现代化操作系统内核项目**。采用 Rust（`no_std`、nightly）编写，支持 RISC-V 64 和 AArch64 两种架构。
+
+> **迁移状态**：项目已从 C++ 迁移到 Rust。C++ 源码（`src_cpp/`）保留作为实现参考，但不再维护。所有新开发均在 Rust 中进行。
 
 与传统 OS 教学项目不同，SimpleKernel 采用**接口驱动（Interface-Driven）** 的设计：
 
-- **项目主体是接口定义**——完整的头文件（`.h/.hpp`）包含类声明、纯虚接口、类型定义、Doxygen 文档
-- **实现由 AI 完成**——你只需要理解接口契约，让 AI 根据接口文档生成实现代码
-- **参考实现可供对照**——项目提供完整的参考实现，用于验证 AI 生成代码的正确性
+- **项目主体是 trait 定义**——trait 包含文档注释（`# Safety`、`# Errors`、`# Panics`）作为契约
+- **实现由 AI 完成**——AI 根据 trait 文档生成 `impl` 块
+- **测试验证正确性**——单元测试（host）和系统测试（QEMU）验证实现是否符合接口契约
 
-### 🌟 核心亮点
+### 核心亮点
 
 | 特性 | 说明 |
 |------|------|
-| 🤖 **AI-First 设计** | 接口文档即 prompt，AI 可直接根据头文件生成完整实现 |
-| 📐 **接口与实现分离** | 头文件只有声明和契约，实现在独立的 `.cpp` 中 |
-| 🌐 **双架构支持** | RISC-V 64、AArch64，同一套接口适配不同硬件 |
-| 🧪 **测试驱动验证** | GoogleTest 测试套件验证 AI 生成的实现是否符合接口契约 |
-| 📖 **完整 Doxygen 文档** | 每个接口都有职责描述、前置条件、后置条件、使用示例 |
-| 🏗️ **工程化基础设施** | CMake 构建、Dev Container 环境、CI/CD、clang-format/clang-tidy |
+| **AI-First 设计** | trait 文档即 prompt，AI 可直接根据 trait 定义生成实现 |
+| **接口与实现分离** | trait 定义契约，`impl` 块是实现，互不耦合 |
+| **双架构支持** | RISC-V 64、AArch64，同一套 trait 适配不同硬件 |
+| **双层测试验证** | 单元测试（`cargo test`）+ 系统测试（`cargo xtask test`，QEMU 运行） |
+| **Workspace 架构** | 内核拆分为 `lib + bin`，子系统独立 crate（memory、sync、page_table 等） |
+| **工程化基础设施** | `xtask` 构建工具、GitHub Actions CI/CD、`rustfmt` + `clippy` |
 
-## 🤖 面向 AI 的设计理念
-
-### 为什么要"面向 AI"？
-
-传统 OS 教学项目的学习路径：**读代码 → 理解原理 → 模仿修改**。这种方式存在几个问题：
-
-1. 内核代码量大，初学者容易迷失在实现细节中
-2. 各模块耦合紧密，难以独立理解单个子系统
-3. 从零实现一个模块的门槛很高，反馈周期长
-
-SimpleKernel 提出一种新范式：**读接口 → 理解契约 → AI 实现 → 测试验证**
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    SimpleKernel 学习流程                   │
-│                                                         │
-│   ┌──────────┐    ┌──────────┐    ┌──────────┐         │
-│   │ 📐 接口   │───▶│ 🤖 AI    │───▶│ 🧪 测试  │         │
-│   │ 头文件    │    │ 生成实现  │    │ 验证正确性│         │
-│   │ + Doxygen │    │ (.cpp)   │    │ GoogleTest│         │
-│   └──────────┘    └──────────┘    └──────────┘         │
-│        │                               │                │
-│        │         ┌──────────┐          │                │
-│        └────────▶│ 📚 参考   │◀─────────┘                │
-│                  │ 实现对照  │                           │
-│                  └──────────┘                           │
-└─────────────────────────────────────────────────────────┘
-```
+## 面向 AI 的设计理念
 
 ### 核心工作流
 
-#### 1️⃣ 阅读接口，理解契约
-
-每个模块的头文件都包含完整的接口文档：
-
-```cpp
-/**
- * @brief 中断子系统抽象基类
- *
- * 所有架构的中断处理必须实现此接口。
- *
- * @pre  硬件中断控制器已初始化
- * @post 可通过 RegisterInterruptFunc 注册中断处理函数
- *
- * 已知实现：PLIC（RISC-V）、GIC（AArch64）
- */
-class InterruptBase {
-public:
-  virtual ~InterruptBase() = default;
-
-  /// 执行中断处理
-  virtual void Do(uint64_t cause, cpu_io::TrapContext* context) = 0;
-
-  /// 注册中断处理函数
-  virtual void RegisterInterruptFunc(uint64_t cause, InterruptFunc func) = 0;
-};
+```
+读 trait 定义 → 理解契约 → AI 生成 impl → 测试验证
 ```
 
-#### 2️⃣ 让 AI 实现
+#### 1. 阅读 trait，理解契约
 
-将头文件作为上下文提供给 AI（如 GitHub Copilot、ChatGPT、Claude 等），要求其生成 `.cpp` 实现。接口的 Doxygen 注释就是最好的 prompt。
+每个模块的 trait 都包含完整的接口文档：
 
-#### 3️⃣ 测试验证
+```rust
+/// 调度器抽象 trait
+///
+/// 所有调度算法必须实现此接口。
+///
+/// # Safety
+/// 实现者必须保证 `pick_next()` 在持有调度锁时调用。
+pub trait Scheduler: Send + Sync {
+    /// 从就绪队列中选择下一个要运行的任务
+    fn pick_next(&mut self) -> Option<TaskRef>;
 
-运行项目自带的测试套件，验证 AI 生成的实现是否符合接口契约：
-
-```shell
-cmake --preset build_riscv64
-cd build_riscv64 && make unit-test
+    /// 将任务加入就绪队列
+    fn enqueue(&mut self, task: TaskRef);
+}
 ```
 
-#### 4️⃣ 对照参考实现
+#### 2. 让 AI 实现
 
-如果测试不通过，可以参考项目提供的参考实现进行对照和学习。
+将 trait 定义作为上下文提供给 AI（如 Claude Code、GitHub Copilot 等），要求其生成 `impl` 块。trait 的文档注释就是最好的 prompt。
 
-### 与 AI 工具的结合方式
+#### 3. 测试验证
 
-| 场景 | 使用方式 |
-|------|---------|
-| **GitHub Copilot** | 打开头文件，在对应的 `.cpp` 中让 Copilot 自动补全实现 |
-| **ChatGPT / Claude** | 将头文件内容粘贴为上下文，要求生成完整的 `.cpp` 实现 |
-| **Copilot Chat / Cursor** | 在 IDE 中选中接口，要求 AI 解释契约含义或生成实现 |
-| **自主学习** | 先独立思考实现思路，再让 AI 生成，对比差异 |
+```bash
+# 单元测试（宿主机）
+cargo test
 
-## 🏛️ 接口体系总览
-
-SimpleKernel 的接口按功能分为以下层次：
-
-```
-┌──────────────────────────────────────────┐
-│              应用/系统调用层               │
-│         syscall.h · SyscallInit          │
-├──────────────────────────────────────────┤
-│               任务管理层                  │
-│  TaskManager · SchedulerBase · Mutex     │
-│  CfsScheduler · FifoScheduler · RR ...   │
-├──────────────────────────────────────────┤
-│               内存管理层                  │
-│  VirtualMemory · PhysicalMemory          │
-│  MapPage · UnmapPage · AllocFrame        │
-├──────────────────────────────────────────┤
-│               中断/异常层                 │
-│  InterruptBase · RegisterInterruptFunc   │
-│  TimerInit · InterruptInit               │
-├──────────────────────────────────────────┤
-│               设备框架层                    │
-│  DeviceManager · DriverRegistry            │
-│  PlatformBus · Ns16550aDriver · VirtioBlk  │
-├──────────────────────────────────────────┤
-│             架构抽象层 (arch.h)            │
-│  ArchInit · InterruptInit · TimerInit    │
-│  EarlyConsole（全局构造阶段自动设置）      │
-├──────────────────────────────────────────┤
-│            运行时支持库                    │
-│  libc (sk_stdio.h, sk_string.h, ...)     │
-│  libcxx (kstd_vector, __cxa_*, ...)      │
-├──────────────────────────────────────────┤
-│            硬件 / QEMU                    │
-│  RISC-V 64 · AArch64                    │
-└──────────────────────────────────────────┘
+# 系统测试（QEMU）
+cargo xtask test --arch riscv64
 ```
 
-### 关键接口文件
+#### 4. 对照参考实现
 
-| 接口文件 | 职责 | 实现文件 |
-|---------|------|---------|
-| `src/arch/arch.h` | 架构无关的统一入口 | 各 `src/arch/{arch}/` 目录 |
-| `src/include/interrupt_base.h` | 中断子系统抽象基类 | `src/arch/{arch}/interrupt.cpp` |
-| `src/device/include/device_manager.hpp` | 设备管理器 | header-only |
-| `src/device/include/driver_registry.hpp` | 驱动注册中心 | header-only |
-| `src/device/include/platform_bus.hpp` | 平台总线（FDT 枚举） | header-only |
-| `src/device/include/driver/ns16550a_driver.hpp` | NS16550A UART 驱动 | header-only（Probe/Remove 模式） |
-| `src/include/virtual_memory.hpp` | 虚拟内存管理接口 | `src/virtual_memory.cpp` |
-| `src/include/kernel_fdt.hpp` | 设备树解析接口 | `src/kernel_fdt.cpp` |
-| `src/include/kernel_elf.hpp` | ELF 解析接口 | `src/kernel_elf.cpp` |
-| `src/task/include/scheduler_base.hpp` | 调度器抽象基类 | `cfs_scheduler.cpp` 等 |
-| `src/include/spinlock.hpp` | 自旋锁接口 | header-only（性能要求） |
-| `src/include/mutex.hpp` | 互斥锁接口 | `src/task/mutex.cpp` |
+如果测试不通过，可以参考项目提供的实现进行对照和学习。
 
-> 📋 完整接口重构计划见 [docs/TODO_interface_refactor.md](./docs/TODO_interface_refactor.md)
-
-## 🏗️ 支持架构
+## 支持架构
 
 | 架构 | 引导链 | 串口 | 中断控制器 | 时钟 |
 |:---:|:---:|:---:|:---:|:---:|
-| **RISC-V 64** | U-Boot + OpenSBI | SBI Call | Direct 模式 | SBI Timer |
-| **AArch64** | U-Boot + ATF + OP-TEE | PL011 | GICv3 | Generic Timer |
+| **RISC-V 64** | U-Boot SPL → OpenSBI → U-Boot | SBI Call | PLIC | SBI Timer |
+| **AArch64** | U-Boot → ATF → OP-TEE | PL011 | GICv3 | Generic Timer |
 
-## 🚀 快速开始
+## 快速开始
 
-### 📋 系统要求
+### 系统要求
 
-- **操作系统**: Linux (推荐 Ubuntu 24.04) 或 macOS
+- **操作系统**: Linux（推荐 Ubuntu 24.04）或 macOS
 - **容器引擎**: Docker 或兼容的容器运行时
-- **工具链**: 已包含在 Dev Container 中（GCC 14 交叉编译器、CMake、QEMU 等）
-- **AI 工具（推荐）**: GitHub Copilot / ChatGPT / Claude
+- **工具链**: 已包含在 Dev Container 中（Rust nightly、GCC 交叉编译器、QEMU 等）
 
-### 🛠️ 环境搭建
+### 环境搭建
 
 **方式一：使用 Dev Container（推荐）**
 
-```shell
-# 1. 克隆项目
+```bash
 git clone https://github.com/simple-xx/SimpleKernel.git
 cd SimpleKernel
 
-# 2. 使用 VS Code 打开并在容器中重新打开
-#    安装 Dev Containers 扩展后，点击左下角 >< 图标
-#    选择 "Reopen in Container"
+# 使用 VS Code 打开并在容器中重新打开
+# 安装 Dev Containers 扩展后，点击左下角 >< 图标
+# 选择 "Reopen in Container"
 
 # 或使用 CLI
 npm install -g @devcontainers/cli
@@ -233,133 +137,157 @@ devcontainer exec --workspace-folder . bash
 
 参考 [工具链文档](./docs/0_工具链.md) 配置本地开发环境。
 
-### ⚡ 编译与运行
+### 编译与运行
 
-```shell
+```bash
 cd SimpleKernel
 
-# 选择目标架构编译（以 RISC-V 64 为例）
-cmake --preset build_riscv64
-cd build_riscv64
-
 # 编译内核
-make SimpleKernel
+cargo xtask build --arch riscv64
 
 # 在 QEMU 模拟器中运行
-make run
+cargo xtask run --arch riscv64
 
-# 运行单元测试（验证你的实现）
-make unit-test
+# 调试（GDB 连接 localhost:1234）
+cargo xtask debug --arch riscv64
+
+# 单元测试（宿主机 x86_64）
+cargo test
+
+# 系统测试（QEMU 中运行）
+cargo xtask test --arch riscv64           # 统一测试内核
+cargo xtask test --arch riscv64 --all     # 全部测试（统一 + 独立）
+cargo xtask test --arch riscv64 --name panic-test  # 指定独立测试
+cargo xtask test --list                   # 列出可用测试
 ```
 
-**支持的架构预设：**
-- `build_riscv64` - RISC-V 64 位架构
-- `build_aarch64` - ARM 64 位架构
+**支持的架构：**
+- `riscv64` — RISC-V 64 位
+- `aarch64` — ARM 64 位
 
-### 🎯 AI 辅助开发工作流
-
-```shell
-# 1. 在 VS Code 中打开项目（推荐安装 GitHub Copilot 扩展）
-code ./SimpleKernel
-
-# 2. 阅读头文件中的接口定义（例如 src/include/virtual_memory.hpp）
-
-# 3. 创建/编辑对应的 .cpp 文件，让 AI 根据接口生成实现
-
-# 4. 编译验证
-cd build_riscv64 && make SimpleKernel
-
-# 5. 运行测试
-make unit-test
-
-# 6. 在 QEMU 中运行，观察行为
-make run
-```
-
-## 📂 项目结构
+## 项目结构
 
 ```
 SimpleKernel/
-├── src/                        # 内核源码
-│   ├── include/                # 📐 公共接口头文件（项目核心）
-│   │   ├── virtual_memory.hpp  #   虚拟内存管理接口
-│   │   ├── kernel_fdt.hpp      #   设备树解析接口
-│   │   ├── kernel_elf.hpp      #   ELF 解析接口
-│   │   ├── spinlock.hpp        #   自旋锁接口
-│   │   ├── mutex.hpp           #   互斥锁接口
-│   │   └── ...
-│   ├── arch/                   # 架构相关代码
-│   │   ├── arch.h              # 📐 架构无关统一接口
-│   │   ├── aarch64/            #   AArch64 实现
-│   │   └── riscv64/            #   RISC-V 64 实现
-│   ├── device/                 # 设备管理框架
-│   │   ├── include/            # 📐 设备框架接口（DeviceManager, DriverRegistry, Bus 等）
-│   │   │   └── driver/         #   具体驱动（ns16550a_driver.hpp, virtio_blk_driver.hpp）
-│   │   └── device.cpp          #   设备初始化入口（DeviceInit）
-│   ├── task/                   # 任务管理
-│   │   ├── include/            # 📐 调度器接口（SchedulerBase 等）
-│   │   └── ...                 #   调度器实现
-│   ├── libc/                   # 内核 C 标准库
-│   └── libcxx/                 # 内核 C++ 运行时
-├── tests/                      # 🧪 测试套件
-│   ├── unit_test/              #   单元测试
-│   ├── integration_test/       #   集成测试
-│   └── system_test/            #   系统测试（QEMU 运行）
-├── docs/                        # 📚 文档
-│   ├── TODO_interface_refactor.md  # 接口重构计划
+├── src/                            # 内核源码
+│   ├── lib.rs                      #   库入口，re-export 所有模块
+│   ├── main.rs                     #   二进制入口（_start、bootstrap）
+│   ├── boot.rs                     #   kernel_init() 分级初始化接口
+│   ├── arch/                       #   架构相关代码
+│   │   ├── riscv64/                #     RISC-V 64 实现
+│   │   └── aarch64/                #     AArch64 实现
+│   ├── task/                       #   任务管理（TCB、调度器、信号）
+│   ├── logging.rs                  #   日志后端（ANSI 彩色输出）
+│   ├── panic.rs                    #   Panic handler + backtrace
 │   └── ...
-├── cmake/                      # CMake 构建配置
-├── 3rd/                        # 第三方依赖（Git Submodule）
-└── tools/                      # 构建工具和模板
+├── crates/                         # Workspace 子 crate
+│   ├── memory/                     #   虚拟/物理内存管理
+│   ├── sync/                       #   SpinLock（中断感知）
+│   ├── page_table/                 #   多级页表
+│   ├── frame_allocator/            #   物理帧分配器
+│   ├── per_cpu/                    #   Per-CPU 数据
+│   └── ...
+├── tests/                          # 系统测试（QEMU 运行）
+│   ├── system/                     #   统一测试内核（所有测试组）
+│   │   └── src/
+│   │       ├── main.rs             #     测试入口 → kernel_init → TestRunner → qemu_exit
+│   │       ├── framework.rs        #     TestRunner / TestCase / TestGroup
+│   │       ├── memory_tests.rs     #     内存测试组
+│   │       └── sync_tests.rs       #     同步原语测试组
+│   └── standalone/                 #   独立测试二进制
+│       └── panic_test/             #     验证 panic handler 行为
+├── xtask/                          # 构建工具（cargo xtask）
+│   └── src/
+│       ├── main.rs                 #   子命令分发（build/run/debug/test/firmware）
+│       ├── build.rs                #   内核和测试编译
+│       ├── qemu.rs                 #   QEMU 启动和 FIT 镜像生成
+│       └── test.rs                 #   系统测试编排
+├── docs/                           # 文档
+│   └── rust-rewrite/               #   Rust 迁移设计文档（P0-P7）
+├── 3rd/                            # 第三方固件（Git Submodule）
+├── src_cpp/                        # C++ 遗留代码（只读参考）
+└── .github/workflows/              # CI/CD（GitHub Actions）
 ```
 
-> 📐 标记的目录/文件是**接口定义**——这是你需要重点阅读的内容。
+## 测试体系
 
-## 🎯 学习路线
+SimpleKernel 采用双层测试架构：
 
-建议按以下顺序学习和实现各模块：
+### 单元测试（宿主机）
 
-### 阶段 1：基础设施（Boot）
+各 crate 内的 `#[test]` 模块，在 x86_64 宿主机上运行：
 
-| 模块 | 接口文件 | 难度 | 说明 |
-|------|---------|:---:|------|
-| Early Console | `src/arch/arch.h` 注释 | ⭐ | 最早期的输出，理解全局构造 |
-| 串口驱动 | `ns16550a_driver.hpp` | ⭐⭐ | 实现 Probe/Remove，理解设备框架和 MMIO |
-| 设备树解析 | `kernel_fdt.hpp` | ⭐⭐ | 解析硬件信息，理解 FDT 格式 |
-| ELF 解析 | `kernel_elf.hpp` | ⭐⭐ | 符号表解析，用于栈回溯 |
+```bash
+cargo test
+```
 
-### 阶段 2：中断系统（Interrupt）
+覆盖范围：页表项编解码、地址空间运算、帧分配器、per-CPU 数据等。
 
-| 模块 | 接口文件 | 难度 | 说明 |
-|------|---------|:---:|------|
-| 中断基类 | `interrupt_base.h` | ⭐⭐ | 理解中断处理的统一抽象 |
-| 中断控制器 | 各架构驱动头文件 | ⭐⭐⭐ | GIC/PLIC 硬件编程 |
-| 时钟中断 | `arch.h → TimerInit` | ⭐⭐ | 定时器配置，tick 驱动 |
+### 系统测试（QEMU）
 
-### 阶段 3：内存管理（Memory）
+在 QEMU 中启动独立的测试内核，验证子系统在真实硬件模拟环境下的行为。
 
-| 模块 | 接口文件 | 难度 | 说明 |
-|------|---------|:---:|------|
-| 虚拟内存 | `virtual_memory.hpp` | ⭐⭐⭐ | 页表管理、地址映射 |
-| 物理内存 | 相关接口 | ⭐⭐⭐ | 帧分配器、伙伴系统 |
+**统一测试内核**（`tests/system/`）：
+- 依赖 `simplekernel` lib，调用 `kernel_init(Full)` 完成初始化
+- 通过 `TestRunner` 按组运行测试，输出 `cargo test` 风格结果
+- 通过 `qemu-exit` 退出并返回状态码
 
-### 阶段 4：任务管理（Thread/Task）
+**独立测试二进制**（`tests/standalone/`）：
+- 测试破坏性行为（panic、OOM、栈溢出）
+- 每个测试是独立的 `#![no_std]` binary
+- 可以自定义 panic handler 和退出逻辑
 
-| 模块 | 接口文件 | 难度 | 说明 |
-|------|---------|:---:|------|
-| 自旋锁 | `spinlock.hpp` | ⭐⭐ | 原子操作，多核同步 |
-| 互斥锁 | `mutex.hpp` | ⭐⭐⭐ | 基于任务阻塞的锁 |
-| 调度器 | `scheduler_base.hpp` | ⭐⭐⭐ | CFS/FIFO/RR 调度算法 |
+```bash
+# 运行全部系统测试
+cargo xtask test --arch riscv64 --all
 
-### 阶段 5：系统调用（Syscall）
+# 输出示例
+# === SimpleKernel System Tests ===
+#
+# running 3 tests in group "memory"
+# test heap_box_alloc ... ok
+# test heap_vec_alloc ... ok
+# test heap_large_alloc ... ok
+# group result: ok. 3 passed; 0 failed
+#
+# running 3 tests in group "sync"
+# test spinlock_basic ... ok
+# test spinlock_modify ... ok
+# test spinlock_not_held_after_drop ... ok
+# group result: ok. 3 passed; 0 failed
+#
+# ================================
+# test result: ok. 6 passed; 0 failed
+```
 
-| 模块 | 接口文件 | 难度 | 说明 |
-|------|---------|:---:|------|
-| 系统调用 | `arch.h → SyscallInit` | ⭐⭐⭐ | 用户态/内核态切换 |
+### 添加新测试
 
-## 📦 第三方依赖
+在 `tests/system/src/` 中创建新测试模块：
 
-### Rust Crate 依赖（当前使用）
+```rust
+// tests/system/src/my_tests.rs
+use crate::framework::TestCase;
+
+pub fn tests() -> &'static [TestCase] {
+    &[TestCase { name: "my_test", run: test_my_feature }]
+}
+
+fn test_my_feature() {
+    assert_eq!(1 + 1, 2);
+}
+```
+
+然后在 `tests/system/src/main.rs` 中注册：
+
+```rust
+mod my_tests;
+
+runner.add_group(TestGroup { name: "my_feature", tests: my_tests::tests() });
+```
+
+## 第三方依赖
+
+### Rust Crate 依赖
 
 | Crate | 用途 |
 |-------|------|
@@ -375,11 +303,8 @@ SimpleKernel/
 | [`rustc-demangle`](https://crates.io/crates/rustc-demangle) | Rust 符号 demangling（栈回溯） |
 | [`unwinding`](https://crates.io/crates/unwinding) | DWARF 栈回溯 |
 | [`fdt`](https://crates.io/crates/fdt) | 纯 Rust 设备树（FDT）解析器 |
-| [`zerocopy`](https://crates.io/crates/zerocopy) | 零拷贝序列化（derive 宏） |
-| [`gdbstub`](https://crates.io/crates/gdbstub) | 内核内嵌 GDB server（不依赖 QEMU `-s`） |
-| [`qemu-exit`](https://crates.io/crates/qemu-exit) | 用指定退出码结束 QEMU（集成测试） |
+| [`qemu-exit`](https://crates.io/crates/qemu-exit) | 用指定退出码结束 QEMU（系统测试） |
 | [`virtio-drivers`](https://crates.io/crates/virtio-drivers) | VirtIO 协议栈（blk/net/console/gpu） |
-| [`smoltcp`](https://crates.io/crates/smoltcp) | 轻量 TCP/IP 协议栈（无堆分配） |
 | [`sbi-rt`](https://crates.io/crates/sbi-rt) | RISC-V SBI 运行时接口 |
 | [`riscv`](https://crates.io/crates/riscv) | RISC-V CSR 访问、S-mode 支持 |
 | [`aarch64-cpu`](https://crates.io/crates/aarch64-cpu) | AArch64 系统寄存器访问 |
@@ -397,111 +322,79 @@ SimpleKernel/
 | [ARM-software/arm-trusted-firmware](https://github.com/ARM-software/arm-trusted-firmware.git) | ARM 可信固件 |
 | [dtc/dtc](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) | 设备树编译器 |
 
-### 推荐开发工具
+## 开发指南
 
-| 工具 | 用途 | 安装 |
-|------|------|------|
-| [`cargo-bloat`](https://github.com/RazrFalcon/cargo-bloat) | 分析内核二进制体积热点 | `cargo install cargo-bloat` |
-| [`cargo-call-stack`](https://crates.io/crates/cargo-call-stack) | 静态全程序栈使用分析（检查栈溢出风险） | `cargo install cargo-call-stack` |
+### 代码风格
 
-### 🗺️ 未来依赖路线图（TODO）
-
-以下 crate 已调研评估，计划在对应阶段引入：
-
-| 阶段 | Crate | 用途 | 备注 |
-|------|-------|------|------|
-| **P3** | [`page_table_multiarch`](https://crates.io/crates/page_table_multiarch) | 架构无关多级页表 | 可选——手写页表教育价值更高，快速推进可用此 crate |
-| **P5** | [`embedded-cli`](https://crates.io/crates/embedded-cli) | 内核调试 CLI（自动补全、子命令、历史记录） | 替代简单的 `log` 输出，提供交互式调试体验 |
-| **P6** | [`volatile`](https://crates.io/crates/volatile) | 安全的 volatile MMIO 寄存器访问 | 替代裸 `read_volatile`/`write_volatile` |
-| **P6** | [`device-driver`](https://crates.io/crates/device-driver) | 设备驱动开发工具包 | 加速驱动开发 |
-| **P7** | [`fatfs`](https://crates.io/crates/fatfs) | FAT 文件系统实现 | 配合 VirtIO 块设备 |
-| **P7** | [`embedded-sdmmc`](https://crates.io/crates/embedded-sdmmc) | SD/MMC 卡协议（纯 Rust） | `fatfs` 的替代选择 |
-| **P7+** | [`embassy`](https://github.com/embassy-rs/embassy) | 嵌入式异步运行时 | 未来考虑内核 async/await 支持 |
-| **P7+** | [`embedded-tls`](https://github.com/drogue-iot/embedded-tls) | no_std TLS 1.3 实现 | 网络安全通信 |
-| **工具** | [`defmt`](https://github.com/knurling-rs/defmt) | 高效嵌入式日志框架 | 比 `log` 更省空间，适合资源受限场景 |
-| **工具** | [`probe-rs`](https://probe.rs) | 现代嵌入式调试工具链 | 配合实际硬件调试 |
-| **工具** | [`embedded-test`](https://github.com/probe-rs/embedded-test) | 嵌入式测试框架 | 支持单元测试、集成测试、异步测试 |
-
-> 参考来源：[awesome-embedded-rust](https://github.com/rust-embedded/awesome-embedded-rust) 及 `docs/rust-rewrite/生态调研与改进建议.md`
-
-## 📝 开发指南
-
-### 🎨 代码风格
-
-- **语言标准**: C23 / C++23
-- **编码规范**: [Google C++ Style Guide](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/contents.html)
-- **自动格式化**: `.clang-format` + `.clang-tidy`
-- **注释规范**: Doxygen 风格，接口文件必须包含完整的契约文档
+- **语言**: Rust nightly，`#![no_std]`，edition 2024
+- **格式化**: `rustfmt.toml`（100 字符宽度），`cargo fmt` 强制执行
+- **静态检查**: `cargo clippy -- -D warnings`
+- **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文
 
 ### 命名约定
 
 | 类型 | 风格 | 示例 |
 |------|------|------|
-| 文件 | 小写下划线 | `kernel_log.hpp` |
-| 类/结构体 | PascalCase | `TaskManager` |
-| 函数 | PascalCase / snake_case | `ArchInit` / `sys_yield` |
-| 变量 | snake_case | `per_cpu_data` |
-| 宏 | SCREAMING_SNAKE | `SIMPLEKERNEL_DEBUG` |
-| 常量 | kCamelCase | `kPageSize` |
-| 内核 libc/libc++ 头文件 | libc: `sk_` 前缀, libcxx: `kstd_` 前缀 | `sk_stdio.h` / `kstd_vector` |
+| 函数/方法 | snake_case | `init_timer()` |
+| 类型/Trait/Enum | PascalCase | `TaskManager`、`Scheduler` |
+| 常量 | SCREAMING_SNAKE_CASE | `MAX_CORE_COUNT` |
+| 模块 | snake_case | `page_table` |
 
-### 📋 Git Commit 规范
+### Git Commit 规范
 
 ```
 <type>(<scope>): <subject>
 
 type: feat|fix|docs|style|refactor|perf|test|build|revert
-scope: 可选，影响的模块 (arch, device, libc)
-subject: 不超过50字符，不加句号
+scope: 可选，影响的模块 (arch, memory, task, xtask)
 ```
 
-### 📚 文档
+每条 commit 必须使用 `git commit --signoff`（DCO 签署）。
 
+### 文档
+
+- **设计总览**: [docs/rust-rewrite/00-概述.md](./docs/rust-rewrite/00-概述.md)
+- **阶段计划**: [docs/rust-rewrite/P0-P7](./docs/rust-rewrite/)
 - **工具链**: [docs/0_工具链.md](./docs/0_工具链.md)
 - **系统启动**: [docs/1_系统启动.md](./docs/1_系统启动.md)
 - **调试输出**: [docs/2_调试输出.md](./docs/2_调试输出.md)
 - **中断**: [docs/3_中断.md](./docs/3_中断.md)
 - **Dev Container**: [docs/docker.md](./docs/docker.md)
-- **接口重构计划**: [docs/TODO_interface_refactor.md](./docs/TODO_interface_refactor.md)
 
-## 🤝 贡献指南
+## 贡献指南
 
 我们欢迎所有形式的贡献！
 
-### 🎯 贡献方式
-
 | 方式 | 说明 |
 |------|------|
-| 🐛 **报告问题** | 通过 [GitHub Issues](https://github.com/Simple-XX/SimpleKernel/issues) 报告 Bug |
-| 📐 **改进接口** | 提出更好的接口抽象和文档改进建议 |
-| 🧪 **补充测试** | 为现有接口编写更完整的测试用例 |
-| 📖 **完善文档** | 改进 Doxygen 注释、添加使用示例 |
-| 🔧 **提交实现** | 提交接口的参考实现或替代实现 |
+| **报告问题** | 通过 [GitHub Issues](https://github.com/Simple-XX/SimpleKernel/issues) 报告 Bug |
+| **改进接口** | 提出更好的 trait 抽象和文档改进建议 |
+| **补充测试** | 在 `tests/system/` 中添加新的测试用例 |
+| **完善文档** | 改进文档注释、添加使用示例 |
+| **提交实现** | 提交 trait 的实现或替代实现 |
 
-### 🔧 代码贡献流程
+### 代码贡献流程
 
 1. Fork 本仓库
 2. 创建功能分支: `git checkout -b feat/amazing-feature`
 3. 遵循代码规范进行开发
-4. 确保所有测试通过
-5. 提交变更: `git commit -m 'feat(scope): add amazing feature'`
+4. 确保所有测试通过: `cargo test && cargo xtask test --arch riscv64 --all`
+5. 提交变更: `git commit --signoff -m 'feat(scope): add amazing feature'`
 6. 创建 Pull Request
 
-## 📄 许可证
+## 许可证
 
 本项目采用多重许可证：
 
-- **代码许可** - [MIT License](./LICENSE)
-- **反 996 许可** - [Anti 996 License](https://github.com/996icu/996.ICU/blob/master/LICENSE)
+- **代码许可** — [MIT License](./LICENSE)
+- **反 996 许可** — [Anti 996 License](https://github.com/996icu/996.ICU/blob/master/LICENSE)
 
 ---
 
 <div align="center">
 
-**⭐ 如果这个项目对您有帮助，请给我们一个 Star！**
+**如果这个项目对您有帮助，请给我们一个 Star！**
 
-**🤖 让 AI 帮你写内核，让你专注于理解操作系统原理！**
-
-[🌟 Star 项目](https://github.com/Simple-XX/SimpleKernel) • [🐛 报告问题](https://github.com/Simple-XX/SimpleKernel/issues) • [💬 参与讨论](https://github.com/Simple-XX/SimpleKernel/discussions)
+[Star 项目](https://github.com/Simple-XX/SimpleKernel) | [报告问题](https://github.com/Simple-XX/SimpleKernel/issues) | [参与讨论](https://github.com/Simple-XX/SimpleKernel/discussions)
 
 </div>
