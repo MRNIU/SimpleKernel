@@ -1,0 +1,35 @@
+[package]
+name = "system-test"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+build = "build.rs"
+
+# 测试二进制入口
+[[bin]]
+name = "system-test"
+path = "src/main.rs"
+test = false
+bench = false
+
+[dependencies]
+simplekernel = { path = "../..", default-features = false }
+memory = { path = "../../crates/memory" }
+sync = { path = "../../crates/sync" }
+per_cpu = { path = "../../crates/per_cpu" }
+config = { path = "../../crates/config" }
+address = { path = "../../crates/address" }
+global_tick = { path = "../../crates/global_tick" }
+log.workspace = true
+qemu-exit.workspace = true
+spin.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[build-dependencies]
+cc.workspace = true

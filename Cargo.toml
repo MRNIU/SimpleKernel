@@ -24,6 +24,7 @@ members = [
     "crates/page_table_entry",
     "crates/page_table",
     "crates/memory",
+    "tests/system",
     "xtask",
 ]
 default-members = ["."]
@@ -115,6 +116,13 @@ repository.workspace = true
 description.workspace = true
 edition.workspace = true
 build = "build.rs"                    # 编译汇编文件 (.S) 和链接脚本
+
+[features]
+default = ["lang_items"]
+# 提供 #[panic_handler] 和 #[alloc_error_handler]。
+# 当 simplekernel 作为库被其他二进制（如 system-test）依赖时，
+# 关闭此 feature 以允许调用方自行定义这些 lang items。
+lang_items = []
 
 # 二进制入口仅面向裸机目标，不参与宿主机测试
 [[bin]]

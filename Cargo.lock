@@ -610,6 +610,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "system-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "address",
+ "cc",
+ "config",
+ "global_tick",
+ "log",
+ "memory",
+ "per_cpu",
+ "qemu-exit",
+ "sbi-rt",
+ "simplekernel",
+ "spin",
+ "sync",
+]
+
+[[package]]
 name = "thiserror"
 version = "2.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"

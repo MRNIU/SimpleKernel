@@ -1,5 +1,8 @@
 #![cfg_attr(not(test), no_std)]
-#![cfg_attr(target_os = "none", feature(alloc_error_handler))]
+#![cfg_attr(
+    all(target_os = "none", feature = "lang_items"),
+    feature(alloc_error_handler)
+)]
 #![cfg_attr(target_os = "none", feature(sync_unsafe_cell))]
 // 测试模式下部分模块不编译（arch, fdt, lang_items），导致它们的消费者
 // 产生 dead_code 警告。这些代码在目标架构上被正常使用。
@@ -22,7 +25,7 @@ pub mod fdt;
 #[cfg(target_os = "none")]
 pub mod init;
 pub mod irq_context;
-#[cfg(target_os = "none")]
+#[cfg(all(target_os = "none", feature = "lang_items"))]
 pub mod lang_items;
 pub mod logging;
 pub mod panic;
