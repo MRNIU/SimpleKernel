@@ -145,23 +145,15 @@ fn run() -> Result<()> {
                 all_passed &= passed;
             }
             if args.all {
-                let standalone_dir = project_root.join("tests/standalone");
-                if standalone_dir.exists()
-                    && let Ok(entries) = std::fs::read_dir(&standalone_dir)
-                {
-                    for entry in entries.flatten() {
-                        if entry.path().join("Cargo.toml").exists() {
-                            let name = entry.file_name().to_string_lossy().to_string();
-                            let passed = test::run_standalone_test(
-                                &sh,
-                                &project_root,
-                                args.arch,
-                                &name,
-                                args.release,
-                            )?;
-                            all_passed &= passed;
-                        }
-                    }
+                for name in test::standalone_test_packages(&project_root) {
+                    let passed = test::run_standalone_test(
+                        &sh,
+                        &project_root,
+                        args.arch,
+                        &name,
+                        args.release,
+                    )?;
+                    all_passed &= passed;
                 }
             }
             if !all_passed {

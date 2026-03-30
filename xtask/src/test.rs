@@ -62,21 +62,48 @@ fn run_test_binary(
     }
 }
 
+/// 从 Cargo.toml 中读取 package name
+fn read_package_name(cargo_toml: &Path) -> Option<String> {
+    let content = std::fs::read_to_string(cargo_toml).ok()?;
+    for line in content.lines() {
+        let trimmed = line.trim();
+        if trimmed.starts_with("name") {
+            // 解析 name = "xxx" 或 name = 'xxx'
+            if let Some(start) = trimmed.find('"') {
+                let rest = &trimmed[start + 1..];
+                if let Some(end) = rest.find('"') {
+                    return Some(rest[..end].to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
+/// 收集所有独立测试的包名
+pub fn standalone_test_packages(project_root: &Path) -> Vec<String> {
+    let mut packages = Vec::new();
+    let standalone_dir = project_root.join("tests/standalone");
+    if standalone_dir.exists() {
+        if let Ok(entries) = std::fs::read_dir(&standalone_dir) {
+            for entry in entries.flatten() {
+                let cargo_toml = entry.path().join("Cargo.toml");
+                if cargo_toml.exists() {
+                    if let Some(name) = read_package_name(&cargo_toml) {
+                        packages.push(name);
+                    }
+                }
+            }
+        }
+    }
+    packages
+}
+
 /// 列出所有可用测试
 pub fn list_tests(project_root: &Path) {
     println!("Available tests:");
     println!("  system-test      — Unified system test kernel (all groups)");
-    let standalone_dir = project_root.join("tests/standalone");
-    if standalone_dir.exists()
-        && let Ok(entries) = std::fs::read_dir(&standalone_dir)
-    {
-        for entry in entries.flatten() {
-            if entry.path().join("Cargo.toml").exists() {
-                println!(
-                    "  {}      — Standalone test",
-                    entry.file_name().to_string_lossy()
-                );
-            }
-        }
+    for name in standalone_test_packages(project_root) {
+        println!("  {name}      — Standalone test");
     }
 }
