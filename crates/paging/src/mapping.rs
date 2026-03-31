@@ -80,7 +80,8 @@ impl<F: NodeFrameOps> MappedPages<F> {
         })
     }
 
-    /// 仅供 crate 内部使用——包装已由其他方法建立的映射。
+    /// 包装已建立的映射——仅测试使用。
+    #[cfg(any(test, feature = "test-support"))]
     pub(crate) fn wrap_existing(
         pt_ref: Arc<SpinLock<PageTable<F>>>,
         vaddr: VirtAddr,

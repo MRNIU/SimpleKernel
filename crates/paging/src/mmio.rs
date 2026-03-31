@@ -10,6 +10,7 @@ use crate::error::PagingError;
 use crate::mapping::{MappedPages, check_bounds_and_align};
 use crate::{NodeFrameOps, PageTable, PteFlags, PteFlagsOps};
 use address::PhysAddr;
+use config::PAGE_SIZE;
 use sync_crate::SpinLock;
 
 /// 已映射的 MMIO 区域——提供类型安全的 volatile 寄存器访问。
@@ -32,18 +33,9 @@ impl<F: NodeFrameOps> MmioRegion<F> {
         size: usize,
     ) -> Result<Self, PagingError> {
         let pa_aligned = paddr.align_down();
-        let end = paddr + size;
-        let page_count = (end.align_up().as_usize() - pa_aligned.as_usize()) / config::PAGE_SIZE;
-        {
-            let mut guard = pt_ref.lock();
-            guard.identity_map_range(pa_aligned, end, PteFlags::kernel_device())?;
-        }
-        let mapping = MappedPages::wrap_existing(
-            pt_ref,
-            address::VirtAddr::new(pa_aligned.as_usize()),
-            page_count,
-            PteFlags::kernel_device(),
-        );
+        let page_count = ((paddr + size).align_up().as_usize() - pa_aligned.as_usize()) / PAGE_SIZE;
+        let mapping =
+            MappedPages::map_identity(pt_ref, pa_aligned, page_count, PteFlags::kernel_device())?;
         Ok(Self { mapping })
     }
 
