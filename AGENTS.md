@@ -10,7 +10,7 @@ Interface-driven OS kernel for AI-assisted learning. Rust (`no_std`, `no_main`),
 src/                  # Kernel source — lib.rs (modules) + main.rs (entry)
 src/arch/             # Per-architecture code (riscv64/, aarch64/)
 src/boot.rs           # kernel_init() — staged init for kernel & test binaries
-crates/               # Workspace crates (memory, sync, per_cpu, page_table, ...)
+crates/               # Workspace crates (memory, sync, per_cpu, paging, ...)
 xtask/                # Build tool (cargo xtask run/build/debug/test/firmware)
 tests/system/         # Unified system test kernel (QEMU, all test groups)
 tests/standalone/     # Standalone test binaries (panic_test, oom_test, ...)
