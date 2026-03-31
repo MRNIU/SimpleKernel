@@ -3,7 +3,7 @@
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
 
-use crate::error::PageTableError;
+use crate::error::PagingError;
 use crate::{NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index};
 use address::{PhysAddr, VirtAddr};
 
@@ -34,7 +34,7 @@ pub struct PageTable<F: NodeFrameOps> {
 
 impl<F: NodeFrameOps> PageTable<F> {
     /// 创建新页表，分配根帧。
-    pub fn create() -> Result<Self, PageTableError> {
+    pub fn create() -> Result<Self, PagingError> {
         let root = F::alloc()?;
         let root_paddr = root.paddr();
         let mut ref_counts = BTreeMap::new();
@@ -80,7 +80,7 @@ impl<F: NodeFrameOps> PageTable<F> {
         &mut self,
         va: VirtAddr,
         target_level: usize,
-    ) -> Result<(PhysAddr, usize), PageTableError> {
+    ) -> Result<(PhysAddr, usize), PagingError> {
         let mut paddr = self.root_paddr;
 
         for level in (target_level + 1..PT_LEVELS).rev() {
@@ -98,7 +98,7 @@ impl<F: NodeFrameOps> PageTable<F> {
                 self.inc_ref(paddr);
                 paddr = frame_paddr;
             } else if pte.is_leaf(level) {
-                return Err(PageTableError::HugePageConflict);
+                return Err(PagingError::HugePageConflict);
             } else {
                 paddr = pte.paddr();
             }
@@ -122,7 +122,7 @@ impl<F: NodeFrameOps> PageTable<F> {
         va: VirtAddr,
         pa: PhysAddr,
         flags: PteFlags,
-    ) -> Result<(), PageTableError> {
+    ) -> Result<(), PagingError> {
         self.map_at_level(va, pa, flags, 0)
     }
 
@@ -145,7 +145,7 @@ impl<F: NodeFrameOps> PageTable<F> {
         pa: PhysAddr,
         flags: PteFlags,
         level: usize,
-    ) -> Result<(), PageTableError> {
+    ) -> Result<(), PagingError> {
         // 在执行任何操作前检查 VA/PA 对齐
         let page_size = crate::page_size_at_level(level);
         debug_assert!(
@@ -168,7 +168,7 @@ impl<F: NodeFrameOps> PageTable<F> {
         let mut table = unsafe { Table::from_paddr(frame_paddr) };
         let current = table.read(idx);
         if current.is_valid() {
-            return Err(PageTableError::AlreadyMapped);
+            return Err(PagingError::AlreadyMapped);
         }
         let leaf_flags = flags.for_leaf_at_level(level);
         table.write(idx, PageTableEntry::new(pa, leaf_flags));
@@ -184,7 +184,7 @@ impl<F: NodeFrameOps> PageTable<F> {
     /// # Errors
     ///
     /// 目标 VA 未映射时返回 `PageNotMapped`。
-    pub(crate) fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PageTableError> {
+    pub(crate) fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PagingError> {
         self.unmap_page_with_flags(va).map(|(pa, _)| pa)
     }
 
@@ -201,7 +201,7 @@ impl<F: NodeFrameOps> PageTable<F> {
     pub(crate) fn unmap_page_with_flags(
         &mut self,
         va: VirtAddr,
-    ) -> Result<(PhysAddr, PteFlags), PageTableError> {
+    ) -> Result<(PhysAddr, PteFlags), PagingError> {
         self.unmap_at_level_with_flags(va, 0)
     }
 
@@ -212,7 +212,7 @@ impl<F: NodeFrameOps> PageTable<F> {
         &mut self,
         va: VirtAddr,
         level: usize,
-    ) -> Result<PhysAddr, PageTableError> {
+    ) -> Result<PhysAddr, PagingError> {
         self.unmap_at_level_with_flags(va, level).map(|(pa, _)| pa)
     }
 
@@ -231,7 +231,7 @@ impl<F: NodeFrameOps> PageTable<F> {
         &mut self,
         va: VirtAddr,
         level: usize,
-    ) -> Result<(PhysAddr, PteFlags), PageTableError> {
+    ) -> Result<(PhysAddr, PteFlags), PagingError> {
         let mut path: [(PhysAddr, usize, PhysAddr); PT_LEVELS] =
             [(PhysAddr::new(0), 0, PhysAddr::new(0)); PT_LEVELS];
         let mut path_len = 0;
@@ -243,10 +243,10 @@ impl<F: NodeFrameOps> PageTable<F> {
             let idx = vpn_index(va, lv);
             let pte = table.read(idx);
             if !pte.is_valid() {
-                return Err(PageTableError::PageNotMapped);
+                return Err(PagingError::PageNotMapped);
             }
             if pte.is_leaf(lv) {
-                return Err(PageTableError::PageNotMapped);
+                return Err(PagingError::PageNotMapped);
             }
             let child_paddr = pte.paddr();
             path[path_len] = (paddr, idx, child_paddr);
@@ -259,7 +259,7 @@ impl<F: NodeFrameOps> PageTable<F> {
         let idx = vpn_index(va, level);
         let pte = table.read(idx);
         if !pte.is_valid() || !pte.is_leaf(level) {
-            return Err(PageTableError::PageNotMapped);
+            return Err(PagingError::PageNotMapped);
         }
         let old_pa = pte.paddr();
         let old_flags = pte.flags();
@@ -340,12 +340,12 @@ impl<F: NodeFrameOps> PageTable<F> {
         start: PhysAddr,
         end: PhysAddr,
         flags: PteFlags,
-    ) -> Result<(), PageTableError> {
+    ) -> Result<(), PagingError> {
         let mut addr = start.align_down();
         let end_aligned = end.align_up();
 
         if addr.as_usize() >= end_aligned.as_usize() {
-            return Err(PageTableError::InvalidRange);
+            return Err(PagingError::InvalidRange);
         }
 
         // 第一阶段：收集所有 (va, pa, level) 映射
@@ -383,7 +383,7 @@ impl<F: NodeFrameOps> PageTable<F> {
 
 #[cfg(test)]
 mod tests {
-    use crate::error::PageTableError;
+    use crate::error::PagingError;
     use crate::*;
     use address::{PhysAddr, VirtAddr};
 
@@ -447,7 +447,7 @@ mod tests {
         let err = pt
             .map_page(va, pa, PteFlags::kernel_rw())
             .expect_err("重复 map 应失败");
-        assert_eq!(err, PageTableError::AlreadyMapped);
+        assert_eq!(err, PagingError::AlreadyMapped);
     }
 
     /// unmap 应返回原始物理地址，且之后查询应为 None。
@@ -472,7 +472,7 @@ mod tests {
         let va = VirtAddr::new(0x1000);
 
         let err = pt.unmap_page(va).expect_err("unmap 未映射页应失败");
-        assert_eq!(err, PageTableError::PageNotMapped);
+        assert_eq!(err, PagingError::PageNotMapped);
     }
 
     /// 跨不同 VPN[2] 范围的映射，会触发不同的二级页表分配。
@@ -539,7 +539,7 @@ mod tests {
         let err = pt
             .unmap_page(va_sibling)
             .expect_err("中间节点已回收，应返回 PageNotMapped");
-        assert_eq!(err, PageTableError::PageNotMapped);
+        assert_eq!(err, PagingError::PageNotMapped);
     }
 
     /// unmap 后中间节点回收：当同表有其他映射时不回收。
@@ -640,7 +640,7 @@ mod tests {
         let err = pt
             .map_page(sub_va, PhysAddr::new(0x9000_0000), PteFlags::kernel_rw())
             .expect_err("大页范围内的子映射应失败");
-        assert_eq!(err, PageTableError::HugePageConflict);
+        assert_eq!(err, PagingError::HugePageConflict);
     }
 
     /// 重复大页映射应返回 AlreadyMapped。
@@ -657,7 +657,7 @@ mod tests {
         let err = pt
             .map_at_level(va, pa, PteFlags::kernel_rw(), 1)
             .expect_err("重复大页映射应失败");
-        assert_eq!(err, PageTableError::AlreadyMapped);
+        assert_eq!(err, PagingError::AlreadyMapped);
     }
 
     /// unmap_at_level 应能取消大页映射。
@@ -685,7 +685,7 @@ mod tests {
         let err = pt
             .unmap_at_level(va, 0)
             .expect_err("level 0 unmap 大页应失败");
-        assert_eq!(err, PageTableError::PageNotMapped);
+        assert_eq!(err, PagingError::PageNotMapped);
     }
 
     /// identity_map_range 对无效范围（start >= end）应返回 InvalidRange。
@@ -700,7 +700,7 @@ mod tests {
                 PteFlags::kernel_rw(),
             )
             .expect_err("start == end 应返回 InvalidRange");
-        assert_eq!(err, PageTableError::InvalidRange);
+        assert_eq!(err, PagingError::InvalidRange);
 
         let err = pt
             .identity_map_range(
@@ -709,7 +709,7 @@ mod tests {
                 PteFlags::kernel_rw(),
             )
             .expect_err("start > end 应返回 InvalidRange");
-        assert_eq!(err, PageTableError::InvalidRange);
+        assert_eq!(err, PagingError::InvalidRange);
     }
 
     /// identity_map_range 在对齐且足够大的区间应自动使用大页。

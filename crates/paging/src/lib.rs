@@ -48,7 +48,7 @@ pub mod mmio;
 /// - 测试：`impl NodeFrameOps for HeapNodeFrame`（本 crate 内置）
 pub trait NodeFrameOps: Send + Sized {
     /// 分配一个零初始化的页表节点帧。
-    fn alloc() -> Result<Self, error::PageTableError>;
+    fn alloc() -> Result<Self, error::PagingError>;
     /// 获取帧的物理地址（裸机 identity mapping）或堆地址（测试）。
     fn paddr(&self) -> PhysAddr;
 }
@@ -77,13 +77,13 @@ impl Drop for HeapNodeFrame {
 
 #[cfg(any(test, feature = "test-support"))]
 impl NodeFrameOps for HeapNodeFrame {
-    fn alloc() -> Result<Self, error::PageTableError> {
+    fn alloc() -> Result<Self, error::PagingError> {
         let layout = core::alloc::Layout::from_size_align(config::PAGE_SIZE, config::PAGE_SIZE)
             .expect("HeapNodeFrame: invalid layout");
         // SAFETY: layout 非零大小
         let ptr = unsafe { alloc::alloc::alloc_zeroed(layout) };
         if ptr.is_null() {
-            return Err(error::PageTableError::AllocationFailed);
+            return Err(error::PagingError::AllocationFailed);
         }
         Ok(Self { ptr, layout })
     }

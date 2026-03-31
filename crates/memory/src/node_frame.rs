@@ -15,10 +15,10 @@ pub struct NodeFrame(frame_allocator::AllocatedFrames);
 
 #[cfg(target_os = "none")]
 impl paging::NodeFrameOps for NodeFrame {
-    fn alloc() -> Result<Self, paging::error::PageTableError> {
+    fn alloc() -> Result<Self, paging::error::PagingError> {
         frame_allocator::AllocatedFrames::alloc_one()
             .map(Self)
-            .map_err(|_| paging::error::PageTableError::AllocationFailed)
+            .map_err(|_| paging::error::PagingError::AllocationFailed)
     }
     fn paddr(&self) -> address::PhysAddr {
         self.0.start_paddr()
@@ -33,16 +33,3 @@ impl paging::NodeFrameOps for NodeFrame {
 pub type PageTable = paging::PageTable<NodeFrame>;
 #[cfg(test)]
 pub type PageTable = paging::PageTable<paging::HeapNodeFrame>;
-
-impl From<paging::error::PageTableError> for crate::error::MemoryError {
-    fn from(e: paging::error::PageTableError) -> Self {
-        use paging::error::PageTableError;
-        match e {
-            PageTableError::AllocationFailed => Self::AllocationFailed,
-            PageTableError::AlreadyMapped
-            | PageTableError::HugePageConflict
-            | PageTableError::InvalidRange => Self::MapFailed,
-            PageTableError::PageNotMapped => Self::PageNotMapped,
-        }
-    }
-}

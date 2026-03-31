@@ -142,7 +142,7 @@ impl<F: NodeFrameOps> MappedPages<F> {
                         }
                     }
                     // 当前这个未映射成功的 frame 会正常 drop 回收
-                    return Err(e.into());
+                    return Err(e);
                 }
             }
         }
