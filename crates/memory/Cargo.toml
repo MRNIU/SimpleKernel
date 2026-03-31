@@ -12,11 +12,10 @@ config = { path = "../config" }
 address = { path = "../address" }
 sync_crate = { path = "../sync", package = "sync" }
 per_cpu = { path = "../per_cpu" }
-page_table = { path = "../page_table" }
+paging = { path = "../paging" }
 frame_allocator = { path = "../frame_allocator" }
 heap_crate = { path = "../heap", package = "heap" }
 tlb = { path = "../tlb" }
-mapped_pages_crate = { path = "../mapped_pages", package = "mapped_pages" }
 
 bitflags.workspace = true
 zerocopy.workspace = true
@@ -24,6 +23,5 @@ log.workspace = true
 spin.workspace = true
 
 [dev-dependencies]
-page_table = { path = "../page_table", features = ["test-support"] }
+paging = { path = "../paging", features = ["test-support"] }
 frame_allocator = { path = "../frame_allocator", features = ["test-support"] }
-mapped_pages_crate = { path = "../mapped_pages", package = "mapped_pages", features = ["test-support"] }

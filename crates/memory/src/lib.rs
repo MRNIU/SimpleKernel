@@ -30,20 +30,20 @@ pub use tlb;
 
 /// 仿射类型映射——具体化的类型别名。
 #[cfg(target_os = "none")]
-pub type MappedPages = mapped_pages_crate::MappedPages<node_frame::NodeFrame>;
+pub type MappedPages = paging::MappedPages<node_frame::NodeFrame>;
 /// 仿射类型映射——测试用类型别名。
 #[cfg(test)]
-pub type MappedPages = mapped_pages_crate::MappedPages<page_table::HeapNodeFrame>;
+pub type MappedPages = paging::MappedPages<paging::HeapNodeFrame>;
 
 /// MMIO 区域——具体化的类型别名。
 #[cfg(target_os = "none")]
-pub type MmioRegion = mapped_pages_crate::mmio::MmioRegion<node_frame::NodeFrame>;
+pub type MmioRegion = paging::mmio::MmioRegion<node_frame::NodeFrame>;
 /// MMIO 区域——测试用类型别名。
 #[cfg(test)]
-pub type MmioRegion = mapped_pages_crate::mmio::MmioRegion<page_table::HeapNodeFrame>;
+pub type MmioRegion = paging::mmio::MmioRegion<paging::HeapNodeFrame>;
 
 /// 映射错误类型 re-export。
-pub use mapped_pages_crate::error::MappedPagesError;
+pub use paging::error::PagingError;
 
 // 公共 API re-export——保持外部调用方的 `memory::Xxx` 路径不变。
 pub use globals::{MEMORY_INFO, MemoryInfo};
@@ -75,7 +75,7 @@ pub fn map_mmio(
     paddr: address::PhysAddr,
     size: usize,
 ) -> Result<address::VirtAddr, error::MemoryError> {
-    use page_table::{PteFlags, PteFlagsOps};
+    use paging::{PteFlags, PteFlagsOps};
 
     let kpt = kernel_page_table().ok_or(error::MemoryError::InvalidPageTable)?;
     let region = MmioRegion::map_to(kpt, paddr, size)?;

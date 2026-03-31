@@ -40,12 +40,15 @@ impl From<frame_allocator::FrameAllocError> for MemoryError {
 }
 
 #[cfg(any(test, target_os = "none"))]
-impl From<mapped_pages_crate::error::MappedPagesError> for MemoryError {
-    fn from(e: mapped_pages_crate::error::MappedPagesError) -> Self {
-        use mapped_pages_crate::error::MappedPagesError;
+impl From<paging::error::PagingError> for MemoryError {
+    fn from(e: paging::error::PagingError) -> Self {
+        use paging::error::PagingError;
         match e {
-            MappedPagesError::PageTable(pt) => pt.into(),
-            MappedPagesError::FrameAlloc(fa) => fa.into(),
+            PagingError::AllocationFailed | PagingError::FrameAllocFailed => Self::AllocationFailed,
+            PagingError::AlreadyMapped
+            | PagingError::HugePageConflict
+            | PagingError::InvalidRange => Self::MapFailed,
+            PagingError::PageNotMapped => Self::PageNotMapped,
         }
     }
 }

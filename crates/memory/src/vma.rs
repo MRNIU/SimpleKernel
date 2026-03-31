@@ -11,7 +11,7 @@ use crate::error::MemoryError;
 use crate::node_frame::PageTable;
 use address::{AddrRange, VirtAddr};
 use config::PAGE_SIZE;
-use page_table::{PteFlags, PteFlagsOps};
+use paging::{PteFlags, PteFlagsOps};
 use sync_crate::SpinLock;
 
 /// VMA backing 类型——描述物理内存的来源。
@@ -351,18 +351,17 @@ impl AddressSpace {
         let range = AddrRange::new(start_aligned, end_aligned);
         self.check_overlap(range)?;
 
-        {
-            let mut pt = self.page_table.lock();
-            let pa_start = address::PhysAddr::new(start_aligned.as_usize());
-            let pa_end = address::PhysAddr::new(end_aligned.as_usize());
-            pt.identity_map_range(pa_start, pa_end, flags)?;
-        }
+        let page_count = (end_aligned - start_aligned) / PAGE_SIZE;
+        let pa_start = address::PhysAddr::new(start_aligned.as_usize());
+        let mapping =
+            MappedPages::map_identity(self.page_table.clone(), pa_start, page_count, flags)?
+                .into_permanent();
 
         let vma = Vma {
             range,
             flags,
             kind: VmaKind::Identity,
-            mapping: None, // 大页映射由页表直接管理，不通过 MappedPages
+            mapping: Some(mapping),
         };
         self.areas.insert(start_aligned, vma);
         Ok(self.areas.get(&start_aligned).expect("刚插入的 VMA"))
@@ -463,7 +462,7 @@ impl core::fmt::Debug for AddressSpace {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mapped_pages_crate::test_pt;
+    use paging::test_pt;
 
     /// 空地址空间应无 VMA。
     #[test]
