@@ -31,6 +31,16 @@ pub const PTE_SIZE_SHIFT: usize = core::mem::size_of::<u64>().trailing_zeros() a
 pub mod table;
 pub use table::PageTable;
 
+#[cfg(any(test, feature = "test-support", target_os = "none"))]
+pub mod mapping;
+#[cfg(any(test, feature = "test-support", target_os = "none"))]
+pub use mapping::MappedPages;
+#[cfg(any(test, feature = "test-support"))]
+pub use mapping::test_pt;
+
+#[cfg(any(test, feature = "test-support", target_os = "none"))]
+pub mod mmio;
+
 /// 页表节点帧的统一接口。
 ///
 /// 消费方通过实现此 trait 向页表注入帧分配能力：
