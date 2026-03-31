@@ -123,7 +123,7 @@ impl<F: NodeFrameOps> MappedPages<F> {
         let mut mapped_count = 0usize;
         let mut pt = pt_ref.lock();
         for i in 0..page_count {
-            let frame = AllocatedFrames::alloc_one()?;
+            let frame = AllocatedFrames::alloc_one().map_err(|_| PagingError::FrameAllocFailed)?;
             let pa = frame.start_paddr();
             let va = va_start + i * PAGE_SIZE;
             match pt.map_page(va, pa, exclusive_flags) {

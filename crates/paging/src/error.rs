@@ -33,9 +33,3 @@ impl fmt::Display for PagingError {
 }
 
 impl core::error::Error for PagingError {}
-
-impl From<frame_allocator::FrameAllocError> for PagingError {
-    fn from(_: frame_allocator::FrameAllocError) -> Self {
-        Self::FrameAllocFailed
-    }
-}
