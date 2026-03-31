@@ -1,49 +1,53 @@
 //! 多级页表——walk / map / unmap 逻辑。
 
-use alloc::collections::BTreeMap;
-use alloc::vec::Vec;
-
 use crate::error::PagingError;
-use crate::{NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index};
+use crate::{
+    NodeFrame, NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index,
+};
 use address::{PhysAddr, VirtAddr};
+use alloc::collections::BTreeMap;
 
 const PT_LEVELS: usize = config::PT_LEVELS;
+
+/// 中间页表节点——持有帧所有权及有效 PTE 引用计数。
+struct NodeEntry {
+    /// 持有帧所有权——drop 时自动释放。
+    #[expect(dead_code, reason = "仅用于持有所有权，通过物理地址访问")]
+    frame: NodeFrame,
+    /// 该帧中有效 PTE 的数量。
+    /// map 时 +1，unmap 时 -1，count == 0 时可回收。
+    ref_count: u16,
+}
 
 /// 多级页表。
 ///
 /// 拥有根帧及所有遍历过程中分配的中间帧。
 /// drop 时自动归还所有帧。
 ///
-/// 类型参数 `F` 是帧类型——裸机使用物理帧分配器的帧，测试使用堆分配帧。
-/// 消费方通过类型别名隐藏泛型参数：
-/// ```ignore
-/// type PageTable = paging::PageTable<AllocatedFrames>;
-/// ```
-pub struct PageTable<F: NodeFrameOps> {
+/// 具体帧类型由 [`NodeFrame`] 类型别名决定（裸机：物理帧，测试：堆分配帧），
+/// 无需泛型参数。
+pub struct PageTable {
     root_paddr: PhysAddr,
     /// 持有根帧所有权，阻止帧被释放——字段本身不直接访问。
     #[expect(dead_code, reason = "仅用于持有所有权，通过 root_paddr 访问")]
-    root: F,
+    root: NodeFrame,
+    /// 根帧的有效 PTE 引用计数（根帧不在 nodes 中，单独记录）。
+    root_ref_count: u16,
     /// 中间页表节点——以物理地址为键，O(log n) 查找/删除。
-    frames: BTreeMap<PhysAddr, F>,
-    /// 每个页表帧（含根帧）中有效 PTE 的引用计数。
-    /// map 时 +1，unmap 时 -1，count == 0 且非根帧时可回收。
-    /// 避免 unmap 回溯时 O(entries_per_table) 全扫描。
-    ref_counts: BTreeMap<PhysAddr, u16>,
+    /// 每个条目持有帧所有权和引用计数，避免并行 map 的同步维护负担。
+    nodes: BTreeMap<PhysAddr, NodeEntry>,
 }
 
-impl<F: NodeFrameOps> PageTable<F> {
+impl PageTable {
     /// 创建新页表，分配根帧。
     pub fn create() -> Result<Self, PagingError> {
-        let root = F::alloc()?;
+        let root = NodeFrame::alloc()?;
         let root_paddr = root.paddr();
-        let mut ref_counts = BTreeMap::new();
-        ref_counts.insert(root_paddr, 0);
         Ok(Self {
             root_paddr,
             root,
-            frames: BTreeMap::new(),
-            ref_counts,
+            root_ref_count: 0,
+            nodes: BTreeMap::new(),
         })
     }
 
@@ -53,22 +57,32 @@ impl<F: NodeFrameOps> PageTable<F> {
         self.root_paddr
     }
 
+    /// 获取指定帧的引用计数的可变引用。
+    ///
+    /// 根帧返回 `root_ref_count`，中间帧从 `nodes` 中查找。
+    #[inline]
+    fn ref_count_mut(&mut self, paddr: PhysAddr) -> &mut u16 {
+        if paddr == self.root_paddr {
+            &mut self.root_ref_count
+        } else {
+            &mut self
+                .nodes
+                .get_mut(&paddr)
+                .expect("ref_count_mut: 帧未注册")
+                .ref_count
+        }
+    }
+
     /// 递增指定帧的引用计数。
     #[inline]
     fn inc_ref(&mut self, paddr: PhysAddr) {
-        *self
-            .ref_counts
-            .get_mut(&paddr)
-            .expect("ref_counts: 帧未注册") += 1;
+        *self.ref_count_mut(paddr) += 1;
     }
 
     /// 递减指定帧的引用计数，返回递减后的值。
     #[inline]
     fn dec_ref(&mut self, paddr: PhysAddr) -> u16 {
-        let count = self
-            .ref_counts
-            .get_mut(&paddr)
-            .expect("ref_counts: 帧未注册");
+        let count = self.ref_count_mut(paddr);
         *count -= 1;
         *count
     }
@@ -84,17 +98,22 @@ impl<F: NodeFrameOps> PageTable<F> {
         let mut paddr = self.root_paddr;
 
         for level in (target_level + 1..PT_LEVELS).rev() {
-            // SAFETY: paddr 指向由 self.root 或 self.frames 持有的有效帧
+            // SAFETY: paddr 指向由 self.root 或 self.nodes 持有的有效帧
             let mut table = unsafe { Table::from_paddr(paddr) };
             let idx = vpn_index(va, level);
             let pte = table.read(idx);
 
             if !pte.is_valid() {
-                let frame = F::alloc()?;
+                let frame = NodeFrame::alloc()?;
                 let frame_paddr = frame.paddr();
                 table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
-                self.frames.insert(frame_paddr, frame);
-                self.ref_counts.insert(frame_paddr, 0);
+                self.nodes.insert(
+                    frame_paddr,
+                    NodeEntry {
+                        frame,
+                        ref_count: 0,
+                    },
+                );
                 self.inc_ref(paddr);
                 paddr = frame_paddr;
             } else if pte.is_leaf(level) {
@@ -268,18 +287,13 @@ impl<F: NodeFrameOps> PageTable<F> {
 
         let mut child_paddr = paddr;
         for &(parent_paddr, parent_idx, _) in path[..path_len].iter().rev() {
-            let count = *self
-                .ref_counts
-                .get(&child_paddr)
-                .expect("ref_counts: 帧未注册");
-            if count > 0 {
+            if *self.ref_count_mut(child_paddr) > 0 {
                 break;
             }
             // SAFETY: parent_paddr 指向由 self 持有的有效帧
             let mut parent_table = unsafe { Table::from_paddr(parent_paddr) };
             parent_table.write(parent_idx, PageTableEntry::empty());
-            self.frames.remove(&child_paddr);
-            self.ref_counts.remove(&child_paddr);
+            self.nodes.remove(&child_paddr);
             self.dec_ref(parent_paddr);
             child_paddr = parent_paddr;
         }
@@ -327,29 +341,23 @@ impl<F: NodeFrameOps> PageTable<F> {
     /// 将 `[start, end)` 物理地址区间 identity-map（VA == PA）。
     ///
     /// 自动使用最大可用页大小（1GB / 2MB / 4KB）。
-    /// 失败时自动回滚已建立的映射，保证事务性。
+    /// 映射失败时直接 panic——内核启动阶段的 identity map 失败不可恢复。
     ///
     /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
     /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
     ///
-    /// # Errors
+    /// # Panics
     ///
-    /// 映射冲突或 `start >= end` 时返回错误。
-    pub(crate) fn identity_map_range(
-        &mut self,
-        start: PhysAddr,
-        end: PhysAddr,
-        flags: PteFlags,
-    ) -> Result<(), PagingError> {
+    /// `start >= end` 或映射冲突时 panic。
+    pub(crate) fn identity_map_range(&mut self, start: PhysAddr, end: PhysAddr, flags: PteFlags) {
         let mut addr = start.align_down();
         let end_aligned = end.align_up();
 
-        if addr.as_usize() >= end_aligned.as_usize() {
-            return Err(PagingError::InvalidRange);
-        }
+        assert!(
+            addr.as_usize() < end_aligned.as_usize(),
+            "identity_map_range: 无效地址范围 [{addr}, {end_aligned})"
+        );
 
-        // 第一阶段：收集所有 (va, pa, level) 映射
-        let mut mappings: Vec<(VirtAddr, PhysAddr, usize)> = Vec::new();
         while addr.as_usize() < end_aligned.as_usize() {
             let remaining = end_aligned.as_usize() - addr.as_usize();
             let va = VirtAddr::new(addr.as_usize());
@@ -364,20 +372,11 @@ impl<F: NodeFrameOps> PageTable<F> {
                     break;
                 }
             }
-            mappings.push((va, addr, selected_level));
+
+            self.map_at_level(va, addr, flags, selected_level)
+                .expect("identity_map_range: 映射失败");
             addr += selected_size;
         }
-
-        // 第二阶段：逐个映射，失败时回滚
-        for (i, &(va, pa, level)) in mappings.iter().enumerate() {
-            if let Err(e) = self.map_at_level(va, pa, flags, level) {
-                for &(va, _, level) in mappings[..i].iter().rev() {
-                    let _ = self.unmap_at_level(va, level);
-                }
-                return Err(e);
-            }
-        }
-        Ok(())
     }
 }
 
@@ -387,8 +386,7 @@ mod tests {
     use crate::*;
     use address::{PhysAddr, VirtAddr};
 
-    use crate::HeapNodeFrame;
-    type PageTable = crate::table::PageTable<HeapNodeFrame>;
+    type PageTable = crate::table::PageTable;
 
     /// create 后 root_paddr 应返回非零地址。
     #[test]
@@ -575,8 +573,7 @@ mod tests {
         let start = PhysAddr::new(0x10_0000);
         let end = PhysAddr::new(0x10_3000); // 3 pages
 
-        pt.identity_map_range(start, end, PteFlags::kernel_rw())
-            .expect("identity_map_range 应成功");
+        pt.identity_map_range(start, end, PteFlags::kernel_rw());
 
         for i in 0..3 {
             let va = VirtAddr::new(0x10_0000 + i * config::PAGE_SIZE);
@@ -688,28 +685,28 @@ mod tests {
         assert_eq!(err, PagingError::PageNotMapped);
     }
 
-    /// identity_map_range 对无效范围（start >= end）应返回 InvalidRange。
+    /// identity_map_range 对无效范围（start == end）应 panic。
     #[test]
-    fn identity_map_range_invalid_range() {
+    #[should_panic(expected = "无效地址范围")]
+    fn identity_map_range_equal_range_panics() {
         let mut pt = PageTable::create().expect("创建测试页表失败");
+        pt.identity_map_range(
+            PhysAddr::new(0x10_0000),
+            PhysAddr::new(0x10_0000),
+            PteFlags::kernel_rw(),
+        );
+    }
 
-        let err = pt
-            .identity_map_range(
-                PhysAddr::new(0x10_0000),
-                PhysAddr::new(0x10_0000),
-                PteFlags::kernel_rw(),
-            )
-            .expect_err("start == end 应返回 InvalidRange");
-        assert_eq!(err, PagingError::InvalidRange);
-
-        let err = pt
-            .identity_map_range(
-                PhysAddr::new(0x20_0000),
-                PhysAddr::new(0x10_0000),
-                PteFlags::kernel_rw(),
-            )
-            .expect_err("start > end 应返回 InvalidRange");
-        assert_eq!(err, PagingError::InvalidRange);
+    /// identity_map_range 对无效范围（start > end）应 panic。
+    #[test]
+    #[should_panic(expected = "无效地址范围")]
+    fn identity_map_range_reversed_range_panics() {
+        let mut pt = PageTable::create().expect("创建测试页表失败");
+        pt.identity_map_range(
+            PhysAddr::new(0x20_0000),
+            PhysAddr::new(0x10_0000),
+            PteFlags::kernel_rw(),
+        );
     }
 
     /// identity_map_range 在对齐且足够大的区间应自动使用大页。
@@ -720,8 +717,7 @@ mod tests {
         let start = PhysAddr::new(huge_size);
         let end = PhysAddr::new(huge_size * 2);
 
-        pt.identity_map_range(start, end, PteFlags::kernel_rw())
-            .expect("identity_map_range 应成功");
+        pt.identity_map_range(start, end, PteFlags::kernel_rw());
 
         // 大页基址应能查询到映射
         let (pa, flags) = pt
@@ -737,35 +733,21 @@ mod tests {
         assert_eq!(pa_offset, PhysAddr::new(huge_size + 0x1000));
     }
 
-    /// identity_map_range 失败时应回滚已建立的映射。
+    /// identity_map_range 映射冲突时应 panic。
     #[test]
-    fn identity_map_range_rollback_on_conflict() {
+    #[should_panic(expected = "映射失败")]
+    fn identity_map_range_conflict_panics() {
         let mut pt = PageTable::create().expect("创建测试页表失败");
-
-        // 先占住一个页，使后续 identity_map_range 在映射到该地址时冲突
         let conflict_va = VirtAddr::new(0x10_2000);
         let conflict_pa = PhysAddr::new(0x10_2000);
         pt.map_page(conflict_va, conflict_pa, PteFlags::kernel_rw())
             .expect("占位映射应成功");
 
-        // identity_map_range 试图映射 [0x10_0000, 0x10_3000)，在第 3 页会冲突
-        let start = PhysAddr::new(0x10_0000);
-        let end = PhysAddr::new(0x10_3000);
-        pt.identity_map_range(start, end, PteFlags::kernel_rw())
-            .expect_err("应因冲突而失败");
-
-        // 前两页应已回滚，查询应为 None
-        assert!(
-            pt.get_mapping(VirtAddr::new(0x10_0000)).is_none(),
-            "回滚后第 1 页不应存在"
+        // 映射 [0x10_0000, 0x10_3000)，在第 3 页冲突时 panic
+        pt.identity_map_range(
+            PhysAddr::new(0x10_0000),
+            PhysAddr::new(0x10_3000),
+            PteFlags::kernel_rw(),
         );
-        assert!(
-            pt.get_mapping(VirtAddr::new(0x10_1000)).is_none(),
-            "回滚后第 2 页不应存在"
-        );
-
-        // 原始占位映射应保持不变
-        let (pa, _) = pt.get_mapping(conflict_va).expect("占位映射应仍存在");
-        assert_eq!(pa, conflict_pa);
     }
 }

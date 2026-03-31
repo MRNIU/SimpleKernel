@@ -13,8 +13,6 @@ pub enum PagingError {
     HugePageConflict,
     /// 目标 VA 未映射
     PageNotMapped,
-    /// 无效地址范围（start >= end）
-    InvalidRange,
     /// 物理帧分配失败
     FrameAllocFailed,
 }
@@ -26,7 +24,6 @@ impl fmt::Display for PagingError {
             Self::AlreadyMapped => write!(f, "virtual address already mapped"),
             Self::HugePageConflict => write!(f, "huge page conflict in walk path"),
             Self::PageNotMapped => write!(f, "virtual address not mapped"),
-            Self::InvalidRange => write!(f, "invalid address range"),
             Self::FrameAllocFailed => write!(f, "physical frame allocation failed"),
         }
     }

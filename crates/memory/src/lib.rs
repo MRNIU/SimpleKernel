@@ -19,7 +19,7 @@ pub mod globals;
 /// 内存子系统初始化（依赖链接器符号，裸机专用）。
 #[cfg(target_os = "none")]
 pub mod init;
-/// NodeFrame 桥接与 PageTable 类型别名。
+/// PageTable 类型 re-export。
 pub mod node_frame;
 /// 虚拟内存区域（VMA）与地址空间管理。
 #[cfg(any(test, target_os = "none"))]
@@ -28,19 +28,13 @@ pub mod vma;
 /// TLB 管理（re-export `tlb` crate）。
 pub use tlb;
 
-/// 仿射类型映射——具体化的类型别名。
-#[cfg(target_os = "none")]
-pub type MappedPages = paging::MappedPages<node_frame::NodeFrame>;
-/// 仿射类型映射——测试用类型别名。
-#[cfg(test)]
-pub type MappedPages = paging::MappedPages<paging::HeapNodeFrame>;
+/// 仿射类型映射——re-export `paging::MappedPages`。
+#[cfg(any(test, target_os = "none"))]
+pub type MappedPages = paging::MappedPages;
 
-/// MMIO 区域——具体化的类型别名。
-#[cfg(target_os = "none")]
-pub type MmioRegion = paging::mmio::MmioRegion<node_frame::NodeFrame>;
-/// MMIO 区域——测试用类型别名。
-#[cfg(test)]
-pub type MmioRegion = paging::mmio::MmioRegion<paging::HeapNodeFrame>;
+/// MMIO 区域——re-export `paging::mmio::MmioRegion`。
+#[cfg(any(test, target_os = "none"))]
+pub type MmioRegion = paging::mmio::MmioRegion;
 
 /// 映射错误类型 re-export。
 pub use paging::error::PagingError;

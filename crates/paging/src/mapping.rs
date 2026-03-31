@@ -1,5 +1,22 @@
 //! 仿射类型映射——move-only 的 VA->PA 映射所有权。
 //!
+//! ## EXCLUSIVE 帧生命周期
+//!
+//! `map_alloc` 分配的帧通过 PTE 的 EXCLUSIVE 位追踪所有权，
+//! Rust 类型系统无法感知这段"隐形"生命周期。完整流转如下：
+//!
+//! ```text
+//! AllocatedFrames::alloc_one()          ← 帧分配器分配
+//!   → frame.into_mapped() → MappedFrames
+//!   → core::mem::forget(mapped)         ← 所有权编码到 PTE EXCLUSIVE 位
+//!   → ... (映射使用期间) ...
+//!   → unmap_page_with_flags()           ← 从 PTE 读回 PA + EXCLUSIVE 标志
+//!   → UnmappedFrames::from_range(pa)    ← 重建帧所有权（unsafe）
+//!   → Drop                              ← 帧归还分配器
+//! ```
+//!
+//! `map_identity` 不设置 EXCLUSIVE 位——drop 时仅清除 PTE，不回收帧。
+//!
 // TODO: 实现 `split` / `merge` 操作——`munmap` 部分区域和 `mremap` 需要。
 //
 // TODO: 支持 COW（Copy-on-Write）共享映射——`fork()` 需要多个进程共享同一物理帧
@@ -13,18 +30,16 @@ use frame_allocator::{AllocatedFrames, UnmappedFrames};
 use sync_crate::SpinLock;
 
 use crate::error::PagingError;
-use crate::{NodeFrameOps, PageTable, PteFlags, PteFlagsOps};
+use crate::{PageTable, PteFlags, PteFlagsOps};
 
-/// unmap_and_reclaim 每次处理的最大页数。
-///
-/// 栈消耗：CHUNK_SIZE * size_of::<PhysAddr>() + heapless::Vec 开销 ~ 264 字节。
-const CHUNK_SIZE: usize = 32;
+/// unmap_and_reclaim 每次处理的最大页数——来自 `config::UNMAP_CHUNK_SIZE`。
+const CHUNK_SIZE: usize = config::UNMAP_CHUNK_SIZE;
 
 /// 仿射类型映射——持有此值即证明 VA->PA 映射有效。
 ///
 /// 不可 Clone、不可 Copy（仿射类型约束）。
 /// Drop 时根据 PTE 中的 EXCLUSIVE 位决定是否释放物理帧。
-pub struct MappedPages<F: NodeFrameOps> {
+pub struct MappedPages {
     /// 映射起始虚拟地址
     vaddr: VirtAddr,
     /// 映射的页数
@@ -38,10 +53,10 @@ pub struct MappedPages<F: NodeFrameOps> {
     /// 内核 `MappedPages` 持有全局内核页表的 `Arc`；
     /// 用户进程 `MappedPages` 持有对应进程页表的 `Arc`。
     /// 进程退出后其所有 `MappedPages` drop，`Arc` 引用计数归零时页表自动释放。
-    page_table: Arc<SpinLock<PageTable<F>>>,
+    page_table: Arc<SpinLock<PageTable>>,
 }
 
-impl<F: NodeFrameOps> MappedPages<F> {
+impl MappedPages {
     /// Identity-map 一段物理地址区间（VA == PA）。
     ///
     /// **不设置 EXCLUSIVE 位**——drop 时仅 unmap PTE，不释放帧。
@@ -56,7 +71,7 @@ impl<F: NodeFrameOps> MappedPages<F> {
     ///
     /// `page_count` 为 0 时 panic。
     pub fn map_identity(
-        pt_ref: Arc<SpinLock<PageTable<F>>>,
+        pt_ref: Arc<SpinLock<PageTable>>,
         pa_start: PhysAddr,
         page_count: usize,
         flags: PteFlags,
@@ -69,7 +84,7 @@ impl<F: NodeFrameOps> MappedPages<F> {
         let pa_end = pa_start + page_count * PAGE_SIZE;
         {
             let mut pt = pt_ref.lock();
-            pt.identity_map_range(pa_start, pa_end, flags)?;
+            pt.identity_map_range(pa_start, pa_end, flags);
         }
         Ok(Self {
             vaddr: va_start,
@@ -83,7 +98,7 @@ impl<F: NodeFrameOps> MappedPages<F> {
     /// 包装已建立的映射——仅测试使用。
     #[cfg(any(test, feature = "test-support"))]
     pub(crate) fn wrap_existing(
-        pt_ref: Arc<SpinLock<PageTable<F>>>,
+        pt_ref: Arc<SpinLock<PageTable>>,
         vaddr: VirtAddr,
         page_count: usize,
         flags: PteFlags,
@@ -111,7 +126,7 @@ impl<F: NodeFrameOps> MappedPages<F> {
     ///
     /// `page_count` 为 0 时 panic。
     pub fn map_alloc(
-        pt_ref: Arc<SpinLock<PageTable<F>>>,
+        pt_ref: Arc<SpinLock<PageTable>>,
         va_start: VirtAddr,
         page_count: usize,
         flags: PteFlags,
@@ -344,7 +359,7 @@ fn reclaim_exclusive_frame(pa: PhysAddr) {
     let _reclaimed = unsafe { UnmappedFrames::from_range(range) };
 }
 
-impl<F: NodeFrameOps> Drop for MappedPages<F> {
+impl Drop for MappedPages {
     fn drop(&mut self) {
         if self.permanent {
             return;
@@ -353,7 +368,7 @@ impl<F: NodeFrameOps> Drop for MappedPages<F> {
     }
 }
 
-impl<F: NodeFrameOps> core::fmt::Debug for MappedPages<F> {
+impl core::fmt::Debug for MappedPages {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let kind = if self.permanent {
             "permanent"
@@ -372,7 +387,7 @@ impl<F: NodeFrameOps> core::fmt::Debug for MappedPages<F> {
 
 /// 创建测试用 `Arc<SpinLock<PageTable>>`。
 #[cfg(any(test, feature = "test-support"))]
-pub fn test_pt() -> Arc<SpinLock<PageTable<crate::HeapNodeFrame>>> {
+pub fn test_pt() -> Arc<SpinLock<PageTable>> {
     let pt = PageTable::create().expect("创建页表");
     Arc::new(SpinLock::new(pt, "test_pt"))
 }
@@ -380,9 +395,7 @@ pub fn test_pt() -> Arc<SpinLock<PageTable<crate::HeapNodeFrame>>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::HeapNodeFrame;
-
-    type Mp = MappedPages<HeapNodeFrame>;
+    type Mp = MappedPages;
 
     /// map_identity 应建立正确的映射并可查询。
     #[test]
@@ -404,17 +417,16 @@ mod tests {
         let _ = mp.into_permanent();
     }
 
-    /// map_identity 重复映射同一 VA 应失败并回滚。
+    /// map_identity 重复映射同一 VA 应 panic（identity_map_range 不可恢复）。
     #[test]
-    fn map_identity_conflict_rollback() {
+    #[should_panic(expected = "映射失败")]
+    fn map_identity_conflict_panics() {
         let pt_ref = test_pt();
         let pa = PhysAddr::new(0x2_0000);
         let _mp1 = Mp::map_identity(pt_ref.clone(), pa, 1, PteFlags::kernel_rw())
             .expect("首次 map 应成功")
             .into_permanent();
-        let err =
-            Mp::map_identity(pt_ref, pa, 1, PteFlags::kernel_rw()).expect_err("重复 map 应失败");
-        assert!(matches!(err, PagingError::AlreadyMapped));
+        let _ = Mp::map_identity(pt_ref, pa, 1, PteFlags::kernel_rw());
     }
 
     /// wrap_existing 应创建非 EXCLUSIVE 映射。

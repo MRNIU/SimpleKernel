@@ -8,7 +8,7 @@ use alloc::sync::Arc;
 
 use crate::error::PagingError;
 use crate::mapping::{MappedPages, check_bounds_and_align};
-use crate::{NodeFrameOps, PageTable, PteFlags, PteFlagsOps};
+use crate::{PageTable, PteFlags, PteFlagsOps};
 use address::PhysAddr;
 use config::PAGE_SIZE;
 use sync_crate::SpinLock;
@@ -17,18 +17,18 @@ use sync_crate::SpinLock;
 ///
 /// 内部通过 [`MappedPages`] 管理页表映射和生命周期。
 /// 不可 Clone（一个映射只有一个 owner），可通过 `&self` 共享读取。
-pub struct MmioRegion<F: NodeFrameOps> {
-    mapping: MappedPages<F>,
+pub struct MmioRegion {
+    mapping: MappedPages,
 }
 
-impl<F: NodeFrameOps> MmioRegion<F> {
+impl MmioRegion {
     /// 将 `[paddr, paddr+size)` identity-map 到指定页表，返回 `MmioRegion`。
     ///
     /// # Errors
     ///
     /// 映射失败时返回错误。
     pub fn map_to(
-        pt_ref: Arc<SpinLock<PageTable<F>>>,
+        pt_ref: Arc<SpinLock<PageTable>>,
         paddr: PhysAddr,
         size: usize,
     ) -> Result<Self, PagingError> {
@@ -89,7 +89,7 @@ impl<F: NodeFrameOps> MmioRegion<F> {
     }
 }
 
-impl<F: NodeFrameOps> core::fmt::Debug for MmioRegion<F> {
+impl core::fmt::Debug for MmioRegion {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,

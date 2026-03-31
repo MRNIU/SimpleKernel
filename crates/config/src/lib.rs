@@ -66,6 +66,12 @@ pub const LOG_HDR_BUF_SIZE: usize = 128;
 /// Panic 格式化缓冲区大小（字节，栈上 heapless::String）
 pub const PANIC_BUF_SIZE: usize = 256;
 
+/// unmap 分块大小（页数）。
+///
+/// `MappedPages::unmap_and_reclaim` 每次在栈上处理的最大页数。
+/// 栈消耗：`UNMAP_CHUNK_SIZE × size_of::<PhysAddr>()` + `heapless::Vec` 开销。
+pub const UNMAP_CHUNK_SIZE: usize = 32;
+
 /// 物理地址到虚拟地址的固定偏移量。
 ///
 /// - `0`：identity mapping（VA == PA），当前使用

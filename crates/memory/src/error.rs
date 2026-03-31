@@ -45,9 +45,7 @@ impl From<paging::error::PagingError> for MemoryError {
         use paging::error::PagingError;
         match e {
             PagingError::AllocationFailed | PagingError::FrameAllocFailed => Self::AllocationFailed,
-            PagingError::AlreadyMapped
-            | PagingError::HugePageConflict
-            | PagingError::InvalidRange => Self::MapFailed,
+            PagingError::AlreadyMapped | PagingError::HugePageConflict => Self::MapFailed,
             PagingError::PageNotMapped => Self::PageNotMapped,
         }
     }

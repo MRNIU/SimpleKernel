@@ -9,8 +9,8 @@
 //!   才能调用这些方法，确保映射的创建与销毁始终通过 RAII 类型管理。
 //!
 //! PTE 编解码由 [`page_table_entry`] crate 提供。
-//! `PageTable` 对帧分配的依赖通过 [`NodeFrameOps`] trait 抽象——
-//! 消费方提供具体实现（裸机用物理帧分配器，测试用堆分配）。
+//! 帧分配通过 [`NodeFrame`] 类型别名选择具体实现（`cfg` 区分裸机与测试），
+//! 页表和映射类型均为非泛型。
 
 #![cfg_attr(not(test), no_std)]
 
@@ -43,9 +43,8 @@ pub mod mmio;
 
 /// 页表节点帧的统一接口。
 ///
-/// 消费方通过实现此 trait 向页表注入帧分配能力：
-/// - 裸机：`impl NodeFrameOps for AllocatedFrames`（在 `memory` crate 中）
-/// - 测试：`impl NodeFrameOps for HeapNodeFrame`（本 crate 内置）
+/// 裸机和测试各自提供一个实现，通过 [`NodeFrame`] 类型别名选择。
+/// 页表、映射等类型直接使用 `NodeFrame`，不再泛型化。
 pub trait NodeFrameOps: Send + Sized {
     /// 分配一个零初始化的页表节点帧。
     fn alloc() -> Result<Self, error::PagingError>;
@@ -53,9 +52,29 @@ pub trait NodeFrameOps: Send + Sized {
     fn paddr(&self) -> PhysAddr;
 }
 
-/// 测试用页表节点帧——从堆分配，模拟物理帧。
+// ── 裸机：包装 AllocatedFrames ─────────────────────────────
+
+/// 裸机页表节点帧——包装 `AllocatedFrames`。
 ///
-/// 通过 `test-support` feature 或 `cfg(test)` 启用。
+/// Newtype 用于为外部类型 `AllocatedFrames` 实现本 crate 的 `NodeFrameOps`。
+#[cfg(target_os = "none")]
+pub struct KernelNodeFrame(frame_allocator::AllocatedFrames);
+
+#[cfg(target_os = "none")]
+impl NodeFrameOps for KernelNodeFrame {
+    fn alloc() -> Result<Self, error::PagingError> {
+        frame_allocator::AllocatedFrames::alloc_one()
+            .map(Self)
+            .map_err(|_| error::PagingError::AllocationFailed)
+    }
+    fn paddr(&self) -> PhysAddr {
+        self.0.start_paddr()
+    }
+}
+
+// ── 测试：堆分配模拟 ──────────────────────────────────────
+
+/// 测试用页表节点帧——从堆分配，模拟物理帧。
 #[cfg(any(test, feature = "test-support"))]
 pub struct HeapNodeFrame {
     ptr: *mut u8,
@@ -91,6 +110,18 @@ impl NodeFrameOps for HeapNodeFrame {
         PhysAddr::new(self.ptr as usize)
     }
 }
+
+// ── 类型选择 ──────────────────────────────────────────────
+
+/// 当前编译目标使用的页表节点帧类型。
+///
+/// - 裸机（`target_os = "none"`）：[`KernelNodeFrame`]（物理帧分配器）
+/// - 测试 / `test-support`：[`HeapNodeFrame`]（堆分配模拟）
+#[cfg(target_os = "none")]
+pub type NodeFrame = KernelNodeFrame;
+/// 当前编译目标使用的页表节点帧类型（测试）。
+#[cfg(any(test, feature = "test-support"))]
+pub type NodeFrame = HeapNodeFrame;
 
 /// 每张页表中的条目数（PAGE_SIZE / sizeof(PTE)）。
 ///
