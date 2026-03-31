@@ -157,6 +157,11 @@ pub unsafe fn bootstrap_enable_irq() {
 /// 3. `switch_to` 在无锁状态下执行（中断仍禁用）
 /// 4. 返回后 `held` drop 恢复中断
 pub fn schedule() {
+    assert!(
+        !interrupt_state::is_in_interrupt(),
+        "禁止在中断上下文中调用 schedule()"
+    );
+
     let core_id = per_cpu::current_core_id();
 
     // 1. 禁用中断——跨越整个 switch_to，guard drop 后仍保持禁用

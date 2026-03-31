@@ -27,7 +27,7 @@ pub fn check_and_clear_need_resched() -> bool {
 
 /// 当前是否可以抢占。
 pub fn preemptible() -> bool {
-    *PREEMPT_DISABLE_COUNT.get() == 0 && !interrupt_state::in_interrupt()
+    *PREEMPT_DISABLE_COUNT.get() == 0 && !interrupt_state::is_in_interrupt()
 }
 
 /// 设置指定核心的 `need_resched` 标志（用于 IPI 跨核唤醒）。

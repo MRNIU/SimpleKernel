@@ -263,6 +263,7 @@ macro_rules! exception_handler {
     ($name:ident => irq) => {
         #[unsafe(no_mangle)]
         pub extern "C" fn $name(ctx: &mut TrapContext) {
+            let _irq = interrupt_state::HardIrqGuard::enter();
             dispatch_irq(ctx);
         }
     };

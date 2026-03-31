@@ -24,7 +24,7 @@ struct SafeHeap(SpinLock<Heap<32>>);
 #[inline(always)]
 fn assert_not_in_irq() {
     assert!(
-        !interrupt_state::in_interrupt(),
+        !interrupt_state::is_in_interrupt(),
         "禁止在中断上下文中进行堆操作"
     );
 }

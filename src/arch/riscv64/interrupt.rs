@@ -229,6 +229,7 @@ pub extern "C" fn HandleTrap(ctx: &mut TrapContext) -> *mut TrapContext {
     let code = scause & !(1u64 << 63);
 
     if is_interrupt {
+        let _irq = interrupt_state::HardIrqGuard::enter();
         match code {
             // 定时器中断（STIP）
             CAUSE_S_TIMER_INT => super::timer::handle_timer(),
