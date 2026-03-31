@@ -182,10 +182,7 @@ impl AddressSpace {
         let range = AddrRange::new(start, end);
         self.check_overlap(range)?;
 
-        let mapping = {
-            let mut pt = self.page_table.lock();
-            MappedPages::map_alloc(&mut pt, self.page_table.clone(), start, page_count, flags)?
-        };
+        let mapping = MappedPages::map_alloc(self.page_table.clone(), start, page_count, flags)?;
 
         let vma = Vma {
             range,
@@ -216,11 +213,9 @@ impl AddressSpace {
         self.check_overlap(range)?;
 
         let mapping = {
-            let mut pt = self.page_table.lock();
             let pa = address::PhysAddr::new(start.as_usize());
-            let mp =
-                MappedPages::map_identity(&mut pt, self.page_table.clone(), pa, page_count, flags)?;
-            mp.into_permanent()
+            MappedPages::map_identity(self.page_table.clone(), pa, page_count, flags)?
+                .into_permanent()
         };
 
         let vma = Vma {
@@ -312,27 +307,16 @@ impl AddressSpace {
 
         // Lazy VMA：物化映射
         let mapping = match vma.kind {
-            VmaKind::Anonymous => {
-                let mut pt = self.page_table.lock();
-                MappedPages::map_alloc(
-                    &mut pt,
-                    self.page_table.clone(),
-                    vma.range.start(),
-                    vma.page_count(),
-                    vma.flags,
-                )?
-            }
+            VmaKind::Anonymous => MappedPages::map_alloc(
+                self.page_table.clone(),
+                vma.range.start(),
+                vma.page_count(),
+                vma.flags,
+            )?,
             VmaKind::Identity => {
-                let mut pt = self.page_table.lock();
                 let pa = address::PhysAddr::new(vma.range.start().as_usize());
-                MappedPages::map_identity(
-                    &mut pt,
-                    self.page_table.clone(),
-                    pa,
-                    vma.page_count(),
-                    vma.flags,
-                )?
-                .into_permanent()
+                MappedPages::map_identity(self.page_table.clone(), pa, vma.page_count(), vma.flags)?
+                    .into_permanent()
             }
         };
 

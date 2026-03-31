@@ -316,6 +316,11 @@ impl<T: Sync> CpuLocal<T> {
     }
 
     /// 宿主机上无法真正跨核访问，返回当前值。
+    ///
+    /// # Safety
+    ///
+    /// 调用方需确保 `_target_core` 对应的 per-CPU 区域已初始化。
+    /// 宿主机测试环境下此函数直接返回模板值，无真实跨核语义。
     #[cfg(not(target_os = "none"))]
     #[inline(always)]
     pub unsafe fn get_on(&self, _target_core: usize) -> &T {

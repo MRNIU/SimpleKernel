@@ -19,7 +19,7 @@ config = { path = "../config" }
 sync_crate = { path = "../sync", package = "sync" }
 tlb = { path = "../tlb" }
 zerocopy.workspace = true
-log.workspace = true
+heapless.workspace = true
 
 [dev-dependencies]
 page_table = { path = "../page_table", features = ["test-support"] }

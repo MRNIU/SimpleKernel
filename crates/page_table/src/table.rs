@@ -185,10 +185,38 @@ impl<F: NodeFrameOps> PageTable<F> {
     ///
     /// 目标 VA 未映射时返回 `PageNotMapped`。
     pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PageTableError> {
-        self.unmap_at_level(va, 0)
+        self.unmap_page_with_flags(va).map(|(pa, _)| pa)
+    }
+
+    /// 取消映射并返回原始物理地址和 PTE 标志。
+    ///
+    /// 与 [`unmap_page`] 相同，但额外返回 unmap 前的 PTE 标志位，
+    /// 避免需要先 `get_mapping` 再 `unmap_page` 的双重页表遍历。
+    ///
+    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**。
+    ///
+    /// # Errors
+    ///
+    /// 目标 VA 未映射时返回 `PageNotMapped`。
+    pub fn unmap_page_with_flags(
+        &mut self,
+        va: VirtAddr,
+    ) -> Result<(PhysAddr, PteFlags), PageTableError> {
+        self.unmap_at_level_with_flags(va, 0)
     }
 
     /// 在指定层级取消映射，返回原始物理地址。
+    ///
+    /// 委托给 [`unmap_at_level_with_flags`]，丢弃标志位。
+    pub fn unmap_at_level(
+        &mut self,
+        va: VirtAddr,
+        level: usize,
+    ) -> Result<PhysAddr, PageTableError> {
+        self.unmap_at_level_with_flags(va, level).map(|(pa, _)| pa)
+    }
+
+    /// 在指定层级取消映射，返回原始物理地址和 PTE 标志。
     ///
     /// unmap 后通过引用计数判断中间页表节点是否全空并回收，
     /// 避免遍历整个页表帧的 O(entries_per_table) 开销。
@@ -199,11 +227,11 @@ impl<F: NodeFrameOps> PageTable<F> {
     /// # Errors
     ///
     /// 目标 VA 在指定层级未映射时返回 `PageNotMapped`。
-    pub fn unmap_at_level(
+    pub fn unmap_at_level_with_flags(
         &mut self,
         va: VirtAddr,
         level: usize,
-    ) -> Result<PhysAddr, PageTableError> {
+    ) -> Result<(PhysAddr, PteFlags), PageTableError> {
         let mut path: [(PhysAddr, usize, PhysAddr); PT_LEVELS] =
             [(PhysAddr::new(0), 0, PhysAddr::new(0)); PT_LEVELS];
         let mut path_len = 0;
@@ -234,6 +262,7 @@ impl<F: NodeFrameOps> PageTable<F> {
             return Err(PageTableError::PageNotMapped);
         }
         let old_pa = pte.paddr();
+        let old_flags = pte.flags();
         table.write(idx, PageTableEntry::empty());
         self.dec_ref(paddr);
 
@@ -255,7 +284,7 @@ impl<F: NodeFrameOps> PageTable<F> {
             child_paddr = parent_paddr;
         }
 
-        Ok(old_pa)
+        Ok((old_pa, old_flags))
     }
 
     /// 只读遍历——从根向下查找叶 PTE，返回 PTE 及其所在层级。

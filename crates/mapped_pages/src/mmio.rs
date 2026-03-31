@@ -7,7 +7,7 @@
 use alloc::sync::Arc;
 
 use crate::error::MappedPagesError;
-use crate::mapping::MappedPages;
+use crate::mapping::{MappedPages, check_bounds_and_align};
 use address::PhysAddr;
 use page_table::{NodeFrameOps, PageTable, PteFlags, PteFlagsOps};
 use sync_crate::SpinLock;
@@ -31,19 +31,22 @@ impl<F: NodeFrameOps> MmioRegion<F> {
         paddr: PhysAddr,
         size: usize,
     ) -> Result<Self, MappedPagesError> {
-        let mut guard = pt_ref.lock();
         let pa_aligned = paddr.align_down();
         let end = paddr + size;
-        guard.identity_map_range(pa_aligned, end, PteFlags::kernel_device())?;
         let page_count = (end.align_up().as_usize() - pa_aligned.as_usize()) / config::PAGE_SIZE;
-        let mapping = MappedPages::new_borrowed(
-            pt_ref.clone(),
-            address::VirtAddr::new(pa_aligned.as_usize()),
-            page_count,
-            PteFlags::kernel_device(),
-        );
-        drop(guard);
-        tlb::flush_tlb();
+        {
+            let mut guard = pt_ref.lock();
+            guard.identity_map_range(pa_aligned, end, PteFlags::kernel_device())?;
+        }
+        // SAFETY: identity_map_range 刚在 pt_ref 中建立了映射，page_count > 0（size > 0）
+        let mapping = unsafe {
+            MappedPages::new_borrowed(
+                pt_ref,
+                address::VirtAddr::new(pa_aligned.as_usize()),
+                page_count,
+                PteFlags::kernel_device(),
+            )
+        };
         Ok(Self { mapping })
     }
 
@@ -75,24 +78,15 @@ impl<F: NodeFrameOps> MmioRegion<F> {
     /// `offset + size_of::<T>()` 超出区域大小、或地址未对齐时 panic。
     #[inline]
     pub fn read_reg<T: zerocopy::FromBytes>(&self, offset: usize) -> T {
-        let size = self.mapping.size();
-        assert!(
-            offset + core::mem::size_of::<T>() <= size,
-            "MmioRegion::read_reg: offset {:#x} + {} 超出区域大小 {:#x}",
+        let ptr: *const T = check_bounds_and_align::<T>(
+            self.mapping.vaddr().as_usize(),
+            self.mapping.size(),
             offset,
-            core::mem::size_of::<T>(),
-            size,
-        );
-        let addr = self.mapping.vaddr().as_usize() + offset;
-        assert!(
-            addr.is_multiple_of(core::mem::align_of::<T>()),
-            "MmioRegion::read_reg: 地址 {:#x} 未对齐到 {} 字节",
-            addr,
-            core::mem::align_of::<T>(),
+            "MmioRegion::read_reg",
         );
         // SAFETY: MmioRegion 构造保证地址区间已映射为 device memory；
-        // assert 验证了越界和对齐；FromBytes 保证任意位模式合法
-        unsafe { core::ptr::read_volatile(addr as *const T) }
+        // check_bounds_and_align 验证了越界和对齐；FromBytes 保证任意位模式合法
+        unsafe { core::ptr::read_volatile(ptr) }
     }
 
     /// 写入指定偏移处的寄存器值（volatile 语义）。
@@ -102,24 +96,15 @@ impl<F: NodeFrameOps> MmioRegion<F> {
     /// `offset + size_of::<T>()` 超出区域大小、或地址未对齐时 panic。
     #[inline]
     pub fn write_reg<T: zerocopy::IntoBytes>(&self, offset: usize, val: T) {
-        let size = self.mapping.size();
-        assert!(
-            offset + core::mem::size_of::<T>() <= size,
-            "MmioRegion::write_reg: offset {:#x} + {} 超出区域大小 {:#x}",
+        let ptr: *const T = check_bounds_and_align::<T>(
+            self.mapping.vaddr().as_usize(),
+            self.mapping.size(),
             offset,
-            core::mem::size_of::<T>(),
-            size,
-        );
-        let addr = self.mapping.vaddr().as_usize() + offset;
-        assert!(
-            addr.is_multiple_of(core::mem::align_of::<T>()),
-            "MmioRegion::write_reg: 地址 {:#x} 未对齐到 {} 字节",
-            addr,
-            core::mem::align_of::<T>(),
+            "MmioRegion::write_reg",
         );
         // SAFETY: MmioRegion 构造保证地址区间已映射为 device memory；
-        // assert 验证了越界和对齐；IntoBytes 保证 val 的位模式可安全写入
-        unsafe { core::ptr::write_volatile(addr as *mut T, val) }
+        // check_bounds_and_align 验证了越界和对齐；IntoBytes 保证 val 的位模式可安全写入
+        unsafe { core::ptr::write_volatile(ptr as *mut T, val) }
     }
 }
 

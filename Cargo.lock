@@ -360,7 +360,7 @@ dependencies = [
  "address",
  "config",
  "frame_allocator",
- "log",
+ "heapless 0.8.0",
  "page_table",
  "sync",
  "tlb",
