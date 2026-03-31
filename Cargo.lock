@@ -5,8 +5,7 @@ version = 4
 [[package]]
 name = "aarch64-cpu"
 version = "11.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44171e22925ec72b63d86747bc3655c7849a5b8d865c980222128839f45ac034"
+source = "git+https://github.com/rust-embedded/aarch64-cpu?branch=main#5e4403c385639b9cbec388c3108c447573e58f1a"
 dependencies = [
  "tock-registers",
 ]

@@ -21,8 +21,6 @@ use core::marker::PhantomData;
 use core::sync::atomic::{AtomicU32, Ordering};
 use per_cpu::cpu_local;
 
-// ── 中断使能控制 ──────────────────────────────────────────────────────
-
 /// 查询当前中断是否启用。
 #[inline(always)]
 pub fn is_enabled() -> bool {
@@ -44,8 +42,6 @@ pub unsafe fn bootstrap_enable() {
     // SAFETY: 由调用方保证安全性
     unsafe { Arch::irq_enable() };
 }
-
-// ── HeldInterrupts ────────────────────────────────────────────────────
 
 /// 中断禁用的证明令牌（proof token）。
 ///
@@ -113,8 +109,6 @@ impl Drop for HeldInterrupts {
     }
 }
 
-// ── HardIrqGuard ──────────────────────────────────────────────────────
-
 /// 硬中断嵌套计数（>0 表示在 hardirq 上下文中）
 #[cpu_local]
 static HARDIRQ_COUNT: AtomicU32 = AtomicU32::new(0);
@@ -168,8 +162,6 @@ pub fn is_in_interrupt() -> bool {
         || SOFTIRQ_COUNT.get().load(Ordering::Relaxed) > 0
 }
 
-// ── 测试 ──────────────────────────────────────────────────────────────
-
 #[cfg(test)]
 mod tests {
     use std::sync::Mutex;
@@ -179,8 +171,6 @@ mod tests {
 
     /// 串行化访问全局状态，防止并行测试相互干扰。
     static TEST_LOCK: Mutex<()> = Mutex::new(());
-
-    // ── HeldInterrupts 测试 ──
 
     /// 中断关闭时 hold：was_enabled=false，drop 后中断仍为关闭。
     #[test]
@@ -211,8 +201,6 @@ mod tests {
     fn held_interrupts_size() {
         assert_eq!(core::mem::size_of::<HeldInterrupts>(), 1);
     }
-
-    // ── HardIrqGuard 测试 ──
 
     /// 默认状态不在中断上下文中。
     #[test]

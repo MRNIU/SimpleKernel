@@ -32,8 +32,6 @@ pub fn early_init(dtb_addr: usize) {
     let kernel_start = unsafe { &__executable_start as *const u8 as u64 };
     let kernel_end = unsafe { &_end as *const u8 as u64 };
 
-    // ── 分发到各子系统 ──
-
     MEMORY_INFO.call_once(|| MemoryInfo {
         physical_memory_addr: PhysAddr::new(mem_addr as usize),
         physical_memory_size: mem_size,

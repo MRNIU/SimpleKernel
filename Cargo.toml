@@ -88,7 +88,9 @@ sbi-rt = { version = "0.0.3", features = ["legacy"] }
 riscv = { version = "0.16", features = ["s-mode"] }
 
 # AArch64
-aarch64-cpu = "11"
+# TODO: aarch64-cpu 使用 git 依赖以获取 DAIFSet/DAIFClr 支持，待包含此功能的新版本
+#       发布到 crates.io 后切换回版本依赖
+aarch64-cpu = { git = "https://github.com/rust-embedded/aarch64-cpu", branch = "main" }
 tock-registers = "0.10"
 arm-gic = "0.8"
 arm-psci = "0.2"

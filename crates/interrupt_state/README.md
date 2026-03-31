@@ -62,7 +62,8 @@ drop(outer);                          // was_enabled = true  → 恢复中断
 | AArch64 | `DAIF.I == 0` | `msr daifset, #2` | `msr daifclr, #2` |
 | 宿主机（测试） | 返回 `false` | no-op | no-op |
 
-AArch64 使用 `daifset`/`daifclr` 而非 `DAIF.write()`，
+AArch64 通过 `aarch64-cpu` crate 的 `DAIFSet`/`DAIFClr` 封装使用
+`daifset`/`daifclr` 指令，而非 `DAIF.write()`，
 避免意外取消屏蔽 Debug/SError/FIQ 异常。
 
 ## 模块结构
@@ -108,15 +109,3 @@ fn access_per_cpu_data(held: &HeldInterrupts) {
 ```
 
 这比 `unsafe` + 注释更安全——如果调用方没有 `HeldInterrupts` 值，代码无法编译。
-
-## TODO
-
-### AArch64 裸汇编替换
-
-AArch64 的 `irq_disable`/`irq_enable` 使用裸汇编（`msr daifset, #2` / `msr daifclr, #2`），
-因为 `aarch64-cpu` crate 的 `DAIF` 只提供整寄存器读写（`msr DAIF, Xn`），
-会覆盖 Debug/SError/FIQ 的屏蔽位。`daifset`/`daifclr` 是原子位操作指令，
-只修改指定位不影响其他异常掩码。
-
-待上游 `aarch64-cpu` 提供 `daifset`/`daifclr` 封装后，替换裸汇编。
-也可考虑向上游提交 PR 添加此功能。

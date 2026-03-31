@@ -149,10 +149,8 @@ pub fn init() {
     GicCpuInterface::set_priority_mask(0xFF);
 
     // 使能 IRQ（仅清除 DAIF.I 位）
-    // SAFETY: msr daifclr 是特权指令，在 EL1 下合法
-    unsafe {
-        core::arch::asm!("msr daifclr, #2");
-    }
+    // SAFETY: 向量表已设置，GIC 已初始化，此处为 bootstrap 路径
+    unsafe { interrupt_state::bootstrap_enable() };
 
     log::info!("InterruptInit: GICv3 (arm-gic) done");
 }
@@ -195,10 +193,8 @@ pub fn init_smp() {
     GicCpuInterface::set_priority_mask(0xFF);
     GicCpuInterface::enable_group1(true);
 
-    // SAFETY: msr daifclr 在 EL1 下合法
-    unsafe {
-        core::arch::asm!("msr daifclr, #2");
-    }
+    // SAFETY: 向量表已设置，GIC 已初始化，此处为 SMP bootstrap 路径
+    unsafe { interrupt_state::bootstrap_enable() };
 }
 
 /// 分发 IRQ（通过 GicCpuInterface 系统寄存器完成 IAR/EOIR）
