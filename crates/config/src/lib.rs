@@ -66,11 +66,17 @@ pub const LOG_HDR_BUF_SIZE: usize = 128;
 /// Panic 格式化缓冲区大小（字节，栈上 heapless::String）
 pub const PANIC_BUF_SIZE: usize = 256;
 
+/// map 分块大小（页数）。
+///
+/// `MappedPages::map_alloc` 每次在栈上分配并映射的最大页数。
+/// 栈消耗：`MAP_CHUNK_SIZE × size_of::<AllocatedFrames>()` ≈ `MAP_CHUNK_SIZE × 16` 字节。
+pub const MAP_CHUNK_SIZE: usize = 128;
+
 /// unmap 分块大小（页数）。
 ///
 /// `MappedPages::unmap_and_reclaim` 每次在栈上处理的最大页数。
-/// 栈消耗：`UNMAP_CHUNK_SIZE × size_of::<PhysAddr>()` + `heapless::Vec` 开销。
-pub const UNMAP_CHUNK_SIZE: usize = 32;
+/// 栈消耗：`UNMAP_CHUNK_SIZE × size_of::<PhysAddr>()` ≈ `UNMAP_CHUNK_SIZE × 8` 字节。
+pub const UNMAP_CHUNK_SIZE: usize = 256;
 
 /// 物理地址到虚拟地址的固定偏移量。
 ///
@@ -91,3 +97,14 @@ const _: () = assert!(
     "KERNEL_STACK_SIZE must be >= PAGE_SIZE"
 );
 const _: () = assert!(MAX_CORE_COUNT > 0, "MAX_CORE_COUNT must be > 0");
+const _: () = assert!(MAP_CHUNK_SIZE > 0, "MAP_CHUNK_SIZE must be > 0");
+const _: () = assert!(UNMAP_CHUNK_SIZE > 0, "UNMAP_CHUNK_SIZE must be > 0");
+// map: AllocatedFrames ≈ 16B，unmap: PhysAddr ≈ 8B，栈预算上限 4KB
+const _: () = assert!(
+    MAP_CHUNK_SIZE * 16 <= 4096,
+    "MAP_CHUNK_SIZE 栈消耗超过 4KB 预算"
+);
+const _: () = assert!(
+    UNMAP_CHUNK_SIZE * 8 <= 4096,
+    "UNMAP_CHUNK_SIZE 栈消耗超过 4KB 预算"
+);

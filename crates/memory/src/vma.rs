@@ -182,7 +182,7 @@ impl AddressSpace {
         let range = AddrRange::new(start, end);
         self.check_overlap(range)?;
 
-        let mapping = MappedPages::map_alloc(self.page_table.clone(), start, page_count, flags)?;
+        let mapping = MappedPages::map_alloc(self.page_table.clone(), start, page_count, flags);
 
         let vma = Vma {
             range,
@@ -312,7 +312,7 @@ impl AddressSpace {
                 vma.range.start(),
                 vma.page_count(),
                 vma.flags,
-            )?,
+            ),
             VmaKind::Identity => {
                 let pa = address::PhysAddr::new(vma.range.start().as_usize());
                 MappedPages::map_identity(self.page_table.clone(), pa, vma.page_count(), vma.flags)?

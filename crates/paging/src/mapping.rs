@@ -32,8 +32,11 @@ use sync_crate::SpinLock;
 use crate::error::PagingError;
 use crate::{PageTable, PteFlags, PteFlagsOps};
 
-/// unmap_and_reclaim 每次处理的最大页数——来自 `config::UNMAP_CHUNK_SIZE`。
-const CHUNK_SIZE: usize = config::UNMAP_CHUNK_SIZE;
+/// map_alloc 每次分配并映射的最大页数。
+const MAP_CHUNK: usize = config::MAP_CHUNK_SIZE;
+
+/// unmap_and_reclaim 每次处理的最大页数。
+const UNMAP_CHUNK: usize = config::UNMAP_CHUNK_SIZE;
 
 /// 仿射类型映射——持有此值即证明 VA->PA 映射有效。
 ///
@@ -63,13 +66,10 @@ impl MappedPages {
     /// 虚拟地址不经过页分配器（VA == PA，由物理布局决定）。
     /// 使用场景：内核启动时的 RAM identity mapping、MMIO 映射。
     ///
-    /// # Errors
-    ///
-    /// 映射冲突时返回错误。
-    ///
     /// # Panics
     ///
-    /// `page_count` 为 0 时 panic。
+    /// - `page_count` 为 0 时 panic。
+    /// - 映射冲突时 panic（`identity_map_range` 内部不可恢复）。
     pub fn map_identity(
         pt_ref: Arc<SpinLock<PageTable>>,
         pa_start: PhysAddr,
@@ -115,61 +115,65 @@ impl MappedPages {
 
     /// 分配新帧并建立映射——**设置 EXCLUSIVE 位**。
     ///
-    /// 内部分配帧并逐页映射，帧所有权通过 PTE 的 EXCLUSIVE 位追踪。
+    /// 分块处理：每轮先分配一批帧到栈缓冲（不持页表锁），再获取锁批量映射。
+    /// 避免堆分配（`Vec` 扩容可能触发页表映射导致递归）。
+    /// 帧所有权通过 PTE 的 EXCLUSIVE 位追踪。
     /// 虚拟地址由调用方指定（通常通过 `AddressSpace` 的 VMA 管理）。
-    ///
-    /// # Errors
-    ///
-    /// 帧分配失败或映射冲突时返回错误。
     ///
     /// # Panics
     ///
-    /// `page_count` 为 0 时 panic。
+    /// - `page_count` 为 0 时 panic。
+    /// - 帧分配失败时 panic（物理内存耗尽不可恢复）。
+    /// - 映射冲突时 panic（说明调用方 VA 管理有 bug）。
     pub fn map_alloc(
         pt_ref: Arc<SpinLock<PageTable>>,
         va_start: VirtAddr,
         page_count: usize,
         flags: PteFlags,
-    ) -> Result<Self, PagingError> {
+    ) -> Self {
         assert!(
             page_count > 0,
             "MappedPages::map_alloc: page_count 不能为 0"
         );
         let exclusive_flags = flags.with_exclusive();
-        let mut mapped_count = 0usize;
-        let mut pt = pt_ref.lock();
-        for i in 0..page_count {
-            let frame = AllocatedFrames::alloc_one().map_err(|_| PagingError::FrameAllocFailed)?;
-            let pa = frame.start_paddr();
-            let va = va_start + i * PAGE_SIZE;
-            match pt.map_page(va, pa, exclusive_flags) {
-                Ok(()) => {
-                    // 帧所有权转移到 PTE：forget 阻止 drop 回收
-                    let mapped = frame.into_mapped();
-                    core::mem::forget(mapped);
-                    mapped_count += 1;
-                }
-                Err(e) => {
-                    // 回滚已映射的页——EXCLUSIVE 帧通过 unmap 路径回收
-                    for j in (0..mapped_count).rev() {
-                        let va = va_start + j * PAGE_SIZE;
-                        if let Ok(old_pa) = pt.unmap_page(va) {
-                            reclaim_exclusive_frame(old_pa);
-                        }
-                    }
-                    // 当前这个未映射成功的 frame 会正常 drop 回收
-                    return Err(e);
-                }
+        let mut offset = 0;
+
+        while offset < page_count {
+            let n = (page_count - offset).min(MAP_CHUNK);
+
+            // 1. 分配帧到栈缓冲（不持页表锁，不用堆分配）
+            let mut frames: heapless::Vec<AllocatedFrames, MAP_CHUNK> = heapless::Vec::new();
+            for _ in 0..n {
+                let frame =
+                    AllocatedFrames::alloc_one().expect("map_alloc: 帧分配失败（物理内存耗尽）");
+                frames
+                    .push(frame)
+                    .unwrap_or_else(|_| panic!("map_alloc: 帧数不超过 MAP_CHUNK"));
             }
+
+            // 2. 获取锁，批量映射
+            let mut pt = pt_ref.lock();
+            for (i, frame) in frames.into_iter().enumerate() {
+                let pa = frame.start_paddr();
+                let va = va_start + (offset + i) * PAGE_SIZE;
+                pt.map_page(va, pa, exclusive_flags)
+                    .expect("map_alloc: map_page 失败（VA 冲突说明调用方 VMA 管理有 bug）");
+                // 帧所有权转移到 PTE：forget 阻止 drop 回收
+                let mapped = frame.into_mapped();
+                core::mem::forget(mapped);
+            }
+            drop(pt);
+
+            offset += n;
         }
-        drop(pt);
-        Ok(Self {
+
+        Self {
             vaddr: va_start,
             page_count,
             flags: exclusive_flags,
             permanent: false,
             page_table: pt_ref,
-        })
+        }
     }
 
     /// 消耗 self，标记为永久映射（drop 时不 unmap）。
@@ -289,18 +293,25 @@ impl MappedPages {
     fn unmap_and_reclaim(&self) {
         let mut offset = 0;
         while offset < self.page_count {
-            let n = (self.page_count - offset).min(CHUNK_SIZE);
-            let mut exclusive_pas: heapless::Vec<PhysAddr, CHUNK_SIZE> = heapless::Vec::new();
+            let n = (self.page_count - offset).min(UNMAP_CHUNK);
+            let mut exclusive_pas: heapless::Vec<PhysAddr, UNMAP_CHUNK> = heapless::Vec::new();
 
             {
                 let mut guard = self.page_table.lock();
                 for i in 0..n {
                     let va = self.vaddr + (offset + i) * PAGE_SIZE;
-                    if let Ok((pa, flags)) = guard.unmap_page_with_flags(va) {
-                        if flags.is_exclusive() {
-                            exclusive_pas
-                                .push(pa)
-                                .expect("exclusive 帧数不超过 CHUNK_SIZE");
+                    match guard.unmap_page_with_flags(va) {
+                        Ok((pa, flags)) => {
+                            if flags.is_exclusive() {
+                                exclusive_pas
+                                    .push(pa)
+                                    .expect("exclusive 帧数不超过 UNMAP_CHUNK");
+                            }
+                        }
+                        Err(e) => {
+                            log::warn!(
+                                "MappedPages::unmap_and_reclaim: unmap {va} 失败: {e}，可能存在状态不一致"
+                            );
                         }
                     }
                 }
@@ -335,7 +346,7 @@ pub(crate) fn check_bounds_and_align<T>(
 ) -> *const T {
     let type_size = core::mem::size_of::<T>();
     assert!(
-        offset + type_size <= size,
+        type_size <= size && offset <= size - type_size,
         "{fn_name}: offset {:#x} + {type_size} 超出映射大小 {:#x}",
         offset,
         size,
@@ -385,16 +396,10 @@ impl core::fmt::Debug for MappedPages {
     }
 }
 
-/// 创建测试用 `Arc<SpinLock<PageTable>>`。
-#[cfg(any(test, feature = "test-support"))]
-pub fn test_pt() -> Arc<SpinLock<PageTable>> {
-    let pt = PageTable::create().expect("创建页表");
-    Arc::new(SpinLock::new(pt, "test_pt"))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_pt;
     type Mp = MappedPages;
 
     /// map_identity 应建立正确的映射并可查询。
@@ -414,7 +419,7 @@ mod tests {
             assert_eq!(got_pa, pa);
             assert!(!got_flags.is_exclusive());
         }
-        let _ = mp.into_permanent();
+        drop(mp);
     }
 
     /// map_identity 重复映射同一 VA 应 panic（identity_map_range 不可恢复）。
@@ -423,6 +428,7 @@ mod tests {
     fn map_identity_conflict_panics() {
         let pt_ref = test_pt();
         let pa = PhysAddr::new(0x2_0000);
+        // _mp1 必须保持 permanent，否则 drop 会 unmap 使后续映射不冲突
         let _mp1 = Mp::map_identity(pt_ref.clone(), pa, 1, PteFlags::kernel_rw())
             .expect("首次 map 应成功")
             .into_permanent();
@@ -440,7 +446,6 @@ mod tests {
         assert!(!mp.flags().is_exclusive());
         let dbg = alloc::format!("{:?}", mp);
         assert!(dbg.contains("borrowed"));
-        let _ = mp.into_permanent();
     }
 
     /// into_permanent 应标记为永久映射。
@@ -459,8 +464,7 @@ mod tests {
         let pt_ref = test_pt();
         let pa = PhysAddr::new(0x5_0000);
         let _mp = Mp::map_identity(pt_ref.clone(), pa, 3, PteFlags::kernel_ro())
-            .expect("多页 map 应成功")
-            .into_permanent();
+            .expect("多页 map 应成功");
         let guard = pt_ref.lock();
         for i in 0..3 {
             let va = VirtAddr::new(0x5_0000 + i * PAGE_SIZE);
@@ -474,8 +478,7 @@ mod tests {
         frame_allocator::ensure_test_init();
         let pt_ref = test_pt();
         let va = VirtAddr::new(0x10_0000);
-        let mp =
-            Mp::map_alloc(pt_ref.clone(), va, 1, PteFlags::kernel_rw()).expect("map_alloc 应成功");
+        let mp = Mp::map_alloc(pt_ref.clone(), va, 1, PteFlags::kernel_rw());
 
         let guard = pt_ref.lock();
         let (_, got_flags) = guard.get_mapping(va).expect("应能查到映射");
@@ -486,7 +489,6 @@ mod tests {
         drop(guard);
         assert!(mp.flags().is_exclusive());
         assert_eq!(mp.size(), PAGE_SIZE);
-        let _ = mp.into_permanent();
     }
 
     /// map_alloc 多页后逐页应都有 EXCLUSIVE 位。
@@ -495,9 +497,7 @@ mod tests {
         frame_allocator::ensure_test_init();
         let pt_ref = test_pt();
         let va = VirtAddr::new(0x20_0000);
-        let _mp = Mp::map_alloc(pt_ref.clone(), va, 3, PteFlags::kernel_rw())
-            .expect("多页 map_alloc 应成功")
-            .into_permanent();
+        let _mp = Mp::map_alloc(pt_ref.clone(), va, 3, PteFlags::kernel_rw());
         let guard = pt_ref.lock();
         for i in 0..3 {
             let page_va = VirtAddr::new(0x20_0000 + i * PAGE_SIZE);
@@ -519,8 +519,6 @@ mod tests {
 
         let val: &u32 = mp.as_type::<u32>(0);
         assert_eq!(*val, 0);
-        let _ = mp.into_permanent();
-        drop(buf);
     }
 
     /// as_type_mut 应能写入映射区域。
@@ -543,8 +541,6 @@ mod tests {
         *val = 0xDEAD_BEEF;
         let readback: &u32 = mp.as_type::<u32>(0);
         assert_eq!(*readback, 0xDEAD_BEEF);
-        let _ = mp.into_permanent();
-        drop(buf);
     }
 
     /// as_type 偏移越界应 panic。
@@ -609,8 +605,7 @@ mod tests {
         frame_allocator::ensure_test_init();
         let pt_ref = test_pt();
         let va = VirtAddr::new(0x30_0000);
-        let mp =
-            Mp::map_alloc(pt_ref.clone(), va, 2, PteFlags::kernel_rw()).expect("map_alloc 应成功");
+        let mp = Mp::map_alloc(pt_ref.clone(), va, 2, PteFlags::kernel_rw());
 
         // 确认映射存在且有 EXCLUSIVE 位
         {

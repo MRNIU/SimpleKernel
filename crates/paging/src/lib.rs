@@ -35,8 +35,12 @@ pub use table::PageTable;
 pub mod mapping;
 #[cfg(any(test, feature = "test-support", target_os = "none"))]
 pub use mapping::MappedPages;
+/// 创建测试用 `Arc<SpinLock<PageTable>>`。
 #[cfg(any(test, feature = "test-support"))]
-pub use mapping::test_pt;
+pub fn test_pt() -> alloc::sync::Arc<sync_crate::SpinLock<PageTable>> {
+    let pt = PageTable::create().expect("创建页表");
+    alloc::sync::Arc::new(sync_crate::SpinLock::new(pt, "test_pt"))
+}
 
 #[cfg(any(test, feature = "test-support", target_os = "none"))]
 pub mod mmio;

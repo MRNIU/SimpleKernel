@@ -426,6 +426,7 @@ dependencies = [
  "config",
  "frame_allocator",
  "heapless 0.8.0",
+ "log",
  "page_table_entry",
  "sync",
  "tlb",

@@ -106,7 +106,8 @@ impl PageTable {
             if !pte.is_valid() {
                 let frame = NodeFrame::alloc()?;
                 let frame_paddr = frame.paddr();
-                table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
+                // 先注册所有权，再写 PTE——若 BTreeMap::insert 因 OOM panic，
+                // frame 随 NodeEntry drop 释放，但不会产生悬挂 PTE。
                 self.nodes.insert(
                     frame_paddr,
                     NodeEntry {
@@ -114,6 +115,7 @@ impl PageTable {
                         ref_count: 0,
                     },
                 );
+                table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
                 self.inc_ref(paddr);
                 paddr = frame_paddr;
             } else if pte.is_leaf(level) {
