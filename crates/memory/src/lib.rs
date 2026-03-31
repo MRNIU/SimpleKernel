@@ -81,7 +81,6 @@ pub fn map_mmio(
     let region = MmioRegion::map_to(kpt, paddr, size)?;
     let vaddr = region.base();
     let region_size = region.size();
-    let _permanent = region.into_permanent();
 
     // 在内核地址空间中注册 MMIO 区域
     if let Some(kas) = kernel_address_space() {

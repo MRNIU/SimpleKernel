@@ -71,7 +71,7 @@ fn plic_init() {
     let kpt = kernel_page_table().expect("plic_init: 内核页表未初始化");
     let region = MmioRegion::map_to(kpt, PhysAddr::new(base), PLIC_SIZE)
         .expect("plic_init: 映射 PLIC MMIO 失败");
-    PLIC.call_once(|| region.into_permanent());
+    PLIC.call_once(|| region);
 
     let plic = plic();
     // Step 2: 设置 UART IRQ 优先级（偏移 = IRQ * 4）

@@ -35,17 +35,9 @@ impl<F: NodeFrameOps> MmioRegion<F> {
         let pa_aligned = paddr.align_down();
         let page_count = ((paddr + size).align_up().as_usize() - pa_aligned.as_usize()) / PAGE_SIZE;
         let mapping =
-            MappedPages::map_identity(pt_ref, pa_aligned, page_count, PteFlags::kernel_device())?;
+            MappedPages::map_identity(pt_ref, pa_aligned, page_count, PteFlags::kernel_device())?
+                .into_permanent();
         Ok(Self { mapping })
-    }
-
-    /// 标记为永久映射——drop 时不 unmap。
-    ///
-    /// 用于 PLIC、GIC 等内核生命周期内永远需要的 MMIO 区域。
-    #[must_use]
-    pub fn into_permanent(mut self) -> Self {
-        self.mapping = self.mapping.into_permanent();
-        self
     }
 
     /// 返回 MMIO 区域的基地址。
