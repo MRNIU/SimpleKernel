@@ -24,9 +24,7 @@ members = [
     "crates/frame_allocator",
     "crates/heap",
     "crates/page_table_entry",
-    "crates/page_table",
     "crates/tlb",
-    "crates/mapped_pages",
     "crates/paging",
     "crates/memory",
     "tests/system",
@@ -149,7 +147,7 @@ sync = { path = "crates/sync" }
 global_tick = { path = "crates/global_tick" }
 local_tick = { path = "crates/local_tick" }
 heap = { path = "crates/heap" }
-page_table = { path = "crates/page_table" }
+paging = { path = "crates/paging" }
 memory = { path = "crates/memory" }
 
 # --- 同步 ---

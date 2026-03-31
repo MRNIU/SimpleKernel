@@ -354,20 +354,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ca88d725a0a943b096803bd34e73a4437208b6077654cc4ecb2947a5f91618d"
 
 [[package]]
-name = "mapped_pages"
-version = "0.1.0"
-dependencies = [
- "address",
- "config",
- "frame_allocator",
- "heapless 0.8.0",
- "page_table",
- "sync",
- "tlb",
- "zerocopy",
-]
-
-[[package]]
 name = "memoffset"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -422,15 +408,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "page_table"
-version = "0.1.0"
-dependencies = [
- "address",
- "config",
- "page_table_entry",
 ]
 
 [[package]]
@@ -615,7 +592,7 @@ dependencies = [
  "local_tick",
  "log",
  "memory",
- "page_table",
+ "paging",
  "per_cpu",
  "qemu-exit",
  "riscv",

@@ -57,7 +57,7 @@ impl ArchOps for Aarch64 {
         addr_space: &mut memory::vma::AddressSpace,
     ) -> Result<(), memory::error::MemoryError> {
         use address::VirtAddr;
-        use page_table::{PteFlags, PteFlagsOps};
+        use paging::{PteFlags, PteFlagsOps};
         // PL011 UART —— console 直接 MMIO 访问
         addr_space.mmap_identity_range(
             VirtAddr::new(PL011_BASE),
