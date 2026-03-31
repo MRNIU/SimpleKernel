@@ -50,8 +50,6 @@ fn level_label(level: log::Level) -> &'static str {
     }
 }
 
-use crate::util::fmt_buf::FmtBuf;
-
 struct KernelLogger;
 
 impl log::Log for KernelLogger {
@@ -68,10 +66,10 @@ impl log::Log for KernelLogger {
         let core_id = per_cpu::current_core_id();
         let level = record.level();
 
-        let mut buf = FmtBuf::new();
-        let _ = write!(&mut buf, "{}", record.args());
+        let mut buf = heapless::String::<{ config::LOG_MSG_BUF_SIZE }>::new();
+        let truncated = write!(&mut buf, "{}", record.args()).is_err();
 
-        let mut hdr = FmtBuf::new();
+        let mut hdr = heapless::String::<{ config::LOG_HDR_BUF_SIZE }>::new();
         let _ = write!(
             &mut hdr,
             "{}[{}][{} {}] ",
@@ -84,7 +82,7 @@ impl log::Log for KernelLogger {
         let _guard = CONSOLE_LOCK.lock();
         put_str(hdr.as_str());
         put_str(buf.as_str());
-        if buf.is_truncated() {
+        if truncated {
             put_str("...[truncated]");
         }
         put_str(ANSI_RESET);

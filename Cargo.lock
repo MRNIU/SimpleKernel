@@ -277,6 +277,7 @@ version = "0.1.0"
 dependencies = [
  "buddy_system_allocator",
  "config",
+ "interrupt_state",
  "log",
  "sync",
 ]
@@ -312,6 +313,7 @@ name = "interrupt_state"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
+ "per_cpu",
  "riscv",
 ]
 

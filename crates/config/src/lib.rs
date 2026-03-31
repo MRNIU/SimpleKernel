@@ -57,6 +57,15 @@ pub const DEFAULT_LOG_LEVEL: log::LevelFilter = log::LevelFilter::Debug;
 /// 回溯最大帧数
 pub const MAX_BACKTRACE_DEPTH: usize = 16;
 
+/// 日志消息体缓冲区大小（字节，栈上 heapless::String）
+pub const LOG_MSG_BUF_SIZE: usize = 256;
+
+/// 日志头部缓冲区大小（字节，栈上 heapless::String）
+pub const LOG_HDR_BUF_SIZE: usize = 128;
+
+/// Panic 格式化缓冲区大小（字节，栈上 heapless::String）
+pub const PANIC_BUF_SIZE: usize = 256;
+
 /// 物理地址到虚拟地址的固定偏移量。
 ///
 /// - `0`：identity mapping（VA == PA），当前使用

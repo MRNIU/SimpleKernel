@@ -24,7 +24,6 @@ pub mod elf;
 pub mod fdt;
 #[cfg(target_os = "none")]
 pub mod init;
-pub mod irq_context;
 #[cfg(all(target_os = "none", feature = "lang_items"))]
 pub mod lang_items;
 pub mod logging;

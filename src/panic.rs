@@ -72,8 +72,6 @@ fn notify_observers(event: &PanicEvent<'_>) {
     }
 }
 
-use crate::util::fmt_buf::FmtBuf;
-
 /// 核心 panic 处理器。打印位置、消息、回溯，并通知观察者。
 #[cfg(not(test))]
 pub fn handle_panic(info: &core::panic::PanicInfo<'_>) -> ! {
@@ -82,7 +80,7 @@ pub fn handle_panic(info: &core::panic::PanicInfo<'_>) -> ! {
     raw_put("\x1b[31mPANIC\x1b[0m at ");
 
     let (file, line) = if let Some(loc) = info.location() {
-        let mut buf = FmtBuf::new();
+        let mut buf = heapless::String::<{ config::PANIC_BUF_SIZE }>::new();
         let _ = write!(buf, "{}:{}", loc.file(), loc.line());
         raw_put(buf.as_str());
         (loc.file(), loc.line())
@@ -92,7 +90,7 @@ pub fn handle_panic(info: &core::panic::PanicInfo<'_>) -> ! {
     };
 
     raw_put(": ");
-    let mut msg_buf = FmtBuf::new();
+    let mut msg_buf = heapless::String::<{ config::PANIC_BUF_SIZE }>::new();
     let _ = write!(msg_buf, "{}", info.message());
     raw_put(msg_buf.as_str());
     raw_put("\n");
@@ -139,14 +137,14 @@ fn dump_backtrace() {
             return UnwindReasonCode::NORMAL_STOP;
         }
 
-        let mut buf = FmtBuf::new();
+        let mut buf = heapless::String::<{ config::PANIC_BUF_SIZE }>::new();
         let _ = write!(buf, "    #{}: 0x{:016X}", depth, ip);
         crate::logging::raw_put(buf.as_str());
 
         if let Some(elf) = KERNEL_ELF.get() {
             if let Some(name) = elf.lookup_symbol(ip as u64) {
                 crate::logging::raw_put(" - ");
-                let mut sym_buf = FmtBuf::new();
+                let mut sym_buf = heapless::String::<{ config::PANIC_BUF_SIZE }>::new();
                 let _ = write!(sym_buf, "{:#}", rustc_demangle::demangle(name));
                 crate::logging::raw_put(sym_buf.as_str());
             }
@@ -196,20 +194,27 @@ mod tests {
         assert_eq!(event.line, 42);
     }
 
+    /// heapless::String 基本格式化。
     #[test]
-    fn fmt_buf_basic() {
-        let mut buf = FmtBuf::new();
+    fn heapless_string_basic() {
+        let mut buf = heapless::String::<{ config::PANIC_BUF_SIZE }>::new();
         let _ = write!(buf, "hello {}", 42);
         assert_eq!(buf.as_str(), "hello 42");
     }
 
+    /// heapless::String 容量溢出时 write! 返回 Err。
     #[test]
-    fn fmt_buf_overflow() {
-        let mut buf = FmtBuf::new();
+    fn heapless_string_overflow() {
+        let mut buf = heapless::String::<32>::new();
+        let mut overflowed = false;
         for _ in 0..100 {
-            let _ = write!(buf, "overflow!");
+            if write!(buf, "overflow!").is_err() {
+                overflowed = true;
+                break;
+            }
         }
-        assert!(buf.pos <= 256);
+        assert!(overflowed);
+        assert!(buf.len() <= 32);
         assert!(!buf.as_str().is_empty());
     }
 }

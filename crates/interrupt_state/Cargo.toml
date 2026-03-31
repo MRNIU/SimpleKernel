@@ -4,8 +4,11 @@ version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Interrupt state management — HeldInterrupts proof token and arch-specific enable/disable"
+description = "Interrupt state management — HeldInterrupts proof token, HardIrqGuard context tracking, and arch-specific enable/disable"
 edition.workspace = true
+
+[dependencies]
+per_cpu = { path = "../per_cpu" }
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]
 riscv.workspace = true

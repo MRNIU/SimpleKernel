@@ -10,8 +10,10 @@
 
 mod arch;
 mod held;
+pub mod irq_context;
 
 pub use held::HeldInterrupts;
+pub use irq_context::{HardIrqGuard, in_interrupt};
 
 use arch::{Arch, InterruptArch as _};
 

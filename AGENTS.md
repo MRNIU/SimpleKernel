@@ -98,6 +98,7 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 - **NO** `static mut` — use `SyncUnsafeCell` or `spin::Once<T>`
 - **NO** empty `unsafe {}` blocks to bypass borrow checker
 - **NO** suppressing warnings with `#[allow(...)]` without justification
+- **NO** heap allocation in interrupt context (`Box`, `Vec`, `String`, `format!`)——use `heapless` containers or stack buffers
 - **NO** modifying `src/` (legacy C++ code, read-only reference)
 
 ## UNIQUE STYLES

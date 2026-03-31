@@ -9,6 +9,7 @@ edition.workspace = true
 
 [dependencies]
 config = { path = "../config" }
+interrupt_state = { path = "../interrupt_state" }
 sync_crate = { path = "../sync", package = "sync" }
 
 buddy_system_allocator.workspace = true
