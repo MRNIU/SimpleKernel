@@ -27,6 +27,7 @@ members = [
     "crates/page_table",
     "crates/tlb",
     "crates/mapped_pages",
+    "crates/paging",
     "crates/memory",
     "tests/system",
     "tests/standalone/panic_test",

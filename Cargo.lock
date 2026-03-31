@@ -443,6 +443,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "paging"
+version = "0.1.0"
+dependencies = [
+ "address",
+ "config",
+ "frame_allocator",
+ "heapless 0.8.0",
+ "page_table_entry",
+ "sync",
+ "tlb",
+ "zerocopy",
+]
+
+[[package]]
 name = "panic-test"
 version = "0.1.0"
 dependencies = [
