@@ -50,6 +50,8 @@ struct MappedPagesInner {
 ```
 
 `flags()` 从 PTE 读取：`self.page_table.get_mapping(self.vaddr).flags().without_exclusive()`。
+**性能 trade-off**：从 O(1) 字段读退化为 O(PT_LEVELS) 页表 walk（3-4 次 Acquire load）。
+当前调用者仅有 VMA 构造（`mapping.flags()`，低频）和 Debug 格式化，可接受。
 
 ### 方法分类
 
@@ -76,8 +78,9 @@ impl Table {
     fn swap(&self, index: usize, val: u64) -> u64;
 
     /// AcqRel CAS——无锁 map（安装中间节点或叶 PTE）。
-    /// 返回 CAS 前的旧值。
-    fn compare_exchange(&self, index: usize, expected: u64, new: u64) -> u64;
+    /// 返回 Result：Ok(old) CAS 成功，Err(actual) CAS 失败。
+    /// 与 std::sync::atomic::AtomicU64::compare_exchange 语义一致。
+    fn compare_exchange(&self, index: usize, expected: u64, new: u64) -> Result<u64, u64>;
 }
 ```
 
@@ -102,19 +105,22 @@ fn walk_create_cas(&self, va: VirtAddr, target_level: usize)
             let frame_paddr = frame.paddr();
             let new_pte = PageTableEntry::new_intermediate(frame_paddr);
 
-            let old = table.compare_exchange(idx, 0, new_pte.as_raw());
-            if old == 0 {
-                // CAS 成功——所有权编码到 PTE，forget 阻止 drop
-                core::mem::forget(frame);
-                paddr = frame_paddr;
-            } else {
-                // CAS 失败——其他核已安装，释放多余分配，使用赢家的节点
-                drop(frame);
-                let winner = PageTableEntry::from_raw(old);
-                if winner.is_leaf(level) {
-                    return Err(PagingError::HugePageConflict);
+            match table.compare_exchange(idx, 0, new_pte.as_raw()) {
+                Ok(_) => {
+                    // CAS 成功——所有权编码到 PTE，forget 阻止 drop
+                    core::mem::forget(frame);
+                    paddr = frame_paddr;
                 }
-                paddr = winner.paddr();
+                Err(actual) => {
+                    // CAS 失败——其他核已安装，释放多余分配，使用赢家的节点
+                    drop(frame);
+                    let winner = PageTableEntry::from_raw(actual);
+                    debug_assert!(winner.is_valid(), "CAS 失败但旧值无效——内核状态已损坏");
+                    if winner.is_leaf(level) {
+                        return Err(PagingError::HugePageConflict);
+                    }
+                    paddr = winner.paddr();
+                }
             }
         } else if pte.is_leaf(level) {
             return Err(PagingError::HugePageConflict);
@@ -140,11 +146,10 @@ pub fn map_page(&self, va: VirtAddr, pa: PhysAddr, flags: PteFlags)
 {
     let (table, idx) = self.walk_create_cas(va, 0)?;
     let leaf_pte = PageTableEntry::new(pa, flags.for_leaf_at_level(0));
-    let old = table.compare_exchange(idx, 0, leaf_pte.as_raw());
-    if old != 0 {
-        return Err(PagingError::AlreadyMapped);
+    match table.compare_exchange(idx, 0, leaf_pte.as_raw()) {
+        Ok(_) => Ok(()),
+        Err(_) => Err(PagingError::AlreadyMapped),
     }
-    Ok(())
 }
 ```
 
@@ -159,8 +164,40 @@ pub fn atomic_clear_leaf(&self, va: VirtAddr) -> Option<(PhysAddr, PteFlags)> {
 }
 ```
 
-`walk_to_leaf_location` 是 `walk_readonly` 的变体，返回 `(Table, index, level)` 而非
-`(PageTableEntry, level)`，用于 swap 操作需要定位 PTE 的位置。
+### walk_to_leaf_location——定位叶 PTE 位置
+
+`walk_readonly` 的变体，返回位置而非值，供 `atomic_clear_leaf` 使用：
+
+```rust
+fn walk_to_leaf_location(&self, va: VirtAddr) -> Option<(Table, usize, usize)> {
+    let mut paddr = self.root_paddr;
+
+    for level in (1..PT_LEVELS).rev() {
+        let table = unsafe { Table::from_paddr(paddr) };
+        let idx = vpn_index(va, level);
+        let pte = table.read_acquire(idx);
+        if !pte.is_valid() {
+            return None;
+        }
+        if pte.is_leaf(level) {
+            return Some((table, idx, level));
+        }
+        paddr = pte.paddr();
+    }
+
+    let table = unsafe { Table::from_paddr(paddr) };
+    let idx = vpn_index(va, 0);
+    let pte = table.read_acquire(idx);
+    if pte.is_valid() && pte.is_leaf(0) {
+        Some((table, idx, 0))
+    } else {
+        None
+    }
+}
+```
+
+`walk_readonly` 同样从 `Table::read`（Relaxed）改为 `Table::read_acquire`（Acquire），
+保持与无锁路径一致的 memory ordering。`get_mapping` 委托 `walk_readonly`，无需额外修改。
 
 ### PageTable::drop——递归 walk 回收中间节点
 
@@ -209,7 +246,9 @@ pub trait NodeFrameOps: Send + Sized {
 ```
 
 裸机实现：通过 `UnmappedFrames::from_range` 归还帧分配器（与 `reclaim_exclusive_frame` 相同模式）。
-测试实现：从 paddr 重建 `HeapNodeFrame` 并 drop（`dealloc`）。
+测试实现：从 paddr 重建指针并 `dealloc`——layout 硬编码为 `(PAGE_SIZE, PAGE_SIZE)`，
+与 `HeapNodeFrame::alloc()` 中的 `Layout::from_size_align(PAGE_SIZE, PAGE_SIZE)` 必须一致。
+这是 `forget` + `reclaim` 模式的固有约束：`alloc` 和 `reclaim` 的 layout 必须匹配。
 
 ### unmap_and_reclaim 改造
 
@@ -261,6 +300,44 @@ EXCLUSIVE 叶帧：
 
 两者的共同点：分配 → forget → PTE 编码 → 读回 PA → 重建帧 RAII → Drop 回收。
 
+## Memory Ordering——happens-before 链
+
+### map (Core A) → read/walk (Core B)
+
+```
+Core A (map_page):
+  (1) NodeFrame::alloc() → 零初始化子表帧        [普通 store]
+  (2) table.compare_exchange(idx, 0, new_pte)     [AcqRel — Release 侧]
+      ↑ Release 保证 (1) 的写入对 CAS 成功后的读者可见
+
+Core B (get_mapping / walk):
+  (3) table.read_acquire(idx) → 读到 new_pte      [Acquire — 与 (2) 的 Release 配对]
+  (4) 解析 pte.paddr() → 访问子表帧               [普通 load]
+      ↑ (1) 的零初始化对 Core B 可见
+
+happens-before: (1) →sb (2) →hb (3) →sb (4) ✓
+```
+
+### map (Core A) → unmap (Core B)
+
+```
+Core A (map_page):
+  (1) 写入叶 PTE: compare_exchange(idx, 0, leaf_pte)  [AcqRel — Release 侧]
+
+Core B (atomic_clear_leaf):
+  (2) walk_to_leaf_location: read_acquire → 定位叶 PTE [Acquire — 与中间节点的 Release 配对]
+  (3) table.swap(idx, 0)                               [AcqRel — Acquire 与 (1) 的 Release 配对]
+      ↑ (1) 的 leaf_pte 对 (3) 可见
+
+happens-before: (1) →hb (3) ✓
+```
+
+### TOCTOU 安全性
+
+`atomic_clear_leaf` 先 `walk_to_leaf_location`（Acquire load 遍历中间节点）再 `swap(idx, 0)`。
+walk 和 swap 之间不存在竞态：中间节点一旦通过 CAS 安装就**永远不会被修改或删除**
+（不回收中间节点），walk 读到的路径在 swap 时仍然有效。
+
 ## 删除清单
 
 | 删除项 | 文件 | 原因 |
@@ -276,6 +353,15 @@ EXCLUSIVE 叶帧：
 | `walk_create` | `table.rs` | 被 `walk_create_cas` 替代 |
 | `Table::read` (Relaxed) | `lib.rs` | 统一为 `read_acquire` |
 | `Table::write` (Relaxed) | `lib.rs` | 被 `compare_exchange` 替代 |
+| `use alloc::collections::BTreeMap` | `table.rs:8` | `BTreeMap` 不再使用 |
+
+**变更项**（非删除）：
+
+| 变更项 | 文件 | 说明 |
+|--------|------|------|
+| `walk_readonly` 内部 ordering | `table.rs` | `Table::read` → `Table::read_acquire` |
+| `map_page` / `map_at_level` 签名 | `table.rs` | `&mut self` → `&self`（CAS 替代锁） |
+| `identity_map_range` 签名 | `table.rs` | `&mut self` → `&self` |
 | `MappedPagesInner::flags` 字段 | `mapping.rs` | 从 PTE 读取 |
 | `MappedPagesInner::exclusive` 字段 | `mapping.rs` | PTE EXCLUSIVE 位是 source of truth |
 | 外层 `SpinLock` 包装 | 所有消费者 | PageTable 完全无锁 |
@@ -286,7 +372,7 @@ EXCLUSIVE 叶帧：
 
 | 文件 | 变更位置 |
 |------|---------|
-| `crates/paging/src/mapping.rs` | `MappedPagesInner` 字段（删 flags/exclusive）、工厂方法签名、`pte_flags`/`flags()` 改为直接调 `get_mapping`、`unmap_and_reclaim` 用 `atomic_clear_leaf` |
+| `crates/paging/src/mapping.rs` | `MappedPagesInner` 字段（删 flags/exclusive）、工厂方法签名、`pte_flags`/`flags()` 改为直接调 `get_mapping`、`unmap_and_reclaim` 用 `atomic_clear_leaf`、`map_alloc` 删 `lock()` 改为直接调 CAS 版 `map_page` |
 | `crates/paging/src/mmio.rs` | `map_to` 签名 |
 | `crates/paging/src/lib.rs` | `test_pt()` 返回 `Arc<PageTable>`、删 `Table::read`/`write` |
 | `crates/memory/src/vma.rs` | `AddressSpace` 字段、`new`/`page_table()` 签名 |
@@ -321,7 +407,7 @@ EXCLUSIVE 叶帧:
 
 | | Linux | Theseus | Redox | **SimpleKernel (改造后)** |
 |--|-------|---------|-------|-------------------------|
-| map 同步 | per-PTE-page lock + CAS | `&mut` 所有权 | RwLock | **CAS** |
+| map 同步 | mmap_lock + per-level lock + CAS | `&mut` 所有权 | RwLock | **CAS** |
 | unmap 同步 | atomic swap | `&mut` | RwLock | **atomic swap** |
 | 中间节点回收 | RCU 延迟释放 | 不回收 | 不回收 | **不回收（Drop walk）** |
 | 节点跟踪 | struct page 元数据 | 无 | 无 | **无（PTE 编码）** |
