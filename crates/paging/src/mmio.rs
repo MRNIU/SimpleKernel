@@ -1,13 +1,13 @@
-//! 类型化 MMIO 区域——强制 volatile 语义的 [`MappedPages`] 包装。
+//! 类型化 MMIO 区域——强制 volatile 语义的 [`PermanentMapping`] 包装。
 //!
-//! `MappedPages` 使用普通内存语义（non-volatile），适合 RAM 映射。
+//! `MappedPages` / `PermanentMapping` 使用普通内存语义（non-volatile），适合 RAM 映射。
 //! `MmioRegion` 使用 volatile 语义，适合设备寄存器——编译器不会优化掉
 //! 对同一地址的重复读写，也不会重排 MMIO 操作。
 
 use alloc::sync::Arc;
 
 use crate::error::PagingError;
-use crate::mapping::{MappedPages, check_bounds_and_align};
+use crate::mapping::{MappedPages, PermanentMapping, check_bounds_and_align};
 use crate::{PageTable, PteFlags, PteFlagsOps};
 use address::PhysAddr;
 use config::PAGE_SIZE;
@@ -15,10 +15,10 @@ use sync_crate::SpinLock;
 
 /// 已映射的 MMIO 区域——提供类型安全的 volatile 寄存器访问。
 ///
-/// 内部通过 [`MappedPages`] 管理页表映射和生命周期。
+/// 内部通过 [`PermanentMapping`] 管理页表映射和生命周期。
 /// 不可 Clone（一个映射只有一个 owner），可通过 `&self` 共享读取。
 pub struct MmioRegion {
-    mapping: MappedPages,
+    mapping: PermanentMapping,
 }
 
 impl MmioRegion {

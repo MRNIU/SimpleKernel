@@ -34,7 +34,7 @@ pub use table::PageTable;
 #[cfg(any(test, feature = "test-support", target_os = "none"))]
 pub mod mapping;
 #[cfg(any(test, feature = "test-support", target_os = "none"))]
-pub use mapping::MappedPages;
+pub use mapping::{MappedPages, PermanentMapping};
 /// 创建测试用 `Arc<SpinLock<PageTable>>`。
 #[cfg(any(test, feature = "test-support"))]
 pub fn test_pt() -> alloc::sync::Arc<sync_crate::SpinLock<PageTable>> {
