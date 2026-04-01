@@ -1,0 +1,18 @@
+[package]
+name = "page_allocator"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Virtual page allocator with typestate lifecycle tracking"
+edition.workspace = true
+
+[dependencies]
+config = { path = "../config" }
+address = { path = "../address" }
+sync_crate = { path = "../sync", package = "sync" }
+
+log.workspace = true
+
+[features]
+test-support = []
