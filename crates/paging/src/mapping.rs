@@ -417,7 +417,7 @@ fn reclaim_exclusive_frame(pa: PhysAddr) {
     let range = FrameRange::new(ppn, ppn + 1);
     // SAFETY: 帧刚从页表 unmap，EXCLUSIVE 保证我们拥有该帧的唯一引用。
     // 构造 UnmappedFrames 使其 Drop 自动归还分配器。
-    let _reclaimed = unsafe { UnmappedFrames::from_range(range) };
+    let _reclaimed: UnmappedFrames = unsafe { UnmappedFrames::from_unmapped_range(range) };
 }
 
 impl Drop for MappedPages {

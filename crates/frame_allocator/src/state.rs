@@ -1,6 +1,8 @@
-//! 帧类型状态定义——`MemoryState` 枚举、`Frames<S>` 结构体、通用操作与 Drop。
+//! 帧类型状态定义——`MemoryState` 枚举、`Frames<S, P>` 结构体、通用操作与 Drop。
 
-use address::{FrameRange, PhysAddr, PhysPageNum};
+use core::marker::PhantomData;
+
+use address::{Frame, FrameRange, Page4K, PageSize, PhysAddr, PhysPageNum};
 
 use crate::alloc::dealloc_to_buddy;
 
@@ -22,45 +24,49 @@ pub enum MemoryState {
     Unmapped,
 }
 
-/// 类型状态帧范围——编译期追踪物理帧生命周期。
+/// 类型状态帧范围——编译期追踪物理帧生命周期和页大小。
 ///
 /// 与单帧设计不同，`Frames` 持有一段**连续的物理帧范围**（[`FrameRange`]），
 /// 支持 [`split_at`](Frames::split_at) 和 [`merge`](Frames::merge) 操作。
 ///
+/// 泛型参数 `P` 标记帧的粒度（4K/2M/1G），Drop 时自动转换为 4K 粒度
+/// 归还 buddy allocator。
+///
 /// 状态转换通过消费 self 的方法实现，防止在错误状态下操作帧。
-pub struct Frames<const S: MemoryState> {
+pub struct Frames<const S: MemoryState, P: PageSize = Page4K> {
     pub(crate) range: FrameRange,
+    _marker: PhantomData<P>,
 }
 
-/// 便利别名——空闲帧，分配器内部持有。
-pub type FreeFrames = Frames<{ MemoryState::Free }>;
+/// 便利别名——空闲帧，分配器内部持有。始终 4K 粒度。
+pub type FreeFrames = Frames<{ MemoryState::Free }, Page4K>;
 /// 便利别名——已分配帧，用户持有。
-pub type AllocatedFrames = Frames<{ MemoryState::Allocated }>;
+pub type AllocatedFrames<P = Page4K> = Frames<{ MemoryState::Allocated }, P>;
 /// 便利别名——已映射帧，页表持有。
-pub type MappedFrames = Frames<{ MemoryState::Mapped }>;
+pub type MappedFrames<P = Page4K> = Frames<{ MemoryState::Mapped }, P>;
 /// 便利别名——已取消映射帧，等待回收。
-pub type UnmappedFrames = Frames<{ MemoryState::Unmapped }>;
+pub type UnmappedFrames<P = Page4K> = Frames<{ MemoryState::Unmapped }, P>;
 
-impl<const S: MemoryState> Frames<S> {
-    /// 返回帧范围。
+impl<const S: MemoryState, P: PageSize> Frames<S, P> {
+    /// 返回帧范围（4K 粒度）。
     #[inline]
     pub fn range(&self) -> FrameRange {
         self.range
     }
 
-    /// 范围内帧的数量。
+    /// 范围内 4K 帧的数量。
     #[inline]
     pub fn count(&self) -> usize {
         self.range.size()
     }
 
-    /// 起始物理页号。
+    /// 起始物理页号（4K 粒度）。
     #[inline]
     pub fn start(&self) -> PhysPageNum {
         self.range.start()
     }
 
-    /// 结束物理页号（不含）。
+    /// 结束物理页号（不含，4K 粒度）。
     #[inline]
     pub fn end(&self) -> PhysPageNum {
         self.range.end()
@@ -72,14 +78,26 @@ impl<const S: MemoryState> Frames<S> {
         self.range.start().start_addr()
     }
 
+    /// 从 FrameRange 和 PageSize 标记构造（crate 内部使用）。
+    #[inline]
+    pub(crate) fn from_range(range: FrameRange) -> Self {
+        Self {
+            range,
+            _marker: PhantomData,
+        }
+    }
+
     /// 消费 self，以新的状态 `NEW` 返回——typestate 转换的共享实现。
     ///
     /// `mem::forget` 阻止旧状态的 Drop 执行，新 `Frames` 继承帧范围。
     #[inline]
-    pub(crate) fn into_state<const NEW: MemoryState>(self) -> Frames<NEW> {
+    pub(crate) fn into_state<const NEW: MemoryState>(self) -> Frames<NEW, P> {
         let range = self.range;
         core::mem::forget(self);
-        Frames { range }
+        Frames {
+            range,
+            _marker: PhantomData,
+        }
     }
 
     /// 在 `mid` 处分割为两段，消费 self。
@@ -87,10 +105,20 @@ impl<const S: MemoryState> Frames<S> {
     /// # Panics
     ///
     /// `mid` 不在范围内时 panic。
-    pub fn split_at(self, mid: PhysPageNum) -> (Self, Self) {
-        let (left, right) = self.range.split_at(mid);
+    pub fn split_at(self, mid: Frame<P>) -> (Self, Self) {
+        let mid_4k = PhysPageNum::new(mid.as_usize());
+        let (left, right) = self.range.split_at(mid_4k);
         core::mem::forget(self);
-        (Self { range: left }, Self { range: right })
+        (
+            Self {
+                range: left,
+                _marker: PhantomData,
+            },
+            Self {
+                range: right,
+                _marker: PhantomData,
+            },
+        )
     }
 
     /// 合并两个首尾相接的同状态帧范围，消费两者。
@@ -101,14 +129,17 @@ impl<const S: MemoryState> Frames<S> {
             Some(merged) => {
                 core::mem::forget(self);
                 core::mem::forget(other);
-                Ok(Self { range: merged })
+                Ok(Self {
+                    range: merged,
+                    _marker: PhantomData,
+                })
             }
             None => Err((self, other)),
         }
     }
 }
 
-impl<const S: MemoryState> Drop for Frames<S> {
+impl<const S: MemoryState, P: PageSize> Drop for Frames<S, P> {
     fn drop(&mut self) {
         match S {
             MemoryState::Free | MemoryState::Allocated | MemoryState::Unmapped => {

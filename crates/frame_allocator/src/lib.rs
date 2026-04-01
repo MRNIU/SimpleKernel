@@ -11,7 +11,7 @@ mod transitions;
 
 pub use alloc::init;
 pub use error::FrameAllocError;
-pub use state::{AllocatedFrames, Frames, FreeFrames, MappedFrames, MemoryState, UnmappedFrames};
+pub use state::{AllocatedFrames, Frames, MappedFrames, MemoryState, UnmappedFrames};
 
 /// 测试用帧分配器初始化——分配堆内存模拟物理内存区域。
 ///

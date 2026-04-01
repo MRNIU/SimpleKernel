@@ -106,9 +106,7 @@ pub(crate) fn alloc_from_buddy(count: usize) -> Result<FreeFrames, FrameAllocErr
         .ok_or(FrameAllocError::OutOfMemory)?;
     let start = PhysPageNum::new(frame_num);
     let end = PhysPageNum::new(frame_num + count);
-    Ok(FreeFrames {
-        range: FrameRange::new(start, end),
-    })
+    Ok(FreeFrames::from_range(FrameRange::new(start, end)))
 }
 
 /// 归还帧到 buddy allocator——仅由 `Frames` 的 Drop 调用。
