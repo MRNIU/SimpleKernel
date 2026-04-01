@@ -139,8 +139,8 @@ SimpleKernel's interfaces are organized into the following layers:
 
 ```
 ┌──────────────────────────────────────────┐
-│          Application / Syscall Layer      │
-│         syscall.h · SyscallInit          │
+│          Syscall API Gateway (SAS)       │
+│   src/syscall/ · Type-safe Rust API      │
 ├──────────────────────────────────────────┤
 │            Task Management Layer          │
 │  TaskManager · SchedulerBase · Mutex     │
@@ -356,7 +356,7 @@ We recommend learning and implementing modules in the following order:
 
 | Module | Interface File | Difficulty | Description |
 |--------|---------------|:---:|-------------|
-| System Calls | `arch.h → SyscallInit` | ⭐⭐⭐ | User/kernel mode switching |
+| System Calls | `src/syscall/` | ⭐⭐ | Type-safe API gateway (SAS, no trap) |
 
 ## 📦 Third-Party Dependencies
 

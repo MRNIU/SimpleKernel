@@ -70,7 +70,10 @@
 | `kernel_rwx` | 读写执行 | V+R+W+X+A+D | VALID+AF+SH_INNER+UXN |
 | `kernel_device` | 设备 MMIO | V+R+W+A+D | VALID+AF+MAIR_IDX1+PXN+UXN |
 
-### 用户态 preset
+### 用户态 preset（当前未使用）
+
+> **注意**：SimpleKernel 采用单地址空间（SAS）架构，不存在用户态/内核态分离。
+> 以下 preset 保留用于未来可能的 MPU 辅助隔离或兼容性需求，当前不会被调用。
 
 | Preset | 权限 | RISC-V 标志 | AArch64 标志 |
 |--------|------|-------------|-------------|

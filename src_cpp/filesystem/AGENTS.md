@@ -1,4 +1,6 @@
-# AGENTS.md — src/filesystem/
+# AGENTS.md — src/filesystem/（C++ 参考代码，只读）
+
+> **注意**：此目录为 C++ 遗留代码，仅作实现参考。Rust 重写已采用 SAS 架构，VFS 操作将通过 `src/syscall/io.rs` 类型安全网关暴露。
 
 ## OVERVIEW
 Three-layer filesystem: VFS abstraction (types in vfs_types.hpp, filesystem ops in filesystem.hpp), RamFS (in-memory, static pool allocation), FatFS (3rd-party FAT wrapper over VirtIO block device). FileDescriptor table per-task.

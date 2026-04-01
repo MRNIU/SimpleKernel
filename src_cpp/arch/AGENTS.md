@@ -1,4 +1,6 @@
-# AGENTS.md — src/arch/
+# AGENTS.md — src/arch/（C++ 参考代码，只读）
+
+> **注意**：此目录为 C++ 遗留代码，仅作实现参考。Rust 重写已采用单地址空间（SAS）架构，不再包含 syscall.rs（ecall/svc 处理）。详见 `docs/rust-rewrite/SAS-架构设计.md`。
 
 ## OVERVIEW
 Per-architecture implementations of `arch.h` unified interface. Each arch has identical file structure: boot.S, arch_main.cpp, early_console.cpp, interrupt.S, interrupt_main.cpp, interrupt.cpp, timer.cpp, switch.S, syscall.cpp, backtrace.cpp, macro.S, link.ld.

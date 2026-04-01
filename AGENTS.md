@@ -3,6 +3,8 @@
 ## OVERVIEW
 Interface-driven OS kernel for AI-assisted learning. Rust (`no_std`, `no_main`), freestanding, nightly toolchain. Two architectures: riscv64, aarch64. Traits define contracts (doc comments with `# Safety`/`# Errors`/`# Panics`), AI generates `impl` blocks, tests verify compliance.
 
+> **架构模型**：SimpleKernel 采用单地址空间（SAS）架构——所有代码运行在同一特权级和地址空间中，不存在用户态/内核态分离。隔离通过 Rust 类型系统 + crate 可见性规则实现（Theseus 式）。详见 `docs/rust-rewrite/SAS-架构设计.md`。
+
 > **迁移状态**：项目正在从 C++ 完全迁移到 Rust。C++ 源码（`src/`）保留作为实现参考，但不再维护。所有新开发均在 Rust（`src/`）中进行。详见 `docs/rust-rewrite/00-概述.md`。
 
 ## STRUCTURE
@@ -40,7 +42,6 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 | `src/arch/{arch}/interrupt.rs` | PLIC/GIC + trap dispatch | interrupt handling |
 | `src/arch/{arch}/timer.rs` | Timer init + tick handler | timer subsystem |
 | `src/arch/{arch}/context.rs` | TrapContext, InitTaskContext | `#[repr(C)]` structs |
-| `src/arch/{arch}/syscall.rs` | ecall/svc handling | syscall dispatch |
 | `src/arch/{arch}/backtrace.rs` | Stack unwinding | debug support |
 | `src/memory/` | Virtual/physical memory, heap | page tables, frame allocator, `#[global_allocator]` |
 | `src/task/` | TaskManager, TCB, schedulers | CFS/FIFO/RR, clone/exit/wait/sleep/signal |
@@ -48,6 +49,7 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 | `src/device/` | DeviceManager, DriverRegistry, drivers | device framework |
 | `src/device/virtio/` | VirtIO subsystem (MMIO, queues, blk) | block device I/O |
 | `src/fs/` | VFS, RamFS, FatFS | filesystem layer |
+| `src/syscall/` | 类型安全的集中式 API 网关（SAS 模式，不经过 trap） | POSIX 兼容 syscall 编号 |
 | `src/sync/spinlock.rs` | SpinLock (interrupt-aware, lock levels) | custom implementation |
 | `src/error.rs` | `ErrorCode`, `KResult<T>` | error handling |
 | `src/logging.rs` | `log` crate backend + ANSI colors | kernel logging |
@@ -142,9 +144,10 @@ cargo doc --no-deps
 - **Linux** — 工业级参考，尤其是调度器（CFS）、VFS、内存管理（`vm_area_struct`）、信号处理
 - **Zephyr** — 嵌入式/RTOS 视角，轻量级线程模型、设备驱动框架（device model + devicetree）、电源管理
 - **Theseus** — Rust 类型系统深度利用，`MappedPages` RAII 映射管理、crate 级模块化、`DeadlockPrevention` trait 参数化同步原语
-- **Redox** — Rust 微内核实践，scheme-based VFS、用户态驱动、`syscall` crate 设计、reliability crate 拆分
+- **Redox** — Rust 微内核实践，scheme-based VFS、`syscall` crate 设计、reliability crate 拆分（注：SimpleKernel 不采用微内核的用户态驱动模型，仅参考其 API 设计）
 
 ## NOTES
+- **SAS architecture**: single address space, no user/kernel split. Isolation via Rust type system + crate visibility (`pub(crate)`). Syscall layer (`src/syscall/`) is the only public cross-module API gateway — direct function calls, no trap (ecall/svc).
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
 - Unit tests run on x86_64 host only (`cargo test`) — system tests use QEMU (`cargo xtask test`)

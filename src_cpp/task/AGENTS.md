@@ -1,4 +1,6 @@
-# AGENTS.md — src/task/
+# AGENTS.md — src/task/（C++ 参考代码，只读）
+
+> **注意**：此目录为 C++ 遗留代码，仅作实现参考。Rust 重写已采用 SAS 架构，任务操作通过 `src/syscall/` 类型安全网关调用，不经过 trap。
 
 ## OVERVIEW
 Task management subsystem: schedulers (CFS/FIFO/RR), TaskControlBlock, TaskManager singleton, sync primitives (mutex via spinlock), syscall-level task operations (clone, exit, sleep, wait, wakeup, block). Idle tasks are statically allocated per-CPU and managed directly via per_cpu::idle_task (no dedicated scheduler).

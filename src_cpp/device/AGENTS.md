@@ -1,4 +1,6 @@
-# AGENTS.md — src/device/
+# AGENTS.md — src/device/（C++ 参考代码，只读）
+
+> **注意**：此目录为 C++ 遗留代码，仅作实现参考。Rust 重写已采用 SAS 架构，驱动通过 crate 边界隔离。
 
 ## OVERVIEW
 Header-only device framework using C++23 concepts and ETL (Embedded Template Library) idioms. FDT-based device enumeration, bus abstraction, driver registry with delegate-based Probe/Remove lifecycle. Three .cpp files: device.cpp (init entry point), device_manager.cpp (ProbeAll implementation), and virtio_driver.cpp (VirtIO device-type dispatch).
