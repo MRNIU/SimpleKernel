@@ -7,13 +7,13 @@
 
 use core::mem::ManuallyDrop;
 
-use address::{FrameRange, PhysAddr, PhysPageNum, VirtAddr};
+use address::{PhysAddr, VirtAddr};
 use config::PAGE_SIZE;
 use frame_allocator::{AllocatedFrames, UnmappedFrames};
 use page_allocator::AllocatedPages;
 
-use crate::error::{PagingError, UnmapResult};
-use crate::{PageTable, PteFlags, PteFlagsOps, PteOps};
+use crate::error::UnmapResult;
+use crate::{PteFlags, PteFlagsOps};
 
 /// map_alloc 每次分配并映射的最大页数。
 const MAP_CHUNK: usize = config::MAP_CHUNK_SIZE;
@@ -82,6 +82,7 @@ impl MappedPages {
         let exclusive_flags = flags.with_exclusive();
         let page_count = pages.count();
         let va_start = pages.start_vaddr();
+        let pt = crate::kernel_page_table();
         let mut offset = 0;
 
         while offset < page_count {
@@ -95,7 +96,6 @@ impl MappedPages {
                     .unwrap_or_else(|_| panic!("map_alloc: 帧数不超过 MAP_CHUNK"));
             }
 
-            let pt = crate::kernel_page_table();
             let mut guard = pt.lock();
             for (i, frame) in frames.into_iter().enumerate() {
                 let pa = frame.start_paddr();
@@ -230,43 +230,50 @@ impl MappedPages {
         self.flags = new_flags;
     }
 
-    /// 手动解除映射并取回所有权——不释放资源。
+    /// 手动解除映射并取回所有权。
     ///
-    /// 返回虚拟页和可能的 EXCLUSIVE 物理帧，调用者自行决定是否重用或释放。
-    pub fn unmap(self) -> (AllocatedPages, Option<UnmappedFrames>) {
+    /// 所有 EXCLUSIVE 帧在 TLB 刷新后自动归还帧分配器。
+    /// 返回虚拟页供调用方重用或释放。
+    pub fn unmap(self) -> AllocatedPages {
         let md = ManuallyDrop::new(self);
+        // SAFETY: md 不会 Drop，我们手动接管 pages 所有权
         let pages = unsafe { core::ptr::read(&md.pages) };
-        let flags = md.flags;
+        let page_count = pages.count();
 
-        let mut exclusive_frames: Option<UnmappedFrames> = None;
+        // 收集 EXCLUSIVE 帧，TLB 刷新后再 drop 回收
+        let mut to_reclaim: heapless::Vec<UnmappedFrames, UNMAP_CHUNK> = heapless::Vec::new();
 
         let pt = crate::kernel_page_table();
         let mut guard = pt.lock();
-        for i in 0..pages.count() {
+        for i in 0..page_count {
             let va = pages.start_vaddr() + i * PAGE_SIZE;
             match guard.unmap_to_result(va) {
                 Ok(UnmapResult::Exclusive(frames)) => {
-                    // 简化：只保留第一段连续帧
-                    if exclusive_frames.is_none() {
-                        exclusive_frames = Some(frames);
-                    }
+                    to_reclaim
+                        .push(frames)
+                        .expect("exclusive 帧数不超过 UNMAP_CHUNK");
                 }
                 Ok(UnmapResult::NonExclusive(_)) => {}
                 Err(e) => panic!("MappedPages::unmap: {va} 失败: {e}"),
             }
         }
         drop(guard);
+
         {
-            let _flush = tlb::TlbFlushGuard::new(pages.start_vaddr().as_usize(), pages.count());
+            let _flush = tlb::TlbFlushGuard::new(pages.start_vaddr().as_usize(), page_count);
         }
 
-        (pages, exclusive_frames)
+        // TLB 已刷新，安全回收 EXCLUSIVE 帧
+        drop(to_reclaim);
+
+        pages
     }
 
     /// Drop 内部实现——unmap PTE + 回收 EXCLUSIVE 帧 + 虚拟页自动归还。
     fn unmap_and_release(&mut self) {
         let page_count = self.pages.count();
         let va_start = self.pages.start_vaddr();
+        let pt = crate::kernel_page_table();
         let mut offset = 0;
 
         while offset < page_count {
@@ -274,7 +281,6 @@ impl MappedPages {
             let mut to_reclaim: heapless::Vec<UnmappedFrames, UNMAP_CHUNK> = heapless::Vec::new();
 
             {
-                let pt = crate::kernel_page_table();
                 let mut guard = pt.lock();
                 for i in 0..n {
                     let va = va_start + (offset + i) * PAGE_SIZE;

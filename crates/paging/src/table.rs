@@ -338,13 +338,41 @@ impl PageTable {
 
     /// 修改已映射页的权限标志位，保留物理地址和 EXCLUSIVE 位不变。
     ///
+    /// 单次页表遍历完成查找和更新，避免双重 walk 开销。
+    ///
     /// **调用方必须在此操作后执行 TLB 刷新。**
     pub(crate) fn update_flags(
         &mut self,
         va: VirtAddr,
         new_flags: PteFlags,
     ) -> Result<PteFlags, PagingError> {
-        let (pte, level) = self.walk_readonly(va).ok_or(PagingError::PageNotMapped)?;
+        // 单次遍历：找到叶 PTE 所在的帧物理地址、索引和层级
+        let mut paddr = self.root_paddr;
+        let mut leaf_level = 0;
+
+        for level in (1..PT_LEVELS).rev() {
+            // SAFETY: paddr 指向由 self 持有的有效帧
+            let table = unsafe { Table::from_paddr(paddr) };
+            let idx = vpn_index(va, level);
+            let pte = table.read(idx);
+            if !pte.is_valid() {
+                return Err(PagingError::PageNotMapped);
+            }
+            if pte.is_leaf(level) {
+                leaf_level = level;
+                break;
+            }
+            paddr = pte.paddr();
+        }
+
+        // SAFETY: paddr 指向叶 PTE 所在的帧
+        let table = unsafe { Table::from_paddr(paddr) };
+        let idx = vpn_index(va, leaf_level);
+        let pte = table.read(idx);
+        if !pte.is_valid() {
+            return Err(PagingError::PageNotMapped);
+        }
+
         let old_flags = pte.flags();
         let pa = pte.paddr();
 
@@ -353,33 +381,12 @@ impl PageTable {
         } else {
             new_flags
         };
-        let leaf_flags = preserve_exclusive.for_leaf_at_level(level);
+        let leaf_flags = preserve_exclusive.for_leaf_at_level(leaf_level);
 
-        let (frame_paddr, idx) = self.walk_to_existing(va, level)?;
-        // SAFETY: frame_paddr 指向由 self 持有的有效帧
-        let mut table = unsafe { Table::from_paddr(frame_paddr) };
+        let mut table = unsafe { Table::from_paddr(paddr) };
         table.write(idx, PageTableEntry::new(pa, leaf_flags));
 
         Ok(old_flags)
-    }
-
-    /// 只读遍历找到已存在映射的 PTE 所在帧和索引。
-    fn walk_to_existing(
-        &self,
-        va: VirtAddr,
-        target_level: usize,
-    ) -> Result<(PhysAddr, usize), PagingError> {
-        let mut paddr = self.root_paddr;
-        for lv in (target_level + 1..PT_LEVELS).rev() {
-            let table = unsafe { Table::from_paddr(paddr) };
-            let idx = vpn_index(va, lv);
-            let pte = table.read(idx);
-            if !pte.is_valid() || pte.is_leaf(lv) {
-                return Err(PagingError::PageNotMapped);
-            }
-            paddr = pte.paddr();
-        }
-        Ok((paddr, vpn_index(va, target_level)))
     }
 
     /// 只读遍历——从根向下查找叶 PTE，返回 PTE 及其所在层级。

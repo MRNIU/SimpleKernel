@@ -17,7 +17,7 @@
 extern crate alloc;
 
 use address::PhysAddr;
-use core::sync::atomic::{AtomicU64, Ordering};
+use core::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 
 pub mod error;
 
@@ -45,7 +45,7 @@ pub mod mmio;
 ///
 /// 通过 [`set_kernel_page_table`] 在启动时设置，MappedPages 的 Drop
 /// 通过 [`kernel_page_table`] 获取引用以执行 unmap。
-static KERNEL_PT_PTR: core::sync::atomic::AtomicUsize = core::sync::atomic::AtomicUsize::new(0);
+static KERNEL_PT_PTR: AtomicUsize = AtomicUsize::new(0);
 
 /// 设置全局内核页表引用。
 ///
@@ -53,10 +53,7 @@ static KERNEL_PT_PTR: core::sync::atomic::AtomicUsize = core::sync::atomic::Atom
 /// `pt` 必须指向有效的、生命周期为 `'static` 的 `SpinLock<PageTable>`。
 /// 仅在启动时调用一次。
 pub unsafe fn set_kernel_page_table(pt: &'static sync_crate::SpinLock<PageTable>) {
-    let prev = KERNEL_PT_PTR.swap(
-        pt as *const _ as usize,
-        core::sync::atomic::Ordering::Release,
-    );
+    let prev = KERNEL_PT_PTR.swap(pt as *const _ as usize, Ordering::Release);
     assert!(prev == 0, "kernel page table already set");
 }
 
@@ -64,7 +61,7 @@ pub unsafe fn set_kernel_page_table(pt: &'static sync_crate::SpinLock<PageTable>
 ///
 /// 未初始化时 panic。
 pub fn kernel_page_table() -> &'static sync_crate::SpinLock<PageTable> {
-    let addr = KERNEL_PT_PTR.load(core::sync::atomic::Ordering::Acquire);
+    let addr = KERNEL_PT_PTR.load(Ordering::Acquire);
     assert!(addr != 0, "kernel page table not initialized");
     // SAFETY: set_kernel_page_table 保证存储的是有效的 'static 引用
     unsafe { &*(addr as *const sync_crate::SpinLock<PageTable>) }
@@ -85,13 +82,6 @@ pub fn ensure_test_init() {
     });
 }
 
-/// 创建测试用 `Arc<SpinLock<PageTable>>`（向后兼容）。
-#[cfg(any(test, feature = "test-support"))]
-pub fn test_pt() -> alloc::sync::Arc<sync_crate::SpinLock<PageTable>> {
-    let pt = PageTable::create().expect("创建页表");
-    alloc::sync::Arc::new(sync_crate::SpinLock::new(pt, "test_pt"))
-}
-
 /// 页表节点帧的统一接口。
 ///
 /// 裸机和测试各自提供一个实现，通过 [`NodeFrame`] 类型别名选择。
@@ -102,8 +92,6 @@ pub trait NodeFrameOps: Send + Sized {
     /// 获取帧的物理地址（裸机 identity mapping）或堆地址（测试）。
     fn paddr(&self) -> PhysAddr;
 }
-
-// ── 裸机：包装 AllocatedFrames ─────────────────────────────
 
 /// 裸机页表节点帧——包装 `AllocatedFrames`。
 ///
@@ -122,8 +110,6 @@ impl NodeFrameOps for KernelNodeFrame {
         self.0.start_paddr()
     }
 }
-
-// ── 测试：堆分配模拟 ──────────────────────────────────────
 
 /// 测试用页表节点帧——从堆分配，模拟物理帧。
 #[cfg(any(test, feature = "test-support"))]
@@ -161,8 +147,6 @@ impl NodeFrameOps for HeapNodeFrame {
         PhysAddr::new(self.ptr as usize)
     }
 }
-
-// ── 类型选择 ──────────────────────────────────────────────
 
 /// 当前编译目标使用的页表节点帧类型。
 ///

@@ -1,6 +1,6 @@
 //! 各状态专属的 impl 块——状态转换方法与分配接口。
 
-use address::{FrameRange, Page4K, PageSize};
+use address::{FrameRange, PageSize};
 use config::PAGE_SIZE;
 
 use crate::FrameAllocError;

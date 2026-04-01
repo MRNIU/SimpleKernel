@@ -24,7 +24,7 @@ mod error;
 mod state;
 
 pub use error::PageAllocError;
-pub use state::{AllocatedPages, FreePages, MemoryState, Pages};
+pub use state::{AllocatedPages, MemoryState, Pages};
 
 static PAGE_ALLOCATOR: SpinLockIrq<PageAllocatorInner> = SpinLockIrq::new_with_level(
     PageAllocatorInner::new(),
@@ -102,24 +102,23 @@ pub(crate) fn alloc_pages(count: usize) -> Result<PageRange, PageAllocError> {
         return Err(PageAllocError::AllocationFailed);
     }
 
-    let needed = count;
-    let mut found_key = None;
+    let found_key = alloc
+        .free_ranges
+        .iter()
+        .find(|(_, range)| range.size() >= count)
+        .map(|(&k, _)| k)
+        .ok_or(PageAllocError::OutOfVirtualSpace)?;
 
-    for (&start_pn, range) in &alloc.free_ranges {
-        if range.size() >= needed {
-            found_key = Some(start_pn);
-            break;
-        }
-    }
-
-    let start_pn = found_key.ok_or(PageAllocError::OutOfVirtualSpace)?;
-    let range = alloc.free_ranges.remove(&start_pn).expect("刚查到的 range");
+    let range = alloc
+        .free_ranges
+        .remove(&found_key)
+        .expect("刚查到的 range");
 
     let alloc_start = range.start();
-    let alloc_end = alloc_start + needed;
+    let alloc_end = alloc_start + count;
     let allocated = PageRange::new(alloc_start, alloc_end);
 
-    if range.size() > needed {
+    if range.size() > count {
         let remaining = PageRange::new(alloc_end, range.end());
         alloc.free_ranges.insert(remaining.start(), remaining);
     }
@@ -178,18 +177,18 @@ pub(crate) fn dealloc_pages(range: PageRange) {
     let mut merge_start = start;
     let mut merge_end = end;
 
-    if let Some((&prev_start, prev_range)) = alloc.free_ranges.range(..start).next_back() {
-        if prev_range.end() == start {
-            merge_start = prev_start;
-            alloc.free_ranges.remove(&prev_start);
-        }
+    if let Some((&prev_start, prev_range)) = alloc.free_ranges.range(..start).next_back()
+        && prev_range.end() == start
+    {
+        merge_start = prev_start;
+        alloc.free_ranges.remove(&prev_start);
     }
 
-    if let Some((&next_start, _)) = alloc.free_ranges.range(end..).next() {
-        if next_start == end {
-            let next_range = alloc.free_ranges.remove(&next_start).expect("刚查到");
-            merge_end = next_range.end();
-        }
+    if let Some((&next_start, _)) = alloc.free_ranges.range(end..).next()
+        && next_start == end
+    {
+        let next_range = alloc.free_ranges.remove(&next_start).expect("刚查到");
+        merge_end = next_range.end();
     }
 
     let merged = PageRange::new(merge_start, merge_end);
@@ -258,7 +257,6 @@ mod tests {
     fn alloc_dealloc_realloc() {
         ensure_test_init();
         let pages = AllocatedPages::alloc(2).expect("首次分配");
-        let va = pages.start_vaddr();
         drop(pages);
         let pages2 = AllocatedPages::alloc(2).expect("重新分配应成功");
         assert!(pages2.start_vaddr().is_aligned());

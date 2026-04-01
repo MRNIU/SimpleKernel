@@ -26,8 +26,6 @@ pub struct Pages<const S: MemoryState> {
     pub(crate) range: PageRange,
 }
 
-/// 便利别名——空闲页，分配器内部持有。
-pub type FreePages = Pages<{ MemoryState::Free }>;
 /// 便利别名——已分配页，用户持有。
 pub type AllocatedPages = Pages<{ MemoryState::Allocated }>;
 
