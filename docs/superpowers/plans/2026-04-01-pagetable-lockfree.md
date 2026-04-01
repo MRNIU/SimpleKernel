@@ -210,6 +210,10 @@ pub struct PageTable {
     #[expect(dead_code, reason = "仅用于持有所有权，通过 root_paddr 访问")]
     root: NodeFrame,
 }
+
+// SAFETY: PageTable 的所有 PTE 操作通过 AtomicU64 保证 SMP 安全；
+// root 字段仅持有所有权（#[expect(dead_code)]），不存在并发数据访问。
+unsafe impl Sync for PageTable {}
 ```
 
 - [ ] **Step 2: 实现 create 和 root_paddr**

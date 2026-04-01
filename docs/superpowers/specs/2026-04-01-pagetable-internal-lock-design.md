@@ -34,6 +34,23 @@ pub struct PageTable {
     root: NodeFrame,
     // 没有 SpinLock，没有 Vec，没有 BTreeMap
 }
+
+// SAFETY: PageTable 的所有 PTE 操作通过 AtomicU64 保证 SMP 安全；
+// root 字段仅持有所有权（#[expect(dead_code)]），不存在并发数据访问。
+unsafe impl Sync for PageTable {}
+```
+
+去掉外层 `SpinLock` 后，`Arc<PageTable>` 要求 `PageTable: Sync`。
+`NodeFrame`（`HeapNodeFrame` 含 `*mut u8`）不自动 `Sync`，需手动 impl。
+
+`create()` 简化为：
+
+```rust
+pub fn create() -> Result<Self, PagingError> {
+    let root = NodeFrame::alloc()?;
+    let root_paddr = root.paddr();
+    Ok(Self { root_paddr, root })
+}
 ```
 
 删除 `NodeEntry`、`ref_count`、`inc_ref`/`dec_ref`/`ref_count_mut`、所有 `unmap_*` 方法。
@@ -354,6 +371,8 @@ walk 和 swap 之间不存在竞态：中间节点一旦通过 CAS 安装就**�
 | `Table::read` (Relaxed) | `lib.rs` | 统一为 `read_acquire` |
 | `Table::write` (Relaxed) | `lib.rs` | 被 `compare_exchange` 替代 |
 | `use alloc::collections::BTreeMap` | `table.rs:8` | `BTreeMap` 不再使用 |
+| `MappedPagesInner::flags` 字段 | `mapping.rs` | 从 PTE 读取，无需缓存 |
+| `MappedPagesInner::exclusive` 字段 | `mapping.rs` | PTE EXCLUSIVE 位是 source of truth |
 
 **变更项**（非删除）：
 
@@ -362,9 +381,15 @@ walk 和 swap 之间不存在竞态：中间节点一旦通过 CAS 安装就**�
 | `walk_readonly` 内部 ordering | `table.rs` | `Table::read` → `Table::read_acquire` |
 | `map_page` / `map_at_level` 签名 | `table.rs` | `&mut self` → `&self`（CAS 替代锁） |
 | `identity_map_range` 签名 | `table.rs` | `&mut self` → `&self` |
-| `MappedPagesInner::flags` 字段 | `mapping.rs` | 从 PTE 读取 |
-| `MappedPagesInner::exclusive` 字段 | `mapping.rs` | PTE EXCLUSIVE 位是 source of truth |
+| `MappedPagesInner::flags()` 方法 | `mapping.rs` | 从字段读改为 PTE walk + `without_exclusive()` |
+| `MappedPages` Debug 实现 | `mapping.rs` | 从 `self.0.exclusive` 改为 PTE `is_exclusive()` 查询 |
 | 外层 `SpinLock` 包装 | 所有消费者 | PageTable 完全无锁 |
+
+**新增项**：
+
+| 新增项 | 文件 | 说明 |
+|--------|------|------|
+| `unsafe impl Sync for PageTable` | `table.rs` | `Arc<PageTable>` 要求 `Sync`，`NodeFrame` 含 `*mut u8` 不自动 `Sync` |
 
 ## 外部接口变更
 
