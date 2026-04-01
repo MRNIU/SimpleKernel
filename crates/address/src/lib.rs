@@ -15,7 +15,7 @@ mod page_size;
 mod range;
 
 pub use addr::{PhysAddr, VirtAddr, phys_to_virt, virt_to_phys};
-pub use page_num::{PhysPageNum, VirtPageNum};
+pub use page_num::{Frame, Page, PhysPageNum, VirtPageNum};
 pub use page_size::{Page1G, Page2M, Page4K, PageSize};
 pub use range::{AddrRange, AddrRangeIter};
 

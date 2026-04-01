@@ -1,81 +1,216 @@
-//! 页号类型 ([`PhysPageNum`], [`VirtPageNum`]) 及与地址类型的互转。
+//! 物理帧 ([`Frame<P>`]) 与虚拟页 ([`Page<P>`]) 类型。
+//!
+//! 泛型参数 `P: PageSize` 在编译期标记帧/页的粒度（4K/2M/1G），
+//! 防止不同粒度的帧/页在算术运算中混用。
+//!
+//! 内部存储统一以 4K 页号为单位，算术运算按 `P::NUM_4K_PAGES` 缩放：
+//! - `Frame<Page4K> + 1` → 内部 number 加 1
+//! - `Frame<Page2M> + 1` → 内部 number 加 512（跳过一个 2M 页）
+//!
+//! [`PhysPageNum`] / [`VirtPageNum`] 是 `Frame<Page4K>` / `Page<Page4K>`
+//! 的类型别名，保持向后兼容。
 
 use core::fmt;
+use core::marker::PhantomData;
 
 use config::PAGE_SIZE_BITS;
 
 use crate::addr::{PhysAddr, VirtAddr};
+use crate::page_size::{Page4K, PageSize};
 
-/// 生成页号 newtype——在 `impl_usize_newtype!` 基础上，
-/// 添加 `start_addr()` 方法、与地址类型的 `From` 互转和 `Display`。
-macro_rules! define_page_num {
-    ($(#[$meta:meta])* $name:ident, $addr:ident) => {
-        $(#[$meta])*
-        #[repr(transparent)]
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-        pub struct $name(pub(crate) usize);
+/// 物理帧——以 4K 页号为内部存储单位的类型安全帧标识。
+///
+/// 泛型参数 `P` 标记帧的粒度，算术运算自动按 `P::NUM_4K_PAGES` 缩放。
+/// 内部 `number` 始终是 4K 页号单位。
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Frame<P: PageSize = Page4K> {
+    pub(crate) number: usize,
+    _marker: PhantomData<P>,
+}
 
-        crate::impl_usize_newtype!($name, none);
+/// 虚拟页——以 4K 页号为内部存储单位的类型安全页标识。
+///
+/// 泛型参数 `P` 标记页的粒度，算术运算自动按 `P::NUM_4K_PAGES` 缩放。
+/// 内部 `number` 始终是 4K 页号单位。
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Page<P: PageSize = Page4K> {
+    pub(crate) number: usize,
+    _marker: PhantomData<P>,
+}
 
-        impl $name {
-            /// 转换为该页起始地址
+/// 物理页号——`Frame<Page4K>` 的向后兼容别名
+pub type PhysPageNum = Frame<Page4K>;
+/// 虚拟页号——`Page<Page4K>` 的向后兼容别名
+pub type VirtPageNum = Page<Page4K>;
+
+/// 为 Frame<P> 和 Page<P> 生成通用方法和 trait 实现。
+///
+/// 两种类型的逻辑完全对称，仅关联的地址类型不同（PhysAddr / VirtAddr）。
+macro_rules! impl_page_or_frame {
+    ($name:ident, $addr:ident, $display_prefix:expr) => {
+        impl<P: PageSize> $name<P> {
+            /// 从 4K 页号构造。
+            ///
+            /// 对于大页（P != Page4K），校验 4K 页号对齐到 P 的边界。
             #[inline]
-            pub const fn start_addr(self) -> $addr {
-                $addr::new(self.0 << PAGE_SIZE_BITS)
+            pub fn new(number_4k: usize) -> Self {
+                assert!(
+                    P::NUM_4K_PAGES == 1 || number_4k % P::NUM_4K_PAGES == 0,
+                    concat!(stringify!($name), ": 4K 页号未对齐到页大小边界")
+                );
+                Self {
+                    number: number_4k,
+                    _marker: PhantomData,
+                }
+            }
+
+            /// 返回内部 4K 页号
+            #[inline]
+            pub const fn as_usize(self) -> usize {
+                self.number
+            }
+
+            /// 转换为起始地址
+            #[inline]
+            pub fn start_addr(self) -> $addr {
+                $addr::new(self.number << PAGE_SIZE_BITS)
             }
         }
 
-        impl From<$addr> for $name {
-            /// 地址转页号（向下取整）
+        impl<P: PageSize> From<$addr> for $name<P> {
+            /// 地址转帧/页号（向下对齐到 P 的边界）
             #[inline]
             fn from(addr: $addr) -> Self {
-                Self(addr.as_usize() >> PAGE_SIZE_BITS)
+                let number_4k = addr.as_usize() >> PAGE_SIZE_BITS;
+                let aligned = number_4k - (number_4k % P::NUM_4K_PAGES);
+                Self {
+                    number: aligned,
+                    _marker: PhantomData,
+                }
             }
         }
 
-        impl From<$name> for $addr {
-            /// 页号转起始地址
+        impl<P: PageSize> From<$name<P>> for $addr {
+            /// 帧/页号转起始地址
             #[inline]
-            fn from(pn: $name) -> Self {
+            fn from(pn: $name<P>) -> Self {
                 pn.start_addr()
             }
         }
 
-        impl fmt::Display for $name {
+        impl<P: PageSize> From<usize> for $name<P> {
+            #[inline]
+            fn from(v: usize) -> Self {
+                Self::new(v)
+            }
+        }
+
+        impl<P: PageSize> From<$name<P>> for usize {
+            #[inline]
+            fn from(v: $name<P>) -> usize {
+                v.number
+            }
+        }
+
+        impl<P: PageSize> core::ops::Add<usize> for $name<P> {
+            type Output = Self;
+            /// 前进 `rhs` 个 P 大小的页——内部 number 加 `rhs × NUM_4K_PAGES`
+            #[inline]
+            fn add(self, rhs: usize) -> Self {
+                Self {
+                    number: self.number + rhs * P::NUM_4K_PAGES,
+                    _marker: PhantomData,
+                }
+            }
+        }
+
+        impl<P: PageSize> core::ops::AddAssign<usize> for $name<P> {
+            #[inline]
+            fn add_assign(&mut self, rhs: usize) {
+                self.number += rhs * P::NUM_4K_PAGES;
+            }
+        }
+
+        impl<P: PageSize> core::ops::Sub<usize> for $name<P> {
+            type Output = Self;
+            /// 后退 `rhs` 个 P 大小的页——内部 number 减 `rhs × NUM_4K_PAGES`
+            #[inline]
+            fn sub(self, rhs: usize) -> Self {
+                debug_assert!(
+                    self.number >= rhs * P::NUM_4K_PAGES,
+                    concat!(stringify!($name), ": underflow")
+                );
+                Self {
+                    number: self.number - rhs * P::NUM_4K_PAGES,
+                    _marker: PhantomData,
+                }
+            }
+        }
+
+        impl<P: PageSize> core::ops::SubAssign<usize> for $name<P> {
+            #[inline]
+            fn sub_assign(&mut self, rhs: usize) {
+                debug_assert!(
+                    self.number >= rhs * P::NUM_4K_PAGES,
+                    concat!(stringify!($name), ": underflow")
+                );
+                self.number -= rhs * P::NUM_4K_PAGES;
+            }
+        }
+
+        impl<P: PageSize> core::ops::Sub<$name<P>> for $name<P> {
+            type Output = usize;
+            /// 两个同类型帧/页号的差——返回 P 大小页的个数
+            #[inline]
+            fn sub(self, rhs: $name<P>) -> usize {
+                debug_assert!(
+                    self.number >= rhs.number,
+                    concat!(stringify!($name), ": underflow")
+                );
+                (self.number - rhs.number) / P::NUM_4K_PAGES
+            }
+        }
+
+        impl<P: PageSize> fmt::Display for $name<P> {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                write!(f, "{}(0x{:X})", stringify!($name), self.0)
+                write!(f, "{}(0x{:X})", $display_prefix, self.number)
+            }
+        }
+
+        impl<P: PageSize> fmt::Debug for $name<P> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "{}(0x{:X})", $display_prefix, self.number)
             }
         }
     };
 }
 
-define_page_num!(
-    /// 物理页号——页表操作中的帧索引（4K 粒度）
-    PhysPageNum, PhysAddr
-);
-
-define_page_num!(
-    /// 虚拟页号——页表操作中的虚拟页索引（4K 粒度）
-    VirtPageNum, VirtAddr
-);
+impl_page_or_frame!(Frame, PhysAddr, "Frame");
+impl_page_or_frame!(Page, VirtAddr, "Page");
 
 // `page_number()` 方法定义在本模块而非 `addr.rs`，
-// 因为返回类型 `PhysPageNum` / `VirtPageNum` 在此处定义，
+// 因为返回类型 `Frame` / `Page` 在此处定义，
 // 放在 `addr.rs` 会造成循环依赖。
 
 impl PhysAddr {
-    /// 转换为物理页号（向下取整）
+    /// 转换为物理页号（向下取整到 4K 边界）
     #[inline]
-    pub const fn page_number(self) -> PhysPageNum {
-        PhysPageNum::new(self.0 >> PAGE_SIZE_BITS)
+    pub const fn page_number(self) -> Frame {
+        Frame {
+            number: self.0 >> PAGE_SIZE_BITS,
+            _marker: PhantomData,
+        }
     }
 }
 
 impl VirtAddr {
-    /// 转换为虚拟页号（向下取整）
+    /// 转换为虚拟页号（向下取整到 4K 边界）
     #[inline]
-    pub const fn page_number(self) -> VirtPageNum {
-        VirtPageNum::new(self.0 >> PAGE_SIZE_BITS)
+    pub const fn page_number(self) -> Page {
+        Page {
+            number: self.0 >> PAGE_SIZE_BITS,
+            _marker: PhantomData,
+        }
     }
 }
 
@@ -83,7 +218,7 @@ impl VirtAddr {
 mod tests {
     use super::*;
 
-    /// PhysAddr → PhysPageNum → PhysAddr 往返一致。
+    /// PhysAddr → Frame → PhysAddr 往返一致。
     #[test]
     fn phys_page_num_roundtrip() {
         let addr = PhysAddr::new(0x8020_3000);
@@ -150,6 +285,47 @@ mod tests {
     #[test]
     fn display_format() {
         let pn = PhysPageNum::new(0x42);
-        assert_eq!(format!("{pn}"), "PhysPageNum(0x42)");
+        assert_eq!(format!("{pn}"), "Frame(0x42)");
+    }
+
+    /// Frame<Page2M> 算术应按 512 缩放。
+    #[test]
+    fn frame_2m_arithmetic() {
+        use crate::page_size::Page2M;
+        let f = Frame::<Page2M>::new(0); // 4K 页号 0
+        let f2 = f + 1; // 前进 1 个 2M 页
+        assert_eq!(f2.as_usize(), 512); // 内部 4K 页号 = 512
+        assert_eq!(f2.start_addr(), PhysAddr::new(512 * 4096)); // 2 MiB
+
+        let f3 = f + 3;
+        assert_eq!(f3 - f, 3); // 差 3 个 2M 页
+    }
+
+    /// Frame<Page2M>::new 对非对齐的 4K 页号应 panic。
+    #[test]
+    #[should_panic(expected = "未对齐到页大小边界")]
+    fn frame_2m_unaligned_panics() {
+        use crate::page_size::Page2M;
+        let _ = Frame::<Page2M>::new(1); // 1 不是 512 的倍数
+    }
+
+    /// Frame<Page1G> 算术应按 512×512 缩放。
+    #[test]
+    fn frame_1g_arithmetic() {
+        use crate::page_size::Page1G;
+        let f = Frame::<Page1G>::new(0);
+        let f2 = f + 1;
+        assert_eq!(f2.as_usize(), 512 * 512);
+    }
+
+    /// 从 PhysAddr 转换为 Frame<Page2M> 应向下对齐。
+    #[test]
+    fn frame_2m_from_addr_aligns_down() {
+        use crate::page_size::Page2M;
+        let addr = PhysAddr::new(3 * 1024 * 1024); // 3 MiB
+        let f: Frame<Page2M> = addr.into();
+        // 3 MiB / 4K = 768, 向下对齐到 512 的倍数 = 512
+        assert_eq!(f.as_usize(), 512);
+        assert_eq!(f.start_addr(), PhysAddr::new(2 * 1024 * 1024)); // 2 MiB
     }
 }
