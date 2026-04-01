@@ -1,43 +1,45 @@
-//! 类型化 MMIO 区域——强制 volatile 语义的 [`PermanentMapping`] 包装。
+//! 类型化 MMIO 区域——强制 volatile 语义的映射包装。
 //!
-//! `MappedPages` / `PermanentMapping` 使用普通内存语义（non-volatile），适合 RAM 映射。
+//! `MappedPages` 使用普通内存语义（non-volatile），适合 RAM 映射。
 //! `MmioRegion` 使用 volatile 语义，适合设备寄存器——编译器不会优化掉
 //! 对同一地址的重复读写，也不会重排 MMIO 操作。
+//!
+//! 内部使用 `ManuallyDrop<MappedPages>` 阻止自动 unmap——
+//! MMIO 区域的生命周期通常等于设备驱动的生命周期。
 
-use alloc::sync::Arc;
+use core::mem::ManuallyDrop;
 
 use crate::error::PagingError;
-use crate::mapping::{MappedPages, PermanentMapping, check_bounds_and_align};
-use crate::{PageTable, PteFlags, PteFlagsOps};
+use crate::mapping::{MappedPages, check_bounds_and_align};
+use crate::{PteFlags, PteFlagsOps};
 use address::PhysAddr;
 use config::PAGE_SIZE;
-use sync_crate::SpinLock;
+use page_allocator::AllocatedPages;
 
 /// 已映射的 MMIO 区域——提供类型安全的 volatile 寄存器访问。
 ///
-/// 内部通过 [`PermanentMapping`] 管理页表映射和生命周期。
+/// 内部通过 `ManuallyDrop<MappedPages>` 管理映射——不会自动 unmap。
 /// 不可 Clone（一个映射只有一个 owner），可通过 `&self` 共享读取。
 pub struct MmioRegion {
-    mapping: PermanentMapping,
+    mapping: ManuallyDrop<MappedPages>,
 }
 
 impl MmioRegion {
-    /// 将 `[paddr, paddr+size)` identity-map 到指定页表，返回 `MmioRegion`。
+    /// 将 `[paddr, paddr+size)` identity-map，返回 `MmioRegion`。
     ///
     /// # Errors
     ///
-    /// 映射失败时返回错误。
-    pub fn map_to(
-        pt_ref: Arc<SpinLock<PageTable>>,
-        paddr: PhysAddr,
-        size: usize,
-    ) -> Result<Self, PagingError> {
+    /// 虚拟页分配或映射失败时返回错误。
+    pub fn map(paddr: PhysAddr, size: usize) -> Result<Self, PagingError> {
         let pa_aligned = paddr.align_down();
         let page_count = ((paddr + size).align_up().as_usize() - pa_aligned.as_usize()) / PAGE_SIZE;
-        let mapping =
-            MappedPages::map_identity(pt_ref, pa_aligned, page_count, PteFlags::kernel_device())?
-                .into_permanent();
-        Ok(Self { mapping })
+        let va = address::VirtAddr::new(pa_aligned.as_usize());
+        let pages =
+            AllocatedPages::alloc_at(va, page_count).map_err(|_| PagingError::AllocationFailed)?;
+        let mp = MappedPages::map_identity(pages, PteFlags::kernel_device());
+        Ok(Self {
+            mapping: ManuallyDrop::new(mp),
+        })
     }
 
     /// 返回 MMIO 区域的基地址。
@@ -53,10 +55,6 @@ impl MmioRegion {
     }
 
     /// 读取指定偏移处的寄存器值（volatile 语义）。
-    ///
-    /// # Panics
-    ///
-    /// `offset + size_of::<T>()` 超出区域大小、或地址未对齐时 panic。
     #[inline]
     pub fn read_reg<T: zerocopy::FromBytes>(&self, offset: usize) -> T {
         let ptr: *const T = check_bounds_and_align::<T>(
@@ -71,10 +69,6 @@ impl MmioRegion {
     }
 
     /// 写入指定偏移处的寄存器值（volatile 语义）。
-    ///
-    /// # Panics
-    ///
-    /// `offset + size_of::<T>()` 超出区域大小、或地址未对齐时 panic。
     #[inline]
     pub fn write_reg<T: zerocopy::IntoBytes>(&self, offset: usize, val: T) {
         let ptr: *const T = check_bounds_and_align::<T>(
@@ -83,8 +77,7 @@ impl MmioRegion {
             offset,
             "MmioRegion::write_reg",
         );
-        // SAFETY: MmioRegion 构造保证地址区间已映射为 device memory；
-        // check_bounds_and_align 验证了越界和对齐；IntoBytes 保证 val 的位模式可安全写入
+        // SAFETY: MmioRegion 构造保证地址区间已映射为 device memory
         unsafe { core::ptr::write_volatile(ptr as *mut T, val) }
     }
 }

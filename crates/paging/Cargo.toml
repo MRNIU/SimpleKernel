@@ -9,19 +9,22 @@ edition.workspace = true
 
 [features]
 default = []
-## 导出 HeapNodeFrame + test_pt 供下游 crate 测试使用。
-test-support = ["frame_allocator/test-support"]
+## 导出测试辅助函数供下游 crate 测试使用。
+test-support = ["frame_allocator/test-support", "page_allocator/test-support"]
 
 [dependencies]
 config = { path = "../config" }
 address = { path = "../address" }
 page_table_entry = { path = "../page_table_entry" }
 frame_allocator = { path = "../frame_allocator" }
+page_allocator = { path = "../page_allocator" }
 sync_crate = { path = "../sync", package = "sync" }
 tlb = { path = "../tlb" }
 log.workspace = true
 zerocopy.workspace = true
 heapless.workspace = true
+spin.workspace = true
 
 [dev-dependencies]
 frame_allocator = { path = "../frame_allocator", features = ["test-support"] }
+page_allocator = { path = "../page_allocator", features = ["test-support"] }

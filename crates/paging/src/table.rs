@@ -303,6 +303,85 @@ impl PageTable {
         Ok((old_pa, old_flags))
     }
 
+    /// 取消映射并返回 [`UnmapResult`]——EXCLUSIVE 检查在此完成。
+    ///
+    /// EXCLUSIVE 帧自动包装为 `UnmappedFrames`，调用方无需接触 unsafe。
+    /// 根据 PTE 所在层级自动计算正确的帧数（支持大页）。
+    ///
+    /// **调用方必须在此操作后执行 TLB 刷新，且在刷新完成前不得 drop 返回的 UnmapResult**。
+    pub(crate) fn unmap_to_result(
+        &mut self,
+        va: VirtAddr,
+    ) -> Result<crate::error::UnmapResult, PagingError> {
+        self.unmap_at_level_to_result(va, 0)
+    }
+
+    /// 在指定层级取消映射并返回 [`UnmapResult`]。
+    pub(crate) fn unmap_at_level_to_result(
+        &mut self,
+        va: VirtAddr,
+        level: usize,
+    ) -> Result<crate::error::UnmapResult, PagingError> {
+        let (old_pa, old_flags) = self.unmap_at_level_with_flags(va, level)?;
+        if old_flags.is_exclusive() {
+            let page_count_4k = crate::page_size_at_level(level) / config::PAGE_SIZE;
+            let start = address::PhysPageNum::from(old_pa);
+            let range = address::FrameRange::new(start, start + page_count_4k);
+            // SAFETY: PTE 的 EXCLUSIVE 位确认此帧由当前映射独占，
+            // PTE 已清除，不存在其他引用
+            let frames = unsafe { frame_allocator::UnmappedFrames::from_unmapped_range(range) };
+            Ok(crate::error::UnmapResult::Exclusive(frames))
+        } else {
+            Ok(crate::error::UnmapResult::NonExclusive(old_pa))
+        }
+    }
+
+    /// 修改已映射页的权限标志位，保留物理地址和 EXCLUSIVE 位不变。
+    ///
+    /// **调用方必须在此操作后执行 TLB 刷新。**
+    pub(crate) fn update_flags(
+        &mut self,
+        va: VirtAddr,
+        new_flags: PteFlags,
+    ) -> Result<PteFlags, PagingError> {
+        let (pte, level) = self.walk_readonly(va).ok_or(PagingError::PageNotMapped)?;
+        let old_flags = pte.flags();
+        let pa = pte.paddr();
+
+        let preserve_exclusive = if old_flags.is_exclusive() {
+            new_flags.with_exclusive()
+        } else {
+            new_flags
+        };
+        let leaf_flags = preserve_exclusive.for_leaf_at_level(level);
+
+        let (frame_paddr, idx) = self.walk_to_existing(va, level)?;
+        // SAFETY: frame_paddr 指向由 self 持有的有效帧
+        let mut table = unsafe { Table::from_paddr(frame_paddr) };
+        table.write(idx, PageTableEntry::new(pa, leaf_flags));
+
+        Ok(old_flags)
+    }
+
+    /// 只读遍历找到已存在映射的 PTE 所在帧和索引。
+    fn walk_to_existing(
+        &self,
+        va: VirtAddr,
+        target_level: usize,
+    ) -> Result<(PhysAddr, usize), PagingError> {
+        let mut paddr = self.root_paddr;
+        for lv in (target_level + 1..PT_LEVELS).rev() {
+            let table = unsafe { Table::from_paddr(paddr) };
+            let idx = vpn_index(va, lv);
+            let pte = table.read(idx);
+            if !pte.is_valid() || pte.is_leaf(lv) {
+                return Err(PagingError::PageNotMapped);
+            }
+            paddr = pte.paddr();
+        }
+        Ok((paddr, vpn_index(va, target_level)))
+    }
+
     /// 只读遍历——从根向下查找叶 PTE，返回 PTE 及其所在层级。
     fn walk_readonly(&self, va: VirtAddr) -> Option<(PageTableEntry, usize)> {
         let mut paddr = self.root_paddr;

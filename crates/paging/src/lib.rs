@@ -34,16 +34,63 @@ pub use table::PageTable;
 #[cfg(any(test, feature = "test-support", target_os = "none"))]
 pub mod mapping;
 #[cfg(any(test, feature = "test-support", target_os = "none"))]
-pub use mapping::{MappedPages, PermanentMapping};
-/// 创建测试用 `Arc<SpinLock<PageTable>>`。
+pub use mapping::MappedPages;
+
+pub use error::UnmapResult;
+
+#[cfg(any(test, feature = "test-support", target_os = "none"))]
+pub mod mmio;
+
+/// 全局内核页表——SAS 架构下只有一张页表，所有映射共用。
+///
+/// 通过 [`set_kernel_page_table`] 在启动时设置，MappedPages 的 Drop
+/// 通过 [`kernel_page_table`] 获取引用以执行 unmap。
+static KERNEL_PT_PTR: core::sync::atomic::AtomicUsize = core::sync::atomic::AtomicUsize::new(0);
+
+/// 设置全局内核页表引用。
+///
+/// # Safety
+/// `pt` 必须指向有效的、生命周期为 `'static` 的 `SpinLock<PageTable>`。
+/// 仅在启动时调用一次。
+pub unsafe fn set_kernel_page_table(pt: &'static sync_crate::SpinLock<PageTable>) {
+    let prev = KERNEL_PT_PTR.swap(
+        pt as *const _ as usize,
+        core::sync::atomic::Ordering::Release,
+    );
+    assert!(prev == 0, "kernel page table already set");
+}
+
+/// 获取全局内核页表引用。
+///
+/// 未初始化时 panic。
+pub fn kernel_page_table() -> &'static sync_crate::SpinLock<PageTable> {
+    let addr = KERNEL_PT_PTR.load(core::sync::atomic::Ordering::Acquire);
+    assert!(addr != 0, "kernel page table not initialized");
+    // SAFETY: set_kernel_page_table 保证存储的是有效的 'static 引用
+    unsafe { &*(addr as *const sync_crate::SpinLock<PageTable>) }
+}
+
+/// 初始化测试环境——全局页表 + frame_allocator + page_allocator。
+#[cfg(any(test, feature = "test-support"))]
+pub fn ensure_test_init() {
+    static INIT: std::sync::Once = std::sync::Once::new();
+    INIT.call_once(|| {
+        frame_allocator::ensure_test_init();
+        page_allocator::ensure_test_init();
+        let pt = PageTable::create().expect("test page table");
+        let pt_lock = sync_crate::SpinLock::new(pt, "test_pt");
+        let pt_static: &'static _ = Box::leak(Box::new(pt_lock));
+        // SAFETY: Box::leak 产出 'static 引用
+        unsafe { set_kernel_page_table(pt_static) };
+    });
+}
+
+/// 创建测试用 `Arc<SpinLock<PageTable>>`（向后兼容）。
 #[cfg(any(test, feature = "test-support"))]
 pub fn test_pt() -> alloc::sync::Arc<sync_crate::SpinLock<PageTable>> {
     let pt = PageTable::create().expect("创建页表");
     alloc::sync::Arc::new(sync_crate::SpinLock::new(pt, "test_pt"))
 }
-
-#[cfg(any(test, feature = "test-support", target_os = "none"))]
-pub mod mmio;
 
 /// 页表节点帧的统一接口。
 ///
