@@ -25,12 +25,13 @@ pub fn init() -> AddressSpace {
     // SAFETY: alloc_start 页对齐，内存区域不与堆重叠，仅调用一次
     unsafe { frame_allocator::init(alloc_start, alloc_size) };
 
-    // 初始化虚拟页分配器——SAS 下 VA == PA，用整段物理内存范围。
-    // 不做 reserve——后续 mmap_identity_range 通过 AllocatedPages::alloc_at
-    // 从分配器中取出页，分配动作本身即"占用"。
+    // 初始化虚拟页分配器——SAS identity mapping 下 VA == PA。
+    // 管理范围从地址 0 到物理内存末尾，覆盖低地址的 MMIO 设备区域
+    // 和高地址的物理 RAM。后续 AllocatedPages::alloc_at 从中取页。
     // SAFETY: 虚拟地址范围有效，仅调用一次
+    let va_end = mem_start + mem_size;
     unsafe {
-        page_allocator::init(VirtAddr::new(mem_start.as_usize()), mem_size);
+        page_allocator::init(VirtAddr::new(0), va_end.as_usize());
     }
 
     // 创建页表——Box::leak 产出 'static 引用
