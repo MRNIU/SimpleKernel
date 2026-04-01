@@ -38,7 +38,7 @@ pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
     let entry_fn: fn(usize) = unsafe { core::mem::transmute(entry) };
     entry_fn(arg);
 
-    task::exit(0);
+    simplekernel::syscall::process::exit(0);
 }
 
 /// 主核引导序列

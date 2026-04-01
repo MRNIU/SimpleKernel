@@ -5,6 +5,7 @@
 
 use core::sync::atomic::{AtomicU32, Ordering};
 
+use simplekernel::syscall;
 use simplekernel::task;
 use sync::SpinLock;
 
@@ -70,7 +71,7 @@ fn counter_thread(id: usize) {
             let core = per_cpu::current_core_id();
             log::info!("counter_{}: i={} on core {}", id, i, core);
         }
-        task::yield_now();
+        syscall::process::yield_now();
     }
 
     TEST_DONE.fetch_add(1, Ordering::Release);
@@ -87,7 +88,7 @@ fn verifier_thread(_arg: usize) {
         if TEST_DONE.load(Ordering::Acquire) >= TEST_THREAD_COUNT {
             break;
         }
-        task::yield_now();
+        syscall::process::yield_now();
     }
 
     let count = *TEST_COUNTER.lock();
@@ -111,7 +112,7 @@ fn verifier_thread(_arg: usize) {
 fn p5b_test_thread(_arg: usize) {
     log::info!("P5b: testing sleep_ms(500)...");
     let tick_before = global_tick::current();
-    task::sleep_ms(500);
+    syscall::process::nanosleep(500);
     let tick_after = global_tick::current();
     let elapsed = tick_after.saturating_sub(tick_before);
     // 500ms @ 10Hz = 5 ticks（全局计数器被双核推进，实际约 10），允许 ≥3
@@ -123,10 +124,10 @@ fn p5b_test_thread(_arg: usize) {
     }
 
     log::info!("P5b: testing clone/wait...");
-    match task::clone_kernel_thread("child", child_thread, 42) {
+    match syscall::process::clone("child", child_thread, 42) {
         Ok(child_pid) => {
             log::info!("P5b: spawned child pid={}", child_pid);
-            match task::wait_child(child_pid) {
+            match syscall::process::waitpid(child_pid) {
                 Ok((pid, code)) => {
                     if pid == child_pid && code == 7 {
                         log::info!("=== CLONE/WAIT TEST PASSED: pid={} code={} ===", pid, code);
@@ -155,13 +156,13 @@ fn p5b_test_thread(_arg: usize) {
     log::info!("=== KMUTEX TEST PASSED ===");
 
     log::info!("P5b: testing signal...");
-    match task::clone_kernel_thread("victim", victim_thread, 0) {
+    match syscall::process::clone("victim", victim_thread, 0) {
         Ok(victim_pid) => {
-            task::yield_now();
-            match task::send_signal(victim_pid, task::signal::Signal::SIGKILL) {
+            syscall::process::yield_now();
+            match syscall::process::kill(victim_pid, task::signal::Signal::SIGKILL) {
                 Ok(()) => {
                     log::info!("P5b: sent SIGKILL to pid={}", victim_pid);
-                    match task::wait_child(victim_pid) {
+                    match syscall::process::waitpid(victim_pid) {
                         Ok((pid, code)) => {
                             log::info!(
                                 "=== SIGNAL TEST PASSED: pid={} killed, code={} ===",
@@ -183,14 +184,14 @@ fn p5b_test_thread(_arg: usize) {
 
 fn child_thread(arg: usize) {
     log::info!("child_thread: arg={}", arg);
-    task::yield_now();
-    task::exit(7);
+    syscall::process::yield_now();
+    syscall::process::exit(7);
 }
 
 fn victim_thread(_arg: usize) {
     log::info!("victim_thread: running, waiting for signal...");
     loop {
-        task::yield_now();
+        syscall::process::yield_now();
     }
 }
 

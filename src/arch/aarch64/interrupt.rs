@@ -224,8 +224,13 @@ fn dispatch_sync(ctx: &mut TrapContext) {
     let ec = (esr >> 26) & 0x3F; // ESR_EL1.EC 字段
 
     match ec {
-        // SVC 指令（EC = 0x15 = 21）
-        0x15 => super::syscall::handle_syscall(ctx),
+        // SAS 模式下 SVC 不应触发——所有 syscall 通过直接函数调用
+        0x15 => {
+            panic!(
+                "SVC 在 SAS 模式下不应触发: ESR=0x{:x}, ELR=0x{:x}",
+                esr, ctx.elr_el1
+            );
+        }
         // 数据中止（EC = 0x24/0x25）或指令中止（EC = 0x20/0x21）
         0x20 | 0x21 | 0x24 | 0x25 => {
             log::error!(

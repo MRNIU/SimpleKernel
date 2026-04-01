@@ -207,9 +207,9 @@ const CAUSE_S_SOFTWARE_INT: u64 = 1;
 const CAUSE_S_TIMER_INT: u64 = 5;
 /// S-mode 外部中断（PLIC）
 const CAUSE_S_EXTERNAL_INT: u64 = 9;
-/// U-mode 环境调用（ecall）
+/// U-mode 环境调用（ecall）——SAS 模式下不应触发
 const CAUSE_U_ECALL: u64 = 8;
-/// S-mode 环境调用（ecall）
+/// S-mode 环境调用（ecall）——SAS 模式下不应触发
 const CAUSE_S_ECALL: u64 = 9;
 
 /// 陷阱处理入口 — 由汇编 interrupt.S 中的 trap_entry 调用
@@ -248,8 +248,13 @@ pub extern "C" fn HandleTrap(ctx: &mut TrapContext) -> *mut TrapContext {
         }
     } else {
         match code {
-            // U-mode ecall 或 S-mode ecall
-            CAUSE_U_ECALL | CAUSE_S_ECALL => super::syscall::handle_syscall(ctx),
+            // SAS 模式下 ecall 不应触发——所有 syscall 通过直接函数调用
+            CAUSE_U_ECALL | CAUSE_S_ECALL => {
+                panic!(
+                    "ecall 在 SAS 模式下不应触发: sepc=0x{:x}, scause=0x{:x}",
+                    ctx.sepc, ctx.scause
+                );
+            }
             _ => {
                 log::error!(
                     "HandleTrap: 异常 code={}, sepc=0x{:x}, stval=0x{:x}, scause=0x{:x}",

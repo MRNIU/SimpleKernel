@@ -31,8 +31,13 @@ mod sched;
 #[cfg(target_os = "none")]
 mod task_table;
 
+// 引导 + 基础设施（保持 pub）
 #[cfg(target_os = "none")]
-pub use sched::{bootstrap_enable_irq, current_task, schedule, timer_tick, yield_now};
+pub use sched::{bootstrap_enable_irq, current_task, schedule, timer_tick};
+
+// syscall 网关后的实现（pub(crate)——外部调用者通过 syscall:: 进入）
+#[cfg(target_os = "none")]
+pub(crate) use sched::yield_now;
 #[cfg(target_os = "none")]
 mod api {
     use alloc::sync::Arc;
@@ -340,9 +345,14 @@ mod api {
     }
 }
 
+// 引导 + 公开 API（保持 pub）
 #[cfg(target_os = "none")]
 pub use api::{
-    TaskBuilder, block_on, clone_kernel_thread, exit, find_task, init, init_smp, send_signal,
-    sleep, sleep_ms, spawn_kernel_thread, spawn_kernel_thread_with_parent, wait_child, wakeup_all,
-    wakeup_one,
+    TaskBuilder, find_task, init, init_smp, spawn_kernel_thread, spawn_kernel_thread_with_parent,
+};
+
+// syscall 网关后的实现（pub(crate)——外部调用者通过 syscall:: 进入）
+#[cfg(target_os = "none")]
+pub(crate) use api::{
+    block_on, clone_kernel_thread, exit, send_signal, sleep_ms, wait_child, wakeup_all, wakeup_one,
 };

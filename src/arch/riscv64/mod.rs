@@ -4,7 +4,6 @@ pub mod context;
 pub mod interrupt;
 pub mod ipi;
 pub mod pte;
-pub mod syscall;
 pub mod timer;
 
 use super::ArchOps;

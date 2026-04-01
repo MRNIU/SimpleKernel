@@ -1,47 +1,45 @@
-/// sys_exit — 终止当前任务
-pub fn sys_exit(code: u64) -> i64 {
-    crate::task::exit(code as i32);
+/// exit — 终止当前任务
+pub fn exit(code: i32) -> ! {
+    crate::task::exit(code)
 }
 
-/// sys_yield — 主动让出 CPU
-pub fn sys_yield() -> i64 {
+/// yield_now — 主动让出 CPU
+pub fn yield_now() {
     crate::task::yield_now();
-    0
 }
 
-/// sys_clone — 创建子内核线程（简化版，entry 和 arg 需为合法函数指针）
-pub fn sys_clone(_entry: u64, _arg: u64) -> i64 {
-    // P5b 简化版：仅在内核态创建线程，用户态 clone 在 P6 实现
-    // 此处返回 -1 表示暂不支持通过 syscall 创建线程
-    -1
+/// clone — 创建子内核线程
+///
+/// # Errors
+///
+/// 创建失败时返回 `TaskError`。
+pub fn clone(
+    name: &'static str,
+    entry: fn(usize),
+    arg: usize,
+) -> Result<usize, crate::task::TaskError> {
+    crate::task::clone_kernel_thread(name, entry, arg)
 }
 
-/// sys_waitpid — 等待子进程退出
-pub fn sys_waitpid(pid: u64) -> i64 {
-    match crate::task::wait_child(pid as usize) {
-        Ok((child_pid, code)) => {
-            // 将 pid 和 code 编码在返回值中：高 32 位 = pid，低 32 位 = code
-            ((child_pid as i64) << 32) | ((code as i64) & 0xFFFF_FFFF)
-        }
-        Err(_) => -1,
-    }
+/// waitpid — 等待子进程退出
+///
+/// # Errors
+///
+/// 找不到子进程时返回 `TaskError::NoChildFound`。
+pub fn waitpid(pid: usize) -> Result<(usize, i32), crate::task::TaskError> {
+    crate::task::wait_child(pid)
 }
 
-/// sys_nanosleep — 睡眠指定毫秒数
-pub fn sys_nanosleep(ms: u64) -> i64 {
+/// nanosleep — 睡眠指定毫秒数
+pub fn nanosleep(ms: u64) {
     crate::task::sleep_ms(ms);
-    0
 }
 
-/// sys_kill — 发送信号
-pub fn sys_kill(pid: u64, sig: u64) -> i64 {
-    use crate::task::signal::Signal;
-    let signal = match Signal::from_u8(sig as u8) {
-        Some(s) => s,
-        None => return -1,
-    };
-    match crate::task::send_signal(pid as usize, signal) {
-        Ok(()) => 0,
-        Err(_) => -1,
-    }
+/// kill — 发送信号
+///
+/// # Errors
+///
+/// 找不到目标任务时返回 `TaskError::TaskNotFound`。
+pub fn kill(pid: usize, sig: crate::task::signal::Signal) -> Result<(), crate::task::TaskError> {
+    crate::task::send_signal(pid, sig)
 }
