@@ -382,7 +382,8 @@ impl MappedPages {
 ///
 /// # Panics
 ///
-/// 越界或未对齐时 panic。
+/// - `T` 为 ZST 时 panic（对映射内存取 ZST 引用无意义）。
+/// - 越界或未对齐时 panic。
 pub(crate) fn check_bounds_and_align<T>(
     base: usize,
     size: usize,
@@ -390,6 +391,10 @@ pub(crate) fn check_bounds_and_align<T>(
     fn_name: &str,
 ) -> *const T {
     let type_size = core::mem::size_of::<T>();
+    assert!(
+        type_size > 0,
+        "{fn_name}: 不支持 ZST（size_of::<T>() == 0）"
+    );
     assert!(
         type_size <= size && offset <= size - type_size,
         "{fn_name}: offset {:#x} + {type_size} 超出映射大小 {:#x}",
