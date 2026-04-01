@@ -185,20 +185,44 @@ impl Table {
         }
     }
 
+    /// Acquire load——无锁 walk 路径。
     #[inline]
-    pub(crate) fn read(&self, index: usize) -> PageTableEntry {
+    pub(crate) fn read_acquire(&self, index: usize) -> PageTableEntry {
         debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
-        // SAFETY: base 指向有效帧，index 经 debug_assert 检查。
-        // Relaxed 即可——外层 SpinLock 提供必要的 memory barrier。
-        let val = unsafe { (*self.base.add(index)).load(Ordering::Relaxed) };
+        // SAFETY: base 指向有效帧，index 经 debug_assert 检查
+        let val = unsafe { (*self.base.add(index)).load(Ordering::Acquire) };
         PageTableEntry::from_raw(val)
     }
 
+    /// AcqRel swap——无锁 unmap（原子清零叶 PTE）。
     #[inline]
-    pub(crate) fn write(&mut self, index: usize, pte: PageTableEntry) {
+    pub(crate) fn swap(&self, index: usize, val: u64) -> u64 {
         debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
         // SAFETY: base 指向有效帧，index 经 debug_assert 检查
-        unsafe { (*self.base.add(index)).store(pte.as_raw(), Ordering::Relaxed) };
+        unsafe { (*self.base.add(index)).swap(val, Ordering::AcqRel) }
+    }
+
+    /// AcqRel CAS——无锁 map（安装中间节点或叶 PTE）。
+    ///
+    /// 返回 `Result`：`Ok(old)` CAS 成功，`Err(actual)` CAS 失败。
+    /// 与 `std::sync::atomic::AtomicU64::compare_exchange` 语义一致。
+    #[inline]
+    pub(crate) fn compare_exchange(
+        &self,
+        index: usize,
+        expected: u64,
+        new: u64,
+    ) -> Result<u64, u64> {
+        debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
+        // SAFETY: base 指向有效帧，index 经 debug_assert 检查
+        unsafe {
+            (*self.base.add(index)).compare_exchange(
+                expected,
+                new,
+                Ordering::AcqRel,
+                Ordering::Acquire,
+            )
+        }
     }
 }
 
