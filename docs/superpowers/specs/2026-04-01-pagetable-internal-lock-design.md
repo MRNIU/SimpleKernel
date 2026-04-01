@@ -1,4 +1,4 @@
-# PageTable 内部锁重构设计
+# PageTable 完全无锁重构设计
 
 ## 问题
 
@@ -13,16 +13,16 @@
 
 ## 设计决策
 
-经对比 Linux（分层锁）、Theseus（无锁 + `&mut` 所有权）、Redox（单 RwLock），选择：
+经对比 Linux（分层锁 + CAS）、Theseus（无锁 + `&mut` 所有权）、Redox（单 RwLock），选择：
 
 | 决策 | 选择 | 理由 |
 |------|------|------|
-| 锁位置 | 推入 PageTable 内部 | 外部接口从 `Arc<SpinLock<PT>>` 简化为 `Arc<PT>` |
-| unmap 路径 | 完全无锁（AtomicU64 swap） | 消除 Drop 死锁 |
-| map 路径 | 内部 SpinLock 保护节点分配 | 中间节点分配需互斥 |
-| 中间节点回收 | 不回收（PageTable drop 时整体释放） | Theseus/Redox 验证可行，删除 ref_count 简化实现 |
-| 节点存储 | `Vec<NodeFrame>`（替代 `BTreeMap<PhysAddr, NodeEntry>`） | 不回收则不需要按 paddr 查找 |
-| Memory ordering | 无锁路径 Acquire/AcqRel，锁内路径保持 Relaxed | 去锁后需显式 ordering 保证跨核可见性 |
+| 锁 | **完全消除** | map 用 CAS 竞争安装中间节点，unmap 用 atomic swap |
+| 中间节点跟踪 | **不跟踪**——所有权编码在 PTE 中 | 与 EXCLUSIVE 叶帧相同的模式：分配 → forget → PTE 记录 PA → Drop 时 walk 回收 |
+| 中间节点回收 | 不回收（PageTable::drop 递归 walk 整棵树释放） | Theseus/Redox 验证可行 |
+| Memory ordering | Acquire load / AcqRel CAS / AcqRel swap | 无锁需显式 ordering 保证跨核可见性 |
+| `MappedPagesInner::flags` | **删除**——从 PTE 读取后去掉 EXCLUSIVE | 消除缓存副本，PTE 是唯一 source of truth |
+| `MappedPagesInner::exclusive` | **删除**——从 PTE EXCLUSIVE 位判断 | 同上 |
 
 ## 架构
 
@@ -32,57 +32,184 @@
 pub struct PageTable {
     root_paddr: PhysAddr,
     root: NodeFrame,
-    /// 中间节点所有权——仅 map 路径 push，Drop 时整体释放。
-    nodes: SpinLock<Vec<NodeFrame>>,
+    // 没有 SpinLock，没有 Vec，没有 BTreeMap
 }
 ```
 
-删除 `NodeEntry` 结构体、`ref_count` 字段及 `inc_ref`/`dec_ref`/`ref_count_mut` 方法。
+删除 `NodeEntry`、`ref_count`、`inc_ref`/`dec_ref`/`ref_count_mut`、所有 `unmap_*` 方法。
 
-### 方法分层
+### MappedPagesInner 结构
+
+```rust
+struct MappedPagesInner {
+    vaddr: VirtAddr,
+    page_count: usize,
+    page_table: Arc<PageTable>,
+    // 没有 flags，没有 exclusive
+}
+```
+
+`flags()` 从 PTE 读取：`self.page_table.get_mapping(self.vaddr).flags().without_exclusive()`。
+
+### 方法分类
+
+所有方法均为 `&self`，全部无锁：
 
 ```
 PageTable
-├── &self 无锁方法（原子 PTE 操作）
-│   ├── root_paddr()           纯读
-│   ├── get_mapping(va)        walk_readonly (Acquire load)
-│   └── atomic_clear_leaf(va)  walk_readonly + swap(0, AcqRel)
-│
-└── &self 内部锁方法（中间节点分配）
-    ├── map_page(va, pa, flags)          lock nodes → walk_create → push frame → write PTE
-    ├── map_at_level(va, pa, flags, lv)  同上，支持大页
-    └── identity_map_range(start, end, flags)  循环调 map_at_level
+├── root_paddr()              纯读
+├── get_mapping(va)           walk (Acquire load) → 读叶 PTE
+├── atomic_clear_leaf(va)     walk (Acquire load) → swap(0, AcqRel)
+├── map_page(va, pa, flags)   walk_create_cas → CAS 安装中间节点 → CAS 安装叶 PTE
+├── map_at_level(...)         同上，支持大页
+└── identity_map_range(...)   循环调 map_at_level
 ```
 
 ### Table 原子操作
 
 ```rust
 impl Table {
-    fn read(&self, index) -> PTE          // Relaxed load（锁内路径）
-    fn read_acquire(&self, index) -> PTE  // Acquire load（无锁路径）
-    fn write(&self, index, pte)           // Relaxed store（锁内路径，&mut self → &self）
-    fn swap(&self, index, val) -> u64     // AcqRel swap（无锁 unmap）
+    /// Acquire load——无锁 walk 路径。
+    fn read_acquire(&self, index: usize) -> PageTableEntry;
+
+    /// AcqRel swap——无锁 unmap（原子清零叶 PTE）。
+    fn swap(&self, index: usize, val: u64) -> u64;
+
+    /// AcqRel CAS——无锁 map（安装中间节点或叶 PTE）。
+    /// 返回 CAS 前的旧值。
+    fn compare_exchange(&self, index: usize, expected: u64, new: u64) -> u64;
 }
 ```
 
-`write` 从 `&mut self` 改为 `&self`——`AtomicU64::store` 只需共享引用。
+删除 `read`（Relaxed load）和 `write`（Relaxed store）——无锁设计下所有操作都需要显式 ordering，
+不再有"锁内路径可以 Relaxed"的场景。
 
-### atomic_clear_leaf 实现
+### walk_create_cas——CAS 安装中间节点
+
+```rust
+fn walk_create_cas(&self, va: VirtAddr, target_level: usize)
+    -> Result<(Table, usize), PagingError>
+{
+    let mut paddr = self.root_paddr;
+
+    for level in (target_level + 1..PT_LEVELS).rev() {
+        let table = unsafe { Table::from_paddr(paddr) };
+        let idx = vpn_index(va, level);
+        let pte = table.read_acquire(idx);
+
+        if !pte.is_valid() {
+            let frame = NodeFrame::alloc()?;
+            let frame_paddr = frame.paddr();
+            let new_pte = PageTableEntry::new_intermediate(frame_paddr);
+
+            let old = table.compare_exchange(idx, 0, new_pte.as_raw());
+            if old == 0 {
+                // CAS 成功——所有权编码到 PTE，forget 阻止 drop
+                core::mem::forget(frame);
+                paddr = frame_paddr;
+            } else {
+                // CAS 失败——其他核已安装，释放多余分配，使用赢家的节点
+                drop(frame);
+                let winner = PageTableEntry::from_raw(old);
+                if winner.is_leaf(level) {
+                    return Err(PagingError::HugePageConflict);
+                }
+                paddr = winner.paddr();
+            }
+        } else if pte.is_leaf(level) {
+            return Err(PagingError::HugePageConflict);
+        } else {
+            paddr = pte.paddr();
+        }
+    }
+
+    let table = unsafe { Table::from_paddr(paddr) };
+    let idx = vpn_index(va, target_level);
+    Ok((table, idx))
+}
+```
+
+CAS 失败只在两个核同时 map 同一 VA 区域的第一个页时发生（竞争创建同一中间节点），
+概率极低。失败方的帧 `drop` 立即归还分配器，无泄漏。
+
+### map_page——CAS 安装叶 PTE
+
+```rust
+pub fn map_page(&self, va: VirtAddr, pa: PhysAddr, flags: PteFlags)
+    -> Result<(), PagingError>
+{
+    let (table, idx) = self.walk_create_cas(va, 0)?;
+    let leaf_pte = PageTableEntry::new(pa, flags.for_leaf_at_level(0));
+    let old = table.compare_exchange(idx, 0, leaf_pte.as_raw());
+    if old != 0 {
+        return Err(PagingError::AlreadyMapped);
+    }
+    Ok(())
+}
+```
+
+### atomic_clear_leaf——原子清除叶 PTE
 
 ```rust
 pub fn atomic_clear_leaf(&self, va: VirtAddr) -> Option<(PhysAddr, PteFlags)> {
-    // 1. 复用 walk_readonly 逻辑（Acquire load）定位叶 PTE
-    //    需要新增内部辅助 walk_to_leaf_location 返回 (Table, index, level)
-    //    而非现有 walk_readonly 返回 (PageTableEntry, level)
-    // 2. table.swap(index, 0)——AcqRel，原子清零并返回旧值
-    // 3. 解析旧 PTE，返回 PA + flags（含 EXCLUSIVE 位）
-    // 不维护 ref_count，不回收中间节点
+    let (table, idx, _level) = self.walk_to_leaf_location(va)?;
+    let old_raw = table.swap(idx, 0);
+    let old_pte = PageTableEntry::from_raw(old_raw);
+    old_pte.is_valid().then(|| (old_pte.paddr(), old_pte.flags()))
 }
 ```
 
-`walk_readonly` 返回已解析的 `(PageTableEntry, level)`，但 `atomic_clear_leaf` 需要
-操作 PTE 所在的 `Table` 和 `index`（才能 swap）。因此新增内部辅助方法
-`walk_to_leaf_location`，与 `walk_readonly` 共享遍历逻辑，但返回位置而非值。
+`walk_to_leaf_location` 是 `walk_readonly` 的变体，返回 `(Table, index, level)` 而非
+`(PageTableEntry, level)`，用于 swap 操作需要定位 PTE 的位置。
+
+### PageTable::drop——递归 walk 回收中间节点
+
+```rust
+impl Drop for PageTable {
+    fn drop(&mut self) {
+        // root 帧由 self.root 持有，不需要手动回收
+        // 递归回收所有中间节点帧
+        self.reclaim_children(self.root_paddr, PT_LEVELS - 1);
+    }
+}
+
+fn reclaim_children(&self, paddr: PhysAddr, level: usize) {
+    if level == 0 {
+        return; // L0 叶节点帧由 MappedPages/reclaim_exclusive_frame 管理
+    }
+    let table = unsafe { Table::from_paddr(paddr) };
+    for idx in 0..ENTRIES_PER_TABLE {
+        let pte = table.read_acquire(idx);
+        if pte.is_valid() && !pte.is_leaf(level) {
+            let child = pte.paddr();
+            self.reclaim_children(child, level - 1);
+            // SAFETY: child 帧由 walk_create_cas 中 forget 的 NodeFrame 分配，
+            // PageTable 独占所有权，此时无并发访问。
+            unsafe { NodeFrame::reclaim(child) };
+        }
+    }
+}
+```
+
+### NodeFrameOps trait 扩展
+
+```rust
+pub trait NodeFrameOps: Send + Sized {
+    fn alloc() -> Result<Self, error::PagingError>;
+    fn paddr(&self) -> PhysAddr;
+
+    /// 从物理地址回收帧——仅在 PageTable::drop 中使用。
+    ///
+    /// # Safety
+    ///
+    /// `paddr` 必须是本 trait 的 `alloc()` 分配、尚未释放的帧，
+    /// 且调用方保证无并发访问。
+    unsafe fn reclaim(paddr: PhysAddr);
+}
+```
+
+裸机实现：通过 `UnmappedFrames::from_range` 归还帧分配器（与 `reclaim_exclusive_frame` 相同模式）。
+测试实现：从 paddr 重建 `HeapNodeFrame` 并 drop（`dealloc`）。
 
 ### unmap_and_reclaim 改造
 
@@ -117,20 +244,41 @@ fn unmap_and_reclaim(&self) {
 }
 ```
 
-不再有 `{ let mut guard = self.page_table.lock(); ... }` 作用域。
+## 所有权模型——统一的"编码到 PTE"模式
+
+中间节点和 EXCLUSIVE 叶帧使用相同的所有权流转模式：
+
+```
+中间节点帧：
+  NodeFrame::alloc() → forget (PTE 记录 paddr)
+    → PageTable::drop → reclaim_children → NodeFrame::reclaim(paddr)
+
+EXCLUSIVE 叶帧：
+  AllocatedFrames::alloc_one() → forget (PTE EXCLUSIVE 位 + paddr)
+    → MappedPages::drop → atomic_clear_leaf 读回 PA
+    → reclaim_exclusive_frame → UnmappedFrames::from_range → Drop
+```
+
+两者的共同点：分配 → forget → PTE 编码 → 读回 PA → 重建帧 RAII → Drop 回收。
 
 ## 删除清单
 
 | 删除项 | 文件 | 原因 |
 |--------|------|------|
-| `NodeEntry` 结构体 | `table.rs` | 只剩 `NodeFrame`，直接存 Vec |
-| `ref_count_mut` / `inc_ref` / `dec_ref` | `table.rs` | 不回收中间节点 |
+| `NodeEntry` 结构体 | `table.rs` | 无需跟踪中间节点 |
+| `nodes: BTreeMap` 字段 | `table.rs` | 所有权编码在 PTE 中 |
+| `root_ref_count` 字段 | `table.rs` | 不回收中间节点 |
+| `ref_count_mut` / `inc_ref` / `dec_ref` | `table.rs` | 同上 |
 | `unmap_page` | `table.rs` | 被 `atomic_clear_leaf` 替代 |
 | `unmap_page_with_flags` | `table.rs` | 同上 |
 | `unmap_at_level` | `table.rs` | 同上 |
 | `unmap_at_level_with_flags` | `table.rs` | 同上 |
+| `walk_create` | `table.rs` | 被 `walk_create_cas` 替代 |
+| `Table::read` (Relaxed) | `lib.rs` | 统一为 `read_acquire` |
+| `Table::write` (Relaxed) | `lib.rs` | 被 `compare_exchange` 替代 |
+| `MappedPagesInner::flags` 字段 | `mapping.rs` | 从 PTE 读取 |
 | `MappedPagesInner::exclusive` 字段 | `mapping.rs` | PTE EXCLUSIVE 位是 source of truth |
-| 外层 `SpinLock` 包装 | 所有消费者 | 锁已推入内部 |
+| 外层 `SpinLock` 包装 | 所有消费者 | PageTable 完全无锁 |
 
 ## 外部接口变更
 
@@ -138,11 +286,11 @@ fn unmap_and_reclaim(&self) {
 
 | 文件 | 变更位置 |
 |------|---------|
-| `crates/paging/src/mapping.rs` | `MappedPagesInner` 字段、`map_identity`/`map_alloc`/`wrap_existing` 签名、`pte_flags` 删 lock、`unmap_and_reclaim` 删 lock |
+| `crates/paging/src/mapping.rs` | `MappedPagesInner` 字段（删 flags/exclusive）、工厂方法签名、`pte_flags`/`flags()` 改为直接调 `get_mapping`、`unmap_and_reclaim` 用 `atomic_clear_leaf` |
 | `crates/paging/src/mmio.rs` | `map_to` 签名 |
-| `crates/paging/src/lib.rs` | `test_pt()` 返回类型 |
+| `crates/paging/src/lib.rs` | `test_pt()` 返回 `Arc<PageTable>`、删 `Table::read`/`write` |
 | `crates/memory/src/vma.rs` | `AddressSpace` 字段、`new`/`page_table()` 签名 |
-| `crates/memory/src/globals.rs` | `KERNEL_PAGE_TABLE` 类型、`store_kernel_page_table`、`kernel_page_table` |
+| `crates/memory/src/globals.rs` | `KERNEL_PAGE_TABLE` 类型、`store`/`get` 函数 |
 | `crates/memory/src/init.rs` | `init_smp` 删 lock |
 | `src/main.rs` | 删 `page_table().lock()` |
 | `src/boot.rs` | 删 `page_table().lock()` |
@@ -152,40 +300,43 @@ fn unmap_and_reclaim(&self) {
 
 改造不破坏任何 RAII 属性：
 
-1. `MappedPages::drop()` → PTE 原子清除 + TLB flush + EXCLUSIVE 帧回收（路径不变，只是无锁）
-2. `PermanentMapping::drop()` → 空操作，仅释放 Arc 引用（不变）
-3. `PageTable::drop()` → `Vec<NodeFrame>` drop → 所有中间节点帧归还分配器
+1. `MappedPages::drop()` → PTE 原子清除 + TLB flush + EXCLUSIVE 帧回收
+2. `PermanentMapping::drop()` → 空操作，仅释放 Arc 引用
+3. `PageTable::drop()` → `reclaim_children` 递归 walk → 所有中间节点帧归还
 4. `Arc<PageTable>` 引用计数 → 最后一个引用释放时触发 PageTable drop
 
-帧所有权流转链不变：
+帧所有权流转链：
+
 ```
-AllocatedFrames → MappedFrames → forget (PTE EXCLUSIVE 位)
-  → atomic_clear_leaf 读回 PA + EXCLUSIVE
-  → UnmappedFrames::from_range → Drop → 帧归还分配器
+EXCLUSIVE 叶帧:
+  AllocatedFrames → forget (PTE EXCLUSIVE)
+    → atomic_clear_leaf → reclaim_exclusive_frame → Drop → 帧归还
+
+中间节点帧:
+  NodeFrame::alloc → forget (PTE 记录 paddr)
+    → PageTable::drop → reclaim_children → NodeFrame::reclaim → 帧归还
 ```
 
-## 与 Theseus 设计的对齐
+## 与参考内核的对比
 
-改造后更接近 Theseus：
-
-- 页表操作无锁（Theseus 靠 `&mut Mapper`，我们靠 AtomicU64）
-- 不回收中间节点（与 Theseus 一致）
-- EXCLUSIVE 位追踪帧所有权（与 Theseus 一致）
-- MappedPages 仿射类型 + into_permanent 转换（与 Theseus 一致）
-
-差异：Theseus 是单地址空间 OS，靠编译期 `&mut` 保证独占；SimpleKernel 有多进程，
-用 `Arc<PageTable>` + 内部锁（仅 map 路径）+ 原子 PTE 操作保证 SMP 安全。
+| | Linux | Theseus | Redox | **SimpleKernel (改造后)** |
+|--|-------|---------|-------|-------------------------|
+| map 同步 | per-PTE-page lock + CAS | `&mut` 所有权 | RwLock | **CAS** |
+| unmap 同步 | atomic swap | `&mut` | RwLock | **atomic swap** |
+| 中间节点回收 | RCU 延迟释放 | 不回收 | 不回收 | **不回收（Drop walk）** |
+| 节点跟踪 | struct page 元数据 | 无 | 无 | **无（PTE 编码）** |
+| 锁数量 | N (per page) | 0 | 1 | **0** |
 
 ## 改动量估算
 
 | 层 | 文件 | 行数 | 风险 |
 |----|------|------|------|
-| Table 原子操作 | `lib.rs` | ~20 | 低 |
-| PageTable 拆分 | `table.rs` | ~150（含大量删除） | 高 |
-| MappedPagesInner | `mapping.rs` | ~40 | 中 |
+| Table 原子操作 | `lib.rs` | ~30 | 低 |
+| PageTable 重构 | `table.rs` | ~200（大量删除 + CAS 新增） | 高 |
+| NodeFrameOps 扩展 | `lib.rs` | ~30 | 中 |
+| MappedPagesInner | `mapping.rs` | ~50 | 中 |
 | MmioRegion | `mmio.rs` | ~5 | 低 |
-| paging re-export | `lib.rs` | ~5 | 低 |
 | memory crate | `vma.rs` + `globals.rs` + `init.rs` | ~20 | 低 |
 | 内核入口 | `main.rs` + `boot.rs` | ~5 | 低 |
-| 测试 | mapping + vma 测试 | ~60 | 低 |
-| **合计** | **8 文件** | **~305（净减 ~120）** | |
+| 测试 | mapping + vma + table 测试 | ~80 | 中 |
+| **合计** | **8 文件** | **~420（净减 ~150）** | |
