@@ -54,13 +54,6 @@ pub trait NodeFrameOps: Send + Sized {
     fn alloc() -> Result<Self, error::PagingError>;
     /// 获取帧的物理地址（裸机 identity mapping）或堆地址（测试）。
     fn paddr(&self) -> PhysAddr;
-    /// 从物理地址回收帧——仅在 PageTable::drop 中使用。
-    ///
-    /// # Safety
-    ///
-    /// `paddr` 必须是本 trait 的 `alloc()` 分配、尚未释放的帧，
-    /// 且调用方保证无并发访问。
-    unsafe fn reclaim(paddr: PhysAddr);
 }
 
 // ── 裸机：包装 AllocatedFrames ─────────────────────────────
@@ -80,13 +73,6 @@ impl NodeFrameOps for KernelNodeFrame {
     }
     fn paddr(&self) -> PhysAddr {
         self.0.start_paddr()
-    }
-    unsafe fn reclaim(paddr: PhysAddr) {
-        use address::{FrameRange, PhysPageNum};
-        let ppn = PhysPageNum::from(paddr);
-        let range = FrameRange::new(ppn, ppn + 1);
-        // SAFETY: 调用方保证帧由 alloc() 分配且未释放，无并发访问。
-        let _reclaimed = unsafe { frame_allocator::UnmappedFrames::from_range(range) };
     }
 }
 
@@ -126,14 +112,6 @@ impl NodeFrameOps for HeapNodeFrame {
     }
     fn paddr(&self) -> PhysAddr {
         PhysAddr::new(self.ptr as usize)
-    }
-    unsafe fn reclaim(paddr: PhysAddr) {
-        let ptr = paddr.as_usize() as *mut u8;
-        // layout 必须与 alloc() 中的 Layout::from_size_align(PAGE_SIZE, PAGE_SIZE) 一致
-        let layout = core::alloc::Layout::from_size_align(config::PAGE_SIZE, config::PAGE_SIZE)
-            .expect("HeapNodeFrame::reclaim: invalid layout");
-        // SAFETY: ptr 由同 layout 的 alloc_zeroed 分配，调用方保证未释放
-        unsafe { alloc::alloc::dealloc(ptr, layout) };
     }
 }
 
