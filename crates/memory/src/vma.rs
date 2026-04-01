@@ -7,12 +7,31 @@ use alloc::collections::BTreeMap;
 use alloc::sync::Arc;
 
 use crate::MappedPages;
+use crate::PermanentMapping;
 use crate::error::MemoryError;
 use crate::node_frame::PageTable;
 use address::{AddrRange, VirtAddr};
 use config::PAGE_SIZE;
 use paging::{PteFlags, PteFlagsOps};
 use sync_crate::SpinLock;
+
+/// VMA 内部映射存储——区分可回收和永久映射。
+enum Mapping {
+    /// 匿名映射——Drop 时 unmap 并回收帧
+    Reclaimable(MappedPages),
+    /// 永久映射——Drop 时不操作
+    Permanent(PermanentMapping),
+}
+
+impl Mapping {
+    /// 返回用户请求的原始权限。
+    fn flags(&self) -> PteFlags {
+        match self {
+            Self::Reclaimable(mp) => mp.flags(),
+            Self::Permanent(pm) => pm.flags(),
+        }
+    }
+}
 
 /// VMA backing 类型——描述物理内存的来源。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -45,7 +64,7 @@ pub struct Vma {
     /// backing 类型
     kind: VmaKind,
     /// 已建立的映射——`None` 表示尚未物化（lazy）
-    mapping: Option<MappedPages>,
+    mapping: Option<Mapping>,
 }
 
 impl Vma {
@@ -188,7 +207,7 @@ impl AddressSpace {
             range,
             flags: mapping.flags(),
             kind: VmaKind::Anonymous,
-            mapping: Some(mapping),
+            mapping: Some(Mapping::Reclaimable(mapping)),
         };
         self.areas.insert(start, vma);
         Ok(self.areas.get(&start).expect("刚插入的 VMA"))
@@ -222,7 +241,7 @@ impl AddressSpace {
             range,
             flags,
             kind: VmaKind::Identity,
-            mapping: Some(mapping),
+            mapping: Some(Mapping::Permanent(mapping)),
         };
         self.areas.insert(start, vma);
         Ok(self.areas.get(&start).expect("刚插入的 VMA"))
@@ -307,16 +326,25 @@ impl AddressSpace {
 
         // Lazy VMA：物化映射
         let mapping = match vma.kind {
-            VmaKind::Anonymous => MappedPages::map_alloc(
-                self.page_table.clone(),
-                vma.range.start(),
-                vma.page_count(),
-                vma.flags,
-            ),
+            VmaKind::Anonymous => {
+                let mp = MappedPages::map_alloc(
+                    self.page_table.clone(),
+                    vma.range.start(),
+                    vma.page_count(),
+                    vma.flags,
+                );
+                Mapping::Reclaimable(mp)
+            }
             VmaKind::Identity => {
                 let pa = address::PhysAddr::new(vma.range.start().as_usize());
-                MappedPages::map_identity(self.page_table.clone(), pa, vma.page_count(), vma.flags)?
-                    .into_permanent()
+                let pm = MappedPages::map_identity(
+                    self.page_table.clone(),
+                    pa,
+                    vma.page_count(),
+                    vma.flags,
+                )?
+                .into_permanent();
+                Mapping::Permanent(pm)
             }
         };
 
@@ -361,7 +389,7 @@ impl AddressSpace {
             range,
             flags,
             kind: VmaKind::Identity,
-            mapping: Some(mapping),
+            mapping: Some(Mapping::Permanent(mapping)),
         };
         self.areas.insert(start_aligned, vma);
         Ok(self.areas.get(&start_aligned).expect("刚插入的 VMA"))
@@ -494,7 +522,7 @@ mod tests {
     fn mmap_anonymous_creates_exclusive() {
         crate::frame::ensure_test_init();
         let pt_ref = test_pt();
-        let mut aspace = AddressSpace::new(pt_ref);
+        let mut aspace = AddressSpace::new(pt_ref.clone());
         let start = VirtAddr::new(0x20_0000);
         let vma = aspace
             .mmap_anonymous(start, 2 * PAGE_SIZE, PteFlags::kernel_rw())
@@ -502,7 +530,14 @@ mod tests {
         assert_eq!(vma.page_count(), 2);
         assert_eq!(vma.kind(), VmaKind::Anonymous);
         assert!(vma.is_mapped());
-        assert!(vma.flags().is_exclusive());
+        // EXCLUSIVE 是内部实现细节，不通过 flags() 暴露
+        // 验证 PTE 级别确实设置了 EXCLUSIVE 位
+        let guard = pt_ref.lock();
+        let (_, pte_flags) = guard.get_mapping(start).expect("应能查到映射");
+        assert!(
+            pte_flags.is_exclusive(),
+            "匿名映射的 PTE 应设置 EXCLUSIVE 位"
+        );
     }
 
     /// find_vma 应找到包含地址的 VMA。

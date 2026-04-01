@@ -32,6 +32,10 @@ pub use tlb;
 #[cfg(any(test, target_os = "none"))]
 pub type MappedPages = paging::MappedPages;
 
+/// 永久映射——re-export `paging::PermanentMapping`。
+#[cfg(any(test, target_os = "none"))]
+pub type PermanentMapping = paging::PermanentMapping;
+
 /// MMIO 区域——re-export `paging::mmio::MmioRegion`。
 #[cfg(any(test, target_os = "none"))]
 pub type MmioRegion = paging::mmio::MmioRegion;
