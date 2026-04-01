@@ -15,7 +15,7 @@ macro_rules! define_page_num {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
         pub struct $name(pub(crate) usize);
 
-        crate::impl_usize_newtype!($name);
+        crate::impl_usize_newtype!($name, none);
 
         impl $name {
             /// 转换为该页起始地址
@@ -50,12 +50,12 @@ macro_rules! define_page_num {
 }
 
 define_page_num!(
-    /// 物理页号——页表操作中的帧索引
+    /// 物理页号——页表操作中的帧索引（4K 粒度）
     PhysPageNum, PhysAddr
 );
 
 define_page_num!(
-    /// 虚拟页号——页表操作中的虚拟页索引
+    /// 虚拟页号——页表操作中的虚拟页索引（4K 粒度）
     VirtPageNum, VirtAddr
 );
 

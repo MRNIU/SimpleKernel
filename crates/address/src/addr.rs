@@ -84,14 +84,24 @@ macro_rules! impl_addr {
 ///
 /// 开启分页后不可直接解引用，需通过 `phys_to_virt()` 转换为
 /// [`VirtAddr`] 后再访问。
+///
+/// 构造时校验地址在 [`PA_BITS`](config::PA_BITS) 范围内，
+/// 超出范围 panic。
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PhysAddr(pub(crate) usize);
 
-crate::impl_usize_newtype!(PhysAddr);
+crate::impl_usize_newtype!(PhysAddr, phys);
 impl_addr!(PhysAddr);
 
 /// 虚拟地址——CPU 可直接访问的指针级地址。
+///
+/// 构造时校验地址是否规范化（[`VA_BITS`](config::VA_BITS) 位符号扩展），
+/// 非规范地址 panic。
+///
+/// 规范化规则：bits\[63:VA_BITS-1\] 必须是 bit\[VA_BITS-2\] 的符号扩展。
+/// 这将地址空间分为低段（全 0 前缀）和高段（全 1 前缀），
+/// 中间的 "canonical hole" 为非法地址。
 ///
 /// 提供 `as_ptr` / `as_mut_ptr` 转换为裸指针，以及
 /// `From<*const T>` / `From<*mut T>` 反向构造。
@@ -99,7 +109,7 @@ impl_addr!(PhysAddr);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VirtAddr(pub(crate) usize);
 
-crate::impl_usize_newtype!(VirtAddr);
+crate::impl_usize_newtype!(VirtAddr, virt);
 impl_addr!(VirtAddr);
 
 impl VirtAddr {
@@ -134,18 +144,25 @@ impl<T> From<*mut T> for VirtAddr {
 ///
 /// 偏移量由 [`PHYS_OFFSET`] 控制，切换到 higher-half kernel 时
 /// 修改该常量即可。
+///
+/// 绕过 `VirtAddr::new` 的规范化校验——在裸机上 PHYS_OFFSET
+/// 保证结果落在规范范围内；在测试环境中物理地址由堆分配模拟，
+/// 可能不满足目标架构的规范化规则。
 #[inline]
 pub fn phys_to_virt(pa: PhysAddr) -> VirtAddr {
-    VirtAddr::new(pa.as_usize().wrapping_add(PHYS_OFFSET))
+    VirtAddr(pa.as_usize().wrapping_add(PHYS_OFFSET))
 }
 
 /// 虚拟地址转物理地址。
 ///
 /// 偏移量由 [`PHYS_OFFSET`] 控制，切换到 higher-half kernel 时
 /// 修改该常量即可。
+///
+/// 绕过 `PhysAddr::new` 的范围校验——逆变换的正确性由 `phys_to_virt`
+/// 的对称性保证。
 #[inline]
 pub fn virt_to_phys(va: VirtAddr) -> PhysAddr {
-    PhysAddr::new(va.as_usize().wrapping_sub(PHYS_OFFSET))
+    PhysAddr(va.as_usize().wrapping_sub(PHYS_OFFSET))
 }
 
 #[cfg(test)]
@@ -185,12 +202,13 @@ mod tests {
 
     /// VirtAddr 的对齐方法应与 PhysAddr 行为一致（宏生成的代码路径相同，
     /// 但类型不同，回归测试防止将来为某一类型添加特化时引入差异）。
+    /// 使用规范化的高段地址（Sv39: bits[63:38] 全 1）。
     #[test]
     fn virt_addr_alignment() {
-        let v = VirtAddr::new(0xFFFF_0000_0000_0001);
+        let v = VirtAddr::new(0xFFFF_FFC0_0000_0001);
         assert!(!v.is_aligned());
-        assert_eq!(v.align_down(), VirtAddr::new(0xFFFF_0000_0000_0000));
-        assert_eq!(v.align_up(), VirtAddr::new(0xFFFF_0000_0000_1000));
+        assert_eq!(v.align_down(), VirtAddr::new(0xFFFF_FFC0_0000_0000));
+        assert_eq!(v.align_up(), VirtAddr::new(0xFFFF_FFC0_0000_1000));
     }
 
     /// 通用对齐：is_aligned_to / align_down_to / align_up_to 支持任意 2 的幂。
@@ -219,10 +237,11 @@ mod tests {
     }
 
     /// align_up_to 溢出也应 panic。
+    /// 使用接近 usize::MAX 的规范化高段虚拟地址。
     #[test]
     #[should_panic(expected = "align_up: address overflow")]
     fn align_up_to_overflow_panics() {
-        let near_max = PhysAddr::new(usize::MAX);
+        let near_max = VirtAddr::new(usize::MAX - PAGE_SIZE + 2);
         let _ = near_max.align_up_to(4096);
     }
 
@@ -246,10 +265,11 @@ mod tests {
     }
 
     /// 地址 - 地址 返回 usize（字节差值），而非地址类型。
+    /// 使用规范化的高段地址。
     #[test]
     fn arithmetic_sub_returns_usize() {
-        let a = VirtAddr::new(0xFFFF_0000_0000_2000);
-        let b = VirtAddr::new(0xFFFF_0000_0000_0000);
+        let a = VirtAddr::new(0xFFFF_FFC0_0000_2000);
+        let b = VirtAddr::new(0xFFFF_FFC0_0000_0000);
         let diff: usize = a - b;
         assert_eq!(diff, 0x2000);
     }
