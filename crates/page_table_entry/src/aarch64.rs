@@ -175,14 +175,74 @@ impl PteFlagsOps for PteFlags {
             | Self::PXN
     }
 
+    /// AArch64 中 Valid 的页面始终可读——没有独立的 "读" 控制位。
+    #[inline]
+    fn is_readable(self) -> bool {
+        self.contains(Self::VALID)
+    }
+
+    /// AArch64 的写权限由 AP_RO 位反向控制——AP_RO=0 表示可写。
     #[inline]
     fn is_writable(self) -> bool {
         !self.contains(Self::AP_RO)
     }
 
+    /// AArch64 的执行权限由 XN 位反向控制。
+    /// 内核页看 PXN，用户页看 UXN。这里取保守策略：任一 XN 位未设置即视为可执行。
+    #[inline]
+    fn is_executable(self) -> bool {
+        !self.contains(Self::PXN) || !self.contains(Self::UXN)
+    }
+
     #[inline]
     fn is_user(self) -> bool {
         self.contains(Self::AP_UNPRIV)
+    }
+
+    #[inline]
+    fn is_exclusive(self) -> bool {
+        self.contains(Self::EXCLUSIVE)
+    }
+
+    #[inline]
+    fn is_accessed(self) -> bool {
+        self.contains(Self::AF)
+    }
+
+    /// AArch64 没有硬件 Dirty 位（在不启用 DBM 时）。
+    /// 这里用 "可写 + 已访问" 近似判断。
+    #[inline]
+    fn is_dirty(self) -> bool {
+        self.is_writable() && self.is_accessed()
+    }
+
+    #[inline]
+    fn with_writable(self, w: bool) -> Self {
+        if w {
+            self.difference(Self::AP_RO)
+        } else {
+            self | Self::AP_RO
+        }
+    }
+
+    /// 设置或清除执行权限——同时操作 PXN 和 UXN。
+    #[inline]
+    fn with_executable(self, x: bool) -> Self {
+        if x {
+            self.difference(Self::PXN | Self::UXN)
+        } else {
+            self | Self::PXN | Self::UXN
+        }
+    }
+
+    #[inline]
+    fn with_exclusive(self) -> Self {
+        self | Self::EXCLUSIVE
+    }
+
+    #[inline]
+    fn without_exclusive(self) -> Self {
+        self.difference(Self::EXCLUSIVE)
     }
 
     /// 将标志位适配为指定层级的叶描述符格式。
@@ -200,16 +260,6 @@ impl PteFlagsOps for PteFlags {
         } else {
             self.difference(Self::TABLE)
         }
-    }
-
-    #[inline]
-    fn is_exclusive(self) -> bool {
-        self.contains(Self::EXCLUSIVE)
-    }
-
-    #[inline]
-    fn with_exclusive(self) -> Self {
-        self | Self::EXCLUSIVE
     }
 }
 

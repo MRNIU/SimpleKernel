@@ -126,20 +126,23 @@ impl PteFlagsOps for PteFlags {
     }
 
     #[inline]
+    fn is_readable(self) -> bool {
+        self.contains(Self::READ)
+    }
+
+    #[inline]
     fn is_writable(self) -> bool {
         self.contains(Self::WRITE)
     }
 
     #[inline]
-    fn is_user(self) -> bool {
-        self.contains(Self::USER)
+    fn is_executable(self) -> bool {
+        self.contains(Self::EXECUTE)
     }
 
-    /// RISC-V 的 PTE 格式与层级无关——叶节点仅由 R/W/X 位区分，
-    /// 无需为不同层级调整标志位，直接返回 self。
     #[inline]
-    fn for_leaf_at_level(self, _level: usize) -> Self {
-        self
+    fn is_user(self) -> bool {
+        self.contains(Self::USER)
     }
 
     #[inline]
@@ -148,8 +151,48 @@ impl PteFlagsOps for PteFlags {
     }
 
     #[inline]
+    fn is_accessed(self) -> bool {
+        self.contains(Self::ACCESSED)
+    }
+
+    #[inline]
+    fn is_dirty(self) -> bool {
+        self.contains(Self::DIRTY)
+    }
+
+    #[inline]
+    fn with_writable(self, w: bool) -> Self {
+        if w {
+            self | Self::WRITE | Self::DIRTY
+        } else {
+            self.difference(Self::WRITE | Self::DIRTY)
+        }
+    }
+
+    #[inline]
+    fn with_executable(self, x: bool) -> Self {
+        if x {
+            self | Self::EXECUTE
+        } else {
+            self.difference(Self::EXECUTE)
+        }
+    }
+
+    #[inline]
     fn with_exclusive(self) -> Self {
         self | Self::EXCLUSIVE
+    }
+
+    #[inline]
+    fn without_exclusive(self) -> Self {
+        self.difference(Self::EXCLUSIVE)
+    }
+
+    /// RISC-V 的 PTE 格式与层级无关——叶节点仅由 R/W/X 位区分，
+    /// 无需为不同层级调整标志位，直接返回 self。
+    #[inline]
+    fn for_leaf_at_level(self, _level: usize) -> Self {
+        self
     }
 }
 
