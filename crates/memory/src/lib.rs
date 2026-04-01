@@ -1,4 +1,4 @@
-//! 内核内存管理——帧分配器、页表、堆、MMIO 映射。
+//! 内核内存管理——帧分配器、页分配器、页表、堆、MMIO 映射。
 
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(target_os = "none", feature(sync_unsafe_cell))]
@@ -8,12 +8,15 @@ extern crate alloc;
 
 /// 错误类型。
 pub mod error;
-/// 物理帧分配器与帧生命周期状态机（re-export `frame_allocator` crate）。
+/// 物理帧分配器（re-export `frame_allocator` crate）。
 #[cfg(any(test, target_os = "none"))]
 pub use frame_allocator as frame;
 /// 堆分配器（re-export `heap` crate）。
 #[cfg(target_os = "none")]
 pub use heap_crate as heap;
+/// 虚拟页分配器（re-export `page_allocator` crate）。
+#[cfg(any(test, target_os = "none"))]
+pub use page_allocator as page;
 /// 全局内存状态。
 pub mod globals;
 /// 内存子系统初始化（依赖链接器符号，裸机专用）。
@@ -32,10 +35,6 @@ pub use tlb;
 #[cfg(any(test, target_os = "none"))]
 pub type MappedPages = paging::MappedPages;
 
-/// 永久映射——re-export `paging::PermanentMapping`。
-#[cfg(any(test, target_os = "none"))]
-pub type PermanentMapping = paging::PermanentMapping;
-
 /// MMIO 区域——re-export `paging::mmio::MmioRegion`。
 #[cfg(any(test, target_os = "none"))]
 pub type MmioRegion = paging::mmio::MmioRegion;
@@ -43,12 +42,9 @@ pub type MmioRegion = paging::mmio::MmioRegion;
 /// 映射错误类型 re-export。
 pub use paging::error::PagingError;
 
-// 公共 API re-export——保持外部调用方的 `memory::Xxx` 路径不变。
 pub use globals::{MEMORY_INFO, MemoryInfo};
 #[cfg(any(test, target_os = "none"))]
-pub use globals::{
-    kernel_address_space, kernel_page_table, store_kernel_address_space, store_kernel_page_table,
-};
+pub use globals::{kernel_address_space, store_kernel_address_space};
 
 #[cfg(any(test, target_os = "none"))]
 pub use address::{phys_to_virt, virt_to_phys};
@@ -56,18 +52,13 @@ pub use address::{phys_to_virt, virt_to_phys};
 #[cfg(target_os = "none")]
 pub use init::{init, init_smp};
 
-/// 将 MMIO 物理地址区间 identity-map 到内核页表，返回对应虚拟地址。
+/// 将 MMIO 物理地址区间 identity-map，返回对应虚拟地址。
 ///
-/// 映射标记为永久（drop 时不 unmap），并在内核地址空间中注册 VMA 记录。
-/// 如需 RAII 管理的 MMIO 映射，请使用 [`MmioRegion::map_to`]。
+/// 映射使用 `ManuallyDrop<MappedPages>`（永久映射），并在内核地址空间中注册 VMA 记录。
 ///
 /// # Errors
 ///
-/// 内核页表未初始化或映射冲突时返回错误。
-///
-/// # Panics
-///
-/// 内核地址空间中注册 VMA 失败时 panic（通常是重复映射同一 MMIO 区域）。
+/// 页/帧分配或映射失败时返回错误。
 #[cfg(any(test, target_os = "none"))]
 pub fn map_mmio(
     paddr: address::PhysAddr,
@@ -75,12 +66,10 @@ pub fn map_mmio(
 ) -> Result<address::VirtAddr, error::MemoryError> {
     use paging::{PteFlags, PteFlagsOps};
 
-    let kpt = kernel_page_table().ok_or(error::MemoryError::InvalidPageTable)?;
-    let region = MmioRegion::map_to(kpt, paddr, size)?;
+    let region = MmioRegion::map(paddr, size)?;
     let vaddr = region.base();
     let region_size = region.size();
 
-    // 在内核地址空间中注册 MMIO 区域
     if let Some(kas) = kernel_address_space() {
         kas.lock()
             .register_existing(
@@ -89,7 +78,7 @@ pub fn map_mmio(
                 PteFlags::kernel_device(),
                 vma::VmaKind::Identity,
             )
-            .expect("MMIO 区域注册到内核地址空间失败——可能是重复映射");
+            .expect("MMIO 区域注册到内核地址空间失败");
     }
 
     Ok(vaddr)

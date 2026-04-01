@@ -41,3 +41,12 @@ pub enum UnmapResult {
     /// PTE 无 EXCLUSIVE 位——非独占映射，返回物理地址供 COW 引用计数等使用
     NonExclusive(address::PhysAddr),
 }
+
+impl core::fmt::Debug for UnmapResult {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::Exclusive(_) => write!(f, "UnmapResult::Exclusive(...)"),
+            Self::NonExclusive(pa) => write!(f, "UnmapResult::NonExclusive({pa})"),
+        }
+    }
+}

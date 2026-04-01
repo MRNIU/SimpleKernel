@@ -1,16 +1,13 @@
 //! 内存子系统初始化——主核 / 从核。
 
 use address::{PhysAddr, VirtAddr};
+use paging::{PageTable, PteFlags, PteFlagsOps};
 
-use crate::node_frame::PageTable;
 use crate::vma::AddressSpace;
-use paging::{PteFlags, PteFlagsOps};
 
 /// 主核内存初始化——返回内核地址空间（包含所有内核段映射）。
 ///
-/// 页表在内部创建并存入全局 `KERNEL_PAGE_TABLE`，
-/// 返回的 `AddressSpace` 持有该页表的 `&'static` 引用。
-/// 调用方通过 `AddressSpace::page_table()` 获取页表引用以激活分页。
+/// 初始化顺序：堆 → 帧分配器 → 页分配器 → 页表 → 分段映射。
 pub fn init() -> AddressSpace {
     // SAFETY: 在任何堆分配之前调用，且仅调用一次（由启动流程保证）
     unsafe { heap_crate::init() };
@@ -25,16 +22,25 @@ pub fn init() -> AddressSpace {
     let alloc_start = kernel_end.align_up();
     let alloc_size = mem_size - (alloc_start - mem_start);
 
-    // SAFETY: alloc_start 页对齐（由 align_up 保证），内存区域在内核镜像之后、
-    // 物理内存范围之内，不与堆重叠，且仅调用一次
+    // SAFETY: alloc_start 页对齐，内存区域不与堆重叠，仅调用一次
     unsafe { frame_allocator::init(alloc_start, alloc_size) };
 
-    // 创建页表并存入全局——获取 &'static 引用以构建 AddressSpace
-    let pt = PageTable::create().expect("failed to create kernel page table");
-    crate::globals::store_kernel_page_table(pt);
-    let pt_ref = crate::globals::kernel_page_table().expect("just stored");
+    // 初始化虚拟页分配器——SAS 下 VA == PA，用整段物理内存范围
+    // SAFETY: 虚拟地址范围有效，仅调用一次
+    unsafe {
+        page_allocator::init(VirtAddr::new(mem_start.as_usize()), mem_size);
+    }
+    // 扣除内核镜像占用的虚拟地址区域（由分段映射管理，不可被自动分配）
+    page_allocator::reserve(VirtAddr::new(mem_start.as_usize()), mem_size);
 
-    let mut kernel_as = AddressSpace::new(pt_ref);
+    // 创建页表——Box::leak 产出 'static 引用
+    let pt = PageTable::create().expect("创建内核页表失败");
+    let pt_lock = sync_crate::SpinLock::new(pt, "kernel_pt");
+    let pt_static: &'static _ = alloc::boxed::Box::leak(alloc::boxed::Box::new(pt_lock));
+    // SAFETY: pt_static 是 'static 引用
+    unsafe { paging::set_kernel_page_table(pt_static) };
+
+    let mut kernel_as = AddressSpace::new();
 
     // SAFETY: 链接器定义的符号
     unsafe extern "C" {
@@ -46,8 +52,8 @@ pub fn init() -> AddressSpace {
     let mem_end = mem_start + mem_size;
 
     // 分段映射（通过 VMA，自动选择大页）：
-    // [mem_start, text_end)    → RWX（.boot 段混合了 code+data，无法拆分为 RX/RW）
-    // [text_end, rodata_end)   → RO（.rodata——只读数据，防止意外修改）
+    // [mem_start, text_end)    → RWX（.boot 段混合了 code+data）
+    // [text_end, rodata_end)   → RO（.rodata）
     // [rodata_end, mem_end)    → RW（.data + .bss + 空闲内存）
     kernel_as
         .mmap_identity_range(
@@ -55,21 +61,21 @@ pub fn init() -> AddressSpace {
             VirtAddr::new(text_end.as_usize()),
             PteFlags::kernel_rwx(),
         )
-        .expect("failed to map kernel code region");
+        .expect("映射内核代码区域失败");
     kernel_as
         .mmap_identity_range(
             VirtAddr::new(text_end.as_usize()),
             VirtAddr::new(rodata_end.as_usize()),
             PteFlags::kernel_ro(),
         )
-        .expect("failed to map kernel rodata region");
+        .expect("映射内核只读数据区域失败");
     kernel_as
         .mmap_identity_range(
             VirtAddr::new(rodata_end.as_usize()),
             VirtAddr::new(mem_end.as_usize()),
             PteFlags::kernel_rw(),
         )
-        .expect("failed to map kernel data + free memory");
+        .expect("映射内核数据+空闲区域失败");
 
     log::info!(
         "MemoryInit: code {}-{} (RWX), rodata {}-{} (RO), data {}-{} (RW)",
@@ -86,8 +92,7 @@ pub fn init() -> AddressSpace {
 
 /// 从核内存初始化——复用主核页表并激活分页。
 pub fn init_smp(activate: impl FnOnce(&PageTable)) {
-    let kpt = crate::globals::kernel_page_table().expect("KERNEL_PAGE_TABLE not initialized");
-    let guard = kpt.lock();
+    let guard = paging::kernel_page_table().lock();
     activate(&*guard);
     log::info!(
         "MemoryInitSMP: paging enabled on core {}",

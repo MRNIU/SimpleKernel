@@ -372,6 +372,7 @@ dependencies = [
  "frame_allocator",
  "heap",
  "log",
+ "page_allocator",
  "paging",
  "per_cpu",
  "spin",

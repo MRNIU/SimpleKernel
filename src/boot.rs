@@ -31,7 +31,7 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     Arch::map_early_mmio(&mut kernel_as).expect("failed to map early MMIO");
     // SAFETY: 页表覆盖所有内核代码/数据及早期 MMIO
     {
-        let pt = kernel_as.page_table().lock();
+        let pt = paging::kernel_page_table().lock();
         unsafe { Arch::activate_page_table(&pt) };
     }
     log::info!("MemoryInit: paging enabled");

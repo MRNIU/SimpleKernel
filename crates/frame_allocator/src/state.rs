@@ -38,6 +38,12 @@ pub struct Frames<const S: MemoryState, P: PageSize = Page4K> {
     _marker: PhantomData<P>,
 }
 
+impl<const S: MemoryState, P: PageSize> core::fmt::Debug for Frames<S, P> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "Frames({}-{})", self.range.start(), self.range.end())
+    }
+}
+
 /// 便利别名——空闲帧，分配器内部持有。始终 4K 粒度。
 pub type FreeFrames = Frames<{ MemoryState::Free }, Page4K>;
 /// 便利别名——已分配帧，用户持有。

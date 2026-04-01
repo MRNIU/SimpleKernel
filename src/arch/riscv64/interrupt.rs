@@ -2,7 +2,7 @@
 ///
 /// 负责 PLIC 初始化、stvec 设置，以及陷阱分发（定时器、外部中断、IPI、系统调用、异常）。
 use address::PhysAddr;
-use memory::{MmioRegion, kernel_page_table};
+use memory::MmioRegion;
 
 use super::context::TrapContext;
 
@@ -68,9 +68,8 @@ fn plic_init() {
     };
 
     // Step 1: 映射 PLIC MMIO 区域，返回 MmioRegion（类型安全的 MMIO 访问）
-    let kpt = kernel_page_table().expect("plic_init: 内核页表未初始化");
-    let region = MmioRegion::map_to(kpt, PhysAddr::new(base), PLIC_SIZE)
-        .expect("plic_init: 映射 PLIC MMIO 失败");
+    let region =
+        MmioRegion::map(PhysAddr::new(base), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
     PLIC.call_once(|| region);
 
     let plic = plic();

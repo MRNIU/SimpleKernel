@@ -224,7 +224,9 @@ impl MappedPages {
                 .expect("mprotect: update_flags 失败");
         }
         drop(guard);
-        tlb::flush_range(self.vaddr().as_usize(), self.page_count());
+        {
+            let _flush = tlb::TlbFlushGuard::new(self.vaddr().as_usize(), self.page_count());
+        }
         self.flags = new_flags;
     }
 
@@ -254,7 +256,9 @@ impl MappedPages {
             }
         }
         drop(guard);
-        tlb::flush_range(pages.start_vaddr().as_usize(), pages.count());
+        {
+            let _flush = tlb::TlbFlushGuard::new(pages.start_vaddr().as_usize(), pages.count());
+        }
 
         (pages, exclusive_frames)
     }

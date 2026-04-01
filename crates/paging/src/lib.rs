@@ -73,13 +73,13 @@ pub fn kernel_page_table() -> &'static sync_crate::SpinLock<PageTable> {
 /// 初始化测试环境——全局页表 + frame_allocator + page_allocator。
 #[cfg(any(test, feature = "test-support"))]
 pub fn ensure_test_init() {
-    static INIT: std::sync::Once = std::sync::Once::new();
+    static INIT: spin::Once<()> = spin::Once::new();
     INIT.call_once(|| {
         frame_allocator::ensure_test_init();
         page_allocator::ensure_test_init();
         let pt = PageTable::create().expect("test page table");
         let pt_lock = sync_crate::SpinLock::new(pt, "test_pt");
-        let pt_static: &'static _ = Box::leak(Box::new(pt_lock));
+        let pt_static: &'static _ = alloc::boxed::Box::leak(alloc::boxed::Box::new(pt_lock));
         // SAFETY: Box::leak 产出 'static 引用
         unsafe { set_kernel_page_table(pt_static) };
     });

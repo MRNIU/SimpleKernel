@@ -1,14 +1,10 @@
-//! 全局内存状态——`MemoryInfo`、内核页表、内核地址空间。
+//! 全局内存状态——`MemoryInfo`、内核地址空间。
 
 use address::PhysAddr;
 
 #[cfg(any(test, target_os = "none"))]
-use alloc::sync::Arc;
-#[cfg(any(test, target_os = "none"))]
 use sync_crate::SpinLock;
 
-#[cfg(any(test, target_os = "none"))]
-use crate::node_frame::PageTable;
 #[cfg(any(test, target_os = "none"))]
 use crate::vma::AddressSpace;
 
@@ -30,29 +26,9 @@ pub struct MemoryInfo {
 /// 全局内存布局信息（一次性初始化，之后只读）。
 pub static MEMORY_INFO: spin::Once<MemoryInfo> = spin::Once::new();
 
-/// 全局内核页表（`Arc` 共享引用——内核与所有内核线程共享同一页表）。
-#[cfg(any(test, target_os = "none"))]
-static KERNEL_PAGE_TABLE: spin::Once<Arc<SpinLock<PageTable>>> = spin::Once::new();
-
 /// 全局内核地址空间。
 #[cfg(any(test, target_os = "none"))]
 static KERNEL_ADDRESS_SPACE: spin::Once<SpinLock<AddressSpace>> = spin::Once::new();
-
-/// 将构建完成的内核页表存入全局 `KERNEL_PAGE_TABLE`。
-#[cfg(any(test, target_os = "none"))]
-pub fn store_kernel_page_table(pt: PageTable) {
-    KERNEL_PAGE_TABLE.call_once(|| Arc::new(SpinLock::new(pt, "kernel_pt")));
-}
-
-/// 获取全局内核页表的 `Arc` 引用；初始化前返回 `None`。
-///
-/// 内核页表通过 `Arc` 共享——内核地址空间、`MappedPages`、
-/// 以及未来的用户进程页表都持有各自的 `Arc<SpinLock<PageTable>>`。
-/// 用户进程退出时其 `Arc` 引用计数归零，页表自动释放。
-#[cfg(any(test, target_os = "none"))]
-pub fn kernel_page_table() -> Option<Arc<SpinLock<PageTable>>> {
-    KERNEL_PAGE_TABLE.get().cloned()
-}
 
 /// 将构建完成的内核地址空间存入全局 `KERNEL_ADDRESS_SPACE`。
 #[cfg(any(test, target_os = "none"))]
