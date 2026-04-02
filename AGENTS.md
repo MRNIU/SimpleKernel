@@ -230,16 +230,50 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 ## CURRENT PHASE
 > **⚠ 临时节——审计结束后清理**
 >
-> 项目当前处于全项目深度审计阶段。审计相关文件：
-> - **Roadmap**（全局计划、排查 checklist、协作流程）: `docs/rust-rewrite/review-roadmap.md`
-> - **Session Prompt**（每次对话的模板）: `docs/rust-rewrite/review-session-prompt.md`
-> - **ADR 目录**（架构决策记录）: `docs/decisions/`
-> - **ADR 模板**: `docs/templates/adr-template.md`
->
-> 审计协作流程：AI 初步审阅 → 提交人工查看 → 作者同步阅读代码 → 共同讨论设计 → 实施变更。
-> 重要设计决策须写入 ADR。详见 Roadmap 中"协作流程"节。
->
-> 以下内容仅在审计期间有效，审计完成后须移除本节及所有与项目本身无关的临时内容。
+> 项目当前处于全项目深度审计阶段。以下内容仅在审计期间有效，审计完成后须移除。
+
+### 审计相关文件
+- **Roadmap**（全局计划、排查 checklist、协作流程）: `docs/rust-rewrite/review-roadmap.md`
+- **审计进度**（跨对话上下文传递）: `docs/rust-rewrite/audit-progress.md`
+- **Session Prompt**（输出格式参考）: `docs/rust-rewrite/review-session-prompt.md`
+- **ADR 目录**（架构决策记录）: `docs/decisions/`
+- **ADR 模板**: `docs/templates/adr-template.md`
+
+### 审计工作流
+
+当用户发起审计任务（如"审计 R2 crates/sync/"、"继续审计"等）时，按以下流程执行：
+
+**启动阶段：**
+1. Read 整个 `docs/rust-rewrite/review-roadmap.md`（定位审查范围和标准排查流程）
+2. Read `docs/rust-rewrite/audit-progress.md`（获取历史上下文和当前进度）
+3. 如果用户说"继续审计"且未指定目标，从 audit-progress.md 的"下一个目标"继续
+4. Read 排查目标的所有源文件
+
+**排查阶段（按 Roadmap 中"标准排查流程"执行）：**
+1. 代码审查（trait → impl → unsafe → error handling → 全局状态 → pub 接口）
+2. Rust 范式审查（所有权 / 生命周期 / typestate / RAII / 零成本 / 错误处理）
+3. 并发安全审查（Send/Sync / 多核竞态 / 中断重入 / 锁序 / atomic ordering）
+4. 依赖与版本检查（crate 版本 / nightly 特性 / 可替代 crate 评估）
+5. 参考内核对比（Linux / Theseus / Redox / Zephyr / µFork）
+6. 接口契约审查（doc comment 完整性）
+
+**输出阶段（按 `review-session-prompt.md` 中的格式输出）：**
+- 模块概述、问题清单、依赖与版本、Crate 替代评估、参考内核对比、设计讨论点、建议的代码修改、文档产出建议
+
+**停止条件：**
+- 完成审查报告后**停下来等待用户反馈**，不要直接开始修改代码
+- 代码修改在讨论完设计问题后进行
+
+**结束阶段：**
+- 对话结束时，将以下内容写入 `docs/rust-rewrite/audit-progress.md`：
+  - 更新"当前状态"（当前 Phase + 下一个目标）
+  - 更新"上次对话摘要"（已完成、关键问题、未决设计问题、下一步）
+  - 追加"已完成的目标"记录
+
+### 审计约束
+- 设计讨论点：列出备选方案和客观优缺点，**不要推荐某个方案**，标注 ADR 待决
+- Crate 替代：列出候选和优缺点，**不要自行替换**，需经讨论后决定
+- ADR 状态：AI 生成的 ADR 状态**必须为"提议"**，只有项目作者 review 后才可改为"已接受"
 
 ## COLLABORATION STYLE
 > **⚠ 临时节——审计结束后清理**
