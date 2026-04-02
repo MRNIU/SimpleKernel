@@ -32,6 +32,8 @@
 use memory_types::{Frame, FrameSpan, PhysAddr};
 use sync_crate::SpinLockIrq;
 
+use crate::state::AllocatedFrames;
+
 use crate::FrameAllocError;
 use crate::state::FreeFrames;
 
@@ -57,37 +59,71 @@ impl FrameAllocatorInner {
     }
 }
 
-/// 初始化帧分配器，将 `[start, start+size)` 区域加入可分配池。
+/// 初始化帧分配器——空闲内存入 buddy，预留范围构造为 `AllocatedFrames` 返回。
 ///
-/// `start` 必须页对齐。
+/// - `free_start`/`free_size`：空闲物理内存范围，加入 buddy allocator
+/// - `reserved`：需要预留的物理地址范围列表 `(start, page_count)`，
+///   不经过 buddy——直接构造为 `AllocatedFrames` 返回给调用方
+///
+/// 预留范围的帧由调用方负责生命周期管理（通常由 `AddressSpace`
+/// 通过 `MappedPages` 持有直到关机）。
 ///
 /// # Safety
-/// 该内存区域必须有效、不与内核/堆重叠，且仅调用一次。
-pub unsafe fn init(start: PhysAddr, size: usize) {
+///
+/// - 所有范围必须有效、页对齐、互不重叠
+/// - `free` 范围和 `reserved` 范围不得重叠
+/// - 仅调用一次
+pub unsafe fn init(
+    free_start: PhysAddr,
+    free_size: usize,
+    reserved: &[(PhysAddr, usize)],
+) -> heapless::Vec<AllocatedFrames, 8> {
     let mut alloc = FRAME_ALLOCATOR.lock();
     assert!(!alloc.initialized, "frame_allocator::init called twice");
     assert!(
-        start.is_aligned(),
-        "frame_allocator::init: start not page-aligned"
+        free_start.is_aligned(),
+        "frame_allocator::init: free_start not page-aligned"
     );
-    assert!(size > 0, "frame_allocator::init: size is zero");
+    assert!(free_size > 0, "frame_allocator::init: free_size is zero");
     assert!(
-        start.as_usize().checked_add(size).is_some(),
+        free_start.as_usize().checked_add(free_size).is_some(),
         "frame_allocator::init: allocation region overflows address space"
     );
 
-    let start_frame = start.page_number().as_usize();
-    let end_frame = PhysAddr::new(start.as_usize() + size)
+    let start_frame = free_start.page_number().as_usize();
+    let end_frame = PhysAddr::new(free_start.as_usize() + free_size)
         .page_number()
         .as_usize();
     alloc.allocator.add_frame(start_frame, end_frame);
     alloc.initialized = true;
 
     log::info!(
-        "FrameInit: {} MB available from {}",
-        size / (1024 * 1024),
-        start
+        "FrameInit: {} MB free from {}",
+        free_size / (1024 * 1024),
+        free_start
     );
+
+    // 预留范围构造为 AllocatedFrames（不经过 buddy）
+    let mut result = heapless::Vec::new();
+    for &(start, count) in reserved {
+        assert!(
+            start.is_aligned(),
+            "frame_allocator::init: reserved range not page-aligned: {start}"
+        );
+        assert!(
+            count > 0,
+            "frame_allocator::init: reserved range count is zero"
+        );
+        let s = Frame::new(start.page_number().as_usize());
+        let e = Frame::new(s.as_usize() + count);
+        let frames = AllocatedFrames::from_range(FrameSpan::new(s, e));
+        result
+            .push(frames)
+            .expect("frame_allocator::init: reserved 范围数不超过 8");
+        log::info!("FrameInit: reserved {} pages at {}", count, start);
+    }
+
+    result
 }
 
 /// 从 buddy allocator 取出帧，构造 `FreeFrames`。

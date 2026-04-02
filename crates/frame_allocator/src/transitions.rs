@@ -1,11 +1,11 @@
 //! 各状态专属的 impl 块——状态转换方法与分配接口。
 
 use config::PAGE_SIZE;
-use memory_types::{FrameSpan, PageSize};
+use memory_types::PageSize;
 
 use crate::FrameAllocError;
 use crate::alloc::alloc_from_buddy;
-use crate::state::{AllocatedFrames, FreeFrames, MappedFrames, UnmappedFrames};
+use crate::state::{AllocatedFrames, FreeFrames};
 
 impl FreeFrames {
     /// 消费 Free 帧，转换为 Allocated 状态。
@@ -49,47 +49,6 @@ impl<P: PageSize> AllocatedFrames<P> {
 
         Ok(Self::from_range(range))
     }
-
-    /// 消费 Allocated 帧，转换为 Mapped 状态。
-    ///
-    /// 在帧被写入页表后调用。
-    pub fn into_mapped(self) -> MappedFrames<P> {
-        self.into_state()
-    }
-}
-
-impl<P: PageSize> MappedFrames<P> {
-    /// 消费 Mapped 帧，转换为 Unmapped 状态。
-    ///
-    /// 在帧从页表中 unmap 后调用。
-    pub fn into_unmapped(self) -> UnmappedFrames<P> {
-        self.into_state()
-    }
-}
-
-impl<P: PageSize> UnmappedFrames<P> {
-    /// 从 4K 帧范围构造 `UnmappedFrames`——用于 EXCLUSIVE unmap 路径。
-    ///
-    /// # Safety
-    ///
-    /// 调用方必须确保该帧范围刚从页表 unmap，且 PTE 的 EXCLUSIVE 位已确认
-    /// 我们拥有该帧的唯一引用。Drop 时帧将归还分配器。
-    pub unsafe fn from_unmapped_range(range: FrameSpan) -> Self {
-        Self::from_range(range)
-    }
-
-    /// 消费 Unmapped 帧，转换回 Allocated 状态（可重新映射到其他页表）。
-    pub fn into_allocated(self) -> AllocatedFrames<P> {
-        self.into_state()
-    }
-
-    /// 显式释放帧——等价于 `drop(self)`。
-    ///
-    /// 通常不需要手动调用——Drop 会自动完成。
-    /// 仅在需要显式控制释放时机时使用。
-    pub fn release(self) {
-        // Drop 自动处理 dealloc_to_buddy
-    }
 }
 
 #[cfg(test)]
@@ -98,10 +57,9 @@ mod tests {
 
     use crate::alloc::alloc_from_buddy;
     use crate::ensure_test_init;
-    use crate::state::{AllocatedFrames, UnmappedFrames};
+    use crate::state::AllocatedFrames;
 
     type Alloc = AllocatedFrames;
-    type Unmap = UnmappedFrames;
 
     /// 分配单帧后帧计数应为 1，地址应页对齐。
     #[test]
@@ -132,47 +90,6 @@ mod tests {
         assert!(frame2.start_paddr().is_aligned());
     }
 
-    /// Allocated → Mapped → Unmapped 状态转换链。
-    #[test]
-    fn typestate_transitions() {
-        ensure_test_init();
-        let allocated = Alloc::alloc_one().expect("分配");
-        let pa = allocated.start_paddr();
-
-        let mapped = allocated.into_mapped();
-        assert_eq!(mapped.start_paddr(), pa);
-
-        let unmapped = mapped.into_unmapped();
-        assert_eq!(unmapped.start_paddr(), pa);
-
-        // Unmapped drop 自动归还分配器
-    }
-
-    /// Unmapped → Allocated 回转。
-    #[test]
-    fn unmapped_back_to_allocated() {
-        ensure_test_init();
-        let allocated = Alloc::alloc_one().expect("分配");
-        let mapped = allocated.into_mapped();
-        let unmapped = mapped.into_unmapped();
-        let reallocated = unmapped.into_allocated();
-        assert_eq!(reallocated.count(), 1);
-    }
-
-    /// Unmapped 显式释放后应能重新分配。
-    #[test]
-    fn unmapped_release_reclaims() {
-        ensure_test_init();
-        let allocated = Alloc::alloc_one().expect("分配");
-        let pa = allocated.start_paddr();
-        let mapped = allocated.into_mapped();
-        let unmapped = mapped.into_unmapped();
-        assert_eq!(unmapped.start_paddr(), pa);
-        unmapped.release();
-        // release 后帧归还分配器，重新分配应成功
-        let _frame2 = Alloc::alloc_one().expect("release 后应能重新分配");
-    }
-
     /// Free → Allocated 显式转换。
     #[test]
     fn free_into_allocated() {
@@ -182,28 +99,6 @@ mod tests {
         let allocated = free.into_allocated();
         assert_eq!(allocated.start_paddr(), pa);
         assert_eq!(allocated.count(), 1);
-    }
-
-    /// 完整生命周期：Free → Allocated → Mapped → Unmapped → Free。
-    #[test]
-    fn full_lifecycle() {
-        ensure_test_init();
-        let free = alloc_from_buddy(2).expect("buddy 分配");
-        let pa = free.start_paddr();
-
-        let allocated = free.into_allocated();
-        assert_eq!(allocated.start_paddr(), pa);
-
-        let mapped = allocated.into_mapped();
-        assert_eq!(mapped.start_paddr(), pa);
-
-        let unmapped = mapped.into_unmapped();
-        assert_eq!(unmapped.start_paddr(), pa);
-
-        assert_eq!(unmapped.start_paddr(), pa);
-        assert_eq!(unmapped.count(), 2);
-        unmapped.release();
-        // release 归还分配器
     }
 
     /// split_at 应正确分割帧范围。
@@ -228,30 +123,6 @@ mod tests {
             .merge(right)
             .unwrap_or_else(|_| panic!("相邻帧 merge 应成功"));
         assert_eq!(merged.count(), 4);
-    }
-
-    /// `UnmappedFrames::from_range` 构造后 drop 应归还分配器。
-    #[test]
-    fn from_range_reclaims() {
-        ensure_test_init();
-        let frame = Alloc::alloc_one().expect("分配");
-        let range = frame.range();
-        let mapped = frame.into_mapped();
-        core::mem::forget(mapped);
-        // SAFETY: 帧已 forget（模拟 EXCLUSIVE unmap 路径），手动重建 Unmapped 以回收
-        let _unmapped = unsafe { Unmap::from_unmapped_range(range) };
-        // drop 归还分配器，后续分配应成功
-        let _frame2 = Alloc::alloc_one().expect("from_range 回收后应能重新分配");
-    }
-
-    /// Mapped 帧 drop 时应 panic。
-    #[test]
-    #[should_panic(expected = "Frames<Mapped> dropped without unmapping")]
-    fn mapped_drop_panics() {
-        ensure_test_init();
-        let allocated = Alloc::alloc_one().expect("分配");
-        let _mapped = allocated.into_mapped();
-        // _mapped drop 时应 panic
     }
 
     /// 合并不相邻的帧应失败并归还双方所有权。

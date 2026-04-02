@@ -1,4 +1,6 @@
 //! 帧类型状态定义——`MemoryState` 枚举、`Frames<S, P>` 结构体、通用操作与 Drop。
+//!
+//! 状态机：`Free → Allocated → Free`。
 
 use core::marker::PhantomData;
 
@@ -8,20 +10,16 @@ use crate::alloc::dealloc_to_buddy;
 
 /// 帧生命周期状态。
 ///
-/// 状态机：`Free → Allocated → Mapped → Unmapped → Free → …`
+/// 状态机：`Free → Allocated → Free`。
 ///
-/// 所有解分配路径最终汇聚到 `Free` 状态，由 `Free` 的 Drop 统一归还
+/// 所有解分配路径最终汇聚到 `Free` 状态，由 Drop 统一归还
 /// buddy allocator。
 #[derive(PartialEq, Eq, core::marker::ConstParamTy)]
 pub enum MemoryState {
     /// 空闲——被分配器持有，Drop 归还 buddy allocator
     Free,
-    /// 已分配——用户持有，Drop 经由 `Free` 归还分配器
+    /// 已分配——用户持有，Drop 归还分配器
     Allocated,
-    /// 已映射到页表——Drop panic（必须先 unmap）
-    Mapped,
-    /// 从页表移除——Drop 经由 `Free` 归还分配器
-    Unmapped,
 }
 
 /// 类型状态帧范围——编译期追踪物理帧生命周期和页大小。
@@ -48,10 +46,6 @@ impl<const S: MemoryState, P: PageSize> core::fmt::Debug for Frames<S, P> {
 pub type FreeFrames = Frames<{ MemoryState::Free }, Page4K>;
 /// 便利别名——已分配帧，用户持有。
 pub type AllocatedFrames<P = Page4K> = Frames<{ MemoryState::Allocated }, P>;
-/// 便利别名——已映射帧，页表持有。
-pub type MappedFrames<P = Page4K> = Frames<{ MemoryState::Mapped }, P>;
-/// 便利别名——已取消映射帧，等待回收。
-pub type UnmappedFrames<P = Page4K> = Frames<{ MemoryState::Unmapped }, P>;
 
 impl<const S: MemoryState, P: PageSize> Frames<S, P> {
     /// 返回帧范围（4K 粒度）。
@@ -147,17 +141,6 @@ impl<const S: MemoryState, P: PageSize> Frames<S, P> {
 
 impl<const S: MemoryState, P: PageSize> Drop for Frames<S, P> {
     fn drop(&mut self) {
-        match S {
-            MemoryState::Free | MemoryState::Allocated | MemoryState::Unmapped => {
-                dealloc_to_buddy(self.range);
-            }
-            // Mapped 帧必须先 unmap，直接 drop 说明存在泄漏
-            MemoryState::Mapped => {
-                panic!(
-                    "Frames<Mapped> dropped without unmapping — frames at {} leaked",
-                    self.range.start()
-                );
-            }
-        }
+        dealloc_to_buddy(self.range);
     }
 }

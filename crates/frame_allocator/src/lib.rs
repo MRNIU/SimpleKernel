@@ -11,7 +11,7 @@ mod transitions;
 
 pub use alloc::init;
 pub use error::FrameAllocError;
-pub use state::{AllocatedFrames, Frames, MappedFrames, MemoryState, UnmappedFrames};
+pub use state::{AllocatedFrames, Frames, MemoryState};
 
 /// 测试用帧分配器初始化——分配堆内存模拟物理内存区域。
 ///
@@ -32,6 +32,6 @@ pub fn ensure_test_init() {
         assert!(!ptr.is_null());
         let start = PhysAddr::new(ptr as usize);
         // SAFETY: 测试专用内存区域，不与其他分配重叠
-        unsafe { init(start, 64 * PAGE_SIZE) };
+        unsafe { init(start, 64 * PAGE_SIZE, &[]) };
     });
 }
