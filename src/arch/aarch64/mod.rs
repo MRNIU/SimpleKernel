@@ -53,16 +53,17 @@ impl ArchOps for Aarch64 {
     }
 
     fn map_early_mmio(
-        addr_space: &mut memory::vma::AddressSpace,
+        _addr_space: &mut memory::vma::AddressSpace,
     ) -> Result<(), memory::error::MemoryError> {
-        use memory_types::VirtAddr;
-        use paging::{PteFlags, PteFlagsOps};
-        // PL011 UART —— console 直接 MMIO 访问
-        addr_space.mmap_identity_range(
-            VirtAddr::new(PL011_BASE),
-            VirtAddr::new(PL011_BASE + PL011_SIZE),
-            PteFlags::kernel_rw(),
-        )?;
+        // PL011 UART —— MMIO identity map（VA == PA，Device-nGnRnE 属性）。
+        // 使用 MmioRegion 而非 mmap_identity_range：
+        // - MMIO 地址不在 buddy allocator 中，不能用 AllocatedFrames::alloc
+        // - 需要 kernel_device() 属性（非 cacheable）
+        let _pl011 =
+            paging::mmio::MmioRegion::map(memory_types::PhysAddr::new(PL011_BASE), PL011_SIZE)
+                .map_err(|_| memory::error::MemoryError::MapFailed)?;
+        // MmioRegion 永久存在——leak 掉防止 Drop 回收虚拟页
+        core::mem::forget(_pl011);
         log::info!("MemoryInit: mapped PL011 UART @ {:#010X}", PL011_BASE);
         Ok(())
     }

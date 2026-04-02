@@ -70,7 +70,7 @@ pub fn init() -> AddressSpace {
 
     // 分段映射：.text(RWX) · .rodata(RO) · .data+free(RW)
     // reserved 的元素顺序与传入 init 的 reserved 参数顺序一致。
-    // 使用 swap_remove(0) 按顺序消费所有权。
+    // 使用 remove(0) 按顺序消费所有权（swap_remove 会打乱顺序）。
     let segments: [(PhysAddr, PteFlags); 3] = [
         (mem_start, PteFlags::kernel_rwx()),
         (text_end, PteFlags::kernel_ro()),
@@ -78,7 +78,7 @@ pub fn init() -> AddressSpace {
     ];
 
     for (seg_start, flags) in segments {
-        let frames = reserved.swap_remove(0);
+        let frames = reserved.remove(0);
         let page_count = frames.count();
         let va = VirtAddr::new(seg_start.as_usize());
         let pages =
