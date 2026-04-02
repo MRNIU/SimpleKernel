@@ -3,8 +3,6 @@
 //! - [`Vma`]：描述一段连续虚拟地址空间的属性（权限、backing 类型）
 //! - [`AddressSpace`]：管理所有 VMA
 
-use core::mem::ManuallyDrop;
-
 use alloc::collections::BTreeMap;
 
 use crate::MappedPages;
@@ -13,24 +11,6 @@ use config::PAGE_SIZE;
 use memory_types::{Span, VirtAddr};
 use page_allocator::AllocatedPages;
 use paging::{PteFlags, PteFlagsOps};
-
-/// VMA 内部映射存储——区分可回收和永久映射。
-enum Mapping {
-    /// 匿名映射——Drop 时 unmap 并回收帧
-    Reclaimable(MappedPages),
-    /// 永久映射——Drop 时不操作（ManuallyDrop 阻止 unmap）
-    Permanent(ManuallyDrop<MappedPages>),
-}
-
-impl Mapping {
-    /// 返回用户请求的原始权限。
-    fn flags(&self) -> PteFlags {
-        match self {
-            Self::Reclaimable(mp) => mp.flags(),
-            Self::Permanent(mp) => mp.flags(),
-        }
-    }
-}
 
 /// VMA backing 类型——描述物理内存的来源。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -50,7 +30,7 @@ pub struct Vma {
     /// backing 类型
     kind: VmaKind,
     /// 已建立的映射——`None` 表示尚未物化（lazy）
-    mapping: Option<Mapping>,
+    mapping: Option<MappedPages>,
 }
 
 impl Vma {
@@ -166,21 +146,21 @@ impl AddressSpace {
 
         let pages = AllocatedPages::alloc_at(start, page_count)
             .map_err(|_| MemoryError::AllocationFailed)?;
-        let mapping = MappedPages::map_alloc(pages, flags);
+        let frames = frame_allocator::AllocatedFrames::alloc(page_count)
+            .map_err(|_| MemoryError::OutOfMemory)?;
+        let mapping = MappedPages::map(pages, frames, flags);
 
         let vma = Vma {
             range,
             flags: mapping.flags(),
             kind: VmaKind::Anonymous,
-            mapping: Some(Mapping::Reclaimable(mapping)),
+            mapping: Some(mapping),
         };
         self.areas.insert(start, vma);
         Ok(self.areas.get(&start).expect("刚插入的 VMA"))
     }
 
-    /// 创建 identity mapping——VA == PA，不分配新帧。
-    ///
-    /// 映射标记为永久（drop 时不 unmap）。
+    /// 创建 identity mapping——分配帧并建立 VA→PA 映射。
     pub fn mmap_identity(
         &mut self,
         start: VirtAddr,
@@ -193,13 +173,15 @@ impl AddressSpace {
 
         let pages = AllocatedPages::alloc_at(start, page_count)
             .map_err(|_| MemoryError::AllocationFailed)?;
-        let mapping = ManuallyDrop::new(MappedPages::map_identity(pages, flags));
+        let frames = frame_allocator::AllocatedFrames::alloc(page_count)
+            .map_err(|_| MemoryError::OutOfMemory)?;
+        let mapping = MappedPages::map(pages, frames, flags);
 
         let vma = Vma {
             range,
-            flags,
+            flags: mapping.flags(),
             kind: VmaKind::Identity,
-            mapping: Some(Mapping::Permanent(mapping)),
+            mapping: Some(mapping),
         };
         self.areas.insert(start, vma);
         Ok(self.areas.get(&start).expect("刚插入的 VMA"))
@@ -259,20 +241,12 @@ impl AddressSpace {
             return Ok(false);
         }
 
-        let mapping = match vma.kind {
-            VmaKind::Anonymous => {
-                let pages = AllocatedPages::alloc_at(vma.range.start(), vma.page_count())
-                    .map_err(|_| MemoryError::AllocationFailed)?;
-                let mp = MappedPages::map_alloc(pages, vma.flags);
-                Mapping::Reclaimable(mp)
-            }
-            VmaKind::Identity => {
-                let pages = AllocatedPages::alloc_at(vma.range.start(), vma.page_count())
-                    .map_err(|_| MemoryError::AllocationFailed)?;
-                let mp = MappedPages::map_identity(pages, vma.flags);
-                Mapping::Permanent(ManuallyDrop::new(mp))
-            }
-        };
+        let page_count = vma.page_count();
+        let pages = AllocatedPages::alloc_at(vma.range.start(), page_count)
+            .map_err(|_| MemoryError::AllocationFailed)?;
+        let frames = frame_allocator::AllocatedFrames::alloc(page_count)
+            .map_err(|_| MemoryError::OutOfMemory)?;
+        let mapping = MappedPages::map(pages, frames, vma.flags);
 
         vma.flags = mapping.flags();
         vma.mapping = Some(mapping);
@@ -297,13 +271,15 @@ impl AddressSpace {
         let page_count = (end_aligned - start_aligned) / PAGE_SIZE;
         let pages = AllocatedPages::alloc_at(start_aligned, page_count)
             .map_err(|_| MemoryError::AllocationFailed)?;
-        let mapping = ManuallyDrop::new(MappedPages::map_identity(pages, flags));
+        let frames = frame_allocator::AllocatedFrames::alloc(page_count)
+            .map_err(|_| MemoryError::OutOfMemory)?;
+        let mapping = MappedPages::map(pages, frames, flags);
 
         let vma = Vma {
             range,
-            flags,
+            flags: mapping.flags(),
             kind: VmaKind::Identity,
-            mapping: Some(Mapping::Permanent(mapping)),
+            mapping: Some(mapping),
         };
         self.areas.insert(start_aligned, vma);
         Ok(self.areas.get(&start_aligned).expect("刚插入的 VMA"))
@@ -329,6 +305,28 @@ impl AddressSpace {
         };
         self.areas.insert(start, vma);
         Ok(self.areas.get(&start).expect("刚插入的 VMA"))
+    }
+
+    /// 注册已由外部建立的映射——直接接管 MappedPages 所有权。
+    ///
+    /// 用于 init 阶段注册内核段映射（帧由 frame_allocator::init 预留）。
+    pub fn register_kernel_mapping(
+        &mut self,
+        start: VirtAddr,
+        mapping: paging::MappedPages,
+        kind: VmaKind,
+    ) {
+        let size = mapping.size();
+        let flags = mapping.flags();
+        let end = start + size;
+        let range = Span::new(start, end);
+        let vma = Vma {
+            range,
+            flags,
+            kind,
+            mapping: Some(mapping),
+        };
+        self.areas.insert(start, vma);
     }
 
     /// 修改 VMA 权限。
@@ -403,7 +401,7 @@ mod tests {
     fn mmap_identity_creates_vma() {
         init();
         let mut aspace = AddressSpace::new();
-        let start = VirtAddr::new(0x1010_0000);
+        let start = VirtAddr::new(0x1000_0000);
         let vma = aspace
             .mmap_identity(start, PAGE_SIZE, PteFlags::kernel_rw())
             .expect("mmap_identity 应成功");
@@ -419,7 +417,7 @@ mod tests {
     fn mmap_anonymous_creates_mapping() {
         init();
         let mut aspace = AddressSpace::new();
-        let start = VirtAddr::new(0x1020_0000);
+        let start = VirtAddr::new(0x1000_2000);
         let vma = aspace
             .mmap_anonymous(start, 2 * PAGE_SIZE, PteFlags::kernel_rw())
             .expect("mmap_anonymous 应成功");
@@ -433,8 +431,8 @@ mod tests {
     fn find_vma_lookup() {
         init();
         let mut aspace = AddressSpace::new();
-        let start = VirtAddr::new(0x1030_0000);
-        aspace
+        let start = VirtAddr::new(0x1000_5000);
+        let _vma = aspace
             .mmap_identity(start, 3 * PAGE_SIZE, PteFlags::kernel_rw())
             .expect("mmap");
         assert!(aspace.find_vma(start).is_some());
@@ -447,7 +445,7 @@ mod tests {
     fn overlap_rejected() {
         init();
         let mut aspace = AddressSpace::new();
-        let start = VirtAddr::new(0x1040_0000);
+        let start = VirtAddr::new(0x1000_9000);
         aspace
             .mmap_identity(start, 2 * PAGE_SIZE, PteFlags::kernel_rw())
             .expect("首次 mmap");
@@ -462,7 +460,7 @@ mod tests {
     fn munmap_removes_vma() {
         init();
         let mut aspace = AddressSpace::new();
-        let start = VirtAddr::new(0x1060_0000);
+        let start = VirtAddr::new(0x1000_C000);
         aspace
             .mmap_anonymous(start, PAGE_SIZE, PteFlags::kernel_rw())
             .expect("mmap");
@@ -477,7 +475,7 @@ mod tests {
         init();
         let mut aspace = AddressSpace::new();
         let err = aspace
-            .mmap_identity(VirtAddr::new(0x10C0_0000), 0, PteFlags::kernel_rw())
+            .mmap_identity(VirtAddr::new(0x1000_E000), 0, PteFlags::kernel_rw())
             .expect_err("size=0 应失败");
         assert_eq!(err, MemoryError::MapFailed);
     }

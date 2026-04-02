@@ -54,7 +54,8 @@ pub use init::{init, init_smp};
 
 /// 将 MMIO 物理地址区间 identity-map，返回对应虚拟地址。
 ///
-/// 映射使用 `ManuallyDrop<MappedPages>`（永久映射），并在内核地址空间中注册 VMA 记录。
+/// MmioRegion 建立映射后通过 `forget` 阻止 pages 回到 page_allocator，
+/// 并在内核地址空间中注册 VMA 记录。
 ///
 /// # Errors
 ///
@@ -80,6 +81,9 @@ pub fn map_mmio(
             )
             .expect("MMIO 区域注册到内核地址空间失败");
     }
+
+    // 阻止 MmioRegion drop 归还 pages 给 page_allocator——MMIO 映射永久存在
+    core::mem::forget(region);
 
     Ok(vaddr)
 }

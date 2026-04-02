@@ -7,7 +7,7 @@ use crate::vma::AddressSpace;
 
 /// 主核内存初始化——返回内核地址空间（包含所有内核段映射）。
 ///
-/// 初始化顺序：堆 → 帧分配器 → 页分配器 → 页表 → 分段映射。
+/// 初始化顺序：堆 → 帧分配器（统一入口）→ 页分配器 → 页表 → 分段映射。
 pub fn init() -> AddressSpace {
     // SAFETY: 在任何堆分配之前调用，且仅调用一次（由启动流程保证）
     unsafe { heap_crate::init() };
@@ -19,11 +19,36 @@ pub fn init() -> AddressSpace {
     let mem_size = info.physical_memory_size;
     let kernel_end = info.kernel_addr + info.kernel_size;
 
-    let alloc_start = kernel_end.align_up();
-    let alloc_size = mem_size - (alloc_start - mem_start);
+    // SAFETY: 链接器定义的符号
+    unsafe extern "C" {
+        static __etext: u8;
+        static __erodata: u8;
+    }
+    let text_end = PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up();
+    let rodata_end = PhysAddr::new(unsafe { &__erodata as *const u8 as usize }).align_up();
+    let mem_end = mem_start + mem_size;
 
-    // SAFETY: alloc_start 页对齐，内存区域不与堆重叠，仅调用一次
-    unsafe { frame_allocator::init(alloc_start, alloc_size) };
+    // 计算各段页数
+    let text_pages = (text_end - mem_start) / config::PAGE_SIZE;
+    let rodata_pages = (rodata_end - text_end) / config::PAGE_SIZE;
+    let data_pages = (mem_end - rodata_end) / config::PAGE_SIZE;
+
+    // 空闲内存 = 内核之后的部分
+    let free_start = kernel_end.align_up();
+    let free_size = mem_size - (free_start - mem_start);
+
+    // SAFETY: 范围有效、页对齐、互不重叠、仅调用一次
+    let mut reserved = unsafe {
+        frame_allocator::init(
+            free_start,
+            free_size,
+            &[
+                (mem_start, text_pages),
+                (text_end, rodata_pages),
+                (rodata_end, data_pages),
+            ],
+        )
+    };
 
     // 初始化虚拟页分配器——SAS identity mapping 下 VA == PA。
     // 管理范围从地址 0 到物理内存末尾，覆盖低地址的 MMIO 设备区域
@@ -43,40 +68,24 @@ pub fn init() -> AddressSpace {
 
     let mut kernel_as = AddressSpace::new();
 
-    // SAFETY: 链接器定义的符号
-    unsafe extern "C" {
-        static __etext: u8;
-        static __erodata: u8;
-    }
-    let text_end = PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up();
-    let rodata_end = PhysAddr::new(unsafe { &__erodata as *const u8 as usize }).align_up();
-    let mem_end = mem_start + mem_size;
+    // 分段映射：.text(RWX) · .rodata(RO) · .data+free(RW)
+    // reserved 的元素顺序与传入 init 的 reserved 参数顺序一致。
+    // 使用 swap_remove(0) 按顺序消费所有权。
+    let segments: [(PhysAddr, PteFlags); 3] = [
+        (mem_start, PteFlags::kernel_rwx()),
+        (text_end, PteFlags::kernel_ro()),
+        (rodata_end, PteFlags::kernel_rw()),
+    ];
 
-    // 分段映射（通过 VMA，自动选择大页）：
-    // [mem_start, text_end)    → RWX（.boot 段混合了 code+data）
-    // [text_end, rodata_end)   → RO（.rodata）
-    // [rodata_end, mem_end)    → RW（.data + .bss + 空闲内存）
-    kernel_as
-        .mmap_identity_range(
-            VirtAddr::new(mem_start.as_usize()),
-            VirtAddr::new(text_end.as_usize()),
-            PteFlags::kernel_rwx(),
-        )
-        .expect("映射内核代码区域失败");
-    kernel_as
-        .mmap_identity_range(
-            VirtAddr::new(text_end.as_usize()),
-            VirtAddr::new(rodata_end.as_usize()),
-            PteFlags::kernel_ro(),
-        )
-        .expect("映射内核只读数据区域失败");
-    kernel_as
-        .mmap_identity_range(
-            VirtAddr::new(rodata_end.as_usize()),
-            VirtAddr::new(mem_end.as_usize()),
-            PteFlags::kernel_rw(),
-        )
-        .expect("映射内核数据+空闲区域失败");
+    for (seg_start, flags) in segments {
+        let frames = reserved.swap_remove(0);
+        let page_count = frames.count();
+        let va = VirtAddr::new(seg_start.as_usize());
+        let pages =
+            page_allocator::AllocatedPages::alloc_at(va, page_count).expect("内核段页分配失败");
+        let mapping = paging::MappedPages::map(pages, frames, flags);
+        kernel_as.register_kernel_mapping(va, mapping, crate::vma::VmaKind::Identity);
+    }
 
     log::info!(
         "MemoryInit: code {}-{} (RWX), rodata {}-{} (RO), data {}-{} (RW)",
