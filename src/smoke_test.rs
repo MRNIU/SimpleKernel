@@ -248,10 +248,47 @@ fn victim_thread(_arg: usize) {
     }
 }
 
+/// P6/P7 综合测试——在内核线程中验证设备 + 文件系统操作。
+fn p6p7_test_thread(_arg: usize) {
+    use simplekernel::fs::vfs::{FileSystem, FileType};
+
+    log::info!("P6P7: testing device manager...");
+    let dev_count = simplekernel::device::manager::device_count();
+    log::info!("P6P7: {} devices registered", dev_count);
+
+    log::info!("P6P7: testing VFS in kernel thread...");
+    let (fs, root) = simplekernel::fs::resolve_path("/").expect("resolve /");
+
+    // 创建文件并写入
+    let inode = fs
+        .create(root, "thread_test.txt", FileType::Regular)
+        .expect("create");
+    let data = b"written from kernel thread";
+    fs.write(inode, 0, data).expect("write");
+
+    // 让出 CPU，验证上下文切换后文件仍可读
+    syscall::process::yield_now();
+
+    // 读回验证
+    let mut buf = [0u8; 64];
+    let n = fs.read(inode, 0, &mut buf).expect("read");
+    assert_eq!(&buf[..n], data);
+    log::info!("P6P7: VFS read after yield OK");
+
+    // 通过路径解析查找
+    let (_, resolved) = simplekernel::fs::resolve_path("/thread_test.txt").expect("resolve");
+    assert_eq!(resolved, inode);
+
+    // 清理
+    fs.unlink(root, "thread_test.txt").expect("unlink");
+
+    log::info!("=== P6P7 TEST PASSED ===");
+}
+
 /// 创建所有冒烟测试线程。
 pub fn spawn_all() {
     log::info!(
-        "Phase 5: spawning {} counter threads + 1 verifier + P5b tests",
+        "Phase 5: spawning {} counter threads + 1 verifier + P5b + P6P7 tests",
         TEST_THREAD_COUNT
     );
 
@@ -261,4 +298,5 @@ pub fn spawn_all() {
     }
     task::spawn_kernel_thread("verifier", verifier_thread, 0);
     task::spawn_kernel_thread("p5b_test", p5b_test_thread, 0);
+    task::spawn_kernel_thread("p6p7_test", p6p7_test_thread, 0);
 }

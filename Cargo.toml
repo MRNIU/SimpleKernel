@@ -79,6 +79,9 @@ qemu-exit = "3"                        # 用指定退出码结束 QEMU（集成�
 # VirtIO 驱动框架（P6 设备框架阶段启用）
 virtio-drivers = { version = "0.13", default-features = false }
 
+# FAT 文件系统（P7 文件系统阶段启用）
+fatfs = { git = "https://github.com/rafalh/rust-fatfs", default-features = false, features = ["alloc", "lfn"] }
+
 # 网络协议栈（P7+ 网络子系统阶段启用）
 smoltcp = { version = "0.13", default-features = false, features = [
     "medium-ip", "proto-ipv4", "socket-tcp", "socket-udp",
@@ -190,6 +193,9 @@ qemu-exit.workspace = true            # 用指定退出码结束 QEMU（集成�
 
 # --- VirtIO ---
 virtio-drivers.workspace = true       # VirtIO 协议栈（blk/net/console/gpu）
+
+# --- FAT 文件系统 ---
+fatfs.workspace = true                # FAT12/16/32 纯 Rust 实现（no_std）
 
 # --- 网络 ---
 smoltcp.workspace = true              # 轻量 TCP/IP 协议栈（无 alloc）

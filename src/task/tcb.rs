@@ -6,6 +6,9 @@ use core::sync::atomic::{AtomicI32, AtomicU32, AtomicU64, Ordering};
 
 use crate::task::state::{AtomicTaskState, TaskState};
 
+#[cfg(target_os = "none")]
+use crate::fs::fd_table::FileDescriptorTable;
+
 // ─── 类型别名 ─────────────────────────────────────────────────────────────────
 
 /// 进程/任务 ID 类型
@@ -84,6 +87,9 @@ pub struct TaskControlBlock {
     /// 内核栈（idle 任务无栈，使用 Option）
     #[cfg(target_os = "none")]
     kstack: Option<KernelStack>,
+    /// 文件描述符表（每任务独立）
+    #[cfg(target_os = "none")]
+    fd_table: sync::SpinLock<FileDescriptorTable>,
 }
 
 // SAFETY: state 与 exit_code 是原子的；context 使用 SyncUnsafeCell（已实现 Sync）；
@@ -119,6 +125,7 @@ impl TaskControlBlock {
             signal_mask: AtomicU32::new(0),
             context: core::cell::SyncUnsafeCell::new(CalleeSavedContext::default()),
             kstack: None,
+            fd_table: sync::SpinLock::new(FileDescriptorTable::new(), "fd_table"),
         }
     }
 
@@ -149,6 +156,7 @@ impl TaskControlBlock {
             signal_mask: AtomicU32::new(0),
             context: core::cell::SyncUnsafeCell::new(ctx),
             kstack: Some(kstack),
+            fd_table: sync::SpinLock::new(FileDescriptorTable::new(), "fd_table"),
         }
     }
 
@@ -281,6 +289,12 @@ impl TaskControlBlock {
     #[cfg(target_os = "none")]
     pub unsafe fn ctx_mut_ptr(&self) -> *mut CalleeSavedContext {
         self.context.get()
+    }
+
+    /// 获取文件描述符表的引用。
+    #[cfg(target_os = "none")]
+    pub fn fd_table(&self) -> &sync::SpinLock<FileDescriptorTable> {
+        &self.fd_table
     }
 }
 

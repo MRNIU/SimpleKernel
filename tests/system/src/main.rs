@@ -8,7 +8,9 @@
 
 extern crate alloc;
 
+mod device_tests;
 mod framework;
+mod fs_tests;
 mod memory_tests;
 mod sync_tests;
 
@@ -63,6 +65,16 @@ fn test_main(argc: i32, argv: *const *const u8) -> ! {
     runner.add_group(TestGroup {
         name: "sync",
         tests: sync_tests::tests(),
+    });
+
+    runner.add_group(TestGroup {
+        name: "device",
+        tests: device_tests::tests(),
+    });
+
+    runner.add_group(TestGroup {
+        name: "fs",
+        tests: fs_tests::tests(),
     });
 
     // 运行所有测试

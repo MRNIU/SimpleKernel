@@ -69,14 +69,14 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
     Arch::init_timer();
     Arch::init_interrupt();
 
-    // P6: 设备子系统——FDT 枚举 + VirtIO 探测
-    simplekernel::device::device_init();
-
-    // P7: 文件系统——挂载 RamFS + VFS 冒烟测试
-    simplekernel::fs::fs_init();
-
     // P5: 任务初始化（必须在 wake_secondary_cores 之前）
     task::init();
+
+    // P6/P7: 设备 + 文件系统初始化
+    // 必须在 task::init() 之后——timer 中断可能触发 schedule()，
+    // 需要 per-CPU 调度器已初始化。
+    simplekernel::device::device_init();
+    simplekernel::fs::fs_init();
 
     Arch::wake_secondary_cores();
     smoke_test::phase4();

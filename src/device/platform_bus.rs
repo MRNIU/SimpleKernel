@@ -37,7 +37,7 @@ pub fn probe_all() {
 fn probe_virtio_mmio_devices(fdt: &KernelFdt) {
     // 遍历查找所有 virtio,mmio 节点
     for index in 0..32 {
-        match fdt.find_compatible_reg_nth("virtio,mmio", index) {
+        match fdt.find_compatible_node_nth("virtio,mmio", index) {
             Ok((addr, size)) => {
                 let paddr = memory_types::PhysAddr::new(addr as usize);
                 log::debug!(

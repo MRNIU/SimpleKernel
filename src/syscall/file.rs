@@ -29,14 +29,8 @@ pub fn open(path: &str, flags: u32) -> Result<u32, crate::fs::vfs::FsError> {
         flags: open_flags,
     };
 
-    // TODO: 当前使用全局 FD 表（无 per-task），待 TCB 集成后切换
-    static GLOBAL_FD_TABLE: spin::Once<sync::SpinLock<crate::fs::fd_table::FileDescriptorTable>> =
-        spin::Once::new();
-    let table = GLOBAL_FD_TABLE.call_once(|| {
-        sync::SpinLock::new(crate::fs::fd_table::FileDescriptorTable::new(), "global_fd")
-    });
-
-    let fd = table.lock().alloc(file)?;
+    let task = crate::task::current_task();
+    let fd = task.fd_table().lock().alloc(file)?;
     Ok(fd.0)
 }
 
@@ -48,14 +42,8 @@ pub fn open(path: &str, flags: u32) -> Result<u32, crate::fs::vfs::FsError> {
 pub fn close(fd: u32) -> Result<(), crate::fs::vfs::FsError> {
     use crate::fs::fd_table::Fd;
 
-    // TODO: 切换为 per-task FD 表
-    static GLOBAL_FD_TABLE: spin::Once<sync::SpinLock<crate::fs::fd_table::FileDescriptorTable>> =
-        spin::Once::new();
-    let table = GLOBAL_FD_TABLE.call_once(|| {
-        sync::SpinLock::new(crate::fs::fd_table::FileDescriptorTable::new(), "global_fd")
-    });
-
-    table.lock().close(Fd(fd))
+    let task = crate::task::current_task();
+    task.fd_table().lock().close(Fd(fd))
 }
 
 /// read — 从文件描述符读取
@@ -67,13 +55,12 @@ pub fn read(fd: u32, buf: &mut [u8]) -> Result<usize, crate::fs::vfs::FsError> {
     use crate::fs::fd_table::Fd;
     use crate::fs::vfs::FsError;
 
-    static GLOBAL_FD_TABLE: spin::Once<sync::SpinLock<crate::fs::fd_table::FileDescriptorTable>> =
-        spin::Once::new();
-    let table = GLOBAL_FD_TABLE.call_once(|| {
-        sync::SpinLock::new(crate::fs::fd_table::FileDescriptorTable::new(), "global_fd")
-    });
-
-    let file_ref = table.lock().get(Fd(fd)).ok_or(FsError::InvalidFd)?;
+    let task = crate::task::current_task();
+    let file_ref = task
+        .fd_table()
+        .lock()
+        .get(Fd(fd))
+        .ok_or(FsError::InvalidFd)?;
 
     let mut file = file_ref.lock();
     let n = file.fs.read(file.inode, file.offset, buf)?;
@@ -90,13 +77,12 @@ pub fn write(fd: u32, data: &[u8]) -> Result<usize, crate::fs::vfs::FsError> {
     use crate::fs::fd_table::Fd;
     use crate::fs::vfs::FsError;
 
-    static GLOBAL_FD_TABLE: spin::Once<sync::SpinLock<crate::fs::fd_table::FileDescriptorTable>> =
-        spin::Once::new();
-    let table = GLOBAL_FD_TABLE.call_once(|| {
-        sync::SpinLock::new(crate::fs::fd_table::FileDescriptorTable::new(), "global_fd")
-    });
-
-    let file_ref = table.lock().get(Fd(fd)).ok_or(FsError::InvalidFd)?;
+    let task = crate::task::current_task();
+    let file_ref = task
+        .fd_table()
+        .lock()
+        .get(Fd(fd))
+        .ok_or(FsError::InvalidFd)?;
 
     let mut file = file_ref.lock();
     let n = file.fs.write(file.inode, file.offset, data)?;

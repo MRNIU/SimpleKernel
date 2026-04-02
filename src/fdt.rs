@@ -199,6 +199,57 @@ impl<'a> KernelFdt<'a> {
 
         Err(FdtError::NodeNotFound)
     }
+    /// 查找第 N 个 `compatible` 匹配的**节点**，返回其 `reg` 第一组 (address, size)。
+    ///
+    /// 与 `find_compatible_reg_nth` 不同：此方法按**节点序号**索引
+    /// （多个 `virtio,mmio` 节点各有一个 `reg`），
+    /// 而 `find_compatible_reg_nth` 按单节点内的 `reg` 条目索引
+    /// （GICv3 单节点多 `reg` 区域）。
+    #[allow(dead_code)]
+    pub fn find_compatible_node_nth(
+        &self,
+        compat: &str,
+        node_index: usize,
+    ) -> Result<(u64, usize), FdtError> {
+        let fdt = parse_fdt!(self.fdt_addr)?;
+        let nodes = fdt.all_nodes().map_err(|_| FdtError::ParseFailed)?;
+
+        let mut count = 0usize;
+
+        for node_result in nodes {
+            let Ok((_depth, node)) = node_result else {
+                continue;
+            };
+            let Ok(Some(prop)) = node.raw_property("compatible") else {
+                continue;
+            };
+            if !compatible_contains(prop.value, compat) {
+                continue;
+            }
+            if count == node_index {
+                let Ok(Some(reg)) = node.raw_property("reg") else {
+                    return Err(FdtError::PropertyNotFound);
+                };
+                if reg.value.len() >= 16 {
+                    let addr = u64::from_be_bytes(
+                        reg.value[0..8]
+                            .try_into()
+                            .map_err(|_| FdtError::ParseFailed)?,
+                    );
+                    let size = u64::from_be_bytes(
+                        reg.value[8..16]
+                            .try_into()
+                            .map_err(|_| FdtError::ParseFailed)?,
+                    ) as usize;
+                    return Ok((addr, size));
+                }
+                return Err(FdtError::InvalidPropertySize);
+            }
+            count += 1;
+        }
+
+        Err(FdtError::NodeNotFound)
+    }
 }
 
 /// 检查 FDT `compatible` 属性值是否包含指定字符串。

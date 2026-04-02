@@ -199,6 +199,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fatfs"
+version = "0.4.0"
+source = "git+https://github.com/rafalh/rust-fatfs#c4b88477b22ca7e5131fbd8891f62a5deaa88e6e"
+dependencies = [
+ "bitflags 2.11.0",
+ "log",
+]
+
+[[package]]
 name = "fdt"
 version = "0.2.0-alpha1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -595,6 +604,7 @@ dependencies = [
  "cc",
  "config",
  "elf",
+ "fatfs",
  "fdt",
  "gdbstub",
  "global_tick",

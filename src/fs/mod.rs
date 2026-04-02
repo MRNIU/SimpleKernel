@@ -130,6 +130,9 @@ pub fn fs_init() {
     // VFS 冒烟测试
     vfs_smoke_test();
 
+    // 尝试挂载 FAT 文件系统（VirtIO 块设备可用时）
+    fatfs_adapter::try_mount_fatfs();
+
     log::info!("FileSystemInit complete");
 }
 
