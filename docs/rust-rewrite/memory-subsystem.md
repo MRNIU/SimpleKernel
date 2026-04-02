@@ -155,27 +155,41 @@ pub type FreeFrames = Frames<{Free}, Page4K>;
 pub type AllocatedFrames<P = Page4K> = Frames<{Allocated}, P>;
 ```
 
-### 3.3 分配器后端
+### 3.3 分配器后端与初始化
 
 ```
-┌─────────────────────────────────────┐
-│        SpinLockIrq 保护              │
-│  ┌─────────────────────────────┐    │
-│  │ buddy_system_allocator<32>  │    │
-│  │  Order 32 → 最大 2^32 页    │    │
-│  │  ≈ 16 TB 连续分配           │    │
-│  └─────────────────────────────┘    │
-│  alloc_from_buddy(count) → FreeFrames│
-│  alloc_at_buddy(start, count)        │
-│  dealloc_to_buddy(range)             │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│        SpinLockIrq 保护                                  │
+│  ┌─────────────────────────────┐                        │
+│  │ buddy_system_allocator<32>  │                        │
+│  │  Order 32 → 最大 2^32 页    │                        │
+│  │  ≈ 16 TB 连续分配           │                        │
+│  └─────────────────────────────┘                        │
+│  alloc_from_buddy(count) → FreeFrames                    │
+│  dealloc_to_buddy(range)                                 │
+│                                                          │
+│  init(free_start, free_size, reserved) → [AllocatedFrames]│
+│       ↑ 空闲内存入 buddy      ↑ 预留范围构造为帧         │
+└─────────────────────────────────────────────────────────┘
 ```
 
 - 全局单例，`SpinLockIrq` 保护（关中断防止死锁）
-- `init()` 时将**全部物理内存**加入 buddy
-- `alloc(count)` — 自动选址分配连续帧
-- `alloc_at(start, count)` — 在指定物理地址分配（与 `page_allocator` 对称）
-- 所有分配/回收都经过 buddy 两个出入口
+- `init()` 是唯一的初始化入口，接受两类参数：
+  - `free_start`/`free_size`：空闲内存范围，加入 buddy
+  - `reserved`：需要预留的物理地址范围列表（如内核 .text/.rodata/.data 段），
+    **不经过 buddy**——直接构造为 `AllocatedFrames` 返回给调用方
+- `alloc(count)` — 自动选址分配连续帧（运行时常规分配）
+
+**为什么预留范围不经过 buddy？**
+`buddy_system_allocator` 只支持 `alloc(count)` 返回 buddy 选择的地址，
+不支持定点分配（`alloc_at`）。内核段的物理地址由链接器/固件决定，
+必须精确预留。`init` 函数在内部直接构造 `AllocatedFrames`（`pub(crate)` 的
+`from_range`），不将这些范围加入 buddy——调用方拿到的是正常的 `AllocatedFrames`，
+后续使用完全 safe。
+
+**内核段帧的生命周期**：由 `AddressSpace` 通过 `MappedPages` 持有直到关机，
+永远不会被 drop。如果被意外 drop，`dealloc_to_buddy` 会将这些帧"额外"加入
+buddy 池——这不是正确行为，但不会导致 UB（仅是多出了一些帧）。
 
 ### 3.4 连续帧分配——设计选择
 
@@ -289,8 +303,8 @@ EXCLUSIVE 位解决的问题是：unmap 时区分"该回收的帧"和"不该回�
 | 共享内存 | 多进程各映射同一帧 | 同一地址空间，传 `&T` 即可 |
 | 非分配器管理的帧 | MMIO、固件保留区 | MMIO 走 `MmioRegion` 独立路径 |
 
-初始化时将**全部 RAM** 加入 buddy allocator，内核段通过 `alloc_at` 预留——
-所有 `MappedPages` 持有的帧都来自分配器，都应该被回收。
+初始化时空闲 RAM 加入 buddy，内核段通过 `init` 的 `reserved` 参数直接构造
+`AllocatedFrames`���—所有 `MappedPages` 持有的帧都有明确所有者，都应该被回收。
 
 ### 5.5 创建——`map`
 
@@ -424,30 +438,37 @@ classDiagram
 // memory crate 中的便捷函数示意
 pub fn mmap_anonymous(&mut self, start, size, flags) -> Result<&Vma, MemoryError> {
     let pages = AllocatedPages::alloc_at(start, page_count)?;
-    let frames = AllocatedFrames::alloc(page_count)?;
+    let frames = AllocatedFrames::alloc(page_count)?;  // 从 buddy 分配
     let mapping = MappedPages::map(pages, frames, flags);  // 统一入口
-    // ...注册 VMA
-}
-
-pub fn mmap_identity(&mut self, start, size, flags) -> Result<&Vma, MemoryError> {
-    let pages = AllocatedPages::alloc_at(start, page_count)?;
-    let frames = AllocatedFrames::alloc_at(pa_start, page_count)?;  // VA == PA
-    let mapping = MappedPages::map(pages, frames, flags);  // 同一入口
     // ...注册 VMA
 }
 ```
 
-identity / anonymous 的区别**只在调用方**——`MappedPages::map` 看到的只是
-"pages + frames + flags"。
+内核段 identity mapping 在 `memory::init()` 中完成，使用 `frame_allocator::init`
+返回的预留帧：
+
+```rust
+// memory::init() 中的内核段映射
+let reserved_frames = unsafe {
+    frame_allocator::init(free_start, free_size, &[
+        (mem_start, text_pages),     // .text+.boot
+        (text_end, rodata_pages),    // .rodata（含 .symtab/.strtab）
+        (rodata_end, rest_pages),    // .data+.bss+空闲内存
+    ])
+};
+// reserved_frames[0..3] 传入 MappedPages::map 建立分段映射
+```
+
+**所有 `MappedPages::map` 调用形式相同**——区别只在帧来源（buddy 分配 vs init 预留）。
 
 ### 7.3 所有 MappedPages 统一 Drop
 
 不再需要 `ManuallyDrop` 区分 identity 和 anonymous：
 
-| `VmaKind` | 帧来源 | Drop 行为 |
-|-----------|--------|-----------|
-| `Anonymous` | `AllocatedFrames::alloc(N)` | unmap + 回收帧 + 回收页 |
-| `Identity` | `AllocatedFrames::alloc_at(pa, N)` | unmap + 回收帧 + 回收页 |
+| 场景 | 帧来源 | Drop 行为 |
+|------|--------|-----------|
+| 匿名映射 | `AllocatedFrames::alloc(N)` | unmap + 回收帧 + 回收页 |
+| 内核段（init） | `init` 返回的预留帧 | 由 `AddressSpace` 持有直到关机，不会 drop |
 
 ---
 
@@ -499,23 +520,31 @@ sequenceDiagram
     participant MP as MappedPages
     participant PT as PageTable
 
-    Note over INIT: 帧分配器加入全部物理内存
-    INIT->>FA: init(mem_start, mem_size)
+    Note over INIT: 一次 init 完成空闲内存 + 预留
+    INIT->>FA: init(free_start, free_size,<br/>reserved=[(text),(rodata),(data)])
+    FA-->>INIT: [AllocatedFrames × 3]
+    Note over FA: 空闲内存入 buddy<br/>预留范围构造为 AllocatedFrames
 
-    Note over INIT: 预留内核段帧
-    INIT->>FA: AllocatedFrames::alloc_at(mem_start, kernel_pages)
-    FA-->>INIT: AllocatedFrames
-
-    Note over INIT: 分配对应虚拟页（VA == PA）
-    INIT->>PA: AllocatedPages::alloc_at(mem_start, kernel_pages)
+    Note over INIT: 为每个段分配虚拟页（VA == PA）
+    INIT->>PA: AllocatedPages::alloc_at(text_start, N)
     PA-->>INIT: AllocatedPages
 
     Note over INIT: 统一路径建立映射
     INIT->>MP: MappedPages::map(pages, frames, RWX)
     MP->>PT: map_page(va, pa, RWX) × N
     MP-->>INIT: MappedPages
-    Note over INIT: 注册到 AddressSpace
+    Note over INIT: 注册到 AddressSpace<br/>（持有直到关机，不会 drop）
 ```
+
+**映射范围与调试信息**：三段映射覆盖完整内核镜像和全部空闲 RAM：
+
+| 段 | 范围 | 权限 | 包含的关键内容 |
+|----|------|------|---------------|
+| .boot + .text | `[mem_start, text_end)` | RWX | 函数代码（backtrace 需要） |
+| .rodata | `[text_end, rodata_end)` | RO | `.symtab`/`.strtab`（地址→函数名）、`.eh_frame`（栈展开） |
+| .data + .bss + free | `[rodata_end, mem_end)` | RW | 全局变量、栈内存、buddy 管理的空闲帧 |
+
+`.rodata` 段包含 ELF 符号表——如果未映射，backtrace 只能输出裸地址，无法解析函数名。
 
 ---
 
@@ -584,19 +613,17 @@ flowchart TD
     C --> C1["FDT 解析 → MEMORY_INFO"]
     C1 --> D["memory::init()"]
     D --> D1["heap::init()"]
-    D1 --> D2["frame_allocator::init(mem_start, mem_size)<br/>← 全部物理内存"]
-    D2 --> D2a["AllocatedFrames::alloc_at(kernel_start, kernel_pages)<br/>← 预留内核段"]
-    D2a --> D3["page_allocator::init(0, mem_end)"]
+    D1 --> D2["frame_allocator::init(<br/>free_start, free_size,<br/>reserved=[text, rodata, data])<br/>← 空闲入 buddy + 预留帧返回"]
+    D2 --> D3["page_allocator::init(0, mem_end)"]
     D3 --> D4["PageTable::create()"]
     D4 --> D5["set_kernel_page_table(pt)"]
-    D5 --> D6["MappedPages::map(pages, frames, flags)<br/>分段映射：.text(RWX) · .rodata(RO) · .data+free(RW)"]
+    D5 --> D6["MappedPages::map(pages, frames, flags) × 3<br/>.text(RWX) · .rodata(RO) · .data+free(RW)"]
     D6 --> D7["store_kernel_address_space(as)"]
     D7 --> E["后续子系统初始化"]
 
     style D fill:#e8f4e8
     style D1 fill:#fff3e0
     style D2 fill:#fff3e0
-    style D2a fill:#fff3e0
     style D3 fill:#fff3e0
     style D4 fill:#fff3e0
     style D5 fill:#fff3e0
@@ -605,9 +632,10 @@ flowchart TD
 
 **约束**：
 - 堆必须在帧分配器之前初始化（buddy allocator 内部使用堆）
-- `init()` 将全部物理内存加入 buddy，随后 `alloc_at` 预留内核段
+- `init()` 一次性完成：空闲内存入 buddy + 内核段帧构造并返回
 - 页表创建后才能建立映射
 - 所有映射（包括内核段 identity map）都走 `MappedPages::map` 统一路径
+- 内核段映射由 `AddressSpace` 持有直到关机——确保 `.symtab` 等调试信息始终可访问
 - 从核（SMP）复用主核页表，只需激活分页
 
 ---
@@ -643,7 +671,7 @@ SimpleKernel 的内存管理受 Theseus 影响，但在 SAS 约束下做了进�
 | 所有权交接 | 无 forget、无 unsafe | `mem::forget` + `unsafe from_unmapped_range` |
 | MappedPages 创建方式 | `map(pages, frames, flags)` 统一入口 | `map_allocated_pages_to` + `map_to_non_exclusive` |
 | 共享映射 / COW | 不支持（SAS 不需要） | EXCLUSIVE 位支持 |
-| 初始化策略 | 全部 RAM 入 buddy → `alloc_at` 预留 | 分阶段，部分内存不入分配器 |
+| 初始化策略 | 空闲 RAM 入 buddy + `init` 预留内核帧 | 分阶段，部分内存不入分配器 |
 
 **SimpleKernel 的选择**：SAS 下没有多地址空间，不需要 COW 和共享映射，
 因此用更简单的"帧存 struct"方案获得更强的编译期保证。
@@ -655,7 +683,7 @@ Theseus 的 EXCLUSIVE 方案更通用，但额外的复杂度在 SAS 下没有�
 
 | 位置 | unsafe 操作 | 不变量 |
 |------|------------|--------|
-| `frame_allocator::init()` | 将内存区间加入分配器 | 区间有效、不重叠、仅调用一次 |
+| `frame_allocator::init()` | 空闲内存入 buddy + 预留范围构造帧 | 区间有效、互不重叠、仅调用一次 |
 | `page_allocator::init()` | 将 VA 空间加入分配器 | 区间有效、仅调用一次 |
 | `AllocatedFrames::alloc()` | 零初始化：`write_bytes(phys_to_virt(pa), 0, size)` | 帧刚分配，无其他引用 |
 | `set_kernel_page_table()` | 存储 `'static` 引用 | 引用确实是 `'static` |
