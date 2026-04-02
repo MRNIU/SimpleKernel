@@ -2,8 +2,6 @@
 
 use core::sync::atomic::{AtomicU8, Ordering};
 
-// ─── TaskState ────────────────────────────────────────────────────────────────
-
 /// 任务的生命周期状态。
 ///
 /// 使用 `#[repr(u8)]` 以便与 `AtomicU8` 配合使用。
@@ -51,8 +49,6 @@ impl TaskState {
     }
 }
 
-// ─── TaskMsg ──────────────────────────────────────────────────────────────────
-
 /// 驱动状态转移的消息（事件）。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TaskMsg {
@@ -81,8 +77,6 @@ pub enum TaskMsg {
     Reap,
 }
 
-// ─── InvalidTransition ────────────────────────────────────────────────────────
-
 /// 非法状态转移错误——记录转移发生时的原始状态与消息。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct InvalidTransition {
@@ -91,8 +85,6 @@ pub struct InvalidTransition {
     /// 触发转移的消息。
     pub msg: TaskMsg,
 }
-
-// ─── transition ───────────────────────────────────────────────────────────────
 
 /// 根据当前状态与消息计算下一个状态。
 ///
@@ -129,8 +121,6 @@ pub fn transition(from: TaskState, msg: TaskMsg) -> Result<TaskState, InvalidTra
     }
 }
 
-// ─── AtomicTaskState ──────────────────────────────────────────────────────────
-
 /// 基于 `AtomicU8` 的原子任务状态，供多核环境使用。
 pub struct AtomicTaskState(AtomicU8);
 
@@ -155,8 +145,6 @@ impl AtomicTaskState {
         self.0.store(state.as_u8(), Ordering::Release);
     }
 }
-
-// ─── Tests ────────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
 mod tests {

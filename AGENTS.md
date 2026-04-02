@@ -5,7 +5,7 @@ Interface-driven OS kernel for AI-assisted learning. Rust (`no_std`, `no_main`),
 
 > **架构模型**：SimpleKernel 采用单地址空间（SAS）架构——所有代码运行在同一特权级和地址空间中，不存在用户态/内核态分离。隔离通过 Rust 类型系统 + crate 可见性规则实现（Theseus 式）。详见 `docs/rust-rewrite/SAS-架构设计.md`。
 
-> **迁移状态**：项目正在从 C++ 完全迁移到 Rust。C++ 源码（`src/`）保留作为实现参考，但不再维护。所有新开发均在 Rust（`src/`）中进行。详见 `docs/rust-rewrite/00-概述.md`。
+> **迁移状态**：从 C++ 到 Rust 的迁移已完成（P0-P7 全部实现）。详见 `docs/rust-rewrite/00-概述.md`。
 
 ## STRUCTURE
 ```
@@ -24,13 +24,12 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 - **Implementing a module** → Read trait definition in the module's `mod.rs` or dedicated trait file first
 - **Adding a driver** → `src/device/` for examples, `Driver` trait for registration pattern
 - **Adding a scheduler** → `src/task/scheduler/mod.rs` for `Scheduler` trait
-- **Boot flow** → `src/main.rs`: `_start` → `bootstrap()` → logging → percpu → early_init → memory → paging → timer → interrupt → task → SMP → schedule
+- **Boot flow** → `src/main.rs`: `_start` → `bootstrap()` → logging → percpu → early_init → memory → paging → timer → interrupt → task → device → fs → SMP → schedule
 - **System tests** → `tests/system/` for unified test kernel, `tests/standalone/` for isolated tests
 - **Error handling** → `KResult<T> = Result<T, ErrorCode>` in `src/error.rs`
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
-- **C++ reference** → `src/` directory (read-only, for understanding original design intent)
 - **Design overview** → `docs/rust-rewrite/00-概述.md` (master plan with all design decisions)
-- **Phase details** → `docs/rust-rewrite/P0-P7` (step-by-step implementation plans)
+- **Phase details** → `docs/rust-rewrite/P0-P7` (implementation plans, all phases complete)
 
 ## CODE MAP
 | Module | Purpose | Key Files |
@@ -46,9 +45,14 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 | `src/memory/` | Virtual/physical memory, heap | page tables, frame allocator, `#[global_allocator]` |
 | `src/task/` | TaskManager, TCB, schedulers | CFS/FIFO/RR, clone/exit/wait/sleep/signal |
 | `src/task/scheduler/` | `Scheduler` trait + implementations | scheduling algorithms |
-| `src/device/` | DeviceManager, DriverRegistry, drivers | device framework |
-| `src/device/virtio/` | VirtIO subsystem (MMIO, queues, blk) | block device I/O |
-| `src/fs/` | VFS, RamFS, FatFS | filesystem layer |
+| `src/device/` | DeviceManager, Hal, PlatformBus | 设备枚举/注册框架 |
+| `src/device/hal.rs` | `virtio-drivers::Hal` trait 实现 | DMA 分配 + MMIO 映射 |
+| `src/device/virtio.rs` | VirtIO 块设备探测 + 全局引用 | MmioTransport + VirtIOBlk |
+| `src/fs/` | VFS, RamFS, FatFS adapter, FD table | 文件系统层 |
+| `src/fs/vfs.rs` | `FileSystem` trait + InodeId/DirEntry/FileType | VFS 抽象 |
+| `src/fs/ramfs.rs` | 内存文件系统（BTreeMap 存储） | RamFS 实现 |
+| `src/fs/fd_table.rs` | Per-task 文件描述符表 | Fd newtype + alloc/get/close |
+| `src/fs/fatfs_adapter.rs` | VirtIO blk → fatfs crate I/O 适配 | 扇区对齐 read-modify-write |
 | `src/syscall/` | 类型安全的集中式 API 网关（SAS 模式，不经过 trap） | POSIX 兼容 syscall 编号 |
 | `src/sync/spinlock.rs` | SpinLock (interrupt-aware, lock levels) | custom implementation |
 | `src/error.rs` | `ErrorCode`, `KResult<T>` | error handling |
@@ -64,6 +68,8 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 | `tests/system/src/main.rs` | Test kernel entry: init → run tests → qemu_exit | system test binary |
 | `tests/system/src/memory_tests.rs` | Heap allocation tests (Box, Vec, large) | memory test group |
 | `tests/system/src/sync_tests.rs` | SpinLock tests (basic, modify, drop) | sync test group |
+| `tests/system/src/device_tests.rs` | DeviceManager + VirtIO blk 验证 | device test group |
+| `tests/system/src/fs_tests.rs` | VFS 路径解析 + RamFS CRUD + 多级目录 | fs test group |
 | `tests/standalone/panic_test/` | Verifies panic handler triggers correctly | standalone test |
 | `xtask/src/test.rs` | `cargo xtask test` orchestration | test runner |
 
@@ -99,9 +105,9 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 - **NO** `spin::Mutex` for kernel mutual exclusion (doesn't disable interrupts)
 - **NO** `static mut` — use `SyncUnsafeCell` or `spin::Once<T>`
 - **NO** empty `unsafe {}` blocks to bypass borrow checker
-- **NO** suppressing warnings with `#[allow(...)]` without justification
+- **NO** suppressing warnings with `#[allow(...)]` without justification——使用 `#[expect(..., reason = "...")]` 代替
 - **NO** heap allocation in interrupt context (`Box`, `Vec`, `String`, `format!`)——use `heapless` containers or stack buffers
-- **NO** modifying `src/` (legacy C++ code, read-only reference)
+- **NO** ASCII-art 分隔线注释（`// ─── Title ───`、`// === Title ===` 等）——用空行和 doc comment 分组
 
 ## UNIQUE STYLES
 - `spin::Once<T>` with named statics: `TASK_MANAGER.call_once(|| ...)`, `TASK_MANAGER.get().unwrap()`
@@ -155,5 +161,5 @@ cargo doc --no-deps
 - Test crates depend on `simplekernel` lib, replace entry point, use `kernel_init()` for initialization
 - Debug: use `cargo xtask debug` + GDB, QEMU logs in build output
 - Design docs: `docs/rust-rewrite/00-概述.md` is the master reference for all design decisions
-- Phase plans: `docs/rust-rewrite/P0-P7` for step-by-step implementation guides
-- C++ code in `src/` is frozen — reference only, will be removed when migration completes
+- Phase plans: `docs/rust-rewrite/P0-P7` — all phases (P0-P7) implementation complete
+- Migration from C++ to Rust is complete; legacy C++ docs removed

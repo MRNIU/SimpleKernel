@@ -151,6 +151,7 @@ pub fn first_deliverable(pending: u32, mask: SignalMask) -> Option<Signal> {
 mod tests {
     use super::*;
 
+    /// 验证 SIGKILL 和 SIGSTOP 不可捕获，其他信号可捕获。
     #[test]
     fn signal_uncatchable() {
         assert!(Signal::SIGKILL.is_uncatchable());
@@ -158,6 +159,7 @@ mod tests {
         assert!(!Signal::SIGTERM.is_uncatchable());
     }
 
+    /// 验证各信号的默认动作（Terminate/Stop/Ignore）。
     #[test]
     fn signal_default_actions() {
         assert_eq!(Signal::SIGKILL.default_action(), SignalAction::Terminate);
@@ -165,12 +167,14 @@ mod tests {
         assert_eq!(Signal::SIGCHLD.default_action(), SignalAction::Ignore);
     }
 
+    /// 验证从 Signal 枚举构造信号掩码的位偏移正确。
     #[test]
     fn signal_mask_from_signal() {
         let mask = SignalMask::from_signal(Signal::SIGTERM);
         assert_eq!(mask.bits(), 1 << 15);
     }
 
+    /// 验证在无屏蔽情况下选择首个待处理信号。
     #[test]
     fn first_deliverable_basic() {
         // pending: SIGTERM(15)，无屏蔽
@@ -178,6 +182,7 @@ mod tests {
         assert_eq!(sig, Some(Signal::SIGTERM));
     }
 
+    /// 验证被屏蔽的信号不会被投递。
     #[test]
     fn first_deliverable_masked() {
         // pending: SIGTERM(15)，SIGTERM 被屏蔽
@@ -185,6 +190,7 @@ mod tests {
         assert_eq!(sig, None);
     }
 
+    /// 验证 SIGKILL 即使设置屏蔽位也能投递（不可屏蔽）。
     #[test]
     fn sigkill_cannot_be_masked() {
         // pending: SIGKILL(9)，尝试屏蔽
@@ -193,6 +199,7 @@ mod tests {
         assert_eq!(sig, Some(Signal::SIGKILL));
     }
 
+    /// 验证信号 u8 转换的往返一致性和无效值处理。
     #[test]
     fn from_u8_roundtrip() {
         assert_eq!(Signal::from_u8(9), Some(Signal::SIGKILL));

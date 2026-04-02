@@ -28,6 +28,7 @@ pub enum ResourceId {
 mod tests {
     use super::*;
 
+    /// 验证资源 ID 的相等性——同类型同值相等，不同类型或不同值不等。
     #[test]
     fn resource_id_equality() {
         assert_eq!(ResourceId::Mutex(1), ResourceId::Mutex(1));
@@ -35,6 +36,7 @@ mod tests {
         assert_ne!(ResourceId::Mutex(1), ResourceId::Semaphore(1));
     }
 
+    /// 验证 Debug 格式化输出包含变体名和内部值。
     #[test]
     fn resource_id_debug() {
         let r = ResourceId::ChildExit(42);

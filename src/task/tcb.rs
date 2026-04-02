@@ -9,15 +9,11 @@ use crate::task::state::{AtomicTaskState, TaskState};
 #[cfg(target_os = "none")]
 use crate::fs::fd_table::FileDescriptorTable;
 
-// ─── 类型别名 ─────────────────────────────────────────────────────────────────
-
 /// 进程/任务 ID 类型
 pub type Pid = usize;
 
 /// 任务的引用计数指针
 pub type TaskRef = Arc<TaskControlBlock>;
-
-// ─── KernelStack ──────────────────────────────────────────────────────────────
 
 /// 内核线程栈
 ///
@@ -49,12 +45,8 @@ impl Default for KernelStack {
     }
 }
 
-// ─── CalleeSavedContext 统一导入 ──────────────────────────────────────────────
-
 #[cfg(target_os = "none")]
 use crate::arch::CalleeSavedContext;
-
-// ─── TaskControlBlock ─────────────────────────────────────────────────────────
 
 /// 任务控制块（Task Control Block，TCB）
 ///
@@ -98,8 +90,6 @@ unsafe impl Send for TaskControlBlock {}
 unsafe impl Sync for TaskControlBlock {}
 
 impl TaskControlBlock {
-    // ─── 构造函数 ──────────────────────────────────────────────────────────
-
     /// 创建 idle 任务（每个 CPU 核一个）。
     ///
     /// idle 任务已处于 Running 状态，无需内核栈（复用引导栈）。
@@ -177,8 +167,6 @@ impl TaskControlBlock {
             signal_mask: AtomicU32::new(0),
         }
     }
-
-    // ─── 访问器 ────────────────────────────────────────────────────────────
 
     /// 返回任务 ID。
     pub fn pid(&self) -> Pid {
@@ -298,13 +286,12 @@ impl TaskControlBlock {
     }
 }
 
-// ─── Tests ────────────────────────────────────────────────────────────────────
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::task::state::TaskState;
 
+    /// 验证 TCB 字段构造和各访问器的正确性。
     #[test]
     fn tcb_fields_and_accessors() {
         let tcb = TaskControlBlock::new_for_test(42, "worker");
@@ -328,6 +315,7 @@ mod tests {
         assert_eq!(tcb.signal_mask(), 0xFFFF_0000);
     }
 
+    /// 验证 TaskRef（Arc）克隆后引用计数正确。
     #[test]
     fn task_ref_arc_clone() {
         let r1: TaskRef = Arc::new(TaskControlBlock::new_for_test(7, "arc_test"));
@@ -336,6 +324,7 @@ mod tests {
         assert_eq!(Arc::strong_count(&r1), 2);
     }
 
+    /// 验证信号位的原子设置和清除操作。
     #[test]
     fn signal_raise_and_clear() {
         let tcb = TaskControlBlock::new_for_test(10, "sig_test");

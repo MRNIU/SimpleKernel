@@ -30,7 +30,7 @@ pub fn device_count() -> usize {
 }
 
 /// 按设备类型查找第一个匹配的设备索引。
-#[allow(dead_code)]
+#[expect(dead_code, reason = "公开 API，供驱动层和文件系统层后续使用")]
 pub fn find_by_type(dtype: DeviceType) -> Option<usize> {
     DEVICE_MANAGER
         .lock()
@@ -41,7 +41,7 @@ pub fn find_by_type(dtype: DeviceType) -> Option<usize> {
 /// 对指定索引的设备执行操作。
 ///
 /// 通过闭包访问设备引用，避免持有锁的生命周期泄漏。
-#[allow(dead_code)]
+#[expect(dead_code, reason = "公开 API，供驱动层和文件系统层后续使用")]
 pub fn with_device<F, R>(index: usize, f: F) -> Option<R>
 where
     F: FnOnce(&dyn Device) -> R,

@@ -190,7 +190,6 @@ pub fn try_mount_fatfs() -> bool {
 
     log::info!("FatFS: mounted VirtIO block device");
 
-    // ── 写入阶段 ──
     let write_content = b"SimpleKernel P7 FAT write-read OK\n";
     {
         let root_dir = fat_fs.root_dir();
@@ -206,7 +205,6 @@ pub fn try_mount_fatfs() -> bool {
         write_content.len()
     );
 
-    // ── 读回阶段 ──
     {
         let root_dir = fat_fs.root_dir();
         let mut file = root_dir
@@ -235,7 +233,6 @@ pub fn try_mount_fatfs() -> bool {
         log::info!("FatFS: read back: \"{}\"", content_str.trim());
     }
 
-    // ── 列目录验证 ──
     {
         let root_dir = fat_fs.root_dir();
         let file_count = root_dir.iter().filter_map(|e| e.ok()).count();
