@@ -58,8 +58,6 @@ pub trait PteFlagsOps: Copy + core::fmt::Debug {
     fn is_executable(self) -> bool;
     /// 是否为用户态可访问的映射。
     fn is_user(self) -> bool;
-    /// 是否设置了 EXCLUSIVE 软件位。
-    fn is_exclusive(self) -> bool;
     /// 硬件是否设置了 Accessed 位（页面已被访问）。
     fn is_accessed(self) -> bool;
     /// 硬件是否设置了 Dirty 位（页面已被写入）。
@@ -71,10 +69,6 @@ pub trait PteFlagsOps: Copy + core::fmt::Debug {
     fn with_writable(self, w: bool) -> Self;
     /// 设置或清除执行权限——用于 mprotect。
     fn with_executable(self, x: bool) -> Self;
-    /// 设置 EXCLUSIVE 位——标记帧由此映射独占。
-    fn with_exclusive(self) -> Self;
-    /// 清除 EXCLUSIVE 位——标记帧被共享（COW fork 后双方都清除）。
-    fn without_exclusive(self) -> Self;
     /// 将标志位适配为指定层级的叶描述符格式。
     fn for_leaf_at_level(self, level: usize) -> Self;
 }

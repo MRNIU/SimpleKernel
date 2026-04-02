@@ -65,12 +65,6 @@ bitflags! {
         const PXN       = 1 << 53;
         /// Unprivileged Execute-Never / Execute-Never
         const UXN       = 1 << 54;
-        /// 软件定义位——bit 55，标记帧所有权。
-        ///
-        /// ARMv8 bits [58:55] 为软件可用位（IGNORED by hardware）。
-        /// EXCLUSIVE = 1：unmap 时帧归还分配器。
-        /// EXCLUSIVE = 0：unmap 时不回收帧。
-        const EXCLUSIVE = 1 << 55;
     }
 }
 
@@ -200,11 +194,6 @@ impl PteFlagsOps for PteFlags {
     }
 
     #[inline]
-    fn is_exclusive(self) -> bool {
-        self.contains(Self::EXCLUSIVE)
-    }
-
-    #[inline]
     fn is_accessed(self) -> bool {
         self.contains(Self::AF)
     }
@@ -233,16 +222,6 @@ impl PteFlagsOps for PteFlags {
         } else {
             self | Self::PXN | Self::UXN
         }
-    }
-
-    #[inline]
-    fn with_exclusive(self) -> Self {
-        self | Self::EXCLUSIVE
-    }
-
-    #[inline]
-    fn without_exclusive(self) -> Self {
-        self.difference(Self::EXCLUSIVE)
     }
 
     /// 将标志位适配为指定层级的叶描述符格式。
@@ -344,7 +323,6 @@ mod tests {
             PteFlags::NG,
             PteFlags::PXN,
             PteFlags::UXN,
-            PteFlags::EXCLUSIVE,
         ];
         for &flag in &all_flags {
             let pte = PageTableEntry::new(pa, flag);
@@ -412,19 +390,6 @@ mod tests {
 
         let table_pte = PageTableEntry::new_intermediate(pa);
         assert!(!table_pte.is_leaf(1));
-    }
-
-    /// EXCLUSIVE 软件位编解码往返。
-    #[test]
-    fn exclusive_roundtrip() {
-        let pa = PhysAddr::new(0x8020_0000);
-        let flags = PteFlags::kernel_rw().with_exclusive();
-        let pte = PageTableEntry::new(pa, flags);
-        assert!(pte.flags().is_exclusive());
-        assert_eq!(pte.paddr(), pa);
-
-        let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
-        assert!(!pte_no_excl.flags().is_exclusive());
     }
 
     /// 用户态 preset 设置了 AP_UNPRIV 和 NG 位。

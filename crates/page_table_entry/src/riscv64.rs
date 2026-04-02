@@ -46,11 +46,6 @@ bitflags! {
         const GLOBAL   = 1 << 5;
         const ACCESSED = 1 << 6;
         const DIRTY    = 1 << 7;
-        /// 软件定义位——RSW bit 8，标记帧所有权。
-        ///
-        /// EXCLUSIVE = 1：unmap 时帧归还分配器。
-        /// EXCLUSIVE = 0：unmap 时不回收帧（identity map / 共享映射）。
-        const EXCLUSIVE = 1 << 8;
     }
 }
 
@@ -146,11 +141,6 @@ impl PteFlagsOps for PteFlags {
     }
 
     #[inline]
-    fn is_exclusive(self) -> bool {
-        self.contains(Self::EXCLUSIVE)
-    }
-
-    #[inline]
     fn is_accessed(self) -> bool {
         self.contains(Self::ACCESSED)
     }
@@ -176,16 +166,6 @@ impl PteFlagsOps for PteFlags {
         } else {
             self.difference(Self::EXECUTE)
         }
-    }
-
-    #[inline]
-    fn with_exclusive(self) -> Self {
-        self | Self::EXCLUSIVE
-    }
-
-    #[inline]
-    fn without_exclusive(self) -> Self {
-        self.difference(Self::EXCLUSIVE)
     }
 
     /// RISC-V 的 PTE 格式与层级无关——叶节点仅由 R/W/X 位区分，
@@ -272,7 +252,6 @@ mod tests {
             PteFlags::GLOBAL,
             PteFlags::ACCESSED,
             PteFlags::DIRTY,
-            PteFlags::EXCLUSIVE,
         ];
         for &flag in &all_flags {
             let pte = PageTableEntry::new(pa, flag);
@@ -310,19 +289,6 @@ mod tests {
         assert_eq!(flags.for_leaf_at_level(0), flags);
         assert_eq!(flags.for_leaf_at_level(1), flags);
         assert_eq!(flags.for_leaf_at_level(2), flags);
-    }
-
-    /// EXCLUSIVE 软件位编解码往返。
-    #[test]
-    fn exclusive_roundtrip() {
-        let pa = PhysAddr::new(0x8020_0000);
-        let flags = PteFlags::kernel_rw().with_exclusive();
-        let pte = PageTableEntry::new(pa, flags);
-        assert!(pte.flags().is_exclusive());
-        assert_eq!(pte.paddr(), pa);
-
-        let pte_no_excl = PageTableEntry::new(pa, PteFlags::kernel_rw());
-        assert!(!pte_no_excl.flags().is_exclusive());
     }
 
     /// 用户态 preset 设置了 USER 位且未设 GLOBAL。
