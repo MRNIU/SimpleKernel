@@ -230,7 +230,15 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 ## CURRENT PHASE
 > **⚠ 临时节——审计结束后清理**
 >
-> 项目当前处于全项目深度审计阶段（Roadmap: `docs/rust-rewrite/review-roadmap.md`）。
+> 项目当前处于全项目深度审计阶段。审计相关文件：
+> - **Roadmap**（全局计划、排查 checklist、协作流程）: `docs/rust-rewrite/review-roadmap.md`
+> - **Session Prompt**（每次对话的模板）: `docs/rust-rewrite/review-session-prompt.md`
+> - **ADR 目录**（架构决策记录）: `docs/decisions/`
+> - **ADR 模板**: `docs/templates/adr-template.md`
+>
+> 审计协作流程：AI 初步审阅 → 提交人工查看 → 作者同步阅读代码 → 共同讨论设计 → 实施变更。
+> 重要设计决策须写入 ADR。详见 Roadmap 中"协作流程"节。
+>
 > 以下内容仅在审计期间有效，审计完成后须移除本节及所有与项目本身无关的临时内容。
 
 ## COLLABORATION STYLE

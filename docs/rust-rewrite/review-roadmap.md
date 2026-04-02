@@ -2,7 +2,7 @@
 
 > **目标**：自底向上排查每个组件，将 C++ 遗留范式转换为地道 Rust，同时完善文档、测试、CI 与工具链。
 >
-> **参考内核**：Linux（子系统接口设计）、Theseus（typestate / crate 隔离）、Redox（scheme VFS / error handling）、µFork（POSIX 兼容策略）
+> **参考内核**：Linux（子系统接口设计）、Theseus（typestate / crate 隔离）、Redox（scheme VFS / error handling）、Zephyr（嵌入式设备模型）、µFork（POSIX 兼容策略）
 >
 > **工作分支**：`feat/rust-SAS`（当前活跃，领先 `main` 234 commits）
 
@@ -14,9 +14,21 @@
 |------|------|
 | **自底向上** | 从无依赖的叶子 crate 开始，逐层向上，每层稳定后再动上层 |
 | **每步可验证** | 每个 Phase 结束时必须：编译通过 + 现有测试全绿 + 新增测试覆盖变更 |
+| **全量回归** | 每个 Phase 结束后，运行全量系统测试 + 上游 Phase 的单元测试，防止底层变更静默破坏上层 |
 | **文档即产出** | 排查过程中同步输出模块文档（README、时序图、生命周期图、依赖图） |
+| **决策即记录** | 重要设计决策写入 ADR（`docs/decisions/`），模板见 `docs/templates/adr-template.md` |
 | **参考即标注** | 借鉴外部内核的设计必须在代码/文档中标注出处（`[Linux: fs/namei.c]`、`[Theseus: MappedPages]`） |
 | **不做无测试的重构** | 任何架构变更必须先有测试兜底，或先补测试再改 |
+
+## 协作流程
+
+审计采用人机协作模式，人工把控每一个关键决策点：
+
+1. **AI 初步审阅** — AI 按排查 checklist 阅读代码，输出审查报告（问题清单 + 改进建议）
+2. **提交人工查看** — 审查报告提交给项目作者 review
+3. **作者同步阅读代码** — 作者独立阅读同一段代码，形成自己的理解
+4. **共同讨论设计** — 作者向 AI 提问，双方讨论设计方案，重要决策写入 ADR
+5. **实施变更** — 达成共识后，AI 执行代码修改，作者 review 并合入
 
 ---
 
@@ -43,54 +55,25 @@ R7  系统调用 ──── syscall 层, POSIX 兼容, 可见性审计
 R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 ```
 
+> **注意**：每个 Phase 只规定审查范围和交付物，不预设具体检查细节。
+> 细节问题应在排查过程中根据代码实际状态发现，而非提前规定——
+> 因为前面 Phase 的变更可能改变后续模块的状态和接口。
+
 ---
 
 ## R0 — 基线建立
 
 **目标**：搭建排查所需的基础设施，建立度量基线。
 
-### R0.1 CI 审计与重写
+### 审查范围
 
-| 检查项 | 当前状态 | 目标 |
-|--------|----------|------|
-| `workflow.yml` 结构 | 3 jobs（check/build-riscv64/build-aarch64） | 评估是否需要拆分、增加 matrix |
-| 系统测试稳定性 | PR 3 次 / push 10 次 | 确认是否足够，考虑 flaky test 检测 |
-| 依赖安全扫描 | ❌ 无 `cargo-deny` | 新增 `deny.toml` + CI job |
-| Unsafe 统计 | ❌ 无自动化 | 新增 `cargo-geiger` 或自定义脚本，输出 unsafe 基线报告 |
-| 代码覆盖率 | ❌ 无 | 评估 `cargo-llvm-cov`（unit test 部分） |
-| Clippy 配置 | 仅 `-D warnings` | 新增 `clippy.toml`，启用额外 lint（`cognitive_complexity`, `unwrap_used` 等） |
-| rustfmt 配置 | ❌ 无 `rustfmt.toml` | 新建，锁定 `max_width = 100` 等规则 |
-| Docker 镜像 | 手动触发重建 | 评估自动化触发策略 |
-
-### R0.2 文档基础设施
-
-| 产出 | 说明 |
-|------|------|
-| 文档模板 | 制定模块 README 模板（概述 / 设计决策 / 依赖图 / 生命周期 / API / 测试） |
-| 图表工具链 | 选定 Mermaid（可嵌入 Markdown），建立 `docs/diagrams/` 目录 |
-| 项目级依赖图 | 用 `cargo-depgraph` 或手动 Mermaid 绘制 crate 间依赖关系 |
-| Rustdoc 发布 | 配置 `cargo doc` → GitHub Pages（`gh-pages` 分支已存在） |
-
-### R0.3 Unsafe 审计基线
-
-- 全量扫描所有 `unsafe` 块，输出清单（文件、行号、SAFETY 注释有无）
-- 分类：必要（FFI/汇编/裸指针操作） vs 可消除（可用安全抽象替代）
-- 输出 `docs/rust-rewrite/unsafe-audit-baseline.md`
-
-### R0.4 依赖审计
-
-| 检查项 | 说明 |
+| 子任务 | 内容 |
 |--------|------|
-| Git 依赖 | `fatfs`（rafalh fork）、`aarch64-cpu`（MRNIU fork）—— 评估是否可上游化或锁定 rev |
-| 版本锁定 | 确认 `Cargo.lock` 是否提交（裸机项目应提交） |
-| 许可证 | `cargo-deny` advisories + licenses 检查 |
-| Unsafe 使用 | 第三方 crate 中的 unsafe 量（`spin`, `buddy_system_allocator` 等） |
-
-### R0.5 分支策略
-
-- 当前 `feat/rust-SAS` 领先 `main` 234 commits，`main` 停留在 signal 开发
-- **决策点**：是否在审计完成前先将 `feat/rust-SAS` 合并到 `main`？
-- 建议：先合并（或 force-push），让 `main` 成为单一真相源，后续审计直接在 `main` 上进行
+| CI 审计与重写 | `workflow.yml` 结构评估、系统测试稳定性、`cargo-deny`、unsafe 统计自动化、代码覆盖率、Clippy/rustfmt 配置、Docker 镜像策略 |
+| 文档基础设施 | 模块 README 模板、Mermaid 图表工具链、项目级依赖图、Rustdoc 发布 |
+| Unsafe 审计基线 | 全量 unsafe 扫描、分类（必要 vs 可消除）、输出基线报告 |
+| 依赖审计 | Git 依赖上游化评估、版本锁定、许可证检查、第三方 unsafe 使用量 |
+| 分支策略 | `feat/rust-SAS` 与 `main` 的合并方案（`merge --no-ff` + `pre-audit-baseline` tag） |
 
 ### R0 交付物
 
@@ -100,7 +83,8 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 - [ ] `docs/rust-rewrite/dependency-audit.md`
 - [ ] `docs/diagrams/crate-dependency-graph.md`（Mermaid）
 - [ ] 模块 README 模板 `docs/templates/module-readme-template.md`
-- [ ] 分支合并完成
+- [ ] ADR 模板 `docs/templates/adr-template.md` + `docs/decisions/` 目录
+- [ ] 分支合并完成（含 `pre-audit-baseline` tag）
 
 ---
 
@@ -108,38 +92,16 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 
 **目标**：排查依赖树底部的叶子 crate，确保类型设计、API 边界、文档和测试完备。
 
-### R1.1 `memory_types`
+### 审查范围
 
-| 排查维度 | 检查内容 |
-|----------|----------|
-| 类型设计 | `PhysAddr` / `VirtAddr` / `Frame<P>` / `Page<P>` / `Span<T>` 的 newtype 封装是否完备 |
-| 算术安全 | 地址运算是否有溢出检查？`checked_add` vs `wrapping_add` 策略是否一致？ |
-| 泛型设计 | `PageSize` trait 是否足够灵活（4K / 2M / 1G）？是否需要 const generic 替代？ |
-| 参考 | [Theseus: `memory_structs`] — 对比 `VirtualAddress` / `PhysicalAddress` 设计 |
-| 测试 | 对齐、溢出、边界、Display/Debug 格式 |
-| 文档 | README + 类型生命周期图 |
+| 模块 | 功能定位 |
+|------|----------|
+| `memory_types` | 地址和页帧的 newtype 封装（`PhysAddr` / `VirtAddr` / `Frame` / `Page` / `Span`） |
+| `config` | 内核常量与编译期不变量 |
+| `span` | 通用范围类型 |
+| `build_common` | 构建脚本共享逻辑 |
 
-### R1.2 `config`
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| 常量分类 | 是否有常量应该变为运行时从 FDT 读取？（如 `MAX_CORE_COUNT`） |
-| const assert | 是否覆盖所有不变量？ |
-| 架构差异 | `cfg` 分支是否清晰？ |
-
-### R1.3 `span`
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| 泛型设计 | 通用范围类型是否过度泛化或不足？ |
-| 与标准库 | 与 `Range<T>` 的关系——是否应实现 `RangeBounds`？ |
-
-### R1.4 `build_common`
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| 职责边界 | 是否承载了不属于 build script 的逻辑？ |
-| 架构扩展 | 新增架构时修改成本 |
+这些是无依赖的叶子 crate，变更不会破坏同层其他模块，但会影响所有上层。
 
 ### R1 交付物
 
@@ -152,41 +114,16 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 
 ## R2 — 同步与 Per-CPU
 
-**目标**：审查同步原语的正确性和 Rust 范式先进性，这是上层所有并发代码的基石。
+**目标**：审查同步原语的正确性和 Rust 范式合理性，这是上层所有并发代码的基石。
 
-### R2.1 `sync`
+### 审查范围
 
-| 排查维度 | 检查内容 |
-|----------|----------|
-| 锁级别 | 当前运行时 panic 检测死锁 → 是否可用 `const generic LEVEL` 做编译期检查？ |
-| RawLock trait | 参数化锁算法设计是否完备？是否需要 RwLock / Ticket Lock？ |
-| Guard 安全 | `PhantomData<*mut ()>` 的 `!Send` 约束是否覆盖所有场景？ |
-| 参考 | [Linux: `lockdep`] 锁依赖检测思路、[Theseus: `DeadlockPrevention` trait] |
-| 文档 | 锁层级图（Mermaid）、获取/释放时序图 |
-
-### R2.2 `interrupt_state`
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| Proof token | `HeldInterrupts` 设计是否可扩展（嵌套中断场景）？ |
-| 架构 trait | `ArchInterruptState` 分发是否干净？ |
-
-### R2.3 `per_cpu`
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| `#[cpu_local]` 宏 | 生成代码质量、编译错误信息是否友好？ |
-| 初始化时序 | primary vs secondary core 初始化顺序是否有竞态？ |
-| `SyncUnsafeCell` 使用 | 哪些可以替换为 `#[cpu_local]` 或 `AtomicXxx`？ |
-| 参考 | [Linux: `DEFINE_PER_CPU`]、[Theseus: `CpuLocalData`] |
-| 文档 | Per-CPU 内存布局图、初始化时序图 |
-
-### R2.4 `macros`
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| proc-macro 质量 | 错误报告是否精确（span 指向正确位置）？ |
-| 可测试性 | 是否有 proc-macro 的编译测试（`trybuild`）？ |
+| 模块 | 功能定位 |
+|------|----------|
+| `sync` | 中断安全的自旋锁原语（SpinLock、Guard、锁级别机制） |
+| `interrupt_state` | 中断状态 proof token（`HeldInterrupts`） |
+| `per_cpu` | Per-CPU 数据（`#[cpu_local]` 宏、SMP 初始化） |
+| `macros` | 过程宏 |
 
 ### R2 交付物
 
@@ -195,7 +132,6 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 - [ ] Per-CPU 初始化时序图
 - [ ] `trybuild` 测试（如适用）
 - [ ] 各 crate README 更新
-- [ ] 编译期锁级别 PoC（如可行）
 
 ---
 
@@ -203,7 +139,9 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 
 **目标**：这是项目中 Rust 范式最成熟的部分（typestate、所有权模型），但也是最复杂的。重点是查漏补缺和文档化。
 
-### 排查顺序（按依赖关系）
+### 审查范围
+
+按依赖关系排查：
 
 ```
 memory_types ← frame_allocator ← page_allocator
@@ -212,46 +150,15 @@ memory_types ← frame_allocator ← page_allocator
                                 ← tlb
 ```
 
-### R3.1 `frame_allocator`
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| Typestate 完备性 | `Free → Allocated → Mapped → Unmapped → Free` 闭环是否无泄漏路径？ |
-| Drop 语义 | 各状态下 Drop 行为是否正确（Mapped drop = panic / Allocated drop = 回收）？ |
-| 性能 | buddy allocator 在碎片化场景下的表现？是否需要 benchmark？ |
-| 参考 | [Theseus: `frame_allocator`] — 对比 typestate 设计差异 |
-| 文档 | 状态机转换图（已有但需验证与代码一致性） |
-
-### R3.2 `page_table_entry`
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| PteFlagsOps trait | builder 方法是否符合 Rust builder pattern 惯例？ |
-| W^X 安全 | 是否在 API 层面阻止同时设置 W+X？（已有测试，确认 API 层是否强制） |
-| 规范引用 | RISC-V Privileged Spec / Arm ARM 链接是否完整？ |
-
-### R3.3 `paging`
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| MappedPages 所有权 | 帧是否随 MappedPages drop 正确归还？ |
-| 无锁化 | Git 历史显示 CAS 方案曾 revert——当前方案是什么？是否需要重新评估？ |
-| MmioRegion | `mem::forget` 泄漏 vs `ManuallyDrop` vs `'static` 引用——选定一种方案 |
-| 参考 | [Theseus: `page_table_entry`, `MappedPages`] |
-
-### R3.4 `memory`
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| AddressSpace / VMA | VMA 管理是否需要红黑树（Linux `maple_tree`）？当前 Vec 是否有性能问题？ |
-| 初始化流程 | `memory::init()` 是否可以用 typestate 表示（未初始化 / 堆可用 / 页表激活）？ |
-| 参考 | [Linux: `mm_struct` / `vm_area_struct`]、[Theseus: `MappedPages` 作为 VMA] |
-
-### R3.5 `heap` / `tlb` / `page_allocator`
-
-- `heap`：堆分配器选择（`buddy_system_allocator`）是否最优？
-- `tlb`：TLB shootdown 策略是否完整（IPI 驱动 / 阈值切换）？
-- `page_allocator`：虚拟页分配器与 Linux `vmalloc` 区域管理的对比
+| 模块 | 功能定位 |
+|------|----------|
+| `frame_allocator` | 物理帧分配器（typestate 状态机、buddy allocator） |
+| `page_table_entry` | 页表项抽象（PTE flags、W^X 安全） |
+| `paging` | 页表管理（MappedPages 所有权、MMIO 映射） |
+| `memory` | 地址空间与 VMA 管理 |
+| `heap` | 内核堆分配器 |
+| `tlb` | TLB 管理与 shootdown |
+| `page_allocator` | 虚拟页分配器 |
 
 ### R3 交付物
 
@@ -269,32 +176,18 @@ memory_types ← frame_allocator ← page_allocator
 
 **目标**：审查架构抽象的完备性，确保新增架构的扩展成本最小。
 
-### R4.1 架构抽象 Trait
+### 审查范围
 
-| 排查维度 | 检查内容 |
-|----------|----------|
-| `ArchOps` trait | 所有 associated functions 是否都是必要的？是否有遗漏？ |
-| 零成本保证 | type alias 分发是否在所有路径上避免了 `dyn` 开销？ |
-| 扩展性 | 假设新增 x86_64——需要改多少文件？ |
-| 参考 | [Theseus: `kernel/` 的 arch 抽象]、[Redox: `arch/` 模块组织] |
+| 模块 | 功能定位 |
+|------|----------|
+| 架构抽象 Trait | `ArchOps` 及其关联类型，零成本分发机制 |
+| Boot Flow | `_start` → `kernel_init()` 分阶段初始化、SMP 启动 |
+| Console | 早期控制台（SBI putchar / PL011 MMIO） |
+| Interrupt | 中断控制器配置（PLIC / GIC）、trap 分发 |
+| Timer | 定时器初始化与 tick 处理 |
 
-### R4.2 Boot Flow
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| `InitLevel` 设计 | 枚举 vs typestate——是否值得用 typestate 表示初始化阶段？ |
-| SMP 启动 | primary/secondary 分发是否有竞态？`PRIMARY_BOOTED` atomic 是否足够？ |
-| 参考 | [Linux: `start_kernel()` 初始化序列]、[Zephyr: `z_cstart()`] |
-| 文档 | 完整启动时序图（含 firmware → _start → kernel_init → idle） |
-
-### R4.3 Console / Interrupt / Timer
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| Console | SBI putchar vs PL011 MMIO——抽象是否统一？ |
-| Interrupt | PLIC/GIC 配置是否 trait 化？中断注册/注销是否有 RAII guard？ |
-| Timer | `HW_FREQ` 全局变量 vs 初始化时写入 config——设计选择 |
-| 文档 | 中断处理流程图（trap → dispatch → handler → return） |
+> R4.1（架构抽象 Trait）和 R4.3（Console/Interrupt/Timer）可与 R3 并行。
+> R4.2（Boot Flow）依赖 R3 的内存初始化变更，需在 R3 稳定后进行。
 
 ### R4 交付物
 
@@ -310,44 +203,14 @@ memory_types ← frame_allocator ← page_allocator
 
 **目标**：这是最可能存在 C++ 范式残留的区域。TCB 设计、调度器接口、上下文切换都需要深度审查。
 
-### R5.1 TCB 设计
+### 审查范围
 
-| 排查维度 | 检查内容 |
-|----------|----------|
-| `SyncUnsafeCell<CalleeSavedContext>` | 是否可替换为更安全的抽象？ |
-| 字段原子性 | `AtomicTaskState` / `AtomicI32` 的 memory ordering 是否正确？ |
-| Typestate | Task 状态转换能否用 typestate 编码（`Task<Running>` / `Task<Sleeping>` / ...）？ |
-| 所有权模型 | `Arc<TaskControlBlock>` 的引用图——谁持有、何时释放？ |
-| 参考 | [Linux: `task_struct`]、[Theseus: `Task`]、[Redox: `Context`] |
-| 文档 | TCB 生命周期图、所有权传递图 |
-
-### R5.2 调度器
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| `Scheduler` trait | 接口是否完备？enqueue / dequeue / pick_next 之外是否需要更多方法？ |
-| `SchedPolicy` enum | 静态分发 vs trait object——当前 enum dispatch 是最优解吗？ |
-| Per-CPU 调度器状态 | `PER_CPU_SCHED: SyncUnsafeCell<[...]>` → 应迁移到 `#[cpu_local]` |
-| CFS 实现 | vruntime 溢出处理、权重计算精度 |
-| 参考 | [Linux: `sched_class` / `fair.c`]、[Redox: round-robin 实现] |
-| 文档 | 调度决策时序图、CFS vruntime 更新流程 |
-
-### R5.3 上下文切换
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| Lock handoff | `lock_manual()` / `unlock_manual()` 绕过 RAII——是否有更安全的方案？ |
-| 栈切换安全 | `switch_to()` 的 unsafe 合约是否文档化？ |
-| 参考 | [Linux: `context_switch()` / `finish_task_switch()`] |
-| 文档 | 上下文切换时序图（含锁交接） |
-
-### R5.4 信号与等待
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| 信号模型 | 当前实现 vs POSIX 信号语义——SAS 下信号的含义是什么？ |
-| WaitQueue | 实现方式是否地道？是否需要 `Waker` pattern（类 Rust `Future`）？ |
-| 参考 | [µFork: 对 POSIX 信号的兼容策略]、[Linux: `signal.c`] |
+| 模块 | 功能定位 |
+|------|----------|
+| TCB | `TaskControlBlock` 结构设计、字段原子性、所有权模型 |
+| 调度器 | `Scheduler` trait、调度策略分发（CFS / FIFO / RR）、Per-CPU 调度器状态 |
+| 上下文切换 | `switch_to()` 及其 lock handoff 机制 |
+| 信号与等待 | SAS 下的信号模型、WaitQueue 实现 |
 
 ### R5 交付物
 
@@ -362,32 +225,17 @@ memory_types ← frame_allocator ← page_allocator
 
 ## R6 — 设备与文件系统
 
-**目标**：审查运行时多态（`dyn Device` / `dyn FileSystem`）的必要性，优化 FD 表设计。
+**目标**：审查运行时多态（`dyn Device` / `dyn FileSystem`）的合理性，审查 FD 表设计。
 
-### R6.1 Device Framework
+### 审查范围
 
-| 排查维度 | 检查内容 |
-|----------|----------|
-| `Vec<Box<dyn Device>>` | 是否需要类型索引查找（`TypeId` → device）？ |
-| 设备生命周期 | 热插拔场景（虽然 QEMU 不需要，但接口应考虑） |
-| HAL trait | `SimpleKernelHal` 的 unsafe 合约 |
-| 参考 | [Linux: `struct device` / `bus_type`]、[Zephyr: device model] |
-
-### R6.2 VFS
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| `FileSystem` trait | 接口是否与 POSIX 语义对齐？缺失哪些操作（stat/chmod/link）？ |
-| `dyn FileSystem` | 是否可改为 enum dispatch（已知 FS 类型有限）？ |
-| 路径解析 | 线性扫描 mount table → 性能是否可接受？ |
-| 参考 | [Linux: `file_operations` / `inode_operations`]、[Redox: scheme-based VFS]、[µFork: POSIX 兼容层] |
-
-### R6.3 FD Table
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| `Arc<SpinLock<File>>` | dup 场景是否真的需要 Arc？fork 语义下的 COW 考虑？ |
-| FD 分配策略 | Vec<Option<...>> 的最低空闲 FD 查找——是否需要 bitmap？ |
+| 模块 | 功能定位 |
+|------|----------|
+| Device Framework | 设备注册/发现框架、设备生命周期 |
+| HAL | `SimpleKernelHal` — VirtIO 驱动的硬件抽象 |
+| VFS | `FileSystem` trait、路径解析、mount 管理 |
+| RamFS / FatFS | 具体文件系统实现 |
+| FD Table | 文件描述符表、dup/close 语义 |
 
 ### R6 交付物
 
@@ -403,22 +251,12 @@ memory_types ← frame_allocator ← page_allocator
 
 **目标**：SAS 架构下 syscall 是直接函数调用，审查其作为唯一公共 API 网关的设计。
 
-### R7.1 Syscall 层
+### 审查范围
 
-| 排查维度 | 检查内容 |
-|----------|----------|
-| API 完备性 | 当前实现了哪些 syscall？缺失哪些核心 POSIX 调用？ |
-| 类型安全 | 参数/返回值是否使用了 newtype（`Fd`, `Pid` 等）而非裸 `usize`？ |
-| 错误码 | `ErrorCode` 是否覆盖所有 POSIX errno？是否需要与 `TaskError` / `FsError` 统一？ |
-| 参考 | [µFork: POSIX 兼容策略——哪些 syscall 原样保留、哪些重新诠释]、[Redox: `syscall` crate] |
-
-### R7.2 可见性审计
-
-| 排查维度 | 检查内容 |
-|----------|----------|
-| `pub` vs `pub(crate)` | 是否有模块暴露了不该暴露的接口？ |
-| SAS 隔离 | crate 边界是否真正阻止了越权访问？ |
-| 参考 | [Theseus: crate 隔离模型] |
+| 模块 | 功能定位 |
+|------|----------|
+| Syscall 层 | API 完备性、类型安全（newtype vs 裸 usize）、错误码统一 |
+| 可见性审计 | `pub` vs `pub(crate)` 全局扫描、crate 边界隔离验证 |
 
 ### R7 交付物
 
@@ -434,45 +272,32 @@ memory_types ← frame_allocator ← page_allocator
 
 **目标**：全局性工作，包括文档重写、CI 重写、项目重组。
 
-### R8.1 文档重写
+### 审查范围
 
-| 产出 | 说明 |
-|------|------|
-| `README.md` | 重写项目首页，反映当前架构和功能 |
-| `docs/rust-rewrite/00-概述.md` | 更新总纲，标记已完成/变更的设计决策 |
-| `AGENTS.md` / `CLAUDE.md` | 根据审计结果更新 AI 辅助指令 |
-| 模块 README | 确保所有 crate 和 `src/` 子模块都有 README |
-| API 文档 | `cargo doc` 生成，发布到 GitHub Pages |
-| 架构图集 | 汇总所有 Mermaid 图到 `docs/diagrams/` |
+| 子任务 | 内容 |
+|--------|------|
+| 文档重写 | `README.md`、`00-概述.md`、`CLAUDE.md`、模块 README、Rustdoc、架构图集 |
+| CI 重写 | Matrix 构建、测试分层并行、质量门全链路、自动发布 |
+| 项目重组 | crate 合并/拆分评估、`src/` 目录结构、测试目录、`3rd/` 子模块清理 |
+| 分支合并 | 审计分支合入 `main`、历史分支清理、分支保护规则 |
+| 审计产物 CI 守护 | 见下方 TODO |
 
-### R8.2 CI 重写
+#### 审计产物 CI 守护
 
-| 项目 | 说明 |
-|------|------|
-| Matrix 构建 | 评估 `{arch} × {feature}` 矩阵 |
-| 测试层级 | unit → system → standalone，分 job 并行 |
-| 质量门 | fmt + clippy + deny + geiger + doc + test 全链路 |
-| 自动发布 | Release tag → 自动构建内核镜像 + 发布 |
-
-### R8.3 项目重组（如需要）
-
-| 可能的变更 | 评估标准 |
-|------------|----------|
-| crate 合并 / 拆分 | 依赖图中是否有过度拆分或耦合过紧的情况？ |
-| `src/` 目录结构 | 模块组织是否反映了当前架构（vs 迁移历史遗留）？ |
-| 测试目录 | `tests/` 组织是否清晰？ |
-| `3rd/` 子模块 | 是否所有子模块都还需要？ |
-
-### R8.4 分支合并
-
-- 将审计后的 `feat/rust-SAS`（或工作分支）合并到 `main`
-- 清理历史分支（`boot`, `interrupt`, `memory`, `snmalloc`, `thread` 等）
-- 设置分支保护规则
+> **TODO**: 审计过程中产出的基线和规范（unsafe 审计基线、锁层级图、依赖图等）需要 CI 自动守护，
+> 防止后续开发导致规范漂移。每次 CI 运行时自动检查：
+>
+> - unsafe 数量是否超过基线（`unsafe-audit-baseline.md` 中的记录）
+> - 文档中引用的函数/类型是否仍然存在（文档与代码一致性）
+> - ADR 中标记为"已接受"的决策，相关代码是否仍符合决策内容
+> - 依赖图（Mermaid）是否与实际 `cargo metadata` 输出一致
+>
+> 具体实现方式在 R0 CI 审计时一并设计。
 
 ### R8 交付物
 
 - [ ] 完整文档集
-- [ ] 新版 CI pipeline
+- [ ] 新版 CI pipeline（含审计产物守护）
 - [ ] 清理后的分支结构
 - [ ] 项目 v1.0 里程碑标记
 
@@ -480,7 +305,8 @@ memory_types ← frame_allocator ← page_allocator
 
 ## 每个 Phase 的标准排查流程
 
-每个模块/crate 排查时，按以下 checklist 执行：
+每个模块/crate 排查时，按以下 checklist 执行。
+具体深入哪些维度、发现哪些问题，由排查过程中根据代码实际状态决定。
 
 ### 代码审查
 
@@ -499,6 +325,27 @@ memory_types ← frame_allocator ← page_allocator
 - [ ] RAII：资源获取/释放是否通过 Drop 自动管理？
 - [ ] 零成本抽象：泛型 vs trait object 的选择是否合理？
 - [ ] 错误处理：`?` 传播 vs `expect` vs `match` 的使用是否恰当？
+
+### 并发安全检查
+
+- [ ] `Send`/`Sync`：类型的 `Send`/`Sync` 约束是否正确？手动 `unsafe impl` 是否有充分理由？
+- [ ] 多核竞态：共享可变状态是否有锁/原子操作保护？跨核访问路径是否遗漏？
+- [ ] 中断重入：中断处理路径是否可能与被中断代码竞争同一资源？锁是否 interrupt-aware？
+- [ ] 锁序：多锁场景下获取顺序是否一致？是否可能死锁？
+- [ ] Atomic ordering：`Ordering` 选择是否正确（`Relaxed` / `Acquire` / `Release` / `SeqCst`）？是否过度使用 `SeqCst`？
+- [ ] 初始化竞态：`spin::Once` / `static` 初始化在 SMP 启动时是否有竞态窗口？
+
+### 依赖与版本检查
+
+- [ ] 第三方 crate 版本：是否使用了最新稳定版？是否有已知 CVE 或 deprecated API？
+- [ ] Rust nightly 特性：是否用到了已稳定的 feature flag（可移除 `#![feature(...)]`）？是否有更新的语言特性可以简化代码？
+- [ ] crate 替代评估：当前手写的功能是否有成熟的 `no_std` crate 可替代？列出候选 crate 及其优缺点，标记为 ADR 待决（不要自行替换）
+
+### 参考内核对比
+
+- [ ] 与参考内核（Linux / Theseus / Redox / Zephyr / µFork）中对应模块的实现思路对比
+- [ ] 记录设计差异及其原因（SimpleKernel 的 SAS 架构 / 教学目标可能导致合理的差异）
+- [ ] 如果参考内核有明显更优的设计，列入设计讨论点（不要自行采纳）
 
 ### 文档输出
 
@@ -522,6 +369,7 @@ memory_types ← frame_allocator ← page_allocator
 | **Linux** | 审查子系统接口设计时 | VFS ops 接口、`sched_class` 设计、`mm_struct`/`vm_area_struct`、信号处理框架、lockdep | 具体 C 实现、CONFIG 宏体系、模块加载 |
 | **Theseus** | 审查 Rust 类型系统利用时 | `MappedPages` RAII、typestate、crate 隔离模型、`DeadlockPrevention` | Theseus 特有的 live evolution 机制 |
 | **Redox** | 审查 API 设计和 error handling 时 | `syscall` crate 设计、scheme VFS、`Error` 统一处理 | 微内核的用户态驱动模型 |
+| **Zephyr** | 审查设备模型和嵌入式设计时 | device model、devicetree 绑定、轻量级线程模型、电源管理 | Zephyr 特有的 Kconfig 体系、行业安全认证流程 |
 | **µFork** | 审查 POSIX 兼容策略时 | 哪些 POSIX 语义原样保留、哪些重新诠释、capability 与 FD 的映射 | Actor model 本身（与 SAS 架构不兼容） |
 
 ---
@@ -534,7 +382,7 @@ memory_types ← frame_allocator ← page_allocator
 | R1 | 2-3 天 | P0 | R0 |
 | R2 | 5-7 天 | P0 | R1 |
 | R3 | 7-10 天 | P1 | R2 |
-| R4 | 5-7 天 | P1 | R2 |
+| R4 | 5-7 天 | P1 | R2（Boot Flow 依赖 R3 内存初始化，架构抽象/Console/Timer 可与 R3 并行） |
 | R5 | 7-10 天 | P1 | R3, R4 |
 | R6 | 5-7 天 | P2 | R5 |
 | R7 | 3-5 天 | P2 | R6 |
@@ -549,3 +397,4 @@ memory_types ← frame_allocator ← page_allocator
 | 日期 | 变更 |
 |------|------|
 | 2026-04-02 | 初版——基于全项目代码审阅、Git 历史分析和设计文档评审 |
+| 2026-04-02 | 重构——移除模块级详细排查维度表，改为按功能分层；新增协作流程、并发安全 checklist、依赖与版本检查、参考内核对比（含 Zephyr）；ADR 机制集成；审计产物 CI 守护 TODO |
