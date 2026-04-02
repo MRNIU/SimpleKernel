@@ -26,8 +26,8 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **System tests** → `tests/system/` for unified test kernel, `tests/standalone/` for isolated tests
 - **Error handling** → `KResult<T> = Result<T, ErrorCode>` in `src/error.rs`
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
-- **Design overview** → `docs/design/00-概述.md` (master plan with all design decisions)
-- **Phase details** → `docs/design/P0-P7` (implementation plans, all phases complete)
+- **Design overview** → `docs/design/00-概述.md` (master plan — written pre-implementation, may be outdated; code is source of truth)
+- **Phase details** → `docs/design/P0-P7` (implementation plans, all phases complete — may diverge from actual code)
 
 ## CODE MAP
 | Module | Purpose | Key Files |
@@ -288,5 +288,5 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
 - Debug: use `cargo xtask debug` + GDB, QEMU logs in build output
-- Design docs: `docs/design/00-概述.md` is the master reference for all design decisions
+- Design docs: `docs/design/` contains design documents written **before implementation**. They may be outdated — **always treat actual code as the source of truth**. When design docs conflict with code, trust the code and flag the discrepancy
 - Phase plans: `docs/design/P0-P7` — all phases (P0-P7) implementation complete
