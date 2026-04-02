@@ -1,11 +1,8 @@
-//! AArch64 TLB 刷新——`tlbi` / `dsb` / `isb` 指令。
+//! AArch64 TLB 刷新——使用 `aarch64-cpu` crate 的 TLBI / barrier 封装。
 //!
 //! [Arm ARM §D8.3](https://developer.arm.com/documentation/ddi0487/latest)
-//
-// TODO: `aarch64-cpu` crate 未提供 TLBI 指令封装（仅有 DSB/ISB barrier），
-// 因此此处使用内联汇编。后续应向上游提交 PR 添加 `tlbi_vmalle1()` 和
-// `tlbi_vae1(vaddr)` 封装，替换手写汇编。
-// 上游仓库：https://github.com/rust-embedded/aarch64-cpu
+
+use aarch64_cpu::asm::{barrier, tlbi};
 
 use super::TlbArch;
 
@@ -14,24 +11,22 @@ pub(crate) struct Aarch64;
 impl TlbArch for Aarch64 {
     #[inline(always)]
     fn flush_all() {
-        // SAFETY: tlbi/dsb/isb 是 EL1 特权指令。
-        unsafe {
-            core::arch::asm!("tlbi vmalle1", "dsb sy", "isb");
-        }
+        // SAFETY: TLBI VMALLE1 + DSB + ISB 是 EL1 特权指令，
+        // 调用方在内核态（EL1）执行。
+        barrier::dsb(barrier::SY);
+        tlbi::vmalle1();
+        barrier::dsb(barrier::SY);
+        barrier::isb(barrier::SY);
     }
 
     #[inline(always)]
     fn flush_page(vaddr: usize) {
-        // SAFETY: tlbi/dsb/isb 是 EL1 特权指令。
-        // TLBI VAE1 操作数格式：虚拟地址右移 PAGE_SHIFT 位（页号）。
-        let page = vaddr >> config::PAGE_SIZE.trailing_zeros();
-        unsafe {
-            core::arch::asm!(
-                "tlbi vae1, {page}",
-                "dsb sy",
-                "isb",
-                page = in(reg) page,
-            );
-        }
+        // SAFETY: TLBI VAE1 + DSB + ISB 是 EL1 特权指令。
+        // Addr::new 负责将虚拟地址右移 12 位并编码到正确的位域。
+        // ASID 传 0——当前为单地址空间，不区分 ASID。
+        barrier::dsb(barrier::SY);
+        tlbi::vae1(tlbi::Addr::new(vaddr as u64, 0));
+        barrier::dsb(barrier::SY);
+        barrier::isb(barrier::SY);
     }
 }

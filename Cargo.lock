@@ -5,7 +5,7 @@ version = 4
 [[package]]
 name = "aarch64-cpu"
 version = "11.2.0"
-source = "git+https://github.com/rust-embedded/aarch64-cpu?branch=main#5e4403c385639b9cbec388c3108c447573e58f1a"
+source = "git+https://github.com/MRNIU/aarch64-cpu?branch=feat%2Fadd-tlbi-instructions#0827b91c49f469d47a77568e519934e9542bde1f"
 dependencies = [
  "tock-registers",
 ]
@@ -715,6 +715,7 @@ dependencies = [
 name = "tlb"
 version = "0.1.0"
 dependencies = [
+ "aarch64-cpu",
  "config",
  "riscv",
  "spin",
