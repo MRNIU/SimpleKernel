@@ -6,7 +6,7 @@
 //!
 //! 虚拟页没有 Mapped/Unmapped 状态——映射生命周期由 MappedPages 管理。
 
-use address::{PageRange, VirtAddr, VirtPageNum};
+use memory_types::{Page, PageSpan, VirtAddr};
 
 use crate::error::PageAllocError;
 
@@ -23,7 +23,7 @@ pub enum MemoryState {
 
 /// 类型状态虚拟页范围——编译期追踪虚拟页生命周期。
 pub struct Pages<const S: MemoryState> {
-    pub(crate) range: PageRange,
+    pub(crate) range: PageSpan,
 }
 
 /// 便利别名——已分配页，用户持有。
@@ -32,7 +32,7 @@ pub type AllocatedPages = Pages<{ MemoryState::Allocated }>;
 impl<const S: MemoryState> Pages<S> {
     /// 返回页范围。
     #[inline]
-    pub fn range(&self) -> PageRange {
+    pub fn range(&self) -> PageSpan {
         self.range
     }
 
@@ -44,13 +44,13 @@ impl<const S: MemoryState> Pages<S> {
 
     /// 起始虚拟页号。
     #[inline]
-    pub fn start(&self) -> VirtPageNum {
+    pub fn start(&self) -> Page {
         self.range.start()
     }
 
     /// 结束虚拟页号（不含）。
     #[inline]
-    pub fn end(&self) -> VirtPageNum {
+    pub fn end(&self) -> Page {
         self.range.end()
     }
 
@@ -76,7 +76,7 @@ impl AllocatedPages {
 
     /// 在指定虚拟地址分配 `count` 个连续页。
     pub fn alloc_at(start: VirtAddr, count: usize) -> Result<Self, PageAllocError> {
-        let start_pn = VirtPageNum::from(start);
+        let start_pn = Page::from(start);
         let range = crate::alloc_pages_at(start_pn, count)?;
         Ok(Self { range })
     }

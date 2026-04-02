@@ -7,8 +7,8 @@ use arm_gic::gicv3::{GicCpuInterface, GicV3};
 use arm_gic::{IntId, InterruptGroup, UniqueMmioPointer};
 use core::ptr::NonNull;
 
-use address::PhysAddr;
 use memory::map_mmio;
+use memory_types::PhysAddr;
 
 use super::context::TrapContext;
 

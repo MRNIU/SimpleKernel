@@ -1,6 +1,6 @@
 //! 全局内存状态——`MemoryInfo`、内核地址空间。
 
-use address::PhysAddr;
+use memory_types::PhysAddr;
 
 #[cfg(any(test, target_os = "none"))]
 use sync_crate::SpinLock;

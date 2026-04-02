@@ -21,7 +21,7 @@
 pub enum MemoryState { Free, Allocated, Mapped, Unmapped }
 
 pub struct Frames<const S: MemoryState> {
-    range: FrameRange,   // 连续物理帧范围 [start, end)
+    range: FrameSpan,   // 连续物理帧范围 [start, end)
 }
 
 pub type FreeFrames      = Frames<{ MemoryState::Free }>;
@@ -204,7 +204,7 @@ let reallocated = unmapped.into_allocated();
 
 ```rust
 let frames = AllocatedFrames::alloc(4)?;
-let mid = PhysPageNum::new(frames.start().as_usize() + 2);
+let mid = Frame::new(frames.start().as_usize() + 2);
 
 // 分割为 [0,2) 和 [2,4)
 let (left, right) = frames.split_at(mid);

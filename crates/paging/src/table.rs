@@ -4,8 +4,8 @@ use crate::error::PagingError;
 use crate::{
     NodeFrame, NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index,
 };
-use address::{PhysAddr, VirtAddr};
 use alloc::collections::BTreeMap;
+use memory_types::{PhysAddr, VirtAddr};
 
 const PT_LEVELS: usize = config::PT_LEVELS;
 
@@ -325,8 +325,8 @@ impl PageTable {
         let (old_pa, old_flags) = self.unmap_at_level_with_flags(va, level)?;
         if old_flags.is_exclusive() {
             let page_count_4k = crate::page_size_at_level(level) / config::PAGE_SIZE;
-            let start = address::PhysPageNum::from(old_pa);
-            let range = address::FrameRange::new(start, start + page_count_4k);
+            let start = memory_types::Frame::from(old_pa);
+            let range = memory_types::FrameSpan::new(start, start + page_count_4k);
             // SAFETY: PTE 的 EXCLUSIVE 位确认此帧由当前映射独占，
             // PTE 已清除，不存在其他引用
             let frames = unsafe { frame_allocator::UnmappedFrames::from_unmapped_range(range) };
@@ -472,7 +472,7 @@ impl PageTable {
 mod tests {
     use crate::error::PagingError;
     use crate::*;
-    use address::{PhysAddr, VirtAddr};
+    use memory_types::{PhysAddr, VirtAddr};
 
     type PageTable = crate::table::PageTable;
 

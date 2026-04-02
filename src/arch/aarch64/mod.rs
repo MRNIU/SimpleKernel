@@ -55,7 +55,7 @@ impl ArchOps for Aarch64 {
     fn map_early_mmio(
         addr_space: &mut memory::vma::AddressSpace,
     ) -> Result<(), memory::error::MemoryError> {
-        use address::VirtAddr;
+        use memory_types::VirtAddr;
         use paging::{PteFlags, PteFlagsOps};
         // PL011 UART —— console 直接 MMIO 访问
         addr_space.mmap_identity_range(

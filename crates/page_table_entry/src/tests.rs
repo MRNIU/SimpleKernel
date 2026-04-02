@@ -1,7 +1,7 @@
 //! 跨架构 PTE 编解码测试。
 
 use crate::{PteFlagsOps, PteOps};
-use address::PhysAddr;
+use memory_types::PhysAddr;
 
 /// 地址编解码边界测试——验证零地址和高位地址不会污染标志字段。
 fn addr_boundary_roundtrip<T: PteOps>()

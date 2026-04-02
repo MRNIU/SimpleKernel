@@ -20,8 +20,8 @@ pub use state::{AllocatedFrames, Frames, MappedFrames, MemoryState, UnmappedFram
 /// 通过 `test-support` feature 或 `cfg(test)` 启用。
 #[cfg(any(test, feature = "test-support"))]
 pub fn ensure_test_init() {
-    use address::PhysAddr;
     use config::PAGE_SIZE;
+    use memory_types::PhysAddr;
 
     static INIT: std::sync::Once = std::sync::Once::new();
     INIT.call_once(|| {

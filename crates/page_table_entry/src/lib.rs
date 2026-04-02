@@ -8,7 +8,7 @@
 
 #![cfg_attr(not(test), no_std)]
 
-use address::PhysAddr;
+use memory_types::PhysAddr;
 
 pub mod aarch64;
 pub mod riscv64;

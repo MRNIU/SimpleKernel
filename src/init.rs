@@ -4,8 +4,8 @@
 pub fn early_init(dtb_addr: usize) {
     use crate::CORE_COUNT;
     use crate::fdt::KernelFdt;
-    use address::PhysAddr;
     use memory::{MEMORY_INFO, MemoryInfo};
+    use memory_types::PhysAddr;
 
     let fdt = match KernelFdt::new(dtb_addr) {
         Ok(f) => f,

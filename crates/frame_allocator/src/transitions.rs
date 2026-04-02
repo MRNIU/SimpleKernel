@@ -1,7 +1,7 @@
 //! 各状态专属的 impl 块——状态转换方法与分配接口。
 
-use address::{FrameRange, PageSize};
 use config::PAGE_SIZE;
+use memory_types::{FrameSpan, PageSize};
 
 use crate::FrameAllocError;
 use crate::alloc::alloc_from_buddy;
@@ -29,13 +29,13 @@ impl<P: PageSize> AllocatedFrames<P> {
     ///
     /// 分配器未初始化返回 `AllocationFailed`，帧耗尽返回 `OutOfMemory`。
     pub fn alloc(count: usize) -> Result<Self, FrameAllocError> {
-        let count_4k = count * P::NUM_4K_PAGES;
+        let count_4k = count << P::NUM_4K_PAGES_SHIFT;
         let free = alloc_from_buddy(count_4k)?;
 
         // SAFETY: 通过 phys_to_virt 将物理地址转换为虚拟地址后写入。
         // 帧刚从分配器获取，不存在其他引用。
         unsafe {
-            let ptr = address::phys_to_virt(free.start_paddr()).as_mut_ptr::<u8>();
+            let ptr = memory_types::phys_to_virt(free.start_paddr()).as_mut_ptr::<u8>();
             core::ptr::write_bytes(ptr, 0, count_4k * PAGE_SIZE);
         }
 
@@ -43,7 +43,7 @@ impl<P: PageSize> AllocatedFrames<P> {
         core::mem::forget(free);
 
         assert!(
-            P::NUM_4K_PAGES == 1 || range.start().as_usize() % P::NUM_4K_PAGES == 0,
+            P::NUM_4K_PAGES == 1 || range.start().as_usize() & (P::NUM_4K_PAGES - 1) == 0,
             "AllocatedFrames::alloc: buddy 返回的帧未对齐到 P 边界"
         );
 
@@ -74,7 +74,7 @@ impl<P: PageSize> UnmappedFrames<P> {
     ///
     /// 调用方必须确保该帧范围刚从页表 unmap，且 PTE 的 EXCLUSIVE 位已确认
     /// 我们拥有该帧的唯一引用。Drop 时帧将归还分配器。
-    pub unsafe fn from_unmapped_range(range: FrameRange) -> Self {
+    pub unsafe fn from_unmapped_range(range: FrameSpan) -> Self {
         Self::from_range(range)
     }
 
@@ -94,7 +94,7 @@ impl<P: PageSize> UnmappedFrames<P> {
 
 #[cfg(test)]
 mod tests {
-    use address::PhysPageNum;
+    use memory_types::Frame;
 
     use crate::alloc::alloc_from_buddy;
     use crate::ensure_test_init;
@@ -211,7 +211,7 @@ mod tests {
     fn split_frames() {
         ensure_test_init();
         let frames = Alloc::alloc(4).expect("alloc(4)");
-        let mid = PhysPageNum::new(frames.start().as_usize() + 2);
+        let mid = Frame::new(frames.start().as_usize() + 2);
         let (left, right) = frames.split_at(mid);
         assert_eq!(left.count(), 2);
         assert_eq!(right.count(), 2);
@@ -222,7 +222,7 @@ mod tests {
     fn merge_adjacent_frames() {
         ensure_test_init();
         let frames = Alloc::alloc(4).expect("alloc(4)");
-        let mid = PhysPageNum::new(frames.start().as_usize() + 2);
+        let mid = Frame::new(frames.start().as_usize() + 2);
         let (left, right) = frames.split_at(mid);
         let merged = left
             .merge(right)

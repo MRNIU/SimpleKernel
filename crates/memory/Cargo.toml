@@ -9,7 +9,7 @@ edition.workspace = true
 
 [dependencies]
 config = { path = "../config" }
-address = { path = "../address" }
+memory_types = { path = "../memory_types" }
 sync_crate = { path = "../sync", package = "sync" }
 per_cpu = { path = "../per_cpu" }
 paging = { path = "../paging" }

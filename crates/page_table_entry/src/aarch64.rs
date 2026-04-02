@@ -17,7 +17,7 @@
 use bitflags::bitflags;
 
 use crate::{PteFlagsOps, PteOps};
-use address::PhysAddr;
+use memory_types::PhysAddr;
 
 /// 输出地址掩码：bits [47:12]（4KB granule）
 const OUTPUT_ADDR_MASK: u64 = 0x0000_FFFF_FFFF_F000;

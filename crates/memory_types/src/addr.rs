@@ -66,7 +66,7 @@ macro_rules! impl_addr {
             pub const fn align_up_to(self, align: usize) -> Self {
                 assert!(align.is_power_of_two(), "align must be a power of two");
                 match self.0.checked_add(align - 1) {
-                    Some(v) => Self(v & !(align - 1)),
+                    Some(v) => Self::new(v & !(align - 1)),
                     None => panic!("align_up: address overflow"),
                 }
             }
@@ -129,14 +129,14 @@ impl VirtAddr {
 impl<T> From<*const T> for VirtAddr {
     #[inline]
     fn from(p: *const T) -> Self {
-        Self(p as usize)
+        Self::new(p as usize)
     }
 }
 
 impl<T> From<*mut T> for VirtAddr {
     #[inline]
     fn from(p: *mut T) -> Self {
-        Self(p as usize)
+        Self::new(p as usize)
     }
 }
 
@@ -297,12 +297,13 @@ mod tests {
         assert_eq!(addr.as_mut_ptr::<u32>() as usize, 0xDEAD_0000);
     }
 
-    /// From<*const T> / From<*mut T> 构造 VirtAddr。
+    /// From<*const T> / From<*mut T> 构造 VirtAddr——使用规范地址范围内的指针。
     #[test]
     fn virt_addr_from_pointer() {
-        let val: u64 = 0;
-        let addr = VirtAddr::from(&val as *const u64);
-        assert_eq!(addr.as_usize(), &val as *const u64 as usize);
+        let canonical: usize = 0x1000;
+        let ptr = canonical as *const u64;
+        let addr = VirtAddr::from(ptr);
+        assert_eq!(addr.as_usize(), canonical);
     }
 
     /// phys_to_virt / virt_to_phys 互逆：任意物理地址经往返转换后应恢复原值。

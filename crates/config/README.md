@@ -75,7 +75,7 @@ crate 底部通过 `const _: () = assert!(...)` 在编译期检查不变量：
 
 ### 1. 修改 `PHYS_OFFSET` 的影响范围
 
-`PHYS_OFFSET` 被 `address` crate 的 `phys_to_virt()` / `virt_to_phys()` 使用。
+`PHYS_OFFSET` 被 `memory_types` crate 的 `phys_to_virt()` / `virt_to_phys()` 使用。
 从 identity mapping（0）切换到 higher-half kernel 时，
 需要同步调整链接脚本中的内核虚拟地址和启动阶段的页表映射。
 

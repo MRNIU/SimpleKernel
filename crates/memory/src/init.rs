@@ -1,6 +1,6 @@
 //! 内存子系统初始化——主核 / 从核。
 
-use address::{PhysAddr, VirtAddr};
+use memory_types::{PhysAddr, VirtAddr};
 use paging::{PageTable, PteFlags, PteFlagsOps};
 
 use crate::vma::AddressSpace;

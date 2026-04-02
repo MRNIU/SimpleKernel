@@ -9,8 +9,8 @@ use alloc::collections::BTreeMap;
 
 use crate::MappedPages;
 use crate::error::MemoryError;
-use address::{AddrRange, VirtAddr};
 use config::PAGE_SIZE;
+use memory_types::{Span, VirtAddr};
 use page_allocator::AllocatedPages;
 use paging::{PteFlags, PteFlagsOps};
 
@@ -44,7 +44,7 @@ pub enum VmaKind {
 /// 虚拟内存区域——描述地址空间中一段连续区域的属性。
 pub struct Vma {
     /// 虚拟地址范围 `[start, end)`，页对齐
-    range: AddrRange<VirtAddr>,
+    range: Span<VirtAddr>,
     /// 访问权限
     flags: PteFlags,
     /// backing 类型
@@ -56,7 +56,7 @@ pub struct Vma {
 impl Vma {
     /// 返回虚拟地址范围。
     #[must_use]
-    pub fn range(&self) -> AddrRange<VirtAddr> {
+    pub fn range(&self) -> Span<VirtAddr> {
         self.range
     }
 
@@ -161,7 +161,7 @@ impl AddressSpace {
         flags: PteFlags,
     ) -> Result<&Vma, MemoryError> {
         let (start, end, page_count) = Self::validate_range(start, size)?;
-        let range = AddrRange::new(start, end);
+        let range = Span::new(start, end);
         self.check_overlap(range)?;
 
         let pages = AllocatedPages::alloc_at(start, page_count)
@@ -188,7 +188,7 @@ impl AddressSpace {
         flags: PteFlags,
     ) -> Result<&Vma, MemoryError> {
         let (start, end, page_count) = Self::validate_range(start, size)?;
-        let range = AddrRange::new(start, end);
+        let range = Span::new(start, end);
         self.check_overlap(range)?;
 
         let pages = AllocatedPages::alloc_at(start, page_count)
@@ -214,7 +214,7 @@ impl AddressSpace {
         kind: VmaKind,
     ) -> Result<&Vma, MemoryError> {
         let (start, end, _) = Self::validate_range(start, size)?;
-        let range = AddrRange::new(start, end);
+        let range = Span::new(start, end);
         self.check_overlap(range)?;
 
         let vma = Vma {
@@ -291,7 +291,7 @@ impl AddressSpace {
         if start_aligned.as_usize() >= end_aligned.as_usize() {
             return Err(MemoryError::MapFailed);
         }
-        let range = AddrRange::new(start_aligned, end_aligned);
+        let range = Span::new(start_aligned, end_aligned);
         self.check_overlap(range)?;
 
         let page_count = (end_aligned - start_aligned) / PAGE_SIZE;
@@ -318,7 +318,7 @@ impl AddressSpace {
         kind: VmaKind,
     ) -> Result<&Vma, MemoryError> {
         let (start, end, _) = Self::validate_range(start, size)?;
-        let range = AddrRange::new(start, end);
+        let range = Span::new(start, end);
         self.check_overlap(range)?;
 
         let vma = Vma {
@@ -360,7 +360,7 @@ impl AddressSpace {
     }
 
     /// 检查新区域是否与已有 VMA 重叠。
-    fn check_overlap(&self, range: AddrRange<VirtAddr>) -> Result<(), MemoryError> {
+    fn check_overlap(&self, range: Span<VirtAddr>) -> Result<(), MemoryError> {
         if let Some((_, prev)) = self.areas.range(..range.start()).next_back() {
             if prev.range.overlaps(range) {
                 return Err(MemoryError::RegionOverlap);

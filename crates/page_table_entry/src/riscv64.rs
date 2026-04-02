@@ -10,7 +10,7 @@
 use bitflags::bitflags;
 
 use crate::{PteFlagsOps, PteOps};
-use address::PhysAddr;
+use memory_types::PhysAddr;
 
 /// 4KB 页：PAGE_SHIFT = 12
 const PAGE_SHIFT: u32 = 12;

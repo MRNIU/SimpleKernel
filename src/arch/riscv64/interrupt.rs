@@ -1,8 +1,8 @@
+use memory::MmioRegion;
 /// RISC-V 64 中断子系统
 ///
 /// 负责 PLIC 初始化、stvec 设置，以及陷阱分发（定时器、外部中断、IPI、系统调用、异常）。
-use address::PhysAddr;
-use memory::MmioRegion;
+use memory_types::PhysAddr;
 
 use super::context::TrapContext;
 

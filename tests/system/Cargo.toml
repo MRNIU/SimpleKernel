@@ -20,7 +20,7 @@ memory = { path = "../../crates/memory" }
 sync = { path = "../../crates/sync" }
 per_cpu = { path = "../../crates/per_cpu" }
 config = { path = "../../crates/config" }
-address = { path = "../../crates/address" }
+memory_types = { path = "../../crates/memory_types" }
 global_tick = { path = "../../crates/global_tick" }
 log.workspace = true
 qemu-exit.workspace = true

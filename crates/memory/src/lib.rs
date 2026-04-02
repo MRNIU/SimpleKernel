@@ -47,7 +47,7 @@ pub use globals::{MEMORY_INFO, MemoryInfo};
 pub use globals::{kernel_address_space, store_kernel_address_space};
 
 #[cfg(any(test, target_os = "none"))]
-pub use address::{phys_to_virt, virt_to_phys};
+pub use memory_types::{phys_to_virt, virt_to_phys};
 
 #[cfg(target_os = "none")]
 pub use init::{init, init_smp};
@@ -61,9 +61,9 @@ pub use init::{init, init_smp};
 /// 页/帧分配或映射失败时返回错误。
 #[cfg(any(test, target_os = "none"))]
 pub fn map_mmio(
-    paddr: address::PhysAddr,
+    paddr: memory_types::PhysAddr,
     size: usize,
-) -> Result<address::VirtAddr, error::MemoryError> {
+) -> Result<memory_types::VirtAddr, error::MemoryError> {
     use paging::{PteFlags, PteFlagsOps};
 
     let region = MmioRegion::map(paddr, size)?;

@@ -13,7 +13,8 @@ members = [
     ".",
     "crates/build_common",
     "crates/config",
-    "crates/address",
+    "crates/span",
+    "crates/memory_types",
     "crates/macros",
     "crates/per_cpu",
     "crates/interrupt_state",
@@ -141,7 +142,7 @@ bench = false
 [dependencies]
 # --- 内部 crate ---
 config = { path = "crates/config" }
-address = { path = "crates/address" }
+memory_types = { path = "crates/memory_types" }
 per_cpu = { path = "crates/per_cpu" }
 interrupt_state = { path = "crates/interrupt_state" }
 sync = { path = "crates/sync" }

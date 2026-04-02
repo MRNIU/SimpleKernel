@@ -39,7 +39,7 @@ pub enum UnmapResult {
     /// PTE 有 EXCLUSIVE 位——帧已包装为 UnmappedFrames，Drop 自动回收
     Exclusive(frame_allocator::UnmappedFrames),
     /// PTE 无 EXCLUSIVE 位——非独占映射，返回物理地址供 COW 引用计数等使用
-    NonExclusive(address::PhysAddr),
+    NonExclusive(memory_types::PhysAddr),
 }
 
 impl core::fmt::Debug for UnmapResult {

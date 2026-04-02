@@ -29,7 +29,7 @@
 // 前置条件：
 //   需要用户进程（页分配频率足够高才有优化价值）。
 
-use address::{FrameRange, PhysAddr, PhysPageNum};
+use memory_types::{Frame, FrameSpan, PhysAddr};
 use sync_crate::SpinLockIrq;
 
 use crate::FrameAllocError;
@@ -104,13 +104,13 @@ pub(crate) fn alloc_from_buddy(count: usize) -> Result<FreeFrames, FrameAllocErr
         // TODO: OOM 时应尝试回收（页缓存淘汰、swap out），
         // 而非直接失败。待引入 page cache / swap 后实现。
         .ok_or(FrameAllocError::OutOfMemory)?;
-    let start = PhysPageNum::new(frame_num);
-    let end = PhysPageNum::new(frame_num + count);
-    Ok(FreeFrames::from_range(FrameRange::new(start, end)))
+    let start = Frame::new(frame_num);
+    let end = Frame::new(frame_num + count);
+    Ok(FreeFrames::from_range(FrameSpan::new(start, end)))
 }
 
 /// 归还帧到 buddy allocator——仅由 `Frames` 的 Drop 调用。
-pub(crate) fn dealloc_to_buddy(range: FrameRange) {
+pub(crate) fn dealloc_to_buddy(range: FrameSpan) {
     if range.size() == 0 {
         return;
     }

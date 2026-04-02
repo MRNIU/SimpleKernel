@@ -2,7 +2,7 @@
 
 use core::marker::PhantomData;
 
-use address::{Frame, FrameRange, Page4K, PageSize, PhysAddr, PhysPageNum};
+use memory_types::{Frame, FrameSpan, Page4K, PageSize, PhysAddr};
 
 use crate::alloc::dealloc_to_buddy;
 
@@ -26,7 +26,7 @@ pub enum MemoryState {
 
 /// 类型状态帧范围——编译期追踪物理帧生命周期和页大小。
 ///
-/// 与单帧设计不同，`Frames` 持有一段**连续的物理帧范围**（[`FrameRange`]），
+/// 与单帧设计不同，`Frames` 持有一段**连续的物理帧范围**（[`FrameSpan`]），
 /// 支持 [`split_at`](Frames::split_at) 和 [`merge`](Frames::merge) 操作。
 ///
 /// 泛型参数 `P` 标记帧的粒度（4K/2M/1G），Drop 时自动转换为 4K 粒度
@@ -34,7 +34,7 @@ pub enum MemoryState {
 ///
 /// 状态转换通过消费 self 的方法实现，防止在错误状态下操作帧。
 pub struct Frames<const S: MemoryState, P: PageSize = Page4K> {
-    pub(crate) range: FrameRange,
+    pub(crate) range: FrameSpan,
     _marker: PhantomData<P>,
 }
 
@@ -56,7 +56,7 @@ pub type UnmappedFrames<P = Page4K> = Frames<{ MemoryState::Unmapped }, P>;
 impl<const S: MemoryState, P: PageSize> Frames<S, P> {
     /// 返回帧范围（4K 粒度）。
     #[inline]
-    pub fn range(&self) -> FrameRange {
+    pub fn range(&self) -> FrameSpan {
         self.range
     }
 
@@ -68,13 +68,13 @@ impl<const S: MemoryState, P: PageSize> Frames<S, P> {
 
     /// 起始物理页号（4K 粒度）。
     #[inline]
-    pub fn start(&self) -> PhysPageNum {
+    pub fn start(&self) -> Frame {
         self.range.start()
     }
 
     /// 结束物理页号（不含，4K 粒度）。
     #[inline]
-    pub fn end(&self) -> PhysPageNum {
+    pub fn end(&self) -> Frame {
         self.range.end()
     }
 
@@ -84,9 +84,9 @@ impl<const S: MemoryState, P: PageSize> Frames<S, P> {
         self.range.start().start_addr()
     }
 
-    /// 从 FrameRange 和 PageSize 标记构造（crate 内部使用）。
+    /// 从 FrameSpan 和 PageSize 标记构造（crate 内部使用）。
     #[inline]
-    pub(crate) fn from_range(range: FrameRange) -> Self {
+    pub(crate) fn from_range(range: FrameSpan) -> Self {
         Self {
             range,
             _marker: PhantomData,
@@ -112,7 +112,7 @@ impl<const S: MemoryState, P: PageSize> Frames<S, P> {
     ///
     /// `mid` 不在范围内时 panic。
     pub fn split_at(self, mid: Frame<P>) -> (Self, Self) {
-        let mid_4k = PhysPageNum::new(mid.as_usize());
+        let mid_4k = Frame::new(mid.as_usize());
         let (left, right) = self.range.split_at(mid_4k);
         core::mem::forget(self);
         (

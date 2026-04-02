@@ -1,11 +1,12 @@
 [package]
-name = "address"
+name = "memory_types"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Type-safe physical/virtual address and page number abstractions for SimpleKernel"
+description = "Type-safe physical/virtual address, page frame, and page size abstractions for SimpleKernel"
 edition.workspace = true
 
 [dependencies]
 config = { path = "../config" }
+span = { path = "../span" }

@@ -12,8 +12,8 @@ use core::mem::ManuallyDrop;
 use crate::error::PagingError;
 use crate::mapping::{MappedPages, check_bounds_and_align};
 use crate::{PteFlags, PteFlagsOps};
-use address::PhysAddr;
 use config::PAGE_SIZE;
+use memory_types::PhysAddr;
 use page_allocator::AllocatedPages;
 
 /// 已映射的 MMIO 区域——提供类型安全的 volatile 寄存器访问。
@@ -33,7 +33,7 @@ impl MmioRegion {
     pub fn map(paddr: PhysAddr, size: usize) -> Result<Self, PagingError> {
         let pa_aligned = paddr.align_down();
         let page_count = ((paddr + size).align_up().as_usize() - pa_aligned.as_usize()) / PAGE_SIZE;
-        let va = address::VirtAddr::new(pa_aligned.as_usize());
+        let va = memory_types::VirtAddr::new(pa_aligned.as_usize());
         let pages =
             AllocatedPages::alloc_at(va, page_count).map_err(|_| PagingError::AllocationFailed)?;
         let mp = MappedPages::map_identity(pages, PteFlags::kernel_device());
@@ -44,7 +44,7 @@ impl MmioRegion {
 
     /// 返回 MMIO 区域的基地址。
     #[must_use]
-    pub fn base(&self) -> address::VirtAddr {
+    pub fn base(&self) -> memory_types::VirtAddr {
         self.mapping.vaddr()
     }
 

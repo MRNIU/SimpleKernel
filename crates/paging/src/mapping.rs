@@ -7,9 +7,9 @@
 
 use core::mem::ManuallyDrop;
 
-use address::{PhysAddr, VirtAddr};
 use config::PAGE_SIZE;
 use frame_allocator::{AllocatedFrames, UnmappedFrames};
+use memory_types::{PhysAddr, VirtAddr};
 use page_allocator::AllocatedPages;
 
 use crate::error::UnmapResult;
@@ -360,7 +360,7 @@ impl core::fmt::Debug for MappedPages {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use address::VirtAddr;
+    use memory_types::VirtAddr;
     use page_allocator::AllocatedPages;
 
     fn alloc_pages_at(va: usize, count: usize) -> AllocatedPages {

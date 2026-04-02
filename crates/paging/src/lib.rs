@@ -16,8 +16,8 @@
 
 extern crate alloc;
 
-use address::PhysAddr;
 use core::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use memory_types::PhysAddr;
 
 pub mod error;
 
@@ -210,7 +210,7 @@ impl Table {
     /// # Safety
     /// - `paddr` 必须指向有效、页对齐的帧
     #[inline]
-    pub(crate) unsafe fn from_paddr(paddr: address::PhysAddr) -> Self {
+    pub(crate) unsafe fn from_paddr(paddr: memory_types::PhysAddr) -> Self {
         Self {
             base: paddr.as_usize() as *mut AtomicU64,
         }
@@ -235,7 +235,7 @@ impl Table {
 
 /// 从虚拟地址中提取第 `level` 级的 VPN 索引。
 #[inline]
-pub(crate) fn vpn_index(va: address::VirtAddr, level: usize) -> usize {
+pub(crate) fn vpn_index(va: memory_types::VirtAddr, level: usize) -> usize {
     let info = &LEVEL_INFO[level];
     (va.as_usize() >> info.shift) & info.index_mask
 }
@@ -249,7 +249,7 @@ pub const fn page_size_at_level(level: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use address::VirtAddr;
+    use memory_types::VirtAddr;
 
     /// 验证 Level 0 的参数从 PAGE_SIZE 正确推导。
     #[test]

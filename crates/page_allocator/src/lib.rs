@@ -17,7 +17,7 @@ extern crate alloc;
 
 use alloc::collections::BTreeMap;
 
-use address::{PageRange, VirtAddr, VirtPageNum};
+use memory_types::{Page, PageSpan, VirtAddr};
 use sync_crate::SpinLockIrq;
 
 mod error;
@@ -33,7 +33,7 @@ static PAGE_ALLOCATOR: SpinLockIrq<PageAllocatorInner> = SpinLockIrq::new_with_l
 );
 
 struct PageAllocatorInner {
-    free_ranges: BTreeMap<VirtPageNum, PageRange>,
+    free_ranges: BTreeMap<Page, PageSpan>,
     initialized: bool,
 }
 
@@ -63,8 +63,8 @@ pub unsafe fn init(start: VirtAddr, size: usize) {
     assert!(size > 0, "page_allocator::init: size is zero");
 
     let start_pn = start.page_number();
-    let end_pn = VirtPageNum::new(start_pn.as_usize() + size / config::PAGE_SIZE);
-    let range = PageRange::new(start_pn, end_pn);
+    let end_pn = Page::new(start_pn.as_usize() + size / config::PAGE_SIZE);
+    let range = PageSpan::new(start_pn, end_pn);
     alloc.free_ranges.insert(start_pn, range);
     alloc.initialized = true;
 
@@ -82,8 +82,8 @@ pub fn reserve(start: VirtAddr, size: usize) {
     if size == 0 {
         return;
     }
-    let start_pn = VirtPageNum::from(start);
-    let end_pn = VirtPageNum::new(start_pn.as_usize() + size / config::PAGE_SIZE);
+    let start_pn = Page::from(start);
+    let end_pn = Page::new(start_pn.as_usize() + size / config::PAGE_SIZE);
 
     let mut alloc = PAGE_ALLOCATOR.lock();
     assert!(
@@ -91,12 +91,12 @@ pub fn reserve(start: VirtAddr, size: usize) {
         "page_allocator::reserve: not initialized"
     );
 
-    let target = PageRange::new(start_pn, end_pn);
+    let target = PageSpan::new(start_pn, end_pn);
     remove_range_from_free(&mut alloc.free_ranges, target);
 }
 
 /// 分配 `count` 个连续虚拟页——自动选择地址。
-pub(crate) fn alloc_pages(count: usize) -> Result<PageRange, PageAllocError> {
+pub(crate) fn alloc_pages(count: usize) -> Result<PageSpan, PageAllocError> {
     let mut alloc = PAGE_ALLOCATOR.lock();
     if !alloc.initialized {
         return Err(PageAllocError::AllocationFailed);
@@ -116,10 +116,10 @@ pub(crate) fn alloc_pages(count: usize) -> Result<PageRange, PageAllocError> {
 
     let alloc_start = range.start();
     let alloc_end = alloc_start + count;
-    let allocated = PageRange::new(alloc_start, alloc_end);
+    let allocated = PageSpan::new(alloc_start, alloc_end);
 
     if range.size() > count {
-        let remaining = PageRange::new(alloc_end, range.end());
+        let remaining = PageSpan::new(alloc_end, range.end());
         alloc.free_ranges.insert(remaining.start(), remaining);
     }
 
@@ -127,17 +127,14 @@ pub(crate) fn alloc_pages(count: usize) -> Result<PageRange, PageAllocError> {
 }
 
 /// 在指定虚拟地址分配 `count` 个连续页。
-pub(crate) fn alloc_pages_at(
-    start: VirtPageNum,
-    count: usize,
-) -> Result<PageRange, PageAllocError> {
+pub(crate) fn alloc_pages_at(start: Page, count: usize) -> Result<PageSpan, PageAllocError> {
     let mut alloc = PAGE_ALLOCATOR.lock();
     if !alloc.initialized {
         return Err(PageAllocError::AllocationFailed);
     }
 
     let end = start + count;
-    let target = PageRange::new(start, end);
+    let target = PageSpan::new(start, end);
 
     let containing_key = alloc
         .free_ranges
@@ -153,11 +150,11 @@ pub(crate) fn alloc_pages_at(
         .expect("刚查到的 range");
 
     if range.start() < start {
-        let before = PageRange::new(range.start(), start);
+        let before = PageSpan::new(range.start(), start);
         alloc.free_ranges.insert(before.start(), before);
     }
     if range.end() > end {
-        let after = PageRange::new(end, range.end());
+        let after = PageSpan::new(end, range.end());
         alloc.free_ranges.insert(after.start(), after);
     }
 
@@ -165,7 +162,7 @@ pub(crate) fn alloc_pages_at(
 }
 
 /// 归还虚拟页到空闲池。
-pub(crate) fn dealloc_pages(range: PageRange) {
+pub(crate) fn dealloc_pages(range: PageSpan) {
     if range.size() == 0 {
         return;
     }
@@ -191,12 +188,12 @@ pub(crate) fn dealloc_pages(range: PageRange) {
         merge_end = next_range.end();
     }
 
-    let merged = PageRange::new(merge_start, merge_end);
+    let merged = PageSpan::new(merge_start, merge_end);
     alloc.free_ranges.insert(merge_start, merged);
 }
 
 /// 从 free_ranges 中移除一段区域（用于 reserve）。
-fn remove_range_from_free(free: &mut BTreeMap<VirtPageNum, PageRange>, target: PageRange) {
+fn remove_range_from_free(free: &mut BTreeMap<Page, PageSpan>, target: PageSpan) {
     let containing_key = free
         .range(..=target.start())
         .next_back()
@@ -207,11 +204,11 @@ fn remove_range_from_free(free: &mut BTreeMap<VirtPageNum, PageRange>, target: P
         let range = free.remove(&key).expect("刚查到");
 
         if range.start() < target.start() {
-            let before = PageRange::new(range.start(), target.start());
+            let before = PageSpan::new(range.start(), target.start());
             free.insert(before.start(), before);
         }
         if range.end() > target.end() {
-            let after = PageRange::new(target.end(), range.end());
+            let after = PageSpan::new(target.end(), range.end());
             free.insert(after.start(), after);
         }
     }

@@ -8,5 +8,5 @@ description = "Hardware page table entry encoding/decoding — PTE traits and ar
 edition.workspace = true
 
 [dependencies]
-address = { path = "../address" }
+memory_types = { path = "../memory_types" }
 bitflags.workspace = true
