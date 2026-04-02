@@ -19,9 +19,13 @@ pub static CORE_COUNT: spin::Once<usize> = spin::Once::new();
 pub mod arch;
 #[cfg(target_os = "none")]
 pub mod boot;
+#[cfg(target_os = "none")]
+pub mod device;
 pub mod elf;
 #[cfg(target_os = "none")]
 pub mod fdt;
+#[cfg(target_os = "none")]
+pub mod fs;
 #[cfg(target_os = "none")]
 pub mod init;
 #[cfg(all(target_os = "none", feature = "lang_items"))]

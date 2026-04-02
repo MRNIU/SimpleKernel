@@ -5,6 +5,8 @@
 // SyscallNumber 枚举保留用于日志、审计和 POSIX 合规追踪。
 
 #[cfg(target_os = "none")]
+pub mod file;
+#[cfg(target_os = "none")]
 pub mod io;
 #[cfg(target_os = "none")]
 pub mod process;
@@ -30,12 +32,27 @@ pub enum SyscallNumber {
     Clone = 220,
     /// waitpid(pid) — 等待子进程退出
     Waitpid = 260,
+    /// open(path, flags) — 打开文件
+    Open = 56,
+    /// close(fd) — 关闭文件描述符
+    Close = 57,
+    /// read(fd, buf, len) — 读文件
+    Read = 63,
+    /// lseek(fd, offset, whence) — 设置文件偏移
+    Lseek = 62,
+    /// mkdir(path) — 创建目录
+    Mkdir = 34,
 }
 
 impl SyscallNumber {
     /// 从 u64 转换为 SyscallNumber，未知号返回 None
     pub fn from_u64(n: u64) -> Option<Self> {
         match n {
+            34 => Some(Self::Mkdir),
+            56 => Some(Self::Open),
+            57 => Some(Self::Close),
+            62 => Some(Self::Lseek),
+            63 => Some(Self::Read),
             64 => Some(Self::Write),
             93 => Some(Self::Exit),
             101 => Some(Self::Nanosleep),

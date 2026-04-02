@@ -48,6 +48,12 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     Arch::init_timer();
     Arch::init_interrupt();
 
+    // P6: 设备子系统——FDT 枚举 + VirtIO 探测
+    crate::device::device_init();
+
+    // P7: 文件系统——挂载 RamFS + VFS 冒烟测试
+    crate::fs::fs_init();
+
     if matches!(level, InitLevel::Interrupt) {
         return;
     }
