@@ -30,23 +30,3 @@ impl fmt::Display for PagingError {
 }
 
 impl core::error::Error for PagingError {}
-
-/// unmap 结果——区分独占帧和共享帧。
-///
-/// EXCLUSIVE 检查在 [`PageTable::unmap_page`] 内部完成，
-/// 调用者无需接触 unsafe 的 `UnmappedFrames::from_unmapped_range`。
-pub enum UnmapResult {
-    /// PTE 有 EXCLUSIVE 位——帧已包装为 UnmappedFrames，Drop 自动回收
-    Exclusive(frame_allocator::UnmappedFrames),
-    /// PTE 无 EXCLUSIVE 位——非独占映射，返回物理地址供 COW 引用计数等使用
-    NonExclusive(memory_types::PhysAddr),
-}
-
-impl core::fmt::Debug for UnmapResult {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        match self {
-            Self::Exclusive(_) => write!(f, "UnmapResult::Exclusive(...)"),
-            Self::NonExclusive(pa) => write!(f, "UnmapResult::NonExclusive({pa})"),
-        }
-    }
-}

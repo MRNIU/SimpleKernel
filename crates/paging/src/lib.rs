@@ -36,8 +36,6 @@ pub mod mapping;
 #[cfg(any(test, feature = "test-support", target_os = "none"))]
 pub use mapping::MappedPages;
 
-pub use error::UnmapResult;
-
 #[cfg(any(test, feature = "test-support", target_os = "none"))]
 pub mod mmio;
 

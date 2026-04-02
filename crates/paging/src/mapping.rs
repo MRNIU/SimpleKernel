@@ -1,38 +1,70 @@
 //! 仿射类型映射——move-only 的 VA→PA 映射所有权。
 //!
-//! [`MappedPages`] 同时持有虚拟页（[`AllocatedPages`]）和通过 PTE EXCLUSIVE 位
-//! 追踪的物理帧所有权。Drop 时自动 unmap PTE、回收 EXCLUSIVE 帧、归还虚拟页。
+//! [`MappedPages`] 同时持有虚拟页（[`AllocatedPages`]）和物理帧（[`AllocatedFrames`]）
+//! 的所有权。Drop 时自动 unmap PTE、回收帧、归还虚拟页。
 //!
 //! 永久映射使用 `ManuallyDrop<MappedPages>` 阻止 Drop。
 
 use core::mem::ManuallyDrop;
 
 use config::PAGE_SIZE;
-use frame_allocator::{AllocatedFrames, UnmappedFrames};
-use memory_types::{PhysAddr, VirtAddr};
+use frame_allocator::AllocatedFrames;
+use memory_types::VirtAddr;
 use page_allocator::AllocatedPages;
 
-use crate::error::UnmapResult;
 use crate::{PteFlags, PteFlagsOps};
-
-/// map_alloc 每次分配并映射的最大页数。
-const MAP_CHUNK: usize = config::MAP_CHUNK_SIZE;
 
 /// unmap_and_release 每次处理的最大页数。
 const UNMAP_CHUNK: usize = config::UNMAP_CHUNK_SIZE;
 
-/// 仿射类型映射——持有虚拟页所有权和映射关系。
+/// 仿射类型映射——持有虚拟页和物理帧所有权。
 ///
-/// 不可 Clone、不可 Copy。Drop 时 unmap PTE 并回收 EXCLUSIVE 帧，
+/// 不可 Clone、不可 Copy。Drop 时 unmap PTE 并回收帧，
 /// 虚拟页归还 page_allocator。
 ///
 /// SAS 架构下通过全局内核页表操作 PTE，不持有页表引用。
 pub struct MappedPages {
     pages: AllocatedPages,
+    frames: AllocatedFrames,
     flags: PteFlags,
 }
 
 impl MappedPages {
+    /// 唯一的创建路径——消费 pages 和 frames 的所有权建立映射。
+    ///
+    /// 调用方决定 VA/PA 的对应关系：
+    ///   - identity map: 确保 pages.start_vaddr() == frames.start_paddr()
+    ///   - 匿名映射: pages 和 frames 地址可以不同
+    pub fn map(pages: AllocatedPages, frames: AllocatedFrames, flags: PteFlags) -> Self {
+        let page_count = pages.count();
+        assert_eq!(
+            page_count,
+            frames.count(),
+            "MappedPages::map: pages 和 frames 数量不一致"
+        );
+        assert!(page_count > 0, "MappedPages::map: 页数不能为 0");
+
+        let pt = crate::kernel_page_table();
+        let va_start = pages.start_vaddr();
+        let pa_start = frames.start_paddr();
+
+        let mut guard = pt.lock();
+        for i in 0..page_count {
+            let va = va_start + i * config::PAGE_SIZE;
+            let pa = pa_start + i * config::PAGE_SIZE;
+            guard
+                .map_page(va, pa, flags)
+                .expect("MappedPages::map: map_page 失败");
+        }
+        drop(guard);
+
+        Self {
+            pages,
+            frames,
+            flags,
+        }
+    }
+
     /// 返回起始虚拟地址。
     #[must_use]
     pub fn vaddr(&self) -> VirtAddr {
@@ -51,7 +83,7 @@ impl MappedPages {
         self.pages.count()
     }
 
-    /// 返回构造时的请求权限（不含 EXCLUSIVE）。
+    /// 返回构造时的请求权限。
     #[must_use]
     pub fn flags(&self) -> PteFlags {
         self.flags
@@ -63,6 +95,12 @@ impl MappedPages {
         &self.pages
     }
 
+    /// 返回持有的物理帧引用。
+    #[must_use]
+    pub fn frames(&self) -> &AllocatedFrames {
+        &self.frames
+    }
+
     /// 读取指定偏移所在页的实际 PTE 标志。
     #[must_use]
     pub fn pte_flags(&self, offset: usize) -> PteFlags {
@@ -72,58 +110,6 @@ impl MappedPages {
             .get_mapping(page_va)
             .expect("MappedPages::pte_flags: 映射不存在")
             .1
-    }
-
-    /// 分配帧并建立映射——设置 EXCLUSIVE 位。
-    ///
-    /// 帧所有权通过 PTE 的 EXCLUSIVE 位追踪，Drop 时自动回收。
-    pub fn map_alloc(pages: AllocatedPages, flags: PteFlags) -> Self {
-        assert!(pages.count() > 0, "MappedPages::map_alloc: 页数不能为 0");
-        let exclusive_flags = flags.with_exclusive();
-        let page_count = pages.count();
-        let va_start = pages.start_vaddr();
-        let pt = crate::kernel_page_table();
-        let mut offset = 0;
-
-        while offset < page_count {
-            let n = (page_count - offset).min(MAP_CHUNK);
-            let mut frames: heapless::Vec<AllocatedFrames, MAP_CHUNK> = heapless::Vec::new();
-            for _ in 0..n {
-                let frame =
-                    AllocatedFrames::alloc_one().expect("map_alloc: 帧分配失败（物理内存耗尽）");
-                frames
-                    .push(frame)
-                    .unwrap_or_else(|_| panic!("map_alloc: 帧数不超过 MAP_CHUNK"));
-            }
-
-            let mut guard = pt.lock();
-            for (i, frame) in frames.into_iter().enumerate() {
-                let pa = frame.start_paddr();
-                let va = va_start + (offset + i) * PAGE_SIZE;
-                guard
-                    .map_page(va, pa, exclusive_flags)
-                    .expect("map_alloc: map_page 失败");
-                let mapped = frame.into_mapped();
-                core::mem::forget(mapped);
-            }
-            drop(guard);
-            offset += n;
-        }
-
-        Self { pages, flags }
-    }
-
-    /// Identity-map 一段物理地址区间（VA == PA）——不设置 EXCLUSIVE 位。
-    pub fn map_identity(pages: AllocatedPages, flags: PteFlags) -> Self {
-        let pa_start = PhysAddr::new(pages.start_vaddr().as_usize());
-        let pa_end = pa_start + pages.size_in_bytes();
-
-        let pt = crate::kernel_page_table();
-        let mut guard = pt.lock();
-        guard.identity_map_range(pa_start, pa_end, flags);
-        drop(guard);
-
-        Self { pages, flags }
     }
 
     /// 获取映射区域内指定偏移处的类型化引用。
@@ -172,14 +158,22 @@ impl MappedPages {
         let md = ManuallyDrop::new(self);
         // SAFETY: md 不会 Drop，我们手动拆分
         let pages = unsafe { core::ptr::read(&md.pages) };
+        let frames = unsafe { core::ptr::read(&md.frames) };
+
         let (left_pages, right_pages) = pages.split(page_index);
+
+        let mid_frame = memory_types::Frame::new(frames.start().as_usize() + page_index);
+        let (left_frames, right_frames) = frames.split_at(mid_frame);
+
         (
             MappedPages {
                 pages: left_pages,
+                frames: left_frames,
                 flags,
             },
             MappedPages {
                 pages: right_pages,
+                frames: right_frames,
                 flags,
             },
         )
@@ -196,17 +190,43 @@ impl MappedPages {
         let other_md = ManuallyDrop::new(other);
         let self_pages = unsafe { core::ptr::read(&self_md.pages) };
         let other_pages = unsafe { core::ptr::read(&other_md.pages) };
+        let self_frames = unsafe { core::ptr::read(&self_md.frames) };
+        let other_frames = unsafe { core::ptr::read(&other_md.frames) };
         let flags = self_md.flags;
 
         match self_pages.merge(other_pages) {
-            Ok(merged) => Ok(MappedPages {
-                pages: merged,
-                flags,
-            }),
+            Ok(merged_pages) => match self_frames.merge(other_frames) {
+                Ok(merged_frames) => Ok(MappedPages {
+                    pages: merged_pages,
+                    frames: merged_frames,
+                    flags,
+                }),
+                Err((sf, of)) => {
+                    let mid = sf.count();
+                    let (sp, op) = merged_pages.split(mid);
+                    Err((
+                        MappedPages {
+                            pages: sp,
+                            frames: sf,
+                            flags,
+                        },
+                        MappedPages {
+                            pages: op,
+                            frames: of,
+                            flags,
+                        },
+                    ))
+                }
+            },
             Err((sp, op)) => Err((
-                MappedPages { pages: sp, flags },
+                MappedPages {
+                    pages: sp,
+                    frames: self_frames,
+                    flags,
+                },
                 MappedPages {
                     pages: op,
+                    frames: other_frames,
                     flags: other_md.flags,
                 },
             )),
@@ -232,82 +252,30 @@ impl MappedPages {
 
     /// 手动解除映射并取回所有权。
     ///
-    /// 所有 EXCLUSIVE 帧在 TLB 刷新后自动归还帧分配器。
-    /// 返回虚拟页供调用方重用或释放。
-    pub fn unmap(self) -> AllocatedPages {
+    /// 返回虚拟页和物理帧供调用方重用或释放。
+    pub fn unmap(self) -> (AllocatedPages, AllocatedFrames) {
         let md = ManuallyDrop::new(self);
-        // SAFETY: md 不会 Drop，我们手动接管 pages 所有权
+        // SAFETY: md 不会 Drop，我们手动接管所有权
         let pages = unsafe { core::ptr::read(&md.pages) };
+        let frames = unsafe { core::ptr::read(&md.frames) };
         let page_count = pages.count();
-
-        // 收集 EXCLUSIVE 帧，TLB 刷新后再 drop 回收
-        let mut to_reclaim: heapless::Vec<UnmappedFrames, UNMAP_CHUNK> = heapless::Vec::new();
+        let va_start = pages.start_vaddr();
 
         let pt = crate::kernel_page_table();
         let mut guard = pt.lock();
         for i in 0..page_count {
-            let va = pages.start_vaddr() + i * PAGE_SIZE;
-            match guard.unmap_to_result(va) {
-                Ok(UnmapResult::Exclusive(frames)) => {
-                    to_reclaim
-                        .push(frames)
-                        .expect("exclusive 帧数不超过 UNMAP_CHUNK");
-                }
-                Ok(UnmapResult::NonExclusive(_)) => {}
-                Err(e) => panic!("MappedPages::unmap: {va} 失败: {e}"),
-            }
+            let va = va_start + i * config::PAGE_SIZE;
+            guard
+                .unmap_page(va)
+                .expect("MappedPages::unmap: unmap_page 失败");
         }
         drop(guard);
 
         {
-            let _flush = tlb::TlbFlushGuard::new(pages.start_vaddr().as_usize(), page_count);
+            let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
         }
 
-        // TLB 已刷新，安全回收 EXCLUSIVE 帧
-        drop(to_reclaim);
-
-        pages
-    }
-
-    /// Drop 内部实现——unmap PTE + 回收 EXCLUSIVE 帧 + 虚拟页自动归还。
-    fn unmap_and_release(&mut self) {
-        let page_count = self.pages.count();
-        let va_start = self.pages.start_vaddr();
-        let pt = crate::kernel_page_table();
-        let mut offset = 0;
-
-        while offset < page_count {
-            let n = (page_count - offset).min(UNMAP_CHUNK);
-            let mut to_reclaim: heapless::Vec<UnmappedFrames, UNMAP_CHUNK> = heapless::Vec::new();
-
-            {
-                let mut guard = pt.lock();
-                for i in 0..n {
-                    let va = va_start + (offset + i) * PAGE_SIZE;
-                    match guard.unmap_to_result(va) {
-                        Ok(UnmapResult::Exclusive(frames)) => {
-                            to_reclaim
-                                .push(frames)
-                                .expect("exclusive 帧数不超过 UNMAP_CHUNK");
-                        }
-                        Ok(UnmapResult::NonExclusive(_)) => {}
-                        Err(e) => {
-                            panic!("MappedPages::unmap_and_release: unmap {va} 失败: {e}");
-                        }
-                    }
-                }
-            }
-
-            {
-                let flush_va = va_start + offset * PAGE_SIZE;
-                let _flush = tlb::TlbFlushGuard::new(flush_va.as_usize(), n);
-            }
-
-            drop(to_reclaim);
-            offset += n;
-        }
-        // self.pages 的 Drop 在 MappedPages::drop 返回后自动执行，
-        // 归还虚拟页给 page_allocator
+        (pages, frames)
     }
 }
 
@@ -341,7 +309,29 @@ pub(crate) fn check_bounds_and_align<T>(
 
 impl Drop for MappedPages {
     fn drop(&mut self) {
-        self.unmap_and_release();
+        let page_count = self.pages.count();
+        let va_start = self.pages.start_vaddr();
+        let pt = crate::kernel_page_table();
+
+        let mut offset = 0;
+        while offset < page_count {
+            let n = (page_count - offset).min(UNMAP_CHUNK);
+            {
+                let mut guard = pt.lock();
+                for i in 0..n {
+                    let va = va_start + (offset + i) * config::PAGE_SIZE;
+                    guard.unmap_page(va).unwrap_or_else(|e| {
+                        panic!("MappedPages::drop: unmap {va} 失败: {e}");
+                    });
+                }
+            }
+            {
+                let flush_va = va_start + offset * config::PAGE_SIZE;
+                let _flush = tlb::TlbFlushGuard::new(flush_va.as_usize(), n);
+            }
+            offset += n;
+        }
+        // self.frames 和 self.pages 在 Drop 返回后自动 drop
     }
 }
 
@@ -367,98 +357,91 @@ mod tests {
         AllocatedPages::alloc_at(VirtAddr::new(va), count).expect("alloc_pages_at")
     }
 
-    /// map_identity 应建立正确的映射并可查询。
+    fn alloc_frames(count: usize) -> AllocatedFrames {
+        AllocatedFrames::alloc(count).expect("alloc_frames")
+    }
+
+    // 测试地址范围: page_allocator 测试 init 覆盖 [0x1000_0000, 0x1010_0000)
+    // 每个测试使用不同的偏移避免并行冲突。
+
     #[test]
-    fn map_identity_basic() {
+    fn map_basic() {
         crate::ensure_test_init();
-        let pages = alloc_pages_at(0x10_0000, 1);
-        let pa = PhysAddr::new(0x10_0000);
-        let mp = MappedPages::map_identity(pages, PteFlags::kernel_rw());
-        assert_eq!(mp.vaddr(), VirtAddr::new(0x10_0000));
-        assert_eq!(mp.size(), PAGE_SIZE);
+        let va_base = 0x1000_0000;
+        let pages = alloc_pages_at(va_base, 1);
+        let frames = alloc_frames(1);
+        let pa = frames.start_paddr();
+        let mp = MappedPages::map(pages, frames, PteFlags::kernel_rw());
 
         let guard = crate::kernel_page_table().lock();
         let (got_pa, _) = guard
-            .get_mapping(VirtAddr::new(0x10_0000))
+            .get_mapping(VirtAddr::new(va_base))
             .expect("映射应存在");
         assert_eq!(got_pa, pa);
-        drop(guard);
-
-        // 转为 ManuallyDrop 阻止 drop 时 unmap（identity map 不设 EXCLUSIVE）
-        let _ = ManuallyDrop::new(mp);
+        assert_eq!(mp.size(), config::PAGE_SIZE);
     }
 
-    /// map_alloc 应分配帧并设置 EXCLUSIVE 位。
     #[test]
-    fn map_alloc_sets_exclusive() {
+    fn map_multi_page() {
         crate::ensure_test_init();
-        let pages = alloc_pages_at(0x20_0000, 1);
-        let va = VirtAddr::new(0x20_0000);
-        let mp = MappedPages::map_alloc(pages, PteFlags::kernel_rw());
-
-        let guard = crate::kernel_page_table().lock();
-        let (_, got_flags) = guard.get_mapping(va).expect("映射应存在");
-        assert!(got_flags.is_exclusive());
-        drop(guard);
-
-        assert_eq!(mp.size(), PAGE_SIZE);
-    }
-
-    /// map_alloc 多页后逐页应都有 EXCLUSIVE 位。
-    #[test]
-    fn map_alloc_multi_page() {
-        crate::ensure_test_init();
-        let pages = alloc_pages_at(0x30_0000, 3);
-        let va = VirtAddr::new(0x30_0000);
-        let _mp = MappedPages::map_alloc(pages, PteFlags::kernel_rw());
+        let va_base = 0x1000_2000;
+        let pages = alloc_pages_at(va_base, 3);
+        let frames = alloc_frames(3);
+        let _mp = MappedPages::map(pages, frames, PteFlags::kernel_rw());
         let guard = crate::kernel_page_table().lock();
         for i in 0..3 {
-            let page_va = va + i * PAGE_SIZE;
-            let (_, flags) = guard.get_mapping(page_va).expect("应已映射");
-            assert!(flags.is_exclusive());
+            assert!(
+                guard
+                    .get_mapping(VirtAddr::new(va_base + i * config::PAGE_SIZE))
+                    .is_some()
+            );
         }
     }
 
-    /// Drop map_alloc 映射应 unmap PTE 并回收帧。
     #[test]
-    fn drop_alloc_unmaps() {
+    fn drop_unmaps() {
         crate::ensure_test_init();
-        let pages = alloc_pages_at(0x40_0000, 2);
-        let va = VirtAddr::new(0x40_0000);
-        let mp = MappedPages::map_alloc(pages, PteFlags::kernel_rw());
+        let va_base = 0x1000_6000;
+        let pages = alloc_pages_at(va_base, 2);
+        let va = VirtAddr::new(va_base);
+        let frames = alloc_frames(2);
+        let mp = MappedPages::map(pages, frames, PteFlags::kernel_rw());
 
         {
             let guard = crate::kernel_page_table().lock();
             assert!(guard.get_mapping(va).is_some());
         }
-
         drop(mp);
-
         let guard = crate::kernel_page_table().lock();
         assert!(guard.get_mapping(va).is_none());
     }
 
-    /// split 应拆分为两个独立的 MappedPages。
     #[test]
     fn split_basic() {
         crate::ensure_test_init();
-        let pages = alloc_pages_at(0x50_0000, 4);
-        let mp = MappedPages::map_alloc(pages, PteFlags::kernel_rw());
+        let va_base = 0x1000_9000;
+        let pages = alloc_pages_at(va_base, 4);
+        let frames = alloc_frames(4);
+        let mp = MappedPages::map(pages, frames, PteFlags::kernel_rw());
 
         let (left, right) = mp.split(2);
         assert_eq!(left.page_count(), 2);
         assert_eq!(right.page_count(), 2);
-        assert_eq!(left.vaddr(), VirtAddr::new(0x50_0000));
-        assert_eq!(right.vaddr(), VirtAddr::new(0x50_0000 + 2 * PAGE_SIZE));
+        assert_eq!(left.vaddr(), VirtAddr::new(va_base));
+        assert_eq!(
+            right.vaddr(),
+            VirtAddr::new(va_base + 2 * config::PAGE_SIZE)
+        );
     }
 
-    /// mprotect 应修改 PTE 权限。
     #[test]
     fn mprotect_changes_flags() {
         crate::ensure_test_init();
-        let pages = alloc_pages_at(0x60_0000, 1);
-        let va = VirtAddr::new(0x60_0000);
-        let mut mp = MappedPages::map_alloc(pages, PteFlags::kernel_rw());
+        let va_base = 0x1000_E000;
+        let pages = alloc_pages_at(va_base, 1);
+        let va = VirtAddr::new(va_base);
+        let frames = alloc_frames(1);
+        let mut mp = MappedPages::map(pages, frames, PteFlags::kernel_rw());
 
         let guard = crate::kernel_page_table().lock();
         let (_, flags) = guard.get_mapping(va).expect("映射应存在");
@@ -470,33 +453,5 @@ mod tests {
         let guard = crate::kernel_page_table().lock();
         let (_, flags) = guard.get_mapping(va).expect("映射应存在");
         assert!(!flags.is_writable());
-        assert!(flags.is_exclusive());
-    }
-
-    /// as_type 应返回映射区域内正确偏移处的引用。
-    #[test]
-    fn as_type_reads_memory() {
-        crate::ensure_test_init();
-        let buf = alloc::vec![0u8; PAGE_SIZE];
-        let va = VirtAddr::new(buf.as_ptr() as usize);
-
-        let pages = AllocatedPages::alloc_at(va, 1).expect("alloc pages");
-        // 建立 identity mapping 使 VA 指向实际的堆内存
-        {
-            let pt = crate::kernel_page_table();
-            let mut guard = pt.lock();
-            let pa = PhysAddr::new(va.as_usize());
-            guard
-                .map_page(va, pa, PteFlags::kernel_rw())
-                .expect("map_page");
-        }
-        let mp = MappedPages {
-            pages,
-            flags: PteFlags::kernel_rw(),
-        };
-        let val: &u32 = mp.as_type::<u32>(0);
-        assert_eq!(*val, 0);
-        // ManuallyDrop 避免 double-unmap（map_page 没设 identity_map_range 的结构）
-        let _ = ManuallyDrop::new(mp);
     }
 }

@@ -303,40 +303,7 @@ impl PageTable {
         Ok((old_pa, old_flags))
     }
 
-    /// 取消映射并返回 [`UnmapResult`]——EXCLUSIVE 检查在此完成。
-    ///
-    /// EXCLUSIVE 帧自动包装为 `UnmappedFrames`，调用方无需接触 unsafe。
-    /// 根据 PTE 所在层级自动计算正确的帧数（支持大页）。
-    ///
-    /// **调用方必须在此操作后执行 TLB 刷新，且在刷新完成前不得 drop 返回的 UnmapResult**。
-    pub(crate) fn unmap_to_result(
-        &mut self,
-        va: VirtAddr,
-    ) -> Result<crate::error::UnmapResult, PagingError> {
-        self.unmap_at_level_to_result(va, 0)
-    }
-
-    /// 在指定层级取消映射并返回 [`UnmapResult`]。
-    pub(crate) fn unmap_at_level_to_result(
-        &mut self,
-        va: VirtAddr,
-        level: usize,
-    ) -> Result<crate::error::UnmapResult, PagingError> {
-        let (old_pa, old_flags) = self.unmap_at_level_with_flags(va, level)?;
-        if old_flags.is_exclusive() {
-            let page_count_4k = crate::page_size_at_level(level) / config::PAGE_SIZE;
-            let start = memory_types::Frame::from(old_pa);
-            let range = memory_types::FrameSpan::new(start, start + page_count_4k);
-            // SAFETY: PTE 的 EXCLUSIVE 位确认此帧由当前映射独占，
-            // PTE 已清除，不存在其他引用
-            let frames = unsafe { frame_allocator::UnmappedFrames::from_unmapped_range(range) };
-            Ok(crate::error::UnmapResult::Exclusive(frames))
-        } else {
-            Ok(crate::error::UnmapResult::NonExclusive(old_pa))
-        }
-    }
-
-    /// 修改已映射页的权限标志位，保留物理地址和 EXCLUSIVE 位不变。
+    /// 修改已映射页的权限标志位，保留物理地址不变。
     ///
     /// 单次页表遍历完成查找和更新，避免双重 walk 开销。
     ///
@@ -376,12 +343,7 @@ impl PageTable {
         let old_flags = pte.flags();
         let pa = pte.paddr();
 
-        let preserve_exclusive = if old_flags.is_exclusive() {
-            new_flags.with_exclusive()
-        } else {
-            new_flags
-        };
-        let leaf_flags = preserve_exclusive.for_leaf_at_level(leaf_level);
+        let leaf_flags = new_flags.for_leaf_at_level(leaf_level);
 
         let mut table = unsafe { Table::from_paddr(paddr) };
         table.write(idx, PageTableEntry::new(pa, leaf_flags));

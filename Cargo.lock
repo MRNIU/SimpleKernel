@@ -216,6 +216,7 @@ version = "0.1.0"
 dependencies = [
  "buddy_system_allocator",
  "config",
+ "heapless 0.8.0",
  "log",
  "memory_types",
  "sync",
@@ -436,7 +437,6 @@ version = "0.1.0"
 dependencies = [
  "config",
  "frame_allocator",
- "heapless 0.8.0",
  "log",
  "memory_types",
  "page_allocator",

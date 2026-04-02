@@ -22,7 +22,6 @@ sync_crate = { path = "../sync", package = "sync" }
 tlb = { path = "../tlb" }
 log.workspace = true
 zerocopy.workspace = true
-heapless.workspace = true
 spin.workspace = true
 
 [dev-dependencies]
