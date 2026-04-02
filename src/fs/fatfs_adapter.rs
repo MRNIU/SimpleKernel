@@ -159,10 +159,20 @@ impl Seek for VirtioBlockAdapter {
     }
 }
 
-/// 尝试挂载 FAT 文件系统到 `/mnt`。
+/// 尝试挂载 FAT 文件系统并执行写入+读回验证。
 ///
-/// 如果 VirtIO 块设备可用且包含有效的 FAT 文件系统，则挂载并返回 `true`。
-/// 否则记录日志并返回 `false`。
+/// 验证流程：
+/// 1. 挂载 rootfs.img（FAT32）
+/// 2. 创建 `KERNEL_WAS_HERE.TXT`，写入标记内容
+/// 3. 关闭文件
+/// 4. 重新打开文件，读回全部内容
+/// 5. 逐字节比对写入与读出内容
+/// 6. 打印内容到串口（供 host 端 `mtools` 二次验证）
+///
+/// QEMU 退出后 host 可执行：
+/// ```sh
+/// mtype -i target/.../boot/rootfs.img ::KERNEL_WAS_HERE.TXT
+/// ```
 pub fn try_mount_fatfs() -> bool {
     if crate::device::virtio::virtio_blk().is_none() {
         log::debug!("FatFS: 无 VirtIO 块设备，跳过挂载");
@@ -170,25 +180,71 @@ pub fn try_mount_fatfs() -> bool {
     }
 
     let adapter = VirtioBlockAdapter::new();
-    match fatfs::FileSystem::new(adapter, fatfs::FsOptions::new()) {
-        Ok(fat_fs) => {
-            // 统计根目录文件数
-            let file_count = {
-                let root_dir = fat_fs.root_dir();
-                root_dir.iter().filter_map(|e| e.ok()).count()
-            };
-            log::info!(
-                "FatFS: mounted VirtIO block device at /mnt ({} files in root)",
-                file_count
-            );
-            // 注意：fatfs crate 的 FileSystem 与我们的 VFS FileSystem trait 不同，
-            // 完整适配需要包装为 VFS trait 实现。当前仅验证挂载可行性。
-            core::mem::forget(fat_fs); // 保持挂载状态（不调用 Drop）
-            true
-        }
+    let fat_fs = match fatfs::FileSystem::new(adapter, fatfs::FsOptions::new()) {
+        Ok(fs) => fs,
         Err(e) => {
-            log::debug!("FatFS: 挂载失败（rootfs.img 可能不是 FAT 格式）: {}", e);
-            false
+            log::debug!("FatFS: 挂载失败: {}", e);
+            return false;
         }
+    };
+
+    log::info!("FatFS: mounted VirtIO block device");
+
+    // ── 写入阶段 ──
+    let write_content = b"SimpleKernel P7 FAT write-read OK\n";
+    {
+        let root_dir = fat_fs.root_dir();
+        let mut file = root_dir
+            .create_file("KERNEL_WAS_HERE.TXT")
+            .expect("FatFS: create file failed");
+        use fatfs::Write;
+        file.write_all(write_content).expect("FatFS: write failed");
+        file.flush().expect("FatFS: flush failed");
     }
+    log::info!(
+        "FatFS: wrote {} bytes to KERNEL_WAS_HERE.TXT",
+        write_content.len()
+    );
+
+    // ── 读回阶段 ──
+    {
+        let root_dir = fat_fs.root_dir();
+        let mut file = root_dir
+            .open_file("KERNEL_WAS_HERE.TXT")
+            .expect("FatFS: open file for read failed");
+        let mut read_buf = [0u8; 128];
+        use fatfs::Read;
+        let n = file.read(&mut read_buf).expect("FatFS: read failed");
+
+        // 逐字节比对
+        assert_eq!(
+            n,
+            write_content.len(),
+            "FatFS: read size mismatch: read {} bytes, expected {}",
+            n,
+            write_content.len()
+        );
+        assert_eq!(
+            &read_buf[..n],
+            write_content,
+            "FatFS: read content mismatch"
+        );
+
+        // 打印到串口——host 可搜索此行确认
+        let content_str = core::str::from_utf8(&read_buf[..n]).unwrap_or("<non-utf8>");
+        log::info!("FatFS: read back: \"{}\"", content_str.trim());
+    }
+
+    // ── 列目录验证 ──
+    {
+        let root_dir = fat_fs.root_dir();
+        let file_count = root_dir.iter().filter_map(|e| e.ok()).count();
+        log::info!("FatFS: root dir has {} file(s)", file_count);
+    }
+
+    log::info!("=== FatFS WRITE-READ TEST PASSED ===");
+
+    // 保持挂载状态
+    core::mem::forget(fat_fs);
+    true
 }
