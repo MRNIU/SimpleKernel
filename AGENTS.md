@@ -227,6 +227,20 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 - **Theseus** — Rust 类型系统深度利用，`MappedPages` RAII 映射管理、crate 级模块化、`DeadlockPrevention` trait 参数化同步原语
 - **Redox** — Rust 微内核实践，scheme-based VFS、`syscall` crate 设计、reliability crate 拆分（注：SimpleKernel 不采用微内核的用户态驱动模型，仅参考其 API 设计）
 
+## CURRENT PHASE
+> **⚠ 临时节——审计结束后清理**
+>
+> 项目当前处于全项目深度审计阶段（Roadmap: `docs/rust-rewrite/review-roadmap.md`）。
+> 以下内容仅在审计期间有效，审计完成后须移除本节及所有与项目本身无关的临时内容。
+
+## COLLABORATION STYLE
+> **⚠ 临时节——审计结束后清理**
+
+- 项目作者是 C/C++ 背景，正在学习 Rust。在编写或审阅代码时：
+  - 遇到 Rust 特有的语法、惯用法、设计模式时，主动用 C/C++ 类比解释
+  - 指出 Rust 写法与 C/C++ 的关键差异（所有权、生命周期、trait vs 虚函数、enum vs union+tag 等）
+  - 不要假设用户熟悉 Rust 高级特性（typestate、GAT、`PhantomData` 等），使用时需简要说明
+
 ## NOTES
 - **SAS architecture**: single address space, no user/kernel split. Isolation via Rust type system + crate visibility (`pub(crate)`). Syscall layer (`src/syscall/`) is the only public cross-module API gateway — direct function calls, no trap (ecall/svc).
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
