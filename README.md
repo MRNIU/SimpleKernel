@@ -353,8 +353,8 @@ scope: 可选，影响的模块 (arch, memory, task, xtask)
 
 ### 文档
 
-- **设计总览**: [docs/rust-rewrite/00-概述.md](./docs/rust-rewrite/00-概述.md)
-- **阶段计划**: [docs/rust-rewrite/P0-P7](./docs/rust-rewrite/)
+- **设计总览**: [docs/design/00-概述.md](./docs/design/00-概述.md)
+- **阶段计划**: [docs/design/](./docs/design/)
 - **工具链**: [docs/0_工具链.md](./docs/0_工具链.md)
 - **系统启动**: [docs/1_系统启动.md](./docs/1_系统启动.md)
 - **调试输出**: [docs/2_调试输出.md](./docs/2_调试输出.md)

@@ -79,8 +79,8 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 
 - [ ] `deny.toml` + CI 集成
 - [ ] `rustfmt.toml` + `clippy.toml`
-- [ ] `docs/rust-rewrite/unsafe-audit-baseline.md`
-- [ ] `docs/rust-rewrite/dependency-audit.md`
+- [ ] `docs/audit/unsafe-audit-baseline.md`
+- [ ] `docs/audit/dependency-audit.md`
 - [ ] `docs/diagrams/crate-dependency-graph.md`（Mermaid）
 - [ ] 模块 README 模板 `docs/templates/module-readme-template.md`
 - [ ] ADR 模板 `docs/templates/adr-template.md` + `docs/decisions/` 目录

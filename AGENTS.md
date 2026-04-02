@@ -3,7 +3,7 @@
 ## OVERVIEW
 Interface-driven OS kernel for AI-assisted learning. Rust (`no_std`, `no_main`), freestanding, nightly toolchain. Two architectures: riscv64, aarch64. Traits define contracts (doc comments with `# Safety`/`# Errors`/`# Panics`), AI generates `impl` blocks, tests verify compliance.
 
-> **架构模型**：SimpleKernel 采用单地址空间（SAS）架构——所有代码运行在同一特权级和地址空间中，不存在用户态/内核态分离。隔离通过 Rust 类型系统 + crate 可见性规则实现（Theseus 式）。详见 `docs/rust-rewrite/SAS-架构设计.md`。
+> **架构模型**：SimpleKernel 采用单地址空间（SAS）架构——所有代码运行在同一特权级和地址空间中，不存在用户态/内核态分离。隔离通过 Rust 类型系统 + crate 可见性规则实现（Theseus 式）。详见 `docs/design/SAS-架构设计.md`。
 
 ## STRUCTURE
 ```
@@ -14,7 +14,7 @@ crates/               # Workspace crates (memory, sync, per_cpu, paging, ...)
 xtask/                # Build tool (cargo xtask run/build/debug/test/firmware)
 tests/system/         # Unified system test kernel (QEMU, all test groups)
 tests/standalone/     # Standalone test binaries (panic_test, oom_test, ...)
-docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
+docs/design/         # Design docs (SAS architecture, subsystem designs, phase plans)
 3rd/                  # Git submodules (opensbi, u-boot, optee, atf, dtc — firmware only)
 ```
 
@@ -26,8 +26,8 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 - **System tests** → `tests/system/` for unified test kernel, `tests/standalone/` for isolated tests
 - **Error handling** → `KResult<T> = Result<T, ErrorCode>` in `src/error.rs`
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
-- **Design overview** → `docs/rust-rewrite/00-概述.md` (master plan with all design decisions)
-- **Phase details** → `docs/rust-rewrite/P0-P7` (implementation plans, all phases complete)
+- **Design overview** → `docs/design/00-概述.md` (master plan with all design decisions)
+- **Phase details** → `docs/design/P0-P7` (implementation plans, all phases complete)
 
 ## CODE MAP
 | Module | Purpose | Key Files |
@@ -73,7 +73,7 @@ docs/rust-rewrite/    # Design docs, phase plans (P0-P7)
 
 ## CONVENTIONS
 
-> Full Rust coding conventions: `docs/rust-rewrite/00-概述.md` §9
+> Full Rust coding conventions: `docs/design/00-概述.md` §9
 
 ### Git
 - **Commit 格式**: `<type>(<scope>): <subject>` — type: feat/fix/refactor/test/docs/chore
@@ -233,9 +233,9 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 > 项目当前处于全项目深度审计阶段。以下内容仅在审计期间有效，审计完成后须移除。
 
 ### 审计相关文件
-- **Roadmap**（全局计划、排查 checklist、协作流程）: `docs/rust-rewrite/review-roadmap.md`
-- **审计进度**（跨对话上下文传递）: `docs/rust-rewrite/audit-progress.md`
-- **Session Prompt**（输出格式参考）: `docs/rust-rewrite/review-session-prompt.md`
+- **Roadmap**（全局计划、排查 checklist、协作流程）: `docs/audit/review-roadmap.md`
+- **审计进度**（跨对话上下文传递）: `docs/audit/audit-progress.md`
+- **Session Prompt**（输出格式参考）: `docs/audit/review-session-prompt.md`
 - **ADR 目录**（架构决策记录）: `docs/decisions/`
 - **ADR 模板**: `docs/templates/adr-template.md`
 
@@ -244,8 +244,8 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 当用户发起审计任务（如"审计 R2 crates/sync/"、"继续审计"等）时，按以下流程执行：
 
 **启动阶段：**
-1. Read 整个 `docs/rust-rewrite/review-roadmap.md`（定位审查范围和标准排查流程）
-2. Read `docs/rust-rewrite/audit-progress.md`（获取历史上下文和当前进度）
+1. Read 整个 `docs/audit/review-roadmap.md`（定位审查范围和标准排查流程）
+2. Read `docs/audit/audit-progress.md`（获取历史上下文和当前进度）
 3. 如果用户说"继续审计"且未指定目标，从 audit-progress.md 的"下一个目标"继续
 4. Read 排查目标的所有源文件
 
@@ -265,7 +265,7 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 - 代码修改在讨论完设计问题后进行
 
 **结束阶段：**
-- 对话结束时，将以下内容写入 `docs/rust-rewrite/audit-progress.md`：
+- 对话结束时，将以下内容写入 `docs/audit/audit-progress.md`：
   - 更新"当前状态"（当前 Phase + 下一个目标）
   - 更新"上次对话摘要"（已完成、关键问题、未决设计问题、下一步）
   - 追加"已完成的目标"记录
@@ -288,5 +288,5 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
 - Debug: use `cargo xtask debug` + GDB, QEMU logs in build output
-- Design docs: `docs/rust-rewrite/00-概述.md` is the master reference for all design decisions
-- Phase plans: `docs/rust-rewrite/P0-P7` — all phases (P0-P7) implementation complete
+- Design docs: `docs/design/00-概述.md` is the master reference for all design decisions
+- Phase plans: `docs/design/P0-P7` — all phases (P0-P7) implementation complete

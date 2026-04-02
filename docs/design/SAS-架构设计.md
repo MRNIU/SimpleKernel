@@ -122,7 +122,7 @@ boot 路径中的初始化函数（`task::init()`、`memory::init()`）不经过
 
 ### 4.3 新增
 
-- `docs/rust-rewrite/SAS-架构设计.md`（本文档）
+- `docs/design/SAS-架构设计.md`（本文档）
 
 ### 4.4 不修改
 

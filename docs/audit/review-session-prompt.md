@@ -3,7 +3,7 @@
 > **使用方法**：每次新对话时，将下方 prompt 模板发送给 Claude。只需替换 `{{占位符}}`。
 >
 > 固定的背景信息（项目结构、编码规范、参考内核指南等）已写入 `CLAUDE.md`，
-> 排查 checklist 和详细计划在 `docs/rust-rewrite/review-roadmap.md` 中，
+> 排查 checklist 和详细计划在 `docs/audit/review-roadmap.md` 中，
 > 此处不重复——AI 会自动读取这些文件。
 
 ---
@@ -15,9 +15,9 @@
 
 ## 核心文件
 
-- **审计 Roadmap**: `docs/rust-rewrite/review-roadmap.md`（全局计划、排查 checklist、协作流程）
-- **设计总纲**: `docs/rust-rewrite/00-概述.md`
-- **SAS 架构**: `docs/rust-rewrite/SAS-架构设计.md`
+- **审计 Roadmap**: `docs/audit/review-roadmap.md`（全局计划、排查 checklist、协作流程）
+- **设计总纲**: `docs/design/00-概述.md`
+- **SAS 架构**: `docs/design/SAS-架构设计.md`
 - **ADR 目录**: `docs/decisions/`（架构决策记录）
 
 ## 当前任务
@@ -33,7 +33,7 @@
 ## 前置操作
 
 **在开始排查前，必须先执行以下操作：**
-1. Read 整个 `docs/rust-rewrite/review-roadmap.md`（定位当前 Phase 的审查范围和标准排查流程）
+1. Read 整个 `docs/audit/review-roadmap.md`（定位当前 Phase 的审查范围和标准排查流程）
 2. Read 排查目标的所有源文件
 
 ## 排查要求
