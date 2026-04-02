@@ -5,8 +5,6 @@ Interface-driven OS kernel for AI-assisted learning. Rust (`no_std`, `no_main`),
 
 > **架构模型**：SimpleKernel 采用单地址空间（SAS）架构——所有代码运行在同一特权级和地址空间中，不存在用户态/内核态分离。隔离通过 Rust 类型系统 + crate 可见性规则实现（Theseus 式）。详见 `docs/rust-rewrite/SAS-架构设计.md`。
 
-> **迁移状态**：从 C++ 到 Rust 的迁移已完成（P0-P7 全部实现）。详见 `docs/rust-rewrite/00-概述.md`。
-
 ## STRUCTURE
 ```
 src/                  # Kernel source — lib.rs (modules) + main.rs (entry)
@@ -145,6 +143,83 @@ cargo fmt --check && cargo clippy -- -D warnings
 cargo doc --no-deps
 ```
 
+## TESTING
+
+三层测试体系：单元测试（host）、系统测试（QEMU 裸机）、独立测试（QEMU 隔离场景）。
+
+### 单元测试（Unit Tests）
+
+在 x86_64 宿主机上运行，测试与体系结构无关的纯逻辑代码。
+
+```bash
+cargo test                                        # 全部单元测试
+cargo test -p memory_types                        # 单个 crate
+cargo test alignment_basic -- --nocapture         # 单个测试（显示输出）
+```
+
+适用范围：`crates/` 下的地址运算、页表参数推导、调度算法、ELF 解析等。
+在模块内用 `#[cfg(test)] mod tests { ... }` 编写，标准 `#[test]` 宏。
+
+### 系统测试（System Tests）
+
+一个 `#![no_std]` 裸机测试内核，在 QEMU 中完整引导后运行所有测试组。
+
+```bash
+cargo xtask test --arch riscv64                   # 运行统一测试内核
+cargo xtask test --arch aarch64                   # aarch64 架构
+cargo xtask test --arch riscv64 --all             # 统一测试 + 全部独立测试
+cargo xtask test --list                           # 列出所有可用测试
+```
+
+测试框架位于 `tests/system/src/framework.rs`，核心类型：
+
+| 类型 | 用途 |
+|------|------|
+| `TestCase { name, run: fn() }` | 单个测试用例 |
+| `TestGroup { name, tests }` | 测试组（静态数组） |
+| `TestRunner` | 收集组、依次执行、统计结果 |
+
+现有测试组（在 `tests/system/src/main.rs` 中注册）：
+
+| 组 | 文件 | 测试内容 |
+|----|------|----------|
+| memory | `memory_tests.rs` | 堆分配（Box、Vec、大块） |
+| sync | `sync_tests.rs` | SpinLock 基本操作、RAII 语义 |
+| device | `device_tests.rs` | DeviceManager、VirtIO 块设备读取 |
+| fs | `fs_tests.rs` | VFS 路径解析、RamFS CRUD、多级目录 |
+
+引导流程：`_start` → `kernel_init(InitLevel::Full)` → 注册测试组 → `runner.run()` → `exit_qemu(0/1)`。
+断言失败 = panic = 测试内核立即终止（裸机环境无法捕获 panic）。
+
+#### 添加系统测试
+
+1. 在 `tests/system/src/` 新建 `xxx_tests.rs`，导出 `pub fn tests() -> &'static [TestCase]`
+2. 在 `tests/system/src/main.rs` 中 `runner.add_group(TestGroup { name: "xxx", tests: xxx_tests::tests() })`
+
+### 独立测试（Standalone Tests）
+
+独立的裸机二进制，用于测试无法在统一测试内核中验证的场景（如 panic 行为、OOM 处理）。
+
+```bash
+cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
+```
+
+现有独立测试：`tests/standalone/panic_test/` — 验证 panic handler 正确触发。
+
+#### 添加独立测试
+
+1. 创建 `tests/standalone/my-test/`，包含 `Cargo.toml`（`name = "my-test"`）和 `src/main.rs`
+2. `src/main.rs` 提供 `_start` 入口，按需调用 `kernel_init(InitLevel::...)` 选择初始化级别
+3. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
+4. xtask 会自动扫描 `tests/standalone/*/Cargo.toml` 发现新测试
+
+### 测试规范
+
+- 每个测试函数必须有 `///` 文档注释
+- 系统/独立测试二进制的 `Cargo.toml` 中设置 `test = false`（不使用标准测试 harness）
+- 测试 crate 依赖 `simplekernel` lib，通过 `kernel_init()` 复用内核初始化流程
+- CI 中系统测试会重复运行多次以验证稳定性（PR: 3 次，push: 10 次），每次超时 300 秒
+
 ## DESIGN REFERENCES
 设计和实现新模块时，应参考以下成熟内核的对应实现，取其精华：
 - **Linux** — 工业级参考，尤其是调度器（CFS）、VFS、内存管理（`vm_area_struct`）、信号处理
@@ -156,10 +231,6 @@ cargo doc --no-deps
 - **SAS architecture**: single address space, no user/kernel split. Isolation via Rust type system + crate visibility (`pub(crate)`). Syscall layer (`src/syscall/`) is the only public cross-module API gateway — direct function calls, no trap (ecall/svc).
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
-- Unit tests run on x86_64 host only (`cargo test`) — system tests use QEMU (`cargo xtask test`)
-- System test architecture: unified test kernel (`tests/system/`) + standalone binaries (`tests/standalone/`)
-- Test crates depend on `simplekernel` lib, replace entry point, use `kernel_init()` for initialization
 - Debug: use `cargo xtask debug` + GDB, QEMU logs in build output
 - Design docs: `docs/rust-rewrite/00-概述.md` is the master reference for all design decisions
 - Phase plans: `docs/rust-rewrite/P0-P7` — all phases (P0-P7) implementation complete
-- Migration from C++ to Rust is complete; legacy C++ docs removed
