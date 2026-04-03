@@ -222,11 +222,28 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 - CI 中系统测试会重复运行多次以验证稳定性（PR: 3 次，push: 10 次），每次超时 300 秒
 
 ## DESIGN REFERENCES
-设计和实现新模块时，应参考以下成熟内核的对应实现，取其精华：
+设计和实现新模块时，应参考以下成熟内核和论文，取其精华。完整参考文献见 `docs/design/references.md`。
+
+### 参考内核
 - **Linux** — 工业级参考，尤其是调度器（CFS）、VFS、内存管理（`vm_area_struct`）、信号处理
 - **Zephyr** — 嵌入式/RTOS 视角，轻量级线程模型、设备驱动框架（device model + devicetree）、电源管理
-- **Theseus** — Rust 类型系统深度利用，`MappedPages` RAII 映射管理、crate 级模块化、`DeadlockPrevention` trait 参数化同步原语
+- **Theseus** — Rust 类型系统深度利用，`MappedPages` RAII 映射管理、crate 级模块化、`#![forbid(unsafe_code)]` APP 隔离
 - **Redox** — Rust 微内核实践，scheme-based VFS、`syscall` crate 设计、reliability crate 拆分（注：SimpleKernel 不采用微内核的用户态驱动模型，仅参考其 API 设计）
+- **Tock** — 嵌入式 Rust 内核，`unsafe trait` capability 模式、Grant 内存模型
+- **Asterinas** — Framekernel 架构（framework 可 unsafe + services 纯 safe Rust），Linux ABI 兼容
+- **rCore** — 清华大学 RISC-V 教学 Rust 内核，启动流程和页表实现参考
+
+### 关键论文
+- [Theseus OSDI'20] — intralingual OS：Rust 编译器即保护环
+- [RedLeaf OSDI'20] — 语言域隔离 + 跨域故障恢复
+- [Tock SOSP'17] — Rust 嵌入式内核 capability 模式
+- [SPIN SOSP'95] — 语言安全内核扩展（Modula-3），SAS 隔离的早期实践
+- [Singularity MSR'05-'07] — SIP 软件隔离进程，量化 SAS 性能优势
+- [Opal TOCS'94] — SAS 保护模型理论基础
+- [Mungi SPE'98] — SAS + capability 保护
+- [RustBelt POPL'18] — Rust 安全模型形式化证明
+- [Asterinas Framekernel ATC'25] — 内核内特权分离，TCB 14%
+- [Rust for Linux ACSAC'24] — Rust 消除 91% 驱动安全漏洞的量化分析
 
 ## CURRENT PHASE
 > **⚠ 临时节——审计结束后清理**
@@ -286,8 +303,16 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 
 ## NOTES
 - **SAS architecture**: single address space, no user/kernel split. Isolation via Rust type system + crate visibility (`pub(crate)`). Syscall layer (`src/syscall/`) is the only public cross-module API gateway — direct function calls, no trap (ecall/svc).
-- **Kernel encapsulation**: future APP code can ONLY access kernel through `src/syscall/` interfaces. These interfaces MUST guarantee safety — validate all inputs, return `KResult<T>` for recoverable errors. Kernel internals (`pub(crate)`) are not accessible to APPs.
-- **Kernel-internal error policy**: the kernel is designed to be infallible. Internal errors (invariant violations, impossible states) MUST panic immediately — fail-fast, no silent error propagation. `Result` is for syscall boundaries; inside the kernel, use `.expect("descriptive reason")` or `panic!()`.
+- **Kernel encapsulation** (three-layer isolation, ref: [Theseus OSDI'20], [Tock SOSP'17], [SPIN SOSP'95]):
+  1. APP crate 必须标记 `#![forbid(unsafe_code)]` — 编译器强制禁止 unsafe，APP 无法绕过类型系统
+  2. 内核内部接口使用 `pub(crate)` — APP crate 无法访问内核内部符号
+  3. `src/syscall/` 是唯一 `pub` 跨 crate 接口 — APP 的一切内核访问必须经过此网关
+  - Syscall 接口使用 Rust 类型（非裸 `usize`），编译器保证类型安全；运行时只验证编译器无法保证的部分（如 Fd 是否有效）
+  - 未来如需 APP 权限分级，可引入 Tock 式 capability token（`unsafe trait` 作为编译期访问控制），当前不需要
+- **Kernel-internal error policy** (bug = panic, expected error = Result):
+  - 不变量违反、不可达路径、逻辑错误 → `panic!()` / `.expect()` — 内核 bug 必须立即暴露，fail-fast
+  - 资源耗尽（OOM）、外部设备失败 → `Result<T, ErrorCode>` — 向上返回，由 syscall 层决定如何报给 APP
+  - 判断标准：**"这不应该发生" → panic；"这可能发生" → Result**
 - **Error diagnostics**: panic/error messages MUST include the actual data that caused the failure, not just the reason. E.g., `panic!("invalid page-aligned address: {:#x}", addr)` instead of `panic!("invalid address")`. This applies to `.expect()`, `panic!()`, and `log::error!()`.
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)

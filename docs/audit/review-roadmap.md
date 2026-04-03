@@ -364,12 +364,17 @@ memory_types ← frame_allocator ← page_allocator
 
 ## 参考内核的具体使用指南
 
+完整参考文献（含论文链接）见 `docs/design/references.md`。
+
 | 参考内核 | 何时参考 | 参考什么 | 不参考什么 |
 |----------|----------|----------|------------|
 | **Linux** | 审查子系统接口设计时 | VFS ops 接口、`sched_class` 设计、`mm_struct`/`vm_area_struct`、信号处理框架、lockdep | 具体 C 实现、CONFIG 宏体系、模块加载 |
-| **Theseus** | 审查 Rust 类型系统利用时 | `MappedPages` RAII、typestate、crate 隔离模型、`DeadlockPrevention` | Theseus 特有的 live evolution 机制 |
+| **Theseus** | 审查 Rust 类型系统利用和 SAS 隔离时 | `MappedPages` RAII、typestate、crate 隔离、`#![forbid(unsafe_code)]` APP 隔离 | Theseus 特有的 live evolution 机制 |
 | **Redox** | 审查 API 设计和 error handling 时 | `syscall` crate 设计、scheme VFS、`Error` 统一处理 | 微内核的用户态驱动模型 |
+| **Tock** | 审查访问控制和嵌入式模式时 | `unsafe trait` capability 模式、Grant 内存模型、capsule 隔离 | MPU 硬件隔离（SimpleKernel 无 MPU） |
+| **Asterinas** | 审查内核内特权分离时 | Framekernel 架构（unsafe framework + safe services）、OSTD 安全抽象层 | Linux ABI 兼容层细节 |
 | **Zephyr** | 审查设备模型和嵌入式设计时 | device model、devicetree 绑定、轻量级线程模型、电源管理 | Zephyr 特有的 Kconfig 体系、行业安全认证流程 |
+| **rCore** | 审查 RISC-V 实现时 | RISC-V 启动流程、页表实现、教学内核结构 | 传统用户态/内核态分离模型 |
 | **µFork** | 审查 POSIX 兼容策略时 | 哪些 POSIX 语义原样保留、哪些重新诠释、capability 与 FD 的映射 | Actor model 本身（与 SAS 架构不兼容） |
 
 ---
