@@ -87,7 +87,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Linting**: `cargo clippy -- -D warnings`
 - **Doc comments**: `///` with `# Safety`, `# Errors`, `# Panics` sections for public APIs（节标题保留英文，内容用中文）
 - **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文（Rust 社区惯例），其后说明用中文
-- **Error handling**: `Result<T, ErrorCode>` + `?` operator; `.expect("reason")` not `.unwrap()`
+- **Error handling**: Syscall boundary uses `Result<T, ErrorCode>` + `?`; kernel internals use `.expect("reason with data")` or `panic!()` — the kernel must not silently proceed on internal errors
 - **Unsafe**: Every `unsafe` block MUST have `// SAFETY:` comment explaining invariants; minimize scope
 - **Singletons**: `spin::Once<T>` with `call_once()` / `get()`
 - **Sync**: Custom `SpinLock<T>` (interrupt-aware), NOT `spin::Mutex` for kernel mutual exclusion
@@ -97,7 +97,8 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 
 ## ANTI-PATTERNS
 
-- **NO** `.unwrap()` — use `.expect("reason")` or `?`
+- **NO** `.unwrap()` — use `.expect("reason with relevant data")` or `?`
+- **NO** vague panic/error messages — always include the data that caused the failure (addresses, indices, sizes, etc.)
 - **NO** `unsafe` without `// SAFETY:` comment
 - **NO** modifying trait definitions to embed implementation (traits = contracts)
 - **NO** `spin::Mutex` for kernel mutual exclusion (doesn't disable interrupts)
@@ -285,6 +286,9 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 
 ## NOTES
 - **SAS architecture**: single address space, no user/kernel split. Isolation via Rust type system + crate visibility (`pub(crate)`). Syscall layer (`src/syscall/`) is the only public cross-module API gateway — direct function calls, no trap (ecall/svc).
+- **Kernel encapsulation**: future APP code can ONLY access kernel through `src/syscall/` interfaces. These interfaces MUST guarantee safety — validate all inputs, return `KResult<T>` for recoverable errors. Kernel internals (`pub(crate)`) are not accessible to APPs.
+- **Kernel-internal error policy**: the kernel is designed to be infallible. Internal errors (invariant violations, impossible states) MUST panic immediately — fail-fast, no silent error propagation. `Result` is for syscall boundaries; inside the kernel, use `.expect("descriptive reason")` or `panic!()`.
+- **Error diagnostics**: panic/error messages MUST include the actual data that caused the failure, not just the reason. E.g., `panic!("invalid page-aligned address: {:#x}", addr)` instead of `panic!("invalid address")`. This applies to `.expect()`, `panic!()`, and `log::error!()`.
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
 - Debug: use `cargo xtask debug` + GDB, QEMU logs in build output
