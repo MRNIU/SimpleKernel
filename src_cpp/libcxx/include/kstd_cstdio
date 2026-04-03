@@ -1,7 +1,0 @@
-/**
- * @copyright Copyright The SimpleKernel Contributors
- */
-
-#pragma once
-
-#include "sk_stdio.h"
