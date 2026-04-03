@@ -124,15 +124,14 @@ macro_rules! impl_usize_newtype {
             type Output = Self;
             #[inline]
             fn add(self, rhs: usize) -> Self {
-                Self(self.0.checked_add(rhs).expect(concat!(stringify!($name), ": 加法溢出")))
+                Self::new(self.0.checked_add(rhs).expect(concat!(stringify!($name), ": 加法溢出")))
             }
         }
 
         impl core::ops::AddAssign<usize> for $name {
             #[inline]
             fn add_assign(&mut self, rhs: usize) {
-                self.0 =
-                    self.0.checked_add(rhs).expect(concat!(stringify!($name), ": 加法溢出"));
+                *self = Self::new(self.0.checked_add(rhs).expect(concat!(stringify!($name), ": 加法溢出")));
             }
         }
 
@@ -140,15 +139,14 @@ macro_rules! impl_usize_newtype {
             type Output = Self;
             #[inline]
             fn sub(self, rhs: usize) -> Self {
-                Self(self.0.checked_sub(rhs).expect(concat!(stringify!($name), ": 减法下溢")))
+                Self::new(self.0.checked_sub(rhs).expect(concat!(stringify!($name), ": 减法下溢")))
             }
         }
 
         impl core::ops::SubAssign<usize> for $name {
             #[inline]
             fn sub_assign(&mut self, rhs: usize) {
-                self.0 =
-                    self.0.checked_sub(rhs).expect(concat!(stringify!($name), ": 减法下溢"));
+                *self = Self::new(self.0.checked_sub(rhs).expect(concat!(stringify!($name), ": 减法下溢")));
             }
         }
 

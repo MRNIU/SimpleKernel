@@ -323,4 +323,20 @@ mod tests {
         assert_eq!(va.as_usize(), PHYS_OFFSET);
         assert_eq!(virt_to_phys(va), pa);
     }
+
+    /// PhysAddr 加法结果超出 PA_BITS 范围应 panic。
+    #[test]
+    #[should_panic(expected = "PA_BITS")]
+    fn phys_add_overflow_pa_bits() {
+        let near_max = PhysAddr::new((1usize << config::PA_BITS) - 2);
+        let _ = near_max + 4;
+    }
+
+    /// VirtAddr 加法结果不满足规范化应 panic。
+    #[test]
+    #[should_panic(expected = "非规范虚拟地址")]
+    fn virt_add_breaks_canonical() {
+        let near_boundary = VirtAddr::new((1usize << (config::VA_BITS - 1)) - 2);
+        let _ = near_boundary + 4;
+    }
 }
