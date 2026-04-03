@@ -18,7 +18,7 @@ mod arch;
 
 use arch::{Arch, InterruptArch as _};
 use core::marker::PhantomData;
-use core::sync::atomic::{AtomicU32, Ordering};
+use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use per_cpu::cpu_local;
 
 /// 查询当前中断是否启用。
@@ -117,6 +117,104 @@ static HARDIRQ_COUNT: AtomicU32 = AtomicU32::new(0);
 // TODO: 引入 SoftIrqGuard 后启用；当前始终为 0
 #[cpu_local]
 static SOFTIRQ_COUNT: AtomicU32 = AtomicU32::new(0);
+
+/// 抢占禁用嵌套计数（per-CPU）。
+///
+/// 大于 0 表示当前核心不可被抢占。由 [`PreemptGuard`] 的构造/析构维护。
+#[cpu_local]
+static PREEMPT_DISABLE_COUNT: AtomicU32 = AtomicU32::new(0);
+
+/// 重调度标志（per-CPU）。
+///
+/// 为 `true` 表示当前核心需要在下一个抢占点执行调度。
+/// 可由其他核心通过 [`set_need_resched_on()`] 跨核设置。
+#[cpu_local]
+pub static NEED_RESCHED: AtomicBool = AtomicBool::new(false);
+
+/// 抢占禁用的证明令牌（proof token）。
+///
+/// 持有此类型的值即证明当前核心的抢占已被禁用。
+/// 不可 Clone / Copy / Send —— 抢占状态是 per-CPU 的，
+/// 不可跨核心传递。析构时自动递减嵌套计数。
+///
+/// 类似 C/C++ 中手动调用 `preempt_disable()` / `preempt_enable()` 对，
+/// 但利用 Rust RAII 保证一定成对出现，不可能遗漏 `preempt_enable()`。
+///
+/// # Examples
+///
+/// ```ignore
+/// let guard = PreemptGuard::disable();
+/// // 抢占已禁用，可安全操作 per-CPU 数据
+/// do_something();
+/// drop(guard); // 恢复抢占
+/// ```
+///
+/// PreemptGuard 不可 Send（不可跨线程传递）：
+/// ```compile_fail
+/// use interrupt_state::PreemptGuard;
+/// fn assert_send<T: Send>() {}
+/// assert_send::<PreemptGuard>(); // 不应编译通过
+/// ```
+pub struct PreemptGuard {
+    /// `*const ()` 使类型自动 `!Send + !Sync`——抢占状态是 per-CPU 的，不可跨核传递。
+    _not_send: PhantomData<*const ()>,
+}
+
+impl PreemptGuard {
+    /// 禁用抢占（递增嵌套计数），返回守卫。
+    ///
+    /// 支持嵌套调用——每次调用递增计数，全部守卫析构后才恢复可抢占状态。
+    #[inline]
+    #[must_use]
+    pub fn disable() -> Self {
+        PREEMPT_DISABLE_COUNT.get().fetch_add(1, Ordering::Relaxed);
+        Self {
+            _not_send: PhantomData,
+        }
+    }
+}
+
+impl Drop for PreemptGuard {
+    fn drop(&mut self) {
+        PREEMPT_DISABLE_COUNT.get().fetch_sub(1, Ordering::Relaxed);
+    }
+}
+
+/// 当前核心是否可被抢占。
+///
+/// 仅当抢占禁用计数为 0 **且**不在中断上下文中时返回 `true`。
+#[inline]
+pub fn preemptible() -> bool {
+    PREEMPT_DISABLE_COUNT.get().load(Ordering::Relaxed) == 0 && !is_in_interrupt()
+}
+
+/// 原子地检查并清除当前核心的重调度标志。
+///
+/// 返回清除前的值——`true` 表示确实需要重调度。
+/// 使用 `Acquire` 序与 [`set_need_resched_on()`] 的 `Release` 配对，
+/// 确保看到设置方在 store 之前的所有写入。
+#[inline]
+pub fn check_and_clear_need_resched() -> bool {
+    NEED_RESCHED.get().swap(false, Ordering::Acquire)
+}
+
+/// 设置目标核心的重调度标志。
+///
+/// 典型场景：唤醒一个任务后，通知其所在核心尽快调度。
+/// 使用 `Release` 序确保唤醒操作的写入在目标核心读取标志时可见。
+///
+/// # Safety
+/// 调用方必须确保 `target_core` 是有效的核心编号（< 实际核心数），
+/// 否则将访问越界的 per-CPU 数据。
+#[inline]
+pub unsafe fn set_need_resched_on(target_core: usize) {
+    // SAFETY: 调用方保证 target_core 是有效核心编号
+    unsafe {
+        NEED_RESCHED
+            .get_on(target_core)
+            .store(true, Ordering::Release);
+    }
+}
 
 /// 硬中断上下文的 RAII 守卫。
 ///
@@ -238,5 +336,58 @@ mod tests {
     #[test]
     fn hard_irq_guard_is_zst() {
         assert_eq!(core::mem::size_of::<HardIrqGuard>(), 0);
+    }
+
+    /// PreemptGuard 大小为 0（只有 PhantomData）。
+    #[test]
+    fn preempt_guard_is_zst() {
+        assert_eq!(core::mem::size_of::<PreemptGuard>(), 0);
+    }
+
+    /// 禁用抢占后 preemptible() 返回 false，drop 后恢复。
+    #[test]
+    fn preempt_disable_makes_non_preemptible() {
+        let _guard = TEST_LOCK.lock().expect("TEST_LOCK poisoned");
+        assert!(preemptible());
+        let preempt = PreemptGuard::disable();
+        assert!(!preemptible());
+        drop(preempt);
+        assert!(preemptible());
+    }
+
+    /// 嵌套 PreemptGuard：内层 drop 后仍不可抢占，外层 drop 后恢复。
+    #[test]
+    fn nested_preempt_guard() {
+        let _guard = TEST_LOCK.lock().expect("TEST_LOCK poisoned");
+        assert!(preemptible());
+        let outer = PreemptGuard::disable();
+        assert!(!preemptible());
+        let inner = PreemptGuard::disable();
+        assert!(!preemptible());
+        drop(inner);
+        assert!(!preemptible());
+        drop(outer);
+        assert!(preemptible());
+    }
+
+    /// 中断上下文中不可抢占（即使抢占计数为 0）。
+    #[test]
+    fn not_preemptible_in_interrupt() {
+        let _guard = TEST_LOCK.lock().expect("TEST_LOCK poisoned");
+        assert!(preemptible());
+        let irq = HardIrqGuard::enter();
+        assert!(!preemptible());
+        drop(irq);
+        assert!(preemptible());
+    }
+
+    /// check_and_clear_need_resched：初始为 false，设置后返回 true，再次检查返回 false。
+    #[test]
+    fn check_and_clear_need_resched_works() {
+        let _guard = TEST_LOCK.lock().expect("TEST_LOCK poisoned");
+        assert!(!check_and_clear_need_resched());
+        NEED_RESCHED.get().store(true, Ordering::Release);
+        assert!(check_and_clear_need_resched());
+        assert!(!check_and_clear_need_resched());
     }
 }
