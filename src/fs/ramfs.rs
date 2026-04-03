@@ -53,7 +53,7 @@ impl RamFs {
         inodes.insert(root_id, root_inode);
 
         Self {
-            inodes: SpinLock::new(inodes, "ramfs"),
+            inodes: SpinLock::new(inodes, "ramfs", sync::lock_level::UNSPECIFIED),
             next_id: AtomicU64::new(1),
             root: root_id,
         }

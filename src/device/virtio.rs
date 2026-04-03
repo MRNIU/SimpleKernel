@@ -126,7 +126,7 @@ fn init_block_device(
     manager::register_device(device);
 
     // 存储全局引用供文件系统使用
-    VIRTIO_BLK.call_once(|| sync::SpinLock::new(blk, "virtio_blk"));
+    VIRTIO_BLK.call_once(|| sync::SpinLock::new(blk, "virtio_blk", sync::lock_level::UNSPECIFIED));
 
     Ok(())
 }

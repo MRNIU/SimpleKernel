@@ -63,7 +63,7 @@ impl FileDescriptorTable {
     ///
     /// FD 表达到上限时返回 `FdTableFull`。
     pub fn alloc(&mut self, file: File) -> FsResult<Fd> {
-        let wrapped = Arc::new(SpinLock::new(file, "fd"));
+        let wrapped = Arc::new(SpinLock::new(file, "fd", sync::lock_level::UNSPECIFIED));
 
         // 查找第一个空槽
         for (i, slot) in self.entries.iter_mut().enumerate() {

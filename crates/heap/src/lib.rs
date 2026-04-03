@@ -49,7 +49,11 @@ unsafe impl GlobalAlloc for SafeHeap {
 }
 
 #[global_allocator]
-static HEAP_ALLOCATOR: SafeHeap = SafeHeap(SpinLock::new(Heap::empty(), "heap"));
+static HEAP_ALLOCATOR: SafeHeap = SafeHeap(SpinLock::new(
+    Heap::empty(),
+    "heap",
+    sync_crate::lock_level::UNSPECIFIED,
+));
 
 /// BSS 区域堆后备存储。
 ///

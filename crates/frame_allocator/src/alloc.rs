@@ -38,7 +38,7 @@ use crate::FrameAllocError;
 use crate::state::FreeFrames;
 
 /// 全局帧分配器，以页帧（PAGE_SIZE 字节）为单位管理物理内存。
-static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocatorInner> = SpinLockIrq::new_with_level(
+static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocatorInner> = SpinLockIrq::new(
     FrameAllocatorInner::new(),
     "frame_alloc",
     sync_crate::lock_level::FRAME_ALLOC,

@@ -73,7 +73,7 @@ pub fn ensure_test_init() {
         frame_allocator::ensure_test_init();
         page_allocator::ensure_test_init();
         let pt = PageTable::create().expect("test page table");
-        let pt_lock = sync_crate::SpinLock::new(pt, "test_pt");
+        let pt_lock = sync_crate::SpinLock::new(pt, "test_pt", sync_crate::lock_level::UNSPECIFIED);
         let pt_static: &'static _ = alloc::boxed::Box::leak(alloc::boxed::Box::new(pt_lock));
         // SAFETY: Box::leak 产出 'static 引用
         unsafe { set_kernel_page_table(pt_static) };

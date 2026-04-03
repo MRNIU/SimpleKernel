@@ -33,7 +33,8 @@ static KERNEL_ADDRESS_SPACE: spin::Once<SpinLock<AddressSpace>> = spin::Once::ne
 /// 将构建完成的内核地址空间存入全局 `KERNEL_ADDRESS_SPACE`。
 #[cfg(any(test, target_os = "none"))]
 pub fn store_kernel_address_space(addr_space: AddressSpace) {
-    KERNEL_ADDRESS_SPACE.call_once(|| SpinLock::new(addr_space, "kernel_as"));
+    KERNEL_ADDRESS_SPACE
+        .call_once(|| SpinLock::new(addr_space, "kernel_as", sync_crate::lock_level::UNSPECIFIED));
 }
 
 /// 获取全局内核地址空间的引用；初始化前返回 `None`。

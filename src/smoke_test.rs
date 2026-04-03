@@ -11,7 +11,7 @@ use sync::SpinLock;
 
 pub fn phase2() {
     log::info!("Testing SpinLock...");
-    let lock = SpinLock::new(42u32, "smoke_test");
+    let lock = SpinLock::new(42u32, "smoke_test", sync::lock_level::UNSPECIFIED);
     {
         let mut guard = lock.lock();
         assert_eq!(*guard, 42);
@@ -104,7 +104,8 @@ pub fn phase4() {
     log::info!("Phase 4 complete");
 }
 
-static TEST_COUNTER: SpinLock<u32> = SpinLock::new(0, "test_counter");
+static TEST_COUNTER: SpinLock<u32> =
+    SpinLock::new(0, "test_counter", sync::lock_level::UNSPECIFIED);
 static TEST_DONE: AtomicU32 = AtomicU32::new(0);
 
 const ITERS_PER_THREAD: u32 = 200;

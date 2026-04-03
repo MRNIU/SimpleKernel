@@ -115,7 +115,11 @@ impl TaskControlBlock {
             signal_mask: AtomicU32::new(0),
             context: core::cell::SyncUnsafeCell::new(CalleeSavedContext::default()),
             kstack: None,
-            fd_table: sync::SpinLock::new(FileDescriptorTable::new(), "fd_table"),
+            fd_table: sync::SpinLock::new(
+                FileDescriptorTable::new(),
+                "fd_table",
+                sync::lock_level::UNSPECIFIED,
+            ),
         }
     }
 
@@ -146,7 +150,11 @@ impl TaskControlBlock {
             signal_mask: AtomicU32::new(0),
             context: core::cell::SyncUnsafeCell::new(ctx),
             kstack: Some(kstack),
-            fd_table: sync::SpinLock::new(FileDescriptorTable::new(), "fd_table"),
+            fd_table: sync::SpinLock::new(
+                FileDescriptorTable::new(),
+                "fd_table",
+                sync::lock_level::UNSPECIFIED,
+            ),
         }
     }
 

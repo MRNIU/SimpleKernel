@@ -20,8 +20,11 @@ use memory::frame::AllocatedFrames;
 /// DMA 分配追踪表——存储尚未释放的 DMA 帧，防止 Drop 自动回收。
 ///
 /// key 为 DMA 缓冲区的物理地址（页对齐），value 为持有帧所有权的 `AllocatedFrames`。
-static DMA_TRACKER: SpinLock<BTreeMap<u64, AllocatedFrames>> =
-    SpinLock::new(BTreeMap::new(), "dma_tracker");
+static DMA_TRACKER: SpinLock<BTreeMap<u64, AllocatedFrames>> = SpinLock::new(
+    BTreeMap::new(),
+    "dma_tracker",
+    sync::lock_level::UNSPECIFIED,
+);
 
 /// SimpleKernel 的 VirtIO HAL 实现。
 pub struct SimpleKernelHal;

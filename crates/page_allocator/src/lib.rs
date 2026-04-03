@@ -26,7 +26,7 @@ mod state;
 pub use error::PageAllocError;
 pub use state::{AllocatedPages, MemoryState, Pages};
 
-static PAGE_ALLOCATOR: SpinLockIrq<PageAllocatorInner> = SpinLockIrq::new_with_level(
+static PAGE_ALLOCATOR: SpinLockIrq<PageAllocatorInner> = SpinLockIrq::new(
     PageAllocatorInner::new(),
     "page_alloc",
     sync_crate::lock_level::PAGE_ALLOC,

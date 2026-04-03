@@ -29,7 +29,8 @@ struct MountEntry {
 }
 
 /// 全局挂载表。
-static MOUNT_TABLE: SpinLock<Vec<MountEntry>> = SpinLock::new(Vec::new(), "mount_table");
+static MOUNT_TABLE: SpinLock<Vec<MountEntry>> =
+    SpinLock::new(Vec::new(), "mount_table", sync::lock_level::UNSPECIFIED);
 
 /// 挂载文件系统到指定路径。
 ///

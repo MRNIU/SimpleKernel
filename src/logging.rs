@@ -12,8 +12,7 @@ const ANSI_YELLOW: &str = "\x1b[33m";
 const ANSI_CYAN: &str = "\x1b[36m";
 const ANSI_GRAY: &str = "\x1b[90m";
 
-static CONSOLE_LOCK: SpinLockIrq<()> =
-    SpinLockIrq::new_with_level((), "console", sync::lock_level::CONSOLE);
+static CONSOLE_LOCK: SpinLockIrq<()> = SpinLockIrq::new((), "console", sync::lock_level::CONSOLE);
 static LOG_SEQ: AtomicU64 = AtomicU64::new(0);
 static LOGGER_INIT: AtomicBool = AtomicBool::new(false);
 static LOGGER: KernelLogger = KernelLogger;

@@ -8,7 +8,8 @@ use sync::SpinLock;
 use super::{Device, DeviceType};
 
 /// 全局设备管理器。
-static DEVICE_MANAGER: SpinLock<Vec<Box<dyn Device>>> = SpinLock::new(Vec::new(), "dev_mgr");
+static DEVICE_MANAGER: SpinLock<Vec<Box<dyn Device>>> =
+    SpinLock::new(Vec::new(), "dev_mgr", sync::lock_level::UNSPECIFIED);
 
 /// 初始化设备管理器。
 pub fn init() {

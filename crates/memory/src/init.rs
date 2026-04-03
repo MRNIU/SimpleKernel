@@ -61,7 +61,7 @@ pub fn init() -> AddressSpace {
 
     // 创建页表——Box::leak 产出 'static 引用
     let pt = PageTable::create().expect("创建内核页表失败");
-    let pt_lock = sync_crate::SpinLock::new(pt, "kernel_pt");
+    let pt_lock = sync_crate::SpinLock::new(pt, "kernel_pt", sync_crate::lock_level::UNSPECIFIED);
     let pt_static: &'static _ = alloc::boxed::Box::leak(alloc::boxed::Box::new(pt_lock));
     // SAFETY: pt_static 是 'static 引用
     unsafe { paging::set_kernel_page_table(pt_static) };

@@ -21,13 +21,13 @@ pub fn tests() -> &'static [TestCase] {
 }
 
 fn test_spinlock_basic() {
-    let lock = SpinLock::new(42u32, "test_basic");
+    let lock = SpinLock::new(42u32, "test_basic", sync::lock_level::UNSPECIFIED);
     let guard = lock.lock();
     assert_eq!(*guard, 42);
 }
 
 fn test_spinlock_modify() {
-    let lock = SpinLock::new(0u32, "test_modify");
+    let lock = SpinLock::new(0u32, "test_modify", sync::lock_level::UNSPECIFIED);
     {
         let mut guard = lock.lock();
         *guard = 99;
@@ -39,7 +39,7 @@ fn test_spinlock_modify() {
 }
 
 fn test_spinlock_not_held_after_drop() {
-    let lock = SpinLock::new(0u32, "test_drop");
+    let lock = SpinLock::new(0u32, "test_drop", sync::lock_level::UNSPECIFIED);
     {
         let _guard = lock.lock();
     }

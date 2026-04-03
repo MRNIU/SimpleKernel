@@ -32,8 +32,11 @@ impl ObserverRegistry {
     }
 }
 
-static OBSERVERS: SpinLock<ObserverRegistry> =
-    SpinLock::new(ObserverRegistry::new(), "panic_observers");
+static OBSERVERS: SpinLock<ObserverRegistry> = SpinLock::new(
+    ObserverRegistry::new(),
+    "panic_observers",
+    sync::lock_level::UNSPECIFIED,
+);
 
 /// 初始化用于回溯解析的 ELF 符号表。
 ///
