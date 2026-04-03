@@ -59,17 +59,7 @@ impl<A: Copy + Ord> Span<A> {
     pub fn is_empty(self) -> bool {
         self.start == self.end
     }
-}
 
-impl<A: Copy + Ord + Sub<A, Output = usize>> Span<A> {
-    /// 范围大小（单位取决于 `A`）
-    #[inline]
-    pub fn size(self) -> usize {
-        self.end - self.start
-    }
-}
-
-impl<A: Copy + Ord + core::ops::Add<usize, Output = A>> Span<A> {
     /// 在 `mid` 处分割为 `[start, mid)` 和 `[mid, end)`。
     ///
     /// # Panics
@@ -88,7 +78,17 @@ impl<A: Copy + Ord + core::ops::Add<usize, Output = A>> Span<A> {
     pub fn contiguous_with(self, other: Self) -> bool {
         self.end == other.start
     }
+}
 
+impl<A: Copy + Ord + Sub<A, Output = usize>> Span<A> {
+    /// 范围大小（单位取决于 `A`）
+    #[inline]
+    pub fn size(self) -> usize {
+        self.end - self.start
+    }
+}
+
+impl<A: Copy + Ord + core::ops::Add<usize, Output = A>> Span<A> {
     /// 合并两个首尾相接的范围；不相接时返回 `None`。
     #[inline]
     pub fn merge(self, other: Self) -> Option<Self> {
