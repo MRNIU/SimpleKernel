@@ -284,7 +284,10 @@ impl<T: Sync> CpuLocal<T> {
     /// # Safety
     /// 调用方必须确保无并发访问（通常通过关中断保证）。
     #[inline(always)]
-    #[allow(clippy::mut_from_ref)] // 故意的 per-CPU 内部可变性：每个 CPU 拥有独立副本
+    #[expect(
+        clippy::mut_from_ref,
+        reason = "per-CPU 内部可变性：每个 CPU 拥有独立副本"
+    )]
     pub unsafe fn get_mut(&self) -> &mut T {
         #[cfg(target_os = "none")]
         {
