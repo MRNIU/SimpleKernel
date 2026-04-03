@@ -45,8 +45,9 @@ pub use globals::{kernel_address_space, store_kernel_address_space};
 #[cfg(target_os = "none")]
 pub use init::{init, init_smp};
 
-/// 将 MMIO 物理地址区间 identity-map，返回对应虚拟地址。
+/// 将 MMIO 物理地址区间 identity-map，返回 `paddr` 对应的虚拟地址。
 ///
+/// 内部按页对齐建立映射，但返回值精确对应调用方请求的 `paddr`（类似 Linux `ioremap`）。
 /// 在内核地址空间中注册 VMA 记录。MMIO 映射永久存在（MmioRegion 不 unmap）。
 ///
 /// # Errors
@@ -60,7 +61,7 @@ pub fn map_mmio(
     use paging::{PteFlags, PteFlagsOps};
 
     let region = MmioRegion::map(paddr, size)?;
-    let vaddr = region.base();
+    let region_base = region.base();
     let region_size = region.size();
 
     if let Some(kas) = kernel_address_space() {
@@ -69,7 +70,7 @@ pub fn map_mmio(
         // 部分重叠（RegionOverlap）是真正的冲突，必须 panic。
         match kas
             .lock()
-            .register_existing(vaddr, region_size, PteFlags::kernel_device())
+            .register_existing(region_base, region_size, PteFlags::kernel_device())
         {
             Ok(_) => {}
             Err(error::MemoryError::RegionIdentical) => {}
@@ -77,5 +78,6 @@ pub fn map_mmio(
         }
     }
 
-    Ok(vaddr)
+    // 返回 paddr 对应的精确虚拟地址（identity mapping: VA == PA）
+    Ok(paddr.to_virt())
 }

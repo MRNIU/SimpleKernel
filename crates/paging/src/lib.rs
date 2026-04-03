@@ -96,7 +96,10 @@ impl NodeFrameOps for KernelNodeFrame {
     fn alloc() -> Result<Self, error::PagingError> {
         frame_allocator::AllocatedFrames::alloc_one()
             .map(Self)
-            .map_err(|_| error::PagingError::AllocationFailed)
+            .map_err(|e| {
+                log::warn!("页表节点帧分配失败: {:?}", e);
+                error::PagingError::AllocationFailed
+            })
     }
     fn paddr(&self) -> PhysAddr {
         self.0.start_paddr()

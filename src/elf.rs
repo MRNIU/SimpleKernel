@@ -136,12 +136,22 @@ impl KernelElf {
         let data: &'static [u8] = unsafe { core::slice::from_raw_parts(base, elf_size) };
 
         // 使用 elf crate 进行校验，并确认存在 .symtab。
-        let elf_file =
-            ElfBytes::<AnyEndian>::minimal_parse(data).map_err(|_| ElfError::InvalidMagic)?;
+        let elf_file = ElfBytes::<AnyEndian>::minimal_parse(data).map_err(|e| {
+            log::warn!(
+                "ELF 解析失败 (addr={:#x}, len={}): {:?}",
+                elf_addr,
+                elf_size,
+                e
+            );
+            ElfError::InvalidMagic
+        })?;
 
         if elf_file
             .symbol_table()
-            .map_err(|_| ElfError::SymtabNotFound)?
+            .map_err(|e| {
+                log::warn!("ELF 符号表读取失败 (addr={:#x}): {:?}", elf_addr, e);
+                ElfError::SymtabNotFound
+            })?
             .is_none()
         {
             return Err(ElfError::SymtabNotFound);

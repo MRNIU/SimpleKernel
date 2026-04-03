@@ -36,16 +36,20 @@ pub struct KernelFdt<'a> {
 macro_rules! parse_fdt {
     ($addr:expr) => {{
         // SAFETY: fdt_addr 已在 KernelFdt::new() 中校验
-        unsafe { fdt::Fdt::from_ptr_unaligned_fallible($addr as *const u8) }
-            .map_err(|_| FdtError::InvalidHeader)
+        unsafe { fdt::Fdt::from_ptr_unaligned_fallible($addr as *const u8) }.map_err(|e| {
+            log::warn!("FDT 解析失败 (addr={:#x}): {:?}", $addr, e);
+            FdtError::InvalidHeader
+        })
     }};
 }
 
 impl<'a> KernelFdt<'a> {
     pub fn new(fdt_addr: usize) -> Result<Self, FdtError> {
         // SAFETY: fdt_addr 由调用方校验（引导加载程序通过 DTB 传入）
-        unsafe { fdt::Fdt::from_ptr_unaligned(fdt_addr as *const u8) }
-            .map_err(|_| FdtError::InvalidHeader)?;
+        unsafe { fdt::Fdt::from_ptr_unaligned(fdt_addr as *const u8) }.map_err(|e| {
+            log::warn!("FDT 头部校验失败 (addr={:#x}): {:?}", fdt_addr, e);
+            FdtError::InvalidHeader
+        })?;
         Ok(Self {
             fdt_addr,
             _marker: PhantomData,
@@ -54,9 +58,18 @@ impl<'a> KernelFdt<'a> {
 
     pub fn core_count(&self) -> Result<usize, FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let root = fdt.root().map_err(|_| FdtError::ParseFailed)?;
-        let cpus = root.cpus().map_err(|_| FdtError::NodeNotFound)?;
-        let iter = cpus.iter().map_err(|_| FdtError::ParseFailed)?;
+        let root = fdt.root().map_err(|e| {
+            log::warn!("FDT root 节点解析失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
+        let cpus = root.cpus().map_err(|e| {
+            log::warn!("FDT cpus 节点未找到: {:?}", e);
+            FdtError::NodeNotFound
+        })?;
+        let iter = cpus.iter().map_err(|e| {
+            log::warn!("FDT cpus 迭代失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
         let count = iter.filter_map(|c| c.ok()).count();
         if count == 0 {
             return Err(FdtError::NodeNotFound);
@@ -66,16 +79,25 @@ impl<'a> KernelFdt<'a> {
 
     pub fn memory(&self) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let root = fdt.root().map_err(|_| FdtError::ParseFailed)?;
-        let memory = root.memory().map_err(|_| FdtError::NodeNotFound)?;
+        let root = fdt.root().map_err(|e| {
+            log::warn!("FDT root 节点解析失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
+        let memory = root.memory().map_err(|e| {
+            log::warn!("FDT memory 节点未找到: {:?}", e);
+            FdtError::NodeNotFound
+        })?;
         let mut regions = memory
             .reg()
-            .map_err(|_| FdtError::PropertyNotFound)?
+            .map_err(|e| {
+                log::warn!("FDT memory reg 属性未找到: {:?}", e);
+                FdtError::PropertyNotFound
+            })?
             .iter::<u64, usize>();
-        let region = regions
-            .next()
-            .ok_or(FdtError::NodeNotFound)?
-            .map_err(|_| FdtError::ParseFailed)?;
+        let region = regions.next().ok_or(FdtError::NodeNotFound)?.map_err(|e| {
+            log::warn!("FDT memory region 解析失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
         Ok((region.address, region.len))
     }
 
@@ -87,16 +109,26 @@ impl<'a> KernelFdt<'a> {
         let fdt = parse_fdt!(self.fdt_addr)?;
         let cpus = fdt
             .find_node("/cpus")
-            .map_err(|_| FdtError::ParseFailed)?
+            .map_err(|e| {
+                log::warn!("FDT 查找 /cpus 节点失败: {:?}", e);
+                FdtError::ParseFailed
+            })?
             .ok_or(FdtError::NodeNotFound)?;
         let prop = cpus
             .raw_property("timebase-frequency")
-            .map_err(|_| FdtError::ParseFailed)?
+            .map_err(|e| {
+                log::warn!("FDT 读取 timebase-frequency 属性失败: {:?}", e);
+                FdtError::ParseFailed
+            })?
             .ok_or(FdtError::PropertyNotFound)?;
-        let bytes: [u8; 4] = prop
-            .value
-            .try_into()
-            .map_err(|_| FdtError::InvalidPropertySize)?;
+        let bytes: [u8; 4] = prop.value.try_into().map_err(|e| {
+            log::warn!(
+                "FDT timebase-frequency 属性大小不匹配 (len={}): {:?}",
+                prop.value.len(),
+                e
+            );
+            FdtError::InvalidPropertySize
+        })?;
         Ok(u32::from_be_bytes(bytes))
     }
 
@@ -105,7 +137,10 @@ impl<'a> KernelFdt<'a> {
     /// 解析失败时返回错误而非静默返回 0。
     pub fn node_count(&self) -> Result<usize, FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let nodes = fdt.all_nodes().map_err(|_| FdtError::ParseFailed)?;
+        let nodes = fdt.all_nodes().map_err(|e| {
+            log::warn!("FDT 遍历所有节点失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
         Ok(nodes.filter_map(|n| n.ok()).count())
     }
 
@@ -116,7 +151,10 @@ impl<'a> KernelFdt<'a> {
     #[expect(dead_code, reason = "公开 API，供设备驱动匹配单节点多 reg 区域")]
     pub fn find_compatible_reg(&self, compat: &str) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let nodes = fdt.all_nodes().map_err(|_| FdtError::ParseFailed)?;
+        let nodes = fdt.all_nodes().map_err(|e| {
+            log::warn!("FDT 遍历所有节点失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
 
         for node_result in nodes {
             let Ok((_depth, node)) = node_result else {
@@ -135,16 +173,22 @@ impl<'a> KernelFdt<'a> {
                 continue;
             };
             if reg.value.len() >= 16 {
-                let addr = u64::from_be_bytes(
-                    reg.value[0..8]
-                        .try_into()
-                        .map_err(|_| FdtError::ParseFailed)?,
-                );
-                let size = u64::from_be_bytes(
-                    reg.value[8..16]
-                        .try_into()
-                        .map_err(|_| FdtError::ParseFailed)?,
-                ) as usize;
+                let addr = u64::from_be_bytes(reg.value[0..8].try_into().map_err(|e| {
+                    log::warn!(
+                        "FDT reg addr 切片转换失败 (len={}): {:?}",
+                        reg.value.len(),
+                        e
+                    );
+                    FdtError::ParseFailed
+                })?);
+                let size = u64::from_be_bytes(reg.value[8..16].try_into().map_err(|e| {
+                    log::warn!(
+                        "FDT reg size 切片转换失败 (len={}): {:?}",
+                        reg.value.len(),
+                        e
+                    );
+                    FdtError::ParseFailed
+                })?) as usize;
                 return Ok((addr, size));
             }
         }
@@ -163,7 +207,10 @@ impl<'a> KernelFdt<'a> {
         index: usize,
     ) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let nodes = fdt.all_nodes().map_err(|_| FdtError::ParseFailed)?;
+        let nodes = fdt.all_nodes().map_err(|e| {
+            log::warn!("FDT 遍历所有节点失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
 
         let entry_size = 16; // 每组 (addr[8] + size[8])
         let offset = index * entry_size;
@@ -183,15 +230,26 @@ impl<'a> KernelFdt<'a> {
                 continue;
             };
             if reg.value.len() >= required_len {
-                let addr = u64::from_be_bytes(
-                    reg.value[offset..offset + 8]
-                        .try_into()
-                        .map_err(|_| FdtError::ParseFailed)?,
-                );
+                let addr =
+                    u64::from_be_bytes(reg.value[offset..offset + 8].try_into().map_err(|e| {
+                        log::warn!(
+                            "FDT reg addr 切片转换失败 (offset={}, len={}): {:?}",
+                            offset,
+                            reg.value.len(),
+                            e
+                        );
+                        FdtError::ParseFailed
+                    })?);
                 let size = u64::from_be_bytes(
-                    reg.value[offset + 8..offset + 16]
-                        .try_into()
-                        .map_err(|_| FdtError::ParseFailed)?,
+                    reg.value[offset + 8..offset + 16].try_into().map_err(|e| {
+                        log::warn!(
+                            "FDT reg size 切片转换失败 (offset={}, len={}): {:?}",
+                            offset + 8,
+                            reg.value.len(),
+                            e
+                        );
+                        FdtError::ParseFailed
+                    })?,
                 ) as usize;
                 return Ok((addr, size));
             }
@@ -215,7 +273,10 @@ impl<'a> KernelFdt<'a> {
         node_index: usize,
     ) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let nodes = fdt.all_nodes().map_err(|_| FdtError::ParseFailed)?;
+        let nodes = fdt.all_nodes().map_err(|e| {
+            log::warn!("FDT 遍历所有节点失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
 
         let mut count = 0usize;
 
@@ -234,16 +295,22 @@ impl<'a> KernelFdt<'a> {
                     return Err(FdtError::PropertyNotFound);
                 };
                 if reg.value.len() >= 16 {
-                    let addr = u64::from_be_bytes(
-                        reg.value[0..8]
-                            .try_into()
-                            .map_err(|_| FdtError::ParseFailed)?,
-                    );
-                    let size = u64::from_be_bytes(
-                        reg.value[8..16]
-                            .try_into()
-                            .map_err(|_| FdtError::ParseFailed)?,
-                    ) as usize;
+                    let addr = u64::from_be_bytes(reg.value[0..8].try_into().map_err(|e| {
+                        log::warn!(
+                            "FDT reg addr 切片转换失败 (len={}): {:?}",
+                            reg.value.len(),
+                            e
+                        );
+                        FdtError::ParseFailed
+                    })?);
+                    let size = u64::from_be_bytes(reg.value[8..16].try_into().map_err(|e| {
+                        log::warn!(
+                            "FDT reg size 切片转换失败 (len={}): {:?}",
+                            reg.value.len(),
+                            e
+                        );
+                        FdtError::ParseFailed
+                    })?) as usize;
                     return Ok((addr, size));
                 }
                 return Err(FdtError::InvalidPropertySize);

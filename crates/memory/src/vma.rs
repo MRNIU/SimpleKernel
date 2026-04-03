@@ -124,8 +124,10 @@ impl AddressSpace {
         }
         let page_count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
 
-        let frames = frame_allocator::AllocatedFrames::alloc(page_count)
-            .map_err(|_| MemoryError::OutOfMemory)?;
+        let frames = frame_allocator::AllocatedFrames::alloc(page_count).map_err(|e| {
+            log::warn!("mmap 帧分配失败 (page_count={}): {:?}", page_count, e);
+            MemoryError::OutOfMemory
+        })?;
 
         // identity mapping: VA = PA
         let start = frames.start_paddr().to_virt();
@@ -197,8 +199,15 @@ impl AddressSpace {
         }
 
         let page_count = vma.page_count();
-        let frames = frame_allocator::AllocatedFrames::alloc(page_count)
-            .map_err(|_| MemoryError::OutOfMemory)?;
+        let frames = frame_allocator::AllocatedFrames::alloc(page_count).map_err(|e| {
+            log::warn!(
+                "page fault 帧分配失败 (addr={}, page_count={}): {:?}",
+                addr,
+                page_count,
+                e
+            );
+            MemoryError::OutOfMemory
+        })?;
         let mapping = MappedPages::map(frames, vma.flags);
 
         vma.flags = mapping.flags();

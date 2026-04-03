@@ -65,13 +65,26 @@ pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError
     let mmio_size = size.max(VIRTIO_MMIO_SIZE);
 
     // 映射 MMIO 区域
-    let vaddr = memory::map_mmio(paddr, mmio_size).map_err(|_| DeviceError::MmioMapFailed)?;
+    let vaddr = memory::map_mmio(paddr, mmio_size).map_err(|e| {
+        log::warn!(
+            "VirtIO MMIO 映射失败 (paddr={}, size={:#x}): {:?}",
+            paddr,
+            mmio_size,
+            e
+        );
+        DeviceError::MmioMapFailed
+    })?;
 
     let header = NonNull::new(vaddr.as_mut_ptr::<VirtIOHeader>()).expect("MMIO vaddr 不应为空");
 
     // SAFETY: vaddr 指向已映射的 VirtIO MMIO 区域，生命周期为 'static（MMIO 映射永久存在）
-    let transport =
-        unsafe { MmioTransport::new(header, mmio_size) }.map_err(|_| DeviceError::InvalidMagic)?;
+    let transport = match unsafe { MmioTransport::new(header, mmio_size) } {
+        Ok(t) => t,
+        Err(e) => {
+            log::debug!("VirtIO probe: MmioTransport::new 失败: {:?}", e);
+            return Err(DeviceError::InvalidMagic);
+        }
+    };
 
     let device_type = transport.device_type();
     log::info!(
@@ -98,8 +111,10 @@ fn init_block_device(
     transport: MmioTransport<'static>,
     paddr: PhysAddr,
 ) -> Result<(), DeviceError> {
-    let mut blk =
-        VirtIOBlk::<SimpleKernelHal, _>::new(transport).map_err(|_| DeviceError::ProbeFailed)?;
+    let mut blk = VirtIOBlk::<SimpleKernelHal, _>::new(transport).map_err(|e| {
+        log::warn!("VirtIO 块设备初始化失败: {:?}", e);
+        DeviceError::ProbeFailed
+    })?;
 
     let capacity = blk.capacity();
     let capacity_mb = capacity * 512 / (1024 * 1024);
@@ -112,8 +127,10 @@ fn init_block_device(
     // 读测试：读取第 0 扇区验证设备可用
     {
         let mut buf = [0u8; 512];
-        blk.read_blocks(0, &mut buf)
-            .map_err(|_| DeviceError::IoError)?;
+        blk.read_blocks(0, &mut buf).map_err(|e| {
+            log::warn!("VirtIO 块设备读测试失败 (sector 0): {:?}", e);
+            DeviceError::IoError
+        })?;
         log::info!("VirtIO: block read test OK (sector 0)");
     }
 

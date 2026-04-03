@@ -109,6 +109,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **NO** suppressing warnings with `#[allow(...)]` without justification——使用 `#[expect(..., reason = "...")]` 代替
 - **NO** heap allocation in interrupt context (`Box`, `Vec`, `String`, `format!`)——use `heapless` containers or stack buffers
 - **NO** ASCII-art 分隔线注释（`// ─── Title ───`、`// === Title ===` 等）——用空行和 doc comment 分组
+- **NO** `.map_err(|_| ...)` 丢弃原始错误——使用 `.map_err(|e| ...)` 保留原始错误信息（写入日志或嵌入新错误类型），便于调试
 
 ## UNIQUE STYLES
 - `spin::Once<T>` with named statics: `TASK_MANAGER.call_once(|| ...)`, `TASK_MANAGER.get().unwrap()`

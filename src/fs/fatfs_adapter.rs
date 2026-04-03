@@ -76,7 +76,10 @@ impl Read for VirtioBlockAdapter {
 
             let mut sector_buf = [0u8; SECTOR_SIZE];
             blk.read_blocks(sector as usize, &mut sector_buf)
-                .map_err(|_| BlockIoError)?;
+                .map_err(|e| {
+                    log::warn!("VirtIO 块设备读取失败 (sector={}): {:?}", sector, e);
+                    BlockIoError
+                })?;
 
             let available = SECTOR_SIZE - offset_in_sector;
             let n = remaining.len().min(available);
@@ -109,7 +112,14 @@ impl Write for VirtioBlockAdapter {
             // Read-modify-write：非对齐写入先读取当前扇区
             if offset_in_sector != 0 || remaining.len() < SECTOR_SIZE {
                 blk.read_blocks(sector as usize, &mut sector_buf)
-                    .map_err(|_| BlockIoError)?;
+                    .map_err(|e| {
+                        log::warn!(
+                            "VirtIO 块设备读取失败 (sector={}, read-modify-write): {:?}",
+                            sector,
+                            e
+                        );
+                        BlockIoError
+                    })?;
             }
 
             let available = SECTOR_SIZE - offset_in_sector;
@@ -117,7 +127,10 @@ impl Write for VirtioBlockAdapter {
             sector_buf[offset_in_sector..offset_in_sector + n].copy_from_slice(&remaining[..n]);
 
             blk.write_blocks(sector as usize, &sector_buf)
-                .map_err(|_| BlockIoError)?;
+                .map_err(|e| {
+                    log::warn!("VirtIO 块设备写入失败 (sector={}): {:?}", sector, e);
+                    BlockIoError
+                })?;
 
             remaining = &remaining[n..];
             self.position += n as u64;
