@@ -5,8 +5,8 @@
 
 ## 当前状态
 
-**当前 Phase**: R0 — 基线建立（实施中）
-**下一个目标**: R1 — 原语层
+**当前 Phase**: R1 — 原语层（已完成）
+**下一个目标**: R2 — 同步与 Per-CPU
 
 ## 上次对话摘要
 
@@ -14,40 +14,31 @@
 
 ### 已完成
 
-- R0.1 CI 审计：识别出重复 step 块、缺少 matrix、缺少单元测试/cargo-deny/unsafe 统计
-- R0.2 文档基础设施：确认现有 crate README 覆盖率高（10/18），缺模块 README 模板
-- R0.3 Unsafe 审计基线：142 unsafe 块，SAFETY 注释覆盖率 ~63%，缺口集中在 paging/memory
-- R0.4 依赖审计：2 个 git 依赖（aarch64-cpu fork、fatfs），65 个外部依赖，许可证全部兼容
-- R0.5 分支策略：243 commits 领先 main，无冲突，决定审计完成后 merge --no-ff
-
-### R0 实施产出
-
-- [x] `deny.toml` — licenses + bans + advisories + sources
-- [x] `docs/templates/module-readme-template.md` — 架构设计 + 模块细节
-- [x] `docs/audit/unsafe-audit-baseline.md` — 按文件/目录的 unsafe 统计
-- [x] `docs/audit/dependency-audit.md` — git 依赖、版本、许可证
-- [x] `docs/diagrams/crate-dependency-graph.md` — Mermaid 自动生成
-- [x] `.github/actions/setup/action.yml` — composite action（checkout + submodule + rustup + cache）
-- [x] `.github/workflows/workflow.yml` — 重构：composite action + matrix + cargo-deny + 单元测试 + 修复 Clippy target
-- [x] `.github/workflows/docs.yml` — Rustdoc GitHub Pages 部署
-- [x] `docs/decisions/001-aarch64-float-support.md` — ADR: AArch64 硬件浮点（提议）
+- R1 审查报告：审阅 `span`、`config`、`build_common`、`memory_types` 四个叶子 crate
+- R1 实施修复（8 个 commit）：
+  - `span`: `split_at`/`contiguous_with` trait bound 放宽至 `Copy + Ord`
+  - `span`: `SpanIter` 实现 `ExactSizeIterator` + `size_hint`
+  - `memory_types`: 地址算术运算（`Add`/`Sub`）后校验结果在有效范围内（`Self::new()`）
+  - `memory_types`: `phys_to_virt`/`virt_to_phys` 自由函数改为方法 `PhysAddr::to_virt()`/`VirtAddr::to_phys()`，启用校验（不再绕过 `new()`）
+  - `memory_types`: `#[allow(clippy::...)]` 改为 `#[expect(..., reason = "...")]`
+  - `build_common`: 补充逐文件 `rerun-if-changed`
+  - `span`、`build_common`: 添加 README
+  - `memory_types`、`config`: 更新 README 反映方法式 API
 
 ### 关键决策
 
 | # | 决策 | 状态 |
 |---|------|------|
-| CI 重构 | composite action + matrix | 已实施 |
-| unsafe 统计 | cargo-geiger（Rust 官方工具链） | 已决定，待 CI 集成 |
-| 系统测试重复次数 | PR:3 / push:10 保留，待进一步讨论 | 暂缓 |
-| AArch64 target | 当前统一为 softfloat，R4 切换到硬件浮点 | ADR-001 提议 |
-| 分支合并 | merge --no-ff，审计全部完成后执行 | 已决定 |
-| `aarch64-cpu` | 暂用 fork，上游 PR 合入后切回 | 已决定 |
-| `fatfs` | 更新到最新，继续用 git 依赖 | 已决定 |
-| Rustdoc | 发布到 GitHub Pages | 已实施 |
+| 地址算术校验 | 方案 A：`Add`/`Sub` 结果通过 `Self::new()` 校验 | 已实施 |
+| 地址转换风格 | 方法式 `pa.to_virt()` / `va.to_phys()`（Theseus 风格） | 已实施 |
+| 转换校验 | 移除为测试环境设计的绕过，`to_virt()`/`to_phys()` 调用 `new()` | 已实施 |
+| `config` 依赖 `log` | 方案 A：保持现状（`log` 轻量，仅用 `LevelFilter` 类型） | 已决定 |
+| `Span::merge` | 仅支持相邻区间，重叠视为错误 | 已决定 |
+| `span` 独立发布 | 可独立发布到 crates.io，当前无紧迫需求 | 记录 |
 
 ### 未决设计问题
 
-- 系统测试重复次数策略（#3）需进一步讨论
+无
 
 ### R8 待办（审计收尾阶段）
 
@@ -60,3 +51,4 @@
 | 日期 | Phase | 内容 |
 |------|-------|------|
 | 2026-04-03 | R0 | 审查报告 + 基础设施实施（CI/文档/审计基线/依赖/ADR） |
+| 2026-04-03 | R1 | 审查报告 + 实施修复（span/config/build_common/memory_types） |
