@@ -112,7 +112,10 @@ macro_rules! impl_page_or_frame {
             type Output = Self;
             /// 前进 `rhs` 个 P 大小的页——内部 number 加 `rhs << NUM_4K_PAGES_SHIFT`
             #[inline]
-            #[allow(clippy::suspicious_arithmetic_impl)]
+            #[expect(
+                clippy::suspicious_arithmetic_impl,
+                reason = "页号算术按 NUM_4K_PAGES_SHIFT 位移缩放，非 bug"
+            )]
             fn add(self, rhs: usize) -> Self {
                 // NUM_4K_PAGES_SHIFT 是 sealed trait 常量（0/9/18），不可能超过位宽
                 let delta = rhs << P::NUM_4K_PAGES_SHIFT;
@@ -128,7 +131,10 @@ macro_rules! impl_page_or_frame {
 
         impl<P: PageSize> core::ops::AddAssign<usize> for $name<P> {
             #[inline]
-            #[allow(clippy::suspicious_op_assign_impl)]
+            #[expect(
+                clippy::suspicious_op_assign_impl,
+                reason = "页号算术按 NUM_4K_PAGES_SHIFT 位移缩放，非 bug"
+            )]
             fn add_assign(&mut self, rhs: usize) {
                 // NUM_4K_PAGES_SHIFT 是 sealed trait 常量（0/9/18），不可能超过位宽
                 let delta = rhs << P::NUM_4K_PAGES_SHIFT;
@@ -143,7 +149,10 @@ macro_rules! impl_page_or_frame {
             type Output = Self;
             /// 后退 `rhs` 个 P 大小的页——内部 number 减 `rhs << NUM_4K_PAGES_SHIFT`
             #[inline]
-            #[allow(clippy::suspicious_arithmetic_impl)]
+            #[expect(
+                clippy::suspicious_arithmetic_impl,
+                reason = "页号算术按 NUM_4K_PAGES_SHIFT 位移缩放，非 bug"
+            )]
             fn sub(self, rhs: usize) -> Self {
                 // NUM_4K_PAGES_SHIFT 是 sealed trait 常量（0/9/18），不可能超过位宽
                 let delta = rhs << P::NUM_4K_PAGES_SHIFT;
@@ -159,7 +168,10 @@ macro_rules! impl_page_or_frame {
 
         impl<P: PageSize> core::ops::SubAssign<usize> for $name<P> {
             #[inline]
-            #[allow(clippy::suspicious_op_assign_impl)]
+            #[expect(
+                clippy::suspicious_op_assign_impl,
+                reason = "页号算术按 NUM_4K_PAGES_SHIFT 位移缩放，非 bug"
+            )]
             fn sub_assign(&mut self, rhs: usize) {
                 // NUM_4K_PAGES_SHIFT 是 sealed trait 常量（0/9/18），不可能超过位宽
                 let delta = rhs << P::NUM_4K_PAGES_SHIFT;
@@ -174,7 +186,10 @@ macro_rules! impl_page_or_frame {
             type Output = usize;
             /// 两个同类型帧/页号的差——返回 P 大小页的个数
             #[inline]
-            #[allow(clippy::suspicious_arithmetic_impl)]
+            #[expect(
+                clippy::suspicious_arithmetic_impl,
+                reason = "页号差值按 NUM_4K_PAGES_SHIFT 位移缩放，非 bug"
+            )]
             fn sub(self, rhs: $name<P>) -> usize {
                 let diff = self
                     .number
