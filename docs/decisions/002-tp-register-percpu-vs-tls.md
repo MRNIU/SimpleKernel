@@ -143,15 +143,51 @@ AArch64 没有 `tp` 冲突，可以直接支持 `std`。RISC-V 暂时保持 `no_
 - 两个架构的 App 能力不对等
 - RISC-V 是项目主要开发架构，功能受限
 
+## 补充分析：为什么 RISC-V S-mode 必须借助寄存器
+
+RISC-V S-mode 无法读取 `mhartid`（M-mode CSR），唯一获取 hart ID 的来源是 boot
+时 SBI 通过 `a0` 传入。之后必须存在一个随时可读的位置。`tp` 是 Linux 的选择，
+`sscratch` 是另一个可行选项（见方案 C）。AArch64 不存在此问题（`MPIDR_EL1` 在
+EL1 可读）。
+
+### `sscratch` 方案的 trap entry 设计
+
+`sscratch` 永久存放 per-CPU 基地址，trap entry 改用 per-CPU scratch 槽保存 `sp`：
+
+```asm
+// sscratch 永久存放 per-CPU 基地址
+csrr t0, sscratch             // t0 = per-CPU 基地址（只读，不交换）
+sd sp, SCRATCH_SP_OFFSET(t0)  // 保存 sp 到 per-CPU scratch 槽
+ld sp, KERN_SP_OFFSET(t0)     // 加载内核栈指针
+// ... 保存其余寄存器
+```
+
+SAS 优势：所有代码运行在内核栈上，trap entry 不需要切换栈，`sscratch` 方案更简单。
+
+### 性能对比
+
+| 操作 | `tp` 方案 | `sscratch` 方案 |
+|------|-----------|-----------------|
+| 读 per-CPU 基地址 | `mv reg, tp`（1 周期） | `csrr reg, sscratch`（1-3 周期） |
+| trap entry 额外开销 | 无（`tp` 始终有效） | 无（`sscratch` 始终有效） |
+| per-CPU 访问总成本 | 1 条指令 | 1 条指令（CSR 读取） |
+
+差异在实际工作负载中可忽略。
+
 ## 决策
 
 待讨论。
 
-当前采用 **方案 A**（维持现状）作为过渡。长期目标是支持 App `std`，需要在以下时间点重新评估：
+当前采用 **方案 A**（维持现状）作为过渡。
 
-1. 开始实现自定义 Rust target 时
-2. 开始移植 `std` 的 `sys` 模块时
+长期目标是支持 App `std`（去掉 `no_std`），需要在以下时间点重新评估：
+
+1. 开始实现自定义 Rust target（`riscv64-simplekernel`）时
+2. 开始移植 `std` 的 `sys` 模块时（参考 Redox OS）
 3. 引入 App 运行时时
+
+**倾向方案 C**（`sscratch` 做 per-CPU）——一条 CSR 指令、不侵入 `tp`、SAS 下 trap
+entry 设计简单。可在 R4（架构层审计）或 `std` 支持实现时执行。
 
 ## 影响
 
