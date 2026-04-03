@@ -225,25 +225,25 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 设计和实现新模块时，应参考以下成熟内核和论文，取其精华。完整参考文献见 `docs/design/references.md`。
 
 ### 参考内核
-- **Linux** — 工业级参考，尤其是调度器（CFS）、VFS、内存管理（`vm_area_struct`）、信号处理
-- **Zephyr** — 嵌入式/RTOS 视角，轻量级线程模型、设备驱动框架（device model + devicetree）、电源管理
-- **Theseus** — Rust 类型系统深度利用，`MappedPages` RAII 映射管理、crate 级模块化、`#![forbid(unsafe_code)]` APP 隔离
-- **Redox** — Rust 微内核实践，scheme-based VFS、`syscall` crate 设计、reliability crate 拆分（注：SimpleKernel 不采用微内核的用户态驱动模型，仅参考其 API 设计）
-- **Tock** — 嵌入式 Rust 内核，`unsafe trait` capability 模式、Grant 内存模型
-- **Asterinas** — Framekernel 架构（framework 可 unsafe + services 纯 safe Rust），Linux ABI 兼容
-- **rCore** — 清华大学 RISC-V 教学 Rust 内核，启动流程和页表实现参考
+- **[Linux](https://github.com/torvalds/linux)** — 工业级参考，尤其是调度器（CFS）、VFS、内存管理（`vm_area_struct`）、信号处理
+- **[Zephyr](https://github.com/zephyrproject-rtos/zephyr)** — 嵌入式/RTOS 视角，轻量级线程模型、设备驱动框架（device model + devicetree）、电源管理
+- **[Theseus](https://github.com/theseus-os/Theseus)** — Rust 类型系统深度利用，`MappedPages` RAII 映射管理、crate 级模块化、`#![forbid(unsafe_code)]` APP 隔离（本地 `ref/Theseus/`）
+- **[Redox](https://github.com/redox-os/redox)** — Rust 微内核实践，scheme-based VFS、`syscall` crate 设计、reliability crate 拆分（注：SimpleKernel 不采用微内核的用户态驱动模型，仅参考其 API 设计）
+- **[Tock](https://github.com/tock/tock)** — 嵌入式 Rust 内核，`unsafe trait` capability 模式、Grant 内存模型
+- **[Asterinas](https://github.com/asterinas/asterinas)** — Framekernel 架构（framework 可 unsafe + services 纯 safe Rust），Linux ABI 兼容
+- **[rCore](https://github.com/rcore-os/rCore-Tutorial-v3)** — 清华大学 RISC-V 教学 Rust 内核，启动流程和页表实现参考
 
 ### 关键论文
-- [Theseus OSDI'20] — intralingual OS：Rust 编译器即保护环
-- [RedLeaf OSDI'20] — 语言域隔离 + 跨域故障恢复
-- [Tock SOSP'17] — Rust 嵌入式内核 capability 模式
-- [SPIN SOSP'95] — 语言安全内核扩展（Modula-3），SAS 隔离的早期实践
-- [Singularity MSR'05-'07] — SIP 软件隔离进程，量化 SAS 性能优势
-- [Opal TOCS'94] — SAS 保护模型理论基础
-- [Mungi SPE'98] — SAS + capability 保护
-- [RustBelt POPL'18] — Rust 安全模型形式化证明
-- [Asterinas Framekernel ATC'25] — 内核内特权分离，TCB 14%
-- [Rust for Linux ACSAC'24] — Rust 消除 91% 驱动安全漏洞的量化分析
+- [Theseus OSDI'20](https://www.usenix.org/system/files/osdi20-boos.pdf) — intralingual OS：Rust 编译器即保护环
+- [RedLeaf OSDI'20](https://www.usenix.org/system/files/osdi20-narayanan_vikram.pdf) — 语言域隔离 + 跨域故障恢复
+- [Tock SOSP'17](https://www.cs.virginia.edu/~bjc8c/papers/levy17tock.pdf) — Rust 嵌入式内核 capability 模式
+- [SPIN SOSP'95](https://cseweb.ucsd.edu/~savage/papers/Sosp95.pdf) — 语言安全内核扩展（Modula-3），SAS 隔离的早期实践
+- [Singularity MSR'05-'07](https://www.microsoft.com/en-us/research/project/singularity/) — SIP 软件隔离进程，量化 SAS 性能优势
+- [Opal TOCS'94](https://homes.cs.washington.edu/~levy/opal.pdf) — SAS 保护模型理论基础
+- [Mungi SPE'98](https://trustworthy.systems/publications/papers/Heiser_EVRL_98.abstract) — SAS + capability 保护
+- [RustBelt POPL'18](https://people.mpi-sws.org/~dreyer/papers/rustbelt/paper.pdf) — Rust 安全模型形式化证明
+- [Asterinas Framekernel ATC'25](https://www.usenix.org/conference/atc25/presentation/peng-yuke) — 内核内特权分离，TCB 14%
+- [Rust for Linux ACSAC'24](https://mars-research.github.io/doc/2024-acsac-rfl.pdf) — Rust 消除 91% 驱动安全漏洞的量化分析
 
 ## CURRENT PHASE
 > **⚠ 临时节——审计结束后清理**
