@@ -32,10 +32,10 @@ impl<P: PageSize> AllocatedFrames<P> {
         let count_4k = count << P::NUM_4K_PAGES_SHIFT;
         let free = alloc_from_buddy(count_4k)?;
 
-        // SAFETY: 通过 phys_to_virt 将物理地址转换为虚拟地址后写入。
+        // SAFETY: 通过 to_virt 将物理地址转换为虚拟地址后写入。
         // 帧刚从分配器获取，不存在其他引用。
         unsafe {
-            let ptr = memory_types::phys_to_virt(free.start_paddr()).as_mut_ptr::<u8>();
+            let ptr = free.start_paddr().to_virt().as_mut_ptr::<u8>();
             core::ptr::write_bytes(ptr, 0, count_4k * PAGE_SIZE);
         }
 

@@ -82,7 +82,7 @@ macro_rules! impl_addr {
 
 /// 物理地址——标识物理内存或 MMIO 的字节位置。
 ///
-/// 开启分页后不可直接解引用，需通过 `phys_to_virt()` 转换为
+/// 开启分页后不可直接解引用，需通过 `.to_virt()` 转换为
 /// [`VirtAddr`] 后再访问。
 ///
 /// 构造时校验地址在 [`PA_BITS`](config::PA_BITS) 范围内，
@@ -124,6 +124,17 @@ impl VirtAddr {
     pub const fn as_mut_ptr<T>(self) -> *mut T {
         self.0 as *mut T
     }
+
+    /// 转换为物理地址（线性映射，偏移量 [`PHYS_OFFSET`]）。
+    ///
+    /// 仅适用于线性映射区域，非线性映射地址须通过页表查询。
+    ///
+    /// # Panics
+    /// 结果不在物理地址有效范围内时 panic。
+    #[inline]
+    pub fn to_phys(self) -> PhysAddr {
+        PhysAddr::new(self.as_usize().wrapping_sub(PHYS_OFFSET))
+    }
 }
 
 impl<T> From<*const T> for VirtAddr {
@@ -140,29 +151,17 @@ impl<T> From<*mut T> for VirtAddr {
     }
 }
 
-/// 物理地址转虚拟地址。
-///
-/// 偏移量由 [`PHYS_OFFSET`] 控制，切换到 higher-half kernel 时
-/// 修改该常量即可。
-///
-/// 绕过 `VirtAddr::new` 的规范化校验——在裸机上 PHYS_OFFSET
-/// 保证结果落在规范范围内；在测试环境中物理地址由堆分配模拟，
-/// 可能不满足目标架构的规范化规则。
-#[inline]
-pub fn phys_to_virt(pa: PhysAddr) -> VirtAddr {
-    VirtAddr(pa.as_usize().wrapping_add(PHYS_OFFSET))
-}
-
-/// 虚拟地址转物理地址。
-///
-/// 偏移量由 [`PHYS_OFFSET`] 控制，切换到 higher-half kernel 时
-/// 修改该常量即可。
-///
-/// 绕过 `PhysAddr::new` 的范围校验——逆变换的正确性由 `phys_to_virt`
-/// 的对称性保证。
-#[inline]
-pub fn virt_to_phys(va: VirtAddr) -> PhysAddr {
-    PhysAddr(va.as_usize().wrapping_sub(PHYS_OFFSET))
+impl PhysAddr {
+    /// 转换为虚拟地址（线性映射，偏移量 [`PHYS_OFFSET`]）。
+    ///
+    /// 仅适用于线性映射区域，非线性映射地址须通过页表查询。
+    ///
+    /// # Panics
+    /// 结果不在规范虚拟地址范围内时 panic。
+    #[inline]
+    pub fn to_virt(self) -> VirtAddr {
+        VirtAddr::new(self.as_usize().wrapping_add(PHYS_OFFSET))
+    }
 }
 
 #[cfg(test)]
@@ -306,22 +305,22 @@ mod tests {
         assert_eq!(addr.as_usize(), canonical);
     }
 
-    /// phys_to_virt / virt_to_phys 互逆：任意物理地址经往返转换后应恢复原值。
+    /// to_virt / to_phys 互逆：任意物理地址经往返转换后应恢复原值。
     #[test]
     fn phys_virt_roundtrip() {
         let pa = PhysAddr::new(0x8020_0000);
-        let va = phys_to_virt(pa);
+        let va = pa.to_virt();
         assert_eq!(va.as_usize(), pa.as_usize().wrapping_add(PHYS_OFFSET));
-        assert_eq!(virt_to_phys(va), pa);
+        assert_eq!(va.to_phys(), pa);
     }
 
     /// 零地址的物理-虚拟转换。
     #[test]
     fn phys_virt_zero() {
         let pa = PhysAddr::new(0);
-        let va = phys_to_virt(pa);
+        let va = pa.to_virt();
         assert_eq!(va.as_usize(), PHYS_OFFSET);
-        assert_eq!(virt_to_phys(va), pa);
+        assert_eq!(va.to_phys(), pa);
     }
 
     /// PhysAddr 加法结果超出 PA_BITS 范围应 panic。

@@ -46,9 +46,6 @@ pub use globals::{MEMORY_INFO, MemoryInfo};
 #[cfg(any(test, target_os = "none"))]
 pub use globals::{kernel_address_space, store_kernel_address_space};
 
-#[cfg(any(test, target_os = "none"))]
-pub use memory_types::{phys_to_virt, virt_to_phys};
-
 #[cfg(target_os = "none")]
 pub use init::{init, init_smp};
 

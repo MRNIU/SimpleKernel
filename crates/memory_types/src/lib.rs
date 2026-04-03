@@ -5,7 +5,7 @@
 //! - [`Frame<P>`] / [`Page<P>`]——页粒度标识（泛型 PageSize），与地址双向转换
 //! - [`Span<A>`]（re-export from [`span`] crate）——半开区间 `[start, end)`
 //!
-//! 以及物理-虚拟地址转换函数 [`phys_to_virt`] / [`virt_to_phys`]。
+//! 以及物理-虚拟地址转换方法 [`PhysAddr::to_virt`] / [`VirtAddr::to_phys`]。
 //!
 //! ## 宏生成的代码
 //!
@@ -23,7 +23,7 @@ mod addr;
 mod page_frame;
 mod page_size;
 
-pub use addr::{PhysAddr, VirtAddr, phys_to_virt, virt_to_phys};
+pub use addr::{PhysAddr, VirtAddr};
 pub use page_frame::{Frame, Page};
 pub use page_size::{Page1G, Page2M, Page4K, PageSize};
 pub use span::{Span, SpanIter};

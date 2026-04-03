@@ -37,9 +37,9 @@ unsafe impl Hal for SimpleKernelHal {
     fn dma_alloc(pages: usize, _direction: BufferDirection) -> (u64, NonNull<u8>) {
         let frames = AllocatedFrames::alloc(pages).expect("DMA 帧分配失败");
         let paddr = frames.start_paddr();
-        let vaddr = memory_types::phys_to_virt(paddr);
+        let vaddr = paddr.to_virt();
 
-        // SAFETY: phys_to_virt 保证返回有效的虚拟地址（identity mapping 下 VA == PA）
+        // SAFETY: to_virt 保证返回有效的虚拟地址（identity mapping 下 VA == PA）
         let ptr = NonNull::new(vaddr.as_mut_ptr::<u8>()).expect("DMA vaddr 为空");
 
         // 将帧存入追踪表，阻止 Drop 回收
@@ -65,14 +65,14 @@ unsafe impl Hal for SimpleKernelHal {
 
     /// MMIO 物理地址转虚拟地址。
     ///
-    /// Identity mapping 下直接调用 `phys_to_virt`。
+    /// Identity mapping 下直接调用 `PhysAddr::to_virt`。
     /// 调用方（virtio-drivers crate）保证 paddr 落在有效 MMIO 区域内。
     ///
     /// # Safety
     ///
     /// `paddr` 和 `size` 必须描述有效的 MMIO 区域。
     unsafe fn mmio_phys_to_virt(paddr: u64, _size: usize) -> NonNull<u8> {
-        let vaddr = memory_types::phys_to_virt(PhysAddr::new(paddr as usize));
+        let vaddr = PhysAddr::new(paddr as usize).to_virt();
         NonNull::new(vaddr.as_mut_ptr::<u8>()).expect("MMIO vaddr 为空")
     }
 
@@ -83,7 +83,7 @@ unsafe impl Hal for SimpleKernelHal {
     /// 缓冲区在共享期间不被其他线程访问。
     unsafe fn share(buffer: NonNull<[u8]>, _direction: BufferDirection) -> u64 {
         let vaddr = VirtAddr::new(buffer.as_ptr() as *const u8 as usize);
-        memory_types::virt_to_phys(vaddr).as_usize() as u64
+        vaddr.to_phys().as_usize() as u64
     }
 
     /// 取消共享缓冲区——identity mapping 下无需额外操作。
