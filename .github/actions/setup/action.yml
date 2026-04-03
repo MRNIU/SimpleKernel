@@ -29,11 +29,13 @@ runs:
     - name: Setup Rust toolchain
       shell: bash
       run: |
+        # Dockerfile 通过 ENV 设置了此路径，但 GitHub Actions container job
+        # 会覆盖容器的 PATH，需要手动恢复
+        export PATH="/usr/local/cargo/bin:$PATH"
         if ! command -v rustup &>/dev/null; then
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
-          echo "/usr/local/cargo/bin" >> "$GITHUB_PATH"
-          export PATH="/usr/local/cargo/bin:$PATH"
         fi
+        echo "/usr/local/cargo/bin" >> "$GITHUB_PATH"
         rustup show
 
     - name: Cache Cargo
