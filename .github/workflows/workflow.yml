@@ -26,6 +26,10 @@ jobs:
     container:
       image: ghcr.io/simple-xx/simplekernel-dev:latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - uses: ./.github/actions/setup
         with:
           cache-key-prefix: cargo-check
@@ -60,6 +64,10 @@ jobs:
       matrix:
         arch: [riscv64, aarch64]
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - uses: ./.github/actions/setup
         with:
           cache-key-prefix: cargo-${{ matrix.arch }}
