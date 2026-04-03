@@ -80,6 +80,12 @@ pub const TIMER_FREQ_HZ: u64 = 10;
 /// Per-CPU 锁顺序栈最大深度
 pub const LOCK_STACK_DEPTH: usize = 16;
 
+/// 自旋锁超时阈值（循环次数）——超过此值 panic。
+///
+/// 帮助定位死锁：超时时 panic 信息包含锁名称、owner 核心等诊断数据。
+/// 仅在 `spin-timeout` feature 启用时生效。
+pub const SPINLOCK_TIMEOUT: u64 = 100_000_000;
+
 /// 内核默认日志级别
 pub const DEFAULT_LOG_LEVEL: log::LevelFilter = log::LevelFilter::Debug;
 
