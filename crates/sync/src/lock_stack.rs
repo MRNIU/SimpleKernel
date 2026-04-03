@@ -21,6 +21,9 @@ pub mod lock_level {
     pub const HEAP: u8 = 12;
     /// 控制台锁——级别最高，几乎可在任何上下文获取
     pub const CONSOLE: u8 = 200;
+    /// 不参与锁序检查——调试 / 诊断锁专用。
+    /// 锁栈对 UNSPECIFIED 级别跳过顺序校验，但仍记录用于诊断。
+    pub const UNSPECIFIED: u8 = 255;
 }
 
 /// 锁栈条目——记录当前持有的 SpinLock 及其级别。
@@ -64,13 +67,24 @@ impl LockStack {
 
     /// 检查锁顺序是否合法——新锁的级别必须严格大于栈顶级别。
     ///
+    /// 特殊处理 [`lock_level::UNSPECIFIED`]：
+    /// - 新锁级别为 UNSPECIFIED 时，跳过顺序检查（始终返回 `true`）。
+    /// - 栈顶级别为 UNSPECIFIED 时，同样跳过检查。
+    ///
     /// 返回 `true` 表示顺序合法，`false` 表示违反顺序。
     #[inline]
     pub fn check_order(&self, new_level: u8) -> bool {
+        if new_level == lock_level::UNSPECIFIED {
+            return true;
+        }
         if self.depth == 0 {
             return true;
         }
-        new_level > self.entries[self.depth - 1].level
+        let top = self.entries[self.depth - 1].level;
+        if top == lock_level::UNSPECIFIED {
+            return true;
+        }
+        new_level > top
     }
 
     /// 获取锁时压栈。
@@ -116,5 +130,66 @@ impl fmt::Debug for LockStack {
             .field("depth", &self.depth)
             .field("entries", &&self.entries[..self.depth])
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 空栈允许任意级别——SCHED、CONSOLE、UNSPECIFIED 均通过。
+    #[test]
+    fn empty_stack_allows_any_level() {
+        let stack = LockStack::new();
+        assert!(stack.check_order(lock_level::SCHED));
+        assert!(stack.check_order(lock_level::CONSOLE));
+        assert!(stack.check_order(lock_level::UNSPECIFIED));
+    }
+
+    /// 栈顶为普通级别时，UNSPECIFIED 跳过顺序检查。
+    #[test]
+    fn unspecified_skips_order_check() {
+        let mut stack = LockStack::new();
+        stack.push(core::ptr::null(), lock_level::CONSOLE);
+        assert!(stack.check_order(lock_level::UNSPECIFIED));
+    }
+
+    /// 栈顶为 UNSPECIFIED 时，任何普通级别也跳过检查。
+    #[test]
+    fn unspecified_on_top_skips_check() {
+        let mut stack = LockStack::new();
+        stack.push(core::ptr::null(), lock_level::UNSPECIFIED);
+        assert!(stack.check_order(lock_level::SCHED));
+    }
+
+    /// 普通级别必须严格递增——SCHED → TASK_TABLE 通过，SCHED → SCHED 失败。
+    #[test]
+    fn normal_levels_must_increase() {
+        let mut stack = LockStack::new();
+        stack.push(core::ptr::null(), lock_level::SCHED);
+        assert!(stack.check_order(lock_level::TASK_TABLE));
+        assert!(!stack.check_order(lock_level::SCHED));
+    }
+
+    /// push/pop 往返——push 后 depth=1，pop 后 depth=0。
+    #[test]
+    fn push_pop_roundtrip() {
+        let mut stack = LockStack::new();
+        let ptr = core::ptr::null();
+        stack.push(ptr, lock_level::SCHED);
+        assert_eq!(stack.depth(), 1);
+        stack.pop(ptr);
+        assert_eq!(stack.depth(), 0);
+    }
+
+    /// pop 时栈顶指针不匹配应 panic。
+    #[test]
+    #[should_panic(expected = "lock stack corrupted")]
+    fn pop_mismatch_panics() {
+        let mut stack = LockStack::new();
+        let ptr_a = 0x1000 as *const ();
+        let ptr_b = 0x2000 as *const ();
+        stack.push(ptr_a, lock_level::SCHED);
+        stack.pop(ptr_b);
     }
 }
