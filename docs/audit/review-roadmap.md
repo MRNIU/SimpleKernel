@@ -270,17 +270,40 @@ memory_types ← frame_allocator ← page_allocator
 
 ## R8 — 集成与收尾
 
-**目标**：全局性工作，包括文档重写、CI 重写、项目重组。
+**目标**：全局性工作，包括文档重写、CI 重写、项目重组、测试基础设施审计。
 
 ### 审查范围
 
 | 子任务 | 内容 |
 |--------|------|
+| **测试基础设施审计** | 全量排查测试相关的 cfg 门控、host 模拟实现、宏开关（见下方详述） |
 | 文档重写 | `README.md`、`00-概述.md`、`CLAUDE.md`、模块 README、Rustdoc、架构图集 |
 | CI 重写 | Matrix 构建、测试分层并行、质量门全链路、自动发布 |
 | 项目重组 | crate 合并/拆分评估、`src/` 目录结构、测试目录、`3rd/` 子模块清理 |
 | 分支合并 | 审计分支合入 `main`、历史分支清理、分支保护规则 |
 | 审计产物 CI 守护 | 见下方 TODO |
+
+#### 测试基础设施审计
+
+代码中大量为测试环境单独添加了实现和宏开关，需全量排查，确保：
+1. **测试代码不污染内核代码**——内核源码应以内核设计为优先，不应为测试环境打补丁
+2. **host 模拟实现与裸机行为一致**——测试有意义的前提是 host 行为能反映裸机行为
+
+排查维度：
+
+| 维度 | 排查内容 | 典型问题 |
+|------|----------|----------|
+| `#[cfg(test)]` 代码块 | 所有 crate 中的 `cfg(test)` 门控代码 | 是否引入了与裸机语义不同的行为？测试是否在验证真实逻辑？ |
+| `#[cfg(not(target_os = "none"))]` host 实现 | `interrupt_state/arch/host.rs`、`per_cpu` 的 host 路径、`ttas.rs` 的 `caller_id()` | host 模拟是否忠实反映裸机行为？是否存在"走过场"的空实现？ |
+| `#[cfg(target_os = "none")]` 门控 | 锁栈、中断检查等仅裸机生效的逻辑 | 门控是否合理？能否让测试也覆盖这些路径？ |
+| `#[cfg_attr(..., allow/expect)]` | 为测试/host 环境压制的 lint | 是否掩盖了真实问题？ |
+| Feature flags | `spin-timeout` 等 feature 对测试的影响 | feature 组合是否都在 CI 中测试？ |
+| `CpuLocal` 在 host 上的行为 | 多线程测试中所有线程共享同一个 static | 是否导致测试结果不可靠？是否需要 thread-local 模拟？ |
+
+交付物：
+- 测试基础设施审计报告（问题清单 + 改进建议）
+- host 模拟实现一致性评估
+- `CpuLocal` host 行为的 ADR（是否需要 thread-local 模拟）
 
 #### 审计产物 CI 守护
 
@@ -296,6 +319,9 @@ memory_types ← frame_allocator ← page_allocator
 
 ### R8 交付物
 
+- [ ] 测试基础设施审计报告
+- [ ] host 模拟实现一致性评估
+- [ ] `CpuLocal` host 行为 ADR
 - [ ] 完整文档集
 - [ ] 新版 CI pipeline（含审计产物守护）
 - [ ] 清理后的分支结构
