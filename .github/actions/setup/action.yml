@@ -33,6 +33,7 @@ runs:
         # 会覆盖容器的 PATH，需要手动恢复
         export PATH="/usr/local/cargo/bin:$PATH"
         if ! command -v rustup &>/dev/null; then
+          apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
         fi
         echo "/usr/local/cargo/bin" >> "$GITHUB_PATH"
