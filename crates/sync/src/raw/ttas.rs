@@ -60,6 +60,9 @@ impl RawSpinLock {
 unsafe impl RawLock for RawSpinLock {
     #[inline]
     fn acquire(&self) {
+        #[cfg(feature = "spin-timeout")]
+        let mut spin_count: u64 = 0;
+
         while self
             .locked
             .compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed)
@@ -67,6 +70,21 @@ unsafe impl RawLock for RawSpinLock {
         {
             while self.locked.load(Ordering::Relaxed) {
                 core::hint::spin_loop();
+
+                #[cfg(feature = "spin-timeout")]
+                {
+                    spin_count += 1;
+                    if spin_count >= config::SPINLOCK_TIMEOUT {
+                        panic!(
+                            "SpinLock '{}': spin timeout after {} iterations \
+                             (owner_core={}, current_core={})",
+                            self.name,
+                            spin_count,
+                            self.owner_core.load(Ordering::Relaxed),
+                            Self::caller_id(),
+                        );
+                    }
+                }
             }
         }
     }

@@ -7,6 +7,9 @@ repository.workspace = true
 description = "Kernel synchronization primitives — layered spinlock, interrupt-safe lock and proof token"
 edition.workspace = true
 
+[features]
+spin-timeout = []
+
 [dependencies]
 config = { path = "../config" }
 interrupt_state = { path = "../interrupt_state" }
