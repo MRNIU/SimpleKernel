@@ -1,0 +1,60 @@
+# Copyright The SimpleKernel Contributors
+
+name: docs
+
+on:
+  push:
+    branches: [main, feat/rust-SAS]
+  workflow_dispatch:
+
+# 同一分支只保留最新的 Pages 部署
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-24.04-arm
+    container:
+      image: ghcr.io/simple-xx/simplekernel-dev:latest
+    steps:
+      - uses: ./.github/actions/setup
+        with:
+          cache-key-prefix: cargo-docs
+
+      # 为两个架构分别生成文档，合并到同一输出目录
+      - name: Build rustdoc (riscv64)
+        run: |
+          cargo doc --no-deps --target riscv64gc-unknown-none-elf
+          mkdir -p docs-out
+          cp -r target/riscv64gc-unknown-none-elf/doc/* docs-out/
+
+      - name: Build rustdoc (aarch64)
+        run: |
+          cargo doc --no-deps --target aarch64-unknown-none-softfloat
+          cp -r target/aarch64-unknown-none-softfloat/doc/* docs-out/ 2>/dev/null || true
+
+      # 生成首页重定向
+      - name: Generate index.html
+        run: echo '<meta http-equiv="refresh" content="0;url=simplekernel/">' > docs-out/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs-out
+
+  deploy:
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

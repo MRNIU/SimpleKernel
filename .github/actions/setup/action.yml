@@ -1,0 +1,47 @@
+# Copyright The SimpleKernel Contributors
+#
+# 公共 setup composite action：checkout → submodule → Rust 工具链 → Cargo 缓存
+# 被 workflow.yml 中所有 job 复用。
+
+name: Setup SimpleKernel Build Environment
+description: Checkout, init submodules, setup Rust toolchain, and cache Cargo
+
+inputs:
+  cache-key-prefix:
+    description: Cache key prefix for differentiating job caches
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    - name: Shallow submodule init
+      shell: bash
+      run: |
+        git config --global --add safe.directory '*'
+        git submodule update --init --recursive --depth 1
+
+    # TODO: 合回 main 后触发 dev-image 重建，届时删除 rustup fallback 安装逻辑
+    - name: Setup Rust toolchain
+      shell: bash
+      run: |
+        if ! command -v rustup &>/dev/null; then
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
+          echo "/usr/local/cargo/bin" >> "$GITHUB_PATH"
+          export PATH="/usr/local/cargo/bin:$PATH"
+        fi
+        rustup show
+
+    - name: Cache Cargo
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+        key: ${{ inputs.cache-key-prefix }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+        restore-keys: |
+          ${{ inputs.cache-key-prefix }}-${{ runner.arch }}-

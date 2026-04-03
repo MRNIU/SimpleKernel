@@ -1,0 +1,44 @@
+# SimpleKernel 依赖审计配置
+# 运行: cargo deny check
+# 文档: https://embarkstudios.github.io/cargo-deny/
+
+[graph]
+targets = [
+    "riscv64gc-unknown-none-elf",
+    "aarch64-unknown-none-softfloat",
+]
+
+[licenses]
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "0BSD",
+    "Unlicense",
+    "ISC",
+    "MPL-2.0",            # fdt crate — file-level copyleft，与 MIT 兼容
+    "MulanPSL-2.0",       # sbi-rt / sbi-spec — 木兰宽松许可证
+    "Unicode-3.0",        # unicode-ident
+]
+confidence-threshold = 0.8
+
+[bans]
+multiple-versions = "warn"    # 同一 crate 多版本时警告（不阻断）
+wildcards = "deny"            # 禁止 `*` 版本通配符
+highlight = "all"
+
+[advisories]
+vulnerability = "deny"        # 有已知 CVE 的 crate 阻断构建
+unmaintained = "warn"         # 不再维护的 crate 警告
+yanked = "deny"               # 已撤回版本阻断
+ignore = []                   # 如需豁免特定 advisory，在此添加 RUSTSEC ID
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = [
+    "https://github.com/MRNIU/aarch64-cpu",     # fork: 等待上游 PR#77 合入
+    "https://github.com/rafalh/rust-fatfs",      # 无 crates.io 发布
+]

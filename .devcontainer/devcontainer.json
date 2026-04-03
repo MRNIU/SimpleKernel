@@ -3,11 +3,16 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
-	"postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && git submodule update --init --recursive && rustup show",
+	"postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && git submodule update --init --recursive --depth 1 && rustup show",
 	"customizations": {
 		"vscode": {
 			"settings": {
-				"rust-analyzer.check.command": "clippy"
+				"terminal.integrated.defaultProfile.linux": "zsh",
+				"rust-analyzer.check.command": "clippy",
+				"rust-analyzer.check.targets": [
+					"riscv64gc-unknown-none-elf",
+					"aarch64-unknown-none-softfloat"
+				]
 			},
 			"extensions": [
 				"rust-lang.rust-analyzer",
@@ -15,7 +20,9 @@
 				"plorefice.devicetree",
 				"zixuanwang.linkerscript",
 				"dan-c-underwood.arm",
-				"zhwu95.riscv"
+				"zhwu95.riscv",
+				"GitHub.vscode-pull-request-github",
+				"eamodio.gitlens"
 			]
 		}
 	}
