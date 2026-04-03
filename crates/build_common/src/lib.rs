@@ -46,6 +46,7 @@ pub fn setup_kernel_build(arch_dir: &Path) {
             .unwrap_or_else(|e| panic!("无法读取目录条目 {}: {e}", arch_dir.display()))
             .path();
         if path.extension().is_some_and(|ext| ext == "S") {
+            println!("cargo:rerun-if-changed={}", path.display());
             build.file(&path);
             has_asm = true;
         }
@@ -54,6 +55,9 @@ pub fn setup_kernel_build(arch_dir: &Path) {
     if has_asm {
         build.compile("asm");
     }
+
+    let linker_script = arch_dir.join("link.ld");
+    println!("cargo:rerun-if-changed={}", linker_script.display());
 
     println!("cargo:rustc-link-arg=-z");
     println!("cargo:rustc-link-arg=norelro");
