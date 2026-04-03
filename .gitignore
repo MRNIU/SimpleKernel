@@ -4,6 +4,7 @@
 .vscode/*
 !.vscode/tasks.json
 !.vscode/launch.json
+!.vscode/settings.json
 .idea
 
 build_aarch64
