@@ -1,19 +1,23 @@
-//! 泛型互斥锁——数据保护 + RAII guard。
+//! 泛型互斥锁——数据保护 + RAII guard + 抢占管理 + 锁序检查。
 
 use core::cell::UnsafeCell;
 use core::fmt;
 use core::marker::PhantomData;
 use core::ops::{Deref, DerefMut};
 
+use interrupt_state::PreemptGuard;
+
 use crate::raw::{RawLock, RawSpinLock};
 
 /// 泛型互斥锁——通过 `R: RawLock` 参数化底层锁算法。
 ///
+/// 获取锁时自动禁用抢占、检查递归加锁、参与锁序检查。
 /// 不涉及中断管理。如果中断 handler 也会获取同一把锁，
 /// 请使用 [`IrqSafe`](crate::irq_safe::IrqSafe)。
 pub struct Mutex<R: RawLock, T> {
     pub(crate) raw: R,
     pub(crate) data: UnsafeCell<T>,
+    level: u8,
 }
 
 // SAFETY: Mutex 通过 RawLock 的原子操作保证互斥访问。
@@ -21,13 +25,20 @@ pub struct Mutex<R: RawLock, T> {
 unsafe impl<R: RawLock, T: Send> Send for Mutex<R, T> {}
 unsafe impl<R: RawLock, T: Send> Sync for Mutex<R, T> {}
 
-/// `SpinLock<T>` 特化构造器——保持与原 API 完全兼容。
+/// `SpinLock<T>` 特化构造器。
 impl<T> Mutex<RawSpinLock, T> {
+    /// 创建自旋锁。
+    ///
+    /// # Arguments
+    /// - `data` — 被保护的数据
+    /// - `name` — 锁名称（诊断用）
+    /// - `level` — 锁级别（用于锁序检查，参见 [`lock_level`]）
     #[must_use]
-    pub const fn new(data: T, name: &'static str) -> Self {
+    pub const fn new(data: T, name: &'static str, level: u8) -> Self {
         Self {
             raw: RawSpinLock::new(name),
             data: UnsafeCell::new(data),
+            level,
         }
     }
 }
@@ -36,29 +47,69 @@ impl<T> Mutex<RawSpinLock, T> {
 impl<R: RawLock, T> Mutex<R, T> {
     /// 获取锁，返回 RAII guard。
     ///
+    /// 流程：中断上下文检查 → 禁用抢占 → 递归检测 → 自旋获取 → 设置 owner → 压锁栈。
+    ///
     /// # Panics
-    /// 同一核心递归加锁（若底层 `RawLock` 支持检测）。
+    /// - 在中断上下文中调用（裸机环境）——应使用 `SpinLockIrq`
+    /// - 同一核心递归加锁（若底层 `RawLock` 支持检测）
+    /// - 锁级别顺序违反（裸机环境）
     pub fn lock(&self) -> MutexGuard<'_, R, T> {
+        #[cfg(target_os = "none")]
+        assert!(
+            !interrupt_state::is_in_interrupt(),
+            "SpinLock '{}': 在中断上下文中调用，应使用 SpinLockIrq",
+            self.raw.name()
+        );
+
+        let preempt = PreemptGuard::disable();
         self.raw.check_recursive();
         self.raw.acquire();
         self.raw.set_owner();
+        self.push_lock_stack();
         MutexGuard {
             mutex: self,
+            preempt,
             _not_send: PhantomData,
         }
     }
 
     /// 尝试获取锁，不阻塞。
+    ///
+    /// # Panics
+    /// - 在中断上下文中调用（裸机环境）——应使用 `SpinLockIrq`
+    /// - 锁级别顺序违反（裸机环境）
     pub fn try_lock(&self) -> Option<MutexGuard<'_, R, T>> {
+        #[cfg(target_os = "none")]
+        assert!(
+            !interrupt_state::is_in_interrupt(),
+            "SpinLock '{}': 在中断上下文中调用，应使用 SpinLockIrq",
+            self.raw.name()
+        );
+
+        let preempt = PreemptGuard::disable();
+
         if self.raw.try_acquire() {
             self.raw.set_owner();
+            self.push_lock_stack();
             Some(MutexGuard {
                 mutex: self,
+                preempt,
                 _not_send: PhantomData,
             })
         } else {
             None
         }
+    }
+
+    /// 闭包 API——获取锁、执行闭包、自动释放。
+    ///
+    /// 比手动持有 guard 更清晰地界定临界区边界。
+    ///
+    /// # Panics
+    /// 与 [`lock()`](Self::lock) 相同。
+    pub fn with<Ret>(&self, f: impl FnOnce(&mut T) -> Ret) -> Ret {
+        let mut guard = self.lock();
+        f(&mut *guard)
     }
 
     /// 查询锁是否被持有。
@@ -70,6 +121,42 @@ impl<R: RawLock, T> Mutex<R, T> {
     pub fn name(&self) -> &'static str {
         self.raw.name()
     }
+
+    /// 锁级别。
+    pub fn level(&self) -> u8 {
+        self.level
+    }
+
+    /// 获取锁后压入 per-CPU 锁栈——检查锁序是否合法。
+    ///
+    /// 仅在裸机环境（`target_os = "none"`）生效；宿主机测试跳过。
+    fn push_lock_stack(&self) {
+        #[cfg(target_os = "none")]
+        {
+            let _held = interrupt_state::HeldInterrupts::hold();
+            // SAFETY: 中断已禁用，无同核心并发访问
+            let stack = unsafe { crate::LOCK_STACK.get_mut() };
+            if !stack.check_order(self.level) {
+                panic!(
+                    "SpinLock '{}': lock order violation (level={})",
+                    self.raw.name(),
+                    self.level,
+                );
+            }
+            stack.push(self as *const Self as *const (), self.level);
+        }
+    }
+
+    /// 释放锁前从 per-CPU 锁栈弹出。
+    fn pop_lock_stack(&self) {
+        #[cfg(target_os = "none")]
+        {
+            let _held = interrupt_state::HeldInterrupts::hold();
+            // SAFETY: 中断已禁用，无同核心并发访问
+            let stack = unsafe { crate::LOCK_STACK.get_mut() };
+            stack.pop(self as *const Self as *const ());
+        }
+    }
 }
 
 impl<R: RawLock, T> fmt::Debug for Mutex<R, T> {
@@ -77,17 +164,25 @@ impl<R: RawLock, T> fmt::Debug for Mutex<R, T> {
         f.debug_struct("Mutex")
             .field("name", &self.raw.name())
             .field("locked", &self.raw.is_locked())
+            .field("level", &self.level)
             .finish()
     }
 }
 
-/// RAII guard——丢弃时释放锁。
+/// RAII guard——丢弃时释放锁并恢复抢占状态。
 ///
 /// 所有锁后端共享同一个 guard 实现。
 /// `!Send`——guard 必须在获取锁的同一核心上释放，
 /// 防止任务迁移导致跨核释放。
+///
+/// 析构顺序：弹锁栈 → 清 owner → 释放锁 → 恢复抢占（`preempt` 自动 drop）。
 pub struct MutexGuard<'a, R: RawLock, T> {
     mutex: &'a Mutex<R, T>,
+    #[expect(
+        dead_code,
+        reason = "持有 PreemptGuard 以利用其 Drop 恢复抢占状态，不需要读取"
+    )]
+    preempt: PreemptGuard,
     /// `*mut ()` 是 `!Send`——使整个 guard 也变为 `!Send`。
     _not_send: PhantomData<*mut ()>,
 }
@@ -110,8 +205,17 @@ impl<R: RawLock, T> DerefMut for MutexGuard<'_, R, T> {
 
 impl<R: RawLock, T> Drop for MutexGuard<'_, R, T> {
     fn drop(&mut self) {
+        // 1. 弹出锁栈（在释放锁之前，确保锁栈状态一致）
+        self.mutex.pop_lock_stack();
+        // 2. 清除 owner
         self.mutex.raw.clear_owner();
+        // 3. 释放锁
         self.mutex.raw.release();
+        // 4. preempt guard 自动 drop——恢复抢占
+        //    （Rust 按字段声明顺序逆序 drop，preempt 在 mutex 之后声明，
+        //     但显式 Drop impl 中字段不会自动 drop，只有非 Drop 字段才会。
+        //     这里 PreemptGuard 实现了 Drop，Rust 在我们的 drop() 返回后
+        //     会自动 drop 所有字段，包括 self.preempt。）
     }
 }
 
@@ -124,13 +228,14 @@ impl<R: RawLock, T: fmt::Debug> fmt::Debug for MutexGuard<'_, R, T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::lock_stack::lock_level;
 
     type SpinLock<T> = Mutex<RawSpinLock, T>;
 
     /// 基本的加锁/解锁流程
     #[test]
     fn lock_and_unlock() {
-        let lock = SpinLock::new(42u32, "test");
+        let lock = SpinLock::new(42u32, "test", lock_level::UNSPECIFIED);
         {
             let guard = lock.lock();
             assert_eq!(*guard, 42);
@@ -141,7 +246,7 @@ mod tests {
     /// guard 提供可变访问
     #[test]
     fn guard_provides_mutable_access() {
-        let lock = SpinLock::new(0u32, "test_mut");
+        let lock = SpinLock::new(0u32, "test_mut", lock_level::UNSPECIFIED);
         {
             let mut guard = lock.lock();
             *guard = 99;
@@ -153,7 +258,7 @@ mod tests {
     /// try_lock 在锁空闲时成功
     #[test]
     fn try_lock_succeeds_when_free() {
-        let lock = SpinLock::new(7u32, "try_lock_test");
+        let lock = SpinLock::new(7u32, "try_lock_test", lock_level::UNSPECIFIED);
         let guard = lock.try_lock();
         assert!(guard.is_some());
         assert_eq!(*guard.expect("lock should succeed"), 7);
@@ -162,7 +267,7 @@ mod tests {
     /// try_lock 在锁已持有时失败
     #[test]
     fn try_lock_fails_when_held() {
-        let lock = SpinLock::new(0u32, "try_lock_held");
+        let lock = SpinLock::new(0u32, "try_lock_held", lock_level::UNSPECIFIED);
         let _g = lock.lock();
         let second = lock.try_lock();
         assert!(second.is_none());
@@ -171,7 +276,7 @@ mod tests {
     /// guard 析构时自动释放锁
     #[test]
     fn guard_drop_releases_lock() {
-        let lock = SpinLock::new(0u32, "drop_test");
+        let lock = SpinLock::new(0u32, "drop_test", lock_level::UNSPECIFIED);
         {
             let _g = lock.lock();
             assert!(lock.is_locked());
@@ -185,7 +290,7 @@ mod tests {
         use std::sync::Arc;
         use std::thread;
 
-        let lock = Arc::new(SpinLock::new(0u64, "concurrent"));
+        let lock = Arc::new(SpinLock::new(0u64, "concurrent", lock_level::UNSPECIFIED));
         let mut handles = Vec::new();
 
         for _ in 0..4 {
@@ -210,8 +315,24 @@ mod tests {
     #[test]
     #[should_panic(expected = "recursive lock")]
     fn recursive_lock_panics() {
-        let lock = SpinLock::new(0u32, "recursive");
+        let lock = SpinLock::new(0u32, "recursive", lock_level::UNSPECIFIED);
         let _g = lock.lock();
         let _g2 = lock.lock();
+    }
+
+    /// with 闭包 API——获取锁、执行闭包、自动释放
+    #[test]
+    fn with_closure_api() {
+        let lock = SpinLock::new(10u32, "with_test", lock_level::UNSPECIFIED);
+        let result = lock.with(|val| {
+            *val += 5;
+            *val
+        });
+        assert_eq!(result, 15);
+        assert!(!lock.is_locked());
+
+        // 验证数据确实被修改
+        let guard = lock.lock();
+        assert_eq!(*guard, 15);
     }
 }

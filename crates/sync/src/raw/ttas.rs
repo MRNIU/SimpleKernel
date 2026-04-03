@@ -33,6 +33,27 @@ impl RawSpinLock {
     fn fatal(name: &str, reason: &str) -> ! {
         panic!("FATAL: SpinLock '{}': {}", name, reason);
     }
+
+    /// 返回当前执行上下文的唯一标识——裸机用核心 ID，宿主机测试用线程 ID。
+    ///
+    /// 宿主机模式下 `per_cpu::current_core_id()` 对所有线程返回 0
+    /// （`per_cpu` 作为依赖编译时 `cfg(test)` 不生效），
+    /// 无法区分不同线程。测试时改用 `std::thread::current().id()` 的哈希值。
+    #[inline]
+    fn caller_id() -> usize {
+        #[cfg(test)]
+        {
+            use std::hash::{Hash, Hasher};
+            let id = std::thread::current().id();
+            let mut hasher = std::collections::hash_map::DefaultHasher::new();
+            id.hash(&mut hasher);
+            hasher.finish() as usize
+        }
+        #[cfg(not(test))]
+        {
+            per_cpu::current_core_id()
+        }
+    }
 }
 
 // SAFETY: TTAS 算法通过 Acquire/Release 原子操作保证互斥。
@@ -73,15 +94,18 @@ unsafe impl RawLock for RawSpinLock {
     }
 
     /// 递归加锁检测——同一核心再次获取同一把锁会死锁（自旋永不返回）。
+    ///
+    /// 裸机环境使用 `current_core_id()`（per-CPU 真实核心 ID）；
+    /// 宿主机使用线程 ID——因为 `per_cpu` 依赖编译时 `cfg(test)` 不生效，
+    /// `current_core_id()` 对所有线程返回 0，会导致多线程测试误判。
     fn check_recursive(&self) {
-        if self.owner_core.load(Ordering::Relaxed) == per_cpu::current_core_id() {
+        if self.owner_core.load(Ordering::Relaxed) == Self::caller_id() {
             Self::fatal(self.name, "recursive lock");
         }
     }
 
     fn set_owner(&self) {
-        self.owner_core
-            .store(per_cpu::current_core_id(), Ordering::Relaxed);
+        self.owner_core.store(Self::caller_id(), Ordering::Relaxed);
     }
 
     fn clear_owner(&self) {

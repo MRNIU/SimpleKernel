@@ -28,7 +28,7 @@ impl<T> IrqSafe<RawSpinLock, T> {
     #[must_use]
     pub const fn new(data: T, name: &'static str) -> Self {
         Self {
-            mutex: Mutex::new(data, name),
+            mutex: Mutex::new(data, name, lock_level::UNSPECIFIED),
             level: lock_level::CONSOLE,
         }
     }
@@ -36,7 +36,7 @@ impl<T> IrqSafe<RawSpinLock, T> {
     #[must_use]
     pub const fn new_with_level(data: T, name: &'static str, level: u8) -> Self {
         Self {
-            mutex: Mutex::new(data, name),
+            mutex: Mutex::new(data, name, lock_level::UNSPECIFIED),
             level,
         }
     }
