@@ -9,7 +9,7 @@
 
 地址 newtype 均为 `#[repr(transparent)]`，零开销包装 `usize`。
 不同类型之间不可隐式转换——`PhysAddr` 和 `VirtAddr` 是编译期不同的类型，
-必须通过显式的 `phys_to_virt()` / `virt_to_phys()` 函数转换。
+必须通过显式的 `PhysAddr::to_virt()` / `VirtAddr::to_phys()` 方法转换。
 转换使用 `wrapping_add` / `wrapping_sub` 以支持 higher-half kernel 布局，
 偏移量由 `config::PHYS_OFFSET` 控制。
 
@@ -45,7 +45,7 @@ pub type PageSpan  = Span<Page>;
 PhysAddr ←──→ Frame            (page_number / start_addr)
 VirtAddr ←──→ Page             (page_number / start_addr)
 
-PhysAddr ←──→ VirtAddr         (phys_to_virt / virt_to_phys)
+PhysAddr ←──→ VirtAddr         (PhysAddr::to_virt / VirtAddr::to_phys)
 
 Span<PhysAddr>                 字节粒度的物理地址范围
 Span<VirtAddr>                 字节粒度的虚拟地址范围
@@ -61,7 +61,7 @@ crates/span/src/
 
 crates/memory_types/src/
 ├── lib.rs           crate 入口，re-export + impl_usize_newtype! 宏
-├── addr.rs          PhysAddr / VirtAddr、对齐方法、phys_to_virt / virt_to_phys
+├── addr.rs          PhysAddr / VirtAddr、对齐方法、PhysAddr::to_virt / VirtAddr::to_phys
 ├── page_frame.rs    Frame<P> / Page<P>、与地址类型的互转
 └── page_size.rs     PageSize trait + Page4K / Page2M / Page1G
 ```
@@ -75,7 +75,7 @@ crates/memory_types/src/
 ### 地址与帧/页
 
 ```rust
-use memory_types::{PhysAddr, Frame, phys_to_virt, virt_to_phys};
+use memory_types::{PhysAddr, Frame};
 
 // 构造与对齐
 let pa = PhysAddr::new(0x8020_0001);
@@ -84,8 +84,8 @@ assert_eq!(pa.align_down(), PhysAddr::new(0x8020_0000));
 assert_eq!(pa.align_up(), PhysAddr::new(0x8020_1000));
 
 // 物理 ↔ 虚拟
-let va = phys_to_virt(pa);
-assert_eq!(virt_to_phys(va), pa);
+let va = pa.to_virt();
+assert_eq!(va.to_phys(), pa);
 
 // 地址 ↔ 帧号（向下取整）
 let addr = PhysAddr::new(0x8020_3000);
@@ -133,7 +133,7 @@ assert_eq!(f.start_addr(), PhysAddr::new(0x8020_3000)); // 不是 0x8020_3FFF
 当地址接近 `usize::MAX` 时，`align_up()` 无法向上对齐而不溢出，
 会 panic 而非静默回绕。这是有意为之，防止产生错误的地址值。
 
-### 3. `phys_to_virt` / `virt_to_phys` 仅适用于线性映射
+### 3. `PhysAddr::to_virt` / `VirtAddr::to_phys` 仅适用于线性映射
 
-这两个函数假设物理地址和虚拟地址之间存在固定偏移关系（`PHYS_OFFSET`）。
+这两个方法假设物理地址和虚拟地址之间存在固定偏移关系（`PHYS_OFFSET`）。
 对于非线性映射的地址（如用户空间地址），必须通过页表查询进行转换。
