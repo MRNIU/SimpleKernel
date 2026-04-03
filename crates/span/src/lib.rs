@@ -100,7 +100,11 @@ impl<A: Copy + Ord + core::ops::Add<usize, Output = A>> Span<A> {
             None
         }
     }
+}
 
+impl<A: Copy + Ord + core::ops::Add<usize, Output = A> + core::ops::Sub<A, Output = usize>>
+    Span<A>
+{
     /// 逐元素迭代（步长为 1）。
     #[inline]
     pub fn iter(self) -> SpanIter<A> {
@@ -117,7 +121,9 @@ pub struct SpanIter<A> {
     end: A,
 }
 
-impl<A: Copy + Ord + core::ops::Add<usize, Output = A>> Iterator for SpanIter<A> {
+impl<A: Copy + Ord + core::ops::Add<usize, Output = A> + core::ops::Sub<A, Output = usize>> Iterator
+    for SpanIter<A>
+{
     type Item = A;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -129,6 +135,16 @@ impl<A: Copy + Ord + core::ops::Add<usize, Output = A>> Iterator for SpanIter<A>
             None
         }
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.end - self.current;
+        (remaining, Some(remaining))
+    }
+}
+
+impl<A: Copy + Ord + core::ops::Add<usize, Output = A> + core::ops::Sub<A, Output = usize>>
+    ExactSizeIterator for SpanIter<A>
+{
 }
 
 #[cfg(test)]
@@ -214,5 +230,21 @@ mod tests {
         let b = Span::new(Val(3), Val(5));
         assert!(a.contiguous_with(b));
         assert!(!b.contiguous_with(a));
+    }
+
+    #[test]
+    fn iter_exact_size() {
+        let span = Span::new(Val(10), Val(15));
+        let iter = span.iter();
+        assert_eq!(iter.len(), 5);
+        assert_eq!(iter.size_hint(), (5, Some(5)));
+    }
+
+    #[test]
+    fn iter_exact_size_empty() {
+        let span = Span::new(Val(3), Val(3));
+        let iter = span.iter();
+        assert_eq!(iter.len(), 0);
+        assert_eq!(iter.size_hint(), (0, Some(0)));
     }
 }
