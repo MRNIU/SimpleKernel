@@ -6,6 +6,15 @@
 use core::fmt;
 
 /// 锁级别常量——数值小的必须先获取。
+///
+/// 持有级别 N 的锁时，只能获取级别 > N 的锁。违反则 panic。
+///
+/// ```text
+/// SCHED(0) -> TASK_TABLE(1) -> INTERRUPT_THREADS(2)
+///          -> KERNEL_AS(3) -> KERNEL_PT(4) -> DMA(5)
+///          -> FRAME_ALLOC(10) -> PAGE_ALLOC(11) -> HEAP(12)
+///          -> PANIC(100) -> CONSOLE(200)
+/// ```
 pub mod lock_level {
     /// 调度锁——级别最低，必须最先获取
     pub const SCHED: u8 = 0;
@@ -13,12 +22,20 @@ pub mod lock_level {
     pub const TASK_TABLE: u8 = 1;
     /// 中断线程锁
     pub const INTERRUPT_THREADS: u8 = 2;
+    /// 内核地址空间锁——VMA 操作持有时可能获取 KERNEL_PT
+    pub const KERNEL_AS: u8 = 3;
+    /// 内核页表锁——map/unmap 持有时可能获取 FRAME_ALLOC / HEAP
+    pub const KERNEL_PT: u8 = 4;
+    /// DMA 追踪表锁——释放 DMA 缓冲区时可能获取 FRAME_ALLOC
+    pub const DMA: u8 = 5;
     /// 帧分配器锁
     pub const FRAME_ALLOC: u8 = 10;
     /// 页分配器锁
     pub const PAGE_ALLOC: u8 = 11;
     /// 堆分配器锁
     pub const HEAP: u8 = 12;
+    /// Panic observer 锁——panic 路径可能获取 CONSOLE
+    pub const PANIC: u8 = 100;
     /// 控制台锁——级别最高，几乎可在任何上下文获取
     pub const CONSOLE: u8 = 200;
     /// 不参与锁序检查——调试 / 诊断锁专用。

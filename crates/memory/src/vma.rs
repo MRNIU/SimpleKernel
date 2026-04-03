@@ -1,5 +1,8 @@
 //! 虚拟内存区域（VMA）与地址空间管理。
 //!
+//! SAS 架构下所有映射均为 identity mapping（VA == PA），
+//! VMA 仅做簿记——追踪哪些地址区间已被占用。
+//!
 //! - [`Vma`]：描述一段连续虚拟地址空间的属性（权限、backing 类型）
 //! - [`AddressSpace`]：管理所有 VMA
 
@@ -9,17 +12,7 @@ use crate::MappedPages;
 use crate::error::MemoryError;
 use config::PAGE_SIZE;
 use memory_types::{Span, VirtAddr};
-use page_allocator::AllocatedPages;
 use paging::{PteFlags, PteFlagsOps};
-
-/// VMA backing 类型——描述物理内存的来源。
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum VmaKind {
-    /// 匿名映射——物理帧由帧分配器按需分配。
-    Anonymous,
-    /// Identity mapping（VA == PA）——不分配新帧。
-    Identity,
-}
 
 /// 虚拟内存区域——描述地址空间中一段连续区域的属性。
 pub struct Vma {
@@ -27,9 +20,7 @@ pub struct Vma {
     range: Span<VirtAddr>,
     /// 访问权限
     flags: PteFlags,
-    /// backing 类型
-    kind: VmaKind,
-    /// 已建立的映射——`None` 表示尚未物化（lazy）
+    /// 已建立的映射——`None` 表示尚未物化（lazy）或外部建立的映射
     mapping: Option<MappedPages>,
 }
 
@@ -64,12 +55,6 @@ impl Vma {
         self.flags
     }
 
-    /// 返回 backing 类型。
-    #[must_use]
-    pub fn kind(&self) -> VmaKind {
-        self.kind
-    }
-
     /// 是否已建立物理映射。
     #[must_use]
     pub fn is_mapped(&self) -> bool {
@@ -81,11 +66,10 @@ impl core::fmt::Debug for Vma {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
-            "Vma({}-{}, {:?}, {:?}, {})",
+            "Vma({}-{}, {:?}, {})",
             self.range.start(),
             self.range.end(),
             self.flags,
-            self.kind,
             if self.is_mapped() { "mapped" } else { "lazy" },
         )
     }
@@ -128,59 +112,32 @@ impl AddressSpace {
             .filter(|vma| vma.range.contains(addr))
     }
 
-    /// 创建匿名映射——分配帧并建立 VA→PA 映射。
+    /// 分配帧并建立 identity mapping（VA == PA）。
     ///
     /// # Errors
     ///
     /// - `RegionOverlap`：与已有 VMA 重叠
     /// - `AllocationFailed` / `OutOfMemory`：分配失败
-    pub fn mmap_anonymous(
-        &mut self,
-        start: VirtAddr,
-        size: usize,
-        flags: PteFlags,
-    ) -> Result<&Vma, MemoryError> {
-        let (start, end, page_count) = Self::validate_range(start, size)?;
+    pub fn mmap(&mut self, size: usize, flags: PteFlags) -> Result<&Vma, MemoryError> {
+        if size == 0 {
+            return Err(MemoryError::MapFailed);
+        }
+        let page_count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
+
+        let frames = frame_allocator::AllocatedFrames::alloc(page_count)
+            .map_err(|_| MemoryError::OutOfMemory)?;
+
+        // identity mapping: VA = PA
+        let start = frames.start_paddr().to_virt();
+        let end = start + page_count * PAGE_SIZE;
         let range = Span::new(start, end);
         self.check_overlap(range)?;
 
-        let pages = AllocatedPages::alloc_at(start, page_count)
-            .map_err(|_| MemoryError::AllocationFailed)?;
-        let frames = frame_allocator::AllocatedFrames::alloc(page_count)
-            .map_err(|_| MemoryError::OutOfMemory)?;
-        let mapping = MappedPages::map(pages, frames, flags);
+        let mapping = MappedPages::map(frames, flags);
 
         let vma = Vma {
             range,
             flags: mapping.flags(),
-            kind: VmaKind::Anonymous,
-            mapping: Some(mapping),
-        };
-        self.areas.insert(start, vma);
-        Ok(self.areas.get(&start).expect("刚插入的 VMA"))
-    }
-
-    /// 创建 identity mapping——分配帧并建立 VA→PA 映射。
-    pub fn mmap_identity(
-        &mut self,
-        start: VirtAddr,
-        size: usize,
-        flags: PteFlags,
-    ) -> Result<&Vma, MemoryError> {
-        let (start, end, page_count) = Self::validate_range(start, size)?;
-        let range = Span::new(start, end);
-        self.check_overlap(range)?;
-
-        let pages = AllocatedPages::alloc_at(start, page_count)
-            .map_err(|_| MemoryError::AllocationFailed)?;
-        let frames = frame_allocator::AllocatedFrames::alloc(page_count)
-            .map_err(|_| MemoryError::OutOfMemory)?;
-        let mapping = MappedPages::map(pages, frames, flags);
-
-        let vma = Vma {
-            range,
-            flags: mapping.flags(),
-            kind: VmaKind::Identity,
             mapping: Some(mapping),
         };
         self.areas.insert(start, vma);
@@ -193,7 +150,6 @@ impl AddressSpace {
         start: VirtAddr,
         size: usize,
         flags: PteFlags,
-        kind: VmaKind,
     ) -> Result<&Vma, MemoryError> {
         let (start, end, _) = Self::validate_range(start, size)?;
         let range = Span::new(start, end);
@@ -202,7 +158,6 @@ impl AddressSpace {
         let vma = Vma {
             range,
             flags,
-            kind,
             mapping: None,
         };
         self.areas.insert(start, vma);
@@ -242,47 +197,13 @@ impl AddressSpace {
         }
 
         let page_count = vma.page_count();
-        let pages = AllocatedPages::alloc_at(vma.range.start(), page_count)
-            .map_err(|_| MemoryError::AllocationFailed)?;
         let frames = frame_allocator::AllocatedFrames::alloc(page_count)
             .map_err(|_| MemoryError::OutOfMemory)?;
-        let mapping = MappedPages::map(pages, frames, vma.flags);
+        let mapping = MappedPages::map(frames, vma.flags);
 
         vma.flags = mapping.flags();
         vma.mapping = Some(mapping);
         Ok(true)
-    }
-
-    /// Identity-map 一段物理地址区间，自动选择大页。
-    pub fn mmap_identity_range(
-        &mut self,
-        start: VirtAddr,
-        end: VirtAddr,
-        flags: PteFlags,
-    ) -> Result<&Vma, MemoryError> {
-        let start_aligned = start.align_down();
-        let end_aligned = end.align_up();
-        if start_aligned.as_usize() >= end_aligned.as_usize() {
-            return Err(MemoryError::MapFailed);
-        }
-        let range = Span::new(start_aligned, end_aligned);
-        self.check_overlap(range)?;
-
-        let page_count = (end_aligned - start_aligned) / PAGE_SIZE;
-        let pages = AllocatedPages::alloc_at(start_aligned, page_count)
-            .map_err(|_| MemoryError::AllocationFailed)?;
-        let frames = frame_allocator::AllocatedFrames::alloc(page_count)
-            .map_err(|_| MemoryError::OutOfMemory)?;
-        let mapping = MappedPages::map(pages, frames, flags);
-
-        let vma = Vma {
-            range,
-            flags: mapping.flags(),
-            kind: VmaKind::Identity,
-            mapping: Some(mapping),
-        };
-        self.areas.insert(start_aligned, vma);
-        Ok(self.areas.get(&start_aligned).expect("刚插入的 VMA"))
     }
 
     /// 注册已由外部建立的映射——仅做簿记，不操作页表。
@@ -291,7 +212,6 @@ impl AddressSpace {
         start: VirtAddr,
         size: usize,
         flags: PteFlags,
-        kind: VmaKind,
     ) -> Result<&Vma, MemoryError> {
         let (start, end, _) = Self::validate_range(start, size)?;
         let range = Span::new(start, end);
@@ -300,7 +220,6 @@ impl AddressSpace {
         let vma = Vma {
             range,
             flags,
-            kind,
             mapping: None,
         };
         self.areas.insert(start, vma);
@@ -310,12 +229,7 @@ impl AddressSpace {
     /// 注册已由外部建立的映射——直接接管 MappedPages 所有权。
     ///
     /// 用于 init 阶段注册内核段映射（帧由 frame_allocator::init 预留）。
-    pub fn register_kernel_mapping(
-        &mut self,
-        start: VirtAddr,
-        mapping: paging::MappedPages,
-        kind: VmaKind,
-    ) {
+    pub fn register_kernel_mapping(&mut self, start: VirtAddr, mapping: paging::MappedPages) {
         let size = mapping.size();
         let flags = mapping.flags();
         let end = start + size;
@@ -323,7 +237,6 @@ impl AddressSpace {
         let vma = Vma {
             range,
             flags,
-            kind,
             mapping: Some(mapping),
         };
         self.areas.insert(start, vma);
@@ -358,14 +271,22 @@ impl AddressSpace {
     }
 
     /// 检查新区域是否与已有 VMA 重叠。
+    ///
+    /// - 完全重合（start + size 均相同）→ `RegionIdentical`
+    /// - 部分重叠 → `RegionOverlap`
     fn check_overlap(&self, range: Span<VirtAddr>) -> Result<(), MemoryError> {
+        // 检查前一个 VMA（起始地址 < range.start 的最近邻）
         if let Some((_, prev)) = self.areas.range(..range.start()).next_back() {
             if prev.range.overlaps(range) {
                 return Err(MemoryError::RegionOverlap);
             }
         }
-        if let Some((_, next)) = self.areas.range(range.start()..).next() {
-            if next.range.overlaps(range) {
+        // 检查起始地址 >= range.start 的 VMA
+        if let Some((_, existing)) = self.areas.range(range.start()..).next() {
+            if existing.range == range {
+                return Err(MemoryError::RegionIdentical);
+            }
+            if existing.range.overlaps(range) {
                 return Err(MemoryError::RegionOverlap);
             }
         }
@@ -396,34 +317,17 @@ mod tests {
         assert!(aspace.find_vma(VirtAddr::new(0x1000)).is_none());
     }
 
-    /// mmap_identity 应创建 VMA 并建立映射。
+    /// mmap 应创建 VMA 并建立映射。
     #[test]
-    fn mmap_identity_creates_vma() {
+    fn mmap_creates_vma() {
         init();
         let mut aspace = AddressSpace::new();
-        let start = VirtAddr::new(0x1000_0000);
         let vma = aspace
-            .mmap_identity(start, PAGE_SIZE, PteFlags::kernel_rw())
-            .expect("mmap_identity 应成功");
-        assert_eq!(vma.start(), start);
+            .mmap(PAGE_SIZE, PteFlags::kernel_rw())
+            .expect("mmap 应成功");
         assert_eq!(vma.size(), PAGE_SIZE);
-        assert_eq!(vma.kind(), VmaKind::Identity);
         assert!(vma.is_mapped());
         assert_eq!(aspace.area_count(), 1);
-    }
-
-    /// mmap_anonymous 应分配帧并创建映射。
-    #[test]
-    fn mmap_anonymous_creates_mapping() {
-        init();
-        let mut aspace = AddressSpace::new();
-        let start = VirtAddr::new(0x1000_2000);
-        let vma = aspace
-            .mmap_anonymous(start, 2 * PAGE_SIZE, PteFlags::kernel_rw())
-            .expect("mmap_anonymous 应成功");
-        assert_eq!(vma.page_count(), 2);
-        assert_eq!(vma.kind(), VmaKind::Anonymous);
-        assert!(vma.is_mapped());
     }
 
     /// find_vma 应找到包含地址的 VMA。
@@ -431,28 +335,13 @@ mod tests {
     fn find_vma_lookup() {
         init();
         let mut aspace = AddressSpace::new();
-        let start = VirtAddr::new(0x1000_5000);
-        let _vma = aspace
-            .mmap_identity(start, 3 * PAGE_SIZE, PteFlags::kernel_rw())
+        let vma = aspace
+            .mmap(3 * PAGE_SIZE, PteFlags::kernel_rw())
             .expect("mmap");
+        let start = vma.start();
         assert!(aspace.find_vma(start).is_some());
         assert!(aspace.find_vma(start + PAGE_SIZE).is_some());
         assert!(aspace.find_vma(start + 3 * PAGE_SIZE).is_none());
-    }
-
-    /// 重叠区域应被拒绝。
-    #[test]
-    fn overlap_rejected() {
-        init();
-        let mut aspace = AddressSpace::new();
-        let start = VirtAddr::new(0x1000_9000);
-        aspace
-            .mmap_identity(start, 2 * PAGE_SIZE, PteFlags::kernel_rw())
-            .expect("首次 mmap");
-        let err = aspace
-            .mmap_identity(start, PAGE_SIZE, PteFlags::kernel_rw())
-            .expect_err("重叠应失败");
-        assert_eq!(err, MemoryError::RegionOverlap);
     }
 
     /// munmap 应移除 VMA。
@@ -460,10 +349,8 @@ mod tests {
     fn munmap_removes_vma() {
         init();
         let mut aspace = AddressSpace::new();
-        let start = VirtAddr::new(0x1000_C000);
-        aspace
-            .mmap_anonymous(start, PAGE_SIZE, PteFlags::kernel_rw())
-            .expect("mmap");
+        let vma = aspace.mmap(PAGE_SIZE, PteFlags::kernel_rw()).expect("mmap");
+        let start = vma.start();
         assert_eq!(aspace.area_count(), 1);
         aspace.munmap(start).expect("munmap 应成功");
         assert_eq!(aspace.area_count(), 0);
@@ -475,8 +362,62 @@ mod tests {
         init();
         let mut aspace = AddressSpace::new();
         let err = aspace
-            .mmap_identity(VirtAddr::new(0x1000_E000), 0, PteFlags::kernel_rw())
+            .mmap(0, PteFlags::kernel_rw())
             .expect_err("size=0 应失败");
         assert_eq!(err, MemoryError::MapFailed);
+    }
+
+    /// 完全相同的 register_existing 应返回 RegionIdentical。
+    #[test]
+    fn register_existing_identical() {
+        init();
+        let mut aspace = AddressSpace::new();
+        let start = VirtAddr::new(0x5000_0000);
+        let size = PAGE_SIZE;
+
+        aspace
+            .register_existing(start, size, PteFlags::kernel_device())
+            .expect("首次注册应成功");
+
+        let err = aspace
+            .register_existing(start, size, PteFlags::kernel_device())
+            .expect_err("重复注册应返回错误");
+        assert_eq!(err, MemoryError::RegionIdentical);
+    }
+
+    /// 部分重叠应返回 RegionOverlap。
+    #[test]
+    fn register_existing_partial_overlap() {
+        init();
+        let mut aspace = AddressSpace::new();
+        let start = VirtAddr::new(0x6000_0000);
+
+        aspace
+            .register_existing(start, 2 * PAGE_SIZE, PteFlags::kernel_device())
+            .expect("首次注册应成功");
+
+        // 后半部分重叠
+        let err = aspace
+            .register_existing(start + PAGE_SIZE, 2 * PAGE_SIZE, PteFlags::kernel_device())
+            .expect_err("部分重叠应返回错误");
+        assert_eq!(err, MemoryError::RegionOverlap);
+    }
+
+    /// 完全包含（新区域是已有区域的子集）应返回 RegionOverlap。
+    #[test]
+    fn register_existing_contained_overlap() {
+        init();
+        let mut aspace = AddressSpace::new();
+        let start = VirtAddr::new(0x7000_0000);
+
+        aspace
+            .register_existing(start, 4 * PAGE_SIZE, PteFlags::kernel_device())
+            .expect("首次注册应成功");
+
+        // 子集重叠
+        let err = aspace
+            .register_existing(start + PAGE_SIZE, PAGE_SIZE, PteFlags::kernel_device())
+            .expect_err("包含关系应返回 RegionOverlap");
+        assert_eq!(err, MemoryError::RegionOverlap);
     }
 }

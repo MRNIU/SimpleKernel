@@ -4,7 +4,7 @@
 //! 对同一地址的重复读写，也不会重排 MMIO 操作。
 //!
 //! MMIO 地址是硬件寄存器，不是 RAM，不在 buddy allocator 中。
-//! 直接使用 PageTable 的 pub(crate) 方法建立映射，不经过 MappedPages。
+//! 直接使用 PageTable 的 pub(crate) 方法建立 identity mapping。
 //! 映射永久存在——不自动 unmap。
 
 use crate::error::PagingError;
@@ -12,18 +12,13 @@ use crate::mapping::check_bounds_and_align;
 use crate::{PteFlags, PteFlagsOps};
 use config::PAGE_SIZE;
 use memory_types::PhysAddr;
-use page_allocator::AllocatedPages;
 
 /// 已映射的 MMIO 区域——提供类型安全的 volatile 寄存器访问。
 ///
 /// MMIO 地址是硬件寄存器，不是 RAM，不在 buddy allocator 中。
-/// 直接使用 PageTable 的 pub(crate) 方法建立映射，不经过 MappedPages。
+/// 直接使用 PageTable 的 pub(crate) 方法建立 identity mapping（VA == PA）。
 /// 映射永久存在——不自动 unmap。
 pub struct MmioRegion {
-    /// 持有虚拟页所有权——Drop 时归还给 page_allocator。
-    /// PTE 不 unmap——MMIO 映射永久存在。
-    #[expect(dead_code, reason = "仅用于持有所有权，通过 base/size 访问")]
-    pages: AllocatedPages,
     base: memory_types::VirtAddr,
     size: usize,
 }
@@ -33,13 +28,11 @@ impl MmioRegion {
     ///
     /// # Errors
     ///
-    /// 虚拟页分配失败时返回错误。
+    /// 页表映射失败时返回错误。
     pub fn map(paddr: PhysAddr, size: usize) -> Result<Self, PagingError> {
         let pa_aligned = paddr.align_down();
         let page_count = ((paddr + size).align_up().as_usize() - pa_aligned.as_usize()) / PAGE_SIZE;
         let va = memory_types::VirtAddr::new(pa_aligned.as_usize());
-        let pages =
-            AllocatedPages::alloc_at(va, page_count).map_err(|_| PagingError::AllocationFailed)?;
 
         let pt = crate::kernel_page_table();
         let mut guard = pt.lock();
@@ -53,7 +46,6 @@ impl MmioRegion {
         Ok(Self {
             base: va,
             size: page_count * PAGE_SIZE,
-            pages,
         })
     }
 

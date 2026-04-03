@@ -35,7 +35,7 @@ impl ObserverRegistry {
 static OBSERVERS: SpinLock<ObserverRegistry> = SpinLock::new(
     ObserverRegistry::new(),
     "panic_observers",
-    sync::lock_level::UNSPECIFIED,
+    sync::lock_level::PANIC,
 );
 
 /// 初始化用于回溯解析的 ELF 符号表。
@@ -79,6 +79,18 @@ fn notify_observers(event: &PanicEvent<'_>) {
 #[cfg(not(test))]
 pub fn handle_panic(info: &core::panic::PanicInfo<'_>) -> ! {
     use crate::logging::raw_put;
+    use core::sync::atomic::{AtomicBool, Ordering};
+
+    // 关中断——防止 timer/外设中断在 panic 处理期间触发二次 panic
+    let _irq = interrupt_state::HeldInterrupts::hold();
+
+    // 重入保护——若 panic handler 自身触发 panic，直接停机
+    static PANICKING: AtomicBool = AtomicBool::new(false);
+    if PANICKING.swap(true, Ordering::Relaxed) {
+        loop {
+            core::hint::spin_loop();
+        }
+    }
 
     raw_put("\x1b[31mPANIC\x1b[0m at ");
 

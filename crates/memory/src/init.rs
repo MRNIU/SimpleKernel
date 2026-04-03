@@ -1,13 +1,13 @@
 //! 内存子系统初始化——主核 / 从核。
 
-use memory_types::{PhysAddr, VirtAddr};
+use memory_types::PhysAddr;
 use paging::{PageTable, PteFlags, PteFlagsOps};
 
 use crate::vma::AddressSpace;
 
 /// 主核内存初始化——返回内核地址空间（包含所有内核段映射）。
 ///
-/// 初始化顺序：堆 → 帧分配器（统一入口）→ 页分配器 → 页表 → 分段映射。
+/// 初始化顺序：堆 -> 帧分配器 -> 页表 -> 分段映射。
 pub fn init() -> AddressSpace {
     // SAFETY: 在任何堆分配之前调用，且仅调用一次（由启动流程保证）
     unsafe { heap_crate::init() };
@@ -50,41 +50,28 @@ pub fn init() -> AddressSpace {
         )
     };
 
-    // 初始化虚拟页分配器——SAS identity mapping 下 VA == PA。
-    // 管理范围从地址 0 到物理内存末尾，覆盖低地址的 MMIO 设备区域
-    // 和高地址的物理 RAM。后续 AllocatedPages::alloc_at 从中取页。
-    // SAFETY: 虚拟地址范围有效，仅调用一次
-    let va_end = mem_start + mem_size;
-    unsafe {
-        page_allocator::init(VirtAddr::new(0), va_end.as_usize());
-    }
-
-    // 创建页表——Box::leak 产出 'static 引用
+    // 创建页表——写入 paging 模块的静态存储，无需堆分配
     let pt = PageTable::create().expect("创建内核页表失败");
-    let pt_lock = sync_crate::SpinLock::new(pt, "kernel_pt", sync_crate::lock_level::UNSPECIFIED);
-    let pt_static: &'static _ = alloc::boxed::Box::leak(alloc::boxed::Box::new(pt_lock));
-    // SAFETY: pt_static 是 'static 引用
-    unsafe { paging::set_kernel_page_table(pt_static) };
+    paging::init_kernel_page_table(pt);
 
     let mut kernel_as = AddressSpace::new();
 
-    // 分段映射：.text(RWX) · .rodata(RO) · .data+free(RW)
+    // 分段映射：.text(RWX) / .rodata(RO) / .data+free(RW)
     // reserved 的元素顺序与传入 init 的 reserved 参数顺序一致。
-    // 使用 remove(0) 按顺序消费所有权（swap_remove 会打乱顺序）。
-    let segments: [(PhysAddr, PteFlags); 3] = [
-        (mem_start, PteFlags::kernel_rwx()),
-        (text_end, PteFlags::kernel_ro()),
-        (rodata_end, PteFlags::kernel_rw()),
+    // identity mapping: VA == PA，MappedPages::map 从 PA 推导 VA。
+    let segments: [PteFlags; 3] = [
+        PteFlags::kernel_rwx(),
+        PteFlags::kernel_ro(),
+        PteFlags::kernel_rw(),
     ];
 
-    for (seg_start, flags) in segments {
+    let seg_starts = [mem_start, text_end, rodata_end];
+
+    for (i, flags) in segments.into_iter().enumerate() {
         let frames = reserved.remove(0);
-        let page_count = frames.count();
-        let va = VirtAddr::new(seg_start.as_usize());
-        let pages =
-            page_allocator::AllocatedPages::alloc_at(va, page_count).expect("内核段页分配失败");
-        let mapping = paging::MappedPages::map(pages, frames, flags);
-        kernel_as.register_kernel_mapping(va, mapping, crate::vma::VmaKind::Identity);
+        let va = memory_types::VirtAddr::new(seg_starts[i].as_usize());
+        let mapping = paging::MappedPages::map(frames, flags);
+        kernel_as.register_kernel_mapping(va, mapping);
     }
 
     log::info!(

@@ -13,7 +13,6 @@ memory_types = { path = "../memory_types" }
 sync_crate = { path = "../sync", package = "sync" }
 per_cpu = { path = "../per_cpu" }
 paging = { path = "../paging" }
-page_allocator = { path = "../page_allocator" }
 frame_allocator = { path = "../frame_allocator" }
 heap_crate = { path = "../heap", package = "heap" }
 tlb = { path = "../tlb" }
@@ -25,5 +24,4 @@ spin.workspace = true
 
 [dev-dependencies]
 paging = { path = "../paging", features = ["test-support"] }
-page_allocator = { path = "../page_allocator", features = ["test-support"] }
 frame_allocator = { path = "../frame_allocator", features = ["test-support"] }

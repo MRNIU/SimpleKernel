@@ -184,14 +184,18 @@ impl PageTable {
             page_size
         );
 
+        let leaf_flags = flags.for_leaf_at_level(level);
         let (frame_paddr, idx) = self.walk_create(va, level)?;
         // SAFETY: frame_paddr 指向由 self 持有的有效帧
         let mut table = unsafe { Table::from_paddr(frame_paddr) };
         let current = table.read(idx);
         if current.is_valid() {
-            return Err(PagingError::AlreadyMapped);
+            // 区分幂等重复和真正冲突
+            if current.paddr() == pa && current.flags() == leaf_flags {
+                return Err(PagingError::AlreadyMappedIdentical);
+            }
+            return Err(PagingError::AlreadyMappedConflict);
         }
-        let leaf_flags = flags.for_leaf_at_level(level);
         table.write(idx, PageTableEntry::new(pa, leaf_flags));
         self.inc_ref(frame_paddr);
         Ok(())
@@ -423,8 +427,12 @@ impl PageTable {
                 }
             }
 
-            self.map_at_level(va, addr, flags, selected_level)
-                .expect("identity_map_range: 映射失败");
+            match self.map_at_level(va, addr, flags, selected_level) {
+                Ok(()) => {}
+                // 幂等：同一页已被相同 PA+flags 映射（如 MMIO 区域重叠），跳过
+                Err(PagingError::AlreadyMappedIdentical) => {}
+                Err(e) => panic!("identity_map_range: 映射 {va} 失败: {e}"),
+            }
             addr += selected_size;
         }
     }
@@ -495,7 +503,7 @@ mod tests {
         let err = pt
             .map_page(va, pa, PteFlags::kernel_rw())
             .expect_err("重复 map 应失败");
-        assert_eq!(err, PagingError::AlreadyMapped);
+        assert_eq!(err, PagingError::AlreadyMappedIdentical);
     }
 
     /// unmap 应返回原始物理地址，且之后查询应为 None。
@@ -704,7 +712,7 @@ mod tests {
         let err = pt
             .map_at_level(va, pa, PteFlags::kernel_rw(), 1)
             .expect_err("重复大页映射应失败");
-        assert_eq!(err, PagingError::AlreadyMapped);
+        assert_eq!(err, PagingError::AlreadyMappedIdentical);
     }
 
     /// unmap_at_level 应能取消大页映射。
@@ -783,21 +791,39 @@ mod tests {
         assert_eq!(pa_offset, PhysAddr::new(huge_size + 0x1000));
     }
 
-    /// identity_map_range 映射冲突时应 panic。
+    /// identity_map_range 映射冲突（flags 不同）时应 panic。
     #[test]
-    #[should_panic(expected = "映射失败")]
+    #[should_panic(expected = "映射")]
     fn identity_map_range_conflict_panics() {
         let mut pt = PageTable::create().expect("创建测试页表失败");
         let conflict_va = VirtAddr::new(0x10_2000);
         let conflict_pa = PhysAddr::new(0x10_2000);
-        pt.map_page(conflict_va, conflict_pa, PteFlags::kernel_rw())
+        // 先以 kernel_ro 占位
+        pt.map_page(conflict_va, conflict_pa, PteFlags::kernel_ro())
             .expect("占位映射应成功");
 
-        // 映射 [0x10_0000, 0x10_3000)，在第 3 页冲突时 panic
+        // 以 kernel_rw 映射同一区域——flags 冲突，应 panic
         pt.identity_map_range(
             PhysAddr::new(0x10_0000),
             PhysAddr::new(0x10_3000),
             PteFlags::kernel_rw(),
         );
+    }
+
+    /// identity_map_range 对相同 PA+flags 的重复映射应幂等（不 panic）。
+    #[test]
+    fn identity_map_range_idempotent() {
+        let mut pt = PageTable::create().expect("创建测试页表失败");
+        let start = PhysAddr::new(0x20_0000);
+        let end = PhysAddr::new(0x20_2000); // 2 pages
+
+        pt.identity_map_range(start, end, PteFlags::kernel_rw());
+        // 重复映射相同区域——应幂等，不 panic
+        pt.identity_map_range(start, end, PteFlags::kernel_rw());
+
+        let (pa, _) = pt
+            .get_mapping(VirtAddr::new(0x20_0000))
+            .expect("映射应存在");
+        assert_eq!(pa, start);
     }
 }

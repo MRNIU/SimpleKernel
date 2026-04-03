@@ -16,7 +16,7 @@
 
 extern crate alloc;
 
-use core::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use core::sync::atomic::{AtomicU64, Ordering};
 use memory_types::PhysAddr;
 
 pub mod error;
@@ -41,42 +41,36 @@ pub mod mmio;
 
 /// 全局内核页表——SAS 架构下只有一张页表，所有映射共用。
 ///
-/// 通过 [`set_kernel_page_table`] 在启动时设置，MappedPages 的 Drop
-/// 通过 [`kernel_page_table`] 获取引用以执行 unmap。
-static KERNEL_PT_PTR: AtomicUsize = AtomicUsize::new(0);
+/// `spin::Once` 在 `.bss` 中静态分配内存，运行时通过 [`init_kernel_page_table`]
+/// 一次性写入 `SpinLock<PageTable>`。无需 `Box::leak`，无需 `unsafe`。
+static KERNEL_PAGE_TABLE: spin::Once<sync_crate::SpinLock<PageTable>> = spin::Once::new();
 
-/// 设置全局内核页表引用。
+/// 初始化全局内核页表——消费 `PageTable` 的所有权，写入静态存储。
 ///
-/// # Safety
-/// `pt` 必须指向有效的、生命周期为 `'static` 的 `SpinLock<PageTable>`。
-/// 仅在启动时调用一次。
-pub unsafe fn set_kernel_page_table(pt: &'static sync_crate::SpinLock<PageTable>) {
-    let prev = KERNEL_PT_PTR.swap(pt as *const _ as usize, Ordering::Release);
-    assert!(prev == 0, "kernel page table already set");
+/// 仅在启动时调用一次。重复调用时 `spin::Once` 忽略后续 `call_once`。
+pub fn init_kernel_page_table(pt: PageTable) {
+    KERNEL_PAGE_TABLE.call_once(|| {
+        sync_crate::SpinLock::new(pt, "kernel_pt", sync_crate::lock_level::KERNEL_PT)
+    });
 }
 
 /// 获取全局内核页表引用。
 ///
 /// 未初始化时 panic。
 pub fn kernel_page_table() -> &'static sync_crate::SpinLock<PageTable> {
-    let addr = KERNEL_PT_PTR.load(Ordering::Acquire);
-    assert!(addr != 0, "kernel page table not initialized");
-    // SAFETY: set_kernel_page_table 保证存储的是有效的 'static 引用
-    unsafe { &*(addr as *const sync_crate::SpinLock<PageTable>) }
+    KERNEL_PAGE_TABLE
+        .get()
+        .expect("kernel page table not initialized")
 }
 
-/// 初始化测试环境——全局页表 + frame_allocator + page_allocator。
+/// 初始化测试环境——全局页表 + frame_allocator。
 #[cfg(any(test, feature = "test-support"))]
 pub fn ensure_test_init() {
     static INIT: spin::Once<()> = spin::Once::new();
     INIT.call_once(|| {
         frame_allocator::ensure_test_init();
-        page_allocator::ensure_test_init();
         let pt = PageTable::create().expect("test page table");
-        let pt_lock = sync_crate::SpinLock::new(pt, "test_pt", sync_crate::lock_level::UNSPECIFIED);
-        let pt_static: &'static _ = alloc::boxed::Box::leak(alloc::boxed::Box::new(pt_lock));
-        // SAFETY: Box::leak 产出 'static 引用
-        unsafe { set_kernel_page_table(pt_static) };
+        init_kernel_page_table(pt);
     });
 }
 

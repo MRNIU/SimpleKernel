@@ -375,7 +375,6 @@ dependencies = [
  "heap",
  "log",
  "memory_types",
- "page_allocator",
  "paging",
  "per_cpu",
  "spin",
@@ -423,16 +422,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "page_allocator"
-version = "0.1.0"
-dependencies = [
- "config",
- "log",
- "memory_types",
- "sync",
-]
-
-[[package]]
 name = "page_table_entry"
 version = "0.1.0"
 dependencies = [
@@ -448,7 +437,6 @@ dependencies = [
  "frame_allocator",
  "log",
  "memory_types",
- "page_allocator",
  "page_table_entry",
  "spin",
  "sync",

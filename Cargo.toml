@@ -23,7 +23,6 @@ members = [
     "crates/local_tick",
 
     "crates/frame_allocator",
-    "crates/page_allocator",
     "crates/heap",
     "crates/page_table_entry",
     "crates/tlb",

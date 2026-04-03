@@ -5,8 +5,8 @@
 
 ## 当前状态
 
-**当前 Phase**: R1 — 原语层（已完成）
-**下一个目标**: R2 — 同步与 Per-CPU
+**当前 Phase**: R3 — 内存子系统（进行中）
+**下一个目标**: R3 剩余工作（README 补全）或 R2 — 同步与 Per-CPU
 
 ## 上次对话摘要
 
@@ -14,37 +14,53 @@
 
 ### 已完成
 
-- R1 审查报告：审阅 `span`、`config`、`build_common`、`memory_types` 四个叶子 crate
-- R1 实施修复（8 个 commit）：
-  - `span`: `split_at`/`contiguous_with` trait bound 放宽至 `Copy + Ord`
-  - `span`: `SpanIter` 实现 `ExactSizeIterator` + `size_hint`
-  - `memory_types`: 地址算术运算（`Add`/`Sub`）后校验结果在有效范围内（`Self::new()`）
-  - `memory_types`: `phys_to_virt`/`virt_to_phys` 自由函数改为方法 `PhysAddr::to_virt()`/`VirtAddr::to_phys()`，启用校验（不再绕过 `new()`）
-  - `memory_types`: `#[allow(clippy::...)]` 改为 `#[expect(..., reason = "...")]`
-  - `build_common`: 补充逐文件 `rerun-if-changed`
-  - `span`、`build_common`: 添加 README
-  - `memory_types`、`config`: 更新 README 反映方法式 API
+- R3 审查报告：审阅 `frame_allocator`、`page_allocator`、`page_table_entry`、`paging`、`tlb`、`heap`、`memory` 七个 crate（~4656 行）
+- R3 实施重构：
+  - `frame_allocator`: 二态 -> 四态 typestate（新增 `Mapped`/`Unmapped` 状态，`MappedFrames::Drop` panic 防泄漏）
+  - `frame_allocator`: 移除 `Frames::split_at`/`merge`（未使用）
+  - `page_allocator`: **整个 crate 删除**（ADR-003: SAS 下只需 identity mapping，VA == PA，虚拟页分配器多余）
+  - `paging/mapping.rs`: `MappedPages` 持有 `ManuallyDrop<MappedFrames>`，`map(frames, flags)` 签名简化（VA 从 PA 推导）
+  - `paging/mmio.rs`: `MmioRegion` 移除 `AllocatedPages` 字段
+  - `paging/lib.rs`: `KERNEL_PT_PTR` AtomicUsize -> `KERNEL_PAGE_TABLE` spin::Once（值直接在 .bss，消除 Box::leak + unsafe）；`set_kernel_page_table` -> `init_kernel_page_table`（safe）
+  - `paging/error.rs`: `AlreadyMapped` 拆分为 `AlreadyMappedIdentical`（幂等）/ `AlreadyMappedConflict`（冲突）
+  - `paging/table.rs`: `identity_map_range` 容忍幂等重复映射（同一页内多个 MMIO 设备不再 panic）
+  - `memory/vma.rs`: 移除 `VmaKind`，合并 `mmap_identity`/`mmap_anonymous` 为 `mmap`；`RegionOverlap` 拆分为 `RegionIdentical`/`RegionOverlap`
+  - `memory/init.rs`: 移除 `page_allocator::init`，简化段映射
+  - `memory/lib.rs`: 移除 `page_allocator` re-export，`map_mmio` 中 `forget` -> `ManuallyDrop`，MMIO VMA 注册容忍 `RegionIdentical`
+  - `heap/lib.rs`: 锁级别 `UNSPECIFIED` -> `HEAP`
+  - `page_table_entry/riscv64.rs`: W+R 检查 `debug_assert` -> `assert`
+  - `sync/lock_stack.rs`: 新增 `KERNEL_AS`/`KERNEL_PT`/`DMA`/`PANIC` 锁级别常量
+  - `memory/globals.rs`: 锁级别 `UNSPECIFIED` -> `KERNEL_AS`
+  - `src/panic.rs`: 锁级别 `UNSPECIFIED` -> `PANIC`
+  - `src/device/hal.rs`: 锁级别 `UNSPECIFIED` -> `DMA`
 
 ### 关键决策
 
-| # | 决策 | 状态 |
-|---|------|------|
-| 地址算术校验 | 方案 A：`Add`/`Sub` 结果通过 `Self::new()` 校验 | 已实施 |
-| 地址转换风格 | 方法式 `pa.to_virt()` / `va.to_phys()`（Theseus 风格） | 已实施 |
-| 转换校验 | 移除为测试环境设计的绕过，`to_virt()`/`to_phys()` 调用 `new()` | 已实施 |
-| `config` 依赖 `log` | 方案 A：保持现状（`log` 轻量，仅用 `LevelFilter` 类型） | 已决定 |
-| `Span::merge` | 仅支持相邻区间，重叠视为错误 | 已决定 |
-| `span` 独立发布 | 可独立发布到 crates.io，当前无紧迫需求 | 记录 |
+| # | 决策 | 状态 | ADR |
+|---|------|------|-----|
+| 四态 typestate | Free/Allocated/Mapped/Unmapped，Mapped Drop panic | 已实施 | — |
+| 移除 page_allocator | SAS 下只需 identity mapping，VA == PA | 已实施 | ADR-003 |
+| 移除 split/merge | `Frames`/`Pages`/`MappedPages` 的 split/merge 未使用 | 已实施 | — |
+| KERNEL_PT_PTR -> spin::Once | 值直接在 .bss，消除 Box::leak | 已实施 | — |
+| AlreadyMapped 拆分 | 幂等（Identical）vs 冲突（Conflict）| 已实施 | — |
+| RegionOverlap 拆分 | 完全重合（Identical）vs 部分重叠（Overlap）| 已实施 | — |
+| 锁级别补全 | KERNEL_AS=3, KERNEL_PT=4, DMA=5, PANIC=100 | 已实施 | — |
+| heap feature gate | `sync_unsafe_cell` const fn 仍未稳定，保留 | 已决定 | — |
 
 ### 未决设计问题
 
-无
+- R6 范围的锁（`dev_mgr`、`ramfs`、`fd`、`virtio_blk`、`mount_table`）锁级别待 R6 审计分配
+- `mmap_identity`/`mmap_anonymous` 合并后的 `mmap` 接口中 `mmap_lazy` 的 `handle_page_fault` 路径未经裸机测试验证
 
 ### R8 待办（审计收尾阶段）
 
 - [ ] `CONTRIBUTING.md` — 贡献指南
 - [ ] `CODE_OF_CONDUCT.md` — 社区行为准则
 - [ ] `SECURITY.md` — 安全漏洞报告流程
+- [ ] `paging/README.md` — 分页子系统文档
+- [ ] `tlb/README.md` — TLB 管理文档
+- [ ] `heap/README.md` — 堆分配器文档
+- [ ] `memory/README.md` — 内存门面 crate 文档
 
 ## 已完成的目标
 
@@ -52,3 +68,4 @@
 |------|-------|------|
 | 2026-04-03 | R0 | 审查报告 + 基础设施实施（CI/文档/审计基线/依赖/ADR） |
 | 2026-04-03 | R1 | 审查报告 + 实施修复（span/config/build_common/memory_types） |
+| 2026-04-03 | R3 | 审查报告 + 重构实施（四态 typestate、移除 page_allocator、锁级别、幂等映射） |

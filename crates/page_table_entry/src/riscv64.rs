@@ -181,7 +181,7 @@ impl PteOps for PageTableEntry {
 
     #[inline]
     fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
-        debug_assert!(
+        assert!(
             !flags.contains(PteFlags::WRITE) || flags.contains(PteFlags::READ),
             "RISC-V spec 禁止 W=1, R=0 的标志组合"
         );

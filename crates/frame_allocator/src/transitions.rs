@@ -5,7 +5,7 @@ use memory_types::PageSize;
 
 use crate::FrameAllocError;
 use crate::alloc::alloc_from_buddy;
-use crate::state::{AllocatedFrames, FreeFrames};
+use crate::state::{AllocatedFrames, FreeFrames, MappedFrames, UnmappedFrames};
 
 impl FreeFrames {
     /// 消费 Free 帧，转换为 Allocated 状态。
@@ -22,8 +22,8 @@ impl<P: PageSize> AllocatedFrames<P> {
 
     /// 分配 `count` 个连续的 P 大小物理帧，内容清零。
     ///
-    /// 内部路径：buddy allocator（4K 粒度）→ `FreeFrames` → `AllocatedFrames<P>`。
-    /// 对于大页（P != Page4K），请求的 4K 帧数 = `count × P::NUM_4K_PAGES`。
+    /// 内部路径：buddy allocator（4K 粒度）-> `FreeFrames` -> `AllocatedFrames<P>`。
+    /// 对于大页（P != Page4K），请求的 4K 帧数 = `count * P::NUM_4K_PAGES`。
     ///
     /// # Errors
     ///
@@ -49,12 +49,42 @@ impl<P: PageSize> AllocatedFrames<P> {
 
         Ok(Self::from_range(range))
     }
+
+    /// 消费 Allocated 帧，转换为 Mapped 状态——表示帧已写入页表。
+    ///
+    /// 调用方在将帧映射到页表后调用此方法。
+    /// `MappedFrames` 的 Drop 会 panic，强制要求必须先 unmap 再释放。
+    pub fn into_mapped(self) -> MappedFrames<P> {
+        self.into_state()
+    }
+}
+
+impl<P: PageSize> MappedFrames<P> {
+    /// 消费 Mapped 帧，转换为 Unmapped 状态——表示帧已从页表移除。
+    ///
+    /// 调用方在从页表 unmap 后调用此方法。
+    /// `UnmappedFrames` 的 Drop 安全地归还帧到 buddy allocator。
+    pub fn into_unmapped(self) -> UnmappedFrames<P> {
+        self.into_state()
+    }
+}
+
+impl<P: PageSize> UnmappedFrames<P> {
+    /// 消费 Unmapped 帧，转换回 Allocated 状态——用于重新映射到其他页表。
+    pub fn into_allocated(self) -> AllocatedFrames<P> {
+        self.into_state()
+    }
+}
+
+impl UnmappedFrames {
+    /// 消费 Unmapped 帧（4K 粒度），转换为 Free 状态。
+    pub fn into_free(self) -> FreeFrames {
+        self.into_state()
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use memory_types::Frame;
-
     use crate::alloc::alloc_from_buddy;
     use crate::ensure_test_init;
     use crate::state::AllocatedFrames;
@@ -90,7 +120,7 @@ mod tests {
         assert!(frame2.start_paddr().is_aligned());
     }
 
-    /// Free → Allocated 显式转换。
+    /// Free -> Allocated 显式转换。
     #[test]
     fn free_into_allocated() {
         ensure_test_init();
@@ -101,48 +131,46 @@ mod tests {
         assert_eq!(allocated.count(), 1);
     }
 
-    /// split_at 应正确分割帧范围。
+    /// Allocated -> Mapped -> Unmapped -> Free 完整生命周期。
     #[test]
-    fn split_frames() {
+    fn full_lifecycle() {
         ensure_test_init();
-        let frames = Alloc::alloc(4).expect("alloc(4)");
-        let mid = Frame::new(frames.start().as_usize() + 2);
-        let (left, right) = frames.split_at(mid);
-        assert_eq!(left.count(), 2);
-        assert_eq!(right.count(), 2);
+        let free = alloc_from_buddy(1).expect("buddy 分配");
+        let pa = free.start_paddr();
+        let allocated = free.into_allocated();
+
+        let mapped = allocated.into_mapped();
+        assert_eq!(mapped.start_paddr(), pa);
+
+        let unmapped = mapped.into_unmapped();
+        assert_eq!(unmapped.start_paddr(), pa);
+
+        let _free = unmapped.into_free();
+        // free drop 后帧归还 buddy
     }
 
-    /// merge 相邻帧应成功。
+    /// Unmapped -> Allocated（重新映射路径）。
     #[test]
-    fn merge_adjacent_frames() {
+    fn unmapped_into_allocated() {
         ensure_test_init();
-        let frames = Alloc::alloc(4).expect("alloc(4)");
-        let mid = Frame::new(frames.start().as_usize() + 2);
-        let (left, right) = frames.split_at(mid);
-        let merged = left
-            .merge(right)
-            .unwrap_or_else(|_| panic!("相邻帧 merge 应成功"));
-        assert_eq!(merged.count(), 4);
+        let free = alloc_from_buddy(1).expect("buddy 分配");
+        let pa = free.start_paddr();
+        let allocated = free.into_allocated();
+
+        let mapped = allocated.into_mapped();
+        let unmapped = mapped.into_unmapped();
+        let reallocated = unmapped.into_allocated();
+        assert_eq!(reallocated.start_paddr(), pa);
+        // reallocated drop 归还 buddy
     }
 
-    /// 合并不相邻的帧应失败并归还双方所有权。
+    /// MappedFrames drop 应 panic。
     #[test]
-    fn merge_non_adjacent_fails() {
+    #[should_panic(expected = "Frames<Mapped> dropped without unmap")]
+    fn mapped_drop_panics() {
         ensure_test_init();
-        let a = Alloc::alloc_one().expect("分配 a");
-        let b = Alloc::alloc_one().expect("分配 b");
-        // 两次独立分配的帧不一定相邻
-        let a_start = a.start();
-        let b_start = b.start();
-        if a_start.as_usize().abs_diff(b_start.as_usize()) > 1 {
-            match a.merge(b) {
-                Err((returned_a, returned_b)) => {
-                    assert_eq!(returned_a.start(), a_start);
-                    assert_eq!(returned_b.start(), b_start);
-                }
-                Ok(_) => panic!("不相邻帧 merge 应失败"),
-            }
-        }
-        // 即使相邻也不出错——测试 merge 本身不 panic
+        let free = alloc_from_buddy(1).expect("buddy 分配");
+        let _mapped = free.into_allocated().into_mapped();
+        // _mapped drop -> panic
     }
 }

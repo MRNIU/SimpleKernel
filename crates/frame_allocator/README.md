@@ -5,13 +5,12 @@
 ## 概览
 
 `frame_allocator` 管理内核的物理页帧（4KB / `PAGE_SIZE` 粒度），提供分配、释放、
-状态转换三类操作。核心设计是将帧的生命周期（空闲 → 已分配 → 已映射 → 已解映射 → 空闲）
+状态转换三类操作。核心设计是将帧的生命周期（空闲 -> 已分配 -> 已映射 -> 已解映射 -> 空闲）
 编码为 Rust 的 const generic 类型参数，使非法的状态转换在编译期被拒绝。
 
 从 `memory` crate 独立出来的原因：帧分配是内存子系统中最底层、最独立的能力，
-被页表（`page_table`）、映射管理（`MappedPages`）、VMA 等上层模块共同依赖。
-独立 crate 使依赖方向单向化，也允许 `page_table` 通过可选 feature 直接集成，
-无需经过 `memory`。
+被页表（`paging`）、映射管理（`MappedPages`）、VMA 等上层模块共同依赖。
+独立 crate 使依赖方向单向化，也允许 `paging` 直接集成，无需经过 `memory`。
 
 ## 状态机
 
@@ -20,7 +19,7 @@
 ```rust
 pub enum MemoryState { Free, Allocated, Mapped, Unmapped }
 
-pub struct Frames<const S: MemoryState> {
+pub struct Frames<const S: MemoryState, P: PageSize = Page4K> {
     range: FrameSpan,   // 连续物理帧范围 [start, end)
 }
 
@@ -31,7 +30,7 @@ pub type UnmappedFrames  = Frames<{ MemoryState::Unmapped }>;
 ```
 
 `MemoryState` 是一个枚举，通过 const generic 参数 `const S: MemoryState` 嵌入类型。
-不同状态是**不同类型**（`Frames<{Free}>` ≠ `Frames<{Allocated}>`），
+不同状态是**不同类型**（`Frames<{Free}>` != `Frames<{Allocated}>`），
 状态转换方法消费 self 并返回新状态的实例，编译器自动阻止对旧实例的使用。
 
 ```mermaid
@@ -43,7 +42,7 @@ stateDiagram-v2
     Allocated --> [*] : Drop（归还 buddy）
 
     Mapped --> Unmapped : into_unmapped()
-    Mapped --> Mapped : ⚠ Drop = panic
+    Mapped --> Mapped : Drop = panic
 
     Unmapped --> Allocated : into_allocated()
     Unmapped --> Free : into_free()
@@ -56,7 +55,7 @@ stateDiagram-v2
 |------|------|--------|-----------|
 | `Free` | 刚从 buddy allocator 取出，尚未交给用户 | 分配器内部 | 归还 buddy |
 | `Allocated` | 用户持有，可写入/映射 | 调用方 | 归还 buddy |
-| `Mapped` | 已写入页表，正在被 MMU 使用 | 页表（通过 PTE） | **panic**——必须先 unmap |
+| `Mapped` | 已写入页表，正在被 MMU 使用 | MappedPages | **panic**——必须先 unmap |
 | `Unmapped` | 已从页表移除，等待回收或重新映射 | 调用方 | 归还 buddy |
 
 **编译期阻止的非法操作：**
@@ -75,7 +74,7 @@ stateDiagram-v2
 src/
 ├── lib.rs           crate 入口，pub use 汇总 + ensure_test_init
 ├── error.rs         FrameAllocError 定义
-├── state.rs         MemoryState 枚举、Frames<S> 结构体、通用操作（split/merge）、Drop
+├── state.rs         MemoryState 枚举、Frames<S> 结构体、通用操作、Drop
 ├── alloc.rs         全局 SpinLockIrq<BuddyAllocator>、init / alloc / dealloc
 └── transitions.rs   各状态的 impl 块（状态转换方法 + 分配接口）、测试
 ```
@@ -83,8 +82,8 @@ src/
 模块间依赖方向：
 
 ```
-transitions.rs ──→ state.rs ←── alloc.rs
-                       ↑             ↑
+transitions.rs --> state.rs <-- alloc.rs
+                       ^             ^
                    error.rs      (buddy_system_allocator 外部 crate)
 ```
 
@@ -99,14 +98,14 @@ transitions.rs ──→ state.rs ←── alloc.rs
 
 ```
 AllocatedFrames::alloc(count)
-  │
-  ├─→ alloc_from_buddy(count)          ← 持有 SpinLockIrq
-  │     └─→ buddy.alloc(count)
-  │     └─→ 构造 FreeFrames            ← 释放锁
-  │
-  ├─→ FreeFrames::into_allocated()     ← typestate 转换（零开销）
-  │
-  └─→ write_bytes(ptr, 0, ...)         ← 零初始化（锁外执行）
+  |
+  +-> alloc_from_buddy(count)          <- 持有 SpinLockIrq
+  |     +-> buddy.alloc(count)
+  |     +-> 构造 FreeFrames            <- 释放锁
+  |
+  +-> FreeFrames::into_allocated()     <- typestate 转换（零开销）
+  |
+  +-> write_bytes(ptr, 0, ...)         <- 零初始化（锁外执行）
 ```
 
 关键设计：零初始化在锁外执行，避免持锁期间做 O(n) 的内存写入。
@@ -115,14 +114,14 @@ AllocatedFrames::alloc(count)
 
 ```
 drop(AllocatedFrames)  或  drop(UnmappedFrames)  或  drop(FreeFrames)
-  │
-  └─→ dealloc_to_buddy(range)          ← 持有 SpinLockIrq
-        └─→ buddy.dealloc(start, count)
+  |
+  +-> dealloc_to_buddy(range)          <- 持有 SpinLockIrq
+        +-> buddy.dealloc(start, count)
 ```
 
 `Frames<Mapped>` 的 Drop 不走此路径——直接 panic。正常流程中 `MappedFrames`
-的所有权由 `MappedPages` 管理，通过 `mem::forget` 转移到 PTE，unmap 时
-通过 `UnmappedFrames::from_range()` 重建。
+的所有权由 `MappedPages` 通过 `ManuallyDrop` 管理，unmap 时通过
+`into_unmapped()` 转换后安全归还。
 
 ## 锁与中断安全
 
@@ -131,8 +130,8 @@ drop(AllocatedFrames)  或  drop(UnmappedFrames)  或  drop(FreeFrames)
 **原因：** 帧分配可能在中断上下文中被调用（如 page fault handler 分配新帧）。
 如果使用普通 `SpinLock`：
 
-1. 线程持有锁 → 中断到来 → 同核心进入 handler
-2. Handler 尝试分配帧 → 拿同一把锁 → **死锁**
+1. 线程持有锁 -> 中断到来 -> 同核心进入 handler
+2. Handler 尝试分配帧 -> 拿同一把锁 -> **死锁**
 
 `SpinLockIrq` 在获取锁前禁用中断，消除了这一场景。代价是每次 lock/unlock
 多一条 CSR/MSR 指令（~2 周期），对于帧分配的频率来说可以忽略。
@@ -155,11 +154,11 @@ drop(AllocatedFrames)  或  drop(UnmappedFrames)  或  drop(FreeFrames)
 `[dependencies]` 中，裸机交叉编译会因找不到 `std` 而失败。
 
 ```toml
-# ✅ 正确
+# 正确
 [dev-dependencies]
 frame_allocator = { path = "../frame_allocator", features = ["test-support"] }
 
-# ❌ 错误——裸机编译会失败
+# 错误——裸机编译会失败
 [dependencies]
 frame_allocator = { path = "../frame_allocator", features = ["test-support"] }
 ```
@@ -187,7 +186,7 @@ assert_eq!(frames.count(), 4);
 let allocated = AllocatedFrames::alloc_one()?;
 
 // 2. 写入页表后，转为 Mapped
-//    （实际由 MappedPages 内部完成）
+//    （实际由 MappedPages::map 内部完成）
 let mapped = allocated.into_mapped();
 
 // 3. 从页表移除后，转为 Unmapped
@@ -200,20 +199,6 @@ let reallocated = unmapped.into_allocated();
 // let free = unmapped.into_free();
 ```
 
-### 分割与合并
-
-```rust
-let frames = AllocatedFrames::alloc(4)?;
-let mid = Frame::new(frames.start().as_usize() + 2);
-
-// 分割为 [0,2) 和 [2,4)
-let (left, right) = frames.split_at(mid);
-
-// 合并回来（必须相邻）
-let merged = left.merge(right)
-    .unwrap_or_else(|(a, b)| panic!("not adjacent"));
-```
-
 ## 注意事项与陷阱
 
 ### 1. `Mapped` 帧禁止直接 drop
@@ -223,27 +208,17 @@ MMU 仍然持有对该物理地址的引用，后续访问将导致 use-after-fr
 
 正确的释放路径是先 unmap（`into_unmapped()`），再 drop 或 `into_free()`。
 
-### 2. `UnmappedFrames::from_range()` 的安全契约
-
-这是一个 `unsafe` 构造函数，用于从页表 unmap 路径重建帧的所有权。调用方必须确保：
-
-- 该范围确实刚从页表 unmap
-- PTE 的 EXCLUSIVE 位已确认当前拥有唯一引用
-- 不存在其他 `Frames` 实例指向同一范围
-
-违反这些条件会导致 double-free。
-
-### 3. 所有分配均零初始化
+### 2. 所有分配均零初始化
 
 当前 `alloc()` / `alloc_one()` 始终将帧内容清零，防止信息泄漏（用户进程不应
 看到前一个进程的数据）。这意味着即使内核内部分配（如页表节点）也会付出清零开销。
 
-### 4. 连续帧分配受 buddy allocator 限制
+### 3. 连续帧分配受 buddy allocator 限制
 
 `alloc(count)` 要求 count 个**物理连续**的帧。buddy allocator 的最大阶为 32，
 在内存碎片化严重时，大块连续分配可能失败即使总空闲帧数充足。
 
-### 5. 初始化顺序依赖
+### 4. 初始化顺序依赖
 
 `frame_allocator::init()` 必须在堆初始化之后、任何帧分配之前调用。
 未初始化时调用 `alloc()` 返回 `FrameAllocError::AllocationFailed`。

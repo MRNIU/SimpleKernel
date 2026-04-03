@@ -1,7 +1,6 @@
-//! 内核内存管理——帧分配器、页分配器、页表、堆、MMIO 映射。
+//! 内核内存管理——帧分配器、页表、堆、MMIO 映射。
 
 #![cfg_attr(not(test), no_std)]
-#![cfg_attr(target_os = "none", feature(sync_unsafe_cell))]
 
 #[cfg(any(test, target_os = "none"))]
 extern crate alloc;
@@ -14,9 +13,6 @@ pub use frame_allocator as frame;
 /// 堆分配器（re-export `heap` crate）。
 #[cfg(target_os = "none")]
 pub use heap_crate as heap;
-/// 虚拟页分配器（re-export `page_allocator` crate）。
-#[cfg(any(test, target_os = "none"))]
-pub use page_allocator as page;
 /// 全局内存状态。
 pub mod globals;
 /// 内存子系统初始化（依赖链接器符号，裸机专用）。
@@ -51,12 +47,11 @@ pub use init::{init, init_smp};
 
 /// 将 MMIO 物理地址区间 identity-map，返回对应虚拟地址。
 ///
-/// MmioRegion 建立映射后通过 `forget` 阻止 pages 回到 page_allocator，
-/// 并在内核地址空间中注册 VMA 记录。
+/// 在内核地址空间中注册 VMA 记录。MMIO 映射永久存在（MmioRegion 不 unmap）。
 ///
 /// # Errors
 ///
-/// 页/帧分配或映射失败时返回错误。
+/// 页表映射失败时返回错误。
 #[cfg(any(test, target_os = "none"))]
 pub fn map_mmio(
     paddr: memory_types::PhysAddr,
@@ -69,18 +64,18 @@ pub fn map_mmio(
     let region_size = region.size();
 
     if let Some(kas) = kernel_address_space() {
-        kas.lock()
-            .register_existing(
-                vaddr,
-                region_size,
-                PteFlags::kernel_device(),
-                vma::VmaKind::Identity,
-            )
-            .expect("MMIO 区域注册到内核地址空间失败");
+        // 多个 MMIO 设备可能落在同一 4KB 页内（如 QEMU virtio,mmio 每 0x200 字节一个），
+        // 页对齐后 VMA 完全相同——RegionIdentical 表示已注册，安全跳过。
+        // 部分重叠（RegionOverlap）是真正的冲突，必须 panic。
+        match kas
+            .lock()
+            .register_existing(vaddr, region_size, PteFlags::kernel_device())
+        {
+            Ok(_) => {}
+            Err(error::MemoryError::RegionIdentical) => {}
+            Err(e) => panic!("MMIO 区域注册到内核地址空间失败: {e}"),
+        }
     }
-
-    // 阻止 MmioRegion drop 归还 pages 给 page_allocator——MMIO 映射永久存在
-    core::mem::forget(region);
 
     Ok(vaddr)
 }
