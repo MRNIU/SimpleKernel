@@ -9,3 +9,6 @@ edition.workspace = true
 
 [dependencies]
 per_cpu = { path = "../per_cpu" }
+
+[lints]
+workspace = true

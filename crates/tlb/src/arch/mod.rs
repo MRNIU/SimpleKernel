@@ -2,11 +2,11 @@
 //!
 //! [`TlbArch`] 定义 TLB 刷新契约，各架构独立实现。
 
-#[cfg(all(target_os = "none", target_arch = "aarch64"))]
+#[cfg(bare_aarch64)]
 mod aarch64;
-#[cfg(not(target_os = "none"))]
+#[cfg(not(bare_metal))]
 mod host;
-#[cfg(all(target_os = "none", target_arch = "riscv64"))]
+#[cfg(bare_riscv64)]
 mod riscv64;
 
 /// TLB 刷新架构契约。
@@ -20,11 +20,11 @@ pub(crate) trait TlbArch {
     fn flush_page(vaddr: usize);
 }
 
-#[cfg(all(target_os = "none", target_arch = "riscv64"))]
+#[cfg(bare_riscv64)]
 pub(crate) type Arch = riscv64::Riscv64;
 
-#[cfg(all(target_os = "none", target_arch = "aarch64"))]
+#[cfg(bare_aarch64)]
 pub(crate) type Arch = aarch64::Aarch64;
 
-#[cfg(not(target_os = "none"))]
+#[cfg(not(bare_metal))]
 pub(crate) type Arch = host::Host;

@@ -142,7 +142,7 @@ impl<R: RawLock, T> IrqSafe<R, T> {
     /// 仅在裸机环境（`target_os = "none"`）生效；宿主机测试跳过
     /// （per-CPU 锁栈在宿主机上所有线程共享同一实例，多线程测试会产生竞态）。
     fn post_acquire(&self) {
-        #[cfg(target_os = "none")]
+        #[cfg(bare_metal)]
         {
             // SAFETY: 中断已禁用，无同核心并发访问
             let stack = unsafe { crate::LOCK_STACK.get_mut() };
@@ -159,7 +159,7 @@ impl<R: RawLock, T> IrqSafe<R, T> {
 
     /// 释放锁前从 per-CPU 锁栈弹出。
     fn pop_lock_stack(&self) {
-        #[cfg(target_os = "none")]
+        #[cfg(bare_metal)]
         {
             // SAFETY: 中断已禁用，无同核心并发访问
             let stack = unsafe { crate::LOCK_STACK.get_mut() };

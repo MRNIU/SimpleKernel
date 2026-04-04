@@ -2,47 +2,47 @@
 
 #![cfg_attr(not(test), no_std)]
 
-#[cfg(any(test, target_os = "none"))]
+#[cfg(any(test, bare_metal))]
 extern crate alloc;
 
 /// 错误类型。
 pub mod error;
 /// 物理帧分配器（re-export `frame_allocator` crate）。
-#[cfg(any(test, target_os = "none"))]
+#[cfg(any(test, bare_metal))]
 pub use frame_allocator as frame;
 /// 堆分配器（re-export `heap` crate）。
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub use heap_crate as heap;
 /// 全局内存状态。
 pub mod globals;
 /// 内存子系统初始化（依赖链接器符号，裸机专用）。
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod init;
 /// PageTable 类型 re-export。
 pub mod node_frame;
 /// 虚拟内存区域（VMA）与地址空间管理。
-#[cfg(any(test, target_os = "none"))]
+#[cfg(any(test, bare_metal))]
 pub mod vma;
 
 /// TLB 管理（re-export `tlb` crate）。
 pub use tlb;
 
 /// 仿射类型映射——re-export `paging::MappedPages`。
-#[cfg(any(test, target_os = "none"))]
+#[cfg(any(test, bare_metal))]
 pub type MappedPages = paging::MappedPages;
 
 /// MMIO 区域——re-export `paging::mmio::MmioRegion`。
-#[cfg(any(test, target_os = "none"))]
+#[cfg(any(test, bare_metal))]
 pub type MmioRegion = paging::mmio::MmioRegion;
 
 /// 映射错误类型 re-export。
 pub use paging::error::PagingError;
 
 pub use globals::{MEMORY_INFO, MemoryInfo};
-#[cfg(any(test, target_os = "none"))]
+#[cfg(any(test, bare_metal))]
 pub use globals::{kernel_address_space, store_kernel_address_space};
 
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub use init::{init, init_smp};
 
 /// 将 MMIO 物理地址区间 identity-map，返回 `paddr` 对应的虚拟地址。
@@ -53,7 +53,7 @@ pub use init::{init, init_smp};
 /// # Errors
 ///
 /// 页表映射失败时返回错误。
-#[cfg(any(test, target_os = "none"))]
+#[cfg(any(test, bare_metal))]
 pub fn map_mmio(
     paddr: memory_types::PhysAddr,
     size: usize,

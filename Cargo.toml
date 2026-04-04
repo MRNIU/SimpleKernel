@@ -11,7 +11,6 @@
 [workspace]
 members = [
     ".",
-    "crates/build_common",
     "crates/config",
     "crates/span",
     "crates/memory_types",
@@ -116,6 +115,13 @@ repository = "https://github.com/Simple-XX/SimpleKernel"
 description = "Interface-driven OS kernel for AI-assisted learning (Rust edition)"
 edition = "2024"
 
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(bare_metal)',
+    'cfg(bare_riscv64)',
+    'cfg(bare_aarch64)',
+] }
+
 # --- 内核 crate（原 kernel/Cargo.toml） ---
 
 [package]
@@ -199,13 +205,13 @@ fatfs.workspace = true                # FAT12/16/32 纯 Rust 实现（no_std）
 # --- 网络 ---
 smoltcp.workspace = true              # 轻量 TCP/IP 协议栈（无 alloc）
 
-# --- RISC-V 架构专用 ---
-[target.'cfg(target_arch = "riscv64")'.dependencies]
+# --- RISC-V 架构专用（仅裸机目标） ---
+[target.'cfg(all(target_os = "none", target_arch = "riscv64"))'.dependencies]
 sbi-rt.workspace = true               # SBI 运行时接口
 riscv.workspace = true                # CSR 访问、S-mode 支持
 
-# --- AArch64 架构专用 ---
-[target.'cfg(target_arch = "aarch64")'.dependencies]
+# --- AArch64 架构专用（仅裸机目标） ---
+[target.'cfg(all(target_os = "none", target_arch = "aarch64"))'.dependencies]
 aarch64-cpu.workspace = true          # 系统寄存器访问
 tock-registers.workspace = true       # 类型安全的 MMIO 寄存器抽象
 arm-gic.workspace = true              # GICv3 驱动（Arm Trusted Firmware 官方）
@@ -213,8 +219,10 @@ arm-psci.workspace = true             # PSCI 电源管理接口（CPU on/off/res
 
 # --- 构建依赖 ---
 [build-dependencies]
-build_common = { path = "crates/build_common" }  # 构建脚本公共逻辑
 cc.workspace = true                   # 编译由 GCC 预处理的汇编 (.S) 文件
+
+[lints]
+workspace = true
 
 # 内核即使在 debug 模式下也需要一定的优化，否则生成的代码过大
 [profile.dev]

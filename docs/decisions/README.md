@@ -13,6 +13,7 @@
 | 001 | [AArch64 浮点支持](001-aarch64-float-support.md) | 提议 | — | — |
 | 002 | [RISC-V tp 寄存器 per-CPU vs TLS](002-tp-register-percpu-vs-tls.md) | 提议 | — | R2 |
 | 003 | [SAS 架构下是否只支持 identity mapping](003-sas-identity-mapping-only.md) | 提议 | 2026-04-03 | R3 |
+| 004 | [消除内核源码中的 `#[cfg(bare_metal)]`](004-cfg-bare-metal-elimination.md) | 提议 | 2026-04-04 | — |
 
 ## 状态规则
 

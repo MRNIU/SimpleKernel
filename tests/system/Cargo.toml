@@ -33,5 +33,7 @@ sbi-rt.workspace = true
 aarch64-cpu.workspace = true
 
 [build-dependencies]
-build_common = { path = "../../crates/build_common" }
 cc.workspace = true
+
+[lints]
+workspace = true

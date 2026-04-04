@@ -10,8 +10,11 @@ edition.workspace = true
 [dependencies]
 per_cpu = { path = "../per_cpu" }
 
-[target.'cfg(target_arch = "riscv64")'.dependencies]
+[target.'cfg(all(target_os = "none", target_arch = "riscv64"))'.dependencies]
 riscv.workspace = true
 
-[target.'cfg(target_arch = "aarch64")'.dependencies]
+[target.'cfg(all(target_os = "none", target_arch = "aarch64"))'.dependencies]
 aarch64-cpu.workspace = true
+
+[lints]
+workspace = true

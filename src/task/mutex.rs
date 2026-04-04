@@ -1,6 +1,6 @@
 //! 内核阻塞互斥锁——竞争时任务进入 Blocked 状态，而非自旋等待。
 
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 mod inner {
     use core::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 
@@ -60,5 +60,5 @@ mod inner {
     }
 }
 
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub use inner::KMutex;

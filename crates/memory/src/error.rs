@@ -31,7 +31,7 @@ impl fmt::Display for MemoryError {
 
 impl core::error::Error for MemoryError {}
 
-#[cfg(any(test, target_os = "none"))]
+#[cfg(any(test, bare_metal))]
 impl From<frame_allocator::FrameAllocError> for MemoryError {
     fn from(e: frame_allocator::FrameAllocError) -> Self {
         match e {
@@ -41,7 +41,7 @@ impl From<frame_allocator::FrameAllocError> for MemoryError {
     }
 }
 
-#[cfg(any(test, target_os = "none"))]
+#[cfg(any(test, bare_metal))]
 impl From<paging::error::PagingError> for MemoryError {
     fn from(e: paging::error::PagingError) -> Self {
         use paging::error::PagingError;

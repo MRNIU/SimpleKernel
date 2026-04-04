@@ -14,3 +14,6 @@ sync_crate = { path = "../sync", package = "sync" }
 
 buddy_system_allocator.workspace = true
 log.workspace = true
+
+[lints]
+workspace = true

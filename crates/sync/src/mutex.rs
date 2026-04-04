@@ -54,7 +54,7 @@ impl<R: RawLock, T> Mutex<R, T> {
     /// - 同一核心递归加锁（若底层 `RawLock` 支持检测）
     /// - 锁级别顺序违反（裸机环境）
     pub fn lock(&self) -> MutexGuard<'_, R, T> {
-        #[cfg(target_os = "none")]
+        #[cfg(bare_metal)]
         assert!(
             !interrupt_state::is_in_interrupt(),
             "SpinLock '{}': 在中断上下文中调用，应使用 SpinLockIrq",
@@ -79,7 +79,7 @@ impl<R: RawLock, T> Mutex<R, T> {
     /// - 在中断上下文中调用（裸机环境）——应使用 `SpinLockIrq`
     /// - 锁级别顺序违反（裸机环境）
     pub fn try_lock(&self) -> Option<MutexGuard<'_, R, T>> {
-        #[cfg(target_os = "none")]
+        #[cfg(bare_metal)]
         assert!(
             !interrupt_state::is_in_interrupt(),
             "SpinLock '{}': 在中断上下文中调用，应使用 SpinLockIrq",
@@ -131,7 +131,7 @@ impl<R: RawLock, T> Mutex<R, T> {
     ///
     /// 仅在裸机环境（`target_os = "none"`）生效；宿主机测试跳过。
     fn push_lock_stack(&self) {
-        #[cfg(target_os = "none")]
+        #[cfg(bare_metal)]
         {
             let _held = interrupt_state::HeldInterrupts::hold();
             // SAFETY: 中断已禁用，无同核心并发访问
@@ -149,7 +149,7 @@ impl<R: RawLock, T> Mutex<R, T> {
 
     /// 释放锁前从 per-CPU 锁栈弹出。
     fn pop_lock_stack(&self) {
-        #[cfg(target_os = "none")]
+        #[cfg(bare_metal)]
         {
             let _held = interrupt_state::HeldInterrupts::hold();
             // SAFETY: 中断已禁用，无同核心并发访问

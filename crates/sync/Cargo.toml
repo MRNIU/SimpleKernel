@@ -14,3 +14,6 @@ spin-timeout = []
 config = { path = "../config" }
 interrupt_state = { path = "../interrupt_state" }
 per_cpu = { path = "../per_cpu" }
+
+[lints]
+workspace = true

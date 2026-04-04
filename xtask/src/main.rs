@@ -58,6 +58,8 @@ struct TestArgs {
 #[derive(Subcommand)]
 enum Commands {
     Build(ArchArgs),
+    /// 检查编译（等价于 `cargo check --target <target> -Z build-std=...`）
+    Check(ArchArgs),
     Run(ArchArgs),
     /// 启动 QEMU 并暂停 CPU，等待 GDB 在 localhost:1234 连接
     Debug(ArchArgs),
@@ -84,6 +86,9 @@ fn run() -> Result<()> {
             let kernel_elf_path =
                 build::build_binary(&sh, &project_root, args.arch, None, args.release)?;
             build::generate_debug_files(&sh, &kernel_elf_path)?;
+        }
+        Commands::Check(args) => {
+            build::check_target(&sh, args.arch)?;
         }
         Commands::Firmware(args) => {
             firmware::build_firmware(&sh, &project_root, args.arch)?;

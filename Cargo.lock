@@ -96,13 +96,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "build_common"
-version = "0.1.0"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "byteorder"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -449,7 +442,6 @@ name = "panic-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "build_common",
  "cc",
  "heap",
  "log",
@@ -588,7 +580,6 @@ dependencies = [
  "bitfield-struct",
  "bitflags 2.11.0",
  "buddy_system_allocator",
- "build_common",
  "cc",
  "config",
  "elf",
@@ -673,7 +664,6 @@ name = "system-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "build_common",
  "cc",
  "config",
  "global_tick",

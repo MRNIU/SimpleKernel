@@ -104,9 +104,10 @@ pub trait PteOps: Copy + core::fmt::Debug {
     fn as_raw(self) -> u64;
 }
 
-#[cfg(target_arch = "aarch64")]
+#[cfg(bare_aarch64)]
 pub use aarch64::{PageTableEntry, PteFlags};
-#[cfg(target_arch = "riscv64")]
+#[cfg(bare_riscv64)]
 pub use riscv64::{PageTableEntry, PteFlags};
-#[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
+/// 宿主机编译占位——所有宿主架构统一使用 riscv64 类型
+#[cfg(not(bare_metal))]
 pub use riscv64::{PageTableEntry, PteFlags};

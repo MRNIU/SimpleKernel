@@ -2,7 +2,7 @@
 xtask = "run --package xtask --"
 
 [target.riscv64gc-unknown-none-elf]
-rustflags = ["-C", "force-unwind-tables=yes"]
+rustflags = ["-C", "force-unwind-tables=yes", "--cfg", "bare_metal", "--cfg", "bare_riscv64"]
 
 [target.aarch64-unknown-none-softfloat]
-rustflags = ["-C", "force-unwind-tables=yes"]
+rustflags = ["-C", "force-unwind-tables=yes", "--cfg", "bare_metal", "--cfg", "bare_aarch64"]

@@ -34,13 +34,14 @@ pub const VA_BITS: usize = PAGE_SIZE_BITS + PT_LEVELS * INDEX_BITS;
 ///
 /// - RISC-V Sv39/Sv48/Sv57: 56 位
 /// - AArch64: 48 位（LPA2 扩展到 52 位，暂不支持）
-#[cfg(target_arch = "riscv64")]
+/// - 宿主机：48（占位，所有宿主架构统一）
+#[cfg(bare_riscv64)]
 pub const PA_BITS: usize = 56;
-/// 物理地址有效位宽
-#[cfg(target_arch = "aarch64")]
+/// 物理地址有效位宽（AArch64 裸机）
+#[cfg(bare_aarch64)]
 pub const PA_BITS: usize = 48;
-/// 物理地址有效位宽（宿主机编译占位）
-#[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
+/// 物理地址有效位宽（宿主机编译占位——所有宿主架构统一取值）
+#[cfg(not(bare_metal))]
 pub const PA_BITS: usize = 48;
 
 /// TLB 全局刷新阈值（页数）。
@@ -62,13 +63,13 @@ pub const PER_CPU_ALIGN_SIZE: usize = 128;
 pub const PERCPU_AREA_MAX: usize = PAGE_SIZE;
 
 /// 页表层级数（RISC-V Sv39: 3 级）
-#[cfg(target_arch = "riscv64")]
+#[cfg(bare_riscv64)]
 pub const PT_LEVELS: usize = 3;
 /// 页表层级数（AArch64 4KB granule: 4 级）
-#[cfg(target_arch = "aarch64")]
+#[cfg(bare_aarch64)]
 pub const PT_LEVELS: usize = 4;
-/// 页表层级数（宿主机编译占位）
-#[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
+/// 页表层级数（宿主机编译占位——所有宿主架构统一取值）
+#[cfg(not(bare_metal))]
 pub const PT_LEVELS: usize = 3;
 
 /// Round-Robin 默认时间片（tick 数）

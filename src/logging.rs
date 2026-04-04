@@ -18,12 +18,12 @@ static LOGGER_INIT: AtomicBool = AtomicBool::new(false);
 static LOGGER: KernelLogger = KernelLogger;
 
 fn put_str(s: &str) {
-    #[cfg(target_os = "none")]
+    #[cfg(bare_metal)]
     {
         use crate::arch::ArchOps;
         crate::arch::Arch::console_write(s);
     }
-    #[cfg(not(target_os = "none"))]
+    #[cfg(not(bare_metal))]
     {
         let _ = s;
     }

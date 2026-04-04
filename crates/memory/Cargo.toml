@@ -25,3 +25,6 @@ spin.workspace = true
 [dev-dependencies]
 paging = { path = "../paging", features = ["test-support"] }
 frame_allocator = { path = "../frame_allocator", features = ["test-support"] }
+
+[lints]
+workspace = true

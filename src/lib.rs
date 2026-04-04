@@ -1,9 +1,6 @@
 #![cfg_attr(not(test), no_std)]
-#![cfg_attr(
-    all(target_os = "none", feature = "lang_items"),
-    feature(alloc_error_handler)
-)]
-#![cfg_attr(target_os = "none", feature(sync_unsafe_cell))]
+#![cfg_attr(all(bare_metal, feature = "lang_items"), feature(alloc_error_handler))]
+#![cfg_attr(bare_metal, feature(sync_unsafe_cell))]
 // 测试模式下部分模块不编译（arch, fdt, lang_items），导致它们的消费者
 // 产生 dead_code 警告。这些代码在目标架构上被正常使用。
 #![cfg_attr(test, allow(dead_code))]
@@ -15,26 +12,26 @@ extern crate alloc;
 /// 与 `config::MAX_CORE_COUNT`（编译期上限）不同，此值为运行时实际核心数。
 pub static CORE_COUNT: spin::Once<usize> = spin::Once::new();
 
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod arch;
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod boot;
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod device;
 pub mod elf;
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod fdt;
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod fs;
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod init;
-#[cfg(all(target_os = "none", feature = "lang_items"))]
+#[cfg(all(bare_metal, feature = "lang_items"))]
 pub mod lang_items;
 pub mod logging;
 pub mod panic;
 pub mod preempt;
 pub mod syscall;
 pub mod task;
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod timer;
 pub mod util;

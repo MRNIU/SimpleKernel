@@ -4,11 +4,11 @@
 //! `irq_disable` / `irq_enable` 为 `pub(crate)`——外部只能通过
 //! [`HeldInterrupts::hold()`](crate::HeldInterrupts::hold) 关中断。
 
-#[cfg(all(target_os = "none", target_arch = "aarch64"))]
+#[cfg(bare_aarch64)]
 mod aarch64;
-#[cfg(not(target_os = "none"))]
+#[cfg(not(bare_metal))]
 mod host;
-#[cfg(all(target_os = "none", target_arch = "riscv64"))]
+#[cfg(bare_riscv64)]
 mod riscv64;
 
 /// 中断控制架构契约。
@@ -31,13 +31,13 @@ pub(crate) trait InterruptArch {
     unsafe fn irq_enable();
 }
 
-#[cfg(all(target_os = "none", target_arch = "riscv64"))]
+#[cfg(bare_riscv64)]
 pub(crate) type Arch = riscv64::Riscv64;
 
-#[cfg(all(target_os = "none", target_arch = "aarch64"))]
+#[cfg(bare_aarch64)]
 pub(crate) type Arch = aarch64::Aarch64;
 
-#[cfg(not(target_os = "none"))]
+#[cfg(not(bare_metal))]
 pub(crate) type Arch = host::Host;
 
 #[cfg(test)]

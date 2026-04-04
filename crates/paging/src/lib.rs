@@ -31,12 +31,12 @@ pub const PTE_SIZE_SHIFT: usize = core::mem::size_of::<u64>().trailing_zeros() a
 pub mod table;
 pub use table::PageTable;
 
-#[cfg(any(test, feature = "test-support", target_os = "none"))]
+#[cfg(any(test, feature = "test-support", bare_metal))]
 pub mod mapping;
-#[cfg(any(test, feature = "test-support", target_os = "none"))]
+#[cfg(any(test, feature = "test-support", bare_metal))]
 pub use mapping::MappedPages;
 
-#[cfg(any(test, feature = "test-support", target_os = "none"))]
+#[cfg(any(test, feature = "test-support", bare_metal))]
 pub mod mmio;
 
 /// 全局内核页表——SAS 架构下只有一张页表，所有映射共用。
@@ -88,10 +88,10 @@ pub trait NodeFrameOps: Send + Sized {
 /// 裸机页表节点帧——包装 `AllocatedFrames`。
 ///
 /// Newtype 用于为外部类型 `AllocatedFrames` 实现本 crate 的 `NodeFrameOps`。
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub struct KernelNodeFrame(frame_allocator::AllocatedFrames);
 
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 impl NodeFrameOps for KernelNodeFrame {
     fn alloc() -> Result<Self, error::PagingError> {
         frame_allocator::AllocatedFrames::alloc_one()
@@ -106,8 +106,11 @@ impl NodeFrameOps for KernelNodeFrame {
     }
 }
 
-/// 测试用页表节点帧——从堆分配，模拟物理帧。
-#[cfg(any(test, feature = "test-support"))]
+/// 宿主机页表节点帧——从堆分配，模拟物理帧。
+///
+/// 在 `cargo test` 和 `cargo check`（宿主机编译）下均可用，
+/// 不再要求 `test` 或 `test-support` feature。
+#[cfg(not(bare_metal))]
 pub struct HeapNodeFrame {
     ptr: *mut u8,
     layout: core::alloc::Layout,
@@ -115,10 +118,10 @@ pub struct HeapNodeFrame {
 
 // SAFETY: HeapNodeFrame 独占其分配的内存（*mut u8 阻止了 auto-Send），
 // 可安全跨线程传递。
-#[cfg(any(test, feature = "test-support"))]
+#[cfg(not(bare_metal))]
 unsafe impl Send for HeapNodeFrame {}
 
-#[cfg(any(test, feature = "test-support"))]
+#[cfg(not(bare_metal))]
 impl Drop for HeapNodeFrame {
     fn drop(&mut self) {
         // SAFETY: ptr 由同 layout 的 alloc_zeroed 分配
@@ -126,7 +129,7 @@ impl Drop for HeapNodeFrame {
     }
 }
 
-#[cfg(any(test, feature = "test-support"))]
+#[cfg(not(bare_metal))]
 impl NodeFrameOps for HeapNodeFrame {
     fn alloc() -> Result<Self, error::PagingError> {
         let layout = core::alloc::Layout::from_size_align(config::PAGE_SIZE, config::PAGE_SIZE)
@@ -145,12 +148,12 @@ impl NodeFrameOps for HeapNodeFrame {
 
 /// 当前编译目标使用的页表节点帧类型。
 ///
-/// - 裸机（`target_os = "none"`）：[`KernelNodeFrame`]（物理帧分配器）
-/// - 测试 / `test-support`：[`HeapNodeFrame`]（堆分配模拟）
-#[cfg(target_os = "none")]
+/// - 裸机（`bare_metal`）：[`KernelNodeFrame`]（物理帧分配器）
+/// - 宿主机（`not(bare_metal)`）：[`HeapNodeFrame`]（堆分配模拟）
+#[cfg(bare_metal)]
 pub type NodeFrame = KernelNodeFrame;
-/// 当前编译目标使用的页表节点帧类型（测试）。
-#[cfg(any(test, feature = "test-support"))]
+/// 当前编译目标使用的页表节点帧类型（宿主机——堆分配模拟）。
+#[cfg(not(bare_metal))]
 pub type NodeFrame = HeapNodeFrame;
 
 /// 每张页表中的条目数（PAGE_SIZE / sizeof(PTE)）。

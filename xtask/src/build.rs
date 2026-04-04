@@ -6,6 +6,14 @@ use xshell::{Shell, cmd};
 use crate::Result;
 use crate::arch::Arch;
 
+/// 裸机目标的 `-Z build-std` 参数——编译和检查共用。
+const BUILD_STD_ARGS: &[&str] = &[
+    "-Z",
+    "build-std=core,compiler_builtins,alloc",
+    "-Z",
+    "build-std-features=compiler-builtins-mem",
+];
+
 /// 编译 Cargo 二进制（内核或测试内核），返回 ELF 产物路径。
 ///
 /// `package` 为 `None` 时编译默认 workspace binary（内核）；
@@ -20,10 +28,7 @@ pub fn build_binary(
     let label = package.unwrap_or("kernel");
     println!("[xtask] Building '{}' for {}...", label, arch.as_str());
     let target = arch.target_triple();
-    let mut build_cmd = cmd!(
-        sh,
-        "cargo build -Z build-std=core,compiler_builtins,alloc -Z build-std-features=compiler-builtins-mem --target {target}"
-    );
+    let mut build_cmd = cmd!(sh, "cargo build {BUILD_STD_ARGS...} --target {target}");
     if let Some(pkg) = package {
         build_cmd = build_cmd.args(["-p", pkg]);
     }
@@ -43,6 +48,16 @@ pub fn build_binary(
         return Err(format!("ELF not found at {}", elf_path.display()).into());
     }
     Ok(elf_path)
+}
+
+/// 检查编译——等价于 `cargo check` 但传入正确的裸机目标和 build-std 参数。
+///
+/// 适用于任意宿主机架构（x86_64 / aarch64 / riscv64），行为完全一致。
+pub fn check_target(sh: &Shell, arch: Arch) -> Result<()> {
+    let target = arch.target_triple();
+    println!("[xtask] Checking for {}...", arch.as_str());
+    cmd!(sh, "cargo check {BUILD_STD_ARGS...} --target {target}").run()?;
+    Ok(())
 }
 
 /// 从 `rustc` sysroot 解析 `llvm-tools` 中指定工具的绝对路径。

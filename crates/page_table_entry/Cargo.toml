@@ -10,3 +10,6 @@ edition.workspace = true
 [dependencies]
 memory_types = { path = "../memory_types" }
 bitflags.workspace = true
+
+[lints]
+workspace = true

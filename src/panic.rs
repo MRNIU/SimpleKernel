@@ -127,7 +127,7 @@ pub fn handle_panic(info: &core::panic::PanicInfo<'_>) -> ! {
 
 /// 使用 DWARF `.eh_frame` 数据（通过 `unwinding` crate）遍历栈，
 /// 并打印每个栈帧的返回地址及可选的符号名。
-#[cfg(all(not(test), target_os = "none"))]
+#[cfg(all(not(test), bare_metal))]
 fn dump_backtrace() {
     use crate::logging::raw_put;
     use core::sync::atomic::{AtomicUsize, Ordering};
@@ -172,15 +172,15 @@ fn dump_backtrace() {
     _Unwind_Backtrace(trace_callback, core::ptr::null_mut());
 }
 
-#[cfg(all(not(test), not(target_os = "none")))]
+#[cfg(all(not(test), not(bare_metal)))]
 fn dump_backtrace() {}
 
-#[cfg(all(not(test), target_os = "none"))]
+#[cfg(all(not(test), bare_metal))]
 pub fn raw_dump_stack() {
     dump_backtrace();
 }
 
-#[cfg(all(not(test), not(target_os = "none")))]
+#[cfg(all(not(test), not(bare_metal)))]
 pub fn raw_dump_stack() {}
 
 #[cfg(test)]

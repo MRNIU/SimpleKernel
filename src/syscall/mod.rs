@@ -4,11 +4,11 @@
 // 不经过 trap（ecall/svc），调用者直接以 Rust 函数调用方式进入。
 // SyscallNumber 枚举保留用于日志、审计和 POSIX 合规追踪。
 
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod file;
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod io;
-#[cfg(target_os = "none")]
+#[cfg(bare_metal)]
 pub mod process;
 
 /// 系统调用号（对齐 Linux ABI）
