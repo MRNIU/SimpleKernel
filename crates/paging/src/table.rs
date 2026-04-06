@@ -7,7 +7,7 @@ use crate::{
 use alloc::collections::BTreeMap;
 use memory_types::{PhysAddr, VirtAddr};
 
-const PT_LEVELS: usize = config::PT_LEVELS;
+const PT_LEVELS: usize = arch::PT_LEVELS;
 
 /// 中间页表节点——持有帧所有权及有效 PTE 引用计数。
 struct NodeEntry {

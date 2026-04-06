@@ -14,29 +14,6 @@ pub const PAGE_SIZE: usize = 4096;
 /// log2(PAGE_SIZE)
 pub const PAGE_SIZE_BITS: usize = PAGE_SIZE.trailing_zeros() as usize;
 
-/// PTE 大小位移量——log2(sizeof(u64)) = 3
-const PTE_SIZE_BITS: usize = 3;
-
-/// 单级页表索引位宽——log2(PAGE_SIZE / sizeof(PTE))
-///
-/// 4KB 页 + 8B PTE = 512 条目 = 9 位索引
-const INDEX_BITS: usize = PAGE_SIZE_BITS - PTE_SIZE_BITS;
-
-/// 虚拟地址有效位宽——由 [`PT_LEVELS`] 自动推导。
-///
-/// 计算公式：`PAGE_SIZE_BITS + PT_LEVELS × INDEX_BITS`
-/// - Sv39 (PT_LEVELS=3): 12 + 3×9 = 39
-/// - Sv48 / AArch64 4KB (PT_LEVELS=4): 12 + 4×9 = 48
-/// - Sv57 (PT_LEVELS=5): 12 + 5×9 = 57
-pub const VA_BITS: usize = PAGE_SIZE_BITS + PT_LEVELS * INDEX_BITS;
-
-/// 物理地址有效位宽（架构固有，无法从 PT_LEVELS 推导）。
-///
-/// - RISC-V Sv39/Sv48/Sv57: 56 位
-/// - AArch64: 48 位（LPA2 扩展到 52 位，暂不支持）
-/// - 宿主机：48（占位）
-pub const PA_BITS: usize = arch::PA_BITS;
-
 /// TLB 全局刷新阈值（页数）。
 ///
 /// unmap 页数超过此阈值时使用全局 TLB flush，否则逐页 flush。
@@ -54,13 +31,6 @@ pub const PER_CPU_ALIGN_SIZE: usize = 128;
 
 /// Per-CPU 区域最大大小
 pub const PERCPU_AREA_MAX: usize = PAGE_SIZE;
-
-/// 页表层级数。
-///
-/// - RISC-V Sv39: 3 级
-/// - AArch64 4KB granule: 4 级
-/// - 宿主机：3（占位）
-pub const PT_LEVELS: usize = arch::PT_LEVELS;
 
 /// Round-Robin 默认时间片（tick 数）
 pub const SCHED_RR_TIME_QUANTUM: u64 = 5;
@@ -110,8 +80,6 @@ pub const UNMAP_CHUNK_SIZE: usize = 256;
 /// - 非零值：higher-half kernel（VA = PA + PHYS_OFFSET）
 pub const PHYS_OFFSET: usize = 0;
 
-const _: () = assert!(VA_BITS > 0 && VA_BITS <= 64, "VA_BITS must be in (0, 64]");
-const _: () = assert!(PA_BITS > 0 && PA_BITS <= 64, "PA_BITS must be in (0, 64]");
 const _: () = assert!(
     PAGE_SIZE.is_power_of_two(),
     "PAGE_SIZE must be a power of two"

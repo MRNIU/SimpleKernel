@@ -8,6 +8,7 @@ description = "Type-safe physical/virtual address, page frame, and page size abs
 edition.workspace = true
 
 [dependencies]
+arch = { path = "../arch" }
 config = { path = "../config" }
 span = { path = "../span" }
 

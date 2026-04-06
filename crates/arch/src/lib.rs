@@ -96,6 +96,22 @@ pub const PA_BITS: usize = Impl::PA_BITS;
 /// 页表层级数（RISC-V Sv39: 3, AArch64 4KB: 4）。
 pub const PT_LEVELS: usize = Impl::PT_LEVELS;
 
+/// 虚拟地址有效位宽——由 [`PT_LEVELS`] 自动推导。
+///
+/// 计算公式：`PAGE_SIZE_BITS + PT_LEVELS × INDEX_BITS`
+/// （4KB 页: PAGE_SIZE_BITS=12, INDEX_BITS=9）
+/// - Sv39 (PT_LEVELS=3): 12 + 3×9 = 39
+/// - Sv48 / AArch64 4KB (PT_LEVELS=4): 12 + 4×9 = 48
+/// - Sv57 (PT_LEVELS=5): 12 + 5×9 = 57
+pub const VA_BITS: usize = {
+    // log2(4096)
+    const PAGE_SIZE_BITS: usize = 12;
+    // log2(sizeof(u64))
+    const PTE_SIZE_BITS: usize = 3;
+    const INDEX_BITS: usize = PAGE_SIZE_BITS - PTE_SIZE_BITS;
+    PAGE_SIZE_BITS + Impl::PT_LEVELS * INDEX_BITS
+};
+
 /// 读取 per-CPU 基地址寄存器（RISC-V: TP, AArch64: TPIDR_EL1）。
 #[inline(always)]
 pub fn percpu_base() -> usize {

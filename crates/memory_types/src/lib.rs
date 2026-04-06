@@ -50,7 +50,7 @@ macro_rules! impl_usize_newtype {
             #[inline]
             pub const fn new(v: usize) -> Self {
                 assert!(
-                    config::PA_BITS >= 64 || v < (1usize << config::PA_BITS),
+                    arch::PA_BITS >= 64 || v < (1usize << arch::PA_BITS),
                     "PhysAddr: 地址超出 PA_BITS 有效范围"
                 );
                 Self(v)
@@ -72,7 +72,7 @@ macro_rules! impl_usize_newtype {
             /// 扩展后的值必须与原值相等。
             #[inline]
             pub const fn new(v: usize) -> Self {
-                let shift = usize::BITS as usize - config::VA_BITS;
+                let shift = usize::BITS as usize - arch::VA_BITS;
                 let canonical = ((v as isize) << shift >> shift) as usize;
                 assert!(
                     v == canonical,

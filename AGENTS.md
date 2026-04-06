@@ -90,6 +90,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Linting**: `cargo clippy -- -D warnings`
 - **Doc comments**: `///` with `# Safety`, `# Errors`, `# Panics` sections for public APIs（节标题保留英文，内容用中文）
 - **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文（Rust 社区惯例），其后说明用中文
+- **注释位置**: 注释写在代码上方，不写在行尾（`// SAFETY:` 除外——紧跟 `unsafe` 块上方）
 - **Error handling**: Syscall boundary uses `Result<T, ErrorCode>` + `?`; kernel internals use `.expect("reason with data")` or `panic!()` — the kernel must not silently proceed on internal errors
 - **Unsafe**: Every `unsafe` block MUST have `// SAFETY:` comment explaining invariants; minimize scope
 - **Singletons**: `spin::Once<T>` with `call_once()` / `get()`

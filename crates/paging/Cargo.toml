@@ -13,6 +13,7 @@ default = []
 test-support = ["frame_allocator/test-support"]
 
 [dependencies]
+arch = { path = "../arch" }
 config = { path = "../config" }
 memory_types = { path = "../memory_types" }
 page_table_entry = { path = "../page_table_entry" }

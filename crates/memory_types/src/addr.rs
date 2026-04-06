@@ -85,7 +85,7 @@ macro_rules! impl_addr {
 /// 开启分页后不可直接解引用，需通过 `.to_virt()` 转换为
 /// [`VirtAddr`] 后再访问。
 ///
-/// 构造时校验地址在 [`PA_BITS`](config::PA_BITS) 范围内，
+/// 构造时校验地址在 [`PA_BITS`](arch::PA_BITS) 范围内，
 /// 超出范围 panic。
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -96,7 +96,7 @@ impl_addr!(PhysAddr);
 
 /// 虚拟地址——CPU 可直接访问的指针级地址。
 ///
-/// 构造时校验地址是否规范化（[`VA_BITS`](config::VA_BITS) 位符号扩展），
+/// 构造时校验地址是否规范化（[`VA_BITS`](arch::VA_BITS) 位符号扩展），
 /// 非规范地址 panic。
 ///
 /// 规范化规则：bits\[63:VA_BITS-1\] 必须是 bit\[VA_BITS-2\] 的符号扩展。
@@ -327,7 +327,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "PA_BITS")]
     fn phys_add_overflow_pa_bits() {
-        let near_max = PhysAddr::new((1usize << config::PA_BITS) - 2);
+        let near_max = PhysAddr::new((1usize << arch::PA_BITS) - 2);
         let _ = near_max + 4;
     }
 
@@ -335,7 +335,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "非规范虚拟地址")]
     fn virt_add_breaks_canonical() {
-        let near_boundary = VirtAddr::new((1usize << (config::VA_BITS - 1)) - 2);
+        let near_boundary = VirtAddr::new((1usize << (arch::VA_BITS - 1)) - 2);
         let _ = near_boundary + 4;
     }
 }
