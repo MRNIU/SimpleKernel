@@ -10,10 +10,7 @@ edition.workspace = true
 [dependencies]
 macros = { path = "../macros" }
 config = { path = "../config" }
-
-[target.'cfg(all(target_os = "none", target_arch = "aarch64"))'.dependencies]
-aarch64-cpu.workspace = true
-tock-registers.workspace = true
+arch = { path = "../arch" }
 
 [lints]
 workspace = true

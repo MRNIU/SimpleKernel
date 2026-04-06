@@ -14,9 +14,6 @@
 
 #![cfg_attr(not(test), no_std)]
 
-mod arch;
-
-use arch::{Arch, InterruptArch as _};
 use core::marker::PhantomData;
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use per_cpu::cpu_local;
@@ -24,7 +21,7 @@ use per_cpu::cpu_local;
 /// 查询当前中断是否启用。
 #[inline(always)]
 pub fn is_enabled() -> bool {
-    Arch::irq_enabled()
+    arch::is_irq_enabled()
 }
 
 /// 首次启用中断——仅供 bootstrap 阶段调用。
@@ -40,7 +37,7 @@ pub fn is_enabled() -> bool {
 #[inline(always)]
 pub unsafe fn bootstrap_enable() {
     // SAFETY: 由调用方保证安全性
-    unsafe { Arch::irq_enable() };
+    unsafe { arch::enable_irq() };
 }
 
 /// 中断禁用的证明令牌（proof token）。
@@ -84,8 +81,8 @@ impl HeldInterrupts {
     #[inline]
     #[must_use]
     pub fn hold() -> Self {
-        let was_enabled = Arch::irq_enabled();
-        Arch::irq_disable();
+        let was_enabled = arch::is_irq_enabled();
+        arch::disable_irq();
         Self {
             was_enabled,
             _not_send: PhantomData,
@@ -104,7 +101,7 @@ impl Drop for HeldInterrupts {
     fn drop(&mut self) {
         if self.was_enabled {
             // SAFETY: 恢复到获取令牌前的中断状态
-            unsafe { Arch::irq_enable() };
+            unsafe { arch::enable_irq() };
         }
     }
 }
@@ -265,7 +262,6 @@ mod tests {
     use std::sync::Mutex;
 
     use super::*;
-    use arch::set_irq_enabled;
 
     /// 串行化访问全局状态，防止并行测试相互干扰。
     static TEST_LOCK: Mutex<()> = Mutex::new(());
@@ -274,24 +270,24 @@ mod tests {
     #[test]
     fn hold_when_disabled() {
         let _guard = TEST_LOCK.lock().expect("TEST_LOCK poisoned");
-        set_irq_enabled(false);
+        arch::set_irq_enabled_for_test(false);
         let held = HeldInterrupts::hold();
         assert!(!held.was_enabled());
-        assert!(!Arch::irq_enabled());
+        assert!(!arch::is_irq_enabled());
         drop(held);
-        assert!(!Arch::irq_enabled());
+        assert!(!arch::is_irq_enabled());
     }
 
     /// 中断开启时 hold：was_enabled=true，hold 期间中断关闭，drop 后恢复开启。
     #[test]
     fn hold_when_enabled_restores_on_drop() {
         let _guard = TEST_LOCK.lock().expect("TEST_LOCK poisoned");
-        set_irq_enabled(true);
+        arch::set_irq_enabled_for_test(true);
         let held = HeldInterrupts::hold();
         assert!(held.was_enabled());
-        assert!(!Arch::irq_enabled());
+        assert!(!arch::is_irq_enabled());
         drop(held);
-        assert!(Arch::irq_enabled());
+        assert!(arch::is_irq_enabled());
     }
 
     /// 验证 HeldInterrupts 的 size（编译期 !Copy / !Send 由 doc test 保证）。

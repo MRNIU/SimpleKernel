@@ -1,0 +1,20 @@
+[package]
+name = "arch"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Architecture abstraction layer — unified interface for CPU registers, interrupt control, TLB maintenance, and arch-specific constants"
+edition.workspace = true
+
+# RISC-V（仅裸机目标）
+[target.'cfg(all(target_os = "none", target_arch = "riscv64"))'.dependencies]
+riscv.workspace = true
+
+# AArch64（仅裸机目标）
+[target.'cfg(all(target_os = "none", target_arch = "aarch64"))'.dependencies]
+aarch64-cpu.workspace = true
+tock-registers.workspace = true
+
+[lints]
+workspace = true

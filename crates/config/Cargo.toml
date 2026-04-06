@@ -9,6 +9,7 @@ edition.workspace = true
 
 [dependencies]
 log.workspace = true
+arch = { path = "../arch" }
 
 [lints]
 workspace = true

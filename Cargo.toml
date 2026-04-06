@@ -11,6 +11,7 @@
 [workspace]
 members = [
     ".",
+    "crates/arch",
     "crates/config",
     "crates/span",
     "crates/memory_types",

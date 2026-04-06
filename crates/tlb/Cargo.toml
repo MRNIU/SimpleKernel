@@ -9,15 +9,8 @@ edition.workspace = true
 
 [dependencies]
 config = { path = "../config" }
+arch = { path = "../arch" }
 spin.workspace = true
-
-# RISC-V sfence.vma 指令（仅裸机目标）
-[target.'cfg(all(target_os = "none", target_arch = "riscv64"))'.dependencies]
-riscv.workspace = true
-
-# AArch64 TLBI/DSB/ISB 指令封装（仅裸机目标）
-[target.'cfg(all(target_os = "none", target_arch = "aarch64"))'.dependencies]
-aarch64-cpu.workspace = true
 
 [lints]
 workspace = true

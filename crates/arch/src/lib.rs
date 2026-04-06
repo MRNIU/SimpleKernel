@@ -1,0 +1,164 @@
+//! 架构抽象层——所有因处理器架构而异的底层操作的统一接口。
+//!
+//! 本 crate 封装 CPU 寄存器访问、中断控制、TLB 维护等硬件原语，
+//! 对外暴露架构无关的模块级函数，上层 crate 无需关心具体架构差异。
+//!
+//! ## 支持的架构
+//!
+//! | 架构 | 条件编译 | 说明 |
+//! |------|----------|------|
+//! | RISC-V 64 | `bare_riscv64` | S 模式，Sv39/Sv48 |
+//! | AArch64 | `bare_aarch64` | EL1，4KB granule |
+//! | 宿主机 | `not(bare_metal)` | mock 实现，用于 `cargo test` |
+//!
+//! ## 使用示例
+//!
+//! ```ignore
+//! arch::disable_irq();
+//! let base = arch::percpu_base();
+//! arch::flush_tlb_page(vaddr);
+//! ```
+
+#![cfg_attr(not(test), no_std)]
+
+#[cfg(bare_aarch64)]
+mod aarch64;
+#[cfg(not(bare_metal))]
+mod host;
+#[cfg(bare_riscv64)]
+mod riscv64;
+
+/// 架构实现契约——各架构必须完整实现。
+///
+/// 此 trait 仅在 crate 内部用于强制各架构提供完整的方法集，
+/// 对外通过模块级函数暴露，调用方无需感知 trait 的存在。
+pub(crate) trait ArchImpl {
+    /// 物理地址有效位宽。
+    ///
+    /// - RISC-V Sv39/Sv48/Sv57: 56 位
+    /// - AArch64: 48 位（LPA2 扩展到 52 位，暂不支持）
+    const PA_BITS: usize;
+
+    /// 页表层级数。
+    ///
+    /// - RISC-V Sv39: 3 级
+    /// - AArch64 4KB granule: 4 级
+    const PT_LEVELS: usize;
+
+    /// 读取 per-CPU 基地址寄存器（RISC-V: TP, AArch64: TPIDR_EL1）。
+    fn percpu_base() -> usize;
+
+    /// 写入 per-CPU 基地址寄存器。
+    ///
+    /// # Safety
+    /// 调用方必须保证 `val` 指向有效的 per-CPU 区域基地址。
+    unsafe fn set_percpu_base(val: usize);
+
+    /// 从硬件寄存器读取当前核心 ID。
+    ///
+    /// 在 per-CPU 子系统初始化之前可用。
+    /// - RISC-V: 从 TP 读取 hart_id（boot.S 写入）
+    /// - AArch64: 从 MPIDR_EL1.Aff0 读取
+    fn core_id() -> usize;
+
+    /// 查询当前中断是否启用。
+    fn is_irq_enabled() -> bool;
+
+    /// 禁用中断。
+    fn disable_irq();
+
+    /// 启用中断。
+    ///
+    /// # Safety
+    /// 调用方必须确保：
+    /// 1. 当前不在持有禁止中断的锁的临界区内
+    /// 2. 中断向量表已正确初始化
+    /// 3. 栈和上下文状态允许安全地处理中断
+    unsafe fn enable_irq();
+
+    /// 刷新整个 TLB。
+    fn flush_tlb_all();
+
+    /// 刷新指定虚拟地址的单条 TLB 表项。
+    fn flush_tlb_page(vaddr: usize);
+}
+
+#[cfg(bare_riscv64)]
+type Impl = riscv64::Riscv64;
+#[cfg(bare_aarch64)]
+type Impl = aarch64::Aarch64;
+#[cfg(not(bare_metal))]
+type Impl = host::Host;
+
+/// 物理地址有效位宽（RISC-V: 56, AArch64: 48）。
+pub const PA_BITS: usize = Impl::PA_BITS;
+
+/// 页表层级数（RISC-V Sv39: 3, AArch64 4KB: 4）。
+pub const PT_LEVELS: usize = Impl::PT_LEVELS;
+
+/// 读取 per-CPU 基地址寄存器（RISC-V: TP, AArch64: TPIDR_EL1）。
+#[inline(always)]
+pub fn percpu_base() -> usize {
+    Impl::percpu_base()
+}
+
+/// 写入 per-CPU 基地址寄存器。
+///
+/// # Safety
+/// 调用方必须保证 `val` 指向有效的 per-CPU 区域基地址。
+#[inline(always)]
+pub unsafe fn set_percpu_base(val: usize) {
+    // SAFETY: 由调用方保证
+    unsafe { Impl::set_percpu_base(val) };
+}
+
+/// 从硬件寄存器读取当前核心 ID（per-CPU 初始化前可用）。
+#[inline(always)]
+pub fn core_id() -> usize {
+    Impl::core_id()
+}
+
+/// 查询当前中断是否启用。
+#[inline(always)]
+pub fn is_irq_enabled() -> bool {
+    Impl::is_irq_enabled()
+}
+
+/// 禁用中断。
+#[inline(always)]
+pub fn disable_irq() {
+    Impl::disable_irq();
+}
+
+/// 启用中断。
+///
+/// # Safety
+/// 调用方必须确保：
+/// 1. 当前不在持有禁止中断的锁的临界区内
+/// 2. 中断向量表已正确初始化
+/// 3. 栈和上下文状态允许安全地处理中断
+#[inline(always)]
+pub unsafe fn enable_irq() {
+    // SAFETY: 由调用方保证
+    unsafe { Impl::enable_irq() };
+}
+
+/// 刷新整个 TLB。
+#[inline(always)]
+pub fn flush_tlb_all() {
+    Impl::flush_tlb_all();
+}
+
+/// 刷新指定虚拟地址的单条 TLB 表项。
+#[inline(always)]
+pub fn flush_tlb_page(vaddr: usize) {
+    Impl::flush_tlb_page(vaddr);
+}
+
+/// 设置宿主机模拟的中断使能状态（仅测试使用）。
+///
+/// 裸机环境下此函数不存在。
+#[cfg(not(bare_metal))]
+pub fn set_irq_enabled_for_test(enabled: bool) {
+    host::set_irq_enabled(enabled);
+}

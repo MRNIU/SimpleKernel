@@ -283,6 +283,24 @@ memory_types ← frame_allocator ← page_allocator
 | 分支合并 | 审计分支合入 `main`、历史分支清理、分支保护规则 |
 | 审计产物 CI 守护 | 见下方 TODO |
 
+#### 函数命名规范检查
+
+全项目扫描所有 `pub` 函数和方法的命名，确保符合 Rust 命名惯例：
+
+| 规则 | 正确示例 | 错误示例 |
+|------|----------|----------|
+| 返回 `bool` 的查询用 `is_`/`has_`/`can_` 前缀 | `is_empty()`, `is_irq_enabled()` | `check_empty()`, `irq_enabled()` |
+| Getter 用名词，不加 `get_`/`read_` 前缀 | `len()`, `percpu_base()` | `get_len()`, `read_percpu_base()` |
+| Setter 用 `set_` 前缀 | `set_len()`, `set_percpu_base()` | `write_percpu_base()` |
+| 动作用动宾结构（动词在前） | `flush_tlb()`, `disable_irq()` | `tlb_flush()`, `irq_disable()` |
+| 不用 C 风格"模块名前缀" | `arch::disable_irq()` | `arch::arch_irq_disable()` |
+
+排查范围：`src/`、`crates/`、`tests/` 下所有 `.rs` 文件的 `pub fn` / `pub unsafe fn`。
+
+交付物：
+- 命名不规范清单（函数名 + 文件位置 + 建议修正）
+- 批量重命名 PR（可分模块提交）
+
 #### 测试基础设施审计
 
 代码中大量为测试环境单独添加了实现和宏开关，需全量排查，确保：
@@ -319,6 +337,7 @@ memory_types ← frame_allocator ← page_allocator
 
 ### R8 交付物
 
+- [ ] 函数命名规范检查报告 + 批量重命名
 - [ ] 测试基础设施审计报告
 - [ ] host 模拟实现一致性评估
 - [ ] `CpuLocal` host 行为 ADR

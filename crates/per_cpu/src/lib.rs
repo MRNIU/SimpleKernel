@@ -69,40 +69,6 @@ static PERCPU_BASES: core::cell::SyncUnsafeCell<[usize; MAX_CORE_COUNT]> =
 #[cfg(bare_metal)]
 static PERCPU_INITIALIZED: AtomicBool = AtomicBool::new(false);
 
-/// 读取 TP（riscv64）或 TPIDR_EL1（aarch64）寄存器。
-#[cfg(bare_metal)]
-#[inline(always)]
-fn read_tp() -> usize {
-    let val: usize;
-    #[cfg(target_arch = "riscv64")]
-    // SAFETY: 读取 TP 寄存器，在 S 模式下始终可读
-    unsafe {
-        core::arch::asm!("mv {}, tp", out(reg) val);
-    }
-    #[cfg(target_arch = "aarch64")]
-    // SAFETY: TPIDR_EL1 在 EL1 下始终可读
-    unsafe {
-        core::arch::asm!("mrs {}, tpidr_el1", out(reg) val);
-    }
-    val
-}
-
-/// 写入 TP（riscv64）或 TPIDR_EL1（aarch64）寄存器。
-#[cfg(bare_metal)]
-#[inline(always)]
-unsafe fn write_tp(val: usize) {
-    #[cfg(target_arch = "riscv64")]
-    // SAFETY: 由调用方保证设置正确的 per-CPU 基地址
-    unsafe {
-        core::arch::asm!("mv tp, {}", in(reg) val);
-    }
-    #[cfg(target_arch = "aarch64")]
-    // SAFETY: 由调用方保证设置正确的 per-CPU 基地址
-    unsafe {
-        core::arch::asm!("msr tpidr_el1, {}", in(reg) val);
-    }
-}
-
 /// 主核 per-CPU 初始化——复制模板、设置每个 CPU 的基地址、设置 TP。
 ///
 /// 必须在任何 `#[cpu_local]` 访问之前调用（`logging::init()` 之后）。
@@ -121,7 +87,7 @@ pub unsafe fn percpu_init() {
     let template_size =
         unsafe { &__percpu_end as *const u8 as usize - &__percpu_start as *const u8 as usize };
 
-    let my_core_id = raw_core_id();
+    let my_core_id = arch::core_id();
 
     // SAFETY: 单核调用，中断关闭，独占访问
     let areas = unsafe { &mut *PERCPU_AREAS.get() };
@@ -143,25 +109,25 @@ pub unsafe fn percpu_init() {
 
     // 设置当前核的 TP
     // SAFETY: bases 已正确初始化
-    unsafe { write_tp(bases[my_core_id]) };
+    unsafe { arch::set_percpu_base(bases[my_core_id]) };
 
     PERCPU_INITIALIZED.store(true, Ordering::Release);
 }
 
-/// 从核 per-CPU 初始化——设置 TP 指向该核的 per-CPU 区域。
+/// 从核 per-CPU 初始化——设置 per-CPU 基地址寄存器指向该核的区域。
 ///
-/// 内部通过 `raw_core_id()` 直接读取硬件寄存器确定当前核心 ID
-/// （riscv64: TP 寄存器，aarch64: MPIDR_EL1），不依赖 per-CPU 变量。
-/// 调用完成后 `current_core_id()` 即可正常工作。
+/// 内部通过 [`arch::core_id()`] 直接读取硬件寄存器确定当前核心 ID，
+/// 不依赖 per-CPU 变量。调用完成后 `current_core_id()` 即可正常工作。
 ///
 /// # Safety
 /// - `percpu_init()` 必须已由主核调用完成
 #[cfg(bare_metal)]
 pub unsafe fn percpu_init_smp() {
-    let id = raw_core_id();
+    let id = arch::core_id();
     // SAFETY: percpu_init() 已填充 PERCPU_BASES，id 来自硬件寄存器
     let bases = unsafe { &*PERCPU_BASES.get() };
-    unsafe { write_tp(bases[id]) };
+    // SAFETY: bases[id] 已在 percpu_init() 中正确初始化
+    unsafe { arch::set_percpu_base(bases[id]) };
 }
 
 /// 读取当前核心 ID。
@@ -176,30 +142,12 @@ pub fn current_core_id() -> usize {
         if PERCPU_INITIALIZED.load(Ordering::Acquire) {
             *CORE_ID.get()
         } else {
-            raw_core_id()
+            arch::core_id()
         }
     }
     #[cfg(not(bare_metal))]
     {
         host_core_id()
-    }
-}
-
-/// 初始化前读取原始核心 ID（riscv64: TP 寄存器，aarch64: MPIDR_EL1.Aff0）。
-#[cfg(bare_metal)]
-#[inline(always)]
-fn raw_core_id() -> usize {
-    #[cfg(target_arch = "riscv64")]
-    {
-        let id: usize;
-        // SAFETY: boot.S 已将 hart_id 写入 TP
-        unsafe { core::arch::asm!("mv {}, tp", out(reg) id) };
-        id
-    }
-    #[cfg(target_arch = "aarch64")]
-    {
-        use aarch64_cpu::registers::{MPIDR_EL1, Readable};
-        MPIDR_EL1.read(MPIDR_EL1::Aff0) as usize
     }
 }
 
@@ -268,7 +216,7 @@ impl<T: Sync> CpuLocal<T> {
     pub fn get(&self) -> &T {
         #[cfg(bare_metal)]
         {
-            let base = read_tp();
+            let base = arch::percpu_base();
             // SAFETY: base 指向当前 CPU 的 per-CPU 区域，offset 在范围内
             unsafe { &*((base + self.offset()) as *const T) }
         }
@@ -291,7 +239,7 @@ impl<T: Sync> CpuLocal<T> {
     pub unsafe fn get_mut(&self) -> &mut T {
         #[cfg(bare_metal)]
         {
-            let base = read_tp();
+            let base = arch::percpu_base();
             // SAFETY: 调用方保证无并发访问
             unsafe { &mut *((base + self.offset()) as *mut T) }
         }

@@ -69,7 +69,7 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
 /// # Safety
 /// 必须在从核的汇编入口跳转后调用，per-CPU 寄存器已设置。
 pub unsafe fn kernel_init_smp() {
-    // SAFETY: percpu_init() 已由主核完成，raw_core_id() 返回有效核心 ID
+    // SAFETY: percpu_init() 已由主核完成，arch::core_id() 返回有效核心 ID
     unsafe { per_cpu::percpu_init_smp() };
     let core_id = per_cpu::current_core_id();
     memory::init_smp(|pt| {

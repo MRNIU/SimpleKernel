@@ -2,10 +2,6 @@
 
 #![no_std]
 
-mod arch;
-
-use arch::{Arch, TlbArch};
-
 /// 跨核 TLB shootdown 请求类型。
 ///
 /// 类型安全的替代方案，避免用 `0` / 非零 约定区分全局/单页刷新。
@@ -78,7 +74,7 @@ impl Drop for TlbFlushGuard {
 ///   实现按 ASID 刷新，避免影响其他进程的 TLB 缓存。
 #[inline(always)]
 pub fn flush_tlb() {
-    Arch::flush_all();
+    arch::flush_tlb_all();
 
     if let Some(shootdown) = TLB_SHOOTDOWN_FN.get() {
         shootdown(TlbFlushRequest::All);
@@ -90,7 +86,7 @@ pub fn flush_tlb() {
 /// 在 unmap 单页或修改单个 PTE 后调用，比 [`flush_tlb`] 精确、开销更低。
 #[inline(always)]
 pub fn flush_tlb_page(vaddr: usize) {
-    Arch::flush_page(vaddr);
+    arch::flush_tlb_page(vaddr);
 
     if let Some(shootdown) = TLB_SHOOTDOWN_FN.get() {
         shootdown(TlbFlushRequest::Page(vaddr));

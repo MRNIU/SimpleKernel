@@ -85,6 +85,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 ### Rust
 - **Language**: Rust nightly, `#![no_std]`, `#![no_main]`, edition 2024
 - **Naming**: `snake_case` functions/methods, `PascalCase` types/traits/enums, `SCREAMING_SNAKE_CASE` constants
+- **函数命名惯例**: 返回 `bool` 用 `is_`/`has_`/`can_` 前缀；getter 用名词不加 `get_`/`read_`（如 `len()`）；setter 用 `set_` 前缀；动作用动宾结构（动词在前，如 `flush_tlb()`、`disable_irq()`）
 - **Formatting**: `rustfmt.toml` (100 char width), enforce via `cargo fmt`
 - **Linting**: `cargo clippy -- -D warnings`
 - **Doc comments**: `///` with `# Safety`, `# Errors`, `# Panics` sections for public APIs（节标题保留英文，内容用中文）
