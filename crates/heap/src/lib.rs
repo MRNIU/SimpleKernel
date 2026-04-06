@@ -5,7 +5,7 @@
 //!
 //! **禁止在中断上下文中进行堆分配**——alloc/dealloc 入口包含运行时断言。
 
-#![cfg_attr(not(test), no_std)]
+#![no_std]
 #![feature(sync_unsafe_cell)]
 
 use buddy_system_allocator::Heap;

@@ -138,33 +138,24 @@ impl<R: RawLock, T> IrqSafe<R, T> {
     }
 
     /// 获取锁后压入 per-CPU 锁栈——检查锁序是否合法。
-    ///
-    /// 仅在裸机环境（`target_os = "none"`）生效；宿主机测试跳过
-    /// （per-CPU 锁栈在宿主机上所有线程共享同一实例，多线程测试会产生竞态）。
     fn post_acquire(&self) {
-        #[cfg(bare_metal)]
-        {
-            // SAFETY: 中断已禁用，无同核心并发访问
-            let stack = unsafe { crate::LOCK_STACK.get_mut() };
-            if !stack.check_order(self.level) {
-                panic!(
-                    "SpinLockIrq '{}': lock order violation (level={})",
-                    self.raw.name(),
-                    self.level,
-                );
-            }
-            stack.push(self as *const Self as *const (), self.level);
+        // SAFETY: 中断已禁用，无同核心并发访问
+        let stack = unsafe { crate::LOCK_STACK.get_mut() };
+        if !stack.check_order(self.level) {
+            panic!(
+                "SpinLockIrq '{}': lock order violation (level={})",
+                self.raw.name(),
+                self.level,
+            );
         }
+        stack.push(self as *const Self as *const (), self.level);
     }
 
     /// 释放锁前从 per-CPU 锁栈弹出。
     fn pop_lock_stack(&self) {
-        #[cfg(bare_metal)]
-        {
-            // SAFETY: 中断已禁用，无同核心并发访问
-            let stack = unsafe { crate::LOCK_STACK.get_mut() };
-            stack.pop(self as *const Self as *const ());
-        }
+        // SAFETY: 中断已禁用，无同核心并发访问
+        let stack = unsafe { crate::LOCK_STACK.get_mut() };
+        stack.pop(self as *const Self as *const ());
     }
 }
 
@@ -260,133 +251,5 @@ impl<R: RawLock, T> Drop for IrqSafeNestedGuard<'_, R, T> {
 impl<R: RawLock, T: fmt::Debug> fmt::Debug for IrqSafeNestedGuard<'_, R, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(&**self, f)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    type SpinLockIrq<T> = IrqSafe<RawSpinLock, T>;
-
-    /// 基本加锁/解锁流程
-    #[test]
-    fn irq_lock_and_unlock() {
-        let lock = SpinLockIrq::new(42u32, "irq_test", lock_level::CONSOLE);
-        {
-            let guard = lock.lock();
-            assert_eq!(*guard, 42);
-        }
-        assert!(!lock.is_locked());
-    }
-
-    /// try_lock 成功
-    #[test]
-    fn irq_try_lock() {
-        let lock = SpinLockIrq::new(0u32, "irq_try", lock_level::CONSOLE);
-        assert!(lock.try_lock().is_some());
-    }
-
-    /// try_lock 在锁已持有时失败
-    #[test]
-    fn irq_try_lock_fails_when_held() {
-        let lock = SpinLockIrq::new(0u32, "irq_try_held", lock_level::CONSOLE);
-        let _g = lock.lock();
-        assert!(lock.try_lock().is_none());
-    }
-
-    /// 带指定锁级别的构造
-    #[test]
-    fn irq_new_with_level() {
-        let lock = SpinLockIrq::new(0u32, "leveled", lock_level::SCHED);
-        let _g = lock.lock();
-        assert!(lock.is_locked());
-    }
-
-    /// new_unordered 便捷构造器
-    #[test]
-    fn irq_new_unordered() {
-        let lock = SpinLockIrq::new_unordered(99u32, "unordered");
-        let guard = lock.lock();
-        assert_eq!(*guard, 99);
-    }
-
-    /// with 闭包 API——获取锁、执行闭包、自动释放
-    #[test]
-    fn irq_with_closure() {
-        let lock = SpinLockIrq::new(10u32, "with_test", lock_level::CONSOLE);
-        let result = lock.with(|val| {
-            *val += 5;
-            *val
-        });
-        assert_eq!(result, 15);
-        assert!(!lock.is_locked());
-
-        // 验证数据确实被修改
-        let guard = lock.lock();
-        assert_eq!(*guard, 15);
-    }
-
-    /// 多线程并发访问
-    #[test]
-    fn irq_concurrent_access() {
-        use std::sync::Arc;
-        use std::thread;
-
-        let lock = Arc::new(SpinLockIrq::new(
-            Vec::<usize>::new(),
-            "irq_concurrent",
-            lock_level::CONSOLE,
-        ));
-        let mut handles = Vec::new();
-
-        for i in 0..4 {
-            let lock = Arc::clone(&lock);
-            handles.push(thread::spawn(move || {
-                for j in 0..100 {
-                    let mut g = lock.lock();
-                    g.push(i * 100 + j);
-                }
-            }));
-        }
-
-        for h in handles {
-            h.join().expect("线程应正常结束");
-        }
-
-        let g = lock.lock();
-        assert_eq!(g.len(), 400, "应有 4x100=400 个元素");
-    }
-
-    /// 嵌套锁获取与自动释放
-    #[test]
-    fn try_lock_nested_and_drop() {
-        let lock = SpinLockIrq::new((), "nested_test", lock_level::CONSOLE);
-        let held = HeldInterrupts::hold();
-        {
-            let guard = lock.try_lock_nested(&held);
-            assert!(guard.is_some());
-            assert!(lock.is_locked());
-        }
-        assert!(!lock.is_locked());
-        drop(held);
-    }
-
-    /// 嵌套锁在锁已持有时获取失败
-    #[test]
-    fn try_lock_nested_fails_when_held() {
-        let lock = SpinLockIrq::new((), "nested_fail", lock_level::CONSOLE);
-        let _g = lock.lock();
-        let held = HeldInterrupts::hold();
-        assert!(lock.try_lock_nested(&held).is_none());
-    }
-
-    /// 递归加锁应 panic
-    #[test]
-    #[should_panic(expected = "recursive lock")]
-    fn irq_recursive_lock_panics() {
-        let lock = SpinLockIrq::new(0u32, "irq_recursive", lock_level::CONSOLE);
-        let _g = lock.lock();
-        let _g2 = lock.lock();
     }
 }

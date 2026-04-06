@@ -23,7 +23,6 @@ config = { path = "../../crates/config" }
 memory_types = { path = "../../crates/memory_types" }
 global_tick = { path = "../../crates/global_tick" }
 log.workspace = true
-qemu-exit.workspace = true
 spin.workspace = true
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]

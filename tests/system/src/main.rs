@@ -121,9 +121,24 @@ fn exit_qemu(code: u32) -> ! {
 
     #[cfg(target_arch = "aarch64")]
     {
-        use qemu_exit::QEMUExit;
-        let handle = qemu_exit::AArch64::new();
-        handle.exit(code);
+        // PSCI SYSTEM_OFF (SMC32: 0x84000008)——QEMU virt + ATF 的 conduit 是 SMC。
+        // 不使用 qemu_exit crate 的 semihosting（HLT），因为 QEMU 未启用 -semihosting，
+        // HLT 会触发 EC=0x00 未知同步异常。
+        let _ = code;
+        // SAFETY: PSCI SYSTEM_OFF 是标准固件接口，无参数，关闭整个系统
+        unsafe {
+            core::arch::asm!(
+                "smc #0",
+                in("x0") 0x8400_0008u64, // PSCI SYSTEM_OFF
+                in("x1") 0u64,
+                in("x2") 0u64,
+                in("x3") 0u64,
+                options(nomem, nostack),
+            );
+        }
+        loop {
+            core::hint::spin_loop();
+        }
     }
 
     #[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]

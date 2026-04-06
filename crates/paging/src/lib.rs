@@ -9,10 +9,10 @@
 //!   才能调用这些方法，确保映射的创建与销毁始终通过 RAII 类型管理。
 //!
 //! PTE 编解码由 [`page_table_entry`] crate 提供。
-//! 帧分配通过 [`NodeFrame`] 类型别名选择具体实现（`cfg` 区分裸机与测试），
+//! 帧分配通过 [`NodeFrame`] 类型别名（[`KernelNodeFrame`]）使用物理帧分配器，
 //! 页表和映射类型均为非泛型。
 
-#![cfg_attr(not(test), no_std)]
+#![no_std]
 
 extern crate alloc;
 
@@ -31,12 +31,9 @@ pub const PTE_SIZE_SHIFT: usize = core::mem::size_of::<u64>().trailing_zeros() a
 pub mod table;
 pub use table::PageTable;
 
-#[cfg(any(test, feature = "test-support", bare_metal))]
 pub mod mapping;
-#[cfg(any(test, feature = "test-support", bare_metal))]
 pub use mapping::MappedPages;
 
-#[cfg(any(test, feature = "test-support", bare_metal))]
 pub mod mmio;
 
 /// 全局内核页表——SAS 架构下只有一张页表，所有映射共用。
@@ -76,22 +73,20 @@ pub fn ensure_test_init() {
 
 /// 页表节点帧的统一接口。
 ///
-/// 裸机和测试各自提供一个实现，通过 [`NodeFrame`] 类型别名选择。
+/// 通过 [`NodeFrame`] 类型别名（[`KernelNodeFrame`]）选择具体实现。
 /// 页表、映射等类型直接使用 `NodeFrame`，不再泛型化。
 pub trait NodeFrameOps: Send + Sized {
     /// 分配一个零初始化的页表节点帧。
     fn alloc() -> Result<Self, error::PagingError>;
-    /// 获取帧的物理地址（裸机 identity mapping）或堆地址（测试）。
+    /// 获取帧的物理地址（identity mapping）。
     fn paddr(&self) -> PhysAddr;
 }
 
 /// 裸机页表节点帧——包装 `AllocatedFrames`。
 ///
 /// Newtype 用于为外部类型 `AllocatedFrames` 实现本 crate 的 `NodeFrameOps`。
-#[cfg(bare_metal)]
 pub struct KernelNodeFrame(frame_allocator::AllocatedFrames);
 
-#[cfg(bare_metal)]
 impl NodeFrameOps for KernelNodeFrame {
     fn alloc() -> Result<Self, error::PagingError> {
         frame_allocator::AllocatedFrames::alloc_one()
@@ -106,55 +101,8 @@ impl NodeFrameOps for KernelNodeFrame {
     }
 }
 
-/// 宿主机页表节点帧——从堆分配，模拟物理帧。
-///
-/// 在 `cargo test` 和 `cargo check`（宿主机编译）下均可用，
-/// 不再要求 `test` 或 `test-support` feature。
-#[cfg(not(bare_metal))]
-pub struct HeapNodeFrame {
-    ptr: *mut u8,
-    layout: core::alloc::Layout,
-}
-
-// SAFETY: HeapNodeFrame 独占其分配的内存（*mut u8 阻止了 auto-Send），
-// 可安全跨线程传递。
-#[cfg(not(bare_metal))]
-unsafe impl Send for HeapNodeFrame {}
-
-#[cfg(not(bare_metal))]
-impl Drop for HeapNodeFrame {
-    fn drop(&mut self) {
-        // SAFETY: ptr 由同 layout 的 alloc_zeroed 分配
-        unsafe { alloc::alloc::dealloc(self.ptr, self.layout) };
-    }
-}
-
-#[cfg(not(bare_metal))]
-impl NodeFrameOps for HeapNodeFrame {
-    fn alloc() -> Result<Self, error::PagingError> {
-        let layout = core::alloc::Layout::from_size_align(config::PAGE_SIZE, config::PAGE_SIZE)
-            .expect("HeapNodeFrame: invalid layout");
-        // SAFETY: layout 非零大小
-        let ptr = unsafe { alloc::alloc::alloc_zeroed(layout) };
-        if ptr.is_null() {
-            return Err(error::PagingError::AllocationFailed);
-        }
-        Ok(Self { ptr, layout })
-    }
-    fn paddr(&self) -> PhysAddr {
-        PhysAddr::new(self.ptr as usize)
-    }
-}
-
-/// 当前编译目标使用的页表节点帧类型。
-///
-/// - 裸机（`bare_metal`）：[`KernelNodeFrame`]（物理帧分配器）
-/// - 宿主机（`not(bare_metal)`）：[`HeapNodeFrame`]（堆分配模拟）
-#[cfg(bare_metal)]
+/// 页表节点帧类型——[`KernelNodeFrame`]（物理帧分配器）。
 pub type NodeFrame = KernelNodeFrame;
-/// 当前编译目标使用的页表节点帧类型（宿主机——堆分配模拟）。
-#[cfg(not(bare_metal))]
-pub type NodeFrame = HeapNodeFrame;
 
 /// 每张页表中的条目数（PAGE_SIZE / sizeof(PTE)）。
 ///

@@ -18,15 +18,8 @@ static LOGGER_INIT: AtomicBool = AtomicBool::new(false);
 static LOGGER: KernelLogger = KernelLogger;
 
 fn put_str(s: &str) {
-    #[cfg(bare_metal)]
-    {
-        use crate::arch::ArchOps;
-        crate::arch::Arch::console_write(s);
-    }
-    #[cfg(not(bare_metal))]
-    {
-        let _ = s;
-    }
+    use crate::arch::ArchOps;
+    crate::arch::Arch::console_write(s);
 }
 
 fn level_color(level: log::Level) -> &'static str {

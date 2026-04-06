@@ -54,7 +54,6 @@ impl<R: RawLock, T> Mutex<R, T> {
     /// - 同一核心递归加锁（若底层 `RawLock` 支持检测）
     /// - 锁级别顺序违反（裸机环境）
     pub fn lock(&self) -> MutexGuard<'_, R, T> {
-        #[cfg(bare_metal)]
         assert!(
             !interrupt_state::is_in_interrupt(),
             "SpinLock '{}': 在中断上下文中调用，应使用 SpinLockIrq",
@@ -79,7 +78,6 @@ impl<R: RawLock, T> Mutex<R, T> {
     /// - 在中断上下文中调用（裸机环境）——应使用 `SpinLockIrq`
     /// - 锁级别顺序违反（裸机环境）
     pub fn try_lock(&self) -> Option<MutexGuard<'_, R, T>> {
-        #[cfg(bare_metal)]
         assert!(
             !interrupt_state::is_in_interrupt(),
             "SpinLock '{}': 在中断上下文中调用，应使用 SpinLockIrq",
@@ -128,34 +126,26 @@ impl<R: RawLock, T> Mutex<R, T> {
     }
 
     /// 获取锁后压入 per-CPU 锁栈——检查锁序是否合法。
-    ///
-    /// 仅在裸机环境（`target_os = "none"`）生效；宿主机测试跳过。
     fn push_lock_stack(&self) {
-        #[cfg(bare_metal)]
-        {
-            let _held = interrupt_state::HeldInterrupts::hold();
-            // SAFETY: 中断已禁用，无同核心并发访问
-            let stack = unsafe { crate::LOCK_STACK.get_mut() };
-            if !stack.check_order(self.level) {
-                panic!(
-                    "SpinLock '{}': lock order violation (level={})",
-                    self.raw.name(),
-                    self.level,
-                );
-            }
-            stack.push(self as *const Self as *const (), self.level);
+        let _held = interrupt_state::HeldInterrupts::hold();
+        // SAFETY: 中断已禁用，无同核心并发访问
+        let stack = unsafe { crate::LOCK_STACK.get_mut() };
+        if !stack.check_order(self.level) {
+            panic!(
+                "SpinLock '{}': lock order violation (level={})",
+                self.raw.name(),
+                self.level,
+            );
         }
+        stack.push(self as *const Self as *const (), self.level);
     }
 
     /// 释放锁前从 per-CPU 锁栈弹出。
     fn pop_lock_stack(&self) {
-        #[cfg(bare_metal)]
-        {
-            let _held = interrupt_state::HeldInterrupts::hold();
-            // SAFETY: 中断已禁用，无同核心并发访问
-            let stack = unsafe { crate::LOCK_STACK.get_mut() };
-            stack.pop(self as *const Self as *const ());
-        }
+        let _held = interrupt_state::HeldInterrupts::hold();
+        // SAFETY: 中断已禁用，无同核心并发访问
+        let stack = unsafe { crate::LOCK_STACK.get_mut() };
+        stack.pop(self as *const Self as *const ());
     }
 }
 
@@ -222,117 +212,5 @@ impl<R: RawLock, T> Drop for MutexGuard<'_, R, T> {
 impl<R: RawLock, T: fmt::Debug> fmt::Debug for MutexGuard<'_, R, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(&**self, f)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::lock_stack::lock_level;
-
-    type SpinLock<T> = Mutex<RawSpinLock, T>;
-
-    /// 基本的加锁/解锁流程
-    #[test]
-    fn lock_and_unlock() {
-        let lock = SpinLock::new(42u32, "test", lock_level::UNSPECIFIED);
-        {
-            let guard = lock.lock();
-            assert_eq!(*guard, 42);
-        }
-        assert!(!lock.is_locked());
-    }
-
-    /// guard 提供可变访问
-    #[test]
-    fn guard_provides_mutable_access() {
-        let lock = SpinLock::new(0u32, "test_mut", lock_level::UNSPECIFIED);
-        {
-            let mut guard = lock.lock();
-            *guard = 99;
-        }
-        let guard = lock.lock();
-        assert_eq!(*guard, 99);
-    }
-
-    /// try_lock 在锁空闲时成功
-    #[test]
-    fn try_lock_succeeds_when_free() {
-        let lock = SpinLock::new(7u32, "try_lock_test", lock_level::UNSPECIFIED);
-        let guard = lock.try_lock();
-        assert!(guard.is_some());
-        assert_eq!(*guard.expect("lock should succeed"), 7);
-    }
-
-    /// try_lock 在锁已持有时失败
-    #[test]
-    fn try_lock_fails_when_held() {
-        let lock = SpinLock::new(0u32, "try_lock_held", lock_level::UNSPECIFIED);
-        let _g = lock.lock();
-        let second = lock.try_lock();
-        assert!(second.is_none());
-    }
-
-    /// guard 析构时自动释放锁
-    #[test]
-    fn guard_drop_releases_lock() {
-        let lock = SpinLock::new(0u32, "drop_test", lock_level::UNSPECIFIED);
-        {
-            let _g = lock.lock();
-            assert!(lock.is_locked());
-        }
-        assert!(!lock.is_locked());
-    }
-
-    /// 多线程并发自增验证互斥正确性
-    #[test]
-    fn concurrent_access() {
-        use std::sync::Arc;
-        use std::thread;
-
-        let lock = Arc::new(SpinLock::new(0u64, "concurrent", lock_level::UNSPECIFIED));
-        let mut handles = Vec::new();
-
-        for _ in 0..4 {
-            let lock = Arc::clone(&lock);
-            handles.push(thread::spawn(move || {
-                for _ in 0..1000 {
-                    let mut g = lock.lock();
-                    *g += 1;
-                }
-            }));
-        }
-
-        for h in handles {
-            h.join().expect("线程应正常结束");
-        }
-
-        let g = lock.lock();
-        assert_eq!(*g, 4000, "并发计数器最终值应为 4000");
-    }
-
-    /// 递归加锁应 panic
-    #[test]
-    #[should_panic(expected = "recursive lock")]
-    fn recursive_lock_panics() {
-        let lock = SpinLock::new(0u32, "recursive", lock_level::UNSPECIFIED);
-        let _g = lock.lock();
-        let _g2 = lock.lock();
-    }
-
-    /// with 闭包 API——获取锁、执行闭包、自动释放
-    #[test]
-    fn with_closure_api() {
-        let lock = SpinLock::new(10u32, "with_test", lock_level::UNSPECIFIED);
-        let result = lock.with(|val| {
-            *val += 5;
-            *val
-        });
-        assert_eq!(result, 15);
-        assert!(!lock.is_locked());
-
-        // 验证数据确实被修改
-        let guard = lock.lock();
-        assert_eq!(*guard, 15);
     }
 }

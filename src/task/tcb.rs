@@ -6,7 +6,6 @@ use core::sync::atomic::{AtomicI32, AtomicU32, AtomicU64, Ordering};
 
 use crate::task::state::{AtomicTaskState, TaskState};
 
-#[cfg(bare_metal)]
 use crate::fs::fd_table::FileDescriptorTable;
 
 /// 进程/任务 ID 类型
@@ -18,12 +17,10 @@ pub type TaskRef = Arc<TaskControlBlock>;
 /// 内核线程栈
 ///
 /// 通过 `Vec<u8>` 在堆上分配，确保生命周期与 TCB 一致。
-#[cfg(bare_metal)]
 pub struct KernelStack {
     data: alloc::vec::Vec<u8>,
 }
 
-#[cfg(bare_metal)]
 impl KernelStack {
     /// 分配一个新的内核栈（大小由 `config::KERNEL_STACK_SIZE` 决定）。
     pub fn new() -> Self {
@@ -38,14 +35,12 @@ impl KernelStack {
     }
 }
 
-#[cfg(bare_metal)]
 impl Default for KernelStack {
     fn default() -> Self {
         Self::new()
     }
 }
 
-#[cfg(bare_metal)]
 use crate::arch::CalleeSavedContext;
 
 /// 任务控制块（Task Control Block，TCB）
@@ -73,14 +68,11 @@ pub struct TaskControlBlock {
     pending_signals: AtomicU32,
     /// 信号屏蔽位图（原子：可由任务自身修改）
     signal_mask: AtomicU32,
-    /// 被调用者保存上下文（仅裸机目标）
-    #[cfg(bare_metal)]
+    /// 被调用者保存上下文
     context: core::cell::SyncUnsafeCell<CalleeSavedContext>,
     /// 内核栈（idle 任务无栈，使用 Option）
-    #[cfg(bare_metal)]
     kstack: Option<KernelStack>,
     /// 文件描述符表（每任务独立）
-    #[cfg(bare_metal)]
     fd_table: sync::SpinLock<FileDescriptorTable>,
 }
 
@@ -93,7 +85,6 @@ impl TaskControlBlock {
     /// 创建 idle 任务（每个 CPU 核一个）。
     ///
     /// idle 任务已处于 Running 状态，无需内核栈（复用引导栈）。
-    #[cfg(bare_metal)]
     pub fn new_idle(pid: Pid, core_id: usize) -> Self {
         // SAFETY: 静态字符串字面量生命周期为 'static
         let name: &'static str = match core_id {
@@ -127,7 +118,6 @@ impl TaskControlBlock {
     ///
     /// 分配内核栈，将 `entry` 和 `arg` 编码到 `CalleeSavedContext` 中，
     /// 使 `switch_to` 后首次执行从 `kernel_thread_entry` 开始。
-    #[cfg(bare_metal)]
     pub fn new_kernel_thread(
         pid: Pid,
         name: &'static str,
@@ -160,7 +150,7 @@ impl TaskControlBlock {
 
     /// 创建测试用任务（仅在 `#[cfg(test)]` 下可用）。
     ///
-    /// 不含上下文和内核栈，仅用于单元测试调度器逻辑。
+    /// 使用默认上下文和空内核栈，仅用于单元测试调度器逻辑。
     #[cfg(test)]
     pub fn new_for_test(pid: Pid, name: &'static str) -> Self {
         Self {
@@ -173,6 +163,13 @@ impl TaskControlBlock {
             wake_tick: AtomicU64::new(0),
             pending_signals: AtomicU32::new(0),
             signal_mask: AtomicU32::new(0),
+            context: core::cell::SyncUnsafeCell::new(CalleeSavedContext::default()),
+            kstack: None,
+            fd_table: sync::SpinLock::new(
+                FileDescriptorTable::new(),
+                "fd_table_test",
+                sync::lock_level::UNSPECIFIED,
+            ),
         }
     }
 
@@ -282,13 +279,11 @@ impl TaskControlBlock {
     /// # Safety
     ///
     /// 调用者必须持有调度锁（IRQ 关闭），且保证同一时刻只有一个核访问。
-    #[cfg(bare_metal)]
     pub unsafe fn ctx_mut_ptr(&self) -> *mut CalleeSavedContext {
         self.context.get()
     }
 
     /// 获取文件描述符表的引用。
-    #[cfg(bare_metal)]
     pub fn fd_table(&self) -> &sync::SpinLock<FileDescriptorTable> {
         &self.fd_table
     }

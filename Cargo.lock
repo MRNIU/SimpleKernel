@@ -57,9 +57,9 @@ dependencies = [
 
 [[package]]
 name = "arm-sysregs"
-version = "0.2.6"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d026e843848da615748d0d35dbdaa9b86f2421a11a32b13b93a761aaea73c20f"
+checksum = "7df3fc5d821089c553fa32966bbe7defbd23d857756a5091ecb094de5e18d1ac"
 dependencies = [
  "bitflags 2.11.0",
  "num_enum",
@@ -112,9 +112,9 @@ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
 
 [[package]]
 name = "cc"
-version = "1.2.58"
+version = "1.2.59"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1e928d4b69e3077709075a938a05ffbedfa53a84c8f766efbf8220bb1ff60e1"
+checksum = "b7a4d3ec6524d28a329fc53654bbadc9bdd7b0431f5d65f1a56ffb28a1ee5283"
 dependencies = [
  "find-msvc-tools",
  "shlex",
@@ -456,7 +456,6 @@ dependencies = [
  "log",
  "memory",
  "per_cpu",
- "qemu-exit",
  "sbi-rt",
  "simplekernel",
 ]
@@ -680,7 +679,6 @@ dependencies = [
  "memory",
  "memory_types",
  "per_cpu",
- "qemu-exit",
  "sbi-rt",
  "simplekernel",
  "spin",

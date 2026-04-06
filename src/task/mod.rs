@@ -26,19 +26,14 @@ impl fmt::Display for TaskError {
 
 impl core::error::Error for TaskError {}
 
-#[cfg(bare_metal)]
 mod sched;
-#[cfg(bare_metal)]
 mod task_table;
 
 // 引导 + 基础设施（保持 pub）
-#[cfg(bare_metal)]
 pub use sched::{bootstrap_enable_irq, current_task, schedule, timer_tick};
 
 // syscall 网关后的实现（pub(crate)——外部调用者通过 syscall:: 进入）
-#[cfg(bare_metal)]
 pub(crate) use sched::yield_now;
-#[cfg(bare_metal)]
 mod api {
     use alloc::sync::Arc;
 
@@ -320,7 +315,7 @@ mod api {
         let child = spawn_kernel_thread_with_parent(name, entry, arg, Some(parent.pid()));
         Ok(child.pid())
     }
-    /// 向指���任务发送信号。
+    /// 向指定任务发送信号。
     pub fn send_signal(pid: Pid, sig: Signal) -> Result<(), TaskError> {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
@@ -346,13 +341,11 @@ mod api {
 }
 
 // 引导 + 公开 API（保持 pub）
-#[cfg(bare_metal)]
 pub use api::{
     TaskBuilder, find_task, init, init_smp, spawn_kernel_thread, spawn_kernel_thread_with_parent,
 };
 
 // syscall 网关后的实现（pub(crate)——外部调用者通过 syscall:: 进入）
-#[cfg(bare_metal)]
 pub(crate) use api::{
     block_on, clone_kernel_thread, exit, send_signal, sleep_ms, wait_child, wakeup_all, wakeup_one,
 };

@@ -2,7 +2,7 @@
 //!
 //! 架构设计详见 `crates/sync/README.md`。
 
-#![cfg_attr(not(test), no_std)]
+#![no_std]
 
 pub(crate) mod irq_safe;
 pub mod lock_stack;

@@ -53,12 +53,8 @@ pub fn cpu_local(attr: TokenStream, item: TokenStream) -> TokenStream {
             fn _check() { _assert_sync::<#ty>(); }
         };
 
-        #[cfg(bare_metal)]
         #[unsafe(link_section = ".percpu")]
         #[used]
-        static #raw_name: #ty = #expr;
-
-        #[cfg(not(bare_metal))]
         static #raw_name: #ty = #expr;
 
         #(#attrs)*
