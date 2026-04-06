@@ -43,7 +43,7 @@
 
 | 项目 | 特点 | 链接 |
 |------|------|------|
-| Theseus | SAS、intralingual 设计、crate 级模块化 | [GitHub](https://github.com/theseus-os/Theseus) / 本地 `ref/Theseus/` |
+| Theseus | SAS、intralingual 设计、crate 级模块化 | [GitHub](https://github.com/theseus-os/Theseus) |
 | Redox | Rust 微内核、scheme VFS、syscall crate | [Website](https://www.redox-os.org/) / [GitHub](https://github.com/redox-os/redox) |
 | Asterinas | Framekernel、Linux ABI 兼容、OSTD 安全抽象 | [GitHub](https://github.com/asterinas/asterinas) |
 | Tock | 嵌入式 Rust、capability token、Grant 模型 | [Website](https://tockos.org/) / [GitHub](https://github.com/tock/tock) |

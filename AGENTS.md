@@ -111,6 +111,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **NO** heap allocation in interrupt context (`Box`, `Vec`, `String`, `format!`)——use `heapless` containers or stack buffers
 - **NO** ASCII-art 分隔线注释（`// ─── Title ───`、`// === Title ===` 等）——用空行和 doc comment 分组
 - **NO** `.map_err(|_| ...)` 丢弃原始错误——使用 `.map_err(|e| ...)` 保留原始错误信息（写入日志或嵌入新错误类型），便于调试
+- **NO** 文档/注释中引用本地路径（`ref/Theseus/`、`/home/...`、`~/...`）——使用上游 URL（GitHub 链接等），保证仓库内所有内容对任意 clone 通用
 
 ## UNIQUE STYLES
 - `spin::Once<T>` with named statics: `TASK_MANAGER.call_once(|| ...)`, `TASK_MANAGER.get().unwrap()`
@@ -231,7 +232,7 @@ cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
 ### 参考内核
 - **[Linux](https://github.com/torvalds/linux)** — 工业级参考，尤其是调度器（CFS）、VFS、内存管理（`vm_area_struct`）、信号处理
 - **[Zephyr](https://github.com/zephyrproject-rtos/zephyr)** — 嵌入式/RTOS 视角，轻量级线程模型、设备驱动框架（device model + devicetree）、电源管理
-- **[Theseus](https://github.com/theseus-os/Theseus)** — Rust 类型系统深度利用，`MappedPages` RAII 映射管理、crate 级模块化、`#![forbid(unsafe_code)]` APP 隔离（本地 `ref/Theseus/`）
+- **[Theseus](https://github.com/theseus-os/Theseus)** — Rust 类型系统深度利用，`MappedPages` RAII 映射管理、crate 级模块化、`#![forbid(unsafe_code)]` APP 隔离
 - **[Redox](https://github.com/redox-os/redox)** — Rust 微内核实践，scheme-based VFS、`syscall` crate 设计、reliability crate 拆分（注：SimpleKernel 不采用微内核的用户态驱动模型，仅参考其 API 设计）
 - **[Tock](https://github.com/tock/tock)** — 嵌入式 Rust 内核，`unsafe trait` capability 模式、Grant 内存模型
 - **[Asterinas](https://github.com/asterinas/asterinas)** — Framekernel 架构（framework 可 unsafe + services 纯 safe Rust），Linux ABI 兼容
