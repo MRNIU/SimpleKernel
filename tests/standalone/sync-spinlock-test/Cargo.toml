@@ -1,0 +1,31 @@
+[package]
+name = "sync-spinlock-test"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+build = "build.rs"
+
+[[bin]]
+name = "sync-spinlock-test"
+path = "src/main.rs"
+test = false
+bench = false
+
+[dependencies]
+test_harness = { path = "../../../crates/test_harness" }
+simplekernel = { path = "../../..", default-features = false }
+sync = { path = "../../../crates/sync" }
+log.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[build-dependencies]
+cc.workspace = true
+
+[lints]
+workspace = true

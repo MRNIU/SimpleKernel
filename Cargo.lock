@@ -699,6 +699,60 @@ dependencies = [
 ]
 
 [[package]]
+name = "sync-lockstack-pop-mismatch-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "heapless 0.8.0",
+ "log",
+ "sbi-rt",
+ "simplekernel",
+ "sync",
+ "test_harness",
+]
+
+[[package]]
+name = "sync-lockstack-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "log",
+ "sbi-rt",
+ "simplekernel",
+ "sync",
+ "test_harness",
+]
+
+[[package]]
+name = "sync-recursive-lock-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "heapless 0.8.0",
+ "log",
+ "sbi-rt",
+ "simplekernel",
+ "sync",
+ "test_harness",
+]
+
+[[package]]
+name = "sync-spinlock-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "log",
+ "sbi-rt",
+ "simplekernel",
+ "sync",
+ "test_harness",
+]
+
+[[package]]
 name = "system-test"
 version = "0.1.0"
 dependencies = [

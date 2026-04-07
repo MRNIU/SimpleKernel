@@ -33,6 +33,10 @@ members = [
     "tests/standalone/panic_test",
     "tests/standalone/frame-alloc-test",
     "tests/standalone/frame-mapped-drop-test",
+    "tests/standalone/sync-spinlock-test",
+    "tests/standalone/sync-recursive-lock-test",
+    "tests/standalone/sync-lockstack-test",
+    "tests/standalone/sync-lockstack-pop-mismatch-test",
     "xtask",
 ]
 default-members = ["."]
