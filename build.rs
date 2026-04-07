@@ -4,26 +4,19 @@ fn main() {
     let arch = std::env::var("CARGO_CFG_TARGET_ARCH").expect("CARGO_CFG_TARGET_ARCH 未设置");
     let os = std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
 
-    // 注入自定义 cfg（与 .cargo/config.toml 的 rustflags 保持同步，供 rust-analyzer 使用）
-    if os == "none" {
-        println!("cargo:rustc-cfg=bare_metal");
-        match arch.as_str() {
-            "riscv64" => println!("cargo:rustc-cfg=bare_riscv64"),
-            "aarch64" => println!("cargo:rustc-cfg=bare_aarch64"),
-            _ => {}
-        }
-    }
-
     if !matches!(arch.as_str(), "riscv64" | "aarch64") || os != "none" {
         return;
     }
 
     let arch_dir = PathBuf::from("src/arch").join(&arch);
-    setup_kernel_build(&arch, &arch_dir);
+    compile_assembly(&arch, &arch_dir);
 }
 
-/// 编译架构相关的汇编文件并设置链接器参数。
-fn setup_kernel_build(arch: &str, arch_dir: &std::path::Path) {
+/// 编译架构相关的汇编文件。
+///
+/// 链接器参数（`-T link.ld`、`-z norelro`）已移至 `.cargo/config.toml`，
+/// 对 workspace 内所有裸机二进制统一生效，无需每个 crate 重复设置。
+fn compile_assembly(arch: &str, arch_dir: &std::path::Path) {
     let compiler = match arch {
         "riscv64" => "riscv64-linux-gnu-gcc",
         "aarch64" => "aarch64-linux-gnu-gcc",
@@ -57,15 +50,5 @@ fn setup_kernel_build(arch: &str, arch_dir: &std::path::Path) {
         build.compile("asm");
     }
 
-    println!(
-        "cargo:rerun-if-changed={}",
-        arch_dir.join("link.ld").display()
-    );
-    println!("cargo:rustc-link-arg=-z");
-    println!("cargo:rustc-link-arg=norelro");
-    println!(
-        "cargo:rustc-link-arg=-T{}",
-        arch_dir.join("link.ld").display()
-    );
     println!("cargo:rerun-if-changed={}", arch_dir.display());
 }

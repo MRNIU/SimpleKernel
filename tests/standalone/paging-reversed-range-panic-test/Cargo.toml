@@ -4,7 +4,6 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-build = "build.rs"
 
 [[bin]]
 name = "paging-reversed-range-panic-test"
@@ -25,9 +24,6 @@ sbi-rt.workspace = true
 
 [target.'cfg(target_arch = "aarch64")'.dependencies]
 aarch64-cpu.workspace = true
-
-[build-dependencies]
-cc.workspace = true
 
 [lints]
 workspace = true

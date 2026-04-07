@@ -182,7 +182,6 @@ name = "device-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "log",
  "sbi-rt",
  "simplekernel",
@@ -238,7 +237,6 @@ name = "frame-alloc-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "config",
  "frame_allocator",
  "log",
@@ -253,7 +251,6 @@ name = "frame-mapped-drop-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "config",
  "frame_allocator",
  "heapless 0.8.0",
@@ -281,7 +278,6 @@ name = "fs-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "log",
  "sbi-rt",
  "simplekernel",
@@ -346,7 +342,6 @@ name = "heap-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "log",
  "sbi-rt",
  "simplekernel",
@@ -519,7 +514,6 @@ name = "paging-basic-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "config",
  "log",
  "memory_types",
@@ -534,7 +528,6 @@ name = "paging-conflict-panic-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "heapless 0.8.0",
  "log",
  "memory_types",
@@ -549,7 +542,6 @@ name = "paging-equal-range-panic-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "heapless 0.8.0",
  "log",
  "memory_types",
@@ -564,7 +556,6 @@ name = "paging-mapping-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "config",
  "frame_allocator",
  "log",
@@ -580,7 +571,6 @@ name = "paging-reversed-range-panic-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "heapless 0.8.0",
  "log",
  "memory_types",
@@ -595,7 +585,6 @@ name = "paging-table-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "config",
  "log",
  "memory_types",
@@ -610,7 +599,6 @@ name = "panic-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "heap",
  "log",
  "memory",
@@ -830,7 +818,6 @@ name = "sync-lockstack-pop-mismatch-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "heapless 0.8.0",
  "log",
  "sbi-rt",
@@ -844,7 +831,6 @@ name = "sync-lockstack-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "log",
  "sbi-rt",
  "simplekernel",
@@ -857,7 +843,6 @@ name = "sync-recursive-lock-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "heapless 0.8.0",
  "log",
  "sbi-rt",
@@ -871,7 +856,6 @@ name = "sync-spinlock-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "log",
  "sbi-rt",
  "simplekernel",
@@ -963,7 +947,6 @@ name = "vma-test"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
- "cc",
  "config",
  "log",
  "memory",
