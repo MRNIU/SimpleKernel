@@ -39,6 +39,20 @@ cargo xtask test --list                                  # 列出可用测试
 | `pte-test` | | normal | 页表项编解码（RISC-V + AArch64） |
 | `panic-test` | | should_panic | panic handler 正确触发 |
 
+## 调试文件
+
+测试二进制默认**不生成**调试文件（`.objdump`、`.readelf`、`.nm`、`.bin`），以加快构建速度。
+这些文件仅在内核主二进制构建时生成（`cargo xtask build/run/debug`）。
+
+如需为测试二进制生成调试文件，使用 `--debug-files` 标志：
+
+```bash
+cargo xtask test --arch riscv64 --name panic-test --debug-files  # 指定测试
+cargo xtask test --arch riscv64 --debug-files                    # 全部测试
+```
+
+生成的文件位于 `target/<triple>/debug/` 目录，与测试 ELF 同名但扩展名不同。
+
 ## 添加新测试
 
 **在已有模块包中添加（推荐）：**

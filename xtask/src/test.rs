@@ -11,7 +11,6 @@ use crate::{Result, build, firmware, qemu};
 pub struct QemuEnv {
     pub boot_dir: PathBuf,
     pub rootfs_path: PathBuf,
-    #[allow(dead_code)] // dtb_path 在 prepare 阶段被 generate_fit_image 间接使用
     pub dtb_path: PathBuf,
 }
 
@@ -27,6 +26,7 @@ pub fn prepare_qemu_env(
     let rootfs_path = build::ensure_rootfs_image(sh, &boot_dir)?;
     let dtb_path = qemu::dump_qemu_dtb(sh, arch, &boot_dir, &rootfs_path)?;
     qemu::generate_boot_script(arch, sh, &boot_dir)?;
+    qemu::prepare_boot_part(&boot_dir)?;
     qemu::setup_tftp(&boot_dir);
     Ok(QemuEnv {
         boot_dir,
@@ -59,6 +59,7 @@ pub fn run_test(
     display_name: &str,
     env: &QemuEnv,
     release: bool,
+    debug_files: bool,
 ) -> Result<bool> {
     let kernel_elf_path = build::build_binary(
         sh,
@@ -68,7 +69,9 @@ pub fn run_test(
         Some(bin_name),
         release,
     )?;
-    build::generate_debug_files(sh, &kernel_elf_path)?;
+    if debug_files {
+        build::generate_debug_files(sh, &kernel_elf_path)?;
+    }
     qemu::generate_fit_image(arch, sh, &env.boot_dir, &kernel_elf_path, &env.dtb_path)?;
 
     println!("[xtask] Running test '{}'...", display_name);
@@ -206,52 +209,11 @@ struct TestResult {
     output: String,
 }
 
-/// 为指定测试包创建独立的 boot 子目录，避免多个测试共享 FIT 镜像文件。
-fn per_test_boot_dir(base_boot_dir: &Path, test_name: &str) -> Result<PathBuf> {
-    let dir = base_boot_dir.join(test_name);
-    std::fs::create_dir_all(&dir)?;
-    Ok(dir)
-}
-
-/// 构建单个测试二进制，生成对应的 FIT 镜像到独立 boot 子目录。
-///
-/// 返回 (kernel_elf_path, per_test_boot_dir)。
-fn build_test_with_fit(
-    sh: &Shell,
-    project_root: &Path,
-    arch: Arch,
-    package: &str,
-    bin_name: &str,
-    env: &QemuEnv,
-    release: bool,
-) -> Result<(PathBuf, PathBuf)> {
-    let kernel_elf_path = build::build_binary(
-        sh,
-        project_root,
-        arch,
-        Some(package),
-        Some(bin_name),
-        release,
-    )?;
-    build::generate_debug_files(sh, &kernel_elf_path)?;
-
-    let test_boot_dir = per_test_boot_dir(&env.boot_dir, bin_name)?;
-
-    // 生成此测试专用的 FIT 镜像
-    qemu::generate_fit_image(arch, sh, &test_boot_dir, &kernel_elf_path, &env.dtb_path)?;
-    // 生成此测试专用的 boot script
-    qemu::generate_boot_script(arch, sh, &test_boot_dir)?;
-    // 为此测试设置 TFTP（顺序执行时安全）
-    qemu::setup_tftp(&test_boot_dir);
-
-    Ok((kernel_elf_path, test_boot_dir))
-}
-
 /// 运行所有测试：构建全部二进制，顺序执行并捕获输出，打印汇总。
 ///
 /// 每个测试在独立 QEMU 实例中运行，输出被捕获而非直接打印到终端。
-/// 超时后自动终止 QEMU 进程。
-// TODO: 未来支持 --jobs 并行执行（需解决 TFTP 目录共享冲突）
+/// 超时后自动终止 QEMU 进程。顺序复用共享的 `boot/` 目录——每轮
+/// 重新生成 FIT 镜像和 TFTP 符号链接，不创建 per-test 子目录。
 pub fn run_all_tests(
     sh: &Shell,
     project_root: &Path,
@@ -259,6 +221,7 @@ pub fn run_all_tests(
     env: &QemuEnv,
     release: bool,
     timeout_secs: u64,
+    debug_files: bool,
 ) -> Result<bool> {
     let bins = test_binaries(project_root);
 
@@ -273,32 +236,36 @@ pub fn run_all_tests(
         timeout_secs
     );
 
-    // 阶段 1：构建所有测试二进制并生成 FIT 镜像
+    // 阶段 1：编译所有测试二进制（提前暴露编译错误）
     println!("[xtask] Building all test binaries...");
-    let mut prepared: Vec<(String, PathBuf, PathBuf)> = Vec::new();
+    let mut prepared: Vec<(String, PathBuf)> = Vec::new();
     for tb in &bins {
-        let (elf, boot_dir) = build_test_with_fit(
+        let elf = build::build_binary(
             sh,
             project_root,
             arch,
-            &tb.package,
-            &tb.bin_name,
-            env,
+            Some(&tb.package),
+            Some(&tb.bin_name),
             release,
         )?;
-        prepared.push((tb.display_name.clone(), elf, boot_dir));
+        if debug_files {
+            build::generate_debug_files(sh, &elf)?;
+        }
+        prepared.push((tb.display_name.clone(), elf));
     }
 
-    // 阶段 2：顺序执行每个测试
+    // 阶段 2：顺序执行——每轮在共享 boot_dir 重新生成 FIT 和 TFTP
     let mut results: Vec<TestResult> = Vec::new();
-    for (name, elf, test_boot_dir) in &prepared {
+    for (name, elf) in &prepared {
+        qemu::generate_fit_image(arch, sh, &env.boot_dir, elf, &env.dtb_path)?;
+
         println!("[xtask] Running test '{name}'...");
         let start = Instant::now();
 
         let qemu_result = qemu::launch_qemu_captured(
             arch,
             project_root,
-            test_boot_dir,
+            &env.boot_dir,
             elf,
             &env.rootfs_path,
             timeout_secs,

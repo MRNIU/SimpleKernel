@@ -42,7 +42,7 @@ fn base_qemu_cmd<'a>(sh: &'a Shell, arch: Arch, rootfs_drive: &str) -> Cmd<'a> {
         "-global",
         "virtio-mmio.force-legacy=false",
         "-netdev",
-        "user,id=net0,tftp=/srv/tftp",
+        "user,id=net0,tftp=/srv/tftp,bootfile=boot.scr.uimg",
         "-device",
         "virtio-net-device,netdev=net0",
         "-device",
@@ -189,7 +189,7 @@ pub fn launch_qemu_captured(
         "-global",
         "virtio-mmio.force-legacy=false",
         "-netdev",
-        "user,id=net0,tftp=/srv/tftp",
+        "user,id=net0,tftp=/srv/tftp,bootfile=boot.scr.uimg",
         "-device",
         "virtio-net-device,netdev=net0",
         "-device",
@@ -222,13 +222,13 @@ pub fn launch_qemu_captured(
         }
         Arch::Aarch64 => {
             let bios = fw.join("arm-trusted-firmware/flash.bin");
-            let fat_drive = format!("file=fat:rw:{},format=raw,media=disk", boot_dir.display());
+            let drive = boot_part_drive_arg(boot_dir);
             cmd.args(["-serial", "stdio", "-serial", "null"])
                 .args(["-d", "guest_errors,cpu_reset"])
                 .arg("-D")
                 .arg(&qemu_log)
                 .arg("-drive")
-                .arg(&fat_drive)
+                .arg(&drive)
                 .arg("-bios")
                 .arg(&bios)
                 .arg("-kernel")
@@ -302,6 +302,28 @@ pub fn launch_qemu_captured(
     }
 }
 
+/// 准备 aarch64 引导分区目录（`boot/boot_part/`）。
+///
+/// U-Boot 的 standard boot 通过 `script` bootmeth 在块设备上扫描
+/// `boot.scr.uimg`。QEMU 的 `file=fat:rw:dir` 将宿主目录映射为虚拟
+/// FAT 块设备。该目录专门存放 U-Boot 启动脚本，与 `boot/` 目录分离，
+/// 避免将构建产物（boot.fit、rootfs.img 等大文件）暴露给虚拟 FAT。
+pub fn prepare_boot_part(boot_dir: &Path) -> Result<PathBuf> {
+    let part_dir = boot_dir.join("boot_part");
+    fs::create_dir_all(&part_dir)?;
+
+    let src = boot_dir.join("boot.scr.uimg");
+    let dst = part_dir.join("boot.scr.uimg");
+    fs::copy(&src, &dst)?;
+    Ok(part_dir)
+}
+
+/// 返回 aarch64 引导分区的 QEMU 驱动参数。
+fn boot_part_drive_arg(boot_dir: &Path) -> String {
+    let part_dir = boot_dir.join("boot_part");
+    format!("file=fat:rw:{},format=raw,media=disk", part_dir.display())
+}
+
 /// 启动 QEMU 运行内核。
 ///
 /// `debug` 为 `true` 时附加 `-s -S`：暂停 CPU 并在 `localhost:1234`
@@ -350,7 +372,7 @@ pub fn launch_qemu(
         }
         Arch::Aarch64 => {
             let bios = fw.join("arm-trusted-firmware/flash.bin");
-            let fat_drive = format!("file=fat:rw:{},format=raw,media=disk", boot_dir.display());
+            let drive = boot_part_drive_arg(boot_dir);
             let mut cmd = base_qemu_cmd(sh, arch, &rootfs_drive)
                 .args([
                     "-serial",
@@ -361,7 +383,7 @@ pub fn launch_qemu(
                 .arg("-D")
                 .arg(&qemu_log)
                 .arg("-drive")
-                .arg(&fat_drive)
+                .arg(&drive)
                 .arg("-bios")
                 .arg(&bios)
                 .arg("-kernel")

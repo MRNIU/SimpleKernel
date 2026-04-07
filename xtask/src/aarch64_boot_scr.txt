@@ -1,5 +1,8 @@
-# 通过 DHCP/BOOTP 获取网络地址，用于后续 TFTP 下载
-bootp
+# 初始化网络——从块设备加载 boot.scr.uimg 时网络尚未就绪，
+# 需先通过 DHCP 获取 IP 和 TFTP 服务器地址。
+# autoload=no 避免 dhcp 重复下载文件。
+setenv autoload no
+dhcp
 
 # 将 FIT 镜像加载地址设为 0x44000000，避免与内核解压目标地址 (0x40100000) 重叠。
 # U-Boot 默认的 kernel_addr_r (0x40400000) 距内核 load address 仅 3 MiB，

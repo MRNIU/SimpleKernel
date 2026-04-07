@@ -53,6 +53,9 @@ struct TestArgs {
     /// 列出可用测试
     #[arg(long)]
     list: bool,
+    /// 生成调试文件（.objdump/.readelf/.nm/.bin），默认不生成
+    #[arg(long)]
+    debug_files: bool,
     /// 每个测试的超时秒数（默认 300）
     #[arg(long, default_value = "300")]
     timeout: u64,
@@ -164,6 +167,7 @@ fn run() -> Result<()> {
                             &tb.display_name,
                             &qemu_env,
                             args.release,
+                            args.debug_files,
                         )?;
                     }
                     None => {
@@ -181,6 +185,7 @@ fn run() -> Result<()> {
                     &qemu_env,
                     args.release,
                     args.timeout,
+                    args.debug_files,
                 )?;
             }
             if !all_passed {
