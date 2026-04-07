@@ -23,14 +23,18 @@ pub fn build_binary(
     project_root: &Path,
     arch: Arch,
     package: Option<&str>,
+    bin_name: Option<&str>,
     release: bool,
 ) -> Result<PathBuf> {
-    let label = package.unwrap_or("kernel");
+    let label = bin_name.or(package).unwrap_or("kernel");
     println!("[xtask] Building '{}' for {}...", label, arch.as_str());
     let target = arch.target_triple();
     let mut build_cmd = cmd!(sh, "cargo build {BUILD_STD_ARGS...} --target {target}");
     if let Some(pkg) = package {
         build_cmd = build_cmd.args(["-p", pkg]);
+    }
+    if let Some(bin) = bin_name {
+        build_cmd = build_cmd.args(["--bin", bin]);
     }
     if release {
         build_cmd = build_cmd.arg("--release");
@@ -38,7 +42,7 @@ pub fn build_binary(
     build_cmd.run()?;
 
     let profile_dir = if release { "release" } else { "debug" };
-    let binary_name = package.unwrap_or("simplekernel");
+    let binary_name = bin_name.or(package).unwrap_or("simplekernel");
     let elf_path = project_root
         .join("target")
         .join(target)

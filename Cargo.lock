@@ -234,21 +234,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5baebc0774151f905a1a2cc41989300b1e6fbb29aff0ceffa1064fdd3088d582"
 
 [[package]]
-name = "frame-alloc-test"
-version = "0.0.0"
-dependencies = [
- "aarch64-cpu",
- "config",
- "frame_allocator",
- "log",
- "memory_types",
- "sbi-rt",
- "simplekernel",
- "test_harness",
-]
-
-[[package]]
-name = "frame-mapped-drop-test"
+name = "frame-test"
 version = "0.0.0"
 dependencies = [
  "aarch64-cpu",

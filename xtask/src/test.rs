@@ -35,20 +35,34 @@ pub fn prepare_qemu_env(
     })
 }
 
+/// 表示一个测试二进制——所属包名 + 二进制名。
+pub struct TestBinary {
+    pub package: String,
+    pub bin_name: String,
+}
+
 /// 运行指定测试
 pub fn run_test(
     sh: &Shell,
     project_root: &Path,
     arch: Arch,
     package: &str,
+    bin_name: &str,
     env: &QemuEnv,
     release: bool,
 ) -> Result<bool> {
-    let kernel_elf_path = build::build_binary(sh, project_root, arch, Some(package), release)?;
+    let kernel_elf_path = build::build_binary(
+        sh,
+        project_root,
+        arch,
+        Some(package),
+        Some(bin_name),
+        release,
+    )?;
     build::generate_debug_files(sh, &kernel_elf_path)?;
     qemu::generate_fit_image(arch, sh, &env.boot_dir, &kernel_elf_path, &env.dtb_path)?;
 
-    println!("[xtask] Running test '{}'...", package);
+    println!("[xtask] Running test '{}'...", bin_name);
     let result = qemu::launch_qemu(
         sh,
         arch,
@@ -61,60 +75,103 @@ pub fn run_test(
 
     match result {
         Ok(()) => {
-            println!("[xtask] Test '{}' completed", package);
+            println!("[xtask] Test '{}' completed", bin_name);
             Ok(true)
         }
         Err(e) => {
-            eprintln!("[xtask] Test '{}' failed: {}", package, e);
+            eprintln!("[xtask] Test '{}' failed: {}", bin_name, e);
             Ok(false)
         }
     }
 }
 
-/// 从 Cargo.toml 中读取 package name
-fn read_package_name(cargo_toml: &Path) -> Option<String> {
-    let content = std::fs::read_to_string(cargo_toml).ok()?;
+/// 从 Cargo.toml 内容中解析 [package] name。
+///
+/// 只匹配 `[[bin]]` 之前出现的第一个 `name = "..."` 行。
+fn read_package_name(content: &str) -> Option<String> {
     for line in content.lines() {
         let trimmed = line.trim();
-        if trimmed.starts_with("name") {
-            // 解析 name = "xxx" 或 name = 'xxx'
-            if let Some(start) = trimmed.find('"') {
-                let rest = &trimmed[start + 1..];
-                if let Some(end) = rest.find('"') {
-                    return Some(rest[..end].to_string());
-                }
+        // 遇到 [[bin]] 前的第一个 name 行即为 package name
+        if trimmed == "[[bin]]" {
+            break;
+        }
+        if trimmed.starts_with("name")
+            && let Some(start) = trimmed.find('"')
+        {
+            let rest = &trimmed[start + 1..];
+            if let Some(end) = rest.find('"') {
+                return Some(rest[..end].to_string());
             }
         }
     }
     None
 }
 
-/// 收集 `tests/` 下所有测试二进制的包名（跳过库 crate）
-pub fn test_packages(project_root: &Path) -> Vec<String> {
-    let mut packages = Vec::new();
-    let tests_dir = project_root.join("tests");
-    if tests_dir.exists()
-        && let Ok(entries) = std::fs::read_dir(&tests_dir)
-    {
-        for entry in entries.flatten() {
-            let dir = entry.path();
-            let cargo_toml = dir.join("Cargo.toml");
-            if cargo_toml.exists()
-                && dir.join("src/main.rs").exists()
-                && let Some(name) = read_package_name(&cargo_toml)
-            {
-                packages.push(name);
+/// 从 Cargo.toml 中解析所有 `[[bin]]` 的 name 字段。
+fn parse_bin_names(content: &str) -> Vec<String> {
+    let mut names = Vec::new();
+    let mut in_bin = false;
+    for line in content.lines() {
+        let trimmed = line.trim();
+        if trimmed == "[[bin]]" {
+            in_bin = true;
+            continue;
+        }
+        if in_bin
+            && trimmed.starts_with("name")
+            && let Some(start) = trimmed.find('"')
+        {
+            let rest = &trimmed[start + 1..];
+            if let Some(end) = rest.find('"') {
+                names.push(rest[..end].to_string());
+                in_bin = false;
             }
         }
+        if trimmed.starts_with('[') && trimmed != "[[bin]]" {
+            in_bin = false;
+        }
     }
-    packages
+    names
+}
+
+/// 收集 `tests/` 下所有测试二进制（扫描 `[[bin]]` 条目，跳过库 crate）。
+pub fn test_binaries(project_root: &Path) -> Vec<TestBinary> {
+    let mut binaries = Vec::new();
+    let tests_dir = project_root.join("tests");
+    let Ok(entries) = std::fs::read_dir(&tests_dir) else {
+        return binaries;
+    };
+    for entry in entries.flatten() {
+        let dir = entry.path();
+        let cargo_toml = dir.join("Cargo.toml");
+        if !cargo_toml.exists() {
+            continue;
+        }
+        let Ok(content) = std::fs::read_to_string(&cargo_toml) else {
+            continue;
+        };
+        let Some(pkg_name) = read_package_name(&content) else {
+            continue;
+        };
+        let bin_names = parse_bin_names(&content);
+        if bin_names.is_empty() {
+            continue;
+        }
+        for bin_name in bin_names {
+            binaries.push(TestBinary {
+                package: pkg_name.clone(),
+                bin_name,
+            });
+        }
+    }
+    binaries
 }
 
 /// 列出所有可用测试
 pub fn list_tests(project_root: &Path) {
     println!("Available tests:");
-    for name in test_packages(project_root) {
-        println!("  {name}");
+    for tb in test_binaries(project_root) {
+        println!("  {}", tb.bin_name);
     }
 }
 
@@ -142,13 +199,21 @@ fn build_test_with_fit(
     project_root: &Path,
     arch: Arch,
     package: &str,
+    bin_name: &str,
     env: &QemuEnv,
     release: bool,
 ) -> Result<(PathBuf, PathBuf)> {
-    let kernel_elf_path = build::build_binary(sh, project_root, arch, Some(package), release)?;
+    let kernel_elf_path = build::build_binary(
+        sh,
+        project_root,
+        arch,
+        Some(package),
+        Some(bin_name),
+        release,
+    )?;
     build::generate_debug_files(sh, &kernel_elf_path)?;
 
-    let test_boot_dir = per_test_boot_dir(&env.boot_dir, package)?;
+    let test_boot_dir = per_test_boot_dir(&env.boot_dir, bin_name)?;
 
     // 生成此测试专用的 FIT 镜像
     qemu::generate_fit_image(arch, sh, &test_boot_dir, &kernel_elf_path, &env.dtb_path)?;
@@ -173,25 +238,33 @@ pub fn run_all_tests(
     release: bool,
     timeout_secs: u64,
 ) -> Result<bool> {
-    let packages: Vec<String> = test_packages(project_root);
+    let bins = test_binaries(project_root);
 
-    if packages.is_empty() {
-        println!("[xtask] No test packages found.");
+    if bins.is_empty() {
+        println!("[xtask] No test binaries found.");
         return Ok(true);
     }
 
     println!(
         "[xtask] Running {} tests (timeout: {}s each)...",
-        packages.len(),
+        bins.len(),
         timeout_secs
     );
 
     // 阶段 1：构建所有测试二进制并生成 FIT 镜像
     println!("[xtask] Building all test binaries...");
     let mut prepared: Vec<(String, PathBuf, PathBuf)> = Vec::new();
-    for name in &packages {
-        let (elf, boot_dir) = build_test_with_fit(sh, project_root, arch, name, env, release)?;
-        prepared.push((name.clone(), elf, boot_dir));
+    for tb in &bins {
+        let (elf, boot_dir) = build_test_with_fit(
+            sh,
+            project_root,
+            arch,
+            &tb.package,
+            &tb.bin_name,
+            env,
+            release,
+        )?;
+        prepared.push((tb.bin_name.clone(), elf, boot_dir));
     }
 
     // 阶段 2：顺序执行每个测试

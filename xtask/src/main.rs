@@ -87,7 +87,7 @@ fn run() -> Result<()> {
     match cli.command {
         Commands::Build(args) => {
             let kernel_elf_path =
-                build::build_binary(&sh, &project_root, args.arch, None, args.release)?;
+                build::build_binary(&sh, &project_root, args.arch, None, None, args.release)?;
             build::generate_debug_files(&sh, &kernel_elf_path)?;
         }
         Commands::Check(args) => {
@@ -101,7 +101,7 @@ fn run() -> Result<()> {
             // 提前检查固件，避免内核编译完成后才发现固件缺失。
             firmware::ensure_firmware_exists(&project_root, arch)?;
             let kernel_elf_path =
-                build::build_binary(&sh, &project_root, arch, None, args.release)?;
+                build::build_binary(&sh, &project_root, arch, None, None, args.release)?;
             build::generate_debug_files(&sh, &kernel_elf_path)?;
             let boot_dir = build::prepare_boot_directory(&project_root, arch, args.release)?;
             let rootfs_path = build::ensure_rootfs_image(&sh, &boot_dir)?;
@@ -123,7 +123,7 @@ fn run() -> Result<()> {
             let arch = args.arch;
             firmware::ensure_firmware_exists(&project_root, arch)?;
             let kernel_elf_path =
-                build::build_binary(&sh, &project_root, arch, None, args.release)?;
+                build::build_binary(&sh, &project_root, arch, None, None, args.release)?;
             build::generate_debug_files(&sh, &kernel_elf_path)?;
             let boot_dir = build::prepare_boot_directory(&project_root, arch, args.release)?;
             let rootfs_path = build::ensure_rootfs_image(&sh, &boot_dir)?;
@@ -149,10 +149,28 @@ fn run() -> Result<()> {
             // 准备 QEMU 环境（固件、boot 目录、rootfs、DTB），仅执行一次
             let qemu_env = test::prepare_qemu_env(&sh, &project_root, args.arch, args.release)?;
             let all_passed;
-            if let Some(name) = &args.name {
+            if let Some(ref name) = args.name {
                 // --name：运行指定测试（交互式，串口直接输出）
-                all_passed =
-                    test::run_test(&sh, &project_root, args.arch, name, &qemu_env, args.release)?;
+                let bins = test::test_binaries(&project_root);
+                let tb = bins.iter().find(|b| b.bin_name == *name);
+                match tb {
+                    Some(tb) => {
+                        all_passed = test::run_test(
+                            &sh,
+                            &project_root,
+                            args.arch,
+                            &tb.package,
+                            &tb.bin_name,
+                            &qemu_env,
+                            args.release,
+                        )?;
+                    }
+                    None => {
+                        eprintln!("[xtask] Unknown test: '{name}'");
+                        eprintln!("[xtask] Use --list to see available tests.");
+                        process::exit(1);
+                    }
+                }
             } else {
                 // 默认 / --all：运行全部测试
                 all_passed = test::run_all_tests(
