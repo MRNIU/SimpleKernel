@@ -88,7 +88,7 @@ fn llvm_tool_path(sh: &Shell, tool: &str) -> Result<PathBuf> {
 }
 
 /// 生成内核调试文件，与内核 ELF 放在同一目录：
-/// - `.objdump` — 完整反汇编（`llvm-objdump -D`）
+/// - `.objdump` — 代码段反汇编（`llvm-objdump -d`）
 /// - `.readelf` — ELF 头及节信息（`llvm-readobj -a`）
 /// - `.nm`      — 符号表（`llvm-nm -a`）
 /// - `.bin`     — 纯二进制（`llvm-objcopy -O binary`）
@@ -108,7 +108,7 @@ pub fn generate_debug_files(sh: &Shell, kernel_elf: &Path) -> Result<()> {
     let nm_out = kernel_elf.with_extension("nm");
     let bin_out = kernel_elf.with_extension("bin");
 
-    match cmd!(sh, "{objdump} -D {kernel_elf}").output() {
+    match cmd!(sh, "{objdump} -d --no-show-raw-insn {kernel_elf}").output() {
         Ok(out) => fs::write(&objdump_out, &out.stdout)?,
         Err(e) => eprintln!("[xtask] warning: llvm-objdump failed: {e}"),
     }
