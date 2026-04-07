@@ -210,35 +210,7 @@ impl PageTable {
     ///
     /// 目标 VA 未映射时返回 `PageNotMapped`。
     pub(crate) fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PagingError> {
-        self.unmap_page_with_flags(va).map(|(pa, _)| pa)
-    }
-
-    /// 取消映射并返回原始物理地址和 PTE 标志。
-    ///
-    /// 与 [`unmap_page`] 相同，但额外返回 unmap 前的 PTE 标志位，
-    /// 避免需要先 `get_mapping` 再 `unmap_page` 的双重页表遍历。
-    ///
-    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**。
-    ///
-    /// # Errors
-    ///
-    /// 目标 VA 未映射时返回 `PageNotMapped`。
-    pub(crate) fn unmap_page_with_flags(
-        &mut self,
-        va: VirtAddr,
-    ) -> Result<(PhysAddr, PteFlags), PagingError> {
-        self.unmap_at_level_with_flags(va, 0)
-    }
-
-    /// 在指定层级取消映射，返回原始物理地址。
-    ///
-    /// 委托给 [`unmap_at_level_with_flags`]，丢弃标志位。
-    pub(crate) fn unmap_at_level(
-        &mut self,
-        va: VirtAddr,
-        level: usize,
-    ) -> Result<PhysAddr, PagingError> {
-        self.unmap_at_level_with_flags(va, level).map(|(pa, _)| pa)
+        self.unmap_at_level_with_flags(va, 0).map(|(pa, _)| pa)
     }
 
     /// 在指定层级取消映射，返回原始物理地址和 PTE 标志。
@@ -317,46 +289,23 @@ impl PageTable {
         va: VirtAddr,
         new_flags: PteFlags,
     ) -> Result<PteFlags, PagingError> {
-        // 单次遍历：找到叶 PTE 所在的帧物理地址、索引和层级
-        let mut paddr = self.root_paddr;
-        let mut leaf_level = 0;
-
-        for level in (1..PT_LEVELS).rev() {
-            // SAFETY: paddr 指向由 self 持有的有效帧
-            let table = unsafe { Table::from_paddr(paddr) };
-            let idx = vpn_index(va, level);
-            let pte = table.read(idx);
-            if !pte.is_valid() {
-                return Err(PagingError::PageNotMapped);
-            }
-            if pte.is_leaf(level) {
-                leaf_level = level;
-                break;
-            }
-            paddr = pte.paddr();
-        }
-
-        // SAFETY: paddr 指向叶 PTE 所在的帧
-        let table = unsafe { Table::from_paddr(paddr) };
-        let idx = vpn_index(va, leaf_level);
-        let pte = table.read(idx);
-        if !pte.is_valid() {
-            return Err(PagingError::PageNotMapped);
-        }
+        let (pte, paddr, idx, leaf_level) =
+            self.walk_to_leaf(va).ok_or(PagingError::PageNotMapped)?;
 
         let old_flags = pte.flags();
-        let pa = pte.paddr();
-
         let leaf_flags = new_flags.for_leaf_at_level(leaf_level);
-
+        // SAFETY: paddr 指向叶 PTE 所在的帧
         let mut table = unsafe { Table::from_paddr(paddr) };
-        table.write(idx, PageTableEntry::new(pa, leaf_flags));
+        table.write(idx, PageTableEntry::new(pte.paddr(), leaf_flags));
 
         Ok(old_flags)
     }
 
-    /// 只读遍历——从根向下查找叶 PTE，返回 PTE 及其所在层级。
-    fn walk_readonly(&self, va: VirtAddr) -> Option<(PageTableEntry, usize)> {
+    /// 只读遍历——从根向下查找叶 PTE，返回已读取的 PTE、所在帧物理地址、索引及层级。
+    ///
+    /// 供 [`walk_readonly`] 和 [`update_flags`] 共用，避免重复 walk 逻辑。
+    /// 返回已缓存的 PTE，调用方无需再次读取。
+    fn walk_to_leaf(&self, va: VirtAddr) -> Option<(PageTableEntry, PhysAddr, usize, usize)> {
         let mut paddr = self.root_paddr;
 
         for level in (1..PT_LEVELS).rev() {
@@ -368,7 +317,7 @@ impl PageTable {
                 return None;
             }
             if pte.is_leaf(level) {
-                return Some((pte, level));
+                return Some((pte, paddr, idx, level));
             }
             paddr = pte.paddr();
         }
@@ -378,10 +327,16 @@ impl PageTable {
         let idx = vpn_index(va, 0);
         let pte = table.read(idx);
         if pte.is_valid() && pte.is_leaf(0) {
-            Some((pte, 0))
+            Some((pte, paddr, idx, 0))
         } else {
             None
         }
+    }
+
+    /// 只读遍历——从根向下查找叶 PTE，返回 PTE 及其所在层级。
+    fn walk_readonly(&self, va: VirtAddr) -> Option<(PageTableEntry, usize)> {
+        let (pte, _, _, level) = self.walk_to_leaf(va)?;
+        Some((pte, level))
     }
 
     /// 查询虚拟地址的映射信息，返回物理地址和标志。
@@ -715,7 +670,7 @@ mod tests {
         assert_eq!(err, PagingError::AlreadyMappedIdentical);
     }
 
-    /// unmap_at_level 应能取消大页映射。
+    /// unmap_at_level_with_flags 应能取消大页映射。
     #[test]
     fn unmap_at_level1_huge_page() {
         let mut pt = PageTable::create().expect("创建页表");
@@ -723,12 +678,14 @@ mod tests {
         let pa = PhysAddr::new(0x0000_0000_4000_0000);
         pt.map_at_level(va, pa, PteFlags::kernel_rw(), 1)
             .expect("map level1");
-        let old_pa = pt.unmap_at_level(va, 1).expect("unmap level1 应成功");
+        let (old_pa, _) = pt
+            .unmap_at_level_with_flags(va, 1)
+            .expect("unmap level1 应成功");
         assert_eq!(old_pa, pa);
         assert!(pt.get_mapping(va).is_none(), "unmap 后应无映射");
     }
 
-    /// unmap_at_level 目标层级无叶节点时应失败。
+    /// unmap_at_level_with_flags 目标层级无叶节点时应失败。
     #[test]
     fn unmap_at_level_wrong_level_fails() {
         let mut pt = PageTable::create().expect("创建页表");
@@ -738,7 +695,7 @@ mod tests {
         pt.map_at_level(va, pa, PteFlags::kernel_rw(), 1)
             .expect("map level1");
         let err = pt
-            .unmap_at_level(va, 0)
+            .unmap_at_level_with_flags(va, 0)
             .expect_err("level 0 unmap 大页应失败");
         assert_eq!(err, PagingError::PageNotMapped);
     }
