@@ -1,10 +1,26 @@
 [package]
-name = "sync-lockstack-test"
-description = "验证锁栈级别顺序检查"
+name = "sync-test"
+description = "SpinLock、LockStack 及边界 panic 测试"
 edition.workspace = true
 
 [[bin]]
+name = "sync-spinlock-test"
+path = "src/spinlock.rs"
+test = false
+
+[[bin]]
 name = "sync-lockstack-test"
+path = "src/lockstack.rs"
+test = false
+
+[[bin]]
+name = "sync-lockstack-pop-mismatch-test"
+path = "src/lockstack_pop_mismatch_panic.rs"
+test = false
+
+[[bin]]
+name = "sync-recursive-lock-test"
+path = "src/recursive_lock_panic.rs"
 test = false
 
 [dependencies]
@@ -12,6 +28,7 @@ test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false }
 sync = { path = "../../crates/sync" }
 log.workspace = true
+heapless.workspace = true
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]
 sbi-rt.workspace = true
