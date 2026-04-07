@@ -185,11 +185,17 @@ test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_p
 
 #### 添加独立测试
 
-1. 创建 `tests/my-test/`，包含 `Cargo.toml` 和 `src/main.rs`
-2. `src/main.rs` 中使用 `test_harness::test_main!` 宏
-3. should_panic 测试使用 `test_main!(level, fn, should_panic)` 变体
-4. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
-5. xtask 自动扫描 `tests/*/Cargo.toml` 发现新测试
+**在已有模块包中添加（推荐）：**
+1. 在对应包的 `src/` 下创建新文件（如 `tests/paging-test/src/my_new_test.rs`）
+2. 在该包的 `Cargo.toml` 中添加 `[[bin]]` 条目，指定 `name` 和 `path`，设置 `test = false`
+3. `src/` 文件中使用 `test_harness::test_main!` 宏
+4. should_panic 测试使用 `test_main!(level, fn, should_panic)` 变体
+5. xtask 自动扫描 `[[bin]]` 条目发现新测试
+
+**创建新模块包：**
+1. 创建 `tests/my-test/`，包含 `Cargo.toml`（至少一个 `[[bin]]` 条目）和对应源文件
+2. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
+3. xtask 自动扫描 `tests/*/Cargo.toml` 中的 `[[bin]]` 条目发现新测试
 
 ### 冒烟测试（Boot Smoke Tests）
 
