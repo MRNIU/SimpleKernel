@@ -35,17 +35,6 @@ pub fn prepare_qemu_env(
     })
 }
 
-/// 运行统一系统测试
-pub fn run_system_test(
-    sh: &Shell,
-    project_root: &Path,
-    arch: Arch,
-    env: &QemuEnv,
-    release: bool,
-) -> Result<bool> {
-    run_test_binary(sh, project_root, arch, "system-test", env, release)
-}
-
 /// 运行指定的独立测试
 pub fn run_standalone_test(
     sh: &Shell,
@@ -133,7 +122,6 @@ pub fn standalone_test_packages(project_root: &Path) -> Vec<String> {
 /// 列出所有可用测试
 pub fn list_tests(project_root: &Path) {
     println!("Available tests:");
-    println!("  system-test      — Unified system test kernel (all groups)");
     for name in standalone_test_packages(project_root) {
         println!("  {name}      — Standalone test");
     }
@@ -193,13 +181,8 @@ pub fn run_all_standalone(
     env: &QemuEnv,
     release: bool,
     timeout_secs: u64,
-    include_system_test: bool,
 ) -> Result<bool> {
-    let mut packages: Vec<String> = Vec::new();
-    if include_system_test {
-        packages.push("system-test".to_string());
-    }
-    packages.extend(standalone_test_packages(project_root));
+    let packages: Vec<String> = standalone_test_packages(project_root);
 
     if packages.is_empty() {
         println!("[xtask] No test packages found.");

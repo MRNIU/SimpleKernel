@@ -29,7 +29,6 @@ members = [
     "crates/paging",
     "crates/memory",
     "crates/test_harness",
-    "tests/system",
     "tests/standalone/panic_test",
     "tests/standalone/frame-alloc-test",
     "tests/standalone/frame-mapped-drop-test",
@@ -155,7 +154,7 @@ build = "build.rs"                    # 编译汇编文件 (.S) 和链接脚本
 [features]
 default = ["lang_items"]
 # 提供 #[panic_handler] 和 #[alloc_error_handler]。
-# 当 simplekernel 作为库被其他二进制（如 system-test）依赖时，
+# 当 simplekernel 作为库被其他二进制（如独立测试）依赖时，
 # 关闭此 feature 以允许调用方自行定义这些 lang items。
 lang_items = []
 

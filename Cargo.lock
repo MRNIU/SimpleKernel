@@ -880,25 +880,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "system-test"
-version = "0.1.0"
-dependencies = [
- "aarch64-cpu",
- "cc",
- "config",
- "global_tick",
- "heap",
- "log",
- "memory",
- "memory_types",
- "per_cpu",
- "sbi-rt",
- "simplekernel",
- "spin",
- "sync",
-]
-
-[[package]]
 name = "test_harness"
 version = "0.1.0"
 dependencies = [

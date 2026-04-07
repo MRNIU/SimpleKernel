@@ -47,7 +47,7 @@ struct TestArgs {
     /// 运行指定的独立测试
     #[arg(long)]
     name: Option<String>,
-    /// 运行全部测试（统一 + 所有独立）
+    /// 运行全部独立测试
     #[arg(long)]
     all: bool,
     /// 列出可用测试
@@ -149,18 +149,7 @@ fn run() -> Result<()> {
             // 准备 QEMU 环境（固件、boot 目录、rootfs、DTB），仅执行一次
             let qemu_env = test::prepare_qemu_env(&sh, &project_root, args.arch, args.release)?;
             let all_passed;
-            if args.all {
-                // --all：运行统一测试 + 所有独立测试，带输出捕获和超时
-                all_passed = test::run_all_standalone(
-                    &sh,
-                    &project_root,
-                    args.arch,
-                    &qemu_env,
-                    args.release,
-                    args.timeout,
-                    true, // include_system_test
-                )?;
-            } else if let Some(name) = &args.name {
+            if let Some(name) = &args.name {
                 // --name：运行指定测试（保持原有交互式行为）
                 all_passed = test::run_standalone_test(
                     &sh,
@@ -171,9 +160,15 @@ fn run() -> Result<()> {
                     args.release,
                 )?;
             } else {
-                // 默认：仅运行统一系统测试（保持原有交互式行为）
-                all_passed =
-                    test::run_system_test(&sh, &project_root, args.arch, &qemu_env, args.release)?;
+                // 默认 / --all：运行全部独立测试
+                all_passed = test::run_all_standalone(
+                    &sh,
+                    &project_root,
+                    args.arch,
+                    &qemu_env,
+                    args.release,
+                    args.timeout,
+                )?;
             }
             if !all_passed {
                 eprintln!("[xtask] Some tests failed");

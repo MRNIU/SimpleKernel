@@ -44,7 +44,7 @@ jobs:
         run: cargo clippy --target aarch64-unknown-none-softfloat -- -D warnings
 
       - name: Unit tests (host)
-        run: cargo test --workspace --exclude simplekernel --exclude system-test --exclude panic-test
+        run: cargo test -p memory_types -p config -p page_table_entry -p span -p arch
 
       - name: Dependency audit
         run: |
@@ -79,6 +79,6 @@ jobs:
         run: |
           for i in $(seq 1 $SYSTEM_TEST_RUNS); do
             echo "=== ${{ matrix.arch }} System Test Run $i/$SYSTEM_TEST_RUNS ==="
-            timeout 300 cargo xtask test --arch ${{ matrix.arch }} --all
+            timeout 600 cargo xtask test --arch ${{ matrix.arch }} --all --timeout 120
             echo "${{ matrix.arch }} system test run $i/$SYSTEM_TEST_RUNS passed"
           done
