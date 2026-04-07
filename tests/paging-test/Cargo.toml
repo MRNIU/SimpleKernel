@@ -4,32 +4,32 @@ description = "页表参数、map/unmap/映射生命周期及边界 panic 测试
 edition.workspace = true
 
 [[bin]]
-name = "paging-basic-test"
+name = "basic"
 path = "src/basic.rs"
 test = false
 
 [[bin]]
-name = "paging-table-test"
+name = "table"
 path = "src/table.rs"
 test = false
 
 [[bin]]
-name = "paging-mapping-test"
+name = "mapping"
 path = "src/mapping.rs"
 test = false
 
 [[bin]]
-name = "paging-conflict-panic-test"
+name = "conflict-panic"
 path = "src/conflict_panic.rs"
 test = false
 
 [[bin]]
-name = "paging-equal-range-panic-test"
+name = "equal-range-panic"
 path = "src/equal_range_panic.rs"
 test = false
 
 [[bin]]
-name = "paging-reversed-range-panic-test"
+name = "reversed-range-panic"
 path = "src/reversed_range_panic.rs"
 test = false
 

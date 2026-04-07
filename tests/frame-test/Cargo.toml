@@ -4,12 +4,12 @@ description = "帧分配器 typestate 生命周期及 MappedFrames drop panic �
 edition.workspace = true
 
 [[bin]]
-name = "frame-alloc-test"
+name = "alloc"
 path = "src/alloc.rs"
 test = false
 
 [[bin]]
-name = "frame-mapped-drop-test"
+name = "mapped-drop-panic"
 path = "src/mapped_drop_panic.rs"
 test = false
 

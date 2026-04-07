@@ -39,15 +39,24 @@ pub fn prepare_qemu_env(
 pub struct TestBinary {
     pub package: String,
     pub bin_name: String,
+    /// 用于 `--list` 和 `--name` 的显示名。
+    /// 单二进制包：包名本身（如 "device-test"）
+    /// 多二进制包：`package/binary`（如 "paging-test/basic"）
+    pub display_name: String,
 }
 
 /// 运行指定测试
+#[expect(
+    clippy::too_many_arguments,
+    reason = "QEMU 测试需要传递构建和显示相关的多个参数"
+)]
 pub fn run_test(
     sh: &Shell,
     project_root: &Path,
     arch: Arch,
     package: &str,
     bin_name: &str,
+    display_name: &str,
     env: &QemuEnv,
     release: bool,
 ) -> Result<bool> {
@@ -62,7 +71,7 @@ pub fn run_test(
     build::generate_debug_files(sh, &kernel_elf_path)?;
     qemu::generate_fit_image(arch, sh, &env.boot_dir, &kernel_elf_path, &env.dtb_path)?;
 
-    println!("[xtask] Running test '{}'...", bin_name);
+    println!("[xtask] Running test '{}'...", display_name);
     let result = qemu::launch_qemu(
         sh,
         arch,
@@ -75,11 +84,11 @@ pub fn run_test(
 
     match result {
         Ok(()) => {
-            println!("[xtask] Test '{}' completed", bin_name);
+            println!("[xtask] Test '{}' completed", display_name);
             Ok(true)
         }
         Err(e) => {
-            eprintln!("[xtask] Test '{}' failed: {}", bin_name, e);
+            eprintln!("[xtask] Test '{}' failed: {}", display_name, e);
             Ok(false)
         }
     }
@@ -141,6 +150,8 @@ pub fn test_binaries(project_root: &Path) -> Vec<TestBinary> {
     let Ok(entries) = std::fs::read_dir(&tests_dir) else {
         return binaries;
     };
+    // 先收集每个包的所有二进制名
+    let mut packages: Vec<(String, Vec<String>)> = Vec::new();
     for entry in entries.flatten() {
         let dir = entry.path();
         let cargo_toml = dir.join("Cargo.toml");
@@ -157,10 +168,21 @@ pub fn test_binaries(project_root: &Path) -> Vec<TestBinary> {
         if bin_names.is_empty() {
             continue;
         }
+        packages.push((pkg_name, bin_names));
+    }
+    // 生成 TestBinary，单二进制包用包名，多二进制包用 package/binary
+    for (pkg_name, bin_names) in packages {
+        let single = bin_names.len() == 1 && bin_names[0] == pkg_name;
         for bin_name in bin_names {
+            let display_name = if single {
+                pkg_name.clone()
+            } else {
+                format!("{}/{}", pkg_name, bin_name)
+            };
             binaries.push(TestBinary {
                 package: pkg_name.clone(),
                 bin_name,
+                display_name,
             });
         }
     }
@@ -171,7 +193,7 @@ pub fn test_binaries(project_root: &Path) -> Vec<TestBinary> {
 pub fn list_tests(project_root: &Path) {
     println!("Available tests:");
     for tb in test_binaries(project_root) {
-        println!("  {}", tb.bin_name);
+        println!("  {}", tb.display_name);
     }
 }
 
@@ -264,7 +286,7 @@ pub fn run_all_tests(
             env,
             release,
         )?;
-        prepared.push((tb.bin_name.clone(), elf, boot_dir));
+        prepared.push((tb.display_name.clone(), elf, boot_dir));
     }
 
     // 阶段 2：顺序执行每个测试

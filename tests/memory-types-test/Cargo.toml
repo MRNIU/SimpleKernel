@@ -4,27 +4,27 @@ description = "memory_types 地址、帧/页号编解码及边界 panic 测试"
 edition.workspace = true
 
 [[bin]]
-name = "memory-types-test"
-path = "src/main.rs"
+name = "codec"
+path = "src/codec.rs"
 test = false
 
 [[bin]]
-name = "memory-types-align-up-overflow-panic-test"
+name = "align-up-overflow-panic"
 path = "src/align_up_overflow_panic.rs"
 test = false
 
 [[bin]]
-name = "memory-types-frame-2m-unaligned-panic-test"
+name = "frame-2m-unaligned-panic"
 path = "src/frame_2m_unaligned_panic.rs"
 test = false
 
 [[bin]]
-name = "memory-types-pa-overflow-panic-test"
+name = "pa-overflow-panic"
 path = "src/pa_overflow_panic.rs"
 test = false
 
 [[bin]]
-name = "memory-types-va-canonical-panic-test"
+name = "va-canonical-panic"
 path = "src/va_canonical_panic.rs"
 test = false
 

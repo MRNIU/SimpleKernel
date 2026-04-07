@@ -152,7 +152,7 @@ fn run() -> Result<()> {
             if let Some(ref name) = args.name {
                 // --name：运行指定测试（交互式，串口直接输出）
                 let bins = test::test_binaries(&project_root);
-                let tb = bins.iter().find(|b| b.bin_name == *name);
+                let tb = bins.iter().find(|b| b.display_name == *name);
                 match tb {
                     Some(tb) => {
                         all_passed = test::run_test(
@@ -161,6 +161,7 @@ fn run() -> Result<()> {
                             args.arch,
                             &tb.package,
                             &tb.bin_name,
+                            &tb.display_name,
                             &qemu_env,
                             args.release,
                         )?;

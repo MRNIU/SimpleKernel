@@ -4,22 +4,22 @@ description = "SpinLock、LockStack 及边界 panic 测试"
 edition.workspace = true
 
 [[bin]]
-name = "sync-spinlock-test"
+name = "spinlock"
 path = "src/spinlock.rs"
 test = false
 
 [[bin]]
-name = "sync-lockstack-test"
+name = "lockstack"
 path = "src/lockstack.rs"
 test = false
 
 [[bin]]
-name = "sync-lockstack-pop-mismatch-test"
+name = "lockstack-pop-mismatch-panic"
 path = "src/lockstack_pop_mismatch_panic.rs"
 test = false
 
 [[bin]]
-name = "sync-recursive-lock-test"
+name = "recursive-lock-panic"
 path = "src/recursive_lock_panic.rs"
 test = false
 
