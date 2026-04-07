@@ -12,7 +12,7 @@
 //! 配合 `AtomicU64` 消除同核中断嵌套的潜在竞态，
 //! 全部 API 均为 safe 函数。
 
-#![cfg_attr(not(test), no_std)]
+#![no_std]
 
 use core::sync::atomic::{AtomicU64, Ordering};
 

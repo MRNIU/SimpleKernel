@@ -26,10 +26,8 @@ pub use macros::cpu_local;
 
 /// Per-CPU 变量的包装器。
 ///
-/// 裸机环境：数据在 `.percpu` section 的模板中，初始化后每 CPU 各有一份副本，
+/// 数据在 `.percpu` section 的模板中，初始化后每 CPU 各有一份副本，
 /// 通过基地址寄存器 + 偏移量访问。
-///
-/// 宿主机测试：只有一个"CPU"，直接解引用模板指针。
 pub struct CpuLocal<T: Sync> {
     /// 指向模板变量的指针。
     template_ptr: *const T,
@@ -43,23 +41,15 @@ impl<T: Sync> CpuLocal<T> {
     /// 由 `#[cpu_local]` 宏调用，不应手动使用。
     ///
     /// # Safety
-    /// 裸机：`ptr` 必须指向 `.percpu` section 中由宏生成的 static 变量。
-    /// 宿主机：`ptr` 必须指向有效的 static 变量。
+    /// `ptr` 必须指向 `.percpu` section 中由宏生成的 static 变量。
     #[doc(hidden)]
     pub const unsafe fn __new(ptr: *const T) -> Self {
         Self { template_ptr: ptr }
     }
 }
 
-#[cfg(bare_metal)]
 mod bare_metal;
-#[cfg(bare_metal)]
 pub use bare_metal::{current_core_id, percpu_init, percpu_init_smp};
-
-#[cfg(not(bare_metal))]
-mod host;
-#[cfg(not(bare_metal))]
-pub use host::current_core_id;
 
 /// 当前核心 ID（由 `percpu_init()` 写入每个 CPU 的区域）。
 #[cpu_local]

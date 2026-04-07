@@ -16,8 +16,5 @@ buddy_system_allocator.workspace = true
 heapless.workspace = true
 log.workspace = true
 
-[features]
-test-support = []
-
 [lints]
 workspace = true

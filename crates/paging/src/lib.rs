@@ -59,17 +59,6 @@ pub fn kernel_page_table() -> &'static sync_crate::SpinLock<PageTable> {
         .expect("kernel page table not initialized")
 }
 
-/// 初始化测试环境——全局页表 + frame_allocator。
-#[cfg(any(test, feature = "test-support"))]
-pub fn ensure_test_init() {
-    static INIT: spin::Once<()> = spin::Once::new();
-    INIT.call_once(|| {
-        frame_allocator::ensure_test_init();
-        let pt = PageTable::create().expect("test page table");
-        init_kernel_page_table(pt);
-    });
-}
-
 /// 页表节点帧的统一接口。
 ///
 /// 通过 [`NodeFrame`] 类型别名（[`KernelNodeFrame`]）选择具体实现。
@@ -189,55 +178,4 @@ pub fn vpn_index(va: memory_types::VirtAddr, level: usize) -> usize {
 #[inline]
 pub const fn page_size_at_level(level: usize) -> usize {
     1usize << LEVEL_INFO[level].shift
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use memory_types::VirtAddr;
-
-    /// 验证 Level 0 的参数从 PAGE_SIZE 正确推导。
-    #[test]
-    fn level0_params_match_page_size() {
-        assert_eq!(LEVEL_INFO[0].shift, config::PAGE_SIZE_BITS);
-        assert_eq!(LEVEL_INFO[0].index_mask, ENTRIES_PER_TABLE - 1);
-    }
-
-    /// 验证各级 shift 链式递增，步长为 INDEX_BITS。
-    #[test]
-    fn level_shifts_are_chained() {
-        for i in 1..LEVEL_INFO.len() {
-            assert_eq!(
-                LEVEL_INFO[i].shift,
-                LEVEL_INFO[i - 1].shift + INDEX_BITS,
-                "level {} shift 不正确",
-                i
-            );
-        }
-    }
-
-    /// 验证 page_size_at_level 返回正确的页大小。
-    #[test]
-    fn page_size_at_level_values() {
-        assert_eq!(page_size_at_level(0), config::PAGE_SIZE);
-        assert_eq!(page_size_at_level(1), ENTRIES_PER_TABLE * config::PAGE_SIZE);
-        assert_eq!(
-            page_size_at_level(2),
-            ENTRIES_PER_TABLE * ENTRIES_PER_TABLE * config::PAGE_SIZE
-        );
-    }
-
-    /// vpn_index 应正确提取各级索引。
-    #[test]
-    fn vpn_index_extracts_correct_bits() {
-        let va = VirtAddr::new(0x1000);
-        assert_eq!(vpn_index(va, 0), 1);
-        assert_eq!(vpn_index(va, 1), 0);
-        assert_eq!(vpn_index(va, 2), 0);
-
-        let va_high = VirtAddr::new(0x4000_0000);
-        assert_eq!(vpn_index(va_high, 0), 0);
-        assert_eq!(vpn_index(va_high, 1), 0);
-        assert_eq!(vpn_index(va_high, 2), 1);
-    }
 }

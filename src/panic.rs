@@ -49,7 +49,6 @@ pub unsafe fn init_elf(elf_addr: u64) {
             KERNEL_ELF.call_once(|| elf);
         }
         Err(_) => {
-            #[cfg(not(test))]
             crate::logging::raw_put("WARNING: failed to parse kernel ELF for backtrace\n");
         }
     }
@@ -76,7 +75,6 @@ fn notify_observers(event: &PanicEvent<'_>) {
 }
 
 /// 核心 panic 处理器。打印位置、消息、回溯，并通知观察者。
-#[cfg(not(test))]
 pub fn handle_panic(info: &core::panic::PanicInfo<'_>) -> ! {
     use crate::logging::raw_put;
     use core::sync::atomic::{AtomicBool, Ordering};
@@ -127,7 +125,6 @@ pub fn handle_panic(info: &core::panic::PanicInfo<'_>) -> ! {
 
 /// 使用 DWARF `.eh_frame` 数据（通过 `unwinding` crate）遍历栈，
 /// 并打印每个栈帧的返回地址及可选的符号名。
-#[cfg(not(test))]
 fn dump_backtrace() {
     use crate::logging::raw_put;
     use core::sync::atomic::{AtomicUsize, Ordering};
@@ -172,58 +169,6 @@ fn dump_backtrace() {
     _Unwind_Backtrace(trace_callback, core::ptr::null_mut());
 }
 
-#[cfg(not(test))]
 pub fn raw_dump_stack() {
     dump_backtrace();
-}
-
-#[cfg(test)]
-pub fn handle_panic(_info: &core::panic::PanicInfo<'_>) -> ! {
-    loop {
-        core::hint::spin_loop();
-    }
-}
-
-#[cfg(test)]
-pub fn raw_dump_stack() {}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn panic_event_fields() {
-        let event = PanicEvent {
-            reason: "test panic",
-            file: "src/main.rs",
-            line: 42,
-            pc: VirtAddr::new(0x8020_0000),
-        };
-        assert_eq!(event.reason, "test panic");
-        assert_eq!(event.line, 42);
-    }
-
-    /// heapless::String 基本格式化。
-    #[test]
-    fn heapless_string_basic() {
-        let mut buf = heapless::String::<{ config::PANIC_BUF_SIZE }>::new();
-        let _ = write!(buf, "hello {}", 42);
-        assert_eq!(buf.as_str(), "hello 42");
-    }
-
-    /// heapless::String 容量溢出时 write! 返回 Err。
-    #[test]
-    fn heapless_string_overflow() {
-        let mut buf = heapless::String::<32>::new();
-        let mut overflowed = false;
-        for _ in 0..100 {
-            if write!(buf, "overflow!").is_err() {
-                overflowed = true;
-                break;
-            }
-        }
-        assert!(overflowed);
-        assert!(buf.len() <= 32);
-        assert!(!buf.as_str().is_empty());
-    }
 }

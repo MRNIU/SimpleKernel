@@ -7,11 +7,6 @@ repository.workspace = true
 description = "Page table + affine-type mapping ownership (MappedPages, MmioRegion)"
 edition.workspace = true
 
-[features]
-default = []
-## 导出测试辅助函数供下游 crate 测试使用。
-test-support = ["frame_allocator/test-support"]
-
 [dependencies]
 arch = { path = "../arch" }
 config = { path = "../config" }
@@ -23,9 +18,6 @@ tlb = { path = "../tlb" }
 log.workspace = true
 zerocopy.workspace = true
 spin.workspace = true
-
-[dev-dependencies]
-frame_allocator = { path = "../frame_allocator", features = ["test-support"] }
 
 [lints]
 workspace = true
