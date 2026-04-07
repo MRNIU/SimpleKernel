@@ -31,6 +31,8 @@ members = [
     "crates/test_harness",
     "tests/system",
     "tests/standalone/panic_test",
+    "tests/standalone/frame-alloc-test",
+    "tests/standalone/frame-mapped-drop-test",
     "xtask",
 ]
 default-members = ["."]

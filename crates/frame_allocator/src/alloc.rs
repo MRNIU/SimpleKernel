@@ -129,7 +129,7 @@ pub unsafe fn init(
 /// 从 buddy allocator 取出帧，构造 `FreeFrames`。
 ///
 /// 这是与底层分配器交互的唯一分配出口——所有分配路径都经过此函数。
-pub(crate) fn alloc_from_buddy(count: usize) -> Result<FreeFrames, FrameAllocError> {
+pub fn alloc_from_buddy(count: usize) -> Result<FreeFrames, FrameAllocError> {
     let mut alloc = FRAME_ALLOCATOR.lock();
     if !alloc.initialized {
         return Err(FrameAllocError::AllocationFailed);
