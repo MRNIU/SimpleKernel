@@ -7,6 +7,9 @@ repository.workspace = true
 description = "Architecture abstraction layer — unified interface for CPU registers, interrupt control, TLB maintenance, and arch-specific constants"
 edition.workspace = true
 
+[dependencies]
+config = { path = "../config" }
+
 # RISC-V（仅裸机目标）
 [target.'cfg(all(target_os = "none", target_arch = "riscv64"))'.dependencies]
 riscv.workspace = true

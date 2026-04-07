@@ -1,13 +1,54 @@
 //! 多级页表——walk / map / unmap 逻辑。
 
-use crate::error::PagingError;
-use crate::{
-    NodeFrame, NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps, Table, vpn_index,
-};
+use core::sync::atomic::{AtomicU64, Ordering};
+
 use alloc::collections::BTreeMap;
 use memory_types::{PhysAddr, VirtAddr};
 
+use crate::error::PagingError;
+use crate::{
+    ENTRIES_PER_TABLE, NodeFrame, NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps,
+    vpn_index,
+};
+
 const PT_LEVELS: usize = arch::PT_LEVELS;
+
+/// 页表节点——封装 PTE 数组的原子访问。
+///
+/// 使用 `AtomicU64` 保证 SMP 下单个 PTE 读写不会 torn read/write。
+/// 外层 `SpinLock` 负责更高层的互斥，此处仅保证单次访问的原子性。
+struct Table {
+    base: *mut AtomicU64,
+}
+
+impl Table {
+    /// 从物理地址构造页表节点。
+    ///
+    /// # Safety
+    /// - `paddr` 必须指向有效、页对齐的帧
+    #[inline]
+    unsafe fn from_paddr(paddr: PhysAddr) -> Self {
+        Self {
+            base: paddr.as_usize() as *mut AtomicU64,
+        }
+    }
+
+    #[inline]
+    fn read(&self, index: usize) -> PageTableEntry {
+        debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
+        // SAFETY: base 指向有效帧，index 经 debug_assert 检查。
+        // Relaxed 即可——外层 SpinLock 提供必要的 memory barrier。
+        let val = unsafe { (*self.base.add(index)).load(Ordering::Relaxed) };
+        PageTableEntry::from_raw(val)
+    }
+
+    #[inline]
+    fn write(&mut self, index: usize, pte: PageTableEntry) {
+        debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
+        // SAFETY: base 指向有效帧，index 经 debug_assert 检查
+        unsafe { (*self.base.add(index)).store(pte.as_raw(), Ordering::Relaxed) };
+    }
+}
 
 /// 中间页表节点——持有帧所有权及有效 PTE 引用计数。
 struct NodeEntry {
@@ -79,12 +120,10 @@ impl PageTable {
         *self.ref_count_mut(paddr) += 1;
     }
 
-    /// 递减指定帧的引用计数，返回递减后的值。
+    /// 递减指定帧的引用计数。
     #[inline]
-    fn dec_ref(&mut self, paddr: PhysAddr) -> u16 {
-        let count = self.ref_count_mut(paddr);
-        *count -= 1;
-        *count
+    fn dec_ref(&mut self, paddr: PhysAddr) {
+        *self.ref_count_mut(paddr) -= 1;
     }
 
     /// 映射用 walker——遍历到 `target_level` 并按需分配中间节点。
@@ -229,8 +268,7 @@ impl PageTable {
         va: VirtAddr,
         level: usize,
     ) -> Result<(PhysAddr, PteFlags), PagingError> {
-        let mut path: [(PhysAddr, usize, PhysAddr); PT_LEVELS] =
-            [(PhysAddr::new(0), 0, PhysAddr::new(0)); PT_LEVELS];
+        let mut path: [(PhysAddr, usize); PT_LEVELS] = [(PhysAddr::new(0), 0); PT_LEVELS];
         let mut path_len = 0;
         let mut paddr = self.root_paddr;
 
@@ -239,14 +277,11 @@ impl PageTable {
             let table = unsafe { Table::from_paddr(paddr) };
             let idx = vpn_index(va, lv);
             let pte = table.read(idx);
-            if !pte.is_valid() {
-                return Err(PagingError::PageNotMapped);
-            }
-            if pte.is_leaf(lv) {
+            if !pte.is_valid() || pte.is_leaf(lv) {
                 return Err(PagingError::PageNotMapped);
             }
             let child_paddr = pte.paddr();
-            path[path_len] = (paddr, idx, child_paddr);
+            path[path_len] = (paddr, idx);
             path_len += 1;
             paddr = child_paddr;
         }
@@ -264,7 +299,7 @@ impl PageTable {
         self.dec_ref(paddr);
 
         let mut child_paddr = paddr;
-        for &(parent_paddr, parent_idx, _) in path[..path_len].iter().rev() {
+        for &(parent_paddr, parent_idx) in path[..path_len].iter().rev() {
             if *self.ref_count_mut(child_paddr) > 0 {
                 break;
             }
@@ -308,7 +343,7 @@ impl PageTable {
     fn walk_to_leaf(&self, va: VirtAddr) -> Option<(PageTableEntry, PhysAddr, usize, usize)> {
         let mut paddr = self.root_paddr;
 
-        for level in (1..PT_LEVELS).rev() {
+        for level in (0..PT_LEVELS).rev() {
             // SAFETY: paddr 指向由 self 持有的有效帧
             let table = unsafe { Table::from_paddr(paddr) };
             let idx = vpn_index(va, level);
@@ -322,26 +357,12 @@ impl PageTable {
             paddr = pte.paddr();
         }
 
-        // SAFETY: paddr 指向由 self 持有的有效帧
-        let table = unsafe { Table::from_paddr(paddr) };
-        let idx = vpn_index(va, 0);
-        let pte = table.read(idx);
-        if pte.is_valid() && pte.is_leaf(0) {
-            Some((pte, paddr, idx, 0))
-        } else {
-            None
-        }
-    }
-
-    /// 只读遍历——从根向下查找叶 PTE，返回 PTE 及其所在层级。
-    fn walk_readonly(&self, va: VirtAddr) -> Option<(PageTableEntry, usize)> {
-        let (pte, _, _, level) = self.walk_to_leaf(va)?;
-        Some((pte, level))
+        None
     }
 
     /// 查询虚拟地址的映射信息，返回物理地址和标志。
     pub fn get_mapping(&self, va: VirtAddr) -> Option<(PhysAddr, PteFlags)> {
-        let (pte, level) = self.walk_readonly(va)?;
+        let (pte, _, _, level) = self.walk_to_leaf(va)?;
         let page_size = crate::page_size_at_level(level);
         let offset = va.as_usize() & (page_size - 1);
         Some((pte.paddr() + offset, pte.flags()))
@@ -371,24 +392,19 @@ impl PageTable {
             let remaining = end_aligned.as_usize() - addr.as_usize();
             let va = VirtAddr::new(addr.as_usize());
 
-            let mut selected_level = 0;
-            let mut selected_size = config::PAGE_SIZE;
-            for level in (1..PT_LEVELS).rev() {
-                let page_size = crate::page_size_at_level(level);
-                if addr.as_usize().is_multiple_of(page_size) && remaining >= page_size {
-                    selected_level = level;
-                    selected_size = page_size;
-                    break;
-                }
-            }
+            let (level, page_size) = (1..PT_LEVELS)
+                .rev()
+                .map(|lv| (lv, crate::page_size_at_level(lv)))
+                .find(|&(_, ps)| addr.as_usize().is_multiple_of(ps) && remaining >= ps)
+                .unwrap_or((0, config::PAGE_SIZE));
 
-            match self.map_at_level(va, addr, flags, selected_level) {
+            match self.map_at_level(va, addr, flags, level) {
                 Ok(()) => {}
                 // 幂等：同一页已被相同 PA+flags 映射（如 MMIO 区域重叠），跳过
                 Err(PagingError::AlreadyMappedIdentical) => {}
                 Err(e) => panic!("identity_map_range: 映射 {va} 失败: {e}"),
             }
-            addr += selected_size;
+            addr += page_size;
         }
     }
 }

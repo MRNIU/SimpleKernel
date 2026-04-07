@@ -27,6 +27,7 @@ name = "arch"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu",
+ "config",
  "riscv",
  "tock-registers",
 ]

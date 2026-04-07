@@ -15,17 +15,14 @@
 
 extern crate alloc;
 
-use core::sync::atomic::{AtomicU64, Ordering};
 use memory_types::PhysAddr;
 
 pub mod error;
 
 pub use page_table_entry::{PageTableEntry, PteFlags, PteFlagsOps, PteOps};
 
-/// PTE 大小的位移量——`log2(sizeof(u64))` = 3。
-///
-/// 两种架构的 PTE 均为 64 位，此常量在所有架构下一致。
-pub const PTE_SIZE_SHIFT: usize = core::mem::size_of::<u64>().trailing_zeros() as usize;
+// 页表几何常量——定义在 arch crate，此处 re-export 供下游使用。
+pub use arch::{ENTRIES_PER_TABLE, INDEX_BITS, INDEX_MASK, LEVEL_SHIFTS, page_size_at_level};
 
 pub mod table;
 pub use table::PageTable;
@@ -92,90 +89,11 @@ impl NodeFrameOps for KernelNodeFrame {
 /// 页表节点帧类型——[`KernelNodeFrame`]（物理帧分配器）。
 pub type NodeFrame = KernelNodeFrame;
 
-/// 每张页表中的条目数（PAGE_SIZE / sizeof(PTE)）。
-///
-/// 64 位架构中 PTE 均为 8 字节，4KB 页对应 512 条目。
-pub const ENTRIES_PER_TABLE: usize = config::PAGE_SIZE / core::mem::size_of::<u64>();
-
-/// 单级索引位宽（log2(ENTRIES_PER_TABLE)）。
-pub const INDEX_BITS: usize = config::PAGE_SIZE_BITS - PTE_SIZE_SHIFT;
-
-/// 层级参数。
-#[derive(Clone, Copy)]
-pub struct LevelInfo {
-    /// 该级 VPN 在虚拟地址中的起始位位置
-    pub shift: usize,
-    /// 索引掩码
-    pub index_mask: usize,
-}
-
-/// 最大页表层级数（Sv57 五级）。
-const MAX_LEVELS: usize = 5;
-
-/// 编译期计算各级层级参数。
-const fn compute_level_info() -> [LevelInfo; MAX_LEVELS] {
-    let mask = ENTRIES_PER_TABLE - 1;
-    let mut info = [LevelInfo {
-        shift: 0,
-        index_mask: mask,
-    }; MAX_LEVELS];
-    info[0].shift = config::PAGE_SIZE_BITS;
-    let mut i = 1;
-    while i < MAX_LEVELS {
-        info[i].shift = info[i - 1].shift + INDEX_BITS;
-        i += 1;
-    }
-    info
-}
-
-pub const LEVEL_INFO: [LevelInfo; MAX_LEVELS] = compute_level_info();
-
-/// 页表节点——封装 PTE 数组的原子访问。
-///
-/// 使用 `AtomicU64` 保证 SMP 下单个 PTE 读写不会 torn read/write。
-/// 外层 `SpinLock` 负责更高层的互斥，此处仅保证单次访问的原子性。
-pub(crate) struct Table {
-    base: *mut AtomicU64,
-}
-
-impl Table {
-    /// 从物理地址构造页表节点。
-    ///
-    /// # Safety
-    /// - `paddr` 必须指向有效、页对齐的帧
-    #[inline]
-    pub(crate) unsafe fn from_paddr(paddr: memory_types::PhysAddr) -> Self {
-        Self {
-            base: paddr.as_usize() as *mut AtomicU64,
-        }
-    }
-
-    #[inline]
-    pub(crate) fn read(&self, index: usize) -> PageTableEntry {
-        debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
-        // SAFETY: base 指向有效帧，index 经 debug_assert 检查。
-        // Relaxed 即可——外层 SpinLock 提供必要的 memory barrier。
-        let val = unsafe { (*self.base.add(index)).load(Ordering::Relaxed) };
-        PageTableEntry::from_raw(val)
-    }
-
-    #[inline]
-    pub(crate) fn write(&mut self, index: usize, pte: PageTableEntry) {
-        debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
-        // SAFETY: base 指向有效帧，index 经 debug_assert 检查
-        unsafe { (*self.base.add(index)).store(pte.as_raw(), Ordering::Relaxed) };
-    }
-}
-
 /// 从虚拟地址中提取第 `level` 级的 VPN 索引。
+///
+/// 此函数因依赖 [`memory_types::VirtAddr`] 而无法放入 `arch` crate
+/// （`memory_types` 已依赖 `arch`，反向依赖会形成循环）。
 #[inline]
 pub fn vpn_index(va: memory_types::VirtAddr, level: usize) -> usize {
-    let info = &LEVEL_INFO[level];
-    (va.as_usize() >> info.shift) & info.index_mask
-}
-
-/// 返回第 `level` 级映射的页大小（字节）。
-#[inline]
-pub const fn page_size_at_level(level: usize) -> usize {
-    1usize << LEVEL_INFO[level].shift
+    (va.as_usize() >> LEVEL_SHIFTS[level]) & INDEX_MASK
 }

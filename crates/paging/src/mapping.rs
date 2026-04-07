@@ -161,25 +161,34 @@ impl MappedPages {
         let mut md = ManuallyDrop::new(self);
         // SAFETY: md 不会 Drop，手动接管字段所有权
         let mapped_frames = unsafe { ManuallyDrop::take(&mut md.frames) };
-
-        let page_count = mapped_frames.count();
-        let va_start = mapped_frames.start_paddr().to_virt();
-
-        let pt = crate::kernel_page_table();
-        let mut guard = pt.lock();
-        for i in 0..page_count {
-            let va = va_start + i * PAGE_SIZE;
-            guard
-                .unmap_page(va)
-                .expect("MappedPages::unmap: unmap_page 失败");
-        }
-        drop(guard);
-
-        {
-            let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
-        }
-
+        unmap_frames_chunked(&mapped_frames, "MappedPages::unmap");
         mapped_frames.into_unmapped()
+    }
+}
+
+/// 分块 unmap——每次持锁最多 unmap `UNMAP_CHUNK` 页，避免长时间关中断。
+fn unmap_frames_chunked(frames: &MappedFrames, caller: &str) {
+    let page_count = frames.count();
+    let va_start = frames.start_paddr().to_virt();
+    let pt = crate::kernel_page_table();
+
+    let mut offset = 0;
+    while offset < page_count {
+        let n = (page_count - offset).min(UNMAP_CHUNK);
+        {
+            let mut guard = pt.lock();
+            for i in 0..n {
+                let va = va_start + (offset + i) * PAGE_SIZE;
+                guard.unmap_page(va).unwrap_or_else(|e| {
+                    panic!("{caller}: unmap {va} 失败: {e}");
+                });
+            }
+        }
+        {
+            let flush_va = va_start + offset * PAGE_SIZE;
+            let _flush = tlb::TlbFlushGuard::new(flush_va.as_usize(), n);
+        }
+        offset += n;
     }
 }
 
@@ -213,29 +222,7 @@ pub(crate) fn check_bounds_and_align<T>(
 
 impl Drop for MappedPages {
     fn drop(&mut self) {
-        let page_count = self.frames.count();
-        let va_start = self.frames.start_paddr().to_virt();
-        let pt = crate::kernel_page_table();
-
-        let mut offset = 0;
-        while offset < page_count {
-            let n = (page_count - offset).min(UNMAP_CHUNK);
-            {
-                let mut guard = pt.lock();
-                for i in 0..n {
-                    let va = va_start + (offset + i) * PAGE_SIZE;
-                    guard.unmap_page(va).unwrap_or_else(|e| {
-                        panic!("MappedPages::drop: unmap {va} 失败: {e}");
-                    });
-                }
-            }
-            {
-                let flush_va = va_start + offset * PAGE_SIZE;
-                let _flush = tlb::TlbFlushGuard::new(flush_va.as_usize(), n);
-            }
-            offset += n;
-        }
-
+        unmap_frames_chunked(&self.frames, "MappedPages::drop");
         // SAFETY: Drop 执行中，self.frames 不会再被访问。
         // 将 MappedFrames 转换为 UnmappedFrames，后者的 Drop 安全归还 buddy。
         let mapped_frames = unsafe { ManuallyDrop::take(&mut self.frames) };

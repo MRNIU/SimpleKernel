@@ -10,7 +10,6 @@
 use crate::error::PagingError;
 use crate::mapping::check_bounds_and_align;
 use crate::{PteFlags, PteFlagsOps};
-use config::PAGE_SIZE;
 use memory_types::PhysAddr;
 
 /// 已映射的 MMIO 区域——提供类型安全的 volatile 寄存器访问。
@@ -31,21 +30,18 @@ impl MmioRegion {
     /// 页表映射失败时返回错误。
     pub fn map(paddr: PhysAddr, size: usize) -> Result<Self, PagingError> {
         let pa_aligned = paddr.align_down();
-        let page_count = ((paddr + size).align_up().as_usize() - pa_aligned.as_usize()) / PAGE_SIZE;
+        let end_aligned = (paddr + size).align_up();
+        let mapped_size = end_aligned.as_usize() - pa_aligned.as_usize();
         let va = memory_types::VirtAddr::new(pa_aligned.as_usize());
 
         let pt = crate::kernel_page_table();
         let mut guard = pt.lock();
-        guard.identity_map_range(
-            pa_aligned,
-            pa_aligned + page_count * PAGE_SIZE,
-            PteFlags::kernel_device(),
-        );
+        guard.identity_map_range(pa_aligned, end_aligned, PteFlags::kernel_device());
         drop(guard);
 
         Ok(Self {
             base: va,
-            size: page_count * PAGE_SIZE,
+            size: mapped_size,
         })
     }
 

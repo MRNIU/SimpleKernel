@@ -96,21 +96,55 @@ pub const PA_BITS: usize = Impl::PA_BITS;
 /// 页表层级数（RISC-V Sv39: 3, AArch64 4KB: 4）。
 pub const PT_LEVELS: usize = Impl::PT_LEVELS;
 
+/// PTE 大小的位移量——`log2(sizeof(u64))` = 3。
+///
+/// 两种架构的 PTE 均为 64 位，此常量在所有架构下一致。
+pub const PTE_SIZE_SHIFT: usize = core::mem::size_of::<u64>().trailing_zeros() as usize;
+
+/// 每张页表中的条目数（PAGE_SIZE / sizeof(PTE)）。
+///
+/// 64 位架构中 PTE 均为 8 字节，4KB 页对应 512 条目。
+pub const ENTRIES_PER_TABLE: usize = config::PAGE_SIZE / core::mem::size_of::<u64>();
+
+/// 单级索引位宽（log2(ENTRIES_PER_TABLE)）。
+pub const INDEX_BITS: usize = config::PAGE_SIZE_BITS - PTE_SIZE_SHIFT;
+
+/// 每级 VPN 索引掩码——所有层级相同（`ENTRIES_PER_TABLE - 1`）。
+///
+/// RISC-V Sv39/48/57 和 AArch64 的页表每级索引位宽相同（9 bits），
+/// 因此 mask 无需 per-level 存储。
+pub const INDEX_MASK: usize = ENTRIES_PER_TABLE - 1;
+
+/// 各级 VPN 在虚拟地址中的起始位位置。
+///
+/// `LEVEL_SHIFTS[0]` = `PAGE_SIZE_BITS`（12），
+/// 后续每级递增 `INDEX_BITS`（9）。
+const fn compute_level_shifts() -> [usize; PT_LEVELS] {
+    let mut shifts = [0usize; PT_LEVELS];
+    shifts[0] = config::PAGE_SIZE_BITS;
+    let mut i = 1;
+    while i < PT_LEVELS {
+        shifts[i] = shifts[i - 1] + INDEX_BITS;
+        i += 1;
+    }
+    shifts
+}
+
+pub const LEVEL_SHIFTS: [usize; PT_LEVELS] = compute_level_shifts();
+
+/// 返回第 `level` 级映射的页大小（字节）。
+#[inline]
+pub const fn page_size_at_level(level: usize) -> usize {
+    1usize << LEVEL_SHIFTS[level]
+}
+
 /// 虚拟地址有效位宽——由 [`PT_LEVELS`] 自动推导。
 ///
 /// 计算公式：`PAGE_SIZE_BITS + PT_LEVELS × INDEX_BITS`
-/// （4KB 页: PAGE_SIZE_BITS=12, INDEX_BITS=9）
 /// - Sv39 (PT_LEVELS=3): 12 + 3×9 = 39
 /// - Sv48 / AArch64 4KB (PT_LEVELS=4): 12 + 4×9 = 48
 /// - Sv57 (PT_LEVELS=5): 12 + 5×9 = 57
-pub const VA_BITS: usize = {
-    // log2(4096)
-    const PAGE_SIZE_BITS: usize = 12;
-    // log2(sizeof(u64))
-    const PTE_SIZE_BITS: usize = 3;
-    const INDEX_BITS: usize = PAGE_SIZE_BITS - PTE_SIZE_BITS;
-    PAGE_SIZE_BITS + Impl::PT_LEVELS * INDEX_BITS
-};
+pub const VA_BITS: usize = config::PAGE_SIZE_BITS + Impl::PT_LEVELS * INDEX_BITS;
 
 /// 读取 per-CPU 基地址寄存器（RISC-V: TP, AArch64: TPIDR_EL1）。
 #[inline(always)]
