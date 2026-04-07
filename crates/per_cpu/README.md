@@ -5,8 +5,8 @@ Per-CPU 数据基础设施——通过 `#[cpu_local]` 分散声明，每核心�
 ## 概览
 
 `per_cpu` 提供 per-CPU 变量的声明、初始化和访问机制。
-用户通过 `#[cpu_local]` 属性宏声明变量，运行时通过 TP 寄存器（riscv64）
-或 TPIDR_EL1（aarch64）定位当前 CPU 的副本，实现无锁、无原子操作的核心本地数据访问。
+用户通过 `#[cpu_local]` 属性宏声明变量，运行时通过 per-CPU 基地址寄存器
+定位当前 CPU 的副本，实现无锁、无原子操作的核心本地数据访问。
 
 本 crate 只提供 per-CPU **机制**（声明、初始化、访问），
 不包含业务变量——各子系统在自己的 crate 中用 `#[cpu_local]` 声明。
@@ -23,13 +23,13 @@ Per-CPU 数据基础设施——通过 `#[cpu_local]` 分散声明，每核心�
 | +-----------------+ |            | +----------+----------+--------------+  |
 +---------------------+            +-----------------------------------------+
                                           |
-                                    TP / TPIDR_EL1 指向当前 CPU 的区域
+                                    per-CPU 基地址寄存器指向当前 CPU 的区域
 ```
 
 1. `#[cpu_local]` 将变量放入 `.percpu` ELF section（模板）
 2. `percpu_init()` 将模板复制 N 份（每 CPU 一份）到 BSS 预留区
-3. TP（riscv64）/ TPIDR_EL1（aarch64）指向当前 CPU 的副本
-4. 访问：`TP + (模板地址 - __percpu_start)` = 当前 CPU 的变量地址
+3. per-CPU 基地址寄存器指向当前 CPU 的副本
+4. 访问：`base + (模板地址 - __percpu_start)` = 当前 CPU 的变量地址
 
 ## 核心类型
 
@@ -57,15 +57,17 @@ Per-CPU 变量的包装器。不直接持有数据——数据在每个 CPU 的�
 
 | 函数 | 说明 |
 |------|------|
-| `percpu_init()` | 主核初始化（复制模板、设置 TP） |
-| `percpu_init_smp()` | 从核初始化（设置 TP） |
+| `percpu_init()` | 主核初始化（复制模板、设置基地址寄存器） |
+| `percpu_init_smp()` | 从核初始化（设置基地址寄存器） |
 | `current_core_id()` | 读取当前核心 ID |
 
 ## 模块结构
 
 ```
 src/
-└── lib.rs           CpuLocal<T>、percpu_init、percpu_init_smp、current_core_id
+├── lib.rs           CpuLocal<T> 公共定义、cfg 分发
+├── bare_metal.rs    裸机实现（链接器符号、段复制、基地址寄存器访问）
+└── host.rs          宿主机 mock（直接解引用，cargo test 用）
 ```
 
 ## 使用示例
@@ -107,8 +109,8 @@ unsafe { NEED_RESCHED.get_on(target_core) }.store(true, Ordering::Release);
 
 ```
 _start
-  +-> percpu_init()          <- 主核：复制模板、设置所有 CPU 基地址、设置 TP
-       +-> percpu_init_smp()  <- 各从核：设置自己的 TP
+  +-> percpu_init()          <- 主核：复制模板、设置所有 CPU 基地址寄存器
+       +-> percpu_init_smp()  <- 各从核：设置自己的基地址寄存器
 ```
 
 `percpu_init()` 必须在 `logging::init()` 之后、任何 `#[cpu_local]` 访问之前调用。
@@ -118,8 +120,8 @@ _start
 | 行为 | 裸机 (`target_os = "none"`) | 宿主机 (`cargo test`) |
 |------|---------------------------|---------------------|
 | 变量存储 | `.percpu` section -> BSS 复制 | 普通 static |
-| 访问路径 | TP + offset | 直接解引用模板指针 |
-| `current_core_id()` | per-CPU `CORE_ID` 或 raw 寄存器 | 线程局部唯一 ID |
+| 访问路径 | base + offset | 直接解引用模板指针 |
+| `current_core_id()` | per-CPU `CORE_ID` 或 raw 寄存器 | 固定返回 0 |
 | `get_mut()` 安全性 | 需关中断 | 单线程测试中安全 |
 
 ## 注意事项
