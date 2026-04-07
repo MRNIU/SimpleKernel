@@ -1,0 +1,22 @@
+[package]
+name = "test_harness"
+description = "独立 QEMU 测试二进制的公共 harness（_start、panic_handler、exit_qemu）"
+edition.workspace = true
+
+[dependencies]
+simplekernel = { path = "../..", default-features = false }
+per_cpu = { path = "../../crates/per_cpu" }
+heap = { path = "../../crates/heap" }
+memory = { path = "../../crates/memory" }
+config = { path = "../../crates/config" }
+heapless.workspace = true
+log.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[lints]
+workspace = true

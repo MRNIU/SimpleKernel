@@ -1,8 +1,8 @@
 # ADR-004: 消除内核源码中的 `#[cfg(bare_metal)]`
 
-> **状态**: 提议
+> **状态**: 已接受（大部分已实施）
 >
-> **日期**: 2026-04-06（更新）
+> **日期**: 2026-04-06（提议）；2026-04-07（实施进展更新）
 >
 > **审计阶段**: R8 — 集成与收尾
 >
@@ -109,9 +109,9 @@ Linux 不会在源码里写 `#ifdef __KERNEL__`——它的代码就是内核代
 
 | 现有宿主机测试 | 迁移到 |
 |--------------|--------|
-| `interrupt_state`: HeldInterrupts 保存-恢复 | `tests/system/` 新增 interrupt 测试组 |
-| `per_cpu`: CpuLocal::get() | `tests/system/` 已有或新增 |
-| `sync`: SpinLock 基本操作 | `tests/system/` 已有 sync 测试组 |
+| `interrupt_state`: HeldInterrupts 保存-恢复 | `tests/` 独立 QEMU 测试二进制 |
+| `per_cpu`: CpuLocal::get() | `tests/` 独立 QEMU 测试二进制 |
+| `sync`: SpinLock 基本操作 | `tests/sync-spinlock-test/` 等（已完成） |
 
 `arch` crate 特殊处理：
 `arch` crate 保留 host.rs 和 `cfg(not(bare_metal))`。原因：`config` 依赖 `arch::PA_BITS`/`arch::PT_LEVELS`，而 `config` 被纯逻辑 crate（`memory_types`）依赖。如果 `arch` 不能在宿主机编译，整个依赖链断裂。host.rs 提供占位值使 `cargo test` 能编译纯逻辑 crate。这是唯一保留 cfg 的 crate，且 cfg 已经集中在一处。
@@ -181,14 +181,16 @@ cfg 散布在源码中，语义通过 `bare_metal` 别名已较清晰。
 ## 影响
 
 - **代码变更**:
-  - `crates/`: 删除 `per_cpu`、`sync`、`paging`、`memory`、`macros` 中所有 `cfg(not(bare_metal))` 分支和 host mock
-  - `src/`: 删除 `lib.rs`、`task/`、`logging.rs`、`syscall/`、`panic.rs`、`halt.rs` 中所有 cfg
-  - `crates/arch/`: 保留 host.rs（为纯逻辑 crate 的 `cargo test` 提供占位值）
-- **Cargo.toml 变更**: 内核 crate 从 `#![cfg_attr(not(test), no_std)]` 改为 `#![no_std]`
-- **测试变更**: `interrupt_state`、`per_cpu`、`sync` 的宿主机测试迁移到 `tests/system/`
-- **CI 变更**: `cargo test` 范围缩小到纯逻辑 crate；`cargo xtask test` 覆盖内核功能
-- **R8 审计影响**: "host 模拟实现一致性评估" 和 "`CpuLocal` host 行为 ADR" 两个待办可直接关闭
-- **开发工作流**: 需文档化新的测试策略（哪些 `cargo test`、哪些 `cargo xtask test`）
+  - ✅ `crates/`: 删除 `per_cpu`、`sync`、`paging`、`memory`、`macros` 中所有 `cfg(not(bare_metal))` 分支和 host mock
+  - ✅ `src/`: 删除 `lib.rs`、`task/`、`logging.rs`、`syscall/`、`panic.rs`、`halt.rs` 中所有 cfg
+  - ✅ `crates/arch/`: 保留 host.rs（为纯逻辑 crate 的 `cargo test` 提供占位值）
+- **Cargo.toml 变更**: ✅ 内核 crate 从 `#![cfg_attr(not(test), no_std)]` 改为 `#![no_std]`
+- **测试变更**: ✅ 宿主机测试迁移到 `tests/` 独立 QEMU 测试二进制（17 个测试，`sync`/`paging`/`memory`/`device`/`fs` 等均已完成）
+- **构建变更**: ✅ 测试 `build.rs` 已消除——链接参数移至 `.cargo/config.toml`，汇编通过 simplekernel rlib 传播
+- **目录变更**: ✅ `tests/standalone/` 扁平化为 `tests/`；`crates/test_harness/` 移至 `tests/test_harness/`
+- **CI 变更**: ✅ `cargo test` 范围缩小到纯逻辑 crate；`cargo xtask test` 覆盖内核功能
+- **R8 审计影响**: ✅ "host 模拟实现一致性评估" 和 "`CpuLocal` host 行为 ADR" 两个待办可直接关闭
+- **开发工作流**: ✅ 测试策略已文档化（`AGENTS.md` §TESTING、`tests/README.md`、`README.md` §测试体系）
 
 ## TODO: 裸机调试能力增强
 

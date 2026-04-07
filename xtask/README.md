@@ -22,7 +22,7 @@ cargo xtask test --arch riscv64 --timeout 120      # 自定义超时（默认 30
 cargo xtask test --list                            # 列出可用测试
 ```
 
-`--all` 模式下，xtask 顺序执行所有 `tests/standalone/` 下的测试二进制，每个启动独立 QEMU 实例。输出被捕获，超时后自动终止。执行完毕后打印汇总报告。
+`--all` 模式下，xtask 顺序执行所有 `tests/` 下的测试二进制，每个启动独立 QEMU 实例。输出被捕获，超时后自动终止。执行完毕后打印汇总报告。
 
 `--name` 模式下，指定测试以交互模式运行（串口输出直接显示到终端），适合调试。
 

@@ -1,0 +1,22 @@
+[package]
+name = "fs-test"
+description = "验证 VFS 路径解析、RamFS CRUD、多级目录"
+edition.workspace = true
+
+[[bin]]
+name = "fs-test"
+test = false
+
+[dependencies]
+test_harness = { path = "../test_harness" }
+simplekernel = { path = "../..", default-features = false }
+log.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[lints]
+workspace = true

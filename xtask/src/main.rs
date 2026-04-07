@@ -150,18 +150,12 @@ fn run() -> Result<()> {
             let qemu_env = test::prepare_qemu_env(&sh, &project_root, args.arch, args.release)?;
             let all_passed;
             if let Some(name) = &args.name {
-                // --name：运行指定测试（保持原有交互式行为）
-                all_passed = test::run_standalone_test(
-                    &sh,
-                    &project_root,
-                    args.arch,
-                    name,
-                    &qemu_env,
-                    args.release,
-                )?;
+                // --name：运行指定测试（交互式，串口直接输出）
+                all_passed =
+                    test::run_test(&sh, &project_root, args.arch, name, &qemu_env, args.release)?;
             } else {
-                // 默认 / --all：运行全部独立测试
-                all_passed = test::run_all_standalone(
+                // 默认 / --all：运行全部测试
+                all_passed = test::run_all_tests(
                     &sh,
                     &project_root,
                     args.arch,

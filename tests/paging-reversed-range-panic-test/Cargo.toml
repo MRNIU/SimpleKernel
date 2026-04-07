@@ -1,0 +1,25 @@
+[package]
+name = "paging-reversed-range-panic-test"
+description = "验证 identity_map_range 反向范围检测（should_panic）"
+edition.workspace = true
+
+[[bin]]
+name = "paging-reversed-range-panic-test"
+test = false
+
+[dependencies]
+test_harness = { path = "../test_harness" }
+simplekernel = { path = "../..", default-features = false }
+paging = { path = "../../crates/paging" }
+memory_types = { path = "../../crates/memory_types" }
+log.workspace = true
+heapless.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[lints]
+workspace = true

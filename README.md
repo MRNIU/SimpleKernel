@@ -187,15 +187,11 @@ SimpleKernel/
 │   ├── frame_allocator/            #   物理帧分配器
 │   ├── per_cpu/                    #   Per-CPU 数据
 │   └── ...
-├── tests/                          # 系统测试（QEMU 运行）
-│   ├── system/                     #   统一测试内核（所有测试组）
-│   │   └── src/
-│   │       ├── main.rs             #     测试入口 → kernel_init → TestRunner → qemu_exit
-│   │       ├── framework.rs        #     TestRunner / TestCase / TestGroup
-│   │       ├── memory_tests.rs     #     内存测试组
-│   │       └── sync_tests.rs       #     同步原语测试组
-│   └── standalone/                 #   独立测试二进制
-│       └── panic_test/             #     验证 panic handler 行为
+├── tests/                          # QEMU 系统测试（每个子目录是独立二进制）
+│   ├── test_harness/               #   公共 harness（test_main! 宏）
+│   ├── heap-test/                  #   堆分配测试
+│   ├── sync-spinlock-test/         #   SpinLock 测试
+│   └── ...                         #   共 17 个测试二进制
 ├── xtask/                          # 构建工具（cargo xtask）
 │   └── src/
 │       ├── main.rs                 #   子命令分发（build/run/debug/test/firmware）
@@ -211,79 +207,37 @@ SimpleKernel/
 
 ## 测试体系
 
-SimpleKernel 采用双层测试架构：
+SimpleKernel 采用两层测试 + 冒烟测试：
 
 ### 单元测试（宿主机）
 
-各 crate 内的 `#[test]` 模块，在 x86_64 宿主机上运行：
+纯逻辑 crate 的 `#[test]` 模块，在宿主机上运行：
 
 ```bash
-cargo test
+cargo test -p memory_types -p config -p page_table_entry -p span -p arch
 ```
 
-覆盖范围：页表项编解码、地址空间运算、帧分配器、per-CPU 数据等。
+覆盖范围：地址运算、PTE 编解码、常量验证等。
 
 ### 系统测试（QEMU）
 
-在 QEMU 中启动独立的测试内核，验证子系统在真实硬件模拟环境下的行为。
-
-**统一测试内核**（`tests/system/`）：
-- 依赖 `simplekernel` lib，调用 `kernel_init(Full)` 完成初始化
-- 通过 `TestRunner` 按组运行测试，输出 `cargo test` 风格结果
-- 通过 `qemu-exit` 退出并返回状态码
-
-**独立测试二进制**（`tests/standalone/`）：
-- 测试破坏性行为（panic、OOM、栈溢出）
-- 每个测试是独立的 `#![no_std]` binary
-- 可以自定义 panic handler 和退出逻辑
+每个测试是独立的 `#![no_std]` 裸机二进制，启动独立 QEMU 实例，拥有干净的内核环境。
 
 ```bash
-# 运行全部系统测试
-cargo xtask test --arch riscv64 --all
-
-# 输出示例
-# === SimpleKernel System Tests ===
-#
-# running 3 tests in group "memory"
-# test heap_box_alloc ... ok
-# test heap_vec_alloc ... ok
-# test heap_large_alloc ... ok
-# group result: ok. 3 passed; 0 failed
-#
-# running 3 tests in group "sync"
-# test spinlock_basic ... ok
-# test spinlock_modify ... ok
-# test spinlock_not_held_after_drop ... ok
-# group result: ok. 3 passed; 0 failed
-#
-# ================================
-# test result: ok. 6 passed; 0 failed
+cargo xtask test --arch riscv64 --all          # 全部测试
+cargo xtask test --arch riscv64 --name <name>  # 指定测试
+cargo xtask test --list                        # 列出可用测试
 ```
+
+测试位于 `tests/` 目录，使用 `tests/test_harness/` 提供的 `test_main!` 宏消除样板代码。
 
 ### 添加新测试
 
-在 `tests/system/src/` 中创建新测试模块：
+1. 创建 `tests/my-test/`，包含 `Cargo.toml` 和 `src/main.rs`
+2. `src/main.rs` 使用 `test_harness::test_main!` 宏
+3. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
 
-```rust
-// tests/system/src/my_tests.rs
-use crate::framework::TestCase;
-
-pub fn tests() -> &'static [TestCase] {
-    &[TestCase { name: "my_test", run: test_my_feature }]
-}
-
-fn test_my_feature() {
-    assert_eq!(1 + 1, 2);
-}
-```
-
-然后在 `tests/system/src/main.rs` 中注册：
-
-```rust
-mod my_tests;
-
-runner.add_group(TestGroup { name: "my_feature", tests: my_tests::tests() });
-```
+详见 `tests/README.md`。
 
 ## 第三方依赖
 

@@ -34,9 +34,8 @@ cargo xtask test --list                        # 列出可用测试
 
 ## 添加新测试
 
-1. 创建 `tests/standalone/my-test/`，包含 `Cargo.toml`、`build.rs`、`src/main.rs`
-2. `build.rs` 从已有测试复制（编译汇编 + 链接器脚本）
-3. `src/main.rs` 使用 `test_harness::test_main!` 宏：
+1. 创建 `tests/my-test/`，包含 `Cargo.toml` 和 `src/main.rs`
+2. `src/main.rs` 使用 `test_harness::test_main!` 宏：
 
 ```rust
 #![no_std]
@@ -63,5 +62,5 @@ fn test_fn() {
 }
 ```
 
-4. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
-5. xtask 自动扫描 `tests/standalone/*/Cargo.toml` 发现新测试
+3. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
+4. xtask 自动扫描 `tests/*/Cargo.toml` 发现新测试

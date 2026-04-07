@@ -1,0 +1,26 @@
+[package]
+name = "vma-test"
+description = "验证 VMA mmap/munmap/find_vma/register_existing"
+edition.workspace = true
+
+[[bin]]
+name = "vma-test"
+test = false
+
+[dependencies]
+test_harness = { path = "../test_harness" }
+simplekernel = { path = "../..", default-features = false }
+memory = { path = "../../crates/memory" }
+memory_types = { path = "../../crates/memory_types" }
+paging = { path = "../../crates/paging" }
+config = { path = "../../crates/config" }
+log.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[lints]
+workspace = true

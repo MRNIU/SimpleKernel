@@ -1,5 +1,9 @@
 # 测试隔离迁移：每测试独立 QEMU 实例 + 内核冒烟测试
 
+> **已完成 / 已过时**：此计划已实施完毕。后续重构将 `tests/standalone/` 扁平化为 `tests/`，
+> `crates/test_harness/` 移至 `tests/test_harness/`，各测试 `build.rs` 已删除（链接参数
+> 移至 `.cargo/config.toml`）。以下内容中的路径和步骤不再反映当前代码结构。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 统一内核启动路径（消除 `main.rs` 与 `boot.rs` 的重复），将内核 crate 的 49 个宿主机测试迁移为独立 QEMU 二进制（每个测试一个干净的内核实例），删除所有 host mock / test-support 配置代码，并在内核启动流程中加入冒烟测试。

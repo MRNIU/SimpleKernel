@@ -12,7 +12,7 @@ src/arch/             # Per-architecture code (riscv64/, aarch64/)
 src/boot.rs           # kernel_init() — staged init for kernel & test binaries
 crates/               # Workspace crates (memory, sync, per_cpu, paging, ...)
 xtask/                # Build tool (cargo xtask run/build/debug/test/firmware)
-tests/standalone/     # Standalone QEMU test binaries (each runs in isolated QEMU instance)
+tests/                # Standalone QEMU test binaries (each runs in isolated QEMU instance)
 docs/design/         # Design docs (SAS architecture, subsystem designs, phase plans)
 3rd/                  # Git submodules (opensbi, u-boot, optee, atf, dtc — firmware only)
 ```
@@ -24,7 +24,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Boot flow** → `src/main.rs`: `_start` → `bootstrap()` → logging → percpu → early_init → memory → paging → timer → interrupt → task → device → fs → SMP → schedule
 - **帧生命周期** → `crates/frame_allocator/`: Free → Allocated → Mapped → Unmapped → Free（typestate 编译期追踪）
 - **映射所有权** → `crates/paging/src/mapping.rs`: `MappedPages` 持有 `MappedFrames`，Drop 自动 unmap
-- **System tests** → `tests/standalone/` for isolated QEMU tests, each binary in its own QEMU instance
+- **System tests** → `tests/` for isolated QEMU tests, each binary in its own QEMU instance
 - **Error handling** → `KResult<T> = Result<T, ErrorCode>` in `src/error.rs`
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
 - **Design overview** → `docs/design/00-概述.md` (master plan — written pre-implementation, may be outdated; code is source of truth)
@@ -63,8 +63,8 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 | `src/panic.rs` | Panic handler + observer pattern | error recovery |
 | `src/lang_items.rs` | `#[panic_handler]` (gated on `lang_items` feature) | Rust runtime |
 | `src/boot.rs` | `kernel_init(InitLevel)` + `kernel_init_smp()` | staged init for kernel & tests |
-| `crates/test_harness/` | `test_main!` 宏（启动 + 测试 + 退出 QEMU） | test infrastructure |
-| `tests/standalone/*/` | 独立 QEMU 测试二进制 | standalone tests |
+| `tests/test_harness/` | `test_main!` 宏（启动 + 测试 + 退出 QEMU） | test infrastructure |
+| `tests/*/` | 独立 QEMU 测试二进制 | standalone tests |
 | `xtask/src/test.rs` | `cargo xtask test` orchestration | test runner |
 
 ## CONVENTIONS
@@ -170,7 +170,7 @@ cargo xtask test --arch riscv64 --name frame-alloc-test # 指定测试
 cargo xtask test --list                                # 列出可用测试
 ```
 
-测试基础设施位于 `crates/test_harness/`，核心是 `test_main!` 宏：
+测试基础设施位于 `tests/test_harness/`，核心是 `test_main!` 宏：
 
 ```rust
 // 普通测试
@@ -185,11 +185,11 @@ test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_p
 
 #### 添加独立测试
 
-1. 创建 `tests/standalone/my-test/`，包含 `Cargo.toml`、`build.rs`、`src/main.rs`
+1. 创建 `tests/my-test/`，包含 `Cargo.toml` 和 `src/main.rs`
 2. `src/main.rs` 中使用 `test_harness::test_main!` 宏
 3. should_panic 测试使用 `test_main!(level, fn, should_panic)` 变体
 4. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
-5. xtask 自动扫描 `tests/standalone/*/Cargo.toml` 发现新测试
+5. xtask 自动扫描 `tests/*/Cargo.toml` 发现新测试
 
 ### 冒烟测试（Boot Smoke Tests）
 

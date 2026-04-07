@@ -1,0 +1,25 @@
+[package]
+name = "paging-basic-test"
+description = "验证页大小计算、VPN 索引提取"
+edition.workspace = true
+
+[[bin]]
+name = "paging-basic-test"
+test = false
+
+[dependencies]
+test_harness = { path = "../test_harness" }
+simplekernel = { path = "../..", default-features = false }
+paging = { path = "../../crates/paging" }
+memory_types = { path = "../../crates/memory_types" }
+config = { path = "../../crates/config" }
+log.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[lints]
+workspace = true

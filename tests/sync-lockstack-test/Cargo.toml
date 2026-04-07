@@ -1,0 +1,23 @@
+[package]
+name = "sync-lockstack-test"
+description = "验证锁栈级别顺序检查"
+edition.workspace = true
+
+[[bin]]
+name = "sync-lockstack-test"
+test = false
+
+[dependencies]
+test_harness = { path = "../test_harness" }
+simplekernel = { path = "../..", default-features = false }
+sync = { path = "../../crates/sync" }
+log.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[lints]
+workspace = true

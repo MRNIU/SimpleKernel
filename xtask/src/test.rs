@@ -35,19 +35,8 @@ pub fn prepare_qemu_env(
     })
 }
 
-/// 运行指定的独立测试
-pub fn run_standalone_test(
-    sh: &Shell,
-    project_root: &Path,
-    arch: Arch,
-    name: &str,
-    env: &QemuEnv,
-    release: bool,
-) -> Result<bool> {
-    run_test_binary(sh, project_root, arch, name, env, release)
-}
-
-fn run_test_binary(
+/// 运行指定测试
+pub fn run_test(
     sh: &Shell,
     project_root: &Path,
     arch: Arch,
@@ -100,16 +89,18 @@ fn read_package_name(cargo_toml: &Path) -> Option<String> {
     None
 }
 
-/// 收集所有独立测试的包名
-pub fn standalone_test_packages(project_root: &Path) -> Vec<String> {
+/// 收集 `tests/` 下所有测试二进制的包名（跳过库 crate）
+pub fn test_packages(project_root: &Path) -> Vec<String> {
     let mut packages = Vec::new();
-    let standalone_dir = project_root.join("tests/standalone");
-    if standalone_dir.exists()
-        && let Ok(entries) = std::fs::read_dir(&standalone_dir)
+    let tests_dir = project_root.join("tests");
+    if tests_dir.exists()
+        && let Ok(entries) = std::fs::read_dir(&tests_dir)
     {
         for entry in entries.flatten() {
-            let cargo_toml = entry.path().join("Cargo.toml");
+            let dir = entry.path();
+            let cargo_toml = dir.join("Cargo.toml");
             if cargo_toml.exists()
+                && dir.join("src/main.rs").exists()
                 && let Some(name) = read_package_name(&cargo_toml)
             {
                 packages.push(name);
@@ -122,8 +113,8 @@ pub fn standalone_test_packages(project_root: &Path) -> Vec<String> {
 /// 列出所有可用测试
 pub fn list_tests(project_root: &Path) {
     println!("Available tests:");
-    for name in standalone_test_packages(project_root) {
-        println!("  {name}      — Standalone test");
+    for name in test_packages(project_root) {
+        println!("  {name}");
     }
 }
 
@@ -169,12 +160,12 @@ fn build_test_with_fit(
     Ok((kernel_elf_path, test_boot_dir))
 }
 
-/// 运行所有独立测试：构建全部二进制，顺序执行并捕获输出，打印汇总。
+/// 运行所有测试：构建全部二进制，顺序执行并捕获输出，打印汇总。
 ///
 /// 每个测试在独立 QEMU 实例中运行，输出被捕获而非直接打印到终端。
 /// 超时后自动终止 QEMU 进程。
 // TODO: 未来支持 --jobs 并行执行（需解决 TFTP 目录共享冲突）
-pub fn run_all_standalone(
+pub fn run_all_tests(
     sh: &Shell,
     project_root: &Path,
     arch: Arch,
@@ -182,7 +173,7 @@ pub fn run_all_standalone(
     release: bool,
     timeout_secs: u64,
 ) -> Result<bool> {
-    let packages: Vec<String> = standalone_test_packages(project_root);
+    let packages: Vec<String> = test_packages(project_root);
 
     if packages.is_empty() {
         println!("[xtask] No test packages found.");
