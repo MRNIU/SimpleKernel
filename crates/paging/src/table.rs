@@ -138,7 +138,7 @@ impl PageTable {
     ///
     /// - 该 VA 已被映射时返回 `AlreadyMapped`。
     /// - walk 路径上遇到大页时返回 `HugePageConflict`。
-    pub(crate) fn map_page(
+    pub fn map_page(
         &mut self,
         va: VirtAddr,
         pa: PhysAddr,
@@ -160,7 +160,7 @@ impl PageTable {
     ///
     /// - 该 VA 已被映射时返回 `AlreadyMapped`。
     /// - walk 路径上遇到大页时返回 `HugePageConflict`。
-    pub(crate) fn map_at_level(
+    pub fn map_at_level(
         &mut self,
         va: VirtAddr,
         pa: PhysAddr,
@@ -209,7 +209,7 @@ impl PageTable {
     /// # Errors
     ///
     /// 目标 VA 未映射时返回 `PageNotMapped`。
-    pub(crate) fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PagingError> {
+    pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PagingError> {
         self.unmap_at_level_with_flags(va, 0).map(|(pa, _)| pa)
     }
 
@@ -224,7 +224,7 @@ impl PageTable {
     /// # Errors
     ///
     /// 目标 VA 在指定层级未映射时返回 `PageNotMapped`。
-    pub(crate) fn unmap_at_level_with_flags(
+    pub fn unmap_at_level_with_flags(
         &mut self,
         va: VirtAddr,
         level: usize,
@@ -284,7 +284,7 @@ impl PageTable {
     /// 单次页表遍历完成查找和更新，避免双重 walk 开销。
     ///
     /// **调用方必须在此操作后执行 TLB 刷新。**
-    pub(crate) fn update_flags(
+    pub fn update_flags(
         &mut self,
         va: VirtAddr,
         new_flags: PteFlags,
@@ -358,7 +358,7 @@ impl PageTable {
     /// # Panics
     ///
     /// `start >= end` 或映射冲突时 panic。
-    pub(crate) fn identity_map_range(&mut self, start: PhysAddr, end: PhysAddr, flags: PteFlags) {
+    pub fn identity_map_range(&mut self, start: PhysAddr, end: PhysAddr, flags: PteFlags) {
         let mut addr = start.align_down();
         let end_aligned = end.align_up();
 

@@ -3,10 +3,9 @@
 //! 本 crate 合并了原 `page_table` 和 `mapped_pages` 两个 crate，
 //! 实现了 **编译期强制的仿射类型安全**：
 //!
-//! - [`PageTable`] 的写操作（`map_page`、`unmap_page` 等）为 `pub(crate)`，
-//!   外部 crate 无法直接调用。
-//! - 只有同 crate 内的 `MappedPages` / `MmioRegion`（后续 Task 添加）
-//!   才能调用这些方法，确保映射的创建与销毁始终通过 RAII 类型管理。
+//! - [`PageTable`] 的写操作（`map_page`、`unmap_page` 等）为 `pub`，
+//!   但正常使用时应通过 `MappedPages` / `MmioRegion` 等 RAII 类型调用，
+//!   确保映射的创建与销毁通过仿射类型管理。
 //!
 //! PTE 编解码由 [`page_table_entry`] crate 提供。
 //! 帧分配通过 [`NodeFrame`] 类型别名（[`KernelNodeFrame`]）使用物理帧分配器，
@@ -110,7 +109,7 @@ pub type NodeFrame = KernelNodeFrame;
 pub const ENTRIES_PER_TABLE: usize = config::PAGE_SIZE / core::mem::size_of::<u64>();
 
 /// 单级索引位宽（log2(ENTRIES_PER_TABLE)）。
-pub(crate) const INDEX_BITS: usize = config::PAGE_SIZE_BITS - PTE_SIZE_SHIFT;
+pub const INDEX_BITS: usize = config::PAGE_SIZE_BITS - PTE_SIZE_SHIFT;
 
 /// 层级参数。
 #[derive(Clone, Copy)]
@@ -181,7 +180,7 @@ impl Table {
 
 /// 从虚拟地址中提取第 `level` 级的 VPN 索引。
 #[inline]
-pub(crate) fn vpn_index(va: memory_types::VirtAddr, level: usize) -> usize {
+pub fn vpn_index(va: memory_types::VirtAddr, level: usize) -> usize {
     let info = &LEVEL_INFO[level];
     (va.as_usize() >> info.shift) & info.index_mask
 }

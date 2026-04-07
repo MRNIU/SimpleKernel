@@ -479,6 +479,97 @@ dependencies = [
 ]
 
 [[package]]
+name = "paging-basic-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "config",
+ "log",
+ "memory_types",
+ "paging",
+ "sbi-rt",
+ "simplekernel",
+ "test_harness",
+]
+
+[[package]]
+name = "paging-conflict-panic-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "heapless 0.8.0",
+ "log",
+ "memory_types",
+ "paging",
+ "sbi-rt",
+ "simplekernel",
+ "test_harness",
+]
+
+[[package]]
+name = "paging-equal-range-panic-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "heapless 0.8.0",
+ "log",
+ "memory_types",
+ "paging",
+ "sbi-rt",
+ "simplekernel",
+ "test_harness",
+]
+
+[[package]]
+name = "paging-mapping-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "config",
+ "frame_allocator",
+ "log",
+ "memory_types",
+ "paging",
+ "sbi-rt",
+ "simplekernel",
+ "test_harness",
+]
+
+[[package]]
+name = "paging-reversed-range-panic-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "heapless 0.8.0",
+ "log",
+ "memory_types",
+ "paging",
+ "sbi-rt",
+ "simplekernel",
+ "test_harness",
+]
+
+[[package]]
+name = "paging-table-test"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu",
+ "cc",
+ "config",
+ "log",
+ "memory_types",
+ "paging",
+ "sbi-rt",
+ "simplekernel",
+ "test_harness",
+]
+
+[[package]]
 name = "panic-test"
 version = "0.1.0"
 dependencies = [

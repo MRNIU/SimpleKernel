@@ -37,6 +37,12 @@ members = [
     "tests/standalone/sync-recursive-lock-test",
     "tests/standalone/sync-lockstack-test",
     "tests/standalone/sync-lockstack-pop-mismatch-test",
+    "tests/standalone/paging-basic-test",
+    "tests/standalone/paging-table-test",
+    "tests/standalone/paging-mapping-test",
+    "tests/standalone/paging-equal-range-panic-test",
+    "tests/standalone/paging-reversed-range-panic-test",
+    "tests/standalone/paging-conflict-panic-test",
     "xtask",
 ]
 default-members = ["."]
