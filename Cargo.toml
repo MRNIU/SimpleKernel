@@ -28,6 +28,7 @@ members = [
     "crates/tlb",
     "crates/paging",
     "crates/memory",
+    "crates/test_harness",
     "tests/system",
     "tests/standalone/panic_test",
     "xtask",
