@@ -5,7 +5,6 @@ extern crate alloc;
 
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use simplekernel::arch::{Arch, ArchOps};
 use simplekernel::*;
 
 mod smoke_test;
@@ -43,45 +42,14 @@ pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
 
 /// 主核引导序列
 ///
-/// logging → DTB → FDT → Phase2 → Memory → Phase3
-/// → Interrupt → Timer → Task → SMP → Phase4 → Phase5 → Idle loop
+/// kernel_init(Full) 完成全部子系统初始化，之后启动冒烟测试线程并进入 idle loop。
 fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
-    logging::init();
-    // SAFETY: 主核调用一次，TP 持有 hart_id（riscv64）/ TPIDR_EL1 为 0（aarch64）
-    unsafe { per_cpu::percpu_init() };
-    init::early_init(Arch::dtb_addr(argc, argv));
-    smoke_test::phase2();
-    // memory::init() 返回内核地址空间（页表已存入全局）
-    let mut kernel_as = memory::init();
-    Arch::map_early_mmio(&mut kernel_as).expect("failed to map early MMIO");
-    // SAFETY: 页表覆盖所有内核代码/数据及早期 MMIO
-    {
-        let pt = paging::kernel_page_table().lock();
-        unsafe { Arch::activate_page_table(&pt) };
+    // SAFETY: bare-metal 环境，主核首次调用
+    unsafe {
+        boot::kernel_init(argc, argv, boot::InitLevel::Full);
     }
-    log::info!("MemoryInit: paging enabled");
-    memory::store_kernel_address_space(kernel_as);
-    smoke_test::phase3();
-    // 必须先初始化 timer（设置 HW_FREQ 和首次超时），再开启中断。
-    // 否则开启中断后挂起的 timer 中断立刻触发，handle_timer() 中
-    // get_interval() 返回 0（HW_FREQ 未初始化），导致 timer 以最高
-    // 频率无限触发，形成中断风暴，主线程代码永远得不到执行。
-    Arch::init_timer();
-    Arch::init_interrupt();
 
-    // P5: 任务初始化（必须在 wake_secondary_cores 之前）
-    task::init();
-
-    // P6/P7: 设备 + 文件系统初始化
-    // 必须在 task::init() 之后——timer 中断可能触发 schedule()，
-    // 需要 per-CPU 调度器已初始化。
-    simplekernel::device::device_init();
-    simplekernel::fs::fs_init();
-
-    Arch::wake_secondary_cores();
-    smoke_test::phase4();
-
-    // P5: 冒烟测试——多核锁竞争 + sleep/clone/wait/signal
+    // 冒烟测试——启动线程级测试（锁竞争、sleep、clone/wait、signal、VFS）
     smoke_test::spawn_all();
 
     // 立即尝试调度，开始运行刚创建的线程

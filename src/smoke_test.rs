@@ -1,108 +1,13 @@
 //! 系统集成冒烟测试——验证各子系统在 QEMU 上正确运行。
 //!
-//! 由 `main.rs` 中 bootstrap 调用，
-//! 阶段测试在引导序列中内联运行，线程测试作为独立内核线程运行。
+//! 由 `main.rs` 中 bootstrap 调用，线程测试作为独立内核线程运行。
+//! 引导序列中的内联冒烟测试已移至 `boot.rs::kernel_init()`。
 
 use core::sync::atomic::{AtomicU32, Ordering};
 
 use simplekernel::syscall;
 use simplekernel::task;
 use sync::SpinLock;
-
-pub fn phase2() {
-    log::info!("Testing SpinLock...");
-    let lock = SpinLock::new(42u32, "smoke_test", sync::lock_level::UNSPECIFIED);
-    {
-        let mut guard = lock.lock();
-        assert_eq!(*guard, 42);
-        *guard = 99;
-    }
-    {
-        let guard = lock.lock();
-        assert_eq!(*guard, 99);
-    }
-    assert!(!lock.is_locked());
-    log::info!("SpinLock OK");
-
-    log::info!("Initializing ELF parser...");
-    let elf_addr = memory::MEMORY_INFO
-        .get()
-        .expect("MEMORY_INFO not initialized")
-        .kernel_addr
-        .as_usize() as u64;
-    // SAFETY: elf_addr 是内核自身的 ELF 基地址，在内核生命周期内有效
-    unsafe { simplekernel::panic::init_elf(elf_addr) };
-    log::info!("ELF parser OK");
-
-    log::info!("Phase 2 complete");
-}
-
-pub fn phase3() {
-    use alloc::boxed::Box;
-
-    let val = Box::new(42u64);
-    log::info!("HeapTest: Box::new(42) = {}", *val);
-    assert_eq!(*val, 42);
-
-    // 显式测试 aarch64-cpu TLBI 封装（rust-embedded/aarch64-cpu#77）
-    #[cfg(target_arch = "aarch64")]
-    {
-        use aarch64_cpu::asm::{barrier, tlbi};
-
-        log::info!("TLBI: testing aarch64-cpu tlbi wrappers...");
-
-        // 1. vmalle1: 全局 TLB 无效化
-        barrier::dsb(barrier::SY);
-        tlbi::vmalle1();
-        barrier::dsb(barrier::SY);
-        barrier::isb(barrier::SY);
-        log::info!("TLBI: vmalle1 OK");
-
-        // 2. vae1: 按 VA + ASID 无效化（使用内核栈地址作为测试 VA）
-        let test_va: u64 = &val as *const _ as u64;
-        barrier::dsb(barrier::SY);
-        tlbi::vae1(tlbi::Addr::new(test_va, 0));
-        barrier::dsb(barrier::SY);
-        barrier::isb(barrier::SY);
-        log::info!("TLBI: vae1(va={:#x}, asid=0) OK", test_va);
-
-        // 3. vale1: 按 VA 无效化（仅末级页表项）
-        barrier::dsb(barrier::SY);
-        tlbi::vale1(tlbi::Addr::new(test_va, 0));
-        barrier::dsb(barrier::SY);
-        barrier::isb(barrier::SY);
-        log::info!("TLBI: vale1 OK");
-
-        // 4. aside1: 按 ASID 无效化
-        barrier::dsb(barrier::SY);
-        tlbi::aside1(tlbi::Asid::new(0));
-        barrier::dsb(barrier::SY);
-        barrier::isb(barrier::SY);
-        log::info!("TLBI: aside1 OK");
-
-        // 5. vmalle1is: Inner Shareable 域全局无效化
-        barrier::dsb(barrier::SY);
-        tlbi::vmalle1is();
-        barrier::dsb(barrier::SY);
-        barrier::isb(barrier::SY);
-        log::info!("TLBI: vmalle1is OK");
-
-        // 6. 验证 Addr 编码正确性
-        let addr = tlbi::Addr::new(0x8000_0000, 1);
-        assert_eq!(addr.as_raw(), 0x0001_0000_0008_0000);
-        let asid = tlbi::Asid::new(42);
-        assert_eq!(asid.as_raw(), 0x002A_0000_0000_0000);
-        log::info!("TLBI: Addr/Asid encoding verified");
-
-        log::info!("=== TLBI TEST PASSED ===");
-    }
-
-    log::info!("Phase 3 complete");
-}
-
-pub fn phase4() {
-    log::info!("Phase 4 complete");
-}
 
 static TEST_COUNTER: SpinLock<u32> =
     SpinLock::new(0, "test_counter", sync::lock_level::UNSPECIFIED);

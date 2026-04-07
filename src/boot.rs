@@ -27,6 +27,18 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     unsafe { per_cpu::percpu_init() };
     crate::init::early_init(Arch::dtb_addr(argc, argv));
 
+    // ELF 符号表初始化——panic backtrace 依赖此信息
+    let elf_addr = memory::MEMORY_INFO
+        .get()
+        .expect("MEMORY_INFO not initialized")
+        .kernel_addr
+        .as_usize() as u64;
+    // SAFETY: elf_addr 是内核自身的 ELF 基地址，在内核生命周期内有效
+    unsafe { crate::panic::init_elf(elf_addr) };
+
+    // 冒烟测试：SpinLock 基本操作
+    smoke_test_spinlock();
+
     let mut kernel_as = memory::init();
     Arch::map_early_mmio(&mut kernel_as).expect("failed to map early MMIO");
     // SAFETY: 页表覆盖所有内核代码/数据及早期 MMIO
@@ -36,6 +48,9 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     }
     log::info!("MemoryInit: paging enabled");
     memory::store_kernel_address_space(kernel_as);
+
+    // 冒烟测试：堆分配 + 帧分配
+    smoke_test_memory();
 
     if matches!(level, InitLevel::Memory) {
         return;
@@ -62,6 +77,53 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     crate::fs::fs_init();
 
     Arch::wake_secondary_cores();
+}
+
+/// 冒烟测试：SpinLock 创建、加锁、修改、解锁。
+fn smoke_test_spinlock() {
+    let lock = sync::SpinLock::new(42u32, "boot_smoke", sync::lock_level::UNSPECIFIED);
+    {
+        let mut guard = lock.lock();
+        assert_eq!(*guard, 42);
+        *guard = 99;
+    }
+    {
+        let guard = lock.lock();
+        assert_eq!(*guard, 99);
+    }
+    assert!(!lock.is_locked());
+    log::debug!("boot smoke: SpinLock OK");
+}
+
+/// 冒烟测试：堆分配（Vec）+ 帧分配（alloc_one）+ aarch64 TLBI。
+fn smoke_test_memory() {
+    // 堆分配验证
+    let v = alloc::vec![1u32, 2, 3];
+    assert_eq!(v.len(), 3);
+    assert_eq!(v[0] + v[1] + v[2], 6);
+    log::debug!("boot smoke: heap alloc OK");
+
+    // 帧分配验证
+    let frame = memory::frame::AllocatedFrames::<memory_types::Page4K>::alloc_one()
+        .expect("boot smoke: frame alloc_one failed");
+    assert!(
+        frame.start_paddr().as_usize() % config::PAGE_SIZE == 0,
+        "boot smoke: frame not page-aligned: {:#x}",
+        frame.start_paddr().as_usize()
+    );
+    log::debug!("boot smoke: frame alloc OK");
+
+    // aarch64: 基本 TLBI 验证（vmalle1 全局 TLB 无效化）
+    #[cfg(target_arch = "aarch64")]
+    {
+        use aarch64_cpu::asm::{barrier, tlbi};
+
+        barrier::dsb(barrier::SY);
+        tlbi::vmalle1();
+        barrier::dsb(barrier::SY);
+        barrier::isb(barrier::SY);
+        log::debug!("boot smoke: TLBI vmalle1 OK");
+    }
 }
 
 /// 从核初始化序列。
