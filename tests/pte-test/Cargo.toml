@@ -1,0 +1,24 @@
+[package]
+name = "pte-test"
+description = "页表项编解码测试（RISC-V + AArch64）"
+edition.workspace = true
+
+[[bin]]
+name = "pte-test"
+test = false
+
+[dependencies]
+test_harness = { path = "../test_harness" }
+simplekernel = { path = "../..", default-features = false }
+page_table_entry = { path = "../../crates/page_table_entry" }
+memory_types = { path = "../../crates/memory_types" }
+log.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[lints]
+workspace = true

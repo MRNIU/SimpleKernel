@@ -17,7 +17,7 @@
 //! | `impl_addr!` | PhysAddr, VirtAddr | 对齐辅助（`page_offset`/`is_aligned`/`align_down`/`align_up`）、`Display` |
 //! | `impl_page_or_frame!` | Frame, Page | `start_addr`、地址/usize 双向转换、按页大小缩放的位移算术、`Display`/`Debug` |
 
-#![cfg_attr(not(test), no_std)]
+#![no_std]
 
 mod addr;
 mod page_frame;

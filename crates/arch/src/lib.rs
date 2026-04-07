@@ -7,9 +7,8 @@
 //!
 //! | 架构 | 条件编译 | 说明 |
 //! |------|----------|------|
-//! | RISC-V 64 | `bare_riscv64` | S 模式，Sv39/Sv48 |
+//! | RISC-V 64 | `bare_riscv64` | S 模式，Sv39 |
 //! | AArch64 | `bare_aarch64` | EL1，4KB granule |
-//! | 宿主机 | `not(bare_metal)` | mock 实现，用于 `cargo test` |
 //!
 //! ## 使用示例
 //!
@@ -19,12 +18,10 @@
 //! arch::flush_tlb_page(vaddr);
 //! ```
 
-#![cfg_attr(not(test), no_std)]
+#![no_std]
 
 #[cfg(bare_aarch64)]
 mod aarch64;
-#[cfg(not(bare_metal))]
-mod host;
 #[cfg(bare_riscv64)]
 mod riscv64;
 
@@ -87,8 +84,6 @@ pub(crate) trait ArchImpl {
 type Impl = riscv64::Riscv64;
 #[cfg(bare_aarch64)]
 type Impl = aarch64::Aarch64;
-#[cfg(not(bare_metal))]
-type Impl = host::Host;
 
 /// 物理地址有效位宽（RISC-V: 56, AArch64: 48）。
 pub const PA_BITS: usize = Impl::PA_BITS;
@@ -203,12 +198,4 @@ pub fn flush_tlb_all() {
 #[inline(always)]
 pub fn flush_tlb_page(vaddr: usize) {
     Impl::flush_tlb_page(vaddr);
-}
-
-/// 设置宿主机模拟的中断使能状态（仅测试使用）。
-///
-/// 裸机环境下此函数不存在。
-#[cfg(not(bare_metal))]
-pub fn set_irq_enabled_for_test(enabled: bool) {
-    host::set_irq_enabled(enabled);
 }

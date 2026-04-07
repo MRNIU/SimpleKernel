@@ -46,6 +46,12 @@ members = [
     "tests/heap-test",
     "tests/device-test",
     "tests/fs-test",
+    "tests/memory-types-test",
+    "tests/memory-types-align-up-overflow-panic-test",
+    "tests/memory-types-pa-overflow-panic-test",
+    "tests/memory-types-va-canonical-panic-test",
+    "tests/memory-types-frame-2m-unaligned-panic-test",
+    "tests/pte-test",
     "xtask",
 ]
 default-members = ["."]

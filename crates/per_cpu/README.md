@@ -51,7 +51,8 @@ Per-CPU 变量的包装器。不直接持有数据——数据在每个 CPU 的�
 
 其他 per-CPU 变量由各自 crate 使用 `#[cpu_local]` 声明，例如：
 - `sync` crate 声明 `LOCK_STACK: LockStack`（锁顺序栈）
-- `interrupt_state` crate 声明 `HARDIRQ_COUNT`、`PREEMPT_DISABLE_COUNT`、`NEED_RESCHED` 等
+- `interrupt_state` crate 声明 `HARDIRQ_COUNT`、`SOFTIRQ_COUNT`、`PREEMPT_DISABLE_COUNT`、`NEED_RESCHED` 等
+- `local_tick` crate 声明 `LOCAL_TICK_COUNT: AtomicU64`（每核心定时器计数）
 
 ## 公开函数
 
@@ -61,13 +62,19 @@ Per-CPU 变量的包装器。不直接持有数据——数据在每个 CPU 的�
 | `percpu_init_smp()` | 从核初始化（设置基地址寄存器） |
 | `current_core_id()` | 读取当前核心 ID |
 
+## 依赖
+
+| crate | 用途 |
+|-------|------|
+| `macros` | 提供 `#[cpu_local]` 过程宏 |
+| `config` | `MAX_CORE_COUNT`、`PERCPU_AREA_MAX` 常量 |
+| `arch` | 架构相关操作（`percpu_base()`、`set_percpu_base()`、`core_id()`） |
+
 ## 模块结构
 
 ```
 src/
-├── lib.rs           CpuLocal<T> 公共定义、cfg 分发
-├── bare_metal.rs    裸机实现（链接器符号、段复制、基地址寄存器访问）
-└── host.rs          宿主机 mock（直接解引用，cargo test 用）
+└── lib.rs           CpuLocal<T> 定义、percpu_init/percpu_init_smp、current_core_id
 ```
 
 ## 使用示例
@@ -114,15 +121,6 @@ _start
 ```
 
 `percpu_init()` 必须在 `logging::init()` 之后、任何 `#[cpu_local]` 访问之前调用。
-
-## 裸机 vs 宿主机
-
-| 行为 | 裸机 (`target_os = "none"`) | 宿主机 (`cargo test`) |
-|------|---------------------------|---------------------|
-| 变量存储 | `.percpu` section -> BSS 复制 | 普通 static |
-| 访问路径 | base + offset | 直接解引用模板指针 |
-| `current_core_id()` | per-CPU `CORE_ID` 或 raw 寄存器 | 固定返回 0 |
-| `get_mut()` 安全性 | 需关中断 | 单线程测试中安全 |
 
 ## 注意事项
 

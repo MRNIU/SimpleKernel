@@ -6,15 +6,12 @@
 //!
 //! 本 crate 无 `alloc` / `config` 依赖，可在 heap 未初始化的早期启动阶段使用。
 
-#![cfg_attr(not(test), no_std)]
+#![no_std]
 
 use memory_types::PhysAddr;
 
 pub mod aarch64;
 pub mod riscv64;
-
-#[cfg(test)]
-mod tests;
 
 /// 页表项标志位的统一接口——各架构必须实现。
 ///
@@ -107,7 +104,4 @@ pub trait PteOps: Copy + core::fmt::Debug {
 #[cfg(bare_aarch64)]
 pub use aarch64::{PageTableEntry, PteFlags};
 #[cfg(bare_riscv64)]
-pub use riscv64::{PageTableEntry, PteFlags};
-/// 宿主机编译占位——所有宿主架构统一使用 riscv64 类型
-#[cfg(not(bare_metal))]
 pub use riscv64::{PageTableEntry, PteFlags};

@@ -1,0 +1,25 @@
+[package]
+name = "memory-types-align-up-overflow-panic-test"
+description = "align_up 溢出应 panic"
+edition.workspace = true
+
+[[bin]]
+name = "memory-types-align-up-overflow-panic-test"
+test = false
+
+[dependencies]
+test_harness = { path = "../test_harness" }
+simplekernel = { path = "../..", default-features = false }
+memory_types = { path = "../../crates/memory_types" }
+config = { path = "../../crates/config" }
+log.workspace = true
+heapless.workspace = true
+
+[target.'cfg(target_arch = "riscv64")'.dependencies]
+sbi-rt.workspace = true
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+aarch64-cpu.workspace = true
+
+[lints]
+workspace = true
