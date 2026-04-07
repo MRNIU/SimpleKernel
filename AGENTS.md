@@ -12,8 +12,7 @@ src/arch/             # Per-architecture code (riscv64/, aarch64/)
 src/boot.rs           # kernel_init() — staged init for kernel & test binaries
 crates/               # Workspace crates (memory, sync, per_cpu, paging, ...)
 xtask/                # Build tool (cargo xtask run/build/debug/test/firmware)
-tests/system/         # Unified system test kernel (QEMU, all test groups)
-tests/standalone/     # Standalone test binaries (panic_test, oom_test, ...)
+tests/standalone/     # Standalone QEMU test binaries (each runs in isolated QEMU instance)
 docs/design/         # Design docs (SAS architecture, subsystem designs, phase plans)
 3rd/                  # Git submodules (opensbi, u-boot, optee, atf, dtc — firmware only)
 ```
@@ -25,7 +24,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Boot flow** → `src/main.rs`: `_start` → `bootstrap()` → logging → percpu → early_init → memory → paging → timer → interrupt → task → device → fs → SMP → schedule
 - **帧生命周期** → `crates/frame_allocator/`: Free → Allocated → Mapped → Unmapped → Free（typestate 编译期追踪）
 - **映射所有权** → `crates/paging/src/mapping.rs`: `MappedPages` 持有 `MappedFrames`，Drop 自动 unmap
-- **System tests** → `tests/system/` for unified test kernel, `tests/standalone/` for isolated tests
+- **System tests** → `tests/standalone/` for isolated QEMU tests, each binary in its own QEMU instance
 - **Error handling** → `KResult<T> = Result<T, ErrorCode>` in `src/error.rs`
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
 - **Design overview** → `docs/design/00-概述.md` (master plan — written pre-implementation, may be outdated; code is source of truth)
@@ -64,13 +63,8 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 | `src/panic.rs` | Panic handler + observer pattern | error recovery |
 | `src/lang_items.rs` | `#[panic_handler]` (gated on `lang_items` feature) | Rust runtime |
 | `src/boot.rs` | `kernel_init(InitLevel)` + `kernel_init_smp()` | staged init for kernel & tests |
-| `tests/system/src/framework.rs` | TestRunner, TestCase, TestGroup | test framework |
-| `tests/system/src/main.rs` | Test kernel entry: init → run tests → qemu_exit | system test binary |
-| `tests/system/src/memory_tests.rs` | Heap allocation tests (Box, Vec, large) | memory test group |
-| `tests/system/src/sync_tests.rs` | SpinLock tests (basic, modify, drop) | sync test group |
-| `tests/system/src/device_tests.rs` | DeviceManager + VirtIO blk 验证 | device test group |
-| `tests/system/src/fs_tests.rs` | VFS 路径解析 + RamFS CRUD + 多级目录 | fs test group |
-| `tests/standalone/panic_test/` | Verifies panic handler triggers correctly | standalone test |
+| `crates/test_harness/` | `test_main!` 宏（启动 + 测试 + 退出 QEMU） | test infrastructure |
+| `tests/standalone/*/` | 独立 QEMU 测试二进制 | standalone tests |
 | `xtask/src/test.rs` | `cargo xtask test` orchestration | test runner |
 
 ## CONVENTIONS
@@ -134,14 +128,13 @@ cargo xtask run --arch aarch64
 # Debug (GDB on localhost:1234)
 cargo xtask debug --arch riscv64
 
-# Unit tests (x86_64 host only)
-cargo test
+# Unit tests (host, pure logic only)
+cargo test -p memory_types -p config -p page_table_entry -p span -p arch
 
 # System tests in QEMU
-cargo xtask test --arch riscv64           # unified test kernel
-cargo xtask test --arch riscv64 --all     # unified + all standalone
-cargo xtask test --arch riscv64 --name panic-test  # specific standalone test
-cargo xtask test --list                   # list available tests
+cargo xtask test --arch riscv64                        # all standalone tests
+cargo xtask test --arch riscv64 --name panic-test      # specific standalone test
+cargo xtask test --list                                # list available tests
 
 # Format + lint check
 cargo fmt --check && cargo clippy -- -D warnings
@@ -152,80 +145,62 @@ cargo doc --no-deps
 
 ## TESTING
 
-三层测试体系：单元测试（host）、系统测试（QEMU 裸机）、独立测试（QEMU 隔离场景）。
+两层测试体系 + 冒烟测试：纯逻辑单元测试（宿主机）、独立 QEMU 系统测试、冒烟测试（内核启动时自动运行）。
 
-### 单元测试（Unit Tests）
+### 纯逻辑单元测试（Host Unit Tests）
 
-在 x86_64 宿主机上运行，测试与体系结构无关的纯逻辑代码。
+在宿主机上运行，测试不涉及硬件的纯计算逻辑。
 
 ```bash
-cargo test                                        # 全部单元测试
+cargo test -p memory_types -p config -p page_table_entry -p span -p arch  # 全部纯逻辑测试
 cargo test -p memory_types                        # 单个 crate
-cargo test alignment_basic -- --nocapture         # 单个测试（显示输出）
+cargo test -p span -- alignment_basic --nocapture # 单个测试（显示输出）
 ```
 
-适用范围：`crates/` 下的地址运算、页表参数推导、调度算法、ELF 解析等。
+适用范围：地址运算、PTE 编解码、常量验证等。
 在模块内用 `#[cfg(test)] mod tests { ... }` 编写，标准 `#[test]` 宏。
 
-### 系统测试（System Tests）
+### 独立 QEMU 系统测试（Standalone Tests）
 
-一个 `#![no_std]` 裸机测试内核，在 QEMU 中完整引导后运行所有测试组。
-
-```bash
-cargo xtask test --arch riscv64                   # 运行统一测试内核
-cargo xtask test --arch aarch64                   # aarch64 架构
-cargo xtask test --arch riscv64 --all             # 统一测试 + 全部独立测试
-cargo xtask test --list                           # 列出所有可用测试
-```
-
-测试框架位于 `tests/system/src/framework.rs`，核心类型：
-
-| 类型 | 用途 |
-|------|------|
-| `TestCase { name, run: fn() }` | 单个测试用例 |
-| `TestGroup { name, tests }` | 测试组（静态数组） |
-| `TestRunner` | 收集组、依次执行、统计结果 |
-
-现有测试组（在 `tests/system/src/main.rs` 中注册）：
-
-| 组 | 文件 | 测试内容 |
-|----|------|----------|
-| memory | `memory_tests.rs` | 堆分配（Box、Vec、大块） |
-| sync | `sync_tests.rs` | SpinLock 基本操作、RAII 语义 |
-| device | `device_tests.rs` | DeviceManager、VirtIO 块设备读取 |
-| fs | `fs_tests.rs` | VFS 路径解析、RamFS CRUD、多级目录 |
-
-引导流程：`_start` → `kernel_init(InitLevel::Full)` → 注册测试组 → `runner.run()` → `exit_qemu(0/1)`。
-断言失败 = panic = 测试内核立即终止（裸机环境无法捕获 panic）。
-
-#### 添加系统测试
-
-1. 在 `tests/system/src/` 新建 `xxx_tests.rs`，导出 `pub fn tests() -> &'static [TestCase]`
-2. 在 `tests/system/src/main.rs` 中 `runner.add_group(TestGroup { name: "xxx", tests: xxx_tests::tests() })`
-
-### 独立测试（Standalone Tests）
-
-独立的裸机二进制，用于测试无法在统一测试内核中验证的场景（如 panic 行为、OOM 处理）。
+每个测试是独立的 `#![no_std]` 裸机二进制，启动独立 QEMU 实例，拥有干净的内核环境。
 
 ```bash
-cargo xtask test --arch riscv64 --name panic-test   # 运行指定独立测试
+cargo xtask test --arch riscv64                        # 全部独立测试
+cargo xtask test --arch riscv64 --name frame-alloc-test # 指定测试
+cargo xtask test --list                                # 列出可用测试
 ```
 
-现有独立测试：`tests/standalone/panic_test/` — 验证 panic handler 正确触发。
+测试基础设施位于 `crates/test_harness/`，核心是 `test_main!` 宏：
+
+```rust
+// 普通测试
+test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_tests);
+
+// should_panic 测试（期望 panic 则通过）
+test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_panic);
+```
+
+`test_main!` 负责：`_start` 入口 → `kernel_init(level)` → 调用测试函数 → `exit_qemu(0)`。
+断言失败 = panic = QEMU 非零退出 = 测试失败。
 
 #### 添加独立测试
 
-1. 创建 `tests/standalone/my-test/`，包含 `Cargo.toml`（`name = "my-test"`）和 `src/main.rs`
-2. `src/main.rs` 提供 `_start` 入口，按需调用 `kernel_init(InitLevel::...)` 选择初始化级别
-3. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
-4. xtask 会自动扫描 `tests/standalone/*/Cargo.toml` 发现新测试
+1. 创建 `tests/standalone/my-test/`，包含 `Cargo.toml`、`build.rs`、`src/main.rs`
+2. `src/main.rs` 中使用 `test_harness::test_main!` 宏
+3. should_panic 测试使用 `test_main!(level, fn, should_panic)` 变体
+4. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
+5. xtask 自动扫描 `tests/standalone/*/Cargo.toml` 发现新测试
+
+### 冒烟测试（Boot Smoke Tests）
+
+内核 `boot.rs::kernel_init()` 各阶段完成后自动运行关键断言（SpinLock 基本操作、堆分配、帧分配），确保基础设施正常。这些测试在每次内核启动（包括独立测试二进制启动）时自动执行，无需手动触发。
 
 ### 测试规范
 
 - 每个测试函数必须有 `///` 文档注释
-- 系统/独立测试二进制的 `Cargo.toml` 中设置 `test = false`（不使用标准测试 harness）
+- 独立测试二进制的 `Cargo.toml` 中设置 `test = false`（不使用标准测试 harness）
 - 测试 crate 依赖 `simplekernel` lib，通过 `kernel_init()` 复用内核初始化流程
-- CI 中系统测试会重复运行多次以验证稳定性（PR: 3 次，push: 10 次），每次超时 300 秒
+- CI 中系统测试会重复运行多次以验证稳定性（PR: 3 次，push: 10 次），每个测试超时 120 秒
 
 ## DESIGN REFERENCES
 设计和实现新模块时，应参考以下成熟内核和论文，取其精华。完整参考文献见 `docs/design/references.md`。
