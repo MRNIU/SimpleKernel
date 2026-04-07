@@ -1,10 +1,36 @@
 [package]
-name = "paging-mapping-test"
-description = "验证 MappedPages RAII 映射生命周期"
+name = "paging-test"
+description = "页表参数、map/unmap/映射生命周期及边界 panic 测试"
 edition.workspace = true
 
 [[bin]]
+name = "paging-basic-test"
+path = "src/basic.rs"
+test = false
+
+[[bin]]
+name = "paging-table-test"
+path = "src/table.rs"
+test = false
+
+[[bin]]
 name = "paging-mapping-test"
+path = "src/mapping.rs"
+test = false
+
+[[bin]]
+name = "paging-conflict-panic-test"
+path = "src/conflict_panic.rs"
+test = false
+
+[[bin]]
+name = "paging-equal-range-panic-test"
+path = "src/equal_range_panic.rs"
+test = false
+
+[[bin]]
+name = "paging-reversed-range-panic-test"
+path = "src/reversed_range_panic.rs"
 test = false
 
 [dependencies]
@@ -15,6 +41,7 @@ frame_allocator = { path = "../../crates/frame_allocator" }
 memory_types = { path = "../../crates/memory_types" }
 config = { path = "../../crates/config" }
 log.workspace = true
+heapless.workspace = true
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]
 sbi-rt.workspace = true
