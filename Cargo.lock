@@ -448,65 +448,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "memory-types-align-up-overflow-panic-test"
-version = "0.0.0"
-dependencies = [
- "aarch64-cpu",
- "config",
- "heapless 0.8.0",
- "log",
- "memory_types",
- "sbi-rt",
- "simplekernel",
- "test_harness",
-]
-
-[[package]]
-name = "memory-types-frame-2m-unaligned-panic-test"
-version = "0.0.0"
-dependencies = [
- "aarch64-cpu",
- "heapless 0.8.0",
- "log",
- "memory_types",
- "sbi-rt",
- "simplekernel",
- "test_harness",
-]
-
-[[package]]
-name = "memory-types-pa-overflow-panic-test"
-version = "0.0.0"
-dependencies = [
- "aarch64-cpu",
- "arch",
- "heapless 0.8.0",
- "log",
- "memory_types",
- "sbi-rt",
- "simplekernel",
- "test_harness",
-]
-
-[[package]]
 name = "memory-types-test"
 version = "0.0.0"
 dependencies = [
  "aarch64-cpu",
- "config",
- "log",
- "memory_types",
- "sbi-rt",
- "simplekernel",
- "test_harness",
-]
-
-[[package]]
-name = "memory-types-va-canonical-panic-test"
-version = "0.0.0"
-dependencies = [
- "aarch64-cpu",
  "arch",
+ "config",
  "heapless 0.8.0",
  "log",
  "memory_types",

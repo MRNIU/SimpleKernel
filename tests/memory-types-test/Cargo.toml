@@ -1,10 +1,31 @@
 [package]
 name = "memory-types-test"
-description = "memory_types 地址和帧/页号编解码测试"
+description = "memory_types 地址、帧/页号编解码及边界 panic 测试"
 edition.workspace = true
 
 [[bin]]
 name = "memory-types-test"
+path = "src/main.rs"
+test = false
+
+[[bin]]
+name = "memory-types-align-up-overflow-panic-test"
+path = "src/align_up_overflow_panic.rs"
+test = false
+
+[[bin]]
+name = "memory-types-frame-2m-unaligned-panic-test"
+path = "src/frame_2m_unaligned_panic.rs"
+test = false
+
+[[bin]]
+name = "memory-types-pa-overflow-panic-test"
+path = "src/pa_overflow_panic.rs"
+test = false
+
+[[bin]]
+name = "memory-types-va-canonical-panic-test"
+path = "src/va_canonical_panic.rs"
 test = false
 
 [dependencies]
@@ -12,7 +33,9 @@ test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false }
 memory_types = { path = "../../crates/memory_types" }
 config = { path = "../../crates/config" }
+arch = { path = "../../crates/arch" }
 log.workspace = true
+heapless.workspace = true
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]
 sbi-rt.workspace = true
