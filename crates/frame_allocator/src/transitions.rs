@@ -87,15 +87,17 @@ impl UnmappedFrames {
 mod tests {
     use crate::alloc::alloc_from_buddy;
     use crate::ensure_test_init;
-    use crate::state::AllocatedFrames;
-
-    type Alloc = AllocatedFrames;
 
     /// 分配单帧后帧计数应为 1，地址应页对齐。
+    ///
+    /// 使用 `alloc_from_buddy` + `into_allocated` 绕过 `alloc()` 中的
+    /// `to_virt()` 清零——宿主机堆指针不满足内核 VA_BITS 规范化约束。
     #[test]
     fn alloc_one_frame() {
         ensure_test_init();
-        let frame = Alloc::alloc_one().expect("alloc_one 应成功");
+        let frame = alloc_from_buddy(1)
+            .expect("buddy 分配应成功")
+            .into_allocated();
         assert_eq!(frame.count(), 1);
         assert!(frame.start_paddr().is_aligned());
     }
@@ -104,7 +106,9 @@ mod tests {
     #[test]
     fn alloc_multiple_frames() {
         ensure_test_init();
-        let frames = Alloc::alloc(4).expect("alloc(4) 应成功");
+        let frames = alloc_from_buddy(4)
+            .expect("buddy 分配应成功")
+            .into_allocated();
         assert_eq!(frames.count(), 4);
     }
 
@@ -113,10 +117,12 @@ mod tests {
     fn alloc_dealloc_realloc() {
         ensure_test_init();
         {
-            let _frame = Alloc::alloc_one().expect("分配");
+            let _frame = alloc_from_buddy(1).expect("分配").into_allocated();
         }
         // frame 已 drop，帧应归还
-        let frame2 = Alloc::alloc_one().expect("重新分配应成功");
+        let frame2 = alloc_from_buddy(1)
+            .expect("重新分配应成功")
+            .into_allocated();
         assert!(frame2.start_paddr().is_aligned());
     }
 
