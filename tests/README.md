@@ -1,41 +1,59 @@
 # 测试目录
 
 独立 QEMU 系统测试——每个测试是独立二进制，启动独立 QEMU 实例，拥有干净的内核环境。
+同模块的测试合并在一个包中，通过 `[[bin]]` 管理多个二进制。
 
 ## 运行
 
 ```bash
-cargo xtask test --arch riscv64 --all          # 全部测试
-cargo xtask test --arch riscv64 --name <name>  # 指定测试
-cargo xtask test --list                        # 列出可用测试
+cargo xtask test --arch riscv64 --all                   # 全部测试
+cargo xtask test --arch riscv64 --name paging-test/table # 指定测试
+cargo xtask test --list                                  # 列出可用测试
 ```
 
 ## 测试清单
 
-| 测试 | 类型 | 验证内容 |
-|------|------|---------|
-| `frame-alloc-test` | normal | 帧分配/释放、typestate 生命周期转换 |
-| `frame-mapped-drop-test` | should_panic | MappedFrames 未 unmap 直接 drop 应 panic |
-| `sync-spinlock-test` | normal | SpinLock 加锁/解锁/try_lock |
-| `sync-recursive-lock-test` | should_panic | 同核递归加锁检测 |
-| `sync-lockstack-test` | normal | 锁栈级别顺序检查 |
-| `sync-lockstack-pop-mismatch-test` | should_panic | 锁栈 pop 指针不匹配检测 |
-| `paging-basic-test` | normal | 页大小计算、VPN 索引提取 |
-| `paging-table-test` | normal | 页表 map/unmap/get_mapping/大页/identity_map_range |
-| `paging-mapping-test` | normal | MappedPages RAII 映射生命周期 |
-| `paging-equal-range-panic-test` | should_panic | identity_map_range 空范围检测 |
-| `paging-reversed-range-panic-test` | should_panic | identity_map_range 反向范围检测 |
-| `paging-conflict-panic-test` | should_panic | identity_map_range 映射冲突检测 |
-| `vma-test` | normal | VMA mmap/munmap/find_vma/register_existing |
-| `heap-test` | normal | 堆分配（Box、Vec、大块） |
-| `device-test` | normal | DeviceManager、VirtIO 块设备读取 |
-| `fs-test` | normal | VFS 路径解析、RamFS CRUD、多级目录 |
-| `panic_test` | should_panic | panic handler 正确触发 |
+| 包 | 二进制 | 类型 | 验证内容 |
+|----|--------|------|---------|
+| `memory-types-test` | `codec` | normal | 地址和帧/页号编解码 |
+| | `align-up-overflow-panic` | should_panic | align_up 溢出检测 |
+| | `frame-2m-unaligned-panic` | should_panic | Frame\<Page2M\> 非对齐检测 |
+| | `pa-overflow-panic` | should_panic | PhysAddr 加法溢出检测 |
+| | `va-canonical-panic` | should_panic | VirtAddr 规范化违反检测 |
+| `paging-test` | `basic` | normal | 页大小计算、VPN 索引提取 |
+| | `table` | normal | 页表 map/unmap/get_mapping/大页/identity_map_range |
+| | `mapping` | normal | MappedPages RAII 映射生命周期 |
+| | `conflict-panic` | should_panic | identity_map_range 映射冲突检测 |
+| | `equal-range-panic` | should_panic | identity_map_range 空范围检测 |
+| | `reversed-range-panic` | should_panic | identity_map_range 反向范围检测 |
+| `sync-test` | `spinlock` | normal | SpinLock 加锁/解锁/try_lock |
+| | `lockstack` | normal | 锁栈级别顺序检查 |
+| | `lockstack-pop-mismatch-panic` | should_panic | 锁栈 pop 指针不匹配检测 |
+| | `recursive-lock-panic` | should_panic | 同核递归加锁检测 |
+| `frame-test` | `alloc` | normal | 帧分配/释放、typestate 生命周期转换 |
+| | `mapped-drop-panic` | should_panic | MappedFrames 未 unmap 直接 drop 应 panic |
+| `heap-test` | | normal | 堆分配（Box、Vec、大块） |
+| `device-test` | | normal | DeviceManager、VirtIO 块设备读取 |
+| `fs-test` | | normal | VFS 路径解析、RamFS CRUD、多级目录 |
+| `vma-test` | | normal | VMA mmap/munmap/find_vma/register_existing |
+| `pte-test` | | normal | 页表项编解码（RISC-V + AArch64） |
+| `panic-test` | | should_panic | panic handler 正确触发 |
 
 ## 添加新测试
 
-1. 创建 `tests/my-test/`，包含 `Cargo.toml` 和 `src/main.rs`
-2. `src/main.rs` 使用 `test_harness::test_main!` 宏：
+**在已有模块包中添加（推荐）：**
+
+1. 在对应包的 `src/` 下创建新源文件
+2. 在该包的 `Cargo.toml` 中添加 `[[bin]]` 条目：
+
+```toml
+[[bin]]
+name = "my-new-test"
+path = "src/my_new_test.rs"
+test = false
+```
+
+3. 源文件使用 `test_harness::test_main!` 宏：
 
 ```rust
 #![no_std]
@@ -62,5 +80,10 @@ fn test_fn() {
 }
 ```
 
-3. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
-4. xtask 自动扫描 `tests/*/Cargo.toml` 发现新测试
+4. xtask 自动扫描 `[[bin]]` 条目发现新测试
+
+**创建新模块包：**
+
+1. 创建 `tests/my-test/`，包含 `Cargo.toml`（至少一个 `[[bin]]` 条目）和对应源文件
+2. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
+3. xtask 自动扫描 `tests/*/Cargo.toml` 中的 `[[bin]]` 条目发现新测试
