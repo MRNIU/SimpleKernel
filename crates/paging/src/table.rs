@@ -700,6 +700,80 @@ mod tests {
         assert_eq!(err, PagingError::PageNotMapped);
     }
 
+    /// update_flags 应修改已映射页的权限并返回旧标志。
+    #[test]
+    fn update_flags_changes_permissions() {
+        let mut pt = PageTable::create().expect("创建测试页表失败");
+        let va = VirtAddr::new(0x1000);
+        let pa = PhysAddr::new(0x8020_0000);
+
+        pt.map_page(va, pa, PteFlags::kernel_rw())
+            .expect("map 应成功");
+        let old_flags = pt
+            .update_flags(va, PteFlags::kernel_ro())
+            .expect("update_flags 应成功");
+        assert_eq!(old_flags, PteFlags::kernel_rw());
+
+        let (got_pa, got_flags) = pt.get_mapping(va).expect("映射应存在");
+        assert_eq!(got_pa, pa);
+        assert_eq!(got_flags, PteFlags::kernel_ro());
+    }
+
+    /// update_flags 对未映射页应返回 PageNotMapped。
+    #[test]
+    fn update_flags_unmapped_fails() {
+        let mut pt = PageTable::create().expect("创建测试页表失败");
+        let err = pt
+            .update_flags(VirtAddr::new(0x1000), PteFlags::kernel_ro())
+            .expect_err("未映射页 update_flags 应失败");
+        assert_eq!(err, PagingError::PageNotMapped);
+    }
+
+    /// 对同一 VA 映射不同 PA 应返回 AlreadyMappedConflict。
+    #[test]
+    fn map_conflict_different_pa() {
+        let mut pt = PageTable::create().expect("创建测试页表失败");
+        let va = VirtAddr::new(0x1000);
+
+        pt.map_page(va, PhysAddr::new(0x8020_0000), PteFlags::kernel_rw())
+            .expect("首次 map 应成功");
+        let err = pt
+            .map_page(va, PhysAddr::new(0x8030_0000), PteFlags::kernel_rw())
+            .expect_err("不同 PA 重复 map 应失败");
+        assert_eq!(err, PagingError::AlreadyMappedConflict);
+    }
+
+    /// 对同一 VA 映射不同 flags 应返回 AlreadyMappedConflict。
+    #[test]
+    fn map_conflict_different_flags() {
+        let mut pt = PageTable::create().expect("创建测试页表失败");
+        let va = VirtAddr::new(0x1000);
+        let pa = PhysAddr::new(0x8020_0000);
+
+        pt.map_page(va, pa, PteFlags::kernel_rw())
+            .expect("首次 map 应成功");
+        let err = pt
+            .map_page(va, pa, PteFlags::kernel_ro())
+            .expect_err("不同 flags 重复 map 应失败");
+        assert_eq!(err, PagingError::AlreadyMappedConflict);
+    }
+
+    /// unmap_at_level_with_flags 应返回正确的旧 flags。
+    #[test]
+    fn unmap_at_level_with_flags_returns_old_flags() {
+        let mut pt = PageTable::create().expect("创建测试页表失败");
+
+        let huge_size = page_size_at_level(1);
+        let va = VirtAddr::new(huge_size);
+        let pa = PhysAddr::new(0x8020_0000);
+        let flags = PteFlags::kernel_rx();
+
+        pt.map_at_level(va, pa, flags, 1).expect("大页映射应成功");
+        let (old_pa, old_flags) = pt.unmap_at_level_with_flags(va, 1).expect("unmap 应成功");
+        assert_eq!(old_pa, pa);
+        assert_eq!(old_flags, flags.for_leaf_at_level(1));
+    }
+
     /// identity_map_range 对无效范围（start == end）应 panic。
     #[test]
     #[should_panic(expected = "无效地址范围")]
