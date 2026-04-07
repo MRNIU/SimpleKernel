@@ -1,5 +1,8 @@
 use std::fs;
+use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
+use std::time::{Duration, Instant};
 use xshell::{Cmd, Shell, cmd};
 
 use crate::Result;
@@ -138,6 +141,164 @@ pub fn setup_tftp(boot_dir: &Path) {
     let _ = fs::remove_file("/srv/tftp/bin");
     if let Err(e) = std::os::unix::fs::symlink(boot_dir, "/srv/tftp/bin") {
         eprintln!("[xtask] warning: failed to link /srv/tftp/bin: {e}");
+    }
+}
+
+/// QEMU 测试执行结果
+pub struct QemuTestResult {
+    /// 测试是否成功（exit code == 0）
+    pub success: bool,
+    /// 是否因超时被终止
+    pub timed_out: bool,
+    /// 捕获的 stdout + stderr 输出
+    pub output: String,
+}
+
+/// 启动 QEMU 并捕获输出，带超时。用于自动化测试场景。
+///
+/// 与 `launch_qemu` 不同，此函数不继承 stdio，而是捕获所有输出并在
+/// 超时后自动终止进程。适用于无人值守的测试执行。
+pub fn launch_qemu_captured(
+    arch: Arch,
+    project_root: &Path,
+    boot_dir: &Path,
+    kernel_elf_path: &Path,
+    rootfs_path: &Path,
+    timeout_secs: u64,
+) -> Result<QemuTestResult> {
+    let rootfs_drive = format!("file={},if=none,format=raw,id=hd0", rootfs_path.display());
+    let qemu_log = boot_dir.join("qemu.log");
+    let fw = arch.firmware_dir(project_root);
+
+    let (machine, cpu) = match arch {
+        Arch::Riscv64 => ("virt", "max"),
+        Arch::Aarch64 => ("virt,secure=on,gic_version=3", "cortex-a72"),
+    };
+
+    let mut cmd = Command::new(arch.qemu_binary());
+
+    // 基础参数（与 base_qemu_cmd 保持一致）
+    cmd.args([
+        "-nographic",
+        "-monitor",
+        "none", // 测试模式不需要 monitor，避免端口冲突
+        "-m",
+        "1024M",
+        "-smp",
+        "2",
+        "-global",
+        "virtio-mmio.force-legacy=false",
+        "-netdev",
+        "user,id=net0,tftp=/srv/tftp",
+        "-device",
+        "virtio-net-device,netdev=net0",
+        "-device",
+        "virtio-gpu-device",
+        "-drive",
+        &rootfs_drive,
+        "-device",
+        "virtio-blk-device,drive=hd0",
+        "-machine",
+        machine,
+        "-cpu",
+        cpu,
+    ]);
+
+    // 架构特定参数
+    match arch {
+        Arch::Riscv64 => {
+            let bios = fw.join("u-boot/spl/u-boot-spl.bin");
+            let loader = format!(
+                "loader,file={},addr=0x80200000",
+                fw.join("u-boot/u-boot.itb").display()
+            );
+            cmd.args(["-serial", "stdio", "-d", "guest_errors,cpu_reset"])
+                .arg("-D")
+                .arg(&qemu_log)
+                .arg("-bios")
+                .arg(&bios)
+                .arg("-device")
+                .arg(&loader);
+        }
+        Arch::Aarch64 => {
+            let bios = fw.join("arm-trusted-firmware/flash.bin");
+            let fat_drive = format!("file=fat:rw:{},format=raw,media=disk", boot_dir.display());
+            cmd.args(["-serial", "stdio", "-serial", "null"])
+                .args(["-d", "guest_errors,cpu_reset"])
+                .arg("-D")
+                .arg(&qemu_log)
+                .arg("-drive")
+                .arg(&fat_drive)
+                .arg("-bios")
+                .arg(&bios)
+                .arg("-kernel")
+                .arg(kernel_elf_path);
+        }
+    }
+
+    cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
+
+    let mut child = cmd
+        .spawn()
+        .map_err(|e| format!("QEMU 启动失败 ({}): {e}", arch.qemu_binary()))?;
+
+    // take stdout/stderr 以便在单独线程中读取，避免管道缓冲区满阻塞
+    let child_stdout = child.stdout.take();
+    let child_stderr = child.stderr.take();
+
+    let stdout_thread = std::thread::spawn(move || {
+        let mut buf = String::new();
+        if let Some(mut out) = child_stdout {
+            let _ = out.read_to_string(&mut buf);
+        }
+        buf
+    });
+    let stderr_thread = std::thread::spawn(move || {
+        let mut buf = String::new();
+        if let Some(mut err) = child_stderr {
+            let _ = err.read_to_string(&mut buf);
+        }
+        buf
+    });
+
+    // 轮询等待进程结束，超时后 kill
+    let timeout = Duration::from_secs(timeout_secs);
+    let start = Instant::now();
+    let timed_out;
+
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                timed_out = false;
+                let stdout_str = stdout_thread.join().unwrap_or_default();
+                let stderr_str = stderr_thread.join().unwrap_or_default();
+                return Ok(QemuTestResult {
+                    success: status.success(),
+                    timed_out,
+                    output: format!("{stdout_str}{stderr_str}"),
+                });
+            }
+            Ok(None) => {
+                if start.elapsed() > timeout {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    timed_out = true;
+                    let stdout_str = stdout_thread.join().unwrap_or_default();
+                    let stderr_str = stderr_thread.join().unwrap_or_default();
+                    return Ok(QemuTestResult {
+                        success: false,
+                        timed_out,
+                        output: format!(
+                            "{stdout_str}{stderr_str}\n[TIMEOUT after {timeout_secs}s]"
+                        ),
+                    });
+                }
+                std::thread::sleep(Duration::from_millis(100));
+            }
+            Err(e) => {
+                return Err(format!("等待 QEMU 进程结束失败: {e}").into());
+            }
+        }
     }
 }
 

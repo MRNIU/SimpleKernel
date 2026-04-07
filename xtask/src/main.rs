@@ -53,6 +53,9 @@ struct TestArgs {
     /// 列出可用测试
     #[arg(long)]
     list: bool,
+    /// 每个测试的超时秒数（默认 300）
+    #[arg(long, default_value = "300")]
+    timeout: u64,
 }
 
 #[derive(Subcommand)]
@@ -143,11 +146,23 @@ fn run() -> Result<()> {
                 test::list_tests(&project_root);
                 return Ok(());
             }
-            // 准备 QEMU 环境（固件、boot 目录、rootfs、DTB、boot script），仅执行一次
+            // 准备 QEMU 环境（固件、boot 目录、rootfs、DTB），仅执行一次
             let qemu_env = test::prepare_qemu_env(&sh, &project_root, args.arch, args.release)?;
-            let mut all_passed = true;
-            if let Some(name) = &args.name {
-                let passed = test::run_standalone_test(
+            let all_passed;
+            if args.all {
+                // --all：运行统一测试 + 所有独立测试，带输出捕获和超时
+                all_passed = test::run_all_standalone(
+                    &sh,
+                    &project_root,
+                    args.arch,
+                    &qemu_env,
+                    args.release,
+                    args.timeout,
+                    true, // include_system_test
+                )?;
+            } else if let Some(name) = &args.name {
+                // --name：运行指定测试（保持原有交互式行为）
+                all_passed = test::run_standalone_test(
                     &sh,
                     &project_root,
                     args.arch,
@@ -155,24 +170,10 @@ fn run() -> Result<()> {
                     &qemu_env,
                     args.release,
                 )?;
-                all_passed &= passed;
             } else {
-                let passed =
+                // 默认：仅运行统一系统测试（保持原有交互式行为）
+                all_passed =
                     test::run_system_test(&sh, &project_root, args.arch, &qemu_env, args.release)?;
-                all_passed &= passed;
-            }
-            if args.all {
-                for name in test::standalone_test_packages(&project_root) {
-                    let passed = test::run_standalone_test(
-                        &sh,
-                        &project_root,
-                        args.arch,
-                        &name,
-                        &qemu_env,
-                        args.release,
-                    )?;
-                    all_passed &= passed;
-                }
             }
             if !all_passed {
                 eprintln!("[xtask] Some tests failed");
