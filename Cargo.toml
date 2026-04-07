@@ -43,6 +43,10 @@ members = [
     "tests/standalone/paging-equal-range-panic-test",
     "tests/standalone/paging-reversed-range-panic-test",
     "tests/standalone/paging-conflict-panic-test",
+    "tests/standalone/vma-test",
+    "tests/standalone/heap-test",
+    "tests/standalone/device-test",
+    "tests/standalone/fs-test",
     "xtask",
 ]
 default-members = ["."]
