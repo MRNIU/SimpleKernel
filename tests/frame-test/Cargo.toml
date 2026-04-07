@@ -1,10 +1,16 @@
 [package]
-name = "frame-mapped-drop-test"
-description = "验证 MappedFrames 未 unmap 直接 drop 应 panic"
+name = "frame-test"
+description = "帧分配器 typestate 生命周期及 MappedFrames drop panic 测试"
 edition.workspace = true
 
 [[bin]]
+name = "frame-alloc-test"
+path = "src/alloc.rs"
+test = false
+
+[[bin]]
 name = "frame-mapped-drop-test"
+path = "src/mapped_drop_panic.rs"
 test = false
 
 [dependencies]
