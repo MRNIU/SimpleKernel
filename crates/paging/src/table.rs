@@ -173,9 +173,11 @@ impl PageTable {
     /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
     /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
     ///
+    /// 若该 VA 已映射到相同 PA，则幂等跳过或按需更新 flags（Ok）。
+    /// 若已映射到不同 PA，则 panic（内核 bug）。
+    ///
     /// # Errors
     ///
-    /// - 该 VA 已被映射时返回 `AlreadyMapped`。
     /// - walk 路径上遇到大页时返回 `HugePageConflict`。
     pub fn map_page(
         &mut self,
@@ -195,9 +197,11 @@ impl PageTable {
     /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
     /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
     ///
+    /// 若该 VA 已映射到相同 PA，则幂等跳过或按需更新 flags（Ok）。
+    /// 若已映射到不同 PA，则 panic（内核 bug）。
+    ///
     /// # Errors
     ///
-    /// - 该 VA 已被映射时返回 `AlreadyMapped`。
     /// - walk 路径上遇到大页时返回 `HugePageConflict`。
     pub fn map_at_level(
         &mut self,
@@ -229,11 +233,20 @@ impl PageTable {
         let mut table = unsafe { Table::from_paddr(frame_paddr) };
         let current = table.read(idx);
         if current.is_valid() {
-            // 区分幂等重复和真正冲突
-            if current.paddr() == pa && current.flags() == leaf_flags {
-                return Err(PagingError::AlreadyMappedIdentical);
+            if current.paddr() != pa {
+                panic!(
+                    "map_at_level: VA {} 已映射到 PA {}，试图重映射到 PA {}（不同 PA 是内核 bug）",
+                    va,
+                    current.paddr(),
+                    pa
+                );
             }
-            return Err(PagingError::AlreadyMappedConflict);
+            // 同一 PA——幂等或权限变更，按需更新 flags
+            // 注意：不调用 inc_ref，引用计数已在首次建立 PTE 时递增
+            if current.flags() != leaf_flags {
+                table.write(idx, PageTableEntry::new(pa, leaf_flags));
+            }
+            return Ok(());
         }
         table.write(idx, PageTableEntry::new(pa, leaf_flags));
         self.inc_ref(frame_paddr);
@@ -400,8 +413,6 @@ impl PageTable {
 
             match self.map_at_level(va, addr, flags, level) {
                 Ok(()) => {}
-                // 幂等：同一页已被相同 PA+flags 映射（如 MMIO 区域重叠），跳过
-                Err(PagingError::AlreadyMappedIdentical) => {}
                 Err(e) => panic!("identity_map_range: 映射 {va} 失败: {e}"),
             }
             addr += page_size;
