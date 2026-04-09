@@ -21,16 +21,13 @@ fn run_tests() {
     test_alloc_dealloc_realloc();
     log::info!("test alloc_dealloc_realloc ... ok");
 
-    test_free_into_allocated();
-    log::info!("test free_into_allocated ... ok");
-
     test_full_lifecycle();
     log::info!("test full_lifecycle ... ok");
 
     test_unmapped_into_allocated();
     log::info!("test unmapped_into_allocated ... ok");
 
-    log::info!("frame-alloc-test: all 6 tests passed");
+    log::info!("frame-alloc-test: all 5 tests passed");
 }
 
 /// 分配单帧后帧计数应为 1，地址应页对齐。
@@ -55,20 +52,10 @@ fn test_alloc_dealloc_realloc() {
     assert!(frame2.start_paddr().is_aligned());
 }
 
-/// Free -> Allocated 显式转换。
-fn test_free_into_allocated() {
-    let free = frame_allocator::alloc_from_backend(1).expect("bitmap 分配");
-    let pa = free.start_paddr();
-    let allocated = free.into_allocated();
-    assert_eq!(allocated.start_paddr(), pa);
-    assert_eq!(allocated.count(), 1);
-}
-
 /// Allocated -> Mapped -> Unmapped -> Free 完整生命周期。
 fn test_full_lifecycle() {
-    let free = frame_allocator::alloc_from_backend(1).expect("bitmap 分配");
-    let pa = free.start_paddr();
-    let allocated = free.into_allocated();
+    let allocated = AllocatedFrames::<Page4K>::alloc_one().expect("分配");
+    let pa = allocated.start_paddr();
     let mapped = allocated.into_mapped();
     assert_eq!(mapped.start_paddr(), pa);
     let unmapped = mapped.into_unmapped();
@@ -78,9 +65,8 @@ fn test_full_lifecycle() {
 
 /// Unmapped -> Allocated（重新映射路径）。
 fn test_unmapped_into_allocated() {
-    let free = frame_allocator::alloc_from_backend(1).expect("bitmap 分配");
-    let pa = free.start_paddr();
-    let allocated = free.into_allocated();
+    let allocated = AllocatedFrames::<Page4K>::alloc_one().expect("分配");
+    let pa = allocated.start_paddr();
     let mapped = allocated.into_mapped();
     let unmapped = mapped.into_unmapped();
     let reallocated = unmapped.into_allocated();

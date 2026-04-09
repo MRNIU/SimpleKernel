@@ -11,6 +11,6 @@ mod error;
 mod state;
 mod transitions;
 
-pub use alloc::{alloc_from_backend, init};
+pub use alloc::init;
 pub use error::FrameAllocError;
 pub use state::{AllocatedFrames, Frames, FreeFrames, MappedFrames, MemoryState, UnmappedFrames};
