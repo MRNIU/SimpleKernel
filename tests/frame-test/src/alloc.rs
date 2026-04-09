@@ -27,7 +27,10 @@ fn run_tests() {
     test_unmapped_into_allocated();
     log::info!("test unmapped_into_allocated ... ok");
 
-    log::info!("frame-alloc-test: all 5 tests passed");
+    test_alloc_zero_returns_error();
+    log::info!("test alloc_zero_returns_error ... ok");
+
+    log::info!("frame-alloc-test: all 6 tests passed");
 }
 
 /// 分配单帧后帧计数应为 1，地址应页对齐。
@@ -61,6 +64,12 @@ fn test_full_lifecycle() {
     let unmapped = mapped.into_unmapped();
     assert_eq!(unmapped.start_paddr(), pa);
     let _free = unmapped.into_free();
+}
+
+/// alloc(0) 应返回错误而非 panic。
+fn test_alloc_zero_returns_error() {
+    let result = AllocatedFrames::<Page4K>::alloc(0);
+    assert!(result.is_err(), "alloc(0) 应返回错误");
 }
 
 /// Unmapped -> Allocated（重新映射路径）。
