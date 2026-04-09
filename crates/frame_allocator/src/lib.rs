@@ -13,4 +13,4 @@ mod transitions;
 
 pub use alloc::init;
 pub use error::FrameAllocError;
-pub use state::{AllocatedFrames, Frames, FreeFrames, MappedFrames, MemoryState, UnmappedFrames};
+pub use state::{AllocatedFrames, Frames, MappedFrames, MemoryState, UnmappedFrames};
