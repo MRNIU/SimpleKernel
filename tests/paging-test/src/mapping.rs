@@ -18,6 +18,12 @@ fn run_tests() {
     test_map_multi_page();
     log::info!("test map_multi_page ... ok");
 
+    test_map_preexisting();
+    log::info!("test map_preexisting ... ok");
+
+    test_map_changes_flags();
+    log::info!("test map_changes_flags ... ok");
+
     test_drop_restores_default_flags();
     log::info!("test drop_restores_default_flags ... ok");
 
@@ -27,7 +33,7 @@ fn run_tests() {
     test_unmap_restores_flags_and_returns_frames();
     log::info!("test unmap_restores_flags_and_returns_frames ... ok");
 
-    log::info!("paging-mapping-test: all 5 tests passed");
+    log::info!("paging-mapping-test: all 7 tests passed");
 }
 
 /// 基本映射——VA 从 PA 推导，页表中有记录。
@@ -55,6 +61,36 @@ fn test_map_multi_page() {
         let pa = pa_start + i * config::PAGE_SIZE;
         assert!(guard.get_mapping(pa.to_virt()).is_some());
     }
+}
+
+/// 对已有背景映射的帧调用 map 应成功（幂等）。
+fn test_map_preexisting() {
+    let frames = AllocatedFrames::alloc(1).expect("alloc frames");
+    let pa = frames.start_paddr();
+    let va = pa.to_virt();
+
+    // 背景映射已存在（kernel_rw），map 以相同 flags 应幂等成功
+    let mp = OwnedPages::map(frames, PteFlags::kernel_rw());
+    assert_eq!(mp.vaddr(), va);
+
+    let guard = paging::kernel_page_table().lock();
+    let (got_pa, _) = guard.get_mapping(va).expect("映射应存在");
+    assert_eq!(got_pa, pa);
+}
+
+/// map 可以覆盖背景映射的权限（从 kernel_rw 改为 kernel_ro）。
+fn test_map_changes_flags() {
+    let frames = AllocatedFrames::alloc(1).expect("alloc frames");
+    let va = frames.start_paddr().to_virt();
+
+    // 背景映射为 kernel_rw，map 以 kernel_ro 应更新 PTE flags
+    let mp = OwnedPages::map(frames, PteFlags::kernel_ro());
+
+    let guard = paging::kernel_page_table().lock();
+    let (_, flags) = guard.get_mapping(va).expect("映射应存在");
+    assert!(!flags.is_writable(), "map(kernel_ro) 应设为只读");
+    drop(guard);
+    drop(mp);
 }
 
 /// Drop 恢复 PTE 为默认 kernel_rw（不删除映射）。
