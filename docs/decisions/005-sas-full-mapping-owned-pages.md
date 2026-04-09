@@ -87,7 +87,7 @@ SAS 架构下，隔离由 Rust 类型系统承担，页表的角色是纵深防�
   - `crates/frame_allocator/`: 换 bitmap 分配器，修复 reserved/free 边界
   - `crates/paging/src/mapping.rs`: `MappedPages` → `OwnedPages`，map 接受已有 PTE，drop 恢复默认权限
   - `crates/paging/src/table.rs`: `map_page` / `map_at_level` 处理同 PA 映射
-  - `crates/paging/src/lib.rs`: 恢复 `KernelNodeFrame` 正常清零
+  - `crates/paging/src/lib.rs`: 移除 `KernelNodeFrame::alloc` 冗余手动清零（`AllocatedFrames::alloc_one` 已清零）
   - `crates/memory/src/init.rs`: 分离 reserved/free 边界，添加背景映射
   - `crates/memory/src/lib.rs`, `vma.rs`: re-export 改名
   - `tests/paging-test/`: 更新测试预期
