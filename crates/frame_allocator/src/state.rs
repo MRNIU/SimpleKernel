@@ -103,6 +103,28 @@ impl<const S: MemoryState, P: PageSize> Frames<S, P> {
             _marker: PhantomData,
         }
     }
+
+    /// 消费 self，同时变更状态和页大小标记。
+    ///
+    /// 用于 `FreeFrames`（4K）→ `AllocatedFrames<P>`（可能大页）的转换。
+    /// 编译期无法检查 P2 的对齐约束，因此包含运行时断言。
+    #[inline]
+    pub(crate) fn into_state_and_size<const NEW: MemoryState, P2: PageSize>(
+        self,
+    ) -> Frames<NEW, P2> {
+        assert!(
+            P2::NUM_4K_PAGES == 1 || self.range.start().as_usize() & (P2::NUM_4K_PAGES - 1) == 0,
+            "into_state_and_size: 帧范围起始 {} 未对齐到 {} 页边界",
+            self.range.start(),
+            P2::NAME
+        );
+        let range = self.range;
+        core::mem::forget(self);
+        Frames {
+            range,
+            _marker: PhantomData,
+        }
+    }
 }
 
 impl<const S: MemoryState, P: PageSize> Drop for Frames<S, P> {

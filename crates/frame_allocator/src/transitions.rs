@@ -9,7 +9,7 @@ use crate::state::{AllocatedFrames, FreeFrames, MappedFrames, UnmappedFrames};
 
 impl FreeFrames {
     /// 消费 Free 帧，转换为 Allocated 状态。
-    pub fn into_allocated(self) -> AllocatedFrames {
+    pub(crate) fn into_allocated(self) -> AllocatedFrames {
         self.into_state()
     }
 }
@@ -40,15 +40,8 @@ impl<P: PageSize> AllocatedFrames<P> {
             core::ptr::write_bytes(ptr, 0, count_4k * PAGE_SIZE);
         }
 
-        let range = free.range();
-        core::mem::forget(free);
-
-        assert!(
-            P::NUM_4K_PAGES == 1 || range.start().as_usize() & (P::NUM_4K_PAGES - 1) == 0,
-            "AllocatedFrames::alloc: 分配器返回的帧未对齐到 P 边界"
-        );
-
-        Ok(Self::from_range(range))
+        // typestate 转换：Free(4K) → Allocated(P)，into_state_and_size 内部检查对齐
+        Ok(free.into_state_and_size())
     }
 
     /// 消费 Allocated 帧，转换为 Mapped 状态——表示帧已写入页表。
