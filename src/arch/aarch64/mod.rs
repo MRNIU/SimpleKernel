@@ -57,7 +57,7 @@ impl ArchOps for Aarch64 {
     ) -> Result<(), memory::error::MemoryError> {
         // PL011 UART —— MMIO identity map（VA == PA，Device-nGnRnE 属性）。
         // 使用 MmioRegion 而非 mmap_identity_range：
-        // - MMIO 地址不在 buddy allocator 中，不能用 AllocatedFrames::alloc
+        // - MMIO 地址不在帧分配器中，不能用 AllocatedFrames::alloc
         // - 需要 kernel_device() 属性（非 cacheable）
         let _pl011 =
             paging::mmio::MmioRegion::map(memory_types::PhysAddr::new(PL011_BASE), PL011_SIZE)

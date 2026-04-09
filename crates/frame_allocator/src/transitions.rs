@@ -34,7 +34,6 @@ impl<P: PageSize> AllocatedFrames<P> {
         let count_4k = count << P::NUM_4K_PAGES_SHIFT;
         let free = alloc_from_backend(count_4k)?;
 
-        // SAS 全量映射下帧始终可访问，分配后立即清零防止泄漏旧数据。
         // SAFETY: identity mapping 下 PA.to_virt() 有效；帧刚从分配器取出，无其他引用
         unsafe {
             let ptr = free.start_paddr().to_virt().as_mut_ptr::<u8>();

@@ -3,7 +3,7 @@
 //! `MmioRegion` 使用 volatile 语义，适合设备寄存器——编译器不会优化掉
 //! 对同一地址的重复读写，也不会重排 MMIO 操作。
 //!
-//! MMIO 地址是硬件寄存器，不是 RAM，不在 buddy allocator 中。
+//! MMIO 地址是硬件寄存器，不是 RAM，不在 帧分配器 中。
 //! 直接使用 PageTable 的 pub(crate) 方法建立 identity mapping。
 //! 映射永久存在——不自动 unmap。
 
@@ -14,7 +14,7 @@ use memory_types::PhysAddr;
 
 /// 已映射的 MMIO 区域——提供类型安全的 volatile 寄存器访问。
 ///
-/// MMIO 地址是硬件寄存器，不是 RAM，不在 buddy allocator 中。
+/// MMIO 地址是硬件寄存器，不是 RAM，不在 帧分配器 中。
 /// 直接使用 PageTable 的 pub(crate) 方法建立 identity mapping（VA == PA）。
 /// 映射永久存在——不自动 unmap。
 pub struct MmioRegion {

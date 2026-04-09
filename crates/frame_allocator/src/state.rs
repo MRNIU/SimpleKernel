@@ -40,8 +40,7 @@ pub enum MemoryState {
 /// 类型状态帧范围——编译期追踪物理帧生命周期和页大小。
 ///
 /// `Frames` 持有一段**连续的物理帧范围**（[`FrameSpan`]）。
-/// 泛型参数 `P` 标记帧的粒度（4K/2M/1G），Drop 时自动转换为 4K 粒度
-/// 归还 bitmap allocator。
+/// 泛型参数 `P` 标记帧的粒度（4K/2M/1G），Drop 时自动转换为 4K 粒度归还分配器。
 ///
 /// 状态转换通过消费 self 的方法实现，防止在错误状态下操作帧。
 pub struct Frames<const S: MemoryState, P: PageSize = Page4K> {

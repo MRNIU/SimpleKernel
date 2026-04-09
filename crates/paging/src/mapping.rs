@@ -153,9 +153,7 @@ impl OwnedPages {
                 .expect("mprotect: update_flags 失败");
         }
         drop(guard);
-        {
-            let _flush = tlb::TlbFlushGuard::new(self.vaddr().as_usize(), self.page_count());
-        }
+        let _flush = tlb::TlbFlushGuard::new(self.vaddr().as_usize(), self.page_count());
         self.flags = new_flags;
     }
 
@@ -164,22 +162,7 @@ impl OwnedPages {
         let mut md = ManuallyDrop::new(self);
         // SAFETY: md 不会 Drop，手动接管字段所有权
         let mapped_frames = unsafe { ManuallyDrop::take(&mut md.frames) };
-        // 恢复默认权限
-        let pt = crate::kernel_page_table();
-        let default_flags = PteFlags::kernel_rw();
-        let va_start = mapped_frames.start_paddr().to_virt();
-        let page_count = mapped_frames.count();
-        for i in 0..page_count {
-            let va = va_start + i * PAGE_SIZE;
-            let mut guard = pt.lock();
-            guard
-                .update_flags(va, default_flags)
-                .expect("OwnedPages::unmap: update_flags 失败");
-            drop(guard);
-        }
-        {
-            let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
-        }
+        restore_default_flags(mapped_frames.start_paddr().to_virt(), mapped_frames.count());
         mapped_frames.into_unmapped()
     }
 }
@@ -212,22 +195,26 @@ pub(crate) fn check_bounds_and_align<T>(
     addr as *const T
 }
 
+/// 批量恢复 PTE 为 kernel_rw（背景映射默认权限）并刷新 TLB。
+///
+/// 持锁期间一次性更新所有页，避免逐页 lock/unlock 开销。
+fn restore_default_flags(va_start: VirtAddr, page_count: usize) {
+    let default_flags = PteFlags::kernel_rw();
+    let pt = crate::kernel_page_table();
+    let mut guard = pt.lock();
+    for i in 0..page_count {
+        let va = va_start + i * PAGE_SIZE;
+        guard
+            .update_flags(va, default_flags)
+            .expect("restore_default_flags: update_flags 失败");
+    }
+    drop(guard);
+    let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
+}
+
 impl Drop for OwnedPages {
     fn drop(&mut self) {
-        // 恢复 PTE 为默认 kernel_rw（背景映射权限），不删除 PTE
-        let pt = crate::kernel_page_table();
-        let default_flags = PteFlags::kernel_rw();
-        for i in 0..self.page_count() {
-            let va = self.vaddr() + i * PAGE_SIZE;
-            let mut guard = pt.lock();
-            guard
-                .update_flags(va, default_flags)
-                .expect("OwnedPages::drop: update_flags 失败");
-            drop(guard);
-        }
-        {
-            let _flush = tlb::TlbFlushGuard::new(self.vaddr().as_usize(), self.page_count());
-        }
+        restore_default_flags(self.vaddr(), self.page_count());
         // SAFETY: Drop 执行中，self.frames 不会再被访问。
         // 将 MappedFrames 转换为 UnmappedFrames，后者的 Drop 安全归还分配器。
         let mapped_frames = unsafe { ManuallyDrop::take(&mut self.frames) };
