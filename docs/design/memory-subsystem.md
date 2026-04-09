@@ -121,9 +121,9 @@ classDiagram
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Free : alloc_from_buddy()
+    [*] --> Free : alloc_from_backend()
     Free --> Allocated : into_allocated()
-    Allocated --> Free : Drop (dealloc_to_buddy)
+    Allocated --> Free : Drop (dealloc_to_backend)
     Allocated --> Allocated : split_at() / merge()
 ```
 
@@ -132,7 +132,7 @@ stateDiagram-v2
 
 | 帧在哪 | 等价状态 | 谁追踪 |
 |--------|---------|--------|
-| 在 buddy 中 | 空闲 | buddy allocator |
+| 在 bitmap 中 | 空闲 | bitmap allocator |
 | 被用户持有（`AllocatedFrames`） | 已分配，未映射 | Rust 所有权 |
 | 在 `MappedPages.frames` 字段里 | 已分配，已映射 | struct 字段所有权 |
 | `MappedPages::drop` 执行中 | 正在取消映射 | Drop 执行顺序 |
@@ -161,35 +161,34 @@ pub type AllocatedFrames<P = Page4K> = Frames<{Allocated}, P>;
 ┌─────────────────────────────────────────────────────────┐
 │        SpinLockIrq 保护                                  │
 │  ┌─────────────────────────────┐                        │
-│  │ buddy_system_allocator<32>  │                        │
-│  │  Order 32 → 最大 2^32 页    │                        │
-│  │  ≈ 16 TB 连续分配           │                        │
+│  │ BitmapAllocator             │                        │
+│  │  1 bit / 4K 帧，bitmap 在堆 │                        │
+│  │  alloc/dealloc 不触碰帧内存  │                        │
 │  └─────────────────────────────┘                        │
-│  alloc_from_buddy(count) → FreeFrames                    │
-│  dealloc_to_buddy(range)                                 │
+│  alloc_from_backend(count) → FreeFrames                  │
+│  dealloc_to_backend(range)                               │
 │                                                          │
 │  init(free_start, free_size, reserved) → [AllocatedFrames]│
-│       ↑ 空闲内存入 buddy      ↑ 预留范围构造为帧         │
+│       ↑ 空闲内存入 bitmap     ↑ 预留范围构造为帧         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 - 全局单例，`SpinLockIrq` 保护（关中断防止死锁）
 - `init()` 是唯一的初始化入口，接受两类参数：
-  - `free_start`/`free_size`：空闲内存范围，加入 buddy
+  - `free_start`/`free_size`：空闲内存范围，加入 bitmap
   - `reserved`：需要预留的物理地址范围列表（如内核 .text/.rodata/.data 段），
-    **不经过 buddy**——直接构造为 `AllocatedFrames` 返回给调用方
+    **不经过 bitmap**——直接构造为 `AllocatedFrames` 返回给调用方
 - `alloc(count)` — 自动选址分配连续帧（运行时常规分配）
 
-**为什么预留范围不经过 buddy？**
-`buddy_system_allocator` 只支持 `alloc(count)` 返回 buddy 选择的地址，
-不支持定点分配（`alloc_at`）。内核段的物理地址由链接器/固件决定，
-必须精确预留。`init` 函数在内部直接构造 `AllocatedFrames`（`pub(crate)` 的
-`from_range`），不将这些范围加入 buddy——调用方拿到的是正常的 `AllocatedFrames`，
-后续使用完全 safe。
+**为什么预留范围不经过 bitmap？**
+`BitmapAllocator` 的 `alloc(count)` 返回分配器选择的地址，不支持定点分配。
+内核段的物理地址由链接器/固件决定，必须精确预留。`init` 函数在内部直接构造
+`AllocatedFrames`（`pub(crate)` 的 `from_range`），不将这些范围加入
+bitmap——调用方拿到的是正常的 `AllocatedFrames`，后续使用完全 safe。
 
 **内核段帧的生命周期**：由 `AddressSpace` 通过 `MappedPages` 持有直到关机，
-永远不会被 drop。如果被意外 drop，`dealloc_to_buddy` 会将这些帧"额外"加入
-buddy 池——这不是正确行为，但不会导致 UB（仅是多出了一些帧）。
+永远不会被 drop。如果被意外 drop，`dealloc_to_backend` 会将这些帧"额外"加入
+bitmap 池——这不是正确行为，但不会导致 UB（仅是多出了一些帧）。
 
 ### 3.4 连续帧分配——设计选择
 
@@ -209,7 +208,7 @@ buddy 池——这不是正确行为，但不会导致 UB（仅是多出了一�
 ### 3.5 `mem::forget` 模式
 
 `split_at` 和 `merge` 使用 `mem::forget` 模式——消费旧值的所有权但跳过其 Drop，
-从其字段构造新值，防止中间状态触发 `dealloc_to_buddy`：
+从其字段构造新值，防止中间状态触发 `dealloc_to_backend`：
 
 ```rust
 pub fn split_at(self, mid: Frame<P>) -> (Self, Self) {
@@ -256,7 +255,7 @@ pub type AllocatedPages = Pages<{Allocated}>;
 
 - **不分配帧**——调用方负责提供 `AllocatedFrames`
 - **不决定 VA==PA 还是 VA!=PA**——调用方负责地址选择
-- **不决定帧来源**——buddy 分配的帧和 `alloc_at` 预留的帧一视同仁
+- **不决定帧来源**——bitmap 分配的帧和 `alloc_at` 预留的帧一视同仁
 - **帧所有权始终在 Rust 类型系统中**——无 `mem::forget`，无 unsafe 恢复路径
 
 ### 5.2 结构
@@ -303,7 +302,7 @@ EXCLUSIVE 位解决的问题是：unmap 时区分"该回收的帧"和"不该回�
 | 共享内存 | 多进程各映射同一帧 | 同一地址空间，传 `&T` 即可 |
 | 非分配器管理的帧 | MMIO、固件保留区 | MMIO 走 `MmioRegion` 独立路径 |
 
-初始化时空闲 RAM 加入 buddy，内核段通过 `init` 的 `reserved` 参数直接构造
+初始化时空闲 RAM 加入 bitmap，内核段通过 `init` 的 `reserved` 参数直接构造
 `AllocatedFrames`���—所有 `MappedPages` 持有的帧都有明确所有者，都应该被回收。
 
 ### 5.5 创建——`map`
@@ -340,13 +339,13 @@ sequenceDiagram
     participant MP as MappedPages::drop
     participant PT as PageTable
     participant TLB as TlbFlushGuard
-    participant buddy as buddy allocator
+    participant FA as bitmap allocator
 
     MP->>PT: unmap_page(va) × N
     MP->>TLB: TlbFlushGuard scope
     Note over TLB: flush TLB
     TLB-->>MP: 完成
-    Note over MP: drop(self.frames) → dealloc_to_buddy
+    Note over MP: drop(self.frames) → dealloc_to_backend
     Note over MP: drop(self.pages) → dealloc_pages
 ```
 
@@ -379,7 +378,7 @@ let val: &mut MyStruct = mapped_pages.as_type_mut::<MyStruct>(offset);
 
 ## 6. MMIO 区域——`MmioRegion`
 
-MMIO 地址是硬件寄存器，**不是 RAM**，不在 buddy allocator 中。
+MMIO 地址是硬件寄存器，**不是 RAM**，不在 bitmap allocator 中。
 `MmioRegion` 直接使用 `PageTable` 的 `pub(crate)` 方法建立映射，
 不经过 `MappedPages`：
 
@@ -438,7 +437,7 @@ classDiagram
 // memory crate 中的便捷函数示意
 pub fn mmap_anonymous(&mut self, start, size, flags) -> Result<&Vma, MemoryError> {
     let pages = AllocatedPages::alloc_at(start, page_count)?;
-    let frames = AllocatedFrames::alloc(page_count)?;  // 从 buddy 分配
+    let frames = AllocatedFrames::alloc(page_count)?;  // 从 bitmap 分配
     let mapping = MappedPages::map(pages, frames, flags);  // 统一入口
     // ...注册 VMA
 }
@@ -459,7 +458,7 @@ let reserved_frames = unsafe {
 // reserved_frames[0..3] 传入 MappedPages::map 建立分段映射
 ```
 
-**所有 `MappedPages::map` 调用形式相同**——区别只在帧来源（buddy 分配 vs init 预留）。
+**所有 `MappedPages::map` 调用形式相同**——区别只在帧来源（bitmap 分配 vs init 预留）。
 
 ### 7.3 所有 MappedPages 统一 Drop
 
@@ -506,7 +505,7 @@ sequenceDiagram
     Note over MEM: drop(Vma) → drop(MappedPages)
     MP->>PT: unmap_page(va)
     MP->>TLB: TlbFlushGuard scope
-    Note over MP: drop(frames) → dealloc_to_buddy
+    Note over MP: drop(frames) → dealloc_to_backend
     Note over MP: drop(pages) → dealloc_pages
 ```
 
@@ -523,7 +522,7 @@ sequenceDiagram
     Note over INIT: 一次 init 完成空闲内存 + 预留
     INIT->>FA: init(free_start, free_size,<br/>reserved=[(text),(rodata),(data)])
     FA-->>INIT: [AllocatedFrames × 3]
-    Note over FA: 空闲内存入 buddy<br/>预留范围构造为 AllocatedFrames
+    Note over FA: 空闲内存入 bitmap<br/>预留范围构造为 AllocatedFrames
 
     Note over INIT: 为每个段分配虚拟页（VA == PA）
     INIT->>PA: AllocatedPages::alloc_at(text_start, N)
@@ -542,7 +541,7 @@ sequenceDiagram
 |----|------|------|---------------|
 | .boot + .text | `[mem_start, text_end)` | RWX | 函数代码（backtrace 需要） |
 | .rodata | `[text_end, rodata_end)` | RO | `.symtab`/`.strtab`（地址→函数名）、`.eh_frame`（栈展开） |
-| .data + .bss + free | `[rodata_end, mem_end)` | RW | 全局变量、栈内存、buddy 管理的空闲帧 |
+| .data + .bss + free | `[rodata_end, mem_end)` | RW | 全局变量、栈内存、bitmap 管理的空闲帧 |
 
 `.rodata` 段包含 ELF 符号表——如果未映射，backtrace 只能输出裸地址，无法解析函数名。
 
@@ -613,7 +612,7 @@ flowchart TD
     C --> C1["FDT 解析 → MEMORY_INFO"]
     C1 --> D["memory::init()"]
     D --> D1["heap::init()"]
-    D1 --> D2["frame_allocator::init(<br/>free_start, free_size,<br/>reserved=[text, rodata, data])<br/>← 空闲入 buddy + 预留帧返回"]
+    D1 --> D2["frame_allocator::init(<br/>free_start, free_size,<br/>reserved=[text, rodata, data])<br/>← 空闲入 bitmap + 预留帧返回"]
     D2 --> D3["page_allocator::init(0, mem_end)"]
     D3 --> D4["PageTable::create()"]
     D4 --> D5["set_kernel_page_table(pt)"]
@@ -631,8 +630,8 @@ flowchart TD
 ```
 
 **约束**：
-- 堆必须在帧分配器之前初始化（buddy allocator 内部使用堆）
-- `init()` 一次性完成：空闲内存入 buddy + 内核段帧构造并返回
+- 堆必须在帧分配器之前初始化（bitmap allocator 内部使用堆存储 bitmap Vec）
+- `init()` 一次性完成：空闲内存入 bitmap + 内核段帧构造并返回
 - 页表创建后才能建立映射
 - 所有映射（包括内核段 identity map）都走 `MappedPages::map` 统一路径
 - 内核段映射由 `AddressSpace` 持有直到关机——确保 `.symtab` 等调试信息始终可访问
@@ -671,7 +670,7 @@ SimpleKernel 的内存管理受 Theseus 影响，但在 SAS 约束下做了进�
 | 所有权交接 | 无 forget、无 unsafe | `mem::forget` + `unsafe from_unmapped_range` |
 | MappedPages 创建方式 | `map(pages, frames, flags)` 统一入口 | `map_allocated_pages_to` + `map_to_non_exclusive` |
 | 共享映射 / COW | 不支持（SAS 不需要） | EXCLUSIVE 位支持 |
-| 初始化策略 | 空闲 RAM 入 buddy + `init` 预留内核帧 | 分阶段，部分内存不入分配器 |
+| 初始化策略 | 空闲 RAM 入 bitmap + `init` 预留内核帧 | 分阶段，部分内存不入分配器 |
 
 **SimpleKernel 的选择**：SAS 下没有多地址空间，不需要 COW 和共享映射，
 因此用更简单的"帧存 struct"方案获得更强的编译期保证。
@@ -683,7 +682,7 @@ Theseus 的 EXCLUSIVE 方案更通用，但额外的复杂度在 SAS 下没有�
 
 | 位置 | unsafe 操作 | 不变量 |
 |------|------------|--------|
-| `frame_allocator::init()` | 空闲内存入 buddy + 预留范围构造帧 | 区间有效、互不重叠、仅调用一次 |
+| `frame_allocator::init()` | 空闲内存入 bitmap + 预留范围构造帧 | 区间有效、互不重叠、仅调用一次 |
 | `page_allocator::init()` | 将 VA 空间加入分配器 | 区间有效、仅调用一次 |
 | `AllocatedFrames::alloc()` | 零初始化：`write_bytes(phys_to_virt(pa), 0, size)` | 帧刚分配，无其他引用 |
 | `set_kernel_page_table()` | 存储 `'static` 引用 | 引用确实是 `'static` |

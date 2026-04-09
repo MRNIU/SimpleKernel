@@ -1,4 +1,4 @@
-//! 全局帧分配器——buddy allocator 封装与初始化。
+//! 全局帧分配器——bitmap allocator 封装与初始化。
 
 //
 // TODO: Per-CPU 帧缓存——消除 SMP 全局锁瓶颈
@@ -32,6 +32,8 @@
 use memory_types::{Frame, FrameSpan, PhysAddr};
 use sync_crate::SpinLockIrq;
 
+use crate::backend::FrameAllocBackend;
+use crate::bitmap::BitmapAllocator;
 use crate::state::AllocatedFrames;
 
 use crate::FrameAllocError;
@@ -46,24 +48,24 @@ static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocatorInner> = SpinLockIrq::new(
 
 /// 帧分配器内部状态。
 struct FrameAllocatorInner {
-    allocator: buddy_system_allocator::FrameAllocator<32>,
+    allocator: BitmapAllocator,
     initialized: bool,
 }
 
 impl FrameAllocatorInner {
     const fn new() -> Self {
         Self {
-            allocator: buddy_system_allocator::FrameAllocator::new(),
+            allocator: BitmapAllocator::new(),
             initialized: false,
         }
     }
 }
 
-/// 初始化帧分配器——空闲内存入 buddy，预留范围构造为 `AllocatedFrames` 返回。
+/// 初始化帧分配器——空闲内存入 bitmap，预留范围构造为 `AllocatedFrames` 返回。
 ///
-/// - `free_start`/`free_size`：空闲物理内存范围，加入 buddy allocator
+/// - `free_start`/`free_size`：空闲物理内存范围，加入 bitmap allocator
 /// - `reserved`：需要预留的物理地址范围列表 `(start, page_count)`，
-///   不经过 buddy——直接构造为 `AllocatedFrames` 返回给调用方
+///   不经过 bitmap——直接构造为 `AllocatedFrames` 返回给调用方
 ///
 /// 预留范围的帧由调用方负责生命周期管理（通常由 `AddressSpace`
 /// 通过 `MappedPages` 持有直到关机）。
@@ -94,7 +96,7 @@ pub unsafe fn init(
     let end_frame = PhysAddr::new(free_start.as_usize() + free_size)
         .page_number()
         .as_usize();
-    alloc.allocator.add_frame(start_frame, end_frame);
+    alloc.allocator.add_frames(start_frame, end_frame);
     alloc.initialized = true;
 
     log::info!(
@@ -103,7 +105,7 @@ pub unsafe fn init(
         free_start
     );
 
-    // 预留范围构造为 AllocatedFrames（不经过 buddy）
+    // 预留范围构造为 AllocatedFrames（不经过 bitmap）
     let mut result = heapless::Vec::new();
     for &(start, count) in reserved {
         assert!(
@@ -126,10 +128,10 @@ pub unsafe fn init(
     result
 }
 
-/// 从 buddy allocator 取出帧，构造 `FreeFrames`。
+/// 从 bitmap allocator 取出帧，构造 `FreeFrames`。
 ///
 /// 这是与底层分配器交互的唯一分配出口——所有分配路径都经过此函数。
-pub fn alloc_from_buddy(count: usize) -> Result<FreeFrames, FrameAllocError> {
+pub fn alloc_from_backend(count: usize) -> Result<FreeFrames, FrameAllocError> {
     let mut alloc = FRAME_ALLOCATOR.lock();
     if !alloc.initialized {
         return Err(FrameAllocError::AllocationFailed);
@@ -145,8 +147,8 @@ pub fn alloc_from_buddy(count: usize) -> Result<FreeFrames, FrameAllocError> {
     Ok(FreeFrames::from_range(FrameSpan::new(start, end)))
 }
 
-/// 归还帧到 buddy allocator——仅由 `Frames` 的 Drop 调用。
-pub(crate) fn dealloc_to_buddy(range: FrameSpan) {
+/// 归还帧到 bitmap allocator——仅由 `Frames` 的 Drop 调用。
+pub(crate) fn dealloc_to_backend(range: FrameSpan) {
     if range.size() == 0 {
         return;
     }

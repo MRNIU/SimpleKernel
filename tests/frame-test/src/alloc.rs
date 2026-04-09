@@ -57,7 +57,7 @@ fn test_alloc_dealloc_realloc() {
 
 /// Free -> Allocated 显式转换。
 fn test_free_into_allocated() {
-    let free = frame_allocator::alloc_from_buddy(1).expect("buddy 分配");
+    let free = frame_allocator::alloc_from_backend(1).expect("bitmap 分配");
     let pa = free.start_paddr();
     let allocated = free.into_allocated();
     assert_eq!(allocated.start_paddr(), pa);
@@ -66,7 +66,7 @@ fn test_free_into_allocated() {
 
 /// Allocated -> Mapped -> Unmapped -> Free 完整生命周期。
 fn test_full_lifecycle() {
-    let free = frame_allocator::alloc_from_buddy(1).expect("buddy 分配");
+    let free = frame_allocator::alloc_from_backend(1).expect("bitmap 分配");
     let pa = free.start_paddr();
     let allocated = free.into_allocated();
     let mapped = allocated.into_mapped();
@@ -78,7 +78,7 @@ fn test_full_lifecycle() {
 
 /// Unmapped -> Allocated（重新映射路径）。
 fn test_unmapped_into_allocated() {
-    let free = frame_allocator::alloc_from_buddy(1).expect("buddy 分配");
+    let free = frame_allocator::alloc_from_backend(1).expect("bitmap 分配");
     let pa = free.start_paddr();
     let allocated = free.into_allocated();
     let mapped = allocated.into_mapped();

@@ -35,28 +35,28 @@ pub type UnmappedFrames  = Frames<{ MemoryState::Unmapped }>;
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Free : alloc_from_buddy()
+    [*] --> Free : alloc_from_backend()
     Free --> Allocated : into_allocated()
 
     Allocated --> Mapped : into_mapped()
-    Allocated --> [*] : Drop（归还 buddy）
+    Allocated --> [*] : Drop（归还 bitmap）
 
     Mapped --> Unmapped : into_unmapped()
     Mapped --> Mapped : Drop = panic
 
     Unmapped --> Allocated : into_allocated()
     Unmapped --> Free : into_free()
-    Unmapped --> [*] : Drop（归还 buddy）
+    Unmapped --> [*] : Drop（归还 bitmap）
 
-    Free --> [*] : Drop（归还 buddy）
+    Free --> [*] : Drop（归还 bitmap）
 ```
 
 | 状态 | 含义 | 所有者 | Drop 行为 |
 |------|------|--------|-----------|
-| `Free` | 刚从 buddy allocator 取出，尚未交给用户 | 分配器内部 | 归还 buddy |
-| `Allocated` | 用户持有，可写入/映射 | 调用方 | 归还 buddy |
+| `Free` | 刚从 bitmap allocator 取出，尚未交给用户 | 分配器内部 | 归还 bitmap |
+| `Allocated` | 用户持有，可写入/映射 | 调用方 | 归还 bitmap |
 | `Mapped` | 已写入页表，正在被 MMU 使用 | MappedPages | **panic**——必须先 unmap |
-| `Unmapped` | 已从页表移除，等待回收或重新映射 | 调用方 | 归还 buddy |
+| `Unmapped` | 已从页表移除，等待回收或重新映射 | 调用方 | 归还 bitmap |
 
 **编译期阻止的非法操作：**
 
@@ -75,7 +75,7 @@ src/
 ├── lib.rs           crate 入口，pub use 汇总 + ensure_test_init
 ├── error.rs         FrameAllocError 定义
 ├── state.rs         MemoryState 枚举、Frames<S> 结构体、通用操作、Drop
-├── alloc.rs         全局 SpinLockIrq<BuddyAllocator>、init / alloc / dealloc
+├── alloc.rs         全局 SpinLockIrq<BitmapAllocator>、init / alloc / dealloc
 └── transitions.rs   各状态的 impl 块（状态转换方法 + 分配接口）、测试
 ```
 
@@ -84,11 +84,11 @@ src/
 ```
 transitions.rs --> state.rs <-- alloc.rs
                        ^             ^
-                   error.rs      (buddy_system_allocator 外部 crate)
+                   error.rs      (bitmap_system_allocator 外部 crate)
 ```
 
-- `state.rs` 定义类型和 Drop（调用 `alloc::dealloc_to_buddy`）
-- `alloc.rs` 封装 buddy allocator（构造 `state::FreeFrames`）
+- `state.rs` 定义类型和 Drop（调用 `alloc::dealloc_to_backend`）
+- `alloc.rs` 封装 bitmap allocator（构造 `state::FreeFrames`）
 - `transitions.rs` 组装两者，提供面向用户的 API
 - `state.rs` 和 `alloc.rs` 存在 crate 内双向依赖——这是有意为之，对外不可见
 
@@ -99,8 +99,8 @@ transitions.rs --> state.rs <-- alloc.rs
 ```
 AllocatedFrames::alloc(count)
   |
-  +-> alloc_from_buddy(count)          <- 持有 SpinLockIrq
-  |     +-> buddy.alloc(count)
+  +-> alloc_from_bitmap(count)          <- 持有 SpinLockIrq
+  |     +-> bitmap.alloc(count)
   |     +-> 构造 FreeFrames            <- 释放锁
   |
   +-> FreeFrames::into_allocated()     <- typestate 转换（零开销）
@@ -115,8 +115,8 @@ AllocatedFrames::alloc(count)
 ```
 drop(AllocatedFrames)  或  drop(UnmappedFrames)  或  drop(FreeFrames)
   |
-  +-> dealloc_to_buddy(range)          <- 持有 SpinLockIrq
-        +-> buddy.dealloc(start, count)
+  +-> dealloc_to_backend(range)          <- 持有 SpinLockIrq
+        +-> bitmap.dealloc(start, count)
 ```
 
 `Frames<Mapped>` 的 Drop 不走此路径——直接 panic。正常流程中 `MappedFrames`
@@ -176,7 +176,7 @@ let pa = frame.start_paddr();
 let frames = AllocatedFrames::alloc(4)?;
 assert_eq!(frames.count(), 4);
 
-// drop 时自动归还 buddy allocator
+// drop 时自动归还 bitmap allocator
 ```
 
 ### 完整生命周期（配合页表）
@@ -213,9 +213,9 @@ MMU 仍然持有对该物理地址的引用，后续访问将导致 use-after-fr
 当前 `alloc()` / `alloc_one()` 始终将帧内容清零，防止信息泄漏（用户进程不应
 看到前一个进程的数据）。这意味着即使内核内部分配（如页表节点）也会付出清零开销。
 
-### 3. 连续帧分配受 buddy allocator 限制
+### 3. 连续帧分配受 bitmap allocator 限制
 
-`alloc(count)` 要求 count 个**物理连续**的帧。buddy allocator 的最大阶为 32，
+`alloc(count)` 要求 count 个**物理连续**的帧。bitmap allocator 的最大阶为 32，
 在内存碎片化严重时，大块连续分配可能失败即使总空闲帧数充足。
 
 ### 4. 初始化顺序依赖

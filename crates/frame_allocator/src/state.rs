@@ -6,7 +6,7 @@ use core::marker::PhantomData;
 
 use memory_types::{FrameSpan, Page4K, PageSize, PhysAddr};
 
-use crate::alloc::dealloc_to_buddy;
+use crate::alloc::dealloc_to_backend;
 
 /// 帧生命周期状态。
 ///
@@ -17,16 +17,16 @@ use crate::alloc::dealloc_to_buddy;
 /// ```
 ///
 /// `Mapped` 帧禁止直接 drop——必须先 unmap 转为 `Unmapped`。
-/// 其余状态 Drop 时归还 buddy allocator。
+/// 其余状态 Drop 时归还 bitmap allocator。
 #[derive(PartialEq, Eq, core::marker::ConstParamTy)]
 pub enum MemoryState {
-    /// 空闲——被分配器持有，Drop 归还 buddy allocator
+    /// 空闲——被分配器持有，Drop 归还 bitmap allocator
     Free,
-    /// 已分配——用户持有，Drop 归还 buddy allocator
+    /// 已分配——用户持有，Drop 归还 bitmap allocator
     Allocated,
     /// 已映射——写入页表，MMU 正在使用。**Drop 会 panic**
     Mapped,
-    /// 已解映射——从页表移除，等待回收或重新映射。Drop 归还 buddy allocator
+    /// 已解映射——从页表移除，等待回收或重新映射。Drop 归还 bitmap allocator
     Unmapped,
 }
 
@@ -34,7 +34,7 @@ pub enum MemoryState {
 ///
 /// `Frames` 持有一段**连续的物理帧范围**（[`FrameSpan`]）。
 /// 泛型参数 `P` 标记帧的粒度（4K/2M/1G），Drop 时自动转换为 4K 粒度
-/// 归还 buddy allocator。
+/// 归还 bitmap allocator。
 ///
 /// 状态转换通过消费 self 的方法实现，防止在错误状态下操作帧。
 pub struct Frames<const S: MemoryState, P: PageSize = Page4K> {
@@ -111,7 +111,7 @@ impl<const S: MemoryState, P: PageSize> Drop for Frames<S, P> {
                 );
             }
             MemoryState::Free | MemoryState::Allocated | MemoryState::Unmapped => {
-                dealloc_to_buddy(self.range);
+                dealloc_to_backend(self.range);
             }
         }
     }

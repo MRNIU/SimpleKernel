@@ -14,7 +14,7 @@ test_harness::test_main!(
 
 /// MappedFrames 未经 unmap 直接 drop 应触发 panic。
 fn test_mapped_drop_panics() {
-    let free = frame_allocator::alloc_from_buddy(1).expect("buddy 分配");
+    let free = frame_allocator::alloc_from_backend(1).expect("bitmap 分配");
     let _mapped = free.into_allocated().into_mapped();
     // _mapped drop -> panic("Frames<Mapped> dropped without unmap")
 }
