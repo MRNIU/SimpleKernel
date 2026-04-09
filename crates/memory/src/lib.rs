@@ -22,8 +22,8 @@ pub mod vma;
 /// TLB 管理（re-export `tlb` crate）。
 pub use tlb;
 
-/// 仿射类型映射——re-export `paging::MappedPages`。
-pub type MappedPages = paging::MappedPages;
+/// 仿射类型帧所有权——re-export `paging::OwnedPages`。
+pub type OwnedPages = paging::OwnedPages;
 
 /// MMIO 区域——re-export `paging::mmio::MmioRegion`。
 pub type MmioRegion = paging::mmio::MmioRegion;

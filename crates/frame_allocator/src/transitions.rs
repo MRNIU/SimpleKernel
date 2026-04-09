@@ -21,7 +21,7 @@ impl<P: PageSize> AllocatedFrames<P> {
 
     /// 分配 `count` 个连续的 P 大小物理帧。
     ///
-    /// 帧内容**未清零**——调用方在 [`MappedPages::map`] 建立映射后会自动清零。
+    /// 帧内容**未清零**——调用方在 [`OwnedPages::map`] 建立映射后会自动清零。
     /// 分配后帧处于 Allocated 状态，尚未映射到页表，不可直接访问。
     ///
     /// 内部路径：bitmap allocator（4K 粒度）-> `FreeFrames` -> `AllocatedFrames<P>`。

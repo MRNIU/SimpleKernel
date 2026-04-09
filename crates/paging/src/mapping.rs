@@ -1,9 +1,11 @@
-//! 仿射类型映射——move-only 的 VA->PA 映射所有权。
+//! 仿射类型所有权——move-only 的物理帧所有权 + 权限管理。
 //!
-//! [`MappedPages`] 持有物理帧（[`MappedFrames`]）的所有权，VA 通过 identity mapping
-//! 从 PA 推导（`VA = PA + PHYS_OFFSET`）。Drop 时自动 unmap PTE 并回收帧。
+//! [`OwnedPages`] 持有物理帧的独占所有权，VA 通过 identity mapping
+//! 从 PA 推导（`VA = PA + PHYS_OFFSET`）。
 //!
-//! SAS 架构下只有 identity mapping——VA 与 PA 一一对应，不存在独立的虚拟地址分配。
+//! SAS 架构下所有物理内存始终有背景 identity mapping（kernel_rw），
+//! `OwnedPages` 管理的是**所有权和权限覆盖层**——
+//! `map` 接管所有权并按需调整 PTE flags，`drop` 恢复默认权限并归还帧。
 
 use core::mem::ManuallyDrop;
 
@@ -13,30 +15,31 @@ use memory_types::VirtAddr;
 
 use crate::{PteFlags, PteFlagsOps};
 
-/// unmap 分块大小——每次持锁 unmap 的最大页数。
-const UNMAP_CHUNK: usize = config::UNMAP_CHUNK_SIZE;
-
-/// 仿射类型映射——持有物理帧所有权，VA 从 PA 推导。
+/// 仿射类型帧所有权——持有物理帧的独占所有权和当前权限。
 ///
-/// 不可 Clone、不可 Copy。Drop 时 unmap PTE 并回收帧。
+/// 不可 Clone、不可 Copy。Drop 时恢复 PTE 为默认权限（kernel_rw）并回收帧。
 ///
-/// 帧以 `MappedFrames` 状态持有——typestate 保证：
-/// - 映射期间帧不会被意外释放（`MappedFrames::Drop` 会 panic）
-/// - Drop 时先 unmap，再将帧转为 `UnmappedFrames`（安全归还 buddy）
-pub struct MappedPages {
-    /// `ManuallyDrop` 阻止 `MappedFrames::Drop`（会 panic）在 `MappedPages::Drop` 前运行。
+/// SAS 全量映射下，所有物理内存始终有 identity mapping（背景层）。
+/// `OwnedPages` 不创建/删除 PTE，而是管理权限覆盖：
+/// - `map`：接管帧所有权，按需更新 PTE flags
+/// - `mprotect`：修改权限
+/// - `drop`：恢复 kernel_rw + 归还帧
+pub struct OwnedPages {
+    /// `ManuallyDrop` 阻止 `MappedFrames::Drop`（会 panic）在 `OwnedPages::Drop` 前运行。
     /// Drop 中手动 take + `into_unmapped()` 安全归还。
     frames: ManuallyDrop<MappedFrames>,
     flags: PteFlags,
 }
 
-impl MappedPages {
-    /// 消费 frames 的所有权，建立 identity mapping（VA == PA）。
+impl OwnedPages {
+    /// 消费 frames 的所有权，设置指定权限。
     ///
-    /// VA 通过 `PA + PHYS_OFFSET` 推导，调用方无需指定虚拟地址。
+    /// SAS 全量映射下，PTE 已由 boot 背景映射建立（kernel_rw）。
+    /// 此方法接管帧所有权并按需更新 PTE flags
+    ///（如从默认 kernel_rw 改为 kernel_ro）。
     pub fn map(frames: AllocatedFrames, flags: PteFlags) -> Self {
         let page_count = frames.count();
-        assert!(page_count > 0, "MappedPages::map: 页数不能为 0");
+        assert!(page_count > 0, "OwnedPages::map: 页数不能为 0");
 
         let pt = crate::kernel_page_table();
         let pa_start = frames.start_paddr();
@@ -48,7 +51,7 @@ impl MappedPages {
             let pa = pa_start + i * PAGE_SIZE;
             guard
                 .map_page(va, pa, flags)
-                .expect("MappedPages::map: map_page 失败");
+                .expect("OwnedPages::map: map_page 失败");
         }
         drop(guard);
 
@@ -97,7 +100,7 @@ impl MappedPages {
         let guard = crate::kernel_page_table().lock();
         guard
             .get_mapping(page_va)
-            .expect("MappedPages::pte_flags: 映射不存在")
+            .expect("OwnedPages::pte_flags: 映射不存在")
             .1
     }
 
@@ -110,7 +113,7 @@ impl MappedPages {
             self.vaddr().as_usize(),
             self.size(),
             offset,
-            "MappedPages::as_type",
+            "OwnedPages::as_type",
         );
         // SAFETY: check_bounds_and_align 已验证偏移在映射范围内且地址对齐；
         // FromBytes 保证任意位模式均为合法 T；
@@ -128,12 +131,12 @@ impl MappedPages {
             self.vaddr().as_usize(),
             self.size(),
             offset,
-            "MappedPages::as_type_mut",
+            "OwnedPages::as_type_mut",
         );
         let pte_flags = self.pte_flags(offset);
         assert!(
             pte_flags.is_writable(),
-            "MappedPages::as_type_mut: PTE 无 WRITE 权限"
+            "OwnedPages::as_type_mut: PTE 无 WRITE 权限"
         );
         // SAFETY: 偏移和对齐已验证，PTE 可写已验证，&mut self 保证独占
         unsafe { &mut *(ptr as *mut T) }
@@ -156,39 +159,28 @@ impl MappedPages {
         self.flags = new_flags;
     }
 
-    /// 手动解除映射并取回帧所有权。
+    /// 释放所有权并取回帧——恢复 PTE 为默认权限（不删除映射）。
     pub fn unmap(self) -> UnmappedFrames {
         let mut md = ManuallyDrop::new(self);
         // SAFETY: md 不会 Drop，手动接管字段所有权
         let mapped_frames = unsafe { ManuallyDrop::take(&mut md.frames) };
-        unmap_frames_chunked(&mapped_frames, "MappedPages::unmap");
-        mapped_frames.into_unmapped()
-    }
-}
-
-/// 分块 unmap——每次持锁最多 unmap `UNMAP_CHUNK` 页，避免长时间关中断。
-fn unmap_frames_chunked(frames: &MappedFrames, caller: &str) {
-    let page_count = frames.count();
-    let va_start = frames.start_paddr().to_virt();
-    let pt = crate::kernel_page_table();
-
-    let mut offset = 0;
-    while offset < page_count {
-        let n = (page_count - offset).min(UNMAP_CHUNK);
-        {
+        // 恢复默认权限
+        let pt = crate::kernel_page_table();
+        let default_flags = PteFlags::kernel_rw();
+        let va_start = mapped_frames.start_paddr().to_virt();
+        let page_count = mapped_frames.count();
+        for i in 0..page_count {
+            let va = va_start + i * PAGE_SIZE;
             let mut guard = pt.lock();
-            for i in 0..n {
-                let va = va_start + (offset + i) * PAGE_SIZE;
-                guard.unmap_page(va).unwrap_or_else(|e| {
-                    panic!("{caller}: unmap {va} 失败: {e}");
-                });
-            }
+            guard
+                .update_flags(va, default_flags)
+                .expect("OwnedPages::unmap: update_flags 失败");
+            drop(guard);
         }
         {
-            let flush_va = va_start + offset * PAGE_SIZE;
-            let _flush = tlb::TlbFlushGuard::new(flush_va.as_usize(), n);
+            let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
         }
-        offset += n;
+        mapped_frames.into_unmapped()
     }
 }
 
@@ -220,21 +212,34 @@ pub(crate) fn check_bounds_and_align<T>(
     addr as *const T
 }
 
-impl Drop for MappedPages {
+impl Drop for OwnedPages {
     fn drop(&mut self) {
-        unmap_frames_chunked(&self.frames, "MappedPages::drop");
+        // 恢复 PTE 为默认 kernel_rw（背景映射权限），不删除 PTE
+        let pt = crate::kernel_page_table();
+        let default_flags = PteFlags::kernel_rw();
+        for i in 0..self.page_count() {
+            let va = self.vaddr() + i * PAGE_SIZE;
+            let mut guard = pt.lock();
+            guard
+                .update_flags(va, default_flags)
+                .expect("OwnedPages::drop: update_flags 失败");
+            drop(guard);
+        }
+        {
+            let _flush = tlb::TlbFlushGuard::new(self.vaddr().as_usize(), self.page_count());
+        }
         // SAFETY: Drop 执行中，self.frames 不会再被访问。
-        // 将 MappedFrames 转换为 UnmappedFrames，后者的 Drop 安全归还 buddy。
+        // 将 MappedFrames 转换为 UnmappedFrames，后者的 Drop 安全归还分配器。
         let mapped_frames = unsafe { ManuallyDrop::take(&mut self.frames) };
         let _unmapped = mapped_frames.into_unmapped();
     }
 }
 
-impl core::fmt::Debug for MappedPages {
+impl core::fmt::Debug for OwnedPages {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
-            "MappedPages({}, {} pages, {:?})",
+            "OwnedPages({}, {} pages, {:?})",
             self.vaddr(),
             self.page_count(),
             self.flags,

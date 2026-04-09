@@ -252,7 +252,6 @@ dependencies = [
 name = "frame_allocator"
 version = "0.1.0"
 dependencies = [
- "buddy_system_allocator",
  "config",
  "heapless 0.8.0",
  "log",

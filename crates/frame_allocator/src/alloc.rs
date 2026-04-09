@@ -17,7 +17,7 @@
 //
 // 数据结构：
 //   固定大小数组 + 计数器（栈式），只缓存单帧（order-0）。
-//   多帧连续分配（count > 1）直接走全局 buddy allocator。
+//   多帧连续分配（count > 1）直接走全局分配器。
 //
 // 中断安全：
 //   通过 `HeldInterrupts` token 证明中断已关闭，
@@ -68,7 +68,7 @@ impl FrameAllocatorInner {
 ///   不经过 bitmap——直接构造为 `AllocatedFrames` 返回给调用方
 ///
 /// 预留范围的帧由调用方负责生命周期管理（通常由 `AddressSpace`
-/// 通过 `MappedPages` 持有直到关机）。
+/// 通过 `OwnedPages` 持有直到关机）。
 ///
 /// # Safety
 ///

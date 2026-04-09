@@ -64,13 +64,13 @@ pub const PANIC_BUF_SIZE: usize = 256;
 
 /// map 分块大小（页数）。
 ///
-/// `MappedPages::map_alloc` 每次在栈上分配并映射的最大页数。
+/// `OwnedPages::map` 分块操作时每次在栈上处理的最大页数。
 /// 栈消耗：`MAP_CHUNK_SIZE × size_of::<AllocatedFrames>()` ≈ `MAP_CHUNK_SIZE × 16` 字节。
 pub const MAP_CHUNK_SIZE: usize = 128;
 
 /// unmap 分块大小（页数）。
 ///
-/// `MappedPages::unmap_and_reclaim` 每次在栈上处理的最大页数。
+/// `OwnedPages::drop`/`unmap` 每次在栈上处理的最大页数。
 /// 栈消耗：`UNMAP_CHUNK_SIZE × size_of::<PhysAddr>()` ≈ `UNMAP_CHUNK_SIZE × 8` 字节。
 pub const UNMAP_CHUNK_SIZE: usize = 256;
 

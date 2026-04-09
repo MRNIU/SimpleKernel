@@ -8,7 +8,7 @@
 
 use alloc::collections::BTreeMap;
 
-use crate::MappedPages;
+use crate::OwnedPages;
 use crate::error::MemoryError;
 use config::PAGE_SIZE;
 use memory_types::{Span, VirtAddr};
@@ -21,7 +21,7 @@ pub struct Vma {
     /// 访问权限
     flags: PteFlags,
     /// 已建立的映射——`None` 表示尚未物化（lazy）或外部建立的映射
-    mapping: Option<MappedPages>,
+    mapping: Option<OwnedPages>,
 }
 
 impl Vma {
@@ -135,7 +135,7 @@ impl AddressSpace {
         let range = Span::new(start, end);
         self.check_overlap(range)?;
 
-        let mapping = MappedPages::map(frames, flags);
+        let mapping = OwnedPages::map(frames, flags);
 
         let vma = Vma {
             range,
@@ -208,7 +208,7 @@ impl AddressSpace {
             );
             MemoryError::OutOfMemory
         })?;
-        let mapping = MappedPages::map(frames, vma.flags);
+        let mapping = OwnedPages::map(frames, vma.flags);
 
         vma.flags = mapping.flags();
         vma.mapping = Some(mapping);
@@ -235,10 +235,10 @@ impl AddressSpace {
         Ok(self.areas.get(&start).expect("刚插入的 VMA"))
     }
 
-    /// 注册已由外部建立的映射——直接接管 MappedPages 所有权。
+    /// 注册已由外部建立的映射——直接接管 OwnedPages 所有权。
     ///
     /// 用于 init 阶段注册内核段映射（帧由 frame_allocator::init 预留）。
-    pub fn register_kernel_mapping(&mut self, start: VirtAddr, mapping: paging::MappedPages) {
+    pub fn register_kernel_mapping(&mut self, start: VirtAddr, mapping: paging::OwnedPages) {
         let size = mapping.size();
         let flags = mapping.flags();
         let end = start + size;

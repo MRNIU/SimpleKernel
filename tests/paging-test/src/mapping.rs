@@ -1,4 +1,4 @@
-//! 仿射类型映射测试——验证 MappedPages 的 map/drop/mprotect/unmap 行为。
+//! 仿射类型所有权测试——验证 OwnedPages 的 map/drop/mprotect/unmap 行为。
 
 #![no_std]
 #![no_main]
@@ -7,7 +7,7 @@
 extern crate alloc;
 
 use frame_allocator::AllocatedFrames;
-use paging::{MappedPages, PteFlags, PteFlagsOps};
+use paging::{OwnedPages, PteFlags, PteFlagsOps};
 
 test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_tests);
 
@@ -18,14 +18,14 @@ fn run_tests() {
     test_map_multi_page();
     log::info!("test map_multi_page ... ok");
 
-    test_drop_unmaps();
-    log::info!("test drop_unmaps ... ok");
+    test_drop_restores_default_flags();
+    log::info!("test drop_restores_default_flags ... ok");
 
     test_mprotect_changes_flags();
     log::info!("test mprotect_changes_flags ... ok");
 
-    test_unmap_returns_unmapped_frames();
-    log::info!("test unmap_returns_unmapped_frames ... ok");
+    test_unmap_restores_flags_and_returns_frames();
+    log::info!("test unmap_restores_flags_and_returns_frames ... ok");
 
     log::info!("paging-mapping-test: all 5 tests passed");
 }
@@ -34,7 +34,7 @@ fn run_tests() {
 fn test_map_basic() {
     let frames = AllocatedFrames::alloc(1).expect("alloc frames");
     let pa = frames.start_paddr();
-    let mp = MappedPages::map(frames, PteFlags::kernel_rw());
+    let mp = OwnedPages::map(frames, PteFlags::kernel_rw());
 
     assert_eq!(mp.vaddr(), pa.to_virt());
     assert_eq!(mp.size(), config::PAGE_SIZE);
@@ -48,7 +48,7 @@ fn test_map_basic() {
 fn test_map_multi_page() {
     let frames = AllocatedFrames::alloc(3).expect("alloc frames");
     let pa_start = frames.start_paddr();
-    let _mp = MappedPages::map(frames, PteFlags::kernel_rw());
+    let _mp = OwnedPages::map(frames, PteFlags::kernel_rw());
 
     let guard = paging::kernel_page_table().lock();
     for i in 0..3 {
@@ -57,26 +57,30 @@ fn test_map_multi_page() {
     }
 }
 
-/// Drop 自动 unmap。
-fn test_drop_unmaps() {
+/// Drop 恢复 PTE 为默认 kernel_rw（不删除映射）。
+fn test_drop_restores_default_flags() {
     let frames = AllocatedFrames::alloc(1).expect("alloc frames");
     let va = frames.start_paddr().to_virt();
-    let mp = MappedPages::map(frames, PteFlags::kernel_rw());
+    // 使用 kernel_ro 映射，drop 后应恢复为 kernel_rw
+    let mp = OwnedPages::map(frames, PteFlags::kernel_ro());
 
     {
         let guard = paging::kernel_page_table().lock();
-        assert!(guard.get_mapping(va).is_some());
+        let (_, flags) = guard.get_mapping(va).expect("映射应存在");
+        assert!(!flags.is_writable());
     }
     drop(mp);
+    // PTE 仍存在，但权限已恢复为 kernel_rw
     let guard = paging::kernel_page_table().lock();
-    assert!(guard.get_mapping(va).is_none());
+    let (_, flags) = guard.get_mapping(va).expect("drop 后映射仍应存在");
+    assert!(flags.is_writable());
 }
 
 /// mprotect 修改权限。
 fn test_mprotect_changes_flags() {
     let frames = AllocatedFrames::alloc(1).expect("alloc frames");
     let va = frames.start_paddr().to_virt();
-    let mut mp = MappedPages::map(frames, PteFlags::kernel_rw());
+    let mut mp = OwnedPages::map(frames, PteFlags::kernel_rw());
 
     {
         let guard = paging::kernel_page_table().lock();
@@ -91,16 +95,19 @@ fn test_mprotect_changes_flags() {
     assert!(!flags.is_writable());
 }
 
-/// unmap 返回 UnmappedFrames 并清除页表。
-fn test_unmap_returns_unmapped_frames() {
+/// unmap 恢复默认权限并返回 UnmappedFrames。
+fn test_unmap_restores_flags_and_returns_frames() {
     let frames = AllocatedFrames::alloc(1).expect("alloc frames");
     let pa = frames.start_paddr();
     let va = pa.to_virt();
-    let mp = MappedPages::map(frames, PteFlags::kernel_rw());
+    // 使用 kernel_ro 映射，unmap 后应恢复为 kernel_rw
+    let mp = OwnedPages::map(frames, PteFlags::kernel_ro());
 
     let unmapped = mp.unmap();
     assert_eq!(unmapped.start_paddr(), pa);
 
+    // PTE 仍存在，但权限已恢复为 kernel_rw
     let guard = paging::kernel_page_table().lock();
-    assert!(guard.get_mapping(va).is_none());
+    let (_, flags) = guard.get_mapping(va).expect("unmap 后映射仍应存在");
+    assert!(flags.is_writable());
 }

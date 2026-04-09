@@ -26,16 +26,16 @@ pub fn init() -> AddressSpace {
     }
     let text_end = PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up();
     let rodata_end = PhysAddr::new(unsafe { &__erodata as *const u8 as usize }).align_up();
-    let mem_end = mem_start + mem_size;
-
-    // 计算各段页数
-    let text_pages = (text_end - mem_start) / config::PAGE_SIZE;
-    let rodata_pages = (rodata_end - text_end) / config::PAGE_SIZE;
-    let data_pages = (mem_end - rodata_end) / config::PAGE_SIZE;
 
     // 空闲内存 = 内核之后的部分
     let free_start = kernel_end.align_up();
     let free_size = mem_size - (free_start - mem_start);
+
+    // 各段页数——data 段只覆盖到 free_start，不含空闲帧区域。
+    // 空闲帧由 OwnedPages::map 接管所有权并按需更新 PTE flags（typestate: Allocated → Mapped）。
+    let text_pages = (text_end - mem_start) / config::PAGE_SIZE;
+    let rodata_pages = (rodata_end - text_end) / config::PAGE_SIZE;
+    let data_pages = (free_start - rodata_end) / config::PAGE_SIZE;
 
     // SAFETY: 范围有效、页对齐、互不重叠、仅调用一次
     let mut reserved = unsafe {
@@ -56,9 +56,9 @@ pub fn init() -> AddressSpace {
 
     let mut kernel_as = AddressSpace::new();
 
-    // 分段映射：.text(RWX) / .rodata(RO) / .data+free(RW)
+    // 分段映射：.text(RWX) / .rodata(RO) / .data(RW)
     // reserved 的元素顺序与传入 init 的 reserved 参数顺序一致。
-    // identity mapping: VA == PA，MappedPages::map 从 PA 推导 VA。
+    // identity mapping: VA == PA，OwnedPages::map 从 PA 推导 VA。
     let segments: [PteFlags; 3] = [
         PteFlags::kernel_rwx(),
         PteFlags::kernel_ro(),
@@ -70,7 +70,7 @@ pub fn init() -> AddressSpace {
     for (i, flags) in segments.into_iter().enumerate() {
         let frames = reserved.remove(0);
         let va = memory_types::VirtAddr::new(seg_starts[i].as_usize());
-        let mapping = paging::MappedPages::map(frames, flags);
+        let mapping = paging::OwnedPages::map(frames, flags);
         kernel_as.register_kernel_mapping(va, mapping);
     }
 
@@ -81,7 +81,7 @@ pub fn init() -> AddressSpace {
         text_end,
         rodata_end,
         rodata_end,
-        mem_end
+        free_start
     );
 
     kernel_as

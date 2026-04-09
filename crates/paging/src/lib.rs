@@ -4,7 +4,7 @@
 //! 实现了 **编译期强制的仿射类型安全**：
 //!
 //! - [`PageTable`] 的写操作（`map_page`、`unmap_page` 等）为 `pub`，
-//!   但正常使用时应通过 `MappedPages` / `MmioRegion` 等 RAII 类型调用，
+//!   但正常使用时应通过 `OwnedPages` / `MmioRegion` 等 RAII 类型调用，
 //!   确保映射的创建与销毁通过仿射类型管理。
 //!
 //! PTE 编解码由 [`page_table_entry`] crate 提供。
@@ -28,7 +28,7 @@ pub mod table;
 pub use table::PageTable;
 
 pub mod mapping;
-pub use mapping::MappedPages;
+pub use mapping::OwnedPages;
 
 pub mod mmio;
 
@@ -74,12 +74,23 @@ pub struct KernelNodeFrame(frame_allocator::AllocatedFrames);
 
 impl NodeFrameOps for KernelNodeFrame {
     fn alloc() -> Result<Self, error::PagingError> {
-        frame_allocator::AllocatedFrames::alloc_one()
-            .map(Self)
-            .map_err(|e| {
-                log::warn!("页表节点帧分配失败: {:?}", e);
-                error::PagingError::AllocationFailed
-            })
+        let frames = frame_allocator::AllocatedFrames::alloc_one().map_err(|e| {
+            log::warn!("页表节点帧分配失败: {:?}", e);
+            error::PagingError::AllocationFailed
+        })?;
+        // 页表节点帧必须清零——残留垃圾会被当作有效 PTE 解读。
+        // 节点帧不经过 OwnedPages::map，
+        // 需在此手动清零。
+        // SAFETY: 帧刚分配，无其他引用；boot 阶段 paging 未激活，
+        // PA 可直接访问；paging 激活后节点帧在已映射区域内分配。
+        unsafe {
+            core::ptr::write_bytes(
+                frames.start_paddr().to_virt().as_mut_ptr::<u8>(),
+                0,
+                config::PAGE_SIZE,
+            );
+        }
+        Ok(Self(frames))
     }
     fn paddr(&self) -> PhysAddr {
         self.0.start_paddr()

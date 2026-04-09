@@ -23,7 +23,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Adding a scheduler** → `src/task/scheduler/mod.rs` for `Scheduler` trait
 - **Boot flow** → `src/main.rs`: `_start` → `bootstrap()` → logging → percpu → early_init → memory → paging → timer → interrupt → task → device → fs → SMP → schedule
 - **帧生命周期** → `crates/frame_allocator/`: Free → Allocated → Mapped → Unmapped → Free（typestate 编译期追踪）
-- **映射所有权** → `crates/paging/src/mapping.rs`: `MappedPages` 持有 `MappedFrames`，Drop 自动 unmap
+- **帧所有权** → `crates/paging/src/mapping.rs`: `OwnedPages` 持有 `MappedFrames`，Drop 恢复默认权限并归还帧
 - **System tests** → `tests/` for isolated QEMU tests, each binary in its own QEMU instance
 - **Error handling** → `KResult<T> = Result<T, ErrorCode>` in `src/error.rs`
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
