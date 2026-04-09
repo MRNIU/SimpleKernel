@@ -8,25 +8,32 @@ use memory_types::{FrameSpan, Page4K, PageSize, PhysAddr};
 
 use crate::alloc::dealloc_to_backend;
 
-/// 帧生命周期状态。
+/// 帧生命周期状态——追踪物理帧的**所有权**。
 ///
-/// 状态机：
+/// SAS 全量映射下所有帧始终有 identity mapping（背景层 kernel_rw）。
+/// 状态不代表 PTE 是否存在，而代表谁持有帧：
+///
 /// ```text
 /// Free -> Allocated -> Mapped -> Unmapped --> Free
-///                                        \-> Allocated（重新映射）
+///                                         \-> Allocated（重新映射）
 /// ```
 ///
+/// - `Free`：分配器持有，背景 kernel_rw 权限
+/// - `Allocated`：用户持有，尚未通过 OwnedPages 管理权限
+/// - `Mapped`：OwnedPages 持有，PTE flags 可能已被覆盖为非默认值
+/// - `Unmapped`：从 OwnedPages 释放，PTE 已恢复为 kernel_rw，等待回收
+///
 /// `Mapped` 帧禁止直接 drop——必须先 unmap 转为 `Unmapped`。
-/// 其余状态 Drop 时归还 bitmap allocator。
+/// 其余状态 Drop 时归还分配器。
 #[derive(PartialEq, Eq, core::marker::ConstParamTy)]
 pub enum MemoryState {
-    /// 空闲——被分配器持有，Drop 归还 bitmap allocator
+    /// 空闲——分配器持有，背景 kernel_rw 权限。Drop 归还分配器
     Free,
-    /// 已分配——用户持有，Drop 归还 bitmap allocator
+    /// 已分配——用户持有，尚未通过 OwnedPages 管理权限。Drop 归还分配器
     Allocated,
-    /// 已映射——写入页表，MMU 正在使用。**Drop 会 panic**
+    /// 已映射——OwnedPages 持有，PTE flags 可能已被覆盖为非默认值。**Drop 会 panic**
     Mapped,
-    /// 已解映射——从页表移除，等待回收或重新映射。Drop 归还 bitmap allocator
+    /// 已解映射——PTE 已恢复为 kernel_rw，等待回收或重新映射。Drop 归还分配器
     Unmapped,
 }
 
