@@ -1,4 +1,9 @@
 //! 内存子系统初始化——主核 / 从核。
+//!
+//! 初始化完成后页表包含两层映射：
+//! 1. **前景映射**（OwnedPages）：text / rodata / data 段，各自权限。
+//! 2. **背景映射**（identity_map_range）：`[free_start, mem_end)` 全量映射为 kernel_rw，
+//!    供帧分配器分配的帧在被 OwnedPages::map 接管前仍可安全访问。
 
 use memory_types::PhysAddr;
 use paging::{PageTable, PteFlags, PteFlagsOps};
@@ -74,14 +79,25 @@ pub fn init() -> AddressSpace {
         kernel_as.register_kernel_mapping(va, mapping);
     }
 
+    // 背景映射：free pool 全量映射为 kernel_rw
+    // 直接操作页表，不经过 OwnedPages——这是 SAS 背景层，不追踪所有权。
+    // 空闲帧由 OwnedPages::map 按需接管所有权时更新 PTE flags。
+    {
+        let mem_end = mem_start + mem_size;
+        let mut guard = paging::kernel_page_table().lock();
+        guard.identity_map_range(free_start, mem_end, PteFlags::kernel_rw());
+    }
+
     log::info!(
-        "MemoryInit: code {}-{} (RWX), rodata {}-{} (RO), data {}-{} (RW)",
+        "MemoryInit: code {}-{} (RWX), rodata {}-{} (RO), data {}-{} (RW), free {}-{} (RW bg)",
         mem_start,
         text_end,
         text_end,
         rodata_end,
         rodata_end,
-        free_start
+        free_start,
+        free_start,
+        mem_start + mem_size
     );
 
     kernel_as
