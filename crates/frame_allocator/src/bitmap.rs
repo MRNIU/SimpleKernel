@@ -138,3 +138,135 @@ impl FrameAllocBackend for BitmapAllocator {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_allocator(start: usize, end: usize) -> BitmapAllocator {
+        let mut a = BitmapAllocator::new();
+        a.add_frames(start, end);
+        a
+    }
+
+    /// add_frames 基本初始化。
+    #[test]
+    fn add_frames_basic() {
+        let a = make_allocator(100, 200);
+        assert_eq!(a.base_frame, 100);
+        assert_eq!(a.total_frames, 100);
+    }
+
+    /// add_frames 扩展——空洞区域标记为已分配。
+    #[test]
+    fn add_frames_extend_with_gap() {
+        let mut a = make_allocator(0, 10);
+        a.add_frames(20, 30);
+        assert_eq!(a.total_frames, 30);
+        // 空洞 [10,20) 应不可分配
+        for _ in 0..10 {
+            a.alloc(1).expect("前 10 帧应可分配");
+        }
+        for _ in 0..10 {
+            a.alloc(1).expect("后 10 帧应可分配");
+        }
+        assert!(a.alloc(1).is_none(), "空洞区域不应可分配");
+    }
+
+    /// 单帧分配与释放。
+    #[test]
+    fn alloc_dealloc_single() {
+        let mut a = make_allocator(0, 64);
+        let f = a.alloc(1).expect("应成功");
+        assert_eq!(f, 0);
+        a.dealloc(f, 1);
+        let f2 = a.alloc(1).expect("释放后应可重新分配");
+        assert_eq!(f2, 0);
+    }
+
+    /// 多帧连续分配。
+    #[test]
+    fn alloc_multi_contiguous() {
+        let mut a = make_allocator(0, 128);
+        let f = a.alloc(4).expect("应分配 4 帧");
+        assert_eq!(f, 0);
+        let f2 = a.alloc(4).expect("应分配后续 4 帧");
+        assert_eq!(f2, 4);
+    }
+
+    /// 碎片化后多帧分配——需要找到连续空闲区域。
+    #[test]
+    fn alloc_multi_fragmented() {
+        let mut a = make_allocator(0, 10);
+        let f0 = a.alloc(1).expect("帧 0");
+        let f1 = a.alloc(1).expect("帧 1");
+        let _f2 = a.alloc(1).expect("帧 2");
+        let f3 = a.alloc(1).expect("帧 3");
+        // 释放 0,1,3 制造碎片：空闲=[0,1], [3], [4..9]
+        a.dealloc(f0, 1);
+        a.dealloc(f1, 1);
+        a.dealloc(f3, 1);
+        // 请求 3 个连续帧——[0,1] 不够，[3] 不够，应从 [4..9] 分配
+        let f = a.alloc(3).expect("应找到连续 3 帧");
+        assert!(f >= 4, "应跳过碎片区域，实际分配起始: {f}");
+    }
+
+    /// OOM——分配耗尽。
+    #[test]
+    fn alloc_oom() {
+        let mut a = make_allocator(0, 3);
+        a.alloc(2).expect("前 2 帧");
+        a.alloc(1).expect("第 3 帧");
+        assert!(a.alloc(1).is_none(), "应 OOM");
+    }
+
+    /// alloc(0) 返回 None。
+    #[test]
+    fn alloc_zero() {
+        let mut a = make_allocator(0, 10);
+        assert!(a.alloc(0).is_none());
+    }
+
+    /// 请求超过总帧数。
+    #[test]
+    fn alloc_exceeds_total() {
+        let mut a = make_allocator(0, 5);
+        assert!(a.alloc(6).is_none());
+    }
+
+    /// 跨 word 边界的多帧分配（确保不限于单个 u64）。
+    #[test]
+    fn alloc_cross_word_boundary() {
+        let mut a = make_allocator(0, 128);
+        // 占满前 62 帧，留 [62,63] 空闲（word 0 末尾）+ [64..] 空闲（word 1）
+        for i in 0..62 {
+            let f = a.alloc(1).expect("逐帧分配");
+            assert_eq!(f, i);
+        }
+        // 请求 4 帧连续——应跨 word 边界 [62,63,64,65]
+        let f = a.alloc(4).expect("跨 word 边界分配");
+        assert_eq!(f, 62);
+    }
+
+    /// dealloc 后帧可重新分配。
+    #[test]
+    fn dealloc_reuse() {
+        let mut a = make_allocator(0, 2);
+        let f = a.alloc(2).expect("分配 2 帧");
+        assert!(a.alloc(1).is_none());
+        a.dealloc(f, 2);
+        let f2 = a.alloc(2).expect("释放后应可重新分配");
+        assert_eq!(f2, f);
+    }
+
+    /// double free 在 debug 模式下应 panic。
+    #[test]
+    #[cfg(debug_assertions)]
+    #[should_panic(expected = "未分配")]
+    fn dealloc_double_free_panics() {
+        let mut a = make_allocator(0, 10);
+        let f = a.alloc(1).expect("分配");
+        a.dealloc(f, 1);
+        a.dealloc(f, 1);
+    }
+}
