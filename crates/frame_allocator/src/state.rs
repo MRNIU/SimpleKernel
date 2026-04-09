@@ -91,23 +91,17 @@ impl<const S: MemoryState, P: PageSize> Frames<S, P> {
         }
     }
 
-    /// 消费 self，以新的状态 `NEW` 返回——typestate 转换的共享实现。
-    ///
-    /// `mem::forget` 阻止旧状态的 Drop 执行，新 `Frames` 继承帧范围。
+    /// 消费 self，以新的状态 `NEW` 返回（页大小不变）。
     #[inline]
     pub(crate) fn into_state<const NEW: MemoryState>(self) -> Frames<NEW, P> {
-        let range = self.range;
-        core::mem::forget(self);
-        Frames {
-            range,
-            _marker: PhantomData,
-        }
+        self.into_state_and_size()
     }
 
     /// 消费 self，同时变更状态和页大小标记。
     ///
     /// 用于 `FreeFrames`（4K）→ `AllocatedFrames<P>`（可能大页）的转换。
     /// 编译期无法检查 P2 的对齐约束，因此包含运行时断言。
+    /// `into_state` 在 `P2 == P` 时委托到此方法——对齐断言对同页大小无额外开销。
     #[inline]
     pub(crate) fn into_state_and_size<const NEW: MemoryState, P2: PageSize>(
         self,

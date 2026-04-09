@@ -40,7 +40,6 @@ impl<P: PageSize> AllocatedFrames<P> {
             core::ptr::write_bytes(ptr, 0, count_4k * PAGE_SIZE);
         }
 
-        // typestate 转换：Free(4K) → Allocated(P)，into_state_and_size 内部检查对齐
         Ok(free.into_state_and_size())
     }
 

@@ -105,7 +105,6 @@ pub unsafe fn init(
         free_start
     );
 
-    // 预留范围构造为 AllocatedFrames（不经过 bitmap）
     let mut result = heapless::Vec::new();
     for &(start, count) in reserved {
         assert!(
