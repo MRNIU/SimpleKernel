@@ -1,4 +1,9 @@
-//! 全局帧分配器——bitmap allocator 封装与初始化。
+//! 全局帧分配器——buddy system 封装与初始化。
+//!
+//! 后端使用 [`buddy_system_allocator::FrameAllocator<32>`]：
+//! - O(log n) alloc / O(log n) dealloc（buddy 合并）
+//! - 分配结果按请求大小的 next_power_of_two 对齐——天然满足大页对齐需求
+//! - 元数据存储在堆上的 `BTreeSet`，不触碰空闲帧内存
 
 //
 // TODO: Per-CPU 帧缓存——消除 SMP 全局锁瓶颈
@@ -29,15 +34,12 @@
 // 前置条件：
 //   需要用户进程（页分配频率足够高才有优化价值）。
 
+use buddy_system_allocator::FrameAllocator;
 use memory_types::{Frame, FrameSpan, PhysAddr};
 use sync_crate::SpinLockIrq;
 
-use crate::backend::FrameAllocBackend;
-use crate::bitmap::BitmapAllocator;
-use crate::state::AllocatedFrames;
-
 use crate::FrameAllocError;
-use crate::state::FreeFrames;
+use crate::state::{AllocatedFrames, FreeFrames};
 
 /// 全局帧分配器，以页帧（PAGE_SIZE 字节）为单位管理物理内存。
 static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocatorInner> = SpinLockIrq::new(
@@ -48,24 +50,24 @@ static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocatorInner> = SpinLockIrq::new(
 
 /// 帧分配器内部状态。
 struct FrameAllocatorInner {
-    allocator: BitmapAllocator,
+    allocator: FrameAllocator<32>,
     initialized: bool,
 }
 
 impl FrameAllocatorInner {
     const fn new() -> Self {
         Self {
-            allocator: BitmapAllocator::new(),
+            allocator: FrameAllocator::new(),
             initialized: false,
         }
     }
 }
 
-/// 初始化帧分配器——空闲内存入 bitmap，预留范围构造为 `AllocatedFrames` 返回。
+/// 初始化帧分配器——空闲内存入 buddy，预留范围构造为 `AllocatedFrames` 返回。
 ///
-/// - `free_start`/`free_size`：空闲物理内存范围，加入 bitmap allocator
+/// - `free_start`/`free_size`：空闲物理内存范围，加入 buddy allocator
 /// - `reserved`：需要预留的物理地址范围列表 `(start, page_count)`，
-///   不经过 bitmap——直接构造为 `AllocatedFrames` 返回给调用方
+///   不经过 buddy——直接构造为 `AllocatedFrames` 返回给调用方
 ///
 /// 预留范围的帧由调用方负责生命周期管理（通常由 `AddressSpace`
 /// 通过 `OwnedPages` 持有直到关机）。
@@ -96,7 +98,7 @@ pub unsafe fn init(
     let end_frame = PhysAddr::new(free_start.as_usize() + free_size)
         .page_number()
         .as_usize();
-    alloc.allocator.add_frames(start_frame, end_frame);
+    alloc.allocator.add_frame(start_frame, end_frame);
     alloc.initialized = true;
 
     log::info!(
@@ -115,9 +117,8 @@ pub unsafe fn init(
             count > 0,
             "frame_allocator::init: reserved range count is zero"
         );
-        let s = Frame::new(start.page_number().as_usize());
-        let e = Frame::new(s.as_usize() + count);
-        let frames = AllocatedFrames::from_range(FrameSpan::new(s, e));
+        let s = start.page_number();
+        let frames = AllocatedFrames::from_range(FrameSpan::new(s, s + count));
         result
             .push(frames)
             .expect("frame_allocator::init: reserved 范围数不超过 8");
@@ -127,10 +128,17 @@ pub unsafe fn init(
     result
 }
 
-/// 从 bitmap allocator 取出帧，构造 `FreeFrames`。
+/// 从 buddy allocator 取出帧，构造 `FreeFrames`。
 ///
 /// 这是与底层分配器交互的唯一分配出口——所有分配路径都经过此函数。
+///
+/// `count` 必须 > 0，否则返回 `AllocationFailed`。
+/// 注意 buddy 内部会将 `count` 向上取整到 2 的幂次，
+/// 实际分配的帧数可能多于请求数，但 `FrameSpan` 仅跟踪请求的帧。
 pub(crate) fn alloc_from_backend(count: usize) -> Result<FreeFrames, FrameAllocError> {
+    if count == 0 {
+        return Err(FrameAllocError::AllocationFailed);
+    }
     let mut alloc = FRAME_ALLOCATOR.lock();
     if !alloc.initialized {
         return Err(FrameAllocError::AllocationFailed);
@@ -142,17 +150,20 @@ pub(crate) fn alloc_from_backend(count: usize) -> Result<FreeFrames, FrameAllocE
         // 而非直接失败。待引入 page cache / swap 后实现。
         .ok_or(FrameAllocError::OutOfMemory)?;
     let start = Frame::new(frame_num);
-    let end = Frame::new(frame_num + count);
-    Ok(FreeFrames::from_range(FrameSpan::new(start, end)))
+    Ok(FreeFrames::from_range(FrameSpan::new(start, start + count)))
 }
 
-/// 归还帧到 bitmap allocator——仅由 `Frames` 的 Drop 调用。
+/// 归还帧到 buddy allocator——仅由 `Frames` 的 Drop 调用。
+///
+/// # Panics
+///
+/// `range` 为空时 panic——零大小帧不应存在，表示分配器内部逻辑错误。
 pub(crate) fn dealloc_to_backend(range: FrameSpan) {
-    if range.size() == 0 {
-        return;
-    }
-    let mut alloc = FRAME_ALLOCATOR.lock();
-    let start = range.start().as_usize();
     let count = range.size();
-    alloc.allocator.dealloc(start, count);
+    assert!(
+        count > 0,
+        "dealloc_to_backend: 归还零大小帧范围 ({range:?})，分配器逻辑错误"
+    );
+    let mut alloc = FRAME_ALLOCATOR.lock();
+    alloc.allocator.dealloc(range.start().as_usize(), count);
 }

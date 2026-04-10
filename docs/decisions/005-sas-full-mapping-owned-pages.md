@@ -15,7 +15,7 @@ SimpleKernel 采用 SAS（单地址空间）架构，隔离通过 Rust 类型系
 
 1. **内部矛盾**：boot 全量映射物理内存（含空闲帧区域），但 `MappedPages::map()` 对已有 PTE panic（`AlreadyMappedIdentical`），typestate 声称 Free 帧无 PTE 但实际有。
 2. **safety 契约违反**：`frame_allocator::init` 文档要求 "free 和 reserved 不重叠"，但 `data_pages = (mem_end - rodata_end)` 包含了 free pool，两者重叠。
-3. **buddy_system_allocator 在空闲帧内存中存链表指针**：依赖全量映射才能工作，与 typestate "Free 帧无 PTE" 矛盾。
+3. **buddy_system_allocator 的 `Heap` 类型在空闲帧内存中存链表指针**：依赖全量映射才能工作，与 typestate "Free 帧无 PTE" 矛盾。（注：物理帧分配器使用的 `FrameAllocator` 类型将元数据存储在堆上的 BTreeSet 中，不触碰帧内存。此条仅适用于 `Heap` 类型。）
 4. **`MappedPages::drop` 删除 PTE**：在全量映射模型下会在背景映射中留下空洞。
 
 对其它内核的调研结论：
@@ -51,7 +51,7 @@ boot 映射全部物理内存（背景层）。`MappedPages` 改名 `OwnedPages`
 
 **缺点**:
 - 空闲帧有 PTE（默认 kernel_rw），但这在 SAS 下不是安全问题——APP 受 `#![forbid(unsafe_code)]` + crate 可见性约束，无法构造裸指针访问
-- 分配器性能：bitmap O(n) vs buddy O(log n)（教学内核可接受）
+- 分配器性能：O(log n)（buddy system，已重新采用 `buddy_system_allocator::FrameAllocator<32>`）
 - `OwnedPages` 名称与 Theseus 的 `MappedPages` 不同，增加理解成本
 
 ### 方案 C: 保持现状 + 打补丁
@@ -84,7 +84,7 @@ SAS 架构下，隔离由 Rust 类型系统承担，页表的角色是纵深防�
 ## 影响
 
 - **代码变更**:
-  - `crates/frame_allocator/`: 换 bitmap 分配器，修复 reserved/free 边界
+  - `crates/frame_allocator/`: 重新采用 `buddy_system_allocator::FrameAllocator<32>`（外部 BTreeSet 元数据，不触碰帧内存），修复 reserved/free 边界
   - `crates/paging/src/mapping.rs`: `MappedPages` → `OwnedPages`，map 接受已有 PTE，drop 恢复默认权限
   - `crates/paging/src/table.rs`: `map_page` / `map_at_level` 处理同 PA 映射
   - `crates/paging/src/lib.rs`: 移除 `KernelNodeFrame::alloc` 冗余手动清零（`AllocatedFrames::alloc_one` 已清零）

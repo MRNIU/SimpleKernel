@@ -9,7 +9,7 @@
 编码为 Rust 的 const generic 类型参数，使非法的状态转换在编译期被拒绝。
 
 从 `memory` crate 独立出来的原因：帧分配是内存子系统中最底层、最独立的能力，
-被页表（`paging`）、映射管理（`MappedPages`）、VMA 等上层模块共同依赖。
+被页表（`paging`）、映射管理（`OwnedPages`）、VMA 等上层模块共同依赖。
 独立 crate 使依赖方向单向化，也允许 `paging` 直接集成，无需经过 `memory`。
 
 ## 状态机
@@ -39,24 +39,24 @@ stateDiagram-v2
     Free --> Allocated : into_allocated()
 
     Allocated --> Mapped : into_mapped()
-    Allocated --> [*] : Drop（归还 bitmap）
+    Allocated --> [*] : Drop（归还 buddy）
 
     Mapped --> Unmapped : into_unmapped()
     Mapped --> Mapped : Drop = panic
 
     Unmapped --> Allocated : into_allocated()
     Unmapped --> Free : into_free()
-    Unmapped --> [*] : Drop（归还 bitmap）
+    Unmapped --> [*] : Drop（归还 buddy）
 
-    Free --> [*] : Drop（归还 bitmap）
+    Free --> [*] : Drop（归还 buddy）
 ```
 
 | 状态 | 含义 | 所有者 | Drop 行为 |
 |------|------|--------|-----------|
-| `Free` | 刚从 bitmap allocator 取出，尚未交给用户 | 分配器内部 | 归还 bitmap |
-| `Allocated` | 用户持有，可写入/映射 | 调用方 | 归还 bitmap |
-| `Mapped` | 已写入页表，正在被 MMU 使用 | MappedPages | **panic**——必须先 unmap |
-| `Unmapped` | 已从页表移除，等待回收或重新映射 | 调用方 | 归还 bitmap |
+| `Free` | 刚从 buddy allocator 取出，尚未交给用户 | 分配器内部 | 归还 buddy |
+| `Allocated` | 用户持有，可写入/映射 | 调用方 | 归还 buddy |
+| `Mapped` | 已写入页表，正在被 MMU 使用 | OwnedPages | **panic**——必须先 unmap |
+| `Unmapped` | 已从页表移除，等待回收或重新映射 | 调用方 | 归还 buddy |
 
 **编译期阻止的非法操作：**
 
@@ -72,11 +72,11 @@ stateDiagram-v2
 
 ```
 src/
-├── lib.rs           crate 入口，pub use 汇总 + ensure_test_init
+├── lib.rs           crate 入口，pub use 汇总
 ├── error.rs         FrameAllocError 定义
 ├── state.rs         MemoryState 枚举、Frames<S> 结构体、通用操作、Drop
-├── alloc.rs         全局 SpinLockIrq<BitmapAllocator>、init / alloc / dealloc
-└── transitions.rs   各状态的 impl 块（状态转换方法 + 分配接口）、测试
+├── alloc.rs         全局 SpinLockIrq<FrameAllocator<32>>、init / alloc / dealloc
+└── transitions.rs   各状态的 impl 块（状态转换方法 + 分配接口）
 ```
 
 模块间依赖方向：
@@ -84,11 +84,11 @@ src/
 ```
 transitions.rs --> state.rs <-- alloc.rs
                        ^             ^
-                   error.rs      (bitmap_system_allocator 外部 crate)
+                   error.rs      (buddy_system_allocator 外部 crate)
 ```
 
 - `state.rs` 定义类型和 Drop（调用 `alloc::dealloc_to_backend`）
-- `alloc.rs` 封装 bitmap allocator（构造 `state::FreeFrames`）
+- `alloc.rs` 封装 buddy allocator（构造 `state::FreeFrames`）
 - `transitions.rs` 组装两者，提供面向用户的 API
 - `state.rs` 和 `alloc.rs` 存在 crate 内双向依赖——这是有意为之，对外不可见
 
@@ -99,13 +99,13 @@ transitions.rs --> state.rs <-- alloc.rs
 ```
 AllocatedFrames::alloc(count)
   |
-  +-> alloc_from_bitmap(count)          <- 持有 SpinLockIrq
-  |     +-> bitmap.alloc(count)
+  +-> alloc_from_backend(count)          <- 持有 SpinLockIrq
+  |     +-> buddy.alloc(count)
   |     +-> 构造 FreeFrames            <- 释放锁
   |
-  +-> FreeFrames::into_allocated()     <- typestate 转换（零开销）
-  |
   +-> write_bytes(ptr, 0, ...)         <- 零初始化（锁外执行）
+  |
+  +-> FreeFrames::into_state_and_size() <- typestate + PageSize 转换（零开销）
 ```
 
 关键设计：零初始化在锁外执行，避免持锁期间做 O(n) 的内存写入。
@@ -116,11 +116,11 @@ AllocatedFrames::alloc(count)
 drop(AllocatedFrames)  或  drop(UnmappedFrames)  或  drop(FreeFrames)
   |
   +-> dealloc_to_backend(range)          <- 持有 SpinLockIrq
-        +-> bitmap.dealloc(start, count)
+        +-> buddy.dealloc(start, count)
 ```
 
 `Frames<Mapped>` 的 Drop 不走此路径——直接 panic。正常流程中 `MappedFrames`
-的所有权由 `MappedPages` 通过 `ManuallyDrop` 管理，unmap 时通过
+的所有权由 `OwnedPages` 通过 `ManuallyDrop` 管理，unmap 时通过
 `into_unmapped()` 转换后安全归还。
 
 ## 锁与中断安全
@@ -136,33 +136,6 @@ drop(AllocatedFrames)  或  drop(UnmappedFrames)  或  drop(FreeFrames)
 `SpinLockIrq` 在获取锁前禁用中断，消除了这一场景。代价是每次 lock/unlock
 多一条 CSR/MSR 指令（~2 周期），对于帧分配的频率来说可以忽略。
 
-## Feature Flags
-
-| Feature | 作用 | 使用场景 |
-|---------|------|----------|
-| `test-support` | 导出 `ensure_test_init()`、禁用 `no_std` | 下游 crate 的 `[dev-dependencies]` |
-
-### `test-support`
-
-导出 `ensure_test_init()` 函数——在宿主机上分配一块堆内存模拟物理内存区域，
-用 `std::sync::Once` 保证幂等，供下游 crate 的 `#[test]` 使用。
-
-### `test-support` 的 Cargo.toml 配置
-
-**必须通过 `[dev-dependencies]` 启用，不能放在 `[dependencies]`。**
-该 feature 会禁用 `#![no_std]` 以获取 `std::sync::Once`。如果放在
-`[dependencies]` 中，裸机交叉编译会因找不到 `std` 而失败。
-
-```toml
-# 正确
-[dev-dependencies]
-frame_allocator = { path = "../frame_allocator", features = ["test-support"] }
-
-# 错误——裸机编译会失败
-[dependencies]
-frame_allocator = { path = "../frame_allocator", features = ["test-support"] }
-```
-
 ## 使用示例
 
 ### 基本分配与释放
@@ -176,7 +149,7 @@ let pa = frame.start_paddr();
 let frames = AllocatedFrames::alloc(4)?;
 assert_eq!(frames.count(), 4);
 
-// drop 时自动归还 bitmap allocator
+// drop 时自动归还 buddy allocator
 ```
 
 ### 完整生命周期（配合页表）
@@ -186,7 +159,7 @@ assert_eq!(frames.count(), 4);
 let allocated = AllocatedFrames::alloc_one()?;
 
 // 2. 写入页表后，转为 Mapped
-//    （实际由 MappedPages::map 内部完成）
+//    （实际由 OwnedPages::map 内部完成）
 let mapped = allocated.into_mapped();
 
 // 3. 从页表移除后，转为 Unmapped
@@ -210,17 +183,19 @@ MMU 仍然持有对该物理地址的引用，后续访问将导致 use-after-fr
 
 ### 2. 所有分配均零初始化
 
-当前 `alloc()` / `alloc_one()` 始终将帧内容清零，防止信息泄漏（用户进程不应
+当前 `alloc()` / `alloc_one()` 始终将帧内容清零，防止信息泄漏（用户进程不会
 看到前一个进程的数据）。这意味着即使内核内部分配（如页表节点）也会付出清零开销。
 
-### 3. 连续帧分配受 bitmap allocator 限制
+### 3. Buddy 内部碎片
 
-`alloc(count)` 要求 count 个**物理连续**的帧。bitmap allocator 的最大阶为 32，
-在内存碎片化严重时，大块连续分配可能失败即使总空闲帧数充足。
+`alloc(count)` 内部将 `count` 向上取整到 2 的幂次。例如 `alloc(3)` 实际
+分配 4 帧，`alloc(5)` 实际分配 8 帧。`dealloc` 做相同取整，保证 alloc/dealloc
+对称。多出的帧在分配期间不可用，但释放后自动合并回 buddy。
 
 ### 4. 初始化顺序依赖
 
 `frame_allocator::init()` 必须在堆初始化之后、任何帧分配之前调用。
+buddy allocator 内部使用 `BTreeSet`（堆分配），因此依赖堆可用。
 未初始化时调用 `alloc()` 返回 `FrameAllocError::AllocationFailed`。
 
 ## TODO

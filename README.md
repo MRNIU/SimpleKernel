@@ -249,7 +249,7 @@ cargo xtask test --list                        # 列出可用测试
 | [`bitflags`](https://crates.io/crates/bitflags) | 类型安全的位标志（寄存器字段、页表项） |
 | [`bitfield-struct`](https://crates.io/crates/bitfield-struct) | 过程宏位域结构体（硬件寄存器字段定义） |
 | [`log`](https://crates.io/crates/log) | 日志门面，后端在 `logging.rs` |
-| [`buddy_system_allocator`](https://crates.io/crates/buddy_system_allocator) | Buddy system 堆分配器 |
+| [`buddy_system_allocator`](https://crates.io/crates/buddy_system_allocator) | Buddy system 堆分配器 + 物理帧分配器 |
 | [`heapless`](https://crates.io/crates/heapless) | 固定容量 `Vec`/`String`/`Queue`（无需堆分配，中断安全） |
 | [`hashbrown`](https://crates.io/crates/hashbrown) | no_std `HashMap`，O(1) 查找 |
 | [`intrusive-collections`](https://crates.io/crates/intrusive-collections) | 侵入式链表/红黑树（调度器队列、等待队列，零额外分配） |

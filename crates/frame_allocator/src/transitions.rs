@@ -24,14 +24,17 @@ impl<P: PageSize> AllocatedFrames<P> {
     ///
     /// SAS 全量映射下帧始终可访问（identity mapping），分配后立即清零防止泄漏旧数据。
     ///
-    /// 内部路径：bitmap allocator（4K 粒度）-> `FreeFrames` -> `AllocatedFrames<P>`。
+    /// 内部路径：buddy allocator（4K 粒度）-> `FreeFrames` -> `AllocatedFrames<P>`。
     /// 对于大页（P != Page4K），请求的 4K 帧数 = `count * P::NUM_4K_PAGES`。
+    /// buddy 内部将帧数向上取整到 2 的幂，天然按自身大小对齐——满足大页对齐需求。
     ///
     /// # Errors
     ///
     /// 分配器未初始化返回 `AllocationFailed`，帧耗尽返回 `OutOfMemory`。
     pub fn alloc(count: usize) -> Result<Self, FrameAllocError> {
-        let count_4k = count << P::NUM_4K_PAGES_SHIFT;
+        let count_4k = count
+            .checked_shl(P::NUM_4K_PAGES_SHIFT as u32)
+            .expect("AllocatedFrames::alloc: count 左移 NUM_4K_PAGES_SHIFT 溢出");
         let free = alloc_from_backend(count_4k)?;
 
         // SAFETY: identity mapping 下 PA.to_virt() 有效；帧刚从分配器取出，无其他引用
@@ -56,7 +59,7 @@ impl<P: PageSize> MappedFrames<P> {
     /// 消费 Mapped 帧，转换为 Unmapped 状态——表示帧已从页表移除。
     ///
     /// 调用方在从页表 unmap 后调用此方法。
-    /// `UnmappedFrames` 的 Drop 安全地归还帧到 bitmap allocator。
+    /// `UnmappedFrames` 的 Drop 安全地归还帧到 buddy allocator。
     pub fn into_unmapped(self) -> UnmappedFrames<P> {
         self.into_state()
     }
