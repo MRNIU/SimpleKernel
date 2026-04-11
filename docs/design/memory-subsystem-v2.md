@@ -90,7 +90,7 @@ SimpleKernel 处于以下研究线的交汇点：
 ```
 ┌─────────────────────────────────────────────────┐
 │  策略层 — memory crate                            │
-│  AddressSpace · Vma · mmap/munmap/mprotect · init │
+│  init · map_mmio · MMIO 跟踪                      │
 ├─────────────────────────────────────────────────┤
 │  机制层 — paging crate                            │
 │  PageTable · OwnedPages · MmioRegion              │
@@ -107,7 +107,7 @@ SimpleKernel 处于以下研究线的交汇点：
 
 | 层 | Crate | 职责 | 不做什么 |
 |----|-------|------|---------|
-| **策略** | `memory` | VMA 管理、便捷映射函数、初始化编排 | 不直接操作 PTE |
+| **策略** | `memory` | 初始化编排、MMIO 注册、map_mmio 便捷函数 | 不直接操作 PTE |
 | **机制** | `paging` | 页表遍历、PTE 读写、OwnedPages 权限管理、MmioRegion | 不分配帧——由上层告知 |
 | **资源** | `frame_allocator` | 物理帧的分配/回收/typestate 追踪 | 不知道页表的存在 |
 | **资源** | `page_table_entry` | 单个 PTE 的 bit-level 编解码（跨架构） | 不做页表遍历 |
@@ -124,7 +124,7 @@ frame_allocator:  FrameState::Free / Allocated
 
 paging:           OwnedPages::new() / set_flags() / Drop
 
-memory/syscall:   mmap() / munmap() / mprotect()
+memory:           init() / map_mmio()
 ```
 
 ---
@@ -232,8 +232,8 @@ fn dealloc_to_backend(range: FrameSpan);
 预留范围的帧从未在 buddy 中注册。如果意外 Drop，`dealloc_to_backend`
 会将未注册的帧交给 buddy 导致状态污染。
 
-**不变量**：内核段帧由 `AddressSpace`（`spin::Once<SpinLock<AddressSpace>>`）
-持有直到关机，`'static` 生命周期保证不会 Drop。
+**不变量**：内核段帧由 `mem::forget` 永久持有——权限已写入页表，
+Drop 永不执行（不恢复权限、不归还帧）。
 
 ### 4.5 连续帧分配
 
@@ -356,7 +356,11 @@ pub struct MmioRegion {
 
 ---
 
-## 7. 地址空间与 VMA——`memory` crate
+## 7. ~~地址空间与 VMA~~ → 内存初始化与 MMIO——`memory` crate
+
+> **⚠ 已过时**：VMA 模块（`AddressSpace`/`Vma`/`mmap`/`munmap`/`mprotect`）已在
+> [ADR-007](../decisions/007-eliminate-vma-and-dead-code.md) 中删除。
+> 以下内容保留供历史参考，**以代码为准**。
 
 `memory` crate 是面向内核其他模块的**唯一公共 API**。
 

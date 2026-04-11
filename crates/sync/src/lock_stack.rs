@@ -22,9 +22,9 @@ pub mod lock_level {
     pub const TASK_TABLE: u8 = 1;
     /// 中断线程锁
     pub const INTERRUPT_THREADS: u8 = 2;
-    /// 内核地址空间锁——VMA 操作持有时可能获取 KERNEL_PT
+    /// MMIO 区域跟踪锁
     pub const KERNEL_AS: u8 = 3;
-    /// 内核页表锁——map/unmap 持有时可能获取 FRAME_ALLOC / HEAP
+    /// 内核页表锁——set_page_flags/update_flags 持有时可能获取 FRAME_ALLOC / HEAP
     pub const KERNEL_PT: u8 = 4;
     /// DMA 追踪表锁——释放 DMA 缓冲区时可能获取 FRAME_ALLOC
     pub const DMA: u8 = 5;

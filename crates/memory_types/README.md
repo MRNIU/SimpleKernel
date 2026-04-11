@@ -29,9 +29,8 @@ pub struct Page  { number: usize }    // 虚拟页
 // 范围（re-export from span crate）
 pub struct Span<A> { start: A, end: A }    // 半开区间 [start, end)
 
-// 便利别名
-pub type FrameSpan = Span<Frame>;
-pub type PageSpan  = Span<Page>;
+// 便利别名（FrameSpan 定义在 frame_allocator 内部，不在本 crate 公共 API 中）
+// pub(crate) type FrameSpan = Span<Frame>;  // frame_allocator 内部使用
 ```
 
 ## 类型关系
@@ -44,8 +43,8 @@ PhysAddr ←──→ VirtAddr         (PhysAddr::to_virt / VirtAddr::to_phys)
 
 Span<PhysAddr>                 字节粒度的物理地址范围
 Span<VirtAddr>                 字节粒度的虚拟地址范围
-Span<Frame>    = FrameSpan     物理帧范围
-Span<Page>     = PageSpan      虚拟页范围
+Span<Frame>                    物理帧范围（frame_allocator 内部使用）
+Span<Page>                     虚拟页范围（当前未使用）
 ```
 
 ## 模块结构
@@ -91,9 +90,9 @@ assert_eq!(f.start_addr(), addr);
 ### 帧范围
 
 ```rust
-use memory_types::{Frame, FrameSpan};
+use memory_types::{Frame, Span};
 
-let range = FrameSpan::new(Frame::new(0), Frame::new(8));
+let range = Span::new(Frame::new(0), Frame::new(8));
 assert_eq!(range.size(), 8);
 assert!(range.contains(F::new(3)));
 assert!(!range.contains(F::new(8))); // 半开区间，end 不含

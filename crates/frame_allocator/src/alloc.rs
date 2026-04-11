@@ -71,8 +71,8 @@ impl FrameAllocatorInner {
 /// - `reserved`：需要预留的物理地址范围列表 `(start, page_count)`，
 ///   不经过 buddy——直接构造为 `AllocatedFrames` 返回给调用方
 ///
-/// 预留范围的帧由调用方负责生命周期管理（通常由 `AddressSpace`
-/// 通过 `OwnedPages` 持有直到关机）。
+/// 预留范围的帧由调用方负责生命周期管理（内核段通常通过
+/// `OwnedPages` + `mem::forget` 永久持有）。
 ///
 /// # Safety
 ///
