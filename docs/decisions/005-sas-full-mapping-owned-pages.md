@@ -1,6 +1,6 @@
 # ADR-005: SAS 全量映射 + OwnedPages 所有权模型
 
-> **状态**: 提议
+> **状态**: 已取代（被 [ADR-006](006-memory-subsystem-simplification.md) 取代并细化）
 >
 > **日期**: 2026-04-09
 >

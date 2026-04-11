@@ -14,6 +14,8 @@
 | 002 | [RISC-V tp 寄存器 per-CPU vs TLS](002-tp-register-percpu-vs-tls.md) | 提议 | — | R2 |
 | 003 | [SAS 架构下是否只支持 identity mapping](003-sas-identity-mapping-only.md) | 提议 | 2026-04-03 | R3 |
 | 004 | [消除内核源码中的 `#[cfg(bare_metal)]`](004-cfg-bare-metal-elimination.md) | 提议 | 2026-04-04 | — |
+| 005 | [SAS 全量映射 + OwnedPages 所有权模型](005-sas-full-mapping-owned-pages.md) | 已取代 | 2026-04-09 | R3 |
+| 006 | [内存子系统简化——4KB 单页 + 2-state + 权限覆盖模型](006-memory-subsystem-simplification.md) | 已接受 | 2026-04-11 | R3 |
 
 ## 状态规则
 
