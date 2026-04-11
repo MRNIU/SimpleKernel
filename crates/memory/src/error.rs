@@ -44,7 +44,7 @@ impl From<paging::error::PagingError> for MemoryError {
     fn from(e: paging::error::PagingError) -> Self {
         use paging::error::PagingError;
         match e {
-            PagingError::AllocationFailed | PagingError::FrameAllocFailed => Self::AllocationFailed,
+            PagingError::AllocationFailed => Self::AllocationFailed,
             PagingError::HugePageConflict => Self::MapFailed,
             PagingError::PageNotMapped => Self::PageNotMapped,
         }

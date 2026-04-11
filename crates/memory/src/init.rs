@@ -33,17 +33,16 @@ pub fn init() -> AddressSpace {
     let text_end = PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up();
     let rodata_end = PhysAddr::new(unsafe { &__erodata as *const u8 as usize }).align_up();
 
-    // 空闲内存 = 内核之后的部分
     let free_start = kernel_end.align_up();
     let free_size = mem_size - (free_start - mem_start);
 
-    // 各段页数——data 段只覆盖到 free_start，不含空闲帧区域
+    // data 段只覆盖到 free_start，不含空闲帧区域
     let text_pages = (text_end - mem_start) / config::PAGE_SIZE;
     let rodata_pages = (rodata_end - text_end) / config::PAGE_SIZE;
     let data_pages = (free_start - rodata_end) / config::PAGE_SIZE;
 
     // SAFETY: 范围有效、页对齐、互不重叠、仅调用一次
-    let mut reserved = unsafe {
+    let reserved = unsafe {
         frame_allocator::init(
             free_start,
             free_size,
@@ -55,13 +54,11 @@ pub fn init() -> AddressSpace {
         )
     };
 
-    // 创建页表——写入 paging 模块的静态存储，无需堆分配
     let pt = PageTable::create().expect("创建内核页表失败");
     paging::init_kernel_page_table(pt);
 
-    // 背景映射：全部物理内存 identity-map 为 kernel_rw（背景层）。
-    // 必须先于 OwnedPages 执行——OwnedPages::new 调用 set_page_flags，
-    // 要求 PTE 已存在（幂等更新 flags）。
+    // 背景层：必须先于 OwnedPages——OwnedPages::new 通过 update_flags 更新权限，
+    // 要求 PTE 已存在。
     {
         let mem_end = mem_start + mem_size;
         let mut guard = paging::kernel_page_table().lock();
@@ -70,20 +67,15 @@ pub fn init() -> AddressSpace {
 
     let mut kernel_as = AddressSpace::new();
 
-    // 内核段权限覆盖：.text(RWX) / .rodata(RO) / .data(RW)
-    // reserved 的元素顺序与传入 init 的 reserved 参数顺序一致。
-    // identity mapping: VA == PA，OwnedPages::new 从 PA 推导 VA。
-    let segments: [PteFlags; 3] = [
-        PteFlags::kernel_rwx(),
-        PteFlags::kernel_ro(),
-        PteFlags::kernel_rw(),
+    // 覆盖层：内核段各自权限覆盖背景层
+    let segments: [(PhysAddr, PteFlags); 3] = [
+        (mem_start, PteFlags::kernel_rwx()),
+        (text_end, PteFlags::kernel_ro()),
+        (rodata_end, PteFlags::kernel_rw()),
     ];
 
-    let seg_starts = [mem_start, text_end, rodata_end];
-
-    for (i, flags) in segments.into_iter().enumerate() {
-        let frames = reserved.remove(0);
-        let va = memory_types::VirtAddr::new(seg_starts[i].as_usize());
+    for ((start, flags), frames) in segments.into_iter().zip(reserved) {
+        let va = memory_types::VirtAddr::new(start.as_usize());
         let mapping = paging::OwnedPages::new(frames, flags);
         kernel_as.register_kernel_mapping(va, mapping);
     }

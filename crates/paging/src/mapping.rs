@@ -31,25 +31,13 @@ impl OwnedPages {
     /// 消费 frames 的所有权，设置指定权限。
     ///
     /// SAS 全量映射下，PTE 已由 boot 背景映射建立（kernel_rw）。
-    /// 此方法接管帧所有权并按需更新 PTE flags
-    ///（如从默认 kernel_rw 改为 kernel_ro）。
+    /// 此方法接管帧所有权并更新 PTE flags（如从 kernel_rw 改为 kernel_ro）。
     pub fn new(frames: AllocatedFrames, flags: PteFlags) -> Self {
         let page_count = frames.count();
         assert!(page_count > 0, "OwnedPages::new: 页数不能为 0");
 
-        let pt = crate::kernel_page_table();
-        let pa_start = frames.start_paddr();
-        let va_start = pa_start.to_virt();
-
-        let mut guard = pt.lock();
-        for i in 0..page_count {
-            let va = va_start + i * PAGE_SIZE;
-            let pa = pa_start + i * PAGE_SIZE;
-            guard
-                .set_page_flags(va, pa, flags)
-                .expect("OwnedPages::new: set_page_flags 失败");
-        }
-        drop(guard);
+        let va_start = frames.start_paddr().to_virt();
+        batch_update_flags(va_start, page_count, flags);
 
         Self { frames, flags }
     }
@@ -129,18 +117,25 @@ impl OwnedPages {
 
     /// 修改权限——遍历 PTE 更新标志位，刷新 TLB。
     pub fn set_flags(&mut self, new_flags: PteFlags) {
-        let pt = crate::kernel_page_table();
-        let mut guard = pt.lock();
-        for i in 0..self.page_count() {
-            let va = self.vaddr() + i * PAGE_SIZE;
-            guard
-                .update_flags(va, new_flags)
-                .expect("set_flags: update_flags 失败");
-        }
-        drop(guard);
-        let _flush = tlb::TlbFlushGuard::new(self.vaddr().as_usize(), self.page_count());
+        batch_update_flags(self.vaddr(), self.page_count(), new_flags);
         self.flags = new_flags;
     }
+}
+
+/// 批量更新 PTE 权限并刷新 TLB。
+///
+/// `new` / `set_flags` / `Drop` 三处共用此逻辑，避免重复。
+fn batch_update_flags(va_start: VirtAddr, page_count: usize, flags: PteFlags) {
+    let pt = crate::kernel_page_table();
+    let mut guard = pt.lock();
+    for i in 0..page_count {
+        let va = va_start + i * PAGE_SIZE;
+        guard
+            .update_flags(va, flags)
+            .expect("batch_update_flags: update_flags 失败");
+    }
+    drop(guard);
+    let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
 }
 
 /// 验证偏移在范围内且地址对齐到 `T` 的自然边界，返回目标指针。
@@ -171,26 +166,9 @@ pub(crate) fn check_bounds_and_align<T>(
     addr as *const T
 }
 
-/// 批量恢复 PTE 为 kernel_rw（背景默认权限）并刷新 TLB。
-///
-/// 持锁期间一次性更新所有页，避免逐页 lock/unlock 开销。
-fn restore_default_flags(va_start: VirtAddr, page_count: usize) {
-    let default_flags = PteFlags::kernel_rw();
-    let pt = crate::kernel_page_table();
-    let mut guard = pt.lock();
-    for i in 0..page_count {
-        let va = va_start + i * PAGE_SIZE;
-        guard
-            .update_flags(va, default_flags)
-            .expect("restore_default_flags: update_flags 失败");
-    }
-    drop(guard);
-    let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
-}
-
 impl Drop for OwnedPages {
     fn drop(&mut self) {
-        restore_default_flags(self.vaddr(), self.page_count());
+        batch_update_flags(self.vaddr(), self.page_count(), PteFlags::kernel_rw());
         // AllocatedFrames 的 Drop 自动归还帧到分配器——零 unsafe
     }
 }

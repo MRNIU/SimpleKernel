@@ -7,21 +7,18 @@ use core::fmt;
 pub enum PagingError {
     /// 页表节点帧分配失败
     AllocationFailed,
-    /// walk 路径上遇到大页冲突
+    /// walk 路径上遇到非预期的叶 PTE（4KB-only 下不应出现）
     HugePageConflict,
     /// 目标 VA 未映射
     PageNotMapped,
-    /// 物理帧分配失败
-    FrameAllocFailed,
 }
 
 impl fmt::Display for PagingError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::AllocationFailed => write!(f, "page table node frame allocation failed"),
-            Self::HugePageConflict => write!(f, "huge page conflict in walk path"),
+            Self::HugePageConflict => write!(f, "unexpected leaf PTE in walk path"),
             Self::PageNotMapped => write!(f, "virtual address not mapped"),
-            Self::FrameAllocFailed => write!(f, "physical frame allocation failed"),
         }
     }
 }
