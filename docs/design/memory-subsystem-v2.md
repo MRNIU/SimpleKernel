@@ -10,6 +10,11 @@
 >
 > 演进历史：本文档取代 [memory-subsystem.md](memory-subsystem.md)（旧设计）。
 > 决策记录见 [ADR-006](../decisions/006-memory-subsystem-simplification.md)。
+>
+> **⚠ 部分内容已过时**：[ADR-007](../decisions/007-eliminate-vma-and-dead-code.md) 删除了
+> VMA 模块（`AddressSpace`/`Vma`/`mmap`/`munmap`/`mprotect`）、`unmap_page`、`as_type`/`as_type_mut`。
+> 内核段 OwnedPages 改为 `mem::forget` 永久持有，MMIO 重叠检测改为 `BTreeMap` 内联实现。
+> 本文档中涉及这些内容的章节（§7 VMA、§8 生命周期中的 munmap/as_type 等）以代码为准。
 
 ---
 

@@ -2,7 +2,9 @@
 //!
 //! 状态机：`Free -> Allocated -> Free`（ADR-006 简化为 2-state）。
 
-use memory_types::{FrameSpan, PhysAddr};
+use memory_types::PhysAddr;
+
+use crate::FrameSpan;
 
 use crate::alloc::dealloc_to_backend;
 
@@ -48,12 +50,6 @@ pub type FreeFrames = Frames<{ FrameState::Free }>;
 pub type AllocatedFrames = Frames<{ FrameState::Allocated }>;
 
 impl<const S: FrameState> Frames<S> {
-    /// 返回帧范围（4K 粒度）。
-    #[inline]
-    pub fn range(&self) -> FrameSpan {
-        self.range
-    }
-
     /// 范围内 4K 帧的数量。
     #[inline]
     pub fn count(&self) -> usize {

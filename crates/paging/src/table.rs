@@ -112,12 +112,6 @@ impl PageTable {
         *self.ref_count_mut(paddr) += 1;
     }
 
-    /// 递减指定帧的引用计数。
-    #[inline]
-    fn dec_ref(&mut self, paddr: PhysAddr) {
-        *self.ref_count_mut(paddr) -= 1;
-    }
-
     /// 映射用 walker——遍历到 Level 0 并按需分配中间节点。
     ///
     /// 返回目标 PTE 所在帧的物理地址及该 PTE 在帧中的索引。
@@ -203,79 +197,6 @@ impl PageTable {
         table.write(idx, PageTableEntry::new(pa, leaf_flags));
         self.inc_ref(frame_paddr);
         Ok(())
-    }
-
-    /// 取消映射单个虚拟页（4KB），返回其原始物理地址。
-    ///
-    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
-    /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
-    ///
-    /// # Errors
-    ///
-    /// 目标 VA 未映射时返回 `PageNotMapped`。
-    pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PagingError> {
-        self.unmap_page_with_flags(va).map(|(pa, _)| pa)
-    }
-
-    /// 取消映射单个虚拟页（4KB），返回原始物理地址和 PTE 标志。
-    ///
-    /// unmap 后通过引用计数判断中间页表节点是否全空并回收，
-    /// 避免遍历整个页表帧的 O(entries_per_table) 开销。
-    ///
-    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
-    /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
-    ///
-    /// # Errors
-    ///
-    /// 目标 VA 未映射时返回 `PageNotMapped`。
-    pub fn unmap_page_with_flags(
-        &mut self,
-        va: VirtAddr,
-    ) -> Result<(PhysAddr, PteFlags), PagingError> {
-        let mut path: [(PhysAddr, usize); PT_LEVELS] = [(PhysAddr::new(0), 0); PT_LEVELS];
-        let mut path_len = 0;
-        let mut paddr = self.root.start_paddr();
-
-        for lv in (1..PT_LEVELS).rev() {
-            // SAFETY: paddr 指向由 self 持有的有效帧
-            let table = unsafe { Table::from_paddr(paddr) };
-            let idx = vpn_index(va, lv);
-            let pte = table.read(idx);
-            if !pte.is_valid() || pte.is_leaf(lv) {
-                return Err(PagingError::PageNotMapped);
-            }
-            let child_paddr = pte.paddr();
-            path[path_len] = (paddr, idx);
-            path_len += 1;
-            paddr = child_paddr;
-        }
-
-        // SAFETY: paddr 指向由 self 持有的有效帧
-        let mut table = unsafe { Table::from_paddr(paddr) };
-        let idx = vpn_index(va, 0);
-        let pte = table.read(idx);
-        if !pte.is_valid() || !pte.is_leaf(0) {
-            return Err(PagingError::PageNotMapped);
-        }
-        let old_pa = pte.paddr();
-        let old_flags = pte.flags();
-        table.write(idx, PageTableEntry::empty());
-        self.dec_ref(paddr);
-
-        let mut child_paddr = paddr;
-        for &(parent_paddr, parent_idx) in path[..path_len].iter().rev() {
-            if *self.ref_count_mut(child_paddr) > 0 {
-                break;
-            }
-            // SAFETY: parent_paddr 指向由 self 持有的有效帧
-            let mut parent_table = unsafe { Table::from_paddr(parent_paddr) };
-            parent_table.write(parent_idx, PageTableEntry::empty());
-            self.nodes.remove(&child_paddr);
-            self.dec_ref(parent_paddr);
-            child_paddr = parent_paddr;
-        }
-
-        Ok((old_pa, old_flags))
     }
 
     /// 修改已映射页的权限标志位，保留物理地址不变。

@@ -24,12 +24,7 @@ mod page_frame;
 
 pub use addr::{PhysAddr, VirtAddr};
 pub use page_frame::{Frame, Page};
-pub use span::{Span, SpanIter};
-
-/// 物理帧范围——`Span<Frame>` 的便利别名。
-pub type FrameSpan = Span<Frame>;
-/// 虚拟页范围——`Span<Page>` 的便利别名。
-pub type PageSpan = Span<Page>;
+pub use span::Span;
 
 /// 为地址 newtype 生成通用基础设施。
 ///

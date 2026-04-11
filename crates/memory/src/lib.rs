@@ -4,6 +4,11 @@
 
 extern crate alloc;
 
+use alloc::collections::BTreeMap;
+
+use memory_types::VirtAddr;
+use sync_crate::SpinLockIrq;
+
 /// 错误类型。
 pub mod error;
 /// 物理帧分配器（re-export `frame_allocator` crate）。
@@ -14,29 +19,31 @@ pub use heap_crate as heap;
 pub mod globals;
 /// 内存子系统初始化（依赖链接器符号，裸机专用）。
 pub mod init;
-/// 虚拟内存区域（VMA）与地址空间管理。
-pub mod vma;
 
 /// TLB 管理（re-export `tlb` crate）。
 pub use tlb;
 
-/// 仿射类型帧所有权——re-export `paging::OwnedPages`。
-pub type OwnedPages = paging::OwnedPages;
-
-/// MMIO 区域——re-export `paging::mmio::MmioRegion`。
-pub type MmioRegion = paging::mmio::MmioRegion;
-
 /// 映射错误类型 re-export。
 pub use paging::error::PagingError;
 
-pub use globals::{MEMORY_INFO, MemoryInfo, kernel_address_space, store_kernel_address_space};
+pub use globals::{MEMORY_INFO, MemoryInfo};
 
 pub use init::{init, init_smp};
+
+/// 已注册的 MMIO 区域——用于检测重叠。
+///
+/// 以基地址为键、区域大小为值。无需 `PteFlags`——
+/// MMIO 区域始终使用 `kernel_device()` 权限。
+static MMIO_REGIONS: SpinLockIrq<BTreeMap<VirtAddr, usize>> = SpinLockIrq::new(
+    BTreeMap::new(),
+    "mmio_regions",
+    sync_crate::lock_level::UNSPECIFIED,
+);
 
 /// 将 MMIO 物理地址区间 identity-map，返回 `paddr` 对应的虚拟地址。
 ///
 /// 内部按页对齐建立映射，但返回值精确对应调用方请求的 `paddr`（类似 Linux `ioremap`）。
-/// 在内核地址空间中注册 VMA 记录。MMIO 映射永久存在（MmioRegion 不 unmap）。
+/// MMIO 映射永久存在（MmioRegion 不 unmap）。
 ///
 /// # Errors
 ///
@@ -45,26 +52,41 @@ pub fn map_mmio(
     paddr: memory_types::PhysAddr,
     size: usize,
 ) -> Result<memory_types::VirtAddr, error::MemoryError> {
-    use paging::{PteFlags, PteFlagsOps};
-
-    let region = MmioRegion::map(paddr, size)?;
+    let region = paging::mmio::MmioRegion::map(paddr, size)?;
     let region_base = region.base();
     let region_size = region.size();
 
-    if let Some(kas) = kernel_address_space() {
-        // 多个 MMIO 设备可能落在同一 4KB 页内（如 QEMU virtio,mmio 每 0x200 字节一个），
-        // 页对齐后 VMA 完全相同——RegionIdentical 表示已注册，安全跳过。
-        // 部分重叠（RegionOverlap）是真正的冲突，必须 panic。
-        match kas
-            .lock()
-            .register_existing(region_base, region_size, PteFlags::kernel_device())
-        {
-            Ok(_) => {}
-            Err(error::MemoryError::RegionIdentical) => {}
-            Err(e) => panic!("MMIO 区域注册到内核地址空间失败: {e}"),
-        }
+    // 多个 MMIO 设备可能落在同一 4KB 页内（如 QEMU virtio,mmio 每 0x200 字节一个），
+    // 页对齐后区域完全相同——MmioIdentical 表示已注册，安全跳过。
+    // 部分重叠（MmioOverlap）是真正的冲突，必须 panic。
+    match check_mmio_overlap(region_base, region_size) {
+        Ok(()) => {}
+        Err(error::MemoryError::MmioIdentical) => {}
+        Err(e) => panic!("MMIO 区域注册失败: {e}"),
     }
 
     // 返回 paddr 对应的精确虚拟地址（identity mapping: VA == PA）
     Ok(paddr.to_virt())
+}
+
+/// 检查并注册 MMIO 区域——检测重叠冲突。
+fn check_mmio_overlap(base: VirtAddr, size: usize) -> Result<(), error::MemoryError> {
+    use memory_types::Span;
+
+    let new_range = Span::new(base, base + size);
+    let mut regions = MMIO_REGIONS.lock();
+
+    // 检查与已有区域的重叠
+    for (&existing_base, &existing_size) in regions.iter() {
+        let existing_range = Span::new(existing_base, existing_base + existing_size);
+        if new_range == existing_range {
+            return Err(error::MemoryError::MmioIdentical);
+        }
+        if new_range.overlaps(existing_range) {
+            return Err(error::MemoryError::MmioOverlap);
+        }
+    }
+
+    regions.insert(base, size);
+    Ok(())
 }

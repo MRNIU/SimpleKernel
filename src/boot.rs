@@ -39,15 +39,14 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     // 冒烟测试：SpinLock 基本操作
     smoke_test_spinlock();
 
-    let mut kernel_as = memory::init();
-    Arch::map_early_mmio(&mut kernel_as).expect("failed to map early MMIO");
+    memory::init();
+    Arch::map_early_mmio().expect("failed to map early MMIO");
     // SAFETY: 页表覆盖所有内核代码/数据及早期 MMIO
     {
         let pt = paging::kernel_page_table().lock();
         unsafe { Arch::activate_page_table(&pt) };
     }
     log::info!("MemoryInit: paging enabled");
-    memory::store_kernel_address_space(kernel_as);
 
     // 冒烟测试：堆分配 + 帧分配
     smoke_test_memory();

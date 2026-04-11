@@ -5,16 +5,20 @@
 //! 2. **覆盖层**（OwnedPages）：内核段各自权限覆盖背景层
 //!
 //! 初始化顺序（ADR-006）：先背景映射全部物理内存，再 OwnedPages 覆盖内核段权限。
+//!
+//! 内核段的 OwnedPages 通过 `mem::forget` 永久持有——
+//! 这些帧与内核同生命周期，永远不归还分配器，权限永远不恢复。
 
 use memory_types::PhysAddr;
 use paging::{PageTable, PteFlags, PteFlagsOps};
 
-use crate::vma::AddressSpace;
-
-/// 主核内存初始化——返回内核地址空间（包含所有内核段权限覆盖）。
+/// 主核内存初始化——堆、帧分配器、页表、权限覆盖。
 ///
-/// 初始化顺序：堆 -> 帧分配器 -> 页表 -> 背景映射 -> 内核段权限覆盖。
-pub fn init() -> AddressSpace {
+/// 内核段的 OwnedPages 通过 `mem::forget` 永久持有：
+/// - 权限已设置到页表中，无需再访问 OwnedPages
+/// - AllocatedFrames 不被 drop → 帧不会归还 buddy 分配器
+/// - OwnedPages 不被 drop → 权限不会恢复为 kernel_rw
+pub fn init() {
     // SAFETY: 在任何堆分配之前调用，且仅调用一次（由启动流程保证）
     unsafe { heap_crate::init() };
 
@@ -65,8 +69,6 @@ pub fn init() -> AddressSpace {
         guard.identity_map_range(mem_start, mem_end, PteFlags::kernel_rw());
     }
 
-    let mut kernel_as = AddressSpace::new();
-
     // 覆盖层：内核段各自权限覆盖背景层
     let segments: [(PhysAddr, PteFlags); 3] = [
         (mem_start, PteFlags::kernel_rwx()),
@@ -77,7 +79,15 @@ pub fn init() -> AddressSpace {
     for ((start, flags), frames) in segments.into_iter().zip(reserved) {
         let va = memory_types::VirtAddr::new(start.as_usize());
         let mapping = paging::OwnedPages::new(frames, flags);
-        kernel_as.register_kernel_mapping(va, mapping);
+        log::debug!(
+            "MemoryInit: segment {}: {} pages, {:?}",
+            va,
+            mapping.page_count(),
+            flags
+        );
+        // 内核段与内核同生命周期——权限已写入页表，
+        // forget 阻止 Drop（不恢复权限、不归还帧）
+        core::mem::forget(mapping);
     }
 
     log::info!(
@@ -91,14 +101,12 @@ pub fn init() -> AddressSpace {
         free_start,
         mem_start + mem_size
     );
-
-    kernel_as
 }
 
 /// 从核内存初始化——复用主核页表并激活分页。
 pub fn init_smp(activate: impl FnOnce(&PageTable)) {
     let guard = paging::kernel_page_table().lock();
-    activate(&*guard);
+    activate(&guard);
     log::info!(
         "MemoryInitSMP: paging enabled on core {}",
         per_cpu::current_core_id()

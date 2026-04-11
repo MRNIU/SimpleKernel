@@ -44,9 +44,7 @@ impl ArchOps for Riscv64 {
         ipi::wake_secondary_cores();
     }
 
-    fn map_early_mmio(
-        _addr_space: &mut memory::vma::AddressSpace,
-    ) -> Result<(), memory::error::MemoryError> {
+    fn map_early_mmio() -> Result<(), memory::error::MemoryError> {
         // RISC-V console 通过 SBI ecall（M-mode），无需 MMIO 映射
         Ok(())
     }

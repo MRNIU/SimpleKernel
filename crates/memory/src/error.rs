@@ -15,12 +15,10 @@ pub enum MemoryError {
     PageNotMapped,
     /// 全局内核页表未初始化
     InvalidPageTable,
-    /// VMA 区域与已有区域完全重合——幂等重复，调用方可安全忽略
-    RegionIdentical,
-    /// VMA 区域与已有区域部分重叠——真正的冲突
-    RegionOverlap,
-    /// 未找到包含指定地址的 VMA 区域
-    RegionNotFound,
+    /// MMIO 区域与已注册区域完全重合——幂等重复，调用方可安全忽略
+    MmioIdentical,
+    /// MMIO 区域与已注册区域部分重叠——真正的冲突
+    MmioOverlap,
 }
 
 impl fmt::Display for MemoryError {

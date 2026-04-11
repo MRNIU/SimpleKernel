@@ -1,10 +1,6 @@
-//! 全局内存状态——`MemoryInfo`、内核地址空间。
+//! 全局内存状态——`MemoryInfo`。
 
 use memory_types::PhysAddr;
-
-use sync_crate::SpinLock;
-
-use crate::vma::AddressSpace;
 
 /// 内核启动时从 FDT 解析出的内存布局信息。
 ///
@@ -23,17 +19,3 @@ pub struct MemoryInfo {
 
 /// 全局内存布局信息（一次性初始化，之后只读）。
 pub static MEMORY_INFO: spin::Once<MemoryInfo> = spin::Once::new();
-
-/// 全局内核地址空间。
-static KERNEL_ADDRESS_SPACE: spin::Once<SpinLock<AddressSpace>> = spin::Once::new();
-
-/// 将构建完成的内核地址空间存入全局 `KERNEL_ADDRESS_SPACE`。
-pub fn store_kernel_address_space(addr_space: AddressSpace) {
-    KERNEL_ADDRESS_SPACE
-        .call_once(|| SpinLock::new(addr_space, "kernel_as", sync_crate::lock_level::KERNEL_AS));
-}
-
-/// 获取全局内核地址空间的引用；初始化前返回 `None`。
-pub fn kernel_address_space() -> Option<&'static SpinLock<AddressSpace>> {
-    KERNEL_ADDRESS_SPACE.get()
-}

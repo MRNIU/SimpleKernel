@@ -418,7 +418,6 @@ dependencies = [
 name = "memory"
 version = "0.1.0"
 dependencies = [
- "bitflags 2.11.0",
  "config",
  "frame_allocator",
  "heap",
@@ -429,7 +428,6 @@ dependencies = [
  "spin",
  "sync",
  "tlb",
- "zerocopy",
 ]
 
 [[package]]
@@ -848,21 +846,6 @@ dependencies = [
  "safe-mmio",
  "thiserror",
  "zerocopy",
-]
-
-[[package]]
-name = "vma-test"
-version = "0.0.0"
-dependencies = [
- "aarch64-cpu",
- "config",
- "log",
- "memory",
- "memory_types",
- "paging",
- "sbi-rt",
- "simplekernel",
- "test_harness",
 ]
 
 [[package]]

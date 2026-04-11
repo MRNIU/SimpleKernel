@@ -35,7 +35,9 @@
 //   需要用户进程（页分配频率足够高才有优化价值）。
 
 use buddy_system_allocator::FrameAllocator;
-use memory_types::{Frame, FrameSpan, PhysAddr};
+use memory_types::{Frame, PhysAddr};
+
+use crate::FrameSpan;
 use sync_crate::SpinLockIrq;
 
 use crate::FrameAllocError;

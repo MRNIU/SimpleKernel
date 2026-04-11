@@ -17,8 +17,6 @@ frame_allocator = { path = "../frame_allocator" }
 heap_crate = { path = "../heap", package = "heap" }
 tlb = { path = "../tlb" }
 
-bitflags.workspace = true
-zerocopy.workspace = true
 log.workspace = true
 spin.workspace = true
 

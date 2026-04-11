@@ -23,7 +23,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Adding a scheduler** → `src/task/scheduler/mod.rs` for `Scheduler` trait
 - **Boot flow** → `src/main.rs`: `_start` → `bootstrap()` → logging → percpu → early_init → memory → paging → timer → interrupt → task → device → fs → SMP → schedule
 - **帧生命周期** → `crates/frame_allocator/`: Free ↔ Allocated（2-state typestate，编译期追踪）
-- **帧所有权** → `crates/paging/src/mapping.rs`: `OwnedPages` 持有 `AllocatedFrames`，Drop 恢复默认权限并自动归还帧
+- **帧所有权** → `crates/paging/src/mapping.rs`: `OwnedPages` 持有 `AllocatedFrames`，Drop 恢复默认权限并自动归还帧；内核段通过 `mem::forget` 永久持有
 - **System tests** → `tests/` for isolated QEMU tests, each binary in its own QEMU instance
 - **Error handling** → `KResult<T> = Result<T, ErrorCode>` in `src/error.rs`
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
@@ -41,7 +41,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 | `src/arch/{arch}/timer.rs` | Timer init + tick handler | timer subsystem |
 | `src/arch/{arch}/context.rs` | TrapContext, InitTaskContext | `#[repr(C)]` structs |
 | `src/arch/{arch}/backtrace.rs` | Stack unwinding | debug support |
-| `src/memory/` | 内存子系统门面（re-export crates） | AddressSpace, VMA, init, map_mmio |
+| `src/memory/` | 内存子系统门面（re-export crates） | init, map_mmio, MMIO 跟踪 |
 | `src/task/` | TaskManager, TCB, schedulers | CFS/FIFO/RR, clone/exit/wait/sleep/signal |
 | `src/task/scheduler/` | `Scheduler` trait + implementations | scheduling algorithms |
 | `src/device/` | DeviceManager, Hal, PlatformBus | 设备枚举/注册框架 |

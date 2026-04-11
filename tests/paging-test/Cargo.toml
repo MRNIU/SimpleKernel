@@ -1,6 +1,6 @@
 [package]
 name = "paging-test"
-description = "页表参数、map/unmap/映射生命周期及边界 panic 测试"
+description = "页表参数、权限管理及边界 panic 测试"
 edition.workspace = true
 
 [[bin]]

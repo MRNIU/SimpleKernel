@@ -52,9 +52,7 @@ impl ArchOps for Aarch64 {
         ipi::wake_secondary_cores();
     }
 
-    fn map_early_mmio(
-        _addr_space: &mut memory::vma::AddressSpace,
-    ) -> Result<(), memory::error::MemoryError> {
+    fn map_early_mmio() -> Result<(), memory::error::MemoryError> {
         // PL011 UART —— MMIO identity map（VA == PA，Device-nGnRnE 属性）。
         // 使用 MmioRegion 而非 mmap_identity_range：
         // - MMIO 地址不在帧分配器中，不能用 AllocatedFrames::alloc
