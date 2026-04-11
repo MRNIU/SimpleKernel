@@ -22,14 +22,9 @@
 pub struct PhysAddr(usize);          // 物理地址
 pub struct VirtAddr(usize);          // 虚拟地址
 
-// 页粒度标识（泛型页大小，默认 4K）
-pub struct Frame<P: PageSize = Page4K> { .. } // 物理帧
-pub struct Page<P: PageSize = Page4K>  { .. } // 虚拟页
-
-// 页大小标记（sealed trait）
-pub struct Page4K;
-pub struct Page2M;
-pub struct Page1G;
+// 页粒度标识（固定 4KB）
+pub struct Frame { number: usize }    // 物理帧
+pub struct Page  { number: usize }    // 虚拟页
 
 // 范围（re-export from span crate）
 pub struct Span<A> { start: A, end: A }    // 半开区间 [start, end)
@@ -62,8 +57,7 @@ crates/span/src/
 crates/memory_types/src/
 ├── lib.rs           crate 入口，re-export + impl_usize_newtype! 宏
 ├── addr.rs          PhysAddr / VirtAddr、对齐方法、PhysAddr::to_virt / VirtAddr::to_phys
-├── page_frame.rs    Frame<P> / Page<P>、与地址类型的互转
-└── page_size.rs     PageSize trait + Page4K / Page2M / Page1G
+└── page_frame.rs    Frame / Page、与地址类型的互转
 ```
 
 三个宏（`impl_usize_newtype!`、`impl_addr!`、`impl_page_or_frame!`）消除
@@ -97,10 +91,9 @@ assert_eq!(f.start_addr(), addr);
 ### 帧范围
 
 ```rust
-use memory_types::{Frame, Page4K, FrameSpan};
+use memory_types::{Frame, FrameSpan};
 
-type F = Frame<Page4K>;
-let range = FrameSpan::new(F::new(0), F::new(8));
+let range = FrameSpan::new(Frame::new(0), Frame::new(8));
 assert_eq!(range.size(), 8);
 assert!(range.contains(F::new(3)));
 assert!(!range.contains(F::new(8))); // 半开区间，end 不含

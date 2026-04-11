@@ -22,8 +22,8 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Adding a driver** → `src/device/` for examples, `Driver` trait for registration pattern
 - **Adding a scheduler** → `src/task/scheduler/mod.rs` for `Scheduler` trait
 - **Boot flow** → `src/main.rs`: `_start` → `bootstrap()` → logging → percpu → early_init → memory → paging → timer → interrupt → task → device → fs → SMP → schedule
-- **帧生命周期** → `crates/frame_allocator/`: Free → Allocated → Mapped → Unmapped → Free（typestate 编译期追踪）
-- **帧所有权** → `crates/paging/src/mapping.rs`: `OwnedPages` 持有 `MappedFrames`，Drop 恢复默认权限并归还帧
+- **帧生命周期** → `crates/frame_allocator/`: Free ↔ Allocated（2-state typestate，编译期追踪）
+- **帧所有权** → `crates/paging/src/mapping.rs`: `OwnedPages` 持有 `AllocatedFrames`，Drop 恢复默认权限并自动归还帧
 - **System tests** → `tests/` for isolated QEMU tests, each binary in its own QEMU instance
 - **Error handling** → `KResult<T> = Result<T, ErrorCode>` in `src/error.rs`
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
