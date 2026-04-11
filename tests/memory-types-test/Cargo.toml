@@ -14,11 +14,6 @@ path = "src/align_up_overflow_panic.rs"
 test = false
 
 [[bin]]
-name = "frame-2m-unaligned-panic"
-path = "src/frame_2m_unaligned_panic.rs"
-test = false
-
-[[bin]]
 name = "pa-overflow-panic"
 path = "src/pa_overflow_panic.rs"
 test = false

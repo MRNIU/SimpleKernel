@@ -242,7 +242,6 @@ dependencies = [
  "frame_allocator",
  "heapless 0.8.0",
  "log",
- "memory_types",
  "sbi-rt",
  "simplekernel",
  "test_harness",

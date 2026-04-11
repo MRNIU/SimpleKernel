@@ -12,7 +12,7 @@ use crate::OwnedPages;
 use crate::error::MemoryError;
 use config::PAGE_SIZE;
 use memory_types::{Span, VirtAddr};
-use paging::{PteFlags, PteFlagsOps};
+use paging::PteFlags;
 
 /// 虚拟内存区域——描述地址空间中一段连续区域的属性。
 pub struct Vma {
@@ -135,7 +135,7 @@ impl AddressSpace {
         let range = Span::new(start, end);
         self.check_overlap(range)?;
 
-        let mapping = OwnedPages::map(frames, flags);
+        let mapping = OwnedPages::new(frames, flags);
 
         let vma = Vma {
             range,
@@ -208,7 +208,7 @@ impl AddressSpace {
             );
             MemoryError::OutOfMemory
         })?;
-        let mapping = OwnedPages::map(frames, vma.flags);
+        let mapping = OwnedPages::new(frames, vma.flags);
 
         vma.flags = mapping.flags();
         vma.mapping = Some(mapping);

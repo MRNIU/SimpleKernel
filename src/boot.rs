@@ -104,8 +104,8 @@ fn smoke_test_memory() {
     log::debug!("boot smoke: heap alloc OK");
 
     // 帧分配验证
-    let frame = memory::frame::AllocatedFrames::<memory_types::Page4K>::alloc_one()
-        .expect("boot smoke: frame alloc_one failed");
+    let frame =
+        memory::frame::AllocatedFrames::alloc_one().expect("boot smoke: frame alloc_one failed");
     assert!(
         frame.start_paddr().as_usize() % config::PAGE_SIZE == 0,
         "boot smoke: frame not page-aligned: {:#x}",

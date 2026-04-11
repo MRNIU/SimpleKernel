@@ -1,12 +1,9 @@
 //! 物理帧 ([`Frame<P>`]) 与虚拟页 ([`Page<P>`]) 类型。
 //!
-//! 泛型参数 `P: PageSize` 在编译期标记帧/页的粒度（4K/2M/1G），
-//! 防止不同粒度的帧/页在算术运算中混用。
+//! 泛型参数 `P: PageSize` 在编译期标记帧/页的粒度。
+//! 当前仅支持 `Page4K`（ADR-006 移除了大页类型）。
 //!
-//! 内部存储统一以 4K 页号为单位，算术运算按 `P::NUM_4K_PAGES_SHIFT` 位移缩放：
-//! - `Frame<Page4K> + 1` → 内部 number 加 1
-//! - `Frame<Page2M> + 1` → 内部 number 加 512（跳过一个 2M 页）
-//!
+//! 内部存储以 4K 页号为单位，算术运算按 `P::NUM_4K_PAGES_SHIFT` 位移缩放。
 //! 默认类型参数为 `Page4K`，因此 `Frame` 等价于 `Frame<Page4K>`。
 
 use core::fmt;

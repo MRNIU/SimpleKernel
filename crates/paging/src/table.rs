@@ -1,4 +1,4 @@
-//! 多级页表——walk / map / unmap 逻辑。
+//! 多级页表——walk / set_page_flags / unmap 逻辑。
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -56,7 +56,7 @@ struct NodeEntry {
     #[expect(dead_code, reason = "仅用于持有所有权，通过物理地址访问")]
     frame: NodeFrame,
     /// 该帧中有效 PTE 的数量。
-    /// map 时 +1，unmap 时 -1，count == 0 时可回收。
+    /// set_page_flags 时 +1，unmap 时 -1，count == 0 时可回收。
     ref_count: u16,
 }
 
@@ -126,17 +126,13 @@ impl PageTable {
         *self.ref_count_mut(paddr) -= 1;
     }
 
-    /// 映射用 walker——遍历到 `target_level` 并按需分配中间节点。
+    /// 映射用 walker——遍历到 Level 0 并按需分配中间节点。
     ///
     /// 返回目标 PTE 所在帧的物理地址及该 PTE 在帧中的索引。
-    fn walk_create(
-        &mut self,
-        va: VirtAddr,
-        target_level: usize,
-    ) -> Result<(PhysAddr, usize), PagingError> {
+    fn walk_create(&mut self, va: VirtAddr) -> Result<(PhysAddr, usize), PagingError> {
         let mut paddr = self.root_paddr;
 
-        for level in (target_level + 1..PT_LEVELS).rev() {
+        for level in (1..PT_LEVELS).rev() {
             // SAFETY: paddr 指向由 self.root 或 self.nodes 持有的有效帧
             let mut table = unsafe { Table::from_paddr(paddr) };
             let idx = vpn_index(va, level);
@@ -164,78 +160,38 @@ impl PageTable {
             }
         }
 
-        let idx = vpn_index(va, target_level);
+        let idx = vpn_index(va, 0);
         Ok((paddr, idx))
     }
 
-    /// 映射单个虚拟页到物理帧（Level 0，4KB）。
+    /// 设置单个虚拟页（4KB）的 PTE 标志位。
+    ///
+    /// SAS 全量映射下 PTE 始终存在，此方法的语义是：
+    /// - 若该 VA 无 PTE → 创建 Level 0 叶 PTE
+    /// - 若该 VA 已有 PTE 且 PA 相同 → 按需更新 flags
+    /// - 若该 VA 已有 PTE 但 PA 不同 → panic（内核 bug）
     ///
     /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
     /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
     ///
-    /// 若该 VA 已映射到相同 PA，则幂等跳过或按需更新 flags（Ok）。
-    /// 若已映射到不同 PA，则 panic（内核 bug）。
-    ///
     /// # Errors
     ///
     /// - walk 路径上遇到大页时返回 `HugePageConflict`。
-    pub fn map_page(
+    pub fn set_page_flags(
         &mut self,
         va: VirtAddr,
         pa: PhysAddr,
         flags: PteFlags,
     ) -> Result<(), PagingError> {
-        self.map_at_level(va, pa, flags, 0)
-    }
-
-    /// 在指定层级映射虚拟地址到物理地址。
-    ///
-    /// - `level = 0`：4KB 页
-    /// - `level = 1`：2MB 大页
-    /// - `level = 2`：1GB 大页
-    ///
-    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
-    /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
-    ///
-    /// 若该 VA 已映射到相同 PA，则幂等跳过或按需更新 flags（Ok）。
-    /// 若已映射到不同 PA，则 panic（内核 bug）。
-    ///
-    /// # Errors
-    ///
-    /// - walk 路径上遇到大页时返回 `HugePageConflict`。
-    pub fn map_at_level(
-        &mut self,
-        va: VirtAddr,
-        pa: PhysAddr,
-        flags: PteFlags,
-        level: usize,
-    ) -> Result<(), PagingError> {
-        // 在执行任何操作前检查 VA/PA 对齐
-        let page_size = crate::page_size_at_level(level);
-        debug_assert!(
-            va.as_usize().is_multiple_of(page_size),
-            "map_at_level: VA {:#x} 未按 level {} 页大小 ({:#x}) 对齐",
-            va.as_usize(),
-            level,
-            page_size
-        );
-        debug_assert!(
-            pa.as_usize().is_multiple_of(page_size),
-            "map_at_level: PA {:#x} 未按 level {} 页大小 ({:#x}) 对齐",
-            pa.as_usize(),
-            level,
-            page_size
-        );
-
-        let leaf_flags = flags.for_leaf_at_level(level);
-        let (frame_paddr, idx) = self.walk_create(va, level)?;
+        let leaf_flags = flags.for_leaf_at_level(0);
+        let (frame_paddr, idx) = self.walk_create(va)?;
         // SAFETY: frame_paddr 指向由 self 持有的有效帧
         let mut table = unsafe { Table::from_paddr(frame_paddr) };
         let current = table.read(idx);
         if current.is_valid() {
             if current.paddr() != pa {
                 panic!(
-                    "map_at_level: VA {} 已映射到 PA {}，试图重映射到 PA {}（不同 PA 是内核 bug）",
+                    "set_page_flags: VA {} 已指向 PA {}，试图改为 PA {}（不同 PA 是内核 bug）",
                     va,
                     current.paddr(),
                     pa
@@ -262,10 +218,10 @@ impl PageTable {
     ///
     /// 目标 VA 未映射时返回 `PageNotMapped`。
     pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PagingError> {
-        self.unmap_at_level_with_flags(va, 0).map(|(pa, _)| pa)
+        self.unmap_page_with_flags(va).map(|(pa, _)| pa)
     }
 
-    /// 在指定层级取消映射，返回原始物理地址和 PTE 标志。
+    /// 取消映射单个虚拟页（4KB），返回原始物理地址和 PTE 标志。
     ///
     /// unmap 后通过引用计数判断中间页表节点是否全空并回收，
     /// 避免遍历整个页表帧的 O(entries_per_table) 开销。
@@ -275,17 +231,16 @@ impl PageTable {
     ///
     /// # Errors
     ///
-    /// 目标 VA 在指定层级未映射时返回 `PageNotMapped`。
-    pub fn unmap_at_level_with_flags(
+    /// 目标 VA 未映射时返回 `PageNotMapped`。
+    pub fn unmap_page_with_flags(
         &mut self,
         va: VirtAddr,
-        level: usize,
     ) -> Result<(PhysAddr, PteFlags), PagingError> {
         let mut path: [(PhysAddr, usize); PT_LEVELS] = [(PhysAddr::new(0), 0); PT_LEVELS];
         let mut path_len = 0;
         let mut paddr = self.root_paddr;
 
-        for lv in (level + 1..PT_LEVELS).rev() {
+        for lv in (1..PT_LEVELS).rev() {
             // SAFETY: paddr 指向由 self 持有的有效帧
             let table = unsafe { Table::from_paddr(paddr) };
             let idx = vpn_index(va, lv);
@@ -301,9 +256,9 @@ impl PageTable {
 
         // SAFETY: paddr 指向由 self 持有的有效帧
         let mut table = unsafe { Table::from_paddr(paddr) };
-        let idx = vpn_index(va, level);
+        let idx = vpn_index(va, 0);
         let pte = table.read(idx);
-        if !pte.is_valid() || !pte.is_leaf(level) {
+        if !pte.is_valid() || !pte.is_leaf(0) {
             return Err(PagingError::PageNotMapped);
         }
         let old_pa = pte.paddr();
@@ -351,7 +306,7 @@ impl PageTable {
 
     /// 只读遍历——从根向下查找叶 PTE，返回已读取的 PTE、所在帧物理地址、索引及层级。
     ///
-    /// 供 [`walk_readonly`] 和 [`update_flags`] 共用，避免重复 walk 逻辑。
+    /// 供 [`walk_to_leaf`] 和 [`update_flags`] 共用，避免重复 walk 逻辑。
     /// 返回已缓存的 PTE，调用方无需再次读取。
     fn walk_to_leaf(&self, va: VirtAddr) -> Option<(PageTableEntry, PhysAddr, usize, usize)> {
         let mut paddr = self.root_paddr;
@@ -381,10 +336,10 @@ impl PageTable {
         Some((pte.paddr() + offset, pte.flags()))
     }
 
-    /// 将 `[start, end)` 物理地址区间 identity-map（VA == PA）。
+    /// 将 `[start, end)` 物理地址区间 identity-map（VA == PA），仅使用 4KB 页。
     ///
-    /// 自动使用最大可用页大小（1GB / 2MB / 4KB）。
-    /// 映射失败时直接 panic——内核启动阶段的 identity map 失败不可恢复。
+    /// ADR-006 移除了大页支持——SAS + QEMU 下大页无可观测收益。
+    /// 所有页均以 4KB 粒度映射，调用 `set_page_flags`。
     ///
     /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
     /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
@@ -402,20 +357,12 @@ impl PageTable {
         );
 
         while addr.as_usize() < end_aligned.as_usize() {
-            let remaining = end_aligned.as_usize() - addr.as_usize();
             let va = VirtAddr::new(addr.as_usize());
-
-            let (level, page_size) = (1..PT_LEVELS)
-                .rev()
-                .map(|lv| (lv, crate::page_size_at_level(lv)))
-                .find(|&(_, ps)| addr.as_usize().is_multiple_of(ps) && remaining >= ps)
-                .unwrap_or((0, config::PAGE_SIZE));
-
-            match self.map_at_level(va, addr, flags, level) {
+            match self.set_page_flags(va, addr, flags) {
                 Ok(()) => {}
-                Err(e) => panic!("identity_map_range: 映射 {va} 失败: {e}"),
+                Err(e) => panic!("identity_map_range: 设置 {va} 权限失败: {e}"),
             }
-            addr += page_size;
+            addr += config::PAGE_SIZE;
         }
     }
 }

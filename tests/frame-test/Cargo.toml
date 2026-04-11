@@ -1,6 +1,6 @@
 [package]
 name = "frame-test"
-description = "帧分配器 typestate 生命周期及 MappedFrames drop panic 测试"
+description = "帧分配器 typestate 生命周期测试"
 edition.workspace = true
 
 [[bin]]
@@ -8,16 +8,10 @@ name = "alloc"
 path = "src/alloc.rs"
 test = false
 
-[[bin]]
-name = "mapped-drop-panic"
-path = "src/mapped_drop_panic.rs"
-test = false
-
 [dependencies]
 test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false }
 frame_allocator = { path = "../../crates/frame_allocator" }
-memory_types = { path = "../../crates/memory_types" }
 config = { path = "../../crates/config" }
 log.workspace = true
 heapless.workspace = true

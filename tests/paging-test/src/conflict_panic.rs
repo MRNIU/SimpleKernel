@@ -1,4 +1,4 @@
-//! should_panic 测试——identity_map_range 映射冲突（flags 不同）时应 panic。
+//! should_panic 测试——identity_map_range 权限冲突（flags 不同）时应 panic。
 
 #![no_std]
 #![no_main]
@@ -16,10 +16,10 @@ fn run_test() {
     let conflict_va = VirtAddr::new(0x10_2000);
     let conflict_pa = PhysAddr::new(0x10_2000);
     // 先以 kernel_ro 占位
-    pt.map_page(conflict_va, conflict_pa, PteFlags::kernel_ro())
-        .expect("占位映射应成功");
+    pt.set_page_flags(conflict_va, conflict_pa, PteFlags::kernel_ro())
+        .expect("占位应成功");
 
-    // 以 kernel_rw 映射同一区域——flags 冲突，应 panic
+    // 以 kernel_rw 对同一区域 identity_map_range——flags 冲突，应 panic
     pt.identity_map_range(
         PhysAddr::new(0x10_0000),
         PhysAddr::new(0x10_3000),

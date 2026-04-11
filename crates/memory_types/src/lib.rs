@@ -25,7 +25,7 @@ mod page_size;
 
 pub use addr::{PhysAddr, VirtAddr};
 pub use page_frame::{Frame, Page};
-pub use page_size::{Page1G, Page2M, Page4K, PageSize};
+pub use page_size::{Page4K, PageSize};
 pub use span::{Span, SpanIter};
 
 /// 物理帧范围——`Span<Frame>` 的便利别名。

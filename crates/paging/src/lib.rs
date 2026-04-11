@@ -1,11 +1,11 @@
-//! 分页子系统——页表 + 仿射类型映射所有权。
+//! 分页子系统——页表 + 仿射类型帧所有权。
 //!
 //! 本 crate 合并了原 `page_table` 和 `mapped_pages` 两个 crate，
 //! 实现了 **编译期强制的仿射类型安全**：
 //!
-//! - [`PageTable`] 的写操作（`map_page`、`unmap_page` 等）为 `pub`，
+//! - [`PageTable`] 的写操作（`set_page_flags`、`unmap_page` 等）为 `pub`，
 //!   但正常使用时应通过 `OwnedPages` / `MmioRegion` 等 RAII 类型调用，
-//!   确保映射的创建与销毁通过仿射类型管理。
+//!   确保帧所有权和权限通过仿射类型管理。
 //!
 //! PTE 编解码由 [`page_table_entry`] crate 提供。
 //! 帧分配通过 [`NodeFrame`] 类型别名（[`KernelNodeFrame`]）使用物理帧分配器，

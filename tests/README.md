@@ -17,13 +17,12 @@ cargo xtask test --list                                  # 列出可用测试
 |----|--------|------|---------|
 | `memory-types-test` | `codec` | normal | 地址和帧/页号编解码 |
 | | `align-up-overflow-panic` | should_panic | align_up 溢出检测 |
-| | `frame-2m-unaligned-panic` | should_panic | Frame\<Page2M\> 非对齐检测 |
 | | `pa-overflow-panic` | should_panic | PhysAddr 加法溢出检测 |
 | | `va-canonical-panic` | should_panic | VirtAddr 规范化违反检测 |
 | `paging-test` | `basic` | normal | 页大小计算、VPN 索引提取 |
-| | `table` | normal | 页表 map/unmap/get_mapping/大页/identity_map_range |
-| | `mapping` | normal | MappedPages RAII 映射生命周期 |
-| | `conflict-panic` | should_panic | identity_map_range 映射冲突检测 |
+| | `table` | normal | 页表 set_page_flags/unmap/get_mapping/identity_map_range |
+| | `mapping` | normal | OwnedPages 仿射类型帧所有权 + 权限管理 |
+| | `conflict-panic` | should_panic | identity_map_range 权限冲突检测 |
 | | `equal-range-panic` | should_panic | identity_map_range 空范围检测 |
 | | `reversed-range-panic` | should_panic | identity_map_range 反向范围检测 |
 | `sync-test` | `spinlock` | normal | SpinLock 加锁/解锁/try_lock |
@@ -31,7 +30,6 @@ cargo xtask test --list                                  # 列出可用测试
 | | `lockstack-pop-mismatch-panic` | should_panic | 锁栈 pop 指针不匹配检测 |
 | | `recursive-lock-panic` | should_panic | 同核递归加锁检测 |
 | `frame-test` | `alloc` | normal | 帧分配/释放、typestate 生命周期转换 |
-| | `mapped-drop-panic` | should_panic | MappedFrames 未 unmap 直接 drop 应 panic |
 | `heap-test` | | normal | 堆分配（Box、Vec、大块） |
 | `device-test` | | normal | DeviceManager、VirtIO 块设备读取 |
 | `fs-test` | | normal | VFS 路径解析、RamFS CRUD、多级目录 |

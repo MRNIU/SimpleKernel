@@ -1,18 +1,19 @@
 //! 内存子系统初始化——主核 / 从核。
 //!
-//! 初始化完成后页表包含两层映射：
-//! 1. **前景映射**（OwnedPages）：text / rodata / data 段，各自权限。
-//! 2. **背景映射**（identity_map_range）：`[free_start, mem_end)` 全量映射为 kernel_rw，
-//!    供帧分配器分配的帧在被 OwnedPages::map 接管前仍可安全访问。
+//! 初始化完成后页表包含两层权限：
+//! 1. **背景层**（identity_map_range）：全部物理内存 identity-map 为 kernel_rw
+//! 2. **覆盖层**（OwnedPages）：内核段各自权限覆盖背景层
+//!
+//! 初始化顺序（ADR-006）：先背景映射全部物理内存，再 OwnedPages 覆盖内核段权限。
 
 use memory_types::PhysAddr;
 use paging::{PageTable, PteFlags, PteFlagsOps};
 
 use crate::vma::AddressSpace;
 
-/// 主核内存初始化——返回内核地址空间（包含所有内核段映射）。
+/// 主核内存初始化——返回内核地址空间（包含所有内核段权限覆盖）。
 ///
-/// 初始化顺序：堆 -> 帧分配器 -> 页表 -> 分段映射。
+/// 初始化顺序：堆 -> 帧分配器 -> 页表 -> 背景映射 -> 内核段权限覆盖。
 pub fn init() -> AddressSpace {
     // SAFETY: 在任何堆分配之前调用，且仅调用一次（由启动流程保证）
     unsafe { heap_crate::init() };
@@ -36,8 +37,7 @@ pub fn init() -> AddressSpace {
     let free_start = kernel_end.align_up();
     let free_size = mem_size - (free_start - mem_start);
 
-    // 各段页数——data 段只覆盖到 free_start，不含空闲帧区域。
-    // 空闲帧由 OwnedPages::map 接管所有权并按需更新 PTE flags（typestate: Allocated → Mapped）。
+    // 各段页数——data 段只覆盖到 free_start，不含空闲帧区域
     let text_pages = (text_end - mem_start) / config::PAGE_SIZE;
     let rodata_pages = (rodata_end - text_end) / config::PAGE_SIZE;
     let data_pages = (free_start - rodata_end) / config::PAGE_SIZE;
@@ -59,11 +59,20 @@ pub fn init() -> AddressSpace {
     let pt = PageTable::create().expect("创建内核页表失败");
     paging::init_kernel_page_table(pt);
 
+    // 背景映射：全部物理内存 identity-map 为 kernel_rw（背景层）。
+    // 必须先于 OwnedPages 执行——OwnedPages::new 调用 set_page_flags，
+    // 要求 PTE 已存在（幂等更新 flags）。
+    {
+        let mem_end = mem_start + mem_size;
+        let mut guard = paging::kernel_page_table().lock();
+        guard.identity_map_range(mem_start, mem_end, PteFlags::kernel_rw());
+    }
+
     let mut kernel_as = AddressSpace::new();
 
-    // 分段映射：.text(RWX) / .rodata(RO) / .data(RW)
+    // 内核段权限覆盖：.text(RWX) / .rodata(RO) / .data(RW)
     // reserved 的元素顺序与传入 init 的 reserved 参数顺序一致。
-    // identity mapping: VA == PA，OwnedPages::map 从 PA 推导 VA。
+    // identity mapping: VA == PA，OwnedPages::new 从 PA 推导 VA。
     let segments: [PteFlags; 3] = [
         PteFlags::kernel_rwx(),
         PteFlags::kernel_ro(),
@@ -75,17 +84,8 @@ pub fn init() -> AddressSpace {
     for (i, flags) in segments.into_iter().enumerate() {
         let frames = reserved.remove(0);
         let va = memory_types::VirtAddr::new(seg_starts[i].as_usize());
-        let mapping = paging::OwnedPages::map(frames, flags);
+        let mapping = paging::OwnedPages::new(frames, flags);
         kernel_as.register_kernel_mapping(va, mapping);
-    }
-
-    // 背景映射：free pool 全量映射为 kernel_rw
-    // 直接操作页表，不经过 OwnedPages——这是 SAS 背景层，不追踪所有权。
-    // 空闲帧由 OwnedPages::map 按需接管所有权时更新 PTE flags。
-    {
-        let mem_end = mem_start + mem_size;
-        let mut guard = paging::kernel_page_table().lock();
-        guard.identity_map_range(free_start, mem_end, PteFlags::kernel_rw());
     }
 
     log::info!(

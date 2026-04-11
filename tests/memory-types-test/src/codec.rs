@@ -7,7 +7,7 @@
 extern crate alloc;
 
 use alloc::format;
-use memory_types::{Frame, Page, Page1G, Page2M, PhysAddr, VirtAddr};
+use memory_types::{Frame, Page, PhysAddr, VirtAddr};
 
 test_harness::test_main!(simplekernel::boot::InitLevel::Memory, run_tests);
 
@@ -68,15 +68,6 @@ fn run_tests() {
 
     test_frame_from_usize_roundtrip();
     log::info!("test frame_from_usize_roundtrip ... ok");
-
-    test_frame_2m_arithmetic();
-    log::info!("test frame_2m_arithmetic ... ok");
-
-    test_frame_1g_arithmetic();
-    log::info!("test frame_1g_arithmetic ... ok");
-
-    test_frame_2m_from_addr_aligns_down();
-    log::info!("test frame_2m_from_addr_aligns_down ... ok");
 
     test_addr_display_format();
     log::info!("test addr_display_format ... ok");
@@ -259,32 +250,6 @@ fn test_frame_from_usize_roundtrip() {
     let pn: Frame = 42usize.into();
     let val: usize = pn.into();
     assert_eq!(val, 42);
-}
-
-/// Frame<Page2M> 算术应按 512 缩放。
-fn test_frame_2m_arithmetic() {
-    let f = Frame::<Page2M>::new(0);
-    let f2 = f + 1;
-    assert_eq!(f2.as_usize(), 512);
-    assert_eq!(f2.start_addr(), PhysAddr::new(512 * 4096));
-
-    let f3 = f + 3;
-    assert_eq!(f3 - f, 3);
-}
-
-/// Frame<Page1G> 算术应按 512×512 缩放。
-fn test_frame_1g_arithmetic() {
-    let f = Frame::<Page1G>::new(0);
-    let f2 = f + 1;
-    assert_eq!(f2.as_usize(), 512 * 512);
-}
-
-/// 从 PhysAddr 转换为 Frame<Page2M> 应向下对齐。
-fn test_frame_2m_from_addr_aligns_down() {
-    let addr = PhysAddr::new(3 * 1024 * 1024);
-    let f: Frame<Page2M> = addr.into();
-    assert_eq!(f.as_usize(), 512);
-    assert_eq!(f.start_addr(), PhysAddr::new(2 * 1024 * 1024));
 }
 
 /// Display 格式化应输出 16 位十六进制，高位补零。
