@@ -14,8 +14,6 @@ pub use heap_crate as heap;
 pub mod globals;
 /// 内存子系统初始化（依赖链接器符号，裸机专用）。
 pub mod init;
-/// PageTable 类型 re-export。
-pub mod node_frame;
 /// 虚拟内存区域（VMA）与地址空间管理。
 pub mod vma;
 

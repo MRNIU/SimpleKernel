@@ -40,7 +40,7 @@ pub trait ArchOps {
     ///
     /// # Safety
     /// 调用方必须确保 `pt` 覆盖了激活后将执行的所有代码和数据。
-    unsafe fn activate_page_table(pt: &memory::node_frame::PageTable);
+    unsafe fn activate_page_table(pt: &paging::PageTable);
 
     /// 向早期控制台输出字符串（SBI putchar / PL011 MMIO）
     fn console_write(s: &str);

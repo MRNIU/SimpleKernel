@@ -76,7 +76,7 @@ impl ArchOps for Aarch64 {
         Ok(())
     }
 
-    unsafe fn activate_page_table(pt: &memory::node_frame::PageTable) {
+    unsafe fn activate_page_table(pt: &paging::PageTable) {
         let ttbr = pt.root_paddr().as_usize() as u64;
 
         // MAIR_EL1: 定义内存属性索引
