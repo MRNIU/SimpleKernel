@@ -261,5 +261,5 @@ fn test_addr_display_format() {
 /// Frame Display 格式化。
 fn test_frame_display_format() {
     let pn: Frame = Frame::new(0x42);
-    assert_eq!(format!("{pn}"), "Frame<4K>(0x42)");
+    assert_eq!(format!("{pn}"), "Frame(0x42)");
 }

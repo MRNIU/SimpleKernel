@@ -2,7 +2,7 @@
 //!
 //! 提供以下 newtype：
 //! - [`PhysAddr`] / [`VirtAddr`]——字节粒度地址，附带对齐辅助方法
-//! - [`Frame<P>`] / [`Page<P>`]——页粒度标识（泛型 PageSize），与地址双向转换
+//! - [`Frame`] / [`Page`]——4K 页粒度标识，与地址双向转换
 //! - [`Span<A>`]（re-export from [`span`] crate）——半开区间 `[start, end)`
 //!
 //! 以及物理-虚拟地址转换方法 [`PhysAddr::to_virt`] / [`VirtAddr::to_phys`]。
@@ -15,17 +15,15 @@
 //! |---|---------|---------|
 //! | `impl_usize_newtype!` | PhysAddr, VirtAddr, Frame, Page | `new`/`as_usize`、`From<usize>` 双向转换、checked 算术运算 |
 //! | `impl_addr!` | PhysAddr, VirtAddr | 对齐辅助（`page_offset`/`is_aligned`/`align_down`/`align_up`）、`Display` |
-//! | `impl_page_or_frame!` | Frame, Page | `start_addr`、地址/usize 双向转换、按页大小缩放的位移算术、`Display`/`Debug` |
+//! | `impl_page_or_frame!` | Frame, Page | `start_addr`、地址/usize 双向转换、算术运算、`Display`/`Debug` |
 
 #![no_std]
 
 mod addr;
 mod page_frame;
-mod page_size;
 
 pub use addr::{PhysAddr, VirtAddr};
 pub use page_frame::{Frame, Page};
-pub use page_size::{Page4K, PageSize};
 pub use span::{Span, SpanIter};
 
 /// 物理帧范围——`Span<Frame>` 的便利别名。
