@@ -1,27 +1,19 @@
 //! 分页子系统——页表 + 仿射类型帧所有权。
 //!
-//! 本 crate 合并了原 `page_table` 和 `mapped_pages` 两个 crate，
-//! 实现了 **编译期强制的仿射类型安全**：
-//!
 //! - [`PageTable`] 的写操作（`set_page_flags`、`unmap_page` 等）为 `pub`，
 //!   但正常使用时应通过 `OwnedPages` / `MmioRegion` 等 RAII 类型调用，
 //!   确保帧所有权和权限通过仿射类型管理。
 //!
 //! PTE 编解码由 [`page_table_entry`] crate 提供。
-//! 帧分配通过 [`NodeFrame`] 类型别名（[`KernelNodeFrame`]）使用物理帧分配器，
-//! 页表和映射类型均为非泛型。
 
 #![no_std]
 
 extern crate alloc;
 
-use memory_types::PhysAddr;
-
 pub mod error;
 
 pub use page_table_entry::{PageTableEntry, PteFlags, PteFlagsOps, PteOps};
 
-// 页表几何常量——定义在 arch crate，此处 re-export 供下游使用。
 pub use arch::{ENTRIES_PER_TABLE, INDEX_BITS, INDEX_MASK, LEVEL_SHIFTS, page_size_at_level};
 
 pub mod table;
@@ -32,15 +24,12 @@ pub use mapping::OwnedPages;
 
 pub mod mmio;
 
-/// 全局内核页表——SAS 架构下只有一张页表，所有映射共用。
-///
-/// `spin::Once` 在 `.bss` 中静态分配内存，运行时通过 [`init_kernel_page_table`]
-/// 一次性写入 `SpinLock<PageTable>`。无需 `Box::leak`，无需 `unsafe`。
+/// 全局内核页表——SAS 架构下只有一张页表，所有权限覆盖共用。
 static KERNEL_PAGE_TABLE: spin::Once<sync_crate::SpinLock<PageTable>> = spin::Once::new();
 
 /// 初始化全局内核页表——消费 `PageTable` 的所有权，写入静态存储。
 ///
-/// 仅在启动时调用一次。重复调用时 `spin::Once` 忽略后续 `call_once`。
+/// 仅在启动时调用一次。
 pub fn init_kernel_page_table(pt: PageTable) {
     KERNEL_PAGE_TABLE.call_once(|| {
         sync_crate::SpinLock::new(pt, "kernel_pt", sync_crate::lock_level::KERNEL_PT)
@@ -56,38 +45,13 @@ pub fn kernel_page_table() -> &'static sync_crate::SpinLock<PageTable> {
         .expect("kernel page table not initialized")
 }
 
-/// 页表节点帧的统一接口。
-///
-/// 通过 [`NodeFrame`] 类型别名（[`KernelNodeFrame`]）选择具体实现。
-/// 页表、映射等类型直接使用 `NodeFrame`，不再泛型化。
-pub trait NodeFrameOps: Send + Sized {
-    /// 分配一个零初始化的页表节点帧。
-    fn alloc() -> Result<Self, error::PagingError>;
-    /// 获取帧的物理地址（identity mapping）。
-    fn paddr(&self) -> PhysAddr;
+/// 分配一个零初始化的页表节点帧。
+fn alloc_node_frame() -> Result<frame_allocator::AllocatedFrames, error::PagingError> {
+    frame_allocator::AllocatedFrames::alloc_one().map_err(|e| {
+        log::warn!("页表节点帧分配失败: {:?}", e);
+        error::PagingError::AllocationFailed
+    })
 }
-
-/// 裸机页表节点帧——包装 `AllocatedFrames`。
-///
-/// Newtype 用于为外部类型 `AllocatedFrames` 实现本 crate 的 `NodeFrameOps`。
-pub struct KernelNodeFrame(frame_allocator::AllocatedFrames);
-
-impl NodeFrameOps for KernelNodeFrame {
-    fn alloc() -> Result<Self, error::PagingError> {
-        frame_allocator::AllocatedFrames::alloc_one()
-            .map(Self)
-            .map_err(|e| {
-                log::warn!("页表节点帧分配失败: {:?}", e);
-                error::PagingError::AllocationFailed
-            })
-    }
-    fn paddr(&self) -> PhysAddr {
-        self.0.start_paddr()
-    }
-}
-
-/// 页表节点帧类型——[`KernelNodeFrame`]（物理帧分配器）。
-pub type NodeFrame = KernelNodeFrame;
 
 /// 从虚拟地址中提取第 `level` 级的 VPN 索引。
 ///

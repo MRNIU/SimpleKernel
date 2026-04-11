@@ -5,11 +5,10 @@ use core::sync::atomic::{AtomicU64, Ordering};
 use alloc::collections::BTreeMap;
 use memory_types::{PhysAddr, VirtAddr};
 
+use frame_allocator::AllocatedFrames;
+
 use crate::error::PagingError;
-use crate::{
-    ENTRIES_PER_TABLE, NodeFrame, NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps,
-    vpn_index,
-};
+use crate::{ENTRIES_PER_TABLE, PageTableEntry, PteFlags, PteFlagsOps, PteOps, vpn_index};
 
 const PT_LEVELS: usize = arch::PT_LEVELS;
 
@@ -53,8 +52,9 @@ impl Table {
 /// 中间页表节点——持有帧所有权及有效 PTE 引用计数。
 struct NodeEntry {
     /// 持有帧所有权——drop 时自动释放。
-    #[expect(dead_code, reason = "仅用于持有所有权，通过物理地址访问")]
-    frame: NodeFrame,
+    /// 不直接访问帧内容（通过物理地址 + identity mapping 访问），
+    /// 但必须持有所有权阻止帧被回收。
+    _frame: AllocatedFrames,
     /// 该帧中有效 PTE 的数量。
     /// set_page_flags 时 +1，unmap 时 -1，count == 0 时可回收。
     ref_count: u16,
@@ -64,28 +64,20 @@ struct NodeEntry {
 ///
 /// 拥有根帧及所有遍历过程中分配的中间帧。
 /// drop 时自动归还所有帧。
-///
-/// 具体帧类型由 [`NodeFrame`] 类型别名决定（裸机：物理帧，测试：堆分配帧），
-/// 无需泛型参数。
 pub struct PageTable {
-    root_paddr: PhysAddr,
-    /// 持有根帧所有权，阻止帧被释放——字段本身不直接访问。
-    #[expect(dead_code, reason = "仅用于持有所有权，通过 root_paddr 访问")]
-    root: NodeFrame,
+    /// 持有根帧所有权——通过 `.start_paddr()` 获取物理地址。
+    root: AllocatedFrames,
     /// 根帧的有效 PTE 引用计数（根帧不在 nodes 中，单独记录）。
     root_ref_count: u16,
     /// 中间页表节点——以物理地址为键，O(log n) 查找/删除。
-    /// 每个条目持有帧所有权和引用计数，避免并行 map 的同步维护负担。
     nodes: BTreeMap<PhysAddr, NodeEntry>,
 }
 
 impl PageTable {
     /// 创建新页表，分配根帧。
     pub fn create() -> Result<Self, PagingError> {
-        let root = NodeFrame::alloc()?;
-        let root_paddr = root.paddr();
+        let root = crate::alloc_node_frame()?;
         Ok(Self {
-            root_paddr,
             root,
             root_ref_count: 0,
             nodes: BTreeMap::new(),
@@ -95,7 +87,7 @@ impl PageTable {
     /// 返回根页表的物理地址（用于写入 satp / TTBR 寄存器）。
     #[inline]
     pub fn root_paddr(&self) -> PhysAddr {
-        self.root_paddr
+        self.root.start_paddr()
     }
 
     /// 获取指定帧的引用计数的可变引用。
@@ -103,7 +95,7 @@ impl PageTable {
     /// 根帧返回 `root_ref_count`，中间帧从 `nodes` 中查找。
     #[inline]
     fn ref_count_mut(&mut self, paddr: PhysAddr) -> &mut u16 {
-        if paddr == self.root_paddr {
+        if paddr == self.root.start_paddr() {
             &mut self.root_ref_count
         } else {
             &mut self
@@ -130,23 +122,23 @@ impl PageTable {
     ///
     /// 返回目标 PTE 所在帧的物理地址及该 PTE 在帧中的索引。
     fn walk_create(&mut self, va: VirtAddr) -> Result<(PhysAddr, usize), PagingError> {
-        let mut paddr = self.root_paddr;
+        let mut paddr = self.root.start_paddr();
 
         for level in (1..PT_LEVELS).rev() {
-            // SAFETY: paddr 指向由 self.root 或 self.nodes 持有的有效帧
+            // SAFETY: paddr 指向由 self 持有的有效帧
             let mut table = unsafe { Table::from_paddr(paddr) };
             let idx = vpn_index(va, level);
             let pte = table.read(idx);
 
             if !pte.is_valid() {
-                let frame = NodeFrame::alloc()?;
-                let frame_paddr = frame.paddr();
+                let frame = crate::alloc_node_frame()?;
+                let frame_paddr = frame.start_paddr();
                 // 先注册所有权，再写 PTE——若 BTreeMap::insert 因 OOM panic，
                 // frame 随 NodeEntry drop 释放，但不会产生悬挂 PTE。
                 self.nodes.insert(
                     frame_paddr,
                     NodeEntry {
-                        frame,
+                        _frame: frame,
                         ref_count: 0,
                     },
                 );
@@ -154,7 +146,10 @@ impl PageTable {
                 self.inc_ref(paddr);
                 paddr = frame_paddr;
             } else if pte.is_leaf(level) {
-                return Err(PagingError::HugePageConflict);
+                panic!(
+                    "walk_create: VA {} 在 level {} 遇到非预期的大页叶 PTE（页表损坏）",
+                    va, level
+                );
             } else {
                 paddr = pte.paddr();
             }
@@ -174,9 +169,10 @@ impl PageTable {
     /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
     /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
     ///
-    /// # Errors
+    /// # Panics
     ///
-    /// - walk 路径上遇到大页时返回 `HugePageConflict`。
+    /// - walk 路径上遇到非预期的大页叶 PTE（页表损坏）
+    /// - VA 已映射到不同的 PA（内核 bug）
     pub fn set_page_flags(
         &mut self,
         va: VirtAddr,
@@ -238,7 +234,7 @@ impl PageTable {
     ) -> Result<(PhysAddr, PteFlags), PagingError> {
         let mut path: [(PhysAddr, usize); PT_LEVELS] = [(PhysAddr::new(0), 0); PT_LEVELS];
         let mut path_len = 0;
-        let mut paddr = self.root_paddr;
+        let mut paddr = self.root.start_paddr();
 
         for lv in (1..PT_LEVELS).rev() {
             // SAFETY: paddr 指向由 self 持有的有效帧
@@ -309,7 +305,7 @@ impl PageTable {
     /// 供 [`walk_to_leaf`] 和 [`update_flags`] 共用，避免重复 walk 逻辑。
     /// 返回已缓存的 PTE，调用方无需再次读取。
     fn walk_to_leaf(&self, va: VirtAddr) -> Option<(PageTableEntry, PhysAddr, usize, usize)> {
-        let mut paddr = self.root_paddr;
+        let mut paddr = self.root.start_paddr();
 
         for level in (0..PT_LEVELS).rev() {
             // SAFETY: paddr 指向由 self 持有的有效帧
