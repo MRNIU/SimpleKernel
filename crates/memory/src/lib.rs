@@ -1,4 +1,54 @@
-//! 内核内存管理——帧分配器、页表、堆、MMIO 映射。
+//! 内核内存管理门面——统一编排子系统初始化、提供 MMIO 映射接口。
+//!
+//! # 架构总览
+//!
+//! 内存子系统由多个 crate 分三层协同工作：
+//!
+//! ```text
+//! ┌─────────────────────────────────────────────────────┐
+//! │  策略层 — memory (本 crate)                          │
+//! │  init() · init_smp() · map_mmio() · MMIO 跟踪       │
+//! ├─────────────────────────────────────────────────────┤
+//! │  机制层 — paging                                     │
+//! │  PageTable · OwnedPages · MmioRegion                 │
+//! ├───────────────┬──────────────────┬──────────────────┤
+//! │ frame_allocator│ page_table_entry  │ tlb             │
+//! │ 物理帧分配     │ PTE 编解码        │ TLB 刷新        │
+//! │ Frames<S>     │ PteFlagsOps/PteOps│ TlbFlushGuard   │
+//! ├───────────────┴──────────────────┴──────────────────┤
+//! │  memory_types — PhysAddr · VirtAddr · Frame · Span   │
+//! └─────────────────────────────────────────────────────┘
+//! ```
+//!
+//! # SAS 全量映射模型
+//!
+//! SAS 架构下所有物理内存在 boot 时 identity-map 为 `kernel_rw`（背景层），
+//! 运行时只调整权限（覆盖层），永远不创建或删除 PTE。
+//!
+//! # 典型使用方式
+//!
+//! ```rust,ignore
+//! use memory::frame::AllocatedFrames;
+//! use paging::{OwnedPages, PteFlags, PteFlagsOps};
+//!
+//! // 分配帧 + 设置只读权限
+//! let frames = AllocatedFrames::alloc(4)?;
+//! let mapping = OwnedPages::new(frames, PteFlags::kernel_ro());
+//! // ... 使用 mapping.vaddr() 访问内存 ...
+//! drop(mapping); // 恢复 kernel_rw + 归还帧
+//!
+//! // MMIO 映射
+//! let va = memory::map_mmio(PhysAddr::new(0x1000_0000), 0x1000)?;
+//! ```
+//!
+//! # 初始化顺序
+//!
+//! 1. `heap::init()` — 启用堆分配（buddy 内部需要 BTreeSet）
+//! 2. `frame_allocator::init()` — 空闲帧入 buddy，内核段帧预留
+//! 3. `PageTable::create()` + `identity_map_range()` — 背景层
+//! 4. `OwnedPages::new()` × 3 + `mem::forget()` — 覆盖层（永久持有）
+//!
+//! 详见 `docs/design/memory-subsystem-v2.md`。
 
 #![no_std]
 

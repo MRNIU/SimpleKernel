@@ -1,6 +1,17 @@
 //! 通用半开区间 [`Span<A>`]——支持包含判断、重叠检测、分割、合并和迭代。
 //!
 //! 零依赖的纯泛型数据结构，可用于地址、页号、帧号等任何 `Copy + Ord` 类型。
+//!
+//! # 在内存子系统中的定位
+//!
+//! `Span` 是内存子系统最底层的数据结构——`memory_types` re-export 它，
+//! `frame_allocator` 用 `Span<Frame>` 追踪连续帧范围，
+//! `memory` 用 `Span<VirtAddr>` 检测 MMIO 区域重叠。
+//!
+//! ```text
+//! frame_allocator::Frames<S> { range: Span<Frame> }
+//! memory::check_mmio_overlap → Span<VirtAddr>.overlaps(...)
+//! ```
 
 #![cfg_attr(not(test), no_std)]
 

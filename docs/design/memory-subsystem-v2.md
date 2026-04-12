@@ -6,15 +6,12 @@
 > - SimpleKernel 的内存模型与 Theseus 等内核有什么根本区别？
 > - 一个物理帧从分配到回收经历了哪些类型状态？
 > - `OwnedPages` 如何通过 Rust 所有权在编译期保证帧不泄漏？
+> - 各 crate 之间如何协同工作，对外接口是什么？
 > - 为什么不需要大页和 page splitting？
 >
 > 演进历史：本文档取代 [memory-subsystem.md](memory-subsystem.md)（旧设计）。
-> 决策记录见 [ADR-006](../decisions/006-memory-subsystem-simplification.md)。
->
-> **⚠ 部分内容已过时**：[ADR-007](../decisions/007-eliminate-vma-and-dead-code.md) 删除了
-> VMA 模块（`AddressSpace`/`Vma`/`mmap`/`munmap`/`mprotect`）、`unmap_page`、`as_type`/`as_type_mut`。
-> 内核段 OwnedPages 改为 `mem::forget` 永久持有，MMIO 重叠检测改为 `BTreeMap` 内联实现。
-> 本文档中涉及这些内容的章节（§7 VMA、§8 生命周期中的 munmap/as_type 等）以代码为准。
+> 决策记录见 [ADR-006](../decisions/006-memory-subsystem-simplification.md)、
+> [ADR-007](../decisions/007-eliminate-vma-and-dead-code.md)。
 
 ---
 
@@ -85,66 +82,186 @@ SimpleKernel 处于以下研究线的交汇点：
 
 ## 2. 架构总览
 
-内存子系统由 6 个 crate 组成，分为三层：
+内存子系统由多个 crate 组成，分为三层：
 
-```
-┌─────────────────────────────────────────────────┐
-│  策略层 — memory crate                            │
-│  init · map_mmio · MMIO 跟踪                      │
-├─────────────────────────────────────────────────┤
-│  机制层 — paging crate                            │
-│  PageTable · OwnedPages · MmioRegion              │
-├───────────────┬───────────────┬─────────────────┤
-│ frame_allocator│ page_table_entry│ tlb            │
-│ 物理帧分配     │ PTE 编解码      │ TLB 刷新       │
-│ Frames<S>     │               │ TlbFlushGuard   │
-├───────────────┴───────────────┴─────────────────┤
-│  memory_types — PhysAddr · VirtAddr · Frame · Span │
-└─────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph "策略层 — 对外 API"
+        memory["<b>memory</b><br/>init · map_mmio · MMIO 跟踪<br/>MemoryInfo 全局状态"]
+    end
+
+    subgraph "机制层 — 映射与页表"
+        paging["<b>paging</b><br/>PageTable · OwnedPages · MmioRegion<br/>vpn_index · 全局内核页表"]
+    end
+
+    subgraph "资源层 — 分配器与基础类型"
+        frame_alloc["<b>frame_allocator</b><br/>物理帧分配<br/>Frames&lt;S&gt; typestate"]
+        pte["<b>page_table_entry</b><br/>PTE 编解码<br/>PteFlagsOps · PteOps"]
+        tlb_crate["<b>tlb</b><br/>TLB 刷新<br/>TlbFlushGuard"]
+        heap["<b>heap</b><br/>#[global_allocator]<br/>buddy_system_allocator"]
+    end
+
+    subgraph "基础层 — 零依赖类型"
+        mem_types["<b>memory_types</b><br/>PhysAddr · VirtAddr<br/>Frame · Page · Span"]
+    end
+
+    memory --> paging
+    memory --> frame_alloc
+    memory --> heap
+    memory --> tlb_crate
+
+    paging --> frame_alloc
+    paging --> pte
+    paging --> tlb_crate
+
+    frame_alloc --> mem_types
+    pte --> mem_types
+    paging --> mem_types
+    memory --> mem_types
 ```
 
 ### 各层职责
 
 | 层 | Crate | 职责 | 不做什么 |
 |----|-------|------|---------|
-| **策略** | `memory` | 初始化编排、MMIO 注册、map_mmio 便捷函数 | 不直接操作 PTE |
-| **机制** | `paging` | 页表遍历、PTE 读写、OwnedPages 权限管理、MmioRegion | 不分配帧——由上层告知 |
+| **策略** | `memory` | 初始化编排、MMIO 注册/重叠检测、对外 re-export | 不直接操作 PTE |
+| **机制** | `paging` | 页表遍历、PTE 读写、OwnedPages 权限管理、MmioRegion | 不管"何时"映射——由上层决定 |
 | **资源** | `frame_allocator` | 物理帧的分配/回收/typestate 追踪 | 不知道页表的存在 |
 | **资源** | `page_table_entry` | 单个 PTE 的 bit-level 编解码（跨架构） | 不做页表遍历 |
-| **资源** | `memory_types` | 地址/帧号 newtype、Span 区间 | 无运行时状态 |
-| **资源** | `tlb` | 架构相关的 TLB invalidate（RAII guard） | 仅 flush，不操作 PTE |
+| **资源** | `tlb` | 架构无关的 TLB invalidate（RAII guard + shootdown） | 仅 flush，不操作 PTE |
+| **资源** | `heap` | `#[global_allocator]`（Box/Vec/BTreeMap） | 不管物理帧，仅管堆内存 |
+| **基础** | `memory_types` | 地址/帧号 newtype、Span 区间 | 无运行时状态，纯类型 |
 
-### 分层命名约定
+### Crate 依赖关系图
 
-每一层用自己的术语，互不侵入：
+```mermaid
+graph LR
+    span["span"]
+    arch["arch"]
+    config["config"]
+    mem_types["memory_types"]
+    pte["page_table_entry"]
+    frame["frame_allocator"]
+    tlb["tlb"]
+    paging["paging"]
+    heap["heap"]
+    memory["memory"]
 
+    mem_types --> span
+    mem_types --> arch
+    mem_types --> config
+
+    pte --> mem_types
+
+    frame --> mem_types
+    frame --> config
+
+    tlb --> arch
+    tlb --> config
+
+    paging --> pte
+    paging --> frame
+    paging --> tlb
+    paging --> mem_types
+    paging --> arch
+    paging --> config
+
+    memory --> paging
+    memory --> frame
+    memory --> heap
+    memory --> tlb
+    memory --> mem_types
+    memory --> config
 ```
-frame_allocator:  FrameState::Free / Allocated
-                  AllocatedFrames::alloc() / Drop
 
-paging:           OwnedPages::new() / set_flags() / Drop
-
-memory:           init() / map_mmio()
-```
+**无循环依赖**的关键：
+- `memory_types` 依赖 `arch`（获取 PA_BITS/VA_BITS），但 `arch` 不依赖 `memory_types`
+- `page_table_entry` 通过 `cfg` 条件编译选择架构，不依赖 `arch` crate
+- `paging` 通过 `arch` 获取 `PT_LEVELS`、`flush_tlb_*` 等常量和函数
 
 ---
 
-## 3. 基础类型——`memory_types`
+## 3. 基础类型——`memory_types` + `span`
 
 所有内存操作的基石是编译期区分物理/虚拟的 newtype：
 
-```rust
-PhysAddr  ──page_number()──▶ Frame   ──Span──▶ FrameSpan
-VirtAddr  ──page_number()──▶ Page    ──Span──▶ PageSpan
+```mermaid
+graph LR
+    PA["PhysAddr<br/>(字节粒度)"]
+    VA["VirtAddr<br/>(字节粒度)"]
+    Frame["Frame<br/>(4K 粒度)"]
+    Page["Page<br/>(4K 粒度)"]
+    FS["Span&lt;Frame&gt;<br/>(帧区间)"]
+    PS["Span&lt;Page&gt;<br/>(页区间)"]
+
+    PA -->|"page_number()"| Frame
+    VA -->|"page_number()"| Page
+    Frame -->|"start_addr()"| PA
+    Page -->|"start_addr()"| VA
+    PA <-->|"to_virt() / to_phys()"| VA
+    Frame -->|"Span::new(start, end)"| FS
+    Page -->|"Span::new(start, end)"| PS
 ```
 
-- `PhysAddr` / `VirtAddr`：编译期不可互换——把 PA 传给期望 VA 的函数是编译错误
-- `Frame` / `Page`：页粒度标识（固定 4KB）
-- `Span<A>`：泛型半开区间 `[start, end)`，支持 split/merge/overlap 检测
+### 3.1 地址类型
 
-所有页大小固定为 4KB（`config::PAGE_SIZE = 4096`）。
-两目标架构（RISC-V Sv39 + AArch64 4KB granule）的基础页大小一致，
-不支持大页（2MB/1GB）——详见 [ADR-006](../decisions/006-memory-subsystem-simplification.md)。
+```rust
+// 物理地址——字节粒度，PA_BITS 以内
+pub struct PhysAddr(usize);
+
+// 虚拟地址——字节粒度，需规范化（高位符号扩展）
+pub struct VirtAddr(usize);
+```
+
+**PhysAddr 接口：**
+
+| 方法 | 说明 |
+|------|------|
+| `new(v: usize) -> Self` | 构造并校验 PA_BITS |
+| `as_usize() -> usize` | 获取原始值 |
+| `page_offset() -> usize` | 页内偏移（低 12 位） |
+| `is_aligned() -> bool` | 是否页对齐 |
+| `align_down() -> Self` | 向下对齐到页边界 |
+| `align_up() -> Self` | 向上对齐到页边界 |
+| `page_number() -> Frame` | 转换为帧号 |
+| `to_virt() -> VirtAddr` | identity mapping: VA = PA |
+
+**VirtAddr 接口：**
+
+| 方法 | 说明 |
+|------|------|
+| `new(v: usize) -> Self` | 构造并校验规范化 |
+| `as_ptr<T>() -> *const T` | 转为裸指针 |
+| `as_mut_ptr<T>() -> *mut T` | 转为可变裸指针 |
+| `to_phys() -> PhysAddr` | identity mapping: PA = VA |
+| `page_number() -> Page` | 转换为页号 |
+
+### 3.2 帧/页号
+
+```rust
+pub struct Frame { number: usize }  // 4K 单位
+pub struct Page  { number: usize }  // 4K 单位
+```
+
+帧/页号支持 `Add<usize>`、`Sub<usize>`、`Sub<Self> -> usize` 算术运算，
+所有运算都是 checked（溢出 panic）。
+
+### 3.3 Span 区间
+
+```rust
+pub struct Span<A: Copy + Ord> { start: A, end: A }  // [start, end)
+```
+
+| 方法 | 说明 |
+|------|------|
+| `new(start, end)` | 构造半开区间（start > end 时 panic） |
+| `start() / end()` | 获取边界 |
+| `size() -> usize` | 区间大小（需 `Sub` trait bound） |
+| `contains(val)` | 包含判断 |
+| `overlaps(other)` | 重叠检测 |
+| `split_at(mid)` | 分割为两段 |
+| `merge(other)` | 合并相邻区间 |
+| `iter()` | 遍历每个元素 |
 
 ---
 
@@ -154,10 +271,20 @@ VirtAddr  ──page_number()──▶ Page    ──Span──▶ PageSpan
 
 物理帧使用 **const generic typestate** 追踪所有权：
 
-```
-                alloc()              Drop
-  buddy pool ──────────▶ Allocated ────────▶ buddy pool
-               (Free→Allocated)       (dealloc_to_backend)
+```mermaid
+stateDiagram-v2
+    [*] --> BuddyPool : 系统启动
+    BuddyPool --> Allocated : alloc_from_backend()
+    Allocated --> BuddyPool : Drop (dealloc_to_backend)
+
+    state BuddyPool {
+        [*] : 空闲帧，分配器持有
+        [*] : 背景 kernel_rw 权限
+    }
+    state Allocated {
+        [*] : 用户持有
+        [*] : 可通过 OwnedPages 覆盖权限
+    }
 ```
 
 只有两个状态——帧在分配器中（Free）或被外部持有（Allocated）。
@@ -204,7 +331,37 @@ Mapped/Unmapped 在 Theseus 中追踪 PTE 生命周期：
 
 2-state 让帧所有权完全由 Rust 类型系统追踪，消除了 `ManuallyDrop` + `unsafe`。
 
-### 4.3 分配器后端
+### 4.3 公开接口
+
+**分配（`AllocatedFrames`）：**
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `alloc_one` | `() -> Result<Self, FrameAllocError>` | 分配 1 帧，清零 |
+| `alloc` | `(count: usize) -> Result<Self, FrameAllocError>` | 分配 N 连续帧，清零 |
+| `count` | `(&self) -> usize` | 帧数量 |
+| `start_paddr` | `(&self) -> PhysAddr` | 起始物理地址 |
+
+**初始化（模块级）：**
+
+```rust
+pub unsafe fn init(
+    free_start: PhysAddr,
+    free_size: usize,
+    reserved: &[(PhysAddr, usize)],  // (起始地址, 帧数)
+) -> heapless::Vec<AllocatedFrames, 8>
+```
+
+**错误类型：**
+
+```rust
+pub enum FrameAllocError {
+    AllocationFailed,  // 分配器未初始化
+    OutOfMemory,       // 帧耗尽
+}
+```
+
+### 4.4 分配器后端
 
 ```rust
 static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocatorInner>;
@@ -221,7 +378,7 @@ fn dealloc_to_backend(range: FrameSpan);
 - 元数据存储在堆上的 BTreeSet，不触碰空闲帧内存
 - 分配结果按 next_power_of_two 对齐——满足硬件对齐需求
 
-### 4.4 初始化
+### 4.5 初始化
 
 `init()` 接受两类参数：
 
@@ -235,7 +392,7 @@ fn dealloc_to_backend(range: FrameSpan);
 **不变量**：内核段帧由 `mem::forget` 永久持有——权限已写入页表，
 Drop 永不执行（不恢复权限、不归还帧）。
 
-### 4.5 连续帧分配
+### 4.6 连续帧分配
 
 所有分配返回单个连续范围（`FrameSpan`）。这是 SAS identity mapping 下的自然约束：
 
@@ -245,13 +402,72 @@ Drop 永不执行（不恢复权限、不归还帧）。
 | DMA 友好 | 大多数 DMA 控制器要求物理连续 buffer |
 | 硬件预取有效 | CPU prefetcher 按物理地址模式预取 |
 
-这与 Linux `kmalloc`（物理连续，优先选择）是同一个取舍。
+---
+
+## 5. PTE 编解码——`page_table_entry`
+
+### 5.1 Trait 接口
+
+```rust
+/// 页表项标志位——工厂 + 查询 + Builder 三类方法
+pub trait PteFlagsOps: Copy + Debug {
+    // 工厂方法（创建权限预设）
+    fn kernel_rw() -> Self;
+    fn kernel_rx() -> Self;
+    fn kernel_ro() -> Self;
+    fn kernel_rwx() -> Self;
+    fn kernel_device() -> Self;
+    fn user_rw() -> Self;
+    fn user_rx() -> Self;
+    fn user_ro() -> Self;
+    fn user_rwx() -> Self;
+
+    // 查询方法
+    fn is_readable(self) -> bool;
+    fn is_writable(self) -> bool;
+    fn is_executable(self) -> bool;
+    fn is_user(self) -> bool;
+    fn is_accessed(self) -> bool;
+    fn is_dirty(self) -> bool;
+
+    // Builder 方法（用于 COW/mprotect）
+    fn with_writable(self, w: bool) -> Self;
+    fn with_executable(self, x: bool) -> Self;
+    fn for_leaf_at_level(self, level: usize) -> Self;
+}
+
+/// 页表项——编码/解码物理地址 + 标志位
+pub trait PteOps: Copy + Debug {
+    type Flags: PteFlagsOps;
+    fn new(paddr: PhysAddr, flags: Self::Flags) -> Self;
+    fn paddr(self) -> PhysAddr;
+    fn flags(self) -> Self::Flags;
+    fn is_valid(self) -> bool;
+    fn is_leaf(self, level: usize) -> bool;
+    fn empty() -> Self;
+    fn new_intermediate(paddr: PhysAddr) -> Self;
+    fn from_raw(raw: u64) -> Self;
+    fn as_raw(self) -> u64;
+}
+```
+
+### 5.2 条件编译导出
+
+```rust
+#[cfg(bare_riscv64)]
+pub use riscv64::{PageTableEntry, PteFlags};
+
+#[cfg(bare_aarch64)]
+pub use aarch64::{PageTableEntry, PteFlags};
+```
+
+上层代码只使用 `PageTableEntry` / `PteFlags`，架构差异完全封装。
 
 ---
 
-## 5. 权限覆盖——`OwnedPages`
+## 6. 权限覆盖——`OwnedPages`
 
-### 5.1 核心概念：背景层 + 覆盖层
+### 6.1 核心概念：背景层 + 覆盖层
 
 ```
 物理内存全貌:
@@ -259,7 +475,7 @@ Drop 永不执行（不恢复权限、不归还帧）。
 │ .text        │ .rodata   │ .data/.bss │  free pool   │
 │ RWX          │ RO        │ RW         │  kernel_rw   │  ← 背景层（init 建立，永久）
 │              │           │            │              │
-│              │           │            │  ┌─OwnedP─┐  │
+│ [mem::forget]│[mem::forget]│[mem::forget]│  ┌─OwnedP─┐  │
 │              │           │            │  │ RO      │  │  ← 覆盖层（运行时，临时）
 │              │           │            │  └─────────┘  │
 └──────────────────────────────────────────────────────┘
@@ -272,7 +488,7 @@ Drop 永不执行（不恢复权限、不归还帧）。
 `OwnedPages` 是一个**权限守卫**（permission guard），
 与 `MutexGuard` 同一模式：构造时获取资源，析构时释放资源。
 
-### 5.2 结构
+### 6.2 结构
 
 ```rust
 pub struct OwnedPages {
@@ -282,48 +498,40 @@ pub struct OwnedPages {
 // 不可 Clone，不可 Copy——move-only 仿射类型
 ```
 
-### 5.3 API
+### 6.3 公开接口
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `new` | `(frames: AllocatedFrames, flags: PteFlags) -> Self` | 接管帧所有权 + 更新 PTE 权限 |
+| `set_flags` | `(&mut self, new_flags: PteFlags)` | 修改权限（遍历 PTE + TLB flush） |
+| `vaddr` | `(&self) -> VirtAddr` | 起始虚拟地址（PA.to_virt()） |
+| `size` | `(&self) -> usize` | 总大小（字节） |
+| `page_count` | `(&self) -> usize` | 页数 |
+| `flags` | `(&self) -> PteFlags` | 当前权限 |
+
+**Drop 行为：**
 
 ```rust
-impl OwnedPages {
-    /// 构造：接管帧所有权 + 设置 PTE 权限。
-    pub fn new(frames: AllocatedFrames, flags: PteFlags) -> Self;
-
-    /// 修改权限。
-    pub fn set_flags(&mut self, new_flags: PteFlags);
-
-    /// 访问器。
-    pub fn vaddr(&self) -> VirtAddr;
-    pub fn size(&self) -> usize;
-    pub fn page_count(&self) -> usize;
-    pub fn flags(&self) -> PteFlags;
-
-    /// 类型化内存访问。
-    pub fn as_type<T: FromBytes>(&self, offset: usize) -> &T;
-    pub fn as_type_mut<T: FromBytes + IntoBytes>(&mut self, offset: usize) -> &mut T;
-}
-
 impl Drop for OwnedPages {
     fn drop(&mut self) {
-        restore_default_flags(self.vaddr(), self.page_count()); // 恢复 kernel_rw
-        // self.frames 自动 Drop → dealloc_to_backend
+        batch_update_flags(self.vaddr(), self.page_count(), PteFlags::kernel_rw());
+        // AllocatedFrames 自动 Drop → dealloc_to_backend
     }
 }
 ```
 
-**零 unsafe**。`Drop` 先恢复 PTE 权限，然后 `AllocatedFrames` 字段自动析构归还 buddy。
+**零 unsafe**——帧管理完全通过 Rust 所有权系统。
 
-### 5.4 编译期保证
+### 6.4 编译期保证
 
 | 保证 | 如何实现 |
 |------|---------|
 | 帧不会 double-free | Rust 所有权唯一（编译期） |
 | 帧不会泄漏 | `OwnedPages::Drop` 必然执行（编译期） |
-| Drop 恢复权限 | Drop 方法体显式执行 `restore_default_flags`（编译期确定调用） |
+| Drop 恢复权限 | Drop 方法体显式调用 `batch_update_flags`（编译期确定） |
 | 映射存活期间帧不被回收 | `frames` 字段与 `OwnedPages` 同生命周期（编译期） |
-| `as_type` 引用不逃逸 | 返回引用生命周期绑定到 `&self`（编译期） |
 
-### 5.5 与 Theseus `MappedPages` 的对比
+### 6.5 与 Theseus `MappedPages` 的对比
 
 | | Theseus `MappedPages` | SimpleKernel `OwnedPages` |
 |--|----------------------|--------------------------|
@@ -333,11 +541,10 @@ impl Drop for OwnedPages {
 | 析构 | 清零 PTE + 回收帧（从 PTE 恢复）+ 回收页 | 恢复 PTE 权限 + 释放帧（从 struct 字段） |
 | unsafe | `mem::forget` + `unsafe from_unmapped_range` | 零 |
 | 帧 typestate | 4 状态（追踪 PTE 生命周期） | 2 状态（追踪分配器所有权） |
-| EXCLUSIVE 位 | 需要（区分可回收/共享帧） | 不需要（所有帧都可回收） |
 
 ---
 
-## 6. MMIO 区域——`MmioRegion`
+## 7. MMIO 区域——`MmioRegion`
 
 MMIO 地址是硬件寄存器，**不是 RAM**，不在 buddy allocator 中。
 `MmioRegion` 与 `OwnedPages` 是平级类型，各自独立：
@@ -349,57 +556,24 @@ pub struct MmioRegion {
 }
 ```
 
-- 直接使用 `PageTable` 建立 identity mapping（设备地址不在背景映射中）
-- `read_reg<T>` / `write_reg<T>` 使用 **volatile** 语义
-- 映射永久存在（生命周期等于设备驱动）
-- 不追踪帧所有权——MMIO 帧不归分配器管
+### 7.1 公开接口
 
----
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `map` | `(paddr: PhysAddr, size: usize) -> Result<Self, PagingError>` | 按页对齐 identity-map |
+| `base` | `(&self) -> VirtAddr` | MMIO 基地址 |
+| `size` | `(&self) -> usize` | 映射大小 |
+| `read_reg<T: FromBytes>` | `(&self, offset: usize) -> T` | volatile 读 |
+| `write_reg<T: IntoBytes>` | `(&self, offset: usize, val: T)` | volatile 写 |
 
-## 7. ~~地址空间与 VMA~~ → 内存初始化与 MMIO——`memory` crate
+### 7.2 与 OwnedPages 的区别
 
-> **⚠ 已过时**：VMA 模块（`AddressSpace`/`Vma`/`mmap`/`munmap`/`mprotect`）已在
-> [ADR-007](../decisions/007-eliminate-vma-and-dead-code.md) 中删除。
-> 以下内容保留供历史参考，**以代码为准**。
-
-`memory` crate 是面向内核其他模块的**唯一公共 API**。
-
-### 7.1 VMA（Virtual Memory Area）
-
-```rust
-pub struct Vma {
-    range: Span<VirtAddr>,        // [start, end)，页对齐
-    flags: PteFlags,              // 权限
-    mapping: Option<OwnedPages>,  // None = lazy，Some = 已物化
-}
-
-pub struct AddressSpace {
-    areas: BTreeMap<VirtAddr, Vma>,
-}
-```
-
-SAS 架构下全局唯一。VMA 提供：
-- 重叠检测（防止双重分配）
-- 区域查询（`find_vma`）
-- lazy mapping（page fault 按需物化）
-
-### 7.2 POSIX 映射
-
-POSIX API 在策略层实现，内部调用机制层：
-
-| POSIX API | 内部操作 |
-|-----------|---------|
-| `mmap(size, flags)` | `AllocatedFrames::alloc` + `OwnedPages::new` + 注册 VMA |
-| `munmap(addr)` | 移除 VMA → `OwnedPages::Drop`（恢复权限 + 释放帧） |
-| `mprotect(addr, flags)` | `OwnedPages::set_flags` |
-
-SAS 下不适用的 POSIX 特性：
-
-| 特性 | 原因 |
-|------|------|
-| `MAP_SHARED` 多进程共享 | SAS 单地址空间，传 `&T` 即可 |
-| `MAP_FIXED` 定点映射 | VA = PA，需 buddy 支持定点分配（当前不支持） |
-| COW / fork | SAS 无多进程 |
+| | OwnedPages | MmioRegion |
+|--|-----------|-----------|
+| 帧来源 | buddy allocator | 硬件固定地址 |
+| 权限 | 任意 | 始终 kernel_device() |
+| 生命周期 | Drop 时恢复 + 归还帧 | 永久映射，不 unmap |
+| 帧所有权 | 持有 `AllocatedFrames` | 不持有（非 RAM） |
 
 ---
 
@@ -409,10 +583,14 @@ SAS 下不适用的 POSIX 特性：
 
 ```rust
 pub struct PageTable {
-    root_paddr: PhysAddr,
-    root: NodeFrame,
-    root_ref_count: u16,
-    nodes: BTreeMap<PhysAddr, NodeEntry>,
+    root: AllocatedFrames,                    // 根帧所有权
+    root_ref_count: u16,                      // 根帧有效 PTE 数
+    nodes: BTreeMap<PhysAddr, NodeEntry>,      // 中间节点
+}
+
+struct NodeEntry {
+    _frame: AllocatedFrames,  // 帧所有权
+    ref_count: u16,           // 有效 PTE 数
 }
 ```
 
@@ -431,44 +609,157 @@ Level 2 (root)              Level 3 (root)
 所有映射均为 4KB 叶页（level 0）。不支持大页（2MB/1GB），
 消除了 page splitting 和多级 map/unmap 的复杂性。
 
-### 8.3 核心操作
+### 8.3 公开接口
 
-| 方法 | 语义 |
-|------|------|
-| `set_page_flags(va, pa, flags)` | PTE 不存在则创建，存在则更新 flags（幂等） |
-| `update_flags(va, flags)` | PTE 必须存在，更新 flags |
-| `unmap_page(va)` | 清除 PTE（仅 MMIO 路径使用） |
-| `identity_map_range(start, end, flags)` | 批量 4KB identity map |
-| `get_mapping(va)` | 查询映射信息 |
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `create` | `() -> Result<Self, PagingError>` | 新建页表（分配根帧） |
+| `root_paddr` | `(&self) -> PhysAddr` | 根帧地址（写 SATP/TTBR） |
+| `set_page_flags` | `(&mut self, va, pa, flags) -> Result<(), PagingError>` | 创建/更新 PTE |
+| `update_flags` | `(&mut self, va, new_flags) -> Result<PteFlags, PagingError>` | 仅改权限 |
+| `get_mapping` | `(&self, va) -> Option<(PhysAddr, PteFlags)>` | 查询映射 |
+| `identity_map_range` | `(&mut self, start, end, flags)` | 批量 identity map |
 
-`set_page_flags` 是 `OwnedPages::new` 的内部调用——能处理 init 阶段（PTE 不存在）
-和运行时（PTE 已存在）两种场景。
+**`set_page_flags` 语义**（SAS 全量映射下）：
+- VA 无 PTE → 创建 Level 0 叶 PTE
+- VA 有 PTE 且 PA 相同 → 按需更新 flags（幂等）
+- VA 有 PTE 但 PA 不同 → panic（内核 bug）
 
-### 8.4 引用计数回收
+### 8.4 全局内核页表
 
-中间页表节点通过引用计数管理。每个节点记录有效 PTE 数量，
-unmap 时 ref_count 降为 0 的节点自动释放。
+```rust
+// sync_crate::SpinLock 是项目自定义的中断感知自旋锁（非 spin::Mutex）
+static KERNEL_PAGE_TABLE: spin::Once<sync_crate::SpinLock<PageTable>>;
+
+pub fn init_kernel_page_table(pt: PageTable);     // 初始化（仅一次）
+pub fn kernel_page_table() -> &'static sync_crate::SpinLock<PageTable>;  // 获取
+```
 
 ---
 
-## 9. 初始化顺序
+## 9. TLB 管理——`tlb`
 
+### 9.1 接口
+
+| 函数/类型 | 说明 |
+|-----------|------|
+| `flush_tlb()` | 刷新整个 TLB（本核 + shootdown） |
+| `flush_tlb_page(vaddr)` | 刷新单页 TLB 条目 |
+| `TlbFlushGuard::new(start_vaddr, page_count)` | RAII 守卫，drop 时自动 flush |
+| `register_tlb_shootdown(fn)` | 注册跨核 IPI 回调 |
+
+### 9.2 刷新策略
+
+```rust
+impl Drop for TlbFlushGuard {
+    fn drop(&mut self) {
+        if page_count <= TLB_FLUSH_THRESHOLD {
+            // 逐页 flush（精确、低开销）
+        } else {
+            // 全局 flush（简单、批量操作更高效）
+        }
+    }
+}
 ```
-_start (汇编)
-  └─ bootstrap()
-       └─ early_init()
-            └─ FDT 解析 → MEMORY_INFO
-                 └─ memory::init()
-                      ├─ 1. heap::init()
-                      ├─ 2. frame_allocator::init(free, reserved)
-                      │      └─ 空闲入 buddy + 内核段帧返回
-                      ├─ 3. PageTable::create()
-                      ├─ 4. identity_map_range(mem_start, mem_end, kernel_rw)
-                      │      └─ 背景层：全部物理内存，4KB 页
-                      ├─ 5. OwnedPages::new(text,  kernel_rwx)  ─┐
-                      ├─ 6. OwnedPages::new(rodata, kernel_ro)   ├─ 覆盖层
-                      ├─ 7. OwnedPages::new(data,   kernel_rw)  ─┘
-                      └─ 8. store_kernel_address_space(as)
+
+---
+
+## 10. 堆分配器——`heap`
+
+```rust
+pub unsafe fn init();  // 将 BSS 中 KERNEL_HEAP_SIZE 字节注册给 buddy
+```
+
+- 后端：`buddy_system_allocator::Heap<32>`
+- 保护：`SpinLock` 包装，中断上下文断言（`assert_not_in_irq()`）
+- 容量：`config::KERNEL_HEAP_SIZE`（默认 4MB）
+- 用途：为内核 `Box`/`Vec`/`BTreeMap` 等提供 `#[global_allocator]`
+
+**重要约束**：堆必须在帧分配器之前初始化——buddy 内部用堆上 BTreeSet。
+
+---
+
+## 11. 门面——`memory` crate
+
+`memory` crate 是面向内核其他模块的**唯一公共 API 入口**。
+
+### 11.1 Re-exports
+
+```rust
+pub use frame_allocator as frame;   // 物理帧分配
+pub use heap_crate as heap;         // 堆分配器
+pub use tlb;                        // TLB 管理
+pub use paging::error::PagingError; // 映射错误
+pub use globals::{MEMORY_INFO, MemoryInfo};  // 全局内存布局
+pub use init::{init, init_smp};     // 初始化入口
+```
+
+### 11.2 map_mmio
+
+```rust
+pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, MemoryError>;
+```
+
+内部流程：
+1. `MmioRegion::map(paddr, size)` → identity-map 为 kernel_device()
+2. `check_mmio_overlap(base, size)` → 检测冲突
+   - 完全相同区域 → `MmioIdentical`（幂等，安全忽略）
+   - 部分重叠 → `MmioOverlap`（panic）
+3. 注册到 `MMIO_REGIONS: BTreeMap<VirtAddr, usize>`
+4. 返回 `paddr.to_virt()`（精确地址，非对齐后地址）
+
+### 11.3 错误类型
+
+```rust
+pub enum MemoryError {
+    AllocationFailed,  // 帧分配器未初始化
+    OutOfMemory,       // 物理帧耗尽
+    MapFailed,         // 页表映射失败
+    PageNotMapped,     // 目标虚拟页未映射
+    InvalidPageTable,  // 全局内核页表未初始化
+    MmioIdentical,     // MMIO 区域完全重合（幂等）
+    MmioOverlap,       // MMIO 区域部分重叠（冲突）
+}
+
+impl From<FrameAllocError> for MemoryError { ... }
+impl From<PagingError> for MemoryError { ... }
+```
+
+---
+
+## 12. 初始化顺序
+
+```mermaid
+sequenceDiagram
+    participant Boot as _start / bootstrap
+    participant Early as early_init
+    participant Mem as memory::init()
+    participant Heap as heap
+    participant Frame as frame_allocator
+    participant PT as PageTable
+    participant Owned as OwnedPages
+
+    Boot->>Early: FDT 解析
+    Early->>Early: MEMORY_INFO.call_once(...)
+
+    Early->>Mem: memory::init()
+    Mem->>Heap: 1. heap::init()
+    Note right of Heap: BSS 区域 4MB 注册给 buddy
+
+    Mem->>Frame: 2. frame_allocator::init(free, reserved)
+    Note right of Frame: 空闲入 buddy<br/>内核段帧返回为 AllocatedFrames
+
+    Mem->>PT: 3. PageTable::create()
+    Mem->>PT: 4. identity_map_range(mem_start, mem_end, kernel_rw)
+    Note right of PT: 背景层——全部物理内存 4KB 页
+
+    Mem->>Owned: 5. OwnedPages::new(text, kernel_rwx)
+    Mem->>Owned: 6. OwnedPages::new(rodata, kernel_ro)
+    Mem->>Owned: 7. OwnedPages::new(data, kernel_rw)
+    Note right of Owned: 覆盖层——内核段权限
+
+    Mem->>Mem: 8. mem::forget(所有 OwnedPages)
+    Note right of Mem: 永久持有——权限不恢复、帧不归还
 ```
 
 **先背景、后覆盖**：步骤 4 建立全量映射（所有 PTE 存在），
@@ -477,36 +768,60 @@ data 段权限与背景相同（kernel_rw），但 `OwnedPages` 追踪其所有�
 
 **约束**：
 - 堆必须在帧分配器之前（buddy 内部用堆上 BTreeSet）
-- 背景映射在 OwnedPages 之前（OwnedPages 内部用 `update_flags`）
+- 背景映射在 OwnedPages 之前（OwnedPages 内部用 `update_flags`，要求 PTE 已存在）
 - 从核复用主核页表，只需激活分页
+
+**从核初始化：**
+
+```rust
+pub fn init_smp(activate: impl FnOnce(&PageTable)) {
+    let guard = paging::kernel_page_table().lock();
+    activate(&guard);  // 架构相关：写 SATP/TTBR 寄存器
+}
+```
 
 ---
 
-## 10. 端到端生命周期
+## 13. 端到端数据流
 
-### 10.1 运行时帧分配的一生
+### 13.1 运行时帧分配的一生
 
+```mermaid
+sequenceDiagram
+    participant User as 调用方
+    participant FA as frame_allocator
+    participant Buddy as buddy allocator
+    participant OP as OwnedPages
+    participant PT as PageTable
+    participant TLB as TlbFlushGuard
+
+    User->>FA: AllocatedFrames::alloc(4)
+    FA->>Buddy: alloc_from_backend(4)
+    Buddy-->>FA: FreeFrames { [100, 104) }
+    FA->>FA: 零初始化（write_bytes）
+    FA->>FA: into_allocated()
+    FA-->>User: AllocatedFrames { [100, 104) }
+
+    User->>OP: OwnedPages::new(frames, kernel_ro)
+    OP->>PT: batch_update_flags(va, 4, kernel_ro)
+    loop 每一页
+        PT->>PT: update_flags(va+i, kernel_ro)
+    end
+    OP->>TLB: TlbFlushGuard::new(va, 4)
+    TLB->>TLB: drop → flush 4 页 TLB
+    OP-->>User: OwnedPages { frames, kernel_ro }
+
+    Note over User: 使用中...
+
+    User->>OP: drop(owned_pages)
+    OP->>PT: batch_update_flags(va, 4, kernel_rw)
+    OP->>TLB: TlbFlushGuard::new(va, 4)
+    TLB->>TLB: drop → flush
+    OP->>FA: AllocatedFrames::drop()
+    FA->>Buddy: dealloc_to_backend([100, 104))
 ```
-1. AllocatedFrames::alloc(4)
-   └─ buddy 分配 4 帧 → AllocatedFrames { range: [100, 104) }
-   └─ 帧内容清零（背景映射下直接写入）
 
-2. OwnedPages::new(frames, kernel_ro)
-   └─ 遍历 4 页，update_flags → PTE 从 kernel_rw 改为 kernel_ro
-   └─ TLB flush
-   └─ 返回 OwnedPages { frames, flags: kernel_ro }
-
-3. 使用中
-   └─ owned.as_type::<MyStruct>(0) → 类型化只读访问
-   └─ 生命周期绑定到 &self，编译器保证引用不逃逸
-
-4. Drop（或 munmap 触发）
-   └─ restore_default_flags → PTE 从 kernel_ro 恢复为 kernel_rw
-   └─ TLB flush
-   └─ AllocatedFrames::Drop → dealloc_to_backend → 帧归还 buddy
-```
-
-### 10.2 内核段映射的一生
+### 13.2 内核段映射的一生
 
 ```
 1. frame_allocator::init(reserved=[(text, N), (rodata, M), (data, K)])
@@ -517,43 +832,118 @@ data 段权限与背景相同（kernel_rw），但 `OwnedPages` 追踪其所有�
 
 3. OwnedPages::new(text_frames, kernel_rwx)
    └─ update_flags → 覆盖 .text 段权限
-   └─ 注册到 AddressSpace
 
-4. 永久持有
-   └─ AddressSpace 存于 spin::Once（'static）→ 永远不 Drop
+4. mem::forget(owned_pages)
+   └─ Drop 永不执行 → 权限永不恢复、帧永不归还
+   └─ 内核段与内核同生命周期
+```
+
+### 13.3 MMIO 映射的一生
+
+```
+1. memory::map_mmio(paddr=0x1000_0000, size=0x1000)
+   └─ MmioRegion::map(paddr, size)
+       └─ 页对齐: [0x1000_0000, 0x1000_1000)
+       └─ identity_map_range(..., kernel_device())
+   └─ check_mmio_overlap(base, size)
+       └─ 无冲突 → 注册到 MMIO_REGIONS
+   └─ 返回 VirtAddr(0x1000_0000)
+
+2. 设备驱动使用
+   └─ mmio.read_reg::<u32>(0x04)   → volatile read at 0x1000_0004
+   └─ mmio.write_reg::<u32>(0x08, val) → volatile write at 0x1000_0008
+
+3. 永久存在——MmioRegion 不实现 unmap
 ```
 
 ---
 
-## 11. 错误处理
+## 14. 协同工作流程图
 
-各层定义自己的错误类型，`memory` crate 统一转换：
+以下展示一次完整的"分配帧 → 设置权限 → 使用 → 释放"流程中各 crate 的协作：
 
-```
-FrameAllocError ──────┐
-  AllocationFailed     │   From impl
-  OutOfMemory          ├──────────────→ MemoryError
-                       │                  AllocationFailed
-PagingError ──────────┘                  OutOfMemory
-  AllocationFailed                        MapFailed
-  HugePageConflict                        PageNotMapped
-  PageNotMapped                           RegionOverlap
-  FrameAllocFailed                        RegionNotFound
-                                          RegionIdentical
+```mermaid
+flowchart TD
+    subgraph "调用方（如 task/device）"
+        A[需要 4 页只读内存]
+    end
+
+    subgraph "memory crate（策略层）"
+        B[提供 re-export 入口]
+    end
+
+    subgraph "frame_allocator（资源层）"
+        C[AllocatedFrames::alloc 4]
+        D[buddy allocator 取帧]
+        E[清零 + 返回 AllocatedFrames]
+    end
+
+    subgraph "paging crate（机制层）"
+        F[OwnedPages::new frames, kernel_ro]
+        G[batch_update_flags]
+        H[PageTable::update_flags × 4]
+        I[TlbFlushGuard drop → flush]
+    end
+
+    subgraph "page_table_entry（资源层）"
+        J[PteFlags::kernel_ro 编码]
+        K[PageTableEntry::new pa, flags]
+    end
+
+    subgraph "tlb（资源层）"
+        L[flush_tlb_page × 4]
+    end
+
+    A --> C
+    C --> D --> E
+    E --> F
+    F --> G --> H
+    H --> J --> K
+    G --> I --> L
+
+    style A fill:#e1f5fe
+    style F fill:#fff3e0
+    style C fill:#e8f5e9
 ```
 
 ---
 
-## 12. unsafe 边界总结
+## 15. 接口速查表
+
+### 15.1 按使用场景
+
+| 场景 | 调用 | 结果 |
+|------|------|------|
+| 分配 N 帧 | `AllocatedFrames::alloc(n)?` | 连续帧，已清零 |
+| 设置权限保护 | `OwnedPages::new(frames, flags)` | RAII 权限守卫 |
+| 修改权限 | `owned.set_flags(new_flags)` | PTE 更新 + TLB flush |
+| 释放帧 | `drop(owned_pages)` | 恢复 kernel_rw + 归还 buddy |
+| 映射 MMIO | `memory::map_mmio(paddr, size)?` | VirtAddr（永久映射） |
+| MMIO 读写 | `mmio.read_reg::<u32>(offset)` | volatile 语义 |
+| 查询映射 | `pt.get_mapping(va)` | `Option<(PhysAddr, PteFlags)>` |
+
+### 15.2 按 crate
+
+| Crate | 主要公开类型/函数 | 典型用法 |
+|-------|------------------|---------|
+| `memory_types` | `PhysAddr`, `VirtAddr`, `Frame`, `Page`, `Span<A>` | 类型安全地址传递 |
+| `frame_allocator` | `AllocatedFrames::alloc()`, `::alloc_one()` | 物理帧分配 |
+| `page_table_entry` | `PteFlags::kernel_rw()` 等工厂方法 | 权限预设 |
+| `paging` | `OwnedPages`, `MmioRegion`, `PageTable` | 权限管理和映射 |
+| `tlb` | `TlbFlushGuard`, `flush_tlb()`, `flush_tlb_page()` | TLB 维护 |
+| `heap` | `heap::init()` | 仅初始化时使用 |
+| `memory` | `init()`, `init_smp()`, `map_mmio()` | 子系统初始化和 MMIO |
+
+---
+
+## 16. unsafe 边界总结
 
 | 位置 | unsafe 操作 | 不变量 |
 |------|------------|--------|
 | `frame_allocator::init()` | 空闲内存入 buddy + 预留范围构造帧 | 区间有效、互不重叠、仅调用一次 |
-| `AllocatedFrames::alloc()` | 零初始化：`write_bytes(pa.to_virt(), 0, size)` | 帧刚分配，无其他引用 |
-| `Table::from_paddr()` | 将 PA 转为 PTE 数组指针 | PA 指向有效、页对齐的帧 |
-| `OwnedPages::as_type{_mut}()` | 从 VA 创建类型化引用 | 映射存活、偏移和对齐已验证 |
+| `AllocatedFrames::alloc()` | 零初始化：`write_bytes(pa.to_virt(), 0, size)` | identity mapping 下帧可写，无其他引用 |
+| `Table::from_paddr()` | 将 PA 转为 PTE 数组指针 | PA 指向由 PageTable 持有的有效帧 |
 | `MmioRegion` 内部 | 对 MMIO 地址建立映射 + volatile 读写 | PA 是有效设备地址 |
+| `heap::init()` | 将 BSS 区域注册给堆 | 仅调用一次，之后由 SpinLock 保护 |
 
 注意：`OwnedPages` 自身**零 unsafe**——帧管理完全通过 Rust 所有权系统。
-相比旧设计（2 处 `ManuallyDrop::take` unsafe）和 Theseus（`mem::forget` +
-`unsafe from_unmapped_range`），这是一个显著的简化。

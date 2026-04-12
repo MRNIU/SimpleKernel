@@ -1,4 +1,22 @@
 //! TLB 管理——架构无关的 TLB 刷新接口 + 跨核 shootdown 回调。
+//!
+//! # 在内存子系统中的定位
+//!
+//! PTE 修改后必须刷新 TLB，否则 CPU 继续使用过期缓存。
+//! 本 crate 提供 RAII 守卫模式（[`TlbFlushGuard`]），确保：
+//! - 页表修改完成后才 flush（避免 race）
+//! - 帧回收之前已 flush（避免 stale access）
+//! - 多核环境自动触发 shootdown IPI
+//!
+//! ```text
+//! paging::OwnedPages / PageTable (修改 PTE)
+//!    │
+//!    ▼ TlbFlushGuard::new(va, count)
+//! tlb (本 crate)
+//!    │
+//!    ├── arch::flush_tlb_page() (本核)
+//!    └── TLB_SHOOTDOWN_FN (跨核 IPI)
+//! ```
 
 #![no_std]
 

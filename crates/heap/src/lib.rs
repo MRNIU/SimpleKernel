@@ -1,4 +1,17 @@
-//! 内核堆分配器。
+//! 内核堆分配器——`#[global_allocator]` 实现。
+//!
+//! # 在内存子系统中的定位
+//!
+//! 堆是内存子系统中**最先初始化**的组件——`frame_allocator` 的 buddy 后端
+//! 内部使用 `BTreeSet`（需要堆分配），因此堆必须在帧分配器之前就绪。
+//!
+//! ```text
+//! memory::init()
+//!    │
+//!    ├── 1. heap::init()        ← 本 crate（最先）
+//!    ├── 2. frame_allocator::init()  （依赖堆）
+//!    └── 3. PageTable / OwnedPages   （依赖帧分配器）
+//! ```
 //!
 //! 通过 `SpinLock` 包装 `buddy_system_allocator`，
 //! 作为 `#[global_allocator]` 为内核提供 `Box`、`Vec` 等堆分配能力。

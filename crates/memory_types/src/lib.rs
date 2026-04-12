@@ -1,13 +1,39 @@
 //! 内核内存基础类型——编译期区分物理/虚拟地址与帧/页号，防止混用。
 //!
-//! 提供以下 newtype：
+//! # 在内存子系统中的定位
+//!
+//! 本 crate 是整个内存子系统的**基础层**——所有上层 crate 都依赖此处定义的类型。
+//! 它不包含任何运行时状态，纯粹通过类型系统在编译期防止地址类别混用。
+//!
+//! ```text
+//! memory / paging / frame_allocator / page_table_entry
+//!    │        │           │                │
+//!    └────────┴───────────┴────────────────┘
+//!                         ▼
+//!              memory_types (本 crate)
+//!                         │
+//!                         ▼
+//!                    span (区间)
+//! ```
+//!
+//! # 类型概览
+//!
+//! ```text
+//! PhysAddr ──page_number()──▶ Frame ──Span::new()──▶ Span<Frame>
+//!    │                          ▲
+//!    │ to_virt()                 │ From<PhysAddr>
+//!    ▼                          │
+//! VirtAddr ──page_number()──▶ Page  ──Span::new()──▶ Span<Page>
+//! ```
+//!
 //! - [`PhysAddr`] / [`VirtAddr`]——字节粒度地址，附带对齐辅助方法
 //! - [`Frame`] / [`Page`]——4K 页粒度标识，与地址双向转换
 //! - [`Span<A>`]（re-export from [`span`] crate）——半开区间 `[start, end)`
 //!
-//! 以及物理-虚拟地址转换方法 [`PhysAddr::to_virt`] / [`VirtAddr::to_phys`]。
+//! 以及物理-虚拟地址转换方法 [`PhysAddr::to_virt`] / [`VirtAddr::to_phys`]
+//! （基于 SAS identity mapping 假设：VA == PA）。
 //!
-//! ## 宏生成的代码
+//! # 宏生成的代码
 //!
 //! 本 crate 使用三个内部宏消除重复代码：
 //!
