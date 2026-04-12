@@ -107,9 +107,6 @@ tock-registers = "0.10"
 arm-gic = "0.8"
 arm-psci = "0.2"
 
-# 构建
-cc = "1"
-
 # 过程宏基础
 syn = { version = "2", features = ["full"] }
 quote = "1"
@@ -141,7 +138,6 @@ license.workspace = true
 repository.workspace = true
 description.workspace = true
 edition.workspace = true
-build = "build.rs"                    # 编译汇编文件 (.S) 和链接脚本
 
 [features]
 default = ["lang_items"]
@@ -225,10 +221,6 @@ aarch64-cpu.workspace = true          # 系统寄存器访问
 tock-registers.workspace = true       # 类型安全的 MMIO 寄存器抽象
 arm-gic.workspace = true              # GICv3 驱动（Arm Trusted Firmware 官方）
 arm-psci.workspace = true             # PSCI 电源管理接口（CPU on/off/reset）
-
-# --- 构建依赖 ---
-[build-dependencies]
-cc.workspace = true                   # 编译由 GCC 预处理的汇编 (.S) 文件
 
 [lints]
 workspace = true

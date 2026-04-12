@@ -1,8 +1,139 @@
-/**
- * @copyright Copyright The SimpleKernel Contributors
+/*
+ * RISC-V 64 Trap 入口/返回汇编
+ *
+ * 布局与 context.rs 中 TrapContext 严格对应，修改时需同步更新。
  */
 
-#include "macro.S"
+/*
+ * 常量与宏定义
+ */
+
+.equ kRegsBytes, 8
+
+/* 31 个通用寄存器(x1-x31) + 4 个 CSR + 1 个 padding = 36 */
+.equ kTrapContextRegsCount, 36
+
+/* 36 * 8 = 288 字节（已 16 字节对齐） */
+.equ kTrapContextSize, ((kTrapContextRegsCount * kRegsBytes + 15) & ~15)
+
+.macro SdBase a, b, c
+    sd \a, ((\b) * kRegsBytes)(\c)
+.endm
+
+.macro LdBase a, b, c
+    ld \a, ((\b) * kRegsBytes)(\c)
+.endm
+
+/*
+ * 保存 TrapContext：分配栈空间，保存 x1-x31 + CSR
+ */
+.macro SaveTrapContext
+    addi sp, sp, -kTrapContextSize
+
+    // 保存通用寄存器 (除了 sp)
+    SdBase ra, 0, sp
+    // sp 需要特殊处理，这里先跳过，最后计算保存
+    SdBase gp, 2, sp
+    SdBase tp, 3, sp
+    SdBase t0, 4, sp
+    SdBase t1, 5, sp
+    SdBase t2, 6, sp
+    SdBase s0, 7, sp
+    SdBase s1, 8, sp
+    SdBase a0, 9, sp
+    SdBase a1, 10, sp
+    SdBase a2, 11, sp
+    SdBase a3, 12, sp
+    SdBase a4, 13, sp
+    SdBase a5, 14, sp
+    SdBase a6, 15, sp
+    SdBase a7, 16, sp
+    SdBase s2, 17, sp
+    SdBase s3, 18, sp
+    SdBase s4, 19, sp
+    SdBase s5, 20, sp
+    SdBase s6, 21, sp
+    SdBase s7, 22, sp
+    SdBase s8, 23, sp
+    SdBase s9, 24, sp
+    SdBase s10, 25, sp
+    SdBase s11, 26, sp
+    SdBase t3, 27, sp
+    SdBase t4, 28, sp
+    SdBase t5, 29, sp
+    SdBase t6, 30, sp
+
+    // 保存原来的 sp 到 offset 1
+    addi t0, sp, kTrapContextSize
+    SdBase t0, 1, sp
+
+    // 保存 CSRs (使用 t0 作为临时寄存器，t0 原值已保存在 offset 4)
+    csrr t0, sstatus
+    SdBase t0, 31, sp
+    csrr t0, sepc
+    SdBase t0, 32, sp
+    csrr t0, stval
+    SdBase t0, 33, sp
+    csrr t0, scause
+    SdBase t0, 34, sp
+.endm
+
+/*
+ * 恢复 TrapContext：从栈上恢复 x1-x31 + CSR，释放栈空间
+ */
+.macro RestoreTrapContext
+    // 恢复 CSRs (使用 t0 作为临时寄存器)
+    LdBase t0, 31, sp
+    csrw sstatus, t0
+    LdBase t0, 32, sp
+    csrw sepc, t0
+    LdBase t0, 33, sp
+    csrw stval, t0
+    LdBase t0, 34, sp
+    csrw scause, t0
+
+    // 恢复通用寄存器 (除了 sp 和 t0)
+    LdBase ra, 0, sp
+    LdBase gp, 2, sp
+    LdBase tp, 3, sp
+    // t0 (4) 最后恢复
+    LdBase t1, 5, sp
+    LdBase t2, 6, sp
+    LdBase s0, 7, sp
+    LdBase s1, 8, sp
+    LdBase a0, 9, sp
+    LdBase a1, 10, sp
+    LdBase a2, 11, sp
+    LdBase a3, 12, sp
+    LdBase a4, 13, sp
+    LdBase a5, 14, sp
+    LdBase a6, 15, sp
+    LdBase a7, 16, sp
+    LdBase s2, 17, sp
+    LdBase s3, 18, sp
+    LdBase s4, 19, sp
+    LdBase s5, 20, sp
+    LdBase s6, 21, sp
+    LdBase s7, 22, sp
+    LdBase s8, 23, sp
+    LdBase s9, 24, sp
+    LdBase s10, 25, sp
+    LdBase s11, 26, sp
+    LdBase t3, 27, sp
+    LdBase t4, 28, sp
+    LdBase t5, 29, sp
+    LdBase t6, 30, sp
+
+    // 恢复 t0
+    LdBase t0, 4, sp
+
+    // 恢复 sp
+    addi sp, sp, kTrapContextSize
+.endm
+
+/*
+ * Trap 入口 / 返回
+ */
 
 .section .text
 
@@ -16,17 +147,6 @@
 
 .align 4
 
-/**
- * @brief Trap 处理入口函数
- *
- * @details 当发生中断或异常时，CPU 跳转到此地址执行。
- * 主要功能：
- * 1. 保存当前 CPU 上下文 (SaveTrapContext)。
- * 2. 将当前栈指针 (sp) 作为参数传递给 HandleTrap。
- * 3. 调用 C++ 实现的 Trap 处理函数 HandleTrap。
- * 4. 恢复 CPU 上下文 (RestoreTrapContext)。
- * 5. 执行 sret 指令返回。
- */
 trap_entry:
     // 检查是从用户态还是内核态进入
     // 如果是从用户态进入，sscratch 保存的是内核栈地址
@@ -58,7 +178,6 @@ trap_entry:
 .Lcall_handler:
     // 将栈指针 sp (指向 TrapContext) 作为参数传递给 HandleTrap
     mv a0, sp
-    // 调用 C++ 中的 Trap 处理函数
     call HandleTrap
 
 trap_return:

@@ -1,13 +1,18 @@
 /// RISC-V 64 中断子系统
 ///
 /// 负责 PLIC 初始化、stvec 设置，以及陷阱分发（定时器、外部中断、IPI、系统调用、异常）。
+use core::arch::global_asm;
+
 use memory_types::PhysAddr;
 use paging::mmio::MmioRegion;
 
 use super::context::TrapContext;
 
-// trap_entry 由 interrupt.S 提供
-// SAFETY: 链接器保证该符号存在
+// Trap 入口/返回汇编（含宏定义），由 LLVM 内置汇编器处理
+global_asm!(include_str!("interrupt.S"));
+
+// trap_entry 由上述 global_asm! 定义
+// SAFETY: global_asm! 保证该符号存在
 unsafe extern "C" {
     fn trap_entry();
 }

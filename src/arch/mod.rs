@@ -58,6 +58,12 @@ pub type CalleeSavedContext = riscv64::context::CalleeSavedContext;
 #[cfg(target_arch = "aarch64")]
 pub type CalleeSavedContext = aarch64::context::CalleeSavedContext;
 
+#[cfg(target_arch = "riscv64")]
+pub use riscv64::switch::switch_to;
+
+#[cfg(target_arch = "aarch64")]
+pub use aarch64::switch::switch_to;
+
 /// 宿主机编译（`cargo clippy` / `cargo check`）占位类型，不会在目标架构上使用。
 #[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
 #[repr(C)]
@@ -70,4 +76,12 @@ pub struct CalleeSavedContext {
 impl CalleeSavedContext {
     /// 宿主机编译占位——实际内核从不在 x86_64 上运行
     pub fn init_for_kernel_thread(&mut self, _kstack_top: usize, _entry: fn(usize), _arg: usize) {}
+}
+
+/// 宿主机编译占位——实际内核从不在 x86_64 上运行
+#[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
+pub unsafe extern "C" fn switch_to(
+    _prev: *mut CalleeSavedContext,
+    _next: *const CalleeSavedContext,
+) {
 }

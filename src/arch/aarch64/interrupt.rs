@@ -5,6 +5,7 @@
 use arm_gic::gicv3::registers::{Gicd, GicrSgi};
 use arm_gic::gicv3::{GicCpuInterface, GicV3};
 use arm_gic::{IntId, InterruptGroup, UniqueMmioPointer};
+use core::arch::global_asm;
 use core::ptr::NonNull;
 
 use memory::map_mmio;
@@ -12,8 +13,11 @@ use memory_types::PhysAddr;
 
 use super::context::TrapContext;
 
-// vector_table 由 interrupt.S 提供（.balign 0x800 对齐）
-// SAFETY: 链接器保证该符号存在
+// 异常向量表 + Trap 入口/返回汇编（含宏定义），由 LLVM 内置汇编器处理
+global_asm!(include_str!("interrupt.S"));
+
+// vector_table 由上述 global_asm! 定义（.balign 0x800 对齐）
+// SAFETY: global_asm! 保证该符号存在
 unsafe extern "C" {
     static vector_table: u8;
 }

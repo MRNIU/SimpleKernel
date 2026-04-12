@@ -20,9 +20,9 @@ use crate::task::tcb::TaskRef;
 use config::MAX_CORE_COUNT;
 use sync::SpinLockIrq;
 use sync::lock_level;
-unsafe extern "C" {
-    fn switch_to(prev: *mut CalleeSavedContext, next: *const CalleeSavedContext);
-}
+
+use crate::arch::switch_to;
+
 /// Per-CPU 调度锁数组——每个核心一把，保护对应核心的调度状态。
 ///
 /// `schedule()` 使用 RAII guard（`lock()`）获取和释放，锁在 `switch_to` 前释放。
