@@ -46,6 +46,9 @@ bitflags! {
         const GLOBAL   = 1 << 5;
         const ACCESSED = 1 << 6;
         const DIRTY    = 1 << 7;
+        /// 软件保留位 RSW[0]——MappedPages 所有权标记。
+        /// 硬件忽略此位（RISC-V Privileged Spec §5.4）。
+        const CLAIMED  = 1 << 8;
     }
 }
 
@@ -151,6 +154,11 @@ impl PteFlagsOps for PteFlags {
     }
 
     #[inline]
+    fn is_claimed(self) -> bool {
+        self.contains(Self::CLAIMED)
+    }
+
+    #[inline]
     fn with_writable(self, w: bool) -> Self {
         if w {
             self | Self::WRITE | Self::DIRTY
@@ -165,6 +173,15 @@ impl PteFlagsOps for PteFlags {
             self | Self::EXECUTE
         } else {
             self.difference(Self::EXECUTE)
+        }
+    }
+
+    #[inline]
+    fn with_claimed(self, claimed: bool) -> Self {
+        if claimed {
+            self | Self::CLAIMED
+        } else {
+            self.difference(Self::CLAIMED)
         }
     }
 

@@ -59,6 +59,8 @@ pub trait PteFlagsOps: Copy + core::fmt::Debug {
     fn is_accessed(self) -> bool;
     /// 硬件是否设置了 Dirty 位（页面已被写入）。
     fn is_dirty(self) -> bool;
+    /// PTE 是否被 MappedPages 声明了所有权（软件保留位）。
+    fn is_claimed(self) -> bool;
 
     // Builder 方法：基于现有标志修改单个属性
 
@@ -66,6 +68,8 @@ pub trait PteFlagsOps: Copy + core::fmt::Debug {
     fn with_writable(self, w: bool) -> Self;
     /// 设置或清除执行权限——用于 mprotect。
     fn with_executable(self, x: bool) -> Self;
+    /// 设置或清除 CLAIMED 所有权标记位。
+    fn with_claimed(self, claimed: bool) -> Self;
     /// 将标志位适配为指定层级的叶描述符格式。
     fn for_leaf_at_level(self, level: usize) -> Self;
 }

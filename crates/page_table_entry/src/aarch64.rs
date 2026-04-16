@@ -65,6 +65,9 @@ bitflags! {
         const PXN       = 1 << 53;
         /// Unprivileged Execute-Never / Execute-Never
         const UXN       = 1 << 54;
+        /// 软件保留位——MappedPages 所有权标记。
+        /// 硬件忽略此位（Arm ARM §D8.3，bit 55 在未启用 DBM 时为软件可用）。
+        const CLAIMED   = 1 << 55;
     }
 }
 
@@ -206,6 +209,11 @@ impl PteFlagsOps for PteFlags {
     }
 
     #[inline]
+    fn is_claimed(self) -> bool {
+        self.contains(Self::CLAIMED)
+    }
+
+    #[inline]
     fn with_writable(self, w: bool) -> Self {
         if w {
             self.difference(Self::AP_RO)
@@ -221,6 +229,15 @@ impl PteFlagsOps for PteFlags {
             self.difference(Self::PXN | Self::UXN)
         } else {
             self | Self::PXN | Self::UXN
+        }
+    }
+
+    #[inline]
+    fn with_claimed(self, claimed: bool) -> Self {
+        if claimed {
+            self | Self::CLAIMED
+        } else {
+            self.difference(Self::CLAIMED)
         }
     }
 
