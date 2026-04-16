@@ -15,6 +15,8 @@ pub enum PagingError {
     PageNotMapped,
     /// 物理帧分配失败
     FrameAllocFailed,
+    /// 页面已被另一个 MappedPages 声明所有权（CLAIMED 位已设置）
+    PageAlreadyClaimed,
 }
 
 impl fmt::Display for PagingError {
@@ -30,6 +32,9 @@ impl fmt::Display for PagingError {
             ),
             Self::PageNotMapped => write!(f, "virtual address not mapped"),
             Self::FrameAllocFailed => write!(f, "physical frame allocation failed"),
+            Self::PageAlreadyClaimed => {
+                write!(f, "page already claimed by another MappedPages")
+            }
         }
     }
 }

@@ -1,9 +1,12 @@
-//! 仿射类型映射——move-only 的 VA->PA 映射所有权。
+//! 仿射类型映射——move-only 的 VA 所有权追踪。
 //!
-//! [`MappedPages`] 持有物理帧（[`MappedFrames`]）的所有权，VA 通过 identity mapping
-//! 从 PA 推导（`VA = PA + PHYS_OFFSET`）。Drop 时自动 unmap PTE 并回收帧。
+//! SAS 架构下所有物理内存在 init 阶段被永久 identity-map（VA == PA），
+//! PTE 创建后不再删除。[`MappedPages`] 不操作 PTE 的创建/删除，
+//! 而是通过 PTE 中的软件 CLAIMED 位追踪所有权：
 //!
-//! SAS 架构下只有 identity mapping——VA 与 PA 一一对应，不存在独立的虚拟地址分配。
+//! - [`MappedPages::claim`]：设置 CLAIMED 位 + 更新权限（不创建 PTE）
+//! - [`MappedPages::release`]：写 poison + 恢复 `kernel_rw` + 清 CLAIMED（不删 PTE）
+//! - Drop：等同 release，帧通过 `into_unmapped()` 自动归还 buddy
 
 use core::mem::ManuallyDrop;
 
@@ -13,16 +16,16 @@ use memory_types::VirtAddr;
 
 use crate::{PteFlags, PteFlagsOps};
 
-/// unmap 分块大小——每次持锁 unmap 的最大页数。
-const UNMAP_CHUNK: usize = config::UNMAP_CHUNK_SIZE;
+/// release 分块大小——每次持锁处理的最大页数。
+const RELEASE_CHUNK: usize = config::UNMAP_CHUNK_SIZE;
 
-/// 仿射类型映射——持有物理帧所有权，VA 从 PA 推导。
+/// 仿射类型映射——通过 CLAIMED 位追踪物理帧所有权。
 ///
-/// 不可 Clone、不可 Copy。Drop 时 unmap PTE 并回收帧。
+/// 不可 Clone、不可 Copy。Drop 时写 poison、清 CLAIMED 并回收帧。
 ///
 /// 帧以 `MappedFrames` 状态持有——typestate 保证：
-/// - 映射期间帧不会被意外释放（`MappedFrames::Drop` 会 panic）
-/// - Drop 时先 unmap，再将帧转为 `UnmappedFrames`（安全归还 buddy）
+/// - 持有期间帧不会被意外释放（`MappedFrames::Drop` 会 panic）
+/// - Drop 时先 release，再将帧转为 `UnmappedFrames`（安全归还 buddy）
 pub struct MappedPages {
     /// `ManuallyDrop` 阻止 `MappedFrames::Drop`（会 panic）在 `MappedPages::Drop` 前运行。
     /// Drop 中手动 take + `into_unmapped()` 安全归还。
@@ -31,29 +34,67 @@ pub struct MappedPages {
 }
 
 impl MappedPages {
-    /// 消费 frames 的所有权，建立 identity mapping（VA == PA）。
+    /// 声明物理帧所有权——设置 CLAIMED 位 + 更新权限。
     ///
-    /// VA 通过 `PA + PHYS_OFFSET` 推导，调用方无需指定虚拟地址。
-    pub fn map(frames: AllocatedFrames, flags: PteFlags) -> Self {
+    /// 不创建 PTE（init 阶段已 identity-map 全部物理内存）。
+    /// 如果目标页的 CLAIMED 位已设置，说明另一个 `MappedPages` 已拥有该页，
+    /// 立即 panic（双重所有权 = bug）。
+    ///
+    /// # Panics
+    ///
+    /// - 页数为 0
+    /// - 任意页的 CLAIMED 位已设置（双重声明）
+    /// - `update_flags` 失败（PTE 不存在）
+    pub fn claim(frames: AllocatedFrames, flags: PteFlags) -> Self {
         let page_count = frames.count();
-        assert!(page_count > 0, "MappedPages::map: 页数不能为 0");
+        assert!(page_count > 0, "MappedPages::claim: 页数不能为 0");
 
         let pt = crate::kernel_page_table();
         let pa_start = frames.start_paddr();
         let va_start = pa_start.to_virt();
 
+        // 带 CLAIMED 位的目标权限
+        let claimed_flags = flags.with_claimed(true);
+
         let mut guard = pt.lock();
         for i in 0..page_count {
             let va = va_start + i * PAGE_SIZE;
-            let pa = pa_start + i * PAGE_SIZE;
-            guard
-                .map_page(va, pa, flags)
-                .expect("MappedPages::map: map_page 失败");
+            let old_flags = guard.update_flags(va, claimed_flags).unwrap_or_else(|e| {
+                panic!(
+                    "MappedPages::claim: update_flags({va}) 失败: {e}——\
+                         该页未被 identity-map？"
+                );
+            });
+
+            assert!(
+                !old_flags.is_claimed(),
+                "MappedPages::claim: 页 {va} 的 CLAIMED 位已设置——双重所有权"
+            );
         }
         drop(guard);
 
+        // 刷新 TLB——权限已变更
+        {
+            let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
+        }
+
         let mapped_frames = frames.into_mapped();
 
+        Self {
+            frames: ManuallyDrop::new(mapped_frames),
+            flags,
+        }
+    }
+
+    /// init 阶段专用构造——跳过 CLAIMED 检查，直接包装已设置 CLAIMED 的帧。
+    ///
+    /// # Safety
+    ///
+    /// 调用方必须保证：
+    /// - `frames` 对应的 PTE 已存在且 CLAIMED 位已设置（由 `identity_map_range` 完成）
+    /// - 没有其他 `MappedPages` 持有这些帧
+    pub unsafe fn from_claimed(frames: AllocatedFrames, flags: PteFlags) -> Self {
+        let mapped_frames = frames.into_mapped();
         Self {
             frames: ManuallyDrop::new(mapped_frames),
             flags,
@@ -78,7 +119,7 @@ impl MappedPages {
         self.frames.count()
     }
 
-    /// 返回构造时的请求权限。
+    /// 返回 claim 时的请求权限（不含 CLAIMED 位）。
     #[must_use]
     pub fn flags(&self) -> PteFlags {
         self.flags
@@ -139,14 +180,17 @@ impl MappedPages {
         unsafe { &mut *(ptr as *mut T) }
     }
 
-    /// 修改映射权限——遍历 PTE 更新标志位，刷新 TLB。
+    /// 修改映射权限——遍历 PTE 更新标志位（保留 CLAIMED），刷新 TLB。
     pub fn mprotect(&mut self, new_flags: PteFlags) {
+        // 保留 CLAIMED 位——mprotect 不改变所有权
+        let claimed_flags = new_flags.with_claimed(true);
+
         let pt = crate::kernel_page_table();
         let mut guard = pt.lock();
         for i in 0..self.page_count() {
             let va = self.vaddr() + i * PAGE_SIZE;
             guard
-                .update_flags(va, new_flags)
+                .update_flags(va, claimed_flags)
                 .expect("mprotect: update_flags 失败");
         }
         drop(guard);
@@ -156,38 +200,71 @@ impl MappedPages {
         self.flags = new_flags;
     }
 
-    /// 手动解除映射并取回帧所有权。
-    pub fn unmap(self) -> UnmappedFrames {
+    /// 手动释放所有权并取回帧——写 poison、恢复 kernel_rw、清 CLAIMED。
+    pub fn release(self) -> UnmappedFrames {
         let mut md = ManuallyDrop::new(self);
         // SAFETY: md 不会 Drop，手动接管字段所有权
         let mapped_frames = unsafe { ManuallyDrop::take(&mut md.frames) };
-        unmap_frames_chunked(&mapped_frames, "MappedPages::unmap");
+        release_frames_chunked(&mapped_frames, "MappedPages::release");
         mapped_frames.into_unmapped()
     }
 }
 
-/// 分块 unmap——每次持锁最多 unmap `UNMAP_CHUNK` 页，避免长时间关中断。
-fn unmap_frames_chunked(frames: &MappedFrames, caller: &str) {
+/// 分块释放——写 poison、恢复 kernel_rw、清 CLAIMED。
+///
+/// 每次持锁最多处理 `RELEASE_CHUNK` 页，避免长时间关中断。
+fn release_frames_chunked(frames: &MappedFrames, caller: &str) {
     let page_count = frames.count();
     let va_start = frames.start_paddr().to_virt();
     let pt = crate::kernel_page_table();
 
+    // 恢复默认权限——kernel_rw 且 CLAIMED = false
+    let restore_flags = PteFlags::kernel_rw();
+
     let mut offset = 0;
     while offset < page_count {
-        let n = (page_count - offset).min(UNMAP_CHUNK);
+        let n = (page_count - offset).min(RELEASE_CHUNK);
+
+        // 步骤 1：写 poison pattern（不需要锁——这些页已被我们 CLAIMED，无竞争）
+        for i in 0..n {
+            let va = va_start + (offset + i) * PAGE_SIZE;
+            // SAFETY: va 是已被 CLAIMED 的页，我们持有唯一所有权，
+            // 写入 poison pattern 用于检测 use-after-free
+            unsafe {
+                core::ptr::write_bytes(va.as_mut_ptr::<u8>(), config::FREED_PAGE_POISON, PAGE_SIZE);
+            }
+        }
+
+        // 步骤 2：持锁恢复 PTE 权限
+        let mut need_tlb_flush = false;
         {
             let mut guard = pt.lock();
             for i in 0..n {
                 let va = va_start + (offset + i) * PAGE_SIZE;
-                guard.unmap_page(va).unwrap_or_else(|e| {
-                    panic!("{caller}: unmap {va} 失败: {e}");
+                let old_flags = guard.update_flags(va, restore_flags).unwrap_or_else(|e| {
+                    panic!("{caller}: update_flags({va}) 失败: {e}");
                 });
+
+                // 断言：旧 PTE 必须有 CLAIMED 位——否则说明 PTE 被外部篡改
+                assert!(
+                    old_flags.is_claimed(),
+                    "{caller}: 页 {va} 的 CLAIMED 位未设置——PTE 被外部篡改？"
+                );
+
+                // 优化：如果旧权限（除 CLAIMED 外）已经是 kernel_rw，
+                // 则只有软件位变了，硬件不缓存软件位，无需 TLB flush
+                if old_flags.with_claimed(false) != restore_flags {
+                    need_tlb_flush = true;
+                }
             }
         }
-        {
+
+        // 步骤 3：按需刷新 TLB
+        if need_tlb_flush {
             let flush_va = va_start + offset * PAGE_SIZE;
             let _flush = tlb::TlbFlushGuard::new(flush_va.as_usize(), n);
         }
+
         offset += n;
     }
 }
@@ -222,7 +299,7 @@ pub(crate) fn check_bounds_and_align<T>(
 
 impl Drop for MappedPages {
     fn drop(&mut self) {
-        unmap_frames_chunked(&self.frames, "MappedPages::drop");
+        release_frames_chunked(&self.frames, "MappedPages::drop");
         // SAFETY: Drop 执行中，self.frames 不会再被访问。
         // 将 MappedFrames 转换为 UnmappedFrames，后者的 Drop 安全归还 buddy。
         let mapped_frames = unsafe { ManuallyDrop::take(&mut self.frames) };

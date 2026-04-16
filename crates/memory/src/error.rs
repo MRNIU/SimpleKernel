@@ -23,6 +23,8 @@ pub enum MemoryError {
     RegionOverlap,
     /// 未找到包含指定地址的 VMA 区域
     RegionNotFound,
+    /// 页面已被声明所有权
+    PageAlreadyClaimed,
 }
 
 impl fmt::Display for MemoryError {
@@ -50,6 +52,7 @@ impl From<paging::error::PagingError> for MemoryError {
             PagingError::AlreadyMappedIdentical => Self::AlreadyMappedIdentical,
             PagingError::AlreadyMappedConflict => Self::AlreadyMappedConflict,
             PagingError::PageNotMapped => Self::PageNotMapped,
+            PagingError::PageAlreadyClaimed => Self::PageAlreadyClaimed,
         }
     }
 }

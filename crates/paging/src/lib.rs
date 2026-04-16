@@ -1,11 +1,14 @@
-//! 分页子系统——页表 + 仿射类型映射所有权。
+//! 分页子系统——页表 + CLAIMED 位所有权追踪。
 //!
-//! 本 crate 合并了原 `page_table` 和 `mapped_pages` 两个 crate，
-//! 实现了 **编译期强制的仿射类型安全**：
+//! SAS 架构下所有物理内存在 init 阶段被永久 identity-map（VA == PA），
+//! PTE 创建后不再删除。[`MappedPages`] 不操作 PTE 的创建/删除，
+//! 而是通过 PTE 中的软件 CLAIMED 位追踪帧所有权：
 //!
-//! - [`PageTable`] 的写操作（`map_page`、`unmap_page` 等）为 `pub(crate)`，
-//!   外部只能通过 `MappedPages` / `MmioRegion` 等 RAII 类型调用，
-//!   确保映射的创建与销毁通过仿射类型管理。
+//! - `claim`：设置 CLAIMED 位 + 更新权限（不创建 PTE）
+//! - `release` / Drop：写 poison + 恢复 `kernel_rw` + 清 CLAIMED（不删 PTE）
+//!
+//! [`PageTable`] 的写操作（`map_page`、`unmap_page`、`update_flags`）为 `pub(crate)`，
+//! 外部只能通过 `MappedPages` / `MmioRegion` 等 RAII 类型间接调用。
 //!
 //! PTE 编解码由 [`page_table_entry`] crate 提供。
 //! 页表节点帧直接使用 [`frame_allocator::AllocatedFrames`]。

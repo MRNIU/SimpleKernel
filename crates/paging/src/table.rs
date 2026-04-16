@@ -245,6 +245,10 @@ impl PageTable {
     /// # Errors
     ///
     /// 目标 VA 未映射时返回 `PageNotMapped`。
+    #[expect(
+        dead_code,
+        reason = "SAS 架构不删 PTE，但保留 API 供未来非 SAS 场景使用"
+    )]
     pub(crate) fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PagingError> {
         self.unmap_at_level_with_flags(va, 0).map(|(pa, _)| pa)
     }
