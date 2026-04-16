@@ -154,7 +154,10 @@ impl PageTable {
                 self.inc_ref(paddr);
                 paddr = frame_paddr;
             } else if pte.is_leaf(level) {
-                return Err(PagingError::HugePageConflict);
+                panic!(
+                    "walk_create: 中间层 level {level} 遇到叶 PTE \
+                     (va={va}, paddr={paddr})"
+                );
             } else {
                 paddr = pte.paddr();
             }
@@ -172,8 +175,7 @@ impl PageTable {
     /// # Errors
     ///
     /// - 该 VA 已被映射时返回 `AlreadyMapped`。
-    /// - walk 路径上遇到大页时返回 `HugePageConflict`。
-    pub fn map_page(
+    pub(crate) fn map_page(
         &mut self,
         va: VirtAddr,
         pa: PhysAddr,
@@ -194,8 +196,7 @@ impl PageTable {
     /// # Errors
     ///
     /// - 该 VA 已被映射时返回 `AlreadyMapped`。
-    /// - walk 路径上遇到大页时返回 `HugePageConflict`。
-    pub fn map_at_level(
+    fn map_at_level(
         &mut self,
         va: VirtAddr,
         pa: PhysAddr,
@@ -244,7 +245,7 @@ impl PageTable {
     /// # Errors
     ///
     /// 目标 VA 未映射时返回 `PageNotMapped`。
-    pub fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PagingError> {
+    pub(crate) fn unmap_page(&mut self, va: VirtAddr) -> Result<PhysAddr, PagingError> {
         self.unmap_at_level_with_flags(va, 0).map(|(pa, _)| pa)
     }
 
@@ -259,7 +260,7 @@ impl PageTable {
     /// # Errors
     ///
     /// 目标 VA 在指定层级未映射时返回 `PageNotMapped`。
-    pub fn unmap_at_level_with_flags(
+    fn unmap_at_level_with_flags(
         &mut self,
         va: VirtAddr,
         level: usize,
@@ -315,7 +316,7 @@ impl PageTable {
     /// 单次页表遍历完成查找和更新，避免双重 walk 开销。
     ///
     /// **调用方必须在此操作后执行 TLB 刷新。**
-    pub fn update_flags(
+    pub(crate) fn update_flags(
         &mut self,
         va: VirtAddr,
         new_flags: PteFlags,
@@ -364,13 +365,9 @@ impl PageTable {
         Some((pte.paddr() + offset, pte.flags()))
     }
 
-    /// 将 `[start, end)` 物理地址区间 identity-map（VA == PA）。
+    /// 将 `[start, end)` 物理地址区间 identity-map（VA == PA），统一使用 4KB 页。
     ///
-    /// 自动使用最大可用页大小（1GB / 2MB / 4KB）。
     /// 映射失败时直接 panic——内核启动阶段的 identity map 失败不可恢复。
-    ///
-    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
-    /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
     ///
     /// # Panics
     ///
@@ -385,22 +382,14 @@ impl PageTable {
         );
 
         while addr.as_usize() < end_aligned.as_usize() {
-            let remaining = end_aligned.as_usize() - addr.as_usize();
             let va = VirtAddr::new(addr.as_usize());
-
-            let (level, page_size) = (1..PT_LEVELS)
-                .rev()
-                .map(|lv| (lv, crate::page_size_at_level(lv)))
-                .find(|&(_, ps)| addr.as_usize().is_multiple_of(ps) && remaining >= ps)
-                .unwrap_or((0, config::PAGE_SIZE));
-
-            match self.map_at_level(va, addr, flags, level) {
+            match self.map_page(va, addr, flags) {
                 Ok(()) => {}
-                // 幂等：同一页已被相同 PA+flags 映射（如 MMIO 区域重叠），跳过
+                // 幂等：同一页已被相同 PA+flags 映射，跳过
                 Err(PagingError::AlreadyMappedIdentical) => {}
                 Err(e) => panic!("identity_map_range: 映射 {va} 失败: {e}"),
             }
-            addr += page_size;
+            addr += config::PAGE_SIZE;
         }
     }
 }

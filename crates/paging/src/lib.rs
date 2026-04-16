@@ -3,8 +3,8 @@
 //! 本 crate 合并了原 `page_table` 和 `mapped_pages` 两个 crate，
 //! 实现了 **编译期强制的仿射类型安全**：
 //!
-//! - [`PageTable`] 的写操作（`map_page`、`unmap_page` 等）为 `pub`，
-//!   但正常使用时应通过 `MappedPages` / `MmioRegion` 等 RAII 类型调用，
+//! - [`PageTable`] 的写操作（`map_page`、`unmap_page` 等）为 `pub(crate)`，
+//!   外部只能通过 `MappedPages` / `MmioRegion` 等 RAII 类型调用，
 //!   确保映射的创建与销毁通过仿射类型管理。
 //!
 //! PTE 编解码由 [`page_table_entry`] crate 提供。

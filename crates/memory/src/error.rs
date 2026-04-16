@@ -15,8 +15,6 @@ pub enum MemoryError {
     AlreadyMappedIdentical,
     /// 目标 VA 已被映射但 PA 或 flags 不同——真正的冲突
     AlreadyMappedConflict,
-    /// walk 路径上遇到大页冲突
-    HugePageConflict,
     /// 目标虚拟页未映射
     PageNotMapped,
     /// VMA 区域与已有区域完全重合——幂等重复，调用方可安全忽略
@@ -51,7 +49,6 @@ impl From<paging::error::PagingError> for MemoryError {
             PagingError::AllocationFailed | PagingError::FrameAllocFailed => Self::AllocationFailed,
             PagingError::AlreadyMappedIdentical => Self::AlreadyMappedIdentical,
             PagingError::AlreadyMappedConflict => Self::AlreadyMappedConflict,
-            PagingError::HugePageConflict => Self::HugePageConflict,
             PagingError::PageNotMapped => Self::PageNotMapped,
         }
     }

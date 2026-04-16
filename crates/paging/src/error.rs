@@ -11,8 +11,6 @@ pub enum PagingError {
     AlreadyMappedIdentical,
     /// 目标 VA 已被映射但 PA 或 flags 不同——真正的冲突
     AlreadyMappedConflict,
-    /// walk 路径上遇到大页冲突
-    HugePageConflict,
     /// 目标 VA 未映射
     PageNotMapped,
     /// 物理帧分配失败
@@ -30,7 +28,6 @@ impl fmt::Display for PagingError {
                 f,
                 "virtual address already mapped with different PA or flags"
             ),
-            Self::HugePageConflict => write!(f, "huge page conflict in walk path"),
             Self::PageNotMapped => write!(f, "virtual address not mapped"),
             Self::FrameAllocFailed => write!(f, "physical frame allocation failed"),
         }
