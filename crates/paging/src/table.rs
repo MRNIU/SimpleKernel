@@ -5,11 +5,10 @@ use core::sync::atomic::{AtomicU64, Ordering};
 use alloc::collections::BTreeMap;
 use memory_types::{PhysAddr, VirtAddr};
 
+use frame_allocator::AllocatedFrames;
+
 use crate::error::PagingError;
-use crate::{
-    ENTRIES_PER_TABLE, NodeFrame, NodeFrameOps, PageTableEntry, PteFlags, PteFlagsOps, PteOps,
-    vpn_index,
-};
+use crate::{ENTRIES_PER_TABLE, PageTableEntry, PteFlags, PteFlagsOps, PteOps, vpn_index};
 
 const PT_LEVELS: usize = arch::PT_LEVELS;
 
@@ -54,7 +53,7 @@ impl Table {
 struct NodeEntry {
     /// 持有帧所有权——drop 时自动释放。
     #[expect(dead_code, reason = "仅用于持有所有权，通过物理地址访问")]
-    frame: NodeFrame,
+    frame: AllocatedFrames,
     /// 该帧中有效 PTE 的数量。
     /// map 时 +1，unmap 时 -1，count == 0 时可回收。
     ref_count: u16,
@@ -64,14 +63,11 @@ struct NodeEntry {
 ///
 /// 拥有根帧及所有遍历过程中分配的中间帧。
 /// drop 时自动归还所有帧。
-///
-/// 具体帧类型由 [`NodeFrame`] 类型别名决定（裸机：物理帧，测试：堆分配帧），
-/// 无需泛型参数。
 pub struct PageTable {
     root_paddr: PhysAddr,
     /// 持有根帧所有权，阻止帧被释放——字段本身不直接访问。
     #[expect(dead_code, reason = "仅用于持有所有权，通过 root_paddr 访问")]
-    root: NodeFrame,
+    root: AllocatedFrames,
     /// 根帧的有效 PTE 引用计数（根帧不在 nodes 中，单独记录）。
     root_ref_count: u16,
     /// 中间页表节点——以物理地址为键，O(log n) 查找/删除。
@@ -82,8 +78,8 @@ pub struct PageTable {
 impl PageTable {
     /// 创建新页表，分配根帧。
     pub fn create() -> Result<Self, PagingError> {
-        let root = NodeFrame::alloc()?;
-        let root_paddr = root.paddr();
+        let root = crate::alloc_node_frame()?;
+        let root_paddr = root.start_paddr();
         Ok(Self {
             root_paddr,
             root,
@@ -143,8 +139,8 @@ impl PageTable {
             let pte = table.read(idx);
 
             if !pte.is_valid() {
-                let frame = NodeFrame::alloc()?;
-                let frame_paddr = frame.paddr();
+                let frame = crate::alloc_node_frame()?;
+                let frame_paddr = frame.start_paddr();
                 // 先注册所有权，再写 PTE——若 BTreeMap::insert 因 OOM panic，
                 // frame 随 NodeEntry drop 释放，但不会产生悬挂 PTE。
                 self.nodes.insert(

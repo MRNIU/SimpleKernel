@@ -8,14 +8,11 @@
 //!   确保映射的创建与销毁通过仿射类型管理。
 //!
 //! PTE 编解码由 [`page_table_entry`] crate 提供。
-//! 帧分配通过 [`NodeFrame`] 类型别名（[`KernelNodeFrame`]）使用物理帧分配器，
-//! 页表和映射类型均为非泛型。
+//! 页表节点帧直接使用 [`frame_allocator::AllocatedFrames`]。
 
 #![no_std]
 
 extern crate alloc;
-
-use memory_types::PhysAddr;
 
 pub mod error;
 
@@ -56,38 +53,13 @@ pub fn kernel_page_table() -> &'static sync_crate::SpinLock<PageTable> {
         .expect("kernel page table not initialized")
 }
 
-/// 页表节点帧的统一接口。
-///
-/// 通过 [`NodeFrame`] 类型别名（[`KernelNodeFrame`]）选择具体实现。
-/// 页表、映射等类型直接使用 `NodeFrame`，不再泛型化。
-pub trait NodeFrameOps: Send + Sized {
-    /// 分配一个零初始化的页表节点帧。
-    fn alloc() -> Result<Self, error::PagingError>;
-    /// 获取帧的物理地址（identity mapping）。
-    fn paddr(&self) -> PhysAddr;
+/// 分配一个页表节点帧，返回 `AllocatedFrames`。
+fn alloc_node_frame() -> Result<frame_allocator::AllocatedFrames, error::PagingError> {
+    frame_allocator::AllocatedFrames::alloc_one().map_err(|e| {
+        log::warn!("页表节点帧分配失败: {:?}", e);
+        error::PagingError::AllocationFailed
+    })
 }
-
-/// 裸机页表节点帧——包装 `AllocatedFrames`。
-///
-/// Newtype 用于为外部类型 `AllocatedFrames` 实现本 crate 的 `NodeFrameOps`。
-pub struct KernelNodeFrame(frame_allocator::AllocatedFrames);
-
-impl NodeFrameOps for KernelNodeFrame {
-    fn alloc() -> Result<Self, error::PagingError> {
-        frame_allocator::AllocatedFrames::alloc_one()
-            .map(Self)
-            .map_err(|e| {
-                log::warn!("页表节点帧分配失败: {:?}", e);
-                error::PagingError::AllocationFailed
-            })
-    }
-    fn paddr(&self) -> PhysAddr {
-        self.0.start_paddr()
-    }
-}
-
-/// 页表节点帧类型——[`KernelNodeFrame`]（物理帧分配器）。
-pub type NodeFrame = KernelNodeFrame;
 
 /// 从虚拟地址中提取第 `level` 级的 VPN 索引。
 ///
