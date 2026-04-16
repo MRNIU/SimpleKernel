@@ -251,20 +251,6 @@ impl AddressSpace {
         self.areas.insert(start, vma);
     }
 
-    /// 修改 VMA 权限。
-    pub fn mprotect(&mut self, addr: VirtAddr, flags: PteFlags) -> Result<(), MemoryError> {
-        let start = self
-            .areas
-            .range(..=addr)
-            .next_back()
-            .filter(|(_, vma)| vma.range.contains(addr))
-            .map(|(&k, _)| k)
-            .ok_or(MemoryError::RegionNotFound)?;
-        let vma = self.areas.get_mut(&start).expect("刚查到的 VMA");
-        vma.flags = flags;
-        Ok(())
-    }
-
     /// 验证并对齐地址范围。
     fn validate_range(
         start: VirtAddr,

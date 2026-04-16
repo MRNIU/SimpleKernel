@@ -51,7 +51,7 @@ impl ArchOps for Riscv64 {
         Ok(())
     }
 
-    unsafe fn activate_page_table(pt: &memory::node_frame::PageTable) {
+    unsafe fn activate_page_table(pt: &paging::PageTable) {
         let ppn = pt.root_paddr().as_usize() >> 12;
         let satp = (8usize << 60) | ppn; // MODE = 8 → Sv39
         // SAFETY: 调用方保证页表映射正确

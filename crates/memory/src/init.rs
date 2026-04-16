@@ -28,7 +28,9 @@ pub fn init() -> AddressSpace {
     let rodata_end = PhysAddr::new(unsafe { &__erodata as *const u8 as usize }).align_up();
     let mem_end = mem_start + mem_size;
 
-    // 计算各段页数
+    // 计算各段页数——data 段覆盖 rodata_end 到 mem_end 全部区域（包含空闲内存），
+    // 因为 SAS 架构下全部物理内存必须 identity-map 才能被内核访问
+    // （页表节点帧、DMA 缓冲等动态分配的内存都需要映射）。
     let text_pages = (text_end - mem_start) / config::PAGE_SIZE;
     let rodata_pages = (rodata_end - text_end) / config::PAGE_SIZE;
     let data_pages = (mem_end - rodata_end) / config::PAGE_SIZE;

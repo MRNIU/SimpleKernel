@@ -9,12 +9,16 @@ pub enum MemoryError {
     AllocationFailed,
     /// 物理帧耗尽
     OutOfMemory,
-    /// 页表映射失败（如重复映射）
+    /// 页表映射失败（参数无效、size 为 0 等）
     MapFailed,
+    /// 目标 VA 已被相同 PA+flags 映射——幂等重复，调用方可安全忽略
+    AlreadyMappedIdentical,
+    /// 目标 VA 已被映射但 PA 或 flags 不同——真正的冲突
+    AlreadyMappedConflict,
+    /// walk 路径上遇到大页冲突
+    HugePageConflict,
     /// 目标虚拟页未映射
     PageNotMapped,
-    /// 全局内核页表未初始化
-    InvalidPageTable,
     /// VMA 区域与已有区域完全重合——幂等重复，调用方可安全忽略
     RegionIdentical,
     /// VMA 区域与已有区域部分重叠——真正的冲突
@@ -45,9 +49,9 @@ impl From<paging::error::PagingError> for MemoryError {
         use paging::error::PagingError;
         match e {
             PagingError::AllocationFailed | PagingError::FrameAllocFailed => Self::AllocationFailed,
-            PagingError::AlreadyMappedIdentical
-            | PagingError::AlreadyMappedConflict
-            | PagingError::HugePageConflict => Self::MapFailed,
+            PagingError::AlreadyMappedIdentical => Self::AlreadyMappedIdentical,
+            PagingError::AlreadyMappedConflict => Self::AlreadyMappedConflict,
+            PagingError::HugePageConflict => Self::HugePageConflict,
             PagingError::PageNotMapped => Self::PageNotMapped,
         }
     }
