@@ -92,6 +92,10 @@ pub trait PteFlagsOps: Copy + core::fmt::Debug {
     fn with_writable(self, w: bool) -> Self;
     /// 设置或清除执行权限——用于 mprotect。
     fn with_executable(self, x: bool) -> Self;
+    /// PTE 是否设置了 CLAIMED 软件位（OwnedPages 所有权标记）。
+    fn is_claimed(self) -> bool;
+    /// 设置或清除 CLAIMED 软件位。
+    fn with_claimed(self, claimed: bool) -> Self;
     /// 将标志位适配为指定层级的叶描述符格式。
     fn for_leaf_at_level(self, level: usize) -> Self;
 }

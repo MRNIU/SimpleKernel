@@ -72,6 +72,13 @@ const _: () = assert!(
     PAGE_SIZE.is_power_of_two(),
     "PAGE_SIZE must be a power of two"
 );
+/// 释放页面毒化字节——OwnedPages drop 后填充所有已释放帧。
+///
+/// 用于检测 use-after-free：读到 0xFE 填充数据 = 访问了已释放页面。
+/// 0xFE：非零（区分 zero-init）、非 0xFF（区分全一）、
+/// 作为指针值在 RISC-V/AArch64 上必定非法。
+pub const FREED_PAGE_POISON: u8 = 0xFE;
+
 const _: () = assert!(
     KERNEL_STACK_SIZE.is_power_of_two(),
     "KERNEL_STACK_SIZE must be a power of two (boot.rs uses shift)"

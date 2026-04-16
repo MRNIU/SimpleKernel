@@ -43,8 +43,9 @@ fn test_new_basic() {
     assert_eq!(mp.size(), config::PAGE_SIZE);
 
     let guard = paging::kernel_page_table().lock();
-    let (got_pa, _) = guard.get_mapping(pa.to_virt()).expect("页表项应存在");
+    let (got_pa, flags) = guard.get_mapping(pa.to_virt()).expect("页表项应存在");
     assert_eq!(got_pa, pa);
+    assert!(flags.is_claimed(), "new 后 PTE 应有 CLAIMED 位");
 }
 
 /// 多页构造。
@@ -86,6 +87,7 @@ fn test_new_changes_flags() {
     let guard = paging::kernel_page_table().lock();
     let (_, flags) = guard.get_mapping(va).expect("页表项应存在");
     assert!(!flags.is_writable(), "new(kernel_ro) 应设为只读");
+    assert!(flags.is_claimed(), "new 后 PTE 应有 CLAIMED 位");
     drop(guard);
     drop(mp);
 }
@@ -101,12 +103,14 @@ fn test_drop_restores_default_flags() {
         let guard = paging::kernel_page_table().lock();
         let (_, flags) = guard.get_mapping(va).expect("页表项应存在");
         assert!(!flags.is_writable());
+        assert!(flags.is_claimed(), "drop 前 PTE 应有 CLAIMED 位");
     }
     drop(mp);
-    // PTE 仍存在，但权限已恢复为 kernel_rw
+    // PTE 仍存在，但权限已恢复为 kernel_rw，CLAIMED 已清除
     let guard = paging::kernel_page_table().lock();
     let (_, flags) = guard.get_mapping(va).expect("drop 后页表项仍应存在");
     assert!(flags.is_writable());
+    assert!(!flags.is_claimed(), "drop 后 CLAIMED 应被清除");
 }
 
 /// set_flags 修改权限。
@@ -126,4 +130,5 @@ fn test_set_flags_changes_flags() {
     let guard = paging::kernel_page_table().lock();
     let (_, flags) = guard.get_mapping(va).expect("页表项应存在");
     assert!(!flags.is_writable());
+    assert!(flags.is_claimed(), "set_flags 后 CLAIMED 应保留");
 }
