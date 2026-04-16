@@ -10,7 +10,6 @@ edition.workspace = true
 [dependencies]
 arch = { path = "../arch" }
 config = { path = "../config" }
-span = { path = "../span" }
 
 [lints]
 workspace = true

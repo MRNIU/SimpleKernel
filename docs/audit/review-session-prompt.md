@@ -119,7 +119,7 @@
 | Phase | Target 示例 |
 |-------|-------------|
 | R0 | CI pipeline, deny.toml, unsafe audit |
-| R1 | `crates/memory_types/`, `crates/config/`, `crates/span/` |
+| R1 | `crates/memory_types/`, `crates/config/` |
 | R2 | `crates/sync/`, `crates/interrupt_state/`, `crates/per_cpu/`, `crates/macros/` |
 | R3 | `crates/frame_allocator/`, `crates/paging/`, `crates/memory/` |
 | R4 | `src/arch/`, `src/boot.rs`, `src/main.rs` |

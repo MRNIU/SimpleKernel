@@ -13,7 +13,7 @@
 转换使用 `wrapping_add` / `wrapping_sub` 以支持 higher-half kernel 布局，
 偏移量由 `config::PHYS_OFFSET` 控制。
 
-范围类型 `Span<A>` 由独立的 `span` crate 提供，本 crate re-export。
+范围类型 `Span<A>` 定义在本 crate 内部。
 
 ## 核心类型
 
@@ -26,8 +26,8 @@ pub struct VirtAddr(usize);          // 虚拟地址
 pub struct Frame { number: usize }    // 物理帧
 pub struct Page  { number: usize }    // 虚拟页
 
-// 范围（re-export from span crate）
-pub struct Span<A> { start: A, end: A }    // 半开区间 [start, end)
+// 半开区间
+pub struct Span<A> { start: A, end: A }    // [start, end)
 
 // 便利别名（FrameSpan 定义在 frame_allocator 内部，不在本 crate 公共 API 中）
 // pub(crate) type FrameSpan = Span<Frame>;  // frame_allocator 内部使用
@@ -50,13 +50,11 @@ Span<Page>                     虚拟页范围（当前未使用）
 ## 模块结构
 
 ```
-crates/span/src/
-└── lib.rs           Span<A> 泛型范围、分割/合并/迭代（零依赖）
-
 crates/memory_types/src/
-├── lib.rs           crate 入口，re-export + impl_usize_newtype! 宏
+├── lib.rs           crate 入口，impl_usize_newtype! 宏
 ├── addr.rs          PhysAddr / VirtAddr、对齐方法、PhysAddr::to_virt / VirtAddr::to_phys
-└── page_frame.rs    Frame / Page、与地址类型的互转
+├── page_frame.rs    Frame / Page、与地址类型的互转
+└── span.rs          Span<A> 半开区间，重叠检测
 ```
 
 三个宏（`impl_usize_newtype!`、`impl_addr!`、`impl_page_or_frame!`）消除
@@ -94,18 +92,12 @@ use memory_types::{Frame, Span};
 
 let range = Span::new(Frame::new(0), Frame::new(8));
 assert_eq!(range.size(), 8);
-assert!(range.contains(F::new(3)));
-assert!(!range.contains(F::new(8))); // 半开区间，end 不含
+assert_eq!(range.start(), Frame::new(0));
+assert_eq!(range.end(), Frame::new(8));
 
-// 分割与合并
-let (left, right) = range.split_at(F::new(4));
-let merged = left.merge(right).expect("相邻范围可合并");
-assert_eq!(merged, range);
-
-// 迭代
-for frame in range.iter() {
-    // frame: Frame<4K>(0x0), Frame<4K>(0x1), ..., Frame<4K>(0x7)
-}
+// 重叠检测
+let other = Span::new(Frame::new(4), Frame::new(12));
+assert!(range.overlaps(other));
 ```
 
 ## 注意事项

@@ -44,7 +44,7 @@ jobs:
         run: cargo clippy --target aarch64-unknown-none-softfloat -- -D warnings
 
       - name: Unit tests (host)
-        run: cargo test -p memory_types -p config -p page_table_entry -p span -p arch
+        run: cargo test -p memory_types -p config -p page_table_entry -p arch
 
       - name: Dependency audit
         run: |

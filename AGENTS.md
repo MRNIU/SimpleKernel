@@ -129,7 +129,7 @@ cargo xtask run --arch aarch64
 cargo xtask debug --arch riscv64
 
 # Unit tests (host, pure logic only)
-cargo test -p memory_types -p config -p page_table_entry -p span -p arch
+cargo test -p memory_types -p config -p page_table_entry -p arch
 
 # System tests in QEMU
 cargo xtask test --arch riscv64                        # all standalone tests
@@ -152,9 +152,9 @@ cargo doc --no-deps
 在宿主机上运行，测试不涉及硬件的纯计算逻辑。
 
 ```bash
-cargo test -p memory_types -p config -p page_table_entry -p span -p arch  # 全部纯逻辑测试
+cargo test -p memory_types -p config -p page_table_entry -p arch  # 全部纯逻辑测试
 cargo test -p memory_types                        # 单个 crate
-cargo test -p span -- alignment_basic --nocapture # 单个测试（显示输出）
+cargo test -p config -- page_size --nocapture     # 单个测试（显示输出）
 ```
 
 适用范围：地址运算、PTE 编解码、常量验证等。

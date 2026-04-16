@@ -214,7 +214,7 @@ SimpleKernel 采用两层测试 + 冒烟测试：
 纯逻辑 crate 的 `#[test]` 模块，在宿主机上运行：
 
 ```bash
-cargo test -p memory_types -p config -p page_table_entry -p span -p arch
+cargo test -p memory_types -p config -p page_table_entry -p arch
 ```
 
 覆盖范围：地址运算、PTE 编解码、常量验证等。

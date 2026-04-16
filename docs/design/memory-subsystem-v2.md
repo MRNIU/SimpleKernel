@@ -136,7 +136,6 @@ graph TB
 
 ```mermaid
 graph LR
-    span["span"]
     arch["arch"]
     config["config"]
     mem_types["memory_types"]
@@ -147,7 +146,6 @@ graph LR
     heap["heap"]
     memory["memory"]
 
-    mem_types --> span
     mem_types --> arch
     mem_types --> config
 
@@ -175,7 +173,7 @@ graph LR
 ```
 
 **无循环依赖**的关键：
-- `memory_types` 依赖 `arch`（获取 PA_BITS/VA_BITS），但 `arch` 不依赖 `memory_types`
+- `memory_types` 依赖 `arch`（获取 PA_BITS/VA_BITS）和内联的 `Span` 类型，但 `arch` 不依赖 `memory_types`
 - `page_table_entry` 通过 `cfg` 条件编译选择架构，不依赖 `arch` crate
 - `paging` 通过 `arch` 获取 `PT_LEVELS`、`flush_tlb_*` 等常量和函数
 
@@ -248,6 +246,8 @@ pub struct Page  { number: usize }  // 4K 单位
 
 ### 3.3 Span 区间
 
+定义在 `memory_types` 内部（不是独立 crate）。
+
 ```rust
 pub struct Span<A: Copy + Ord> { start: A, end: A }  // [start, end)
 ```
@@ -257,11 +257,7 @@ pub struct Span<A: Copy + Ord> { start: A, end: A }  // [start, end)
 | `new(start, end)` | 构造半开区间（start > end 时 panic） |
 | `start() / end()` | 获取边界 |
 | `size() -> usize` | 区间大小（需 `Sub` trait bound） |
-| `contains(val)` | 包含判断 |
 | `overlaps(other)` | 重叠检测 |
-| `split_at(mid)` | 分割为两段 |
-| `merge(other)` | 合并相邻区间 |
-| `iter()` | 遍历每个元素 |
 
 ---
 

@@ -11,9 +11,6 @@
 //!    └────────┴───────────┴────────────────┘
 //!                         ▼
 //!              memory_types (本 crate)
-//!                         │
-//!                         ▼
-//!                    span (区间)
 //! ```
 //!
 //! # 类型概览
@@ -23,12 +20,12 @@
 //!    │                          ▲
 //!    │ to_virt()                 │ From<PhysAddr>
 //!    ▼                          │
-//! VirtAddr ──page_number()──▶ Page  ──Span::new()──▶ Span<Page>
+//! VirtAddr ──page_number()──▶ Page
 //! ```
 //!
 //! - [`PhysAddr`] / [`VirtAddr`]——字节粒度地址，附带对齐辅助方法
 //! - [`Frame`] / [`Page`]——4K 页粒度标识，与地址双向转换
-//! - [`Span<A>`]（re-export from [`span`] crate）——半开区间 `[start, end)`
+//! - [`Span<A>`]——半开区间 `[start, end)`，支持重叠检测
 //!
 //! 以及物理-虚拟地址转换方法 [`PhysAddr::to_virt`] / [`VirtAddr::to_phys`]
 //! （基于 SAS identity mapping 假设：VA == PA）。
@@ -47,6 +44,7 @@
 
 mod addr;
 mod page_frame;
+mod span;
 
 pub use addr::{PhysAddr, VirtAddr};
 pub use page_frame::{Frame, Page};
