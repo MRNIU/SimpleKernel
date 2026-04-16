@@ -34,7 +34,7 @@ fn run_tests() {
 fn test_map_basic() {
     let frames = AllocatedFrames::alloc(1).expect("alloc frames");
     let pa = frames.start_paddr();
-    let mp = MappedPages::map(frames, PteFlags::kernel_rw());
+    let mp = MappedPages::claim(frames, PteFlags::kernel_rw());
 
     assert_eq!(mp.vaddr(), pa.to_virt());
     assert_eq!(mp.size(), config::PAGE_SIZE);
@@ -48,7 +48,7 @@ fn test_map_basic() {
 fn test_map_multi_page() {
     let frames = AllocatedFrames::alloc(3).expect("alloc frames");
     let pa_start = frames.start_paddr();
-    let _mp = MappedPages::map(frames, PteFlags::kernel_rw());
+    let _mp = MappedPages::claim(frames, PteFlags::kernel_rw());
 
     let guard = paging::kernel_page_table().lock();
     for i in 0..3 {
@@ -61,7 +61,7 @@ fn test_map_multi_page() {
 fn test_drop_unmaps() {
     let frames = AllocatedFrames::alloc(1).expect("alloc frames");
     let va = frames.start_paddr().to_virt();
-    let mp = MappedPages::map(frames, PteFlags::kernel_rw());
+    let mp = MappedPages::claim(frames, PteFlags::kernel_rw());
 
     {
         let guard = paging::kernel_page_table().lock();
@@ -76,7 +76,7 @@ fn test_drop_unmaps() {
 fn test_mprotect_changes_flags() {
     let frames = AllocatedFrames::alloc(1).expect("alloc frames");
     let va = frames.start_paddr().to_virt();
-    let mut mp = MappedPages::map(frames, PteFlags::kernel_rw());
+    let mut mp = MappedPages::claim(frames, PteFlags::kernel_rw());
 
     {
         let guard = paging::kernel_page_table().lock();
@@ -96,7 +96,7 @@ fn test_unmap_returns_unmapped_frames() {
     let frames = AllocatedFrames::alloc(1).expect("alloc frames");
     let pa = frames.start_paddr();
     let va = pa.to_virt();
-    let mp = MappedPages::map(frames, PteFlags::kernel_rw());
+    let mp = MappedPages::claim(frames, PteFlags::kernel_rw());
 
     let unmapped = mp.unmap();
     assert_eq!(unmapped.start_paddr(), pa);

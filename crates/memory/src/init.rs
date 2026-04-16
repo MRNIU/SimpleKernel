@@ -72,7 +72,7 @@ pub fn init() -> AddressSpace {
     for (i, flags) in segments.into_iter().enumerate() {
         let frames = reserved.remove(0);
         let va = memory_types::VirtAddr::new(seg_starts[i].as_usize());
-        let mapping = paging::MappedPages::map(frames, flags);
+        let mapping = paging::MappedPages::claim(frames, flags);
         kernel_as.register_kernel_mapping(va, mapping);
     }
 
