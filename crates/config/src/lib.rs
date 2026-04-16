@@ -80,6 +80,12 @@ pub const UNMAP_CHUNK_SIZE: usize = 256;
 /// - 非零值：higher-half kernel（VA = PA + PHYS_OFFSET）
 pub const PHYS_OFFSET: usize = 0;
 
+/// 释放页面的 poison 填充字节——帮助检测 use-after-free。
+///
+/// MappedPages 释放所有权时用此值填充页面内容。
+/// 0xFE 与 Linux SLAB 的 freed 标记一致。
+pub const FREED_PAGE_POISON: u8 = 0xFE;
+
 const _: () = assert!(
     PAGE_SIZE.is_power_of_two(),
     "PAGE_SIZE must be a power of two"
