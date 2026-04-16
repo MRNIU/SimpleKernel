@@ -225,17 +225,8 @@ fn release_frames_chunked(frames: &MappedFrames, caller: &str) {
     while offset < page_count {
         let n = (page_count - offset).min(RELEASE_CHUNK);
 
-        // 步骤 1：写 poison pattern（不需要锁——这些页已被我们 CLAIMED，无竞争）
-        for i in 0..n {
-            let va = va_start + (offset + i) * PAGE_SIZE;
-            // SAFETY: va 是已被 CLAIMED 的页，我们持有唯一所有权，
-            // 写入 poison pattern 用于检测 use-after-free
-            unsafe {
-                core::ptr::write_bytes(va.as_mut_ptr::<u8>(), config::FREED_PAGE_POISON, PAGE_SIZE);
-            }
-        }
-
-        // 步骤 2：持锁恢复 PTE 权限
+        // 步骤 1：恢复 kernel_rw 权限（清 CLAIMED）——必须在写 poison 之前，
+        // 因为页面可能是只读的（如 mprotect 设为 RO），直接写会 page fault。
         let mut need_tlb_flush = false;
         {
             let mut guard = pt.lock();
@@ -251,18 +242,27 @@ fn release_frames_chunked(frames: &MappedFrames, caller: &str) {
                     "{caller}: 页 {va} 的 CLAIMED 位未设置——PTE 被外部篡改？"
                 );
 
-                // 优化：如果旧权限（除 CLAIMED 外）已经是 kernel_rw，
-                // 则只有软件位变了，硬件不缓存软件位，无需 TLB flush
+                // 如果旧权限（除 CLAIMED 外）与 kernel_rw 不同，需要 TLB flush
                 if old_flags.with_claimed(false) != restore_flags {
                     need_tlb_flush = true;
                 }
             }
         }
 
-        // 步骤 3：按需刷新 TLB
+        // 步骤 2：TLB flush（必须在写 poison 之前——旧的只读 TLB 条目可能仍在缓存中）
         if need_tlb_flush {
             let flush_va = va_start + offset * PAGE_SIZE;
             let _flush = tlb::TlbFlushGuard::new(flush_va.as_usize(), n);
+        }
+
+        // 步骤 3：写 poison pattern（此时页面已恢复为 kernel_rw，可安全写入）
+        for i in 0..n {
+            let va = va_start + (offset + i) * PAGE_SIZE;
+            // SAFETY: PTE 已恢复为 kernel_rw（可写），TLB 已刷新，
+            // 写入 poison pattern 用于检测 use-after-free
+            unsafe {
+                core::ptr::write_bytes(va.as_mut_ptr::<u8>(), config::FREED_PAGE_POISON, PAGE_SIZE);
+            }
         }
 
         offset += n;
