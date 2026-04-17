@@ -65,9 +65,6 @@ bitflags! {
         const PXN       = 1 << 53;
         /// Unprivileged Execute-Never / Execute-Never
         const UXN       = 1 << 54;
-        /// 软件可用位——OwnedPages 所有权标记。
-        /// 硬件忽略此位（[Arm ARM §D8.3](https://developer.arm.com/documentation/ddi0487/latest)，bit 55 在未启用 DBM 时可供软件使用）。
-        const CLAIMED   = 1 << 55;
     }
 }
 
@@ -224,20 +221,6 @@ impl PteFlagsOps for PteFlags {
             self.difference(Self::PXN | Self::UXN)
         } else {
             self | Self::PXN | Self::UXN
-        }
-    }
-
-    #[inline]
-    fn is_claimed(self) -> bool {
-        self.contains(Self::CLAIMED)
-    }
-
-    #[inline]
-    fn with_claimed(self, claimed: bool) -> Self {
-        if claimed {
-            self | Self::CLAIMED
-        } else {
-            self.difference(Self::CLAIMED)
         }
     }
 

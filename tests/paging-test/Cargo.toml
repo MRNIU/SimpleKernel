@@ -19,11 +19,6 @@ path = "src/mapping.rs"
 test = false
 
 [[bin]]
-name = "double-claim-panic"
-path = "src/double_claim_panic.rs"
-test = false
-
-[[bin]]
 name = "conflict-panic"
 path = "src/conflict_panic.rs"
 test = false

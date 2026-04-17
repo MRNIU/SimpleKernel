@@ -1,4 +1,4 @@
-//! 仿射类型所有权——move-only 的物理帧所有权 + 权限管理 + CLAIMED 位保护。
+//! 仿射类型所有权——move-only 的物理帧所有权 + 权限管理。
 //!
 //! [`OwnedPages`] 持有物理帧的独占所有权，VA 通过 identity mapping
 //! 从 PA 推导（`VA = PA + PHYS_OFFSET`）。
@@ -6,8 +6,8 @@
 //! SAS 架构下所有物理内存始终有背景 identity mapping（kernel_rw），
 //! `OwnedPages` 管理的是**所有权和权限覆盖层**。
 //!
-//! PTE 中的 CLAIMED 软件位（RISC-V RSW[0] / AArch64 bit 55）提供运行时纵深防御——
-//! 与编译期 typestate 互补，检测 `unsafe` 代码或分配器 bug 导致的双重分配。
+//! 双重分配由 Rust 所有权系统在编译期防止（`AllocatedFrames` 不可 Clone/Copy）。
+//! Drop 时写入 poison 填充（`FREED_PAGE_POISON`）作为被动调试信号。
 
 use config::PAGE_SIZE;
 use frame_allocator::AllocatedFrames;
@@ -22,32 +22,32 @@ use crate::{PteFlags, PteFlagsOps};
 ///
 /// SAS 全量映射下，所有物理内存始终有 identity mapping（背景层）。
 /// `OwnedPages` 不创建/删除 PTE，而是管理权限覆盖：
-/// - `new`：设置 CLAIMED + 更新权限
-/// - `set_flags`：修改权限（保留 CLAIMED）
-/// - `drop`：恢复 kernel_rw（清 CLAIMED）→ poison → 归还帧
+/// - `new`：更新权限
+/// - `set_flags`：修改权限
+/// - `drop`：恢复 kernel_rw → poison → 归还帧
 pub struct OwnedPages {
     frames: AllocatedFrames,
-    /// 用户可见的权限标志——不含 CLAIMED 位。
+    /// 当前权限标志。
     flags: PteFlags,
 }
 
 impl OwnedPages {
-    /// 声明物理帧所有权——设置 CLAIMED 位 + 更新权限。
+    /// 声明物理帧所有权——更新 PTE 权限。
     ///
     /// SAS 全量映射下，PTE 已由 boot 背景映射建立（kernel_rw）。
-    /// 此方法接管帧所有权、设置 CLAIMED 软件位、并更新 PTE flags。
+    /// 此方法接管帧所有权并更新 PTE flags。
+    /// 双重分配由 Rust 所有权系统在编译期防止（`AllocatedFrames` 不可 Clone/Copy）。
     ///
     /// # Panics
     ///
     /// - 页数为 0
-    /// - 任意页的 CLAIMED 位已设置（双重所有权 = 内核 bug）
     /// - PTE 不存在（背景映射未建立）
     pub fn new(frames: AllocatedFrames, flags: PteFlags) -> Self {
         let page_count = frames.count();
         assert!(page_count > 0, "OwnedPages::new: 页数不能为 0");
 
         let va_start = frames.start_paddr().to_virt();
-        claim_pages(va_start, page_count, flags);
+        batch_update_flags(va_start, page_count, flags);
 
         Self { frames, flags }
     }
@@ -70,47 +70,22 @@ impl OwnedPages {
         self.frames.count()
     }
 
-    /// 返回用户可见的权限（不含 CLAIMED 位）。
+    /// 返回当前权限。
     #[must_use]
     pub fn flags(&self) -> PteFlags {
         self.flags
     }
 
-    /// 修改权限——遍历 PTE 更新标志位（保留 CLAIMED），刷新 TLB。
+    /// 修改权限——遍历 PTE 更新标志位，刷新 TLB。
     pub fn set_flags(&mut self, new_flags: PteFlags) {
-        batch_update_flags(
-            self.vaddr(),
-            self.page_count(),
-            new_flags.with_claimed(true),
-        );
+        batch_update_flags(self.vaddr(), self.page_count(), new_flags);
         self.flags = new_flags;
     }
 }
 
-/// 声明页面所有权——设置 flags + CLAIMED，检查双重所有权。
-///
-/// 单次锁内完成 check + write，无 TOCTOU 窗口。
-fn claim_pages(va_start: VirtAddr, page_count: usize, flags: PteFlags) {
-    let claimed_flags = flags.with_claimed(true);
-    let pt = crate::kernel_page_table();
-    let mut guard = pt.lock();
-    for i in 0..page_count {
-        let va = va_start + i * PAGE_SIZE;
-        let old = guard
-            .update_flags(va, claimed_flags)
-            .expect("claim_pages: PTE 不存在——背景映射未建立？");
-        assert!(
-            !old.is_claimed(),
-            "OwnedPages::new: 页 {va} 已被声明所有权（CLAIMED 位已设置）——双重分配"
-        );
-    }
-    drop(guard);
-    let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
-}
-
 /// 批量更新 PTE 权限并刷新 TLB。
 ///
-/// `set_flags` / `Drop` 共用此逻辑。flags 透传（含或不含 CLAIMED 由调用方决定）。
+/// `new` / `set_flags` / `Drop` 共用此逻辑。
 fn batch_update_flags(va_start: VirtAddr, page_count: usize, flags: PteFlags) {
     let pt = crate::kernel_page_table();
     let mut guard = pt.lock();
@@ -129,7 +104,7 @@ impl Drop for OwnedPages {
         let va_start = self.vaddr();
         let page_count = self.page_count();
 
-        // 恢复 kernel_rw（清 CLAIMED）+ flush TLB
+        // 恢复 kernel_rw + flush TLB
         batch_update_flags(va_start, page_count, PteFlags::kernel_rw());
 
         // 写 poison——此时 PTE 已恢复 kernel_rw 且 TLB 已刷新
