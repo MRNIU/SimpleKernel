@@ -42,8 +42,8 @@ fn test_new_basic() {
     assert_eq!(mp.vaddr(), pa.to_virt());
     assert_eq!(mp.size(), config::PAGE_SIZE);
 
-    let guard = paging::kernel_page_table().lock();
-    let (got_pa, _flags) = guard.get_mapping(pa.to_virt()).expect("页表项应存在");
+    let pt = paging::kernel_page_table();
+    let (got_pa, _flags) = pt.get_mapping(pa.to_virt()).expect("页表项应存在");
     assert_eq!(got_pa, pa);
 }
 
@@ -53,10 +53,10 @@ fn test_new_multi_page() {
     let pa_start = frames.start_paddr();
     let _mp = OwnedPages::new(frames, PteFlags::kernel_rw());
 
-    let guard = paging::kernel_page_table().lock();
+    let pt = paging::kernel_page_table();
     for i in 0..3 {
         let pa = pa_start + i * config::PAGE_SIZE;
-        assert!(guard.get_mapping(pa.to_virt()).is_some());
+        assert!(pt.get_mapping(pa.to_virt()).is_some());
     }
 }
 
@@ -70,8 +70,8 @@ fn test_new_preexisting() {
     let mp = OwnedPages::new(frames, PteFlags::kernel_rw());
     assert_eq!(mp.vaddr(), va);
 
-    let guard = paging::kernel_page_table().lock();
-    let (got_pa, _) = guard.get_mapping(va).expect("页表项应存在");
+    let pt = paging::kernel_page_table();
+    let (got_pa, _) = pt.get_mapping(va).expect("页表项应存在");
     assert_eq!(got_pa, pa);
 }
 
@@ -83,10 +83,9 @@ fn test_new_changes_flags() {
     // 背景层为 kernel_rw，new 以 kernel_ro 应更新 PTE flags
     let mp = OwnedPages::new(frames, PteFlags::kernel_ro());
 
-    let guard = paging::kernel_page_table().lock();
-    let (_, flags) = guard.get_mapping(va).expect("页表项应存在");
+    let pt = paging::kernel_page_table();
+    let (_, flags) = pt.get_mapping(va).expect("页表项应存在");
     assert!(!flags.is_writable(), "new(kernel_ro) 应设为只读");
-    drop(guard);
     drop(mp);
 }
 
@@ -98,14 +97,14 @@ fn test_drop_restores_default_flags() {
     let mp = OwnedPages::new(frames, PteFlags::kernel_ro());
 
     {
-        let guard = paging::kernel_page_table().lock();
-        let (_, flags) = guard.get_mapping(va).expect("页表项应存在");
+        let pt = paging::kernel_page_table();
+        let (_, flags) = pt.get_mapping(va).expect("页表项应存在");
         assert!(!flags.is_writable());
     }
     drop(mp);
     // PTE 仍存在，但权限已恢复为 kernel_rw
-    let guard = paging::kernel_page_table().lock();
-    let (_, flags) = guard.get_mapping(va).expect("drop 后页表项仍应存在");
+    let pt = paging::kernel_page_table();
+    let (_, flags) = pt.get_mapping(va).expect("drop 后页表项仍应存在");
     assert!(flags.is_writable());
 }
 
@@ -116,14 +115,14 @@ fn test_set_flags_changes_flags() {
     let mut mp = OwnedPages::new(frames, PteFlags::kernel_rw());
 
     {
-        let guard = paging::kernel_page_table().lock();
-        let (_, flags) = guard.get_mapping(va).expect("页表项应存在");
+        let pt = paging::kernel_page_table();
+        let (_, flags) = pt.get_mapping(va).expect("页表项应存在");
         assert!(flags.is_writable());
     }
 
     mp.set_flags(PteFlags::kernel_ro());
 
-    let guard = paging::kernel_page_table().lock();
-    let (_, flags) = guard.get_mapping(va).expect("页表项应存在");
+    let pt = paging::kernel_page_table();
+    let (_, flags) = pt.get_mapping(va).expect("页表项应存在");
     assert!(!flags.is_writable());
 }

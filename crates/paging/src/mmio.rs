@@ -34,9 +34,7 @@ impl MmioRegion {
         let va = memory_types::VirtAddr::new(pa_aligned.as_usize());
 
         let pt = crate::kernel_page_table();
-        let mut guard = pt.lock();
-        guard.identity_map_range(pa_aligned, end_aligned, PteFlags::kernel_device());
-        drop(guard);
+        pt.identity_map_range(pa_aligned, end_aligned, PteFlags::kernel_device());
 
         Ok(Self {
             base: va,

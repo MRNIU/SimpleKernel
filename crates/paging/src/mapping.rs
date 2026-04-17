@@ -88,14 +88,11 @@ impl OwnedPages {
 /// `new` / `set_flags` / `Drop` 共用此逻辑。
 fn batch_update_flags(va_start: VirtAddr, page_count: usize, flags: PteFlags) {
     let pt = crate::kernel_page_table();
-    let mut guard = pt.lock();
     for i in 0..page_count {
         let va = va_start + i * PAGE_SIZE;
-        guard
-            .update_pte(va, flags)
+        pt.update_pte(va, flags)
             .expect("batch_update_flags: update_pte 失败");
     }
-    drop(guard);
     let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
 }
 

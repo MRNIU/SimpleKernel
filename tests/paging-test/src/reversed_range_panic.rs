@@ -12,7 +12,7 @@ use paging::{PageTable, PteFlags, PteFlagsOps};
 test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_panic);
 
 fn run_test() {
-    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let pt = PageTable::create().expect("创建测试页表失败");
     pt.identity_map_range(
         PhysAddr::new(0x20_0000),
         PhysAddr::new(0x10_0000),

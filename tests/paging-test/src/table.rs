@@ -57,7 +57,7 @@ fn test_root_paddr_is_valid() {
 
 /// 设置单页权限后应能查询到正确的物理地址和标志。
 fn test_create_pte_and_get_mapping() {
-    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
     let flags = PteFlags::kernel_rw();
@@ -71,7 +71,7 @@ fn test_create_pte_and_get_mapping() {
 
 /// 为两个不同的虚拟页设置不同权限，互不干扰。
 fn test_create_pte_different_pages() {
-    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let pt = PageTable::create().expect("创建测试页表失败");
 
     let va1 = VirtAddr::new(0x0000_1000);
     let va2 = VirtAddr::new(0x0000_2000);
@@ -93,7 +93,7 @@ fn test_create_pte_different_pages() {
 
 /// 同 VA + 同 PA + 同 flags 的重复调用应幂等。
 fn test_create_pte_idempotent() {
-    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
 
@@ -105,7 +105,7 @@ fn test_create_pte_idempotent() {
 
 /// 跨不同 VPN[2] 范围的操作，会触发不同的二级页表分配。
 fn test_create_pte_in_different_vpn_ranges() {
-    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let pt = PageTable::create().expect("创建测试页表失败");
 
     let va_low = VirtAddr::new(0x0000_1000);
     let va_high = VirtAddr::new(0x4000_0000);
@@ -132,7 +132,7 @@ fn test_get_mapping_on_empty_table() {
 
 /// identity_map_range 多页后应能逐页查询。
 fn test_identity_map_range_multi_page() {
-    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let pt = PageTable::create().expect("创建测试页表失败");
     let start = PhysAddr::new(0x10_0000);
     let end = PhysAddr::new(0x10_3000); // 3 pages
 
@@ -147,7 +147,7 @@ fn test_identity_map_range_multi_page() {
 
 /// update_pte 应修改已有页的权限并返回旧标志。
 fn test_update_pte_changes_permissions() {
-    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
 
@@ -165,7 +165,7 @@ fn test_update_pte_changes_permissions() {
 
 /// update_pte 对未映射页应返回 PageNotMapped。
 fn test_update_pte_unmapped_fails() {
-    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let pt = PageTable::create().expect("创建测试页表失败");
     let err = pt
         .update_pte(VirtAddr::new(0x1000), PteFlags::kernel_ro())
         .expect_err("未映射页 update_pte 应失败");
@@ -174,7 +174,7 @@ fn test_update_pte_unmapped_fails() {
 
 /// 同 VA + 同 PA + 不同 flags → FlagsConflict 错误（显式修改请用 update_pte）。
 fn test_create_pte_flags_conflict() {
-    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
 
@@ -188,7 +188,7 @@ fn test_create_pte_flags_conflict() {
 
 /// identity_map_range 对相同 PA+flags 的重复操作应幂等（不 panic）。
 fn test_identity_map_range_idempotent() {
-    let mut pt = PageTable::create().expect("创建测试页表失败");
+    let pt = PageTable::create().expect("创建测试页表失败");
     let start = PhysAddr::new(0x20_0000);
     let end = PhysAddr::new(0x20_2000); // 2 pages
 

@@ -65,8 +65,7 @@ pub fn init() {
     // 要求 PTE 已存在。
     {
         let mem_end = mem_start + mem_size;
-        let mut guard = paging::kernel_page_table().lock();
-        guard.identity_map_range(mem_start, mem_end, PteFlags::kernel_rw());
+        paging::kernel_page_table().identity_map_range(mem_start, mem_end, PteFlags::kernel_rw());
     }
 
     // 覆盖层：内核段各自权限覆盖背景层
@@ -105,8 +104,8 @@ pub fn init() {
 
 /// 从核内存初始化——复用主核页表并激活分页。
 pub fn init_smp(activate: impl FnOnce(&PageTable)) {
-    let guard = paging::kernel_page_table().lock();
-    activate(&guard);
+    let pt = paging::kernel_page_table();
+    activate(pt);
     log::info!(
         "MemoryInitSMP: paging enabled on core {}",
         per_cpu::current_core_id()
