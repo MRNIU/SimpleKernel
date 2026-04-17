@@ -1,8 +1,8 @@
-//! 多级页表——walk / set_page_flags / unmap 逻辑。
+//! 多级页表——walk / set_page_flags 逻辑。
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
-use alloc::collections::BTreeMap;
+use alloc::vec::Vec;
 use memory_types::{PhysAddr, VirtAddr};
 
 use frame_allocator::AllocatedFrames;
@@ -49,17 +49,6 @@ impl Table {
     }
 }
 
-/// 中间页表节点——持有帧所有权及有效 PTE 引用计数。
-struct NodeEntry {
-    /// 持有帧所有权——drop 时自动释放。
-    /// 不直接访问帧内容（通过物理地址 + identity mapping 访问），
-    /// 但必须持有所有权阻止帧被回收。
-    _frame: AllocatedFrames,
-    /// 该帧中有效 PTE 的数量。
-    /// set_page_flags 时 +1，unmap 时 -1，count == 0 时可回收。
-    ref_count: u16,
-}
-
 /// 多级页表。
 ///
 /// 拥有根帧及所有遍历过程中分配的中间帧。
@@ -67,10 +56,8 @@ struct NodeEntry {
 pub struct PageTable {
     /// 持有根帧所有权——通过 `.start_paddr()` 获取物理地址。
     root: AllocatedFrames,
-    /// 根帧的有效 PTE 引用计数（根帧不在 nodes 中，单独记录）。
-    root_ref_count: u16,
-    /// 中间页表节点——以物理地址为键，O(log n) 查找/删除。
-    nodes: BTreeMap<PhysAddr, NodeEntry>,
+    /// 中间页表节点——仅持有所有权，drop 时自动释放。
+    nodes: Vec<AllocatedFrames>,
 }
 
 impl PageTable {
@@ -79,8 +66,7 @@ impl PageTable {
         let root = crate::alloc_node_frame()?;
         Ok(Self {
             root,
-            root_ref_count: 0,
-            nodes: BTreeMap::new(),
+            nodes: Vec::new(),
         })
     }
 
@@ -88,28 +74,6 @@ impl PageTable {
     #[inline]
     pub fn root_paddr(&self) -> PhysAddr {
         self.root.start_paddr()
-    }
-
-    /// 获取指定帧的引用计数的可变引用。
-    ///
-    /// 根帧返回 `root_ref_count`，中间帧从 `nodes` 中查找。
-    #[inline]
-    fn ref_count_mut(&mut self, paddr: PhysAddr) -> &mut u16 {
-        if paddr == self.root.start_paddr() {
-            &mut self.root_ref_count
-        } else {
-            &mut self
-                .nodes
-                .get_mut(&paddr)
-                .expect("ref_count_mut: 帧未注册")
-                .ref_count
-        }
-    }
-
-    /// 递增指定帧的引用计数。
-    #[inline]
-    fn inc_ref(&mut self, paddr: PhysAddr) {
-        *self.ref_count_mut(paddr) += 1;
     }
 
     /// 映射用 walker——遍历到 Level 0 并按需分配中间节点。
@@ -127,17 +91,10 @@ impl PageTable {
             if !pte.is_valid() {
                 let frame = crate::alloc_node_frame()?;
                 let frame_paddr = frame.start_paddr();
-                // 先注册所有权，再写 PTE——若 BTreeMap::insert 因 OOM panic，
-                // frame 随 NodeEntry drop 释放，但不会产生悬挂 PTE。
-                self.nodes.insert(
-                    frame_paddr,
-                    NodeEntry {
-                        _frame: frame,
-                        ref_count: 0,
-                    },
-                );
+                // 先注册所有权，再写 PTE——若 Vec::push 因 OOM panic，
+                // frame 随 drop 释放，但不会产生悬挂 PTE。
+                self.nodes.push(frame);
                 table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
-                self.inc_ref(paddr);
                 paddr = frame_paddr;
             } else if pte.is_leaf(level) {
                 panic!(
@@ -188,14 +145,12 @@ impl PageTable {
                 );
             }
             // 同一 PA——幂等或权限变更，按需更新 flags
-            // 注意：不调用 inc_ref，引用计数已在首次建立 PTE 时递增
             if current.flags() != leaf_flags {
                 table.write(idx, PageTableEntry::new(pa, leaf_flags));
             }
             return Ok(());
         }
         table.write(idx, PageTableEntry::new(pa, leaf_flags));
-        self.inc_ref(frame_paddr);
         Ok(())
     }
 
