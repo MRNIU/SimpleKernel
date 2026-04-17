@@ -111,6 +111,7 @@ fn run() -> Result<()> {
             let dtb_path = qemu::dump_qemu_dtb(&sh, arch, &boot_dir, &rootfs_path)?;
             qemu::generate_fit_image(arch, &sh, &boot_dir, &kernel_elf_path, &dtb_path)?;
             qemu::generate_boot_script(arch, &sh, &boot_dir)?;
+            qemu::prepare_boot_part(&boot_dir)?;
             qemu::setup_tftp(&boot_dir);
             qemu::launch_qemu(
                 &sh,
@@ -133,6 +134,7 @@ fn run() -> Result<()> {
             let dtb_path = qemu::dump_qemu_dtb(&sh, arch, &boot_dir, &rootfs_path)?;
             qemu::generate_fit_image(arch, &sh, &boot_dir, &kernel_elf_path, &dtb_path)?;
             qemu::generate_boot_script(arch, &sh, &boot_dir)?;
+            qemu::prepare_boot_part(&boot_dir)?;
             qemu::setup_tftp(&boot_dir);
             qemu::launch_qemu(
                 &sh,
