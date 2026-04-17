@@ -27,7 +27,8 @@ pub fn init() {
         .expect("MEMORY_INFO not initialized");
     let mem_start = info.physical_memory_addr;
     let mem_size = info.physical_memory_size;
-    let kernel_end = info.kernel_addr + info.kernel_size;
+    let kernel_start = info.kernel_addr;
+    let kernel_end = kernel_start + info.kernel_size;
 
     // SAFETY: 链接器定义的符号
     unsafe extern "C" {
@@ -40,8 +41,9 @@ pub fn init() {
     let free_start = kernel_end.align_up();
     let free_size = mem_size - (free_start - mem_start);
 
-    // data 段只覆盖到 free_start，不含空闲帧区域
-    let text_pages = (text_end - mem_start) / config::PAGE_SIZE;
+    // 段计算——注意 text 段从 kernel_start 开始，不是 mem_start。
+    // [mem_start, kernel_start) 是固件区域（OpenSBI 等），保留背景层 kernel_rw。
+    let text_pages = (text_end - kernel_start) / config::PAGE_SIZE;
     let rodata_pages = (rodata_end - text_end) / config::PAGE_SIZE;
     let data_pages = (free_start - rodata_end) / config::PAGE_SIZE;
 
@@ -51,12 +53,25 @@ pub fn init() {
             free_start,
             free_size,
             &[
-                (mem_start, text_pages),
+                (kernel_start, text_pages),
                 (text_end, rodata_pages),
                 (rodata_end, data_pages),
             ],
         )
     };
+
+    // 帧分配器就绪——用物理帧扩展堆到完整大小
+    {
+        let extend_size = config::KERNEL_HEAP_SIZE - config::BOOTSTRAP_HEAP_SIZE;
+        let extend_pages = extend_size / config::PAGE_SIZE;
+        let heap_frames =
+            frame_allocator::AllocatedFrames::alloc(extend_pages).expect("heap extend: 帧分配失败");
+        let heap_start = heap_frames.start_paddr().to_virt().as_usize();
+        // SAFETY: 帧刚分配，identity-mapped，无其他引用
+        unsafe { heap_crate::extend(heap_start, extend_size) };
+        // 堆帧永久持有——与内核同生命周期
+        core::mem::forget(heap_frames);
+    }
 
     let pt = PageTable::create().expect("创建内核页表失败");
     paging::init_kernel_page_table(pt);
@@ -69,8 +84,9 @@ pub fn init() {
     }
 
     // 覆盖层：内核段各自权限覆盖背景层
+    // [mem_start, kernel_start) 保持背景层 kernel_rw（固件区域）
     let segments: [(PhysAddr, PteFlags); 3] = [
-        (mem_start, PteFlags::kernel_rwx()),
+        (kernel_start, PteFlags::kernel_rx()),
         (text_end, PteFlags::kernel_ro()),
         (rodata_end, PteFlags::kernel_rw()),
     ];
@@ -90,8 +106,10 @@ pub fn init() {
     }
 
     log::info!(
-        "MemoryInit: code {}-{} (RWX), rodata {}-{} (RO), data {}-{} (RW), free {}-{} (RW bg)",
+        "MemoryInit: fw {}-{} (RW bg), code {}-{} (RX), rodata {}-{} (RO), data {}-{} (RW), free {}-{} (RW bg)",
         mem_start,
+        kernel_start,
+        kernel_start,
         text_end,
         text_end,
         rodata_end,

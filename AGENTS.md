@@ -143,6 +143,8 @@ cargo fmt --check && cargo clippy -- -D warnings
 cargo doc --no-deps
 ```
 
+**QEMU 超时**：在 QEMU 中运行内核或测试时经常出现卡死或无限循环打印日志的情况。所有通过 Bash 工具执行的 QEMU 相关命令（`cargo xtask run`、`cargo xtask test`）**必须设置 30 秒超时**（`timeout: 30000`）。超时后应 `pkill -f qemu-system` 清理残留进程。
+
 ## TESTING
 
 两层测试体系 + 冒烟测试：纯逻辑单元测试（宿主机）、独立 QEMU 系统测试、冒烟测试（内核启动时自动运行）。

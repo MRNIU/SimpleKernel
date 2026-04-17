@@ -3,8 +3,8 @@
 /// 负责 PLIC 初始化、stvec 设置，以及陷阱分发（定时器、外部中断、IPI、系统调用、异常）。
 use core::arch::global_asm;
 
+use memory::MmioRegion;
 use memory_types::PhysAddr;
-use paging::mmio::MmioRegion;
 
 use super::context::TrapContext;
 
@@ -72,9 +72,9 @@ fn plic_init() {
         addr as usize
     };
 
-    // Step 1: 映射 PLIC MMIO 区域，返回 MmioRegion（类型安全的 MMIO 访问）
+    // Step 1: 通过 memory 门面映射 PLIC MMIO 区域（含 RAM 重叠校验）
     let region =
-        MmioRegion::map(PhysAddr::new(base), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
+        memory::map_mmio(PhysAddr::new(base), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
     PLIC.call_once(|| region);
 
     let plic = plic();

@@ -65,7 +65,7 @@ pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError
     let mmio_size = size.max(VIRTIO_MMIO_SIZE);
 
     // 映射 MMIO 区域
-    let vaddr = memory::map_mmio(paddr, mmio_size).map_err(|e| {
+    let region = memory::map_mmio(paddr, mmio_size).map_err(|e| {
         log::warn!(
             "VirtIO MMIO 映射失败 (paddr={}, size={:#x}): {:?}",
             paddr,
@@ -75,7 +75,8 @@ pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError
         DeviceError::MmioMapFailed
     })?;
 
-    let header = NonNull::new(vaddr.as_mut_ptr::<VirtIOHeader>()).expect("MMIO vaddr 不应为空");
+    let header =
+        NonNull::new(region.base().as_mut_ptr::<VirtIOHeader>()).expect("MMIO vaddr 不应为空");
 
     // SAFETY: vaddr 指向已映射的 VirtIO MMIO 区域，生命周期为 'static（MMIO 映射永久存在）
     let transport = match unsafe { MmioTransport::new(header, mmio_size) } {

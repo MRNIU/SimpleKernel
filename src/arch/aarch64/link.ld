@@ -17,7 +17,7 @@ SECTIONS
   /* Read-only sections, merged into text segment: */
   PROVIDE (__executable_start = SEGMENT_START("text-segment", 0x40100000));
   . = SEGMENT_START("text-segment", 0x40100000) + SIZEOF_HEADERS;
-  .boot           : ALIGN(0x1000) { *(.text.boot) *(.data.boot) *(.bss.boot) }
+  .boot           : ALIGN(0x1000) { *(.text.boot) }
   .interp         : { *(.interp) }
   .note.gnu.build-id  : { *(.note.gnu.build-id) }
   .hash           : { *(.hash) }

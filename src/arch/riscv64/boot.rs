@@ -15,6 +15,7 @@ global_asm!(
 .type _boot, @function
 .extern _start
 .extern __global_pointer$
+.extern BOOT_STACK
 
 _boot:
     // dtb 地址 (a1) 为零则跳过 gp 初始化
@@ -31,7 +32,7 @@ _boot:
 2:  // 按照每个 core 设置栈地址：(hart_id + 1) << log2(KERNEL_STACK_SIZE)
     add t0, a0, 1
     slli t0, t0, {KERNEL_STACK_SIZE_LOG2}
-    la sp, stack_top
+    la sp, BOOT_STACK
     add sp, sp, t0
 
     // 将 hart id 写入 tp
@@ -44,14 +45,6 @@ _boot:
 
     call _start
     wfi
-
-.section .bss.boot
-.align 16
-.global stack_top
-stack_top:
-    .space {KERNEL_STACK_SIZE} * {MAX_CORE_COUNT}
 "#,
     KERNEL_STACK_SIZE_LOG2 = const KERNEL_STACK_SIZE_LOG2,
-    KERNEL_STACK_SIZE = const config::KERNEL_STACK_SIZE,
-    MAX_CORE_COUNT = const config::MAX_CORE_COUNT,
 );

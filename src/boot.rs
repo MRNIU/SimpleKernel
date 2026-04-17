@@ -3,7 +3,21 @@
 //! 提供 `kernel_init()` 函数，将启动序列分解为独立级别，
 //! 供内核主入口和系统测试共用。
 
+use core::cell::SyncUnsafeCell;
+
 use crate::arch::{Arch, ArchOps};
+
+/// 启动栈——仅在 `_boot` 入口到 `task::init()` 首次上下文切换期间使用。
+///
+/// 每核 `KERNEL_STACK_SIZE` 字节，共 `MAX_CORE_COUNT` 核。
+/// 声明为普通 BSS 静态变量（data 段，RW），不放入 `.bss.boot`——
+/// 后者在链接脚本中位于 `__etext` 之前，会被 W^X 覆盖为 RX 导致栈不可写。
+///
+/// 汇编通过 `la sp, BOOT_STACK` 引用此符号（PC-relative 寻址，不要求与
+/// `.text.boot` 在同一 section）。
+#[unsafe(no_mangle)]
+static BOOT_STACK: SyncUnsafeCell<[u8; config::KERNEL_STACK_SIZE * config::MAX_CORE_COUNT]> =
+    SyncUnsafeCell::new([0; config::KERNEL_STACK_SIZE * config::MAX_CORE_COUNT]);
 
 /// 内核初始化级别
 pub enum InitLevel {

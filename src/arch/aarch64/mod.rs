@@ -54,23 +54,9 @@ impl ArchOps for Aarch64 {
     }
 
     fn map_early_mmio() -> Result<(), memory::error::MemoryError> {
-        // PL011 UART —— MMIO identity map（VA == PA，Device-nGnRnE 属性）。
-        // 使用 MmioRegion 而非 mmap_identity_range：
-        // - MMIO 地址不在帧分配器中，不能用 AllocatedFrames::alloc
-        // - 需要 kernel_device() 属性（非 cacheable）
-        let _pl011 =
-            paging::mmio::MmioRegion::map(memory_types::PhysAddr::new(PL011_BASE), PL011_SIZE)
-                .map_err(|e| {
-                    log::warn!(
-                        "PL011 MMIO 映射失败 (addr={:#x}, size={:#x}): {:?}",
-                        PL011_BASE,
-                        PL011_SIZE,
-                        e
-                    );
-                    memory::error::MemoryError::MapFailed
-                })?;
-        // MmioRegion 永久存在——leak 掉防止 Drop 回收虚拟页
-        core::mem::forget(_pl011);
+        // PL011 UART —— 通过 memory 门面建立 MMIO identity map
+        // （VA == PA，Device-nGnRnE 属性，含 RAM 重叠校验）。
+        memory::map_mmio(memory_types::PhysAddr::new(PL011_BASE), PL011_SIZE)?;
         log::info!("MemoryInit: mapped PL011 UART @ {:#010X}", PL011_BASE);
         Ok(())
     }

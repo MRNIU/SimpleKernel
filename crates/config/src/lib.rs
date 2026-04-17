@@ -23,8 +23,15 @@ pub const TLB_FLUSH_THRESHOLD: usize = 33;
 /// 内核线程栈大小
 pub const KERNEL_STACK_SIZE: usize = 4 * PAGE_SIZE;
 
-/// 内核堆大小
+/// 内核堆总大小（引导堆 + 帧分配堆）
 pub const KERNEL_HEAP_SIZE: usize = 1024 * PAGE_SIZE;
+
+/// 引导堆大小——BSS 中的最小堆，仅够 `frame_allocator::init()` 使用。
+///
+/// `frame_allocator` 的 buddy 后端使用 `BTreeSet`（需要堆分配），
+/// 因此在帧分配器就绪之前必须有一个最小堆。
+/// 帧分配器初始化后，由 `memory::init()` 从物理帧扩展堆到 `KERNEL_HEAP_SIZE`。
+pub const BOOTSTRAP_HEAP_SIZE: usize = 16 * PAGE_SIZE;
 
 /// Per-CPU 区域对齐
 pub const PER_CPU_ALIGN_SIZE: usize = 128;

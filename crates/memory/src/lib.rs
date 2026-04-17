@@ -68,14 +68,16 @@ pub use tlb;
 
 /// 映射错误类型 re-export。
 pub use paging::error::PagingError;
+/// MMIO 区域（re-export `paging::mmio::MmioRegion`）。
+pub use paging::mmio::MmioRegion;
 
 pub use globals::{MEMORY_INFO, MemoryInfo};
 
 pub use init::{init, init_smp};
 
-/// 将 MMIO 物理地址区间 identity-map，返回 `paddr` 对应的虚拟地址。
+/// 将 MMIO 物理地址区间 identity-map，返回类型安全的 [`MmioRegion`]。
 ///
-/// 内部按页对齐建立映射，但返回值精确对应调用方请求的 `paddr`（类似 Linux `ioremap`）。
+/// 这是建立 MMIO 映射的**唯一公开入口**——内部完成 RAM 重叠校验和页表映射。
 /// MMIO 映射永久存在（MmioRegion 不 unmap）。
 ///
 /// 重叠检测由 PageTable 的 PTE 担当真相源——同 PA + 同 flags 幂等通过，
@@ -87,7 +89,7 @@ pub use init::{init, init_smp};
 pub fn map_mmio(
     paddr: memory_types::PhysAddr,
     size: usize,
-) -> Result<memory_types::VirtAddr, error::MemoryError> {
+) -> Result<MmioRegion, error::MemoryError> {
     // paddr RAM 校验——拒绝将 RAM 重映射为 Device 内存
     let info = MEMORY_INFO
         .get()
@@ -103,6 +105,5 @@ pub fn map_mmio(
         ram_end
     );
 
-    paging::mmio::MmioRegion::map(paddr, size)?;
-    Ok(paddr.to_virt())
+    Ok(paging::mmio::MmioRegion::map(paddr, size)?)
 }

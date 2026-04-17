@@ -1,20 +1,19 @@
 //! 内核堆分配器——`#[global_allocator]` 实现。
 //!
-//! # 在内存子系统中的定位
-//!
-//! 堆是内存子系统中**最先初始化**的组件——`frame_allocator` 的 buddy 后端
-//! 内部使用 `BTreeSet`（需要堆分配），因此堆必须在帧分配器之前就绪。
+//! # 两阶段初始化
 //!
 //! ```text
 //! memory::init()
 //!    │
-//!    ├── 1. heap::init()        ← 本 crate（最先）
-//!    ├── 2. frame_allocator::init()  （依赖堆）
-//!    └── 3. PageTable / OwnedPages   （依赖帧分配器）
+//!    ├── 1. heap::init()              ← BSS 引导堆（64KB，仅够 BTreeSet）
+//!    ├── 2. frame_allocator::init()   （依赖引导堆）
+//!    ├── 3. heap::extend(addr, size)  ← 帧分配器就绪后，用物理帧扩展堆
+//!    └── 4. PageTable / OwnedPages    （使用扩展后的完整堆）
 //! ```
 //!
-//! 通过 `SpinLock` 包装 `buddy_system_allocator`，
-//! 作为 `#[global_allocator]` 为内核提供 `Box`、`Vec` 等堆分配能力。
+//! 引导堆存在的原因：`frame_allocator` 的 buddy 后端内部使用 `BTreeSet`
+//! （第三方 crate `buddy_system_allocator`），需要堆分配。
+//! 引导堆是打破 "堆需要帧 ↔ 帧需要堆" 循环依赖的最小 BSS 垫片。
 //!
 //! **禁止在中断上下文中进行堆分配**——alloc/dealloc 入口包含运行时断言。
 
@@ -22,7 +21,6 @@
 #![feature(sync_unsafe_cell)]
 
 use buddy_system_allocator::Heap;
-use config::KERNEL_HEAP_SIZE;
 use core::alloc::{GlobalAlloc, Layout};
 use core::cell::SyncUnsafeCell;
 use core::ptr::NonNull;
@@ -68,27 +66,46 @@ static HEAP_ALLOCATOR: SafeHeap = SafeHeap(SpinLock::new(
     sync_crate::lock_level::HEAP,
 ));
 
-/// BSS 区域堆后备存储。
+/// BSS 引导堆——打破 "堆需要帧 ↔ 帧需要堆" 循环依赖的最小垫片。
 ///
-/// 使用 `SyncUnsafeCell` 代替 `static mut`，遵循项目规范。
-/// 仅在 `init()` 中通过指针访问，之后由 `HEAP_ALLOCATOR` 独占管理。
-static HEAP_SPACE: SyncUnsafeCell<[u8; KERNEL_HEAP_SIZE]> =
-    SyncUnsafeCell::new([0; KERNEL_HEAP_SIZE]);
+/// 仅 `BOOTSTRAP_HEAP_SIZE`（64KB），够 `frame_allocator::init()` 的
+/// `BTreeSet` 分配。帧分配器就绪后通过 [`extend`] 用物理帧扩展到完整堆。
+static BOOTSTRAP_HEAP: SyncUnsafeCell<[u8; config::BOOTSTRAP_HEAP_SIZE]> =
+    SyncUnsafeCell::new([0; config::BOOTSTRAP_HEAP_SIZE]);
 
-/// 初始化内核堆分配器。
+/// 初始化引导堆——仅提供 `frame_allocator::init()` 所需的最小堆。
 ///
 /// # Safety
 /// 必须恰好调用一次，且在任何堆分配之前调用。
 pub unsafe fn init() {
-    let heap_start = HEAP_SPACE.get() as usize;
-    // SAFETY: HEAP_SPACE 是静态 BSS 区域，init 仅调用一次，
-    // 之后该区域完全由 HEAP_ALLOCATOR 内部锁保护
+    let start = BOOTSTRAP_HEAP.get() as usize;
+    // SAFETY: BOOTSTRAP_HEAP 是静态 BSS 区域，init 仅调用一次
     unsafe {
-        HEAP_ALLOCATOR.0.lock().init(heap_start, KERNEL_HEAP_SIZE);
+        HEAP_ALLOCATOR
+            .0
+            .lock()
+            .init(start, config::BOOTSTRAP_HEAP_SIZE);
     }
     log::info!(
-        "HeapInit: {}MB heap at {:#x}",
-        KERNEL_HEAP_SIZE / (1024 * 1024),
-        heap_start
+        "HeapInit: {}KB bootstrap heap at {:#x}",
+        config::BOOTSTRAP_HEAP_SIZE / 1024,
+        start
     );
+}
+
+/// 用帧分配器提供的物理内存扩展堆。
+///
+/// 在 `frame_allocator::init()` 之后调用。SAS identity mapping 下
+/// 物理地址即虚拟地址，帧内存可直接作为堆空间使用。
+///
+/// # Safety
+/// - `start` 必须是有效的、页对齐的物理地址（identity-mapped）
+/// - `[start, start+size)` 范围内的内存不被其他模块使用
+/// - 调用方负责持有对应的 `AllocatedFrames`（防止帧被回收）
+pub unsafe fn extend(start: usize, size: usize) {
+    // SAFETY: 调用方保证内存范围有效且独占
+    unsafe {
+        HEAP_ALLOCATOR.0.lock().add_to_heap(start, start + size);
+    }
+    log::info!("HeapExtend: +{}KB at {:#x}", size / 1024, start);
 }

@@ -258,7 +258,10 @@ impl PageTable {
     /// 将 `[start, end)` 物理地址区间 identity-map（VA == PA），仅使用 4KB 页。
     ///
     /// ADR-006 移除了大页支持——SAS + QEMU 下大页无可观测收益。
-    /// 所有页均以 4KB 粒度映射，调用 `create_pte`。
+    /// 所有页均以 4KB 粒度映射。
+    ///
+    /// 批量操作——内部只取一次 nodes 锁，避免逐页锁获取/释放开销。
+    /// 对 128 MB RAM（32K 页）从 32K 次锁操作降为 1 次。
     ///
     /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
     /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
@@ -275,9 +278,12 @@ impl PageTable {
             "identity_map_range: 无效地址范围 [{addr}, {end_aligned})"
         );
 
+        let leaf_flags = flags.for_leaf_at_level(0);
+        let mut nodes = self.nodes.lock();
+
         while addr.as_usize() < end_aligned.as_usize() {
             let va = VirtAddr::new(addr.as_usize());
-            match self.create_pte(va, addr, flags) {
+            match self.walk_create_and_write(&mut nodes, va, addr, leaf_flags) {
                 Ok(()) => {}
                 Err(PagingError::FlagsConflict) => panic!(
                     "identity_map_range: VA {} flags 冲突——已有 PTE 的权限与请求不同",

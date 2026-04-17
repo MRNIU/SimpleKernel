@@ -27,6 +27,9 @@ impl MmioRegion {
     /// # Errors
     ///
     /// 页表映射失败时返回错误。
+    /// **不要直接调用**——请使用 `memory::map_mmio`，后者包含 RAM 重叠校验。
+    ///
+    /// 此方法保留 `pub` 仅因 `memory` crate 需要跨 crate 调用。
     pub fn map(paddr: PhysAddr, size: usize) -> Result<Self, PagingError> {
         let pa_aligned = paddr.align_down();
         let end_aligned = (paddr + size).align_up();
