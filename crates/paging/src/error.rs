@@ -9,6 +9,8 @@ pub enum PagingError {
     AllocationFailed,
     /// 目标 VA 未映射
     PageNotMapped,
+    /// 已有 PTE 的 flags 与请求冲突（同 PA + 不同 flags）
+    FlagsConflict,
 }
 
 impl fmt::Display for PagingError {
@@ -16,6 +18,9 @@ impl fmt::Display for PagingError {
         match self {
             Self::AllocationFailed => write!(f, "page table node frame allocation failed"),
             Self::PageNotMapped => write!(f, "virtual address not mapped"),
+            Self::FlagsConflict => {
+                write!(f, "PTE flags conflict (same PA, different flags)")
+            }
         }
     }
 }

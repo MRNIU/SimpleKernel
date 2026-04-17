@@ -1,4 +1,4 @@
-//! 页表操作测试——验证 set_page_flags/get_mapping/update_flags/identity_map_range 核心操作。
+//! 页表操作测试——验证 create_pte/get_mapping/update_pte/identity_map_range 核心操作。
 
 #![no_std]
 #![no_main]
@@ -16,17 +16,17 @@ fn run_tests() {
     test_root_paddr_is_valid();
     log::info!("test root_paddr_is_valid ... ok");
 
-    test_set_page_flags_and_get_mapping();
-    log::info!("test set_page_flags_and_get_mapping ... ok");
+    test_create_pte_and_get_mapping();
+    log::info!("test create_pte_and_get_mapping ... ok");
 
-    test_set_page_flags_different_pages();
-    log::info!("test set_page_flags_different_pages ... ok");
+    test_create_pte_different_pages();
+    log::info!("test create_pte_different_pages ... ok");
 
-    test_set_page_flags_idempotent();
-    log::info!("test set_page_flags_idempotent ... ok");
+    test_create_pte_idempotent();
+    log::info!("test create_pte_idempotent ... ok");
 
-    test_set_page_flags_in_different_vpn_ranges();
-    log::info!("test set_page_flags_in_different_vpn_ranges ... ok");
+    test_create_pte_in_different_vpn_ranges();
+    log::info!("test create_pte_in_different_vpn_ranges ... ok");
 
     test_get_mapping_on_empty_table();
     log::info!("test get_mapping_on_empty_table ... ok");
@@ -34,14 +34,14 @@ fn run_tests() {
     test_identity_map_range_multi_page();
     log::info!("test identity_map_range_multi_page ... ok");
 
-    test_update_flags_changes_permissions();
-    log::info!("test update_flags_changes_permissions ... ok");
+    test_update_pte_changes_permissions();
+    log::info!("test update_pte_changes_permissions ... ok");
 
-    test_update_flags_unmapped_fails();
-    log::info!("test update_flags_unmapped_fails ... ok");
+    test_update_pte_unmapped_fails();
+    log::info!("test update_pte_unmapped_fails ... ok");
 
-    test_set_page_flags_updates_flags_same_pa();
-    log::info!("test set_page_flags_updates_flags_same_pa ... ok");
+    test_create_pte_flags_conflict();
+    log::info!("test create_pte_flags_conflict ... ok");
 
     test_identity_map_range_idempotent();
     log::info!("test identity_map_range_idempotent ... ok");
@@ -56,14 +56,13 @@ fn test_root_paddr_is_valid() {
 }
 
 /// 设置单页权限后应能查询到正确的物理地址和标志。
-fn test_set_page_flags_and_get_mapping() {
+fn test_create_pte_and_get_mapping() {
     let mut pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
     let flags = PteFlags::kernel_rw();
 
-    pt.set_page_flags(va, pa, flags)
-        .expect("set_page_flags 应成功");
+    pt.create_pte(va, pa, flags).expect("create_pte 应成功");
 
     let (mapped_pa, mapped_flags) = pt.get_mapping(va).expect("应能找到页表项");
     assert_eq!(mapped_pa, pa);
@@ -71,7 +70,7 @@ fn test_set_page_flags_and_get_mapping() {
 }
 
 /// 为两个不同的虚拟页设置不同权限，互不干扰。
-fn test_set_page_flags_different_pages() {
+fn test_create_pte_different_pages() {
     let mut pt = PageTable::create().expect("创建测试页表失败");
 
     let va1 = VirtAddr::new(0x0000_1000);
@@ -79,9 +78,9 @@ fn test_set_page_flags_different_pages() {
     let pa1 = PhysAddr::new(0x8020_0000);
     let pa2 = PhysAddr::new(0x8020_1000);
 
-    pt.set_page_flags(va1, pa1, PteFlags::kernel_rw())
+    pt.create_pte(va1, pa1, PteFlags::kernel_rw())
         .expect("set va1");
-    pt.set_page_flags(va2, pa2, PteFlags::kernel_rx())
+    pt.create_pte(va2, pa2, PteFlags::kernel_rx())
         .expect("set va2");
 
     let (got_pa1, got_flags1) = pt.get_mapping(va1).expect("va1 应有页表项");
@@ -93,19 +92,19 @@ fn test_set_page_flags_different_pages() {
 }
 
 /// 同 VA + 同 PA + 同 flags 的重复调用应幂等。
-fn test_set_page_flags_idempotent() {
+fn test_create_pte_idempotent() {
     let mut pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
 
-    pt.set_page_flags(va, pa, PteFlags::kernel_rw())
-        .expect("首次 set 应成功");
-    pt.set_page_flags(va, pa, PteFlags::kernel_rw())
-        .expect("幂等 set 应成功");
+    pt.create_pte(va, pa, PteFlags::kernel_rw())
+        .expect("首次 create 应成功");
+    pt.create_pte(va, pa, PteFlags::kernel_rw())
+        .expect("幂等 create 应成功");
 }
 
 /// 跨不同 VPN[2] 范围的操作，会触发不同的二级页表分配。
-fn test_set_page_flags_in_different_vpn_ranges() {
+fn test_create_pte_in_different_vpn_ranges() {
     let mut pt = PageTable::create().expect("创建测试页表失败");
 
     let va_low = VirtAddr::new(0x0000_1000);
@@ -113,9 +112,9 @@ fn test_set_page_flags_in_different_vpn_ranges() {
     let pa1 = PhysAddr::new(0x8020_0000);
     let pa2 = PhysAddr::new(0x8020_1000);
 
-    pt.set_page_flags(va_low, pa1, PteFlags::kernel_rw())
+    pt.create_pte(va_low, pa1, PteFlags::kernel_rw())
         .expect("set low");
-    pt.set_page_flags(va_high, pa2, PteFlags::kernel_rw())
+    pt.create_pte(va_high, pa2, PteFlags::kernel_rw())
         .expect("set high");
 
     let (got1, _) = pt.get_mapping(va_low).expect("low 应有页表项");
@@ -146,17 +145,17 @@ fn test_identity_map_range_multi_page() {
     }
 }
 
-/// update_flags 应修改已有页的权限并返回旧标志。
-fn test_update_flags_changes_permissions() {
+/// update_pte 应修改已有页的权限并返回旧标志。
+fn test_update_pte_changes_permissions() {
     let mut pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
 
-    pt.set_page_flags(va, pa, PteFlags::kernel_rw())
-        .expect("set 应成功");
+    pt.create_pte(va, pa, PteFlags::kernel_rw())
+        .expect("create 应成功");
     let old_flags = pt
-        .update_flags(va, PteFlags::kernel_ro())
-        .expect("update_flags 应成功");
+        .update_pte(va, PteFlags::kernel_ro())
+        .expect("update_pte 应成功");
     assert_eq!(old_flags, PteFlags::kernel_rw());
 
     let (got_pa, got_flags) = pt.get_mapping(va).expect("页表项应存在");
@@ -164,28 +163,27 @@ fn test_update_flags_changes_permissions() {
     assert_eq!(got_flags, PteFlags::kernel_ro());
 }
 
-/// update_flags 对未映射页应返回 PageNotMapped。
-fn test_update_flags_unmapped_fails() {
+/// update_pte 对未映射页应返回 PageNotMapped。
+fn test_update_pte_unmapped_fails() {
     let mut pt = PageTable::create().expect("创建测试页表失败");
     let err = pt
-        .update_flags(VirtAddr::new(0x1000), PteFlags::kernel_ro())
-        .expect_err("未映射页 update_flags 应失败");
+        .update_pte(VirtAddr::new(0x1000), PteFlags::kernel_ro())
+        .expect_err("未映射页 update_pte 应失败");
     assert_eq!(err, PagingError::PageNotMapped);
 }
 
-/// 同 VA + 同 PA + 不同 flags → 更新权限。
-fn test_set_page_flags_updates_flags_same_pa() {
+/// 同 VA + 同 PA + 不同 flags → FlagsConflict 错误（显式修改请用 update_pte）。
+fn test_create_pte_flags_conflict() {
     let mut pt = PageTable::create().expect("创建测试页表失败");
     let va = VirtAddr::new(0x1000);
     let pa = PhysAddr::new(0x8020_0000);
 
-    pt.set_page_flags(va, pa, PteFlags::kernel_rw())
-        .expect("首次 set 应成功");
-    pt.set_page_flags(va, pa, PteFlags::kernel_ro())
-        .expect("更新权限应成功");
-
-    let (_, flags) = pt.get_mapping(va).expect("页表项应存在");
-    assert_eq!(flags, PteFlags::kernel_ro());
+    pt.create_pte(va, pa, PteFlags::kernel_rw())
+        .expect("首次 create 应成功");
+    let err = pt
+        .create_pte(va, pa, PteFlags::kernel_ro())
+        .expect_err("不同 flags 应返回 FlagsConflict");
+    assert_eq!(err, PagingError::FlagsConflict);
 }
 
 /// identity_map_range 对相同 PA+flags 的重复操作应幂等（不 panic）。

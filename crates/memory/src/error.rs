@@ -15,10 +15,6 @@ pub enum MemoryError {
     PageNotMapped,
     /// 全局内核页表未初始化
     InvalidPageTable,
-    /// MMIO 区域与已注册区域完全重合——幂等重复，调用方可安全忽略
-    MmioIdentical,
-    /// MMIO 区域与已注册区域部分重叠——真正的冲突
-    MmioOverlap,
 }
 
 impl fmt::Display for MemoryError {
@@ -44,6 +40,7 @@ impl From<paging::error::PagingError> for MemoryError {
         match e {
             PagingError::AllocationFailed => Self::AllocationFailed,
             PagingError::PageNotMapped => Self::PageNotMapped,
+            PagingError::FlagsConflict => Self::MapFailed,
         }
     }
 }

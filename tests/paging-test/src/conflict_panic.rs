@@ -16,7 +16,7 @@ fn run_test() {
     let conflict_va = VirtAddr::new(0x10_2000);
     let conflict_pa = PhysAddr::new(0x10_2000);
     // 先以 kernel_ro 占位
-    pt.set_page_flags(conflict_va, conflict_pa, PteFlags::kernel_ro())
+    pt.create_pte(conflict_va, conflict_pa, PteFlags::kernel_ro())
         .expect("占位应成功");
 
     // 以 kernel_rw 对同一区域 identity_map_range——flags 冲突，应 panic

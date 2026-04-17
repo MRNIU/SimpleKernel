@@ -92,8 +92,8 @@ fn batch_update_flags(va_start: VirtAddr, page_count: usize, flags: PteFlags) {
     for i in 0..page_count {
         let va = va_start + i * PAGE_SIZE;
         guard
-            .update_flags(va, flags)
-            .expect("batch_update_flags: update_flags 失败");
+            .update_pte(va, flags)
+            .expect("batch_update_flags: update_pte 失败");
     }
     drop(guard);
     let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);

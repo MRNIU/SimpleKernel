@@ -409,7 +409,6 @@ dependencies = [
  "paging",
  "per_cpu",
  "spin",
- "sync",
  "tlb",
 ]
 

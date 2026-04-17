@@ -10,7 +10,6 @@ edition.workspace = true
 [dependencies]
 config = { path = "../config" }
 memory_types = { path = "../memory_types" }
-sync_crate = { path = "../sync", package = "sync" }
 per_cpu = { path = "../per_cpu" }
 paging = { path = "../paging" }
 frame_allocator = { path = "../frame_allocator" }

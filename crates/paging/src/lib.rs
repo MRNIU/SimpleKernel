@@ -25,7 +25,7 @@
 //!
 //! # 使用方式
 //!
-//! [`PageTable`] 的写操作（`set_page_flags`、`update_flags` 等）为 `pub`，
+//! [`PageTable`] 的写操作（`create_pte`、`update_pte` 等）为 `pub`，
 //! 但正常使用时应通过 `OwnedPages` / `MmioRegion` 等 RAII 类型调用，
 //! 确保帧所有权和权限通过仿射类型管理。
 //!

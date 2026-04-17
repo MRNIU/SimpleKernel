@@ -61,7 +61,7 @@ pub fn init() {
     let pt = PageTable::create().expect("创建内核页表失败");
     paging::init_kernel_page_table(pt);
 
-    // 背景层：必须先于 OwnedPages——OwnedPages::new 通过 update_flags 更新权限，
+    // 背景层：必须先于 OwnedPages——OwnedPages::new 通过 update_pte 更新权限，
     // 要求 PTE 已存在。
     {
         let mem_end = mem_start + mem_size;

@@ -1,4 +1,4 @@
-//! 多级页表——walk / set_page_flags 逻辑。
+//! 多级页表——walk / create_pte / update_pte 逻辑。
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -110,21 +110,28 @@ impl PageTable {
         Ok((paddr, idx))
     }
 
-    /// 设置单个虚拟页（4KB）的 PTE 标志位。
+    /// 创建单个虚拟页（4KB）的 PTE。
     ///
-    /// SAS 全量映射下 PTE 始终存在，此方法的语义是：
-    /// - 若该 VA 无 PTE → 创建 Level 0 叶 PTE
-    /// - 若该 VA 已有 PTE 且 PA 相同 → 按需更新 flags
+    /// SAS 全量映射下 PTE 始终存在。此方法的语义：
+    /// - 若该 VA 无 PTE → 创建 Level 0 叶 PTE，返回 Ok
+    /// - 若该 VA 已有 PTE 且 PA 相同且 flags 相同 → 幂等，返回 Ok
+    /// - 若该 VA 已有 PTE 且 PA 相同但 flags 不同 → Err(FlagsConflict)；
+    ///   显式修改 flags 请使用 [`update_pte`](Self::update_pte)
     /// - 若该 VA 已有 PTE 但 PA 不同 → panic（内核 bug）
     ///
     /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
     /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
     ///
+    /// # Errors
+    ///
+    /// - `PagingError::AllocationFailed` — 中间节点帧分配失败
+    /// - `PagingError::FlagsConflict` — 同 PA 不同 flags
+    ///
     /// # Panics
     ///
     /// - walk 路径上遇到非预期的大页叶 PTE（页表损坏）
     /// - VA 已映射到不同的 PA（内核 bug）
-    pub fn set_page_flags(
+    pub fn create_pte(
         &mut self,
         va: VirtAddr,
         pa: PhysAddr,
@@ -138,15 +145,14 @@ impl PageTable {
         if current.is_valid() {
             if current.paddr() != pa {
                 panic!(
-                    "set_page_flags: VA {} 已指向 PA {}，试图改为 PA {}（不同 PA 是内核 bug）",
+                    "create_pte: VA {} 已指向 PA {}，试图改为 PA {}（不同 PA 是内核 bug）",
                     va,
                     current.paddr(),
                     pa
                 );
             }
-            // 同一 PA——幂等或权限变更，按需更新 flags
             if current.flags() != leaf_flags {
-                table.write(idx, PageTableEntry::new(pa, leaf_flags));
+                return Err(PagingError::FlagsConflict);
             }
             return Ok(());
         }
@@ -159,7 +165,7 @@ impl PageTable {
     /// 单次页表遍历完成查找和更新，避免双重 walk 开销。
     ///
     /// **调用方必须在此操作后执行 TLB 刷新。**
-    pub fn update_flags(
+    pub fn update_pte(
         &mut self,
         va: VirtAddr,
         new_flags: PteFlags,
@@ -178,7 +184,7 @@ impl PageTable {
 
     /// 只读遍历——从根向下查找叶 PTE，返回已读取的 PTE、所在帧物理地址、索引及层级。
     ///
-    /// 供 [`walk_to_leaf`] 和 [`update_flags`] 共用，避免重复 walk 逻辑。
+    /// 供 [`walk_to_leaf`] 和 [`update_pte`] 共用，避免重复 walk 逻辑。
     /// 返回已缓存的 PTE，调用方无需再次读取。
     fn walk_to_leaf(&self, va: VirtAddr) -> Option<(PageTableEntry, PhysAddr, usize, usize)> {
         let mut paddr = self.root.start_paddr();
@@ -211,7 +217,7 @@ impl PageTable {
     /// 将 `[start, end)` 物理地址区间 identity-map（VA == PA），仅使用 4KB 页。
     ///
     /// ADR-006 移除了大页支持——SAS + QEMU 下大页无可观测收益。
-    /// 所有页均以 4KB 粒度映射，调用 `set_page_flags`。
+    /// 所有页均以 4KB 粒度映射，调用 `create_pte`。
     ///
     /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
     /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
@@ -230,8 +236,12 @@ impl PageTable {
 
         while addr.as_usize() < end_aligned.as_usize() {
             let va = VirtAddr::new(addr.as_usize());
-            match self.set_page_flags(va, addr, flags) {
+            match self.create_pte(va, addr, flags) {
                 Ok(()) => {}
+                Err(PagingError::FlagsConflict) => panic!(
+                    "identity_map_range: VA {} flags 冲突——已有 PTE 的权限与请求不同",
+                    va
+                ),
                 Err(e) => panic!("identity_map_range: 设置 {va} 权限失败: {e}"),
             }
             addr += config::PAGE_SIZE;

@@ -24,7 +24,7 @@ pub mod lock_level {
     pub const INTERRUPT_THREADS: u8 = 2;
     /// MMIO 区域跟踪锁
     pub const KERNEL_AS: u8 = 3;
-    /// 内核页表锁——set_page_flags/update_flags 持有时可能获取 FRAME_ALLOC / HEAP
+    /// 内核页表锁——create_pte/update_pte 持有时可能获取 FRAME_ALLOC / HEAP
     pub const KERNEL_PT: u8 = 4;
     /// DMA 追踪表锁——释放 DMA 缓冲区时可能获取 FRAME_ALLOC
     pub const DMA: u8 = 5;
