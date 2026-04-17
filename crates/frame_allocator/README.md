@@ -1,49 +1,38 @@
 # frame_allocator
 
-物理帧分配器——以 2-state typestate 在编译期追踪帧的所有权。
+物理帧分配器——RAII 所有权追踪 + buddy 后端。
 
 ## 概览
 
 `frame_allocator` 管理内核的物理页帧（4KB 粒度），提供分配和释放操作。
-核心设计是将帧的所有权状态（空闲 / 已分配）编码为 Rust 的 const generic 类型参数，
-使非法的状态转换在编译期被拒绝。
+核心类型 `AllocatedFrames` 通过 Rust 的 move 语义在编译期追踪帧所有权——
+不可 Clone、不可 Copy，Drop 时自动归还 buddy allocator。
 
 从 `memory` crate 独立出来的原因：帧分配是内存子系统中最底层、最独立的能力，
 被页表（`paging`）、权限管理（`OwnedPages`）等上层模块共同依赖。
 独立 crate 使依赖方向单向化，也允许 `paging` 直接集成，无需经过 `memory`。
 
-## 状态机
-
-核心类型定义：
+## 核心类型
 
 ```rust
-pub enum FrameState { Free, Allocated }
-
-pub struct Frames<const S: FrameState> {
+pub struct AllocatedFrames {
     range: FrameSpan,   // 连续物理帧范围 [start, end)
 }
-
-pub type FreeFrames      = Frames<{ FrameState::Free }>;
-pub type AllocatedFrames = Frames<{ FrameState::Allocated }>;
 ```
-
-只有两个状态——帧在分配器中（Free）或被外部持有（Allocated）：
 
 ```
             alloc()              Drop
-buddy pool ────────> Allocated ────────> buddy pool
-            (Free->Allocated)     (dealloc_to_backend)
+buddy pool ────────> AllocatedFrames ────────> buddy pool
+                                      (dealloc_to_backend)
 ```
 
-`FrameState` 通过 const generic 参数嵌入类型，不同状态是**不同类型**。
-状态转换消费 self 并返回新状态的实例，编译器自动阻止对旧实例的使用。
+Rust ownership + Drop 提供所有编译期保证：
 
-| 状态 | 含义 | 所有者 | Drop 行为 |
-|------|------|--------|-----------|
-| `Free` | 刚从 buddy allocator 取出，尚未交给用户 | 分配器内部 | 归还 buddy |
-| `Allocated` | 用户持有 | 调用方 / OwnedPages | 归还 buddy |
-
-Drop 行为统一——所有状态的帧都归还分配器，无需运行时 panic 保护网。
+| 防御场景 | 机制 |
+|---------|------|
+| 未分配就使用帧 | `AllocatedFrames::alloc` 是唯一公开构造器 |
+| 释放后使用帧 | Drop 消费 self → 编译错误 |
+| 双重持有 | 不可 Clone/Copy → move 语义保证唯一所有权 |
 
 ## 模块结构
 
@@ -51,9 +40,8 @@ Drop 行为统一——所有状态的帧都归还分配器，无需运行时 pa
 src/
 ├── lib.rs           crate 入口，pub use 汇总
 ├── error.rs         FrameAllocError 定义
-├── state.rs         FrameState 枚举、Frames<S> 结构体、通用操作、Drop
-├── alloc.rs         全局 SpinLockIrq<FrameAllocator<32>>、init / alloc / dealloc
-└── transitions.rs   FreeFrames::into_allocated() + AllocatedFrames::alloc()
+├── frames.rs        AllocatedFrames 结构体、alloc/alloc_one、Drop
+└── alloc.rs         全局 SpinLockIrq<FrameAllocator<32>>、init / alloc_from_backend / dealloc
 ```
 
 ## 分配与释放路径
@@ -64,20 +52,24 @@ src/
 AllocatedFrames::alloc(count)
   |
   +-> alloc_from_backend(count)          <- 持有 SpinLockIrq
-  |     +-> buddy.alloc(count)
-  |     +-> 构造 FreeFrames              <- 释放锁
-  |
-  +-> write_bytes(ptr, 0, ...)           <- 零初始化（锁外执行）
-  |
-  +-> FreeFrames::into_state()           <- typestate 转换（零开销）
+        +-> buddy.alloc(count)
+        +-> 构造 AllocatedFrames         <- 释放锁
 ```
 
-关键设计：零初始化在锁外执行，避免持锁期间做 O(n) 的内存写入。
+帧内容**未初始化**——调用方按场景决定初始化策略：
+
+| 调用方 | 初始化策略 | 原因 |
+|-------|-----------|------|
+| `alloc_node_frame()`（页表节点） | 清零 | 无效 PTE = 0 |
+| `dma_alloc()`（DMA 缓冲区） | 清零 | 防信息泄漏到设备 |
+| 栈/一般数据 | 按需 | 立即写入，无需清零 |
+
+这遵循"机制与策略分离"原则（与 Linux `alloc_pages` / Theseus `allocate_frames` 一致）。
 
 ### 释放
 
 ```
-drop(AllocatedFrames)  或  drop(FreeFrames)
+drop(AllocatedFrames)
   |
   +-> dealloc_to_backend(range)          <- 持有 SpinLockIrq
         +-> buddy.dealloc(start, count)
@@ -98,7 +90,7 @@ drop(AllocatedFrames)  或  drop(FreeFrames)
 ## 使用示例
 
 ```rust
-// 分配 1 帧（4KB），内容已清零
+// 分配 1 帧（4KB），内容未初始化
 let frame = AllocatedFrames::alloc_one()?;
 let pa = frame.start_paddr();
 
@@ -115,14 +107,15 @@ assert_eq!(frames.count(), 4);
 let frames = AllocatedFrames::alloc(4)?;
 let guard = OwnedPages::new(frames, PteFlags::kernel_ro());
 // guard.set_flags(PteFlags::kernel_rw());  // 改权限
-// drop(guard) → 恢复默认权限 + 释放帧
+// drop(guard) → 恢复默认权限 + poison 填充 + 释放帧
 ```
 
 ## 注意事项
 
-### 1. 所有分配均零初始化
+### 1. 帧内容未初始化
 
-`alloc()` / `alloc_one()` 始终将帧内容清零，防止信息泄漏。
+`alloc()` / `alloc_one()` 返回的帧内容未初始化——调用方必须按需初始化。
+在 Rust 中访问未初始化内存需要 `unsafe`，编写者有义务保证初始化。
 
 ### 2. Buddy 内部碎片
 

@@ -10,7 +10,7 @@
 两个核心 trait：
 
 - **`PteFlagsOps`** — 标志位操作：preset 映射（`kernel_rw` / `user_rw` 等）、
-  权限查询（`is_writable` / `is_user`）、层级适配、EXCLUSIVE 软件位
+  权限查询（`is_writable` / `is_user`）、Builder（`with_writable` / `with_executable`）、层级适配
 - **`PteOps`** — 完整 PTE 操作：构造（叶 / 中间节点）、地址与标志提取、
   有效性判断、原始值访问
 
@@ -23,7 +23,6 @@
 | **中间节点** | V=1, R/W/X 全零 | VALID=1, TABLE=1 |
 | **设备 MMIO** | 等同 kernel_rw（TODO: Svpbmt） | MAIR_IDX1 (Device-nGnRnE) |
 | **层级适配** | 无需（格式统一） | 清除 TABLE 位（L1+ 的块描述符） |
-| **EXCLUSIVE 位** | RSW bit 8 | 软件可用位 bit 55 |
 | **用户态标记** | USER 位（bit 4） | AP_UNPRIV (bit 6) + NG (bit 11) |
 
 本 crate 无 `alloc` / `config` 依赖，可在 heap 未初始化的早期启动阶段使用。
@@ -35,9 +34,9 @@
 ```
 63    54 53                       10 9  8  7  6  5  4  3  2  1  0
 ┌───────┬───────────────────────────┬────┬──┬──┬──┬──┬──┬──┬──┬──┐
-│ rsv'd │          PPN              │ EX │ D│ A│ G│ U│ X│ W│ R│ V│
+│ rsv'd │          PPN              │RSW │ D│ A│ G│ U│ X│ W│ R│ V│
 └───────┴───────────────────────────┴────┴──┴──┴──┴──┴──┴──┴──┴──┘
-         44-bit PPN → PA[55:12]      ↑ 软件 EXCLUSIVE 位（RSW[8]）
+         44-bit PPN → PA[55:12]      ↑ 软件保留位（当前未使用）
 ```
 
 - Sv39/48/57 使用相同格式，模式无关
@@ -48,10 +47,10 @@
 ```
 63  58 55 54 53  12 11 10 9  8  7  6  4  2  1  0
 ┌───┬──┬──┬──┬───┬──┬──┬────┬──┬────┬────┬──┬──┐
-│rsv│EX│UX│PX│OA │nG│AF│ SH │  │ AP │MAIR│TBL│ V│
+│rsv│SW│UX│PX│OA │nG│AF│ SH │  │ AP │MAIR│TBL│ V│
 └───┴──┴──┴──┴───┴──┴──┴────┴──┴────┴────┴──┴──┘
   ↑                                         ↑
-  bit 55: EXCLUSIVE                    bit 1: TABLE（叶/中间节点区分）
+  bit 55: 软件可用（当前未使用）         bit 1: TABLE（叶/中间节点区分）
 ```
 
 - 叶节点（页/块描述符）与中间节点（表描述符）通过 TABLE 位区分
@@ -143,13 +142,6 @@ let pte = PageTableEntry::new(PhysAddr::new(0x4000_0000), flags);
 let pte = PageTableEntry::new_intermediate(PhysAddr::new(0x8030_0000));
 assert!(pte.is_valid());
 assert!(!pte.is_leaf(1)); // 中间节点不是叶
-```
-
-### EXCLUSIVE 位
-
-```rust
-let flags = PteFlags::kernel_rw().with_exclusive();
-assert!(flags.is_exclusive());
 ```
 
 ## 注意事项

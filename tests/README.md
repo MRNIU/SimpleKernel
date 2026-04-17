@@ -29,11 +29,10 @@ cargo xtask test --list                                  # 列出可用测试
 | | `lockstack` | normal | 锁栈级别顺序检查 |
 | | `lockstack-pop-mismatch-panic` | should_panic | 锁栈 pop 指针不匹配检测 |
 | | `recursive-lock-panic` | should_panic | 同核递归加锁检测 |
-| `frame-test` | `alloc` | normal | 帧分配/释放、typestate 生命周期转换 |
+| `frame-test` | `alloc` | normal | 帧分配/释放、RAII 所有权生命周期 |
 | `heap-test` | | normal | 堆分配（Box、Vec、大块） |
 | `device-test` | | normal | DeviceManager、VirtIO 块设备读取 |
 | `fs-test` | | normal | VFS 路径解析、RamFS CRUD、多级目录 |
-| `vma-test` | | normal | VMA mmap/munmap/find_vma/register_existing |
 | `pte-test` | | normal | 页表项编解码（RISC-V + AArch64） |
 | `panic-test` | | should_panic | panic handler 正确触发 |
 
