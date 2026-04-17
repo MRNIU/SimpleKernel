@@ -16,6 +16,12 @@
 | 004 | [消除内核源码中的 `#[cfg(bare_metal)]`](004-cfg-bare-metal-elimination.md) | 提议 | 2026-04-04 | — |
 | 005 | [SAS 全量映射 + OwnedPages 所有权模型](005-sas-full-mapping-owned-pages.md) | 已取代 | 2026-04-09 | R3 |
 | 006 | [内存子系统简化——4KB 单页 + 2-state + 权限覆盖模型](006-memory-subsystem-simplification.md) | 已接受 | 2026-04-11 | R3 |
+| 007 | [消除 VMA 模块及内存子系统死代码](007-eliminate-vma-and-dead-code.md) | 提议 | 2026-04-12 | R3 |
+| 008 | [删除 FrameState typestate 与 `adt_const_params` nightly 依赖](008-eliminate-frame-state-typestate.md) | 提议 | 2026-04-17 | R3 回看 |
+| 009 | [删除 CLAIMED 软件位与 page poison 纵深防御](009-remove-claimed-bit-and-page-poison.md) | 提议 | 2026-04-17 | R3 回看 |
+| 010 | [PageTable 内部结构简化——BTreeMap → Vec，删除引用计数死代码](010-pagetable-nodes-vec-and-remove-refcount.md) | 提议 | 2026-04-17 | R3 回看 |
+| 011 | [MMIO overlap 检测统一至 `set_page_flags`；引入 `FlagsConflict` 错误](011-mmio-overlap-via-set-page-flags.md) | 提议 | 2026-04-17 | R3 回看 |
+| 012 | [PageTable 拆分；hot-path PTE 更新无锁化](012-pagetable-split-lock-free-hot-path.md) | 提议 | 2026-04-17 | R3 回看 |
 
 ## 状态规则
 
