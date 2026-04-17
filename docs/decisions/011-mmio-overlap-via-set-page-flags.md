@@ -1,4 +1,4 @@
-# ADR-011: MMIO overlap 检测统一至 `set_page_flags`；引入 `FlagsConflict` 错误
+# ADR-011: MMIO overlap 检测统一至 `create_pte`；引入 `FlagsConflict` 错误
 
 > **状态**: 提议
 >
@@ -42,9 +42,9 @@ pub fn map_mmio(paddr, size) -> Result<VirtAddr, MemoryError> {
 
 panic 后内核 halt 虽不产生"后果"，但代码逻辑"先做不可回滚动作再检查能否做"本身是反模式。
 
-### 问题 2：`set_page_flags` 在 "同 PA + 不同 flags" 时的语义与 `identity_map_range` 的预期矛盾
+### 问题 2：`create_pte` 在 "同 PA + 不同 flags" 时的语义与 `identity_map_range` 的预期矛盾
 
-当前 `set_page_flags(va, pa, flags)` 行为：
+当前 `create_pte(va, pa, flags)` 行为：
 
 ```rust
 if current.is_valid() {
@@ -61,25 +61,25 @@ if current.is_valid() {
 
 但 `tests/paging-test/src/conflict_panic.rs` 期望：
 ```rust
-pt.set_page_flags(va, pa, kernel_ro)?;             // 先占位
+pt.create_pte(va, pa, kernel_ro)?;             // 先占位
 pt.identity_map_range(..., kernel_rw);             // 以不同 flags 覆盖 → 测试期待 panic
 ```
 
 行为不一致：
-- `set_page_flags` 文档说"按需更新 flags"（允许冲突）
+- `create_pte` 文档说"按需更新 flags"（允许冲突）
 - `identity_map_range` 测试期望"flags 冲突 panic"
 - 现行实现不 panic——测试 `should_panic` 期望落空
 
-这是 **`set_page_flags` 承担了两种本应分开的语义**：
+这是 **`create_pte` 承担了两种本应分开的语义**：
 1. **首次建立**（VA→PA+flags 作为完整契约）
 2. **隐式更新**（当 VA 已有 PA 但 flags 不同时，改 flags）
 
-这两种语义应由不同的 API 承担：前者是 `set_page_flags`（"建立"），后者是 `update_flags`（"仅改 flags"）——两者已经各自存在，但 `set_page_flags` 错误地兼职了后者。
+这两种语义应由不同的 API 承担：前者是 `create_pte`（"建立"），后者是 `update_pte`（"仅改 flags"）——两者已经各自存在，但 `create_pte` 错误地兼职了后者。
 
 ### 问题 3：`MmioRegion::map` 接收裸 paddr 缺乏 RAM 交叉校验
 
 若驱动（或 FDT 解析错误）将落在 `MEMORY_INFO.physical_memory` 范围内的 paddr 传入，当前会：
-1. `set_page_flags` 在 SAS 背景层对该 PA 的 PTE 把 flags 从 `kernel_rw` 更新为 `kernel_device()`
+1. `create_pte` 在 SAS 背景层对该 PA 的 PTE 把 flags 从 `kernel_rw` 更新为 `kernel_device()`
 2. AArch64 下 RAM 被重映射为 Device-nGnRnE——uncacheable + strong ordering，性能骤降 + 潜在一致性问题
 3. RISC-V 下（无 Svpbmt）缓存属性无变化，但仍是概念错误
 
@@ -93,11 +93,11 @@ pt.identity_map_range(..., kernel_rw);             // 以不同 flags 覆盖 →
 | `map_mmio` 调用 `check_mmio_overlap` 的匹配块 | 5 |
 | **合计** | **~32 行** |
 
-新增 `set_page_flags` 返回 `FlagsConflict` 分支：~6 行。净减 ~26 行。
+新增 `create_pte` 返回 `FlagsConflict` 分支：~6 行。净减 ~26 行。
 
 ## 备选方案
 
-### 方案 A: `set_page_flags` 新增 `Err(FlagsConflict)` + 删除 MMIO_REGIONS + paddr RAM 校验
+### 方案 A: `create_pte` 新增 `Err(FlagsConflict)` + 删除 MMIO_REGIONS + paddr RAM 校验
 
 **设计**：
 
@@ -110,7 +110,7 @@ pub enum PagingError {
 }
 
 // crates/paging/src/table.rs
-pub fn set_page_flags(&mut self, va, pa, flags) -> Result<(), PagingError> {
+pub fn create_pte(&mut self, va, pa, flags) -> Result<(), PagingError> {
     let leaf_flags = flags.for_leaf_at_level(0);
     let (frame_paddr, idx) = self.walk_create(va)?;
     let mut table = unsafe { Table::from_paddr(frame_paddr) };
@@ -152,31 +152,31 @@ pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, MemoryError> {
 
 **优点**:
 - 单一真相源——PageTable 中的 PTE 本身是 overlap 检测的 canonical state，无需另设 BTreeMap
-- `set_page_flags` 语义清晰：建立契约，flags 冲突告诉调用方（返回 Err，不默默变更）；`update_flags` 仍用于显式改 flags 场景（`OwnedPages::set_flags`、`claim_pages` 等）
-- 消除 TOCTOU——`identity_map_range` 遇到冲突时 PTE **未被修改**（`set_page_flags` 在冲突时不 write），panic 前状态一致
+- `create_pte` 语义清晰：建立契约，flags 冲突告诉调用方（返回 Err，不默默变更）；`update_pte` 仍用于显式改 flags 场景（`OwnedPages::set_flags`、`claim_pages` 等）
+- 消除 TOCTOU——`identity_map_range` 遇到冲突时 PTE **未被修改**（`create_pte` 在冲突时不 write），panic 前状态一致
 - 消除 `UNSPECIFIED` 锁级别语义错误（静态连同锁一起删）
 - paddr RAM 校验在唯一合适的入口（`memory::map_mmio`）防 Device-memory 重映射 RAM
 - 修复 `conflict_panic.rs` 测试失败状态
 
 **缺点**:
-- `set_page_flags` 行为变化——当前宽松（默默更新），新版严格（冲突返回 Err）。调用方需要适配：
+- `create_pte` 行为变化——当前宽松（默默更新），新版严格（冲突返回 Err）。调用方需要适配：
   - `identity_map_range` 需要 panic 处理新错误——这正是期望行为
-  - `OwnedPages::new`、`OwnedPages::set_flags` 通过 `update_flags` 调用路径（不经过 `set_page_flags`）——不受影响
+  - `OwnedPages::new`、`OwnedPages::set_flags` 通过 `update_pte` 调用路径（不经过 `create_pte`）——不受影响
 - `MmioRegion::map` 的 PL011/PLIC 驱动直连调用路径不再经过 `memory::map_mmio` 校验——这些是内核内部驱动，trusted；是否需要将 RAM 校验下沉到 `MmioRegion::map` 自身是次要决策
 
 ### 方案 B: 保留 MMIO_REGIONS，修复操作顺序（先检查后映射）
 
 **优点**:
-- 不改 `set_page_flags` 语义
+- 不改 `create_pte` 语义
 
 **缺点**:
 - BTreeMap 仍重复记录 PTE 已有信息
-- 现有 `set_page_flags` / `identity_map_range` 间的语义矛盾未解决，`conflict_panic.rs` 仍然期望错误的行为
+- 现有 `create_pte` / `identity_map_range` 间的语义矛盾未解决，`conflict_panic.rs` 仍然期望错误的行为
 - 锁级别 UNSPECIFIED 问题未修——MMIO_REGIONS + KERNEL_PT 潜在锁序风险仍在
 
 ### 方案 C: 保持现状
 
-维持"先映射后检查"、宽松 `set_page_flags`、`conflict_panic.rs` 测试与代码矛盾。
+维持"先映射后检查"、宽松 `create_pte`、`conflict_panic.rs` 测试与代码矛盾。
 
 **优点**: 零改动
 
@@ -189,7 +189,7 @@ pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, MemoryError> {
 ## 理由
 
 - **PageTable 的 PTE 是 MMIO overlap 的自然真相源**——软件层的 BTreeMap 是重复簿记；删除它去 TOCTOU、去锁序问题、去 UNSPECIFIED 锁级别问题、去 `MmioIdentical`/`MmioOverlap` 两个 error 变体
-- **`set_page_flags` vs `update_flags` 是显式意图区分**：`HashMap::insert` vs `HashMap::get_mut().set()` 的类比——建立新键时重复键给警告，已知键的修改走 get_mut；两种意图不应被一个 API 兼职
+- **`create_pte` vs `update_pte` 是显式意图区分**：`HashMap::insert` vs `HashMap::get_mut().set()` 的类比——建立新键时重复键给警告，已知键的修改走 get_mut；两种意图不应被一个 API 兼职
 - **paddr RAM 校验成本极低**（一次算术比较），收益是拒绝一类隐式 RAM 损坏
 - **`conflict_panic.rs` 测试的原作者意图是"flags 冲突 = 配置错误"**——方案 A 让代码与意图对齐；方案 C 让测试失败
 
@@ -202,7 +202,7 @@ pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, MemoryError> {
 | 文件 | 变更 |
 |------|------|
 | `crates/paging/src/error.rs` | `PagingError` 新增 `FlagsConflict` 变体 + `Display` 描述 |
-| `crates/paging/src/table.rs` | `set_page_flags` 在 "同 PA + 不同 flags" 时返回 `Err(FlagsConflict)` 而非默默更新；注释更新"按需更新 flags"→"flags 冲突返回错误" |
+| `crates/paging/src/table.rs` | `create_pte` 在 "同 PA + 不同 flags" 时返回 `Err(FlagsConflict)` 而非默默更新；注释更新"按需更新 flags"→"flags 冲突返回错误" |
 | `crates/paging/src/table.rs` | `identity_map_range` 的 match 分支覆盖 `FlagsConflict` → panic |
 | `crates/memory/src/lib.rs` | 删除 `MMIO_REGIONS` 静态、`check_mmio_overlap` 函数；`map_mmio` 加 paddr RAM 校验并简化为 "map + 返回 paddr.to_virt()"；删除 `use alloc::collections::BTreeMap` / `SpinLockIrq` 相关 import |
 | `crates/memory/src/error.rs` | 删除 `MemoryError::{MmioIdentical, MmioOverlap}` 变体；`From<PagingError>` 新增 `FlagsConflict` 映射为 `MapFailed`（或保留 PagingError 作为 source） |
@@ -217,25 +217,25 @@ pub fn map_mmio(paddr: PhysAddr, size: usize) -> Result<VirtAddr, MemoryError> {
 | `MemoryError::MmioOverlap` | 删除 |
 | `MemoryError::MapFailed` | 保留（或新增为 FlagsConflict 的映射目标——待实施时权衡） |
 | `memory::map_mmio` | 签名不变；行为：部分重叠不再 panic，返回 `Err(MapFailed)` 或类似 |
-| `PageTable::set_page_flags` | 签名不变；新错误分支 `FlagsConflict` |
+| `PageTable::create_pte` | 签名不变；新错误分支 `FlagsConflict` |
 
 ### 测试
 
 - `tests/paging-test/src/conflict_panic.rs` 无需修改代码——实施 ADR 后应从"测试失败"变为"测试通过"（`identity_map_range` 遇冲突 panic）
-- `tests/paging-test/src/table.rs` 的 `test_set_page_flags_idempotent` 和 `test_set_page_flags_updates_flags_same_pa`：
-  - `test_set_page_flags_idempotent` 传相同 flags——保持 Ok
-  - `test_set_page_flags_updates_flags_same_pa` 传不同 flags——**需要适配**：改为预期 `Err(FlagsConflict)`；或改测 `update_flags` 显式更新路径
+- `tests/paging-test/src/table.rs` 的 `test_create_pte_idempotent` 和 `test_create_pte_updates_flags_same_pa`：
+  - `test_create_pte_idempotent` 传相同 flags——保持 Ok
+  - `test_create_pte_updates_flags_same_pa` 传不同 flags——**需要适配**：改为预期 `Err(FlagsConflict)`；或改测 `update_pte` 显式更新路径
 - 新增测试：`test_map_mmio_rejects_ram_address`——传入 RAM 范围内 paddr 应 panic
 
 ### 文档
 
-- `crates/paging/src/table.rs::set_page_flags` doc comment：
+- `crates/paging/src/table.rs::create_pte` doc comment：
   ```
   /// SAS 全量映射下 PTE 始终存在。此方法的语义：
   /// - 若该 VA 无 PTE → 创建 Level 0 叶 PTE，返回 Ok
   /// - 若该 VA 已有 PTE 且 PA 相同且 flags 相同 → 幂等，返回 Ok
   /// - 若该 VA 已有 PTE 且 PA 相同但 flags 不同 → Err(FlagsConflict)；
-  ///   显式修改 flags 请使用 update_flags
+  ///   显式修改 flags 请使用 update_pte
   /// - 若该 VA 已有 PTE 但 PA 不同 → panic（内核 bug）
   ```
 - `crates/memory/src/lib.rs` 模块注释：删除 `MMIO_REGIONS` 和"检测重叠"描述

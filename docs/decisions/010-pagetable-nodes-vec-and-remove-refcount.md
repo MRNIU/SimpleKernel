@@ -40,7 +40,7 @@ impl PageTable {
 | 操作 | 位置 | 说明 |
 |------|------|------|
 | 写入（初始化为 0） | `PageTable::create`, `walk_create` 中 `NodeEntry { ref_count: 0, ... }` | 初始化 |
-| 写入（递增） | `inc_ref → ref_count_mut += 1` | `walk_create` 新建中间节点时；`set_page_flags` 新建叶 PTE 时 |
+| 写入（递增） | `inc_ref → ref_count_mut += 1` | `walk_create` 新建中间节点时；`create_pte` 新建叶 PTE 时 |
 | **读取** | **无** | `ref_count_mut` 返回 `&mut u16` 但只被 `inc_ref` 调用，调用者不读返回值 |
 
 该字段从未被任何逻辑读取。移除后无行为变化。
@@ -102,7 +102,7 @@ impl PageTable {
         let idx = vpn_index(va, 0);
         Ok((paddr, idx))
     }
-    // set_page_flags 同样删除 inc_ref 调用
+    // create_pte 同样删除 inc_ref 调用
 }
 ```
 
@@ -150,14 +150,14 @@ impl PageTable {
 
 | 文件 | 变更 |
 |------|------|
-| `crates/paging/src/table.rs` | 删除 `struct NodeEntry`、`root_ref_count` 字段、`ref_count_mut` 方法、`inc_ref` 方法；`nodes` 字段类型改为 `Vec<AllocatedFrames>`；`walk_create` 中 `self.nodes.insert(...)` 改为 `self.nodes.push(frame)`；删除 `self.inc_ref(paddr)` 调用（共 2 处：walk_create 和 set_page_flags）；`PageTable::create` 初始化字段调整 |
+| `crates/paging/src/table.rs` | 删除 `struct NodeEntry`、`root_ref_count` 字段、`ref_count_mut` 方法、`inc_ref` 方法；`nodes` 字段类型改为 `Vec<AllocatedFrames>`；`walk_create` 中 `self.nodes.insert(...)` 改为 `self.nodes.push(frame)`；删除 `self.inc_ref(paddr)` 调用（共 2 处：walk_create 和 create_pte）；`PageTable::create` 初始化字段调整 |
 | `crates/paging/src/table.rs` | 模块内 `use alloc::collections::BTreeMap` 改为 `use alloc::vec::Vec` |
 
 ### API 变更
 
 | 项 | 变更 |
 |----|------|
-| `PageTable` 公开 API（`create`, `root_paddr`, `set_page_flags`, `update_flags`, `get_mapping`, `identity_map_range`） | 不变 |
+| `PageTable` 公开 API（`create`, `root_paddr`, `create_pte`, `update_flags`, `get_mapping`, `identity_map_range`） | 不变 |
 
 外部调用方完全不受影响。
 
