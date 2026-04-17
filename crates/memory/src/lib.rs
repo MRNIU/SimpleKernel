@@ -38,17 +38,8 @@
 //! drop(mapping); // 恢复 kernel_rw + 归还帧
 //!
 //! // MMIO 映射
-//! let va = memory::map_mmio(PhysAddr::new(0x1000_0000), 0x1000)?;
+//! let region = memory::map_mmio(PhysAddr::new(0x1000_0000), 0x1000)?;
 //! ```
-//!
-//! # 初始化顺序
-//!
-//! 1. `heap::init()` — 启用堆分配（buddy 内部需要 BTreeSet）
-//! 2. `frame_allocator::init()` — 空闲帧入 buddy，内核段帧预留
-//! 3. `PageTable::create()` + `identity_map_range()` — 背景层
-//! 4. `OwnedPages::new()` × 3 + `mem::forget()` — 覆盖层（永久持有）
-//!
-//! 详见 `docs/design/memory-subsystem-v2.md`。
 
 #![no_std]
 

@@ -51,14 +51,9 @@ const PLIC_CONTEXT_BASE: usize = 0x0020_0000;
 /// PLIC 阈值/claim 寄存器每上下文间距
 const PLIC_CONTEXT_STRIDE: usize = 0x1000;
 
-/// 初始化 PLIC
-///
-/// 1. 将 PLIC 寄存器区域 identity-map 进内核页表（返回 `MmioRegion`）
-/// 2. 设置 UART IRQ（10）优先级为 1
-/// 3. 使能 hart 0 S-mode 上下文中的 UART IRQ
-/// 4. 设置 hart 0 S-mode 上下文阈值为 0（接受所有优先级 ≥1 的中断）
+/// 初始化 PLIC——映射 MMIO、配置 UART IRQ 优先级/使能/阈值。
 fn plic_init() {
-    // Step 0: 从 FDT 读取 PLIC 基地址（FDT 是唯一来源）
+    // 从 FDT 读取 PLIC 基地址
     let base = {
         let fdt_addr = *crate::fdt::FDT_ADDR
             .get()
@@ -72,22 +67,23 @@ fn plic_init() {
         addr as usize
     };
 
-    // Step 1: 通过 memory 门面映射 PLIC MMIO 区域（含 RAM 重叠校验）
+    // 映射 PLIC MMIO 区域
     let region =
         memory::map_mmio(PhysAddr::new(base), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
     PLIC.call_once(|| region);
 
     let plic = plic();
-    // Step 2: 设置 UART IRQ 优先级（偏移 = IRQ * 4）
+
+    // 设置 UART IRQ 优先级
     plic.write_reg::<u32>(PLIC_PRIORITY_BASE + UART_IRQ as usize * 4, 1);
 
-    // Step 3: 使能 IRQ 10 — hart 0 S-mode 上下文
+    // 使能 UART IRQ — hart 0 S-mode 上下文
     let enable_offset =
         PLIC_ENABLE_BASE + PLIC_S_CONTEXT_HART0 * PLIC_ENABLE_STRIDE + (UART_IRQ as usize / 32) * 4;
     let current: u32 = plic.read_reg(enable_offset);
     plic.write_reg::<u32>(enable_offset, current | (1 << (UART_IRQ % 32)));
 
-    // Step 4: 设置阈值为 0
+    // 阈值 = 0：接受所有优先级 ≥1 的中断
     let threshold_offset = PLIC_CONTEXT_BASE + PLIC_S_CONTEXT_HART0 * PLIC_CONTEXT_STRIDE;
     plic.write_reg::<u32>(threshold_offset, 0);
 }
@@ -202,9 +198,6 @@ pub fn init_smp() {
     }
 }
 
-// 陷阱分发入口（由 interrupt.S 调用）
-
-// ─── scause 中断/异常编码 ────────────────────────────────────────────
 /// S-mode 软件中断（IPI）
 const CAUSE_S_SOFTWARE_INT: u64 = 1;
 /// S-mode 定时器中断

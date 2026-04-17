@@ -128,9 +128,6 @@ cargo xtask run --arch aarch64
 # Debug (GDB on localhost:1234)
 cargo xtask debug --arch riscv64
 
-# Unit tests (host, pure logic only)
-cargo test -p memory_types -p config -p page_table_entry -p arch
-
 # System tests in QEMU
 cargo xtask test --arch riscv64                        # all standalone tests
 cargo xtask test --arch riscv64 --name panic-test      # specific standalone test
@@ -147,20 +144,7 @@ cargo doc --no-deps
 
 ## TESTING
 
-两层测试体系 + 冒烟测试：纯逻辑单元测试（宿主机）、独立 QEMU 系统测试、冒烟测试（内核启动时自动运行）。
-
-### 纯逻辑单元测试（Host Unit Tests）
-
-在宿主机上运行，测试不涉及硬件的纯计算逻辑。
-
-```bash
-cargo test -p memory_types -p config -p page_table_entry -p arch  # 全部纯逻辑测试
-cargo test -p memory_types                        # 单个 crate
-cargo test -p config -- page_size --nocapture     # 单个测试（显示输出）
-```
-
-适用范围：地址运算、PTE 编解码、常量验证等。
-在模块内用 `#[cfg(test)] mod tests { ... }` 编写，标准 `#[test]` 宏。
+独立 QEMU 系统测试 + 冒烟测试（内核启动时自动运行）。
 
 ### 独立 QEMU 系统测试（Standalone Tests）
 
