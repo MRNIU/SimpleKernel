@@ -14,7 +14,7 @@
 //! ├───────────────┬──────────────────┬──────────────────┤
 //! │ frame_allocator│ page_table_entry  │ tlb             │
 //! │ 物理帧分配     │ PTE 编解码        │ TLB 刷新        │
-//! │ Frames<S>     │ PteFlagsOps/PteOps│ TlbFlushGuard   │
+//! │ AllocatedFrames│ PteFlagsOps/PteOps│ TlbFlushGuard   │
 //! ├───────────────┴──────────────────┴──────────────────┤
 //! │  memory_types — PhysAddr · VirtAddr · Frame · Span   │
 //! └─────────────────────────────────────────────────────┘

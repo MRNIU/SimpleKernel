@@ -72,10 +72,20 @@ pub fn kernel_page_table() -> &'static sync_crate::SpinLock<PageTable> {
 
 /// 分配一个零初始化的页表节点帧。
 fn alloc_node_frame() -> Result<frame_allocator::AllocatedFrames, error::PagingError> {
-    frame_allocator::AllocatedFrames::alloc_one().map_err(|e| {
+    let frame = frame_allocator::AllocatedFrames::alloc_one().map_err(|e| {
         log::warn!("页表节点帧分配失败: {:?}", e);
         error::PagingError::AllocationFailed
-    })
+    })?;
+    // 页表节点需要全零初态（无效 PTE = 0），由此处负责清零
+    // SAFETY: identity mapping 下 PA.to_virt() 有效；帧刚分配，无其他引用
+    unsafe {
+        core::ptr::write_bytes(
+            frame.start_paddr().to_virt().as_mut_ptr::<u8>(),
+            0,
+            config::PAGE_SIZE,
+        );
+    }
+    Ok(frame)
 }
 
 /// 从虚拟地址中提取第 `level` 级的 VPN 索引。

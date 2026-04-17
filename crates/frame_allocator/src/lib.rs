@@ -1,4 +1,4 @@
-//! 物理帧分配器——typestate 生命周期追踪 + buddy 后端。
+//! 物理帧分配器——RAII 帧所有权 + buddy 后端。
 //!
 //! # 在内存子系统中的定位
 //!
@@ -15,37 +15,35 @@
 //! buddy_system_allocator (后端)
 //! ```
 //!
-//! # 2-State Typestate
+//! # 分配器接口
 //!
 //! ```text
-//! buddy pool ──alloc()──▶ Allocated ──Drop──▶ buddy pool
+//! buddy pool ──alloc()──▶ AllocatedFrames ──Drop──▶ buddy pool
 //! ```
 //!
-//! - `Free`：分配器持有，仅在 `alloc_from_backend` 内部短暂存在
-//! - `Allocated`：外部持有，通过 `AllocatedFrames` 类型表示
+//! `AllocatedFrames` 是唯一的公开帧类型——持有所有权，Drop 时归还分配器。
+//! 帧内容**未初始化**，调用方按需清零或初始化。
 //!
 //! 帧的所有权通过 Rust move 语义在编译期追踪，无需引用计数或 PTE 标记位。
 //!
 //! # 典型用法
 //!
 //! ```rust,ignore
-//! let frames = AllocatedFrames::alloc(4)?;  // 4 连续帧，已清零
+//! let frames = AllocatedFrames::alloc(4)?;  // 4 连续帧，内容未初始化
 //! // frames 通过 identity mapping 可直接访问
 //! let ptr: *mut u8 = frames.start_paddr().to_virt().as_mut_ptr();
 //! // Drop 时自动归还 buddy
 //! ```
 
 #![no_std]
-#![feature(adt_const_params)]
 
 mod alloc;
 mod error;
-mod state;
-mod transitions;
+mod frames;
 
 pub use alloc::init;
 pub use error::FrameAllocError;
-pub use state::{AllocatedFrames, FrameState, Frames};
+pub use frames::AllocatedFrames;
 
 /// 物理帧范围——`frame_allocator` 内部使用的便利别名。
 pub(crate) type FrameSpan = memory_types::Span<memory_types::Frame>;

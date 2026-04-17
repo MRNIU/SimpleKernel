@@ -29,7 +29,7 @@
 //   `PerCpuFrameCache` 的方法签名接受 `&HeldInterrupts` 参数。
 //
 // 对现有代码的影响：
-//   仅修改本文件（alloc.rs）；state.rs 和 transitions.rs 无需改动。
+//   仅修改本文件（alloc.rs）和 frames.rs。
 //
 // 前置条件：
 //   需要用户进程（页分配频率足够高才有优化价值）。
@@ -41,7 +41,7 @@ use crate::FrameSpan;
 use sync_crate::SpinLockIrq;
 
 use crate::FrameAllocError;
-use crate::state::{AllocatedFrames, FreeFrames};
+use crate::frames::AllocatedFrames;
 
 /// 全局帧分配器，以页帧（PAGE_SIZE 字节）为单位管理物理内存。
 static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocatorInner> = SpinLockIrq::new(
@@ -130,14 +130,14 @@ pub unsafe fn init(
     result
 }
 
-/// 从 buddy allocator 取出帧，构造 `FreeFrames`。
+/// 从 buddy allocator 取出帧，构造 `AllocatedFrames`。
 ///
 /// 这是与底层分配器交互的唯一分配出口——所有分配路径都经过此函数。
 ///
 /// `count` 必须 > 0，否则返回 `AllocationFailed`。
 /// 注意 buddy 内部会将 `count` 向上取整到 2 的幂次，
 /// 实际分配的帧数可能多于请求数，但 `FrameSpan` 仅跟踪请求的帧。
-pub(crate) fn alloc_from_backend(count: usize) -> Result<FreeFrames, FrameAllocError> {
+pub(crate) fn alloc_from_backend(count: usize) -> Result<AllocatedFrames, FrameAllocError> {
     if count == 0 {
         return Err(FrameAllocError::AllocationFailed);
     }
@@ -152,10 +152,13 @@ pub(crate) fn alloc_from_backend(count: usize) -> Result<FreeFrames, FrameAllocE
         // 而非直接失败。待引入 page cache / swap 后实现。
         .ok_or(FrameAllocError::OutOfMemory)?;
     let start = Frame::new(frame_num);
-    Ok(FreeFrames::from_range(FrameSpan::new(start, start + count)))
+    Ok(AllocatedFrames::from_range(FrameSpan::new(
+        start,
+        start + count,
+    )))
 }
 
-/// 归还帧到 buddy allocator——仅由 `Frames` 的 Drop 调用。
+/// 归还帧到 buddy allocator——仅由 `AllocatedFrames` 的 Drop 调用。
 ///
 /// # Panics
 ///

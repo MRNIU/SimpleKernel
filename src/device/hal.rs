@@ -33,11 +33,16 @@ pub struct SimpleKernelHal;
 unsafe impl Hal for SimpleKernelHal {
     /// 分配 DMA 缓冲区——调用帧分配器获取物理连续页。
     ///
-    /// `AllocatedFrames::alloc` 已保证内容清零。
+    /// 帧分配器不清零（ADR-008），DMA 缓冲区需要清零以防信息泄漏。
     fn dma_alloc(pages: usize, _direction: BufferDirection) -> (u64, NonNull<u8>) {
         let frames = AllocatedFrames::alloc(pages).expect("DMA 帧分配失败");
         let paddr = frames.start_paddr();
         let vaddr = paddr.to_virt();
+
+        // SAFETY: identity mapping 下 PA.to_virt() 有效；帧刚分配，无其他引用
+        unsafe {
+            core::ptr::write_bytes(vaddr.as_mut_ptr::<u8>(), 0, pages * config::PAGE_SIZE);
+        }
 
         // SAFETY: to_virt 保证返回有效的虚拟地址（identity mapping 下 VA == PA）
         let ptr = NonNull::new(vaddr.as_mut_ptr::<u8>()).expect("DMA vaddr 为空");
