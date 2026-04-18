@@ -10,10 +10,10 @@
 use buddy_system_allocator::FrameAllocator;
 use memory_types::{Frame, PhysAddr};
 
-use crate::FrameSpan;
 use sync_crate::SpinLockIrq;
 
 use crate::FrameAllocError;
+use crate::FrameSpan;
 use crate::frames::AllocatedFrames;
 
 /// 全局帧分配器，以页帧（PAGE_SIZE 字节）为单位管理物理内存。
@@ -54,52 +54,33 @@ unsafe fn init_buddy(free_start: PhysAddr, free_size: usize) {
     );
 }
 
-/// 将预留范围直接构造为 `AllocatedFrames`，不经过 buddy。
-///
-/// 调用方负责预留范围的生命周期（内核段通过 `mem::forget` 永久持有）。
-///
-/// # Panics
-///
-/// `start` 未页对齐或 `count == 0` 时 panic——预留描述错误是内核 bug。
-fn claim_reserved(start: PhysAddr, count: usize) -> AllocatedFrames {
-    assert!(
-        start.is_aligned(),
-        "frame_allocator::init: reserved 范围未页对齐: {start}"
-    );
-    assert!(count > 0, "frame_allocator::init: reserved 范围 count 为 0");
-    let s = start.page_number();
-    log::info!("FrameInit: reserved {} pages at {}", count, start);
-    AllocatedFrames::from_range(FrameSpan::new(s, s + count))
-}
-
-/// 初始化帧分配器——空闲内存入 buddy，预留范围构造为 `AllocatedFrames` 返回。
+/// 初始化帧分配器——空闲内存入 buddy，校验并记录预留范围。
 ///
 /// - `free_start` / `free_size`：空闲物理内存范围，加入 buddy allocator
 /// - `reserved`：需要预留的物理地址范围 `(start, page_count)` 列表；
-///   不经过 buddy，直接构造为 `AllocatedFrames` 返回给调用方
-///
-/// 预留范围的帧由调用方负责生命周期管理（内核段通过 `mem::forget` 永久持有）。
+///   **不加入** buddy，天然从分配池中排除（调用方持有物理范围引用无需通过本函数）
 ///
 /// # Safety
 ///
 /// - 所有范围必须有效、页对齐、互不重叠
 /// - `free` 范围和 `reserved` 范围不得重叠
 /// - 仅调用一次
-pub unsafe fn init(
-    free_start: PhysAddr,
-    free_size: usize,
-    reserved: &[(PhysAddr, usize)],
-) -> heapless::Vec<AllocatedFrames, 8> {
+///
+/// # Panics
+///
+/// `reserved` 任一条目未页对齐或 `count == 0` 时 panic——预留描述错误是内核 bug。
+pub unsafe fn init(free_start: PhysAddr, free_size: usize, reserved: &[(PhysAddr, usize)]) {
     // SAFETY: 调用方约束直接转发给 init_buddy
     unsafe { init_buddy(free_start, free_size) };
 
-    let mut result = heapless::Vec::new();
     for &(start, count) in reserved {
-        result
-            .push(claim_reserved(start, count))
-            .expect("frame_allocator::init: reserved 范围数不超过 8");
+        assert!(
+            start.is_aligned(),
+            "frame_allocator::init: reserved 范围未页对齐: {start}"
+        );
+        assert!(count > 0, "frame_allocator::init: reserved 范围 count 为 0");
+        log::info!("FrameInit: reserved {} pages at {}", count, start);
     }
-    result
 }
 
 /// 从 buddy allocator 取出帧，构造 `AllocatedFrames`。

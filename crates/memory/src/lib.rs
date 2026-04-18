@@ -2,9 +2,6 @@
 
 #![no_std]
 
-pub use heap_crate as heap;
-pub use tlb;
-
 pub mod globals;
 pub mod init;
 

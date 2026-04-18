@@ -28,13 +28,12 @@ impl MmioRegion {
         let pa_aligned = paddr.align_down();
         let end_aligned = (paddr + size).align_up();
         let mapped_size = end_aligned.as_usize() - pa_aligned.as_usize();
-        let va = memory_types::VirtAddr::new(pa_aligned.as_usize());
 
         let pt = crate::kernel_page_table();
         pt.identity_map_range(pa_aligned, end_aligned, PteFlags::kernel_device());
 
         Self {
-            base: va,
+            base: pa_aligned.to_virt(),
             size: mapped_size,
         }
     }

@@ -34,7 +34,7 @@ pub fn init() {
     let data_pages = (free_start - rodata_end) / config::PAGE_SIZE;
 
     // SAFETY: 范围有效、页对齐、互不重叠、仅调用一次
-    let reserved = unsafe {
+    unsafe {
         frame_allocator::init(
             free_start,
             free_size,
@@ -43,8 +43,8 @@ pub fn init() {
                 (text_end, rodata_pages),
                 (rodata_end, data_pages),
             ],
-        )
-    };
+        );
+    }
 
     {
         let extend_size = config::KERNEL_HEAP_SIZE - config::BOOTSTRAP_HEAP_SIZE;
@@ -68,15 +68,14 @@ pub fn init() {
     }
 
     // 覆盖层——[mem_start, kernel_start) 保持 kernel_rw（固件区域）
-    let segments: [(PhysAddr, PteFlags); 3] = [
-        (kernel_start, PteFlags::kernel_rx()),
-        (text_end, PteFlags::kernel_ro()),
-        (rodata_end, PteFlags::kernel_rw()),
+    let segments: [(PhysAddr, usize, PteFlags); 3] = [
+        (kernel_start, text_pages, PteFlags::kernel_rx()),
+        (text_end, rodata_pages, PteFlags::kernel_ro()),
+        (rodata_end, data_pages, PteFlags::kernel_rw()),
     ];
 
-    for ((start, flags), frames) in segments.into_iter().zip(reserved) {
-        let va = memory_types::VirtAddr::new(start.as_usize());
-        let page_count = frames.page_count();
+    for (start, page_count, flags) in segments {
+        let va = start.to_virt();
         paging::kernel_page_table().update_range_flags(va, page_count, flags);
         log::debug!(
             "MemoryInit: segment {}: {} pages, {:?}",
@@ -84,8 +83,6 @@ pub fn init() {
             page_count,
             flags
         );
-        // 内核段帧与内核同生命周期——阻止 Drop 将预留范围归还 buddy
-        core::mem::forget(frames);
     }
 
     log::info!(

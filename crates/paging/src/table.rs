@@ -257,8 +257,7 @@ impl PageTable {
 
         let mut addr = addr_start;
         while addr.as_usize() < end_aligned.as_usize() {
-            let va = VirtAddr::new(addr.as_usize());
-            self.walk_create_and_write(&mut nodes, va, addr, leaf_flags);
+            self.walk_create_and_write(&mut nodes, addr.to_virt(), addr, leaf_flags);
             addr += config::PAGE_SIZE;
         }
     }

@@ -14,7 +14,6 @@ per_cpu = { path = "../per_cpu" }
 paging = { path = "../paging" }
 frame_allocator = { path = "../frame_allocator" }
 heap_crate = { path = "../heap", package = "heap" }
-tlb = { path = "../tlb" }
 
 log.workspace = true
 spin.workspace = true

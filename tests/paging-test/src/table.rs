@@ -56,9 +56,7 @@ fn test_identity_map_single_page() {
 
     pt.identity_map_range(pa, pa + config::PAGE_SIZE, flags);
 
-    let (mapped_pa, mapped_flags) = pt
-        .get_mapping(VirtAddr::new(pa.as_usize()))
-        .expect("应能找到页表项");
+    let (mapped_pa, mapped_flags) = pt.get_mapping(pa.to_virt()).expect("应能找到页表项");
     assert_eq!(mapped_pa, pa);
     assert_eq!(mapped_flags, flags);
 }
@@ -73,12 +71,8 @@ fn test_identity_map_different_pages() {
     pt.identity_map_range(pa1, pa1 + config::PAGE_SIZE, PteFlags::kernel_rw());
     pt.identity_map_range(pa2, pa2 + config::PAGE_SIZE, PteFlags::kernel_rx());
 
-    let (got_pa1, got_flags1) = pt
-        .get_mapping(VirtAddr::new(pa1.as_usize()))
-        .expect("pa1 应有");
-    let (got_pa2, got_flags2) = pt
-        .get_mapping(VirtAddr::new(pa2.as_usize()))
-        .expect("pa2 应有");
+    let (got_pa1, got_flags1) = pt.get_mapping(pa1.to_virt()).expect("pa1 应有");
+    let (got_pa2, got_flags2) = pt.get_mapping(pa2.to_virt()).expect("pa2 应有");
     assert_eq!(got_pa1, pa1);
     assert_eq!(got_pa2, pa2);
     assert_eq!(got_flags1, PteFlags::kernel_rw());
@@ -110,12 +104,8 @@ fn test_identity_map_in_different_vpn_ranges() {
     pt.identity_map_range(pa_low, pa_low + config::PAGE_SIZE, PteFlags::kernel_rw());
     pt.identity_map_range(pa_high, pa_high + config::PAGE_SIZE, PteFlags::kernel_rw());
 
-    let (got1, _) = pt
-        .get_mapping(VirtAddr::new(pa_low.as_usize()))
-        .expect("low 应有");
-    let (got2, _) = pt
-        .get_mapping(VirtAddr::new(pa_high.as_usize()))
-        .expect("high 应有");
+    let (got1, _) = pt.get_mapping(pa_low.to_virt()).expect("low 应有");
+    let (got2, _) = pt.get_mapping(pa_high.to_virt()).expect("high 应有");
     assert_eq!(got1, pa_low);
     assert_eq!(got2, pa_high);
 }
@@ -131,7 +121,7 @@ fn test_get_mapping_on_empty_table() {
 fn test_update_pte_changes_permissions() {
     let pt = PageTable::create();
     let pa = PhysAddr::new(0x8020_0000);
-    let va = VirtAddr::new(pa.as_usize());
+    let va = pa.to_virt();
 
     pt.identity_map_range(pa, pa + config::PAGE_SIZE, PteFlags::kernel_rw());
     let old_flags = pt.update_pte(va, PteFlags::kernel_ro());
@@ -149,7 +139,7 @@ fn test_update_range_flags_batch() {
     let end = PhysAddr::new(0x30_3000); // 3 pages
 
     pt.identity_map_range(start, end, PteFlags::kernel_rw());
-    pt.update_range_flags(VirtAddr::new(start.as_usize()), 3, PteFlags::kernel_ro());
+    pt.update_range_flags(start.to_virt(), 3, PteFlags::kernel_ro());
 
     for i in 0..3 {
         let va = VirtAddr::new(0x30_0000 + i * config::PAGE_SIZE);

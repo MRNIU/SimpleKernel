@@ -236,7 +236,6 @@ name = "frame_allocator"
 version = "0.1.0"
 dependencies = [
  "buddy_system_allocator",
- "heapless 0.8.0",
  "log",
  "memory_types",
  "sync",
@@ -409,7 +408,6 @@ dependencies = [
  "paging",
  "per_cpu",
  "spin",
- "tlb",
 ]
 
 [[package]]
