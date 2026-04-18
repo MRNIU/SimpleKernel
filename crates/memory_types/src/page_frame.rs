@@ -18,19 +18,17 @@ pub struct Frame {
 }
 
 impl Frame {
-    /// 从 4K 页号构造。
     #[inline]
     pub const fn new(number_4k: usize) -> Self {
         Self { number: number_4k }
     }
 
-    /// 返回内部 4K 页号
     #[inline]
     pub const fn as_usize(self) -> usize {
         self.number
     }
 
-    /// 转换为起始物理地址
+    /// 转换为起始物理地址。
     #[inline]
     pub const fn start_addr(self) -> PhysAddr {
         PhysAddr::new(self.number << PAGE_SIZE_BITS)
@@ -38,7 +36,7 @@ impl Frame {
 }
 
 impl From<PhysAddr> for Frame {
-    /// 地址转帧号（向下对齐到 4K 边界）
+    /// 地址转帧号，低位被截断（向下对齐到 4K 边界）。
     #[inline]
     fn from(addr: PhysAddr) -> Self {
         Self {
@@ -48,7 +46,6 @@ impl From<PhysAddr> for Frame {
 }
 
 impl From<Frame> for PhysAddr {
-    /// 帧号转起始地址
     #[inline]
     fn from(frame: Frame) -> Self {
         frame.start_addr()
@@ -71,7 +68,6 @@ impl From<Frame> for usize {
 
 impl core::ops::Add<usize> for Frame {
     type Output = Self;
-    /// 前进 `rhs` 个 4K 页
     #[inline]
     fn add(self, rhs: usize) -> Self {
         Self {
@@ -89,7 +85,6 @@ impl core::ops::AddAssign<usize> for Frame {
 
 impl core::ops::Sub<usize> for Frame {
     type Output = Self;
-    /// 后退 `rhs` 个 4K 页
     #[inline]
     fn sub(self, rhs: usize) -> Self {
         Self {
@@ -105,9 +100,9 @@ impl core::ops::SubAssign<usize> for Frame {
     }
 }
 
+/// 两个帧号相减得到 4K 页的个数。
 impl core::ops::Sub<Frame> for Frame {
     type Output = usize;
-    /// 两个帧号的差——返回 4K 页的个数
     #[inline]
     fn sub(self, rhs: Frame) -> usize {
         self.number
@@ -129,7 +124,7 @@ impl fmt::Debug for Frame {
 }
 
 impl PhysAddr {
-    /// 转换为物理页号（向下取整到 4K 边界）
+    /// 转换为物理页号（向下取整到 4K 边界）。
     #[inline]
     pub const fn page_number(self) -> Frame {
         Frame {

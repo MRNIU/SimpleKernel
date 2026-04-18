@@ -36,7 +36,10 @@ fn run_tests() {
     test_identity_map_range_idempotent();
     log::info!("test identity_map_range_idempotent ... ok");
 
-    log::info!("paging-table-test: all 8 tests passed");
+    test_update_range_flags_batch();
+    log::info!("test update_range_flags_batch ... ok");
+
+    log::info!("paging-table-test: all 9 tests passed");
 }
 
 /// create 后 root_paddr 应返回非零地址。
@@ -137,6 +140,22 @@ fn test_update_pte_changes_permissions() {
     let (got_pa, got_flags) = pt.get_mapping(va).expect("页表项应存在");
     assert_eq!(got_pa, pa);
     assert_eq!(got_flags, PteFlags::kernel_ro());
+}
+
+/// update_range_flags 应对整段连续页批量更新权限。
+fn test_update_range_flags_batch() {
+    let pt = PageTable::create();
+    let start = PhysAddr::new(0x30_0000);
+    let end = PhysAddr::new(0x30_3000); // 3 pages
+
+    pt.identity_map_range(start, end, PteFlags::kernel_rw());
+    pt.update_range_flags(VirtAddr::new(start.as_usize()), 3, PteFlags::kernel_ro());
+
+    for i in 0..3 {
+        let va = VirtAddr::new(0x30_0000 + i * config::PAGE_SIZE);
+        let (_, flags) = pt.get_mapping(va).expect("页表项应存在");
+        assert_eq!(flags, PteFlags::kernel_ro(), "页 {i} 权限未更新");
+    }
 }
 
 /// identity_map_range 对相同 PA+flags 的重复操作应幂等（不 panic）。

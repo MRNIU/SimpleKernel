@@ -15,7 +15,7 @@ use memory_types::{PhysAddr, VirtAddr};
 use sync::SpinLock;
 use virtio_drivers::{BufferDirection, Hal};
 
-use memory::frame::AllocatedFrames;
+use frame_allocator::AllocatedFrames;
 
 /// DMA 分配追踪表——存储尚未释放的 DMA 帧，防止 Drop 自动回收。
 ///

@@ -61,7 +61,7 @@ pub fn init() {
     let pt = PageTable::create();
     paging::init_kernel_page_table(pt);
 
-    // 背景层必须先于 OwnedPages——update_pte 要求 PTE 已存在
+    // 背景层必须先于权限覆盖——覆盖操作要求 PTE 已存在
     {
         let mem_end = mem_start + mem_size;
         paging::kernel_page_table().identity_map_range(mem_start, mem_end, PteFlags::kernel_rw());
@@ -76,15 +76,16 @@ pub fn init() {
 
     for ((start, flags), frames) in segments.into_iter().zip(reserved) {
         let va = memory_types::VirtAddr::new(start.as_usize());
-        let mapping = paging::OwnedPages::new(frames, flags);
+        let page_count = frames.page_count();
+        paging::kernel_page_table().update_range_flags(va, page_count, flags);
         log::debug!(
             "MemoryInit: segment {}: {} pages, {:?}",
             va,
-            mapping.page_count(),
+            page_count,
             flags
         );
-        // 永久持有——阻止 Drop 恢复权限和归还帧
-        core::mem::forget(mapping);
+        // 内核段帧与内核同生命周期——阻止 Drop 将预留范围归还 buddy
+        core::mem::forget(frames);
     }
 
     log::info!(

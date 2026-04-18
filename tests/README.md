@@ -20,8 +20,7 @@ cargo xtask test --list                                  # 列出可用测试
 | | `pa-overflow-panic` | should_panic | PhysAddr 加法溢出检测 |
 | | `va-canonical-panic` | should_panic | VirtAddr 规范化违反检测 |
 | `paging-test` | `basic` | normal | 页大小计算、VPN 索引提取 |
-| | `table` | normal | 页表 create_pte/update_pte/get_mapping/identity_map_range |
-| | `mapping` | normal | OwnedPages 仿射类型帧所有权 + 权限管理 |
+| | `table` | normal | 页表 identity_map_range / update_pte / update_range_flags / get_mapping |
 | | `conflict-panic` | should_panic | identity_map_range 权限冲突检测 |
 | | `equal-range-panic` | should_panic | identity_map_range 空范围检测 |
 | | `reversed-range-panic` | should_panic | identity_map_range 反向范围检测 |

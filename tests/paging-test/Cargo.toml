@@ -14,11 +14,6 @@ path = "src/table.rs"
 test = false
 
 [[bin]]
-name = "mapping"
-path = "src/mapping.rs"
-test = false
-
-[[bin]]
 name = "conflict-panic"
 path = "src/conflict_panic.rs"
 test = false

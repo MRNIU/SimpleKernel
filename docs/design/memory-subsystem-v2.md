@@ -1,17 +1,31 @@
 # 内存管理子系统 v2
 
+> **⚠ 部分过时**：[ADR-013](../decisions/013-ownedpages-necessity.md) 已删除
+> `OwnedPages` 抽象层。本文档中所有涉及 `OwnedPages::new` / `OwnedPages::Drop` /
+> "权限守卫" / §6 的描述均已不适用。当前设计：
+>
+> - 帧生命周期直接由 `AllocatedFrames` RAII 承担（Drop 归还 buddy）
+> - 权限覆盖通过 `PageTable::update_range_flags(va, count, flags)` 方法执行
+> - 内核段通过 `mem::forget(frames)` 永久持有，不经过任何守卫类型
+>
+> 其余部分（分层、全量映射模型、PageTable 设计、MmioRegion）仍然有效。
+> 读者以源码为准（`crates/paging/src/table.rs`、`crates/memory/src/init.rs`）。
+>
 > 本文档面向**内核开发者**，系统描述 SimpleKernel 内存管理的设计哲学、
 > 所有权模型和生命周期流转。读完本文你应该能回答：
 >
 > - SimpleKernel 的内存模型与 Theseus 等内核有什么根本区别？
 > - 一个物理帧从分配到回收经历了哪些类型状态？
-> - `OwnedPages` 如何通过 Rust 所有权在编译期保证帧不泄漏？
 > - 各 crate 之间如何协同工作，对外接口是什么？
 > - 为什么不需要大页和 page splitting？
 >
+> ADR-013 之后，帧所有权由 `AllocatedFrames` RAII 直接承担，
+> 权限覆盖由 `PageTable::update_range_flags` 方法幂等施加——不再有中间守卫类型。
+>
 > 演进历史：本文档取代 [memory-subsystem.md](memory-subsystem.md)（旧设计）。
 > 决策记录见 [ADR-006](../decisions/006-memory-subsystem-simplification.md)、
-> [ADR-007](../decisions/007-eliminate-vma-and-dead-code.md)。
+> [ADR-007](../decisions/007-eliminate-vma-and-dead-code.md)、
+> [ADR-013](../decisions/013-ownedpages-necessity.md)。
 
 ---
 

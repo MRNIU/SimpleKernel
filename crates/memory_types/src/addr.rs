@@ -11,20 +11,17 @@ use config::{PAGE_SIZE, PHYS_OFFSET};
 macro_rules! impl_addr {
     ($name:ident) => {
         impl $name {
-            /// 页内偏移（低 [`PAGE_SIZE`] 位）
+            /// 页内偏移（低 `PAGE_SIZE_BITS` 位）。
             #[inline]
             pub const fn page_offset(self) -> usize {
                 self.0 & (PAGE_SIZE - 1)
             }
 
-            /// 是否页对齐
             #[inline]
             pub const fn is_aligned(self) -> bool {
                 self.is_aligned_to(PAGE_SIZE)
             }
 
-            /// 是否按指定大小对齐（`align` 必须为 2 的幂）
-            ///
             /// # Panics
             /// `align` 非 2 的幂时 panic。
             #[inline]
@@ -33,14 +30,11 @@ macro_rules! impl_addr {
                 self.0 & (align - 1) == 0
             }
 
-            /// 向下对齐到页边界
             #[inline]
             pub const fn align_down(self) -> Self {
                 self.align_down_to(PAGE_SIZE)
             }
 
-            /// 向下对齐到指定边界（`align` 必须为 2 的幂）
-            ///
             /// # Panics
             /// `align` 非 2 的幂时 panic。
             #[inline]
@@ -49,7 +43,7 @@ macro_rules! impl_addr {
                 Self(self.0 & !(align - 1))
             }
 
-            /// 向上对齐到页边界；已对齐时保持不变
+            /// 向上对齐到页边界；已对齐时保持不变。
             ///
             /// # Panics
             /// 地址接近 `usize::MAX` 导致溢出时 panic。
@@ -58,8 +52,6 @@ macro_rules! impl_addr {
                 self.align_up_to(PAGE_SIZE)
             }
 
-            /// 向上对齐到指定边界（`align` 必须为 2 的幂）
-            ///
             /// # Panics
             /// `align` 非 2 的幂，或地址接近 `usize::MAX` 导致溢出时 panic。
             #[inline]
@@ -113,13 +105,11 @@ crate::impl_usize_newtype!(VirtAddr, virt);
 impl_addr!(VirtAddr);
 
 impl VirtAddr {
-    /// 转换为原始只读指针
     #[inline]
     pub const fn as_ptr<T>(self) -> *const T {
         self.0 as *const T
     }
 
-    /// 转换为原始可变指针
     #[inline]
     pub const fn as_mut_ptr<T>(self) -> *mut T {
         self.0 as *mut T

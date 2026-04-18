@@ -164,6 +164,7 @@ local_tick = { path = "crates/local_tick" }
 heap = { path = "crates/heap" }
 paging = { path = "crates/paging" }
 memory = { path = "crates/memory" }
+frame_allocator = { path = "crates/frame_allocator" }
 
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中

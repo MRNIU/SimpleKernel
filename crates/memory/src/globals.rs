@@ -7,13 +7,9 @@ use memory_types::PhysAddr;
 /// 在 `early_init()` 中通过 `MEMORY_INFO.call_once()` 填充，
 /// 之后由内存子系统只读访问。
 pub struct MemoryInfo {
-    /// 物理内存起始地址
     pub physical_memory_addr: PhysAddr,
-    /// 物理内存大小（字节）
     pub physical_memory_size: usize,
-    /// 内核镜像起始物理地址
     pub kernel_addr: PhysAddr,
-    /// 内核镜像大小（字节）
     pub kernel_size: usize,
 }
 

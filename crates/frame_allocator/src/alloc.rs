@@ -5,34 +5,7 @@
 //! - 分配结果按请求大小的 next_power_of_two 对齐——天然满足大页对齐需求
 //! - 元数据存储在堆上的 `BTreeSet`，不触碰空闲帧内存
 
-//
-// TODO: Per-CPU 帧缓存——消除 SMP 全局锁瓶颈
-//
-// 当前所有 alloc/dealloc 都竞争同一把 `SpinLock`，核数越多缓存行弹跳越严重。
-// 应引入两级结构：
-//
-// 架构：
-//   每个 CPU 持有本地缓存（`#[cpu_local] static PER_CPU_CACHE`），
-//   快速路径只需关中断即可操作，无需任何锁；
-//   缓存耗尽/溢出时才拿全局锁批量 refill/drain。
-//
-// 关键参数：
-//   - HIGH  = 64  缓存上限，超过则 drain BATCH 帧到全局
-//   - BATCH = 16  每次 refill/drain 的帧数
-//
-// 数据结构：
-//   固定大小数组 + 计数器（栈式），只缓存单帧（order-0）。
-//   多帧连续分配（count > 1）直接走全局分配器。
-//
-// 中断安全：
-//   通过 `HeldInterrupts` token 证明中断已关闭，
-//   `PerCpuFrameCache` 的方法签名接受 `&HeldInterrupts` 参数。
-//
-// 对现有代码的影响：
-//   仅修改本文件（alloc.rs）和 frames.rs。
-//
-// 前置条件：
-//   需要用户进程（页分配频率足够高才有优化价值）。
+// TODO: Per-CPU 帧缓存消除 SMP 全局锁瓶颈——待引入用户进程后再评估。
 
 use buddy_system_allocator::FrameAllocator;
 use memory_types::{Frame, PhysAddr};
@@ -83,7 +56,7 @@ unsafe fn init_buddy(free_start: PhysAddr, free_size: usize) {
 
 /// 将预留范围直接构造为 `AllocatedFrames`，不经过 buddy。
 ///
-/// 调用方负责预留范围的生命周期（通常通过 `OwnedPages` + `mem::forget` 永久持有）。
+/// 调用方负责预留范围的生命周期（内核段通过 `mem::forget` 永久持有）。
 ///
 /// # Panics
 ///
@@ -105,8 +78,7 @@ fn claim_reserved(start: PhysAddr, count: usize) -> AllocatedFrames {
 /// - `reserved`：需要预留的物理地址范围 `(start, page_count)` 列表；
 ///   不经过 buddy，直接构造为 `AllocatedFrames` 返回给调用方
 ///
-/// 预留范围的帧由调用方负责生命周期管理（内核段通常通过
-/// `OwnedPages` + `mem::forget` 永久持有）。
+/// 预留范围的帧由调用方负责生命周期管理（内核段通过 `mem::forget` 永久持有）。
 ///
 /// # Safety
 ///

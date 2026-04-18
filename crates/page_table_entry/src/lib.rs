@@ -1,34 +1,7 @@
 //! 硬件页表项编解码——PTE trait 定义与各架构实现。
 //!
-//! # 在内存子系统中的定位
-//!
-//! 本 crate 是内存子系统的**资源层**——提供单个 PTE 的 bit-level 编解码，
-//! 不感知页表结构（多级遍历由 `paging` crate 负责）。
-//!
-//! ```text
-//! paging::PageTable (遍历 + 读写)
-//!    │
-//!    ▼ 调用 PteOps 方法编解码
-//! page_table_entry (本 crate: 单个 PTE)
-//!    │
-//!    ▼
-//! memory_types::PhysAddr (地址类型)
-//! ```
-//!
-//! # 架构抽象方式
-//!
-//! 通过 trait + 条件编译实现跨架构：
-//! - [`PteFlagsOps`]：权限工厂接口
-//! - [`PteOps`]：PTE 编解码统一接口
-//! - `#[cfg(bare_riscv64)]` / `#[cfg(bare_aarch64)]`：选择具体实现
-//!
-//! 上层代码只使用 [`PageTableEntry`] / [`PteFlags`] 类型别名，无需关心架构差异。
-//!
-//! # 类型列表
-//!
-//! - [`PteFlagsOps`] / [`PteOps`]：统一 trait 接口，各架构必须实现
-//! - [`aarch64`] / [`riscv64`]：各架构的 `PageTableEntry` + `PteFlags` 定义
-//! - [`PageTableEntry`] / [`PteFlags`]：当前目标架构的类型别名（条件编译导出）
+//! 通过 [`PteFlagsOps`] + [`PteOps`] trait 屏蔽架构差异，上层只使用
+//! [`PageTableEntry`] / [`PteFlags`] 类型别名（条件编译选择具体实现）。
 //!
 //! 本 crate 无 `alloc` / `config` 依赖，可在 heap 未初始化的早期启动阶段使用。
 
@@ -42,7 +15,7 @@ pub mod riscv64;
 /// 页表项标志位的统一接口——各架构必须实现。
 ///
 /// SAS 架构下只需要内核权限工厂——没有用户态，不做页回收（无需 A/D 位查询），
-/// 权限修改通过 `OwnedPages::set_flags` 整包替换（无需 builder）。
+/// 权限修改通过 `PageTable::update_range_flags` 整包替换（无需 builder）。
 pub trait PteFlagsOps: Copy + core::fmt::Debug {
     /// 内核读写数据映射。
     fn kernel_rw() -> Self;

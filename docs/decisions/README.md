@@ -22,6 +22,7 @@
 | 010 | [PageTable 内部结构简化——BTreeMap → Vec，删除引用计数死代码](010-pagetable-nodes-vec-and-remove-refcount.md) | 提议 | 2026-04-17 | R3 回看 |
 | 011 | [MMIO overlap 检测统一至 `create_pte`；引入 `FlagsConflict` 错误](011-mmio-overlap-via-set-page-flags.md) | 提议 | 2026-04-17 | R3 回看 |
 | 012 | [PageTable 拆分；hot-path PTE 更新无锁化](012-pagetable-split-lock-free-hot-path.md) | 提议 | 2026-04-17 | R3 回看 |
+| 013 | [删除 `OwnedPages` 抽象层](013-ownedpages-necessity.md) | 已接受 | 2026-04-18 | R3 回看 |
 
 ## 状态规则
 

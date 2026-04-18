@@ -26,13 +26,11 @@ impl<A: Copy + Ord> Span<A> {
         Self { start, end }
     }
 
-    /// 范围起始
     #[inline]
     pub fn start(self) -> A {
         self.start
     }
 
-    /// 范围结束（不含）
     #[inline]
     pub fn end(self) -> A {
         self.end
@@ -40,7 +38,6 @@ impl<A: Copy + Ord> Span<A> {
 }
 
 impl<A: Copy + Ord + Sub<A, Output = usize>> Span<A> {
-    /// 范围大小（单位取决于 `A`）
     #[inline]
     pub fn size(self) -> usize {
         self.end - self.start
@@ -60,7 +57,7 @@ mod tests {
         assert_eq!(r.end(), 0x3000);
     }
 
-    /// start > end 时 panic
+    /// `start > end` 时构造应 panic
     #[test]
     #[should_panic(expected = "start must be <= end")]
     fn invalid_panics() {

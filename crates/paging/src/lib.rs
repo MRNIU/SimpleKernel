@@ -1,37 +1,4 @@
-//! 分页子系统——页表管理 + 仿射类型帧所有权 + MMIO 映射。
-//!
-//! # 在内存子系统中的定位
-//!
-//! 本 crate 是内存子系统的**机制层**——提供页表操作和权限管理原语，
-//! 但不决定"何时"或"为什么"映射。策略层（`memory` crate）编排初始化和 MMIO，
-//! 应用层通过 [`OwnedPages`] / [`mmio::MmioRegion`] RAII 类型安全使用。
-//!
-//! ```text
-//! memory (策略: 何时映射)
-//!    │
-//!    ▼
-//! paging (机制: 如何映射)  ← 本 crate
-//!    │
-//!    ├── frame_allocator (帧分配)
-//!    ├── page_table_entry (PTE 编解码)
-//!    └── tlb (TLB 刷新)
-//! ```
-//!
-//! # 核心类型
-//!
-//! - [`PageTable`]：多级基数树页表，管理 PTE 的创建和更新
-//! - [`OwnedPages`]：仿射类型权限守卫——持有帧所有权 + 管理 PTE 权限覆盖
-//! - [`mmio::MmioRegion`]：永久 MMIO 映射 + volatile 寄存器访问
-//!
-//! # 错误策略
-//!
-//! SAS 架构下分页操作的失败路径都是**预期外的内核 bug**——
-//! OOM 发生在 boot 时不应出现、映射冲突是调用方逻辑错误、
-//! `PageNotMapped` 违反 SAS 背景层不变量。
-//!
-//! 因此本 crate 的所有接口**失败即 panic**，不返回 `Result`。
-//! 唯一向上传递 `FrameAllocError::OutOfMemory` 的场景在运行时帧分配
-//! （`AllocatedFrames::alloc`），不在本 crate 的接口范围。
+//! 分页子系统——页表管理 + MMIO 映射。
 
 #![no_std]
 
@@ -43,9 +10,6 @@ pub use arch::{ENTRIES_PER_TABLE, INDEX_BITS, INDEX_MASK, LEVEL_SHIFTS, page_siz
 
 pub mod table;
 pub use table::PageTable;
-
-pub mod mapping;
-pub use mapping::OwnedPages;
 
 pub mod mmio;
 

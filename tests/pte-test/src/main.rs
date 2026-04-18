@@ -100,7 +100,7 @@ fn test_each_flag_roundtrip() {
 /// 四个内核 preset 应产生互不相同的 flags 位组合。
 ///
 /// 这是对"工厂方法返回正确位"的烟测——kernel_rw/rx/ro/rwx 若被
-/// 无意改同，调用方（OwnedPages::new）会建立错误权限但不会立即报错。
+/// 无意改同，调用方（`PageTable::update_range_flags`）会建立错误权限但不会立即报错。
 fn test_kernel_preset_distinctness() {
     let rw = PteFlags::kernel_rw();
     let rx = PteFlags::kernel_rx();

@@ -9,7 +9,7 @@
 不可 Clone、不可 Copy，Drop 时自动归还 buddy allocator。
 
 从 `memory` crate 独立出来的原因：帧分配是内存子系统中最底层、最独立的能力，
-被页表（`paging`）、权限管理（`OwnedPages`）等上层模块共同依赖。
+被页表（`paging`）、堆扩展、DMA、内核段覆盖等上层模块共同依赖。
 独立 crate 使依赖方向单向化，也允许 `paging` 直接集成，无需经过 `memory`。
 
 ## 核心类型
@@ -96,18 +96,19 @@ let pa = frame.start_paddr();
 
 // 分配 4 个连续帧
 let frames = AllocatedFrames::alloc(4)?;
-assert_eq!(frames.count(), 4);
+assert_eq!(frames.page_count(), 4);
 
 // drop 时自动归还 buddy allocator
 ```
 
-配合 `OwnedPages` 设置 PTE 权限：
+配合 `PageTable::update_range_flags` 设置 PTE 权限：
 
 ```rust
 let frames = AllocatedFrames::alloc(4)?;
-let guard = OwnedPages::new(frames, PteFlags::kernel_ro());
-// guard.set_flags(PteFlags::kernel_rw());  // 改权限
-// drop(guard) → 恢复默认权限 + poison 填充 + 释放帧
+let va = frames.start_paddr().to_virt();
+paging::kernel_page_table().update_range_flags(va, frames.page_count(), PteFlags::kernel_ro());
+// drop(frames) → 自动归还 buddy
+// 若需永久持有（如内核段），显式 core::mem::forget(frames)
 ```
 
 ## 注意事项

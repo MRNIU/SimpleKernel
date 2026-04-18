@@ -1,34 +1,4 @@
 //! 内核内存基础类型——编译期区分物理/虚拟地址与帧/页号，防止混用。
-//!
-//! # 在内存子系统中的定位
-//!
-//! 本 crate 是整个内存子系统的**基础层**——所有上层 crate 都依赖此处定义的类型。
-//! 它不包含任何运行时状态，纯粹通过类型系统在编译期防止地址类别混用。
-//!
-//! ```text
-//! memory / paging / frame_allocator / page_table_entry
-//!    │        │           │                │
-//!    └────────┴───────────┴────────────────┘
-//!                         ▼
-//!              memory_types (本 crate)
-//! ```
-//!
-//! # 类型概览
-//!
-//! ```text
-//! PhysAddr ──page_number()──▶ Frame ──Span::new()──▶ Span<Frame>
-//!    │
-//!    │ to_virt()
-//!    ▼
-//! VirtAddr
-//! ```
-//!
-//! - [`PhysAddr`] / [`VirtAddr`]——字节粒度地址，附带对齐辅助方法
-//! - [`Frame`]——4K 物理帧粒度标识，与物理地址双向转换
-//! - [`Span<A>`]——半开区间 `[start, end)`
-//!
-//! 以及物理-虚拟地址转换方法 [`PhysAddr::to_virt`] / [`VirtAddr::to_phys`]
-//! （基于 SAS identity mapping 假设：VA == PA）。
 
 #![no_std]
 
@@ -63,7 +33,6 @@ macro_rules! impl_usize_newtype {
                 Self(v)
             }
 
-            /// 返回内部 `usize` 值
             #[inline]
             pub const fn as_usize(self) -> usize {
                 self.0
@@ -88,7 +57,6 @@ macro_rules! impl_usize_newtype {
                 Self(v)
             }
 
-            /// 返回内部 `usize` 值
             #[inline]
             pub const fn as_usize(self) -> usize {
                 self.0
@@ -104,7 +72,6 @@ macro_rules! impl_usize_newtype {
                 Self(v)
             }
 
-            /// 返回内部 `usize` 值
             #[inline]
             pub const fn as_usize(self) -> usize {
                 self.0

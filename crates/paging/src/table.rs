@@ -178,6 +178,25 @@ impl PageTable {
         PageTableEntry::from_raw(old.as_raw()).flags()
     }
 
+    /// 批量修改 `[va_start, va_start + page_count * PAGE_SIZE)` 的权限位并刷新 TLB。
+    ///
+    /// 每页通过 [`update_pte`](Self::update_pte) 独立更新，最后由 `TlbFlushGuard`
+    /// 在 drop 时统一刷 TLB——避免中途过期的 TLB 条目被其他核观察到。
+    ///
+    /// # Panics
+    ///
+    /// 区间内任一页未映射时 panic（同 [`update_pte`](Self::update_pte)）。
+    //
+    // TODO: 单次 walk 批量更新——当前每页独立调用 `update_pte` 触发完整 walk，
+    // 同一区间的页通常共享中间节点，可合并为单次 walk 后按叶节点索引步进。
+    // 待引入大映射场景（mmap / 模块加载）后优化。
+    pub fn update_range_flags(&self, va_start: VirtAddr, page_count: usize, flags: PteFlags) {
+        for i in 0..page_count {
+            self.update_pte(va_start + i * config::PAGE_SIZE, flags);
+        }
+        let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
+    }
+
     /// 只读遍历——从根向下查找叶 PTE，返回已读取的 PTE、所在帧物理地址、索引及层级。
     ///
     /// 无锁操作——SAS 下中间节点只建不删，walk 路径稳定。

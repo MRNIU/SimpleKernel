@@ -11,10 +11,6 @@ use crate::{PteFlags, PteFlagsOps};
 use memory_types::PhysAddr;
 
 /// 已映射的 MMIO 区域——提供类型安全的 volatile 寄存器访问。
-///
-/// MMIO 地址是硬件寄存器，不是 RAM，不在帧分配器中。
-/// 直接使用 PageTable 方法建立 identity mapping（VA == PA）。
-/// 映射永久存在——不自动 unmap。
 pub struct MmioRegion {
     base: memory_types::VirtAddr,
     size: usize,
@@ -24,7 +20,6 @@ impl MmioRegion {
     /// 将 `[paddr, paddr+size)` identity-map，返回 `MmioRegion`。
     ///
     /// **不要直接调用**——请使用 `memory::map_mmio`，后者包含 RAM 重叠校验。
-    /// 此方法保留 `pub` 仅因 `memory` crate 需要跨 crate 调用。
     ///
     /// # Panics
     ///
@@ -44,13 +39,11 @@ impl MmioRegion {
         }
     }
 
-    /// 返回 MMIO 区域的基地址。
     #[must_use]
     pub fn base(&self) -> memory_types::VirtAddr {
         self.base
     }
 
-    /// 返回 MMIO 区域的大小（字节）。
     #[must_use]
     pub fn size(&self) -> usize {
         self.size

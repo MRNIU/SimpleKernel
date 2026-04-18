@@ -7,17 +7,24 @@ use core::cell::SyncUnsafeCell;
 
 use crate::arch::{Arch, ArchOps};
 
+/// 启动栈存储——`[u8; N]` 自身对齐 1 字节，但栈指针必须满足 ABI 要求
+/// （RISC-V Psabi §2.1、AAPCS64 §6.2.3 均要求 sp 16 字节对齐）。
+/// 用 `#[repr(C, align(16))]` newtype 显式指定 16 字节对齐，避免链接器
+/// 把 BOOT_STACK 放到奇地址导致 `_boot` 设置的 sp 非法。
+#[repr(C, align(16))]
+struct BootStackStorage([u8; config::KERNEL_STACK_SIZE * config::MAX_CORE_COUNT]);
+
 /// 启动栈——仅在 `_boot` 入口到 `task::init()` 首次上下文切换期间使用。
 ///
 /// 每核 `KERNEL_STACK_SIZE` 字节，共 `MAX_CORE_COUNT` 核。
 /// 声明为普通 BSS 静态变量（data 段，RW），不放入 `.bss.boot`——
 /// 后者在链接脚本中位于 `__etext` 之前，会被 W^X 覆盖为 RX 导致栈不可写。
 ///
-/// 汇编通过 `la sp, BOOT_STACK` 引用此符号（PC-relative 寻址，不要求与
-/// `.text.boot` 在同一 section）。
+/// 汇编通过 `la sp, BOOT_STACK`（riscv64）/ `adrp + add` (aarch64) 引用此符号。
 #[unsafe(no_mangle)]
-static BOOT_STACK: SyncUnsafeCell<[u8; config::KERNEL_STACK_SIZE * config::MAX_CORE_COUNT]> =
-    SyncUnsafeCell::new([0; config::KERNEL_STACK_SIZE * config::MAX_CORE_COUNT]);
+static BOOT_STACK: SyncUnsafeCell<BootStackStorage> = SyncUnsafeCell::new(BootStackStorage(
+    [0; config::KERNEL_STACK_SIZE * config::MAX_CORE_COUNT],
+));
 
 /// 内核初始化级别
 pub enum InitLevel {
@@ -118,7 +125,7 @@ fn smoke_test_memory() {
 
     // 帧分配验证
     let frame =
-        memory::frame::AllocatedFrames::alloc_one().expect("boot smoke: frame alloc_one failed");
+        frame_allocator::AllocatedFrames::alloc_one().expect("boot smoke: frame alloc_one failed");
     assert!(
         frame.start_paddr().as_usize() % config::PAGE_SIZE == 0,
         "boot smoke: frame not page-aligned: {:#x}",
