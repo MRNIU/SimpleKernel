@@ -37,12 +37,6 @@ impl<A: Copy + Ord> Span<A> {
     pub fn end(self) -> A {
         self.end
     }
-
-    /// 两个范围是否重叠
-    #[inline]
-    pub fn overlaps(self, other: Self) -> bool {
-        self.start < other.end && other.start < self.end
-    }
 }
 
 impl<A: Copy + Ord + Sub<A, Output = usize>> Span<A> {
@@ -64,16 +58,6 @@ mod tests {
         assert_eq!(r.size(), 0x2000);
         assert_eq!(r.start(), 0x1000);
         assert_eq!(r.end(), 0x3000);
-    }
-
-    /// 重叠检测——相交与相邻
-    #[test]
-    fn overlaps() {
-        let a = Span::new(1usize, 3);
-        let b = Span::new(2usize, 4);
-        assert!(a.overlaps(b));
-        // 相邻但不重叠
-        assert!(!a.overlaps(Span::new(3, 4)));
     }
 
     /// start > end 时 panic

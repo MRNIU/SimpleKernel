@@ -43,24 +43,14 @@ bitflags! {
         const VALID     = 1 << 0;
         /// Table/Page 描述符（1 = table/page，0 = block）
         const TABLE     = 1 << 1;
-        /// MAIR 索引 0（Normal memory）：bits [4:2] = 0b000。
-        /// 零值常量——在 `|` 表达式中无实际作用，仅为文档可读性保留。
-        /// Normal memory 即 MAIR 索引位全零时的默认选择。
-        const MAIR_IDX0 = 0b000 << 2;
         /// MAIR 索引 1（Device-nGnRnE）：bits [4:2] = 0b001
         const MAIR_IDX1 = 0b001 << 2;
-        /// AP[2:1] = 0b01：EL0 可访问（unprivileged access）
-        const AP_UNPRIV = 0b01 << 6;
-        /// AP[2:1] = 0b10：只读（EL1 read-only，EL0 不可访问）。
-        /// 注意 AP 是双位字段 bits [7:6]，`AP_UNPRIV | AP_RO` = 0b11 表示
-        /// 内核+用户均只读。
+        /// AP[2:1] = 0b10：只读（EL1 read-only）
         const AP_RO     = 0b10 << 6;
         /// Inner Shareable：bits [9:8] = 0b11
         const SH_INNER  = 0b11 << 8;
         /// Access Flag
         const AF        = 1 << 10;
-        /// non-Global
-        const NG        = 1 << 11;
         /// Privileged Execute-Never
         const PXN       = 1 << 53;
         /// Unprivileged Execute-Never / Execute-Never
@@ -71,20 +61,30 @@ bitflags! {
 /// 标志位掩码——所有已定义标志位的并集，用于从 PTE 中精确提取标志。
 const FLAGS_MASK: u64 = PteFlags::all().bits();
 
+impl PteFlags {
+    /// Level 0 叶 PTE 共享基础位：VALID | TABLE | AF。
+    ///
+    /// 所有权限 factory 都从这三位开始，便于读者快速识别"哪些位是叶 PTE 必备的"。
+    const LEAF_BASE: Self = Self::VALID.union(Self::TABLE).union(Self::AF);
+
+    /// 内核 Normal memory 叶 PTE 基础位：LEAF_BASE | SH_INNER。
+    const KERNEL_NORMAL: Self = Self::LEAF_BASE.union(Self::SH_INNER);
+}
+
 impl PteFlagsOps for PteFlags {
     #[inline]
     fn kernel_rw() -> Self {
-        Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::PXN | Self::UXN
+        Self::KERNEL_NORMAL | Self::PXN | Self::UXN
     }
 
     #[inline]
     fn kernel_rx() -> Self {
-        Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::AP_RO | Self::UXN
+        Self::KERNEL_NORMAL | Self::AP_RO | Self::UXN
     }
 
     #[inline]
     fn kernel_ro() -> Self {
-        Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::AP_RO | Self::PXN | Self::UXN
+        Self::KERNEL_NORMAL | Self::AP_RO | Self::PXN | Self::UXN
     }
 
     /// 内核读写执行映射。
@@ -93,7 +93,7 @@ impl PteFlagsOps for PteFlags {
     /// 防止特权提升后利用内核映射执行代码。
     #[inline]
     fn kernel_rwx() -> Self {
-        Self::VALID | Self::TABLE | Self::AF | Self::SH_INNER | Self::UXN
+        Self::KERNEL_NORMAL | Self::UXN
     }
 
     /// 设备 MMIO 映射（Device-nGnRnE，不可缓存、不可执行）。
@@ -102,126 +102,7 @@ impl PteFlagsOps for PteFlags {
     /// shareability 字段被硬件忽略，省略以避免误导。
     #[inline]
     fn kernel_device() -> Self {
-        Self::VALID | Self::TABLE | Self::AF | Self::MAIR_IDX1 | Self::PXN | Self::UXN
-    }
-
-    /// 用户态读写数据映射（不可执行）。
-    ///
-    /// - `AP_UNPRIV`：允许 EL0 访问
-    /// - `NG`：non-Global，TLB 条目绑定 ASID（per-process）
-    /// - `PXN | UXN`：数据页不可执行（W^X）
-    #[inline]
-    fn user_rw() -> Self {
-        Self::VALID
-            | Self::TABLE
-            | Self::AF
-            | Self::SH_INNER
-            | Self::AP_UNPRIV
-            | Self::NG
-            | Self::PXN
-            | Self::UXN
-    }
-
-    /// 用户态读-执行映射（不可写）。
-    ///
-    /// - `AP_UNPRIV | AP_RO`：EL0 + EL1 均只读
-    /// - `PXN`：禁止内核执行用户代码页
-    /// - 不设 `UXN`：允许用户态执行
-    #[inline]
-    fn user_rx() -> Self {
-        Self::VALID
-            | Self::TABLE
-            | Self::AF
-            | Self::SH_INNER
-            | Self::AP_UNPRIV
-            | Self::AP_RO
-            | Self::NG
-            | Self::PXN
-    }
-
-    /// 用户态只读映射。
-    #[inline]
-    fn user_ro() -> Self {
-        Self::VALID
-            | Self::TABLE
-            | Self::AF
-            | Self::SH_INNER
-            | Self::AP_UNPRIV
-            | Self::AP_RO
-            | Self::NG
-            | Self::PXN
-            | Self::UXN
-    }
-
-    /// 用户态读写执行映射。
-    ///
-    /// - `PXN`：禁止内核执行
-    /// - 不设 `UXN`：允许用户态执行
-    /// - 不设 `AP_RO`：允许写入
-    #[inline]
-    fn user_rwx() -> Self {
-        Self::VALID
-            | Self::TABLE
-            | Self::AF
-            | Self::SH_INNER
-            | Self::AP_UNPRIV
-            | Self::NG
-            | Self::PXN
-    }
-
-    /// AArch64 中 Valid 的页面始终可读——没有独立的 "读" 控制位。
-    #[inline]
-    fn is_readable(self) -> bool {
-        self.contains(Self::VALID)
-    }
-
-    /// AArch64 的写权限由 AP_RO 位反向控制——AP_RO=0 表示可写。
-    #[inline]
-    fn is_writable(self) -> bool {
-        !self.contains(Self::AP_RO)
-    }
-
-    /// AArch64 的执行权限由 XN 位反向控制。
-    /// 内核页看 PXN，用户页看 UXN。这里取保守策略：任一 XN 位未设置即视为可执行。
-    #[inline]
-    fn is_executable(self) -> bool {
-        !self.contains(Self::PXN) || !self.contains(Self::UXN)
-    }
-
-    #[inline]
-    fn is_user(self) -> bool {
-        self.contains(Self::AP_UNPRIV)
-    }
-
-    #[inline]
-    fn is_accessed(self) -> bool {
-        self.contains(Self::AF)
-    }
-
-    /// AArch64 没有硬件 Dirty 位（在不启用 DBM 时）。
-    /// 这里用 "可写 + 已访问" 近似判断。
-    #[inline]
-    fn is_dirty(self) -> bool {
-        self.is_writable() && self.is_accessed()
-    }
-
-    #[inline]
-    fn with_writable(self, w: bool) -> Self {
-        if w {
-            self.difference(Self::AP_RO)
-        } else {
-            self | Self::AP_RO
-        }
-    }
-
-    /// 设置或清除执行权限——同时操作 PXN 和 UXN。
-    #[inline]
-    fn with_executable(self, x: bool) -> Self {
-        if x {
-            self.difference(Self::PXN | Self::UXN)
-        } else {
-            self | Self::PXN | Self::UXN
-        }
+        Self::LEAF_BASE | Self::MAIR_IDX1 | Self::PXN | Self::UXN
     }
 
     /// 将标志位适配为指定层级的叶描述符格式。
@@ -278,11 +159,6 @@ impl PteOps for PageTableEntry {
         } else {
             self.0 & PteFlags::TABLE.bits() == 0
         }
-    }
-
-    #[inline]
-    fn empty() -> Self {
-        Self(0)
     }
 
     #[inline]

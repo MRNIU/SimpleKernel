@@ -25,8 +25,6 @@ pub enum DeviceError {
     ProbeFailed,
     /// 不支持的设备类型
     UnsupportedDevice,
-    /// MMIO 映射失败
-    MmioMapFailed,
     /// DMA 分配失败
     DmaAllocFailed,
     /// 设备 I/O 错误

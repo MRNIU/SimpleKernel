@@ -54,7 +54,7 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     smoke_test_spinlock();
 
     memory::init();
-    Arch::map_early_mmio().expect("failed to map early MMIO");
+    Arch::map_early_mmio();
     // SAFETY: 页表覆盖所有内核代码/数据及早期 MMIO
     {
         let pt = paging::kernel_page_table();

@@ -30,7 +30,7 @@ impl AllocatedFrames {
     ///
     /// # Errors
     ///
-    /// 分配器未初始化返回 `AllocationFailed`，帧耗尽返回 `OutOfMemory`。
+    /// 帧耗尽返回 `OutOfMemory`。
     pub fn alloc(count: usize) -> Result<Self, crate::FrameAllocError> {
         crate::alloc::alloc_from_backend(count)
     }
@@ -39,14 +39,14 @@ impl AllocatedFrames {
     ///
     /// # Errors
     ///
-    /// 分配器未初始化返回 `AllocationFailed`，帧耗尽返回 `OutOfMemory`。
+    /// 帧耗尽返回 `OutOfMemory`。
     pub fn alloc_one() -> Result<Self, crate::FrameAllocError> {
         Self::alloc(1)
     }
 
     /// 范围内 4K 帧的数量。
     #[inline]
-    pub fn count(&self) -> usize {
+    pub fn page_count(&self) -> usize {
         self.range.size()
     }
 

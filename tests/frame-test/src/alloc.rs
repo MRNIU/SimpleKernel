@@ -20,23 +20,20 @@ fn run_tests() {
     test_alloc_dealloc_realloc();
     log::info!("test alloc_dealloc_realloc ... ok");
 
-    test_alloc_zero_returns_error();
-    log::info!("test alloc_zero_returns_error ... ok");
-
-    log::info!("frame-alloc-test: all 4 tests passed");
+    log::info!("frame-alloc-test: all 3 tests passed");
 }
 
 /// 分配单帧后帧计数应为 1，地址应页对齐。
 fn test_alloc_one_frame() {
     let frame = AllocatedFrames::alloc_one().expect("alloc_one 应成功");
-    assert_eq!(frame.count(), 1);
+    assert_eq!(frame.page_count(), 1);
     assert!(frame.start_paddr().is_aligned());
 }
 
 /// 分配多帧后帧计数应正确。
 fn test_alloc_multiple_frames() {
     let frames = AllocatedFrames::alloc(4).expect("alloc(4) 应成功");
-    assert_eq!(frames.count(), 4);
+    assert_eq!(frames.page_count(), 4);
 }
 
 /// 帧 drop 后应能重新分配。
@@ -46,10 +43,4 @@ fn test_alloc_dealloc_realloc() {
     }
     let frame2 = AllocatedFrames::alloc_one().expect("重新分配应成功");
     assert!(frame2.start_paddr().is_aligned());
-}
-
-/// alloc(0) 应返回错误而非 panic。
-fn test_alloc_zero_returns_error() {
-    let result = AllocatedFrames::alloc(0);
-    assert!(result.is_err(), "alloc(0) 应返回错误");
 }

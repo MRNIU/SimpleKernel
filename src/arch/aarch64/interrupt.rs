@@ -127,11 +127,8 @@ pub fn init() {
     init_gic_addrs();
     let addrs = GIC_ADDRS.get().expect("GIC_ADDRS 未初始化");
 
-    // 映射 GICD 和 GICR MMIO 区域
-    map_mmio(PhysAddr::new(addrs.gicd_base), addrs.gicd_size)
-        .expect("interrupt_init: 映射 GICD 失败");
-    map_mmio(PhysAddr::new(addrs.gicr_base), addrs.gicr_size)
-        .expect("interrupt_init: 映射 GICR 失败");
+    map_mmio(PhysAddr::new(addrs.gicd_base), addrs.gicd_size);
+    map_mmio(PhysAddr::new(addrs.gicr_base), addrs.gicr_size);
 
     let cpu_id = per_cpu::current_core_id();
 

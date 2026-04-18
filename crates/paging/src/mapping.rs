@@ -43,7 +43,7 @@ impl OwnedPages {
     /// - 页数为 0
     /// - PTE 不存在（背景映射未建立）
     pub fn new(frames: AllocatedFrames, flags: PteFlags) -> Self {
-        let page_count = frames.count();
+        let page_count = frames.page_count();
         assert!(page_count > 0, "OwnedPages::new: 页数不能为 0");
 
         let va_start = frames.start_paddr().to_virt();
@@ -61,13 +61,13 @@ impl OwnedPages {
     /// 返回区域总大小（字节）。
     #[must_use]
     pub fn size(&self) -> usize {
-        self.frames.count() * PAGE_SIZE
+        self.frames.page_count() * PAGE_SIZE
     }
 
     /// 返回页数。
     #[must_use]
     pub fn page_count(&self) -> usize {
-        self.frames.count()
+        self.frames.page_count()
     }
 
     /// 返回当前权限。
@@ -86,12 +86,14 @@ impl OwnedPages {
 /// 批量更新 PTE 权限并刷新 TLB。
 ///
 /// `new` / `set_flags` / `Drop` 共用此逻辑。
+//
+// TODO: 单次 walk 批量更新——当前每页独立调用 `update_pte` 触发完整 walk，
+// 同一区间所有页共享中间节点，可合并为单次 walk 后按叶节点索引步进。
+// 待引入大映射场景（如 mmap）时优化。
 fn batch_update_flags(va_start: VirtAddr, page_count: usize, flags: PteFlags) {
     let pt = crate::kernel_page_table();
     for i in 0..page_count {
-        let va = va_start + i * PAGE_SIZE;
-        pt.update_pte(va, flags)
-            .expect("batch_update_flags: update_pte 失败");
+        pt.update_pte(va_start + i * PAGE_SIZE, flags);
     }
     let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
 }
@@ -99,10 +101,9 @@ fn batch_update_flags(va_start: VirtAddr, page_count: usize, flags: PteFlags) {
 impl Drop for OwnedPages {
     fn drop(&mut self) {
         let va_start = self.vaddr();
-        let page_count = self.page_count();
 
         // 恢复 kernel_rw + flush TLB
-        batch_update_flags(va_start, page_count, PteFlags::kernel_rw());
+        batch_update_flags(va_start, self.page_count(), PteFlags::kernel_rw());
 
         // 写 poison——此时 PTE 已恢复 kernel_rw 且 TLB 已刷新
         // SAFETY: va_start identity-mapped，帧仍由 self.frames 持有（buddy 尚未回收）
@@ -110,7 +111,7 @@ impl Drop for OwnedPages {
             core::ptr::write_bytes(
                 va_start.as_mut_ptr::<u8>(),
                 config::FREED_PAGE_POISON,
-                page_count * PAGE_SIZE,
+                self.size(),
             );
         }
 

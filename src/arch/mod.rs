@@ -32,7 +32,7 @@ pub trait ArchOps {
     fn wake_secondary_cores();
 
     /// 映射分页激活前必须就绪的架构特定 MMIO
-    fn map_early_mmio() -> Result<(), memory::error::MemoryError>;
+    fn map_early_mmio();
 
     /// 激活页表（写入 satp / ttbr0_el1 等硬件寄存器）
     ///

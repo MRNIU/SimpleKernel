@@ -53,12 +53,11 @@ impl ArchOps for Aarch64 {
         ipi::wake_secondary_cores();
     }
 
-    fn map_early_mmio() -> Result<(), memory::error::MemoryError> {
+    fn map_early_mmio() {
         // PL011 UART —— 通过 memory 门面建立 MMIO identity map
         // （VA == PA，Device-nGnRnE 属性，含 RAM 重叠校验）。
-        memory::map_mmio(memory_types::PhysAddr::new(PL011_BASE), PL011_SIZE)?;
+        memory::map_mmio(memory_types::PhysAddr::new(PL011_BASE), PL011_SIZE);
         log::info!("MemoryInit: mapped PL011 UART @ {:#010X}", PL011_BASE);
-        Ok(())
     }
 
     unsafe fn activate_page_table(pt: &paging::PageTable) {

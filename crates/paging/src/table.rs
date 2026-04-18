@@ -1,4 +1,4 @@
-//! 多级页表——walk / create_pte / update_pte 逻辑。
+//! 多级页表——walk / identity_map_range / update_pte 逻辑。
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -7,7 +7,6 @@ use memory_types::{PhysAddr, VirtAddr};
 
 use frame_allocator::AllocatedFrames;
 
-use crate::error::PagingError;
 use crate::{ENTRIES_PER_TABLE, PageTableEntry, PteFlags, PteFlagsOps, PteOps, vpn_index};
 
 const PT_LEVELS: usize = arch::PT_LEVELS;
@@ -67,26 +66,25 @@ impl Table {
 ///
 /// 锁粒度：
 /// - `root`：创建后永不变动，无需同步保护
-/// - `nodes`：仅 `create_pte` 的慢路径（建新 PTE）需要互斥
+/// - `nodes`：仅建新 PTE 的慢路径需要互斥（`identity_map_range`）
 /// - 单个 PTE：`AtomicU64` per-entry，`Acquire/Release` ordering
 pub struct PageTable {
     root: AllocatedFrames,
-    /// 中间节点容器——仅 `create_pte` 的慢路径需要锁。
     nodes: sync_crate::SpinLock<Vec<AllocatedFrames>>,
 }
 
 impl PageTable {
     /// 创建新页表，分配根帧。
-    pub fn create() -> Result<Self, PagingError> {
-        let root = crate::alloc_node_frame()?;
-        Ok(Self {
+    pub fn create() -> Self {
+        let root = crate::alloc_node_frame();
+        Self {
             root,
             nodes: sync_crate::SpinLock::new(
                 Vec::new(),
                 "pt_nodes",
                 sync_crate::lock_level::KERNEL_PT,
             ),
-        })
+        }
     }
 
     /// 返回根页表的物理地址（用于写入 satp / TTBR 寄存器）。
@@ -95,67 +93,18 @@ impl PageTable {
         self.root.start_paddr()
     }
 
-    /// 创建单个虚拟页（4KB）的 PTE。
+    /// 持锁 walk 到 Level 0 并按需分配中间节点，写入叶 PTE。
     ///
-    /// SAS 全量映射下 PTE 始终存在。此方法的语义：
-    /// - 若该 VA 无 PTE → 创建 Level 0 叶 PTE，返回 Ok
-    /// - 若该 VA 已有 PTE 且 PA 相同且 flags 相同 → 幂等，返回 Ok
-    /// - 若该 VA 已有 PTE 且 PA 相同但 flags 不同 → Err(FlagsConflict)；
-    ///   显式修改 flags 请使用 [`update_pte`](Self::update_pte)
-    /// - 若该 VA 已有 PTE 但 PA 不同 → panic（内核 bug）
-    ///
-    /// **调用方必须在此操作后执行架构相关的 TLB 刷新**
-    /// （RISC-V: `sfence.vma`，AArch64: `TLBI` + `DSB` + `ISB`）。
-    ///
-    /// # Errors
-    ///
-    /// - `PagingError::AllocationFailed` — 中间节点帧分配失败
-    /// - `PagingError::FlagsConflict` — 同 PA 不同 flags
-    ///
-    /// # Panics
-    ///
-    /// - walk 路径上遇到非预期的大页叶 PTE（页表损坏）
-    /// - VA 已映射到不同的 PA（内核 bug）
-    pub fn create_pte(
-        &self,
-        va: VirtAddr,
-        pa: PhysAddr,
-        flags: PteFlags,
-    ) -> Result<(), PagingError> {
-        let leaf_flags = flags.for_leaf_at_level(0);
-
-        // 快速路径：先无锁检查 PTE 是否已存在
-        if let Some((pte, _, _, level)) = self.walk_to_leaf(va) {
-            if pte.paddr() != pa {
-                panic!(
-                    "create_pte: VA {} 已指向 PA {}，试图改为 PA {}（不同 PA 是内核 bug）",
-                    va,
-                    pte.paddr(),
-                    pa
-                );
-            }
-            let existing_leaf_flags = flags.for_leaf_at_level(level);
-            if pte.flags() == existing_leaf_flags {
-                return Ok(()); // 幂等
-            }
-            return Err(PagingError::FlagsConflict);
-        }
-
-        // 慢路径：PTE 不存在，需要分配中间节点——取锁
-        let mut nodes = self.nodes.lock();
-        self.walk_create_and_write(&mut nodes, va, pa, leaf_flags)
-    }
-
-    /// 持锁建立新 PTE——walk 到 Level 0 并按需分配中间节点，写入叶 PTE。
-    ///
-    /// TOCTOU re-check：快速路径到取锁之间，另一核可能已建立该 PTE。
+    /// 若该 VA 已存在 PTE：
+    /// - 同 PA 同 flags → 幂等，直接返回
+    /// - 其他情况（不同 PA 或不同 flags）→ panic（调用方 bug）
     fn walk_create_and_write(
         &self,
         nodes: &mut Vec<AllocatedFrames>,
         va: VirtAddr,
         pa: PhysAddr,
         leaf_flags: PteFlags,
-    ) -> Result<(), PagingError> {
+    ) {
         let mut paddr = self.root.start_paddr();
 
         for level in (1..PT_LEVELS).rev() {
@@ -165,7 +114,7 @@ impl PageTable {
             let pte = table.read(idx);
 
             if !pte.is_valid() {
-                let frame = crate::alloc_node_frame()?;
+                let frame = crate::alloc_node_frame();
                 let frame_paddr = frame.start_paddr();
                 nodes.push(frame);
                 table.write(idx, PageTableEntry::new_intermediate(frame_paddr));
@@ -187,22 +136,22 @@ impl PageTable {
 
         // TOCTOU re-check：另一核可能在我们取锁期间已建立该 PTE
         if current.is_valid() {
-            if current.paddr() != pa {
-                panic!(
-                    "create_pte: VA {} 已指向 PA {}，试图改为 PA {}（不同 PA 是内核 bug）",
-                    va,
-                    current.paddr(),
-                    pa
-                );
-            }
-            if current.flags() == leaf_flags {
-                return Ok(()); // 幂等
-            }
-            return Err(PagingError::FlagsConflict);
+            assert_eq!(
+                current.paddr(),
+                pa,
+                "identity_map_range: VA {va} 已指向 PA {}，试图改为 PA {pa}（内核 bug）",
+                current.paddr(),
+            );
+            assert_eq!(
+                current.flags(),
+                leaf_flags,
+                "identity_map_range: VA {va} flags 冲突——已有 PTE {:?} 与请求 {leaf_flags:?} 不同",
+                current.flags(),
+            );
+            return; // 幂等重复映射
         }
 
         table.write(idx, PageTableEntry::new(pa, leaf_flags));
-        Ok(())
     }
 
     /// 修改已映射页的权限标志位，保留物理地址不变。
@@ -210,9 +159,15 @@ impl PageTable {
     /// 无锁操作——使用原子 swap 替换叶 PTE。
     ///
     /// **调用方必须在此操作后执行 TLB 刷新。**
-    pub fn update_pte(&self, va: VirtAddr, new_flags: PteFlags) -> Result<PteFlags, PagingError> {
-        let (pte, paddr, idx, leaf_level) =
-            self.walk_to_leaf(va).ok_or(PagingError::PageNotMapped)?;
+    ///
+    /// # Panics
+    ///
+    /// 目标 VA 未映射时 panic——SAS 架构下所有物理内存都有背景 identity mapping，
+    /// 未映射是违反不变量的内核 bug。
+    pub fn update_pte(&self, va: VirtAddr, new_flags: PteFlags) -> PteFlags {
+        let (pte, paddr, idx, leaf_level) = self
+            .walk_to_leaf(va)
+            .unwrap_or_else(|| panic!("update_pte: VA {va} 未映射（违反 SAS 背景层不变量）"));
 
         let leaf_flags = new_flags.for_leaf_at_level(leaf_level);
         let new_pte = PageTableEntry::new(pte.paddr(), leaf_flags);
@@ -220,7 +175,7 @@ impl PageTable {
         let table = unsafe { Table::from_paddr(paddr) };
         let old = table.swap(idx, new_pte);
 
-        Ok(PageTableEntry::from_raw(old.as_raw()).flags())
+        PageTableEntry::from_raw(old.as_raw()).flags()
     }
 
     /// 只读遍历——从根向下查找叶 PTE，返回已读取的 PTE、所在帧物理地址、索引及层级。
@@ -268,29 +223,23 @@ impl PageTable {
     ///
     /// # Panics
     ///
-    /// `start >= end` 或映射冲突时 panic。
+    /// `start >= end`、映射冲突（同 PA 不同 flags）、页表节点 OOM 时 panic。
     pub fn identity_map_range(&self, start: PhysAddr, end: PhysAddr, flags: PteFlags) {
-        let mut addr = start.align_down();
+        let addr_start = start.align_down();
         let end_aligned = end.align_up();
 
         assert!(
-            addr.as_usize() < end_aligned.as_usize(),
-            "identity_map_range: 无效地址范围 [{addr}, {end_aligned})"
+            addr_start.as_usize() < end_aligned.as_usize(),
+            "identity_map_range: 无效地址范围 [{addr_start}, {end_aligned})"
         );
 
         let leaf_flags = flags.for_leaf_at_level(0);
         let mut nodes = self.nodes.lock();
 
+        let mut addr = addr_start;
         while addr.as_usize() < end_aligned.as_usize() {
             let va = VirtAddr::new(addr.as_usize());
-            match self.walk_create_and_write(&mut nodes, va, addr, leaf_flags) {
-                Ok(()) => {}
-                Err(PagingError::FlagsConflict) => panic!(
-                    "identity_map_range: VA {} flags 冲突——已有 PTE 的权限与请求不同",
-                    va
-                ),
-                Err(e) => panic!("identity_map_range: 设置 {va} 权限失败: {e}"),
-            }
+            self.walk_create_and_write(&mut nodes, va, addr, leaf_flags);
             addr += config::PAGE_SIZE;
         }
     }

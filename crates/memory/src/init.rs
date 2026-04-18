@@ -58,7 +58,7 @@ pub fn init() {
         core::mem::forget(heap_frames);
     }
 
-    let pt = PageTable::create().expect("创建内核页表失败");
+    let pt = PageTable::create();
     paging::init_kernel_page_table(pt);
 
     // 背景层必须先于 OwnedPages——update_pte 要求 PTE 已存在

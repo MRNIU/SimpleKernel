@@ -25,6 +25,13 @@
 //! SAS 架构下所有物理内存在 boot 时 identity-map 为 `kernel_rw`（背景层），
 //! 运行时只调整权限（覆盖层），永远不创建或删除 PTE。
 //!
+//! # 错误策略
+//!
+//! SAS 下分页/MMIO 映射失败都是**内核 bug**（boot 时 OOM、RAM/Device 重叠、
+//! flags 冲突），因此 [`map_mmio`] 和下层页表操作**失败即 panic**。
+//! 唯一向上传递 `FrameAllocError::OutOfMemory` 的场景是运行时帧分配
+//! （`AllocatedFrames::alloc`），不经过本 crate 的接口。
+//!
 //! # 典型使用方式
 //!
 //! ```rust,ignore
@@ -37,29 +44,31 @@
 //! // ... 使用 mapping.vaddr() 访问内存 ...
 //! drop(mapping); // 恢复 kernel_rw + 归还帧
 //!
-//! // MMIO 映射
-//! let region = memory::map_mmio(PhysAddr::new(0x1000_0000), 0x1000)?;
+//! // MMIO 映射（失败 panic）
+//! let region = memory::map_mmio(PhysAddr::new(0x1000_0000), 0x1000);
 //! ```
 
 #![no_std]
 
-/// 错误类型。
-pub mod error;
-/// 物理帧分配器（re-export `frame_allocator` crate）。
+/// 物理帧分配器 re-export。
+///
+/// **不要让 `simplekernel` 根 crate 直接依赖 `frame_allocator`**——已观察到
+/// 在根 `Cargo.toml` 添加 `frame_allocator = { path = ... }` 会导致 SMP QEMU
+/// 启动后立即死锁（QEMU 100% CPU、无任何串口输出），疑似 workspace 依赖图
+/// 在多测试二进制场景下产生的 linker 边界情况。根因待调查（见
+/// `docs/audit/audit-progress.md` 中"待办：调查 frame_allocator 直接依赖死锁"）。
 pub use frame_allocator as frame;
-/// 堆分配器（re-export `heap` crate）。
+/// 堆分配器 re-export。
 pub use heap_crate as heap;
+/// TLB 管理 re-export。
+pub use tlb;
+
 /// 全局内存状态。
 pub mod globals;
 /// 内存子系统初始化（依赖链接器符号，裸机专用）。
 pub mod init;
 
-/// TLB 管理（re-export `tlb` crate）。
-pub use tlb;
-
-/// 映射错误类型 re-export。
-pub use paging::error::PagingError;
-/// MMIO 区域（re-export `paging::mmio::MmioRegion`）。
+/// MMIO 区域（re-export `paging::mmio::MmioRegion`，是 `map_mmio` 的返回类型）。
 pub use paging::mmio::MmioRegion;
 
 pub use globals::{MEMORY_INFO, MemoryInfo};
@@ -71,20 +80,12 @@ pub use init::{init, init_smp};
 /// 这是建立 MMIO 映射的**唯一公开入口**——内部完成 RAM 重叠校验和页表映射。
 /// MMIO 映射永久存在（MmioRegion 不 unmap）。
 ///
-/// 重叠检测由 PageTable 的 PTE 担当真相源——同 PA + 同 flags 幂等通过，
-/// flags 冲突由 `identity_map_range` 内部 panic。
+/// # Panics
 ///
-/// # Errors
-///
-/// 页表映射失败时返回错误。
-pub fn map_mmio(
-    paddr: memory_types::PhysAddr,
-    size: usize,
-) -> Result<MmioRegion, error::MemoryError> {
-    // paddr RAM 校验——拒绝将 RAM 重映射为 Device 内存
-    let info = MEMORY_INFO
-        .get()
-        .expect("map_mmio: MEMORY_INFO not initialized");
+/// - `paddr + size` 与 RAM 范围重叠（拒绝将 RAM 重映射为 Device 内存）
+/// - 页表映射冲突或节点 OOM
+pub fn map_mmio(paddr: memory_types::PhysAddr, size: usize) -> MmioRegion {
+    let info = MEMORY_INFO.get().expect("map_mmio: MEMORY_INFO 未初始化");
     let ram_start = info.physical_memory_addr.as_usize();
     let ram_end = ram_start + info.physical_memory_size;
     assert!(
@@ -96,5 +97,5 @@ pub fn map_mmio(
         ram_end
     );
 
-    Ok(paging::mmio::MmioRegion::map(paddr, size)?)
+    paging::mmio::MmioRegion::map(paddr, size)
 }

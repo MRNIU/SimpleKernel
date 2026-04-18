@@ -67,9 +67,7 @@ fn plic_init() {
         addr as usize
     };
 
-    // 映射 PLIC MMIO 区域
-    let region =
-        memory::map_mmio(PhysAddr::new(base), PLIC_SIZE).expect("plic_init: 映射 PLIC MMIO 失败");
+    let region = memory::map_mmio(PhysAddr::new(base), PLIC_SIZE);
     PLIC.call_once(|| region);
 
     let plic = plic();

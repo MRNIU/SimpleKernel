@@ -85,7 +85,7 @@ fn test_new_changes_flags() {
 
     let pt = paging::kernel_page_table();
     let (_, flags) = pt.get_mapping(va).expect("页表项应存在");
-    assert!(!flags.is_writable(), "new(kernel_ro) 应设为只读");
+    assert_eq!(flags, PteFlags::kernel_ro(), "new(kernel_ro) 应设为只读");
     drop(mp);
 }
 
@@ -99,13 +99,13 @@ fn test_drop_restores_default_flags() {
     {
         let pt = paging::kernel_page_table();
         let (_, flags) = pt.get_mapping(va).expect("页表项应存在");
-        assert!(!flags.is_writable());
+        assert_eq!(flags, PteFlags::kernel_ro());
     }
     drop(mp);
     // PTE 仍存在，但权限已恢复为 kernel_rw
     let pt = paging::kernel_page_table();
     let (_, flags) = pt.get_mapping(va).expect("drop 后页表项仍应存在");
-    assert!(flags.is_writable());
+    assert_eq!(flags, PteFlags::kernel_rw());
 }
 
 /// set_flags 修改权限。
@@ -117,12 +117,12 @@ fn test_set_flags_changes_flags() {
     {
         let pt = paging::kernel_page_table();
         let (_, flags) = pt.get_mapping(va).expect("页表项应存在");
-        assert!(flags.is_writable());
+        assert_eq!(flags, PteFlags::kernel_rw());
     }
 
     mp.set_flags(PteFlags::kernel_ro());
 
     let pt = paging::kernel_page_table();
     let (_, flags) = pt.get_mapping(va).expect("页表项应存在");
-    assert!(!flags.is_writable());
+    assert_eq!(flags, PteFlags::kernel_ro());
 }

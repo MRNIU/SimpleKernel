@@ -15,14 +15,8 @@ fn run_tests() {
     test_each_flag_roundtrip();
     log::info!("test each_flag_roundtrip ... ok");
 
-    test_wx_invariants();
-    log::info!("test wx_invariants ... ok");
-
-    test_user_presets();
-    log::info!("test user_presets ... ok");
-
-    test_user_wx_invariants();
-    log::info!("test user_wx_invariants ... ok");
+    test_kernel_preset_distinctness();
+    log::info!("test kernel_preset_distinctness ... ok");
 
     test_invalid_pte_is_not_leaf();
     log::info!("test invalid_pte_is_not_leaf ... ok");
@@ -33,13 +27,13 @@ fn run_tests() {
     test_addr_boundary_roundtrip();
     log::info!("test addr_boundary_roundtrip ... ok");
 
-    test_kernel_presets_not_user();
-    log::info!("test kernel_presets_not_user ... ok");
-
     #[cfg(target_arch = "riscv64")]
     {
         test_riscv64_for_leaf_at_level_is_identity();
         log::info!("test riscv64_for_leaf_at_level_is_identity ... ok");
+
+        test_riscv64_wx_bits();
+        log::info!("test riscv64_wx_bits ... ok");
     }
 
     #[cfg(target_arch = "aarch64")]
@@ -52,6 +46,9 @@ fn run_tests() {
 
         test_aarch64_is_leaf_level_dependent();
         log::info!("test aarch64_is_leaf_level_dependent ... ok");
+
+        test_aarch64_wx_bits();
+        log::info!("test aarch64_wx_bits ... ok");
     }
 
     log::info!("pte-test: all tests passed");
@@ -87,11 +84,9 @@ fn test_each_flag_roundtrip() {
             PteFlags::VALID,
             PteFlags::TABLE,
             PteFlags::MAIR_IDX1,
-            PteFlags::AP_UNPRIV,
             PteFlags::AP_RO,
             PteFlags::SH_INNER,
             PteFlags::AF,
-            PteFlags::NG,
             PteFlags::PXN,
             PteFlags::UXN,
         ];
@@ -102,73 +97,22 @@ fn test_each_flag_roundtrip() {
     }
 }
 
-/// W^X 安全不变量。
-fn test_wx_invariants() {
+/// 四个内核 preset 应产生互不相同的 flags 位组合。
+///
+/// 这是对"工厂方法返回正确位"的烟测——kernel_rw/rx/ro/rwx 若被
+/// 无意改同，调用方（OwnedPages::new）会建立错误权限但不会立即报错。
+fn test_kernel_preset_distinctness() {
     let rw = PteFlags::kernel_rw();
-    assert!(rw.is_writable());
-    assert!(!rw.is_executable());
-
     let rx = PteFlags::kernel_rx();
-    assert!(!rx.is_writable());
-    assert!(rx.is_executable());
-
     let ro = PteFlags::kernel_ro();
-    assert!(!ro.is_writable());
-    assert!(!ro.is_executable());
-
     let rwx = PteFlags::kernel_rwx();
-    assert!(rwx.is_writable());
-    assert!(rwx.is_executable());
 
-    let dev = PteFlags::kernel_device();
-    assert!(!dev.is_executable());
-}
-
-/// 用户态 preset 设置了 user 位及架构特定标志。
-fn test_user_presets() {
-    assert!(PteFlags::user_rw().is_user());
-    assert!(PteFlags::user_rx().is_user());
-    assert!(PteFlags::user_ro().is_user());
-    assert!(PteFlags::user_rwx().is_user());
-
-    // RISC-V: 用户态 preset 不设 GLOBAL
-    #[cfg(target_arch = "riscv64")]
-    {
-        use page_table_entry::riscv64::PteFlags;
-        assert!(!PteFlags::user_rw().contains(PteFlags::GLOBAL));
-        assert!(!PteFlags::user_rx().contains(PteFlags::GLOBAL));
-        assert!(!PteFlags::user_ro().contains(PteFlags::GLOBAL));
-        assert!(!PteFlags::user_rwx().contains(PteFlags::GLOBAL));
-    }
-
-    // AArch64: 用户态 preset 设 NG（Not-Global）
-    #[cfg(target_arch = "aarch64")]
-    {
-        use page_table_entry::aarch64::PteFlags;
-        assert!(PteFlags::user_rw().contains(PteFlags::NG));
-        assert!(PteFlags::user_rx().contains(PteFlags::NG));
-        assert!(PteFlags::user_ro().contains(PteFlags::NG));
-        assert!(PteFlags::user_rwx().contains(PteFlags::NG));
-    }
-}
-
-/// 用户态 preset 的 W^X 不变量。
-fn test_user_wx_invariants() {
-    let rw = PteFlags::user_rw();
-    assert!(rw.is_writable());
-    assert!(!rw.is_executable());
-
-    let rx = PteFlags::user_rx();
-    assert!(!rx.is_writable());
-    assert!(rx.is_executable());
-
-    let ro = PteFlags::user_ro();
-    assert!(!ro.is_writable());
-    assert!(!ro.is_executable());
-
-    let rwx = PteFlags::user_rwx();
-    assert!(rwx.is_writable());
-    assert!(rwx.is_executable());
+    assert_ne!(rw, rx);
+    assert_ne!(rw, ro);
+    assert_ne!(rx, ro);
+    assert_ne!(rwx, rw);
+    assert_ne!(rwx, rx);
+    assert_ne!(rwx, ro);
 }
 
 /// 无效 PTE 不应被视为叶节点。
@@ -213,15 +157,6 @@ fn test_addr_boundary_roundtrip() {
     assert_eq!(pte_high.flags(), flags);
 }
 
-/// 内核 preset 不应被标记为用户态可访问。
-fn test_kernel_presets_not_user() {
-    assert!(!PteFlags::kernel_rw().is_user());
-    assert!(!PteFlags::kernel_rx().is_user());
-    assert!(!PteFlags::kernel_ro().is_user());
-    assert!(!PteFlags::kernel_rwx().is_user());
-    assert!(!PteFlags::kernel_device().is_user());
-}
-
 /// RISC-V: for_leaf_at_level 不改变标志位。
 #[cfg(target_arch = "riscv64")]
 fn test_riscv64_for_leaf_at_level_is_identity() {
@@ -229,6 +164,23 @@ fn test_riscv64_for_leaf_at_level_is_identity() {
     assert_eq!(flags.for_leaf_at_level(0), flags);
     assert_eq!(flags.for_leaf_at_level(1), flags);
     assert_eq!(flags.for_leaf_at_level(2), flags);
+}
+
+/// RISC-V: 内核 preset 的 R/W/X 位符合预期。
+#[cfg(target_arch = "riscv64")]
+fn test_riscv64_wx_bits() {
+    use page_table_entry::riscv64::PteFlags;
+    let rw = PteFlags::kernel_rw();
+    assert!(rw.contains(PteFlags::READ | PteFlags::WRITE));
+    assert!(!rw.contains(PteFlags::EXECUTE));
+
+    let rx = PteFlags::kernel_rx();
+    assert!(rx.contains(PteFlags::READ | PteFlags::EXECUTE));
+    assert!(!rx.contains(PteFlags::WRITE));
+
+    let ro = PteFlags::kernel_ro();
+    assert!(ro.contains(PteFlags::READ));
+    assert!(!ro.contains(PteFlags::WRITE | PteFlags::EXECUTE));
 }
 
 /// AArch64: 设备映射使用 MAIR_IDX1。
@@ -265,4 +217,25 @@ fn test_aarch64_is_leaf_level_dependent() {
 
     let table_pte = PageTableEntry::new_intermediate(pa);
     assert!(!table_pte.is_leaf(1));
+}
+
+/// AArch64: 内核 preset 的 AP_RO/PXN/UXN 位符合预期。
+#[cfg(target_arch = "aarch64")]
+fn test_aarch64_wx_bits() {
+    use page_table_entry::aarch64::PteFlags;
+    // kernel_rw: 可写（无 AP_RO）、内核/用户均不可执行
+    let rw = PteFlags::kernel_rw();
+    assert!(!rw.contains(PteFlags::AP_RO));
+    assert!(rw.contains(PteFlags::PXN | PteFlags::UXN));
+
+    // kernel_rx: 只读（AP_RO）、可执行（无 PXN）、用户不可执行（UXN）
+    let rx = PteFlags::kernel_rx();
+    assert!(rx.contains(PteFlags::AP_RO));
+    assert!(!rx.contains(PteFlags::PXN));
+    assert!(rx.contains(PteFlags::UXN));
+
+    // kernel_ro: 只读 + 均不可执行
+    let ro = PteFlags::kernel_ro();
+    assert!(ro.contains(PteFlags::AP_RO));
+    assert!(ro.contains(PteFlags::PXN | PteFlags::UXN));
 }

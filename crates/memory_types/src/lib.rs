@@ -17,28 +17,18 @@
 //!
 //! ```text
 //! PhysAddr ──page_number()──▶ Frame ──Span::new()──▶ Span<Frame>
-//!    │                          ▲
-//!    │ to_virt()                 │ From<PhysAddr>
-//!    ▼                          │
-//! VirtAddr ──page_number()──▶ Page
+//!    │
+//!    │ to_virt()
+//!    ▼
+//! VirtAddr
 //! ```
 //!
 //! - [`PhysAddr`] / [`VirtAddr`]——字节粒度地址，附带对齐辅助方法
-//! - [`Frame`] / [`Page`]——4K 页粒度标识，与地址双向转换
-//! - [`Span<A>`]——半开区间 `[start, end)`，支持重叠检测
+//! - [`Frame`]——4K 物理帧粒度标识，与物理地址双向转换
+//! - [`Span<A>`]——半开区间 `[start, end)`
 //!
 //! 以及物理-虚拟地址转换方法 [`PhysAddr::to_virt`] / [`VirtAddr::to_phys`]
 //! （基于 SAS identity mapping 假设：VA == PA）。
-//!
-//! # 宏生成的代码
-//!
-//! 本 crate 使用三个内部宏消除重复代码：
-//!
-//! | 宏 | 作用范围 | 生成内容 |
-//! |---|---------|---------|
-//! | `impl_usize_newtype!` | PhysAddr, VirtAddr, Frame, Page | `new`/`as_usize`、`From<usize>` 双向转换、checked 算术运算 |
-//! | `impl_addr!` | PhysAddr, VirtAddr | 对齐辅助（`page_offset`/`is_aligned`/`align_down`/`align_up`）、`Display` |
-//! | `impl_page_or_frame!` | Frame, Page | `start_addr`、地址/usize 双向转换、算术运算、`Display`/`Debug` |
 
 #![no_std]
 
@@ -47,7 +37,7 @@ mod page_frame;
 mod span;
 
 pub use addr::{PhysAddr, VirtAddr};
-pub use page_frame::{Frame, Page};
+pub use page_frame::Frame;
 pub use span::Span;
 
 /// 为地址 newtype 生成通用基础设施。

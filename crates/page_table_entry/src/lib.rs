@@ -18,7 +18,7 @@
 //! # 架构抽象方式
 //!
 //! 通过 trait + 条件编译实现跨架构：
-//! - [`PteFlagsOps`]：权限标志位统一接口（工厂 + 查询 + Builder）
+//! - [`PteFlagsOps`]：权限工厂接口
 //! - [`PteOps`]：PTE 编解码统一接口
 //! - `#[cfg(bare_riscv64)]` / `#[cfg(bare_aarch64)]`：选择具体实现
 //!
@@ -41,17 +41,9 @@ pub mod riscv64;
 
 /// 页表项标志位的统一接口——各架构必须实现。
 ///
-/// 保证 RISC-V 和 AArch64 的 `PteFlags` 提供完全相同的方法集，
-/// 避免新增 preset 时某一架构遗漏。
-///
-/// 方法分三类：
-/// - 工厂方法：创建常用权限组合（`kernel_rw` 等）
-/// - 查询方法：读取单个权限属性（`is_writable` 等）
-/// - Builder 方法：基于现有标志修改单个属性（`with_writable` 等），
-///   用于 `mprotect`、COW 等场景
+/// SAS 架构下只需要内核权限工厂——没有用户态，不做页回收（无需 A/D 位查询），
+/// 权限修改通过 `OwnedPages::set_flags` 整包替换（无需 builder）。
 pub trait PteFlagsOps: Copy + core::fmt::Debug {
-    // 工厂方法：创建常用权限组合
-
     /// 内核读写数据映射。
     fn kernel_rw() -> Self;
     /// 内核读-执行映射。
@@ -62,36 +54,7 @@ pub trait PteFlagsOps: Copy + core::fmt::Debug {
     fn kernel_rwx() -> Self;
     /// 设备 MMIO 映射（不可缓存、不可执行）。
     fn kernel_device() -> Self;
-    /// 用户态读写数据映射（不可执行）。
-    fn user_rw() -> Self;
-    /// 用户态读-执行映射（不可写）。
-    fn user_rx() -> Self;
-    /// 用户态只读映射。
-    fn user_ro() -> Self;
-    /// 用户态读写执行映射。
-    fn user_rwx() -> Self;
 
-    // 查询方法：读取单个权限属性
-
-    /// 是否具有读权限。
-    fn is_readable(self) -> bool;
-    /// 是否具有写权限。
-    fn is_writable(self) -> bool;
-    /// 是否具有执行权限。
-    fn is_executable(self) -> bool;
-    /// 是否为用户态可访问的映射。
-    fn is_user(self) -> bool;
-    /// 硬件是否设置了 Accessed 位（页面已被访问）。
-    fn is_accessed(self) -> bool;
-    /// 硬件是否设置了 Dirty 位（页面已被写入）。
-    fn is_dirty(self) -> bool;
-
-    // Builder 方法：基于现有标志修改单个属性
-
-    /// 设置或清除写权限——用于 COW 降级/恢复、mprotect。
-    fn with_writable(self, w: bool) -> Self;
-    /// 设置或清除执行权限——用于 mprotect。
-    fn with_executable(self, x: bool) -> Self;
     /// 将标志位适配为指定层级的叶描述符格式。
     fn for_leaf_at_level(self, level: usize) -> Self;
 }
@@ -117,8 +80,6 @@ pub trait PteOps: Copy + core::fmt::Debug {
     fn is_valid(self) -> bool;
     /// 是否为叶节点。
     fn is_leaf(self, level: usize) -> bool;
-    /// 空 PTE（全零）。
-    fn empty() -> Self;
     /// 中间节点 PTE（指向下一级页表）。
     fn new_intermediate(paddr: PhysAddr) -> Self;
     /// 从原始 u64 值构造 PTE。

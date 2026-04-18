@@ -7,7 +7,7 @@
 extern crate alloc;
 
 use alloc::format;
-use memory_types::{Frame, Page, PhysAddr, VirtAddr};
+use memory_types::{Frame, PhysAddr, VirtAddr};
 
 test_harness::test_main!(simplekernel::boot::InitLevel::Memory, run_tests);
 
@@ -54,17 +54,17 @@ fn run_tests() {
     test_frame_from_unaligned_truncates();
     log::info!("test frame_from_unaligned_truncates ... ok");
 
-    test_page_from_trait();
-    log::info!("test page_from_trait ... ok");
+    test_frame_from_addr();
+    log::info!("test frame_from_addr ... ok");
 
     test_frame_zero();
     log::info!("test frame_zero ... ok");
 
-    test_page_arithmetic();
-    log::info!("test page_arithmetic ... ok");
+    test_frame_arithmetic();
+    log::info!("test frame_arithmetic ... ok");
 
-    test_page_assign_ops();
-    log::info!("test page_assign_ops ... ok");
+    test_frame_assign_ops();
+    log::info!("test frame_assign_ops ... ok");
 
     test_frame_from_usize_roundtrip();
     log::info!("test frame_from_usize_roundtrip ... ok");
@@ -212,37 +212,37 @@ fn test_frame_from_unaligned_truncates() {
     assert_eq!(pn.start_addr(), PhysAddr::new(0x8020_3000));
 }
 
-/// From trait 双向转换。
-fn test_page_from_trait() {
-    let addr = VirtAddr::new(0x1_0000);
-    let pn: Page = addr.into();
-    assert_eq!(pn.as_usize(), 0x10);
-    let back: VirtAddr = pn.into();
+/// From<PhysAddr> 构造 Frame（向下取整）。
+fn test_frame_from_addr() {
+    let addr = PhysAddr::new(0x1_0000);
+    let frame: Frame = addr.into();
+    assert_eq!(frame.as_usize(), 0x10);
+    let back: PhysAddr = frame.into();
     assert_eq!(back, addr);
 }
 
-/// 零页号的起始地址应为 0。
+/// 零帧号的起始地址应为 0。
 fn test_frame_zero() {
-    let pn: Frame = Frame::new(0);
-    assert_eq!(pn.start_addr(), PhysAddr::new(0));
+    let frame: Frame = Frame::new(0);
+    assert_eq!(frame.start_addr(), PhysAddr::new(0));
 }
 
-/// 页号加减偏移及两个页号相减。
-fn test_page_arithmetic() {
-    let pn: Page = Page::new(0x100);
-    assert_eq!((pn + 3).as_usize(), 0x103);
-    assert_eq!((pn - 1).as_usize(), 0xFF);
-    let diff: usize = Page::new(0x105) - pn;
+/// 帧号加减偏移及两个帧号相减。
+fn test_frame_arithmetic() {
+    let frame = Frame::new(0x100);
+    assert_eq!((frame + 3).as_usize(), 0x103);
+    assert_eq!((frame - 1).as_usize(), 0xFF);
+    let diff: usize = Frame::new(0x105) - frame;
     assert_eq!(diff, 5);
 }
 
 /// += 和 -= 运算符。
-fn test_page_assign_ops() {
-    let mut pn: Page = Page::new(10);
-    pn += 5;
-    assert_eq!(pn.as_usize(), 15);
-    pn -= 3;
-    assert_eq!(pn.as_usize(), 12);
+fn test_frame_assign_ops() {
+    let mut frame = Frame::new(10);
+    frame += 5;
+    assert_eq!(frame.as_usize(), 15);
+    frame -= 3;
+    assert_eq!(frame.as_usize(), 12);
 }
 
 /// From<usize> 和 Into<usize> 双向转换。

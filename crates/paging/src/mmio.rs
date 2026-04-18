@@ -3,18 +3,17 @@
 //! `MmioRegion` 使用 volatile 语义，适合设备寄存器——编译器不会优化掉
 //! 对同一地址的重复读写，也不会重排 MMIO 操作。
 //!
-//! MMIO 地址是硬件寄存器，不是 RAM，不在 帧分配器 中。
-//! 直接使用 PageTable 的 pub(crate) 方法建立 identity mapping。
+//! MMIO 地址是硬件寄存器，不是 RAM，不在帧分配器中。
+//! 直接使用 PageTable 方法建立 identity mapping。
 //! 映射永久存在——不自动 unmap。
 
-use crate::error::PagingError;
 use crate::{PteFlags, PteFlagsOps};
 use memory_types::PhysAddr;
 
 /// 已映射的 MMIO 区域——提供类型安全的 volatile 寄存器访问。
 ///
-/// MMIO 地址是硬件寄存器，不是 RAM，不在 帧分配器 中。
-/// 直接使用 PageTable 的 pub(crate) 方法建立 identity mapping（VA == PA）。
+/// MMIO 地址是硬件寄存器，不是 RAM，不在帧分配器中。
+/// 直接使用 PageTable 方法建立 identity mapping（VA == PA）。
 /// 映射永久存在——不自动 unmap。
 pub struct MmioRegion {
     base: memory_types::VirtAddr,
@@ -24,13 +23,13 @@ pub struct MmioRegion {
 impl MmioRegion {
     /// 将 `[paddr, paddr+size)` identity-map，返回 `MmioRegion`。
     ///
-    /// # Errors
-    ///
-    /// 页表映射失败时返回错误。
     /// **不要直接调用**——请使用 `memory::map_mmio`，后者包含 RAM 重叠校验。
-    ///
     /// 此方法保留 `pub` 仅因 `memory` crate 需要跨 crate 调用。
-    pub fn map(paddr: PhysAddr, size: usize) -> Result<Self, PagingError> {
+    ///
+    /// # Panics
+    ///
+    /// 页表映射冲突或节点 OOM 时 panic（内核 bug）。
+    pub fn map(paddr: PhysAddr, size: usize) -> Self {
         let pa_aligned = paddr.align_down();
         let end_aligned = (paddr + size).align_up();
         let mapped_size = end_aligned.as_usize() - pa_aligned.as_usize();
@@ -39,10 +38,10 @@ impl MmioRegion {
         let pt = crate::kernel_page_table();
         pt.identity_map_range(pa_aligned, end_aligned, PteFlags::kernel_device());
 
-        Ok(Self {
+        Self {
             base: va,
             size: mapped_size,
-        })
+        }
     }
 
     /// 返回 MMIO 区域的基地址。
@@ -51,7 +50,7 @@ impl MmioRegion {
         self.base
     }
 
-    /// 返回 MMIO 区域的大小。
+    /// 返回 MMIO 区域的大小（字节）。
     #[must_use]
     pub fn size(&self) -> usize {
         self.size

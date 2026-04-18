@@ -49,31 +49,33 @@ bitflags! {
     }
 }
 
+impl PteFlags {
+    /// 内核叶 PTE 的共享基础位：VALID | GLOBAL | ACCESSED。
+    ///
+    /// SAS 架构下所有内核权限组合共享这三位，各 factory 只需
+    /// 在此基础上补 R/W/X/D 即可。
+    const KERNEL_BASE: Self = Self::VALID.union(Self::GLOBAL).union(Self::ACCESSED);
+}
+
 impl PteFlagsOps for PteFlags {
     #[inline]
     fn kernel_rw() -> Self {
-        Self::VALID | Self::READ | Self::WRITE | Self::GLOBAL | Self::ACCESSED | Self::DIRTY
+        Self::KERNEL_BASE | Self::READ | Self::WRITE | Self::DIRTY
     }
 
     #[inline]
     fn kernel_rx() -> Self {
-        Self::VALID | Self::READ | Self::EXECUTE | Self::GLOBAL | Self::ACCESSED
+        Self::KERNEL_BASE | Self::READ | Self::EXECUTE
     }
 
     #[inline]
     fn kernel_ro() -> Self {
-        Self::VALID | Self::READ | Self::GLOBAL | Self::ACCESSED
+        Self::KERNEL_BASE | Self::READ
     }
 
     #[inline]
     fn kernel_rwx() -> Self {
-        Self::VALID
-            | Self::READ
-            | Self::WRITE
-            | Self::EXECUTE
-            | Self::GLOBAL
-            | Self::ACCESSED
-            | Self::DIRTY
+        Self::KERNEL_BASE | Self::READ | Self::WRITE | Self::EXECUTE | Self::DIRTY
     }
 
     /// 设备 MMIO 映射。
@@ -85,87 +87,6 @@ impl PteFlagsOps for PteFlags {
     #[inline]
     fn kernel_device() -> Self {
         Self::kernel_rw()
-    }
-
-    /// 用户态读写数据映射（不可执行）。
-    ///
-    /// 设置 USER 位使页面仅在 U-mode 可访问；不设 GLOBAL，
-    /// 因为用户页面是 per-process 的（配合 ASID 使用）。
-    #[inline]
-    fn user_rw() -> Self {
-        Self::VALID | Self::READ | Self::WRITE | Self::USER | Self::ACCESSED | Self::DIRTY
-    }
-
-    /// 用户态读-执行映射（不可写）。
-    #[inline]
-    fn user_rx() -> Self {
-        Self::VALID | Self::READ | Self::EXECUTE | Self::USER | Self::ACCESSED
-    }
-
-    /// 用户态只读映射。
-    #[inline]
-    fn user_ro() -> Self {
-        Self::VALID | Self::READ | Self::USER | Self::ACCESSED
-    }
-
-    /// 用户态读写执行映射。
-    #[inline]
-    fn user_rwx() -> Self {
-        Self::VALID
-            | Self::READ
-            | Self::WRITE
-            | Self::EXECUTE
-            | Self::USER
-            | Self::ACCESSED
-            | Self::DIRTY
-    }
-
-    #[inline]
-    fn is_readable(self) -> bool {
-        self.contains(Self::READ)
-    }
-
-    #[inline]
-    fn is_writable(self) -> bool {
-        self.contains(Self::WRITE)
-    }
-
-    #[inline]
-    fn is_executable(self) -> bool {
-        self.contains(Self::EXECUTE)
-    }
-
-    #[inline]
-    fn is_user(self) -> bool {
-        self.contains(Self::USER)
-    }
-
-    #[inline]
-    fn is_accessed(self) -> bool {
-        self.contains(Self::ACCESSED)
-    }
-
-    #[inline]
-    fn is_dirty(self) -> bool {
-        self.contains(Self::DIRTY)
-    }
-
-    #[inline]
-    fn with_writable(self, w: bool) -> Self {
-        if w {
-            self | Self::WRITE | Self::DIRTY
-        } else {
-            self.difference(Self::WRITE | Self::DIRTY)
-        }
-    }
-
-    #[inline]
-    fn with_executable(self, x: bool) -> Self {
-        if x {
-            self | Self::EXECUTE
-        } else {
-            self.difference(Self::EXECUTE)
-        }
     }
 
     /// RISC-V 的 PTE 格式与层级无关——叶节点仅由 R/W/X 位区分，
@@ -210,11 +131,6 @@ impl PteOps for PageTableEntry {
     fn is_leaf(self, _level: usize) -> bool {
         self.is_valid()
             && self.0 & (PteFlags::READ | PteFlags::WRITE | PteFlags::EXECUTE).bits() != 0
-    }
-
-    #[inline]
-    fn empty() -> Self {
-        Self(0)
     }
 
     /// 中间节点 PTE（仅 V 位，指向下一级页表）。

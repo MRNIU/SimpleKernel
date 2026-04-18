@@ -60,20 +60,12 @@ pub fn virtio_blk()
 ///
 /// # Errors
 ///
-/// 映射失败、魔数无效、设备初始化失败时返回对应错误。
+/// 魔数无效、设备初始化失败时返回对应错误。
+/// MMIO 映射失败由 [`memory::map_mmio`] panic（boot 时配置错误是内核 bug）。
 pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError> {
     let mmio_size = size.max(VIRTIO_MMIO_SIZE);
 
-    // 映射 MMIO 区域
-    let region = memory::map_mmio(paddr, mmio_size).map_err(|e| {
-        log::warn!(
-            "VirtIO MMIO 映射失败 (paddr={}, size={:#x}): {:?}",
-            paddr,
-            mmio_size,
-            e
-        );
-        DeviceError::MmioMapFailed
-    })?;
+    let region = memory::map_mmio(paddr, mmio_size);
 
     let header =
         NonNull::new(region.base().as_mut_ptr::<VirtIOHeader>()).expect("MMIO vaddr 不应为空");
