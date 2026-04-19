@@ -117,15 +117,14 @@ fn test_get_mapping_on_empty_table() {
     assert!(pt.get_mapping(VirtAddr::new(0)).is_none());
 }
 
-/// update_pte 应修改已有页的权限并返回旧标志。
+/// update_pte 应修改已有页的权限。
 fn test_update_pte_changes_permissions() {
     let pt = PageTable::create();
     let pa = PhysAddr::new(0x8020_0000);
     let va = pa.to_virt();
 
     pt.identity_map_range(pa, pa + config::PAGE_SIZE, PteFlags::kernel_rw());
-    let old_flags = pt.update_pte(va, PteFlags::kernel_ro());
-    assert_eq!(old_flags, PteFlags::kernel_rw());
+    pt.update_pte(va, PteFlags::kernel_ro());
 
     let (got_pa, got_flags) = pt.get_mapping(va).expect("页表项应存在");
     assert_eq!(got_pa, pa);

@@ -1,15 +1,15 @@
 # paging
 
-分页子系统——页表管理 + MMIO 映射。
+分页子系统——多级页表管理。
 
 ## 概览
 
 本 crate 是内存子系统的**机制层**——提供页表操作原语，但不决定"何时"或
-"为什么"映射。策略层（`memory` crate）编排初始化和 MMIO，应用层通过
-`PageTable` 的直接方法和 `mmio::MmioRegion` 使用。
+"为什么"映射。策略层（`memory` crate）编排初始化、MMIO 类型化包装与
+全局内存布局。应用层通过 `PageTable` 的直接方法使用。
 
 ```
-memory (策略: 何时映射)
+memory (策略: 何时映射, MMIO 类型, MEMORY_INFO)
    │
    ▼
 paging (机制: 如何映射)  ← 本 crate
@@ -25,7 +25,6 @@ paging (机制: 如何映射)  ← 本 crate
   - `identity_map_range(start, end, flags)`：建立背景 identity mapping
   - `update_pte(va, flags)` / `update_range_flags(va, count, flags)`：修改已映射页权限（后者附带 TLB 刷新）
   - `get_mapping(va)`：查询 PTE
-- `mmio::MmioRegion`：永久 MMIO 映射 + volatile 寄存器访问
 
 ## 帧所有权
 

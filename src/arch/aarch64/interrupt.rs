@@ -8,7 +8,7 @@ use arm_gic::{IntId, InterruptGroup, UniqueMmioPointer};
 use core::arch::global_asm;
 use core::ptr::NonNull;
 
-use memory::map_mmio;
+use memory::MmioRegion;
 use memory_types::PhysAddr;
 
 use super::context::TrapContext;
@@ -90,7 +90,7 @@ fn init_gic_addrs() {
 /// IAR/EOIR 通过 `GicCpuInterface` 静态方法访问，不依赖此实例。
 ///
 /// # Safety
-/// GICD 和 GICR 区域必须已通过 `map_mmio` 映射。
+/// GICD 和 GICR 区域必须已通过 `MmioRegion::map` 映射。
 unsafe fn create_gic<'a>() -> GicV3<'a> {
     let cpu_count = crate::CORE_COUNT.get().copied().unwrap_or(1);
 
@@ -127,8 +127,8 @@ pub fn init() {
     init_gic_addrs();
     let addrs = GIC_ADDRS.get().expect("GIC_ADDRS 未初始化");
 
-    map_mmio(PhysAddr::new(addrs.gicd_base), addrs.gicd_size);
-    map_mmio(PhysAddr::new(addrs.gicr_base), addrs.gicr_size);
+    MmioRegion::map(PhysAddr::new(addrs.gicd_base), addrs.gicd_size);
+    MmioRegion::map(PhysAddr::new(addrs.gicr_base), addrs.gicr_size);
 
     let cpu_id = per_cpu::current_core_id();
 

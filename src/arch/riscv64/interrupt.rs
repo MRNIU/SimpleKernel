@@ -67,7 +67,7 @@ fn plic_init() {
         addr as usize
     };
 
-    let region = memory::map_mmio(PhysAddr::new(base), PLIC_SIZE);
+    let region = memory::MmioRegion::map(PhysAddr::new(base), PLIC_SIZE);
     PLIC.call_once(|| region);
 
     let plic = plic();

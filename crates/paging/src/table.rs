@@ -164,7 +164,7 @@ impl PageTable {
     ///
     /// 目标 VA 未映射时 panic——SAS 架构下所有物理内存都有背景 identity mapping，
     /// 未映射是违反不变量的内核 bug。
-    pub fn update_pte(&self, va: VirtAddr, new_flags: PteFlags) -> PteFlags {
+    pub fn update_pte(&self, va: VirtAddr, new_flags: PteFlags) {
         let (pte, paddr, idx, leaf_level) = self
             .walk_to_leaf(va)
             .unwrap_or_else(|| panic!("update_pte: VA {va} 未映射（违反 SAS 背景层不变量）"));
@@ -173,15 +173,23 @@ impl PageTable {
         let new_pte = PageTableEntry::new(pte.paddr(), leaf_flags);
         // SAFETY: paddr 源自 self.root 或 self.nodes 持有的帧——生命周期由 &self 保证
         let table = unsafe { Table::from_paddr(paddr) };
-        let old = table.swap(idx, new_pte);
-
-        PageTableEntry::from_raw(old.as_raw()).flags()
+        table.swap(idx, new_pte);
     }
 
     /// 批量修改 `[va_start, va_start + page_count * PAGE_SIZE)` 的权限位并刷新 TLB。
     ///
     /// 每页通过 [`update_pte`](Self::update_pte) 独立更新，最后由 `TlbFlushGuard`
     /// 在 drop 时统一刷 TLB——避免中途过期的 TLB 条目被其他核观察到。
+    ///
+    /// 参数用 `(va_start, page_count)` 而非 byte range——调用方（DMA 分配器、未来
+    /// `mprotect`）天然以页为单位持有数量。对照 [`identity_map_range`](Self::identity_map_range)
+    /// 接收 byte range。
+    ///
+    /// # 跨页非原子
+    ///
+    /// 区间内各页**独立**更新——更新第 `k+1` 页时第 `k` 页已写回，其他核可能观察到
+    /// 前半区间新 flags、后半区间旧 flags 的**中间状态**。若调用场景要求整段翻转
+    /// 不可分（如 W^X 切换），调用方需自行在更高层加锁或使用 stop-the-world 协议。
     ///
     /// # Panics
     ///
@@ -230,6 +238,10 @@ impl PageTable {
     }
 
     /// 将 `[start, end)` 物理地址区间 identity-map（VA == PA），仅使用 4KB 页。
+    ///
+    /// 参数用 byte range——调用方（FDT / MMIO 描述符）天然持有字节起止，内部
+    /// `align_down`/`align_up` 吸收对齐差异。对照 [`update_range_flags`](Self::update_range_flags)
+    /// 接收 `(va, page_count)`。
     ///
     /// ADR-006 移除了大页支持——SAS + QEMU 下大页无可观测收益。
     /// 所有页均以 4KB 粒度映射。

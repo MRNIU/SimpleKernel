@@ -35,6 +35,12 @@ impl<A: Copy + Ord> Span<A> {
     pub fn end(self) -> A {
         self.end
     }
+
+    /// 两个半开区间是否相交。
+    #[inline]
+    pub fn overlaps(self, other: Self) -> bool {
+        self.start < other.end && other.start < self.end
+    }
 }
 
 impl<A: Copy + Ord + Sub<A, Output = usize>> Span<A> {
@@ -62,5 +68,22 @@ mod tests {
     #[should_panic(expected = "start must be <= end")]
     fn invalid_panics() {
         let _ = Span::new(2usize, 1);
+    }
+
+    /// `overlaps` 的相交 / 相邻 / 分离场景
+    #[test]
+    fn overlaps_detection() {
+        let a = Span::new(0x1000usize, 0x3000);
+        // 相交
+        assert!(a.overlaps(Span::new(0x2000, 0x4000)));
+        assert!(a.overlaps(Span::new(0x500, 0x1500)));
+        // 包含
+        assert!(a.overlaps(Span::new(0x1500, 0x2500)));
+        assert!(Span::new(0x500, 0x4000).overlaps(a));
+        // 相邻不相交（半开区间端点对齐）
+        assert!(!a.overlaps(Span::new(0x3000, 0x4000)));
+        assert!(!a.overlaps(Span::new(0x500, 0x1000)));
+        // 完全分离
+        assert!(!a.overlaps(Span::new(0x5000, 0x6000)));
     }
 }

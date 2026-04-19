@@ -408,6 +408,7 @@ dependencies = [
  "paging",
  "per_cpu",
  "spin",
+ "zerocopy",
 ]
 
 [[package]]
@@ -484,7 +485,6 @@ dependencies = [
  "spin",
  "sync",
  "tlb",
- "zerocopy",
 ]
 
 [[package]]

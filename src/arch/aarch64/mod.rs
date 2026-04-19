@@ -54,9 +54,9 @@ impl ArchOps for Aarch64 {
     }
 
     fn map_early_mmio() {
-        // PL011 UART —— 通过 memory 门面建立 MMIO identity map
+        // PL011 UART —— 建立 MMIO identity map
         // （VA == PA，Device-nGnRnE 属性，含 RAM 重叠校验）。
-        memory::map_mmio(memory_types::PhysAddr::new(PL011_BASE), PL011_SIZE);
+        memory::MmioRegion::map(memory_types::PhysAddr::new(PL011_BASE), PL011_SIZE);
         log::info!("MemoryInit: mapped PL011 UART @ {:#010X}", PL011_BASE);
     }
 

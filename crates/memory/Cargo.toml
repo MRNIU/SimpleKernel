@@ -17,6 +17,7 @@ heap_crate = { path = "../heap", package = "heap" }
 
 log.workspace = true
 spin.workspace = true
+zerocopy.workspace = true
 
 [lints]
 workspace = true

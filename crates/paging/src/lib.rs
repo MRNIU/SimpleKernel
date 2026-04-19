@@ -1,4 +1,6 @@
-//! 分页子系统——页表管理 + MMIO 映射。
+//! 分页子系统——多级页表管理。
+//!
+//! MMIO 类型化包装位于 `memory::mmio`（业务层），此 crate 只提供页表原语。
 
 #![no_std]
 
@@ -10,8 +12,6 @@ pub use arch::{ENTRIES_PER_TABLE, INDEX_BITS, INDEX_MASK, LEVEL_SHIFTS, page_siz
 
 pub mod table;
 pub use table::PageTable;
-
-pub mod mmio;
 
 /// 全局内核页表——SAS 架构下只有一张页表，所有权限覆盖共用。
 ///

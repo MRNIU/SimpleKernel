@@ -4,7 +4,7 @@ version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Page table + MMIO region mapping"
+description = "Page table management"
 edition.workspace = true
 
 [dependencies]
@@ -16,7 +16,6 @@ frame_allocator = { path = "../frame_allocator" }
 sync_crate = { path = "../sync", package = "sync" }
 tlb = { path = "../tlb" }
 log.workspace = true
-zerocopy.workspace = true
 spin.workspace = true
 
 [lints]

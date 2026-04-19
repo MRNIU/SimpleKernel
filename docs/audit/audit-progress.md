@@ -5,18 +5,68 @@
 
 ## 当前状态
 
-**当前 Phase**: R3 — 内存子系统（ADR-013 OwnedPages 删除 + 接口精简完成）
+**当前 Phase**: R3 — 内存子系统（低优先级 review 遗留清理完毕）
 **下一个目标**（按优先级）：
-1. **DMA buffer 权限语义**：`src/device/hal.rs::dma_alloc` 未设 `PteFlags::kernel_device()`，AArch64 真机 cache 一致性风险（详见"未决问题"）
-2. **TLB shootdown 接入**：`tlb::register_tlb_shootdown` 无调用者，跨核失效机制断线（详见"未决问题"）
-3. R8 剩余 README：`CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` / `SECURITY.md`（paging / tlb / heap / memory 已补）
-4. 低优先级 review 遗留（范围 API 形状一致性、MMIO 两入口等，详见"未决问题"）
+1. **DMA buffer 权限语义**：真机缺陷，QEMU 不模拟 CPU cache 掩盖了问题（详见"未决问题"）
+2. R8 剩余 README：`CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` / `SECURITY.md`（paging / tlb / heap / memory 已补）
+3. **TLB shootdown 接入** — 降优先级：当前所有 PTE 修改发生在 SMP 激活之前，不需要跨核广播；引入 P9 per-process 页表 / mmap / 页回收后才需要，届时配合 R4 中断子系统 IPI 原语一起做
 
 ## 上次对话摘要
 
-**日期**：2026-04-18（ADR-013）
+**日期**：2026-04-18（低优先级 review 遗留清理）
 
 ### 已完成
+
+**主线：清理 R3 审计低优先级遗留 + 两个高优先级问题重新定性**
+
+四项低优先级 review 遗留一次性清掉：
+
+1. **5.2 MMIO 单一入口改造**（`crates/paging/src/mmio.rs` + `crates/memory/src/lib.rs`）
+   - `MmioRegion::map` 改为接收 `ram_range: Range<PhysAddr>` 参数，RAM 重叠校验**下沉到 paging 层**——paging 自持完整不变量检查
+   - `memory::map_mmio` 从 `MEMORY_INFO` 读 RAM 范围后构造 `ram_range` 转发——保留门面语义（调用方不需要知道 `MEMORY_INFO` 在哪）
+   - 消除"两个公开入口"（`MmioRegion::map` 不再标注"不要直接调用"）
+2. **5.3 `PageTable::update_pte` 返回 `()`**——原返回旧 flags 仅一个测试消费，测试改为 `update_pte` 后直接 `get_mapping` 校验新 flags
+3. **5.4 range API 形状差异**（`identity_map_range(start_pa, end_pa)` vs `update_range_flags(va, page_count)`）—— **不强制统一**，在两个 API doc comment 分别说明形状选择理由：
+   - `identity_map_range` 使用 byte range：调用方（FDT / MMIO 描述符）天然持有字节起止，内部 `align_*` 吸收差异
+   - `update_range_flags` 使用 page count：调用方（DMA 分配器 / 未来 mprotect）天然以页为单位
+4. **3.3 `update_range_flags` 跨页非原子**——doc comment 补充"跨页非原子"节，明确其他核可观察到区间部分新 / 部分旧 flags 的中间状态
+
+**两个高优先级问题的概念澄清**（对话前半）：
+
+- **DMA vs MMIO**：`SimpleKernelHal::dma_alloc` 分配的是**设备 DMA 访问的 RAM**（virtqueue / 数据 buffer），不是 MMIO 寄存器——两者是不同概念。DMA 权限问题**真实存在**，QEMU 不模拟 CPU cache 一致性，所以测试绿但真机会爆。保留在未决问题清单。
+- **TLB shootdown**：改 flag **本核**必须刷 TLB（`TlbFlushGuard` 已做）；**跨核广播**当前不需要，因为所有 PTE 修改都发生在 SMP 激活之前（`memory::init` 时其他核尚未启动，从核 `init_smp` 复用主核已经 finalize 的页表）。此问题**降优先级**，等 P9 per-process 页表 / mmap / 页回收再接入，届时配合 R4 中断子系统的 IPI 原语。
+
+**验证**：riscv64 + aarch64 双架构构建通过；paging-test/table（9 测试）/ conflict-panic / equal-range-panic / reversed-range-panic SMP QEMU 全绿；fmt clean。
+
+### 追加：MMIO 子系统布局修正（同日后续轮次）
+
+**动机**：用户质疑"为什么 MMIO 一个在 paging 一个在 memory？"——考古 git 历史发现：
+- `ac09ec801`（2026-03-31）把 `MmioRegion` 从 memory 移入 paging，理由是**消除跨 crate unsafe**（当时 paging 内部构造函数是 `unsafe new_borrowed`，移入后可用 `pub(crate) wrap_existing`）
+- `7987681fb`（2026-04）在 memory 加回 `map_mmio` 门面以集中做 **RAM 重叠校验**
+
+两个原始动机在 ADR-013 + 5.2 改造后**都已失效**：`PageTable::identity_map_range` 现在是公开安全接口、RAM 校验已下沉到 `MmioRegion::map`。两处分布是历史惯性，不是当前架构意图。
+
+**实施**（本轮第二次提交）：
+- `crates/paging/src/mmio.rs` 整体迁至 `crates/memory/src/mmio.rs`
+- `MmioRegion::map(paddr, size, ram_range)` 简化为 `MmioRegion::map(paddr, size)` —— 内部直接读 `MEMORY_INFO`（既然合并到 memory 就没必要保留参数注入）
+- 删除 `memory::map_mmio` 函数——**真正单一入口**是 `memory::MmioRegion::map(...)`
+- paging 回归**纯页表 crate**（2 个源文件：lib.rs + table.rs），`zerocopy` 依赖随 MMIO 模块一并移至 memory
+- 调用方 4 处更新：`src/device/virtio.rs` / `src/arch/aarch64/mod.rs` / `src/arch/aarch64/interrupt.rs` / `src/arch/riscv64/interrupt.rs`
+- paging/README.md + memory/README.md 同步更新分层图
+
+### 关键决策
+
+| # | 决策 | 状态 | ADR |
+|---|------|------|-----|
+| MmioRegion 单一入口 + ram_range 显式注入 | RAM 校验下沉到 paging 层，`memory::map_mmio` 降级为读 `MEMORY_INFO` 的 thin wrapper | 已实施 | — |
+| `update_pte` 返回 `()` | 旧 flags 返回值无生产消费者，测试改为 `get_mapping` 验证 | 已实施 | — |
+| range API 保留双形状 | byte range vs page count 反映不同调用场景，强制统一反而加负担——在 doc 里说明差异理由 | 已实施 | — |
+| TLB shootdown 接入降优先级 | 当前 PTE 修改全在 SMP 激活前，不触发跨核失效需求；保留未决，等 P9 前置阶段再做 | 已调整 | — |
+| **MmioRegion 整体迁回 memory crate** | 当年迁入 paging 的原始动机（消除 unsafe）已消失，让架构回到与当前动机匹配的状态 | 已实施 | — |
+
+---
+
+### 上上轮摘要（2026-04-18 ADR-013）
 
 **主线：删除 `OwnedPages` 抽象层（ADR-013 提议 → 已接受 → 落地）**
 
@@ -78,45 +128,37 @@
 
 **关联问题**：`PteFlagsOps::kernel_device()` 的 RISC-V 实现有 TODO 提到 Svpbmt 扩展（`crates/page_table_entry/src/riscv64.rs:85`），真机场景需要 PBMT 位设置 NC 或 IO 属性。
 
-#### 🔴 高优先级：TLB shootdown 回调机制断线
+#### 🟡 中优先级：TLB shootdown 回调机制待接入（**已降优先级**）
 
 **文件**：`crates/tlb/src/lib.rs:27`
 
 **现象**：`register_tlb_shootdown` 有零个调用者——`TLB_SHOOTDOWN_FN: spin::Once<fn(TlbFlushRequest)>` 从未被 `call_once`，所以 `flush_tlb()` / `flush_tlb_page()` 里的跨核 IPI 路径是死代码。
 
-**当前为什么不出 bug**：
-- `PageTable::update_range_flags` 的唯一运行时调用是 `memory::init`，发生在 SMP 激活之前（从核通过 `init_smp` 激活分页时复用主核页表）
+**当前为什么不爆**（本轮澄清的结论）：
+- `PageTable::update_range_flags` 的唯一运行时调用是 `memory::init`，**发生在 SMP 激活之前**
+- 从核通过 `init_smp` 激活分页时复用主核已经 finalize 的页表——从核启动时 TLB 从空开始，看不到任何中间状态
 - MMIO 映射也在 SMP 激活前完成
-- 运行时没有动态 PTE 修改 → 没有跨核 TLB 失效需求
+- **结论**：运行时没有动态 PTE 修改 → 不需要跨核 TLB 失效 → 当前实现正确，不是 bug
 
-**何时会出 bug**：
+**何时必须接入**：
 - P9 用户程序引入 per-process 页表 → 进程切换需要 TLB 刷新
 - 任何动态 `mmap` / `mprotect` 路径
 - 页回收路径（如果引入）
 
-**修复方向（ADR 待决）**：
+**接入方向（ADR 待决，等 P9 前置 / R4 中断子系统就绪后再讨论）**：
 1. IPI 机制：需要 `src/arch/{arch}/interrupt.rs` 的中断子系统提供跨核 IPI 发送原语
 2. 注册时机：在 `device_init` / 中断子系统 init 完成后调用 `tlb::register_tlb_shootdown`
 3. 数据结构：`TlbFlushRequest` 通过 per-CPU mailbox 或 IPI payload 传递；目标核在 IPI handler 中执行本地 `arch::flush_tlb_page` / `flush_tlb_all`
 4. 同步：发起核是否需要等待其他核 ack（影响是否需要 barrier / 跨核状态位）
-
-**关联问题**：
-- `update_range_flags` 批量更新是**非原子**的（跨页），多核竞争可能观察到中间状态——跨核 TLB 协议需要考虑此语义
-- `TlbFlushRequest::All` 与 `TlbFlushRequest::Page` 的选择由 `TLB_FLUSH_THRESHOLD` 驱动，IPI 需要传递相应载荷
-
-#### 🟡 中优先级：低优先级 review 遗留
-
-| 编号 | 问题 | 文件 | 建议动作 |
-|-----|------|------|---------|
-| 5.2 | MMIO 两个公开入口（`memory::map_mmio` 做 RAM 重叠检查；`MmioRegion::map` pub 但注释写"不要调用"）| `crates/paging/src/mmio.rs:27` | 考虑 `MmioRegion::map_checked(paddr, size, ram_range)` 签名让 RAM 范围显式注入，`MmioRegion::map` 降级 `pub(crate)` |
-| 5.3 | `PageTable::update_pte` 返回旧 flags 仅测试用 | `crates/paging/src/table.rs:167` | 可改 `()`——收益小，非紧急 |
-| 5.4 | range API 形状不一致（`identity_map_range(start, end)` vs `update_range_flags(start, count)`）| `crates/paging/src/table.rs` | 统一为 (start, count) 或 (start, end) |
-| 3.3 | `update_range_flags` 批量非原子 | `crates/paging/src/table.rs:189` | 在 doc comment 明确跨页非原子语义 |
-| — | `update_range_flags` 单次 walk 批量优化 | `crates/paging/src/table.rs:185` | TODO 已标记，引入 mmap / 大映射场景时实施 |
+5. 与 `update_range_flags` 跨页非原子语义的配合：跨核协议需要考虑"发起核修改了 N 页但其他核可能只看到前 k 页新 flags"的情形
 
 #### 🟢 低优先级：R6 相关
 
 - R6 范围的锁（`dev_mgr` / `ramfs` / `fd` / `virtio_blk` / `mount_table`）锁级别仍用 `UNSPECIFIED`，待 R6 审计统一分配
+
+#### 🟢 低优先级：已标记 TODO（待场景触发时处理）
+
+- `update_range_flags` 单次 walk 批量优化（`crates/paging/src/table.rs:185`）——当前每页独立 walk，引入 mmap / 模块加载大映射场景后再优化
 
 ### R8 待办（审计收尾阶段）
 
@@ -137,3 +179,5 @@
 | 2026-04-03 | R3 | 审查报告 + 重构实施（四态 typestate、移除 page_allocator、锁级别、幂等映射） |
 | 2026-04-18 | R3 (第二轮) | 精简未用 API + 错误扁平化（commit `8456b3540`，净减 ~540 行） |
 | 2026-04-18 | R3 (ADR-013) | 删除 OwnedPages 抽象 + 精简 frame_allocator::init 接口 + 注释清理（commits `9d7ad44c6` / `f36f347de`，净减 ~170 行） |
+| 2026-04-18 | R3 (收尾) | 清理低优先级 review 遗留：MMIO 单一入口 + `update_pte` 返回 `()` + range API 形状 doc + `update_range_flags` 跨页非原子 doc；TLB shootdown 降优先级；DMA 权限问题概念澄清保留 |
+| 2026-04-18 | R3 (布局修正) | MMIO 子系统从 paging crate 整体迁回 memory crate（`crates/paging/src/mmio.rs` → `crates/memory/src/mmio.rs`）——当年迁入 paging 的动机（消除跨 crate unsafe）已失效，RAM 校验下沉后 ram_range 参数可内部从 MEMORY_INFO 读取；`memory::map_mmio` 门面删除，唯一入口 `memory::MmioRegion::map(paddr, size)`；paging 回归纯页表 crate（少 zerocopy 依赖） |
