@@ -26,7 +26,13 @@ macro_rules! impl_addr {
             /// `align` 非 2 的幂时 panic。
             #[inline]
             pub const fn is_aligned_to(self, align: usize) -> bool {
-                assert!(align.is_power_of_two(), "align must be a power of two");
+                assert!(
+                    align.is_power_of_two(),
+                    concat!(
+                        stringify!($name),
+                        "::is_aligned_to: align 必须是 2 的幂（非零）"
+                    )
+                );
                 self.0 & (align - 1) == 0
             }
 
@@ -39,7 +45,13 @@ macro_rules! impl_addr {
             /// `align` 非 2 的幂时 panic。
             #[inline]
             pub const fn align_down_to(self, align: usize) -> Self {
-                assert!(align.is_power_of_two(), "align must be a power of two");
+                assert!(
+                    align.is_power_of_two(),
+                    concat!(
+                        stringify!($name),
+                        "::align_down_to: align 必须是 2 的幂（非零）"
+                    )
+                );
                 Self(self.0 & !(align - 1))
             }
 
@@ -56,10 +68,19 @@ macro_rules! impl_addr {
             /// `align` 非 2 的幂，或地址接近 `usize::MAX` 导致溢出时 panic。
             #[inline]
             pub const fn align_up_to(self, align: usize) -> Self {
-                assert!(align.is_power_of_two(), "align must be a power of two");
+                assert!(
+                    align.is_power_of_two(),
+                    concat!(
+                        stringify!($name),
+                        "::align_up_to: align 必须是 2 的幂（非零）"
+                    )
+                );
                 match self.0.checked_add(align - 1) {
                     Some(v) => Self::new(v & !(align - 1)),
-                    None => panic!("align_up: address overflow"),
+                    None => panic!(concat!(
+                        stringify!($name),
+                        "::align_up_to: self + (align - 1) 溢出（地址接近 usize::MAX）"
+                    )),
                 }
             }
         }
@@ -120,10 +141,20 @@ impl VirtAddr {
     /// 仅适用于线性映射区域，非线性映射地址须通过页表查询。
     ///
     /// # Panics
-    /// 结果不在物理地址有效范围内时 panic。
+    /// 结果超出 `arch::PA_BITS` 范围时 panic。
     #[inline]
     pub fn to_phys(self) -> PhysAddr {
-        PhysAddr::new(self.as_usize().wrapping_sub(PHYS_OFFSET))
+        let raw = self.0.wrapping_sub(PHYS_OFFSET);
+        if arch::PA_BITS < 64 && raw >= (1usize << arch::PA_BITS) {
+            panic!(
+                "VirtAddr::to_phys: va={:#x} - PHYS_OFFSET={:#x} = {:#x}, 超出 PA_BITS={}",
+                self.0,
+                PHYS_OFFSET,
+                raw,
+                arch::PA_BITS,
+            );
+        }
+        PhysAddr(raw)
     }
 }
 
@@ -147,9 +178,21 @@ impl PhysAddr {
     /// 仅适用于线性映射区域，非线性映射地址须通过页表查询。
     ///
     /// # Panics
-    /// 结果不在规范虚拟地址范围内时 panic。
+    /// 结果不是 `arch::VA_BITS` 规范地址时 panic。
     #[inline]
     pub fn to_virt(self) -> VirtAddr {
-        VirtAddr::new(self.as_usize().wrapping_add(PHYS_OFFSET))
+        let raw = self.0.wrapping_add(PHYS_OFFSET);
+        let shift = usize::BITS as usize - arch::VA_BITS;
+        let canonical = ((raw as isize) << shift >> shift) as usize;
+        if raw != canonical {
+            panic!(
+                "PhysAddr::to_virt: pa={:#x} + PHYS_OFFSET={:#x} = {:#x}, 非规范虚拟地址（VA_BITS={}）",
+                self.0,
+                PHYS_OFFSET,
+                raw,
+                arch::VA_BITS,
+            );
+        }
+        VirtAddr(raw)
     }
 }

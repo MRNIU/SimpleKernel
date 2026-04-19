@@ -8,9 +8,7 @@ use config::PAGE_SIZE_BITS;
 
 use crate::addr::PhysAddr;
 
-/// 物理帧——以 4K 页号为内部存储单位的类型安全帧标识。
-///
-/// 内部 `number` 是 4K 页号单位。
+/// 物理帧——4K 页号的类型安全 newtype。
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Frame {
@@ -35,68 +33,16 @@ impl Frame {
     }
 }
 
-impl From<PhysAddr> for Frame {
-    /// 地址转帧号，低位被截断（向下对齐到 4K 边界）。
-    #[inline]
-    fn from(addr: PhysAddr) -> Self {
-        Self {
-            number: addr.as_usize() >> PAGE_SIZE_BITS,
-        }
-    }
-}
-
-impl From<Frame> for PhysAddr {
-    #[inline]
-    fn from(frame: Frame) -> Self {
-        frame.start_addr()
-    }
-}
-
-impl From<usize> for Frame {
-    #[inline]
-    fn from(v: usize) -> Self {
-        Self::new(v)
-    }
-}
-
-impl From<Frame> for usize {
-    #[inline]
-    fn from(v: Frame) -> usize {
-        v.number
-    }
-}
-
 impl core::ops::Add<usize> for Frame {
     type Output = Self;
     #[inline]
     fn add(self, rhs: usize) -> Self {
+        let lhs = self.number;
         Self {
-            number: self.number.checked_add(rhs).expect("Frame: 加法溢出"),
+            number: lhs
+                .checked_add(rhs)
+                .unwrap_or_else(|| panic!("Frame::add: {lhs} + {rhs} 加法溢出")),
         }
-    }
-}
-
-impl core::ops::AddAssign<usize> for Frame {
-    #[inline]
-    fn add_assign(&mut self, rhs: usize) {
-        self.number = self.number.checked_add(rhs).expect("Frame: 加法溢出");
-    }
-}
-
-impl core::ops::Sub<usize> for Frame {
-    type Output = Self;
-    #[inline]
-    fn sub(self, rhs: usize) -> Self {
-        Self {
-            number: self.number.checked_sub(rhs).expect("Frame: 减法下溢"),
-        }
-    }
-}
-
-impl core::ops::SubAssign<usize> for Frame {
-    #[inline]
-    fn sub_assign(&mut self, rhs: usize) {
-        self.number = self.number.checked_sub(rhs).expect("Frame: 减法下溢");
     }
 }
 
@@ -105,9 +51,9 @@ impl core::ops::Sub<Frame> for Frame {
     type Output = usize;
     #[inline]
     fn sub(self, rhs: Frame) -> usize {
-        self.number
-            .checked_sub(rhs.number)
-            .expect("Frame: 减法下溢")
+        let (l, r) = (self.number, rhs.number);
+        l.checked_sub(r)
+            .unwrap_or_else(|| panic!("Frame::sub: {l} - {r} 减法下溢"))
     }
 }
 

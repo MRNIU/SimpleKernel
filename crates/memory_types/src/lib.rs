@@ -23,12 +23,12 @@ pub use span::Span;
 macro_rules! impl_usize_newtype {
     ($name:ident, phys) => {
         impl $name {
-            /// 从原始 `usize` 构造，校验物理地址在有效范围内
+            /// 从原始 `usize` 构造，校验物理地址在 `arch::PA_BITS` 范围内。
             #[inline]
             pub const fn new(v: usize) -> Self {
                 assert!(
                     arch::PA_BITS >= 64 || v < (1usize << arch::PA_BITS),
-                    "PhysAddr: 地址超出 PA_BITS 有效范围"
+                    "PhysAddr::new: addr 超出 arch::PA_BITS 可表示范围"
                 );
                 Self(v)
             }
@@ -42,17 +42,15 @@ macro_rules! impl_usize_newtype {
     };
     ($name:ident, virt) => {
         impl $name {
-            /// 从原始 `usize` 构造，校验虚拟地址规范化
-            ///
-            /// 规范化规则：将地址视为 VA_BITS 宽的有符号数进行符号扩展，
-            /// 扩展后的值必须与原值相等。
+            /// 从原始 `usize` 构造，校验地址按 `arch::VA_BITS` 规范化
+            /// （高位必须是 bit[VA_BITS-1] 的符号扩展）。
             #[inline]
             pub const fn new(v: usize) -> Self {
                 let shift = usize::BITS as usize - arch::VA_BITS;
                 let canonical = ((v as isize) << shift >> shift) as usize;
                 assert!(
                     v == canonical,
-                    "VirtAddr: 非规范虚拟地址"
+                    "VirtAddr::new: addr 不是 arch::VA_BITS 符号扩展的规范地址"
                 );
                 Self(v)
             }
@@ -98,14 +96,22 @@ macro_rules! impl_usize_newtype {
             type Output = Self;
             #[inline]
             fn add(self, rhs: usize) -> Self {
-                Self::new(self.0.checked_add(rhs).expect(concat!(stringify!($name), ": 加法溢出")))
+                let lhs = self.0;
+                Self::new(lhs.checked_add(rhs).unwrap_or_else(|| panic!(
+                    "{}::add: {:#x} + {:#x} 加法溢出",
+                    stringify!($name), lhs, rhs,
+                )))
             }
         }
 
         impl core::ops::AddAssign<usize> for $name {
             #[inline]
             fn add_assign(&mut self, rhs: usize) {
-                *self = Self::new(self.0.checked_add(rhs).expect(concat!(stringify!($name), ": 加法溢出")));
+                let lhs = self.0;
+                *self = Self::new(lhs.checked_add(rhs).unwrap_or_else(|| panic!(
+                    "{}::add_assign: {:#x} + {:#x} 加法溢出",
+                    stringify!($name), lhs, rhs,
+                )));
             }
         }
 
@@ -113,14 +119,22 @@ macro_rules! impl_usize_newtype {
             type Output = Self;
             #[inline]
             fn sub(self, rhs: usize) -> Self {
-                Self::new(self.0.checked_sub(rhs).expect(concat!(stringify!($name), ": 减法下溢")))
+                let lhs = self.0;
+                Self::new(lhs.checked_sub(rhs).unwrap_or_else(|| panic!(
+                    "{}::sub: {:#x} - {:#x} 减法下溢",
+                    stringify!($name), lhs, rhs,
+                )))
             }
         }
 
         impl core::ops::SubAssign<usize> for $name {
             #[inline]
             fn sub_assign(&mut self, rhs: usize) {
-                *self = Self::new(self.0.checked_sub(rhs).expect(concat!(stringify!($name), ": 减法下溢")));
+                let lhs = self.0;
+                *self = Self::new(lhs.checked_sub(rhs).unwrap_or_else(|| panic!(
+                    "{}::sub_assign: {:#x} - {:#x} 减法下溢",
+                    stringify!($name), lhs, rhs,
+                )));
             }
         }
 
@@ -128,7 +142,11 @@ macro_rules! impl_usize_newtype {
             type Output = usize;
             #[inline]
             fn sub(self, rhs: $name) -> usize {
-                self.0.checked_sub(rhs.0).expect(concat!(stringify!($name), ": 减法下溢"))
+                let (l, r) = (self.0, rhs.0);
+                l.checked_sub(r).unwrap_or_else(|| panic!(
+                    "{}::sub: {:#x} - {:#x} 减法下溢",
+                    stringify!($name), l, r,
+                ))
             }
         }
     };
