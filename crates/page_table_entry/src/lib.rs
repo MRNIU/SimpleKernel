@@ -3,7 +3,8 @@
 //! 通过 [`PteFlagsOps`] + [`PteOps`] trait 屏蔽架构差异，上层只使用
 //! [`PageTableEntry`] / [`PteFlags`] 类型别名（条件编译选择具体实现）。
 //!
-//! 本 crate 无 `alloc` / `config` 依赖，可在 heap 未初始化的早期启动阶段使用。
+//! 本 crate 无 `alloc` 依赖（`config` 仅提供编译期常量），
+//! 可在 heap 未初始化的早期启动阶段使用。
 
 #![no_std]
 

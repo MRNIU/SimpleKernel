@@ -12,8 +12,8 @@ use bitflags::bitflags;
 use crate::{PteFlagsOps, PteOps};
 use memory_types::PhysAddr;
 
-/// 4KB 页：PAGE_SHIFT = 12
-const PAGE_SHIFT: u32 = 12;
+/// 页大小 shift（4KB 页 = 12），与 `config::PAGE_SIZE_BITS` 同源。
+const PAGE_SHIFT: u32 = config::PAGE_SIZE_BITS as u32;
 
 /// flags 位宽（RISC-V PTE 格式固定 10 位：bits [9:0]）
 const FLAGS_BITS: u32 = 10;
@@ -104,7 +104,7 @@ impl PteOps for PageTableEntry {
     fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
         assert!(
             !flags.contains(PteFlags::WRITE) || flags.contains(PteFlags::READ),
-            "RISC-V spec 禁止 W=1, R=0 的标志组合"
+            "RISC-V PTE::new: flags={flags:?} 违反 W=1,R=0 禁用组合（Priv Spec §5.4）"
         );
         let ppn = ((paddr.as_usize() as u64) >> PAGE_SHIFT) << FLAGS_BITS;
         Self(ppn | flags.bits())
