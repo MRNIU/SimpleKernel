@@ -124,7 +124,8 @@ fn test_update_pte_changes_permissions() {
     let va = pa.to_virt();
 
     pt.identity_map_range(pa, pa + config::PAGE_SIZE, PteFlags::kernel_rw());
-    pt.update_pte(va, PteFlags::kernel_ro());
+    // SAFETY: 测试页表只在当前测试函数内使用，同一 PTE 没有并发写入者。
+    unsafe { pt.update_pte(va, PteFlags::kernel_ro()) };
 
     let (got_pa, got_flags) = pt.get_mapping(va).expect("页表项应存在");
     assert_eq!(got_pa, pa);

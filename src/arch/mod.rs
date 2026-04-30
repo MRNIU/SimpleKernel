@@ -31,6 +31,9 @@ pub trait ArchOps {
     /// 唤醒所有从核
     fn wake_secondary_cores();
 
+    /// 向指定核心发送 IPI。
+    fn send_ipi(core_id: usize);
+
     /// 映射分页激活前必须就绪的架构特定 MMIO
     fn map_early_mmio();
 

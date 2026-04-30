@@ -2,7 +2,7 @@
 
 use core::fmt;
 
-use config::{PAGE_SIZE, PHYS_OFFSET};
+use config::PAGE_SIZE;
 
 /// 为地址 newtype 生成对齐辅助方法和 `Display`。
 ///
@@ -136,25 +136,15 @@ impl VirtAddr {
         self.0 as *mut T
     }
 
-    /// 转换为物理地址（线性映射，偏移量 [`PHYS_OFFSET`]）。
+    /// 转换为物理地址（SAS identity mapping，VA == PA）。
     ///
-    /// 仅适用于线性映射区域，非线性映射地址须通过页表查询。
+    /// 仅适用于内核 SAS 全量映射区域，非 identity mapping 地址须通过页表查询。
     ///
     /// # Panics
     /// 结果超出 `arch::PA_BITS` 范围时 panic。
     #[inline]
     pub fn to_phys(self) -> PhysAddr {
-        let raw = self.0.wrapping_sub(PHYS_OFFSET);
-        if arch::PA_BITS < 64 && raw >= (1usize << arch::PA_BITS) {
-            panic!(
-                "VirtAddr::to_phys: va={:#x} - PHYS_OFFSET={:#x} = {:#x}, 超出 PA_BITS={}",
-                self.0,
-                PHYS_OFFSET,
-                raw,
-                arch::PA_BITS,
-            );
-        }
-        PhysAddr(raw)
+        PhysAddr::new(self.as_usize())
     }
 }
 
@@ -173,26 +163,14 @@ impl<T> From<*mut T> for VirtAddr {
 }
 
 impl PhysAddr {
-    /// 转换为虚拟地址（线性映射，偏移量 [`PHYS_OFFSET`]）。
+    /// 转换为虚拟地址（SAS identity mapping，VA == PA）。
     ///
-    /// 仅适用于线性映射区域，非线性映射地址须通过页表查询。
+    /// 仅适用于内核 SAS 全量映射区域，非 identity mapping 地址须通过页表查询。
     ///
     /// # Panics
     /// 结果不是 `arch::VA_BITS` 规范地址时 panic。
     #[inline]
     pub fn to_virt(self) -> VirtAddr {
-        let raw = self.0.wrapping_add(PHYS_OFFSET);
-        let shift = usize::BITS as usize - arch::VA_BITS;
-        let canonical = ((raw as isize) << shift >> shift) as usize;
-        if raw != canonical {
-            panic!(
-                "PhysAddr::to_virt: pa={:#x} + PHYS_OFFSET={:#x} = {:#x}, 非规范虚拟地址（VA_BITS={}）",
-                self.0,
-                PHYS_OFFSET,
-                raw,
-                arch::VA_BITS,
-            );
-        }
-        VirtAddr(raw)
+        VirtAddr::new(self.as_usize())
     }
 }

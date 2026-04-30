@@ -264,7 +264,7 @@ git commit --signoff -m "fix(memory_types): 地址算术运算后校验结果在
 1) 在 `impl PhysAddr` 块（`page_number` 方法所在的那个）中添加：
 
 ```rust
-    /// 转换为虚拟地址（线性映射，偏移量 [`PHYS_OFFSET`]）。
+    /// 转换为虚拟地址（SAS identity mapping，VA == PA）。
     ///
     /// 仅适用于线性映射区域，非线性映射地址须通过页表查询。
     ///
@@ -272,14 +272,14 @@ git commit --signoff -m "fix(memory_types): 地址算术运算后校验结果在
     /// 结果不在规范虚拟地址范围内时 panic。
     #[inline]
     pub fn to_virt(self) -> VirtAddr {
-        VirtAddr::new(self.as_usize().wrapping_add(PHYS_OFFSET))
+        VirtAddr::new(self.as_usize())
     }
 ```
 
 2) 在 `impl VirtAddr` 块（`as_ptr`/`as_mut_ptr` 所在的那个）中添加：
 
 ```rust
-    /// 转换为物理地址（线性映射，偏移量 [`PHYS_OFFSET`]）。
+    /// 转换为物理地址（SAS identity mapping，VA == PA）。
     ///
     /// 仅适用于线性映射区域，非线性映射地址须通过页表查询。
     ///
@@ -287,7 +287,7 @@ git commit --signoff -m "fix(memory_types): 地址算术运算后校验结果在
     /// 结果不在物理地址有效范围内时 panic。
     #[inline]
     pub fn to_phys(self) -> PhysAddr {
-        PhysAddr::new(self.as_usize().wrapping_sub(PHYS_OFFSET))
+        PhysAddr::new(self.as_usize())
     }
 ```
 
@@ -316,7 +316,7 @@ pub use addr::{PhysAddr, VirtAddr};
     fn phys_virt_roundtrip() {
         let pa = PhysAddr::new(0x8020_0000);
         let va = pa.to_virt();
-        assert_eq!(va.as_usize(), pa.as_usize().wrapping_add(PHYS_OFFSET));
+        assert_eq!(va.as_usize(), pa.as_usize());
         assert_eq!(va.to_phys(), pa);
     }
 
@@ -325,7 +325,7 @@ pub use addr::{PhysAddr, VirtAddr};
     fn phys_virt_zero() {
         let pa = PhysAddr::new(0);
         let va = pa.to_virt();
-        assert_eq!(va.as_usize(), PHYS_OFFSET);
+        assert_eq!(va.as_usize(), 0);
         assert_eq!(va.to_phys(), pa);
     }
 ```
@@ -583,7 +583,7 @@ git commit --signoff -m "docs(memory_types): 更新 README 反映方法式地址
 **Files:**
 - Modify: `crates/config/README.md`
 
-- [ ] **Step 1: 更新 `PHYS_OFFSET` 说明中的函数引用**
+- [ ] **Step 1: 更新 identity mapping 说明中的函数引用**
 
 将 `phys_to_virt()` / `virt_to_phys()` 改为 `PhysAddr::to_virt()` / `VirtAddr::to_phys()`。
 
@@ -591,7 +591,7 @@ git commit --signoff -m "docs(memory_types): 更新 README 反映方法式地址
 
 ```bash
 git add crates/config/README.md
-git commit --signoff -m "docs(config): 更新 PHYS_OFFSET 说明中的 API 引用"
+git commit --signoff -m "docs(config): 更新 identity mapping 说明中的 API 引用"
 ```
 
 ---

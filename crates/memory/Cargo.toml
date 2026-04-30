@@ -12,6 +12,7 @@ config = { path = "../config" }
 memory_types = { path = "../memory_types" }
 per_cpu = { path = "../per_cpu" }
 paging = { path = "../paging" }
+tlb = { path = "../tlb" }
 frame_allocator = { path = "../frame_allocator" }
 heap_crate = { path = "../heap", package = "heap" }
 

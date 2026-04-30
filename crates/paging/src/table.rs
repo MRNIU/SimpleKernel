@@ -30,7 +30,7 @@ impl Table {
     #[inline]
     unsafe fn from_paddr(paddr: PhysAddr) -> Self {
         Self {
-            base: paddr.as_usize() as *mut AtomicU64,
+            base: paddr.to_virt().as_mut_ptr::<AtomicU64>(),
         }
     }
 
@@ -164,7 +164,14 @@ impl PageTable {
     ///
     /// 目标 VA 未映射时 panic——SAS 架构下所有物理内存都有背景 identity mapping，
     /// 未映射是违反不变量的内核 bug。
-    pub fn update_pte(&self, va: VirtAddr, new_flags: PteFlags) {
+    ///
+    /// # Safety
+    ///
+    /// 调用方必须保证：
+    /// - 同一 PTE 没有并发写入者；
+    /// - 修改完成后在重新依赖权限语义前刷新本核和其他在线核心的 TLB；
+    /// - 权限收紧或释放帧前，调用方不能让旧权限继续被观察。
+    pub unsafe fn update_pte(&self, va: VirtAddr, new_flags: PteFlags) {
         let (pte, paddr, idx, leaf_level) = self
             .walk_to_leaf(va)
             .unwrap_or_else(|| panic!("update_pte: VA {va} 未映射（违反 SAS 背景层不变量）"));
@@ -200,7 +207,9 @@ impl PageTable {
     // 待引入大映射场景（mmap / 模块加载）后优化。
     pub fn update_range_flags(&self, va_start: VirtAddr, page_count: usize, flags: PteFlags) {
         for i in 0..page_count {
-            self.update_pte(va_start + i * config::PAGE_SIZE, flags);
+            // SAFETY: update_range_flags 是页表权限覆盖的受控入口；循环内按页串行更新，
+            // 同一调用不会并发写同一 PTE，函数末尾用 TlbFlushGuard 刷新所有目标页。
+            unsafe { self.update_pte(va_start + i * config::PAGE_SIZE, flags) };
         }
         let _flush = tlb::TlbFlushGuard::new(va_start.as_usize(), page_count);
     }

@@ -45,6 +45,11 @@ impl ArchOps for Riscv64 {
         ipi::wake_secondary_cores();
     }
 
+    #[inline]
+    fn send_ipi(core_id: usize) {
+        ipi::send_ipi(core_id);
+    }
+
     fn map_early_mmio() {
         // RISC-V console 通过 SBI ecall（M-mode），无需 MMIO 映射
     }

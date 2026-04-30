@@ -342,7 +342,7 @@ Replace the entire `crates/paging/src/mapping.rs` with:
 //! 仿射类型所有权——move-only 的物理帧所有权 + 权限管理。
 //!
 //! [`OwnedPages`] 持有物理帧的独占所有权，VA 通过 identity mapping
-//! 从 PA 推导（`VA = PA + PHYS_OFFSET`）。
+//! 从 PA 推导（VA == PA）。
 //!
 //! SAS 架构下所有物理内存始终有背景 identity mapping（kernel_rw），
 //! `OwnedPages` 管理的是**所有权和权限覆盖层**。

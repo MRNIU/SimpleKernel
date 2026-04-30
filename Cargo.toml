@@ -163,6 +163,7 @@ global_tick = { path = "crates/global_tick" }
 local_tick = { path = "crates/local_tick" }
 heap = { path = "crates/heap" }
 paging = { path = "crates/paging" }
+tlb = { path = "crates/tlb" }
 memory = { path = "crates/memory" }
 frame_allocator = { path = "crates/frame_allocator" }
 

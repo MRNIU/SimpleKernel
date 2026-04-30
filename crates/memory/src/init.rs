@@ -14,7 +14,18 @@ pub fn init() {
     let mem_start = info.physical_memory_addr;
     let mem_size = info.physical_memory_size;
     let kernel_start = info.kernel_addr;
-    let kernel_end = kernel_start + info.kernel_size;
+    let kernel_end = PhysAddr::new(
+        kernel_start
+            .as_usize()
+            .checked_add(info.kernel_size)
+            .expect("MemoryInit: kernel 结束地址溢出"),
+    );
+    let mem_end = PhysAddr::new(
+        mem_start
+            .as_usize()
+            .checked_add(mem_size)
+            .expect("MemoryInit: RAM 结束地址溢出"),
+    );
 
     // SAFETY: 链接器定义的符号
     unsafe extern "C" {
@@ -25,7 +36,16 @@ pub fn init() {
     let rodata_end = PhysAddr::new(unsafe { &__erodata as *const u8 as usize }).align_up();
 
     let free_start = kernel_end.align_up();
-    let free_size = mem_size - (free_start - mem_start);
+    assert!(mem_size > 0, "MemoryInit: RAM 大小为 0 (start={mem_start})");
+    assert!(
+        kernel_start >= mem_start && kernel_end <= mem_end,
+        "MemoryInit: kernel [{kernel_start}, {kernel_end}) 不在 RAM [{mem_start}, {mem_end}) 内"
+    );
+    assert!(
+        free_start <= mem_end,
+        "MemoryInit: free_start {free_start} 超出 RAM 结束地址 {mem_end}"
+    );
+    let free_size = mem_end - free_start;
 
     // 段计算——注意 text 段从 kernel_start 开始，不是 mem_start。
     // [mem_start, kernel_start) 是固件区域（OpenSBI 等），保留背景层 kernel_rw。
@@ -63,7 +83,6 @@ pub fn init() {
 
     // 背景层必须先于权限覆盖——覆盖操作要求 PTE 已存在
     {
-        let mem_end = mem_start + mem_size;
         paging::kernel_page_table().identity_map_range(mem_start, mem_end, PteFlags::kernel_rw());
     }
 
@@ -96,7 +115,7 @@ pub fn init() {
         rodata_end,
         free_start,
         free_start,
-        mem_start + mem_size
+        mem_end
     );
 }
 

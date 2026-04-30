@@ -69,12 +69,6 @@ pub const LOG_HDR_BUF_SIZE: usize = 128;
 /// Panic 格式化缓冲区大小（字节，栈上 heapless::String）
 pub const PANIC_BUF_SIZE: usize = 256;
 
-/// 物理地址到虚拟地址的固定偏移量。
-///
-/// - `0`：identity mapping（VA == PA），当前使用
-/// - 非零值：higher-half kernel（VA = PA + PHYS_OFFSET）
-pub const PHYS_OFFSET: usize = 0;
-
 const _: () = assert!(
     PAGE_SIZE.is_power_of_two(),
     "PAGE_SIZE must be a power of two"

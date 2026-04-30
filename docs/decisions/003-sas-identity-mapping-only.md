@@ -32,7 +32,7 @@ capability token、编译期可见性），而非回到地址翻译。如果需�
 ### 方案 A: 移除 page_allocator，只保留 identity mapping
 
 移除 `page_allocator` crate。`MappedPages` 只接受 `AllocatedFrames`，
-VA 通过 `PA + PHYS_OFFSET` 推导。`AddressSpace` 合并为单一映射接口。
+VA 与 PA 数值相同（identity mapping）。`AddressSpace` 合并为单一映射接口。
 
 **优点**:
 - 消除 ~400 行不使用的代码（`page_allocator` 及其 typestate）

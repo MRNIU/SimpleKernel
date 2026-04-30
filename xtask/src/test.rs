@@ -21,7 +21,7 @@ pub fn prepare_qemu_env(
     arch: Arch,
     release: bool,
 ) -> Result<QemuEnv> {
-    firmware::ensure_firmware_exists(project_root, arch)?;
+    firmware::ensure_firmware_ready(sh, project_root, arch)?;
     let boot_dir = build::prepare_boot_directory(project_root, arch, release)?;
     let rootfs_path = build::ensure_rootfs_image(sh, &boot_dir)?;
     let dtb_path = qemu::dump_qemu_dtb(sh, arch, &boot_dir, &rootfs_path)?;
@@ -60,6 +60,7 @@ pub fn run_test(
     env: &QemuEnv,
     release: bool,
     debug_files: bool,
+    timeout_secs: u64,
 ) -> Result<bool> {
     let kernel_elf_path = build::build_binary(
         sh,
@@ -74,7 +75,10 @@ pub fn run_test(
     }
     qemu::generate_fit_image(arch, sh, &env.boot_dir, &kernel_elf_path, &env.dtb_path)?;
 
-    println!("[xtask] Running test '{}'...", display_name);
+    println!(
+        "[xtask] Running test '{}' (timeout: {}s)...",
+        display_name, timeout_secs
+    );
     let result = qemu::launch_qemu(
         sh,
         arch,
@@ -83,6 +87,7 @@ pub fn run_test(
         &kernel_elf_path,
         &env.rootfs_path,
         false,
+        Some(timeout_secs),
     );
 
     match result {

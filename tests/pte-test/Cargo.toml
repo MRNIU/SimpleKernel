@@ -7,12 +7,18 @@ edition.workspace = true
 name = "pte-test"
 test = false
 
+[[bin]]
+name = "unaligned-paddr-panic"
+path = "src/unaligned_paddr_panic.rs"
+test = false
+
 [dependencies]
 test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false }
 page_table_entry = { path = "../../crates/page_table_entry" }
 memory_types = { path = "../../crates/memory_types" }
 log.workspace = true
+heapless.workspace = true
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]
 sbi-rt.workspace = true

@@ -408,6 +408,7 @@ dependencies = [
  "paging",
  "per_cpu",
  "spin",
+ "tlb",
  "zerocopy",
 ]
 
@@ -552,6 +553,7 @@ name = "pte-test"
 version = "0.0.0"
 dependencies = [
  "aarch64-cpu",
+ "heapless 0.8.0",
  "log",
  "memory_types",
  "page_table_entry",
@@ -676,6 +678,7 @@ dependencies = [
  "smoltcp",
  "spin",
  "sync",
+ "tlb",
  "tock-registers",
  "unwinding",
  "virtio-drivers",

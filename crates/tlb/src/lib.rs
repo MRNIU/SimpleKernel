@@ -74,7 +74,7 @@ impl Drop for TlbFlushGuard {
 ///   实现按 ASID 刷新，避免影响其他进程的 TLB 缓存。
 #[inline(always)]
 pub fn flush_tlb() {
-    arch::flush_tlb_all();
+    flush_tlb_local();
 
     if let Some(shootdown) = TLB_SHOOTDOWN_FN.get() {
         shootdown(TlbFlushRequest::All);
@@ -86,9 +86,25 @@ pub fn flush_tlb() {
 /// 在 unmap 单页或修改单个 PTE 后调用，比 [`flush_tlb`] 精确、开销更低。
 #[inline(always)]
 pub fn flush_tlb_page(vaddr: usize) {
-    arch::flush_tlb_page(vaddr);
+    flush_tlb_page_local(vaddr);
 
     if let Some(shootdown) = TLB_SHOOTDOWN_FN.get() {
         shootdown(TlbFlushRequest::Page(vaddr));
     }
+}
+
+/// 仅刷新当前核心的整个 TLB，不触发跨核 shootdown。
+///
+/// IPI 接收端处理 shootdown 请求时使用此函数，避免递归广播。
+#[inline(always)]
+pub fn flush_tlb_local() {
+    arch::flush_tlb_all();
+}
+
+/// 仅刷新当前核心指定虚拟地址对应的 TLB 项，不触发跨核 shootdown。
+///
+/// IPI 接收端处理 shootdown 请求时使用此函数，避免递归广播。
+#[inline(always)]
+pub fn flush_tlb_page_local(vaddr: usize) {
+    arch::flush_tlb_page(vaddr);
 }

@@ -56,6 +56,7 @@ impl MmioRegion {
             end_aligned,
             PteFlags::kernel_device(),
         );
+        tlb::flush_tlb();
 
         Self {
             base: pa_aligned.to_virt(),

@@ -53,9 +53,9 @@ SimpleKernel 没有 unmap，意味着：
 | 同一页同时改权限 | Rust 所有权（编译期阻止） | 不可能发生 |
 | walk_to_leaf 读 vs update_pte 写 | Acquire/Release ordering | 安全（原子读写，无 torn access） |
 | walk_create 建节点 vs walk_to_leaf 读 | Release/Acquire + 节点只增不删 | 安全 |
-| TLB 缓存旧权限 | 需 TLB shootdown（与锁无关） | 当前有窗口，需独立解决 |
+| TLB 缓存旧权限 | IPI-based TLB shootdown（与锁无关） | 由 `src/tlb_shootdown.rs` 同步广播 |
 
-**TLB 一致性是独立问题**：权限变更后其他核的 TLB 可能仍缓存旧条目。这在有锁的当前实现中同样存在——SpinLock 保护数据结构一致性，不保护 TLB 一致性。未来需引入 IPI-based TLB shootdown 独立解决。
+**TLB 一致性是独立问题**：权限变更后其他核的 TLB 可能仍缓存旧条目。这在有锁的实现中同样存在——SpinLock 保护数据结构一致性，不保护 TLB 一致性。当前由 `src/tlb_shootdown.rs` 在中断子系统初始化后注册 `tlb` 回调，通过 IPI 同步广播并等待目标核心 ACK。
 
 ## 现行原子 ordering 的不足
 
@@ -128,7 +128,7 @@ impl PageTable {
     }
 
     /// 只改 flags，不分配中间节点——无锁
-    pub fn update_pte(&self, va: VirtAddr, new_flags: PteFlags) -> Result<PteFlags, PagingError> {
+    pub unsafe fn update_pte(&self, va: VirtAddr, new_flags: PteFlags) -> Result<PteFlags, PagingError> {
         let (pte, paddr, idx, level) = self.walk_to_leaf(va).ok_or(PagingError::PageNotMapped)?;
         let leaf_flags = new_flags.for_leaf_at_level(level);
         let new_pte = PageTableEntry::new(pte.paddr(), leaf_flags);
@@ -241,7 +241,7 @@ fn write(&mut self, index: usize, pte: PageTableEntry) {
 | `crates/paging/src/table.rs` | 重写 `PageTable` 结构——`nodes` 改为 `SpinLock<Vec<AllocatedFrames>>`；方法签名 `&mut self` → `&self`；`walk_to_leaf` 改为 `&self` 无锁；`walk_create` 拆分为 `walk_create_and_write(nodes: &mut Vec<_>)` 内部方法；`update_pte` 改为 atomic swap 无锁 |
 | `crates/paging/src/table.rs` | `Table::read/write` Ordering 从 `Relaxed` 升级为 `Acquire` / `Release`；新增 `Table::swap(idx, new) -> PageTableEntry` 用 `AcqRel` |
 | `crates/paging/src/lib.rs` | `KERNEL_PAGE_TABLE: spin::Once<PageTable>`（去掉外层 `SpinLock`）；`kernel_page_table()` 返回 `&'static PageTable`；`init_kernel_page_table(pt)` 签名不变 |
-| `crates/paging/src/mapping.rs` | `claim_pages` / `batch_update_pte`（若 ADR-009 删除 claim_pages，则仅 batch_update_pte）去掉 `kernel_page_table().lock()`；直接调 `kernel_page_table().update_pte(va, flags)` |
+| `crates/paging/src/mapping.rs` | `claim_pages` / `batch_update_pte`（若 ADR-009 删除 claim_pages，则仅 batch_update_pte）去掉 `kernel_page_table().lock()`；在 `OwnedPages` 不变量下调用 `unsafe kernel_page_table().update_pte(va, flags)` |
 | `crates/paging/src/mmio.rs` | `MmioRegion::map` 去掉 `lock()` 调用 |
 | `crates/memory/src/init.rs` | 同上——`identity_map_range` 不再需要 `guard` |
 
@@ -249,7 +249,8 @@ fn write(&mut self, index: usize, pte: PageTableEntry) {
 
 | 项 | 变更 |
 |----|------|
-| `PageTable::create_pte`, `update_pte`, `get_mapping`, `identity_map_range`, `root_paddr` | `&mut self` → `&self` |
+| `PageTable::create_pte`, `get_mapping`, `identity_map_range`, `root_paddr` | `&mut self` → `&self` |
+| `PageTable::update_pte` | `&mut self` → `&self`，并标记为 `unsafe` 机制接口 |
 | `kernel_page_table()` 返回类型 | `&'static SpinLock<PageTable>` → `&'static PageTable` |
 | `PagingError::FlagsConflict` | 与 ADR-011 一致（本 ADR 与 ADR-011 在 `create_pte` 返回值上保持一致） |
 

@@ -3,7 +3,7 @@
 /// 使用 `arm-gic` crate 初始化 GICv3，通过 `GicCpuInterface` 系统寄存器
 /// 完成 IAR/EOIR 操作。VBAR_EL1 设置及 16 个异常向量处理函数。
 use arm_gic::gicv3::registers::{Gicd, GicrSgi};
-use arm_gic::gicv3::{GicCpuInterface, GicV3};
+use arm_gic::gicv3::{GicCpuInterface, GicV3, Group};
 use arm_gic::{IntId, InterruptGroup, UniqueMmioPointer};
 use core::arch::global_asm;
 use core::ptr::NonNull;
@@ -40,6 +40,12 @@ const VTIMER_PPI: u32 = 11;
 
 /// 定时器中断优先级
 const VTIMER_PRIORITY: u8 = 0xA0;
+
+/// TLB shootdown 使用的 SGI 编号。
+const TLB_SHOOTDOWN_SGI: u32 = 0;
+
+/// TLB shootdown SGI 优先级。
+const TLB_SHOOTDOWN_PRIORITY: u8 = 0x90;
 
 /// 从 FDT 解析 GICv3 的 GICD 和 GICR 基地址。
 ///
@@ -105,6 +111,17 @@ unsafe fn create_gic<'a>() -> GicV3<'a> {
     }
 }
 
+/// 使能当前 CPU 接收 TLB shootdown SGI。
+fn enable_tlb_shootdown_sgi(gic: &mut GicV3<'_>, cpu_id: usize) {
+    let intid = IntId::sgi(TLB_SHOOTDOWN_SGI);
+    gic.set_group(intid, Some(cpu_id), Group::Group1NS)
+        .expect("GIC: 设置 TLB shootdown SGI 分组失败");
+    gic.set_interrupt_priority(intid, Some(cpu_id), TLB_SHOOTDOWN_PRIORITY)
+        .expect("GIC: 设置 TLB shootdown SGI 优先级失败");
+    gic.enable_interrupt(intid, Some(cpu_id), true)
+        .expect("GIC: 使能 TLB shootdown SGI 失败");
+}
+
 /// 初始化主核中断系统
 ///
 /// 1. 设置 VBAR_EL1 为向量表地址
@@ -144,6 +161,7 @@ pub fn init() {
             .expect("GIC: 设置定时器中断优先级失败");
         gic.enable_interrupt(vtimer_intid, Some(cpu_id), true)
             .expect("GIC: 使能定时器中断失败");
+        enable_tlb_shootdown_sgi(&mut gic, cpu_id);
     }
 
     // 设置优先级掩码（接受所有优先级）
@@ -189,6 +207,7 @@ pub fn init_smp() {
             .expect("GIC SMP: 设置定时器中断优先级失败");
         gic.enable_interrupt(vtimer_intid, Some(cpu_id), true)
             .expect("GIC SMP: 使能定时器中断失败");
+        enable_tlb_shootdown_sgi(&mut gic, cpu_id);
     }
 
     GicCpuInterface::set_priority_mask(0xFF);
@@ -210,6 +229,9 @@ fn dispatch_irq(ctx: &mut TrapContext) {
     match intid {
         id if id == IntId::ppi(VTIMER_PPI) => {
             super::timer::handle_timer(ctx);
+        }
+        id if id == IntId::sgi(TLB_SHOOTDOWN_SGI) => {
+            crate::tlb_shootdown::handle_ipi();
         }
         id => {
             log::warn!("dispatch_irq: 未知 IRQ {:?}", id);

@@ -11,21 +11,27 @@ use crate::arch::Arch;
 /// 32-bit TA 需要单独的 Arm32 工具链。
 const CROSS_COMPILE_ARM32: &str = "arm-linux-gnueabihf-";
 
-/// 检查运行所需的固件文件是否就绪，缺失时返回带路径列表的错误。
-pub fn ensure_firmware_exists(project_root: &Path, arch: Arch) -> Result<()> {
+fn required_firmware_paths(project_root: &Path, arch: Arch) -> Vec<PathBuf> {
     let fw = arch.firmware_dir(project_root);
-    let required_paths: Vec<PathBuf> = match arch {
+    match arch {
         Arch::Riscv64 => vec![
             fw.join("u-boot/spl/u-boot-spl.bin"),
             fw.join("u-boot/u-boot.itb"),
         ],
         Arch::Aarch64 => vec![fw.join("arm-trusted-firmware/flash.bin")],
-    };
+    }
+}
 
-    let missing: Vec<PathBuf> = required_paths
+fn missing_firmware_paths(project_root: &Path, arch: Arch) -> Vec<PathBuf> {
+    required_firmware_paths(project_root, arch)
         .into_iter()
         .filter(|path| !path.exists())
-        .collect();
+        .collect()
+}
+
+/// 检查运行所需的固件文件是否就绪，缺失时返回带路径列表的错误。
+pub fn ensure_firmware_exists(project_root: &Path, arch: Arch) -> Result<()> {
+    let missing = missing_firmware_paths(project_root, arch);
     if missing.is_empty() {
         return Ok(());
     }
@@ -38,6 +44,25 @@ pub fn ensure_firmware_exists(project_root: &Path, arch: Arch) -> Result<()> {
         message.push_str(&path.display().to_string());
     }
     Err(message.into())
+}
+
+/// 确保运行所需固件存在；缺失时自动编译对应架构固件。
+pub fn ensure_firmware_ready(sh: &Shell, project_root: &Path, arch: Arch) -> Result<()> {
+    let missing = missing_firmware_paths(project_root, arch);
+    if missing.is_empty() {
+        return Ok(());
+    }
+
+    println!(
+        "[xtask] Firmware for {} is missing; building it now...",
+        arch.as_str()
+    );
+    for path in &missing {
+        println!("[xtask]   missing: {}", path.display());
+    }
+
+    build_firmware(sh, project_root, arch)?;
+    ensure_firmware_exists(project_root, arch)
 }
 
 /// 编译指定架构所需的全部固件。

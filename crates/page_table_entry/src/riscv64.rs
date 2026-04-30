@@ -103,6 +103,10 @@ impl PteOps for PageTableEntry {
     #[inline]
     fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
         assert!(
+            paddr.is_aligned(),
+            "PageTableEntry::new: 物理地址未页对齐: {paddr}"
+        );
+        assert!(
             !flags.contains(PteFlags::WRITE) || flags.contains(PteFlags::READ),
             "RISC-V PTE::new: flags={flags:?} 违反 W=1,R=0 禁用组合（Priv Spec §5.4）"
         );
@@ -136,6 +140,10 @@ impl PteOps for PageTableEntry {
     /// 中间节点 PTE（仅 V 位，指向下一级页表）。
     #[inline]
     fn new_intermediate(paddr: PhysAddr) -> Self {
+        assert!(
+            paddr.is_aligned(),
+            "PageTableEntry::new_intermediate: 物理地址未页对齐: {paddr}"
+        );
         let ppn = ((paddr.as_usize() as u64) >> PAGE_SHIFT) << FLAGS_BITS;
         Self(ppn | PteFlags::VALID.bits())
     }

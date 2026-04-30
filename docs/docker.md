@@ -1,7 +1,7 @@
 
 # Dev Container 开发环境
 
-本项目使用 [Dev Container](https://containers.dev/) 提供一致的开发环境，包含 GCC 14 交叉编译工具链、QEMU 和全部构建依赖。
+本项目使用 [Dev Container](https://containers.dev/) 提供一致的开发环境。镜像基于 Ubuntu 26.04 LTS，包含交叉编译工具链、QEMU、固件构建依赖、Rust nightly 工具链、`pre-commit` 和 `cargo xtask` 所需工具。
 
 ## 快速开始
 
@@ -26,32 +26,42 @@ npm install -g @devcontainers/cli
 devcontainer up --workspace-folder .
 
 # 在容器内执行命令
-devcontainer exec --workspace-folder . cmake --preset=build_riscv64
+devcontainer exec --workspace-folder . cargo xtask build --arch riscv64
 ```
 
 ## 验证环境
 
 ```shell
-gcc --version                      # GCC 14
+gcc --version
 aarch64-linux-gnu-gcc --version    # aarch64 交叉编译器
 riscv64-linux-gnu-gcc --version    # riscv64 交叉编译器
-cmake --version
+rustup show
+cargo --version
+pre-commit --version
+shellcheck --version
 qemu-system-riscv64 --version
+mkimage -V
 ```
 
 ## 构建与运行
 
 ```shell
-# 配置 + 编译（二选一）
-cmake --preset=build_riscv64 && cmake --build build_riscv64 --target SimpleKernel
-cmake --preset=build_aarch64 && cmake --build build_aarch64 --target SimpleKernel
+# 构建内核
+cargo xtask build --arch riscv64
+cargo xtask build --arch aarch64
 
-# 运行（在对应 build 目录下）
-make run
+# 构建固件
+cargo xtask firmware --arch riscv64
+cargo xtask firmware --arch aarch64
+# run/debug/test 会在固件缺失时自动构建，这里通常只需显式预热固件时使用
+
+# 运行
+cargo xtask run --arch riscv64 --timeout 30
+cargo xtask run --arch aarch64 --timeout 30
 
 # 调试
-make debug    # GDB 连接 localhost:1234
+cargo xtask debug --arch riscv64    # GDB 连接 localhost:1234
 
-# 单元测试 + 覆盖率
-cmake --build build_riscv64 --target unit-test coverage
+# QEMU 系统测试
+cargo xtask test --arch riscv64
 ```

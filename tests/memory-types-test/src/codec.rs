@@ -172,10 +172,7 @@ fn test_virt_addr_from_pointer() {
 fn test_phys_virt_roundtrip() {
     let pa = PhysAddr::new(0x8020_0000);
     let va = pa.to_virt();
-    assert_eq!(
-        va.as_usize(),
-        pa.as_usize().wrapping_add(config::PHYS_OFFSET)
-    );
+    assert_eq!(va.as_usize(), pa.as_usize());
     assert_eq!(va.to_phys(), pa);
 }
 
@@ -183,7 +180,7 @@ fn test_phys_virt_roundtrip() {
 fn test_phys_virt_zero() {
     let pa = PhysAddr::new(0);
     let va = pa.to_virt();
-    assert_eq!(va.as_usize(), config::PHYS_OFFSET);
+    assert_eq!(va.as_usize(), 0);
     assert_eq!(va.to_phys(), pa);
 }
 

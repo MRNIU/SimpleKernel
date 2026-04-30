@@ -128,6 +128,10 @@ impl PteOps for PageTableEntry {
 
     #[inline]
     fn new(paddr: PhysAddr, flags: PteFlags) -> Self {
+        assert!(
+            paddr.is_aligned(),
+            "PageTableEntry::new: 物理地址未页对齐: {paddr}"
+        );
         Self((paddr.as_usize() as u64 & OUTPUT_ADDR_MASK) | flags.bits())
     }
 
@@ -163,6 +167,10 @@ impl PteOps for PageTableEntry {
 
     #[inline]
     fn new_intermediate(paddr: PhysAddr) -> Self {
+        assert!(
+            paddr.is_aligned(),
+            "PageTableEntry::new_intermediate: 物理地址未页对齐: {paddr}"
+        );
         let bits = (paddr.as_usize() as u64 & OUTPUT_ADDR_MASK)
             | PteFlags::VALID.bits()
             | PteFlags::TABLE.bits();

@@ -19,7 +19,6 @@
 | `PAGE_SIZE_BITS` | 12 | log2(PAGE_SIZE)，由 `trailing_zeros()` 自动计算 |
 | `KERNEL_STACK_SIZE` | 16KB | 内核线程栈大小（必须为 2 的幂且 >= PAGE_SIZE） |
 | `KERNEL_HEAP_SIZE` | 4MB | 内核堆大小 |
-| `PHYS_OFFSET` | 0 | 物理→虚拟地址偏移（0 = identity mapping） |
 
 ### 页表
 
@@ -73,12 +72,6 @@ crate 底部通过 `const _: () = assert!(...)` 在编译期检查不变量：
 
 ## 注意事项
 
-### 1. 修改 `PHYS_OFFSET` 的影响范围
-
-`PHYS_OFFSET` 被 `memory_types` crate 的 `PhysAddr::to_virt()` / `VirtAddr::to_phys()` 使用。
-从 identity mapping（0）切换到 higher-half kernel 时，
-需要同步调整链接脚本中的内核虚拟地址和启动阶段的页表映射。
-
-### 2. `KERNEL_STACK_SIZE` 必须为 2 的幂
+### 1. `KERNEL_STACK_SIZE` 必须为 2 的幂
 
 `boot.rs` 中使用移位运算计算栈偏移，依赖此不变量。编译期 assert 已保证。

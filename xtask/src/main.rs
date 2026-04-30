@@ -39,6 +39,17 @@ struct ArchArgs {
 }
 
 #[derive(Args, Clone)]
+struct RunArgs {
+    #[arg(long, value_enum, default_value = "riscv64")]
+    arch: Arch,
+    #[arg(long)]
+    release: bool,
+    /// QEMU 运行超时秒数，默认 30 秒
+    #[arg(long, default_value = "30")]
+    timeout: u64,
+}
+
+#[derive(Args, Clone)]
 struct TestArgs {
     #[arg(long, value_enum, default_value = "riscv64")]
     arch: Arch,
@@ -66,7 +77,7 @@ enum Commands {
     Build(ArchArgs),
     /// 检查编译（等价于 `cargo check --target <target> -Z build-std=...`）
     Check(ArchArgs),
-    Run(ArchArgs),
+    Run(RunArgs),
     /// 启动 QEMU 并暂停 CPU，等待 GDB 在 localhost:1234 连接
     Debug(ArchArgs),
     Firmware(ArchArgs),
@@ -101,8 +112,7 @@ fn run() -> Result<()> {
         }
         Commands::Run(args) => {
             let arch = args.arch;
-            // 提前检查固件，避免内核编译完成后才发现固件缺失。
-            firmware::ensure_firmware_exists(&project_root, arch)?;
+            firmware::ensure_firmware_ready(&sh, &project_root, arch)?;
             let kernel_elf_path =
                 build::build_binary(&sh, &project_root, arch, None, None, args.release)?;
             build::generate_debug_files(&sh, &kernel_elf_path)?;
@@ -121,11 +131,12 @@ fn run() -> Result<()> {
                 &kernel_elf_path,
                 &rootfs_path,
                 false,
+                Some(args.timeout),
             )?;
         }
         Commands::Debug(args) => {
             let arch = args.arch;
-            firmware::ensure_firmware_exists(&project_root, arch)?;
+            firmware::ensure_firmware_ready(&sh, &project_root, arch)?;
             let kernel_elf_path =
                 build::build_binary(&sh, &project_root, arch, None, None, args.release)?;
             build::generate_debug_files(&sh, &kernel_elf_path)?;
@@ -144,6 +155,7 @@ fn run() -> Result<()> {
                 &kernel_elf_path,
                 &rootfs_path,
                 true,
+                None,
             )?;
         }
         Commands::Test(args) => {
@@ -170,6 +182,7 @@ fn run() -> Result<()> {
                             &qemu_env,
                             args.release,
                             args.debug_files,
+                            args.timeout,
                         )?;
                     }
                     None => {

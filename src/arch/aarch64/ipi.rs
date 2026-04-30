@@ -34,7 +34,7 @@ pub fn send_ipi(cpu_id: usize) {
             v = in(reg) sgi_value,
         );
     }
-    log::info!("IPI sent to cpu {}", cpu_id);
+    log::debug!("IPI sent to cpu {}", cpu_id);
 }
 
 /// 通过 SMC 执行 PSCI 调用，返回 x0（ReturnCode）

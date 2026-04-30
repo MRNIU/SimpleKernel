@@ -10,8 +10,7 @@
 地址 newtype 均为 `#[repr(transparent)]`，零开销包装 `usize`。
 不同类型之间不可隐式转换——`PhysAddr` 和 `VirtAddr` 是编译期不同的类型，
 必须通过显式的 `PhysAddr::to_virt()` / `VirtAddr::to_phys()` 方法转换。
-转换使用 `wrapping_add` / `wrapping_sub` 以支持 higher-half kernel 布局，
-偏移量由 `config::PHYS_OFFSET` 控制。
+SimpleKernel 当前只支持 SAS identity mapping，因此这两个方法保持地址数值不变。
 
 范围类型 `Span<A>` 定义在本 crate 内部。
 
@@ -117,7 +116,7 @@ assert_eq!(f.start_addr(), PhysAddr::new(0x8020_3000)); // 不是 0x8020_3FFF
 当地址接近 `usize::MAX` 时，`align_up()` 无法向上对齐而不溢出，
 会 panic 而非静默回绕。这是有意为之，防止产生错误的地址值。
 
-### 3. `PhysAddr::to_virt` / `VirtAddr::to_phys` 仅适用于线性映射
+### 3. `PhysAddr::to_virt` / `VirtAddr::to_phys` 仅适用于 identity mapping
 
-这两个方法假设物理地址和虚拟地址之间存在固定偏移关系（`PHYS_OFFSET`）。
+这两个方法假设物理地址和虚拟地址数值相同（VA == PA）。
 对于非线性映射的地址（如用户空间地址），必须通过页表查询进行转换。

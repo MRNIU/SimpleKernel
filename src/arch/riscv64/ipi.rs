@@ -20,8 +20,15 @@ unsafe extern "C" {
 pub fn send_ipi(hart_id: usize) {
     // HartMask::from_mask_base(mask=1, base=hart_id) 表示精确指定单个 hart
     let mask = sbi_rt::HartMask::from_mask_base(1, hart_id);
-    sbi_rt::send_ipi(mask).ok();
-    log::info!("IPI sent to hart {}", hart_id);
+    let ret = sbi_rt::send_ipi(mask);
+    assert!(
+        ret.is_ok(),
+        "send_ipi: 发送到 hart {} 失败 (error={}, value={})",
+        hart_id,
+        ret.error as isize,
+        ret.value
+    );
+    log::debug!("IPI sent to hart {}", hart_id);
 }
 
 /// 处理接收到的 IPI
@@ -40,7 +47,8 @@ pub fn handle_ipi(_ctx: &mut TrapContext) {
         );
     }
     let core_id = per_cpu::current_core_id();
-    log::info!("IPI received on core {}", core_id);
+    crate::tlb_shootdown::handle_ipi();
+    log::debug!("IPI received on core {}", core_id);
 }
 
 /// 启动所有从核

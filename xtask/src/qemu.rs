@@ -26,12 +26,12 @@ fn generate_its_content(arch: Arch, kernel_path: &str, dtb_path: &str) -> String
 
 // 所有 QEMU 调用共享的基础参数：无图形、1 GiB 内存、2 核、
 // virtio 网络/GPU/块设备、machine 和 cpu 按架构选择。
-fn base_qemu_cmd<'a>(sh: &'a Shell, arch: Arch, rootfs_drive: &str) -> Cmd<'a> {
+fn base_qemu_args(arch: Arch, rootfs_drive: &str) -> Vec<String> {
     let (machine, cpu) = match arch {
         Arch::Riscv64 => ("virt", "max"),
         Arch::Aarch64 => ("virt,secure=on,gic_version=3", "cortex-a72"),
     };
-    sh.cmd(arch.qemu_binary()).args([
+    [
         "-nographic",
         "-monitor",
         "telnet::2333,server,nowait",
@@ -55,7 +55,28 @@ fn base_qemu_cmd<'a>(sh: &'a Shell, arch: Arch, rootfs_drive: &str) -> Cmd<'a> {
         machine,
         "-cpu",
         cpu,
-    ])
+    ]
+    .into_iter()
+    .map(String::from)
+    .collect()
+}
+
+fn base_qemu_cmd<'a>(sh: &'a Shell, arch: Arch, rootfs_drive: &str) -> Cmd<'a> {
+    sh.cmd(arch.qemu_binary())
+        .args(base_qemu_args(arch, rootfs_drive))
+}
+
+fn base_qemu_timeout_cmd<'a>(
+    sh: &'a Shell,
+    arch: Arch,
+    rootfs_drive: &str,
+    timeout_secs: u64,
+) -> Cmd<'a> {
+    let timeout = format!("{timeout_secs}s");
+    sh.cmd("timeout")
+        .arg(timeout)
+        .arg(arch.qemu_binary())
+        .args(base_qemu_args(arch, rootfs_drive))
 }
 
 /// 启动 QEMU 并将硬件设备树导出到 `boot_dir/qemu.dtb`。
@@ -336,11 +357,18 @@ pub fn launch_qemu(
     kernel_elf_path: &Path,
     rootfs_path: &Path,
     debug: bool,
+    timeout_secs: Option<u64>,
 ) -> Result<()> {
     if debug {
         println!(
             "[xtask] Launching QEMU (debug) for {} — attach GDB on port 1234...",
             arch.as_str()
+        );
+    } else if let Some(timeout_secs) = timeout_secs {
+        println!(
+            "[xtask] Launching QEMU for {} (timeout: {}s)...",
+            arch.as_str(),
+            timeout_secs
         );
     } else {
         println!("[xtask] Launching QEMU for {}...", arch.as_str());
@@ -357,14 +385,19 @@ pub fn launch_qemu(
                 "loader,file={},addr=0x80200000",
                 fw.join("u-boot/u-boot.itb").display()
             );
-            let mut cmd = base_qemu_cmd(sh, arch, &rootfs_drive)
-                .args(["-serial", "stdio", "-d", "guest_errors,cpu_reset"])
-                .arg("-D")
-                .arg(&qemu_log)
-                .arg("-bios")
-                .arg(&bios)
-                .arg("-device")
-                .arg(&loader);
+            let mut cmd = match timeout_secs {
+                Some(timeout_secs) if !debug => {
+                    base_qemu_timeout_cmd(sh, arch, &rootfs_drive, timeout_secs)
+                }
+                _ => base_qemu_cmd(sh, arch, &rootfs_drive),
+            }
+            .args(["-serial", "stdio", "-d", "guest_errors,cpu_reset"])
+            .arg("-D")
+            .arg(&qemu_log)
+            .arg("-bios")
+            .arg(&bios)
+            .arg("-device")
+            .arg(&loader);
             if debug {
                 cmd = cmd.args(["-s", "-S"]);
             }
@@ -373,21 +406,26 @@ pub fn launch_qemu(
         Arch::Aarch64 => {
             let bios = fw.join("arm-trusted-firmware/flash.bin");
             let drive = boot_part_drive_arg(boot_dir);
-            let mut cmd = base_qemu_cmd(sh, arch, &rootfs_drive)
-                .args([
-                    "-serial",
-                    "stdio", // 主串口：ATF + U-Boot + 内核 → 直接输出到终端
-                    "-serial", "null", // OP-TEE 串口：通常无输出，丢弃即可
-                ])
-                .args(["-d", "guest_errors,cpu_reset"])
-                .arg("-D")
-                .arg(&qemu_log)
-                .arg("-drive")
-                .arg(&drive)
-                .arg("-bios")
-                .arg(&bios)
-                .arg("-kernel")
-                .arg(kernel_elf_path);
+            let mut cmd = match timeout_secs {
+                Some(timeout_secs) if !debug => {
+                    base_qemu_timeout_cmd(sh, arch, &rootfs_drive, timeout_secs)
+                }
+                _ => base_qemu_cmd(sh, arch, &rootfs_drive),
+            }
+            .args([
+                "-serial",
+                "stdio", // 主串口：ATF + U-Boot + 内核 → 直接输出到终端
+                "-serial", "null", // OP-TEE 串口：通常无输出，丢弃即可
+            ])
+            .args(["-d", "guest_errors,cpu_reset"])
+            .arg("-D")
+            .arg(&qemu_log)
+            .arg("-drive")
+            .arg(&drive)
+            .arg("-bios")
+            .arg(&bios)
+            .arg("-kernel")
+            .arg(kernel_elf_path);
             if debug {
                 cmd = cmd.args(["-s", "-S"]);
             }

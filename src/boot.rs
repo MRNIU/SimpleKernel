@@ -82,6 +82,7 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     // 频率无限触发，形成中断风暴，主线程代码永远得不到执行。
     Arch::init_timer();
     Arch::init_interrupt();
+    crate::tlb_shootdown::init_primary();
 
     if matches!(level, InitLevel::Interrupt) {
         return;
@@ -162,5 +163,6 @@ pub unsafe fn kernel_init_smp() {
     // 与主核一致：先 timer 再 interrupt，避免中断风暴
     Arch::init_timer_smp(core_id);
     Arch::init_interrupt_smp();
+    crate::tlb_shootdown::mark_current_core_online();
     log::info!("SMP: core {} online", core_id);
 }
