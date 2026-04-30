@@ -202,9 +202,9 @@ SimpleKernel's interfaces are organized into the following layers:
 
 ### 📋 System Requirements
 
-- **Operating System**: Linux (Ubuntu 24.04 recommended) or macOS
+- **Operating System**: Linux (Ubuntu 26.04 LTS recommended) or macOS
 - **Container Engine**: Docker or compatible container runtime
-- **Toolchain**: Included in Dev Container (GCC 14 cross-compilers, CMake, QEMU, etc.)
+- **Toolchain**: Included in Dev Container (Rust nightly, cross-compilers, QEMU, firmware build dependencies, etc.)
 - **AI Tools (recommended)**: GitHub Copilot / ChatGPT / Claude
 
 ### 🛠️ Environment Setup
@@ -229,6 +229,10 @@ devcontainer exec --workspace-folder . bash
 > Also supports **GitHub Codespaces**: Click Code → Codespaces → Create codespace on main
 >
 > See [Dev Container documentation](./docs/docker.md) for details.
+
+> The development workflow defaults to Dev Container. Except for entry tools such as Docker,
+> Dev Container CLI/extension, and Git, you do not need to install Rust nightly, cross-compilers,
+> QEMU, or firmware build dependencies on the host.
 
 **Option 2: Local Environment**
 

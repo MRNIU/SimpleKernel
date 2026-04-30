@@ -71,6 +71,12 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 
 > Full Rust coding conventions: `docs/design/00-概述.md` §9
 
+### Environment
+- **容器优先**：凡是能在 Dev Container / Docker 中完成的构建、检查、`pre-commit`、固件构建、QEMU 运行和系统测试，都应在容器内执行，不要为本项目修改宿主机工具链。
+- **宿主机边界**：宿主机只负责 Docker 或兼容容器运行时、Dev Container CLI/扩展、Git 等入口工具；不要在宿主机安装 Rust nightly、交叉编译器、QEMU 或固件构建依赖来绕过容器。
+- **命令入口**：在宿主机发起命令时优先使用 `devcontainer exec --workspace-folder . <command>`，或使用当前已构建的项目开发镜像运行等价命令。
+- **例外**：只有容器不可用、任务明确要求本地环境，或正在修复容器自身配置时，才考虑宿主机执行；说明原因并保持宿主/容器步骤边界清晰。
+
 ### Git
 - **Commit 格式**: `<type>(<scope>): <subject>` — type: feat/fix/refactor/test/docs/chore
 - **Sign-off 必须**: 每条 commit 必须使用 `git commit --signoff`（DCO 签署），**不可省略**

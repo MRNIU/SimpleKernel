@@ -3,6 +3,12 @@
 
 本项目使用 [Dev Container](https://containers.dev/) 提供一致的开发环境。镜像基于 Ubuntu 26.04 LTS，包含交叉编译工具链、QEMU、固件构建依赖、Rust nightly 工具链、`pre-commit` 和 `cargo xtask` 所需工具。
 
+## 宿主机与容器边界
+
+默认优先使用 Dev Container 运行构建、检查、`pre-commit`、固件构建和 QEMU 测试。除 Docker 或兼容容器运行时、Dev Container CLI/扩展、Git 等入口工具外，不要为了本项目在宿主机安装 Rust nightly、交叉编译器、QEMU 或固件构建依赖。
+
+在宿主机上执行命令时，优先使用 `devcontainer exec --workspace-folder . <command>` 进入容器环境；只有 Docker/devcontainer 本身不可用、或任务明确要求本地环境时，才按本地工具链文档配置宿主机。
+
 ## 快速开始
 
 ### VS Code

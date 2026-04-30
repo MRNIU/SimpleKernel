@@ -107,7 +107,7 @@ cargo xtask test --arch riscv64
 
 ### 系统要求
 
-- **操作系统**: Linux（推荐 Ubuntu 24.04）或 macOS
+- **操作系统**: Linux（推荐 Ubuntu 26.04 LTS）或 macOS
 - **容器引擎**: Docker 或兼容的容器运行时
 - **工具链**: 已包含在 Dev Container 中（Rust nightly、GCC 交叉编译器、QEMU 等）
 
@@ -132,6 +132,9 @@ devcontainer exec --workspace-folder . bash
 > 也支持 **GitHub Codespaces**：点击仓库页面的 Code → Codespaces → Create codespace on main
 >
 > 详细说明见 [Dev Container 文档](./docs/docker.md)
+
+> 开发环境默认优先使用 Dev Container。除安装 Docker、Dev Container CLI/扩展、
+> Git 等入口工具外，不需要在宿主机安装 Rust nightly、交叉编译器、QEMU 或固件构建依赖。
 
 **方式二：本地环境**
 
