@@ -5,7 +5,7 @@
 [graph]
 targets = [
     "riscv64gc-unknown-none-elf",
-    "aarch64-unknown-none-softfloat",
+    "aarch64-unknown-none",
 ]
 
 [licenses]
@@ -29,9 +29,7 @@ wildcards = "deny"            # 禁止 `*` 版本通配符
 highlight = "all"
 
 [advisories]
-vulnerability = "deny"        # 有已知 CVE 的 crate 阻断构建
-unmaintained = "warn"         # 不再维护的 crate 警告
-yanked = "deny"               # 已撤回版本阻断
+unmaintained = "all"          # 检查所有不再维护的 crate advisory
 ignore = []                   # 如需豁免特定 advisory，在此添加 RUSTSEC ID
 
 [sources]

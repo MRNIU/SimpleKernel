@@ -31,7 +31,7 @@ paging (机制: 如何映射)  ← 本 crate
 帧由 `frame_allocator::AllocatedFrames`（RAII，Drop 时归还 buddy）直接管理。
 权限设定是对已映射 PTE 的幂等操作，不与帧生命周期耦合——内核段通过
 `update_range_flags` 设置权限后 `mem::forget(frames)` 永久持有（见
-[ADR-013](../../docs/decisions/013-ownedpages-necessity.md)）。
+[ADR-013](../../docs/adr/013-ownedpages-necessity.md)）。
 
 ## 错误策略
 

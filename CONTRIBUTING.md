@@ -1,0 +1,58 @@
+# 贡献指南
+
+感谢参与 SimpleKernel。提交前请先阅读根目录 `AGENTS.md`、`docs/conventions.md` 和 `docs/git.md`。
+
+## 开发环境
+
+开发环境默认使用 Dev Container。宿主机只需要 Docker 或兼容容器运行时、Dev Container CLI/扩展、Git 等入口工具；不要为了本项目在宿主机安装 Rust nightly、交叉编译器、QEMU 或固件构建依赖。
+
+```bash
+devcontainer up --workspace-folder .
+devcontainer exec --workspace-folder . bash
+```
+
+容器内常用命令：
+
+```bash
+cargo xtask build --arch riscv64
+cargo xtask test --arch riscv64
+cargo fmt --check
+cargo clippy -- -D warnings
+```
+
+通过 Bash 工具运行 QEMU 相关命令时必须设置 30 秒超时；超时后清理残留 QEMU 进程。
+
+## 提交流程
+
+1. 从最新主分支创建小范围分支。
+2. 按 trait 契约、设计文档和 ADR 理解边界。
+3. 修改代码时同步更新测试和文档。
+4. 运行与改动范围匹配的验证命令。
+5. 使用 `git commit --signoff` 提交。
+6. 创建 PR，并按 PR 模板说明测试、文档、风险和回滚。
+
+## 文档同步要求
+
+| 改动 | 必须同步检查 |
+|------|--------------|
+| 启动流程、命令、测试入口变化 | `README.md`、`docs/README.md`、相关 SOP |
+| 架构不变量变化 | `docs/adr/`、SAD/SDD、`AGENTS.md` |
+| 公开 trait、错误码、类型或模块边界变化 | 代码文档注释、SDD、模块 README |
+| 固件、第三方源码、供应商交付物变化 | `3rd/` 记录、`docs/suppliers/`、`docs/production/` |
+| 硬件或生产流程变化 | `docs/hardware/`、`docs/sop/` |
+
+## 代码约定
+
+- 注释和文档注释使用中文；`# Safety`、`# Errors`、`# Panics` 节标题保留英文。
+- 所有 `unsafe` 块必须有 `// SAFETY:` 注释。
+- 不使用 `.unwrap()`；错误信息必须包含有助于定位问题的数据。
+- 内核互斥使用项目自定义 `SpinLock<T>`。
+- trait 是契约，不要为了某个实现把实现细节塞进 trait 定义。
+
+## Commit
+
+commit 使用 `docs/git.md` 中的格式，并且必须带 DCO sign-off：
+
+```bash
+git commit --signoff -m "docs(conventions): 补充文档结构约定"
+```

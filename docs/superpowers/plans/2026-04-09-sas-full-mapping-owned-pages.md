@@ -8,7 +8,7 @@
 
 **Tech Stack:** Rust nightly, `#![no_std]`, RISC-V Sv39 / AArch64 4KB pages
 
-**ADR:** `docs/decisions/005-sas-full-mapping-owned-pages.md`
+**ADR:** `docs/adr/005-sas-full-mapping-owned-pages.md`
 
 ---
 

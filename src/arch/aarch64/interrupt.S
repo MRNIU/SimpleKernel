@@ -10,19 +10,20 @@
 
 .equ kRegsBytes, 8
 
-/* TrapContext: 320 字节 */
-.equ kTrapContextSize, 320
+/* TrapContext: 896 字节 */
+.equ kTrapContextSize, 896
 
 /*
- * 保存 TrapContext：分配栈空间，保存 x0-x30 + 系统寄存器
+ * 保存 TrapContext：分配栈空间，保存 x0-x30 + FP/SIMD + 系统寄存器
  *
  * 偏移 0-247: x0-x30
  * 偏移 248: _padding0
- * 偏移 256-271: elr_el1, spsr_el1
- * 偏移 272: esr_el1
- * 偏移 280-295: sp_el0, tpidr_el0
- * 偏移 296: ttbr0_el1
- * 偏移 304-319: sp_el1, tpidr_el1
+ * 偏移 256-767: q0-q31
+ * 偏移 768-783: fpsr, fpcr
+ * 偏移 784-831: _padding1
+ * 偏移 832-855: elr_el1, spsr_el1, esr_el1
+ * 偏移 856-879: sp_el0, tpidr_el0, ttbr0_el1
+ * 偏移 880-895: sp_el1, tpidr_el1
  */
 .macro SaveTrapContext
     sub sp, sp, #kTrapContextSize
@@ -45,43 +46,92 @@
     stp x28, x29, [sp, #16 * 14]
     str x30, [sp, #240]
 
-    // 保存系统寄存器 (偏移 256-319)
+    // 保存 FP/SIMD 寄存器 q0-q31 (偏移 256-767)
+    stp q0, q1, [sp, #256]
+    stp q2, q3, [sp, #288]
+    stp q4, q5, [sp, #320]
+    stp q6, q7, [sp, #352]
+    stp q8, q9, [sp, #384]
+    stp q10, q11, [sp, #416]
+    stp q12, q13, [sp, #448]
+    stp q14, q15, [sp, #480]
+    stp q16, q17, [sp, #512]
+    stp q18, q19, [sp, #544]
+    stp q20, q21, [sp, #576]
+    stp q22, q23, [sp, #608]
+    stp q24, q25, [sp, #640]
+    stp q26, q27, [sp, #672]
+    stp q28, q29, [sp, #704]
+    stp q30, q31, [sp, #736]
+
+    // 保存浮点状态寄存器 (偏移 768-783) 和系统寄存器 (偏移 832-895)
+    // 使用临时基址避免 stp/ldp 偏移范围限制
+    add x28, sp, #768
+    mrs x9, fpsr
+    mrs x10, fpcr
+    stp x9, x10, [x28]
+
     mrs x9, elr_el1
     mrs x10, spsr_el1
-    stp x9, x10, [sp, #256]
+    stp x9, x10, [x28, #64]
     mrs x9, esr_el1
-    str x9, [sp, #272]
+    str x9, [x28, #80]
 
     mrs x9, sp_el0
     mrs x10, tpidr_el0
-    stp x9, x10, [sp, #280]
-    mrs x9, ttbr0_el1
-    str x9, [sp, #296]
+    mrs x11, ttbr0_el1
+    stp x9, x10, [x28, #88]
+    str x11, [x28, #104]
 
     // sp_el1: 保存分配前的栈指针
     add x9, sp, #kTrapContextSize
     mrs x10, tpidr_el1
-    stp x9, x10, [sp, #304]
+    stp x9, x10, [x28, #112]
 .endm
 
 /*
- * 恢复 TrapContext：从栈上恢复 x0-x30 + 系统寄存器，释放栈空间
+ * 恢复 TrapContext：从栈上恢复 x0-x30 + FP/SIMD + 系统寄存器，释放栈空间
  */
 .macro RestoreTrapContext
-    // 恢复系统寄存器 (偏移 256-319)
-    ldp x9, x10, [sp, #256]
+    // 恢复系统寄存器 (偏移 832-895) 和浮点状态寄存器 (偏移 768-783)
+    // 使用临时基址避免 stp/ldp 偏移范围限制
+    add x28, sp, #768
+
+    ldp x9, x10, [x28, #64]
     msr elr_el1, x9
     msr spsr_el1, x10
     // 注意：不恢复 esr_el1，它是硬件在异常时自动设置的只读寄存器
 
-    ldp x9, x10, [sp, #280]
-    ldr x11, [sp, #296]
+    ldp x9, x10, [x28, #88]
+    ldr x11, [x28, #104]
     msr sp_el0, x9
     msr tpidr_el0, x10
     msr ttbr0_el1, x11
 
-    ldp x9, x10, [sp, #304]
+    ldp x9, x10, [x28, #112]
     msr tpidr_el1, x10
+
+    ldp x9, x10, [x28]
+    msr fpsr, x9
+    msr fpcr, x10
+
+    // 恢复 FP/SIMD 寄存器 q0-q31 (偏移 256-767)
+    ldp q0, q1, [sp, #256]
+    ldp q2, q3, [sp, #288]
+    ldp q4, q5, [sp, #320]
+    ldp q6, q7, [sp, #352]
+    ldp q8, q9, [sp, #384]
+    ldp q10, q11, [sp, #416]
+    ldp q12, q13, [sp, #448]
+    ldp q14, q15, [sp, #480]
+    ldp q16, q17, [sp, #512]
+    ldp q18, q19, [sp, #544]
+    ldp q20, q21, [sp, #576]
+    ldp q22, q23, [sp, #608]
+    ldp q24, q25, [sp, #640]
+    ldp q26, q27, [sp, #672]
+    ldp q28, q29, [sp, #704]
+    ldp q30, q31, [sp, #736]
 
     // 恢复通用寄存器 x0-x30 (偏移 0-247)
     ldp x0, x1, [sp, #16 * 0]
@@ -281,16 +331,16 @@ trap_return:
 
     // 恢复 Trap 上下文
     // 检查 spsr_el1.M[3:0] 判断返回到用户态还是内核态
-    // spsr_el1 at offset 264
-    ldr x9, [sp, #264]
+    // spsr_el1 at offset 840
+    ldr x9, [sp, #840]
     // 提取 M[3:0]
     and x9, x9, #0xF
     cbnz x9, .Lret_to_kernel
 
 .Lret_to_user:
     // 返回用户态
-    // ttbr0_el1 at offset 296
-    ldr x9, [sp, #296]
+    // ttbr0_el1 at offset 872
+    ldr x9, [sp, #872]
     msr ttbr0_el1, x9
     isb
 

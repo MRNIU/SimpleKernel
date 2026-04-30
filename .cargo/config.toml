@@ -11,7 +11,7 @@ rustflags = [
     "-C", "link-arg=-Tsrc/arch/riscv64/link.ld",
 ]
 
-[target.aarch64-unknown-none-softfloat]
+[target.aarch64-unknown-none]
 rustflags = [
     "-C", "force-unwind-tables=yes",
     "--cfg", "bare_metal",

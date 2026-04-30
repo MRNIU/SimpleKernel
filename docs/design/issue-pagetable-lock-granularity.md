@@ -1,7 +1,7 @@
 # PageTable 锁粒度与 Drop 死锁问题
 
 > **⚠ 本文档已过时**——描述的是旧设计中的 `MappedPages` 模型。
-> 当前设计使用 `OwnedPages`（见 [ADR-006](../decisions/006-memory-subsystem-simplification.md)），
+> 当前设计使用 `OwnedPages`（见 [ADR-006](../adr/006-memory-subsystem-simplification.md)），
 > Drop 不再调用 unmap（只恢复 PTE 权限），死锁场景已不存在。
 
 ## 问题描述

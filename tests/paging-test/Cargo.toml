@@ -28,6 +28,11 @@ name = "reversed-range-panic"
 path = "src/reversed_range_panic.rs"
 test = false
 
+[[bin]]
+name = "tlb-shootdown"
+path = "src/tlb_shootdown.rs"
+test = false
+
 [dependencies]
 test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false }

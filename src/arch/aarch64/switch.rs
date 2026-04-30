@@ -12,7 +12,7 @@ use super::context::CalleeSavedContext;
 /// 从 `next` 恢复 callee-saved 寄存器并跳转到保存的 `pc`。
 ///
 /// 寄存器布局（与 `CalleeSavedContext` 一致）：
-/// x19-x30[0-95], sp[96], pc[104]，总计 112 字节。
+/// x19-x30[0-95], d8-d15[96-159], sp[160], pc[168]，总计 176 字节。
 ///
 /// # Safety
 ///
@@ -32,13 +32,23 @@ pub unsafe extern "C" fn switch_to(
         "stp x25, x26, [x0, #48]",
         "stp x27, x28, [x0, #64]",
         "stp x29, x30, [x0, #80]",
+        // 保存 d8-d15 到 prev (x0)
+        "stp d8, d9, [x0, #96]",
+        "stp d10, d11, [x0, #112]",
+        "stp d12, d13, [x0, #128]",
+        "stp d14, d15, [x0, #144]",
         // 保存 sp 和 pc（lr）
         "mov x9, sp",
         "mov x10, x30",
-        "stp x9, x10, [x0, #96]",
+        "stp x9, x10, [x0, #160]",
         // 从 next (x1) 恢复 sp 和 pc
-        "ldp x9, x10, [x1, #96]",
+        "ldp x9, x10, [x1, #160]",
         "mov sp, x9",
+        // 恢复 d8-d15
+        "ldp d8, d9, [x1, #96]",
+        "ldp d10, d11, [x1, #112]",
+        "ldp d12, d13, [x1, #128]",
+        "ldp d14, d15, [x1, #144]",
         // 恢复 x19-x30
         "ldp x19, x20, [x1, #0]",
         "ldp x21, x22, [x1, #16]",

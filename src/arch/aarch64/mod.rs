@@ -71,7 +71,7 @@ impl ArchOps for Aarch64 {
         // MAIR_EL1: 定义内存属性索引
         //   Attr0 = 0xFF: Normal, Write-Back, Read/Write-Allocate（内核代码/数据）
         //   Attr1 = 0x00: Device-nGnRnE（MMIO 设备寄存器）
-        let mair: u64 = 0xFF | (0x00 << 8);
+        let mair: u64 = 0xFF;
 
         // TCR_EL1: 翻译控制
         //   T0SZ  = 16  → 48 位虚拟地址空间（bits [5:0]）
@@ -82,8 +82,7 @@ impl ArchOps for Aarch64 {
         let tcr: u64 = 16 // T0SZ = 16
             | (0b01 << 8)  // IRGN0
             | (0b01 << 10) // ORGN0
-            | (0b11 << 12) // SH0
-            | (0b00 << 14); // TG0 = 4KB
+            | (0b11 << 12); // SH0, TG0 = 4KB
 
         // SAFETY: 调用方保证页表映射正确；MAIR/TCR 必须在写入 TTBR 并使能 MMU 前配置
         unsafe {

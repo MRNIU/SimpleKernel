@@ -230,7 +230,7 @@ crates/paging/src/mapping.rs             OwnedPages::Drop 的 poison write_bytes
 
 - `crates/paging/src/mapping.rs` 模块 doc comment：删除 CLAIMED 相关段落；保留 poison 描述（"Drop 时写入 poison 填充用于 use-after-free 调试"）
 - `docs/design/memory-subsystem-v2.md`：§1.3 "编译期保证优于运行时保证" 章节原本就是这个立场，不需改；§6 "权限覆盖——OwnedPages" 的"编译期保证"表格已经与此 ADR 一致——确认无需修改
-- ADR 索引（`docs/decisions/README.md`）新增本条目
+- ADR 索引（`docs/adr/README.md`）新增本条目
 
 ## 参考
 

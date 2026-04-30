@@ -41,7 +41,7 @@ jobs:
         run: cargo clippy --target riscv64gc-unknown-none-elf -- -D warnings
 
       - name: Clippy (aarch64)
-        run: cargo clippy --target aarch64-unknown-none-softfloat -- -D warnings
+        run: cargo clippy --target aarch64-unknown-none -- -D warnings
 
       - name: Unit tests (host)
         run: cargo test -p memory_types -p config -p page_table_entry -p arch

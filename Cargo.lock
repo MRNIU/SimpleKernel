@@ -33,6 +33,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "arch-test"
+version = "0.0.0"
+dependencies = [
+ "aarch64-cpu",
+ "log",
+ "sbi-rt",
+ "simplekernel",
+ "test_harness",
+]
+
+[[package]]
 name = "arm-gic"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

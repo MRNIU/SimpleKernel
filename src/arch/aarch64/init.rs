@@ -29,13 +29,13 @@ unsafe fn parse_hex_from_argv2(argv: *const *const u8) -> u64 {
 
     let mut buf = [0u8; 32];
     let mut len = 0;
-    for i in 0..buf.len() {
+    for (i, slot) in buf.iter_mut().enumerate() {
         // SAFETY: 在 null 终止的 C 字符串范围内读取，受 buf 大小限制
         let c = unsafe { *argv2.add(i) };
         if c == 0 {
             break;
         }
-        buf[i] = c;
+        *slot = c;
         len += 1;
     }
 

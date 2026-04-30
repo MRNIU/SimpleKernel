@@ -16,7 +16,7 @@
 | **每步可验证** | 每个 Phase 结束时必须：编译通过 + 现有测试全绿 + 新增测试覆盖变更 |
 | **全量回归** | 每个 Phase 结束后，运行全量系统测试 + 上游 Phase 的单元测试，防止底层变更静默破坏上层 |
 | **文档即产出** | 排查过程中同步输出模块文档（README、时序图、生命周期图、依赖图） |
-| **决策即记录** | 重要设计决策写入 ADR（`docs/decisions/`），模板见 `docs/templates/adr-template.md` |
+| **决策即记录** | 重要设计决策写入 ADR（`docs/adr/`），模板见 `docs/templates/adr-template.md` |
 | **参考即标注** | 借鉴外部内核的设计必须在代码/文档中标注出处（`[Linux: fs/namei.c]`、`[Theseus: MappedPages]`） |
 | **不做无测试的重构** | 任何架构变更必须先有测试兜底，或先补测试再改 |
 
@@ -83,7 +83,7 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 - [ ] `docs/audit/dependency-audit.md`
 - [ ] `docs/diagrams/crate-dependency-graph.md`（Mermaid）
 - [ ] 模块 README 模板 `docs/templates/module-readme-template.md`
-- [ ] ADR 模板 `docs/templates/adr-template.md` + `docs/decisions/` 目录
+- [ ] ADR 模板 `docs/templates/adr-template.md` + `docs/adr/` 目录
 - [ ] 分支合并完成（含 `pre-audit-baseline` tag）
 
 ---

@@ -33,6 +33,7 @@ members = [
     "tests/sync-test",
     "tests/paging-test",
     "tests/heap-test",
+    "tests/arch-test",
     "tests/device-test",
     "tests/fs-test",
     "tests/memory-types-test",

@@ -364,6 +364,11 @@ pub fn launch_qemu(
             "[xtask] Launching QEMU (debug) for {} — attach GDB on port 1234...",
             arch.as_str()
         );
+        println!(
+            "[xtask] GDB command: gdb-multiarch {} -x {}",
+            kernel_elf_path.display(),
+            project_root.join("debug.gdb").display()
+        );
     } else if let Some(timeout_secs) = timeout_secs {
         println!(
             "[xtask] Launching QEMU for {} (timeout: {}s)...",

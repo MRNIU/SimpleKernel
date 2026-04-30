@@ -24,6 +24,7 @@
 - [测试体系](#测试体系)
 - [第三方依赖](#第三方依赖)
 - [开发指南](#开发指南)
+- [文档入口](#文档入口)
 - [贡献指南](#贡献指南)
 - [许可证](#许可证)
 
@@ -136,9 +137,9 @@ devcontainer exec --workspace-folder . bash
 > 开发环境默认优先使用 Dev Container。除安装 Docker、Dev Container CLI/扩展、
 > Git 等入口工具外，不需要在宿主机安装 Rust nightly、交叉编译器、QEMU 或固件构建依赖。
 
-**方式二：本地环境**
+**方式二：修复容器或执行明确要求的本地任务**
 
-参考 [工具链文档](./docs/0_工具链.md) 配置本地开发环境。
+默认不在宿主机安装 Rust nightly、交叉编译器、QEMU 或固件构建依赖。只有容器不可用、正在修复容器自身配置，或任务明确要求本地环境时，才在宿主机执行，并在 PR 中说明原因和验证边界。
 
 ### 编译与运行
 
@@ -201,10 +202,15 @@ SimpleKernel/
 │       ├── build.rs                #   内核和测试编译
 │       ├── qemu.rs                 #   QEMU 启动和 FIT 镜像生成
 │       └── test.rs                 #   系统测试编排
-├── docs/                           # 文档
-│   └── rust-rewrite/               #   Rust 迁移设计文档（P0-P7）
-├── 3rd/                            # 第三方固件（Git Submodule）
-├── src_cpp/                        # C++ 遗留代码（只读参考）
+├── docs/                           # 文档入口、设计、ADR、审计、模板和 SOP
+│   ├── README.md                   #   文档类型和目录说明
+│   ├── conventions.md              #   工程和文档约定
+│   ├── git.md                      #   Git 与 commit 规范
+│   ├── design/                     #   当前设计与历史阶段设计
+│   ├── adr/                  #   ADR 架构决策记录
+│   ├── audit/                      #   深度审计计划与进度
+│   └── templates/                  #   可复制文档模板
+├── 3rd/                            # 第三方固件源码（Git Submodule）
 └── .github/workflows/              # CI/CD（GitHub Actions）
 ```
 
@@ -240,7 +246,7 @@ cargo xtask test --list                        # 列出可用测试
 2. `src/main.rs` 使用 `test_harness::test_main!` 宏
 3. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
 
-详见 `tests/README.md`。
+新增独立测试的细节以 `tests/test_harness/`、现有 `tests/*/Cargo.toml` 和 `xtask/src/test.rs` 为准。
 
 ## 第三方依赖
 
@@ -270,6 +276,8 @@ cargo xtask test --list                        # 列出可用测试
 | [`arm-psci`](https://crates.io/crates/arm-psci) | PSCI 电源管理接口 |
 
 ### 固件 / 引导（Git Submodule）
+
+`3rd/` 只保存需要随仓库固定版本的第三方固件源码和工具源码。Rust crate 依赖由 `Cargo.toml` / `Cargo.lock` 管理，不复制到 `3rd/`。更新 submodule 时，应在 PR 中说明来源、版本、许可证影响和验证命令。
 
 | 依赖 | 用途 |
 |------|------|
@@ -308,15 +316,19 @@ scope: 可选，影响的模块 (arch, memory, task, xtask)
 
 每条 commit 必须使用 `git commit --signoff`（DCO 签署）。
 
-### 文档
+## 文档入口
 
+- **文档索引**: [docs/README.md](./docs/README.md)
+- **工程约定**: [docs/conventions.md](./docs/conventions.md)
+- **Git 与 Commit**: [docs/git.md](./docs/git.md)
 - **设计总览**: [docs/design/00-概述.md](./docs/design/00-概述.md)
-- **阶段计划**: [docs/design/](./docs/design/)
-- **工具链**: [docs/0_工具链.md](./docs/0_工具链.md)
-- **系统启动**: [docs/1_系统启动.md](./docs/1_系统启动.md)
-- **调试输出**: [docs/2_调试输出.md](./docs/2_调试输出.md)
-- **中断**: [docs/3_中断.md](./docs/3_中断.md)
+- **SAS 架构**: [docs/design/SAS-架构设计.md](./docs/design/SAS-架构设计.md)
+- **架构决策记录（ADR）**: [docs/adr/README.md](./docs/adr/README.md)
+- **审计计划与进度**: [docs/audit/review-roadmap.md](./docs/audit/review-roadmap.md)、[docs/audit/audit-progress.md](./docs/audit/audit-progress.md)
 - **Dev Container**: [docs/docker.md](./docs/docker.md)
+- **可复制模板**: [docs/templates/README.md](./docs/templates/README.md)
+
+文档类型边界：SAD/SDD 描述当前架构和当前设计；ADR/RFC 记录决策历史和方案讨论；Spec 记录设计输入；Plan 记录执行步骤。图表优先使用 Mermaid 或 PlantUML。
 
 ## 贡献指南
 

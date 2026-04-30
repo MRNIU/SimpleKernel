@@ -1,6 +1,6 @@
 # 内存管理子系统 v2
 
-> **⚠ 部分过时**：[ADR-013](../decisions/013-ownedpages-necessity.md) 已删除
+> **⚠ 部分过时**：[ADR-013](../adr/013-ownedpages-necessity.md) 已删除
 > `OwnedPages` 抽象层。本文档中所有涉及 `OwnedPages::new` / `OwnedPages::Drop` /
 > "权限守卫" / §6 的描述均已不适用。当前设计：
 >
@@ -23,9 +23,9 @@
 > 权限覆盖由 `PageTable::update_range_flags` 方法幂等施加——不再有中间守卫类型。
 >
 > 演进历史：本文档取代 [memory-subsystem.md](memory-subsystem.md)（旧设计）。
-> 决策记录见 [ADR-006](../decisions/006-memory-subsystem-simplification.md)、
-> [ADR-007](../decisions/007-eliminate-vma-and-dead-code.md)、
-> [ADR-013](../decisions/013-ownedpages-necessity.md)。
+> 决策记录见 [ADR-006](../adr/006-memory-subsystem-simplification.md)、
+> [ADR-007](../adr/007-eliminate-vma-and-dead-code.md)、
+> [ADR-013](../adr/013-ownedpages-necessity.md)。
 
 ---
 

@@ -12,7 +12,7 @@
 
 SimpleKernel 采用 SAS（单地址空间）架构，应用程序与内核运行在同一特权级和地址空间中。
 
-当前 AArch64 编译目标为 `aarch64-unknown-none-softfloat`，即禁用硬件浮点，所有浮点运算由软件模拟。
+此前 AArch64 编译目标为 `aarch64-unknown-none-softfloat`，即禁用硬件浮点，所有浮点运算由软件模拟。
 而 RISC-V 目标 `riscv64gc-unknown-none-elf` 中 `g` 已包含 `f`+`d` 扩展（单精度+双精度硬件浮点）。
 
 在 SAS 架构下，应用程序与内核共享编译目标。如果应用需要浮点运算，内核也必须启用硬件浮点支持，否则：
@@ -38,15 +38,21 @@ SimpleKernel 采用 SAS（单地址空间）架构，应用程序与内核运行
 
 ## 决策
 
-（待讨论后确定）
+2026-04-30 本轮按方案 A 恢复硬件浮点支持；ADR 状态暂保留为"提议"，待项目作者 review 本轮实现后再改为"已接受"。
 
-初步倾向方案 A。实施计划：
-1. R0 阶段：统一 CI 中 Clippy target 为 `aarch64-unknown-none-softfloat`（修复当前不一致）
+实施记录：
+1. R0 阶段：统一 CI 中 Clippy target 为 `aarch64-unknown-none-softfloat`（修复当时不一致）
 2. R4 阶段（架构审查）：切换到 `aarch64-unknown-none`，同步修改 `TrapContext` + 汇编
+
+2026-04-30 恢复执行记录：
+- AArch64 Rust target 已切回 `aarch64-unknown-none`
+- `TrapContext` 保存/恢复 q0-q31、FPSR、FPCR
+- `CalleeSavedContext` 保存/恢复 d8-d15
+- `_boot` 早期设置 `CPACR_EL1.FPEN=0b11`，确保 hardfloat 指令可在 EL0/EL1 使用
 
 ## 理由
 
-（待方案确定后填写）
+方案 A 与 RISC-V 当前 `riscv64gc-unknown-none-elf` 的硬件浮点能力对齐，避免 SAS 架构下 APP crate 无法使用硬件浮点。相比 lazy FP，eager save/restore 更接近历史实现，调试成本低，代价是 trap/context switch 路径固定保存更多状态；后续若性能成为瓶颈，再用新 ADR 讨论 lazy FP 或按任务标记保存。
 
 ## 影响
 

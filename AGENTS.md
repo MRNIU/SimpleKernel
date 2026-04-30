@@ -233,7 +233,7 @@ test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_p
 - **Roadmap**（全局计划、排查 checklist、协作流程）: `docs/audit/review-roadmap.md`
 - **审计进度**（跨对话上下文传递）: `docs/audit/audit-progress.md`
 - **Session Prompt**（输出格式参考）: `docs/audit/review-session-prompt.md`
-- **ADR 目录**（架构决策记录）: `docs/decisions/`
+- **ADR 目录**（架构决策记录）: `docs/adr/`
 - **ADR 模板**: `docs/templates/adr-template.md`
 
 ### 审计工作流

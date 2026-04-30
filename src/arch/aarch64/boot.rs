@@ -30,6 +30,13 @@ _boot:
     // 初始化 TPIDR_EL1 为 0（percpu_init 会设置正确的 per-CPU 基地址）
     msr tpidr_el1, xzr
 
+    // 启用 EL0/EL1 的 FP/SIMD 访问，避免 hardfloat 目标生成的浮点指令触发异常
+    mrs x9, cpacr_el1
+    movz x11, #0x30, lsl #16
+    orr x9, x9, x11
+    msr cpacr_el1, x9
+    isb
+
     // 保存传递的参数
     stp x0, x1, [sp, #-16]!
 

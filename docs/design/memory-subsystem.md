@@ -1,7 +1,7 @@
 # 内存管理子系统
 
 > **⚠ 本文档已过时**——描述的是 ADR-005 之前的设计（含 `page_allocator`、4-state typestate、`MappedPages`）。
-> 当前设计见 [memory-subsystem-v2.md](memory-subsystem-v2.md)（[ADR-006](../decisions/006-memory-subsystem-simplification.md)）。
+> 当前设计见 [memory-subsystem-v2.md](memory-subsystem-v2.md)（[ADR-006](../adr/006-memory-subsystem-simplification.md)）。
 > 保留本文档供参考内核演进历史。
 
 > 本文档面向**内核开发者**，系统描述 SimpleKernel 内存管理的设计意图、类型层次、

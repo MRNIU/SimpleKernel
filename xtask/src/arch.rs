@@ -20,7 +20,7 @@ impl Arch {
     pub fn target_triple(self) -> &'static str {
         match self {
             Self::Riscv64 => "riscv64gc-unknown-none-elf",
-            Self::Aarch64 => "aarch64-unknown-none-softfloat",
+            Self::Aarch64 => "aarch64-unknown-none",
         }
     }
 

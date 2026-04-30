@@ -43,6 +43,11 @@ pub fn mark_current_core_online() {
     ONLINE_CORES.fetch_or(1usize << core_id, Ordering::Release);
 }
 
+/// 返回当前已标记可接收 TLB shootdown IPI 的 CPU 数量。
+pub fn online_core_count() -> usize {
+    ONLINE_CORES.load(Ordering::Acquire).count_ones() as usize
+}
+
 /// 处理当前核心收到的 TLB shootdown IPI。
 pub fn handle_ipi() {
     let core_id = per_cpu::current_core_id();

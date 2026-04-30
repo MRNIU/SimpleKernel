@@ -254,6 +254,15 @@ fn dispatch_sync(ctx: &mut TrapContext) {
                 esr, ctx.elr_el1
             );
         }
+        // FP/SIMD access trap（EC = 0x07）：通常说明 CPACR_EL1.FPEN 未正确开启。
+        0x07 => {
+            log::error!(
+                "dispatch_sync: FP/SIMD 访问异常，检查 CPACR_EL1.FPEN: ESR=0x{:x}, ELR=0x{:x}",
+                esr,
+                ctx.elr_el1
+            );
+            crate::util::halt::halt("FP/SIMD 未启用，内核停止");
+        }
         // 数据中止（EC = 0x24/0x25）或指令中止（EC = 0x20/0x21）
         0x20 | 0x21 | 0x24 | 0x25 => {
             log::error!(

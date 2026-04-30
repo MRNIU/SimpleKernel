@@ -42,11 +42,31 @@ fn level_label(level: log::Level) -> &'static str {
     }
 }
 
+fn target_level(target: &str) -> log::LevelFilter {
+    let mut level = config::DEFAULT_LOG_LEVEL;
+    for (prefix, filter) in config::LOG_MODULE_FILTERS {
+        if !prefix.is_empty() && target.starts_with(prefix) {
+            level = *filter;
+        }
+    }
+    level
+}
+
+fn global_max_level() -> log::LevelFilter {
+    let mut level = config::DEFAULT_LOG_LEVEL;
+    for (_, filter) in config::LOG_MODULE_FILTERS {
+        if *filter > level {
+            level = *filter;
+        }
+    }
+    level
+}
+
 struct KernelLogger;
 
 impl log::Log for KernelLogger {
     fn enabled(&self, metadata: &log::Metadata<'_>) -> bool {
-        metadata.level() <= log::max_level()
+        metadata.level().to_level_filter() <= target_level(metadata.target())
     }
 
     fn log(&self, record: &log::Record<'_>) {
@@ -89,7 +109,7 @@ pub fn init() {
         return;
     }
     if log::set_logger(&LOGGER).is_ok() {
-        log::set_max_level(config::DEFAULT_LOG_LEVEL);
+        log::set_max_level(global_max_level());
     }
 }
 

@@ -5,15 +5,102 @@
 
 ## 当前状态
 
-**当前 Phase**: R3 — 内存子系统（低优先级 review 遗留清理完毕）
+**当前 Phase**: R3 — DMA / VirtIO HAL 权限语义审计完成，等待设计决策
 **下一个目标**（按优先级）：
-1. **DMA buffer 权限语义**：真机缺陷，QEMU 不模拟 CPU cache 掩盖了问题（详见"未决问题"）
+1. **DMA / VirtIO HAL 设计决策**：`dma_alloc` coherent buffer 权限、`share/unshare` streaming buffer cache maintenance、是否新增 `kernel_dma_coherent()` / Normal-NC PTE factory（详见"未决设计问题"）
 2. R8 剩余 README：`CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` / `SECURITY.md`（paging / tlb / heap / memory 已补）
-3. **TLB shootdown 接入** — 降优先级：当前所有 PTE 修改发生在 SMP 激活之前，不需要跨核广播；引入 P9 per-process 页表 / mmap / 页回收后才需要，届时配合 R4 中断子系统 IPI 原语一起做
+3. **TLB shootdown 协议后续验证**：当前代码已在 `src/tlb_shootdown.rs` 接入注册和 IPI ack；不再是"零调用者"问题，但仍可在 R4/R8 补系统测试和异常路径审查
 
 ## 上次对话摘要
 
-**日期**：2026-04-18（低优先级 review 遗留清理）
+**日期**：2026-04-30（DMA / VirtIO HAL 权限语义审计）
+
+### 已完成
+
+**主线：继续 R3 未决高优先级项，审计 DMA buffer 权限语义**
+
+本轮只做审计报告和设计分歧整理，未修改代码。结论比旧记录更细：
+
+1. **`dma_alloc` coherent buffer 仍保留背景层 `kernel_rw`**
+   - `SimpleKernelHal::dma_alloc` 分配 `AllocatedFrames` 后只清零并放入 `DMA_TRACKER`
+   - 未调用 `PageTable::update_range_flags(..., PteFlags::kernel_device())` 或任何 DMA 专用权限 factory
+   - AArch64 下背景层 `kernel_rw` 是 Normal Write-Back cacheable；真机非 coherent DMA 会看到旧数据或写回丢失
+2. **`share/unshare` streaming buffer 完全没有 cache maintenance**
+   - `VirtIOBlk::read_blocks` / `write_blocks` 会把普通栈/堆 buffer 交给 virtqueue
+   - `virtio-drivers` 通过 `Hal::share` / `Hal::unshare` 暴露流式 DMA 同步点
+   - 当前实现仅 `VA -> PA`，忽略 `BufferDirection`，没有 DriverToDevice clean，也没有 DeviceToDriver invalidate
+   - 这比 `dma_alloc` 更直接影响 FAT/块设备读写：`src/device/virtio.rs` 的扇区 0 读测试和 `src/fs/fatfs_adapter.rs` 的 `sector_buf` 都是普通 cacheable buffer
+3. **`kernel_device()` 语义是 MMIO，不应直接等同 DMA RAM**
+   - AArch64 当前 `kernel_device()` 使用 MAIR_IDX1 Device-nGnRnE，适合寄存器 MMIO
+   - DMA buffer 是 RAM，被 CPU 正常读写；把 RAM 映射成 Device memory 虽可避开 cache，但会引入强排序/非聚合/非重排语义和潜在访问限制
+   - 更精确的方向是新增 `kernel_dma_coherent()` / Normal Non-Cacheable MAIR 属性，或保留 cacheable 并在 streaming map/unmap 做 clean/invalidate
+4. **旧记录中的 TLB shootdown 状态已过期**
+   - 最新代码已新增 `src/tlb_shootdown.rs`，`kernel_init()` 在 `Arch::init_interrupt()` 后调用 `tlb_shootdown::init_primary()`
+   - `update_range_flags` 现在会通过 `TlbFlushGuard` 触发本核 flush + 已在线核心 shootdown
+   - 当前 `device_init()` 在 `wake_secondary_cores()` 前执行，所以启动期 VirtIO queue DMA 分配发生在从核上线前；但未来热插拔/新队列/运行期 DMA 分配仍需正确处理跨核属性切换
+
+**依赖检查**：
+- `virtio-drivers = 0.13.0`，`cargo search` 显示 0.13.0 仍是 crates.io 最新
+- `aarch64-cpu` crates.io 最新为 11.2.0，但项目仍使用 fork 分支获取 TLBI 封装；这与本轮 DMA 议题无直接冲突
+- 候选 crate：
+  - `aarch64-cpu-ext = 0.1.4`：no_std，提供 AArch64 cache clean/invalidate range helper
+  - `dma-api = 0.7.2`：no_std-ish DMA 抽象，含 coherent/map_single/cache sync 模型，但引入一套外部 OSAL，不宜在未决策前替换现有 HAL
+
+### 关键结论
+
+| # | 结论 | 状态 | ADR |
+|---|------|------|-----|
+| DMA buffer 不是 MMIO | DMA 分配的是设备可访问 RAM，不是寄存器区；用 `MmioRegion` 语义解释不成立 | 已确认 | — |
+| `share/unshare` cache 同步缺失 | 当前 VirtIO 数据 buffer 是普通 cacheable 内存，缺少 clean/invalidate 是真机正确性问题 | 待设计 | 待定 |
+| coherent DMA PTE 属性缺失 | `dma_alloc` 返回的 virtqueue / used ring 等 coherent 区域未设置 DMA-safe 属性 | 待设计 | 待定 |
+| `kernel_device()` 不宜复用为 DMA RAM 的唯一语义 | Device-nGnRnE 是 MMIO 属性；DMA RAM 可能需要 Normal-NC 或 explicit cache maintenance | 待设计 | 待定 |
+| TLB shootdown 已接入 | 旧记录中"零调用者"已被后续提交修正；后续只需测试和协议审查 | 已更新认知 | — |
+
+### 未决设计问题（待讨论）
+
+#### 🔴 高优先级：VirtIO streaming DMA cache maintenance
+
+**文件**：`src/device/hal.rs:89` / `src/device/hal.rs:99`
+
+**现象**：`share()` / `unshare()` 忽略 `BufferDirection`，只做 `VirtAddr::to_phys()`。`virtio-drivers` 对普通 I/O buffer 的同步点就在这两个方法里。
+
+**备选方案（ADR 待决）**：
+1. 方案 A：在 `share()` 对 `DriverToDevice|Both` 执行 clean，在 `unshare()` 对 `DeviceToDriver|Both` 执行 invalidate
+2. 方案 B：为 streaming buffer 建立临时 non-cacheable alias / bounce buffer，`share` 拷贝出去，`unshare` 拷贝回来
+3. 方案 C：要求所有块设备 I/O buffer 来自 DMA coherent allocator，普通栈/堆 buffer 不允许直接提交给 VirtIO
+4. 方案 D：保持现状，仅支持 coherent QEMU/虚拟平台
+
+#### 🔴 高优先级：DMA coherent allocation 的 PTE 属性
+
+**文件**：`src/device/hal.rs:37`
+
+**现象**：`dma_alloc()` 返回的 virtqueue DMA 区域保留 `kernel_rw`，AArch64 为 Normal Write-Back cacheable。
+
+**备选方案（ADR 待决）**：
+1. 方案 A：新增 `PteFlagsOps::kernel_dma_coherent()`，AArch64 使用 Normal Non-Cacheable MAIR 属性，RISC-V 暂时等同 `kernel_rw()`
+2. 方案 B：短期复用 `kernel_device()` 改 PTE，快速消除 cacheable 行为，但明确这是过渡方案
+3. 方案 C：保持 PTE 为 cacheable，在 `dma_alloc` / descriptor 更新路径显式做 cache maintenance
+4. 方案 D：引入 `DmaBuffer<T>` / DMA allocator 层，封装权限、cache sync、DMA mask、未来 IOMMU
+
+#### 🟡 中优先级：AArch64 cache maintenance helper 归属
+
+**备选方案（ADR 待决）**：
+1. 方案 A：在 `src/arch/aarch64/` 手写 `dc cvac` / `dc ivac` / `dc civac` range helper，暴露给 HAL
+2. 方案 B：引入 `aarch64-cpu-ext` 仅复用 cache helper
+3. 方案 C：等上游 `aarch64-cpu` / fork 增加 cache helper 后统一使用同一 crate
+
+### 验证
+
+- 本轮无代码变更，未运行构建或 QEMU 系统测试
+- 执行了源码审计、`cargo search` / `cargo info` 依赖版本查询
+
+### 下一步
+
+等待项目作者选择 DMA 方案；确认后再实施代码修改、补测试，并更新 ADR / 文档。
+
+---
+
+### 上轮摘要（2026-04-18 低优先级 review 遗留清理）
 
 ### 已完成
 
@@ -101,7 +188,7 @@
 
 | # | 决策 | 状态 | ADR |
 |---|------|------|-----|
-| 删除 `OwnedPages` 抽象层 | 无消费者 + 与 ADR-008 论据同构；改用 `PageTable::update_range_flags` 方法 | 已实施 | [ADR-013](../decisions/013-ownedpages-necessity.md) |
+| 删除 `OwnedPages` 抽象层 | 无消费者 + 与 ADR-008 论据同构；改用 `PageTable::update_range_flags` 方法 | 已实施 | [ADR-013](../adr/013-ownedpages-necessity.md) |
 | 删除 `FREED_PAGE_POISON` 常量 | 唯一消费者 OwnedPages::Drop 消失后成为孤立常量；未来如需 poison 机制再按场景引入 | 已实施 | ADR-013 |
 | `frame_allocator::init` 返回 `()` | 原返回值（reserved `AllocatedFrames`）既冗余又有类型安全洞（Drop 会污染 buddy） | 已实施 | — |
 | 流程图迁移 README | 原保留在 lib.rs 模块 doc 的 ASCII 流程图移至各 crate README.md；lib.rs 留一句话概述 | 已实施 | — |

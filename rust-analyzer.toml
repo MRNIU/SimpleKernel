@@ -11,7 +11,7 @@ buildScripts.enable = true
 [check]
 targets = [
     "riscv64gc-unknown-none-elf",
-    "aarch64-unknown-none-softfloat",
+    "aarch64-unknown-none",
 ]
 extraArgs = [
     "-Z", "build-std=core,compiler_builtins,alloc",

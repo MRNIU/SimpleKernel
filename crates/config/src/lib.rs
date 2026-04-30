@@ -57,6 +57,18 @@ pub const SPINLOCK_TIMEOUT: u64 = 100_000_000;
 /// 内核默认日志级别
 pub const DEFAULT_LOG_LEVEL: log::LevelFilter = log::LevelFilter::Debug;
 
+/// 模块级日志过滤表。
+///
+/// `src/logging.rs` 会用 `record.target()` 与这里的前缀做匹配，命中后使用
+/// 对应日志级别；未命中则回退到 [`DEFAULT_LOG_LEVEL`]。例如调试调度器时可改为：
+///
+/// ```ignore
+/// pub const LOG_MODULE_FILTERS: &[(&str, log::LevelFilter)] = &[
+///     ("simplekernel::task", log::LevelFilter::Trace),
+/// ];
+/// ```
+pub const LOG_MODULE_FILTERS: &[(&str, log::LevelFilter)] = &[];
+
 /// 回溯最大帧数
 pub const MAX_BACKTRACE_DEPTH: usize = 16;
 

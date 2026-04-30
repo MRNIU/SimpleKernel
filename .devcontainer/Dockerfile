@@ -124,7 +124,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
         --component clippy \
         --component llvm-tools \
         --target riscv64gc-unknown-none-elf \
-        --target aarch64-unknown-none-softfloat && \
+        --target aarch64-unknown-none && \
     chmod -R a+w "$RUSTUP_HOME" "$CARGO_HOME" && \
     rustup show && \
     rustc --version && \

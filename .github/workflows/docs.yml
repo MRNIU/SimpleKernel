@@ -40,8 +40,8 @@ jobs:
 
       - name: Build rustdoc (aarch64)
         run: |
-          cargo doc --no-deps --target aarch64-unknown-none-softfloat
-          cp -r target/aarch64-unknown-none-softfloat/doc/* docs-out/ 2>/dev/null || true
+          cargo doc --no-deps --target aarch64-unknown-none
+          cp -r target/aarch64-unknown-none/doc/* docs-out/ 2>/dev/null || true
 
       # 生成首页重定向
       - name: Generate index.html

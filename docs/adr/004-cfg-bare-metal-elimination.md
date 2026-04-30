@@ -192,19 +192,19 @@ cfg 散布在源码中，语义通过 `bare_metal` 别名已较清晰。
 - **R8 审计影响**: ✅ "host 模拟实现一致性评估" 和 "`CpuLocal` host 行为 ADR" 两个待办可直接关闭
 - **开发工作流**: ✅ 测试策略已文档化（`AGENTS.md` §TESTING、`tests/README.md`、`README.md` §测试体系）
 
-## TODO: 裸机调试能力增强
+## 裸机调试能力增强
 
 去掉宿主机测试后，复杂 bug（调度死锁、多核竞态）只能在 QEMU 裸机环境中调试。
 以下配套工作按优先级排列，确保调试体验不降级：
 
-1. **GDB init 脚本**（零成本）
-   - 创建 `debug.gdb`，自动加载内核符号、设置常用断点（`schedule`、`context_switch`、`handle_timer_irq`）
-   - 定义 GDB 便捷命令（如 `current_task` 打印当前 TCB）
-   - `cargo xtask debug` 自动传入 `-x debug.gdb`
+1. **GDB init 脚本**（零成本）✅
+   - 已创建 `debug.gdb`，设置常用断点（`schedule`、`switch_to`、`handle_timer_common`）
+   - 已定义 GDB 便捷命令（如 `sk-current-task`、`sk-bt`）
+   - `cargo xtask debug` 启动 QEMU 时会打印带 `-x debug.gdb` 的 `gdb-multiarch` 连接命令
 
-2. **子系统级日志过滤**（小投入）
-   - 在 `src/logging.rs` 中增加 module path 匹配，支持按模块设置日志级别
-   - 调试调度时可只看 `task::` 前缀的日志，不被其他子系统淹没
+2. **子系统级日志过滤**（小投入）✅
+   - `src/logging.rs` 已增加 module path 前缀匹配
+   - `crates/config/src/lib.rs` 的 `LOG_MODULE_FILTERS` 支持按模块设置日志级别，例如调试 `simplekernel::task` 前缀
 
 3. **调度状态 dump**（中等投入）
    - Panic handler 中自动打印所有 TCB 状态（pid、state、优先级、持有的锁）

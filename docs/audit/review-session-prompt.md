@@ -18,7 +18,7 @@
 - **审计 Roadmap**: `docs/audit/review-roadmap.md`（全局计划、排查 checklist、协作流程）
 - **设计总纲**: `docs/design/00-概述.md`
 - **SAS 架构**: `docs/design/SAS-架构设计.md`
-- **ADR 目录**: `docs/decisions/`（架构决策记录）
+- **ADR 目录**: `docs/adr/`（架构决策记录）
 
 ## 当前任务
 
