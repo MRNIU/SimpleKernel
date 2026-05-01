@@ -1,6 +1,6 @@
 # ADR-009: 删除 CLAIMED 软件位，保留 page poison
 
-> **状态**: 提议
+> **状态**: 已接受（部分由 [ADR-013](013-ownedpages-necessity.md) 后续取代）
 >
 > **日期**: 2026-04-17
 >

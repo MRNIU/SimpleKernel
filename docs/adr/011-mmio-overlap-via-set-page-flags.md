@@ -1,6 +1,6 @@
 # ADR-011: MMIO overlap 检测统一至 `create_pte`；引入 `FlagsConflict` 错误
 
-> **状态**: 提议
+> **状态**: 已接受
 >
 > **日期**: 2026-04-17
 >

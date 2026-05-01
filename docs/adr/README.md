@@ -12,18 +12,18 @@ ADR 描述“为什么做出某个决策”。当前架构和当前设计仍应�
 
 | 编号 | 标题 | 状态 | 日期 | 阶段 |
 |------|------|------|------|------|
-| 001 | [AArch64 浮点支持](001-aarch64-float-support.md) | 提议 | — | — |
+| 001 | [AArch64 浮点支持](001-aarch64-float-support.md) | 已接受 | 2026-04-03 | R0/R4 |
 | 002 | [RISC-V tp 寄存器 per-CPU vs TLS](002-tp-register-percpu-vs-tls.md) | 提议 | — | R2 |
-| 003 | [SAS 架构下是否只支持 identity mapping](003-sas-identity-mapping-only.md) | 提议 | 2026-04-03 | R3 |
-| 004 | [消除内核源码中的 `#[cfg(bare_metal)]`](004-cfg-bare-metal-elimination.md) | 提议 | 2026-04-04 | — |
+| 003 | [SAS 架构下是否只支持 identity mapping](003-sas-identity-mapping-only.md) | 已接受 | 2026-04-03 | R3 |
+| 004 | [消除内核源码中的 `#[cfg(bare_metal)]`](004-cfg-bare-metal-elimination.md) | 已接受（大部分已实施） | 2026-04-06 | R8 |
 | 005 | [SAS 全量映射 + OwnedPages 所有权模型](005-sas-full-mapping-owned-pages.md) | 已取代 | 2026-04-09 | R3 |
 | 006 | [内存子系统简化——4KB 单页 + 2-state + 权限覆盖模型](006-memory-subsystem-simplification.md) | 已接受 | 2026-04-11 | R3 |
-| 007 | [消除 VMA 模块及内存子系统死代码](007-eliminate-vma-and-dead-code.md) | 提议 | 2026-04-12 | R3 |
-| 008 | [删除 FrameState typestate 与 `adt_const_params` nightly 依赖](008-eliminate-frame-state-typestate.md) | 提议 | 2026-04-17 | R3 回看 |
-| 009 | [删除 CLAIMED 软件位，保留 page poison](009-remove-claimed-bit-and-page-poison.md) | 提议 | 2026-04-17 | R3 回看 |
-| 010 | [PageTable 内部结构简化——BTreeMap → Vec，删除引用计数死代码](010-pagetable-nodes-vec-and-remove-refcount.md) | 提议 | 2026-04-17 | R3 回看 |
-| 011 | [MMIO overlap 检测统一至 `create_pte`；引入 `FlagsConflict` 错误](011-mmio-overlap-via-set-page-flags.md) | 提议 | 2026-04-17 | R3 回看 |
-| 012 | [PageTable 拆分；hot-path PTE 更新无锁化](012-pagetable-split-lock-free-hot-path.md) | 提议 | 2026-04-17 | R3 回看 |
+| 007 | [消除 VMA 模块及内存子系统死代码](007-eliminate-vma-and-dead-code.md) | 已接受 | 2026-04-12 | R3 |
+| 008 | [删除 FrameState typestate 与 `adt_const_params` nightly 依赖](008-eliminate-frame-state-typestate.md) | 已接受 | 2026-04-17 | R3 回看 |
+| 009 | [删除 CLAIMED 软件位，保留 page poison](009-remove-claimed-bit-and-page-poison.md) | 已接受（部分由 ADR-013 后续取代） | 2026-04-17 | R3 回看 |
+| 010 | [PageTable 内部结构简化——BTreeMap → Vec，删除引用计数死代码](010-pagetable-nodes-vec-and-remove-refcount.md) | 已接受 | 2026-04-17 | R3 回看 |
+| 011 | [MMIO overlap 检测统一至 `create_pte`；引入 `FlagsConflict` 错误](011-mmio-overlap-via-set-page-flags.md) | 已接受 | 2026-04-17 | R3 回看 |
+| 012 | [PageTable 拆分；hot-path PTE 更新无锁化](012-pagetable-split-lock-free-hot-path.md) | 已接受 | 2026-04-17 | R3 回看 |
 | 013 | [删除 `OwnedPages` 抽象层](013-ownedpages-necessity.md) | 已接受 | 2026-04-18 | R3 回看 |
 
 ## 状态规则

@@ -1,6 +1,6 @@
 # ADR-008: 删除 FrameState typestate 与 `adt_const_params` nightly 依赖
 
-> **状态**: 提议
+> **状态**: 已接受
 >
 > **日期**: 2026-04-17
 >
