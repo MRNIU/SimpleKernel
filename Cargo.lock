@@ -4,10 +4,29 @@ version = 4
 
 [[package]]
 name = "aarch64-cpu"
+version = "10.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a21cd0131c25c438e19cd6a774adf7e3f64f7f4d723022882facc2dee0f8bc9"
+dependencies = [
+ "tock-registers 0.9.0",
+]
+
+[[package]]
+name = "aarch64-cpu"
 version = "11.2.0"
 source = "git+https://github.com/MRNIU/aarch64-cpu?branch=feat%2Fadd-tlbi-instructions#0827b91c49f469d47a77568e519934e9542bde1f"
 dependencies = [
- "tock-registers",
+ "tock-registers 0.10.1",
+]
+
+[[package]]
+name = "aarch64-cpu-ext"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52dad5cf7342926ce1c375ec680834e56dd3cdbe8b7adf8a6f99b2854cc52c17"
+dependencies = [
+ "aarch64-cpu 10.0.0",
+ "tock-registers 0.10.1",
 ]
 
 [[package]]
@@ -26,17 +45,17 @@ checksum = "940b3a0ca603d1eade50a4846a2afffd5ef57a9feac2c0e2ec2e14f9ead76000"
 name = "arch"
 version = "0.1.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "config",
  "riscv",
- "tock-registers",
+ "tock-registers 0.10.1",
 ]
 
 [[package]]
 name = "arch-test"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "log",
  "sbi-rt",
  "simplekernel",
@@ -174,20 +193,80 @@ dependencies = [
 ]
 
 [[package]]
+name = "convert_case"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "633458d4ef8c78b72454de2d54fd6ab2e60f9e02be22f3c6104cdc8a4e0fceb9"
+dependencies = [
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "critical-section"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "790eea4361631c5e7d22598ecd5723ff611904e3344ce8720784c93e3d83d40b"
 
 [[package]]
+name = "derive_more"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d751e9e49156b02b44f9c1815bcb94b984cdcc4396ecc32521c739452808b134"
+dependencies = [
+ "derive_more-impl",
+]
+
+[[package]]
+name = "derive_more-impl"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "799a97264921d8623a957f6c3b9011f3b5492f557bbb7a5a19b7fa6d06ba8dcb"
+dependencies = [
+ "convert_case",
+ "proc-macro2",
+ "quote",
+ "rustc_version",
+ "syn",
+ "unicode-xid",
+]
+
+[[package]]
 name = "device-test"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "log",
  "sbi-rt",
  "simplekernel",
  "test_harness",
+]
+
+[[package]]
+name = "dma"
+version = "0.1.0"
+dependencies = [
+ "config",
+ "dma-api",
+ "frame_allocator",
+ "log",
+ "memory_types",
+ "sync",
+ "zerocopy",
+]
+
+[[package]]
+name = "dma-api"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2136c1ae5dd8dfddada92cc005f8518ad47b00619781b361a17104fb8a44b3e8"
+dependencies = [
+ "aarch64-cpu-ext",
+ "cfg-if",
+ "derive_more",
+ "log",
+ "mbarrier",
+ "spin",
+ "thiserror",
 ]
 
 [[package]]
@@ -232,7 +311,7 @@ checksum = "9d070dea8bd0df3ea6d250490ae21eb908e83478c53099212ba1fa5af8e77a5b"
 name = "frame-test"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "config",
  "frame_allocator",
  "heapless 0.8.0",
@@ -256,7 +335,7 @@ dependencies = [
 name = "fs-test"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "log",
  "sbi-rt",
  "simplekernel",
@@ -320,7 +399,7 @@ dependencies = [
 name = "heap-test"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "log",
  "sbi-rt",
  "simplekernel",
@@ -378,6 +457,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "lock_api"
+version = "0.4.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "224399e74b87b5f3557511d98dff8b14089b3dadafcab6bb93eab67d3aace965"
+dependencies = [
+ "scopeguard",
+]
+
+[[package]]
 name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -397,6 +485,12 @@ name = "managed"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ca88d725a0a943b096803bd34e73a4437208b6077654cc4ecb2947a5f91618d"
+
+[[package]]
+name = "mbarrier"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9257ea6fe9726d1f1a67fddbda4c06cc97b4fb18716b78ec03ba05e29d625e28"
 
 [[package]]
 name = "memoffset"
@@ -427,7 +521,7 @@ dependencies = [
 name = "memory-types-test"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "arch",
  "config",
  "heapless 0.8.0",
@@ -504,7 +598,7 @@ dependencies = [
 name = "paging-test"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "config",
  "frame_allocator",
  "heapless 0.8.0",
@@ -520,7 +614,7 @@ dependencies = [
 name = "panic-test"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "heap",
  "log",
  "memory",
@@ -563,7 +657,7 @@ dependencies = [
 name = "pte-test"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "heapless 0.8.0",
  "log",
  "memory_types",
@@ -625,6 +719,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b50b8869d9fc858ce7266cce0194bd74df58b9d0e3f6df3a9fc8eb470d95c09d"
 
 [[package]]
+name = "rustc_version"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfcb3a22ef46e85b45de6ee7e79d063319ebb6594faafcf1c225ea92ab6e9b92"
+dependencies = [
+ "semver",
+]
+
+[[package]]
 name = "rustversion"
 version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -655,16 +758,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6e36312fb5ddc10d08ecdc65187402baba4ac34585cb9d1b78522ae2358d890"
 
 [[package]]
+name = "scopeguard"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+
+[[package]]
+name = "semver"
+version = "1.0.28"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a7852d02fc848982e0c167ef163aaff9cd91dc640ba85e263cb1ce46fae51cd"
+
+[[package]]
 name = "simplekernel"
 version = "0.1.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "arm-gic",
  "arm-psci",
  "bitfield-struct",
  "bitflags 2.11.0",
  "buddy_system_allocator",
  "config",
+ "dma",
  "elf",
  "fatfs",
  "fdt",
@@ -690,7 +806,7 @@ dependencies = [
  "spin",
  "sync",
  "tlb",
- "tock-registers",
+ "tock-registers 0.10.1",
  "unwinding",
  "virtio-drivers",
 ]
@@ -713,6 +829,9 @@ name = "spin"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d5fe4ccb98d9c292d56fec89a5e07da7fc4cf0dc11e156b41793132775d3e591"
+dependencies = [
+ "lock_api",
+]
 
 [[package]]
 name = "stable_deref_trait"
@@ -744,7 +863,7 @@ dependencies = [
 name = "sync-test"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "heapless 0.8.0",
  "log",
  "sbi-rt",
@@ -757,7 +876,7 @@ dependencies = [
 name = "test_harness"
 version = "0.0.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 11.2.0",
  "config",
  "heap",
  "heapless 0.8.0",
@@ -799,6 +918,12 @@ dependencies = [
 
 [[package]]
 name = "tock-registers"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b9e2fdb3a1e862c0661768b7ed25390811df1947a8acbfbefe09b47078d93c4"
+
+[[package]]
+name = "tock-registers"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d2d250f87fb3fb6f225c907cf54381509f47b40b74b1d1f12d2dccbc915bdfe"
@@ -808,6 +933,18 @@ name = "unicode-ident"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
+
+[[package]]
+name = "unicode-segmentation"
+version = "1.13.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9629274872b2bfaf8d66f5f15725007f635594914870f65218920345aa11aa8c"
+
+[[package]]
+name = "unicode-xid"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 
 [[package]]
 name = "unwinding"

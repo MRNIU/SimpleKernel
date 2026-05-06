@@ -27,6 +27,7 @@ members = [
     "crates/tlb",
     "crates/paging",
     "crates/memory",
+    "crates/dma",
     "tests/test_harness",
     "tests/panic_test",
     "tests/frame-test",
@@ -85,6 +86,9 @@ qemu-exit = "3"                        # 用指定退出码结束 QEMU（集成�
 
 # VirtIO 驱动框架（P6 设备框架阶段启用）
 virtio-drivers = { version = "0.13", default-features = false }
+
+# DMA 抽象封装在 crates/dma 内，避免 dma_api::* 扩散到设备层。
+dma-api = "0.7.2"
 
 # FAT 文件系统（P7 文件系统阶段启用）
 fatfs = { git = "https://github.com/rafalh/rust-fatfs", default-features = false, features = ["alloc", "lfn"] }
@@ -167,6 +171,7 @@ paging = { path = "crates/paging" }
 tlb = { path = "crates/tlb" }
 memory = { path = "crates/memory" }
 frame_allocator = { path = "crates/frame_allocator" }
+dma = { path = "crates/dma" }
 
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中

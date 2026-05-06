@@ -1,0 +1,21 @@
+[package]
+name = "dma"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SimpleKernel DMA abstraction wrapping dma-api"
+edition.workspace = true
+
+[dependencies]
+config = { path = "../config" }
+frame_allocator = { path = "../frame_allocator" }
+memory_types = { path = "../memory_types" }
+sync_crate = { path = "../sync", package = "sync" }
+
+dma-api.workspace = true
+log.workspace = true
+zerocopy.workspace = true
+
+[lints]
+workspace = true
