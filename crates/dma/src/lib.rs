@@ -10,3 +10,9 @@
 //! 真机 non-coherent DMA 的 cache/PTE 语义不属于当前提交承诺。
 
 #![no_std]
+
+pub mod direction;
+pub mod error;
+
+pub use direction::DmaDirection;
+pub use error::{DmaError, DmaResult};

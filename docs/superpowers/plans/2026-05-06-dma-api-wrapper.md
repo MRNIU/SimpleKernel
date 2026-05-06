@@ -16,7 +16,7 @@
 - Create `crates/dma/README.md`: crate boundary, dependency rationale, QEMU-only caveat.
 - Create `crates/dma/src/lib.rs`: public module surface and re-exports.
 - Create `crates/dma/src/direction.rs`: SimpleKernel `DmaDirection` wrapper and conversion to `dma_api::DmaDirection`.
-- Create `crates/dma/src/error.rs`: SimpleKernel `DmaError` wrapper around `dma_api::DmaError` plus raw-region errors.
+- Create `crates/dma/src/error.rs`: SimpleKernel-owned `DmaError` variants plus raw-region errors, with crate-private boundary conversions from `dma_api::DmaError`.
 - Create `crates/dma/src/qemu.rs`: `QemuIdentityDmaOp` and raw page helpers for the VirtIO HAL.
 - Create `crates/dma/src/device.rs`: `DmaDevice`, `DmaBuffer<T>`, `DmaArray<T>`, `StreamingMapping<T>` wrappers.
 - Modify `Cargo.toml`: add `crates/dma` to workspace, add `dma-api` to workspace dependencies, add `dma` dependency to root crate.
@@ -179,7 +179,7 @@ Create `crates/dma/src/error.rs`:
 ```rust
 //! DMA 错误类型。
 
-use core::fmt;
+use core::{alloc::LayoutError, fmt};
 
 /// DMA 操作结果。
 pub type DmaResult<T> = Result<T, DmaError>;
@@ -187,8 +187,18 @@ pub type DmaResult<T> = Result<T, DmaError>;
 /// SimpleKernel DMA 错误。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DmaError {
-    /// `dma-api` 返回的错误。
-    Api(dma_api::DmaError),
+    /// DMA 内存不足。
+    NoMemory,
+    /// DMA 内存布局无效。
+    InvalidLayout,
+    /// DMA 地址不满足设备 mask。
+    DmaMaskNotMatch { addr: u64, mask: u64 },
+    /// DMA 地址不满足对齐要求。
+    AlignMismatch { required: usize, address: u64 },
+    /// DMA 指针为空。
+    NullPointer,
+    /// DMA buffer 大小为 0。
+    ZeroSizedBuffer,
     /// 页数为 0，无法分配或释放 DMA 区域。
     ZeroPages,
     /// 释放不存在的 raw DMA 区域。
@@ -203,16 +213,46 @@ pub enum DmaError {
     NullVirtualAddress { paddr: u64 },
 }
 
-impl From<dma_api::DmaError> for DmaError {
-    fn from(error: dma_api::DmaError) -> Self {
-        DmaError::Api(error)
+impl From<LayoutError> for DmaError {
+    fn from(_error: LayoutError) -> Self {
+        DmaError::InvalidLayout
+    }
+}
+
+impl DmaError {
+    #[expect(dead_code, reason = "后续 qemu/device 模块会在 crate 内转换 dma-api 错误")]
+    pub(crate) fn from_api(error: dma_api::DmaError) -> Self {
+        match error {
+            dma_api::DmaError::NoMemory => DmaError::NoMemory,
+            dma_api::DmaError::LayoutError(_error) => DmaError::InvalidLayout,
+            dma_api::DmaError::DmaMaskNotMatch { addr, mask } => DmaError::DmaMaskNotMatch {
+                addr: addr.as_u64(),
+                mask,
+            },
+            dma_api::DmaError::AlignMismatch { required, address } => DmaError::AlignMismatch {
+                required,
+                address: address.as_u64(),
+            },
+            dma_api::DmaError::NullPointer => DmaError::NullPointer,
+            dma_api::DmaError::ZeroSizedBuffer => DmaError::ZeroSizedBuffer,
+        }
     }
 }
 
 impl fmt::Display for DmaError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            DmaError::Api(error) => write!(f, "{error}"),
+            DmaError::NoMemory => write!(f, "DMA 内存不足"),
+            DmaError::InvalidLayout => write!(f, "DMA 内存布局无效"),
+            DmaError::DmaMaskNotMatch { addr, mask } => {
+                write!(f, "DMA 地址不满足设备 mask: addr={addr:#x}, mask={mask:#x}")
+            }
+            DmaError::AlignMismatch { required, address } => write!(
+                f,
+                "DMA 地址不满足对齐要求: required={required}, address={address:#x}",
+            ),
+            DmaError::NullPointer => write!(f, "DMA 指针为空"),
+            DmaError::ZeroSizedBuffer => write!(f, "DMA buffer 大小为 0"),
             DmaError::ZeroPages => write!(f, "DMA 页数不能为 0"),
             DmaError::UnknownRawRegion { paddr } => {
                 write!(f, "未找到 raw DMA 区域: paddr={paddr:#x}")
@@ -231,6 +271,8 @@ impl fmt::Display for DmaError {
         }
     }
 }
+
+impl core::error::Error for DmaError {}
 ```
 
 - [ ] **Step 3: Export wrapper modules**
@@ -279,6 +321,7 @@ git commit --signoff -m "feat(dma): add direction and error wrappers"
 
 **Files:**
 - Create: `crates/dma/src/qemu.rs`
+- Modify: `crates/dma/src/error.rs`
 - Modify: `crates/dma/src/lib.rs`
 
 - [ ] **Step 1: Implement `QemuIdentityDmaOp` and raw helpers**
@@ -368,9 +411,9 @@ pub fn raw_alloc_pages(pages: usize, _direction: DmaDirection) -> DmaResult<(u64
     }
 
     let layout = Layout::from_size_align(pages * config::PAGE_SIZE, config::PAGE_SIZE)
-        .map_err(dma_api::DmaError::from)?;
+        .map_err(DmaError::from)?;
     let handle = unsafe { QEMU_IDENTITY_DMA_OP.alloc_coherent(u64::MAX, layout) }
-        .ok_or(DmaError::Api(dma_api::DmaError::NoMemory))?;
+        .ok_or(DmaError::NoMemory)?;
 
     Ok((handle.dma_addr().as_u64(), handle.as_ptr()))
 }
@@ -402,13 +445,13 @@ pub fn raw_dealloc_pages(paddr: u64, _vaddr: NonNull<u8>, pages: usize) -> DmaRe
 pub fn raw_map_single(buffer: NonNull<[u8]>, direction: DmaDirection) -> DmaResult<u64> {
     // SAFETY: `virtio-drivers::Hal::share` 的调用方保证 buffer 在共享期间有效。
     let slice = unsafe { buffer.as_ref() };
-    let size =
-        NonZeroUsize::new(slice.len()).ok_or(DmaError::Api(dma_api::DmaError::ZeroSizedBuffer))?;
+    let size = NonZeroUsize::new(slice.len()).ok_or(DmaError::ZeroSizedBuffer)?;
     let ptr = NonNull::new(slice.as_ptr() as *mut u8).ok_or(DmaError::NullVirtualAddress {
         paddr: 0,
     })?;
 
-    let handle = unsafe { QEMU_IDENTITY_DMA_OP.map_single(u64::MAX, ptr, size, 1, direction.into()) }?;
+    let handle = unsafe { QEMU_IDENTITY_DMA_OP.map_single(u64::MAX, ptr, size, 1, direction.into()) }
+        .map_err(DmaError::from_api)?;
     Ok(handle.dma_addr().as_u64())
 }
 
@@ -416,7 +459,15 @@ pub fn raw_map_single(buffer: NonNull<[u8]>, direction: DmaDirection) -> DmaResu
 pub fn raw_unmap_single(_paddr: u64, _buffer: NonNull<[u8]>, _direction: DmaDirection) {}
 ```
 
-- [ ] **Step 2: Export QEMU helpers**
+- [ ] **Step 2: Remove temporary `from_api` dead-code expectation**
+
+After `crates/dma/src/qemu.rs` calls `DmaError::from_api` for the first time, remove this temporary line from `crates/dma/src/error.rs`:
+
+```rust
+#[expect(dead_code, reason = "后续 qemu/device 模块会在 crate 内转换 dma-api 错误")]
+```
+
+- [ ] **Step 3: Export QEMU helpers**
 
 Replace `crates/dma/src/lib.rs` with:
 
@@ -441,7 +492,7 @@ pub use error::{DmaError, DmaResult};
 pub use qemu::{raw_alloc_pages, raw_dealloc_pages, raw_map_single, raw_unmap_single};
 ```
 
-- [ ] **Step 3: Check the crate**
+- [ ] **Step 4: Check the crate**
 
 Run:
 
@@ -451,10 +502,10 @@ devcontainer exec --workspace-folder . cargo check -p dma
 
 Expected: the `dma` crate compiles and the command exits 0.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add crates/dma/src/lib.rs crates/dma/src/qemu.rs
+git add crates/dma/src/lib.rs crates/dma/src/error.rs crates/dma/src/qemu.rs
 git commit --signoff -m "feat(dma): implement qemu identity backend"
 ```
 
@@ -513,7 +564,7 @@ impl DmaDevice {
         self.inner
             .box_zero_with_align::<T>(align, direction.into())
             .map(DmaBuffer)
-            .map_err(DmaError::from)
+            .map_err(DmaError::from_api)
     }
 
     /// 分配固定长度 typed coherent DMA array。
@@ -526,7 +577,7 @@ impl DmaDevice {
         self.inner
             .array_zero_with_align::<T>(len, align, direction.into())
             .map(DmaArray)
-            .map_err(DmaError::from)
+            .map_err(DmaError::from_api)
     }
 
     /// 映射已有 slice 为 streaming DMA 区域。
@@ -539,7 +590,7 @@ impl DmaDevice {
         self.inner
             .map_single_array::<T>(buffer, align, direction.into())
             .map(StreamingMapping)
-            .map_err(DmaError::from)
+            .map_err(DmaError::from_api)
     }
 }
 
