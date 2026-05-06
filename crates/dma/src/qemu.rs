@@ -1,4 +1,4 @@
-//! QEMU VirtIO identity-mapped DMA backend.
+//! QEMU VirtIO 恒等映射 DMA 后端。
 
 extern crate alloc;
 
@@ -81,6 +81,8 @@ pub fn raw_alloc_pages(pages: usize, _direction: DmaDirection) -> DmaResult<(u64
 
     let layout = Layout::from_size_align(pages * config::PAGE_SIZE, config::PAGE_SIZE)
         .map_err(DmaError::from)?;
+    // SAFETY: layout 由非零页数和 PAGE_SIZE 构造，满足页对齐；当前 QEMU 后端不使用
+    // dma_mask，分配出的连续帧由 DMA_TRACKER 持有并由 raw_dealloc_pages 配对释放。
     let handle = unsafe { QEMU_IDENTITY_DMA_OP.alloc_coherent(u64::MAX, layout) }
         .ok_or(DmaError::NoMemory)?;
 
@@ -133,6 +135,8 @@ pub unsafe fn raw_map_single(buffer: NonNull<[u8]>, direction: DmaDirection) -> 
     let ptr =
         NonNull::new(slice.as_ptr() as *mut u8).ok_or(DmaError::NullVirtualAddress { paddr: 0 })?;
 
+    // SAFETY: ptr 和 size 来自调用方提供的非空 slice；raw_map_single 的 Safety 契约要求
+    // buffer 在 DMA 共享期间保持有效且连续。
     let handle =
         unsafe { QEMU_IDENTITY_DMA_OP.map_single(u64::MAX, ptr, size, 1, direction.into()) }
             .map_err(DmaError::from_api)?;

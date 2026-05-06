@@ -26,7 +26,67 @@
 
 ## 上次对话摘要
 
-**日期**：2026-04-30（DMA / VirtIO HAL 权限语义审计）
+**日期**：2026-05-06（DMA API wrapper 落地）
+
+### 已完成
+
+**主线：采用 `dma-api` 但封装在新的 `crates/dma` 边界内**
+
+本轮从 DMA / VirtIO HAL 的设计讨论进入实现，选择"封装 `dma-api`"而不是让
+`dma_api::*` 直接扩散到设备层：
+
+1. **新增 `crates/dma`**
+   - 在 workspace 中新增 `dma` crate，并引入 `dma-api 0.7.2`
+   - `DmaDirection` / `DmaError` / `DmaResult` 使用 SimpleKernel 自己的公开类型
+   - `DmaError::from_api` 保持 crate-private，避免上层依赖 `dma_api::DmaError`
+2. **实现 QEMU identity DMA 后端**
+   - `QemuIdentityDmaOp` 实现 `dma_api::DmaOp`
+   - `DMA_TRACKER` 从 `src/device/hal.rs` 移入 `crates/dma`
+   - `raw_alloc_pages` / `raw_dealloc_pages` / `raw_map_single` / `raw_unmap_single`
+     作为 `virtio-drivers::Hal` 的 raw adapter helper
+3. **提供 typed wrapper**
+   - `DmaDevice` 包装 `dma_api::DeviceDma`
+   - `DmaBuffer<T>` 包装 `dma_api::DBox<T>`
+   - `DmaArray<T>` 包装 `dma_api::DArray<T>`
+   - `StreamingMapping<T>` 包装 `dma_api::SArrayPtr<T>`
+   - `DmaValue` 只表达字节可读写和 `Copy`，不表达设备 ABI / endian；descriptor
+     仍需 `#[repr(C)]` 和固定宽度字段
+4. **VirtIO HAL 改为适配层**
+   - `src/device/hal.rs` 删除本地 `DMA_TRACKER`、`AllocatedFrames` 和裸 VA/PA 逻辑
+   - `BufferDirection` 转换为 `dma::DmaDirection`
+   - `dma_alloc` / `dma_dealloc` / `share` / `unshare` 委托 `crates/dma`
+5. **文档与 ADR**
+   - 新增 ADR-014，状态为"提议"
+   - 更新 `crates/dma/README.md`，明确第三方依赖边界
+   - 更新本文件当前状态和验证结果
+
+### 关键结论
+
+| # | 结论 | 状态 | ADR |
+|---|------|------|-----|
+| `dma-api` 只作为 `crates/dma` 内部实现依赖 | 上层模块使用 SimpleKernel wrapper，不直接暴露 `dma_api::*` | 已实施 | [ADR-014](../adr/014-qemu-virtio-dma-api-wrapper.md) |
+| 当前 DMA 后端只承诺 QEMU VirtIO identity mapping | QEMU 行为保持不变；真机 non-coherent DMA 未被声明为已支持 | 已实施 | ADR-014 |
+| `DmaBuffer<T>` / `DmaArray<T>` / `StreamingMapping<T>` 先建立类型边界 | typed wrapper 已存在，但驱动侧后续是否使用仍需按场景接入 | 已实施 | ADR-014 |
+| cache maintenance / PTE 属性 / DMA capability 仍是后续真机设计问题 | 本轮不解决 AArch64 non-coherent 真实硬件一致性 | 待设计 | 待定 |
+
+### 验证
+
+- `cargo check -p dma -Z build-std=core,compiler_builtins,alloc -Z build-std-features=compiler-builtins-mem --target riscv64gc-unknown-none-elf` 通过
+- `cargo fmt --all -- --check` 通过
+- `cargo xtask check --arch riscv64` 通过（仅已有 warning）
+- `cargo xtask check --arch aarch64` 通过（仅已有 warning）
+- `timeout 30s cargo xtask test --arch riscv64 --name device-test` 通过，日志包含
+  `VirtIO: block read test OK (sector 0)`、`virtio_blk_read_sector ... ok`、
+  `device-test: all 3 tests passed`
+
+### 下一步
+
+下一步不是继续改 QEMU 路径，而是进入真机 DMA 语义设计：cache maintenance、
+PTE 属性（如 Normal-NC）、DMA mask / capability / IOMMU 或 bounce buffer 策略。
+
+---
+
+### 上轮摘要（2026-04-30 DMA / VirtIO HAL 权限语义审计）
 
 ### 已完成
 
