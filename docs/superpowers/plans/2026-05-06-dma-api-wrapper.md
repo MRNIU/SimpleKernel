@@ -931,7 +931,9 @@ Expected: the command exits 0.
 
 ```bash
 git add src/device/hal.rs
-git commit --signoff -m "refactor(device): route virtio dma through dma crate"
+git commit --signoff \
+  -m "refactor(device): route virtio dma through dma crate" \
+  -m "Delegate VirtIO HAL allocation, deallocation, and streaming buffer mapping to the new dma crate raw helpers while preserving the current QEMU identity-mapped behavior."
 ```
 
 ---
