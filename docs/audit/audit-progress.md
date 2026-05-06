@@ -5,11 +5,15 @@
 
 ## 当前状态
 
-**当前 Phase**: R3 — DMA / VirtIO HAL 权限语义审计完成，等待设计决策
+**当前 Phase**: R3 — DMA / VirtIO HAL 已接入 `crates/dma` QEMU identity 封装，等待后续验证与真机设计
 **下一个目标**（按优先级）：
-1. **DMA / VirtIO HAL 设计决策**：`dma_alloc` coherent buffer 权限、`share/unshare` streaming buffer cache maintenance、是否新增 `kernel_dma_coherent()` / Normal-NC PTE factory（详见"未决设计问题"）
+1. **DMA / VirtIO HAL 后续验证**：`crates/dma` 已封装 `dma-api` 并接入 QEMU VirtIO 路径；当前仍只承诺 QEMU VirtIO identity mapping，不承诺 non-coherent 真机 DMA。后续真机前需继续设计 cache maintenance、PTE 属性和设备 DMA capability。
 2. R8 剩余 README：`CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` / `SECURITY.md`（paging / tlb / heap / memory 已补）
 3. **TLB shootdown 协议后续验证**：当前代码已在 `src/tlb_shootdown.rs` 接入注册和 IPI ack；不再是"零调用者"问题，但仍可在 R4/R8 补系统测试和异常路径审查
+
+验证计划：执行 `cargo check -p dma`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64` 和 `cargo xtask test --arch riscv64 --name device-test`。
+QEMU 测试需使用 30 秒超时并在超时后清理残留 `qemu-system` 进程。
 
 ## 上次对话摘要
 

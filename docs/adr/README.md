@@ -25,6 +25,7 @@ ADR 描述“为什么做出某个决策”。当前架构和当前设计仍应�
 | 011 | [MMIO overlap 检测统一至 `create_pte`；引入 `FlagsConflict` 错误](011-mmio-overlap-via-set-page-flags.md) | 已接受 | 2026-04-17 | R3 回看 |
 | 012 | [PageTable 拆分；hot-path PTE 更新无锁化](012-pagetable-split-lock-free-hot-path.md) | 已接受 | 2026-04-17 | R3 回看 |
 | 013 | [删除 `OwnedPages` 抽象层](013-ownedpages-necessity.md) | 已接受 | 2026-04-18 | R3 回看 |
+| 014 | [QEMU VirtIO DMA 抽象封装 `dma-api`](014-qemu-virtio-dma-api-wrapper.md) | 提议 | 2026-05-06 | R3/R6 |
 
 ## 状态规则
 

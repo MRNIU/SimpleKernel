@@ -21,6 +21,18 @@ SimpleKernel 自己的 typed wrapper：
 当前 raw 后端不声明真机 non-coherent DMA 能力。cache clean / invalidate、PTE
 属性和设备 DMA capability 仍需在后续设计中明确。
 
+## 第三方依赖边界
+
+本 crate 内部使用 `dma-api 0.7.2`，并用 SimpleKernel 自己的类型名隔离上层：
+
+- `DmaDevice` 包装 `dma_api::DeviceDma`
+- `DmaBuffer<T>` 包装 `dma_api::DBox<T>`
+- `DmaArray<T>` 包装 `dma_api::DArray<T>`
+- `StreamingMapping<T>` 包装 `dma_api::SArrayPtr<T>`
+
+上层模块不要直接使用 `dma_api::*`。如果未来替换 DMA abstraction crate，只修改
+`crates/dma`。
+
 ## 依赖影响
 
 `dma-api 0.7.2` 会引入自身的 cache/barrier 支持 crate，包括 AArch64 支持依赖。
