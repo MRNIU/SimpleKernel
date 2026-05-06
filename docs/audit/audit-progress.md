@@ -11,9 +11,18 @@
 2. R8 剩余 README：`CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` / `SECURITY.md`（paging / tlb / heap / memory 已补）
 3. **TLB shootdown 协议后续验证**：当前代码已在 `src/tlb_shootdown.rs` 接入注册和 IPI ack；不再是"零调用者"问题，但仍可在 R4/R8 补系统测试和异常路径审查
 
-验证计划：执行 `cargo check -p dma`、`cargo xtask check --arch riscv64`、
-`cargo xtask check --arch aarch64` 和 `cargo xtask test --arch riscv64 --name device-test`。
-QEMU 测试需使用 30 秒超时并在超时后清理残留 `qemu-system` 进程。
+验证计划：执行架构化 `cargo check -p dma ... --target riscv64gc-unknown-none-elf`、
+`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64` 和
+`cargo xtask test --arch riscv64 --name device-test`。QEMU 测试需使用 30 秒超时并在
+超时后清理残留 `qemu-system` 进程。
+
+验证结果（2026-05-06）：`cargo check -p dma -Z build-std=core,compiler_builtins,alloc
+-Z build-std-features=compiler-builtins-mem --target riscv64gc-unknown-none-elf`、
+`cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64`、`timeout 30s cargo xtask test --arch riscv64
+--name device-test` 均通过。裸 `cargo check -p dma` 不带 target 时不会加载
+`.cargo/config.toml` 中的 `bare_riscv64` / `bare_aarch64` cfg，不能作为本仓库的有效
+验证命令。
 
 ## 上次对话摘要
 
