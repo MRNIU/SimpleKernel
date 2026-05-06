@@ -561,6 +561,9 @@ use crate::{DmaDirection, DmaError, DmaResult};
 ///
 /// `FromBytes` 保证任意设备写入位模式可构造为 `T`，`IntoBytes` 保证 CPU 写入
 /// 可以按字节交给设备读取，`Copy` 避免从 DMA 内存读取时产生所有权搬移语义。
+///
+/// 面向设备的 descriptor 类型仍应使用 `#[repr(C)]` 和固定宽度整数字段；
+/// `DmaValue` 不编码设备 ABI 或 endian 语义。
 pub trait DmaValue: zerocopy::FromBytes + zerocopy::IntoBytes + Copy {}
 
 impl<T> DmaValue for T where T: zerocopy::FromBytes + zerocopy::IntoBytes + Copy {}
@@ -610,7 +613,12 @@ impl DmaDevice {
     }
 
     /// 映射已有 slice 为 streaming DMA 区域。
-    pub fn map_slice<T: DmaValue>(
+    ///
+    /// # Safety
+    ///
+    /// `buffer` 必须在返回的 mapping 生命周期内保持有效；调用方必须按目标 DMA
+    /// 方向维护别名和同步规则，避免 CPU 与设备并发访问同一内存时破坏一致性。
+    pub unsafe fn map_slice<T: DmaValue>(
         &self,
         buffer: &[T],
         align: usize,
@@ -633,7 +641,12 @@ impl<T: DmaValue> DmaBuffer<T> {
     }
 
     /// 返回 CPU 可访问指针。
-    pub fn as_ptr(&self) -> NonNull<T> {
+    ///
+    /// # Safety
+    ///
+    /// 返回的指针仅在 `self` 存活期间有效；解引用会绕过 wrapper 的 cache sync
+    /// 语义，调用方必须确保不会违反设备/CPU 别名或同步规则。
+    pub unsafe fn as_ptr(&self) -> NonNull<T> {
         self.0.as_ptr()
     }
 
@@ -679,6 +692,10 @@ impl<T: DmaValue> DmaArray<T> {
 
     /// 写入一个元素。
     pub fn set(&mut self, index: usize, value: T) {
+        let len = self.len();
+        if index >= len {
+            panic!("DMA 数组写入越界: index={index}, len={len}");
+        }
         self.0.set(index, value);
     }
 
@@ -724,6 +741,10 @@ impl<T: DmaValue> StreamingMapping<T> {
 
     /// 写入一个元素，并按方向执行写入后同步。
     pub fn set(&mut self, index: usize, value: T) {
+        let len = self.len();
+        if index >= len {
+            panic!("DMA streaming 映射写入越界: index={index}, len={len}");
+        }
         self.0.set(index, value);
     }
 
