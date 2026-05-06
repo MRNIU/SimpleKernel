@@ -209,6 +209,12 @@ pub enum DmaError {
         expected_pages: usize,
         actual_pages: usize,
     },
+    /// 释放 raw DMA 区域时虚拟地址和分配记录不一致。
+    RawRegionVirtualAddressMismatch {
+        paddr: u64,
+        expected_vaddr: usize,
+        actual_vaddr: usize,
+    },
     /// DMA 虚拟地址为空。
     NullVirtualAddress { paddr: u64 },
 }
@@ -264,6 +270,14 @@ impl fmt::Display for DmaError {
             } => write!(
                 f,
                 "raw DMA 区域页数不匹配: paddr={paddr:#x}, expected={expected_pages}, actual={actual_pages}",
+            ),
+            DmaError::RawRegionVirtualAddressMismatch {
+                paddr,
+                expected_vaddr,
+                actual_vaddr,
+            } => write!(
+                f,
+                "raw DMA 区域虚拟地址不匹配: paddr={paddr:#x}, expected_vaddr={expected_vaddr:#x}, actual_vaddr={actual_vaddr:#x}",
             ),
             DmaError::NullVirtualAddress { paddr } => {
                 write!(f, "DMA 虚拟地址为空: paddr={paddr:#x}")
@@ -340,7 +354,7 @@ use core::ptr::NonNull;
 
 use dma_api::{DmaAddr, DmaHandle, DmaMapHandle, DmaOp};
 use frame_allocator::AllocatedFrames;
-use memory_types::{PhysAddr, VirtAddr};
+use memory_types::VirtAddr;
 use sync_crate::SpinLock;
 
 use crate::{DmaDirection, DmaError, DmaResult};
@@ -419,7 +433,7 @@ pub fn raw_alloc_pages(pages: usize, _direction: DmaDirection) -> DmaResult<(u64
 }
 
 /// 释放页级 raw coherent DMA 区域。
-pub fn raw_dealloc_pages(paddr: u64, _vaddr: NonNull<u8>, pages: usize) -> DmaResult<()> {
+pub fn raw_dealloc_pages(paddr: u64, vaddr: NonNull<u8>, pages: usize) -> DmaResult<()> {
     if pages == 0 {
         return Err(DmaError::ZeroPages);
     }
@@ -437,12 +451,27 @@ pub fn raw_dealloc_pages(paddr: u64, _vaddr: NonNull<u8>, pages: usize) -> DmaRe
             actual_pages,
         });
     }
+    let expected_vaddr = frames.start_paddr().to_virt().as_usize();
+    let actual_vaddr = vaddr.as_ptr() as usize;
+    if expected_vaddr != actual_vaddr {
+        tracker.insert(paddr, frames);
+        return Err(DmaError::RawRegionVirtualAddressMismatch {
+            paddr,
+            expected_vaddr,
+            actual_vaddr,
+        });
+    }
 
     Ok(())
 }
 
 /// 映射已有 buffer 为设备可见 DMA 地址。
-pub fn raw_map_single(buffer: NonNull<[u8]>, direction: DmaDirection) -> DmaResult<u64> {
+///
+/// # Safety
+///
+/// `buffer` 必须在 DMA 共享期间指向有效的连续内存区域，并且不能以违反
+/// VirtIO HAL 契约的方式被并发修改。
+pub unsafe fn raw_map_single(buffer: NonNull<[u8]>, direction: DmaDirection) -> DmaResult<u64> {
     // SAFETY: `virtio-drivers::Hal::share` 的调用方保证 buffer 在共享期间有效。
     let slice = unsafe { buffer.as_ref() };
     let size = NonZeroUsize::new(slice.len()).ok_or(DmaError::ZeroSizedBuffer)?;
@@ -485,7 +514,7 @@ Replace `crates/dma/src/lib.rs` with:
 
 pub mod direction;
 pub mod error;
-pub mod qemu;
+mod qemu;
 
 pub use direction::DmaDirection;
 pub use error::{DmaError, DmaResult};
@@ -734,7 +763,7 @@ Replace `crates/dma/src/lib.rs` with:
 pub mod device;
 pub mod direction;
 pub mod error;
-pub mod qemu;
+mod qemu;
 
 pub use device::{DmaArray, DmaBuffer, DmaDevice, DmaValue, StreamingMapping};
 pub use direction::DmaDirection;
@@ -853,7 +882,7 @@ Replace `share` with:
 ```rust
 unsafe fn share(buffer: NonNull<[u8]>, direction: BufferDirection) -> u64 {
     let direction = virtio_direction(direction);
-    dma::raw_map_single(buffer, direction).unwrap_or_else(|error| {
+    unsafe { dma::raw_map_single(buffer, direction) }.unwrap_or_else(|error| {
         panic!("DMA buffer 共享失败: direction={direction:?}, error={error}");
     })
 }

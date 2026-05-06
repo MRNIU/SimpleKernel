@@ -30,6 +30,12 @@ pub enum DmaError {
         expected_pages: usize,
         actual_pages: usize,
     },
+    /// 释放 raw DMA 区域时虚拟地址和分配记录不一致。
+    RawRegionVirtualAddressMismatch {
+        paddr: u64,
+        expected_vaddr: usize,
+        actual_vaddr: usize,
+    },
     /// DMA 虚拟地址为空。
     NullVirtualAddress { paddr: u64 },
 }
@@ -41,7 +47,6 @@ impl From<LayoutError> for DmaError {
 }
 
 impl DmaError {
-    #[expect(dead_code, reason = "后续 qemu/device 模块会在 crate 内转换 dma-api 错误")]
     pub(crate) fn from_api(error: dma_api::DmaError) -> Self {
         match error {
             dma_api::DmaError::NoMemory => DmaError::NoMemory,
@@ -85,6 +90,14 @@ impl fmt::Display for DmaError {
             } => write!(
                 f,
                 "raw DMA 区域页数不匹配: paddr={paddr:#x}, expected={expected_pages}, actual={actual_pages}",
+            ),
+            DmaError::RawRegionVirtualAddressMismatch {
+                paddr,
+                expected_vaddr,
+                actual_vaddr,
+            } => write!(
+                f,
+                "raw DMA 区域虚拟地址不匹配: paddr={paddr:#x}, expected_vaddr={expected_vaddr:#x}, actual_vaddr={actual_vaddr:#x}",
             ),
             DmaError::NullVirtualAddress { paddr } => {
                 write!(f, "DMA 虚拟地址为空: paddr={paddr:#x}")

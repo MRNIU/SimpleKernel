@@ -3,17 +3,17 @@
 `crates/dma` 是 SimpleKernel 的 DMA 抽象边界。它集中依赖 `dma-api`，避免
 `dma_api::*` 类型直接扩散到设备层和未来驱动层。
 
-本初始 crate 只建立边界和计划中的依赖表面，尚未实现运行时 DMA API 或后端。
-后续任务会在本 crate 内暴露：
+当前 crate 已提供 QEMU VirtIO + SAS identity mapping 的 raw DMA 后端和 helper，
+用于页级 coherent allocation 与 streaming mapping 地址转换。下一步会在本 crate
+内暴露类型化 wrapper：
 
 - `DmaDevice`
 - `DmaBuffer`
 - `DmaArray`
 - `StreamingMapping`
 
-计划中的第一阶段后端是 QEMU VirtIO + SAS identity mapping。届时 coherent
-allocation、streaming mapping、cache clean / invalidate 的语义会在实现中明确；
-当前提交不声明这些能力已经存在。
+当前 raw 后端不声明真机 non-coherent DMA 能力。cache clean / invalidate、PTE
+属性和设备 DMA capability 仍需在后续设计中明确。
 
 ## 依赖影响
 
