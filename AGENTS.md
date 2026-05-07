@@ -41,7 +41,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 | `src/arch/{arch}/timer.rs` | Timer init + tick handler | timer subsystem |
 | `src/arch/{arch}/context.rs` | TrapContext, InitTaskContext | `#[repr(C)]` structs |
 | `src/arch/{arch}/backtrace.rs` | Stack unwinding | debug support |
-| `src/memory/` | 内存子系统门面（re-export crates） | init, map_mmio |
+| `crates/memory/` | 内存子系统策略层（初始化 + MMIO 类型化入口） | `init`, `init_smp`, `MmioRegion` |
 | `src/task/` | TaskManager, TCB, schedulers | CFS/FIFO/RR, clone/exit/wait/sleep/signal |
 | `src/task/scheduler/` | `Scheduler` trait + implementations | scheduling algorithms |
 | `src/device/` | DeviceManager, Hal, PlatformBus | 设备枚举/注册框架 |

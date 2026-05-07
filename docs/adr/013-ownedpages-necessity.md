@@ -224,7 +224,7 @@ ADR-008 删除 `FrameState` typestate 的核心论据是 "当前 API 边界上�
   - `docs/design/memory-subsystem-v2.md` §6（权限覆盖）重写——不再有"权限守卫"类型，改为描述 `update_range_flags` 方法
   - `crates/paging/README.md` 删除 `OwnedPages` 条目
   - `crates/frame_allocator/README.md` 删除 `OwnedPages` 配合示例
-  - `crates/memory/README.md` 示例改写为 `update_range_flags + mem::forget`
+  - `crates/memory/AGENTS.md` 示例改写为 `update_range_flags + mem::forget`
   - `crates/page_table_entry/src/lib.rs` 删除引用 `OwnedPages::set_flags` 的注释
 
 ## 参考

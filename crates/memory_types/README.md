@@ -4,8 +4,8 @@
 
 ## 概览
 
-`memory_types` 提供类型安全的地址和页帧 newtype，在编译期区分物理地址与虚拟地址、
-字节粒度与页粒度，杜绝跨类型的误用。
+`memory_types` 提供类型安全的地址和物理帧 newtype，在编译期区分物理地址与虚拟地址、
+字节粒度与帧粒度，杜绝跨类型的误用。
 
 地址 newtype 均为 `#[repr(transparent)]`，零开销包装 `usize`。
 不同类型之间不可隐式转换——`PhysAddr` 和 `VirtAddr` 是编译期不同的类型，
@@ -21,9 +21,8 @@ SimpleKernel 当前只支持 SAS identity mapping，因此这两个方法保持�
 pub struct PhysAddr(usize);          // 物理地址
 pub struct VirtAddr(usize);          // 虚拟地址
 
-// 页粒度标识（固定 4KB）
+// 帧粒度标识（固定 4KB）
 pub struct Frame { number: usize }    // 物理帧
-pub struct Page  { number: usize }    // 虚拟页
 
 // 半开区间
 pub struct Span<A> { start: A, end: A }    // [start, end)
@@ -36,14 +35,12 @@ pub struct Span<A> { start: A, end: A }    // [start, end)
 
 ```
 PhysAddr ←──→ Frame            (page_number / start_addr)
-VirtAddr ←──→ Page             (page_number / start_addr)
 
 PhysAddr ←──→ VirtAddr         (PhysAddr::to_virt / VirtAddr::to_phys)
 
 Span<PhysAddr>                 字节粒度的物理地址范围
 Span<VirtAddr>                 字节粒度的虚拟地址范围
 Span<Frame>                    物理帧范围（frame_allocator 内部使用）
-Span<Page>                     虚拟页范围（当前未使用）
 ```
 
 ## 模块结构
@@ -52,13 +49,12 @@ Span<Page>                     虚拟页范围（当前未使用）
 crates/memory_types/src/
 ├── lib.rs           crate 入口，impl_usize_newtype! 宏
 ├── addr.rs          PhysAddr / VirtAddr、对齐方法、PhysAddr::to_virt / VirtAddr::to_phys
-├── page_frame.rs    Frame / Page、与地址类型的互转
+├── page_frame.rs    Frame、与 PhysAddr 的互转
 └── span.rs          Span<A> 半开区间，重叠检测
 ```
 
-三个宏（`impl_usize_newtype!`、`impl_addr!`、`impl_page_or_frame!`）消除
-重复代码——构造/访问、checked 算术运算、对齐方法、`From` 互转、
-`Display` 格式化等，均由宏统一生成。
+两个宏（`impl_usize_newtype!`、`impl_addr!`）消除重复代码——构造/访问、
+checked 算术运算、对齐方法、`From` 互转、`Display` 格式化等，均由宏统一生成。
 
 ## 使用示例
 

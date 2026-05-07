@@ -212,7 +212,7 @@ PTE 属性（如 Normal-NC）、DMA mask / capability / IOMMU 或 bounce buffer 
 - 删除 `memory::map_mmio` 函数——**真正单一入口**是 `memory::MmioRegion::map(...)`
 - paging 回归**纯页表 crate**（2 个源文件：lib.rs + table.rs），`zerocopy` 依赖随 MMIO 模块一并移至 memory
 - 调用方 4 处更新：`src/device/virtio.rs` / `src/arch/aarch64/mod.rs` / `src/arch/aarch64/interrupt.rs` / `src/arch/riscv64/interrupt.rs`
-- paging/README.md + memory/README.md 同步更新分层图
+- paging/README.md + memory/AGENTS.md 同步更新分层图
 
 ### 关键决策
 
@@ -245,7 +245,7 @@ PTE 属性（如 Normal-NC）、DMA mask / capability / IOMMU 或 bounce buffer 
    - 删除 `config::FREED_PAGE_POISON`（唯一消费者是 OwnedPages::Drop）
    - 删除 `tests/paging-test/src/mapping.rs`（6 个自证测试）+ 新增 `test_update_range_flags_batch`
    - 一并带入：对话前半的注释清理、`BOOT_STACK` 16 字节对齐修复、`frame_allocator` 直连依赖（`src/boot.rs` / `src/device/hal.rs` 去掉 `memory::frame` 间接路径）
-   - 新建 ADR-013 + 4 个 crate README（memory / paging / heap / tlb）
+   - 新建 ADR-013 + crate 文档（memory/AGENTS.md，paging / heap / tlb README）
 
 2. `f36f347de refactor(memory): 精简 frame_allocator::init 接口 + 消除 PhysAddr→VirtAddr 冗余`（9 files, +32/-73）
    - `frame_allocator::init` 返回 `()`（原返回 `heapless::Vec<AllocatedFrames, 8>`）——消除了类型安全洞（`claim_reserved` 给出的预留帧 Drop 会污染 buddy）+ panic safety 洞 + 接口冗余三问题
@@ -328,7 +328,7 @@ PTE 属性（如 Normal-NC）、DMA mask / capability / IOMMU 或 bounce buffer 
 - [x] `paging/README.md` — 分页子系统文档（ADR-013 落地时补全）
 - [x] `tlb/README.md` — TLB 管理文档（同上）
 - [x] `heap/README.md` — 堆分配器文档（同上）
-- [x] `memory/README.md` — 内存门面 crate 文档（同上）
+- [x] `memory/AGENTS.md` — 内存门面 crate 文档（同上）
 
 ## 已完成的目标
 

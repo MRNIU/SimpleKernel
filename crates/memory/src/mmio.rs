@@ -26,30 +26,33 @@ impl MmioRegion {
     /// # Panics
     ///
     /// - `MEMORY_INFO` 未初始化（必须在 `memory::init()` 之后调用）
-    /// - `[paddr, paddr+size)` 与 RAM 范围重叠（拒绝将 RAM 重映射为 Device 内存）
+    /// - `size == 0`
+    /// - 页对齐后的映射 envelope 与 RAM 范围重叠（拒绝将 RAM 重映射为 Device 内存）
     /// - 页表映射冲突或节点 OOM（内核 bug）
     pub fn map(paddr: PhysAddr, size: usize) -> Self {
+        assert!(size > 0, "MmioRegion::map: size 不能为 0");
+
         let info = MEMORY_INFO
             .get()
             .expect("MmioRegion::map: MEMORY_INFO 未初始化（应在 memory::init 之后调用）");
+        let pa_aligned = paddr.align_down();
+        let end_aligned = (paddr + size).align_up();
         let ram = Span::new(
             info.physical_memory_addr,
             info.physical_memory_addr + info.physical_memory_size,
         );
-        let req = Span::new(paddr, paddr + size);
+        let mapped = Span::new(pa_aligned, end_aligned);
 
         assert!(
-            !ram.overlaps(req),
-            "MmioRegion::map: paddr {} + {:#x} 与 RAM 范围 [{}, {}) 重叠——拒绝映射为 Device 内存",
+            !ram.overlaps(mapped),
+            "MmioRegion::map: 映射 envelope [{}, {}) 来自 paddr {} + {:#x}，与 RAM 范围 [{}, {}) 重叠——拒绝映射为 Device 内存",
+            mapped.start(),
+            mapped.end(),
             paddr,
             size,
             ram.start(),
             ram.end()
         );
-
-        let pa_aligned = paddr.align_down();
-        let end_aligned = (paddr + size).align_up();
-        let mapped_size = end_aligned - pa_aligned;
 
         paging::kernel_page_table().identity_map_range(
             pa_aligned,
@@ -59,8 +62,8 @@ impl MmioRegion {
         tlb::flush_tlb();
 
         Self {
-            base: pa_aligned.to_virt(),
-            size: mapped_size,
+            base: paddr.to_virt(),
+            size,
         }
     }
 

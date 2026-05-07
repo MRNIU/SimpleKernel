@@ -48,7 +48,7 @@ SimpleKernel 是一个**面向 AI 辅助学习的现代化操作系统内核项�
 | **接口与实现分离** | trait 定义契约，`impl` 块是实现，互不耦合 |
 | **双架构支持** | RISC-V 64、AArch64，同一套 trait 适配不同硬件 |
 | **双层测试验证** | 单元测试（`cargo test`）+ 系统测试（`cargo xtask test`，QEMU 运行） |
-| **Workspace 架构** | 内核拆分为 `lib + bin`，子系统独立 crate（memory、sync、page_table 等） |
+| **Workspace 架构** | 内核拆分为 `lib + bin`，子系统独立 crate（memory、sync、paging 等） |
 | **工程化基础设施** | `xtask` 构建工具、GitHub Actions CI/CD、`rustfmt` + `clippy` |
 
 ## 面向 AI 的设计理念
@@ -187,7 +187,7 @@ SimpleKernel/
 ├── crates/                         # Workspace 子 crate
 │   ├── memory/                     #   虚拟/物理内存管理
 │   ├── sync/                       #   SpinLock（中断感知）
-│   ├── page_table/                 #   多级页表
+│   ├── paging/                     #   多级页表
 │   ├── frame_allocator/            #   物理帧分配器
 │   ├── per_cpu/                    #   Per-CPU 数据
 │   └── ...
@@ -303,7 +303,7 @@ cargo xtask test --list                        # 列出可用测试
 | 函数/方法 | snake_case | `init_timer()` |
 | 类型/Trait/Enum | PascalCase | `TaskManager`、`Scheduler` |
 | 常量 | SCREAMING_SNAKE_CASE | `MAX_CORE_COUNT` |
-| 模块 | snake_case | `page_table` |
+| 模块 | snake_case | `paging` |
 
 ### Git Commit 规范
 
