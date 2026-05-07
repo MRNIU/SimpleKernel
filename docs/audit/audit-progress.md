@@ -5,84 +5,66 @@
 
 ## 当前状态
 
-**当前 Phase**: R3 — DMA / VirtIO HAL 已接入 `crates/dma` QEMU identity 封装，等待后续验证与真机设计
+**当前 Phase**: R3 — 第一组低耦合内存不变量修复完成，等待第二组设计边界讨论
 **下一个目标**（按优先级）：
-1. **DMA / VirtIO HAL 后续验证**：`crates/dma` 已封装 `dma-api` 并接入 QEMU VirtIO 路径；当前仍只承诺 QEMU VirtIO identity mapping，不承诺 non-coherent 真机 DMA。后续真机前需继续设计 cache maintenance、PTE 属性和设备 DMA capability。
-2. R8 剩余 README：`CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` / `SECURITY.md`（paging / tlb / heap / memory 已补）
-3. **TLB shootdown 协议后续验证**：当前代码已在 `src/tlb_shootdown.rs` 接入注册和 IPI ack；不再是"零调用者"问题，但仍可在 R4/R8 补系统测试和异常路径审查
+1. **第二组：需要设计边界后再改**：`PageTable::update_range_flags()` 的并发写者证明、公开 `kernel_rwx()` 与 W^X 策略、frame allocator 是否承诺 hard IRQ 可分配、单段 RAM fail-fast 还是多段 RAM 支持。
+2. **第三组：真机前必须关闭**：streaming DMA cache maintenance / bounce buffer、coherent DMA 的 PTE/cache 语义、DMA mask / capability / IOMMU 或 bounce buffer 策略、RISC-V `kernel_device()` 的 PMA/Svpbmt 边界。
+3. **测试/文档闭环**：修复当前 RISC-V `should_panic` 测试只看 QEMU 正常关机、不看失败标记的问题；继续补 TLB shootdown 远端 ack/访问测试、DMA 跨页 buffer/写路径/mask 测试、MMIO panic 测试；修正 `page_allocator` 已移除但 roadmap/依赖图仍引用的问题；补 `crates/memory/README.md` 或修正 audit-progress 中“已补”的旧记录。
 
-验证计划：执行架构化 `cargo check -p dma ... --target riscv64gc-unknown-none-elf`、
-`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64` 和
-`cargo xtask test --arch riscv64 --name device-test`。QEMU 测试需使用 30 秒超时并在
+验证计划：后续设计边界改动仍需先补目标回归测试，再按变更面执行
+`cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64`。涉及 QEMU 的命令必须使用 30 秒超时并在
 超时后清理残留 `qemu-system` 进程。
 
-验证结果（2026-05-06）：`cargo check -p dma -Z build-std=core,compiler_builtins,alloc
--Z build-std-features=compiler-builtins-mem --target riscv64gc-unknown-none-elf`、
-`cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
-`cargo xtask check --arch aarch64`、`timeout 30s cargo xtask test --arch riscv64
---name device-test` 均通过。裸 `cargo check -p dma` 不带 target 时不会加载
-`.cargo/config.toml` 中的 `bare_riscv64` / `bare_aarch64` cfg，不能作为本仓库的有效
-验证命令。
+验证结果（2026-05-07 第一组修复）：`cargo fmt --all -- --check`、
+`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64` 通过
+（保留既有 warning）。RISC-V QEMU 30 秒超时下运行并通过：
+`memory-types-test/align-down-canonical-panic`、`memory-types-test/frame-overflow-panic`、
+`memory-test/double-init-panic`、`frame-test/reserved-overlap-panic`、
+`memory-types-test/codec`、`frame-test/alloc`。其中 should_panic 测试额外 grep
+了串口中的 `SHOULD_PANIC OK` 和具体 panic 文案，因为当前 RISC-V harness
+不会把 should_panic 未触发转换成非零退出码。
 
 ## 上次对话摘要
 
-**日期**：2026-05-06（DMA API wrapper 落地）
+**日期**：2026-05-07（第一组低耦合内存不变量修复）
 
 ### 已完成
 
-**主线：采用 `dma-api` 但封装在新的 `crates/dma` 边界内**
+**主线：修复 R3 内存层第一组可直接修的问题**
 
-本轮从 DMA / VirtIO HAL 的设计讨论进入实现，选择"封装 `dma-api`"而不是让
-`dma_api::*` 直接扩散到设备层：
+本轮从 `docs/audit/2026-05-07-r3-memory-review-findings.md` 的“第一组”开始，
+按测试先行修复了四个低耦合不变量问题：
 
-1. **新增 `crates/dma`**
-   - 在 workspace 中新增 `dma` crate，并引入 `dma-api 0.7.2`
-   - `DmaDirection` / `DmaError` / `DmaResult` 使用 SimpleKernel 自己的公开类型
-   - `DmaError::from_api` 保持 crate-private，避免上层依赖 `dma_api::DmaError`
-2. **实现 QEMU identity DMA 后端**
-   - `QemuIdentityDmaOp` 实现 `dma_api::DmaOp`
-   - `DMA_TRACKER` 从 `src/device/hal.rs` 移入 `crates/dma`
-   - `raw_alloc_pages` / `raw_dealloc_pages` / `raw_map_single` / `raw_unmap_single`
-     作为 `virtio-drivers::Hal` 的 raw adapter helper
-3. **提供 typed wrapper**
-   - `DmaDevice` 包装 `dma_api::DeviceDma`
-   - `DmaBuffer<T>` 包装 `dma_api::DBox<T>`
-   - `DmaArray<T>` 包装 `dma_api::DArray<T>`
-   - `StreamingMapping<T>` 包装 `dma_api::SArrayPtr<T>`
-   - `DmaValue` 只表达字节可读写和 `Copy`，不表达设备 ABI / endian；descriptor
-     仍需 `#[repr(C)]` 和固定宽度字段
-4. **VirtIO HAL 改为适配层**
-   - `src/device/hal.rs` 删除本地 `DMA_TRACKER`、`AllocatedFrames` 和裸 VA/PA 逻辑
-   - `BufferDirection` 转换为 `dma::DmaDirection`
-   - `dma_alloc` / `dma_dealloc` / `share` / `unshare` 委托 `crates/dma`
-5. **文档与 ADR**
-   - 新增 ADR-014，状态为"提议"
-   - 更新 `crates/dma/README.md`，明确第三方依赖边界
-   - 更新本文件当前状态和验证结果
+1. `VirtAddr::align_down_to()` 改为重新经过 `Self::new(...)`，防止高半区大粒度对齐生成 canonical hole 地址。
+2. `Frame::new()` 增加页号上界校验，`Frame + usize` 同步防止越过 `arch::PA_BITS` 可表示范围。
+3. `memory::init()` 入口增加 `AtomicBool` 一次性守卫，二次调用直接 fail-fast，不再进入 heap/frame allocator 内部损坏路径。
+4. `frame_allocator::init()` 在入 buddy 前校验 free/reserved 页对齐、非零、溢出和重叠；文档明确 `reserved` 只校验和记录，不从 free 范围扣除。
 
 ### 关键结论
 
 | # | 结论 | 状态 | ADR |
 |---|------|------|-----|
-| `dma-api` 只作为 `crates/dma` 内部实现依赖 | 上层模块使用 SimpleKernel wrapper，不直接暴露 `dma_api::*` | 已实施 | [ADR-014](../adr/014-qemu-virtio-dma-api-wrapper.md) |
-| 当前 DMA 后端只承诺 QEMU VirtIO identity mapping | QEMU 行为保持不变；真机 non-coherent DMA 未被声明为已支持 | 已实施 | ADR-014 |
-| `DmaBuffer<T>` / `DmaArray<T>` / `StreamingMapping<T>` 先建立类型边界 | typed wrapper 已存在，但驱动侧后续是否使用仍需按场景接入 | 已实施 | ADR-014 |
-| cache maintenance / PTE 属性 / DMA capability 仍是后续真机设计问题 | 本轮不解决 AArch64 non-coherent 真实硬件一致性 | 待设计 | 待定 |
+| `memory::init()` 是 safe public API，但包住 heap/frame allocator 的“一次性 unsafe”前提 | 已加一次性 fail-fast 守卫 | 已修复 | — |
+| `update_range_flags()` safe wrapper 没有兑现 `update_pte()` 的无并发写者前提 | 运行期权限 / DMA 属性切换需要锁、token 或 unsafe 边界 | 待讨论 | 待定 |
+| `kernel_rwx()` 公开存在，与 README 的 W^X 约束冲突 | 需删除、收窄可见性或改成显式危险 API | 待讨论 | 待定 |
+| DMA QEMU identity 后端仍无真机 cache sync / coherent PTE / mask 语义 | 与 ADR-014 一致，但硬件前必须继续设计 | 待设计 | ADR-014 后续 |
+| `Frame` / `VirtAddr::align_down_to` 有 newtype 不变量漏洞 | 已补 QEMU should_panic 回归并修复 | 已修复 | — |
+| `frame_allocator::init reserved` 只记录不生效，API 契约误导 | 已收敛为“校验 + 记录”，要求 caller 预先排除 free 范围 | 已修复 | — |
+| RISC-V MMIO、AArch64 段边界、多段 RAM、TLB shootdown 测试均有语义或测试缺口 | 需要分拆为设计讨论和测试任务 | 待讨论 | 待定 |
 
 ### 验证
 
-- `cargo check -p dma -Z build-std=core,compiler_builtins,alloc -Z build-std-features=compiler-builtins-mem --target riscv64gc-unknown-none-elf` 通过
-- `cargo fmt --all -- --check` 通过
-- `cargo xtask check --arch riscv64` 通过（仅已有 warning）
-- `cargo xtask check --arch aarch64` 通过（仅已有 warning）
-- `timeout 30s cargo xtask test --arch riscv64 --name device-test` 通过，日志包含
-  `VirtIO: block read test OK (sector 0)`、`virtio_blk_read_sector ... ok`、
-  `device-test: all 3 tests passed`
+- `cargo fmt --all -- --check` 通过。
+- `cargo xtask check --arch riscv64` / `cargo xtask check --arch aarch64` 通过，保留既有 warning。
+- 30 秒超时运行 RISC-V QEMU 回归：`align-down-canonical-panic`、`frame-overflow-panic`、`double-init-panic`、`reserved-overlap-panic` 均打印预期 `SHOULD_PANIC OK` 和具体 panic 文案。
+- 30 秒超时运行 RISC-V 正常路径：`memory-types-test/codec`、`frame-test/alloc` 通过。
 
 ### 下一步
 
-下一步不是继续改 QEMU 路径，而是进入真机 DMA 语义设计：cache maintenance、
-PTE 属性（如 Normal-NC）、DMA mask / capability / IOMMU 或 bounce buffer 策略。
+进入第二组设计讨论：权限切换所有权 / W^X API / frame allocator hard IRQ 承诺 /
+单段 RAM fail-fast 与多段 RAM 支持边界。另需优先修复 should_panic harness
+的退出码/失败判定，否则未触发 panic 的测试可能被 xtask 误判为通过。
 
 ---
 
@@ -341,3 +323,5 @@ PTE 属性（如 Normal-NC）、DMA mask / capability / IOMMU 或 bounce buffer 
 | 2026-04-18 | R3 (ADR-013) | 删除 OwnedPages 抽象 + 精简 frame_allocator::init 接口 + 注释清理（commits `9d7ad44c6` / `f36f347de`，净减 ~170 行） |
 | 2026-04-18 | R3 (收尾) | 清理低优先级 review 遗留：MMIO 单一入口 + `update_pte` 返回 `()` + range API 形状 doc + `update_range_flags` 跨页非原子 doc；TLB shootdown 降优先级；DMA 权限问题概念澄清保留 |
 | 2026-04-18 | R3 (布局修正) | MMIO 子系统从 paging crate 整体迁回 memory crate（`crates/paging/src/mmio.rs` → `crates/memory/src/mmio.rs`）——当年迁入 paging 的动机（消除跨 crate unsafe）已失效，RAM 校验下沉后 ram_range 参数可内部从 MEMORY_INFO 读取；`memory::map_mmio` 门面删除，唯一入口 `memory::MmioRegion::map(paddr, size)`；paging 回归纯页表 crate（少 zerocopy 依赖） |
+| 2026-05-07 | R3 (subagent 复审) | 使用 4 个 subagent 只读复审 `memory_types` / `frame_allocator` / `page_table_entry` / `paging` / `tlb` / `heap` / `memory` / `dma`，整理出初始化一次性、权限切换并发、W^X、DMA 真机语义、newtype 不变量、RISC-V MMIO 属性、AArch64 段边界和多段 RAM 等待讨论问题；详细说明见 `docs/audit/2026-05-07-r3-memory-review-findings.md` |
+| 2026-05-07 | R3 (第一组修复) | 修复 `VirtAddr::align_down_to` canonical 校验、`Frame::new` 页号范围、`memory::init` 二次调用 fail-fast、`frame_allocator::init reserved` 校验语义；新增对应 QEMU 回归测试和测试清单。 |

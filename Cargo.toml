@@ -37,6 +37,7 @@ members = [
     "tests/arch-test",
     "tests/device-test",
     "tests/fs-test",
+    "tests/memory-test",
     "tests/memory-types-test",
     "tests/pte-test",
     "xtask",

@@ -102,6 +102,7 @@ MMIO 地址是硬件寄存器，不是 RAM，不在帧分配器中。
 SAS 下分页 / MMIO 映射失败都是内核 bug：
 
 - `MEMORY_INFO` 未初始化。
+- `init()` 被二次调用。
 - `size == 0`。
 - RAM / Device 重叠。
 - boot 期页表节点 OOM。

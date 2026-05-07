@@ -42,7 +42,9 @@ macro_rules! impl_addr {
             }
 
             /// # Panics
-            /// `align` 非 2 的幂时 panic。
+            ///
+            /// `align` 非 2 的幂时 panic。对 [`VirtAddr`]，对齐结果若落入
+            /// canonical hole，也会在重新构造地址时 panic。
             #[inline]
             pub const fn align_down_to(self, align: usize) -> Self {
                 assert!(
@@ -52,7 +54,7 @@ macro_rules! impl_addr {
                         "::align_down_to: align 必须是 2 的幂（非零）"
                     )
                 );
-                Self(self.0 & !(align - 1))
+                Self::new(self.0 & !(align - 1))
             }
 
             /// 向上对齐到页边界；已对齐时保持不变。

@@ -14,6 +14,16 @@ path = "src/align_up_overflow_panic.rs"
 test = false
 
 [[bin]]
+name = "align-down-canonical-panic"
+path = "src/align_down_canonical_panic.rs"
+test = false
+
+[[bin]]
+name = "frame-overflow-panic"
+path = "src/frame_overflow_panic.rs"
+test = false
+
+[[bin]]
 name = "pa-overflow-panic"
 path = "src/pa_overflow_panic.rs"
 test = false

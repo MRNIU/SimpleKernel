@@ -1,10 +1,27 @@
 //! 内存子系统初始化——主核 / 从核。
 
+use core::sync::atomic::{AtomicBool, Ordering};
+
 use memory_types::PhysAddr;
 use paging::{PageTable, PteFlags, PteFlagsOps};
 
+/// 主核内存初始化是否已完成。
+static MEMORY_INIT_DONE: AtomicBool = AtomicBool::new(false);
+
 /// 主核内存初始化——引导堆 → 帧分配器 → 堆扩展 → 页表 → 权限覆盖。
+///
+/// # Panics
+///
+/// `MEMORY_INFO` 未初始化、RAM / kernel 范围不合法、帧分配失败、页表映射失败，
+/// 或本函数被二次调用时 panic。
 pub fn init() {
+    assert!(
+        MEMORY_INIT_DONE
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .is_ok(),
+        "memory::init called more than once"
+    );
+
     // SAFETY: 在任何堆分配之前调用，且仅调用一次（由启动流程保证）
     unsafe { heap_crate::init() };
 

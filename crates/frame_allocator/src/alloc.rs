@@ -32,16 +32,6 @@ static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocator<32>> = SpinLockIrq::new(
 /// - `free_start` 页对齐、`free_size > 0`、`[free_start, free_start+free_size)` 有效
 /// - 仅调用一次（由上层启动流程保证）
 unsafe fn init_buddy(free_start: PhysAddr, free_size: usize) {
-    assert!(
-        free_start.is_aligned(),
-        "frame_allocator::init: free_start 未页对齐: {free_start}"
-    );
-    assert!(free_size > 0, "frame_allocator::init: free_size 为 0");
-    assert!(
-        free_start.as_usize().checked_add(free_size).is_some(),
-        "frame_allocator::init: 分配区间越过地址空间"
-    );
-
     let start_frame = free_start.page_number().as_usize();
     let end_frame = (free_start + free_size).page_number().as_usize();
 
@@ -54,11 +44,67 @@ unsafe fn init_buddy(free_start: PhysAddr, free_size: usize) {
     );
 }
 
+fn free_span(free_start: PhysAddr, free_size: usize) -> FrameSpan {
+    assert!(
+        free_start.is_aligned(),
+        "frame_allocator::init: free_start 未页对齐: {free_start}"
+    );
+    assert!(free_size > 0, "frame_allocator::init: free_size 为 0");
+
+    let free_end = free_start + free_size;
+    assert!(
+        free_end.is_aligned(),
+        "frame_allocator::init: free 结束地址未页对齐: start={free_start}, size={free_size}, end={free_end}"
+    );
+
+    FrameSpan::new(free_start.page_number(), free_end.page_number())
+}
+
+fn reserved_span(index: usize, start: PhysAddr, count: usize) -> FrameSpan {
+    assert!(
+        start.is_aligned(),
+        "frame_allocator::init: reserved[{index}] 范围未页对齐: {start}"
+    );
+    assert!(
+        count > 0,
+        "frame_allocator::init: reserved[{index}] 范围 count 为 0"
+    );
+
+    let start_frame = start.page_number();
+    FrameSpan::new(start_frame, start_frame + count)
+}
+
+fn validate_reserved_ranges(free: FrameSpan, reserved: &[(PhysAddr, usize)]) {
+    for (i, &(start, count)) in reserved.iter().enumerate() {
+        let span = reserved_span(i, start, count);
+        assert!(
+            !span.overlaps(free),
+            "frame_allocator::init: reserved[{i}] 范围 [{}, {}) 与 free 范围 [{}, {}) 重叠",
+            span.start(),
+            span.end(),
+            free.start(),
+            free.end()
+        );
+
+        for (j, &(other_start, other_count)) in reserved[..i].iter().enumerate() {
+            let other = reserved_span(j, other_start, other_count);
+            assert!(
+                !span.overlaps(other),
+                "frame_allocator::init: reserved[{i}] 范围 [{}, {}) 与 reserved[{j}] 范围 [{}, {}) 重叠",
+                span.start(),
+                span.end(),
+                other.start(),
+                other.end()
+            );
+        }
+    }
+}
+
 /// 初始化帧分配器——空闲内存入 buddy，校验并记录预留范围。
 ///
 /// - `free_start` / `free_size`：空闲物理内存范围，加入 buddy allocator
 /// - `reserved`：需要预留的物理地址范围 `(start, page_count)` 列表；
-///   **不加入** buddy，天然从分配池中排除（调用方持有物理范围引用无需通过本函数）
+///   用于校验和日志记录；调用方必须保证 `free` 范围已经排除这些区域。
 ///
 /// # Safety
 ///
@@ -68,17 +114,16 @@ unsafe fn init_buddy(free_start: PhysAddr, free_size: usize) {
 ///
 /// # Panics
 ///
-/// `reserved` 任一条目未页对齐或 `count == 0` 时 panic——预留描述错误是内核 bug。
+/// `free` 或 `reserved` 任一条目未页对齐、`count == 0`、结束地址溢出，
+/// 或范围发生重叠时 panic——初始化描述错误是内核 bug。
 pub unsafe fn init(free_start: PhysAddr, free_size: usize, reserved: &[(PhysAddr, usize)]) {
+    let free = free_span(free_start, free_size);
+    validate_reserved_ranges(free, reserved);
+
     // SAFETY: 调用方约束直接转发给 init_buddy
     unsafe { init_buddy(free_start, free_size) };
 
     for &(start, count) in reserved {
-        assert!(
-            start.is_aligned(),
-            "frame_allocator::init: reserved 范围未页对齐: {start}"
-        );
-        assert!(count > 0, "frame_allocator::init: reserved 范围 count 为 0");
         log::info!("FrameInit: reserved {} pages at {}", count, start);
     }
 }

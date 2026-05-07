@@ -17,6 +17,8 @@ cargo xtask test --list                                  # 列出可用测试
 |----|--------|------|---------|
 | `memory-types-test` | `codec` | normal | 地址和帧/页号编解码 |
 | | `align-up-overflow-panic` | should_panic | align_up 溢出检测 |
+| | `align-down-canonical-panic` | should_panic | align_down_to canonical 校验 |
+| | `frame-overflow-panic` | should_panic | Frame 页号范围校验 |
 | | `pa-overflow-panic` | should_panic | PhysAddr 加法溢出检测 |
 | | `va-canonical-panic` | should_panic | VirtAddr 规范化违反检测 |
 | `paging-test` | `basic` | normal | 页大小计算、VPN 索引提取 |
@@ -29,6 +31,8 @@ cargo xtask test --list                                  # 列出可用测试
 | | `lockstack-pop-mismatch-panic` | should_panic | 锁栈 pop 指针不匹配检测 |
 | | `recursive-lock-panic` | should_panic | 同核递归加锁检测 |
 | `frame-test` | `alloc` | normal | 帧分配/释放、RAII 所有权生命周期 |
+| | `reserved-overlap-panic` | should_panic | init reserved/free 重叠检测 |
+| `memory-test` | `double-init-panic` | should_panic | memory::init 二次调用 fail-fast |
 | `heap-test` | | normal | 堆分配（Box、Vec、大块） |
 | `device-test` | | normal | DeviceManager、VirtIO 块设备读取 |
 | `fs-test` | | normal | VFS 路径解析、RamFS CRUD、多级目录 |

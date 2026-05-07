@@ -1,24 +1,17 @@
 [package]
-name = "frame-test"
-description = "帧分配器 typestate 生命周期测试"
+name = "memory-test"
+description = "memory 门面初始化边界测试"
 edition.workspace = true
 
 [[bin]]
-name = "alloc"
-path = "src/alloc.rs"
-test = false
-
-[[bin]]
-name = "reserved-overlap-panic"
-path = "src/reserved_overlap_panic.rs"
+name = "double-init-panic"
+path = "src/double_init_panic.rs"
 test = false
 
 [dependencies]
 test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false }
-frame_allocator = { path = "../../crates/frame_allocator" }
-config = { path = "../../crates/config" }
-memory_types = { path = "../../crates/memory_types" }
+memory = { path = "../../crates/memory" }
 log.workspace = true
 heapless.workspace = true
 

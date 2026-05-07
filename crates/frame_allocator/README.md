@@ -127,3 +127,7 @@ paging::kernel_page_table().update_range_flags(va, frames.page_count(), PteFlags
 
 `frame_allocator::init()` 必须在堆初始化之后、任何帧分配之前调用。
 buddy allocator 内部使用 `BTreeSet`（堆分配），因此依赖堆可用。
+
+`reserved` 参数只做页对齐、溢出和重叠校验，并记录启动日志；它不会从
+`free_start` / `free_size` 描述的空闲范围中扣除页面。调用方必须先把所有
+固件区、内核镜像区和其他保留区从 free 范围中排除，再调用 `init()`。

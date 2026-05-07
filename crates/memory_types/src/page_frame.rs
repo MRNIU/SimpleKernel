@@ -8,6 +8,8 @@ use config::PAGE_SIZE_BITS;
 
 use crate::addr::PhysAddr;
 
+const MAX_FRAME_COUNT: usize = 1usize << (arch::PA_BITS - PAGE_SIZE_BITS);
+
 /// 物理帧——4K 页号的类型安全 newtype。
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -16,8 +18,17 @@ pub struct Frame {
 }
 
 impl Frame {
+    /// 从 4K 页号构造物理帧。
+    ///
+    /// # Panics
+    ///
+    /// `number_4k` 左移为字节地址后超出 [`arch::PA_BITS`] 可表示范围时 panic。
     #[inline]
     pub const fn new(number_4k: usize) -> Self {
+        assert!(
+            number_4k < MAX_FRAME_COUNT,
+            "Frame::new: 页号超出 arch::PA_BITS 可表示范围"
+        );
         Self { number: number_4k }
     }
 
@@ -38,11 +49,14 @@ impl core::ops::Add<usize> for Frame {
     #[inline]
     fn add(self, rhs: usize) -> Self {
         let lhs = self.number;
-        Self {
-            number: lhs
-                .checked_add(rhs)
-                .unwrap_or_else(|| panic!("Frame::add: {lhs} + {rhs} 加法溢出")),
-        }
+        let number = lhs
+            .checked_add(rhs)
+            .unwrap_or_else(|| panic!("Frame::add: {lhs} + {rhs} 加法溢出"));
+        assert!(
+            number < MAX_FRAME_COUNT,
+            "Frame::add: {lhs} + {rhs} 超出 arch::PA_BITS 可表示范围"
+        );
+        Self { number }
     }
 }
 

@@ -112,7 +112,17 @@ assert_eq!(f.start_addr(), PhysAddr::new(0x8020_3000)); // 不是 0x8020_3FFF
 当地址接近 `usize::MAX` 时，`align_up()` 无法向上对齐而不溢出，
 会 panic 而非静默回绕。这是有意为之，防止产生错误的地址值。
 
-### 3. `PhysAddr::to_virt` / `VirtAddr::to_phys` 仅适用于 identity mapping
+`VirtAddr::align_down_to()` 同样会重新执行 canonical 校验。高半区地址使用
+过大的对齐粒度时，如果结果落入 canonical hole，会 panic 而不是构造非法
+`VirtAddr`。
+
+### 3. `Frame::new` 校验页号范围
+
+`Frame::new(number_4k)` 要求页号左移 12 位后仍位于 `arch::PA_BITS`
+可表示范围内。超过范围的页号会 panic，避免 `Frame::start_addr()` 把过大的
+页号截断成另一个物理地址。
+
+### 4. `PhysAddr::to_virt` / `VirtAddr::to_phys` 仅适用于 identity mapping
 
 这两个方法假设物理地址和虚拟地址数值相同（VA == PA）。
 对于非线性映射的地址（如用户空间地址），必须通过页表查询进行转换。
