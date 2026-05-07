@@ -122,6 +122,9 @@ assert_eq!(f.start_addr(), PhysAddr::new(0x8020_3000)); // 不是 0x8020_3FFF
 可表示范围内。超过范围的页号会 panic，避免 `Frame::start_addr()` 把过大的
 页号截断成另一个物理地址。
 
+`Frame + usize` 也会校验结果页号仍在同一范围内，不能通过帧号加法绕过
+`Frame::new()` 的强不变量。
+
 ### 4. `PhysAddr::to_virt` / `VirtAddr::to_phys` 仅适用于 identity mapping
 
 这两个方法假设物理地址和虚拟地址数值相同（VA == PA）。

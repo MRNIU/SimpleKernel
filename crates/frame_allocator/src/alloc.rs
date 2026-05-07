@@ -44,6 +44,15 @@ unsafe fn init_buddy(free_start: PhysAddr, free_size: usize) {
     );
 }
 
+/// 校验空闲物理内存范围，并转换为 buddy 使用的半开帧区间。
+///
+/// `free_size` 以字节为单位；返回的 [`FrameSpan`] 表示
+/// `[free_start.page_number(), free_end.page_number())`。
+///
+/// # Panics
+///
+/// `free_start` 未页对齐、`free_size == 0`、结束地址溢出或结束地址未页对齐时
+/// panic。启动期空闲内存描述错误是内核初始化不变量错误，必须在入 buddy 前暴露。
 fn free_span(free_start: PhysAddr, free_size: usize) -> FrameSpan {
     assert!(
         free_start.is_aligned(),
@@ -60,6 +69,14 @@ fn free_span(free_start: PhysAddr, free_size: usize) -> FrameSpan {
     FrameSpan::new(free_start.page_number(), free_end.page_number())
 }
 
+/// 校验单个预留物理范围，并转换为半开帧区间。
+///
+/// `count` 以 4K 页为单位；`index` 只用于 panic 信息定位 `reserved[index]`。
+///
+/// # Panics
+///
+/// `start` 未页对齐、`count == 0`、或 `start + count` 超出当前架构可表示的
+/// 物理帧范围时 panic。
 fn reserved_span(index: usize, start: PhysAddr, count: usize) -> FrameSpan {
     assert!(
         start.is_aligned(),
@@ -74,6 +91,15 @@ fn reserved_span(index: usize, start: PhysAddr, count: usize) -> FrameSpan {
     FrameSpan::new(start_frame, start_frame + count)
 }
 
+/// 校验预留范围不污染 buddy 的空闲池描述。
+///
+/// 此函数必须在 [`init_buddy`] 之前调用：`reserved` 不会从 buddy 中扣除页面，
+/// 因此调用方传入的 `free` 必须已经排除所有预留区。
+///
+/// # Panics
+///
+/// 任一 `reserved` 条目非法、与 `free` 重叠、或与前面的 `reserved` 条目重叠时
+/// panic。
 fn validate_reserved_ranges(free: FrameSpan, reserved: &[(PhysAddr, usize)]) {
     for (i, &(start, count)) in reserved.iter().enumerate() {
         let span = reserved_span(i, start, count);
