@@ -1,4 +1,4 @@
-//! 页表操作测试——验证 identity_map_range / get_mapping / update_pte 核心操作。
+//! 页表操作测试——验证 identity_map_range / get_mapping / update_range_flags 核心操作。
 
 #![no_std]
 #![no_main]
@@ -30,8 +30,8 @@ fn run_tests() {
     test_get_mapping_on_empty_table();
     log::info!("test get_mapping_on_empty_table ... ok");
 
-    test_update_pte_changes_permissions();
-    log::info!("test update_pte_changes_permissions ... ok");
+    test_update_range_flags_changes_permissions();
+    log::info!("test update_range_flags_changes_permissions ... ok");
 
     test_identity_map_range_idempotent();
     log::info!("test identity_map_range_idempotent ... ok");
@@ -117,15 +117,14 @@ fn test_get_mapping_on_empty_table() {
     assert!(pt.get_mapping(VirtAddr::new(0)).is_none());
 }
 
-/// update_pte 应修改已有页的权限。
-fn test_update_pte_changes_permissions() {
+/// update_range_flags 应修改已有页的权限。
+fn test_update_range_flags_changes_permissions() {
     let pt = PageTable::create();
     let pa = PhysAddr::new(0x8020_0000);
     let va = pa.to_virt();
 
     pt.identity_map_range(pa, pa + config::PAGE_SIZE, PteFlags::kernel_rw());
-    // SAFETY: 测试页表只在当前测试函数内使用，同一 PTE 没有并发写入者。
-    unsafe { pt.update_pte(va, PteFlags::kernel_ro()) };
+    pt.update_range_flags(va, 1, PteFlags::kernel_ro());
 
     let (got_pa, got_flags) = pt.get_mapping(va).expect("页表项应存在");
     assert_eq!(got_pa, pa);

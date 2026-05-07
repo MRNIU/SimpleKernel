@@ -99,7 +99,60 @@ pub fn dump_qemu_dtb(
     if !dtb_path.exists() {
         return Err(format!("failed to generate DTB at {}", dtb_path.display()).into());
     }
+    inject_firmware_reserved_memory(arch, &dtb_path)?;
     Ok(dtb_path)
+}
+
+/// QEMU virt 原生 DTB 不描述第一段 RAM 中的 firmware/bootloader 保留区。
+/// 内核需要这个节点来区分固件保留区和普通内核 RAM，因此在打包 FIT 前补充。
+fn inject_firmware_reserved_memory(arch: Arch, dtb_path: &Path) -> Result<()> {
+    let dts_path = dtb_path.with_extension("dts");
+    let status = Command::new("dtc")
+        .args(["-q", "-I", "dtb", "-O", "dts", "-o"])
+        .arg(&dts_path)
+        .arg(dtb_path)
+        .status()
+        .map_err(|e| format!("dtc 反编译 DTB 失败: {e}"))?;
+    if !status.success() {
+        return Err(format!("dtc 反编译 DTB 失败: {status}").into());
+    }
+
+    let mut dts = fs::read_to_string(&dts_path)?;
+    if dts.contains("simplekernel,firmware-reserved") {
+        return Ok(());
+    }
+    if dts.contains("reserved-memory") {
+        eprintln!(
+            "[xtask] warning: DTB already has /reserved-memory; skip SimpleKernel firmware node injection"
+        );
+        return Ok(());
+    }
+
+    let (addr, size) = match arch {
+        Arch::Riscv64 => (0x8000_0000u64, 0x0020_0000u64),
+        Arch::Aarch64 => (0x4000_0000u64, 0x0010_0000u64),
+    };
+    let node = format!(
+        "\n\treserved-memory {{\n\t\t#address-cells = <0x02>;\n\t\t#size-cells = <0x02>;\n\t\tranges;\n\n\t\tfirmware@{addr:x} {{\n\t\t\tcompatible = \"simplekernel,firmware-reserved\";\n\t\t\treg = <0x00 0x{addr:08x} 0x00 0x{size:08x}>;\n\t\t\tno-map;\n\t\t}};\n\t}};\n"
+    );
+    let insert_at = dts
+        .find("\n\tmemory@")
+        .or_else(|| dts.rfind("\n};"))
+        .ok_or("无法定位 DTB root 节点插入点")?;
+    dts.insert_str(insert_at, &node);
+    fs::write(&dts_path, dts)?;
+
+    let status = Command::new("dtc")
+        .args(["-q", "-I", "dts", "-O", "dtb", "-o"])
+        .arg(dtb_path)
+        .arg(&dts_path)
+        .status()
+        .map_err(|e| format!("dtc 重新编译 DTB 失败: {e}"))?;
+    if !status.success() {
+        return Err(format!("dtc 重新编译 DTB 失败: {status}").into());
+    }
+    println!("[xtask] Injected firmware reserved-memory: addr={addr:#x}, size={size:#x}");
+    Ok(())
 }
 
 /// 将内核 ELF 和 DTB 打包为 U-Boot FIT 镜像（`boot.its` → `boot.fit`）。

@@ -25,6 +25,17 @@ static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocator<32>> = SpinLockIrq::new(
     sync_crate::lock_level::FRAME_ALLOC,
 );
 
+/// 断言当前不在中断上下文中。
+///
+/// buddy 后端依赖堆分配的元数据结构，不能在 hard IRQ 路径中分配或释放。
+#[inline(always)]
+fn assert_not_in_irq(operation: &str) {
+    assert!(
+        !interrupt_state::is_in_interrupt(),
+        "frame_allocator::{operation}: 禁止在中断上下文中分配或释放物理帧"
+    );
+}
+
 /// 将空闲物理内存加入 buddy 后端。
 ///
 /// # Safety
@@ -165,6 +176,7 @@ pub unsafe fn init(free_start: PhysAddr, free_size: usize, reserved: &[(PhysAddr
 ///
 /// `count == 0` 时 panic（调用方逻辑错误，不是 OOM）。
 pub(crate) fn alloc_from_backend(count: usize) -> Result<AllocatedFrames, FrameAllocError> {
+    assert_not_in_irq("alloc_from_backend");
     assert!(count > 0, "alloc_from_backend: count 不能为 0");
 
     let frame_num = FRAME_ALLOCATOR
@@ -186,6 +198,7 @@ pub(crate) fn alloc_from_backend(count: usize) -> Result<AllocatedFrames, FrameA
 ///
 /// `range` 为空时 panic——零大小帧不应存在，表示分配器内部逻辑错误。
 pub(crate) fn dealloc_to_backend(range: FrameSpan) {
+    assert_not_in_irq("dealloc_to_backend");
     let count = range.size();
     assert!(
         count > 0,

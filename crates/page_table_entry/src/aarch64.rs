@@ -87,13 +87,12 @@ impl PteFlagsOps for PteFlags {
         Self::KERNEL_NORMAL | Self::AP_RO | Self::PXN | Self::UXN
     }
 
-    /// 内核读写执行映射。
+    /// 固件保留区映射。
     ///
-    /// UXN = 1 阻止 EL0 执行此页——即使内核允许 RWX，用户态仍不可执行，
-    /// 防止特权提升后利用内核映射执行代码。
+    /// 当前固件保留区使用背景层读写权限，不向上层暴露通用 RWX preset。
     #[inline]
-    fn kernel_rwx() -> Self {
-        Self::KERNEL_NORMAL | Self::UXN
+    fn kernel_firmware() -> Self {
+        Self::kernel_rw()
     }
 
     /// 设备 MMIO 映射（Device-nGnRnE，不可缓存、不可执行）。

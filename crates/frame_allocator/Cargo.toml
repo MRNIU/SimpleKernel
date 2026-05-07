@@ -8,6 +8,7 @@ description = "Physical frame allocator with RAII ownership tracking"
 edition.workspace = true
 
 [dependencies]
+interrupt_state = { path = "../interrupt_state" }
 memory_types = { path = "../memory_types" }
 sync_crate = { path = "../sync", package = "sync" }
 

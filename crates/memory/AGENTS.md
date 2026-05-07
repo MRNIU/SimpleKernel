@@ -76,7 +76,7 @@ sequenceDiagram
   Memory->>Paging: PageTable::create()
   Memory->>Paging: init_kernel_page_table(pt)
   Memory->>Paging: identity_map_range(all RAM, kernel_rw)
-  Memory->>Paging: update_range_flags(.text/.rodata/.data)
+  Memory->>Paging: update_range_flags(firmware/.text/.rodata/.data)
 ```
 
 从核路径只调用 `init_smp()`，复用主核已经建立的全局内核页表，不重新构造页表。

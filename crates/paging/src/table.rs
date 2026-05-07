@@ -1,4 +1,4 @@
-//! 多级页表——walk / identity_map_range / update_pte 逻辑。
+//! 多级页表——walk / identity_map_range / update_range_flags 逻辑。
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
@@ -17,7 +17,7 @@ const PT_LEVELS: usize = arch::PT_LEVELS;
 /// `Acquire/Release` ordering 保证：
 /// - `read`（Acquire）：读到的 PTE 值与写入方的所有先序写操作同步
 /// - `write`（Release）：写入 PTE 前的所有先序写操作对后续 Acquire 读可见
-/// - `swap`（AcqRel）：兼具 Acquire + Release 语义，用于无锁 update_pte
+/// - `swap`（AcqRel）：兼具 Acquire + Release 语义，用于内部 PTE 覆盖
 struct Table {
     base: *mut AtomicU64,
 }
@@ -49,7 +49,7 @@ impl Table {
         unsafe { (*self.base.add(index)).store(pte.as_raw(), Ordering::Release) };
     }
 
-    /// 原子交换 PTE，返回旧值。用于无锁 update_pte。
+    /// 原子交换 PTE，返回旧值。用于无锁权限覆盖。
     #[inline]
     fn swap(&self, index: usize, pte: PageTableEntry) -> PageTableEntry {
         debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
@@ -171,7 +171,7 @@ impl PageTable {
     /// - 同一 PTE 没有并发写入者；
     /// - 修改完成后在重新依赖权限语义前刷新本核和其他在线核心的 TLB；
     /// - 权限收紧或释放帧前，调用方不能让旧权限继续被观察。
-    pub unsafe fn update_pte(&self, va: VirtAddr, new_flags: PteFlags) {
+    unsafe fn update_pte(&self, va: VirtAddr, new_flags: PteFlags) {
         let (pte, paddr, idx, leaf_level) = self
             .walk_to_leaf(va)
             .unwrap_or_else(|| panic!("update_pte: VA {va} 未映射（违反 SAS 背景层不变量）"));
@@ -197,6 +197,13 @@ impl PageTable {
     /// 区间内各页**独立**更新——更新第 `k+1` 页时第 `k` 页已写回，其他核可能观察到
     /// 前半区间新 flags、后半区间旧 flags 的**中间状态**。若调用场景要求整段翻转
     /// 不可分（如 W^X 切换），调用方需自行在更高层加锁或使用 stop-the-world 协议。
+    ///
+    /// # 并发写者
+    ///
+    /// 当前生产路径只在启动期 `memory::init()` 覆盖内核段和固件保留区权限，
+    /// 此时 SMP 尚未进入运行期调度，不存在多核同时修改同一 VA 的调用路径。
+    /// 后续若把此接口用于运行期 DMA 属性切换、模块加载或 `mprotect`，必须先在
+    /// 上层引入区间锁、owner token 或等价的地址空间所有权证明。
     ///
     /// # Panics
     ///

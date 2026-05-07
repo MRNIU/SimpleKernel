@@ -5,21 +5,22 @@
 > 范围：`memory_types`、`frame_allocator`、`page_table_entry`、`paging`、`tlb`、`heap`、`memory`、`dma` 以及相关调用方。
 >
 > 本文记录问题原因、可能触发路径、修复方案和当前处理状态。
-> 第一组低耦合问题已在 2026-05-07 修复；其余设计边界问题仍待讨论。
+> 第一组低耦合问题已在 2026-05-07 修复；第二组中的 W^X 固件映射、frame allocator hard IRQ 边界、单段 RAM fail-fast 已落地。剩余重点是运行期权限切换的未来所有权模型。
 
 ## 总览
 
 | # | 严重度 | 问题 | 主要风险 | 决策状态 |
 |---|--------|------|----------|----------|
 | 1 | P1 | `memory::init()` safe API 承担一次性 unsafe 前提 | 重复初始化破坏堆 / 帧分配器状态 | 已修复 |
-| 2 | P1 | `update_range_flags()` 缺少并发写者证明 | 运行期权限切换 last-writer-wins | 需设计边界 |
-| 3 | P1 | 公开 `kernel_rwx()` 打穿 W^X | 普通调用方可创建 RWX 映射 | 需设计边界 |
+| 2 | P1 | `update_range_flags()` 缺少并发写者证明 | 未来运行期权限切换 last-writer-wins | 当前无生产触发，未来需边界 |
+| 3 | P1 | 公开 `kernel_rwx()` 打穿 W^X | 普通调用方可创建 RWX 映射 | 已修复 |
 | 4 | P1 | DMA streaming `unmap` 无同步语义 | 真机 non-coherent 读旧 cache 行 | 需 ADR |
 | 5 | P1 | coherent DMA 仍是普通 cacheable RAM | virtqueue ring 可见性不可靠 | 需 ADR |
-| 6 | P1 | 帧分配中断语义与 heap 后端冲突 | IRQ/page fault 路径 panic 或死锁 | 需定义承诺 |
+| 6 | P1 | 帧分配中断语义与 heap 后端冲突 | IRQ/page fault 路径 panic 或死锁 | 已修复：禁止 hard IRQ |
 | 7 | P2 | `VirtAddr::align_down_to()` 绕过 canonical 校验 | newtype 可产生非法 VA | 已修复 |
 | 8 | P2 | `Frame` 页号范围未校验 | 超大页号截断成错误 PA | 已修复 |
 | 9 | P2 | `frame_allocator::init()` 的 `reserved` 只记录不生效 | API 契约误导调用方 | 已修复 |
+| 10 | P2 | FDT 只读取第一段 RAM | 多 bank 平台丢内存或误判 MMIO | 已修复（单段 fail-fast） |
 
 ## 修复状态
 
@@ -36,7 +37,22 @@
 - `memory-types-test/frame-overflow-panic`
 - `memory-test/double-init-panic`
 - `frame-test/reserved-overlap-panic`
-| 10 | P2 | FDT 只读取第一段 RAM | 多 bank 平台丢内存或误判 MMIO | 需设计边界 |
+
+### 第二组已修复/收窄（2026-05-07）
+
+- `KernelFdt::memory()` 检测到第二段 RAM region 时返回 `UnsupportedLayout`，避免静默只使用第一段。
+- `PageTable::update_pte()` 收窄为 `PageTable` 内部机制函数；公开调用面只保留带 TLB 刷新的 `update_range_flags()`。当前生产调用只在启动期 `memory::init()`，没有多核同时改同一 VA 的路径；未来运行期调用仍需区间锁或 owner token。
+- 删除公开 `kernel_rwx()` preset，新增 `kernel_firmware()` preset；`KernelFdt::firmware_reserved_memory()` 可解析 `/reserved-memory/firmware@...`，`xtask` 会给 QEMU 原生 DTB 注入该节点，`memory::init()` 再通过专用 `map_firmware_region()` 标记固件保留区。
+- `frame_allocator` 在 `alloc_from_backend()` / `dealloc_to_backend()` 入口断言不在 hard IRQ 上下文中，匹配 heap 后端约束。
+
+对应回归测试：
+
+- `memory-test/fdt-multi-memory`
+- `memory-test/fdt-firmware-reserved`
+- `pte-test/pte-test`
+- `paging-test/table`
+- `frame-test/alloc-in-hardirq-panic`
+- `frame-test/dealloc-in-hardirq-panic`
 
 ## 1. `memory::init()` safe API 承担一次性 unsafe 前提
 
@@ -97,7 +113,15 @@ boot::kernel_init()
 
 ### 问题原因
 
-`PageTable::update_pte()` 是 unsafe，并要求调用方保证同一 PTE 没有并发写入者。`update_range_flags()` 是 safe wrapper，但没有任何机制证明这个前提：
+`PageTable::update_pte()` 原本是公开 unsafe，并要求调用方保证同一 PTE 没有并发写入者。现已收窄为 `PageTable` 内部机制函数，公开调用面只保留带 TLB 刷新的 `update_range_flags()`。
+
+当前内存模型下，生产路径没有“多核同时改同一个 VA”的场景：
+
+- `update_range_flags()` 的生产调用集中在 `memory::init()`。
+- `memory::init()` 发生在主核启动阶段；从核尚未进入运行期调度。
+- 当前没有 `mprotect`、demand paging、模块热加载、运行期 DMA PTE 属性切换等调用方。
+
+因此它现在不是一个已知可触发的并发 bug，而是一个必须保留在 API 边界上的未来风险。若未来把 `update_range_flags()` 用到运行期，它仍没有机制证明同一 VA 区间没有并发写者：
 
 - 没有页表权限更新锁。
 - 没有 range owner / mapping owner。
@@ -135,9 +159,9 @@ memory::init()
 
 短期约束：
 
-1. 给 `update_range_flags()` 增加全局权限更新锁，至少保证同一页表内权限更新串行化。
-2. 将 `update_pte()` 收窄为 `pub(crate)` 或保留 unsafe 但只允许测试/内部使用。
-3. 文档明确跨页仍非原子，但同一 PTE 不会并发写。
+1. `update_pte()` 已收窄为内部函数；测试改为走 `update_range_flags()`。
+2. 文档明确当前生产路径只在启动期使用；新增运行期调用前必须先设计并发写者边界。
+3. 若未来需要运行期权限切换，先给 `update_range_flags()` 增加全局权限更新锁，或引入更强的 range owner / mapping owner。
 
 中期设计：
 
@@ -155,16 +179,16 @@ memory::init()
 
 ### 问题原因
 
-`PteFlagsOps` 公开 `kernel_rwx()`，而 README 又声明内核 preset 遵循 W^X。实际实现中：
+`PteFlagsOps` 曾公开 `kernel_rwx()`，而 README 又声明内核 preset 遵循 W^X。旧实现中：
 
 - RISC-V `kernel_rwx()` 包含 `READ | WRITE | EXECUTE | DIRTY`。
 - AArch64 `kernel_rwx()` 对 EL1 可写且可执行，只设置 `UXN` 阻止 EL0 执行。
 
-这让普通调用方可以通过公开 factory 创建 RWX 映射，类型层没有表达“这是危险例外”。
+这让普通调用方可以通过公开 factory 创建 RWX 映射，类型层没有表达“这是危险例外”。现已删除 `kernel_rwx()`，并用 `kernel_firmware()` 表达固件保留区的专用权限语义。固件区地址优先来自 FDT `/reserved-memory/firmware@...`；QEMU 原生 DTB 没有该节点时，`xtask` 会在 dump 出来的 DTB 中注入 SimpleKernel 专用固件保留节点。
 
 ### 可能触发路径
 
-当前生产路径未发现直接调用 `kernel_rwx()`，但潜在路径很短：
+旧生产路径未发现直接调用 `kernel_rwx()`，但潜在路径很短：
 
 ```text
 任意上层模块
@@ -184,7 +208,7 @@ memory::init()
 
 | 方案 | 优点 | 缺点 | ADR |
 |------|------|------|-----|
-| 删除 `kernel_rwx()` | W^X 语义最清晰 | 若有 boot 例外需要另建入口 | 可直接修 |
+| 删除 `kernel_rwx()` | W^X 语义最清晰 | 若有 boot 例外需要另建入口 | 已采用 |
 | 收窄为 crate-private | 防止上层误用 | paging 内仍可误用 | 可直接修 |
 | 改名为 `kernel_rwx_for_boot_trampoline_only` | 语义显式 | 仍保留危险能力 | 需要说明使用边界 |
 | 保留但加测试白名单 | 兼容性强 | API 仍容易误用 | 不推荐单独作为最终状态 |
@@ -332,7 +356,7 @@ interrupt context drops AllocatedFrames
   -> panic
 ```
 
-当前系统未实现 demand paging，所以触发概率低；但文档承诺已经把未来调用方引向错误方向。
+当前系统未实现 demand paging，所以旧代码触发概率低；但文档承诺已经把未来调用方引向错误方向。现已将承诺改为：hard IRQ 中禁止分配/释放物理帧，错误调用立即 panic。
 
 ### 修复方案
 
@@ -346,9 +370,10 @@ interrupt context drops AllocatedFrames
 
 最小修复：
 
-1. 在 `alloc_from_backend()` 和 `dealloc_to_backend()` 加 `assert!(!interrupt_state::is_in_interrupt())`，或新增明确的 non-IRQ API 文档。
-2. 修改 `frame_allocator/README.md`，删除“page fault handler 可直接分配”的承诺。
-3. 后续若需要 page fault 分配，先设计应急池或非 heap frame backend。
+1. 已在 `alloc_from_backend()` 和 `dealloc_to_backend()` 加 `assert!(!interrupt_state::is_in_interrupt())`。
+2. 已修改 `frame_allocator/README.md`，删除“中断/page fault handler 可直接分配”的承诺。
+3. 已新增 `frame-test/alloc-in-hardirq-panic` 和 `frame-test/dealloc-in-hardirq-panic`。
+4. 后续若需要 page fault 分配，先设计应急池或非 heap frame backend。
 
 ## 7. `VirtAddr::align_down_to()` 绕过 canonical 校验
 
@@ -494,6 +519,8 @@ frame_allocator::init(ram_start, ram_size, reserved_ranges)
 
 位置：`src/fdt.rs:90-101`
 
+状态：已采用短期 fail-fast 方案；完整多 bank RAM 支持仍是长期设计项。
+
 ### 问题原因
 
 `FdtReader::memory()` 调用 `memory.reg().iter()` 后只取 `regions.next()`，返回第一个 `(address, len)`。`MemoryInfo` 也只包含单个 `physical_memory_addr` 和 `physical_memory_size`。
@@ -533,8 +560,8 @@ FdtReader::memory()
 短期 fail-fast：
 
 1. 继续只支持单段 RAM。
-2. `FdtReader::memory()` 检测第二个 region，如果存在则返回错误或 panic。
-3. 错误信息列出“当前只支持单段 RAM”和至少 region 数量。
+2. `FdtReader::memory()` 检测第二个 region，如果存在则返回错误。
+3. 错误日志列出“当前只支持单段 RAM”和前两段 region 的地址 / 大小。
 
 长期支持：
 
@@ -554,14 +581,12 @@ FdtReader::memory()
 
 这些问题不需要先做 ADR，适合用小提交快速降低底层不变量风险。
 
-### 第二组：需要设计边界
+### 第二组：剩余设计边界
 
-1. `update_range_flags()` 的并发写者证明。
-2. `kernel_rwx()` 与 W^X 策略。
-3. frame allocator 是否承诺 hard IRQ 可分配。
-4. 单段 RAM fail-fast 还是多段 RAM 支持。
+1. `update_range_flags()` 若进入运行期路径，需要并发写者证明。
+2. 完整多 bank RAM 支持。
 
-这些会影响 API 形状或未来架构，应先讨论并按需写 ADR。
+`kernel_rwx()` 与 W^X 策略、固件 reserved-memory 解析、frame allocator hard IRQ 禁止、单段 RAM fail-fast 已先按窄口径修复。剩余项会影响 API 形状或未来架构，应先讨论并按需写 ADR。
 
 ### 第三组：真机前必须关闭
 
@@ -580,5 +605,5 @@ FdtReader::memory()
 | `frame_allocator` | 非 2 的幂 count；非法 reserved；重复 init；中断上下文禁止分配 |
 | `memory` | 二次 init fail-fast；MMIO size=0 / RAM overlap / offset 越界 / 寄存器未对齐 |
 | `paging/tlb` | update 权限并发或锁保护；TLB shootdown ack 统计；远端核真实访问 probe |
-| `page_table_entry` | 常规 preset 不允许 W+X；若保留 RWX 则显式危险 API 白名单 |
+| `page_table_entry` | 常规 preset 不允许 W+X；固件 preset 不暴露通用 RWX |
 | `dma/device` | read/write；multi-sector；跨页 buffer；dealloc mismatch；zero pages；mask failure |

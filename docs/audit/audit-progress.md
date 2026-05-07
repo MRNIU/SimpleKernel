@@ -5,9 +5,9 @@
 
 ## 当前状态
 
-**当前 Phase**: R3 — 第一组低耦合内存不变量修复完成，等待第二组设计边界讨论
+**当前 Phase**: R3 — 第一组低耦合内存不变量修复完成；第二组中的固件 reserved-memory、frame allocator hard IRQ 边界、单段 RAM fail-fast 已落地，剩余运行期权限切换所有权与完整多 bank RAM 设计
 **下一个目标**（按优先级）：
-1. **第二组：需要设计边界后再改**：`PageTable::update_range_flags()` 的并发写者证明、公开 `kernel_rwx()` 与 W^X 策略、frame allocator 是否承诺 hard IRQ 可分配、单段 RAM fail-fast 还是多段 RAM 支持。
+1. **第二组：剩余设计边界**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM 支持仍留作长期设计项。
 2. **第三组：真机前必须关闭**：streaming DMA cache maintenance / bounce buffer、coherent DMA 的 PTE/cache 语义、DMA mask / capability / IOMMU 或 bounce buffer 策略、RISC-V `kernel_device()` 的 PMA/Svpbmt 边界。
 3. **测试/文档闭环**：修复当前 RISC-V `should_panic` 测试只看 QEMU 正常关机、不看失败标记的问题；继续补 TLB shootdown 远端 ack/访问测试、DMA 跨页 buffer/写路径/mask 测试、MMIO panic 测试；修正 `page_allocator` 已移除但 roadmap/依赖图仍引用的问题；补 `crates/memory/README.md` 或修正 audit-progress 中“已补”的旧记录。
 
@@ -15,6 +15,18 @@
 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64`。涉及 QEMU 的命令必须使用 30 秒超时并在
 超时后清理残留 `qemu-system` 进程。
+
+验证结果（2026-05-07 第二组修复）：`cargo fmt --all -- --check`、
+`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64` 通过
+（保留既有 warning）。RISC-V QEMU 30 秒超时下运行并通过：
+`memory-test/fdt-multi-memory`、`memory-test/fdt-firmware-reserved`、
+`pte-test/pte-test`、`paging-test/table`、`frame-test/alloc-in-hardirq-panic`、
+`frame-test/dealloc-in-hardirq-panic`。其中 `fdt-firmware-reserved` 验证
+`KernelFdt::firmware_reserved_memory()` 可解析 `/reserved-memory/firmware@...`；
+`xtask` 会给 QEMU 原生 DTB 注入该节点，启动日志可见
+`FirmwareReserved: addr=0x80000000, size=0x200000`。`PageTable::update_pte()`
+已收窄为内部机制函数，删除公开 `kernel_rwx()` preset，新增 `kernel_firmware()`；
+frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 
 验证结果（2026-05-07 第一组修复）：`cargo fmt --all -- --check`、
 `cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64` 通过
@@ -46,11 +58,12 @@
 | # | 结论 | 状态 | ADR |
 |---|------|------|-----|
 | `memory::init()` 是 safe public API，但包住 heap/frame allocator 的“一次性 unsafe”前提 | 已加一次性 fail-fast 守卫 | 已修复 | — |
-| `update_range_flags()` safe wrapper 没有兑现 `update_pte()` 的无并发写者前提 | 运行期权限 / DMA 属性切换需要锁、token 或 unsafe 边界 | 待讨论 | 待定 |
-| `kernel_rwx()` 公开存在，与 README 的 W^X 约束冲突 | 需删除、收窄可见性或改成显式危险 API | 待讨论 | 待定 |
+| `update_range_flags()` safe wrapper 没有兑现运行期同页无并发写者前提 | 当前生产只在启动期 `memory::init()` 使用，不存在多核同时改同一 VA；未来运行期权限 / DMA 属性切换仍需要锁、token 或 unsafe 边界 | 待未来设计 | 待定 |
+| `kernel_rwx()` 公开存在，与 README 的 W^X 约束冲突 | 已删除公开 `kernel_rwx()`；FDT reserved-memory / xtask 注入提供固件区来源，`kernel_firmware()` + `map_firmware_region()` 表达固件保留区 | 已修复 | — |
 | DMA QEMU identity 后端仍无真机 cache sync / coherent PTE / mask 语义 | 与 ADR-014 一致，但硬件前必须继续设计 | 待设计 | ADR-014 后续 |
 | `Frame` / `VirtAddr::align_down_to` 有 newtype 不变量漏洞 | 已补 QEMU should_panic 回归并修复 | 已修复 | — |
 | `frame_allocator::init reserved` 只记录不生效，API 契约误导 | 已收敛为“校验 + 记录”，要求 caller 预先排除 free 范围 | 已修复 | — |
+| `frame_allocator` hard IRQ 语义与 heap 后端冲突 | 已明确禁止 hard IRQ 中分配/释放物理帧，并在后端入口 assert | 已修复 | — |
 | RISC-V MMIO、AArch64 段边界、多段 RAM、TLB shootdown 测试均有语义或测试缺口 | 需要分拆为设计讨论和测试任务 | 待讨论 | 待定 |
 
 ### 验证
@@ -62,8 +75,8 @@
 
 ### 下一步
 
-进入第二组设计讨论：权限切换所有权 / W^X API / frame allocator hard IRQ 承诺 /
-单段 RAM fail-fast 与多段 RAM 支持边界。另需优先修复 should_panic harness
+进入第二组剩余设计讨论：运行期权限切换所有权 / 多段 RAM 支持边界。
+另需优先修复 should_panic harness
 的退出码/失败判定，否则未触发 panic 的测试可能被 xtask 误判为通过。
 
 ---

@@ -66,7 +66,7 @@
 | `kernel_rw` | 读写，不可执行 | V+R+W+A+D | VALID+AF+SH_INNER+PXN+UXN |
 | `kernel_rx` | 读+执行，不可写 | V+R+X+A+D | VALID+AF+SH_INNER+UXN |
 | `kernel_ro` | 只读 | V+R+A+D | VALID+AF+SH_INNER+AP_RO+PXN+UXN |
-| `kernel_rwx` | 读写执行 | V+R+W+X+A+D | VALID+AF+SH_INNER+UXN |
+| `kernel_firmware` | 固件保留区（读写，不可执行） | V+R+W+A+D | VALID+AF+SH_INNER+PXN+UXN |
 | `kernel_device` | 设备 MMIO | V+R+W+A+D | VALID+AF+MAIR_IDX1+PXN+UXN |
 
 ### 用户态 preset（当前未使用）

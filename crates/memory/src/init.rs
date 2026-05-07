@@ -8,6 +8,25 @@ use paging::{PageTable, PteFlags, PteFlagsOps};
 /// 主核内存初始化是否已完成。
 static MEMORY_INIT_DONE: AtomicBool = AtomicBool::new(false);
 
+/// 标记固件保留区权限。
+///
+/// 信息源优先来自 FDT `/reserved-memory/firmware@...`；若平台没有提供该节点，
+/// `early_init()` 会回退为 `[mem_start, kernel_start)`。
+fn map_firmware_region(firmware_start: PhysAddr, firmware_size: usize) {
+    if firmware_size == 0 {
+        return;
+    }
+
+    let start = firmware_start.align_down();
+    let end = (firmware_start + firmware_size).align_up();
+    let page_count = (end - start) / config::PAGE_SIZE;
+    paging::kernel_page_table().update_range_flags(
+        start.to_virt(),
+        page_count,
+        PteFlags::kernel_firmware(),
+    );
+}
+
 /// 主核内存初始化——引导堆 → 帧分配器 → 堆扩展 → 页表 → 权限覆盖。
 ///
 /// # Panics
@@ -30,6 +49,8 @@ pub fn init() {
         .expect("MEMORY_INFO not initialized");
     let mem_start = info.physical_memory_addr;
     let mem_size = info.physical_memory_size;
+    let firmware_start = info.firmware_reserved_addr;
+    let firmware_size = info.firmware_reserved_size;
     let kernel_start = info.kernel_addr;
     let kernel_end = PhysAddr::new(
         kernel_start
@@ -62,10 +83,16 @@ pub fn init() {
         free_start <= mem_end,
         "MemoryInit: free_start {free_start} 超出 RAM 结束地址 {mem_end}"
     );
+    if firmware_size > 0 {
+        let firmware_end = firmware_start + firmware_size;
+        assert!(
+            firmware_start >= mem_start && firmware_end <= mem_end,
+            "MemoryInit: firmware reserved [{firmware_start}, {firmware_end}) 不在 RAM [{mem_start}, {mem_end}) 内"
+        );
+    }
     let free_size = mem_end - free_start;
 
     // 段计算——注意 text 段从 kernel_start 开始，不是 mem_start。
-    // [mem_start, kernel_start) 是固件区域（OpenSBI 等），保留背景层 kernel_rw。
     let text_pages = (text_end - kernel_start) / config::PAGE_SIZE;
     let rodata_pages = (rodata_end - text_end) / config::PAGE_SIZE;
     let data_pages = (free_start - rodata_end) / config::PAGE_SIZE;
@@ -98,12 +125,11 @@ pub fn init() {
     let pt = PageTable::create();
     paging::init_kernel_page_table(pt);
 
-    // 背景层必须先于权限覆盖——覆盖操作要求 PTE 已存在
-    {
-        paging::kernel_page_table().identity_map_range(mem_start, mem_end, PteFlags::kernel_rw());
-    }
+    // 背景层必须先于权限覆盖——覆盖操作要求 PTE 已存在。
+    paging::kernel_page_table().identity_map_range(mem_start, mem_end, PteFlags::kernel_rw());
+    map_firmware_region(firmware_start, firmware_size);
 
-    // 覆盖层——[mem_start, kernel_start) 保持 kernel_rw（固件区域）
+    // 覆盖层——固件保留区、代码、只读数据、可写数据分别收紧到目标权限。
     let segments: [(PhysAddr, usize, PteFlags); 3] = [
         (kernel_start, text_pages, PteFlags::kernel_rx()),
         (text_end, rodata_pages, PteFlags::kernel_ro()),
@@ -122,9 +148,9 @@ pub fn init() {
     }
 
     log::info!(
-        "MemoryInit: fw {}-{} (RW bg), code {}-{} (RX), rodata {}-{} (RO), data {}-{} (RW), free {}-{} (RW bg)",
-        mem_start,
-        kernel_start,
+        "MemoryInit: fw {}+{:#x} (firmware), code {}-{} (RX), rodata {}-{} (RO), data {}-{} (RW), free {}-{} (RW bg)",
+        firmware_start,
+        firmware_size,
         kernel_start,
         text_end,
         text_end,

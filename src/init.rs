@@ -32,11 +32,20 @@ pub fn early_init(dtb_addr: usize) {
     let kernel_start = unsafe { &__executable_start as *const u8 as u64 };
     let kernel_end = unsafe { &_end as *const u8 as u64 };
 
+    let firmware_reserved = fdt.firmware_reserved_memory().unwrap_or_else(|_| {
+        let size = kernel_start
+            .checked_sub(mem_addr)
+            .expect("early_init: kernel_start 小于 FDT RAM 起点");
+        (mem_addr, size as usize)
+    });
+
     MEMORY_INFO.call_once(|| MemoryInfo {
         physical_memory_addr: PhysAddr::new(mem_addr as usize),
         physical_memory_size: mem_size,
         kernel_addr: PhysAddr::new(kernel_start as usize),
         kernel_size: (kernel_end - kernel_start) as usize,
+        firmware_reserved_addr: PhysAddr::new(firmware_reserved.0 as usize),
+        firmware_reserved_size: firmware_reserved.1,
     });
 
     CORE_COUNT.call_once(|| core_count);
@@ -53,5 +62,10 @@ pub fn early_init(dtb_addr: usize) {
 
     log::info!("FDT: found {} nodes, {} CPUs", node_count, core_count);
     log::info!("Memory: {} MB", mem_size / (1024 * 1024));
+    log::info!(
+        "FirmwareReserved: addr={:#x}, size={:#x}",
+        firmware_reserved.0,
+        firmware_reserved.1
+    );
     log::info!("Hello SimpleKernel");
 }

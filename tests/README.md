@@ -22,7 +22,7 @@ cargo xtask test --list                                  # 列出可用测试
 | | `pa-overflow-panic` | should_panic | PhysAddr 加法溢出检测 |
 | | `va-canonical-panic` | should_panic | VirtAddr 规范化违反检测 |
 | `paging-test` | `basic` | normal | 页大小计算、VPN 索引提取 |
-| | `table` | normal | 页表 identity_map_range / update_pte / update_range_flags / get_mapping |
+| | `table` | normal | 页表 identity_map_range / update_range_flags / get_mapping |
 | | `conflict-panic` | should_panic | identity_map_range 权限冲突检测 |
 | | `equal-range-panic` | should_panic | identity_map_range 空范围检测 |
 | | `reversed-range-panic` | should_panic | identity_map_range 反向范围检测 |
@@ -32,7 +32,11 @@ cargo xtask test --list                                  # 列出可用测试
 | | `recursive-lock-panic` | should_panic | 同核递归加锁检测 |
 | `frame-test` | `alloc` | normal | 帧分配/释放、RAII 所有权生命周期 |
 | | `reserved-overlap-panic` | should_panic | init reserved/free 重叠检测 |
+| | `alloc-in-hardirq-panic` | should_panic | hard IRQ 中禁止分配帧 |
+| | `dealloc-in-hardirq-panic` | should_panic | hard IRQ 中禁止释放帧 |
 | `memory-test` | `double-init-panic` | should_panic | memory::init 二次调用 fail-fast |
+| | `fdt-multi-memory` | normal | 多段 RAM FDT 当前 fail-fast |
+| | `fdt-firmware-reserved` | normal | FDT 固件 reserved-memory 解析 |
 | `heap-test` | | normal | 堆分配（Box、Vec、大块） |
 | `device-test` | | normal | DeviceManager、VirtIO 块设备读取 |
 | `fs-test` | | normal | VFS 路径解析、RamFS CRUD、多级目录 |

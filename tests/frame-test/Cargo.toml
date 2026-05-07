@@ -13,11 +13,22 @@ name = "reserved-overlap-panic"
 path = "src/reserved_overlap_panic.rs"
 test = false
 
+[[bin]]
+name = "alloc-in-hardirq-panic"
+path = "src/alloc_in_hardirq_panic.rs"
+test = false
+
+[[bin]]
+name = "dealloc-in-hardirq-panic"
+path = "src/dealloc_in_hardirq_panic.rs"
+test = false
+
 [dependencies]
 test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false }
 frame_allocator = { path = "../../crates/frame_allocator" }
 config = { path = "../../crates/config" }
+interrupt_state = { path = "../../crates/interrupt_state" }
 memory_types = { path = "../../crates/memory_types" }
 log.workspace = true
 heapless.workspace = true

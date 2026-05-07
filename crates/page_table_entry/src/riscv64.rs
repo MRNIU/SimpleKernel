@@ -73,9 +73,12 @@ impl PteFlagsOps for PteFlags {
         Self::KERNEL_BASE | Self::READ
     }
 
+    /// 固件保留区映射。
+    ///
+    /// 当前固件保留区使用背景层读写权限，不向上层暴露通用 RWX preset。
     #[inline]
-    fn kernel_rwx() -> Self {
-        Self::KERNEL_BASE | Self::READ | Self::WRITE | Self::EXECUTE | Self::DIRTY
+    fn kernel_firmware() -> Self {
+        Self::kernel_rw()
     }
 
     /// 设备 MMIO 映射。

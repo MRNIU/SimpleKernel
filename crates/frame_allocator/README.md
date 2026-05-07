@@ -79,13 +79,19 @@ drop(AllocatedFrames)
 
 全局分配器使用 `SpinLockIrq`（获取时关中断，释放时恢复），而非普通 `SpinLock`。
 
-**原因：** 帧分配可能在中断上下文中被调用（如 page fault handler 分配新帧）。
-如果使用普通 `SpinLock`：
+**原因：** 普通线程路径可能正在持有 frame allocator 锁，此时若同核心中断进入并
+再次拿同一把锁，会造成递归死锁。`SpinLockIrq` 在获取锁前禁用中断，消除了这一场景：
 
 1. 线程持有锁 -> 中断到来 -> 同核心进入 handler
 2. Handler 尝试分配帧 -> 拿同一把锁 -> **死锁**
 
-`SpinLockIrq` 在获取锁前禁用中断，消除了这一场景。
+但这不表示 frame allocator 承诺可在 hard IRQ 中分配。当前 buddy 后端的元数据
+依赖堆结构，而 `heap` crate 已明确禁止中断上下文堆操作。因此：
+
+- `alloc_from_backend()` 会断言当前不在中断上下文中。
+- `dealloc_to_backend()` 同样会断言当前不在中断上下文中。
+- hard IRQ handler 不能直接分配/释放 `AllocatedFrames`；如未来确实需要，应先设计
+  no-heap frame metadata 或 per-CPU emergency frame cache。
 
 ## 使用示例
 

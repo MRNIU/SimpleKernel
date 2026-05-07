@@ -18,6 +18,9 @@ fn run_tests() {
     test_kernel_preset_distinctness();
     log::info!("test kernel_preset_distinctness ... ok");
 
+    test_kernel_firmware_preset();
+    log::info!("test kernel_firmware_preset ... ok");
+
     test_invalid_pte_is_not_leaf();
     log::info!("test invalid_pte_is_not_leaf ... ok");
 
@@ -97,22 +100,23 @@ fn test_each_flag_roundtrip() {
     }
 }
 
-/// 四个内核 preset 应产生互不相同的 flags 位组合。
+/// 常规内核 preset 应产生互不相同的 flags 位组合。
 ///
-/// 这是对"工厂方法返回正确位"的烟测——kernel_rw/rx/ro/rwx 若被
+/// 这是对"工厂方法返回正确位"的烟测——kernel_rw/rx/ro 若被
 /// 无意改同，调用方（`PageTable::update_range_flags`）会建立错误权限但不会立即报错。
 fn test_kernel_preset_distinctness() {
     let rw = PteFlags::kernel_rw();
     let rx = PteFlags::kernel_rx();
     let ro = PteFlags::kernel_ro();
-    let rwx = PteFlags::kernel_rwx();
 
     assert_ne!(rw, rx);
     assert_ne!(rw, ro);
     assert_ne!(rx, ro);
-    assert_ne!(rwx, rw);
-    assert_ne!(rwx, rx);
-    assert_ne!(rwx, ro);
+}
+
+/// 固件保留区 preset 显式复用背景层读写权限，不暴露通用 RWX preset。
+fn test_kernel_firmware_preset() {
+    assert_eq!(PteFlags::kernel_firmware(), PteFlags::kernel_rw());
 }
 
 /// 无效 PTE 不应被视为叶节点。

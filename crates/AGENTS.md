@@ -103,7 +103,7 @@ sequenceDiagram
   Paging->>Frame: AllocatedFrames::alloc_one() 页表节点
   Memory->>Paging: identity_map_range(all RAM, kernel_rw)
   Paging->>PTE: PageTableEntry::new(...)
-  Memory->>Paging: update_range_flags(text/rodata/data)
+  Memory->>Paging: update_range_flags(firmware/text/rodata/data)
   Paging->>TLB: TlbFlushGuard drop
 ```
 

@@ -8,6 +8,16 @@ name = "double-init-panic"
 path = "src/double_init_panic.rs"
 test = false
 
+[[bin]]
+name = "fdt-multi-memory"
+path = "src/fdt_multi_memory.rs"
+test = false
+
+[[bin]]
+name = "fdt-firmware-reserved"
+path = "src/fdt_firmware_reserved.rs"
+test = false
+
 [dependencies]
 test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false }

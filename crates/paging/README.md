@@ -23,7 +23,7 @@ paging (机制: 如何映射)  ← 本 crate
 
 - `PageTable`：多级基数树页表，管理 PTE 的创建与更新
   - `identity_map_range(start, end, flags)`：建立背景 identity mapping
-  - `update_pte(va, flags)` / `update_range_flags(va, count, flags)`：修改已映射页权限（后者附带 TLB 刷新）
+  - `update_range_flags(va, count, flags)`：修改已映射页权限并刷新 TLB
   - `get_mapping(va)`：查询 PTE
 
 ## 帧所有权

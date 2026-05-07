@@ -24,8 +24,8 @@ pub trait PteFlagsOps: Copy + core::fmt::Debug {
     fn kernel_rx() -> Self;
     /// 内核只读映射。
     fn kernel_ro() -> Self;
-    /// 内核读写执行映射。
-    fn kernel_rwx() -> Self;
+    /// 固件保留区映射。
+    fn kernel_firmware() -> Self;
     /// 设备 MMIO 映射（不可缓存、不可执行）。
     fn kernel_device() -> Self;
 

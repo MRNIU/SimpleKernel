@@ -14,6 +14,8 @@ pub enum FdtError {
     ParseFailed,
     /// 属性大小不匹配
     InvalidPropertySize,
+    /// 当前不支持该硬件布局
+    UnsupportedLayout,
 }
 
 impl fmt::Display for FdtError {
@@ -98,7 +100,92 @@ impl<'a> KernelFdt<'a> {
             log::warn!("FDT memory region 解析失败: {:?}", e);
             FdtError::ParseFailed
         })?;
+        if let Some(second) = regions.next() {
+            let second = second.map_err(|e| {
+                log::warn!("FDT 第二段 memory region 解析失败: {:?}", e);
+                FdtError::ParseFailed
+            })?;
+            log::warn!(
+                "FDT memory reg 包含多段 RAM：第一段 addr={:#x}, size={:#x}；第二段 addr={:#x}, size={:#x}。当前只支持单段 RAM，拒绝静默忽略后续 bank",
+                region.address,
+                region.len,
+                second.address,
+                second.len
+            );
+            return Err(FdtError::UnsupportedLayout);
+        }
         Ok((region.address, region.len))
+    }
+
+    /// 从 `/reserved-memory` 查找固件/bootloader 保留区。
+    ///
+    /// 当前匹配两类描述：
+    /// - 节点名为 `firmware@...` / `bootloader@...` / `opensbi@...` / `u-boot@...`
+    /// - `compatible` 包含 `simplekernel,firmware-reserved`
+    ///
+    /// QEMU 原生 DTB 通常不包含该节点，`xtask` 会在导出 DTB 后补充
+    /// `firmware@...` 节点；非 QEMU 平台可由 bootloader 直接提供同等节点。
+    pub fn firmware_reserved_memory(&self) -> Result<(u64, usize), FdtError> {
+        let fdt = parse_fdt!(self.fdt_addr)?;
+        let root = fdt.root().map_err(|e| {
+            log::warn!("FDT root 节点解析失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
+        let reserved = root.reserved_memory().map_err(|e| {
+            log::debug!("FDT /reserved-memory 节点未找到或解析失败: {:?}", e);
+            FdtError::NodeNotFound
+        })?;
+        let children = reserved.children().map_err(|e| {
+            log::warn!("FDT /reserved-memory 子节点迭代失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
+
+        for child_result in children {
+            let child = child_result.map_err(|e| {
+                log::warn!("FDT /reserved-memory 子节点解析失败: {:?}", e);
+                FdtError::ParseFailed
+            })?;
+            let name = child.name().map_err(|e| {
+                log::warn!("FDT /reserved-memory 子节点名称解析失败: {:?}", e);
+                FdtError::ParseFailed
+            })?;
+            let compatible_match = child
+                .compatible()
+                .map_err(|e| {
+                    log::warn!("FDT /reserved-memory/{} compatible 解析失败: {:?}", name, e);
+                    FdtError::ParseFailed
+                })?
+                .is_some_and(|compatible| {
+                    compatible.compatible_with("simplekernel,firmware-reserved")
+                });
+            let name_match = matches!(name.name, "firmware" | "bootloader" | "opensbi" | "u-boot");
+            if !compatible_match && !name_match {
+                continue;
+            }
+
+            let reg = child
+                .reg()
+                .map_err(|e| {
+                    log::warn!("FDT /reserved-memory/{} reg 解析失败: {:?}", name, e);
+                    FdtError::ParseFailed
+                })?
+                .ok_or(FdtError::PropertyNotFound)?;
+            let mut regions = reg.iter::<u64, usize>();
+            let region = regions.next().ok_or(FdtError::NodeNotFound)?.map_err(|e| {
+                log::warn!("FDT /reserved-memory/{} region 解析失败: {:?}", name, e);
+                FdtError::ParseFailed
+            })?;
+            if regions.next().is_some() {
+                log::warn!(
+                    "FDT /reserved-memory/{} 包含多段 region；当前固件保留区只支持单段",
+                    name
+                );
+                return Err(FdtError::UnsupportedLayout);
+            }
+            return Ok((region.address, region.len));
+        }
+
+        Err(FdtError::NodeNotFound)
     }
 
     /// 从 FDT `/cpus` 节点读取 `timebase-frequency` 属性。

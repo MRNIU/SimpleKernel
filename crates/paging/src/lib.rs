@@ -16,7 +16,7 @@ pub use table::PageTable;
 /// 全局内核页表——SAS 架构下只有一张页表，所有权限覆盖共用。
 ///
 /// 锁已移入 `PageTable` 内部（`nodes` 字段），外层无需再加锁。
-/// hot path（`get_mapping`、`update_pte`、`walk_to_leaf`）完全无锁，
+/// hot path（`get_mapping`、`update_range_flags`、`walk_to_leaf`）完全无锁，
 /// 仅 `identity_map_range` 的慢路径（分配中间节点）需要内部锁。
 static KERNEL_PAGE_TABLE: spin::Once<PageTable> = spin::Once::new();
 

@@ -315,6 +315,7 @@ dependencies = [
  "config",
  "frame_allocator",
  "heapless 0.8.0",
+ "interrupt_state",
  "log",
  "memory_types",
  "sbi-rt",
@@ -327,6 +328,7 @@ name = "frame_allocator"
 version = "0.1.0"
 dependencies = [
  "buddy_system_allocator",
+ "interrupt_state",
  "log",
  "memory_types",
  "sync",
