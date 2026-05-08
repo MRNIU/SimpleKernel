@@ -4,7 +4,6 @@
 //! （`_start`、`panic_handler`、`exit_qemu`、`kernel_thread_bootstrap`）。
 
 #![no_std]
-#![feature(alloc_error_handler)]
 
 extern crate alloc;
 
@@ -86,6 +85,7 @@ macro_rules! test_main {
                     simplekernel::boot::kernel_init(argc, argv, $level);
                 }
                 $test_fn();
+                log::info!("TEST OK");
                 $crate::exit_qemu(0);
             } else {
                 // SAFETY: 从核入口，汇编已设置栈和寄存器
@@ -149,21 +149,16 @@ macro_rules! test_main {
 
         #[panic_handler]
         fn panic(info: &core::panic::PanicInfo<'_>) -> ! {
-            // 打印 panic 信息供 xtask 检查
-            simplekernel::logging::raw_put("\x1b[32mSHOULD_PANIC OK\x1b[0m: ");
             if let Some(loc) = info.location() {
-                let mut buf = heapless::String::<256>::new();
-                let _ = core::fmt::Write::write_fmt(
-                    &mut buf,
-                    format_args!("{}:{}", loc.file(), loc.line()),
+                log::info!(
+                    "SHOULD_PANIC OK: {}:{}: {}",
+                    loc.file(),
+                    loc.line(),
+                    info.message()
                 );
-                simplekernel::logging::raw_put(buf.as_str());
+            } else {
+                log::info!("SHOULD_PANIC OK: <unknown>: {}", info.message());
             }
-            simplekernel::logging::raw_put(": ");
-            let mut msg_buf = heapless::String::<256>::new();
-            let _ = core::fmt::Write::write_fmt(&mut msg_buf, format_args!("{}", info.message()));
-            simplekernel::logging::raw_put(msg_buf.as_str());
-            simplekernel::logging::raw_put("\n");
             // panic 发生 = should_panic 测试成功
             $crate::exit_qemu(0);
         }

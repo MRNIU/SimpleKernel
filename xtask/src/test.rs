@@ -45,6 +45,69 @@ pub struct TestBinary {
     pub display_name: String,
 }
 
+/// 根据 QEMU 进程状态和串口 sentinel 得出的测试判定。
+struct TestVerdict {
+    passed: bool,
+    status: &'static str,
+    failure_reason: Option<String>,
+}
+
+const SUCCESS_SENTINELS: [&str; 2] = ["TEST OK", "SHOULD_PANIC OK"];
+
+const FAILURE_SENTINELS: [&str; 3] = [
+    "SHOULD_PANIC test returned without panic",
+    "TEST PANIC:",
+    "PANIC_TEST: alloc error",
+];
+
+/// QEMU 的宿主退出码不一定携带 guest `exit_qemu(code)`，因此测试必须以串口
+/// sentinel 作为最终成功条件。
+fn evaluate_qemu_test_result(result: &qemu::QemuTestResult) -> TestVerdict {
+    if result.timed_out {
+        return TestVerdict {
+            passed: false,
+            status: "TIMEOUT",
+            failure_reason: Some("QEMU 运行超时".to_string()),
+        };
+    }
+
+    if !result.success {
+        return TestVerdict {
+            passed: false,
+            status: "FAIL",
+            failure_reason: Some("QEMU 进程非零退出".to_string()),
+        };
+    }
+
+    if let Some(marker) = FAILURE_SENTINELS
+        .iter()
+        .find(|marker| result.output.contains(**marker))
+    {
+        return TestVerdict {
+            passed: false,
+            status: "FAIL",
+            failure_reason: Some(format!("串口输出包含失败标记 `{marker}`")),
+        };
+    }
+
+    if SUCCESS_SENTINELS
+        .iter()
+        .any(|marker| result.output.contains(marker))
+    {
+        return TestVerdict {
+            passed: true,
+            status: "PASS",
+            failure_reason: None,
+        };
+    }
+
+    TestVerdict {
+        passed: false,
+        status: "FAIL",
+        failure_reason: Some("串口输出缺少 `TEST OK` 或 `SHOULD_PANIC OK` 成功标记".to_string()),
+    }
+}
+
 /// 运行指定测试
 #[expect(
     clippy::too_many_arguments,
@@ -79,21 +142,26 @@ pub fn run_test(
         "[xtask] Running test '{}' (timeout: {}s)...",
         display_name, timeout_secs
     );
-    let result = qemu::launch_qemu(
-        sh,
+    let result = qemu::launch_qemu_captured(
         arch,
         project_root,
         &env.boot_dir,
         &kernel_elf_path,
         &env.rootfs_path,
-        false,
-        Some(timeout_secs),
+        timeout_secs,
     );
 
     match result {
-        Ok(()) => {
-            println!("[xtask] Test '{}' completed", display_name);
-            Ok(true)
+        Ok(qemu_result) => {
+            let verdict = evaluate_qemu_test_result(&qemu_result);
+            println!("[xtask] Test '{}' {}", display_name, verdict.status);
+            if let Some(reason) = verdict.failure_reason {
+                eprintln!("[xtask] Test '{}' failed: {}", display_name, reason);
+                println!("---------- {} output ----------", display_name);
+                println!("{}", qemu_result.output);
+                println!("---------- end {} ----------", display_name);
+            }
+            Ok(verdict.passed)
         }
         Err(e) => {
             eprintln!("[xtask] Test '{}' failed: {}", display_name, e);
@@ -212,6 +280,7 @@ struct TestResult {
     timed_out: bool,
     duration: std::time::Duration,
     output: String,
+    failure_reason: Option<String>,
 }
 
 /// 运行所有测试：构建全部二进制，顺序执行并捕获输出，打印汇总。
@@ -277,24 +346,20 @@ pub fn run_all_tests(
         )?;
 
         let duration = start.elapsed();
-        let status = if qemu_result.timed_out {
-            "TIMEOUT"
-        } else if qemu_result.success {
-            "PASS"
-        } else {
-            "FAIL"
-        };
+        let verdict = evaluate_qemu_test_result(&qemu_result);
         println!(
-            "[xtask]   {name}: {status} ({:.1}s)",
+            "[xtask]   {name}: {} ({:.1}s)",
+            verdict.status,
             duration.as_secs_f64()
         );
 
         results.push(TestResult {
             name: name.clone(),
-            passed: qemu_result.success,
+            passed: verdict.passed,
             timed_out: qemu_result.timed_out,
             duration,
             output: qemu_result.output,
+            failure_reason: verdict.failure_reason,
         });
     }
 
@@ -333,10 +398,62 @@ pub fn run_all_tests(
         if !r.passed {
             println!();
             println!("---------- {} output ----------", r.name);
+            if let Some(reason) = &r.failure_reason {
+                println!("failure reason: {reason}");
+            }
             println!("{}", r.output);
             println!("---------- end {} ----------", r.name);
         }
     }
 
     Ok(failed == 0 && timed_out == 0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn qemu_result(success: bool, timed_out: bool, output: &str) -> qemu::QemuTestResult {
+        qemu::QemuTestResult {
+            success,
+            timed_out,
+            output: output.to_string(),
+        }
+    }
+
+    #[test]
+    fn missing_success_sentinel_fails_even_when_qemu_status_is_success() {
+        let result = qemu_result(true, false, "SHOULD_PANIC test returned without panic\n");
+
+        let verdict = evaluate_qemu_test_result(&result);
+
+        assert!(!verdict.passed);
+    }
+
+    #[test]
+    fn normal_success_sentinel_passes() {
+        let result = qemu_result(true, false, "boot log\nTEST OK\n");
+
+        let verdict = evaluate_qemu_test_result(&result);
+
+        assert!(verdict.passed);
+    }
+
+    #[test]
+    fn should_panic_success_sentinel_passes() {
+        let result = qemu_result(true, false, "\u{1b}[32mSHOULD_PANIC OK\u{1b}[0m: panic\n");
+
+        let verdict = evaluate_qemu_test_result(&result);
+
+        assert!(verdict.passed);
+    }
+
+    #[test]
+    fn timeout_fails_even_with_success_sentinel() {
+        let result = qemu_result(false, true, "TEST OK\n[TIMEOUT after 30s]");
+
+        let verdict = evaluate_qemu_test_result(&result);
+
+        assert!(!verdict.passed);
+    }
 }

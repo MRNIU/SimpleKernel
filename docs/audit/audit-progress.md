@@ -5,17 +5,33 @@
 
 ## 当前状态
 
-**当前 Phase**: R4 — 架构层只读复审已完成，并已将问题原因、可能触发路径、修复方案和验证方向写入 `docs/audit/2026-05-08-r4-architecture-review-findings.md`。本轮未修改实现代码；R4 修复尚未开始。
+**当前 Phase**: R4 — 架构层第一阶段测试可信度修复已完成。`R4-09 should_panic harness/xtask 假阳性`
+已通过串口 success sentinel 和 xtask 输出判定收口，后续 panic 回归不再只依赖 QEMU 宿主退出码。
 **下一个目标**（按优先级）：
-1. **测试可信度优先**：修复 R4-09 `should_panic` harness/xtask 假阳性问题，否则后续 panic 回归可能继续误判通过。
-2. **R4 低耦合修复切片**：R4-03 RISC-V 从核 `gp` 初始化、R4-07 任务栈 16 字节对齐、R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 timer fail-fast。
-3. **R4 时序与跨核协议设计**：R4-01/R4-02 timer 与调度边界、R4-04/R4-12 CPU topology 与 SGI、R4-05 TLB shootdown 协议、R4-11 PLIC context 与启用顺序、R4-13 discovered/online core count、R4-14 timekeeper core。
-4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
+1. **R4 低耦合修复切片**：R4-03 RISC-V 从核 `gp` 初始化、R4-07 任务栈 16 字节对齐、R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 timer fail-fast。
+2. **R4 时序与跨核协议设计**：R4-01/R4-02 timer 与调度边界、R4-04/R4-12 CPU topology 与 SGI、R4-05 TLB shootdown 协议、R4-11 PLIC context 与启用顺序、R4-13 discovered/online core count、R4-14 timekeeper core。
+3. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
 
 验证计划：后续设计边界改动仍需先补目标回归测试，再按变更面执行
 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64`。涉及 QEMU 的命令必须使用 30 秒超时并在
 超时后清理残留 `qemu-system` 进程。
+
+验证结果（2026-05-08 R4 第一阶段测试可信度修复）：容器 `simplekernel-dev`
+内 `cargo fmt --all -- --check`、`cargo test -p xtask`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64` 通过（保留既有 warning）。新增 xtask 单测覆盖：
+QEMU 进程状态成功但缺少 success sentinel 时必须失败、normal `TEST OK` 成功、
+`should_panic` 的 `SHOULD_PANIC OK` 成功、timeout 即使带 success sentinel 也失败。
+RISC-V QEMU 30 秒超时下定点验证通过：`memory-types-test/codec`、
+`memory-types-test/align-down-canonical-panic`、`panic-test`、`device-test`。
+随后运行 `cargo xtask test --arch riscv64 --timeout 30`，30 个独立测试全部通过
+（30 passed, 0 failed, 0 timed out）。另用 AArch64 目标构建 `device-test` 和
+`memory-types-test/align-down-canonical-panic`，确认 test harness normal / should_panic
+路径在 AArch64 也能编译。第一次全量 RISC-V 回归曾暴露 `device-test` 的裸串口
+`TEST OK` 被从核日志穿插打碎，最终改为通过 `log` 后端输出 success sentinel，
+由 console lock 保证单条 sentinel 不被并发日志破坏。提交前复查 warning 时，
+清理了 `tests/test_harness` 中新触发的 `unused feature: alloc_error_handler`；
+复跑验证后，本轮改动文件不再产生新的编译 warning，剩余 warning 均来自既有内核路径。
 
 验证结果（2026-05-08 R4 复审文档化）：本轮只新增审计文档并更新进度文件，
 未修改实现代码，未运行构建或 QEMU 系统测试。R4 问题详情见
@@ -48,6 +64,35 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 不会把 should_panic 未触发转换成非零退出码。
 
 ## 上次对话摘要
+
+**日期**：2026-05-08（R4 第一阶段测试可信度修复）
+
+### 已完成
+
+本轮按 `docs/audit/2026-05-08-r4-architecture-review-findings.md` 的处理顺序，
+先修复 R4-09 `should_panic` harness/xtask 假阳性问题：
+
+1. normal `test_main!` 测试成功后输出 `TEST OK` sentinel。
+2. should_panic 和手写 `panic-test` 的成功路径统一输出 `SHOULD_PANIC OK` sentinel。
+3. `cargo xtask test --name` 与全量测试均改用捕获输出路径，并由 xtask 同时检查 QEMU 进程状态、
+   timeout、失败 sentinel 和 success sentinel。
+4. success sentinel 改用 `log` 后端输出，避免 SMP 从核日志与裸串口 sentinel 交错导致误判。
+
+### 关键结论
+
+| # | 结论 | 状态 | ADR |
+|---|------|------|-----|
+| R4-09 `should_panic` harness 假阳性 | 已通过统一 success sentinel + xtask 输出判定修复 | 已修复 | — |
+| QEMU guest `exit_qemu(code)` 仍不应作为唯一可信信号 | xtask 现在要求串口 success sentinel；缺失即失败 | 已收口 | — |
+| SMP 日志可打碎裸串口 sentinel | success sentinel 必须走日志锁或等价原子输出路径 | 已修复 | — |
+| R4-03/R4-07/R4-08/R4-10/R4-15 | 下一组低耦合修复切片 | 待修复 | 部分待定 |
+
+### 下一步
+
+进入 R4 低耦合修复切片：优先处理 R4-03 RISC-V 从核 `gp` 初始化、R4-07 任务栈 16 字节对齐、
+R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 timer fail-fast。
+
+---
 
 **日期**：2026-05-08（R4 架构层复审文档化）
 

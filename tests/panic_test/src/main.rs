@@ -95,14 +95,14 @@ fn exit_qemu(code: u32) -> ! {
 #[panic_handler]
 fn panic(_info: &PanicInfo<'_>) -> ! {
     // 打印触发标记——测试运行器通过此字符串判断测试通过
-    simplekernel::logging::raw_put("PANIC_TEST_TRIGGERED\n");
+    log::info!("SHOULD_PANIC OK: PANIC_TEST_TRIGGERED");
     // 成功退出——触发 panic 就是期望行为
     exit_qemu(0);
 }
 
 #[alloc_error_handler]
 fn alloc_error(layout: Layout) -> ! {
-    simplekernel::logging::raw_put("PANIC_TEST: alloc error\n");
+    simplekernel::logging::raw_put("TEST PANIC: alloc error\n");
     let _ = layout;
     exit_qemu(1);
 }
