@@ -5,16 +5,21 @@
 
 ## 当前状态
 
-**当前 Phase**: R3 — 内存层可直接修复的不变量与边界问题已落地；R3 roadmap / 依赖图中的 `page_allocator` 旧引用已清理，`crates/memory/AGENTS.md` 作为 memory crate 的本地模块说明入口。剩余运行期权限切换所有权、完整多 bank RAM、真机设备/DMA 语义属于后续设计跟踪。
+**当前 Phase**: R4 — 架构层只读复审已完成，并已将问题原因、可能触发路径、修复方案和验证方向写入 `docs/audit/2026-05-08-r4-architecture-review-findings.md`。本轮未修改实现代码；R4 修复尚未开始。
 **下一个目标**（按优先级）：
-1. **第二组：剩余设计边界**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM 支持仍留作长期设计项。
-2. **第三组：设备/DMA 真机语义跟踪**：streaming DMA cache maintenance / bounce buffer、coherent DMA 的 PTE/cache 语义、DMA mask / capability / IOMMU 或 bounce buffer 策略、RISC-V `kernel_device()` 的 PMA/Svpbmt 边界。独立跟踪入口：`docs/audit/2026-05-07-device-dma-rdrive-tracking.md`；后续可与 rdrive 集成一起评估。
-3. **测试/工具闭环**：修复当前 RISC-V `should_panic` 测试只看 QEMU 正常关机、不看失败标记的问题；继续补 TLB shootdown 远端 ack/访问测试、DMA 跨页 buffer/写路径/mask 测试、MMIO panic 测试。
+1. **测试可信度优先**：修复 R4-09 `should_panic` harness/xtask 假阳性问题，否则后续 panic 回归可能继续误判通过。
+2. **R4 低耦合修复切片**：R4-03 RISC-V 从核 `gp` 初始化、R4-07 任务栈 16 字节对齐、R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 timer fail-fast。
+3. **R4 时序与跨核协议设计**：R4-01/R4-02 timer 与调度边界、R4-04/R4-12 CPU topology 与 SGI、R4-05 TLB shootdown 协议、R4-11 PLIC context 与启用顺序、R4-13 discovered/online core count、R4-14 timekeeper core。
+4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
 
 验证计划：后续设计边界改动仍需先补目标回归测试，再按变更面执行
 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64`。涉及 QEMU 的命令必须使用 30 秒超时并在
 超时后清理残留 `qemu-system` 进程。
+
+验证结果（2026-05-08 R4 复审文档化）：本轮只新增审计文档并更新进度文件，
+未修改实现代码，未运行构建或 QEMU 系统测试。R4 问题详情见
+`docs/audit/2026-05-08-r4-architecture-review-findings.md`。
 
 验证结果（2026-05-07 第二组修复）：`cargo fmt --all -- --check`、
 `cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64` 通过
@@ -43,6 +48,37 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 不会把 should_panic 未触发转换成非零退出码。
 
 ## 上次对话摘要
+
+**日期**：2026-05-08（R4 架构层复审文档化）
+
+### 已完成
+
+本轮将 R4 架构层复审结论固化为
+`docs/audit/2026-05-08-r4-architecture-review-findings.md`，覆盖
+`src/arch/`、`src/boot.rs`、`src/main.rs`、`src/timer.rs`、
+`src/tlb_shootdown.rs`、`src/fdt.rs`、`src/task/` 中与架构层直接耦合的入口，
+以及 `tests/test_harness/` / `xtask/src/qemu.rs` 中影响 R4 验证可信度的路径。
+
+文档按 `R4-01` 到 `R4-17` 编号记录每个问题的原因、可能触发路径、修复方案和验证方向。
+本轮只做文档和进度更新，未修改实现代码。
+
+### 关键结论
+
+| # | 结论 | 状态 | ADR |
+|---|------|------|-----|
+| R4-09 `should_panic` harness 假阳性会污染后续回归 | 应优先修复测试可信度 | 待修复 | — |
+| R4-03/R4-07/R4-08/R4-10/R4-15 属于低耦合启动/ABI/fail-fast 切片 | 可先分批落地 | 待修复 | 部分待定 |
+| R4-01/R4-02 timer 与调度边界跨 R4/R5 | 需要明确 post-IRQ preempt 或协作式调度语义 | 待设计 | 待定 |
+| R4-04/R4-12/R4-13 暴露 CPU topology、logical id 和 online mask 模型缺口 | 需要统一拓扑模型 | 待设计 | 待定 |
+| R4-05 TLB shootdown 需要发布屏障、等待上下文约束和远端 ack 测试 | 需要协议设计 | 待设计 | 待定 |
+| R4-06 RISC-V 浮点状态保存/禁用策略未定 | 影响 ABI 和上下文切换 | 待设计 | 待定 |
+
+### 下一步
+
+先从 R4-09 `should_panic` harness/xtask 假阳性修复开始；测试可信度补齐后，
+再进入 R4 低耦合修复切片和 timer/SMP/TLB 的设计讨论。
+
+---
 
 **日期**：2026-05-07（第一组低耦合内存不变量修复）
 
