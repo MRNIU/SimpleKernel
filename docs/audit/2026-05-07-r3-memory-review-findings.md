@@ -6,6 +6,9 @@
 >
 > 本文记录问题原因、可能触发路径、修复方案和当前处理状态。
 > 第一组低耦合问题已在 2026-05-07 修复；第二组中的 W^X 固件映射、frame allocator hard IRQ 边界、单段 RAM fail-fast 已落地。剩余重点是运行期权限切换的未来所有权模型。
+> 第三组设备/DMA 真机语义问题已独立到
+> [`2026-05-07-device-dma-rdrive-tracking.md`](2026-05-07-device-dma-rdrive-tracking.md)，
+> 后续可与 rdrive 集成一起评估。
 
 ## 总览
 
@@ -589,6 +592,9 @@ FdtReader::memory()
 `kernel_rwx()` 与 W^X 策略、固件 reserved-memory 解析、frame allocator hard IRQ 禁止、单段 RAM fail-fast 已先按窄口径修复。剩余项会影响 API 形状或未来架构，应先讨论并按需写 ADR。
 
 ### 第三组：真机前必须关闭
+
+跟踪入口：
+[`2026-05-07-device-dma-rdrive-tracking.md`](2026-05-07-device-dma-rdrive-tracking.md)。
 
 1. streaming DMA cache maintenance / bounce buffer。
 2. coherent DMA 的 PTE/cache 语义。

@@ -41,7 +41,7 @@ R1  原语层 ────── memory_types, config, span, build_common
 │
 R2  同步与 CPU ── sync, interrupt_state, per_cpu, macros
 │
-R3  内存子系统 ── frame_allocator → page_allocator → page_table_entry
+R3  内存子系统 ── frame_allocator → page_table_entry
 │                 → tlb → paging → heap → memory
 │
 R4  架构层 ────── arch 抽象 trait, boot flow, console, interrupt, timer
@@ -144,8 +144,7 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 按依赖关系排查：
 
 ```
-memory_types ← frame_allocator ← page_allocator
-                                ← page_table_entry ← paging ← memory
+memory_types ← frame_allocator ← page_table_entry ← paging ← memory
                                 ← heap
                                 ← tlb
 ```
@@ -158,7 +157,6 @@ memory_types ← frame_allocator ← page_allocator
 | `memory` | 地址空间与 VMA 管理 |
 | `heap` | 内核堆分配器 |
 | `tlb` | TLB 管理与 shootdown |
-| `page_allocator` | 虚拟页分配器 |
 
 ### R3 交付物
 

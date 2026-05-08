@@ -5,11 +5,11 @@
 
 ## 当前状态
 
-**当前 Phase**: R3 — 第一组低耦合内存不变量修复完成；第二组中的固件 reserved-memory、frame allocator hard IRQ 边界、单段 RAM fail-fast 已落地，剩余运行期权限切换所有权与完整多 bank RAM 设计
+**当前 Phase**: R3 — 内存层可直接修复的不变量与边界问题已落地；R3 roadmap / 依赖图中的 `page_allocator` 旧引用已清理，`crates/memory/AGENTS.md` 作为 memory crate 的本地模块说明入口。剩余运行期权限切换所有权、完整多 bank RAM、真机设备/DMA 语义属于后续设计跟踪。
 **下一个目标**（按优先级）：
 1. **第二组：剩余设计边界**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM 支持仍留作长期设计项。
-2. **第三组：真机前必须关闭**：streaming DMA cache maintenance / bounce buffer、coherent DMA 的 PTE/cache 语义、DMA mask / capability / IOMMU 或 bounce buffer 策略、RISC-V `kernel_device()` 的 PMA/Svpbmt 边界。
-3. **测试/文档闭环**：修复当前 RISC-V `should_panic` 测试只看 QEMU 正常关机、不看失败标记的问题；继续补 TLB shootdown 远端 ack/访问测试、DMA 跨页 buffer/写路径/mask 测试、MMIO panic 测试；修正 `page_allocator` 已移除但 roadmap/依赖图仍引用的问题；补 `crates/memory/README.md` 或修正 audit-progress 中“已补”的旧记录。
+2. **第三组：设备/DMA 真机语义跟踪**：streaming DMA cache maintenance / bounce buffer、coherent DMA 的 PTE/cache 语义、DMA mask / capability / IOMMU 或 bounce buffer 策略、RISC-V `kernel_device()` 的 PMA/Svpbmt 边界。独立跟踪入口：`docs/audit/2026-05-07-device-dma-rdrive-tracking.md`；后续可与 rdrive 集成一起评估。
+3. **测试/工具闭环**：修复当前 RISC-V `should_panic` 测试只看 QEMU 正常关机、不看失败标记的问题；继续补 TLB shootdown 远端 ack/访问测试、DMA 跨页 buffer/写路径/mask 测试、MMIO panic 测试。
 
 验证计划：后续设计边界改动仍需先补目标回归测试，再按变更面执行
 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
@@ -27,6 +27,11 @@
 `FirmwareReserved: addr=0x80000000, size=0x200000`。`PageTable::update_pte()`
 已收窄为内部机制函数，删除公开 `kernel_rwx()` preset，新增 `kernel_firmware()`；
 frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
+
+验证结果（2026-05-08 R3 文档与 warning 收口）：容器 `simplekernel-dev`
+内 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64` 通过。当前 R3 内存 crate 本身无编译 warning；
+`src/fdt.rs` 中与内存初始化相邻的 3 个过期 `#[expect(dead_code)]` warning 已移除。
 
 验证结果（2026-05-07 第一组修复）：`cargo fmt --all -- --check`、
 `cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64` 通过
@@ -60,7 +65,7 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 | `memory::init()` 是 safe public API，但包住 heap/frame allocator 的“一次性 unsafe”前提 | 已加一次性 fail-fast 守卫 | 已修复 | — |
 | `update_range_flags()` safe wrapper 没有兑现运行期同页无并发写者前提 | 当前生产只在启动期 `memory::init()` 使用，不存在多核同时改同一 VA；未来运行期权限 / DMA 属性切换仍需要锁、token 或 unsafe 边界 | 待未来设计 | 待定 |
 | `kernel_rwx()` 公开存在，与 README 的 W^X 约束冲突 | 已删除公开 `kernel_rwx()`；FDT reserved-memory / xtask 注入提供固件区来源，`kernel_firmware()` + `map_firmware_region()` 表达固件保留区 | 已修复 | — |
-| DMA QEMU identity 后端仍无真机 cache sync / coherent PTE / mask 语义 | 与 ADR-014 一致，但硬件前必须继续设计 | 待设计 | ADR-014 后续 |
+| DMA QEMU identity 后端仍无真机 cache sync / coherent PTE / mask 语义 | 与 ADR-014 一致，已独立到 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪；硬件/rdrive 集成前必须继续设计 | 待设计 | ADR-014 后续 |
 | `Frame` / `VirtAddr::align_down_to` 有 newtype 不变量漏洞 | 已补 QEMU should_panic 回归并修复 | 已修复 | — |
 | `frame_allocator::init reserved` 只记录不生效，API 契约误导 | 已收敛为“校验 + 记录”，要求 caller 预先排除 free 范围 | 已修复 | — |
 | `frame_allocator` hard IRQ 语义与 heap 后端冲突 | 已明确禁止 hard IRQ 中分配/释放物理帧，并在后端入口 assert | 已修复 | — |
@@ -338,3 +343,5 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 | 2026-04-18 | R3 (布局修正) | MMIO 子系统从 paging crate 整体迁回 memory crate（`crates/paging/src/mmio.rs` → `crates/memory/src/mmio.rs`）——当年迁入 paging 的动机（消除跨 crate unsafe）已失效，RAM 校验下沉后 ram_range 参数可内部从 MEMORY_INFO 读取；`memory::map_mmio` 门面删除，唯一入口 `memory::MmioRegion::map(paddr, size)`；paging 回归纯页表 crate（少 zerocopy 依赖） |
 | 2026-05-07 | R3 (subagent 复审) | 使用 4 个 subagent 只读复审 `memory_types` / `frame_allocator` / `page_table_entry` / `paging` / `tlb` / `heap` / `memory` / `dma`，整理出初始化一次性、权限切换并发、W^X、DMA 真机语义、newtype 不变量、RISC-V MMIO 属性、AArch64 段边界和多段 RAM 等待讨论问题；详细说明见 `docs/audit/2026-05-07-r3-memory-review-findings.md` |
 | 2026-05-07 | R3 (第一组修复) | 修复 `VirtAddr::align_down_to` canonical 校验、`Frame::new` 页号范围、`memory::init` 二次调用 fail-fast、`frame_allocator::init reserved` 校验语义；新增对应 QEMU 回归测试和测试清单。 |
+| 2026-05-07 | R3 (第二组修复) | 收紧固件 reserved-memory 映射、删除公开 `kernel_rwx()`、将 `PageTable::update_pte()` 收窄为内部机制函数、禁止 frame allocator hard IRQ 分配/释放、对多段 RAM FDT fail-fast，并补对应回归测试。 |
+| 2026-05-08 | R3 (文档与 warning 收口) | 删除 R3 roadmap / 依赖图中的 `page_allocator` 旧引用，确认 `crates/memory/AGENTS.md` 作为本地模块说明入口，移除 `src/fdt.rs` 中已过期的 3 个 `#[expect(dead_code)]`。 |

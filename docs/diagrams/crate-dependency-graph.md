@@ -35,7 +35,6 @@ graph TD
 
     subgraph R3["R3 内存子系统"]
         frame_allocator
-        page_allocator
         page_table_entry
         tlb
         paging
@@ -60,15 +59,11 @@ graph TD
     frame_allocator --> config
     frame_allocator --> memory_types
     frame_allocator --> sync
-    page_allocator --> config
-    page_allocator --> memory_types
-    page_allocator --> sync
     page_table_entry --> memory_types
     tlb --> config
     paging --> config
     paging --> frame_allocator
     paging --> memory_types
-    paging --> page_allocator
     paging --> page_table_entry
     paging --> sync
     paging --> tlb
@@ -79,7 +74,6 @@ graph TD
     memory --> frame_allocator
     memory --> heap
     memory --> memory_types
-    memory --> page_allocator
     memory --> paging
     memory --> per_cpu
     memory --> sync
@@ -121,14 +115,13 @@ graph TD
 |----------------|---------|
 | `build_common` | cc |
 | `config` | log |
-| `frame_allocator` | buddy_system_allocator, heapless, log |
+| `frame_allocator` | buddy_system_allocator, log |
 | `heap` | buddy_system_allocator, log |
 | `interrupt_state` | aarch64-cpu, riscv |
 | `macros` | proc-macro2, quote, syn |
-| `memory` | bitflags, log, spin, zerocopy |
-| `page_allocator` | log |
+| `memory` | log, spin, zerocopy |
 | `page_table_entry` | bitflags |
-| `paging` | log, spin, zerocopy |
+| `paging` | log, spin |
 | `per_cpu` | aarch64-cpu, tock-registers |
 | `simplekernel` | aarch64-cpu, arm-gic, arm-psci, bitfield-struct, bitflags, buddy_system_allocator, cc, elf, fatfs, fdt, gdbstub, hashbrown, heapless, intrusive-collections, log, qemu-exit, riscv, rustc-demangle, sbi-rt, smoltcp, spin, tock-registers, unwinding, virtio-drivers |
 | `sync` | *(无直接外部依赖)* |

@@ -235,7 +235,6 @@ impl<'a> KernelFdt<'a> {
     /// 返回其 `reg` 属性的第一组 (address, size)。
     ///
     /// 用于从 FDT 动态获取 PLIC/GIC 等中断控制器的基地址。
-    #[expect(dead_code, reason = "公开 API，供设备驱动匹配单节点多 reg 区域")]
     pub fn find_compatible_reg(&self, compat: &str) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
         let nodes = fdt.all_nodes().map_err(|e| {
@@ -287,7 +286,6 @@ impl<'a> KernelFdt<'a> {
     ///
     /// `index=0` 等价于 `find_compatible_reg`。
     /// 用于 GICv3 等节点的 `reg` 属性包含多组区域的情况。
-    #[expect(dead_code, reason = "公开 API，供 GICv3 等单节点多 reg 区域解析")]
     pub fn find_compatible_reg_nth(
         &self,
         compat: &str,
@@ -350,10 +348,6 @@ impl<'a> KernelFdt<'a> {
     /// （多个 `virtio,mmio` 节点各有一个 `reg`），
     /// 而 `find_compatible_reg_nth` 按单节点内的 `reg` 条目索引
     /// （GICv3 单节点多 `reg` 区域）。
-    #[expect(
-        dead_code,
-        reason = "公开 API，供 PlatformBus 枚举同 compatible 的多个节点"
-    )]
     pub fn find_compatible_node_nth(
         &self,
         compat: &str,
