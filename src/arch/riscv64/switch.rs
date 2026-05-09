@@ -14,7 +14,7 @@ use super::context::CalleeSavedContext;
 /// 从 `next` 恢复 callee-saved 寄存器，通过 `ret` 跳转到 `next.ra`。
 ///
 /// 寄存器布局（与 `CalleeSavedContext` 一致）：
-/// ra[0], sp[1], s0[2]..s11[13]，每个 8 字节。
+/// ra[0], sp[1], s0[2]..s11[13], fs0[14]..fs11[25]，每个 8 字节。
 ///
 /// # Safety
 ///
@@ -27,6 +27,8 @@ pub unsafe extern "C" fn switch_to(
     _next: *const CalleeSavedContext,
 ) {
     naked_asm!(
+        ".option push",
+        ".option arch, +d",
         // 保存 callee-saved 寄存器到 prev (a0)
         "sd ra,   0*8(a0)",
         "sd sp,   1*8(a0)",
@@ -42,6 +44,18 @@ pub unsafe extern "C" fn switch_to(
         "sd s9,  11*8(a0)",
         "sd s10, 12*8(a0)",
         "sd s11, 13*8(a0)",
+        "fsd fs0,  14*8(a0)",
+        "fsd fs1,  15*8(a0)",
+        "fsd fs2,  16*8(a0)",
+        "fsd fs3,  17*8(a0)",
+        "fsd fs4,  18*8(a0)",
+        "fsd fs5,  19*8(a0)",
+        "fsd fs6,  20*8(a0)",
+        "fsd fs7,  21*8(a0)",
+        "fsd fs8,  22*8(a0)",
+        "fsd fs9,  23*8(a0)",
+        "fsd fs10, 24*8(a0)",
+        "fsd fs11, 25*8(a0)",
         // 从 next (a1) 恢复 callee-saved 寄存器
         "ld ra,   0*8(a1)",
         "ld sp,   1*8(a1)",
@@ -57,6 +71,19 @@ pub unsafe extern "C" fn switch_to(
         "ld s9,  11*8(a1)",
         "ld s10, 12*8(a1)",
         "ld s11, 13*8(a1)",
+        "fld fs0,  14*8(a1)",
+        "fld fs1,  15*8(a1)",
+        "fld fs2,  16*8(a1)",
+        "fld fs3,  17*8(a1)",
+        "fld fs4,  18*8(a1)",
+        "fld fs5,  19*8(a1)",
+        "fld fs6,  20*8(a1)",
+        "fld fs7,  21*8(a1)",
+        "fld fs8,  22*8(a1)",
+        "fld fs9,  23*8(a1)",
+        "fld fs10, 24*8(a1)",
+        "fld fs11, 25*8(a1)",
+        ".option pop",
         "ret",
     );
 }

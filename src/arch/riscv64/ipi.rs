@@ -20,6 +20,12 @@ unsafe extern "C" {
 /// # 参数
 /// - `hart_id`：目标 hart 的 ID
 pub fn send_ipi(hart_id: usize) {
+    // SAFETY: `fence rw, rw` 只约束当前 hart 的内存访问顺序，不读写内存或栈。
+    // 发送 IPI 前必须先发布 shootdown mailbox 写入，确保远端 handler 能看到请求。
+    unsafe {
+        core::arch::asm!("fence rw, rw", options(nostack));
+    }
+
     // HartMask::from_mask_base(mask=1, base=hart_id) 表示精确指定单个 hart
     let mask = sbi_rt::HartMask::from_mask_base(1, hart_id);
     let ret = sbi_rt::send_ipi(mask);
@@ -82,11 +88,9 @@ pub fn wake_secondary_cores() {
         if ret.is_ok() {
             log::info!("SMP: hart {} 启动成功 (entry=0x{:x})", hart_id, boot_addr);
         } else {
-            log::warn!(
+            panic!(
                 "SMP: hart {} 启动失败 (error={}, value={})",
-                hart_id,
-                ret.error as isize,
-                ret.value
+                hart_id, ret.error as isize, ret.value
             );
         }
     }

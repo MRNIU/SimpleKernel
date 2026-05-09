@@ -10,12 +10,15 @@
  * 常量与宏定义
  */
 
+.option push
+.option arch, +d
+
 .equ kRegsBytes, 8
 
-/* 31 个通用寄存器(x1-x31) + 4 个 CSR + 1 个 padding = 36 */
-.equ kTrapContextRegsCount, 36
+/* 31 个通用寄存器(x1-x31) + 32 个浮点寄存器 + fcsr + 4 个 CSR = 68 */
+.equ kTrapContextRegsCount, 68
 
-/* 36 * 8 = 288 字节（已 16 字节对齐） */
+/* 68 * 8 = 544 字节（已 16 字节对齐） */
 .equ kTrapContextSize, ((kTrapContextRegsCount * kRegsBytes + 15) & ~15)
 
 .macro SdBase a, b, c
@@ -26,8 +29,16 @@
     ld \a, ((\b) * kRegsBytes)(\c)
 .endm
 
+.macro FsdBase a, b, c
+    fsd \a, ((\b) * kRegsBytes)(\c)
+.endm
+
+.macro FldBase a, b, c
+    fld \a, ((\b) * kRegsBytes)(\c)
+.endm
+
 /*
- * 保存 TrapContext：分配栈空间，保存 x1-x31 + CSR
+ * 保存 TrapContext：分配栈空间，保存 x1-x31 + f0-f31 + fcsr + CSR
  */
 .macro SaveTrapContext
     addi sp, sp, -kTrapContextSize
@@ -69,30 +80,106 @@
     addi t0, sp, kTrapContextSize
     SdBase t0, 1, sp
 
+    // 保存浮点寄存器
+    FsdBase ft0, 31, sp
+    FsdBase ft1, 32, sp
+    FsdBase ft2, 33, sp
+    FsdBase ft3, 34, sp
+    FsdBase ft4, 35, sp
+    FsdBase ft5, 36, sp
+    FsdBase ft6, 37, sp
+    FsdBase ft7, 38, sp
+    FsdBase fs0, 39, sp
+    FsdBase fs1, 40, sp
+    FsdBase fa0, 41, sp
+    FsdBase fa1, 42, sp
+    FsdBase fa2, 43, sp
+    FsdBase fa3, 44, sp
+    FsdBase fa4, 45, sp
+    FsdBase fa5, 46, sp
+    FsdBase fa6, 47, sp
+    FsdBase fa7, 48, sp
+    FsdBase fs2, 49, sp
+    FsdBase fs3, 50, sp
+    FsdBase fs4, 51, sp
+    FsdBase fs5, 52, sp
+    FsdBase fs6, 53, sp
+    FsdBase fs7, 54, sp
+    FsdBase fs8, 55, sp
+    FsdBase fs9, 56, sp
+    FsdBase fs10, 57, sp
+    FsdBase fs11, 58, sp
+    FsdBase ft8, 59, sp
+    FsdBase ft9, 60, sp
+    FsdBase ft10, 61, sp
+    FsdBase ft11, 62, sp
+
+    // 保存 fcsr
+    frcsr t0
+    SdBase t0, 63, sp
+
     // 保存 CSRs (使用 t0 作为临时寄存器，t0 原值已保存在 offset 4)
     csrr t0, sstatus
-    SdBase t0, 31, sp
+    SdBase t0, 64, sp
     csrr t0, sepc
-    SdBase t0, 32, sp
+    SdBase t0, 65, sp
     csrr t0, stval
-    SdBase t0, 33, sp
+    SdBase t0, 66, sp
     csrr t0, scause
-    SdBase t0, 34, sp
+    SdBase t0, 67, sp
 .endm
 
 /*
- * 恢复 TrapContext：从栈上恢复 x1-x31 + CSR，释放栈空间
+ * 恢复 TrapContext：从栈上恢复 x1-x31 + f0-f31 + fcsr + CSR，释放栈空间
  */
 .macro RestoreTrapContext
     // 恢复 CSRs (使用 t0 作为临时寄存器)
-    LdBase t0, 31, sp
+    LdBase t0, 64, sp
     csrw sstatus, t0
-    LdBase t0, 32, sp
+    LdBase t0, 65, sp
     csrw sepc, t0
-    LdBase t0, 33, sp
+    LdBase t0, 66, sp
     csrw stval, t0
-    LdBase t0, 34, sp
+    LdBase t0, 67, sp
     csrw scause, t0
+
+    // 恢复 fcsr
+    LdBase t0, 63, sp
+    fscsr t0
+
+    // 恢复浮点寄存器
+    FldBase ft0, 31, sp
+    FldBase ft1, 32, sp
+    FldBase ft2, 33, sp
+    FldBase ft3, 34, sp
+    FldBase ft4, 35, sp
+    FldBase ft5, 36, sp
+    FldBase ft6, 37, sp
+    FldBase ft7, 38, sp
+    FldBase fs0, 39, sp
+    FldBase fs1, 40, sp
+    FldBase fa0, 41, sp
+    FldBase fa1, 42, sp
+    FldBase fa2, 43, sp
+    FldBase fa3, 44, sp
+    FldBase fa4, 45, sp
+    FldBase fa5, 46, sp
+    FldBase fa6, 47, sp
+    FldBase fa7, 48, sp
+    FldBase fs2, 49, sp
+    FldBase fs3, 50, sp
+    FldBase fs4, 51, sp
+    FldBase fs5, 52, sp
+    FldBase fs6, 53, sp
+    FldBase fs7, 54, sp
+    FldBase fs8, 55, sp
+    FldBase fs9, 56, sp
+    FldBase fs10, 57, sp
+    FldBase fs11, 58, sp
+    FldBase ft8, 59, sp
+    FldBase ft9, 60, sp
+    FldBase ft10, 61, sp
+    FldBase ft11, 62, sp
 
     // 恢复通用寄存器 (除了 sp 和 t0)
     LdBase ra, 0, sp
@@ -188,8 +275,8 @@ trap_return:
     mv sp, a0
 
     // 恢复 Trap 上下文
-    // 检查 sstatus.SPP (offset 31) 判断返回到用户态还是内核态
-    ld t0, 31*8(sp)
+    // 检查 sstatus.SPP (offset 64) 判断返回到用户态还是内核态
+    ld t0, 64*8(sp)
     andi t0, t0, 0x100
     bnez t0, .Lret_to_kernel
 
@@ -211,3 +298,5 @@ trap_return:
     RestoreTrapContext
     // 从 S 模式异常中返回
     sret
+
+.option pop

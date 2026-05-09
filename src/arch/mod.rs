@@ -14,7 +14,7 @@ pub(crate) mod riscv64;
 /// TLB 管理在 `memory` crate 中提供，
 /// core ID 在 `per_cpu` crate 中提供，tick 计数在 `tick` crate 中提供，
 /// 此 trait 仅定义初始化和硬件配置操作。
-pub trait ArchOps {
+pub(crate) trait ArchOps {
     /// 从引导参数中提取 DTB（设备树）物理地址。
     ///
     /// # Safety
@@ -55,24 +55,24 @@ pub trait ArchOps {
 }
 
 #[cfg(target_arch = "riscv64")]
-pub type Arch = riscv64::Riscv64;
+pub(crate) type Arch = riscv64::Riscv64;
 
 #[cfg(target_arch = "aarch64")]
-pub type Arch = aarch64::Aarch64;
+pub(crate) type Arch = aarch64::Aarch64;
 
 /// 被调用者保存上下文——架构无关的统一类型别名
 #[cfg(target_arch = "riscv64")]
-pub type CalleeSavedContext = riscv64::context::CalleeSavedContext;
+pub(crate) type CalleeSavedContext = riscv64::context::CalleeSavedContext;
 
 /// 被调用者保存上下文——架构无关的统一类型别名
 #[cfg(target_arch = "aarch64")]
-pub type CalleeSavedContext = aarch64::context::CalleeSavedContext;
+pub(crate) type CalleeSavedContext = aarch64::context::CalleeSavedContext;
 
 #[cfg(target_arch = "riscv64")]
-pub use riscv64::switch::switch_to;
+pub(crate) use riscv64::switch::switch_to;
 
 #[cfg(target_arch = "aarch64")]
-pub use aarch64::switch::switch_to;
+pub(crate) use aarch64::switch::switch_to;
 
 /// 宿主机编译（`cargo clippy` / `cargo check`）占位类型，不会在目标架构上使用。
 #[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]

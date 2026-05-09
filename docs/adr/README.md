@@ -28,6 +28,11 @@ ADR 描述“为什么做出某个决策”。当前架构和当前设计仍应�
 | 012 | [PageTable 拆分；hot-path PTE 更新无锁化](012-pagetable-split-lock-free-hot-path.md) | 已接受 | 2026-04-17 | R3 回看 |
 | 013 | [删除 `OwnedPages` 抽象层](013-ownedpages-necessity.md) | 已接受 | 2026-04-18 | R3 回看 |
 | 014 | [QEMU VirtIO DMA 抽象封装 `dma-api`](014-qemu-virtio-dma-api-wrapper.md) | 提议 | 2026-05-06 | R3/R6 |
+| 015 | [R4 dense core id 平台契约](015-r4-dense-core-id-platform-contract.md) | 提议 | 2026-05-09 | R4 |
+| 016 | [R4 timer IRQ-exit 抢占边界](016-r4-timer-irq-exit-preemption.md) | 提议 | 2026-05-09 | R4 |
+| 017 | [RISC-V eager 浮点上下文保存](017-riscv64-eager-fpu-context.md) | 提议 | 2026-05-09 | R4 |
+| 018 | [R4 TLB shootdown 完整协议](018-r4-tlb-shootdown-protocol.md) | 提议（待决策） | 2026-05-09 | R4 |
+| 019 | [R4 timer absolute deadline 与 tick 漂移语义](019-r4-timer-absolute-deadline-and-drift.md) | 提议（暂定方案 B） | 2026-05-09 | R4/R5 |
 
 ## 状态规则
 

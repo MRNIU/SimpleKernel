@@ -14,6 +14,7 @@ use crate::arch::{Arch, ArchOps};
 const REQUEST_NONE: usize = 0;
 const REQUEST_ALL: usize = 1;
 const REQUEST_PAGE: usize = 2;
+const ONLINE_WAIT_ROUNDS: usize = 1_000_000;
 
 static ONLINE_CORES: AtomicUsize = AtomicUsize::new(0);
 static BROADCAST_LOCK: AtomicBool = AtomicBool::new(false);
@@ -48,6 +49,43 @@ pub fn mark_current_core_online() {
 /// 返回当前已标记可接收 TLB shootdown IPI 的 CPU 数量。
 pub fn online_core_count() -> usize {
     ONLINE_CORES.load(Ordering::Acquire).count_ones() as usize
+}
+
+/// 返回当前已标记可接收 TLB shootdown IPI 的 CPU 位图。
+pub fn online_core_mask() -> usize {
+    ONLINE_CORES.load(Ordering::Acquire)
+}
+
+/// 当前所有 FDT 发现的 CPU 是否都已完成 SMP online。
+pub fn all_discovered_cores_online() -> bool {
+    let discovered = crate::cpu_topology::topology().discovered_core_count();
+    let expected = expected_online_mask(discovered);
+    online_core_mask() & expected == expected
+}
+
+/// 等待所有 FDT 发现的 CPU 完成 SMP online。
+///
+/// # Panics
+/// 当从核未在有限自旋内上线时 panic，并打印缺失 CPU 位图。
+pub fn wait_for_all_discovered_cores_online() {
+    let discovered = crate::cpu_topology::topology().discovered_core_count();
+    let expected = expected_online_mask(discovered);
+
+    for _ in 0..ONLINE_WAIT_ROUNDS {
+        if online_core_mask() & expected == expected {
+            return;
+        }
+        core::hint::spin_loop();
+    }
+
+    let actual = online_core_mask();
+    panic!(
+        "SMP: 等待所有 CPU online 超时: discovered={}, expected_mask={:#x}, actual_mask={:#x}, missing_mask={:#x}",
+        discovered,
+        expected,
+        actual,
+        expected & !actual
+    );
 }
 
 /// 处理当前核心收到的 TLB shootdown IPI。
@@ -94,6 +132,11 @@ fn broadcast(request: TlbFlushRequest) {
         return;
     }
 
+    assert!(
+        interrupt_state::is_enabled(),
+        "tlb_shootdown: 发起跨核广播前必须处于 IRQ enabled 状态，避免等待远端 ack 时形成不可恢复等待"
+    );
+
     while BROADCAST_LOCK
         .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
         .is_err()
@@ -110,6 +153,7 @@ fn broadcast(request: TlbFlushRequest) {
     REQUEST_ADDR.store(addr, Ordering::Relaxed);
     REQUEST_KIND.store(kind, Ordering::Relaxed);
     let generation = REQUEST_GENERATION.fetch_add(1, Ordering::AcqRel) + 1;
+    core::sync::atomic::fence(Ordering::Release);
 
     for core_id in 0..config::MAX_CORE_COUNT {
         if target_mask & (1usize << core_id) != 0 {
@@ -127,4 +171,14 @@ fn broadcast(request: TlbFlushRequest) {
     }
 
     BROADCAST_LOCK.store(false, Ordering::Release);
+}
+
+fn expected_online_mask(core_count: usize) -> usize {
+    assert!(
+        (1..=config::MAX_CORE_COUNT).contains(&core_count),
+        "SMP: discovered core count {} 不在 1..={} 内",
+        core_count,
+        config::MAX_CORE_COUNT
+    );
+    (1usize << core_count) - 1
 }

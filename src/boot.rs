@@ -100,6 +100,7 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     crate::fs::fs_init();
 
     Arch::wake_secondary_cores();
+    crate::tlb_shootdown::wait_for_all_discovered_cores_online();
 }
 
 /// 冒烟测试：SpinLock 创建、加锁、修改、解锁。

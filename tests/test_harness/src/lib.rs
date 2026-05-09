@@ -115,10 +115,15 @@ macro_rules! test_main {
         }
 
         #[unsafe(no_mangle)]
-        pub extern "C" fn kernel_thread_bootstrap(_entry: usize, _arg: usize) -> ! {
-            loop {
-                core::hint::spin_loop();
-            }
+        pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
+            // SAFETY: 新线程由调度器切入时中断处于关闭状态，调度锁已在 `switch_to` 前释放。
+            unsafe { simplekernel::task::bootstrap_enable_irq() };
+
+            // SAFETY: `entry` 由 `TaskControlBlock::new_kernel_thread` 编码为合法 `fn(usize)`。
+            let entry_fn: fn(usize) = unsafe { core::mem::transmute(entry) };
+            entry_fn(arg);
+
+            simplekernel::syscall::process::exit(0);
         }
 
         #[panic_handler]
@@ -163,10 +168,15 @@ macro_rules! test_main {
         }
 
         #[unsafe(no_mangle)]
-        pub extern "C" fn kernel_thread_bootstrap(_entry: usize, _arg: usize) -> ! {
-            loop {
-                core::hint::spin_loop();
-            }
+        pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
+            // SAFETY: 新线程由调度器切入时中断处于关闭状态，调度锁已在 `switch_to` 前释放。
+            unsafe { simplekernel::task::bootstrap_enable_irq() };
+
+            // SAFETY: `entry` 由 `TaskControlBlock::new_kernel_thread` 编码为合法 `fn(usize)`。
+            let entry_fn: fn(usize) = unsafe { core::mem::transmute(entry) };
+            entry_fn(arg);
+
+            simplekernel::syscall::process::exit(0);
         }
 
         #[panic_handler]

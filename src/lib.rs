@@ -14,7 +14,7 @@ extern crate alloc;
 /// 与 `config::MAX_CORE_COUNT`（编译期上限）不同，此值为运行时实际核心数。
 pub static CORE_COUNT: spin::Once<usize> = spin::Once::new();
 
-pub mod arch;
+pub(crate) mod arch;
 pub mod boot;
 pub mod cpu_topology;
 pub mod device;

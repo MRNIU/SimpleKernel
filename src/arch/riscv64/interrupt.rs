@@ -10,6 +10,10 @@ use memory_types::PhysAddr;
 
 use super::context::TrapContext;
 
+const SSTATUS_SIE: usize = 1 << 1;
+const SSTATUS_FS_DIRTY: usize = 0b11 << 13;
+const SIE_SSIE_STIE_SEIE: usize = 0x222;
+
 // Trap 入口/返回汇编（含宏定义），由 LLVM 内置汇编器处理
 global_asm!(include_str!("interrupt.S"));
 
@@ -155,12 +159,24 @@ fn handle_external() {
 
 // 中断初始化
 
+#[inline]
+fn enable_fpu() {
+    // SAFETY: `sstatus.FS` 是 S-mode 可写字段；设置为 Dirty 允许当前 hart 执行 D/F 指令。
+    unsafe {
+        core::arch::asm!(
+            "csrs sstatus, {mask}",
+            mask = in(reg) SSTATUS_FS_DIRTY,
+        );
+    }
+}
+
 /// 初始化主核中断系统
 ///
 /// 1. 设置 stvec 为 trap_entry（Direct 模式，mode=0）
-/// 2. 使能 sie 中的 STIE（bit5）、SEIE（bit9）、SSIE（bit1）
-/// 3. 设置 sstatus.SIE（bit1）使能全局中断
-/// 4. 初始化 PLIC
+/// 2. 设置 sstatus.FS=Dirty，使当前 hart 可执行硬件浮点指令
+/// 3. 初始化 PLIC
+/// 4. 使能 sie 中的 STIE（bit5）、SEIE（bit9）、SSIE（bit1）
+/// 5. 设置 sstatus.SIE（bit1）使能全局中断
 pub fn init() {
     // SAFETY: stvec/sscratch 是 S 模式 CSR，在 S 模式下可安全写入
     unsafe {
@@ -178,6 +194,7 @@ pub fn init() {
         );
     }
 
+    enable_fpu();
     plic_init();
 
     // SAFETY: sie/sstatus 是 S 模式 CSR，在 PLIC 已初始化后使能中断
@@ -185,11 +202,11 @@ pub fn init() {
         // 使能 sie: SSIE(1) | STIE(5) | SEIE(9) → mask = 0x222
         core::arch::asm!(
             "csrs sie, {mask}",
-            mask = in(reg) 0x222usize,
+            mask = in(reg) SIE_SSIE_STIE_SEIE,
         );
 
         // 使能全局中断 sstatus.SIE（bit1）
-        core::arch::asm!("csrs sstatus, {mask}", mask = in(reg) 0x2usize);
+        core::arch::asm!("csrs sstatus, {mask}", mask = in(reg) SSTATUS_SIE);
     }
 
     log::info!("InterruptInit done");
@@ -213,14 +230,15 @@ pub fn init_smp() {
     }
 
     configure_plic_context(current_plic_s_context());
+    enable_fpu();
 
     // SAFETY: 本核 PLIC context 已配置，CSR 写入在 S 模式下安全
     unsafe {
         core::arch::asm!(
             "csrs sie, {mask}",
-            mask = in(reg) 0x222usize,
+            mask = in(reg) SIE_SSIE_STIE_SEIE,
         );
-        core::arch::asm!("csrs sstatus, {mask}", mask = in(reg) 0x2usize);
+        core::arch::asm!("csrs sstatus, {mask}", mask = in(reg) SSTATUS_SIE);
     }
 }
 

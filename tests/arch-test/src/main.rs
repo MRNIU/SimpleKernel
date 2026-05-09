@@ -6,7 +6,40 @@
 #![no_main]
 #![feature(alloc_error_handler)]
 
+#[cfg(target_arch = "riscv64")]
+use core::sync::atomic::{AtomicBool, Ordering};
+
 test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_tests);
+
+#[cfg(target_arch = "riscv64")]
+core::arch::global_asm!(
+    r#"
+    .section .text
+    .option push
+    .option arch, +d
+    .global arch_test_write_fs0_bits
+    .type arch_test_write_fs0_bits, @function
+arch_test_write_fs0_bits:
+    fmv.d.x fs0, a0
+    ret
+
+    .global arch_test_read_fs0_bits
+    .type arch_test_read_fs0_bits, @function
+arch_test_read_fs0_bits:
+    fmv.x.d a0, fs0
+    ret
+    .option pop
+"#
+);
+
+#[cfg(target_arch = "riscv64")]
+unsafe extern "C" {
+    fn arch_test_write_fs0_bits(bits: u64);
+    fn arch_test_read_fs0_bits() -> u64;
+}
+
+#[cfg(target_arch = "riscv64")]
+static RISCV64_FP_CHILD_DONE: AtomicBool = AtomicBool::new(false);
 
 fn run_tests() {
     test_kernel_stack_alignment();
@@ -18,11 +51,20 @@ fn run_tests() {
     test_cpu_topology_contract();
     log::info!("test cpu_topology_contract ... ok");
 
+    test_smp_online_barrier_contract();
+    log::info!("test smp_online_barrier_contract ... ok");
+
     test_irq_exit_preemption_contract();
     log::info!("test irq_exit_preemption_contract ... ok");
 
     test_aarch64_fp_arithmetic();
     log::info!("test aarch64_fp_arithmetic ... ok");
+
+    test_riscv64_fp_arithmetic();
+    log::info!("test riscv64_fp_arithmetic ... ok");
+
+    test_riscv64_fp_context_switch();
+    log::info!("test riscv64_fp_context_switch ... ok");
 
     log::info!("arch-test: all tests passed");
 }
@@ -78,6 +120,20 @@ fn test_cpu_topology_contract() {
     );
 }
 
+/// Full 初始化返回后，所有 FDT 发现的核心都必须已经完成 SMP online。
+fn test_smp_online_barrier_contract() {
+    let discovered = *simplekernel::CORE_COUNT
+        .get()
+        .expect("arch-test: CORE_COUNT 未初始化");
+
+    assert!(
+        simplekernel::tlb_shootdown::all_discovered_cores_online(),
+        "Full 初始化返回时所有 discovered CPU 都必须 online: discovered={}, online={}",
+        discovered,
+        simplekernel::tlb_shootdown::online_core_count()
+    );
+}
+
 /// IRQ-exit 抢占判定必须只消费一次 pending reschedule 标志。
 fn test_irq_exit_preemption_contract() {
     simplekernel::preempt::request_current_core_reschedule();
@@ -116,3 +172,77 @@ fn fp_expression(lhs: f64, rhs: f64) -> f64 {
     let sum = core::hint::black_box(lhs + rhs);
     sum * core::hint::black_box(2.0_f64)
 }
+
+/// RISC-V `gc` 目标应能在 S-mode 执行硬件浮点运算。
+#[cfg(target_arch = "riscv64")]
+fn test_riscv64_fp_arithmetic() {
+    let lhs = core::hint::black_box(3.5_f64);
+    let rhs = core::hint::black_box(1.25_f64);
+    let value = riscv64_fp_expression(lhs, rhs);
+
+    assert!(
+        (value - 5.625).abs() < f64::EPSILON,
+        "RISC-V 浮点计算结果错误: value={}",
+        value
+    );
+}
+
+/// 非 RISC-V 架构不执行本测试。
+#[cfg(not(target_arch = "riscv64"))]
+fn test_riscv64_fp_arithmetic() {}
+
+/// 产生一段不可在编译期完全折叠的 RISC-V 浮点表达式。
+#[cfg(target_arch = "riscv64")]
+#[inline(never)]
+fn riscv64_fp_expression(lhs: f64, rhs: f64) -> f64 {
+    let sum = core::hint::black_box(lhs + rhs);
+    sum + core::hint::black_box(0.875_f64)
+}
+
+/// RISC-V 任务切换必须保存/恢复 callee-saved 浮点寄存器 `fs0`。
+#[cfg(target_arch = "riscv64")]
+fn test_riscv64_fp_context_switch() {
+    const PARENT_VALUE: f64 = 11.5;
+
+    RISCV64_FP_CHILD_DONE.store(false, Ordering::Release);
+
+    // SAFETY: 测试在 RISC-V `gc` 目标下运行，`fs0` 用作被调用者保存浮点寄存器。
+    unsafe { arch_test_write_fs0_bits(PARENT_VALUE.to_bits()) };
+
+    simplekernel::task::spawn_kernel_thread("riscv64-fp-child", riscv64_fp_child, 0);
+    simplekernel::syscall::process::yield_now();
+
+    assert!(
+        RISCV64_FP_CHILD_DONE.load(Ordering::Acquire),
+        "RISC-V FP 子任务未运行完成"
+    );
+
+    // SAFETY: 与写入侧相同，读取当前任务的 `fs0` 原始位模式用于验证上下文恢复。
+    let actual = unsafe { arch_test_read_fs0_bits() };
+    assert_eq!(
+        actual,
+        PARENT_VALUE.to_bits(),
+        "RISC-V 任务切换未恢复父任务 fs0: actual={:#x}, expected={:#x}",
+        actual,
+        PARENT_VALUE.to_bits()
+    );
+}
+
+/// 子任务覆盖 `fs0`，用于验证父任务切回后是否恢复自己的 FP 状态。
+#[cfg(target_arch = "riscv64")]
+fn riscv64_fp_child(_: usize) {
+    const CHILD_VALUE: f64 = 42.25;
+
+    // SAFETY: 测试在 RISC-V `gc` 目标下运行，故意覆盖 `fs0` 以暴露上下文切换缺口。
+    unsafe { arch_test_write_fs0_bits(CHILD_VALUE.to_bits()) };
+
+    let _ = riscv64_fp_expression(
+        core::hint::black_box(7.0_f64),
+        core::hint::black_box(8.0_f64),
+    );
+    RISCV64_FP_CHILD_DONE.store(true, Ordering::Release);
+}
+
+/// 非 RISC-V 架构不执行本测试。
+#[cfg(not(target_arch = "riscv64"))]
+fn test_riscv64_fp_context_switch() {}

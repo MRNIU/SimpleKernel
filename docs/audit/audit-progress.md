@@ -7,20 +7,53 @@
 
 ## 当前状态
 
-**当前 Phase**: R4 — 架构层第三阶段 CPU topology 取舍收缩与 timer 方案 A 已完成。
-`R4-01/R4-02/R4-11/R4-14` 已修复；`R4-04/R4-12` 已明确为 dense core id / 单 cluster
-平台契约，并用 FDT CPU 表做 fail-fast 诊断；`R4-13` 仍缺 boot-time all-cores-online barrier；
-`R4-05/R4-06/R4-16/R4-17` 仍待后续设计/文档切片。
+**当前 Phase**: R4 — 架构层第四阶段不涉及 ADR 的修复切片和 R4 剩余 ADR 提议稿已完成。
+`R4-01/R4-02/R4-03/R4-07/R4-08/R4-09/R4-10/R4-11/R4-13/R4-14`
+已修复；`R4-04/R4-12` 已明确为 dense core id / 单 cluster 平台契约，并用 FDT CPU 表
+做 fail-fast 诊断，已补 ADR-015；`R4-02` timer IRQ-exit preemption 边界已补 ADR-016；
+`R4-06` RISC-V eager FPU 上下文保存已恢复并补 ADR-017；`R4-05` 已完成发布屏障、
+IRQ enabled 断言和 IPI barrier 的最小硬化，并补 ADR-018 提议稿待决策；`R4-16` 已完成
+`src/arch` 首轮外部暴露面收窄；`R4-17` 已补 R4 当前设计文档和启动 barrier 回归。
+`R4-15` 漂移语义已补 ADR-019，并暂定采用方案 B；per-core absolute deadline 实现和回归待后续。
 **下一个目标**（按优先级）：
-1. **R4 跨核协议剩余项**：R4-05 TLB shootdown 协议、R4-13 boot-time online barrier。
-2. **R4/R5 设计 ADR**：CPU topology 平台契约、timer IRQ-exit preemption、R4-15 absolute deadline / tick 漂移语义。
-3. **R4 交付文档与暴露面收口**：R4-16 `src/arch` 暴露面、R4-17 启动/中断/timer/SMP 文档与测试补齐。
+1. **等待项目作者决策**：ADR-018 TLB shootdown 完整协议。
+2. **R4 后续协议测试**：在 ADR-018 定案后补远端访问强证明和 ack/timeout 诊断测试。
+3. **R4 timer 后续实现**：按 ADR-019 暂定方案 B 补 per-core absolute deadline 和漂移回归；missed tick 补记后续回看。
 4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
 
 验证计划：后续设计边界改动仍需先补目标回归测试，再按变更面执行
 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64`。涉及 QEMU 的命令必须使用 30 秒超时并在
 超时后清理残留 `qemu-system` 进程。
+
+验证结果（2026-05-09 R4 剩余 ADR 提议稿）：本轮只新增/更新文档，未修改实现代码。
+已补 ADR-018（TLB shootdown 完整协议）和 ADR-019（timer absolute deadline / tick 漂移语义），
+并同步 ADR 索引、R4 审计报告、R4 interrupt/timer 设计说明和审计进度。验证使用
+`git diff --check`。
+
+验证结果（2026-05-09 ADR-019 暂定方案 B 记录）：本轮只更新文档，未修改实现代码。
+ADR-019 已记录暂定采用方案 B；ADR 索引、R4 审计报告、R4 interrupt/timer 设计说明和本进度文件
+已同步为“暂定方案 B，待实现 per-core absolute deadline”。验证使用 `git diff --check`。
+
+验证结果（2026-05-09 R4 ADR 补记与 RISC-V 浮点恢复）：容器
+`simplekernel-dev` 内先补 RISC-V FP 上下文红测：父任务写 `fs0`、子任务覆盖 `fs0`、
+切回后父任务必须读回原值；RED 阶段确认当前代码会读到子任务值，说明第 6 项不是完全已支持。
+实现后恢复 RISC-V eager FPU 上下文保存，并补 ADR-015/016/017。验证通过：
+`cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64`、RISC-V QEMU 30 秒超时下
+`cargo xtask test --arch riscv64 --name arch-test --timeout 30` 和
+`cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`，
+以及 `git diff --check`。
+
+验证结果（2026-05-09 R4 第四阶段不涉及 ADR 修复）：容器 `simplekernel-dev`
+内先按 TDD 给 `arch-test` 增加 Full 初始化返回时 all-discovered-cores-online 断言；
+RED 阶段确认缺少 `tlb_shootdown::all_discovered_cores_online()` 时 `arch-test` 编译失败。
+实现后补齐 boot-time online barrier、hart/CPU 启动失败 fail-fast、TLB shootdown 最小发布屏障与
+IPI barrier、`src/arch` crate 外暴露面收窄，并新增 R4 启动/中断/timer/新增架构指南文档。
+验证通过：`cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64`、RISC-V QEMU 30 秒超时下
+`cargo xtask test --arch riscv64 --name arch-test --timeout 30` 和
+`cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`。
 
 验证结果（2026-05-09 R4 第三阶段 CPU topology 取舍收缩与 timer 方案 A）：容器
 `simplekernel-dev` 内先补充回归，`arch-test` 覆盖 dense CPU id 契约、timekeeper core 绑定，
@@ -87,6 +120,87 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 不会把 should_panic 未触发转换成非零退出码。
 
 ## 上次对话摘要
+
+**日期**：2026-05-09（R4 剩余 ADR 提议稿）
+
+### 已完成
+
+本轮按用户要求展开剩余两个 R4 决策问题，并补充 ADR 提议稿：
+
+1. ADR-018：TLB shootdown 完整协议。展开单 broadcast lock、per-CPU mailbox、stop-the-world rendezvous
+   和本地 flush 反例，并列出作者需要确认的上下文、超时、目标集合和锁序问题。
+2. ADR-019：timer absolute deadline 与 tick 漂移语义。展开相对重装、absolute deadline、
+   missed tick 补记和未来 tickless 方向，并列出 `global_tick` 语义、sleep/timeout 追赶和 scheduler
+   记账接口问题。
+3. 同步 `docs/adr/README.md`、R4 审计报告、R4 interrupt/timer 设计说明和本进度文件。
+
+### 关键结论
+
+| # | 结论 | 状态 | ADR |
+|---|------|------|-----|
+| R4-05 TLB shootdown 完整协议 | 最小硬化已在代码中，长期协议仍需作者选 A/B/C | 待决策 | ADR-018 |
+| R4-15 timer 漂移语义 | fail-fast 已在代码中；absolute deadline 暂定方案 B，missed tick / tickless 后续回看 | 待实现 | ADR-019 |
+
+### 下一步
+
+等待项目作者在 ADR-018 中选择方案；ADR-019 已暂定方案 B，后续进入 per-core absolute
+deadline 实现和回归测试。
+
+**日期**：2026-05-09（R4 ADR 补记与 RISC-V 浮点恢复）
+
+### 已完成
+
+本轮按用户要求检查 R4 需要决策的问题是否已有 ADR，并处理“代码已存在但缺 ADR”的项目：
+
+1. R4-04/R4-12：补充 ADR-015，记录当前 dense core id / AArch64 单 cluster 平台契约。
+2. R4-02：补充 ADR-016，记录 timer IRQ-exit preemption 边界。
+3. R4-06：确认 AArch64 已由 ADR-001 支撑；RISC-V 当前代码虽能执行浮点运算，但未保存 FP 上下文。
+   参考历史 `f24ac7e8` 前的 68/26 槽布局，恢复 RISC-V eager FPU 保存，并补充 ADR-017。
+4. `arch-test` 增加 RISC-V 浮点运算和 `fs0` 跨任务保存回归；`tests/test_harness`
+   的 `kernel_thread_bootstrap` 改为执行新线程入口，使独立系统测试可覆盖内核线程上下文切换。
+
+### 关键结论
+
+| # | 结论 | 状态 | ADR |
+|---|------|------|-----|
+| R4-02 timer IRQ-exit preemption | 已落地并补决策记录 | 已修复 | ADR-016 |
+| R4-04/R4-12 CPU topology / SGI 平台契约 | 当前选择 dense core id、单 cluster，不做 remap | 已修复 | ADR-015 |
+| R4-06 RISC-V 浮点 | 不是“完全已支持”：FP 指令能执行，但任务切换原先不保存 `fs0-fs11` | 已修复 | ADR-017 |
+| R4-05 TLB shootdown 完整协议 | 只有最小硬化，是否升级 mailbox/rendezvous 仍未定 | 待设计 | 待补 |
+| R4-15 timer 漂移语义 | fail-fast 已修复；后续已由 ADR-019 暂定方案 B | 待实现 | ADR-019 |
+
+### 下一步
+
+优先进入 R4-05 TLB shootdown 完整协议 ADR；R4-15 后续按 ADR-019 暂定方案 B 实现。
+
+**日期**：2026-05-09（R4 第四阶段不涉及 ADR 修复）
+
+### 已完成
+
+本轮按用户要求只处理不需要先做 ADR 的 R4 review 修复：
+
+1. R4-13：`kernel_init(Full)` 在 `Arch::wake_secondary_cores()` 后等待所有 FDT discovered CPU online；
+   hart/CPU 启动失败直接 fail-fast，Full 初始化返回后不再 fire-and-forget。
+2. R4-05：在不改变单 broadcast lock 方案的前提下，补充发起方 IRQ enabled 断言、request 发布 fence、
+   RISC-V `fence rw, rw` 和 AArch64 `dsb ishst` IPI barrier。
+3. R4-16：将 `src/arch` 根模块、`ArchOps`、`Arch`、`CalleeSavedContext`、`switch_to`
+   收窄为 crate 内部可见。
+4. R4-17：新增 R4 启动/SMP、中断/timer/TLB、架构移植指南三份设计文档，并在 `docs/README.md`
+   增加当前设计入口。
+
+### 关键结论
+
+| # | 结论 | 状态 | ADR |
+|---|------|------|-----|
+| R4-13 boot-time online barrier | 已改成 Full 初始化返回前等待所有 discovered CPU online | 已修复 | 建议补 CPU topology ADR |
+| R4-05 TLB shootdown 最小硬化 | 发布顺序和调用上下文已加防线，但单 lock / per-CPU mailbox / rendezvous 仍未定 | 部分完成 | 需要 |
+| R4-16 `src/arch` 暴露面 | crate 外直接访问 `simplekernel::arch::*` 的路径已首轮关闭 | 已修复 | — |
+| R4-17 R4 交付文档 | 当前启动、中断/timer、架构移植指南已补齐 | 已修复 | — |
+
+### 下一步
+
+剩余进入 ADR/设计切片：R4-05 完整 TLB shootdown 协议、R4-06 RISC-V 浮点策略、
+R4-15 timer absolute deadline / tick 漂移语义，以及 CPU topology 和 timer-preemption 的已采用决策补记。
 
 **日期**：2026-05-09（R4 第二阶段低耦合修复）
 

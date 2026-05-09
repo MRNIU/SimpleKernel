@@ -52,6 +52,14 @@ docs/
 
 SimpleKernel 当前已有 `docs/design/` 和 `docs/adr/`。新增 SAD/SDD 时可以使用 `docs/templates/sad.md`、`docs/templates/sdd.md`，也可以按子系统放入 `docs/design/`，但必须在相关入口文档中链接。
 
+## 当前设计入口
+
+- `docs/design/SAS-架构设计.md`：单地址空间 SAS 架构边界。
+- `docs/design/memory-subsystem-v2.md`：当前内存子系统设计。
+- `docs/design/R4-arch-boot-sequence.md`：R4 启动与 SMP 上线时序。
+- `docs/design/R4-interrupt-timer-flow.md`：R4 中断、timer 与 TLB shootdown 流程。
+- `docs/design/R4-architecture-porting-guide.md`：新增架构后端指南。
+
 ## 图表规则
 
 架构图、数据流、状态机、硬件拓扑、生产流程和 SOP 优先使用 Mermaid 或 PlantUML。图表必须配套文字说明，不能只提交图片或截图。

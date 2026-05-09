@@ -33,9 +33,11 @@ pub fn send_ipi(cpu_id: usize) {
     //   其余位为 0
     let target_list: u64 = 1u64 << cpu_id;
     let sgi_value: u64 = target_list; // INTID=0，其余位=0
-    // SAFETY: ICC_SGI1R_EL1 在 EL1 下可写（GICv3 CPU 接口使能后）
+    // SAFETY: ICC_SGI1R_EL1 在 EL1 下可写（GICv3 CPU 接口使能后）。
+    // `dsb ishst` 确保普通内存中的 shootdown mailbox 写入先于 SGI doorbell 对外可见。
     unsafe {
         core::arch::asm!(
+            "dsb ishst",
             "msr icc_sgi1r_el1, {v}",
             "isb",
             v = in(reg) sgi_value,
@@ -118,7 +120,7 @@ pub fn wake_secondary_cores() {
         if ret == 0 {
             log::info!("SMP: cpu {} 启动成功 (entry=0x{:x})", cpu_id, entry_addr);
         } else {
-            log::warn!("SMP: cpu {} 启动失败 (psci_ret={})", cpu_id, ret);
+            panic!("SMP: cpu {} 启动失败 (psci_ret={})", cpu_id, ret);
         }
     }
 }
