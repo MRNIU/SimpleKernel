@@ -152,6 +152,8 @@ default = ["lang_items"]
 # 当 simplekernel 作为库被其他二进制（如独立测试）依赖时，
 # 关闭此 feature 以允许调用方自行定义这些 lang items。
 lang_items = []
+# 仅供独立系统测试触发内部故障路径；生产二进制不要启用。
+test-support = []
 
 # 二进制入口仅面向裸机目标，不参与宿主机测试
 [[bin]]

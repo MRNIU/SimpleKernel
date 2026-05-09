@@ -86,8 +86,10 @@ SimpleKernel 的 R4 架构层只提供启动、console、timer、interrupt、IPI
 - 发出 IPI 前，当前 CPU 对普通内存的 request mailbox 写入已经对目标 CPU 可见。
 - RISC-V 当前使用 `fence rw, rw`。
 - AArch64 当前使用 `dsb ishst` 后写 `ICC_SGI1R_EL1`。
+- 目标 CPU 必须在完成本地 TLB flush 后发布 ack；发起方等待 ack 超时会 fail-fast 并输出诊断。
 
-完整 TLB shootdown 协议是否升级为 per-CPU mailbox 或 rendezvous 仍待 ADR；新增架构不应私自引入另一套协议。
+完整 TLB shootdown 协议当前按 ADR-018 方案 A 保留单 broadcast lock。per-CPU mailbox 或 rendezvous
+属于后续演进方向；新增架构不应私自引入另一套协议。
 
 ## 最小验证
 

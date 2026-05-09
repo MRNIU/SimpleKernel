@@ -15,6 +15,7 @@ const REQUEST_NONE: usize = 0;
 const REQUEST_ALL: usize = 1;
 const REQUEST_PAGE: usize = 2;
 const ONLINE_WAIT_ROUNDS: usize = 1_000_000;
+const ACK_WAIT_ROUNDS: usize = 10_000_000;
 
 static ONLINE_CORES: AtomicUsize = AtomicUsize::new(0);
 static BROADCAST_LOCK: AtomicBool = AtomicBool::new(false);
@@ -113,6 +114,26 @@ pub fn handle_ipi() {
     ACK_GENERATION[core_id].store(generation, Ordering::Release);
 }
 
+/// 触发 TLB shootdown ack 超时路径，供独立系统测试验证诊断 fail-fast。
+///
+/// # Panics
+/// 总是触发 ack timeout panic。
+#[cfg(feature = "test-support")]
+pub fn trigger_ack_timeout_for_test() {
+    let mut generation = REQUEST_GENERATION.load(Ordering::Acquire).wrapping_add(1);
+    if generation == 0 {
+        generation = 1;
+    }
+    wait_for_acks_or_panic(
+        1usize << (config::MAX_CORE_COUNT - 1),
+        generation,
+        REQUEST_ALL,
+        0,
+        per_cpu::current_core_id(),
+        8,
+    );
+}
+
 fn broadcast(request: TlbFlushRequest) {
     assert!(
         !interrupt_state::is_in_interrupt(),
@@ -161,16 +182,64 @@ fn broadcast(request: TlbFlushRequest) {
         }
     }
 
-    for (core_id, ack) in ACK_GENERATION.iter().enumerate() {
-        if target_mask & (1usize << core_id) == 0 {
-            continue;
-        }
-        while ack.load(Ordering::Acquire) != generation {
-            core::hint::spin_loop();
-        }
-    }
+    wait_for_acks_or_panic(
+        target_mask,
+        generation,
+        kind,
+        addr,
+        self_id,
+        ACK_WAIT_ROUNDS,
+    );
 
     BROADCAST_LOCK.store(false, Ordering::Release);
+}
+
+fn wait_for_acks_or_panic(
+    target_mask: usize,
+    generation: usize,
+    kind: usize,
+    addr: usize,
+    initiator_core_id: usize,
+    max_rounds: usize,
+) {
+    for _ in 0..max_rounds {
+        if missing_ack_mask(target_mask, generation) == 0 {
+            return;
+        }
+        core::hint::spin_loop();
+    }
+
+    let missing = missing_ack_mask(target_mask, generation);
+    panic!(
+        "tlb_shootdown: 等待远端 ack 超时: initiator_core={}, target_mask={:#x}, missing_ack_mask={:#x}, generation={}, request_kind={}, request_addr={:#x}, max_rounds={}",
+        initiator_core_id,
+        target_mask,
+        missing,
+        generation,
+        request_kind_name(kind),
+        addr,
+        max_rounds
+    );
+}
+
+fn missing_ack_mask(target_mask: usize, generation: usize) -> usize {
+    let mut missing = 0;
+    for (core_id, ack) in ACK_GENERATION.iter().enumerate() {
+        let core_bit = 1usize << core_id;
+        if target_mask & core_bit != 0 && ack.load(Ordering::Acquire) != generation {
+            missing |= core_bit;
+        }
+    }
+    missing
+}
+
+fn request_kind_name(kind: usize) -> &'static str {
+    match kind {
+        REQUEST_ALL => "all",
+        REQUEST_PAGE => "page",
+        REQUEST_NONE => "none",
+        _ => "unknown",
+    }
 }
 
 fn expected_online_mask(core_count: usize) -> usize {

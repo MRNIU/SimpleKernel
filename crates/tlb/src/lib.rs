@@ -20,6 +20,11 @@ pub enum TlbFlushRequest {
 /// 跨核 TLB shootdown 回调函数。
 ///
 /// 由中断子系统通过 [`register_tlb_shootdown`] 注册，实际 IPI 发送逻辑由调用方实现。
+/// 回调必须保证：
+///
+/// - 调用方完成 PTE 写入后才发起 shootdown。
+/// - 发起上下文满足架构层要求，例如不在 hard IRQ 中，并且跨核等待前 IRQ 可用。
+/// - 远端 CPU 完成本地 TLB flush 后才发布 ack；若 ack 长时间缺失，应 fail-fast。
 static TLB_SHOOTDOWN_FN: spin::Once<fn(TlbFlushRequest)> = spin::Once::new();
 
 /// 注册跨核 TLB shootdown 回调。
@@ -68,6 +73,10 @@ impl Drop for TlbFlushGuard {
 ///
 /// 单页 unmap 应使用 [`flush_tlb_page`] 避免不必要的全局刷新。
 ///
+/// # Panics
+///
+/// 注册的跨核 shootdown 回调如果发现非法调用上下文，或等待远端 CPU ack 超时，会 panic。
+///
 /// # TODO
 ///
 /// - **ASID 支持**：当前 TLB flush 是全局的（所有 ASID），引入用户进程后
@@ -86,6 +95,10 @@ pub fn flush_tlb() {
 /// 刷新指定虚拟地址对应的单条 TLB 表项。
 ///
 /// 在 unmap 单页或修改单个 PTE 后调用，比 [`flush_tlb`] 精确、开销更低。
+///
+/// # Panics
+///
+/// 注册的跨核 shootdown 回调如果发现非法调用上下文，或等待远端 CPU ack 超时，会 panic。
 #[inline(always)]
 pub fn flush_tlb_page(vaddr: usize) {
     flush_tlb_page_local(vaddr);

@@ -4,7 +4,7 @@
 
 ## 状态
 
-**提议**
+**已接受（方案 A，B/C 后续演进）**
 
 ## 日期
 
@@ -51,7 +51,7 @@ CPU0:
   increment REQUEST_GENERATION
   release fence
   send IPI to every online target CPU
-  spin until every target ACK_GENERATION == REQUEST_GENERATION
+  spin with timeout until every target ACK_GENERATION == REQUEST_GENERATION
   release BROADCAST_LOCK
 
 CPU1:
@@ -154,29 +154,31 @@ flush 后写 ack sequence。可以保留一个较小的 initiator lock，也可�
 
 ## 决策
 
-**待项目作者决策。**
+采用**方案 A：保留单 broadcast lock，补齐契约和诊断**。
 
-需要在以下方向中选择一个：
+当前 R4/R5 先按低频页表权限更新和启动期属性覆盖场景收口，不在本阶段引入
+per-CPU mailbox 或 stop-the-world rendezvous。等待远端 ack 使用有限自旋上限；
+超时按内核 bug 处理，直接 `panic!()`，并打印发起核、目标 mask、缺失 ack mask、
+generation、request kind、request addr 和等待上限。
 
-- 选择方案 A：短期保留当前单 broadcast lock，补 timeout 和诊断，作为 R4/R5 的正式协议。
-- 选择方案 B：现在进入 per-CPU mailbox + sequence counter 重构。
-- 选择方案 C：把 shootdown 和运行期页表修改提升为 stop-the-world rendezvous 设计。
-- 方案 D 不建议作为正式选择，只作为反例记录其风险。
+方案 B/C 保留为后续演进方向：当运行期映射变更、DMA 属性切换、模块加载或更复杂的跨核页表修改进入主路径时，
+再评估 per-CPU mailbox、sequence counter 或 rendezvous 状态机。
 
 ## 决策问题
 
-项目作者需要明确以下问题：
+本次决策对原问题的回答：
 
-1. 当前 R4/R5 是否只需要低频页表权限更新，还是要为后续运行期映射变更预留并发协议？
-2. shootdown 超时应当 `panic!()` fail-fast，还是记录错误后继续运行？按当前内核错误策略，协议失效更接近内核 bug。
-3. 是否接受“发起跨核 shootdown 必须 IRQ enabled”的 API 约束？
-4. 是否需要在 R4 阶段就把页表写者锁序写成代码约束，还是只在 ADR 和测试中约束？
-5. TLB shootdown 的目标集合是当前 online CPU，还是所有 discovered CPU？当前代码已经选择 online CPU，boot barrier 保证 Full 初始化后二者一致。
+1. 当前 R4/R5 先按低频页表权限更新处理，不为并发运行期映射变更提前重构协议。
+2. shootdown 超时 `panic!()` fail-fast；协议失效属于内核 bug。
+3. 接受“发起跨核 shootdown 必须 IRQ enabled”的 API 约束。
+4. R4 阶段先用 ADR、doc comment、断言和回归测试约束页表写者顺序；运行期共享写者出现前不引入新 token。
+5. TLB shootdown 目标集合是当前 online CPU；`kernel_init(Full)` 的 boot barrier 保证 Full 初始化后二者与 discovered CPU 一致。
 
 ## 理由
 
-这里暂不替项目作者选择方案。技术上，方案 A 是当前代码的自然延续；方案 B 是中期扩展性更好的协议；
-方案 C 是最强一致性模型，但需要和调度器、页表写锁、抢占边界一起设计。
+方案 A 是当前代码的自然延续，可以先把最危险的“无限等待且不可诊断”收敛为 fail-fast。
+它不声称解决长期扩展性问题；方案 B 仍是中期更容易扩展的协议，方案 C 仍是最强一致性模型，
+但二者都需要和调度器、页表写锁、抢占边界一起设计。
 
 无论选择哪一项，都必须保留已经落地的基本不变量：request 发布先于 IPI、远端 flush 先于 ack、
 发起方等待时不能处于 hard IRQ，且失败路径必须可诊断。
@@ -184,16 +186,16 @@ flush 后写 ack sequence。可以保留一个较小的 initiator lock，也可�
 ## 影响
 
 - **代码变更**:
-  - 方案 A：主要增加 timeout、缺失 ack 诊断和文档化锁序。
+  - 方案 A：已增加 timeout、缺失 ack 诊断和文档化锁序。
   - 方案 B：重构 `src/tlb_shootdown.rs` 的全局 mailbox 为 per-CPU mailbox。
   - 方案 C：新增 rendezvous 状态机，并联动 scheduler / interrupt 边界。
-- **API 变更**: 可能需要把发起上下文约束写进 `tlb` crate 的回调契约。
+- **API 变更**: `tlb` crate 的回调契约已写入发起上下文和 fail-fast 边界。
 - **测试**:
-  - 必须补远端访问强证明：CPU0 改权限或映射后 shootdown，CPU1 在 ack 后访问目标 VA。
-  - 必须补 timeout/诊断测试或可控故障注入。
+  - 已补 timeout/诊断 should_panic 回归。
+  - 仍需补远端访问强证明：CPU0 改权限或映射后 shootdown，CPU1 在 ack 后访问目标 VA。
   - 方案 B/C 需要额外覆盖并发发起方、重复 IPI 和目标核延迟 ack。
-- **文档**: `docs/design/R4-interrupt-timer-flow.md` 需要按最终方案更新。
-- **当前设计同步**: 若方案 B/C 被接受，需要同步更新 R4 架构移植指南和 paging 设计文档。
+- **文档**: `docs/design/R4-interrupt-timer-flow.md` 已按方案 A 更新。
+- **当前设计同步**: 若未来切换到方案 B/C，需要同步更新 R4 架构移植指南和 paging 设计文档。
 
 ## 参考
 

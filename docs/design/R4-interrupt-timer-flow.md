@@ -8,8 +8,8 @@
 > `src/arch/*/ipi.rs`、`src/timer.rs`、`src/tlb_shootdown.rs`、`src/task/sched.rs`。
 
 本文记录当前 R4 层已经落地的中断边界。RISC-V 浮点策略已由 ADR-017 收敛为 eager 保存恢复。
-TLB shootdown 完整协议见 ADR-018 提议稿，仍待项目作者决策；timer absolute deadline / 长期漂移语义
-见 ADR-019，已暂定采用方案 B。
+TLB shootdown 完整协议已由 ADR-018 收敛为方案 A：保留单 broadcast lock，补齐 timeout 和诊断；
+timer absolute deadline / 长期漂移语义见 ADR-019，已暂定采用方案 B。
 
 ## Timer IRQ 与抢占边界
 
@@ -60,22 +60,24 @@ sequenceDiagram
     Remote->>Mailbox: "Acquire generation"
     Remote->>Remote: "flush local TLB"
     Remote->>Mailbox: "Release ack generation"
-    Local->>Mailbox: "wait Acquire ack"
+    Local->>Mailbox: "wait Acquire ack with timeout"
 ```
 
-当前实现仍保留单 broadcast lock。已落地的非 ADR 硬化包括：
+当前实现按 ADR-018 方案 A 保留单 broadcast lock。已落地的硬化包括：
 
 - 发起广播前禁止 hardirq 上下文。
 - 存在远端目标时，发起广播前要求当前 CPU IRQ enabled，避免从已关中断的不可等待区域进入跨核等待。
 - mailbox 发布后使用 release fence。
 - RISC-V `send_ipi()` 前执行 `fence rw, rw`。
 - AArch64 `ICC_SGI1R_EL1` 前执行 `dsb ishst`。
+- 等待远端 ack 使用有限自旋上限，超时 panic 并打印发起核、目标 mask、缺失 ack mask、
+  generation、request kind 和 request addr。
 
-仍待项目作者决策的内容（见 ADR-018）：
+仍保留为后续演进的内容：
 
-- 是否继续使用单 broadcast lock，还是改为 per-CPU mailbox + sequence counter。
+- 当运行期映射变更增多时，是否改为 per-CPU mailbox + sequence counter。
 - 是否引入 stop-the-world rendezvous。
-- 是否增加可诊断的 ack timeout 或 lock-order 证明。
+- 是否把页表写锁、调度锁、中断屏蔽之间的锁序进一步写成 token 或状态机。
 
 ## Timer Deadline 与漂移边界
 
@@ -104,7 +106,9 @@ sequenceDiagram
 
 - `cargo xtask test --arch riscv64 --name arch-test --timeout 30`
   - 覆盖 IRQ-exit 抢占请求只消费一次、RISC-V 浮点运算和 `fs0` 跨任务保存。
-- `cargo xtask test --arch riscv64 --name tlb-shootdown --timeout 30`
+- `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`
   - 覆盖 online CPU 集合参与 TLB shootdown 回归。
+- `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown-timeout-panic --timeout 30`
+  - 覆盖远端 ack 缺失时 fail-fast，而不是无限自旋。
 - `cargo xtask check --arch riscv64` 和 `cargo xtask check --arch aarch64`
   - 覆盖两架构 IPI barrier 代码可编译。

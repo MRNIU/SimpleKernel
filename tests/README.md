@@ -25,6 +25,8 @@ cargo xtask test --list                                  # 列出可用测试
 | | `va-canonical-panic` | should_panic | VirtAddr 规范化违反检测 |
 | `paging-test` | `basic` | normal | 页大小计算、VPN 索引提取 |
 | | `table` | normal | 页表 identity_map_range / update_range_flags / get_mapping |
+| | `tlb-shootdown` | normal | 在线 CPU 参与 TLB shootdown 回归 |
+| | `tlb-shootdown-timeout-panic` | should_panic | TLB shootdown ack 超时 fail-fast |
 | | `conflict-panic` | should_panic | identity_map_range 权限冲突检测 |
 | | `equal-range-panic` | should_panic | identity_map_range 空范围检测 |
 | | `reversed-range-panic` | should_panic | identity_map_range 反向范围检测 |

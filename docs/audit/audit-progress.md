@@ -11,13 +11,13 @@
 `R4-01/R4-02/R4-03/R4-07/R4-08/R4-09/R4-10/R4-11/R4-13/R4-14`
 已修复；`R4-04/R4-12` 已明确为 dense core id / 单 cluster 平台契约，并用 FDT CPU 表
 做 fail-fast 诊断，已补 ADR-015；`R4-02` timer IRQ-exit preemption 边界已补 ADR-016；
-`R4-06` RISC-V eager FPU 上下文保存已恢复并补 ADR-017；`R4-05` 已完成发布屏障、
-IRQ enabled 断言和 IPI barrier 的最小硬化，并补 ADR-018 提议稿待决策；`R4-16` 已完成
+`R4-06` RISC-V eager FPU 上下文保存已恢复并补 ADR-017；`R4-05` 已按 ADR-018 采用方案 A，
+完成发布屏障、IRQ enabled 断言、IPI barrier、ack timeout 和缺失 ack 诊断；`R4-16` 已完成
 `src/arch` 首轮外部暴露面收窄；`R4-17` 已补 R4 当前设计文档和启动 barrier 回归。
 `R4-15` 漂移语义已补 ADR-019，并暂定采用方案 B；per-core absolute deadline 实现和回归待后续。
 **下一个目标**（按优先级）：
-1. **等待项目作者决策**：ADR-018 TLB shootdown 完整协议。
-2. **R4 后续协议测试**：在 ADR-018 定案后补远端访问强证明和 ack/timeout 诊断测试。
+1. **R4 后续协议测试**：补远端访问强证明，CPU0 修改权限或映射后，CPU1 在 ack 后立即访问目标 VA。
+2. **R4 TLB 后续升级**：运行期映射变更增多后，再评估 ADR-018 方案 B per-CPU mailbox 或方案 C rendezvous。
 3. **R4 timer 后续实现**：按 ADR-019 暂定方案 B 补 per-core absolute deadline 和漂移回归；missed tick 补记后续回看。
 4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
 
@@ -25,6 +25,18 @@ IRQ enabled 断言和 IPI barrier 的最小硬化，并补 ADR-018 提议稿待�
 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64`。涉及 QEMU 的命令必须使用 30 秒超时并在
 超时后清理残留 `qemu-system` 进程。
+
+验证结果（2026-05-09 ADR-018 方案 A 实现）：容器 `simplekernel-dev` 内先补
+`paging-test/tlb-shootdown-timeout-panic` should_panic 红测，RED 阶段确认缺少
+`tlb_shootdown::trigger_ack_timeout_for_test()` 时编译失败。实现后 `broadcast()`
+继续保留单 broadcast lock，但等待远端 ack 改为有限自旋；超时 panic 会打印发起核、
+目标 mask、缺失 ack mask、generation、request kind 和 request addr。同步 ADR-018、
+ADR 索引、R4 interrupt/timer 设计说明、架构移植指南、R4 审计报告、`tlb` crate
+契约文档和测试清单。验证通过：`cargo fmt --all -- --check`、
+`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64`、
+RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown-timeout-panic --timeout 30`
+和 `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`，
+以及 `git diff --check`。
 
 验证结果（2026-05-09 R4 剩余 ADR 提议稿）：本轮只新增/更新文档，未修改实现代码。
 已补 ADR-018（TLB shootdown 完整协议）和 ADR-019（timer absolute deadline / tick 漂移语义），
@@ -120,6 +132,29 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 不会把 should_panic 未触发转换成非零退出码。
 
 ## 上次对话摘要
+
+**日期**：2026-05-09（ADR-018 方案 A 实现）
+
+### 已完成
+
+本轮按项目作者指示先采用 ADR-018 方案 A，B/C 留待后续演进：
+
+1. 在 `paging-test` 增加 `tlb-shootdown-timeout-panic` should_panic 回归，覆盖 ack 缺失时必须 fail-fast。
+2. `src/tlb_shootdown.rs` 保留单 broadcast lock，但等待 ack 改为有限自旋；超时 panic 输出可定位诊断。
+3. `tlb` crate 文档补充 shootdown 回调的调用上下文、PTE 写入顺序和远端 ack fail-fast 契约。
+4. 同步 ADR-018、ADR 索引、R4 interrupt/timer 设计说明、架构移植指南、R4 审计报告和测试清单。
+
+### 关键结论
+
+| # | 结论 | 状态 | ADR |
+|---|------|------|-----|
+| R4-05 TLB shootdown 方案 A | 单 broadcast lock 暂时保留，ack timeout 与诊断已落地 | 已按方案 A 收口 | ADR-018 |
+| per-CPU mailbox / rendezvous | 运行期映射变更增多后再评估切换 B/C | 后续演进 | ADR-018 |
+| 远端访问强证明 | 仍需补 CPU1 ack 后访问目标 VA 的系统测试 | 待补 | ADR-018 |
+
+### 下一步
+
+优先补 ADR-018 的远端访问强证明；B/C 只在运行期映射变更、DMA 属性切换或模块加载进入主路径后再评估。
 
 **日期**：2026-05-09（R4 剩余 ADR 提议稿）
 

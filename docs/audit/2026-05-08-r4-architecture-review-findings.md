@@ -296,9 +296,12 @@ CPU1:
 并在存在远端目标时要求发起方处于 IRQ enabled 状态；request mailbox 发布后加入 release fence；
 RISC-V `send_ipi()` 前加入 `fence rw, rw`；AArch64 写 `ICC_SGI1R_EL1` 前加入 `dsb ishst`。
 
-仍未改变单 broadcast lock 协议。是否升级为 per-CPU mailbox、sequence counter 或 stop-the-world
-rendezvous 仍需 ADR 决策。
-已补充 ADR-018 提议稿，列出方案 A/B/C/D 和需要项目作者确认的决策问题。
+2026-05-09 已按 ADR-018 采用方案 A：暂时保留单 broadcast lock，但等待远端 ack 改为有限自旋；
+超时直接 panic，并打印发起核、目标 mask、缺失 ack mask、generation、request kind 和 request addr。
+新增 `paging-test/tlb-shootdown-timeout-panic` should_panic 回归，覆盖 ack 缺失时 fail-fast。
+
+仍未升级为 per-CPU mailbox、sequence counter 或 stop-the-world rendezvous；这些保留为后续运行期映射变更增多后的演进方向。
+远端访问强证明仍需补充：CPU0 修改权限或映射后，CPU1 在 ack 后立即访问目标 VA。
 
 ## R4-06. RISC-V hard-float 状态未保存
 
