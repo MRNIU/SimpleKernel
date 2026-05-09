@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! FDT `/reserved-memory` 固件保留区解析测试。
 
 #![no_std]

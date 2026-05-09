@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # RFC
 
 本目录保存决策前的设计空间探索。RFC 用于比较方案，不代表最终决策。

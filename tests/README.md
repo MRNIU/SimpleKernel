@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 测试目录
 
 独立 QEMU 系统测试——每个测试是独立二进制，启动独立 QEMU 实例，拥有干净的内核环境。

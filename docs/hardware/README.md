@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # Hardware
 
 本目录保存硬件相关文档，包括硬件拓扑、接口、设备树、固件链路、板级 bring-up、生产夹具和实验室验证。

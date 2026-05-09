@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # Suppliers
 
 本目录保存外部固件、SDK、硬件模块、认证服务、生产服务和外协团队的交付物记录。

@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # interrupt_state
 
 中断状态与抢占状态管理——proof token、RAII 守卫和架构中断原语。

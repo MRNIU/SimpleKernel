@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 use config::TIMER_FREQ_HZ;
 
 /// 校验并计算每个 tick 的硬件计数间隔。

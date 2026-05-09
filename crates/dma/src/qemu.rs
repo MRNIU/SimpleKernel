@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! QEMU VirtIO 恒等映射 DMA 后端。
 
 extern crate alloc;

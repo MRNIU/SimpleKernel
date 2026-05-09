@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "test_harness"
 description = "独立 QEMU 测试二进制的公共 harness（_start、panic_handler、exit_qemu）"

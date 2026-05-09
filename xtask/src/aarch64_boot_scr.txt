@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 # 初始化网络——从块设备加载 boot.scr.uimg 时网络尚未就绪，
 # 需先通过 DHCP 获取 IP 和 TFTP 服务器地址。
 # autoload=no 避免 dhcp 重复下载文件。

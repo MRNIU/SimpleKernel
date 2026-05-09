@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 锁级别常量 + per-CPU 锁栈——强制锁获取顺序，防止 ABBA 死锁。
 //!
 //! 每个核心维护一个 [`LockStack`]，记录当前持有锁的级别。

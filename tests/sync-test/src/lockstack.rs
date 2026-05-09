@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! LockStack 测试——验证锁序检查、push/pop 往返。
 
 #![no_std]

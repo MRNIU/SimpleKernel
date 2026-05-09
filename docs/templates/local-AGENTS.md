@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # TODO 路径/模块 AGENTS.md
 
 > **使用说明**

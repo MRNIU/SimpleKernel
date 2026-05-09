@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 内核阻塞互斥锁——竞争时任务进入 Blocked 状态，而非自旋等待。
 
 mod inner {

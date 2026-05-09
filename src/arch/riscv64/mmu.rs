@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! RISC-V S-mode MMU 启用流程。
 
 const SATP_MODE_SV39: usize = 8;

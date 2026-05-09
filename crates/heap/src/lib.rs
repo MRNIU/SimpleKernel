@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 内核堆分配器——`#[global_allocator]` 实现。
 //!
 //! **禁止在中断上下文中进行堆分配**——alloc/dealloc 入口包含运行时断言。

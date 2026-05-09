@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-012: PageTable 拆分；hot-path PTE 更新无锁化
 
 > **状态**: 已接受

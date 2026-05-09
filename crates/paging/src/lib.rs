@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 分页子系统——多级页表管理。
 //!
 //! MMIO 类型化包装位于 `memory::mmio`（业务层），此 crate 只提供页表原语。

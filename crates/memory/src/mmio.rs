@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 类型化 MMIO 区域——强制 volatile 语义的映射包装。
 //!
 //! `MmioRegion` 使用 volatile 语义，适合设备寄存器——编译器不会优化掉

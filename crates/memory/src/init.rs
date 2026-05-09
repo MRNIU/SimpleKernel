@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 内存子系统初始化——主核 / 从核。
 
 use core::sync::atomic::{AtomicBool, Ordering};

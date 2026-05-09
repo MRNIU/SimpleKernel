@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 #[cfg(target_arch = "aarch64")]
 pub(crate) mod aarch64;
 

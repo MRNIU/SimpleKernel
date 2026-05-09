@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! VirtIO 块设备 → `fatfs` crate I/O 适配器。
 //!
 //! 将 VirtIO 块设备的扇区粒度 I/O 转换为 `fatfs` crate 所需的

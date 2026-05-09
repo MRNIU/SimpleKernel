@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! TLB shootdown 系统测试——验证在线从核参与页表权限更新同步。
 
 #![no_std]

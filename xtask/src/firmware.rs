@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 use std::fs;
 use std::path::{Path, PathBuf};
 use xshell::{Shell, cmd};

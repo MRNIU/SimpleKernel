@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 # rust-analyzer 项目级配置（IDE 无关——VS Code / Neovim / Helix / IntelliJ 通用）
 #
 # 主分析目标为 riscv64 裸机，诊断同时覆盖 aarch64。

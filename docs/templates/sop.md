@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # TODO 标准作业流程（SOP）
 
 > **使用说明**

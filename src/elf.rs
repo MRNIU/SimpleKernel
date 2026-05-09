@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 use core::fmt;
 
 use elf::ElfBytes;

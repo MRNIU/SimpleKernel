@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! AArch64 ARMv8 PTE 编码。
 //!
 //! Stage 1 页描述符格式（4KB granule）：

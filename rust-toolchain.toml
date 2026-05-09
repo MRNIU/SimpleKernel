@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [toolchain]
 channel = "nightly-2026-03-24"
 components = ["rust-src", "rustfmt", "clippy", "llvm-tools"]

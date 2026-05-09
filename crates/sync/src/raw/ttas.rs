@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! TTAS（test-and-test-and-set）自旋锁实现。
 
 use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};

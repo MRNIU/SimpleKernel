@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 文档模板
 
 本目录保存可复制模板。使用时复制到目标目录并改名，不要直接在模板文件中填写真实项目内容。

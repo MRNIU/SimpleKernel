@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # YYYY-MM-DD TODO Spec
 
 > **使用说明**

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 文件系统测试——验证 VFS、RamFS、路径解析基本操作。
 
 #![no_std]

@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-013: 删除 `OwnedPages` 抽象层
 
 > **状态**: 已接受

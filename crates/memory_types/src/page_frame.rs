@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 物理帧 ([`Frame`]) 类型。
 //!
 //! 固定 4K 页大小，无泛型参数。内部存储以 4K 页号为单位。

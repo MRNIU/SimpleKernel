@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// AArch64 通用定时器子系统
 ///
 /// 使用 AArch64 虚拟定时器（CNTV_*_EL0）实现周期性时钟中断。

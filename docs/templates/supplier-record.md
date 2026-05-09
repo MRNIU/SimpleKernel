@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # TODO 供应商记录
 
 > **使用说明**

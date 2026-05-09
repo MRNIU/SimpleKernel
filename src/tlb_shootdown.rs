@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 跨核 TLB shootdown 协调。
 //!
 //! `tlb` crate 只知道“需要广播”的抽象回调；本模块负责把请求编码为

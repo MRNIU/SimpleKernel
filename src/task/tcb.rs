@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 任务控制块（TCB）与内核栈——任务的核心数据结构。
 
 use alloc::alloc::{alloc_zeroed, dealloc, handle_alloc_error};

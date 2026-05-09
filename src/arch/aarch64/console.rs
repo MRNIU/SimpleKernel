@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 const UARTDR: usize = 0x00;
 const UARTFR: usize = 0x18;
 const UARTFR_TXFF: u32 = 1 << 5;

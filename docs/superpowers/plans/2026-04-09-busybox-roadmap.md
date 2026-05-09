@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # BusyBox 支持路线图
 
 > 从 SAS 内核到运行 BusyBox shell 的完整路径。

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! should_panic 测试——identity_map_range 权限冲突（flags 不同）时应 panic。
 
 #![no_std]

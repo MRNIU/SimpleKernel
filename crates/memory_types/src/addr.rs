@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 物理地址 ([`PhysAddr`]) 与虚拟地址 ([`VirtAddr`]) 类型。
 
 use core::fmt;

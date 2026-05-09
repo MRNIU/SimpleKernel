@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # TODO Software Architecture Document (SAD)
 
 > **使用说明**

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! Round-Robin 调度器——时间片轮转。
 
 use alloc::collections::VecDeque;

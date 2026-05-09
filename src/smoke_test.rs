@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 系统集成冒烟测试——验证各子系统在 QEMU 上正确运行。
 //!
 //! 由 `main.rs` 中 bootstrap 调用，线程测试作为独立内核线程运行。

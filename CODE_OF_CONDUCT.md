@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 行为准则
 
 SimpleKernel 欢迎围绕 Rust、操作系统、内核架构和 AI 辅助学习的技术讨论。所有参与者应保持专业、具体、可验证。

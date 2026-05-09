@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # heap
 
 内核堆分配器——`#[global_allocator]` 实现。

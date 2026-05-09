@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! frame_allocator::init 应拒绝与 free 范围重叠的 reserved 描述。
 
 #![no_std]

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 资源标识符——标记任务阻塞等待的具体资源类型。
 
 /// 资源标识符

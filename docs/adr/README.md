@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 架构决策记录（ADR）
 
 本目录是 SimpleKernel 的 ADR（Architecture Decision Record，架构决策记录）目录，记录审计、重构和功能演进过程中的重要架构决策。

@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # frame_allocator
 
 物理帧分配器——RAII 所有权追踪 + buddy 后端。

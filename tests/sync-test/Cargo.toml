@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "sync-test"
 description = "SpinLock、LockStack 及边界 panic 测试"

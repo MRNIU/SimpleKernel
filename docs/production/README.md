@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # Production
 
 本目录保存生产、固件构建、发布、批次验证、回滚和验收流程相关文档。

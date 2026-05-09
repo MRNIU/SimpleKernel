@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! RISC-V Sv39/Sv48/Sv57 PTE 编码。
 //!
 //! PTE 格式（所有 Sv 模式共用）：

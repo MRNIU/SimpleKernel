@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 全局内存状态——`MemoryInfo`。
 
 use memory_types::PhysAddr;

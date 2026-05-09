@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 页表项编解码测试——运行当前架构的 PTE 测试。
 
 #![no_std]

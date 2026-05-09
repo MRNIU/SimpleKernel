@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-006: 内存子系统简化——4KB 单页 + 2-state + 权限覆盖模型
 
 > **状态**: 已接受

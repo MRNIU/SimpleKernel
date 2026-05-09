@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # page_table_entry
 
 硬件页表项编解码——PTE trait 定义与各架构实现。

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// RISC-V 64 核间中断（IPI）支持
 ///
 /// 通过 SBI legacy send_ipi 发送软件中断，通过 PSCI（hart_start）唤醒从核。

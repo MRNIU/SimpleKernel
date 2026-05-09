@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "global_tick"
 version.workspace = true

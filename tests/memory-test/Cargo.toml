@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "memory-test"
 description = "memory 门面初始化边界测试"

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! VirtAddr 加法结果不满足规范化应 panic。
 
 #![no_std]

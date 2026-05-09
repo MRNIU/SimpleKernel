@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 use core::arch::global_asm;
 
 // KERNEL_STACK_SIZE 必须是 2 的幂，方便用移位替代乘法

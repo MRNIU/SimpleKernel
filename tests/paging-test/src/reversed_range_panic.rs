@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! should_panic 测试——identity_map_range 对无效范围（start > end）应 panic。
 
 #![no_std]

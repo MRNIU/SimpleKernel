@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! FIFO 调度器——先进先出，最简单的调度算法。
 
 use alloc::collections::VecDeque;

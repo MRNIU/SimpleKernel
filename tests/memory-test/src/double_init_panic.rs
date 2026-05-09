@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! memory::init 二次调用应 fail-fast。
 
 #![no_std]

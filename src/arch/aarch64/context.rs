@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// AArch64 陷阱上下文与被调用者保存寄存器上下文
 ///
 /// 布局与 interrupt.S / switch.rs 中的汇编严格对应，修改时需同步更新汇编代码。

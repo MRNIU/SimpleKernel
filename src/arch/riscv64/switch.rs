@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// RISC-V 64 上下文切换——naked 函数实现
 ///
 /// 使用 `#[unsafe(naked)]` 替代外部 `.S` 文件，消除对 GCC 交叉编译器的依赖。

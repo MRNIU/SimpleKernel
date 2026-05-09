@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 全局任务表——持有所有任务、睡眠队列和等待队列。
 
 use alloc::collections::BTreeMap;

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 use clap::ValueEnum;
 use std::path::{Path, PathBuf};
 

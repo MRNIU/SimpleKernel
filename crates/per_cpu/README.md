@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # per_cpu
 
 Per-CPU 数据基础设施——通过 `#[cpu_local]` 分散声明，每核心独立副本。

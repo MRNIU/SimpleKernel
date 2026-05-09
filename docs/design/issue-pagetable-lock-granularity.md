@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # PageTable 锁粒度与 Drop 死锁问题
 
 > **⚠ 本文档已过时**——描述的是旧设计中的 `MappedPages` 模型。

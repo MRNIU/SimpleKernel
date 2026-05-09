@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-003: SAS 架构下只支持 identity mapping
 
 > **状态**: 已接受

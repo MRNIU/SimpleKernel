@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 独立 QEMU 测试二进制的公共 harness。
 //!
 //! 提供 `test_main!` 宏，消除每个测试二进制的样板代码

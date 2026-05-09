@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 内存管理子系统 v2
 
 > 当前文档描述 SimpleKernel 现行内存子系统设计。历史设计见

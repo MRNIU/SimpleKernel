@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "frame_allocator"
 version.workspace = true

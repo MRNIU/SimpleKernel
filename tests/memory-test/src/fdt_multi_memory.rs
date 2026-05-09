@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 多段 RAM 的 FDT 当前应 fail-fast，而不是静默取第一段。
 
 #![no_std]

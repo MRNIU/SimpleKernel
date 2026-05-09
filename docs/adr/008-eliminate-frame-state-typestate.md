@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-008: 删除 FrameState typestate 与 `adt_const_params` nightly 依赖
 
 > **状态**: 已接受

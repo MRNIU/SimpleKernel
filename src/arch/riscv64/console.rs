@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 pub fn putchar(c: u8) {
     sbi_rt::console_write_byte(c);
 }

@@ -1,3 +1,5 @@
+/* Copyright The SimpleKernel Contributors */
+
 /*
  * AArch64 异常向量表 + Trap 入口/返回汇编
  *

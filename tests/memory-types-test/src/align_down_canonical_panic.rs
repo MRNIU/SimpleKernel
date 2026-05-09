@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! align_down_to 不应生成 canonical hole 中的虚拟地址。
 
 #![no_std]

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 use crate::elf::KernelElf;
 use core::fmt::Write;
 use memory_types::VirtAddr;

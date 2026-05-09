@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-005: SAS 全量映射 + OwnedPages 所有权模型
 
 > **状态**: 已取代（被 [ADR-006](006-memory-subsystem-simplification.md) 取代并细化）

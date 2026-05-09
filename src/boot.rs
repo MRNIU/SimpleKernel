@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 内核分级初始化接口。
 //!
 //! 提供 `kernel_init()` 函数，将启动序列分解为独立级别，

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 任务状态机——定义任务的生命周期状态、消息以及状态转移函数。
 
 use core::sync::atomic::{AtomicU8, Ordering};

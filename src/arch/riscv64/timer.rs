@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// RISC-V 64 定时器子系统
 ///
 /// 通过 SBI set_timer 接口实现周期性时钟中断。

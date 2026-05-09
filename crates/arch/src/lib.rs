@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 架构抽象层——所有因处理器架构而异的底层操作的统一接口。
 //!
 //! 本 crate 封装 CPU 寄存器访问、中断控制、TLB 维护等硬件原语，

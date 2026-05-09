@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # paging
 
 分页子系统——多级页表管理。

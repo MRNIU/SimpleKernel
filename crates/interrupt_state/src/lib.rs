@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 中断状态管理——proof token、RAII 守卫和架构中断原语。
 //!
 //! | 类型 | 作用 |

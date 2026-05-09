@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 审计进度
 
 > 此文件由 AI 在每次审计对话结束时自动更新，用于跨对话传递上下文。

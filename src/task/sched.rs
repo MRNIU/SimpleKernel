@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! Per-CPU 调度核心——调度锁、调度状态、上下文切换、任务窃取。
 //!
 //! 采用 Theseus 风格的无锁切换：

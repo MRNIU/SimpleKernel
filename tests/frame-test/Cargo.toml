@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "frame-test"
 description = "帧分配器 typestate 生命周期测试"

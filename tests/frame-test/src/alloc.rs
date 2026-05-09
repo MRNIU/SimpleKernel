@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 帧分配器测试——验证 RAII 帧分配与回收。
 
 #![no_std]

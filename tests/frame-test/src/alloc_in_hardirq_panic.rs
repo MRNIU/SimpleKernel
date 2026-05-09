@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! hard IRQ 中禁止分配物理帧。
 
 #![no_std]

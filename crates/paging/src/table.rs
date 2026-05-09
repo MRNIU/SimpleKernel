@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 多级页表——walk / identity_map_range / update_range_flags 逻辑。
 
 use core::sync::atomic::{AtomicU64, Ordering};

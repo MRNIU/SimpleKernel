@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 物理帧分配器——RAII 帧所有权 + buddy 后端。
 //!
 //! `AllocatedFrames` 是唯一的公开帧类型，持有所有权，Drop 时归还分配器。

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! DMA 方向类型。
 
 /// DMA 传输方向。

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 帧分配器错误定义。
 
 use core::fmt;

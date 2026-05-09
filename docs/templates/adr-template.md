@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-NNNN: 标题（简短描述决策）
 
 > **状态**: 提议 | 已接受 | 已废弃 | 已取代（被 ADR-XXXX 取代）

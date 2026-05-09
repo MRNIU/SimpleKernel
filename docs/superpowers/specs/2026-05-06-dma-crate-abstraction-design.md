@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 2026-05-06 DMA Crate 抽象设计
 
 ## 背景

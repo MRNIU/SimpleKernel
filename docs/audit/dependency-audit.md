@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 依赖审计
 
 > **生成日期**：2026-04-03

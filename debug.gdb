@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 set confirm off
 set pagination off
 set print pretty on

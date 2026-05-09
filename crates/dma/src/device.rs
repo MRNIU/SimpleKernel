@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! Typed DMA 容器封装。
 
 use core::ptr::NonNull;

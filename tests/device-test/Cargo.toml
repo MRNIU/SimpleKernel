@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "device-test"
 description = "验证 DeviceManager 枚举和 VirtIO 块设备读取"

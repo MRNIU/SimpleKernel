@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// AArch64 中断子系统
 ///
 /// 使用 `arm-gic` crate 初始化 GICv3，通过 `GicCpuInterface` 系统寄存器

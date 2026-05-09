@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # TODO Software Design Document (SDD)
 
 > **使用说明**

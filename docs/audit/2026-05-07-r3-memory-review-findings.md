@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # R3 内存层复审问题说明
 
 > 日期：2026-05-07

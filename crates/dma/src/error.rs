@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! DMA 错误类型。
 
 use core::{alloc::LayoutError, fmt};

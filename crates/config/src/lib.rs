@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 内核编译期配置常量。
 //!
 //! 所有可调参数集中在此 crate，其他模块通过 `config::XXX` 引用。

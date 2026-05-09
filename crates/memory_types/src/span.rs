@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 半开区间 `[start, end)` 类型——支持重叠检测。
 
 use core::ops::Sub;

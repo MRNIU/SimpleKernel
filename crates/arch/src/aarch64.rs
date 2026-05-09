@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! AArch64 架构实现——EL1。
 //!
 //! - Per-CPU: `TPIDR_EL1` 寄存器

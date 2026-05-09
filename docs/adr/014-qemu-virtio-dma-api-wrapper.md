@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-014: QEMU VirtIO DMA 抽象封装 `dma-api`
 
 > **状态**: 提议

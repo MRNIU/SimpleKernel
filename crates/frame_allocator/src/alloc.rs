@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 全局帧分配器——buddy system 封装与初始化。
 //!
 //! 后端使用 [`buddy_system_allocator::FrameAllocator<32>`]：

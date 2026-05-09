@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 参考文献
 
 > 本文件收录 SimpleKernel 设计过程中参考的论文和开源项目。

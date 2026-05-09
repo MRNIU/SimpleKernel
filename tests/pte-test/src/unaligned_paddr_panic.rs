@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! should_panic 测试——构造 PTE 时物理地址必须页对齐。
 
 #![no_std]

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! CFS（完全公平调度器）——基于虚拟运行时间的公平调度。
 
 use alloc::collections::VecDeque;

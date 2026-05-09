@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! Frame::new 应拒绝无法转换为有效物理地址的页号。
 
 #![no_std]

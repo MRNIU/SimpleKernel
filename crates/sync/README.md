@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # sync -- 内核同步原语
 
 ## 分层架构

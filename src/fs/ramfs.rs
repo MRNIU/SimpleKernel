@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 内存文件系统（RamFS）——数据完全存储在内核堆中。
 //!
 //! 适用于 `/tmp`、`/proc` 等不需要持久化的挂载点。

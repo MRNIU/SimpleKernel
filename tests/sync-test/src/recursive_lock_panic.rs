@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! should_panic 测试：同一核心递归加锁应触发 panic。
 
 #![no_std]

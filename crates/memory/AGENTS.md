@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # AGENTS.md — crates/memory
 
 本 crate 是内核内存管理门面，统一编排子系统初始化，并提供 MMIO 类型化访问。

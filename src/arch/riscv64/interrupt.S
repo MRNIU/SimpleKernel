@@ -1,3 +1,5 @@
+/* Copyright The SimpleKernel Contributors */
+
 /*
  * RISC-V 64 Trap 入口/返回汇编
  *

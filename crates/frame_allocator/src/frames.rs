@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 已分配帧类型——RAII 物理帧所有权。
 
 use memory_types::PhysAddr;

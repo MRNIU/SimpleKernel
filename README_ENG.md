@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 [![codecov](https://codecov.io/gh/Simple-XX/SimpleKernel/graph/badge.svg?token=J7NKK3SBNJ)](https://codecov.io/gh/Simple-XX/SimpleKernel)
 ![workflow](https://github.com/Simple-XX/SimpleKernel/actions/workflows/workflow.yml/badge.svg)
 ![commit-activity](https://img.shields.io/github/commit-activity/t/Simple-XX/SimpleKernel)

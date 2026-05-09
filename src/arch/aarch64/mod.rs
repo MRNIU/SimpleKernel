@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 mod boot;
 pub mod console;
 pub mod context;

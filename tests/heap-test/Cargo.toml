@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "heap-test"
 description = "验证堆分配（Box、Vec、大块）"

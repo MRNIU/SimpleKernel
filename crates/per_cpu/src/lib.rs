@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! Per-CPU 数据——通过 `#[cpu_local]` 分散声明，每核心独立副本。
 //!
 //! 本 crate 只提供 per-CPU 机制（声明、初始化、访问），

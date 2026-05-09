@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! RISC-V 64 架构实现——S 模式。
 //!
 //! - Per-CPU: TP 寄存器

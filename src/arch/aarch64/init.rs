@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 use crate::logging;
 
 /// 从 argv[2] 解析 DTB 地址（十六进制字符串）。

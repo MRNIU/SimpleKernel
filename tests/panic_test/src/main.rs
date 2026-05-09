@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 独立测试：验证 panic handler 正确触发
 //!
 //! 期望行为：触发 panic → 输出 "PANIC_TEST_TRIGGERED" → 退出 QEMU。

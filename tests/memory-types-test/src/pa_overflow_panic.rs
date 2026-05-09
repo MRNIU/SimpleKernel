@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! PhysAddr 加法结果超出 PA_BITS 范围应 panic。
 
 #![no_std]

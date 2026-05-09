@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 use core::alloc::Layout;
 use core::panic::PanicInfo;
 

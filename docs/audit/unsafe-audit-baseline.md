@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # Unsafe 审计基线
 
 > **生成日期**：2026-04-03

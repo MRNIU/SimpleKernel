@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # Specs
 
 本目录保存功能或子系统的设计输入。Spec 说明“要解决什么问题、接口需求是什么、验收标准是什么”，不替代当前设计文档。

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 虚拟文件系统（VFS）——统一的文件系统操作接口。
 //!
 //! 所有具体文件系统（RamFS、FatFS 等）实现 [`FileSystem`] trait，

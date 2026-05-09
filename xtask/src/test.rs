@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! `cargo xtask test` — 在 QEMU 中运行系统测试
 
 use std::path::{Path, PathBuf};

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// 早期初始化（架构无关）——解析 FDT，将信息分发到各子系统。
 ///
 /// 在堆和分页启用之前运行，仅依赖 logging 和栈。

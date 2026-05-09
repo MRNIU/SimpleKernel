@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # local_tick
 
 Per-CPU tick 计数器——每核独立的调度时基。

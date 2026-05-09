@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! DMA 抽象层。
 //!
 //! 本 crate 是 SimpleKernel 对 `dma-api` 的依赖边界，避免 `dma_api::*`

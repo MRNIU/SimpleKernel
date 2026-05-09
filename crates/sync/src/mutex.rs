@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 泛型互斥锁——数据保护 + RAII guard + 抢占管理 + 锁序检查。
 
 use core::cell::UnsafeCell;

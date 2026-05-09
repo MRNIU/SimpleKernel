@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// open — 打开文件（或创建）
 ///
 /// # Errors

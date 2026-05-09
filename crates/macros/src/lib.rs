@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! SimpleKernel 过程宏集合。
 //!
 //! 当前包含：

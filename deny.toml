@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 # SimpleKernel 依赖审计配置
 # 运行: cargo deny check
 # 文档: https://embarkstudios.github.io/cargo-deny/

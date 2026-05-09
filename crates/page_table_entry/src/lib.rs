@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 硬件页表项编解码——PTE trait 定义与各架构实现。
 //!
 //! 通过 [`PteFlagsOps`] + [`PteOps`] trait 屏蔽架构差异，上层只使用

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 设备子系统测试——验证设备管理器和 VirtIO 块设备。
 
 #![no_std]

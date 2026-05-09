@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # SimpleKernel 审计 Session Prompt
 
 > **使用方法**：每次新对话时，将下方 prompt 模板发送给 Claude。只需替换 `{{占位符}}`。

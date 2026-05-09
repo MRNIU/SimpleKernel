@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 内核日志后端——基于 `log` crate，通过 `SpinLockIrq` 保护串口输出。
 
 use core::fmt::Write;

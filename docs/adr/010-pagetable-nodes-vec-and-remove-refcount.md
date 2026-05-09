@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-010: PageTable 内部结构简化——BTreeMap → Vec，删除引用计数死代码
 
 > **状态**: 已接受

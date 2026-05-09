@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "arch-test"
 description = "验证架构相关基础能力"

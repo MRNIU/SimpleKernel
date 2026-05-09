@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 设备管理框架——设备注册、查找、VirtIO 子系统。
 //!
 //! 本模块通过 FDT 枚举发现设备，调用对应驱动探测函数，

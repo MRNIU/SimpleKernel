@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-007: 消除 VMA 模块及内存子系统死代码
 
 > **状态**: 已接受

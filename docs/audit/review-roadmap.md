@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # SimpleKernel 全项目深度审计 Roadmap
 
 > **目标**：自底向上排查每个组件，将 C++ 遗留范式转换为地道 Rust，同时完善文档、测试、CI 与工具链。

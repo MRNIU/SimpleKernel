@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 设备与 DMA 真机语义跟踪
 
 > 日期：2026-05-07

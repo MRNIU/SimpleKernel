@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # YYYY-MM-DD TODO 硬件设计
 
 > **使用说明**

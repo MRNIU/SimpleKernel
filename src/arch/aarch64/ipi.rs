@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// AArch64 核间中断（IPI）支持
 ///
 /// - SGI：通过 GICv3 `ICC_SGI1R_EL1` 发送软件生成中断

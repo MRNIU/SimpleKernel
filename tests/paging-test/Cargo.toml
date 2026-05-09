@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "paging-test"
 description = "页表参数、权限管理及边界 panic 测试"

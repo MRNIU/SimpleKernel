@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! SpinLock 公开 API 测试——验证基本加锁/解锁、guard 修改、try_lock 语义。
 
 #![no_std]

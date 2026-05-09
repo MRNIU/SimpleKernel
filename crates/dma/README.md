@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # dma
 
 `crates/dma` 是 SimpleKernel 的 DMA 抽象边界。它集中依赖 `dma-api`，避免

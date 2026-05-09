@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-002: RISC-V tp 寄存器——per-CPU 与 TLS 的冲突及 App std 支持路线
 
 > **状态**: 提议

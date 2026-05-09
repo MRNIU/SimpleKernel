@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # `{crate_name}` — {一句话描述}
 
 > **所属层级**：{R1 原语层 / R2 同步层 / R3 内存子系统 / R4 架构层 / ...}

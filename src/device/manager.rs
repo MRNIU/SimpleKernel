@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 设备管理器——全局设备注册与查找。
 
 use alloc::boxed::Box;

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// exit — 终止当前任务
 pub fn exit(code: i32) -> ! {
     crate::task::exit(code)

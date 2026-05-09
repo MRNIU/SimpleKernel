@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 原始锁机制——`RawLock` trait 抽象 + 各算法实现。
 
 mod ttas;

@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-009: 删除 CLAIMED 软件位，保留 page poison
 
 > **状态**: 已接受（部分由 [ADR-013](013-ownedpages-necessity.md) 后续取代）

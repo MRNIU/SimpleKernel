@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 架构相关系统测试。
 
 #![no_std]

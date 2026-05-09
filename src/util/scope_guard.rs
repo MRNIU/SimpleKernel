@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 /// RAII cleanup guard — runs cleanup on Drop, dismiss() cancels it.
 /// Pattern from Linux kernel Rust — used for init failure rollback.
 pub struct ScopeGuard<F: FnOnce()> {

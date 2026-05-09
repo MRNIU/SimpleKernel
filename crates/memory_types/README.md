@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # memory_types
 
 内核内存基础类型——编译期区分物理/虚拟地址与帧/页号，防止混用。

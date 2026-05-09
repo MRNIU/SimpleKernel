@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 抢占控制——re-export `interrupt_state` 的抢占原语。
 //!
 //! 抢占状态（`PREEMPT_DISABLE_COUNT`、`NEED_RESCHED`）及其操作函数

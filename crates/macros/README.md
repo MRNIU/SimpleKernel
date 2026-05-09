@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # macros
 
 SimpleKernel 过程宏集合。

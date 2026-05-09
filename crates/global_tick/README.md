@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # global_tick
 
 全局单调 tick 计数器——内核调度时基。

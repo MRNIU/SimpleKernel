@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # tlb
 
 TLB 管理——架构无关的 TLB 刷新接口 + 跨核 shootdown 回调。

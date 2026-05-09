@@ -1,2 +1,4 @@
+# Copyright The SimpleKernel Contributors
+
 tftp $kernel_addr_r bin/boot.fit
 bootm $kernel_addr_r

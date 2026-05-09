@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 页表操作测试——验证 identity_map_range / get_mapping / update_range_flags 核心操作。
 
 #![no_std]

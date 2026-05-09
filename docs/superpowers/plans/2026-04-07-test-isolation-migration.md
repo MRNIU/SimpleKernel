@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 测试隔离迁移：每测试独立 QEMU 实例 + 内核冒烟测试
 
 > **已完成 / 已过时**：此计划已实施完毕。后续重构将 `tests/standalone/` 扁平化为 `tests/`，

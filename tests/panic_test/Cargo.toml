@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "panic-test"
 description = "验证 panic handler 正确触发并输出标记字符串"

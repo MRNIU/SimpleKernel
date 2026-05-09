@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # xtask — 内核构建工具
 
 替代 CMake 的宿主机构建脚本，通过 `cargo xtask <subcommand>` 调用。

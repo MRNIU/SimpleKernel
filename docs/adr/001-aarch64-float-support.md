@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-001: AArch64 启用硬件浮点支持
 
 ## 状态

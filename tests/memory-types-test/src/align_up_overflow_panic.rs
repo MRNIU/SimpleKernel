@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! align_up 在地址空间顶部应 panic 而非静默回绕。
 
 #![no_std]

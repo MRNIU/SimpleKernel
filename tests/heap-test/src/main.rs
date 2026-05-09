@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 堆分配器测试——验证 Box、Vec、大块分配基本功能。
 
 #![no_std]

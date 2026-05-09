@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 文件描述符表——每任务独立的文件句柄管理。
 //!
 //! 每个任务（[`TaskControlBlock`]）持有自己的 `FileDescriptorTable`，

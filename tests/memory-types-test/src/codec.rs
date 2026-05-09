@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! memory_types 地址和帧/页号编解码测试。
 
 #![no_std]

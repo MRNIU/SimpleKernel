@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 #[cfg(not(test))]
 #[cold]
 #[inline(never)]

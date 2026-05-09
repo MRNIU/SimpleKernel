@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "fs-test"
 description = "验证 VFS 路径解析、RamFS CRUD、多级目录"

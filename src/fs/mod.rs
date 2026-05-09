@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 文件系统子系统——VFS 层、RamFS、挂载管理。
 //!
 //! 架构：

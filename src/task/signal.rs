@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 信号子系统——信号编号、掩码及默认动作。
 
 use bitflags::bitflags;

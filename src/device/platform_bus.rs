@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 平台总线——通过 FDT 遍历发现并探测设备。
 //!
 //! 遍历设备树中的所有节点，匹配 `compatible` 属性并调用对应的驱动探测函数。

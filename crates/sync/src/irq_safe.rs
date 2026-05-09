@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 中断安全锁——直接组合 `RawLock` + `UnsafeCell`，叠加中断管理和锁序检查。
 //!
 //! 不经过 [`Mutex`]，避免双重锁栈推入和不必要的 `PreemptGuard` 开销

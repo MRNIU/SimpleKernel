@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 页表参数计算测试——验证 LEVEL_INFO、INDEX_BITS、vpn_index 的正确性。
 
 #![no_std]

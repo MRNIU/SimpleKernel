@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # Crate 依赖关系图
 
 > **生成日期**：2026-04-03

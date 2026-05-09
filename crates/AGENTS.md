@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # AGENTS.md — crates/
 
 本目录包含 SimpleKernel 的 workspace 子 crate。每个 crate 只暴露一个窄边界，

@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # ADR-004: 消除内核源码中的 `#[cfg(bare_metal)]`
 
 > **状态**: 已接受（大部分已实施）

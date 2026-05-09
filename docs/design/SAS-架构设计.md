@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 单地址空间（SAS）架构设计
 
 > 日期：2026-04-01

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! TLB 管理——架构无关的 TLB 刷新接口 + 跨核 shootdown 回调。
 //!
 //! PTE 修改后必须刷新 TLB，否则 CPU 继续使用过期缓存。

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 use core::arch::global_asm;
 
 const _: () = assert!(

@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! VirtIO 设备探测与管理——利用 `virtio-drivers` crate。
 //!
 //! 通过 MMIO transport 探测 VirtIO 设备类型，对支持的设备（当前仅块设备）

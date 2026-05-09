@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # YYYY-MM-DD TODO Plan
 
 > **使用说明**

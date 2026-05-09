@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! Per-CPU tick 计数器——每核独立的调度时基。
 //!
 //! 每个核心的 timer handler 调用 [`advance()`] 递增本核计数器。

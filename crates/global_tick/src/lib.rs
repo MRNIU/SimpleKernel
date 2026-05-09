@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 全局 tick 计数器——内核调度时基。
 //!
 //! 提供单调递增的 tick 计数，由 BSP 的 timer handler 驱动。

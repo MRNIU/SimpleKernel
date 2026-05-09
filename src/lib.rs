@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(feature = "lang_items", feature(alloc_error_handler))]
 #![feature(sync_unsafe_cell)]

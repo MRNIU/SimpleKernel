@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! should_panic 测试：pop 时栈顶指针不匹配应 panic。
 
 #![no_std]

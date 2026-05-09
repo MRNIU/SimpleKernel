@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! 任务管理子系统——任务控制块、状态机、调度器接口。
 
 use core::fmt;

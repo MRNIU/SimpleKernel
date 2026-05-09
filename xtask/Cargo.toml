@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 # xtask — 内核构建工具
 #
 # 宿主机上运行的标准 Rust 程序，通过 `cargo xtask <subcommand>` 调用。

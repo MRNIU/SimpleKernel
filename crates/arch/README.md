@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # arch
 
 架构抽象层——所有因处理器架构而异的底层操作的统一接口。

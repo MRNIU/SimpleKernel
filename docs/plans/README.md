@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # Plans
 
 本目录保存执行计划、任务拆分和验证步骤。Plan 只记录执行，不替代 Spec、SDD 或 ADR。

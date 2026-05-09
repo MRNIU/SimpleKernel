@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! `virtio-drivers` crate 的 HAL 实现——连接内核内存管理与 VirtIO 协议栈。
 //!
 //! 通过实现 [`virtio_drivers::Hal`] trait，使 VirtIO crate 能够：

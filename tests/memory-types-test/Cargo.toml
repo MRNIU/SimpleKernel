@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [package]
 name = "memory-types-test"
 description = "memory_types 地址、帧/页号编解码及边界 panic 测试"

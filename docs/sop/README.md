@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # SOP
 
 本目录保存标准作业流程。适用于固件构建、QEMU 验证、硬件诊断、生产测试、供应商验收、发布和回滚等重复操作。

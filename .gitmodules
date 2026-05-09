@@ -1,3 +1,5 @@
+# Copyright The SimpleKernel Contributors
+
 [submodule "3rd/opensbi"]
 	path = 3rd/opensbi
 	url = https://github.com/riscv-software-src/opensbi.git

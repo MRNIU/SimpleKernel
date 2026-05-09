@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 内存管理子系统
 
 > **⚠ 本文档已过时**——描述的是 ADR-005 之前的设计（含 `page_allocator`、4-state typestate、`MappedPages`）。

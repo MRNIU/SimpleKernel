@@ -1,3 +1,5 @@
+// Copyright The SimpleKernel Contributors
+
 //! AArch64 EL1 MMU 启用流程。
 
 const MAIR_NORMAL_WB: u64 = 0xFF;
