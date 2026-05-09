@@ -63,9 +63,7 @@ impl ArchOps for Riscv64 {
     }
 
     fn console_write(s: &str) {
-        for byte in s.bytes() {
-            sbi_rt::console_write_byte(byte);
-        }
+        console::puts(s);
     }
 }
 

@@ -210,7 +210,7 @@ mod api {
 
     /// 挂起当前任务指定毫秒数。
     pub fn sleep_ms(ms: u64) {
-        let ticks = (ms * config::TIMER_FREQ_HZ + 999) / 1000;
+        let ticks = (ms * config::TIMER_FREQ_HZ).div_ceil(1000);
         sleep(ticks);
     }
     /// 在指定资源上阻塞当前任务。
@@ -240,6 +240,7 @@ mod api {
     }
 
     /// 唤醒在指定资源上阻塞的所有任务。
+    #[expect(dead_code, reason = "广播唤醒入口保留给后续条件变量和批量资源通知")]
     pub fn wakeup_all(resource: ResourceId) {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
@@ -349,5 +350,5 @@ pub use api::{
 
 // syscall 网关后的实现（pub(crate)——外部调用者通过 syscall:: 进入）
 pub(crate) use api::{
-    block_on, clone_kernel_thread, exit, send_signal, sleep_ms, wait_child, wakeup_all, wakeup_one,
+    block_on, clone_kernel_thread, exit, send_signal, sleep_ms, wait_child, wakeup_one,
 };

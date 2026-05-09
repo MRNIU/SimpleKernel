@@ -26,8 +26,6 @@ const VIRTIO_MMIO_SIZE: usize = 0x200;
 /// VirtIO 块设备包装——实现 `Device` trait 以注册到 DeviceManager。
 pub struct VirtIOBlockDevice {
     name: alloc::string::String,
-    /// 块设备容量（扇区数）
-    capacity_sectors: u64,
 }
 
 impl super::Device for VirtIOBlockDevice {
@@ -131,10 +129,7 @@ fn init_block_device(
 
     // 注册到设备管理器
     let dev_name = format!("virtio-blk@{}", paddr);
-    let device = Box::new(VirtIOBlockDevice {
-        name: dev_name,
-        capacity_sectors: capacity,
-    });
+    let device = Box::new(VirtIOBlockDevice { name: dev_name });
     manager::register_device(device);
 
     // 存储全局引用供文件系统使用

@@ -114,6 +114,10 @@ pub struct TaskControlBlock {
     /// 被调用者保存上下文
     context: core::cell::SyncUnsafeCell<CalleeSavedContext>,
     /// 内核栈（idle 任务无栈，使用 Option）
+    #[expect(
+        dead_code,
+        reason = "字段持有线程内核栈所有权，随 TCB Drop 释放，调度路径不直接读取"
+    )]
     kstack: Option<KernelStack>,
     /// 文件描述符表（每任务独立）
     fd_table: sync::SpinLock<FileDescriptorTable>,

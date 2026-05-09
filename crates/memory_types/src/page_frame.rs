@@ -11,7 +11,7 @@ use config::PAGE_SIZE_BITS;
 use crate::addr::PhysAddr;
 
 /// 当前架构物理地址位宽可表示的 4K 帧数量上限。
-const MAX_FRAME_COUNT: usize = 1usize << (arch::PA_BITS - PAGE_SIZE_BITS);
+const MAX_FRAME_COUNT: usize = 1usize << (crate::addr_width::PA_BITS - PAGE_SIZE_BITS);
 
 /// 物理帧——4K 页号的类型安全 newtype。
 #[repr(transparent)]
@@ -30,7 +30,7 @@ impl Frame {
     pub const fn new(number_4k: usize) -> Self {
         assert!(
             number_4k < MAX_FRAME_COUNT,
-            "Frame::new: 页号必须小于 1 << (arch::PA_BITS - PAGE_SIZE_BITS)"
+            "Frame::new: 页号必须小于 1 << (PA_BITS - PAGE_SIZE_BITS)"
         );
         Self { number: number_4k }
     }
@@ -62,7 +62,7 @@ impl core::ops::Add<usize> for Frame {
             .unwrap_or_else(|| panic!("Frame::add: {lhs} + {rhs} 加法溢出"));
         assert!(
             number < MAX_FRAME_COUNT,
-            "Frame::add: {lhs} + {rhs} 超出 arch::PA_BITS 可表示范围"
+            "Frame::add: {lhs} + {rhs} 超出 PA_BITS 可表示范围"
         );
         Self { number }
     }

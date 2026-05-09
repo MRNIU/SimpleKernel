@@ -132,7 +132,10 @@ fn smoke_test_memory() {
     let frame =
         frame_allocator::AllocatedFrames::alloc_one().expect("boot smoke: frame alloc_one failed");
     assert!(
-        frame.start_paddr().as_usize() % config::PAGE_SIZE == 0,
+        frame
+            .start_paddr()
+            .as_usize()
+            .is_multiple_of(config::PAGE_SIZE),
         "boot smoke: frame not page-aligned: {:#x}",
         frame.start_paddr().as_usize()
     );

@@ -14,7 +14,6 @@
 use alloc::sync::Arc;
 use core::cell::SyncUnsafeCell;
 
-use crate::arch::CalleeSavedContext;
 use crate::task::scheduler::SchedPolicy;
 use crate::task::scheduler::Scheduler;
 use crate::task::state::TaskState;
@@ -249,13 +248,13 @@ pub fn timer_tick() {
     if let Some(_guard) = PER_CPU_SCHED_LOCK[core_id].try_lock() {
         // SAFETY: 持有本核调度锁
         let sched = unsafe { per_cpu_sched(core_id) };
-        if let Some(current) = sched.current.as_ref() {
-            if sched.scheduler.task_tick(current) {
-                // 调度策略判定需要抢占（时间片到期 / vruntime 超过队首）
-                crate::preempt::NEED_RESCHED
-                    .get()
-                    .store(true, core::sync::atomic::Ordering::Release);
-            }
+        if let Some(current) = sched.current.as_ref()
+            && sched.scheduler.task_tick(current)
+        {
+            // 调度策略判定需要抢占（时间片到期 / vruntime 超过队首）
+            crate::preempt::NEED_RESCHED
+                .get()
+                .store(true, core::sync::atomic::Ordering::Release);
         }
     }
 }

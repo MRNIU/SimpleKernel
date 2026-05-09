@@ -158,7 +158,7 @@ fn victim_thread(_arg: usize) {
 
 /// P6/P7 综合测试——在内核线程中验证设备 + 文件系统操作。
 fn p6p7_test_thread(_arg: usize) {
-    use simplekernel::fs::vfs::{FileSystem, FileType};
+    use simplekernel::fs::vfs::FileType;
 
     log::info!("P6P7: testing device manager...");
     let dev_count = simplekernel::device::manager::device_count();

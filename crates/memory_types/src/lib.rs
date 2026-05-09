@@ -12,6 +12,18 @@ pub use addr::{PhysAddr, VirtAddr};
 pub use page_frame::Frame;
 pub use span::Span;
 
+#[cfg(any(bare_riscv64, bare_aarch64))]
+pub(crate) mod addr_width {
+    pub(crate) const PA_BITS: usize = arch::PA_BITS;
+    pub(crate) const VA_BITS: usize = arch::VA_BITS;
+}
+
+#[cfg(not(any(bare_riscv64, bare_aarch64)))]
+pub(crate) mod addr_width {
+    pub(crate) const PA_BITS: usize = usize::BITS as usize;
+    pub(crate) const VA_BITS: usize = usize::BITS as usize;
+}
+
 /// 为地址 newtype 生成通用基础设施。
 ///
 /// 生成内容：`new`（带规范化校验）/ `as_usize` 构造与访问、
@@ -25,12 +37,12 @@ pub use span::Span;
 macro_rules! impl_usize_newtype {
     ($name:ident, phys) => {
         impl $name {
-            /// 从原始 `usize` 构造，校验物理地址在 `arch::PA_BITS` 范围内。
+            /// 从原始 `usize` 构造，校验物理地址在目标地址位宽范围内。
             #[inline]
             pub const fn new(v: usize) -> Self {
                 assert!(
-                    arch::PA_BITS >= 64 || v < (1usize << arch::PA_BITS),
-                    "PhysAddr::new: addr 超出 arch::PA_BITS 可表示范围"
+                    crate::addr_width::PA_BITS >= 64 || v < (1usize << crate::addr_width::PA_BITS),
+                    "PhysAddr::new: addr 超出 PA_BITS 可表示范围"
                 );
                 Self(v)
             }
@@ -44,15 +56,15 @@ macro_rules! impl_usize_newtype {
     };
     ($name:ident, virt) => {
         impl $name {
-            /// 从原始 `usize` 构造，校验地址按 `arch::VA_BITS` 规范化
+            /// 从原始 `usize` 构造，校验地址按目标虚拟地址位宽规范化
             /// （高位必须是 bit[VA_BITS-1] 的符号扩展）。
             #[inline]
             pub const fn new(v: usize) -> Self {
-                let shift = usize::BITS as usize - arch::VA_BITS;
+                let shift = usize::BITS as usize - crate::addr_width::VA_BITS;
                 let canonical = ((v as isize) << shift >> shift) as usize;
                 assert!(
                     v == canonical,
-                    "VirtAddr::new: addr 不是 arch::VA_BITS 符号扩展的规范地址"
+                    "VirtAddr::new: addr 不是 VA_BITS 符号扩展的规范地址"
                 );
                 Self(v)
             }

@@ -102,7 +102,7 @@ macro_rules! impl_addr {
 /// 开启分页后不可直接解引用，需通过 `.to_virt()` 转换为
 /// [`VirtAddr`] 后再访问。
 ///
-/// 构造时校验地址在 [`PA_BITS`](arch::PA_BITS) 范围内，
+/// 构造时校验地址在目标架构 `PA_BITS` 范围内，
 /// 超出范围 panic。
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -113,7 +113,7 @@ impl_addr!(PhysAddr);
 
 /// 虚拟地址——CPU 可直接访问的指针级地址。
 ///
-/// 构造时校验地址是否规范化（[`VA_BITS`](arch::VA_BITS) 位符号扩展），
+/// 构造时校验地址是否规范化（目标架构 `VA_BITS` 位符号扩展），
 /// 非规范地址 panic。
 ///
 /// 规范化规则：bits\[63:VA_BITS-1\] 必须是 bit\[VA_BITS-2\] 的符号扩展。
@@ -145,7 +145,7 @@ impl VirtAddr {
     /// 仅适用于内核 SAS 全量映射区域，非 identity mapping 地址须通过页表查询。
     ///
     /// # Panics
-    /// 结果超出 `arch::PA_BITS` 范围时 panic。
+    /// 结果超出目标架构 `PA_BITS` 范围时 panic。
     #[inline]
     pub fn to_phys(self) -> PhysAddr {
         PhysAddr::new(self.as_usize())
@@ -172,7 +172,7 @@ impl PhysAddr {
     /// 仅适用于内核 SAS 全量映射区域，非 identity mapping 地址须通过页表查询。
     ///
     /// # Panics
-    /// 结果不是 `arch::VA_BITS` 规范地址时 panic。
+    /// 结果不是目标架构 `VA_BITS` 规范地址时 panic。
     #[inline]
     pub fn to_virt(self) -> VirtAddr {
         VirtAddr::new(self.as_usize())

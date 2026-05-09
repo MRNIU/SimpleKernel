@@ -23,6 +23,12 @@ mod inner {
     /// KMutex ID 计数器
     static NEXT_MUTEX_ID: AtomicU64 = AtomicU64::new(1);
 
+    impl Default for KMutex {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
     impl KMutex {
         /// 创建新的阻塞互斥锁。
         pub fn new() -> Self {

@@ -68,10 +68,8 @@ pub fn register_observer(observer: &'static dyn PanicObserver) {
 
 fn notify_observers(event: &PanicEvent<'_>) {
     if let Some(registry) = OBSERVERS.try_lock() {
-        for slot in &registry.slots {
-            if let Some(obs) = slot {
-                obs.on_panic(event);
-            }
+        for obs in registry.slots.iter().flatten() {
+            obs.on_panic(event);
         }
     }
 }
@@ -155,13 +153,13 @@ fn dump_backtrace() {
         let _ = write!(buf, "    #{}: 0x{:016X}", depth, ip);
         crate::logging::raw_put(buf.as_str());
 
-        if let Some(elf) = KERNEL_ELF.get() {
-            if let Some(name) = elf.lookup_symbol(ip as u64) {
-                crate::logging::raw_put(" - ");
-                let mut sym_buf = heapless::String::<{ config::PANIC_BUF_SIZE }>::new();
-                let _ = write!(sym_buf, "{:#}", rustc_demangle::demangle(name));
-                crate::logging::raw_put(sym_buf.as_str());
-            }
+        if let Some(elf) = KERNEL_ELF.get()
+            && let Some(name) = elf.lookup_symbol(ip as u64)
+        {
+            crate::logging::raw_put(" - ");
+            let mut sym_buf = heapless::String::<{ config::PANIC_BUF_SIZE }>::new();
+            let _ = write!(sym_buf, "{:#}", rustc_demangle::demangle(name));
+            crate::logging::raw_put(sym_buf.as_str());
         }
         crate::logging::raw_put("\n");
 

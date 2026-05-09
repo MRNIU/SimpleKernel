@@ -162,9 +162,9 @@ impl CalleeSavedContext {
     /// - `s0` → 入口函数指针
     /// - `s1` → 入口函数参数
     pub fn init_for_kernel_thread(&mut self, kstack_top: usize, entry: fn(usize), arg: usize) {
-        self.ra = super::switch::kernel_thread_entry as unsafe extern "C" fn() as u64;
+        self.ra = super::switch::kernel_thread_entry as unsafe extern "C" fn() as usize as u64;
         self.sp = kstack_top as u64;
-        self.s0 = entry as u64;
+        self.s0 = entry as usize as u64;
         self.s1 = arg as u64;
     }
 }

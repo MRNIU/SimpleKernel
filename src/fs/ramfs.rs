@@ -67,6 +67,12 @@ impl RamFs {
     }
 }
 
+impl Default for RamFs {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FileSystem for RamFs {
     fn name(&self) -> &str {
         "ramfs"
@@ -188,14 +194,12 @@ impl FileSystem for RamFs {
         let (_, child_id, child_type) = entries[pos].clone();
 
         // 如果是目录，检查是否为空
-        if child_type == FileType::Directory {
-            if let Some(child_inode) = inodes.get(&child_id) {
-                if let RamInodeData::Directory(child_entries) = &child_inode.data {
-                    if !child_entries.is_empty() {
-                        return Err(FsError::DirectoryNotEmpty);
-                    }
-                }
-            }
+        if child_type == FileType::Directory
+            && let Some(child_inode) = inodes.get(&child_id)
+            && let RamInodeData::Directory(child_entries) = &child_inode.data
+            && !child_entries.is_empty()
+        {
+            return Err(FsError::DirectoryNotEmpty);
         }
 
         // 移除目录项和 inode

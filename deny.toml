@@ -27,12 +27,14 @@ confidence-threshold = 0.8
 
 [bans]
 multiple-versions = "warn"    # 同一 crate 多版本时警告（不阻断）
-wildcards = "deny"            # 禁止 `*` 版本通配符
+wildcards = "warn"            # 本仓库 path/workspace 依赖由 workspace 统一约束，仅警告
 highlight = "all"
 
 [advisories]
 unmaintained = "all"          # 检查所有不再维护的 crate advisory
-ignore = []                   # 如需豁免特定 advisory，在此添加 RUSTSEC ID
+ignore = [
+    "RUSTSEC-2024-0436",      # paste 为 riscv / arm-sysregs 传递依赖，当前无直接替换入口
+]
 
 [sources]
 unknown-registry = "deny"
