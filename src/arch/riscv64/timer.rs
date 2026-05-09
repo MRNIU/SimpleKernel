@@ -7,8 +7,14 @@
 /// 以 `config::TIMER_FREQ_HZ` 为目标 tick 频率计算触发间隔。
 use core::sync::atomic::{AtomicU64, Ordering};
 
+use per_cpu::cpu_local;
+
 /// 硬件定时器频率（Hz）——`early_init` 阶段通过 `set_hw_freq()` 设置
 static HW_FREQ: AtomicU64 = AtomicU64::new(0);
+
+/// 本核下一次 absolute timer deadline。
+#[cpu_local]
+static NEXT_DEADLINE: AtomicU64 = AtomicU64::new(0);
 
 /// 设置硬件定时器频率（由 `early_init` 在 FDT 解析后调用）
 pub fn set_hw_freq(freq: u64) {
@@ -43,6 +49,27 @@ fn set_timer_or_panic(deadline: u64, context: &str) {
     );
 }
 
+/// 根据当前硬件计数初始化本核 absolute deadline。
+fn init_next_deadline(interval: u64, context: &str) {
+    let deadline = read_time()
+        .checked_add(interval)
+        .unwrap_or_else(|| panic!("TimerInit: {context} deadline 溢出: interval={interval}"));
+    NEXT_DEADLINE.get().store(deadline, Ordering::Relaxed);
+    set_timer_or_panic(deadline, context);
+}
+
+/// 推进本核 absolute deadline 到未来。
+fn reload_next_deadline(interval: u64) {
+    let current = NEXT_DEADLINE.get().load(Ordering::Relaxed);
+    assert_ne!(
+        current, 0,
+        "TimerInit: RISC-V next_deadline 未初始化，不能重装 timer"
+    );
+    let next = crate::timer::next_absolute_deadline(current, read_time(), interval);
+    NEXT_DEADLINE.get().store(next, Ordering::Relaxed);
+    set_timer_or_panic(next, "interrupt reload");
+}
+
 /// 初始化主核定时器
 ///
 /// 硬件频率已由 `set_hw_freq()` 设置，计算 tick 间隔，设置首个超时。
@@ -54,8 +81,7 @@ pub fn init() {
     );
 
     let interval = crate::timer::checked_tick_interval(freq);
-    let next = read_time() + interval;
-    set_timer_or_panic(next, "primary init");
+    init_next_deadline(interval, "primary init");
     log::info!(
         "TimerInit: hw_freq={} Hz, tick_freq={} Hz, interval={} cycles",
         freq,
@@ -69,8 +95,7 @@ pub fn init() {
 /// # 参数
 /// - `hart_id`：当前从核的 hart ID
 pub fn init_smp(hart_id: usize) {
-    let next = read_time() + get_interval();
-    set_timer_or_panic(next, "smp init");
+    init_next_deadline(get_interval(), "smp init");
     log::info!("TimerInitSMP core {}", hart_id);
 }
 
@@ -79,8 +104,7 @@ pub fn init_smp(hart_id: usize) {
 /// 重置定时器硬件后，调用架构无关的公共 tick 处理。
 pub fn handle_timer() {
     let interval = get_interval();
-    let next = read_time() + interval;
-    set_timer_or_panic(next, "interrupt reload");
+    reload_next_deadline(interval);
 
     // 架构无关：tick 计数、抢占状态、调度记账、日志
     crate::timer::handle_timer_common();

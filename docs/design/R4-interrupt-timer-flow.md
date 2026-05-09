@@ -81,14 +81,14 @@ sequenceDiagram
 
 ## Timer Deadline 与漂移边界
 
-当前 RISC-V / AArch64 仍按相对重装语义设置下一次 timer：
+当前 RISC-V / AArch64 均按 per-core absolute deadline 设置下一次 timer：
 
-- RISC-V 使用 `read_time() + interval` 写 SBI timer deadline。
-- AArch64 使用 `CNTV_TVAL_EL0 = interval`。
+- RISC-V 每核保存 `NEXT_DEADLINE`，使用 SBI `set_timer(next_deadline)` 写 absolute deadline。
+- AArch64 每核保存 `NEXT_DEADLINE`，使用 `CNTV_CVAL_EL0 = next_deadline` 写 absolute deadline。
 
-这会让 handler 延迟进入下一周期，长期运行时 tick 可能向后漂移。ADR-019 已暂定采用方案 B：
-后续应改为 per-core absolute deadline，晚到时把下一次硬件 deadline 推进到未来，但逻辑 tick
-仍只推进 1。missed tick 补记和 tickless one-shot 留到后续调度 / timeout 语义设计再回看。
+handler 晚到时，公共 `timer::next_absolute_deadline()` 会把下一次硬件 deadline 推进到第一个严格晚于
+当前硬件计数的位置。公共 tick 语义仍保持方案 B：每次 timer interrupt 只推进 1 个逻辑 tick，
+不补记 missed ticks。missed tick 补记和 tickless one-shot 留到后续调度 / timeout 语义设计再回看。
 
 ## 中断分发职责
 
@@ -105,10 +105,10 @@ sequenceDiagram
 ## 验证
 
 - `cargo xtask test --arch riscv64 --name arch-test --timeout 30`
-  - 覆盖 IRQ-exit 抢占请求只消费一次、RISC-V 浮点运算和 `fs0` 跨任务保存。
+  - 覆盖 absolute deadline 推进契约、IRQ-exit 抢占请求只消费一次、RISC-V 浮点运算和 `fs0` 跨任务保存。
 - `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`
   - 覆盖 online CPU 集合参与 TLB shootdown 回归。
 - `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown-timeout-panic --timeout 30`
   - 覆盖远端 ack 缺失时 fail-fast，而不是无限自旋。
 - `cargo xtask check --arch riscv64` 和 `cargo xtask check --arch aarch64`
-  - 覆盖两架构 IPI barrier 代码可编译。
+  - 覆盖两架构 absolute deadline 与 IPI barrier 代码可编译。

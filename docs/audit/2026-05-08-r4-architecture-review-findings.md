@@ -756,6 +756,9 @@ R4/R5 timer-preemption 设计阶段处理。
 已补充 ADR-019 提议稿，列出相对重装、absolute deadline、missed tick 补记和 tickless
 方向的取舍。2026-05-09 项目作者已同意暂定采用方案 B：后续先改为 per-core absolute
 deadline，晚到时跳到未来但只记一个逻辑 tick；missed tick 补记和 tickless one-shot 后续回看。
+同日后续已执行方案 B：`timer::next_absolute_deadline()` 编码“跳到未来但只记一个逻辑 tick”的纯逻辑；
+RISC-V 每核保存 `NEXT_DEADLINE` 并继续用 SBI absolute `set_timer()`；AArch64 每核保存
+`NEXT_DEADLINE` 并改用 `CNTV_CVAL_EL0`。方案 C 的 missed tick 补记仍留作后续升级。
 
 ## R4-16. `src/arch` 暴露面偏宽
 

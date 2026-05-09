@@ -42,8 +42,11 @@ scheduler / sleep / timeout
 
 ## 与 `config::TIMER_FREQ_HZ` 的关系
 
-`TIMER_FREQ_HZ`（默认 10 Hz）决定定时器中断的触发频率，
-即每秒调用 `advance()` 的次数。换算为时间：
+`TIMER_FREQ_HZ`（默认 10 Hz）决定目标定时器中断频率。按照 ADR-019 方案 B，
+`global_tick` 只表示已经处理过的 timekeeper timer interrupt 次数，不补记 missed ticks。
+因此它可以作为调度和 sleep/timeout 的逻辑 tick，但不能直接当成真实硬件 elapsed time。
+
+在没有长时间关中断、handler 延迟或 missed tick 的理想情况下，可近似换算为：
 
 ```
 经过时间 = global_tick::current() / config::TIMER_FREQ_HZ

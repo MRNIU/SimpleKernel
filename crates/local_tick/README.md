@@ -9,6 +9,8 @@ Per-CPU tick 计数器——每核独立的调度时基。
 `local_tick` 为每个 CPU 核心维护独立的 tick 计数器，
 由本核的 timer handler 驱动递增。
 调度器可据此进行精确的 per-CPU 时间片记账。
+按照 ADR-019 方案 B，它记录的是本核已经处理过的 timer interrupt 次数，
+不补记 missed ticks，也不直接代表真实硬件 elapsed time。
 
 与 `global_tick`（BSP 单点递增的全局计数器）互补：
 - `global_tick`：全局时间推进（BSP 单点递增）

@@ -26,7 +26,7 @@ R4-15 已经修复两个直接错误：
 - `checked_tick_interval()` 会拒绝 `freq < TIMER_FREQ_HZ`，避免 interval 变成 0。
 - RISC-V `set_timer()` 失败不再 `.ok()` 丢弃，而是带 deadline/error/value fail-fast。
 
-剩余问题是 tick 的时间语义。当前两架构仍接近“相对重装”：
+剩余问题是 tick 的时间语义。修复前两架构仍接近“相对重装”：
 
 - RISC-V 在 timer interrupt 中使用 `read_time() + interval` 设置下一次 SBI timer deadline。
 - AArch64 使用 `CNTV_TVAL_EL0 = interval` 重新装载相对间隔。
@@ -142,7 +142,7 @@ handle_timer_common(elapsed_ticks)
 
 ## 决策
 
-**暂定选择方案 B：absolute deadline，晚到时跳到未来但只记一个逻辑 tick。**
+**选择方案 B：absolute deadline，晚到时跳到未来但只记一个逻辑 tick。**
 
 这是 R4/R5 边界上的阶段性决策：当前先消除相对重装导致的硬件 deadline 持续漂移，
 不在本阶段重定义 `global_tick` / `local_tick` 的逻辑时间语义，也不补记 missed ticks。
@@ -152,13 +152,13 @@ handle_timer_common(elapsed_ticks)
 
 ## 决策问题
 
-本次暂定决策对原问题的回答如下：
+本次决策对原问题的回答如下：
 
-1. `global_tick` / `local_tick` 暂时继续代表“已处理 timer interrupt 次数”，不代表硬件时间经过的 tick 数。
-2. sleep/timeout 暂时不在中断延迟后追赶真实时间。
-3. scheduler 的 `timer_tick()` 暂时不新增 `elapsed_ticks` 参数，只接收一次 tick / reschedule 信号。
-4. timer handler 暂时不补记多个 missed ticks；handler 晚到时只把下一次硬件 deadline 推进到未来。
-5. AArch64 后续实现应切到 `CNTV_CVAL_EL0` 绝对 deadline，与 RISC-V SBI absolute deadline 对齐。
+1. `global_tick` / `local_tick` 继续代表“已处理 timer interrupt 次数”，不代表硬件时间经过的 tick 数。
+2. sleep/timeout 目前不在中断延迟后追赶真实时间。
+3. scheduler 的 `timer_tick()` 目前不新增 `elapsed_ticks` 参数，只接收一次 tick / reschedule 信号。
+4. timer handler 目前不补记多个 missed ticks；handler 晚到时只把下一次硬件 deadline 推进到未来。
+5. AArch64 已切到 `CNTV_CVAL_EL0` 绝对 deadline，与 RISC-V SBI absolute deadline 对齐。
 
 ## 理由
 
@@ -182,14 +182,14 @@ sleep queue、timeout 和 scheduler 记账接口，属于 R5 调度语义或更�
 
 - **代码变更**:
   - 方案 A：只更新文档和测试期望。
-  - 方案 B：RISC-V/AArch64 增加 per-core `next_deadline`，AArch64 使用 `CNTV_CVAL_EL0`。
+  - 方案 B：RISC-V/AArch64 增加 per-core `next_deadline`，AArch64 使用 `CNTV_CVAL_EL0`。（已落地）
   - 方案 C：在方案 B 基础上修改 `timer::handle_timer_common()`、`global_tick`、`local_tick`、
     sleep queue 和 scheduler tick 记账接口。
 - **API 变更**:
   - 方案 B 可保持公共 API 基本不变。
   - 方案 C 需要引入 `elapsed_ticks` 或批量 tick API。
 - **测试**:
-  - 方案 B：需要 mock 或 QEMU 长时间测试，确认 deadline 不按 handler 延迟持续后移。
+  - 方案 B：已用 `arch-test` 覆盖 absolute deadline 推进契约；长时间漂移统计可作为后续增强。
   - 方案 C：需要 missed tick、批量 sleep wakeup、scheduler 记账和最大补 tick 上限测试。
 - **文档**: `docs/design/R4-interrupt-timer-flow.md` 需要记录最终 tick 语义。
 - **当前设计同步**: 若方案 C 被接受，R5 调度设计必须同步 tick accounting 语义。
@@ -199,5 +199,5 @@ sleep queue、timeout 和 scheduler 记账接口，属于 R5 调度语义或更�
 - `docs/audit/2026-05-08-r4-architecture-review-findings.md` — R4-15
 - `docs/design/R4-interrupt-timer-flow.md` — 当前 timer 与 preemption 流程
 - `src/timer.rs` — 公共 tick 处理
-- `src/arch/riscv64/timer.rs` — 当前 RISC-V timer rearm
-- `src/arch/aarch64/timer.rs` — 当前 AArch64 timer rearm
+- `src/arch/riscv64/timer.rs` — RISC-V absolute deadline rearm
+- `src/arch/aarch64/timer.rs` — AArch64 absolute deadline rearm

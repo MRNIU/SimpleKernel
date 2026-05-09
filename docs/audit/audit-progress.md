@@ -14,17 +14,29 @@
 `R4-06` RISC-V eager FPU 上下文保存已恢复并补 ADR-017；`R4-05` 已按 ADR-018 采用方案 A，
 完成发布屏障、IRQ enabled 断言、IPI barrier、ack timeout 和缺失 ack 诊断；`R4-16` 已完成
 `src/arch` 首轮外部暴露面收窄；`R4-17` 已补 R4 当前设计文档和启动 barrier 回归。
-`R4-15` 漂移语义已补 ADR-019，并暂定采用方案 B；per-core absolute deadline 实现和回归待后续。
+`R4-15` 漂移语义已补 ADR-019，并已按方案 B 落地 per-core absolute deadline；方案 C 的
+missed tick 补记和 tickless one-shot 后续回看。
 **下一个目标**（按优先级）：
 1. **R4 后续协议测试**：补远端访问强证明，CPU0 修改权限或映射后，CPU1 在 ack 后立即访问目标 VA。
 2. **R4 TLB 后续升级**：运行期映射变更增多后，再评估 ADR-018 方案 B per-CPU mailbox 或方案 C rendezvous。
-3. **R4 timer 后续实现**：按 ADR-019 暂定方案 B 补 per-core absolute deadline 和漂移回归；missed tick 补记后续回看。
+3. **R4 timer 后续升级**：按 ADR-019 后续回看条件再评估方案 C missed tick 补记或 tickless one-shot。
 4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
 
 验证计划：后续设计边界改动仍需先补目标回归测试，再按变更面执行
 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64`。涉及 QEMU 的命令必须使用 30 秒超时并在
 超时后清理残留 `qemu-system` 进程。
+
+验证结果（2026-05-09 ADR-019 方案 B 实现）：容器 `simplekernel-dev` 内先按 TDD
+给 `arch-test` 增加 absolute deadline 推进契约；RED 阶段确认缺少
+`simplekernel::timer::next_absolute_deadline()` 时 `arch-test` 编译失败。实现后公共
+`timer::next_absolute_deadline()` 编码“跳到未来但只记一个逻辑 tick”；RISC-V 每核保存
+`NEXT_DEADLINE` 并继续用 SBI absolute `set_timer()`；AArch64 每核保存 `NEXT_DEADLINE`
+并改用 `CNTV_CVAL_EL0`。同时同步 ADR-019、ADR 索引、R4 interrupt/timer 设计说明、
+R4 审计报告和 tick README。验证通过：`cargo fmt --all -- --check`、
+`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64`、
+RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name arch-test --timeout 30`，
+以及 `git diff --check`。
 
 验证结果（2026-05-09 ADR-018 方案 A 实现）：容器 `simplekernel-dev` 内先补
 `paging-test/tlb-shootdown-timeout-panic` should_panic 红测，RED 阶段确认缺少
@@ -132,6 +144,33 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 不会把 should_panic 未触发转换成非零退出码。
 
 ## 上次对话摘要
+
+**日期**：2026-05-09（ADR-019 方案 B 实现）
+
+### 已完成
+
+本轮按项目作者指示先执行 ADR-019 方案 B，方案 C 留待后续升级：
+
+1. 在 `arch-test` 增加 absolute deadline 推进契约红测，确认缺少 helper 时编译失败。
+2. 新增 `timer::next_absolute_deadline()`，当 handler 晚到时把硬件 deadline 推进到第一个严格晚于
+   `now` 的位置，但公共 timer 层仍只推进一个逻辑 tick。
+3. RISC-V timer 改为 per-core `NEXT_DEADLINE` + SBI absolute `set_timer()`。
+4. AArch64 timer 改为 per-core `NEXT_DEADLINE` + `CNTV_CVAL_EL0`，不再使用 `CNTV_TVAL_EL0`
+   做相对重装。
+5. 同步 ADR-019、ADR 索引、R4 interrupt/timer 设计说明、R4 审计报告和 tick README。
+
+### 关键结论
+
+| # | 结论 | 状态 | ADR |
+|---|------|------|-----|
+| R4-15 timer absolute deadline | 方案 B 已落地；硬件 deadline 不再因 handler 延迟持续向后漂移 | 已修复 | ADR-019 |
+| missed tick / tickless | 不在本轮补记 missed ticks，不修改 scheduler tick API | 后续回看 | ADR-019 方案 C/D |
+| R4-05 TLB shootdown 完整协议 | 最小硬化已在代码中，长期协议仍需作者选 A/B/C | 待决策 | ADR-018 |
+
+### 下一步
+
+优先等待 ADR-018 TLB shootdown 完整协议决策；timer 方向后续只在 sleep/timeout 或 scheduler
+需要真实 elapsed time 时再升级到方案 C。
 
 **日期**：2026-05-09（ADR-018 方案 A 实现）
 

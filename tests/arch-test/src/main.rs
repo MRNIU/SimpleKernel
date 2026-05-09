@@ -48,6 +48,9 @@ fn run_tests() {
     test_tick_interval_contract();
     log::info!("test tick_interval_contract ... ok");
 
+    test_absolute_deadline_contract();
+    log::info!("test_absolute_deadline_contract ... ok");
+
     test_cpu_topology_contract();
     log::info!("test cpu_topology_contract ... ok");
 
@@ -86,6 +89,26 @@ fn test_kernel_stack_alignment() {
 fn test_tick_interval_contract() {
     let interval = simplekernel::timer::checked_tick_interval(config::TIMER_FREQ_HZ * 10);
     assert_eq!(interval, 10);
+}
+
+/// 方案 B 要求硬件 deadline 跳到未来，但每次 timer interrupt 仍只对应一个逻辑 tick。
+fn test_absolute_deadline_contract() {
+    assert_eq!(
+        simplekernel::timer::next_absolute_deadline(100, 99, 10),
+        100
+    );
+    assert_eq!(
+        simplekernel::timer::next_absolute_deadline(100, 100, 10),
+        110
+    );
+    assert_eq!(
+        simplekernel::timer::next_absolute_deadline(100, 129, 10),
+        130
+    );
+    assert_eq!(
+        simplekernel::timer::next_absolute_deadline(100, 130, 10),
+        140
+    );
 }
 
 /// CPU topology 必须显式校验当前 dense core id 平台契约。
