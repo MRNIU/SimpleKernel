@@ -28,7 +28,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+
+      - name: Check DCO sign-off
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+
+          if git rev-parse -q --verify HEAD^2 >/dev/null; then
+            range="HEAD^1..HEAD"
+          else
+            range="${{ github.event.pull_request.base.sha }}..HEAD"
+          fi
+
+          missing=0
+          for commit in $(git rev-list --no-merges "$range"); do
+            if ! git log -1 --format=%B "$commit" | grep -qi '^Signed-off-by:'; then
+              echo "::error title=Missing DCO sign-off::Commit $commit does not contain a Signed-off-by trailer."
+              missing=1
+            fi
+          done
+
+          exit "$missing"
 
       - uses: ./.github/actions/setup
         with:

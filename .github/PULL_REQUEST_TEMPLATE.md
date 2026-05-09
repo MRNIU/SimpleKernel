@@ -15,6 +15,7 @@ TODO
 - [ ] 硬件设计、生产流程、供应商边界或 SOP 无变化，或已同步更新对应文档
 - [ ] 开发环境、CI、Dev Container、QEMU 或发布流程无变化，或已更新文档
 - [ ] 没有破坏性变化，或已用 `!`/`BREAKING CHANGE` 和迁移说明标注
+- [ ] 每个 commit 都包含 DCO `Signed-off-by` trailer，或已说明例外原因
 
 ## 测试
 

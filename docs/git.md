@@ -45,6 +45,12 @@
 - 每条 commit 必须使用 DCO sign-off：`git commit --signoff` 或 `git commit -s`。
 - 禁止使用无信息量提交信息，例如 `update`、`fix bug`、`misc`、`wip`、`changes`。
 
+仓库提供 `.gitmessage` 作为可选提交模板；需要时可执行：
+
+```bash
+git config commit.template .gitmessage
+```
+
 示例：
 
 ```text

@@ -1,15 +1,60 @@
 # Copyright The SimpleKernel Contributors
 
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+*~
+.nfs*
+*.swp
+*.swo
 .vscode/*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/settings.json
 .idea
+.fleet/
+.zed/
+
+.env
+.env.*
+!.env.example
+.envrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.csr
+*.der
+
+*.log
+logs/
 
 build_aarch64
 build_riscv64
 build_x86_64
+build/
+dist/
+out/
+coverage/
+.cache/
+.tmp/
+tmp/
+temp/
 *.o
 *.objdump
 *.elf
@@ -21,9 +66,21 @@ target/
 *.rlib
 *.rmeta
 *.pdb
+node_modules/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
 
 .worktrees/
-.claude
+.claude/
+.codex/
+.superpowers/
+.aider*
 
 # 参考内核源码
 ref/

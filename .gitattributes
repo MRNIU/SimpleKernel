@@ -1,0 +1,25 @@
+# Copyright The SimpleKernel Contributors
+
+# Normalize text files for cross-platform development.
+* text=auto eol=lf
+
+# Windows command scripts commonly expect CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Keep binary assets binary.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.tgz binary
+*.7z binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
