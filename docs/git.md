@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # Git 与 Commit 规范
 
 ## Git 规则
@@ -42,7 +44,7 @@
 - `scope` 使用英文小写，表示影响范围，例如 `memory`、`sync`、`arch`、`xtask`、`docs`。
 - `subject` 优先使用中文，不加句号，尽量不超过 72 个字符。
 - 破坏性变化必须使用 `!` 并在正文或 footer 中写明迁移方式。
-- 每条 commit 必须使用 DCO sign-off：`git commit --signoff` 或 `git commit -s`。
+- 每条 commit 必须使用 DCO sign-off：`git commit --signoff` 或 `git commit -s`；PR CI 会检查 `Signed-off-by` trailer。
 - 禁止使用无信息量提交信息，例如 `update`、`fix bug`、`misc`、`wip`、`changes`。
 
 仓库提供 `.gitmessage` 作为可选提交模板；需要时可执行：

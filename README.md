@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 [![codecov](https://codecov.io/gh/Simple-XX/SimpleKernel/graph/badge.svg?token=J7NKK3SBNJ)](https://codecov.io/gh/Simple-XX/SimpleKernel)
 ![workflow](https://github.com/Simple-XX/SimpleKernel/actions/workflows/workflow.yml/badge.svg)
 ![commit-activity](https://img.shields.io/github/commit-activity/t/Simple-XX/SimpleKernel)
@@ -86,11 +88,11 @@ pub trait Scheduler: Send + Sync {
 #### 3. 测试验证
 
 ```bash
-# 单元测试（宿主机）
-cargo test
+# 单元测试
+devcontainer exec --workspace-folder . cargo test
 
 # 系统测试（QEMU）
-cargo xtask test --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
 ```
 
 #### 4. 对照参考实现
@@ -124,8 +126,7 @@ cd SimpleKernel
 # 安装 Dev Containers 扩展后，点击左下角 >< 图标
 # 选择 "Reopen in Container"
 
-# 或使用 CLI
-npm install -g @devcontainers/cli
+# 或使用已存在的 Dev Container CLI
 devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash
 ```
@@ -134,35 +135,35 @@ devcontainer exec --workspace-folder . bash
 >
 > 详细说明见 [Dev Container 文档](./docs/docker.md)
 
-> 开发环境默认优先使用 Dev Container。除安装 Docker、Dev Container CLI/扩展、
-> Git 等入口工具外，不需要在宿主机安装 Rust nightly、交叉编译器、QEMU 或固件构建依赖。
+> 开发环境默认优先使用 Dev Container。宿主机只保留 Docker 或兼容容器运行时、
+> Git、编辑器/AI agent 和已有 Dev Container 入口工具；不要为了本项目在宿主机安装开发依赖。
 
 **方式二：修复容器或执行明确要求的本地任务**
 
-默认不在宿主机安装 Rust nightly、交叉编译器、QEMU 或固件构建依赖。只有容器不可用、正在修复容器自身配置，或任务明确要求本地环境时，才在宿主机执行，并在 PR 中说明原因和验证边界。
+默认不在宿主机安装 Rust nightly、交叉编译器、QEMU、固件构建依赖或其他项目开发依赖。只有正在修复容器自身配置、文档/Git 等入口操作，或任务明确要求无需项目工具链的本地操作时，才在宿主机执行，并在 PR 中说明原因和验证边界。
 
 ### 编译与运行
 
-```bash
-cd SimpleKernel
+以下项目命令通过 Dev Container、Codespaces 或 CI 声明的隔离环境执行；宿主机只作为 Docker/Dev Container 编排入口。
 
+```bash
 # 编译内核
-cargo xtask build --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask build --arch riscv64
 
 # 在 QEMU 模拟器中运行
-cargo xtask run --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask run --arch riscv64
 
 # 调试（GDB 连接 localhost:1234）
-cargo xtask debug --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask debug --arch riscv64
 
-# 单元测试（宿主机 x86_64）
-cargo test
+# 单元测试
+devcontainer exec --workspace-folder . cargo test
 
 # 系统测试（QEMU 中运行）
-cargo xtask test --arch riscv64           # 统一测试内核
-cargo xtask test --arch riscv64 --all     # 全部测试（统一 + 独立）
-cargo xtask test --arch riscv64 --name panic-test  # 指定独立测试
-cargo xtask test --list                   # 列出可用测试
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --all
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name panic-test
+devcontainer exec --workspace-folder . cargo xtask test --list
 ```
 
 **支持的架构：**
@@ -218,12 +219,12 @@ SimpleKernel/
 
 SimpleKernel 采用两层测试 + 冒烟测试：
 
-### 单元测试（宿主机）
+### 单元测试（容器内 host target）
 
-纯逻辑 crate 的 `#[test]` 模块，在宿主机上运行：
+纯逻辑 crate 的 `#[test]` 模块，在容器内以宿主架构运行：
 
 ```bash
-cargo test -p memory_types -p config -p page_table_entry -p arch
+devcontainer exec --workspace-folder . cargo test -p memory_types -p config -p page_table_entry -p arch
 ```
 
 覆盖范围：地址运算、PTE 编解码、常量验证等。
@@ -233,9 +234,9 @@ cargo test -p memory_types -p config -p page_table_entry -p arch
 每个测试是独立的 `#![no_std]` 裸机二进制，启动独立 QEMU 实例，拥有干净的内核环境。
 
 ```bash
-cargo xtask test --arch riscv64 --all          # 全部测试
-cargo xtask test --arch riscv64 --name <name>  # 指定测试
-cargo xtask test --list                        # 列出可用测试
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --all
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name <name>
+devcontainer exec --workspace-folder . cargo xtask test --list
 ```
 
 测试位于 `tests/` 目录，使用 `tests/test_harness/` 提供的 `test_main!` 宏消除样板代码。
@@ -295,6 +296,7 @@ cargo xtask test --list                        # 列出可用测试
 - **格式化**: `rustfmt.toml`（100 字符宽度），`cargo fmt` 强制执行
 - **静态检查**: `cargo clippy -- -D warnings`
 - **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文
+- **完整约定**: Copyright、注释、文件规模、严格 JSON、第三方代码和运行时配置规则见 [docs/conventions.md](./docs/conventions.md)
 
 ### 命名约定
 
@@ -310,11 +312,17 @@ cargo xtask test --list                        # 列出可用测试
 ```
 <type>(<scope>): <subject>
 
-type: feat|fix|docs|style|refactor|perf|test|build|revert
+type: feat|fix|refactor|test|docs|chore|build|ci|perf|style|revert
 scope: 可选，影响的模块 (arch, memory, task, xtask)
 ```
 
 每条 commit 必须使用 `git commit --signoff`（DCO 签署）。
+PR CI 会检查每个 commit 是否包含 `Signed-off-by` trailer。
+可选提交模板：
+
+```bash
+git config commit.template .gitmessage
+```
 
 ## 文档入口
 
@@ -346,8 +354,8 @@ scope: 可选，影响的模块 (arch, memory, task, xtask)
 
 1. Fork 本仓库
 2. 创建功能分支: `git checkout -b feat/amazing-feature`
-3. 遵循代码规范进行开发
-4. 确保所有测试通过: `cargo test && cargo xtask test --arch riscv64 --all`
+3. 遵循 `AGENTS.md`、`docs/conventions.md` 和 `docs/git.md` 进行开发
+4. 确保相关测试通过，例如 `devcontainer exec --workspace-folder . cargo test` 和 `devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --all`
 5. 提交变更: `git commit --signoff -m 'feat(scope): add amazing feature'`
 6. 创建 Pull Request
 

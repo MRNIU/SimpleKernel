@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # AGENTS.md — SimpleKernel
 
 ## OVERVIEW
@@ -69,18 +71,26 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 
 ## CONVENTIONS
 
-> Full Rust coding conventions: `docs/design/00-概述.md` §9
+> Full project conventions: `docs/conventions.md`; legacy phase design conventions: `docs/design/00-概述.md` §9
 
 ### Environment
 - **容器优先**：凡是能在 Dev Container / Docker 中完成的构建、检查、`pre-commit`、固件构建、QEMU 运行和系统测试，都应在容器内执行，不要为本项目修改宿主机工具链。
-- **宿主机边界**：宿主机只负责 Docker 或兼容容器运行时、Dev Container CLI/扩展、Git 等入口工具；不要在宿主机安装 Rust nightly、交叉编译器、QEMU 或固件构建依赖来绕过容器。
+- **宿主机边界**：宿主机只负责 Docker 或兼容容器运行时、Git、编辑器/AI agent 和已有 Dev Container 入口工具；不要在宿主机安装 Rust nightly、交叉编译器、QEMU、固件构建依赖或其他项目开发依赖来绕过容器。
 - **命令入口**：在宿主机发起命令时优先使用 `devcontainer exec --workspace-folder . <command>`，或使用当前已构建的项目开发镜像运行等价命令。
-- **例外**：只有容器不可用、任务明确要求本地环境，或正在修复容器自身配置时，才考虑宿主机执行；说明原因并保持宿主/容器步骤边界清晰。
+- **例外**：只有正在修复容器自身配置、文档/Git 等入口操作，或任务明确要求无需项目工具链的本地操作时，才考虑宿主机执行；说明原因并保持宿主/容器步骤边界清晰。
 
 ### Git
 - **Commit 格式**: `<type>(<scope>): <subject>` — type: feat/fix/refactor/test/docs/chore
 - **Sign-off 必须**: 每条 commit 必须使用 `git commit --signoff`（DCO 签署），**不可省略**
+- **DCO 门禁**：PR CI 会检查每个 commit 是否包含 `Signed-off-by` trailer。
+- **Commit 模板**：可执行 `git config commit.template .gitmessage` 启用仓库提交模板；模板必须镜像 `docs/git.md`。
 - **Subagent 派发时**：给 subagent 的 commit 指令中也必须包含 `--signoff`
+
+### Repository Hygiene
+- **Copyright**：仓库自有源码、脚本、CI 配置、重要项目配置和长期维护文档，新增时应带 `Copyright The SimpleKernel Contributors` 文件头；严格 JSON 或不支持注释的文件不强行加入文件头。
+- **机器可读格式**：`.json` 文件保持严格 JSON，不写注释、不留尾随逗号；需要说明时写在相邻文档。
+- **文件规模**：手写源码超过 300 行时 review 应检查职责边界；原则上不超过 500 行，超过时 PR 需说明暂不拆分理由或拆分计划。
+- **运行时配置**：FDT、MMIO、timer 频率、core count、QEMU 参数、固件路径和硬件拓扑等运行时/platform 输入必须显式校验；缺失或非法输入应 fail fast，不用 `Default`、`unwrap_or(...)` 等隐式 fallback 掩盖。
 
 ### Rust
 - **Language**: Rust nightly, `#![no_std]`, `#![no_main]`, edition 2024
@@ -91,6 +101,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Doc comments**: `///` with `# Safety`, `# Errors`, `# Panics` sections for public APIs（节标题保留英文，内容用中文）
 - **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文（Rust 社区惯例），其后说明用中文
 - **注释位置**: 注释写在代码上方，不写在行尾（`// SAFETY:` 除外——紧跟 `unsafe` 块上方）
+- **注释内容**: 注释解释原因、不变量和失败后果，不重复代码表面含义；临时 TODO 必须说明触发条件、后续处理位置或关联文档。
 - **Error handling**: Syscall boundary uses `Result<T, ErrorCode>` + `?`; kernel internals use `.expect("reason with data")` or `panic!()` — the kernel must not silently proceed on internal errors
 - **Unsafe**: Every `unsafe` block MUST have `// SAFETY:` comment explaining invariants; minimize scope
 - **Singletons**: `spin::Once<T>` with `call_once()` / `get()`
@@ -122,28 +133,31 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - Cargo workspace: root package (kernel) + `xtask` (build tool)
 
 ## COMMANDS
+宿主机侧执行项目命令时使用 `devcontainer exec --workspace-folder . <command>`。
+
 ```bash
 # Build kernel
-cargo xtask build --arch riscv64
-cargo xtask build --arch aarch64
+devcontainer exec --workspace-folder . cargo xtask build --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask build --arch aarch64
 
 # Run in QEMU (via xtask — handles FIT image + TFTP + QEMU)
-cargo xtask run --arch riscv64
-cargo xtask run --arch aarch64
+devcontainer exec --workspace-folder . cargo xtask run --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask run --arch aarch64
 
 # Debug (GDB on localhost:1234)
-cargo xtask debug --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask debug --arch riscv64
 
 # System tests in QEMU
-cargo xtask test --arch riscv64                        # all standalone tests
-cargo xtask test --arch riscv64 --name panic-test      # specific standalone test
-cargo xtask test --list                                # list available tests
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name panic-test
+devcontainer exec --workspace-folder . cargo xtask test --list
 
 # Format + lint check
-cargo fmt --check && cargo clippy -- -D warnings
+devcontainer exec --workspace-folder . cargo fmt --check
+devcontainer exec --workspace-folder . cargo clippy -- -D warnings
 
 # Documentation
-cargo doc --no-deps
+devcontainer exec --workspace-folder . cargo doc --no-deps
 ```
 
 **QEMU 超时**：在 QEMU 中运行内核或测试时经常出现卡死或无限循环打印日志的情况。所有通过 Bash 工具执行的 QEMU 相关命令（`cargo xtask run`、`cargo xtask test`）**必须设置 30 秒超时**（`timeout: 30000`）。超时后应 `pkill -f qemu-system` 清理残留进程。
@@ -157,9 +171,9 @@ cargo doc --no-deps
 每个测试是独立的 `#![no_std]` 裸机二进制，启动独立 QEMU 实例，拥有干净的内核环境。
 
 ```bash
-cargo xtask test --arch riscv64                        # 全部独立测试
-cargo xtask test --arch riscv64 --name frame-alloc-test # 指定测试
-cargo xtask test --list                                # 列出可用测试
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name frame-alloc-test
+devcontainer exec --workspace-folder . cargo xtask test --list
 ```
 
 测试基础设施位于 `tests/test_harness/`，核心是 `test_main!` 宏：

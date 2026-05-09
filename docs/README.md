@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # docs/
 
 本目录保存 SimpleKernel 的项目文档。代码是实现真值源；当历史设计文档与代码冲突时，以当前代码为准，并在审查记录或 ADR 中标出差异。
@@ -36,8 +38,8 @@ docs/
 | 跟踪审计阶段目标、进度和发现 | `docs/audit/` |
 | 记录硬件接口、固件、生产、供应商或 SOP | `docs/hardware/`、`docs/production/`、`docs/suppliers/`、`docs/sop/` |
 | 创建局部协作规则或新文档 | `docs/templates/` |
-| 记录长期工程约定 | `docs/conventions.md` |
-| 记录 Git 和 commit 规范 | `docs/git.md` |
+| 记录长期工程约定，包括 Copyright、注释、文件规模、严格 JSON、第三方代码和运行时配置 | `docs/conventions.md` |
+| 记录 Git、commit、DCO 和 `.gitmessage` 规范 | `docs/git.md` |
 
 ## SAD、SDD 与历史文档边界
 

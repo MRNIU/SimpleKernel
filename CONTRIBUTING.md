@@ -1,23 +1,25 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 贡献指南
 
 感谢参与 SimpleKernel。提交前请先阅读根目录 `AGENTS.md`、`docs/conventions.md` 和 `docs/git.md`。
 
 ## 开发环境
 
-开发环境默认使用 Dev Container。宿主机只需要 Docker 或兼容容器运行时、Dev Container CLI/扩展、Git 等入口工具；不要为了本项目在宿主机安装 Rust nightly、交叉编译器、QEMU 或固件构建依赖。
+开发环境默认使用 Dev Container。宿主机只保留 Docker 或兼容容器运行时、Git、编辑器/AI agent 和已有 Dev Container 入口工具；不要为了本项目在宿主机安装 Rust nightly、交叉编译器、QEMU、固件构建依赖或其他项目开发依赖。
 
 ```bash
 devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash
 ```
 
-容器内常用命令：
+宿主机侧常用命令：
 
 ```bash
-cargo xtask build --arch riscv64
-cargo xtask test --arch riscv64
-cargo fmt --check
-cargo clippy -- -D warnings
+devcontainer exec --workspace-folder . cargo xtask build --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
+devcontainer exec --workspace-folder . cargo fmt --check
+devcontainer exec --workspace-folder . cargo clippy -- -D warnings
 ```
 
 通过 Bash 工具运行 QEMU 相关命令时必须设置 30 秒超时；超时后清理残留 QEMU 进程。
@@ -37,6 +39,8 @@ cargo clippy -- -D warnings
 |------|--------------|
 | 启动流程、命令、测试入口变化 | `README.md`、`docs/README.md`、相关 SOP |
 | 架构不变量变化 | `docs/adr/`、SAD/SDD、`AGENTS.md` |
+| 项目长期约定、Copyright、注释、文件规模、运行时配置规则变化 | `AGENTS.md`、`docs/conventions.md` |
+| Git/commit/DCO/提交模板变化 | `docs/git.md`、`.gitmessage`、PR 模板 |
 | 公开 trait、错误码、类型或模块边界变化 | 代码文档注释、SDD、模块 README |
 | 固件、第三方源码、供应商交付物变化 | `3rd/` 记录、`docs/suppliers/`、`docs/production/` |
 | 硬件或生产流程变化 | `docs/hardware/`、`docs/sop/` |
@@ -48,6 +52,9 @@ cargo clippy -- -D warnings
 - 不使用 `.unwrap()`；错误信息必须包含有助于定位问题的数据。
 - 内核互斥使用项目自定义 `SpinLock<T>`。
 - trait 是契约，不要为了某个实现把实现细节塞进 trait 定义。
+- 新增自有源码、脚本、CI 配置、重要配置和长期维护文档时按 `docs/conventions.md` 添加 Copyright 文件头。
+- 手写源码超过 300 行时主动检查职责边界；超过 500 行时 PR 说明暂不拆分理由或拆分计划。
+- 运行时/platform 输入缺失或非法时 fail fast，不用隐式默认值掩盖配置或硬件描述问题。
 
 ## Commit
 
@@ -56,3 +63,11 @@ commit 使用 `docs/git.md` 中的格式，并且必须带 DCO sign-off：
 ```bash
 git commit --signoff -m "docs(conventions): 补充文档结构约定"
 ```
+
+可选启用仓库提交模板：
+
+```bash
+git config commit.template .gitmessage
+```
+
+PR CI 会检查每个 commit 是否包含 `Signed-off-by` trailer。

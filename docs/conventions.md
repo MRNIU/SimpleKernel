@@ -1,3 +1,5 @@
+<!-- Copyright The SimpleKernel Contributors -->
+
 # 项目约定
 
 本文记录 SimpleKernel 长期协作约定。审计阶段的临时规则仍以根目录 `AGENTS.md` 的“CURRENT PHASE”部分为准；临时规则清理后，应把仍然有效的规则沉淀到本文。
@@ -17,6 +19,7 @@
 - 严格 JSON 文件不写注释，也不为了版权头破坏 JSON 兼容性；需要说明版权、用途或格式约束时，写在相邻 README 或文档中。
 - 第三方代码、vendor copy、submodule、许可证正文和生成文件保留其上游或生成器声明，不改写为 SimpleKernel 版权头。
 - 既有文件没有版权头时，不为补版权做大规模无关 churn；在本次修改触及且格式允许时顺手补齐即可。
+- 后续需要做一次全仓库 Copyright 与文件头检查，统一确认哪些文件需要补头、哪些文件因格式或来源应豁免。
 
 ## 注释写法
 
