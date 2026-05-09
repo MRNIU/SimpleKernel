@@ -29,14 +29,21 @@ runs:
     - name: Setup Rust toolchain
       shell: bash
       run: |
-        # Dockerfile 通过 ENV 设置了此路径，但 GitHub Actions container job
-        # 会覆盖容器的 PATH，需要手动恢复
-        export PATH="/usr/local/cargo/bin:$PATH"
+        # Dockerfile 通过 ENV 设置了这些路径，但 GitHub Actions container job
+        # 可能会覆盖容器环境变量和 PATH，需要手动恢复并传给后续 steps。
+        export CARGO_HOME="${CARGO_HOME:-/usr/local/cargo}"
+        export RUSTUP_HOME="${RUSTUP_HOME:-/usr/local/rustup}"
+        export PATH="$CARGO_HOME/bin:$PATH"
         if ! command -v rustup &>/dev/null; then
           apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+            sh -s -- -y --default-toolchain none --no-modify-path
         fi
-        echo "/usr/local/cargo/bin" >> "$GITHUB_PATH"
+        {
+          echo "CARGO_HOME=$CARGO_HOME"
+          echo "RUSTUP_HOME=$RUSTUP_HOME"
+        } >> "$GITHUB_ENV"
+        echo "$CARGO_HOME/bin" >> "$GITHUB_PATH"
         rustup show
 
     - name: Cache Cargo
