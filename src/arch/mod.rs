@@ -13,8 +13,13 @@ pub(crate) mod riscv64;
 /// core ID 在 `per_cpu` crate 中提供，tick 计数在 `tick` crate 中提供，
 /// 此 trait 仅定义初始化和硬件配置操作。
 pub trait ArchOps {
-    /// 从引导参数中提取 DTB（设备树）物理地址
-    fn dtb_addr(argc: i32, argv: *const *const u8) -> usize;
+    /// 从引导参数中提取 DTB（设备树）物理地址。
+    ///
+    /// # Safety
+    /// 调用方必须保证 `argc` / `argv` 来自当前架构启动入口，且在解析期间保持有效。
+    /// 对 AArch64，`argv` 必须满足 U-Boot `bootm` 传入的 C 字符串数组布局；
+    /// 对 RISC-V，`argv` 实际承载 OpenSBI 传入的 DTB 地址整数。
+    unsafe fn dtb_addr(argc: i32, argv: *const *const u8) -> usize;
 
     /// 主核中断控制器初始化（PLIC / GIC）
     fn init_interrupt();

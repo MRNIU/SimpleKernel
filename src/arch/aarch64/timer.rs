@@ -16,7 +16,7 @@ fn read_cntfrq() -> u64 {
 /// 计算每个 tick 的定时器计数值
 #[inline]
 fn get_interval() -> u64 {
-    read_cntfrq() / TIMER_FREQ_HZ
+    crate::timer::checked_tick_interval(read_cntfrq())
 }
 
 /// 初始化主核虚拟定时器

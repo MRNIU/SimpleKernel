@@ -7,10 +7,35 @@
 test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_tests);
 
 fn run_tests() {
+    test_kernel_stack_alignment();
+    log::info!("test kernel_stack_alignment ... ok");
+
+    test_tick_interval_contract();
+    log::info!("test tick_interval_contract ... ok");
+
     test_aarch64_fp_arithmetic();
     log::info!("test aarch64_fp_arithmetic ... ok");
 
     log::info!("arch-test: all tests passed");
+}
+
+/// 内核线程栈顶必须满足 RISC-V psABI 和 AAPCS64 的 16 字节对齐要求。
+fn test_kernel_stack_alignment() {
+    let stack = simplekernel::task::tcb::KernelStack::new();
+
+    assert_eq!(simplekernel::task::tcb::KernelStack::ALIGN, 16);
+    assert_eq!(
+        stack.top() % simplekernel::task::tcb::KernelStack::ALIGN,
+        0,
+        "KernelStack 栈顶未按 16 字节对齐: top={:#x}",
+        stack.top()
+    );
+}
+
+/// timer tick interval 必须非零，避免启动后进入中断风暴或静默停摆。
+fn test_tick_interval_contract() {
+    let interval = simplekernel::timer::checked_tick_interval(config::TIMER_FREQ_HZ * 10);
+    assert_eq!(interval, 10);
 }
 
 /// AArch64 hardfloat 目标应能执行硬件浮点运算。

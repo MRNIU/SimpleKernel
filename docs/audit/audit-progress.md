@@ -5,11 +5,12 @@
 
 ## 当前状态
 
-**当前 Phase**: R4 — 架构层第一阶段测试可信度修复已完成。`R4-09 should_panic harness/xtask 假阳性`
-已通过串口 success sentinel 和 xtask 输出判定收口，后续 panic 回归不再只依赖 QEMU 宿主退出码。
+**当前 Phase**: R4 — 架构层第二阶段低耦合修复已完成。`R4-09 should_panic harness/xtask 假阳性`
+已通过串口 success sentinel 和 xtask 输出判定收口；`R4-03/R4-07/R4-08/R4-10` 已修复；
+`R4-15` 的 fail-fast 部分已修复，absolute deadline / 漂移语义保留到 timer-preemption 设计阶段。
 **下一个目标**（按优先级）：
-1. **R4 低耦合修复切片**：R4-03 RISC-V 从核 `gp` 初始化、R4-07 任务栈 16 字节对齐、R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 timer fail-fast。
-2. **R4 时序与跨核协议设计**：R4-01/R4-02 timer 与调度边界、R4-04/R4-12 CPU topology 与 SGI、R4-05 TLB shootdown 协议、R4-11 PLIC context 与启用顺序、R4-13 discovered/online core count、R4-14 timekeeper core。
+1. **R4 时序与跨核协议设计**：R4-01/R4-02 timer 与调度边界、R4-04/R4-12 CPU topology 与 SGI、R4-05 TLB shootdown 协议、R4-11 PLIC context 与启用顺序、R4-13 discovered/online core count、R4-14 timekeeper core。
+2. **R4/R5 timer 语义剩余项**：R4-15 absolute deadline / tick 漂移语义，需与 preemption 闭环一起定。
 3. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
 
 验证计划：后续设计边界改动仍需先补目标回归测试，再按变更面执行
@@ -32,6 +33,17 @@ RISC-V QEMU 30 秒超时下定点验证通过：`memory-types-test/codec`、
 由 console lock 保证单条 sentinel 不被并发日志破坏。提交前复查 warning 时，
 清理了 `tests/test_harness` 中新触发的 `unused feature: alloc_error_handler`；
 复跑验证后，本轮改动文件不再产生新的编译 warning，剩余 warning 均来自既有内核路径。
+
+验证结果（2026-05-09 R4 第二阶段低耦合修复）：容器 `simplekernel-dev`
+内 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64` 通过（保留既有 warning）。新增 `arch-test`
+覆盖 `KernelStack` 16 字节栈顶对齐和 `checked_tick_interval()` 非零 interval 合约。
+RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name arch-test --timeout 30`
+通过，覆盖 Full 初始化和从核启动路径。AArch64 首次验证暴露 QEMU `cortex-a72`
+仅报告 44-bit PARange，直接断言硬件必须支持编译期 `PA_BITS=48` 会导致 MMU 启用前 panic；
+后续决策改为 SimpleKernel AArch64 当前只支持 48-bit PA，因此保留该 fail-fast 语义并删去
+动态收窄代码。当前 QEMU `cortex-a72` 上 `cargo xtask test --arch aarch64 --name arch-test --timeout 30`
+应输出明确 panic；若要恢复 AArch64 QEMU 通过，需要调整 QEMU CPU/平台或重新讨论动态收窄策略。
 
 验证结果（2026-05-08 R4 复审文档化）：本轮只新增审计文档并更新进度文件，
 未修改实现代码，未运行构建或 QEMU 系统测试。R4 问题详情见
@@ -64,6 +76,37 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 不会把 should_panic 未触发转换成非零退出码。
 
 ## 上次对话摘要
+
+**日期**：2026-05-09（R4 第二阶段低耦合修复）
+
+### 已完成
+
+本轮按 `docs/audit/2026-05-08-r4-architecture-review-findings.md` 的第二阶段处理顺序，
+完成 R4 低耦合修复切片：
+
+1. RISC-V `_boot` 无条件初始化 `gp`，从核启动不再因 `opaque=0` 跳过全局指针设置。
+2. `KernelStack` 改为显式 16 字节对齐分配，`top()` 保留 ABI 对齐断言。
+3. `ArchOps::dtb_addr()` 改为 `unsafe fn`，AArch64 boot args 解析补齐 `# Safety` 边界和 `argc < 3` 防护。
+4. AArch64 `TCR_EL1.IPS` 固定为 48-bit PA，启动期检查 `ID_AA64MMFR0_EL1.PARange`，不匹配则 fail-fast。
+5. timer interval 统一走 `checked_tick_interval()`，RISC-V `set_timer` 失败改为携带 deadline/error/value 的 fail-fast。
+
+### 关键结论
+
+| # | 结论 | 状态 | ADR |
+|---|------|------|-----|
+| R4-03 RISC-V 从核 `gp` 初始化 | 已改为所有 hart 无条件初始化 `gp` | 已修复 | — |
+| R4-07 任务栈 16 字节对齐 | 已通过显式 `Layout` 分配和 `arch-test` 回归覆盖 | 已修复 | — |
+| R4-08 `dtb_addr` unsafe 边界 | 已把裸 boot args 解析移入显式 unsafe 契约 | 已修复 | — |
+| R4-10 AArch64 `TCR_EL1.IPS` | 当前只支持 48-bit PA；QEMU `cortex-a72` 44-bit PA 会按设计在 MMU 启用前 panic | 已修复 | — |
+| R4-15 timer fail-fast | 零 interval / SBI timer 失败已 fail-fast；absolute deadline / 漂移语义仍待 timer-preemption 设计 | 部分完成 | 待定 |
+
+### 下一步
+
+进入 R4 时序与跨核协议设计：R4-01/R4-02 timer 与调度边界、R4-04/R4-12 CPU topology 与 SGI、
+R4-05 TLB shootdown 协议、R4-11 PLIC context 与启用顺序、R4-13 discovered/online core count、
+R4-14 timekeeper core。
+
+---
 
 **日期**：2026-05-08（R4 第一阶段测试可信度修复）
 

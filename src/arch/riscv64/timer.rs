@@ -5,8 +5,6 @@
 /// 以 `config::TIMER_FREQ_HZ` 为目标 tick 频率计算触发间隔。
 use core::sync::atomic::{AtomicU64, Ordering};
 
-use config::TIMER_FREQ_HZ;
-
 /// 硬件定时器频率（Hz）——`early_init` 阶段通过 `set_hw_freq()` 设置
 static HW_FREQ: AtomicU64 = AtomicU64::new(0);
 
@@ -28,7 +26,19 @@ fn read_time() -> u64 {
 #[inline]
 fn get_interval() -> u64 {
     let freq = HW_FREQ.load(Ordering::Relaxed);
-    freq / TIMER_FREQ_HZ
+    crate::timer::checked_tick_interval(freq)
+}
+
+/// 设置下一次 SBI timer deadline，失败时直接暴露平台错误。
+fn set_timer_or_panic(deadline: u64, context: &str) {
+    let ret = sbi_rt::set_timer(deadline);
+    assert!(
+        ret.ok().is_some(),
+        "TimerInit: SBI set_timer 失败 ({context}): deadline={}, error={}, value={}",
+        deadline,
+        ret.error as isize,
+        ret.value
+    );
 }
 
 /// 初始化主核定时器
@@ -41,13 +51,13 @@ pub fn init() {
         "TimerInit: HW_FREQ 未设置（early_init 未调用 set_hw_freq？）"
     );
 
-    let interval = freq / TIMER_FREQ_HZ;
+    let interval = crate::timer::checked_tick_interval(freq);
     let next = read_time() + interval;
-    sbi_rt::set_timer(next).ok();
+    set_timer_or_panic(next, "primary init");
     log::info!(
         "TimerInit: hw_freq={} Hz, tick_freq={} Hz, interval={} cycles",
         freq,
-        TIMER_FREQ_HZ,
+        config::TIMER_FREQ_HZ,
         interval
     );
 }
@@ -58,7 +68,7 @@ pub fn init() {
 /// - `hart_id`：当前从核的 hart ID
 pub fn init_smp(hart_id: usize) {
     let next = read_time() + get_interval();
-    sbi_rt::set_timer(next).ok();
+    set_timer_or_panic(next, "smp init");
     log::info!("TimerInitSMP core {}", hart_id);
 }
 
@@ -67,16 +77,8 @@ pub fn init_smp(hart_id: usize) {
 /// 重置定时器硬件后，调用架构无关的公共 tick 处理。
 pub fn handle_timer() {
     let interval = get_interval();
-    // 防御性检查：HW_FREQ 未初始化时 interval == 0，
-    // 此时直接设置一个安全间隔避免中断风暴
-    if interval == 0 {
-        sbi_rt::set_timer(read_time() + 10_000_000).ok();
-        return;
-    }
-
-    // 架构相关：重置 SBI 定时器
     let next = read_time() + interval;
-    sbi_rt::set_timer(next).ok();
+    set_timer_or_panic(next, "interrupt reload");
 
     // 架构无关：tick 计数、抢占状态、调度记账、日志
     crate::timer::handle_timer_common();

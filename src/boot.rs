@@ -46,7 +46,9 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     crate::logging::init();
     // SAFETY: 主核调用一次，TP 持有 hart_id（riscv64）/ TPIDR_EL1 为 0（aarch64）
     unsafe { per_cpu::percpu_init() };
-    crate::init::early_init(Arch::dtb_addr(argc, argv));
+    // SAFETY: kernel_init 只从裸机 `_start` 调用，argc/argv 保留架构启动入口传入的原始参数。
+    let dtb_addr = unsafe { Arch::dtb_addr(argc, argv) };
+    crate::init::early_init(dtb_addr);
 
     // ELF 符号表初始化——panic backtrace 依赖此信息
     let elf_addr = memory::MEMORY_INFO

@@ -4,8 +4,17 @@ use crate::logging;
 ///
 /// AArch64 上 U-Boot bootm 将 DTB 地址作为 argv[2] 传入。
 /// 解析失败时记录警告并返回 0。
-pub fn dtb_addr_from_argv(argv: *const *const u8) -> usize {
-    // SAFETY: argv 由 _start 传入，_start 通过 boot.S 从 U-Boot 接收
+///
+/// # Safety
+/// `argc` / `argv` 必须来自 U-Boot `bootm` 传入的启动参数；当 `argc >= 3`
+/// 时，`argv[2]` 必须是有效的 null 终止十六进制 C 字符串。
+pub unsafe fn dtb_addr_from_argv(argc: i32, argv: *const *const u8) -> usize {
+    if argc < 3 {
+        logging::raw_put("WARNING: argc < 3, cannot read DTB address\n");
+        return 0;
+    }
+
+    // SAFETY: 调用方保证 argv 满足 U-Boot bootm 参数布局。
     let addr = unsafe { parse_hex_from_argv2(argv) };
     addr as usize
 }

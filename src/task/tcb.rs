@@ -1,7 +1,10 @@
 //! 任务控制块（TCB）与内核栈——任务的核心数据结构。
 
+use alloc::alloc::{alloc_zeroed, dealloc, handle_alloc_error};
 use alloc::sync::Arc;
 
+use core::alloc::Layout;
+use core::ptr::NonNull;
 use core::sync::atomic::{AtomicI32, AtomicU32, AtomicU64, Ordering};
 
 use crate::task::state::{AtomicTaskState, TaskState};
@@ -16,28 +19,66 @@ pub type TaskRef = Arc<TaskControlBlock>;
 
 /// 内核线程栈
 ///
-/// 通过 `Vec<u8>` 在堆上分配，确保生命周期与 TCB 一致。
+/// 通过显式 [`Layout`] 在堆上分配，确保生命周期与 TCB 一致，并把
+/// RISC-V psABI / AAPCS64 要求的 16 字节栈对齐写入分配契约。
 pub struct KernelStack {
-    data: alloc::vec::Vec<u8>,
+    ptr: NonNull<u8>,
+    layout: Layout,
 }
 
 impl KernelStack {
+    /// 内核线程栈 ABI 对齐。
+    pub const ALIGN: usize = 16;
+
     /// 分配一个新的内核栈（大小由 `config::KERNEL_STACK_SIZE` 决定）。
     pub fn new() -> Self {
-        Self {
-            data: alloc::vec![0u8; config::KERNEL_STACK_SIZE],
-        }
+        let layout = Self::layout();
+        // SAFETY: layout 由 `KernelStack::layout()` 构造，size 非零且对齐合法。
+        let ptr = unsafe { alloc_zeroed(layout) };
+        let ptr = NonNull::new(ptr).unwrap_or_else(|| handle_alloc_error(layout));
+        Self { ptr, layout }
     }
 
     /// 返回栈顶地址（栈从高地址向低地址增长）。
     pub fn top(&self) -> usize {
-        self.data.as_ptr() as usize + self.data.len()
+        let top = self.ptr.as_ptr() as usize + self.layout.size();
+        assert_eq!(
+            top % Self::ALIGN,
+            0,
+            "KernelStack::top: 栈顶未按 {} 字节对齐: top={:#x}",
+            Self::ALIGN,
+            top
+        );
+        top
+    }
+
+    fn layout() -> Layout {
+        assert!(
+            config::KERNEL_STACK_SIZE.is_multiple_of(Self::ALIGN),
+            "KernelStack::layout: KERNEL_STACK_SIZE={} 不是 {} 的整数倍",
+            config::KERNEL_STACK_SIZE,
+            Self::ALIGN
+        );
+        Layout::from_size_align(config::KERNEL_STACK_SIZE, Self::ALIGN)
+            .expect("KernelStack::layout: 无效的内核栈 Layout")
+    }
+
+    #[cfg(test)]
+    fn bottom_for_test(&self) -> usize {
+        self.ptr.as_ptr() as usize
     }
 }
 
 impl Default for KernelStack {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Drop for KernelStack {
+    fn drop(&mut self) {
+        // SAFETY: ptr/layout 来自同一次 `alloc_zeroed(layout)`，且只在 Drop 中释放一次。
+        unsafe { dealloc(self.ptr.as_ptr(), self.layout) };
     }
 }
 
@@ -338,5 +379,14 @@ mod tests {
         assert_eq!(tcb.pending_signals(), 1 << 3);
         tcb.clear_signal(1 << 3);
         assert_eq!(tcb.pending_signals(), 0);
+    }
+
+    /// 内核线程栈必须把 ABI 的 16 字节对齐写入分配契约。
+    #[test]
+    fn kernel_stack_uses_abi_alignment_contract() {
+        let stack = KernelStack::new();
+        assert_eq!(KernelStack::ALIGN, 16);
+        assert_eq!(stack.bottom_for_test() % KernelStack::ALIGN, 0);
+        assert_eq!(stack.top() % KernelStack::ALIGN, 0);
     }
 }

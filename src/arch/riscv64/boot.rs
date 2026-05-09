@@ -18,10 +18,8 @@ global_asm!(
 .extern BOOT_STACK
 
 _boot:
-    // dtb 地址 (a1) 为零则跳过 gp 初始化
-    beqz a1, 2f
-
-    // 初始化 gp 寄存器
+    // 初始化 gp 寄存器。每个 hart 都必须满足 RISC-V psABI 的全局指针契约，
+    // 不能依赖 a1/opaque 是否携带 DTB 地址。
     // @see riscv-abi.pdf#9.1.4
 .option push
 .option norelax
@@ -29,7 +27,7 @@ _boot:
     addi  gp, gp, %pcrel_lo(1b)
 .option pop
 
-2:  // 按照每个 core 设置栈地址：(hart_id + 1) << log2(KERNEL_STACK_SIZE)
+    // 按照每个 core 设置栈地址：(hart_id + 1) << log2(KERNEL_STACK_SIZE)
     add t0, a0, 1
     slli t0, t0, {KERNEL_STACK_SIZE_LOG2}
     la sp, BOOT_STACK

@@ -3,6 +3,7 @@ pub mod console;
 pub mod context;
 pub mod interrupt;
 pub mod ipi;
+mod mmu;
 pub mod pte;
 pub mod switch;
 pub mod timer;
@@ -14,7 +15,7 @@ pub struct Riscv64;
 
 impl ArchOps for Riscv64 {
     #[inline]
-    fn dtb_addr(_argc: i32, argv: *const *const u8) -> usize {
+    unsafe fn dtb_addr(_argc: i32, argv: *const *const u8) -> usize {
         // OpenSBI 传递 a0=hart_id, a1=DTB 地址
         // boot.S 将 a1 作为第二个 C 参数（argv）转发
         argv as usize
@@ -55,16 +56,8 @@ impl ArchOps for Riscv64 {
     }
 
     unsafe fn activate_page_table(pt: &paging::PageTable) {
-        let ppn = pt.root_paddr().as_usize() >> 12;
-        let satp = (8usize << 60) | ppn; // MODE = 8 → Sv39
-        // SAFETY: 调用方保证页表映射正确
-        unsafe {
-            core::arch::asm!(
-                "csrw satp, {satp}",
-                "sfence.vma",
-                satp = in(reg) satp,
-            );
-        }
+        // SAFETY: trait 调用方保证页表已经建立了启用 MMU 所需映射。
+        unsafe { mmu::activate_page_table(pt) };
     }
 
     fn console_write(s: &str) {

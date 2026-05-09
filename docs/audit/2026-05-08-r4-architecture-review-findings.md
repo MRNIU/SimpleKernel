@@ -22,19 +22,19 @@ R4 覆盖的是“硬件入口到内核抽象”的边界层：架构启动代�
 |---|--------|------|----------|----------|
 | R4-01 | P1 | Timer/IRQ 可能在调度器初始化前触发 | tick 进入未初始化 scheduler 状态，启动期 panic 或状态损坏 | 需修复 |
 | R4-02 | P1 | timer preemption 闭环不完整且绕过调度策略 | 时间片语义不生效，FIFO/RR/CFS trait 结果被旁路 | 需设计 |
-| R4-03 | P1 | RISC-V 从核启动跳过 `gp` 初始化 | 从核访问 small data / 全局对象可能使用错误 `gp` | 可直接修复 |
+| R4-03 | P1 | RISC-V 从核启动跳过 `gp` 初始化 | 从核访问 small data / 全局对象可能使用错误 `gp` | 已修复 |
 | R4-04 | P1 | SMP 假设硬件 core id 稠密且小于 `MAX_CORE_COUNT` | 非稠密 hart/MPIDR 拓扑下栈、per-CPU、IPI 索引越界或错绑 | 需设计 |
 | R4-05 | P1 | TLB shootdown 发布顺序和等待协议不完整 | 远端核可能看不到请求；广播锁与 IRQ 屏蔽组合可死锁 | 需设计 |
 | R4-06 | P1 | RISC-V hard-float 状态未保存 | 开启 F/D 目标后跨任务浮点寄存器被破坏 | ADR 待决 |
-| R4-07 | P1 | 任务栈未显式保证 16 字节对齐 | ABI 违约，函数 prologue / 保存上下文可能在部分平台异常 | 可直接修复 |
-| R4-08 | P1 | `ArchOps::dtb_addr()` safe API 隐藏裸指针解引用 | safe 调用者无法知道 boot args 的 unsafe 前提 | 可直接修复 |
+| R4-07 | P1 | 任务栈未显式保证 16 字节对齐 | ABI 违约，函数 prologue / 保存上下文可能在部分平台异常 | 已修复 |
+| R4-08 | P1 | `ArchOps::dtb_addr()` safe API 隐藏裸指针解引用 | safe 调用者无法知道 boot args 的 unsafe 前提 | 已修复 |
 | R4-09 | P1 | `should_panic` 测试可能误判通过 | 未触发 panic 的负向测试仍被 xtask 当成成功 | 应优先修复 |
-| R4-10 | P2 | AArch64 `PA_BITS=48` 但 TCR 未设置 `IPS` | 物理地址宽度契约与 MMU 配置不一致 | 可直接修复或 ADR |
+| R4-10 | P2 | AArch64 `PA_BITS=48` 但 TCR 未设置 `IPS` | 物理地址宽度契约与 MMU 配置不一致 | 已修复 |
 | R4-11 | P2 | RISC-V PLIC 固定 hart0 S-mode context 且启用顺序过早 | 从核外部中断不可用；早期外部中断可打到未初始化 PLIC | 需修复 |
 | R4-12 | P2 | AArch64 SGI 只使用 Aff0 低 4 位 | 多 cluster 或 Aff0 不稠密时 IPI 投递错误 | 与 R4-04 合并设计 |
 | R4-13 | P2 | `CORE_COUNT` 语义混淆 discovered/online，SMP 启动 fire-and-forget | 主核继续运行时从核可能尚未上线或已启动失败 | 需设计 |
 | R4-14 | P2 | 全局 tick 固定 `core_id == 0` | BSP 不是 0 或 timekeeper 迁移后 tick 失效 | 需修复 |
-| R4-15 | P2 | timer 错误处理、零 interval 和漂移语义不闭环 | 定时器静默停止、除零或长期漂移 | 可分步修复 |
+| R4-15 | P2 | timer 错误处理、零 interval 和漂移语义不闭环 | 定时器静默停止、除零或长期漂移 | fail-fast 已修复；漂移待设计 |
 | R4-16 | P2 | `src/arch` 暴露面偏宽 | APP / 上层模块可绕过 syscall 和任务抽象边界 | R7 前应收窄 |
 | R4-17 | P2 | R4 文档、测试与实际代码漂移 | 审计结论和回归证据不足，后续修复缺少可信测试 | 需补文档/测试 |
 
@@ -167,6 +167,11 @@ Rust 编译器生成的全局/静态数据访问可能使用错误基址。
 
 - 增加 SMP QEMU 测试：从核启动后读写一个会落入 small data 的 per-CPU 或全局静态变量。
 - 反汇编检查 `_start` 和从核入口均包含 `gp` 初始化路径。
+
+### 修复记录
+
+2026-05-09 已改为在 RISC-V `_boot` 中无条件初始化 `gp`，不再依赖 `a1/opaque`
+是否携带 DTB 地址。RISC-V `arch-test` 已在 2 核 QEMU 中通过，覆盖 Full 初始化和从核启动路径。
 
 ## R4-04. SMP 假设硬件 core id 稠密且小于 `MAX_CORE_COUNT`
 
@@ -343,6 +348,11 @@ TaskControlBlock::new()
 - 增加任务创建测试，断言所有新任务初始 SP 16 字节对齐。
 - 在上下文切换入口增加一次低成本断言，调试期捕获错误栈。
 
+### 修复记录
+
+2026-05-09 已将 `KernelStack` 改为显式 `Layout::from_size_align(..., 16)` 分配，
+`top()` 保留 16 字节对齐断言，并在 `arch-test` 中增加栈顶对齐回归。
+
 ## R4-08. `ArchOps::dtb_addr()` safe API 隐藏裸指针解引用
 
 位置：`src/arch/mod.rs:17`、`src/arch/aarch64/init.rs:7`、`src/arch/aarch64/init.rs:24`、`src/arch/aarch64/init.rs:34`
@@ -380,6 +390,11 @@ RISC-V 通常由 `a1` 直接传 DTB 地址，AArch64 boot chain 更复杂，因�
 
 - 增加 AArch64 boot args 解析单元或 QEMU smoke 测试，覆盖空指针/非法 magic 的 fail-fast 路径。
 - Rustdoc 中补齐 `# Safety` 或 `BootArgs` 的不变量说明。
+
+### 修复记录
+
+2026-05-09 已将 `ArchOps::dtb_addr()` 改为 `unsafe fn` 并补充 `# Safety` 契约。
+AArch64 解析入口增加 `argc < 3` 的早期返回，避免参数数量不足时直接读取 `argv[2]`。
 
 ## R4-09. `should_panic` 测试可能误判通过
 
@@ -452,8 +467,16 @@ QEMU virt 的内存通常落在低地址，短期可能看不出问题；真机�
 
 ### 验证方向
 
-- AArch64 启动日志打印 PARange、选择的 IPS 和 `PA_BITS`。
-- 增加启动断言：硬件支持的 PA bits 不小于编译期 `PA_BITS`，否则 fail-fast。
+- AArch64 启动期读取 PARange，若硬件不报告 48-bit PA 则在启用 MMU 前 fail-fast。
+- TCR 固定写入 `IPS=0b101`，保持 `arch::PA_BITS=48`、AArch64 PTE 输出地址位和 MMU 配置一致。
+- 当前 QEMU `cortex-a72` 仅报告 44-bit PA，因此 AArch64 QEMU 启动测试应输出明确 panic；
+  后续若要恢复 AArch64 QEMU 通过，需要改用支持 48-bit PA 的 CPU/平台配置，或重新讨论动态收窄策略。
+
+### 修复记录
+
+2026-05-09 已按方案 B 收窄：SimpleKernel AArch64 当前只支持 48-bit PA。启动期读取
+`ID_AA64MMFR0_EL1.PARange`，若硬件不是 48-bit 则直接 panic；通过检查后固定写入
+`TCR_EL1.IPS=0b101`。这避免为暂未支持的 32/36/40/42/44/52/56-bit PA 增加动态降级代码。
 
 ## R4-11. RISC-V PLIC 固定 hart0 S-mode context 且启用顺序过早
 
@@ -649,6 +672,13 @@ handler 延迟:
 
 - 增加 timer init 单元测试或架构 mock，覆盖 `freq = 0`、`freq < TICK_HZ`、`set_timer` 失败。
 - 增加 QEMU 长时间 tick 统计，确认 tick 间隔不会因 handler 延迟持续漂移。
+
+### 修复记录
+
+2026-05-09 已补齐 fail-fast 部分：公共 `checked_tick_interval()` 会拒绝
+`freq < TIMER_FREQ_HZ` 或零 interval；RISC-V `set_timer` 失败不再 `.ok()` 丢弃，
+而是携带 deadline/error/value panic。绝对 deadline 和长期漂移语义仍留到
+R4/R5 timer-preemption 设计阶段处理。
 
 ## R4-16. `src/arch` 暴露面偏宽
 

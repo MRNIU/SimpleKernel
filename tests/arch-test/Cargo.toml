@@ -10,6 +10,7 @@ test = false
 [dependencies]
 test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false }
+config = { path = "../../crates/config" }
 log.workspace = true
 
 [target.'cfg(target_arch = "riscv64")'.dependencies]

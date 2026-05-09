@@ -56,6 +56,7 @@ name = "arch-test"
 version = "0.0.0"
 dependencies = [
  "aarch64-cpu 11.2.0",
+ "config",
  "log",
  "sbi-rt",
  "simplekernel",

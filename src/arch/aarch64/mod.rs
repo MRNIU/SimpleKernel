@@ -4,6 +4,7 @@ pub mod context;
 pub mod init;
 pub mod interrupt;
 pub mod ipi;
+mod mmu;
 pub mod pte;
 pub mod switch;
 pub mod timer;
@@ -23,9 +24,10 @@ const PL011_SIZE: usize = 0x1000;
 pub struct Aarch64;
 
 impl ArchOps for Aarch64 {
-    fn dtb_addr(_argc: i32, argv: *const *const u8) -> usize {
+    unsafe fn dtb_addr(argc: i32, argv: *const *const u8) -> usize {
         // U-Boot 将 DTB 地址作为 argv[2] 的十六进制字符串传入
-        init::dtb_addr_from_argv(argv)
+        // SAFETY: 调用方保证 argc/argv 来自当前 AArch64 boot 入口。
+        unsafe { init::dtb_addr_from_argv(argc, argv) }
     }
 
     #[inline]
@@ -66,49 +68,8 @@ impl ArchOps for Aarch64 {
     }
 
     unsafe fn activate_page_table(pt: &paging::PageTable) {
-        let ttbr = pt.root_paddr().as_usize() as u64;
-
-        // MAIR_EL1: 定义内存属性索引
-        //   Attr0 = 0xFF: Normal, Write-Back, Read/Write-Allocate（内核代码/数据）
-        //   Attr1 = 0x00: Device-nGnRnE（MMIO 设备寄存器）
-        let mair: u64 = 0xFF;
-
-        // TCR_EL1: 翻译控制
-        //   T0SZ  = 16  → 48 位虚拟地址空间（bits [5:0]）
-        //   TG0   = 0b00 → 4KB granule（bits [15:14]）
-        //   SH0   = 0b11 → Inner Shareable（bits [13:12]）
-        //   ORGN0 = 0b01 → Outer Write-Back, Write-Allocate（bits [11:10]）
-        //   IRGN0 = 0b01 → Inner Write-Back, Write-Allocate（bits [9:8]）
-        let tcr: u64 = 16 // T0SZ = 16
-            | (0b01 << 8)  // IRGN0
-            | (0b01 << 10) // ORGN0
-            | (0b11 << 12); // SH0, TG0 = 4KB
-
-        // SAFETY: 调用方保证页表映射正确；MAIR/TCR 必须在写入 TTBR 并使能 MMU 前配置
-        unsafe {
-            core::arch::asm!(
-                "msr mair_el1, {mair}",
-                "msr tcr_el1, {tcr}",
-                "isb",
-                "msr ttbr0_el1, {ttbr}",
-                "isb",
-                "tlbi vmalle1",
-                "dsb sy",
-                "isb",
-                mair = in(reg) mair,
-                tcr = in(reg) tcr,
-                ttbr = in(reg) ttbr,
-            );
-            // 使能 MMU（SCTLR_EL1.M，bit 0）
-            let mut sctlr: u64;
-            core::arch::asm!("mrs {sctlr}, sctlr_el1", sctlr = out(reg) sctlr);
-            sctlr |= 1;
-            core::arch::asm!(
-                "msr sctlr_el1, {sctlr}",
-                "isb",
-                sctlr = in(reg) sctlr,
-            );
-        }
+        // SAFETY: trait 调用方保证页表已经建立了启用 MMU 所需映射。
+        unsafe { mmu::activate_page_table(pt) };
     }
 
     fn console_write(s: &str) {
