@@ -32,9 +32,9 @@ static BOOT_STACK: SyncUnsafeCell<BootStackStorage> = SyncUnsafeCell::new(BootSt
 pub enum InitLevel {
     /// 日志 + per_cpu + early_init + 内存子系统 + 页表激活
     Memory,
-    /// Memory + 定时器 + 中断控制器
+    /// Memory + 任务调度基础设施 + 定时器 + 中断控制器
     Interrupt,
-    /// Interrupt + 任务子系统 + SMP 唤醒（完整初始化）
+    /// Interrupt + 设备/文件系统 + SMP 唤醒（完整初始化）
     Full,
 }
 
@@ -80,10 +80,10 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
         return;
     }
 
+    crate::task::init();
+
     // 必须先初始化 timer（设置 HW_FREQ 和首次超时），再开启中断。
-    // 否则开启中断后挂起的 timer 中断立刻触发，handle_timer() 中
-    // get_interval() 返回 0（HW_FREQ 未初始化），导致 timer 以最高
-    // 频率无限触发，形成中断风暴，主线程代码永远得不到执行。
+    // task::init() 必须在开启中断前完成，timer IRQ exit 可能触发抢占调度。
     Arch::init_timer();
     Arch::init_interrupt();
     crate::tlb_shootdown::init_primary();
@@ -91,8 +91,6 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     if matches!(level, InitLevel::Interrupt) {
         return;
     }
-
-    crate::task::init();
 
     // P6/P7: 设备 + 文件系统初始化
     // 必须在 task::init() 之后——timer 中断可能触发 schedule()，

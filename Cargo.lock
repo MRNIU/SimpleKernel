@@ -58,6 +58,7 @@ dependencies = [
  "aarch64-cpu 11.2.0",
  "config",
  "log",
+ "per_cpu",
  "sbi-rt",
  "simplekernel",
  "test_harness",

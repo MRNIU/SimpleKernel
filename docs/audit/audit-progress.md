@@ -7,18 +7,28 @@
 
 ## 当前状态
 
-**当前 Phase**: R4 — 架构层第二阶段低耦合修复已完成。`R4-09 should_panic harness/xtask 假阳性`
-已通过串口 success sentinel 和 xtask 输出判定收口；`R4-03/R4-07/R4-08/R4-10` 已修复；
-`R4-15` 的 fail-fast 部分已修复，absolute deadline / 漂移语义保留到 timer-preemption 设计阶段。
+**当前 Phase**: R4 — 架构层第三阶段 CPU topology 取舍收缩与 timer 方案 A 已完成。
+`R4-01/R4-02/R4-11/R4-14` 已修复；`R4-04/R4-12` 已明确为 dense core id / 单 cluster
+平台契约，并用 FDT CPU 表做 fail-fast 诊断；`R4-13` 仍缺 boot-time all-cores-online barrier；
+`R4-05/R4-06/R4-16/R4-17` 仍待后续设计/文档切片。
 **下一个目标**（按优先级）：
-1. **R4 时序与跨核协议设计**：R4-01/R4-02 timer 与调度边界、R4-04/R4-12 CPU topology 与 SGI、R4-05 TLB shootdown 协议、R4-11 PLIC context 与启用顺序、R4-13 discovered/online core count、R4-14 timekeeper core。
-2. **R4/R5 timer 语义剩余项**：R4-15 absolute deadline / tick 漂移语义，需与 preemption 闭环一起定。
-3. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
+1. **R4 跨核协议剩余项**：R4-05 TLB shootdown 协议、R4-13 boot-time online barrier。
+2. **R4/R5 设计 ADR**：CPU topology 平台契约、timer IRQ-exit preemption、R4-15 absolute deadline / tick 漂移语义。
+3. **R4 交付文档与暴露面收口**：R4-16 `src/arch` 暴露面、R4-17 启动/中断/timer/SMP 文档与测试补齐。
+4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
 
 验证计划：后续设计边界改动仍需先补目标回归测试，再按变更面执行
 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64`。涉及 QEMU 的命令必须使用 30 秒超时并在
 超时后清理残留 `qemu-system` 进程。
+
+验证结果（2026-05-09 R4 第三阶段 CPU topology 取舍收缩与 timer 方案 A）：容器
+`simplekernel-dev` 内先补充回归，`arch-test` 覆盖 dense CPU id 契约、timekeeper core 绑定，
+以及 `need_resched` 在 IRQ-exit 判定中只消费一次。实现收缩为：FDT CPU 表只做 dense
+`0..core_count` 校验和异常诊断，不建立 logical/hardware remap；per-CPU、IPI、SMP 启动继续直接使用
+core id。验证通过：`cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64`，以及 RISC-V QEMU 30 秒超时下
+`cargo xtask test --arch riscv64 --name arch-test --timeout 30`。
 
 验证结果（2026-05-08 R4 第一阶段测试可信度修复）：容器 `simplekernel-dev`
 内 `cargo fmt --all -- --check`、`cargo test -p xtask`、`cargo xtask check --arch riscv64`、
@@ -159,7 +169,7 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 | R4-09 `should_panic` harness 假阳性会污染后续回归 | 应优先修复测试可信度 | 待修复 | — |
 | R4-03/R4-07/R4-08/R4-10/R4-15 属于低耦合启动/ABI/fail-fast 切片 | 可先分批落地 | 待修复 | 部分待定 |
 | R4-01/R4-02 timer 与调度边界跨 R4/R5 | 需要明确 post-IRQ preempt 或协作式调度语义 | 待设计 | 待定 |
-| R4-04/R4-12/R4-13 暴露 CPU topology、logical id 和 online mask 模型缺口 | 需要统一拓扑模型 | 待设计 | 待定 |
+| R4-04/R4-12/R4-13 暴露 CPU topology 平台契约和 online mask 模型缺口 | 需要显式拓扑约束与上线协议 | 待设计 | 待定 |
 | R4-05 TLB shootdown 需要发布屏障、等待上下文约束和远端 ack 测试 | 需要协议设计 | 待设计 | 待定 |
 | R4-06 RISC-V 浮点状态保存/禁用策略未定 | 影响 ABI 和上下文切换 | 待设计 | 待定 |
 

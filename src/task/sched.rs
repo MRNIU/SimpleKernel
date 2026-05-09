@@ -234,6 +234,18 @@ pub fn schedule() {
     drop(held);
 }
 
+/// IRQ exit 抢占点。
+///
+/// 调用方必须已经退出 hardirq 计数，但仍处在 trap 返回路径上。
+///
+/// # Panics
+/// 当调用方仍处于中断上下文、或调度器尚未初始化时，底层 `schedule()` 会 fail-fast。
+pub fn preempt_after_irq() {
+    if crate::preempt::take_irq_exit_preemption_request() {
+        schedule();
+    }
+}
+
 /// 主动让出 CPU。
 pub fn yield_now() {
     schedule();
@@ -243,7 +255,12 @@ pub fn yield_now() {
 ///
 /// 使用 `try_lock` 避免与正在进行的 `schedule()` 死锁：
 /// 如果调度锁已被持有（`schedule()` 正在上下文切换），跳过本次 tick。
-pub fn timer_tick() {
+///
+/// 返回 `true` 表示当前调度策略要求在 IRQ exit 后抢占。
+///
+/// # Panics
+/// 当当前 core id 超出调度器数组范围，或本核调度状态尚未初始化时 panic。
+pub fn timer_tick() -> bool {
     let core_id = per_cpu::current_core_id();
     if let Some(_guard) = PER_CPU_SCHED_LOCK[core_id].try_lock() {
         // SAFETY: 持有本核调度锁
@@ -251,10 +268,8 @@ pub fn timer_tick() {
         if let Some(current) = sched.current.as_ref()
             && sched.scheduler.task_tick(current)
         {
-            // 调度策略判定需要抢占（时间片到期 / vruntime 超过队首）
-            crate::preempt::NEED_RESCHED
-                .get()
-                .store(true, core::sync::atomic::Ordering::Release);
+            return true;
         }
     }
+    false
 }

@@ -16,6 +16,7 @@ pub static CORE_COUNT: spin::Once<usize> = spin::Once::new();
 
 pub mod arch;
 pub mod boot;
+pub mod cpu_topology;
 pub mod device;
 pub mod elf;
 pub mod fdt;

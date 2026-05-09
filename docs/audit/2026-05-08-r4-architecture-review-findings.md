@@ -22,20 +22,20 @@ R4 覆盖的是“硬件入口到内核抽象”的边界层：架构启动代�
 
 | # | 严重度 | 问题 | 主要风险 | 决策状态 |
 |---|--------|------|----------|----------|
-| R4-01 | P1 | Timer/IRQ 可能在调度器初始化前触发 | tick 进入未初始化 scheduler 状态，启动期 panic 或状态损坏 | 需修复 |
-| R4-02 | P1 | timer preemption 闭环不完整且绕过调度策略 | 时间片语义不生效，FIFO/RR/CFS trait 结果被旁路 | 需设计 |
+| R4-01 | P1 | Timer/IRQ 可能在调度器初始化前触发 | tick 进入未初始化 scheduler 状态，启动期 panic 或状态损坏 | 已修复 |
+| R4-02 | P1 | timer preemption 闭环不完整且绕过调度策略 | 时间片语义不生效，FIFO/RR/CFS trait 结果被旁路 | 方案 A 已落地 |
 | R4-03 | P1 | RISC-V 从核启动跳过 `gp` 初始化 | 从核访问 small data / 全局对象可能使用错误 `gp` | 已修复 |
-| R4-04 | P1 | SMP 假设硬件 core id 稠密且小于 `MAX_CORE_COUNT` | 非稠密 hart/MPIDR 拓扑下栈、per-CPU、IPI 索引越界或错绑 | 需设计 |
+| R4-04 | P1 | SMP 假设硬件 core id 稠密且小于 `MAX_CORE_COUNT` | 非稠密 hart/MPIDR 拓扑下栈、per-CPU、IPI 索引越界或错绑 | 平台契约已显式化 |
 | R4-05 | P1 | TLB shootdown 发布顺序和等待协议不完整 | 远端核可能看不到请求；广播锁与 IRQ 屏蔽组合可死锁 | 需设计 |
 | R4-06 | P1 | RISC-V hard-float 状态未保存 | 开启 F/D 目标后跨任务浮点寄存器被破坏 | ADR 待决 |
 | R4-07 | P1 | 任务栈未显式保证 16 字节对齐 | ABI 违约，函数 prologue / 保存上下文可能在部分平台异常 | 已修复 |
 | R4-08 | P1 | `ArchOps::dtb_addr()` safe API 隐藏裸指针解引用 | safe 调用者无法知道 boot args 的 unsafe 前提 | 已修复 |
 | R4-09 | P1 | `should_panic` 测试可能误判通过 | 未触发 panic 的负向测试仍被 xtask 当成成功 | 应优先修复 |
 | R4-10 | P2 | AArch64 `PA_BITS=48` 但 TCR 未设置 `IPS` | 物理地址宽度契约与 MMU 配置不一致 | 已修复 |
-| R4-11 | P2 | RISC-V PLIC 固定 hart0 S-mode context 且启用顺序过早 | 从核外部中断不可用；早期外部中断可打到未初始化 PLIC | 需修复 |
-| R4-12 | P2 | AArch64 SGI 只使用 Aff0 低 4 位 | 多 cluster 或 Aff0 不稠密时 IPI 投递错误 | 与 R4-04 合并设计 |
-| R4-13 | P2 | `CORE_COUNT` 语义混淆 discovered/online，SMP 启动 fire-and-forget | 主核继续运行时从核可能尚未上线或已启动失败 | 需设计 |
-| R4-14 | P2 | 全局 tick 固定 `core_id == 0` | BSP 不是 0 或 timekeeper 迁移后 tick 失效 | 需修复 |
+| R4-11 | P2 | RISC-V PLIC 固定 hart0 S-mode context 且启用顺序过早 | 从核外部中断不可用；早期外部中断可打到未初始化 PLIC | 已修复 |
+| R4-12 | P2 | AArch64 SGI 只使用 Aff0 低 4 位 | 多 cluster 或 Aff0 不稠密时 IPI 投递错误 | 平台契约已显式化 |
+| R4-13 | P2 | `CORE_COUNT` 语义混淆 discovered/online，SMP 启动 fire-and-forget | 主核继续运行时从核可能尚未上线或已启动失败 | 部分完成 |
+| R4-14 | P2 | 全局 tick 固定 `core_id == 0` | BSP 不是 0 或 timekeeper 迁移后 tick 失效 | 已修复 |
 | R4-15 | P2 | timer 错误处理、零 interval 和漂移语义不闭环 | 定时器静默停止、除零或长期漂移 | fail-fast 已修复；漂移待设计 |
 | R4-16 | P2 | `src/arch` 暴露面偏宽 | APP / 上层模块可绕过 syscall 和任务抽象边界 | R7 前应收窄 |
 | R4-17 | P2 | R4 文档、测试与实际代码漂移 | 审计结论和回归证据不足，后续修复缺少可信测试 | 需补文档/测试 |
@@ -88,6 +88,12 @@ boot::kernel_init(Full)
   期望要么被 mask，要么落到已初始化的 idle scheduler。
 - 启动日志中记录 IRQ 全局打开点和 scheduler ready 点，用于人工确认时序。
 
+### 修复状态
+
+已调整 `boot::kernel_init()` 顺序：主核在 `Arch::init_timer()` / `Arch::init_interrupt()`
+之前先完成 `task::init()`，确保 timer IRQ 即使在全局 IRQ 打开后立即到达，也能落到已初始化的
+idle/current task 与 per-CPU scheduler 状态上。
+
 ## R4-02. Timer preemption 闭环不完整且绕过调度策略
 
 位置：`src/timer.rs:18`、`src/main.rs:59`、`src/main.rs:78`、`src/task/sched.rs:160`、`src/task/sched.rs:251`
@@ -125,6 +131,13 @@ timer interrupt
   同时把 FIFO/RR/CFS 的时间片语义降级为未来目标。此方案需在 R5 设计中写清楚。
 
 以上属于 R4/R5 交界设计，应写入 ADR 或任务调度设计文档。
+
+### 修复状态
+
+已按方案 A 落地：`task::timer_tick()` 返回调度策略是否要求抢占，公共 timer 层只在该返回值为 true 时
+设置当前核 `need_resched`；RISC-V/AArch64 IRQ handler 在 `HardIrqGuard` 释放后调用
+`task::preempt_after_irq()`，由 `preempt::take_irq_exit_preemption_request()` 消费一次 pending flag 并进入
+`schedule()`。这保留了“硬中断内不切换上下文”的边界，同时闭合 timer-driven preemption 路径。
 
 ### 验证方向
 
@@ -203,22 +216,28 @@ CORE_COUNT = 2
 从核 hart_id = 2
   -> boot stack[2]
   -> per_cpu[2]
-  -> 越过 0..CORE_COUNT 或错过 logical core 1
+  -> 越过 0..CORE_COUNT 或错过 core 1
 ```
 
 AArch64 多 cluster 场景下，MPIDR 的 Aff1/Aff2 也可能参与 CPU 唯一标识，单取 Aff0 更容易错绑。
 
-### 修复方案
+### 设计取舍
 
-- 引入 CPU topology 表：从 FDT/MPIDR/hart id 解析出 `logical_id <-> hardware_id` 映射。
-- per-CPU、boot stack、scheduler 只使用 dense logical id；IPI、hart_start、SGI 发送使用 hardware id。
-- 在 topology 初始化时 fail-fast：CPU 数量超过 `MAX_CORE_COUNT`、硬件 id 重复、无法建立映射都直接 panic。
-- 在过渡期增加断言：只支持单 cluster、hardware id 稠密，文档明确平台约束。
+当前不引入 `logical_id <-> hardware_id` remap。SimpleKernel 的平台契约是 CPU id 必须为
+`0..core_count` dense 编号，RISC-V hart id 与 AArch64 Aff0 都按该契约直接作为 core id 使用。
+FDT `/cpus` 表只用于启动期校验和异常诊断：CPU 数量超出 `MAX_CORE_COUNT`、id 重复、缺洞或非 dense
+都 fail-fast，并打印表项帮助定位平台描述问题。
 
 ### 验证方向
 
-- 构造测试 DTB，包含非稠密 hart id，期望当前过渡实现 fail-fast 或新 topology 映射正确。
-- SMP 启动测试断言 `logical_id` 连续、`hardware_id` 可逆映射、每个在线核写入自己的 per-CPU slot。
+- 构造测试 DTB，包含非稠密 hart id，期望当前实现 fail-fast 并输出 FDT CPU 表。
+- SMP 启动测试断言每个在线核的 `current_core_id()` 落在 `0..CORE_COUNT`。
+
+### 修复状态
+
+已收缩为 `cpu_topology` 平台契约校验：FDT `/cpus` 解析出的 id 必须组成 dense `0..core_count`
+集合；运行期不维护 remap。`per_cpu`、`hart_start`、SBI IPI、AArch64 SGI 和启动栈继续直接使用
+core id；`_boot` 只增加 `core_id < MAX_CORE_COUNT` 的早期边界检查。
 
 ## R4-05. TLB shootdown 发布顺序和等待协议不完整
 
@@ -527,6 +546,12 @@ PLIC 代码固定使用 hart0 的 S-mode context，claim/complete 和 enable 都
 - SMP QEMU 中让从核执行一次 external interrupt enable 路径，断言使用的 PLIC context 与 hart id 匹配。
 - 增加早期中断顺序测试或 debug 断言，禁止 PLIC 未初始化时 claim。
 
+### 修复状态
+
+已改为按当前硬件 hart id 计算 PLIC S-mode context（`2 * hart_id + 1`），主核/从核分别配置本核 context
+的 enable/threshold；主核初始化顺序调整为设置 trap vector、映射并初始化 PLIC、配置 context 后再打开
+`sie` 和全局 SIE。
+
 ## R4-12. AArch64 SGI 只使用 Aff0 低 4 位
 
 位置：`src/arch/aarch64/ipi.rs:23`、`src/arch/aarch64/ipi.rs:27`、`src/arch/aarch64/ipi.rs:85`
@@ -543,20 +568,27 @@ CPU topology:
   CPU0: Aff1=0, Aff0=0
   CPU1: Aff1=1, Aff0=0
 
-send_ipi(logical CPU1)
+send_ipi(CPU1)
   -> 只编码 Aff0=0
   -> IPI 可能发到 CPU0 或错误 cluster
 ```
 
-### 修复方案
+### 设计取舍
 
-- 与 R4-04 的 CPU topology 表合并处理：`logical_id -> MPIDR`，SGI 发送时填完整 affinity 字段。
-- 过渡期在 AArch64 启动时断言单 cluster、Aff0 稠密且 `< 16`，并在文档中声明平台限制。
+- 当前不支持多 cluster / 非 Aff0 dense 平台；AArch64 CPU id 取 MPIDR Aff0。
+- 启动期通过 FDT CPU 表校验该平台契约，发现完整 MPIDR 不是 dense `0..core_count` 时 fail-fast。
+- SGI 发送保留 TargetList 编码，并断言 `cpu_id < 16`。
 
 ### 验证方向
 
 - AArch64 SMP 启动时记录每个在线核 MPIDR，断言当前 SGI 编码前提成立。
 - 后续可用模拟多 cluster DT/MPIDR 的单元测试覆盖编码函数。
+
+### 修复状态
+
+已按 R4-04 的设计取舍收缩：当前 AArch64 只支持单 cluster、Aff0 dense 且 `< 16` 的平台。
+`send_ipi(cpu_id)` 保持 TargetList 编码，并增加 `cpu_id < 16` 断言；FDT CPU 表如果出现多 cluster
+MPIDR 编码，会在 topology 校验阶段 fail-fast，而不是运行期 remap。
 
 ## R4-13. `CORE_COUNT` 语义混淆 discovered/online，SMP 启动 fire-and-forget
 
@@ -596,6 +628,12 @@ boot:
 - R4 SMP test 断言：发现核数、上线核数、online mask 一致；从核均执行过 `kernel_init_smp()`。
 - 注入一个启动失败路径，验证主核能超时并打印失败 hart/MPIDR。
 
+### 修复状态
+
+本轮已拆出 discovered topology 摘要（`cpu_topology::topology().discovered_core_count()`）和 FDT dense
+校验；TLB shootdown 继续使用 online mask。尚未实现“唤醒从核后等待全部 discovered CPU online”的
+boot barrier，因此 R4-13 仍保留部分完成状态。
+
 ## R4-14. 全局 tick 固定 `core_id == 0`
 
 位置：`src/timer.rs:11`、`src/timer.rs:13`、`src/main.rs:18`、`src/arch/riscv64/ipi.rs:57`
@@ -622,14 +660,18 @@ timer interrupt on hart 2:
 
 ### 修复方案
 
-- 启动时记录 `BSP_LOGICAL_ID` 或 `TIMEKEEPER_CORE_ID`，timer 层使用该值，而不是硬编码 0。
-- 如果未来支持 timekeeper 迁移，抽象成 atomic owner；当前阶段可以固定为 primary logical core。
-- 在 topology 初始化后统一使用 logical id。
+- 启动时记录 `TIMEKEEPER_CORE_ID`，timer 层使用该值，而不是硬编码 0。
+- 如果未来支持 timekeeper 迁移，抽象成 atomic owner；当前阶段可以固定为 primary core。
 
 ### 验证方向
 
-- 增加启动断言：primary logical id 与 timer global tick owner 一致。
+- 增加启动断言：primary core id 与 timer global tick owner 一致。
 - 在 RISC-V QEMU 中尝试非 0 boot hart 配置时，验证 global tick 仍推进。
+
+### 修复状态
+
+已增加 `timer::init_timekeeper()` / `timer::timekeeper_core_id()`，topology 初始化时把 primary core
+记录为 timekeeper；`handle_timer_common()` 用该 core id 推进全局 tick，不再硬编码 `core_id == 0`。
 
 ## R4-15. Timer 错误处理、零 interval 和漂移语义不闭环
 
@@ -771,12 +813,12 @@ ADR：需要。
 
 ### 2. CPU topology 模型
 
-- 方案 A：短期断言硬件 id 稠密。优点是改动小，缺点是平台假设窄。
+- 方案 A（已采用）：短期断言硬件 id 稠密。优点是改动小，缺点是平台假设窄。
 - 方案 B：引入 logical/hardware id 映射。优点是能覆盖 RISC-V 非稠密 hart 和 AArch64 MPIDR，
   缺点是需要改 per-CPU、IPI、boot stack 和 scheduler 调用面。
 - 方案 C：每个架构各自维护映射。优点是局部实现快，缺点是上层跨核协议容易重复处理拓扑差异。
 
-ADR：需要。
+ADR：建议补充，用于固化 dense CPU id 平台契约和后续 online barrier 语义。
 
 ### 3. TLB shootdown 协议
 
@@ -788,11 +830,11 @@ ADR：需要。
 
 ### 4. Timer 与调度边界
 
-- 方案 A：R4 提供 post-IRQ preempt hook，R5 scheduler policy 决定是否切换。
+- 方案 A（已落地）：R4 提供 post-IRQ preempt hook，R5 scheduler policy 决定是否切换。
 - 方案 B：R4 只置位 resched flag，R5 在安全点消费，文档明确这是协作式调度。
 - 方案 C：把 timer tick 完全下沉给 task scheduler，R4 只负责硬件 ack/rearm。
 
-ADR：需要，且应与 R5 任务管理审计一起讨论。
+ADR：建议补充，用于固化“硬中断内不 schedule、IRQ exit 消费 need_resched”的边界。
 
 ## 文档产出建议
 
@@ -800,12 +842,13 @@ ADR：需要，且应与 R5 任务管理审计一起讨论。
 - `docs/design/R4-interrupt-timer-flow.md`：中断、timer、preemption 流程图。
 - `docs/design/R4-architecture-porting-guide.md`：新增架构指南。
 - ADR：RISC-V 浮点策略。
-- ADR：CPU topology 与 logical core id。
+- ADR：CPU topology 平台契约。
 - ADR：TLB shootdown 协议。
 - ADR：timer/preemption 边界。
 
 ## 本轮验证
 
-本轮是文档化审计结论，没有修改实现代码，未运行构建或 QEMU 系统测试。后续每个修复切片应先补目标测试，
-再按变更面执行 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
-`cargo xtask check --arch aarch64` 和对应 QEMU 回归。
+本文最初是文档化审计结论；后续修复切片按 TDD 补充 `arch-test` 回归，并在容器内验证：
+`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64`、
+`cargo xtask test --arch riscv64 --name arch-test --timeout 30`。完整格式检查和最终回归记录见
+`docs/audit/audit-progress.md`。

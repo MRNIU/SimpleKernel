@@ -35,9 +35,6 @@ fn plic() -> &'static MmioRegion {
 /// UART 中断号（QEMU virt 平台）
 const UART_IRQ: u32 = 10;
 
-/// hart 0 S-mode 上下文编号（S-mode context = 2*hart + 1）
-const PLIC_S_CONTEXT_HART0: usize = 1;
-
 /// PLIC 优先级寄存器基偏移
 const PLIC_PRIORITY_BASE: usize = 0x0000_0000;
 
@@ -52,6 +49,32 @@ const PLIC_CONTEXT_BASE: usize = 0x0020_0000;
 
 /// PLIC 阈值/claim 寄存器每上下文间距
 const PLIC_CONTEXT_STRIDE: usize = 0x1000;
+
+/// RISC-V QEMU virt PLIC 的 S-mode context 编号。
+fn plic_s_context_for_core_id(core_id: usize) -> usize {
+    core_id
+        .checked_mul(2)
+        .and_then(|value| value.checked_add(1))
+        .expect("PLIC: hart id 计算 S-mode context 溢出")
+}
+
+/// 返回当前 core 对应的 PLIC S-mode context 编号。
+fn current_plic_s_context() -> usize {
+    plic_s_context_for_core_id(per_cpu::current_core_id())
+}
+
+/// 为指定 PLIC context 使能 UART IRQ 并设置阈值。
+fn configure_plic_context(context: usize) {
+    let plic = plic();
+
+    let enable_offset =
+        PLIC_ENABLE_BASE + context * PLIC_ENABLE_STRIDE + (UART_IRQ as usize / 32) * 4;
+    let current: u32 = plic.read_reg(enable_offset);
+    plic.write_reg::<u32>(enable_offset, current | (1 << (UART_IRQ % 32)));
+
+    let threshold_offset = PLIC_CONTEXT_BASE + context * PLIC_CONTEXT_STRIDE;
+    plic.write_reg::<u32>(threshold_offset, 0);
+}
 
 /// 初始化 PLIC——映射 MMIO、配置 UART IRQ 优先级/使能/阈值。
 fn plic_init() {
@@ -77,15 +100,7 @@ fn plic_init() {
     // 设置 UART IRQ 优先级
     plic.write_reg::<u32>(PLIC_PRIORITY_BASE + UART_IRQ as usize * 4, 1);
 
-    // 使能 UART IRQ — hart 0 S-mode 上下文
-    let enable_offset =
-        PLIC_ENABLE_BASE + PLIC_S_CONTEXT_HART0 * PLIC_ENABLE_STRIDE + (UART_IRQ as usize / 32) * 4;
-    let current: u32 = plic.read_reg(enable_offset);
-    plic.write_reg::<u32>(enable_offset, current | (1 << (UART_IRQ % 32)));
-
-    // 阈值 = 0：接受所有优先级 ≥1 的中断
-    let threshold_offset = PLIC_CONTEXT_BASE + PLIC_S_CONTEXT_HART0 * PLIC_CONTEXT_STRIDE;
-    plic.write_reg::<u32>(threshold_offset, 0);
+    configure_plic_context(current_plic_s_context());
 }
 
 /// 从 PLIC claim 寄存器读取待处理中断号
@@ -109,7 +124,8 @@ const PLIC_MAX_IRQ: u32 = 1023;
 
 /// 处理外部中断（PLIC IRQ）
 fn handle_external() {
-    let irq = plic_claim(PLIC_S_CONTEXT_HART0);
+    let context = current_plic_s_context();
+    let irq = plic_claim(context);
 
     // IRQ 范围校验：PLIC 有效 IRQ 为 1-1023，0 表示 spurious
     if irq > PLIC_MAX_IRQ {
@@ -133,7 +149,7 @@ fn handle_external() {
         }
     }
     if irq != 0 {
-        plic_complete(PLIC_S_CONTEXT_HART0, irq);
+        plic_complete(context, irq);
     }
 }
 
@@ -146,7 +162,7 @@ fn handle_external() {
 /// 3. 设置 sstatus.SIE（bit1）使能全局中断
 /// 4. 初始化 PLIC
 pub fn init() {
-    // SAFETY: stvec/sscratch/sie/sstatus 是 S 模式 CSR，在 S 模式下可安全写入
+    // SAFETY: stvec/sscratch 是 S 模式 CSR，在 S 模式下可安全写入
     unsafe {
         // sscratch = 0 表示当前处于内核态。
         // trap_entry 通过 csrrw sp, sscratch, sp 交换后检查 sp 是否为 0
@@ -160,7 +176,12 @@ pub fn init() {
             "csrw stvec, {addr}",
             addr = in(reg) trap_entry_addr,
         );
+    }
 
+    plic_init();
+
+    // SAFETY: sie/sstatus 是 S 模式 CSR，在 PLIC 已初始化后使能中断
+    unsafe {
         // 使能 sie: SSIE(1) | STIE(5) | SEIE(9) → mask = 0x222
         core::arch::asm!(
             "csrs sie, {mask}",
@@ -171,7 +192,6 @@ pub fn init() {
         core::arch::asm!("csrs sstatus, {mask}", mask = in(reg) 0x2usize);
     }
 
-    plic_init();
     log::info!("InterruptInit done");
 }
 
@@ -190,6 +210,12 @@ pub fn init_smp() {
             "csrw stvec, {addr}",
             addr = in(reg) trap_entry_addr,
         );
+    }
+
+    configure_plic_context(current_plic_s_context());
+
+    // SAFETY: 本核 PLIC context 已配置，CSR 写入在 S 模式下安全
+    unsafe {
         core::arch::asm!(
             "csrs sie, {mask}",
             mask = in(reg) 0x222usize,
@@ -226,23 +252,26 @@ pub extern "C" fn HandleTrap(ctx: &mut TrapContext) -> *mut TrapContext {
     let code = scause & !(1u64 << 63);
 
     if is_interrupt {
-        let _irq = interrupt_state::HardIrqGuard::enter();
-        match code {
-            // 定时器中断（STIP）
-            CAUSE_S_TIMER_INT => super::timer::handle_timer(),
-            // 外部中断（SEIP）
-            CAUSE_S_EXTERNAL_INT => handle_external(),
-            // 软件中断 / IPI（SSIP）
-            CAUSE_S_SOFTWARE_INT => super::ipi::handle_ipi(ctx),
-            _ => {
-                log::warn!(
-                    "HandleTrap: 未知中断 code={}, sepc=0x{:x}, scause=0x{:x}",
-                    code,
-                    ctx.sepc,
-                    ctx.scause
-                );
+        {
+            let _irq = interrupt_state::HardIrqGuard::enter();
+            match code {
+                // 定时器中断（STIP）
+                CAUSE_S_TIMER_INT => super::timer::handle_timer(),
+                // 外部中断（SEIP）
+                CAUSE_S_EXTERNAL_INT => handle_external(),
+                // 软件中断 / IPI（SSIP）
+                CAUSE_S_SOFTWARE_INT => super::ipi::handle_ipi(ctx),
+                _ => {
+                    log::warn!(
+                        "HandleTrap: 未知中断 code={}, sepc=0x{:x}, scause=0x{:x}",
+                        code,
+                        ctx.sepc,
+                        ctx.scause
+                    );
+                }
             }
         }
+        crate::task::preempt_after_irq();
     } else {
         match code {
             // SAS 模式下 ecall 不应触发——所有 syscall 通过直接函数调用

@@ -17,7 +17,7 @@ pub fn early_init(dtb_addr: usize) {
     };
 
     let node_count = fdt.node_count().unwrap_or(0);
-    let core_count = fdt.core_count().unwrap_or(1);
+    let core_count = crate::cpu_topology::init_from_fdt(&fdt);
 
     let (mem_addr, mem_size) = match fdt.memory() {
         Ok(m) => m,

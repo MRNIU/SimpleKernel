@@ -22,11 +22,16 @@ unsafe extern "C" {
 /// # 参数
 /// - `cpu_id`：目标 CPU 的 MPIDR Aff0 字段值（通常等于 CPU 编号）
 pub fn send_ipi(cpu_id: usize) {
+    assert!(
+        cpu_id < 16,
+        "send_ipi: GICv3 SGI TargetList 只支持 Aff0 < 16，cpu_id={}",
+        cpu_id
+    );
     // ICC_SGI1R_EL1 编码：
     //   [15:0]  TargetList  — 目标 CPU 位掩码
     //   [27:24] INTID       — SGI 编号（0–15）
     //   其余位为 0
-    let target_list: u64 = 1u64 << (cpu_id & 0xF);
+    let target_list: u64 = 1u64 << cpu_id;
     let sgi_value: u64 = target_list; // INTID=0，其余位=0
     // SAFETY: ICC_SGI1R_EL1 在 EL1 下可写（GICv3 CPU 接口使能后）
     unsafe {

@@ -15,6 +15,12 @@ fn run_tests() {
     test_tick_interval_contract();
     log::info!("test tick_interval_contract ... ok");
 
+    test_cpu_topology_contract();
+    log::info!("test cpu_topology_contract ... ok");
+
+    test_irq_exit_preemption_contract();
+    log::info!("test irq_exit_preemption_contract ... ok");
+
     test_aarch64_fp_arithmetic();
     log::info!("test aarch64_fp_arithmetic ... ok");
 
@@ -38,6 +44,51 @@ fn test_kernel_stack_alignment() {
 fn test_tick_interval_contract() {
     let interval = simplekernel::timer::checked_tick_interval(config::TIMER_FREQ_HZ * 10);
     assert_eq!(interval, 10);
+}
+
+/// CPU topology 必须显式校验当前 dense core id 平台契约。
+fn test_cpu_topology_contract() {
+    let discovered = *simplekernel::CORE_COUNT
+        .get()
+        .expect("arch-test: CORE_COUNT 未初始化");
+    let topology = simplekernel::cpu_topology::topology();
+
+    assert_eq!(
+        topology.discovered_core_count(),
+        discovered,
+        "CPU topology 发现核心数必须与 CORE_COUNT 一致"
+    );
+    assert!(
+        topology.primary_core_id() < discovered,
+        "primary core id 必须落在 dense CPU 表内: primary={}, discovered={}",
+        topology.primary_core_id(),
+        discovered
+    );
+    assert_eq!(
+        simplekernel::timer::timekeeper_core_id(),
+        topology.primary_core_id(),
+        "timer timekeeper 必须跟随 primary core"
+    );
+
+    assert!(
+        per_cpu::current_core_id() < discovered,
+        "当前 core id 必须落在 dense CPU 表内: current={}, discovered={}",
+        per_cpu::current_core_id(),
+        discovered
+    );
+}
+
+/// IRQ-exit 抢占判定必须只消费一次 pending reschedule 标志。
+fn test_irq_exit_preemption_contract() {
+    simplekernel::preempt::request_current_core_reschedule();
+    assert!(
+        simplekernel::preempt::take_irq_exit_preemption_request(),
+        "设置 need_resched 后，IRQ-exit 抢占判定应返回 true"
+    );
+    assert!(
+        !simplekernel::preempt::take_irq_exit_preemption_request(),
+        "IRQ-exit 抢占判定必须原子消费 need_resched"
+    );
 }
 
 /// AArch64 hardfloat 目标应能执行硬件浮点运算。

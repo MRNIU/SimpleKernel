@@ -29,7 +29,9 @@ _boot:
     addi  gp, gp, %pcrel_lo(1b)
 .option pop
 
-    // 按照每个 core 设置栈地址：(hart_id + 1) << log2(KERNEL_STACK_SIZE)
+    // 当前平台契约要求 hart id 为 0..MAX_CORE_COUNT 的 dense 编号。
+    li t1, {MAX_CORE_COUNT}
+    bgeu a0, t1, .Lboot_stack_overflow
     add t0, a0, 1
     slli t0, t0, {KERNEL_STACK_SIZE_LOG2}
     la sp, BOOT_STACK
@@ -45,6 +47,11 @@ _boot:
 
     call _start
     wfi
+
+.Lboot_stack_overflow:
+    wfi
+    j .Lboot_stack_overflow
 "#,
     KERNEL_STACK_SIZE_LOG2 = const KERNEL_STACK_SIZE_LOG2,
+    MAX_CORE_COUNT = const config::MAX_CORE_COUNT,
 );

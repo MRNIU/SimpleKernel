@@ -81,6 +81,65 @@ impl<'a> KernelFdt<'a> {
         Ok(count)
     }
 
+    /// 返回 `/cpus/cpu*` 节点声明的硬件 CPU id 列表。
+    ///
+    /// RISC-V 下该值对应 hart id；AArch64 下该值对应 MPIDR affinity 编码。
+    /// 当前调用方只用它校验平台满足 dense CPU id 契约。
+    ///
+    /// # Errors
+    /// 当 FDT 根节点或 `/cpus` 节点解析失败、CPU `reg` 属性缺失/无效、
+    /// CPU id 重复，或 CPU 数量超过 [`config::MAX_CORE_COUNT`] 时返回错误。
+    pub fn cpu_hardware_ids(
+        &self,
+    ) -> Result<heapless::Vec<usize, { config::MAX_CORE_COUNT }>, FdtError> {
+        let fdt = parse_fdt!(self.fdt_addr)?;
+        let root = fdt.root().map_err(|e| {
+            log::warn!("FDT root 节点解析失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
+        let cpus = root.cpus().map_err(|e| {
+            log::warn!("FDT cpus 节点未找到: {:?}", e);
+            FdtError::NodeNotFound
+        })?;
+        let iter = cpus.iter().map_err(|e| {
+            log::warn!("FDT cpus 迭代失败: {:?}", e);
+            FdtError::ParseFailed
+        })?;
+
+        let mut ids = heapless::Vec::<usize, { config::MAX_CORE_COUNT }>::new();
+        for cpu_result in iter {
+            let cpu = cpu_result.map_err(|e| {
+                log::warn!("FDT cpu 节点解析失败: {:?}", e);
+                FdtError::ParseFailed
+            })?;
+            let reg = cpu.reg::<u64>().map_err(|e| {
+                log::warn!("FDT cpu reg 属性解析失败: {:?}", e);
+                FdtError::ParseFailed
+            })?;
+            let hardware_id = reg.first().map_err(|e| {
+                log::warn!("FDT cpu reg id 收集失败: {:?}", e);
+                FdtError::ParseFailed
+            })?;
+            let hardware_id = usize::try_from(hardware_id).map_err(|_| {
+                log::warn!("FDT cpu hardware id 超出 usize: {}", hardware_id);
+                FdtError::UnsupportedLayout
+            })?;
+            if ids.contains(&hardware_id) {
+                log::warn!("FDT cpu hardware id 重复: {}", hardware_id);
+                return Err(FdtError::UnsupportedLayout);
+            }
+            ids.push(hardware_id).map_err(|_| {
+                log::warn!("FDT cpu 数量超过 MAX_CORE_COUNT {}", config::MAX_CORE_COUNT);
+                FdtError::UnsupportedLayout
+            })?;
+        }
+
+        if ids.is_empty() {
+            return Err(FdtError::NodeNotFound);
+        }
+        Ok(ids)
+    }
+
     pub fn memory(&self) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
         let root = fdt.root().map_err(|e| {

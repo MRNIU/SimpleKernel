@@ -17,11 +17,11 @@ global_asm!(
 .extern BOOT_STACK
 
 _boot:
-    // 获取启动核 ID
+    // 当前平台契约要求 MPIDR Aff0 为 0..MAX_CORE_COUNT 的 dense 编号。
     mrs x10, mpidr_el1
     and x10, x10, #0xFF
-
-    // 按照每个 core 设置栈地址：(core_id + 1) << log2(KERNEL_STACK_SIZE)
+    cmp x10, #{MAX_CORE_COUNT}
+    b.hs 2f
     add x10, x10, #1
     lsl x10, x10, #{KERNEL_STACK_SIZE_LOG2}
     adrp x11, BOOT_STACK
@@ -44,6 +44,11 @@ _boot:
 
     bl _start
     b .
+
+2:
+    wfi
+    b 2b
 "#,
     KERNEL_STACK_SIZE_LOG2 = const KERNEL_STACK_SIZE_LOG2,
+    MAX_CORE_COUNT = const config::MAX_CORE_COUNT,
 );

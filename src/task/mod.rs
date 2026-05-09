@@ -32,7 +32,7 @@ mod sched;
 mod task_table;
 
 // 引导 + 基础设施（保持 pub）
-pub use sched::{bootstrap_enable_irq, current_task, schedule, timer_tick};
+pub use sched::{bootstrap_enable_irq, current_task, preempt_after_irq, schedule, timer_tick};
 
 // syscall 网关后的实现（pub(crate)——外部调用者通过 syscall:: 进入）
 pub(crate) use sched::yield_now;
