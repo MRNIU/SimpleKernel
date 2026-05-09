@@ -102,7 +102,7 @@ pub fn init_from_fdt(fdt: &crate::fdt::KernelFdt<'_>) -> usize {
         primary_core_id,
     });
 
-    for core_id in ids.iter().copied() {
+    for &core_id in &ids {
         log::info!("CPU topology: supported dense core {}", core_id);
     }
 

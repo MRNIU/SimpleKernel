@@ -30,8 +30,8 @@ R4 覆盖的是“硬件入口到内核抽象”的边界层：架构启动代�
 | R4-06 | P1 | RISC-V hard-float 状态未保存 | 开启 F/D 目标后跨任务浮点寄存器被破坏 | ADR 待决 |
 | R4-07 | P1 | 任务栈未显式保证 16 字节对齐 | ABI 违约，函数 prologue / 保存上下文可能在部分平台异常 | 已修复 |
 | R4-08 | P1 | `ArchOps::dtb_addr()` safe API 隐藏裸指针解引用 | safe 调用者无法知道 boot args 的 unsafe 前提 | 已修复 |
-| R4-09 | P1 | `should_panic` 测试可能误判通过 | 未触发 panic 的负向测试仍被 xtask 当成成功 | 应优先修复 |
-| R4-10 | P2 | AArch64 `PA_BITS=48` 但 TCR 未设置 `IPS` | 物理地址宽度契约与 MMU 配置不一致 | 已修复 |
+| R4-09 | P1 | `should_panic` 测试可能误判通过 | 未触发 panic 的负向测试仍被 xtask 当成成功 | 已修复 |
+| R4-10 | P2 | AArch64 `PA_BITS` 与 TCR `IPS` 需要一致 | 物理地址宽度契约与 MMU 配置不一致 | 已修复 |
 | R4-11 | P2 | RISC-V PLIC 固定 hart0 S-mode context 且启用顺序过早 | 从核外部中断不可用；早期外部中断可打到未初始化 PLIC | 已修复 |
 | R4-12 | P2 | AArch64 SGI 只使用 Aff0 低 4 位 | 多 cluster 或 Aff0 不稠密时 IPI 投递错误 | 平台契约已显式化 |
 | R4-13 | P2 | `CORE_COUNT` 语义混淆 discovered/online，SMP 启动 fire-and-forget | 主核继续运行时从核可能尚未上线或已启动失败 | 部分完成 |
@@ -458,7 +458,13 @@ should_panic 测试:
 - 增加一个故意“不 panic”的 should_panic 负向 harness 自测，期望 xtask 返回失败。
 - 增加一个真实 panic 的 should_panic 正向自测，确认 sentinel/退出码路径不会误杀。
 
-## R4-10. AArch64 `PA_BITS=48` 但 TCR 未设置 `IPS`
+### 修复记录
+
+2026-05-09 补充测试体开始标记：`should_panic` 只有进入测试函数后发生的 panic 才输出
+`SHOULD_PANIC OK`；启动/初始化阶段 panic 统一输出 `TEST PANIC:` 并退出 QEMU。
+普通测试 panic 也改为测试专用 `TEST PANIC:` 失败路径，避免生产 panic handler 自旋到 timeout。
+
+## R4-10. AArch64 `PA_BITS` 与 TCR `IPS` 需要一致
 
 位置：`crates/arch/src/aarch64.rs:21`、`src/arch/aarch64/mod.rs:82`
 
@@ -488,16 +494,15 @@ QEMU virt 的内存通常落在低地址，短期可能看不出问题；真机�
 
 ### 验证方向
 
-- AArch64 启动期读取 PARange，若硬件不报告 48-bit PA 则在启用 MMU 前 fail-fast。
-- TCR 固定写入 `IPS=0b101`，保持 `arch::PA_BITS=48`、AArch64 PTE 输出地址位和 MMU 配置一致。
-- 当前 QEMU `cortex-a72` 仅报告 44-bit PA，因此 AArch64 QEMU 启动测试应输出明确 panic；
-  后续若要恢复 AArch64 QEMU 通过，需要改用支持 48-bit PA 的 CPU/平台配置，或重新讨论动态收窄策略。
+- AArch64 启动期读取 PARange，若硬件不报告平台约定的 44-bit PA 则在启用 MMU 前 fail-fast。
+- TCR 固定写入 `IPS=0b100`，保持 `arch::PA_BITS=44`、AArch64 PTE 输出地址位和 MMU 配置一致。
+- 当前 QEMU `cortex-a72` 报告 44-bit PA，因此 AArch64 QEMU 启动测试应通过。
 
 ### 修复记录
 
-2026-05-09 已按方案 B 收窄：SimpleKernel AArch64 当前只支持 48-bit PA。启动期读取
-`ID_AA64MMFR0_EL1.PARange`，若硬件不是 48-bit 则直接 panic；通过检查后固定写入
-`TCR_EL1.IPS=0b101`。这避免为暂未支持的 32/36/40/42/44/52/56-bit PA 增加动态降级代码。
+2026-05-09 首轮按方案 B 收窄为 48-bit PA fail-fast；随后因当前 QEMU `cortex-a72`
+仅报告 44-bit PARange，改为方案 A 的最小平台收口：`arch::PA_BITS=44`，
+`TCR_EL1.IPS=0b100`，启动期检查硬件 PARange 必须与该平台契约一致。
 
 ## R4-11. RISC-V PLIC 固定 hart0 S-mode context 且启用顺序过早
 

@@ -35,7 +35,7 @@ pub(crate) trait ArchImpl {
     /// 物理地址有效位宽。
     ///
     /// - RISC-V Sv39/Sv48/Sv57: 56 位
-    /// - AArch64: 48 位（LPA2 扩展到 52 位，暂不支持）
+    /// - AArch64: 44 位（匹配当前 QEMU `cortex-a72` 平台）
     const PA_BITS: usize;
 
     /// 页表层级数。
@@ -87,7 +87,7 @@ type Impl = riscv64::Riscv64;
 #[cfg(bare_aarch64)]
 type Impl = aarch64::Aarch64;
 
-/// 物理地址有效位宽（RISC-V: 56, AArch64: 48）。
+/// 物理地址有效位宽（RISC-V: 56, AArch64: 44）。
 pub const PA_BITS: usize = Impl::PA_BITS;
 
 /// 页表层级数（RISC-V Sv39: 3, AArch64 4KB: 4）。

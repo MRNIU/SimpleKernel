@@ -20,7 +20,7 @@ use super::ArchImpl;
 pub(crate) struct Aarch64;
 
 impl ArchImpl for Aarch64 {
-    const PA_BITS: usize = 48;
+    const PA_BITS: usize = 44;
     const PT_LEVELS: usize = 4;
 
     #[inline(always)]

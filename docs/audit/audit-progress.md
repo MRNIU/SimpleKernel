@@ -53,9 +53,8 @@ RISC-V QEMU 30 秒超时下定点验证通过：`memory-types-test/codec`、
 RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name arch-test --timeout 30`
 通过，覆盖 Full 初始化和从核启动路径。AArch64 首次验证暴露 QEMU `cortex-a72`
 仅报告 44-bit PARange，直接断言硬件必须支持编译期 `PA_BITS=48` 会导致 MMU 启用前 panic；
-后续决策改为 SimpleKernel AArch64 当前只支持 48-bit PA，因此保留该 fail-fast 语义并删去
-动态收窄代码。当前 QEMU `cortex-a72` 上 `cargo xtask test --arch aarch64 --name arch-test --timeout 30`
-应输出明确 panic；若要恢复 AArch64 QEMU 通过，需要调整 QEMU CPU/平台或重新讨论动态收窄策略。
+后续决策改为当前 AArch64 QEMU 平台按 44-bit PA 收口，保持 `arch::PA_BITS` 与
+`TCR_EL1.IPS` 一致。
 
 验证结果（2026-05-08 R4 复审文档化）：本轮只新增审计文档并更新进度文件，
 未修改实现代码，未运行构建或 QEMU 系统测试。R4 问题详情见
@@ -99,7 +98,7 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 1. RISC-V `_boot` 无条件初始化 `gp`，从核启动不再因 `opaque=0` 跳过全局指针设置。
 2. `KernelStack` 改为显式 16 字节对齐分配，`top()` 保留 ABI 对齐断言。
 3. `ArchOps::dtb_addr()` 改为 `unsafe fn`，AArch64 boot args 解析补齐 `# Safety` 边界和 `argc < 3` 防护。
-4. AArch64 `TCR_EL1.IPS` 固定为 48-bit PA，启动期检查 `ID_AA64MMFR0_EL1.PARange`，不匹配则 fail-fast。
+4. AArch64 `TCR_EL1.IPS` 固定为 44-bit PA，匹配当前 QEMU `cortex-a72` 的 PARange。
 5. timer interval 统一走 `checked_tick_interval()`，RISC-V `set_timer` 失败改为携带 deadline/error/value 的 fail-fast。
 
 ### 关键结论
@@ -109,7 +108,7 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 | R4-03 RISC-V 从核 `gp` 初始化 | 已改为所有 hart 无条件初始化 `gp` | 已修复 | — |
 | R4-07 任务栈 16 字节对齐 | 已通过显式 `Layout` 分配和 `arch-test` 回归覆盖 | 已修复 | — |
 | R4-08 `dtb_addr` unsafe 边界 | 已把裸 boot args 解析移入显式 unsafe 契约 | 已修复 | — |
-| R4-10 AArch64 `TCR_EL1.IPS` | 当前只支持 48-bit PA；QEMU `cortex-a72` 44-bit PA 会按设计在 MMU 启用前 panic | 已修复 | — |
+| R4-10 AArch64 `TCR_EL1.IPS` | 当前 AArch64 QEMU 平台按 44-bit PA 收口，`PA_BITS` 与 `TCR_EL1.IPS` 一致 | 已修复 | — |
 | R4-15 timer fail-fast | 零 interval / SBI timer 失败已 fail-fast；absolute deadline / 漂移语义仍待 timer-preemption 设计 | 部分完成 | 待定 |
 
 ### 下一步

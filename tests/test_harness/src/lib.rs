@@ -9,6 +9,22 @@
 
 extern crate alloc;
 
+use core::fmt::Write;
+
+/// 打印测试专用 panic sentinel，供 `xtask` 判定失败。
+#[doc(hidden)]
+pub fn report_unexpected_panic(info: &core::panic::PanicInfo<'_>) {
+    simplekernel::logging::raw_put("TEST PANIC: ");
+    let mut buf = heapless::String::<{ config::PANIC_BUF_SIZE }>::new();
+    if let Some(loc) = info.location() {
+        let _ = write!(buf, "{}:{}: {}", loc.file(), loc.line(), info.message());
+    } else {
+        let _ = write!(buf, "<unknown>: {}", info.message());
+    }
+    simplekernel::logging::raw_put(buf.as_str());
+    simplekernel::logging::raw_put("\n");
+}
+
 /// 退出 QEMU，`code` 为退出码（0 = 成功，非零 = 失败）。
 pub fn exit_qemu(code: u32) -> ! {
     #[cfg(target_arch = "riscv64")]
@@ -107,7 +123,8 @@ macro_rules! test_main {
 
         #[panic_handler]
         fn panic(info: &core::panic::PanicInfo<'_>) -> ! {
-            simplekernel::panic::handle_panic(info);
+            $crate::report_unexpected_panic(info);
+            $crate::exit_qemu(1);
         }
 
         #[alloc_error_handler]
@@ -121,6 +138,8 @@ macro_rules! test_main {
     ($level:expr, $test_fn:ident, should_panic) => {
         static PRIMARY_BOOTED: core::sync::atomic::AtomicBool =
             core::sync::atomic::AtomicBool::new(false);
+        static TEST_BODY_STARTED: core::sync::atomic::AtomicBool =
+            core::sync::atomic::AtomicBool::new(false);
 
         #[unsafe(no_mangle)]
         pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
@@ -129,6 +148,7 @@ macro_rules! test_main {
                 unsafe {
                     simplekernel::boot::kernel_init(argc, argv, $level);
                 }
+                TEST_BODY_STARTED.store(true, core::sync::atomic::Ordering::Release);
                 $test_fn();
                 // 执行到此说明没有 panic → should_panic 测试失败
                 simplekernel::logging::raw_put("SHOULD_PANIC test returned without panic\n");
@@ -151,6 +171,10 @@ macro_rules! test_main {
 
         #[panic_handler]
         fn panic(info: &core::panic::PanicInfo<'_>) -> ! {
+            if !TEST_BODY_STARTED.load(core::sync::atomic::Ordering::Acquire) {
+                $crate::report_unexpected_panic(info);
+                $crate::exit_qemu(1);
+            }
             if let Some(loc) = info.location() {
                 log::info!(
                     "SHOULD_PANIC OK: {}:{}: {}",

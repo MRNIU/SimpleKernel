@@ -25,7 +25,7 @@ cfg 标志在 `.cargo/config.toml` 中按 target 设置，不需要 build.rs。
 
 | 常量 | 类型 | RISC-V 64 | AArch64 | 说明 |
 |------|------|-----------|---------|------|
-| `PA_BITS` | `usize` | 56 | 48 | 物理地址有效位宽 |
+| `PA_BITS` | `usize` | 56 | 44 | 物理地址有效位宽 |
 | `PT_LEVELS` | `usize` | 3 (Sv39) | 4 (4KB granule) | 页表层级数 |
 | `VA_BITS` | `usize` | 39 | 48 | 虚拟地址有效位宽（自动推导） |
 | `PTE_SIZE_SHIFT` | `usize` | 3 | 3 | `log2(sizeof(u64))` |

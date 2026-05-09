@@ -8,16 +8,16 @@ const TCR_T0SZ_48_BITS: u64 = 16;
 const TCR_IRGN0_WRITE_BACK: u64 = 0b01 << 8;
 const TCR_ORGN0_WRITE_BACK: u64 = 0b01 << 10;
 const TCR_SH0_INNER_SHAREABLE: u64 = 0b11 << 12;
-const TCR_IPS_48_BITS: u64 = 0b101;
+const TCR_IPS_44_BITS: u64 = 0b100;
 const TCR_IPS_SHIFT: u64 = 32;
-const SUPPORTED_PA_BITS: usize = 48;
+const SUPPORTED_PA_BITS: usize = 44;
 
 fn tcr_el1_value() -> u64 {
     TCR_T0SZ_48_BITS
         | TCR_IRGN0_WRITE_BACK
         | TCR_ORGN0_WRITE_BACK
         | TCR_SH0_INNER_SHAREABLE
-        | (TCR_IPS_48_BITS << TCR_IPS_SHIFT)
+        | (TCR_IPS_44_BITS << TCR_IPS_SHIFT)
 }
 
 fn supported_pa_bits() -> usize {
