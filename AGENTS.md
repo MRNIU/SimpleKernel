@@ -141,15 +141,15 @@ devcontainer exec --workspace-folder . cargo xtask build --arch riscv64
 devcontainer exec --workspace-folder . cargo xtask build --arch aarch64
 
 # Run in QEMU (via xtask — handles FIT image + TFTP + QEMU)
-devcontainer exec --workspace-folder . cargo xtask run --arch riscv64
-devcontainer exec --workspace-folder . cargo xtask run --arch aarch64
+devcontainer exec --workspace-folder . cargo xtask run --arch riscv64 --timeout 30
+devcontainer exec --workspace-folder . cargo xtask run --arch aarch64 --timeout 30
 
 # Debug (GDB on localhost:1234)
 devcontainer exec --workspace-folder . cargo xtask debug --arch riscv64
 
 # System tests in QEMU
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name panic-test
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --timeout 30
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name panic-test --timeout 30
 devcontainer exec --workspace-folder . cargo xtask test --list
 
 # Format + lint check
@@ -171,8 +171,8 @@ devcontainer exec --workspace-folder . cargo doc --no-deps
 每个测试是独立的 `#![no_std]` 裸机二进制，启动独立 QEMU 实例，拥有干净的内核环境。
 
 ```bash
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name frame-alloc-test
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --timeout 30
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30
 devcontainer exec --workspace-folder . cargo xtask test --list
 ```
 
@@ -186,8 +186,9 @@ test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_tests);
 test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_panic);
 ```
 
-`test_main!` 负责：`_start` 入口 → `kernel_init(level)` → 调用测试函数 → `exit_qemu(0)`。
-断言失败 = panic = QEMU 非零退出 = 测试失败。
+`test_main!` 负责：`_start` 入口 → `kernel_init(level)` → 调用测试函数 → 输出成功 sentinel → `exit_qemu(0)`。
+`xtask` 以串口 sentinel 判定成功：普通测试必须输出 `TEST OK`，`should_panic` 测试必须输出
+`SHOULD_PANIC OK`；断言失败会输出失败 sentinel 并被判为测试失败。
 
 #### 添加独立测试
 

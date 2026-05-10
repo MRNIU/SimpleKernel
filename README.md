@@ -92,7 +92,7 @@ pub trait Scheduler: Send + Sync {
 devcontainer exec --workspace-folder . cargo test
 
 # 系统测试（QEMU）
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --timeout 30
 ```
 
 #### 4. 对照参考实现
@@ -151,7 +151,7 @@ devcontainer exec --workspace-folder . bash
 devcontainer exec --workspace-folder . cargo xtask build --arch riscv64
 
 # 在 QEMU 模拟器中运行
-devcontainer exec --workspace-folder . cargo xtask run --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask run --arch riscv64 --timeout 30
 
 # 调试（GDB 连接 localhost:1234）
 devcontainer exec --workspace-folder . cargo xtask debug --arch riscv64
@@ -160,9 +160,8 @@ devcontainer exec --workspace-folder . cargo xtask debug --arch riscv64
 devcontainer exec --workspace-folder . cargo test
 
 # 系统测试（QEMU 中运行）
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --all
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name panic-test
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --all --timeout 30
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name panic-test --timeout 30
 devcontainer exec --workspace-folder . cargo xtask test --list
 ```
 
@@ -192,11 +191,11 @@ SimpleKernel/
 │   ├── frame_allocator/            #   物理帧分配器
 │   ├── per_cpu/                    #   Per-CPU 数据
 │   └── ...
-├── tests/                          # QEMU 系统测试（每个子目录是独立二进制）
+├── tests/                          # QEMU 系统测试（按包组织，[[bin]] 自动发现）
 │   ├── test_harness/               #   公共 harness（test_main! 宏）
 │   ├── heap-test/                  #   堆分配测试
-│   ├── sync-spinlock-test/         #   SpinLock 测试
-│   └── ...                         #   共 17 个测试二进制
+│   ├── sync-test/                  #   SpinLock / 锁栈测试
+│   └── ...                         #   每个 [[bin]] 独立启动 QEMU
 ├── xtask/                          # 构建工具（cargo xtask）
 │   └── src/
 │       ├── main.rs                 #   子命令分发（build/run/debug/test/firmware）
@@ -234,8 +233,8 @@ devcontainer exec --workspace-folder . cargo test -p memory_types -p config -p p
 每个测试是独立的 `#![no_std]` 裸机二进制，启动独立 QEMU 实例，拥有干净的内核环境。
 
 ```bash
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --all
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name <name>
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --all --timeout 30
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name <name> --timeout 30
 devcontainer exec --workspace-folder . cargo xtask test --list
 ```
 
@@ -346,7 +345,7 @@ git config commit.template .gitmessage
 |------|------|
 | **报告问题** | 通过 [GitHub Issues](https://github.com/Simple-XX/SimpleKernel/issues) 报告 Bug |
 | **改进接口** | 提出更好的 trait 抽象和文档改进建议 |
-| **补充测试** | 在 `tests/system/` 中添加新的测试用例 |
+| **补充测试** | 在 `tests/` 的对应测试包中添加 `[[bin]]` 测试用例 |
 | **完善文档** | 改进文档注释、添加使用示例 |
 | **提交实现** | 提交 trait 的实现或替代实现 |
 
@@ -355,7 +354,7 @@ git config commit.template .gitmessage
 1. Fork 本仓库
 2. 创建功能分支: `git checkout -b feat/amazing-feature`
 3. 遵循 `AGENTS.md`、`docs/conventions.md` 和 `docs/git.md` 进行开发
-4. 确保相关测试通过，例如 `devcontainer exec --workspace-folder . cargo test` 和 `devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --all`
+4. 确保相关测试通过，例如 `devcontainer exec --workspace-folder . cargo test` 和 `devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --all --timeout 30`
 5. 提交变更: `git commit --signoff -m 'feat(scope): add amazing feature'`
 6. 创建 Pull Request
 

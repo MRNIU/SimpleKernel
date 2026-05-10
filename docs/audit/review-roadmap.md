@@ -6,7 +6,7 @@
 >
 > **参考内核**：Linux（子系统接口设计）、Theseus（typestate / crate 隔离）、Redox（scheme VFS / error handling）、Zephyr（嵌入式设备模型）、µFork（POSIX 兼容策略）
 >
-> **工作分支**：`feat/rust-SAS`（当前活跃，领先 `main` 234 commits）
+> **工作分支**：`feat/rust-SAS`（当前活跃；与 `main` / `origin/feat/rust-SAS` 的差距以 `git status` 和 `git rev-list` 为准，不在本文维护动态 commit 数）
 
 ---
 
@@ -79,13 +79,13 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 
 ### R0 交付物
 
-- [ ] `deny.toml` + CI 集成
+- [x] `deny.toml` + CI 集成
 - [ ] `rustfmt.toml` + `clippy.toml`
-- [ ] `docs/audit/unsafe-audit-baseline.md`
-- [ ] `docs/audit/dependency-audit.md`
-- [ ] `docs/diagrams/crate-dependency-graph.md`（Mermaid）
-- [ ] 模块 README 模板 `docs/templates/module-readme-template.md`
-- [ ] ADR 模板 `docs/templates/adr-template.md` + `docs/adr/` 目录
+- [x] `docs/audit/unsafe-audit-baseline.md`
+- [x] `docs/audit/dependency-audit.md`
+- [x] `docs/diagrams/crate-dependency-graph.md`（Mermaid）
+- [x] 模块 README 模板 `docs/templates/module-readme-template.md`
+- [x] ADR 模板 `docs/templates/adr-template.md` + `docs/adr/` 目录
 - [ ] 分支合并完成（含 `pre-audit-baseline` tag）
 
 ---
@@ -155,8 +155,8 @@ memory_types ← frame_allocator ← page_table_entry ← paging ← memory
 |------|----------|
 | `frame_allocator` | 物理帧分配器（typestate 状态机、buddy allocator） |
 | `page_table_entry` | 页表项抽象（PTE flags、W^X 安全） |
-| `paging` | 页表管理（MappedPages 所有权、MMIO 映射） |
-| `memory` | 地址空间与 VMA 管理 |
+| `paging` | 页表管理（identity mapping、`update_range_flags` 权限覆盖、TLB 刷新回调） |
+| `memory` | 内存初始化、内存布局校验与 MMIO 类型化入口 |
 | `heap` | 内核堆分配器 |
 | `tlb` | TLB 管理与 shootdown |
 
@@ -164,8 +164,8 @@ memory_types ← frame_allocator ← page_table_entry ← paging ← memory
 
 - [ ] 内存子系统全景依赖图
 - [ ] 帧生命周期状态机图（Mermaid state diagram，从代码验证）
-- [ ] 页表映射/解映射时序图
-- [ ] VMA 操作时序图
+- [ ] 页表映射/权限覆盖时序图
+- [ ] MMIO 映射与 RAM 重叠校验时序图
 - [ ] 各 crate README
 - [ ] Unsafe 审计（此层 unsafe 最密集）
 - [ ] 单元测试 + 系统测试补全

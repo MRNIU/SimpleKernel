@@ -291,11 +291,11 @@ TLB shootdown 在主核中断控制器初始化后注册。从核完成本核中
 cargo fmt --all -- --check
 cargo xtask check --arch riscv64
 cargo xtask check --arch aarch64
-timeout 30s cargo xtask test --arch riscv64 --name frame-alloc-test
-timeout 30s cargo xtask test --arch riscv64 --name heap-test
-timeout 30s cargo xtask test --arch riscv64 --name paging-table-test
-timeout 30s cargo xtask test --arch riscv64 --name tlb-shootdown-test
-timeout 30s cargo xtask test --arch riscv64 --name device-test
+cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30
+cargo xtask test --arch riscv64 --name heap-test --timeout 30
+cargo xtask test --arch riscv64 --name paging-test/table --timeout 30
+cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30
+cargo xtask test --arch riscv64 --name device-test --timeout 30
 ```
 
 所有 QEMU 相关命令必须设置 30 秒超时；超时后清理残留 `qemu-system` 进程。

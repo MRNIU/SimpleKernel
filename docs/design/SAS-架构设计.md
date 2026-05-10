@@ -145,7 +145,7 @@ boot 路径中的初始化函数（`task::init()`、`memory::init()`）不经过
 | syscall 函数可正常调用 | `smoke_test.rs` 改为直接调用后正常运行 |
 | crate 可见性正确 | `cargo build` 编译通过——绕过 syscall 调用 `pub(crate)` 函数会编译失败 |
 | 单元测试 | `cargo test` 通过（x86_64 host） |
-| 系统测试 | `cargo xtask test --arch riscv64` 通过 |
+| 系统测试 | `cargo xtask test --arch riscv64 --timeout 30` 通过 |
 | lint | `cargo fmt --check && cargo clippy -- -D warnings` 通过 |
 
 不新增测试——纯重构，行为不变，现有测试覆盖即可。

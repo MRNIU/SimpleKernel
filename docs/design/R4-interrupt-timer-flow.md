@@ -9,7 +9,7 @@
 
 本文记录当前 R4 层已经落地的中断边界。RISC-V 浮点策略已由 ADR-017 收敛为 eager 保存恢复。
 TLB shootdown 完整协议已由 ADR-018 收敛为方案 A：保留单 broadcast lock，补齐 timeout 和诊断；
-timer absolute deadline / 长期漂移语义见 ADR-019，已暂定采用方案 B。
+timer absolute deadline / 长期漂移语义见 ADR-019，方案 B 已落地，方案 C 后续回看。
 
 ## Timer IRQ 与抢占边界
 

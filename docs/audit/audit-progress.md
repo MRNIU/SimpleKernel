@@ -27,17 +27,6 @@ missed tick 补记和 tickless one-shot 后续回看。
 `cargo xtask check --arch aarch64`。涉及 QEMU 的命令必须使用 30 秒超时并在
 超时后清理残留 `qemu-system` 进程。
 
-验证结果（2026-05-09 ADR-019 方案 B 实现）：容器 `simplekernel-dev` 内先按 TDD
-给 `arch-test` 增加 absolute deadline 推进契约；RED 阶段确认缺少
-`simplekernel::timer::next_absolute_deadline()` 时 `arch-test` 编译失败。实现后公共
-`timer::next_absolute_deadline()` 编码“跳到未来但只记一个逻辑 tick”；RISC-V 每核保存
-`NEXT_DEADLINE` 并继续用 SBI absolute `set_timer()`；AArch64 每核保存 `NEXT_DEADLINE`
-并改用 `CNTV_CVAL_EL0`。同时同步 ADR-019、ADR 索引、R4 interrupt/timer 设计说明、
-R4 审计报告和 tick README。验证通过：`cargo fmt --all -- --check`、
-`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64`、
-RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name arch-test --timeout 30`，
-以及 `git diff --check`。
-
 验证结果（2026-05-09 ADR-018 方案 A 实现）：容器 `simplekernel-dev` 内先补
 `paging-test/tlb-shootdown-timeout-panic` should_panic 红测，RED 阶段确认缺少
 `tlb_shootdown::trigger_ack_timeout_for_test()` 时编译失败。实现后 `broadcast()`
@@ -50,14 +39,26 @@ RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name paging-test/
 和 `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`，
 以及 `git diff --check`。
 
+验证结果（2026-05-09 ADR-019 方案 B 实现）：容器 `simplekernel-dev` 内先按 TDD
+给 `arch-test` 增加 absolute deadline 推进契约；RED 阶段确认缺少
+`simplekernel::timer::next_absolute_deadline()` 时 `arch-test` 编译失败。实现后公共
+`timer::next_absolute_deadline()` 编码“跳到未来但只记一个逻辑 tick”；RISC-V 每核保存
+`NEXT_DEADLINE` 并继续用 SBI absolute `set_timer()`；AArch64 每核保存 `NEXT_DEADLINE`
+并改用 `CNTV_CVAL_EL0`。同时同步 ADR-019、ADR 索引、R4 interrupt/timer 设计说明、
+R4 审计报告和 tick README。验证通过：`cargo fmt --all -- --check`、
+`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64`、
+RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name arch-test --timeout 30`，
+以及 `git diff --check`。
+
 验证结果（2026-05-09 R4 剩余 ADR 提议稿）：本轮只新增/更新文档，未修改实现代码。
 已补 ADR-018（TLB shootdown 完整协议）和 ADR-019（timer absolute deadline / tick 漂移语义），
 并同步 ADR 索引、R4 审计报告、R4 interrupt/timer 设计说明和审计进度。验证使用
 `git diff --check`。
 
-验证结果（2026-05-09 ADR-019 暂定方案 B 记录）：本轮只更新文档，未修改实现代码。
-ADR-019 已记录暂定采用方案 B；ADR 索引、R4 审计报告、R4 interrupt/timer 设计说明和本进度文件
-已同步为“暂定方案 B，待实现 per-core absolute deadline”。验证使用 `git diff --check`。
+验证结果（2026-05-09 ADR-019 方案 B 决策记录）：本轮只更新文档，未修改实现代码。
+当时 ADR-019 记录为采用方案 B；后续已按方案 B 落地 per-core absolute deadline。
+ADR 索引、R4 审计报告、R4 interrupt/timer 设计说明和本进度文件已在后续记录中同步到实现后状态。
+验证使用 `git diff --check`。
 
 验证结果（2026-05-09 R4 ADR 补记与 RISC-V 浮点恢复）：容器
 `simplekernel-dev` 内先补 RISC-V FP 上下文红测：父任务写 `fs0`、子任务覆盖 `fs0`、
@@ -165,11 +166,11 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 |---|------|------|-----|
 | R4-15 timer absolute deadline | 方案 B 已落地；硬件 deadline 不再因 handler 延迟持续向后漂移 | 已修复 | ADR-019 |
 | missed tick / tickless | 不在本轮补记 missed ticks，不修改 scheduler tick API | 后续回看 | ADR-019 方案 C/D |
-| R4-05 TLB shootdown 完整协议 | 最小硬化已在代码中，长期协议仍需作者选 A/B/C | 待决策 | ADR-018 |
+| R4-05 TLB shootdown 完整协议 | 当前状态已按方案 A 收敛；仍需补远端访问强证明 | 部分完成 | ADR-018 |
 
 ### 下一步
 
-优先等待 ADR-018 TLB shootdown 完整协议决策；timer 方向后续只在 sleep/timeout 或 scheduler
+优先补 ADR-018 方案 A 的远端访问强证明；timer 方向后续只在 sleep/timeout 或 scheduler
 需要真实 elapsed time 时再升级到方案 C。
 
 **日期**：2026-05-09（ADR-018 方案 A 实现）
@@ -212,13 +213,13 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 
 | # | 结论 | 状态 | ADR |
 |---|------|------|-----|
-| R4-05 TLB shootdown 完整协议 | 最小硬化已在代码中，长期协议仍需作者选 A/B/C | 待决策 | ADR-018 |
-| R4-15 timer 漂移语义 | fail-fast 已在代码中；absolute deadline 暂定方案 B，missed tick / tickless 后续回看 | 待实现 | ADR-019 |
+| R4-05 TLB shootdown 完整协议 | 当时仍待选择；后续已按 ADR-018 方案 A 收口，远端访问强证明待补 | 已接受方案 A | ADR-018 |
+| R4-15 timer 漂移语义 | 当时暂定方案 B；后续已落地 per-core absolute deadline，missed tick / tickless 后续回看 | 已落地方案 B | ADR-019 |
 
 ### 下一步
 
-等待项目作者在 ADR-018 中选择方案；ADR-019 已暂定方案 B，后续进入 per-core absolute
-deadline 实现和回归测试。
+该条是当时的 ADR 提议稿摘要；后续 ADR-018 已接受方案 A，ADR-019 方案 B 已实现。
+当前下一步以本文件顶部“当前状态”为准。
 
 **日期**：2026-05-09（R4 ADR 补记与 RISC-V 浮点恢复）
 
@@ -241,11 +242,12 @@ deadline 实现和回归测试。
 | R4-04/R4-12 CPU topology / SGI 平台契约 | 当前选择 dense core id、单 cluster，不做 remap | 已修复 | ADR-015 |
 | R4-06 RISC-V 浮点 | 不是“完全已支持”：FP 指令能执行，但任务切换原先不保存 `fs0-fs11` | 已修复 | ADR-017 |
 | R4-05 TLB shootdown 完整协议 | 只有最小硬化，是否升级 mailbox/rendezvous 仍未定 | 待设计 | 待补 |
-| R4-15 timer 漂移语义 | fail-fast 已修复；后续已由 ADR-019 暂定方案 B | 待实现 | ADR-019 |
+| R4-15 timer 漂移语义 | fail-fast 已修复；后续已由 ADR-019 方案 B 落地 per-core absolute deadline | 已修复 | ADR-019 |
 
 ### 下一步
 
-优先进入 R4-05 TLB shootdown 完整协议 ADR；R4-15 后续按 ADR-019 暂定方案 B 实现。
+该条是当时的 ADR 补记摘要；后续已完成 R4-05 方案 A 与 R4-15 方案 B 的实现。
+当前下一步以本文件顶部“当前状态”为准。
 
 **日期**：2026-05-09（R4 第四阶段不涉及 ADR 修复）
 

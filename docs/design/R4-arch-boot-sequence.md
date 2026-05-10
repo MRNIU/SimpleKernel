@@ -98,5 +98,5 @@ sequenceDiagram
   - 覆盖 dense CPU id 契约。
   - 覆盖 timekeeper 绑定 primary core。
   - 覆盖 Full 初始化返回时所有 discovered CPU 已 online。
-- `cargo xtask test --arch riscv64 --name tlb-shootdown --timeout 30`
+- `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`
   - 覆盖所有 online CPU 已进入 TLB shootdown 目标集合。

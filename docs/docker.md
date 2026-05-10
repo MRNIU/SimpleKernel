@@ -67,5 +67,5 @@ devcontainer exec --workspace-folder . cargo xtask run --arch aarch64 --timeout 
 devcontainer exec --workspace-folder . cargo xtask debug --arch riscv64
 
 # QEMU 系统测试
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
+devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --timeout 30
 ```

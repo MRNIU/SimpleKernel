@@ -26,7 +26,7 @@ R4 覆盖的是“硬件入口到内核抽象”的边界层：架构启动代�
 | R4-02 | P1 | timer preemption 闭环不完整且绕过调度策略 | 时间片语义不生效，FIFO/RR/CFS trait 结果被旁路 | 方案 A 已落地，ADR-016 |
 | R4-03 | P1 | RISC-V 从核启动跳过 `gp` 初始化 | 从核访问 small data / 全局对象可能使用错误 `gp` | 已修复 |
 | R4-04 | P1 | SMP 假设硬件 core id 稠密且小于 `MAX_CORE_COUNT` | 非稠密 hart/MPIDR 拓扑下栈、per-CPU、IPI 索引越界或错绑 | 平台契约已显式化，ADR-015 |
-| R4-05 | P1 | TLB shootdown 发布顺序和等待协议不完整 | 远端核可能看不到请求；广播锁与 IRQ 屏蔽组合可死锁 | 已做最小硬化；ADR-018 待决策 |
+| R4-05 | P1 | TLB shootdown 发布顺序和等待协议不完整 | 远端核可能看不到请求；广播锁与 IRQ 屏蔽组合可死锁 | 已按 ADR-018 方案 A 收口；远端访问强证明待补 |
 | R4-06 | P1 | RISC-V hard-float 状态未保存 | 开启 F/D 目标后跨任务浮点寄存器被破坏 | 已修复，ADR-017 |
 | R4-07 | P1 | 任务栈未显式保证 16 字节对齐 | ABI 违约，函数 prologue / 保存上下文可能在部分平台异常 | 已修复 |
 | R4-08 | P1 | `ArchOps::dtb_addr()` safe API 隐藏裸指针解引用 | safe 调用者无法知道 boot args 的 unsafe 前提 | 已修复 |
@@ -36,7 +36,7 @@ R4 覆盖的是“硬件入口到内核抽象”的边界层：架构启动代�
 | R4-12 | P2 | AArch64 SGI 只使用 Aff0 低 4 位 | 多 cluster 或 Aff0 不稠密时 IPI 投递错误 | 平台契约已显式化，ADR-015 |
 | R4-13 | P2 | `CORE_COUNT` 语义混淆 discovered/online，SMP 启动 fire-and-forget | 主核继续运行时从核可能尚未上线或已启动失败 | 已修复 |
 | R4-14 | P2 | 全局 tick 固定 `core_id == 0` | BSP 不是 0 或 timekeeper 迁移后 tick 失效 | 已修复 |
-| R4-15 | P2 | timer 错误处理、零 interval 和漂移语义不闭环 | 定时器静默停止、除零或长期漂移 | fail-fast 已修复；ADR-019 暂定方案 B，待实现 |
+| R4-15 | P2 | timer 错误处理、零 interval 和漂移语义不闭环 | 定时器静默停止、除零或长期漂移 | ADR-019 方案 B 已落地；方案 C/D 后续回看 |
 | R4-16 | P2 | `src/arch` 暴露面偏宽 | APP / 上层模块可绕过 syscall 和任务抽象边界 | 首轮已收窄 |
 | R4-17 | P2 | R4 文档、测试与实际代码漂移 | 审计结论和回归证据不足，后续修复缺少可信测试 | R4 交付文档已补；协议测试仍随 ADR |
 
@@ -841,7 +841,7 @@ R4 Roadmap 要求产出架构 trait 文档、启动时序图、中断处理流�
 ### 验证方向
 
 - 文档中的关键函数名和路径通过脚本或 CI 检查存在性。
-- R4 修复完成后，至少运行 `cargo xtask test --arch riscv64 --name <R4 test>` 的目标回归，
+- R4 修复完成后，至少运行 `cargo xtask test --arch riscv64 --name <R4 test> --timeout 30` 的目标回归，
   涉及 QEMU 时使用 30 秒超时并清理残留进程。
 
 ### 修复状态
@@ -880,7 +880,7 @@ ADR：已补充 ADR-015，用于固化 dense CPU id 平台契约和后续 online
 - 方案 B：per-CPU mailbox + sequence counter。优点是减少全局锁等待，缺点是实现和调试成本更高。
 - 方案 C：stop-the-world rendezvous。优点是语义清晰，缺点是对调度/中断时序侵入大。
 
-ADR：已补充 ADR-018，待项目作者决策。
+ADR：已补充 ADR-018，并已接受方案 A；per-CPU mailbox / rendezvous 保留为后续演进。
 
 ### 4. Timer 与调度边界
 
@@ -899,7 +899,7 @@ ADR：已补充 ADR-016，用于固化“硬中断内不 schedule、IRQ exit 消
   缺点是公共 timer 和 scheduler 记账都要支持批量 tick。
 - 方案 D：未来 tickless one-shot deadline。优点是空闲时减少 tick，缺点是超出当前 R4 范围。
 
-ADR：已补充 ADR-019，暂定采用方案 B，待后续实现 per-core absolute deadline。
+ADR：已补充 ADR-019，方案 B 已落地；missed tick 补记和 tickless one-shot 留作后续回看。
 
 ## 文档产出建议
 
@@ -908,9 +908,9 @@ ADR：已补充 ADR-019，暂定采用方案 B，待后续实现 per-core absolu
 - `docs/design/R4-architecture-porting-guide.md`：新增架构指南。
 - ADR：RISC-V 浮点策略（已补 ADR-017）。
 - ADR：CPU topology 平台契约（已补 ADR-015）。
-- ADR：TLB shootdown 协议（已补 ADR-018，待决策）。
+- ADR：TLB shootdown 协议（已补 ADR-018，方案 A 已接受，远端访问强证明待补）。
 - ADR：timer/preemption 边界（已补 ADR-016）。
-- ADR：timer absolute deadline / tick 漂移语义（已补 ADR-019，暂定方案 B，待实现）。
+- ADR：timer absolute deadline / tick 漂移语义（已补 ADR-019，方案 B 已落地，方案 C/D 后续回看）。
 
 ## 本轮验证
 

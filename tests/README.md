@@ -8,9 +8,9 @@
 ## 运行
 
 ```bash
-cargo xtask test --arch riscv64 --all                   # 全部测试
-cargo xtask test --arch riscv64 --name paging-test/table # 指定测试
-cargo xtask test --list                                  # 列出可用测试
+cargo xtask test --arch riscv64 --all --timeout 30                    # 全部测试
+cargo xtask test --arch riscv64 --name paging-test/table --timeout 30  # 指定测试
+cargo xtask test --list                                               # 列出可用测试
 ```
 
 ## 测试清单
@@ -41,10 +41,12 @@ cargo xtask test --list                                  # 列出可用测试
 | `memory-test` | `double-init-panic` | should_panic | memory::init 二次调用 fail-fast |
 | | `fdt-multi-memory` | normal | 多段 RAM FDT 当前 fail-fast |
 | | `fdt-firmware-reserved` | normal | FDT 固件 reserved-memory 解析 |
+| `arch-test` | | normal | 架构启动、timer deadline、IRQ-exit 抢占、SMP online 与浮点上下文 |
 | `heap-test` | | normal | 堆分配（Box、Vec、大块） |
 | `device-test` | | normal | DeviceManager、VirtIO 块设备读取 |
 | `fs-test` | | normal | VFS 路径解析、RamFS CRUD、多级目录 |
 | `pte-test` | | normal | 页表项编解码（RISC-V + AArch64） |
+| | `unaligned-paddr-panic` | should_panic | PTE 物理地址对齐校验 |
 | `panic-test` | | should_panic | panic handler 正确触发 |
 
 ## 调试文件
@@ -55,8 +57,8 @@ cargo xtask test --list                                  # 列出可用测试
 如需为测试二进制生成调试文件，使用 `--debug-files` 标志：
 
 ```bash
-cargo xtask test --arch riscv64 --name panic-test --debug-files  # 指定测试
-cargo xtask test --arch riscv64 --debug-files                    # 全部测试
+cargo xtask test --arch riscv64 --name panic-test --timeout 30 --debug-files  # 指定测试
+cargo xtask test --arch riscv64 --timeout 30 --debug-files                    # 全部测试
 ```
 
 生成的文件位于 `target/<triple>/debug/` 目录，与测试 ELF 同名但扩展名不同。

@@ -2,9 +2,10 @@
 
 # PageTable 锁粒度与 Drop 死锁问题
 
-> **⚠ 本文档已过时**——描述的是旧设计中的 `MappedPages` 模型。
-> 当前设计使用 `OwnedPages`（见 [ADR-006](../adr/006-memory-subsystem-simplification.md)），
-> Drop 不再调用 unmap（只恢复 PTE 权限），死锁场景已不存在。
+> **⚠ 本文档已过时**——描述的是旧设计中的 `MappedPages` / `OwnedPages` 模型。
+> 当前代码已按 [ADR-013](../adr/013-ownedpages-necessity.md) 删除 `OwnedPages`，`paging` crate
+> 只保留 `PageTable::identity_map_range()` 与 `PageTable::update_range_flags()` 等页表原语。
+> Drop/unmap 路径已不存在，本文仅作为历史问题记录。
 
 ## 问题描述
 
