@@ -7,18 +7,40 @@
 > 来源：R3 内存层复审第三组问题
 >
 > 范围：`crates/dma`、`src/device/hal.rs`、VirtIO 块设备路径、页表设备属性、
-> 后续 rdrive 集成评估。
+> 后续 rdrive 借鉴、兼容或集成评估。
 
 ## 目标
 
-本文把 R3 复审中剩余的设备/DMA 问题从内存层报告中独立出来，作为后续真机与
-rdrive 集成评估的跟踪入口。
+本文把 R3 复审中剩余的设备/DMA 问题从内存层报告中独立出来，作为后续真机设备与
+rdrive 借鉴、兼容或集成评估的跟踪入口。
+
+## 2026-06-03 rdrive 评估结论
+
+本轮评估结论：**借鉴 `rdrive` 的注册和 probe 思路，优先实现 SimpleKernel 本地设备框架；
+不直接把 `rdrive` 作为核心设备框架引入。**
+
+依据：
+
+- `rdrive` 的 `DriverRegister`、probe level、priority、FDT compatible 匹配和 PCI probe
+  设计可作为本地框架参考。
+- `rdrive` 的设备句柄、`spin::Mutex` / `RwLock`、`mmio-api` 全局入口、PCIe 子系统和
+  unsafe 边界需要单独审计，直接引入会把外部设备模型变成 SimpleKernel 核心架构边界。
+- SimpleKernel 已有 `memory::MmioRegion`、`crates/dma`、自定义锁和 `src/device/` 门面；
+  设备框架演进应优先保持这些边界。
+
+后续跟踪：
+
+- ADR-020 记录“借鉴而非直接引入”的架构决策。
+- P6 设备设计文档记录本地 driver descriptor、probe priority 和 typed device interface
+  的演进方向。
+- 若后续目标变为大量复用 tgoskits / ArceOS PCIe、NVMe、USB 或 SoC 驱动，应重新做隔离 POC，
+  再评估是否局部兼容 `rdif-*` 或直接引入 `rdrive`。
 
 当前结论：
 
 - 这些问题不阻塞 QEMU VirtIO + SAS identity mapping 路径。
 - 这些问题阻塞 non-coherent 真机设备支持声明。
-- 后续若引入 rdrive，应把 rdrive 的 DMA 能力、地址限制、缓存一致性模型和中断/队列
+- 后续借鉴或局部兼容 rdrive 时，应把 rdrive 的 DMA 能力、地址限制、缓存一致性模型和中断/队列
   形态一起纳入评估，而不是只在 VirtIO 路径上局部修补。
 
 ## 当前边界
@@ -163,9 +185,9 @@ RISC-V `PteFlags::kernel_device()` 当前等同 `kernel_rw()`。代码注释已�
 | 支持 Svpbmt PBMT NC/IO 位 | 语义清晰 | 需要检测扩展、编码 PTE、补 TLB/cache 文档 |
 | 对未知平台 fail-fast | 避免静默错误 | 会限制可运行平台 |
 
-## rdrive 集成前检查清单
+## rdrive 借鉴或集成前检查清单
 
-在把这些问题与 rdrive 集成合并评估前，至少需要补齐以下信息：
+在把这些问题与 rdrive 思路借鉴、`rdif-*` 兼容或直接集成合并评估前，至少需要补齐以下信息：
 
 - rdrive 使用 MMIO、PCIe、platform bus 还是其他枚举方式。
 - rdrive descriptor/ring/queue 是否由 CPU 和设备共享。
@@ -186,9 +208,9 @@ RISC-V `PteFlags::kernel_device()` 当前等同 `kernel_rw()`。代码注释已�
   - QEMU read/write、multi-sector、跨页 buffer 回归。
   - mask failure / bounce path 单元或系统测试。
   - coherent DMA dealloc mismatch、zero pages、地址不匹配回归。
-  - rdrive 集成后增加 queue/ring/data buffer 可见性验证。
+  - rdrive 借鉴、兼容或集成后增加 queue/ring/data buffer 可见性验证。
 
 ## 当前状态
 
 当前保持 ADR-014 的边界：QEMU identity backend 可用于现有 VirtIO 路径，但不声明
-non-coherent 真机 DMA 正确性。后续 rdrive 集成评估应以本文作为设备/DMA 问题入口。
+non-coherent 真机 DMA 正确性。后续 rdrive 借鉴、兼容或集成评估应以本文作为设备/DMA 问题入口。
