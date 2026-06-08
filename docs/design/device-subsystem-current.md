@@ -76,12 +76,72 @@ sequenceDiagram
 | D3 | 将 `platform_bus` 从集中式 match 迁移为 descriptor 驱动的 compatible 匹配 | 保持 `device-test` 和 FAT 回归可运行 |
 | D4 | 设备 registry 表达 typed capability、device id、依赖关系和重复注册诊断 | 上层仍只依赖本地门面 |
 | D5 | 如需复用 tgoskits 驱动，评估 `rdif-*` 适配层或隔离 `rdrive` POC | 不直接改变核心设备边界 |
+| D6 | 预留受信任驱动模块 ABI，允许驱动以 `#[repr(C)]` descriptor 暴露注册入口 | 只设计 ABI，不加载外部代码 |
+| D7 | 从文件系统加载受信任驱动模块，完成 ELF 装载、重定位和 registry 注册 | 需单独 ADR 和 loader 验证 |
+
+## 动态驱动加载远期目标
+
+后续如果要支持“从文件系统加载设备驱动”，应把目标拆成三层，而不是直接把
+当前 `DeviceManager` 替换成动态模块加载器：
+
+| 层级 | 含义 | 当前阶段定位 |
+|------|------|--------------|
+| 动态注册 | 驱动代码已编译进内核，启动或运行时注册 descriptor | R6 近期目标 |
+| 动态探测 | registry 根据 Static / FDT / PCI 等资源匹配驱动 | R6 近期目标 |
+| 动态加载代码 | 从文件系统读取驱动模块，重定位后注册到设备框架 | R6 之后的独立设计目标 |
+
+在 SimpleKernel 的 SAS 架构下，动态加载的驱动模块与内核运行在同一特权级和同一地址空间。
+因此动态驱动不是不受信任的用户态插件，而是受信任内核代码。它必须遵守内核的锁级别、
+MMIO、DMA、panic/fail-fast 和可见性边界。
+
+动态加载路径应遵守以下边界：
+
+- Rust `dyn Trait` 不作为跨模块稳定 ABI。模块边界使用 `#[repr(C)]` descriptor、
+  `extern "C"` 函数和显式 ABI version。
+- 驱动模块通过内核提供的 `KernelDriverApi` 或等价函数表注册能力接口，不直接依赖
+  `rdrive::Device<T>`、`rdif-*`、`mmio-api` 或 `dma_api::*`。
+- 模块加载器负责读取模块文件、校验 ABI version 和签名或 hash、分配代码/数据段、
+  执行 relocation、解析允许导出的内核符号，并设置代码页权限。
+- 第一版动态加载应只支持 load，不支持 unload；卸载需要设备引用计数、正在执行的
+  callback 排空、IRQ/DMA 停止、资源释放和并发访问屏障。
+- 动态模块不得绕过 `memory::MmioRegion`、`crates/dma` 和设备 registry 的 typed
+  capability 边界。
+
+一个可演进的模块 descriptor 形态如下：
+
+```rust
+#[repr(C)]
+pub struct DriverModuleDescriptor {
+    pub abi_version: u32,
+    pub name_ptr: *const u8,
+    pub name_len: usize,
+    pub init: extern "C" fn(api: *const KernelDriverApi) -> i32,
+    pub deinit: extern "C" fn() -> i32,
+}
+```
+
+该结构只表达远期 ABI 方向，不代表当前已实现动态模块加载。
+
+### 后续待确认问题
+
+这些问题应在后续 R6 / module-loader 设计对话中逐一确认：
+
+1. 动态驱动是否只支持受信任、同版本内核构建产物，还是需要支持第三方模块。
+2. 模块文件格式采用 relocatable ELF、shared object 风格 ELF，还是 SimpleKernel 自定义
+   `.skmod` 容器。
+3. 内核导出符号采用全局 symbol table、显式 `KernelDriverApi` 函数表，还是两者组合。
+4. 第一版是否只支持加载不支持卸载。
+5. 模块签名、hash、版本和依赖关系由谁生成和校验。
+6. 加载后驱动的 panic、初始化失败、probe 失败和资源回滚语义如何定义。
+7. 动态模块是否允许申请 DMA、注册 IRQ handler、访问 MMIO，以及这些 capability 如何授权。
+8. QEMU 系统测试如何覆盖模块加载、重复注册、ABI mismatch、relocation 失败和 load 后块设备 I/O。
 
 ## 非目标
 
 - 当前不直接新增 `rdrive` Cargo 依赖。
 - 当前不把 `rdif-*` 作为 SimpleKernel 上层公共接口。
 - 当前不引入 PCIe、ACPI 或自动链接段驱动注册作为主路径。
+- 当前不实现从文件系统加载驱动代码；动态驱动加载需要单独 ADR、模块 ABI 和 loader 设计。
 - 当前不宣称真机 non-coherent DMA、IOMMU、bounce buffer 或 DMA mask 策略已经闭环。
 
 ## 验证入口
