@@ -7,7 +7,11 @@
 
 ## 当前状态
 
-**当前 Phase**: R4 — 架构层第四阶段不涉及 ADR 的修复切片、R4 剩余 ADR 提议稿、
+**当前 Phase**: R6 — 设备子系统 D0.5 已完成；本轮只强化当前 D0 的 VirtIO block
+基线测试和 platform bus fail-fast 语义，未进入 D1 `BlockDevice` 门面实现，未修改
+`src/fs/fatfs_adapter.rs`。
+
+历史 R4 状态：架构层第四阶段不涉及 ADR 的修复切片、R4 剩余 ADR 提议稿、
 以及 ADR-018 方案 A 的 RISC-V/AArch64 远端访问强证明已完成。
 `R4-01/R4-02/R4-03/R4-07/R4-08/R4-09/R4-10/R4-11/R4-13/R4-14`
 已修复；`R4-04/R4-12` 已明确为 dense core id / 单 cluster 平台契约，并用 FDT CPU 表
@@ -19,9 +23,19 @@
 `R4-15` 漂移语义已补 ADR-019，并已按方案 B 落地 per-core absolute deadline；方案 C 的
 missed tick 补记和 tickless one-shot 后续回看。
 **下一个目标**（按优先级）：
-1. **R4 TLB 后续升级**：运行期映射变更增多后，再评估 ADR-018 方案 B per-CPU mailbox 或方案 C rendezvous。
-2. **R4 timer 后续升级**：按 ADR-019 后续回看条件再评估方案 C missed tick 补记或 tickless one-shot。
-3. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
+1. **R6/D1 BlockDevice 门面**：需项目作者单独确认后再开始；D0.5 未新增 `BlockDevice` trait。
+2. **R4 TLB 后续升级**：运行期映射变更增多后，再评估 ADR-018 方案 B per-CPU mailbox 或方案 C rendezvous。
+3. **R4 timer 后续升级**：按 ADR-019 后续回看条件再评估方案 C missed tick 补记或 tickless one-shot。
+4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
+
+验证结果（2026-06-08 device D0.5）：本轮只修改 `src/device/` 的 FDT/platform bus
+fail-fast 语义、`tests/device-test/` 的硬断言，以及当前设计/审计状态说明。`device-test`
+现在要求 Full 初始化后 `device_count() > 0`、`virtio_blk()` 存在，并且 sector 0 读取成功；
+`platform_bus` 在 `FDT_ADDR` 缺失、FDT 解析失败或已匹配 `virtio,mmio` 节点 `reg` 非法时
+直接 fail-fast。未新增 `BlockDevice` trait，未修改 `src/fs/fatfs_adapter.rs`。
+验证通过：`cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64`、RISC-V QEMU 30 秒超时下
+`cargo xtask test --arch riscv64 --name device-test --timeout 30`，以及 `git diff --check`。
 
 验证结果（2026-06-08 ADR-018 RISC-V/AArch64 远端访问强证明）：新增
 `paging-test/tlb-remote-access`，使用测试专用从核 mailbox 让 CPU1 先写目标 VA 缓存旧 RW 翻译；
@@ -162,6 +176,31 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 不会把 should_panic 未触发转换成非零退出码。
 
 ## 上次对话摘要
+
+**日期**：2026-06-08（device D0.5）
+
+### 已完成
+
+本轮按项目作者指示只执行 device 子系统 D0.5，未进入 D1 `BlockDevice` 门面实现：
+
+1. 强化 `tests/device-test/src/main.rs`，把 `device_count() > 0`、`virtio_blk()` 可用性、
+   sector 0 读取成功都改为硬断言。
+2. 收紧 `src/device/platform_bus.rs` 的 Full 初始化语义：`FDT_ADDR` 缺失、FDT 解析失败，
+   或已匹配 `virtio,mmio` 节点 `reg` 非法时 fail-fast。
+3. 同步 `docs/design/device-subsystem-current.md`，记录 D0.5 是当前 D0 基线强化，不新增
+   `BlockDevice` trait，不改 `fatfs_adapter`。
+
+### 关键结论
+
+| # | 结论 | 状态 | 文档 |
+|---|------|------|------|
+| D0.5 device-test 硬断言 | 设备计数、VirtIO 块设备存在性、sector 0 读取都不再 log/skip | 已完成 | `docs/design/device-subsystem-current.md` |
+| platform bus fail-fast | Full 初始化下 FDT 缺失、解析失败和已匹配节点 `reg` 非法不再静默返回 | 已完成 | `docs/design/device-subsystem-current.md` |
+| D1 BlockDevice | 本轮未开始，需后续单独确认 | 未进入 | ADR-020 |
+
+### 下一步
+
+如继续 R6，应从 D1 `BlockDevice` 本地门面另起切片；D0.5 已保持现有 VirtIO/FAT 路径不变。
 
 **日期**：2026-05-09（ADR-019 方案 B 实现）
 
@@ -687,3 +726,4 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 | 2026-05-07 | R3 (第一组修复) | 修复 `VirtAddr::align_down_to` canonical 校验、`Frame::new` 页号范围、`memory::init` 二次调用 fail-fast、`frame_allocator::init reserved` 校验语义；新增对应 QEMU 回归测试和测试清单。 |
 | 2026-05-07 | R3 (第二组修复) | 收紧固件 reserved-memory 映射、删除公开 `kernel_rwx()`、将 `PageTable::update_pte()` 收窄为内部机制函数、禁止 frame allocator hard IRQ 分配/释放、对多段 RAM FDT fail-fast，并补对应回归测试。 |
 | 2026-05-08 | R3 (文档与 warning 收口) | 删除 R3 roadmap / 依赖图中的 `page_allocator` 旧引用，确认 `crates/memory/AGENTS.md` 作为本地模块说明入口，移除 `src/fdt.rs` 中已过期的 3 个 `#[expect(dead_code)]`。 |
+| 2026-06-08 | R6 (device D0.5) | 强化当前 device 基线：`device-test` 硬断言设备计数、VirtIO 块设备存在性和 sector 0 读取；Full 初始化下 platform bus 对 FDT 缺失、解析失败和非法 `virtio,mmio` `reg` fail-fast；未进入 `BlockDevice` 门面。 |

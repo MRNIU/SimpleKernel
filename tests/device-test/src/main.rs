@@ -26,23 +26,28 @@ fn run_tests() {
 /// 设备管理器应正常初始化且可查询。
 fn test_device_manager_has_devices() {
     let count = simplekernel::device::manager::device_count();
-    log::info!("device_manager: {} devices registered", count);
+    assert!(
+        count > 0,
+        "device-test: Full 初始化后应至少注册一个设备，实际为 {}",
+        count
+    );
 }
 
 /// VirtIO 块设备全局引用可用性检查。
 fn test_virtio_blk_available() {
     let available = simplekernel::device::virtio::virtio_blk().is_some();
-    log::info!("virtio_blk available: {}", available);
+    assert!(
+        available,
+        "device-test: Full 初始化后应探测到 VirtIO 块设备"
+    );
 }
 
-/// VirtIO 块设备读取测试（仅在块设备可用时执行）。
+/// VirtIO 块设备读取测试。
 fn test_virtio_blk_read_sector() {
-    if let Some(blk) = simplekernel::device::virtio::virtio_blk() {
-        let mut blk = blk.lock();
-        let mut buf = [0u8; 512];
-        blk.read_blocks(0, &mut buf).expect("读取扇区 0 失败");
-        log::info!("virtio_blk: sector 0 read OK");
-    } else {
-        log::info!("virtio_blk: not available, skipping read test");
-    }
+    let blk = simplekernel::device::virtio::virtio_blk()
+        .expect("device-test: Full 初始化后应探测到 VirtIO 块设备");
+    let mut blk = blk.lock();
+    let mut buf = [0u8; 512];
+    blk.read_blocks(0, &mut buf)
+        .expect("device-test: VirtIO 块设备读取 sector 0 应成功");
 }

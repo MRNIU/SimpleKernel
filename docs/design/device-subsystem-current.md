@@ -66,11 +66,21 @@ sequenceDiagram
 - 自动链接段注册不是第一阶段目标；若后续采用 `.driver.register*`，必须同步链接脚本、
   起止符号、保留规则和链接段回归测试。
 
+## D0.5 基线
+
+D0.5 只强化当前 D0 的 VirtIO block 路径，不进入 D1 `BlockDevice` 门面实现：
+
+- Full 初始化路径下，`platform_bus` 依赖 `early_init()` 记录的 FDT 地址；`FDT_ADDR` 缺失、
+  FDT 解析失败，或已匹配的 `virtio,mmio` 节点 `reg` 属性非法，均必须 fail-fast。
+- `device-test` 必须把 `device_count() > 0`、`virtio_blk()` 可用，以及 sector 0 读取成功作为硬断言。
+- `fatfs_adapter` 在 D0.5 不迁移，仍继续通过 `virtio_blk()` 访问当前 VirtIO 块设备。
+
 ## 演进路径
 
 | 阶段 | 目标 | 兼容约束 |
 |------|------|----------|
 | D0 | 保持当前 VirtIO block + FAT 路径稳定 | 保留 `device_count()` 和 `virtio_blk()` |
+| D0.5 | 强化当前 device-test 与 platform bus fail-fast 语义 | 不新增 `BlockDevice`，不改 `fatfs_adapter` |
 | D1 | 新增本地 `BlockDevice` trait 和块设备门面 | `fatfs_adapter` 迁移后再弱化 VirtIO 具体依赖 |
 | D2 | 新增本地 `DriverDescriptor` / `ProbeKind` / `ProbeLevel` / `ProbePriority` | 先支持 Static / FDT，PCIe 后续按需求加入 |
 | D3 | 将 `platform_bus` 从集中式 match 迁移为 descriptor 驱动的 compatible 匹配 | 保持 `device-test` 和 FAT 回归可运行 |

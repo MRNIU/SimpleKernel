@@ -68,6 +68,10 @@ pub trait Device: Send + Sync {
 /// 初始化设备子系统——扫描 FDT 并探测所有设备。
 ///
 /// 在页表激活和中断初始化之后调用。
+///
+/// # Panics
+/// Full 初始化要求 FDT 平台输入已就绪且可解析；若 platform bus 发现 FDT 缺失、
+/// 解析失败或已匹配设备节点的 `reg` 属性非法，会立即 panic。
 pub fn device_init() {
     log::info!("DeviceInit: scanning FDT...");
     manager::init();
