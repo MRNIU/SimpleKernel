@@ -26,7 +26,7 @@ R4 覆盖的是“硬件入口到内核抽象”的边界层：架构启动代�
 | R4-02 | P1 | timer preemption 闭环不完整且绕过调度策略 | 时间片语义不生效，FIFO/RR/CFS trait 结果被旁路 | 方案 A 已落地，ADR-016 |
 | R4-03 | P1 | RISC-V 从核启动跳过 `gp` 初始化 | 从核访问 small data / 全局对象可能使用错误 `gp` | 已修复 |
 | R4-04 | P1 | SMP 假设硬件 core id 稠密且小于 `MAX_CORE_COUNT` | 非稠密 hart/MPIDR 拓扑下栈、per-CPU、IPI 索引越界或错绑 | 平台契约已显式化，ADR-015 |
-| R4-05 | P1 | TLB shootdown 发布顺序和等待协议不完整 | 远端核可能看不到请求；广播锁与 IRQ 屏蔽组合可死锁 | 已按 ADR-018 方案 A 收口；远端访问强证明待补 |
+| R4-05 | P1 | TLB shootdown 发布顺序和等待协议不完整 | 远端核可能看不到请求；广播锁与 IRQ 屏蔽组合可死锁 | 已按 ADR-018 方案 A 收口；RISC-V 远端访问强证明已补 |
 | R4-06 | P1 | RISC-V hard-float 状态未保存 | 开启 F/D 目标后跨任务浮点寄存器被破坏 | 已修复，ADR-017 |
 | R4-07 | P1 | 任务栈未显式保证 16 字节对齐 | ABI 违约，函数 prologue / 保存上下文可能在部分平台异常 | 已修复 |
 | R4-08 | P1 | `ArchOps::dtb_addr()` safe API 隐藏裸指针解引用 | safe 调用者无法知道 boot args 的 unsafe 前提 | 已修复 |
@@ -300,8 +300,13 @@ RISC-V `send_ipi()` 前加入 `fence rw, rw`；AArch64 写 `ICC_SGI1R_EL1` 前�
 超时直接 panic，并打印发起核、目标 mask、缺失 ack mask、generation、request kind 和 request addr。
 新增 `paging-test/tlb-shootdown-timeout-panic` should_panic 回归，覆盖 ack 缺失时 fail-fast。
 
+2026-06-08 已新增 `paging-test/tlb-remote-access`：CPU1 先写目标 VA 缓存旧 RW 翻译，
+CPU0 将同一页改为 RO 并等待 shootdown ack，随后 CPU1 再写同一 VA 必须触发 RISC-V
+store page fault。测试通过 `test-support` 下的精确 fault 恢复钩子匹配 target core、fault VA
+和 fault PC，避免吞掉非预期异常。
+
 仍未升级为 per-CPU mailbox、sequence counter 或 stop-the-world rendezvous；这些保留为后续运行期映射变更增多后的演进方向。
-远端访问强证明仍需补充：CPU0 修改权限或映射后，CPU1 在 ack 后立即访问目标 VA。
+AArch64 同型远端访问强证明仍待补充；当前 AArch64 `TrapContext` 尚未保存 `FAR_EL1`，不适合做精确 VA 匹配恢复。
 
 ## R4-06. RISC-V hard-float 状态未保存
 
@@ -810,8 +815,8 @@ simplekernel::arch::* 为 public
 R4 Roadmap 要求产出架构 trait 文档、启动时序图、中断处理流程图、架构扩展指南和 SMP 启动验证；
 当前代码已经进入更复杂的 SMP/timer/TLB shootdown 状态，但文档仍有旧启动顺序、模块路径或测试策略描述。
 
-测试侧也存在覆盖不足：`arch-test` 主要覆盖 AArch64 FP，`paging-test` 的 TLB shootdown 测试偏 PTE
-检查，不足以证明 R4 的 IPI/远端 ack/timer delivery 协议。
+测试侧曾存在覆盖不足：`arch-test` 主要覆盖 AArch64 FP，`paging-test` 的旧 TLB shootdown 测试偏 PTE
+检查。后续已补 `paging-test/tlb-remote-access` 覆盖 RISC-V 远端 ack 后访问语义。
 
 ### 可能触发路径
 
@@ -835,7 +840,7 @@ R4 Roadmap 要求产出架构 trait 文档、启动时序图、中断处理流�
   - SMP 上线验证。
   - IPI 投递和 ack。
   - timer delivery 与 preemption hook。
-  - TLB shootdown 远端访问验证。
+  - TLB shootdown 远端访问验证（RISC-V 已补，AArch64 待 `FAR_EL1` 支撑）。
 - 统一 QEMU timeout 说明：交互命令 30 秒、CI 单测超时 120 秒、xtask 默认值是否需要保留 300 秒应写清楚。
 
 ### 验证方向
@@ -853,7 +858,8 @@ R4 Roadmap 要求产出架构 trait 文档、启动时序图、中断处理流�
 - `docs/design/R4-architecture-porting-guide.md`
 
 同时在 `docs/README.md` 增加当前设计入口，并在 `arch-test` 中补充 Full 初始化返回后的
-all-discovered-cores-online 合约断言。TLB shootdown 的远端访问强证明测试仍依赖后续协议 ADR。
+all-discovered-cores-online 合约断言。2026-06-08 已补 RISC-V `paging-test/tlb-remote-access`
+作为 TLB shootdown 远端访问强证明；AArch64 同型测试待 `FAR_EL1` 进入 trap context 后补。
 
 ## 设计讨论点
 
@@ -908,7 +914,7 @@ ADR：已补充 ADR-019，方案 B 已落地；missed tick 补记和 tickless on
 - `docs/design/R4-architecture-porting-guide.md`：新增架构指南。
 - ADR：RISC-V 浮点策略（已补 ADR-017）。
 - ADR：CPU topology 平台契约（已补 ADR-015）。
-- ADR：TLB shootdown 协议（已补 ADR-018，方案 A 已接受，远端访问强证明待补）。
+- ADR：TLB shootdown 协议（已补 ADR-018，方案 A 已接受，RISC-V 远端访问强证明已补）。
 - ADR：timer/preemption 边界（已补 ADR-016）。
 - ADR：timer absolute deadline / tick 漂移语义（已补 ADR-019，方案 B 已落地，方案 C/D 后续回看）。
 

@@ -23,6 +23,79 @@ unsafe extern "C" {
     fn trap_entry();
 }
 
+#[cfg(feature = "test-support")]
+mod expected_fault {
+    use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+
+    use super::TrapContext;
+
+    const NO_CORE: usize = usize::MAX;
+    const CAUSE_STORE_PAGE_FAULT: u64 = 15;
+
+    static ARMED: AtomicBool = AtomicBool::new(false);
+    static OBSERVED: AtomicBool = AtomicBool::new(false);
+    static TARGET_CORE_ID: AtomicUsize = AtomicUsize::new(NO_CORE);
+    static FAULT_ADDR: AtomicUsize = AtomicUsize::new(0);
+    static FAULT_PC: AtomicUsize = AtomicUsize::new(0);
+    static RESUME_PC: AtomicUsize = AtomicUsize::new(0);
+
+    pub fn expect_store_page_fault(
+        target_core_id: usize,
+        fault_addr: usize,
+        fault_pc: usize,
+        resume_pc: usize,
+    ) {
+        TARGET_CORE_ID.store(target_core_id, Ordering::Relaxed);
+        FAULT_ADDR.store(fault_addr, Ordering::Relaxed);
+        FAULT_PC.store(fault_pc, Ordering::Relaxed);
+        RESUME_PC.store(resume_pc, Ordering::Relaxed);
+        OBSERVED.store(false, Ordering::Relaxed);
+        ARMED.store(true, Ordering::Release);
+    }
+
+    pub fn observed() -> bool {
+        OBSERVED.load(Ordering::Acquire)
+    }
+
+    pub fn try_handle(code: u64, ctx: &mut TrapContext) -> bool {
+        if code != CAUSE_STORE_PAGE_FAULT || !ARMED.load(Ordering::Acquire) {
+            return false;
+        }
+
+        let core_id = per_cpu::current_core_id();
+        if core_id != TARGET_CORE_ID.load(Ordering::Relaxed)
+            || ctx.stval as usize != FAULT_ADDR.load(Ordering::Relaxed)
+            || ctx.sepc as usize != FAULT_PC.load(Ordering::Relaxed)
+        {
+            return false;
+        }
+
+        ctx.sepc = RESUME_PC.load(Ordering::Relaxed) as u64;
+        OBSERVED.store(true, Ordering::Release);
+        ARMED.store(false, Ordering::Release);
+        true
+    }
+}
+
+/// 注册一个测试专用的 store page fault 恢复点。
+///
+/// 仅用于独立系统测试验证 TLB shootdown 后远端核心访问语义。
+#[cfg(feature = "test-support")]
+pub fn expect_store_page_fault_for_test(
+    target_core_id: usize,
+    fault_addr: usize,
+    fault_pc: usize,
+    resume_pc: usize,
+) {
+    expected_fault::expect_store_page_fault(target_core_id, fault_addr, fault_pc, resume_pc);
+}
+
+/// 返回测试专用 store page fault 是否已经命中。
+#[cfg(feature = "test-support")]
+pub fn store_page_fault_observed_for_test() -> bool {
+    expected_fault::observed()
+}
+
 // PLIC 地址常量
 
 /// PLIC MMIO 区域——使用 `MmioRegion` 提供类型安全的寄存器访问
@@ -300,6 +373,11 @@ pub extern "C" fn HandleTrap(ctx: &mut TrapContext) -> *mut TrapContext {
                 );
             }
             _ => {
+                #[cfg(feature = "test-support")]
+                if expected_fault::try_handle(code, ctx) {
+                    return ctx as *mut TrapContext;
+                }
+
                 log::error!(
                     "HandleTrap: 异常 code={}, sepc=0x{:x}, stval=0x{:x}, scause=0x{:x}",
                     code,

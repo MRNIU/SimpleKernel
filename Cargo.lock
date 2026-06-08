@@ -623,6 +623,7 @@ dependencies = [
  "log",
  "memory_types",
  "paging",
+ "per_cpu",
  "sbi-rt",
  "simplekernel",
  "test_harness",

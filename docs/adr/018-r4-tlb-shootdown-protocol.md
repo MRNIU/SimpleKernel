@@ -192,7 +192,9 @@ generation、request kind、request addr 和等待上限。
 - **API 变更**: `tlb` crate 的回调契约已写入发起上下文和 fail-fast 边界。
 - **测试**:
   - 已补 timeout/诊断 should_panic 回归。
-  - 仍需补远端访问强证明：CPU0 改权限或映射后 shootdown，CPU1 在 ack 后访问目标 VA。
+  - 已补 RISC-V 远端访问强证明：CPU0 改权限后 shootdown，CPU1 在 ack 后写目标 VA 必须触发
+    store page fault。
+  - AArch64 同型强证明仍待补充；当前 AArch64 `TrapContext` 尚未保存 `FAR_EL1`，不适合做精确 VA 匹配恢复。
   - 方案 B/C 需要额外覆盖并发发起方、重复 IPI 和目标核延迟 ack。
 - **文档**: `docs/design/R4-interrupt-timer-flow.md` 已按方案 A 更新。
 - **当前设计同步**: 若未来切换到方案 B/C，需要同步更新 R4 架构移植指南和 paging 设计文档。

@@ -110,5 +110,8 @@ handler 晚到时，公共 `timer::next_absolute_deadline()` 会把下一次硬�
   - 覆盖 online CPU 集合参与 TLB shootdown 回归。
 - `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown-timeout-panic --timeout 30`
   - 覆盖远端 ack 缺失时 fail-fast，而不是无限自旋。
+- `cargo xtask test --arch riscv64 --name paging-test/tlb-remote-access --timeout 30`
+  - 覆盖 CPU0 收紧页权限并等待 shootdown ack 后，CPU1 再写目标 VA 必须按新 RO 权限触发
+    store page fault。
 - `cargo xtask check --arch riscv64` 和 `cargo xtask check --arch aarch64`
   - 覆盖两架构 absolute deadline 与 IPI barrier 代码可编译。

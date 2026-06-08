@@ -40,6 +40,11 @@ name = "tlb-shootdown-timeout-panic"
 path = "src/tlb_shootdown_timeout_panic.rs"
 test = false
 
+[[bin]]
+name = "tlb-remote-access"
+path = "src/tlb_remote_access.rs"
+test = false
+
 [dependencies]
 test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false, features = ["test-support"] }
@@ -47,6 +52,7 @@ paging = { path = "../../crates/paging" }
 frame_allocator = { path = "../../crates/frame_allocator" }
 memory_types = { path = "../../crates/memory_types" }
 config = { path = "../../crates/config" }
+per_cpu = { path = "../../crates/per_cpu" }
 log.workspace = true
 heapless.workspace = true
 

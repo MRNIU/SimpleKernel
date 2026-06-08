@@ -29,6 +29,8 @@ pub mod panic;
 pub mod preempt;
 pub mod syscall;
 pub mod task;
+#[cfg(feature = "test-support")]
+pub mod test_support;
 pub mod timer;
 pub mod tlb_shootdown;
 pub mod util;
