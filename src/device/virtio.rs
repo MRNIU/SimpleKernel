@@ -17,11 +17,18 @@ use virtio_drivers::device::blk::VirtIOBlk;
 use virtio_drivers::transport::mmio::{MmioTransport, VirtIOHeader};
 use virtio_drivers::transport::{DeviceType, Transport};
 
+use super::block::{self, BlockDevice};
 use super::hal::SimpleKernelHal;
 use super::{DeviceError, manager};
 
 /// VirtIO MMIO 设备标准寄存器空间大小（字节）。
 const VIRTIO_MMIO_SIZE: usize = 0x200;
+
+/// VirtIO block 设备的扇区大小。
+const VIRTIO_BLOCK_SECTOR_SIZE: usize = 512;
+
+/// 当前 VirtIO block 全局锁类型。
+pub type VirtIOBlockLock = sync::SpinLock<VirtIOBlk<SimpleKernelHal, MmioTransport<'static>>>;
 
 /// VirtIO 块设备包装——实现 `Device` trait 以注册到 DeviceManager。
 pub struct VirtIOBlockDevice {
@@ -42,15 +49,55 @@ impl super::Device for VirtIOBlockDevice {
 ///
 /// 使用 `spin::Once` 保证只初始化一次。
 /// 存储 `SpinLock` 包装以支持多核并发访问。
-static VIRTIO_BLK: spin::Once<sync::SpinLock<VirtIOBlk<SimpleKernelHal, MmioTransport<'static>>>> =
-    spin::Once::new();
+static VIRTIO_BLK: spin::Once<VirtIOBlockLock> = spin::Once::new();
 
 /// 获取全局 VirtIO 块设备引用。
 ///
 /// 返回 `None` 表示尚未探测到块设备。
-pub fn virtio_blk()
--> Option<&'static sync::SpinLock<VirtIOBlk<SimpleKernelHal, MmioTransport<'static>>>> {
+pub fn virtio_blk() -> Option<&'static VirtIOBlockLock> {
     VIRTIO_BLK.get()
+}
+
+impl BlockDevice for VirtIOBlockLock {
+    fn sector_size(&self) -> usize {
+        VIRTIO_BLOCK_SECTOR_SIZE
+    }
+
+    fn sector_count(&self) -> u64 {
+        self.lock().capacity()
+    }
+
+    fn read_sector(&self, sector: u64, buf: &mut [u8]) -> Result<(), DeviceError> {
+        let mut blk = self.lock();
+        let sector_count = blk.capacity();
+        block::validate_sector_io(sector, buf.len(), VIRTIO_BLOCK_SECTOR_SIZE, sector_count)?;
+        let sector_index =
+            usize::try_from(sector).map_err(|_| DeviceError::BlockSectorOutOfRange {
+                sector,
+                sector_count,
+            })?;
+
+        blk.read_blocks(sector_index, buf).map_err(|e| {
+            log::warn!("VirtIO 块设备读取失败 (sector={}): {:?}", sector, e);
+            DeviceError::IoError
+        })
+    }
+
+    fn write_sector(&self, sector: u64, buf: &[u8]) -> Result<(), DeviceError> {
+        let mut blk = self.lock();
+        let sector_count = blk.capacity();
+        block::validate_sector_io(sector, buf.len(), VIRTIO_BLOCK_SECTOR_SIZE, sector_count)?;
+        let sector_index =
+            usize::try_from(sector).map_err(|_| DeviceError::BlockSectorOutOfRange {
+                sector,
+                sector_count,
+            })?;
+
+        blk.write_blocks(sector_index, buf).map_err(|e| {
+            log::warn!("VirtIO 块设备写入失败 (sector={}): {:?}", sector, e);
+            DeviceError::IoError
+        })
+    }
 }
 
 /// 探测单个 VirtIO MMIO 设备。
@@ -134,6 +181,10 @@ fn init_block_device(
 
     // 存储全局引用供文件系统使用
     VIRTIO_BLK.call_once(|| sync::SpinLock::new(blk, "virtio_blk", sync::lock_level::UNSPECIFIED));
+    let blk = VIRTIO_BLK
+        .get()
+        .expect("VirtIO block Once 刚初始化后应可取得全局引用");
+    block::register_block_device(blk);
 
     Ok(())
 }

@@ -6,7 +6,7 @@
 //! - `vfs.rs`：`FileSystem` trait + 基础类型（InodeId, DirEntry, FileType 等）
 //! - `fd_table.rs`：每任务文件描述符表
 //! - `ramfs.rs`：内存文件系统实现
-//! - `fatfs_adapter.rs`：VirtIO 块设备 → fatfs crate 适配
+//! - `fatfs_adapter.rs`：本地块设备门面 → fatfs crate 适配
 //! - `mod.rs`：挂载表、路径解析、全局初始化
 
 pub mod fatfs_adapter;
@@ -133,7 +133,7 @@ pub fn fs_init() {
     // VFS 冒烟测试
     vfs_smoke_test();
 
-    // 尝试挂载 FAT 文件系统（VirtIO 块设备可用时）
+    // 尝试挂载 FAT 文件系统（块设备门面可用时）
     fatfs_adapter::try_mount_fatfs();
 
     log::info!("FileSystemInit complete");

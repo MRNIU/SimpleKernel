@@ -15,10 +15,13 @@ SimpleKernel 保留本地 `crate::device` 作为设备子系统边界。设备�
 当前实现仍是一个薄设备模型：
 
 - `src/device/mod.rs` 定义 `Device` / `DeviceType` 和 `device_init()`；
+- `src/device/block.rs` 定义本地 `BlockDevice` trait 和默认块设备门面；
 - `src/device/manager.rs` 用 `SpinLock<Vec<Box<dyn Device>>>` 保存已注册设备；
 - `src/device/platform_bus.rs` 从 FDT 枚举 `virtio,mmio` 节点；
 - `src/device/virtio.rs` 使用 `virtio-drivers` 初始化 VirtIO block，并通过全局
-  `virtio_blk()` 暴露给 `src/fs/fatfs_adapter.rs`；
+  `virtio_blk()` 保留兼容入口，同时把同一块设备注册为本地 `BlockDevice`；
+- `src/fs/fatfs_adapter.rs` 通过 `crate::device::block::block_device()` 访问块设备，
+  不再直接依赖 VirtIO 具体类型；
 - MMIO 通过 `memory::MmioRegion` 永久映射，DMA 继续走 `crates/dma` 的 QEMU identity
   backend 边界。
 
@@ -32,6 +35,7 @@ sequenceDiagram
   participant Fdt as KernelFdt
   participant Bus as platform_bus
   participant Virtio as virtio
+  participant Block as device::block
   participant Memory as memory::MmioRegion
   participant Fs as fatfs_adapter
 
@@ -45,11 +49,13 @@ sequenceDiagram
   Virtio->>Virtio: MmioTransport + VirtIOBlk 初始化
   Virtio->>Manager: register_device(Box<dyn Device>)
   Virtio->>Virtio: VIRTIO_BLK.call_once(...)
-  Fs->>Virtio: virtio_blk()
+  Virtio->>Block: register_block_device(&VIRTIO_BLK)
+  Fs->>Block: block_device()
+  Block-->>Fs: dyn BlockDevice
 ```
 
-这条路径是当前代码真值面。`DeviceManager` 只记录枚举结果；块设备实际 I/O 仍通过
-`virtio_blk()` 取得具体 VirtIO 设备。
+这条路径是当前代码真值面。`DeviceManager` 只记录枚举结果；块设备实际 I/O 已通过
+本地 `BlockDevice` 门面进入，`virtio_blk()` 仍作为兼容入口保留给测试和旧调用点。
 
 ## 边界和不变量
 
@@ -75,13 +81,26 @@ D0.5 只强化当前 D0 的 VirtIO block 路径，不进入 D1 `BlockDevice` 门
 - `device-test` 必须把 `device_count() > 0`、`virtio_blk()` 可用，以及 sector 0 读取成功作为硬断言。
 - `fatfs_adapter` 在 D0.5 不迁移，仍继续通过 `virtio_blk()` 访问当前 VirtIO 块设备。
 
+## D1 当前状态
+
+D1 已新增本地 `BlockDevice` trait 和默认块设备门面，但尚未进入 D2 的
+`DriverDescriptor` / probe registry：
+
+- `BlockDevice` 当前覆盖 `sector_size()`、`sector_count()`、字节容量 `capacity()`、
+  以及 `read_sector()` / `write_sector()` 整扇区 I/O。
+- VirtIO block 通过同一个全局 `SpinLock<VirtIOBlk<...>>` 实现 `BlockDevice`，
+  所以 DMA、MMIO 和 QEMU identity backend 语义没有扩大。
+- `fatfs_adapter` 已迁移到 `device::block::block_device()`，不再直接调用 `virtio_blk()`。
+- `device-test` 以 `BlockDevice` 门面读取 sector 0，同时保留 `virtio_blk()` 兼容入口存在性检查。
+- D2 尚未开始：没有新增 driver descriptor、probe priority、PCIe、ACPI 或自动链接段注册。
+
 ## 演进路径
 
 | 阶段 | 目标 | 兼容约束 |
 |------|------|----------|
 | D0 | 保持当前 VirtIO block + FAT 路径稳定 | 保留 `device_count()` 和 `virtio_blk()` |
 | D0.5 | 强化当前 device-test 与 platform bus fail-fast 语义 | 不新增 `BlockDevice`，不改 `fatfs_adapter` |
-| D1 | 新增本地 `BlockDevice` trait 和块设备门面 | `fatfs_adapter` 迁移后再弱化 VirtIO 具体依赖 |
+| D1 | 新增本地 `BlockDevice` trait 和块设备门面 | 已落地；`virtio_blk()` 兼容入口暂时保留 |
 | D2 | 新增本地 `DriverDescriptor` / `ProbeKind` / `ProbeLevel` / `ProbePriority` | 先支持 Static / FDT，PCIe 后续按需求加入 |
 | D3 | 将 `platform_bus` 从集中式 match 迁移为 descriptor 驱动的 compatible 匹配 | 保持 `device-test` 和 FAT 回归可运行 |
 | D4 | 设备 registry 表达 typed capability、device id、依赖关系和重复注册诊断 | 上层仍只依赖本地门面 |

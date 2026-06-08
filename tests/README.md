@@ -44,7 +44,7 @@ cargo xtask test --list                                               # 列出�
 | | `fdt-firmware-reserved` | normal | FDT 固件 reserved-memory 解析 |
 | `arch-test` | | normal | 架构启动、timer deadline、IRQ-exit 抢占、SMP online 与浮点上下文 |
 | `heap-test` | | normal | 堆分配（Box、Vec、大块） |
-| `device-test` | | normal | DeviceManager、VirtIO 块设备读取 |
+| `device-test` | | normal | DeviceManager、BlockDevice 门面、VirtIO 兼容入口 |
 | `fs-test` | | normal | VFS 路径解析、RamFS CRUD、多级目录 |
 | `pte-test` | | normal | 页表项编解码（RISC-V + AArch64） |
 | | `unaligned-paddr-panic` | should_panic | PTE 物理地址对齐校验 |

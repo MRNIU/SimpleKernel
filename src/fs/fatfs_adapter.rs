@@ -1,11 +1,11 @@
 // Copyright The SimpleKernel Contributors
 
-//! VirtIO 块设备 → `fatfs` crate I/O 适配器。
+//! 本地块设备门面 → `fatfs` crate I/O 适配器。
 //!
-//! 将 VirtIO 块设备的扇区粒度 I/O 转换为 `fatfs` crate 所需的
+//! 将 [`crate::device::block::BlockDevice`] 的扇区粒度 I/O 转换为 `fatfs` crate 所需的
 //! 字节级 `Read`/`Write`/`Seek` 接口。
 //!
-//! 核心挑战：VirtIO 块设备以 512 字节扇区为单位操作，
+//! 核心挑战：当前默认块设备以 512 字节扇区为单位操作，
 //! 而 `fatfs` 需要任意偏移的字节级读写。
 //! 解决方案：扇区对齐的 read-modify-write。
 
@@ -38,36 +38,35 @@ impl core::fmt::Display for BlockIoError {
     }
 }
 
-/// VirtIO 块设备的字节级 I/O 适配器——实现 `fatfs` 的 I/O trait。
+/// 块设备的字节级 I/O 适配器——实现 `fatfs` 的 I/O trait。
 ///
 /// 维护当前读写位置（`position`），将字节级操作转换为扇区级操作。
-pub struct VirtioBlockAdapter {
+pub struct BlockDeviceAdapter {
     /// 当前字节偏移量
     position: u64,
 }
 
-impl VirtioBlockAdapter {
+impl BlockDeviceAdapter {
     /// 创建新的适配器，位置初始化为 0。
     pub fn new() -> Self {
         Self { position: 0 }
     }
 }
 
-impl Default for VirtioBlockAdapter {
+impl Default for BlockDeviceAdapter {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl IoBase for VirtioBlockAdapter {
+impl IoBase for BlockDeviceAdapter {
     type Error = BlockIoError;
 }
 
-impl Read for VirtioBlockAdapter {
+impl Read for BlockDeviceAdapter {
     /// 从当前位置读取数据到 `buf`，返回实际读取字节数。
     fn read(&mut self, buf: &mut [u8]) -> Result<usize, Self::Error> {
-        let blk = crate::device::virtio::virtio_blk().ok_or(BlockIoError)?;
-        let mut blk = blk.lock();
+        let blk = crate::device::block::block_device().ok_or(BlockIoError)?;
 
         let mut bytes_read = 0;
         let mut remaining = buf;
@@ -77,11 +76,10 @@ impl Read for VirtioBlockAdapter {
             let offset_in_sector = (self.position % SECTOR_SIZE as u64) as usize;
 
             let mut sector_buf = [0u8; SECTOR_SIZE];
-            blk.read_blocks(sector as usize, &mut sector_buf)
-                .map_err(|e| {
-                    log::warn!("VirtIO 块设备读取失败 (sector={}): {:?}", sector, e);
-                    BlockIoError
-                })?;
+            blk.read_sector(sector, &mut sector_buf).map_err(|e| {
+                log::warn!("块设备读取失败 (sector={}): {:?}", sector, e);
+                BlockIoError
+            })?;
 
             let available = SECTOR_SIZE - offset_in_sector;
             let n = remaining.len().min(available);
@@ -96,11 +94,10 @@ impl Read for VirtioBlockAdapter {
     }
 }
 
-impl Write for VirtioBlockAdapter {
+impl Write for BlockDeviceAdapter {
     /// 从当前位置写入 `data`，返回实际写入字节数。
     fn write(&mut self, data: &[u8]) -> Result<usize, Self::Error> {
-        let blk = crate::device::virtio::virtio_blk().ok_or(BlockIoError)?;
-        let mut blk = blk.lock();
+        let blk = crate::device::block::block_device().ok_or(BlockIoError)?;
 
         let mut bytes_written = 0;
         let mut remaining = data;
@@ -113,26 +110,24 @@ impl Write for VirtioBlockAdapter {
 
             // Read-modify-write：非对齐写入先读取当前扇区
             if offset_in_sector != 0 || remaining.len() < SECTOR_SIZE {
-                blk.read_blocks(sector as usize, &mut sector_buf)
-                    .map_err(|e| {
-                        log::warn!(
-                            "VirtIO 块设备读取失败 (sector={}, read-modify-write): {:?}",
-                            sector,
-                            e
-                        );
-                        BlockIoError
-                    })?;
+                blk.read_sector(sector, &mut sector_buf).map_err(|e| {
+                    log::warn!(
+                        "块设备读取失败 (sector={}, read-modify-write): {:?}",
+                        sector,
+                        e
+                    );
+                    BlockIoError
+                })?;
             }
 
             let available = SECTOR_SIZE - offset_in_sector;
             let n = remaining.len().min(available);
             sector_buf[offset_in_sector..offset_in_sector + n].copy_from_slice(&remaining[..n]);
 
-            blk.write_blocks(sector as usize, &sector_buf)
-                .map_err(|e| {
-                    log::warn!("VirtIO 块设备写入失败 (sector={}): {:?}", sector, e);
-                    BlockIoError
-                })?;
+            blk.write_sector(sector, &sector_buf).map_err(|e| {
+                log::warn!("块设备写入失败 (sector={}): {:?}", sector, e);
+                BlockIoError
+            })?;
 
             remaining = &remaining[n..];
             self.position += n as u64;
@@ -142,23 +137,22 @@ impl Write for VirtioBlockAdapter {
         Ok(bytes_written)
     }
 
-    /// 刷新缓冲区——VirtIO 块设备无缓冲，空操作。
+    /// 刷新缓冲区——当前块设备门面无额外软件缓冲，空操作。
     fn flush(&mut self) -> Result<(), Self::Error> {
         Ok(())
     }
 }
 
-impl Seek for VirtioBlockAdapter {
+impl Seek for BlockDeviceAdapter {
     /// 设置读写位置。
     fn seek(&mut self, pos: SeekFrom) -> Result<u64, Self::Error> {
         let new_pos = match pos {
             SeekFrom::Start(offset) => offset as i64,
             SeekFrom::Current(offset) => self.position as i64 + offset,
             SeekFrom::End(_) => {
-                // 需要知道设备大小——从 VirtIO 块设备获取
-                let blk = crate::device::virtio::virtio_blk().ok_or(BlockIoError)?;
-                let blk = blk.lock();
-                let size = blk.capacity() * SECTOR_SIZE as u64;
+                // 需要知道设备大小——从本地 BlockDevice 门面获取。
+                let blk = crate::device::block::block_device().ok_or(BlockIoError)?;
+                let size = blk.capacity();
                 match pos {
                     SeekFrom::End(offset) => size as i64 + offset,
                     _ => unreachable!(),
@@ -189,12 +183,21 @@ impl Seek for VirtioBlockAdapter {
 /// mtype -i target/.../boot/rootfs.img ::KERNEL_WAS_HERE.TXT
 /// ```
 pub fn try_mount_fatfs() -> bool {
-    if crate::device::virtio::virtio_blk().is_none() {
-        log::debug!("FatFS: 无 VirtIO 块设备，跳过挂载");
+    let Some(block_device) = crate::device::block::block_device() else {
+        log::debug!("FatFS: 无块设备，跳过挂载");
+        return false;
+    };
+
+    if block_device.sector_size() != SECTOR_SIZE {
+        log::warn!(
+            "FatFS: 块设备扇区大小不支持 (actual={}, expected={})",
+            block_device.sector_size(),
+            SECTOR_SIZE
+        );
         return false;
     }
 
-    let adapter = VirtioBlockAdapter::new();
+    let adapter = BlockDeviceAdapter::new();
     let fat_fs = match fatfs::FileSystem::new(adapter, fatfs::FsOptions::new()) {
         Ok(fs) => fs,
         Err(e) => {
@@ -203,7 +206,7 @@ pub fn try_mount_fatfs() -> bool {
         }
     };
 
-    log::info!("FatFS: mounted VirtIO block device");
+    log::info!("FatFS: mounted block device");
 
     let write_content = b"SimpleKernel P7 FAT write-read OK\n";
     {

@@ -7,10 +7,12 @@
 //!
 //! 架构：
 //! - `hal.rs`：`virtio-drivers` crate 的 HAL 实现
+//! - `block.rs`：本地 `BlockDevice` 能力门面
 //! - `manager.rs`：设备注册/查找
 //! - `platform_bus.rs`：FDT 遍历 → 驱动匹配
 //! - `virtio.rs`：VirtIO 设备探测与管理
 
+pub mod block;
 pub mod hal;
 pub mod manager;
 pub mod platform_bus;
@@ -31,6 +33,20 @@ pub enum DeviceError {
     DmaAllocFailed,
     /// 设备 I/O 错误
     IoError,
+    /// 块设备整扇区 I/O 缓冲区大小不匹配
+    InvalidBlockBuffer {
+        /// 调用方传入的缓冲区长度
+        len: usize,
+        /// 设备要求的扇区大小
+        sector_size: usize,
+    },
+    /// 块设备扇区号越界
+    BlockSectorOutOfRange {
+        /// 调用方请求的扇区号
+        sector: u64,
+        /// 设备总扇区数
+        sector_count: u64,
+    },
     /// FDT 中未找到设备
     DeviceNotFound,
 }
