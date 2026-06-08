@@ -8,31 +8,33 @@
 ## 当前状态
 
 **当前 Phase**: R4 — 架构层第四阶段不涉及 ADR 的修复切片、R4 剩余 ADR 提议稿、
-以及 ADR-018 方案 A 的 RISC-V 远端访问强证明已完成。
+以及 ADR-018 方案 A 的 RISC-V/AArch64 远端访问强证明已完成。
 `R4-01/R4-02/R4-03/R4-07/R4-08/R4-09/R4-10/R4-11/R4-13/R4-14`
 已修复；`R4-04/R4-12` 已明确为 dense core id / 单 cluster 平台契约，并用 FDT CPU 表
 做 fail-fast 诊断，已补 ADR-015；`R4-02` timer IRQ-exit preemption 边界已补 ADR-016；
 `R4-06` RISC-V eager FPU 上下文保存已恢复并补 ADR-017；`R4-05` 已按 ADR-018 采用方案 A，
 完成发布屏障、IRQ enabled 断言、IPI barrier、ack timeout、缺失 ack 诊断和 RISC-V
-远端访问强证明；`R4-16` 已完成
+远端访问强证明，并已补 AArch64 同型强证明；`R4-16` 已完成
 `src/arch` 首轮外部暴露面收窄；`R4-17` 已补 R4 当前设计文档和启动 barrier 回归。
 `R4-15` 漂移语义已补 ADR-019，并已按方案 B 落地 per-core absolute deadline；方案 C 的
 missed tick 补记和 tickless one-shot 后续回看。
 **下一个目标**（按优先级）：
-1. **AArch64 TLB 强证明补齐**：若要做同型远端访问强证明，先把 `FAR_EL1` 纳入 AArch64 trap context，
-   再用 target core + fault VA + fault PC 精确恢复。
-2. **R4 TLB 后续升级**：运行期映射变更增多后，再评估 ADR-018 方案 B per-CPU mailbox 或方案 C rendezvous。
-3. **R4 timer 后续升级**：按 ADR-019 后续回看条件再评估方案 C missed tick 补记或 tickless one-shot。
-4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
+1. **R4 TLB 后续升级**：运行期映射变更增多后，再评估 ADR-018 方案 B per-CPU mailbox 或方案 C rendezvous。
+2. **R4 timer 后续升级**：按 ADR-019 后续回看条件再评估方案 C missed tick 补记或 tickless one-shot。
+3. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
 
-验证结果（2026-06-08 ADR-018 RISC-V 远端访问强证明）：新增
+验证结果（2026-06-08 ADR-018 RISC-V/AArch64 远端访问强证明）：新增
 `paging-test/tlb-remote-access`，使用测试专用从核 mailbox 让 CPU1 先写目标 VA 缓存旧 RW 翻译；
 CPU0 调用 `PageTable::update_range_flags(..., kernel_ro())` 并等待 TLB shootdown ack 后，
-CPU1 再写同一 VA 必须触发 RISC-V store page fault。`test-support` 下新增精确 fault 恢复钩子，
-同时匹配 target core、fault VA 和 fault PC，命中后把 `sepc` 跳到测试 resume label。
+CPU1 再写同一 VA 必须触发写权限异常。`test-support` 下新增精确 fault 恢复钩子：
+RISC-V 匹配 store page fault 的 target core、fault VA 和 fault PC，命中后把 `sepc` 跳到测试 resume label；
+AArch64 将 `FAR_EL1` 纳入 `TrapContext`，匹配写 data abort 的 target core、`FAR_EL1` 和 `ELR_EL1`，
+命中后把 `elr_el1` 跳到测试 resume label。
 验证通过：`cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64`、新增测试二进制的 RISC-V/AArch64 目标编译、
+RISC-V/AArch64 目标下 `paging-test/tlb-remote-access` 的 `cargo clippy -- -D warnings`、
 RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name paging-test/tlb-remote-access --timeout 30`、
+AArch64 QEMU 30 秒超时下 `cargo xtask test --arch aarch64 --name paging-test/tlb-remote-access --timeout 30`、
 `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`、
 `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown-timeout-panic --timeout 30`，
 以及 `git diff --check`。
@@ -181,11 +183,11 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 |---|------|------|-----|
 | R4-15 timer absolute deadline | 方案 B 已落地；硬件 deadline 不再因 handler 延迟持续向后漂移 | 已修复 | ADR-019 |
 | missed tick / tickless | 不在本轮补记 missed ticks，不修改 scheduler tick API | 后续回看 | ADR-019 方案 C/D |
-| R4-05 TLB shootdown 完整协议 | 当前状态已按方案 A 收敛；仍需补远端访问强证明 | 部分完成 | ADR-018 |
+| R4-05 TLB shootdown 完整协议 | 当前状态已按方案 A 收敛；RISC-V/AArch64 远端访问强证明后续已补 | 已完成当前强证明 | ADR-018 |
 
 ### 下一步
 
-优先补 ADR-018 方案 A 的远端访问强证明；timer 方向后续只在 sleep/timeout 或 scheduler
+ADR-018 方案 A 的远端访问强证明后续已补；timer 方向后续只在 sleep/timeout 或 scheduler
 需要真实 elapsed time 时再升级到方案 C。
 
 **日期**：2026-05-09（ADR-018 方案 A 实现）
@@ -205,11 +207,11 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 |---|------|------|-----|
 | R4-05 TLB shootdown 方案 A | 单 broadcast lock 暂时保留，ack timeout 与诊断已落地 | 已按方案 A 收口 | ADR-018 |
 | per-CPU mailbox / rendezvous | 运行期映射变更增多后再评估切换 B/C | 后续演进 | ADR-018 |
-| 远端访问强证明 | 仍需补 CPU1 ack 后访问目标 VA 的系统测试 | 待补 | ADR-018 |
+| 远端访问强证明 | 后续已补 RISC-V/AArch64 CPU1 ack 后访问目标 VA 的系统测试 | 已补 | ADR-018 |
 
 ### 下一步
 
-优先补 ADR-018 的远端访问强证明；B/C 只在运行期映射变更、DMA 属性切换或模块加载进入主路径后再评估。
+ADR-018 的远端访问强证明后续已补；B/C 只在运行期映射变更、DMA 属性切换或模块加载进入主路径后再评估。
 
 **日期**：2026-05-09（R4 剩余 ADR 提议稿）
 
@@ -228,7 +230,7 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 
 | # | 结论 | 状态 | ADR |
 |---|------|------|-----|
-| R4-05 TLB shootdown 完整协议 | 当时仍待选择；后续已按 ADR-018 方案 A 收口，远端访问强证明待补 | 已接受方案 A | ADR-018 |
+| R4-05 TLB shootdown 完整协议 | 当时仍待选择；后续已按 ADR-018 方案 A 收口，RISC-V/AArch64 远端访问强证明已补 | 已接受方案 A | ADR-018 |
 | R4-15 timer 漂移语义 | 当时暂定方案 B；后续已落地 per-core absolute deadline，missed tick / tickless 后续回看 | 已落地方案 B | ADR-019 |
 
 ### 下一步
@@ -256,7 +258,7 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 | R4-02 timer IRQ-exit preemption | 已落地并补决策记录 | 已修复 | ADR-016 |
 | R4-04/R4-12 CPU topology / SGI 平台契约 | 当前选择 dense core id、单 cluster，不做 remap | 已修复 | ADR-015 |
 | R4-06 RISC-V 浮点 | 不是“完全已支持”：FP 指令能执行，但任务切换原先不保存 `fs0-fs11` | 已修复 | ADR-017 |
-| R4-05 TLB shootdown 完整协议 | 只有最小硬化，是否升级 mailbox/rendezvous 仍未定 | 待设计 | 待补 |
+| R4-05 TLB shootdown 完整协议 | 后续已按 ADR-018 方案 A 收口；mailbox/rendezvous 保留为运行期映射变更多后的演进项 | 已接受方案 A | ADR-018 |
 | R4-15 timer 漂移语义 | fail-fast 已修复；后续已由 ADR-019 方案 B 落地 per-core absolute deadline | 已修复 | ADR-019 |
 
 ### 下一步

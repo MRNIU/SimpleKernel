@@ -27,7 +27,7 @@ cargo xtask test --list                                               # 列出�
 | | `table` | normal | 页表 identity_map_range / update_range_flags / get_mapping |
 | | `tlb-shootdown` | normal | 在线 CPU 参与 TLB shootdown 回归 |
 | | `tlb-shootdown-timeout-panic` | should_panic | TLB shootdown ack 超时 fail-fast |
-| | `tlb-remote-access` | normal | RISC-V 远端 CPU 在 shootdown ack 后按新权限访问目标 VA |
+| | `tlb-remote-access` | normal | RISC-V/AArch64 远端 CPU 在 shootdown ack 后按新权限访问目标 VA |
 | | `conflict-panic` | should_panic | identity_map_range 权限冲突检测 |
 | | `equal-range-panic` | should_panic | identity_map_range 空范围检测 |
 | | `reversed-range-panic` | should_panic | identity_map_range 反向范围检测 |

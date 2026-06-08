@@ -24,6 +24,86 @@ unsafe extern "C" {
     static vector_table: u8;
 }
 
+#[cfg(feature = "test-support")]
+mod expected_fault {
+    use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+
+    use super::TrapContext;
+
+    const NO_CORE: usize = usize::MAX;
+    const EC_DATA_ABORT_CURRENT_EL: u64 = 0x25;
+    const ESR_EC_SHIFT: u64 = 26;
+    const ESR_EC_MASK: u64 = 0x3F;
+    const ESR_ISS_WNR: u64 = 1 << 6;
+
+    static ARMED: AtomicBool = AtomicBool::new(false);
+    static OBSERVED: AtomicBool = AtomicBool::new(false);
+    static TARGET_CORE_ID: AtomicUsize = AtomicUsize::new(NO_CORE);
+    static FAULT_ADDR: AtomicUsize = AtomicUsize::new(0);
+    static FAULT_PC: AtomicUsize = AtomicUsize::new(0);
+    static RESUME_PC: AtomicUsize = AtomicUsize::new(0);
+
+    pub fn expect_write_data_abort(
+        target_core_id: usize,
+        fault_addr: usize,
+        fault_pc: usize,
+        resume_pc: usize,
+    ) {
+        TARGET_CORE_ID.store(target_core_id, Ordering::Relaxed);
+        FAULT_ADDR.store(fault_addr, Ordering::Relaxed);
+        FAULT_PC.store(fault_pc, Ordering::Relaxed);
+        RESUME_PC.store(resume_pc, Ordering::Relaxed);
+        OBSERVED.store(false, Ordering::Relaxed);
+        ARMED.store(true, Ordering::Release);
+    }
+
+    pub fn observed() -> bool {
+        OBSERVED.load(Ordering::Acquire)
+    }
+
+    pub fn try_handle(ctx: &mut TrapContext) -> bool {
+        let ec = (ctx.esr_el1 >> ESR_EC_SHIFT) & ESR_EC_MASK;
+        if ec != EC_DATA_ABORT_CURRENT_EL
+            || ctx.esr_el1 & ESR_ISS_WNR == 0
+            || !ARMED.load(Ordering::Acquire)
+        {
+            return false;
+        }
+
+        let core_id = per_cpu::current_core_id();
+        if core_id != TARGET_CORE_ID.load(Ordering::Relaxed)
+            || ctx.far_el1 as usize != FAULT_ADDR.load(Ordering::Relaxed)
+            || ctx.elr_el1 as usize != FAULT_PC.load(Ordering::Relaxed)
+        {
+            return false;
+        }
+
+        ctx.elr_el1 = RESUME_PC.load(Ordering::Relaxed) as u64;
+        OBSERVED.store(true, Ordering::Release);
+        ARMED.store(false, Ordering::Release);
+        true
+    }
+}
+
+/// 注册一个测试专用的 AArch64 写 data abort 恢复点。
+///
+/// 仅用于独立系统测试验证 TLB shootdown 后远端核心访问语义。
+#[cfg(feature = "test-support")]
+pub fn expect_write_data_abort_for_test(
+    target_core_id: usize,
+    fault_addr: usize,
+    fault_pc: usize,
+    resume_pc: usize,
+) {
+    expected_fault::expect_write_data_abort(target_core_id, fault_addr, fault_pc, resume_pc);
+}
+
+/// 返回测试专用 AArch64 写 data abort 是否已经命中。
+#[cfg(feature = "test-support")]
+pub fn write_data_abort_observed_for_test() -> bool {
+    expected_fault::observed()
+}
+
 /// GIC 地址信息（运行时初始化）
 struct GicAddrs {
     gicd_base: usize,
@@ -248,6 +328,11 @@ fn dispatch_sync(ctx: &mut TrapContext) {
     let esr = ctx.esr_el1;
     let ec = (esr >> 26) & 0x3F; // ESR_EL1.EC 字段
 
+    #[cfg(feature = "test-support")]
+    if expected_fault::try_handle(ctx) {
+        return;
+    }
+
     match ec {
         // SAS 模式下 SVC 不应触发——所有 syscall 通过直接函数调用
         0x15 => {
@@ -268,19 +353,21 @@ fn dispatch_sync(ctx: &mut TrapContext) {
         // 数据中止（EC = 0x24/0x25）或指令中止（EC = 0x20/0x21）
         0x20 | 0x21 | 0x24 | 0x25 => {
             log::error!(
-                "dispatch_sync: 地址中止 EC=0x{:02x}, ESR=0x{:x}, ELR=0x{:x}",
+                "dispatch_sync: 地址中止 EC=0x{:02x}, ESR=0x{:x}, ELR=0x{:x}, FAR=0x{:x}",
                 ec,
                 esr,
-                ctx.elr_el1
+                ctx.elr_el1,
+                ctx.far_el1
             );
             crate::util::halt::halt("致命异常，内核停止");
         }
         _ => {
             log::error!(
-                "dispatch_sync: 未知同步异常 EC=0x{:02x}, ESR=0x{:x}, ELR=0x{:x}",
+                "dispatch_sync: 未知同步异常 EC=0x{:02x}, ESR=0x{:x}, ELR=0x{:x}, FAR=0x{:x}",
                 ec,
                 esr,
-                ctx.elr_el1
+                ctx.elr_el1,
+                ctx.far_el1
             );
             crate::util::halt::halt("致命异常，内核停止");
         }
@@ -309,10 +396,11 @@ macro_rules! exception_handler {
         #[unsafe(no_mangle)]
         pub extern "C" fn $name(ctx: &mut TrapContext) {
             log::error!(
-                "{}: ESR=0x{:x}, ELR=0x{:x}",
+                "{}: ESR=0x{:x}, ELR=0x{:x}, FAR=0x{:x}",
                 stringify!($name),
                 ctx.esr_el1,
-                ctx.elr_el1
+                ctx.elr_el1,
+                ctx.far_el1
             );
             crate::util::halt::halt("致命异常，内核停止");
         }

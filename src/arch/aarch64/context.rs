@@ -7,7 +7,7 @@ use core::mem::offset_of;
 
 /// 陷阱上下文 — 保存发生异常/中断时所有通用寄存器及必要系统寄存器
 ///
-/// 大小：896 字节，与 interrupt.S 中 `kTrapContextSize` 一致。
+/// 大小：912 字节，与 interrupt.S 中 `kTrapContextSize` 一致。
 ///
 /// 内存布局：
 /// - 偏移   0–240: x0–x30 (31 个通用寄存器，每个 8 字节)
@@ -19,11 +19,13 @@ use core::mem::offset_of;
 /// - 偏移 832: elr_el1（异常链接寄存器）
 /// - 偏移 840: spsr_el1（保存的程序状态寄存器）
 /// - 偏移 848: esr_el1（异常综合寄存器）
-/// - 偏移 856: sp_el0（用户栈指针）
-/// - 偏移 864: tpidr_el0（用户线程指针）
-/// - 偏移 872: ttbr0_el1（用户页表基地址）
-/// - 偏移 880: sp_el1（内核栈指针，陷入前）
-/// - 偏移 888: tpidr_el1（内核线程指针）
+/// - 偏移 856: far_el1（故障地址寄存器）
+/// - 偏移 864: sp_el0（用户栈指针）
+/// - 偏移 872: tpidr_el0（用户线程指针）
+/// - 偏移 880: ttbr0_el1（用户页表基地址）
+/// - 偏移 888: sp_el1（内核栈指针，陷入前）
+/// - 偏移 896: tpidr_el1（内核线程指针）
+/// - 偏移 904: _padding2（16 字节栈对齐填充）
 #[repr(C)]
 #[derive(Debug, Default, Clone)]
 pub struct TrapContext {
@@ -45,6 +47,8 @@ pub struct TrapContext {
     pub spsr_el1: u64,
     /// ESR_EL1 — 异常综合寄存器
     pub esr_el1: u64,
+    /// FAR_EL1 — 地址中止时的故障虚拟地址
+    pub far_el1: u64,
     /// SP_EL0 — 用户栈指针
     pub sp_el0: u64,
     /// TPIDR_EL0 — 用户线程本地存储指针
@@ -55,13 +59,15 @@ pub struct TrapContext {
     pub sp_el1: u64,
     /// TPIDR_EL1 — 内核线程本地存储指针
     pub tpidr_el1: u64,
+    /// 填充，使 TrapContext 总大小保持 16 字节对齐
+    pub _padding2: u64,
 }
 
 // 编译时大小和偏移断言
 const _: () = {
     assert!(
-        core::mem::size_of::<TrapContext>() == 896,
-        "TrapContext 大小必须为 896 字节"
+        core::mem::size_of::<TrapContext>() == 912,
+        "TrapContext 大小必须为 912 字节"
     );
     assert!(offset_of!(TrapContext, x) == 0, "x 数组应从偏移 0 开始");
     assert!(
@@ -88,24 +94,32 @@ const _: () = {
         "esr_el1 应在偏移 848"
     );
     assert!(
-        offset_of!(TrapContext, sp_el0) == 856,
-        "sp_el0 应在偏移 856"
+        offset_of!(TrapContext, far_el1) == 856,
+        "far_el1 应在偏移 856"
     );
     assert!(
-        offset_of!(TrapContext, tpidr_el0) == 864,
-        "tpidr_el0 应在偏移 864"
+        offset_of!(TrapContext, sp_el0) == 864,
+        "sp_el0 应在偏移 864"
     );
     assert!(
-        offset_of!(TrapContext, ttbr0_el1) == 872,
-        "ttbr0_el1 应在偏移 872"
+        offset_of!(TrapContext, tpidr_el0) == 872,
+        "tpidr_el0 应在偏移 872"
     );
     assert!(
-        offset_of!(TrapContext, sp_el1) == 880,
-        "sp_el1 应在偏移 880"
+        offset_of!(TrapContext, ttbr0_el1) == 880,
+        "ttbr0_el1 应在偏移 880"
     );
     assert!(
-        offset_of!(TrapContext, tpidr_el1) == 888,
-        "tpidr_el1 应在偏移 888"
+        offset_of!(TrapContext, sp_el1) == 888,
+        "sp_el1 应在偏移 888"
+    );
+    assert!(
+        offset_of!(TrapContext, tpidr_el1) == 896,
+        "tpidr_el1 应在偏移 896"
+    );
+    assert!(
+        offset_of!(TrapContext, _padding2) == 904,
+        "_padding2 应在偏移 904"
     );
 };
 

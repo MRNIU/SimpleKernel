@@ -12,8 +12,8 @@
 
 .equ kRegsBytes, 8
 
-/* TrapContext: 896 字节 */
-.equ kTrapContextSize, 896
+/* TrapContext: 912 字节 */
+.equ kTrapContextSize, 912
 
 /*
  * 保存 TrapContext：分配栈空间，保存 x0-x30 + FP/SIMD + 系统寄存器
@@ -23,9 +23,10 @@
  * 偏移 256-767: q0-q31
  * 偏移 768-783: fpsr, fpcr
  * 偏移 784-831: _padding1
- * 偏移 832-855: elr_el1, spsr_el1, esr_el1
- * 偏移 856-879: sp_el0, tpidr_el0, ttbr0_el1
- * 偏移 880-895: sp_el1, tpidr_el1
+ * 偏移 832-863: elr_el1, spsr_el1, esr_el1, far_el1
+ * 偏移 864-887: sp_el0, tpidr_el0, ttbr0_el1
+ * 偏移 888-903: sp_el1, tpidr_el1
+ * 偏移 904-911: _padding2
  */
 .macro SaveTrapContext
     sub sp, sp, #kTrapContextSize
@@ -66,7 +67,7 @@
     stp q28, q29, [sp, #704]
     stp q30, q31, [sp, #736]
 
-    // 保存浮点状态寄存器 (偏移 768-783) 和系统寄存器 (偏移 832-895)
+    // 保存浮点状态寄存器 (偏移 768-783) 和系统寄存器 (偏移 832-903)
     // 使用临时基址避免 stp/ldp 偏移范围限制
     add x28, sp, #768
     mrs x9, fpsr
@@ -77,25 +78,26 @@
     mrs x10, spsr_el1
     stp x9, x10, [x28, #64]
     mrs x9, esr_el1
-    str x9, [x28, #80]
+    mrs x10, far_el1
+    stp x9, x10, [x28, #80]
 
     mrs x9, sp_el0
     mrs x10, tpidr_el0
     mrs x11, ttbr0_el1
-    stp x9, x10, [x28, #88]
-    str x11, [x28, #104]
+    stp x9, x10, [x28, #96]
+    str x11, [x28, #112]
 
     // sp_el1: 保存分配前的栈指针
     add x9, sp, #kTrapContextSize
     mrs x10, tpidr_el1
-    stp x9, x10, [x28, #112]
+    stp x9, x10, [x28, #120]
 .endm
 
 /*
  * 恢复 TrapContext：从栈上恢复 x0-x30 + FP/SIMD + 系统寄存器，释放栈空间
  */
 .macro RestoreTrapContext
-    // 恢复系统寄存器 (偏移 832-895) 和浮点状态寄存器 (偏移 768-783)
+    // 恢复系统寄存器 (偏移 832-903) 和浮点状态寄存器 (偏移 768-783)
     // 使用临时基址避免 stp/ldp 偏移范围限制
     add x28, sp, #768
 
@@ -104,13 +106,13 @@
     msr spsr_el1, x10
     // 注意：不恢复 esr_el1，它是硬件在异常时自动设置的只读寄存器
 
-    ldp x9, x10, [x28, #88]
-    ldr x11, [x28, #104]
+    ldp x9, x10, [x28, #96]
+    ldr x11, [x28, #112]
     msr sp_el0, x9
     msr tpidr_el0, x10
     msr ttbr0_el1, x11
 
-    ldp x9, x10, [x28, #112]
+    ldp x9, x10, [x28, #120]
     msr tpidr_el1, x10
 
     ldp x9, x10, [x28]
@@ -341,8 +343,8 @@ trap_return:
 
 .Lret_to_user:
     // 返回用户态
-    // ttbr0_el1 at offset 872
-    ldr x9, [sp, #872]
+    // ttbr0_el1 at offset 880
+    ldr x9, [sp, #880]
     msr ttbr0_el1, x9
     isb
 

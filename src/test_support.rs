@@ -29,3 +29,29 @@ pub fn expect_riscv64_store_page_fault(
 pub fn riscv64_store_page_fault_observed() -> bool {
     crate::arch::riscv64::interrupt::store_page_fault_observed_for_test()
 }
+
+/// 注册一个 AArch64 写 data abort 预期恢复点。
+///
+/// # Panics
+///
+/// 如果目标架构不是 AArch64，本函数不可用。
+#[cfg(target_arch = "aarch64")]
+pub fn expect_aarch64_write_data_abort(
+    target_core_id: usize,
+    fault_addr: usize,
+    fault_pc: usize,
+    resume_pc: usize,
+) {
+    crate::arch::aarch64::interrupt::expect_write_data_abort_for_test(
+        target_core_id,
+        fault_addr,
+        fault_pc,
+        resume_pc,
+    );
+}
+
+/// 返回预期 AArch64 写 data abort 是否已经被目标核心命中。
+#[cfg(target_arch = "aarch64")]
+pub fn aarch64_write_data_abort_observed() -> bool {
+    crate::arch::aarch64::interrupt::write_data_abort_observed_for_test()
+}
