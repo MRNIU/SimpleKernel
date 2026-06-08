@@ -56,6 +56,7 @@ SimpleKernel 当前已有 `docs/design/` 和 `docs/adr/`。新增 SAD/SDD 时可
 
 - `docs/design/SAS-架构设计.md`：单地址空间 SAS 架构边界。
 - `docs/design/memory-subsystem-v2.md`：当前内存子系统设计。
+- `docs/design/device-subsystem-current.md`：当前设备子系统设计和 rdrive 决策边界。
 - `docs/design/R4-arch-boot-sequence.md`：R4 启动与 SMP 上线时序。
 - `docs/design/R4-interrupt-timer-flow.md`：R4 中断、timer 与 TLB shootdown 流程。
 - `docs/design/R4-architecture-porting-guide.md`：新增架构后端指南。

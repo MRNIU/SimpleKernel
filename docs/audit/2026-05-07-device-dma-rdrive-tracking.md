@@ -14,9 +14,10 @@
 本文把 R3 复审中剩余的设备/DMA 问题从内存层报告中独立出来，作为后续真机设备与
 rdrive 借鉴、兼容或集成评估的跟踪入口。
 
-## 2026-06-03 rdrive 评估结论
+## rdrive 决策收口
 
-本轮评估结论：**借鉴 `rdrive` 的注册和 probe 思路，优先实现 SimpleKernel 本地设备框架；
+2026-06-08，ADR-020 已接受。本轮评估结论收口为：**借鉴 `rdrive` 的注册和 probe 思路，
+优先实现 SimpleKernel 本地设备框架；
 不直接把 `rdrive` 作为核心设备框架引入。**
 
 依据：
@@ -30,9 +31,9 @@ rdrive 借鉴、兼容或集成评估的跟踪入口。
 
 后续跟踪：
 
-- ADR-020 记录“借鉴而非直接引入”的架构决策。
-- P6 设备设计文档记录本地 driver descriptor、probe priority 和 typed device interface
-  的演进方向。
+- ADR-020 记录“借鉴而非直接引入”的已接受架构决策。
+- `docs/design/device-subsystem-current.md` 记录当前设备子系统边界、本地 driver descriptor、
+  probe priority 和 typed device interface 的演进方向。
 - 若后续目标变为大量复用 tgoskits / ArceOS PCIe、NVMe、USB 或 SoC 驱动，应重新做隔离 POC，
   再评估是否局部兼容 `rdif-*` 或直接引入 `rdrive`。
 
@@ -213,4 +214,5 @@ RISC-V `PteFlags::kernel_device()` 当前等同 `kernel_rw()`。代码注释已�
 ## 当前状态
 
 当前保持 ADR-014 的边界：QEMU identity backend 可用于现有 VirtIO 路径，但不声明
-non-coherent 真机 DMA 正确性。后续 rdrive 借鉴、兼容或集成评估应以本文作为设备/DMA 问题入口。
+non-coherent 真机 DMA 正确性。rdrive 架构取舍已经由 ADR-020 收口；后续若要借鉴、
+兼容或直接集成 `rdrive`，仍应以本文作为设备/DMA 问题入口。

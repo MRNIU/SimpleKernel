@@ -33,7 +33,7 @@ ADR 描述“为什么做出某个决策”。当前架构和当前设计仍应�
 | 017 | [RISC-V eager 浮点上下文保存](017-riscv64-eager-fpu-context.md) | 提议 | 2026-05-09 | R4 |
 | 018 | [R4 TLB shootdown 完整协议](018-r4-tlb-shootdown-protocol.md) | 已接受（方案 A，B/C 后续演进） | 2026-05-09 | R4 |
 | 019 | [R4 timer absolute deadline 与 tick 漂移语义](019-r4-timer-absolute-deadline-and-drift.md) | 提议（方案 B 已落地，方案 C 后续） | 2026-05-09 | R4/R5 |
-| 020 | [借鉴 rdrive 思路而非直接引入为核心设备框架](020-borrow-rdrive-patterns-local-device-framework.md) | 提议 | 2026-06-03 | R6 |
+| 020 | [借鉴 rdrive 思路而非直接引入为核心设备框架](020-borrow-rdrive-patterns-local-device-framework.md) | 已接受 | 2026-06-03 | R6 |
 
 ## 状态规则
 

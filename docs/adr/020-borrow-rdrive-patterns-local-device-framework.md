@@ -2,9 +2,11 @@
 
 # ADR-020: 借鉴 rdrive 思路而非直接引入为核心设备框架
 
-> **状态**: 提议
+> **状态**: 已接受
 >
 > **日期**: 2026-06-03
+>
+> **接受日期**: 2026-06-08
 >
 > **审计阶段**: R6 — 设备框架与驱动回看
 >
@@ -111,6 +113,10 @@ SimpleKernel 当前设备层已经有一套很薄的本地模型：
 `rdrive` 不作为当前核心设备框架直接引入。SimpleKernel 后续应保留 `crate::device`
 门面，并在其内部演进出本地 driver registry、probe descriptor 和设备接口 trait。
 
+2026-06-08 收口后，本决策进入已接受状态。后续若要改变为直接引入 `rdrive`、让
+`rdif-*` 成为上层公共接口，或采用 `mmio-api` / 自动链接段注册作为核心路径，必须重新
+提交 ADR 或隔离 POC 结论。
+
 ## 理由
 
 ### 设备框架是内核核心边界，不只是普通依赖
@@ -171,9 +177,11 @@ SimpleKernel 的上层模块依赖外部类型，例如 `rdrive::Device<T>`、`r
   - 新增 `fs-test` 覆盖 FAT 通过 `BlockDevice` 门面读写。
 - **文档**:
   - `docs/design/P6-设备框架与驱动.md` 同步记录本决策和后续演进方向。
+  - `docs/design/device-subsystem-current.md` 记录当前 `src/device/` 设计边界和演进路径。
   - `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 保留 rdrive 评估入口，并更新为“借鉴优先”。
 - **当前设计同步**:
-  - 本 ADR 接受后，应把 `src/device/` 的当前 SDD 从历史 P6 计划中拆成单独当前设计文档。
+  - `src/device/` 的当前 SDD 已从历史 P6 计划中拆出，见
+    `docs/design/device-subsystem-current.md`。
 
 ## 参考
 
