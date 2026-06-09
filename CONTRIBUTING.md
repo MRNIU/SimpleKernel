@@ -9,17 +9,24 @@
 开发环境默认使用 Dev Container。宿主机只保留 Docker 或兼容容器运行时、Git、编辑器/AI agent 和已有 Dev Container 入口工具；不要为了本项目在宿主机安装 Rust nightly、交叉编译器、QEMU、固件构建依赖或其他项目开发依赖。
 
 ```bash
+DEVCONTAINER_USER="$(id -un | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
+DEVCONTAINER_BRANCH="$(git branch --show-current | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
+if [ -z "$DEVCONTAINER_BRANCH" ]; then
+  echo "detached HEAD is not allowed for the devcontainer name" >&2
+  exit 1
+fi
+export DEVCONTAINER_NAME="simplekernel-devcontainer-${DEVCONTAINER_USER}-${DEVCONTAINER_BRANCH}"
 devcontainer up --workspace-folder .
-devcontainer exec --workspace-folder . bash
+docker exec -w /workspace "$DEVCONTAINER_NAME" bash
 ```
 
 宿主机侧常用命令：
 
 ```bash
-devcontainer exec --workspace-folder . cargo xtask build --arch riscv64
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64
-devcontainer exec --workspace-folder . cargo fmt --check
-devcontainer exec --workspace-folder . cargo clippy -- -D warnings
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask build --arch riscv64
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo fmt --check
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo clippy -- -D warnings
 ```
 
 通过 Bash 工具运行 QEMU 相关命令时必须设置 30 秒超时；超时后清理残留 QEMU 进程。
@@ -37,11 +44,11 @@ devcontainer exec --workspace-folder . cargo clippy -- -D warnings
 
 | 改动 | 必须同步检查 |
 |------|--------------|
-| 启动流程、命令、测试入口变化 | `README.md`、`docs/README.md`、相关设计或计划文档 |
+| 启动流程、命令、测试入口变化 | 根 `README.md`、`docs/AGENTS.md`、相关局部 `AGENTS.md`、相关设计或计划文档 |
 | 架构不变量变化 | `docs/adr/`、SAD/SDD、`AGENTS.md` |
 | 项目长期约定、Copyright、注释、文件规模、运行时配置规则变化 | `AGENTS.md`、`docs/conventions.md` |
 | Git/commit/DCO/提交模板变化 | `AGENTS.md`、`README.md`、本文件、`.gitmessage`、PR 模板 |
-| 公开 trait、错误码、类型或模块边界变化 | 代码文档注释、SDD、模块 README |
+| 公开 trait、错误码、类型或模块边界变化 | 代码文档注释、SDD、最近的局部 `AGENTS.md` |
 | 固件、第三方源码或外部交付物变化 | `3rd/` 记录、`README.md`、相关 ADR/设计/审计文档 |
 | QEMU、固件链路或目标平台假设变化 | `README.md`、相关设计文档、相关测试说明 |
 

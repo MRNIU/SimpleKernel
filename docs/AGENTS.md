@@ -1,17 +1,18 @@
 <!-- Copyright The SimpleKernel Contributors -->
 
-# docs/
+# docs/AGENTS.md
 
-本目录保存 SimpleKernel 的项目文档。代码是实现真值源；当历史设计文档与代码冲突时，以当前代码为准，并在审查记录或 ADR 中标出差异。
+本目录保存 SimpleKernel 的项目文档。本文件是 `docs/` 的局部规则和文档路由入口。
+代码是实现真值源；当历史设计文档与代码冲突时，以当前代码为准，并在审查记录或 ADR 中标出差异。
 
 ## 目录结构
 
 ```text
 docs/
-  README.md
+  AGENTS.md
   conventions.md
   design/             # 当前设计说明与历史阶段设计，部分内容可能早于实现
-  adr/          # ADR：架构决策记录
+  adr/                # ADR：架构决策记录
   audit/              # 当前深度审计计划、进度与输出格式
   diagrams/           # 可审查的架构图和依赖图
   rfcs/               # 决策前的设计空间讨论
@@ -32,7 +33,7 @@ docs/
 | 跟踪实施步骤和验证 | `docs/plans/` |
 | 跟踪审计阶段目标、进度和发现 | `docs/audit/` |
 | 记录 QEMU、固件链路、目标平台或外部交付物边界 | `docs/design/`、`docs/adr/` 或 `docs/audit/` |
-| 创建局部协作规则或新文档 | `docs/templates/` |
+| 创建局部协作规则或新文档模板 | `docs/templates/` |
 | 记录长期工程约定，包括 Copyright、注释、文件规模、严格 JSON、第三方代码和运行时配置 | `docs/conventions.md` |
 | 记录 Git、commit、DCO 和 `.gitmessage` 规范 | 根目录 `AGENTS.md`、`CONTRIBUTING.md` 和 `.gitmessage` |
 
@@ -59,3 +60,8 @@ SimpleKernel 当前已有 `docs/design/` 和 `docs/adr/`。新增 SAD/SDD 时可
 ## 图表规则
 
 架构图、数据流、状态机、启动流程和目标平台拓扑优先使用 Mermaid 或 PlantUML。图表必须配套文字说明，不能只提交图片或截图。
+
+## README 边界
+
+`docs/` 及其子目录不新增 README。目录级说明、索引、模板使用规则和 agent 工作流
+统一写入最近的 `AGENTS.md`；根目录 `README.md` 只保留面向普通读者的项目入口。

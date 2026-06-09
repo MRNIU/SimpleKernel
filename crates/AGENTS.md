@@ -15,6 +15,11 @@ flowchart TB
     memory_types["memory_types<br/>PhysAddr / VirtAddr / Frame / Span"]
   end
 
+  subgraph Platform["平台描述与设备模型层"]
+    platform_fdt["platform_fdt<br/>内核自有 DTB + FDT 查询"]
+    device_core["device_core<br/>descriptor / probe / capability registry"]
+  end
+
   subgraph Runtime["运行时原语层"]
     interrupt_state["interrupt_state<br/>中断状态 proof token"]
     sync["sync<br/>中断感知锁与锁序检查"]
@@ -37,6 +42,8 @@ flowchart TB
   arch --> config
   memory_types --> arch
   memory_types --> config
+  platform_fdt --> config
+  device_core --> platform_fdt
 
   sync --> interrupt_state
   per_cpu --> macros
@@ -68,6 +75,8 @@ flowchart TB
 | `config` | 基础层 | 编译期常量和静态不变量 | 运行时配置、硬件探测 |
 | `arch` | 基础层 | 架构常量、页表层级、TLB/中断底层操作 | 持有内核全局状态 |
 | `memory_types` | 基础层 | 类型安全地址、帧号和半开区间 | 分配、页表 walk、权限策略 |
+| `platform_fdt` | 平台描述层 | 启动期 DTB 自有 storage 与 FDT 查询 | 设备注册、驱动 probe、MMIO/DMA |
+| `device_core` | 设备模型层 | 驱动 descriptor、probe 语义和 typed capability registry | DTB 生命周期、VirtIO/MMIO/DMA 实现、文件系统 |
 | `interrupt_state` | 运行时原语层 | 中断开关状态、`HeldInterrupts` proof token | 锁实现、调度 |
 | `sync` | 运行时原语层 | `SpinLock`、`SpinLockIrq`、锁级别检查 | 业务状态管理 |
 | `macros` | 运行时原语层 | `#[cpu_local]` 等过程宏 | 运行时 per-CPU 存储 |
@@ -152,15 +161,15 @@ cache maintenance、DMA-safe PTE 属性和设备 capability 设计，不要把 Q
 
 | 改动 | 必须同步更新 |
 |------|--------------|
-| crate 公开 API 变化 | 调用方、对应测试、crate-local README/AGENTS、本文件 |
+| crate 公开 API 变化 | 调用方、对应测试、crate-local `AGENTS.md`、本文件 |
 | 内存层职责或依赖变化 | `docs/design/memory-subsystem-v2.md`、相关 ADR |
-| DMA 语义变化 | `crates/dma/README.md`、`docs/adr/014-qemu-virtio-dma-api-wrapper.md` 或新 ADR |
-| 锁语义变化 | `crates/sync/README.md`、锁级别说明和相关测试 |
-| 命令或验证入口变化 | 根 `README.md`、`docs/docker.md`、`xtask/README.md` |
+| DMA 语义变化 | `crates/dma/AGENTS.md`、`docs/adr/014-qemu-virtio-dma-api-wrapper.md` 或新 ADR |
+| 锁语义变化 | `crates/sync/AGENTS.md`、锁级别说明和相关测试 |
+| 命令或验证入口变化 | 根 `README.md`、`docs/docker.md`、`xtask/AGENTS.md` |
 
 ## 文档边界
 
-- `AGENTS.md` 记录长期边界、依赖方向和修改规则。
-- crate `README.md` 记录用法、公共 API 和示例。
+- `AGENTS.md` 记录长期边界、依赖方向、修改规则、公共 API 用法和示例。
+- crate 不再新增 README；原目录级 README 内容应迁移到最近的 `AGENTS.md`。
 - `docs/design/` 记录当前子系统设计；当设计文档和代码冲突时，以代码为准并同步文档。
 - `docs/adr/` 记录已经做出的架构决策；AI 新增 ADR 初始状态必须为“提议”。

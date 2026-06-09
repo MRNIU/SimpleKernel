@@ -1,9 +1,27 @@
 {
-	"name": "SimpleKernel",
+	"name": "simplekernel-devcontainer",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "Dockerfile",
+		"options": [
+			"--tag",
+			"simplekernel-devcontainer:latest"
+		]
 	},
-	"postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && git submodule update --init --recursive --depth 1 && rustup show",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+	"workspaceFolder": "/workspace",
+	"runArgs": [
+		"--name",
+		"${localEnv:DEVCONTAINER_NAME}"
+	],
+	"remoteUser": "dev",
+	"updateRemoteUserUID": true,
+	"containerEnv": {
+		"CARGO_HOME": "/usr/local/cargo",
+		"RUSTUP_HOME": "/usr/local/rustup",
+		"CARGO_TARGET_DIR": "${containerWorkspaceFolder}/target",
+		"TMPDIR": "${containerWorkspaceFolder}/.tmp"
+	},
+	"postCreateCommand": "mkdir -p ${containerWorkspaceFolder}/target ${containerWorkspaceFolder}/.tmp && git config --global --add safe.directory ${containerWorkspaceFolder} && git submodule update --init --recursive --depth 1 && pre-commit install --install-hooks && rustup show && cargo fetch --locked && cargo --version && cargo clippy --version && rustfmt --version && qemu-system-riscv64 --version && qemu-system-aarch64 --version && mkimage -V && gh --version && pre-commit --version && mmdc --version",
 	"customizations": {
 		"vscode": {
 			"settings": {

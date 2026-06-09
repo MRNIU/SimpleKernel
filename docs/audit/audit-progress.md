@@ -108,7 +108,7 @@ RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name paging-test/
 `timer::next_absolute_deadline()` 编码“跳到未来但只记一个逻辑 tick”；RISC-V 每核保存
 `NEXT_DEADLINE` 并继续用 SBI absolute `set_timer()`；AArch64 每核保存 `NEXT_DEADLINE`
 并改用 `CNTV_CVAL_EL0`。同时同步 ADR-019、ADR 索引、R4 interrupt/timer 设计说明、
-R4 审计报告和 tick README。验证通过：`cargo fmt --all -- --check`、
+R4 审计报告和 tick AGENTS。验证通过：`cargo fmt --all -- --check`、
 `cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64`、
 RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name arch-test --timeout 30`，
 以及 `git diff --check`。
@@ -290,7 +290,7 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 3. RISC-V timer 改为 per-core `NEXT_DEADLINE` + SBI absolute `set_timer()`。
 4. AArch64 timer 改为 per-core `NEXT_DEADLINE` + `CNTV_CVAL_EL0`，不再使用 `CNTV_TVAL_EL0`
    做相对重装。
-5. 同步 ADR-019、ADR 索引、R4 interrupt/timer 设计说明、R4 审计报告和 tick README。
+5. 同步 ADR-019、ADR 索引、R4 interrupt/timer 设计说明、R4 审计报告和 tick AGENTS。
 
 ### 关键结论
 
@@ -339,7 +339,7 @@ ADR-018 的远端访问强证明后续已补；B/C 只在运行期映射变更�
 2. ADR-019：timer absolute deadline 与 tick 漂移语义。展开相对重装、absolute deadline、
    missed tick 补记和未来 tickless 方向，并列出 `global_tick` 语义、sleep/timeout 追赶和 scheduler
    记账接口问题。
-3. 同步 `docs/adr/README.md`、R4 审计报告、R4 interrupt/timer 设计说明和本进度文件。
+3. 同步 `docs/adr/AGENTS.md`、R4 审计报告、R4 interrupt/timer 设计说明和本进度文件。
 
 ### 关键结论
 
@@ -393,7 +393,7 @@ ADR-018 的远端访问强证明后续已补；B/C 只在运行期映射变更�
    RISC-V `fence rw, rw` 和 AArch64 `dsb ishst` IPI barrier。
 3. R4-16：将 `src/arch` 根模块、`ArchOps`、`Arch`、`CalleeSavedContext`、`switch_to`
    收窄为 crate 内部可见。
-4. R4-17：新增 R4 启动/SMP、中断/timer/TLB、架构移植指南三份设计文档，并在 `docs/README.md`
+4. R4-17：新增 R4 启动/SMP、中断/timer/TLB、架构移植指南三份设计文档，并在 `docs/AGENTS.md`
    增加当前设计入口。
 
 ### 关键结论
@@ -669,7 +669,7 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 - 删除 `memory::map_mmio` 函数——**真正单一入口**是 `memory::MmioRegion::map(...)`
 - paging 回归**纯页表 crate**（2 个源文件：lib.rs + table.rs），`zerocopy` 依赖随 MMIO 模块一并移至 memory
 - 调用方 4 处更新：`src/device/virtio.rs` / `src/arch/aarch64/mod.rs` / `src/arch/aarch64/interrupt.rs` / `src/arch/riscv64/interrupt.rs`
-- paging/README.md + memory/AGENTS.md 同步更新分层图
+- paging/AGENTS.md + memory/AGENTS.md 同步更新分层图
 
 ### 关键决策
 
@@ -688,7 +688,7 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 **主线：删除 `OwnedPages` 抽象层（ADR-013 提议 → 已接受 → 落地）**
 
 论证路径：
-1. 对话前半做了审计驱动的内存模块注释清理（ASCII 流程图迁移到 README、删除字段级重复 doc），顺便发现 `OwnedPages` 的实际消费情况
+1. 对话前半做了审计驱动的内存模块注释清理（ASCII 流程图迁移到 AGENTS、删除字段级重复 doc），顺便发现 `OwnedPages` 的实际消费情况
 2. 代码扫描确认 `OwnedPages` 唯一生产调用点是 `memory::init`，紧随 `mem::forget` —— Drop 分支在生产中从未触发，`set_flags` 零调用者
 3. 审阅历史 P9 用户程序草案与 BusyBox 路线图结论（已吸收到 ADR-013，原生成目录不再作为长期真值源）：确认用户侧走独立 per-process 页表 + `UserVma { frames: Vec<AllocatedFrames> }`，**明确绕过 `OwnedPages`**（VA≠PA、map_page vs update_flags 不同原语）
 4. 审阅 `src/device/hal.rs`：virtio `Hal` trait 签名 `(u64, NonNull<u8>)` 边界强制裸指针，move-only 类型传不过去——DMA 若需类型化抽象应是专用 `DmaBuffer<T>`，不复用 `OwnedPages`
@@ -702,7 +702,7 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
    - 删除 `config::FREED_PAGE_POISON`（唯一消费者是 OwnedPages::Drop）
    - 删除 `tests/paging-test/src/mapping.rs`（6 个自证测试）+ 新增 `test_update_range_flags_batch`
    - 一并带入：对话前半的注释清理、`BOOT_STACK` 16 字节对齐修复、`frame_allocator` 直连依赖（`src/boot.rs` / `src/device/hal.rs` 去掉 `memory::frame` 间接路径）
-   - 新建 ADR-013 + crate 文档（memory/AGENTS.md，paging / heap / tlb README）
+   - 新建 ADR-013 + crate 文档（memory/AGENTS.md，paging / heap / tlb AGENTS）
 
 2. `f36f347de refactor(memory): 精简 frame_allocator::init 接口 + 消除 PhysAddr→VirtAddr 冗余`（9 files, +32/-73）
    - `frame_allocator::init` 返回 `()`（原返回 `heapless::Vec<AllocatedFrames, 8>`）——消除了类型安全洞（`claim_reserved` 给出的预留帧 Drop 会污染 buddy）+ panic safety 洞 + 接口冗余三问题
@@ -721,7 +721,7 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 | 删除 `OwnedPages` 抽象层 | 无消费者 + 与 ADR-008 论据同构；改用 `PageTable::update_range_flags` 方法 | 已实施 | [ADR-013](../adr/013-ownedpages-necessity.md) |
 | 删除 `FREED_PAGE_POISON` 常量 | 唯一消费者 OwnedPages::Drop 消失后成为孤立常量；未来如需 poison 机制再按场景引入 | 已实施 | ADR-013 |
 | `frame_allocator::init` 返回 `()` | 原返回值（reserved `AllocatedFrames`）既冗余又有类型安全洞（Drop 会污染 buddy） | 已实施 | — |
-| 流程图迁移 README | 原保留在 lib.rs 模块 doc 的 ASCII 流程图移至各 crate README.md；lib.rs 留一句话概述 | 已实施 | — |
+| 流程图迁移 AGENTS | 原保留在 lib.rs 模块 doc 的 ASCII 流程图移至各 crate AGENTS.md；lib.rs 留一句话概述 | 已实施 | — |
 
 ### 未决设计问题（待新对话处理）
 
@@ -781,9 +781,9 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 
 - [ ] `CONTRIBUTING.md` — 贡献指南
 - [ ] `CODE_OF_CONDUCT.md` — 社区行为准则
-- [x] `paging/README.md` — 分页子系统文档（ADR-013 落地时补全）
-- [x] `tlb/README.md` — TLB 管理文档（同上）
-- [x] `heap/README.md` — 堆分配器文档（同上）
+- [x] `paging/AGENTS.md` — 分页子系统文档（ADR-013 落地时补全）
+- [x] `tlb/AGENTS.md` — TLB 管理文档（同上）
+- [x] `heap/AGENTS.md` — 堆分配器文档（同上）
 - [x] `memory/AGENTS.md` — 内存门面 crate 文档（同上）
 
 ## 已完成的目标

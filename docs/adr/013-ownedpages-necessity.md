@@ -71,7 +71,7 @@
 维持 `OwnedPages` 结构与 `new`/`set_flags`/`Drop` 语义。
 
 **优点**：
-- 零改动；设计文档、README、测试全部对齐
+- 零改动；设计文档、AGENTS、测试全部对齐
 - 概念清晰：与 Theseus `MappedPages`、`MutexGuard` 同构，学习成本低
 - 未来引入 DMA buffer、可回收内核内存区、模块热加载等**短生命周期帧 + 权限覆盖**场景时直接可用
 - 保留"帧所有权与权限语义打包"的类型，有助于表达设计意图
@@ -224,8 +224,8 @@ ADR-008 删除 `FrameState` typestate 的核心论据是 "当前 API 边界上�
   - 为 `update_range_flags` 在现有 `tests/paging-test/src/table.rs` 中补一份最小测试
 - **文档变更**：
   - `docs/design/memory-subsystem-v2.md` §6（权限覆盖）重写——不再有"权限守卫"类型，改为描述 `update_range_flags` 方法
-  - `crates/paging/README.md` 删除 `OwnedPages` 条目
-  - `crates/frame_allocator/README.md` 删除 `OwnedPages` 配合示例
+  - `crates/paging/AGENTS.md` 删除 `OwnedPages` 条目
+  - `crates/frame_allocator/AGENTS.md` 删除 `OwnedPages` 配合示例
   - `crates/memory/AGENTS.md` 示例改写为 `update_range_flags + mem::forget`
   - `crates/page_table_entry/src/lib.rs` 删除引用 `OwnedPages::set_flags` 的注释
 

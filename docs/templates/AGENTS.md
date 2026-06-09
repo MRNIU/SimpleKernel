@@ -13,6 +13,8 @@
 | `plan.md` | 执行计划、任务拆分和验证 | `docs/plans/YYYY-MM-DD-topic.md` |
 | `local-AGENTS.md` | 模块或 crate 的局部协作规则 | 模块根目录 `AGENTS.md` |
 | `adr-template.md` | 架构决策记录 | `docs/adr/NNN-title.md` |
-| `module-readme-template.md` | crate 或模块 README | 模块目录 `README.md` |
 
 图表优先使用 Mermaid 或 PlantUML。图表必须配套文字说明，不能替代接口、参数、验收标准和责任边界。
+
+新增模块、crate、测试包或工具目录时，默认使用局部 `AGENTS.md` 承载职责边界、
+修改规则、验证入口和不要假设的事项；不要新增目录级 README 作为协作真值源。

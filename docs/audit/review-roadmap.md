@@ -17,7 +17,7 @@
 | **自底向上** | 从无依赖的叶子 crate 开始，逐层向上，每层稳定后再动上层 |
 | **每步可验证** | 每个 Phase 结束时必须：编译通过 + 现有测试全绿 + 新增测试覆盖变更 |
 | **全量回归** | 每个 Phase 结束后，运行全量系统测试 + 上游 Phase 的单元测试，防止底层变更静默破坏上层 |
-| **文档即产出** | 排查过程中同步输出模块文档（README、时序图、生命周期图、依赖图） |
+| **文档即产出** | 排查过程中同步输出模块 AGENTS、时序图、生命周期图、依赖图 |
 | **决策即记录** | 重要设计决策写入 ADR（`docs/adr/`），模板见 `docs/templates/adr-template.md` |
 | **参考即标注** | 借鉴外部内核的设计必须在代码/文档中标注出处（`[Linux: fs/namei.c]`、`[Theseus: MappedPages]`） |
 | **不做无测试的重构** | 任何架构变更必须先有测试兜底，或先补测试再改 |
@@ -72,7 +72,7 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 | 子任务 | 内容 |
 |--------|------|
 | CI 审计与重写 | `workflow.yml` 结构评估、系统测试稳定性、`cargo-deny`、unsafe 统计自动化、代码覆盖率、Clippy/rustfmt 配置、Docker 镜像策略 |
-| 文档基础设施 | 模块 README 模板、Mermaid 图表工具链、项目级依赖图、Rustdoc 发布 |
+| 文档基础设施 | 模块 AGENTS 模板、Mermaid 图表工具链、项目级依赖图、Rustdoc 发布 |
 | Unsafe 审计基线 | 全量 unsafe 扫描、分类（必要 vs 可消除）、输出基线报告 |
 | 依赖审计 | Git 依赖上游化评估、版本锁定、许可证检查、第三方 unsafe 使用量 |
 | 分支策略 | `feat/rust-SAS` 与 `main` 的合并方案（`merge --no-ff` + `pre-audit-baseline` tag） |
@@ -84,7 +84,7 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 - [x] `docs/audit/unsafe-audit-baseline.md`
 - [x] `docs/audit/dependency-audit.md`
 - [x] `docs/diagrams/crate-dependency-graph.md`（Mermaid）
-- [x] 模块 README 模板 `docs/templates/module-readme-template.md`
+- [x] 模块 AGENTS 模板 `docs/templates/local-AGENTS.md`
 - [x] ADR 模板 `docs/templates/adr-template.md` + `docs/adr/` 目录
 - [ ] 分支合并完成（含 `pre-audit-baseline` tag）
 
@@ -107,7 +107,7 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 
 ### R1 交付物
 
-- [ ] 各 crate README（按模板）
+- [ ] 各 crate AGENTS（按模板）
 - [ ] 单元测试补全
 - [ ] `memory_types` 类型关系图（Mermaid class diagram）
 - [ ] API 变更（如有）
@@ -133,7 +133,7 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 - [ ] 中断状态生命周期图
 - [ ] Per-CPU 初始化时序图
 - [ ] `trybuild` 测试（如适用）
-- [ ] 各 crate README 更新
+- [ ] 各 crate AGENTS 更新
 
 ---
 
@@ -166,7 +166,7 @@ memory_types ← frame_allocator ← page_table_entry ← paging ← memory
 - [ ] 帧生命周期状态机图（Mermaid state diagram，从代码验证）
 - [ ] 页表映射/权限覆盖时序图
 - [ ] MMIO 映射与 RAM 重叠校验时序图
-- [ ] 各 crate README
+- [ ] 各 crate AGENTS
 - [ ] Unsafe 审计（此层 unsafe 最密集）
 - [ ] 单元测试 + 系统测试补全
 
@@ -277,7 +277,7 @@ memory_types ← frame_allocator ← page_table_entry ← paging ← memory
 | 子任务 | 内容 |
 |--------|------|
 | **测试基础设施审计** | 全量排查测试相关的 cfg 门控、host 模拟实现、宏开关（见下方详述） |
-| 文档重写 | `README.md`、`00-概述.md`、`AGENTS.md`、模块 README、Rustdoc、架构图集 |
+| 文档重写 | `README.md`、`00-概述.md`、`AGENTS.md`、模块 AGENTS、Rustdoc、架构图集 |
 | CI 重写 | Matrix 构建、测试分层并行、质量门全链路、自动发布 |
 | 项目重组 | crate 合并/拆分评估、`src/` 目录结构、测试目录、`3rd/` 子模块清理 |
 | 分支合并 | 审计分支合入 `main`、历史分支清理、分支保护规则 |
@@ -394,7 +394,7 @@ memory_types ← frame_allocator ← page_table_entry ← paging ← memory
 
 ### 文档输出
 
-- [ ] 模块 README（按模板）
+- [ ] 模块 AGENTS（按模板）
 - [ ] 关键类型的生命周期图（Mermaid）
 - [ ] 关键操作的时序图（Mermaid）
 - [ ] 依赖关系图（如有变更）

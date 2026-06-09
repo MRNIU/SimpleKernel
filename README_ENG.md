@@ -224,8 +224,15 @@ cd SimpleKernel
 
 # Or use CLI
 npm install -g @devcontainers/cli
+DEVCONTAINER_USER="$(id -un | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
+DEVCONTAINER_BRANCH="$(git branch --show-current | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
+if [ -z "$DEVCONTAINER_BRANCH" ]; then
+  echo "detached HEAD is not allowed for the devcontainer name" >&2
+  exit 1
+fi
+export DEVCONTAINER_NAME="simplekernel-devcontainer-${DEVCONTAINER_USER}-${DEVCONTAINER_BRANCH}"
 devcontainer up --workspace-folder .
-devcontainer exec --workspace-folder . bash
+docker exec -w /workspace "$DEVCONTAINER_NAME" bash
 ```
 
 > Also supports **GitHub Codespaces**: Click Code → Codespaces → Create codespace on main

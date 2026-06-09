@@ -376,7 +376,7 @@ interrupt context drops AllocatedFrames
 最小修复：
 
 1. 已在 `alloc_from_backend()` 和 `dealloc_to_backend()` 加 `assert!(!interrupt_state::is_in_interrupt())`。
-2. 已修改 `frame_allocator/README.md`，删除“中断/page fault handler 可直接分配”的承诺。
+2. 已修改 `frame_allocator/AGENTS.md`，删除“中断/page fault handler 可直接分配”的承诺。
 3. 已新增 `frame-test/alloc-in-hardirq-panic` 和 `frame-test/dealloc-in-hardirq-panic`。
 4. 后续若需要 page fault 分配，先设计应急池或非 heap frame backend。
 

@@ -303,6 +303,6 @@ cargo xtask test --arch riscv64 --name device-test --timeout 30
 ## 文档维护规则
 
 - 修改内存层职责或依赖方向时，同步更新 [crates/AGENTS.md](../../crates/AGENTS.md)。
-- 修改 `PageTable` / `AllocatedFrames` / `MmioRegion` / DMA 边界时，同步更新对应 crate README 或 AGENTS。
+- 修改 `PageTable` / `AllocatedFrames` / `MmioRegion` / DMA 边界时，同步更新对应 crate AGENTS。
 - 变更已经接受的架构决策时，新建或更新 ADR；AI 生成的新 ADR 初始状态必须为“提议”。
 - 历史设计文档可以保留，但必须在顶部标明已过时并指向当前文档。

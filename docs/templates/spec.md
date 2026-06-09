@@ -46,4 +46,4 @@
 
 - [ ] 需要 ADR：TODO
 - [ ] 需要 SAD/SDD 更新：TODO
-- [ ] 需要 README、设计文档或审计记录更新：TODO
+- [ ] 需要根 README、局部 AGENTS、设计文档或审计记录更新：TODO

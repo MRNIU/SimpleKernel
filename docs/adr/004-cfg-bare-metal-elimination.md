@@ -192,7 +192,7 @@ cfg 散布在源码中，语义通过 `bare_metal` 别名已较清晰。
 - **目录变更**: ✅ `tests/standalone/` 扁平化为 `tests/`；`crates/test_harness/` 移至 `tests/test_harness/`
 - **CI 变更**: ✅ `cargo test` 范围缩小到纯逻辑 crate；`cargo xtask test` 覆盖内核功能
 - **R8 审计影响**: ✅ "host 模拟实现一致性评估" 和 "`CpuLocal` host 行为 ADR" 两个待办可直接关闭
-- **开发工作流**: ✅ 测试策略已文档化（`AGENTS.md` §TESTING、`tests/README.md`、`README.md` §测试体系）
+- **开发工作流**: ✅ 测试策略已文档化（`AGENTS.md` §TESTING、`tests/AGENTS.md`、`README.md` §测试体系）
 
 ## 裸机调试能力增强
 

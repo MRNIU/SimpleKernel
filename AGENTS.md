@@ -32,6 +32,16 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Design overview** → `docs/design/00-概述.md` (master plan — written pre-implementation, may be outdated; code is source of truth)
 - **Phase details** → `docs/design/P0-P7` (implementation plans, all phases complete — may diverge from actual code)
 
+## DOCUMENT ROUTING
+
+- 根 `README.md` 只保留面向普通读者的项目介绍、快速开始、构建/测试入口、项目结构和贡献入口。
+- 目录级规则、协作约定、修改 checklist、验证入口、局部职责边界和不要假设的事项，统一写入最近的 `AGENTS.md`。
+- `docs/AGENTS.md` 是文档目录索引和文档类型路由；`docs/conventions.md` 记录长期工程约定。
+- `docs/adr/AGENTS.md`、`docs/rfcs/AGENTS.md`、`docs/specs/AGENTS.md`、`docs/plans/AGENTS.md` 和 `docs/templates/AGENTS.md` 分别管理对应文档类型。
+- `tests/AGENTS.md`、`xtask/AGENTS.md` 和 crate-local `AGENTS.md` 是各目录的局部运行手册。
+- 新增目录级 README 默认不允许。确实需要新增时，必须确认它是面向仓库外普通读者的入口，并说明为什么不能放入最近的 `AGENTS.md`、设计文档、ADR/RFC、Spec 或 Plan。
+- README 与 `AGENTS.md` 冲突时，以 `AGENTS.md` 为准，并在同一变更中修正冲突。
+
 ## CODE MAP
 | Module | Purpose | Key Files |
 |--------|---------|-----------|
@@ -76,7 +86,8 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 ### Environment
 - **容器优先**：凡是能在 Dev Container / Docker 中完成的构建、检查、`pre-commit`、固件构建、QEMU 运行和系统测试，都应在容器内执行，不要为本项目修改宿主机工具链。
 - **宿主机边界**：宿主机只负责 Docker 或兼容容器运行时、Git、编辑器/AI agent 和已有 Dev Container 入口工具；不要在宿主机安装 Rust nightly、交叉编译器、QEMU、固件构建依赖或其他项目开发依赖来绕过容器。
-- **命令入口**：在宿主机发起命令时优先使用 `devcontainer exec --workspace-folder . <command>`，或使用当前已构建的项目开发镜像运行等价命令。
+- **命令入口**：宿主机先按 `.devcontainer/AGENTS.md` 设置 `DEVCONTAINER_NAME=simplekernel-devcontainer-{username}-{branch}`，再通过 Dev Container CLI 或手动 fallback 启动常驻容器。项目命令优先使用 `docker exec -w /workspace "$DEVCONTAINER_NAME" <command>`；`devcontainer exec --workspace-folder . <command>` 仅作为临时交互入口。
+- **CI 工具链一致性**：CI、Dev Container 和本地容器应使用 `.devcontainer/Dockerfile` 声明的工具链。不要在 workflow 中临时安装 Rust、cargo 子命令、QEMU 或交叉工具链来补齐缺失环境；发现镜像缺工具时，先修复 Dockerfile 或重建开发镜像。
 - **例外**：只有正在修复容器自身配置、文档/Git 等入口操作，或任务明确要求无需项目工具链的本地操作时，才考虑宿主机执行；说明原因并保持宿主/容器步骤边界清晰。
 
 ### Git
@@ -91,6 +102,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **机器可读格式**：`.json` 文件保持严格 JSON，不写注释、不留尾随逗号；需要说明时写在相邻文档。
 - **文件规模**：手写源码超过 300 行时 review 应检查职责边界；原则上不超过 500 行，超过时 PR 需说明暂不拆分理由或拆分计划。
 - **运行时配置**：FDT、MMIO、timer 频率、core count、QEMU 参数、固件路径和硬件拓扑等运行时/platform 输入必须显式校验；缺失或非法输入应 fail fast，不用 `Default`、`unwrap_or(...)` 等隐式 fallback 掩盖。
+- **目录级文档**：可由局部 `AGENTS.md` 承载的目录说明、模块协作规则、工具运行手册和测试目录索引，不再新增 README。
 
 ### Rust
 - **Language**: Rust nightly, `#![no_std]`, `#![no_main]`, edition 2024
@@ -133,31 +145,44 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - Cargo workspace: root package (kernel) + `xtask` (build tool)
 
 ## COMMANDS
-宿主机侧执行项目命令时使用 `devcontainer exec --workspace-folder . <command>`。
+宿主机侧先按 SimpleKernel 命名规则设置常驻容器名，再启动 Dev Container：
+
+```bash
+DEVCONTAINER_USER="$(id -un | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
+DEVCONTAINER_BRANCH="$(git branch --show-current | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
+if [ -z "$DEVCONTAINER_BRANCH" ]; then
+  echo "detached HEAD is not allowed for the devcontainer name" >&2
+  exit 1
+fi
+export DEVCONTAINER_NAME="simplekernel-devcontainer-${DEVCONTAINER_USER}-${DEVCONTAINER_BRANCH}"
+devcontainer up --workspace-folder .
+```
+
+后续项目命令通过同一个常驻容器执行：
 
 ```bash
 # Build kernel
-devcontainer exec --workspace-folder . cargo xtask build --arch riscv64
-devcontainer exec --workspace-folder . cargo xtask build --arch aarch64
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask build --arch riscv64
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask build --arch aarch64
 
 # Run in QEMU (via xtask — handles FIT image + TFTP + QEMU)
-devcontainer exec --workspace-folder . cargo xtask run --arch riscv64 --timeout 30
-devcontainer exec --workspace-folder . cargo xtask run --arch aarch64 --timeout 30
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask run --arch riscv64 --timeout 30
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask run --arch aarch64 --timeout 30
 
 # Debug (GDB on localhost:1234)
-devcontainer exec --workspace-folder . cargo xtask debug --arch riscv64
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask debug --arch riscv64
 
 # System tests in QEMU
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --timeout 30
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name panic-test --timeout 30
-devcontainer exec --workspace-folder . cargo xtask test --list
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --timeout 30
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --name panic-test --timeout 30
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --list
 
 # Format + lint check
-devcontainer exec --workspace-folder . cargo fmt --check
-devcontainer exec --workspace-folder . cargo clippy -- -D warnings
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo fmt --check
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo clippy -- -D warnings
 
 # Documentation
-devcontainer exec --workspace-folder . cargo doc --no-deps
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo doc --no-deps
 ```
 
 **QEMU 超时**：在 QEMU 中运行内核或测试时经常出现卡死或无限循环打印日志的情况。所有通过 Bash 工具执行的 QEMU 相关命令（`cargo xtask run`、`cargo xtask test`）**必须设置 30 秒超时**（`timeout: 30000`）。超时后应 `pkill -f qemu-system` 清理残留进程。
@@ -171,9 +196,9 @@ devcontainer exec --workspace-folder . cargo doc --no-deps
 每个测试是独立的 `#![no_std]` 裸机二进制，启动独立 QEMU 实例，拥有干净的内核环境。
 
 ```bash
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --timeout 30
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30
-devcontainer exec --workspace-folder . cargo xtask test --list
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --timeout 30
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30
+docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --list
 ```
 
 测试基础设施位于 `tests/test_harness/`，核心是 `test_main!` 宏：
@@ -250,6 +275,7 @@ test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_p
 - **Session Prompt**（输出格式参考）: `docs/audit/review-session-prompt.md`
 - **ADR 目录**（架构决策记录）: `docs/adr/`
 - **ADR 模板**: `docs/templates/adr-template.md`
+- **文档目录入口**: `docs/AGENTS.md`
 
 ### 审计工作流
 

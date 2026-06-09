@@ -41,7 +41,7 @@
 ## 排查要求
 
 按照 Roadmap 中"每个 Phase 的标准排查流程"执行：
-1. 阅读与理解（trait → impl → unsafe → 测试 → README）
+1. 阅读与理解（trait → impl → unsafe → 测试 → AGENTS）
 2. Rust 范式审查（所有权 / 生命周期 / typestate / RAII / 零成本 / 错误处理 / unsafe / 可见性）
 3. 并发安全审查（Send/Sync 约束 / 多核竞态 / 中断重入 / 锁序 / atomic ordering）
 4. 依赖与版本检查（第三方 crate 版本 / Rust nightly 特性更新 / 可替代 crate 评估）
@@ -106,7 +106,7 @@
 按优先级排列，每项标注是否需要先补测试。
 
 ### 文档产出建议
-需要产出的 README / Mermaid 图 / ADR 列表。
+需要产出的 AGENTS / Mermaid 图 / ADR 列表。
 
 ## 停止条件
 
@@ -206,7 +206,7 @@
 
 ### 文档产出建议
 - 锁层级关系图（Mermaid）
-- `crates/sync/README.md`（按模块模板）
+- `crates/sync/AGENTS.md`（按模块模板）
 - ADR: 编译期锁级别方案评估
 - ADR: 自定义 SpinLock vs lock_api
 ```

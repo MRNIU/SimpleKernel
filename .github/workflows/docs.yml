@@ -21,7 +21,7 @@ jobs:
   build-docs:
     runs-on: ubuntu-24.04-arm
     container:
-      image: ghcr.io/simple-xx/simplekernel-dev:latest
+      image: ghcr.io/simple-xx/simplekernel-devcontainer:latest
     steps:
       - uses: actions/checkout@v4
         with:

@@ -162,8 +162,8 @@ SimpleKernel DMA 边界，职责更接近 adapter。
   - 需要验证 `cargo xtask test --arch riscv64 --name device-test`；QEMU 命令使用 30 秒超时，
     超时后清理残留 `qemu-system` 进程。
 - **文档**：
-  - `docs/adr/README.md` 增加 ADR-014 索引。
-  - `crates/dma/README.md` 记录第三方依赖边界。
+  - `docs/adr/AGENTS.md` 增加 ADR-014 索引。
+  - `crates/dma/AGENTS.md` 记录第三方依赖边界。
   - `docs/audit/audit-progress.md` 更新 DMA / VirtIO HAL 后续验证状态。
 
 ## 参考

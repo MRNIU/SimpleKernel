@@ -196,7 +196,7 @@ entry 设计简单。可在 R4（架构层审计）或 `std` 支持实现时执�
 - **当前代码**：无变更
 - **约束记录**：RISC-V App 禁止使用 `#[thread_local]`——需在 App crate 模板中注明
 - **未来变更**：选择 B/C/D 方案时需修改 `crates/per_cpu`、`crates/macros`、`src/arch/riscv64/switch.S`
-- **文档**：`crates/per_cpu/README.md` 应注明 RISC-V `tp` 寄存器约束
+- **文档**：`crates/per_cpu/AGENTS.md` 应注明 RISC-V `tp` 寄存器约束
 
 ## 参考
 

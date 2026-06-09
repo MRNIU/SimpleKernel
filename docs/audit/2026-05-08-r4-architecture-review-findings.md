@@ -859,7 +859,7 @@ R4 Roadmap 要求产出架构 trait 文档、启动时序图、中断处理流�
 - `docs/design/R4-interrupt-timer-flow.md`
 - `docs/design/R4-architecture-porting-guide.md`
 
-同时在 `docs/README.md` 增加当前设计入口，并在 `arch-test` 中补充 Full 初始化返回后的
+同时在 `docs/AGENTS.md` 增加当前设计入口，并在 `arch-test` 中补充 Full 初始化返回后的
 all-discovered-cores-online 合约断言。2026-06-08 已补 RISC-V/AArch64 `paging-test/tlb-remote-access`
 作为 TLB shootdown 远端访问强证明。
 

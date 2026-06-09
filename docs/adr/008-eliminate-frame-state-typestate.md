@@ -209,7 +209,7 @@ fn alloc_node_frame() -> Result<AllocatedFrames, PagingError> {
 
 - `crates/frame_allocator/src/lib.rs` 模块注释：删除 "2-State Typestate" 章节，改为"分配器接口"；明确标注 `alloc` 返回的帧**内容未初始化**
 - `docs/design/memory-subsystem-v2.md` §4.1 / §4.2：删除 2-state 状态图和"为什么只有 2 个状态"章节，改为"单一类型 AllocatedFrames + RAII"描述
-- README：如有 frame_allocator 的独立 README，同步更新
+- AGENTS：同步更新 frame_allocator 局部 AGENTS
 
 ## 参考
 

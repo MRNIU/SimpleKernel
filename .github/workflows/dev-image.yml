@@ -6,12 +6,12 @@ on:
   push:
     branches: [main]
     paths:
-      - '.devcontainer/Dockerfile'
+      - '.devcontainer/**'
       - '.github/workflows/dev-image.yml'
   workflow_dispatch:
 
 env:
-  IMAGE: ghcr.io/simple-xx/simplekernel-dev
+  IMAGE: ghcr.io/simple-xx/simplekernel-devcontainer
 
 jobs:
   build-and-push:

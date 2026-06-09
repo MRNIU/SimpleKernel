@@ -135,5 +135,14 @@ RUN cargo install --locked cargo-deny && \
     cargo install --locked mdbook && \
     chmod -R a+w "$CARGO_HOME"
 
+# Dev Container 交互用户。构建阶段仍使用 root 安装工具，运行阶段使用 dev。
+RUN useradd -m -s /usr/bin/zsh dev && \
+    echo 'dev ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/dev && \
+    chmod 0440 /etc/sudoers.d/dev && \
+    mkdir -p /workspace && \
+    chown dev:dev /workspace
+
 # 默认 shell 设为 zsh
 ENV SHELL=/usr/bin/zsh
+
+WORKDIR /workspace

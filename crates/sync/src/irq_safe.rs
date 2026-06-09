@@ -5,7 +5,7 @@
 //! 不经过 [`Mutex`]，避免双重锁栈推入和不必要的 `PreemptGuard` 开销
 //! （中断禁用 ⊃ 抢占禁用）。
 //!
-//! 设计决策详见 `crates/sync/README.md`。
+//! 设计决策详见 `crates/sync/AGENTS.md`。
 
 use core::cell::UnsafeCell;
 use core::fmt;

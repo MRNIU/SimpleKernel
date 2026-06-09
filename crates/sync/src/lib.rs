@@ -2,7 +2,7 @@
 
 //! 内核同步原语——分层自旋锁、中断安全锁和锁序检查。
 //!
-//! 架构设计详见 `crates/sync/README.md`。
+//! 架构设计详见 `crates/sync/AGENTS.md`。
 
 #![no_std]
 
