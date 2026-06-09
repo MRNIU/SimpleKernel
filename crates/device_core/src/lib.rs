@@ -11,7 +11,9 @@ pub mod capability;
 pub mod descriptor;
 pub mod registry;
 
-pub use capability::{BlockDevice, BlockError, BlockResult, CapabilityType, DeviceCapability};
+pub use capability::{
+    BlockDevice, BlockError, BlockResult, CapabilityType, DeviceCapability, validate_sector_io,
+};
 pub use descriptor::{
     DriverDescriptor, FdtProbeContext, ProbeContext, ProbeFailure, ProbeFailureKind, ProbeFn,
     ProbeKind, ProbeLevel, ProbeOutcome, ProbePriority, ProbeRequirement, ProbeSkipReason,

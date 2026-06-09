@@ -2,7 +2,7 @@
 
 # R6/D2 设备驱动描述符与 Probe Registry 设计说明
 
-> **状态**：D2-0 / D2a / D2b 已落地；D2c 与收口清理待实现
+> **状态**：D2-0 / D2a / D2b / D2c 已落地；D2 收口清理待实现
 >
 > **范围**：R6 设备子系统 D2
 >
@@ -11,7 +11,7 @@
 
 ## 设计结论
 
-D2 的目标是把当前 `platform_bus` 中单一 VirtIO MMIO 探测逻辑，演进为
+D2 的目标是把 D2 起点 `platform_bus` 中单一 VirtIO MMIO 探测逻辑，演进为
 SimpleKernel 本地的 driver descriptor + probe registry 模型。D2 仍只覆盖启动期内建驱动，
 不进入动态模块加载。
 
@@ -48,9 +48,9 @@ FDT compatible 匹配思路，并把 SimpleKernel 自己的 DTB 生命周期、M
 
 ## 设计目标
 
-D2 要解决当前代码中的四个耦合点：
+D2 起点要解决的四个耦合点：
 
-1. `platform_bus` 仍直接编排 VirtIO MMIO 探测，新增驱动会继续把 match 逻辑堆到总线代码里。
+1. `platform_bus` 直接编排 VirtIO MMIO 探测，新增驱动会继续把 match 逻辑堆到总线代码里。
 2. probe 顺序由代码位置和循环隐式决定，没有稳定的 descriptor 级排序语义。
 3. probe 成功后的设备实例和上层能力分散在 `DeviceManager`、`virtio_blk()` 和
    `block_device()` 中，没有统一诊断入口。
@@ -83,11 +83,11 @@ D2 明确不做以下工作：
 
 ## 当前真值面
 
-当前设备初始化路径已进入 D2b 过渡状态：`platform_bus` 仍是内核集成入口，但不再直接硬编码
+当前设备初始化路径已进入 D2c 过渡状态：`platform_bus` 仍是内核集成入口，但不再直接硬编码
 VirtIO MMIO probe 循环；它先构造内建 driver descriptor registry，再按 descriptor 的
-FDT compatible 声明枚举节点并调用 probe adapter。真实设备实例和默认块设备仍沿用旧
-`DeviceManager` / `virtio_blk()` / `block_device()` 兼容路径，typed capability registry
-主路径留到 D2c。
+FDT compatible 声明枚举节点并调用 probe adapter。真实块设备能力已接入
+`device_core::CapabilityRegistry`，默认 `block_device()` 由第一个成功注册的
+`DeviceCapability::Block` 决定。旧 `DeviceManager` 和 `virtio_blk()` 仍作为迁移期兼容入口保留。
 
 ```mermaid
 sequenceDiagram
@@ -98,6 +98,7 @@ sequenceDiagram
   participant Fdt as "platform_fdt"
   participant Virtio as "virtio descriptor adapter"
   participant DeviceManager as "manager::register_device()"
+  participant Capability as "device_core::CapabilityRegistry"
   participant Block as "block::register_block_device()"
   participant Fs as "fatfs_adapter"
 
@@ -112,12 +113,15 @@ sequenceDiagram
     Bus->>Virtio: probe(ProbeContext::Fdt)
     Virtio-->>Bus: Bound / Skipped / Err
     Virtio->>DeviceManager: register_device(Box<dyn Device>)
-    Virtio->>Virtio: 初始化 VIRTIO_BLK Once
-    Virtio->>Block: register_block_device(&VIRTIO_BLK)
+    Virtio->>Block: register_block_device(name, source, BlockDevice)
+    Block->>Capability: register_device + register_capability(Block)
+    Virtio->>Virtio: 初始化 VIRTIO_BLK 兼容引用
   end
   Bus->>Registry: 更新 matched / bound / skipped / failed 统计
+  Init->>Block: default_block_device_id()
   Init->>DeviceManager: device_count()
   Fs->>Block: block_device()
+  Block->>Capability: default_block_device()
 ```
 
 当前兼容入口和 D2 要求如下：
@@ -127,7 +131,7 @@ sequenceDiagram
 | `device::device_init()` | 初始化 manager 后调用 platform bus | 入口不变，内部可切到 registry 编排 | 继续作为设备子系统初始化入口 |
 | `manager::device_count()` | 读取旧 `Vec<Box<dyn Device>>` 长度 | 保持可用，保证 `device-test` 不断 | 删除公共旧路径或改为 registry-backed 门面 |
 | `virtio::virtio_blk()` | 返回首个 VirtIO block 全局锁 | 迁移期保留，但不再作为所有权真值 | 删除公共入口或收窄为 `pub(crate)` |
-| `block::block_device()` | 返回默认 `dyn BlockDevice` | 保持可用 | 保持稳定能力门面，由 registry 支撑 |
+| `block::block_device()` | 返回 registry 默认 `dyn BlockDevice` | 保持可用 | 保持稳定能力门面，由 registry 支撑 |
 | `device-test` | 检查设备数、VirtIO block 和 sector 0 | 继续通过 | 改为 registry / `BlockDevice` 断言 |
 | `fs-test` | 通过 `block_device()` 做 FAT I/O | 继续通过 | 继续通过 |
 
@@ -625,7 +629,7 @@ pub trait BlockDevice: Send + Sync {
 
 ## 多 VirtIO Block 实例
 
-当前 `VIRTIO_BLK: Once<VirtIOBlockLock>` 只能表达一个块设备。D2c 后它不能继续作为所有权真值。
+D2c 后 `VIRTIO_BLK` 不再作为块设备所有权真值，只保存第一个 VirtIO block 的迁移期兼容引用。
 
 D2c 规则：
 
@@ -634,9 +638,9 @@ D2c 规则：
 - D2 不实现 unload、revoke 或热插拔释放，boot device 可以永久持有。
 - `virtio_blk()` 迁移期只返回默认 VirtIO block，作为旧测试和旧调用点的兼容门面。
 
-可接受的第一版实现包括 `Box::leak` 或 registry-owned 永久 storage。关键约束是：
-`block_device() -> Option<&'static dyn device_core::BlockDevice>` 的兼容语义必须保持，且后续多个块设备不能被
-`VIRTIO_BLK.call_once()` 静默吞掉。
+当前第一版实现使用 `Box::leak` 创建永久 `VirtIOBlockDevice` wrapper。关键约束是：
+`block_device() -> Option<&'static dyn device_core::BlockDevice>` 的兼容语义保持，且多个块设备会
+分别进入 `CapabilityRegistry`，不会被 `VIRTIO_BLK.call_once()` 静默吞掉。
 
 ## 实现切片
 
@@ -693,7 +697,7 @@ D2b 前置约束：
 - `descriptor` 模块承载 descriptor / probe / failure / skipped 语义。
 - `registry` 模块承载 descriptor 排序、重复 name / compatible 诊断、probe 统计、
   `RegisteredDevice`、`RegisteredCapability` 和默认 Block capability 选择。
-- 真实 `platform_bus` / VirtIO / FAT 路径尚未迁移，仍属于 D2b-D2c。
+- D2a 当时不迁移真实 `platform_bus` / VirtIO / FAT 路径；后续 D2b / D2c 已完成对应迁移。
 
 首批 descriptor 仍可由 `src/device` 手写静态 slice 提供：
 
@@ -758,8 +762,8 @@ D2b 验证重点：
   和 `Err`；旧 `probe_mmio_device(paddr, size)` 仍作为兼容包装保留。
 - QEMU virt 中 `device_id = 0` 的空 VirtIO MMIO slot 记录为 `Skipped(NotApplicable)`；
   net / gpu 等非 block VirtIO 设备记录为 `Skipped(UnsupportedDevice)`。
-- D2b 不迁移 `src/device/block.rs` 的 trait 与默认块设备门面；`DeviceManager`、
-  `virtio_blk()` 和 `block_device()` 仍是 D2b 期间的兼容约束。
+- D2b 切片当时不迁移 `src/device/block.rs` 的 trait 与默认块设备门面；`DeviceManager`、
+  `virtio_blk()` 和 `block_device()` 是 D2b 期间的兼容约束，D2c 再接入 capability registry。
 
 ### D2c：typed capability registry 和默认 Block 选择
 
@@ -779,6 +783,19 @@ D2b 验证重点：
 - probe 完成后检查 required default `Block` capability。
 - `virtio_blk()` 继续作为迁移期兼容入口。
 
+当前落地状态：
+
+- `device_core` 的 capability 模块承载 `BlockDevice`、`BlockError`、`BlockResult` 和
+  `validate_sector_io()`。
+- `src/device/block.rs` re-export `device_core` 的块设备接口，并通过全局
+  `CapabilityRegistry` 提供 `block_device()` 和默认块设备 id 查询。
+- VirtIO block 使用本地 `VirtIOBlockDevice` wrapper 实现 `device_core::BlockDevice`，避免
+  对外部 `sync::SpinLock<VirtIOBlk<...>>` 直接实现外部 trait。
+- 每个成功 VirtIO block probe 都通过 `Box::leak` 创建永久实例，注册旧 `DeviceManager`
+  兼容记录，再注册 `RegisteredDevice` 和 `DeviceCapability::Block`。
+- `virtio_blk()` 保存第一个成功 VirtIO block 的锁引用，仅作为迁移期兼容入口。
+- `device_init()` 在 probe 完成后要求默认 `Block` capability 存在；缺失时 fail-fast。
+
 成功路径：
 
 ```text
@@ -790,7 +807,7 @@ VirtIO block probe 成功
   -> 兼容期继续让 virtio_blk() 返回默认 VirtIO block
 ```
 
-D2c 完成后必须保持：
+D2c 已保持：
 
 - `manager::device_count() > 0`。
 - `virtio::virtio_blk().is_some()`。
@@ -853,13 +870,13 @@ git diff --check
 实现阶段至少运行：
 
 ```bash
-devcontainer exec --workspace-folder . cargo fmt --all -- --check
-devcontainer exec --workspace-folder . cargo test -p device_core
-devcontainer exec --workspace-folder . cargo test -p platform_fdt
-devcontainer exec --workspace-folder . cargo xtask check --arch riscv64
-devcontainer exec --workspace-folder . cargo xtask check --arch aarch64
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name device-test --timeout 30
-devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --name fs-test --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo fmt --all -- --check
+docker exec -w /workspace simplekernel-devcontainer cargo test -p device_core
+docker exec -w /workspace simplekernel-devcontainer cargo test -p platform_fdt
+docker exec -w /workspace simplekernel-devcontainer cargo xtask check --arch riscv64
+docker exec -w /workspace simplekernel-devcontainer cargo xtask check --arch aarch64
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name device-test --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name fs-test --timeout 30
 ```
 
 QEMU 命令必须设置 30 秒超时，并在超时后清理残留 `qemu-system` 进程。

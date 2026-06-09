@@ -7,7 +7,7 @@
 
 ## 当前状态
 
-**当前 Phase**: R6 — D2-0a / D2a 前置切片已落地。当前本地平台描述 crate 已收口为
+**当前 Phase**: R6 — D2-0a / D2a / D2b / D2c 已落地。当前本地平台描述 crate 已收口为
 `crates/platform_fdt`，不保留旧兼容入口；`PlatformFdt` 负责
 kernel-owned DTB 生命周期、`FdtSelector::{Path, Compatible}` 统一查询、borrowed
 `FdtNodeView` 和结构化错误返回。`FdtNodeId` 已改为同一 DTB view 内稳定的全树 DFS
@@ -15,8 +15,9 @@ kernel-owned DTB 生命周期、`FdtSelector::{Path, Compatible}` 统一查询�
 已新增 descriptor / probe / registry / typed capability 纯模型，承载 `DriverDescriptor`、
 `ProbeKind`、`ProbeRequirement`、`ProbeLevel`、`ProbePriority`、`FdtProbeContext`、
 `ProbeOutcome`、`ProbeFailure`、`DeviceId`、`DeviceSource`、`BlockDevice` 和
-`DeviceCapability::Block`。真实 `platform_bus` / VirtIO / FAT 路径尚未迁移，仍属于
-D2b-D2c。
+`DeviceCapability::Block`。真实 `platform_bus` 已迁移到 descriptor-driven Static / FDT
+probe，默认块设备已接入 `device_core::CapabilityRegistry`；`DeviceManager` 和
+`virtio_blk()` 仍作为 D2 收口前的兼容路径保留。
 
 历史 R6 状态：设备子系统 D0.5 已完成；本轮只强化当前 D0 的 VirtIO block
 基线测试和 platform bus fail-fast 语义，未进入 D1 `BlockDevice` 门面实现，未修改
@@ -34,10 +35,17 @@ D2b-D2c。
 `R4-15` 漂移语义已补 ADR-019，并已按方案 B 落地 per-core absolute deadline；方案 C 的
 missed tick 补记和 tickless one-shot 后续回看。
 **下一个目标**（按优先级）：
-1. **R6/D2b platform bus registry 迁移**：在 `platform_fdt` 和 `device_core` 基座上，把 `platform_bus` 迁移到 descriptor-driven Static / FDT probe，不直接回退到旧 `fdt` API。
+1. **R6/D2 收口清理**：在 D2c 验证稳定后，移除或收窄公开 `virtio_blk()`，将 `device-test` 改为 registry / `block_device()` 断言，并删除或改造旧 `DeviceManager` 公共路径。
 2. **R4 TLB 后续升级**：运行期映射变更增多后，再评估 ADR-018 方案 B per-CPU mailbox 或方案 C rendezvous。
 3. **R4 timer 后续升级**：按 ADR-019 后续回看条件再评估方案 C missed tick 补记或 tickless one-shot。
 4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
+
+验证结果（2026-06-09 D2c）：通过 `cargo fmt --all`、`cargo test -p device_core`、
+`cargo test -p platform_fdt`、`cargo xtask check --arch riscv64`、
+`cargo xtask check --arch aarch64`、RISC-V QEMU 30 秒超时下
+`cargo xtask test --arch riscv64 --name device-test --timeout 30` 和
+`cargo xtask test --arch riscv64 --name fs-test --timeout 30`；随后全量
+`cargo xtask test --arch riscv64 --timeout 30` 通过 32 个独立测试。
 
 验证结果（2026-06-09 D2-0a / D2a）：通过 `cargo fmt --all -- --check`、
 `cargo test -p platform_fdt`、`cargo test -p device_core`、
@@ -803,3 +811,4 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 | 2026-05-08 | R3 (文档与 warning 收口) | 删除 R3 roadmap / 依赖图中的 `page_allocator` 旧引用，确认 `crates/memory/AGENTS.md` 作为本地模块说明入口，移除平台 FDT 路径中已过期的 `#[expect(dead_code)]`。 |
 | 2026-06-08 | R6 (device D0.5) | 强化当前 device 基线：`device-test` 硬断言设备计数、VirtIO 块设备存在性和 sector 0 读取；Full 初始化下 platform bus 对 FDT 缺失、解析失败和非法 `virtio,mmio` `reg` fail-fast；未进入 `BlockDevice` 门面。 |
 | 2026-06-09 | R6 (FDT D2-0) | 将本地 FDT crate 重命名为 `platform_fdt`，落地 `PlatformFdt` 生命周期、`FdtSelector` 查询、borrowed `FdtNodeView`，并迁移 early init、PLIC/GIC、platform_bus 和 FDT 测试；device-test/fs-test 回归通过。 |
+| 2026-06-09 | R6 (device D2c) | 将默认块设备接入 `device_core::CapabilityRegistry`，`src/device/block.rs` 改为 registry-backed 兼容门面，VirtIO block probe 注册 `RegisteredDevice` 和 `DeviceCapability::Block`；`device-test` / `fs-test` 和 RISC-V 全量系统测试回归通过。 |

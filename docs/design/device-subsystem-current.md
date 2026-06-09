@@ -13,15 +13,16 @@ SimpleKernel 保留本地 `crate::device` 作为设备子系统边界。设备�
 的 driver descriptor、probe kind、probe level、priority 和 FDT compatible 匹配思路，
 但不直接把 `rdrive` 作为核心设备框架引入。
 
-当前实现已进入 D2b 过渡状态，仍保持一个较薄的设备模型：
+当前实现已进入 D2c 过渡状态，仍保持一个较薄的设备模型：
 
 - `src/device/mod.rs` 定义 `Device` / `DeviceType` 和 `device_init()`；
-- `src/device/block.rs` 定义本地 `BlockDevice` trait 和默认块设备门面；
+- `src/device/block.rs` re-export `device_core::BlockDevice` / `BlockError`，并通过
+  `device_core::CapabilityRegistry` 提供默认块设备门面；
 - `src/device/manager.rs` 用 `SpinLock<Vec<Box<dyn Device>>>` 保存已注册设备；
 - `src/device/platform_bus.rs` 通过 `device_core::DriverRegistry` 编排内建 descriptor，
   并按 descriptor 声明的 FDT compatible 查询节点；
 - `src/device/virtio.rs` 使用 `virtio-drivers` 初始化 VirtIO block，并通过全局
-  `virtio_blk()` 保留兼容入口，同时把同一块设备注册为本地 `BlockDevice`；
+  `virtio_blk()` 保留兼容入口，同时把每个成功块设备注册为 `DeviceCapability::Block`；
 - `src/device/virtio.rs` 已提供 VirtIO MMIO descriptor adapter 和 typed probe result，
   能区分 block bound、unsupported/non-applicable skip 和真实 probe failure；
 - `src/fs/fatfs_adapter.rs` 通过 `crate::device::block::block_device()` 访问块设备，
@@ -40,6 +41,7 @@ sequenceDiagram
   participant Bus as platform_bus
   participant Registry as device_core::DriverRegistry
   participant Virtio as virtio
+  participant Capability as device_core::CapabilityRegistry
   participant Block as device::block
   participant Memory as memory::MmioRegion
   participant Fs as fatfs_adapter
@@ -54,15 +56,19 @@ sequenceDiagram
   Virtio->>Memory: map(paddr, size)
   Virtio->>Virtio: MmioTransport + VirtIOBlk 初始化
   Virtio->>Manager: register_device(Box<dyn Device>)
-  Virtio->>Virtio: VIRTIO_BLK.call_once(...)
-  Virtio->>Block: register_block_device(&VIRTIO_BLK)
+  Virtio->>Block: register_block_device(name, source, BlockDevice)
+  Block->>Capability: register_device + register_capability(Block)
+  Virtio->>Virtio: VIRTIO_BLK.call_once(default lock)
+  Device->>Block: default_block_device_id()
   Fs->>Block: block_device()
-  Block-->>Fs: dyn BlockDevice
+  Block->>Capability: default_block_device()
+  Block-->>Fs: dyn device_core::BlockDevice
 ```
 
 这条路径是当前代码真值面。`device_core::DriverRegistry` 当前负责 descriptor 排序、
-重复声明诊断和 probe 统计；`DeviceManager` 仍记录枚举结果；块设备实际 I/O 已通过本地
-`BlockDevice` 门面进入，`virtio_blk()` 仍作为兼容入口保留给测试和旧调用点。
+重复声明诊断和 probe 统计；`device_core::CapabilityRegistry` 负责保存设备实例、
+`Block` capability 和默认块设备选择；`DeviceManager` 仍作为迁移期兼容路径记录枚举结果；
+`virtio_blk()` 仍作为兼容入口保留给测试和旧调用点。
 
 ## 边界和不变量
 
@@ -88,17 +94,19 @@ D0.5 只强化当前 D0 的 VirtIO block 路径，不进入 D1 `BlockDevice` 门
 - `device-test` 必须把 `device_count() > 0`、`virtio_blk()` 可用，以及 sector 0 读取成功作为硬断言。
 - `fatfs_adapter` 在 D0.5 不迁移，仍继续通过 `virtio_blk()` 访问当前 VirtIO 块设备。
 
-## D2b 当前状态
+## D2c 当前状态
 
-D1 已新增本地 `BlockDevice` trait 和默认块设备门面。D2 的
+D1 曾新增本地 `BlockDevice` trait 和默认块设备门面；D2c 已将 trait 与错误类型上移到
+`device_core`。D2 的
 `DriverDescriptor` / probe registry / 最小 typed capability registry 方案已在
 [R6/D2 设备驱动描述符与 Probe Registry 设计说明](device-d2-driver-descriptor-probe.md)
-中收敛；当前已落地 D2-0a / D2a / D2b，D2c typed capability 主路径尚未迁移：
+中收敛；当前已落地 D2-0a / D2a / D2b / D2c，D2 收口清理尚未开始：
 
-- `BlockDevice` 当前覆盖 `sector_size()`、`sector_count()`、字节容量 `capacity()`、
-  以及 `read_sector()` / `write_sector()` 整扇区 I/O。
-- VirtIO block 通过同一个全局 `SpinLock<VirtIOBlk<...>>` 实现 `BlockDevice`，
-  所以 DMA、MMIO 和 QEMU identity backend 语义没有扩大。
+- `device_core::BlockDevice` 当前覆盖 `sector_size()`、`sector_count()`、字节容量
+  `capacity()`，以及 `read_sector()` / `write_sector()` 整扇区 I/O。
+- VirtIO block 通过本地 `VirtIOBlockDevice` wrapper 实现 `device_core::BlockDevice`；
+  wrapper 内部仍持有 `SpinLock<VirtIOBlk<...>>`，所以 DMA、MMIO 和 QEMU identity backend
+  语义没有扩大。
 - `fatfs_adapter` 已迁移到 `device::block::block_device()`，不再直接调用 `virtio_blk()`。
 - `device-test` 以 `BlockDevice` 门面读取 sector 0，同时保留 `virtio_blk()` 兼容入口存在性检查。
 - `platform_fdt::FdtNodeId` 已改为同一 DTB view 内稳定的全树 DFS 序号；path 查询和
@@ -106,8 +114,11 @@ D1 已新增本地 `BlockDevice` trait 和默认块设备门面。D2 的
 - `crates/device_core` 已新增 descriptor / probe / registry / typed capability 纯模型。
 - D2b 已迁移 `platform_bus` 到 descriptor-driven Static / FDT probe；VirtIO MMIO 通过
   descriptor adapter 返回 `Bound` / `Skipped` / `Err`。
-- D2c 尚未开始：`src/device/block.rs` 仍是上层 `BlockDevice` 兼容门面，
-  默认块设备尚未改由 `device_core::CapabilityRegistry` 主路径选择。
+- D2c 已将 `src/device/block.rs` 改为 registry-backed 兼容门面；默认块设备由
+  `device_core::CapabilityRegistry` 中第一个成功注册的 `Block` capability 决定。
+- 每个成功 VirtIO block probe 都创建永久 `VirtIOBlockDevice` 实例并注册
+  `DeviceCapability::Block`；`virtio_blk()` 只保存第一个 VirtIO block 的兼容引用。
+- `device_init()` 在 probe 完成后要求默认 `Block` capability 存在，缺失时 fail-fast。
 - 当前代码没有新增 PCIe、ACPI 或自动链接段注册。
 
 ## D2 设计入口
@@ -131,8 +142,8 @@ D2 的当前设计真值面是
   `FdtNodeName<'static>`、matched compatible 和 `FdtReg`；registry 不保存 borrowed
   `FdtNodeView<'_>` / `FdtNodeList<'_>`。
 - D2 已引入最小 typed capability registry 纯模型，首批只覆盖 `DeviceCapability::Block`；
-  `BlockDevice` trait 和 `BlockError` 已放在 `device_core`，`src/device/block.rs` 仍作为当前
-  运行路径的兼容门面，后续 D2c 再迁移调用方。
+  `BlockDevice` trait、`BlockError` 和整扇区 I/O 校验已放在 `device_core`，
+  `src/device/block.rs` 是 registry-backed 兼容门面。
 - 多个 FDT 节点拥有同一 compatible 是正常多设备实例；descriptor 侧同一 compatible
   重复注册禁止，设备绑定状态以稳定 `FdtNodeId` 为准。
 - 默认 `block_device()` 由 descriptor/probe 顺序中第一个成功注册的 `Block` capability 决定。
@@ -149,7 +160,7 @@ D2 的当前设计真值面是
 | D0 | 保持当前 VirtIO block + FAT 路径稳定 | 保留 `device_count()` 和 `virtio_blk()` |
 | D0.5 | 强化当前 device-test 与 platform bus fail-fast 语义 | 不新增 `BlockDevice`，不改 `fatfs_adapter` |
 | D1 | 新增本地 `BlockDevice` trait 和块设备门面 | 已落地；`virtio_blk()` 兼容入口暂时保留 |
-| D2 | 新增本地 `DriverDescriptor` / `ProbeKind` / `ProbeRequirement` / `ProbeLevel` / `ProbePriority`，并将 `platform_bus` 迁移为 descriptor 驱动的 Static / FDT probe | 同步引入最小 typed capability registry；D2a-D2c 保留旧入口，D2 收口后清理 `virtio_blk()` 和旧 `DeviceManager` 公共路径 |
+| D2 | 新增本地 `DriverDescriptor` / `ProbeKind` / `ProbeRequirement` / `ProbeLevel` / `ProbePriority`，并将 `platform_bus` 迁移为 descriptor 驱动的 Static / FDT probe | D2c 已接入最小 typed capability registry；收口清理前继续保留 `virtio_blk()` 和旧 `DeviceManager` 公共路径 |
 | D3 | 扩展 registry 能力和默认设备策略，例如分区块设备、root block 选择或 `Late` 后置初始化 | 以 D2 registry 为真值面，不恢复旧具体驱动入口 |
 | D4 | 设备 registry 表达更完整的 device id、依赖关系、多能力查询和重复注册诊断 | 上层仍只依赖本地门面 |
 | D5 | 如需复用 tgoskits 驱动，评估 `rdif-*` 适配层或隔离 `rdrive` POC | 不直接改变核心设备边界 |

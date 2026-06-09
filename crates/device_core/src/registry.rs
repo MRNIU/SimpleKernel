@@ -558,6 +558,25 @@ mod tests {
     }
 
     #[test]
+    fn block_validation_rejects_partial_or_out_of_range_io() {
+        assert_eq!(
+            crate::validate_sector_io(0, 128, 512, 8),
+            Err(BlockError::InvalidBuffer {
+                len: 128,
+                sector_size: 512,
+            })
+        );
+        assert_eq!(
+            crate::validate_sector_io(8, 512, 512, 8),
+            Err(BlockError::SectorOutOfRange {
+                sector: 8,
+                sector_count: 8,
+            })
+        );
+        assert_eq!(crate::validate_sector_io(7, 512, 512, 8), Ok(()));
+    }
+
+    #[test]
     fn fdt_device_source_reuses_probe_context_value() {
         let context = FdtProbeContext {
             node_id: platform_fdt::FdtNodeId::from_stable_ordinal(7),

@@ -37,20 +37,6 @@ pub enum DeviceError {
     DmaAllocFailed,
     /// 设备 I/O 错误
     IoError,
-    /// 块设备整扇区 I/O 缓冲区大小不匹配
-    InvalidBlockBuffer {
-        /// 调用方传入的缓冲区长度
-        len: usize,
-        /// 设备要求的扇区大小
-        sector_size: usize,
-    },
-    /// 块设备扇区号越界
-    BlockSectorOutOfRange {
-        /// 调用方请求的扇区号
-        sector: u64,
-        /// 设备总扇区数
-        sector_count: u64,
-    },
     /// FDT 中未找到设备
     DeviceNotFound,
 }
@@ -96,6 +82,13 @@ pub fn device_init() {
     log::info!("DeviceInit: scanning FDT...");
     manager::init();
     platform_bus::probe_all();
+    let default_block = block::default_block_device_id().unwrap_or_else(|| {
+        panic!("DeviceInit: Full 初始化完成后缺少默认 Block capability，无法继续初始化文件系统")
+    });
     let count = manager::device_count();
-    log::info!("DeviceInit complete: {} devices enumerated", count);
+    log::info!(
+        "DeviceInit complete: {} devices enumerated, default_block_device={}",
+        count,
+        default_block.raw()
+    );
 }

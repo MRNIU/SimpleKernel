@@ -55,6 +55,34 @@ pub trait BlockDevice: Send + Sync {
     fn write_sector(&self, sector: u64, buf: &[u8]) -> BlockResult<()>;
 }
 
+/// 校验整扇区 I/O 的缓冲区长度和扇区边界。
+///
+/// # Errors
+///
+/// 缓冲区长度不是完整扇区，或扇区号不在设备容量范围内时返回 [`BlockError`]。
+pub fn validate_sector_io(
+    sector: u64,
+    buf_len: usize,
+    sector_size: usize,
+    sector_count: u64,
+) -> BlockResult<()> {
+    if buf_len != sector_size {
+        return Err(BlockError::InvalidBuffer {
+            len: buf_len,
+            sector_size,
+        });
+    }
+
+    if sector >= sector_count {
+        return Err(BlockError::SectorOutOfRange {
+            sector,
+            sector_count,
+        });
+    }
+
+    Ok(())
+}
+
 /// 设备能力分类。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CapabilityType {

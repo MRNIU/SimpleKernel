@@ -9,11 +9,13 @@
 
 use alloc::boxed::Box;
 use alloc::format;
+use alloc::string::String;
 
 use core::ptr::NonNull;
 
 use device_core::{
-    FdtProbeContext, ProbeContext, ProbeFailure, ProbeFailureKind, ProbeOutcome, ProbeSkipReason,
+    BlockError, DeviceSource, FdtProbeContext, ProbeContext, ProbeFailure, ProbeFailureKind,
+    ProbeOutcome, ProbeSkipReason,
 };
 use memory_types::PhysAddr;
 use virtio_drivers::device::blk::VirtIOBlk;
@@ -39,12 +41,12 @@ const VIRTIO_BLOCK_SECTOR_SIZE: usize = 512;
 /// 当前 VirtIO block 全局锁类型。
 pub type VirtIOBlockLock = sync::SpinLock<VirtIOBlk<SimpleKernelHal, MmioTransport<'static>>>;
 
-/// VirtIO 块设备包装——实现 `Device` trait 以注册到 DeviceManager。
-pub struct VirtIOBlockDevice {
+/// VirtIO 块设备兼容记录——实现旧 `Device` trait 以注册到 DeviceManager。
+pub struct VirtIOBlockRecord {
     name: alloc::string::String,
 }
 
-impl super::Device for VirtIOBlockDevice {
+impl super::Device for VirtIOBlockRecord {
     fn name(&self) -> &str {
         &self.name
     }
@@ -54,17 +56,34 @@ impl super::Device for VirtIOBlockDevice {
     }
 }
 
-/// 全局 VirtIO 块设备引用（供文件系统层使用）。
+/// VirtIO block typed capability 实例。
+pub struct VirtIOBlockDevice {
+    lock: VirtIOBlockLock,
+}
+
+impl VirtIOBlockDevice {
+    fn new(block: VirtIOBlk<SimpleKernelHal, MmioTransport<'static>>) -> Self {
+        Self {
+            lock: sync::SpinLock::new(block, "virtio_blk", sync::lock_level::UNSPECIFIED),
+        }
+    }
+
+    fn lock(&self) -> &VirtIOBlockLock {
+        &self.lock
+    }
+}
+
+/// 默认 VirtIO 块设备兼容引用。
 ///
-/// 使用 `spin::Once` 保证只初始化一次。
-/// 存储 `SpinLock` 包装以支持多核并发访问。
-static VIRTIO_BLK: spin::Once<VirtIOBlockLock> = spin::Once::new();
+/// D2c 后真实所有权由 capability registry 记录；本入口只保留迁移期兼容语义，返回
+/// 第一个成功注册的 VirtIO block。
+static VIRTIO_BLK: spin::Once<&'static VirtIOBlockLock> = spin::Once::new();
 
 /// 获取全局 VirtIO 块设备引用。
 ///
 /// 返回 `None` 表示尚未探测到块设备。
 pub fn virtio_blk() -> Option<&'static VirtIOBlockLock> {
-    VIRTIO_BLK.get()
+    VIRTIO_BLK.get().copied()
 }
 
 /// VirtIO MMIO typed probe 结果。
@@ -81,44 +100,42 @@ pub enum VirtioMmioProbeResult {
     },
 }
 
-impl BlockDevice for VirtIOBlockLock {
+impl BlockDevice for VirtIOBlockDevice {
     fn sector_size(&self) -> usize {
         VIRTIO_BLOCK_SECTOR_SIZE
     }
 
     fn sector_count(&self) -> u64 {
-        self.lock().capacity()
+        self.lock.lock().capacity()
     }
 
-    fn read_sector(&self, sector: u64, buf: &mut [u8]) -> Result<(), DeviceError> {
-        let mut blk = self.lock();
+    fn read_sector(&self, sector: u64, buf: &mut [u8]) -> device_core::BlockResult<()> {
+        let mut blk = self.lock.lock();
         let sector_count = blk.capacity();
         block::validate_sector_io(sector, buf.len(), VIRTIO_BLOCK_SECTOR_SIZE, sector_count)?;
-        let sector_index =
-            usize::try_from(sector).map_err(|_| DeviceError::BlockSectorOutOfRange {
-                sector,
-                sector_count,
-            })?;
+        let sector_index = usize::try_from(sector).map_err(|_| BlockError::SectorOutOfRange {
+            sector,
+            sector_count,
+        })?;
 
         blk.read_blocks(sector_index, buf).map_err(|e| {
             log::warn!("VirtIO 块设备读取失败 (sector={}): {:?}", sector, e);
-            DeviceError::IoError
+            BlockError::Io
         })
     }
 
-    fn write_sector(&self, sector: u64, buf: &[u8]) -> Result<(), DeviceError> {
-        let mut blk = self.lock();
+    fn write_sector(&self, sector: u64, buf: &[u8]) -> device_core::BlockResult<()> {
+        let mut blk = self.lock.lock();
         let sector_count = blk.capacity();
         block::validate_sector_io(sector, buf.len(), VIRTIO_BLOCK_SECTOR_SIZE, sector_count)?;
-        let sector_index =
-            usize::try_from(sector).map_err(|_| DeviceError::BlockSectorOutOfRange {
-                sector,
-                sector_count,
-            })?;
+        let sector_index = usize::try_from(sector).map_err(|_| BlockError::SectorOutOfRange {
+            sector,
+            sector_count,
+        })?;
 
         blk.write_blocks(sector_index, buf).map_err(|e| {
             log::warn!("VirtIO 块设备写入失败 (sector={}): {:?}", sector, e);
-            DeviceError::IoError
+            BlockError::Io
         })
     }
 }
@@ -133,7 +150,7 @@ impl BlockDevice for VirtIOBlockLock {
 /// 魔数无效、设备初始化失败时返回对应错误。
 /// MMIO 映射失败由 [`memory::MmioRegion::map`] panic（boot 时配置错误是内核 bug）。
 pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError> {
-    match probe_mmio_at(paddr, size)? {
+    match probe_mmio_at(paddr, size, DeviceSource::Static)? {
         VirtioMmioProbeResult::Block { .. } | VirtioMmioProbeResult::Skipped { .. } => Ok(()),
     }
 }
@@ -177,10 +194,14 @@ pub fn probe_mmio_block(context: FdtProbeContext) -> Result<VirtioMmioProbeResul
         DeviceError::InvalidResource
     })?;
     let paddr = PhysAddr::new(addr);
-    probe_mmio_at(paddr, context.reg.size)
+    probe_mmio_at(paddr, context.reg.size, DeviceSource::Fdt(context))
 }
 
-fn probe_mmio_at(paddr: PhysAddr, size: usize) -> Result<VirtioMmioProbeResult, DeviceError> {
+fn probe_mmio_at(
+    paddr: PhysAddr,
+    size: usize,
+    source: DeviceSource,
+) -> Result<VirtioMmioProbeResult, DeviceError> {
     let mmio_size = size.max(VIRTIO_MMIO_SIZE);
 
     let region = memory::MmioRegion::map(paddr, mmio_size);
@@ -223,7 +244,7 @@ fn probe_mmio_at(paddr: PhysAddr, size: usize) -> Result<VirtioMmioProbeResult, 
 
     match device_type {
         DeviceType::Block => {
-            let device_id = init_block_device(transport, paddr)?;
+            let device_id = init_block_device(transport, paddr, source)?;
             Ok(VirtioMmioProbeResult::Block { device_id })
         }
         _ => {
@@ -242,6 +263,7 @@ fn probe_mmio_at(paddr: PhysAddr, size: usize) -> Result<VirtioMmioProbeResult, 
 fn init_block_device(
     transport: MmioTransport<'static>,
     paddr: PhysAddr,
+    source: DeviceSource,
 ) -> Result<device_core::DeviceId, DeviceError> {
     let mut blk = VirtIOBlk::<SimpleKernelHal, _>::new(transport).map_err(|e| {
         log::warn!("VirtIO 块设备初始化失败: {:?}", e);
@@ -266,19 +288,29 @@ fn init_block_device(
         log::info!("VirtIO: block read test OK (sector 0)");
     }
 
-    // 注册到设备管理器
-    let dev_name = format!("virtio-blk@{}", paddr);
-    let device = Box::new(VirtIOBlockDevice { name: dev_name });
+    let dev_name: &'static str = Box::leak(format!("virtio-blk@{}", paddr).into_boxed_str());
+
+    // 注册到旧设备管理器，迁移期继续支撑 device_count() 和旧查询路径。
+    let device = Box::new(VirtIOBlockRecord {
+        name: String::from(dev_name),
+    });
     let device_id = manager::register_device(device);
 
-    // 存储全局引用供文件系统使用
-    VIRTIO_BLK.call_once(|| sync::SpinLock::new(blk, "virtio_blk", sync::lock_level::UNSPECIFIED));
-    let blk = VIRTIO_BLK
-        .get()
-        .expect("VirtIO block Once 刚初始化后应可取得全局引用");
-    block::register_block_device(blk);
+    let block_device = Box::leak(Box::new(VirtIOBlockDevice::new(blk)));
+    let registry_device_id =
+        block::register_block_device(dev_name, source, block_device).map_err(|error| {
+            log::warn!(
+                "VirtIO 块设备注册到 capability registry 失败: name={}, old_device_id={}, error={:?}",
+                dev_name,
+                device_id.raw(),
+                error
+            );
+            DeviceError::InvalidResource
+        })?;
 
-    Ok(device_id)
+    VIRTIO_BLK.call_once(|| block_device.lock());
+
+    Ok(registry_device_id)
 }
 
 fn probe_failure_from_device_error(error: DeviceError) -> ProbeFailure {
@@ -293,9 +325,7 @@ fn probe_failure_from_device_error(error: DeviceError) -> ProbeFailure {
             ProbeFailureKind::DeviceInitFailed
         }
         DeviceError::UnsupportedDevice => ProbeFailureKind::Unsupported,
-        DeviceError::IoError
-        | DeviceError::InvalidBlockBuffer { .. }
-        | DeviceError::BlockSectorOutOfRange { .. } => ProbeFailureKind::IoFailed,
+        DeviceError::IoError => ProbeFailureKind::IoFailed,
     };
     ProbeFailure::new(kind, "virtio-mmio probe failed")
 }
