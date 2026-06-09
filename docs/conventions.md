@@ -38,7 +38,6 @@ repo/
   AGENTS.md
   README.md
   CONTRIBUTING.md
-  SECURITY.md
   CODE_OF_CONDUCT.md
   .devcontainer/
   .github/

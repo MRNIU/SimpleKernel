@@ -77,7 +77,7 @@
 - 保留"帧所有权与权限语义打包"的类型，有助于表达设计意图
 
 **缺点**：
-- 违反 CLAUDE.md 原则 "Don't design for hypothetical future requirements"
+- 违反当时项目 agent 规则所强调的 "Don't design for hypothetical future requirements"
 - 与 ADR-008 删除 `FrameState` 的理由自相矛盾——两者都是"编译期保证没有用户可见面的消费者"
 - Drop 分支（~20 行含 poison）属于死代码，无法通过生产测试覆盖
 - 测试套件自证——既然唯一生产用法是 `new + forget`，那"Drop 恢复权限"这条测试断言保护的行为在实际产品中不发生
@@ -194,7 +194,7 @@ ADR-008 删除 `FrameState` typestate 的核心论据是 "当前 API 边界上�
 
 ### 方案 A/C 不选的理由
 
-- **方案 A（保留）**：违反 CLAUDE.md "Don't design for hypothetical future requirements"；与 ADR-008 论据自相矛盾；Drop 分支是死代码无法通过生产测试覆盖
+- **方案 A（保留）**：违反当时项目 agent 规则所强调的 "Don't design for hypothetical future requirements"；与 ADR-008 论据自相矛盾；Drop 分支是死代码无法通过生产测试覆盖
 - **方案 C（降级为视图类型）**：类型名"Owned"保留但 Drop 行为砍掉，语义错位更令人困惑；在 Rust 惯例（RAII 类型应通过 Drop 传达所有权语义）面前是半成品
 
 ### 关于 `FREED_PAGE_POISON`
@@ -239,4 +239,4 @@ ADR-008 删除 `FrameState` typestate 的核心论据是 "当前 API 边界上�
 - [Theseus OSDI'20 §4.3 `MappedPages`](https://www.usenix.org/system/files/osdi20-boos.pdf) — 原始 RAII 设计，但 Theseus 场景有大量短生命周期映射
 - `docs/design/SAS-架构设计.md` §1.2 — "MappedPages 仿射类型防止非法映射操作"的原始论述
 - `docs/design/memory-subsystem-v2.md` §6 — "权限守卫"的现行概念模型
-- CLAUDE.md — "Don't design for hypothetical future requirements"、"Don't add features, refactor, or introduce abstractions beyond what the task requires"
+- 项目 agent 规则（当前统一入口为 `AGENTS.md`）— 曾强调 "Don't design for hypothetical future requirements"、"Don't add features, refactor, or introduce abstractions beyond what the task requires"

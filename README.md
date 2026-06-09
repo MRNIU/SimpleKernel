@@ -241,7 +241,6 @@ SimpleKernel/
 ├── docs/                           # 文档入口、设计、ADR、审计和模板
 │   ├── README.md                   #   文档类型和目录说明
 │   ├── conventions.md              #   工程和文档约定
-│   ├── git.md                      #   Git 与 commit 规范
 │   ├── design/                     #   当前设计与历史阶段设计
 │   ├── adr/                  #   ADR 架构决策记录
 │   ├── audit/                      #   深度审计计划与进度
@@ -363,7 +362,7 @@ git config commit.template .gitmessage
 
 - **文档索引**: [docs/README.md](./docs/README.md)
 - **工程约定**: [docs/conventions.md](./docs/conventions.md)
-- **Git 与 Commit**: [docs/git.md](./docs/git.md)
+- **Git 与 Commit**: 见 [AGENTS.md](./AGENTS.md)、[CONTRIBUTING.md](./CONTRIBUTING.md) 和 [.gitmessage](./.gitmessage)
 - **设计总览**: [docs/design/00-概述.md](./docs/design/00-概述.md)
 - **SAS 架构**: [docs/design/SAS-架构设计.md](./docs/design/SAS-架构设计.md)
 - **架构决策记录（ADR）**: [docs/adr/README.md](./docs/adr/README.md)
@@ -389,7 +388,7 @@ git config commit.template .gitmessage
 
 1. Fork 本仓库
 2. 创建功能分支: `git checkout -b feat/amazing-feature`
-3. 遵循 `AGENTS.md`、`docs/conventions.md` 和 `docs/git.md` 进行开发
+3. 遵循 `AGENTS.md`、`docs/conventions.md` 和 `CONTRIBUTING.md` 进行开发
 4. 确保相关测试通过，例如 `devcontainer exec --workspace-folder . cargo test` 和 `devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --all --timeout 30`
 5. 提交变更: `git commit --signoff -m 'feat(scope): add amazing feature'`
 6. 创建 Pull Request

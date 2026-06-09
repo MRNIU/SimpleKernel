@@ -95,7 +95,7 @@ SAS 架构下，隔离由 Rust 类型系统承担，页表的角色是纵深防�
   - `tests/paging-test/`: 更新测试预期
 - **API 变更**: `MappedPages` → `OwnedPages`（pub 类型改名）
 - **测试**: `test_drop_unmaps` 改为测试 flags 恢复；新增 `test_map_preexisting` 测试幂等/flags 更新
-- **文档**: typestate 文档、CLAUDE.md 更新
+- **文档**: typestate 文档、AGENTS.md 更新
 
 ## 参考
 

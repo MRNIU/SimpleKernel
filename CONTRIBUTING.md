@@ -2,7 +2,7 @@
 
 # 贡献指南
 
-感谢参与 SimpleKernel。提交前请先阅读根目录 `AGENTS.md`、`docs/conventions.md` 和 `docs/git.md`。
+感谢参与 SimpleKernel。提交前请先阅读根目录 `AGENTS.md`、`docs/conventions.md` 和本文件。
 
 ## 开发环境
 
@@ -40,7 +40,7 @@ devcontainer exec --workspace-folder . cargo clippy -- -D warnings
 | 启动流程、命令、测试入口变化 | `README.md`、`docs/README.md`、相关设计或计划文档 |
 | 架构不变量变化 | `docs/adr/`、SAD/SDD、`AGENTS.md` |
 | 项目长期约定、Copyright、注释、文件规模、运行时配置规则变化 | `AGENTS.md`、`docs/conventions.md` |
-| Git/commit/DCO/提交模板变化 | `docs/git.md`、`.gitmessage`、PR 模板 |
+| Git/commit/DCO/提交模板变化 | `AGENTS.md`、`README.md`、本文件、`.gitmessage`、PR 模板 |
 | 公开 trait、错误码、类型或模块边界变化 | 代码文档注释、SDD、模块 README |
 | 固件、第三方源码或外部交付物变化 | `3rd/` 记录、`README.md`、相关 ADR/设计/审计文档 |
 | QEMU、固件链路或目标平台假设变化 | `README.md`、相关设计文档、相关测试说明 |
@@ -58,7 +58,7 @@ devcontainer exec --workspace-folder . cargo clippy -- -D warnings
 
 ## Commit
 
-commit 使用 `docs/git.md` 中的格式，并且必须带 DCO sign-off：
+commit 使用 Conventional Commits 格式，并且必须带 DCO sign-off：
 
 ```bash
 git commit --signoff -m "docs(conventions): 补充文档结构约定"

@@ -74,7 +74,7 @@ SAS 架构下非 identity mapping 没有实际用途，移除 `page_allocator` �
   - 根 `Cargo.toml`: 移除 workspace member
 - **API 变更**: `MappedPages::map` 签名变更，`unmap` 返回值变更
 - **测试**: `paging` 和 `memory` 测试适配新接口
-- **文档**: `CLAUDE.md` CODE MAP、frame_allocator README
+- **文档**: `AGENTS.md` CODE MAP、frame_allocator README
 
 ## 参考
 

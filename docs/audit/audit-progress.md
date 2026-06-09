@@ -770,7 +770,6 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 
 - [ ] `CONTRIBUTING.md` — 贡献指南
 - [ ] `CODE_OF_CONDUCT.md` — 社区行为准则
-- [ ] `SECURITY.md` — 安全漏洞报告流程
 - [x] `paging/README.md` — 分页子系统文档（ADR-013 落地时补全）
 - [x] `tlb/README.md` — TLB 管理文档（同上）
 - [x] `heap/README.md` — 堆分配器文档（同上）

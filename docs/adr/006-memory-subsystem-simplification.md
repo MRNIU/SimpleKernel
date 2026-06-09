@@ -222,7 +222,7 @@ buddy 导致状态污染。
 
 - `docs/design/memory-subsystem.md`：头部标注"已过时，见 memory-subsystem-v2.md"
 - 新建 `docs/design/memory-subsystem-v2.md`：完整描述新设计
-- `CLAUDE.md`：更新 CODE MAP 和相关描述
+- `AGENTS.md`：更新 CODE MAP 和相关描述
 
 ## 参考
 

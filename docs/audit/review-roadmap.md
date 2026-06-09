@@ -277,7 +277,7 @@ memory_types ← frame_allocator ← page_table_entry ← paging ← memory
 | 子任务 | 内容 |
 |--------|------|
 | **测试基础设施审计** | 全量排查测试相关的 cfg 门控、host 模拟实现、宏开关（见下方详述） |
-| 文档重写 | `README.md`、`00-概述.md`、`CLAUDE.md`、模块 README、Rustdoc、架构图集 |
+| 文档重写 | `README.md`、`00-概述.md`、`AGENTS.md`、模块 README、Rustdoc、架构图集 |
 | CI 重写 | Matrix 构建、测试分层并行、质量门全链路、自动发布 |
 | 项目重组 | crate 合并/拆分评估、`src/` 目录结构、测试目录、`3rd/` 子模块清理 |
 | 分支合并 | 审计分支合入 `main`、历史分支清理、分支保护规则 |

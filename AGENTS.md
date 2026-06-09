@@ -83,7 +83,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Commit 格式**: `<type>(<scope>): <subject>` — type: feat/fix/refactor/test/docs/chore
 - **Sign-off 必须**: 每条 commit 必须使用 `git commit --signoff`（DCO 签署），**不可省略**
 - **DCO 门禁**：PR CI 会检查每个 commit 是否包含 `Signed-off-by` trailer。
-- **Commit 模板**：可执行 `git config commit.template .gitmessage` 启用仓库提交模板；模板必须镜像 `docs/git.md`。
+- **Commit 模板**：可执行 `git config commit.template .gitmessage` 启用仓库提交模板；模板必须镜像本文件、`README.md` 和 `CONTRIBUTING.md` 中的 Git 规则。
 - **Subagent 派发时**：给 subagent 的 commit 指令中也必须包含 `--signoff`
 
 ### Repository Hygiene
