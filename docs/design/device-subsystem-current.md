@@ -110,13 +110,19 @@ D2 的当前设计真值面是
   和 borrowed node view；固定平台配置可用 path 查询，设备 probe 继续按 compatible 枚举。
 - `platform_fdt` 查询层返回结构化错误，不在内部 panic；compatible 枚举为空不是错误，
   matched node 的必需属性非法必须作为错误返回。
-- D2 registry 需要同一 DTB view 内稳定的 FDT node key；若当前 `FdtNodeId` 仍是 query-local
-  ordinal，应先改为全 DTB 稳定 id，或由 `src/device` adapter 合成 D2 MMIO probe key。
+- D2 registry 需要同一 DTB view 内稳定的 FDT node id；若当前 `FdtNodeId` 仍是 query-local
+  ordinal，应先改为全 DTB 稳定 id。
 - D2 引入本地 `DriverDescriptor`、`ProbeKind`、`ProbeRequirement`、`ProbeLevel` 和
   `ProbePriority`。
-- D2 同时引入最小 typed capability registry，首批只要求覆盖 `DeviceCapability::Block`。
+- `device_core` 可以有限依赖 `platform_fdt` 公开值类型，但不能调用 `platform_fdt::get()`、
+  初始化 DTB storage 或自行扫描全局 FDT。
+- `ProbeContext::Fdt` 只携带按值的 `FdtProbeContext`，包含稳定 `FdtNodeId`、
+  `FdtNodeName<'static>`、matched compatible 和 `FdtReg`；registry 不保存 borrowed
+  `FdtNodeView<'_>` / `FdtNodeList<'_>`。
+- D2 同时引入最小 typed capability registry，首批只要求覆盖 `DeviceCapability::Block`；
+  `BlockDevice` trait 和 `BlockError` 放在 `device_core`，`src/device/block.rs` 作为兼容门面。
 - 多个 FDT 节点拥有同一 compatible 是正常多设备实例；descriptor 侧同一 compatible
-  重复注册禁止。
+  重复注册禁止，设备绑定状态以稳定 `FdtNodeId` 为准。
 - 默认 `block_device()` 由 descriptor/probe 顺序中第一个成功注册的 `Block` capability 决定。
 - `ProbeLevel::Late` 保留给后续依赖已有 capability 的后置初始化，D2 首批不使用。
 - D2a-D2c 期间 `device_count()`、`virtio_blk()`、`block_device()`、`device-test` 和 `fs-test`
