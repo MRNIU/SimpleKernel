@@ -6,6 +6,7 @@ use alloc::boxed::Box;
 use alloc::string::ToString;
 use alloc::vec::Vec;
 
+use device_core::DeviceId;
 use sync::SpinLock;
 
 use super::{Device, DeviceType};
@@ -21,11 +22,20 @@ pub fn init() {
 }
 
 /// 注册一个已探测成功的设备。
-pub fn register_device(device: Box<dyn Device>) {
+pub fn register_device(device: Box<dyn Device>) -> DeviceId {
     let name = device.name().to_string();
     let dtype = device.device_type();
-    DEVICE_MANAGER.lock().push(device);
+    let mut devices = DEVICE_MANAGER.lock();
+    let raw_id = u32::try_from(devices.len()).unwrap_or_else(|_| {
+        panic!(
+            "DeviceManager: 设备数量超过 DeviceId 可表达范围: count={}",
+            devices.len()
+        )
+    });
+    let id = DeviceId::new(raw_id);
+    devices.push(device);
     log::info!("DeviceManager: registered {:?} \"{}\"", dtype, name);
+    id
 }
 
 /// 返回已注册设备总数。

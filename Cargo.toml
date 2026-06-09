@@ -181,6 +181,7 @@ memory = { path = "crates/memory" }
 frame_allocator = { path = "crates/frame_allocator" }
 dma = { path = "crates/dma" }
 platform_fdt = { path = "crates/platform_fdt" }
+device_core = { path = "crates/device_core" }
 
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中

@@ -2,7 +2,7 @@
 
 # R6/D2 设备驱动描述符与 Probe Registry 设计说明
 
-> **状态**：已吸收 D2 review 决策，等待实现
+> **状态**：D2-0 / D2a / D2b 已落地；D2c 与收口清理待实现
 >
 > **范围**：R6 设备子系统 D2
 >
@@ -83,31 +83,39 @@ D2 明确不做以下工作：
 
 ## 当前真值面
 
-当前设备初始化路径仍以 `platform_bus` 为中心：
+当前设备初始化路径已进入 D2b 过渡状态：`platform_bus` 仍是内核集成入口，但不再直接硬编码
+VirtIO MMIO probe 循环；它先构造内建 driver descriptor registry，再按 descriptor 的
+FDT compatible 声明枚举节点并调用 probe adapter。真实设备实例和默认块设备仍沿用旧
+`DeviceManager` / `virtio_blk()` / `block_device()` 兼容路径，typed capability registry
+主路径留到 D2c。
 
 ```mermaid
 sequenceDiagram
   participant Init as "device_init()"
   participant Manager as "manager::init()"
   participant Bus as "platform_bus::probe_all()"
+  participant Registry as "device_core::DriverRegistry"
   participant Fdt as "platform_fdt"
-  participant Virtio as "virtio::probe_mmio_device()"
+  participant Virtio as "virtio descriptor adapter"
   participant DeviceManager as "manager::register_device()"
   participant Block as "block::register_block_device()"
   participant Fs as "fatfs_adapter"
 
   Init->>Manager: 初始化旧 DeviceManager
   Init->>Bus: probe_all()
-  Bus->>Fdt: 获取 kernel-owned FDT view
-  Bus->>Fdt: query_nodes(Compatible(FDT_COMPATIBLE_MMIO))
+  Bus->>Registry: DriverRegistry::new(BUILTIN_DRIVERS)
+  Registry-->>Bus: 排序后的 descriptor + stats
+  Bus->>Fdt: query_nodes(Compatible(descriptor.compatibles))
   Fdt-->>Bus: FdtNodeList
   loop 每个 FdtNodeView
-    Bus->>Bus: reg_required() + address 转 PhysAddr
-    Bus->>Virtio: probe_mmio_device(paddr, reg.size)
+    Bus->>Bus: 转换为 FdtProbeContext
+    Bus->>Virtio: probe(ProbeContext::Fdt)
+    Virtio-->>Bus: Bound / Skipped / Err
     Virtio->>DeviceManager: register_device(Box<dyn Device>)
     Virtio->>Virtio: 初始化 VIRTIO_BLK Once
     Virtio->>Block: register_block_device(&VIRTIO_BLK)
   end
+  Bus->>Registry: 更新 matched / bound / skipped / failed 统计
   Init->>DeviceManager: device_count()
   Fs->>Block: block_device()
 ```
@@ -739,6 +747,19 @@ D2b 验证重点：
 - 多个 descriptor 声明同一个 compatible 会在 registry 初始化阶段报错。
 - 非 block VirtIO MMIO 节点记录为 `Skipped`。
 - 不引入 PCIe、ACPI 或自动链接段注册。
+
+当前落地状态：
+
+- `src/device/platform_bus.rs` 已通过 `device_core::DriverRegistry` 构造内建 descriptor 集合，
+  并按 `ProbeLevel` + `ProbePriority` + `name` 的稳定顺序执行 Static / FDT probe。
+- `src/device/platform_bus.rs` 负责把 `FdtNodeView<'static>` 转成 `FdtProbeContext`，并维护
+  启动期已 bound 的 FDT node id 集合，避免同一节点被重复绑定。
+- VirtIO MMIO 已新增 descriptor adapter 和 typed probe result，区分 `Block`、`Skipped`
+  和 `Err`；旧 `probe_mmio_device(paddr, size)` 仍作为兼容包装保留。
+- QEMU virt 中 `device_id = 0` 的空 VirtIO MMIO slot 记录为 `Skipped(NotApplicable)`；
+  net / gpu 等非 block VirtIO 设备记录为 `Skipped(UnsupportedDevice)`。
+- D2b 不迁移 `src/device/block.rs` 的 trait 与默认块设备门面；`DeviceManager`、
+  `virtio_blk()` 和 `block_device()` 仍是 D2b 期间的兼容约束。
 
 ### D2c：typed capability registry 和默认 Block 选择
 

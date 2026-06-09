@@ -12,10 +12,13 @@ use alloc::format;
 
 use core::ptr::NonNull;
 
+use device_core::{
+    FdtProbeContext, ProbeContext, ProbeFailure, ProbeFailureKind, ProbeOutcome, ProbeSkipReason,
+};
 use memory_types::PhysAddr;
 use virtio_drivers::device::blk::VirtIOBlk;
-use virtio_drivers::transport::mmio::{MmioTransport, VirtIOHeader};
-use virtio_drivers::transport::{DeviceType, Transport};
+use virtio_drivers::transport::mmio::{MmioError, MmioTransport, VirtIOHeader};
+use virtio_drivers::transport::{DeviceType, DeviceTypeError, Transport};
 
 use super::block::{self, BlockDevice};
 use super::hal::SimpleKernelHal;
@@ -26,6 +29,9 @@ const VIRTIO_MMIO_SIZE: usize = 0x200;
 
 /// VirtIO MMIO transport 的 FDT `compatible` 字符串。
 pub(super) const FDT_COMPATIBLE_MMIO: &str = "virtio,mmio";
+
+/// VirtIO MMIO descriptor 声明的 FDT compatible 集合。
+pub(super) const FDT_COMPATIBLES_MMIO: &[&str] = &[FDT_COMPATIBLE_MMIO];
 
 /// VirtIO block 设备的扇区大小。
 const VIRTIO_BLOCK_SECTOR_SIZE: usize = 512;
@@ -59,6 +65,20 @@ static VIRTIO_BLK: spin::Once<VirtIOBlockLock> = spin::Once::new();
 /// 返回 `None` 表示尚未探测到块设备。
 pub fn virtio_blk() -> Option<&'static VirtIOBlockLock> {
     VIRTIO_BLK.get()
+}
+
+/// VirtIO MMIO typed probe 结果。
+pub enum VirtioMmioProbeResult {
+    /// 成功绑定为块设备。
+    Block {
+        /// 迁移期沿用旧 `DeviceManager` 分配的设备 id。
+        device_id: device_core::DeviceId,
+    },
+    /// 识别到资源但不由当前 VirtIO block 路径绑定。
+    Skipped {
+        /// 跳过原因。
+        reason: ProbeSkipReason,
+    },
 }
 
 impl BlockDevice for VirtIOBlockLock {
@@ -113,6 +133,54 @@ impl BlockDevice for VirtIOBlockLock {
 /// 魔数无效、设备初始化失败时返回对应错误。
 /// MMIO 映射失败由 [`memory::MmioRegion::map`] panic（boot 时配置错误是内核 bug）。
 pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError> {
+    match probe_mmio_at(paddr, size)? {
+        VirtioMmioProbeResult::Block { .. } | VirtioMmioProbeResult::Skipped { .. } => Ok(()),
+    }
+}
+
+/// VirtIO MMIO descriptor adapter。
+pub(super) fn probe_mmio_descriptor(context: ProbeContext) -> Result<ProbeOutcome, ProbeFailure> {
+    let ProbeContext::Fdt(context) = context else {
+        return Err(ProbeFailure::new(
+            ProbeFailureKind::InvalidResource,
+            "virtio-mmio descriptor requires FDT context",
+        ));
+    };
+
+    match probe_mmio_block(context) {
+        Ok(VirtioMmioProbeResult::Block { device_id }) => Ok(ProbeOutcome::Bound { device_id }),
+        Ok(VirtioMmioProbeResult::Skipped { reason }) => Ok(ProbeOutcome::Skipped { reason }),
+        Err(error) => {
+            log_probe_error(context, error);
+            Err(probe_failure_from_device_error(error))
+        }
+    }
+}
+
+/// 从 FDT probe 上下文探测 VirtIO MMIO block 设备。
+///
+/// # Errors
+///
+/// FDT `reg` 地址超出当前地址宽度、transport 初始化失败、block 初始化失败或读测试失败时返回
+/// [`DeviceError`]。
+pub fn probe_mmio_block(context: FdtProbeContext) -> Result<VirtioMmioProbeResult, DeviceError> {
+    let addr = usize::try_from(context.reg.address).map_err(|_| {
+        log::warn!(
+            "VirtIO MMIO FDT 地址超出 usize: node_id={}, name={}@{}, compatible={}, addr={:#x}, size={:#x}",
+            context.node_id.ordinal(),
+            context.node_name.name,
+            context.node_name.unit_address.unwrap_or("<none>"),
+            context.matched_compatible,
+            context.reg.address,
+            context.reg.size
+        );
+        DeviceError::InvalidResource
+    })?;
+    let paddr = PhysAddr::new(addr);
+    probe_mmio_at(paddr, context.reg.size)
+}
+
+fn probe_mmio_at(paddr: PhysAddr, size: usize) -> Result<VirtioMmioProbeResult, DeviceError> {
     let mmio_size = size.max(VIRTIO_MMIO_SIZE);
 
     let region = memory::MmioRegion::map(paddr, mmio_size);
@@ -122,10 +190,26 @@ pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError
 
     // SAFETY: vaddr 指向已映射的 VirtIO MMIO 区域，生命周期为 'static（MMIO 映射永久存在）
     let transport = match unsafe { MmioTransport::new(header, mmio_size) } {
-        Ok(t) => t,
-        Err(e) => {
-            log::debug!("VirtIO probe: MmioTransport::new 失败: {:?}", e);
+        Ok(transport) => transport,
+        Err(MmioError::InvalidDeviceID(DeviceTypeError::InvalidDeviceType(0))) => {
+            log::debug!("VirtIO: {} 是空 MMIO slot，跳过", paddr);
+            return Ok(VirtioMmioProbeResult::Skipped {
+                reason: ProbeSkipReason::NotApplicable,
+            });
+        }
+        Err(MmioError::InvalidDeviceID(error)) => {
+            log::debug!("VirtIO: {} device id 暂不支持: {:?}", paddr, error);
+            return Ok(VirtioMmioProbeResult::Skipped {
+                reason: ProbeSkipReason::UnsupportedDevice,
+            });
+        }
+        Err(MmioError::BadMagic(error)) => {
+            log::debug!("VirtIO probe: MMIO magic 无效: {:#x}", error);
             return Err(DeviceError::InvalidMagic);
+        }
+        Err(error) => {
+            log::debug!("VirtIO probe: MmioTransport::new 失败: {:?}", error);
+            return Err(DeviceError::TransportInitFailed);
         }
     };
 
@@ -138,10 +222,15 @@ pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError
     );
 
     match device_type {
-        DeviceType::Block => init_block_device(transport, paddr),
+        DeviceType::Block => {
+            let device_id = init_block_device(transport, paddr)?;
+            Ok(VirtioMmioProbeResult::Block { device_id })
+        }
         _ => {
             log::debug!("VirtIO: {:?} 设备暂不支持，跳过", device_type);
-            Ok(())
+            Ok(VirtioMmioProbeResult::Skipped {
+                reason: ProbeSkipReason::UnsupportedDevice,
+            })
         }
     }
 }
@@ -153,7 +242,7 @@ pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError
 fn init_block_device(
     transport: MmioTransport<'static>,
     paddr: PhysAddr,
-) -> Result<(), DeviceError> {
+) -> Result<device_core::DeviceId, DeviceError> {
     let mut blk = VirtIOBlk::<SimpleKernelHal, _>::new(transport).map_err(|e| {
         log::warn!("VirtIO 块设备初始化失败: {:?}", e);
         DeviceError::ProbeFailed
@@ -180,7 +269,7 @@ fn init_block_device(
     // 注册到设备管理器
     let dev_name = format!("virtio-blk@{}", paddr);
     let device = Box::new(VirtIOBlockDevice { name: dev_name });
-    manager::register_device(device);
+    let device_id = manager::register_device(device);
 
     // 存储全局引用供文件系统使用
     VIRTIO_BLK.call_once(|| sync::SpinLock::new(blk, "virtio_blk", sync::lock_level::UNSPECIFIED));
@@ -189,5 +278,37 @@ fn init_block_device(
         .expect("VirtIO block Once 刚初始化后应可取得全局引用");
     block::register_block_device(blk);
 
-    Ok(())
+    Ok(device_id)
+}
+
+fn probe_failure_from_device_error(error: DeviceError) -> ProbeFailure {
+    let kind = match error {
+        DeviceError::InvalidMagic | DeviceError::TransportInitFailed => {
+            ProbeFailureKind::TransportInitFailed
+        }
+        DeviceError::InvalidResource | DeviceError::DeviceNotFound => {
+            ProbeFailureKind::InvalidResource
+        }
+        DeviceError::ProbeFailed | DeviceError::DmaAllocFailed => {
+            ProbeFailureKind::DeviceInitFailed
+        }
+        DeviceError::UnsupportedDevice => ProbeFailureKind::Unsupported,
+        DeviceError::IoError
+        | DeviceError::InvalidBlockBuffer { .. }
+        | DeviceError::BlockSectorOutOfRange { .. } => ProbeFailureKind::IoFailed,
+    };
+    ProbeFailure::new(kind, "virtio-mmio probe failed")
+}
+
+fn log_probe_error(context: FdtProbeContext, error: DeviceError) {
+    log::warn!(
+        "VirtIO MMIO descriptor probe 失败: node_id={}, name={}@{}, compatible={}, reg_addr={:#x}, reg_size={:#x}, error={:?}",
+        context.node_id.ordinal(),
+        context.node_name.name,
+        context.node_name.unit_address.unwrap_or("<none>"),
+        context.matched_compatible,
+        context.reg.address,
+        context.reg.size,
+        error
+    );
 }

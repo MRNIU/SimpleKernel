@@ -2,16 +2,34 @@
 
 //! 平台总线——通过 FDT 遍历发现并探测设备。
 //!
-//! 遍历设备树中的所有节点，匹配 `compatible` 属性并调用对应的驱动探测函数。
+//! 遍历设备树中的所有节点，按 driver descriptor 匹配 `compatible` 属性并调用 probe。
 //! 参考 Linux `drivers/of/platform.c` 中 `of_platform_bus_create()` 的设计模式。
 
-use crate::platform_fdt::{FdtSelector, PlatformFdt};
+use device_core::{
+    DriverDescriptor, DriverRegistry, FdtProbeContext, ProbeContext, ProbeKind, ProbeLevel,
+    ProbeOutcome, ProbePriority, ProbeRequirement,
+};
+use heapless::Vec;
+use platform_fdt::{FdtNodeId, FdtNodeView, FdtSelector, PlatformFdt};
 
-use super::virtio::FDT_COMPATIBLE_MMIO;
+use super::virtio::{FDT_COMPATIBLES_MMIO, probe_mmio_descriptor};
+
+static VIRTIO_MMIO_DRIVER: DriverDescriptor = DriverDescriptor {
+    name: "virtio-mmio",
+    probe_kind: ProbeKind::Fdt {
+        compatibles: FDT_COMPATIBLES_MMIO,
+    },
+    requirement: ProbeRequirement::Required,
+    level: ProbeLevel::Device,
+    priority: ProbePriority::DEFAULT,
+    probe: probe_mmio_descriptor,
+};
+
+static BUILTIN_DRIVERS: &[DriverDescriptor] = &[VIRTIO_MMIO_DRIVER];
 
 /// 扫描 FDT 并探测所有已知设备。
 ///
-/// 当前通过 VirtIO 驱动声明的 MMIO compatible 探测 VirtIO 设备。
+/// 当前通过内建 driver descriptor 编排 Static / FDT probe。
 ///
 /// # Panics
 /// Full 初始化路径要求 FDT 已由 `early_init()` 记录且可解析；若缺失或解析失败，
@@ -20,39 +38,279 @@ pub fn probe_all() {
     let fdt =
         crate::platform_fdt::get().expect("PlatformBus: FDT 未初始化，Full 初始化不能跳过设备扫描");
 
-    // 探测所有 VirtIO MMIO 设备
-    probe_virtio_mmio_devices(fdt);
+    let mut registry = DriverRegistry::new(BUILTIN_DRIVERS).unwrap_or_else(|error| {
+        panic!("PlatformBus: 内建 driver descriptor 注册失败: {:?}", error)
+    });
+
+    probe_static_drivers(&mut registry);
+    probe_fdt_drivers(fdt, &mut registry);
+    log_probe_summary(&registry);
 }
 
-/// 枚举 FDT 中所有 `virtio,mmio` compatible 的节点并逐一探测。
-///
-/// QEMU virt 平台通常在 0x10001000 起始地址分配多个 VirtIO MMIO 设备，
-/// 每个设备占 0x200 字节寄存器空间。
-fn probe_virtio_mmio_devices(fdt: &PlatformFdt) {
-    let nodes = fdt
-        .query_nodes(FdtSelector::Compatible(FDT_COMPATIBLE_MMIO))
-        .expect("PlatformBus: VirtIO MMIO FDT 查询失败");
+fn probe_static_drivers(registry: &mut DriverRegistry<'_>) {
+    for index in 0..registry.drivers().len() {
+        let descriptor = *registry.drivers()[index];
+        if !matches!(descriptor.probe_kind, ProbeKind::Static) {
+            continue;
+        }
 
-    for node in nodes.iter() {
-        let index = node.id().ordinal();
-        let reg = node.reg_required().unwrap_or_else(|error| {
-            panic!("PlatformBus: VirtIO MMIO #{} reg 缺失: {}", index, error)
-        });
-        let addr = usize::try_from(reg.address).unwrap_or_else(|_| {
+        let outcome = run_probe(descriptor, ProbeContext::Static);
+        record_probe_result(registry, index, descriptor, ProbeContext::Static, outcome);
+    }
+}
+
+fn probe_fdt_drivers(fdt: &PlatformFdt, registry: &mut DriverRegistry<'_>) {
+    let mut bound_nodes = FdtNodeSet::<{ device_core::MAX_REGISTERED_DEVICES }>::new();
+
+    for index in 0..registry.drivers().len() {
+        let descriptor = *registry.drivers()[index];
+        let compatibles = descriptor.probe_kind.compatibles();
+        if compatibles.is_empty() {
+            continue;
+        }
+
+        let mut matched_nodes = FdtNodeSet::<{ platform_fdt::MAX_QUERY_NODES }>::new();
+        for compatible in compatibles {
+            let nodes = fdt
+                .query_nodes(FdtSelector::Compatible(compatible))
+                .unwrap_or_else(|error| {
+                    panic!(
+                        "PlatformBus: driver={} compatible={} FDT 查询失败: {}",
+                        descriptor.name, compatible, error
+                    )
+                });
+
+            for node in nodes.iter() {
+                if bound_nodes.contains(node.id()) || matched_nodes.contains(node.id()) {
+                    continue;
+                }
+                matched_nodes.insert(node.id(), descriptor.name);
+
+                let context = build_fdt_probe_context(node, descriptor.name, compatible);
+                let probe_context = ProbeContext::Fdt(context);
+                let outcome = run_probe(descriptor, probe_context);
+                let bound =
+                    record_probe_result(registry, index, descriptor, probe_context, outcome);
+                if bound {
+                    bound_nodes.insert(node.id(), descriptor.name);
+                }
+            }
+        }
+    }
+}
+
+fn run_probe(
+    descriptor: DriverDescriptor,
+    context: ProbeContext,
+) -> Result<ProbeOutcome, device_core::ProbeFailure> {
+    (descriptor.probe)(context)
+}
+
+fn record_probe_result(
+    registry: &mut DriverRegistry<'_>,
+    index: usize,
+    descriptor: DriverDescriptor,
+    context: ProbeContext,
+    result: Result<ProbeOutcome, device_core::ProbeFailure>,
+) -> bool {
+    registry.stats_mut()[index].record_match();
+    match result {
+        Ok(outcome) => {
+            registry.stats_mut()[index].record_outcome(outcome);
+            log_probe_outcome(descriptor, context, outcome);
+            matches!(outcome, ProbeOutcome::Bound { .. })
+        }
+        Err(failure) => {
+            registry.stats_mut()[index].record_failure();
+            handle_probe_failure(descriptor, context, failure);
+            false
+        }
+    }
+}
+
+fn build_fdt_probe_context(
+    node: &FdtNodeView<'static>,
+    driver_name: &'static str,
+    queried_compatible: &'static str,
+) -> FdtProbeContext {
+    let reg = node.reg_required().unwrap_or_else(|error| {
+        panic!(
+            "PlatformBus: driver={} FDT node_id={} name={}@{} compatible={} reg 缺失或非法: {}",
+            driver_name,
+            node.id().ordinal(),
+            node.name().name,
+            node.name().unit_address.unwrap_or("<none>"),
+            queried_compatible,
+            error
+        )
+    });
+    let matched_compatible = node.matched_compatible().unwrap_or_else(|| {
+        panic!(
+            "PlatformBus: driver={} FDT node_id={} name={}@{} 查询 compatible={} 后缺少 matched compatible",
+            driver_name,
+            node.id().ordinal(),
+            node.name().name,
+            node.name().unit_address.unwrap_or("<none>"),
+            queried_compatible
+        )
+    });
+
+    FdtProbeContext {
+        node_id: node.id(),
+        node_name: node.name(),
+        matched_compatible,
+        reg,
+    }
+}
+
+fn log_probe_outcome(descriptor: DriverDescriptor, context: ProbeContext, outcome: ProbeOutcome) {
+    match (context, outcome) {
+        (ProbeContext::Fdt(context), ProbeOutcome::Bound { device_id }) => {
+            log::info!(
+                "PlatformBus: driver={} bound FDT node_id={} name={}@{} compatible={} reg_addr={:#x} reg_size={:#x} device_id={}",
+                descriptor.name,
+                context.node_id.ordinal(),
+                context.node_name.name,
+                context.node_name.unit_address.unwrap_or("<none>"),
+                context.matched_compatible,
+                context.reg.address,
+                context.reg.size,
+                device_id.raw()
+            );
+        }
+        (ProbeContext::Fdt(context), ProbeOutcome::Skipped { reason }) => {
+            log::debug!(
+                "PlatformBus: driver={} skipped FDT node_id={} name={}@{} compatible={} reg_addr={:#x} reg_size={:#x} reason={:?}",
+                descriptor.name,
+                context.node_id.ordinal(),
+                context.node_name.name,
+                context.node_name.unit_address.unwrap_or("<none>"),
+                context.matched_compatible,
+                context.reg.address,
+                context.reg.size,
+                reason
+            );
+        }
+        (ProbeContext::Static, ProbeOutcome::Bound { device_id }) => {
+            log::info!(
+                "PlatformBus: static driver={} bound device_id={}",
+                descriptor.name,
+                device_id.raw()
+            );
+        }
+        (ProbeContext::Static, ProbeOutcome::Skipped { reason }) => {
+            log::debug!(
+                "PlatformBus: static driver={} skipped reason={:?}",
+                descriptor.name,
+                reason
+            );
+        }
+    }
+}
+
+fn handle_probe_failure(
+    descriptor: DriverDescriptor,
+    context: ProbeContext,
+    failure: device_core::ProbeFailure,
+) {
+    match descriptor.requirement {
+        ProbeRequirement::Required => panic_required_probe_failure(descriptor, context, failure),
+        ProbeRequirement::Optional => log_optional_probe_failure(descriptor, context, failure),
+    }
+}
+
+fn panic_required_probe_failure(
+    descriptor: DriverDescriptor,
+    context: ProbeContext,
+    failure: device_core::ProbeFailure,
+) -> ! {
+    match context {
+        ProbeContext::Fdt(context) => {
             panic!(
-                "PlatformBus: VirtIO MMIO #{} 地址超出 usize: {:#x}",
-                index, reg.address
+                "PlatformBus: required driver={} probe 失败: node_id={}, name={}@{}, compatible={}, reg_addr={:#x}, reg_size={:#x}, failure={:?}",
+                descriptor.name,
+                context.node_id.ordinal(),
+                context.node_name.name,
+                context.node_name.unit_address.unwrap_or("<none>"),
+                context.matched_compatible,
+                context.reg.address,
+                context.reg.size,
+                failure
+            )
+        }
+        ProbeContext::Static => {
+            panic!(
+                "PlatformBus: required static driver={} probe 失败: failure={:?}",
+                descriptor.name, failure
+            )
+        }
+    }
+}
+
+fn log_optional_probe_failure(
+    descriptor: DriverDescriptor,
+    context: ProbeContext,
+    failure: device_core::ProbeFailure,
+) {
+    match context {
+        ProbeContext::Fdt(context) => {
+            log::warn!(
+                "PlatformBus: optional driver={} probe 失败: node_id={}, name={}@{}, compatible={}, reg_addr={:#x}, reg_size={:#x}, failure={:?}",
+                descriptor.name,
+                context.node_id.ordinal(),
+                context.node_name.name,
+                context.node_name.unit_address.unwrap_or("<none>"),
+                context.matched_compatible,
+                context.reg.address,
+                context.reg.size,
+                failure
+            );
+        }
+        ProbeContext::Static => {
+            log::warn!(
+                "PlatformBus: optional static driver={} probe 失败: failure={:?}",
+                descriptor.name,
+                failure
+            );
+        }
+    }
+}
+
+fn log_probe_summary(registry: &DriverRegistry<'_>) {
+    for stats in registry.stats() {
+        log::info!(
+            "PlatformBus: driver={} matched={} bound={} skipped={} failed={}",
+            stats.driver_name,
+            stats.matched,
+            stats.bound,
+            stats.skipped,
+            stats.failed
+        );
+    }
+}
+
+struct FdtNodeSet<const N: usize> {
+    nodes: Vec<FdtNodeId, N>,
+}
+
+impl<const N: usize> FdtNodeSet<N> {
+    const fn new() -> Self {
+        Self { nodes: Vec::new() }
+    }
+
+    fn contains(&self, node_id: FdtNodeId) -> bool {
+        self.nodes.contains(&node_id)
+    }
+
+    fn insert(&mut self, node_id: FdtNodeId, driver_name: &'static str) {
+        if self.contains(node_id) {
+            return;
+        }
+        self.nodes.push(node_id).unwrap_or_else(|_| {
+            panic!(
+                "PlatformBus: driver={} FDT node set 超出容量: capacity={}",
+                driver_name, N
             )
         });
-        let paddr = memory_types::PhysAddr::new(addr);
-        log::debug!(
-            "PlatformBus: found VirtIO MMIO #{} at {}, size={:#x}",
-            index,
-            paddr,
-            reg.size
-        );
-        if let Err(e) = super::virtio::probe_mmio_device(paddr, reg.size) {
-            log::debug!("PlatformBus: VirtIO MMIO #{} probe skipped: {:?}", index, e);
-        }
     }
 }

@@ -25,10 +25,14 @@ use core::fmt;
 pub enum DeviceError {
     /// VirtIO MMIO header 魔数无效
     InvalidMagic,
+    /// VirtIO MMIO transport 初始化失败
+    TransportInitFailed,
     /// 设备探测失败
     ProbeFailed,
     /// 不支持的设备类型
     UnsupportedDevice,
+    /// FDT 或平台资源描述非法
+    InvalidResource,
     /// DMA 分配失败
     DmaAllocFailed,
     /// 设备 I/O 错误

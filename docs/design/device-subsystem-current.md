@@ -13,14 +13,17 @@ SimpleKernel 保留本地 `crate::device` 作为设备子系统边界。设备�
 的 driver descriptor、probe kind、probe level、priority 和 FDT compatible 匹配思路，
 但不直接把 `rdrive` 作为核心设备框架引入。
 
-当前实现仍是一个薄设备模型：
+当前实现已进入 D2b 过渡状态，仍保持一个较薄的设备模型：
 
 - `src/device/mod.rs` 定义 `Device` / `DeviceType` 和 `device_init()`；
 - `src/device/block.rs` 定义本地 `BlockDevice` trait 和默认块设备门面；
 - `src/device/manager.rs` 用 `SpinLock<Vec<Box<dyn Device>>>` 保存已注册设备；
-- `src/device/platform_bus.rs` 通过 VirtIO 驱动侧 compatible 常量查询 FDT 节点；
+- `src/device/platform_bus.rs` 通过 `device_core::DriverRegistry` 编排内建 descriptor，
+  并按 descriptor 声明的 FDT compatible 查询节点；
 - `src/device/virtio.rs` 使用 `virtio-drivers` 初始化 VirtIO block，并通过全局
   `virtio_blk()` 保留兼容入口，同时把同一块设备注册为本地 `BlockDevice`；
+- `src/device/virtio.rs` 已提供 VirtIO MMIO descriptor adapter 和 typed probe result，
+  能区分 block bound、unsupported/non-applicable skip 和真实 probe failure；
 - `src/fs/fatfs_adapter.rs` 通过 `crate::device::block::block_device()` 访问块设备，
   不再直接依赖 VirtIO 具体类型；
 - MMIO 通过 `memory::MmioRegion` 永久映射，DMA 继续走 `crates/dma` 的 QEMU identity
@@ -35,6 +38,7 @@ sequenceDiagram
   participant Manager as DeviceManager
   participant Fdt as platform_fdt
   participant Bus as platform_bus
+  participant Registry as device_core::DriverRegistry
   participant Virtio as virtio
   participant Block as device::block
   participant Memory as memory::MmioRegion
@@ -43,9 +47,10 @@ sequenceDiagram
   Boot->>Device: InitLevel::Full 阶段进入设备初始化
   Device->>Manager: init()
   Device->>Bus: probe_all()
-  Bus->>Fdt: 获取 kernel-owned FDT view
-  Bus->>Fdt: query_nodes(Compatible(FDT_COMPATIBLE_MMIO))
-  Bus->>Virtio: probe_mmio_device(paddr, size)
+  Bus->>Registry: DriverRegistry::new(BUILTIN_DRIVERS)
+  Bus->>Fdt: query_nodes(Compatible(descriptor.compatibles))
+  Bus->>Bus: FdtNodeView 转 FdtProbeContext
+  Bus->>Virtio: descriptor probe(ProbeContext::Fdt)
   Virtio->>Memory: map(paddr, size)
   Virtio->>Virtio: MmioTransport + VirtIOBlk 初始化
   Virtio->>Manager: register_device(Box<dyn Device>)
@@ -55,8 +60,9 @@ sequenceDiagram
   Block-->>Fs: dyn BlockDevice
 ```
 
-这条路径是当前代码真值面。`DeviceManager` 只记录枚举结果；块设备实际 I/O 已通过
-本地 `BlockDevice` 门面进入，`virtio_blk()` 仍作为兼容入口保留给测试和旧调用点。
+这条路径是当前代码真值面。`device_core::DriverRegistry` 当前负责 descriptor 排序、
+重复声明诊断和 probe 统计；`DeviceManager` 仍记录枚举结果；块设备实际 I/O 已通过本地
+`BlockDevice` 门面进入，`virtio_blk()` 仍作为兼容入口保留给测试和旧调用点。
 
 ## 边界和不变量
 
@@ -82,12 +88,12 @@ D0.5 只强化当前 D0 的 VirtIO block 路径，不进入 D1 `BlockDevice` 门
 - `device-test` 必须把 `device_count() > 0`、`virtio_blk()` 可用，以及 sector 0 读取成功作为硬断言。
 - `fatfs_adapter` 在 D0.5 不迁移，仍继续通过 `virtio_blk()` 访问当前 VirtIO 块设备。
 
-## D1 当前状态
+## D2b 当前状态
 
 D1 已新增本地 `BlockDevice` trait 和默认块设备门面。D2 的
 `DriverDescriptor` / probe registry / 最小 typed capability registry 方案已在
 [R6/D2 设备驱动描述符与 Probe Registry 设计说明](device-d2-driver-descriptor-probe.md)
-中收敛；当前已落地 D2-0a / D2a 的纯模型基座，真实 probe 主路径尚未迁移：
+中收敛；当前已落地 D2-0a / D2a / D2b，D2c typed capability 主路径尚未迁移：
 
 - `BlockDevice` 当前覆盖 `sector_size()`、`sector_count()`、字节容量 `capacity()`、
   以及 `read_sector()` / `write_sector()` 整扇区 I/O。
@@ -98,8 +104,10 @@ D1 已新增本地 `BlockDevice` trait 和默认块设备门面。D2 的
 - `platform_fdt::FdtNodeId` 已改为同一 DTB view 内稳定的全树 DFS 序号；path 查询和
   compatible 查询命中同一节点时返回同一 id。
 - `crates/device_core` 已新增 descriptor / probe / registry / typed capability 纯模型。
-- D2b/D2c 尚未开始：当前 `platform_bus` 仍直接编排 VirtIO MMIO probe，`src/device/block.rs`
-  仍是上层 `BlockDevice` 兼容门面。
+- D2b 已迁移 `platform_bus` 到 descriptor-driven Static / FDT probe；VirtIO MMIO 通过
+  descriptor adapter 返回 `Bound` / `Skipped` / `Err`。
+- D2c 尚未开始：`src/device/block.rs` 仍是上层 `BlockDevice` 兼容门面，
+  默认块设备尚未改由 `device_core::CapabilityRegistry` 主路径选择。
 - 当前代码没有新增 PCIe、ACPI 或自动链接段注册。
 
 ## D2 设计入口

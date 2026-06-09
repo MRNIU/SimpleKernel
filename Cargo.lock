@@ -820,6 +820,7 @@ dependencies = [
  "bitflags 2.11.0",
  "buddy_system_allocator",
  "config",
+ "device_core",
  "dma",
  "elf",
  "fatfs",
