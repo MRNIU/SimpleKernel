@@ -18,10 +18,6 @@ docs/
   rfcs/               # 决策前的设计空间讨论
   specs/              # 功能或子系统设计输入
   plans/              # 执行计划和验证步骤
-  hardware/           # 硬件拓扑、接口、bring-up、夹具和板级约束
-  production/         # 固件构建、发布、生产测试和回滚流程
-  suppliers/          # 外部固件、SDK、供应商交付物和验收记录
-  sop/                # 可重复操作的标准作业流程
   templates/          # 可复制模板
 ```
 
@@ -36,7 +32,7 @@ docs/
 | 描述功能或子系统的设计输入 | `docs/specs/` |
 | 跟踪实施步骤和验证 | `docs/plans/` |
 | 跟踪审计阶段目标、进度和发现 | `docs/audit/` |
-| 记录硬件接口、固件、生产、供应商或 SOP | `docs/hardware/`、`docs/production/`、`docs/suppliers/`、`docs/sop/` |
+| 记录 QEMU、固件链路、目标平台或外部交付物边界 | `docs/design/`、`docs/adr/` 或 `docs/audit/` |
 | 创建局部协作规则或新文档 | `docs/templates/` |
 | 记录长期工程约定，包括 Copyright、注释、文件规模、严格 JSON、第三方代码和运行时配置 | `docs/conventions.md` |
 | 记录 Git、commit、DCO 和 `.gitmessage` 规范 | `docs/git.md` |
@@ -63,4 +59,4 @@ SimpleKernel 当前已有 `docs/design/` 和 `docs/adr/`。新增 SAD/SDD 时可
 
 ## 图表规则
 
-架构图、数据流、状态机、硬件拓扑、生产流程和 SOP 优先使用 Mermaid 或 PlantUML。图表必须配套文字说明，不能只提交图片或截图。
+架构图、数据流、状态机、启动流程和目标平台拓扑优先使用 Mermaid 或 PlantUML。图表必须配套文字说明，不能只提交图片或截图。

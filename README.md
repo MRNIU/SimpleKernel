@@ -138,6 +138,17 @@ devcontainer exec --workspace-folder . bash
 > 开发环境默认优先使用 Dev Container。宿主机只保留 Docker 或兼容容器运行时、
 > Git、编辑器/AI agent 和已有 Dev Container 入口工具；不要为了本项目在宿主机安装开发依赖。
 
+#### 容器与镜像命名
+
+常规开发优先使用 `devcontainer up/exec` 或编辑器 Dev Container 入口。需要手动创建可复用后台容器时，容器名使用当前用户名和具名 Git 分支，分支名中的 `/`、空格和其他特殊字符替换为 `-`；detached HEAD 状态不要创建常驻容器。
+
+| 用途 | 名称 / 路径 | 说明 |
+|------|-------------|------|
+| Dev Container 配置 | `.devcontainer/devcontainer.json` | 本地开发入口，按 `.devcontainer/Dockerfile` 构建 |
+| CI Dev Container 镜像 | `ghcr.io/simple-xx/simplekernel-dev:latest` | `workflow.yml`、`docs.yml` 使用；`dev-image.yml` 额外发布 commit SHA tag |
+| 手动常驻容器 | `simplekernel-devcontainer-{username}-{branch}` | 仅在不用 Dev Container CLI 时需要；后续命令通过 `docker exec` 进入 |
+| 项目运行时容器 | 无 | 内核运行在 Dev Container 内启动的 QEMU 中，不维护根目录生产容器镜像 |
+
 **方式二：修复容器或执行明确要求的本地任务**
 
 默认不在宿主机安装 Rust nightly、交叉编译器、QEMU、固件构建依赖或其他项目开发依赖。只有正在修复容器自身配置、文档/Git 等入口操作，或任务明确要求无需项目工具链的本地操作时，才在宿主机执行，并在 PR 中说明原因和验证边界。
@@ -168,6 +179,31 @@ devcontainer exec --workspace-folder . cargo xtask test --list
 **支持的架构：**
 - `riscv64` — RISC-V 64 位
 - `aarch64` — ARM 64 位
+
+### 运行模式与验证模式
+
+| 模式 | 用途 | 运行位置 | 是否需要硬件 | 命令入口 |
+|------|------|----------|--------------|----------|
+| 容器内开发 | 编译、检查、文档、pre-commit | Dev Container / Codespaces | 否 | `devcontainer exec --workspace-folder . <command>` |
+| CI | DCO、fmt、clippy、单元测试、依赖审计、双架构构建和系统测试 | GitHub Actions + `ghcr.io/simple-xx/simplekernel-dev:latest` | 否 | `.github/workflows/workflow.yml` |
+| QEMU 运行 | 启动内核并观察串口日志 | Dev Container / CI | 否 | `cargo xtask run --arch <arch> --timeout 30` |
+| QEMU 系统测试 | 独立裸机测试二进制回归 | Dev Container / CI | 否 | `cargo xtask test --arch <arch> --timeout 30` |
+| 固件构建 | OpenSBI、U-Boot、OP-TEE、ATF 构建 | Dev Container / CI | 否 | `cargo xtask firmware --arch <arch>` |
+| 文档发布 | 生成 rustdoc 并部署 GitHub Pages | GitHub Actions | 否 | `.github/workflows/docs.yml` |
+
+交互式 Bash 中运行 QEMU 相关命令时必须设置 30 秒超时；超时后清理残留 `qemu-system` 进程。CI 为稳定性使用 workflow 中声明的更长外层超时和重复次数。
+
+### 打包与发布
+
+SimpleKernel 当前没有独立生产容器镜像。需要保留或发布的产物必须写回仓库工作区内的声明目录，不能只留在容器临时文件系统、匿名 volume 或项目外路径。
+
+| 产物 | 生成命令 / workflow | 宿主机可见路径 | 容器内路径 | 校验 / 发布 |
+|------|---------------------|----------------|------------|-------------|
+| 内核 ELF 与调试文件 | `cargo xtask build --arch <arch>` | `target/<target-triple>/<profile>/` | 同 bind mount 路径 | `cargo xtask run/test` 或 `cargo xtask build` 成功 |
+| 启动产物 | `cargo xtask run/test --arch <arch>` | `target/<target-triple>/<profile>/boot/` | 同 bind mount 路径 | 包含 `boot.fit`、`boot.scr.uimg`、`rootfs.img` 等 |
+| 固件产物 | `cargo xtask firmware --arch <arch>` | `target/firmware/<arch>/` | 同 bind mount 路径 | `ensure_firmware_exists()` 检查必需文件 |
+| rustdoc Pages artifact | `.github/workflows/docs.yml` | CI 工作区 `docs-out/` | `docs-out/` | `actions/upload-pages-artifact` 后部署 GitHub Pages |
+| Dev Container 镜像 | `.github/workflows/dev-image.yml` | GHCR | `ghcr.io/simple-xx/simplekernel-dev:{latest,sha}` | workflow build-and-push 成功 |
 
 ## 项目结构
 
@@ -202,7 +238,7 @@ SimpleKernel/
 │       ├── build.rs                #   内核和测试编译
 │       ├── qemu.rs                 #   QEMU 启动和 FIT 镜像生成
 │       └── test.rs                 #   系统测试编排
-├── docs/                           # 文档入口、设计、ADR、审计、模板和 SOP
+├── docs/                           # 文档入口、设计、ADR、审计和模板
 │   ├── README.md                   #   文档类型和目录说明
 │   ├── conventions.md              #   工程和文档约定
 │   ├── git.md                      #   Git 与 commit 规范

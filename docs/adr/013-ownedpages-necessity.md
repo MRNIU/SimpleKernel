@@ -146,7 +146,7 @@ impl OwnedPages {
 
 ### 关键证据：潜在消费者经核实均不复用 OwnedPages
 
-初稿列出的两个"未来可能"场景（DMA buffer 与用户程序）经代码和 P9 计划文档验证后，**均不会消费 `OwnedPages`**：
+初稿列出的两个"未来可能"场景（DMA buffer 与用户程序）经代码和历史 P9/BusyBox 草案结论验证后，**均不会消费 `OwnedPages`**。相关草案结论已经吸收到本 ADR；生成工具留下的历史计划不再作为长期真值源保留在仓库中。
 
 **DMA buffer**（`src/device/hal.rs`）：
 
@@ -155,9 +155,9 @@ impl OwnedPages {
 - DMA 真正特有需求（cache flush / invalidate、类型化 `DmaBuffer<T>`、IOMMU hook）与 `OwnedPages` 的权限覆盖 + poison 语义**特性集合几乎不重叠**
 - 结论：DMA 若需要类型化抽象，应设计专用 `DmaBuffer<T>`，不复用 `OwnedPages`
 
-**用户程序加载**（`docs/superpowers/plans/2026-04-09-p9-elf-loader-process-model.md`）：
+**用户程序加载**：
 
-根据 [BusyBox 路线图](../superpowers/plans/2026-04-09-busybox-roadmap.md) "混合模型"决策：内核侧保持 SAS，用户侧走传统 U-mode + 独立页表。P9 的 `UserVma` 草案直接持有 `Vec<AllocatedFrames>`，**明确绕过 `OwnedPages`**。根本原因：
+历史 P9/BusyBox 草案中的 "混合模型" 决策是：内核侧保持 SAS，用户侧走传统 U-mode + 独立页表。P9 的 `UserVma` 草案直接持有 `Vec<AllocatedFrames>`，**明确绕过 `OwnedPages`**。根本原因：
 
 - **VA ≠ PA**：用户进程有独立页表，`OwnedPages::vaddr() = PA.to_virt()` 的 identity-mapping 假设不成立
 - **创建 PTE vs 覆盖 flags**：SAS 下 `OwnedPages::new` 是在背景 PTE 上改 flags；用户侧是从无到有建 PTE（`map_page`），非同一原语

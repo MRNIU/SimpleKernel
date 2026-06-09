@@ -33,9 +33,41 @@ devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . cargo xtask build --arch riscv64
 ```
 
+### 手动常驻容器
+
+通常不需要手动 `docker run`；优先使用 Dev Container CLI 或编辑器入口。需要排查 Dev Container CLI 本身、或在无 CLI 环境中复用同一个后台容器时，可以按以下规则创建稳定命名的常驻容器。`docker run` 只用于创建后台容器，项目命令仍通过 `docker exec` 在容器内执行。
+
+```shell
+docker build -f .devcontainer/Dockerfile -t simplekernel-devcontainer:latest .devcontainer
+
+DEVCONTAINER_USER="$(id -un | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
+DEVCONTAINER_BRANCH="$(git branch --show-current | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
+if [ -z "$DEVCONTAINER_BRANCH" ]; then
+  echo "detached HEAD is not allowed for the devcontainer name" >&2
+  exit 1
+fi
+
+export DEVCONTAINER_NAME="simplekernel-devcontainer-${DEVCONTAINER_USER}-${DEVCONTAINER_BRANCH}"
+docker inspect "$DEVCONTAINER_NAME" >/dev/null 2>&1 || docker run -d \
+  --name "$DEVCONTAINER_NAME" \
+  --mount "type=bind,src=$(pwd),dst=/workspace" \
+  -w /workspace \
+  simplekernel-devcontainer:latest sleep infinity
+
+if [ "$(docker inspect -f '{{.State.Running}}' "$DEVCONTAINER_NAME")" != "true" ]; then
+  docker start "$DEVCONTAINER_NAME" >/dev/null
+fi
+
+docker exec "$DEVCONTAINER_NAME" bash -lc \
+  'git config --global --add safe.directory /workspace && cargo xtask build --arch riscv64'
+```
+
+重建同名容器前，先确认旧容器没有需要保留的状态。需要保留的内核、固件、文档或测试产物必须写回当前仓库的 `target/`、`docs-out/` 或文档声明的产物目录。
+
 ## 验证环境
 
 ```shell
+devcontainer exec --workspace-folder . cat /etc/os-release
 devcontainer exec --workspace-folder . gcc --version
 devcontainer exec --workspace-folder . aarch64-linux-gnu-gcc --version
 devcontainer exec --workspace-folder . riscv64-linux-gnu-gcc --version
@@ -69,3 +101,24 @@ devcontainer exec --workspace-folder . cargo xtask debug --arch riscv64
 # QEMU 系统测试
 devcontainer exec --workspace-folder . cargo xtask test --arch riscv64 --timeout 30
 ```
+
+## 提交前检查
+
+```shell
+devcontainer exec --workspace-folder . pre-commit run --all-files
+devcontainer exec --workspace-folder . cargo fmt --all -- --check
+devcontainer exec --workspace-folder . cargo clippy --target riscv64gc-unknown-none-elf -- -D warnings
+devcontainer exec --workspace-folder . cargo clippy --target aarch64-unknown-none -- -D warnings
+devcontainer exec --workspace-folder . cargo deny check
+```
+
+## 产物路径
+
+| 产物 | 宿主机路径 | 容器内路径 | 说明 |
+|------|------------|------------|------|
+| Cargo 产物 | `target/` | `/workspace/target/` | 内核 ELF、调试文件、启动目录和固件都在此目录树下 |
+| 固件产物 | `target/firmware/<arch>/` | `/workspace/target/firmware/<arch>/` | OpenSBI、U-Boot、OP-TEE、ATF 输出 |
+| 启动产物 | `target/<target-triple>/<profile>/boot/` | `/workspace/target/<target-triple>/<profile>/boot/` | `boot.fit`、`boot.scr.uimg`、`rootfs.img` |
+| 文档发布产物 | `docs-out/` | `/workspace/docs-out/` | CI 中由 `docs.yml` 生成并上传 GitHub Pages artifact |
+
+发布、验收和回滚只能使用上述宿主机可见路径或 CI artifact，不依赖容器临时目录、匿名 volume、用户主目录或项目外缓存中的唯一副本。

@@ -87,13 +87,13 @@ Done --> [*]
 |------|------|-------------|----------|----------|
 | TODO | TODO | TODO | TODO | TODO |
 
-## 硬件、生产、供应商与 SOP
+## 固件、QEMU 与目标平台
 
 | 关联项 | 文档 | 影响 | 验证方式 |
 |--------|------|------|----------|
-| 硬件设计 | TODO | TODO | TODO |
-| 生产/SOP | TODO | TODO | TODO |
-| 供应商交付物 | TODO | TODO | TODO |
+| 固件链路 | TODO | TODO | TODO |
+| QEMU/目标平台 | TODO | TODO | TODO |
+| 第三方源码 | TODO | TODO | TODO |
 
 ## 测试与验证
 

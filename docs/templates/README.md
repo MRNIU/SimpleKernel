@@ -12,9 +12,6 @@
 | `spec.md` | 功能或子系统设计输入 | `docs/specs/YYYY-MM-DD-topic.md` |
 | `plan.md` | 执行计划、任务拆分和验证 | `docs/plans/YYYY-MM-DD-topic.md` |
 | `local-AGENTS.md` | 模块或 crate 的局部协作规则 | 模块根目录 `AGENTS.md` |
-| `hardware-design.md` | 硬件拓扑、接口、bring-up、夹具和生产约束 | `docs/hardware/YYYY-MM-DD-topic.md` |
-| `supplier-record.md` | 外部固件、SDK、供应商交付物和验收记录 | `docs/suppliers/vendor-name.md` |
-| `sop.md` | 标准作业流程 | `docs/sop/topic.md` |
 | `adr-template.md` | 架构决策记录 | `docs/adr/NNN-title.md` |
 | `module-readme-template.md` | crate 或模块 README | 模块目录 `README.md` |
 

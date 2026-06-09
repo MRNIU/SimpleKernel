@@ -679,7 +679,7 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 论证路径：
 1. 对话前半做了审计驱动的内存模块注释清理（ASCII 流程图迁移到 README、删除字段级重复 doc），顺便发现 `OwnedPages` 的实际消费情况
 2. 代码扫描确认 `OwnedPages` 唯一生产调用点是 `memory::init`，紧随 `mem::forget` —— Drop 分支在生产中从未触发，`set_flags` 零调用者
-3. 审阅 P9 用户程序计划文档（`docs/superpowers/plans/2026-04-09-p9-elf-loader-process-model.md`）与 BusyBox 路线图：确认用户侧走独立 per-process 页表 + `UserVma { frames: Vec<AllocatedFrames> }`，**明确绕过 `OwnedPages`**（VA≠PA、map_page vs update_flags 不同原语）
+3. 审阅历史 P9 用户程序草案与 BusyBox 路线图结论（已吸收到 ADR-013，原生成目录不再作为长期真值源）：确认用户侧走独立 per-process 页表 + `UserVma { frames: Vec<AllocatedFrames> }`，**明确绕过 `OwnedPages`**（VA≠PA、map_page vs update_flags 不同原语）
 4. 审阅 `src/device/hal.rs`：virtio `Hal` trait 签名 `(u64, NonNull<u8>)` 边界强制裸指针，move-only 类型传不过去——DMA 若需类型化抽象应是专用 `DmaBuffer<T>`，不复用 `OwnedPages`
 5. 结论与 ADR-008 论据同构（"API 边界无用户可见面 → 删除"）
 

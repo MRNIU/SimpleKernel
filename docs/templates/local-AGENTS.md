@@ -4,7 +4,7 @@
 
 > **使用说明**
 >
-> 复制到模块、crate、测试包、硬件子系统或重要目录根部，并改名为 `AGENTS.md`。局部 `AGENTS.md` 只记录该目录的局部规则；跨项目通用规则仍由根目录 `AGENTS.md` 和 `docs/conventions.md` 负责。
+> 复制到模块、crate、测试包或重要目录根部，并改名为 `AGENTS.md`。局部 `AGENTS.md` 只记录该目录的局部规则；跨项目通用规则仍由根目录 `AGENTS.md` 和 `docs/conventions.md` 负责。
 
 ## 模块概览
 
@@ -49,8 +49,8 @@ flowchart TB
 | 改动 | 必须同步更新 |
 |------|--------------|
 | 公开 API 或数据结构变化 | 调用方、测试、文档 |
-| 配置或命令变化 | README、SOP、CI |
-| 硬件或外部接口变化 | 硬件设计、供应商记录、SOP |
+| 配置或命令变化 | README、CI、相关设计或计划文档 |
+| 固件、QEMU 或目标平台接口变化 | README、相关 ADR/设计/审计文档 |
 
 ## 验证
 
@@ -62,4 +62,4 @@ flowchart TB
 
 - ADR/RFC：TODO
 - Spec/Plan：TODO
-- 硬件/供应商/SOP：TODO
+- 设计/审计：TODO
