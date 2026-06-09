@@ -80,7 +80,7 @@ pub fn validate_dense_core_ids(ids: &[usize]) {
 /// # Panics
 /// 当 FDT CPU 表无法解析、CPU id 不满足 dense 平台契约、primary core id
 /// 不在 FDT CPU 表中，或 topology 被重复初始化时 panic。
-pub fn init_from_fdt(fdt: &crate::fdt::KernelFdt<'_>) -> usize {
+pub fn init_from_fdt(fdt: &crate::fdt::KernelFdt) -> usize {
     let ids = fdt
         .cpu_hardware_ids()
         .expect("CPU topology: FDT CPU id 解析失败");

@@ -5,7 +5,7 @@
 //! 遍历设备树中的所有节点，匹配 `compatible` 属性并调用对应的驱动探测函数。
 //! 参考 Linux `drivers/of/platform.c` 中 `of_platform_bus_create()` 的设计模式。
 
-use crate::fdt::{FDT_ADDR, FdtError, KernelFdt};
+use crate::fdt::{FdtError, KernelFdt};
 
 /// 扫描 FDT 并探测所有已知设备。
 ///
@@ -16,18 +16,10 @@ use crate::fdt::{FDT_ADDR, FdtError, KernelFdt};
 /// Full 初始化路径要求 FDT 已由 `early_init()` 记录且可解析；若缺失或解析失败，
 /// 表示启动平台契约被破坏，必须 fail-fast，不能静默跳过设备扫描。
 pub fn probe_all() {
-    let fdt_addr = match FDT_ADDR.get() {
-        Some(&addr) => addr,
-        None => panic!("PlatformBus: FDT_ADDR 未初始化，Full 初始化不能跳过设备扫描"),
-    };
-
-    let fdt = match KernelFdt::new(fdt_addr) {
-        Ok(fdt) => fdt,
-        Err(e) => panic!("PlatformBus: FDT 解析失败 (addr={:#x}): {:?}", fdt_addr, e),
-    };
+    let fdt = crate::fdt::get().expect("PlatformBus: FDT 未初始化，Full 初始化不能跳过设备扫描");
 
     // 探测所有 VirtIO MMIO 设备
-    probe_virtio_mmio_devices(&fdt);
+    probe_virtio_mmio_devices(fdt);
 }
 
 /// 枚举 FDT 中所有 `virtio,mmio` compatible 的节点并逐一探测。

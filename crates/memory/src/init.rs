@@ -30,7 +30,7 @@ fn map_firmware_region(firmware_start: PhysAddr, firmware_size: usize) {
 }
 
 /// 将内核自有 DTB storage 收紧为只读。
-fn map_boot_fdt_region() {
+fn map_fdt_region() {
     let Some(region) = fdt::storage_region() else {
         return;
     };
@@ -42,7 +42,7 @@ fn map_boot_fdt_region() {
         PteFlags::kernel_ro(),
     );
     log::debug!(
-        "MemoryInit: boot_fdt storage {}: {} pages, {:?}",
+        "MemoryInit: fdt storage {}: {} pages, {:?}",
         start.to_virt(),
         region.page_count(),
         PteFlags::kernel_ro()
@@ -168,7 +168,7 @@ pub fn init() {
             flags
         );
     }
-    map_boot_fdt_region();
+    map_fdt_region();
 
     log::info!(
         "MemoryInit: fw {}+{:#x} (firmware), code {}-{} (RX), rodata {}-{} (RO), data {}-{} (RW), free {}-{} (RW bg)",

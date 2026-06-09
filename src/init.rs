@@ -9,21 +9,14 @@ pub fn early_init(dtb_addr: usize) {
     use memory_types::PhysAddr;
 
     // SAFETY: dtb_addr 来自架构启动入口；bootloader 契约保证它在 early_init 期间可读。
-    let boot_fdt = match unsafe { fdt::init_from_raw(dtb_addr) } {
-        Ok(boot_fdt) => boot_fdt,
+    let fdt = match unsafe { fdt::init_from_raw(dtb_addr) } {
+        Ok(fdt) => fdt,
         Err(error) => {
-            log::error!("BootFdt: {}", error);
+            log::error!("KernelFdt: {}", error);
             crate::util::halt::halt("无法初始化内核自有 DTB 副本");
         }
     };
-    let fdt_addr = boot_fdt.storage_addr();
-
-    let fdt = match fdt::KernelFdt::new(fdt_addr) {
-        Ok(f) => f,
-        Err(_) => {
-            crate::util::halt::halt("无法解析 FDT");
-        }
-    };
+    let fdt_addr = fdt.storage_addr();
 
     let node_count = fdt.node_count().unwrap_or(0);
     let core_count = crate::cpu_topology::init_from_fdt(&fdt);
@@ -73,10 +66,10 @@ pub fn early_init(dtb_addr: usize) {
 
     log::info!("FDT: found {} nodes, {} CPUs", node_count, core_count);
     log::info!(
-        "BootFdt: copied raw={:#x} to kernel-owned={:#x}, totalsize={:#x}",
-        boot_fdt.raw_addr(),
-        boot_fdt.storage_addr(),
-        boot_fdt.total_size()
+        "KernelFdt: copied raw={:#x} to kernel-owned={:#x}, totalsize={:#x}",
+        dtb_addr,
+        fdt.storage_addr(),
+        fdt.total_size()
     );
     log::info!("Memory: {} MB", mem_size / (1024 * 1024));
     log::info!(

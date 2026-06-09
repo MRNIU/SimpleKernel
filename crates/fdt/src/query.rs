@@ -1,45 +1,16 @@
 // Copyright The SimpleKernel Contributors
 
-use core::fmt;
-use core::marker::PhantomData;
+use crate::{FdtError, KernelFdt};
 
-/// FDT 解析错误。
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FdtError {
-    /// FDT 头部无效
-    InvalidHeader,
-    /// 找不到所需节点
-    NodeNotFound,
-    /// 找不到所需属性
-    PropertyNotFound,
-    /// FDT 解析失败
-    ParseFailed,
-    /// 属性大小不匹配
-    InvalidPropertySize,
-    /// 当前不支持该硬件布局
-    UnsupportedLayout,
-}
-
-impl fmt::Display for FdtError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(self, f)
-    }
-}
-
-impl core::error::Error for FdtError {}
-
-/// 内核自有 FDT 副本基地址（`early_init` 中初始化，中断子系统解析 PLIC/GIC 时使用）
+/// 内核自有 FDT 副本基地址。
+///
+/// 新调用方应优先使用 [`crate::get()`] 获取已初始化的 [`KernelFdt`]；该地址保留给迁移期
+/// 只需要裸地址的旧接口。
 pub static FDT_ADDR: spin::Once<usize> = spin::Once::new();
-
-#[derive(Debug)]
-pub struct KernelFdt<'a> {
-    fdt_addr: usize,
-    _marker: PhantomData<&'a [u8]>,
-}
 
 macro_rules! parse_fdt {
     ($addr:expr) => {{
-        // SAFETY: fdt_addr 已在 KernelFdt::new() 中校验
+        // SAFETY: fdt_addr 已在 KernelFdt::new() 或 init_from_raw() 中校验。
         unsafe { fdt_parser::Fdt::from_ptr_unaligned_fallible($addr as *const u8) }.map_err(|e| {
             log::warn!("FDT 解析失败 (addr={:#x}): {:?}", $addr, e);
             FdtError::InvalidHeader
@@ -47,21 +18,9 @@ macro_rules! parse_fdt {
     }};
 }
 
-impl<'a> KernelFdt<'a> {
-    pub fn new(fdt_addr: usize) -> Result<Self, FdtError> {
-        // SAFETY: fdt_addr 由调用方校验（引导加载程序通过 DTB 传入）
-        unsafe { fdt_parser::Fdt::from_ptr_unaligned(fdt_addr as *const u8) }.map_err(|e| {
-            log::warn!("FDT 头部校验失败 (addr={:#x}): {:?}", fdt_addr, e);
-            FdtError::InvalidHeader
-        })?;
-        Ok(Self {
-            fdt_addr,
-            _marker: PhantomData,
-        })
-    }
-
+impl KernelFdt {
     pub fn core_count(&self) -> Result<usize, FdtError> {
-        let fdt = parse_fdt!(self.fdt_addr)?;
+        let fdt = parse_fdt!(self.storage_addr)?;
         let root = fdt.root().map_err(|e| {
             log::warn!("FDT root 节点解析失败: {:?}", e);
             FdtError::ParseFailed
@@ -92,7 +51,7 @@ impl<'a> KernelFdt<'a> {
     pub fn cpu_hardware_ids(
         &self,
     ) -> Result<heapless::Vec<usize, { config::MAX_CORE_COUNT }>, FdtError> {
-        let fdt = parse_fdt!(self.fdt_addr)?;
+        let fdt = parse_fdt!(self.storage_addr)?;
         let root = fdt.root().map_err(|e| {
             log::warn!("FDT root 节点解析失败: {:?}", e);
             FdtError::ParseFailed
@@ -141,7 +100,7 @@ impl<'a> KernelFdt<'a> {
     }
 
     pub fn memory(&self) -> Result<(u64, usize), FdtError> {
-        let fdt = parse_fdt!(self.fdt_addr)?;
+        let fdt = parse_fdt!(self.storage_addr)?;
         let root = fdt.root().map_err(|e| {
             log::warn!("FDT root 节点解析失败: {:?}", e);
             FdtError::ParseFailed
@@ -187,7 +146,7 @@ impl<'a> KernelFdt<'a> {
     /// QEMU 原生 DTB 通常不包含该节点，`xtask` 会在导出 DTB 后补充
     /// `firmware@...` 节点；非 QEMU 平台可由 bootloader 直接提供同等节点。
     pub fn firmware_reserved_memory(&self) -> Result<(u64, usize), FdtError> {
-        let fdt = parse_fdt!(self.fdt_addr)?;
+        let fdt = parse_fdt!(self.storage_addr)?;
         let root = fdt.root().map_err(|e| {
             log::warn!("FDT root 节点解析失败: {:?}", e);
             FdtError::ParseFailed
@@ -254,7 +213,7 @@ impl<'a> KernelFdt<'a> {
     /// RISC-V 平台必须提供此属性；AArch64 的 FDT 通常不含此属性，
     /// 返回 `Err` 后由调用方回退到 `CNTFRQ_EL0`。
     pub fn timebase_frequency(&self) -> Result<u32, FdtError> {
-        let fdt = parse_fdt!(self.fdt_addr)?;
+        let fdt = parse_fdt!(self.storage_addr)?;
         let cpus = fdt
             .find_node("/cpus")
             .map_err(|e| {
@@ -284,7 +243,7 @@ impl<'a> KernelFdt<'a> {
     ///
     /// 解析失败时返回错误而非静默返回 0。
     pub fn node_count(&self) -> Result<usize, FdtError> {
-        let fdt = parse_fdt!(self.fdt_addr)?;
+        let fdt = parse_fdt!(self.storage_addr)?;
         let nodes = fdt.all_nodes().map_err(|e| {
             log::warn!("FDT 遍历所有节点失败: {:?}", e);
             FdtError::ParseFailed
@@ -297,7 +256,7 @@ impl<'a> KernelFdt<'a> {
     ///
     /// 用于从 FDT 动态获取 PLIC/GIC 等中断控制器的基地址。
     pub fn find_compatible_reg(&self, compat: &str) -> Result<(u64, usize), FdtError> {
-        let fdt = parse_fdt!(self.fdt_addr)?;
+        let fdt = parse_fdt!(self.storage_addr)?;
         let compatibles = [compat];
         let nodes = fdt.all_compatible(&compatibles).map_err(|e| {
             log::warn!("FDT 查找 compatible={} 节点失败: {:?}", compat, e);
@@ -335,7 +294,7 @@ impl<'a> KernelFdt<'a> {
         compat: &str,
         index: usize,
     ) -> Result<(u64, usize), FdtError> {
-        let fdt = parse_fdt!(self.fdt_addr)?;
+        let fdt = parse_fdt!(self.storage_addr)?;
         let compatibles = [compat];
         let nodes = fdt.all_compatible(&compatibles).map_err(|e| {
             log::warn!("FDT 查找 compatible={} 节点失败: {:?}", compat, e);
@@ -374,7 +333,7 @@ impl<'a> KernelFdt<'a> {
         compat: &str,
         node_index: usize,
     ) -> Result<(u64, usize), FdtError> {
-        let fdt = parse_fdt!(self.fdt_addr)?;
+        let fdt = parse_fdt!(self.storage_addr)?;
         let compatibles = [compat];
         let nodes = fdt.all_compatible(&compatibles).map_err(|e| {
             log::warn!("FDT 查找 compatible={} 节点失败: {:?}", compat, e);

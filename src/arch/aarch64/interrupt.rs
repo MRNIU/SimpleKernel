@@ -136,10 +136,7 @@ const TLB_SHOOTDOWN_PRIORITY: u8 = 0x90;
 /// 第二组（GICR）从 reg 属性偏移 16 字节处读取。
 fn init_gic_addrs() {
     GIC_ADDRS.call_once(|| {
-        let fdt_addr = *crate::fdt::FDT_ADDR
-            .get()
-            .expect("init_gic_addrs: FDT_ADDR 未初始化");
-        let fdt = crate::fdt::KernelFdt::new(fdt_addr).expect("init_gic_addrs: FDT 解析失败");
+        let fdt = crate::fdt::get().expect("init_gic_addrs: FDT 未初始化");
 
         // 使用通用方法读取 GICD 基地址
         let (gicd_addr, gicd_size) = fdt

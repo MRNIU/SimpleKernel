@@ -35,7 +35,8 @@ const MULTI_MEMORY_DTB: &[u8] = &[
 
 /// `KernelFdt::memory()` 不应在多段 RAM FDT 上静默只返回第一段。
 fn run_test() {
-    let fdt = simplekernel::fdt::KernelFdt::new(MULTI_MEMORY_DTB.as_ptr() as usize)
+    // SAFETY: MULTI_MEMORY_DTB 是 static fixture，测试期间保持可读。
+    let fdt = unsafe { simplekernel::fdt::KernelFdt::new(MULTI_MEMORY_DTB.as_ptr() as usize) }
         .expect("测试 DTB 应可解析");
 
     assert!(

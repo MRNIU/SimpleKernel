@@ -157,10 +157,7 @@ fn configure_plic_context(context: usize) {
 fn plic_init() {
     // 从 FDT 读取 PLIC 基地址
     let base = {
-        let fdt_addr = *crate::fdt::FDT_ADDR
-            .get()
-            .expect("plic_init: FDT_ADDR 未初始化");
-        let fdt = crate::fdt::KernelFdt::new(fdt_addr).expect("plic_init: FDT 解析失败");
+        let fdt = crate::fdt::get().expect("plic_init: FDT 未初始化");
         let (addr, _size) = fdt
             .find_compatible_reg("riscv,plic0")
             .or_else(|_| fdt.find_compatible_reg("sifive,plic-1.0.0"))
