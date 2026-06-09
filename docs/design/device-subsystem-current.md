@@ -106,10 +106,12 @@ D2 的当前设计真值面是
 
 - D2 支持 `Static` / `Fdt`，不支持 PCIe、ACPI 或自动链接段注册。
 - D2-0 已将平台描述层收口为 `crates/platform_fdt`，不保留旧 crate 名或兼容 re-export。
-- `platform_fdt` 提供 `FdtSelector::{Path, Compatible}` 统一查询入口，返回 borrowed
-  node view；固定平台配置可用 path 查询，设备 probe 继续按 compatible 枚举。
+- `platform_fdt` 提供 `FdtSelector::{Path, Compatible}` 统一查询入口，返回 `FdtNodeList`
+  和 borrowed node view；固定平台配置可用 path 查询，设备 probe 继续按 compatible 枚举。
 - `platform_fdt` 查询层返回结构化错误，不在内部 panic；compatible 枚举为空不是错误，
   matched node 的必需属性非法必须作为错误返回。
+- D2 registry 需要同一 DTB view 内稳定的 FDT node key；若当前 `FdtNodeId` 仍是 query-local
+  ordinal，应先改为全 DTB 稳定 id，或由 `src/device` adapter 合成 D2 MMIO probe key。
 - D2 引入本地 `DriverDescriptor`、`ProbeKind`、`ProbeRequirement`、`ProbeLevel` 和
   `ProbePriority`。
 - D2 同时引入最小 typed capability registry，首批只要求覆盖 `DeviceCapability::Block`。

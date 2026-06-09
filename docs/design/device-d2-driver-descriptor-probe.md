@@ -2,7 +2,7 @@
 
 # R6/D2 设备驱动描述符与 Probe Registry 设计说明
 
-> **状态**：review 后重写，等待实现
+> **状态**：按当前 `platform_fdt` 真值面重写，等待 review
 >
 > **范围**：R6 设备子系统 D2
 >
@@ -21,8 +21,10 @@ FDT compatible 匹配思路，并把 SimpleKernel 自己的 DTB 生命周期、M
 
 本轮确认后的核心边界：
 
-- 将平台描述层收口为 `platform_fdt` crate：闭合 U-Boot 传入 DTB
-  的生命周期，提供 kernel-owned FDT view 和平台描述查询。
+- `platform_fdt` 已成为平台描述层真值面：启动期闭合 U-Boot 传入 DTB 生命周期，
+  提供 kernel-owned FDT bytes、`FdtSelector::{Path, Compatible}` 查询和 borrowed node view。
+- D2 registry 需要稳定的 FDT 节点身份。当前 `FdtNodeId` 若仍是单次查询结果序号，
+  D2-0a 必须先把它收敛为同一 DTB view 内稳定的 node id，或由 adapter 合成等价稳定 key。
 - 新增 `device_core` crate：承载平台无关的 descriptor、probe 排序、诊断统计、`DeviceId` 和
   最小 capability registry 模型。
 - D2c 新增 `device_block` crate：承载平台无关的 `BlockDevice` 能力接口和整扇区 I/O 校验。
@@ -48,8 +50,8 @@ D2 要解决当前代码中的四个耦合点：
 2. probe 顺序由代码位置和循环隐式决定，没有稳定的 descriptor 级排序语义。
 3. probe 成功后的设备实例和上层能力分散在 `DeviceManager`、`virtio_blk()` 和
    `block_device()` 中，没有统一诊断入口。
-4. FDT 解析虽然已经开始复制到 kernel-owned storage，但 crate 名称、查询入口和设备枚举模型
-   仍停留在 parser wrapper 风格，尚未体现平台描述层边界。
+4. FDT 解析已经收口到 `platform_fdt`，但 D2 registry 还需要明确如何从 borrowed
+   `FdtNodeView` 转换成平台无关 probe resource，避免重新把 parser/backend 类型扩散进设备核心层。
 
 D2 的目标是：
 
@@ -93,10 +95,11 @@ sequenceDiagram
   Init->>Manager: 初始化旧 DeviceManager
   Init->>Bus: probe_all()
   Bus->>Fdt: 获取 kernel-owned FDT view
-  loop index 0..32
-    Bus->>Fdt: query_nodes(Compatible(FDT_COMPATIBLE_MMIO))
-    Fdt-->>Bus: paddr + size
-    Bus->>Virtio: probe_mmio_device(paddr, size)
+  Bus->>Fdt: query_nodes(Compatible(FDT_COMPATIBLE_MMIO))
+  Fdt-->>Bus: FdtNodeList
+  loop 每个 FdtNodeView
+    Bus->>Bus: reg_required() + address 转 PhysAddr
+    Bus->>Virtio: probe_mmio_device(paddr, reg.size)
     Virtio->>DeviceManager: register_device(Box<dyn Device>)
     Virtio->>Virtio: 初始化 VIRTIO_BLK Once
     Virtio->>Block: register_block_device(&VIRTIO_BLK)
@@ -157,14 +160,18 @@ D2-0 采用 kernel-owned DTB 副本闭合生命周期，并把现有 FDT crate �
 6. 后续所有 FDT 解析都基于 kernel-owned 副本，不再引用 U-Boot 原始地址。
 
 该设计等价于把启动参数中的 DTB 从 bootloader-owned blob 转换为 kernel-owned platform data。
-只有完成这一步后，registry 才允许长期保存来自 FDT 的 `node_path` / compatible 引用。
+只有完成这一步后，registry 才允许长期保存来自 FDT bytes 的 compatible、节点名或 unit address
+引用。D2 不要求 `platform_fdt` 提供绝对 node path；若后续需要 path 级诊断，应作为
+`platform_fdt` 的单独扩展实现。
 
-第一版 `platform_fdt` 可采用固定上限并 fail-fast：
+当前 `platform_fdt` 采用固定上限并 fail-fast：
 
 ```rust
 pub const MAX_DTB_SIZE: usize = 256 * 1024;
 
 pub struct PlatformFdt {
+    raw_addr: Option<usize>,
+    storage_addr: usize,
     bytes: &'static [u8],
 }
 ```
@@ -194,11 +201,12 @@ sequenceDiagram
   Boot->>Memory: 初始化 buddy + 页表
   Memory->>PlatformFdt: 将 DTB 副本映射收紧为 RO
   Boot->>Device: device_init()
-  Device->>PlatformFdt: 查询 FDT 节点 view
-  Device->>Adapter: 转换 FDT node 为 probe resource
+  Device->>PlatformFdt: query_nodes(Compatible(...))
+  PlatformFdt-->>Device: FdtNodeList
+  Device->>Adapter: FdtNodeView 转换为 FdtProbeResource
   Adapter->>Core: probe_static + probe_fdt
   Core->>Desc: 按 level + priority + name 排序
-  Core->>Desc: compatible 完全相等匹配
+  Core->>Desc: 按 compatible 完全相等匹配 resource
   Desc->>Virtio: probe(ProbeContext::Fdt)
   Virtio-->>Core: Bound / Skipped / Err
   Core->>Capability: 注册 device + Block capability
@@ -341,30 +349,40 @@ D2 规则：
 `platform_fdt` 对外提供统一查询入口，selector 同时支持固定 path 和 compatible 枚举：
 
 ```rust
-pub enum FdtSelector<'a> {
-    Path(&'a str),
-    Compatible(&'a str),
+pub enum FdtSelector<'query> {
+    Path(&'query str),
+    Compatible(&'query str),
 }
 
-pub fn query_nodes(&self, selector: FdtSelector<'_>) -> Result<FdtNodeIter<'_>, FdtError>;
+pub fn query_nodes(&self, selector: FdtSelector<'_>) -> Result<FdtNodeList<'_>, FdtError>;
 ```
 
 Path 查询用于 `/cpus`、`/reserved-memory` 等固定平台配置节点；设备发现仍使用 FDT
 标准的 compatible 匹配语义。compatible 查询为空不是错误；若某个 matched node 的必需属性
 非法，必须返回结构化错误，不能伪装成 `NodeNotFound`。
 
-`platform_fdt` 应提供本地 borrowed view，避免把第三方 FDT parser 类型直接扩散到 `device_core`：
+`platform_fdt` 提供本地 borrowed view，避免把第三方 FDT parser 类型直接扩散到 `device_core`。
+D2 设计按 accessor API 使用它，不依赖内部字段：
 
 ```rust
-pub struct FdtNodeView<'a> {
-    pub id: FdtNodeId,
-    pub path: &'a str,
-    pub compatibles: FdtCompatibleList<'a>,
-    pub reg: Option<FdtReg>,
+pub struct FdtNodeView<'fdt> { /* private fields */ }
+
+impl<'fdt> FdtNodeView<'fdt> {
+    pub const fn id(&self) -> FdtNodeId;
+    pub const fn name(&self) -> FdtNodeName<'fdt>;
+    pub const fn matched_compatible(&self) -> Option<&'fdt str>;
+    pub fn compatibles(&self) -> &[&'fdt str];
+    pub fn regs(&self) -> &[FdtReg];
+    pub fn reg_required(&self) -> Result<FdtReg, FdtError>;
+}
+
+pub struct FdtNodeName<'fdt> {
+    pub name: &'fdt str,
+    pub unit_address: Option<&'fdt str>,
 }
 
 pub struct FdtReg {
-    pub paddr: PhysAddr,
+    pub address: u64,
     pub size: usize,
 }
 ```
@@ -372,9 +390,21 @@ pub struct FdtReg {
 D2 只要求 VirtIO MMIO 当前需要的 `reg`。中断号、DMA mask、phandle、parent bus 等属性留给后续。
 
 `device_core` 不直接依赖 `platform_fdt` 的内部类型。`src/device` 的 FDT adapter 负责把
-`platform_fdt::FdtNodeView<'_>` 转换为 `device_core` 拥有的最小 probe value，例如 opaque
-`FdtNodeId`、`node_path`、`matched_compatible` 和 `FdtReg`。同名类型如果同时存在，应通过模块路径
-区分，不能让 `device_core` 反向依赖 `platform_fdt`。
+`platform_fdt::FdtNodeView<'_>` 转换为 `device_core` 拥有的最小 probe value，例如
+`FdtNodeKey`、`node_name`、`unit_address`、`matched_compatible` 和 `FdtReg`。同名类型如果同时存在，
+应通过模块路径区分，不能让 `device_core` 反向依赖 `platform_fdt`。
+
+D2 registry 需要一个“同一 DTB view 内稳定”的 FDT 节点身份，用于避免同一个节点因多个
+compatible 字符串被重复绑定。当前 `platform_fdt::FdtNodeId::ordinal()` 若仍表示“本次查询结果中的序号”，
+它不能直接作为 registry 的跨 descriptor 绑定 key。D2-0a 必须选择其一：
+
+- 将 `platform_fdt::FdtNodeId` 语义改为全 DTB 遍历稳定序号；`Path` 和 `Compatible` 查询返回同一节点时
+  id 相同。
+- 或在 `src/device` adapter 中为 D2 首批 MMIO 设备合成 `FdtNodeKey`，至少包含
+  `name`、`unit_address`、`reg.address` 和 `reg.size`，并说明它只是 D2 的 MMIO probe key。
+
+优先选择第一种。它不要求 parser 提供完整 path，也能让 registry 正确处理一个 FDT 节点同时包含
+具体 compatible 和通用 compatible 的场景。
 
 ## ProbeContext 和 ProbeOutcome
 
@@ -386,11 +416,21 @@ pub enum ProbeContext<'a> {
     Fdt(FdtProbeContext<'a>),
 }
 
+pub struct FdtNodeKey {
+    pub stable_ordinal: usize,
+}
+
 pub struct FdtProbeContext<'a> {
-    pub node_id: FdtNodeId,
-    pub node_path: &'a str,
+    pub node_key: FdtNodeKey,
+    pub node_name: &'a str,
+    pub unit_address: Option<&'a str>,
     pub matched_compatible: &'a str,
     pub reg: FdtReg,
+}
+
+pub struct FdtReg {
+    pub address: u64,
+    pub size: usize,
 }
 
 pub enum ProbeOutcome {
@@ -406,9 +446,11 @@ pub enum ProbeOutcome {
 `Bound` 表示该 descriptor 已经绑定该资源，并完成设备或能力注册。`Skipped` 表示资源可匹配，
 但该实例不应由该 descriptor 绑定。
 
-由于 D2-0 已经把 DTB 复制到 kernel-owned RO storage，`platform_fdt` 可以安全返回 borrowed
-node view；但 `device_core` 仍不直接保存这些 view。跨入 registry 前由 `src/device` adapter
-转换为最小 probe value，长期诊断所需字段应在 adapter 边界明确拷贝或转为平台无关值。
+由于当前代码已经把 DTB 复制到 kernel-owned storage，并在 `memory::init()` 后把该 storage
+映射收紧为 RO，`platform_fdt` 可以安全返回 borrowed node view。但 `device_core` 仍不直接保存
+`platform_fdt::FdtNodeView<'_>`。跨入 registry 前由 `src/device` adapter 转换为最小 probe value；
+长期诊断所需字段只保存 `node_key`、`node_name`、`unit_address`、`matched_compatible`、`reg.address`
+和 `reg.size`。
 
 ### ProbeFailure
 
@@ -484,8 +526,8 @@ D2 把“平台输入错误”、“不支持实例”、“probe 失败”和�
 
 诊断要求：
 
-- `Required` 失败时，panic/error 信息必须包含 descriptor name、node path、matched compatible、
-  paddr、size 和原始错误。
+- `Required` 失败时，panic/error 信息必须包含 descriptor name、node key、node name、
+  unit address、matched compatible、reg address、size 和原始错误。
 - `Optional` 失败时，日志必须包含相同上下文，且 registry 统计为 skipped/failed。
 - required `Block` capability 缺失时，日志必须列出已匹配、bound、skipped、failed 的相关 descriptor
   和 FDT 节点。
@@ -516,10 +558,11 @@ pub struct RegisteredDevice {
 pub enum DeviceSource {
     Static,
     Fdt {
-        node_id: FdtNodeId,
-        node_path: &'static str,
+        node_key: FdtNodeKey,
+        node_name: &'static str,
+        unit_address: Option<&'static str>,
         matched_compatible: &'static str,
-        paddr: PhysAddr,
+        address: u64,
         size: usize,
     },
 }
@@ -536,7 +579,7 @@ pub enum DeviceCapability {
 - `DeviceCapability` 是该设备实例暴露给上层的能力。
 - capability 通过 `DeviceId` 关联到设备实例，不直接塞进 descriptor。
 
-`DeviceType`、`FdtNodeId`、`FdtReg`、`DeviceSource` 这类 registry 诊断所需值类型由
+`DeviceType`、`FdtNodeKey`、`FdtReg`、`DeviceSource` 这类 registry 诊断所需值类型由
 `device_core` 自己定义，或由 `src/device` adapter 转换成 `device_core` 拥有的等价值类型。
 它们不能直接复用 `src/device::DeviceType` 或 `platform_fdt` 内部节点类型，否则 `device_core` 会失去
 平台无关边界。
@@ -572,22 +615,32 @@ D2c 规则：
 
 D2 拆成四个实现切片和一个收口清理切片。每个切片都必须保持当前兼容入口可用。
 
-### D2-0：`platform_fdt` 与 DTB 生命周期闭合
+### D2-0：`platform_fdt` 基线与 FDT node identity
 
-目标：
+当前代码已经完成的基线：
 
 - 使用 `crates/platform_fdt` 作为平台描述层 crate，不保留旧 crate 名或兼容 re-export。
 - 在 `early_init()` 中校验 U-Boot 传入 DTB，并复制到 kernel-owned storage。
 - 后续 FDT 解析只基于 kernel-owned 副本。
-- 分页初始化后将 DTB 副本所在页映射为 RO。
-- 提供 `FdtSelector::{Path, Compatible}` 统一查询入口和 borrowed `FdtNodeView`。
+- `memory::init()` 后将 DTB 副本所在页映射为 RO。
+- 提供 `FdtSelector::{Path, Compatible}` 统一查询入口，返回 `FdtNodeList<'_>` 和 borrowed
+  `FdtNodeView<'_>`。
 - 调用方迁移到新 API，不保留 `find_compatible_node_nth()` 等旧兼容包装。
+
+D2 前置补强：
+
+- 将 `FdtNodeId` 明确为同一 DTB view 内稳定 node id，或在 `src/device` adapter 中合成
+  D2 MMIO probe 可用的 `FdtNodeKey`。
+- 文档和实现不得把 `FdtNodeId::ordinal()` 误写成全局稳定 id，除非 `platform_fdt` 已经按该语义实现。
+- `device_core` 只接收 adapter 转换后的平台无关值，不直接保存 `FdtNodeView<'_>`。
 
 验证重点：
 
 - `memory-test` 中已有 FDT 测试继续通过。
 - `device-test` 和 `fs-test` 继续通过。
 - DTB 超出上限时 fail-fast，错误信息包含原始地址、`totalsize` 和上限。
+- 若调整 `FdtNodeId` 语义，应增加 `platform_fdt` host fixture 测试，覆盖同一节点通过 path 和
+  compatible 查询时得到同一稳定 id。
 
 ### D2a：`device_core` descriptor / registry 纯模型
 
@@ -595,7 +648,7 @@ D2 拆成四个实现切片和一个收口清理切片。每个切片都必须�
 
 - 新增 `crates/device_core`。
 - 定义 `DriverDescriptor`、`ProbeKind`、`ProbeRequirement`、`ProbeLevel`、`ProbePriority`、
-  `ProbeOutcome`、`ProbeFailure`、`DeviceId`、`DeviceType`、`DeviceSource`、`FdtNodeId`、
+  `ProbeOutcome`、`ProbeFailure`、`DeviceId`、`DeviceType`、`DeviceSource`、`FdtNodeKey`、
   `FdtReg` 和基础诊断统计。
 - `device_core` 不依赖 `src/device::DeviceError`、`platform_fdt`、VirtIO、MMIO 或 FAT。
 - 不迁移 QEMU 启动路径。
@@ -630,14 +683,17 @@ static BUILTIN_DRIVERS: &[DriverDescriptor] = &[VIRTIO_MMIO_DRIVER];
 ```text
 for node in platform_fdt.query_nodes(FdtSelector::Compatible(FDT_COMPATIBLE_MMIO)):
     let reg = node.reg_required()
-    virtio::probe_mmio_device(reg.paddr, reg.size)
+    let paddr = PhysAddr::new(usize::try_from(reg.address)?)
+    virtio::probe_mmio_device(paddr, reg.size)
 ```
 
 迁移后：
 
 ```text
 registry.probe_static(BUILTIN_DRIVERS)
-registry.probe_fdt(BUILTIN_DRIVERS, platform_fdt.query_nodes(...))
+let nodes = platform_fdt.query_nodes(FdtSelector::Compatible(...))
+let resources = src/device FDT adapter converts FdtNodeView -> FdtProbeContext
+registry.probe_fdt(BUILTIN_DRIVERS, resources)
 ```
 
 D2b 验证重点：
@@ -758,6 +814,8 @@ QEMU 命令必须设置 30 秒超时，并在超时后清理残留 `qemu-system`
 - PCIe、ACPI、自动链接段注册是否明确留到后续。
 - `platform_fdt` 是否闭合 U-Boot DTB 生命周期，并避免继续缓存 bootloader-owned DTB 引用。
 - DTB 副本是否最终映射为 RO。
+- `platform_fdt` 或 `src/device` adapter 是否为 registry 提供同一 DTB view 内稳定的 FDT node key。
+- 文档和实现是否避免把 query-local ordinal 当成跨 descriptor 稳定 identity 使用。
 - `device_core` 是否保持平台无关，不依赖 FDT / MMIO / VirtIO。
 - `device_core` 是否不依赖 `src/device::DeviceError`，probe 边界是否使用 core-owned `ProbeFailure`。
 - `device_core` 是否不直接依赖 `platform_fdt` 内部类型，FDT adapter 是否完成 value 转换。
