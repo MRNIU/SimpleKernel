@@ -129,6 +129,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
 
 [[package]]
+name = "boot_fdt"
+version = "0.1.0"
+dependencies = [
+ "config",
+ "spin",
+]
+
+[[package]]
 name = "buddy_system_allocator"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -510,6 +518,7 @@ dependencies = [
 name = "memory"
 version = "0.1.0"
 dependencies = [
+ "boot_fdt",
  "config",
  "frame_allocator",
  "heap",
@@ -797,6 +806,7 @@ dependencies = [
  "arm-psci",
  "bitfield-struct",
  "bitflags 2.11.0",
+ "boot_fdt",
  "buddy_system_allocator",
  "config",
  "dma",

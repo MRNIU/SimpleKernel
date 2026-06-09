@@ -1,0 +1,17 @@
+# Copyright The SimpleKernel Contributors
+
+[package]
+name = "boot_fdt"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Boot-time DTB ownership and validation for SimpleKernel"
+edition.workspace = true
+
+[dependencies]
+config = { path = "../config" }
+spin.workspace = true
+
+[lints]
+workspace = true

@@ -17,6 +17,7 @@ paging = { path = "../paging" }
 tlb = { path = "../tlb" }
 frame_allocator = { path = "../frame_allocator" }
 heap_crate = { path = "../heap", package = "heap" }
+boot_fdt = { path = "../boot_fdt" }
 
 log.workspace = true
 spin.workspace = true

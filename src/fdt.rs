@@ -28,7 +28,7 @@ impl fmt::Display for FdtError {
 
 impl core::error::Error for FdtError {}
 
-/// FDT 基地址（`early_init` 中初始化，中断子系统解析 PLIC/GIC 时使用）
+/// 内核自有 FDT 副本基地址（`early_init` 中初始化，中断子系统解析 PLIC/GIC 时使用）
 pub static FDT_ADDR: spin::Once<usize> = spin::Once::new();
 
 #[derive(Debug)]

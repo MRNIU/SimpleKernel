@@ -25,6 +25,7 @@ members = [
 
     "crates/frame_allocator",
     "crates/heap",
+    "crates/boot_fdt",
     "crates/page_table_entry",
     "crates/tlb",
     "crates/paging",
@@ -177,6 +178,7 @@ tlb = { path = "crates/tlb" }
 memory = { path = "crates/memory" }
 frame_allocator = { path = "crates/frame_allocator" }
 dma = { path = "crates/dma" }
+boot_fdt = { path = "crates/boot_fdt" }
 
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中

@@ -9,7 +9,17 @@ pub fn early_init(dtb_addr: usize) {
     use memory::{MEMORY_INFO, MemoryInfo};
     use memory_types::PhysAddr;
 
-    let fdt = match KernelFdt::new(dtb_addr) {
+    // SAFETY: dtb_addr 来自架构启动入口；bootloader 契约保证它在 early_init 期间可读。
+    let boot_fdt = match unsafe { boot_fdt::init_from_raw(dtb_addr) } {
+        Ok(boot_fdt) => boot_fdt,
+        Err(error) => {
+            log::error!("BootFdt: {}", error);
+            crate::util::halt::halt("无法初始化内核自有 DTB 副本");
+        }
+    };
+    let fdt_addr = boot_fdt.storage_addr();
+
+    let fdt = match KernelFdt::new(fdt_addr) {
         Ok(f) => f,
         Err(_) => {
             crate::util::halt::halt("无法解析 FDT");
@@ -52,7 +62,7 @@ pub fn early_init(dtb_addr: usize) {
 
     CORE_COUNT.call_once(|| core_count);
 
-    crate::fdt::FDT_ADDR.call_once(|| dtb_addr);
+    crate::fdt::FDT_ADDR.call_once(|| fdt_addr);
 
     // RISC-V 的 timebase-frequency 在 FDT /cpus 节点中；
     // aarch64 从 CNTFRQ_EL0 寄存器直接读取，不需要此值。
@@ -63,6 +73,12 @@ pub fn early_init(dtb_addr: usize) {
     }
 
     log::info!("FDT: found {} nodes, {} CPUs", node_count, core_count);
+    log::info!(
+        "BootFdt: copied raw={:#x} to kernel-owned={:#x}, totalsize={:#x}",
+        boot_fdt.raw_addr(),
+        boot_fdt.storage_addr(),
+        boot_fdt.total_size()
+    );
     log::info!("Memory: {} MB", mem_size / (1024 * 1024));
     log::info!(
         "FirmwareReserved: addr={:#x}, size={:#x}",

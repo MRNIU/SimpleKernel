@@ -29,6 +29,26 @@ fn map_firmware_region(firmware_start: PhysAddr, firmware_size: usize) {
     );
 }
 
+/// 将内核自有 DTB storage 收紧为只读。
+fn map_boot_fdt_region() {
+    let Some(region) = boot_fdt::storage_region() else {
+        return;
+    };
+
+    let start = PhysAddr::new(region.start);
+    paging::kernel_page_table().update_range_flags(
+        start.to_virt(),
+        region.page_count(),
+        PteFlags::kernel_ro(),
+    );
+    log::debug!(
+        "MemoryInit: boot_fdt storage {}: {} pages, {:?}",
+        start.to_virt(),
+        region.page_count(),
+        PteFlags::kernel_ro()
+    );
+}
+
 /// 主核内存初始化——引导堆 → 帧分配器 → 堆扩展 → 页表 → 权限覆盖。
 ///
 /// # Panics
@@ -148,6 +168,7 @@ pub fn init() {
             flags
         );
     }
+    map_boot_fdt_region();
 
     log::info!(
         "MemoryInit: fw {}+{:#x} (firmware), code {}-{} (RX), rodata {}-{} (RO), data {}-{} (RW), free {}-{} (RW bg)",
