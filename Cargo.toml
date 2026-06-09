@@ -26,6 +26,7 @@ members = [
     "crates/frame_allocator",
     "crates/heap",
     "crates/platform_fdt",
+    "crates/device_core",
     "crates/page_table_entry",
     "crates/tlb",
     "crates/paging",

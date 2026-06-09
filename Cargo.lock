@@ -244,6 +244,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "device_core"
+version = "0.1.0"
+dependencies = [
+ "heapless 0.8.0",
+ "platform_fdt",
+]
+
+[[package]]
 name = "dma"
 version = "0.1.0"
 dependencies = [

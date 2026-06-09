@@ -642,13 +642,14 @@ D2 拆成四个实现切片和一个收口清理切片。每个切片都必须�
 - 在 `early_init()` 中校验 U-Boot 传入 DTB，并复制到 kernel-owned storage。
 - 后续 FDT 解析只基于 kernel-owned 副本。
 - `memory::init()` 后将 DTB 副本所在页映射为 RO。
-- 提供 `FdtSelector::{Path, Compatible}` 统一查询入口，返回 `FdtNodeList<'_>` 和 borrowed
-  `FdtNodeView<'_>`。
+- 提供 `FdtSelector::{Path, Compatible}` 统一查询入口，返回 `FdtNodeList<'static>` 和 borrowed
+  `FdtNodeView<'static>`。
 - 调用方迁移到新 API，不保留 `find_compatible_node_nth()` 等旧兼容包装。
+- `FdtNodeId` 已收敛为同一 DTB view 内稳定的全树 DFS 序号；同一节点通过 path 和
+  compatible 查询时得到相同 id。
 
-D2 前置补强：
+D2b 前置约束：
 
-- 将 `FdtNodeId` 明确为同一 DTB view 内稳定 node id。
 - 文档和实现不得把 query-local ordinal 当成跨 descriptor 稳定 identity 使用。
 - `src/device` 集成层把 `FdtNodeView<'_>` 转换为按值的 `FdtProbeContext`；`device_core`
   不接收或保存 `&FdtNodeView<'_>`。
@@ -658,8 +659,7 @@ D2 前置补强：
 - `memory-test` 中已有 FDT 测试继续通过。
 - `device-test` 和 `fs-test` 继续通过。
 - DTB 超出上限时 fail-fast，错误信息包含原始地址、`totalsize` 和上限。
-- 若调整 `FdtNodeId` 语义，应增加 `platform_fdt` host fixture 测试，覆盖同一节点通过 path 和
-  compatible 查询时得到同一稳定 id。
+- `platform_fdt` host fixture 测试覆盖同一节点通过 path 和 compatible 查询时得到同一稳定 id。
 - kernel 集成路径传给 registry 的 `FdtProbeContext` 只包含 DTB-backed `'static` 字符串；
   host fixture 也使用 static DTB bytes。
 
@@ -676,6 +676,16 @@ D2 前置补强：
 - 不迁移 QEMU 启动路径。
 - 不改变 `platform_bus::probe_all()` 真实行为。
 - 不改变 `virtio.rs`、`block_device()` 或 `fatfs_adapter`。
+
+当前落地状态：
+
+- `crates/device_core` 已作为纯逻辑 workspace crate 加入。
+- `capability` 模块承载 `BlockDevice`、`BlockError`、`BlockResult` 和
+  `DeviceCapability::Block`。
+- `descriptor` 模块承载 descriptor / probe / failure / skipped 语义。
+- `registry` 模块承载 descriptor 排序、重复 name / compatible 诊断、probe 统计、
+  `RegisteredDevice`、`RegisteredCapability` 和默认 Block capability 选择。
+- 真实 `platform_bus` / VirtIO / FAT 路径尚未迁移，仍属于 D2b-D2c。
 
 首批 descriptor 仍可由 `src/device` 手写静态 slice 提供：
 

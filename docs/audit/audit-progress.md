@@ -7,12 +7,16 @@
 
 ## 当前状态
 
-**当前 Phase**: R6 — FDT D2-0 前置切片已落地。当前本地平台描述 crate 已收口为
+**当前 Phase**: R6 — D2-0a / D2a 前置切片已落地。当前本地平台描述 crate 已收口为
 `crates/platform_fdt`，不保留旧兼容入口；`PlatformFdt` 负责
 kernel-owned DTB 生命周期、`FdtSelector::{Path, Compatible}` 统一查询、borrowed
-`FdtNodeView` 和结构化错误返回。`platform_bus` 已通过 VirtIO 驱动侧 compatible 常量
-枚举 VirtIO MMIO 节点，PLIC/GIC 地址解析已改用 `crates/arch_primitives` 暴露的
-`FDT_INTERRUPT_CONTROLLER_COMPATIBLES` 常量。
+`FdtNodeView` 和结构化错误返回。`FdtNodeId` 已改为同一 DTB view 内稳定的全树 DFS
+序号，path 查询和 compatible 查询命中同一节点时返回同一 id。`crates/device_core`
+已新增 descriptor / probe / registry / typed capability 纯模型，承载 `DriverDescriptor`、
+`ProbeKind`、`ProbeRequirement`、`ProbeLevel`、`ProbePriority`、`FdtProbeContext`、
+`ProbeOutcome`、`ProbeFailure`、`DeviceId`、`DeviceSource`、`BlockDevice` 和
+`DeviceCapability::Block`。真实 `platform_bus` / VirtIO / FAT 路径尚未迁移，仍属于
+D2b-D2c。
 
 历史 R6 状态：设备子系统 D0.5 已完成；本轮只强化当前 D0 的 VirtIO block
 基线测试和 platform bus fail-fast 语义，未进入 D1 `BlockDevice` 门面实现，未修改
@@ -30,10 +34,17 @@ kernel-owned DTB 生命周期、`FdtSelector::{Path, Compatible}` 统一查询�
 `R4-15` 漂移语义已补 ADR-019，并已按方案 B 落地 per-core absolute deadline；方案 C 的
 missed tick 补记和 tickless one-shot 后续回看。
 **下一个目标**（按优先级）：
-1. **R6/D2 descriptor / probe registry**：在 `platform_fdt` 基座上继续迁移到 descriptor / probe registry，不直接回退到旧 `fdt` API。
+1. **R6/D2b platform bus registry 迁移**：在 `platform_fdt` 和 `device_core` 基座上，把 `platform_bus` 迁移到 descriptor-driven Static / FDT probe，不直接回退到旧 `fdt` API。
 2. **R4 TLB 后续升级**：运行期映射变更增多后，再评估 ADR-018 方案 B per-CPU mailbox 或方案 C rendezvous。
 3. **R4 timer 后续升级**：按 ADR-019 后续回看条件再评估方案 C missed tick 补记或 tickless one-shot。
 4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
+
+验证结果（2026-06-09 D2-0a / D2a）：通过 `cargo fmt --all -- --check`、
+`cargo test -p platform_fdt`、`cargo test -p device_core`、
+`cargo clippy -p platform_fdt -- -D warnings`、`cargo clippy -p device_core -- -D warnings`、
+`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64`，以及 RISC-V QEMU
+30 秒超时下 `cargo xtask test --arch riscv64 --name device-test --timeout 30` 和
+`cargo xtask test --arch riscv64 --name fs-test --timeout 30`。
 
 验证结果（2026-06-09 FDT D2-0）：通过 `cargo test -p platform_fdt`、
 `cargo clippy -p platform_fdt -- -D warnings`、`cargo xtask build --arch riscv64`、

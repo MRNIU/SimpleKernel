@@ -87,7 +87,7 @@ D0.5 只强化当前 D0 的 VirtIO block 路径，不进入 D1 `BlockDevice` 门
 D1 已新增本地 `BlockDevice` trait 和默认块设备门面。D2 的
 `DriverDescriptor` / probe registry / 最小 typed capability registry 方案已在
 [R6/D2 设备驱动描述符与 Probe Registry 设计说明](device-d2-driver-descriptor-probe.md)
-中收敛，尚未实现：
+中收敛；当前已落地 D2-0a / D2a 的纯模型基座，真实 probe 主路径尚未迁移：
 
 - `BlockDevice` 当前覆盖 `sector_size()`、`sector_count()`、字节容量 `capacity()`、
   以及 `read_sector()` / `write_sector()` 整扇区 I/O。
@@ -95,8 +95,12 @@ D1 已新增本地 `BlockDevice` trait 和默认块设备门面。D2 的
   所以 DMA、MMIO 和 QEMU identity backend 语义没有扩大。
 - `fatfs_adapter` 已迁移到 `device::block::block_device()`，不再直接调用 `virtio_blk()`。
 - `device-test` 以 `BlockDevice` 门面读取 sector 0，同时保留 `virtio_blk()` 兼容入口存在性检查。
-- D2 实现尚未开始：当前代码没有新增 driver descriptor、probe priority、typed capability
-  registry、PCIe、ACPI 或自动链接段注册。
+- `platform_fdt::FdtNodeId` 已改为同一 DTB view 内稳定的全树 DFS 序号；path 查询和
+  compatible 查询命中同一节点时返回同一 id。
+- `crates/device_core` 已新增 descriptor / probe / registry / typed capability 纯模型。
+- D2b/D2c 尚未开始：当前 `platform_bus` 仍直接编排 VirtIO MMIO probe，`src/device/block.rs`
+  仍是上层 `BlockDevice` 兼容门面。
+- 当前代码没有新增 PCIe、ACPI 或自动链接段注册。
 
 ## D2 设计入口
 
@@ -110,17 +114,17 @@ D2 的当前设计真值面是
   和 borrowed node view；固定平台配置可用 path 查询，设备 probe 继续按 compatible 枚举。
 - `platform_fdt` 查询层返回结构化错误，不在内部 panic；compatible 枚举为空不是错误，
   matched node 的必需属性非法必须作为错误返回。
-- D2 registry 需要同一 DTB view 内稳定的 FDT node id；若当前 `FdtNodeId` 仍是 query-local
-  ordinal，应先改为全 DTB 稳定 id。
-- D2 引入本地 `DriverDescriptor`、`ProbeKind`、`ProbeRequirement`、`ProbeLevel` 和
-  `ProbePriority`。
+- D2 registry 需要同一 DTB view 内稳定的 FDT node id；当前 `FdtNodeId` 已是全 DTB 稳定 id。
+- D2 已引入本地 `DriverDescriptor`、`ProbeKind`、`ProbeRequirement`、`ProbeLevel` 和
+  `ProbePriority` 纯模型。
 - `device_core` 可以有限依赖 `platform_fdt` 公开值类型，但不能调用 `platform_fdt::get()`、
   初始化 DTB storage 或自行扫描全局 FDT。
 - `ProbeContext::Fdt` 只携带按值的 `FdtProbeContext`，包含稳定 `FdtNodeId`、
   `FdtNodeName<'static>`、matched compatible 和 `FdtReg`；registry 不保存 borrowed
   `FdtNodeView<'_>` / `FdtNodeList<'_>`。
-- D2 同时引入最小 typed capability registry，首批只要求覆盖 `DeviceCapability::Block`；
-  `BlockDevice` trait 和 `BlockError` 放在 `device_core`，`src/device/block.rs` 作为兼容门面。
+- D2 已引入最小 typed capability registry 纯模型，首批只覆盖 `DeviceCapability::Block`；
+  `BlockDevice` trait 和 `BlockError` 已放在 `device_core`，`src/device/block.rs` 仍作为当前
+  运行路径的兼容门面，后续 D2c 再迁移调用方。
 - 多个 FDT 节点拥有同一 compatible 是正常多设备实例；descriptor 侧同一 compatible
   重复注册禁止，设备绑定状态以稳定 `FdtNodeId` 为准。
 - 默认 `block_device()` 由 descriptor/probe 顺序中第一个成功注册的 `Block` capability 决定。

@@ -1,0 +1,17 @@
+# Copyright The SimpleKernel Contributors
+
+[package]
+name = "device_core"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Descriptor, probe, and typed capability model for SimpleKernel devices"
+edition.workspace = true
+
+[dependencies]
+heapless.workspace = true
+platform_fdt = { path = "../platform_fdt" }
+
+[lints]
+workspace = true

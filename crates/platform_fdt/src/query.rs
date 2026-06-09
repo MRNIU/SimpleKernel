@@ -1,6 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
 use fdt_parser::helpers::UnalignedFallibleNode;
+use fdt_parser::nodes::AsNode;
 use fdt_parser::properties::Compatible;
 
 use crate::{FdtError, PlatformFdt};
@@ -23,18 +24,22 @@ pub enum FdtSelector<'query> {
     Compatible(&'query str),
 }
 
-/// 查询结果中的节点序号。
+/// 同一 DTB view 内稳定的节点序号。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FdtNodeId {
     ordinal: usize,
 }
 
 impl FdtNodeId {
-    const fn new(ordinal: usize) -> Self {
+    /// 从全树 DFS 遍历序号构造节点 id。
+    ///
+    /// 该构造函数主要供 `platform_fdt` 查询层和静态测试 fixture 使用；真实设备 probe
+    /// 应优先复用 [`FdtNodeView::id`] 返回的值。
+    pub const fn from_stable_ordinal(ordinal: usize) -> Self {
         Self { ordinal }
     }
 
-    /// 返回节点在本次查询结果中的序号。
+    /// 返回节点在同一 DTB view 全树 DFS 遍历中的稳定序号。
     pub const fn ordinal(self) -> usize {
         self.ordinal
     }
@@ -72,7 +77,7 @@ pub struct FdtNodeView<'fdt> {
 }
 
 impl<'fdt> FdtNodeView<'fdt> {
-    /// 返回节点在本次查询结果中的序号。
+    /// 返回节点在同一 DTB view 全树 DFS 遍历中的稳定序号。
     pub const fn id(&self) -> FdtNodeId {
         self.id
     }
@@ -178,20 +183,49 @@ impl PlatformFdt {
     ///
     /// # Errors
     /// 当 FDT 自身解析失败、匹配节点解析失败、节点属性非法，或结果超过固定容量时返回错误。
-    pub fn query_nodes(&self, selector: FdtSelector<'_>) -> Result<FdtNodeList<'_>, FdtError> {
+    pub fn query_nodes(&self, selector: FdtSelector<'_>) -> Result<FdtNodeList<'static>, FdtError> {
         let fdt = parse_fdt!(self)?;
         let mut list = FdtNodeList::new();
 
         match selector {
             FdtSelector::Path(path) => {
-                let Some(node) = fdt.find_node(path).map_err(|e| {
-                    log::warn!("FDT 查找路径 {} 失败: {:?}", path, e);
-                    FdtError::ParseFailed
-                })?
-                else {
+                if path == "/" {
+                    let root = fdt.root().map_err(|e| {
+                        log::warn!("FDT root 节点解析失败: {:?}", e);
+                        FdtError::ParseFailed
+                    })?;
+                    list.push(node_to_view(
+                        root.as_node(),
+                        FdtNodeId::from_stable_ordinal(0),
+                        None,
+                        "path",
+                    )?)?;
                     return Ok(list);
-                };
-                list.push(node_to_view(node, FdtNodeId::new(0), None, "path")?)?;
+                }
+
+                let nodes = fdt.all_nodes().map_err(|e| {
+                    log::warn!("FDT 遍历节点以查询路径 {} 失败: {:?}", path, e);
+                    FdtError::ParseFailed
+                })?;
+                let mut node_path = NodePath::new();
+                for (tree_ordinal, node_result) in nodes.enumerate() {
+                    let (depth, node) = node_result.map_err(|e| {
+                        log::warn!("FDT path={} 节点解析失败: {:?}", path, e);
+                        FdtError::ParseFailed
+                    })?;
+                    node_path.push(depth, node_name(&node, path)?)?;
+                    if !node_path.matches(path) {
+                        continue;
+                    }
+
+                    list.push(node_to_view(
+                        node,
+                        FdtNodeId::from_stable_ordinal(tree_ordinal + FDT_ROOT_NODE_ID + 1),
+                        None,
+                        "path",
+                    )?)?;
+                    break;
+                }
             }
             FdtSelector::Compatible(compatible) => {
                 let nodes = fdt.all_nodes().map_err(|e| {
@@ -199,8 +233,7 @@ impl PlatformFdt {
                     FdtError::ParseFailed
                 })?;
 
-                let mut ordinal = 0;
-                for node_result in nodes {
+                for (tree_ordinal, node_result) in nodes.enumerate() {
                     let (_, node) = node_result.map_err(|e| {
                         log::warn!("FDT compatible={} 节点解析失败: {:?}", compatible, e);
                         FdtError::ParseFailed
@@ -210,11 +243,10 @@ impl PlatformFdt {
                     }
                     list.push(node_to_view(
                         node,
-                        FdtNodeId::new(ordinal),
+                        FdtNodeId::from_stable_ordinal(tree_ordinal + FDT_ROOT_NODE_ID + 1),
                         Some(compatible),
                         compatible,
                     )?)?;
-                    ordinal += 1;
                 }
             }
         }
@@ -241,7 +273,12 @@ impl PlatformFdt {
             if !node_matches_compatible(&node, compatible, compatible)? {
                 continue;
             }
-            let view = node_to_view(node, FdtNodeId::new(0), Some(compatible), compatible)?;
+            let view = node_to_view(
+                node,
+                FdtNodeId::from_stable_ordinal(0),
+                Some(compatible),
+                compatible,
+            )?;
             return view.reg_nth(reg_index).ok_or(FdtError::PropertyNotFound);
         }
 
@@ -481,6 +518,61 @@ impl PlatformFdt {
     }
 }
 
+struct NodePath<'fdt> {
+    components: [Option<FdtNodeName<'fdt>>; FDT_MAX_DEPTH],
+    depth: usize,
+}
+
+impl<'fdt> NodePath<'fdt> {
+    const fn new() -> Self {
+        Self {
+            components: [None; FDT_MAX_DEPTH],
+            depth: 0,
+        }
+    }
+
+    fn push(&mut self, depth: usize, name: FdtNodeName<'fdt>) -> Result<(), FdtError> {
+        if depth == 0 || depth > self.components.len() {
+            log::warn!("FDT 节点深度超出支持范围: {}", depth);
+            return Err(FdtError::UnsupportedLayout);
+        }
+
+        self.components[depth - 1] = Some(name);
+        self.depth = depth;
+        Ok(())
+    }
+
+    fn matches(&self, path: &str) -> bool {
+        if !path.starts_with('/') || path == "/" {
+            return false;
+        }
+
+        let mut count = 0;
+        for (index, component) in path.trim_start_matches('/').split('/').enumerate() {
+            count += 1;
+            let Some(Some(name)) = self.components.get(index) else {
+                return false;
+            };
+            if !component_matches_name(component, *name) {
+                return false;
+            }
+        }
+
+        count == self.depth
+    }
+}
+
+const FDT_ROOT_NODE_ID: usize = 0;
+const FDT_MAX_DEPTH: usize = 16;
+
+fn component_matches_name(component: &str, name: FdtNodeName<'_>) -> bool {
+    if let Some((base, unit_address)) = component.split_once('@') {
+        name.name == base && name.unit_address == Some(unit_address)
+    } else {
+        name.name == component
+    }
+}
+
 fn node_to_view<'fdt>(
     node: UnalignedFallibleNode<'fdt>,
     id: FdtNodeId,
@@ -506,6 +598,20 @@ fn node_to_view<'fdt>(
         matched_compatible,
         compatibles,
         regs,
+    })
+}
+
+fn node_name<'fdt>(
+    node: &UnalignedFallibleNode<'fdt>,
+    context: &str,
+) -> Result<FdtNodeName<'fdt>, FdtError> {
+    let name = node.name().map_err(|e| {
+        log::warn!("FDT {} 节点名称解析失败: {:?}", context, e);
+        FdtError::ParseFailed
+    })?;
+    Ok(FdtNodeName {
+        name: name.name,
+        unit_address: name.unit_address,
     })
 }
 
@@ -597,4 +703,98 @@ fn collect_regs<'fdt>(
         })?;
     }
     Ok(regs)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_DTB: &[u8] = &[
+        0xd0, 0x0d, 0xfe, 0xed, 0x00, 0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x38, 0x00, 0x00, 0x01,
+        0xcc, 0x00, 0x00, 0x00, 0x28, 0x00, 0x00, 0x00, 0x11, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x37, 0x00, 0x00, 0x01, 0x94, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00,
+        0x00, 0x0f, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x17, 0x00,
+        0x00, 0x00, 0x1b, 0x73, 0x69, 0x6d, 0x70, 0x6c, 0x65, 0x6b, 0x65, 0x72, 0x6e, 0x65, 0x6c,
+        0x2c, 0x74, 0x65, 0x73, 0x74, 0x2d, 0x72, 0x6f, 0x6f, 0x74, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x01, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x65, 0x73, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00,
+        0x00, 0x1a, 0x00, 0x00, 0x00, 0x26, 0x2f, 0x73, 0x6f, 0x63, 0x2f, 0x76, 0x69, 0x72, 0x74,
+        0x69, 0x6f, 0x5f, 0x6d, 0x6d, 0x69, 0x6f, 0x40, 0x31, 0x30, 0x30, 0x30, 0x31, 0x30, 0x30,
+        0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x01, 0x73, 0x6f, 0x63,
+        0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x0f, 0x00,
+        0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2c,
+        0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x0b, 0x00, 0x00, 0x00, 0x1b, 0x73, 0x69, 0x6d,
+        0x70, 0x6c, 0x65, 0x2d, 0x62, 0x75, 0x73, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x76, 0x69,
+        0x72, 0x74, 0x69, 0x6f, 0x5f, 0x6d, 0x6d, 0x69, 0x6f, 0x40, 0x31, 0x30, 0x30, 0x30, 0x31,
+        0x30, 0x30, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x23,
+        0x00, 0x00, 0x00, 0x1b, 0x76, 0x65, 0x6e, 0x64, 0x6f, 0x72, 0x2c, 0x73, 0x70, 0x65, 0x63,
+        0x69, 0x66, 0x69, 0x63, 0x2d, 0x76, 0x69, 0x72, 0x74, 0x69, 0x6f, 0x00, 0x76, 0x69, 0x72,
+        0x74, 0x69, 0x6f, 0x2c, 0x6d, 0x6d, 0x69, 0x6f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00,
+        0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x33, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x10, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
+        0x01, 0x6f, 0x74, 0x68, 0x65, 0x72, 0x40, 0x31, 0x30, 0x30, 0x30, 0x32, 0x30, 0x30, 0x30,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00, 0x1b, 0x76,
+        0x69, 0x72, 0x74, 0x69, 0x6f, 0x2c, 0x6d, 0x6d, 0x69, 0x6f, 0x00, 0x00, 0x00, 0x00, 0x03,
+        0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x33, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x20,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00,
+        0x00, 0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x09, 0x23, 0x61, 0x64, 0x64, 0x72,
+        0x65, 0x73, 0x73, 0x2d, 0x63, 0x65, 0x6c, 0x6c, 0x73, 0x00, 0x23, 0x73, 0x69, 0x7a, 0x65,
+        0x2d, 0x63, 0x65, 0x6c, 0x6c, 0x73, 0x00, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x74, 0x69, 0x62,
+        0x6c, 0x65, 0x00, 0x64, 0x69, 0x73, 0x6b, 0x30, 0x00, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x73,
+        0x00, 0x72, 0x65, 0x67, 0x00,
+    ];
+
+    fn test_fdt() -> PlatformFdt {
+        // SAFETY: TEST_DTB 是静态 fixture，字节在整个测试进程生命周期内可读。
+        unsafe { PlatformFdt::from_static(TEST_DTB.as_ptr() as usize) }
+            .expect("TEST_DTB 应是有效 DTB fixture")
+    }
+
+    #[test]
+    fn path_and_compatible_queries_share_stable_node_id() {
+        let fdt = test_fdt();
+        let by_path = fdt
+            .query_nodes(FdtSelector::Path("/soc/virtio_mmio@10001000"))
+            .expect("path 查询应成功");
+        let by_specific_compatible = fdt
+            .query_nodes(FdtSelector::Compatible("vendor,specific-virtio"))
+            .expect("compatible 查询应成功");
+
+        assert_eq!(by_path.len(), 1);
+        assert_eq!(by_specific_compatible.len(), 1);
+        assert_eq!(
+            by_path.first().expect("path 命中节点").id(),
+            by_specific_compatible
+                .first()
+                .expect("compatible 命中节点")
+                .id()
+        );
+    }
+
+    #[test]
+    fn compatible_query_preserves_stable_ids_for_multiple_instances() {
+        let fdt = test_fdt();
+        let by_specific_compatible = fdt
+            .query_nodes(FdtSelector::Compatible("vendor,specific-virtio"))
+            .expect("specific compatible 查询应成功");
+        let by_generic_compatible = fdt
+            .query_nodes(FdtSelector::Compatible("virtio,mmio"))
+            .expect("generic compatible 查询应成功");
+
+        let first_specific = by_specific_compatible.first().expect("specific 命中节点");
+        let first_generic = by_generic_compatible.first().expect("generic 首个节点");
+        let second_generic = by_generic_compatible
+            .iter()
+            .nth(1)
+            .expect("generic 第二个节点");
+
+        assert_eq!(by_generic_compatible.len(), 2);
+        assert_eq!(first_specific.id(), first_generic.id());
+        assert_ne!(first_generic.id(), second_generic.id());
+        assert_eq!(first_generic.matched_compatible(), Some("virtio,mmio"));
+        assert_eq!(second_generic.matched_compatible(), Some("virtio,mmio"));
+    }
 }
