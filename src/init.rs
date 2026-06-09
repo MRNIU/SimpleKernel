@@ -5,12 +5,11 @@
 /// 在堆和分页启用之前运行，仅依赖 logging 和栈。
 pub fn early_init(dtb_addr: usize) {
     use crate::CORE_COUNT;
-    use crate::fdt::KernelFdt;
     use memory::{MEMORY_INFO, MemoryInfo};
     use memory_types::PhysAddr;
 
     // SAFETY: dtb_addr 来自架构启动入口；bootloader 契约保证它在 early_init 期间可读。
-    let boot_fdt = match unsafe { boot_fdt::init_from_raw(dtb_addr) } {
+    let boot_fdt = match unsafe { fdt::init_from_raw(dtb_addr) } {
         Ok(boot_fdt) => boot_fdt,
         Err(error) => {
             log::error!("BootFdt: {}", error);
@@ -19,7 +18,7 @@ pub fn early_init(dtb_addr: usize) {
     };
     let fdt_addr = boot_fdt.storage_addr();
 
-    let fdt = match KernelFdt::new(fdt_addr) {
+    let fdt = match fdt::KernelFdt::new(fdt_addr) {
         Ok(f) => f,
         Err(_) => {
             crate::util::halt::halt("无法解析 FDT");
@@ -62,7 +61,7 @@ pub fn early_init(dtb_addr: usize) {
 
     CORE_COUNT.call_once(|| core_count);
 
-    crate::fdt::FDT_ADDR.call_once(|| fdt_addr);
+    fdt::FDT_ADDR.call_once(|| fdt_addr);
 
     // RISC-V 的 timebase-frequency 在 FDT /cpus 节点中；
     // aarch64 从 CNTFRQ_EL0 寄存器直接读取，不需要此值。

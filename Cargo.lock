@@ -129,14 +129,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
 
 [[package]]
-name = "boot_fdt"
-version = "0.1.0"
-dependencies = [
- "config",
- "spin",
-]
-
-[[package]]
 name = "buddy_system_allocator"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -309,6 +301,17 @@ source = "git+https://github.com/rafalh/rust-fatfs#c4b88477b22ca7e5131fbd8891f62
 dependencies = [
  "bitflags 2.11.0",
  "log",
+]
+
+[[package]]
+name = "fdt"
+version = "0.1.0"
+dependencies = [
+ "config",
+ "fdt 0.2.0-alpha1",
+ "heapless 0.8.0",
+ "log",
+ "spin",
 ]
 
 [[package]]
@@ -518,8 +521,8 @@ dependencies = [
 name = "memory"
 version = "0.1.0"
 dependencies = [
- "boot_fdt",
  "config",
+ "fdt 0.1.0",
  "frame_allocator",
  "heap",
  "log",
@@ -806,13 +809,12 @@ dependencies = [
  "arm-psci",
  "bitfield-struct",
  "bitflags 2.11.0",
- "boot_fdt",
  "buddy_system_allocator",
  "config",
  "dma",
  "elf",
  "fatfs",
- "fdt",
+ "fdt 0.1.0",
  "frame_allocator",
  "gdbstub",
  "global_tick",

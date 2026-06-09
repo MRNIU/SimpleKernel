@@ -40,7 +40,7 @@ pub struct KernelFdt<'a> {
 macro_rules! parse_fdt {
     ($addr:expr) => {{
         // SAFETY: fdt_addr 已在 KernelFdt::new() 中校验
-        unsafe { fdt::Fdt::from_ptr_unaligned_fallible($addr as *const u8) }.map_err(|e| {
+        unsafe { fdt_parser::Fdt::from_ptr_unaligned_fallible($addr as *const u8) }.map_err(|e| {
             log::warn!("FDT 解析失败 (addr={:#x}): {:?}", $addr, e);
             FdtError::InvalidHeader
         })
@@ -50,7 +50,7 @@ macro_rules! parse_fdt {
 impl<'a> KernelFdt<'a> {
     pub fn new(fdt_addr: usize) -> Result<Self, FdtError> {
         // SAFETY: fdt_addr 由调用方校验（引导加载程序通过 DTB 传入）
-        unsafe { fdt::Fdt::from_ptr_unaligned(fdt_addr as *const u8) }.map_err(|e| {
+        unsafe { fdt_parser::Fdt::from_ptr_unaligned(fdt_addr as *const u8) }.map_err(|e| {
             log::warn!("FDT 头部校验失败 (addr={:#x}): {:?}", fdt_addr, e);
             FdtError::InvalidHeader
         })?;
@@ -381,9 +381,7 @@ impl<'a> KernelFdt<'a> {
             FdtError::ParseFailed
         })?;
 
-        let mut count = 0usize;
-
-        for node_result in nodes {
+        for (count, node_result) in nodes.enumerate() {
             let node = node_result.map_err(|e| {
                 log::warn!("FDT compatible={} 节点解析失败: {:?}", compat, e);
                 FdtError::ParseFailed
@@ -416,7 +414,6 @@ impl<'a> KernelFdt<'a> {
                 let size = region.len;
                 return Ok((addr, size));
             }
-            count += 1;
         }
 
         Err(FdtError::NodeNotFound)

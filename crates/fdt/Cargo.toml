@@ -1,16 +1,19 @@
 # Copyright The SimpleKernel Contributors
 
 [package]
-name = "boot_fdt"
+name = "fdt"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Boot-time DTB ownership and validation for SimpleKernel"
+description = "Kernel-owned FDT storage and platform queries for SimpleKernel"
 edition.workspace = true
 
 [dependencies]
 config = { path = "../config" }
+fdt_parser.workspace = true
+heapless.workspace = true
+log.workspace = true
 spin.workspace = true
 
 [lints]

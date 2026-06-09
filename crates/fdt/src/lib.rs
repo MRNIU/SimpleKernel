@@ -3,13 +3,17 @@
 //! 启动期 DTB 生命周期管理。
 //!
 //! 本 crate 负责把 bootloader 传入的 DTB 从外部 blob 复制到内核自有、
-//! 页对齐的固定 storage。后续 FDT 解析应只使用复制后的 bytes。
+//! 页对齐的固定 storage，并提供平台无关的 FDT 查询 API。
 
 #![cfg_attr(not(test), no_std)]
 #![feature(sync_unsafe_cell)]
 
+mod query;
+
 use core::cell::SyncUnsafeCell;
 use core::fmt;
+
+pub use query::{FDT_ADDR, FdtError, KernelFdt};
 
 /// 第一版内核自有 DTB storage 上限。
 pub const MAX_DTB_SIZE: usize = 256 * 1024;

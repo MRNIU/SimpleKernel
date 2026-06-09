@@ -19,7 +19,6 @@ pub mod boot;
 pub mod cpu_topology;
 pub mod device;
 pub mod elf;
-pub mod fdt;
 pub mod fs;
 pub mod init;
 #[cfg(feature = "lang_items")]
@@ -34,3 +33,5 @@ pub mod test_support;
 pub mod timer;
 pub mod tlb_shootdown;
 pub mod util;
+
+pub use fdt;

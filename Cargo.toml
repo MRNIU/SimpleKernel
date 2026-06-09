@@ -25,7 +25,7 @@ members = [
 
     "crates/frame_allocator",
     "crates/heap",
-    "crates/boot_fdt",
+    "crates/fdt",
     "crates/page_table_entry",
     "crates/tlb",
     "crates/paging",
@@ -81,8 +81,8 @@ unwinding = { version = "0.2", default-features = false, features = [
     "unwinder", "fde-static", "dwarf-expr", "hide-trace",
 ] }
 
-# 设备树
-fdt = "0.2.0-alpha1"
+# 设备树解析器（本地 fdt crate 内部使用）
+fdt_parser = { package = "fdt", version = "0.2.0-alpha1" }
 
 # 调试 / 测试
 gdbstub = { version = "0.7", default-features = false }   # 内核内嵌 GDB server
@@ -178,7 +178,7 @@ tlb = { path = "crates/tlb" }
 memory = { path = "crates/memory" }
 frame_allocator = { path = "crates/frame_allocator" }
 dma = { path = "crates/dma" }
-boot_fdt = { path = "crates/boot_fdt" }
+fdt = { path = "crates/fdt" }
 
 # --- 同步 ---
 # spin: 仅用于 Once<T> 单例初始化, 自定义 SpinLock 在 sync/spinlock.rs 中
@@ -207,9 +207,6 @@ rustc-demangle.workspace = true
 
 # --- DWARF 回溯 ---
 unwinding.workspace = true
-
-# --- 设备树 ---
-fdt.workspace = true                  # 纯 Rust FDT 解析器 (no_std)
 
 # --- 调试 / 测试 ---
 gdbstub.workspace = true              # 内核内嵌 GDB server（QEMU 外也能调试）

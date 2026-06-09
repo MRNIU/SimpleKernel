@@ -31,7 +31,7 @@ fn map_firmware_region(firmware_start: PhysAddr, firmware_size: usize) {
 
 /// 将内核自有 DTB storage 收紧为只读。
 fn map_boot_fdt_region() {
-    let Some(region) = boot_fdt::storage_region() else {
+    let Some(region) = fdt::storage_region() else {
         return;
     };
 
