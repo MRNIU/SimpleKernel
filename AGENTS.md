@@ -86,7 +86,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 ### Environment
 - **容器优先**：凡是能在 Dev Container / Docker 中完成的构建、检查、`pre-commit`、固件构建、QEMU 运行和系统测试，都应在容器内执行，不要为本项目修改宿主机工具链。
 - **宿主机边界**：宿主机只负责 Docker 或兼容容器运行时、Git、编辑器/AI agent 和已有 Dev Container 入口工具；不要在宿主机安装 Rust nightly、交叉编译器、QEMU、固件构建依赖或其他项目开发依赖来绕过容器。
-- **命令入口**：宿主机先按 `.devcontainer/AGENTS.md` 设置 `DEVCONTAINER_NAME=simplekernel-devcontainer-{username}-{branch}`，再通过 Dev Container CLI 或手动 fallback 启动常驻容器。项目命令优先使用 `docker exec -w /workspace "$DEVCONTAINER_NAME" <command>`；`devcontainer exec --workspace-folder . <command>` 仅作为临时交互入口。
+- **命令入口**：宿主机通过 Dev Container CLI 或手动 fallback 启动固定名常驻容器 `simplekernel-devcontainer`。项目命令优先使用 `docker exec -w /workspace simplekernel-devcontainer <command>`；`devcontainer exec --workspace-folder . <command>` 仅作为临时交互入口。
 - **CI 工具链一致性**：CI、Dev Container 和本地容器应使用 `.devcontainer/Dockerfile` 声明的工具链。不要在 workflow 中临时安装 Rust、cargo 子命令、QEMU 或交叉工具链来补齐缺失环境；发现镜像缺工具时，先修复 Dockerfile 或重建开发镜像。
 - **例外**：只有正在修复容器自身配置、文档/Git 等入口操作，或任务明确要求无需项目工具链的本地操作时，才考虑宿主机执行；说明原因并保持宿主/容器步骤边界清晰。
 
@@ -145,16 +145,9 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - Cargo workspace: root package (kernel) + `xtask` (build tool)
 
 ## COMMANDS
-宿主机侧先按 SimpleKernel 命名规则设置常驻容器名，再启动 Dev Container：
+宿主机侧先启动固定名常驻 Dev Container：
 
 ```bash
-DEVCONTAINER_USER="$(id -un | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
-DEVCONTAINER_BRANCH="$(git branch --show-current | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
-if [ -z "$DEVCONTAINER_BRANCH" ]; then
-  echo "detached HEAD is not allowed for the devcontainer name" >&2
-  exit 1
-fi
-export DEVCONTAINER_NAME="simplekernel-devcontainer-${DEVCONTAINER_USER}-${DEVCONTAINER_BRANCH}"
 devcontainer up --workspace-folder .
 ```
 
@@ -162,27 +155,27 @@ devcontainer up --workspace-folder .
 
 ```bash
 # Build kernel
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask build --arch riscv64
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask build --arch aarch64
+docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch riscv64
+docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch aarch64
 
 # Run in QEMU (via xtask — handles FIT image + TFTP + QEMU)
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask run --arch riscv64 --timeout 30
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask run --arch aarch64 --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch riscv64 --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch aarch64 --timeout 30
 
 # Debug (GDB on localhost:1234)
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask debug --arch riscv64
+docker exec -w /workspace simplekernel-devcontainer cargo xtask debug --arch riscv64
 
 # System tests in QEMU
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --timeout 30
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --name panic-test --timeout 30
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --list
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name panic-test --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 
 # Format + lint check
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo fmt --check
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo clippy -- -D warnings
+docker exec -w /workspace simplekernel-devcontainer cargo fmt --check
+docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings
 
 # Documentation
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo doc --no-deps
+docker exec -w /workspace simplekernel-devcontainer cargo doc --no-deps
 ```
 
 **QEMU 超时**：在 QEMU 中运行内核或测试时经常出现卡死或无限循环打印日志的情况。所有通过 Bash 工具执行的 QEMU 相关命令（`cargo xtask run`、`cargo xtask test`）**必须设置 30 秒超时**（`timeout: 30000`）。超时后应 `pkill -f qemu-system` 清理残留进程。
@@ -196,9 +189,9 @@ docker exec -w /workspace "$DEVCONTAINER_NAME" cargo doc --no-deps
 每个测试是独立的 `#![no_std]` 裸机二进制，启动独立 QEMU 实例，拥有干净的内核环境。
 
 ```bash
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --timeout 30
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --list
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 ```
 
 测试基础设施位于 `tests/test_harness/`，核心是 `test_main!` 宏：

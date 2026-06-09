@@ -14,38 +14,25 @@ QEMU、固件构建依赖、pre-commit、Mermaid 和 GitHub CLI 都在容器内�
 |------|------|
 | Dev Container 显示名 | `simplekernel-devcontainer` |
 | 本地开发镜像 | `simplekernel-devcontainer:latest` |
-| 常驻 Dev Container 容器名 | `simplekernel-devcontainer-{username}-{branch}` |
+| 常驻 Dev Container 容器名 | `simplekernel-devcontainer` |
 | CI / GHCR Dev Container 镜像 | `ghcr.io/simple-xx/simplekernel-devcontainer:{latest,sha}` |
 | 项目运行时容器 | 无；内核只在 Dev Container 内启动的 QEMU 中运行 |
 
-`username` 和 `branch` 必须归一化为 Docker 容器名允许的字符。`branch` 来自当前具名
-Git 分支；detached HEAD 状态不得启动常驻 Dev Container。不要依赖 Docker 自动生成的
+固定容器名意味着同一宿主机默认只维护一个 SimpleKernel 常驻 Dev Container。切换工作区
+或重建容器前，先确认同名容器的 bind mount 指向当前仓库；不要依赖 Docker 自动生成的
 随机名称作为常规入口。
 
 ## 启动入口
-
-使用编辑器 Dev Container 或 CLI 前，先在宿主机 shell 中设置本仓库命名规则要求的
-`DEVCONTAINER_NAME`：
-
-```bash
-DEVCONTAINER_USER="$(id -un | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
-DEVCONTAINER_BRANCH="$(git branch --show-current | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
-if [ -z "$DEVCONTAINER_BRANCH" ]; then
-  echo "detached HEAD is not allowed for the devcontainer name" >&2
-  exit 1
-fi
-export DEVCONTAINER_NAME="simplekernel-devcontainer-${DEVCONTAINER_USER}-${DEVCONTAINER_BRANCH}"
-```
 
 标准入口：
 
 ```bash
 devcontainer up --workspace-folder .
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask build --arch riscv64
+docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch riscv64
 ```
 
 `devcontainer exec --workspace-folder . <command>` 也可用于临时交互，但文档化验证和 PR
-证据优先写成 `docker exec -w /workspace "$DEVCONTAINER_NAME" <command>`，这样容器名、
+证据优先写成 `docker exec -w /workspace simplekernel-devcontainer <command>`，这样容器名、
 工作目录和复用边界都明确。
 
 ## 手动 Docker fallback
@@ -55,15 +42,15 @@ docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask build --arch riscv64
 
 ```bash
 docker build --pull=false -f .devcontainer/Dockerfile -t simplekernel-devcontainer:latest .devcontainer
-docker inspect "$DEVCONTAINER_NAME" >/dev/null 2>&1 || docker run -d \
-  --name "$DEVCONTAINER_NAME" \
+docker inspect simplekernel-devcontainer >/dev/null 2>&1 || docker run -d \
+  --name simplekernel-devcontainer \
   --mount "type=bind,src=$(pwd),dst=/workspace" \
   -w /workspace \
   simplekernel-devcontainer:latest sleep infinity
-if [ "$(docker inspect -f '{{.State.Running}}' "$DEVCONTAINER_NAME")" != "true" ]; then
-  docker start "$DEVCONTAINER_NAME" >/dev/null
+if [ "$(docker inspect -f '{{.State.Running}}' simplekernel-devcontainer)" != "true" ]; then
+  docker start simplekernel-devcontainer >/dev/null
 fi
-docker exec -w /workspace "$DEVCONTAINER_NAME" git config --global --add safe.directory /workspace
+docker exec -w /workspace simplekernel-devcontainer git config --global --add safe.directory /workspace
 ```
 
 重建同名容器前，先确认旧容器没有需要保留的状态。需要保留的内核、固件、文档或测试产物

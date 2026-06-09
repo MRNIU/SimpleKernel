@@ -11,7 +11,7 @@
 	"workspaceFolder": "/workspace",
 	"runArgs": [
 		"--name",
-		"${localEnv:DEVCONTAINER_NAME}"
+		"simplekernel-devcontainer"
 	],
 	"remoteUser": "dev",
 	"updateRemoteUserUID": true,

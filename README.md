@@ -89,10 +89,10 @@ pub trait Scheduler: Send + Sync {
 
 ```bash
 # 单元测试
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo test
+docker exec -w /workspace simplekernel-devcontainer cargo test
 
 # 系统测试（QEMU）
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
 ```
 
 #### 4. 对照参考实现
@@ -127,15 +127,8 @@ cd SimpleKernel
 # 选择 "Reopen in Container"
 
 # 或使用已存在的 Dev Container CLI
-DEVCONTAINER_USER="$(id -un | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
-DEVCONTAINER_BRANCH="$(git branch --show-current | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
-if [ -z "$DEVCONTAINER_BRANCH" ]; then
-  echo "detached HEAD is not allowed for the devcontainer name" >&2
-  exit 1
-fi
-export DEVCONTAINER_NAME="simplekernel-devcontainer-${DEVCONTAINER_USER}-${DEVCONTAINER_BRANCH}"
 devcontainer up --workspace-folder .
-docker exec -w /workspace "$DEVCONTAINER_NAME" bash
+docker exec -w /workspace simplekernel-devcontainer bash
 ```
 
 > 也支持 **GitHub Codespaces**：点击仓库页面的 Code → Codespaces → Create codespace on main
@@ -147,13 +140,13 @@ docker exec -w /workspace "$DEVCONTAINER_NAME" bash
 
 #### 容器与镜像命名
 
-常规开发优先使用编辑器 Dev Container 入口或 `devcontainer up` 启动常驻容器，后续项目命令通过 `docker exec` 进入。容器名使用当前用户名和具名 Git 分支，分支名中的 `/`、空格和其他特殊字符替换为 `-`；detached HEAD 状态不要创建常驻容器。
+常规开发优先使用编辑器 Dev Container 入口或 `devcontainer up` 启动固定名常驻容器 `simplekernel-devcontainer`，后续项目命令通过 `docker exec` 进入。同一宿主机默认只维护一个 SimpleKernel 常驻容器；切换工作区前先确认同名容器的 bind mount 指向当前仓库。
 
 | 用途 | 名称 / 路径 | 说明 |
 |------|-------------|------|
 | Dev Container 配置 | `.devcontainer/devcontainer.json` | 本地开发入口，按 `.devcontainer/Dockerfile` 构建 |
 | CI Dev Container 镜像 | `ghcr.io/simple-xx/simplekernel-devcontainer:latest` | `workflow.yml`、`docs.yml` 使用；`dev-image.yml` 额外发布 commit SHA tag |
-| 常驻 Dev Container 容器 | `simplekernel-devcontainer-{username}-{branch}` | Dev Container CLI 和手动 fallback 共用；后续命令通过 `docker exec` 进入 |
+| 常驻 Dev Container 容器 | `simplekernel-devcontainer` | Dev Container CLI 和手动 fallback 共用；后续命令通过 `docker exec` 进入 |
 | 项目运行时容器 | 无 | 内核运行在 Dev Container 内启动的 QEMU 中，不维护根目录生产容器镜像 |
 
 **方式二：修复容器或执行明确要求的本地任务**
@@ -166,21 +159,21 @@ docker exec -w /workspace "$DEVCONTAINER_NAME" bash
 
 ```bash
 # 编译内核
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask build --arch riscv64
+docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch riscv64
 
 # 在 QEMU 模拟器中运行
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask run --arch riscv64 --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch riscv64 --timeout 30
 
 # 调试（GDB 连接 localhost:1234）
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask debug --arch riscv64
+docker exec -w /workspace simplekernel-devcontainer cargo xtask debug --arch riscv64
 
 # 单元测试
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo test
+docker exec -w /workspace simplekernel-devcontainer cargo test
 
 # 系统测试（QEMU 中运行）
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --all --timeout 30
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --name panic-test --timeout 30
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --list
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --all --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name panic-test --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 ```
 
 **支持的架构：**
@@ -191,7 +184,7 @@ docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --list
 
 | 模式 | 用途 | 运行位置 | 是否需要硬件 | 命令入口 |
 |------|------|----------|--------------|----------|
-| 容器内开发 | 编译、检查、文档、pre-commit | Dev Container / Codespaces | 否 | `docker exec -w /workspace "$DEVCONTAINER_NAME" <command>` |
+| 容器内开发 | 编译、检查、文档、pre-commit | Dev Container / Codespaces | 否 | `docker exec -w /workspace simplekernel-devcontainer <command>` |
 | CI | DCO、fmt、clippy、单元测试、依赖审计、双架构构建和系统测试 | GitHub Actions + `ghcr.io/simple-xx/simplekernel-devcontainer:latest` | 否 | `.github/workflows/workflow.yml` |
 | QEMU 运行 | 启动内核并观察串口日志 | Dev Container / CI | 否 | `cargo xtask run --arch <arch> --timeout 30` |
 | QEMU 系统测试 | 独立裸机测试二进制回归 | Dev Container / CI | 否 | `cargo xtask test --arch <arch> --timeout 30` |
@@ -265,7 +258,7 @@ SimpleKernel 采用两层测试 + 冒烟测试：
 纯逻辑 crate 的 `#[test]` 模块，在容器内以宿主架构运行：
 
 ```bash
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo test -p memory_types -p config -p page_table_entry -p arch
+docker exec -w /workspace simplekernel-devcontainer cargo test -p memory_types -p config -p page_table_entry -p arch
 ```
 
 覆盖范围：地址运算、PTE 编解码、常量验证等。
@@ -275,9 +268,9 @@ docker exec -w /workspace "$DEVCONTAINER_NAME" cargo test -p memory_types -p con
 每个测试是独立的 `#![no_std]` 裸机二进制，启动独立 QEMU 实例，拥有干净的内核环境。
 
 ```bash
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --all --timeout 30
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --name <name> --timeout 30
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --list
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --all --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name <name> --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 ```
 
 测试位于 `tests/` 目录，使用 `tests/test_harness/` 提供的 `test_main!` 宏消除样板代码。
@@ -397,7 +390,7 @@ git config commit.template .gitmessage
 1. Fork 本仓库
 2. 创建功能分支: `git checkout -b feat/amazing-feature`
 3. 遵循 `AGENTS.md`、`docs/conventions.md` 和 `CONTRIBUTING.md` 进行开发
-4. 确保相关测试通过，例如 `docker exec -w /workspace "$DEVCONTAINER_NAME" cargo test` 和 `docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64 --all --timeout 30`
+4. 确保相关测试通过，例如 `docker exec -w /workspace simplekernel-devcontainer cargo test` 和 `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --all --timeout 30`
 5. 提交变更: `git commit --signoff -m 'feat(scope): add amazing feature'`
 6. 创建 Pull Request
 

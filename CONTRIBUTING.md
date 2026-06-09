@@ -9,24 +9,17 @@
 开发环境默认使用 Dev Container。宿主机只保留 Docker 或兼容容器运行时、Git、编辑器/AI agent 和已有 Dev Container 入口工具；不要为了本项目在宿主机安装 Rust nightly、交叉编译器、QEMU、固件构建依赖或其他项目开发依赖。
 
 ```bash
-DEVCONTAINER_USER="$(id -un | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
-DEVCONTAINER_BRANCH="$(git branch --show-current | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^-+//; s/-+$//')"
-if [ -z "$DEVCONTAINER_BRANCH" ]; then
-  echo "detached HEAD is not allowed for the devcontainer name" >&2
-  exit 1
-fi
-export DEVCONTAINER_NAME="simplekernel-devcontainer-${DEVCONTAINER_USER}-${DEVCONTAINER_BRANCH}"
 devcontainer up --workspace-folder .
-docker exec -w /workspace "$DEVCONTAINER_NAME" bash
+docker exec -w /workspace simplekernel-devcontainer bash
 ```
 
 宿主机侧常用命令：
 
 ```bash
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask build --arch riscv64
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo xtask test --arch riscv64
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo fmt --check
-docker exec -w /workspace "$DEVCONTAINER_NAME" cargo clippy -- -D warnings
+docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch riscv64
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64
+docker exec -w /workspace simplekernel-devcontainer cargo fmt --check
+docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings
 ```
 
 通过 Bash 工具运行 QEMU 相关命令时必须设置 30 秒超时；超时后清理残留 QEMU 进程。
