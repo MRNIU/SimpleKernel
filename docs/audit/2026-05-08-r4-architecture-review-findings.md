@@ -5,7 +5,7 @@
 > 日期：2026-05-08
 >
 > 范围：`src/arch/`、`src/boot.rs`、`src/main.rs`、`src/timer.rs`、
-> `src/tlb_shootdown.rs`、`src/fdt.rs`、`src/task/` 中与架构层直接耦合的入口，
+> `src/tlb_shootdown.rs`、`crates/platform_fdt/`、`src/task/` 中与架构层直接耦合的入口，
 > 以及 `tests/test_harness/`、`xtask/src/qemu.rs` 中会影响 R4 验证可信度的测试基础设施。
 >
 > 本文最初记录 R4 架构层复审中发现的问题原因、可能触发路径、修复方案和验证方向。
@@ -191,7 +191,7 @@ Rust 编译器生成的全局/静态数据访问可能使用错误基址。
 
 ## R4-04. SMP 假设硬件 core id 稠密且小于 `MAX_CORE_COUNT`
 
-位置：`src/fdt.rs:75`、`src/init.rs:51`、`src/arch/riscv64/boot.rs:32`、
+位置：`crates/platform_fdt/src/query.rs`、`src/init.rs:51`、`src/arch/riscv64/boot.rs:32`、
 `src/arch/aarch64/boot.rs:22`、`crates/per_cpu/src/lib.rs:194`
 
 ### 问题原因
@@ -496,7 +496,7 @@ should_panic 测试:
 
 ## R4-10. AArch64 `PA_BITS` 与 TCR `IPS` 需要一致
 
-位置：`crates/arch/src/aarch64.rs:21`、`src/arch/aarch64/mod.rs:82`
+位置：`crates/arch_primitives/src/aarch64.rs:21`、`src/arch/aarch64/mod.rs:82`
 
 ### 问题原因
 
@@ -525,13 +525,13 @@ QEMU virt 的内存通常落在低地址，短期可能看不出问题；真机�
 ### 验证方向
 
 - AArch64 启动期读取 PARange，若硬件不报告平台约定的 44-bit PA 则在启用 MMU 前 fail-fast。
-- TCR 固定写入 `IPS=0b100`，保持 `arch::PA_BITS=44`、AArch64 PTE 输出地址位和 MMU 配置一致。
+- TCR 固定写入 `IPS=0b100`，保持 `arch_primitives::PA_BITS=44`、AArch64 PTE 输出地址位和 MMU 配置一致。
 - 当前 QEMU `cortex-a72` 报告 44-bit PA，因此 AArch64 QEMU 启动测试应通过。
 
 ### 修复记录
 
 2026-05-09 首轮按方案 B 收窄为 48-bit PA fail-fast；随后因当前 QEMU `cortex-a72`
-仅报告 44-bit PARange，改为方案 A 的最小平台收口：`arch::PA_BITS=44`，
+仅报告 44-bit PARange，改为方案 A 的最小平台收口：`arch_primitives::PA_BITS=44`，
 `TCR_EL1.IPS=0b100`，启动期检查硬件 PARange 必须与该平台契约一致。
 
 ## R4-11. RISC-V PLIC 固定 hart0 S-mode context 且启用顺序过早

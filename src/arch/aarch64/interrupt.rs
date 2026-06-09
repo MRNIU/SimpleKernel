@@ -10,6 +10,7 @@ use arm_gic::{IntId, InterruptGroup, UniqueMmioPointer};
 use core::arch::global_asm;
 use core::ptr::NonNull;
 
+use arch_primitives::FDT_INTERRUPT_CONTROLLER_COMPATIBLES;
 use memory::MmioRegion;
 use memory_types::PhysAddr;
 
@@ -114,9 +115,6 @@ struct GicAddrs {
 
 static GIC_ADDRS: spin::Once<GicAddrs> = spin::Once::new();
 
-/// 每核 GICR 帧大小（RD_base 64KB + SGI_base 64KB = 0x20000）
-const GICR_STRIDE: usize = 0x2_0000;
-
 /// 虚拟定时器 PPI 编号（PPI 11 = GIC IRQ 27）
 const VTIMER_PPI: u32 = 11;
 
@@ -129,42 +127,43 @@ const TLB_SHOOTDOWN_SGI: u32 = 0;
 /// TLB shootdown SGI 优先级。
 const TLB_SHOOTDOWN_PRIORITY: u8 = 0x90;
 
+/// 从 FDT 中读取 GICv3 的指定 `reg` 区域。
+fn gic_reg_from_fdt(
+    fdt: &crate::platform_fdt::PlatformFdt,
+    reg_index: usize,
+) -> Result<crate::platform_fdt::FdtReg, crate::platform_fdt::FdtError> {
+    for compatible in FDT_INTERRUPT_CONTROLLER_COMPATIBLES {
+        match fdt.compatible_reg(compatible, reg_index) {
+            Err(crate::platform_fdt::FdtError::NodeNotFound) => {}
+            result => return result,
+        }
+    }
+
+    Err(crate::platform_fdt::FdtError::NodeNotFound)
+}
+
 /// 从 FDT 解析 GICv3 的 GICD 和 GICR 基地址。
 ///
 /// GICv3 `reg` 属性包含两组区域：GICD (addr, size) + GICR (addr, size)。
-/// 使用通用的 `find_compatible_reg` 获取第一组（GICD），
-/// 第二组（GICR）从 reg 属性偏移 16 字节处读取。
 fn init_gic_addrs() {
     GIC_ADDRS.call_once(|| {
-        let fdt = crate::fdt::get().expect("init_gic_addrs: FDT 未初始化");
+        let fdt = crate::platform_fdt::get().expect("init_gic_addrs: FDT 未初始化");
 
-        // 使用通用方法读取 GICD 基地址
-        let (gicd_addr, gicd_size) = fdt
-            .find_compatible_reg("arm,gic-v3")
-            .expect("init_gic_addrs: FDT 中未找到 arm,gic-v3 节点");
-
-        // GICR 地址需要从同一节点的 reg 属性偏移 16 字节处读取
-        // find_compatible_reg 只返回第一组，这里用默认值计算 GICR
-        let gicr_addr = gicd_addr + gicd_size as u64;
-        let gicr_size = GICR_STRIDE * crate::CORE_COUNT.get().copied().unwrap_or(1);
-
-        // 尝试从 FDT 精确读取 GICR（如果 reg 属性够长）
-        let (gicr_addr, gicr_size) = fdt
-            .find_compatible_reg_nth("arm,gic-v3", 1)
-            .unwrap_or((gicr_addr, gicr_size));
+        let gicd = gic_reg_from_fdt(fdt, 0).expect("init_gic_addrs: FDT 中未找到 GICv3 GICD reg");
+        let gicr = gic_reg_from_fdt(fdt, 1).expect("init_gic_addrs: FDT 中未找到 GICv3 GICR reg");
 
         log::info!(
             "GIC: GICD={:#x}({}), GICR={:#x}({})",
-            gicd_addr,
-            gicd_size,
-            gicr_addr,
-            gicr_size
+            gicd.address,
+            gicd.size,
+            gicr.address,
+            gicr.size
         );
         GicAddrs {
-            gicd_base: gicd_addr as usize,
-            gicd_size,
-            gicr_base: gicr_addr as usize,
-            gicr_size,
+            gicd_base: usize::try_from(gicd.address).expect("init_gic_addrs: GICD 地址超出 usize"),
+            gicd_size: gicd.size,
+            gicr_base: usize::try_from(gicr.address).expect("init_gic_addrs: GICR 地址超出 usize"),
+            gicr_size: gicr.size,
         }
     });
 }

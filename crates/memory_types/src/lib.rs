@@ -14,8 +14,8 @@ pub use span::Span;
 
 #[cfg(any(bare_riscv64, bare_aarch64))]
 pub(crate) mod addr_width {
-    pub(crate) const PA_BITS: usize = arch::PA_BITS;
-    pub(crate) const VA_BITS: usize = arch::VA_BITS;
+    pub(crate) const PA_BITS: usize = arch_primitives::PA_BITS;
+    pub(crate) const VA_BITS: usize = arch_primitives::VA_BITS;
 }
 
 #[cfg(not(any(bare_riscv64, bare_aarch64)))]

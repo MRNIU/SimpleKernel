@@ -11,7 +11,7 @@
 
 独立 crate 的原因：tick 计数是调度器和睡眠机制的基础依赖，
 但它本身不需要知道定时器硬件细节——只需一个原子计数器和两个函数。
-拆出来后，调度器依赖 `global_tick` 而非整个 `arch`，依赖方向更清晰。
+拆出来后，调度器依赖 `global_tick` 而非整个 `src/arch` 集成层，依赖方向更清晰。
 
 per-CPU tick 记账见 [`local_tick`](../local_tick/) crate。
 
@@ -32,7 +32,7 @@ pub fn current() -> u64;
 ## 调用链
 
 ```
-arch::timer_handler()
+架构 timer IRQ handler
   └→ global_tick::advance(is_bsp)  ← BSP: fetch_add(1, AcqRel) + 1
                                       从核: load(Acquire)
 
@@ -52,4 +52,4 @@ scheduler / sleep / timeout
 经过时间 = global_tick::current() / config::TIMER_FREQ_HZ
 ```
 
-修改 `TIMER_FREQ_HZ` 不需要改动本 crate——只影响 `arch` 层的定时器配置。
+修改 `TIMER_FREQ_HZ` 不需要改动本 crate——只影响 `src/arch` 层的定时器配置。

@@ -3,7 +3,7 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(feature = "lang_items", feature(alloc_error_handler))]
 #![feature(sync_unsafe_cell)]
-// 测试模式下部分模块不编译（arch, fdt, lang_items），导致它们的消费者
+// 测试模式下部分模块不编译（arch, platform_fdt, lang_items），导致它们的消费者
 // 产生 dead_code 警告。这些代码在目标架构上被正常使用。
 #![cfg_attr(test, allow(dead_code))]
 
@@ -34,4 +34,4 @@ pub mod timer;
 pub mod tlb_shootdown;
 pub mod util;
 
-pub use fdt;
+pub use platform_fdt;

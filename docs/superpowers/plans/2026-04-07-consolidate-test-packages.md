@@ -123,7 +123,7 @@ test_harness = { path = "../test_harness" }
 simplekernel = { path = "../..", default-features = false }
 memory_types = { path = "../../crates/memory_types" }
 config = { path = "../../crates/config" }
-arch = { path = "../../crates/arch" }
+arch_primitives = { path = "../../crates/arch_primitives" }
 log.workspace = true
 heapless.workspace = true
 

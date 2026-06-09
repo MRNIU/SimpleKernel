@@ -60,7 +60,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 | `src/logging.rs` | `log` crate backend + ANSI colors | kernel logging |
 | `src/config.rs` | Kernel constants (`MAX_CORE_COUNT`, etc.) | configuration |
 | `src/per_cpu.rs` | Per-CPU data + CORE_COUNT | SMP support |
-| `src/fdt.rs` | Device tree parser (`fdt` crate wrapper) | hardware discovery |
+| `crates/platform_fdt/` | 平台描述层（kernel-owned DTB + FDT 查询） | hardware discovery |
 | `src/elf.rs` | ELF symbol table parser | backtrace support |
 | `src/panic.rs` | Panic handler + observer pattern | error recovery |
 | `src/lang_items.rs` | `#[panic_handler]` (gated on `lang_items` feature) | Rust runtime |

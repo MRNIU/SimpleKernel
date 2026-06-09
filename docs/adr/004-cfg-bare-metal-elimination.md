@@ -15,7 +15,7 @@
 当前项目通过 `#[cfg(bare_metal)]` / `#[cfg(not(bare_metal))]` 在源码中同时容纳裸机实现和宿主机 mock，
 以支持 `cargo test` 在宿主机上运行单元测试。
 
-架构差异（riscv64 vs aarch64）已由 `crates/arch/` 统一处理，
+架构差异（riscv64 vs aarch64）已由 `crates/arch_primitives/` 统一处理，
 剩余的 cfg 全部是**运行环境差异**（裸机 vs 宿主机），遍布整个代码库。
 
 ### 完整清单
@@ -116,7 +116,7 @@ Linux 不会在源码里写 `#ifdef __KERNEL__`——它的代码就是内核代
 | `sync`: SpinLock 基本操作 | `tests/sync-spinlock-test/` 等（已完成） |
 
 `arch` crate 特殊处理：
-`arch` crate 保留 host.rs 和 `cfg(not(bare_metal))`。原因：`config` 依赖 `arch::PA_BITS`/`arch::PT_LEVELS`，而 `config` 被纯逻辑 crate（`memory_types`）依赖。如果 `arch` 不能在宿主机编译，整个依赖链断裂。host.rs 提供占位值使 `cargo test` 能编译纯逻辑 crate。这是唯一保留 cfg 的 crate，且 cfg 已经集中在一处。
+`arch_primitives` crate 保留 host.rs 和 `cfg(not(bare_metal))`。原因：`config` 依赖 `arch_primitives::PA_BITS`/`arch_primitives::PT_LEVELS`，而 `config` 被纯逻辑 crate（`memory_types`）依赖。如果 `arch_primitives` 不能在宿主机编译，整个依赖链断裂。host.rs 提供占位值使 `cargo test` 能编译纯逻辑 crate。这是唯一保留 cfg 的 crate，且 cfg 已经集中在一处。
 
 **优点**:
 - 消除 ~78 个 cfg（仅 `arch` 保留 ~7 个）
@@ -185,7 +185,7 @@ cfg 散布在源码中，语义通过 `bare_metal` 别名已较清晰。
 - **代码变更**:
   - ✅ `crates/`: 删除 `per_cpu`、`sync`、`paging`、`memory`、`macros` 中所有 `cfg(not(bare_metal))` 分支和 host mock
   - ✅ `src/`: 删除 `lib.rs`、`task/`、`logging.rs`、`syscall/`、`panic.rs`、`halt.rs` 中所有 cfg
-  - ✅ `crates/arch/`: 保留 host.rs（为纯逻辑 crate 的 `cargo test` 提供占位值）
+  - ✅ `crates/arch_primitives/`: 保留 host.rs（为纯逻辑 crate 的 `cargo test` 提供占位值）
 - **Cargo.toml 变更**: ✅ 内核 crate 从 `#![cfg_attr(not(test), no_std)]` 改为 `#![no_std]`
 - **测试变更**: ✅ 宿主机测试迁移到 `tests/` 独立 QEMU 测试二进制（17 个测试，`sync`/`paging`/`memory`/`device`/`fs` 等均已完成）
 - **构建变更**: ✅ 测试 `build.rs` 已消除——链接参数移至 `.cargo/config.toml`，汇编通过 simplekernel rlib 传播
@@ -219,4 +219,4 @@ cfg 散布在源码中，语义通过 `bare_metal` 别名已较清晰。
 - [Tock SOSP'17](https://www.cs.virginia.edu/~bjc8c/papers/levy17tock.pdf) — trait 抽象平台差异，测试在硬件上运行
 - [rCore-Tutorial-v3](https://github.com/rcore-os/rCore-Tutorial-v3) — 内核测试在 QEMU 裸机运行
 - [Theseus 源码](https://github.com/theseus-os/Theseus) 调研：零 host mock，3 个 `#[cfg(test)]` 均为纯逻辑
-- `crates/arch/` 重构 commit `d2cac96f4` — 架构差异已集中处理
+- `crates/arch_primitives/` 重构 commit `d2cac96f4` — 架构差异已集中处理

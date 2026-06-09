@@ -13,7 +13,7 @@ edition.workspace = true
 config = { path = "../config" }
 
 [target.'cfg(target_os = "none")'.dependencies]
-arch = { path = "../arch" }
+arch_primitives = { path = "../arch_primitives" }
 
 [lints]
 workspace = true

@@ -11,7 +11,7 @@
 
 ## 设计结论
 
-D2 的目标是把当前 `platform_bus` 中硬编码的 `virtio,mmio` 探测逻辑，演进为
+D2 的目标是把当前 `platform_bus` 中单一 VirtIO MMIO 探测逻辑，演进为
 SimpleKernel 本地的 driver descriptor + probe registry 模型。D2 仍只覆盖启动期内建驱动，
 不进入动态模块加载。
 
@@ -21,11 +21,12 @@ FDT compatible 匹配思路，并把 SimpleKernel 自己的 DTB 生命周期、M
 
 本轮确认后的核心边界：
 
-- 新增 `boot_fdt` crate：闭合 U-Boot 传入 DTB 的生命周期，提供 kernel-owned FDT view。
+- 将平台描述层收口为 `platform_fdt` crate：闭合 U-Boot 传入 DTB
+  的生命周期，提供 kernel-owned FDT view 和平台描述查询。
 - 新增 `device_core` crate：承载平台无关的 descriptor、probe 排序、诊断统计、`DeviceId` 和
   最小 capability registry 模型。
 - D2c 新增 `device_block` crate：承载平台无关的 `BlockDevice` 能力接口和整扇区 I/O 校验。
-- `src/device/` 保留为内核集成层：接入 `boot_fdt`、调用 `device_core`、适配 VirtIO/MMIO/DMA、
+- `src/device/` 保留为内核集成层：接入 `platform_fdt`、调用 `device_core`、适配 VirtIO/MMIO/DMA、
   保留迁移期兼容门面。
 - D2 支持 `Static` / `Fdt` 两类 probe；PCIe、ACPI、自动链接段注册留到后续。
 - FDT compatible 采用完全相等匹配；多个 FDT 节点拥有同一 compatible 是正常多设备实例。
@@ -43,12 +44,12 @@ FDT compatible 匹配思路，并把 SimpleKernel 自己的 DTB 生命周期、M
 
 D2 要解决当前代码中的四个耦合点：
 
-1. `platform_bus` 直接知道 `"virtio,mmio"`，新增驱动会继续把 match 逻辑堆到总线代码里。
+1. `platform_bus` 仍直接编排 VirtIO MMIO 探测，新增驱动会继续把 match 逻辑堆到总线代码里。
 2. probe 顺序由代码位置和循环隐式决定，没有稳定的 descriptor 级排序语义。
 3. probe 成功后的设备实例和上层能力分散在 `DeviceManager`、`virtio_blk()` 和
    `block_device()` 中，没有统一诊断入口。
-4. FDT 解析当前依赖裸 `FDT_ADDR` 反复构造 `KernelFdt`，没有把 U-Boot DTB 的 backing memory
-   生命周期显式闭合。
+4. FDT 解析虽然已经开始复制到 kernel-owned storage，但 crate 名称、查询入口和设备枚举模型
+   仍停留在 parser wrapper 风格，尚未体现平台描述层边界。
 
 D2 的目标是：
 
@@ -83,7 +84,7 @@ sequenceDiagram
   participant Init as "device_init()"
   participant Manager as "manager::init()"
   participant Bus as "platform_bus::probe_all()"
-  participant Fdt as "KernelFdt"
+  participant Fdt as "platform_fdt"
   participant Virtio as "virtio::probe_mmio_device()"
   participant DeviceManager as "manager::register_device()"
   participant Block as "block::register_block_device()"
@@ -91,9 +92,9 @@ sequenceDiagram
 
   Init->>Manager: 初始化旧 DeviceManager
   Init->>Bus: probe_all()
-  Bus->>Fdt: 解析 FDT_ADDR
+  Bus->>Fdt: 获取 kernel-owned FDT view
   loop index 0..32
-    Bus->>Fdt: find_compatible_node_nth("virtio,mmio", index)
+    Bus->>Fdt: query_nodes(Compatible(FDT_COMPATIBLE_MMIO))
     Fdt-->>Bus: paddr + size
     Bus->>Virtio: probe_mmio_device(paddr, size)
     Virtio->>DeviceManager: register_device(Box<dyn Device>)
@@ -121,17 +122,18 @@ D2 后的目标不是一个更大的 `src/device` 模块，而是清晰分层：
 
 | 层 | 位置 | 职责 | 平台依赖 |
 |----|------|------|----------|
-| DTB 生命周期与 FDT view | `crates/boot_fdt` | 复制 U-Boot DTB、校验 totalsize、提供节点枚举和属性读取 | 不依赖具体设备驱动 |
+| DTB 生命周期与 FDT view | `crates/platform_fdt` | 复制 U-Boot DTB、校验 totalsize、提供 selector 查询、节点 view 和 typed query | 不依赖具体设备驱动 |
 | 设备核心模型 | `crates/device_core` | descriptor、probe kind、排序、重复诊断、统计、`DeviceId`、typed capability registry | 不依赖 FDT / MMIO / VirtIO |
 | 块设备能力接口 | `crates/device_block` | `BlockDevice` trait、整扇区 I/O 校验、块设备错误类型 | 不依赖 VirtIO / FAT / registry |
-| FDT probe 适配 | `src/device/` 内集成层，后续可独立 | 把 `boot_fdt` 节点枚举转换成 `device_core` 可 probe 的资源 | 依赖当前内核初始化顺序 |
+| FDT probe 适配 | `src/device/` 内集成层，后续可独立 | 把 `platform_fdt` 节点 view 转换成 `device_core` 可 probe 的资源 | 依赖当前内核初始化顺序 |
 | 具体驱动适配 | `src/device/virtio.rs` 等 | MMIO 映射、VirtIO transport、DMA HAL、block capability 创建 | 依赖内核 memory / dma |
 | 上层门面 | `src/device/block.rs` 等 | `block_device()`、迁移期 `virtio_blk()` 兼容入口 | 依赖当前调用方 |
 
-`device_core` 不应知道 DTB 地址来自 U-Boot，也不应依赖 `KernelFdt` 全局单例。FDT 资源通过参数传入：
+`device_core` 不应知道 DTB 地址来自 U-Boot，也不应依赖 `platform_fdt` 的全局 view 或
+parser 类型。FDT 资源通过参数传入：
 
 ```text
-boot_fdt.nodes()
+platform_fdt.query_nodes(FdtSelector::Compatible(...))
   -> src/device fdt adapter
   -> device_core registry matching
   -> descriptor probe(ProbeContext::Fdt)
@@ -145,10 +147,10 @@ SimpleKernel 为了审计清晰和教学性，把平台描述格式和设备核�
 U-Boot/FIT 当前把 kernel 和 FDT 作为两个独立 image 传递。内核不能假设原始 DTB 位于内核代码段，
 也不能假设原始 DTB 会在 frame allocator 启用后继续不被覆盖。
 
-D2-0 采用 kernel-owned DTB 副本闭合生命周期：
+D2-0 采用 kernel-owned DTB 副本闭合生命周期，并把现有 FDT crate 收口为平台描述层：
 
 1. 架构入口仍按现状取得 U-Boot/OpenSBI 传入的 DTB 地址。
-2. `boot_fdt` 校验 DTB header，并读取 `totalsize`。
+2. `platform_fdt` 校验 DTB header，并读取 `totalsize`。
 3. `early_init()` 把 DTB bytes 复制到内核自有、页对齐的固定 buffer 或等价 reserved storage。
 4. 复制目标属于内核 data/reserved 范围，不进入 buddy allocator。
 5. 内存分页初始化后，把该 storage 的映射权限收紧为 RO。
@@ -157,12 +159,12 @@ D2-0 采用 kernel-owned DTB 副本闭合生命周期：
 该设计等价于把启动参数中的 DTB 从 bootloader-owned blob 转换为 kernel-owned platform data。
 只有完成这一步后，registry 才允许长期保存来自 FDT 的 `node_path` / compatible 引用。
 
-第一版 `boot_fdt` 可采用固定上限并 fail-fast：
+第一版 `platform_fdt` 可采用固定上限并 fail-fast：
 
 ```rust
 pub const MAX_DTB_SIZE: usize = 256 * 1024;
 
-pub struct BootFdt {
+pub struct PlatformFdt {
     bytes: &'static [u8],
 }
 ```
@@ -176,7 +178,7 @@ pub struct BootFdt {
 sequenceDiagram
   participant Boot as "kernel_init()"
   participant RawDtb as "U-Boot DTB addr"
-  participant BootFdt as "boot_fdt"
+  participant PlatformFdt as "platform_fdt"
   participant Memory as "memory::init()"
   participant Device as "device_init()"
   participant Adapter as "src/device FDT adapter"
@@ -188,11 +190,11 @@ sequenceDiagram
   participant Fs as "fatfs_adapter"
 
   Boot->>RawDtb: 读取启动参数
-  Boot->>BootFdt: 校验 totalsize + 复制到 kernel-owned storage
+  Boot->>PlatformFdt: 校验 totalsize + 复制到 kernel-owned storage
   Boot->>Memory: 初始化 buddy + 页表
-  Memory->>BootFdt: 将 DTB 副本映射收紧为 RO
+  Memory->>PlatformFdt: 将 DTB 副本映射收紧为 RO
   Boot->>Device: device_init()
-  Device->>BootFdt: 获取节点枚举
+  Device->>PlatformFdt: 查询 FDT 节点 view
   Device->>Adapter: 转换 FDT node 为 probe resource
   Adapter->>Core: probe_static + probe_fdt
   Core->>Desc: 按 level + priority + name 排序
@@ -252,7 +254,7 @@ pub enum ProbeKind {
 ```
 
 `device_core` 可以定义 `ProbeKind::Fdt` 的声明形态，但不直接解析 DTB。FDT 节点枚举由
-`boot_fdt` 和 `src/device` adapter 提供。
+`platform_fdt` 和 `src/device` adapter 提供。
 
 ### `ProbeRequirement`
 
@@ -318,7 +320,7 @@ descriptor 的稳定排序规则：
 ## FDT 匹配语义
 
 D2 registry 以 FDT 节点为匹配单位。驱动不再自行调用
-`find_compatible_node_nth("...", index)`。
+`find_compatible_node_nth("...", index)`；`platform_fdt` 也不保留这类旧兼容包装。
 
 FDT `compatible` 属性是字符串列表，通常从具体到通用，例如：
 
@@ -336,10 +338,25 @@ D2 规则：
 - descriptor 侧同一 compatible 重复声明是 registry 初始化错误。
 - 多个 FDT 节点拥有同一 compatible 是正常多设备实例。
 
-`boot_fdt` 应提供本地节点枚举模型，避免把第三方 FDT parser 类型直接扩散到 `device_core`：
+`platform_fdt` 对外提供统一查询入口，selector 同时支持固定 path 和 compatible 枚举：
 
 ```rust
-pub struct FdtDeviceNode<'a> {
+pub enum FdtSelector<'a> {
+    Path(&'a str),
+    Compatible(&'a str),
+}
+
+pub fn query_nodes(&self, selector: FdtSelector<'_>) -> Result<FdtNodeIter<'_>, FdtError>;
+```
+
+Path 查询用于 `/cpus`、`/reserved-memory` 等固定平台配置节点；设备发现仍使用 FDT
+标准的 compatible 匹配语义。compatible 查询为空不是错误；若某个 matched node 的必需属性
+非法，必须返回结构化错误，不能伪装成 `NodeNotFound`。
+
+`platform_fdt` 应提供本地 borrowed view，避免把第三方 FDT parser 类型直接扩散到 `device_core`：
+
+```rust
+pub struct FdtNodeView<'a> {
     pub id: FdtNodeId,
     pub path: &'a str,
     pub compatibles: FdtCompatibleList<'a>,
@@ -354,10 +371,10 @@ pub struct FdtReg {
 
 D2 只要求 VirtIO MMIO 当前需要的 `reg`。中断号、DMA mask、phandle、parent bus 等属性留给后续。
 
-`device_core` 不直接依赖 `boot_fdt` 的内部类型。`src/device` 的 FDT adapter 负责把
-`boot_fdt::FdtDeviceNode<'_>` 转换为 `device_core` 拥有的最小 probe value，例如 opaque
+`device_core` 不直接依赖 `platform_fdt` 的内部类型。`src/device` 的 FDT adapter 负责把
+`platform_fdt::FdtNodeView<'_>` 转换为 `device_core` 拥有的最小 probe value，例如 opaque
 `FdtNodeId`、`node_path`、`matched_compatible` 和 `FdtReg`。同名类型如果同时存在，应通过模块路径
-区分，不能让 `device_core` 反向依赖 `boot_fdt`。
+区分，不能让 `device_core` 反向依赖 `platform_fdt`。
 
 ## ProbeContext 和 ProbeOutcome
 
@@ -389,9 +406,9 @@ pub enum ProbeOutcome {
 `Bound` 表示该 descriptor 已经绑定该资源，并完成设备或能力注册。`Skipped` 表示资源可匹配，
 但该实例不应由该 descriptor 绑定。
 
-由于 D2-0 已经把 DTB 复制到 kernel-owned RO storage，`node_path` 和 FDT compatible 引用可以
-在 registry 诊断中长期保存。若某个实现阶段尚未闭合 DTB 生命周期，则只能保存 `node_id`、
-`paddr`、`size` 和 descriptor 静态 compatible，不能保存 FDT parser 借出的路径引用。
+由于 D2-0 已经把 DTB 复制到 kernel-owned RO storage，`platform_fdt` 可以安全返回 borrowed
+node view；但 `device_core` 仍不直接保存这些 view。跨入 registry 前由 `src/device` adapter
+转换为最小 probe value，长期诊断所需字段应在 adapter 边界明确拷贝或转为平台无关值。
 
 ### ProbeFailure
 
@@ -521,7 +538,7 @@ pub enum DeviceCapability {
 
 `DeviceType`、`FdtNodeId`、`FdtReg`、`DeviceSource` 这类 registry 诊断所需值类型由
 `device_core` 自己定义，或由 `src/device` adapter 转换成 `device_core` 拥有的等价值类型。
-它们不能直接复用 `src/device::DeviceType` 或 `boot_fdt` 内部节点类型，否则 `device_core` 会失去
+它们不能直接复用 `src/device::DeviceType` 或 `platform_fdt` 内部节点类型，否则 `device_core` 会失去
 平台无关边界。
 
 D2 首批只实现 `DeviceCapability::Block`。该能力依赖 D2c 新增的 `device_block` crate，而不是
@@ -555,15 +572,16 @@ D2c 规则：
 
 D2 拆成四个实现切片和一个收口清理切片。每个切片都必须保持当前兼容入口可用。
 
-### D2-0：`boot_fdt` 与 DTB 生命周期闭合
+### D2-0：`platform_fdt` 与 DTB 生命周期闭合
 
 目标：
 
-- 新增 `crates/boot_fdt`。
+- 使用 `crates/platform_fdt` 作为平台描述层 crate，不保留旧 crate 名或兼容 re-export。
 - 在 `early_init()` 中校验 U-Boot 传入 DTB，并复制到 kernel-owned storage。
 - 后续 FDT 解析只基于 kernel-owned 副本。
 - 分页初始化后将 DTB 副本所在页映射为 RO。
-- 现有 `KernelFdt` API 行为保持兼容，调用方不需要立刻迁移到节点枚举 API。
+- 提供 `FdtSelector::{Path, Compatible}` 统一查询入口和 borrowed `FdtNodeView`。
+- 调用方迁移到新 API，不保留 `find_compatible_node_nth()` 等旧兼容包装。
 
 验证重点：
 
@@ -579,7 +597,7 @@ D2 拆成四个实现切片和一个收口清理切片。每个切片都必须�
 - 定义 `DriverDescriptor`、`ProbeKind`、`ProbeRequirement`、`ProbeLevel`、`ProbePriority`、
   `ProbeOutcome`、`ProbeFailure`、`DeviceId`、`DeviceType`、`DeviceSource`、`FdtNodeId`、
   `FdtReg` 和基础诊断统计。
-- `device_core` 不依赖 `src/device::DeviceError`、`boot_fdt`、VirtIO、MMIO 或 FAT。
+- `device_core` 不依赖 `src/device::DeviceError`、`platform_fdt`、VirtIO、MMIO 或 FAT。
 - 不迁移 QEMU 启动路径。
 - 不改变 `platform_bus::probe_all()` 真实行为。
 - 不改变 `virtio.rs`、`block_device()` 或 `fatfs_adapter`。
@@ -601,25 +619,25 @@ static BUILTIN_DRIVERS: &[DriverDescriptor] = &[VIRTIO_MMIO_DRIVER];
 
 目标：
 
-- `platform_bus` 从集中式 `"virtio,mmio"` match 迁移为 registry 编排。
+- `platform_bus` 从集中式 VirtIO MMIO match 迁移为 registry 编排。
 - `device_init()` 入口保持不变。
-- `src/device` 通过 `boot_fdt` 枚举 FDT 节点，并把资源通过参数传给 `device_core`。
+- `src/device` 通过 `platform_fdt` 枚举 FDT 节点，并把资源通过参数传给 `device_core`。
 - 新增 VirtIO MMIO descriptor adapter，把 `ProbeContext::Fdt` 转成现有 VirtIO MMIO 初始化参数。
 - 新增 typed VirtIO probe result；旧 `virtio::probe_mmio_device(paddr, size)` 保留为兼容包装。
 
 迁移前：
 
 ```text
-for index in 0..32:
-    fdt.find_compatible_node_nth("virtio,mmio", index)
-    virtio::probe_mmio_device(paddr, size)
+for node in platform_fdt.query_nodes(FdtSelector::Compatible(FDT_COMPATIBLE_MMIO)):
+    let reg = node.reg_required()
+    virtio::probe_mmio_device(reg.paddr, reg.size)
 ```
 
 迁移后：
 
 ```text
 registry.probe_static(BUILTIN_DRIVERS)
-registry.probe_fdt(BUILTIN_DRIVERS, boot_fdt.nodes())
+registry.probe_fdt(BUILTIN_DRIVERS, platform_fdt.query_nodes(...))
 ```
 
 D2b 验证重点：
@@ -692,7 +710,7 @@ SimpleKernel 的取舍：
 - 借鉴 descriptor、probe kind、priority 和 compatible 匹配。
 - 不复用 rdrive 的 `Device<T>`、`rdif-*`、`spin::Mutex` / `RwLock`、`mmio-api` 或自动链接段。
 - 不把 FDT backend 和设备核心模型强绑定在一个 crate 中。
-- 用 `boot_fdt` 显式闭合 U-Boot DTB 生命周期，再把 FDT 节点作为参数传给 `device_core`。
+- 用 `platform_fdt` 显式闭合 U-Boot DTB 生命周期，再把 FDT 节点作为参数传给 `device_core`。
 
 ## 测试策略
 
@@ -710,7 +728,7 @@ D2 测试边界：
 | `Required` / `Optional` 错误分类 | MMIO 映射 |
 | probe 统计聚合 | VirtIO transport |
 | 默认 Block 选择的纯排序规则 | DMA backend |
-| `boot_fdt` 的纯 bytes fixture 解析 | `block_device()` + FAT I/O |
+| `platform_fdt` 的纯 bytes fixture 解析 | `block_device()` + FAT I/O |
 | `device_block` 整扇区 I/O 校验 | VirtIO block sector 0 读写 |
 
 文档阶段验证：
@@ -724,7 +742,7 @@ git diff --check
 ```bash
 devcontainer exec --workspace-folder . cargo fmt --all -- --check
 devcontainer exec --workspace-folder . cargo test -p device_core
-devcontainer exec --workspace-folder . cargo test -p boot_fdt
+devcontainer exec --workspace-folder . cargo test -p platform_fdt
 devcontainer exec --workspace-folder . cargo test -p device_block
 devcontainer exec --workspace-folder . cargo xtask check --arch riscv64
 devcontainer exec --workspace-folder . cargo xtask check --arch aarch64
@@ -738,11 +756,11 @@ QEMU 命令必须设置 30 秒超时，并在超时后清理残留 `qemu-system`
 
 - D2 是否仍只覆盖 Static / FDT。
 - PCIe、ACPI、自动链接段注册是否明确留到后续。
-- `boot_fdt` 是否闭合 U-Boot DTB 生命周期，并避免继续缓存 bootloader-owned DTB 引用。
+- `platform_fdt` 是否闭合 U-Boot DTB 生命周期，并避免继续缓存 bootloader-owned DTB 引用。
 - DTB 副本是否最终映射为 RO。
 - `device_core` 是否保持平台无关，不依赖 FDT / MMIO / VirtIO。
 - `device_core` 是否不依赖 `src/device::DeviceError`，probe 边界是否使用 core-owned `ProbeFailure`。
-- `device_core` 是否不直接依赖 `boot_fdt` 内部类型，FDT adapter 是否完成 value 转换。
+- `device_core` 是否不直接依赖 `platform_fdt` 内部类型，FDT adapter 是否完成 value 转换。
 - `device_block` 是否承载平台无关 `BlockDevice` trait，`src/device/block.rs` 是否只是兼容门面。
 - `DriverDescriptor` 是否只表达驱动声明，不混入设备实例。
 - FDT compatible 是否采用完全相等匹配。

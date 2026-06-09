@@ -10,7 +10,9 @@ extern crate alloc;
 
 pub use page_table_entry::{PageTableEntry, PteFlags, PteFlagsOps, PteOps};
 
-pub use arch::{ENTRIES_PER_TABLE, INDEX_BITS, INDEX_MASK, LEVEL_SHIFTS, page_size_at_level};
+pub use arch_primitives::{
+    ENTRIES_PER_TABLE, INDEX_BITS, INDEX_MASK, LEVEL_SHIFTS, page_size_at_level,
+};
 
 pub mod table;
 pub use table::PageTable;

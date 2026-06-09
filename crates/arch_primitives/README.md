@@ -1,12 +1,12 @@
 <!-- Copyright The SimpleKernel Contributors -->
 
-# arch
+# arch_primitives
 
-架构抽象层——所有因处理器架构而异的底层操作的统一接口。
+架构原语层——所有因处理器架构而异的底层操作和常量的统一接口。
 
 ## 概览
 
-`arch` crate 封装 CPU 寄存器访问、中断控制、TLB 维护等硬件原语，
+`arch_primitives` crate 封装 CPU 寄存器访问、中断控制、TLB 维护等硬件原语，
 对外暴露架构无关的模块级函数和常量，上层 crate 无需关心具体架构差异。
 
 内部通过 `ArchImpl` trait 定义各架构必须实现的方法集，
@@ -33,6 +33,7 @@ cfg 标志在 `.cargo/config.toml` 中按 target 设置，不需要 build.rs。
 | `INDEX_BITS` | `usize` | 9 | 9 | 单级索引位宽 |
 | `INDEX_MASK` | `usize` | 0x1FF | 0x1FF | 单级索引掩码 |
 | `LEVEL_SHIFTS` | `[usize; PT_LEVELS]` | [12,21,30] | [12,21,30,39] | 各级 VPN 起始位位置 |
+| `FDT_INTERRUPT_CONTROLLER_COMPATIBLES` | `&[&str]` | `riscv,plic0` / `sifive,plic-1.0.0` | `arm,gic-v3` | 当前架构首选中断控制器的 FDT binding |
 
 ## 公开函数
 
@@ -93,25 +94,28 @@ src/
 ### ArchImpl trait 的内部性
 
 `ArchImpl` 是 `pub(crate)` trait，不对外暴露。
-对外通过模块级函数 `arch::disable_irq()` 等调用，
+对外通过模块级函数 `arch_primitives::disable_irq()` 等调用，
 调用方不需要 `use ArchImpl`，也不需要知道 `Riscv64`/`Aarch64` 类型的存在。
 
 ## 使用示例
 
 ```rust
 // 关中断 + 操作 + 开中断
-arch::disable_irq();
+arch_primitives::disable_irq();
 // ... 临界区操作 ...
 // SAFETY: 中断向量表已初始化，不在嵌套关中断临界区内
-unsafe { arch::enable_irq() };
+unsafe { arch_primitives::enable_irq() };
 
 // 读取 per-CPU 基地址
-let base = arch::percpu_base();
+let base = arch_primitives::percpu_base();
 
 // 刷新单页 TLB
-arch::flush_tlb_page(vaddr);
+arch_primitives::flush_tlb_page(vaddr);
 
 // 页表几何常量
-let shift = arch::LEVEL_SHIFTS[level];
-let entries = arch::ENTRIES_PER_TABLE;
+let shift = arch_primitives::LEVEL_SHIFTS[level];
+let entries = arch_primitives::ENTRIES_PER_TABLE;
+
+// FDT 中断控制器 binding
+let compatibles = arch_primitives::FDT_INTERRUPT_CONTROLLER_COMPATIBLES;
 ```

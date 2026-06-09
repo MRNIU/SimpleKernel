@@ -30,7 +30,7 @@ pub fn current() -> u64;
 ## 调用链
 
 ```
-arch::timer_handler()
+架构 timer IRQ handler
   → timer::handle_timer_common()
       ├→ global_tick::advance(is_bsp)   // 全局 tick
       └→ local_tick::advance()          // 本核 tick（每核独立递增）

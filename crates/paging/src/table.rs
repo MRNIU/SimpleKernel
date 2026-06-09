@@ -11,7 +11,7 @@ use frame_allocator::AllocatedFrames;
 
 use crate::{ENTRIES_PER_TABLE, PageTableEntry, PteFlags, PteFlagsOps, PteOps, vpn_index};
 
-const PT_LEVELS: usize = arch::PT_LEVELS;
+const PT_LEVELS: usize = arch_primitives::PT_LEVELS;
 
 /// 页表节点——封装 PTE 数组的原子访问。
 ///

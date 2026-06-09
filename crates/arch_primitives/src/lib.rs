@@ -15,9 +15,10 @@
 //! ## 使用示例
 //!
 //! ```ignore
-//! arch::disable_irq();
-//! let base = arch::percpu_base();
-//! arch::flush_tlb_page(vaddr);
+//! arch_primitives::disable_irq();
+//! let base = arch_primitives::percpu_base();
+//! arch_primitives::flush_tlb_page(vaddr);
+//! let interrupt_controller = arch_primitives::FDT_INTERRUPT_CONTROLLER_COMPATIBLES;
 //! ```
 
 #![no_std]
@@ -43,6 +44,9 @@ pub(crate) trait ArchImpl {
     /// - RISC-V Sv39: 3 级
     /// - AArch64 4KB granule: 4 级
     const PT_LEVELS: usize;
+
+    /// 当前架构首选中断控制器的 FDT `compatible` 字符串。
+    const FDT_INTERRUPT_CONTROLLER_COMPATIBLES: &'static [&'static str];
 
     /// 读取 per-CPU 基地址寄存器（RISC-V: TP, AArch64: TPIDR_EL1）。
     fn percpu_base() -> usize;
@@ -92,6 +96,10 @@ pub const PA_BITS: usize = Impl::PA_BITS;
 
 /// 页表层级数（RISC-V Sv39: 3, AArch64 4KB: 4）。
 pub const PT_LEVELS: usize = Impl::PT_LEVELS;
+
+/// 当前架构首选中断控制器的 FDT `compatible` 字符串。
+pub const FDT_INTERRUPT_CONTROLLER_COMPATIBLES: &[&str] =
+    Impl::FDT_INTERRUPT_CONTROLLER_COMPATIBLES;
 
 /// PTE 大小的位移量——`log2(sizeof(u64))` = 3。
 ///

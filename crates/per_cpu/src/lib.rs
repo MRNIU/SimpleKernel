@@ -71,7 +71,7 @@ impl<T: Sync> CpuLocal<T> {
     /// 对于非原子类型，调用方应确保中断已关闭。
     #[inline(always)]
     pub fn get(&self) -> &T {
-        let base = arch::percpu_base();
+        let base = arch_primitives::percpu_base();
         // SAFETY: base 指向当前 CPU 的 per-CPU 区域，offset 在范围内
         unsafe { &*((base + self.offset()) as *const T) }
     }
@@ -86,7 +86,7 @@ impl<T: Sync> CpuLocal<T> {
         reason = "per-CPU 内部可变性：每个 CPU 拥有独立副本"
     )]
     pub unsafe fn get_mut(&self) -> &mut T {
-        let base = arch::percpu_base();
+        let base = arch_primitives::percpu_base();
         // SAFETY: 调用方保证无并发访问
         unsafe { &mut *((base + self.offset()) as *mut T) }
     }
@@ -157,7 +157,7 @@ pub unsafe fn percpu_init() {
     let template_size =
         unsafe { &__percpu_end as *const u8 as usize - &__percpu_start as *const u8 as usize };
 
-    let my_core_id = arch::core_id();
+    let my_core_id = arch_primitives::core_id();
 
     // SAFETY: 单核调用，中断关闭，独占访问
     let areas = unsafe { &mut *PERCPU_AREAS.get() };
@@ -180,24 +180,24 @@ pub unsafe fn percpu_init() {
 
     // 设置当前核的 per-CPU 基地址寄存器
     // SAFETY: bases 已正确初始化
-    unsafe { arch::set_percpu_base(bases[my_core_id]) };
+    unsafe { arch_primitives::set_percpu_base(bases[my_core_id]) };
 
     PERCPU_INITIALIZED.store(true, Ordering::Release);
 }
 
 /// 从核 per-CPU 初始化——设置 per-CPU 基地址寄存器指向该核的区域。
 ///
-/// 内部通过 [`arch::core_id()`] 直接读取硬件寄存器确定当前核心 ID，
+/// 内部通过 [`arch_primitives::core_id()`] 直接读取硬件寄存器确定当前核心 ID，
 /// 不依赖 per-CPU 变量。调用完成后 `current_core_id()` 即可正常工作。
 ///
 /// # Safety
 /// - `percpu_init()` 必须已由主核调用完成
 pub unsafe fn percpu_init_smp() {
-    let id = arch::core_id();
+    let id = arch_primitives::core_id();
     // SAFETY: percpu_init() 已填充 PERCPU_BASES，id 来自硬件寄存器
     let bases = unsafe { &*PERCPU_BASES.get() };
     // SAFETY: bases[id] 已在 percpu_init() 中正确初始化
-    unsafe { arch::set_percpu_base(bases[id]) };
+    unsafe { arch_primitives::set_percpu_base(bases[id]) };
 }
 
 /// 读取当前核心 ID。
@@ -209,6 +209,6 @@ pub fn current_core_id() -> usize {
     if PERCPU_INITIALIZED.load(Ordering::Acquire) {
         *CORE_ID.get()
     } else {
-        arch::core_id()
+        arch_primitives::core_id()
     }
 }

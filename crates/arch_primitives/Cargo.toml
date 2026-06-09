@@ -1,12 +1,12 @@
 # Copyright The SimpleKernel Contributors
 
 [package]
-name = "arch"
+name = "arch_primitives"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Architecture abstraction layer — unified interface for CPU registers, interrupt control, TLB maintenance, and arch-specific constants"
+description = "Architecture primitives — CPU registers, interrupt state, TLB maintenance, paging geometry, and arch-specific constants"
 edition.workspace = true
 
 [dependencies]

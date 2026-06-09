@@ -16,7 +16,7 @@ R4 — 架构层
 
 ## 涉及模块
 
-`src/cpu_topology.rs`、`src/fdt.rs`、`src/boot.rs`、`src/arch/riscv64/`、
+`src/cpu_topology.rs`、`crates/platform_fdt/`、`src/boot.rs`、`src/arch/riscv64/`、
 `src/arch/aarch64/`、`crates/per_cpu/`、`src/tlb_shootdown.rs`
 
 ## 背景

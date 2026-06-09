@@ -120,7 +120,7 @@ assert_eq!(f.start_addr(), PhysAddr::new(0x8020_3000)); // 不是 0x8020_3FFF
 
 ### 3. `Frame::new` 校验页号范围
 
-`Frame::new(number_4k)` 要求页号左移 12 位后仍位于 `arch::PA_BITS`
+`Frame::new(number_4k)` 要求页号左移 12 位后仍位于 `arch_primitives::PA_BITS`
 可表示范围内。超过范围的页号会 panic，避免 `Frame::start_addr()` 把过大的
 页号截断成另一个物理地址。
 

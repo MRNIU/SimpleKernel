@@ -9,21 +9,27 @@ pub fn early_init(dtb_addr: usize) {
     use memory_types::PhysAddr;
 
     // SAFETY: dtb_addr 来自架构启动入口；bootloader 契约保证它在 early_init 期间可读。
-    let fdt = match unsafe { fdt::init_from_raw(dtb_addr) } {
+    let fdt = match unsafe { platform_fdt::init_from_raw(dtb_addr) } {
         Ok(fdt) => fdt,
         Err(error) => {
-            log::error!("KernelFdt: {}", error);
+            log::error!("PlatformFdt: {}", error);
             crate::util::halt::halt("无法初始化内核自有 DTB 副本");
         }
     };
-    let fdt_addr = fdt.storage_addr();
 
-    let node_count = fdt.node_count().unwrap_or(0);
-    let core_count = crate::cpu_topology::init_from_fdt(&fdt);
+    let node_count = match fdt.node_count() {
+        Ok(count) => count,
+        Err(error) => {
+            log::error!("PlatformFdt: FDT 节点计数失败: {}", error);
+            crate::util::halt::halt("无法遍历 FDT 节点");
+        }
+    };
+    let core_count = crate::cpu_topology::init_from_fdt(fdt);
 
     let (mem_addr, mem_size) = match fdt.memory() {
         Ok(m) => m,
-        Err(_) => {
+        Err(error) => {
+            log::error!("PlatformFdt: FDT memory 解析失败: {}", error);
             crate::util::halt::halt("无法从 FDT 获取内存信息");
         }
     };
@@ -36,12 +42,19 @@ pub fn early_init(dtb_addr: usize) {
     let kernel_start = unsafe { &__executable_start as *const u8 as u64 };
     let kernel_end = unsafe { &_end as *const u8 as u64 };
 
-    let firmware_reserved = fdt.firmware_reserved_memory().unwrap_or_else(|_| {
-        let size = kernel_start
-            .checked_sub(mem_addr)
-            .expect("early_init: kernel_start 小于 FDT RAM 起点");
-        (mem_addr, size as usize)
-    });
+    let firmware_reserved = match fdt.firmware_reserved_memory() {
+        Ok(region) => region,
+        Err(platform_fdt::FdtError::NodeNotFound) => {
+            let size = kernel_start
+                .checked_sub(mem_addr)
+                .expect("early_init: kernel_start 小于 FDT RAM 起点");
+            (mem_addr, size as usize)
+        }
+        Err(error) => {
+            log::error!("PlatformFdt: firmware reserved-memory 解析失败: {}", error);
+            crate::util::halt::halt("无法从 FDT 获取固件保留区");
+        }
+    };
 
     MEMORY_INFO.call_once(|| MemoryInfo {
         physical_memory_addr: PhysAddr::new(mem_addr as usize),
@@ -54,19 +67,23 @@ pub fn early_init(dtb_addr: usize) {
 
     CORE_COUNT.call_once(|| core_count);
 
-    fdt::FDT_ADDR.call_once(|| fdt_addr);
-
     // RISC-V 的 timebase-frequency 在 FDT /cpus 节点中；
     // aarch64 从 CNTFRQ_EL0 寄存器直接读取，不需要此值。
     #[cfg(target_arch = "riscv64")]
     {
-        let timer_freq = fdt.timebase_frequency().unwrap_or(0) as u64;
+        let timer_freq = match fdt.timebase_frequency() {
+            Ok(frequency) => u64::from(frequency),
+            Err(error) => {
+                log::error!("PlatformFdt: timebase-frequency 解析失败: {}", error);
+                crate::util::halt::halt("无法从 FDT 获取 RISC-V timer 频率");
+            }
+        };
         crate::arch::riscv64::timer::set_hw_freq(timer_freq);
     }
 
     log::info!("FDT: found {} nodes, {} CPUs", node_count, core_count);
     log::info!(
-        "KernelFdt: copied raw={:#x} to kernel-owned={:#x}, totalsize={:#x}",
+        "PlatformFdt: copied raw={:#x} to kernel-owned={:#x}, totalsize={:#x}",
         dtb_addr,
         fdt.storage_addr(),
         fdt.total_size()

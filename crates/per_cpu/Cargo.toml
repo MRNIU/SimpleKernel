@@ -12,7 +12,7 @@ edition.workspace = true
 [dependencies]
 macros = { path = "../macros" }
 config = { path = "../config" }
-arch = { path = "../arch" }
+arch_primitives = { path = "../arch_primitives" }
 
 [lints]
 workspace = true

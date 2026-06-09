@@ -17,6 +17,8 @@ pub(crate) struct Riscv64;
 impl ArchImpl for Riscv64 {
     const PA_BITS: usize = 56;
     const PT_LEVELS: usize = 3;
+    const FDT_INTERRUPT_CONTROLLER_COMPATIBLES: &'static [&'static str] =
+        &["riscv,plic0", "sifive,plic-1.0.0"];
 
     #[inline(always)]
     fn percpu_base() -> usize {

@@ -11,7 +11,7 @@ edition.workspace = true
 
 [dependencies]
 config = { path = "../config" }
-arch = { path = "../arch" }
+arch_primitives = { path = "../arch_primitives" }
 spin.workspace = true
 
 [lints]

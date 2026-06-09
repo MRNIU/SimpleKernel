@@ -45,9 +45,9 @@
 
 ### 第二组已修复/收窄（2026-05-07）
 
-- `KernelFdt::memory()` 检测到第二段 RAM region 时返回 `UnsupportedLayout`，避免静默只使用第一段。
+- `PlatformFdt::memory()` 检测到第二段 RAM region 时返回 `UnsupportedLayout`，避免静默只使用第一段。
 - `PageTable::update_pte()` 收窄为 `PageTable` 内部机制函数；公开调用面只保留带 TLB 刷新的 `update_range_flags()`。当前生产调用只在启动期 `memory::init()`，没有多核同时改同一 VA 的路径；未来运行期调用仍需区间锁或 owner token。
-- 删除公开 `kernel_rwx()` preset，新增 `kernel_firmware()` preset；`KernelFdt::firmware_reserved_memory()` 可解析 `/reserved-memory/firmware@...`，`xtask` 会给 QEMU 原生 DTB 注入该节点，`memory::init()` 再通过专用 `map_firmware_region()` 标记固件保留区。
+- 删除公开 `kernel_rwx()` preset，新增 `kernel_firmware()` preset；`PlatformFdt::firmware_reserved_memory()` 可解析 `/reserved-memory/firmware@...`，`xtask` 会给 QEMU 原生 DTB 注入该节点，`memory::init()` 再通过专用 `map_firmware_region()` 标记固件保留区。
 - `frame_allocator` 在 `alloc_from_backend()` / `dealloc_to_backend()` 入口断言不在 hard IRQ 上下文中，匹配 heap 后端约束。
 
 对应回归测试：
@@ -450,7 +450,7 @@ Frame::new(too_large)
 最小修复：
 
 1. 在 `Frame::new()` 中校验：
-   - `number_4k < (1usize << (arch::PA_BITS - config::PAGE_SIZE_BITS))`
+   - `number_4k < (1usize << (arch_primitives::PA_BITS - config::PAGE_SIZE_BITS))`
    - 需要处理 `PA_BITS == usize::BITS` 的边界。
 2. 或在 `start_addr()` 用 `checked_shl` / `checked_mul(PAGE_SIZE)` 并校验 `PhysAddr`。
 3. 补 `memory-types-test` 的 `frame_overflow_panic`。
@@ -522,7 +522,7 @@ frame_allocator::init(ram_start, ram_size, reserved_ranges)
 
 ## 10. FDT 只读取第一段 RAM
 
-位置：`src/fdt.rs:90-101`
+位置：`crates/platform_fdt/src/query.rs`
 
 状态：已采用短期 fail-fast 方案；完整多 bank RAM 支持仍是长期设计项。
 

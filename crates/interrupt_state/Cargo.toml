@@ -11,7 +11,7 @@ edition.workspace = true
 
 [dependencies]
 per_cpu = { path = "../per_cpu" }
-arch = { path = "../arch" }
+arch_primitives = { path = "../arch_primitives" }
 
 [lints]
 workspace = true

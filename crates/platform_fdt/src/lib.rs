@@ -13,7 +13,10 @@ mod query;
 use core::cell::SyncUnsafeCell;
 use core::fmt;
 
-pub use query::FDT_ADDR;
+pub use query::{
+    FdtCompatibleList, FdtNodeId, FdtNodeList, FdtNodeName, FdtNodeView, FdtReg, FdtSelector,
+    MAX_NODE_COMPATIBLES, MAX_NODE_REGIONS, MAX_QUERY_NODES,
+};
 
 /// 第一版内核自有 DTB storage 上限。
 pub const MAX_DTB_SIZE: usize = 256 * 1024;
@@ -28,25 +31,26 @@ struct DtbStorage([u8; MAX_DTB_SIZE]);
 
 /// 内核可查询的 FDT 视图。
 #[derive(Debug)]
-pub struct KernelFdt {
+pub struct PlatformFdt {
     raw_addr: Option<usize>,
     storage_addr: usize,
     bytes: &'static [u8],
 }
 
-impl KernelFdt {
-    /// 从已有 DTB 地址构造查询视图。
+impl PlatformFdt {
+    /// 从测试或固定平台镜像中的 static DTB 构造查询视图。
     ///
-    /// 此构造函数不复制 DTB，只用于测试 fixture 和迁移期兼容路径。启动路径应使用
+    /// 此构造函数不复制 DTB，只用于测试 fixture 或真实静态平台镜像。启动路径应使用
     /// [`init_from_raw`]，确保 FDT bytes 先进入内核自有 storage。
     ///
     /// # Safety
     ///
-    /// `fdt_addr` 必须指向有效 DTB，且该内存在返回的 [`KernelFdt`] 使用期间保持可读。
-    pub unsafe fn new(fdt_addr: usize) -> Result<Self, FdtError> {
+    /// `fdt_addr` 必须指向有效 DTB，且该内存在返回的 [`PlatformFdt`] 使用期间保持可读。
+    /// 对普通 bootloader 传入的临时 DTB 地址不要使用此函数，应走 [`init_from_raw`] 复制路径。
+    pub unsafe fn from_static(fdt_addr: usize) -> Result<Self, FdtError> {
         let total_size = unsafe { validate_raw_header(fdt_addr)? };
         // SAFETY: validate_raw_header 已校验 fdt_addr 指向至少 totalsize 字节的合法 FDT；
-        // 调用方负责保证该内存在返回的 KernelFdt 使用期间保持有效。
+        // 调用方负责保证该内存在返回的 PlatformFdt 使用期间保持有效。
         let bytes = unsafe { core::slice::from_raw_parts(fdt_addr as *const u8, total_size) };
         Ok(Self {
             raw_addr: None,
@@ -167,15 +171,15 @@ impl fmt::Display for FdtError {
 impl core::error::Error for FdtError {}
 
 static DTB_STORAGE: SyncUnsafeCell<DtbStorage> = SyncUnsafeCell::new(DtbStorage([0; MAX_DTB_SIZE]));
-static KERNEL_FDT: spin::Once<KernelFdt> = spin::Once::new();
+static PLATFORM_FDT: spin::Once<PlatformFdt> = spin::Once::new();
 
 /// 从 bootloader 传入的原始 DTB 地址初始化内核自有 FDT。
 ///
 /// # Safety
 ///
 /// `raw_addr` 必须指向 bootloader 提供的有效 DTB，且至少在本函数完成复制前保持可读。
-pub unsafe fn init_from_raw(raw_addr: usize) -> Result<&'static KernelFdt, FdtError> {
-    if let Some(existing) = KERNEL_FDT.get() {
+pub unsafe fn init_from_raw(raw_addr: usize) -> Result<&'static PlatformFdt, FdtError> {
+    if let Some(existing) = PLATFORM_FDT.get() {
         return Err(FdtError::AlreadyInitialized {
             existing_addr: existing.storage_addr(),
         });
@@ -185,30 +189,30 @@ pub unsafe fn init_from_raw(raw_addr: usize) -> Result<&'static KernelFdt, FdtEr
     let storage_ptr = DTB_STORAGE.get().cast::<u8>();
 
     // SAFETY: 调用方保证 raw_addr 指向 total_size 字节可读 DTB；storage_ptr 指向
-    // 内核自有固定 storage，且 KERNEL_FDT 尚未初始化，启动期单核路径没有并发写入者。
+    // 内核自有固定 storage，且 PLATFORM_FDT 尚未初始化，启动期单核路径没有并发写入者。
     unsafe {
         core::ptr::copy_nonoverlapping(raw_addr as *const u8, storage_ptr, total_size);
     }
 
     // SAFETY: 刚复制 total_size 字节到内核自有 static storage；该 storage 在内核生命周期内有效。
     let bytes = unsafe { core::slice::from_raw_parts(storage_ptr.cast_const(), total_size) };
-    let kernel_fdt = KernelFdt {
+    let platform_fdt = PlatformFdt {
         raw_addr: Some(raw_addr),
         storage_addr: storage_ptr.addr(),
         bytes,
     };
 
-    Ok(KERNEL_FDT.call_once(|| kernel_fdt))
+    Ok(PLATFORM_FDT.call_once(|| platform_fdt))
 }
 
 /// 返回已初始化的内核自有 FDT。
-pub fn get() -> Option<&'static KernelFdt> {
-    KERNEL_FDT.get()
+pub fn get() -> Option<&'static PlatformFdt> {
+    PLATFORM_FDT.get()
 }
 
 /// 返回 DTB 固定 storage 范围。只有初始化后才需要修改映射权限。
 pub fn storage_region() -> Option<StorageRegion> {
-    KERNEL_FDT.get().map(KernelFdt::owned_storage_region)
+    PLATFORM_FDT.get().map(PlatformFdt::owned_storage_region)
 }
 
 unsafe fn validate_raw_header(raw_addr: usize) -> Result<usize, FdtError> {

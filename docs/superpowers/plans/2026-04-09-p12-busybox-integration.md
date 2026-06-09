@@ -200,7 +200,7 @@ QEMU 将 initramfs 放到内存中的指定地址，通过 FDT `/chosen/linux,in
 
 - [ ] **Step 1: 从 FDT 获取 initramfs 地址**
 
-在 `src/fdt.rs` 的 `KernelFdt` 中添加：
+在 `crates/platform_fdt/src/query.rs` 的 `PlatformFdt` 中添加：
 
 ```rust
 /// 获取 initramfs 的内存范围。
@@ -312,9 +312,7 @@ fn align4(x: usize) -> usize { (x + 3) & !3 }
 
 ```rust
 // 提取 initramfs（如果存在）
-if let Some((start, end)) = crate::fdt::KernelFdt::new(fdt_addr)
-    .ok()
-    .and_then(|fdt| fdt.initrd())
+if let Some((start, end)) = crate::platform_fdt::get().and_then(|fdt| fdt.initrd())
 {
     let data = unsafe { core::slice::from_raw_parts(start as *const u8, end - start) };
     crate::initramfs::extract_initramfs(data);

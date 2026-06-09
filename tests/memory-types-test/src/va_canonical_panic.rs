@@ -17,6 +17,6 @@ test_harness::test_main!(
 );
 
 fn run_test() {
-    let near_boundary = VirtAddr::new((1usize << (arch::VA_BITS - 1)) - 2);
+    let near_boundary = VirtAddr::new((1usize << (arch_primitives::VA_BITS - 1)) - 2);
     let _ = near_boundary + 4;
 }

@@ -1,12 +1,12 @@
 # Copyright The SimpleKernel Contributors
 
 [package]
-name = "fdt"
+name = "platform_fdt"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Kernel-owned FDT storage and platform queries for SimpleKernel"
+description = "Kernel-owned FDT storage and platform description queries for SimpleKernel"
 edition.workspace = true
 
 [dependencies]

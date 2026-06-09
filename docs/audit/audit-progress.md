@@ -7,7 +7,14 @@
 
 ## 当前状态
 
-**当前 Phase**: R6 — 设备子系统 D0.5 已完成；本轮只强化当前 D0 的 VirtIO block
+**当前 Phase**: R6 — FDT D2-0 前置切片已落地。当前本地平台描述 crate 已收口为
+`crates/platform_fdt`，不保留旧兼容入口；`PlatformFdt` 负责
+kernel-owned DTB 生命周期、`FdtSelector::{Path, Compatible}` 统一查询、borrowed
+`FdtNodeView` 和结构化错误返回。`platform_bus` 已通过 VirtIO 驱动侧 compatible 常量
+枚举 VirtIO MMIO 节点，PLIC/GIC 地址解析已改用 `crates/arch_primitives` 暴露的
+`FDT_INTERRUPT_CONTROLLER_COMPATIBLES` 常量。
+
+历史 R6 状态：设备子系统 D0.5 已完成；本轮只强化当前 D0 的 VirtIO block
 基线测试和 platform bus fail-fast 语义，未进入 D1 `BlockDevice` 门面实现，未修改
 `src/fs/fatfs_adapter.rs`。
 
@@ -23,15 +30,29 @@
 `R4-15` 漂移语义已补 ADR-019，并已按方案 B 落地 per-core absolute deadline；方案 C 的
 missed tick 补记和 tickless one-shot 后续回看。
 **下一个目标**（按优先级）：
-1. **R6/D1 BlockDevice 门面**：需项目作者单独确认后再开始；D0.5 未新增 `BlockDevice` trait。
+1. **R6/D2 descriptor / probe registry**：在 `platform_fdt` 基座上继续迁移到 descriptor / probe registry，不直接回退到旧 `fdt` API。
 2. **R4 TLB 后续升级**：运行期映射变更增多后，再评估 ADR-018 方案 B per-CPU mailbox 或方案 C rendezvous。
 3. **R4 timer 后续升级**：按 ADR-019 后续回看条件再评估方案 C missed tick 补记或 tickless one-shot。
 4. **R3 遗留设计跟踪**：`PageTable::update_range_flags()` 若进入运行期路径，需要并发写者证明；完整多 bank RAM、真机设备/DMA 语义继续按 `docs/audit/2026-05-07-device-dma-rdrive-tracking.md` 跟踪。
 
+验证结果（2026-06-09 FDT D2-0）：通过 `cargo test -p platform_fdt`、
+`cargo clippy -p platform_fdt -- -D warnings`、`cargo xtask build --arch riscv64`、
+`cargo xtask build --arch aarch64`、RISC-V QEMU 30 秒超时下
+`cargo xtask test --arch riscv64 --name memory-test/fdt-multi-memory --timeout 30` 和
+`cargo xtask test --arch riscv64 --name memory-test/fdt-firmware-reserved --timeout 30`、
+`cargo xtask test --arch riscv64 --name device-test --timeout 30`、
+`cargo xtask test --arch riscv64 --name fs-test --timeout 30`。
+实现中曾暴露 `FdtNodeList` 固定容量过大导致启动栈压力，表现为 `device-test` 在
+`DeviceManager: initialized` 后进入 `trap_entry` store page fault；已将第一版容量收紧为
+`MAX_QUERY_NODES=16`、`MAX_NODE_COMPATIBLES=4`、`MAX_NODE_REGIONS=4` 后回归通过。
+未通过项：仓库级 `cargo clippy -- -D warnings` 仍在 host target 下触发既有
+`crates/arch_primitives/src/lib.rs` 缺少 `Impl` cfg；裸机 target clippy 触发既有
+`src/device/block.rs:67` `map_clone` lint。
+
 验证结果（2026-06-08 device D0.5）：本轮只修改 `src/device/` 的 FDT/platform bus
 fail-fast 语义、`tests/device-test/` 的硬断言，以及当前设计/审计状态说明。`device-test`
 现在要求 Full 初始化后 `device_count() > 0`、`virtio_blk()` 存在，并且 sector 0 读取成功；
-`platform_bus` 在 `FDT_ADDR` 缺失、FDT 解析失败或已匹配 `virtio,mmio` 节点 `reg` 非法时
+`platform_bus` 在 FDT view 缺失、FDT 解析失败或已匹配 `virtio,mmio` 节点 `reg` 非法时
 直接 fail-fast。未新增 `BlockDevice` trait，未修改 `src/fs/fatfs_adapter.rs`。
 验证通过：`cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64`、RISC-V QEMU 30 秒超时下
@@ -58,7 +79,7 @@ AArch64 QEMU 30 秒超时下 `cargo xtask test --arch aarch64 --name paging-test
 `cargo xtask check --arch aarch64`。涉及 QEMU 的命令必须使用 30 秒超时并在
 超时后清理残留 `qemu-system` 进程。
 
-验证结果（2026-05-09 ADR-018 方案 A 实现）：容器 `simplekernel-dev` 内先补
+验证结果（2026-05-09 ADR-018 方案 A 实现）：项目开发容器内先补
 `paging-test/tlb-shootdown-timeout-panic` should_panic 红测，RED 阶段确认缺少
 `tlb_shootdown::trigger_ack_timeout_for_test()` 时编译失败。实现后 `broadcast()`
 继续保留单 broadcast lock，但等待远端 ack 改为有限自旋；超时 panic 会打印发起核、
@@ -70,7 +91,7 @@ RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name paging-test/
 和 `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`，
 以及 `git diff --check`。
 
-验证结果（2026-05-09 ADR-019 方案 B 实现）：容器 `simplekernel-dev` 内先按 TDD
+验证结果（2026-05-09 ADR-019 方案 B 实现）：项目开发容器内先按 TDD
 给 `arch-test` 增加 absolute deadline 推进契约；RED 阶段确认缺少
 `simplekernel::timer::next_absolute_deadline()` 时 `arch-test` 编译失败。实现后公共
 `timer::next_absolute_deadline()` 编码“跳到未来但只记一个逻辑 tick”；RISC-V 每核保存
@@ -92,7 +113,7 @@ ADR 索引、R4 审计报告、R4 interrupt/timer 设计说明和本进度文件
 验证使用 `git diff --check`。
 
 验证结果（2026-05-09 R4 ADR 补记与 RISC-V 浮点恢复）：容器
-`simplekernel-dev` 内先补 RISC-V FP 上下文红测：父任务写 `fs0`、子任务覆盖 `fs0`、
+项目开发容器内先补 RISC-V FP 上下文红测：父任务写 `fs0`、子任务覆盖 `fs0`、
 切回后父任务必须读回原值；RED 阶段确认当前代码会读到子任务值，说明第 6 项不是完全已支持。
 实现后恢复 RISC-V eager FPU 上下文保存，并补 ADR-015/016/017。验证通过：
 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
@@ -101,7 +122,7 @@ ADR 索引、R4 审计报告、R4 interrupt/timer 设计说明和本进度文件
 `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`，
 以及 `git diff --check`。
 
-验证结果（2026-05-09 R4 第四阶段不涉及 ADR 修复）：容器 `simplekernel-dev`
+验证结果（2026-05-09 R4 第四阶段不涉及 ADR 修复）：项目开发容器
 内先按 TDD 给 `arch-test` 增加 Full 初始化返回时 all-discovered-cores-online 断言；
 RED 阶段确认缺少 `tlb_shootdown::all_discovered_cores_online()` 时 `arch-test` 编译失败。
 实现后补齐 boot-time online barrier、hart/CPU 启动失败 fail-fast、TLB shootdown 最小发布屏障与
@@ -112,14 +133,14 @@ IPI barrier、`src/arch` crate 外暴露面收窄，并新增 R4 启动/中断/t
 `cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`。
 
 验证结果（2026-05-09 R4 第三阶段 CPU topology 取舍收缩与 timer 方案 A）：容器
-`simplekernel-dev` 内先补充回归，`arch-test` 覆盖 dense CPU id 契约、timekeeper core 绑定，
+项目开发容器内先补充回归，`arch-test` 覆盖 dense CPU id 契约、timekeeper core 绑定，
 以及 `need_resched` 在 IRQ-exit 判定中只消费一次。实现收缩为：FDT CPU 表只做 dense
 `0..core_count` 校验和异常诊断，不建立 logical/hardware remap；per-CPU、IPI、SMP 启动继续直接使用
 core id。验证通过：`cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64`，以及 RISC-V QEMU 30 秒超时下
 `cargo xtask test --arch riscv64 --name arch-test --timeout 30`。
 
-验证结果（2026-05-08 R4 第一阶段测试可信度修复）：容器 `simplekernel-dev`
+验证结果（2026-05-08 R4 第一阶段测试可信度修复）：项目开发容器
 内 `cargo fmt --all -- --check`、`cargo test -p xtask`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64` 通过（保留既有 warning）。新增 xtask 单测覆盖：
 QEMU 进程状态成功但缺少 success sentinel 时必须失败、normal `TEST OK` 成功、
@@ -135,14 +156,14 @@ RISC-V QEMU 30 秒超时下定点验证通过：`memory-types-test/codec`、
 清理了 `tests/test_harness` 中新触发的 `unused feature: alloc_error_handler`；
 复跑验证后，本轮改动文件不再产生新的编译 warning，剩余 warning 均来自既有内核路径。
 
-验证结果（2026-05-09 R4 第二阶段低耦合修复）：容器 `simplekernel-dev`
+验证结果（2026-05-09 R4 第二阶段低耦合修复）：项目开发容器
 内 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64` 通过（保留既有 warning）。新增 `arch-test`
 覆盖 `KernelStack` 16 字节栈顶对齐和 `checked_tick_interval()` 非零 interval 合约。
 RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name arch-test --timeout 30`
 通过，覆盖 Full 初始化和从核启动路径。AArch64 首次验证暴露 QEMU `cortex-a72`
 仅报告 44-bit PARange，直接断言硬件必须支持编译期 `PA_BITS=48` 会导致 MMU 启用前 panic；
-后续决策改为当前 AArch64 QEMU 平台按 44-bit PA 收口，保持 `arch::PA_BITS` 与
+后续决策改为当前 AArch64 QEMU 平台按 44-bit PA 收口，保持 `arch_primitives::PA_BITS` 与
 `TCR_EL1.IPS` 一致。
 
 验证结果（2026-05-08 R4 复审文档化）：本轮只新增审计文档并更新进度文件，
@@ -155,16 +176,16 @@ RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name arch-test --
 `memory-test/fdt-multi-memory`、`memory-test/fdt-firmware-reserved`、
 `pte-test/pte-test`、`paging-test/table`、`frame-test/alloc-in-hardirq-panic`、
 `frame-test/dealloc-in-hardirq-panic`。其中 `fdt-firmware-reserved` 验证
-`KernelFdt::firmware_reserved_memory()` 可解析 `/reserved-memory/firmware@...`；
+`PlatformFdt::firmware_reserved_memory()` 可解析 `/reserved-memory/firmware@...`；
 `xtask` 会给 QEMU 原生 DTB 注入该节点，启动日志可见
 `FirmwareReserved: addr=0x80000000, size=0x200000`。`PageTable::update_pte()`
 已收窄为内部机制函数，删除公开 `kernel_rwx()` preset，新增 `kernel_firmware()`；
 frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 
-验证结果（2026-05-08 R3 文档与 warning 收口）：容器 `simplekernel-dev`
+验证结果（2026-05-08 R3 文档与 warning 收口）：项目开发容器
 内 `cargo fmt --all -- --check`、`cargo xtask check --arch riscv64`、
 `cargo xtask check --arch aarch64` 通过。当前 R3 内存 crate 本身无编译 warning；
-`src/fdt.rs` 中与内存初始化相邻的 3 个过期 `#[expect(dead_code)]` warning 已移除。
+`crates/platform_fdt` 中与内存初始化相邻的过期 `#[expect(dead_code)]` warning 已移除。
 
 验证结果（2026-05-07 第一组修复）：`cargo fmt --all -- --check`、
 `cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64` 通过
@@ -177,6 +198,50 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 
 ## 上次对话摘要
 
+**日期**：2026-06-09（FDT D2-0 实现）
+
+### 已完成
+
+本轮按已确认设计先回填 R6/D2 设计文档，再落地 FDT D2-0 前置切片：
+
+1. 将本地平台描述 crate 收口为 `crates/platform_fdt`，不保留旧 crate 名、
+   `pub use ... as fdt` 或旧查询 wrapper。
+2. 将平台 FDT 视图收口为 `PlatformFdt`，保留 kernel-owned DTB storage，测试 fixture
+   通过显式 unsafe `from_static()` 构造。
+3. 新增 `FdtSelector::{Path, Compatible}`、`FdtNodeView`、`FdtNodeList`、`FdtReg` 等
+   borrowed 查询模型；compatible 查询无匹配返回空列表，匹配节点属性非法返回错误。
+4. 将 `early_init()`、CPU topology、memory DTB RO 映射、PLIC/GIC 地址解析、platform bus、
+   FDT 相关测试迁移到新 API。
+5. 同步 `docs/design/device-d2-driver-descriptor-probe.md`、
+   `docs/design/device-subsystem-current.md` 和本审计进度文件。
+
+### 关键结论
+
+| # | 结论 | 状态 | 文档 |
+|---|------|------|------|
+| kernel-owned DTB | `platform_fdt` 继续复制 bootloader DTB 到固定 storage，并在分页后映射为 RO | 已落地 | `crates/platform_fdt/src/lib.rs`, `crates/memory/src/init.rs` |
+| API 生命周期 | `PlatformFdt::from_static()` 明确只用于 static fixture / 静态平台镜像；启动路径使用 `init_from_raw()` | 已落地 | `crates/platform_fdt/src/lib.rs` |
+| 查询语义 | 已提供 `FdtSelector::{Path, Compatible}` 统一查询和 borrowed node view | 已落地 | `crates/platform_fdt/src/query.rs` |
+| 设备 probe | `platform_bus` 已用 VirtIO 驱动侧 compatible 常量枚举节点 | 已落地 | `src/device/platform_bus.rs`, `src/device/virtio.rs` |
+| 固定容量 | 第一版 `FdtNodeList` 容量需控制栈占用，当前收敛为 16 个节点、4 个 compatible、4 个 reg region | 已落地 | `crates/platform_fdt/src/query.rs` |
+
+### 已确认设计决策
+
+| # | 决策 | 影响 |
+|---|------|------|
+| 1 | 不新增 crate；平台描述层使用 `crates/platform_fdt`，凸显平台描述层属性 | workspace package/path、依赖名、文档和测试命令需同步改名 |
+| 2 | 不保留旧 `fdt` 兼容入口 | 根 crate 不再 `pub use ... as fdt`，调用点一次性迁移 |
+| 3 | `platform_fdt` 对外提供统一查询入口，但 selector 同时支持 `Path` 和 `Compatible` | 固定平台配置可用 path 查询；设备 probe 继续按 FDT compatible 枚举 |
+| 4 | `platform_fdt` 返回结构化错误，不在查询层 panic；调用方按启动阶段决定 fail-fast | compatible 枚举为空不是错误；matched node 的必需属性非法必须作为错误返回 |
+| 5 | 执行顺序采用 FDT API 收口 → platform bus 迁移 → D2 registry；实现期不保留旧接口兼容 | 旧 crate 名、旧 re-export、`find_compatible_node_nth()` 等兼容包装应随迁移删除 |
+| 6 | 统一查询返回 borrowed `FdtNodeView`，设备集成层再转换为 registry 所需的 minimal value | `platform_fdt` 保持轻量少分配，`device_core` 不依赖 FDT 生命周期或 parser 类型 |
+| 7 | 先回填设计文档，再进入 `platform_fdt` API 收口实现 | 当前实现切片只做 FDT 基座和 platform bus 迁移，不直接跳到完整 D2 registry |
+
+### 下一步
+
+继续 R6/D2 descriptor / probe registry；后续如果需要支持更大 FDT 枚举结果，应改为
+流式 iterator、caller-provided buffer 或专用静态 scratch，而不是直接增大栈上 `FdtNodeList`。
+
 **日期**：2026-06-08（device D0.5）
 
 ### 已完成
@@ -185,7 +250,7 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 
 1. 强化 `tests/device-test/src/main.rs`，把 `device_count() > 0`、`virtio_blk()` 可用性、
    sector 0 读取成功都改为硬断言。
-2. 收紧 `src/device/platform_bus.rs` 的 Full 初始化语义：`FDT_ADDR` 缺失、FDT 解析失败，
+2. 收紧 `src/device/platform_bus.rs` 的 Full 初始化语义：FDT view 缺失、FDT 解析失败，
    或已匹配 `virtio,mmio` 节点 `reg` 非法时 fail-fast。
 3. 同步 `docs/design/device-subsystem-current.md`，记录 D0.5 是当前 D0 基线强化，不新增
    `BlockDevice` trait，不改 `fatfs_adapter`。
@@ -401,7 +466,7 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 本轮将 R4 架构层复审结论固化为
 `docs/audit/2026-05-08-r4-architecture-review-findings.md`，覆盖
 `src/arch/`、`src/boot.rs`、`src/main.rs`、`src/timer.rs`、
-`src/tlb_shootdown.rs`、`src/fdt.rs`、`src/task/` 中与架构层直接耦合的入口，
+`src/tlb_shootdown.rs`、`crates/platform_fdt/`、`src/task/` 中与架构层直接耦合的入口，
 以及 `tests/test_harness/` / `xtask/src/qemu.rs` 中影响 R4 验证可信度的路径。
 
 文档按 `R4-01` 到 `R4-17` 编号记录每个问题的原因、可能触发路径、修复方案和验证方向。
@@ -435,7 +500,7 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 按测试先行修复了四个低耦合不变量问题：
 
 1. `VirtAddr::align_down_to()` 改为重新经过 `Self::new(...)`，防止高半区大粒度对齐生成 canonical hole 地址。
-2. `Frame::new()` 增加页号上界校验，`Frame + usize` 同步防止越过 `arch::PA_BITS` 可表示范围。
+2. `Frame::new()` 增加页号上界校验，`Frame + usize` 同步防止越过 `arch_primitives::PA_BITS` 可表示范围。
 3. `memory::init()` 入口增加 `AtomicBool` 一次性守卫，二次调用直接 fail-fast，不再进入 heap/frame allocator 内部损坏路径。
 4. `frame_allocator::init()` 在入 buddy 前校验 free/reserved 页对齐、非零、溢出和重叠；文档明确 `reserved` 只校验和记录，不从 free 范围扣除。
 
@@ -689,7 +754,7 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 **接入方向（ADR 待决，等 P9 前置 / R4 中断子系统就绪后再讨论）**：
 1. IPI 机制：需要 `src/arch/{arch}/interrupt.rs` 的中断子系统提供跨核 IPI 发送原语
 2. 注册时机：在 `device_init` / 中断子系统 init 完成后调用 `tlb::register_tlb_shootdown`
-3. 数据结构：`TlbFlushRequest` 通过 per-CPU mailbox 或 IPI payload 传递；目标核在 IPI handler 中执行本地 `arch::flush_tlb_page` / `flush_tlb_all`
+3. 数据结构：`TlbFlushRequest` 通过 per-CPU mailbox 或 IPI payload 传递；目标核在 IPI handler 中执行本地 `arch_primitives::flush_tlb_page` / `flush_tlb_all`
 4. 同步：发起核是否需要等待其他核 ack（影响是否需要 barrier / 跨核状态位）
 5. 与 `update_range_flags` 跨页非原子语义的配合：跨核协议需要考虑"发起核修改了 N 页但其他核可能只看到前 k 页新 flags"的情形
 
@@ -725,5 +790,6 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 | 2026-05-07 | R3 (subagent 复审) | 使用 4 个 subagent 只读复审 `memory_types` / `frame_allocator` / `page_table_entry` / `paging` / `tlb` / `heap` / `memory` / `dma`，整理出初始化一次性、权限切换并发、W^X、DMA 真机语义、newtype 不变量、RISC-V MMIO 属性、AArch64 段边界和多段 RAM 等待讨论问题；详细说明见 `docs/audit/2026-05-07-r3-memory-review-findings.md` |
 | 2026-05-07 | R3 (第一组修复) | 修复 `VirtAddr::align_down_to` canonical 校验、`Frame::new` 页号范围、`memory::init` 二次调用 fail-fast、`frame_allocator::init reserved` 校验语义；新增对应 QEMU 回归测试和测试清单。 |
 | 2026-05-07 | R3 (第二组修复) | 收紧固件 reserved-memory 映射、删除公开 `kernel_rwx()`、将 `PageTable::update_pte()` 收窄为内部机制函数、禁止 frame allocator hard IRQ 分配/释放、对多段 RAM FDT fail-fast，并补对应回归测试。 |
-| 2026-05-08 | R3 (文档与 warning 收口) | 删除 R3 roadmap / 依赖图中的 `page_allocator` 旧引用，确认 `crates/memory/AGENTS.md` 作为本地模块说明入口，移除 `src/fdt.rs` 中已过期的 3 个 `#[expect(dead_code)]`。 |
+| 2026-05-08 | R3 (文档与 warning 收口) | 删除 R3 roadmap / 依赖图中的 `page_allocator` 旧引用，确认 `crates/memory/AGENTS.md` 作为本地模块说明入口，移除平台 FDT 路径中已过期的 `#[expect(dead_code)]`。 |
 | 2026-06-08 | R6 (device D0.5) | 强化当前 device 基线：`device-test` 硬断言设备计数、VirtIO 块设备存在性和 sector 0 读取；Full 初始化下 platform bus 对 FDT 缺失、解析失败和非法 `virtio,mmio` `reg` fail-fast；未进入 `BlockDevice` 门面。 |
+| 2026-06-09 | R6 (FDT D2-0) | 将本地 FDT crate 重命名为 `platform_fdt`，落地 `PlatformFdt` 生命周期、`FdtSelector` 查询、borrowed `FdtNodeView`，并迁移 early init、PLIC/GIC、platform_bus 和 FDT 测试；device-test/fs-test 回归通过。 |

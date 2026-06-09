@@ -24,6 +24,9 @@ use super::{DeviceError, manager};
 /// VirtIO MMIO 设备标准寄存器空间大小（字节）。
 const VIRTIO_MMIO_SIZE: usize = 0x200;
 
+/// VirtIO MMIO transport 的 FDT `compatible` 字符串。
+pub(super) const FDT_COMPATIBLE_MMIO: &str = "virtio,mmio";
+
 /// VirtIO block 设备的扇区大小。
 const VIRTIO_BLOCK_SECTOR_SIZE: usize = 512;
 

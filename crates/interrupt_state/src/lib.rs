@@ -23,7 +23,7 @@ use per_cpu::cpu_local;
 /// 查询当前中断是否启用。
 #[inline(always)]
 pub fn is_enabled() -> bool {
-    arch::is_irq_enabled()
+    arch_primitives::is_irq_enabled()
 }
 
 /// 首次启用中断——仅供 bootstrap 阶段调用。
@@ -39,7 +39,7 @@ pub fn is_enabled() -> bool {
 #[inline(always)]
 pub unsafe fn bootstrap_enable() {
     // SAFETY: 由调用方保证安全性
-    unsafe { arch::enable_irq() };
+    unsafe { arch_primitives::enable_irq() };
 }
 
 /// 中断禁用的证明令牌（proof token）。
@@ -83,8 +83,8 @@ impl HeldInterrupts {
     #[inline]
     #[must_use]
     pub fn hold() -> Self {
-        let was_enabled = arch::is_irq_enabled();
-        arch::disable_irq();
+        let was_enabled = arch_primitives::is_irq_enabled();
+        arch_primitives::disable_irq();
         Self {
             was_enabled,
             _not_send: PhantomData,
@@ -103,7 +103,7 @@ impl Drop for HeldInterrupts {
     fn drop(&mut self) {
         if self.was_enabled {
             // SAFETY: 恢复到获取令牌前的中断状态
-            unsafe { arch::enable_irq() };
+            unsafe { arch_primitives::enable_irq() };
         }
     }
 }

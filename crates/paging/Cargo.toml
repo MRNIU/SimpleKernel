@@ -10,7 +10,7 @@ description = "Page table management"
 edition.workspace = true
 
 [dependencies]
-arch = { path = "../arch" }
+arch_primitives = { path = "../arch_primitives" }
 config = { path = "../config" }
 memory_types = { path = "../memory_types" }
 page_table_entry = { path = "../page_table_entry" }

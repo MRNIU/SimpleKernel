@@ -293,7 +293,7 @@ memory_types ← frame_allocator ← page_table_entry ← paging ← memory
 | Getter 用名词，不加 `get_`/`read_` 前缀 | `len()`, `percpu_base()` | `get_len()`, `read_percpu_base()` |
 | Setter 用 `set_` 前缀 | `set_len()`, `set_percpu_base()` | `write_percpu_base()` |
 | 动作用动宾结构（动词在前） | `flush_tlb()`, `disable_irq()` | `tlb_flush()`, `irq_disable()` |
-| 不用 C 风格"模块名前缀" | `arch::disable_irq()` | `arch::arch_irq_disable()` |
+| 不用 C 风格"模块名前缀" | `arch_primitives::disable_irq()` | `arch_primitives::arch_irq_disable()` |
 
 排查范围：`src/`、`crates/`、`tests/` 下所有 `.rs` 文件的 `pub fn` / `pub unsafe fn`。
 

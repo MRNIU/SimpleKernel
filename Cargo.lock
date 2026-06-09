@@ -42,16 +42,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "940b3a0ca603d1eade50a4846a2afffd5ef57a9feac2c0e2ec2e14f9ead76000"
 
 [[package]]
-name = "arch"
-version = "0.1.0"
-dependencies = [
- "aarch64-cpu 11.2.0",
- "config",
- "riscv",
- "tock-registers 0.10.1",
-]
-
-[[package]]
 name = "arch-test"
 version = "0.0.0"
 dependencies = [
@@ -62,6 +52,16 @@ dependencies = [
  "sbi-rt",
  "simplekernel",
  "test_harness",
+]
+
+[[package]]
+name = "arch_primitives"
+version = "0.1.0"
+dependencies = [
+ "aarch64-cpu 11.2.0",
+ "config",
+ "riscv",
+ "tock-registers 0.10.1",
 ]
 
 [[package]]
@@ -305,17 +305,6 @@ dependencies = [
 
 [[package]]
 name = "fdt"
-version = "0.1.0"
-dependencies = [
- "config",
- "fdt 0.2.0-alpha1",
- "heapless 0.8.0",
- "log",
- "spin",
-]
-
-[[package]]
-name = "fdt"
 version = "0.2.0-alpha1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d070dea8bd0df3ea6d250490ae21eb908e83478c53099212ba1fa5af8e77a5b"
@@ -452,7 +441,7 @@ checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 name = "interrupt_state"
 version = "0.1.0"
 dependencies = [
- "arch",
+ "arch_primitives",
  "per_cpu",
 ]
 
@@ -522,13 +511,13 @@ name = "memory"
 version = "0.1.0"
 dependencies = [
  "config",
- "fdt 0.1.0",
  "frame_allocator",
  "heap",
  "log",
  "memory_types",
  "paging",
  "per_cpu",
+ "platform_fdt",
  "spin",
  "tlb",
  "zerocopy",
@@ -552,7 +541,7 @@ name = "memory-types-test"
 version = "0.0.0"
 dependencies = [
  "aarch64-cpu 11.2.0",
- "arch",
+ "arch_primitives",
  "config",
  "heapless 0.8.0",
  "log",
@@ -566,7 +555,7 @@ dependencies = [
 name = "memory_types"
 version = "0.1.0"
 dependencies = [
- "arch",
+ "arch_primitives",
  "config",
 ]
 
@@ -613,7 +602,7 @@ dependencies = [
 name = "paging"
 version = "0.1.0"
 dependencies = [
- "arch",
+ "arch_primitives",
  "config",
  "frame_allocator",
  "log",
@@ -670,9 +659,20 @@ checksum = "b867cad97c0791bbd3aaa6472142568c6c9e8f71937e98379f584cfb0cf35bec"
 name = "per_cpu"
 version = "0.1.0"
 dependencies = [
- "arch",
+ "arch_primitives",
  "config",
  "macros",
+]
+
+[[package]]
+name = "platform_fdt"
+version = "0.1.0"
+dependencies = [
+ "config",
+ "fdt",
+ "heapless 0.8.0",
+ "log",
+ "spin",
 ]
 
 [[package]]
@@ -805,6 +805,7 @@ name = "simplekernel"
 version = "0.1.0"
 dependencies = [
  "aarch64-cpu 11.2.0",
+ "arch_primitives",
  "arm-gic",
  "arm-psci",
  "bitfield-struct",
@@ -814,7 +815,6 @@ dependencies = [
  "dma",
  "elf",
  "fatfs",
- "fdt 0.1.0",
  "frame_allocator",
  "gdbstub",
  "global_tick",
@@ -829,6 +829,7 @@ dependencies = [
  "memory_types",
  "paging",
  "per_cpu",
+ "platform_fdt",
  "qemu-exit",
  "riscv",
  "rustc-demangle",
@@ -942,7 +943,7 @@ dependencies = [
 name = "tlb"
 version = "0.1.0"
 dependencies = [
- "arch",
+ "arch_primitives",
  "config",
  "spin",
 ]

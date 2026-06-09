@@ -5,6 +5,7 @@
 /// 负责 PLIC 初始化、stvec 设置，以及陷阱分发（定时器、外部中断、IPI、系统调用、异常）。
 use core::arch::global_asm;
 
+use arch_primitives::FDT_INTERRUPT_CONTROLLER_COMPATIBLES;
 use memory::MmioRegion;
 use memory_types::PhysAddr;
 
@@ -140,6 +141,20 @@ fn current_plic_s_context() -> usize {
     plic_s_context_for_core_id(per_cpu::current_core_id())
 }
 
+/// 从 FDT 中读取 PLIC 的首个 `reg` 区域。
+fn plic_reg_from_fdt(
+    fdt: &crate::platform_fdt::PlatformFdt,
+) -> Result<crate::platform_fdt::FdtReg, crate::platform_fdt::FdtError> {
+    for compatible in FDT_INTERRUPT_CONTROLLER_COMPATIBLES {
+        match fdt.compatible_reg(compatible, 0) {
+            Err(crate::platform_fdt::FdtError::NodeNotFound) => {}
+            result => return result,
+        }
+    }
+
+    Err(crate::platform_fdt::FdtError::NodeNotFound)
+}
+
 /// 为指定 PLIC context 使能 UART IRQ 并设置阈值。
 fn configure_plic_context(context: usize) {
     let plic = plic();
@@ -157,13 +172,10 @@ fn configure_plic_context(context: usize) {
 fn plic_init() {
     // 从 FDT 读取 PLIC 基地址
     let base = {
-        let fdt = crate::fdt::get().expect("plic_init: FDT 未初始化");
-        let (addr, _size) = fdt
-            .find_compatible_reg("riscv,plic0")
-            .or_else(|_| fdt.find_compatible_reg("sifive,plic-1.0.0"))
-            .expect("plic_init: FDT 中未找到 PLIC 节点（尝试 riscv,plic0 和 sifive,plic-1.0.0）");
-        log::info!("PLIC: 从 FDT 读取基地址 {:#x}", addr);
-        addr as usize
+        let fdt = crate::platform_fdt::get().expect("plic_init: FDT 未初始化");
+        let reg = plic_reg_from_fdt(fdt).expect("plic_init: FDT 中未找到 PLIC 节点");
+        log::info!("PLIC: 从 FDT 读取基地址 {:#x}", reg.address);
+        usize::try_from(reg.address).expect("plic_init: PLIC 地址超出 usize")
     };
 
     let region = memory::MmioRegion::map(PhysAddr::new(base), PLIC_SIZE);

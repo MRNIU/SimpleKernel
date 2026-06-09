@@ -18,6 +18,6 @@ test_harness::test_main!(
 
 /// 大粒度向下对齐高半区边界地址应触发 canonical 校验 panic。
 fn run_test() {
-    let high_half_base = VirtAddr::new(usize::MAX << (arch::VA_BITS - 1));
-    let _ = high_half_base.align_down_to(1usize << arch::VA_BITS);
+    let high_half_base = VirtAddr::new(usize::MAX << (arch_primitives::VA_BITS - 1));
+    let _ = high_half_base.align_down_to(1usize << arch_primitives::VA_BITS);
 }

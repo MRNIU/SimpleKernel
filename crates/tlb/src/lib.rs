@@ -113,7 +113,7 @@ pub fn flush_tlb_page(vaddr: usize) {
 /// IPI 接收端处理 shootdown 请求时使用此函数，避免递归广播。
 #[inline(always)]
 pub fn flush_tlb_local() {
-    arch::flush_tlb_all();
+    arch_primitives::flush_tlb_all();
 }
 
 /// 仅刷新当前核心指定虚拟地址对应的 TLB 项，不触发跨核 shootdown。
@@ -121,5 +121,5 @@ pub fn flush_tlb_local() {
 /// IPI 接收端处理 shootdown 请求时使用此函数，避免递归广播。
 #[inline(always)]
 pub fn flush_tlb_page_local(vaddr: usize) {
-    arch::flush_tlb_page(vaddr);
+    arch_primitives::flush_tlb_page(vaddr);
 }

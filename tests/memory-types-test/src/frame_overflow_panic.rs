@@ -18,6 +18,6 @@ test_harness::test_main!(
 
 /// 超过物理地址位宽的页号不能构造为 `Frame`。
 fn run_test() {
-    let frame_count_limit = 1usize << (arch::PA_BITS - config::PAGE_SIZE_BITS);
+    let frame_count_limit = 1usize << (arch_primitives::PA_BITS - config::PAGE_SIZE_BITS);
     let _ = Frame::new(frame_count_limit);
 }

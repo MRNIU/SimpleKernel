@@ -13,10 +13,15 @@ test_harness::test_main!(
     test_firmware_reserved_memory
 );
 
-/// `KernelFdt` 应能从 `/reserved-memory/firmware@...` 解析固件保留区。
+/// `PlatformFdt` 应能从 `/reserved-memory/firmware@...` 解析固件保留区。
 fn test_firmware_reserved_memory() {
     // SAFETY: FIRMWARE_RESERVED_DTB 是 static fixture，测试期间保持可读。
-    let fdt = unsafe { simplekernel::fdt::KernelFdt::new(FIRMWARE_RESERVED_DTB.as_ptr() as usize) }
+    let fdt =
+        unsafe {
+            simplekernel::platform_fdt::PlatformFdt::from_static(
+                FIRMWARE_RESERVED_DTB.as_ptr() as usize
+            )
+        }
         .expect("测试 DTB 应可解析");
 
     let (addr, size) = fdt

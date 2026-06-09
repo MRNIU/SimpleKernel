@@ -18,7 +18,7 @@ SimpleKernel 保留本地 `crate::device` 作为设备子系统边界。设备�
 - `src/device/mod.rs` 定义 `Device` / `DeviceType` 和 `device_init()`；
 - `src/device/block.rs` 定义本地 `BlockDevice` trait 和默认块设备门面；
 - `src/device/manager.rs` 用 `SpinLock<Vec<Box<dyn Device>>>` 保存已注册设备；
-- `src/device/platform_bus.rs` 从 FDT 枚举 `virtio,mmio` 节点；
+- `src/device/platform_bus.rs` 通过 VirtIO 驱动侧 compatible 常量查询 FDT 节点；
 - `src/device/virtio.rs` 使用 `virtio-drivers` 初始化 VirtIO block，并通过全局
   `virtio_blk()` 保留兼容入口，同时把同一块设备注册为本地 `BlockDevice`；
 - `src/fs/fatfs_adapter.rs` 通过 `crate::device::block::block_device()` 访问块设备，
@@ -33,7 +33,7 @@ sequenceDiagram
   participant Boot as boot::kernel_init
   participant Device as device::device_init
   participant Manager as DeviceManager
-  participant Fdt as KernelFdt
+  participant Fdt as platform_fdt
   participant Bus as platform_bus
   participant Virtio as virtio
   participant Block as device::block
@@ -43,8 +43,8 @@ sequenceDiagram
   Boot->>Device: InitLevel::Full 阶段进入设备初始化
   Device->>Manager: init()
   Device->>Bus: probe_all()
-  Bus->>Fdt: 读取 FDT_ADDR 并解析设备树
-  Bus->>Fdt: find_compatible_node_nth("virtio,mmio", index)
+  Bus->>Fdt: 获取 kernel-owned FDT view
+  Bus->>Fdt: query_nodes(Compatible(FDT_COMPATIBLE_MMIO))
   Bus->>Virtio: probe_mmio_device(paddr, size)
   Virtio->>Memory: map(paddr, size)
   Virtio->>Virtio: MmioTransport + VirtIOBlk 初始化
@@ -77,8 +77,8 @@ sequenceDiagram
 
 D0.5 只强化当前 D0 的 VirtIO block 路径，不进入 D1 `BlockDevice` 门面实现：
 
-- Full 初始化路径下，`platform_bus` 依赖 `early_init()` 记录的 FDT 地址；`FDT_ADDR` 缺失、
-  FDT 解析失败，或已匹配的 `virtio,mmio` 节点 `reg` 属性非法，均必须 fail-fast。
+- Full 初始化路径下，`platform_bus` 依赖 `early_init()` 初始化的 kernel-owned FDT view；
+  FDT view 缺失、FDT 解析失败，或已匹配的 VirtIO MMIO 节点 `reg` 属性非法，均必须 fail-fast。
 - `device-test` 必须把 `device_count() > 0`、`virtio_blk()` 可用，以及 sector 0 读取成功作为硬断言。
 - `fatfs_adapter` 在 D0.5 不迁移，仍继续通过 `virtio_blk()` 访问当前 VirtIO 块设备。
 
@@ -105,6 +105,11 @@ D2 的当前设计真值面是
 该文档已确认以下边界：
 
 - D2 支持 `Static` / `Fdt`，不支持 PCIe、ACPI 或自动链接段注册。
+- D2-0 已将平台描述层收口为 `crates/platform_fdt`，不保留旧 crate 名或兼容 re-export。
+- `platform_fdt` 提供 `FdtSelector::{Path, Compatible}` 统一查询入口，返回 borrowed
+  node view；固定平台配置可用 path 查询，设备 probe 继续按 compatible 枚举。
+- `platform_fdt` 查询层返回结构化错误，不在内部 panic；compatible 枚举为空不是错误，
+  matched node 的必需属性非法必须作为错误返回。
 - D2 引入本地 `DriverDescriptor`、`ProbeKind`、`ProbeRequirement`、`ProbeLevel` 和
   `ProbePriority`。
 - D2 同时引入最小 typed capability registry，首批只要求覆盖 `DeviceCapability::Block`。

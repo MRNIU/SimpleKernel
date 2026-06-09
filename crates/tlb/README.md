@@ -21,6 +21,6 @@ paging::PageTable::update_range_flags (修改 PTE)
    ▼ TlbFlushGuard::new(va, count)
 tlb (本 crate)
    │
-   ├── arch::flush_tlb_page() (本核)
+   ├── arch_primitives::flush_tlb_page() (本核)
    └── TLB_SHOOTDOWN_FN (跨核 IPI)
 ```

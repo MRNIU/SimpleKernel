@@ -17,6 +17,6 @@ test_harness::test_main!(
 );
 
 fn run_test() {
-    let near_max = PhysAddr::new((1usize << arch::PA_BITS) - 2);
+    let near_max = PhysAddr::new((1usize << arch_primitives::PA_BITS) - 2);
     let _ = near_max + 4;
 }

@@ -31,7 +31,7 @@ SimpleKernel 的 R4 架构层只提供启动、console、timer、interrupt、IPI
 
 - `targets/<arch>.json`
 - `xtask` 的目标枚举、QEMU 参数和 FIT/固件路径。
-- `crates/arch` 中的 `PA_BITS`、`VA_BITS`、TLB、本地中断和 per-CPU 基址原语。
+- `crates/arch_primitives` 中的 `PA_BITS`、`VA_BITS`、TLB、本地中断和 per-CPU 基址原语。
 - `docs/design/` 中的架构启动、interrupt/timer 流程说明。
 
 ## `ArchOps` 合约

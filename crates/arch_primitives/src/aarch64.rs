@@ -22,6 +22,7 @@ pub(crate) struct Aarch64;
 impl ArchImpl for Aarch64 {
     const PA_BITS: usize = 44;
     const PT_LEVELS: usize = 4;
+    const FDT_INTERRUPT_CONTROLLER_COMPATIBLES: &'static [&'static str] = &["arm,gic-v3"];
 
     #[inline(always)]
     fn percpu_base() -> usize {
