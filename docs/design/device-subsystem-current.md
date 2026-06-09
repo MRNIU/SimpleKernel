@@ -4,7 +4,8 @@
 
 > 本文描述 `src/device/` 当前实现和下一步演进边界。历史 P6 计划见
 > [P6-设备框架与驱动.md](P6-设备框架与驱动.md)；`rdrive` 取舍见
-> [ADR-020](../adr/020-borrow-rdrive-patterns-local-device-framework.md)。
+> [ADR-020](../adr/020-borrow-rdrive-patterns-local-device-framework.md)。D2 方案见
+> [R6/D2 设备驱动描述符与 Probe Registry 设计说明](device-d2-driver-descriptor-probe.md)。
 
 ## 当前结论
 
@@ -83,8 +84,10 @@ D0.5 只强化当前 D0 的 VirtIO block 路径，不进入 D1 `BlockDevice` 门
 
 ## D1 当前状态
 
-D1 已新增本地 `BlockDevice` trait 和默认块设备门面，但尚未进入 D2 的
-`DriverDescriptor` / probe registry：
+D1 已新增本地 `BlockDevice` trait 和默认块设备门面。D2 的
+`DriverDescriptor` / probe registry / 最小 typed capability registry 方案已在
+[R6/D2 设备驱动描述符与 Probe Registry 设计说明](device-d2-driver-descriptor-probe.md)
+中收敛，尚未实现：
 
 - `BlockDevice` 当前覆盖 `sector_size()`、`sector_count()`、字节容量 `capacity()`、
   以及 `read_sector()` / `write_sector()` 整扇区 I/O。
@@ -92,7 +95,27 @@ D1 已新增本地 `BlockDevice` trait 和默认块设备门面，但尚未进�
   所以 DMA、MMIO 和 QEMU identity backend 语义没有扩大。
 - `fatfs_adapter` 已迁移到 `device::block::block_device()`，不再直接调用 `virtio_blk()`。
 - `device-test` 以 `BlockDevice` 门面读取 sector 0，同时保留 `virtio_blk()` 兼容入口存在性检查。
-- D2 尚未开始：没有新增 driver descriptor、probe priority、PCIe、ACPI 或自动链接段注册。
+- D2 实现尚未开始：当前代码没有新增 driver descriptor、probe priority、typed capability
+  registry、PCIe、ACPI 或自动链接段注册。
+
+## D2 设计入口
+
+D2 的当前设计真值面是
+[R6/D2 设备驱动描述符与 Probe Registry 设计说明](device-d2-driver-descriptor-probe.md)。
+该文档已确认以下边界：
+
+- D2 支持 `Static` / `Fdt`，不支持 PCIe、ACPI 或自动链接段注册。
+- D2 引入本地 `DriverDescriptor`、`ProbeKind`、`ProbeRequirement`、`ProbeLevel` 和
+  `ProbePriority`。
+- D2 同时引入最小 typed capability registry，首批只要求覆盖 `DeviceCapability::Block`。
+- 多个 FDT 节点拥有同一 compatible 是正常多设备实例；descriptor 侧同一 compatible
+  重复注册禁止。
+- 默认 `block_device()` 由 descriptor/probe 顺序中第一个成功注册的 `Block` capability 决定。
+- `ProbeLevel::Late` 保留给后续依赖已有 capability 的后置初始化，D2 首批不使用。
+- D2a-D2c 期间 `device_count()`、`virtio_blk()`、`block_device()`、`device-test` 和 `fs-test`
+  仍是兼容约束；D2 收口后应删除 `virtio_blk()` 具体驱动入口和旧 `DeviceManager` 公共路径。
+- D2a 允许增加 descriptor / registry 纯逻辑 host unit test；真实 FDT / MMIO / VirtIO /
+  DMA / `device_init()` 路径仍只通过 QEMU 系统测试验证，不引入 host mock。
 
 ## 演进路径
 
@@ -101,9 +124,9 @@ D1 已新增本地 `BlockDevice` trait 和默认块设备门面，但尚未进�
 | D0 | 保持当前 VirtIO block + FAT 路径稳定 | 保留 `device_count()` 和 `virtio_blk()` |
 | D0.5 | 强化当前 device-test 与 platform bus fail-fast 语义 | 不新增 `BlockDevice`，不改 `fatfs_adapter` |
 | D1 | 新增本地 `BlockDevice` trait 和块设备门面 | 已落地；`virtio_blk()` 兼容入口暂时保留 |
-| D2 | 新增本地 `DriverDescriptor` / `ProbeKind` / `ProbeLevel` / `ProbePriority` | 先支持 Static / FDT，PCIe 后续按需求加入 |
-| D3 | 将 `platform_bus` 从集中式 match 迁移为 descriptor 驱动的 compatible 匹配 | 保持 `device-test` 和 FAT 回归可运行 |
-| D4 | 设备 registry 表达 typed capability、device id、依赖关系和重复注册诊断 | 上层仍只依赖本地门面 |
+| D2 | 新增本地 `DriverDescriptor` / `ProbeKind` / `ProbeRequirement` / `ProbeLevel` / `ProbePriority`，并将 `platform_bus` 迁移为 descriptor 驱动的 Static / FDT probe | 同步引入最小 typed capability registry；D2a-D2c 保留旧入口，D2 收口后清理 `virtio_blk()` 和旧 `DeviceManager` 公共路径 |
+| D3 | 扩展 registry 能力和默认设备策略，例如分区块设备、root block 选择或 `Late` 后置初始化 | 以 D2 registry 为真值面，不恢复旧具体驱动入口 |
+| D4 | 设备 registry 表达更完整的 device id、依赖关系、多能力查询和重复注册诊断 | 上层仍只依赖本地门面 |
 | D5 | 如需复用 tgoskits 驱动，评估 `rdif-*` 适配层或隔离 `rdrive` POC | 不直接改变核心设备边界 |
 | D6 | 预留受信任驱动模块 ABI，允许驱动以 `#[repr(C)]` descriptor 暴露注册入口 | 只设计 ABI，不加载外部代码 |
 | D7 | 从文件系统加载受信任驱动模块，完成 ELF 装载、重定位和 registry 注册 | 需单独 ADR 和 loader 验证 |
