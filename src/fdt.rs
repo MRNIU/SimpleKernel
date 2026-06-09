@@ -298,44 +298,27 @@ impl<'a> KernelFdt<'a> {
     /// 用于从 FDT 动态获取 PLIC/GIC 等中断控制器的基地址。
     pub fn find_compatible_reg(&self, compat: &str) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let nodes = fdt.all_nodes().map_err(|e| {
-            log::warn!("FDT 遍历所有节点失败: {:?}", e);
+        let compatibles = [compat];
+        let nodes = fdt.all_compatible(&compatibles).map_err(|e| {
+            log::warn!("FDT 查找 compatible={} 节点失败: {:?}", compat, e);
             FdtError::ParseFailed
         })?;
 
         for node_result in nodes {
-            let Ok((_depth, node)) = node_result else {
+            let node = node_result.map_err(|e| {
+                log::warn!("FDT compatible={} 节点解析失败: {:?}", compat, e);
+                FdtError::ParseFailed
+            })?;
+            let Ok(Some(reg)) = node.reg() else {
                 continue;
             };
-            // 检查 compatible 属性
-            let Ok(Some(prop)) = node.raw_property("compatible") else {
-                continue;
-            };
-            // compatible 是 null-terminated 字符串列表
-            if !compatible_contains(prop.value, compat) {
-                continue;
-            }
-            // 读取 reg 属性——简化处理：假设 #address-cells=2, #size-cells=2
-            let Ok(Some(reg)) = node.raw_property("reg") else {
-                continue;
-            };
-            if reg.value.len() >= 16 {
-                let addr = u64::from_be_bytes(reg.value[0..8].try_into().map_err(|e| {
-                    log::warn!(
-                        "FDT reg addr 切片转换失败 (len={}): {:?}",
-                        reg.value.len(),
-                        e
-                    );
+            if let Some(region) = reg.iter::<u64, usize>().next() {
+                let region = region.map_err(|e| {
+                    log::warn!("FDT compatible={} reg 解析失败: {:?}", compat, e);
                     FdtError::ParseFailed
-                })?);
-                let size = u64::from_be_bytes(reg.value[8..16].try_into().map_err(|e| {
-                    log::warn!(
-                        "FDT reg size 切片转换失败 (len={}): {:?}",
-                        reg.value.len(),
-                        e
-                    );
-                    FdtError::ParseFailed
-                })?) as usize;
+                })?;
+                let addr = region.address;
+                let size = region.len;
                 return Ok((addr, size));
             }
         }
@@ -353,50 +336,27 @@ impl<'a> KernelFdt<'a> {
         index: usize,
     ) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let nodes = fdt.all_nodes().map_err(|e| {
-            log::warn!("FDT 遍历所有节点失败: {:?}", e);
+        let compatibles = [compat];
+        let nodes = fdt.all_compatible(&compatibles).map_err(|e| {
+            log::warn!("FDT 查找 compatible={} 节点失败: {:?}", compat, e);
             FdtError::ParseFailed
         })?;
 
-        let entry_size = 16; // 每组 (addr[8] + size[8])
-        let offset = index * entry_size;
-        let required_len = offset + entry_size;
-
         for node_result in nodes {
-            let Ok((_depth, node)) = node_result else {
+            let node = node_result.map_err(|e| {
+                log::warn!("FDT compatible={} 节点解析失败: {:?}", compat, e);
+                FdtError::ParseFailed
+            })?;
+            let Ok(Some(reg)) = node.reg() else {
                 continue;
             };
-            let Ok(Some(prop)) = node.raw_property("compatible") else {
-                continue;
-            };
-            if !compatible_contains(prop.value, compat) {
-                continue;
-            }
-            let Ok(Some(reg)) = node.raw_property("reg") else {
-                continue;
-            };
-            if reg.value.len() >= required_len {
-                let addr =
-                    u64::from_be_bytes(reg.value[offset..offset + 8].try_into().map_err(|e| {
-                        log::warn!(
-                            "FDT reg addr 切片转换失败 (offset={}, len={}): {:?}",
-                            offset,
-                            reg.value.len(),
-                            e
-                        );
-                        FdtError::ParseFailed
-                    })?);
-                let size = u64::from_be_bytes(
-                    reg.value[offset + 8..offset + 16].try_into().map_err(|e| {
-                        log::warn!(
-                            "FDT reg size 切片转换失败 (offset={}, len={}): {:?}",
-                            offset + 8,
-                            reg.value.len(),
-                            e
-                        );
-                        FdtError::ParseFailed
-                    })?,
-                ) as usize;
+            if let Some(region) = reg.iter::<u64, usize>().nth(index) {
+                let region = region.map_err(|e| {
+                    log::warn!("FDT compatible={} reg #{} 解析失败: {:?}", compat, index, e);
+                    FdtError::ParseFailed
+                })?;
+                let addr = region.address;
+                let size = region.len;
                 return Ok((addr, size));
             }
         }
@@ -415,64 +375,50 @@ impl<'a> KernelFdt<'a> {
         node_index: usize,
     ) -> Result<(u64, usize), FdtError> {
         let fdt = parse_fdt!(self.fdt_addr)?;
-        let nodes = fdt.all_nodes().map_err(|e| {
-            log::warn!("FDT 遍历所有节点失败: {:?}", e);
+        let compatibles = [compat];
+        let nodes = fdt.all_compatible(&compatibles).map_err(|e| {
+            log::warn!("FDT 查找 compatible={} 节点失败: {:?}", compat, e);
             FdtError::ParseFailed
         })?;
 
         let mut count = 0usize;
 
         for node_result in nodes {
-            let Ok((_depth, node)) = node_result else {
-                continue;
-            };
-            let Ok(Some(prop)) = node.raw_property("compatible") else {
-                continue;
-            };
-            if !compatible_contains(prop.value, compat) {
-                continue;
-            }
+            let node = node_result.map_err(|e| {
+                log::warn!("FDT compatible={} 节点解析失败: {:?}", compat, e);
+                FdtError::ParseFailed
+            })?;
             if count == node_index {
-                let Ok(Some(reg)) = node.raw_property("reg") else {
-                    return Err(FdtError::PropertyNotFound);
-                };
-                if reg.value.len() >= 16 {
-                    let addr = u64::from_be_bytes(reg.value[0..8].try_into().map_err(|e| {
+                let reg = node.reg().map_err(|e| {
+                    log::warn!(
+                        "FDT compatible={} 节点 #{} reg 属性解析失败: {:?}",
+                        compat,
+                        node_index,
+                        e
+                    );
+                    FdtError::ParseFailed
+                })?;
+                let reg = reg.ok_or(FdtError::PropertyNotFound)?;
+                let region = reg
+                    .iter::<u64, usize>()
+                    .next()
+                    .ok_or(FdtError::InvalidPropertySize)?
+                    .map_err(|e| {
                         log::warn!(
-                            "FDT reg addr 切片转换失败 (len={}): {:?}",
-                            reg.value.len(),
+                            "FDT compatible={} 节点 #{} reg 第一项解析失败: {:?}",
+                            compat,
+                            node_index,
                             e
                         );
                         FdtError::ParseFailed
-                    })?);
-                    let size = u64::from_be_bytes(reg.value[8..16].try_into().map_err(|e| {
-                        log::warn!(
-                            "FDT reg size 切片转换失败 (len={}): {:?}",
-                            reg.value.len(),
-                            e
-                        );
-                        FdtError::ParseFailed
-                    })?) as usize;
-                    return Ok((addr, size));
-                }
-                return Err(FdtError::InvalidPropertySize);
+                    })?;
+                let addr = region.address;
+                let size = region.len;
+                return Ok((addr, size));
             }
             count += 1;
         }
 
         Err(FdtError::NodeNotFound)
     }
-}
-
-/// 检查 FDT `compatible` 属性值是否包含指定字符串。
-///
-/// `compatible` 是以 null 分隔的字符串列表（例如 `"sifive,plic-1.0.0\0riscv,plic0\0"`）。
-fn compatible_contains(value: &[u8], needle: &str) -> bool {
-    let needle_bytes = needle.as_bytes();
-    for entry in value.split(|&b| b == 0) {
-        if entry == needle_bytes {
-            return true;
-        }
-    }
-    false
 }
