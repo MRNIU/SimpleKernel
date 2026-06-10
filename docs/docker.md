@@ -30,8 +30,10 @@
 ```shell
 devcontainer up --workspace-folder .
 
-# 在容器内执行命令
+# 宿主机侧通过固定容器执行项目命令
 docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch riscv64
+docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch riscv64 --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
 ```
 
 ### 手动常驻容器

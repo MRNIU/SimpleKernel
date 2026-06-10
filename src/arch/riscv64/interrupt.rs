@@ -16,10 +16,10 @@ const SSTATUS_SIE: usize = 1 << 1;
 const SSTATUS_FS_DIRTY: usize = 0b11 << 13;
 const SIE_SSIE_STIE_SEIE: usize = 0x222;
 
-// Trap 入口/返回汇编（含宏定义），由 LLVM 内置汇编器处理
+// Trap 入口/返回汇编（含宏定义），由 LLVM 内置汇编器处理。
 global_asm!(include_str!("interrupt.S"));
 
-// trap_entry 由上述 global_asm! 定义
+// `trap_entry` 由上述 global_asm! 定义。
 // SAFETY: global_asm! 保证该符号存在
 unsafe extern "C" {
     fn trap_entry();
@@ -108,7 +108,13 @@ const PLIC_SIZE: usize = 0x0040_0000;
 
 /// 获取 PLIC MmioRegion 引用
 fn plic() -> &'static MmioRegion {
-    PLIC.get().expect("PLIC 未初始化")
+    PLIC.get().unwrap_or_else(|| {
+        panic!(
+            "PLIC 未初始化: current_core={}, plic_size={:#x}",
+            per_cpu::current_core_id(),
+            PLIC_SIZE
+        )
+    })
 }
 
 /// UART 中断号（QEMU virt 平台）
@@ -134,7 +140,7 @@ fn plic_s_context_for_core_id(core_id: usize) -> usize {
     core_id
         .checked_mul(2)
         .and_then(|value| value.checked_add(1))
-        .expect("PLIC: hart id 计算 S-mode context 溢出")
+        .unwrap_or_else(|| panic!("PLIC: hart id 计算 S-mode context 溢出: core_id={core_id}"))
 }
 
 /// 返回当前 core 对应的 PLIC S-mode context 编号。
@@ -174,7 +180,8 @@ fn plic_init() {
     // 从 FDT 读取 PLIC 基地址
     let base = {
         let fdt = crate::platform_fdt::get().expect("plic_init: FDT 未初始化");
-        let reg = plic_reg_from_fdt(fdt).expect("plic_init: FDT 中未找到 PLIC 节点");
+        let reg = plic_reg_from_fdt(fdt)
+            .unwrap_or_else(|error| panic!("plic_init: FDT 中未找到 PLIC 节点: error={error}"));
         log::info!("PLIC: 从 FDT 读取基地址 {:#x}", reg.address);
         usize::try_from(reg.address).unwrap_or_else(|_| {
             panic!(
@@ -231,7 +238,7 @@ fn handle_external() {
 
     match irq {
         0 => {
-            // spurious interrupt, 忽略
+            // 虚假中断，忽略。
         }
         n if n == UART_IRQ => {
             log::info!("UART IRQ");
@@ -265,6 +272,9 @@ fn enable_fpu() {
 /// 3. 初始化 PLIC
 /// 4. 使能 sie 中的 STIE（bit5）、SEIE（bit9）、SSIE（bit1）
 /// 5. 设置 sstatus.SIE（bit1）使能全局中断
+///
+/// # Panics
+/// FDT 缺少 PLIC 节点、PLIC 地址非法或当前 core id 无法映射到 S-mode context 时 panic。
 pub fn init() {
     // SAFETY: stvec/sscratch 是 S 模式 CSR，在 S 模式下可安全写入
     unsafe {
@@ -304,6 +314,9 @@ pub fn init() {
 ///
 /// 设置 stvec，使能 sie，设置 sstatus.SIE。
 /// PLIC 由主核统一初始化，从核只需配置本核的 CSR。
+///
+/// # Panics
+/// 当前 core id 无法映射到 S-mode context，或 PLIC 尚未由主核初始化时 panic。
 pub fn init_smp() {
     // SAFETY: CSR 写入在 S 模式下安全
     unsafe {

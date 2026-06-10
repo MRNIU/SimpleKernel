@@ -11,7 +11,7 @@ use crate::alloc::dealloc_to_backend;
 ///
 /// 不可 Clone、不可 Copy。帧内容**未初始化**——调用方按需初始化。
 ///
-/// SAS 全量映射下帧始终可通过 identity mapping 访问（`PA.to_virt()`）。
+/// SAS 全量映射下帧始终可通过恒等映射访问（`PA.to_virt()`）。
 pub struct AllocatedFrames {
     pub(crate) range: FrameSpan,
 }
@@ -30,6 +30,11 @@ impl core::fmt::Debug for AllocatedFrames {
 impl AllocatedFrames {
     /// 分配 `count` 个连续 4K 物理帧。**内容未初始化**，调用方负责初始化。
     ///
+    /// # Panics
+    ///
+    /// `count == 0`，或在中断上下文中调用时 panic。帧分配器后端依赖堆元数据，
+    /// 不能在硬中断路径中分配。
+    ///
     /// # Errors
     ///
     /// 帧耗尽返回 `OutOfMemory`。
@@ -38,6 +43,10 @@ impl AllocatedFrames {
     }
 
     /// 分配一个 4K 物理帧。**内容未初始化**。
+    ///
+    /// # Panics
+    ///
+    /// 在中断上下文中调用时 panic。帧分配器后端依赖堆元数据，不能在硬中断路径中分配。
     ///
     /// # Errors
     ///

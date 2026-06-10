@@ -30,6 +30,36 @@ use config::{MAX_CORE_COUNT, PERCPU_AREA_MAX};
 
 pub use macros::cpu_local;
 
+fn assert_initialized(api: &str) {
+    if !PERCPU_INITIALIZED.load(Ordering::Acquire) {
+        panic!(
+            "per_cpu: {api} 在 percpu_init() 前被调用: raw_core_id={}, MAX_CORE_COUNT={}",
+            arch_primitives::core_id(),
+            MAX_CORE_COUNT
+        );
+    }
+}
+
+fn assert_core_id_in_range(core_id: usize, context: &str) {
+    assert!(
+        core_id < MAX_CORE_COUNT,
+        "per_cpu: {context} core_id {} 超出 MAX_CORE_COUNT {}",
+        core_id,
+        MAX_CORE_COUNT
+    );
+}
+
+fn assert_offset_in_range<T>(offset: usize, context: &str) {
+    let size = core::mem::size_of::<T>();
+    let end = offset.checked_add(size).unwrap_or_else(|| {
+        panic!("per_cpu: {context} 偏移溢出: offset={offset:#x}, size={size:#x}")
+    });
+    assert!(
+        end <= PERCPU_AREA_MAX,
+        "per_cpu: {context} 访问超出 per-CPU 区域: offset={offset:#x}, size={size:#x}, area_size={PERCPU_AREA_MAX:#x}"
+    );
+}
+
 // SAFETY: 链接脚本提供 `.percpu` section 的起止符号；本 crate 只读取其地址
 // 计算模板偏移，不解引用未知外部内存。
 unsafe extern "C" {
@@ -73,9 +103,17 @@ impl<T: Sync> CpuLocal<T> {
     /// 对于非原子类型，调用方应确保中断已关闭。
     #[inline(always)]
     pub fn get(&self) -> &T {
+        assert_initialized("CpuLocal::get");
+        let offset = self.offset();
+        assert_offset_in_range::<T>(offset, "CpuLocal::get");
         let base = arch_primitives::percpu_base();
+        assert!(
+            base != 0,
+            "per_cpu: CpuLocal::get 读取到空 per-CPU base: offset={offset:#x}, size={:#x}",
+            core::mem::size_of::<T>()
+        );
         // SAFETY: base 指向当前 CPU 的 per-CPU 区域，offset 在范围内
-        unsafe { &*((base + self.offset()) as *const T) }
+        unsafe { &*((base + offset) as *const T) }
     }
 
     /// 获取当前 CPU 的变量的可变引用。
@@ -88,9 +126,17 @@ impl<T: Sync> CpuLocal<T> {
         reason = "per-CPU 内部可变性：每个 CPU 拥有独立副本"
     )]
     pub unsafe fn get_mut(&self) -> &mut T {
+        assert_initialized("CpuLocal::get_mut");
+        let offset = self.offset();
+        assert_offset_in_range::<T>(offset, "CpuLocal::get_mut");
         let base = arch_primitives::percpu_base();
+        assert!(
+            base != 0,
+            "per_cpu: CpuLocal::get_mut 读取到空 per-CPU base: offset={offset:#x}, size={:#x}",
+            core::mem::size_of::<T>()
+        );
         // SAFETY: 调用方保证无并发访问
-        unsafe { &mut *((base + self.offset()) as *mut T) }
+        unsafe { &mut *((base + offset) as *mut T) }
     }
 
     /// 访问指定 CPU 的变量副本（例如通过 IPI 设置其他核心的标志）。
@@ -100,12 +146,20 @@ impl<T: Sync> CpuLocal<T> {
     /// - `target_core` 必须 < `MAX_CORE_COUNT`。
     #[inline(always)]
     pub unsafe fn get_on(&self, target_core: usize) -> &T {
-        debug_assert!(target_core < MAX_CORE_COUNT, "无效的核心 ID: {target_core}");
+        assert_initialized("CpuLocal::get_on");
+        assert_core_id_in_range(target_core, "CpuLocal::get_on target_core");
+        let offset = self.offset();
+        assert_offset_in_range::<T>(offset, "CpuLocal::get_on");
         // SAFETY: percpu_init() 已填充 PERCPU_BASES
         let bases = unsafe { &*PERCPU_BASES.get() };
         let base = bases[target_core];
+        assert!(
+            base != 0,
+            "per_cpu: CpuLocal::get_on 目标核心 base 未初始化: target_core={target_core}, offset={offset:#x}, size={:#x}",
+            core::mem::size_of::<T>()
+        );
         // SAFETY: 调用方保证访问安全
-        unsafe { &*((base + self.offset()) as *const T) }
+        unsafe { &*((base + offset) as *const T) }
     }
 }
 
@@ -134,7 +188,7 @@ static PERCPU_BASES: core::cell::SyncUnsafeCell<[usize; MAX_CORE_COUNT]> =
     core::cell::SyncUnsafeCell::new([0; MAX_CORE_COUNT]);
 
 /// per-CPU 系统是否已初始化。
-/// `core_id()` 在初始化前回退到读原始寄存器。
+/// 公开访问入口在该标志发布前必须 fail-fast；初始化代码自身直接读取硬件核心 ID。
 static PERCPU_INITIALIZED: AtomicBool = AtomicBool::new(false);
 
 /// 当前核心 ID（由 `percpu_init()` 写入每个 CPU 的区域）。
@@ -149,21 +203,35 @@ static CORE_ID: usize = 0;
 /// - 只能由主核调用一次
 /// - 调用前基地址寄存器必须持有当前核心 ID（riscv64: TP）或为 0（aarch64: TPIDR_EL1）
 pub unsafe fn percpu_init() {
-    assert!(
-        !PERCPU_INITIALIZED.load(Ordering::Acquire),
-        "percpu_init() 被重复调用"
-    );
+    if PERCPU_INITIALIZED.load(Ordering::Acquire) {
+        panic!(
+            "per_cpu: percpu_init() 被重复调用: current_core_id={}, MAX_CORE_COUNT={}",
+            current_core_id(),
+            MAX_CORE_COUNT
+        );
+    }
 
     // SAFETY: 链接器保证 __percpu_start/__percpu_end 指向 .percpu section 边界
     let template = unsafe { &__percpu_start as *const u8 };
     let template_size =
         unsafe { &__percpu_end as *const u8 as usize - &__percpu_start as *const u8 as usize };
+    assert!(
+        template_size <= PERCPU_AREA_MAX,
+        "per_cpu: .percpu 模板超出 per-CPU 区域: template_start={:p}, template_end={:p}, template_size={template_size:#x}, area_size={PERCPU_AREA_MAX:#x}",
+        template,
+        unsafe { &__percpu_end as *const u8 }
+    );
 
     let my_core_id = arch_primitives::core_id();
+    assert_core_id_in_range(my_core_id, "percpu_init current core");
 
     // SAFETY: 单核调用，中断关闭，独占访问
     let areas = unsafe { &mut *PERCPU_AREAS.get() };
     let bases = unsafe { &mut *PERCPU_BASES.get() };
+    let core_id_offset = unsafe {
+        &_PERCPU_CORE_ID_RAW as *const usize as usize - &__percpu_start as *const u8 as usize
+    };
+    assert_offset_in_range::<usize>(core_id_offset, "CORE_ID");
 
     // 复制模板到每个 CPU 的区域，并设置 CORE_ID
     for i in 0..MAX_CORE_COUNT {
@@ -173,9 +241,6 @@ pub unsafe fn percpu_init() {
         bases[i] = dest as usize;
 
         // 将 CORE_ID 写入每个 CPU 的区域
-        let core_id_offset = unsafe {
-            &_PERCPU_CORE_ID_RAW as *const usize as usize - &__percpu_start as *const u8 as usize
-        };
         // SAFETY: 偏移在 per-CPU 区域范围内
         unsafe { *((dest as usize + core_id_offset) as *mut usize) = i };
     }
@@ -195,22 +260,27 @@ pub unsafe fn percpu_init() {
 /// # Safety
 /// - `percpu_init()` 必须已由主核调用完成
 pub unsafe fn percpu_init_smp() {
+    assert_initialized("percpu_init_smp");
     let id = arch_primitives::core_id();
+    assert_core_id_in_range(id, "percpu_init_smp current core");
     // SAFETY: percpu_init() 已填充 PERCPU_BASES，id 来自硬件寄存器
     let bases = unsafe { &*PERCPU_BASES.get() };
+    assert!(
+        bases[id] != 0,
+        "per_cpu: percpu_init_smp 目标核心 base 未初始化: core_id={id}, MAX_CORE_COUNT={MAX_CORE_COUNT}"
+    );
     // SAFETY: bases[id] 已在 percpu_init() 中正确初始化
     unsafe { arch_primitives::set_percpu_base(bases[id]) };
 }
 
 /// 读取当前核心 ID。
 ///
-/// - 初始化后：从 per-CPU `CORE_ID` 变量读取
-/// - 初始化前：回退到读原始寄存器
+/// # Panics
+/// 当 per-CPU 子系统尚未初始化，或当前 core id 超出 [`MAX_CORE_COUNT`] 时 panic。
 #[inline(always)]
 pub fn current_core_id() -> usize {
-    if PERCPU_INITIALIZED.load(Ordering::Acquire) {
-        *CORE_ID.get()
-    } else {
-        arch_primitives::core_id()
-    }
+    assert_initialized("current_core_id");
+    let core_id = *CORE_ID.get();
+    assert_core_id_in_range(core_id, "current_core_id");
+    core_id
 }

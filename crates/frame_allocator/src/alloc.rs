@@ -1,13 +1,13 @@
 // Copyright The SimpleKernel Contributors
 
-//! 全局帧分配器——buddy system 封装与初始化。
+//! 全局帧分配器——伙伴系统封装与初始化。
 //!
 //! 后端使用 [`buddy_system_allocator::FrameAllocator<32>`]：
-//! - O(log n) alloc / O(log n) dealloc（buddy 合并）
-//! - 分配结果按请求大小的 next_power_of_two 对齐——天然满足大页对齐需求
+//! - O(log n) 分配 / O(log n) 释放（伙伴合并）
+//! - 分配结果按请求大小的 next_power_of_two 对齐，天然满足大页对齐需求
 //! - 元数据存储在堆上的 `BTreeSet`，不触碰空闲帧内存
 
-// TODO: Per-CPU 帧缓存消除 SMP 全局锁瓶颈——待引入用户进程后再评估。
+// TODO: 引入用户进程后评估 per-CPU 帧缓存，用于消除 SMP 全局锁瓶颈。
 
 use buddy_system_allocator::FrameAllocator;
 use memory_types::{Frame, PhysAddr};
@@ -29,7 +29,7 @@ static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocator<32>> = SpinLockIrq::new(
 
 /// 断言当前不在中断上下文中。
 ///
-/// buddy 后端依赖堆分配的元数据结构，不能在 hard IRQ 路径中分配或释放。
+/// 伙伴系统后端依赖堆分配的元数据结构，不能在硬中断路径中分配或释放。
 #[inline(always)]
 fn assert_not_in_irq(operation: &str) {
     assert!(
@@ -38,7 +38,7 @@ fn assert_not_in_irq(operation: &str) {
     );
 }
 
-/// 将空闲物理内存加入 buddy 后端。
+/// 将空闲物理内存加入伙伴系统后端。
 ///
 /// # Safety
 ///
@@ -57,7 +57,7 @@ unsafe fn init_buddy(free_start: PhysAddr, free_size: usize) {
     );
 }
 
-/// 校验空闲物理内存范围，并转换为 buddy 使用的半开帧区间。
+/// 校验空闲物理内存范围，并转换为伙伴系统使用的半开帧区间。
 ///
 /// `free_size` 以字节为单位；返回的 [`FrameSpan`] 表示
 /// `[free_start.page_number(), free_end.page_number())`。
@@ -104,9 +104,9 @@ fn reserved_span(index: usize, start: PhysAddr, count: usize) -> FrameSpan {
     FrameSpan::new(start_frame, start_frame + count)
 }
 
-/// 校验预留范围不污染 buddy 的空闲池描述。
+/// 校验预留范围不污染伙伴系统的空闲池描述。
 ///
-/// 此函数必须在 [`init_buddy`] 之前调用：`reserved` 不会从 buddy 中扣除页面，
+/// 此函数必须在 [`init_buddy`] 之前调用：`reserved` 不会从伙伴系统中扣除页面，
 /// 因此调用方传入的 `free` 必须已经排除所有预留区。
 ///
 /// # Panics
@@ -139,9 +139,9 @@ fn validate_reserved_ranges(free: FrameSpan, reserved: &[(PhysAddr, usize)]) {
     }
 }
 
-/// 初始化帧分配器——空闲内存入 buddy，校验并记录预留范围。
+/// 初始化帧分配器——空闲内存加入伙伴系统，校验并记录预留范围。
 ///
-/// - `free_start` / `free_size`：空闲物理内存范围，加入 buddy allocator
+/// - `free_start` / `free_size`：空闲物理内存范围，加入伙伴系统分配器
 /// - `reserved`：需要预留的物理地址范围 `(start, page_count)` 列表；
 ///   用于校验和日志记录；调用方必须保证 `free` 范围已经排除这些区域。
 ///
@@ -159,7 +159,8 @@ pub unsafe fn init(free_start: PhysAddr, free_size: usize, reserved: &[(PhysAddr
     let free = free_span(free_start, free_size);
     validate_reserved_ranges(free, reserved);
 
-    // SAFETY: 调用方约束直接转发给 init_buddy
+    // SAFETY: `free_span` 和 `validate_reserved_ranges` 已校验地址对齐、非零大小和重叠；
+    // `init` 的安全契约要求启动流程只调用一次，否则会重复加入同一批空闲帧。
     unsafe { init_buddy(free_start, free_size) };
 
     for &(start, count) in reserved {
@@ -167,11 +168,11 @@ pub unsafe fn init(free_start: PhysAddr, free_size: usize, reserved: &[(PhysAddr
     }
 }
 
-/// 从 buddy allocator 取出帧，构造 `AllocatedFrames`。
+/// 从伙伴系统后端取出帧，构造 `AllocatedFrames`。
 ///
 /// 这是与底层分配器交互的唯一分配出口——所有分配路径都经过此函数。
 ///
-/// 注意 buddy 内部会将 `count` 向上取整到 2 的幂次，
+/// 注意伙伴系统内部会将 `count` 向上取整到 2 的幂次，
 /// 实际分配的帧数可能多于请求数，但 `FrameSpan` 仅跟踪请求的帧。
 ///
 /// # Panics
@@ -180,7 +181,7 @@ pub unsafe fn init(free_start: PhysAddr, free_size: usize, reserved: &[(PhysAddr
 ///
 /// # Errors
 ///
-/// buddy allocator 无法满足请求时返回 [`FrameAllocError::OutOfMemory`]。
+/// 伙伴系统后端无法满足请求时返回 [`FrameAllocError::OutOfMemory`]。
 pub(crate) fn alloc_from_backend(count: usize) -> Result<AllocatedFrames, FrameAllocError> {
     assert_not_in_irq("alloc_from_backend");
     assert!(count > 0, "alloc_from_backend: count 不能为 0");
@@ -198,7 +199,7 @@ pub(crate) fn alloc_from_backend(count: usize) -> Result<AllocatedFrames, FrameA
     )))
 }
 
-/// 归还帧到 buddy allocator——仅由 `AllocatedFrames` 的 Drop 调用。
+/// 归还帧到伙伴系统后端——仅由 `AllocatedFrames` 的 Drop 调用。
 ///
 /// # Panics
 ///

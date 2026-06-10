@@ -26,9 +26,12 @@ pub struct IrqSafe<R: RawLock, T> {
     level: u8,
 }
 
-// SAFETY: IrqSafe 通过 RawLock 的原子操作 + 中断禁用保证互斥访问。
-// T: Send 即可安全跨线程——锁保证同一时刻只有一个核心访问 T。
+// SAFETY: `IrqSafe` 不暴露未同步的 `T` 访问；移动锁本身不会移动已借出的 guard。
+// `RawLock: Send + Sync` 负责跨核心原子同步，`T: Send` 保证受保护数据可在线程间转移。
 unsafe impl<R: RawLock, T: Send> Send for IrqSafe<R, T> {}
+
+// SAFETY: 所有共享访问都必须先取得 guard；guard 持有期间中断保持关闭并持有 RawLock，
+// `UnsafeCell<T>` 只在互斥成立时生成引用，因此 `T: Send` 足以允许 `&IrqSafe` 跨核心共享。
 unsafe impl<R: RawLock, T: Send> Sync for IrqSafe<R, T> {}
 
 impl<T> IrqSafe<RawSpinLock, T> {
@@ -65,7 +68,7 @@ impl<R: RawLock, T> IrqSafe<R, T> {
         loop {
             let held = HeldInterrupts::hold();
 
-            // 关中断后检测：保证 per-CPU owner_core 与当前核心一致
+            // 关中断后检测，保证递归检测看到的 owner_core 不被同核心中断路径改写。
             self.raw.check_recursive();
 
             if self.raw.try_acquire() {
@@ -86,6 +89,10 @@ impl<R: RawLock, T> IrqSafe<R, T> {
     }
 
     /// 尝试获取锁，不阻塞。
+    ///
+    /// # Panics
+    ///
+    /// 锁级别顺序违反时 panic。
     pub fn try_lock(&self) -> Option<IrqSafeGuard<'_, R, T>> {
         if self.raw.is_locked() {
             return None;
@@ -141,7 +148,8 @@ impl<R: RawLock, T> IrqSafe<R, T> {
 
     /// 获取锁后压入 per-CPU 锁栈——检查锁序是否合法。
     fn post_acquire(&self) {
-        // SAFETY: 中断已禁用，无同核心并发访问
+        // SAFETY: 调用者只在持有 `HeldInterrupts` 后进入这里，当前核心中断已关闭。
+        // CPU-local `LOCK_STACK` 不会被同核心中断重入并发修改；其他核心访问各自实例。
         let stack = unsafe { crate::LOCK_STACK.get_mut() };
         if !stack.check_order(self.level) {
             panic!(
@@ -155,7 +163,8 @@ impl<R: RawLock, T> IrqSafe<R, T> {
 
     /// 释放锁前从 per-CPU 锁栈弹出。
     fn pop_lock_stack(&self) {
-        // SAFETY: 中断已禁用，无同核心并发访问
+        // SAFETY: guard 析构期间仍持有 `HeldInterrupts`，当前核心中断保持关闭；
+        // 弹栈与释放锁之间不会被同核心中断打断。
         let stack = unsafe { crate::LOCK_STACK.get_mut() };
         stack.pop(self as *const Self as *const ());
     }
@@ -183,31 +192,33 @@ impl<R: RawLock, T> Deref for IrqSafeGuard<'_, R, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
-        // SAFETY: guard 持有锁，独占访问
+        // SAFETY: guard 只能由成功获取锁构造；锁未释放前不会再产生可变访问，
+        // 返回引用的生命周期受 guard 约束。
         unsafe { &*self.irq_safe.data.get() }
     }
 }
 
 impl<R: RawLock, T> DerefMut for IrqSafeGuard<'_, R, T> {
     fn deref_mut(&mut self) -> &mut T {
-        // SAFETY: guard 持有锁，独占访问
+        // SAFETY: `&mut self` 保证同一个 guard 不会同时借出多个可变引用；
+        // RawLock 互斥和中断关闭保证其他上下文此时不能访问 `data`。
         unsafe { &mut *self.irq_safe.data.get() }
     }
 }
 
 impl<R: RawLock, T> Drop for IrqSafeGuard<'_, R, T> {
     fn drop(&mut self) {
-        // 1. 弹出锁栈（中断仍禁用，per-CPU 访问安全）
+        // 释放锁前先弹栈，确保锁序诊断仍能看到当前锁处于持有状态。
         self.irq_safe.pop_lock_stack();
 
-        // 2. 清除 owner
+        // owner 只用于递归检测和诊断，必须在锁位释放前清除。
         self.irq_safe.raw.clear_owner();
 
-        // 3. 释放锁
+        // Release store 让临界区内写入对下一位持锁者可见。
         self.irq_safe.raw.release();
 
-        // 4. 恢复中断（若获取前中断已启用）
-        // SAFETY: held 在此之后不再被访问，且仅 drop 一次
+        // SAFETY: `held` 存放在 `ManuallyDrop` 中，尚未被 drop；恢复中断必须最后发生，
+        // 否则中断 handler 可能在锁栈或 owner 状态尚未收尾时重入。
         unsafe { ManuallyDrop::drop(&mut self.held) };
     }
 }
@@ -230,21 +241,23 @@ impl<R: RawLock, T> Deref for IrqSafeNestedGuard<'_, R, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
-        // SAFETY: guard 持有锁，独占访问
+        // SAFETY: 嵌套 guard 只能由成功获取 RawLock 构造；调用方用 `HeldInterrupts`
+        // 证明中断已关闭，锁释放前不会产生并发可变访问。
         unsafe { &*self.irq_safe.data.get() }
     }
 }
 
 impl<R: RawLock, T> DerefMut for IrqSafeNestedGuard<'_, R, T> {
     fn deref_mut(&mut self) -> &mut T {
-        // SAFETY: guard 持有锁，独占访问
+        // SAFETY: `&mut self` 保证同一个嵌套 guard 不会同时借出多个可变引用；
+        // RawLock 互斥保证其他核心不能访问 `data`。
         unsafe { &mut *self.irq_safe.data.get() }
     }
 }
 
 impl<R: RawLock, T> Drop for IrqSafeNestedGuard<'_, R, T> {
     fn drop(&mut self) {
-        // 清除 owner → 释放锁（不操作锁栈——嵌套获取时未压栈）
+        // 嵌套获取未压入锁栈，只需要按 owner -> 锁位顺序收尾。
         self.irq_safe.raw.clear_owner();
         self.irq_safe.raw.release();
     }

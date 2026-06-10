@@ -110,14 +110,25 @@ fn smoke_test_spinlock() {
     let lock = sync::SpinLock::new(42u32, "boot_smoke", sync::lock_level::UNSPECIFIED);
     {
         let mut guard = lock.lock();
-        assert_eq!(*guard, 42);
+        assert!(
+            *guard == 42,
+            "boot smoke: SpinLock 初始值错误: expected=42, actual={}",
+            *guard
+        );
         *guard = 99;
     }
     {
         let guard = lock.lock();
-        assert_eq!(*guard, 99);
+        assert!(
+            *guard == 99,
+            "boot smoke: SpinLock 写回值错误: expected=99, actual={}",
+            *guard
+        );
     }
-    assert!(!lock.is_locked());
+    assert!(
+        !lock.is_locked(),
+        "boot smoke: SpinLock guard drop 后仍处于 locked 状态"
+    );
     log::debug!("boot smoke: SpinLock OK");
 }
 
@@ -125,13 +136,28 @@ fn smoke_test_spinlock() {
 fn smoke_test_memory() {
     // 堆分配验证
     let v = alloc::vec![1u32, 2, 3];
-    assert_eq!(v.len(), 3);
-    assert_eq!(v[0] + v[1] + v[2], 6);
+    assert!(
+        v.len() == 3,
+        "boot smoke: Vec 长度错误: expected=3, actual={}",
+        v.len()
+    );
+    let sum = v[0] + v[1] + v[2];
+    assert!(
+        sum == 6,
+        "boot smoke: Vec 求和值错误: expected=6, actual={sum}, values=({}, {}, {})",
+        v[0],
+        v[1],
+        v[2]
+    );
     log::debug!("boot smoke: heap alloc OK");
 
     // 帧分配验证
-    let frame =
-        frame_allocator::AllocatedFrames::alloc_one().expect("boot smoke: frame alloc_one failed");
+    let frame = frame_allocator::AllocatedFrames::alloc_one().unwrap_or_else(|error| {
+        panic!(
+            "boot smoke: frame alloc_one 失败: page_size={:#x}, error={error:?}",
+            config::PAGE_SIZE
+        )
+    });
     assert!(
         frame
             .start_paddr()

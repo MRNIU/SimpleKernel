@@ -19,6 +19,9 @@ pub struct Riscv64;
 
 impl ArchOps for Riscv64 {
     #[inline]
+    /// # Safety
+    ///
+    /// 调用方必须满足 [`ArchOps::dtb_addr`] 的启动参数契约。
     unsafe fn dtb_addr(_argc: i32, argv: *const *const u8) -> usize {
         // OpenSBI 传递 a0=hart_id, a1=DTB 地址
         // boot.S 将 a1 作为第二个 C 参数（argv）转发
@@ -59,6 +62,9 @@ impl ArchOps for Riscv64 {
         // RISC-V console 通过 SBI ecall（M-mode），无需 MMIO 映射
     }
 
+    /// # Safety
+    ///
+    /// 调用方必须满足 [`ArchOps::activate_page_table`] 的页表映射契约。
     unsafe fn activate_page_table(pt: &paging::PageTable) {
         // SAFETY: trait 调用方保证页表已经建立了启用 MMU 所需映射。
         unsafe { mmu::activate_page_table(pt) };

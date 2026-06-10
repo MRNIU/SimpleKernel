@@ -108,7 +108,7 @@ impl Write for BlockDeviceAdapter {
 
             let mut sector_buf = [0u8; SECTOR_SIZE];
 
-            // Read-modify-write：非对齐写入先读取当前扇区
+            // 读改写：非对齐写入先读取当前扇区。
             if offset_in_sector != 0 || remaining.len() < SECTOR_SIZE {
                 blk.read_sector(sector, &mut sector_buf).map_err(|e| {
                     log::warn!(
@@ -182,6 +182,9 @@ impl Seek for BlockDeviceAdapter {
 /// ```sh
 /// mtype -i target/.../boot/rootfs.img ::KERNEL_WAS_HERE.TXT
 /// ```
+///
+/// # Panics
+/// FAT 写入、刷新、读回或内容校验失败时 panic，并输出文件名、长度或读回内容。
 pub fn try_mount_fatfs() -> bool {
     let Some(block_device) = crate::device::block::block_device() else {
         log::debug!("FatFS: 无块设备，跳过挂载");
@@ -213,10 +216,19 @@ pub fn try_mount_fatfs() -> bool {
         let root_dir = fat_fs.root_dir();
         let mut file = root_dir
             .create_file("KERNEL_WAS_HERE.TXT")
-            .expect("FatFS: create file failed");
+            .unwrap_or_else(|error| {
+                panic!("FatFS: 创建文件失败: path=KERNEL_WAS_HERE.TXT, error={error:?}")
+            });
         use fatfs::Write;
-        file.write_all(write_content).expect("FatFS: write failed");
-        file.flush().expect("FatFS: flush failed");
+        file.write_all(write_content).unwrap_or_else(|error| {
+            panic!(
+                "FatFS: 写入失败: path=KERNEL_WAS_HERE.TXT, len={}, error={error:?}",
+                write_content.len()
+            )
+        });
+        file.flush().unwrap_or_else(|error| {
+            panic!("FatFS: flush 失败: path=KERNEL_WAS_HERE.TXT, error={error:?}")
+        });
     }
     log::info!(
         "FatFS: wrote {} bytes to KERNEL_WAS_HERE.TXT",
@@ -227,12 +239,19 @@ pub fn try_mount_fatfs() -> bool {
         let root_dir = fat_fs.root_dir();
         let mut file = root_dir
             .open_file("KERNEL_WAS_HERE.TXT")
-            .expect("FatFS: open file for read failed");
+            .unwrap_or_else(|error| {
+                panic!("FatFS: 打开文件读取失败: path=KERNEL_WAS_HERE.TXT, error={error:?}")
+            });
         let mut read_buf = [0u8; 128];
         use fatfs::Read;
-        let n = file.read(&mut read_buf).expect("FatFS: read failed");
+        let n = file.read(&mut read_buf).unwrap_or_else(|error| {
+            panic!(
+                "FatFS: 读取失败: path=KERNEL_WAS_HERE.TXT, buf_len={}, error={error:?}",
+                read_buf.len()
+            )
+        });
 
-        // 逐字节比对
+        // 逐字节比对。
         assert_eq!(
             n,
             write_content.len(),
@@ -246,7 +265,7 @@ pub fn try_mount_fatfs() -> bool {
             "FatFS: read content mismatch"
         );
 
-        // 打印到串口——host 可搜索此行确认
+        // 打印到串口，host 可搜索此行确认。
         let content_str = core::str::from_utf8(&read_buf[..n]).unwrap_or_else(|error| {
             panic!(
                 "FatFS: read back UTF-8 解码失败: len={n}, error={error}, bytes={:x?}",
@@ -264,7 +283,7 @@ pub fn try_mount_fatfs() -> bool {
 
     log::info!("=== FatFS WRITE-READ TEST PASSED ===");
 
-    // 保持挂载状态
+    // 保持挂载状态。
     core::mem::forget(fat_fs);
     true
 }

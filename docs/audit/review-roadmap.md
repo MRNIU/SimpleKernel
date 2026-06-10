@@ -80,7 +80,7 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 ### R0 交付物
 
 - [x] `deny.toml` + CI 集成
-- [ ] `rustfmt.toml` + `clippy.toml`
+- [ ] 格式化/lint 规则收口：无 `rustfmt.toml`，使用 rustfmt 默认 100 字符宽度；Clippy 规则以 `Cargo.toml` 和 CI 为准
 - [x] `docs/audit/unsafe-audit-baseline.md`
 - [x] `docs/audit/dependency-audit.md`
 - [x] `docs/diagrams/crate-dependency-graph.md`（Mermaid）

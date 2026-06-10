@@ -1,18 +1,18 @@
 // Copyright The SimpleKernel Contributors
 
-//! Typed DMA 容器封装。
+//! 类型化 DMA 容器封装。
 
 use core::ptr::NonNull;
 
 use crate::{DmaDirection, DmaError, DmaResult};
 
-/// 可安全放入 typed DMA buffer 的 Plain Old Data 类型。
+/// 可安全放入类型化 DMA 缓冲区的普通字节数据类型。
 ///
 /// `FromBytes` 保证任意设备写入位模式可构造为 `T`，`IntoBytes` 保证 CPU 写入
 /// 可以按字节交给设备读取，`Copy` 避免从 DMA 内存读取时产生所有权搬移语义。
 ///
-/// 面向设备的 descriptor 类型仍应使用 `#[repr(C)]` 和固定宽度整数字段；
-/// `DmaValue` 不编码设备 ABI 或 endian 语义。
+/// 面向设备的描述符类型仍应使用 `#[repr(C)]` 和固定宽度整数字段；
+/// `DmaValue` 不编码设备 ABI 或字节序语义。
 pub trait DmaValue: zerocopy::FromBytes + zerocopy::IntoBytes + Copy {}
 
 impl<T> DmaValue for T where T: zerocopy::FromBytes + zerocopy::IntoBytes + Copy {}
@@ -24,7 +24,7 @@ pub struct DmaDevice {
 }
 
 impl DmaDevice {
-    /// 创建 QEMU identity-mapped DMA 设备入口。
+    /// 创建 QEMU 恒等映射 DMA 设备入口。
     pub fn qemu_identity(dma_mask: u64) -> Self {
         Self {
             inner: dma_api::DeviceDma::new(dma_mask, &crate::qemu::QEMU_IDENTITY_DMA_OP),
@@ -36,7 +36,7 @@ impl DmaDevice {
         self.inner.dma_mask()
     }
 
-    /// 分配单个 typed coherent DMA buffer。
+    /// 分配单个类型化 coherent DMA 缓冲区。
     ///
     /// # Errors
     ///
@@ -52,7 +52,7 @@ impl DmaDevice {
             .map_err(DmaError::from_api)
     }
 
-    /// 分配固定长度 typed coherent DMA array。
+    /// 分配固定长度类型化 coherent DMA 数组。
     ///
     /// # Errors
     ///
@@ -69,7 +69,7 @@ impl DmaDevice {
             .map_err(DmaError::from_api)
     }
 
-    /// 映射已有 slice 为 streaming DMA 区域。
+    /// 映射已有切片为 streaming DMA 区域。
     ///
     /// # Safety
     ///
@@ -78,7 +78,7 @@ impl DmaDevice {
     ///
     /// # Errors
     ///
-    /// DMA API 拒绝 buffer、对齐或后端映射失败时返回错误。
+    /// DMA API 拒绝缓冲区、对齐或后端映射失败时返回错误。
     pub unsafe fn map_slice<T: DmaValue>(
         &self,
         buffer: &[T],
@@ -92,7 +92,7 @@ impl DmaDevice {
     }
 }
 
-/// 单个 typed coherent DMA buffer。
+/// 单个类型化 coherent DMA 缓冲区。
 pub struct DmaBuffer<T: DmaValue>(dma_api::DBox<T>);
 
 impl<T: DmaValue> DmaBuffer<T> {
@@ -105,8 +105,8 @@ impl<T: DmaValue> DmaBuffer<T> {
     ///
     /// # Safety
     ///
-    /// 返回的指针仅在 `self` 存活期间有效；解引用会绕过 wrapper 的 cache sync
-    /// 语义，调用方必须确保不会违反设备/CPU 别名或同步规则。
+    /// 返回的指针仅在 `self` 存活期间有效；解引用会绕过封装层的缓存同步语义，
+    /// 调用方必须确保不会违反设备/CPU 别名或同步规则。
     pub unsafe fn as_ptr(&self) -> NonNull<T> {
         self.0.as_ptr()
     }
@@ -127,7 +127,7 @@ impl<T: DmaValue> DmaBuffer<T> {
     }
 }
 
-/// typed coherent DMA array。
+/// 类型化 coherent DMA 数组。
 pub struct DmaArray<T: DmaValue>(dma_api::DArray<T>);
 
 impl<T: DmaValue> DmaArray<T> {
@@ -152,6 +152,10 @@ impl<T: DmaValue> DmaArray<T> {
     }
 
     /// 写入一个元素。
+    ///
+    /// # Panics
+    ///
+    /// `index >= self.len()` 时 panic。
     pub fn set(&mut self, index: usize, value: T) {
         let len = self.len();
         if index >= len {
@@ -160,7 +164,11 @@ impl<T: DmaValue> DmaArray<T> {
         self.0.set(index, value);
     }
 
-    /// 从 slice 复制数据到 DMA 数组。
+    /// 从切片复制数据到 DMA 数组。
+    ///
+    /// # Panics
+    ///
+    /// `source.len() != self.len()` 时底层 DMA 数组会 panic。
     pub fn copy_from_slice(&mut self, source: &[T]) {
         self.0.copy_from_slice(source);
     }
@@ -176,7 +184,7 @@ impl<T: DmaValue> DmaArray<T> {
     }
 }
 
-/// streaming DMA mapping。
+/// streaming DMA 映射。
 pub struct StreamingMapping<T: DmaValue>(dma_api::SArrayPtr<T>);
 
 impl<T: DmaValue> StreamingMapping<T> {
@@ -201,6 +209,10 @@ impl<T: DmaValue> StreamingMapping<T> {
     }
 
     /// 写入一个元素，并按方向执行写入后同步。
+    ///
+    /// # Panics
+    ///
+    /// `index >= self.len()` 时 panic。
     pub fn set(&mut self, index: usize, value: T) {
         let len = self.len();
         if index >= len {
@@ -209,7 +221,11 @@ impl<T: DmaValue> StreamingMapping<T> {
         self.0.set(index, value);
     }
 
-    /// 手动确认 CPU 写入对设备可见。
+    /// 从切片复制数据，并手动确认 CPU 写入对设备可见。
+    ///
+    /// # Panics
+    ///
+    /// `source.len() != self.len()` 时底层 DMA 映射会 panic。
     pub fn copy_from_slice(&mut self, source: &[T]) {
         self.0.copy_from_slice(source);
     }

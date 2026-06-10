@@ -65,9 +65,11 @@ unsafe impl Hal for SimpleKernelHal {
     /// # Safety
     ///
     /// `paddr` 和 `size` 必须描述有效的 MMIO 区域。
-    unsafe fn mmio_phys_to_virt(paddr: u64, _size: usize) -> NonNull<u8> {
+    unsafe fn mmio_phys_to_virt(paddr: u64, size: usize) -> NonNull<u8> {
         let vaddr = PhysAddr::new(paddr as usize).to_virt();
-        NonNull::new(vaddr.as_mut_ptr::<u8>()).expect("MMIO vaddr 为空")
+        NonNull::new(vaddr.as_mut_ptr::<u8>()).unwrap_or_else(|| {
+            panic!("MMIO vaddr 为空: paddr={paddr:#x}, size={size:#x}, vaddr={vaddr}")
+        })
     }
 
     /// 共享缓冲区——委托 `crates/dma` 建立流式 DMA 映射。

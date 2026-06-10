@@ -75,6 +75,9 @@ fn reload_next_deadline(interval: u64) {
 /// 初始化主核虚拟定时器
 ///
 /// 设置 CNTV_CVAL_EL0 为 absolute deadline，然后使能定时器（CNTV_CTL_EL0 = 1）。
+///
+/// # Panics
+/// 硬件频率非法或 deadline 计算溢出时 panic。
 pub fn init() {
     let hw_freq = read_cntfrq();
     let interval = get_interval();
@@ -88,6 +91,9 @@ pub fn init() {
 }
 
 /// 初始化从核虚拟定时器
+///
+/// # Panics
+/// 硬件频率非法或 deadline 计算溢出时 panic。
 pub fn init_smp(cpu_id: usize) {
     init_next_deadline(get_interval(), "smp init");
     log::info!("TimerInitSMP core {}", cpu_id);
@@ -96,6 +102,9 @@ pub fn init_smp(cpu_id: usize) {
 /// 处理定时器中断（虚拟定时器 PPI IRQ 27）
 ///
 /// 重置定时器硬件后，调用架构无关的公共 tick 处理。
+///
+/// # Panics
+/// 本核 deadline 未初始化或新 deadline 计算失败时 panic。
 pub fn handle_timer(_ctx: &mut super::context::TrapContext) {
     let interval = get_interval();
     reload_next_deadline(interval);

@@ -74,6 +74,9 @@ fn reload_next_deadline(interval: u64) {
 /// 初始化主核定时器
 ///
 /// 硬件频率已由 `set_hw_freq()` 设置，计算 tick 间隔，设置首个超时。
+///
+/// # Panics
+/// 硬件频率未初始化、tick 间隔非法或 SBI timer 设置失败时 panic。
 pub fn init() {
     let freq = HW_FREQ.load(Ordering::Relaxed);
     assert!(
@@ -95,6 +98,9 @@ pub fn init() {
 ///
 /// # 参数
 /// - `hart_id`：当前从核的 hart ID
+///
+/// # Panics
+/// 硬件频率未初始化、tick 间隔非法或 SBI timer 设置失败时 panic。
 pub fn init_smp(hart_id: usize) {
     init_next_deadline(get_interval(), "smp init");
     log::info!("TimerInitSMP core {}", hart_id);
@@ -103,6 +109,9 @@ pub fn init_smp(hart_id: usize) {
 /// 处理定时器中断
 ///
 /// 重置定时器硬件后，调用架构无关的公共 tick 处理。
+///
+/// # Panics
+/// 本核 deadline 未初始化或新 deadline 计算失败时 panic。
 pub fn handle_timer() {
     let interval = get_interval();
     reload_next_deadline(interval);

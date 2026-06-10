@@ -6,11 +6,11 @@
 
 use super::context::TrapContext;
 
-// _boot 入口点（boot.S 中定义）
-// 从核必须经过 _boot 而非 _start，因为 _boot 负责：
-//   1. 按 hart_id 设置 per-core 栈（sp）
-//   2. 将 hart_id 写入 tp 寄存器（current_core_id() 依赖）
-//   3. 初始化 gp 寄存器
+// `_boot` 入口点由 `boot.S` 定义。
+// 从核必须经过 `_boot` 而非 `_start`，因为 `_boot` 负责：
+// 1. 按 hart_id 设置 per-core 栈（sp）
+// 2. 将 hart_id 写入 tp 寄存器（current_core_id() 依赖）
+// 3. 初始化 gp 寄存器
 // SAFETY: 链接器保证该符号存在于内核镜像中
 unsafe extern "C" {
     fn _boot();
@@ -27,7 +27,7 @@ pub fn send_ipi(hart_id: usize) {
         core::arch::asm!("fence rw, rw", options(nostack));
     }
 
-    // HartMask::from_mask_base(mask=1, base=hart_id) 表示精确指定单个 hart
+    // `HartMask::from_mask_base(mask=1, base=hart_id)` 表示精确指定单个 hart。
     let mask = sbi_rt::HartMask::from_mask_base(1, hart_id);
     let ret = sbi_rt::send_ipi(mask);
     assert!(
@@ -64,6 +64,9 @@ pub fn handle_ipi(_ctx: &mut TrapContext) {
 ///
 /// 读取 `crate::CORE_COUNT`，对每个从核调用 SBI hart_start。
 /// 跳过当前核心（主核），因为任何 hart 都可能成为主核（取决于谁先到达 `_start`）。
+///
+/// # Panics
+/// `CORE_COUNT` 未初始化，或 SBI `hart_start` 返回错误时 panic。
 pub fn wake_secondary_cores() {
     let core_count = crate::CORE_COUNT.get().copied().unwrap_or_else(|| {
         panic!(
@@ -88,15 +91,15 @@ pub fn wake_secondary_cores() {
         if hart_id == my_hart {
             continue;
         }
-        // SBI hart_start 传递：a0 = hart_id, a1 = opaque（此处为 0）
-        // _boot 利用 a0 设置 tp 和 per-core 栈，然后跳转到 _start
+        // SBI hart_start 传递：a0 = hart_id, a1 = opaque（此处为 0）。
+        // `_boot` 利用 a0 设置 tp 和 per-core 栈，然后跳转到 `_start`。
         let ret = sbi_rt::hart_start(hart_id, boot_addr, 0);
         if ret.is_ok() {
             log::info!("SMP: hart {} 启动成功 (entry=0x{:x})", hart_id, boot_addr);
         } else {
             panic!(
-                "SMP: hart {} 启动失败 (error={}, value={})",
-                hart_id, ret.error as isize, ret.value
+                "SMP: hart {} 启动失败: entry={:#x}, core_count={}, current_hart={}, error={}, value={}",
+                hart_id, boot_addr, core_count, my_hart, ret.error as isize, ret.value
             );
         }
     }

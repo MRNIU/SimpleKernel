@@ -289,7 +289,8 @@ pub fn launch_qemu_captured(
     cmd.args([
         "-nographic",
         "-monitor",
-        "none", // 测试模式不需要 monitor，避免端口冲突
+        // 测试模式不需要 monitor，避免端口冲突。
+        "none",
         "-m",
         "1024M",
         "-smp",
@@ -512,11 +513,12 @@ pub fn launch_qemu(
                 }
                 _ => base_qemu_cmd(sh, arch, &rootfs_drive),
             }
-            .args([
-                "-serial",
-                "stdio", // 主串口：ATF + U-Boot + 内核 → 直接输出到终端
-                "-serial", "null", // OP-TEE 串口：通常无输出，丢弃即可
-            ])
+            .arg("-serial")
+            // 主串口：ATF + U-Boot + 内核直接输出到终端。
+            .arg("stdio")
+            .arg("-serial")
+            // OP-TEE 串口通常无输出，丢弃即可。
+            .arg("null")
             .args(["-d", "guest_errors,cpu_reset"])
             .arg("-D")
             .arg(&qemu_log)

@@ -11,8 +11,11 @@ use crate::{Result, build, firmware, qemu};
 
 /// QEMU 启动所需的共享环境（与具体测试二进制无关）
 pub struct QemuEnv {
+    /// 启动产物目录，包含 FIT、启动脚本、rootfs 和 QEMU 日志。
     pub boot_dir: PathBuf,
+    /// QEMU virtio-blk 使用的 FAT32 rootfs 镜像路径。
     pub rootfs_path: PathBuf,
+    /// 从 QEMU 导出的并注入固件保留区后的 DTB 路径。
     pub dtb_path: PathBuf,
 }
 
@@ -43,7 +46,9 @@ pub fn prepare_qemu_env(
 
 /// 表示一个测试二进制——所属包名 + 二进制名。
 pub struct TestBinary {
+    /// `tests/*/Cargo.toml` 中的 package name。
     pub package: String,
+    /// `[[bin]]` 条目中的 binary name。
     pub bin_name: String,
     /// 用于 `--list` 和 `--name` 的显示名。
     /// 单二进制包：包名本身（如 "device-test"）

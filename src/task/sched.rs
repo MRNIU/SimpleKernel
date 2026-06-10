@@ -67,9 +67,20 @@ pub(super) static PER_CPU_SCHED: SyncUnsafeCell<[Option<PerCpuSched>; MAX_CORE_C
 ///
 /// 调用者必须持有 PER_CPU_SCHED_LOCK[core_id]。
 pub(super) unsafe fn per_cpu_sched(core_id: usize) -> &'static mut PerCpuSched {
+    assert!(
+        core_id < MAX_CORE_COUNT,
+        "per_cpu_sched: core_id={} 超出 MAX_CORE_COUNT={}",
+        core_id,
+        MAX_CORE_COUNT
+    );
     // SAFETY: 调用者持有对应核心的调度锁
     let array = unsafe { &mut *PER_CPU_SCHED.get() };
-    array[core_id].as_mut().expect("per_cpu_sched: 未初始化")
+    array[core_id].as_mut().unwrap_or_else(|| {
+        panic!(
+            "per_cpu_sched: 调度状态未初始化: core_id={}, max_core_count={}",
+            core_id, MAX_CORE_COUNT
+        )
+    })
 }
 /// 从其他核心窃取一个任务——当本核就绪队列为空时调用。
 ///
@@ -104,7 +115,7 @@ pub(super) fn try_steal(my_core: usize, held: &sync::HeldInterrupts) -> Option<T
         return None;
     }
 
-    // proof token 证明中断已禁用，RAII guard 自动释放锁
+    // proof token 证明中断已禁用，RAII guard 自动释放锁。
     let _guard = PER_CPU_SCHED_LOCK[victim].try_lock_nested(held)?;
 
     // SAFETY: 持有 victim 的调度锁
@@ -123,16 +134,25 @@ pub(super) fn try_steal(my_core: usize, held: &sync::HeldInterrupts) -> Option<T
     stolen
 }
 /// 获取当前核上正在运行的任务。
+///
+/// # Panics
+/// 当前核心 ID 超出调度器数组范围、调度状态尚未初始化，或当前核心没有运行任务时 panic。
 pub fn current_task() -> TaskRef {
     let core_id = per_cpu::current_core_id();
+    assert!(
+        core_id < MAX_CORE_COUNT,
+        "current_task: core_id={} 超出 MAX_CORE_COUNT={}",
+        core_id,
+        MAX_CORE_COUNT
+    );
     // SAFETY: 本核 current 仅在持有本核调度锁时修改，其他核不会修改
     let sched = unsafe { &*PER_CPU_SCHED.get() }[core_id]
         .as_ref()
-        .expect("current_task: 未初始化");
+        .unwrap_or_else(|| panic!("current_task: 调度状态未初始化: core_id={core_id}"));
     sched
         .current
         .as_ref()
-        .expect("current_task: 当前核无运行任务")
+        .unwrap_or_else(|| panic!("current_task: 当前核无运行任务: core_id={core_id}"))
         .clone()
 }
 
@@ -157,6 +177,10 @@ pub unsafe fn bootstrap_enable_irq() {
 /// 2. RAII guard 获取调度锁 → 选任务 → 提取裸指针 → guard drop 释放锁
 /// 3. `switch_to` 在无锁状态下执行（中断仍禁用）
 /// 4. 返回后 `held` drop 恢复中断
+///
+/// # Panics
+/// 在中断上下文调用、当前核心 ID 超出范围、调度状态未初始化或缺少 idle/current
+/// 任务时 panic。
 pub fn schedule() {
     assert!(
         !interrupt_state::is_in_interrupt(),
@@ -164,6 +188,12 @@ pub fn schedule() {
     );
 
     let core_id = per_cpu::current_core_id();
+    assert!(
+        core_id < MAX_CORE_COUNT,
+        "schedule: core_id={} 超出 MAX_CORE_COUNT={}",
+        core_id,
+        MAX_CORE_COUNT
+    );
 
     // 1. 禁用中断——跨越整个 switch_to，guard drop 后仍保持禁用
     let held = sync::HeldInterrupts::hold();
@@ -188,7 +218,10 @@ pub fn schedule() {
         }
 
         // 2c. 取出当前任务
-        let prev = sched.current.take().expect("schedule: no current task");
+        let prev = sched
+            .current
+            .take()
+            .unwrap_or_else(|| panic!("schedule: 当前核无 current task: core_id={core_id}"));
 
         // 2d. 若 prev 仍为 Running（主动让出），标记为 Ready 并延迟入队
         if prev.state() == TaskState::Running {
@@ -208,7 +241,13 @@ pub fn schedule() {
             .pick_next()
             .or_else(|| try_steal(core_id, &held))
             .or_else(|| sched.deferred_prev.take().map(|dp| dp.task))
-            .unwrap_or_else(|| sched.idle.as_ref().expect("schedule: no idle task").clone());
+            .unwrap_or_else(|| {
+                sched
+                    .idle
+                    .as_ref()
+                    .unwrap_or_else(|| panic!("schedule: 当前核无 idle task: core_id={core_id}"))
+                    .clone()
+            });
         next.set_state(TaskState::Running);
         sched.current = Some(next.clone());
 
@@ -217,8 +256,10 @@ pub fn schedule() {
             return;
         }
 
-        // 2g. 提取裸指针（锁仍持有，安全）
+        // 2g. 提取裸指针（锁仍持有，安全）。
+        // SAFETY: 持有本核调度锁，`prev` 和 `next` 的上下文不会被其他核心并发修改。
         let prev_ctx = unsafe { prev.ctx_mut_ptr() };
+        // SAFETY: 持有本核调度锁，`next` 已被设置为当前核运行任务。
         let next_ctx = unsafe { next.ctx_mut_ptr() };
         drop(prev);
         drop(next);
@@ -226,7 +267,8 @@ pub fn schedule() {
         // _guard drop: 释放锁，内层 HeldInterrupts（was_enabled=false）no-op
     };
 
-    // 3. 无锁上下文切换（中断仍禁用）
+    // 3. 无锁上下文切换（中断仍禁用）。
+    // SAFETY: 上下文指针来自持有调度锁时的 TCB，切换期间中断保持禁用。
     unsafe { switch_to(switch_ctx.0, switch_ctx.1) };
 
     // 4. 恢复中断（对于从 switch_to 返回的已有任务）
@@ -247,6 +289,9 @@ pub fn preempt_after_irq() {
 }
 
 /// 主动让出 CPU。
+///
+/// # Panics
+/// 透传 [`schedule`] 的 fail-fast 条件。
 pub fn yield_now() {
     schedule();
 }

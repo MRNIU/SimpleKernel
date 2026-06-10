@@ -61,8 +61,14 @@ impl KernelStack {
             config::KERNEL_STACK_SIZE,
             Self::ALIGN
         );
-        Layout::from_size_align(config::KERNEL_STACK_SIZE, Self::ALIGN)
-            .expect("KernelStack::layout: 无效的内核栈 Layout")
+        Layout::from_size_align(config::KERNEL_STACK_SIZE, Self::ALIGN).unwrap_or_else(|error| {
+            panic!(
+                "KernelStack::layout: 无效的内核栈 Layout: size={}, align={}, error={:?}",
+                config::KERNEL_STACK_SIZE,
+                Self::ALIGN,
+                error
+            )
+        })
     }
 
     #[cfg(test)]
@@ -123,8 +129,8 @@ pub struct TaskControlBlock {
     fd_table: sync::SpinLock<FileDescriptorTable>,
 }
 
-// SAFETY: state 与 exit_code 是原子的；context 使用 SyncUnsafeCell（已实现 Sync）；
-// kstack 仅在调度锁（IRQ off）下访问，同一时刻只有一个核持有
+// SAFETY: `TaskControlBlock` 的跨核共享字段使用原子类型或内核锁保护；
+// `context` 只通过调度锁保护的 unsafe 入口访问；`kstack` 创建后不被并发修改。
 unsafe impl Send for TaskControlBlock {}
 unsafe impl Sync for TaskControlBlock {}
 
@@ -133,7 +139,6 @@ impl TaskControlBlock {
     ///
     /// idle 任务已处于 Running 状态，无需内核栈（复用引导栈）。
     pub fn new_idle(pid: Pid, core_id: usize) -> Self {
-        // SAFETY: 静态字符串字面量生命周期为 'static
         let name: &'static str = match core_id {
             0 => "idle/0",
             1 => "idle/1",

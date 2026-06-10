@@ -14,5 +14,5 @@ pub fn halt(msg: &str) -> ! {
 
 #[cfg(test)]
 pub fn halt(msg: &str) -> ! {
-    panic!("{}", msg);
+    panic!("测试模式调用 halt: msg={msg}");
 }

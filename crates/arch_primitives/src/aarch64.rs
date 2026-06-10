@@ -32,9 +32,14 @@ impl ArchImpl for Aarch64 {
         val
     }
 
+    /// # Safety
+    ///
+    /// 调用方必须满足 [`ArchImpl::set_percpu_base`] 的契约，保证 `val` 指向
+    /// 当前 PE 的有效 per-CPU 区域。
     #[inline(always)]
     unsafe fn set_percpu_base(val: usize) {
-        // SAFETY: 由调用方保证设置正确的 per-CPU 基地址
+        // SAFETY: 上层安全契约保证 `val` 是当前 PE 的 per-CPU 基地址。
+        // 若写入错误地址，后续通过 TPIDR_EL1 定位的 per-CPU 数据会落到错误内存。
         unsafe { core::arch::asm!("msr tpidr_el1, {}", in(reg) val) };
     }
 
@@ -54,6 +59,10 @@ impl ArchImpl for Aarch64 {
         DAIFSet.write(DAIFSet::I::Mask);
     }
 
+    /// # Safety
+    ///
+    /// 调用方必须满足 [`ArchImpl::enable_irq`] 的契约，确保异常向量、栈和临界区状态
+    /// 已允许处理 IRQ。
     #[inline(always)]
     unsafe fn enable_irq() {
         DAIFClr.write(DAIFClr::I::Unmask);

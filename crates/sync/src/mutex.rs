@@ -22,9 +22,12 @@ pub struct Mutex<R: RawLock, T> {
     level: u8,
 }
 
-// SAFETY: Mutex 通过 RawLock 的原子操作保证互斥访问。
-// RawLock: Send + Sync（supertrait），T: Send 即可安全跨线程。
+// SAFETY: `Mutex` 不暴露未同步的 `T` 访问；移动锁本身不会移动已借出的 guard。
+// `RawLock: Send + Sync` 负责跨核心原子同步，`T: Send` 保证受保护数据可在线程间转移。
 unsafe impl<R: RawLock, T: Send> Send for Mutex<R, T> {}
+
+// SAFETY: 所有共享访问都必须先取得 guard；guard 生命周期绑定到 `&self`，
+// `UnsafeCell<T>` 只在持锁期间生成引用，因此 `T: Send` 足以允许 `&Mutex` 跨核心共享。
 unsafe impl<R: RawLock, T: Send> Sync for Mutex<R, T> {}
 
 /// `SpinLock<T>` 特化构造器。
@@ -130,7 +133,8 @@ impl<R: RawLock, T> Mutex<R, T> {
     /// 获取锁后压入 per-CPU 锁栈——检查锁序是否合法。
     fn push_lock_stack(&self) {
         let _held = interrupt_state::HeldInterrupts::hold();
-        // SAFETY: 中断已禁用，无同核心并发访问
+        // SAFETY: `HeldInterrupts` 已关闭当前核心中断，CPU-local `LOCK_STACK`
+        // 不会被同核心中断重入并发修改；其他核心访问的是各自的 CPU-local 实例。
         let stack = unsafe { crate::LOCK_STACK.get_mut() };
         if !stack.check_order(self.level) {
             panic!(
@@ -145,7 +149,8 @@ impl<R: RawLock, T> Mutex<R, T> {
     /// 释放锁前从 per-CPU 锁栈弹出。
     fn pop_lock_stack(&self) {
         let _held = interrupt_state::HeldInterrupts::hold();
-        // SAFETY: 中断已禁用，无同核心并发访问
+        // SAFETY: `HeldInterrupts` 已关闭当前核心中断，当前 guard 仍持有锁，
+        // 因此弹栈与后续释放锁之间不会被同核心中断打断。
         let stack = unsafe { crate::LOCK_STACK.get_mut() };
         stack.pop(self as *const Self as *const ());
     }
@@ -183,31 +188,31 @@ impl<R: RawLock, T> Deref for MutexGuard<'_, R, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
-        // SAFETY: guard 持有锁，独占访问
+        // SAFETY: guard 只能由成功获取锁构造；锁未释放前不会再产生可变访问，
+        // 返回引用的生命周期受 guard 约束。
         unsafe { &*self.mutex.data.get() }
     }
 }
 
 impl<R: RawLock, T> DerefMut for MutexGuard<'_, R, T> {
     fn deref_mut(&mut self) -> &mut T {
-        // SAFETY: guard 持有锁，独占访问
+        // SAFETY: `&mut self` 保证同一个 guard 不会同时借出多个可变引用；
+        // RawLock 互斥保证其他核心此时不能访问 `data`。
         unsafe { &mut *self.mutex.data.get() }
     }
 }
 
 impl<R: RawLock, T> Drop for MutexGuard<'_, R, T> {
     fn drop(&mut self) {
-        // 1. 弹出锁栈（在释放锁之前，确保锁栈状态一致）
+        // 释放锁前先弹栈，确保锁序诊断仍能看到当前锁处于持有状态。
         self.mutex.pop_lock_stack();
-        // 2. 清除 owner
+
+        // owner 只用于递归检测和诊断，必须在锁位释放前清除。
         self.mutex.raw.clear_owner();
-        // 3. 释放锁
+
+        // Release store 让临界区内写入对下一位持锁者可见。
         self.mutex.raw.release();
-        // 4. preempt guard 自动 drop——恢复抢占
-        //    （Rust 按字段声明顺序逆序 drop，preempt 在 mutex 之后声明，
-        //     但显式 Drop impl 中字段不会自动 drop，只有非 Drop 字段才会。
-        //     这里 PreemptGuard 实现了 Drop，Rust 在我们的 drop() 返回后
-        //     会自动 drop 所有字段，包括 self.preempt。）
+        // `PreemptGuard` 在本函数返回后自动 drop，最后恢复抢占，避免持锁期间迁核。
     }
 }
 

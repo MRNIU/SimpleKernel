@@ -57,8 +57,8 @@ impl PlatformFdt {
                 log::warn!("FDT cpu reg id 收集失败: {:?}", e);
                 FdtError::ParseFailed
             })?;
-            let hardware_id = usize::try_from(hardware_id).map_err(|_| {
-                log::warn!("FDT cpu hardware id 超出 usize: {}", hardware_id);
+            let hardware_id = usize::try_from(hardware_id).map_err(|error| {
+                log::warn!("FDT cpu hardware id 超出 usize: {hardware_id}, error={error}");
                 FdtError::UnsupportedLayout
             })?;
             if ids.contains(&hardware_id) {

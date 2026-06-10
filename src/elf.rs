@@ -82,9 +82,10 @@ impl KernelElf {
             return Err(ElfError::InvalidMagic);
         }
 
-        // 校验类别
+        // 校验类别。
         match header[4] {
-            2 => {} // ELFCLASS64（64 位）
+            // ELFCLASS64（64 位）。
+            2 => {}
             1 => return Err(ElfError::Unsupported32Bit),
             _ => return Err(ElfError::InvalidClass),
         }
@@ -95,17 +96,17 @@ impl KernelElf {
         let e_shoff = u64::from_le_bytes(
             header[40..48]
                 .try_into()
-                .expect("e_shoff: 固定长度切片转换"),
+                .expect("ELF header e_shoff 切片转换失败: range=40..48, header_len=64"),
         ) as usize;
         let e_shentsize = u16::from_le_bytes(
             header[58..60]
                 .try_into()
-                .expect("e_shentsize: 固定长度切片转换"),
+                .expect("ELF header e_shentsize 切片转换失败: range=58..60, header_len=64"),
         ) as usize;
         let e_shnum = u16::from_le_bytes(
             header[60..62]
                 .try_into()
-                .expect("e_shnum: 固定长度切片转换"),
+                .expect("ELF header e_shnum 切片转换失败: range=60..62, header_len=64"),
         ) as usize;
 
         let mut elf_size = e_shoff + e_shnum * e_shentsize;
@@ -118,16 +119,16 @@ impl KernelElf {
                 unsafe { core::slice::from_raw_parts(base.add(e_shoff), e_shnum * e_shentsize) };
             for i in 0..e_shnum {
                 let off = i * e_shentsize;
-                // Elf64_Shdr：sh_offset 位于第 24 字节（8 字节），sh_size 位于第 32 字节（8 字节）
+                // Elf64_Shdr 中 sh_offset 位于第 24 字节，sh_size 位于第 32 字节。
                 let sh_offset = u64::from_le_bytes(
                     sh_bytes[off + 24..off + 32]
                         .try_into()
-                        .expect("sh_offset: 固定长度切片转换"),
+                        .expect("ELF section header sh_offset 切片转换失败"),
                 ) as usize;
                 let sh_size = u64::from_le_bytes(
                     sh_bytes[off + 32..off + 40]
                         .try_into()
-                        .expect("sh_size: 固定长度切片转换"),
+                        .expect("ELF section header sh_size 切片转换失败"),
                 ) as usize;
                 let section_end = sh_offset + sh_size;
                 if section_end > elf_size {
@@ -228,15 +229,19 @@ mod tests {
     fn make_header_buf() -> [u8; 64] {
         let mut buf = [0u8; 64];
         buf[0..4].copy_from_slice(&[0x7F, b'E', b'L', b'F']);
-        buf[4] = 2; // ELFCLASS64（64 位）
-        buf[5] = 1; // ELFDATA2LSB（小端）
-        buf[6] = 1; // EV_CURRENT（当前版本）
+        // ELFCLASS64（64 位）。
+        buf[4] = 2;
+        // ELFDATA2LSB（小端）。
+        buf[5] = 1;
+        // EV_CURRENT（当前版本）。
+        buf[6] = 1;
         buf
     }
 
     /// 空地址应返回 InvalidAddress 错误。
     #[test]
     fn reject_null_address() {
+        // SAFETY: 测试故意传入空地址，验证前置校验在解引用前返回错误。
         let result = unsafe { KernelElf::new(0) };
         assert_eq!(result.unwrap_err(), ElfError::InvalidAddress);
     }
@@ -246,6 +251,7 @@ mod tests {
     fn reject_invalid_magic() {
         let mut buf = make_header_buf();
         buf[0] = 0x00;
+        // SAFETY: 栈上缓冲区至少包含 ELF 头部，测试只验证魔数拒绝路径。
         let result = unsafe { KernelElf::new(buf.as_ptr() as u64) };
         assert_eq!(result.unwrap_err(), ElfError::InvalidMagic);
     }
@@ -254,7 +260,9 @@ mod tests {
     #[test]
     fn reject_32bit_elf() {
         let mut buf = make_header_buf();
-        buf[4] = 1; // ELFCLASS32（32 位）
+        // ELFCLASS32（32 位）。
+        buf[4] = 1;
+        // SAFETY: 栈上缓冲区至少包含 ELF 头部，测试只验证 32 位类别拒绝路径。
         let result = unsafe { KernelElf::new(buf.as_ptr() as u64) };
         assert_eq!(result.unwrap_err(), ElfError::Unsupported32Bit);
     }
@@ -264,6 +272,7 @@ mod tests {
     fn reject_unknown_class() {
         let mut buf = make_header_buf();
         buf[4] = 0xFF;
+        // SAFETY: 栈上缓冲区至少包含 ELF 头部，测试只验证未知类别拒绝路径。
         let result = unsafe { KernelElf::new(buf.as_ptr() as u64) };
         assert_eq!(result.unwrap_err(), ElfError::InvalidClass);
     }

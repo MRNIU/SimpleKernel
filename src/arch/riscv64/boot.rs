@@ -44,8 +44,10 @@ _boot:
 
     // 保存 SBI 传递的参数
     addi sp, sp, -8*2
-    sd a0, (0 * 8)(sp)     // a0: 启动核 id
-    sd a1, (1 * 8)(sp)     // a1: dtb 地址
+    // a0: 启动核 id
+    sd a0, (0 * 8)(sp)
+    // a1: dtb 地址
+    sd a1, (1 * 8)(sp)
 
     call _start
     wfi

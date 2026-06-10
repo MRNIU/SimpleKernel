@@ -35,10 +35,6 @@ static MOUNT_TABLE: SpinLock<Vec<MountEntry>> =
     SpinLock::new(Vec::new(), "mount_table", sync::lock_level::UNSPECIFIED);
 
 /// 挂载文件系统到指定路径。
-///
-/// # Errors
-///
-/// 当前实现不检查重复挂载。
 pub fn mount(path: &str, fs: Arc<dyn FileSystem>) {
     log::info!("VFS: mounting {} at {}", fs.name(), path);
     MOUNT_TABLE.lock().push(MountEntry {
@@ -68,7 +64,8 @@ pub fn resolve_path(path: &str) -> FsResult<(Arc<dyn FileSystem>, InodeId)> {
 
     let fs = entry.fs.clone();
     let mount_path_len = entry.path.len();
-    drop(mount_table); // 释放锁
+    // 释放挂载表锁，避免后续文件系统 lookup 期间持有全局锁。
+    drop(mount_table);
 
     // 获取挂载点之后的相对路径
     let relative = &path[mount_path_len..];
@@ -120,11 +117,15 @@ fn split_parent_name(path: &str) -> FsResult<(&str, &str)> {
             }
             Ok((parent, name))
         }
-        None => Err(FsError::NotFound), // 无绝对路径
+        // 无绝对路径。
+        None => Err(FsError::NotFound),
     }
 }
 
 /// 初始化文件系统子系统——挂载 RamFS 到根目录。
+///
+/// # Panics
+/// 内置 VFS 冒烟测试失败时 panic，说明基础文件系统路径不可用。
 pub fn fs_init() {
     log::info!("FileSystemInit: mounting RamFS at /");
     let ramfs = Arc::new(ramfs::RamFs::new());
@@ -142,24 +143,38 @@ pub fn fs_init() {
 /// VFS 冒烟测试——验证基本文件操作。
 fn vfs_smoke_test() {
     // mkdir /tmp
-    let (fs, root) = resolve_path("/").expect("resolve / 应成功");
-    let tmp_id = fs.mkdir(root, "tmp").expect("mkdir /tmp 应成功");
+    let (fs, root) = resolve_path("/").expect("VFS smoke: resolve path=/ 应成功");
+    let tmp_id = fs
+        .mkdir(root, "tmp")
+        .unwrap_or_else(|error| panic!("VFS smoke: mkdir parent={root} name=tmp 失败: {error}"));
     log::info!("VFS test: mkdir /tmp OK");
 
     // create /tmp/hello.txt
     let file_id = fs
         .create(tmp_id, "hello.txt", vfs::FileType::Regular)
-        .expect("create /tmp/hello.txt 应成功");
+        .unwrap_or_else(|error| {
+            panic!("VFS smoke: create parent={tmp_id} name=hello.txt 失败: {error}")
+        });
     log::info!("VFS test: create /tmp/hello.txt OK");
 
     // write
     let data = b"Hello, world!";
-    let written = fs.write(file_id, 0, data).expect("write 应成功");
+    let written = fs.write(file_id, 0, data).unwrap_or_else(|error| {
+        panic!(
+            "VFS smoke: write inode={file_id} offset=0 len={} 失败: {error}",
+            data.len()
+        )
+    });
     log::info!("VFS test: write {} bytes OK", written);
 
     // read
     let mut buf = [0u8; 32];
-    let read = fs.read(file_id, 0, &mut buf).expect("read 应成功");
+    let read = fs.read(file_id, 0, &mut buf).unwrap_or_else(|error| {
+        panic!(
+            "VFS smoke: read inode={file_id} offset=0 buf_len={} 失败: {error}",
+            buf.len()
+        )
+    });
     let content = core::str::from_utf8(&buf[..read]).unwrap_or_else(|error| {
         panic!(
             "VFS smoke test UTF-8 解码失败: read={read}, error={error}, bytes={:x?}",
@@ -169,10 +184,12 @@ fn vfs_smoke_test() {
     log::info!("VFS test: read \"{}\" OK", content);
 
     // unlink
-    fs.unlink(tmp_id, "hello.txt").expect("unlink 应成功");
+    fs.unlink(tmp_id, "hello.txt").unwrap_or_else(|error| {
+        panic!("VFS smoke: unlink parent={tmp_id} name=hello.txt 失败: {error}")
+    });
     log::info!("VFS test: unlink /tmp/hello.txt OK");
 
     // 验证路径解析
-    let (_, resolved) = resolve_path("/tmp").expect("resolve /tmp 应成功");
+    let (_, resolved) = resolve_path("/tmp").expect("VFS smoke: resolve path=/tmp 应成功");
     assert_eq!(resolved, tmp_id);
 }

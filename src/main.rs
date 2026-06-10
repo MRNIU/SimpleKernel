@@ -18,7 +18,7 @@ static PRIMARY_BOOTED: AtomicBool = AtomicBool::new(false);
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
-    // swap 返回旧值：false → 当前核是第一个到达的核（主核）
+    // swap 返回旧值：false 表示当前核是第一个到达的主核。
     if !PRIMARY_BOOTED.swap(true, Ordering::AcqRel) {
         bootstrap(argc, argv);
     } else {
@@ -32,12 +32,12 @@ pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
 /// 放在 kernel crate 中打破 arch→task 循环依赖。
 #[unsafe(no_mangle)]
 pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
-    // 启用中断——schedule() 的 HeldInterrupts::hold() 禁用了中断，
-    // 调度锁已在 switch_to 前由 RAII guard 释放，此处只需恢复中断
-    // SAFETY: 调度锁已释放，启用中断是安全的
+    // 启用中断：schedule() 的 HeldInterrupts::hold() 禁用了中断，
+    // 调度锁已在 switch_to 前由 RAII guard 释放，此处只需恢复中断。
+    // SAFETY: 调度锁已释放，向量表与中断控制器已完成初始化。
     unsafe { task::bootstrap_enable_irq() };
 
-    // SAFETY: entry 是由 new_kernel_thread 编码的合法 fn(usize) 指针
+    // SAFETY: entry 是由 new_kernel_thread 编码的合法 fn(usize) 指针。
     let entry_fn: fn(usize) = unsafe { core::mem::transmute(entry) };
     entry_fn(arg);
 
@@ -48,7 +48,7 @@ pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
 ///
 /// kernel_init(Full) 完成全部子系统初始化，之后启动冒烟测试线程并进入 idle loop。
 fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
-    // SAFETY: bare-metal 环境，主核首次调用
+    // SAFETY: bare-metal 环境，主核首次调用。
     unsafe {
         boot::kernel_init(argc, argv, boot::InitLevel::Full);
     }
@@ -59,7 +59,7 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
     // 立即尝试调度，开始运行刚创建的线程
     task::schedule();
 
-    // Idle loop — bootstrap 上下文成为 idle 任务
+    // 空闲循环：bootstrap 上下文成为 idle 任务。
     loop {
         if preempt::check_and_clear_need_resched() {
             task::schedule();
@@ -72,13 +72,13 @@ fn bootstrap(argc: i32, argv: *const *const u8) -> ! {
 ///
 /// 由主核通过 `wake_secondary_cores()` 启动，经 `_start` 分流到此。
 fn bootstrap_smp(_argc: i32, _argv: *const *const u8) -> ! {
-    // SAFETY: 从核入口，汇编已设置栈和寄存器
+    // SAFETY: 从核入口，汇编已设置栈和寄存器。
     unsafe { boot::kernel_init_smp() };
 
     // 从核上线后立即尝试调度，抢全局队列中的任务
     task::schedule();
 
-    // Idle loop
+    // 空闲循环。
     loop {
         if preempt::check_and_clear_need_resched() {
             task::schedule();

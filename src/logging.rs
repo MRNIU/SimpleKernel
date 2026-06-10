@@ -106,6 +106,7 @@ impl log::Log for KernelLogger {
     fn flush(&self) {}
 }
 
+/// 初始化全局日志后端。
 pub fn init() {
     if LOGGER_INIT.swap(true, Ordering::AcqRel) {
         return;
@@ -115,8 +116,14 @@ pub fn init() {
     }
 }
 
+/// 刷新日志后端。
+///
+/// 当前串口后端同步写出，无额外缓冲。
 pub fn flush() {}
 
+/// 不经过 `log` facade 直接输出原始字符串。
+///
+/// panic 路径使用此入口，避免重新进入日志格式化与过滤逻辑。
 pub fn raw_put(msg: &str) {
     put_str(msg);
 }

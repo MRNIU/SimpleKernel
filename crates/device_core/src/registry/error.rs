@@ -30,11 +30,15 @@ pub enum RegistryError {
     },
     /// 设备实例数量超过第一版固定容量。
     TooManyDevices {
+        /// 尝试注册前已有设备数量。
+        count: usize,
         /// 固定容量上限。
         max: usize,
     },
     /// capability 数量超过第一版固定容量。
     TooManyCapabilities {
+        /// 尝试注册前已有 capability 数量。
+        count: usize,
         /// 固定容量上限。
         max: usize,
     },

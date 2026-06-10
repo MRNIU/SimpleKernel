@@ -203,7 +203,9 @@ impl FileSystem for RamFs {
         }
 
         // 移除目录项和 inode
-        let parent_inode = inodes.get_mut(&parent).expect("父目录刚刚验证过");
+        let parent_inode = inodes.get_mut(&parent).unwrap_or_else(|| {
+            panic!("RamFS unlink: 父目录二次查找失败: parent={parent}, name={name}")
+        });
         if let RamInodeData::Directory(entries) = &mut parent_inode.data {
             entries.swap_remove(pos);
         }
@@ -260,7 +262,8 @@ mod tests {
         let root = fs.root_inode();
         let stat = fs.stat(root).expect("root stat 应成功");
         assert_eq!(stat.file_type, FileType::Directory);
-        assert_eq!(stat.size, 0); // 空目录
+        // 根目录初始为空目录。
+        assert_eq!(stat.size, 0);
     }
 
     /// 创建文件、写入、读取、stat 全流程。
@@ -346,7 +349,7 @@ mod tests {
         let fs = RamFs::new();
         let root = fs.root_inode();
         fs.create(root, "dup", FileType::Regular)
-            .expect("first create");
+            .expect("首次创建 dup 应成功");
         assert_eq!(
             fs.create(root, "dup", FileType::Regular),
             Err(FsError::AlreadyExists)

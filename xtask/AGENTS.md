@@ -7,26 +7,28 @@
 ## 子命令
 
 ```bash
-cargo xtask build    [--arch riscv64|aarch64] [--release]   # 编译内核
-cargo xtask check    [--arch riscv64|aarch64]               # 检查编译
-cargo xtask run      [--arch riscv64|aarch64] [--release] [--timeout 30]  # 编译并在 QEMU 中运行
-cargo xtask debug    [--arch riscv64|aarch64] [--release]   # QEMU 调试模式（GDB localhost:1234）
-cargo xtask firmware [--arch riscv64|aarch64]               # 编译第三方固件
-cargo xtask test     [选项]                                  # 运行 QEMU 系统测试
+docker exec -w /workspace simplekernel-devcontainer cargo xtask build    [--arch riscv64|aarch64] [--release]
+docker exec -w /workspace simplekernel-devcontainer cargo xtask check    [--arch riscv64|aarch64]
+docker exec -w /workspace simplekernel-devcontainer cargo xtask run      [--arch riscv64|aarch64] [--release] [--timeout 30]
+docker exec -w /workspace simplekernel-devcontainer cargo xtask debug    [--arch riscv64|aarch64] [--release]
+docker exec -w /workspace simplekernel-devcontainer cargo xtask firmware [--arch riscv64|aarch64]
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test     [选项]
 ```
 
 ## 测试命令
 
 ```bash
-cargo xtask test --arch riscv64 --all              # 全部独立测试
-cargo xtask test --arch riscv64 --name <name>      # 指定测试（交互式，串口直接输出）
-cargo xtask test --arch riscv64 --timeout 120      # 自定义超时（默认 300 秒）
-cargo xtask test --list                            # 列出可用测试
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --all --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name <name> --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 120
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 ```
 
 `--all` 模式下，xtask 顺序执行所有 `tests/` 下的测试二进制，每个启动独立 QEMU 实例。输出被捕获，超时后自动终止。执行完毕后打印汇总报告。
 
 `--name` 模式下，指定测试以交互模式运行（串口输出直接显示到终端），适合调试。
+
+QEMU 系统测试默认按 30 秒超时执行。低性能宿主机或特殊测试可显式放宽，例如 `--timeout 120`，但应在任务说明或验证记录中写清楚原因。
 
 ## 固件与运行
 

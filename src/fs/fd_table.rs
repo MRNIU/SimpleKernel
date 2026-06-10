@@ -104,7 +104,8 @@ impl FileDescriptorTable {
         if slot.is_none() {
             return Err(FsError::InvalidFd);
         }
-        *slot = None; // Arc 引用计数自动递减
+        // `Arc` 引用计数随槽位清空自动递减。
+        *slot = None;
         Ok(())
     }
 }

@@ -12,11 +12,14 @@ static MEMORY_INIT_DONE: AtomicBool = AtomicBool::new(false);
 
 /// 标记固件保留区权限。
 ///
-/// 信息源优先来自 FDT `/reserved-memory/firmware@...`；若平台没有提供该节点，
-/// `early_init()` 会回退为 `[mem_start, kernel_start)`。
+/// 信息源来自 FDT `/reserved-memory/firmware@...`；缺失该节点属于平台输入错误，
+/// `early_init()` 会在进入内存子系统前 fail-fast。
 fn map_firmware_region(firmware_start: PhysAddr, firmware_size: usize) {
     if firmware_size == 0 {
-        return;
+        panic!(
+            "MemoryInit: firmware reserved 大小为 0: firmware_start={firmware_start}, core_id={}",
+            per_cpu::current_core_id()
+        );
     }
 
     let start = firmware_start.align_down();
@@ -31,9 +34,12 @@ fn map_firmware_region(firmware_start: PhysAddr, firmware_size: usize) {
 
 /// 将内核自有 DTB storage 收紧为只读。
 fn map_fdt_region() {
-    let Some(region) = platform_fdt::storage_region() else {
-        return;
-    };
+    let region = platform_fdt::storage_region().unwrap_or_else(|| {
+        panic!(
+            "MemoryInit: platform_fdt storage 未初始化，无法收紧 DTB 权限: core_id={}",
+            per_cpu::current_core_id()
+        )
+    });
 
     let start = PhysAddr::new(region.start);
     paging::kernel_page_table().update_range_flags(
@@ -56,19 +62,26 @@ fn map_fdt_region() {
 /// `MEMORY_INFO` 未初始化、RAM / kernel 范围不合法、帧分配失败、页表映射失败，
 /// 或本函数被二次调用时 panic。
 pub fn init() {
-    assert!(
-        MEMORY_INIT_DONE
-            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
-            .is_ok(),
-        "memory::init called more than once"
-    );
+    if MEMORY_INIT_DONE
+        .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+        .is_err()
+    {
+        panic!(
+            "MemoryInit: memory::init 被重复调用: core_id={}",
+            per_cpu::current_core_id()
+        );
+    }
 
     // SAFETY: 在任何堆分配之前调用，且仅调用一次（由启动流程保证）
     unsafe { heap_crate::init() };
 
-    let info = crate::globals::MEMORY_INFO
-        .get()
-        .expect("MEMORY_INFO not initialized");
+    let info = crate::globals::MEMORY_INFO.get().unwrap_or_else(|| {
+        panic!(
+            "MemoryInit: MEMORY_INFO 未初始化: core_id={}, init_done={}",
+            per_cpu::current_core_id(),
+            MEMORY_INIT_DONE.load(Ordering::Acquire)
+        )
+    });
     let mem_start = info.physical_memory_addr;
     let mem_size = info.physical_memory_size;
     let firmware_start = info.firmware_reserved_addr;
@@ -143,7 +156,11 @@ pub fn init() {
         let extend_size = config::KERNEL_HEAP_SIZE - config::BOOTSTRAP_HEAP_SIZE;
         let extend_pages = extend_size / config::PAGE_SIZE;
         let heap_frames =
-            frame_allocator::AllocatedFrames::alloc(extend_pages).expect("heap extend: 帧分配失败");
+            frame_allocator::AllocatedFrames::alloc(extend_pages).unwrap_or_else(|error| {
+                panic!(
+                    "MemoryInit: heap extend 帧分配失败: extend_size={extend_size:#x}, extend_pages={extend_pages}, free_start={free_start}, free_size={free_size:#x}, error={error:?}"
+                )
+            });
         let heap_start = heap_frames.start_paddr().to_virt().as_usize();
         // SAFETY: 帧刚分配，identity-mapped，无其他引用
         unsafe { heap_crate::extend(heap_start, extend_size) };

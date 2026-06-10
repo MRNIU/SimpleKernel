@@ -97,14 +97,14 @@ mod tests {
         let mut sched = RoundRobinScheduler::with_quantum(3);
         let task = make_task(1);
 
-        // pick_next 重置 elapsed
+        // pick_next 重置 elapsed。
         sched.enqueue(task.clone());
         let picked = sched.pick_next().expect("应能取到任务");
 
-        // 前两次 tick 不触发抢占
+        // 前两次 tick 不触发抢占。
         assert!(!sched.task_tick(&picked));
         assert!(!sched.task_tick(&picked));
-        // 第三次 tick 触发抢占
+        // 第三次 tick 触发抢占。
         assert!(sched.task_tick(&picked));
     }
 
@@ -117,12 +117,15 @@ mod tests {
         sched.enqueue(t2);
 
         let picked = sched.pick_next().expect("取到 t1");
-        assert!(!sched.task_tick(&picked)); // tick 1
-        assert!(sched.task_tick(&picked)); // tick 2 → 到期
+        // 第 1 个 tick 不触发抢占。
+        assert!(!sched.task_tick(&picked));
+        // 第 2 个 tick 时间片到期。
+        assert!(sched.task_tick(&picked));
 
-        // 重新 pick 应重置计数
+        // 重新 pick 应重置计数。
         let picked = sched.pick_next().expect("取到 t2");
-        assert!(!sched.task_tick(&picked)); // tick 1（重置）
+        // 重置后的第 1 个 tick 不触发抢占。
+        assert!(!sched.task_tick(&picked));
     }
 
     #[test]
@@ -133,7 +136,7 @@ mod tests {
         sched.enqueue(make_task(3));
         let stolen = sched.steal_one().expect("应能偷到任务");
         assert_eq!(stolen.pid(), 3);
-        // 剩余 [1, 2]
-        assert_eq!(sched.pick_next().expect("").pid(), 1);
+        // 队列中剩余 [1, 2]。
+        assert_eq!(sched.pick_next().expect("队列中应剩余 pid=1").pid(), 1);
     }
 }

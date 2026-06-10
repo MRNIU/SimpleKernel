@@ -2,7 +2,7 @@
 
 //! 作用域退出时执行清理的 RAII guard。
 
-/// RAII cleanup guard，`Drop` 时运行清理函数，`dismiss()` 取消清理。
+/// RAII 清理 guard，`Drop` 时运行清理函数，`dismiss()` 取消清理。
 /// 模式参考 Linux kernel Rust，用于初始化失败回滚。
 pub struct ScopeGuard<F: FnOnce()> {
     cleanup: Option<F>,
@@ -15,7 +15,7 @@ impl<F: FnOnce()> ScopeGuard<F> {
         }
     }
 
-    /// Cancel cleanup (call on success path).
+    /// 取消清理函数，通常在成功路径调用。
     pub fn dismiss(mut self) {
         self.cleanup = None;
     }

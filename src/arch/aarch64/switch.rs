@@ -27,6 +27,8 @@ pub unsafe extern "C" fn switch_to(
     _prev: *mut CalleeSavedContext,
     _next: *const CalleeSavedContext,
 ) {
+    // SAFETY: 该 naked 函数不生成 Rust 序言/尾声；调用者保证 `x0/x1` 分别为
+    // `prev/next` 上下文指针，且布局与 `CalleeSavedContext` 完全一致。
     naked_asm!(
         // 保存 x19-x30 到 prev (x0)
         "stp x19, x20, [x0, #0]",
@@ -79,5 +81,7 @@ pub unsafe extern "C" fn switch_to(
 /// 指针，`x20` 必须是该函数接受的参数值。
 #[unsafe(naked)]
 pub unsafe extern "C" fn kernel_thread_entry() {
+    // SAFETY: 该入口只能由 `switch_to` 恢复到预构造上下文时进入；`x19/x20`
+    // 按 `CalleeSavedContext::init_for_kernel_thread` 的约定保存入口和参数。
     naked_asm!("mov x0, x19", "mov x1, x20", "bl kernel_thread_bootstrap",);
 }

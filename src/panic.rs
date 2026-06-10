@@ -12,15 +12,21 @@ static KERNEL_ELF: Once<KernelElf> = Once::new();
 
 const MAX_OBSERVERS: usize = 4;
 
+/// panic 事件快照，供 observer 在停机前读取。
 pub struct PanicEvent<'a> {
+    /// panic 消息文本。
     pub reason: &'a str,
+    /// 触发位置文件名；未知时为 `"<unknown>"`。
     pub file: &'a str,
+    /// 触发位置行号；未知时为 0。
     pub line: u32,
+    /// 触发时记录的程序计数器；当前尚未从 trap 上下文填充。
     pub pc: VirtAddr,
 }
 
 /// 希望在内核 panic 时收到通知的组件所实现的 trait。
 pub trait PanicObserver: Send + Sync {
+    /// 处理 panic 事件。
     fn on_panic(&self, event: &PanicEvent<'_>);
 }
 
@@ -47,17 +53,25 @@ static OBSERVERS: SpinLock<ObserverRegistry> = SpinLock::new(
 /// # Safety
 /// `elf_addr` 必须指向一个有效的 ELF64 二进制，并且在整个内核生命周期内保持映射。
 pub unsafe fn init_elf(elf_addr: u64) {
-    // SAFETY: 调用者保证该 ELF 地址有效
+    // SAFETY: 调用者保证该 ELF 地址有效，并且映射覆盖完整内核 ELF。
     match unsafe { KernelElf::new(elf_addr) } {
         Ok(elf) => {
             KERNEL_ELF.call_once(|| elf);
         }
-        Err(_) => {
-            crate::logging::raw_put("WARNING: failed to parse kernel ELF for backtrace\n");
+        Err(error) => {
+            let mut buf = heapless::String::<{ config::PANIC_BUF_SIZE }>::new();
+            let _ = writeln!(
+                buf,
+                "WARNING: failed to parse kernel ELF for backtrace: addr={elf_addr:#x}, error={error:?}"
+            );
+            crate::logging::raw_put(buf.as_str());
         }
     }
 }
 
+/// 注册 panic observer。
+///
+/// observer 表满时记录警告并忽略新增 observer；panic 路径不能在此动态分配。
 pub fn register_observer(observer: &'static dyn PanicObserver) {
     let mut registry = OBSERVERS.lock();
     for slot in registry.slots.iter_mut() {
@@ -66,6 +80,11 @@ pub fn register_observer(observer: &'static dyn PanicObserver) {
             return;
         }
     }
+    log::warn!(
+        "PanicObserver registry full: capacity={}, observer_addr={:p}",
+        MAX_OBSERVERS,
+        observer
+    );
 }
 
 fn notify_observers(event: &PanicEvent<'_>) {
@@ -171,6 +190,7 @@ fn dump_backtrace() {
     _Unwind_Backtrace(trace_callback, core::ptr::null_mut());
 }
 
+/// 直接打印当前栈回溯。
 pub fn raw_dump_stack() {
     dump_backtrace();
 }

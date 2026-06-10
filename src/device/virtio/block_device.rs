@@ -62,9 +62,14 @@ impl BlockDevice for VirtIOBlockDevice {
         let mut blk = self.lock.lock();
         let sector_count = blk.capacity();
         block::validate_sector_io(sector, buf.len(), VIRTIO_BLOCK_SECTOR_SIZE, sector_count)?;
-        let sector_index = usize::try_from(sector).map_err(|_| BlockError::SectorOutOfRange {
-            sector,
-            sector_count,
+        let sector_index = usize::try_from(sector).map_err(|error| {
+            log::warn!(
+                "VirtIO 块设备读取 sector 无法转换为 usize: sector={sector}, sector_count={sector_count}, error={error}"
+            );
+            BlockError::SectorOutOfRange {
+                sector,
+                sector_count,
+            }
         })?;
 
         blk.read_blocks(sector_index, buf).map_err(|e| {
@@ -77,9 +82,14 @@ impl BlockDevice for VirtIOBlockDevice {
         let mut blk = self.lock.lock();
         let sector_count = blk.capacity();
         block::validate_sector_io(sector, buf.len(), VIRTIO_BLOCK_SECTOR_SIZE, sector_count)?;
-        let sector_index = usize::try_from(sector).map_err(|_| BlockError::SectorOutOfRange {
-            sector,
-            sector_count,
+        let sector_index = usize::try_from(sector).map_err(|error| {
+            log::warn!(
+                "VirtIO 块设备写入 sector 无法转换为 usize: sector={sector}, sector_count={sector_count}, error={error}"
+            );
+            BlockError::SectorOutOfRange {
+                sector,
+                sector_count,
+            }
         })?;
 
         blk.write_blocks(sector_index, buf).map_err(|e| {

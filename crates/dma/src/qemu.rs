@@ -16,7 +16,7 @@ use sync_crate::SpinLock;
 
 use crate::{DmaDirection, DmaError, DmaResult};
 
-/// QEMU VirtIO identity-mapped DMA 操作实现。
+/// QEMU VirtIO 恒等映射 DMA 操作实现。
 pub struct QemuIdentityDmaOp;
 
 pub(crate) static QEMU_IDENTITY_DMA_OP: QemuIdentityDmaOp = QemuIdentityDmaOp;
@@ -29,6 +29,10 @@ impl DmaOp for QemuIdentityDmaOp {
         config::PAGE_SIZE
     }
 
+    /// # Safety
+    ///
+    /// 调用方必须满足 `dma-api` 的 `DmaOp::map_single` 契约：`addr..addr+size`
+    /// 在映射期间保持有效、连续，并按 DMA 方向维护 CPU/设备访问同步。
     unsafe fn map_single(
         &self,
         _dma_mask: u64,
@@ -41,13 +45,21 @@ impl DmaOp for QemuIdentityDmaOp {
         let paddr = vaddr.to_phys().as_usize() as u64;
         let layout = Layout::from_size_align(size.get(), align)?;
 
-        // SAFETY: 当前内核使用 SAS identity mapping；`addr` 指向调用方提供的连续
-        // buffer，`paddr` 是同一区域的设备可见地址，layout 来自调用方 size/align。
+        // SAFETY: `DmaOp::map_single` 的调用方保证 `addr..addr+size` 在 DMA 共享期间
+        // 有效且连续；当前 SAS 恒等映射保证 `paddr` 是同一区域的设备可见地址。
+        // 若调用方传入悬垂或非连续缓冲区，设备 DMA 会读写错误内存。
         Ok(unsafe { DmaMapHandle::new(addr, DmaAddr::from(paddr), layout, None) })
     }
 
+    /// # Safety
+    ///
+    /// 调用方必须传回此前由本后端返回且尚未解除的 streaming DMA 映射句柄。
     unsafe fn unmap_single(&self, _handle: DmaMapHandle) {}
 
+    /// # Safety
+    ///
+    /// 调用方必须满足 `dma-api` 的 `DmaOp::alloc_coherent` 契约，传入合法布局并按
+    /// 返回句柄的所有权释放 coherent DMA 区域。
     unsafe fn alloc_coherent(&self, _dma_mask: u64, layout: Layout) -> Option<DmaHandle> {
         let pages = layout.size().div_ceil(config::PAGE_SIZE).max(1);
         let frames = AllocatedFrames::alloc(pages).ok()?;
@@ -55,18 +67,22 @@ impl DmaOp for QemuIdentityDmaOp {
         let vaddr = paddr.to_virt();
         let ptr = NonNull::new(vaddr.as_mut_ptr::<u8>())?;
 
-        // SAFETY: identity mapping 下 PA.to_virt() 有效；帧刚分配，尚无其他引用。
+        // SAFETY: `AllocatedFrames::alloc` 返回独占帧；SAS 恒等映射下 `PA.to_virt()`
+        // 可直接写入。清零防止把旧内存内容暴露给设备。
         unsafe {
             core::ptr::write_bytes(ptr.as_ptr(), 0, pages * config::PAGE_SIZE);
         }
 
         DMA_TRACKER.lock().insert(paddr.as_usize() as u64, frames);
 
-        // SAFETY: `ptr` 指向刚分配并清零的连续 DMA 内存；DMA 地址与 identity
-        // mapping 下的物理地址一致；layout 由调用方 `dma-api` 校验。
+        // SAFETY: `ptr` 指向刚分配并清零的连续 DMA 内存；DMA 地址与 SAS 恒等映射下的
+        // 物理地址一致；layout 已由调用方和 `Layout` 类型校验。
         Some(unsafe { DmaHandle::new(ptr, DmaAddr::from(paddr.as_usize() as u64), layout) })
     }
 
+    /// # Safety
+    ///
+    /// 调用方必须传回此前由本后端返回且尚未释放的 coherent DMA 句柄。
     unsafe fn dealloc_coherent(&self, handle: DmaHandle) {
         let paddr = handle.dma_addr().as_u64();
         if DMA_TRACKER.lock().remove(&paddr).is_none() {
@@ -89,6 +105,7 @@ pub fn raw_alloc_pages(pages: usize, _direction: DmaDirection) -> DmaResult<(u64
         .map_err(DmaError::from)?;
     // SAFETY: layout 由非零页数和 PAGE_SIZE 构造，满足页对齐；当前 QEMU 后端不使用
     // dma_mask，分配出的连续帧由 DMA_TRACKER 持有并由 raw_dealloc_pages 配对释放。
+    // 若后端返回 None，会转换为显式 NoMemory 错误。
     let handle = unsafe { QEMU_IDENTITY_DMA_OP.alloc_coherent(u64::MAX, layout) }
         .ok_or(DmaError::NoMemory)?;
 
@@ -132,7 +149,7 @@ pub fn raw_dealloc_pages(paddr: u64, vaddr: NonNull<u8>, pages: usize) -> DmaRes
     Ok(())
 }
 
-/// 映射已有 buffer 为设备可见 DMA 地址。
+/// 映射已有缓冲区为设备可见 DMA 地址。
 ///
 /// # Safety
 ///
@@ -141,21 +158,24 @@ pub fn raw_dealloc_pages(paddr: u64, vaddr: NonNull<u8>, pages: usize) -> DmaRes
 ///
 /// # Errors
 ///
-/// buffer 为空、虚拟地址为空，或后端 DMA 映射失败时返回错误。
+/// 缓冲区为空、虚拟地址为空，或后端 DMA 映射失败时返回错误。
 pub unsafe fn raw_map_single(buffer: NonNull<[u8]>, direction: DmaDirection) -> DmaResult<u64> {
-    // SAFETY: `virtio-drivers::Hal::share` 的调用方保证 buffer 在共享期间有效。
+    // SAFETY: `raw_map_single` 的安全契约要求 `buffer` 元数据和指向内存在 DMA
+    // 共享期间有效；若调用方传入悬垂切片，`as_ref` 会产生无效引用并导致 UB。
     let slice = unsafe { buffer.as_ref() };
     let size = NonZeroUsize::new(slice.len()).ok_or(DmaError::ZeroSizedBuffer)?;
     let ptr =
         NonNull::new(slice.as_ptr() as *mut u8).ok_or(DmaError::NullVirtualAddress { paddr: 0 })?;
 
-    // SAFETY: ptr 和 size 来自调用方提供的非空 slice；raw_map_single 的 Safety 契约要求
-    // buffer 在 DMA 共享期间保持有效且连续。
+    // SAFETY: `ptr` 和 `size` 来自已校验的非空 slice；`raw_map_single` 的安全契约要求
+    // 缓冲区在 DMA 共享期间保持有效且连续。
     let handle =
         unsafe { QEMU_IDENTITY_DMA_OP.map_single(u64::MAX, ptr, size, 1, direction.into()) }
             .map_err(DmaError::from_api)?;
     Ok(handle.dma_addr().as_u64())
 }
 
-/// 解除已有 buffer 的 streaming DMA 映射。
+/// 解除已有缓冲区的 streaming DMA 映射。
+///
+/// QEMU 恒等映射后端不维护 streaming 映射状态，因此当前实现是空操作。
 pub fn raw_unmap_single(_paddr: u64, _buffer: NonNull<[u8]>, _direction: DmaDirection) {}

@@ -43,7 +43,11 @@ pub fn probe_all() {
         crate::platform_fdt::get().expect("PlatformBus: FDT 未初始化，Full 初始化不能跳过设备扫描");
 
     let mut registry = DriverRegistry::new(BUILTIN_DRIVERS).unwrap_or_else(|error| {
-        panic!("PlatformBus: 内建 driver descriptor 注册失败: {:?}", error)
+        panic!(
+            "PlatformBus: 内建 driver descriptor 注册失败: driver_count={}, error={:?}",
+            BUILTIN_DRIVERS.len(),
+            error
+        )
     });
 
     probe_static_drivers(&mut registry);

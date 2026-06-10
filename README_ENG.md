@@ -4,9 +4,11 @@
 
 # SimpleKernel
 
-SimpleKernel is an interface-driven OS kernel for AI-assisted learning. The
-current codebase is written in Rust (`no_std`, `no_main`, nightly toolchain) and
-targets RISC-V 64 and AArch64 through the repository `cargo xtask` workflow.
+SimpleKernel is an interface-driven OS kernel for AI-assisted learning. This
+file is a concise English entry point; the maintained project details live in
+the Chinese README and repository documentation. The current codebase is written
+in Rust (`no_std`, `no_main`, nightly toolchain) and targets RISC-V 64 and
+AArch64 through the repository `cargo xtask` workflow.
 
 The Chinese README is the maintained project entry point:
 

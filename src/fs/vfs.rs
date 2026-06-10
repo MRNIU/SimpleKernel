@@ -140,12 +140,20 @@ pub trait FileSystem: Send + Sync {
     /// 读取文件内容。
     ///
     /// 从 `offset` 位置开始读取，最多填满 `buf`，返回实际读取字节数。
+    ///
+    /// # Errors
+    ///
+    /// inode 不存在或目标是目录时返回错误。
     fn read(&self, inode: InodeId, offset: u64, buf: &mut [u8]) -> FsResult<usize>;
 
     /// 写入文件内容。
     ///
     /// 从 `offset` 位置开始写入 `data`，返回实际写入字节数。
     /// 文件不足时自动扩展。
+    ///
+    /// # Errors
+    ///
+    /// inode 不存在或目标是目录时返回错误。
     fn write(&self, inode: InodeId, offset: u64, data: &[u8]) -> FsResult<usize>;
 
     /// 创建子目录。
@@ -170,5 +178,9 @@ pub trait FileSystem: Send + Sync {
     fn readdir(&self, inode: InodeId) -> FsResult<Vec<DirEntry>>;
 
     /// 获取 inode 元数据。
+    ///
+    /// # Errors
+    ///
+    /// inode 不存在时返回 `NotFound`。
     fn stat(&self, inode: InodeId) -> FsResult<InodeStat>;
 }

@@ -69,8 +69,8 @@ struct TestArgs {
     /// 生成调试文件（.objdump/.readelf/.nm/.bin），默认不生成
     #[arg(long)]
     debug_files: bool,
-    /// 每个测试的超时秒数（默认 300）
-    #[arg(long, default_value = "300")]
+    /// 每个测试的超时秒数（默认 30）
+    #[arg(long, default_value = "30")]
     timeout: u64,
 }
 
@@ -217,8 +217,11 @@ fn run() -> Result<()> {
 }
 
 fn project_root() -> PathBuf {
-    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+    std::path::Path::new(manifest_dir)
         .parent()
-        .expect("xtask must be a direct workspace member")
+        .unwrap_or_else(|| {
+            panic!("xtask 必须是 workspace 直接成员: CARGO_MANIFEST_DIR={manifest_dir}")
+        })
         .to_path_buf()
 }

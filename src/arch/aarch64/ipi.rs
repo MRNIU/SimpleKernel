@@ -7,10 +7,10 @@
 
 use arm_psci::{EntryPoint, Function, Mpidr};
 
-// _boot 入口点（boot.S 中定义）
-// 从核必须经过 _boot 而非 _start，因为 _boot 负责：
-//   1. 读取 MPIDR_EL1 获取 core ID
-//   2. 按 core ID 设置 per-core 栈（sp）
+// `_boot` 入口点由 `boot.S` 定义。
+// 从核必须经过 `_boot` 而非 `_start`，因为 `_boot` 负责：
+// 1. 读取 MPIDR_EL1 获取 core ID
+// 2. 按 core ID 设置 per-core 栈（sp）
 // SAFETY: 链接器保证该符号存在于内核镜像中
 unsafe extern "C" {
     fn _boot();
@@ -33,7 +33,8 @@ pub fn send_ipi(cpu_id: usize) {
     //   [27:24] INTID       — SGI 编号（0–15）
     //   其余位为 0
     let target_list: u64 = 1u64 << cpu_id;
-    let sgi_value: u64 = target_list; // INTID=0，其余位=0
+    // INTID=0，其余位=0。
+    let sgi_value: u64 = target_list;
     // SAFETY: ICC_SGI1R_EL1 在 EL1 下可写（GICv3 CPU 接口使能后）。
     // `dsb ishst` 确保普通内存中的 shootdown mailbox 写入先于 SGI doorbell 对外可见。
     unsafe {
@@ -78,6 +79,9 @@ unsafe fn psci_smc_call(regs: &[u64; 4]) -> i64 {
 /// 使用 `arm-psci` crate 构造 `Function::CpuOn` 请求，通过 SMC 发送给固件。
 /// 每个从核以 `_boot` 为入口（初始化栈后跳转到 `_start`），context_id = 0。
 /// 跳过当前核心（主核），因为任何 CPU 都可能成为主核。
+///
+/// # Panics
+/// `CORE_COUNT` 未初始化，或 PSCI `CPU_ON` 返回错误码时 panic。
 pub fn wake_secondary_cores() {
     let core_count = crate::CORE_COUNT.get().copied().unwrap_or_else(|| {
         panic!(
@@ -107,7 +111,8 @@ pub fn wake_secondary_cores() {
             aff0: cpu_id as u8,
             aff1: 0,
             aff2: 0,
-            aff3: Some(0), // 64-bit 模式（CpuOn64 = 0xC400_0003）
+            // 64-bit 模式（CpuOn64 = 0xC400_0003）。
+            aff3: Some(0),
         };
         let func = Function::CpuOn {
             target_cpu,
@@ -126,7 +131,10 @@ pub fn wake_secondary_cores() {
         if ret == 0 {
             log::info!("SMP: cpu {} 启动成功 (entry=0x{:x})", cpu_id, entry_addr);
         } else {
-            panic!("SMP: cpu {} 启动失败 (psci_ret={})", cpu_id, ret);
+            panic!(
+                "SMP: cpu {} 启动失败: entry={:#x}, core_count={}, current_cpu={}, psci_ret={}",
+                cpu_id, entry_addr, core_count, my_cpu, ret
+            );
         }
     }
 }

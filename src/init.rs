@@ -12,16 +12,20 @@ pub fn early_init(dtb_addr: usize) {
     let fdt = match unsafe { platform_fdt::init_from_raw(dtb_addr) } {
         Ok(fdt) => fdt,
         Err(error) => {
-            log::error!("PlatformFdt: {}", error);
-            crate::util::halt::halt("无法初始化内核自有 DTB 副本");
+            panic!(
+                "PlatformFdt: 无法初始化内核自有 DTB 副本: dtb_addr={dtb_addr:#x}, error={error}"
+            );
         }
     };
 
     let node_count = match fdt.node_count() {
         Ok(count) => count,
         Err(error) => {
-            log::error!("PlatformFdt: FDT 节点计数失败: {}", error);
-            crate::util::halt::halt("无法遍历 FDT 节点");
+            panic!(
+                "PlatformFdt: FDT 节点计数失败: raw_dtb={dtb_addr:#x}, storage={:#x}, totalsize={:#x}, error={error}",
+                fdt.storage_addr(),
+                fdt.total_size()
+            );
         }
     };
     let core_count = crate::cpu_topology::init_from_fdt(fdt);
@@ -29,8 +33,11 @@ pub fn early_init(dtb_addr: usize) {
     let (mem_addr, mem_size) = match fdt.memory() {
         Ok(m) => m,
         Err(error) => {
-            log::error!("PlatformFdt: FDT memory 解析失败: {}", error);
-            crate::util::halt::halt("无法从 FDT 获取内存信息");
+            panic!(
+                "PlatformFdt: FDT memory 解析失败: raw_dtb={dtb_addr:#x}, storage={:#x}, totalsize={:#x}, error={error}",
+                fdt.storage_addr(),
+                fdt.total_size()
+            );
         }
     };
 
@@ -41,21 +48,32 @@ pub fn early_init(dtb_addr: usize) {
     }
     let kernel_start = unsafe { &__executable_start as *const u8 as u64 };
     let kernel_end = unsafe { &_end as *const u8 as u64 };
+    assert!(
+        kernel_end >= kernel_start,
+        "early_init: kernel_end 小于 kernel_start: kernel_start={kernel_start:#x}, kernel_end={kernel_end:#x}"
+    );
 
     let firmware_reserved = match fdt.firmware_reserved_memory() {
         Ok(region) => region,
-        Err(platform_fdt::FdtError::NodeNotFound) => {
-            let size = kernel_start
-                .checked_sub(mem_addr)
-                .expect("early_init: kernel_start 小于 FDT RAM 起点");
-            (mem_addr, size as usize)
-        }
         Err(error) => {
-            log::error!("PlatformFdt: firmware reserved-memory 解析失败: {}", error);
-            crate::util::halt::halt("无法从 FDT 获取固件保留区");
+            panic!(
+                "PlatformFdt: firmware reserved-memory 解析失败: raw_dtb={dtb_addr:#x}, storage={:#x}, totalsize={:#x}, mem_addr={mem_addr:#x}, mem_size={mem_size:#x}, kernel_start={kernel_start:#x}, kernel_end={kernel_end:#x}, error={error}",
+                fdt.storage_addr(),
+                fdt.total_size()
+            );
         }
     };
 
+    if let Some(existing) = MEMORY_INFO.get() {
+        panic!(
+            "MemoryInfo: 重复初始化: existing_mem={}+{:#x}, existing_kernel={}+{:#x}, new_mem={mem_addr:#x}+{mem_size:#x}, new_kernel={kernel_start:#x}+{:#x}, dtb_addr={dtb_addr:#x}",
+            existing.physical_memory_addr,
+            existing.physical_memory_size,
+            existing.kernel_addr,
+            existing.kernel_size,
+            kernel_end - kernel_start
+        );
+    }
     MEMORY_INFO.call_once(|| MemoryInfo {
         physical_memory_addr: PhysAddr::new(mem_addr as usize),
         physical_memory_size: mem_size,
@@ -65,6 +83,14 @@ pub fn early_init(dtb_addr: usize) {
         firmware_reserved_size: firmware_reserved.1,
     });
 
+    if let Some(existing) = CORE_COUNT.get() {
+        panic!(
+            "CORE_COUNT: 重复初始化: existing={}, new={}, MAX_CORE_COUNT={}, dtb_addr={dtb_addr:#x}",
+            existing,
+            core_count,
+            config::MAX_CORE_COUNT
+        );
+    }
     CORE_COUNT.call_once(|| core_count);
 
     // RISC-V 的 timebase-frequency 在 FDT /cpus 节点中；
@@ -74,8 +100,11 @@ pub fn early_init(dtb_addr: usize) {
         let timer_freq = match fdt.timebase_frequency() {
             Ok(frequency) => u64::from(frequency),
             Err(error) => {
-                log::error!("PlatformFdt: timebase-frequency 解析失败: {}", error);
-                crate::util::halt::halt("无法从 FDT 获取 RISC-V timer 频率");
+                panic!(
+                    "PlatformFdt: timebase-frequency 解析失败: raw_dtb={dtb_addr:#x}, storage={:#x}, totalsize={:#x}, error={error}",
+                    fdt.storage_addr(),
+                    fdt.total_size()
+                );
             }
         };
         crate::arch::riscv64::timer::set_hw_freq(timer_freq);

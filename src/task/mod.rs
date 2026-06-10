@@ -52,11 +52,20 @@ mod api {
     use crate::task::tcb::{Pid, TaskControlBlock, TaskRef};
 
     /// BSP 初始化。
+    ///
+    /// # Panics
+    /// 当前核心 ID 超出 `config::MAX_CORE_COUNT` 时 panic。
     pub fn init() {
         let core_id = per_cpu::current_core_id();
+        assert!(
+            core_id < config::MAX_CORE_COUNT,
+            "TaskInit: BSP core_id={} 超出 MAX_CORE_COUNT={}",
+            core_id,
+            config::MAX_CORE_COUNT
+        );
         let idle = Arc::new(TaskControlBlock::new_idle(0, core_id));
 
-        // SAFETY: 此时仅 BSP 核心运行，无并发访问
+        // SAFETY: 此时仅 BSP 核心运行，无并发访问。
         unsafe {
             let mut sched = PerCpuSched::new(SchedPolicy::default_policy());
             sched.current = Some(idle.clone());
@@ -74,11 +83,20 @@ mod api {
     }
 
     /// 从核初始化。
+    ///
+    /// # Panics
+    /// 当前核心 ID 超出 `config::MAX_CORE_COUNT` 时 panic。
     pub fn init_smp() {
         let core_id = per_cpu::current_core_id();
+        assert!(
+            core_id < config::MAX_CORE_COUNT,
+            "TaskInitSMP: core_id={} 超出 MAX_CORE_COUNT={}",
+            core_id,
+            config::MAX_CORE_COUNT
+        );
         let idle = Arc::new(TaskControlBlock::new_idle(0, core_id));
 
-        // SAFETY: 每个核心仅写自己的 slot
+        // SAFETY: 每个核心仅写自己的 slot。
         unsafe {
             let mut sched = PerCpuSched::new(SchedPolicy::default_policy());
             sched.current = Some(idle.clone());
@@ -194,6 +212,9 @@ mod api {
     ///
     /// 必须在持有 TASK_TABLE 锁时原子完成「加入睡眠队列 + 设置状态」，
     /// 否则另一核心的 `wake_expired_sleepers()` 可能在窗口期内遗漏该任务。
+    ///
+    /// # Panics
+    /// 当前任务或调度器状态未初始化时 panic。
     pub fn sleep(ticks: u64) {
         let task = super::sched::current_task();
         let now = global_tick::current();
@@ -209,6 +230,9 @@ mod api {
     }
 
     /// 挂起当前任务指定毫秒数。
+    ///
+    /// # Panics
+    /// 当前任务或调度器状态未初始化时 panic。
     pub fn sleep_ms(ms: u64) {
         let ticks = (ms * config::TIMER_FREQ_HZ).div_ceil(1000);
         sleep(ticks);
@@ -217,6 +241,9 @@ mod api {
     ///
     /// 必须在持有 TASK_TABLE 锁时原子完成「加入等待队列 + 设置状态」，
     /// 否则另一核心的 `wakeup_one()` 可能在窗口期内遗漏该任务。
+    ///
+    /// # Panics
+    /// 当前任务或调度器状态未初始化时 panic。
     pub fn block_on(resource: ResourceId) {
         let task = super::sched::current_task();
 
@@ -230,6 +257,9 @@ mod api {
     }
 
     /// 唤醒在指定资源上阻塞的一个任务。
+    ///
+    /// # Panics
+    /// 当前核心调度状态未初始化时 panic。
     pub fn wakeup_one(resource: ResourceId) {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
@@ -250,6 +280,9 @@ mod api {
         table.wake_all(sched, resource);
     }
     /// 退出当前任务。
+    ///
+    /// # Panics
+    /// 当前任务或调度器状态未初始化时 panic。
     pub fn exit(code: i32) -> ! {
         let task = super::sched::current_task();
         let pid = task.pid();
@@ -274,7 +307,7 @@ mod api {
         }
 
         schedule();
-        unreachable!("exited task was rescheduled");
+        unreachable!("已退出任务被重新调度: pid={pid}, exit_code={code}");
     }
 
     /// 等待子进程退出。

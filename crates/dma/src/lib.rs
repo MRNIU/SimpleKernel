@@ -6,9 +6,9 @@
 //! 类型直接扩散到设备层和未来驱动层。
 //!
 //! 当前已提供 `DmaDevice` / `DmaBuffer` / `DmaArray` / `StreamingMapping`
-//! 等 typed wrapper；后端仍是 QEMU VirtIO identity mapping raw backend。
+//! 等类型化封装；后端仍是 QEMU VirtIO 恒等映射的原始后端。
 //!
-//! 真机 non-coherent DMA 的 cache/PTE 语义不属于当前提交承诺。
+//! 真机非一致性 DMA 的 cache/PTE 语义不属于当前提交承诺。
 
 #![no_std]
 

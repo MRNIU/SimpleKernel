@@ -78,9 +78,9 @@ pub(in crate::device) fn probe_mmio_descriptor(
 /// FDT `reg` 地址超出当前地址宽度、transport 初始化失败、block 初始化失败或读测试失败时返回
 /// [`DeviceError`]。
 pub fn probe_mmio_block(context: FdtProbeContext) -> Result<VirtioMmioProbeResult, DeviceError> {
-    let addr = usize::try_from(context.reg.address).map_err(|_| {
+    let addr = usize::try_from(context.reg.address).map_err(|error| {
         log::warn!(
-            "VirtIO MMIO FDT 地址超出 usize: node_id={}, name={}@{}, compatible={}, addr={:#x}, size={:#x}",
+            "VirtIO MMIO FDT 地址超出 usize: node_id={}, name={}@{}, compatible={}, addr={:#x}, size={:#x}, error={error}",
             context.node_id.ordinal(),
             context.node_name.name,
             context.node_name.unit_address.unwrap_or("<none>"),
@@ -105,8 +105,12 @@ fn probe_mmio_at(
     }
 
     let region = memory::MmioRegion::map(paddr, size);
-    let header =
-        NonNull::new(region.base().as_mut_ptr::<VirtIOHeader>()).expect("MMIO vaddr 不应为空");
+    let header = NonNull::new(region.base().as_mut_ptr::<VirtIOHeader>()).unwrap_or_else(|| {
+        panic!(
+            "VirtIO MMIO: 映射后的 header vaddr 为空: paddr={}, size={:#x}",
+            paddr, size
+        )
+    });
 
     // SAFETY: vaddr 指向已映射的 VirtIO MMIO 区域，生命周期为 'static（MMIO 映射永久存在）。
     let transport = match unsafe { MmioTransport::new(header, size) } {

@@ -43,7 +43,9 @@ impl RawSpinLock {
     }
 }
 
-// SAFETY: TTAS 算法通过 Acquire/Release 原子操作保证互斥。
+// SAFETY: TTAS 只在 `false -> true` 的 Acquire CAS 成功后进入临界区，
+// `release` 用 Release store 清除锁位，形成进入/退出临界区的同步边。
+// 失败路径只读取原子锁位，不访问受保护数据；owner_core 仅用于诊断和递归检测。
 unsafe impl RawLock for RawSpinLock {
     #[inline]
     fn acquire(&self) {

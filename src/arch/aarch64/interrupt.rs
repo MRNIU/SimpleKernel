@@ -17,10 +17,10 @@ use memory_types::PhysAddr;
 
 use super::context::TrapContext;
 
-// 异常向量表 + Trap 入口/返回汇编（含宏定义），由 LLVM 内置汇编器处理
+// 异常向量表 + Trap 入口/返回汇编（含宏定义），由 LLVM 内置汇编器处理。
 global_asm!(include_str!("interrupt.S"));
 
-// vector_table 由上述 global_asm! 定义（.balign 0x800 对齐）
+// `vector_table` 由上述 global_asm! 定义（.balign 0x800 对齐）。
 // SAFETY: global_asm! 保证该符号存在
 unsafe extern "C" {
     static vector_table: u8;
@@ -150,8 +150,12 @@ fn init_gic_addrs() {
     GIC_ADDRS.call_once(|| {
         let fdt = crate::platform_fdt::get().expect("init_gic_addrs: FDT 未初始化");
 
-        let gicd = gic_reg_from_fdt(fdt, 0).expect("init_gic_addrs: FDT 中未找到 GICv3 GICD reg");
-        let gicr = gic_reg_from_fdt(fdt, 1).expect("init_gic_addrs: FDT 中未找到 GICv3 GICR reg");
+        let gicd = gic_reg_from_fdt(fdt, 0).unwrap_or_else(|error| {
+            panic!("init_gic_addrs: FDT 中未找到 GICv3 GICD reg: reg_index=0, error={error}")
+        });
+        let gicr = gic_reg_from_fdt(fdt, 1).unwrap_or_else(|error| {
+            panic!("init_gic_addrs: FDT 中未找到 GICv3 GICR reg: reg_index=1, error={error}")
+        });
 
         log::info!(
             "GIC: GICD={:#x}({}), GICR={:#x}({})",
@@ -219,11 +223,27 @@ unsafe fn create_gic<'a>() -> GicV3<'a> {
 fn enable_tlb_shootdown_sgi(gic: &mut GicV3<'_>, cpu_id: usize) {
     let intid = IntId::sgi(TLB_SHOOTDOWN_SGI);
     gic.set_group(intid, Some(cpu_id), Group::Group1NS)
-        .expect("GIC: 设置 TLB shootdown SGI 分组失败");
+        .unwrap_or_else(|error| {
+            panic!(
+                "GIC: 设置 TLB shootdown SGI 分组失败: cpu_id={cpu_id}, sgi={}, error={error:?}",
+                TLB_SHOOTDOWN_SGI
+            )
+        });
     gic.set_interrupt_priority(intid, Some(cpu_id), TLB_SHOOTDOWN_PRIORITY)
-        .expect("GIC: 设置 TLB shootdown SGI 优先级失败");
+        .unwrap_or_else(|error| {
+            panic!(
+                "GIC: 设置 TLB shootdown SGI 优先级失败: cpu_id={cpu_id}, sgi={}, priority={:#x}, error={error:?}",
+                TLB_SHOOTDOWN_SGI,
+                TLB_SHOOTDOWN_PRIORITY
+            )
+        });
     gic.enable_interrupt(intid, Some(cpu_id), true)
-        .expect("GIC: 使能 TLB shootdown SGI 失败");
+        .unwrap_or_else(|error| {
+            panic!(
+                "GIC: 使能 TLB shootdown SGI 失败: cpu_id={cpu_id}, sgi={}, error={error:?}",
+                TLB_SHOOTDOWN_SGI
+            )
+        });
 }
 
 /// 初始化主核中断系统
@@ -232,6 +252,9 @@ fn enable_tlb_shootdown_sgi(gic: &mut GicV3<'_>, cpu_id: usize) {
 /// 2. 映射 GICD/GICR 并通过 arm-gic 初始化 GICv3
 /// 3. 使能虚拟定时器 PPI（IRQ 27）
 /// 4. 通过 DAIFCLR 使能 IRQ
+///
+/// # Panics
+/// FDT 缺少 GICv3 reg、地址非法、GIC 初始化失败或中断配置失败时 panic。
 pub fn init() {
     // SAFETY: vector_table 由链接器定义，.balign 0x800 对齐
     let vbar = unsafe { &vector_table as *const u8 as u64 };
@@ -267,9 +290,19 @@ pub fn init() {
         // 使能虚拟定时器 PPI
         let vtimer_intid = IntId::ppi(VTIMER_PPI);
         gic.set_interrupt_priority(vtimer_intid, Some(cpu_id), VTIMER_PRIORITY)
-            .expect("GIC: 设置定时器中断优先级失败");
+            .unwrap_or_else(|error| {
+                panic!(
+                    "GIC: 设置定时器中断优先级失败: cpu_id={cpu_id}, ppi={}, priority={:#x}, error={error:?}",
+                    VTIMER_PPI,
+                    VTIMER_PRIORITY
+                )
+            });
         gic.enable_interrupt(vtimer_intid, Some(cpu_id), true)
-            .expect("GIC: 使能定时器中断失败");
+            .unwrap_or_else(|error| {
+                panic!(
+                    "GIC: 使能定时器中断失败: cpu_id={cpu_id}, ppi={VTIMER_PPI}, error={error:?}"
+                )
+            });
         enable_tlb_shootdown_sgi(&mut gic, cpu_id);
     }
 
@@ -290,6 +323,9 @@ pub fn init() {
 /// 2. 初始化本核 GIC CPU 接口和 Redistributor
 /// 3. 使能虚拟定时器 PPI
 /// 4. 使能 IRQ
+///
+/// # Panics
+/// 主核未初始化 GIC 地址、GIC CPU 接口初始化失败或本核中断配置失败时 panic。
 pub fn init_smp() {
     // SAFETY: vector_table 由链接器定义
     let vbar = unsafe { &vector_table as *const u8 as u64 };
@@ -313,9 +349,20 @@ pub fn init_smp() {
         // 使能本核虚拟定时器 PPI
         let vtimer_intid = IntId::ppi(VTIMER_PPI);
         gic.set_interrupt_priority(vtimer_intid, Some(cpu_id), VTIMER_PRIORITY)
-            .expect("GIC SMP: 设置定时器中断优先级失败");
+            .unwrap_or_else(|error| {
+                panic!(
+                    "GIC SMP: 设置定时器中断优先级失败: cpu_id={cpu_id}, ppi={}, priority={:#x}, error={error:?}",
+                    VTIMER_PPI,
+                    VTIMER_PRIORITY
+                )
+            });
         gic.enable_interrupt(vtimer_intid, Some(cpu_id), true)
-            .expect("GIC SMP: 使能定时器中断失败");
+            .unwrap_or_else(|error| {
+                panic!(
+                    "GIC SMP: 使能定时器中断失败: cpu_id={cpu_id}, ppi={}, error={error:?}",
+                    VTIMER_PPI
+                )
+            });
         enable_tlb_shootdown_sgi(&mut gic, cpu_id);
     }
 
@@ -353,7 +400,8 @@ fn dispatch_irq(ctx: &mut TrapContext) {
 /// 分发同步异常（读取 ctx.esr_el1，根据 EC 字段路由）
 fn dispatch_sync(ctx: &mut TrapContext) {
     let esr = ctx.esr_el1;
-    let ec = (esr >> 26) & 0x3F; // ESR_EL1.EC 字段
+    // ESR_EL1.EC 字段。
+    let ec = (esr >> 26) & 0x3F;
 
     #[cfg(feature = "test-support")]
     if expected_fault::try_handle(ctx) {

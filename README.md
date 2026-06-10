@@ -186,12 +186,12 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 |------|------|----------|--------------|----------|
 | 容器内开发 | 编译、检查、文档、pre-commit | Dev Container / Codespaces | 否 | `docker exec -w /workspace simplekernel-devcontainer <command>` |
 | CI | DCO、fmt、clippy、单元测试、依赖审计、双架构构建和系统测试 | GitHub Actions + `ghcr.io/simple-xx/simplekernel-devcontainer:latest` | 否 | `.github/workflows/workflow.yml` |
-| QEMU 运行 | 启动内核并观察串口日志 | Dev Container / CI | 否 | `cargo xtask run --arch <arch> --timeout 30` |
-| QEMU 系统测试 | 独立裸机测试二进制回归 | Dev Container / CI | 否 | `cargo xtask test --arch <arch> --timeout 30` |
-| 固件构建 | OpenSBI、U-Boot、OP-TEE、ATF 构建 | Dev Container / CI | 否 | `cargo xtask firmware --arch <arch>` |
+| QEMU 运行 | 启动内核并观察串口日志 | Dev Container / CI | 否 | `docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch <arch> --timeout 30` |
+| QEMU 系统测试 | 独立裸机测试二进制回归 | Dev Container / CI | 否 | `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch <arch> --timeout 30` |
+| 固件构建 | OpenSBI、U-Boot、OP-TEE、ATF 构建 | Dev Container / CI | 否 | `docker exec -w /workspace simplekernel-devcontainer cargo xtask firmware --arch <arch>` |
 | 文档发布 | 生成 rustdoc 并部署 GitHub Pages | GitHub Actions | 否 | `.github/workflows/docs.yml` |
 
-交互式 Bash 中运行 QEMU 相关命令默认使用 `--timeout 30`；低性能宿主机或特殊测试可以显式放宽，但应在命令或说明中写清楚原因。超时后清理残留 `qemu-system` 进程。CI 为稳定性使用 workflow 中声明的更长外层超时和重复次数。
+宿主机侧通过 `docker exec -w /workspace simplekernel-devcontainer ...` 运行 QEMU 相关命令时默认使用 `--timeout 30`；低性能宿主机或特殊测试可以显式放宽，但应在命令或说明中写清楚原因。超时后清理残留 `qemu-system` 进程。CI 为稳定性使用 workflow 中声明的更长外层超时和重复次数。
 
 ### 打包与发布
 
@@ -199,9 +199,9 @@ SimpleKernel 当前没有独立生产容器镜像。需要保留或发布的产�
 
 | 产物 | 生成命令 / workflow | 宿主机可见路径 | 容器内路径 | 校验 / 发布 |
 |------|---------------------|----------------|------------|-------------|
-| 内核 ELF 与调试文件 | `cargo xtask build --arch <arch>` | `target/<target-triple>/<profile>/` | 同 bind mount 路径 | `cargo xtask run --arch <arch> --timeout 30`、`cargo xtask test --arch <arch> --timeout 30` 或 `cargo xtask build` 成功 |
-| 启动产物 | `cargo xtask run --arch <arch> --timeout 30` / `cargo xtask test --arch <arch> --timeout 30` | `target/<target-triple>/<profile>/boot/` | 同 bind mount 路径 | 包含 `boot.fit`、`boot.scr.uimg`、`rootfs.img` 等 |
-| 固件产物 | `cargo xtask firmware --arch <arch>` | `target/firmware/<arch>/` | 同 bind mount 路径 | `ensure_firmware_exists()` 检查必需文件 |
+| 内核 ELF 与调试文件 | `docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch <arch>` | `target/<target-triple>/<profile>/` | 同 bind mount 路径 | `docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch <arch> --timeout 30`、`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch <arch> --timeout 30` 或构建成功 |
+| 启动产物 | `docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch <arch> --timeout 30` / `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch <arch> --timeout 30` | `target/<target-triple>/<profile>/boot/` | 同 bind mount 路径 | 包含 `boot.fit`、`boot.scr.uimg`、`rootfs.img` 等 |
+| 固件产物 | `docker exec -w /workspace simplekernel-devcontainer cargo xtask firmware --arch <arch>` | `target/firmware/<arch>/` | 同 bind mount 路径 | `ensure_firmware_exists()` 检查必需文件 |
 | rustdoc Pages artifact | `.github/workflows/docs.yml` | CI 工作区 `docs-out/` | `docs-out/` | `actions/upload-pages-artifact` 后部署 GitHub Pages |
 | Dev Container 镜像 | `.github/workflows/dev-image.yml` | GHCR | `ghcr.io/simple-xx/simplekernel-devcontainer:{latest,sha}` | workflow build-and-push 成功 |
 
@@ -300,7 +300,7 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 | [`elf`](https://crates.io/crates/elf) | 零拷贝 ELF 解析（no_std） |
 | [`rustc-demangle`](https://crates.io/crates/rustc-demangle) | Rust 符号 demangling（栈回溯） |
 | [`unwinding`](https://crates.io/crates/unwinding) | DWARF 栈回溯 |
-| [`fdt`](https://crates.io/crates/fdt) | 纯 Rust 设备树（FDT）解析器 |
+| [`fdt`](https://crates.io/crates/fdt) | 纯 Rust 设备树（FDT）解析器，由本地 `platform_fdt` crate 封装 |
 | [`qemu-exit`](https://crates.io/crates/qemu-exit) | 用指定退出码结束 QEMU（系统测试） |
 | [`virtio-drivers`](https://crates.io/crates/virtio-drivers) | VirtIO 协议栈（blk/net/console/gpu） |
 | [`sbi-rt`](https://crates.io/crates/sbi-rt) | RISC-V SBI 运行时接口 |
@@ -327,8 +327,8 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 ### 代码风格
 
 - **语言**: Rust nightly，`#![no_std]`，edition 2024
-- **格式化**: 使用 rustfmt 默认 100 字符宽度，执行 `cargo fmt --all`
-- **静态检查**: `cargo clippy -- -D warnings`
+- **格式化**: 使用 rustfmt 默认 100 字符宽度，通过固定容器执行 `cargo fmt --all`
+- **静态检查**: 通过固定容器执行 `cargo clippy -- -D warnings`
 - **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文
 - **完整约定**: Copyright、注释、文件规模、严格 JSON、第三方代码和运行时配置规则见 [docs/conventions.md](./docs/conventions.md)
 
@@ -343,7 +343,7 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 
 ### Git Commit 规范
 
-提交规则以 [.gitmessage](./.gitmessage) 为详细模板。每条 commit 必须使用 `git commit --signoff`（DCO 签署），PR CI 会检查每个 commit 是否包含 `Signed-off-by` trailer。
+提交格式、正文、footer 和发布卫生规则以 [.gitmessage](./.gitmessage) 为唯一详细模板。每条 commit 必须使用 `git commit --signoff`（DCO 签署），PR CI 会检查 `Signed-off-by` trailer。
 
 可选启用仓库提交模板：
 

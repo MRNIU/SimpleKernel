@@ -13,9 +13,23 @@ static TIMEKEEPER_CORE_ID: AtomicUsize = AtomicUsize::new(usize::MAX);
 /// # Panics
 /// 当 timekeeper 已经初始化过时 panic。
 pub fn init_timekeeper(core_id: usize) {
-    TIMEKEEPER_CORE_ID
-        .compare_exchange(usize::MAX, core_id, Ordering::AcqRel, Ordering::Acquire)
-        .expect("TimerInit: timekeeper 已初始化");
+    assert!(
+        core_id < config::MAX_CORE_COUNT,
+        "TimerInit: timekeeper core_id {} 超出 MAX_CORE_COUNT {}",
+        core_id,
+        config::MAX_CORE_COUNT
+    );
+    if let Err(existing) = TIMEKEEPER_CORE_ID.compare_exchange(
+        usize::MAX,
+        core_id,
+        Ordering::AcqRel,
+        Ordering::Acquire,
+    ) {
+        panic!(
+            "TimerInit: timekeeper 已初始化: existing_core_id={existing}, new_core_id={core_id}, MAX_CORE_COUNT={}",
+            config::MAX_CORE_COUNT
+        );
+    }
 }
 
 /// 返回负责推进全局 tick 的 CPU。
@@ -24,7 +38,12 @@ pub fn init_timekeeper(core_id: usize) {
 /// 当 timekeeper 尚未初始化时 panic。
 pub fn timekeeper_core_id() -> usize {
     let core_id = TIMEKEEPER_CORE_ID.load(Ordering::Acquire);
-    assert_ne!(core_id, usize::MAX, "TimerInit: timekeeper 未初始化");
+    assert!(
+        core_id != usize::MAX,
+        "TimerInit: timekeeper 未初始化: sentinel={}, MAX_CORE_COUNT={}",
+        usize::MAX,
+        config::MAX_CORE_COUNT
+    );
     core_id
 }
 

@@ -60,7 +60,7 @@ docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings
 
 ## Commit
 
-commit 使用 Conventional Commits 格式，并且必须带 DCO sign-off。详细提交模板以 [.gitmessage](./.gitmessage) 为准：
+commit 必须带 DCO sign-off，提交格式、正文、footer 和发布卫生规则以 [.gitmessage](./.gitmessage) 为唯一详细模板：
 
 ```bash
 git commit --signoff -m "docs(conventions): 补充文档结构约定"

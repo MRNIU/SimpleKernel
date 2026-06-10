@@ -138,8 +138,9 @@ impl AtomicTaskState {
     ///
     /// 若底层存储值不对应任何已知 `TaskState` 变体则 panic（不应发生）。
     pub fn load(&self) -> TaskState {
-        TaskState::from_u8(self.0.load(Ordering::Acquire))
-            .expect("AtomicTaskState: 存储了无效的状态值")
+        let raw = self.0.load(Ordering::Acquire);
+        TaskState::from_u8(raw)
+            .unwrap_or_else(|| panic!("AtomicTaskState: 存储了无效的状态值: raw={raw}"))
     }
 
     /// 以 `Release` 语序写入新状态。

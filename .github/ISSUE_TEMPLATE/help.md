@@ -13,6 +13,8 @@ assignees: ''
 
 ## 已尝试的步骤
 
+问题类型：Rust API / QEMU 运行 / QEMU 系统测试 / Dev Container / `xtask` / 文档
+
 ```bash
 docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
 ```
@@ -23,6 +25,7 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch risc
 - 容器入口：`simplekernel-devcontainer`
 - 分支或 commit：
 - 目标架构：`riscv64` / `aarch64` / 不适用
+- 是否修改过容器、QEMU 参数、固件或测试镜像：
 - QEMU 命令是否使用 `--timeout 30`，如放宽请说明原因：
 
 ## 其他上下文

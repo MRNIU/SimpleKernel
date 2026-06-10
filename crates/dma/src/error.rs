@@ -20,7 +20,7 @@ pub enum DmaError {
     AlignMismatch { required: usize, address: u64 },
     /// DMA 指针为空。
     NullPointer,
-    /// DMA buffer 大小为 0。
+    /// DMA 缓冲区大小为 0。
     ZeroSizedBuffer,
     /// 页数为 0，无法分配或释放 DMA 区域。
     ZeroPages,
@@ -80,7 +80,7 @@ impl fmt::Display for DmaError {
                 "DMA 地址不满足对齐要求: required={required}, address={address:#x}",
             ),
             DmaError::NullPointer => write!(f, "DMA 指针为空"),
-            DmaError::ZeroSizedBuffer => write!(f, "DMA buffer 大小为 0"),
+            DmaError::ZeroSizedBuffer => write!(f, "DMA 缓冲区大小为 0"),
             DmaError::ZeroPages => write!(f, "DMA 页数不能为 0"),
             DmaError::UnknownRawRegion { paddr } => {
                 write!(f, "未找到 raw DMA 区域: paddr={paddr:#x}")

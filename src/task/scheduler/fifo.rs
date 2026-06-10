@@ -93,13 +93,13 @@ mod tests {
         sched.enqueue(make_task(1));
         sched.enqueue(make_task(2));
         sched.enqueue(make_task(3));
-        // steal 从队尾取（最后入队的任务），与 pick_next 从队首取相反
+        // steal 从队尾取（最后入队的任务），与 pick_next 从队首取相反。
         let stolen = sched.steal_one().expect("应能偷到任务");
         assert_eq!(stolen.pid(), 3);
         assert_eq!(sched.queue_size(), 2);
-        // 队列中剩余 [1, 2]
-        assert_eq!(sched.pick_next().expect("").pid(), 1);
-        assert_eq!(sched.pick_next().expect("").pid(), 2);
+        // 队列中剩余 [1, 2]。
+        assert_eq!(sched.pick_next().expect("队列中应剩余 pid=1").pid(), 1);
+        assert_eq!(sched.pick_next().expect("队列中应剩余 pid=2").pid(), 2);
     }
 
     #[test]

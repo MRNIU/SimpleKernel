@@ -46,9 +46,11 @@ impl CapabilityRegistry {
             device_type,
             source,
         };
+        let count = self.devices.len();
         self.devices
             .push(device)
-            .map_err(|_| RegistryError::TooManyDevices {
+            .map_err(|_rejected_device| RegistryError::TooManyDevices {
+                count,
                 max: MAX_REGISTERED_DEVICES,
             })?;
         Ok(id)
@@ -72,12 +74,14 @@ impl CapabilityRegistry {
             self.default_block_device = Some(device_id);
         }
 
+        let count = self.capabilities.len();
         self.capabilities
             .push(RegisteredCapability {
                 device_id,
                 capability,
             })
-            .map_err(|_| RegistryError::TooManyCapabilities {
+            .map_err(|_rejected_capability| RegistryError::TooManyCapabilities {
+                count,
                 max: MAX_DEVICE_CAPABILITIES,
             })
     }

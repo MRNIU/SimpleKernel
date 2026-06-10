@@ -138,6 +138,10 @@ const fn compute_level_shifts() -> [usize; PT_LEVELS] {
 pub const LEVEL_SHIFTS: [usize; PT_LEVELS] = compute_level_shifts();
 
 /// 返回第 `level` 级映射的页大小（字节）。
+///
+/// # Panics
+///
+/// `level >= PT_LEVELS` 时 panic。调用方必须先用当前架构的页表层级数校验输入。
 #[inline]
 pub const fn page_size_at_level(level: usize) -> usize {
     1usize << LEVEL_SHIFTS[level]
@@ -163,7 +167,8 @@ pub fn percpu_base() -> usize {
 /// 调用方必须保证 `val` 指向有效的 per-CPU 区域基地址。
 #[inline(always)]
 pub unsafe fn set_percpu_base(val: usize) {
-    // SAFETY: 由调用方保证
+    // SAFETY: 本函数的安全契约要求 `val` 是当前核心有效的 per-CPU 基地址。
+    // 架构后端只负责写寄存器；若调用方传入非法地址，后续 per-CPU 访问会读写错误内存。
     unsafe { Impl::set_percpu_base(val) };
 }
 
@@ -194,7 +199,8 @@ pub fn disable_irq() {
 /// 3. 栈和上下文状态允许安全地处理中断
 #[inline(always)]
 pub unsafe fn enable_irq() {
-    // SAFETY: 由调用方保证
+    // SAFETY: 本函数的安全契约要求中断入口、栈和当前临界区状态已经就绪。
+    // 架构后端只负责解除硬件屏蔽；若前提不满足，中断可能在错误上下文中重入。
     unsafe { Impl::enable_irq() };
 }
 

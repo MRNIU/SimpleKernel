@@ -61,7 +61,10 @@ pub fn device_init() {
     manager::init();
     platform_bus::probe_all();
     let default_block = block::default_block_device_id().unwrap_or_else(|| {
-        panic!("DeviceInit: Full 初始化完成后缺少默认 Block capability，无法继续初始化文件系统")
+        panic!(
+            "DeviceInit: Full 初始化完成后缺少默认 Block capability，无法继续初始化文件系统: device_count={}",
+            device_count()
+        )
     });
     let count = device_count();
     log::info!(

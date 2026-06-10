@@ -39,7 +39,11 @@ fn log_cpu_id_table(ids: &[usize]) {
 /// 当 CPU 列表为空、CPU 数超过 [`config::MAX_CORE_COUNT`]、id 重复、
 /// id 超出 `0..core_count`，或表中存在空洞时 panic。
 pub fn validate_dense_core_ids(ids: &[usize]) {
-    assert!(!ids.is_empty(), "CPU topology: CPU 列表不能为空");
+    assert!(
+        !ids.is_empty(),
+        "CPU topology: CPU 列表不能为空: MAX_CORE_COUNT={}",
+        config::MAX_CORE_COUNT
+    );
     assert!(
         ids.len() <= config::MAX_CORE_COUNT,
         "CPU topology: CPU 数 {} 超出 MAX_CORE_COUNT {}",
@@ -60,7 +64,13 @@ pub fn validate_dense_core_ids(ids: &[usize]) {
         }
         if seen[core_id] {
             log_cpu_id_table(ids);
-            panic!("CPU topology: FDT CPU id {} 重复", core_id);
+            panic!(
+                "CPU topology: FDT CPU id {} 重复: entry={}, ids_len={}, MAX_CORE_COUNT={}",
+                core_id,
+                entry,
+                ids.len(),
+                config::MAX_CORE_COUNT
+            );
         }
         seen[core_id] = true;
     }
@@ -68,7 +78,12 @@ pub fn validate_dense_core_ids(ids: &[usize]) {
     for (expected, present) in seen.iter().copied().take(ids.len()).enumerate() {
         if !present {
             log_cpu_id_table(ids);
-            panic!("CPU topology: FDT CPU 表缺少 dense core_id={}", expected);
+            panic!(
+                "CPU topology: FDT CPU 表缺少 dense core_id={}: ids_len={}, MAX_CORE_COUNT={}",
+                expected,
+                ids.len(),
+                config::MAX_CORE_COUNT
+            );
         }
     }
 }
@@ -81,21 +96,37 @@ pub fn validate_dense_core_ids(ids: &[usize]) {
 /// 当 FDT CPU 表无法解析、CPU id 不满足 dense 平台契约、primary core id
 /// 不在 FDT CPU 表中，或 topology 被重复初始化时 panic。
 pub fn init_from_fdt(fdt: &crate::platform_fdt::PlatformFdt) -> usize {
-    let ids = fdt
-        .cpu_hardware_ids()
-        .expect("CPU topology: FDT CPU id 解析失败");
+    let ids = fdt.cpu_hardware_ids().unwrap_or_else(|error| {
+        panic!(
+            "CPU topology: FDT CPU id 解析失败: storage={:#x}, totalsize={:#x}, error={error}",
+            fdt.storage_addr(),
+            fdt.total_size()
+        )
+    });
     validate_dense_core_ids(&ids);
 
     let primary_core_id = per_cpu::current_core_id();
     if primary_core_id >= ids.len() {
         log_cpu_id_table(&ids);
         panic!(
-            "CPU topology: primary core_id={} 不在 FDT dense CPU 表 0..{} 中",
+            "CPU topology: primary core_id={} 不在 FDT dense CPU 表 0..{} 中: ids_len={}, MAX_CORE_COUNT={}",
             primary_core_id,
-            ids.len()
+            ids.len(),
+            ids.len(),
+            config::MAX_CORE_COUNT
         );
     }
 
+    if let Some(existing) = CPU_TOPOLOGY.get() {
+        panic!(
+            "CPU topology: 重复初始化: existing_core_count={}, existing_primary={}, new_core_count={}, new_primary={}, MAX_CORE_COUNT={}",
+            existing.discovered_core_count(),
+            existing.primary_core_id(),
+            ids.len(),
+            primary_core_id,
+            config::MAX_CORE_COUNT
+        );
+    }
     crate::timer::init_timekeeper(primary_core_id);
     CPU_TOPOLOGY.call_once(|| CpuTopology {
         discovered_core_count: ids.len(),
@@ -114,5 +145,11 @@ pub fn init_from_fdt(fdt: &crate::platform_fdt::PlatformFdt) -> usize {
 /// # Panics
 /// 当 CPU topology 尚未初始化时 panic。
 pub fn topology() -> &'static CpuTopology {
-    CPU_TOPOLOGY.get().expect("CPU topology 尚未初始化")
+    CPU_TOPOLOGY.get().unwrap_or_else(|| {
+        panic!(
+            "CPU topology 尚未初始化: current_core_id={}, MAX_CORE_COUNT={}",
+            per_cpu::current_core_id(),
+            config::MAX_CORE_COUNT
+        )
+    })
 }

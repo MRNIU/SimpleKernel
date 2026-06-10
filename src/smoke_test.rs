@@ -76,7 +76,7 @@ fn p5b_test_thread(_arg: usize) {
     syscall::process::nanosleep(500);
     let tick_after = global_tick::current();
     let elapsed = tick_after.saturating_sub(tick_before);
-    // 500ms @ 10Hz = 5 ticks（全局计数器被双核推进，实际约 10），允许 ≥3
+    // 500ms 在 10Hz 下是 5 tick；全局计数器会被多核推进，允许最少 3 tick。
     log::info!("P5b: sleep_ms(500) elapsed {} ticks", elapsed);
     if elapsed >= 3 {
         log::info!("=== SLEEP TEST PASSED ===");
@@ -110,7 +110,9 @@ fn p5b_test_thread(_arg: usize) {
     log::info!("P5b: testing KMutex...");
     static KMUTEX: spin::Once<task::mutex::KMutex> = spin::Once::new();
     KMUTEX.call_once(task::mutex::KMutex::new);
-    let km = KMUTEX.get().expect("KMutex not initialized");
+    let km = KMUTEX
+        .get()
+        .expect("P5b KMutex smoke: KMUTEX.call_once 后仍未初始化");
     km.lock();
     log::info!("P5b: KMutex acquired");
     km.unlock();
@@ -165,30 +167,46 @@ fn p6p7_test_thread(_arg: usize) {
     log::info!("P6P7: {} devices registered", dev_count);
 
     log::info!("P6P7: testing VFS in kernel thread...");
-    let (fs, root) = simplekernel::fs::resolve_path("/").expect("resolve /");
+    let (fs, root) =
+        simplekernel::fs::resolve_path("/").expect("P6P7 VFS smoke: resolve path=/ 失败");
 
     // 创建文件并写入
     let inode = fs
         .create(root, "thread_test.txt", FileType::Regular)
-        .expect("create");
+        .unwrap_or_else(|error| {
+            panic!("P6P7 VFS smoke: create parent={root} name=thread_test.txt 失败: {error}")
+        });
     let data = b"written from kernel thread";
-    fs.write(inode, 0, data).expect("write");
+    fs.write(inode, 0, data).unwrap_or_else(|error| {
+        panic!(
+            "P6P7 VFS smoke: write inode={inode} offset=0 len={} 失败: {error}",
+            data.len()
+        )
+    });
 
     // 让出 CPU，验证上下文切换后文件仍可读
     syscall::process::yield_now();
 
     // 读回验证
     let mut buf = [0u8; 64];
-    let n = fs.read(inode, 0, &mut buf).expect("read");
+    let n = fs.read(inode, 0, &mut buf).unwrap_or_else(|error| {
+        panic!(
+            "P6P7 VFS smoke: read inode={inode} offset=0 buf_len={} 失败: {error}",
+            buf.len()
+        )
+    });
     assert_eq!(&buf[..n], data);
     log::info!("P6P7: VFS read after yield OK");
 
     // 通过路径解析查找
-    let (_, resolved) = simplekernel::fs::resolve_path("/thread_test.txt").expect("resolve");
+    let (_, resolved) = simplekernel::fs::resolve_path("/thread_test.txt")
+        .expect("P6P7 VFS smoke: resolve path=/thread_test.txt 失败");
     assert_eq!(resolved, inode);
 
     // 清理
-    fs.unlink(root, "thread_test.txt").expect("unlink");
+    fs.unlink(root, "thread_test.txt").unwrap_or_else(|error| {
+        panic!("P6P7 VFS smoke: unlink parent={root} name=thread_test.txt 失败: {error}")
+    });
 
     log::info!("=== P6P7 TEST PASSED ===");
 }

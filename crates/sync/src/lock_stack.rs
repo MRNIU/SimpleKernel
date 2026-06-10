@@ -54,8 +54,12 @@ pub struct LockStackEntry {
     pub level: u8,
 }
 
-// SAFETY: lock_ptr 仅用于比较、从不解引用；访问发生在中断关闭的 per-CPU 上下文中。
+// SAFETY: `lock_ptr` 只作为不透明标识进行相等比较，从不解引用；
+// 条目移动到其他上下文不会赋予访问被指向锁对象的能力。
 unsafe impl Send for LockStackEntry {}
+
+// SAFETY: `LockStackEntry` 不提供内部可变性，`lock_ptr` 也不会被解引用；
+// 共享引用只能读取诊断字段，不会造成跨核心数据竞争。
 unsafe impl Sync for LockStackEntry {}
 
 /// Per-CPU 锁栈——获取新锁时检查级别是否严格大于栈顶。
@@ -131,7 +135,7 @@ impl LockStack {
         assert_eq!(
             self.entries[self.depth - 1].lock_ptr,
             lock_ptr,
-            "lock stack corrupted — 释放顺序与获取顺序不一致"
+            "lock stack corrupted: 释放顺序与获取顺序不一致"
         );
         self.depth -= 1;
     }

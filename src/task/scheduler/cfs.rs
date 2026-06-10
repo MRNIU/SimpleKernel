@@ -141,7 +141,7 @@ mod tests {
         sched.enqueue(t1.clone());
         sched.enqueue(t2);
 
-        // pick t1 (vruntime=0)
+        // 取出 t1，当前 vruntime 为 0。
         let picked = sched.pick_next().expect("取到 t1");
         assert_eq!(picked.pid(), 1);
 
@@ -171,10 +171,12 @@ mod tests {
 
         // 运行 t1 两个 tick
         let picked = sched.pick_next().expect("t1");
-        sched.task_tick(&picked); // vruntime=1
-        sched.task_tick(&picked); // vruntime=2
+        // 第一次 tick 后 vruntime=1。
+        sched.task_tick(&picked);
+        // 第二次 tick 后 vruntime=2。
+        sched.task_tick(&picked);
 
-        // 通过 put_prev 放回 t1（保留 vruntime=2）
+        // 通过 put_prev 放回 t1（保留 vruntime=2）。
         sched.put_prev(t1);
 
         // t2(vruntime=0) 应先被选中（因为 t1 的 vruntime=2 更大）
@@ -203,7 +205,8 @@ mod tests {
         let picked = sched.pick_next().expect("t1");
         sched.task_tick(&picked);
         sched.task_tick(&picked);
-        sched.put_prev(picked); // t1.vruntime=2
+        // 此时 t1.vruntime=2。
+        sched.put_prev(picked);
 
         // 现在队列: t2(vruntime=0), t1(vruntime=2)
         // steal_one 从 Vec 尾部弹出——排序后最大 vruntime 的在末尾

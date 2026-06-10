@@ -20,7 +20,7 @@ pub unsafe fn dtb_addr_from_argv(argc: i32, argv: *const *const u8) -> usize {
     }
 
     // SAFETY: 调用方保证 argv 满足 U-Boot bootm 参数布局。
-    let addr = unsafe { parse_hex_from_argv2(argv) };
+    let addr = unsafe { parse_hex_from_argv2(argc, argv) };
     addr as usize
 }
 
@@ -28,15 +28,17 @@ pub unsafe fn dtb_addr_from_argv(argc: i32, argv: *const *const u8) -> usize {
 ///
 /// # Safety
 /// `argv` 必须是 U-Boot 传入的有效指针数组。
-unsafe fn parse_hex_from_argv2(argv: *const *const u8) -> u64 {
+unsafe fn parse_hex_from_argv2(argc: i32, argv: *const *const u8) -> u64 {
     if argv.is_null() {
-        panic!("AArch64 boot argv 为空，无法读取 DTB 地址: argv={argv:p}");
+        panic!("AArch64 boot argv 为空，无法读取 DTB 地址: argc={argc}, argv={argv:p}");
     }
 
     // SAFETY: U-Boot bootm 传入的 argv 至少包含 3 个元素
     let argv2 = unsafe { *argv.add(2) };
     if argv2.is_null() {
-        panic!("AArch64 boot argv[2] 为空，无法读取 DTB 地址: argv={argv:p}, argv2={argv2:p}");
+        panic!(
+            "AArch64 boot argv[2] 为空，无法读取 DTB 地址: argc={argc}, argv={argv:p}, argv2={argv2:p}"
+        );
     }
 
     let mut buf = [0u8; 32];
@@ -53,30 +55,41 @@ unsafe fn parse_hex_from_argv2(argv: *const *const u8) -> u64 {
 
     if len == buf.len() {
         panic!(
-            "AArch64 boot argv[2] 未在最大长度内终止: argv2={argv2:p}, max_len={}, bytes={:x?}",
+            "AArch64 boot argv[2] 未在最大长度内终止: argc={argc}, argv={argv:p}, argv2={argv2:p}, max_len={}, bytes={:x?}",
             buf.len(),
             &buf[..]
+        );
+    }
+    if len == 0 {
+        panic!(
+            "AArch64 boot argv[2] 为空字符串，无法解析 DTB 地址: argc={argc}, argv={argv:p}, argv2={argv2:p}, len={len}"
         );
     }
 
     let s = core::str::from_utf8(&buf[..len]).unwrap_or_else(|error| {
         panic!(
-            "AArch64 boot argv[2] 不是有效 UTF-8: argv2={argv2:p}, len={len}, error={error}, bytes={:x?}",
+            "AArch64 boot argv[2] 不是有效 UTF-8: argc={argc}, argv={argv:p}, argv2={argv2:p}, len={len}, error={error}, bytes={:x?}",
             &buf[..len]
         )
     });
-    let hex = s
-        .strip_prefix("0x")
-        .or_else(|| s.strip_prefix("0X"))
-        .unwrap_or(s);
+    let hex = if let Some(stripped) = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")) {
+        stripped
+    } else {
+        s
+    };
     match u64::from_str_radix(hex, 16) {
-        Ok(addr) => addr,
+        Ok(addr) if addr != 0 => addr,
+        Ok(addr) => {
+            panic!(
+                "AArch64 boot argv[2] 解析出无效 DTB 地址 0: argc={argc}, argv={argv:p}, argv2={argv2:p}, len={len}, raw='{s}', parsed='{hex}', parsed_addr={addr:#x}"
+            );
+        }
         Err(error) => {
             logging::raw_put("ERROR: 无法解析 DTB 地址: '");
             logging::raw_put(s);
             logging::raw_put("'\n");
             panic!(
-                "AArch64 boot argv[2] 不是十六进制 DTB 地址: argv2={argv2:p}, raw='{s}', parsed='{hex}', error={error}"
+                "AArch64 boot argv[2] 不是十六进制 DTB 地址: argc={argc}, argv={argv:p}, argv2={argv2:p}, len={len}, raw='{s}', parsed='{hex}', error={error}"
             );
         }
     }

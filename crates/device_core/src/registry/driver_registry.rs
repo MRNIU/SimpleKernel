@@ -86,12 +86,12 @@ impl<'drivers> DriverRegistry<'drivers> {
 
         let mut drivers = Vec::new();
         for descriptor in descriptors {
-            drivers
-                .push(descriptor)
-                .map_err(|_| RegistryError::TooManyDrivers {
+            drivers.push(descriptor).map_err(|_rejected_descriptor| {
+                RegistryError::TooManyDrivers {
                     count: descriptors.len(),
                     max: MAX_DRIVER_DESCRIPTORS,
-                })?;
+                }
+            })?;
         }
         drivers
             .as_mut_slice()
@@ -101,7 +101,7 @@ impl<'drivers> DriverRegistry<'drivers> {
         for descriptor in &drivers {
             stats
                 .push(DriverProbeStats::new(descriptor.name))
-                .map_err(|_| RegistryError::TooManyDrivers {
+                .map_err(|_rejected_stats| RegistryError::TooManyDrivers {
                     count: descriptors.len(),
                     max: MAX_DRIVER_DESCRIPTORS,
                 })?;
