@@ -99,6 +99,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 
 ### Repository Hygiene
 - **Copyright**：仓库自有源码、脚本、CI 配置、重要项目配置和长期维护文档，新增时应带 `Copyright The SimpleKernel Contributors` 文件头；严格 JSON 或不支持注释的文件不强行加入文件头。
+- **Rust 文件说明**：仓库自有 Rust 源文件版权头后必须用 `//!` 写文件或模块职责说明，再写 `#![...]`、`use` 和代码。
 - **机器可读格式**：`.json` 文件保持严格 JSON，不写注释、不留尾随逗号；需要说明时写在相邻文档。
 - **文件规模**：手写源码超过 300 行时 review 应检查职责边界；原则上不超过 500 行，超过时 PR 需说明暂不拆分理由或拆分计划。
 - **错误定义**：所有项目自有错误类型都应能向上层暴露，让调用方决定处理、降级或转换；错误 enum 和对应 Result alias 统一放在所属 crate 或子系统最近的 `error.rs`，并由模块根按需 re-export。不要新增只服务单个小模块的私有错误定义。
