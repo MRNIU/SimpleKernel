@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! `PlatformFdt` 的节点查询实现。
+
 use fdt_parser::nodes::AsNode;
 
 use crate::{FdtError, PlatformFdt};

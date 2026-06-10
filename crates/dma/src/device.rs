@@ -37,6 +37,10 @@ impl DmaDevice {
     }
 
     /// 分配单个 typed coherent DMA buffer。
+    ///
+    /// # Errors
+    ///
+    /// DMA API 拒绝布局、对齐或后端内存分配失败时返回错误。
     pub fn buffer_zeroed<T: DmaValue>(
         &self,
         align: usize,
@@ -49,6 +53,10 @@ impl DmaDevice {
     }
 
     /// 分配固定长度 typed coherent DMA array。
+    ///
+    /// # Errors
+    ///
+    /// DMA API 拒绝布局、对齐或后端内存分配失败时返回错误。
     pub fn array_zeroed<T: DmaValue>(
         &self,
         len: usize,
@@ -67,6 +75,10 @@ impl DmaDevice {
     ///
     /// `buffer` 必须在返回的 mapping 生命周期内保持有效；调用方必须按目标 DMA
     /// 方向维护别名和同步规则，避免 CPU 与设备并发访问同一内存时破坏一致性。
+    ///
+    /// # Errors
+    ///
+    /// DMA API 拒绝 buffer、对齐或后端映射失败时返回错误。
     pub unsafe fn map_slice<T: DmaValue>(
         &self,
         buffer: &[T],

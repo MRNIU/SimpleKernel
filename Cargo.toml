@@ -1,14 +1,15 @@
 # Copyright The SimpleKernel Contributors
 
-# SimpleKernel — Rust 版本
+# SimpleKernel — Rust no_std kernel workspace
 #
-# 工作区包含两个 crate:
-#   - 根 crate: 内核主体 (#![no_std], 交叉编译到 riscv64/aarch64)
-#   - xtask:    构建辅助工具 (宿主机运行, 替代 CMake)
+# 工作区包含根内核 crate、内部子系统 crate、QEMU 系统测试 crate 和 xtask 工具。
+# 公开构建、运行和测试入口统一通过 `cargo xtask ...`，不要在文档入口中暴露
+# 旧自定义 target JSON 示例。
 #
-# 使用方法:
-#   cargo build --target targets/riscv64-none.json
-#   cargo xtask run --arch riscv64
+# 使用方法（在项目 Dev Container 内执行）:
+#   cargo xtask build --arch riscv64
+#   cargo xtask run --arch riscv64 --timeout 30
+#   cargo xtask test --arch riscv64 --timeout 30
 
 [workspace]
 members = [

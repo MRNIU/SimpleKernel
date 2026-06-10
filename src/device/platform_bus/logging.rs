@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! PlatformBus probe 结果日志输出。
+
 use device_core::{DriverDescriptor, DriverRegistry, ProbeContext, ProbeOutcome, ProbeRequirement};
 
 pub(super) fn log_probe_outcome(

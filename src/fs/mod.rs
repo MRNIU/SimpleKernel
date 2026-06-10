@@ -160,7 +160,12 @@ fn vfs_smoke_test() {
     // read
     let mut buf = [0u8; 32];
     let read = fs.read(file_id, 0, &mut buf).expect("read 应成功");
-    let content = core::str::from_utf8(&buf[..read]).expect("UTF-8 解码失败");
+    let content = core::str::from_utf8(&buf[..read]).unwrap_or_else(|error| {
+        panic!(
+            "VFS smoke test UTF-8 解码失败: read={read}, error={error}, bytes={:x?}",
+            &buf[..read]
+        )
+    });
     log::info!("VFS test: read \"{}\" OK", content);
 
     // unlink

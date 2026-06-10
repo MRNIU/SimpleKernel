@@ -142,3 +142,9 @@ Per-CPU 变量的"无锁"前提是同一核心上不会有并发访问。
 
 跨核访问其他 CPU 的 per-CPU 变量存在数据竞争风险。
 安全选项：使用原子类型（`AtomicBool`、`AtomicUsize`）或确保目标 CPU 已停止。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- per-CPU 区域、访问 API 或宏消费方式变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p per_cpu -- -D warnings`。
+- 影响 CPU local 初始化或跨核访问时，补跑相关 QEMU 测试；基础入口是 `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name arch-test --timeout 30`。

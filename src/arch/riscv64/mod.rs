@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! RISC-V 64 架构实现入口。
+
 mod boot;
 pub mod console;
 pub mod context;

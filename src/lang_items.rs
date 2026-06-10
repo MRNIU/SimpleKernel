@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! 裸机 Rust runtime lang items。
+
 use core::alloc::Layout;
 use core::panic::PanicInfo;
 

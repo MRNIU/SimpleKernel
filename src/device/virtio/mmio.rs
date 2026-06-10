@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! VirtIO MMIO transport 的 FDT probe 与初始化。
+
 use core::ptr::NonNull;
 
 use device_core::{

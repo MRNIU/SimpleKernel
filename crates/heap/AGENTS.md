@@ -23,3 +23,14 @@ memory::init()
 
 **禁止在中断上下文中进行堆分配**——alloc/dealloc 入口包含运行时断言。
 中断处理器应使用栈分配或 `heapless` 容器。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- allocator 初始化或分配路径变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p heap -- -D warnings`。
+- 堆扩展或中断上下文约束变更：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name heap-test --timeout 30`。
+
+## 不要假设
+
+- 不要在帧分配器就绪前移除 BSS 引导堆；它用于打破堆和帧分配器的启动循环。
+- 不要在中断上下文中引入 `Box`、`Vec`、`String` 或 `format!`。

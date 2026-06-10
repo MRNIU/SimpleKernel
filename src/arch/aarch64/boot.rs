@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! AArch64 早期汇编入口与启动栈布局。
+
 use core::arch::global_asm;
 
 const _: () = assert!(

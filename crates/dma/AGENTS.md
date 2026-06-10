@@ -43,3 +43,14 @@ cache maintenance 策略，应只影响本 crate 的实现和对外封装。
 
 后续真机 non-coherent DMA 支持需要单独设计 cache maintenance、PTE 属性和设备
 DMA capability。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- wrapper 或 raw 后端变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p dma -- -D warnings`。
+- 影响 VirtIO block I/O 时：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name device-test --timeout 30`。
+
+## 不要假设
+
+- 不要把当前 QEMU identity mapping 后端写成真机 non-coherent DMA 保证。
+- 不要让 `dma_api::*` 类型越过本 crate 边界进入设备层 public API。

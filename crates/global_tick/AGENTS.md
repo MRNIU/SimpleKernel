@@ -53,3 +53,14 @@ scheduler / sleep / timeout
 ```
 
 修改 `TIMER_FREQ_HZ` 不需要改动本 crate——只影响 `src/arch` 层的定时器配置。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- tick API 或原子语义变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p global_tick -- -D warnings`。
+- 影响 timer handler、sleep 或调度记账时，补跑相关 QEMU 测试；完整系统入口是 `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30`。
+
+## 不要假设
+
+- 不要把 tick 计数直接当成真实 elapsed time；它只记录已处理的 timer interrupt。
+- 不要让非 BSP 核递增全局 tick，per-CPU 记账应放在 `local_tick`。

@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! `xtask` 支持的目标架构定义。
+
 use clap::ValueEnum;
 use std::path::{Path, PathBuf};
 

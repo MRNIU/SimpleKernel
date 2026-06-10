@@ -1,34 +1,42 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report a SimpleKernel bug
 title: "[BUG]"
 labels: bug
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## 问题描述
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+请简要说明 bug 的现象、影响范围和是否可稳定复现。
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## 复现步骤
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+1. 使用的分支或 commit：
+2. 使用的架构：`riscv64` / `aarch64`
+3. 执行的命令：
+   ```bash
+   docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
+   ```
+4. 实际结果：
 
-**Env (please complete the following information):**
- - OS: [e.g. MacOS 10.14.2]
- - Compile tools: [e.g. i386-elf-gcc i386-elf-ld]
- - Emulator: [e.g. Bochs 2.6.9]
- - Branch: [e.g. TODO]
- - Any modifications to tools/env.sh:
+## 期望行为
 
-**Additional context**
-Add any other context about the problem here.
+说明你期望看到的行为或输出。
+
+## 日志或截图
+
+请粘贴关键错误、panic、QEMU 串口日志或 CI 链接；不要粘贴无关长日志。
+
+## 环境
+
+- 运行位置：Dev Container / Codespaces / CI
+- 容器入口：`simplekernel-devcontainer`
+- 宿主机操作系统：
+- QEMU 命令是否使用 `--timeout 30`，如放宽请说明原因：
+- 是否修改过 Dev Container、固件、QEMU 参数或测试镜像：
+
+## 其他上下文
+
+补充相关设计文档、ADR、PR 或 issue 链接。

@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! `PlatformFdt` 的平台属性查询实现。
+
 use crate::{FdtError, PlatformFdt};
 
 macro_rules! parse_fdt {
@@ -63,8 +65,12 @@ impl PlatformFdt {
                 log::warn!("FDT cpu hardware id 重复: {}", hardware_id);
                 return Err(FdtError::UnsupportedLayout);
             }
-            ids.push(hardware_id).map_err(|_| {
-                log::warn!("FDT cpu 数量超过 MAX_CORE_COUNT {}", config::MAX_CORE_COUNT);
+            ids.push(hardware_id).map_err(|overflow_id| {
+                log::warn!(
+                    "FDT cpu 数量超过 MAX_CORE_COUNT {}: rejected_hardware_id={}",
+                    config::MAX_CORE_COUNT,
+                    overflow_id
+                );
                 FdtError::UnsupportedLayout
             })?;
         }

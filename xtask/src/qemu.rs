@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! FIT 镜像生成与 QEMU 启动执行器。
+
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -81,7 +83,25 @@ fn base_qemu_timeout_cmd<'a>(
         .args(base_qemu_args(arch, rootfs_drive))
 }
 
+fn join_reader_thread(
+    stream_name: &str,
+    handle: std::thread::JoinHandle<String>,
+) -> Result<String> {
+    handle.join().map_err(|payload| {
+        let panic_message = payload
+            .downcast_ref::<&str>()
+            .copied()
+            .or_else(|| payload.downcast_ref::<String>().map(String::as_str))
+            .unwrap_or("<non-string panic>");
+        format!("QEMU {stream_name} reader thread panicked: {panic_message}").into()
+    })
+}
+
 /// 启动 QEMU 并将硬件设备树导出到 `boot_dir/qemu.dtb`。
+///
+/// # Errors
+///
+/// QEMU 执行失败、未生成 DTB，或固件保留区注入失败时返回错误。
 pub fn dump_qemu_dtb(
     sh: &Shell,
     arch: Arch,
@@ -158,6 +178,10 @@ fn inject_firmware_reserved_memory(arch: Arch, dtb_path: &Path) -> Result<()> {
 }
 
 /// 将内核 ELF 和 DTB 打包为 U-Boot FIT 镜像（`boot.its` → `boot.fit`）。
+///
+/// # Errors
+///
+/// 无法规范化输入路径、写入 ITS 文件，或 `mkimage` 执行失败时返回错误。
 pub fn generate_fit_image(
     arch: Arch,
     sh: &Shell,
@@ -184,6 +208,10 @@ pub fn generate_fit_image(
 }
 
 /// 将 U-Boot 启动脚本编译为 `boot.scr.uimg`。
+///
+/// # Errors
+///
+/// 无法写入脚本源文件，或 `mkimage` 执行失败时返回错误。
 pub fn generate_boot_script(arch: Arch, sh: &Shell, boot_dir: &Path) -> Result<PathBuf> {
     println!("[xtask] Creating boot script image...");
 
@@ -234,6 +262,10 @@ pub struct QemuTestResult {
 ///
 /// 与 `launch_qemu` 不同，此函数不继承 stdio，而是捕获所有输出并在
 /// 超时后自动终止进程。适用于无人值守的测试执行。
+///
+/// # Errors
+///
+/// QEMU 进程启动、等待或输出读取线程回收失败时返回错误。
 pub fn launch_qemu_captured(
     arch: Arch,
     project_root: &Path,
@@ -346,8 +378,8 @@ pub fn launch_qemu_captured(
         match child.try_wait() {
             Ok(Some(status)) => {
                 timed_out = false;
-                let stdout_str = stdout_thread.join().unwrap_or_default();
-                let stderr_str = stderr_thread.join().unwrap_or_default();
+                let stdout_str = join_reader_thread("stdout", stdout_thread)?;
+                let stderr_str = join_reader_thread("stderr", stderr_thread)?;
                 return Ok(QemuTestResult {
                     success: status.success(),
                     timed_out,
@@ -359,8 +391,8 @@ pub fn launch_qemu_captured(
                     let _ = child.kill();
                     let _ = child.wait();
                     timed_out = true;
-                    let stdout_str = stdout_thread.join().unwrap_or_default();
-                    let stderr_str = stderr_thread.join().unwrap_or_default();
+                    let stdout_str = join_reader_thread("stdout", stdout_thread)?;
+                    let stderr_str = join_reader_thread("stderr", stderr_thread)?;
                     return Ok(QemuTestResult {
                         success: false,
                         timed_out,
@@ -384,6 +416,10 @@ pub fn launch_qemu_captured(
 /// `boot.scr.uimg`。QEMU 的 `file=fat:rw:dir` 将宿主目录映射为虚拟
 /// FAT 块设备。该目录专门存放 U-Boot 启动脚本，与 `boot/` 目录分离，
 /// 避免将构建产物（boot.fit、rootfs.img 等大文件）暴露给虚拟 FAT。
+///
+/// # Errors
+///
+/// 无法创建引导分区目录，或无法复制启动脚本时返回错误。
 pub fn prepare_boot_part(boot_dir: &Path) -> Result<PathBuf> {
     let part_dir = boot_dir.join("boot_part");
     fs::create_dir_all(&part_dir)?;
@@ -404,6 +440,10 @@ fn boot_part_drive_arg(boot_dir: &Path) -> String {
 ///
 /// `debug` 为 `true` 时附加 `-s -S`：暂停 CPU 并在 `localhost:1234`
 /// 开放 GDB 远程调试端口，等待 GDB 连接后再继续执行。
+///
+/// # Errors
+///
+/// QEMU 命令执行失败时返回错误。
 pub fn launch_qemu(
     sh: &Shell,
     arch: Arch,

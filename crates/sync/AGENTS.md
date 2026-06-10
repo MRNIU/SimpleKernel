@@ -173,3 +173,9 @@ let _guard = other_lock.try_lock_nested(&held)?;
   此类场景必须使用 `SpinLockIrq`。
 - **RawSpinLock 无公平性保证**——TTAS 不保证 FIFO，
   高争用场景可实现 `RawTicketLock` 等公平算法替换。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- 锁 API、锁级别或中断感知语义变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p sync -- -D warnings`。
+- 锁行为、panic 路径或 lockstack 变化：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name sync-test/spinlock --timeout 30`，并按影响面补跑其他 sync tests。

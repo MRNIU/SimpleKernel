@@ -131,3 +131,9 @@ assert_eq!(f.start_addr(), PhysAddr::new(0x8020_3000)); // 不是 0x8020_3FFF
 
 这两个方法假设物理地址和虚拟地址数值相同（VA == PA）。
 对于非线性映射的地址（如用户空间地址），必须通过页表查询进行转换。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- 地址、帧或区间类型变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p memory_types -- -D warnings`。
+- 编解码、对齐或溢出语义变更：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name memory-types-test/codec --timeout 30`，并按影响面补跑 panic 类 memory-types tests。

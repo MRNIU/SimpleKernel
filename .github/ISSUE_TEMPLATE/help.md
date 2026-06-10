@@ -1,21 +1,30 @@
 ---
 name: Help
-about: any questions
+about: Ask a SimpleKernel usage or development question
 title: "[HELP]"
 labels: help wanted
 assignees: ''
 
 ---
 
-**Env (please complete the following information):**
- - OS: [e.g. MacOS 10.14.2]
- - Compile tools: [e.g. i386-elf-gcc i386-elf-ld]
- - Emulator: [e.g. Bochs 2.6.9]
- - Branch: [e.g. TODO]
- - Any modifications to tools/env.sh:
+## 问题
 
-**Describe your question**
-A clear and concise description of what the question is.
+请说明你想了解的命令、模块、设计或错误现象。
 
-**Additional context**
-Add any other context about the problem here.
+## 已尝试的步骤
+
+```bash
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
+```
+
+## 环境
+
+- 运行位置：Dev Container / Codespaces / CI
+- 容器入口：`simplekernel-devcontainer`
+- 分支或 commit：
+- 目标架构：`riscv64` / `aarch64` / 不适用
+- QEMU 命令是否使用 `--timeout 30`，如放宽请说明原因：
+
+## 其他上下文
+
+补充相关日志、文档、ADR、PR 或 issue 链接。

@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! SimpleKernel 裸机入口。
+
 #![no_std]
 #![no_main]
 

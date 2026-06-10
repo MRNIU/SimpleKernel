@@ -1,8 +1,9 @@
 // Copyright The SimpleKernel Contributors
 
-/// RISC-V 64 核间中断（IPI）支持
-///
-/// 通过 SBI legacy send_ipi 发送软件中断，通过 PSCI（hart_start）唤醒从核。
+//! RISC-V 64 核间中断（IPI）支持。
+//!
+//! 通过 SBI legacy send_ipi 发送软件中断，通过 SBI hart_start 唤醒从核。
+
 use super::context::TrapContext;
 
 // _boot 入口点（boot.S 中定义）
@@ -64,7 +65,12 @@ pub fn handle_ipi(_ctx: &mut TrapContext) {
 /// 读取 `crate::CORE_COUNT`，对每个从核调用 SBI hart_start。
 /// 跳过当前核心（主核），因为任何 hart 都可能成为主核（取决于谁先到达 `_start`）。
 pub fn wake_secondary_cores() {
-    let core_count = crate::CORE_COUNT.get().copied().unwrap_or(1);
+    let core_count = crate::CORE_COUNT.get().copied().unwrap_or_else(|| {
+        panic!(
+            "SMP: CORE_COUNT 未初始化，不能启动 RISC-V 从核 (current_hart={})",
+            per_cpu::current_core_id()
+        )
+    });
 
     if core_count <= 1 {
         log::info!("SMP: 单核模式，无从核需要启动");

@@ -140,3 +140,9 @@ let id: u32 = region.read_reg(0x0); // volatile 读寄存器。
 - `init()` / `init_smp()` 顺序变化：同步更新启动时序图。
 - 下层 crate 职责变化：同步更新 `../AGENTS.md`。
 - 接受的架构决策变化：同步更新或新增 `docs/adr/`；AI 新增 ADR 初始状态必须为“提议”。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- 初始化、MMIO 或策略层 API 变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p memory -- -D warnings`。
+- FDT reserved-memory、double init、MMIO 或内存布局行为变更：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name memory-test --timeout 30`。

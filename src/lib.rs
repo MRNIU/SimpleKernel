@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! SimpleKernel 库 crate，承载内核子系统与系统测试复用入口。
+
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(feature = "lang_items", feature(alloc_error_handler))]
 #![feature(sync_unsafe_cell)]

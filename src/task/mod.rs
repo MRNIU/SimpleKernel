@@ -278,6 +278,10 @@ mod api {
     }
 
     /// 等待子进程退出。
+    ///
+    /// # Errors
+    ///
+    /// 当前任务没有匹配的子任务时返回 [`TaskError::NoChildFound`]。
     pub fn wait_child(child_pid: usize) -> Result<(Pid, i32), TaskError> {
         loop {
             {
@@ -309,6 +313,11 @@ mod api {
         }
     }
     /// 克隆当前任务——创建子内核线程。
+    ///
+    /// # Errors
+    ///
+    /// 当前实现的内核线程 spawn 路径直接返回新任务；保留 `Result` 用于后续向上传递
+    /// 任务表容量或栈分配失败。
     pub fn clone_kernel_thread(
         name: &'static str,
         entry: fn(usize),
@@ -319,6 +328,10 @@ mod api {
         Ok(child.pid())
     }
     /// 向指定任务发送信号。
+    ///
+    /// # Errors
+    ///
+    /// 目标任务不存在时返回 [`TaskError::TaskNotFound`]。
     pub fn send_signal(pid: Pid, sig: Signal) -> Result<(), TaskError> {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();

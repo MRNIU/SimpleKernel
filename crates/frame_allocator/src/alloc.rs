@@ -177,6 +177,10 @@ pub unsafe fn init(free_start: PhysAddr, free_size: usize, reserved: &[(PhysAddr
 /// # Panics
 ///
 /// `count == 0` 时 panic（调用方逻辑错误，不是 OOM）。
+///
+/// # Errors
+///
+/// buddy allocator 无法满足请求时返回 [`FrameAllocError::OutOfMemory`]。
 pub(crate) fn alloc_from_backend(count: usize) -> Result<AllocatedFrames, FrameAllocError> {
     assert_not_in_irq("alloc_from_backend");
     assert!(count > 0, "alloc_from_backend: count 不能为 0");

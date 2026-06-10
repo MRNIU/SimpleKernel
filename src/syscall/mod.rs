@@ -1,10 +1,10 @@
 // Copyright The SimpleKernel Contributors
 
-// 系统调用接口（SAS 模式——类型安全的集中式 API 网关）
-//
-// 单地址空间架构下，syscall 层是跨模块操作的唯一公开入口。
-// 不经过 trap（ecall/svc），调用者直接以 Rust 函数调用方式进入。
-// SyscallNumber 枚举保留用于日志、审计和 POSIX 合规追踪。
+//! 系统调用接口（SAS 模式下类型安全的集中式 API 网关）。
+//!
+//! 单地址空间架构下，syscall 层是跨模块操作的唯一公开入口。不经过 trap
+//! （ecall/svc），调用者直接以 Rust 函数调用方式进入。`SyscallNumber`
+//! 枚举保留用于日志、审计和 POSIX 合规追踪。
 
 pub mod file;
 pub mod io;

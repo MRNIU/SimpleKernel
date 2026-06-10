@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! SAS 模式文件相关 syscall 网关。
+
 /// open — 打开文件（或创建）
 ///
 /// # Errors

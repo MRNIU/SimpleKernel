@@ -21,10 +21,12 @@ TODO
 
 ## 测试
 
-- [ ] `cargo fmt --check`
-- [ ] `cargo clippy -- -D warnings`
-- [ ] `cargo xtask test --arch riscv64`
+- [ ] `docker exec -w /workspace simplekernel-devcontainer cargo fmt --all -- --check`
+- [ ] `docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings`
+- [ ] `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30`
 - [ ] 其他：TODO
+
+QEMU 运行或系统测试默认使用 `--timeout 30`。如需放宽，请在“其他”或“风险与回滚”中说明原因。
 
 ## 文档
 

@@ -76,6 +76,10 @@ impl DmaOp for QemuIdentityDmaOp {
 }
 
 /// 分配页级 raw coherent DMA 区域，供 `virtio-drivers::Hal::dma_alloc` 使用。
+///
+/// # Errors
+///
+/// `pages == 0`、布局无效或后端无法分配连续 DMA 区域时返回错误。
 pub fn raw_alloc_pages(pages: usize, _direction: DmaDirection) -> DmaResult<(u64, NonNull<u8>)> {
     if pages == 0 {
         return Err(DmaError::ZeroPages);
@@ -92,6 +96,10 @@ pub fn raw_alloc_pages(pages: usize, _direction: DmaDirection) -> DmaResult<(u64
 }
 
 /// 释放页级 raw coherent DMA 区域。
+///
+/// # Errors
+///
+/// `pages == 0`、DMA 记录不存在，或传入页数/虚拟地址与分配记录不一致时返回错误。
 pub fn raw_dealloc_pages(paddr: u64, vaddr: NonNull<u8>, pages: usize) -> DmaResult<()> {
     if pages == 0 {
         return Err(DmaError::ZeroPages);
@@ -130,6 +138,10 @@ pub fn raw_dealloc_pages(paddr: u64, vaddr: NonNull<u8>, pages: usize) -> DmaRes
 ///
 /// `buffer` 必须在 DMA 共享期间指向有效的连续内存区域，并且不能以违反
 /// VirtIO HAL 契约的方式被并发修改。
+///
+/// # Errors
+///
+/// buffer 为空、虚拟地址为空，或后端 DMA 映射失败时返回错误。
 pub unsafe fn raw_map_single(buffer: NonNull<[u8]>, direction: DmaDirection) -> DmaResult<u64> {
     // SAFETY: `virtio-drivers::Hal::share` 的调用方保证 buffer 在共享期间有效。
     let slice = unsafe { buffer.as_ref() };

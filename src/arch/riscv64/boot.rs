@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! RISC-V 64 早期汇编入口与启动栈布局。
+
 use core::arch::global_asm;
 
 // KERNEL_STACK_SIZE 必须是 2 的幂，方便用移位替代乘法

@@ -1,8 +1,9 @@
 // Copyright The SimpleKernel Contributors
 
-/// RISC-V 64 中断子系统
-///
-/// 负责 PLIC 初始化、stvec 设置，以及陷阱分发（定时器、外部中断、IPI、系统调用、异常）。
+//! RISC-V 64 中断子系统。
+//!
+//! 负责 PLIC 初始化、stvec 设置，以及陷阱分发（定时器、外部中断、IPI、系统调用、异常）。
+
 use core::arch::global_asm;
 
 use arch_primitives::FDT_INTERRUPT_CONTROLLER_COMPATIBLES;
@@ -175,7 +176,12 @@ fn plic_init() {
         let fdt = crate::platform_fdt::get().expect("plic_init: FDT 未初始化");
         let reg = plic_reg_from_fdt(fdt).expect("plic_init: FDT 中未找到 PLIC 节点");
         log::info!("PLIC: 从 FDT 读取基地址 {:#x}", reg.address);
-        usize::try_from(reg.address).expect("plic_init: PLIC 地址超出 usize")
+        usize::try_from(reg.address).unwrap_or_else(|_| {
+            panic!(
+                "plic_init: PLIC 地址超出 usize: addr={:#x}, size={:#x}",
+                reg.address, reg.size
+            )
+        })
     };
 
     let region = memory::MmioRegion::map(PhysAddr::new(base), PLIC_SIZE);

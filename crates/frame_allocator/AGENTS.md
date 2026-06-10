@@ -139,3 +139,9 @@ buddy allocator 内部使用 `BTreeSet`（堆分配），因此依赖堆可用�
 `reserved` 参数只做页对齐、溢出和重叠校验，并记录启动日志；它不会从
 `free_start` / `free_size` 描述的空闲范围中扣除页面。调用方必须先把所有
 固件区、内核镜像区和其他保留区从 free 范围中排除，再调用 `init()`。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- 分配器 API 或 RAII 生命周期变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p frame_allocator -- -D warnings`。
+- 分配、释放、保留区或中断上下文行为变更：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30`，并按影响面补跑 panic 类 frame tests。

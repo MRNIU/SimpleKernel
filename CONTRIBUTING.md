@@ -17,12 +17,12 @@ docker exec -w /workspace simplekernel-devcontainer bash
 
 ```bash
 docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch riscv64
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64
-docker exec -w /workspace simplekernel-devcontainer cargo fmt --check
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
+docker exec -w /workspace simplekernel-devcontainer cargo fmt --all -- --check
 docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings
 ```
 
-通过 Bash 工具运行 QEMU 相关命令时必须设置 30 秒超时；超时后清理残留 QEMU 进程。
+通过 Bash 工具运行 QEMU 相关命令默认使用 `--timeout 30`；低性能宿主机或特殊测试可以显式放宽，但应写清楚原因。超时后清理残留 QEMU 进程。
 
 ## 提交流程
 
@@ -60,7 +60,7 @@ docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings
 
 ## Commit
 
-commit 使用 Conventional Commits 格式，并且必须带 DCO sign-off：
+commit 使用 Conventional Commits 格式，并且必须带 DCO sign-off。详细提交模板以 [.gitmessage](./.gitmessage) 为准：
 
 ```bash
 git commit --signoff -m "docs(conventions): 补充文档结构约定"

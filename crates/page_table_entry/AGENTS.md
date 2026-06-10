@@ -172,3 +172,9 @@ RISC-V 特权规范要求 W=1 时 R 必须为 1。`new()` 中有 `debug_assert` 
 RISC-V 的 `kernel_device()` 当前等同于 `kernel_rw()`，
 缺少非缓存属性。待平台支持 Svpbmt 扩展时，需使用 PBMT 位设置
 NC（Non-Cacheable）或 IO 属性，避免 MMIO 区域被 CPU 缓存。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- PTE bit 编解码或 preset 变化：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p page_table_entry -- -D warnings`。
+- 架构位域、权限或地址边界变化：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name pte-test --timeout 30`。

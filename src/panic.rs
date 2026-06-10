@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! panic 处理、符号解析与 observer 通知。
+
 use crate::elf::KernelElf;
 use core::fmt::Write;
 use memory_types::VirtAddr;

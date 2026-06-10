@@ -60,7 +60,7 @@ pub fn cpu_local(attr: TokenStream, item: TokenStream) -> TokenStream {
         static #raw_name: #ty = #expr;
 
         #(#attrs)*
-        #[allow(non_upper_case_globals)]
+        #[expect(non_upper_case_globals, reason = "cpu_local 宏生成的 CpuLocal static 需要沿用调用方变量名")]
         #vis static #name: ::per_cpu::CpuLocal<#ty> =
             // SAFETY: raw_name 是由本宏生成的 static 变量，地址在整个内核生命周期内有效
             unsafe { ::per_cpu::CpuLocal::__new(&#raw_name as *const #ty) };

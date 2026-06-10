@@ -55,7 +55,9 @@ pub unsafe fn kernel_init(argc: i32, argv: *const *const u8, level: InitLevel) {
     // ELF 符号表初始化——panic backtrace 依赖此信息
     let elf_addr = memory::MEMORY_INFO
         .get()
-        .expect("MEMORY_INFO not initialized")
+        .unwrap_or_else(|| {
+            panic!("MEMORY_INFO 未初始化: dtb_addr={dtb_addr:#x}, argc={argc}, argv={argv:p}")
+        })
         .kernel_addr
         .as_usize() as u64;
     // SAFETY: elf_addr 是内核自身的 ELF 基地址，在内核生命周期内有效

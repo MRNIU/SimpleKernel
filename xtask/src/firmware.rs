@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! 第三方固件产物检查与构建入口。
+
 use std::fs;
 use std::path::{Path, PathBuf};
 use xshell::{Shell, cmd};
@@ -32,6 +34,10 @@ fn missing_firmware_paths(project_root: &Path, arch: Arch) -> Vec<PathBuf> {
 }
 
 /// 检查运行所需的固件文件是否就绪，缺失时返回带路径列表的错误。
+///
+/// # Errors
+///
+/// 任一必需固件文件不存在时返回错误。
 pub fn ensure_firmware_exists(project_root: &Path, arch: Arch) -> Result<()> {
     let missing = missing_firmware_paths(project_root, arch);
     if missing.is_empty() {
@@ -49,6 +55,10 @@ pub fn ensure_firmware_exists(project_root: &Path, arch: Arch) -> Result<()> {
 }
 
 /// 确保运行所需固件存在；缺失时自动编译对应架构固件。
+///
+/// # Errors
+///
+/// 固件构建失败，或构建后仍缺少必需固件文件时返回错误。
 pub fn ensure_firmware_ready(sh: &Shell, project_root: &Path, arch: Arch) -> Result<()> {
     let missing = missing_firmware_paths(project_root, arch);
     if missing.is_empty() {
@@ -71,12 +81,17 @@ pub fn ensure_firmware_ready(sh: &Shell, project_root: &Path, arch: Arch) -> Res
 ///
 /// - `riscv64`: OpenSBI → U-Boot（U-Boot 依赖 OpenSBI 的 `fw_dynamic.bin`）
 /// - `aarch64`: U-Boot → OP-TEE → ATF（ATF 打包 OP-TEE 和 U-Boot 为 `flash.bin`）
+///
+/// # Errors
+///
+/// 无法获取并行度，或任一固件构建步骤失败时返回错误。
 pub fn build_firmware(sh: &Shell, project_root: &Path, arch: Arch) -> Result<()> {
     let cross = arch.cross_compile();
     let out_base = arch.firmware_dir(project_root);
     let jobs = std::thread::available_parallelism()
-        .map(|n| n.get().to_string())
-        .unwrap_or_else(|_| "4".into());
+        .map_err(|e| format!("无法获取 host 并行度，不能确定 firmware make -j 参数: {e}"))?
+        .get()
+        .to_string();
 
     match arch {
         Arch::Riscv64 => {

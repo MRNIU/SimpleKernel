@@ -94,7 +94,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Commit 格式**: `<type>(<scope>): <subject>` — type: feat/fix/refactor/test/docs/chore
 - **Sign-off 必须**: 每条 commit 必须使用 `git commit --signoff`（DCO 签署），**不可省略**
 - **DCO 门禁**：PR CI 会检查每个 commit 是否包含 `Signed-off-by` trailer。
-- **Commit 模板**：可执行 `git config commit.template .gitmessage` 启用仓库提交模板；模板必须镜像本文件、`README.md` 和 `CONTRIBUTING.md` 中的 Git 规则。
+- **Commit 模板**：`.gitmessage` 是详细提交模板；本文件、`README.md` 和 `CONTRIBUTING.md` 只保留最小入口并指向该模板。
 - **Subagent 派发时**：给 subagent 的 commit 指令中也必须包含 `--signoff`
 
 ### Repository Hygiene
@@ -111,7 +111,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Language**: Rust nightly, `#![no_std]`, `#![no_main]`, edition 2024
 - **Naming**: `snake_case` functions/methods, `PascalCase` types/traits/enums, `SCREAMING_SNAKE_CASE` constants
 - **函数命名惯例**: 返回 `bool` 用 `is_`/`has_`/`can_` 前缀；getter 用名词不加 `get_`/`read_`（如 `len()`）；setter 用 `set_` 前缀；动作用动宾结构（动词在前，如 `flush_tlb()`、`disable_irq()`）
-- **Formatting**: `rustfmt.toml` (100 char width), enforce via `cargo fmt`
+- **Formatting**: rustfmt default 100 char width, enforce via `cargo fmt --all`
 - **Linting**: `cargo clippy -- -D warnings`
 - **Doc comments**: `///` with `# Safety`, `# Errors`, `# Panics` sections for public APIs（节标题保留英文，内容用中文）
 - **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文（Rust 社区惯例），其后说明用中文
@@ -174,14 +174,14 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch risc
 docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 
 # Format + lint check
-docker exec -w /workspace simplekernel-devcontainer cargo fmt --check
+docker exec -w /workspace simplekernel-devcontainer cargo fmt --all -- --check
 docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings
 
 # Documentation
 docker exec -w /workspace simplekernel-devcontainer cargo doc --no-deps
 ```
 
-**QEMU 超时**：在 QEMU 中运行内核或测试时经常出现卡死或无限循环打印日志的情况。所有通过 Bash 工具执行的 QEMU 相关命令（`cargo xtask run`、`cargo xtask test`）**必须设置 30 秒超时**（`timeout: 30000`）。超时后应 `pkill -f qemu-system` 清理残留进程。
+**QEMU 超时**：在 QEMU 中运行内核或测试时经常出现卡死或无限循环打印日志的情况。所有通过 Bash 工具执行的 QEMU 相关命令（`cargo xtask run`、`cargo xtask test`）默认使用 `--timeout 30`（Bash 工具侧 `timeout: 30000`）。低性能宿主机或特殊测试可显式放宽，但应写清楚原因。超时后应 `pkill -f qemu-system` 清理残留进程。
 
 ## TESTING
 

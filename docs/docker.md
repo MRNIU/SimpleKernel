@@ -95,6 +95,8 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask debug --arch ris
 docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
 ```
 
+QEMU 运行和系统测试默认使用 `--timeout 30`。低性能宿主机、固件冷构建或特殊长测可以显式放宽超时，但应在命令或说明中写清楚原因；命令超时后清理残留 `qemu-system` 进程。
+
 ## 提交前检查
 
 ```shell

@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! FDT 节点到内核查询视图的转换逻辑。
+
 use fdt_parser::helpers::UnalignedFallibleNode;
 use fdt_parser::properties::Compatible;
 
@@ -72,12 +74,13 @@ fn collect_compatibles<'fdt>(
     };
 
     for item in compatible.all().filter(|item| !item.is_empty()) {
-        compatibles.push(item).map_err(|_| {
+        compatibles.push(item).map_err(|overflow_item| {
             log::warn!(
-                "FDT {} 节点 {} compatible 数量超过 {}",
+                "FDT {} 节点 {} compatible 数量超过 {}: rejected={}",
                 context,
                 name.name,
-                MAX_NODE_COMPATIBLES
+                MAX_NODE_COMPATIBLES,
+                overflow_item
             );
             FdtError::UnsupportedLayout
         })?;
@@ -129,12 +132,14 @@ fn collect_regs<'fdt>(
             address: region.address,
             size: region.len,
         })
-        .map_err(|_| {
+        .map_err(|overflow_region| {
             log::warn!(
-                "FDT {} 节点 {} reg 区域数量超过 {}",
+                "FDT {} 节点 {} reg 区域数量超过 {}: rejected_addr={:#x}, rejected_size={:#x}",
                 context,
                 name.name,
-                MAX_NODE_REGIONS
+                MAX_NODE_REGIONS,
+                overflow_region.address,
+                overflow_region.size
             );
             FdtError::UnsupportedLayout
         })?;

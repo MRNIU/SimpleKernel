@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! 内核 ELF 符号表解析。
+
 use core::fmt;
 
 use elf::ElfBytes;
@@ -163,14 +165,12 @@ impl KernelElf {
     }
 
     #[must_use]
-    #[allow(dead_code)] // P3+ panic backtrace 使用
     pub fn elf_size(&self) -> usize {
         self.data.len()
     }
 
     /// 返回 `.symtab` 中符号的数量；若解析失败则返回 0。
     #[must_use]
-    #[allow(dead_code)] // P3+ panic backtrace 使用
     pub fn symbol_count(&self) -> usize {
         let Ok(elf) = ElfBytes::<AnyEndian>::minimal_parse(self.data) else {
             return 0;
@@ -186,7 +186,6 @@ impl KernelElf {
     /// 返回最接近且不超过 `addr` 的符号名。
     /// 若未找到匹配符号，则返回 `None`。
     #[must_use]
-    #[allow(dead_code)] // P3+ panic backtrace 使用
     pub fn lookup_symbol(&self, addr: u64) -> Option<&str> {
         let elf = ElfBytes::<AnyEndian>::minimal_parse(self.data).ok()?;
         let (symtab, strtab) = elf.symbol_table().ok()??;

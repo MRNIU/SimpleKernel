@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! 架构无关 timekeeper 与全局 tick 推进入口。
+
 use core::sync::atomic::{AtomicUsize, Ordering};
 
 use config::TIMER_FREQ_HZ;

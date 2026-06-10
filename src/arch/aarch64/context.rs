@@ -1,8 +1,9 @@
 // Copyright The SimpleKernel Contributors
 
-/// AArch64 陷阱上下文与被调用者保存寄存器上下文
-///
-/// 布局与 interrupt.S / switch.rs 中的汇编严格对应，修改时需同步更新汇编代码。
+//! AArch64 陷阱上下文与被调用者保存寄存器上下文。
+//!
+//! 布局与 `interrupt.S` / `switch.rs` 中的汇编严格对应，修改时需同步更新汇编代码。
+
 use core::mem::offset_of;
 
 /// 陷阱上下文 — 保存发生异常/中断时所有通用寄存器及必要系统寄存器

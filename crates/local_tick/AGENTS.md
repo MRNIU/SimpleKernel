@@ -44,3 +44,14 @@ scheduler / per-CPU accounting
 底层使用 `#[cpu_local]` 变量（每 CPU 独立副本），
 配合 `AtomicU64` 消除同核中断嵌套的潜在竞态，
 全部 API 均为 safe 函数。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- per-CPU tick API 或原子语义变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p local_tick -- -D warnings`。
+- 影响 timer handler 或调度记账时，补跑相关 QEMU 测试；完整系统入口是 `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30`。
+
+## 不要假设
+
+- 不要把本核 tick 当成全局时间源；跨核全局时间推进应使用 `global_tick`。
+- 不要绕过 `#[cpu_local]` 直接共享普通可变计数器。

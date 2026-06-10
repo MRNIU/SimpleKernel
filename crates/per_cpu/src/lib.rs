@@ -30,6 +30,8 @@ use config::{MAX_CORE_COUNT, PERCPU_AREA_MAX};
 
 pub use macros::cpu_local;
 
+// SAFETY: 链接脚本提供 `.percpu` section 的起止符号；本 crate 只读取其地址
+// 计算模板偏移，不解引用未知外部内存。
 unsafe extern "C" {
     static __percpu_start: u8;
     static __percpu_end: u8;

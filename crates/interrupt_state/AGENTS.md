@@ -180,3 +180,9 @@ fn access_per_cpu_data(held: &HeldInterrupts) {
 ```
 
 这比 `unsafe` + 注释更安全——如果调用方没有 `HeldInterrupts` 值，代码无法编译。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- interrupt proof token 或架构实现变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p interrupt_state -- -D warnings`。
+- 影响锁或中断嵌套语义时：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name sync-test/spinlock --timeout 30`，并按影响面补跑 arch tests。

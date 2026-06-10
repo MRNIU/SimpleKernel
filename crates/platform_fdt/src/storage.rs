@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! 内核自有 DTB storage 与原始 FDT 校验入口。
+
 use core::cell::SyncUnsafeCell;
 
 use crate::FdtError;
@@ -33,6 +35,10 @@ impl PlatformFdt {
     ///
     /// `fdt_addr` 必须指向有效 DTB，且该内存在返回的 [`PlatformFdt`] 使用期间保持可读。
     /// 对普通 bootloader 传入的临时 DTB 地址不要使用此函数，应走 [`init_from_raw`] 复制路径。
+    ///
+    /// # Errors
+    ///
+    /// DTB 地址为空、header 非法、magic 不匹配或 `totalsize` 超出支持范围时返回错误。
     pub unsafe fn from_static(fdt_addr: usize) -> Result<Self, FdtError> {
         let total_size = unsafe { validate_raw_header(fdt_addr)? };
         // SAFETY: validate_raw_header 已校验 fdt_addr 指向至少 totalsize 字节的合法 FDT；
@@ -98,6 +104,10 @@ static PLATFORM_FDT: spin::Once<PlatformFdt> = spin::Once::new();
 /// # Safety
 ///
 /// `raw_addr` 必须指向 bootloader 提供的有效 DTB，且至少在本函数完成复制前保持可读。
+///
+/// # Errors
+///
+/// FDT 已初始化，或原始 DTB header 非法、magic 不匹配、大小超出 storage 上限时返回错误。
 pub unsafe fn init_from_raw(raw_addr: usize) -> Result<&'static PlatformFdt, FdtError> {
     if let Some(existing) = PLATFORM_FDT.get() {
         return Err(FdtError::AlreadyInitialized {

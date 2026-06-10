@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! FDT 查询返回值与选择器类型。
+
 use crate::FdtError;
 
 /// 单次查询最多返回的节点数量。
@@ -149,9 +151,21 @@ impl<'fdt> FdtNodeList<'fdt> {
         }
     }
 
+    /// 追加一个查询命中节点。
+    ///
+    /// # Errors
+    ///
+    /// 查询结果超过 [`MAX_QUERY_NODES`] 时返回 [`FdtError::UnsupportedLayout`]。
     pub(crate) fn push(&mut self, node: FdtNodeView<'fdt>) -> Result<(), FdtError> {
-        self.nodes.push(node).map_err(|_| {
-            log::warn!("FDT 查询结果超过 MAX_QUERY_NODES {}", MAX_QUERY_NODES);
+        self.nodes.push(node).map_err(|overflow_node| {
+            let name = overflow_node.name();
+            log::warn!(
+                "FDT 查询结果超过 MAX_QUERY_NODES {}: rejected_node_id={}, rejected_name={}@{}",
+                MAX_QUERY_NODES,
+                overflow_node.id().ordinal(),
+                name.name,
+                name.unit_address.unwrap_or("<none>")
+            );
             FdtError::UnsupportedLayout
         })
     }

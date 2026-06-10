@@ -78,13 +78,20 @@ pub fn init() {
         kernel_start
             .as_usize()
             .checked_add(info.kernel_size)
-            .expect("MemoryInit: kernel 结束地址溢出"),
+            .unwrap_or_else(|| {
+                panic!(
+                    "MemoryInit: kernel 结束地址溢出: start={kernel_start}, size={}",
+                    info.kernel_size
+                )
+            }),
     );
     let mem_end = PhysAddr::new(
         mem_start
             .as_usize()
             .checked_add(mem_size)
-            .expect("MemoryInit: RAM 结束地址溢出"),
+            .unwrap_or_else(|| {
+                panic!("MemoryInit: RAM 结束地址溢出: start={mem_start}, size={mem_size}")
+            }),
     );
 
     // SAFETY: 链接器定义的符号

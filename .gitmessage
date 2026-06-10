@@ -3,7 +3,7 @@
 <type>(<scope>): <subject>
 
 # type: feat|fix|refactor|perf|test|docs|build|ci|chore|style|revert
-# scope: optional, English identifier such as memory, sync, arch, xtask, docs
+# scope: optional, English identifier such as memory, sync, arch_primitives, platform_fdt, xtask, docs
 # subject: 中文优先，保留必要英文术语，不加句号，尽量不超过 72 个字符
 # breaking change: add ! before :, for example <type>(<scope>)!: <subject>
 #
@@ -14,3 +14,5 @@
 # footer: add issue refs or BREAKING CHANGE only when applicable
 # BREAKING CHANGE: describe migration when needed
 # Signed-off-by is required; use git commit -s or git commit --signoff
+# Do not include local-only host paths, scratch paths, private workflow notes,
+# or personal container names in commit messages.

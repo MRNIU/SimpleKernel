@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! `platform_fdt` 查询 API 的 host fixture 测试。
+
 use platform_fdt::{FdtSelector, PlatformFdt};
 
 const TEST_DTB: &[u8] = &[

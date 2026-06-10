@@ -1,9 +1,10 @@
 // Copyright The SimpleKernel Contributors
 
-/// AArch64 通用定时器子系统
-///
-/// 使用 AArch64 虚拟定时器（CNTV_*_EL0）实现周期性时钟中断。
-/// 目标 tick 频率：`config::TIMER_FREQ_HZ` Hz。
+//! AArch64 通用定时器子系统。
+//!
+//! 使用 AArch64 虚拟定时器（CNTV_*_EL0）实现周期性时钟中断。
+//! 目标 tick 频率：`config::TIMER_FREQ_HZ` Hz。
+
 use core::sync::atomic::{AtomicU64, Ordering};
 
 use config::TIMER_FREQ_HZ;

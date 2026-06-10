@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! FDT 遍历过程中的节点路径栈。
+
 use crate::FdtError;
 
 use super::{FDT_MAX_DEPTH, FdtNodeName};

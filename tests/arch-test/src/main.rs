@@ -33,6 +33,8 @@ arch_test_read_fs0_bits:
 );
 
 #[cfg(target_arch = "riscv64")]
+// SAFETY: 上方 global_asm! 在本测试二进制内定义这两个符号；签名只传递
+// f64 bit pattern，不跨越 Rust 所有权边界。
 unsafe extern "C" {
     fn arch_test_write_fs0_bits(bits: u64);
     fn arch_test_read_fs0_bits() -> u64;

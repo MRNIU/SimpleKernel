@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! FDT 初始化与查询错误类型。
+
 use core::fmt;
 
 const FDT_HEADER_SIZE: usize = 40;

@@ -55,6 +55,8 @@ tlb_remote_store_probe_resume_pc:
 "#
         );
 
+        // SAFETY: 上方 global_asm! 在本测试二进制内定义 probe 与恢复点符号；
+        // Rust 侧只保存符号地址，并通过 `write` 封装调用前提。
         unsafe extern "C" {
             fn tlb_remote_store_probe(addr: *mut u64, value: u64);
             static tlb_remote_store_probe_fault_pc: u8;
@@ -107,6 +109,8 @@ tlb_remote_store_probe_resume_pc:
 "#
         );
 
+        // SAFETY: 上方 global_asm! 在本测试二进制内定义 probe 与恢复点符号；
+        // Rust 侧只保存符号地址，并通过 `write` 封装调用前提。
         unsafe extern "C" {
             fn tlb_remote_store_probe(addr: *mut u64, value: u64);
             static tlb_remote_store_probe_fault_pc: u8;

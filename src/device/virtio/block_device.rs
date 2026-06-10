@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! VirtIO block 设备的本地 BlockDevice 门面。
+
 use alloc::boxed::Box;
 use alloc::format;
 use alloc::string::String;

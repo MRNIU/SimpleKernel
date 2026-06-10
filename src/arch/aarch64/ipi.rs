@@ -1,9 +1,10 @@
 // Copyright The SimpleKernel Contributors
 
-/// AArch64 核间中断（IPI）支持
-///
-/// - SGI：通过 GICv3 `ICC_SGI1R_EL1` 发送软件生成中断
-/// - SMP：通过 `arm-psci` crate 构造 PSCI CPU_ON 调用唤醒从核
+//! AArch64 核间中断（IPI）支持。
+//!
+//! - SGI：通过 GICv3 `ICC_SGI1R_EL1` 发送软件生成中断
+//! - SMP：通过 `arm-psci` crate 构造 PSCI CPU_ON 调用唤醒从核
+
 use arm_psci::{EntryPoint, Function, Mpidr};
 
 // _boot 入口点（boot.S 中定义）
@@ -78,7 +79,12 @@ unsafe fn psci_smc_call(regs: &[u64; 4]) -> i64 {
 /// 每个从核以 `_boot` 为入口（初始化栈后跳转到 `_start`），context_id = 0。
 /// 跳过当前核心（主核），因为任何 CPU 都可能成为主核。
 pub fn wake_secondary_cores() {
-    let core_count = crate::CORE_COUNT.get().copied().unwrap_or(1);
+    let core_count = crate::CORE_COUNT.get().copied().unwrap_or_else(|| {
+        panic!(
+            "SMP: CORE_COUNT 未初始化，不能启动 AArch64 从核 (current_cpu={})",
+            per_cpu::current_core_id()
+        )
+    });
 
     if core_count <= 1 {
         log::info!("SMP: 单核模式，无从核需要启动");

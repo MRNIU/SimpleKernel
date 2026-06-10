@@ -247,7 +247,12 @@ pub fn try_mount_fatfs() -> bool {
         );
 
         // 打印到串口——host 可搜索此行确认
-        let content_str = core::str::from_utf8(&read_buf[..n]).unwrap_or("<non-utf8>");
+        let content_str = core::str::from_utf8(&read_buf[..n]).unwrap_or_else(|error| {
+            panic!(
+                "FatFS: read back UTF-8 解码失败: len={n}, error={error}, bytes={:x?}",
+                &read_buf[..n]
+            )
+        });
         log::info!("FatFS: read back: \"{}\"", content_str.trim());
     }
 

@@ -1,10 +1,11 @@
 // Copyright The SimpleKernel Contributors
 
-/// RISC-V 64 定时器子系统
-///
-/// 通过 SBI set_timer 接口实现周期性时钟中断。
-/// 硬件频率由 `early_init()` 通过 `set_hw_freq()` 设置（FDT `timebase-frequency`），
-/// 以 `config::TIMER_FREQ_HZ` 为目标 tick 频率计算触发间隔。
+//! RISC-V 64 定时器子系统。
+//!
+//! 通过 SBI set_timer 接口实现周期性时钟中断。
+//! 硬件频率由 `early_init()` 通过 `set_hw_freq()` 设置（FDT `timebase-frequency`），
+//! 以 `config::TIMER_FREQ_HZ` 为目标 tick 频率计算触发间隔。
+
 use core::sync::atomic::{AtomicU64, Ordering};
 
 use per_cpu::cpu_local;

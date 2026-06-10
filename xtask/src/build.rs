@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! `xtask build/check` 的内核构建入口。
+
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str;
@@ -20,6 +22,10 @@ const BUILD_STD_ARGS: &[&str] = &[
 ///
 /// `package` 为 `None` 时编译默认 workspace binary（内核）；
 /// 为 `Some("name")` 时编译指定包。
+///
+/// # Errors
+///
+/// Cargo 构建失败，或预期 ELF 产物不存在时返回错误。
 pub fn build_binary(
     sh: &Shell,
     project_root: &Path,
@@ -59,6 +65,10 @@ pub fn build_binary(
 /// 检查编译——等价于 `cargo check` 但传入正确的裸机目标和 build-std 参数。
 ///
 /// 适用于任意宿主机架构（x86_64 / aarch64 / riscv64），行为完全一致。
+///
+/// # Errors
+///
+/// `cargo check` 执行失败时返回错误。
 pub fn check_target(sh: &Shell, arch: Arch) -> Result<()> {
     let target = arch.target_triple();
     println!("[xtask] Checking for {}...", arch.as_str());
@@ -97,6 +107,10 @@ fn llvm_tool_path(sh: &Shell, tool: &str) -> Result<PathBuf> {
 ///
 /// 使用 `llvm-tools` 中的工具，原生支持所有目标架构，
 /// 无需额外安装 GCC cross 工具链。各工具失败时只打警告，不中断构建。
+///
+/// # Errors
+///
+/// 无法解析 `llvm-tools` 路径，或写入调试文件失败时返回错误。
 pub fn generate_debug_files(sh: &Shell, kernel_elf: &Path) -> Result<()> {
     println!("[xtask] Generating debug files...");
 
@@ -131,6 +145,10 @@ pub fn generate_debug_files(sh: &Shell, kernel_elf: &Path) -> Result<()> {
 }
 
 /// 创建启动产物目录 `target/{triple}/{profile}/boot/`，按需 `mkdir -p`。
+///
+/// # Errors
+///
+/// 无法创建启动产物目录时返回错误。
 pub fn prepare_boot_directory(project_root: &Path, arch: Arch, release: bool) -> Result<PathBuf> {
     let profile_dir = if release { "release" } else { "debug" };
     let boot_dir = project_root
@@ -150,6 +168,10 @@ pub fn prepare_boot_directory(project_root: &Path, arch: Arch, release: bool) ->
 ///
 /// 首次运行时用 `dd` + `mkfs.fat` 在 `boot_dir` 下创建 64 MiB 空镜像；
 /// 已存在则直接返回，跳过创建。
+///
+/// # Errors
+///
+/// 无法创建镜像文件，或 `mkfs.fat` 执行失败时返回错误。
 pub fn ensure_rootfs_image(sh: &Shell, boot_dir: &Path) -> Result<PathBuf> {
     let rootfs_path = boot_dir.join("rootfs.img");
     if rootfs_path.exists() {

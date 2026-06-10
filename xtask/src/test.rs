@@ -16,7 +16,11 @@ pub struct QemuEnv {
     pub dtb_path: PathBuf,
 }
 
-/// 准备 QEMU 启动环境（仅需执行一次）
+/// 准备 QEMU 启动环境（仅需执行一次）。
+///
+/// # Errors
+///
+/// 固件、启动目录、rootfs、DTB、启动脚本或引导分区准备失败时返回错误。
 pub fn prepare_qemu_env(
     sh: &Shell,
     project_root: &Path,
@@ -110,7 +114,11 @@ fn evaluate_qemu_test_result(result: &qemu::QemuTestResult) -> TestVerdict {
     }
 }
 
-/// 运行指定测试
+/// 运行指定测试。
+///
+/// # Errors
+///
+/// 测试二进制构建、FIT 镜像生成、TFTP 设置或 QEMU 执行失败时返回错误。
 #[expect(
     clippy::too_many_arguments,
     reason = "QEMU 测试需要传递构建和显示相关的多个参数"
@@ -290,6 +298,10 @@ struct TestResult {
 /// 每个测试在独立 QEMU 实例中运行，输出被捕获而非直接打印到终端。
 /// 超时后自动终止 QEMU 进程。顺序复用共享的 `boot/` 目录——每轮
 /// 重新生成 FIT 镜像和 TFTP 符号链接，不创建 per-test 子目录。
+///
+/// # Errors
+///
+/// 任一测试构建、FIT 镜像生成、TFTP 设置或 QEMU 执行失败时返回错误。
 pub fn run_all_tests(
     sh: &Shell,
     project_root: &Path,

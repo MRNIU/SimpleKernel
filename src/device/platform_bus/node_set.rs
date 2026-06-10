@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! PlatformBus FDT 节点去重集合。
+
 use heapless::Vec;
 use platform_fdt::FdtNodeId;
 

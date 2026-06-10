@@ -1,8 +1,8 @@
 // Copyright The SimpleKernel Contributors
 
-/// 早期初始化（架构无关）——解析 FDT，将信息分发到各子系统。
-///
-/// 在堆和分页启用之前运行，仅依赖 logging 和栈。
+//! 架构无关早期初始化入口。
+
+/// 解析 FDT，并在堆和分页启用前将平台信息分发到各子系统。
 pub fn early_init(dtb_addr: usize) {
     use crate::CORE_COUNT;
     use memory::{MEMORY_INFO, MemoryInfo};

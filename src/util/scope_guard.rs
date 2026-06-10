@@ -1,7 +1,9 @@
 // Copyright The SimpleKernel Contributors
 
-/// RAII cleanup guard — runs cleanup on Drop, dismiss() cancels it.
-/// Pattern from Linux kernel Rust — used for init failure rollback.
+//! 作用域退出时执行清理的 RAII guard。
+
+/// RAII cleanup guard，`Drop` 时运行清理函数，`dismiss()` 取消清理。
+/// 模式参考 Linux kernel Rust，用于初始化失败回滚。
 pub struct ScopeGuard<F: FnOnce()> {
     cleanup: Option<F>,
 }

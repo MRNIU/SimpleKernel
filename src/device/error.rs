@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! 设备子系统错误类型。
+
 use core::fmt;
 
 /// 设备子系统错误。

@@ -1,9 +1,10 @@
 // Copyright The SimpleKernel Contributors
 
-/// AArch64 上下文切换——naked 函数实现
-///
-/// 使用 `#[unsafe(naked)]` 替代外部 `.S` 文件，消除对 GCC 交叉编译器的依赖。
-/// 布局与 `context.rs` 中 `CalleeSavedContext` 严格对应。
+//! AArch64 上下文切换 naked 函数实现。
+//!
+//! 使用 `#[unsafe(naked)]` 替代外部 `.S` 文件，消除对 GCC 交叉编译器的依赖。
+//! 布局与 `context.rs` 中 `CalleeSavedContext` 严格对应。
+
 use core::arch::naked_asm;
 
 use super::context::CalleeSavedContext;
@@ -71,6 +72,11 @@ pub unsafe extern "C" fn switch_to(
 /// - `x20`（`regs[1]`）= 参数 `arg`
 ///
 /// 将它们搬到参数寄存器 `x0`/`x1` 后调用 `kernel_thread_bootstrap`。
+///
+/// # Safety
+///
+/// 只能由 `switch_to` 恢复到预先构造的内核线程上下文时进入；`x19` 必须是有效函数
+/// 指针，`x20` 必须是该函数接受的参数值。
 #[unsafe(naked)]
 pub unsafe extern "C" fn kernel_thread_entry() {
     naked_asm!("mov x0, x19", "mov x1, x20", "bl kernel_thread_bootstrap",);

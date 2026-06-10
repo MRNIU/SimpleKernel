@@ -1,8 +1,9 @@
 // Copyright The SimpleKernel Contributors
 
-/// RISC-V 64 陷阱上下文与被调用者保存寄存器上下文
-///
-/// 布局与 macro.S 中的宏严格对应，修改时需同步更新汇编代码。
+//! RISC-V 64 陷阱上下文与被调用者保存寄存器上下文。
+//!
+//! 布局与 macro.S 中的宏严格对应，修改时需同步更新汇编代码。
+
 // 编译时偏移验证
 use core::mem::offset_of;
 

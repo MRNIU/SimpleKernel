@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! FDT 查询子模块入口。
+
 mod node;
 mod path;
 mod platform;

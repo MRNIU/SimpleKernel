@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! 架构分发层与架构操作契约。
+
 #[cfg(target_arch = "aarch64")]
 pub(crate) mod aarch64;
 
@@ -89,6 +91,10 @@ impl CalleeSavedContext {
 }
 
 /// 宿主机编译占位——实际内核从不在 x86_64 上运行
+///
+/// # Safety
+///
+/// 仅用于宿主机编译占位，实际内核路径不会调用；若测试直接调用，指针参数无需被解引用。
 #[cfg(not(any(target_arch = "riscv64", target_arch = "aarch64")))]
 pub unsafe extern "C" fn switch_to(
     _prev: *mut CalleeSavedContext,

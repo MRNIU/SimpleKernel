@@ -77,3 +77,9 @@ crate 底部通过 `const _: () = assert!(...)` 在编译期检查不变量：
 ### 1. `KERNEL_STACK_SIZE` 必须为 2 的幂
 
 `boot.rs` 中使用移位运算计算栈偏移，依赖此不变量。编译期 assert 已保证。
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- 常量或编译期校验变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p config -- -D warnings`。
+- 影响启动、内存、SMP 或定时器参数时，按影响面补跑对应 `cargo xtask build` 或 `cargo xtask test`，QEMU 命令必须带 `--timeout 30`。

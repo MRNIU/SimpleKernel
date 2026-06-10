@@ -1,9 +1,10 @@
 // Copyright The SimpleKernel Contributors
 
-/// AArch64 中断子系统
-///
-/// 使用 `arm-gic` crate 初始化 GICv3，通过 `GicCpuInterface` 系统寄存器
-/// 完成 IAR/EOIR 操作。VBAR_EL1 设置及 16 个异常向量处理函数。
+//! AArch64 中断子系统。
+//!
+//! 使用 `arm-gic` crate 初始化 GICv3，通过 `GicCpuInterface` 系统寄存器
+//! 完成 IAR/EOIR 操作。VBAR_EL1 设置及 16 个异常向量处理函数。
+
 use arm_gic::gicv3::registers::{Gicd, GicrSgi};
 use arm_gic::gicv3::{GicCpuInterface, GicV3, Group};
 use arm_gic::{IntId, InterruptGroup, UniqueMmioPointer};
@@ -160,9 +161,19 @@ fn init_gic_addrs() {
             gicr.size
         );
         GicAddrs {
-            gicd_base: usize::try_from(gicd.address).expect("init_gic_addrs: GICD 地址超出 usize"),
+            gicd_base: usize::try_from(gicd.address).unwrap_or_else(|_| {
+                panic!(
+                    "init_gic_addrs: GICD 地址超出 usize: addr={:#x}, size={:#x}",
+                    gicd.address, gicd.size
+                )
+            }),
             gicd_size: gicd.size,
-            gicr_base: usize::try_from(gicr.address).expect("init_gic_addrs: GICR 地址超出 usize"),
+            gicr_base: usize::try_from(gicr.address).unwrap_or_else(|_| {
+                panic!(
+                    "init_gic_addrs: GICR 地址超出 usize: addr={:#x}, size={:#x}",
+                    gicr.address, gicr.size
+                )
+            }),
             gicr_size: gicr.size,
         }
     });
@@ -176,15 +187,30 @@ fn init_gic_addrs() {
 /// # Safety
 /// GICD 和 GICR 区域必须已通过 `MmioRegion::map` 映射。
 unsafe fn create_gic<'a>() -> GicV3<'a> {
-    let cpu_count = crate::CORE_COUNT.get().copied().unwrap_or(1);
+    let cpu_id = per_cpu::current_core_id();
+    let cpu_count = crate::CORE_COUNT.get().copied().unwrap_or_else(|| {
+        panic!("GIC: CORE_COUNT 未初始化，不能创建 GICv3 实例 (current_cpu={cpu_id})")
+    });
 
-    let addrs = GIC_ADDRS.get().expect("GIC_ADDRS 未初始化");
+    let addrs = GIC_ADDRS
+        .get()
+        .unwrap_or_else(|| panic!("GIC_ADDRS 未初始化 (current_cpu={cpu_id})"));
 
     // SAFETY: GICD/GICR 已映射，identity mapping 保证地址有效
     unsafe {
         let gicd_ptr: *mut Gicd = addrs.gicd_base as *mut Gicd;
-        let gicd = UniqueMmioPointer::new(NonNull::new(gicd_ptr).expect("GICD 基地址为 null"));
-        let gicr = NonNull::new(addrs.gicr_base as *mut GicrSgi).expect("GICR 基地址为 null");
+        let gicd = UniqueMmioPointer::new(NonNull::new(gicd_ptr).unwrap_or_else(|| {
+            panic!(
+                "GICD 基地址为 null: base={:#x}, size={:#x}, current_cpu={cpu_id}",
+                addrs.gicd_base, addrs.gicd_size
+            )
+        }));
+        let gicr = NonNull::new(addrs.gicr_base as *mut GicrSgi).unwrap_or_else(|| {
+            panic!(
+                "GICR 基地址为 null: base={:#x}, size={:#x}, current_cpu={cpu_id}",
+                addrs.gicr_base, addrs.gicr_size
+            )
+        });
         GicV3::new(gicd, gicr, cpu_count, false)
     }
 }
@@ -220,7 +246,12 @@ pub fn init() {
 
     // 从 FDT 初始化 GIC 地址
     init_gic_addrs();
-    let addrs = GIC_ADDRS.get().expect("GIC_ADDRS 未初始化");
+    let addrs = GIC_ADDRS.get().unwrap_or_else(|| {
+        panic!(
+            "GIC_ADDRS 未初始化 (init, cpu_id={})",
+            per_cpu::current_core_id()
+        )
+    });
 
     MmioRegion::map(PhysAddr::new(addrs.gicd_base), addrs.gicd_size);
     MmioRegion::map(PhysAddr::new(addrs.gicr_base), addrs.gicr_size);

@@ -27,6 +27,8 @@ fn assert_not_in_irq() {
     );
 }
 
+// SAFETY: SafeHeap 通过 SpinLock 串行化 buddy allocator 访问；alloc/dealloc
+// 在进入锁前拒绝中断上下文，避免中断重入破坏分配器状态。
 unsafe impl GlobalAlloc for SafeHeap {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         assert_not_in_irq();

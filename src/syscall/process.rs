@@ -1,5 +1,7 @@
 // Copyright The SimpleKernel Contributors
 
+//! SAS 模式进程与任务相关 syscall 网关。
+
 /// exit — 终止当前任务
 pub fn exit(code: i32) -> ! {
     crate::task::exit(code)

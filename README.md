@@ -32,9 +32,9 @@
 
 ## 项目简介
 
-SimpleKernel 是一个**面向 AI 辅助学习的现代化操作系统内核项目**。采用 Rust（`no_std`、nightly）编写，支持 RISC-V 64 和 AArch64 两种架构。
+SimpleKernel 是一个**面向 AI 辅助学习的现代化操作系统内核项目**。采用 Rust（`no_std`、`no_main`、nightly）编写，支持 RISC-V 64 和 AArch64 两种架构。
 
-> **迁移状态**：项目已从 C++ 迁移到 Rust。C++ 源码（`src_cpp/`）保留作为实现参考，但不再维护。所有新开发均在 Rust 中进行。
+项目采用单地址空间（SAS）模型：所有代码运行在同一特权级和地址空间中，隔离主要依赖 Rust 类型系统、crate 可见性和明确的 API 边界。
 
 与传统 OS 教学项目不同，SimpleKernel 采用**接口驱动（Interface-Driven）** 的设计：
 
@@ -191,7 +191,7 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 | 固件构建 | OpenSBI、U-Boot、OP-TEE、ATF 构建 | Dev Container / CI | 否 | `cargo xtask firmware --arch <arch>` |
 | 文档发布 | 生成 rustdoc 并部署 GitHub Pages | GitHub Actions | 否 | `.github/workflows/docs.yml` |
 
-交互式 Bash 中运行 QEMU 相关命令时必须设置 30 秒超时；超时后清理残留 `qemu-system` 进程。CI 为稳定性使用 workflow 中声明的更长外层超时和重复次数。
+交互式 Bash 中运行 QEMU 相关命令默认使用 `--timeout 30`；低性能宿主机或特殊测试可以显式放宽，但应在命令或说明中写清楚原因。超时后清理残留 `qemu-system` 进程。CI 为稳定性使用 workflow 中声明的更长外层超时和重复次数。
 
 ### 打包与发布
 
@@ -199,8 +199,8 @@ SimpleKernel 当前没有独立生产容器镜像。需要保留或发布的产�
 
 | 产物 | 生成命令 / workflow | 宿主机可见路径 | 容器内路径 | 校验 / 发布 |
 |------|---------------------|----------------|------------|-------------|
-| 内核 ELF 与调试文件 | `cargo xtask build --arch <arch>` | `target/<target-triple>/<profile>/` | 同 bind mount 路径 | `cargo xtask run/test` 或 `cargo xtask build` 成功 |
-| 启动产物 | `cargo xtask run/test --arch <arch>` | `target/<target-triple>/<profile>/boot/` | 同 bind mount 路径 | 包含 `boot.fit`、`boot.scr.uimg`、`rootfs.img` 等 |
+| 内核 ELF 与调试文件 | `cargo xtask build --arch <arch>` | `target/<target-triple>/<profile>/` | 同 bind mount 路径 | `cargo xtask run --arch <arch> --timeout 30`、`cargo xtask test --arch <arch> --timeout 30` 或 `cargo xtask build` 成功 |
+| 启动产物 | `cargo xtask run --arch <arch> --timeout 30` / `cargo xtask test --arch <arch> --timeout 30` | `target/<target-triple>/<profile>/boot/` | 同 bind mount 路径 | 包含 `boot.fit`、`boot.scr.uimg`、`rootfs.img` 等 |
 | 固件产物 | `cargo xtask firmware --arch <arch>` | `target/firmware/<arch>/` | 同 bind mount 路径 | `ensure_firmware_exists()` 检查必需文件 |
 | rustdoc Pages artifact | `.github/workflows/docs.yml` | CI 工作区 `docs-out/` | `docs-out/` | `actions/upload-pages-artifact` 后部署 GitHub Pages |
 | Dev Container 镜像 | `.github/workflows/dev-image.yml` | GHCR | `ghcr.io/simple-xx/simplekernel-devcontainer:{latest,sha}` | workflow build-and-push 成功 |
@@ -258,7 +258,7 @@ SimpleKernel 采用两层测试 + 冒烟测试：
 纯逻辑 crate 的 `#[test]` 模块，在容器内以宿主架构运行：
 
 ```bash
-docker exec -w /workspace simplekernel-devcontainer cargo test -p memory_types -p config -p page_table_entry -p arch
+docker exec -w /workspace simplekernel-devcontainer cargo test -p memory_types -p config -p page_table_entry -p arch_primitives
 ```
 
 覆盖范围：地址运算、PTE 编解码、常量验证等。
@@ -327,7 +327,7 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 ### 代码风格
 
 - **语言**: Rust nightly，`#![no_std]`，edition 2024
-- **格式化**: `rustfmt.toml`（100 字符宽度），`cargo fmt` 强制执行
+- **格式化**: 使用 rustfmt 默认 100 字符宽度，执行 `cargo fmt --all`
 - **静态检查**: `cargo clippy -- -D warnings`
 - **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文
 - **完整约定**: Copyright、注释、文件规模、严格 JSON、第三方代码和运行时配置规则见 [docs/conventions.md](./docs/conventions.md)
@@ -343,16 +343,9 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 
 ### Git Commit 规范
 
-```
-<type>(<scope>): <subject>
+提交规则以 [.gitmessage](./.gitmessage) 为详细模板。每条 commit 必须使用 `git commit --signoff`（DCO 签署），PR CI 会检查每个 commit 是否包含 `Signed-off-by` trailer。
 
-type: feat|fix|refactor|test|docs|chore|build|ci|perf|style|revert
-scope: 可选，影响的模块 (arch, memory, task, xtask)
-```
-
-每条 commit 必须使用 `git commit --signoff`（DCO 签署）。
-PR CI 会检查每个 commit 是否包含 `Signed-off-by` trailer。
-可选提交模板：
+可选启用仓库提交模板：
 
 ```bash
 git config commit.template .gitmessage
@@ -390,7 +383,7 @@ git config commit.template .gitmessage
 1. Fork 本仓库
 2. 创建功能分支: `git checkout -b feat/amazing-feature`
 3. 遵循 `AGENTS.md`、`docs/conventions.md` 和 `CONTRIBUTING.md` 进行开发
-4. 确保相关测试通过，例如 `docker exec -w /workspace simplekernel-devcontainer cargo test` 和 `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --all --timeout 30`
+4. 确保相关测试通过，例如 `docker exec -w /workspace simplekernel-devcontainer cargo test`、`docker exec -w /workspace simplekernel-devcontainer cargo fmt --all -- --check` 和 `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --all --timeout 30`
 5. 提交变更: `git commit --signoff -m 'feat(scope): add amazing feature'`
 6. 创建 Pull Request
 
