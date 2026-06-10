@@ -67,6 +67,22 @@ repo/
 - 拆分依据优先是职责、依赖方向、测试边界和变更频率，不为了行数制造无意义 wrapper、过深目录或隐藏循环依赖。
 - 生成文件、lockfile、fixture、大型静态数据、第三方/vendor 文件、许可证正文和少数格式要求集中维护的入口文件可以例外；例外应能说明来源或原因。
 
+## 错误类型组织
+
+- 所有项目自有错误类型都应能向上层暴露，让调用方决定处理、降级、重试、清理、转换或 fail-fast；不要用只服务单个小模块的私有错误类型隐藏失败路径。
+- crate 级或子系统级错误 enum、`Display`/`Error` impl、`From` 转换和对应 Result alias 统一放在所属 crate 或子系统最近的 `error.rs`，并由 `lib.rs`、`mod.rs` 或子系统入口按需 re-export。
+- 不为项目整体新增全局 Result alias。全局别名会让不同子系统过早压成同一种错误，降低类型区分、错误字段保留和边界转换的可审查性。需要统一 ABI 或 syscall 返回时，在边界处显式把 `DeviceError`、`FsError`、`FdtError` 等映射到稳定错误码。
+- Result alias 应按边界命名，例如 `DeviceResult<T>`、`FsResult<T>`、`DmaResult<T>`；很短的内部函数也可以直接写 `Result<T, XxxError>`，但错误类型仍放在 `error.rs`。
+- 新增错误变体必须携带定位所需的安全上下文，例如地址、大小、节点名、架构、路径、索引、设备名、状态码或底层错误；避免只有 `Invalid`、`Failed`、`IoError` 这类不可定位的裸变体。
+
+## 测试组织
+
+- 系统/QEMU 测试放在仓库 `tests/` 下，按模块包组织，每个测试二进制对应一个独立 `tests/<package>/src/*.rs` 文件，并在该包 `Cargo.toml` 中配置 `[[bin]]`、`test = false`。
+- crate 级 host 测试放在与 `src/` 同级的 `crates/<crate>/tests/` 目录，优先覆盖公开 API、错误类型向上暴露后的行为、跨模块契约和回归场景。
+- 模块内部私有白盒测试直接内联在实现文件的 `#[cfg(test)] mod tests { ... }` 中；不要为只有一个 `mod.rs` 的私有测试额外创建模块旁 `tests/` 目录。
+- 测试 fixture、mock、断言 helper 和较大的公开契约场景放入 crate 根 `tests/` 下的独立文件或子目录；不要为了测试便利把生产 API 放宽为 `pub`。
+- bugfix 尽量补充能复现问题的回归测试；无法自动化覆盖时，PR 必须说明手动验证、残余风险和后续补测条件。
+
 ## 机器可读格式
 
 - `.json` 文件保持严格 JSON，不写注释、不留尾随逗号，确保通用解析器、CI、Dev Container 和第三方工具都能读取。
@@ -152,5 +168,5 @@ repo/
 - 使用 Rust nightly、`#![no_std]`、`#![no_main]`、edition 2024。
 - 公共 API 文档注释使用 `///`，涉及安全、错误或 panic 时保留 `# Safety`、`# Errors`、`# Panics` 英文节标题，内容用中文。
 - 所有 `unsafe` 块必须有紧邻的 `// SAFETY:` 注释，说明调用方保证了哪些不变量。
-- 不使用 `.unwrap()`；可恢复错误使用 `?`，内部不变量违反使用 `.expect("带关键数据的原因")` 或 `panic!()`。
+- 不使用 `.unwrap()`；可恢复错误使用 `?` 向上传递所属子系统错误，内部不变量违反使用 `.expect("带关键数据的原因")` 或 `panic!()`。
 - 内核互斥使用项目自定义 `SpinLock<T>`，不要用 `spin::Mutex` 替代中断感知锁。

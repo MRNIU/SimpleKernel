@@ -52,6 +52,8 @@ docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings
 - 不使用 `.unwrap()`；错误信息必须包含有助于定位问题的数据。
 - 内核互斥使用项目自定义 `SpinLock<T>`。
 - trait 是契约，不要为了某个实现把实现细节塞进 trait 定义。
+- 错误类型和 Result alias 放在所属 crate 或子系统最近的 `error.rs`，并向上层暴露；不新增项目级全局 Result alias，syscall/ABI 边界显式转换错误码。
+- crate 级 host 测试放在与 `src/` 同级的 `tests/` 目录；模块私有白盒测试内联在实现文件的 `#[cfg(test)] mod tests` 中；系统/QEMU 测试保持仓库 `tests/*/src/*.rs` 独立二进制。
 - 新增自有源码、脚本、CI 配置、重要配置和长期维护文档时按 `docs/conventions.md` 添加 Copyright 文件头。
 - 手写源码超过 300 行时主动检查职责边界；超过 500 行时 PR 说明暂不拆分理由或拆分计划。
 - 运行时/platform 输入缺失或非法时 fail fast，不用隐式默认值掩盖配置或硬件描述问题。

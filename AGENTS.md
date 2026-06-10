@@ -27,7 +27,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **帧生命周期** → `crates/frame_allocator/`: `AllocatedFrames` RAII 所有权（Drop 归还 buddy）；内核段通过 `mem::forget` 永久持有（ADR-013）
 - **权限覆盖** → `PageTable::update_range_flags(va, count, flags)` — 已映射区间权限整包更新 + TLB 刷新
 - **System tests** → `tests/` for isolated QEMU tests, each binary in its own QEMU instance
-- **Error handling** → `KResult<T> = Result<T, ErrorCode>` in `src/error.rs`
+- **Error handling** → subsystem errors live in nearest `error.rs`; convert explicitly at syscall/ABI boundaries
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
 - **Design overview** → `docs/design/00-概述.md` (master plan — written pre-implementation, may be outdated; code is source of truth)
 - **Phase details** → `docs/design/P0-P7` (implementation plans, all phases complete — may diverge from actual code)
@@ -66,7 +66,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 | `src/fs/fatfs_adapter.rs` | VirtIO blk → fatfs crate I/O 适配 | 扇区对齐 read-modify-write |
 | `src/syscall/` | 类型安全的集中式 API 网关（SAS 模式，不经过 trap） | POSIX 兼容 syscall 编号 |
 | `src/sync/spinlock.rs` | SpinLock (interrupt-aware, lock levels) | custom implementation |
-| `src/error.rs` | `ErrorCode`, `KResult<T>` | error handling |
+| `*/error.rs` | 子系统错误 enum + Result alias | error handling |
 | `src/logging.rs` | `log` crate backend + ANSI colors | kernel logging |
 | `src/config.rs` | Kernel constants (`MAX_CORE_COUNT`, etc.) | configuration |
 | `src/per_cpu.rs` | Per-CPU data + CORE_COUNT | SMP support |
@@ -101,6 +101,8 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Copyright**：仓库自有源码、脚本、CI 配置、重要项目配置和长期维护文档，新增时应带 `Copyright The SimpleKernel Contributors` 文件头；严格 JSON 或不支持注释的文件不强行加入文件头。
 - **机器可读格式**：`.json` 文件保持严格 JSON，不写注释、不留尾随逗号；需要说明时写在相邻文档。
 - **文件规模**：手写源码超过 300 行时 review 应检查职责边界；原则上不超过 500 行，超过时 PR 需说明暂不拆分理由或拆分计划。
+- **错误定义**：所有项目自有错误类型都应能向上层暴露，让调用方决定处理、降级或转换；错误 enum 和对应 Result alias 统一放在所属 crate 或子系统最近的 `error.rs`，并由模块根按需 re-export。不要新增只服务单个小模块的私有错误定义。
+- **测试文件**：系统/QEMU 测试保持 `tests/*/src/*.rs` 独立二进制；crate 级 host 测试放在与 `src/` 同级的 `crates/<crate>/tests/`；模块内部私有白盒测试直接内联在实现文件的 `#[cfg(test)] mod tests` 中。
 - **运行时配置**：FDT、MMIO、timer 频率、core count、QEMU 参数、固件路径和硬件拓扑等运行时/platform 输入必须显式校验；缺失或非法输入应 fail fast，不用 `Default`、`unwrap_or(...)` 等隐式 fallback 掩盖。
 - **目录级文档**：可由局部 `AGENTS.md` 承载的目录说明、模块协作规则、工具运行手册和测试目录索引，不再新增 README。
 
@@ -114,7 +116,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文（Rust 社区惯例），其后说明用中文
 - **注释位置**: 注释写在代码上方，不写在行尾（`// SAFETY:` 除外——紧跟 `unsafe` 块上方）
 - **注释内容**: 注释解释原因、不变量和失败后果，不重复代码表面含义；临时 TODO 必须说明触发条件、后续处理位置或关联文档。
-- **Error handling**: Syscall boundary uses `Result<T, ErrorCode>` + `?`; kernel internals use `.expect("reason with data")` or `panic!()` — the kernel must not silently proceed on internal errors
+- **Error handling**: 可恢复错误使用所属子系统的错误类型向上传递；syscall/ABI 边界再显式映射到 ABI 错误码。不要为项目整体新增全局 Result alias，避免过早丢失错误来源和字段。内核内部不变量违反使用 `.expect("reason with data")` 或 `panic!()`，不得静默继续。
 - **Unsafe**: Every `unsafe` block MUST have `// SAFETY:` comment explaining invariants; minimize scope
 - **Singletons**: `spin::Once<T>` with `call_once()` / `get()`
 - **Sync**: Custom `SpinLock<T>` (interrupt-aware), NOT `spin::Mutex` for kernel mutual exclusion
@@ -140,7 +142,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 ## UNIQUE STYLES
 - `spin::Once<T>` with named statics: `TASK_MANAGER.call_once(|| ...)`, `TASK_MANAGER.get().unwrap()`
 - `SpinLockGuard<'_, T>` RAII locking (disables/restores interrupts on acquire/release)
-- `KResult<T> = Result<T, ErrorCode>` project-wide type alias
+- Subsystem-scoped errors and Result aliases, with explicit boundary conversion
 - Per-architecture code selected via `#[cfg(target_arch = "...")]`
 - Cargo workspace: root package (kernel) + `xtask` (build tool)
 
@@ -324,9 +326,9 @@ test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_p
   - 未来如需 APP 权限分级，可引入 Tock 式 capability token（`unsafe trait` 作为编译期访问控制），当前不需要
 - **Kernel-internal error policy** (bug = panic, expected error = Result):
   - 不变量违反、不可达路径、逻辑错误 → `panic!()` / `.expect()` — 内核 bug 必须立即暴露，fail-fast
-  - 资源耗尽（OOM）、外部设备失败 → `Result<T, ErrorCode>` — 向上返回，由 syscall 层决定如何报给 APP
+  - 资源耗尽（OOM）、外部设备失败 → 所属子系统 `Result<T, XxxError>` — 向上返回，由上层或 syscall 边界决定如何降级、恢复或报给 APP
   - 判断标准：**"这不应该发生" → panic；"这可能发生" → Result**
-- **Error diagnostics**: panic/error messages MUST include the actual data that caused the failure, not just the reason. E.g., `panic!("invalid page-aligned address: {:#x}", addr)` instead of `panic!("invalid address")`. This applies to `.expect()`, `panic!()`, and `log::error!()`.
+- **Error diagnostics**: panic/error messages and error variants MUST include the actual data that caused the failure, not just the reason. E.g., `panic!("invalid page-aligned address: {:#x}", addr)` instead of `panic!("invalid address")`. This applies to `.expect()`, `panic!()`, `log::error!()`, and new error enum variants.
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
 - Debug: use `cargo xtask debug` + GDB, QEMU logs in build output
