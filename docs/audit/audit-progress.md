@@ -9,15 +9,18 @@
 
 **当前 Phase**: R6 — D2-0a / D2a / D2b / D2c 与 D2 收口清理已落地。当前本地平台描述 crate 已收口为
 `crates/platform_fdt`，不保留旧兼容入口；`PlatformFdt` 负责
-kernel-owned DTB 生命周期、`FdtSelector::{Path, Compatible}` 统一查询、borrowed
-`FdtNodeView` 和结构化错误返回。`FdtNodeId` 已改为同一 DTB view 内稳定的全树 DFS
-序号，path 查询和 compatible 查询命中同一节点时返回同一 id。`crates/device_core`
+kernel-owned DTB 生命周期、`FdtSelector::{Path, Compatible}`、小结果集 `query_nodes()`、
+流式 `visit_nodes()`、borrowed `FdtNodeView` 和结构化错误返回。`FdtNodeId` 已改为
+同一 DTB view 内稳定的全树 DFS 序号，path 查询和 compatible 查询命中同一节点时返回同一 id。
+`crates/device_core`
 已新增 descriptor / probe / registry / typed capability 纯模型，承载 `DriverDescriptor`、
 `ProbeKind`、`ProbeRequirement`、`ProbeLevel`、`ProbePriority`、`FdtProbeContext`、
 `ProbeOutcome`、`ProbeFailure`、`DeviceId`、`DeviceSource`、`BlockDevice` 和
 `DeviceCapability::Block`。真实 `platform_bus` 已迁移到 descriptor-driven Static / FDT
 probe，默认块设备已接入 `device_core::CapabilityRegistry`；公开 `virtio_blk()` 入口已删除，
 旧 `DeviceManager` 公共路径已替换为 registry-backed `device::device_count()`。
+设备 probe 的 compatible 枚举已改为 `visit_nodes()` 流式访问 matched FDT 节点，避免把
+AArch64 / RISC-V 不同的 VirtIO MMIO 实例数量绑定到 `FdtNodeList<16>`。
 
 历史 R6 状态：设备子系统 D0.5 已完成；本轮只强化当前 D0 的 VirtIO block
 基线测试和 platform bus fail-fast 语义，未进入 D1 `BlockDevice` 门面实现，未修改
@@ -52,6 +55,14 @@ missed tick 补记和 tickless one-shot 后续回看。
 RISC-V QEMU 30 秒超时下 `cargo xtask test --arch riscv64 --name device-test --timeout 30`、
 `cargo xtask test --arch riscv64 --name fs-test --timeout 30`，以及全量
 `cargo xtask test --arch riscv64 --timeout 30` 的 32 个独立测试。
+
+验证结果（2026-06-10 D2 跨架构 FDT 枚举修复）：通过 `cargo fmt --all`、
+`cargo test -p platform_fdt`、`cargo test -p device_core`、AArch64 QEMU 30 秒超时下
+`cargo xtask test --arch aarch64 --timeout 30` 的 32 个独立测试，以及 RISC-V QEMU
+30 秒超时下 `cargo xtask test --arch riscv64 --timeout 30` 的 32 个独立测试。修复前
+AArch64 在 `platform_bus` 查询 `virtio,mmio` 时因匹配节点超过 `MAX_QUERY_NODES=16`
+返回 `UnsupportedLayout`；修复后设备枚举使用 `PlatformFdt::visit_nodes()` 逐个 probe，
+`query_nodes()` 继续作为小结果集 bounded snapshot。
 
 验证结果（2026-06-09 D2-0a / D2a）：通过 `cargo fmt --all -- --check`、
 `cargo test -p platform_fdt`、`cargo test -p device_core`、
@@ -246,9 +257,9 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 |---|------|------|------|
 | kernel-owned DTB | `platform_fdt` 继续复制 bootloader DTB 到固定 storage，并在分页后映射为 RO | 已落地 | `crates/platform_fdt/src/lib.rs`, `crates/memory/src/init.rs` |
 | API 生命周期 | `PlatformFdt::from_static()` 明确只用于 static fixture / 静态平台镜像；启动路径使用 `init_from_raw()` | 已落地 | `crates/platform_fdt/src/lib.rs` |
-| 查询语义 | 已提供 `FdtSelector::{Path, Compatible}` 统一查询和 borrowed node view | 已落地 | `crates/platform_fdt/src/query.rs` |
+| 查询语义 | 已提供 `FdtSelector::{Path, Compatible}`、bounded `query_nodes()`、流式 `visit_nodes()` 和 borrowed node view | 已落地 | `crates/platform_fdt/src/query.rs` |
 | 设备 probe | `platform_bus` 已用 VirtIO 驱动侧 compatible 常量枚举节点 | 已落地 | `src/device/platform_bus.rs`, `src/device/virtio.rs` |
-| 固定容量 | 第一版 `FdtNodeList` 容量需控制栈占用，当前收敛为 16 个节点、4 个 compatible、4 个 reg region | 已落地 | `crates/platform_fdt/src/query.rs` |
+| 固定容量 | `FdtNodeList` 容量控制小结果集栈占用；设备 compatible 枚举不再受该容量限制，改用 `visit_nodes()` 流式访问 | 已落地 | `crates/platform_fdt/src/query.rs`, `src/device/platform_bus.rs` |
 
 ### 已确认设计决策
 
@@ -256,7 +267,7 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 |---|------|------|
 | 1 | 不新增 crate；平台描述层使用 `crates/platform_fdt`，凸显平台描述层属性 | workspace package/path、依赖名、文档和测试命令需同步改名 |
 | 2 | 不保留旧 `fdt` 兼容入口 | 根 crate 不再 `pub use ... as fdt`，调用点一次性迁移 |
-| 3 | `platform_fdt` 对外提供统一查询入口，但 selector 同时支持 `Path` 和 `Compatible` | 固定平台配置可用 path 查询；设备 probe 继续按 FDT compatible 枚举 |
+| 3 | `platform_fdt` 对外提供统一 selector，但 selector 同时支持 `Path` 和 `Compatible` | 固定平台配置可用 bounded 查询；设备 probe 继续按 FDT compatible 流式枚举 |
 | 4 | `platform_fdt` 返回结构化错误，不在查询层 panic；调用方按启动阶段决定 fail-fast | compatible 枚举为空不是错误；matched node 的必需属性非法必须作为错误返回 |
 | 5 | 执行顺序采用 FDT API 收口 → platform bus 迁移 → D2 registry；实现期不保留旧接口兼容 | 旧 crate 名、旧 re-export、`find_compatible_node_nth()` 等兼容包装应随迁移删除 |
 | 6 | 统一查询返回 borrowed `FdtNodeView`，设备集成层再转换为 registry 所需的 minimal value | `platform_fdt` 保持轻量少分配，`device_core` 不依赖 FDT 生命周期或 parser 类型 |
@@ -264,8 +275,9 @@ frame allocator 后端已在 hard IRQ 上下文分配/释放时 fail-fast。
 
 ### 下一步
 
-继续 R6/D2 descriptor / probe registry；后续如果需要支持更大 FDT 枚举结果，应改为
-流式 iterator、caller-provided buffer 或专用静态 scratch，而不是直接增大栈上 `FdtNodeList`。
+继续 R6/D3 readiness；更大 FDT 枚举结果已经通过 `visit_nodes()` 流式路径覆盖，后续如需
+长期保存完整查询结果，再评估 caller-provided buffer 或专用静态 scratch，而不是直接增大
+栈上 `FdtNodeList`。
 
 **日期**：2026-06-08（device D0.5）
 
@@ -819,3 +831,4 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 | 2026-06-09 | R6 (FDT D2-0) | 将本地 FDT crate 重命名为 `platform_fdt`，落地 `PlatformFdt` 生命周期、`FdtSelector` 查询、borrowed `FdtNodeView`，并迁移 early init、PLIC/GIC、platform_bus 和 FDT 测试；device-test/fs-test 回归通过。 |
 | 2026-06-09 | R6 (device D2c) | 将默认块设备接入 `device_core::CapabilityRegistry`，`src/device/block.rs` 改为 registry-backed 兼容门面，VirtIO block probe 注册 `RegisteredDevice` 和 `DeviceCapability::Block`；`device-test` / `fs-test` 和 RISC-V 全量系统测试回归通过。 |
 | 2026-06-10 | R6 (device D2 cleanup) | 删除公开 `virtio_blk()` 兼容入口，将旧 `manager` 公共路径收窄为 crate 内部实现，新增 registry-backed `device::device_count()`；`device-test` 改为默认 Block capability / `block_device()` 断言。 |
+| 2026-06-10 | R6 (D2 cross-arch FDT enumeration) | 修复 AArch64 `virtio,mmio` 节点数超过 `FdtNodeList<16>` 导致的 platform bus panic：新增 `PlatformFdt::visit_nodes()` 流式枚举，platform bus 不再把设备实例数量绑定到固定查询容量；AArch64 / RISC-V 全量系统测试均通过。 |

@@ -2,7 +2,7 @@
 
 # R6/D2 设备驱动描述符与 Probe Registry 设计说明
 
-> **状态**：D2-0 / D2a / D2b / D2c 和 D2 收口清理已落地；D3 待设计
+> **状态**：D2-0 / D2a / D2b / D2c、D2 收口清理和跨架构 FDT 枚举修复已落地；D3 待设计
 >
 > **范围**：R6 设备子系统 D2
 >
@@ -108,9 +108,8 @@ sequenceDiagram
   Init->>Bus: probe_all()
   Bus->>Registry: DriverRegistry::new(BUILTIN_DRIVERS)
   Registry-->>Bus: 排序后的 descriptor + stats
-  Bus->>Fdt: query_nodes(Compatible(descriptor.compatibles))
-  Fdt-->>Bus: FdtNodeList
-  loop 每个 FdtNodeView
+  Bus->>Fdt: visit_nodes(Compatible(descriptor.compatibles))
+  loop 每个 matched FdtNodeView
     Bus->>Bus: 转换为 FdtProbeContext
     Bus->>Virtio: probe(ProbeContext::Fdt)
     Virtio-->>Bus: Bound / Skipped / Err
@@ -219,16 +218,17 @@ sequenceDiagram
   Boot->>Memory: 初始化 buddy + 页表
   Memory->>PlatformFdt: 将 DTB 副本映射收紧为 RO
   Boot->>Device: device_init()
-  Device->>PlatformFdt: query_nodes(Compatible(...))
-  PlatformFdt-->>Device: FdtNodeList
-  Device->>Device: FdtNodeView 按值转换为 FdtProbeContext
-  Device->>Core: probe_static + probe_fdt(FdtProbeContext list)
+  Device->>PlatformFdt: visit_nodes(Compatible(...))
+  Device->>Core: probe_static()
   Core->>Desc: 按 level + priority + name 排序
-  Core->>Desc: 按 compatible 完全相等匹配 resource
-  Desc->>Virtio: probe(ProbeContext::Fdt)
-  Virtio-->>Core: Bound / Skipped / Err
-  Core->>Capability: 注册 device + Block capability
-  Core->>Block: 设置默认 Block capability
+  loop 每个 matched FdtNodeView
+    Device->>Device: FdtNodeView 按值转换为 FdtProbeContext
+    Device->>Desc: 按 compatible 完全相等匹配 resource
+    Desc->>Virtio: probe(ProbeContext::Fdt)
+    Virtio-->>Device: Bound / Skipped / Err
+    Device->>Capability: 注册 device + Block capability
+    Device->>Block: 设置默认 Block capability
+  end
   Fs->>Block: block_device()
 ```
 
@@ -370,7 +370,7 @@ D2 规则：
 构造 `FdtProbeContext` 并调用同一个 descriptor。若某个实例是 block，则注册 `Block`
 capability；若是 D2 暂不支持的 net / console 等类型，则返回 `Skipped` 并保留诊断。
 
-`platform_fdt` 对外提供统一查询入口，selector 同时支持固定 path 和 compatible 枚举：
+`platform_fdt` 对外提供统一 selector，支持固定 path 和 compatible 枚举：
 
 ```rust
 pub enum FdtSelector<'query> {
@@ -379,11 +379,18 @@ pub enum FdtSelector<'query> {
 }
 
 pub fn query_nodes(&self, selector: FdtSelector<'_>) -> Result<FdtNodeList<'_>, FdtError>;
+pub fn visit_nodes(
+    &self,
+    selector: FdtSelector<'_>,
+    visitor: impl FnMut(FdtNodeView<'static>) -> Result<(), FdtError>,
+) -> Result<(), FdtError>;
 ```
 
-Path 查询用于 `/cpus`、`/reserved-memory` 等固定平台配置节点；设备发现仍使用 FDT
-标准的 compatible 匹配语义。compatible 查询为空不是错误；若某个 matched node 的必需属性
-非法，必须返回结构化错误，不能伪装成 `NodeNotFound`。
+`query_nodes()` 是小结果集的 bounded snapshot；Path 查询或测试 fixture 可以使用它。
+设备发现必须使用 `visit_nodes()` 流式枚举，因为 AArch64 和 RISC-V 的 QEMU
+`virtio,mmio` 实例数量和 MMIO 布局不同，不能把平台实例数量绑定到 `FdtNodeList`
+固定容量。compatible 查询为空不是错误；若某个 matched node 的必需属性非法，必须返回
+结构化错误，不能伪装成 `NodeNotFound`。
 
 `platform_fdt` 提供本地 borrowed view，避免把第三方 FDT parser 类型直接扩散到设备层。
 `src/device` 集成层只用这些 accessor 抽取 probe 所需字段；`device_core` 不接收或长期保存
@@ -731,19 +738,23 @@ static BUILTIN_DRIVERS: &[DriverDescriptor] = &[VIRTIO_MMIO_DRIVER];
 迁移前：
 
 ```text
-for node in platform_fdt.query_nodes(FdtSelector::Compatible(FDT_COMPATIBLE_MMIO)):
+platform_fdt.visit_nodes(FdtSelector::Compatible(FDT_COMPATIBLE_MMIO), |node|:
     let reg = node.reg_required()
     let paddr = PhysAddr::new(usize::try_from(reg.address)?)
     virtio::probe_mmio_device(paddr, reg.size)
+)
 ```
 
 迁移后：
 
 ```text
 registry.probe_static(BUILTIN_DRIVERS)
-let nodes = platform_fdt.query_nodes(FdtSelector::Compatible(...))
-let contexts = nodes.iter().map(build_fdt_probe_context)
-registry.probe_fdt(BUILTIN_DRIVERS, contexts)
+platform_fdt.visit_nodes(FdtSelector::Compatible(...), |node|:
+    if node already bound or this is not descriptor's first matching compatible:
+        return
+    let context = build_fdt_probe_context(node)
+    registry.probe_fdt(BUILTIN_DRIVERS, context)
+)
 ```
 
 D2b 验证重点：
@@ -752,6 +763,8 @@ D2b 验证重点：
 - `fs-test` 仍能通过默认 `block_device()` 使用 FAT 路径。
 - DTB 缺失、FDT 解析失败、匹配节点 `reg` 非法仍 fail-fast。
 - 多个同 compatible FDT 节点可以逐个 probe。
+- 设备枚举不依赖固定 `FdtNodeList` 容量；AArch64 / RISC-V 的 VirtIO MMIO 实例数量由
+  真实 FDT 决定。
 - 多个 descriptor 声明同一个 compatible 会在 registry 初始化阶段报错。
 - 非 block VirtIO MMIO 节点记录为 `Skipped`。
 - 不引入 PCIe、ACPI 或自动链接段注册。

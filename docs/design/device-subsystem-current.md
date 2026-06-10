@@ -21,7 +21,7 @@ SimpleKernel 保留本地 `crate::device` 作为设备子系统边界。设备�
   `device_core::CapabilityRegistry` 提供默认块设备门面；
 - `src/device/manager.rs` 仅作为 crate 内部兼容记录，不再是公开设备枚举真值面；
 - `src/device/platform_bus.rs` 通过 `device_core::DriverRegistry` 编排内建 descriptor，
-  并按 descriptor 声明的 FDT compatible 查询节点；
+  并按 descriptor 声明的 FDT compatible 流式枚举节点；
 - `src/device/virtio.rs` 使用 `virtio-drivers` 初始化 VirtIO block，并把每个成功块设备注册为
   `DeviceCapability::Block`；
 - `src/device/virtio.rs` 已提供 VirtIO MMIO descriptor adapter 和 typed probe result，
@@ -51,14 +51,16 @@ sequenceDiagram
   Device->>Manager: init()
   Device->>Bus: probe_all()
   Bus->>Registry: DriverRegistry::new(BUILTIN_DRIVERS)
-  Bus->>Fdt: query_nodes(Compatible(descriptor.compatibles))
-  Bus->>Bus: FdtNodeView 转 FdtProbeContext
-  Bus->>Virtio: descriptor probe(ProbeContext::Fdt)
-  Virtio->>Memory: map(paddr, size)
-  Virtio->>Virtio: MmioTransport + VirtIOBlk 初始化
-  Virtio->>Manager: register_device(Box<dyn Device>)
-  Virtio->>Block: register_block_device(name, source, BlockDevice)
-  Block->>Capability: register_device + register_capability(Block)
+  Bus->>Fdt: visit_nodes(Compatible(descriptor.compatibles))
+  loop 每个 matched FdtNodeView
+    Bus->>Bus: FdtNodeView 转 FdtProbeContext
+    Bus->>Virtio: descriptor probe(ProbeContext::Fdt)
+    Virtio->>Memory: map(paddr, size)
+    Virtio->>Virtio: MmioTransport + VirtIOBlk 初始化
+    Virtio->>Manager: register_device(Box<dyn Device>)
+    Virtio->>Block: register_block_device(name, source, BlockDevice)
+    Block->>Capability: register_device + register_capability(Block)
+  end
   Device->>Block: default_block_device_id()
   Device->>Device: device_count()
   Fs->>Block: block_device()
@@ -116,6 +118,8 @@ D1 曾新增本地 `BlockDevice` trait 和默认块设备门面；D2c 已将 tra
 - `crates/device_core` 已新增 descriptor / probe / registry / typed capability 纯模型。
 - D2b 已迁移 `platform_bus` 到 descriptor-driven Static / FDT probe；VirtIO MMIO 通过
   descriptor adapter 返回 `Bound` / `Skipped` / `Err`。
+- D2 的设备枚举使用 `platform_fdt::visit_nodes()` 流式访问 matched FDT 节点；`query_nodes()`
+  保留为小结果集 bounded snapshot，不能作为 VirtIO MMIO 实例数量上限。
 - D2c 已将 `src/device/block.rs` 改为 registry-backed 兼容门面；默认块设备由
   `device_core::CapabilityRegistry` 中第一个成功注册的 `Block` capability 决定。
 - 每个成功 VirtIO block probe 都创建永久 `VirtIOBlockDevice` 实例并注册
@@ -133,8 +137,8 @@ D2 的当前设计真值面是
 
 - D2 支持 `Static` / `Fdt`，不支持 PCIe、ACPI 或自动链接段注册。
 - D2-0 已将平台描述层收口为 `crates/platform_fdt`，不保留旧 crate 名或兼容 re-export。
-- `platform_fdt` 提供 `FdtSelector::{Path, Compatible}` 统一查询入口，返回 `FdtNodeList`
-  和 borrowed node view；固定平台配置可用 path 查询，设备 probe 继续按 compatible 枚举。
+- `platform_fdt` 提供 `FdtSelector::{Path, Compatible}` 统一 selector；固定平台配置可用
+  `query_nodes()` 小结果集查询，设备 probe 通过 `visit_nodes()` 按 compatible 流式枚举。
 - `platform_fdt` 查询层返回结构化错误，不在内部 panic；compatible 枚举为空不是错误，
   matched node 的必需属性非法必须作为错误返回。
 - D2 registry 需要同一 DTB view 内稳定的 FDT node id；当前 `FdtNodeId` 已是全 DTB 稳定 id。

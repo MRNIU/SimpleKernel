@@ -69,24 +69,15 @@ fn probe_fdt_drivers(fdt: &PlatformFdt, registry: &mut DriverRegistry<'_>) {
             continue;
         }
 
-        let mut matched_nodes = FdtNodeSet::<{ platform_fdt::MAX_QUERY_NODES }>::new();
         for compatible in compatibles {
-            let nodes = fdt
-                .query_nodes(FdtSelector::Compatible(compatible))
-                .unwrap_or_else(|error| {
-                    panic!(
-                        "PlatformBus: driver={} compatible={} FDT 查询失败: {}",
-                        descriptor.name, compatible, error
-                    )
-                });
-
-            for node in nodes.iter() {
-                if bound_nodes.contains(node.id()) || matched_nodes.contains(node.id()) {
-                    continue;
+            fdt.visit_nodes(FdtSelector::Compatible(compatible), |node| {
+                if bound_nodes.contains(node.id())
+                    || !is_first_descriptor_match(&node, compatibles, compatible)
+                {
+                    return Ok(());
                 }
-                matched_nodes.insert(node.id(), descriptor.name);
 
-                let context = build_fdt_probe_context(node, descriptor.name, compatible);
+                let context = build_fdt_probe_context(&node, descriptor.name, compatible);
                 let probe_context = ProbeContext::Fdt(context);
                 let outcome = run_probe(descriptor, probe_context);
                 let bound =
@@ -94,9 +85,27 @@ fn probe_fdt_drivers(fdt: &PlatformFdt, registry: &mut DriverRegistry<'_>) {
                 if bound {
                     bound_nodes.insert(node.id(), descriptor.name);
                 }
-            }
+                Ok(())
+            })
+            .unwrap_or_else(|error| {
+                panic!(
+                    "PlatformBus: driver={} compatible={} FDT 查询失败: {}",
+                    descriptor.name, compatible, error
+                )
+            });
         }
     }
+}
+
+fn is_first_descriptor_match(
+    node: &FdtNodeView<'static>,
+    descriptor_compatibles: &[&'static str],
+    queried_compatible: &'static str,
+) -> bool {
+    descriptor_compatibles
+        .iter()
+        .find(|compatible| node.compatibles().contains(compatible))
+        .is_some_and(|compatible| *compatible == queried_compatible)
 }
 
 fn run_probe(

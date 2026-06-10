@@ -122,6 +122,9 @@ impl<'fdt> FdtNodeView<'fdt> {
 }
 
 /// FDT 查询结果。
+///
+/// 该类型是小结果集的 bounded snapshot；需要遍历数量由平台决定的 compatible 节点时，
+/// 优先使用 [`PlatformFdt::visit_nodes`]，避免把平台实例数量写进固定栈容量。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FdtNodeList<'fdt> {
     nodes: heapless::Vec<FdtNodeView<'fdt>, MAX_QUERY_NODES>,
@@ -184,8 +187,25 @@ impl PlatformFdt {
     /// # Errors
     /// 当 FDT 自身解析失败、匹配节点解析失败、节点属性非法，或结果超过固定容量时返回错误。
     pub fn query_nodes(&self, selector: FdtSelector<'_>) -> Result<FdtNodeList<'static>, FdtError> {
-        let fdt = parse_fdt!(self)?;
         let mut list = FdtNodeList::new();
+        self.visit_nodes(selector, |node| list.push(node))?;
+        Ok(list)
+    }
+
+    /// 流式访问匹配的 FDT 节点。
+    ///
+    /// 与 [`query_nodes`](Self::query_nodes) 不同，本方法不把全部匹配结果收集到固定容量
+    /// `FdtNodeList` 中，适合用于 VirtIO MMIO 这类不同架构可声明不同实例数量的设备枚举。
+    ///
+    /// # Errors
+    ///
+    /// 当 FDT 自身解析失败、匹配节点解析失败、节点属性非法，或回调返回错误时返回错误。
+    pub fn visit_nodes(
+        &self,
+        selector: FdtSelector<'_>,
+        mut visitor: impl FnMut(FdtNodeView<'static>) -> Result<(), FdtError>,
+    ) -> Result<(), FdtError> {
+        let fdt = parse_fdt!(self)?;
 
         match selector {
             FdtSelector::Path(path) => {
@@ -194,13 +214,13 @@ impl PlatformFdt {
                         log::warn!("FDT root 节点解析失败: {:?}", e);
                         FdtError::ParseFailed
                     })?;
-                    list.push(node_to_view(
+                    visitor(node_to_view(
                         root.as_node(),
                         FdtNodeId::from_stable_ordinal(0),
                         None,
                         "path",
                     )?)?;
-                    return Ok(list);
+                    return Ok(());
                 }
 
                 let nodes = fdt.all_nodes().map_err(|e| {
@@ -218,7 +238,7 @@ impl PlatformFdt {
                         continue;
                     }
 
-                    list.push(node_to_view(
+                    visitor(node_to_view(
                         node,
                         FdtNodeId::from_stable_ordinal(tree_ordinal + FDT_ROOT_NODE_ID + 1),
                         None,
@@ -241,7 +261,7 @@ impl PlatformFdt {
                     if !node_matches_compatible(&node, compatible, compatible)? {
                         continue;
                     }
-                    list.push(node_to_view(
+                    visitor(node_to_view(
                         node,
                         FdtNodeId::from_stable_ordinal(tree_ordinal + FDT_ROOT_NODE_ID + 1),
                         Some(compatible),
@@ -251,7 +271,7 @@ impl PlatformFdt {
             }
         }
 
-        Ok(list)
+        Ok(())
     }
 
     /// 返回首个匹配 `compatible` 节点的指定 `reg` 区域。
