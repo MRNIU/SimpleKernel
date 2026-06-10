@@ -3,7 +3,7 @@
 //! VirtIO 设备探测与管理——利用 `virtio-drivers` crate。
 //!
 //! 通过 MMIO transport 探测 VirtIO 设备类型，对支持的设备（当前仅块设备）
-//! 执行完整初始化并注册到 DeviceManager。
+//! 执行完整初始化并注册为块设备 capability。
 //!
 //! [VirtIO spec §4.2 Virtio Over MMIO](https://docs.oasis-open.org/virtio/virtio/v1.2/virtio-v1.2.html)
 
@@ -67,30 +67,13 @@ impl VirtIOBlockDevice {
             lock: sync::SpinLock::new(block, "virtio_blk", sync::lock_level::UNSPECIFIED),
         }
     }
-
-    fn lock(&self) -> &VirtIOBlockLock {
-        &self.lock
-    }
-}
-
-/// 默认 VirtIO 块设备兼容引用。
-///
-/// D2c 后真实所有权由 capability registry 记录；本入口只保留迁移期兼容语义，返回
-/// 第一个成功注册的 VirtIO block。
-static VIRTIO_BLK: spin::Once<&'static VirtIOBlockLock> = spin::Once::new();
-
-/// 获取全局 VirtIO 块设备引用。
-///
-/// 返回 `None` 表示尚未探测到块设备。
-pub fn virtio_blk() -> Option<&'static VirtIOBlockLock> {
-    VIRTIO_BLK.get().copied()
 }
 
 /// VirtIO MMIO typed probe 结果。
 pub enum VirtioMmioProbeResult {
     /// 成功绑定为块设备。
     Block {
-        /// 迁移期沿用旧 `DeviceManager` 分配的设备 id。
+        /// capability registry 分配的设备 id。
         device_id: device_core::DeviceId,
     },
     /// 识别到资源但不由当前 VirtIO block 路径绑定。
@@ -259,7 +242,7 @@ fn probe_mmio_at(
 /// 初始化 VirtIO 块设备。
 ///
 /// 创建 `VirtIOBlk` 实例，执行读测试验证设备功能，
-/// 注册到 DeviceManager 并存储全局引用。
+/// 注册 VirtIO block 设备记录和块设备 capability。
 fn init_block_device(
     transport: MmioTransport<'static>,
     paddr: PhysAddr,
@@ -290,7 +273,7 @@ fn init_block_device(
 
     let dev_name: &'static str = Box::leak(format!("virtio-blk@{}", paddr).into_boxed_str());
 
-    // 注册到旧设备管理器，迁移期继续支撑 device_count() 和旧查询路径。
+    // 注册到旧设备管理器，迁移期继续支撑内部枚举日志。
     let device = Box::new(VirtIOBlockRecord {
         name: String::from(dev_name),
     });
@@ -307,8 +290,6 @@ fn init_block_device(
             );
             DeviceError::InvalidResource
         })?;
-
-    VIRTIO_BLK.call_once(|| block_device.lock());
 
     Ok(registry_device_id)
 }

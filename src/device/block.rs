@@ -64,6 +64,12 @@ pub fn block_device() -> Option<&'static dyn BlockDevice> {
         .map(|(_, device)| device)
 }
 
+/// 返回 registry 当前记录的设备实例数量。
+#[must_use]
+pub fn registered_device_count() -> usize {
+    CAPABILITY_REGISTRY.lock().devices().len()
+}
+
 /// 返回 registry 当前记录的默认块设备 id。
 #[must_use]
 pub fn default_block_device_id() -> Option<DeviceId> {

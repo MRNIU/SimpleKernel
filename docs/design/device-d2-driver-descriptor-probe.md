@@ -2,7 +2,7 @@
 
 # R6/D2 设备驱动描述符与 Probe Registry 设计说明
 
-> **状态**：D2-0 / D2a / D2b / D2c 已落地；D2 收口清理待实现
+> **状态**：D2-0 / D2a / D2b / D2c 和 D2 收口清理已落地；D3 待设计
 >
 > **范围**：R6 设备子系统 D2
 >
@@ -32,8 +32,8 @@ FDT compatible 匹配思路，并把 SimpleKernel 自己的 DTB 生命周期、M
   也不能自行扫描全局 FDT。registry 长期状态不保存 `FdtNodeView<'_>`。
 - `FdtProbeContext` 是唯一的 FDT probe 输入类型，按值保存稳定 node id、DTB-backed
   `'static` 字符串和 `reg`；不新增同义的 probe resource 类型。
-- `src/device/` 保留为内核集成层：调用 `device_core`、适配 VirtIO/MMIO/DMA，并保留迁移期
-  兼容门面。
+- `src/device/` 保留为内核集成层：调用 `device_core`、适配 VirtIO/MMIO/DMA，并提供稳定
+  上层门面。
 - D2 支持 `Static` / `Fdt` 两类 probe；PCIe、ACPI、自动链接段注册留到后续。
 - FDT compatible 采用完全相等匹配；多个 FDT 节点拥有同一 compatible 是正常多设备实例。
 - descriptor 侧同一 compatible 重复注册禁止；registry 初始化时诊断为错误。
@@ -41,10 +41,11 @@ FDT compatible 匹配思路，并把 SimpleKernel 自己的 DTB 生命周期、M
 - 默认块设备是 capability 层的后置约束：Full + FS 路径要求至少一个 `Block` capability。
 - VirtIO MMIO descriptor 必须区分 `Bound`、`Skipped` 和 `failed`，不能继续用
   `Result<(), DeviceError>` 承载三种语义。
-- 每个 VirtIO block probe 成功都产生独立永久设备实例；`VIRTIO_BLK` 只保留为迁移期兼容入口。
-- D2a-D2c 期间保持 `device_count()`、`virtio_blk()`、`block_device()`、`device-test` 和
-  `fs-test` 可运行。
-- D2 收口后，先清理公开 `virtio_blk()` 和旧 `DeviceManager` 公共路径，再进入更广义 D3。
+- 每个 VirtIO block probe 成功都产生独立永久设备实例，并注册为 `DeviceCapability::Block`。
+- D2a-D2c 期间曾保持 `device_count()`、`virtio_blk()`、`block_device()`、`device-test` 和
+  `fs-test` 可运行；D2 收口后公开 `virtio_blk()` 已删除，旧 `DeviceManager` 公共路径已改为
+  registry-backed `device::device_count()`。
+- D2 收口清理完成后，再进入更广义 D3。
 
 ## 设计目标
 
@@ -76,18 +77,19 @@ D2 明确不做以下工作：
 - 不支持 `.driver.register*` 自动链接段注册。
 - 不实现动态加载驱动模块。
 - 不声明真机 non-coherent DMA、IOMMU、bounce buffer 或 DMA mask 策略已经闭环。
-- 不在 D2a-D2c 中移除 `virtio_blk()` 兼容入口；该入口在 D2 收口清理切片中处理。
+- 不在 D2a-D2c 中移除 `virtio_blk()` 兼容入口；该入口已在 D2 收口清理切片中处理。
 - 不实现完整多设备策略、设备依赖图、热插拔、卸载或 capability revoke。
 - 不使用 `Any` / downcast 作为上层能力查询主路径。
 - 不把固定 QEMU DTB 直接链接进 `.rodata` 作为通用方案；U-Boot 仍按标准方式传递独立 DTB。
 
 ## 当前真值面
 
-当前设备初始化路径已进入 D2c 过渡状态：`platform_bus` 仍是内核集成入口，但不再直接硬编码
+当前设备初始化路径已完成 D2 收口：`platform_bus` 仍是内核集成入口，但不再直接硬编码
 VirtIO MMIO probe 循环；它先构造内建 driver descriptor registry，再按 descriptor 的
 FDT compatible 声明枚举节点并调用 probe adapter。真实块设备能力已接入
 `device_core::CapabilityRegistry`，默认 `block_device()` 由第一个成功注册的
-`DeviceCapability::Block` 决定。旧 `DeviceManager` 和 `virtio_blk()` 仍作为迁移期兼容入口保留。
+`DeviceCapability::Block` 决定。旧 `DeviceManager` 已收窄为 crate 内部兼容记录，公开设备计数由
+registry-backed `device::device_count()` 提供；公开 `virtio_blk()` 入口已删除。
 
 ```mermaid
 sequenceDiagram
@@ -115,11 +117,10 @@ sequenceDiagram
     Virtio->>DeviceManager: register_device(Box<dyn Device>)
     Virtio->>Block: register_block_device(name, source, BlockDevice)
     Block->>Capability: register_device + register_capability(Block)
-    Virtio->>Virtio: 初始化 VIRTIO_BLK 兼容引用
   end
   Bus->>Registry: 更新 matched / bound / skipped / failed 统计
   Init->>Block: default_block_device_id()
-  Init->>DeviceManager: device_count()
+  Init->>Block: device_count()
   Fs->>Block: block_device()
   Block->>Capability: default_block_device()
 ```
@@ -129,10 +130,11 @@ sequenceDiagram
 | API / 路径 | 当前语义 | D2a-D2c 要求 | D2 收口后 |
 |------------|----------|--------------|-----------|
 | `device::device_init()` | 初始化 manager 后调用 platform bus | 入口不变，内部可切到 registry 编排 | 继续作为设备子系统初始化入口 |
-| `manager::device_count()` | 读取旧 `Vec<Box<dyn Device>>` 长度 | 保持可用，保证 `device-test` 不断 | 删除公共旧路径或改为 registry-backed 门面 |
-| `virtio::virtio_blk()` | 返回首个 VirtIO block 全局锁 | 迁移期保留，但不再作为所有权真值 | 删除公共入口或收窄为 `pub(crate)` |
+| `device::device_count()` | 返回 registry 设备实例数 | D2 收口新增公开门面 | registry-backed 公开设备计数入口 |
+| `manager::device_count()` | 已删除公共路径 | D2a-D2c 保持可用，保证 `device-test` 不断 | 公共路径已删除 |
+| `virtio::virtio_blk()` | 已删除公共入口 | 迁移期保留，但不再作为所有权真值 | 公共入口已删除 |
 | `block::block_device()` | 返回 registry 默认 `dyn BlockDevice` | 保持可用 | 保持稳定能力门面，由 registry 支撑 |
-| `device-test` | 检查设备数、VirtIO block 和 sector 0 | 继续通过 | 改为 registry / `BlockDevice` 断言 |
+| `device-test` | 通过 registry / `BlockDevice` 断言 | D2a-D2c 继续通过 | 已改为 registry / `BlockDevice` 断言 |
 | `fs-test` | 通过 `block_device()` 做 FAT I/O | 继续通过 | 继续通过 |
 
 ## 目标分层
@@ -145,7 +147,7 @@ D2 后的目标不是一个更大的 `src/device` 模块，而是清晰分层：
 | 设备核心模型 | `crates/device_core` | descriptor、probe kind、排序、重复诊断、统计、`DeviceId`、`BlockDevice` / `BlockError` 能力接口、typed capability registry | 可依赖 `platform_fdt` 公开值类型；不依赖 MMIO / VirtIO / FAT |
 | FDT 枚举集成 | `src/device/platform_bus.rs` | 获取全局 `PlatformFdt`，把 `FdtNodeView` 按值转换为 `FdtProbeContext` 后交给 `device_core` probe | 依赖当前内核初始化顺序 |
 | 具体驱动适配 | `src/device/virtio.rs` 等 | MMIO 映射、VirtIO transport、DMA HAL、block capability 创建 | 依赖内核 memory / dma |
-| 上层门面 | `src/device/block.rs` 等 | `block_device()`、迁移期 `virtio_blk()` 兼容入口 | 依赖当前调用方 |
+| 上层门面 | `src/device/block.rs` 等 | `block_device()`、`device_count()` 等稳定入口 | 依赖当前调用方 |
 
 `device_core` 可以使用 `platform_fdt` 的公开值类型，但它不应知道 DTB 地址来自 U-Boot，
 也不应调用 `platform_fdt::get()`、初始化 DTB storage 或自行扫描全局 FDT。FDT 节点仍由
@@ -625,26 +627,28 @@ pub trait BlockDevice: Send + Sync {
 2. descriptor/probe 顺序中第一个成功注册的 `Block` capability 成为默认 `block_device()`。
 3. `block_device()` 继续是 FAT 和上层模块的稳定入口。
 4. Full + FS 路径要求至少存在一个默认 `Block` capability；缺失时 fail-fast。
-5. `virtio_blk()` 只在 D2a-D2c 迁移期保留，D2 收口后清理。
+5. `virtio_blk()` 只在 D2a-D2c 迁移期保留，D2 收口后已清理。
 
 ## 多 VirtIO Block 实例
 
-D2c 后 `VIRTIO_BLK` 不再作为块设备所有权真值，只保存第一个 VirtIO block 的迁移期兼容引用。
+D2c 后 `VIRTIO_BLK` 不再作为块设备所有权真值；D2 收口清理已删除公开 `virtio_blk()` 入口。
 
 D2c 规则：
 
 - 每个 VirtIO block probe 成功都分配一个永久设备实例。
 - 该实例由 registry 保存，并通过 `DeviceId` 关联 `DeviceCapability::Block`。
 - D2 不实现 unload、revoke 或热插拔释放，boot device 可以永久持有。
-- `virtio_blk()` 迁移期只返回默认 VirtIO block，作为旧测试和旧调用点的兼容门面。
+- D2a-D2c 迁移期 `virtio_blk()` 只返回默认 VirtIO block，作为旧测试和旧调用点的兼容门面；
+  D2 收口后该入口已删除。
 
 当前第一版实现使用 `Box::leak` 创建永久 `VirtIOBlockDevice` wrapper。关键约束是：
 `block_device() -> Option<&'static dyn device_core::BlockDevice>` 的兼容语义保持，且多个块设备会
-分别进入 `CapabilityRegistry`，不会被 `VIRTIO_BLK.call_once()` 静默吞掉。
+分别进入 `CapabilityRegistry`。
 
 ## 实现切片
 
-D2 拆成四个实现切片和一个收口清理切片。每个切片都必须保持当前兼容入口可用。
+D2 拆成四个实现切片和一个收口清理切片。D2a-D2c 必须保持迁移期兼容入口可用；
+D2 收口清理负责删除旧公开入口。
 
 ### D2-0：`platform_fdt` 基线与 FDT node identity
 
@@ -781,7 +785,7 @@ D2b 验证重点：
 - registry 保存所有 `Block` capability。
 - `block_device()` 的默认选择接入 registry 规则。
 - probe 完成后检查 required default `Block` capability。
-- `virtio_blk()` 继续作为迁移期兼容入口。
+- `virtio_blk()` 在 D2c 期间继续作为迁移期兼容入口，D2 收口清理再删除。
 
 当前落地状态：
 
@@ -793,7 +797,8 @@ D2b 验证重点：
   对外部 `sync::SpinLock<VirtIOBlk<...>>` 直接实现外部 trait。
 - 每个成功 VirtIO block probe 都通过 `Box::leak` 创建永久实例，注册旧 `DeviceManager`
   兼容记录，再注册 `RegisteredDevice` 和 `DeviceCapability::Block`。
-- `virtio_blk()` 保存第一个成功 VirtIO block 的锁引用，仅作为迁移期兼容入口。
+- D2c 期间 `virtio_blk()` 保存第一个成功 VirtIO block 的锁引用，仅作为迁移期兼容入口；
+  D2 收口清理已删除该公开入口。
 - `device_init()` 在 probe 完成后要求默认 `Block` capability 存在；缺失时 fail-fast。
 
 成功路径：
@@ -804,10 +809,9 @@ VirtIO block probe 成功
   -> registry.register_device(...)
   -> registry.register_capability(device_id, DeviceCapability::Block(instance))
   -> 若这是第一个成功 Block capability，则作为默认 block_device()
-  -> 兼容期继续让 virtio_blk() 返回默认 VirtIO block
 ```
 
-D2c 已保持：
+D2c 当时保持：
 
 - `manager::device_count() > 0`。
 - `virtio::virtio_blk().is_some()`。
@@ -817,13 +821,15 @@ D2c 已保持：
 
 ### D2 收口清理
 
-D2c 通过后、进入 D3 前，先做清理切片：
+D2c 通过后、进入 D3 前，先做清理切片。当前已落地：
 
-- `device-test` 不再断言 `virtio_blk()` 存在，改为通过 registry 或 `block_device()` 验证默认块设备。
-- `virtio::virtio_blk()` 删除公共入口，或收窄为 `pub(crate)`。
-- 旧 `manager::device_count()` 公共路径删除，或改为 registry-backed 门面。
-- `Vec<Box<dyn Device>>` 不再作为设备枚举真值面。
-- `device-subsystem-current.md` 同步更新为“旧入口已清理”。
+- `device-test` 不再断言 `virtio_blk()` 存在，改为通过 registry-backed `device_count()`、
+  默认 Block capability 和 `block_device()` 验证默认块设备。
+- `virtio::virtio_blk()` 已删除公共入口。
+- 旧 `manager::device_count()` 公共路径已删除，公开 `device::device_count()` 改为
+  registry-backed 门面。
+- `Vec<Box<dyn Device>>` 不再作为设备枚举真值面，只保留为 crate 内部兼容记录。
+- `device-subsystem-current.md` 已同步更新为“旧入口已清理”。
 
 ## 与 rdrive 的关系
 

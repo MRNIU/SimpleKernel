@@ -3,18 +3,18 @@
 //! 设备管理框架——设备注册、查找、VirtIO 子系统。
 //!
 //! 本模块通过 FDT 枚举发现设备，调用对应驱动探测函数，
-//! 并将成功探测的设备注册到全局 `DeviceManager`。
+//! 并将成功探测的设备注册为 typed capability。
 //!
 //! 架构：
 //! - `hal.rs`：`virtio-drivers` crate 的 HAL 实现
 //! - `block.rs`：本地 `BlockDevice` 能力门面
-//! - `manager.rs`：设备注册/查找
+//! - `manager.rs`：迁移期内部设备记录
 //! - `platform_bus.rs`：FDT 遍历 → 驱动匹配
 //! - `virtio.rs`：VirtIO 设备探测与管理
 
 pub mod block;
 pub mod hal;
-pub mod manager;
+pub(crate) mod manager;
 pub mod platform_bus;
 pub mod virtio;
 
@@ -71,6 +71,12 @@ pub trait Device: Send + Sync {
     fn device_type(&self) -> DeviceType;
 }
 
+/// 返回 registry 当前记录的设备实例数量。
+#[must_use]
+pub fn device_count() -> usize {
+    block::registered_device_count()
+}
+
 /// 初始化设备子系统——扫描 FDT 并探测所有设备。
 ///
 /// 在页表激活和中断初始化之后调用。
@@ -85,7 +91,7 @@ pub fn device_init() {
     let default_block = block::default_block_device_id().unwrap_or_else(|| {
         panic!("DeviceInit: Full 初始化完成后缺少默认 Block capability，无法继续初始化文件系统")
     });
-    let count = manager::device_count();
+    let count = device_count();
     log::info!(
         "DeviceInit complete: {} devices enumerated, default_block_device={}",
         count,

@@ -160,8 +160,8 @@ fn victim_thread(_arg: usize) {
 fn p6p7_test_thread(_arg: usize) {
     use simplekernel::fs::vfs::FileType;
 
-    log::info!("P6P7: testing device manager...");
-    let dev_count = simplekernel::device::manager::device_count();
+    log::info!("P6P7: testing device registry...");
+    let dev_count = simplekernel::device::device_count();
     log::info!("P6P7: {} devices registered", dev_count);
 
     log::info!("P6P7: testing VFS in kernel thread...");
