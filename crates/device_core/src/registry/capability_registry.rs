@@ -6,9 +6,10 @@ use heapless::Vec;
 
 use crate::DeviceCapability;
 
+use config::{MAX_DEVICE_CAPABILITIES, MAX_REGISTERED_DEVICES};
+
 use super::{
-    DeviceId, DeviceSource, DeviceType, MAX_DEVICE_CAPABILITIES, MAX_REGISTERED_DEVICES,
-    RegisteredCapability, RegisteredDevice, RegistryError,
+    DeviceId, DeviceSource, DeviceType, RegisteredCapability, RegisteredDevice, RegistryError,
 };
 
 /// 设备实例和 capability registry。

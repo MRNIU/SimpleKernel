@@ -7,10 +7,9 @@ use fdt_parser::properties::Compatible;
 
 use crate::FdtError;
 
-use super::{
-    FdtCompatibleList, FdtNodeId, FdtNodeName, FdtNodeView, FdtReg, MAX_NODE_COMPATIBLES,
-    MAX_NODE_REGIONS,
-};
+use config::{MAX_NODE_COMPATIBLES, MAX_NODE_REGIONS};
+
+use super::{FdtCompatibleList, FdtNodeId, FdtNodeName, FdtNodeView, FdtReg};
 
 /// 将 parser 节点转换为稳定查询视图。
 ///

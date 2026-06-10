@@ -98,7 +98,7 @@ RISC-V target 下
 `cargo xtask test --arch riscv64 --name device-test --timeout 30`、
 `cargo xtask test --arch riscv64 --name fs-test --timeout 30`。
 实现中曾暴露 `FdtNodeList` 固定容量过大导致启动栈压力，表现为 `device-test` 在
-`DeviceManager: initialized` 后进入 `trap_entry` store page fault；已将第一版容量收紧为
+`DeviceManager: initialized` 后进入 `trap_entry` store page fault；已将容量收紧为
 `MAX_QUERY_NODES=16`、`MAX_NODE_COMPATIBLES=4`、`MAX_NODE_REGIONS=4` 后回归通过。
 未通过项：仓库级 `cargo clippy -- -D warnings` 仍在 host target 下触发既有
 `crates/arch_primitives/src/lib.rs` 缺少 `Impl` cfg；裸机 target clippy 触发既有

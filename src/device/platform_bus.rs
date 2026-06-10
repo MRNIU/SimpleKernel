@@ -68,7 +68,7 @@ fn probe_static_drivers(registry: &mut DriverRegistry<'_>) {
 }
 
 fn probe_fdt_drivers(fdt: &PlatformFdt, registry: &mut DriverRegistry<'_>) {
-    let mut bound_nodes = FdtNodeSet::<{ device_core::MAX_REGISTERED_DEVICES }>::new();
+    let mut bound_nodes = FdtNodeSet::<{ config::MAX_REGISTERED_DEVICES }>::new();
 
     for index in 0..registry.drivers().len() {
         let descriptor = *registry.drivers()[index];

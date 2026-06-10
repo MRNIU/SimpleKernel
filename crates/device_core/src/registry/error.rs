@@ -7,7 +7,7 @@ use super::DeviceId;
 /// registry 构造或注册错误。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RegistryError {
-    /// descriptor 数量超过第一版固定容量。
+    /// descriptor 数量超过固定容量。
     TooManyDrivers {
         /// 实际 descriptor 数量。
         count: usize,
@@ -28,14 +28,14 @@ pub enum RegistryError {
         /// 第二个声明者。
         second_driver: &'static str,
     },
-    /// 设备实例数量超过第一版固定容量。
+    /// 设备实例数量超过固定容量。
     TooManyDevices {
         /// 尝试注册前已有设备数量。
         count: usize,
         /// 固定容量上限。
         max: usize,
     },
-    /// capability 数量超过第一版固定容量。
+    /// capability 数量超过固定容量。
     TooManyCapabilities {
         /// 尝试注册前已有 capability 数量。
         count: usize,

@@ -10,6 +10,7 @@ description = "Descriptor, probe, and typed capability model for SimpleKernel de
 edition.workspace = true
 
 [dependencies]
+config = { path = "../config" }
 heapless.workspace = true
 platform_fdt = { path = "../platform_fdt" }
 

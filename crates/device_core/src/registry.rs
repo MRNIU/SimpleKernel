@@ -16,10 +16,3 @@ pub use capability_registry::CapabilityRegistry;
 pub use driver_registry::{DriverProbeStats, DriverRegistry};
 pub use error::RegistryError;
 pub use types::{DeviceId, DeviceSource, DeviceType, RegisteredCapability, RegisteredDevice};
-
-/// 第一版内建驱动 descriptor 数量上限。
-pub const MAX_DRIVER_DESCRIPTORS: usize = 16;
-/// 第一版启动期注册设备数量上限。
-pub const MAX_REGISTERED_DEVICES: usize = 32;
-/// 第一版启动期注册 capability 数量上限。
-pub const MAX_DEVICE_CAPABILITIES: usize = 32;

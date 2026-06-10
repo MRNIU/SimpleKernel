@@ -15,6 +15,5 @@ mod storage;
 pub use error::FdtError;
 pub use query::{
     FdtCompatibleList, FdtNodeId, FdtNodeList, FdtNodeName, FdtNodeView, FdtReg, FdtSelector,
-    MAX_NODE_COMPATIBLES, MAX_NODE_REGIONS, MAX_QUERY_NODES,
 };
-pub use storage::{MAX_DTB_SIZE, PlatformFdt, StorageRegion, get, init_from_raw, storage_region};
+pub use storage::{PlatformFdt, StorageRegion, get, init_from_raw, storage_region};

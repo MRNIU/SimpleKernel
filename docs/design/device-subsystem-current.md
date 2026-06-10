@@ -199,7 +199,7 @@ MMIO、DMA、panic/fail-fast 和可见性边界。
   `rdrive::Device<T>`、`rdif-*`、`mmio-api` 或 `dma_api::*`。
 - 模块加载器负责读取模块文件、校验 ABI version 和签名或 hash、分配代码/数据段、
   执行 relocation、解析允许导出的内核符号，并设置代码页权限。
-- 第一版动态加载应只支持 load，不支持 unload；卸载需要设备引用计数、正在执行的
+- 动态加载初始阶段应只支持 load，不支持 unload；卸载需要设备引用计数、正在执行的
   callback 排空、IRQ/DMA 停止、资源释放和并发访问屏障。
 - 动态模块不得绕过 `memory::MmioRegion`、`crates/dma` 和设备 registry 的 typed
   capability 边界。
@@ -227,7 +227,7 @@ pub struct DriverModuleDescriptor {
 2. 模块文件格式采用 relocatable ELF、shared object 风格 ELF，还是 SimpleKernel 自定义
    `.skmod` 容器。
 3. 内核导出符号采用全局 symbol table、显式 `KernelDriverApi` 函数表，还是两者组合。
-4. 第一版是否只支持加载不支持卸载。
+4. 动态加载初始阶段是否只支持加载不支持卸载。
 5. 模块签名、hash、版本和依赖关系由谁生成和校验。
 6. 加载后驱动的 panic、初始化失败、probe 失败和资源回滚语义如何定义。
 7. 动态模块是否允许申请 DMA、注册 IRQ handler、访问 MMIO，以及这些 capability 如何授权。

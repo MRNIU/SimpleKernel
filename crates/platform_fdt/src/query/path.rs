@@ -4,7 +4,9 @@
 
 use crate::FdtError;
 
-use super::{FDT_MAX_DEPTH, FdtNodeName};
+use config::FDT_MAX_DEPTH;
+
+use super::FdtNodeName;
 
 pub(super) struct NodePath<'fdt> {
     components: [Option<FdtNodeName<'fdt>>; FDT_MAX_DEPTH],
@@ -23,7 +25,7 @@ impl<'fdt> NodePath<'fdt> {
     ///
     /// # Errors
     ///
-    /// `depth == 0` 或超过 [`FDT_MAX_DEPTH`] 时返回错误。
+    /// `depth == 0` 或超过 [`config::FDT_MAX_DEPTH`] 时返回错误。
     pub(super) fn push(&mut self, depth: usize, name: FdtNodeName<'fdt>) -> Result<(), FdtError> {
         if depth == 0 || depth > self.components.len() {
             log::warn!("FDT 节点深度超出支持范围: {}", depth);

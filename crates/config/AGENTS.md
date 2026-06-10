@@ -44,6 +44,24 @@
 | `PERCPU_AREA_MAX` | 4KB | Per-CPU 区域最大大小 |
 | `LOCK_STACK_DEPTH` | 16 | Per-CPU 锁顺序栈最大深度 |
 
+### FDT / 平台描述
+
+| 常量 | 默认值 | 说明 |
+|------|--------|------|
+| `MAX_DTB_SIZE` | 256KB | 内核自有 DTB storage 上限（必须按页对齐） |
+| `FDT_MAX_DEPTH` | 16 | FDT 路径查询支持的最大节点深度 |
+| `MAX_QUERY_NODES` | 16 | 单次 FDT 查询最多返回的节点数量 |
+| `MAX_NODE_COMPATIBLES` | 4 | 单个 FDT 节点最多保留的 `compatible` 字符串数量 |
+| `MAX_NODE_REGIONS` | 4 | 单个 FDT 节点最多保留的 `reg` 区域数量 |
+
+### 设备模型
+
+| 常量 | 默认值 | 说明 |
+|------|--------|------|
+| `MAX_DRIVER_DESCRIPTORS` | 16 | 内建驱动 descriptor 数量上限 |
+| `MAX_REGISTERED_DEVICES` | 32 | 启动期注册设备数量上限 |
+| `MAX_DEVICE_CAPABILITIES` | 32 | 启动期注册 capability 数量上限 |
+
 ### 调度与定时
 
 | 常量 | 默认值 | 说明 |
@@ -65,6 +83,8 @@ crate 底部通过 `const _: () = assert!(...)` 在编译期检查不变量：
 - `PAGE_SIZE` 必须为 2 的幂
 - `KERNEL_STACK_SIZE` 必须为 2 的幂且 >= `PAGE_SIZE`
 - `MAX_CORE_COUNT` 必须 > 0
+- `MAX_DTB_SIZE` 必须 > 0 且按页对齐
+- FDT 与设备模型固定容量必须 > 0
 
 违反任一条件会导致编译错误，而非运行时 panic。
 
@@ -83,6 +103,12 @@ crate 底部通过 `const _: () = assert!(...)` 在编译期检查不变量：
 ### 1. `KERNEL_STACK_SIZE` 必须为 2 的幂
 
 `boot.rs` 中使用移位运算计算栈偏移，依赖此不变量。编译期 assert 已保证。
+
+### 2. FDT 与设备容量上限从 `config` 引用
+
+`platform_fdt`、`device_core` 和上层调用方都应直接使用 `config::...` 常量，不在局部 crate
+重新导出容量常量。调整容量时优先修改 `crates/config/src/lib.rs`，再按影响面验证对应
+crate。
 
 ## 验证入口
 

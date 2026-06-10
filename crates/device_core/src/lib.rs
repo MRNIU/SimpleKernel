@@ -20,6 +20,5 @@ pub use descriptor::{
 };
 pub use registry::{
     CapabilityRegistry, DeviceId, DeviceSource, DeviceType, DriverProbeStats, DriverRegistry,
-    MAX_DEVICE_CAPABILITIES, MAX_DRIVER_DESCRIPTORS, MAX_REGISTERED_DEVICES, RegisteredCapability,
-    RegisteredDevice, RegistryError,
+    RegisteredCapability, RegisteredDevice, RegistryError,
 };

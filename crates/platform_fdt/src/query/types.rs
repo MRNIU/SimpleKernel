@@ -4,14 +4,7 @@
 
 use crate::FdtError;
 
-/// 单次查询最多返回的节点数量。
-pub const MAX_QUERY_NODES: usize = 16;
-
-/// 单节点最多保留的 `compatible` 字符串数量。
-pub const MAX_NODE_COMPATIBLES: usize = 4;
-
-/// 单节点最多保留的 `reg` 区域数量。
-pub const MAX_NODE_REGIONS: usize = 4;
+use config::{MAX_NODE_COMPATIBLES, MAX_NODE_REGIONS, MAX_QUERY_NODES};
 
 /// FDT 查询入口。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

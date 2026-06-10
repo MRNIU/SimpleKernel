@@ -6,13 +6,10 @@ use core::cell::SyncUnsafeCell;
 
 use crate::FdtError;
 
-/// 第一版内核自有 DTB storage 上限。
-pub const MAX_DTB_SIZE: usize = 256 * 1024;
+use config::MAX_DTB_SIZE;
 
 const FDT_MAGIC: u32 = 0xd00d_feed;
 const FDT_HEADER_SIZE: usize = 40;
-
-const _: [(); 0] = [(); MAX_DTB_SIZE % config::PAGE_SIZE];
 
 #[repr(C, align(4096))]
 struct DtbStorage([u8; MAX_DTB_SIZE]);

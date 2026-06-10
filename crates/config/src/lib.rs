@@ -50,6 +50,30 @@ pub const TIMER_FREQ_HZ: u64 = 10;
 /// Per-CPU 锁顺序栈最大深度
 pub const LOCK_STACK_DEPTH: usize = 16;
 
+/// 内核自有 DTB storage 上限。
+pub const MAX_DTB_SIZE: usize = 256 * 1024;
+
+/// FDT 路径查询支持的最大节点深度。
+pub const FDT_MAX_DEPTH: usize = 16;
+
+/// 单次 FDT 查询最多返回的节点数量。
+pub const MAX_QUERY_NODES: usize = 16;
+
+/// 单个 FDT 节点最多保留的 `compatible` 字符串数量。
+pub const MAX_NODE_COMPATIBLES: usize = 4;
+
+/// 单个 FDT 节点最多保留的 `reg` 区域数量。
+pub const MAX_NODE_REGIONS: usize = 4;
+
+/// 内建驱动 descriptor 数量上限。
+pub const MAX_DRIVER_DESCRIPTORS: usize = 16;
+
+/// 启动期注册设备数量上限。
+pub const MAX_REGISTERED_DEVICES: usize = 32;
+
+/// 启动期注册 capability 数量上限。
+pub const MAX_DEVICE_CAPABILITIES: usize = 32;
+
 /// 自旋锁超时阈值（循环次数）——超过此值 panic。
 ///
 /// 帮助定位死锁：超时时 panic 信息包含锁名称、owner 核心等诊断数据。
@@ -96,3 +120,24 @@ const _: () = assert!(
     "KERNEL_STACK_SIZE must be >= PAGE_SIZE"
 );
 const _: () = assert!(MAX_CORE_COUNT > 0, "MAX_CORE_COUNT must be > 0");
+const _: () = assert!(MAX_DTB_SIZE > 0, "MAX_DTB_SIZE must be > 0");
+const _: () = assert!(
+    MAX_DTB_SIZE.is_multiple_of(PAGE_SIZE),
+    "MAX_DTB_SIZE must be page-aligned"
+);
+const _: () = assert!(FDT_MAX_DEPTH > 0, "FDT_MAX_DEPTH must be > 0");
+const _: () = assert!(MAX_QUERY_NODES > 0, "MAX_QUERY_NODES must be > 0");
+const _: () = assert!(MAX_NODE_COMPATIBLES > 0, "MAX_NODE_COMPATIBLES must be > 0");
+const _: () = assert!(MAX_NODE_REGIONS > 0, "MAX_NODE_REGIONS must be > 0");
+const _: () = assert!(
+    MAX_DRIVER_DESCRIPTORS > 0,
+    "MAX_DRIVER_DESCRIPTORS must be > 0"
+);
+const _: () = assert!(
+    MAX_REGISTERED_DEVICES > 0,
+    "MAX_REGISTERED_DEVICES must be > 0"
+);
+const _: () = assert!(
+    MAX_DEVICE_CAPABILITIES > 0,
+    "MAX_DEVICE_CAPABILITIES must be > 0"
+);

@@ -23,7 +23,7 @@ static CAPABILITY_REGISTRY: sync::SpinLock<CapabilityRegistry> = sync::SpinLock:
 ///
 /// # Errors
 ///
-/// 设备实例或 capability 数量超过第一版固定容量时返回 [`RegistryError`]。
+/// 设备实例或 capability 数量超过固定容量时返回 [`RegistryError`]。
 pub fn register_block_device(
     name: &'static str,
     source: DeviceSource,

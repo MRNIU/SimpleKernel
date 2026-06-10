@@ -11,7 +11,7 @@ descriptor、probe 语义、稳定设备身份和 typed capability registry，�
 - `descriptor` 定义 `DriverDescriptor`、probe 类型、probe 优先级、probe 结果和失败原因。
 - `capability` 定义上层可持有的 typed capability，例如 `BlockDevice` 和 sector I/O 校验。
 - `registry` 维护内建 driver descriptor 集合、probe 统计、设备实例和 capability 绑定。
-  - `registry.rs` 只作为模块入口，统一 re-export 对外 API 和固定容量常量。
+  - `registry.rs` 只作为模块入口，统一 re-export registry 对外 API。
   - `registry/driver_registry.rs` 负责 descriptor 集合校验、排序和 probe 统计。
   - `registry/capability_registry.rs` 负责设备实例、capability 绑定和默认块设备选择。
   - `registry/types.rs` 定义 `DeviceId`、设备来源和注册记录类型。
@@ -25,7 +25,7 @@ descriptor、probe 语义、稳定设备身份和 typed capability registry，�
 - 本 crate 不拥有 DTB 生命周期，不扫描全局 FDT，也不决定哪些节点应被 probe。
 - 本 crate 不实现 VirtIO、MMIO、DMA、文件系统或具体 block device 后端。
 - 本 crate 不做动态驱动加载；当前 descriptor 集合仍是启动期内建驱动清单。
-- registry 的固定容量是第一版启动期约束，调整容量时必须同步错误诊断和相关测试。
+- registry 的固定容量由 `config` crate 统一定义；调整容量时必须同步错误诊断和相关测试。
 
 ## 验证入口
 

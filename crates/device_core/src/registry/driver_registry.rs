@@ -8,7 +8,9 @@ use heapless::Vec;
 
 use crate::{DriverDescriptor, ProbeOutcome};
 
-use super::{MAX_DRIVER_DESCRIPTORS, RegistryError};
+use config::MAX_DRIVER_DESCRIPTORS;
+
+use super::RegistryError;
 
 /// 单个 descriptor 的 probe 统计。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
