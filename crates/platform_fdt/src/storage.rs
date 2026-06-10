@@ -1,0 +1,225 @@
+// Copyright The SimpleKernel Contributors
+
+use core::cell::SyncUnsafeCell;
+
+use crate::FdtError;
+
+/// 第一版内核自有 DTB storage 上限。
+pub const MAX_DTB_SIZE: usize = 256 * 1024;
+
+const FDT_MAGIC: u32 = 0xd00d_feed;
+const FDT_HEADER_SIZE: usize = 40;
+
+const _: [(); 0] = [(); MAX_DTB_SIZE % config::PAGE_SIZE];
+
+#[repr(C, align(4096))]
+struct DtbStorage([u8; MAX_DTB_SIZE]);
+
+/// 内核可查询的 FDT 视图。
+#[derive(Debug)]
+pub struct PlatformFdt {
+    raw_addr: Option<usize>,
+    storage_addr: usize,
+    bytes: &'static [u8],
+}
+
+impl PlatformFdt {
+    /// 从测试或固定平台镜像中的 static DTB 构造查询视图。
+    ///
+    /// 此构造函数不复制 DTB，只用于测试 fixture 或真实静态平台镜像。启动路径应使用
+    /// [`init_from_raw`]，确保 FDT bytes 先进入内核自有 storage。
+    ///
+    /// # Safety
+    ///
+    /// `fdt_addr` 必须指向有效 DTB，且该内存在返回的 [`PlatformFdt`] 使用期间保持可读。
+    /// 对普通 bootloader 传入的临时 DTB 地址不要使用此函数，应走 [`init_from_raw`] 复制路径。
+    pub unsafe fn from_static(fdt_addr: usize) -> Result<Self, FdtError> {
+        let total_size = unsafe { validate_raw_header(fdt_addr)? };
+        // SAFETY: validate_raw_header 已校验 fdt_addr 指向至少 totalsize 字节的合法 FDT；
+        // 调用方负责保证该内存在返回的 PlatformFdt 使用期间保持有效。
+        let bytes = unsafe { core::slice::from_raw_parts(fdt_addr as *const u8, total_size) };
+        Ok(Self {
+            raw_addr: None,
+            storage_addr: fdt_addr,
+            bytes,
+        })
+    }
+
+    /// 原始 bootloader DTB 地址，仅启动期复制路径存在。
+    pub const fn raw_addr(&self) -> Option<usize> {
+        self.raw_addr
+    }
+
+    /// 当前 FDT bytes 起始地址。
+    pub const fn storage_addr(&self) -> usize {
+        self.storage_addr
+    }
+
+    /// DTB 副本 bytes。
+    pub const fn bytes(&self) -> &'static [u8] {
+        self.bytes
+    }
+
+    /// DTB `totalsize`。
+    pub const fn total_size(&self) -> usize {
+        self.bytes.len()
+    }
+
+    /// 当前全局 FDT storage 的页对齐范围。
+    const fn owned_storage_region(&self) -> StorageRegion {
+        StorageRegion {
+            start: self.storage_addr,
+            len: MAX_DTB_SIZE,
+        }
+    }
+}
+
+/// 内核自有 DTB storage 的页对齐范围。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct StorageRegion {
+    /// storage 起始地址。
+    pub start: usize,
+    /// storage 保留字节数。
+    pub len: usize,
+}
+
+impl StorageRegion {
+    /// storage 覆盖页数。
+    pub const fn page_count(self) -> usize {
+        self.len / config::PAGE_SIZE
+    }
+}
+
+static DTB_STORAGE: SyncUnsafeCell<DtbStorage> = SyncUnsafeCell::new(DtbStorage([0; MAX_DTB_SIZE]));
+static PLATFORM_FDT: spin::Once<PlatformFdt> = spin::Once::new();
+
+/// 从 bootloader 传入的原始 DTB 地址初始化内核自有 FDT。
+///
+/// # Safety
+///
+/// `raw_addr` 必须指向 bootloader 提供的有效 DTB，且至少在本函数完成复制前保持可读。
+pub unsafe fn init_from_raw(raw_addr: usize) -> Result<&'static PlatformFdt, FdtError> {
+    if let Some(existing) = PLATFORM_FDT.get() {
+        return Err(FdtError::AlreadyInitialized {
+            existing_addr: existing.storage_addr(),
+        });
+    }
+
+    let total_size = unsafe { validate_raw_header(raw_addr)? };
+    let storage_ptr = DTB_STORAGE.get().cast::<u8>();
+
+    // SAFETY: 调用方保证 raw_addr 指向 total_size 字节可读 DTB；storage_ptr 指向
+    // 内核自有固定 storage，且 PLATFORM_FDT 尚未初始化，启动期单核路径没有并发写入者。
+    unsafe {
+        core::ptr::copy_nonoverlapping(raw_addr as *const u8, storage_ptr, total_size);
+    }
+
+    // SAFETY: 刚复制 total_size 字节到内核自有 static storage；该 storage 在内核生命周期内有效。
+    let bytes = unsafe { core::slice::from_raw_parts(storage_ptr.cast_const(), total_size) };
+    let platform_fdt = PlatformFdt {
+        raw_addr: Some(raw_addr),
+        storage_addr: storage_ptr.addr(),
+        bytes,
+    };
+
+    Ok(PLATFORM_FDT.call_once(|| platform_fdt))
+}
+
+/// 返回已初始化的内核自有 FDT。
+pub fn get() -> Option<&'static PlatformFdt> {
+    PLATFORM_FDT.get()
+}
+
+/// 返回 DTB 固定 storage 范围。只有初始化后才需要修改映射权限。
+pub fn storage_region() -> Option<StorageRegion> {
+    PLATFORM_FDT.get().map(PlatformFdt::owned_storage_region)
+}
+
+unsafe fn validate_raw_header(raw_addr: usize) -> Result<usize, FdtError> {
+    if raw_addr == 0 {
+        return Err(FdtError::NullRawAddr);
+    }
+
+    // SAFETY: 调用方保证 raw_addr 指向至少 FDT header 可读的 DTB。
+    let magic = unsafe { read_be_u32(raw_addr as *const u8) };
+    if magic != FDT_MAGIC {
+        return Err(FdtError::InvalidMagic { raw_addr, magic });
+    }
+
+    // SAFETY: 调用方保证 raw_addr 指向至少 FDT header 可读的 DTB；totalsize 位于 header + 4。
+    let total_size = unsafe { read_be_u32((raw_addr as *const u8).add(4)) as usize };
+    validate_total_size(raw_addr, total_size)?;
+    Ok(total_size)
+}
+
+fn validate_total_size(raw_addr: usize, total_size: usize) -> Result<(), FdtError> {
+    if total_size < FDT_HEADER_SIZE {
+        return Err(FdtError::HeaderTooSmall {
+            raw_addr,
+            total_size,
+        });
+    }
+
+    if total_size > MAX_DTB_SIZE {
+        return Err(FdtError::TooLarge {
+            raw_addr,
+            total_size,
+            max_size: MAX_DTB_SIZE,
+        });
+    }
+
+    Ok(())
+}
+
+unsafe fn read_be_u32(ptr: *const u8) -> u32 {
+    let mut bytes = [0u8; 4];
+    // SAFETY: 调用方保证 ptr 指向至少 4 字节可读内存；copy_nonoverlapping 不要求源对齐。
+    unsafe {
+        core::ptr::copy_nonoverlapping(ptr, bytes.as_mut_ptr(), bytes.len());
+    }
+    u32::from_be_bytes(bytes)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const RAW_ADDR: usize = 0x8020_0000;
+
+    #[test]
+    fn validate_total_size_accepts_header_sized_dtb() {
+        assert_eq!(validate_total_size(RAW_ADDR, FDT_HEADER_SIZE), Ok(()));
+    }
+
+    #[test]
+    fn validate_total_size_rejects_too_small_header() {
+        assert_eq!(
+            validate_total_size(RAW_ADDR, FDT_HEADER_SIZE - 1),
+            Err(FdtError::HeaderTooSmall {
+                raw_addr: RAW_ADDR,
+                total_size: FDT_HEADER_SIZE - 1,
+            })
+        );
+    }
+
+    #[test]
+    fn validate_total_size_rejects_oversized_dtb() {
+        assert_eq!(
+            validate_total_size(RAW_ADDR, MAX_DTB_SIZE + 1),
+            Err(FdtError::TooLarge {
+                raw_addr: RAW_ADDR,
+                total_size: MAX_DTB_SIZE + 1,
+                max_size: MAX_DTB_SIZE,
+            })
+        );
+    }
+
+    #[test]
+    fn read_be_u32_accepts_unaligned_input() {
+        let bytes = [0, 0xd0, 0x0d, 0xfe, 0xed];
+        let ptr = bytes[1..].as_ptr();
+        // SAFETY: ptr 指向 bytes[1..] 的 4 字节有效内存。
+        let value = unsafe { read_be_u32(ptr) };
+        assert_eq!(value, FDT_MAGIC);
+    }
+}
