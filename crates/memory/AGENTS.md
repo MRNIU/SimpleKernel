@@ -24,6 +24,12 @@
 
 本 crate 只负责编排顺序和跨模块业务校验，例如 MMIO 与 RAM 范围的重叠检查。
 
+## 边界
+
+- 本 crate 是内存子系统策略层，不实现 buddy 后端、页表 walk、PTE 编码或 TLB shootdown 传输。
+- 本 crate 不提供通用 `mmap` / `munmap` / demand paging，也不提供运行时 RAM 热插拔。
+- `MmioRegion` 只表达永久 identity-mapped MMIO 窗口，不表达 DMA cache coherence 或设备生命周期。
+
 ## 子系统分层
 
 ```mermaid
@@ -146,3 +152,9 @@ let id: u32 = region.read_reg(0x0); // volatile 读寄存器。
 - 文档-only 变更：`git diff --check`。
 - 初始化、MMIO 或策略层 API 变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p memory -- -D warnings`。
 - FDT reserved-memory、double init、MMIO 或内存布局行为变更：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name memory-test --timeout 30`。
+
+## 不要假设
+
+- 不要把 `memory` 当成物理帧或页表机制的唯一入口；机制能力分别属于下层 crate。
+- 不要把 MMIO envelope 与 RAM 重叠视为可恢复错误；这是平台描述或调用方 bug。
+- 不要新增静默 fallback 来掩盖缺失的 `MEMORY_INFO`、非法 size 或映射冲突。

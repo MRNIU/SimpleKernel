@@ -46,9 +46,9 @@ pub fn prepare_qemu_env(
 
 /// 表示一个测试二进制——所属包名 + 二进制名。
 pub struct TestBinary {
-    /// `tests/*/Cargo.toml` 中的 package name。
+    /// `tests/*/Cargo.toml` 中的 package 名称。
     pub package: String,
-    /// `[[bin]]` 条目中的 binary name。
+    /// `[[bin]]` 条目中的二进制名称。
     pub bin_name: String,
     /// 用于 `--list` 和 `--name` 的显示名。
     /// 单二进制包：包名本身（如 "device-test"）
@@ -191,7 +191,7 @@ pub fn run_test(
 fn read_package_name(content: &str) -> Option<String> {
     for line in content.lines() {
         let trimmed = line.trim();
-        // 遇到 [[bin]] 前的第一个 name 行即为 package name
+        // 遇到 [[bin]] 前的第一个 name 行即为 package 名称。
         if trimmed == "[[bin]]" {
             break;
         }

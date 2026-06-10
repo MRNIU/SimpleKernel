@@ -139,13 +139,16 @@ boot 路径中的初始化函数（`task::init()`、`memory::init()`）不经过
 
 验证标准：迁移后内核行为与迁移前完全一致。
 
+以下验证命令为 `simplekernel-devcontainer` 容器内语境；宿主机侧执行时使用
+`docker exec -w /workspace simplekernel-devcontainer ...`。
+
 | 验证项 | 方式 |
 |--------|------|
 | ecall/svc 不再被调用 | trap handler 中 panic 分支——意外触发会立即崩溃 |
 | syscall 函数可正常调用 | `smoke_test.rs` 改为直接调用后正常运行 |
-| crate 可见性正确 | `cargo build` 编译通过——绕过 syscall 调用 `pub(crate)` 函数会编译失败 |
+| crate 可见性正确 | `cargo xtask check --arch riscv64` 编译通过——绕过 syscall 调用 `pub(crate)` 函数会编译失败 |
 | 单元测试 | `cargo test` 通过（x86_64 host） |
 | 系统测试 | `cargo xtask test --arch riscv64 --timeout 30` 通过 |
-| lint | `cargo fmt --check && cargo clippy -- -D warnings` 通过 |
+| lint | `cargo fmt --all -- --check && cargo clippy -- -D warnings` 通过 |
 
 不新增测试——纯重构，行为不变，现有测试覆盖即可。

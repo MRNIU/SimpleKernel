@@ -38,7 +38,8 @@ pub fn is_enabled() -> bool {
 /// 3. 栈和上下文状态允许安全地处理中断
 #[inline(always)]
 pub unsafe fn bootstrap_enable() {
-    // SAFETY: 由调用方保证安全性
+    // SAFETY: 本函数的安全契约要求调用点已经完成中断向量、栈和临界区收尾。
+    // `enable_irq` 只解除硬件屏蔽；若前提不满足，IRQ 可能在未就绪上下文中重入。
     unsafe { arch_primitives::enable_irq() };
 }
 
@@ -55,7 +56,8 @@ pub unsafe fn bootstrap_enable() {
 /// let held = HeldInterrupts::hold();
 /// // 中断已禁用，可安全访问 per-CPU 数据
 /// do_critical_section(&held);
-/// drop(held); // 恢复中断
+/// // 恢复中断
+/// drop(held);
 /// ```
 ///
 /// HeldInterrupts 不可 Copy（use-after-move）：
@@ -63,14 +65,16 @@ pub unsafe fn bootstrap_enable() {
 /// use interrupt_state::HeldInterrupts;
 /// let a = HeldInterrupts::hold();
 /// let b = a;
-/// drop(a); // 不应编译通过
+/// // `a` 已被移动，不应编译通过。
+/// drop(a);
 /// ```
 ///
 /// HeldInterrupts 不可 Send（不可跨线程传递）：
 /// ```compile_fail
 /// use interrupt_state::HeldInterrupts;
 /// fn assert_send<T: Send>() {}
-/// assert_send::<HeldInterrupts>(); // 不应编译通过
+/// // 中断状态是 per-CPU 状态，不应编译通过。
+/// assert_send::<HeldInterrupts>();
 /// ```
 pub struct HeldInterrupts {
     was_enabled: bool,
@@ -102,7 +106,8 @@ impl HeldInterrupts {
 impl Drop for HeldInterrupts {
     fn drop(&mut self) {
         if self.was_enabled {
-            // SAFETY: 恢复到获取令牌前的中断状态
+            // SAFETY: `hold()` 记录了进入临界区前的中断状态；仅当之前为 enabled 时
+            // 恢复中断，嵌套关中断的内层 guard 不会提前开启 IRQ。
             unsafe { arch_primitives::enable_irq() };
         }
     }
@@ -145,14 +150,16 @@ pub static NEED_RESCHED: AtomicBool = AtomicBool::new(false);
 /// let guard = PreemptGuard::disable();
 /// // 抢占已禁用，可安全操作 per-CPU 数据
 /// do_something();
-/// drop(guard); // 恢复抢占
+/// // 恢复抢占
+/// drop(guard);
 /// ```
 ///
 /// PreemptGuard 不可 Send（不可跨线程传递）：
 /// ```compile_fail
 /// use interrupt_state::PreemptGuard;
 /// fn assert_send<T: Send>() {}
-/// assert_send::<PreemptGuard>(); // 不应编译通过
+/// // 抢占状态是 per-CPU 状态，不应编译通过。
+/// assert_send::<PreemptGuard>();
 /// ```
 pub struct PreemptGuard {
     /// `*const ()` 使类型自动 `!Send + !Sync`——抢占状态是 per-CPU 的，不可跨核传递。
@@ -207,7 +214,9 @@ pub fn check_and_clear_need_resched() -> bool {
 /// 否则将访问越界的 per-CPU 数据。
 #[inline]
 pub unsafe fn set_need_resched_on(target_core: usize) {
-    // SAFETY: 调用方保证 target_core 是有效核心编号
+    // SAFETY: 本函数的安全契约要求 `target_core` 小于实际核心数。
+    // 满足该前提时 `get_on` 返回目标核心的 CPU-local 标志；否则会越界访问
+    // per-CPU 区域并写入错误内存。
     unsafe {
         NEED_RESCHED
             .get_on(target_core)

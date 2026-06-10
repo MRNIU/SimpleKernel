@@ -11,6 +11,12 @@
 
 本 crate 无 `alloc` 依赖，唯一外部依赖是 `log`（仅用于 `DEFAULT_LOG_LEVEL` 的类型）。
 
+## 边界
+
+- 本 crate 只放编译期常量和 const 校验，不读取 FDT、启动参数或运行时平台状态。
+- 本 crate 不负责按硬件拓扑调整配置；运行时/platform 输入必须由对应子系统显式校验。
+- 修改常量会影响所有依赖方，不能在局部模块中复制一份魔数来绕过本 crate。
+
 ## 常量一览
 
 ### 内存
@@ -83,3 +89,8 @@ crate 底部通过 `const _: () = assert!(...)` 在编译期检查不变量：
 - 文档-only 变更：`git diff --check`。
 - 常量或编译期校验变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p config -- -D warnings`。
 - 影响启动、内存、SMP 或定时器参数时，按影响面补跑对应 `cargo xtask build` 或 `cargo xtask test`，QEMU 命令必须带 `--timeout 30`。
+
+## 不要假设
+
+- 不要把 `config` 当成运行时配置中心；硬件发现结果应进入平台或子系统状态。
+- 不要降低 const assert 来“兼容”非法值；常量不满足不变量时应在编译期暴露。

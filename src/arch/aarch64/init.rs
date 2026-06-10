@@ -12,6 +12,10 @@ use crate::logging;
 /// # Safety
 /// `argc` / `argv` 必须来自 U-Boot `bootm` 传入的启动参数；当 `argc >= 3`
 /// 时，`argv[2]` 必须是有效的 null 终止十六进制 C 字符串。
+///
+/// # Panics
+/// 当启动参数数量不足、`argv` 或 `argv[2]` 为空、`argv[2]` 未终止、
+/// 不是 UTF-8、不是十六进制地址或解析为地址 0 时 panic，并输出原始参数信息。
 pub unsafe fn dtb_addr_from_argv(argc: i32, argv: *const *const u8) -> usize {
     if argc < 3 {
         panic!(

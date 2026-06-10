@@ -13,6 +13,12 @@ PTE 修改后必须刷新 TLB，否则 CPU 继续使用过期缓存。
 - 小范围按页 flush、大范围整体 flush（`TLB_FLUSH_THRESHOLD` 阈值切换）
 - 多核环境自动触发 shootdown IPI（注册回调未接入前为 no-op）
 
+## 边界
+
+- 本 crate 负责 TLB flush guard、本核刷新入口和跨核 shootdown 回调封装。
+- 本 crate 不修改 PTE、不实现 IPI 传输、不决定哪些地址范围需要映射。
+- shootdown callback 未注册时只能视为单核/no-op 状态，不能作为多核完整保证。
+
 ## 调用层次
 
 ```

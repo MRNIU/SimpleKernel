@@ -2,6 +2,16 @@
 
 # sync -- 内核同步原语
 
+## 职责
+
+本 crate 提供内核互斥原语、锁级别检查和中断/抢占感知 guard 组合。
+
+## 边界
+
+- 本 crate 只管理锁机制、锁序诊断和 guard 生命周期，不拥有业务状态。
+- 本 crate 不直接操作架构中断寄存器；中断状态 proof token 来自 `interrupt_state`。
+- 本 crate 不承诺公平调度；当前 raw lock 是 TTAS，自旋等待语义需由调用方按上下文控制。
+
 ## 分层架构
 
 ```text

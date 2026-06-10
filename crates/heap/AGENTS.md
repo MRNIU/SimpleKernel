@@ -4,6 +4,16 @@
 
 内核堆分配器——`#[global_allocator]` 实现。
 
+## 职责
+
+本 crate 提供全局 allocator、BSS 引导堆和帧分配器就绪后的堆扩展入口。
+
+## 边界
+
+- 本 crate 不选择物理帧，不管理页表映射，也不定义 DMA-safe 分配语义。
+- 本 crate 不允许中断上下文分配；中断 handler 应使用栈对象或 `heapless` 容器。
+- 帧来源和堆扩展地址由 `memory` / `frame_allocator` 编排后传入。
+
 ## 两阶段初始化
 
 ```

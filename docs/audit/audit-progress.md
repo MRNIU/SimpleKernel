@@ -4,6 +4,9 @@
 
 > 此文件由 AI 在每次审计对话结束时自动更新，用于跨对话传递上下文。
 > 请勿手动编辑，除非需要纠正 AI 的记录。
+> 本文中的裸 `cargo ...` 验证命令均表示在固定 Dev Container
+> `simplekernel-devcontainer` 内执行；宿主机侧执行时使用
+> `docker exec -w /workspace simplekernel-devcontainer ...`。
 
 ## 当前状态
 
@@ -66,15 +69,19 @@ AArch64 在 `platform_bus` 查询 `virtio,mmio` 时因匹配节点超过 `MAX_QU
 
 验证结果（2026-06-10 代码风格与文件组织 follow-up）：按
 `docs/audit/2026-06-10-style-organization-followup.md` 使用多个 subagent 并行完成文档入口、
-旧 crate 名、容器命令、issue 模板、unsafe/API 契约、注释位置、诊断质量和 registry 文件地图收口。
+旧 crate 名、容器命令、issue 模板、crate-local 手册、unsafe/API 契约、注释位置、运行时诊断质量和
+registry 文件地图收口。
 通过 `cargo fmt --all -- --check`、`git diff --check`、无缺失 `//!` 模块说明复扫、
-无裸 `#[allow]` / `.map_err(|_| ...)` 复扫、旧 `arch` / `fdt` 命名复扫（剩余命中仅为外部
-`fdt` 依赖、已标历史命名边界的设计/ADR 和本 follow-up 清单自身）、
+无裸 `#[allow]` / `.map_err(|_| ...)` / `.unwrap()` 复扫、crate-local `AGENTS.md` 缺失复扫、
+旧 `arch` / `fdt` 命名复扫（剩余命中仅为外部 `fdt` 依赖、已标历史命名边界的设计/ADR
+和本 follow-up 清单自身）、
 `cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64`、
-`cargo test -p device_core -p platform_fdt -p memory_types`、RISC-V/AArch64 target 下
-`cargo clippy -p dma -p memory -p memory_types -p paging -p per_cpu -p platform_fdt -- -D warnings`，
-以及 RISC-V QEMU 30 秒超时下 `memory-test/fdt-firmware-reserved`、`paging-test/table`、
-`device-test`。
+`cargo test -p device_core -p platform_fdt`、`cargo clippy -p xtask -- -D warnings`、
+RISC-V target 下
+`cargo clippy -p device_core -p frame_allocator -p interrupt_state -p memory -p page_table_entry -p paging -p platform_fdt -p sync -- -D warnings`，
+以及 RISC-V QEMU 30 秒超时下 `frame-test/alloc`、`frame-test/alloc-in-hardirq-panic`、
+`frame-test/dealloc-in-hardirq-panic`、`memory-test/fdt-firmware-reserved`、
+`memory-test/fdt-multi-memory`、`paging-test/table` 和 `arch-test`。
 
 验证结果（2026-06-09 D2-0a / D2a）：通过 `cargo fmt --all -- --check`、
 `cargo test -p platform_fdt`、`cargo test -p device_core`、

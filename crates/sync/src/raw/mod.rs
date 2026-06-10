@@ -16,6 +16,11 @@ pub use ttas::RawSpinLock;
 /// 3. 所有方法在多核并发调用下无 UB
 pub unsafe trait RawLock: Send + Sync {
     /// 阻塞获取。
+    ///
+    /// # Panics
+    ///
+    /// 实现可在检测到递归加锁、死锁或自旋超时时 panic；panic 信息应包含锁名和
+    /// 当前 owner 等诊断数据。
     fn acquire(&self);
 
     /// 非阻塞尝试，成功返回 `true`。
@@ -31,6 +36,10 @@ pub unsafe trait RawLock: Send + Sync {
     fn name(&self) -> &'static str;
 
     /// 递归加锁检测——默认空实现。
+    ///
+    /// # Panics
+    ///
+    /// 实现检测到当前执行上下文已经持有此锁时可以 panic。
     fn check_recursive(&self) {}
 
     /// 设置当前核心为 owner——默认空实现。

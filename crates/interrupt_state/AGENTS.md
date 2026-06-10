@@ -16,6 +16,12 @@
 唯一的例外是 `bootstrap_enable()`——新任务首次获得 CPU 时
 无条件开启中断，不与 disable 配对，因此标记为 `unsafe`。
 
+## 边界
+
+- 本 crate 只管理中断/抢占状态 proof token、RAII guard 和架构中断原语封装。
+- 本 crate 不实现锁、调度策略或中断控制器分发；这些语义分别属于 `sync`、调度层和架构设备层。
+- 对外状态修改必须通过 guard 或明确标记的 unsafe bootstrap/跨核调度入口。
+
 ## 公开 API
 
 ```rust

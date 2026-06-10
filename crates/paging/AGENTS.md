@@ -21,6 +21,12 @@ paging (机制: 如何映射)  ← 本 crate
    └── tlb (TLB 刷新)
 ```
 
+## 边界
+
+- 本 crate 只提供页表 walk、identity map、权限覆盖和查询机制。
+- 本 crate 不负责内存布局策略、MMIO 类型化访问、帧分配策略或跨核 IPI 传输实现。
+- 页表节点帧由 `frame_allocator::AllocatedFrames` 提供；TLB 刷新入口由 `tlb` 封装。
+
 ## 核心类型
 
 - `PageTable`：多级基数树页表，管理 PTE 的创建与更新

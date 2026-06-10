@@ -14,8 +14,9 @@ macro_rules! parse_fdt {
     ($platform_fdt:expr) => {{
         fdt_parser::Fdt::new_unaligned_fallible($platform_fdt.bytes()).map_err(|e| {
             log::warn!(
-                "FDT 解析失败 (addr={:#x}): {:?}",
+                "FDT 解析失败: storage_addr={:#x}, totalsize={:#x}, error={:?}",
                 $platform_fdt.storage_addr(),
+                $platform_fdt.total_size(),
                 e
             );
             FdtError::InvalidHeader

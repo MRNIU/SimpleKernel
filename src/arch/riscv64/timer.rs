@@ -17,9 +17,22 @@ static HW_FREQ: AtomicU64 = AtomicU64::new(0);
 #[cpu_local]
 static NEXT_DEADLINE: AtomicU64 = AtomicU64::new(0);
 
-/// 设置硬件定时器频率（由 `early_init` 在 FDT 解析后调用）
+/// 设置硬件定时器频率（由 `early_init` 在 FDT 解析后调用）。
+///
+/// # Panics
+///
+/// `freq` 低于目标 tick 频率，或硬件频率被重复设置时 panic。
 pub fn set_hw_freq(freq: u64) {
-    HW_FREQ.store(freq, Ordering::Relaxed);
+    let interval = crate::timer::checked_tick_interval(freq);
+    if let Err(existing) = HW_FREQ.compare_exchange(0, freq, Ordering::AcqRel, Ordering::Acquire) {
+        panic!(
+            "TimerInit: RISC-V HW_FREQ 重复设置: existing={} Hz, new={} Hz, new_interval={} cycles, tick_freq={} Hz",
+            existing,
+            freq,
+            interval,
+            config::TIMER_FREQ_HZ
+        );
+    }
 }
 
 /// 读取 `time` CSR（参考时钟周期计数）
@@ -52,9 +65,13 @@ fn set_timer_or_panic(deadline: u64, context: &str) {
 
 /// 根据当前硬件计数初始化本核 absolute deadline。
 fn init_next_deadline(interval: u64, context: &str) {
-    let deadline = read_time()
-        .checked_add(interval)
-        .unwrap_or_else(|| panic!("TimerInit: {context} deadline 溢出: interval={interval}"));
+    let now = read_time();
+    let deadline = now.checked_add(interval).unwrap_or_else(|| {
+        panic!(
+            "TimerInit: {context} deadline 溢出: now={now}, interval={interval}, core_id={}",
+            per_cpu::current_core_id()
+        )
+    });
     NEXT_DEADLINE.get().store(deadline, Ordering::Relaxed);
     set_timer_or_panic(deadline, context);
 }
@@ -62,11 +79,13 @@ fn init_next_deadline(interval: u64, context: &str) {
 /// 推进本核 absolute deadline 到未来。
 fn reload_next_deadline(interval: u64) {
     let current = NEXT_DEADLINE.get().load(Ordering::Relaxed);
-    assert_ne!(
-        current, 0,
-        "TimerInit: RISC-V next_deadline 未初始化，不能重装 timer"
+    let now = read_time();
+    assert!(
+        current != 0,
+        "TimerInit: RISC-V next_deadline 未初始化，不能重装 timer: current_deadline={current}, now={now}, interval={interval}, core_id={}",
+        per_cpu::current_core_id()
     );
-    let next = crate::timer::next_absolute_deadline(current, read_time(), interval);
+    let next = crate::timer::next_absolute_deadline(current, now, interval);
     NEXT_DEADLINE.get().store(next, Ordering::Relaxed);
     set_timer_or_panic(next, "interrupt reload");
 }

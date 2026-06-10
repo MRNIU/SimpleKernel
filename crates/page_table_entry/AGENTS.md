@@ -29,6 +29,12 @@
 
 本 crate 无 `alloc` / `config` 依赖，可在 heap 未初始化的早期启动阶段使用。
 
+## 边界
+
+- 本 crate 只负责 PTE bit-level 编解码、preset flags 和架构差异封装。
+- 本 crate 不遍历页表、不分配页表节点、不刷新 TLB，也不决定内存布局策略。
+- 上层必须通过 `paging` / `tlb` 组合页表修改和 TLB 维护，不能把 PTE 更新视为完整映射操作。
+
 ## PTE 位域布局
 
 ### RISC-V

@@ -64,7 +64,7 @@ bitflags! {
 const FLAGS_MASK: u64 = PteFlags::all().bits();
 
 impl PteFlags {
-    /// Level 0 叶 PTE 共享基础位：VALID | TABLE | AF。
+    /// 第 0 级叶 PTE 共享基础位：VALID | TABLE | AF。
     ///
     /// 所有权限 factory 都从这三位开始，便于读者快速识别"哪些位是叶 PTE 必备的"。
     const LEAF_BASE: Self = Self::VALID.union(Self::TABLE).union(Self::AF);
@@ -109,10 +109,10 @@ impl PteFlagsOps for PteFlags {
     /// 将标志位适配为指定层级的叶描述符格式。
     ///
     /// ARMv8 在不同层级使用不同描述符格式：
-    /// - Level 0 (page descriptor)：TABLE 位 = 1（bit[1]）
-    /// - Level > 0 (block descriptor)：TABLE 位 = 0
+    /// - 第 0 级（page descriptor）：TABLE 位 = 1（bit[1]）
+    /// - 第 1 级及以上（block descriptor）：TABLE 位 = 0
     ///
-    /// 所有 preset 默认设置 TABLE=1（适用于 Level 0）。
+    /// 所有 preset 默认设置 TABLE=1（适用于第 0 级）。
     /// 映射大页时必须调用此方法清除 TABLE 位。
     #[inline]
     fn for_leaf_at_level(self, level: usize) -> Self {
@@ -152,8 +152,8 @@ impl PteOps for PageTableEntry {
     }
 
     /// ARMv8 的叶判断依赖层级：
-    /// - Level 0（最低级）：所有有效项都是 page descriptor（叶），TABLE 位 = 1
-    /// - Level 1-3：TABLE 位 = 0 表示 block descriptor（叶）
+    /// - 第 0 级（最低级）：所有有效项都是 page descriptor（叶），TABLE 位 = 1
+    /// - 第 1-3 级：TABLE 位 = 0 表示 block descriptor（叶）
     #[inline]
     fn is_leaf(self, level: usize) -> bool {
         if !self.is_valid() {

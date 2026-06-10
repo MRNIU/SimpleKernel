@@ -25,7 +25,7 @@
 
 | 依赖 | 版本 | 备注 | 行动 |
 |------|------|------|------|
-| `fdt` | `0.2.0-alpha1` | Alpha 版本，API 可能不稳定 | 暂不替换，R6 设备审查时重新评估 |
+| `fdt` package（workspace alias: `fdt_parser`） | `0.2.0-alpha1` | Alpha 版本，API 可能不稳定；由本地 `platform_fdt` 封装 | 暂不替换，R6 设备审查时重新评估 |
 | `sbi-rt` | `0.0.3` | 0.x 系列 | 关注上游 breaking changes |
 | `spin` | `0.10` | 仅用 `Once<T>` | 稳定，无需变更 |
 
@@ -41,10 +41,11 @@
 | MulanPSL-2.0 OR MIT | 2 | ✅（木兰宽松许可证） |
 | BSD-2-Clause OR Apache-2.0 OR MIT | 2 | ✅ |
 | Unlicense OR MIT | 1 | ✅ |
-| MPL-2.0 | 1（`fdt`） | ⚠️ file-level copyleft，与 MIT 兼容 |
+| MPL-2.0 | 1（`fdt` package，workspace alias: `fdt_parser`） | ⚠️ file-level copyleft，与 MIT 兼容 |
 | (MIT OR Apache-2.0) AND Unicode-3.0 | 1 | ✅ |
 
-**结论**：所有依赖许可证均与项目 MIT 许可证兼容。`fdt` 的 MPL-2.0 是 file-level copyleft，不影响项目整体许可。
+**结论**：所有依赖许可证均与项目 MIT 许可证兼容。`fdt` package 的 MPL-2.0 是 file-level copyleft，
+不影响项目整体许可；仓库内通过 `platform_fdt` 封装该依赖。
 
 ## Workspace 内部依赖关系
 

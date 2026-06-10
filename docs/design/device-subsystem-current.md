@@ -243,6 +243,9 @@ pub struct DriverModuleDescriptor {
 
 ## 验证入口
 
+以下验证命令为 `simplekernel-devcontainer` 容器内语境；宿主机侧执行时使用
+`docker exec -w /workspace simplekernel-devcontainer ...`。
+
 - `cargo xtask test --arch riscv64 --name device-test --timeout 30`
 - `cargo xtask test --arch riscv64 --name fs-test --timeout 30`
 - `cargo xtask test --arch riscv64 --timeout 30`

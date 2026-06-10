@@ -38,7 +38,13 @@ impl Table {
 
     #[inline]
     fn read(&self, index: usize) -> PageTableEntry {
-        debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
+        debug_assert!(
+            index < ENTRIES_PER_TABLE,
+            "Table::read: PTE index 越界: index={}, entries={}, table_base={:p}",
+            index,
+            ENTRIES_PER_TABLE,
+            self.base
+        );
         // SAFETY: base 指向有效帧，index 经 debug_assert 检查
         let val = unsafe { (*self.base.add(index)).load(Ordering::Acquire) };
         PageTableEntry::from_raw(val)
@@ -46,7 +52,14 @@ impl Table {
 
     #[inline]
     fn write(&self, index: usize, pte: PageTableEntry) {
-        debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
+        debug_assert!(
+            index < ENTRIES_PER_TABLE,
+            "Table::write: PTE index 越界: index={}, entries={}, table_base={:p}, new_pte_raw={:#x}",
+            index,
+            ENTRIES_PER_TABLE,
+            self.base,
+            pte.as_raw()
+        );
         // SAFETY: base 指向有效帧，index 经 debug_assert 检查
         unsafe { (*self.base.add(index)).store(pte.as_raw(), Ordering::Release) };
     }
@@ -54,7 +67,14 @@ impl Table {
     /// 原子交换 PTE，返回旧值。用于无锁权限覆盖。
     #[inline]
     fn swap(&self, index: usize, pte: PageTableEntry) -> PageTableEntry {
-        debug_assert!(index < ENTRIES_PER_TABLE, "PTE index out of bounds");
+        debug_assert!(
+            index < ENTRIES_PER_TABLE,
+            "Table::swap: PTE index 越界: index={}, entries={}, table_base={:p}, new_pte_raw={:#x}",
+            index,
+            ENTRIES_PER_TABLE,
+            self.base,
+            pte.as_raw()
+        );
         // SAFETY: base 指向有效帧，index 经 debug_assert 检查
         let old = unsafe { (*self.base.add(index)).swap(pte.as_raw(), Ordering::AcqRel) };
         PageTableEntry::from_raw(old)
@@ -123,8 +143,14 @@ impl PageTable {
                 paddr = frame_paddr;
             } else if pte.is_leaf(level) {
                 panic!(
-                    "walk_create: VA {} 在 level {} 遇到非预期的大页叶 PTE（页表损坏）",
-                    va, level
+                    "walk_create: VA {} 在 level {} 遇到非预期的大页叶 PTE: table_paddr={}, index={}, pte_raw={:#x}, pte_paddr={}, pte_flags={:?}",
+                    va,
+                    level,
+                    paddr,
+                    idx,
+                    pte.as_raw(),
+                    pte.paddr(),
+                    pte.flags()
                 );
             } else {
                 paddr = pte.paddr();
@@ -210,12 +236,18 @@ impl PageTable {
     ///
     /// # Panics
     ///
-    /// 区间内任一页未映射时 panic（同 [`update_pte`](Self::update_pte)）。
+    /// `page_count == 0`，或区间内任一页未映射时 panic（同 [`update_pte`](Self::update_pte)）。
     //
     // TODO: 单次 walk 批量更新——当前每页独立调用 `update_pte` 触发完整 walk，
     // 同一区间的页通常共享中间节点，可合并为单次 walk 后按叶节点索引步进。
     // 待引入大映射场景（mmap / 模块加载）后优化。
     pub fn update_range_flags(&self, va_start: VirtAddr, page_count: usize, flags: PteFlags) {
+        assert!(
+            page_count > 0,
+            "update_range_flags: page_count 不能为 0: va_start={}, flags={:?}",
+            va_start,
+            flags
+        );
         for i in 0..page_count {
             // SAFETY: update_range_flags 是页表权限覆盖的受控入口；循环内按页串行更新，
             // 同一调用不会并发写同一 PTE，函数末尾用 TlbFlushGuard 刷新所有目标页。
@@ -280,7 +312,7 @@ impl PageTable {
 
         assert!(
             addr_start.as_usize() < end_aligned.as_usize(),
-            "identity_map_range: 无效地址范围 [{addr_start}, {end_aligned})"
+            "identity_map_range: 无效地址范围: requested=[{start}, {end}), aligned=[{addr_start}, {end_aligned}), flags={flags:?}"
         );
 
         let leaf_flags = flags.for_leaf_at_level(0);

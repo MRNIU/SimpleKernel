@@ -148,7 +148,12 @@ fn gic_reg_from_fdt(
 /// GICv3 `reg` 属性包含两组区域：GICD (addr, size) + GICR (addr, size)。
 fn init_gic_addrs() {
     GIC_ADDRS.call_once(|| {
-        let fdt = crate::platform_fdt::get().expect("init_gic_addrs: FDT 未初始化");
+        let current_cpu = per_cpu::current_core_id();
+        let fdt = crate::platform_fdt::get().unwrap_or_else(|| {
+            panic!(
+                "init_gic_addrs: FDT 未初始化: current_cpu={current_cpu}, gicd_reg_index=0, gicr_reg_index=1"
+            )
+        });
 
         let gicd = gic_reg_from_fdt(fdt, 0).unwrap_or_else(|error| {
             panic!("init_gic_addrs: FDT 中未找到 GICv3 GICD reg: reg_index=0, error={error}")
@@ -165,17 +170,19 @@ fn init_gic_addrs() {
             gicr.size
         );
         GicAddrs {
-            gicd_base: usize::try_from(gicd.address).unwrap_or_else(|_| {
+            gicd_base: usize::try_from(gicd.address).unwrap_or_else(|error| {
                 panic!(
-                    "init_gic_addrs: GICD 地址超出 usize: addr={:#x}, size={:#x}",
-                    gicd.address, gicd.size
+                    "init_gic_addrs: GICD 地址超出 usize: addr={:#x}, size={:#x}, error={error}",
+                    gicd.address,
+                    gicd.size
                 )
             }),
             gicd_size: gicd.size,
-            gicr_base: usize::try_from(gicr.address).unwrap_or_else(|_| {
+            gicr_base: usize::try_from(gicr.address).unwrap_or_else(|error| {
                 panic!(
-                    "init_gic_addrs: GICR 地址超出 usize: addr={:#x}, size={:#x}",
-                    gicr.address, gicr.size
+                    "init_gic_addrs: GICR 地址超出 usize: addr={:#x}, size={:#x}, error={error}",
+                    gicr.address,
+                    gicr.size
                 )
             }),
             gicr_size: gicr.size,

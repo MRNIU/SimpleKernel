@@ -5,6 +5,11 @@
 use crate::DeviceId;
 
 /// 驱动 probe 函数。
+///
+/// # Errors
+///
+/// probe 识别到目标资源但无法完成初始化、资源非法或底层 I/O 失败时返回
+/// [`ProbeFailure`]；调用方再根据 [`ProbeRequirement`] 决定 fail-fast 或记录后继续。
 pub type ProbeFn = fn(ProbeContext) -> Result<ProbeOutcome, ProbeFailure>;
 
 /// 驱动声明。

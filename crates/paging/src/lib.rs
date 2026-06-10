@@ -27,7 +27,18 @@ static KERNEL_PAGE_TABLE: spin::Once<PageTable> = spin::Once::new();
 /// 初始化全局内核页表——消费 `PageTable` 的所有权，写入静态存储。
 ///
 /// 仅在启动时调用一次。
+///
+/// # Panics
+///
+/// 全局内核页表已初始化时 panic，避免重复初始化被 `Once` 静默吞掉。
 pub fn init_kernel_page_table(pt: PageTable) {
+    if let Some(existing) = KERNEL_PAGE_TABLE.get() {
+        panic!(
+            "paging::init_kernel_page_table: 全局内核页表重复初始化: existing_root={}, new_root={}",
+            existing.root_paddr(),
+            pt.root_paddr()
+        );
+    }
     KERNEL_PAGE_TABLE.call_once(|| pt);
 }
 
@@ -37,9 +48,9 @@ pub fn init_kernel_page_table(pt: PageTable) {
 ///
 /// 全局内核页表尚未通过 [`init_kernel_page_table`] 初始化时 panic。
 pub fn kernel_page_table() -> &'static PageTable {
-    KERNEL_PAGE_TABLE
-        .get()
-        .expect("kernel page table not initialized")
+    KERNEL_PAGE_TABLE.get().unwrap_or_else(|| {
+        panic!("paging::kernel_page_table: 全局内核页表未初始化: initialized=false")
+    })
 }
 
 /// 分配一个零初始化的页表节点帧。
@@ -48,8 +59,12 @@ pub fn kernel_page_table() -> &'static PageTable {
 ///
 /// 帧分配失败时 panic——页表节点分配发生在 boot 时，OOM 是内核 bug。
 fn alloc_node_frame() -> frame_allocator::AllocatedFrames {
-    let frame = frame_allocator::AllocatedFrames::alloc_one()
-        .expect("页表节点帧分配失败（boot-time OOM 是内核 bug）");
+    let frame = frame_allocator::AllocatedFrames::alloc_one().unwrap_or_else(|error| {
+        panic!(
+            "paging::alloc_node_frame: 页表节点帧分配失败: requested_pages=1, page_size={:#x}, error={error:?}",
+            config::PAGE_SIZE
+        )
+    });
     // 页表节点需要全零初态（无效 PTE = 0），由此处负责清零
     // SAFETY: identity mapping 下 PA.to_virt() 有效；帧刚分配，无其他引用
     unsafe {
@@ -66,7 +81,18 @@ fn alloc_node_frame() -> frame_allocator::AllocatedFrames {
 ///
 /// 此函数因依赖 [`memory_types::VirtAddr`] 而无法放入 `arch_primitives` crate
 /// （`memory_types` 已依赖 `arch_primitives`，反向依赖会形成循环）。
+///
+/// # Panics
+///
+/// `level` 超出当前架构页表层数时 panic。
 #[inline]
 pub fn vpn_index(va: memory_types::VirtAddr, level: usize) -> usize {
+    assert!(
+        level < LEVEL_SHIFTS.len(),
+        "paging::vpn_index: level 超出页表层数: va={}, level={}, levels={}",
+        va,
+        level,
+        LEVEL_SHIFTS.len()
+    );
     (va.as_usize() >> LEVEL_SHIFTS[level]) & INDEX_MASK
 }

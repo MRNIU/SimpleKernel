@@ -53,9 +53,13 @@ fn program_deadline(deadline: u64) {
 
 /// 根据当前虚拟计数器初始化本核 absolute deadline。
 fn init_next_deadline(interval: u64, context: &str) {
-    let deadline = read_cntvct()
-        .checked_add(interval)
-        .unwrap_or_else(|| panic!("TimerInit: {context} deadline 溢出: interval={interval}"));
+    let now = read_cntvct();
+    let deadline = now.checked_add(interval).unwrap_or_else(|| {
+        panic!(
+            "TimerInit: {context} deadline 溢出: now={now}, interval={interval}, core_id={}",
+            per_cpu::current_core_id()
+        )
+    });
     NEXT_DEADLINE.get().store(deadline, Ordering::Relaxed);
     program_deadline(deadline);
 }
@@ -63,11 +67,13 @@ fn init_next_deadline(interval: u64, context: &str) {
 /// 推进本核 absolute deadline 到未来。
 fn reload_next_deadline(interval: u64) {
     let current = NEXT_DEADLINE.get().load(Ordering::Relaxed);
-    assert_ne!(
-        current, 0,
-        "TimerInit: AArch64 next_deadline 未初始化，不能重装 timer"
+    let now = read_cntvct();
+    assert!(
+        current != 0,
+        "TimerInit: AArch64 next_deadline 未初始化，不能重装 timer: current_deadline={current}, now={now}, interval={interval}, core_id={}",
+        per_cpu::current_core_id()
     );
-    let next = crate::timer::next_absolute_deadline(current, read_cntvct(), interval);
+    let next = crate::timer::next_absolute_deadline(current, now, interval);
     NEXT_DEADLINE.get().store(next, Ordering::Relaxed);
     program_deadline(next);
 }

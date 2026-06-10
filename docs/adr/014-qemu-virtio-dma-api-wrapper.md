@@ -157,10 +157,12 @@ SimpleKernel DMA 边界，职责更接近 adapter。
   - 当前 QEMU VirtIO 行为保持不变。
   - 不承诺 non-coherent AArch64 真机 DMA 正确性。
 - **测试**：
+  - 以下验证命令为 `simplekernel-devcontainer` 容器内语境；宿主机侧执行时使用
+    `docker exec -w /workspace simplekernel-devcontainer ...`。
   - 需要验证 `cargo check -p dma`。
   - 需要验证 `cargo xtask check --arch riscv64` 和 `cargo xtask check --arch aarch64`。
-  - 需要验证 `cargo xtask test --arch riscv64 --name device-test`；QEMU 命令使用 30 秒超时，
-    超时后清理残留 `qemu-system` 进程。
+  - 需要验证 `cargo xtask test --arch riscv64 --name device-test --timeout 30`；超时后清理残留
+    `qemu-system` 进程。
 - **文档**：
   - `docs/adr/AGENTS.md` 增加 ADR-014 索引。
   - `crates/dma/AGENTS.md` 记录第三方依赖边界。

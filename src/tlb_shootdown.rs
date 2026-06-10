@@ -124,7 +124,12 @@ pub fn handle_ipi() {
         REQUEST_ALL => tlb::flush_tlb_local(),
         REQUEST_PAGE => tlb::flush_tlb_page_local(REQUEST_ADDR.load(Ordering::Relaxed)),
         REQUEST_NONE => return,
-        kind => panic!("tlb_shootdown: 未知请求类型 {kind}"),
+        kind => panic!(
+            "tlb_shootdown: 未知请求类型: kind={kind}, core_id={core_id}, generation={}, request_addr={:#x}, online_mask={:#x}",
+            generation,
+            REQUEST_ADDR.load(Ordering::Relaxed),
+            online_core_mask()
+        ),
     }
 
     ACK_GENERATION[core_id].store(generation, Ordering::Release);
@@ -153,7 +158,8 @@ pub fn trigger_ack_timeout_for_test() {
 fn broadcast(request: TlbFlushRequest) {
     assert!(
         !interrupt_state::is_in_interrupt(),
-        "tlb_shootdown: 不支持在中断上下文中发起广播"
+        "tlb_shootdown: 不支持在中断上下文中发起广播: in_interrupt=true, online_mask={:#x}, request={request:?}",
+        online_core_mask()
     );
 
     let self_id = per_cpu::current_core_id();

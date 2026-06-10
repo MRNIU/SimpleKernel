@@ -27,22 +27,38 @@ fn run_tests() {
 
 /// 分配单帧后帧计数应为 1，地址应页对齐。
 fn test_alloc_one_frame() {
-    let frame = AllocatedFrames::alloc_one().expect("alloc_one 应成功");
-    assert_eq!(frame.page_count(), 1);
-    assert!(frame.start_paddr().is_aligned());
+    let frame = AllocatedFrames::alloc_one().unwrap_or_else(|error| {
+        panic!("frame-test/alloc: alloc_one 失败: requested_pages=1, error={error:?}")
+    });
+    assert_eq!(frame.page_count(), 1, "单帧分配页数错误");
+    assert!(
+        frame.start_paddr().is_aligned(),
+        "单帧分配返回未页对齐地址: start={}",
+        frame.start_paddr()
+    );
 }
 
 /// 分配多帧后帧计数应正确。
 fn test_alloc_multiple_frames() {
-    let frames = AllocatedFrames::alloc(4).expect("alloc(4) 应成功");
-    assert_eq!(frames.page_count(), 4);
+    let frames = AllocatedFrames::alloc(4).unwrap_or_else(|error| {
+        panic!("frame-test/alloc: alloc(4) 失败: requested_pages=4, error={error:?}")
+    });
+    assert_eq!(frames.page_count(), 4, "多帧分配页数错误");
 }
 
 /// 帧 drop 后应能重新分配。
 fn test_alloc_dealloc_realloc() {
     {
-        let _frame = AllocatedFrames::alloc_one().expect("分配");
+        let _frame = AllocatedFrames::alloc_one().unwrap_or_else(|error| {
+            panic!("frame-test/alloc: drop 前 alloc_one 失败: requested_pages=1, error={error:?}")
+        });
     }
-    let frame2 = AllocatedFrames::alloc_one().expect("重新分配应成功");
-    assert!(frame2.start_paddr().is_aligned());
+    let frame2 = AllocatedFrames::alloc_one().unwrap_or_else(|error| {
+        panic!("frame-test/alloc: drop 后重新 alloc_one 失败: requested_pages=1, error={error:?}")
+    });
+    assert!(
+        frame2.start_paddr().is_aligned(),
+        "重新分配返回未页对齐地址: start={}",
+        frame2.start_paddr()
+    );
 }

@@ -47,6 +47,11 @@ pub trait PteOps: Copy + core::fmt::Debug {
     /// 对应架构的标志位类型
     type Flags: PteFlagsOps;
     /// 从物理地址和标志构造叶 PTE。
+    ///
+    /// # Panics
+    ///
+    /// `paddr` 未按页对齐，或传入的架构标志组合违反硬件 PTE 不变量时 panic。
+    /// 例如 RISC-V 禁止 W=1 且 R=0 的权限组合。
     fn new(paddr: PhysAddr, flags: Self::Flags) -> Self;
     /// 从 PTE 提取物理地址。
     fn paddr(self) -> PhysAddr;
@@ -57,6 +62,10 @@ pub trait PteOps: Copy + core::fmt::Debug {
     /// 是否为叶节点。
     fn is_leaf(self, level: usize) -> bool;
     /// 中间节点 PTE（指向下一级页表）。
+    ///
+    /// # Panics
+    ///
+    /// `paddr` 未按页对齐时 panic。
     fn new_intermediate(paddr: PhysAddr) -> Self;
     /// 从原始 u64 值构造 PTE。
     fn from_raw(raw: u64) -> Self;

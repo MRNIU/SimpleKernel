@@ -12,6 +12,12 @@
 内部通过 `ArchImpl` trait 定义各架构必须实现的方法集，
 再用 `cfg` 选择具体实现，对外只暴露模块级函数——调用方无需感知 trait 的存在。
 
+## 边界
+
+- 本 crate 只封装处理器架构原语和架构相关常量，不持有内核全局状态。
+- 本 crate 不负责编排启动顺序、解析 FDT、管理中断控制器或决定页表策略。
+- 架构具体类型和 `ArchImpl` 仍是内部细节；上层只依赖模块级函数和常量。
+
 ## 支持的架构
 
 | 架构 | cfg 标志 | 实现文件 | 说明 |
@@ -125,3 +131,8 @@ let compatibles = arch_primitives::FDT_INTERRUPT_CONTROLLER_COMPATIBLES;
 - 文档-only 变更：`git diff --check`。
 - 常量、架构函数或 cfg 变化：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p arch_primitives -- -D warnings`。
 - 影响裸机行为时，补跑相关架构 QEMU 测试，例如 `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name arch-test --timeout 30`。
+
+## 不要假设
+
+- 不要把宿主机测试常量当成裸机硬件保证；裸机行为以对应架构实现为准。
+- 不要在上层绕过本 crate 直接依赖 `riscv`、`aarch64-cpu` 或系统寄存器细节实现通用逻辑。

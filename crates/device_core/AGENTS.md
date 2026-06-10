@@ -16,6 +16,7 @@ descriptor、probe 语义、稳定设备身份和 typed capability registry，�
   - `registry/capability_registry.rs` 负责设备实例、capability 绑定和默认块设备选择。
   - `registry/types.rs` 定义 `DeviceId`、设备来源和注册记录类型。
   - `registry/error.rs` 定义 registry 构造和注册错误。
+  - `registry/tests.rs` 覆盖 descriptor 排序/去重、probe 统计、capability 默认选择和 FDT 来源保真。
 - `DeviceId`、`DeviceSource` 和 `DeviceType` 只提供稳定诊断身份，不承诺全局硬件拓扑模型。
 
 ## 边界

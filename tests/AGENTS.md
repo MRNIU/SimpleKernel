@@ -2,14 +2,18 @@
 
 # 测试目录
 
+## 职责
+
 独立 QEMU 系统测试——每个测试是独立二进制，启动独立 QEMU 实例，拥有干净的内核环境。
 同模块的测试合并在一个包中，通过 `[[bin]]` 管理多个二进制。
+
+## 边界
 
 本目录只承载系统/QEMU 测试。crate 级 host 测试放在对应 crate 中与 `src/` 同级的
 `tests/` 目录；模块私有白盒测试直接内联在实现文件的 `#[cfg(test)] mod tests` 中，
 不放到仓库根 `tests/` 下。
 
-## 运行
+## 验证入口
 
 ```bash
 # 全部测试
@@ -124,3 +128,9 @@ fn test_fn() {
 1. 创建 `tests/my-test/`，包含 `Cargo.toml`（至少一个 `[[bin]]` 条目）和对应源文件
 2. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
 3. xtask 自动扫描 `tests/*/Cargo.toml` 中的 `[[bin]]` 条目发现新测试
+
+## 不要假设
+
+- 不要把根 `tests/` 当成 crate 级 host 测试目录；host 测试应靠近被测 crate。
+- 不要新增依赖标准测试 harness 的裸机系统测试；独立二进制必须设置 `test = false`。
+- 不要省略 QEMU 超时；系统测试命令默认带 `--timeout 30`，特殊场景放宽时说明原因。

@@ -3,6 +3,10 @@
 //! 上层能力接口。
 
 /// 块设备操作结果。
+///
+/// # Errors
+///
+/// 块设备调用在缓冲区长度非法、扇区越界或底层 I/O 失败时返回 [`BlockError`]。
 pub type BlockResult<T> = Result<T, BlockError>;
 
 /// 块设备错误。

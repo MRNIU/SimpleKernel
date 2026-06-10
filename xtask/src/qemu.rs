@@ -250,7 +250,7 @@ pub fn setup_tftp(boot_dir: &Path) {
 
 /// QEMU 测试执行结果
 pub struct QemuTestResult {
-    /// 测试是否成功（exit code == 0）
+    /// 测试是否成功（退出码为 0）
     pub success: bool,
     /// 是否因超时被终止
     pub timed_out: bool,
@@ -351,7 +351,7 @@ pub fn launch_qemu_captured(
         .spawn()
         .map_err(|e| format!("QEMU 启动失败 ({}): {e}", arch.qemu_binary()))?;
 
-    // take stdout/stderr 以便在单独线程中读取，避免管道缓冲区满阻塞
+    // 取出 stdout/stderr 以便在单独线程中读取，避免管道缓冲区满阻塞。
     let child_stdout = child.stdout.take();
     let child_stderr = child.stderr.take();
 
@@ -445,6 +445,10 @@ fn boot_part_drive_arg(boot_dir: &Path) -> String {
 /// # Errors
 ///
 /// QEMU 命令执行失败时返回错误。
+#[expect(
+    clippy::too_many_arguments,
+    reason = "QEMU 启动需要同时传入构建产物、固件目录、rootfs 和运行模式参数"
+)]
 pub fn launch_qemu(
     sh: &Shell,
     arch: Arch,

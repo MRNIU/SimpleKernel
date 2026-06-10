@@ -9,10 +9,10 @@ use xshell::{Shell, cmd};
 use crate::Result;
 use crate::arch::Arch;
 
-/// OP-TEE 32-bit Trusted Application 的编译工具链前缀。
+/// OP-TEE 32 位可信应用的编译工具链前缀。
 ///
-/// OP-TEE 的 64-bit core 使用主工具链（`Arch::cross_compile()`），
-/// 32-bit TA 需要单独的 Arm32 工具链。
+/// OP-TEE 的 64 位核心使用主工具链（`Arch::cross_compile()`），
+/// 32 位 TA 需要单独的 Arm32 工具链。
 const CROSS_COMPILE_ARM32: &str = "arm-linux-gnueabihf-";
 
 fn required_firmware_paths(project_root: &Path, arch: Arch) -> Vec<PathBuf> {

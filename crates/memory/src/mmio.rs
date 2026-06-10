@@ -32,11 +32,11 @@ impl MmioRegion {
     /// - 页对齐后的映射 envelope 与 RAM 范围重叠（拒绝将 RAM 重映射为 Device 内存）
     /// - 页表映射冲突或节点 OOM（内核 bug）
     pub fn map(paddr: PhysAddr, size: usize) -> Self {
-        assert!(size > 0, "MmioRegion::map: size 不能为 0");
+        assert!(size > 0, "MmioRegion::map: size 不能为 0: paddr={paddr}");
 
-        let info = MEMORY_INFO
-            .get()
-            .expect("MmioRegion::map: MEMORY_INFO 未初始化（应在 memory::init 之后调用）");
+        let info = MEMORY_INFO.get().unwrap_or_else(|| {
+            panic!("MmioRegion::map: MEMORY_INFO 未初始化: paddr={paddr}, size={size:#x}")
+        });
         let pa_aligned = paddr.align_down();
         let end_aligned = (paddr + size).align_up();
         let ram = Span::new(
@@ -75,6 +75,10 @@ impl MmioRegion {
     }
 
     /// 读取指定偏移处的寄存器值（volatile 语义）。
+    ///
+    /// # Panics
+    ///
+    /// `T` 是零大小类型、访问范围超出 MMIO 区域，或目标地址未按 `T` 对齐时 panic。
     #[inline]
     pub fn read_reg<T: zerocopy::FromBytes>(&self, offset: usize) -> T {
         let ptr: *const T = self.reg_ptr::<T>(offset);
@@ -84,6 +88,10 @@ impl MmioRegion {
     }
 
     /// 写入指定偏移处的寄存器值（volatile 语义）。
+    ///
+    /// # Panics
+    ///
+    /// `T` 是零大小类型、访问范围超出 MMIO 区域，或目标地址未按 `T` 对齐时 panic。
     #[inline]
     pub fn write_reg<T: zerocopy::IntoBytes>(&self, offset: usize, val: T) {
         let ptr: *mut T = self.reg_ptr::<T>(offset) as *mut T;
@@ -95,19 +103,31 @@ impl MmioRegion {
     #[inline]
     fn reg_ptr<T>(&self, offset: usize) -> *const T {
         let type_size = core::mem::size_of::<T>();
-        assert!(type_size > 0, "MmioRegion: 不支持 ZST");
+        assert!(
+            type_size > 0,
+            "MmioRegion: 不支持 ZST 寄存器访问: base={}, region_size={:#x}, offset={:#x}, type={}",
+            self.base,
+            self.size,
+            offset,
+            core::any::type_name::<T>()
+        );
         assert!(
             type_size <= self.size && offset <= self.size - type_size,
-            "MmioRegion: offset {:#x} + {type_size} 超出区域大小 {:#x}",
-            offset,
+            "MmioRegion: 访问越界: base={}, region_size={:#x}, offset={:#x}, access_size={type_size}, type={}",
+            self.base,
             self.size,
+            offset,
+            core::any::type_name::<T>()
         );
         let addr = self.base.as_usize() + offset;
         let align = core::mem::align_of::<T>();
         assert!(
             addr.is_multiple_of(align),
-            "MmioRegion: 地址 {:#x} 未对齐到 {align} 字节",
+            "MmioRegion: 寄存器地址未对齐: addr={:#x}, align={align}, base={}, offset={:#x}, type={}",
             addr,
+            self.base,
+            offset,
+            core::any::type_name::<T>()
         );
         addr as *const T
     }

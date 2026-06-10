@@ -15,6 +15,12 @@
 
 per-CPU tick 记账见 [`local_tick`](../local_tick/) crate。
 
+## 边界
+
+- 本 crate 只维护 BSP 推进的全局逻辑 tick，不编程硬件 timer。
+- 本 crate 不负责 per-CPU 调度记账；每核 tick 语义属于 `local_tick`。
+- 本 crate 不把 tick 换算为真实墙钟时间，频率配置由架构 timer 层使用 `config::TIMER_FREQ_HZ`。
+
 ## API
 
 ```rust

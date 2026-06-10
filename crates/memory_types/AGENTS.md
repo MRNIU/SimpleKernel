@@ -16,6 +16,12 @@ SimpleKernel 当前只支持 SAS identity mapping，因此这两个方法保持�
 
 范围类型 `Span<A>` 定义在本 crate 内部。
 
+## 边界
+
+- 本 crate 只提供地址、帧号和半开区间的类型安全表示。
+- 本 crate 不负责物理帧分配、页表 walk、权限策略、TLB 刷新或 MMIO volatile 访问。
+- `PhysAddr::to_virt()` / `VirtAddr::to_phys()` 只表达当前 SAS identity mapping 假设，不是通用页表查询。
+
 ## 核心类型
 
 ```rust

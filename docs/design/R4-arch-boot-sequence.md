@@ -94,6 +94,9 @@ sequenceDiagram
 
 ## 验证
 
+以下验证命令为 `simplekernel-devcontainer` 容器内语境；宿主机侧执行时使用
+`docker exec -w /workspace simplekernel-devcontainer ...`。
+
 - `cargo xtask test --arch riscv64 --name arch-test --timeout 30`
   - 覆盖 dense CPU id 契约。
   - 覆盖 timekeeper 绑定 primary core。

@@ -16,6 +16,12 @@ Per-CPU tick 计数器——每核独立的调度时基。
 - `global_tick`：全局时间推进（BSP 单点递增）
 - `local_tick`：per-CPU 记账（每核独立递增）
 
+## 边界
+
+- 本 crate 只维护当前 CPU 的 tick 计数，不提供跨核全局时间源。
+- 本 crate 不编程硬件 timer，不决定调度策略，也不补记 missed ticks。
+- 全局时间推进属于 `global_tick`，timer 频率和中断触发属于架构 timer 层。
+
 ## API
 
 ```rust

@@ -73,7 +73,8 @@ SimpleKernel 当前设备层已经有一套很薄的本地模型：
 - FDT compatible 匹配与 phandle 到设备 ID 的映射；
 - 本地 `BlockDevice` / `NetDevice` / `SerialDevice` 等接口 trait；
 - 本地设备 registry 使用 SimpleKernel 的 `SpinLock` / `SpinLockIrq` 和锁级别规则；
-- MMIO、DMA、FDT 和错误处理继续走 SimpleKernel 自己的 `memory` / `dma` / `fdt` / `DeviceError` 边界。
+- MMIO、DMA、FDT 和错误处理继续走 SimpleKernel 自己的 `memory` / `dma` /
+  `platform_fdt` / `DeviceError` 边界。
 
 后续如需兼容 `rdif-*`，可以新增适配层，而不是让 `rdrive` 类型直接扩散到内核上层。
 

@@ -8,8 +8,9 @@ macro_rules! parse_fdt {
     ($platform_fdt:expr) => {{
         fdt_parser::Fdt::new_unaligned_fallible($platform_fdt.bytes()).map_err(|e| {
             log::warn!(
-                "FDT 解析失败 (addr={:#x}): {:?}",
+                "FDT 解析失败: storage_addr={:#x}, totalsize={:#x}, error={:?}",
                 $platform_fdt.storage_addr(),
+                $platform_fdt.total_size(),
                 e
             );
             FdtError::InvalidHeader
@@ -142,7 +143,12 @@ impl PlatformFdt {
             FdtError::ParseFailed
         })?;
         let reserved = root.reserved_memory().map_err(|e| {
-            log::debug!("FDT /reserved-memory 节点未找到或解析失败: {:?}", e);
+            log::warn!(
+                "FDT /reserved-memory 节点未找到或解析失败: storage_addr={:#x}, totalsize={:#x}, error={:?}",
+                self.storage_addr(),
+                self.total_size(),
+                e
+            );
             FdtError::NodeNotFound
         })?;
         let children = reserved.children().map_err(|e| {
@@ -200,8 +206,8 @@ impl PlatformFdt {
 
     /// 从 FDT `/cpus` 节点读取 `timebase-frequency` 属性。
     ///
-    /// RISC-V 平台必须提供此属性；AArch64 的 FDT 通常不含此属性，
-    /// 返回 `Err` 后由调用方回退到 `CNTFRQ_EL0`。
+    /// RISC-V 启动路径必须提供此属性。AArch64 启动路径不调用此函数，
+    /// 而是直接读取 `CNTFRQ_EL0`。
     ///
     /// # Errors
     /// 当 `/cpus` 节点缺失、属性缺失或属性长度不是 4 字节时返回错误。
@@ -223,7 +229,9 @@ impl PlatformFdt {
             .ok_or(FdtError::PropertyNotFound)?;
         let bytes: [u8; 4] = prop.value.try_into().map_err(|e| {
             log::warn!(
-                "FDT timebase-frequency 属性大小不匹配 (len={}): {:?}",
+                "FDT timebase-frequency 属性大小不匹配: storage_addr={:#x}, totalsize={:#x}, len={}, expected_len=4, error={:?}",
+                self.storage_addr(),
+                self.total_size(),
                 prop.value.len(),
                 e
             );

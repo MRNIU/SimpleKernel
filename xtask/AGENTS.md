@@ -5,6 +5,16 @@
 SimpleKernel 的仓库内构建、运行、调试、固件和系统测试入口，通过固定 Dev Container 中的
 `cargo xtask <subcommand>` 调用。
 
+## 职责
+
+`xtask` 负责把内核构建、QEMU 运行、调试文件、固件构建和系统测试编排成稳定 CLI 入口。
+
+## 边界
+
+- 本工具不替代 Dev Container；项目依赖和 QEMU 仍以 `simplekernel-devcontainer` 内环境为准。
+- 本工具不修改内核运行时语义，只负责构建产物、启动参数、固件和测试执行编排。
+- 缺少工具链或固件构建依赖时，优先修复 Dev Container / Dockerfile，而不是在宿主机补装。
+
 ## 子命令
 
 ```bash
@@ -41,6 +51,19 @@ QEMU 系统测试默认按 30 秒超时执行。低性能宿主机或特殊测�
 ```bash
 docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch riscv64 --timeout 120
 ```
+
+## 验证入口
+
+- 文档-only 变更：`git diff --check`。
+- CLI 参数、构建或测试编排变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p xtask -- -D warnings`。
+- 测试发现逻辑变化：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list`。
+- QEMU run/test 行为变化：按影响面运行对应 `cargo xtask run` 或 `cargo xtask test`，命令必须带 `--timeout 30` 或说明放宽原因。
+
+## 不要假设
+
+- 不要在公开命令示例中写裸 `cargo xtask ...` 而不说明容器语境。
+- 不要把自动固件构建写成手动前置步骤；`run`、`debug` 和 `test` 会按需检查并构建固件。
+- 不要新增无超时的 QEMU 调用路径。
 
 ## 源码结构
 

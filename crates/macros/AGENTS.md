@@ -10,6 +10,12 @@ SimpleKernel 过程宏集合。
 Rust 要求 proc-macro crate 独立于普通 crate（不能在同一个 crate 中同时导出类型和过程宏），
 因此本 crate 专门存放宏定义，由对应的类型 crate 再导出给用户使用。
 
+## 边界
+
+- 本 crate 只导出过程宏，不导出运行时类型、trait 或普通函数。
+- 本 crate 不持有 per-CPU 存储；`#[cpu_local]` 只生成访问包装和 section 布局代码。
+- 宏的用户入口应由类型 crate 再导出，例如通过 `per_cpu::cpu_local` 使用。
+
 ## 当前宏
 
 ### `#[cpu_local]`

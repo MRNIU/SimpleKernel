@@ -179,13 +179,19 @@ fn configure_plic_context(context: usize) {
 fn plic_init() {
     // 从 FDT 读取 PLIC 基地址
     let base = {
-        let fdt = crate::platform_fdt::get().expect("plic_init: FDT 未初始化");
+        let fdt = crate::platform_fdt::get().unwrap_or_else(|| {
+            panic!(
+                "plic_init: FDT 未初始化: current_core={}, plic_size={:#x}",
+                per_cpu::current_core_id(),
+                PLIC_SIZE
+            )
+        });
         let reg = plic_reg_from_fdt(fdt)
             .unwrap_or_else(|error| panic!("plic_init: FDT 中未找到 PLIC 节点: error={error}"));
         log::info!("PLIC: 从 FDT 读取基地址 {:#x}", reg.address);
-        usize::try_from(reg.address).unwrap_or_else(|_| {
+        usize::try_from(reg.address).unwrap_or_else(|error| {
             panic!(
-                "plic_init: PLIC 地址超出 usize: addr={:#x}, size={:#x}",
+                "plic_init: PLIC 地址超出 usize: addr={:#x}, size={:#x}, error={error}",
                 reg.address, reg.size
             )
         })

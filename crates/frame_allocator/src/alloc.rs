@@ -9,6 +9,8 @@
 
 // TODO: 引入用户进程后评估 per-CPU 帧缓存，用于消除 SMP 全局锁瓶颈。
 
+use core::sync::atomic::{AtomicBool, Ordering};
+
 use buddy_system_allocator::FrameAllocator;
 use memory_types::{Frame, PhysAddr};
 
@@ -26,6 +28,7 @@ static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocator<32>> = SpinLockIrq::new(
     "frame_alloc",
     sync_crate::lock_level::FRAME_ALLOC,
 );
+static FRAME_ALLOCATOR_INITIALIZED: AtomicBool = AtomicBool::new(false);
 
 /// 断言当前不在中断上下文中。
 ///
@@ -34,7 +37,7 @@ static FRAME_ALLOCATOR: SpinLockIrq<FrameAllocator<32>> = SpinLockIrq::new(
 fn assert_not_in_irq(operation: &str) {
     assert!(
         !interrupt_state::is_in_interrupt(),
-        "frame_allocator::{operation}: 禁止在中断上下文中分配或释放物理帧"
+        "frame_allocator::{operation}: 禁止在中断上下文中分配或释放物理帧: in_interrupt=true"
     );
 }
 
@@ -71,7 +74,10 @@ fn free_span(free_start: PhysAddr, free_size: usize) -> FrameSpan {
         free_start.is_aligned(),
         "frame_allocator::init: free_start 未页对齐: {free_start}"
     );
-    assert!(free_size > 0, "frame_allocator::init: free_size 为 0");
+    assert!(
+        free_size > 0,
+        "frame_allocator::init: free_size 为 0: free_start={free_start}"
+    );
 
     let free_end = free_start + free_size;
     assert!(
@@ -153,11 +159,20 @@ fn validate_reserved_ranges(free: FrameSpan, reserved: &[(PhysAddr, usize)]) {
 ///
 /// # Panics
 ///
-/// `free` 或 `reserved` 任一条目未页对齐、`count == 0`、结束地址溢出，
-/// 或范围发生重叠时 panic——初始化描述错误是内核 bug。
+/// `free` 或 `reserved` 任一条目未页对齐、`count == 0`、结束地址溢出、
+/// 范围发生重叠，或本函数被重复调用时 panic——初始化描述错误是内核 bug。
 pub unsafe fn init(free_start: PhysAddr, free_size: usize, reserved: &[(PhysAddr, usize)]) {
     let free = free_span(free_start, free_size);
     validate_reserved_ranges(free, reserved);
+    if FRAME_ALLOCATOR_INITIALIZED
+        .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+        .is_err()
+    {
+        panic!(
+            "frame_allocator::init: 重复初始化: free_start={free_start}, free_size={free_size:#x}, reserved_count={}",
+            reserved.len()
+        );
+    }
 
     // SAFETY: `free_span` 和 `validate_reserved_ranges` 已校验地址对齐、非零大小和重叠；
     // `init` 的安全契约要求启动流程只调用一次，否则会重复加入同一批空闲帧。
