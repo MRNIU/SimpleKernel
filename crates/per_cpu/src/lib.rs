@@ -76,8 +76,9 @@ pub struct CpuLocal<T: Sync> {
     template_ptr: *const T,
 }
 
-// SAFETY: CpuLocal 只是偏移计算器，T: Sync 保证跨线程共享安全
+// SAFETY: CpuLocal 只是偏移计算器，T: Sync 保证跨线程共享安全。
 unsafe impl<T: Sync> Send for CpuLocal<T> {}
+// SAFETY: CpuLocal 不提供全局共享可变引用；每次访问都会按当前或目标核心计算独立副本地址。
 unsafe impl<T: Sync> Sync for CpuLocal<T> {}
 
 impl<T: Sync> CpuLocal<T> {
@@ -101,6 +102,10 @@ impl<T: Sync> CpuLocal<T> {
     ///
     /// 对于 `AtomicBool` 等原子类型，无需关中断即可安全调用。
     /// 对于非原子类型，调用方应确保中断已关闭。
+    ///
+    /// # Panics
+    ///
+    /// per-CPU 子系统尚未初始化、当前 per-CPU base 为空，或模板偏移超出保留区域时 panic。
     #[inline(always)]
     pub fn get(&self) -> &T {
         assert_initialized("CpuLocal::get");
@@ -119,7 +124,12 @@ impl<T: Sync> CpuLocal<T> {
     /// 获取当前 CPU 的变量的可变引用。
     ///
     /// # Safety
+    ///
     /// 调用方必须确保无并发访问（通常通过关中断保证）。
+    ///
+    /// # Panics
+    ///
+    /// per-CPU 子系统尚未初始化、当前 per-CPU base 为空，或模板偏移超出保留区域时 panic。
     #[inline(always)]
     #[expect(
         clippy::mut_from_ref,
@@ -142,8 +152,14 @@ impl<T: Sync> CpuLocal<T> {
     /// 访问指定 CPU 的变量副本（例如通过 IPI 设置其他核心的标志）。
     ///
     /// # Safety
+    ///
     /// - 调用方必须确保访问安全（使用原子类型，或目标 CPU 已停止）。
     /// - `target_core` 必须 < `MAX_CORE_COUNT`。
+    ///
+    /// # Panics
+    ///
+    /// per-CPU 子系统尚未初始化、`target_core` 越界、目标 base 为空，
+    /// 或模板偏移超出保留区域时 panic。
     #[inline(always)]
     pub unsafe fn get_on(&self, target_core: usize) -> &T {
         assert_initialized("CpuLocal::get_on");
@@ -200,8 +216,14 @@ static CORE_ID: usize = 0;
 /// 必须在任何 `#[cpu_local]` 访问之前调用（`logging::init()` 之后）。
 ///
 /// # Safety
+///
 /// - 只能由主核调用一次
 /// - 调用前基地址寄存器必须持有当前核心 ID（riscv64: TP）或为 0（aarch64: TPIDR_EL1）
+///
+/// # Panics
+///
+/// 重复初始化、当前核心 ID 越界、`.percpu` 模板超过保留区域，或 `CORE_ID`
+/// 模板偏移超出保留区域时 panic。
 pub unsafe fn percpu_init() {
     if PERCPU_INITIALIZED.load(Ordering::Acquire) {
         panic!(
@@ -211,23 +233,26 @@ pub unsafe fn percpu_init() {
         );
     }
 
-    // SAFETY: 链接器保证 __percpu_start/__percpu_end 指向 .percpu section 边界
+    // SAFETY: 链接器保证 `__percpu_start` 指向 `.percpu` section 起始符号。
     let template = unsafe { &__percpu_start as *const u8 };
-    let template_size =
-        unsafe { &__percpu_end as *const u8 as usize - &__percpu_start as *const u8 as usize };
+    // SAFETY: 链接器保证 `__percpu_end` 指向 `.percpu` section 结束符号。
+    let template_end = unsafe { &__percpu_end as *const u8 };
+    let template_size = template_end as usize - template as usize;
     assert!(
         template_size <= PERCPU_AREA_MAX,
         "per_cpu: .percpu 模板超出 per-CPU 区域: template_start={:p}, template_end={:p}, template_size={template_size:#x}, area_size={PERCPU_AREA_MAX:#x}",
         template,
-        unsafe { &__percpu_end as *const u8 }
+        template_end
     );
 
     let my_core_id = arch_primitives::core_id();
     assert_core_id_in_range(my_core_id, "percpu_init current core");
 
-    // SAFETY: 单核调用，中断关闭，独占访问
+    // SAFETY: 单核调用，中断关闭，独占访问 per-CPU storage。
     let areas = unsafe { &mut *PERCPU_AREAS.get() };
+    // SAFETY: 单核调用，中断关闭，独占访问 per-CPU base 表。
     let bases = unsafe { &mut *PERCPU_BASES.get() };
+    // SAFETY: `_PERCPU_CORE_ID_RAW` 与 `__percpu_start` 都位于 `.percpu` 模板内，只计算偏移。
     let core_id_offset = unsafe {
         &_PERCPU_CORE_ID_RAW as *const usize as usize - &__percpu_start as *const u8 as usize
     };
@@ -258,7 +283,12 @@ pub unsafe fn percpu_init() {
 /// 不依赖 per-CPU 变量。调用完成后 `current_core_id()` 即可正常工作。
 ///
 /// # Safety
+///
 /// - `percpu_init()` 必须已由主核调用完成
+///
+/// # Panics
+///
+/// per-CPU 子系统尚未初始化、当前核心 ID 越界，或目标核心 base 未初始化时 panic。
 pub unsafe fn percpu_init_smp() {
     assert_initialized("percpu_init_smp");
     let id = arch_primitives::core_id();

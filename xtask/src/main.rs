@@ -2,7 +2,7 @@
 
 //! xtask — 内核构建工具
 //!
-//! 替代 CMake 的宿主机构建脚本，通过 `cargo xtask <subcommand>` 调用。
+//! 仓库自带构建与运行入口，通过 `cargo xtask <subcommand>` 调用。
 //!
 //! 子命令：
 //! - `build`    — 编译内核并生成调试文件

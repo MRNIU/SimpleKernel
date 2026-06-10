@@ -65,7 +65,12 @@ pub(super) static PER_CPU_SCHED: SyncUnsafeCell<[Option<PerCpuSched>; MAX_CORE_C
 
 /// # Safety
 ///
-/// 调用者必须持有 PER_CPU_SCHED_LOCK[core_id]。
+/// 调用者必须持有 `PER_CPU_SCHED_LOCK[core_id]`，并保证当前访问不会与其他核心对同一
+/// `PerCpuSched` slot 的可变访问并发。
+///
+/// # Panics
+///
+/// `core_id` 超出 `MAX_CORE_COUNT` 或对应调度状态尚未初始化时 panic。
 pub(super) unsafe fn per_cpu_sched(core_id: usize) -> &'static mut PerCpuSched {
     assert!(
         core_id < MAX_CORE_COUNT,
@@ -73,7 +78,7 @@ pub(super) unsafe fn per_cpu_sched(core_id: usize) -> &'static mut PerCpuSched {
         core_id,
         MAX_CORE_COUNT
     );
-    // SAFETY: 调用者持有对应核心的调度锁
+    // SAFETY: 调用者持有对应核心的调度锁，确保该 slot 没有并发可变访问。
     let array = unsafe { &mut *PER_CPU_SCHED.get() };
     array[core_id].as_mut().unwrap_or_else(|| {
         panic!(
@@ -98,7 +103,8 @@ pub(super) fn try_steal(my_core: usize, held: &sync::HeldInterrupts) -> Option<T
         if core == my_core {
             continue;
         }
-        // SAFETY: 只读快照（best-effort hint），不需要严格一致性
+        // SAFETY: 这里只读取队列长度作为尽力而为的窃取提示；真正窃取前会重新获取 victim
+        // 调度锁并再次检查队列状态。
         let sched = match unsafe { &*PER_CPU_SCHED.get() }[core].as_ref() {
             Some(s) => s,
             None => continue,
@@ -115,10 +121,10 @@ pub(super) fn try_steal(my_core: usize, held: &sync::HeldInterrupts) -> Option<T
         return None;
     }
 
-    // proof token 证明中断已禁用，RAII guard 自动释放锁。
+    // `held` 证明中断已禁用，RAII guard 自动释放锁。
     let _guard = PER_CPU_SCHED_LOCK[victim].try_lock_nested(held)?;
 
-    // SAFETY: 持有 victim 的调度锁
+    // SAFETY: 已持有 victim 核心的调度锁，该 slot 不会被其他核心并发修改。
     let victim_sched = unsafe { per_cpu_sched(victim) };
     let stolen = victim_sched.scheduler.steal_one();
 
@@ -145,7 +151,7 @@ pub fn current_task() -> TaskRef {
         core_id,
         MAX_CORE_COUNT
     );
-    // SAFETY: 本核 current 仅在持有本核调度锁时修改，其他核不会修改
+    // SAFETY: 本核 current 仅在持有本核调度锁时修改；这里只读当前任务引用，不创建可变别名。
     let sched = unsafe { &*PER_CPU_SCHED.get() }[core_id]
         .as_ref()
         .unwrap_or_else(|| panic!("current_task: 调度状态未初始化: core_id={core_id}"));
@@ -166,7 +172,7 @@ pub fn current_task() -> TaskRef {
 ///
 /// 仅供 `kernel_thread_bootstrap` 在新任务首次运行时调用一次。
 pub unsafe fn bootstrap_enable_irq() {
-    // SAFETY: 调度锁已释放，向量表已初始化，启用中断是安全的
+    // SAFETY: 调度锁已释放，向量表已初始化，本入口仅在新任务首次运行时恢复 IRQ 状态。
     unsafe { interrupt_state::bootstrap_enable() };
 }
 
@@ -202,7 +208,7 @@ pub fn schedule() {
     let switch_ctx = {
         let _guard = PER_CPU_SCHED_LOCK[core_id].lock();
 
-        // SAFETY: 持有本核调度锁
+        // SAFETY: 已持有本核调度锁，该核心调度状态不会被其他路径并发修改。
         let sched = unsafe { per_cpu_sched(core_id) };
 
         // 2a. 将上次 switch 延迟的 prev 入队
@@ -264,7 +270,7 @@ pub fn schedule() {
         drop(prev);
         drop(next);
         (prev_ctx, next_ctx)
-        // _guard drop: 释放锁，内层 HeldInterrupts（was_enabled=false）no-op
+        // `_guard` drop 释放锁；内层 HeldInterrupts 记录的原状态为已禁用，不会重新打开中断。
     };
 
     // 3. 无锁上下文切换（中断仍禁用）。
@@ -308,7 +314,7 @@ pub fn yield_now() {
 pub fn timer_tick() -> bool {
     let core_id = per_cpu::current_core_id();
     if let Some(_guard) = PER_CPU_SCHED_LOCK[core_id].try_lock() {
-        // SAFETY: 持有本核调度锁
+        // SAFETY: 已持有本核调度锁，该核心调度状态不会被其他路径并发修改。
         let sched = unsafe { per_cpu_sched(core_id) };
         if let Some(current) = sched.current.as_ref()
             && sched.scheduler.task_tick(current)

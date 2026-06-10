@@ -64,6 +64,18 @@ AArch64 在 `platform_bus` 查询 `virtio,mmio` 时因匹配节点超过 `MAX_QU
 返回 `UnsupportedLayout`；修复后设备枚举使用 `PlatformFdt::visit_nodes()` 逐个 probe，
 `query_nodes()` 继续作为小结果集 bounded snapshot。
 
+验证结果（2026-06-10 代码风格与文件组织 follow-up）：按
+`docs/audit/2026-06-10-style-organization-followup.md` 使用多个 subagent 并行完成文档入口、
+旧 crate 名、容器命令、issue 模板、unsafe/API 契约、注释位置、诊断质量和 registry 文件地图收口。
+通过 `cargo fmt --all -- --check`、`git diff --check`、无缺失 `//!` 模块说明复扫、
+无裸 `#[allow]` / `.map_err(|_| ...)` 复扫、旧 `arch` / `fdt` 命名复扫（剩余命中仅为外部
+`fdt` 依赖、已标历史命名边界的设计/ADR 和本 follow-up 清单自身）、
+`cargo xtask check --arch riscv64`、`cargo xtask check --arch aarch64`、
+`cargo test -p device_core -p platform_fdt -p memory_types`、RISC-V/AArch64 target 下
+`cargo clippy -p dma -p memory -p memory_types -p paging -p per_cpu -p platform_fdt -- -D warnings`，
+以及 RISC-V QEMU 30 秒超时下 `memory-test/fdt-firmware-reserved`、`paging-test/table`、
+`device-test`。
+
 验证结果（2026-06-09 D2-0a / D2a）：通过 `cargo fmt --all -- --check`、
 `cargo test -p platform_fdt`、`cargo test -p device_core`、
 `cargo clippy -p platform_fdt -- -D warnings`、`cargo clippy -p device_core -- -D warnings`、
@@ -832,3 +844,4 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 | 2026-06-09 | R6 (device D2c) | 将默认块设备接入 `device_core::CapabilityRegistry`，`src/device/block.rs` 改为 registry-backed 兼容门面，VirtIO block probe 注册 `RegisteredDevice` 和 `DeviceCapability::Block`；`device-test` / `fs-test` 和 RISC-V 全量系统测试回归通过。 |
 | 2026-06-10 | R6 (device D2 cleanup) | 删除公开 `virtio_blk()` 兼容入口，将旧 `manager` 公共路径收窄为 crate 内部实现，新增 registry-backed `device::device_count()`；`device-test` 改为默认 Block capability / `block_device()` 断言。 |
 | 2026-06-10 | R6 (D2 cross-arch FDT enumeration) | 修复 AArch64 `virtio,mmio` 节点数超过 `FdtNodeList<16>` 导致的 platform bus panic：新增 `PlatformFdt::visit_nodes()` 流式枚举，platform bus 不再把设备实例数量绑定到固定查询容量；AArch64 / RISC-V 全量系统测试均通过。 |
+| 2026-06-10 | R8 (style organization follow-up) | 按 `2026-06-10-style-organization-followup.md` 完成文档入口、旧命名、容器命令、issue 模板、unsafe/API 契约和文件组织收口；保留历史设计/ADR 中已标注的旧命名语境。 |

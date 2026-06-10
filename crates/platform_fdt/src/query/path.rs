@@ -19,6 +19,11 @@ impl<'fdt> NodePath<'fdt> {
         }
     }
 
+    /// 记录当前遍历深度上的节点名称。
+    ///
+    /// # Errors
+    ///
+    /// `depth == 0` 或超过 [`FDT_MAX_DEPTH`] 时返回错误。
     pub(super) fn push(&mut self, depth: usize, name: FdtNodeName<'fdt>) -> Result<(), FdtError> {
         if depth == 0 || depth > self.components.len() {
             log::warn!("FDT 节点深度超出支持范围: {}", depth);

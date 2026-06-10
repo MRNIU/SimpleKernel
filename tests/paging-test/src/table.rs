@@ -85,7 +85,8 @@ fn test_identity_map_different_pages() {
 fn test_identity_map_range_multi_page() {
     let pt = PageTable::create();
     let start = PhysAddr::new(0x10_0000);
-    let end = PhysAddr::new(0x10_3000); // 3 pages
+    // 3 页。
+    let end = PhysAddr::new(0x10_3000);
 
     pt.identity_map_range(start, end, PteFlags::kernel_rw());
 
@@ -137,7 +138,8 @@ fn test_update_range_flags_changes_permissions() {
 fn test_update_range_flags_batch() {
     let pt = PageTable::create();
     let start = PhysAddr::new(0x30_0000);
-    let end = PhysAddr::new(0x30_3000); // 3 pages
+    // 3 页。
+    let end = PhysAddr::new(0x30_3000);
 
     pt.identity_map_range(start, end, PteFlags::kernel_rw());
     pt.update_range_flags(start.to_virt(), 3, PteFlags::kernel_ro());
@@ -153,7 +155,8 @@ fn test_update_range_flags_batch() {
 fn test_identity_map_range_idempotent() {
     let pt = PageTable::create();
     let start = PhysAddr::new(0x20_0000);
-    let end = PhysAddr::new(0x20_2000); // 2 pages
+    // 2 页。
+    let end = PhysAddr::new(0x20_2000);
 
     pt.identity_map_range(start, end, PteFlags::kernel_rw());
     // 重复操作相同区域——应幂等，不 panic

@@ -11,6 +11,11 @@ descriptor、probe 语义、稳定设备身份和 typed capability registry，�
 - `descriptor` 定义 `DriverDescriptor`、probe 类型、probe 优先级、probe 结果和失败原因。
 - `capability` 定义上层可持有的 typed capability，例如 `BlockDevice` 和 sector I/O 校验。
 - `registry` 维护内建 driver descriptor 集合、probe 统计、设备实例和 capability 绑定。
+  - `registry.rs` 只作为模块入口，统一 re-export 对外 API 和固定容量常量。
+  - `registry/driver_registry.rs` 负责 descriptor 集合校验、排序和 probe 统计。
+  - `registry/capability_registry.rs` 负责设备实例、capability 绑定和默认块设备选择。
+  - `registry/types.rs` 定义 `DeviceId`、设备来源和注册记录类型。
+  - `registry/error.rs` 定义 registry 构造和注册错误。
 - `DeviceId`、`DeviceSource` 和 `DeviceType` 只提供稳定诊断身份，不承诺全局硬件拓扑模型。
 
 ## 边界

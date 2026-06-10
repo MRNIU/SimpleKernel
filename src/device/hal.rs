@@ -34,6 +34,10 @@ fn virtio_direction(direction: BufferDirection) -> dma::DmaDirection {
 // - share/unshare 委托 `crates/dma` 完成流式 DMA 映射；当前 QEMU 后端为 identity mapping
 unsafe impl Hal for SimpleKernelHal {
     /// 分配 DMA 缓冲区——委托 `crates/dma` 管理帧所有权与后端映射。
+    ///
+    /// # Panics
+    ///
+    /// DMA 帧分配失败时 panic；启动期 VirtIO 设备不可用时不能继续完成设备初始化。
     fn dma_alloc(pages: usize, direction: BufferDirection) -> (u64, NonNull<u8>) {
         let direction = virtio_direction(direction);
         dma::raw_alloc_pages(pages, direction).unwrap_or_else(|error| {
@@ -65,6 +69,10 @@ unsafe impl Hal for SimpleKernelHal {
     /// # Safety
     ///
     /// `paddr` 和 `size` 必须描述有效的 MMIO 区域。
+    ///
+    /// # Panics
+    ///
+    /// 转换后的虚拟地址为空时 panic。
     unsafe fn mmio_phys_to_virt(paddr: u64, size: usize) -> NonNull<u8> {
         let vaddr = PhysAddr::new(paddr as usize).to_virt();
         NonNull::new(vaddr.as_mut_ptr::<u8>()).unwrap_or_else(|| {
@@ -77,6 +85,10 @@ unsafe impl Hal for SimpleKernelHal {
     /// # Safety
     ///
     /// 缓冲区在共享期间不被其他线程访问。
+    ///
+    /// # Panics
+    ///
+    /// DMA 映射失败时 panic。
     unsafe fn share(buffer: NonNull<[u8]>, direction: BufferDirection) -> u64 {
         let direction = virtio_direction(direction);
         // SAFETY: `virtio-drivers::Hal::share` 的调用契约保证 buffer 是有效且非空的

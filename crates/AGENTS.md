@@ -11,7 +11,7 @@
 flowchart TB
   subgraph Core["基础层"]
     config["config<br/>编译期常量"]
-    arch["arch<br/>架构常量与底层 CPU 操作"]
+    arch_primitives["arch_primitives<br/>架构常量与底层 CPU 操作"]
     memory_types["memory_types<br/>PhysAddr / VirtAddr / Frame / Span"]
   end
 
@@ -39,8 +39,8 @@ flowchart TB
     dma["dma<br/>DMA 边界与 QEMU identity 后端"]
   end
 
-  arch --> config
-  memory_types --> arch
+  arch_primitives --> config
+  memory_types --> arch_primitives
   memory_types --> config
   platform_fdt --> config
   device_core --> platform_fdt
@@ -54,7 +54,7 @@ flowchart TB
   frame_allocator --> memory_types
   frame_allocator --> sync
   page_table_entry --> memory_types
-  tlb --> arch
+  tlb --> arch_primitives
   paging --> frame_allocator
   paging --> page_table_entry
   paging --> tlb
@@ -73,7 +73,7 @@ flowchart TB
 | Crate | 所属层 | 职责 | 不负责 |
 |-------|--------|------|--------|
 | `config` | 基础层 | 编译期常量和静态不变量 | 运行时配置、硬件探测 |
-| `arch` | 基础层 | 架构常量、页表层级、TLB/中断底层操作 | 持有内核全局状态 |
+| `arch_primitives` | 基础层 | 架构常量、页表层级、TLB/中断底层操作 | 持有内核全局状态 |
 | `memory_types` | 基础层 | 类型安全地址、帧号和半开区间 | 分配、页表 walk、权限策略 |
 | `platform_fdt` | 平台描述层 | 启动期 DTB 自有 storage 与 FDT 查询 | 设备注册、驱动 probe、MMIO/DMA |
 | `device_core` | 设备模型层 | 驱动 descriptor、probe 语义和 typed capability registry | DTB 生命周期、VirtIO/MMIO/DMA 实现、文件系统 |

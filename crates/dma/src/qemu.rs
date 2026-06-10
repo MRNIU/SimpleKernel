@@ -167,11 +167,12 @@ pub unsafe fn raw_map_single(buffer: NonNull<[u8]>, direction: DmaDirection) -> 
     let ptr =
         NonNull::new(slice.as_ptr() as *mut u8).ok_or(DmaError::NullVirtualAddress { paddr: 0 })?;
 
-    // SAFETY: `ptr` 和 `size` 来自已校验的非空 slice；`raw_map_single` 的安全契约要求
-    // 缓冲区在 DMA 共享期间保持有效且连续。
-    let handle =
+    let handle = {
+        // SAFETY: `ptr` 和 `size` 来自已校验的非空 slice；`raw_map_single` 的安全契约要求
+        // 缓冲区在 DMA 共享期间保持有效且连续。
         unsafe { QEMU_IDENTITY_DMA_OP.map_single(u64::MAX, ptr, size, 1, direction.into()) }
-            .map_err(DmaError::from_api)?;
+    }
+    .map_err(DmaError::from_api)?;
     Ok(handle.dma_addr().as_u64())
 }
 

@@ -112,8 +112,14 @@ pub fn init() {
         static __etext: u8;
         static __erodata: u8;
     }
-    let text_end = PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up();
-    let rodata_end = PhysAddr::new(unsafe { &__erodata as *const u8 as usize }).align_up();
+    let text_end = {
+        // SAFETY: 链接脚本提供 `__etext` 符号；这里只读取符号地址，不解引用内存。
+        PhysAddr::new(unsafe { &__etext as *const u8 as usize }).align_up()
+    };
+    let rodata_end = {
+        // SAFETY: 链接脚本提供 `__erodata` 符号；这里只读取符号地址，不解引用内存。
+        PhysAddr::new(unsafe { &__erodata as *const u8 as usize }).align_up()
+    };
 
     let free_start = kernel_end.align_up();
     assert!(mem_size > 0, "MemoryInit: RAM 大小为 0 (start={mem_start})");

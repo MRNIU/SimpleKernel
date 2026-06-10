@@ -40,6 +40,7 @@ impl PlatformFdt {
     ///
     /// DTB 地址为空、header 非法、magic 不匹配或 `totalsize` 超出支持范围时返回错误。
     pub unsafe fn from_static(fdt_addr: usize) -> Result<Self, FdtError> {
+        // SAFETY: 本函数的安全契约要求 `fdt_addr` 指向有效 DTB header。
         let total_size = unsafe { validate_raw_header(fdt_addr)? };
         // SAFETY: validate_raw_header 已校验 fdt_addr 指向至少 totalsize 字节的合法 FDT；
         // 调用方负责保证该内存在返回的 PlatformFdt 使用期间保持有效。
@@ -115,6 +116,7 @@ pub unsafe fn init_from_raw(raw_addr: usize) -> Result<&'static PlatformFdt, Fdt
         });
     }
 
+    // SAFETY: 本函数的安全契约要求 `raw_addr` 指向复制期间可读的有效 DTB header。
     let total_size = unsafe { validate_raw_header(raw_addr)? };
     let storage_ptr = DTB_STORAGE.get().cast::<u8>();
 
@@ -145,6 +147,15 @@ pub fn storage_region() -> Option<StorageRegion> {
     PLATFORM_FDT.get().map(PlatformFdt::owned_storage_region)
 }
 
+/// 校验原始 DTB header，返回 `totalsize`。
+///
+/// # Safety
+///
+/// `raw_addr` 必须指向至少 FDT header 大小的可读内存。
+///
+/// # Errors
+///
+/// 地址为空、magic 不匹配、header 过小或 `totalsize` 超出 storage 上限时返回错误。
 unsafe fn validate_raw_header(raw_addr: usize) -> Result<usize, FdtError> {
     if raw_addr == 0 {
         return Err(FdtError::NullRawAddr);
@@ -181,6 +192,11 @@ fn validate_total_size(raw_addr: usize, total_size: usize) -> Result<(), FdtErro
     Ok(())
 }
 
+/// 从可能未对齐的 FDT header 指针读取 big-endian `u32`。
+///
+/// # Safety
+///
+/// `ptr` 必须指向至少 4 字节可读内存。
 unsafe fn read_be_u32(ptr: *const u8) -> u32 {
     let mut bytes = [0u8; 4];
     // SAFETY: 调用方保证 ptr 指向至少 4 字节可读内存；copy_nonoverlapping 不要求源对齐。

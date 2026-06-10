@@ -91,10 +91,10 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **例外**：只有正在修复容器自身配置、文档/Git 等入口操作，或任务明确要求无需项目工具链的本地操作时，才考虑宿主机执行；说明原因并保持宿主/容器步骤边界清晰。
 
 ### Git
-- **Commit 格式**: `<type>(<scope>): <subject>` — type: feat/fix/refactor/test/docs/chore
-- **Sign-off 必须**: 每条 commit 必须使用 `git commit --signoff`（DCO 签署），**不可省略**
+- **详细模板**：提交格式、正文、footer、DCO 和发布卫生规则以 `.gitmessage` 为唯一详细真值面。
+- **Sign-off 必须**：每条 commit 必须使用 `git commit --signoff`（DCO 签署），**不可省略**
 - **DCO 门禁**：PR CI 会检查每个 commit 是否包含 `Signed-off-by` trailer。
-- **Commit 模板**：`.gitmessage` 是详细提交模板；本文件、`README.md` 和 `CONTRIBUTING.md` 只保留最小入口并指向该模板。
+- **入口边界**：本文件、`README.md` 和 `CONTRIBUTING.md` 只保留最小提醒并指向 `.gitmessage`，不要复制详细规则。
 - **Subagent 派发时**：给 subagent 的 commit 指令中也必须包含 `--signoff`
 
 ### Repository Hygiene

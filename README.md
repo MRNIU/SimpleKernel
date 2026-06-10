@@ -343,7 +343,7 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 
 ### Git Commit 规范
 
-提交格式、正文、footer 和发布卫生规则以 [.gitmessage](./.gitmessage) 为唯一详细模板。每条 commit 必须使用 `git commit --signoff`（DCO 签署），PR CI 会检查 `Signed-off-by` trailer。
+提交格式、正文、footer 和发布卫生规则以 [.gitmessage](./.gitmessage) 为唯一详细模板。每条 commit 必须使用 `git commit --signoff`（DCO 签署），PR CI 会检查 `Signed-off-by` trailer。其他入口文档只保留最小提醒，不重复维护详细规则。
 
 可选启用仓库提交模板：
 
@@ -355,7 +355,7 @@ git config commit.template .gitmessage
 
 - **文档索引**: [docs/AGENTS.md](./docs/AGENTS.md)
 - **工程约定**: [docs/conventions.md](./docs/conventions.md)
-- **Git 与 Commit**: 见 [AGENTS.md](./AGENTS.md)、[CONTRIBUTING.md](./CONTRIBUTING.md) 和 [.gitmessage](./.gitmessage)
+- **Git 与 Commit**: 详细模板和发布卫生规则见 [.gitmessage](./.gitmessage)
 - **设计总览**: [docs/design/00-概述.md](./docs/design/00-概述.md)
 - **SAS 架构**: [docs/design/SAS-架构设计.md](./docs/design/SAS-架构设计.md)
 - **架构决策记录（ADR）**: [docs/adr/AGENTS.md](./docs/adr/AGENTS.md)
@@ -384,7 +384,7 @@ git config commit.template .gitmessage
 2. 创建功能分支: `git checkout -b feat/amazing-feature`
 3. 遵循 `AGENTS.md`、`docs/conventions.md` 和 `CONTRIBUTING.md` 进行开发
 4. 确保相关测试通过，例如 `docker exec -w /workspace simplekernel-devcontainer cargo test`、`docker exec -w /workspace simplekernel-devcontainer cargo fmt --all -- --check` 和 `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --all --timeout 30`
-5. 提交变更: `git commit --signoff -m 'feat(scope): add amazing feature'`
+5. 按 [.gitmessage](./.gitmessage) 规则使用 `git commit --signoff` 提交变更
 6. 创建 Pull Request
 
 ## 许可证

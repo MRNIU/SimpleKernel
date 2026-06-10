@@ -43,6 +43,9 @@ pub enum VirtioMmioProbeResult {
 /// # Errors
 ///
 /// 魔数无效、设备初始化失败时返回对应错误。
+///
+/// # Panics
+///
 /// MMIO 映射失败由 [`memory::MmioRegion::map`] panic（boot 时配置错误是内核 bug）。
 pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError> {
     match probe_mmio_at(paddr, size, DeviceSource::Static)? {
@@ -51,6 +54,11 @@ pub fn probe_mmio_device(paddr: PhysAddr, size: usize) -> Result<(), DeviceError
 }
 
 /// VirtIO MMIO descriptor adapter。
+///
+/// # Errors
+///
+/// 传入非 FDT probe 上下文、transport 初始化失败、block 初始化失败或读测试失败时返回
+/// [`ProbeFailure`]。
 pub(in crate::device) fn probe_mmio_descriptor(
     context: ProbeContext,
 ) -> Result<ProbeOutcome, ProbeFailure> {
@@ -77,6 +85,10 @@ pub(in crate::device) fn probe_mmio_descriptor(
 ///
 /// FDT `reg` 地址超出当前地址宽度、transport 初始化失败、block 初始化失败或读测试失败时返回
 /// [`DeviceError`]。
+///
+/// # Panics
+///
+/// MMIO 映射失败由 [`memory::MmioRegion::map`] panic（boot 时配置错误是内核 bug）。
 pub fn probe_mmio_block(context: FdtProbeContext) -> Result<VirtioMmioProbeResult, DeviceError> {
     let addr = usize::try_from(context.reg.address).map_err(|error| {
         log::warn!(
@@ -112,7 +124,8 @@ fn probe_mmio_at(
         )
     });
 
-    // SAFETY: vaddr 指向已映射的 VirtIO MMIO 区域，生命周期为 'static（MMIO 映射永久存在）。
+    // SAFETY: `header` 指向刚建立的 VirtIO MMIO 映射，`size` 来自平台资源描述；
+    // 该 MMIO 映射在启动期永久保留，不会在 transport 生命周期内失效。
     let transport = match unsafe { MmioTransport::new(header, size) } {
         Ok(transport) => transport,
         Err(MmioError::InvalidDeviceID(DeviceTypeError::InvalidDeviceType(0))) => {

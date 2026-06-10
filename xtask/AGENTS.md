@@ -2,7 +2,8 @@
 
 # xtask — 内核构建工具
 
-替代 CMake 的宿主机构建脚本，通过 `cargo xtask <subcommand>` 调用。
+SimpleKernel 的仓库内构建、运行、调试、固件和系统测试入口，通过固定 Dev Container 中的
+`cargo xtask <subcommand>` 调用。
 
 ## 子命令
 
@@ -32,12 +33,13 @@ QEMU 系统测试默认按 30 秒超时执行。低性能宿主机或特殊测�
 
 ## 固件与运行
 
-`run`、`debug` 和 `test` 会在启动前检查目标架构所需固件。固件缺失时，xtask 会自动执行对应的 `firmware` 构建流程，不需要手动先跑 `cargo xtask firmware`。
+`run`、`debug` 和 `test` 会在启动前检查目标架构所需固件。固件缺失时，xtask 会自动执行对应的 `firmware` 构建流程，不需要手动先执行
+`docker exec -w /workspace simplekernel-devcontainer cargo xtask firmware`。
 
 `run` 默认给 QEMU 设置 30 秒超时，避免启动流程卡死后阻塞终端。需要更长时间时可显式传入：
 
 ```bash
-cargo xtask run --arch riscv64 --timeout 120
+docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch riscv64 --timeout 120
 ```
 
 ## 源码结构

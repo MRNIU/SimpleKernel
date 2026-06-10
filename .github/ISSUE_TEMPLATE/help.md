@@ -13,7 +13,7 @@ assignees: ''
 
 ## 已尝试的步骤
 
-问题类型：Rust API / QEMU 运行 / QEMU 系统测试 / Dev Container / `xtask` / 文档
+问题类型：Rust `no_std`/`no_main` API / QEMU 运行 / QEMU 系统测试 / Dev Container / `xtask` / 文档
 
 ```bash
 docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30

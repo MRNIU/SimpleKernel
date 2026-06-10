@@ -17,7 +17,7 @@ assignees: ''
 
 ## 影响范围
 
-- 需求类型：Rust API / 内核子系统 / QEMU 系统测试 / Dev Container / `xtask` / 文档
+- 需求类型：Rust `no_std`/`no_main` API / 内核子系统 / QEMU 系统测试 / Dev Container / `xtask` / 文档
 - 目标架构：`riscv64` / `aarch64` / 双架构 / 不适用
 - 可能涉及的模块或 crate：
 - 是否影响 Dev Container、QEMU、固件、CI 或 `xtask` 入口：

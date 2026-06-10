@@ -35,7 +35,7 @@ docs/
 | 记录 QEMU、固件链路、目标平台或外部交付物边界 | `docs/design/`、`docs/adr/` 或 `docs/audit/` |
 | 创建局部协作规则或新文档模板 | `docs/templates/` |
 | 记录长期工程约定，包括 Copyright、注释、文件规模、严格 JSON、第三方代码和运行时配置 | `docs/conventions.md` |
-| 记录 Git、commit、DCO 和 `.gitmessage` 规范 | 根目录 `AGENTS.md`、`CONTRIBUTING.md` 和 `.gitmessage` |
+| 记录 Git、commit、DCO 和发布卫生规则 | `.gitmessage` 是详细真值面；根 `AGENTS.md` 和 `CONTRIBUTING.md` 只保留最小入口 |
 
 ## SAD、SDD 与历史文档边界
 

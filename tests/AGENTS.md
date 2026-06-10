@@ -12,9 +12,14 @@
 ## 运行
 
 ```bash
-cargo xtask test --arch riscv64 --all --timeout 30                    # 全部测试
-cargo xtask test --arch riscv64 --name paging-test/table --timeout 30  # 指定测试
-cargo xtask test --list                                               # 列出可用测试
+# 全部测试
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --all --timeout 30
+
+# 指定测试
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name paging-test/table --timeout 30
+
+# 列出可用测试
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 ```
 
 ## 测试清单
@@ -62,8 +67,11 @@ cargo xtask test --list                                               # 列出�
 如需为测试二进制生成调试文件，使用 `--debug-files` 标志：
 
 ```bash
-cargo xtask test --arch riscv64 --name panic-test --timeout 30 --debug-files  # 指定测试
-cargo xtask test --arch riscv64 --timeout 30 --debug-files                    # 全部测试
+# 指定测试
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name panic-test --timeout 30 --debug-files
+
+# 全部测试
+docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30 --debug-files
 ```
 
 生成的文件位于 `target/<triple>/debug/` 目录，与测试 ELF 同名但扩展名不同。

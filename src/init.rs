@@ -3,6 +3,11 @@
 //! 架构无关早期初始化入口。
 
 /// 解析 FDT，并在堆和分页启用前将平台信息分发到各子系统。
+///
+/// # Panics
+///
+/// DTB 地址无效、FDT 必需字段缺失或非法、内核链接符号区间非法，或全局平台状态重复初始化时
+/// panic。
 pub fn early_init(dtb_addr: usize) {
     use crate::CORE_COUNT;
     use memory::{MEMORY_INFO, MemoryInfo};
@@ -46,7 +51,9 @@ pub fn early_init(dtb_addr: usize) {
         static __executable_start: u8;
         static _end: u8;
     }
+    // SAFETY: 符号由链接脚本提供，取地址不会读取符号内容，地址在内核生命周期内稳定。
     let kernel_start = unsafe { &__executable_start as *const u8 as u64 };
+    // SAFETY: 符号由链接脚本提供，取地址不会读取符号内容，地址在内核生命周期内稳定。
     let kernel_end = unsafe { &_end as *const u8 as u64 };
     assert!(
         kernel_end >= kernel_start,

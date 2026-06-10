@@ -40,7 +40,7 @@ docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings
 | 启动流程、命令、测试入口变化 | 根 `README.md`、`docs/AGENTS.md`、相关局部 `AGENTS.md`、相关设计或计划文档 |
 | 架构不变量变化 | `docs/adr/`、SAD/SDD、`AGENTS.md` |
 | 项目长期约定、Copyright、注释、文件规模、运行时配置规则变化 | `AGENTS.md`、`docs/conventions.md` |
-| Git/commit/DCO/提交模板变化 | `AGENTS.md`、`README.md`、本文件、`.gitmessage`、PR 模板 |
+| Git/commit/DCO/提交模板变化 | `.gitmessage` 是详细真值面；`AGENTS.md`、`README.md` 和本文件只保留最小入口 |
 | 公开 trait、错误码、类型或模块边界变化 | 代码文档注释、SDD、最近的局部 `AGENTS.md` |
 | 固件、第三方源码或外部交付物变化 | `3rd/` 记录、`README.md`、相关 ADR/设计/审计文档 |
 | QEMU、固件链路或目标平台假设变化 | `README.md`、相关设计文档、相关测试说明 |
@@ -60,11 +60,7 @@ docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings
 
 ## Commit
 
-commit 必须带 DCO sign-off，提交格式、正文、footer 和发布卫生规则以 [.gitmessage](./.gitmessage) 为唯一详细模板：
-
-```bash
-git commit --signoff -m "docs(conventions): 补充文档结构约定"
-```
+commit 必须带 DCO sign-off。提交格式、正文、footer 和发布卫生规则以 [.gitmessage](./.gitmessage) 为唯一详细模板；本文件不重复维护详细规则。
 
 可选启用仓库提交模板：
 

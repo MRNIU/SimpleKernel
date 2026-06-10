@@ -33,6 +33,10 @@ impl KernelStack {
     pub const ALIGN: usize = 16;
 
     /// 分配一个新的内核栈（大小由 `config::KERNEL_STACK_SIZE` 决定）。
+    ///
+    /// # Panics
+    ///
+    /// `KERNEL_STACK_SIZE` 不满足 ABI 对齐要求，或堆分配失败时 panic。
     pub fn new() -> Self {
         let layout = Self::layout();
         // SAFETY: layout 由 `KernelStack::layout()` 构造，size 非零且对齐合法。
@@ -42,6 +46,10 @@ impl KernelStack {
     }
 
     /// 返回栈顶地址（栈从高地址向低地址增长）。
+    ///
+    /// # Panics
+    ///
+    /// 若分配得到的栈顶地址不满足 ABI 对齐要求则 panic。
     pub fn top(&self) -> usize {
         let top = self.ptr.as_ptr() as usize + self.layout.size();
         assert_eq!(
@@ -129,9 +137,11 @@ pub struct TaskControlBlock {
     fd_table: sync::SpinLock<FileDescriptorTable>,
 }
 
-// SAFETY: `TaskControlBlock` 的跨核共享字段使用原子类型或内核锁保护；
-// `context` 只通过调度锁保护的 unsafe 入口访问；`kstack` 创建后不被并发修改。
+// SAFETY: `TaskControlBlock` 的跨核共享字段使用原子类型或内核锁保护；移动 TCB 所有权不会
+// 破坏 `context` 和 `kstack` 的访问约束。
 unsafe impl Send for TaskControlBlock {}
+// SAFETY: `context` 只通过调度锁保护的 unsafe 入口访问；`kstack` 创建后不被并发修改，
+// 文件描述符表由内核锁串行化。
 unsafe impl Sync for TaskControlBlock {}
 
 impl TaskControlBlock {
@@ -170,6 +180,10 @@ impl TaskControlBlock {
     ///
     /// 分配内核栈，将 `entry` 和 `arg` 编码到 `CalleeSavedContext` 中，
     /// 使 `switch_to` 后首次执行从 `kernel_thread_entry` 开始。
+    ///
+    /// # Panics
+    ///
+    /// 内核栈分配或栈顶 ABI 对齐校验失败时 panic。
     pub fn new_kernel_thread(
         pid: Pid,
         name: &'static str,
@@ -248,6 +262,10 @@ impl TaskControlBlock {
     /// 写入任务状态（Release 语序）。
     ///
     /// debug 模式下校验状态转移合法性，非法转移触发 panic。
+    ///
+    /// # Panics
+    ///
+    /// debug 构建下，若状态转移不在允许路径内则 panic。
     pub fn set_state(&self, new: TaskState) {
         #[cfg(debug_assertions)]
         {

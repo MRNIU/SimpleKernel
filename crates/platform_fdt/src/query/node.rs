@@ -12,6 +12,11 @@ use super::{
     MAX_NODE_REGIONS,
 };
 
+/// 将 parser 节点转换为稳定查询视图。
+///
+/// # Errors
+///
+/// 节点名称、compatible 或 reg 属性解析失败，或本 crate 固定容量不足时返回错误。
 pub(super) fn node_to_view<'fdt>(
     node: UnalignedFallibleNode<'fdt>,
     id: FdtNodeId,
@@ -40,6 +45,11 @@ pub(super) fn node_to_view<'fdt>(
     ))
 }
 
+/// 读取节点名称并转换为轻量视图。
+///
+/// # Errors
+///
+/// parser 无法解析节点名称时返回错误。
 pub(super) fn node_name<'fdt>(
     node: &UnalignedFallibleNode<'fdt>,
     context: &str,
@@ -88,6 +98,11 @@ fn collect_compatibles<'fdt>(
     Ok(compatibles)
 }
 
+/// 判断节点是否包含目标 compatible 字符串。
+///
+/// # Errors
+///
+/// compatible 属性存在但 parser 无法解析时返回错误。
 pub(super) fn node_matches_compatible<'fdt>(
     node: &UnalignedFallibleNode<'fdt>,
     compatible: &str,

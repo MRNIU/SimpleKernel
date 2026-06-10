@@ -14,7 +14,7 @@ assignees: ''
 ## 复现步骤
 
 1. 分支或 commit：
-2. 问题类型：Rust 编译 / QEMU 运行 / QEMU 系统测试 / Dev Container / `xtask` / 文档
+2. 问题类型：Rust `no_std`/`no_main` 编译 / QEMU 运行 / QEMU 系统测试 / Dev Container / `xtask` / 文档
 3. 目标架构：`riscv64` / `aarch64` / 不适用
 4. 执行的命令：
    ```bash

@@ -63,6 +63,11 @@ tlb_remote_store_probe_resume_pc:
             static tlb_remote_store_probe_resume_pc: u8;
         }
 
+        /// 通过汇编 probe 向目标地址写入测试值。
+        ///
+        /// # Safety
+        ///
+        /// 调用方必须保证目标地址在当前测试阶段有效，并且预期 fault 恢复点已配置。
         pub unsafe fn write(addr: *mut u64, value: u64) {
             // SAFETY: 调用方保证目标地址和预期 fault 恢复点已按测试阶段配置。
             unsafe { tlb_remote_store_probe(addr, value) };
@@ -117,6 +122,11 @@ tlb_remote_store_probe_resume_pc:
             static tlb_remote_store_probe_resume_pc: u8;
         }
 
+        /// 通过汇编 probe 向目标地址写入测试值。
+        ///
+        /// # Safety
+        ///
+        /// 调用方必须保证目标地址在当前测试阶段有效，并且预期 fault 恢复点已配置。
         pub unsafe fn write(addr: *mut u64, value: u64) {
             // SAFETY: 调用方保证目标地址和预期 fault 恢复点已按测试阶段配置。
             unsafe { tlb_remote_store_probe(addr, value) };

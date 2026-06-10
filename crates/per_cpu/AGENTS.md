@@ -70,7 +70,7 @@ Per-CPU 变量的包装器。不直接持有数据——数据在每个 CPU 的�
 |-------|------|
 | `macros` | 提供 `#[cpu_local]` 过程宏 |
 | `config` | `MAX_CORE_COUNT`、`PERCPU_AREA_MAX` 常量 |
-| `arch` | 架构相关操作（`percpu_base()`、`set_percpu_base()`、`core_id()`） |
+| `arch_primitives` | 架构相关操作（`percpu_base()`、`set_percpu_base()`、`core_id()`） |
 
 ## 模块结构
 

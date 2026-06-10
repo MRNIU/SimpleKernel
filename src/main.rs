@@ -16,6 +16,11 @@ mod smoke_test;
 /// 标记主核是否已完成初始化，用于区分主核/从核引导路径
 static PRIMARY_BOOTED: AtomicBool = AtomicBool::new(false);
 
+/// 裸机启动入口，由架构启动代码跳入。
+///
+/// # Panics
+///
+/// 平台输入、内存、分页、设备或文件系统初始化失败时 panic。
 #[unsafe(no_mangle)]
 pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
     // swap 返回旧值：false 表示当前核是第一个到达的主核。
@@ -30,6 +35,10 @@ pub extern "C" fn _start(argc: i32, argv: *const *const u8) -> ! {
 ///
 /// 新任务首次被 `switch_to` 调度运行时，从此函数开始执行。
 /// 放在 kernel crate 中打破 arch→task 循环依赖。
+///
+/// # Panics
+///
+/// 调度器状态未初始化，或任务入口返回后的退出路径无法完成调度时 panic。
 #[unsafe(no_mangle)]
 pub extern "C" fn kernel_thread_bootstrap(entry: usize, arg: usize) -> ! {
     // 启用中断：schedule() 的 HeldInterrupts::hold() 禁用了中断，

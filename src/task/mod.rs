@@ -65,7 +65,7 @@ mod api {
         );
         let idle = Arc::new(TaskControlBlock::new_idle(0, core_id));
 
-        // SAFETY: 此时仅 BSP 核心运行，无并发访问。
+        // SAFETY: 此时仅 BSP 核心运行，尚未启动从核和任务调度，不存在并发访问调度数组。
         unsafe {
             let mut sched = PerCpuSched::new(SchedPolicy::default_policy());
             sched.current = Some(idle.clone());
@@ -96,7 +96,7 @@ mod api {
         );
         let idle = Arc::new(TaskControlBlock::new_idle(0, core_id));
 
-        // SAFETY: 每个核心仅写自己的 slot。
+        // SAFETY: 每个从核只写入以自身 `core_id` 索引的 slot；主核已完成全局数组初始化。
         unsafe {
             let mut sched = PerCpuSched::new(SchedPolicy::default_policy());
             sched.current = Some(idle.clone());
@@ -153,17 +153,29 @@ mod api {
         }
 
         /// 创建任务并加入就绪队列。
+        ///
+        /// # Panics
+        ///
+        /// 当前核心调度状态尚未初始化，或当前核心 ID 超出调度数组范围时 panic。
         pub fn spawn(self) -> TaskRef {
             do_spawn(self.name, self.entry, self.arg, self.parent_pid)
         }
     }
 
     /// 创建内核线程并加入就绪队列（无父任务）。
+    ///
+    /// # Panics
+    ///
+    /// 当前核心调度状态尚未初始化，或当前核心 ID 超出调度数组范围时 panic。
     pub fn spawn_kernel_thread(name: &'static str, entry: fn(usize), arg: usize) -> TaskRef {
         do_spawn(name, entry, arg, None)
     }
 
     /// 创建内核线程并加入就绪队列，指定父任务。
+    ///
+    /// # Panics
+    ///
+    /// 当前核心调度状态尚未初始化，或当前核心 ID 超出调度数组范围时 panic。
     pub fn spawn_kernel_thread_with_parent(
         name: &'static str,
         entry: fn(usize),
@@ -183,7 +195,7 @@ mod api {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
         let mut table = TASK_TABLE.lock();
-        // SAFETY: 持有本核调度锁
+        // SAFETY: 已持有本核调度锁，该核心调度状态不会被其他路径并发修改。
         let sched = unsafe { per_cpu_sched(core_id) };
 
         let pid = table.alloc_pid();
@@ -264,18 +276,22 @@ mod api {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
         let mut table = TASK_TABLE.lock();
-        // SAFETY: 持有本核调度锁
+        // SAFETY: 已持有本核调度锁，该核心调度状态不会被其他路径并发修改。
         let sched = unsafe { per_cpu_sched(core_id) };
         table.wake_one(sched, resource);
     }
 
     /// 唤醒在指定资源上阻塞的所有任务。
+    ///
+    /// # Panics
+    ///
+    /// 当前核心调度状态未初始化时 panic。
     #[expect(dead_code, reason = "广播唤醒入口保留给后续条件变量和批量资源通知")]
     pub fn wakeup_all(resource: ResourceId) {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
         let mut table = TASK_TABLE.lock();
-        // SAFETY: 持有本核调度锁
+        // SAFETY: 已持有本核调度锁，该核心调度状态不会被其他路径并发修改。
         let sched = unsafe { per_cpu_sched(core_id) };
         table.wake_all(sched, resource);
     }
@@ -300,7 +316,7 @@ mod api {
             let core_id = per_cpu::current_core_id();
             let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
             let mut table = TASK_TABLE.lock();
-            // SAFETY: 持有本核调度锁
+            // SAFETY: 已持有本核调度锁，该核心调度状态不会被其他路径并发修改。
             let sched = unsafe { per_cpu_sched(core_id) };
             table.wake_one(sched, ResourceId::ChildExit(pid));
             table.wake_one(sched, ResourceId::ChildExit(0));
@@ -315,6 +331,10 @@ mod api {
     /// # Errors
     ///
     /// 当前任务没有匹配的子任务时返回 [`TaskError::NoChildFound`]。
+    ///
+    /// # Panics
+    ///
+    /// 当前任务或调度器状态未初始化时 panic。
     pub fn wait_child(child_pid: usize) -> Result<(Pid, i32), TaskError> {
         loop {
             {
@@ -351,6 +371,10 @@ mod api {
     ///
     /// 当前实现的内核线程 spawn 路径直接返回新任务；保留 `Result` 用于后续向上传递
     /// 任务表容量或栈分配失败。
+    ///
+    /// # Panics
+    ///
+    /// 当前任务或调度器状态未初始化时 panic。
     pub fn clone_kernel_thread(
         name: &'static str,
         entry: fn(usize),
@@ -365,11 +389,15 @@ mod api {
     /// # Errors
     ///
     /// 目标任务不存在时返回 [`TaskError::TaskNotFound`]。
+    ///
+    /// # Panics
+    ///
+    /// 当前核心调度状态未初始化时 panic。
     pub fn send_signal(pid: Pid, sig: Signal) -> Result<(), TaskError> {
         let core_id = per_cpu::current_core_id();
         let _sched_guard = PER_CPU_SCHED_LOCK[core_id].lock();
         let table = TASK_TABLE.lock();
-        // SAFETY: 持有本核调度锁
+        // SAFETY: 已持有本核调度锁，该核心调度状态不会被其他路径并发修改。
         let sched = unsafe { per_cpu_sched(core_id) };
 
         let task = table

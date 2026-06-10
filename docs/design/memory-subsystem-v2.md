@@ -48,7 +48,7 @@ flowchart TB
 
   subgraph Primitive["基础层"]
     types["memory_types<br/>PhysAddr / VirtAddr<br/>Frame / Span"]
-    arch["arch<br/>PT levels / TLB ops"]
+    arch_primitives["arch_primitives<br/>PT levels / TLB ops"]
     config["config<br/>PAGE_SIZE / heap size / thresholds"]
   end
 
@@ -64,8 +64,8 @@ flowchart TB
   paging --> tlb
   paging --> types
   pte --> types
-  tlb --> arch
-  types --> arch
+  tlb --> arch_primitives
+  types --> arch_primitives
   types --> config
   frame --> types
   heap --> config

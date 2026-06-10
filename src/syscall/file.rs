@@ -7,6 +7,10 @@
 /// # Errors
 ///
 /// 文件不存在且未指定 CREATE 标志时返回错误。
+///
+/// # Panics
+///
+/// 当前任务或文件描述符表所属调度状态未初始化时 panic。
 pub fn open(path: &str, flags: u32) -> Result<u32, crate::fs::vfs::FsError> {
     use crate::fs::fd_table::File;
     use crate::fs::vfs::{FileType, FsError, OpenFlags};
@@ -43,6 +47,10 @@ pub fn open(path: &str, flags: u32) -> Result<u32, crate::fs::vfs::FsError> {
 /// # Errors
 ///
 /// 无效 FD 返回 `InvalidFd`。
+///
+/// # Panics
+///
+/// 当前任务或文件描述符表所属调度状态未初始化时 panic。
 pub fn close(fd: u32) -> Result<(), crate::fs::vfs::FsError> {
     use crate::fs::fd_table::Fd;
 
@@ -55,6 +63,10 @@ pub fn close(fd: u32) -> Result<(), crate::fs::vfs::FsError> {
 /// # Errors
 ///
 /// FD 无效或 I/O 错误时返回错误。
+///
+/// # Panics
+///
+/// 当前任务或文件描述符表所属调度状态未初始化时 panic。
 pub fn read(fd: u32, buf: &mut [u8]) -> Result<usize, crate::fs::vfs::FsError> {
     use crate::fs::fd_table::Fd;
     use crate::fs::vfs::FsError;
@@ -77,6 +89,10 @@ pub fn read(fd: u32, buf: &mut [u8]) -> Result<usize, crate::fs::vfs::FsError> {
 /// # Errors
 ///
 /// FD 无效或 I/O 错误时返回错误。
+///
+/// # Panics
+///
+/// 当前任务或文件描述符表所属调度状态未初始化时 panic。
 pub fn write(fd: u32, data: &[u8]) -> Result<usize, crate::fs::vfs::FsError> {
     use crate::fs::fd_table::Fd;
     use crate::fs::vfs::FsError;

@@ -12,7 +12,24 @@ subagent 分批执行整改；本文只记录已确认的处理方向，不替�
 - 后续执行时每个 subagent 应选择互不重叠的文件范围，避免同时修改同一模块。
 - 代码改动后按影响面运行验证；文档-only 改动至少运行 `git diff --check`。
 
-## 待处理表
+## 本轮执行状态
+
+2026-06-10 本轮已用多个 subagent 并行执行，并由主线复扫、补漏和验证。原始待处理表保留作
+排查索引，当前状态如下：
+
+- 已落地：编号 1、2、5、6、7、8、11、14、16、18、19。
+- 已确认当前满足或无需新增修改：编号 3（18 个 workspace crate 均已有 `AGENTS.md`）、
+  4（repo-owned Rust 文件均已有 `//!` 模块说明）、13（无裸 `#[allow]`）、
+  15（无 `.map_err(|_| ...)` 残留）。
+- 已由当前代码语义覆盖并复验：编号 9、10、12；AArch64 boot argv、FDT、CORE_COUNT、
+  panic/expect/assert 诊断均保留触发数据，运行时/platform 输入不走静默 fallback。
+- 编号 17：`crates/device_core/src/registry.rs` 在本轮开始前已拆分；本轮只同步了
+  `crates/device_core/AGENTS.md` 的拆分后文件地图。
+
+最终验证见 `docs/audit/audit-progress.md` 中
+“验证结果（2026-06-10 代码风格与文件组织 follow-up）”。
+
+## 原始待处理表
 
 | 编号 | 处理结论 | 范围 | 后续动作 |
 |------|----------|------|----------|

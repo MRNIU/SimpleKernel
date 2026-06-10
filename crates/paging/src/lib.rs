@@ -33,7 +33,9 @@ pub fn init_kernel_page_table(pt: PageTable) {
 
 /// 获取全局内核页表引用。
 ///
-/// 未初始化时 panic。
+/// # Panics
+///
+/// 全局内核页表尚未通过 [`init_kernel_page_table`] 初始化时 panic。
 pub fn kernel_page_table() -> &'static PageTable {
     KERNEL_PAGE_TABLE
         .get()
@@ -62,8 +64,8 @@ fn alloc_node_frame() -> frame_allocator::AllocatedFrames {
 
 /// 从虚拟地址中提取第 `level` 级的 VPN 索引。
 ///
-/// 此函数因依赖 [`memory_types::VirtAddr`] 而无法放入 `arch` crate
-/// （`memory_types` 已依赖 `arch`，反向依赖会形成循环）。
+/// 此函数因依赖 [`memory_types::VirtAddr`] 而无法放入 `arch_primitives` crate
+/// （`memory_types` 已依赖 `arch_primitives`，反向依赖会形成循环）。
 #[inline]
 pub fn vpn_index(va: memory_types::VirtAddr, level: usize) -> usize {
     (va.as_usize() >> LEVEL_SHIFTS[level]) & INDEX_MASK

@@ -28,6 +28,10 @@ static ACK_GENERATION: [AtomicUsize; config::MAX_CORE_COUNT] =
 /// 注册 shootdown 回调，并标记当前核心在线。
 ///
 /// 必须在主核中断控制器初始化完成后调用；此时本核可以发送 IPI。
+///
+/// # Panics
+///
+/// 当前核心 ID 超出 `config::MAX_CORE_COUNT` 时 panic。
 pub fn init_primary() {
     tlb::register_tlb_shootdown(broadcast);
     mark_current_core_online();
@@ -36,6 +40,10 @@ pub fn init_primary() {
 /// 标记当前核心已能接收 IPI。
 ///
 /// 从核必须在本核中断控制器初始化并启用 IRQ 后调用。
+///
+/// # Panics
+///
+/// 当前核心 ID 超出 `config::MAX_CORE_COUNT` 时 panic。
 pub fn mark_current_core_online() {
     let core_id = per_cpu::current_core_id();
     assert!(
@@ -58,6 +66,10 @@ pub fn online_core_mask() -> usize {
 }
 
 /// 当前所有 FDT 发现的 CPU 是否都已完成 SMP online。
+///
+/// # Panics
+///
+/// FDT 发现的 CPU 数量不在 `1..=config::MAX_CORE_COUNT` 范围内时 panic。
 pub fn all_discovered_cores_online() -> bool {
     let discovered = crate::cpu_topology::topology().discovered_core_count();
     let expected = expected_online_mask(discovered);
@@ -90,6 +102,10 @@ pub fn wait_for_all_discovered_cores_online() {
 }
 
 /// 处理当前核心收到的 TLB shootdown IPI。
+///
+/// # Panics
+///
+/// 当前核心 ID 超出 `config::MAX_CORE_COUNT`，或收到未知 shootdown 请求类型时 panic。
 pub fn handle_ipi() {
     let core_id = per_cpu::current_core_id();
     assert!(

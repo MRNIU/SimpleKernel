@@ -150,7 +150,8 @@ impl PageTable {
                 "identity_map_range: VA {va} flags 冲突——已有 PTE {:?} 与请求 {leaf_flags:?} 不同",
                 current.flags(),
             );
-            return; // 幂等重复映射
+            // 幂等重复映射。
+            return;
         }
 
         table.write(idx, PageTableEntry::new(pa, leaf_flags));

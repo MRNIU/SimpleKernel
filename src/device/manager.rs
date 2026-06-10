@@ -22,6 +22,10 @@ pub(crate) fn init() {
 }
 
 /// 注册一个已探测成功的设备。
+///
+/// # Panics
+///
+/// 设备数量超过 [`DeviceId`] 当前可表达范围时 panic。
 pub(crate) fn register_device(device: Box<dyn Device>) -> DeviceId {
     let name = device.name().to_string();
     let dtype = device.device_type();

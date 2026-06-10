@@ -38,6 +38,10 @@ macro_rules! impl_usize_newtype {
     ($name:ident, phys) => {
         impl $name {
             /// 从原始 `usize` 构造，校验物理地址在目标地址位宽范围内。
+            ///
+            /// # Panics
+            ///
+            /// `v` 超出当前目标架构物理地址位宽可表示范围时 panic。
             #[inline]
             pub const fn new(v: usize) -> Self {
                 assert!(
@@ -58,6 +62,10 @@ macro_rules! impl_usize_newtype {
         impl $name {
             /// 从原始 `usize` 构造，校验地址按目标虚拟地址位宽规范化
             /// （高位必须是 bit[VA_BITS-1] 的符号扩展）。
+            ///
+            /// # Panics
+            ///
+            /// `v` 不是当前目标架构虚拟地址位宽的规范地址时 panic。
             #[inline]
             pub const fn new(v: usize) -> Self {
                 let shift = usize::BITS as usize - crate::addr_width::VA_BITS;

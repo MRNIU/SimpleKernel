@@ -47,9 +47,10 @@ impl core::fmt::Debug for KernelElf {
     }
 }
 
-// SAFETY: KernelElf 只读取静态内存区域（也就是内核二进制本身）。
-// 内核二进制以只读方式映射，并在整个内核生命周期内保持有效。
+// SAFETY: KernelElf 只持有指向内核 ELF 映像的只读切片；该映像在内核生命周期内保持映射，
+// 共享到其他执行上下文不会产生可变别名或数据竞争。
 unsafe impl Send for KernelElf {}
+// SAFETY: KernelElf 不提供内部可变性，所有解析操作只读访问同一份静态 ELF 映像。
 unsafe impl Sync for KernelElf {}
 
 impl KernelElf {
@@ -64,8 +65,13 @@ impl KernelElf {
     /// - `SymtabNotFound` — 没有 `.symtab` 段
     ///
     /// # Safety
+    ///
     /// `elf_addr` 必须指向一个有效、完整映射的 ELF64 二进制文件，
     /// 并且在 `'static` 生命周期内保持有效。
+    ///
+    /// # Panics
+    ///
+    /// 若 ELF 头部或段头表字段与 ELF64 固定布局不一致，内部固定范围校验失败时 panic。
     pub unsafe fn new(elf_addr: u64) -> Result<Self, ElfError> {
         if elf_addr == 0 {
             return Err(ElfError::InvalidAddress);
@@ -74,7 +80,7 @@ impl KernelElf {
         let base = elf_addr as *const u8;
 
         // 读取前 64 字节（ELF64 头部）以进行校验并计算大小。
-        // SAFETY: 调用者保证 elf_addr 指向有效的 ELF 二进制文件。
+        // SAFETY: 调用者保证 `elf_addr` 指向至少覆盖 ELF64 头部的可读映射。
         let header = unsafe { core::slice::from_raw_parts(base, 64) };
 
         // 校验魔数
@@ -114,7 +120,7 @@ impl KernelElf {
         // 遍历段头以找到最大范围（.symtab 和 .strtab 等段
         // 往往位于段头表之后）。
         if e_shoff > 0 && e_shnum > 0 && e_shentsize >= 40 {
-            // SAFETY: 段头表位于 ELF 二进制内部。
+            // SAFETY: 调用者保证 ELF 映像完整映射；这里按 ELF 头部字段读取段头表范围。
             let sh_bytes =
                 unsafe { core::slice::from_raw_parts(base.add(e_shoff), e_shnum * e_shentsize) };
             for i in 0..e_shnum {
@@ -137,7 +143,7 @@ impl KernelElf {
             }
         }
 
-        // SAFETY: 计算得到的 elf_size 覆盖整个二进制文件。
+        // SAFETY: 调用者保证从 `base` 到计算出的 `elf_size` 范围在内核生命周期内可读。
         let data: &'static [u8] = unsafe { core::slice::from_raw_parts(base, elf_size) };
 
         // 使用 elf crate 进行校验，并确认存在 .symtab。
