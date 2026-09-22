@@ -23,10 +23,10 @@ DTB 复制到内核自有 storage，并提供平台无关的 FDT 查询 API，�
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- 查询或 storage API 变更：`docker exec -w /workspace simplekernel-devcontainer cargo test -p platform_fdt`。
-- lint/实现变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p platform_fdt -- -D warnings`。
-- 影响内存 FDT 解析时：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name memory-test/fdt-multi-memory --timeout 30`。
-- 影响设备 compatible 遍历时：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name device-test --timeout 30`。
+- 查询或 storage API 变更：`cargo test -p platform_fdt`。
+- lint/实现变更：`cargo clippy -p platform_fdt -- -D warnings`。
+- 影响内存 FDT 解析时：`cargo xtask test --arch riscv64 --name memory-test/fdt-multi-memory --timeout 30`。
+- 影响设备 compatible 遍历时：`cargo xtask test --arch riscv64 --name device-test --timeout 30`。
 
 ## 不要假设
 

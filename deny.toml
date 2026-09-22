@@ -16,9 +16,7 @@ allow = [
     "Apache-2.0",
     "BSD-2-Clause",
     "BSD-3-Clause",
-    "0BSD",
     "Unlicense",
-    "ISC",
     "MPL-2.0",            # fdt crate — file-level copyleft，与 MIT 兼容
     "MulanPSL-2.0",       # sbi-rt / sbi-spec — 木兰宽松许可证
     "Unicode-3.0",        # unicode-ident
@@ -42,5 +40,5 @@ unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
 allow-git = [
     "https://github.com/MRNIU/aarch64-cpu",     # fork: 等待上游 PR#77 合入
-    "https://github.com/rafalh/rust-fatfs",      # 无 crates.io 发布
+    "https://github.com/rafalh/rust-fatfs",      # 当前 no_std 0.4 接口尚无 crates.io 发布
 ]

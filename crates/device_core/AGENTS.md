@@ -30,9 +30,9 @@ descriptor、probe 语义、稳定设备身份和 typed capability registry，�
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- API 或实现变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p device_core -- -D warnings`。
-- registry/probe 纯模型语义变更：`docker exec -w /workspace simplekernel-devcontainer cargo test -p device_core`。
-- 与平台总线或 VirtIO 绑定行为相关的变更：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name device-test --timeout 30`。
+- API 或实现变更：`cargo clippy -p device_core -- -D warnings`。
+- registry/probe 纯模型语义变更：`cargo test -p device_core`。
+- 与平台总线或 VirtIO 绑定行为相关的变更：`cargo xtask test --arch riscv64 --name device-test --timeout 30`。
 
 ## 不要假设
 

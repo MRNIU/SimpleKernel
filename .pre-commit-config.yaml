@@ -8,6 +8,7 @@ repos:
       - id: check-case-conflict
       - id: check-illegal-windows-names
       - id: check-json
+      - id: check-toml
       - id: check-merge-conflict
       - id: check-symlinks
       - id: check-xml
@@ -18,10 +19,29 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
 
-  - repo: https://github.com/doublify/pre-commit-rust
-    rev: v1.0
+  - repo: local
     hooks:
-      - id: fmt
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: cargo fmt --all -- --check
+        language: system
+        pass_filenames: false
+        types: [rust]
+      # 裸机 Clippy 较慢，按架构显式运行；普通提交仍执行快速格式与文件检查。
+      - id: cargo-clippy-riscv64
+        name: cargo clippy (riscv64)
+        entry: cargo clippy --locked --target riscv64gc-unknown-none-elf -- -D warnings
+        language: system
+        pass_filenames: false
+        types: [rust]
+        stages: [manual]
+      - id: cargo-clippy-aarch64
+        name: cargo clippy (aarch64)
+        entry: cargo clippy --locked --target aarch64-unknown-none -- -D warnings
+        language: system
+        pass_filenames: false
+        types: [rust]
+        stages: [manual]
 
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.11.0

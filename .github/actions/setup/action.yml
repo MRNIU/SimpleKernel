@@ -1,10 +1,10 @@
 # Copyright The SimpleKernel Contributors
 #
-# 公共 setup composite action：checkout → submodule → Rust 工具链 → Cargo 缓存
+# 公共 setup composite action：submodule → Rust 工具链 → Cargo 缓存
 # 被 workflow.yml 中所有 job 复用。
 
 name: Setup SimpleKernel Build Environment
-description: Checkout, init submodules, setup Rust toolchain, and cache Cargo
+description: Init submodules, setup repository Rust toolchain, and cache Cargo
 
 inputs:
   cache-key-prefix:
@@ -14,15 +14,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 1
-
     - name: Shallow submodule init
       shell: bash
       run: |
-        git config --global --add safe.directory '*'
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
         git submodule update --init --recursive --depth 1
 
     - name: Setup Rust toolchain
@@ -34,7 +29,7 @@ runs:
         export RUSTUP_HOME="${RUSTUP_HOME:-/usr/local/rustup}"
         export PATH="$CARGO_HOME/bin:$PATH"
         if ! command -v rustup >/dev/null 2>&1; then
-          echo "::error title=Missing Rust toolchain::rustup is not available in the SimpleKernel dev image. Rebuild the image from .devcontainer/Dockerfile instead of installing Rust in CI."
+          echo "::error title=Missing Rust toolchain::rustup is required in the selected CI environment."
           exit 1
         fi
         {
@@ -42,10 +37,12 @@ runs:
           echo "RUSTUP_HOME=$RUSTUP_HOME"
         } >> "$GITHUB_ENV"
         echo "$CARGO_HOME/bin" >> "$GITHUB_PATH"
-        rustup show
+        # 读取 checkout 的 rust-toolchain.toml，旧镜像也能补齐新版本和组件。
+        rustup show active-toolchain
+        rustc --version
 
     - name: Cache Cargo
-      uses: actions/cache@v4
+      uses: actions/cache@v6.1.0
       with:
         path: |
           /usr/local/cargo/registry

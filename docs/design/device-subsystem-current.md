@@ -176,8 +176,7 @@ FAT 成功证明需单独的挂载成功与读写证据（或硬断言测试）�
 不足。本轮只核对代码与历史记录，未补测试或执行上述路径。
 
 纯逻辑 crate 使用 host 测试；真实启动、DTB storage、MMIO、VirtIO、DMA 由 QEMU 系统测试
-验证，不为真实 probe 路径引入 host mock。以下命令在 `simplekernel-devcontainer` 容器内执行，
-宿主机加 `docker exec -w /workspace simplekernel-devcontainer` 前缀：
+验证，不为真实 probe 路径引入 host mock。以下命令在所选本地或容器环境的仓库根执行：
 
 - `cargo test -p device_core -p platform_fdt`
 - `cargo xtask check --arch riscv64` / `cargo xtask check --arch aarch64`
@@ -186,4 +185,4 @@ FAT 成功证明需单独的挂载成功与读写证据（或硬断言测试）�
 - 跨架构枚举变更须同时覆盖 AArch64 的对应测试；阶段回归按 Roadmap 选择全量测试。
 
 以上为验证入口，不是本轮通过记录。历史执行结果从审计进度进入。
-QEMU 默认 30 秒超时；超时后在对应容器清理残留 `qemu-system` 进程。
+QEMU 默认 30 秒超时；超时后在执行环境中确认并清理本次残留 `qemu-system` 进程。

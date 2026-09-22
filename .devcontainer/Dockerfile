@@ -1,8 +1,16 @@
 # Copyright The SimpleKernel Contributors
 
+FROM node:26.9.0-bookworm-slim AS node
+
 FROM ubuntu:26.04
 
-ARG RUST_TOOLCHAIN=nightly-2026-03-24
+# 使用当前 Node，避免发行版 Node 低于新版 npm 的最低要求。
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
+COPY --from=node /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
+RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
+    ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+
+ARG RUST_TOOLCHAIN=nightly-2026-09-22
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -77,9 +85,6 @@ RUN apt-get update && apt-get full-upgrade -y && \
     python-is-python3 \
     # 文档生成
     graphviz \
-    # Node.js（Mermaid CLI 图表渲染依赖）
-    nodejs \
-    npm \
     && \
     apt-get autoremove -y && apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
@@ -100,15 +105,15 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
 
 # pre-commit（仓库提交前检查）
 RUN python3 -m venv /opt/pre-commit && \
-    /opt/pre-commit/bin/pip install --no-cache-dir --upgrade pip pre-commit && \
+    /opt/pre-commit/bin/pip install --no-cache-dir --upgrade pip pre-commit==4.6.2 && \
     ln -s /opt/pre-commit/bin/pre-commit /usr/local/bin/pre-commit && \
     pre-commit --version
 
 # Mermaid CLI（Markdown 中的 Mermaid 图表 → PNG/SVG）
-RUN npm install -g npm@latest && \
+RUN npm install -g npm@12.0.2 && \
     hash -r && \
     npm --version && \
-    npm install -g @mermaid-js/mermaid-cli && \
+    npm install -g @mermaid-js/mermaid-cli@11.17.0 && \
     mmdc --version
 
 # Rust 工具链（与 rust-toolchain.toml 保持一致）
@@ -131,16 +136,16 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
     cargo --version
 
 # Cargo 审计与文档工具
-RUN cargo install --locked cargo-deny && \
-    cargo install --locked mdbook && \
+RUN cargo install --locked cargo-deny --version 0.20.2 && \
+    cargo install --locked mdbook --version 0.5.4 && \
     chmod -R a+w "$CARGO_HOME"
 
 # Dev Container 交互用户。构建阶段仍使用 root 安装工具，运行阶段使用 dev。
 RUN useradd -m -s /usr/bin/zsh dev && \
     echo 'dev ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/dev && \
     chmod 0440 /etc/sudoers.d/dev && \
-    mkdir -p /workspace && \
-    chown dev:dev /workspace
+    mkdir -p /workspace /srv/tftp && \
+    chown dev:dev /workspace /srv/tftp
 
 # 默认 shell 设为 zsh
 ENV SHELL=/usr/bin/zsh

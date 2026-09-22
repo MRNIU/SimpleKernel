@@ -13,17 +13,29 @@
 `tests/` 目录；模块私有白盒测试直接内联在实现文件的 `#[cfg(test)] mod tests` 中，
 不放到仓库根 `tests/` 下。
 
+## 通过条件与证据
+
+`test_main!` 负责启动、按 `InitLevel` 初始化、调用测试函数和退出 QEMU。
+普通测试输出 `TEST OK`，should_panic 测试输出 `SHOULD_PANIC OK`。
+当前 runner 要求退出成功、未超时、没有失败 sentinel 且至少包含一个成功 sentinel；
+它不按测试类型绑定具体成功标记。不能仅以 QEMU 退出或出现 panic 判断通过。
+实现依据是 `xtask/src/test.rs::evaluate_qemu_test_result` 与 `tests/test_harness/src/lib.rs`。
+
+每个测试函数写 `///` 注释，说明验证的契约。选择足够的初始化级别，并区分启动断言、
+内核主程序的冒烟线程和本测试自己的断言；独立测试不会自动运行主程序的全部冒烟线程。
+超时、诊断日志与残留清理统一见 [xtask 手册](../xtask/AGENTS.md#超时失败与清理)。
+
 ## 验证入口
 
 ```bash
 # 全部测试
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --all --timeout 30
+cargo xtask test --arch riscv64 --all --timeout 30
 
 # 指定测试
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name paging-test/table --timeout 30
+cargo xtask test --arch riscv64 --name paging-test/table --timeout 30
 
 # 列出可用测试
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
+cargo xtask test --list
 ```
 
 ## 测试清单
@@ -72,13 +84,13 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 
 ```bash
 # 指定测试
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name panic-test --timeout 30 --debug-files
+cargo xtask test --arch riscv64 --name panic-test --timeout 30 --debug-files
 
 # 全部测试
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30 --debug-files
+cargo xtask test --arch riscv64 --timeout 30 --debug-files
 ```
 
-生成的文件位于 `target/<triple>/debug/` 目录，与测试 ELF 同名但扩展名不同。
+生成的文件位于 `target/<triple>/<profile>/` 目录，与测试 ELF 同名但扩展名不同。
 
 ## 添加新测试
 
@@ -97,6 +109,10 @@ test = false
 3. 源文件使用 `test_harness::test_main!` 宏：
 
 ```rust
+// Copyright The SimpleKernel Contributors
+
+//! 验证目标子系统的公开契约。
+
 #![no_std]
 #![no_main]
 #![feature(alloc_error_handler)]
@@ -106,6 +122,7 @@ extern crate alloc;
 // 普通测试
 test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_tests);
 
+/// 验证正常调用的预期结果。
 fn run_tests() {
     // 测试逻辑，assert 失败 = 测试失败
 }
@@ -116,6 +133,7 @@ should_panic 测试使用第三个参数：
 ```rust
 test_harness::test_main!(simplekernel::boot::InitLevel::Full, test_fn, should_panic);
 
+/// 验证非法输入触发预期 panic。
 fn test_fn() {
     // 触发预期 panic = 测试成功
 }

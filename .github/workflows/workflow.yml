@@ -17,6 +17,10 @@ env:
   # PR: 3 runs for speed; push/release: 10 runs for stability
   SYSTEM_TEST_RUNS: ${{ github.event_name == 'pull_request' && 3 || 10 }}
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   check:
     runs-on: ubuntu-24.04-arm
@@ -26,7 +30,7 @@ jobs:
     container:
       image: ghcr.io/simple-xx/simplekernel-devcontainer:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
@@ -59,13 +63,13 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Clippy (riscv64)
-        run: cargo clippy --target riscv64gc-unknown-none-elf -- -D warnings
+        run: cargo clippy --locked --target riscv64gc-unknown-none-elf -- -D warnings
 
       - name: Clippy (aarch64)
-        run: cargo clippy --target aarch64-unknown-none -- -D warnings
+        run: cargo clippy --locked --target aarch64-unknown-none -- -D warnings
 
       - name: Unit tests (host)
-        run: cargo test -p memory_types -p config -p page_table_entry
+        run: cargo test --locked -p memory_types -p config -p page_table_entry -p platform_fdt -p device_core -p macros -p xtask
 
       - name: Dependency audit
         run: cargo deny check
@@ -83,7 +87,7 @@ jobs:
       matrix:
         arch: [riscv64, aarch64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 1
 

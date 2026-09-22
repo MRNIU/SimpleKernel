@@ -37,8 +37,8 @@ memory::init()
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- allocator 初始化或分配路径变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p heap -- -D warnings`。
-- 堆扩展或中断上下文约束变更：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name heap-test --timeout 30`。
+- allocator 初始化或分配路径变更：`cargo clippy -p heap --target riscv64gc-unknown-none-elf -- -D warnings`。
+- 堆扩展或中断上下文约束变更：`cargo xtask test --arch riscv64 --name heap-test --timeout 30`。
 
 ## 不要假设
 

@@ -19,16 +19,17 @@ The Chinese README is the maintained project entry point:
 
 ## Quick Start
 
-Use the project Dev Container instead of installing the Rust nightly toolchain,
-cross-compilers, QEMU, or firmware build dependencies on the host.
+Choose a local environment or the optional Dev Container / Docker environment.
+Prepare the dependencies described in [CONTRIBUTING](CONTRIBUTING.md#环境与命令),
+then run these commands at the repository root in your chosen environment.
 
 ```bash
-devcontainer up --workspace-folder .
-docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch riscv64
-docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch riscv64 --timeout 30
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
-docker exec -w /workspace simplekernel-devcontainer cargo fmt --all -- --check
+cargo xtask build --arch riscv64
+cargo xtask run --arch riscv64 --timeout 30
+cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30
 ```
 
-QEMU run and test commands default to `--timeout 30`. Use a larger timeout only
-when the scenario explicitly needs it.
+If using a container, check that it mounts this checkout. For command details,
+QEMU timeouts and cleanup, see the [xtask guide](xtask/AGENTS.md); choose validation by change
+scope in [CONTRIBUTING](CONTRIBUTING.md). The kernel uses a single address space (SAS);
+restricting all application access to the syscall gateway remains a goal, not a completed guarantee.

@@ -1,6 +1,6 @@
 # Copyright The SimpleKernel Contributors
 
 [toolchain]
-channel = "nightly-2026-03-24"
+channel = "nightly-2026-09-22"
 components = ["rust-src", "rustfmt", "clippy", "llvm-tools"]
 targets = ["riscv64gc-unknown-none-elf", "aarch64-unknown-none"]

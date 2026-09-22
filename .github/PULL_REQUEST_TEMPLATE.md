@@ -1,40 +1,32 @@
 <!-- Copyright The SimpleKernel Contributors -->
 
-## 摘要
+## 问题与变更
 
-TODO
+<!-- 说明触发场景、原行为和变更后的行为；文档变更说明准确性或维护成本问题。 -->
 
-## 变更内容
+## 影响与风险
 
-- TODO
+<!-- 仅说明适用项：公开契约/错误、所有权、SAS/平台边界、unsafe/并发/中断、依赖/固件来源。
+涉及待决架构选择时链接 ADR/RFC；实现落地不等于 ADR 已接受。说明兼容性及必要的回滚方式。 -->
 
-## 影响面检查
+## 验证证据
 
-- [ ] 公开 trait、API、错误码、数据结构或协议边界无变化，或已在摘要/风险中说明
-- [ ] 启动流程、架构边界、SAS 不变量或跨模块依赖无变化，或已补充 ADR/SAD/SDD/RFC/Spec/Plan
-- [ ] Rust `unsafe`、并发、锁序、中断上下文或内存权限无变化，或已说明验证方式
-- [ ] 第三方源码、固件、submodule、生成物或外部交付物无变化，或已说明来源、版本、许可证、验证与真值源
-- [ ] QEMU、固件链路、目标平台假设或外部边界无变化，或已同步更新对应设计/审计文档
-- [ ] 开发环境、CI、Dev Container、QEMU 或发布流程无变化，或已更新文档
-- [ ] 没有破坏性变化，或已用 `!`/`BREAKING CHANGE` 和迁移说明标注
-- [ ] 每个 commit 都包含 DCO `Signed-off-by` trailer，或已说明例外原因
+<!-- 按 CONTRIBUTING.md 的验证表选择必要检查，不默认要求文档改动跑全量 QEMU。
+填写真实命令、环境/target/测试名、结果与证据入口；未执行项填写原因和残余风险。
+QEMU 超时、失败与清理按 xtask/AGENTS.md；测试通过条件按 tests/AGENTS.md。 -->
 
-## 测试
+| 命令或检查 | 环境 / target / 测试名 | 结果 / 证据 |
+|------------|----------------------|-------------|
+| | | |
 
-- [ ] `docker exec -w /workspace simplekernel-devcontainer cargo fmt --all -- --check`
-- [ ] `docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings`
-- [ ] `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30`
-- [ ] 其他：TODO
+未覆盖项及原因：
 
-QEMU 运行或系统测试默认使用 `--timeout 30`。如需放宽，请在“其他”或“风险与回滚”中说明原因。
+## 提交前确认
 
-## 文档
+- [ ] 已检查 diff，仅包含本任务改动
+- [ ] 已按 CONTRIBUTING.md 同步确实受影响的文档和入口，或说明不适用
+- [ ] 每个 commit 均符合 .gitmessage，包含 DCO `Signed-off-by` trailer
 
-- [ ] 如果命令或入口变化，已更新 `README.md`
-- [ ] 如果长期约定变化，已更新 `docs/conventions.md` 或 `AGENTS.md`
-- [ ] 如果架构决策变化，已更新 `docs/adr/`
-- [ ] 如果适用，已更新 SAD/SDD/RFC/Spec/Plan
-
-## 风险与回滚
-
-TODO
+<!-- 开发流程：https://github.com/Simple-XX/SimpleKernel/blob/HEAD/CONTRIBUTING.md
+提交模板：https://github.com/Simple-XX/SimpleKernel/blob/HEAD/.gitmessage
+仓库内查看时以当前分支文件为准。 -->

@@ -35,6 +35,7 @@ docs/
 | 记录 QEMU、固件链路、目标平台或外部交付物边界 | `docs/design/`、`docs/adr/` 或 `docs/audit/` |
 | 创建局部协作规则或新文档模板 | `docs/templates/` |
 | 记录长期工程约定，包括 Copyright、注释、文件规模、严格 JSON、第三方代码和运行时配置 | `docs/conventions.md` |
+| 按任务组织开发步骤 | 唯一项目 skill：[simplekernel-dev](../.agents/skills/simplekernel-dev/SKILL.md)，不复制长期规则或动态进度 |
 | 记录 Git、commit、DCO 和发布卫生规则 | `.gitmessage` 是详细真值面；根 `AGENTS.md` 和 `CONTRIBUTING.md` 只保留最小入口 |
 
 ## SAD、SDD 与历史文档边界
@@ -53,6 +54,7 @@ SimpleKernel 当前已有 `docs/design/` 和 `docs/adr/`。新增 SAD/SDD 时可
 - [审计进度](audit/audit-progress.md)：当前工作、未决事项、唯一下一步与验证入口。
 - [Roadmap](audit/review-roadmap.md)：R0–R8 范围及逐项交付物对账，阶段关闭须单独举证。
 - [历史记录](audit/2026-09-22-audit-history.md)：归档对话和旧验证；不作为当前执行清单。
+- [依赖核验](audit/dependency-audit.md)：当前依赖选择、版本升级阻塞和审计边界。
 - [style follow-up](audit/2026-06-10-style-organization-followup.md)：已完成切片的历史追踪。
 
 动态进度只在审计进度维护，交付物状态只在 Roadmap 维护；当前设计维护契约与实现边界。

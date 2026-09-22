@@ -61,7 +61,7 @@ flowchart TB
 
 | 命令/步骤 | 运行位置 | 需要硬件/外部服务 | 超时 | 说明 |
 |-----------|----------|--------------------|------|------|
-| TODO | TODO：Dev Container / CI | TODO | TODO | TODO |
+| TODO | TODO：本地 / 可选容器 / CI | TODO | TODO | TODO |
 
 ## 关联文档
 

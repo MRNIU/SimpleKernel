@@ -2,21 +2,11 @@
 #
 <type>(<scope>): <subject>
 
-# type: feat|fix|refactor|perf|test|docs|build|ci|chore|style|revert
-# scope: optional English identifier, for example memory, sync, arch_primitives,
-# scope: platform_fdt, xtask, docs, ci
-# subject: 中文优先，保留必要英文术语，不加句号，尽量不超过 72 个字符
-# breaking change: add ! before :, for example <type>(<scope>)!: <subject>
-#
-# body: trivial or mechanical changes may omit the body
-# body: substantive changes should explain:
-# body: - why this change is needed
-# body: - what repository-visible behavior, API, docs, or tests changed
-# body: - risk, compatibility, or rollback notes when relevant
-# body: - validation that was actually run
-#
-# footer: add issue refs or BREAKING CHANGE only when applicable
-# BREAKING CHANGE: describe migration when needed
-# Signed-off-by is required; use git commit -s or git commit --signoff
-# Do not include local-only host paths, scratch paths, private workflow notes, or
-# ad hoc container names. Prefer repository-visible commands and evidence.
+# 类型：feat|fix|refactor|perf|test|docs|build|ci|chore|style|revert
+# 范围：可选，使用英文标识符，例如 docs、devcontainer
+# 主题：用中文说明具体变化，保留必要术语，不加句号，尽量不超过 72 个字符
+# 正文：细小或机械变更可省略；实质变更说明原因、变化、风险/兼容性及实际验证
+# 破坏性变更：冒号前必须加 !；在正文或 BREAKING CHANGE 页脚中说明影响、部署及迁移要求
+# 脚注：按需关联议题或 PR
+# 签署：使用 git commit -s 添加 Signed-off-by
+# Codex 参与时添加：Co-authored-by: OpenAI Codex <codex@openai.com>

@@ -82,5 +82,5 @@ proc-macro crate 编译为宿主机动态库（不是目标架构的静态库）
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- 宏展开逻辑变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p macros -- -D warnings`。
-- `#[cpu_local]` 输出或语义变化时，同时检查消费者：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p per_cpu -- -D warnings`。
+- 宏展开逻辑变更：`cargo clippy -p macros -- -D warnings`。
+- `#[cpu_local]` 输出或语义变化时，同时检查消费者：`cargo clippy -p per_cpu --target riscv64gc-unknown-none-elf -- -D warnings`。

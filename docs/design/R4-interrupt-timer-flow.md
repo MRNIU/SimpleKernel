@@ -104,8 +104,7 @@ handler 晚到时，公共 `timer::next_absolute_deadline()` 会把下一次硬�
 
 ## 验证
 
-以下验证命令为 `simplekernel-devcontainer` 容器内语境；宿主机侧执行时使用
-`docker exec -w /workspace simplekernel-devcontainer ...`。
+以下命令在所选本地或容器环境的仓库根执行；依赖准备见 [贡献指南](../../CONTRIBUTING.md#环境与命令)。
 
 - `cargo xtask test --arch riscv64 --name arch-test --timeout 30`
   - 覆盖 absolute deadline 推进契约、IRQ-exit 抢占请求只消费一次、RISC-V 浮点运算和 `fs0` 跨任务保存。

@@ -92,8 +92,7 @@ SimpleKernel 的 R4 架构层只提供启动、console、timer、interrupt、IPI
 
 ## 最小验证
 
-以下验证命令为 `simplekernel-devcontainer` 容器内语境；宿主机侧执行时使用
-`docker exec -w /workspace simplekernel-devcontainer ...`。
+以下命令在所选本地或容器环境的仓库根执行；依赖准备见 [贡献指南](../../CONTRIBUTING.md#环境与命令)。
 
 新增架构进入 R4 可用状态前，至少需要：
 

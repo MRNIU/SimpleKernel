@@ -79,8 +79,9 @@ pub mod lock_level {
 | 堆分配器、帧分配器 | `SpinLockIrq` | 缺页等异常路径可能嵌套获取 |
 | 调试/诊断用途（如 log buffer） | `SpinLockIrq::new_unordered()` | 不参与锁序检查，避免干扰 |
 
-判断标准：**如果不确定，用 `SpinLockIrq`**——它更保守但永远正确。
-`SpinLock` 是优化选项，前提是能证明中断 handler 不会获取同一把锁。
+选择前追踪调用上下文与嵌套锁序；`SpinLockIrq` 只处理本核 IRQ 重入，仍须满足锁序、
+guard 生命周期和跨核前进条件。它不使堆/帧分配变得 hard IRQ 安全，约束见所属 allocator。
+使用 `SpinLock` 的前提是能证明中断 handler 不会获取同一把锁。
 
 ## `.with()` 闭包 API
 
@@ -187,5 +188,5 @@ let _guard = other_lock.try_lock_nested(&held)?;
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- 锁 API、锁级别或中断感知语义变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p sync -- -D warnings`。
-- 锁行为、panic 路径或 lockstack 变化：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name sync-test/spinlock --timeout 30`，并按影响面补跑其他 sync tests。
+- 锁 API、锁级别或中断感知语义变更：`cargo clippy -p sync --target riscv64gc-unknown-none-elf -- -D warnings`。
+- 锁行为、panic 路径或 lockstack 变化：`cargo xtask test --arch riscv64 --name sync-test/spinlock --timeout 30`，并按影响面补跑其他 sync tests。

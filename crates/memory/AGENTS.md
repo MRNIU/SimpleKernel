@@ -150,8 +150,11 @@ let id: u32 = region.read_reg(0x0); // volatile 读寄存器。
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- 初始化、MMIO 或策略层 API 变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p memory -- -D warnings`。
-- FDT reserved-memory、double init、MMIO 或内存布局行为变更：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name memory-test --timeout 30`。
+- 初始化、MMIO 或策略层 API 变更：`cargo clippy -p memory --target riscv64gc-unknown-none-elf -- -D warnings`。
+- FDT reserved-memory 变更：`cargo xtask test --arch riscv64 --name memory-test/fdt-firmware-reserved --timeout 30`。
+
+double init 使用 `memory-test/double-init-panic`，多 RAM 使用 `memory-test/fdt-multi-memory`；
+MMIO 或布局变化按 [测试清单](../../tests/AGENTS.md) 选择能覆盖该路径的测试，不把上述 FDT 测试当成 MMIO 完整证据。
 
 ## 不要假设
 

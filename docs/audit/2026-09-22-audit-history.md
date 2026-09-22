@@ -1,6 +1,6 @@
 <!-- Copyright The SimpleKernel Contributors -->
 
-# 审计历史记录（截至 2026-06-10 的原进度快照）
+# 审计历史记录与文档治理交接
 
 > 归档日期：2026-09-22。来源：`e45053ab:docs/audit/audit-progress.md`。
 > 下文保存原有对话摘要、验证记录和完成项，日期、命令、结果均属于当时记录。
@@ -892,3 +892,28 @@ R4-08 `ArchOps::dtb_addr()` unsafe 边界、R4-10 AArch64 `TCR_EL1.IPS`、R4-15 
 - 回看《确认d2后续步骤》《审查驱动描述符探测》《梳理 SimpleKernel 当前工作》的相关对话：
   显式 root/default block 选择只是历史建议，没有作者确认的 D3 最小范围。
 - 本轮只做文档静态对账与校验，未执行构建或 QEMU；阶段交付状态以 Roadmap 为准。
+
+<a id="collaboration-round-one"></a>
+## 2026-09-22 第一轮文档对账交接（归档）
+
+来源：`f5e1f5f9:docs/audit/audit-progress.md`；当轮事实基线为 `e45053ab`，
+不是第二轮验证结果。第一轮完成当前入口、D2 契约、测试覆盖表述与 Roadmap 对账，
+迁移旧进度快照，未修改运行时实现或 ADR 状态。
+原下一步“下一轮提炼最小项目 skill”已由第二轮协作入口整理承接，不再作为待执行指令。
+
+历史记录未完整保存每次测试时 HEAD 和原始日志，保留其证据层级，不补造绑定。
+第一轮只执行文档静态验证：`git diff --check`、修改文件的本地链接/当前路径/关键符号核对，
+以及进度、Roadmap、设备设计的一致性复核。未运行 Rust 构建、Clippy、host 测试或 QEMU。
+
+第一轮静态检查结果：47 个本地链接/锚点、96 个当前路径、35 项关键符号核对通过；
+4 个明确的新测试示例/可选文档位置不计入当前路径。已删除 D2 文档无残留 Markdown 链接；
+`git diff --check` 和新增历史文件的 whitespace 检查通过。上述数量只对应第一轮修改文档。
+
+<a id="collaboration-round-two-initial"></a>
+## 第二轮协作入口：依赖刷新前的验证快照
+
+2026-09-22，基线 `f5e1f5f` 加当时未提交文档 diff：`git diff --check`、145 个本地链接/锚点、
+20 条 xtask 示例和 32 个测试名静态核验通过；skill 格式校验及 Codex `skills/list` 的 repo 发现通过。
+三个假想任务走查未扩大到全量审计或 QEMU。当时尚未执行项目 Rust 构建/测试。
+随后作者要求本地与容器可自由选择、删除 EditorConfig/issue 模板并刷新依赖；
+先前容器限定规则与“本轮不改 CI”范围已被新要求替代。后续实测见当前审计进度。

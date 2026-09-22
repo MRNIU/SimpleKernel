@@ -23,7 +23,7 @@ jobs:
     container:
       image: ghcr.io/simple-xx/simplekernel-devcontainer:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 1
 
@@ -48,7 +48,7 @@ jobs:
         run: echo '<meta http-equiv="refresh" content="0;url=simplekernel/">' > docs-out/index.html
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: docs-out
 
@@ -61,4 +61,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5.0.1

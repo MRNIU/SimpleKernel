@@ -2,7 +2,7 @@
 
 //! 文件描述符表——每任务独立的文件句柄管理。
 //!
-//! 每个任务（[`TaskControlBlock`]）持有自己的 `FileDescriptorTable`，
+//! 每个任务（[`TaskControlBlock`](crate::task::tcb::TaskControlBlock)）持有自己的 `FileDescriptorTable`，
 //! 管理打开文件的引用。使用 `Arc` 实现文件引用共享（如 dup/fork）。
 //!
 //! 设计参考：

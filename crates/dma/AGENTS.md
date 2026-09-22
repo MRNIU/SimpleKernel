@@ -55,8 +55,8 @@ DMA capability。
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- wrapper 或 raw 后端变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p dma -- -D warnings`。
-- 影响 VirtIO block I/O 时：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name device-test --timeout 30`。
+- wrapper 或 raw 后端变更：`cargo clippy -p dma --target riscv64gc-unknown-none-elf -- -D warnings`。
+- 影响 VirtIO block I/O 时：`cargo xtask test --arch riscv64 --name device-test --timeout 30`。
 
 ## 不要假设
 

@@ -34,8 +34,8 @@ tlb (本 crate)
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- flush guard、threshold 或 shootdown callback 变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p tlb -- -D warnings`。
-- 跨核 shootdown 或权限更新可见性变化：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`，并按影响面补跑 `paging-test/tlb-remote-access`。
+- flush guard、threshold 或 shootdown callback 变更：`cargo clippy -p tlb --target riscv64gc-unknown-none-elf -- -D warnings`。
+- 跨核 shootdown 或权限更新可见性变化：`cargo xtask test --arch riscv64 --name paging-test/tlb-shootdown --timeout 30`，并按影响面补跑 `paging-test/tlb-remote-access`。
 
 ## 不要假设
 

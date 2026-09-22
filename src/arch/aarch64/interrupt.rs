@@ -222,7 +222,12 @@ unsafe fn create_gic<'a>() -> GicV3<'a> {
                 addrs.gicr_base, addrs.gicr_size
             )
         });
-        GicV3::new(gicd, gicr, cpu_count, false)
+        GicV3::new(gicd, gicr, cpu_count).unwrap_or_else(|error| {
+            panic!(
+                "GIC: 创建 GICv3 失败: gicd={:#x}, gicr={:#x}, cpu_count={cpu_count}, current_cpu={cpu_id}, error={error:?}",
+                addrs.gicd_base, addrs.gicr_base
+            )
+        })
     }
 }
 

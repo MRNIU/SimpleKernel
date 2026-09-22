@@ -54,8 +54,8 @@ OOM 发生在 boot 时不应出现、映射冲突是调用方逻辑错误、
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- 页表 walk、映射或权限覆盖变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p paging -- -D warnings`。
-- 映射、冲突、权限覆盖或 TLB guard 行为变更：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name paging-test/basic --timeout 30`，并按影响面补跑其他 paging tests。
+- 页表 walk、映射或权限覆盖变更：`cargo clippy -p paging --target riscv64gc-unknown-none-elf -- -D warnings`。
+- 映射、冲突、权限覆盖或 TLB guard 行为变更：`cargo xtask test --arch riscv64 --name paging-test/basic --timeout 30`，并按影响面补跑其他 paging tests。
 
 ## 不要假设
 

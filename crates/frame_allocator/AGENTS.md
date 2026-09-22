@@ -149,5 +149,5 @@ buddy allocator 内部使用 `BTreeSet`（堆分配），因此依赖堆可用�
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- 分配器 API 或 RAII 生命周期变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p frame_allocator -- -D warnings`。
-- 分配、释放、保留区或中断上下文行为变更：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30`，并按影响面补跑 panic 类 frame tests。
+- 分配器 API 或 RAII 生命周期变更：`cargo clippy -p frame_allocator --target riscv64gc-unknown-none-elf -- -D warnings`。
+- 分配、释放、保留区或中断上下文行为变更：`cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30`，并按影响面补跑 panic 类 frame tests。

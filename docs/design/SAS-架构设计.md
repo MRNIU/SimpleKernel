@@ -139,8 +139,7 @@ boot 路径中的初始化函数（`task::init()`、`memory::init()`）不经过
 
 验证标准：迁移后内核行为与迁移前完全一致。
 
-以下验证命令为 `simplekernel-devcontainer` 容器内语境；宿主机侧执行时使用
-`docker exec -w /workspace simplekernel-devcontainer ...`。
+以下命令在所选本地或容器环境的仓库根执行；依赖准备见 [贡献指南](../../CONTRIBUTING.md#环境与命令)。
 
 | 验证项 | 方式 |
 |--------|------|

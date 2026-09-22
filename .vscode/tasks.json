@@ -35,7 +35,9 @@
                 "xtask",
                 "run",
                 "--arch",
-                "riscv64"
+                "riscv64",
+                "--timeout",
+                "30"
             ],
             "group": {
                 "kind": "build",
@@ -112,7 +114,9 @@
                 "xtask",
                 "run",
                 "--arch",
-                "aarch64"
+                "aarch64",
+                "--timeout",
+                "30"
             ],
             "group": {
                 "kind": "build",

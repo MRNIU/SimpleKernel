@@ -1,60 +1,48 @@
 <!-- Copyright The SimpleKernel Contributors -->
 
-# 依赖审计
+# 依赖核验
 
-> **生成日期**：2026-04-03
-> **分支**：`feat/rust-SAS`（commit: aff99bdd8）
+> 核验日期：2026-09-22；基线 `f5e1f5f` 加本轮未提交工作区。
+> 本文记录依赖选择与升级限制；精确版本以 `Cargo.toml`、`Cargo.lock`、`rust-toolchain.toml`
+> 及工具配置为准。旧 2026-04-03 统计已被本次实测替代，不作为当前验证证据。
 
-## 总览
+## 更新范围
 
-| 指标 | 数量 |
-|------|------|
-| Workspace crate | 18 |
-| 外部依赖（含传递） | 65 |
-| Cargo.lock 总包数 | 88 |
-| Git 依赖（非 registry） | 2 |
+- Rust 更新为 `nightly-2026-09-22`；Cargo registry 依赖按 crates.io 当前非撤回版本更新。
+  `fdt` 已使用预发布接口，本轮从 alpha1 更新到 alpha2；`xshell` 使用最新正式版而非新预发布版。
+- 移除源码与所有成员 manifest 均无消费者的 `bitfield-struct`、`gdbstub`、`hashbrown`、
+  `intrusive-collections`、`qemu-exit`、`smoltcp` 六个预留依赖。不表示网络或内嵌 GDB 已实现。
+- `arm-gic 0.9.1` 自动识别 redistributor frame 布局；现有构造点适配 `Result`，失败保留
+  GIC 地址、CPU 数量和原始错误并 panic，不静默回退。
+- GitHub Actions、pre-commit 与开发镜像工具版本同步升级。clap 显式启用 help/usage/error-context，
+  修复原配置禁用默认功能导致 `cargo xtask --help` 不可用的问题。
+- 固件 submodule 保持本轮开始时的 gitlink，不升级固件版本。
 
-## Git 依赖
+| 实际统计 | 修改前 | 修改后 |
+|----------|--------|--------|
+| workspace members | 32 | 32 |
+| 根 workspace 外部依赖声明 | 28 | 22 |
+| Cargo.lock 包数 | 110 | 103 |
+| lockfile 外部包数（含多版本与传递依赖） | 78 | 71 |
+| Git 来源包数 | 2 | 2 |
 
-| 依赖 | 版本 | 来源 | 状态 | 计划 |
-|------|------|------|------|------|
-| `aarch64-cpu` | 11.2.0 | `github.com/MRNIU/aarch64-cpu` branch `feat/add-tlbi-instructions` | Fork，等待上游 PR `rust-embedded/aarch64-cpu#77` | 上游合入后切回 crates.io |
-| `fatfs` | 0.4.0 | `github.com/rafalh/rust-fatfs` | 无 crates.io 发布 | 更新到最新 commit，继续使用 |
+## 保留项与升级阻塞
 
-## 值得关注的版本
+| 依赖 | 本轮选择 | 原因与后续触发条件 |
+|------|----------|--------------------|
+| `dma-api` | `0.7.3`，保持 0.7 兼容线 | 最新 `0.10.2` 删除 `DmaHandle`/`DBox` 等接口，重做 `DmaOp` 的连续分配、流式映射和释放契约。已实际编译确认不兼容；按作者决定留待单独迁移，需覆盖现有所有权、释放失败、错误映射与 DMA 验证。 |
+| `aarch64-cpu` | 11.2.0 fork，lockfile 固定 revision | 当前 crates.io 11.2.0 源码仍缺项目所需 `DAIFSet`/`DAIFClr` 和 `asm::tlbi`；未用正式版替换 fork。上游具备对应接口后再迁移。 |
+| `fatfs` | Git 0.4.0，更新到 `2aefc2a0` | crates.io 最新正式版 0.3.6 不对应当前 no_std/alloc 接口，保留现有来源。 |
+| 传递依赖旧 major | 由消费者约束 | 包括 DMA 引入的旧 `aarch64-cpu`/`tock-registers`、其他过程宏使用的 syn 2；不通过 patch 强制替换不兼容版本。 |
 
-| 依赖 | 版本 | 备注 | 行动 |
-|------|------|------|------|
-| `fdt` package（workspace alias: `fdt_parser`） | `0.2.0-alpha1` | Alpha 版本，API 可能不稳定；由本地 `platform_fdt` 封装 | 暂不替换，R6 设备审查时重新评估 |
-| `sbi-rt` | `0.0.3` | 0.x 系列 | 关注上游 breaking changes |
-| `spin` | `0.10` | 仅用 `Once<T>` | 稳定，无需变更 |
+## 验证与证据边界
 
-## 许可证分布
+`cargo deny 0.20.2 check` 返回成功：advisories、bans、licenses、sources 均通过。
+仍有配置允许的多版本和 path 依赖通配符告警；不将它描述为零告警。
+Git workspace 依赖补充包版本约束后，不再出现该工具的 `unresolved-workspace-dependency` 诊断。
+`deny.toml` 中已有 `paste` 不再维护告警例外继续保留，不新增 advisory 豁免。
 
-| 许可证 | crate 数量 | 兼容性 |
-|--------|-----------|--------|
-| MIT OR Apache-2.0 | 42 | ✅ |
-| MIT/Apache-2.0 | 6 | ✅ |
-| MIT | 6 | ✅ |
-| 0BSD | 2 | ✅ |
-| BSD-3-Clause OR MIT OR Apache-2.0 | 2 | ✅ |
-| MulanPSL-2.0 OR MIT | 2 | ✅（木兰宽松许可证） |
-| BSD-2-Clause OR Apache-2.0 OR MIT | 2 | ✅ |
-| Unlicense OR MIT | 1 | ✅ |
-| MPL-2.0 | 1（`fdt` package，workspace alias: `fdt_parser`） | ⚠️ file-level copyleft，与 MIT 兼容 |
-| (MIT OR Apache-2.0) AND Unicode-3.0 | 1 | ✅ |
-
-**结论**：所有依赖许可证均与项目 MIT 许可证兼容。`fdt` package 的 MPL-2.0 是 file-level copyleft，
-不影响项目整体许可；仓库内通过 `platform_fdt` 封装该依赖。
-
-## Workspace 内部依赖关系
-
-详见 `docs/diagrams/crate-dependency-graph.md`。
-
-## `deny.toml` 配置
-
-已创建 `deny.toml`，包含：
-- `[licenses]`：上述所有许可证的 allowlist
-- `[bans]`：多版本警告、禁止通配符版本
-- `[advisories]`：CVE 扫描（阻断）、不维护警告、已撤回阻断
-- `[sources]`：仅允许 crates.io + 两个已知 git 源
+本轮构建、测试及环境限制统一见 [审计进度](audit-progress.md#第二轮验证与工具限制2026-09-22)。
+上游版本核验使用 [Rust nightly manifest](https://static.rust-lang.org/dist/channel-rust-nightly.toml)、
+[crates.io](https://crates.io/)、各 Actions 仓库 release、[PyPI](https://pypi.org/project/pre-commit/)、
+[Node 发布索引](https://nodejs.org/dist/index.json) 和 npm registry；这些“最新”结论只对应核验日期。

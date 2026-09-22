@@ -2,338 +2,74 @@
 
 # AGENTS.md — SimpleKernel
 
-## OVERVIEW
-Interface-driven OS kernel for AI-assisted learning. Rust (`no_std`, `no_main`), freestanding, nightly toolchain. Two architectures: riscv64, aarch64. Traits define contracts (doc comments with `# Safety`/`# Errors`/`# Panics`), AI generates `impl` blocks, tests verify compliance.
+## 项目与任务边界
 
-> **架构模型**：SimpleKernel 采用单地址空间（SAS）架构——所有代码运行在同一特权级和地址空间中，不存在用户态/内核态分离。隔离目标依赖 Rust 类型系统 + crate 可见性规则（Theseus 式）；当前公共可见性尚未全面收窄，见下方 NOTES。详见 `docs/design/SAS-架构设计.md`。
+SimpleKernel 是接口驱动的 Rust `no_std` / `no_main` 学习内核，使用 nightly、edition 2024，
+支持 riscv64 与 aarch64。trait 文档是契约，先理解契约再修改实现。
 
-## STRUCTURE
-```
-src/                  # Kernel source — lib.rs (modules) + main.rs (entry)
-src/arch/             # Per-architecture code (riscv64/, aarch64/)
-src/boot.rs           # kernel_init() — staged init for kernel & test binaries
-crates/               # Workspace crates (memory, sync, per_cpu, paging, ...)
-xtask/                # Build tool (cargo xtask run/build/debug/test/firmware)
-tests/                # Standalone QEMU test binaries (each runs in isolated QEMU instance)
-docs/design/         # Design docs (SAS architecture, subsystem designs, phase plans)
-3rd/                  # Git submodules (opensbi, u-boot, optee, atf, dtc — firmware only)
-```
+- 采用单地址空间 SAS：所有代码在同一特权级和地址空间，syscall 是直接函数调用。
+  Rust 类型系统与 crate 可见性是隔离手段；APP 只能经 syscall 访问内核是目标，尚未全面实现。
+  当前边界见 [SAS 设计](docs/design/SAS-架构设计.md) 和 `src/lib.rs` 的实际公开面。
+- 先确认任务范围、branch、HEAD、index、工作区及目标目录的局部 `AGENTS.md`，保留无关改动。
+  只读审查先交付发现；实现、提交、push 分别遵循用户授权，不从历史记录继承一次性授权。
+- 代码是实现真值；当前设计解释边界，ADR 解释决策。历史阶段文档、旧测试通过和文件存在
+  都不能证明当前验证通过、ADR 已接受或审计阶段关闭。
+- 用中文说明结果。遇到影响理解的 Rust 特有概念，简要用 C/C++ 类比，并说明所有权、
+  生命周期或静态约束的差异，不假设作者已熟悉 typestate、GAT、`PhantomData` 等。
 
-## WHERE TO LOOK
-- **Implementing a module** → Read trait definition in the module's `mod.rs` or dedicated trait file first
-- **Adding a driver** → 先读 `crates/device_core/src/descriptor.rs` 的 `DriverDescriptor` / probe 契约，再看 `src/device/platform_bus.rs` 与 `src/device/virtio/` 的集成示例
-- **Adding a scheduler** → `src/task/scheduler/mod.rs` for `Scheduler` trait
-- **Boot flow** → `src/main.rs` 的 `_start` → `bootstrap()` → `src/boot.rs::kernel_init(Full)`：logging → percpu → early_init → memory/分页 → task → timer → interrupt/TLB 回调注册 → device → fs → SMP online barrier；返回后启动冒烟线程并 schedule
-- **帧生命周期** → `crates/frame_allocator/`: `AllocatedFrames` RAII 所有权（Drop 归还 buddy）；内核段通过 `mem::forget` 永久持有（ADR-013）
-- **权限覆盖** → `PageTable::update_range_flags(va, count, flags)` — 已映射区间逐页权限覆盖 + TLB 刷新；跨页更新不是原子的
-- **System tests** → `tests/` for isolated QEMU tests, each binary in its own QEMU instance
-- **Error handling** → subsystem errors live in nearest `error.rs`; convert explicitly at syscall/ABI boundaries
-- **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
-- **Design overview** → `docs/design/00-概述.md` (master plan — written pre-implementation, may be outdated; code is source of truth)
-- **Phase details** → `docs/design/` 中 P6/P7 等历史设计只作背景，不作为 R0–R8 审计关闭证据；当前状态见 `docs/audit/audit-progress.md`
+## 规则与操作入口
 
-## DOCUMENT ROUTING
+同一规则只保留一个详细维护位置；本文件保留项目级边界和路由，局部不变量留在所属目录。
 
-- 根 `README.md` 只保留面向普通读者的项目介绍、快速开始、构建/测试入口、项目结构和贡献入口。
-- 目录级规则、协作约定、修改 checklist、验证入口、局部职责边界和不要假设的事项，统一写入最近的 `AGENTS.md`。
-- `docs/AGENTS.md` 是文档目录索引和文档类型路由；`docs/conventions.md` 记录长期工程约定。
-- `docs/adr/AGENTS.md`、`docs/rfcs/AGENTS.md`、`docs/specs/AGENTS.md`、`docs/plans/AGENTS.md` 和 `docs/templates/AGENTS.md` 分别管理对应文档类型。
-- `tests/AGENTS.md`、`xtask/AGENTS.md` 和 crate-local `AGENTS.md` 是各目录的局部运行手册。
-- 新增目录级 README 默认不允许。确实需要新增时，必须确认它是面向仓库外普通读者的入口，并说明为什么不能放入最近的 `AGENTS.md`、设计文档、ADR/RFC、Spec 或 Plan。
-- README 与 `AGENTS.md` 冲突时，以 `AGENTS.md` 为准，并在同一变更中修正冲突。
+| 需要了解 | 详细入口 |
+|----------|----------|
+| 项目定位、快速开始、能力边界 | [README](README.md)；[英文入口](README_ENG.md) |
+| 开发、按范围验证、提交和 PR | [CONTRIBUTING](CONTRIBUTING.md) |
+| 可选容器配置、挂载与产物路径 | [.devcontainer/AGENTS.md](.devcontainer/AGENTS.md)；用户搭建说明见 [docs/docker.md](docs/docker.md) |
+| Rust、错误、unsafe、文件组织、注释等工程规则 | [docs/conventions.md](docs/conventions.md) |
+| commit 格式、正文、footer、DCO | [.gitmessage](.gitmessage)；每条提交必须 `git commit --signoff` |
+| 构建、运行、调试、参数、QEMU 超时与失败清理 | [xtask/AGENTS.md](xtask/AGENTS.md) |
+| 独立测试、sentinel、测试清单及新增方式 | [tests/AGENTS.md](tests/AGENTS.md) |
+| crate 职责、依赖与局部验证 | [crates/AGENTS.md](crates/AGENTS.md)，再读目标 crate 的 `AGENTS.md` |
+| 文档类型、当前设计、ADR/RFC/Spec/Plan 模板路由 | [docs/AGENTS.md](docs/AGENTS.md) |
+| 按任务组织开发操作 | 唯一项目 skill：[simplekernel-dev](.agents/skills/simplekernel-dev/SKILL.md) |
 
-## CODE MAP
-| Module | Purpose | Key Files |
-|--------|---------|-----------|
-| `src/main.rs` | `#![no_std]` `#![no_main]` entry, `_start` | main entry point |
-| `src/arch/` | Arch-agnostic dispatch via `cfg` | `mod.rs` + `{riscv64,aarch64}/` |
-| `src/arch/mod.rs`、`src/arch/{riscv64,aarch64}/mod.rs` | `ArchOps` 契约与实现分发 | 启动入口在各架构 `boot.rs`；AArch64 另有 `init.rs` |
-| `src/arch/{arch}/console.rs` | Early console (SBI / PL011) | UART output |
-| `src/arch/{arch}/interrupt.rs` | PLIC/GIC + trap dispatch | interrupt handling |
-| `src/arch/{arch}/timer.rs` | Timer init + tick handler | timer subsystem |
-| `src/arch/{arch}/context.rs` | TrapContext, CalleeSavedContext | `#[repr(C)]` structs |
-| `src/panic.rs`、`src/elf.rs` | 栈回溯、符号解析和 panic observer | debug support |
-| `crates/memory/` | 内存子系统策略层（初始化 + MMIO 类型化入口） | `init`, `init_smp`, `MmioRegion` |
-| `src/task/` | TaskTable, TCB, PerCpuSched 与 schedulers | CFS/FIFO/RR, clone/exit/wait/sleep/signal |
-| `src/task/scheduler/` | `Scheduler` trait + implementations | scheduling algorithms |
-| `src/device/`、`crates/device_core/` | descriptor probe、typed capability、内核驱动集成 | `DeviceManager` 仅为内部兼容记录 |
-| `src/device/hal.rs` | `virtio-drivers::Hal` trait 实现 | DMA 分配 + MMIO 映射 |
-| `src/device/virtio.rs`、`src/device/virtio/` | VirtIO 模块入口、MMIO probe、永久块设备实例 | MmioTransport + VirtIOBlk wrapper |
-| `src/fs/` | VFS, RamFS, FatFS adapter, FD table | 文件系统层 |
-| `src/fs/vfs.rs` | `FileSystem` trait + InodeId/DirEntry/FileType | VFS 抽象 |
-| `src/fs/ramfs.rs` | 内存文件系统（BTreeMap 存储） | RamFS 实现 |
-| `src/fs/fd_table.rs` | Per-task 文件描述符表 | Fd newtype + alloc/get/close |
-| `src/fs/fatfs_adapter.rs` | 本地 `BlockDevice` 门面 → fatfs crate I/O 适配 | 扇区对齐 read-modify-write |
-| `src/syscall/` | 类型安全的集中式 API 网关（SAS 模式，不经过 trap） | POSIX 兼容 syscall 编号 |
-| `crates/sync/src/` | `SpinLock` 禁用抢占；`SpinLockIrq` 关中断；两者检查锁序 | `mutex.rs`、`irq_safe.rs`、`raw/` |
-| `*/error.rs` | 子系统错误 enum + Result alias | error handling |
-| `src/logging.rs` | `log` crate backend + ANSI colors | kernel logging |
-| `crates/config/src/lib.rs` | Kernel constants (`MAX_CORE_COUNT`, FDT/设备容量等) | configuration |
-| `crates/per_cpu/src/lib.rs`、`src/lib.rs` | Per-CPU 数据在前者；`CORE_COUNT` 在后者 | SMP support |
-| `crates/platform_fdt/` | 平台描述层（kernel-owned DTB + FDT 查询） | hardware discovery |
-| `src/elf.rs` | ELF symbol table parser | backtrace support |
-| `src/panic.rs` | Panic handler + observer pattern | error recovery |
-| `src/lang_items.rs` | `#[panic_handler]` (gated on `lang_items` feature) | Rust runtime |
-| `src/boot.rs` | `kernel_init(InitLevel)` + `kernel_init_smp()` | staged init for kernel & tests |
-| `tests/test_harness/` | `test_main!` 宏（启动 + 测试 + 退出 QEMU） | test infrastructure |
-| `tests/*/` | 独立 QEMU 测试二进制 | standalone tests |
-| `xtask/src/test.rs` | `cargo xtask test` orchestration | test runner |
+开发环境由开发者选择，本地与容器使用相同工具链和 xtask 入口。环境准备见
+[贡献指南](CONTRIBUTING.md#环境与命令)；Docker / Dev Container 均为可选项。
+根 README 面向普通读者；局部协作说明不新建 README，规则见文档路由与工程约定。
+README 与适用 AGENTS 冲突时以 AGENTS 为准，并在同一变更中修正冲突。
 
-## CONVENTIONS
+## 关键不变量
 
-> Full project conventions: `docs/conventions.md`; legacy phase design conventions: `docs/design/00-概述.md` §9
+- 保持资源唯一所有权和 RAII 释放顺序。`AllocatedFrames` 的 Drop 归还 buddy；永久持有
+  必须明确表达。帧生命周期、页表权限、MMIO、DMA 各归所属 crate，不互相替代。
+- 内核互斥使用项目 `sync` crate。锁选择、中断与抢占 guard、锁序及跨核约束见
+  [sync 局部规则](crates/sync/AGENTS.md)；不能以 host stub 验证代替裸机并发证据。
+- 中断上下文禁止堆分配/释放；涉及 `Send`/`Sync`、原子顺序、per-CPU 访问、unsafe 或
+  TLB 时必须检查真实调用上下文，不能以“编译通过”代替安全证明。
+- 内核不变量违反必须 fail-fast；预期资源/设备失败向上返回所属子系统错误。
+  完整错误与输入校验规则见工程约定，不能通过静默 fallback 掩盖非法平台输入。
+- 当前 DMA 后端只承诺 QEMU VirtIO identity mapping，不宣称真机 non-coherent DMA 保证。
 
-### Environment
-- **容器优先**：凡是能在 Dev Container / Docker 中完成的构建、检查、`pre-commit`、固件构建、QEMU 运行和系统测试，都应在容器内执行，不要为本项目修改宿主机工具链。
-- **宿主机边界**：宿主机只负责 Docker 或兼容容器运行时、Git、编辑器/AI agent 和已有 Dev Container 入口工具；不要在宿主机安装 Rust nightly、交叉编译器、QEMU、固件构建依赖或其他项目开发依赖来绕过容器。
-- **命令入口**：宿主机通过 Dev Container CLI 或手动 fallback 启动固定名常驻容器 `simplekernel-devcontainer`。项目命令优先使用 `docker exec -w /workspace simplekernel-devcontainer <command>`；`devcontainer exec --workspace-folder . <command>` 仅作为临时交互入口。
-- **CI 工具链一致性**：CI、Dev Container 和本地容器应使用 `.devcontainer/Dockerfile` 声明的工具链。不要在 workflow 中临时安装 Rust、cargo 子命令、QEMU 或交叉工具链来补齐缺失环境；发现镜像缺工具时，先修复 Dockerfile 或重建开发镜像。
-- **例外**：只有正在修复容器自身配置、文档/Git 等入口操作，或任务明确要求无需项目工具链的本地操作时，才考虑宿主机执行；说明原因并保持宿主/容器步骤边界清晰。
+## 代码导航
 
-### Git
-- **详细模板**：提交格式、正文、footer、DCO 和发布卫生规则以 `.gitmessage` 为唯一详细真值面。
-- **Sign-off 必须**：每条 commit 必须使用 `git commit --signoff`（DCO 签署），**不可省略**
-- **DCO 门禁**：PR CI 会检查每个 commit 是否包含 `Signed-off-by` trailer。
-- **入口边界**：本文件、`README.md` 和 `CONTRIBUTING.md` 只保留最小提醒并指向 `.gitmessage`，不要复制详细规则。
-- **Subagent 派发时**：给 subagent 的 commit 指令中也必须包含 `--signoff`
+| 任务 | 入口 |
+|------|------|
+| 启动与 SMP | `src/main.rs` → `src/boot.rs`；架构入口在 `src/arch/{riscv64,aarch64}/boot.rs` |
+| 架构契约、interrupt、timer、context | `src/arch/mod.rs` 的 `ArchOps` 与各架构目录 |
+| 内存策略 / 帧 / 页表 / MMIO / DMA | `crates/memory/` 及 [crate 职责表](crates/AGENTS.md) |
+| 调度与任务 | `src/task/`；`src/task/scheduler/mod.rs` 的 `Scheduler` |
+| 驱动 probe 与 capability | `crates/device_core/src/descriptor.rs` → `src/device/platform_bus.rs` → `src/device/virtio/` |
+| VFS 与文件描述符 | `src/fs/vfs.rs`、`src/fs/fd_table.rs`；边界转换在 `src/syscall/` |
+| 日志与 panic | `src/logging.rs`、`src/panic.rs`、`src/elf.rs` |
 
-### Repository Hygiene
-- **Copyright**：仓库自有源码、脚本、CI 配置、重要项目配置和长期维护文档，新增时应带 `Copyright The SimpleKernel Contributors` 文件头；严格 JSON 或不支持注释的文件不强行加入文件头。
-- **Rust 文件说明**：仓库自有 Rust 源文件版权头后必须用 `//!` 写文件或模块职责说明，再写 `#![...]`、`use` 和代码。
-- **机器可读格式**：`.json` 文件保持严格 JSON，不写注释、不留尾随逗号；需要说明时写在相邻文档。
-- **文件规模**：手写源码超过 300 行时 review 应检查职责边界；原则上不超过 500 行，超过时 PR 需说明暂不拆分理由或拆分计划。
-- **错误定义**：所有项目自有错误类型都应能向上层暴露，让调用方决定处理、降级或转换；错误 enum 和对应 Result alias 统一放在所属 crate 或子系统最近的 `error.rs`，并由模块根按需 re-export。不要新增只服务单个小模块的私有错误定义。
-- **测试文件**：系统/QEMU 测试保持 `tests/*/src/*.rs` 独立二进制；crate 级 host 测试放在与 `src/` 同级的 `crates/<crate>/tests/`；模块内部私有白盒测试直接内联在实现文件的 `#[cfg(test)] mod tests` 中。
-- **运行时配置**：FDT、MMIO、timer 频率、core count、QEMU 参数、固件路径和硬件拓扑等运行时/platform 输入必须显式校验；缺失或非法输入应 fail fast，不用 `Default`、`unwrap_or(...)` 等隐式 fallback 掩盖。
-- **目录级文档**：可由局部 `AGENTS.md` 承载的目录说明、模块协作规则、工具运行手册和测试目录索引，不再新增 README。
+## 专项审计入口
 
-### Rust
-- **Language**: Rust nightly, `#![no_std]`, `#![no_main]`, edition 2024
-- **Naming**: `snake_case` functions/methods, `PascalCase` types/traits/enums, `SCREAMING_SNAKE_CASE` constants
-- **函数命名惯例**: 返回 `bool` 用 `is_`/`has_`/`can_` 前缀；getter 用名词不加 `get_`/`read_`（如 `len()`）；setter 用 `set_` 前缀；动作用动宾结构（动词在前，如 `flush_tlb()`、`disable_irq()`）
-- **Formatting**: rustfmt default 100 char width, enforce via `cargo fmt --all`
-- **Linting**: 内核按 CI 指定裸机 target 执行 Clippy；host 纯逻辑 crate 按局部 AGENTS 执行
-- **Doc comments**: `///` with `# Safety`, `# Errors`, `# Panics` sections for public APIs（节标题保留英文，内容用中文）
-- **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文（Rust 社区惯例），其后说明用中文
-- **注释位置**: 注释写在代码上方，不写在行尾（`// SAFETY:` 除外——紧跟 `unsafe` 块上方）
-- **注释内容**: 注释解释原因、不变量和失败后果，不重复代码表面含义；临时 TODO 必须说明触发条件、后续处理位置或关联文档。
-- **Error handling**: 可恢复错误使用所属子系统的错误类型向上传递；syscall/ABI 边界再显式映射到 ABI 错误码。不要为项目整体新增全局 Result alias，避免过早丢失错误来源和字段。内核内部不变量违反使用 `.expect("reason with data")` 或 `panic!()`，不得静默继续。
-- **Unsafe**: Every `unsafe` block MUST have `// SAFETY:` comment explaining invariants; minimize scope
-- **Singletons**: `spin::Once<T>` with `call_once()` / `get()`
-- **Sync**: 使用 `sync` crate；`SpinLock<T>` 禁用抢占且拒绝中断上下文，`SpinLockIrq<T>` 关中断，选择规则见 `crates/sync/AGENTS.md`；不要使用 `spin::Mutex` 替代
-- **Assembly**: `.S` files compiled via `cc` crate in `build.rs`; `#[repr(C)]` for ABI-compatible structs
-- **Attributes**: Rust 2024 edition syntax — `#[unsafe(no_mangle)]` (not `#[no_mangle]`)
-- **规范引用**: 涉及体系结构、硬件规范的代码，模块文档注释须附上官方文档链接并精确到章节（如 `[Arm ARM §D8.3](https://...)`）
+仅在用户要求项目深度审计或继续审计时，读取
+[Roadmap](docs/audit/review-roadmap.md) 和 [当前进度](docs/audit/audit-progress.md)，
+按 Roadmap 的协作流程、标准排查流程执行；输出结构见
+[审计 prompt](docs/audit/review-session-prompt.md)。普通局部修复、审查和文档修改不自动扩展为全阶段审计。
 
-## ANTI-PATTERNS
-
-- **NO** `.unwrap()` — use `.expect("reason with relevant data")` or `?`
-- **NO** vague panic/error messages — always include the data that caused the failure (addresses, indices, sizes, etc.)
-- **NO** `unsafe` without `// SAFETY:` comment
-- **NO** modifying trait definitions to embed implementation (traits = contracts)
-- **NO** `spin::Mutex` for kernel mutual exclusion；按上下文选择项目 `SpinLock` / `SpinLockIrq`
-- **NO** `static mut` — use `SyncUnsafeCell` or `spin::Once<T>`
-- **NO** empty `unsafe {}` blocks to bypass borrow checker
-- **NO** suppressing warnings with `#[allow(...)]` without justification——使用 `#[expect(..., reason = "...")]` 代替
-- **NO** heap allocation in interrupt context (`Box`, `Vec`, `String`, `format!`)——use `heapless` containers or stack buffers
-- **NO** ASCII-art 分隔线注释（`// ─── Title ───`、`// === Title ===` 等）——用空行和 doc comment 分组
-- **NO** `.map_err(|_| ...)` 丢弃原始错误——使用 `.map_err(|e| ...)` 保留原始错误信息（写入日志或嵌入新错误类型），便于调试
-- **NO** 文档/注释中引用本地路径（`ref/Theseus/`、`/home/...`、`~/...`）——使用上游 URL（GitHub 链接等），保证仓库内所有内容对任意 clone 通用
-
-## UNIQUE STYLES
-- `spin::Once<T>` with named statics: `CORE_COUNT.call_once(|| core_count)`, `CORE_COUNT.get().expect("CORE_COUNT 未初始化，必须先完成 early_init()")`
-- `SpinLockGuard` / `SpinLockIrqGuard` 通过 RAII 分别管理抢占 / 中断状态；详见 `crates/sync/AGENTS.md`
-- Subsystem-scoped errors and Result aliases, with explicit boundary conversion
-- Per-architecture code selected via `#[cfg(target_arch = "...")]`
-- Cargo workspace: root kernel + `crates/` 子系统 + `tests/` 独立测试 + `xtask`；成员以 `Cargo.toml` 为准
-
-## COMMANDS
-宿主机侧先启动固定名常驻 Dev Container：
-
-```bash
-devcontainer up --workspace-folder .
-```
-
-后续项目命令通过同一个常驻容器执行：
-
-```bash
-# Build kernel
-docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch riscv64
-docker exec -w /workspace simplekernel-devcontainer cargo xtask build --arch aarch64
-
-# Run in QEMU (via xtask — handles FIT image + TFTP + QEMU)
-docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch riscv64 --timeout 30
-docker exec -w /workspace simplekernel-devcontainer cargo xtask run --arch aarch64 --timeout 30
-
-# Debug (GDB on localhost:1234)
-docker exec -w /workspace simplekernel-devcontainer cargo xtask debug --arch riscv64
-
-# System tests in QEMU
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name panic-test --timeout 30
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
-
-# Format + lint check
-docker exec -w /workspace simplekernel-devcontainer cargo fmt --all -- --check
-docker exec -w /workspace simplekernel-devcontainer cargo clippy --target riscv64gc-unknown-none-elf -- -D warnings
-docker exec -w /workspace simplekernel-devcontainer cargo clippy --target aarch64-unknown-none -- -D warnings
-
-# Documentation
-docker exec -w /workspace simplekernel-devcontainer cargo doc --no-deps
-```
-
-**QEMU 超时**：QEMU 运行可能卡住或持续打印日志。`cargo xtask run` / `cargo xtask test` 默认传入 `--timeout 30`，工具侧也应设置有界等待。低性能宿主机或特殊测试可显式放宽，但须说明原因。超时后在对应开发容器内执行 `pkill -f qemu-system` 清理残留进程。
-
-## TESTING
-
-独立 QEMU 系统测试 + 冒烟测试（内核启动时自动运行）。
-
-### 独立 QEMU 系统测试（Standalone Tests）
-
-每个测试是独立的 `#![no_std]` 裸机二进制，启动独立 QEMU 实例，拥有干净的内核环境。
-
-```bash
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30
-docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
-```
-
-测试基础设施位于 `tests/test_harness/`，核心是 `test_main!` 宏：
-
-```rust
-// 普通测试
-test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_tests);
-
-// should_panic 测试（期望 panic 则通过）
-test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_panic);
-```
-
-`test_main!` 负责：`_start` 入口 → `kernel_init(level)` → 调用测试函数 → 输出成功 sentinel → `exit_qemu(0)`。
-`xtask` 以串口 sentinel 判定成功：普通测试必须输出 `TEST OK`，`should_panic` 测试必须输出
-`SHOULD_PANIC OK`；断言失败会输出失败 sentinel 并被判为测试失败。
-
-#### 添加独立测试
-
-**在已有模块包中添加（推荐）：**
-1. 在对应包的 `src/` 下创建新文件（如 `tests/paging-test/src/my_new_test.rs`）
-2. 在该包的 `Cargo.toml` 中添加 `[[bin]]` 条目，指定 `name` 和 `path`，设置 `test = false`
-3. `src/` 文件中使用 `test_harness::test_main!` 宏
-4. should_panic 测试使用 `test_main!(level, fn, should_panic)` 变体
-5. xtask 自动扫描 `[[bin]]` 条目发现新测试
-
-**创建新模块包：**
-1. 创建 `tests/my-test/`，包含 `Cargo.toml`（至少一个 `[[bin]]` 条目）和对应源文件
-2. 在根 `Cargo.toml` 的 `[workspace] members` 中添加路径
-3. xtask 自动扫描 `tests/*/Cargo.toml` 中的 `[[bin]]` 条目发现新测试
-
-### 冒烟测试（Boot Smoke Tests）
-
-内核 `boot.rs::kernel_init()` 各阶段完成后自动运行关键断言（SpinLock 基本操作、堆分配、帧分配），确保基础设施正常。这些测试在每次内核启动（包括独立测试二进制启动）时自动执行，无需手动触发。
-
-### 测试规范
-
-- 每个测试函数必须有 `///` 文档注释
-- 独立测试二进制的 `Cargo.toml` 中设置 `test = false`（不使用标准测试 harness）
-- 测试 crate 依赖 `simplekernel` lib，通过 `kernel_init()` 复用内核初始化流程
-- CI 中系统测试会重复运行多次以验证稳定性（PR: 3 次，push: 10 次），每个测试超时 120 秒
-
-## DESIGN REFERENCES
-设计和实现新模块时，应参考以下成熟内核和论文，取其精华。完整参考文献见 `docs/design/references.md`。
-
-### 参考内核
-- **[Linux](https://github.com/torvalds/linux)** — 工业级参考，尤其是调度器（CFS）、VFS、内存管理（`vm_area_struct`）、信号处理
-- **[Zephyr](https://github.com/zephyrproject-rtos/zephyr)** — 嵌入式/RTOS 视角，轻量级线程模型、设备驱动框架（device model + devicetree）、电源管理
-- **[Theseus](https://github.com/theseus-os/Theseus)** — Rust 类型系统深度利用，`MappedPages` RAII 映射管理、crate 级模块化、`#![forbid(unsafe_code)]` APP 隔离
-- **[Redox](https://github.com/redox-os/redox)** — Rust 微内核实践，scheme-based VFS、`syscall` crate 设计、reliability crate 拆分（注：SimpleKernel 不采用微内核的用户态驱动模型，仅参考其 API 设计）
-- **[Tock](https://github.com/tock/tock)** — 嵌入式 Rust 内核，`unsafe trait` capability 模式、Grant 内存模型
-- **[Asterinas](https://github.com/asterinas/asterinas)** — Framekernel 架构（framework 可 unsafe + services 纯 safe Rust），Linux ABI 兼容
-- **[rCore](https://github.com/rcore-os/rCore-Tutorial-v3)** — 清华大学 RISC-V 教学 Rust 内核，启动流程和页表实现参考
-
-### 关键论文
-- [Theseus OSDI'20](https://www.usenix.org/system/files/osdi20-boos.pdf) — intralingual OS：Rust 编译器即保护环
-- [RedLeaf OSDI'20](https://www.usenix.org/system/files/osdi20-narayanan_vikram.pdf) — 语言域隔离 + 跨域故障恢复
-- [Tock SOSP'17](https://www.cs.virginia.edu/~bjc8c/papers/levy17tock.pdf) — Rust 嵌入式内核 capability 模式
-- [SPIN SOSP'95](https://cseweb.ucsd.edu/~savage/papers/Sosp95.pdf) — 语言安全内核扩展（Modula-3），SAS 隔离的早期实践
-- [Singularity MSR'05-'07](https://www.microsoft.com/en-us/research/project/singularity/) — SIP 软件隔离进程，量化 SAS 性能优势
-- [Opal TOCS'94](https://homes.cs.washington.edu/~levy/opal.pdf) — SAS 保护模型理论基础
-- [Mungi SPE'98](https://trustworthy.systems/publications/papers/Heiser_EVRL_98.abstract) — SAS + capability 保护
-- [RustBelt POPL'18](https://people.mpi-sws.org/~dreyer/papers/rustbelt/paper.pdf) — Rust 安全模型形式化证明
-- [Asterinas Framekernel ATC'25](https://www.usenix.org/conference/atc25/presentation/peng-yuke) — 内核内特权分离，TCB 14%
-- [Rust for Linux ACSAC'24](https://mars-research.github.io/doc/2024-acsac-rfl.pdf) — Rust 消除 91% 驱动安全漏洞的量化分析
-
-## CURRENT PHASE
-> **⚠ 临时节——审计结束后清理**
->
-> 项目当前处于全项目深度审计阶段。以下内容仅在审计期间有效，审计完成后须移除。
-
-### 审计相关文件
-- **Roadmap**（全局计划、排查 checklist、协作流程）: `docs/audit/review-roadmap.md`
-- **审计进度**（当前工作、未决问题、唯一下一步和证据入口）: `docs/audit/audit-progress.md`
-- **历史记录**：从审计进度进入；历史验证、建议和切片完成不等于当前 HEAD 通过、ADR 接受或阶段关闭
-- **Session Prompt**（输出格式参考）: `docs/audit/review-session-prompt.md`
-- **ADR 目录**（架构决策记录）: `docs/adr/`
-- **ADR 模板**: `docs/templates/adr-template.md`
-- **文档目录入口**: `docs/AGENTS.md`
-
-### 审计工作流
-
-当用户发起审计任务（如"审计 R2 crates/sync/"、"继续审计"等）时，按以下流程执行：
-
-**启动阶段：**
-1. Read 整个 `docs/audit/review-roadmap.md`（定位审查范围和标准排查流程）
-2. Read `docs/audit/audit-progress.md`（获取历史上下文和当前进度）
-3. 如果用户说"继续审计"且未指定目标，从 audit-progress.md 的"下一个目标"继续
-4. Read 排查目标的所有源文件
-
-**排查阶段（按 Roadmap 中"标准排查流程"执行）：**
-1. 代码审查（trait → impl → unsafe → error handling → 全局状态 → pub 接口）
-2. Rust 范式审查（所有权 / 生命周期 / typestate / RAII / 零成本 / 错误处理）
-3. 并发安全审查（Send/Sync / 多核竞态 / 中断重入 / 锁序 / atomic ordering）
-4. 依赖与版本检查（crate 版本 / nightly 特性 / 可替代 crate 评估）
-5. 参考内核对比（Linux / Theseus / Redox / Zephyr / µFork）
-6. 接口契约审查（doc comment 完整性）
-
-**输出阶段（按 `review-session-prompt.md` 中的格式输出）：**
-- 模块概述、问题清单、依赖与版本、Crate 替代评估、参考内核对比、设计讨论点、建议的代码修改、文档产出建议
-
-**停止条件：**
-- 完成审查报告后**停下来等待用户反馈**，不要直接开始修改代码
-- 代码修改在讨论完设计问题后进行
-
-**结束阶段：**
-- 对话结束时，将以下内容写入 `docs/audit/audit-progress.md`：
-  - 更新"当前状态"（当前 Phase + 下一个目标）
-  - 保留简短交接和验证证据入口；旧摘要、旧验证移入已有历史记录并标明日期/适用基线
-  - 交付物勾选仅在 Roadmap 维护，附证据；阶段关闭另需范围覆盖、遗留处理与回归证明
-
-### 审计约束
-- 设计讨论点：列出备选方案和客观优缺点，**不要推荐某个方案**，标注 ADR 待决
-- Crate 替代：列出候选和优缺点，**不要自行替换**，需经讨论后决定
-- ADR 状态：AI 生成的 ADR 状态**必须为"提议"**，只有项目作者 review 后才可改为"已接受"
-
-## COLLABORATION STYLE
-> **⚠ 临时节——审计结束后清理**
-
-- 项目作者是 C/C++ 背景，正在学习 Rust。在编写或审阅代码时：
-  - 遇到 Rust 特有的语法、惯用法、设计模式时，主动用 C/C++ 类比解释
-  - 指出 Rust 写法与 C/C++ 的关键差异（所有权、生命周期、trait vs 虚函数、enum vs union+tag 等）
-  - 不要假设用户熟悉 Rust 高级特性（typestate、GAT、`PhantomData` 等），使用时需简要说明
-
-## NOTES
-- **SAS 当前实现**：单地址空间，无用户态/内核态分离；syscall 是直接函数调用，不经过 ecall/svc。将 syscall 收敛为 APP 唯一公共网关是架构目标，不能当作已经完成的可见性隔离。
-- **Kernel encapsulation 目标**（参考上方 Theseus/Tock/SPIN 论文）：
-  1. APP crate 必须标记 `#![forbid(unsafe_code)]` — 编译器强制禁止 unsafe，APP 无法绕过类型系统
-  2. 内核内部接口使用 `pub(crate)` — APP crate 无法访问内核内部符号
-  3. 目标是让 `src/syscall/` 成为 APP 唯一 `pub` 跨 crate 访问网关；当前尚未全面兑现
-  - 当前 `src/lib.rs` 仅将 `arch` 根模块收窄为 `pub(crate)`，仍公开 `boot`、`device`、`fs`、`task` 等模块；R7 需审计这些实际暴露面和 syscall 类型边界，不能声称 APP 的全部访问已被强制经过网关
-  - 未来如需 APP 权限分级，可引入 Tock 式 capability token（`unsafe trait` 作为编译期访问控制），当前不需要
-- **Kernel-internal error policy** (bug = panic, expected error = Result):
-  - 不变量违反、不可达路径、逻辑错误 → `panic!()` / `.expect()` — 内核 bug 必须立即暴露，fail-fast
-  - 资源耗尽（OOM）、外部设备失败 → 所属子系统 `Result<T, XxxError>` — 向上返回，由上层或 syscall 边界决定如何降级、恢复或报给 APP
-  - 判断标准：**"这不应该发生" → panic；"这可能发生" → Result**
-- **Error diagnostics**: panic/error messages and error variants MUST include the actual data that caused the failure, not just the reason. E.g., `panic!("invalid page-aligned address: {:#x}", addr)` instead of `panic!("invalid address")`. This applies to `.expect()`, `panic!()`, `log::error!()`, and new error enum variants.
-- Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
-- Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
-- Debug: use `cargo xtask debug` + GDB, QEMU logs in build output
-- Design docs: `docs/design/` 同时包含当前设计与历史方案；入口见 `docs/AGENTS.md`。实现以代码为准，运行结果以带基线的验证记录为准；发现冲突须标明。
-- 历史 P 阶段和当前 R0–R8 审计是不同维度；已有实现或阶段设计文件不能证明审计完成。
+未指定审计目标时从进度中的下一步开始。审计报告与实施分开，设计讨论点客观列出备选方案，
+不代替作者决策；ADR 状态权限见 [ADR 规则](docs/adr/AGENTS.md)。参考资料按需从
+[references](docs/design/references.md) 进入，不要求每个任务全量阅读。

@@ -2,7 +2,8 @@
 
 # 项目约定
 
-本文记录 SimpleKernel 长期协作约定。审计阶段的临时规则仍以根目录 `AGENTS.md` 的“CURRENT PHASE”部分为准；临时规则清理后，应把仍然有效的规则沉淀到本文。
+本文是 SimpleKernel 长期工程规则的详细维护位置。任务与目录路由见[根 AGENTS](../AGENTS.md)，
+专项审计流程见[Roadmap](audit/review-roadmap.md)，不将专项流程套用到每个局部任务。
 
 ## 语言与文档
 
@@ -17,7 +18,7 @@
 
 - 仓库自有的源码、脚本、CI 配置、重要项目配置和长期维护文档，新增时应带项目版权头：`Copyright The SimpleKernel Contributors`。
 - 文件头使用对应生态的注释语法：Rust 用 `//`，Shell/YAML/TOML 用 `#`；Markdown 可使用 HTML 注释；不支持注释或要求严格格式的文件不强行加入文件头。
-- 文件头顺序固定：需要 shebang 的脚本第一行写 shebang，第二行写版权头；其他文件第一行写版权头。版权头后空一行，再写文件或模块说明。
+- 文件头顺序：需要 shebang 的脚本先写 shebang；需要 YAML frontmatter 的 Markdown（如 skill、issue 模板）先保留 frontmatter。其后写版权头；其他文件第一行写版权头。版权头后空一行，再写文件或模块说明。
 - 仓库自有 Rust 源文件在版权头后必须用 `//!` 写文件或模块说明。说明至少交代本文件负责什么；非平凡模块还应说明边界、关键不变量、失败策略或规范来源。`//!` 后再写 `#![...]` crate/module attributes、`use` 和代码。
 - 严格 JSON 文件不写注释，也不为了版权头破坏 JSON 兼容性；需要说明版权、用途或格式约束时，写在相邻 AGENTS 或文档中。
 - 第三方代码、vendor copy、submodule、许可证正文和生成文件保留其上游或生成器声明，不改写为 SimpleKernel 版权头。
@@ -33,6 +34,24 @@
 - 涉及体系结构、硬件规范或固件接口的模块文档，应链接官方文档并精确到章节；不要引用本地路径、个人笔记或未提交资料。
 - 不使用 ASCII-art 分隔线注释；用空行、模块文档和小节标题组织代码。
 - 临时 TODO 注释必须说明触发条件、后续处理位置或关联文档；不留下无上下文的 `TODO`。
+
+## Rust 实现规则
+
+- Rust nightly、edition 2024；内核为 `no_std` / `no_main`，工具链版本以
+  `rust-toolchain.toml` 为准。格式使用默认 rustfmt（100 字符宽度）。
+- 函数/模块用 `snake_case`，类型/trait/enum 用 `PascalCase`，常量用 `SCREAMING_SNAKE_CASE`。
+  bool 查询用 `is_`/`has_`/`can_`，getter 用名词，setter 用 `set_`，动作用动宾结构。
+- trait 保持契约职责，不为单个实现嵌入实现细节。公共 API 按适用情况写 `# Safety`、
+  `# Errors`、`# Panics`，内容用中文。
+- 每个 unsafe 块必须有相邻 `// SAFETY:`，说明所有权、生命周期、并发和平台前提；范围尽量小。
+  禁止用空 unsafe 块绕过检查，不能仅写“此处安全”。
+- 禁止 `static mut`；根据约束使用 `SyncUnsafeCell` 或 `spin::Once<T>`。单例初始化使用具名
+  `spin::Once<T>`，访问前检查初始化状态，不允许隐式继续。
+- 不使用无理由的 `#[allow(...)]`；必要 lint 例外使用 `#[expect(..., reason = "...")]`。
+- Rust 2024 导出符号使用 `#[unsafe(no_mangle)]`；与汇编/设备 ABI 共享的数据采用
+  `#[repr(C)]` 并校验布局。当前架构汇编由 `global_asm!` 接入，不存在根 `build.rs` / `cc` 构建步骤。
+- 内核互斥使用项目 `sync` crate，禁止替换为 `spin::Mutex`；锁选择及 guard 顺序见
+  [sync 规则](../crates/sync/AGENTS.md)。中断上下文禁止堆分配/释放，使用栈或 `heapless` 容器。
 
 ## 仓库结构
 
@@ -55,7 +74,7 @@ repo/
 目录规则：
 
 - `src/` 保存内核主体代码，`crates/` 保存 workspace 子 crate，`tests/` 保存独立 QEMU 测试二进制。
-- `.devcontainer/` 是默认开发环境入口；构建、检查、pre-commit、固件构建、QEMU 和系统测试优先在容器内执行。
+- 本地与容器开发均可；环境准备见 [贡献指南](../CONTRIBUTING.md#环境与命令)，`.devcontainer/` 提供可选预装环境。
 - `docs/adr/` 是 ADR 目录，用于保存架构决策记录。
 - `docs/design/` 保存当前设计文档和历史阶段设计。历史阶段文档可能早于实现；代码和 ADR 优先级更高。
 - 大模块如果有独立边界、依赖约束或修改 checklist，应在模块根目录放局部 `AGENTS.md`，从 `docs/templates/local-AGENTS.md` 复制后改写。
@@ -77,6 +96,16 @@ repo/
 - Result alias 应按边界命名，例如 `DeviceResult<T>`、`FsResult<T>`、`DmaResult<T>`；很短的内部函数也可以直接写 `Result<T, XxxError>`，但错误类型仍放在 `error.rs`。
 - 新增错误变体必须携带定位所需的安全上下文，例如地址、大小、节点名、架构、路径、索引、设备名、状态码或底层错误；避免只有 `Invalid`、`Failed`、`IoError` 这类不可定位的裸变体。
 
+### 错误处理与诊断
+
+- “不应该发生”的内核不变量违反使用 `panic!()` / `.expect()`，必须立即暴露；
+  “可能发生”的资源耗尽和设备失败使用所属子系统 `Result`，由上层决定降级或恢复。
+  启动期等更严格的不变量以所属模块契约为准。
+- 不使用 `.unwrap()`；用 `?` 传播预期失败，或以包含上下文的 `.expect()` 暴露 bug。
+- panic、expect、错误和日志说明必须携带可定位的实际数据，如地址、索引、大小、路径或状态。
+  不用模糊的 “failed” 隐藏触发条件。
+- 不用 `.map_err(|_| ...)` 丢弃原始错误；将底层错误嵌入新错误或记录到日志，再在边界显式转换。
+
 ## 测试组织
 
 - 系统/QEMU 测试放在仓库 `tests/` 下，按模块包组织，每个测试二进制对应一个独立 `tests/<package>/src/*.rs` 文件，并在该包 `Cargo.toml` 中配置 `[[bin]]`、`test = false`。
@@ -95,7 +124,7 @@ repo/
 
 1. 代码变更导致文档失效时，必须在同一个 PR 更新文档。
 2. 架构不变量变化时，必须更新 `docs/adr/` 或相关 SAD/SDD。
-3. 公开 trait、错误码、启动流程、测试入口、命令参数变化时，必须更新根 `README.md`、相关局部 `AGENTS.md`、设计文档和测试说明。
+3. 公开 trait、错误码、启动流程、测试入口、命令参数变化时，只同步确实受影响的契约、局部规则、设计或测试说明。详细归属见 [CONTRIBUTING](../CONTRIBUTING.md#文档同步)；README 仅在读者入口受影响时更新。
 4. 被文档引用的文件移动时，必须同步更新引用。
 5. AI 工具记忆、聊天记录和本地草稿不是权威来源；写入仓库前必须回到仓库文件验证。
 6. 当前工作和下一步只在 `docs/audit/audit-progress.md` 维护，审计交付物状态只在 Roadmap
@@ -143,7 +172,7 @@ repo/
 | 验证方式 | 构建、QEMU、目标平台验证或 CI 命令 |
 | 真值源 | 上游、生成输入或仓库源码 |
 
-当前固件相关 submodule 的初始化和验证命令应写在根 README、相关局部 AGENTS、设计文档或审计记录中。
+固件 submodule 的环境初始化见 [贡献指南](../CONTRIBUTING.md#本地开发)，构建和验证入口见 [xtask/AGENTS.md](../xtask/AGENTS.md)。
 
 ## 生成物
 

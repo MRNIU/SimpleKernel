@@ -54,8 +54,8 @@ scheduler / per-CPU accounting
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- per-CPU tick API 或原子语义变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p local_tick -- -D warnings`。
-- 影响 timer handler 或调度记账时，补跑相关 QEMU 测试；完整系统入口是 `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --timeout 30`。
+- per-CPU tick API 或原子语义变更：`cargo clippy -p local_tick --target riscv64gc-unknown-none-elf -- -D warnings`。
+- 影响 timer handler 或调度记账时，补跑相关 QEMU 测试；完整系统入口是 `cargo xtask test --arch riscv64 --timeout 30`。
 
 ## 不要假设
 

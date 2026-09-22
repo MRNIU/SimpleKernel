@@ -113,7 +113,7 @@ crate。
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- 常量或编译期校验变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p config -- -D warnings`。
+- 常量或编译期校验变更：`cargo clippy -p config -- -D warnings`。
 - 影响启动、内存、SMP 或定时器参数时，按影响面补跑对应 `cargo xtask build` 或 `cargo xtask test`，QEMU 命令必须带 `--timeout 30`。
 
 ## 不要假设

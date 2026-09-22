@@ -10,8 +10,8 @@
 利用类型系统在编译期保证中断安全和抢占安全。
 
 核心原则：**关中断只能通过 guard，开中断由 guard 的 Drop 自动完成**。
-裸 `irq_disable()` 为 `pub(crate)`，外部无法直接调用——
-这在编译期消除了"关了忘记开"的错误类别。
+本 crate 的调用方通过 guard 管理保存/恢复；底层 `arch_primitives::disable_irq()` 仍公开，
+因此不能宣称整个内核已由可见性强制禁止绕过 guard。
 
 唯一的例外是 `bootstrap_enable()`——新任务首次获得 CPU 时
 无条件开启中断，不与 disable 配对，因此标记为 `unsafe`。
@@ -114,7 +114,6 @@ drop(outer);                          // was_enabled = true  -> 恢复中断
 |------|------|--------|--------|
 | RISC-V | `sstatus.SIE` | `csrc sstatus, SIE` | `csrs sstatus, SIE` |
 | AArch64 | `DAIF.I == 0` | `msr daifset, #2` | `msr daifclr, #2` |
-| 宿主机（测试） | 返回 `false` | no-op | no-op |
 
 AArch64 通过 `aarch64-cpu` crate 的 `DAIFSet`/`DAIFClr` 封装使用
 `daifset`/`daifclr` 指令，而非 `DAIF.write()`，
@@ -122,18 +121,9 @@ AArch64 通过 `aarch64-cpu` crate 的 `DAIFSet`/`DAIFClr` 封装使用
 
 ## 模块结构
 
-```
-src/
-├── lib.rs               crate 入口，HeldInterrupts、PreemptGuard、HardIrqGuard、
-│                        is_enabled、is_in_interrupt、preemptible、
-│                        check_and_clear_need_resched、set_need_resched_on、
-│                        bootstrap_enable
-└── arch/
-    ├── mod.rs           InterruptArch trait + cfg 分发
-    ├── riscv64.rs       RISC-V 中断原语（pub(crate)）
-    ├── aarch64.rs       AArch64 中断原语（pub(crate)）
-    └── host.rs          宿主机 stub（cargo test 用）
-```
+本 crate 的实现集中在 `src/lib.rs`；中断寄存器操作委托给 `arch_primitives`，
+不再有本地 `arch/` 或 `host.rs`。当前 `arch_primitives` 仅提供裸机后端，
+验证须使用相应 target；不能把历史 host no-op 当作可执行入口或硬件证据。
 
 ## Per-CPU 变量
 
@@ -190,5 +180,5 @@ fn access_per_cpu_data(held: &HeldInterrupts) {
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- interrupt proof token 或架构实现变更：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p interrupt_state -- -D warnings`。
-- 影响锁或中断嵌套语义时：`docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name sync-test/spinlock --timeout 30`，并按影响面补跑 arch tests。
+- interrupt proof token 或架构实现变更：`cargo clippy -p interrupt_state --target riscv64gc-unknown-none-elf -- -D warnings`。
+- 影响锁或中断嵌套语义时：`cargo xtask test --arch riscv64 --name sync-test/spinlock --timeout 30`，并按影响面补跑 arch tests。

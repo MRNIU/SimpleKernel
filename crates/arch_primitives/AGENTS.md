@@ -129,8 +129,8 @@ let compatibles = arch_primitives::FDT_INTERRUPT_CONTROLLER_COMPATIBLES;
 ## 验证入口
 
 - 文档-only 变更：`git diff --check`。
-- 常量、架构函数或 cfg 变化：`docker exec -w /workspace simplekernel-devcontainer cargo clippy -p arch_primitives -- -D warnings`。
-- 影响裸机行为时，补跑相关架构 QEMU 测试，例如 `docker exec -w /workspace simplekernel-devcontainer cargo xtask test --arch riscv64 --name arch-test --timeout 30`。
+- 常量、架构函数或 cfg 变化：`cargo clippy -p arch_primitives --target riscv64gc-unknown-none-elf -- -D warnings`。
+- 影响裸机行为时，补跑相关架构 QEMU 测试，例如 `cargo xtask test --arch riscv64 --name arch-test --timeout 30`。
 
 ## 不要假设
 

@@ -24,6 +24,16 @@
 
 ## 协作流程
 
+本节只适用于用户发起的专项深度审计；普通局部修改和片段 review 按根 AGENTS 与贡献指南。
+启动时读取本 Roadmap、当前进度和目标所有源文件；未指定目标时读取进度中的下一步。
+
+- 输出结构见 [审计 prompt](review-session-prompt.md)，完成报告后等待作者反馈，不直接实施。
+- 设计讨论点客观列出备选方案及优缺点，不推荐方案；crate 替代仅评估，不自行替换。
+  ADR 状态与接受权限以 [ADR 规则](../adr/AGENTS.md) 为准。
+- 非只读任务结束时更新 [当前进度](audit-progress.md) 的状态、简短交接、下一步和证据入口；
+  旧摘要/验证移入已有历史记录并标明日期与基线。只读要求优先，交接写在答复中。
+- 交付物勾选仅在本 Roadmap 维护且附证据；阶段关闭另需完整覆盖、遗留处理和回归证明。
+
 审计采用人机协作模式，人工把控每一个关键决策点：
 
 1. **AI 初步审阅** — AI 按排查 checklist 阅读代码，输出审查报告（问题清单 + 改进建议）
@@ -128,7 +138,7 @@ R8  集成与收尾 ── 文档重写, CI 重写, 项目重组, 分支合并
 | `memory_types` | 地址和页帧的 newtype 封装（`PhysAddr` / `VirtAddr` / `Frame` / `Page` / `Span`） |
 | `config` | 内核常量与编译期不变量 |
 | `Span`（原 `span` crate） | 已并入 `crates/memory_types/src/span.rs`，提交 `ff85b3f5` |
-| 原 `build_common` | crate 已在 `404ad4d7` 删除，构建逻辑回到根 `build.rs`；不再要求为已删除 crate 新增手册 |
+| 原 `build_common` | crate 已在 `404ad4d7` 删除，当前构建编排在 `xtask/src/build.rs`，架构汇编在 `global_asm!` 调用点；不再要求为已删除 crate 新增手册 |
 
 这是原始审查分组，不再是当前依赖拓扑；当前成员和依赖以 `Cargo.toml` / crate manifest 为准。
 
@@ -339,7 +349,7 @@ memory_types ← frame_allocator ← page_table_entry ← paging ← memory
 | 维度 | 排查内容 | 典型问题 |
 |------|----------|----------|
 | `#[cfg(test)]` 代码块 | 所有 crate 中的 `cfg(test)` 门控代码 | 是否引入了与裸机语义不同的行为？测试是否在验证真实逻辑？ |
-| `#[cfg(not(target_os = "none"))]` host 实现 | `interrupt_state/arch/host.rs`、`per_cpu` 的 host 路径、`ttas.rs` 的 `caller_id()` | host 模拟是否忠实反映裸机行为？是否存在"走过场"的空实现？ |
+| host 与裸机编译边界 | `memory_types` 的条件依赖、`arch_primitives` 的裸机 `Impl`、`ttas.rs` 的 `caller_id()` | 原 `interrupt_state/arch/host.rs` 已不存在；核验每个 host 入口是否可编译及其证据边界 |
 | `#[cfg(target_os = "none")]` 门控 | 锁栈、中断检查等仅裸机生效的逻辑 | 门控是否合理？能否让测试也覆盖这些路径？ |
 | `#[cfg_attr(..., allow/expect)]` | 为测试/host 环境压制的 lint | 是否掩盖了真实问题？ |
 | Feature flags | `spin-timeout` 等 feature 对测试的影响 | feature 组合是否都在 CI 中测试？ |

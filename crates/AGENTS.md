@@ -157,15 +157,26 @@ sequenceDiagram
 当前 `dma` crate 只承诺 QEMU VirtIO identity mapping。真机 non-coherent DMA 仍需要
 cache maintenance、DMA-safe PTE 属性和设备 capability 设计，不要把 QEMU 路径误写成通用硬件保证。
 
+## 验证边界
+
+局部手册的 package host Clippy / 测试只适用于有 host 编译路径的 crate，例如 `config`、
+`memory_types`、`page_table_entry`、`platform_fdt`、`device_core` 和过程宏 `macros`。
+`arch_primitives` 只定义裸机 `Impl`，直接或间接依赖它的运行时 crate 必须指定裸机 target；
+不能套用旧 host stub 说明。局部裸机命令以 RISC-V 为例，影响 AArch64 时改用
+`--target aarch64-unknown-none`，共享代码检查两种 target。
+
+静态检查不证明寄存器、中断或 SMP 行为；按 [贡献指南](../CONTRIBUTING.md#按改动选择验证)
+选择对应定点 QEMU。纯模型 host 测试不自动扩大为全量平台回归。
+
 ## 修改规则
 
 | 改动 | 必须同步更新 |
 |------|--------------|
-| crate 公开 API 变化 | 调用方、对应测试、crate-local `AGENTS.md`、本文件 |
+| crate 公开 API 变化 | 调用方与对应测试；仅在描述受影响时更新 crate-local `AGENTS.md`，职责/依赖变化才更新本文件 |
 | 内存层职责或依赖变化 | `docs/design/memory-subsystem-v2.md`、相关 ADR |
 | DMA 语义变化 | `crates/dma/AGENTS.md`、`docs/adr/014-qemu-virtio-dma-api-wrapper.md` 或新 ADR |
 | 锁语义变化 | `crates/sync/AGENTS.md`、锁级别说明和相关测试 |
-| 命令或验证入口变化 | 根 `README.md`、`docs/docker.md`、`xtask/AGENTS.md` |
+| 命令或验证入口变化 | 所属 crate 的验证入口与 `xtask/AGENTS.md`；其他入口仅更新受影响的示例或链接 |
 
 ## 文档边界
 
