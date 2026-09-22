@@ -13,7 +13,7 @@
 
 <!-- 按 CONTRIBUTING.md 的验证表选择必要检查，不默认要求文档改动跑全量 QEMU。
 填写真实命令、环境/target/测试名、结果与证据入口；未执行项填写原因和残余风险。
-QEMU 超时、失败与清理按 xtask/AGENTS.md；测试通过条件按 tests/AGENTS.md。 -->
+QEMU 超时、失败与清理按 xtask/README.md；测试通过条件按 tests/README.md。 -->
 
 | 命令或检查 | 环境 / target / 测试名 | 结果 / 证据 |
 |------------|----------------------|-------------|

@@ -412,7 +412,7 @@ ADR-018 的远端访问强证明后续已补；B/C 只在运行期映射变更�
 2. ADR-019：timer absolute deadline 与 tick 漂移语义。展开相对重装、absolute deadline、
    missed tick 补记和未来 tickless 方向，并列出 `global_tick` 语义、sleep/timeout 追赶和 scheduler
    记账接口问题。
-3. 同步 `docs/adr/AGENTS.md`、R4 审计报告、R4 interrupt/timer 设计说明和本进度文件。
+3. 同步 `docs/adr/README.md`、R4 审计报告、R4 interrupt/timer 设计说明和本进度文件。
 
 ### 关键结论
 
@@ -466,7 +466,7 @@ ADR-018 的远端访问强证明后续已补；B/C 只在运行期映射变更�
    RISC-V `fence rw, rw` 和 AArch64 `dsb ishst` IPI barrier。
 3. R4-16：将 `src/arch` 根模块、`ArchOps`、`Arch`、`CalleeSavedContext`、`switch_to`
    收窄为 crate 内部可见。
-4. R4-17：新增 R4 启动/SMP、中断/timer/TLB、架构移植指南三份设计文档，并在 `docs/AGENTS.md`
+4. R4-17：新增 R4 启动/SMP、中断/timer/TLB、架构移植指南三份设计文档，并在 `docs/README.md`
    增加当前设计入口。
 
 ### 关键结论

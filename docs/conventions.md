@@ -12,7 +12,7 @@
 - 中文解释和英文术语同时出现时，优先使用“中文说明 + 英文术语”，例如“单地址空间 SAS”“页表项 PTE”。
 - 易过期内容必须带日期，例如路线图、阶段状态、审计结论、临时兼容策略。
 - 文档引用文件路径时使用仓库相对路径，不写本地绝对路径、用户名、个人机器名或个人工具配置。
-- 根 `README.md` 只保留面向普通读者的项目入口；目录级说明、局部协作规则、验证入口和修改 checklist 默认使用最近的 `AGENTS.md`。
+- 根 `README.md` 保留普通读者入口；目录职责、使用手册、索引和验证入口写在目录 README，供开发者和 agent 共用。
 
 ## Copyright 与文件头
 
@@ -77,8 +77,8 @@ repo/
 - 本地与容器开发均可；环境准备见 [贡献指南](../CONTRIBUTING.md#环境与命令)，`.devcontainer/` 提供可选预装环境。
 - `docs/adr/` 是 ADR 目录，用于保存架构决策记录。
 - `docs/design/` 保存当前设计文档和历史阶段设计。历史阶段文档可能早于实现；代码和 ADR 优先级更高。
-- 大模块如果有独立边界、依赖约束或修改 checklist，应在模块根目录放局部 `AGENTS.md`，从 `docs/templates/local-AGENTS.md` 复制后改写。
-- 新增目录级 README 默认不允许；确需新增时，必须确认它面向仓库外普通读者，并说明为什么不能放入最近的 `AGENTS.md`、设计文档、ADR/RFC、Spec 或 Plan。
+- 只有需要自动发现的目录特有 agent 约束才新增局部 `AGENTS.md`，可参考 `docs/templates/local-AGENTS.md`；不要复制 README 手册。现有 crates 局部规则继续有效。
+- README 与 AGENTS 使用链接共享详细规则；架构与设计仍归设计文档，动态状态仍归进度记录。
 
 ## 代码组织与文件规模
 
@@ -172,7 +172,7 @@ repo/
 | 验证方式 | 构建、QEMU、目标平台验证或 CI 命令 |
 | 真值源 | 上游、生成输入或仓库源码 |
 
-固件 submodule 的环境初始化见 [贡献指南](../CONTRIBUTING.md#本地开发)，构建和验证入口见 [xtask/AGENTS.md](../xtask/AGENTS.md)。
+固件 submodule 的环境初始化见 [贡献指南](../CONTRIBUTING.md#本地开发)，构建和验证入口见 [xtask/README.md](../xtask/README.md)。
 
 ## 生成物
 

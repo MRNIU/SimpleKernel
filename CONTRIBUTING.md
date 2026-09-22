@@ -8,9 +8,9 @@
    `git status --short`、`git diff`、`git diff --cached`。保留无关改动；分支基于已确认的目标线，
    不因历史 prompt 自动切换到 main 或重置工作区。
 2. 阅读 [根 AGENTS](AGENTS.md) 和目标目录的局部规则；工程细节见
-   [conventions](docs/conventions.md)，按需从 [文档索引](docs/AGENTS.md) 找当前设计。
+   [conventions](docs/conventions.md)，按需从 [文档索引](docs/README.md) 找当前设计。
 3. 先追踪 trait 契约、实现、调用方和测试。局部修复按既有契约实施；改变架构不变量、
-   所有权、跨模块边界或引入长期替代方案时，按 [ADR 规则](docs/adr/AGENTS.md) 讨论决策。
+   所有权、跨模块边界或引入长期替代方案时，按 [ADR 规则](docs/adr/README.md) 讨论决策。
    普通小改不要求新建 Plan、ADR 或扫描全仓。
 4. 只读审查交付问题位置、可达触发、影响、证据和最小修复方向，完成后等待反馈。
    用户已授权实施的任务继续完成范围内修改；不把审查授权视为修改授权。
@@ -19,7 +19,7 @@
 
 开发者可自行选择本地环境或容器环境；Docker、Dev Container 均为可选项。
 下文命令在所选环境的仓库根执行，共用 [rust-toolchain.toml](rust-toolchain.toml)、
-Cargo.lock 和 [xtask 手册](xtask/AGENTS.md)。
+Cargo.lock 和 [xtask 手册](xtask/README.md)。
 
 ### 本地开发
 
@@ -28,7 +28,8 @@ Cargo.lock 和 [xtask 手册](xtask/AGENTS.md)。
   构建的 LLVM 工具来自工具链 `llvm-tools` 组件。运行/测试创建 FAT 镜像时另需 `dd`、`mkfs.fat`。
 - 运行/系统测试需要 `qemu-system-riscv64` / `qemu-system-aarch64`、`dtc`、`mkimage`；
   首次自动构建固件还需要 GNU make、目标交叉 GCC/binutils、Python 固件模块等。
-  完整 Linux 包清单可参考 [.devcontainer/Dockerfile](.devcontainer/Dockerfile)，按任务安装即可。
+  Linux 固件/QEMU 包清单按架构维护在 [CI setup](.github/actions/setup/action.yml)，
+  在所选环境按任务安装；调试另装 `gdb-multiarch`。
 - 涉及固件时执行 `git submodule update --init --recursive --depth 1`，保持 Git 固定版本。
   GDB 调试使用支持目标架构的 GDB。
 
@@ -37,9 +38,16 @@ Cargo.lock 和 [xtask 手册](xtask/AGENTS.md)。
 这不是完整的原生跨宿主平台支持承诺。运行前需确保当前用户可写 `/srv/tftp`，且没有其他
 SimpleKernel QEMU 作业共用它；纯逻辑测试不需要该目录。
 
+### 为什么仍需 nightly
+
+`no_std` 本身不要求 nightly，但当前实现使用尚未稳定的 `SyncUnsafeCell` 和
+`#[alloc_error_handler]`；xtask 还通过 `-Z build-std` 重建 core/alloc/compiler_builtins。
+因此仅修改工具链版本不能迁移到 stable。未来迁移需同时评估静态存储的并发契约、
+分配失败处理、预编译标准库是否满足两个 target，并完成相应回归。
+
 ### 可选容器与提交检查
 
-希望使用预装依赖时，见 [Dev Container / Docker 使用说明](docs/docker.md)。容器只提供环境，
+希望使用基础 Rust 容器时，见 [Dev Container / Docker 使用说明](docs/docker.md)。容器只提供环境，
 不改变贡献规则。复用容器时确认挂载的是当前 checkout。
 
 pre-commit 是可选本地辅助工具，配置见 [.pre-commit-config.yaml](.pre-commit-config.yaml)。
@@ -59,7 +67,7 @@ QEMU 测试。更大的集成变更或阶段关闭按其约定扩大回归；不
 | Markdown、协作规则、skill | `git diff --check`；核对受影响路径、链接、命令和规则引用；skill 另查 frontmatter、发现位置与典型任务走查 |
 | crate 纯逻辑 | 按局部 AGENTS 选择 `cargo test -p <package>` 和 package Clippy；host 只证明实际编译到的逻辑 |
 | 裸机实现、共享内核接口 | 格式、受影响 target 的 Clippy / `xtask check`；需要链接产物时用 `xtask build` |
-| 锁、中断、页表、启动、per-CPU、设备或平台行为 | 在编译检查之外，按 [测试清单](tests/AGENTS.md) 选择定点 QEMU；host stub 不证明硬件行为、SMP、时序或真机 DMA |
+| 锁、中断、页表、启动、per-CPU、设备或平台行为 | 在编译检查之外，按 [测试清单](tests/README.md) 选择定点 QEMU；host stub 不证明硬件行为、SMP、时序或真机 DMA |
 | xtask 参数或测试编排 | package Clippy / host 测试；参数 `--help`、测试发现 `test --list`；执行路径变化再运行对应 QEMU 场景 |
 | 依赖与许可证 | `cargo deny check`，并按消费者影响补充验证 |
 | Rust API 文档 | 对受影响 target 执行 `cargo doc --no-deps --target <triple>`；普通 Markdown 不要求 rustdoc |
@@ -96,14 +104,14 @@ cargo xtask test --list
 | 变化 | 详细维护位置 |
 |------|--------------|
 | 工程约定、错误与代码风格 | [conventions](docs/conventions.md) |
-| 环境选择与本地依赖 / 可选容器维护 | 本文件 / [docs/docker.md](docs/docker.md)、[.devcontainer/AGENTS.md](.devcontainer/AGENTS.md) |
-| CLI、超时、测试编排 / 测试契约 | [xtask/AGENTS.md](xtask/AGENTS.md) / [tests/AGENTS.md](tests/AGENTS.md) |
+| 环境选择与本地依赖 / 可选容器维护 | 本文件 / [docs/docker.md](docs/docker.md) |
+| CLI、超时、测试编排 / 测试契约 | [xtask/README.md](xtask/README.md) / [tests/README.md](tests/README.md) |
 | trait、错误、所有权、平台或模块边界 | 契约注释、当前设计和相关局部 AGENTS；架构决策另按 ADR 规则 |
 | 提交格式、DCO、footer | [.gitmessage](.gitmessage) |
 | 项目定位、快速开始、读者导航 | [README](README.md)，英文入口仅同步其实际受影响部分 |
 | 当前工作、未决事项、下一步 | [audit-progress](docs/audit/audit-progress.md)；历史证据按其路由归档 |
 
-文件移动或删除时检查引用；文档类型和模板按 [docs/AGENTS.md](docs/AGENTS.md) 路由。
+文件移动或删除时检查引用；文档类型和模板按 [docs/README.md](docs/README.md) 路由。
 
 ## 提交与 PR
 

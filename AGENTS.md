@@ -25,18 +25,20 @@ SimpleKernel 是接口驱动的 Rust `no_std` / `no_main` 学习内核，使用 
 |----------|----------|
 | 项目定位、快速开始、能力边界 | [README](README.md)；[英文入口](README_ENG.md) |
 | 开发、按范围验证、提交和 PR | [CONTRIBUTING](CONTRIBUTING.md) |
-| 可选容器配置、挂载与产物路径 | [.devcontainer/AGENTS.md](.devcontainer/AGENTS.md)；用户搭建说明见 [docs/docker.md](docs/docker.md) |
+| 可选容器配置、挂载与产物路径 | [docs/docker.md](docs/docker.md) |
 | Rust、错误、unsafe、文件组织、注释等工程规则 | [docs/conventions.md](docs/conventions.md) |
 | commit 格式、正文、footer、DCO | [.gitmessage](.gitmessage)；每条提交必须 `git commit --signoff` |
-| 构建、运行、调试、参数、QEMU 超时与失败清理 | [xtask/AGENTS.md](xtask/AGENTS.md) |
-| 独立测试、sentinel、测试清单及新增方式 | [tests/AGENTS.md](tests/AGENTS.md) |
+| 构建、运行、调试、参数、QEMU 超时与失败清理 | [xtask/README.md](xtask/README.md) |
+| 独立测试、sentinel、测试清单及新增方式 | [tests/README.md](tests/README.md) |
 | crate 职责、依赖与局部验证 | [crates/AGENTS.md](crates/AGENTS.md)，再读目标 crate 的 `AGENTS.md` |
-| 文档类型、当前设计、ADR/RFC/Spec/Plan 模板路由 | [docs/AGENTS.md](docs/AGENTS.md) |
+| 文档类型、当前设计、ADR/RFC/Spec/Plan 模板路由 | [docs/README.md](docs/README.md) |
 | 按任务组织开发操作 | 唯一项目 skill：[simplekernel-dev](.agents/skills/simplekernel-dev/SKILL.md) |
 
 开发环境由开发者选择，本地与容器使用相同工具链和 xtask 入口。环境准备见
 [贡献指南](CONTRIBUTING.md#环境与命令)；Docker / Dev Container 均为可选项。
-根 README 面向普通读者；局部协作说明不新建 README，规则见文档路由与工程约定。
+根 README 面向普通读者；目录职责、操作手册和索引放在目录 README。
+修改 docs、tests 或 xtask 时，按上表读取对应 README 中的约束；Markdown 链接不会自动加载。
+局部 AGENTS 仅用于需要自动发现的目录特有约束，不为每个目录新建。
 README 与适用 AGENTS 冲突时以 AGENTS 为准，并在同一变更中修正冲突。
 
 ## 关键不变量
@@ -71,5 +73,5 @@ README 与适用 AGENTS 冲突时以 AGENTS 为准，并在同一变更中修正
 [审计 prompt](docs/audit/review-session-prompt.md)。普通局部修复、审查和文档修改不自动扩展为全阶段审计。
 
 未指定审计目标时从进度中的下一步开始。审计报告与实施分开，设计讨论点客观列出备选方案，
-不代替作者决策；ADR 状态权限见 [ADR 规则](docs/adr/AGENTS.md)。参考资料按需从
+不代替作者决策；ADR 状态权限见 [ADR 规则](docs/adr/README.md)。参考资料按需从
 [references](docs/design/references.md) 进入，不要求每个任务全量阅读。

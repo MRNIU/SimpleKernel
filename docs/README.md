@@ -1,15 +1,15 @@
 <!-- Copyright The SimpleKernel Contributors -->
 
-# docs/AGENTS.md
+# 文档索引
 
-本目录保存 SimpleKernel 的项目文档。本文件是 `docs/` 的局部规则和文档路由入口。
+本目录保存 SimpleKernel 的项目文档。本文件是开发者与 agent 共用的文档索引和维护指南。
 代码是实现真值源；当历史设计文档与代码冲突时，以当前代码为准，并在审查记录或 ADR 中标出差异。
 
 ## 目录结构
 
 ```text
 docs/
-  AGENTS.md
+  README.md
   conventions.md
   design/             # 当前设计说明与历史阶段设计，部分内容可能早于实现
   adr/                # ADR：架构决策记录
@@ -73,7 +73,16 @@ SimpleKernel 当前已有 `docs/design/` 和 `docs/adr/`。新增 SAD/SDD 时可
 
 架构图、数据流、状态机、启动流程和目标平台拓扑优先使用 Mermaid 或 PlantUML。图表必须配套文字说明，不能只提交图片或截图。
 
-## README 边界
+## RFC、Spec 与 Plan
 
-`docs/` 及其子目录不新增 README。目录级说明、索引、模板使用规则和 agent 工作流
-统一写入最近的 `AGENTS.md`；根目录 `README.md` 只保留面向普通读者的项目入口。
+按需创建文档及目录，不要求普通小改先生成计划。模板见 [模板索引](templates/README.md)。
+
+| 类型 | 路径与模板 | 维护要求 |
+|------|------------|----------|
+| RFC | `docs/rfcs/YYYY-MM-DD-topic.md`；[rfc.md](templates/rfc.md) | 比较方案；接受后记录 ADR 并同步 SAD/SDD；放弃时标明状态和原因 |
+| Spec | `docs/specs/YYYY-MM-DD-topic.md`；[spec.md](templates/spec.md) | 明确问题、接口需求与验收标准；设计稳定后同步或链接 SDD；改变架构不变量时补充 ADR |
+| Plan | `docs/plans/YYYY-MM-DD-topic.md`；[plan.md](templates/plan.md) | 包含目标、预计变更、任务、验证、风险和回滚；完成或废弃后更新状态和未覆盖项，不替代设计决策 |
+
+ADR 的编号、状态权限和索引见 [ADR 手册](adr/README.md)。
+目录说明与索引使用 README；只有独立的 agent 约束才使用局部 AGENTS，详细归属见
+[工程约定](conventions.md#仓库结构)。

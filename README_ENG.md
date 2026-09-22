@@ -15,13 +15,14 @@ The Chinese README is the maintained project entry point:
 - [中文 README](./README.md)
 - [Dev Container setup](./docs/docker.md)
 - [Contribution guide](./CONTRIBUTING.md)
-- [Documentation index](./docs/AGENTS.md)
+- [Documentation index](./docs/README.md)
 
 ## Quick Start
 
 Choose a local environment or the optional Dev Container / Docker environment.
 Prepare the dependencies described in [CONTRIBUTING](CONTRIBUTING.md#环境与命令),
-then run these commands at the repository root in your chosen environment.
+The base container provides compilation tools; install QEMU and firmware dependencies
+before running system tests. Run these commands at the repository root in your chosen environment.
 
 ```bash
 cargo xtask build --arch riscv64
@@ -30,6 +31,6 @@ cargo xtask test --arch riscv64 --name frame-test/alloc --timeout 30
 ```
 
 If using a container, check that it mounts this checkout. For command details,
-QEMU timeouts and cleanup, see the [xtask guide](xtask/AGENTS.md); choose validation by change
+QEMU timeouts and cleanup, see the [xtask guide](xtask/README.md); choose validation by change
 scope in [CONTRIBUTING](CONTRIBUTING.md). The kernel uses a single address space (SAS);
 restricting all application access to the syscall gateway remains a goal, not a completed guarantee.

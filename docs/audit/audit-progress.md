@@ -67,7 +67,8 @@ root/default block 选择、分区块设备、`Late` 后置初始化、多能力
 ## 第二轮验证与工具限制（2026-09-22）
 
 早期纯文档核验见 [依赖刷新前的快照](2026-09-22-audit-history.md#collaboration-round-two-initial)。
-以下为本轮更新后的实际验证，不表示审计阶段关闭或真实硬件已验证。
+以下为提交 `6ff91fa4` 所收敛的验证记录，不表示审计阶段关闭或真实硬件已验证。
+该提交之后的基础镜像精简和 AArch64 对照诊断见文末；旧完整镜像结果不代表精简镜像。
 
 - 在本机已有 devbox 中安装/使用仓库指定 nightly，未安装宿主机开发依赖；这是本机环境选择，
   不是项目对贡献者的容器要求。
@@ -100,15 +101,69 @@ root/default block 选择、分区块设备、`Late` 后置初始化、多能力
   位于 FIT 内的另一份 DTB。内核 `src/init.rs:66` 因 `NodeNotFound` fail-fast。
   对生成 DTB 的独立 host 诊断返回 `Ok((0x40000000, 0x100000))`，说明该输入可被新解析器读取；
   串口明确显示使用 `0x40000000` 处的 QEMU FDT。原 HEAD 的启动脚本与初始化要求相同，
-  本轮未改此启动链，也未重跑旧依赖基线，不能将失败归因于依赖升级或宣称旧版本已通过。
+  当时未改此启动链，也未重跑旧依赖基线；后续 QEMU 版本对照见文末。
   后续需单独修正 AArch64 DTB 交接并重跑回归；本轮不靠 fallback 放宽内核校验。
 
 - devbox bind mount 上首次 xtask 链接报告临时 `.o` 文件不可见；随后查询文件已存在。
   使用 `CARGO_BUILD_BUILD_DIR=/opt/simplekernel-build-cache` 将中间产物移到容器文件系统后构建成功，
   `CARGO_TARGET_DIR` 仍指向当前 checkout 的 `target/`。这只记录本次环境规避方式，未改构建系统。
 - 当前 xtask 仍依赖 Unix symlink、固定 `/srv/tftp` 和 Linux 风格工具名；本地开发可选不等于
-  原生 Windows/macOS 全流程已支持。镜像为 dev 用户补齐 `/srv/tftp` 写权限。
+  原生 Windows/macOS 全流程已支持。基础镜像精简后，运行 QEMU 前按容器指南准备 `/srv/tftp`。
 - VS Code `cppdbg` 扩展需自行安装，后台 debug task 仍缺 readiness matcher；未验证 F5 连通性。
 - xtask 的 check / firmware 分发不消费 `ArchArgs.release`；非法测试名仍可能先触发固件准备。
   本轮未改这些行为，手册不提供无效选项，名称不确定时先用 `test --list`。
 - 未执行 GitHub 托管 CI、Pages 发布或镜像推送；actionlint 和本机运行不能替代远端结果。
+
+## 基础环境与 AArch64 对照诊断（2026-09-22，基于 6ff91fa4）
+
+- Rust stable 1.98.1：`cargo +stable check --locked -p platform_fdt` 在
+  `sync_unsafe_cell` feature gate 报 E0554；`cargo +stable xtask check --arch riscv64`
+  在 `-Z build-std` 被拒绝。另有 `alloc_error_handler` 使用，保留仓库 nightly 与 devbox 安装。
+- crates 外 AGENTS 从 10 个减至 3 个：根规则及 tests/xtask 的极短导航。
+  文档、ADR、模板、测试和 xtask 手册改为 README；RFC/Spec/Plan 规则合并到文档索引，
+  容器维护合并到 docker.md。19 个 crates AGENTS 及 crates 下全部文件保持不变。
+- 基础镜像仅预装 Git、C/C++ 编译环境和 Rust；CI 系统测试按架构安装固件/QEMU，
+  检查 job 单独安装 cargo-deny，Dev Container 仅自动安装 rust-analyzer 扩展。
+
+- 精简镜像 `simplekernel-devcontainer:basic-check` 构建成功；以 dev 用户核验 Rust/Git/C
+  可用，QEMU、Node、pre-commit、Mermaid、cargo-deny 未预装。一次性容器内
+  `cargo test --locked -p xtask -p platform_fdt` 共 10 项通过；
+  `cargo xtask check --arch aarch64` 与 `--arch riscv64` 通过。
+  初次验证将 target 放入 Docker 默认 noexec tmpfs，build script 无法执行；改为容器普通目录
+  `/opt/check-target` 后通过，未为此修改项目配置。
+- actionlint、composite action shell 语法、两架构可选包清单的 `apt-get --simulate`、
+  Dockerfile `--check`、修改文件 pre-commit、链接/命令检查和 skill 格式校验通过。
+  skill 三场景走查仍分别选择局部测试、只读证据、文档链接检查，无新增全量回归要求。
+  未执行托管 CI、从零构建固件或完整系统回归；AArch64 定点诊断不能替代它们。
+  日志在 `.tmp/basic-image-check.log`、`.tmp/basic-pre-commit.log`、`.tmp/ci-deps-check.log`。
+
+### AArch64 原因与修复方向
+
+使用同一现有 `fdt-firmware-reserved` ELF、FIT 与固定固件产物，直接执行 xtask 等价 QEMU
+参数，每次限制 30 秒。只重打包忽略目录内的 `boot.scr.uimg` 做对照，结束后恢复原产物；
+未修改内核或仓库启动脚本，未升级固件。该测试使用 `InitLevel::Memory`，不覆盖完整设备/SMP 启动。
+
+| QEMU | 原脚本：显式使用 QEMU 原始 DTB | 提取 FIT DTB 后显式传入 |
+|------|--------------------------------|-------------------------|
+| 8.2.2（Ubuntu 24.04） | `src/init.rs:66` / `NodeNotFound` | `TEST OK` |
+| 10.2.1（devbox） | `src/init.rs:66` / `NodeNotFound` | `TEST OK` |
+
+因此这次缺少固件保留区的失败不由 QEMU 升级独立引起。`xtask/src/qemu.rs` 把保留区
+注入 FIT DTB，但 `xtask/src/aarch64_boot_scr.txt:19` 用原始 `$fdt_addr` 绕过它。
+Git 历史：`f25fba40` 引入保留区注入时有缺失节点 fallback；`c0b629c3`（2026-06-10）
+删除 fallback 后，这个交接问题变成 fail-fast。不要通过恢复 fallback 隐藏问题。
+
+不能直接改成 `bootm $kernel_addr_r`：虽选中 FIT DTB，实测会在
+`src/arch/aarch64/init.rs:21` 报 `argc=1`；当前 ELF 启动约定从 `argv[2]` 解析 DTB。
+已验证的修复方向是提取处理后的 DTB，再保留显式参数：
+
+```text
+setenv fdt_addr_r 0x43000000
+imxtract $kernel_addr_r fdt $fdt_addr_r
+bootm $kernel_addr_r - $fdt_addr_r
+```
+
+这是诊断方案，不是已经合入的修复。正式实现需检查提取失败时停止、DTB 暂存与内核/FIT
+地址区间不重叠，并运行完整 AArch64 回归。当前地址只在上述固定产物对照中验证。
+原始串口日志：忽略目录 `.tmp/aarch64-dtb-probe/`、`.tmp/aarch64-dtb-probe-qemu8/`。
+两版原脚本虽进程退出码为 0，均含 `TEST PANIC`，按 sentinel 判失败。

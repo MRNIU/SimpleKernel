@@ -1,24 +1,27 @@
 # Copyright The SimpleKernel Contributors
 #
-# 公共 setup composite action：submodule → Rust 工具链 → Cargo 缓存
+# 公共 setup：Rust 与 Cargo 缓存；系统测试按架构补齐可选依赖。
 # 被 workflow.yml 中所有 job 复用。
 
 name: Setup SimpleKernel Build Environment
-description: Init submodules, setup repository Rust toolchain, and cache Cargo
+description: Setup Rust and Cargo cache, optionally install firmware and QEMU dependencies
 
 inputs:
   cache-key-prefix:
     description: Cache key prefix for differentiating job caches
     required: true
 
+  firmware-arch:
+    description: Optional firmware and QEMU architecture (riscv64 or aarch64)
+    default: ""
+
 runs:
   using: composite
   steps:
-    - name: Shallow submodule init
+    - name: Trust checkout
       shell: bash
       run: |
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
-        git submodule update --init --recursive --depth 1
 
     - name: Setup Rust toolchain
       shell: bash
@@ -50,3 +53,22 @@ runs:
         key: ${{ inputs.cache-key-prefix }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
         restore-keys: |
           ${{ inputs.cache-key-prefix }}-${{ runner.arch }}-
+
+    - name: Install firmware and QEMU dependencies
+      if: inputs.firmware-arch != ''
+      shell: bash
+      env:
+        FIRMWARE_ARCH: ${{ inputs.firmware-arch }}
+      run: |
+        case "$FIRMWARE_ARCH" in
+          riscv64) arch_packages=(qemu-system-riscv gcc-riscv64-linux-gnu binutils-riscv64-linux-gnu) ;;
+          aarch64) arch_packages=(qemu-system-arm gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu gcc-arm-linux-gnueabihf binutils-arm-linux-gnueabihf) ;;
+          *) echo "Unsupported firmware architecture: $FIRMWARE_ARCH" >&2; exit 1 ;;
+        esac
+        apt-get update
+        apt-get install --no-install-recommends -y "${arch_packages[@]}" \
+          bc bison flex gawk cpio pkg-config libgnutls28-dev libncurses-dev libssl-dev \
+          openssl swig uuid-dev python3 python3-cryptography python3-dev python3-pyelftools \
+          python3-setuptools python-is-python3 device-tree-compiler u-boot-tools dosfstools
+        mkdir -p /srv/tftp
+        git submodule update --init --recursive --depth 1

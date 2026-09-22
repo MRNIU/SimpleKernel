@@ -21,11 +21,11 @@
 		"CARGO_TARGET_DIR": "${containerWorkspaceFolder}/target",
 		"TMPDIR": "${containerWorkspaceFolder}/.tmp"
 	},
-	"postCreateCommand": "mkdir -p ${containerWorkspaceFolder}/target ${containerWorkspaceFolder}/.tmp && git config --global --add safe.directory ${containerWorkspaceFolder} && git submodule update --init --recursive --depth 1 && rustup show && cargo fetch --locked && cargo --version && cargo clippy --version && rustfmt --version && qemu-system-riscv64 --version && qemu-system-aarch64 --version && mkimage -V && gh --version && pre-commit --version && mmdc --version",
+	"postCreateCommand": "mkdir -p /workspace/target /workspace/.tmp && git config --global --add safe.directory /workspace && rustup show active-toolchain",
 	"customizations": {
 		"vscode": {
 			"settings": {
-				"terminal.integrated.defaultProfile.linux": "zsh",
+				"terminal.integrated.defaultProfile.linux": "bash",
 				"rust-analyzer.check.command": "clippy",
 				"rust-analyzer.check.targets": [
 					"riscv64gc-unknown-none-elf",
@@ -33,14 +33,7 @@
 				]
 			},
 			"extensions": [
-				"rust-lang.rust-analyzer",
-				"ms-vscode.hexeditor",
-				"plorefice.devicetree",
-				"zixuanwang.linkerscript",
-				"dan-c-underwood.arm",
-				"zhwu95.riscv",
-				"GitHub.vscode-pull-request-github",
-				"eamodio.gitlens"
+				"rust-lang.rust-analyzer"
 			]
 		}
 	}

@@ -72,7 +72,9 @@ jobs:
         run: cargo test --locked -p memory_types -p config -p page_table_entry -p platform_fdt -p device_core -p macros -p xtask
 
       - name: Dependency audit
-        run: cargo deny check
+        run: |
+          cargo install --locked cargo-deny --version 0.20.2
+          cargo deny check
 
   build:
     needs: check
@@ -94,6 +96,7 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           cache-key-prefix: cargo-${{ matrix.arch }}
+          firmware-arch: ${{ matrix.arch }}
 
       - name: Build
         run: cargo xtask build --arch ${{ matrix.arch }}
