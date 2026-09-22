@@ -2,7 +2,7 @@
 
 # R4 新增架构指南
 
-> 状态：当前实现指南，更新于 2026-05-09。
+> 状态：当前实现指南，更新于 2026-05-09；2026-09-22 按 `e45053ab` 纠正启动文件路径。
 >
 > 范围：新增一个与 `riscv64`、`aarch64` 同级的裸机架构后端。
 
@@ -16,7 +16,7 @@ SimpleKernel 的 R4 架构层只提供启动、console、timer、interrupt、IPI
 
 | 文件 | 职责 |
 |------|------|
-| `src/arch/<arch>/boot.S` | 入口、每核栈选择、core id 寄存器初始化、跳转 `_start` |
+| `src/arch/<arch>/boot.rs` | 入口、每核栈选择、core id 寄存器初始化、跳转 `_start` |
 | `src/arch/<arch>/mod.rs` | 实现 `ArchOps` |
 | `src/arch/<arch>/console.rs` | early console 输出 |
 | `src/arch/<arch>/timer.rs` | 主核/从核 timer 初始化、IRQ ack/rearm |

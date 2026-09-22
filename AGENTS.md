@@ -5,7 +5,7 @@
 ## OVERVIEW
 Interface-driven OS kernel for AI-assisted learning. Rust (`no_std`, `no_main`), freestanding, nightly toolchain. Two architectures: riscv64, aarch64. Traits define contracts (doc comments with `# Safety`/`# Errors`/`# Panics`), AI generates `impl` blocks, tests verify compliance.
 
-> **架构模型**：SimpleKernel 采用单地址空间（SAS）架构——所有代码运行在同一特权级和地址空间中，不存在用户态/内核态分离。隔离通过 Rust 类型系统 + crate 可见性规则实现（Theseus 式）。详见 `docs/design/SAS-架构设计.md`。
+> **架构模型**：SimpleKernel 采用单地址空间（SAS）架构——所有代码运行在同一特权级和地址空间中，不存在用户态/内核态分离。隔离目标依赖 Rust 类型系统 + crate 可见性规则（Theseus 式）；当前公共可见性尚未全面收窄，见下方 NOTES。详见 `docs/design/SAS-架构设计.md`。
 
 ## STRUCTURE
 ```
@@ -21,16 +21,16 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 
 ## WHERE TO LOOK
 - **Implementing a module** → Read trait definition in the module's `mod.rs` or dedicated trait file first
-- **Adding a driver** → `src/device/` for examples, `Driver` trait for registration pattern
+- **Adding a driver** → 先读 `crates/device_core/src/descriptor.rs` 的 `DriverDescriptor` / probe 契约，再看 `src/device/platform_bus.rs` 与 `src/device/virtio/` 的集成示例
 - **Adding a scheduler** → `src/task/scheduler/mod.rs` for `Scheduler` trait
-- **Boot flow** → `src/main.rs`: `_start` → `bootstrap()` → logging → percpu → early_init → memory → paging → timer → interrupt → task → device → fs → SMP → schedule
+- **Boot flow** → `src/main.rs` 的 `_start` → `bootstrap()` → `src/boot.rs::kernel_init(Full)`：logging → percpu → early_init → memory/分页 → task → timer → interrupt/TLB 回调注册 → device → fs → SMP online barrier；返回后启动冒烟线程并 schedule
 - **帧生命周期** → `crates/frame_allocator/`: `AllocatedFrames` RAII 所有权（Drop 归还 buddy）；内核段通过 `mem::forget` 永久持有（ADR-013）
-- **权限覆盖** → `PageTable::update_range_flags(va, count, flags)` — 已映射区间权限整包更新 + TLB 刷新
+- **权限覆盖** → `PageTable::update_range_flags(va, count, flags)` — 已映射区间逐页权限覆盖 + TLB 刷新；跨页更新不是原子的
 - **System tests** → `tests/` for isolated QEMU tests, each binary in its own QEMU instance
 - **Error handling** → subsystem errors live in nearest `error.rs`; convert explicitly at syscall/ABI boundaries
 - **Logging** → `log::info!()` / `log::debug!()` via `log` crate, backend in `src/logging.rs`
 - **Design overview** → `docs/design/00-概述.md` (master plan — written pre-implementation, may be outdated; code is source of truth)
-- **Phase details** → `docs/design/P0-P7` (implementation plans, all phases complete — may diverge from actual code)
+- **Phase details** → `docs/design/` 中 P6/P7 等历史设计只作背景，不作为 R0–R8 审计关闭证据；当前状态见 `docs/audit/audit-progress.md`
 
 ## DOCUMENT ROUTING
 
@@ -47,29 +47,29 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 |--------|---------|-----------|
 | `src/main.rs` | `#![no_std]` `#![no_main]` entry, `_start` | main entry point |
 | `src/arch/` | Arch-agnostic dispatch via `cfg` | `mod.rs` + `{riscv64,aarch64}/` |
-| `src/arch/{arch}/init.rs` | ArchInit, ArchInitSMP | per-arch boot sequence |
-| `src/arch/{arch}/console.rs" | Early console (SBI / PL011) | UART output |
+| `src/arch/mod.rs`、`src/arch/{riscv64,aarch64}/mod.rs` | `ArchOps` 契约与实现分发 | 启动入口在各架构 `boot.rs`；AArch64 另有 `init.rs` |
+| `src/arch/{arch}/console.rs` | Early console (SBI / PL011) | UART output |
 | `src/arch/{arch}/interrupt.rs` | PLIC/GIC + trap dispatch | interrupt handling |
 | `src/arch/{arch}/timer.rs` | Timer init + tick handler | timer subsystem |
-| `src/arch/{arch}/context.rs` | TrapContext, InitTaskContext | `#[repr(C)]` structs |
-| `src/arch/{arch}/backtrace.rs` | Stack unwinding | debug support |
+| `src/arch/{arch}/context.rs` | TrapContext, CalleeSavedContext | `#[repr(C)]` structs |
+| `src/panic.rs`、`src/elf.rs` | 栈回溯、符号解析和 panic observer | debug support |
 | `crates/memory/` | 内存子系统策略层（初始化 + MMIO 类型化入口） | `init`, `init_smp`, `MmioRegion` |
-| `src/task/` | TaskManager, TCB, schedulers | CFS/FIFO/RR, clone/exit/wait/sleep/signal |
+| `src/task/` | TaskTable, TCB, PerCpuSched 与 schedulers | CFS/FIFO/RR, clone/exit/wait/sleep/signal |
 | `src/task/scheduler/` | `Scheduler` trait + implementations | scheduling algorithms |
-| `src/device/` | DeviceManager, Hal, PlatformBus | 设备枚举/注册框架 |
+| `src/device/`、`crates/device_core/` | descriptor probe、typed capability、内核驱动集成 | `DeviceManager` 仅为内部兼容记录 |
 | `src/device/hal.rs` | `virtio-drivers::Hal` trait 实现 | DMA 分配 + MMIO 映射 |
-| `src/device/virtio.rs` | VirtIO 块设备探测 + 全局引用 | MmioTransport + VirtIOBlk |
+| `src/device/virtio.rs`、`src/device/virtio/` | VirtIO 模块入口、MMIO probe、永久块设备实例 | MmioTransport + VirtIOBlk wrapper |
 | `src/fs/` | VFS, RamFS, FatFS adapter, FD table | 文件系统层 |
 | `src/fs/vfs.rs` | `FileSystem` trait + InodeId/DirEntry/FileType | VFS 抽象 |
 | `src/fs/ramfs.rs` | 内存文件系统（BTreeMap 存储） | RamFS 实现 |
 | `src/fs/fd_table.rs` | Per-task 文件描述符表 | Fd newtype + alloc/get/close |
-| `src/fs/fatfs_adapter.rs` | VirtIO blk → fatfs crate I/O 适配 | 扇区对齐 read-modify-write |
+| `src/fs/fatfs_adapter.rs` | 本地 `BlockDevice` 门面 → fatfs crate I/O 适配 | 扇区对齐 read-modify-write |
 | `src/syscall/` | 类型安全的集中式 API 网关（SAS 模式，不经过 trap） | POSIX 兼容 syscall 编号 |
-| `src/sync/spinlock.rs` | SpinLock (interrupt-aware, lock levels) | custom implementation |
+| `crates/sync/src/` | `SpinLock` 禁用抢占；`SpinLockIrq` 关中断；两者检查锁序 | `mutex.rs`、`irq_safe.rs`、`raw/` |
 | `*/error.rs` | 子系统错误 enum + Result alias | error handling |
 | `src/logging.rs` | `log` crate backend + ANSI colors | kernel logging |
-| `src/config.rs` | Kernel constants (`MAX_CORE_COUNT`, etc.) | configuration |
-| `src/per_cpu.rs` | Per-CPU data + CORE_COUNT | SMP support |
+| `crates/config/src/lib.rs` | Kernel constants (`MAX_CORE_COUNT`, FDT/设备容量等) | configuration |
+| `crates/per_cpu/src/lib.rs`、`src/lib.rs` | Per-CPU 数据在前者；`CORE_COUNT` 在后者 | SMP support |
 | `crates/platform_fdt/` | 平台描述层（kernel-owned DTB + FDT 查询） | hardware discovery |
 | `src/elf.rs` | ELF symbol table parser | backtrace support |
 | `src/panic.rs` | Panic handler + observer pattern | error recovery |
@@ -112,7 +112,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Naming**: `snake_case` functions/methods, `PascalCase` types/traits/enums, `SCREAMING_SNAKE_CASE` constants
 - **函数命名惯例**: 返回 `bool` 用 `is_`/`has_`/`can_` 前缀；getter 用名词不加 `get_`/`read_`（如 `len()`）；setter 用 `set_` 前缀；动作用动宾结构（动词在前，如 `flush_tlb()`、`disable_irq()`）
 - **Formatting**: rustfmt default 100 char width, enforce via `cargo fmt --all`
-- **Linting**: `cargo clippy -- -D warnings`
+- **Linting**: 内核按 CI 指定裸机 target 执行 Clippy；host 纯逻辑 crate 按局部 AGENTS 执行
 - **Doc comments**: `///` with `# Safety`, `# Errors`, `# Panics` sections for public APIs（节标题保留英文，内容用中文）
 - **注释语言**: 所有注释和文档注释使用中文；`// SAFETY:` 前缀保留英文（Rust 社区惯例），其后说明用中文
 - **注释位置**: 注释写在代码上方，不写在行尾（`// SAFETY:` 除外——紧跟 `unsafe` 块上方）
@@ -120,7 +120,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **Error handling**: 可恢复错误使用所属子系统的错误类型向上传递；syscall/ABI 边界再显式映射到 ABI 错误码。不要为项目整体新增全局 Result alias，避免过早丢失错误来源和字段。内核内部不变量违反使用 `.expect("reason with data")` 或 `panic!()`，不得静默继续。
 - **Unsafe**: Every `unsafe` block MUST have `// SAFETY:` comment explaining invariants; minimize scope
 - **Singletons**: `spin::Once<T>` with `call_once()` / `get()`
-- **Sync**: Custom `SpinLock<T>` (interrupt-aware), NOT `spin::Mutex` for kernel mutual exclusion
+- **Sync**: 使用 `sync` crate；`SpinLock<T>` 禁用抢占且拒绝中断上下文，`SpinLockIrq<T>` 关中断，选择规则见 `crates/sync/AGENTS.md`；不要使用 `spin::Mutex` 替代
 - **Assembly**: `.S` files compiled via `cc` crate in `build.rs`; `#[repr(C)]` for ABI-compatible structs
 - **Attributes**: Rust 2024 edition syntax — `#[unsafe(no_mangle)]` (not `#[no_mangle]`)
 - **规范引用**: 涉及体系结构、硬件规范的代码，模块文档注释须附上官方文档链接并精确到章节（如 `[Arm ARM §D8.3](https://...)`）
@@ -131,7 +131,7 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **NO** vague panic/error messages — always include the data that caused the failure (addresses, indices, sizes, etc.)
 - **NO** `unsafe` without `// SAFETY:` comment
 - **NO** modifying trait definitions to embed implementation (traits = contracts)
-- **NO** `spin::Mutex` for kernel mutual exclusion (doesn't disable interrupts)
+- **NO** `spin::Mutex` for kernel mutual exclusion；按上下文选择项目 `SpinLock` / `SpinLockIrq`
 - **NO** `static mut` — use `SyncUnsafeCell` or `spin::Once<T>`
 - **NO** empty `unsafe {}` blocks to bypass borrow checker
 - **NO** suppressing warnings with `#[allow(...)]` without justification——使用 `#[expect(..., reason = "...")]` 代替
@@ -141,11 +141,11 @@ docs/design/         # Design docs (SAS architecture, subsystem designs, phase p
 - **NO** 文档/注释中引用本地路径（`ref/Theseus/`、`/home/...`、`~/...`）——使用上游 URL（GitHub 链接等），保证仓库内所有内容对任意 clone 通用
 
 ## UNIQUE STYLES
-- `spin::Once<T>` with named statics: `TASK_MANAGER.call_once(|| ...)`, `TASK_MANAGER.get().unwrap()`
-- `SpinLockGuard<'_, T>` RAII locking (disables/restores interrupts on acquire/release)
+- `spin::Once<T>` with named statics: `CORE_COUNT.call_once(|| core_count)`, `CORE_COUNT.get().expect("CORE_COUNT 未初始化，必须先完成 early_init()")`
+- `SpinLockGuard` / `SpinLockIrqGuard` 通过 RAII 分别管理抢占 / 中断状态；详见 `crates/sync/AGENTS.md`
 - Subsystem-scoped errors and Result aliases, with explicit boundary conversion
 - Per-architecture code selected via `#[cfg(target_arch = "...")]`
-- Cargo workspace: root package (kernel) + `xtask` (build tool)
+- Cargo workspace: root kernel + `crates/` 子系统 + `tests/` 独立测试 + `xtask`；成员以 `Cargo.toml` 为准
 
 ## COMMANDS
 宿主机侧先启动固定名常驻 Dev Container：
@@ -175,13 +175,14 @@ docker exec -w /workspace simplekernel-devcontainer cargo xtask test --list
 
 # Format + lint check
 docker exec -w /workspace simplekernel-devcontainer cargo fmt --all -- --check
-docker exec -w /workspace simplekernel-devcontainer cargo clippy -- -D warnings
+docker exec -w /workspace simplekernel-devcontainer cargo clippy --target riscv64gc-unknown-none-elf -- -D warnings
+docker exec -w /workspace simplekernel-devcontainer cargo clippy --target aarch64-unknown-none -- -D warnings
 
 # Documentation
 docker exec -w /workspace simplekernel-devcontainer cargo doc --no-deps
 ```
 
-**QEMU 超时**：在 QEMU 中运行内核或测试时经常出现卡死或无限循环打印日志的情况。所有通过 Bash 工具执行的 QEMU 相关命令（`cargo xtask run`、`cargo xtask test`）默认使用 `--timeout 30`（Bash 工具侧 `timeout: 30000`）。低性能宿主机或特殊测试可显式放宽，但应写清楚原因。超时后应 `pkill -f qemu-system` 清理残留进程。
+**QEMU 超时**：QEMU 运行可能卡住或持续打印日志。`cargo xtask run` / `cargo xtask test` 默认传入 `--timeout 30`，工具侧也应设置有界等待。低性能宿主机或特殊测试可显式放宽，但须说明原因。超时后在对应开发容器内执行 `pkill -f qemu-system` 清理残留进程。
 
 ## TESTING
 
@@ -267,7 +268,8 @@ test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_p
 
 ### 审计相关文件
 - **Roadmap**（全局计划、排查 checklist、协作流程）: `docs/audit/review-roadmap.md`
-- **审计进度**（跨对话上下文传递）: `docs/audit/audit-progress.md`
+- **审计进度**（当前工作、未决问题、唯一下一步和证据入口）: `docs/audit/audit-progress.md`
+- **历史记录**：从审计进度进入；历史验证、建议和切片完成不等于当前 HEAD 通过、ADR 接受或阶段关闭
 - **Session Prompt**（输出格式参考）: `docs/audit/review-session-prompt.md`
 - **ADR 目录**（架构决策记录）: `docs/adr/`
 - **ADR 模板**: `docs/templates/adr-template.md`
@@ -301,8 +303,8 @@ test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_p
 **结束阶段：**
 - 对话结束时，将以下内容写入 `docs/audit/audit-progress.md`：
   - 更新"当前状态"（当前 Phase + 下一个目标）
-  - 更新"上次对话摘要"（已完成、关键问题、未决设计问题、下一步）
-  - 追加"已完成的目标"记录
+  - 保留简短交接和验证证据入口；旧摘要、旧验证移入已有历史记录并标明日期/适用基线
+  - 交付物勾选仅在 Roadmap 维护，附证据；阶段关闭另需范围覆盖、遗留处理与回归证明
 
 ### 审计约束
 - 设计讨论点：列出备选方案和客观优缺点，**不要推荐某个方案**，标注 ADR 待决
@@ -318,12 +320,12 @@ test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_p
   - 不要假设用户熟悉 Rust 高级特性（typestate、GAT、`PhantomData` 等），使用时需简要说明
 
 ## NOTES
-- **SAS architecture**: single address space, no user/kernel split. Isolation via Rust type system + crate visibility (`pub(crate)`). Syscall layer (`src/syscall/`) is the only public cross-module API gateway — direct function calls, no trap (ecall/svc).
-- **Kernel encapsulation** (three-layer isolation, ref: [Theseus OSDI'20], [Tock SOSP'17], [SPIN SOSP'95]):
+- **SAS 当前实现**：单地址空间，无用户态/内核态分离；syscall 是直接函数调用，不经过 ecall/svc。将 syscall 收敛为 APP 唯一公共网关是架构目标，不能当作已经完成的可见性隔离。
+- **Kernel encapsulation 目标**（参考上方 Theseus/Tock/SPIN 论文）：
   1. APP crate 必须标记 `#![forbid(unsafe_code)]` — 编译器强制禁止 unsafe，APP 无法绕过类型系统
   2. 内核内部接口使用 `pub(crate)` — APP crate 无法访问内核内部符号
-  3. `src/syscall/` 是唯一 `pub` 跨 crate 接口 — APP 的一切内核访问必须经过此网关
-  - Syscall 接口使用 Rust 类型（非裸 `usize`），编译器保证类型安全；运行时只验证编译器无法保证的部分（如 Fd 是否有效）
+  3. 目标是让 `src/syscall/` 成为 APP 唯一 `pub` 跨 crate 访问网关；当前尚未全面兑现
+  - 当前 `src/lib.rs` 仅将 `arch` 根模块收窄为 `pub(crate)`，仍公开 `boot`、`device`、`fs`、`task` 等模块；R7 需审计这些实际暴露面和 syscall 类型边界，不能声称 APP 的全部访问已被强制经过网关
   - 未来如需 APP 权限分级，可引入 Tock 式 capability token（`unsafe trait` 作为编译期访问控制），当前不需要
 - **Kernel-internal error policy** (bug = panic, expected error = Result):
   - 不变量违反、不可达路径、逻辑错误 → `panic!()` / `.expect()` — 内核 bug 必须立即暴露，fail-fast
@@ -333,5 +335,5 @@ test_harness::test_main!(simplekernel::boot::InitLevel::Full, run_test, should_p
 - Interface-driven: traits are contracts, `impl` blocks are implementations AI generates
 - Boot chains differ: riscv64 (U-Boot SPL→OpenSBI→U-Boot), aarch64 (U-Boot→ATF→OP-TEE)
 - Debug: use `cargo xtask debug` + GDB, QEMU logs in build output
-- Design docs: `docs/design/` contains design documents written **before implementation**. They may be outdated — **always treat actual code as the source of truth**. When design docs conflict with code, trust the code and flag the discrepancy
-- Phase plans: `docs/design/P0-P7` — all phases (P0-P7) implementation complete
+- Design docs: `docs/design/` 同时包含当前设计与历史方案；入口见 `docs/AGENTS.md`。实现以代码为准，运行结果以带基线的验证记录为准；发现冲突须标明。
+- 历史 P 阶段和当前 R0–R8 审计是不同维度；已有实现或阶段设计文件不能证明审计完成。

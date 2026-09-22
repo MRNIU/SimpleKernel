@@ -48,6 +48,16 @@ docs/
 
 SimpleKernel 当前已有 `docs/design/` 和 `docs/adr/`。新增 SAD/SDD 时可以使用 `docs/templates/sad.md`、`docs/templates/sdd.md`，也可以按子系统放入 `docs/design/`，但必须在相关入口文档中链接。
 
+## 状态与证据入口
+
+- [审计进度](audit/audit-progress.md)：当前工作、未决事项、唯一下一步与验证入口。
+- [Roadmap](audit/review-roadmap.md)：R0–R8 范围及逐项交付物对账，阶段关闭须单独举证。
+- [历史记录](audit/2026-09-22-audit-history.md)：归档对话和旧验证；不作为当前执行清单。
+- [style follow-up](audit/2026-06-10-style-organization-followup.md)：已完成切片的历史追踪。
+
+动态进度只在审计进度维护，交付物状态只在 Roadmap 维护；当前设计维护契约与实现边界。
+不要把文件存在、实现落地、历史测试通过、阶段关闭或 ADR 接受混为同一状态。
+
 ## 当前设计入口
 
 - `docs/design/SAS-架构设计.md`：单地址空间 SAS 架构边界。
